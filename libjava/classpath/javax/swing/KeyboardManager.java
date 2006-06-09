@@ -46,6 +46,7 @@ import java.awt.event.KeyEvent;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.WeakHashMap;
 
 /**
  * This class maintains a mapping from top-level containers to a 
@@ -65,7 +66,7 @@ class KeyboardManager
    * A mapping between top level containers and Hashtables that 
    * map KeyStrokes to Components.
    */
-  Hashtable topLevelLookup = new Hashtable();  
+  WeakHashMap topLevelLookup = new WeakHashMap();  
   
   /**
    * A mapping between top level containers and Vectors of JMenuBars

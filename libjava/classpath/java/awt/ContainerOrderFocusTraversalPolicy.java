@@ -111,14 +111,16 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
 	ancestor = current.getFocusCycleRootAncestor ();
 	if (ancestor == prevAncestor)
 	  {
-	    // We've reached the top focus cycle root ancestor.  Check
-	    // if it is root.
-	    if (ancestor != root)
+            // We've reached the top focus cycle root ancestor.  Check
+            // if it is root.
+            if (ancestor == null)
+              ancestor = root;
+            else if (ancestor != root)
 	      throw new IllegalArgumentException ("the given container is not"
 						  + " a focus cycle root of the"
 						  + " current component");
-	    else
-	      break;
+            else
+              break;
 	  }
 	prevAncestor = ancestor;
       }
@@ -136,7 +138,6 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
       return getFirstComponent ((Container) current);
 
     Container parent = current.getParent ();
-
     synchronized (parent.getTreeLock ())
       {
         Component[] components = parent.getComponents ();
@@ -146,47 +147,104 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
         // Find component's index.
         for (int i = 0; i < numComponents; i++)
           {
-            if (components[i] == current)
+            if (components[i].equals(current))
               componentIndex = i;
           }
 
-        // Search forward for the next acceptable component.
-        for (int i = componentIndex + 1; i < numComponents; i++)
-          {
-            if (accept (components[i]))
-              return components[i];
-
-            if (components[i] instanceof Container)
-              {
-                Component result = getFirstComponent ((Container) components[i]);
-
-                if (result != null
-                    && implicitDownCycleTraversal)
-                  return result;
-              }
-          }
-
+        // Search forward for the next acceptable component.  
+        // Search through all components at least one time
+        // i.e. start at componentIndex + 1 --> nComponents -1 --> 0  ---> componentIndex
+        int i = componentIndex + 1;
+        int end = numComponents - 1;
+        Component next = getNextAvailableComponent(components, i, end);
+        if (next != null)
+          return next;
+        
+        // Now check remainder of components from 0 to componentIndex
+        i = 0;
+        end = componentIndex;
+        next = getNextAvailableComponent(components, i, end);
+        if (next != null)
+          return next; 
+        
         // No focusable components after current in its Container.  So go
         // to the next Component after current's Container (parent).
         Component result = getComponentAfter (root, parent);
-
         return result;
       }
+  }
+  
+  /**
+   * Gets the next available component in the array between the given range.
+   * 
+   * @param components - the array of components.
+   * @param start - where to start
+   * @param end - where to end
+   * @return next component if found
+   */
+  private Component getNextAvailableComponent(Component[] components, int start, int end)
+  {
+    while (start <= end)
+      {
+        Component c = components[start];
+
+        if (c.visible && c.isDisplayable() && c.enabled && c.focusable)
+          return c;
+
+        if (c instanceof Container)
+          {
+            Component result = getFirstComponent((Container) c);
+
+            if (result != null && implicitDownCycleTraversal && result.visible
+                && result.isDisplayable() && result.enabled && result.focusable)
+              return result;
+          }
+        start++;
+      }
+
+    return null;
+  }
+
+  /**
+   * Gets the previous available component in the array between the given range.
+   * 
+   * @param components - the array of components.
+   * @param start - where to start
+   * @param end - where to end
+   * @return previous component if found
+   */
+  Component getPrevAvailableComponent(Component[] components, int start, int end)
+  {
+    while (start >= end) 
+      {
+        Component c = components[start];
+        if (c.visible && c.isDisplayable() && c.enabled && c.focusable)
+          return c;
+
+        if (c instanceof Container)
+          {
+            Component result = getLastComponent((Container) c);
+
+            if (result != null
+                && (result.visible && result.isDisplayable() && result.enabled && result.focusable))
+              return result;
+          }
+        start--;
+      }
+    return null;
   }
 
   /**
    * Returns the Component that should receive the focus before
-   * <code>current</code>.  <code>root</code> must be a focus cycle
-   * root of current.
-   *
+   * <code>current</code>. <code>root</code> must be a focus cycle root of
+   * current.
+   * 
    * @param root a focus cycle root of current
    * @param current a (possibly indirect) child of root, or root itself
-   *
-   * @return the previous Component in the focus traversal order for
-   * root, or null if no acceptable Component exists.
-   *
-   * @exception IllegalArgumentException If root is not a focus cycle
-   * root of current, or if either root or current is null.
+   * @return the previous Component in the focus traversal order for root, or
+   *         null if no acceptable Component exists.
+   * @exception IllegalArgumentException If root is not a focus cycle root of
+   *              current, or if either root or current is null.
    */
   public Component getComponentBefore (Container root, Component current)
   {
@@ -207,7 +265,9 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
 	  {
 	    // We've reached the top focus cycle root ancestor.  Check
 	    // if it is root.
-	    if (ancestor != root)
+            if (ancestor == null)
+              ancestor = root;
+            else if (ancestor != root)
 	      throw new IllegalArgumentException ("the given container is not"
 						  + " a focus cycle root of the"
 						  + " current component");
@@ -244,20 +304,20 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
               componentIndex = i;
           }
 
-        // Search backward for the next acceptable component.
-        for (int i = componentIndex - 1; i >= 0; i--)
-          {
-            if (accept (components[i]))
-              return components[i];
-
-            if (components[i] instanceof Container)
-              {
-                Component result = getLastComponent ((Container) components[i]);
-
-                if (result != null)
-                  return result;
-              }
-          }
+        // Search through all components at least one time
+        // i.e. start at componentIndex - 1 --> 0 --> numComponents -1  ---> componentIndex
+        int i = componentIndex - 1;
+        int end = 0;
+        Component prev = getPrevAvailableComponent(components, i, end);
+        if (prev != null)
+          return prev;
+        
+        // Now check remainder of components
+        i = numComponents -1;
+        end = componentIndex;
+        prev = getPrevAvailableComponent(components, i, end);
+        if (prev != null)
+          return prev; 
 
         // No focusable components before current in its Container.  So go
         // to the previous Component before current's Container (parent).
@@ -286,7 +346,8 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
         || !root.isDisplayable ())
       return null;
 
-    if (accept (root))
+    if (root.visible && root.isDisplayable() && root.enabled
+        && root.focusable)
       return root;
 
     Component[] componentArray = root.getComponents ();
@@ -295,14 +356,16 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
       {
         Component component = componentArray [i];
 	
-	if (accept (component))
+	if (component.visible && component.isDisplayable() && component.enabled
+            && component.focusable)
 	  return component;
 
         if (component instanceof Container)
           {
             Component result = getFirstComponent ((Container) component);
 
-            if (result != null)
+            if (result != null
+                && (result.visible && result.isDisplayable() && result.enabled && result.focusable))
               return result;
           }
       }
@@ -329,7 +392,8 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
         || !root.isDisplayable ())
       return null;
 
-    if (accept (root))
+    if (root.visible && root.isDisplayable() && root.enabled
+        && root.focusable)
       return root;
 
     Component[] componentArray = root.getComponents ();
@@ -338,14 +402,17 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
       {
         Component component = componentArray [i];
 	
-	if (accept (component))
+	if (component.visible && component.isDisplayable() && component.enabled
+            && component.focusable)
 	  return component;
 
         if (component instanceof Container)
           {
             Component result = getLastComponent ((Container) component);
 
-            if (result != null)
+            if (result != null &&
+                result.visible && result.isDisplayable() && result.enabled
+                && result.focusable)
               return result;
           }
       }

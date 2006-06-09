@@ -1,5 +1,5 @@
 /* JToolBar.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -757,14 +757,28 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
   } // addImpl()
 
   /**
-   * This method returns a String description of the JToolBar.
+   * Returns a string describing the attributes for the <code>JToolBar</code>
+   * component, for use in debugging.  The return value is guaranteed to be 
+   * non-<code>null</code>, but the format of the string may vary between
+   * implementations.
    *
-   * @return A String description of the JToolBar.
+   * @return A string describing the attributes of the <code>JToolBar</code>.
    */
   protected String paramString()
   {
-    return "JToolBar";
-  } // paramString()
+    StringBuffer sb = new StringBuffer(super.paramString());
+    sb.append(",floatable=").append(floatable);
+    sb.append(",margin=");
+    if (margin != null)
+      sb.append(margin);
+    sb.append(",orientation=");
+    if (orientation == HORIZONTAL)
+      sb.append("HORIZONTAL");
+    else
+      sb.append(VERTICAL);
+    sb.append(",paintBorder=").append(paintBorder);
+    return sb.toString();
+  }
 
   /**
    * Returns the object that provides accessibility features for this

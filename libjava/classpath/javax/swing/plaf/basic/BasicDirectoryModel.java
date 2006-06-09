@@ -227,16 +227,16 @@ public class BasicDirectoryModel extends AbstractListModel
 
     if (aTrav == bTrav)
       {
-	String aname = a.getName().toLowerCase();
-	String bname = b.getName().toLowerCase();
-	return ((aname.compareTo(bname) < 0) ? true : false);
+        String aname = a.getName().toLowerCase();
+        String bname = b.getName().toLowerCase();
+        return (aname.compareTo(bname) < 0) ? true : false;
       }
     else
       {
-	if (aTrav)
-	  return true;
-	else
-	  return false;
+        if (aTrav)
+          return true;
+        else
+          return false;
       }
   }
 

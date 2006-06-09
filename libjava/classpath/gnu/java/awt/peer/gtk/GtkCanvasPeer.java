@@ -45,7 +45,6 @@ import java.awt.peer.CanvasPeer;
 public class GtkCanvasPeer extends GtkComponentPeer implements CanvasPeer
 {
   native void create ();
-  native void realize ();
 
   public GtkCanvasPeer (Canvas c)
   {

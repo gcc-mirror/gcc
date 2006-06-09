@@ -258,6 +258,9 @@ public class MenuSelectionManager
   {
     MenuElement[] selection = (MenuElement[])
                     selectedPath.toArray(new MenuElement[selectedPath.size()]);
+    if (selection.length == 0)
+      return;
+
     MenuElement[] path;
     for (int index = selection.length - 1; index >= 0; index--)
       {

@@ -144,25 +144,7 @@ public final class Buffers
    */
   public static Object getData(DataBuffer buffer)
   {
-    if (buffer instanceof DataBufferByte)
-      return ((DataBufferByte) buffer).getData();
-
-    if (buffer instanceof DataBufferShort)
-      return ((DataBufferShort) buffer).getData();
-
-    if (buffer instanceof DataBufferUShort)
-      return ((DataBufferUShort) buffer).getData();
-
-    if (buffer instanceof DataBufferInt)
-      return ((DataBufferInt) buffer).getData();
-
-    if (buffer instanceof DataBufferFloat)
-      return ((DataBufferFloat) buffer).getData();
-
-    if (buffer instanceof DataBufferDouble)
-      return ((DataBufferDouble) buffer).getData();
-
-    throw new ClassCastException("Unknown data buffer type");
+    return getData(buffer, 0, null, 0, buffer.getSize());
   }
 
     
@@ -172,46 +154,46 @@ public final class Buffers
    * given destination array is null.
    */
   public static Object getData(DataBuffer src, int srcOffset,
-			       Object dest,  int destOffset,
+			       Object dest,  int dstOffset,
 			       int length)
   {
     Object from;
-    if (src instanceof DataBufferByte)
+    switch(src.getDataType())
       {
-	from = ((DataBufferByte) src).getData();
-	if (dest == null) dest = new byte[length+destOffset];
-      }
-    else if (src instanceof DataBufferShort)
-      {
-	from = ((DataBufferShort) src).getData();
-	if (dest == null) dest = new short[length+destOffset];
-      }
-    else if (src instanceof DataBufferUShort)
-      {
-	from = ((DataBufferUShort) src).getData();
-	if (dest == null) dest = new short[length+destOffset];
-      }
-    else if (src instanceof DataBufferInt)
-      {
-	from = ((DataBufferInt) src).getData();
-	if (dest == null) dest = new int[length+destOffset];
-      }
-    else if (src instanceof DataBufferFloat)
-      {
-	from = ((DataBufferFloat) src).getData();
-	if (dest == null) dest = new float[length+destOffset];
-      }
-    else if (src instanceof DataBufferDouble)
-      {
-	from = ((DataBufferDouble) src).getData();
-	if (dest == null) dest = new double[length+destOffset];
-      }
-    else
-      {
+      case DataBuffer.TYPE_BYTE:
+	if (dest == null) dest = new byte[length+dstOffset];
+	for(int i = 0; i < length; i++)
+	  ((byte[])dest)[i + dstOffset] = (byte)src.getElem(i + srcOffset);
+	break;
+
+      case DataBuffer.TYPE_DOUBLE:
+	if (dest == null) dest = new double[length+dstOffset];
+	for(int i = 0; i < length; i++)
+	  ((double[])dest)[i + dstOffset] = src.getElemDouble(i + srcOffset);
+	break;
+
+      case DataBuffer.TYPE_FLOAT:
+	if (dest == null) dest = new float[length+dstOffset];
+	for(int i = 0; i < length; i++)
+	  ((float[])dest)[i + dstOffset] = src.getElemFloat(i + srcOffset);
+	break;
+
+      case DataBuffer.TYPE_INT:
+	if (dest == null) dest = new int[length+dstOffset];
+	for(int i = 0; i < length; i++)
+	  ((int[])dest)[i + dstOffset] = src.getElem(i + srcOffset);
+	break;
+
+      case DataBuffer.TYPE_SHORT:
+      case DataBuffer.TYPE_USHORT:
+	if (dest == null) dest = new short[length+dstOffset];
+	for(int i = 0; i < length; i++)
+	  ((short[])dest)[i + dstOffset] = (short)src.getElem(i + srcOffset);
+	break;
+
+      case DataBuffer.TYPE_UNDEFINED:
 	throw new ClassCastException("Unknown data buffer type");
       }
-    
-    System.arraycopy(from, srcOffset, dest, destOffset, length);
     return dest;
   }
   

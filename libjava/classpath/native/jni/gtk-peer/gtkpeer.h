@@ -36,12 +36,14 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
+#include <cairo.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <config.h>
 #include "native_state.h"
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include <jni.h>
 
@@ -54,6 +56,7 @@ exception statement from your version. */
 
 extern struct state_table *cp_gtk_native_state_table;
 extern struct state_table *cp_gtk_native_global_ref_table;
+extern struct state_table *cp_gtk_native_graphics2d_state_table;
 
 #define NSA_INIT(env, clazz) \
    do {cp_gtk_native_state_table = cp_gtk_init_state_table (env, clazz); \
@@ -83,33 +86,20 @@ extern struct state_table *cp_gtk_native_global_ref_table;
     (*env)->DeleteGlobalRef (env, *globRefPtr); \
     free (globRefPtr);} while (0)
 
-extern struct state_table *cp_gtk_native_graphics_state_table;
+#define NSA_G2D_INIT(env, clazz) \
+  cp_gtk_native_graphics2d_state_table = cp_gtk_init_state_table (env, clazz)
 
-#define NSA_G_INIT(env, clazz) \
-  cp_gtk_native_graphics_state_table = cp_gtk_init_state_table (env, clazz)
+#define NSA_GET_G2D_PTR(env, obj) \
+  cp_gtk_get_state (env, obj, cp_gtk_native_graphics2d_state_table)
 
-#define NSA_GET_G_PTR(env, obj) \
-  cp_gtk_get_state (env, obj, cp_gtk_native_graphics_state_table)
+#define NSA_SET_G2D_PTR(env, obj, ptr) \
+  cp_gtk_set_state (env, obj, cp_gtk_native_graphics2d_state_table, (void *)ptr)
 
-#define NSA_SET_G_PTR(env, obj, ptr) \
-  cp_gtk_set_state (env, obj, cp_gtk_native_graphics_state_table, (void *)ptr)
-
-#define NSA_DEL_G_PTR(env, obj) \
-  cp_gtk_remove_state_slot (env, obj, cp_gtk_native_graphics_state_table)
+#define NSA_DEL_G2D_PTR(env, obj) \
+  cp_gtk_remove_state_slot (env, obj, cp_gtk_native_graphics2d_state_table)
 
 #define SWAPU32(w)							\
   (((w) << 24) | (((w) & 0xff00) << 8) | (((w) >> 8) & 0xff00) | ((w) >> 24))
-
-struct graphics
-{
-  GdkDrawable *drawable;
-  GdkGC *gc;
-  GdkColormap *cm;
-  PangoFontDescription *pango_font;
-  PangoContext *pango_context;
-  PangoLayout *pango_layout;
-  jint x_offset, y_offset;
-};
 
 /* New-style event masks. */
 #define AWT_BUTTON1_DOWN_MASK (1 << 10)
@@ -192,14 +182,12 @@ jint cp_gtk_state_to_awt_mods (guint state);
 
 /* Image helpers */
 GdkPixbuf *cp_gtk_image_get_pixbuf (JNIEnv *env, jobject obj);
-GdkPixmap *cp_gtk_image_get_pixmap (JNIEnv *env, jobject obj);
-jboolean cp_gtk_image_is_offscreen (JNIEnv *env, jobject obj);
+
+/* Component Graphics helpers */
+void cp_gtk_grab_current_drawable(GtkWidget *widget, GdkDrawable **draw,
+				  GdkWindow **win);
 
 /* JNI initialization functions */
-#if GTK_CAIRO
-void cp_gtk_graphics2d_init_jni (void);
-#endif
-void cp_gtk_graphics_init_jni (void);
 void cp_gtk_button_init_jni (void);
 void cp_gtk_checkbox_init_jni (void);
 void cp_gtk_choice_init_jni (void);
@@ -220,6 +208,8 @@ void cp_gtk_textcomponent_connect_signals (GObject *ptr, jobject *gref);
 
 /* Debugging */
 void cp_gtk_print_current_thread (void);
+
+GdkPixmap *cp_gtk_get_pixmap( JNIEnv *env, jobject obj);
 
 #define SYNCHRONIZE_GDK 0
 

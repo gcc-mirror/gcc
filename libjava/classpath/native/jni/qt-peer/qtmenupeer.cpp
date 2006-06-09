@@ -44,9 +44,11 @@ exception statement from your version. */
 #include "slotcallbacks.h"
 #include "componentevent.h"
 
-#define ADDMENU 0
-#define ADDITEM 1
-#define ADDSEPA 2
+typedef enum ActionType {
+  ActionMenu,
+  ActionItem,
+  ActionSeparator
+} ActionType;
 
 // Sets the title, but also tear-off.
 class MenuTitleEvent : public AWTEvent {
@@ -81,18 +83,18 @@ class MenuAction : public AWTEvent {
  private:
   QMenu *menu;
   QAction *action;
-  int isMenu; // 0 to add a menu, 1 to add an item, 2 to add a seperator
+  ActionType actionType; // type of action to add
   JavaVM *vm;
   jobject menuPeer;
   jobject itemPeer;
 
 public:
   MenuAction(JNIEnv *env, jobject mp, jobject ip, QMenu *m, QAction *a, 
-	     bool ismenu) : AWTEvent()
+	     ActionType actionType) : AWTEvent()
   {
     menu = m;
     action = a;
-    isMenu = ismenu;
+    this->actionType = actionType;
     env->GetJavaVM( &vm );
     menuPeer = env->NewGlobalRef( mp );
     if( ip != NULL )
@@ -104,35 +106,22 @@ public:
   void runEvent()
   {
     JNIEnv *env;
-    QAction *newAction; // adding an action creates a new duplicate.
     vm->GetEnv((void **)&env, JNI_VERSION_1_1);
-
-    switch(isMenu)
-      {
-      case ADDMENU:
-	newAction = menu->addMenu( (QMenu *)action );
-	break;
-      case ADDITEM:
-	newAction = menu->addAction(action->text());
-	newAction->setSeparator(action->isSeparator());
-	newAction->setCheckable(action->isCheckable());
-	//	delete action;
-	break;
-      case ADDSEPA:
-	newAction = menu->addSeparator();
-	break;
-      }
+    if (actionType == ActionMenu)
+      menu->addMenu ((QMenu *) action);
+    else
+      menu->addAction (action);
 
     jclass menuCls = env->GetObjectClass( menuPeer );
     jmethodID mid = env->GetMethodID(menuCls, "add", "(J)V");
     env->DeleteLocalRef(menuCls);
-    env->CallVoidMethod( menuPeer, mid, (jlong)newAction );
+    env->CallVoidMethod( menuPeer, mid, (jlong)action );
 
     env->DeleteGlobalRef( menuPeer );
     if( itemPeer != NULL )
       {
-	setNativeObject( env, itemPeer, newAction );
-	connectAction(newAction, env, itemPeer);
+	setNativeObject( env, itemPeer, action );
+	connectAction(action, env, itemPeer);
 	env->DeleteGlobalRef( itemPeer );
       }
   }
@@ -190,7 +179,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtMenuPeer_insertSeperator
   QMenu *menu = (QMenu *)getNativeObject( env, obj );
   assert( menu );
   mainThread->postEventToMain( new MenuAction( env, obj, NULL,
-					       menu, NULL, ADDSEPA ) );
+					       menu, NULL, ActionSeparator ) );
 }
 
 /*
@@ -205,7 +194,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtMenuPeer_insertItem
   QAction *action = (QAction *)getNativeObject( env, item );
   assert( action );
 
-  mainThread->postEventToMain( new MenuAction( env, obj, item, menu, action, ADDITEM ));
+  mainThread->postEventToMain( new MenuAction( env, obj, item, menu, action, ActionItem ));
 }
 
 /*
@@ -220,7 +209,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtMenuPeer_insertMenu
   QMenu *insMenu = (QMenu *)getNativeObject(env, menu);
   assert( insMenu );
 
-  mainThread->postEventToMain( new MenuAction( env, obj, menu, thisMenu, (QAction *)insMenu, ADDMENU ) );
+  mainThread->postEventToMain( new MenuAction( env, obj, menu, thisMenu, (QAction *)insMenu, ActionMenu ) );
 }
 
 /*

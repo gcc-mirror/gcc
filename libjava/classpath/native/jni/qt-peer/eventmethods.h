@@ -1,5 +1,5 @@
 /* eventmethods.cpp --
-   Copyright (C)  2005  Free Software Foundation, Inc.
+   Copyright (C)  2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -62,7 +62,7 @@ private:
     env->DeleteGlobalRef(componentCls);
   }
 
-  void callVoidMethod(char *methodName)
+  void callVoidMethod(const char *methodName)
   {
     JNIEnv *env;
     vm->GetEnv((void **)&env, JNI_VERSION_1_1);
@@ -72,7 +72,7 @@ private:
     env->CallVoidMethod( target, fireEventID );
   }
 
-  void callMouseMethod(char *methodName, 
+  void callMouseMethod(const char *methodName,
 		       int modifiers, int x, int y, int clickCount)
   {
     JNIEnv *env;

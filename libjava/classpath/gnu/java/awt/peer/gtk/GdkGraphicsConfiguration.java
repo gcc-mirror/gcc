@@ -1,5 +1,5 @@
 /* GdkGraphicsConfiguration.java -- describes characteristics of graphics
-   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -42,26 +42,33 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.ImageCapabilities;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.awt.Transparency;
 
 import java.awt.geom.AffineTransform;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.DirectColorModel;
 import java.awt.image.VolatileImage;
 
 public class GdkGraphicsConfiguration 
   extends GraphicsConfiguration
 {
   GdkScreenGraphicsDevice gdkScreenGraphicsDevice;
-  ColorModel cm;
-  Rectangle bounds;
+  
+  ColorModel opaqueColorModel;
 
+  ColorModel bitmaskColorModel;
+
+  ColorModel translucentColorModel;
+  
   public GdkGraphicsConfiguration(GdkScreenGraphicsDevice dev)
   {
-    this.gdkScreenGraphicsDevice = dev;
-    cm = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).getColorModel();
-    bounds = ((GtkToolkit) Toolkit.getDefaultToolkit()).getBounds();
+    gdkScreenGraphicsDevice = dev;
+    
+    opaqueColorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF, 0);
+    bitmaskColorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF, 0x1000000);
+    translucentColorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF, 0xFF000000);
   }
 
   public GraphicsDevice getDevice()
@@ -94,12 +101,21 @@ public class GdkGraphicsConfiguration
 
   public ColorModel getColorModel()
   {
-    return cm;
+    return opaqueColorModel;
   }
 
   public ColorModel getColorModel(int transparency)
   {
-    return getColorModel();
+    switch (transparency)
+    {
+      case Transparency.OPAQUE:
+        return opaqueColorModel;
+      case Transparency.BITMASK:
+        return bitmaskColorModel;
+      default:
+      case Transparency.TRANSLUCENT:
+        return translucentColorModel;
+    }
   }
 
   public AffineTransform getDefaultTransform()
@@ -116,7 +132,7 @@ public class GdkGraphicsConfiguration
 
   public Rectangle getBounds()
   {
-    return bounds;
+    return gdkScreenGraphicsDevice.getBounds();
   }
 
   public BufferCapabilities getBufferCapabilities()
@@ -133,8 +149,8 @@ public class GdkGraphicsConfiguration
 
   public VolatileImage createCompatibleVolatileImage(int width, int height, int transparency)
   {
-      // FIXME: implement
-    return null;
+      // FIXME: support the transparency argument
+    return new GtkVolatileImage(width, height);
   }
 
 }

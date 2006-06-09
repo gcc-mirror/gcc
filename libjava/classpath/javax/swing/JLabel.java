@@ -1,5 +1,5 @@
 /* JLabel.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,6 +50,7 @@ import java.awt.event.KeyEvent;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleExtendedComponent;
+import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleText;
 import javax.swing.plaf.LabelUI;
 import javax.swing.text.AttributeSet;
@@ -62,12 +63,39 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
 {
 
   /**
-   * Accessibility support for JLabel.
+   * Provides the accessibility features for the <code>JLabel</code>
+   * component.
    */
   protected class AccessibleJLabel
     extends JComponent.AccessibleJComponent
     implements AccessibleText, AccessibleExtendedComponent
   {
+    
+    /**
+     * Returns the accessible name.
+     * 
+     * @return The accessible name.
+     */
+    public String getAccessibleName()
+    {
+      if (accessibleName != null)
+        return accessibleName;
+      if (text != null)
+        return text;
+      else
+        return super.getAccessibleName();
+    }
+    
+    /**
+     * Returns the accessible role for the <code>JLabel</code> component.
+     *
+     * @return {@link AccessibleRole#LABEL}.
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.LABEL;
+    }
+    
     /**
      * Returns the selected text. This is null since JLabels
      * are not selectable.
@@ -297,7 +325,6 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
     }
   }
 
-  /** DOCUMENT ME! */
   private static final long serialVersionUID = 5496508283662221534L;
 
   static final String LABEL_PROPERTY = "labeledBy";
@@ -452,14 +479,42 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   }
 
   /**
-   * This method is used primarily for debugging purposes and returns a string
-   * that can be used to represent this label.
+   * Returns a string describing the attributes for the <code>JLabel</code>
+   * component, for use in debugging.  The return value is guaranteed to be 
+   * non-<code>null</code>, but the format of the string may vary between
+   * implementations.
    *
-   * @return A string to represent this label.
+   * @return A string describing the attributes of the <code>JLabel</code>.
    */
   protected String paramString()
   {
-    return super.paramString();
+    StringBuffer sb = new StringBuffer(super.paramString());
+    sb.append(",defaultIcon=");
+    if (icon != null)
+      sb.append(icon);
+    sb.append(",disabledIcon=");
+    if (disabledIcon != null)
+      sb.append(disabledIcon);
+    sb.append(",horizontalAlignment=");
+    sb.append(SwingUtilities.convertHorizontalAlignmentCodeToString(
+        horizontalAlignment));
+    sb.append(",horizontalTextPosition=");
+    sb.append(SwingUtilities.convertHorizontalAlignmentCodeToString(
+        horizontalTextPosition));
+    sb.append(",iconTextGap=").append(iconTextGap);
+    sb.append(",labelFor=");
+    if (labelFor != null)
+      sb.append(labelFor);
+    sb.append(",text=");
+    if (text != null)
+      sb.append(text);
+    sb.append(",verticalAlignment=");
+    sb.append(SwingUtilities.convertVerticalAlignmentCodeToString(
+        verticalAlignment));
+    sb.append(",verticalTextPosition=");
+    sb.append(SwingUtilities.convertVerticalAlignmentCodeToString(
+        verticalTextPosition));
+    return sb.toString();
   }
 
   /**
@@ -868,24 +923,25 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   {
     if (c != labelFor)
       {
+        Component oldLabelFor = labelFor;
+        labelFor = c;
+        firePropertyChange("labelFor", oldLabelFor, labelFor);
+
         // We put the label into the client properties for the labeled
         // component so that it can be read by the AccessibleJComponent.
         // The other option would be to reserve a default visible field
-        // in JComponent, but since this is relativly seldomly used, it
+        // in JComponent, but since this is relatively seldomly used, it
         // would be unnecessary waste of memory to do so.
-	Component oldLabelFor = labelFor;
         if (oldLabelFor instanceof JComponent)
           {
             ((JComponent) oldLabelFor).putClientProperty(LABEL_PROPERTY, null);
           }
 
-	labelFor = c;
-	if (labelFor instanceof JComponent)
+        if (labelFor instanceof JComponent)
           {
             ((JComponent) labelFor).putClientProperty(LABEL_PROPERTY, this);
           }
 
-	firePropertyChange("labelFor", oldLabelFor, labelFor);
       }
   }
 
@@ -902,9 +958,10 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the object that provides accessibility features for this
+   * <code>JLabel</code> component.
    *
-   * @return The accessible context.
+   * @return The accessible context (an instance of {@link AccessibleJLabel}).
    */
   public AccessibleContext getAccessibleContext()
   {

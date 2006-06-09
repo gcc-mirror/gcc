@@ -364,7 +364,8 @@ public class MultiFileChooserUI extends FileChooserUI
    * @return The filter returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public FileFilter getAcceptAllFileFilter(JFileChooser chooser) {
+  public FileFilter getAcceptAllFileFilter(JFileChooser chooser) 
+  {
     FileFilter result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -393,7 +394,8 @@ public class MultiFileChooserUI extends FileChooserUI
    * @return The view returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public FileView getFileView(JFileChooser chooser) {
+  public FileView getFileView(JFileChooser chooser) 
+  {
     FileView result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -422,7 +424,8 @@ public class MultiFileChooserUI extends FileChooserUI
    * @return The text returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public String getApproveButtonText(JFileChooser chooser) {
+  public String getApproveButtonText(JFileChooser chooser) 
+  {
     String result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -451,7 +454,8 @@ public class MultiFileChooserUI extends FileChooserUI
    * @return The title returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public String getDialogTitle(JFileChooser chooser) {
+  public String getDialogTitle(JFileChooser chooser) 
+  {
     String result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -476,7 +480,8 @@ public class MultiFileChooserUI extends FileChooserUI
    * 
    * @param chooser  the file chooser.
    */
-  public void rescanCurrentDirectory(JFileChooser chooser) {
+  public void rescanCurrentDirectory(JFileChooser chooser) 
+  {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
     {
@@ -493,7 +498,8 @@ public class MultiFileChooserUI extends FileChooserUI
    * @param chooser  the file chooser.
    * @param file  the file.
    */
-  public void ensureFileIsVisible(JFileChooser chooser, File file) {
+  public void ensureFileIsVisible(JFileChooser chooser, File file) 
+  {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
     {

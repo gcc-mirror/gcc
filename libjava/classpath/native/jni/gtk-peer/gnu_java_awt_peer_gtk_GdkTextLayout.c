@@ -1,5 +1,5 @@
 /* gnu_java_awt_GdkTextLayout.c
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
    
    This file is part of GNU Classpath.
    
@@ -47,6 +47,7 @@
 #include "native_state.h"
 #include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_GdkTextLayout.h"
+#include "cairographics2d.h"
 
 struct state_table *cp_gtk_native_text_layout_state_table;
 
@@ -59,6 +60,9 @@ typedef struct gp
   double sx;
   double sy;
 } generalpath ;
+
+static void paint_glyph_run(cairo_t *cr, cairo_glyph_t **glyphs,
+			    gint *n_glyphs, PangoLayoutRun *run);
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkTextLayout_initStaticState 
@@ -93,8 +97,6 @@ Java_gnu_java_awt_peer_gtk_GdkTextLayout_setText
   gchar *str = NULL;
   gint len = 0;
 
-  gdk_threads_enter ();
-
   g_assert(self != NULL);
   g_assert(text != NULL);
 
@@ -106,9 +108,33 @@ Java_gnu_java_awt_peer_gtk_GdkTextLayout_setText
   str = (gchar *)(*env)->GetStringUTFChars (env, text, NULL);
   g_assert (str != NULL);
 
-  pango_layout_set_text (tl->pango_layout, text, len);
+  gdk_threads_enter ();
+
+  pango_layout_set_text (tl->pango_layout, str, len);
 
   (*env)->ReleaseStringUTFChars (env, text, str);
+
+  gdk_threads_leave ();  
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GdkTextLayout_setFont (JNIEnv *env, jobject obj, jobject font)
+{
+  struct textlayout *tl;
+  struct peerfont *pf;
+
+  g_assert(obj != NULL);
+  g_assert(font != NULL);
+
+  tl = (struct textlayout *)NSA_GET_TEXT_LAYOUT_PTR (env, obj);
+  g_assert(tl != NULL);
+  g_assert(tl->pango_layout != NULL);
+  pf = (struct peerfont *)NSA_GET_FONT_PTR (env, font);
+  g_assert(pf != NULL);
+  
+  gdk_threads_enter ();
+
+  pango_layout_set_font_description(tl->pango_layout, pf->desc);
 
   gdk_threads_leave ();  
 }
@@ -207,10 +233,108 @@ Java_gnu_java_awt_peer_gtk_GdkTextLayout_dispose
   gdk_threads_leave ();
 }
 
+/**
+ * Draw this textlayout on a cairo surface
+ * FIXME: Seems completely broken.
+ */
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GdkTextLayout_cairoDrawGdkTextLayout
+   (JNIEnv *env, jobject obj, jobject cairographics, jfloat x, jfloat y)
+{
+  /* 
+   * FIXME: Some day we expect either cairo or pango will know how to make
+   * a pango layout paint to a cairo surface. that day is not yet here.
+   */
+
+  cairo_t *cr;
+  struct textlayout *tl = NULL;
+  PangoLayoutIter *i = NULL;
+  PangoLayoutRun *run = NULL;
+  cairo_glyph_t *glyphs = NULL;
+  gint n_glyphs = 0;
+
+  g_assert (cairographics != NULL);
+
+  cr = cp_gtk_get_cairo_t(env, cairographics);
+  tl = (struct textlayout *)NSA_GET_TEXT_LAYOUT_PTR (env, obj);
+
+  g_assert (cr != NULL);
+  g_assert (tl != NULL);
+  g_assert (tl->pango_layout != NULL);
+
+  gdk_threads_enter ();
+
+  i = pango_layout_get_iter (tl->pango_layout);
+  g_assert (i != NULL);
+
+  cairo_translate (cr, x, y);
+
+  do 
+    {
+      run = pango_layout_iter_get_run (i);
+      if (run != NULL)
+	paint_glyph_run (cr, &glyphs, &n_glyphs, run);
+    } 
+  while (pango_layout_iter_next_run (i));
+  
+  if (glyphs != NULL)
+    g_free (glyphs);
+
+  cairo_translate (cr, -x, -y);
+  
+  pango_layout_iter_free (i);
+
+  gdk_threads_leave ();
+}
+
+static void
+paint_glyph_run(cairo_t *cr,
+		cairo_glyph_t **glyphs,
+		gint *n_glyphs,
+		PangoLayoutRun *run)
+{
+  gint i = 0;
+  gint x = 0, y = 0;
+
+  g_assert (cr != NULL);
+  g_assert (glyphs != NULL);
+  g_assert (n_glyphs != NULL);
+  g_assert (run != NULL);
+
+  if (run->glyphs != NULL && run->glyphs->num_glyphs > 0)
+    {
+      if (*n_glyphs < run->glyphs->num_glyphs)
+	{
+	  *glyphs = g_realloc(*glyphs, 
+			      (sizeof(cairo_glyph_t) 
+			       * run->glyphs->num_glyphs));
+	  *n_glyphs = run->glyphs->num_glyphs;
+	}
+      
+      g_assert (*glyphs != NULL);
+
+      for (i = 0; i < run->glyphs->num_glyphs; ++i)
+	{	  
+	  (*glyphs)[i].index = run->glyphs->glyphs[i].glyph;
+
+	  (*glyphs)[i].x =
+	    ((double) (x + run->glyphs->glyphs[i].geometry.x_offset)) 
+	    / ((double) PANGO_SCALE);
+
+	  (*glyphs)[i].y =
+	    ((double) (y + run->glyphs->glyphs[i].geometry.y_offset)) 
+	    / ((double) PANGO_SCALE);
+	  
+	  x += run->glyphs->glyphs[i].geometry.width;
+	}
+      cairo_show_glyphs (cr, *glyphs, run->glyphs->num_glyphs);
+    }
+}
+
 /* GetOutline code follows ****************************/
 /********* Freetype callback functions *****************************/
 
-static int _moveTo( FT_Vector* to,
+static int _moveTo( const FT_Vector* to,
 		    void *p)
 {
   JNIEnv *env;
@@ -233,7 +357,7 @@ static int _moveTo( FT_Vector* to,
   return 0;
 }
 
-static int _lineTo( FT_Vector*  to,
+static int _lineTo( const FT_Vector*  to,
 		    void *p)
 {
   JNIEnv *env;
@@ -255,8 +379,8 @@ static int _lineTo( FT_Vector*  to,
   return 0;
 }
 
-static int _quadTo( FT_Vector*  cp,
-		    FT_Vector*  to,
+static int _quadTo( const FT_Vector*  cp,
+		    const FT_Vector*  to,
 		    void *p)
 {
   JNIEnv *env;
@@ -280,9 +404,9 @@ static int _quadTo( FT_Vector*  cp,
   return 0;
 }
 
-static int _curveTo( FT_Vector*  cp1,
-		     FT_Vector*  cp2,
-		     FT_Vector*  to,
+static int _curveTo( const FT_Vector*  cp1,
+		     const FT_Vector*  cp2,
+		     const FT_Vector*  to,
 		     void *p)
 {
   JNIEnv *env;
@@ -320,10 +444,10 @@ Java_gnu_java_awt_peer_gtk_GdkTextLayout_getOutline
   PangoLayoutLine *current_line;
   FT_Outline_Funcs ftCallbacks = 
     {
-      _moveTo,
-      _lineTo,
-      _quadTo,
-      _curveTo,
+      (FT_Outline_MoveToFunc) _moveTo,
+      (FT_Outline_LineToFunc) _lineTo,
+      (FT_Outline_ConicToFunc) _quadTo,
+      (FT_Outline_CubicToFunc) _curveTo,
       0,
       0
     };

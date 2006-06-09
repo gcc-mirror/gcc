@@ -607,11 +607,11 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       }
     else
       {
-        if (isOcean && tabIndex == tabPane.getSelectedIndex()+ 1)
+        if (isOcean && tabIndex == tabPane.getSelectedIndex() + 1)
           {
             g.setColor(oceanSelectedBorder);
           }
-        if (tabIndex != tabRuns[runCount- 1])
+        if (tabIndex != tabRuns[runCount - 1])
           {
             g.drawLine(0, 0, 0, bottom);
           }
@@ -856,7 +856,7 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     // run directly above the content or the selected tab is not visible,
     // then we draw an unbroken line.
     if (tabPlacement != TOP || selectedIndex < 0
-        || rect.y  + rect.height + 1 < y || rect.x < x ||rect.x > x + w)
+        || rect.y  + rect.height + 1 < y || rect.x < x || rect.x > x + w)
       {
         g.drawLine(x, y, x + w - 2, y);
         if (isOcean && tabPlacement == TOP)

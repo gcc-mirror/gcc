@@ -236,7 +236,7 @@ public class AlphaCompositeContext
               }
             else
               {
-                for (int i = srcComponentsLength - 1; i >= 0; i--)
+                for (int i = srcComponentsLength - 2; i >= 0; i--)
                   srcComponents[i] *= srcComponents[srcComponentsLength - 1];
               }
             if (! dstColorModel.isAlphaPremultiplied())

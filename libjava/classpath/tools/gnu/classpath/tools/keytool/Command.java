@@ -42,6 +42,7 @@ import gnu.classpath.SystemProperties;
 import gnu.classpath.tools.common.CallbackUtil;
 import gnu.classpath.tools.common.ProviderUtil;
 import gnu.classpath.tools.common.SecurityProviderInfo;
+import gnu.classpath.tools.getopt.Parser;
 import gnu.java.security.OID;
 import gnu.java.security.Registry;
 import gnu.java.security.der.BitString;
@@ -167,10 +168,17 @@ abstract class Command
   private int providerNdx = -2;
   /** The callback handler to use when needing to interact with user. */
   private CallbackHandler handler;
+  /** The shutdown hook. */
+  private ShutdownHook shutdownThread;
 
   // Constructor(s) -----------------------------------------------------------
 
-  // default 0-arguments constructor
+  protected Command()
+  {
+    super();
+    shutdownThread = new ShutdownHook();
+    Runtime.getRuntime().addShutdownHook(shutdownThread);
+  }
 
   // Methods ------------------------------------------------------------------
 
@@ -193,14 +201,16 @@ abstract class Command
   public void doCommand() throws Exception
   {
     try
-    {
-      setup();
-      start();
-    }
+      {
+        setup();
+        start();
+      }
     finally
-    {
-      teardown();
-    }
+      {
+        teardown();
+        if (shutdownThread != null)
+          Runtime.getRuntime().removeShutdownHook(shutdownThread);
+      }
   }
 
   /**
@@ -228,11 +238,18 @@ abstract class Command
    * 
    * @param args an array of options for this handler and possibly other
    *          commands and their options.
-   * @param startIndex the index of the first argument in <code>args</code> to
-   *          process.
-   * @return the index of the first unprocessed argument in <code>args</code>.
+   * @return the remaining un-processed <code>args</code>.
    */
-  abstract int processArgs(String[] args, int startIndex);
+  String[] processArgs(String[] args)
+  {
+    log.entering(this.getClass().getName(), "processArgs", args); //$NON-NLS-1$
+
+    Parser cmdOptionsParser = getParser();
+    String[] result = cmdOptionsParser.parse(args);
+
+    log.exiting(this.getClass().getName(), "processArgs", result); //$NON-NLS-1$
+    return result;
+  }
 
   /**
    * Initialize this concrete command handler for later invocation of the
@@ -344,6 +361,12 @@ abstract class Command
   }
 
   // parameter setup and validation methods -----------------------------------
+
+  /**
+   * @return a {@link Parser} that knows how to parse the concrete command's
+   *         options.
+   */
+  abstract Parser getParser();
 
   /**
    * Convenience method to setup the key store given its type, its password, its
@@ -486,7 +509,6 @@ abstract class Command
         storePasswordChars = pcb.getPassword();
         pcb.clearPassword();
       }
-    log.finest("storePasswordChars = [" + String.valueOf(storePasswordChars)+ "]"); //$NON-NLS-1$ //$NON-NLS-2$
   }
 
   /**
@@ -575,7 +597,7 @@ abstract class Command
     catch (IOException x)
     {
       log.fine("Exception while closing the key store input stream: " + x //$NON-NLS-1$
-                 + ". Ignore"); //$NON-NLS-1$
+               + ". Ignore"); //$NON-NLS-1$
     }
   }
 
@@ -970,7 +992,7 @@ abstract class Command
   protected void saveKeyStore(char[] password) throws IOException,
       KeyStoreException, NoSuchAlgorithmException, CertificateException
   {
-    log.entering(this.getClass().getName(), "saveKeyStore", String.valueOf(password)); //$NON-NLS-1$
+    log.entering(this.getClass().getName(), "saveKeyStore"); //$NON-NLS-1$
 
     URLConnection con = storeURL.openConnection();
     con.setDoOutput(true);
@@ -1143,5 +1165,16 @@ abstract class Command
       handler = CallbackUtil.getConsoleHandler();
 
     return handler;
+  }
+
+  // Inner class(es) ==========================================================
+
+  private class ShutdownHook
+      extends Thread
+  {
+    public void run()
+    {
+      teardown();
+    }
   }
 }

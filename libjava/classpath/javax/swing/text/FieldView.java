@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BoundedRangeModel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -241,12 +242,29 @@ public class FieldView extends PlainView
 
     Shape newAlloc = adjustAllocation(s);
     
-    // Set a clip to prevent drawing outside of the allocation area.
-    // TODO: Is there a better way to achieve this?
     Shape clip = g.getClip();
-    g.setClip(s);
+    if (clip != null)
+      {
+        // Reason for this: The allocation area is always determined by the
+        // size of the component (and its insets) regardless of whether
+        // parts of the component are invisible or not (e.g. when the
+        // component is part of a JScrollPane and partly moved out of
+        // the user-visible range). However the clip of the Graphics
+        // instance may be adjusted properly to that condition but
+        // does not handle insets. By calculating the intersection
+        // we get the correct clip to paint the text in all cases.
+        Rectangle r = s.getBounds();
+        Rectangle cb = clip.getBounds();
+        SwingUtilities.computeIntersection(r.x, r.y, r.width, r.height, cb);
+
+        g.setClip(cb);
+      }
+    else
+      g.setClip(s);
+
     super.paint(g, newAlloc);
     g.setClip(clip);
+    
   }
 
   public void insertUpdate(DocumentEvent ev, Shape shape, ViewFactory vf)

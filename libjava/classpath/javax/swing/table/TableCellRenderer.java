@@ -46,21 +46,21 @@ import javax.swing.JTable;
  * TableCellRenderer public interface
  * @author Andrew Selkirk
  */
-public interface TableCellRenderer {
+public interface TableCellRenderer 
+{
 
-	/**
-	 * Get table cell renderer component
-	 * @param table JTable
-	 * @param value Value of cell
-	 * @param isSelected Cell selected
-	 * @param hasFocus Cell has focus
-	 * @param row Row of cell
-	 * @param column Column of cell
-	 * @returns Component
-	 */
-	Component getTableCellRendererComponent(JTable table,
-			Object value, boolean isSelected, boolean hasFocus,
-			int row, int column);
+  /**
+   * Get table cell renderer component
+   * @param table JTable
+   * @param value Value of cell
+   * @param isSelected Cell selected
+   * @param hasFocus Cell has focus
+   * @param row Row of cell
+   * @param column Column of cell
+   * @return Component
+   */
+  Component getTableCellRendererComponent(JTable table, Object value, 
+      boolean isSelected, boolean hasFocus, int row, int column);
 
 
-} // TableCellRenderer
+}

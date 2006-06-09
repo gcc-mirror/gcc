@@ -1,5 +1,5 @@
 /* JTableHeader.java --
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,9 +38,8 @@ exception statement from your version. */
 
 package javax.swing.table;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -82,282 +81,516 @@ public class JTableHeader extends JComponent
     protected class AccessibleJTableHeaderEntry extends AccessibleContext
       implements Accessible, AccessibleComponent
     {
+      
+      private int columnIndex;
+      
+      private JTableHeader parent;
+      
+      private JTable table;
+      
       public AccessibleJTableHeaderEntry(int c, JTableHeader p, JTable t)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        columnIndex = c;
+        parent = p;
+        table = t;
       }
       
+      /**
+       * Returns the column header renderer.
+       * 
+       * @return The column header renderer.
+       */
+      Component getColumnHeaderRenderer()
+      {
+        TableColumn tc = parent.getColumnModel().getColumn(columnIndex);
+        TableCellRenderer r = tc.getHeaderRenderer();
+        if (r == null)
+          r = parent.getDefaultRenderer();
+        return r.getTableCellRendererComponent(table, tc.headerValue, 
+            false, false, -1, columnIndex);
+      }
+      
+      /**
+       * Returns the accessible context for the column header renderer, or 
+       * <code>null</code>.
+       * 
+       * @return The accessible context.
+       */
+      AccessibleContext getAccessibleColumnHeaderRenderer()
+      {
+        Component c = getColumnHeaderRenderer();
+        if (c instanceof Accessible)
+          return c.getAccessibleContext();
+        return null;
+      }
+      
+      /**
+       * @see #removeFocusListener(FocusListener)
+       */
       public void addFocusListener(FocusListener l)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          c.addFocusListener(l);
       }
       
+      /**
+       * @see #removePropertyChangeListener(PropertyChangeListener)
+       */
       public void addPropertyChangeListener(PropertyChangeListener l)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        // add the listener to the accessible context for the header
+        // renderer...
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac != null)
+          ac.addPropertyChangeListener(l);
       }
       
       public boolean contains(Point p)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.contains(p);
+        else 
+          return false;
       }
       
       public AccessibleAction getAccessibleAction()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac instanceof AccessibleAction)
+          return (AccessibleAction) ac;
+        else 
+          return null;
       }
       
       public Accessible getAccessibleAt(Point p)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getAccessibleAt(p);
+        else
+          return null;
       }
       
+      /**
+       * Returns <code>null</code> as the header entry has no accessible
+       * children.
+       * 
+       * @return <code>null</code>.
+       */
       public Accessible getAccessibleChild(int i)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        return null;
       }
       
+      /**
+       * Returns the number of accessible children, zero in this case.
+       * 
+       * @return 0
+       */
       public int getAccessibleChildrenCount()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        return 0;
       }
       
+      /**
+       * Returns the accessible component for this header entry.
+       * 
+       * @return <code>this</code>.
+       */
       public AccessibleComponent getAccessibleComponent()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        return this;
       }
       
+      /**
+       * Returns the accessible context for this header entry.
+       * 
+       * @return <code>this</code>.
+       */
       public AccessibleContext getAccessibleContext()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        return this;
       }
       
+      /**
+       * Returns the accessible description.
+       * 
+       * @return The accessible description.
+       * 
+       * @see #setAccessibleDescription(String)
+       */
       public String getAccessibleDescription()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac != null)
+          return ac.getAccessibleDescription();
+        return accessibleDescription;
       }
       
+      /**
+       * Returns the index of this header entry.
+       * 
+       * @return The index of this header entry.
+       */
       public int getAccessibleIndexInParent()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        return columnIndex;
       }
       
+      /**
+       * Returns the accessible name.
+       * 
+       * @return The accessible name.
+       * 
+       * @see #setAccessibleName(String)
+       */
       public String getAccessibleName()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac != null)
+          return ac.getAccessibleName();
+        return accessibleName;
       }
       
+      /**
+       * Returns the accessible role for the header entry.
+       * 
+       * @return The accessible role.
+       */
       public AccessibleRole getAccessibleRole()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac != null)
+          return ac.getAccessibleRole();
+        else
+          return null;
       }
       
       public AccessibleSelection getAccessibleSelection()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac instanceof AccessibleValue)
+          return (AccessibleSelection) ac;
+        else 
+          return null;
       }
       
       public AccessibleStateSet getAccessibleStateSet()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac != null)
+          return ac.getAccessibleStateSet();
+        else 
+          return null;
       }
       
       public AccessibleText getAccessibleText()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac != null)
+          return ac.getAccessibleText();
+        else 
+          return null;
       }
       
       public AccessibleValue getAccessibleValue()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac instanceof AccessibleValue)
+          return (AccessibleValue) ac;
+        else 
+          return null;
       }
       
       public Color getBackground()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getBackground();
+        else
+          return null;
       }
       
       public Rectangle getBounds()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getBounds();
+        else
+          return null;
       }
       
       public Cursor getCursor()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getCursor();
+        else
+          return null;
       }
       
       public Font getFont()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getFont();
+        else
+          return null;
       }
       
       public FontMetrics getFontMetrics(Font f)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getFontMetrics(f);
+        else
+          return null;
       }
       
       public Color getForeground()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getForeground();
+        else
+          return null;
       }
       
       public Locale getLocale()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        Component c = getColumnHeaderRenderer();
+        if (c != null)
+          return c.getLocale();
+        return null;
       }
       
       public Point getLocation()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getLocation();
+        else
+          return null;
       }
       
       public Point getLocationOnScreen()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getLocationOnScreen();
+        else
+          return null;
       }
       
       public Dimension getSize()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.getSize();
+        else
+          return null;
       }
       
       public boolean isEnabled()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.isEnabled();
+        else
+          return false;
       }
       
       public boolean isFocusTraversable()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.isFocusTraversable();
+        else
+          return false;
       }
       
       public boolean isShowing()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.isShowing();
+        else
+          return false;
       }
       
       public boolean isVisible()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          return c.isVisible();
+        else
+          return false;
       }
       
+      /**
+       * @see #addFocusListener(FocusListener)
+       */
       public void removeFocusListener(FocusListener l)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          c.removeFocusListener(l);
       }
       
+      /**
+       * @see #addPropertyChangeListener(PropertyChangeListener)
+       */
       public void removePropertyChangeListener(PropertyChangeListener l)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac != null)
+          ac.removePropertyChangeListener(l);
       }
       
+      /**
+       * @see #addFocusListener(FocusListener)
+       */
       public void requestFocus()
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent c = ac.getAccessibleComponent();
+        if (c != null)
+          c.requestFocus();
       }
       
+      /**
+       * @see #getAccessibleDescription()
+       */
       public void setAccessibleDescription(String s)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac != null)
+          ac.setAccessibleDescription(s);
+        else
+          accessibleDescription = s;
       }
       
+      /**
+       * @see #getAccessibleName()
+       */
       public void setAccessibleName(String s)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        if (ac != null)
+          ac.setAccessibleName(s);
       }
       
       public void setBackground(Color c)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent comp = ac.getAccessibleComponent();
+        if (comp != null)
+          comp.setBackground(c);
       }
       
       public void setBounds(Rectangle r)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent comp = ac.getAccessibleComponent();
+        if (comp != null)
+          comp.setBounds(r);
       }
       
       public void setCursor(Cursor c)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent comp = ac.getAccessibleComponent();
+        if (comp != null)
+          comp.setCursor(c);
       }
       
       public void setEnabled(boolean b)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent comp = ac.getAccessibleComponent();
+        if (comp != null)
+          comp.setEnabled(b);
       }
       
       public void setFont(Font f)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent comp = ac.getAccessibleComponent();
+        if (comp != null)
+          comp.setFont(f);
       }
       
       public void setForeground(Color c)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent comp = ac.getAccessibleComponent();
+        if (comp != null)
+          comp.setForeground(c);
       }
       
       public void setLocation(Point p)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent comp = ac.getAccessibleComponent();
+        if (comp != null)
+          comp.setLocation(p);
       }
       
       public void setSize(Dimension d)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent comp = ac.getAccessibleComponent();
+        if (comp != null)
+          comp.setSize(d);
       }
       
       public void setVisible(boolean b)
-        throws NotImplementedException
       {
-        throw new Error("not implemented");
+        AccessibleContext ac = getAccessibleColumnHeaderRenderer();
+        AccessibleComponent comp = ac.getAccessibleComponent();
+        if (comp != null)
+          comp.setVisible(b);
       }
     };
+    
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.PANEL;
+    }
+    
+    public int getAccessibleChildrenCount()
+    {
+      return table.getColumnCount();
+    }
+    
+    public Accessible getAccessibleChild(int i)
+    {
+      return new AccessibleJTableHeaderEntry(i, JTableHeader.this, table);
+    }
+    
+    public Accessible getAccessibleAt(Point p)
+    {
+      return getAccessibleChild(columnAtPoint(p));
+    }
   }
   
   /**

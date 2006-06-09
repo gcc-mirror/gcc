@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -70,6 +68,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.LookAndFeel;
+import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -209,9 +208,9 @@ public class BasicSliderUI extends SliderUI
      * @param e A {@link FocusEvent}.
      */
     public void focusGained(FocusEvent e)
-      throws NotImplementedException
     {
-      // FIXME: implement.
+      slider.repaint();
+      hasFocus = true;
     }
 
     /**
@@ -221,9 +220,9 @@ public class BasicSliderUI extends SliderUI
      * @param e A {@link FocusEvent}.
      */
     public void focusLost(FocusEvent e)
-      throws NotImplementedException
     {
-      // FIXME: implement.
+      slider.repaint();
+      hasFocus = false;
     }
   }
 
@@ -592,6 +591,9 @@ public class BasicSliderUI extends SliderUI
 
   /** The focus color. */
   private transient Color focusColor;
+  
+  /** True if the slider has focus. */
+  private transient boolean hasFocus;
 
   /**
    * Creates a new Basic look and feel Slider UI.
@@ -1548,9 +1550,11 @@ public class BasicSliderUI extends SliderUI
       paintTicks(g);
     if (slider.getPaintLabels())
       paintLabels(g);
-
-    //FIXME: Paint focus.
+    
     paintThumb(g);
+    
+    if (hasFocus)
+      paintFocus(g);
   }
 
   /**
@@ -1602,7 +1606,7 @@ public class BasicSliderUI extends SliderUI
     Color saved_color = g.getColor();
 
     g.setColor(getFocusColor());
-
+    
     g.drawRect(focusRect.x, focusRect.y, focusRect.width, focusRect.height);
 
     g.setColor(saved_color);
@@ -1989,7 +1993,7 @@ public class BasicSliderUI extends SliderUI
   public void paintThumb(Graphics g)
   {
     Color saved_color = g.getColor();
-    
+
     Point a = new Point(thumbRect.x, thumbRect.y);
     Point b = new Point(a);
     Point c = new Point(a);
@@ -1997,11 +2001,11 @@ public class BasicSliderUI extends SliderUI
     Point e = new Point(a);
 
     Polygon bright;
-    Polygon light;  // light shadow
-    Polygon dark;   // dark shadow
+    Polygon light; // light shadow
+    Polygon dark; // dark shadow
     Polygon all;
 
-    // This will be in X-dimension if the slider is inverted and y if it isn't.           
+    // This will be in X-dimension if the slider is inverted and y if it isn't.
     int turnPoint;
 
     if (slider.getOrientation() == JSlider.HORIZONTAL)
@@ -2016,13 +2020,15 @@ public class BasicSliderUI extends SliderUI
         bright = new Polygon(new int[] { b.x - 1, a.x, e.x, d.x },
                              new int[] { b.y, a.y, e.y, d.y }, 4);
 
-        dark = new Polygon(new int[] { b.x, c.x, d.x + 1 },
-                           new int[] { b.y, c.y - 1, d.y }, 3);
-    
-    light = new Polygon(new int[] { b.x - 1, c.x - 1, d.x + 1 },
-                        new int[] { b.y + 1, c.y - 1, d.y - 1 }, 3);
-    
-        all = new Polygon(new int[] { a.x + 1, b.x - 2, c.x - 2, d.x, e.x + 1 },
+        dark = new Polygon(new int[] { b.x, c.x, d.x + 1 }, new int[] { b.y,
+                                                                       c.y - 1,
+                                                                       d.y }, 3);
+
+        light = new Polygon(new int[] { b.x - 1, c.x - 1, d.x + 1 },
+                            new int[] { b.y + 1, c.y - 1, d.y - 1 }, 3);
+
+        all = new Polygon(
+                          new int[] { a.x + 1, b.x - 2, c.x - 2, d.x, e.x + 1 },
                           new int[] { a.y + 1, b.y + 1, c.y - 1, d.y - 1, e.y },
                           5);
       }
@@ -2038,15 +2044,16 @@ public class BasicSliderUI extends SliderUI
         bright = new Polygon(new int[] { c.x - 1, b.x, a.x, e.x },
                              new int[] { c.y - 1, b.y, a.y, e.y - 1 }, 4);
 
-        dark = new Polygon(new int[] { c.x, d.x, e.x },
-                           new int[] { c.y, d.y, e.y }, 3);
+        dark = new Polygon(new int[] { c.x, d.x, e.x }, new int[] { c.y, d.y,
+                                                                   e.y }, 3);
 
-    light = new Polygon(new int[] { c.x - 1, d.x, e.x + 1},
-                       new int[] { c.y, d.y - 1, e.y - 1}, 3);
-        all = new Polygon(new int[] { a.x + 1, b.x, c.x - 2, c.x - 2, d.x, 
-                                      e.x + 1 },
-                          new int[] { a.y + 1, b.y + 1, c.y - 1, c.y, d.y - 2, 
-                                      e.y - 2 }, 6);
+        light = new Polygon(new int[] { c.x - 1, d.x, e.x + 1 },
+                            new int[] { c.y, d.y - 1, e.y - 1 }, 3);
+        all = new Polygon(new int[] { a.x + 1, b.x, c.x - 2, c.x - 2, d.x,
+                                     e.x + 1 }, new int[] { a.y + 1, b.y + 1,
+                                                           c.y - 1, c.y,
+                                                           d.y - 2, e.y - 2 },
+                          6);
       }
 
     g.setColor(Color.WHITE);
@@ -2057,7 +2064,7 @@ public class BasicSliderUI extends SliderUI
 
     g.setColor(Color.GRAY);
     g.drawPolyline(light.xpoints, light.ypoints, light.npoints);
-    
+
     g.setColor(Color.LIGHT_GRAY);
     g.drawPolyline(all.xpoints, all.ypoints, all.npoints);
     g.fillPolygon(all);

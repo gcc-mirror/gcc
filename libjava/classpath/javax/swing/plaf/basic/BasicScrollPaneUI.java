@@ -1,5 +1,5 @@
 /* BasicScrollPaneUI.java
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.MouseWheelEvent;
@@ -52,20 +53,31 @@ import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JViewport;
 import javax.swing.LookAndFeel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.ScrollPaneLayout;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ScrollPaneUI;
 
+/**
+ * A UI delegate for the {@link JScrollPane} component.
+ */
 public class BasicScrollPaneUI extends ScrollPaneUI
   implements ScrollPaneConstants
 {
@@ -236,7 +248,7 @@ public class BasicScrollPaneUI extends ScrollPaneUI
     final Rectangle rect = new Rectangle();
 
     /**
-     * Scroll with the mouse whell.
+     * Scroll with the mouse wheel.
      * 
      * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
      */
@@ -311,7 +323,11 @@ public class BasicScrollPaneUI extends ScrollPaneUI
     }
     
     /**
-     * Get the scroll bar value or null if there is no such scroll bar.
+     * Get the scroll bar value or 0 if there is no such scroll bar.
+     * 
+     * @param bar  the scroll bar (<code>null</code> permitted).
+     * 
+     * @return The scroll bar value, or 0.
      */
     final int getValue(JScrollBar bar)
     {
@@ -478,6 +494,197 @@ public class BasicScrollPaneUI extends ScrollPaneUI
       v.getComponent(i).addMouseWheelListener(mouseWheelListener);
   }
 
+  InputMap getInputMap(int condition) 
+  {
+    if (condition == JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+      return (InputMap) UIManager.get("ScrollPane.ancestorInputMap");
+    return null;
+  }
+
+  /**
+   * Returns the action map for the {@link JScrollPane}.  All scroll panes 
+   * share a single action map which is created the first time this method is 
+   * called, then stored in the UIDefaults table for subsequent access.
+   * 
+   * @return The shared action map.
+   */
+  ActionMap getActionMap() 
+  {
+    ActionMap map = (ActionMap) UIManager.get("ScrollPane.actionMap");
+
+    if (map == null) // first time here
+      {
+        map = createActionMap();
+        if (map != null)
+          UIManager.put("Slider.actionMap", map);
+      }
+    return map;
+  }
+
+  /**
+   * Creates the action map shared by all {@link JSlider} instances.
+   * This method is called once by {@link #getActionMap()} when it 
+   * finds no action map in the UIDefaults table...after the map is 
+   * created, it gets added to the defaults table so that subsequent 
+   * calls to {@link #getActionMap()} will return the same shared 
+   * instance.
+   * 
+   * @return The action map.
+   */
+  ActionMap createActionMap()
+  {
+    ActionMap map = new ActionMapUIResource();
+    map.put("scrollLeft", 
+            new AbstractAction("scrollLeft") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb = sp.getHorizontalScrollBar();
+                if (sb.isVisible()) 
+                  {
+                    int delta = sb.getBlockIncrement(-1);
+                    sb.setValue(sb.getValue() + delta);
+                  }
+              }
+            }
+    );
+    map.put("scrollEnd", 
+            new AbstractAction("scrollEnd") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb1 = sp.getHorizontalScrollBar();
+                if (sb1.isVisible()) 
+                  {
+                    sb1.setValue(sb1.getMaximum());
+                  }
+                JScrollBar sb2 = sp.getVerticalScrollBar();
+                if (sb2.isVisible()) 
+                  {
+                    sb2.setValue(sb2.getMaximum());
+                  }
+              }
+            }
+    );
+    map.put("unitScrollUp", 
+            new AbstractAction("unitScrollUp") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb = sp.getVerticalScrollBar();
+                if (sb.isVisible()) 
+                  {
+                    int delta = sb.getUnitIncrement(-1);
+                    sb.setValue(sb.getValue() + delta);
+                  }
+              }
+            }
+    );
+    map.put("unitScrollLeft", 
+            new AbstractAction("unitScrollLeft") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb = sp.getHorizontalScrollBar();
+                if (sb.isVisible()) 
+                  {
+                    int delta = sb.getUnitIncrement(-1);
+                    sb.setValue(sb.getValue() + delta);
+                  }
+              }
+            }
+    );
+    map.put("scrollUp", 
+            new AbstractAction("scrollUp") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb = sp.getVerticalScrollBar();
+                if (sb.isVisible()) 
+                  {
+                    int delta = sb.getBlockIncrement(-1);
+                    sb.setValue(sb.getValue() + delta);
+                  }
+              }
+            }
+    );
+    map.put("scrollRight", 
+            new AbstractAction("scrollRight") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb = sp.getHorizontalScrollBar();
+                if (sb.isVisible()) 
+                  {
+                    int delta = sb.getBlockIncrement(1);
+                    sb.setValue(sb.getValue() + delta);
+                  }
+              }
+            }
+    );
+    map.put("scrollHome", 
+            new AbstractAction("scrollHome") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb1 = sp.getHorizontalScrollBar();
+                if (sb1.isVisible()) 
+                  {
+                    sb1.setValue(sb1.getMinimum());
+                  }
+                JScrollBar sb2 = sp.getVerticalScrollBar();
+                if (sb2.isVisible()) 
+                  {
+                    sb2.setValue(sb2.getMinimum());
+                  }
+              }
+            }
+    );
+    map.put("scrollDown", 
+            new AbstractAction("scrollDown") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb = sp.getVerticalScrollBar();
+                if (sb.isVisible()) 
+                  {
+                    int delta = sb.getBlockIncrement(1);
+                    sb.setValue(sb.getValue() + delta);
+                  }
+              }
+            }
+    );
+    map.put("unitScrollDown", 
+            new AbstractAction("unitScrollDown") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb = sp.getVerticalScrollBar();
+                if (sb.isVisible()) 
+                  {
+                    int delta = sb.getUnitIncrement(1);
+                    sb.setValue(sb.getValue() + delta);
+                  }
+              }
+            }
+    );
+    map.put("unitScrollRight", 
+            new AbstractAction("unitScrollRight") {
+              public void actionPerformed(ActionEvent event)
+              {
+                JScrollPane sp = (JScrollPane) event.getSource();
+                JScrollBar sb = sp.getHorizontalScrollBar();
+                if (sb.isVisible()) 
+                  {
+                    int delta = sb.getUnitIncrement(1);
+                    sb.setValue(sb.getValue() + delta);
+                  }
+              }
+            }
+    );
+    return map;
+  }
+  
   /**
    * Installs additional keyboard actions on the scrollpane. This is a hook
    * method provided to subclasses in order to install their own keyboard
@@ -486,12 +693,29 @@ public class BasicScrollPaneUI extends ScrollPaneUI
    * @param sp the scrollpane to install keyboard actions on
    */
   protected void installKeyboardActions(JScrollPane sp)
-    throws NotImplementedException
   {
-    // TODO: Is this only a hook method or should we actually do something
-    // here? If the latter, than figure out what and implement this.
+    InputMap keyMap = getInputMap(
+        JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    SwingUtilities.replaceUIInputMap(sp, 
+        JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, keyMap);
+    ActionMap map = getActionMap();
+    SwingUtilities.replaceUIActionMap(sp, map);
   }
 
+  /**
+   * Uninstalls all keyboard actions from the JScrollPane that have been
+   * installed by {@link #installKeyboardActions}. This is a hook method
+   * provided to subclasses to add their own keyboard actions.
+   *
+   * @param sp the scrollpane to uninstall keyboard actions from
+   */
+  protected void uninstallKeyboardActions(JScrollPane sp)
+  {
+    SwingUtilities.replaceUIActionMap(sp, null);
+    SwingUtilities.replaceUIInputMap(sp, 
+        JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, null);
+  }
+  
   /**
    * Creates and returns the change listener for the horizontal scrollbar.
    *
@@ -536,6 +760,8 @@ public class BasicScrollPaneUI extends ScrollPaneUI
    * Creates and returns the mouse wheel listener for the scrollpane.
    *
    * @return the mouse wheel listener for the scrollpane
+   * 
+   * @since 1.4
    */
   protected MouseWheelListener createMouseWheelListener()
   {
@@ -545,7 +771,7 @@ public class BasicScrollPaneUI extends ScrollPaneUI
   public void uninstallUI(final JComponent c) 
   {
     super.uninstallUI(c);
-    this.uninstallDefaults((JScrollPane)c);
+    this.uninstallDefaults((JScrollPane) c);
     uninstallListeners((JScrollPane) c);
     installKeyboardActions((JScrollPane) c);
   }
@@ -574,23 +800,9 @@ public class BasicScrollPaneUI extends ScrollPaneUI
 
   }
 
-  /**
-   * Uninstalls all keyboard actions from the JScrollPane that have been
-   * installed by {@link #installKeyboardActions}. This is a hook method
-   * provided to subclasses to add their own keyboard actions.
-   *
-   * @param sp the scrollpane to uninstall keyboard actions from
-   */
-  protected void uninstallKeyboardActions(JScrollPane sp)
-    throws NotImplementedException
-  {
-    // TODO: Is this only a hook method or should we actually do something
-    // here? If the latter, than figure out what and implement this.
-  }
-
   public Dimension getMinimumSize(JComponent c) 
   {
-    JScrollPane p = (JScrollPane ) c;
+    JScrollPane p = (JScrollPane) c;
     ScrollPaneLayout sl = (ScrollPaneLayout) p.getLayout();
     return sl.minimumLayoutSize(c);
   }

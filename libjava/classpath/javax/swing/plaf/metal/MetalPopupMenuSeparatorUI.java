@@ -51,7 +51,7 @@ public class MetalPopupMenuSeparatorUI
 
   // FIXME: maybe replace by a Map of instances when this becomes stateful
   /** The shared UI instance for MetalPopupMenuSeparatorUIs */
-  private static MetalPopupMenuSeparatorUI instance = null;
+  private static MetalPopupMenuSeparatorUI instance;
 
   /**
    * Constructs a new instance of <code>MetalPopupMenuSeparatorUI</code>.

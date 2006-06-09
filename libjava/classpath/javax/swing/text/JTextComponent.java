@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -176,6 +178,7 @@ public abstract class JTextComponent extends JComponent
      * @param e - caret event
      */
     public void caretUpdate(CaretEvent e)
+      throws NotImplementedException
     {
       // TODO: fire appropriate event.
       dot = e.getDot();
@@ -187,6 +190,7 @@ public abstract class JTextComponent extends JComponent
      * @return the accessible state set of this component
      */
     public AccessibleStateSet getAccessibleStateSet()
+      throws NotImplementedException
     {
       AccessibleStateSet state = super.getAccessibleStateSet();
       // TODO: Figure out what state must be added here to the super's state.
@@ -237,6 +241,7 @@ public abstract class JTextComponent extends JComponent
      * @param e - document event
      */
     public void insertUpdate(DocumentEvent e)
+      throws NotImplementedException
     {
       // TODO
     }
@@ -248,6 +253,7 @@ public abstract class JTextComponent extends JComponent
      * @param e - document event
      */
     public void removeUpdate(DocumentEvent e)
+      throws NotImplementedException
     {
       // TODO
     }
@@ -259,6 +265,7 @@ public abstract class JTextComponent extends JComponent
      * @param e - document event
      */
     public void changedUpdate(DocumentEvent e)
+      throws NotImplementedException
     {
       // TODO
     }
@@ -271,6 +278,7 @@ public abstract class JTextComponent extends JComponent
      * @return the character index, or -1
      */
     public int getIndexAtPoint(Point p)
+      throws NotImplementedException
     {
       return 0; // TODO
     }
@@ -289,6 +297,7 @@ public abstract class JTextComponent extends JComponent
      * @return the bounding box, may be empty or null.
      */
     public Rectangle getCharacterBounds(int index)
+      throws NotImplementedException
     {
       return null; // TODO
     }
@@ -311,6 +320,7 @@ public abstract class JTextComponent extends JComponent
     * @return the character's attributes
     */
     public AttributeSet getCharacterAttribute(int index)
+      throws NotImplementedException
     {
       return null; // TODO
     }
@@ -324,6 +334,7 @@ public abstract class JTextComponent extends JComponent
      * @return the selection of text at that index, or null
      */
     public String getAtIndex(int part, int index)
+      throws NotImplementedException
     {
       return null; // TODO
     }
@@ -337,6 +348,7 @@ public abstract class JTextComponent extends JComponent
      * @return the selection of text after that index, or null
      */
     public String getAfterIndex(int part, int index)
+      throws NotImplementedException
     {
       return null; // TODO
     }
@@ -350,6 +362,7 @@ public abstract class JTextComponent extends JComponent
      * @return the selection of text before that index, or null
      */
     public String getBeforeIndex(int part, int index)
+      throws NotImplementedException
     {
       return null; // TODO
     }
@@ -361,6 +374,7 @@ public abstract class JTextComponent extends JComponent
      * @return the 0-based number of actions
      */
     public int getAccessibleActionCount()
+      throws NotImplementedException
     {
       return 0; // TODO
     }
@@ -369,11 +383,11 @@ public abstract class JTextComponent extends JComponent
      * Get a description for the specified action. Returns null if out of
      * bounds.
      * 
-     * @param i
-     *          the action to describe, 0-based
+     * @param i  the action to describe, 0-based
      * @return description of the action
      */
     public String getAccessibleActionDescription(int i)
+      throws NotImplementedException
     {
       // TODO: Not implemented fully
       return super.getAccessibleDescription();
@@ -386,6 +400,7 @@ public abstract class JTextComponent extends JComponent
      * @return true if the action was performed
      */
     public boolean doAccessibleAction(int i)
+      throws NotImplementedException
     {
       return false; // TODO
     }
@@ -396,6 +411,7 @@ public abstract class JTextComponent extends JComponent
      * @param s the new text
      */
     public void setTextContents(String s)
+      throws NotImplementedException
     {
       // TODO
     }
@@ -407,6 +423,7 @@ public abstract class JTextComponent extends JComponent
      * @param s the new text
      */
     public void insertTextAtIndex(int index, String s)
+      throws NotImplementedException
     {
       replaceText(index, index, s);
     }
@@ -495,6 +512,7 @@ public abstract class JTextComponent extends JComponent
      * @param s the new attribute set for the range
      */
     public void setAttributes(int start, int end, AttributeSet s)
+      throws NotImplementedException
     {
       // TODO
     }
@@ -1365,7 +1383,7 @@ public abstract class JTextComponent extends JComponent
   {
     if (editable == newValue)
       return;
-
+    
     boolean oldValue = editable;
     editable = newValue;
     firePropertyChange("editable", oldValue, newValue);
@@ -1725,17 +1743,20 @@ public abstract class JTextComponent extends JComponent
 
   public void copy()
   {
+    if (isEnabled())
     doTransferAction("copy", TransferHandler.getCopyAction());
   }
 
   public void cut()
   {
-    doTransferAction("cut", TransferHandler.getCutAction());
+    if (editable && isEnabled())
+      doTransferAction("cut", TransferHandler.getCutAction());
   }
 
   public void paste()
   {
-    doTransferAction("paste", TransferHandler.getPasteAction());
+    if (editable && isEnabled())
+      doTransferAction("paste", TransferHandler.getPasteAction());
   }
 
   private void doTransferAction(String name, Action action)

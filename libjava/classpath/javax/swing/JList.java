@@ -1475,19 +1475,18 @@ public class JList extends JComponent implements Accessible, Scrollable
   }
 
   /**
-   * Returns all the values in the list's {@link #model} property which
-   * are selected, according to the list's {@link #selectionModel} property.
-   *
+   * Returns all the values in the list's {@link #model} property which are
+   * selected, according to the list's {@link #selectionModel} property.
+   * 
    * @return An array containing all the selected values
-   *
    * @see #setSelectedValue
    */
   public Object[] getSelectedValues()
   {
-    int [] idx = getSelectedIndices();
-    Object [] v = new Object[idx.length];
+    int[] idx = getSelectedIndices();
+    Object[] v = new Object[idx.length];
     for (int i = 0; i < idx.length; ++i)
-      v[i] = getModel().getElementAt(i);
+      v[i] = getModel().getElementAt(idx[i]);
     return v;
   }
 

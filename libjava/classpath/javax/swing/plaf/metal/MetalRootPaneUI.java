@@ -958,7 +958,7 @@ public class MetalRootPaneUI
   /**
    * The shared UI instance for MetalRootPaneUIs.
    */
-  private static MetalRootPaneUI instance = null;
+  private static MetalRootPaneUI instance;
 
   /**
    * Constructs a shared instance of <code>MetalRootPaneUI</code>.

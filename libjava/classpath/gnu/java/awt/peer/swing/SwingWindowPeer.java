@@ -48,9 +48,9 @@ import java.awt.peer.WindowPeer;
  * As a minimum, a subclass must implement all the remaining abstract methods
  * as well as the following methods:
  * <ul>
- * <li>{@link ComponentPeer#getLocationOnScreen()}</li>
- * <li>{@link ComponentPeer#getGraphics()}</li>
- * <li>{@link ComponentPeer#createImage(int, int)}</li>
+ * <li>{@link java.awt.peer.ComponentPeer#getLocationOnScreen()}</li>
+ * <li>{@link java.awt.peer.ComponentPeer#getGraphics()}</li>
+ * <li>{@link java.awt.peer.ComponentPeer#createImage(int, int)}</li>
  * </ul>
  *
  * @author Roman Kennke (kennke@aicas.com)

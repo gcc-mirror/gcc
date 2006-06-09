@@ -1,5 +1,5 @@
 /* TransferHandler.java --
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,12 +38,14 @@ exception statement from your version. */
 
 package javax.swing;
 
+import gnu.classpath.NotImplementedException;
+
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
-import java.awt.Toolkit;
 import java.io.Serializable;
 
 public class TransferHandler implements Serializable
@@ -147,42 +149,48 @@ public class TransferHandler implements Serializable
     this.sourceActions = property != null ? COPY : NONE;
   }
 
-  public boolean canImport (JComponent c, DataFlavor[] flavors)
+  public boolean canImport(JComponent c, DataFlavor[] flavors)
+    throws NotImplementedException
   {
     return false;
   }
 
   protected Transferable createTransferable(JComponent c) 
+    throws NotImplementedException
   {
     return null;
   }
 
-  public void exportAsDrag (JComponent c, InputEvent e, int action) 
+  public void exportAsDrag(JComponent c, InputEvent e, int action) 
+    throws NotImplementedException
   {
     // TODO: Implement this properly
   }
 
-  protected void exportDone (JComponent c, Transferable data, int action) 
+  protected void exportDone(JComponent c, Transferable data, int action) 
+    throws NotImplementedException
   {
     // TODO: Implement this properly
   }
 
   public void exportToClipboard(JComponent c, Clipboard clip, int action) 
+    throws NotImplementedException
   {
     // TODO: Implement this properly
   } 
 
-  public int getSourceActions (JComponent c)
+  public int getSourceActions(JComponent c)
   {
     return sourceActions;
   }
 
-  public Icon getVisualRepresentation (Transferable t)
+  public Icon getVisualRepresentation(Transferable t)
   {
     return visualRepresentation;
   }
 
-  public boolean importData (JComponent c, Transferable t) 
+  public boolean importData(JComponent c, Transferable t) 
+    throws NotImplementedException
   {
     return false;
   }

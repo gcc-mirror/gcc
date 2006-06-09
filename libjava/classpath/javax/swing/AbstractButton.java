@@ -1,5 +1,5 @@
 /* AbstractButton.java -- Provides basic button functionality.
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -274,7 +274,7 @@ public abstract class AbstractButton extends JComponent
   protected ChangeListener changeListener;
 
   /**
-   * The time in miliseconds in which clicks get coalesced into a single
+   * The time in milliseconds in which clicks get coalesced into a single
    * <code>ActionEvent</code>.
    */
   long multiClickThreshhold;
@@ -445,7 +445,7 @@ public abstract class AbstractButton extends JComponent
      * {@link AccessibleState#FOCUSED}, {@link AccessibleState#PRESSED} and
      * {@link AccessibleState#CHECKED}.
      *
-     * @return the curren state of this accessible object
+     * @return the current state of this accessible object
      */
     public AccessibleStateSet getAccessibleStateSet()
     {
@@ -651,8 +651,8 @@ public abstract class AbstractButton extends JComponent
      * Returns the minimum accessible value for the AccessibleAbstractButton,
      * which is <code>0</code>.
      *
-     * @return the maxinimum accessible value for the AccessibleAbstractButton,
-     *         which is <code>1</code>
+     * @return the minimimum accessible value for the AccessibleAbstractButton,
+     *         which is <code>0</code>
      */
     public Number getMinimumAccessibleValue()
     {

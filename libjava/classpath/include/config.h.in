@@ -9,9 +9,6 @@
 /* Define to enable support for local sockets. */
 #undef ENABLE_LOCAL_SOCKETS
 
-/* defined if cairo support was built in */
-#undef GTK_CAIRO
-
 /* Define to 1 if you have the `accept' function. */
 #undef HAVE_ACCEPT
 
@@ -99,8 +96,14 @@
 /* Define to 1 if you have the `lseek' function. */
 #undef HAVE_LSEEK
 
+/* Define to 1 if you have the `lstat' function. */
+#undef HAVE_LSTAT
+
 /* Define to 1 if you have the `madvise' function. */
 #undef HAVE_MADVISE
+
+/* Define to 1 if you have the <magic.h> header file. */
+#undef HAVE_MAGIC_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -131,6 +134,9 @@
 
 /* Define to 1 if you have the `read' function. */
 #undef HAVE_READ
+
+/* Define to 1 if you have the `readlink' function. */
+#undef HAVE_READLINK
 
 /* Define to 1 if you have the `recvfrom' function. */
 #undef HAVE_RECVFROM
@@ -229,6 +235,12 @@
 
 /* Define to 1 if you have the `write' function. */
 #undef HAVE_WRITE
+
+/* Define to 1 if you have libXrandr. */
+#undef HAVE_XRANDR
+
+/* Define to 1 if you have libXrender. */
+#undef HAVE_XRENDER
 
 /* Define if the host machine stores words of multi-word integers in
    big-endian order. */

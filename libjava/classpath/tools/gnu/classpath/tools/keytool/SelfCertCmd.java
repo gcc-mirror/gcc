@@ -38,6 +38,11 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.tools.getopt.ClasspathToolParser;
+import gnu.classpath.tools.getopt.Option;
+import gnu.classpath.tools.getopt.OptionException;
+import gnu.classpath.tools.getopt.OptionGroup;
+import gnu.classpath.tools.getopt.Parser;
 import gnu.java.security.x509.X500DistinguishedName;
 
 import java.io.ByteArrayInputStream;
@@ -129,7 +134,7 @@ import javax.security.auth.x500.X500Principal;
  *      
  *      <dt>-keypass PASSWORD</dt>
  *      
- *      <dt>-storetype STORE_TYP}</dt>
+ *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
  *      <code>keystore.type</code> in the security properties file, which is
@@ -171,15 +176,15 @@ import javax.security.auth.x500.X500Principal;
 class SelfCertCmd extends Command
 {
   private static final Logger log = Logger.getLogger(SelfCertCmd.class.getName());
-  private String _alias;
-  private String _sigAlgorithm;
-  private String _dName;
-  private String _password;
-  private String _validityStr;
-  private String _ksType;
-  private String _ksURL;
-  private String _ksPassword;
-  private String _providerClassName;
+  protected String _alias;
+  protected String _sigAlgorithm;
+  protected String _dName;
+  protected String _password;
+  protected String _validityStr;
+  protected String _ksType;
+  protected String _ksURL;
+  protected String _ksPassword;
+  protected String _providerClassName;
   private X500DistinguishedName distinguishedName;
   private int validityInDays;
 
@@ -253,71 +258,29 @@ class SelfCertCmd extends Command
 
   // life-cycle methods -------------------------------------------------------
 
-  int processArgs(String[] args, int i)
-  {
-    int limit = args.length;
-    String opt;
-    while (++i < limit)
-      {
-        opt = args[i];
-        log.finest("args[" + i + "]=" + opt);
-        if (opt == null || opt.length() == 0)
-          continue;
-
-        if ("-alias".equals(opt)) // -alias ALIAS
-          _alias = args[++i];
-        else if ("-sigalg".equals(opt)) // -sigalg ALGORITHM
-          _sigAlgorithm = args[++i];
-        else if ("-dname".equals(opt)) // -dname NAME
-          _dName = args[++i];
-        else if ("-keypass".equals(opt)) // -keypass PASSWORD
-          _password = args[++i];
-        else if ("-validity".equals(opt)) // -validity DAY_COUNT
-          _validityStr = args[++i];
-        else if ("-storetype".equals(opt)) // -storetype STORE_TYPE
-          _ksType = args[++i];
-        else if ("-keystore".equals(opt)) // -keystore URL
-          _ksURL = args[++i];
-        else if ("-storepass".equals(opt)) // -storepass PASSWORD
-          _ksPassword = args[++i];
-        else if ("-provider".equals(opt)) // -provider PROVIDER_CLASS_NAME
-          _providerClassName = args[++i];
-        else if ("-v".equals(opt))
-          verbose = true;
-        else
-          break;
-      }
-
-    return i;
-  }
-
   void setup() throws Exception
   {
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
     setAliasParam(_alias);
     setKeyPasswordNoPrompt(_password);
-//    setDName(_dName);
     setValidityParam(_validityStr);
-//    setSignatureAlgorithm(_sigAlgorithm);
 
-    log.finer("-selfcert handler will use the following options:");
-    log.finer("  -alias=" + alias);
-    log.finer("  -sigalg=" + _sigAlgorithm);
-    log.finer("  -dname=" + _dName);
-    log.finer("  -keypass=" + _password);
-    log.finer("  -validity=" + validityInDays);
-    log.finer("  -storetype=" + storeType);
-    log.finer("  -keystore=" + storeURL);
-    log.finer("  -storepass=" + String.valueOf(storePasswordChars));
-    log.finer("  -provider=" + provider);
-    log.finer("  -v=" + verbose);
+    log.finer("-selfcert handler will use the following options:"); //$NON-NLS-1$
+    log.finer("  -alias=" + alias); //$NON-NLS-1$
+    log.finer("  -sigalg=" + _sigAlgorithm); //$NON-NLS-1$
+    log.finer("  -dname=" + _dName); //$NON-NLS-1$
+    log.finer("  -validity=" + validityInDays); //$NON-NLS-1$
+    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
+    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
+    log.finer("  -provider=" + provider); //$NON-NLS-1$
+    log.finer("  -v=" + verbose); //$NON-NLS-1$
   }
 
   void start() throws KeyStoreException, NoSuchAlgorithmException,
       UnrecoverableKeyException, IOException, UnsupportedCallbackException,
       InvalidKeyException, SignatureException, CertificateException
   {
-    log.entering(getClass().getName(), "start");
+    log.entering(getClass().getName(), "start"); //$NON-NLS-1$
 
     // 1. get the key entry and certificate chain associated to alias
     Key privateKey = getAliasPrivateKey();
@@ -337,7 +300,7 @@ class SelfCertCmd extends Command
     byte[] derBytes = getSelfSignedCertificate(distinguishedName,
                                                publicKey,
                                                (PrivateKey) privateKey);
-    CertificateFactory x509Factory = CertificateFactory.getInstance("X.509");
+    CertificateFactory x509Factory = CertificateFactory.getInstance("X.509"); //$NON-NLS-1$
     ByteArrayInputStream bais = new ByteArrayInputStream(derBytes);
     Certificate certificate = x509Factory.generateCertificate(bais);
 
@@ -348,10 +311,113 @@ class SelfCertCmd extends Command
     // 7. persist the key store
     saveKeyStore();
 
-    log.exiting(getClass().getName(), "start");
+    log.exiting(getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   // own methods --------------------------------------------------------------
+
+  Parser getParser()
+  {
+    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
+
+    Parser result = new ClasspathToolParser(Main.SELFCERT_CMD, true);
+    result.setHeader(Messages.getString("SelfCertCmd.14")); //$NON-NLS-1$
+    result.setFooter(Messages.getString("SelfCertCmd.15")); //$NON-NLS-1$
+    OptionGroup options = new OptionGroup(Messages.getString("SelfCertCmd.16")); //$NON-NLS-1$
+    options.add(new Option(Main.ALIAS_OPT,
+                           Messages.getString("SelfCertCmd.17"), //$NON-NLS-1$
+                           Messages.getString("SelfCertCmd.18")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _alias = argument;
+      }
+    });
+    options.add(new Option(Main.SIGALG_OPT,
+                           Messages.getString("SelfCertCmd.19"), //$NON-NLS-1$
+                           Messages.getString("SelfCertCmd.20")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _sigAlgorithm = argument;
+      }
+    });
+    options.add(new Option(Main.DNAME_OPT,
+                           Messages.getString("SelfCertCmd.21"), //$NON-NLS-1$
+                           Messages.getString("SelfCertCmd.22")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _dName = argument;
+      }
+    });
+    options.add(new Option(Main.KEYPASS_OPT,
+                           Messages.getString("SelfCertCmd.23"), //$NON-NLS-1$
+                           Messages.getString("SelfCertCmd.24")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _password = argument;
+      }
+    });
+    options.add(new Option(Main.VALIDITY_OPT,
+                           Messages.getString("SelfCertCmd.25"), //$NON-NLS-1$
+                           Messages.getString("SelfCertCmd.26")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _validityStr = argument;
+      }
+    });
+    options.add(new Option(Main.STORETYPE_OPT,
+                           Messages.getString("SelfCertCmd.27"), //$NON-NLS-1$
+                           Messages.getString("SelfCertCmd.28")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksType = argument;
+      }
+    });
+    options.add(new Option(Main.KEYSTORE_OPT,
+                           Messages.getString("SelfCertCmd.29"), //$NON-NLS-1$
+                           Messages.getString("SelfCertCmd.30")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksURL = argument;
+      }
+    });
+    options.add(new Option(Main.STOREPASS_OPT,
+                           Messages.getString("SelfCertCmd.31"), //$NON-NLS-1$
+                           Messages.getString("SelfCertCmd.32")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksPassword = argument;
+      }
+    });
+    options.add(new Option(Main.PROVIDER_OPT,
+                           Messages.getString("SelfCertCmd.33"), //$NON-NLS-1$
+                           Messages.getString("SelfCertCmd.34")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _providerClassName = argument;
+      }
+    });
+    options.add(new Option(Main.VERBOSE_OPT,
+                           Messages.getString("SelfCertCmd.35")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        verbose = true;
+      }
+    });
+    result.add(options);
+
+    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    return result;
+  }
 
   private void setDName(String name, X500Principal defaultName)
   {

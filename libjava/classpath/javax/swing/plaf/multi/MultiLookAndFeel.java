@@ -49,7 +49,8 @@ import javax.swing.plaf.ComponentUI;
  * A look and feel that provides the ability to use auxiliary look and feels
  * in addition to the primary look and feel.
  */
-public class MultiLookAndFeel extends LookAndFeel {
+public class MultiLookAndFeel extends LookAndFeel 
+{
 
   /**
    * Creates a new instance of the look and feel.

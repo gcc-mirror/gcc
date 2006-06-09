@@ -262,14 +262,16 @@ public class TreePath implements Serializable
     if (path == null)
       return false;
     int count = getPathCount();
-    if (path.getPathCount() < count)
+    int otherPathLength = path.getPathCount();
+    if (otherPathLength < count)
       return false;
-    for (int i = 0; i < count; i++)
-    {
-      if (!this.path[i].equals(path.getPathComponent(i)))
-        return false;
-    }
-    return true;
+    while (otherPathLength > count)
+      {
+        otherPathLength--;
+        path = path.getParentPath();
+      }
+    
+    return equals(path);
   }
 
   /**

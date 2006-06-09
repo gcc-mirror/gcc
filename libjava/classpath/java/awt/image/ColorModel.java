@@ -92,7 +92,12 @@ public abstract class ColorModel implements Transparency
   int transparency;
   boolean hasAlpha;
   boolean isAlphaPremultiplied;
-    
+
+  /**
+   * The standard color model for the common sRGB.
+   */
+  private static final ColorModel S_RGB_MODEL = new SRGBColorModel();
+
   static int[] nArray(int value, int times)
   {
     int[] array = new int[times];
@@ -196,7 +201,7 @@ public abstract class ColorModel implements Transparency
    */
   public static ColorModel getRGBdefault()
   {
-    return new DirectColorModel(32, 0xff0000, 0xff00, 0xff, 0xff000000);
+    return S_RGB_MODEL;
   }
 
   public final boolean hasAlpha()
@@ -760,5 +765,57 @@ public abstract class ColorModel implements Transparency
   public String toString()
   {
     return getClass().getName() + "[" + stringParam() + "]";
+  }
+
+  /**
+   * A color model optimized for standard sRGB.
+   */
+  private static class SRGBColorModel
+    extends DirectColorModel
+  {
+    
+    SRGBColorModel()
+    {
+      super(32,0x00FF0000,0x0000FF00,0x000000FF,0xFF000000);
+    }
+
+    public int getAlpha(Object inData)
+    {
+      return ((((int[]) inData)[0]) >> 24) & 0xFF;
+    }
+
+    public int getBlue(Object inData)
+    {
+      return ((((int[]) inData)[0])) & 0xFF;
+    }
+
+    public int getGreen(Object inData)
+    {
+      return ((((int[]) inData)[0]) >>  8) & 0xFF;
+    }
+
+    public int getRed(Object inData)
+    {
+      return ((((int[]) inData)[0]) >> 16) & 0xFF;
+    }
+
+    public int getRGB(Object inData)
+    {
+      return ((int[]) inData)[0];
+    }
+
+    public Object getDataElements(int rgb, Object pixel)
+    {
+      if(pixel == null)
+        {
+          pixel = new int[]{rgb};  
+        }
+      else
+        {
+          ((int[]) pixel)[0] = rgb;  
+        }
+      
+      return pixel;
+    }
   }
 }

@@ -92,7 +92,12 @@ public class SwingContainerPeer
    */
   public Insets getInsets()
   {
-    return insets();
+    Insets retVal;
+    if (swingComponent != null)
+      retVal = swingComponent.getJComponent().getInsets();
+    else
+      retVal = new Insets(0, 0, 0, 0);
+    return retVal;
   }
 
   /**
@@ -209,6 +214,8 @@ public class SwingContainerPeer
   protected void handleMouseEvent(MouseEvent ev)
   {
     Component comp = awtComponent.getComponentAt(ev.getPoint());
+    if(comp == null)
+      comp = awtComponent;
     if (comp != null)
       {
         ComponentPeer peer = comp.getPeer();

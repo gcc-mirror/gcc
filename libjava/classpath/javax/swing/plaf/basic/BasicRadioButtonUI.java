@@ -1,5 +1,5 @@
 /* BasicRadioButtonUI.java
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -167,9 +167,8 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
       }
     if (text != null)
       paintText(g, b, tr, text);
-    // TODO: Figure out what is the size parameter?
     if (b.hasFocus() && b.isFocusPainted() && m.isEnabled())
-      paintFocus(g, tr, null);
+      paintFocus(g, tr, c.getSize());
   }
 
   /**
@@ -177,9 +176,8 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
    *
    * @param g the graphics context
    * @param tr the rectangle for the text label
-   * @param size the size (??)
+   * @param size the size of the <code>JRadioButton</code> component.
    */
-  // TODO: Figure out what for is the size parameter.
   protected void paintFocus(Graphics g, Rectangle tr, Dimension size)
   {
     Color focusColor = UIManager.getColor(getPropertyPrefix() + ".focus");

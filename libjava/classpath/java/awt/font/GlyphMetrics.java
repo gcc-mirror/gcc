@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.awt.font;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.geom.Rectangle2D;
 
 /**
@@ -94,16 +92,18 @@ public final class GlyphMetrics
     return bounds;
   }
 
-  public float getLSB ()
-    throws NotImplementedException
+  public float getLSB()
   {
-    throw new Error ("not implemented");
+    if (horizontal)
+      return (float) bounds.getX();
+    return (float) bounds.getY();
   }
 
-  public float getRSB ()
-   throws NotImplementedException
+  public float getRSB()
   {
-    throw new Error ("not implemented");
+    if (horizontal)
+      return (float) (advanceX - (bounds.getX() + bounds.getWidth()));
+    return (float) (advanceY - (bounds.getY() + bounds.getHeight()));
   }
 
   public int getType ()

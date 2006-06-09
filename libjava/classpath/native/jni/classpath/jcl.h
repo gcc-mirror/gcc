@@ -1,5 +1,5 @@
 /* jcl.h
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,6 +49,10 @@ typedef jlong jpointer;
 #else
 #error "Unknown pointer size"
 #endif
+
+/* Helper macros for going between pointers and jlongs.  */
+#define JLONG_TO_PTR(T,P) ((T *)(long)P)
+#define PTR_TO_JLONG(P) ((jlong)(long)P)
 
 JNIEXPORT jclass JNICALL JCL_FindClass (JNIEnv * env, const char *className);
 JNIEXPORT void JNICALL JCL_ThrowException (JNIEnv * env,

@@ -215,9 +215,8 @@ public class BasicRootPaneUI extends RootPaneUI
                                        JComponent.WHEN_IN_FOCUSED_WINDOW);
         if (newValue != null)
           {
-            Object[] keybindings =
-              (Object[]) UIManager.get
-              ("RootPane.defaultButtonWindowKeyBindings");
+            Object[] keybindings = (Object[]) UIManager.get(
+                "RootPane.defaultButtonWindowKeyBindings");
             LookAndFeel.loadKeyBindings(im, keybindings);
           }
         else

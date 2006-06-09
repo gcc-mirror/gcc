@@ -773,12 +773,14 @@ gnu_java_awt_java2d_source_files = \
 classpath/gnu/java/awt/java2d/AbstractGraphics2D.java \
 classpath/gnu/java/awt/java2d/AlphaCompositeContext.java \
 classpath/gnu/java/awt/java2d/CubicSegment.java \
+classpath/gnu/java/awt/java2d/ImagePaint.java \
 classpath/gnu/java/awt/java2d/LineSegment.java \
 classpath/gnu/java/awt/java2d/PolyEdge.java \
 classpath/gnu/java/awt/java2d/PolyEdgeComparator.java \
 classpath/gnu/java/awt/java2d/QuadSegment.java \
 classpath/gnu/java/awt/java2d/RasterGraphics.java \
-classpath/gnu/java/awt/java2d/Segment.java
+classpath/gnu/java/awt/java2d/Segment.java \
+classpath/gnu/java/awt/java2d/TexturePaintContext.java
 
 gnu_java_awt_java2d_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_java2d_source_files)))
 
@@ -813,13 +815,17 @@ gnu/java/awt/peer.list: $(gnu_java_awt_peer_source_files)
 
 
 gnu_java_awt_peer_gtk_source_files = \
+classpath/gnu/java/awt/peer/gtk/BufferedImageGraphics.java \
+classpath/gnu/java/awt/peer/gtk/CairoGraphics2D.java \
+classpath/gnu/java/awt/peer/gtk/CairoSurface.java \
+classpath/gnu/java/awt/peer/gtk/CairoSurfaceGraphics.java \
+classpath/gnu/java/awt/peer/gtk/ComponentGraphics.java \
+classpath/gnu/java/awt/peer/gtk/ComponentGraphicsCopy.java \
+classpath/gnu/java/awt/peer/gtk/FreetypeGlyphVector.java \
 classpath/gnu/java/awt/peer/gtk/GThreadMutex.java \
 classpath/gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java \
 classpath/gnu/java/awt/peer/gtk/GdkFontMetrics.java \
 classpath/gnu/java/awt/peer/gtk/GdkFontPeer.java \
-classpath/gnu/java/awt/peer/gtk/GdkGlyphVector.java \
-classpath/gnu/java/awt/peer/gtk/GdkGraphics.java \
-classpath/gnu/java/awt/peer/gtk/GdkGraphics2D.java \
 classpath/gnu/java/awt/peer/gtk/GdkGraphicsConfiguration.java \
 classpath/gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java \
 classpath/gnu/java/awt/peer/gtk/GdkPixbufDecoder.java \
@@ -859,7 +865,8 @@ classpath/gnu/java/awt/peer/gtk/GtkTextAreaPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkTextFieldPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkToolkit.java \
 classpath/gnu/java/awt/peer/gtk/GtkVolatileImage.java \
-classpath/gnu/java/awt/peer/gtk/GtkWindowPeer.java
+classpath/gnu/java/awt/peer/gtk/GtkWindowPeer.java \
+classpath/gnu/java/awt/peer/gtk/VolatileImageGraphics.java
 
 gnu-java-awt-peer-gtk.lo: $(gnu_java_awt_peer_gtk_source_files)
 	@find classpath/lib/gnu/java/awt/peer/gtk -name '*.class' > gnu-java-awt-peer-gtk.list
@@ -936,6 +943,25 @@ gnu-java-awt-peer-swing.lo: $(gnu_java_awt_peer_swing_source_files)
 	@find classpath/lib/gnu/java/awt/peer/swing -name '*.class' > gnu-java-awt-peer-swing.list
 	$(LTGCJCOMPILE) -fjni -findirect-dispatch -fno-indirect-classes -c -o gnu-java-awt-peer-swing.lo @gnu-java-awt-peer-swing.list
 	@rm -f gnu-java-awt-peer-swing.list
+
+gnu_java_awt_print_source_files = \
+classpath/gnu/java/awt/print/JavaPrinterGraphics.java \
+classpath/gnu/java/awt/print/JavaPrinterJob.java \
+classpath/gnu/java/awt/print/PostScriptGraphics2D.java \
+classpath/gnu/java/awt/print/SpooledDocument.java
+
+gnu_java_awt_print_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_print_source_files)))
+
+gnu/java/awt/print.list: $(gnu_java_awt_print_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_java_awt_print_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/java/awt/print.list
+
+-include gnu/java/awt/print.deps
+
 
 gnu_java_beans_source_files = \
 classpath/gnu/java/beans/BeanInfoEmbryo.java \
@@ -3333,8 +3359,27 @@ gnu/javax/swing/plaf/metal.list: $(gnu_javax_swing_plaf_metal_source_files)
 -include gnu/javax/swing/plaf/metal.deps
 
 
+gnu_javax_swing_text_html_source_files = \
+classpath/gnu/javax/swing/text/html/CharacterAttributeTranslator.java \
+classpath/gnu/javax/swing/text/html/CombinedAttributes.java \
+classpath/gnu/javax/swing/text/html/ImageViewIconFactory.java
+
+gnu_javax_swing_text_html_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_swing_text_html_source_files)))
+
+gnu/javax/swing/text/html.list: $(gnu_javax_swing_text_html_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_javax_swing_text_html_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/javax/swing/text/html.list
+
+-include gnu/javax/swing/text/html.deps
+
+
 gnu_javax_swing_text_html_parser_source_files = \
 classpath/gnu/javax/swing/text/html/parser/HTML_401F.java \
+classpath/gnu/javax/swing/text/html/parser/SmallHtmlAttributeSet.java \
 classpath/gnu/javax/swing/text/html/parser/gnuDTD.java \
 classpath/gnu/javax/swing/text/html/parser/htmlAttributeSet.java \
 classpath/gnu/javax/swing/text/html/parser/htmlValidator.java
@@ -7051,7 +7096,8 @@ classpath/javax/swing/plaf/basic/BasicToolTipUI.java \
 classpath/javax/swing/plaf/basic/BasicTreeUI.java \
 classpath/javax/swing/plaf/basic/BasicViewportUI.java \
 classpath/javax/swing/plaf/basic/ComboPopup.java \
-classpath/javax/swing/plaf/basic/DefaultMenuLayout.java
+classpath/javax/swing/plaf/basic/DefaultMenuLayout.java \
+classpath/javax/swing/plaf/basic/SharedUIDefaults.java
 
 javax_swing_plaf_basic_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_plaf_basic_source_files)))
 
@@ -7301,8 +7347,10 @@ classpath/javax/swing/text/html/HTMLDocument.java \
 classpath/javax/swing/text/html/HTMLEditorKit.java \
 classpath/javax/swing/text/html/HTMLFrameHyperlinkEvent.java \
 classpath/javax/swing/text/html/HTMLTableView.java \
+classpath/javax/swing/text/html/ImageView.java \
 classpath/javax/swing/text/html/InlineView.java \
 classpath/javax/swing/text/html/ListView.java \
+classpath/javax/swing/text/html/MinimalHTMLWriter.java \
 classpath/javax/swing/text/html/NullView.java \
 classpath/javax/swing/text/html/ObjectView.java \
 classpath/javax/swing/text/html/Option.java \
@@ -8368,6 +8416,7 @@ all_packages_source_files = \
   gnu/java/awt/image.list \
   gnu/java/awt/java2d.list \
   gnu/java/awt/peer.list \
+  gnu/java/awt/print.list \
   gnu/java/io.list \
   gnu/java/lang.list \
   gnu/java/lang/reflect.list \
@@ -8455,6 +8504,7 @@ all_packages_source_files = \
   gnu/javax/security/auth/login.list \
   gnu/javax/swing/plaf/gnu.list \
   gnu/javax/swing/plaf/metal.list \
+  gnu/javax/swing/text/html.list \
   gnu/javax/swing/text/html/parser.list \
   gnu/javax/swing/text/html/parser/models.list \
   gnu/javax/swing/text/html/parser/support.list \
@@ -8585,6 +8635,7 @@ ordinary_header_files = \
   $(gnu_java_awt_image_header_files) \
   $(gnu_java_awt_java2d_header_files) \
   $(gnu_java_awt_peer_header_files) \
+  $(gnu_java_awt_print_header_files) \
   $(gnu_java_io_header_files) \
   $(gnu_java_lang_header_files) \
   $(gnu_java_lang_reflect_header_files) \
@@ -8672,6 +8723,7 @@ ordinary_header_files = \
   $(gnu_javax_security_auth_login_header_files) \
   $(gnu_javax_swing_plaf_gnu_header_files) \
   $(gnu_javax_swing_plaf_metal_header_files) \
+  $(gnu_javax_swing_text_html_header_files) \
   $(gnu_javax_swing_text_html_parser_header_files) \
   $(gnu_javax_swing_text_html_parser_models_header_files) \
   $(gnu_javax_swing_text_html_parser_support_header_files) \

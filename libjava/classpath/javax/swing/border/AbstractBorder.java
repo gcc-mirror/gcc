@@ -194,6 +194,6 @@ public abstract class AbstractBorder implements Border, Serializable
       height -= borderInsets.top + borderInsets.bottom;
     }
 
-    return new Rectangle (x, y, width, height);
+    return new Rectangle(x, y, width, height);
   }
 }

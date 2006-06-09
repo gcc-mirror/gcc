@@ -356,7 +356,8 @@ public class MultiSplitPaneUI extends SplitPaneUI
    * 
    * @param pane  the component.
    */
-  public void resetToPreferredSizes(JSplitPane pane) {
+  public void resetToPreferredSizes(JSplitPane pane) 
+  {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
     {
@@ -372,7 +373,8 @@ public class MultiSplitPaneUI extends SplitPaneUI
    * @param pane  the component.
    * @param location  the location.
    */
-  public void setDividerLocation(JSplitPane pane, int location) {
+  public void setDividerLocation(JSplitPane pane, int location) 
+  {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
     {
@@ -392,7 +394,8 @@ public class MultiSplitPaneUI extends SplitPaneUI
    * @return The location returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public int getDividerLocation(JSplitPane pane) {
+  public int getDividerLocation(JSplitPane pane) 
+  {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -421,7 +424,8 @@ public class MultiSplitPaneUI extends SplitPaneUI
    * @return The location returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public int getMinimumDividerLocation(JSplitPane pane) {
+  public int getMinimumDividerLocation(JSplitPane pane) 
+  {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -450,7 +454,8 @@ public class MultiSplitPaneUI extends SplitPaneUI
    * @return The location returned by the UI delegate from the primary 
    *         look and feel. 
    */
-  public int getMaximumDividerLocation(JSplitPane pane) {
+  public int getMaximumDividerLocation(JSplitPane pane) 
+  {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
@@ -476,7 +481,8 @@ public class MultiSplitPaneUI extends SplitPaneUI
    * @param pane  the component.
    * @param g  the graphics device.
    */
-  public void finishedPaintingChildren(JSplitPane pane, Graphics g) {
+  public void finishedPaintingChildren(JSplitPane pane, Graphics g) 
+  {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
     {

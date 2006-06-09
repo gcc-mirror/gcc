@@ -400,8 +400,8 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
                           dragCache.width, dragCache.height);
         pane = null;
         dragCache = null;
+        component.repaint();        
       }
-    component.repaint();
   }
 
   /**
@@ -463,8 +463,8 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
                           dragCache.width, dragCache.height);
         pane = null;
         dragCache = null;
+        component.repaint();        
       }
-    component.repaint();
   }
 
   /**
@@ -481,13 +481,6 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
                                 int newWidth, int newHeight)
   {
     component.setBounds(newX, newY, newWidth, newHeight);
-    component.revalidate();
-
-    // If not null, I'd rather repaint the parent
-    if (component.getParent() != null)
-      component.getParent().repaint();
-    else
-      component.repaint();
   }
 
   /**

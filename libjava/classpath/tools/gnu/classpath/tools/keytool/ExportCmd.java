@@ -38,6 +38,11 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.tools.getopt.ClasspathToolParser;
+import gnu.classpath.tools.getopt.Option;
+import gnu.classpath.tools.getopt.OptionException;
+import gnu.classpath.tools.getopt.OptionGroup;
+import gnu.classpath.tools.getopt.Parser;
 import gnu.java.security.util.Base64;
 
 import java.io.IOException;
@@ -69,7 +74,7 @@ import java.util.logging.Logger;
  *      exported to. If omitted, STDOUT will be used instead.
  *      <p></dd>
  *      
- *      <dt>-storetype STORE_TYP}</dt>
+ *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
  *      <code>keystore.type</code> in the security properties file, which is
@@ -119,13 +124,13 @@ import java.util.logging.Logger;
 class ExportCmd extends Command
 {
   private static final Logger log = Logger.getLogger(ExportCmd.class.getName());
-  private String _alias;
-  private String _certFileName;
-  private String _ksType;
-  private String _ksURL;
-  private String _ksPassword;
-  private String _providerClassName;
-  private boolean rfc;
+  protected String _alias;
+  protected String _certFileName;
+  protected String _ksType;
+  protected String _ksURL;
+  protected String _ksPassword;
+  protected String _providerClassName;
+  protected boolean rfc;
 
   // default 0-arguments constructor
 
@@ -178,72 +183,37 @@ class ExportCmd extends Command
 
   // life-cycle methods -------------------------------------------------------
 
-  int processArgs(String[] args, int i)
-  {
-    int limit = args.length;
-    String opt;
-    while (++i < limit)
-      {
-        opt = args[i];
-        log.finest("args[" + i + "]=" + opt);
-        if (opt == null || opt.length() == 0)
-          continue;
-
-        if ("-alias".equals(opt)) // -alias ALIAS
-          _alias = args[++i];
-        else if ("-file".equals(opt)) // -file FILE_NAME
-          _certFileName = args[++i];
-        else if ("-storetype".equals(opt)) // -storetype STORE_TYPE
-          _ksType = args[++i];
-        else if ("-keystore".equals(opt)) // -keystore URL
-          _ksURL = args[++i];
-        else if ("-storepass".equals(opt)) // -storepass PASSWORD
-          _ksPassword = args[++i];
-        else if ("-provider".equals(opt)) // -provider PROVIDER_CLASS_NAME
-          _providerClassName = args[++i];
-        else if ("-rfc".equals(opt))
-          rfc = true;
-        else if ("-v".equals(opt))
-          verbose = true;
-        else
-          break;
-      }
-
-    return i;
-  }
-
   void setup() throws Exception
   {
     setOutputStreamParam(_certFileName);
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
     setAliasParam(_alias);
 
-    log.finer("-export handler will use the following options:");
-    log.finer("  -alias=" + alias);
-    log.finer("  -file=" + _certFileName);
-    log.finer("  -storetype=" + storeType);
-    log.finer("  -keystore=" + storeURL);
-    log.finer("  -storepass=" + String.valueOf(storePasswordChars));
-    log.finer("  -provider=" + provider);
-    log.finer("  -rfc=" + rfc);
-    log.finer("  -v=" + verbose);
+    log.finer("-export handler will use the following options:"); //$NON-NLS-1$
+    log.finer("  -alias=" + alias); //$NON-NLS-1$
+    log.finer("  -file=" + _certFileName); //$NON-NLS-1$
+    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
+    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
+    log.finer("  -provider=" + provider); //$NON-NLS-1$
+    log.finer("  -rfc=" + rfc); //$NON-NLS-1$
+    log.finer("  -v=" + verbose); //$NON-NLS-1$
   }
 
   void start() throws KeyStoreException, CertificateEncodingException,
       IOException
   {
-    log.entering(this.getClass().getName(), "start");
+    log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
 
     ensureStoreContainsAlias();
     Certificate certificate;
     if (store.isCertificateEntry(alias))
       {
-        log.fine("Alias [" + alias + "] is a trusted certificate");
+        log.finer("Alias [" + alias + "] is a trusted certificate"); //$NON-NLS-1$ //$NON-NLS-2$
         certificate = store.getCertificate(alias);
       }
     else
       {
-        log.fine("Alias [" + alias + "] is a key entry");
+        log.finer("Alias [" + alias + "] is a key entry"); //$NON-NLS-1$ //$NON-NLS-2$
         Certificate[] chain = store.getCertificateChain(alias);
         certificate = chain[0];
       }
@@ -253,14 +223,100 @@ class ExportCmd extends Command
       {
         String encoded = Base64.encode(derBytes, 0, derBytes.length, true);
         PrintWriter pw = new PrintWriter(outStream, true);
-        pw.println("-----BEGIN CERTIFICATE-----");
+        pw.println("-----BEGIN CERTIFICATE-----"); //$NON-NLS-1$
         pw.println(encoded);
-        pw.println("-----END CERTIFICATE-----");
+        pw.println("-----END CERTIFICATE-----"); //$NON-NLS-1$
       }
     else
       outStream.write(derBytes);
 
     // stream is closed in Command.teardown()
-    log.exiting(this.getClass().getName(), "start");
+    log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
+  }
+
+  // own methods --------------------------------------------------------------
+
+  Parser getParser()
+  {
+    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
+
+    Parser result = new ClasspathToolParser(Main.EXPORT_CMD, true);
+    result.setHeader(Messages.getString("ExportCmd.17")); //$NON-NLS-1$
+    result.setFooter(Messages.getString("ExportCmd.18")); //$NON-NLS-1$
+    OptionGroup options = new OptionGroup(Messages.getString("ExportCmd.19")); //$NON-NLS-1$
+    options.add(new Option(Main.ALIAS_OPT,
+                           Messages.getString("ExportCmd.20"), //$NON-NLS-1$
+                           Messages.getString("ExportCmd.21")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _alias = argument;
+      }
+    });
+    options.add(new Option(Main.FILE_OPT,
+                           Messages.getString("ExportCmd.22"), //$NON-NLS-1$
+                           Messages.getString("ExportCmd.23")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _certFileName = argument;
+      }
+    });
+    options.add(new Option(Main.STORETYPE_OPT,
+                           Messages.getString("ExportCmd.24"), //$NON-NLS-1$
+                           Messages.getString("ExportCmd.25")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksType = argument;
+      }
+    });
+    options.add(new Option(Main.KEYSTORE_OPT,
+                           Messages.getString("ExportCmd.26"), //$NON-NLS-1$
+                           Messages.getString("ExportCmd.27")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksURL = argument;
+      }
+    });
+    options.add(new Option(Main.STOREPASS_OPT,
+                           Messages.getString("ExportCmd.28"), //$NON-NLS-1$
+                           Messages.getString("ExportCmd.29")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksPassword = argument;
+      }
+    });
+    options.add(new Option(Main.PROVIDER_OPT,
+                           Messages.getString("ExportCmd.30"), //$NON-NLS-1$
+                           Messages.getString("ExportCmd.31")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _providerClassName = argument;
+      }
+    });
+    options.add(new Option(Main.RFC_OPT,
+                           Messages.getString("ExportCmd.32")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        rfc = true;
+      }
+    });
+    options.add(new Option(Main.VERBOSE_OPT,
+                           Messages.getString("ExportCmd.33")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        verbose = true;
+      }
+    });
+    result.add(options);
+
+    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    return result;
   }
 }

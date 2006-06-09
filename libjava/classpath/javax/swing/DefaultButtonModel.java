@@ -1,5 +1,5 @@
 /* DefaultButtonModel.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,7 +63,7 @@ import javax.swing.event.EventListenerList;
  * change to the "selected" property will trigger the firing of an ItemEvent
  * in addition to ChangeEvent. This is true whether the model is enabled or
  * not. One other state change is special: the transition from "enabled,
- * armed and pressd" to "enabled, armed and not-pressed". This is considered
+ * armed and pressed" to "enabled, armed and not-pressed". This is considered
  * the "trailing edge" of a successful mouse click, and therefore fires an
  * ActionEvent in addition to a ChangeEvent. In all other respects this class
  * is just a container of boolean flags.
@@ -371,7 +371,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
     if (e)
       stateMask = stateMask | ENABLED;
     else
-      stateMask = stateMask & (~ENABLED);
+      stateMask = stateMask & (~ENABLED) & (~ARMED) & (~PRESSED);
 
     // notify interested ChangeListeners
     fireStateChanged();
@@ -555,21 +555,21 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * one model in a given group can have their "selected" property be
    * <code>true</code> at a time.
    *
-   * @param g The new "group" property
+   * @param g The new "group" property (<code>null</code> permitted).
+   * 
+   * @see #getGroup()
    */
   public void setGroup(ButtonGroup g)
   {
-    if (group != g)
-      {
-        group = g;
-        fireStateChanged();
-      }
+    group = g;
   }
 
   /**
    * Returns the current value of the model's "group" property.
    *
    * @return The value of the "group" property
+   * 
+   * @see #setGroup(ButtonGroup)
    */
   public ButtonGroup getGroup()
   {

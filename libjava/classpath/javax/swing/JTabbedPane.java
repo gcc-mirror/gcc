@@ -1,5 +1,5 @@
 /* JTabbedPane.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
@@ -53,6 +51,7 @@ import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleSelection;
+import javax.accessibility.AccessibleState;
 import javax.accessibility.AccessibleStateSet;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -79,8 +78,6 @@ public class JTabbedPane extends JComponent implements Serializable,
   /**
    * Accessibility support for <code>JTabbedPane</code>.
    */
-  // FIXME: This inner class is a complete stub and must be implemented
-  // properly.
   protected class AccessibleJTabbedPane extends JComponent.AccessibleJComponent
     implements AccessibleSelection, ChangeListener
   {
@@ -99,14 +96,17 @@ public class JTabbedPane extends JComponent implements Serializable,
 
     /**
      * Receives notification when the selection state of the
-     * <code>JTabbedPane</code> changes.
+     * <code>JTabbedPane</code> changes and fires appropriate property change
+     * events to interested listeners.
      *
      * @param e the change event describing the change
      */
     public void stateChanged(ChangeEvent e)
-      throws NotImplementedException
     {
-      // Implement this properly.
+      // I couldn't figure out what else should be done here.
+      Object source = e.getSource();
+      firePropertyChange(AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY,
+                         null, source);
     }
 
     /**
@@ -116,9 +116,8 @@ public class JTabbedPane extends JComponent implements Serializable,
      * @return the accessible role of the <code>JTabbedPane</code>
      */
     public AccessibleRole getAccessibleRole()
-      throws NotImplementedException
     {
-      return null;
+      return AccessibleRole.PAGE_TAB_LIST;
     }
 
     /**
@@ -129,9 +128,8 @@ public class JTabbedPane extends JComponent implements Serializable,
      *         <code>JTabbedPane</code>
      */
     public int getAccessibleChildrenCount()
-      throws NotImplementedException
     {
-      return 0;
+      return getTabCount();
     }
 
     /**
@@ -158,9 +156,8 @@ public class JTabbedPane extends JComponent implements Serializable,
      * @return the current selection state of the <code>JTabbedPane</code>
      */
     public AccessibleSelection getAccessibleSelection()
-      throws NotImplementedException
     {
-      return null;
+      return this;
     }
 
     /**
@@ -175,90 +172,99 @@ public class JTabbedPane extends JComponent implements Serializable,
      *         this location
      */
     public Accessible getAccessibleAt(Point p)
-      throws NotImplementedException
     {
-      return null;
+      int tabIndex = indexAtLocation(p.x, p.y);
+      if (tabIndex >= 0)
+        return getAccessibleChild(tabIndex);
+      else
+        return getAccessibleSelection(0);
     }
 
     /**
-     * The number of selected child components of the
-     * <code>JTabbedPane</code>. This will be <code>0</code> if the
-     * <code>JTabbedPane</code> has no children, or <code>1</code> otherwise,
-     * since there is always exactly one tab selected. 
+     * Returns the number of selected child components of the
+     * <code>JTabbedPane</code>. The reference implementation appears
+     * to return <code>1</code> always and we do the same. 
      *
-     * @return number of selected child components of the
-     *         <code>JTabbedPane</code>
+     * @return <code>1</code>
      */
     public int getAccessibleSelectionCount()
-      throws NotImplementedException
     {
-      return 0;
+      return 1;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the selected tab, or <code>null</code> if there is no 
+     * selection.
      *
-     * @param i DOCUMENT ME!
+     * @param i  the selection index (ignored here).
      *
-     * @return DOCUMENT ME!
+     * @return The selected tab, or <code>null</code>.
      */
     public Accessible getAccessibleSelection(int i)
-      throws NotImplementedException
     {
-      return null;
+      Accessible result = null;
+      int selected = getSelectedIndex();
+      if (selected >= 0)
+        result = (Page) tabs.get(selected);
+      return result;
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns <code>true</code> if the specified child is selected,
+     * and <code>false</code> otherwise.
      *
-     * @param i DOCUMENT ME!
+     * @param i the child index.
      *
-     * @return DOCUMENT ME!
+     * @return A boolean.
      */
     public boolean isAccessibleChildSelected(int i)
-      throws NotImplementedException
     {
-      return false;
+      return i == getSelectedIndex();
     }
 
     /**
-     * DOCUMENT ME!
+     * Selects the specified tab.
      *
-     * @param i DOCUMENT ME!
+     * @param i  the index of the item to select.
      */
     public void addAccessibleSelection(int i)
-      throws NotImplementedException
     {
-      // TODO: Implement this properly.
+      setSelectedIndex(i);
     }
 
     /**
-     * DOCUMENT ME!
+     * Does nothing - it makes no sense to remove a selection for a
+     * tabbed pane, since one tab must always be selected.
      *
-     * @param i DOCUMENT ME!
+     * @param i  the item index.
+     * 
+     * @see #addAccessibleSelection(int)
      */
     public void removeAccessibleSelection(int i)
-      throws NotImplementedException
     {
-      // TODO: Implement this properly.
+      // do nothing
     }
 
     /**
-     * DOCUMENT ME!
+     * Does nothing - it makes no sense to clear the selection for
+     * a tabbed pane, since one tab must always be selected.
+     * 
+     * @see #addAccessibleSelection(int)
      */
     public void clearAccessibleSelection()
-      throws NotImplementedException
     {
-      // TODO: Implement this properly.
+      // do nothing
     }
 
     /**
-     * DOCUMENT ME!
+     * Does nothing - it makes no sense to select all for a tabbed
+     * pane, since only one tab can be selected at a time.
+     * 
+     * @see #addAccessibleSelection(int)
      */
     public void selectAllAccessibleSelection()
-      throws NotImplementedException
     {
-      // TODO: Implement this properly.
+      // do nothing
     }
   }
 
@@ -267,7 +273,6 @@ public class JTabbedPane extends JComponent implements Serializable,
    */
   protected class ModelListener implements ChangeListener, Serializable
   {
-    /** DOCUMENT ME! */
     private static final long serialVersionUID = 497359819958114132L;
 
     /**
@@ -446,7 +451,6 @@ public class JTabbedPane extends JComponent implements Serializable,
       return title;
     }
 
-    /** DOCUMENT ME! */
     private static final long serialVersionUID = 1614381073220130939L;
 
     /**
@@ -598,6 +602,19 @@ public class JTabbedPane extends JComponent implements Serializable,
     }
 
     /**
+     * Returns the accessible name for this tab.
+     * 
+     * @return The accessible name.
+     */
+    public String getAccessibleName()
+    {
+      if (accessibleName != null)
+        return accessibleName;
+      else
+        return title;
+    }
+    
+    /**
      * Returns the accessible role of this tab, which is always
      * {@link AccessibleRole#PAGE_TAB}.
      *
@@ -608,18 +625,31 @@ public class JTabbedPane extends JComponent implements Serializable,
       return AccessibleRole.PAGE_TAB;
     }
 
+    /**
+     * Returns the accessible state set of this object.
+     *
+     * @return the accessible state set of this object
+     */
     public AccessibleStateSet getAccessibleStateSet()
-      throws NotImplementedException
     {
-      // FIXME: Implement this properly.
-      return null;
+      AccessibleContext parentCtx = JTabbedPane.this.getAccessibleContext(); 
+      AccessibleStateSet state = parentCtx.getAccessibleStateSet();
+      state.add(AccessibleState.SELECTABLE);
+      if (component == getSelectedComponent())
+        state.add(AccessibleState.SELECTED);
+      return state;
     }
 
+    /**
+     * Returns the index of this tab inside its parent.
+     *
+     * @return the index of this tab inside its parent
+     */
     public int getAccessibleIndexInParent()
-      throws NotImplementedException
     {
-      // FIXME: Implement this properly.
-      return 0;
+      // TODO: Not sure if the title is unambiguous, but I can't figure
+      // another way of doing this.
+      return indexOfTab(title);
     }
 
     /**
@@ -1623,25 +1653,45 @@ public class JTabbedPane extends JComponent implements Serializable,
   }
 
   /**
-   * This method returns a string representation of this JTabbedPane. It is
-   * mainly used for debugging purposes.
+   * Returns a string describing the attributes for the 
+   * <code>JTabbedPane</code> component, for use in debugging.  The return 
+   * value is guaranteed to be non-<code>null</code>, but the format of the 
+   * string may vary between implementations.
    *
-   * @return A string representation of this JTabbedPane.
+   * @return A string describing the attributes of the 
+   *     <code>JTabbedPane</code>.
    */
   protected String paramString()
   {
-    return "JTabbedPane";
+    StringBuffer sb = new StringBuffer(super.paramString());
+    sb.append(",tabPlacement=");
+    if (tabPlacement == TOP)
+      sb.append("TOP");
+    if (tabPlacement == BOTTOM)
+      sb.append("BOTTOM");
+    if (tabPlacement == LEFT)
+      sb.append("LEFT");
+    if (tabPlacement == RIGHT)
+      sb.append("RIGHT");
+    return sb.toString();
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the object that provides accessibility features for this
+   * <code>JTabbedPane</code> component.
    *
-   * @return DOCUMENT ME!
+   * @return The accessible context (an instance of 
+   *         {@link AccessibleJTabbedPane}).
    */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      accessibleContext = new AccessibleJTabbedPane();
+      {
+        AccessibleJTabbedPane ctx = new AccessibleJTabbedPane();
+        addChangeListener(ctx);
+        accessibleContext = ctx;
+      }
+
     return accessibleContext;
   }
 }

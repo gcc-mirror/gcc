@@ -183,7 +183,8 @@ public abstract class AbstractWriter
     if (! elt.isLeaf())
       throw new BadLocationException("Element is not a leaf",
 				     elt.getStartOffset());
-    return document.getText(elt.getStartOffset(), elt.getEndOffset());
+    return document.getText(elt.getStartOffset(), 
+			    elt.getEndOffset() - elt.getStartOffset());
   }
 
   /**

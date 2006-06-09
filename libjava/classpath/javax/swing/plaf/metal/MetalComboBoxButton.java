@@ -256,9 +256,8 @@ public class MetalComboBoxButton
           {
             ListCellRenderer renderer = comboBox.getRenderer();
             boolean pressed = this.getModel().isPressed();
-            Component comp= renderer.getListCellRendererComponent(listBox,
-                                                    comboBox.getSelectedItem(),
-                                                    -1, false, false);
+            Component comp = renderer.getListCellRendererComponent(listBox,
+                comboBox.getSelectedItem(), -1, false, false);
             comp.setFont(rendererPane.getFont());
             if (model.isArmed() && model.isPressed())
               {

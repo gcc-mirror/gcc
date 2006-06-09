@@ -887,8 +887,7 @@ public class DefaultMutableTreeNode
       return false;
     if (node == this)
       return true;
-    return (node.getParent() == getParent()
-            && getParent() != null);
+    return node.getParent() == getParent() && getParent() != null;
   }
 
   /**
@@ -1070,7 +1069,7 @@ public class DefaultMutableTreeNode
 
       public Object nextElement()
       {
-          if(queue.isEmpty())
+          if (queue.isEmpty())
               throw new NoSuchElementException("No more elements left.");
 
           TreeNode node = (TreeNode) queue.removeFirst();
@@ -1105,7 +1104,7 @@ public class DefaultMutableTreeNode
 
       public Object nextElement()
       {
-          if( next == null )
+          if (next == null)
               throw new NoSuchElementException("No more elements left.");
 
           Object current = next;
@@ -1121,7 +1120,7 @@ public class DefaultMutableTreeNode
       private TreeNode traverse(Enumeration children)
       {
           // If more children are available step down.
-          if( children.hasMoreElements() )
+          if (children.hasMoreElements())
           {
               TreeNode child = (TreeNode) children.nextElement();
               childrenEnums.push(child.children());
@@ -1134,7 +1133,7 @@ public class DefaultMutableTreeNode
 
           // If there are no more levels left, there is no next
           // element to return.
-          if ( childrenEnums.isEmpty() )
+          if (childrenEnums.isEmpty())
               return null;
           else
           {
@@ -1165,7 +1164,7 @@ public class DefaultMutableTreeNode
 
        public Object nextElement()
        {
-           if( nodes.isEmpty() )
+           if (nodes.isEmpty())
                throw new NoSuchElementException("No more elements left!");
 
            Enumeration children = (Enumeration) childrenEnums.peek();
@@ -1175,7 +1174,7 @@ public class DefaultMutableTreeNode
 
        private Object traverse(Enumeration children)
        {
-           if ( children.hasMoreElements() )
+           if (children.hasMoreElements())
            {
                TreeNode node = (TreeNode) children.nextElement();
                nodes.push(node);

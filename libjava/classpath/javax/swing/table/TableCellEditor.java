@@ -47,19 +47,19 @@ import javax.swing.JTable;
  * TableCellEditor public interface
  * @author Andrew Selkirk
  */
-public interface TableCellEditor extends CellEditor {
+public interface TableCellEditor extends CellEditor 
+{
 
-	/**
-	 * Get table cell editor component
-	 * @param table JTable
-	 * @param value Value of cell
-	 * @param isSelected Cell selected
-	 * @param row Row of cell
-	 * @param column Column of cell
-	 * @returns Component
-	 */
-	Component getTableCellEditorComponent(JTable table,
-			Object value, boolean isSelected, int row, int column);
+  /**
+   * Get table cell editor component
+   * @param table JTable
+   * @param value Value of cell
+   * @param isSelected Cell selected
+   * @param row Row of cell
+   * @param column Column of cell
+   * @return Component
+   */
+  Component getTableCellEditorComponent(JTable table, Object value, 
+      boolean isSelected, int row, int column);
 
-
-} // TableCellEditor
+}

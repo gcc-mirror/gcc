@@ -227,13 +227,13 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   }
 
   /** Whether or not this slider paints its ticks. */
-  private transient boolean paintTicks = false;
+  private transient boolean paintTicks;
 
   /** Whether or not this slider paints its track. */
   private transient boolean paintTrack = true;
 
   /** Whether or not this slider paints its labels. */
-  private transient boolean paintLabels = false;
+  private transient boolean paintLabels;
 
   /**
    * A dictionary of (Integer, Component) pairs where each Component is a
@@ -251,7 +251,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
   protected int minorTickSpacing;
 
   /** Whether the slider snaps its values to ticks. */
-  protected boolean snapToTicks = false;
+  protected boolean snapToTicks;
 
   /** The orientation (horizontal or vertical) of the slider. */
   protected int orientation = HORIZONTAL;

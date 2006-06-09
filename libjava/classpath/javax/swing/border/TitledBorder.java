@@ -45,11 +45,10 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
-import java.awt.Shape;
-import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
-import java.awt.geom.AffineTransform;
+import java.awt.Point;
+import java.awt.Rectangle;
 
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 
@@ -464,191 +463,238 @@ public class TitledBorder extends AbstractBorder
   public void paintBorder(Component c, Graphics  g, 
                           int x, int y, int width, int height)
   {
-    Measurements mes = getMeasurements(c);
-    Font oldFont = g.getFont();
-    Color oldColor = g.getColor();
+    Rectangle borderRect = new Rectangle(x + EDGE_SPACING, y + EDGE_SPACING,
+                                         width - (EDGE_SPACING * 2),
+                                         height - (EDGE_SPACING * 2));
+    Point textLoc = new Point();
 
-    /**
-     * A local helper class for painting the border without changing
-     * any pixels inside the rectangle of the title text.
-     */
-    class BorderPainter
-    {
-      private Component c;
-      private Border b;
-      private int x, y, width, height;
+    // Save color and font.
+    Color savedColor = g.getColor();
+    Font savedFont = g.getFont();
 
-      /**
-       * Constructs a BorderPainter.
-       *
-       * @param c the component whose border is being painted.
-       * @param b the border object.
-       * @param x the x coordinate of the rectangle delimiting the border.
-       * @param y the y coordinate of the rectangle delimiting the border.
-       * @param width the width of the rectangle delimiting the border.
-       * @param height the width of the rectangle delimiting the border.
-       */
-      public BorderPainter(Component c, Border b,
-                           int x, int y, int width, int height)
-      {
-        this.c = c;
-        this.b = b;
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-      }
+    // The font metrics.
+    Font font = getFont(c);
+    g.setFont(font);
+    FontMetrics fm = c.getFontMetrics(font);
 
+    layoutBorderWithTitle(c, fm, borderRect, textLoc);
+    paintBorderWithTitle(c, g, x, y, width, height, borderRect, textLoc, fm);
 
-      /**
-       * Paints the entire border.
-       */
-      public void paint(Graphics g)
-      {
-        if (b != null)
-          b.paintBorder(c, g, x, y, width, height);
-      }
+    g.setColor(getTitleColor());
+    g.drawString(getTitle(), textLoc.x, textLoc.y);
+    g.setFont(savedFont);
+    g.setColor(savedColor);
+  }
 
+  /**
+   * Calculates the bounding box of the inner border and the location of the
+   * title string.
+   *
+   * @param c the component on which to paint the border
+   * @param fm the font metrics
+   * @param borderRect output parameter, holds the bounding box of the inner
+   *        border on method exit
+   * @param textLoc output parameter, holds the location of the title text
+   *        on method exit
+   */
+  private void layoutBorderWithTitle(Component c, FontMetrics fm,
+                                     Rectangle borderRect,
+                                     Point textLoc)
+  {
+    Border b = getBorder();
 
-      /**
-       * Paints the border, clipping the drawing operation to a
-       * given rectangular area.
-       */
-      private void paint(Graphics g,
-                         int clipX, int clipY, int clipWidth, int clipHeight)
-      {
-        Shape oldClip = g.getClip();
-        try
-        {
-          g.clipRect(clipX, clipY, clipWidth, clipHeight);
-          paint(g);
-        }
-        finally
-        {
-          g.setClip(oldClip);
-        }
-      }
+    // The font metrics.
+    int fontHeight = fm.getHeight();
+    int fontDescent = fm.getDescent();
+    int fontAscent = fm.getAscent();
+    int titleWidth = fm.stringWidth(getTitle());
 
+    // The base insets.
+    Insets insets;
+    if (b == null)
+      insets = new Insets(0, 0, 0, 0);
+    else
+      insets = b.getBorderInsets(c);
 
-      /**
-       * Paints the border without affecting a given rectangular area.
-       * This is used for painting the border without drawing anything
-       * underneath the title text.
-       *
-       * <p>Since we do not want to introduce unnecessary dependencies
-       * on Java 2D, we perform the clipping without constructive geometry
-       * (provided by java.awt.geom.Area). Instead, the border&#x2019;s
-       * bounding rectangle is split into smaller parts, which are then
-       * clipped and painted individually.:
-       *
-       * <p><pre>
-       *    +--------------------+          +--------------------+
-       *    |                    |          |        1           |
-       *    |   +--------+       |          +---+--------+-------+
-       *    |   | hole   |       |  |====>  | 2 | hole   |   3   |
-       *    |   +--------+       |          |---+--------+-------+
-       *    |                    |          |        4           |
-       *    +--------------------+          +--------------------+</pre>
-       *
-       */
-      public void paintExcept(Graphics g,
-                              int holeX, int holeY, int holeWidth, int holeHeight)
-      {
-        int stripeHeight;
+    // The offset of the border rectangle, dependend on the title placement.
+    int offset;
 
-        stripeHeight = holeY - y;
-        if (stripeHeight > 0)
-          paint(g, x, y, width, stripeHeight);   // patch #1 in the image above
-
-        stripeHeight = holeHeight;
-        if (stripeHeight > 0)
-        {
-          paint(g, x, holeY, holeX - x, stripeHeight);  // patches #2 and #3
-          paint(g, holeX + holeWidth, holeY, x + width - (holeX + holeWidth), stripeHeight);
-        }
-
-        stripeHeight = height - (holeY - y + holeHeight);
-        if (stripeHeight > 0)
-          paint(g, x, y + height - stripeHeight, width, stripeHeight); // #4
-      }
-    };
-
-    BorderPainter bp;
-    int textX, textY, borderWidth, borderHeight;
-
-    borderWidth = width - (mes.outerSpacing.left + mes.outerSpacing.right);
-    borderHeight = height - (mes.outerSpacing.top + mes.outerSpacing.bottom);
-    bp = new BorderPainter(c, getBorder(),
-                           x + mes.outerSpacing.left, y + mes.outerSpacing.top,
-                           borderWidth, borderHeight);
-
-    switch (getRealTitleJustification(c))
-    {
-    case LEFT:
-      textX = x + EDGE_SPACING + TEXT_INSET_H;
-      break;
-
-    case CENTER:
-      textX = x + (borderWidth - mes.textWidth) / 2;
-      break;
-
-    case RIGHT:
-      textX = x + borderWidth - (mes.textWidth + TEXT_INSET_H);
-      break;
-
-    default:
-      throw new IllegalStateException();
-    }
-
+    // Layout border and text vertically.
+    int titlePosition = getTitlePosition();
     switch (titlePosition)
     {
-    case ABOVE_TOP:
-      textY = y + EDGE_SPACING;
-      break;
-
-    case TOP:
-    case DEFAULT_POSITION:
-    default:
-      textY = y + mes.outerSpacing.top + mes.borderInsets.top - mes.textAscent
-              + mes.lineHeight;
-      break;
-
-    case BELOW_TOP:
-      textY = y + mes.outerSpacing.top + mes.borderInsets.top + TEXT_SPACING;
-      break;
-
-    case ABOVE_BOTTOM:
-      textY = y + height - mes.outerSpacing.bottom - mes.borderInsets.bottom
-        - TEXT_SPACING - (mes.textAscent + mes.textDescent);
-      break;
-
-    case BOTTOM:
-    case BELOW_BOTTOM:
-      textY = y + height - (mes.textAscent + mes.textDescent);
-      break;
+      case ABOVE_BOTTOM:
+        textLoc.y = borderRect.y + borderRect.height - insets.bottom
+                     - fontDescent - TEXT_SPACING;
+        break;
+      case BOTTOM:
+        borderRect.height -= fontHeight / 2;
+        textLoc.y = borderRect.y + borderRect.height - fontDescent
+                     + (fontAscent + fontDescent - insets.bottom) / 2;
+        break;
+      case BELOW_BOTTOM:
+        borderRect.height -=  fontHeight;
+        textLoc.y = borderRect.y + borderRect.height + fontAscent
+                     + TEXT_SPACING;
+        break;
+      case ABOVE_TOP:
+        offset = fontAscent + fontDescent
+                 + Math.max(EDGE_SPACING, TEXT_SPACING * 2) - EDGE_SPACING;
+        borderRect.y += offset;
+        borderRect.height -= offset;
+        textLoc.y = borderRect.y - (fontDescent + TEXT_SPACING);
+        break;
+      case BELOW_TOP:
+        textLoc.y = borderRect.y + insets.top + fontAscent + TEXT_SPACING;
+        break;
+      case TOP:
+      case DEFAULT_POSITION:
+      default:
+        offset = Math.max(0, ((fontAscent / 2) + TEXT_SPACING) - EDGE_SPACING);
+        borderRect.y += offset;
+        borderRect.height -= offset;
+        textLoc.y = borderRect.y - fontDescent
+                     + (insets.top + fontAscent + fontDescent) / 2;
+        break;
     }
 
-    if (mes.trimmedText == null)
-      bp.paint(g);
+    // Layout border and text horizontally.
+    int justification = getTitleJustification();
+    // Adjust justification for LEADING and TRAILING depending on the direction
+    // of the component.
+    if (c.getComponentOrientation().isLeftToRight())
+      {
+        if (justification == LEADING || justification == DEFAULT_JUSTIFICATION)
+          justification = LEFT;
+        else if (justification == TRAILING)
+          justification = RIGHT;
+      }
     else
+      {
+        if (justification == LEADING || justification == DEFAULT_JUSTIFICATION)
+          justification = RIGHT;
+        else if (justification == TRAILING)
+          justification = LEFT;
+      }
+
+    switch (justification)
     {
-      try
-      {
-        g.setFont(mes.font);
-        g.setColor(getTitleColor());
-        g.drawString(mes.trimmedText, textX, textY + mes.textAscent);
-      }
-      finally
-      {
-        g.setFont(oldFont);
-        g.setColor(oldColor);
-      }
-      bp.paintExcept(g, textX, textY,
-                     mes.textWidth, mes.textAscent + mes.textDescent);
+      case CENTER:
+        textLoc.x = borderRect.x + (borderRect.width - titleWidth) / 2;
+        break;
+      case RIGHT:
+        textLoc.x = borderRect.x + borderRect.width - titleWidth
+                     - TEXT_INSET_H - insets.right;
+        break;
+      case LEFT:
+      default:
+        textLoc.x = borderRect.x + TEXT_INSET_H + insets.left;
     }
   }
-  
-  
+
+  /**
+   * Paints the border with the title.
+   *
+   * @param c the component to paint on
+   * @param g the graphics context used for paintin
+   * @param x the upper left corner of the whole border
+   * @param y the upper left corner of the whole border
+   * @param width the width of the whole border
+   * @param height the width of the whole border
+   * @param borderRect the bounding box of the inner border
+   * @param textLoc the location of the border title
+   * @param fm the font metrics of the title
+   */
+  private void paintBorderWithTitle(Component c, Graphics g, int x, int y,
+                                    int width, int height,
+                                    Rectangle borderRect, Point textLoc,
+                                    FontMetrics fm)
+  {
+    Border b = getBorder();
+    int fontDescent = fm.getDescent();
+    int fontAscent = fm.getAscent();
+    int titleWidth = fm.stringWidth(getTitle());
+
+    if (b != null)
+      {
+        // Paint border in segments, when the title is painted above the
+        // border.
+        if (((titlePosition == TOP || titlePosition == DEFAULT_POSITION)
+            && (borderRect.y > textLoc.y - fontAscent))
+            || (titlePosition == BOTTOM
+                && borderRect.y + borderRect.height < textLoc.y + fontDescent))
+          {
+            Rectangle clip = new Rectangle();
+            Rectangle saved = g.getClipBounds();
+
+            // Paint border left from the text.
+            clip.setBounds(saved);
+            SwingUtilities.computeIntersection(x, y, textLoc.x - x - 1,
+                                               height, clip);
+            if (! clip.isEmpty())
+              {
+                g.setClip(clip);
+                b.paintBorder(c, g, borderRect.x, borderRect.y,
+                              borderRect.width,
+                              borderRect.height);
+              }
+            // Paint border right from the text.
+            clip.setBounds(saved);
+            SwingUtilities.computeIntersection(textLoc.x + titleWidth + 1, y,
+                x + width - (textLoc.x + titleWidth + 1), height, clip);
+            if (! clip.isEmpty())
+              {
+                g.setClip(clip);
+                b.paintBorder(c, g, borderRect.x, borderRect.y,
+                              borderRect.width,
+                              borderRect.height);
+              }
+
+            if (titlePosition == TOP || titlePosition == DEFAULT_POSITION)
+              {
+                // Paint border below the text.
+                clip.setBounds(saved);
+                SwingUtilities.computeIntersection(textLoc.x - 1,
+                                                   textLoc.y + fontDescent,
+                                                   titleWidth + 2,
+                                                   y + height - textLoc.y - fontDescent,
+                                                   clip);
+                if (! clip.isEmpty())
+                  {
+                    g.setClip(clip);
+                    b.paintBorder(c, g, borderRect.x, borderRect.y,
+                                  borderRect.width,
+                                  borderRect.height);
+                  }
+	                
+              }
+            else
+              {
+                // Paint border above the text.
+                clip.setBounds(saved);
+                SwingUtilities.computeIntersection(textLoc.x - 1, y,
+                                                   titleWidth + 2,
+                                                   textLoc.y - fontDescent - y,
+                                                   clip);
+                if (! clip.isEmpty())
+                  {
+                    g.setClip(clip);
+                    b.paintBorder(c, g, borderRect.x, borderRect.y,
+                                  borderRect.width,
+                                  borderRect.height);
+                  }
+	                
+              }
+            g.setClip(saved);
+          }
+        else
+          {
+            b.paintBorder(c, g, borderRect.x, borderRect.y, borderRect.width,
+                          borderRect.height);
+          }
+      }
+  }
+
   /**
    * Measures the width of this border.
    *
@@ -682,7 +728,72 @@ public class TitledBorder extends AbstractBorder
    */
   public Insets getBorderInsets(Component c, Insets insets)
   {
-    return getMeasurements(c).getContentInsets(insets);
+    // Initialize insets with the insets from our border.
+    Border border = getBorder();
+    if (border != null)
+      {
+        if (border instanceof AbstractBorder)
+          {
+            AbstractBorder aBorder = (AbstractBorder) border;
+            aBorder.getBorderInsets(c, insets);
+          }
+        else
+          {
+            Insets i = border.getBorderInsets(c);
+            insets.top = i.top;
+            insets.bottom = i.bottom;
+            insets.left = i.left;
+            insets.right = i.right;
+          }
+      }
+    else
+      {
+        insets.top = 0;
+        insets.bottom = 0;
+        insets.left = 0;
+        insets.right = 0;
+      }
+
+    // Add spacing.
+    insets.top += EDGE_SPACING + TEXT_SPACING;
+    insets.bottom += EDGE_SPACING + TEXT_SPACING;
+    insets.left += EDGE_SPACING + TEXT_SPACING;
+    insets.right += EDGE_SPACING + TEXT_SPACING;
+
+    String title = getTitle();
+    if (c != null && title != null && !title.equals(""))
+      {
+        Font font = getFont(c);
+        FontMetrics fm = c.getFontMetrics(font);
+        int ascent = fm.getAscent();
+        int descent = fm.getDescent();
+        int height = fm.getHeight();
+        switch (getTitlePosition())
+        {
+          case ABOVE_BOTTOM:
+            insets.bottom += ascent + descent + TEXT_SPACING;
+            break;
+          case BOTTOM:
+            insets.bottom += ascent + descent;
+            break;
+          case BELOW_BOTTOM:
+            insets.bottom += height;
+            break;
+          case ABOVE_TOP:
+            insets.top += ascent + descent +
+                          Math.max(EDGE_SPACING, TEXT_SPACING * 2)
+                          - EDGE_SPACING;
+            break;
+          case BELOW_TOP:
+            insets.top += ascent + descent + TEXT_SPACING;
+            break;
+          case TOP:
+          case DEFAULT_POSITION:
+          default:
+            insets.top += ascent + descent;
+        }
+      }
+    return insets;
   }
   
   
@@ -919,7 +1030,26 @@ public class TitledBorder extends AbstractBorder
    */
   public Dimension getMinimumSize(Component c)
   {
-    return getMeasurements(c).getMinimumSize();
+    Insets i = getBorderInsets(c);
+    Dimension minSize = new Dimension(i.left + i.right, i.top + i.bottom);
+    Font font = getFont(c);
+    FontMetrics fm = c.getFontMetrics(font);
+    int titleWidth = fm.stringWidth(getTitle());
+    switch (getTitlePosition())
+    {
+      case ABOVE_TOP:
+      case BELOW_BOTTOM:
+        minSize.width = Math.max(minSize.width, titleWidth);
+        break;
+      case BELOW_TOP:
+      case ABOVE_BOTTOM:
+      case TOP:
+      case BOTTOM:
+      case DEFAULT_POSITION:
+      default:
+        minSize.width += titleWidth;
+    }
+    return minSize;
   }
 
 
@@ -943,253 +1073,4 @@ public class TitledBorder extends AbstractBorder
     return new Font("Dialog", Font.PLAIN, 12);
   }
 
-
-  /**
-   * Returns the horizontal alignment of the title text in relation to
-   * the border, mapping the component-dependent alignment constants
-   * {@link #LEADING}, {@link #TRAILING} and {@link #DEFAULT_JUSTIFICATION}
-   * to the correct value according to the embedded component&#x2019;s
-   * orientation.
-   *
-   * @param c the Component for which this TitledBorder is the border.
-   *
-   * @return one of the values {@link #LEFT}, {@link #CENTER}, or {@link
-   *         #RIGHT}.
-   */
-  private int getRealTitleJustification(Component c)
-  {
-    switch (titleJustification)
-    {
-    case DEFAULT_JUSTIFICATION:
-    case LEADING:
-      if ((c == null) || c.getComponentOrientation().isLeftToRight())
-        return LEFT;
-      else
-        return RIGHT;
-
-    case TRAILING:
-      if ((c == null) || c.getComponentOrientation().isLeftToRight())
-        return RIGHT;
-      else
-        return LEFT;
-
-    default:
-      return titleJustification;
-    }
-  }
-
-
-  /**
-   * Performs various measurements for the current state of this TitledBorder
-   * and the given Component.
-   * 
-   * @param c  the component (<code>null</code> not permitted).
-   * 
-   * @return Various measurements.
-   */
-  private Measurements getMeasurements(Component c)
-  {
-    Measurements m = new Measurements();
-    FontMetrics fmet;
-
-    m.font = getFont(c);
-    fmet = c.getFontMetrics(m.font);
-    m.border = getBorder();
-    if (m.border != null)
-      m.borderInsets = m.border.getBorderInsets(c);
-    else
-      m.borderInsets = new Insets(0, 0, 0, 0);
-
-    if (title != null)
-    {
-      m.trimmedText = title.trim();
-      if (m.trimmedText.length() == 0)
-        m.trimmedText = null;
-    }
-    
-    if (m.trimmedText != null)
-      {
-        m.textAscent = fmet.getAscent();
-        m.textDescent = fmet.getDescent() + fmet.getLeading();
-
-        FontRenderContext frc = new FontRenderContext(new AffineTransform(), 
-            false, false);
-        LineMetrics lmet = m.font.getLineMetrics(m.trimmedText, 0,
-            m.trimmedText.length(), frc);
-        m.lineHeight = (int) lmet.getStrikethroughOffset();
-        
-        // Fallback in case that LineMetrics is not available/working.
-        if (m.lineHeight == 0)
-          m.lineHeight = (int) (0.3333 * (double) m.textAscent);
-        m.textWidth = fmet.stringWidth(m.trimmedText) + 3;
-      }
-    else
-      {
-        m.textAscent = 0;
-        m.textDescent = 0;
-      }
-
-    m.innerSpacing = new Insets(EDGE_SPACING, EDGE_SPACING, EDGE_SPACING, 
-            EDGE_SPACING);
-    m.outerSpacing = new Insets(EDGE_SPACING, EDGE_SPACING, EDGE_SPACING, 
-            EDGE_SPACING);
-
-    switch (titlePosition)
-    {
-    case ABOVE_TOP:
-      m.outerSpacing.top += m.textAscent + m.textDescent + TEXT_SPACING;
-      break;
-
-    case TOP:
-      m.outerSpacing.top += m.textDescent + m.lineHeight;
-      m.innerSpacing.top += m.textAscent - m.lineHeight;
-      break;
-      
-    case BELOW_TOP:
-      m.innerSpacing.top += m.textAscent + m.textDescent + TEXT_SPACING;
-      break;
-
-    case ABOVE_BOTTOM:
-      m.innerSpacing.bottom += m.textAscent + m.textDescent + TEXT_SPACING;
-      break;
-
-    case BOTTOM:
-      m.innerSpacing.bottom += Math.max(m.textAscent - m.lineHeight, 0);
-      m.outerSpacing.bottom += m.textDescent + m.lineHeight;
-      break;
-
-    case BELOW_BOTTOM:
-      m.outerSpacing.bottom += m.textAscent + m.textDescent;
-      break;
-
-    default:
-      m.outerSpacing.top += m.textAscent;
-    }
-
-    return m;
-  }
-
-
-  /**
-   * A private helper class for holding the result of measuring the
-   * distances of a TitledBorder.  While it would be possible to cache
-   * these objects, it does not seem to be worth the effort. Note that
-   * invalidating the cache would be tricky, especially since there is
-   * no notification mechanism that would inform the cache when
-   * border has changed, so it would return different insets.
-   */
-  private static class Measurements
-  {
-    /**
-     * The font used for displaying the title text. Note that it can
-     * well be that the TitledBorder&#x2019;s font is <code>null</code>,
-     * which means that the font is to be retrieved from the current
-     * LookAndFeel. In this case, this <code>font</code> field will
-     * contain the result of the retrieval. Therefore, it is safe
-     * to assume that this <code>font</code> field will never have
-     * a <code>null</code> value.
-     */
-    Font font;
-
-
-    /**
-     * The number of pixels between the base line and the top of the
-     * text box.
-     */
-    int textAscent;
-
-
-    /**
-     * The number of pixels between the base line and the bottom of
-     * the text box.
-     */
-    int textDescent;
-
-    /**
-     * The number of pixels between the base line and the height where
-     * a strike-through would be drawn.
-     */
-    int lineHeight;
-
-    /**
-     * The title text after removing leading and trailing white space
-     * characters. If the title consists only of white space, the
-     * value of <code>trimmedText</code> will be <code>null</code>.
-     */
-    String trimmedText;
-
-
-    /**
-     * The width of the trimmed title text in pixels.
-     */
-    int textWidth;
-
-
-    /**
-     * The border that constitutes the interior border
-     * underneath the title text.
-     */
-    Border border;
-
-
-    /**
-     * The distance between the TitledBorder and the interior border.
-     */
-    Insets outerSpacing;
-    
-    /**
-     * The width of the interior border, as returned by
-     * <code>border.getBorderInsets()</code>.
-     */
-    Insets borderInsets;
-
-    
-    /**
-     * The distance between the interior border and the nested
-     * Component for which this TitledBorder is a border.
-     */
-    Insets innerSpacing;
-
-
-    /**
-     * Determines the insets of the nested component when it has a
-     * TitledBorder as its border. Used by {@link
-     * TitledBorder#getBorderInsets(Component, Insets)}.
-     *
-     * @param i an Insets object for storing the results into, or
-     *        <code>null</code> to cause the creation of a
-     *        new instance.
-     *
-     * @return the <code>i</code> object, or a new Insets object
-     *         if <code>null</code> was passed for <code>i</code>.
-     */
-    public Insets getContentInsets(Insets i)
-    {
-      if (i == null)
-        i = new Insets(0, 0, 0, 0);
-      i.left = outerSpacing.left + borderInsets.left + innerSpacing.left;
-      i.right = outerSpacing.right + borderInsets.right + innerSpacing.right;
-      i.top = outerSpacing.top + borderInsets.top + innerSpacing.top;
-      i.bottom = outerSpacing.bottom + borderInsets.bottom + innerSpacing.bottom;
-      return i;
-    }
-
-
-    /**
-     * Calculates the minimum size needed for displaying the border
-     * and its title. Used by {@link TitledBorder#getMinimumSize(Component)}.
-     * 
-     * @return The minimum size.
-     */
-    public Dimension getMinimumSize()
-    {
-      int width;
-      Insets insets;
-
-      insets = getContentInsets(null);
-      width = Math.max(insets.left + insets.right, textWidth + 2 
-              * TEXT_INSET_H);
-      return new Dimension(width, insets.top + insets.bottom);
-    }
-  }
 }

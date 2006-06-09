@@ -110,7 +110,7 @@ public class GNUGlyphVector
     
     fontSize = font.getSize2D();
     transform = font.getTransform(); // returns a modifiable copy
-    transform.concatenate(renderContext.getTransform());
+    //transform.concatenate(renderContext.getTransform());
   }
 
 

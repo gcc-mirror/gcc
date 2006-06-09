@@ -46,6 +46,7 @@ import javax.swing.text.html.HTML;
 
 /**
  * A set, adapted to store HTML attributes.
+ * 
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class htmlAttributeSet
@@ -53,23 +54,34 @@ public class htmlAttributeSet
 {
   public static final htmlAttributeSet EMPTY_HTML_ATTRIBUTE_SET =
     new htmlAttributeSet();
+  
   AttributeSet parent;
 
   /**
-   * Looks in this set and, if not found, later looks in the parent set.
-   * Calls toString(), allowing to pass as HTML.Attribute, as String
-   * to this method.
-   * @param key A key to search for a value.
+   * Looks in this set and, if not found, later looks in the parent set. Calls
+   * toString(), allowing to pass as HTML.Attribute, as String to this method.
+   * 
+   * @param _key A key to search for a value.
    * @return The value, if one is defined.
    */
   public Object getAttribute(Object _key)
   {
+    Object v = super.getAttribute(_key);
+    if (v != null || _key == null)
+      return v;
+
     Object key = _key.toString().toLowerCase();
 
-    Object v = super.getAttribute(key);
+    v = super.getAttribute(key);
     if (v != null)
       return v;
-    else if (parent != null)
+
+    key = HTML.getAttributeKey((String) key);
+    v = super.getAttribute(key);
+    if (v != null)
+      return v;
+
+    if (parent != null)
       return parent.getAttribute(key);
     else
       return null;
@@ -85,26 +97,29 @@ public class htmlAttributeSet
     final Enumeration enumeration = super.getAttributeNames();
 
     return new Enumeration()
+    {
+      public boolean hasMoreElements()
       {
-        public boolean hasMoreElements()
-        {
-          return enumeration.hasMoreElements();
-        }
+        return enumeration.hasMoreElements();
+      }
 
-        public Object nextElement()
-        {
-          Object key = enumeration.nextElement();
-          HTML.Attribute hKey = HTML.getAttributeKey((String) key);
-          if (hKey != null)
-            return hKey;
-          else
-            return key;
-        }
-      };
+      public Object nextElement()
+      {
+        Object key = enumeration.nextElement();
+        if (key instanceof String)
+          {
+            HTML.Attribute hKey = HTML.getAttributeKey((String) key);
+            if (hKey != null)
+              return hKey;
+          }
+        return key;
+      }
+    };
   }
 
   /**
    * Set the parent set, containing the default values.
+   * 
    * @param a_parent
    */
   public void setResolveParent(AttributeSet a_parent)
@@ -114,7 +129,8 @@ public class htmlAttributeSet
 
   /**
    * Get the parent set, containing the default values.
-   * @return
+   * 
+   * @return the parent, used to resolve the attributes.
    */
   public AttributeSet getResolveParent()
   {
@@ -123,11 +139,45 @@ public class htmlAttributeSet
 
   /**
    * Add the attribute to this attribute set.
-   * @param key Attribute key (will be case insensitive)
+   * 
+   * @param key Attribute key (if string, it will be case insensitive)
    * @param value Attribute value
    */
   public void addAttribute(Object key, Object value)
   {
-    super.addAttribute(key.toString().toLowerCase(), value);
+    if (key instanceof String)
+      super.addAttribute(((String) key).toLowerCase(), value);
+    else
+      super.addAttribute(key, value);
   }
+
+  /**
+   * Copy attributes. The returned copy does not longer contains the extended
+   * features, needed to participate in the HTML parsing. The returned set may
+   * not be mutable.
+   */
+  public AttributeSet copyAttributes()
+  {
+    if (getAttributeCount() <= 8)
+      // For the small size, typical in HTML tags, the direct iteration is
+      // faster than more complex algorithms.
+      return new SmallHtmlAttributeSet(this);
+    else
+      return (AttributeSet) clone();
+  }   
+  
+  /**
+   * Returns a clone of the attribute set.
+   * 
+   * @return A clone of the attribute set.
+   */
+  public Object clone()
+  {
+    htmlAttributeSet set = new htmlAttributeSet();
+    set.addAttributes(this);
+    AttributeSet parent = getResolveParent();
+    if (parent != null)
+      set.setResolveParent(parent);
+    return set;
+  }  
 }

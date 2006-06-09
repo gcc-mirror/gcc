@@ -38,6 +38,11 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.tools.getopt.ClasspathToolParser;
+import gnu.classpath.tools.getopt.Option;
+import gnu.classpath.tools.getopt.OptionException;
+import gnu.classpath.tools.getopt.OptionGroup;
+import gnu.classpath.tools.getopt.Parser;
 import gnu.java.security.util.Base64;
 
 import java.io.IOException;
@@ -64,7 +69,7 @@ import java.util.logging.Logger;
  *      omitted from the command line.
  *      <p></dd>
  *      
- *      <dt>-storetype STORE_TYP}</dt>
+ *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
  *      <code>keystore.type</code> in the security properties file, which is
@@ -113,12 +118,12 @@ import java.util.logging.Logger;
 class ListCmd extends Command
 {
   private static final Logger log = Logger.getLogger(ListCmd.class.getName());
-  private String _alias;
-  private String _ksType;
-  private String _ksURL;
-  private String _ksPassword;
-  private String _providerClassName;
-  private boolean rfc;
+  protected String _alias;
+  protected String _ksType;
+  protected String _ksURL;
+  protected String _ksPassword;
+  protected String _providerClassName;
+  protected boolean rfc;
   private boolean all;
 
   // default 0-arguments constructor
@@ -166,44 +171,11 @@ class ListCmd extends Command
 
   // life-cycle methods -------------------------------------------------------
 
-  int processArgs(String[] args, int i)
-  {
-    int limit = args.length;
-    String opt;
-    while (++i < limit)
-      {
-        opt = args[i];
-        log.finest("args[" + i + "]=" + opt); //$NON-NLS-1$ //$NON-NLS-2$
-        if (opt == null || opt.length() == 0)
-          continue;
-
-        if ("-alias".equals(opt)) // -alias ALIAS //$NON-NLS-1$
-          _alias = args[++i];
-        else if ("-storetype".equals(opt)) // -storetype STORE_TYPE //$NON-NLS-1$
-          _ksType = args[++i];
-        else if ("-keystore".equals(opt)) // -keystore URL //$NON-NLS-1$
-          _ksURL = args[++i];
-        else if ("-storepass".equals(opt)) // -storepass PASSWORD //$NON-NLS-1$
-          _ksPassword = args[++i];
-        else if ("-provider".equals(opt)) // -provider PROVIDER_CLASS_NAME //$NON-NLS-1$
-          _providerClassName = args[++i];
-        else if ("-v".equals(opt)) //$NON-NLS-1$
-          verbose = true;
-        else if ("-rfc".equals(opt)) //$NON-NLS-1$
-          rfc = true;
-        else
-          break;
-      }
-
-    all = _alias == null;
-
-    return i;
-  }
-
   void setup() throws Exception
   {
     setOutputStreamParam(null); // use stdout
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
+    all = _alias == null;
     if (! all)
       setAliasParam(_alias);
 
@@ -218,7 +190,6 @@ class ListCmd extends Command
     log.finer("  -alias=" + alias); //$NON-NLS-1$
     log.finer("  -storetype=" + storeType); //$NON-NLS-1$
     log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -storepass=" + String.valueOf(storePasswordChars)); //$NON-NLS-1$
     log.finer("  -provider=" + provider); //$NON-NLS-1$
     log.finer("  -v=" + verbose); //$NON-NLS-1$
     log.finer("  -rfc=" + rfc); //$NON-NLS-1$
@@ -253,6 +224,81 @@ class ListCmd extends Command
   }
 
   // own methods --------------------------------------------------------------
+
+  Parser getParser()
+  {
+    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
+
+    Parser result = new ClasspathToolParser(Main.LIST_CMD, true);
+    result.setHeader(Messages.getString("ListCmd.20")); //$NON-NLS-1$
+    result.setFooter(Messages.getString("ListCmd.19")); //$NON-NLS-1$
+    OptionGroup options = new OptionGroup(Messages.getString("ListCmd.18")); //$NON-NLS-1$
+    options.add(new Option(Main.ALIAS_OPT,
+                           Messages.getString("ListCmd.17"), //$NON-NLS-1$
+                           Messages.getString("ListCmd.16")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _alias = argument;
+      }
+    });
+    options.add(new Option(Main.STORETYPE_OPT,
+                           Messages.getString("ListCmd.15"), //$NON-NLS-1$
+                           Messages.getString("ListCmd.14")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksType = argument;
+      }
+    });
+    options.add(new Option(Main.KEYSTORE_OPT,
+                           Messages.getString("ListCmd.13"), //$NON-NLS-1$
+                           Messages.getString("ListCmd.12")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksURL = argument;
+      }
+    });
+    options.add(new Option(Main.STOREPASS_OPT,
+                           Messages.getString("ListCmd.11"), //$NON-NLS-1$
+                           Messages.getString("ListCmd.10")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksPassword = argument;
+      }
+    });
+    options.add(new Option(Main.PROVIDER_OPT,
+                           Messages.getString("ListCmd.9"), //$NON-NLS-1$
+                           Messages.getString("ListCmd.8")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _providerClassName = argument;
+      }
+    });
+    options.add(new Option(Main.VERBOSE_OPT,
+                           Messages.getString("ListCmd.7")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        verbose = true;
+      }
+    });
+    options.add(new Option(Main.RFC_OPT,
+                           Messages.getString("ListCmd.6")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        rfc = true;
+      }
+    });
+    result.add(options);
+
+    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    return result;
+  }
 
   /**
    * Prints the certificate(s) associated with the designated alias.
@@ -312,7 +358,7 @@ class ListCmd extends Command
   private void print1Chain(Certificate[] chain, PrintWriter writer)
       throws CertificateEncodingException
   {
-    if (!verbose && !rfc)
+    if (! verbose && ! rfc)
       fingerprint(chain[0], writer);
     else
       {

@@ -75,7 +75,7 @@ public class MetalToolTipUI
   public static final int padSpaceBetweenStrings = 12;
 
   /** The shared UI instance. */
-  private static MetalToolTipUI instance = null;
+  private static MetalToolTipUI instance;
   
   /** A flag controlling the visibility of the accelerator (if there is one). */
   private boolean isAcceleratorHidden;
@@ -256,8 +256,8 @@ public class MetalToolTipUI
         g.setColor(acceleratorForeground);
         fm = t.getFontMetrics(acceleratorFont);
         int width = fm.stringWidth(acceleratorString);
-        g.drawString(acceleratorString, vr.x + vr.width - width - padSpaceBetweenStrings/2, 
-                vr.y + vr.height - fm.getDescent());
+        g.drawString(acceleratorString, vr.x + vr.width - width 
+            - padSpaceBetweenStrings / 2, vr.y + vr.height - fm.getDescent());
       }
 
     g.setColor(saved);   

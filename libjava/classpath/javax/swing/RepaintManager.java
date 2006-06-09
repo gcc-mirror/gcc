@@ -47,9 +47,8 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.image.VolatileImage;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -63,19 +62,20 @@ import java.util.WeakHashMap;
  * double buffer surface is used by root components to paint
  * themselves.</p>
  *
- * <p>In general, painting is very confusing in swing. see <a
+ * <p>See <a
  * href="http://java.sun.com/products/jfc/tsc/articles/painting/index.html">this
  * document</a> for more details.</p>
  *
  * @author Roman Kennke (kennke@aicas.com)
  * @author Graydon Hoare (graydon@redhat.com)
+ * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public class RepaintManager
 {
   /**
    * The current repaint managers, indexed by their ThreadGroups.
    */
-  private static WeakHashMap currentRepaintManagers;
+  static WeakHashMap currentRepaintManagers;
 
   /**
    * A rectangle object to be reused in damaged regions calculation.
@@ -134,44 +134,6 @@ public class RepaintManager
 
   }
 
-  /**
-   * Compares two components using their depths in the component hierarchy.
-   * A component with a lesser depth (higher level components) are sorted
-   * before components with a deeper depth (low level components). This is used
-   * to order paint requests, so that the higher level components are painted
-   * before the low level components get painted.
-   *
-   * @author Roman Kennke (kennke@aicas.com)
-   */
-  private class ComponentComparator implements Comparator
-  {
-
-    /**
-     * Compares two components.
-     *
-     * @param o1 the first component
-     * @param o2 the second component
-     *
-     * @return a negative integer, if <code>o1</code> is bigger in than
-     *         <code>o2</code>, zero, if both are at the same size and a
-     *         positive integer, if <code>o1</code> is smaller than
-     *         <code>o2</code> 
-     */
-    public int compare(Object o1, Object o2)
-    {
-      if (o1 instanceof JComponent && o2 instanceof JComponent)
-        {
-          JComponent c1 = (JComponent) o1;
-          Rectangle d1 = (Rectangle) dirtyComponentsWork.get(c1);
-          JComponent c2 = (JComponent) o2;
-          Rectangle d2 = (Rectangle) dirtyComponentsWork.get(c2);
-          return d2.width * d2.height - d1.width * d1.height;
-        }
-      throw new ClassCastException("This comparator can only be used with "
-                                   + "JComponents");
-    }
-  }
-
   /** 
    * A table storing the dirty regions of components.  The keys of this
    * table are components, the values are rectangles. Each component maps
@@ -187,18 +149,13 @@ public class RepaintManager
    * @see #markCompletelyClean
    * @see #markCompletelyDirty
    */
-  HashMap dirtyComponents;
+  private HashMap dirtyComponents;
 
   /**
    * The dirtyComponents which is used in paintDiryRegions to avoid unnecessary
    * locking.
    */
-  HashMap dirtyComponentsWork;
-
-  /**
-   * The comparator used for ordered inserting into the repaintOrder list. 
-   */
-  private transient Comparator comparator;
+  private HashMap dirtyComponentsWork;
 
   /**
    * A single, shared instance of the helper class. Any methods which mark
@@ -422,6 +379,9 @@ public class RepaintManager
   {
     if (w <= 0 || h <= 0 || !component.isShowing())
       return;
+    
+    Component parent = component.getParent();
+    
     component.computeVisibleRect(rectCache);
     SwingUtilities.computeIntersection(x, y, w, h, rectCache);
 
@@ -485,8 +445,7 @@ public class RepaintManager
   public void markCompletelyDirty(JComponent component)
   {
     Rectangle r = component.getBounds();
-    addDirtyRegion(component, r.x, r.y, r.width, r.height);
-    component.isCompletelyDirty = true;
+    addDirtyRegion(component, 0, 0, r.width, r.height);
   }
 
   /**
@@ -506,7 +465,6 @@ public class RepaintManager
       {
         dirtyComponents.remove(component);
       }
-    component.isCompletelyDirty = false;
   }
 
   /**
@@ -525,9 +483,13 @@ public class RepaintManager
    */
   public boolean isCompletelyDirty(JComponent component)
   {
-    if (! dirtyComponents.containsKey(component))
-      return false;
-    return component.isCompletelyDirty;
+    boolean retVal = false;
+    if (dirtyComponents.containsKey(component))
+      {
+        Rectangle dirtyRegion = (Rectangle) dirtyComponents.get(component);
+        retVal = dirtyRegion.equals(SwingUtilities.getLocalBounds(component));
+      }
+    return retVal;
   }
 
   /**
@@ -554,8 +516,8 @@ public class RepaintManager
   }
 
   /**
-   * Repaint all regions of all components which have been marked dirty in
-   * the {@link #dirtyComponents} table.
+   * Repaint all regions of all components which have been marked dirty in the
+   * {@link #dirtyComponents} table.
    */
   public void paintDirtyRegions()
   {
@@ -571,28 +533,75 @@ public class RepaintManager
         dirtyComponentsWork = swap;
       }
 
-    ArrayList repaintOrder = new ArrayList(dirtyComponentsWork.size());;
-    // We sort the components by their size here. This way we have a good
-    // chance that painting the bigger components also paints the smaller
-    // components and we don't need to paint them twice.
-    repaintOrder.addAll(dirtyComponentsWork.keySet());
+    // Compile a set of repaint roots.
+    HashSet repaintRoots = new HashSet();
+    Set components = dirtyComponentsWork.keySet();
+    for (Iterator i = components.iterator(); i.hasNext();)
+      {
+        JComponent dirty = (JComponent) i.next();
+        compileRepaintRoots(dirtyComponentsWork, dirty, repaintRoots);
+      }
 
-    if (comparator == null)
-      comparator = new ComponentComparator();
-    Collections.sort(repaintOrder, comparator);
     repaintUnderway = true;
-    for (Iterator i = repaintOrder.iterator(); i.hasNext();)
+    for (Iterator i = repaintRoots.iterator(); i.hasNext();)
       {
         JComponent comp = (JComponent) i.next();
-        // If a component is marked completely clean in the meantime, then skip
-        // it.
         Rectangle damaged = (Rectangle) dirtyComponentsWork.remove(comp);
         if (damaged == null || damaged.isEmpty())
           continue;
         comp.paintImmediately(damaged);
       }
+    dirtyComponentsWork.clear();
     repaintUnderway = false;
     commitRemainingBuffers();
+  }
+  
+  /**
+   * Compiles a list of components that really get repainted. This is called
+   * once for each component in the dirtyComponents HashMap, each time with
+   * another <code>dirty</code> parameter. This searches up the component
+   * hierarchy of <code>dirty</code> to find the highest parent that is also
+   * marked dirty and merges the dirty regions.
+   *
+   * @param dirtyRegions the dirty regions 
+   * @param dirty the component for which to find the repaint root
+   * @param roots the list to which new repaint roots get appended
+   */
+  private void compileRepaintRoots(HashMap dirtyRegions, JComponent dirty,
+                                   HashSet roots)
+  {
+    Component current = dirty;
+    Component root = dirty;
+
+    // Search the highest component that is also marked dirty.
+    Component parent;
+    while (true)
+      {
+        parent = current.getParent();
+        if (parent == null || !(parent instanceof JComponent))
+          break;
+
+        current = parent;
+        // We can skip to the next up when this parent is not dirty.
+        if (dirtyRegions.containsKey(parent))
+          {
+            root = current;
+          }
+      }
+
+    // Merge the rectangles of the root and the requested component if
+    // the are different.
+    if (root != dirty)
+      {
+        Rectangle dirtyRect = (Rectangle) dirtyRegions.get(dirty);
+        dirtyRect = SwingUtilities.convertRectangle(dirty, dirtyRect, root);
+        Rectangle rootRect = (Rectangle) dirtyRegions.get(root);
+        SwingUtilities.computeUnion(dirtyRect.x, dirtyRect.y, dirtyRect.width,
+                                    dirtyRect.height, rootRect);
+      }
+
+    // Adds the root to the roots set.
+    roots.add(root);
   }
 
   /**

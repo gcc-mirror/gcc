@@ -1,5 +1,5 @@
 /* JEditorPane.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -538,8 +538,8 @@ public class JEditorPane extends JTextComponent
 
   public JEditorPane(URL url) throws IOException
   {
-    init ();
-    setEditorKit (createEditorKitForContentType("text/html"));;
+    init();
+    setEditorKit(createEditorKitForContentType("text/html"));;
     setPage(url);
   }
   
@@ -581,7 +581,7 @@ public class JEditorPane extends JTextComponent
     // TODO: Have to handle the case where a ClassLoader was specified
     // when the EditorKit was registered
     EditorKit e = null;
-    String className = (String)registerMap.get(type);
+    String className = (String) registerMap.get(type);
     if (className != null)
       {
         try

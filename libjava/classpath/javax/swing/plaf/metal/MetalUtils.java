@@ -104,7 +104,7 @@ class MetalUtils
             else
               g.setColor(dark);
 
-            for (int mX = x + (xOff); mX < (x + w); mX += 4)
+            for (int mX = x + xOff; mX < (x + w); mX += 4)
               {
                 g.drawLine(mX, mY, mX, mY);
               }

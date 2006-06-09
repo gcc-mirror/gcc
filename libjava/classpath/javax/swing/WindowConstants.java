@@ -1,5 +1,5 @@
 /* WindowConstants.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,31 +38,42 @@ exception statement from your version. */
 package javax.swing;
 
 /**
- * Defines some constants that are used in Swing's top-level
- * containers.
- *
+ * Defines some constants that are used in Swing's top-level containers.  See 
+ * the following methods:
+ * <ul>
+ * <li>{@link JFrame#setDefaultCloseOperation(int)};</li>
+ * <li>{@link JInternalFrame#setDefaultCloseOperation(int)};</li>
+ * <li>{@link JDialog#setDefaultCloseOperation(int)};</li>
+ * </ul>
+ * 
  * @author Andrew Selkirk
  */
 public interface WindowConstants
 {
   /**
-   * DO_NOTHING_ON_CLOSE
+   * Do nothing when the container is closed.
    */
   int DO_NOTHING_ON_CLOSE = 0;
 
   /**
-   * HIDE_ON_CLOSE
+   * Hide the container when it is closed.
    */
   int HIDE_ON_CLOSE = 1;
 
   /**
-   * DISPOSE_ON_CLOSE
+   * Dispose the container when it is closed.
+   * 
+   * @see Window#dispose()
    */
   int DISPOSE_ON_CLOSE = 2;
 
   /**
-   * EXIT_ON_CLOSE
+   * Exit the application when the container is closed.
+   * 
+   * @see System#exit(int)
+   * 
+   * @since 1.4
    */
-  int EXIT_ON_CLOSE =3;
+  int EXIT_ON_CLOSE = 3;
 
 }

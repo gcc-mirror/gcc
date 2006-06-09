@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.ItemSelectable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -60,6 +58,8 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.ComboBoxUI;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.basic.ComboPopup;
 
 /**
  * A component that allows a user to select any item in its list and
@@ -675,7 +675,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
       }
     else
       throw new RuntimeException("Unable to remove the items because the data "
-                                 +"model it is not an instance of "
+                                 + "model it is not an instance of "
                                  + "MutableComboBoxModel.");
   }
 
@@ -848,7 +848,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
   {
     PopupMenuListener[] listeners = getPopupMenuListeners();
     PopupMenuEvent e = new PopupMenuEvent(this);
-    for(int i = 0; i < listeners.length; i++)
+    for (int i = 0; i < listeners.length; i++)
       listeners[i].popupMenuCanceled(e);
   }
 
@@ -862,7 +862,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
   {
     PopupMenuListener[] listeners = getPopupMenuListeners();
     PopupMenuEvent e = new PopupMenuEvent(this);
-    for(int i = 0; i < listeners.length; i++)
+    for (int i = 0; i < listeners.length; i++)
       listeners[i].popupMenuWillBecomeInvisible(e);
   }
 
@@ -876,7 +876,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
   {
     PopupMenuListener[] listeners = getPopupMenuListeners();
     PopupMenuEvent e = new PopupMenuEvent(this);
-    for(int i = 0; i < listeners.length; i++)
+    for (int i = 0; i < listeners.length; i++)
       listeners[i].popupMenuWillBecomeVisible(e);
   }
 
@@ -1246,34 +1246,102 @@ public class JComboBox extends JComponent implements ItemSelectable,
       // Nothing to do here.
     }
 
+    /**
+     * Returns the number of accessible children of this object. The
+     * implementation of AccessibleJComboBox delegates this call to the UI
+     * of the associated JComboBox.
+     *
+     * @return the number of accessible children of this object
+     *
+     * @see ComponentUI#getAccessibleChildrenCount(JComponent)
+     */
     public int getAccessibleChildrenCount()
-      throws NotImplementedException
     {
-      return 0;
+      ComponentUI ui = getUI();
+      int count;
+      if (ui != null)
+        count = ui.getAccessibleChildrenCount(JComboBox.this);
+      else
+        count = super.getAccessibleChildrenCount();
+      return count;
     }
 
-    public Accessible getAccessibleChild(int value0)
-      throws NotImplementedException
+    /**
+     * Returns the number of accessible children of this object. The
+     * implementation of AccessibleJComboBox delegates this call to the UI
+     * of the associated JComboBox.
+     *
+     * @param index the index of the accessible child to fetch
+     *
+     * @return the number of accessible children of this object
+     *
+     * @see ComponentUI#getAccessibleChild(JComponent, int)
+     */
+    public Accessible getAccessibleChild(int index)
     {
-      return null;
+      ComponentUI ui = getUI();
+      Accessible child = null;
+      if (ui != null)
+        child = ui.getAccessibleChild(JComboBox.this, index);
+      else
+        child = super.getAccessibleChild(index);
+      return child;
     }
 
+    /**
+     * Returns the AccessibleSelection object associated with this object.
+     * AccessibleJComboBoxes handle their selection themselves, so this
+     * always returns <code>this</code>.
+     *
+     * @return the AccessibleSelection object associated with this object
+     */
     public AccessibleSelection getAccessibleSelection()
-      throws NotImplementedException
     {
-      return null;
+      return this;
     }
 
-    public Accessible getAccessibleSelection(int value0)
-      throws NotImplementedException
+    /**
+     * Returns the accessible selection from this AccssibleJComboBox.
+     *
+     * @param index the index of the selected child to fetch
+     *
+     * @return the accessible selection from this AccssibleJComboBox
+     */
+    public Accessible getAccessibleSelection(int index)
     {
-      return null;
+      // Get hold of the actual popup.
+      Accessible popup = getUI().getAccessibleChild(JComboBox.this, 0);
+      Accessible selected = null;
+      if (popup != null && popup instanceof ComboPopup)
+        {
+          ComboPopup cPopup = (ComboPopup) popup;
+          // Query the list for the currently selected child.
+          JList l = cPopup.getList();
+          AccessibleContext listCtx = l.getAccessibleContext();
+          if (listCtx != null)
+            {
+              AccessibleSelection s = listCtx.getAccessibleSelection();
+              if (s != null)
+                {
+                  selected = s.getAccessibleSelection(index);
+                }
+            }
+        }
+      return selected;
     }
 
-    public boolean isAccessibleChildSelected(int value0)
-      throws NotImplementedException
+    /**
+     * Returns <code>true</code> if the accessible child with the specified
+     * <code>index</code> is selected, <code>false</code> otherwise.
+     *
+     * @param index the index of the accessible child
+     *
+     * @return <code>true</code> if the accessible child with the specified
+     *         <code>index</code> is selected, <code>false</code> otherwise
+     */
+    public boolean isAccessibleChildSelected(int index)
     {
-      return false;
+      return getSelectedIndex() == index;
     }
 
     /**
@@ -1286,58 +1354,121 @@ public class JComboBox extends JComponent implements ItemSelectable,
       return AccessibleRole.COMBO_BOX;
     }
 
+    /**
+     * Returns the accessible action associated to this accessible object.
+     * AccessibleJComboBox implements its own AccessibleAction, so this
+     * method returns <code>this</code>.
+     *
+     * @return the accessible action associated to this accessible object
+     */
     public AccessibleAction getAccessibleAction()
-      throws NotImplementedException
     {
-      return null;
+      return this;
     }
 
-    public String getAccessibleActionDescription(int value0)
-      throws NotImplementedException
+    /**
+     * Returns the description of the specified action. AccessibleJComboBox
+     * implements 1 action (toggle the popup menu) and thus returns
+     * <code>UIManager.getString("ComboBox.togglePopupText")</code>
+     *
+     * @param actionIndex the index of the action for which to return the
+     *        description
+     *
+     * @return the description of the specified action
+     */
+    public String getAccessibleActionDescription(int actionIndex)
     {
-      return null;
+      return UIManager.getString("ComboBox.togglePopupText");
     }
 
+    /**
+     * Returns the number of accessible actions that can be performed by
+     * this object. AccessibleJComboBox implement s one accessible action
+     * (toggle the popup menu), so this method always returns <code>1</code>.
+     *
+     * @return the number of accessible actions that can be performed by
+     *         this object
+     */
     public int getAccessibleActionCount()
-      throws NotImplementedException
     {
-      return 0;
+      return 1;
     }
 
-    public boolean doAccessibleAction(int value0)
-      throws NotImplementedException
+    /**
+     * Performs the accessible action with the specified index.
+     * AccessibleJComboBox has 1 accessible action
+     * (<code>actionIndex == 0</code>), which is to toggle the
+     * popup menu. All other action indices have no effect and return
+     * <code<>false</code>.
+     *
+     * @param actionIndex the index of the action to perform
+     *
+     * @return <code>true</code> if the action has been performed,
+     *         <code>false</code> otherwise
+     */
+    public boolean doAccessibleAction(int actionIndex)
     {
-      return false;
+      boolean actionPerformed = false;
+      if (actionIndex == 0)
+        {
+          setPopupVisible(! isPopupVisible());
+          actionPerformed = true;
+        }
+      return actionPerformed;
     }
 
+    /**
+     * Returns the number of selected accessible children of this object. This
+     * returns <code>1</code> if the combobox has a selected entry,
+     * <code>0</code> otherwise.
+     *
+     * @return the number of selected accessible children of this object
+     */
     public int getAccessibleSelectionCount()
-      throws NotImplementedException
     {
-      return 0;
+      Object sel = getSelectedItem();
+      int count = 0;
+      if (sel != null)
+        count = 1;
+      return count;
     }
 
-    public void addAccessibleSelection(int value0)
-      throws NotImplementedException
+    /**
+     * Sets the current selection to the specified <code>index</code>.
+     *
+     * @param index the index to set as selection
+     */
+    public void addAccessibleSelection(int index)
     {
-      // TODO: Implement this properly.
+      setSelectedIndex(index);
     }
 
-    public void removeAccessibleSelection(int value0)
-      throws NotImplementedException
+    /**
+     * Removes the specified index from the current selection.
+     *
+     * @param index the index to remove from the selection
+     */
+    public void removeAccessibleSelection(int index)
     {
-      // TODO: Implement this properly.
+      if (getSelectedIndex() == index)
+        clearAccessibleSelection();
     }
 
+    /**
+     * Clears the current selection.
+     */
     public void clearAccessibleSelection()
-      throws NotImplementedException
     {
-      // TODO: Implement this properly.
+      setSelectedIndex(-1);
     }
 
+    /**
+     * Multiple selection is not supported by AccessibleJComboBox, so this
+     * does nothing.
+     */
     public void selectAllAccessibleSelection()
-      throws NotImplementedException
     {
-      // TODO: Implement this properly.
+      // Nothing to do here.
     }
   }
 }

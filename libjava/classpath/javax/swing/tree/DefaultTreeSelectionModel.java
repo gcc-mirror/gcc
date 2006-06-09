@@ -147,9 +147,9 @@ public class DefaultTreeSelectionModel
     
     // Clone the selection and the list selection model.
     cloned.selection = (TreePath[]) selection.clone();
-    if (listSelectionModel!=null)
-      cloned.listSelectionModel = 
-        (DefaultListSelectionModel) listSelectionModel.clone();
+    if (listSelectionModel != null)
+      cloned.listSelectionModel 
+        = (DefaultListSelectionModel) listSelectionModel.clone();
     return cloned;
   }
 
@@ -171,7 +171,7 @@ public class DefaultTreeSelectionModel
             b.append(getRow(selection[i]));
             b.append(' ');
           }
-        b.append(", lead "+getLeadSelectionRow());
+        b.append(", lead " + getLeadSelectionRow());
         return b.toString();
       }
   }
@@ -360,7 +360,7 @@ public class DefaultTreeSelectionModel
           }
       }
     
-     if (path!=leadPath)
+     if (path != leadPath)
        {
         TreePath oldLead = leadPath;
         leadPath = path;
@@ -445,7 +445,7 @@ public class DefaultTreeSelectionModel
         
         // If the removed path was the lead path, set the lead path to null.
         TreePath oldLead = leadPath;
-        if (path!=null && leadPath!=null && path.equals(leadPath))
+        if (path != null && leadPath != null && path.equals(leadPath))
           leadPath = null;
 
         fireValueChanged(new TreeSelectionEvent(this, path, false, oldLead,
@@ -564,7 +564,7 @@ public class DefaultTreeSelectionModel
    */
   public boolean isSelectionEmpty()
   {
-    return ((selection == null) || (selection.length == 0));
+    return (selection == null) || (selection.length == 0);
   }
 
   /**
@@ -841,7 +841,7 @@ public class DefaultTreeSelectionModel
     if (leadIndex > 0 && leadIndex < selection.length)
       setSelectionPath(selection[leadIndex]);
     else
-      setSelectionPath(selection[selection.length -1]);
+      setSelectionPath(selection[selection.length - 1]);
   }
   
   /**
@@ -882,7 +882,7 @@ public class DefaultTreeSelectionModel
 
     for (int i = 1; i < rows.length; i++)
       {
-        if (rows[i-1] != rows[i] - 1)
+        if (rows[i - 1] != rows[i] - 1)
           return false;
       }
     return true;

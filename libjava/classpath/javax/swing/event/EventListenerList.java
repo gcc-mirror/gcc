@@ -1,5 +1,5 @@
 /* EventListenerList.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -187,11 +187,15 @@ public class EventListenerList
 
 
   /**
-   * Get a list of listenerType/listener pairs
-   * @return Listener list
+   * Returns an array containing a sequence of listenerType/listener pairs, one
+   * for each listener.
+   * 
+   * @return An array containing the listener types and references.
    */
   public Object[] getListenerList()
   {
+    // returning the internal storage is a bad idea, but tests show that the
+    // reference implementation does this...
     return listenerList;
   }
 

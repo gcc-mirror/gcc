@@ -1,0 +1,307 @@
+/* gnu_java_awt_peer_gtk_ComponentGraphics.c
+   Copyright (C) 2006 Free Software Foundation, Inc.
+
+This file is part of GNU Classpath.
+
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA.
+
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. */
+
+#include "jcl.h"
+#include "gtkpeer.h"
+#include <cairo-xlib.h>
+#include <gdk/gdktypes.h>
+#include <gdk/gdkprivate.h>
+#include <gdk/gdkx.h>
+#include <X11/extensions/Xrender.h>
+
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gdk-pixbuf/gdk-pixdata.h>
+
+#include <cairo-ft.h>
+#include <cairo-xlib.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "gnu_java_awt_peer_gtk_ComponentGraphics.h"
+
+#include "cairographics2d.h"
+
+static short flush_scheduled = 0;
+
+static gboolean flush (gpointer data __attribute__((unused)))
+{
+  gdk_threads_enter ();
+
+  XFlush (GDK_DISPLAY ());
+  flush_scheduled = 0;
+
+  gdk_threads_leave ();
+
+  return FALSE;
+}
+
+/* The minimum time period between calls to XFlush, in
+   milliseconds. */
+#define MINIMUM_FLUSH_PERIOD 20
+
+/* schedule_flush must be called with the GDK lock held. */
+static void
+schedule_flush ()
+{
+  if (!flush_scheduled)
+    {
+      g_timeout_add (MINIMUM_FLUSH_PERIOD, flush, NULL);
+      flush_scheduled = 1;
+    }
+}
+
+void cp_gtk_grab_current_drawable(GtkWidget *widget, GdkDrawable **draw,
+				  GdkWindow **win)
+{
+  g_assert (widget != NULL);
+  g_assert (draw != NULL);
+  g_assert (win != NULL);
+
+  *win = widget->window;
+
+  *draw = *win;
+  gdk_window_get_internal_paint_info (*win, draw, 0, 0); 
+}
+
+/**
+ * Returns whether the XRender extension is supported
+ */
+JNIEXPORT jboolean JNICALL 
+Java_gnu_java_awt_peer_gtk_ComponentGraphics_hasXRender
+  (JNIEnv *env __attribute__ ((unused)), jclass cls __attribute__ ((unused)))
+{
+#if HAVE_XRENDER
+  int ev = 0, err = 0; 
+  if( XRenderQueryExtension (GDK_DISPLAY (), &ev, &err) )
+    return JNI_TRUE;
+#endif
+  return JNI_FALSE;
+}
+
+
+JNIEXPORT jlong JNICALL 
+Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState
+  (JNIEnv *env, jobject obj __attribute__ ((unused)), jobject peer)
+{
+  Drawable draw;
+  Display * dpy;
+  Visual * vis;
+  GdkDrawable *drawable;
+  cairo_surface_t *surface;
+  GdkWindow *win;
+  GtkWidget *widget = NULL;
+  void *ptr = NULL;
+  int width, height;
+  cairo_t *cr;
+
+  gdk_threads_enter();
+
+  ptr = NSA_GET_PTR (env, peer);
+  g_assert (ptr != NULL);
+
+  widget = GTK_WIDGET (ptr);
+  g_assert (widget != NULL);
+
+  cp_gtk_grab_current_drawable (widget, &drawable, &win);
+  g_assert (drawable != NULL);
+
+  width = widget->allocation.width;
+  height = widget->allocation.height;
+
+  g_assert (drawable != NULL);
+
+  draw = gdk_x11_drawable_get_xid(drawable);
+  g_assert (draw != (XID) 0);
+  
+  dpy = gdk_x11_drawable_get_xdisplay(drawable);
+  g_assert (dpy != NULL);
+  
+  vis = gdk_x11_visual_get_xvisual(gdk_drawable_get_visual(drawable));
+  g_assert (vis != NULL);
+  
+  surface = cairo_xlib_surface_create (dpy, draw, vis, width, height);
+  g_assert (surface != NULL);
+
+  cr = cairo_create (surface);
+  g_assert(cr != NULL);
+
+  gdk_threads_leave();
+
+  return PTR_TO_JLONG(cr);
+}
+
+/**
+ * Disposes of the surface
+ */
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_ComponentGraphics_disposeSurface
+  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)),
+   jlong value)
+{
+  struct cairographics2d *gr;
+  cairo_surface_t *surface;
+
+  gr = JLONG_TO_PTR(struct cairographics2d, value);
+
+  if (gr == NULL)
+    return;
+
+  if (gr->cr == NULL)
+    return;
+
+  surface = cairo_get_target (gr->cr);
+  if (surface != NULL)
+    cairo_surface_destroy (surface);
+}
+
+JNIEXPORT jlong JNICALL 
+Java_gnu_java_awt_peer_gtk_ComponentGraphics_initFromVolatile
+  (JNIEnv *env  __attribute__ ((unused)), jobject obj __attribute__ ((unused)),
+   jlong ptr, jint width, jint height)
+{
+  Drawable draw;
+  Display * dpy;
+  Visual * vis;
+  GdkDrawable *drawable;
+  cairo_surface_t *surface;
+  cairo_t *cr;
+
+  gdk_threads_enter();
+
+  drawable = JLONG_TO_PTR(GdkDrawable, ptr);
+  g_assert (drawable != NULL);
+
+  draw = gdk_x11_drawable_get_xid(drawable);
+  g_assert (draw != (XID) 0);
+  
+  dpy = gdk_x11_drawable_get_xdisplay(drawable);
+  g_assert (dpy != NULL);
+  
+  vis = gdk_x11_visual_get_xvisual(gdk_drawable_get_visual(drawable));
+  g_assert (vis != NULL);
+  
+  surface = cairo_xlib_surface_create (dpy, draw, vis, width, height);
+  g_assert (surface != NULL);
+
+  cr = cairo_create (surface);
+  g_assert(cr != NULL);
+
+  gdk_threads_leave();
+
+  return PTR_TO_JLONG(cr);
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_ComponentGraphics_start_1gdk_1drawing
+  (JNIEnv *env __attribute__ ((unused)), jobject obj __attribute__ ((unused)))
+{
+  gdk_threads_enter();
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_ComponentGraphics_end_1gdk_1drawing
+  (JNIEnv *env __attribute__ ((unused)), jobject obj __attribute__ ((unused)))
+{
+  schedule_flush ();
+  gdk_threads_leave();
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_ComponentGraphics_copyAreaNative
+  (JNIEnv *env, jobject obj __attribute__((unused)), jobject peer,
+   jint x, jint y, jint w, jint h, jint dx, jint dy)
+{
+  GdkPixbuf *pixbuf;
+  GdkDrawable *drawable;
+  GdkWindow *win;
+  GtkWidget *widget = NULL;
+  void *ptr = NULL;
+
+  gdk_threads_enter();
+
+  ptr = NSA_GET_PTR (env, peer);
+  g_assert (ptr != NULL);
+
+  widget = GTK_WIDGET (ptr);
+  g_assert (widget != NULL);
+
+  cp_gtk_grab_current_drawable (widget, &drawable, &win);
+  g_assert (drawable != NULL);
+
+  pixbuf = gdk_pixbuf_new( GDK_COLORSPACE_RGB, TRUE, 8, w, h );
+  gdk_pixbuf_get_from_drawable( pixbuf, drawable, NULL, x, y, 0, 0, w, h );
+  gdk_draw_pixbuf (drawable, NULL, pixbuf,
+		   0, 0, x + dx, y + dy, 
+		   w, h, 
+		   GDK_RGB_DITHER_NORMAL, 0, 0);
+  gdk_threads_leave();
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_ComponentGraphics_drawVolatile
+(JNIEnv *env, jobject obj __attribute__ ((unused)), jobject peer, 
+ jobject img, jint x, jint y, jint w, jint h)
+{
+  GdkPixmap *pixmap;
+  GtkWidget *widget = NULL;
+  void *ptr = NULL;
+  GdkGC *gc;
+
+  gdk_threads_enter();
+  ptr = NSA_GET_PTR (env, peer);
+  g_assert (ptr != NULL);
+
+  widget = GTK_WIDGET (ptr);
+  g_assert (widget != NULL);
+
+  pixmap = cp_gtk_get_pixmap( env, img );
+ 
+  gc = gdk_gc_new(widget->window);
+  gdk_draw_drawable(widget->window,
+		    gc,
+		    pixmap,
+		    0, 0,
+		    x, y,
+		    w, h);
+
+  g_object_unref( gc );
+
+  schedule_flush ();
+
+  gdk_threads_leave();
+}

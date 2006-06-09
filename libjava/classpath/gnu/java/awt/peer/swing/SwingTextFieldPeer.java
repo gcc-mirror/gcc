@@ -283,7 +283,7 @@ public class SwingTextFieldPeer
    * @param startPos the start index of the selection
    * @param endPos the start index of the selection
    */
-  public void select(int start_pos, int endPos)
+  public void select(int startPos, int endPos)
   {
     // TODO: Must be implemented.
   }

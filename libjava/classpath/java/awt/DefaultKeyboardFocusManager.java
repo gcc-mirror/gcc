@@ -274,10 +274,12 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
 
   public boolean dispatchKeyEvent (KeyEvent e)
   {
-    Component focusOwner = getGlobalPermanentFocusOwner ();
-
+    Component focusOwner = getFocusOwner();
+    if (focusOwner == null)
+      focusOwner = getFocusedWindow();
+    
     if (focusOwner != null)
-      redispatchEvent(focusOwner, e);
+      redispatchEvent(focusOwner, e);      
 
     // Loop through all registered KeyEventPostProcessors, giving
     // each a chance to process this event.
@@ -294,7 +296,7 @@ public class DefaultKeyboardFocusManager extends KeyboardFocusManager
     // MenuShortcut.
     if (postProcessKeyEvent (e))
       return true;
-
+    
     // Always return true.
     return true;
   }

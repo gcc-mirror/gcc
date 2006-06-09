@@ -52,6 +52,7 @@ import java.util.EventListener;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.swing.event.MenuKeyListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.PopupMenuUI;
@@ -409,6 +410,36 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
     this.insert(new Separator(), -1);
   }
 
+  /**
+   * Adds a MenuKeyListener to the popup.
+   * 
+   * @param l - the listener to add.
+   */
+  public void addMenuKeyListener(MenuKeyListener l)
+  {
+    listenerList.add(MenuKeyListener.class, l);
+  }
+  
+  /**
+   * Removes a MenuKeyListener from the popup.
+   * 
+   * @param l - the listener to remove.
+   */
+  public void removeMenuKeyListener(MenuKeyListener l)
+  {
+    listenerList.remove(MenuKeyListener.class, l);
+  }
+  
+  /**
+   * Returns array of getMenuKeyListeners that are listening to JPopupMenu.
+   * 
+   * @return array of getMenuKeyListeners that are listening to JPopupMenu
+   */
+  public MenuKeyListener[] getMenuKeyListeners()
+  {
+    return ((MenuKeyListener[]) listenerList.getListeners(MenuKeyListener.class));
+  }
+  
   /**
    * Adds popupMenuListener to listen for PopupMenuEvents fired
    * by the JPopupMenu

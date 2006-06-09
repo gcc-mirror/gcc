@@ -1,5 +1,5 @@
 /* AbstractLayoutCache.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,13 +38,10 @@ exception statement from your version. */
 
 package javax.swing.tree;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Rectangle;
 import java.util.Enumeration;
 
 import javax.swing.event.TreeModelEvent;
-import javax.swing.tree.VariableHeightLayoutCache.NodeRecord;
 
 /**
  * class AbstractLayoutCache
@@ -275,7 +272,7 @@ public abstract class AbstractLayoutCache
     for (int i = 0; i < n; i++)
       {
         TreePath path = getPathForRow(i);
-        r.setBounds(0,0,0,0);        
+        r.setBounds(0, 0, 0, 0);        
         r = getBounds(path, r);
         if (r.x + r.width > maximalWidth)
           maximalWidth = r.x + r.width;

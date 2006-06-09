@@ -307,7 +307,7 @@ public class SimpleDateFormat extends DateFormat
 		// Not a valid letter
 		throw new IllegalArgumentException("Invalid letter "
 						   + thisChar +
-						   "encountered at character "
+						   " encountered at character "
 						   + i + ".");
 	      }
 	    else if (thisChar == '\'')

@@ -95,7 +95,7 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
       String propName = e.getPropertyName();
       if (e.getPropertyName().equals(JInternalFrame.FRAME_ICON_PROPERTY))
         {
-	  title.setIcon( frame.getFrameIcon() );
+          title.setIcon(frame.getFrameIcon());
         }
       else if (propName.equals("JInternalFrame.isPalette"))
         {
@@ -387,8 +387,8 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
       paintPalette(g);
     else
       {
-	paintTitleBackground(g);
-	paintChildren(g);
+        paintTitleBackground(g);
+        paintChildren(g);
         Dimension d = getSize();
         if (frame.isSelected())
           g.setColor(MetalLookAndFeel.getPrimaryControlDarkShadow());
@@ -421,7 +421,8 @@ public class MetalInternalFrameTitlePane extends BasicInternalFrameTitlePane
           endX = Math.max(closeButton.getX(), endX);
         endX -= 7;
         if (endX > startX)
-          MetalUtils.fillMetalPattern(this, g, startX, 3, endX - startX, getHeight() - 6, Color.white, Color.gray);
+          MetalUtils.fillMetalPattern(this, g, startX, 3, endX - startX, 
+              getHeight() - 6, Color.white, Color.gray);
       }
     g.setColor(savedColor);
   }

@@ -48,6 +48,8 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -98,8 +100,9 @@ public class SwingComponentPeer
 
   /**
    * Creates a SwingComponentPeer instance. Subclasses are expected to call
-   * this constructor and thereafter call {@link #init(Component, JComponent)}
-   * in order to setup the AWT and Swing components properly.
+   * this constructor and thereafter call
+   * {@link #init(Component, SwingComponent)} in order to setup the AWT and
+   * Swing components properly.
    */
   protected SwingComponentPeer()
   {
@@ -164,9 +167,12 @@ public class SwingComponentPeer
    */
   public Image createImage(int width, int height)
   {
-    Component parent = awtComponent.getParent();
-    ComponentPeer parentPeer = parent.getPeer();
-    return parentPeer.createImage(width, height);
+    GraphicsEnvironment graphicsEnv =
+      GraphicsEnvironment.getLocalGraphicsEnvironment();
+    GraphicsDevice dev = graphicsEnv.getDefaultScreenDevice();
+    GraphicsConfiguration conf = dev.getDefaultConfiguration();
+    Image image = conf.createCompatibleImage(width, height);
+    return image;
   }
 
   /**
@@ -442,20 +448,6 @@ public class SwingComponentPeer
     return retVal;
   }
 
-  /**
-   * Prepares an image for rendering on this component. This is called by
-   * {@link Component#prepareImage(Image, int, int, ImageObserver)}.
-   *
-   * @param img the image to prepare
-   * @param width the desired width of the rendered image
-   * @param height the desired height of the rendered image
-   * @param ob the image observer to be notified of updates in the preparation
-   *        process
-   *
-   * @return <code>true</code> if the image has been fully prepared,
-   *         <code>false</code> otherwise (in which case the image observer
-   *         receives updates)
-   */
   public void paint(Graphics graphics)
   {
     // FIXME: I don't know what this method is supposed to do.
@@ -478,8 +470,17 @@ public class SwingComponentPeer
   public boolean prepareImage(Image img, int width, int height, ImageObserver ob)
   {
     Component parent = awtComponent.getParent();
-    ComponentPeer parentPeer = parent.getPeer();
-    return parentPeer.prepareImage(img, width, height, ob);
+    boolean res;
+    if(parent != null)
+      {
+        ComponentPeer parentPeer = parent.getPeer();
+        res = parentPeer.prepareImage(img, width, height, ob);
+      }
+    else
+      {
+        res = Toolkit.getDefaultToolkit().prepareImage(img, width, height, ob);
+      }
+    return res;
   }
 
   public void print(Graphics graphics)

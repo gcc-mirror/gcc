@@ -38,12 +38,14 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingConstants;
 
 /**
  * TextAction
@@ -108,4 +110,106 @@ public abstract class TextAction extends AbstractAction
   {
     return null; // TODO
   }
+  
+  /** Abstract helper class which implements everything needed for an
+   * Action implementation in <code>DefaultEditorKit</code> which
+   * does horizontal movement (and selection).  
+   */
+  abstract static class HorizontalMovementAction extends TextAction
+  {
+    int dir;
+    
+    HorizontalMovementAction(String name, int direction)
+    {
+      super(name);
+      dir = direction;
+    }
+    
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      try
+      {
+        if (t != null)
+          {
+            int offs
+              = Utilities.getNextVisualPositionFrom(t,
+                                                    t.getCaretPosition(),
+                                                    dir);
+              
+            Caret c = t.getCaret();
+            
+            actionPerformedImpl(c, offs);
+            
+            c.setMagicCaretPosition(t.modelToView(offs).getLocation());
+          }
+      }
+    catch(BadLocationException ble)
+      {
+        throw 
+          (InternalError) new InternalError("Illegal offset").initCause(ble);
+      }
+    
+    }
+    
+    protected abstract void actionPerformedImpl(Caret c, int offs)
+      throws BadLocationException;
+  }
+  
+  /** Abstract helper class which implements everything needed for an
+   * Action implementation in <code>DefaultEditorKit</code> which
+   * does vertical movement (and selection).
+   */  
+  abstract static class VerticalMovementAction extends TextAction
+  {
+    int dir;
+    
+    VerticalMovementAction(String name, int direction)
+    {
+      super(name);
+      dir = direction;
+    }
+
+    public void actionPerformed(ActionEvent event)
+    {
+      JTextComponent t = getTextComponent(event);
+      try
+        {
+          if (t != null)
+            {
+              Caret c = t.getCaret();
+              // The magic caret position may be null when the caret
+              // has not moved yet.
+              Point mcp = c.getMagicCaretPosition();
+
+              int pos;
+              if (mcp != null)
+                {
+                  mcp.y = t.modelToView(c.getDot()).y;
+                  pos = t.viewToModel(mcp);
+                }
+              else
+                pos = c.getDot();
+        
+              pos = Utilities.getNextVisualPositionFrom(t,
+                                                        t.getCaretPosition(),
+                                                        dir);
+        
+              if (pos > -1)
+                actionPerformedImpl(c, pos);
+            }
+        }
+      catch(BadLocationException ble) 
+      {
+        throw 
+          (InternalError) new InternalError("Illegal offset").initCause(ble);
+      }
+    }
+    
+    protected abstract void actionPerformedImpl(Caret c, int offs)
+    throws BadLocationException;
+    
+  }
+  
+  
 }

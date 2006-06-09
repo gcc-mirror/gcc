@@ -109,14 +109,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   native void gtkWidgetRequestFocus ();
   native void gtkWidgetDispatchKeyEvent (int id, long when, int mods,
                                          int keyCode, int keyLocation);
-
-  native boolean isRealized ();
-
-  void realize ()
-  {
-    // Default implementation does nothing
-  }
-
+  native void realize();
   native void setNativeEventMask ();
 
   void create ()
@@ -149,6 +142,9 @@ public class GtkComponentPeer extends GtkGenericPeer
 
     setNativeEventMask ();
 
+    // This peer is guaranteed to have an X window upon construction.
+    // That is, native methods such as those in GdkGraphics can rely
+    // on this component's widget->window field being non-null.
     realize ();
 
     if (awtComponent.isCursorSet())
@@ -211,16 +207,7 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public Image createImage (int width, int height)
   {
-    Image image;
-    if (GtkToolkit.useGraphics2D ())
-      image = new BufferedImage (width, height, BufferedImage.TYPE_INT_RGB);
-    else
-      image = new GtkImage (width, height);
-
-    Graphics g = image.getGraphics();
-    g.setColor(getBackground());
-    g.fillRect(0, 0, width, height);
-    return image;
+    return CairoSurface.getBufferedImage(width, height);
   }
 
   public void disable () 
@@ -247,10 +234,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   // never return null.
   public Graphics getGraphics ()
   {
-    if (GtkToolkit.useGraphics2D ())
-        return new GdkGraphics2D (this);
-    else
-        return new GdkGraphics (this);
+    return ComponentGraphics.getComponentGraphics(this);
   }
 
   public Point getLocationOnScreen () 
@@ -713,7 +697,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   // on which this component is displayed.
   public VolatileImage createVolatileImage (int width, int height)
   {
-    return new GtkVolatileImage (width, height);
+    return new GtkVolatileImage (this, width, height, null);
   }
 
   // Creates buffers used in a buffering strategy.
@@ -723,7 +707,7 @@ public class GtkComponentPeer extends GtkGenericPeer
     // numBuffers == 2 implies double-buffering, meaning one back
     // buffer and one front buffer.
     if (numBuffers == 2)
-      backBuffer = new GtkVolatileImage(awtComponent.getWidth(),
+      backBuffer = new GtkVolatileImage(this, awtComponent.getWidth(),
 					awtComponent.getHeight(),
 					caps.getBackBufferCapabilities());
     else

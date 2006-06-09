@@ -38,6 +38,12 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.tools.getopt.ClasspathToolParser;
+import gnu.classpath.tools.getopt.Option;
+import gnu.classpath.tools.getopt.OptionException;
+import gnu.classpath.tools.getopt.OptionGroup;
+import gnu.classpath.tools.getopt.Parser;
+
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -64,7 +70,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  *      omitted from the command line.
  *      <p></dd>
  *      
- *      <dt>-storetype STORE_TYP}</dt>
+ *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
  *      <code>keystore.type</code> in the security properties file, which is
@@ -106,11 +112,11 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 class DeleteCmd extends Command
 {
   private static final Logger log = Logger.getLogger(DeleteCmd.class.getName());
-  private String _alias;
-  private String _ksType;
-  private String _ksURL;
-  private String _ksPassword;
-  private String _providerClassName;
+  protected String _alias;
+  protected String _ksType;
+  protected String _ksURL;
+  protected String _ksPassword;
+  protected String _providerClassName;
 
   // default 0-arguments constructor
 
@@ -148,36 +154,6 @@ class DeleteCmd extends Command
 
   // life-cycle methods -------------------------------------------------------
 
-  int processArgs(String[] args, int i)
-  {
-    int limit = args.length;
-    String opt;
-    while (++i < limit)
-      {
-        opt = args[i];
-        log.finest("args[" + i + "]=" + opt); //$NON-NLS-1$ //$NON-NLS-2$
-        if (opt == null || opt.length() == 0)
-          continue;
-
-        if ("-alias".equals(opt)) // -alias ALIAS //$NON-NLS-1$
-          _alias = args[++i];
-        else if ("-storetype".equals(opt)) // -storetype STORE_TYPE //$NON-NLS-1$
-          _ksType = args[++i];
-        else if ("-keystore".equals(opt)) // -keystore URL //$NON-NLS-1$
-          _ksURL = args[++i];
-        else if ("-storepass".equals(opt)) // -storepass PASSWORD //$NON-NLS-1$
-          _ksPassword = args[++i];
-        else if ("-provider".equals(opt)) // -provider PROVIDER_CLASS_NAME //$NON-NLS-1$
-          _providerClassName = args[++i];
-        else if ("-v".equals(opt)) //$NON-NLS-1$
-          verbose = true;
-        else
-          break;
-      }
-
-    return i;
-  }
-
   void setup() throws Exception
   {
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
@@ -187,7 +163,6 @@ class DeleteCmd extends Command
     log.finer("  -alias=" + alias); //$NON-NLS-1$
     log.finer("  -storetype=" + storeType); //$NON-NLS-1$
     log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -storepass=" + String.valueOf(storePasswordChars)); //$NON-NLS-1$
     log.finer("  -provider=" + provider); //$NON-NLS-1$
     log.finer("  -v=" + verbose); //$NON-NLS-1$
   }
@@ -205,6 +180,73 @@ class DeleteCmd extends Command
   }
 
   // own methods --------------------------------------------------------------
+
+  Parser getParser()
+  {
+    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
+
+    Parser result = new ClasspathToolParser(Main.DELETE_CMD, true);
+    result.setHeader(Messages.getString("DeleteCmd.18")); //$NON-NLS-1$
+    result.setFooter(Messages.getString("DeleteCmd.17")); //$NON-NLS-1$
+    OptionGroup options = new OptionGroup(Messages.getString("DeleteCmd.16")); //$NON-NLS-1$
+    options.add(new Option(Main.ALIAS_OPT,
+                           Messages.getString("DeleteCmd.15"), //$NON-NLS-1$
+                           Messages.getString("DeleteCmd.14")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _alias = argument;
+      }
+    });
+    options.add(new Option(Main.STORETYPE_OPT,
+                           Messages.getString("DeleteCmd.13"), //$NON-NLS-1$
+                           Messages.getString("DeleteCmd.12")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksType = argument;
+      }
+    });
+    options.add(new Option(Main.KEYSTORE_OPT,
+                           Messages.getString("DeleteCmd.11"), //$NON-NLS-1$
+                           Messages.getString("DeleteCmd.10")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksURL = argument;
+      }
+    });
+    options.add(new Option(Main.STOREPASS_OPT,
+                           Messages.getString("DeleteCmd.9"), //$NON-NLS-1$
+                           Messages.getString("DeleteCmd.8")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _ksPassword = argument;
+      }
+    });
+    options.add(new Option(Main.PROVIDER_OPT,
+                           Messages.getString("DeleteCmd.7"), //$NON-NLS-1$
+                           Messages.getString("DeleteCmd.6")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        _providerClassName = argument;
+      }
+    });
+    options.add(new Option(Main.VERBOSE_OPT,
+                           Messages.getString("DeleteCmd.5")) //$NON-NLS-1$
+    {
+      public void parsed(String argument) throws OptionException
+      {
+        verbose = true;
+      }
+    });
+    result.add(options);
+
+    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    return result;
+  }
 
   /**
    * Set the alias to delete from the key store.

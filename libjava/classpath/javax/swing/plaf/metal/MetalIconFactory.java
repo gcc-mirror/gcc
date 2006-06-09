@@ -617,7 +617,8 @@ public class MetalIconFactory implements Serializable
      * 
      * @return The width of the icon.
      */
-    public int getIconWidth() {
+    public int getIconWidth() 
+    {
       return 16;
     }
     

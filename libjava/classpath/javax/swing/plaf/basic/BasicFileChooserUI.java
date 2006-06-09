@@ -365,10 +365,10 @@ public class BasicFileChooserUI extends FileChooserUI
   {
 
     /** DOCUMENT ME! */
-    private Object lastSelected = null;
+    private Object lastSelected;
 
     /** DOCUMENT ME! */
-    private JList list = null;
+    private JList list;
 
     /**
      * Creates a new DoubleClickListener object.
