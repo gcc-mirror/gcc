@@ -2653,6 +2653,11 @@ gfc_create_module_variable (gfc_symbol * sym)
 {
   tree decl;
 
+  /* Module functions with alternate entries are dealt with later and
+     would get caught by the next condition.  */
+  if (sym->attr.entry)
+    return;
+
   /* Only output symbols from this module.  */
   if (sym->ns != module_namespace)
     {

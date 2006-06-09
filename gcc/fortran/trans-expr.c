@@ -361,6 +361,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 
       if ((se->expr == parent_decl && return_value)
 	   || (sym->ns && sym->ns->proc_name
+	       && parent_decl
 	       && sym->ns->proc_name->backend_decl == parent_decl
 	       && (alternate_entry || entry_master)))
 	parent_flag = 1;
