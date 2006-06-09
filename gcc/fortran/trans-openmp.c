@@ -94,6 +94,29 @@ gfc_omp_predetermined_sharing (tree decl)
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }
 
+
+/* Return code to initialize DECL with its default constructor, or
+   NULL if there's nothing to do.  */
+
+tree
+gfc_omp_clause_default_ctor (tree clause ATTRIBUTE_UNUSED, tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  stmtblock_t block;
+
+  if (! GFC_DESCRIPTOR_TYPE_P (type))
+    return NULL;
+
+  /* Allocatable arrays in PRIVATE clauses need to be set to
+     "not currently allocated" allocation status.  */
+  gfc_init_block (&block);
+
+  gfc_conv_descriptor_data_set (&block, decl, null_pointer_node);
+
+  return gfc_finish_block (&block);
+}
+
+
 /* Return true if DECL's DECL_VALUE_EXPR (if any) should be
    disregarded in OpenMP construct, because it is going to be
    remapped during OpenMP lowering.  SHARED is true if DECL
