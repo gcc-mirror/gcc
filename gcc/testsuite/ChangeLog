@@ -1,3 +1,17 @@
+2006-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/27747
+	* gcc.dg/cpp/_Pragma6.c: New test.
+
+	PR c++/27748
+	* g++.dg/cpp/_Pragma1.C: New test.
+
+	PR preprocessor/27746
+	* gcc.dg/gomp/macro-3.c: New test.
+	* gcc.dg/gomp/macro-4.c: New test.
+	* g++.dg/gomp/macro-3.C: New test.
+	* g++.dg/gomp/macro-4.C: New test.
+
 2006-06-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/26998
