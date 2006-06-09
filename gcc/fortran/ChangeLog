@@ -1,3 +1,22 @@
+2006-06-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24558
+	PR fortran/20877
+	PR fortran/25047
+	* decl.c (get_proc_name): Add new argument to flag that a
+	module function entry is being treated. If true, correct
+	error condition, add symtree to module namespace and add
+	a module procedure.
+	(gfc_match_function_decl, gfc_match_entry,
+	gfc_match_subroutine): Use the new argument in calls to
+	get_proc_name.
+	* resolve.c (resolve_entries): ENTRY symbol reference to
+	to master entry namespace if a module function.
+	* trans-decl.c (gfc_create_module_variable): Return if
+	the symbol is an entry.
+	* trans-exp.c (gfc_conv_variable): Check that parent_decl
+	is not NULL.
+
 2006-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/27916

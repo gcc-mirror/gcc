@@ -385,6 +385,16 @@ resolve_entries (gfc_namespace * ns)
   ns->entries = el;
   ns->proc_name->attr.entry = 1;
 
+  /* If it is a module function, it needs to be in the right namespace
+     so that gfc_get_fake_result_decl can gather up the results. The
+     need for this arose in get_proc_name, where these beasts were
+     left in their own namespace, to keep prior references linked to
+     the entry declaration.*/
+  if (ns->proc_name->attr.function
+	&& ns->parent
+	&& ns->parent->proc_name->attr.flavor == FL_MODULE)
+    el->sym->ns = ns;
+
   /* Add an entry statement for it.  */
   c = gfc_get_code ();
   c->op = EXEC_ENTRY;
