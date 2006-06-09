@@ -1265,11 +1265,13 @@ do_pragma (cpp_reader *pfile)
 {
   const struct pragma_entry *p = NULL;
   const cpp_token *token, *pragma_token = pfile->cur_token;
+  cpp_token ns_token;
   unsigned int count = 1;
 
   pfile->state.prevent_expansion++;
 
   token = cpp_get_token (pfile);
+  ns_token = *token;
   if (token->type == CPP_NAME)
     {
       p = lookup_pragma_entry (pfile->pragmas, token->val.node);
@@ -1318,7 +1320,22 @@ do_pragma (cpp_reader *pfile)
     }
   else if (pfile->cb.def_pragma)
     {
-      _cpp_backup_tokens (pfile, count);
+      if (count == 1 || pfile->context->prev == NULL)
+	_cpp_backup_tokens (pfile, count);
+      else
+	{
+	  /* Invalid name comes from macro expansion, _cpp_backup_tokens
+	     won't allow backing 2 tokens.  */
+	  /* ??? The token buffer is leaked.  Perhaps if def_pragma hook
+	     reads both tokens, we could perhaps free it, but if it doesn't,
+	     we don't know the exact lifespan.  */
+	  cpp_token *toks = XNEWVEC (cpp_token, 2);
+	  toks[0] = ns_token;
+	  toks[0].flags |= NO_EXPAND;
+	  toks[1] = *token;
+	  toks[1].flags |= NO_EXPAND;
+	  _cpp_push_token_context (pfile, NULL, toks, 2);
+	}
       pfile->cb.def_pragma (pfile, pfile->directive_line);
     }
 
@@ -1494,6 +1511,7 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
   pfile->context = XNEW (cpp_context);
   pfile->context->macro = 0;
   pfile->context->prev = 0;
+  pfile->context->next = 0;
 
   /* Inline run_directive, since we need to delay the _cpp_pop_buffer
      until we've read all of the tokens that we want.  */
@@ -1534,7 +1552,10 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in)
 	      maxcount = maxcount * 3 / 2;
 	      toks = XRESIZEVEC (cpp_token, toks, maxcount);
 	    }
-	  toks[count++] = *cpp_get_token (pfile);
+	  toks[count] = *cpp_get_token (pfile);
+	  /* Macros have been already expanded by cpp_get_token
+	     if the pragma allowed expansion.  */
+	  toks[count++].flags |= NO_EXPAND;
 	}
       while (toks[count-1].type != CPP_PRAGMA_EOL);
     }

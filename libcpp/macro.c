@@ -1180,7 +1180,7 @@ cpp_scan_nooutput (cpp_reader *pfile)
   pfile->state.prevent_expansion--;
 }
 
-/* Step back one (or more) tokens.  Can only step mack more than 1 if
+/* Step back one (or more) tokens.  Can only step back more than 1 if
    they are from the lexer, and not from macro expansion.  */
 void
 _cpp_backup_tokens (cpp_reader *pfile, unsigned int count)
