@@ -282,7 +282,7 @@ struct _Jv_Bigint
 {
   struct _Jv_Bigint *_next;
   int _k, _maxwds, _sign, _wds;
-  unsigned long _x[MAX_BIGNUM_WDS];
+  unsigned long _x[1];
 };
 
 
@@ -310,10 +310,8 @@ struct _Jv_reent
   int _result_k;
   struct _Jv_Bigint *_p5s;
 
-  struct _Jv_Bigint _freelist[MAX_BIGNUMS];
-  int _allocation_map;
-
-  int num;
+  struct _Jv_Bigint **_freelist;
+  int _max_k;
 };
 
 

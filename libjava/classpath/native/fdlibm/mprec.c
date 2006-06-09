@@ -80,72 +80,112 @@
  *	down depends on the machine and the number being converted.
  */
 
+/*#include <_ansi.h>*/
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+/* #include <reent.h> */
 #include "mprec.h"
 
 /* reent.c knows this value */
-#define _Kmax 15
-#include <stdio.h>
+/* #define _Kmax 15 */
 
-_Jv_Bigint *
-_DEFUN (Balloc, (ptr, k), struct _Jv_reent *ptr _AND int k)
+#define _reent _Jv_reent
+#define _Bigint _Jv_Bigint
+
+#define _REENT_CHECK_MP(x)
+#define _REENT_MP_FREELIST(x) ((x)->_freelist)
+#define _REENT_MP_P5S(x) ((x)->_p5s)
+
+typedef unsigned long __ULong;
+typedef long __Long;
+
+static void *
+_calloc_r (void *ignore, size_t x1, size_t x2)
 {
-  _Jv_Bigint *rv = NULL;
+  char *result = (char *) malloc (x1 * x2);
+  memset (result, 0, x1 * x2);
+  return result;
+}
 
-  int i = 0;
-  int j = 1;
+_Bigint *
+_DEFUN (Balloc, (ptr, k), struct _reent *ptr _AND int k)
+{
+  int x;
+  _Bigint *rv ;
+  int new_k = k + 1;
 
-  /* FIXME - assert disabled because of PR classpath/23863
-   * assert ((1 << k) < MAX_BIGNUM_WDS);
-   */
+  _REENT_CHECK_MP(ptr);
+  if (_REENT_MP_FREELIST(ptr) == NULL)
+    {
+      /* Allocate a list of pointers to the mprec objects */
+      _REENT_MP_FREELIST(ptr) = (struct _Bigint **) _calloc_r (ptr, 
+						      sizeof (struct _Bigint *),
+							       new_k);
+      if (_REENT_MP_FREELIST(ptr) == NULL)
+	{
+	  return NULL;
+	}
+      ptr->_max_k = new_k;
+    }
+  else if (new_k > ptr->_max_k)
+    {
+      struct _Bigint **new_list
+	= (struct _Bigint **) realloc (ptr->_freelist,
+				       new_k * sizeof (struct _Bigint *));
+      memset (&new_list[ptr->_max_k], 0,
+	      (new_k - ptr->_max_k) * sizeof (struct _Bigint *));
+      ptr->_freelist = new_list;
+      ptr->_max_k = new_k;
 
-  while ((ptr->_allocation_map & j) && i < MAX_BIGNUMS)
-    i++, j <<= 1;
+    }
 
-  assert (i < MAX_BIGNUMS);
+  assert (k <= ptr->_max_k);
 
-  if (i >= MAX_BIGNUMS) 
-    return NULL;
-
-  ptr->_allocation_map |= j;
-  rv = &ptr->_freelist[i];
-      
-  rv->_k = k;
-  rv->_maxwds = 32;
-
+  if ((rv = _REENT_MP_FREELIST(ptr)[k]) != 0)
+    {
+      _REENT_MP_FREELIST(ptr)[k] = rv->_next;
+    }
+  else
+    {
+      x = 1 << k;
+      /* Allocate an mprec Bigint and stick in in the freelist */
+      rv = (_Bigint *) _calloc_r (ptr,
+				  1,
+				  sizeof (_Bigint) +
+				  (x-1) * sizeof(rv->_x));
+      if (rv == NULL) return NULL;
+      rv->_k = k;
+      rv->_maxwds = x;
+    }
+  rv->_sign = rv->_wds = 0;
   return rv;
 }
 
-
 void
-_DEFUN (Bfree, (ptr, v), struct _Jv_reent *ptr _AND _Jv_Bigint * v)
+_DEFUN (Bfree, (ptr, v), struct _reent *ptr _AND _Bigint * v)
 {
-  long i;
-
-  i = v - ptr->_freelist;
-
-  assert (i >= 0 && i < MAX_BIGNUMS);
-
-  if (i >= 0 && i < MAX_BIGNUMS)
-    ptr->_allocation_map &= ~ (1 << i);
+  _REENT_CHECK_MP(ptr);
+  if (v)
+    {
+      v->_next = _REENT_MP_FREELIST(ptr)[v->_k];
+      _REENT_MP_FREELIST(ptr)[v->_k] = v;
+    }
 }
 
-
-_Jv_Bigint *
+_Bigint *
 _DEFUN (multadd, (ptr, b, m, a),
-	struct _Jv_reent *ptr _AND
-	_Jv_Bigint * b _AND
+	struct _reent *ptr _AND
+	_Bigint * b _AND
 	int m _AND
 	int a)
 {
   int i, wds;
-  unsigned long *x, y;
+  __ULong *x, y;
 #ifdef Pack_32
-  unsigned long xi, z;
+  __ULong xi, z;
 #endif
-  _Jv_Bigint *b1;
+  _Bigint *b1;
 
   wds = b->_wds;
   x = b->_x;
@@ -180,17 +220,17 @@ _DEFUN (multadd, (ptr, b, m, a),
   return b;
 }
 
-_Jv_Bigint *
+_Bigint *
 _DEFUN (s2b, (ptr, s, nd0, nd, y9),
-	struct _Jv_reent * ptr _AND
+	struct _reent * ptr _AND
 	_CONST char *s _AND
 	int nd0 _AND
 	int nd _AND
-	unsigned long y9)
+	__ULong y9)
 {
-  _Jv_Bigint *b;
+  _Bigint *b;
   int i, k;
-  long x, y;
+  __Long x, y;
 
   x = (nd + 8) / 9;
   for (k = 0, y = 1; x > y; y <<= 1, k++);
@@ -222,7 +262,7 @@ _DEFUN (s2b, (ptr, s, nd0, nd, y9),
 
 int
 _DEFUN (hi0bits,
-	(x), register unsigned long x)
+	(x), register __ULong x)
 {
   register int k = 0;
 
@@ -256,10 +296,10 @@ _DEFUN (hi0bits,
 }
 
 int
-_DEFUN (lo0bits, (y), unsigned long *y)
+_DEFUN (lo0bits, (y), __ULong *y)
 {
   register int k;
-  register unsigned long x = *y;
+  register __ULong x = *y;
 
   if (x & 7)
     {
@@ -298,17 +338,17 @@ _DEFUN (lo0bits, (y), unsigned long *y)
     {
       k++;
       x >>= 1;
-      if (!(x & 1))
+      if (!x & 1)
 	return 32;
     }
   *y = x;
   return k;
 }
 
-_Jv_Bigint *
-_DEFUN (i2b, (ptr, i), struct _Jv_reent * ptr _AND int i)
+_Bigint *
+_DEFUN (i2b, (ptr, i), struct _reent * ptr _AND int i)
 {
-  _Jv_Bigint *b;
+  _Bigint *b;
 
   b = Balloc (ptr, 1);
   b->_x[0] = i;
@@ -316,15 +356,15 @@ _DEFUN (i2b, (ptr, i), struct _Jv_reent * ptr _AND int i)
   return b;
 }
 
-_Jv_Bigint *
-_DEFUN (mult, (ptr, a, b), struct _Jv_reent * ptr _AND _Jv_Bigint * a _AND _Jv_Bigint * b)
+_Bigint *
+_DEFUN (mult, (ptr, a, b), struct _reent * ptr _AND _Bigint * a _AND _Bigint * b)
 {
-  _Jv_Bigint *c;
+  _Bigint *c;
   int k, wa, wb, wc;
-  unsigned long carry, y, z;
-  unsigned long *x, *xa, *xae, *xb, *xbe, *xc, *xc0;
+  __ULong carry, y, z;
+  __ULong *x, *xa, *xae, *xb, *xbe, *xc, *xc0;
 #ifdef Pack_32
-  unsigned long z2;
+  __ULong z2;
 #endif
 
   if (a->_wds < b->_wds)
@@ -350,7 +390,7 @@ _DEFUN (mult, (ptr, a, b), struct _Jv_reent * ptr _AND _Jv_Bigint * a _AND _Jv_B
 #ifdef Pack_32
   for (; xb < xbe; xb++, xc0++)
     {
-      if ((y = *xb & 0xffff))
+      if ((y = *xb & 0xffff) != 0)
 	{
 	  x = xa;
 	  xc = xc0;
@@ -366,7 +406,7 @@ _DEFUN (mult, (ptr, a, b), struct _Jv_reent * ptr _AND _Jv_Bigint * a _AND _Jv_B
 	  while (x < xae);
 	  *xc = carry;
 	}
-      if ((y = *xb >> 16))
+      if ((y = *xb >> 16) != 0)
 	{
 	  x = xa;
 	  xc = xc0;
@@ -387,7 +427,7 @@ _DEFUN (mult, (ptr, a, b), struct _Jv_reent * ptr _AND _Jv_Bigint * a _AND _Jv_B
 #else
   for (; xb < xbe; xc0++)
     {
-      if ((y = *xb++))
+      if (y = *xb++)
 	{
 	  x = xa;
 	  xc = xc0;
@@ -408,23 +448,24 @@ _DEFUN (mult, (ptr, a, b), struct _Jv_reent * ptr _AND _Jv_Bigint * a _AND _Jv_B
   return c;
 }
 
-_Jv_Bigint *
+_Bigint *
 _DEFUN (pow5mult,
-	(ptr, b, k), struct _Jv_reent * ptr _AND _Jv_Bigint * b _AND int k)
+	(ptr, b, k), struct _reent * ptr _AND _Bigint * b _AND int k)
 {
-  _Jv_Bigint *b1, *p5, *p51;
+  _Bigint *b1, *p5, *p51;
   int i;
   static _CONST int p05[3] = {5, 25, 125};
 
-  if ((i = k & 3))
+  if ((i = k & 3) != 0)
     b = multadd (ptr, b, p05[i - 1], 0);
 
   if (!(k >>= 2))
     return b;
-  if (!(p5 = ptr->_p5s))
+  _REENT_CHECK_MP(ptr);
+  if (!(p5 = _REENT_MP_P5S(ptr)))
     {
       /* first time */
-      p5 = ptr->_p5s = i2b (ptr, 625);
+      p5 = _REENT_MP_P5S(ptr) = i2b (ptr, 625);
       p5->_next = 0;
     }
   for (;;)
@@ -447,12 +488,12 @@ _DEFUN (pow5mult,
   return b;
 }
 
-_Jv_Bigint *
-_DEFUN (lshift, (ptr, b, k), struct _Jv_reent * ptr _AND _Jv_Bigint * b _AND int k)
+_Bigint *
+_DEFUN (lshift, (ptr, b, k), struct _reent * ptr _AND _Bigint * b _AND int k)
 {
   int i, k1, n, n1;
-  _Jv_Bigint *b1;
-  unsigned long *x, *x1, *xe, z;
+  _Bigint *b1;
+  __ULong *x, *x1, *xe, z;
 
 #ifdef Pack_32
   n = k >> 5;
@@ -480,7 +521,7 @@ _DEFUN (lshift, (ptr, b, k), struct _Jv_reent * ptr _AND _Jv_Bigint * b _AND int
 	  z = *x++ >> k1;
 	}
       while (x < xe);
-      if ((*x1 = z))
+      if ((*x1 = z) != 0)
 	++n1;
     }
 #else
@@ -490,11 +531,11 @@ _DEFUN (lshift, (ptr, b, k), struct _Jv_reent * ptr _AND _Jv_Bigint * b _AND int
       z = 0;
       do
 	{
-	  *x1++ = (*x << k & 0xffff) | z;
+	  *x1++ = *x << k & 0xffff | z;
 	  z = *x++ >> k1;
 	}
       while (x < xe);
-      if ((*x1 = z))
+      if (*x1 = z)
 	++n1;
     }
 #endif
@@ -508,9 +549,9 @@ _DEFUN (lshift, (ptr, b, k), struct _Jv_reent * ptr _AND _Jv_Bigint * b _AND int
 }
 
 int
-_DEFUN (cmp, (a, b), _Jv_Bigint * a _AND _Jv_Bigint * b)
+_DEFUN (cmp, (a, b), _Bigint * a _AND _Bigint * b)
 {
-  unsigned long *xa, *xa0, *xb, *xb0;
+  __ULong *xa, *xa0, *xb, *xb0;
   int i, j;
 
   i = a->_wds;
@@ -537,16 +578,16 @@ _DEFUN (cmp, (a, b), _Jv_Bigint * a _AND _Jv_Bigint * b)
   return 0;
 }
 
-_Jv_Bigint *
-_DEFUN (diff, (ptr, a, b), struct _Jv_reent * ptr _AND
-	_Jv_Bigint * a _AND _Jv_Bigint * b)
+_Bigint *
+_DEFUN (diff, (ptr, a, b), struct _reent * ptr _AND
+	_Bigint * a _AND _Bigint * b)
 {
-  _Jv_Bigint *c;
+  _Bigint *c;
   int i, wa, wb;
-  long borrow, y;		/* We need signed shifts here. */
-  unsigned long *xa, *xae, *xb, *xbe, *xc;
+  __Long borrow, y;		/* We need signed shifts here. */
+  __ULong *xa, *xae, *xb, *xbe, *xc;
 #ifdef Pack_32
-  long z;
+  __Long z;
 #endif
 
   i = cmp (a, b);
@@ -625,7 +666,7 @@ double
 _DEFUN (ulp, (_x), double _x)
 {
   union double_union x, a;
-  register long L;
+  register __Long L;
 
   x.d = _x;
 
@@ -659,7 +700,7 @@ _DEFUN (ulp, (_x), double _x)
 	  word0 (a) = 0;
 	  L -= Exp_shift;
 #ifndef _DOUBLE_IS_32BITS
-	  word1 (a) = L >= 31 ? 1 : 1 << (31 - L);
+         word1 (a) = L >= 31 ? 1 : 1 << (31 - L);
 #endif
 	}
     }
@@ -669,13 +710,13 @@ _DEFUN (ulp, (_x), double _x)
 
 double
 _DEFUN (b2d, (a, e),
-	_Jv_Bigint * a _AND int *e)
+	_Bigint * a _AND int *e)
 {
-  unsigned long *xa, *xa0, w, y, z;
+  __ULong *xa, *xa0, w, y, z;
   int k;
   union double_union d;
 #ifdef VAX
-  unsigned long d0, d1;
+  __ULong d0, d1;
 #else
 #define d0 word0(d)
 #define d1 word1(d)
@@ -696,7 +737,7 @@ _DEFUN (b2d, (a, e),
       d0 = Exp_1 | y >> (Ebits - k);
       w = xa > xa0 ? *--xa : 0;
 #ifndef _DOUBLE_IS_32BITS
-      d1 = y << (32 - Ebits + k) | w >> (Ebits - k);
+      d1 = y << ((32 - Ebits) + k) | w >> (Ebits - k);
 #endif
       goto ret_d;
     }
@@ -720,18 +761,18 @@ _DEFUN (b2d, (a, e),
   if (k < Ebits + 16)
     {
       z = xa > xa0 ? *--xa : 0;
-      d0 = Exp_1 | y << (k - Ebits) | z >> (Ebits + 16 - k);
+      d0 = Exp_1 | y << k - Ebits | z >> Ebits + 16 - k;
       w = xa > xa0 ? *--xa : 0;
       y = xa > xa0 ? *--xa : 0;
-      d1 = z << (k + 16 - Ebits) | w << (k - Ebits) | y >> (16 + Ebits - k);
+      d1 = z << k + 16 - Ebits | w << k - Ebits | y >> 16 + Ebits - k;
       goto ret_d;
     }
   z = xa > xa0 ? *--xa : 0;
   w = xa > xa0 ? *--xa : 0;
   k -= Ebits + 16;
-  d0 = Exp_1 | y << (k + 16) | z << k | w >> (16 - k);
+  d0 = Exp_1 | y << k + 16 | z << k | w >> 16 - k;
   y = xa > xa0 ? *--xa : 0;
-  d1 = w << (k + 16) | y << k;
+  d1 = w << k + 16 | y << k;
 #endif
 ret_d:
 #ifdef VAX
@@ -744,22 +785,24 @@ ret_d:
   return d.d;
 }
 
-_Jv_Bigint *
+_Bigint *
 _DEFUN (d2b,
 	(ptr, _d, e, bits),
-	struct _Jv_reent * ptr _AND
+	struct _reent * ptr _AND
 	double _d _AND
 	int *e _AND
 	int *bits)
 
 {
   union double_union d;
-  _Jv_Bigint *b;
+  _Bigint *b;
   int de, i, k;
-  unsigned long *x, y, z;
+  __ULong *x, y, z;
 #ifdef VAX
-  unsigned long d0, d1;
+  __ULong d0, d1;
+#endif
   d.d = _d;
+#ifdef VAX
   d0 = word0 (d) >> 16 | word0 (d) << 16;
   d1 = word1 (d) >> 16 | word1 (d) << 16;
 #else
@@ -783,16 +826,18 @@ _DEFUN (d2b,
   z |= Exp_msk11;
 #endif
 #else
-  if ((de = (int) (d0 >> Exp_shift)))
+  if ((de = (int) (d0 >> Exp_shift)) != 0)
     z |= Exp_msk1;
 #endif
 #ifdef Pack_32
 #ifndef _DOUBLE_IS_32BITS
-  if ((y = d1))
+  if (d1)
     {
-      if ((k = lo0bits (&y)))
+      y = d1;
+      k = lo0bits (&y);
+      if (k)
 	{
-	  x[0] = y | z << (32 - k);
+         x[0] = y | z << (32 - k);
 	  z >>= k;
 	}
       else
@@ -814,22 +859,24 @@ _DEFUN (d2b,
 #endif
     }
 #else
-  if ((y = d1))
+  if (d1)
     {
-      if ((k = lo0bits (&y)))
+      y = d1;
+      k = lo0bits (&y);
+      if (k)
 	if (k >= 16)
 	  {
-	    x[0] = y | (z << (32 - k) & 0xffff);
-	    x[1] = z >> (k - 16) & 0xffff;
+	    x[0] = y | z << 32 - k & 0xffff;
+	    x[1] = z >> k - 16 & 0xffff;
 	    x[2] = z >> k;
 	    i = 2;
 	  }
 	else
 	  {
 	    x[0] = y & 0xffff;
-	    x[1] = (y >> 16 | z << (16 - k)) & 0xffff;
+	    x[1] = y >> 16 | z << 16 - k & 0xffff;
 	    x[2] = z >> k & 0xffff;
-	    x[3] = z >> (k + 16);
+	    x[3] = z >> k + 16;
 	    i = 3;
 	  }
       else
@@ -894,7 +941,7 @@ _DEFUN (d2b,
 #undef d1
 
 double
-_DEFUN (ratio, (a, b), _Jv_Bigint * a _AND _Jv_Bigint * b)
+_DEFUN (ratio, (a, b), _Bigint * a _AND _Bigint * b)
 
 {
   union double_union da, db;
@@ -958,3 +1005,17 @@ _CONST double tinytens[] =
 #endif
 
 
+double
+_DEFUN (_mprec_log10, (dig),
+	int dig)
+{
+  double v = 1.0;
+  if (dig < 24)
+    return tens[dig];
+  while (dig > 0)
+    {
+      v *= 10;
+      dig--;
+    }
+  return v;
+}

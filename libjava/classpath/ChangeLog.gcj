@@ -1,3 +1,20 @@
+2006-06-09  Tom Tromey  <tromey@redhat.com>
+
+	PR classpath/23863:
+	* native/fdlibm/dtoa.c (_dtoa): Free contents of _Jv_reent when
+	finished.
+	* native/fdlibm/mprec.c: New version from newlib.  Commented out
+	some includes.  Added <assert.h>.
+	(_reent, _Bigint): New defines.
+	(_REENT_CHECK_MP, _REENT_MP_FREELIST, _REENT_MP_P5S): Likewise.
+	(__ULong, __Long): New types.
+	(_calloc_r): New function.
+	(Balloc): Dynamically add new _freelist entries as needed.
+	* native/fdlibm/mprec.h (struct _Jv_Bigint): Don't use
+	MAX_BIGNUMS to size _x[].
+	(struct _Jv_reent): _freelist now a _Jv_Bigint**.  Removed
+	_allocation_map, num.  Added _max_k.
+
 2006-05-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* native/jni/gtk-peer/Makefile.am (gcc_version): New variable.
