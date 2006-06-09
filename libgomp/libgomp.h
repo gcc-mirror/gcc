@@ -237,11 +237,14 @@ static inline struct gomp_thread *gomp_thread (void)
 /* These are the OpenMP 2.5 internal control variables described in
    section 2.3.  At least those that correspond to environment variables.  */
 
-extern unsigned gomp_nthreads_var;
+extern unsigned long gomp_nthreads_var;
 extern bool gomp_dyn_var;
 extern bool gomp_nest_var;
 extern enum gomp_schedule_type gomp_run_sched_var;
-extern unsigned gomp_run_sched_chunk;
+extern unsigned long gomp_run_sched_chunk;
+
+/* The attributes to be used during thread creation.  */
+extern pthread_attr_t gomp_thread_attr;
 
 /* Function prototypes.  */
 

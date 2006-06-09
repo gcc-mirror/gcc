@@ -1,3 +1,15 @@
+2006-06-09  Richard Henderson  <rth@redhat.com>
+
+	* env.c (gomp_nthreads_var): Change to unsigned long.
+	(gomp_run_sched_chunk): Likewise.
+	(parse_unsigned_long): Rename from parse_num_threads and generalize.
+	(initialize_env): Initialize gomp_thread_attr.
+	* libgomp.h (gomp_nthreads_var): Update decl.
+	(gomp_run_sched_chunk): Likewise.
+	(gomp_thread_attr): Declare.
+	* team.c (gomp_thread_attr): Export.
+	(initialize_team): Don't initialize it.
+
 2006-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/27916

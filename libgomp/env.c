@@ -32,13 +32,15 @@
 #include "libgomp_f.h"
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+#include <errno.h>
 
 
-unsigned gomp_nthreads_var = 1;
+unsigned long gomp_nthreads_var = 1;
 bool gomp_dyn_var = false;
 bool gomp_nest_var = false;
 enum gomp_schedule_type gomp_run_sched_var = GFS_DYNAMIC;
-unsigned gomp_run_sched_chunk = 1;
+unsigned long gomp_run_sched_chunk = 1;
 
 /* Parse the OMP_SCHEDULE environment variable.  */
 
@@ -98,33 +100,35 @@ parse_schedule (void)
   return;
 }
 
-/* Parse the OMP_NUM_THREADS environment varible.  Return true if one was
+/* Parse an unsigned long environment varible.  Return true if one was
    present and it was successfully parsed.  */
 
 static bool
-parse_num_threads (void)
+parse_unsigned_long (const char *name, unsigned long *pvalue)
 {
   char *env, *end;
+  unsigned long value;
 
-  env = getenv ("OMP_NUM_THREADS");
+  env = getenv (name);
   if (env == NULL)
     return false;
 
   if (*env == '\0')
     goto invalid;
 
-  gomp_nthreads_var = strtoul (env, &end, 10);
+  value = strtoul (env, &end, 10);
   if (*end != '\0')
     goto invalid;
+
+  *pvalue = value;
   return true;
 
  invalid:
-  gomp_error ("Invalid value for enviroment variable OMP_NUM_THREADS");
-  gomp_nthreads_var = 1;
+  gomp_error ("Invalid value for environment variable %s", name);
   return false;
 }
 
-/* Parse a boolean value for environement variable NAME and store the 
+/* Parse a boolean value for environment variable NAME and store the 
    result in VALUE.  */
 
 static void
@@ -141,20 +145,43 @@ parse_boolean (const char *name, bool *value)
   else if (strcmp (env, "false") == 0)
     *value = false;
   else
-    gomp_error ("Invalid value for environement variable %s", name);
+    gomp_error ("Invalid value for environment variable %s", name);
 }
 
 static void __attribute__((constructor))
 initialize_env (void)
 {
+  unsigned long stacksize;
+
   /* Do a compile time check that mkomp_h.pl did good job.  */
   omp_check_defines ();
 
   parse_schedule ();
   parse_boolean ("OMP_DYNAMIC", &gomp_dyn_var);
   parse_boolean ("OMP_NESTED", &gomp_nest_var);
-  if (!parse_num_threads ())
+  if (!parse_unsigned_long ("OMP_NUM_THREADS", &gomp_nthreads_var))
     gomp_init_num_threads ();
+
+  /* Not strictly environment related, but ordering constructors is tricky.  */
+  pthread_attr_init (&gomp_thread_attr);
+  pthread_attr_setdetachstate (&gomp_thread_attr, PTHREAD_CREATE_DETACHED);
+
+  if (parse_unsigned_long ("OMP_STACKSIZE", &stacksize))
+    {
+      stacksize *= 1024;
+      if (stacksize < PTHREAD_STACK_MIN)
+	gomp_error ("Stack size less than minimum of %luk",
+		    PTHREAD_STACK_MIN / 1024ul
+		    + (PTHREAD_STACK_MIN % 1024 != 0));
+      else
+	{
+	  int err = pthread_attr_setstacksize (&gomp_thread_attr, stacksize);
+	  if (err == EINVAL)
+	    gomp_error ("Stack size larger than system limit");
+	  else if (err != 0)
+	    gomp_error ("Stack size change failed: %s", strerror (err));
+	}
+    }
 }
 
 
