@@ -1,3 +1,7 @@
+2006-06-09  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.java (getClassLoaderInternal): Now native.
+
 2006-06-09  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java
