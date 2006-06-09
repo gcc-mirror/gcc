@@ -2,7 +2,7 @@
  *
  * The author of this software is David M. Gay.
  *
- * Copyright (c) 1991 by AT&T.
+ * Copyright (c) 1991, 2006 by AT&T.
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose without fee is hereby granted, provided that this entire notice
@@ -897,10 +897,23 @@ _DEFUN (_dtoa,
 {
   struct _Jv_reent reent;
   char *p;
+  int i;
+
   memset (&reent, 0, sizeof reent);
 
   p = _dtoa_r (&reent, _d, mode, ndigits, decpt, sign, rve, float_type);
   strcpy (buf, p);
 
-  return;
+  for (i = 0; i < reent._result_k; ++i)
+    {
+      struct _Jv_Bigint *l = reent._freelist[i];
+      while (l)
+	{
+	  struct _Jv_Bigint *next = l->_next;
+	  free (l);
+	  l = next;
+	}
+    }
+  if (reent._freelist)
+    free (reent._freelist);
 }
