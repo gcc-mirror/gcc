@@ -1,5 +1,13 @@
 2006-06-09  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/27730:
+	* java/lang/Thread.java (threadId): New field.
+	(nextThreadId): New static field.
+	(Thread): Initialize new field.
+	(getId): New method.
+
+2006-06-09  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/Class.java (getClassLoaderInternal): Now native.
 
 2006-06-09  Thomas Fitzsimmons  <fitzsim@redhat.com>
