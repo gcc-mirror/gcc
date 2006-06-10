@@ -1,3 +1,9 @@
+2006-06-10  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* configure.ac (ac_configure_args): Add --disable-plugin.
+	(--enable-gtk-cairo): Remove option.
+	* configure: Regenerate.
+
 2006-06-09  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/27730:
