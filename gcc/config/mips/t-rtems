@@ -1,5 +1,16 @@
 # Custom multilibs for RTEMS
 
-MULTILIB_OPTIONS = mips1/mips3/mips32 msoft-float/msingle-float
-MULTILIB_DIRNAMES = mips1 mips3 mips32 soft-float single
-MULTILIB_MATCHES = msingle-float=m4650
+# default is mips1 EB hard-float
+MULTILIB_OPTIONS = mips1/mips3/mips32 EB/EL msoft-float
+MULTILIB_DIRNAMES = mips1 mips3 mips32 eb el soft-float
+MULTILIB_MATCHES = EL=mel EB=meb
+
+MULTILIB_EXCEPTIONS =
+
+# Big endian only
+MULTILIB_EXCEPTIONS += EL*
+MULTILIB_EXCEPTIONS += mips32/EL*
+
+# Little endian only
+MULTILIB_EXCEPTIONS += mips3
+MULTILIB_EXCEPTIONS += mips3/msoft-float
