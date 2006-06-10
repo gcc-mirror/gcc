@@ -1,3 +1,7 @@
+2006-06-09  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config/mips/t-rtems: Add EL/EB multilib variants.
+
 2006-06-09  Mike Stump  <mrs@apple.com>
 
 	* c-typeck.c (c_begin_vm_scope): Fix file_scope processing.
