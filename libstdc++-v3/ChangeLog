@@ -1,5 +1,18 @@
 2006-06-09  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random (random_device::random_device(const
+	std::string& = "/dev/urandom")): Open in binary mode.
+
+	* include/tr1/random (random_device::random_device(const
+	std::string& = "rand")): Use mersenne_twister.
+	(random_device::_M_strtoul): New.
+	(random_device::operator()()): Update.
+
+	* include/tr1/random: Minor stylistic changes, consistently
+	qualify with std::.
+
+2006-06-09  Paolo Carlini  <pcarlini@suse.de>
+
 	* acinclude.m4 ([GLIBCXX_CHECK_RANDOM_TR1]): New, check for
 	the availability of "/dev/random" and "/dev/urandom".
 	* configure.ac: Use it.
