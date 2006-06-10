@@ -1,3 +1,7 @@
+2006-06-09  Mike Stump  <mrs@apple.com>
+
+	* c-typeck.c (c_begin_vm_scope): Fix file_scope processing.
+
 2006-06-09  David Daney  <ddaney@avtrex.com>
 
 	* doc/install.texi: Add binutils version recommendation for mips-*-*.

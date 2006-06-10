@@ -1,3 +1,7 @@
+2006-06-09  Mike Stump  <mrs@apple.com>
+
+	* gcc.dg/vla-7.c: Add.
+
 2006-06-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24558
