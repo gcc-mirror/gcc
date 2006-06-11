@@ -1,3 +1,10 @@
+2006-06-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR middle-end/27942
+	* stor-layout.c (update_alignment_for_field): Don't add extra
+	alignment for packed non-bitfield fields in ms_bitfield_layout_p
+	code.
+
 2006-06-09  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/mips/t-rtems: Add EL/EB multilib variants.
