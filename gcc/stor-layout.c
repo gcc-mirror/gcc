@@ -693,7 +693,7 @@ update_alignment_for_field (record_layout_info rli, tree field,
 	 the type, except that for zero-size bitfields this only
 	 applies if there was an immediately prior, nonzero-size
 	 bitfield.  (That's the way it is, experimentally.) */
-      if (!is_bitfield
+      if ((!is_bitfield && !DECL_PACKED (field))
 	  || (!integer_zerop (DECL_SIZE (field))
 	      ? !DECL_PACKED (field)
 	      : (rli->prev_field
