@@ -1,3 +1,9 @@
+2006-06-12  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* builtins.c (expand_builtin_return_addr): Only use
+	frame_pointer_rtx when count == 0 and we are expanding
+	__builtin_return_address.
+
 2006-06-12  Fred Fish  <fnf@specifix.com>
 
 	* config/mips/mips.c (mips_file_start): Create special section
