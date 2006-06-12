@@ -4572,8 +4572,7 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 	  && reg_renumber[regno] < 0
 	  && reg_equiv_constant[regno] != 0
 	  && (tem = gen_lowpart_common (GET_MODE (x),
-					reg_equiv_constant[regno])) != 0
-	  && LEGITIMATE_CONSTANT_P (tem))
+					reg_equiv_constant[regno])) != 0)
 	return tem;
 
       if (regno >= FIRST_PSEUDO_REGISTER
@@ -4584,8 +4583,7 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 	    simplify_gen_subreg (GET_MODE (x), reg_equiv_constant[regno],
 				 GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
 	  gcc_assert (tem);
-	  if (LEGITIMATE_CONSTANT_P (tem))
-	    return tem;
+	  return tem;
 	}
 
       /* If the subreg contains a reg that will be converted to a mem,

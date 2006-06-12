@@ -1,5 +1,13 @@
 2006-06-11  Roger Sayle  <roger@eyesopen.com>
 
+	PR target/27858
+	Revert incorrect fix for PR target/27158
+	2006-05-08  Roger Sayle  <roger@eyesopen.com>
+	* reload.c (find_reloads_toplev): Only return the simplified SUBREG
+	of a reg_equiv_constant if the result is a legitimate constant.
+
+2006-06-11  Roger Sayle  <roger@eyesopen.com>
+
 	PR target/27158
 	* config/rs6000/rs6000.c (const_vector_elt_as_int): New function to
 	extract a CONST_VECTOR element and interpret it as an integer.
