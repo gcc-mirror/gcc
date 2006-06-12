@@ -1,5 +1,10 @@
 2006-06-12  Andrew Haley  <aph@redhat.com>
 
+	* testsuite/libjava.lang/PR27908.out: Delete.
+	* testsuite/libjava.lang/PR27908.java: Delete.
+
+2006-06-12  Andrew Haley  <aph@redhat.com>
+
 	* testsuite/libjava.lang/PR27908.out: New.
 	* testsuite/libjava.lang/PR27908.java: New.
 
