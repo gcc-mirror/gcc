@@ -1,3 +1,11 @@
+2006-06-12  David Ayers  <d.ayers@inode.at>
+
+	PR bootstrap/27963
+	PR target/19970
+	* configure.in:	Remove target-boehm-gc from noconfigdirs where 
+	${libgcj} is specified.
+	* configure: Regenerate.
+	
 2006-06-06  Carlos O'Donell <carlos@codesourcery.com>
 
 	Sync from src:
