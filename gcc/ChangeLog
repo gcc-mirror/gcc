@@ -1,3 +1,8 @@
+2006-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_expr): Treat VIEW_CONVERT_EXPR like other
+	lvalues in the fb_none case with side-effects.
+
 2006-06-12  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-flow.h: Remove the prototype for
