@@ -1,3 +1,9 @@
+2006-06-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR target/27421
+	* config/i386/i386.c (classify_argument): Skip fields with invalid
+	types in unions.
+
 2006-06-09  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/mips/t-rtems: Add EL/EB multilib variants.
