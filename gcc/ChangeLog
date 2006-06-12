@@ -1,3 +1,13 @@
+2006-06-11  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/27158
+	* config/rs6000/rs6000.c (const_vector_elt_as_int): New function to
+	extract a CONST_VECTOR element and interpret it as an integer.
+	(vspltis_constant): Use const_vector_elt_as_int instead of the
+	macro CONST_VECTOR_ELT in order to handle FP vector modes.
+	* config/rs6000/predicates.md (easy_vector_const): Consider
+	floating point ALTIVEC_VECTOR_MODEs via easy_altivec_constant.
+
 2006-06-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR middle-end/27942
