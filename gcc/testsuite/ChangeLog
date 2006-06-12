@@ -1,3 +1,8 @@
+2006-06-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/21210
+	* g++.dg/init/complex1.C: New test case.
+
 2006-06-11  Eric Christopher  <echristo@apple.com>
 
 	PR middle-end/27948

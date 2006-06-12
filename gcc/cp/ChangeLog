@@ -1,3 +1,9 @@
+2006-06-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/21210
+	* typeck2.c (build_functional_cast): Use cp_convert to construct
+	non-aggregate initializers instead of the user-level build_c_cast.
+
 2006-06-07  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27601
