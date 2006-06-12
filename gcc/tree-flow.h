@@ -827,7 +827,6 @@ bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 void create_iv (tree, tree, tree, struct loop *, block_stmt_iterator *, bool,
 		tree *, tree *);
 void split_loop_exit_edge (edge);
-void compute_phi_arg_on_exit (edge, tree, tree);
 unsigned force_expr_to_var_cost (tree);
 basic_block bsi_insert_on_edge_immediate_loop (edge, tree);
 void standard_iv_increment_position (struct loop *, block_stmt_iterator *,

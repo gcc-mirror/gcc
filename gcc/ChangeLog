@@ -1,3 +1,11 @@
+2006-06-12  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-flow.h: Remove the prototype for
+	compute_phi_arg_on_exit.
+	* tree-ssa-loop-ivopts.c (protect_loop_closed_ssa_form_use,
+	protect_loop_closed_ssa_form, compute_phi_arg_on_exit):
+	Remove.
+
 2006-06-12  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* builtins.c (expand_builtin_return_addr): Only use
