@@ -3,9 +3,9 @@
 /* Test for gcc bitfield layout, with -mno-ms-bitfields */
 /* Adapted from Donn Terry <donnte@microsoft.com> testcase
    posted to GCC-patches
-   http://gcc.gnu.org/ml/gcc-patches/2000-08/msg00577.html */ 
+   http://gcc.gnu.org/ml/gcc-patches/2000-08/msg00577.html */
 
-/* { dg-do run { target *-*-interix* *-*-mingw* *-*-cygwin* } } */
+/* { dg-do run { target *-*-interix* *-*-mingw* *-*-cygwin* i?86-*-darwin } } */
 /* { dg-options "-mno-ms-bitfields" } */
 
 #include <stddef.h>
@@ -19,14 +19,14 @@ struct one {
   int d;
   unsigned char a;
   unsigned short b:7;
-  char c;	
+  char c;
 };
 
 struct two {
   int d;
   unsigned char a;
   unsigned int b:7;
-  char c;	    	
+  char c;
 };
 
 struct three {
@@ -47,13 +47,13 @@ struct four {
 };
 
 struct five {
-  char a;	  	
+  char a;
   int :0;        /* ignored; prior field is not a bitfield. */
   char b;
   char c;
 };
 
-struct six { 
+struct six {
   char a :8;
   int :0;	/* not ignored; prior field IS a bitfield, causes
 		   struct alignment as well. */
@@ -70,7 +70,7 @@ struct seven {
 };
 
 struct eight { /* ms size 4 */
-  short b:3;  
+  short b:3;
   char  c;
 };
 
@@ -151,7 +151,7 @@ int main(){
   struct eight test_eight;
   union nine test_nine;
   struct ten test_ten;
- 
+
 #if defined (_TEST_MS_LAYOUT) || defined (_MSC_VER)
   size_t exp_sizeof_one = 12;
   size_t exp_sizeof_two = 16;
@@ -180,7 +180,7 @@ int main(){
   size_t exp_sizeof_one = 8;
   size_t exp_sizeof_two = 8;
   size_t exp_sizeof_three = 6;
-  size_t exp_sizeof_four = 6;  
+  size_t exp_sizeof_four = 6;
   size_t exp_sizeof_five = 6;
   size_t exp_sizeof_six = 6;
   size_t exp_sizeof_seven = 6;
@@ -201,12 +201,12 @@ int main(){
 
 #endif
 
-  unsigned char i; 
+  unsigned char i;
   for ( i = 0; i < 16; i++ )
     filler[i] = i;
 
   check_struct_off (one);
-  check_struct_off (two);  
+  check_struct_off (two);
   check_struct_off (three);
   check_struct_off (four);
   check_struct_off (five);
@@ -217,7 +217,7 @@ int main(){
   check_struct_off (ten);
 
   check_struct_size (one);
-  check_struct_size (two);  
+  check_struct_size (two);
   check_struct_size (three);
   check_struct_size (four);
   check_struct_size (five);
@@ -229,4 +229,3 @@ int main(){
 
   return 0;
 };
-

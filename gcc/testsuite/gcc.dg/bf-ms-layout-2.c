@@ -6,7 +6,8 @@
    http://gcc.gnu.org/ml/gcc-patches/2000-08/msg00577.html */
 
 /* { dg-do run { target *-*-interix* *-*-mingw* *-*-cygwin* i?86-*-darwin* } } */
-/* { dg-options "-mms-bitfields -D_TEST_MS_LAYOUT" } */
+/* { dg-options "-D_TEST_MS_LAYOUT" } */
+/* This test uses the attribute instead of the command line option.  */
 
 #include <stddef.h>
 #include <string.h>
@@ -15,26 +16,30 @@ extern void abort();
 
 #pragma pack(8)
 
+#ifdef __GNUC__
+#define ATTR __attribute__ ((ms_struct))
+#endif
+
 struct one {
   int d;
   unsigned char a;
   unsigned short b:7;
   char c;
-} ;
+} ATTR;
 
 struct two {
   int d;
   unsigned char a;
   unsigned int b:7;
   char c;
-} ;
+} ATTR;
 
 struct three {
   short d;
   unsigned short a:3;
   unsigned short b:9;
   unsigned char c:7;
-} ;
+} ATTR;
 
 
 /* Bitfields of size 0 have some truly odd behaviors. */
@@ -44,14 +49,14 @@ struct four {
   unsigned short b:9;
   unsigned int :0;  /* forces struct alignment to int */
   unsigned char c:7;
-} ;
+} ATTR;
 
 struct five {
   char a;
   int :0;        /* ignored; prior field is not a bitfield. */
   char b;
   char c;
-} ;
+} ATTR;
 
 struct six {
   char a :8;
@@ -59,7 +64,7 @@ struct six {
 		   struct alignment as well. */
   char b;
   char c;
-} ;
+} ATTR;
 
 struct seven {
   char a:8;
@@ -67,12 +72,12 @@ struct seven {
   int  :0;	/* Ignored; prior field is zero size bitfield. */
   char b;
   char c;
-} ;
+} ATTR;
 
 struct eight { /* ms size 4 */
   short b:3;
   char  c;
-} ;
+} ATTR;
 
 #ifdef _MSC_VER
 #define LONGLONG __int64
@@ -83,13 +88,13 @@ struct eight { /* ms size 4 */
 union nine {   /* ms size 8 */
   LONGLONG a:3;
   char  c;
-} ;
+} ATTR;
 
 struct ten {   /* ms size 16 */
   LONGLONG a:3;
   LONGLONG b:3;
   char  c;
-} ;
+} ATTR;
 
 
 #define val(s,f) (s.f)
