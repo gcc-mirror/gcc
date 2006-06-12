@@ -1109,6 +1109,8 @@ finish_anon_union (tree anon_union_decl)
     }
 
   main_decl = build_anon_union_vars (type, anon_union_decl);
+  if (main_decl == error_mark_node)
+    return;
   if (main_decl == NULL_TREE)
     {
       warning (0, "anonymous union with no members");
