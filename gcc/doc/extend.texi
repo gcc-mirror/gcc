@@ -9672,6 +9672,17 @@ multiple @code{#pragma pack(@var{n})} instances and finalized by a single
 @code{#pragma pack(pop)}.
 @end enumerate
 
+Some targets, e.g. i386 and powerpc, support the @code{ms_struct}
+@code{#pragma} which lays out a structure as the documented
+@code{__attribute__ ((ms_struct))}.
+@enumerate
+@item @code{#pragma ms_struct on} turns on the layout for structures
+declared.
+@item @code{#pragma ms_struct off} turns off the layout for structures
+declared.
+@item @code{#pragma ms_struct reset} goes back to the default layout.
+@end enumerate
+
 @node Weak Pragmas
 @subsection Weak Pragmas
 
