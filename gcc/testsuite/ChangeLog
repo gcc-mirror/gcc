@@ -1,5 +1,8 @@
 2006-06-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR target/27421
+	* gcc.dg/union-3.c: New test.
+
 	PR c++/27933
 	* g++.dg/lookup/using15.C: New test.
 
