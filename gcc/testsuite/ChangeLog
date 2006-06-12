@@ -1,5 +1,8 @@
 2006-06-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27933
+	* g++.dg/lookup/using15.C: New test.
+
 	PR c++/27951
 	* g++.dg/other/anon4.C: New test.
 

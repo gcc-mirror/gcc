@@ -1,5 +1,9 @@
 2006-06-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27933
+	* name-lookup.c (lookup_qualified_name): Always return error_mark_node
+	if lookup fails.
+
 	PR c++/27951
 	* decl2.c (finish_anon_union): Return early if build_anon_union_vars
 	fails.
