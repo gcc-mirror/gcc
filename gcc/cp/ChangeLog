@@ -1,5 +1,8 @@
 2006-06-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27601
+	* semantics.c (finish_offsetof): Handle pseudo-destructors.
+
 	PR c++/27933
 	* name-lookup.c (lookup_qualified_name): Always return error_mark_node
 	if lookup fails.
