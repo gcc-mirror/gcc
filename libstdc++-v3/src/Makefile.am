@@ -162,7 +162,6 @@ sources = \
 	istream-inst.cc \
 	istream.cc \
 	locale-inst.cc \
-	locale-misc-inst.cc \
 	misc-inst.cc \
 	ostream-inst.cc \
 	sstream-inst.cc \

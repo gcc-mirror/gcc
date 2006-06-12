@@ -1,3 +1,16 @@
+2006-06-12  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/26970
+	* config/locale/gnu/c_locale.h (__convert_from_v<>): Change to
+	variadic function, instead of template function.
+	* config/locale/generic/c_locale.h (__convert_from_v<>): Likewise.
+	* include/bits/locale_facets.tcc (num_put<>::_M_insert_float):
+	Adjust.
+	(money_put<>::do_put(long double)): Likewise.
+	* src/locale-misc-inst.cc: Remove.
+	* src/Makefile.am: Adjust.
+	* src/Makefile.in: Regenerate.
+
 2006-06-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (random_device::random_device(const
