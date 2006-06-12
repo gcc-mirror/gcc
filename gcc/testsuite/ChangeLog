@@ -1,3 +1,8 @@
+2006-06-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27601
+	* g++.dg/ext/offsetof1.C: Add test for pseudo-destructors.
+
 2006-06-12  Mark Mitchell  <mark@codesourcery.com>
 	    Kazu Hirata  <kazu@codesourcery.com>
 
