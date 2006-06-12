@@ -1,3 +1,8 @@
+2006-06-12  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/libjava.lang/PR27908.out: New.
+	* testsuite/libjava.lang/PR27908.java: New.
+
 2006-06-10  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* configure.ac (ac_configure_args): Add --disable-plugin.
