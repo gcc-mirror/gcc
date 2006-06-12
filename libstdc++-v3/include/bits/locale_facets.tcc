@@ -1135,7 +1135,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       __len = __newlen;
     }
 
-  // The following code uses snprintf (or sprintf(), when
+  // The following code uses vsnprintf (or vsprintf(), when
   // _GLIBCXX_USE_C99 is not defined) to convert floating point values
   // for insertion into a stream.  An optimization would be to replace
   // them with code that works directly on a wide buffer and then use
@@ -1176,16 +1176,16 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
 	__num_base::_S_format_float(__io, __fbuf, __mod);
-	__len = std::__convert_from_v(__cs, __cs_size, __fbuf, __v,
-				      _S_get_c_locale(), __prec);
+	__len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+				      __fbuf, __prec, __v);
 
 	// If the buffer was not large enough, try again with the correct size.
 	if (__len >= __cs_size)
 	  {
 	    __cs_size = __len + 1;
 	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	    __len = std::__convert_from_v(__cs, __cs_size, __fbuf, __v,
-					  _S_get_c_locale(), __prec);
+	    __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+					  __fbuf, __prec, __v);
 	  }
 #else
 	// Consider the possibility of long ios_base::fixed outputs
@@ -1203,8 +1203,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
 	__num_base::_S_format_float(__io, __fbuf, __mod);
-	__len = std::__convert_from_v(__cs, 0, __fbuf, __v,
-				      _S_get_c_locale(), __prec);
+	__len = std::__convert_from_v(_S_get_c_locale(), __cs, 0, __fbuf, 
+				      __prec, __v);
 #endif
 
 	// [22.2.2.2.2] Stage 2, convert to char_type, using correct
@@ -1834,22 +1834,22 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 328. Bad sprintf format modifier in money_put<>::do_put()
-      int __len = std::__convert_from_v(__cs, __cs_size, "%.*Lf", __units,
-					_S_get_c_locale(), 0);
+      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+					"%.*Lf", 0, __units);
       // If the buffer was not large enough, try again with the correct size.
       if (__len >= __cs_size)
 	{
 	  __cs_size = __len + 1;
 	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	  __len = std::__convert_from_v(__cs, __cs_size, "%.*Lf", __units,
-					_S_get_c_locale(), 0);
+	  __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
+					"%.*Lf", 0, __units);
 	}
 #else
       // max_exponent10 + 1 for the integer part, + 2 for sign and '\0'.
       const int __cs_size = numeric_limits<long double>::max_exponent10 + 3;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = std::__convert_from_v(__cs, 0, "%.*Lf", __units,
-					_S_get_c_locale(), 0);
+      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, 0, "%.*Lf", 
+					0, __units);
 #endif
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 							   * __cs_size));

@@ -67,9 +67,9 @@ am__libstdc___la_SOURCES_DIST = bitmap_allocator.cc pool_allocator.cc \
 	locale_init.cc locale_facets.cc localename.cc stdexcept.cc \
 	strstream.cc tree.cc allocator-inst.cc concept-inst.cc \
 	fstream-inst.cc ext-inst.cc ios-inst.cc iostream-inst.cc \
-	istream-inst.cc istream.cc locale-inst.cc locale-misc-inst.cc \
-	misc-inst.cc ostream-inst.cc sstream-inst.cc streambuf-inst.cc \
-	streambuf.cc string-inst.cc valarray-inst.cc wlocale-inst.cc \
+	istream-inst.cc istream.cc locale-inst.cc misc-inst.cc \
+	ostream-inst.cc sstream-inst.cc streambuf-inst.cc streambuf.cc \
+	string-inst.cc valarray-inst.cc wlocale-inst.cc \
 	wstring-inst.cc atomicity.cc codecvt_members.cc \
 	collate_members.cc ctype_members.cc messages_members.cc \
 	monetary_members.cc numeric_members.cc time_members.cc \
@@ -87,11 +87,10 @@ am__objects_4 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	localename.lo stdexcept.lo strstream.lo tree.lo \
 	allocator-inst.lo concept-inst.lo fstream-inst.lo ext-inst.lo \
 	ios-inst.lo iostream-inst.lo istream-inst.lo istream.lo \
-	locale-inst.lo locale-misc-inst.lo misc-inst.lo \
-	ostream-inst.lo sstream-inst.lo streambuf-inst.lo streambuf.lo \
-	string-inst.lo valarray-inst.lo wlocale-inst.lo \
-	wstring-inst.lo $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3)
+	locale-inst.lo misc-inst.lo ostream-inst.lo sstream-inst.lo \
+	streambuf-inst.lo streambuf.lo string-inst.lo valarray-inst.lo \
+	wlocale-inst.lo wstring-inst.lo $(am__objects_1) \
+	$(am__objects_2) $(am__objects_3)
 am_libstdc___la_OBJECTS = $(am__objects_4)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -366,7 +365,6 @@ sources = \
 	istream-inst.cc \
 	istream.cc \
 	locale-inst.cc \
-	locale-misc-inst.cc \
 	misc-inst.cc \
 	ostream-inst.cc \
 	sstream-inst.cc \
