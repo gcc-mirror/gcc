@@ -5718,7 +5718,9 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  switch (code)
 	    {
 	    case COMPONENT_REF:
-	    case REALPART_EXPR: case IMAGPART_EXPR:
+	    case REALPART_EXPR:
+	    case IMAGPART_EXPR:
+	    case VIEW_CONVERT_EXPR:
 	      gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 			     gimple_test_f, fallback);
 	      break;
