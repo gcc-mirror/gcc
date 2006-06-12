@@ -5830,8 +5830,9 @@ mips_file_start (void)
 
       /* There is no ELF header flag to distinguish long32 forms of the
 	 EABI from long64 forms.  Emit a special section to help tools
-	 such as GDB.  */
-      if (mips_abi == ABI_EABI)
+	 such as GDB.  Do the same for o64, which is sometimes used with
+	 -mlong64.  */
+      if (mips_abi == ABI_EABI || mips_abi == ABI_O64)
 	fprintf (asm_out_file, "\t.section .gcc_compiled_long%d\n",
 		 TARGET_LONG64 ? 64 : 32);
 
