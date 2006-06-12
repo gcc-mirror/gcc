@@ -278,9 +278,6 @@
     {
       if (zero_constant (op, mode))
         return true;
-      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
-        return false;
-
       return easy_altivec_constant (op, mode);
     }
 
