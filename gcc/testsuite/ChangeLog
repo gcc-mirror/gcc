@@ -1,3 +1,11 @@
+2006-06-11  Eric Christopher  <echristo@apple.com>
+
+	PR middle-end/27948
+	* gcc.dg/bf-ms-layout.c: Run on darwin.
+	* gcc.dg/bf-no-ms-layout: Ditto.
+	* gcc.dg/attr-ms_struct-2.c: New.
+	* gcc.dg/bf-ms-layout-2.c: Ditto.
+
 2006-06-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.dg/attr-ms_struct-packed1.c: New.
@@ -49,10 +57,10 @@
 	* gcc/testsuite/gfortran.dg/substr_2.f: New test.
 
 2006-06-08  Asher Langton  <langton2@llnl.gov>
-	
+
 	PR fortran/27786
 	* cray_pointers_2.f90: Add -fbounds-check compile flag.
-	
+
 2006-06-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR target/27421
@@ -125,7 +133,7 @@
 
 2006-06-05  Dorit Nuzman  <dorit@il.ibm.com>
             Victor Kaplansky  <victork@il.ibm.com>
-	    
+
 	PR tree-optimizations/26360
 	* gcc.dg/vect/vect.exp: Compile tests prefixed with "no-tree-dce"
 	with -fno-tree-dce.
@@ -156,7 +164,7 @@
 
 	PR c++/27807
 	* g++.dg/ext/complit7.C: New test.
-	
+
 	PR c++/27806
 	* g++.dg/parse/ptrmem5.C: New test.
 

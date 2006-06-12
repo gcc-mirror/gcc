@@ -1,5 +1,11 @@
 2006-06-11  Eric Christopher  <echristo@apple.com>
 
+	PR middle-end/27948
+	* stor-layout.c (place_field): Remove check for
+	remaining_in_alignment when aligning at the end of a run.
+
+2006-06-11  Eric Christopher  <echristo@apple.com>
+
 	PR 27542
 	* doc/extend.texi (Structure-Packing Pragmas): Document ms_struct
 	pragma.

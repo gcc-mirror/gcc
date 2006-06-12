@@ -1070,8 +1070,7 @@ place_field (record_layout_info rli, tree field)
 		 Note: since the beginning of the field was aligned then
 		 of course the end will be too.  No round needed.  */
 
-	      if (!integer_zerop (DECL_SIZE (rli->prev_field))
-		  && rli->remaining_in_alignment)
+	      if (!integer_zerop (DECL_SIZE (rli->prev_field)))
 		{
 		  rli->bitpos
 		    = size_binop (PLUS_EXPR, rli->bitpos,
@@ -1085,7 +1084,7 @@ place_field (record_layout_info rli, tree field)
 	      /* Cause a new bitfield to be captured, either this time (if
 		 currently a bitfield) or next time we see one.  */
 	      if (!DECL_BIT_FIELD_TYPE(field)
-		 || integer_zerop (DECL_SIZE (field)))
+		  || integer_zerop (DECL_SIZE (field)))
 		rli->prev_field = NULL;
 	    }
 
@@ -1105,9 +1104,9 @@ place_field (record_layout_info rli, tree field)
 	 there wasn't.  */
 
       if (!DECL_BIT_FIELD_TYPE (field)
-	  || ( prev_saved != NULL
-	       ? !simple_cst_equal (TYPE_SIZE (type),
-				    TYPE_SIZE (TREE_TYPE (prev_saved)))
+	  || (prev_saved != NULL
+	      ? !simple_cst_equal (TYPE_SIZE (type),
+				   TYPE_SIZE (TREE_TYPE (prev_saved)))
 	      : !integer_zerop (DECL_SIZE (field)) ))
 	{
 	  /* Never smaller than a byte for compatibility.  */
