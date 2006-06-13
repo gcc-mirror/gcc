@@ -1,3 +1,9 @@
+2006-06-13  Roger Sayle  <roger@eyesopen.com>
+
+	* configure.ac (HAS_MCONTEXT_T_UNDERSCORES): Include <sys/signal.h>
+	before <ucontext.h> to define sigset_t required by <sys/ucontext.h>.
+	* configure: Regenerate.
+
 2006-06-13  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.c (bfin_reorg_loops): Only call recog_memoized ()

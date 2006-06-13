@@ -12289,6 +12289,7 @@ if test "${gcc_cv_mcontext_underscores+set}" = set; then
 else
   cat >conftest.$ac_ext <<_ACEOF
 
+#include <sys/signal.h>
 #include <ucontext.h>
 int main() { mcontext_t m; if (m->ss.srr0) return 0; return 0; }
 
