@@ -39,7 +39,9 @@ static tree java_gimplify_default_expr (tree);
 static tree java_gimplify_block (tree);
 static tree java_gimplify_new_array_init (tree);
 static tree java_gimplify_try_expr (tree);
-static tree java_gimplify_modify_expr (tree);
+static enum gimplify_status java_gimplify_modify_expr (tree*, tree*, tree *);
+static enum gimplify_status java_gimplify_component_ref (tree*, tree*, tree *);
+static enum gimplify_status java_gimplify_self_mod_expr (tree*, tree*, tree *);
 
 static void dump_java_tree (enum tree_dump_index, tree);
 
@@ -119,8 +121,7 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
       return GS_UNHANDLED;
 
     case MODIFY_EXPR:
-      *expr_p = java_gimplify_modify_expr (*expr_p);
-      return GS_UNHANDLED;
+      return java_gimplify_modify_expr (expr_p, pre_p, post_p);
 
     case SAVE_EXPR:
       /* Note that we can see <save_expr NULL> if the save_expr was
@@ -132,6 +133,12 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
 			       /* want_lvalue */ false);
       return GS_UNHANDLED;
 
+    case POSTINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+      return java_gimplify_self_mod_expr (expr_p, pre_p, post_p);
+      
     /* These should already be lowered before we get here.  */
     case URSHIFT_EXPR:
     case COMPARE_EXPR:
@@ -147,6 +154,9 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
     case INSTANCEOF_EXPR:
     case CLASS_LITERAL:
       gcc_unreachable ();
+
+    case COMPONENT_REF:
+      return java_gimplify_component_ref (expr_p, pre_p, post_p);
 
     default:
       /* Java insists on strict left-to-right evaluation of expressions.
@@ -208,12 +218,99 @@ java_gimplify_exit_block_expr (tree expr)
   return build1 (GOTO_EXPR, void_type_node, label);
 }
 
-static tree
-java_gimplify_modify_expr (tree modify_expr)
+
+
+static enum gimplify_status
+java_gimplify_component_ref (tree *expr_p, tree *pre_p, tree *post_p)
 {
+  if (TREE_THIS_VOLATILE (TREE_OPERAND (*expr_p, 1))
+      && ! TREE_THIS_VOLATILE (*expr_p))
+  {
+    enum gimplify_status stat;
+    tree sync_expr;
+
+    /* Special handling for volatile fields.  
+
+    A load has "acquire" semantics, implying that you can't move up
+    later operations.  A store has "release" semantics meaning that
+    earlier operations cannot be delayed past it.  
+
+    This logic only handles loads: stores are handled in
+    java_gimplify_modify_expr().
+
+    We gimplify this COMPONENT_REF, put the result in a tmp_var, and then
+    return a COMPOUND_EXPR of the form {__sync_synchronize(); tmp_var}.  
+    This forces __sync_synchronize() to be placed immediately after
+    loading from the volatile field.
+
+    */
+  
+    TREE_THIS_VOLATILE (*expr_p) = 1;
+    stat = gimplify_expr (expr_p, pre_p, post_p,
+			  is_gimple_formal_tmp_var, fb_rvalue);
+    if (stat == GS_ERROR)
+      return stat;
+
+    sync_expr 
+      = build3 (CALL_EXPR, void_type_node,
+		build_address_of (built_in_decls[BUILT_IN_SYNCHRONIZE]),
+		NULL_TREE, NULL_TREE);
+    TREE_SIDE_EFFECTS (sync_expr) = 1;
+    *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
+		      sync_expr, *expr_p);
+    TREE_SIDE_EFFECTS (*expr_p) = 1;
+  }
+
+  return GS_UNHANDLED;
+}
+  
+
+static enum gimplify_status
+java_gimplify_modify_expr (tree *modify_expr_p, tree *pre_p, tree *post_p)
+{
+  tree modify_expr = *modify_expr_p;
   tree lhs = TREE_OPERAND (modify_expr, 0);
   tree rhs = TREE_OPERAND (modify_expr, 1);
   tree lhs_type = TREE_TYPE (lhs);
+
+  if (TREE_CODE (lhs) == COMPONENT_REF
+      && TREE_THIS_VOLATILE (TREE_OPERAND (lhs, 1)))
+    {
+      /* Special handling for volatile fields.  
+
+      A load has "acquire" semantics, implying that you can't move up
+      later operations.  A store has "release" semantics meaning that
+      earlier operations cannot be delayed past it.  
+
+      This logic only handles stores; loads are handled in
+      java_gimplify_component_ref().
+
+      We gimplify the rhs, put the result in a tmp_var, and then return
+      a MODIFY_EXPR with an rhs of the form {__sync_synchronize(); tmp_var}.
+      This forces __sync_synchronize() to be placed after evaluating
+      the rhs and immediately before storing to the volatile field.
+
+      */
+  
+      enum gimplify_status stat;
+      tree sync_expr 
+	= build3 (CALL_EXPR, void_type_node,
+		  build_address_of (built_in_decls[BUILT_IN_SYNCHRONIZE]),
+		  NULL_TREE, NULL_TREE);
+      TREE_SIDE_EFFECTS (sync_expr) = 1;
+
+      stat = gimplify_expr (&rhs, pre_p, post_p,
+			    is_gimple_formal_tmp_var, fb_rvalue);
+      if (stat == GS_ERROR)
+	return stat;
+
+      rhs = build2 (COMPOUND_EXPR, TREE_TYPE (rhs),
+		    sync_expr, rhs);
+      TREE_SIDE_EFFECTS (rhs) = 1;
+      TREE_THIS_VOLATILE (lhs) = 1;
+      TREE_OPERAND (modify_expr, 0) = lhs;
+      TREE_OPERAND (modify_expr, 1) = rhs;
+    }
 
   /* This is specific to the bytecode compiler.  If a variable has
      LOCAL_SLOT_P set, replace an assignment to it with an assignment
@@ -235,7 +332,24 @@ java_gimplify_modify_expr (tree modify_expr)
        assignment and subclass assignment.  */
     TREE_OPERAND (modify_expr, 1) = convert (lhs_type, rhs);
 
-  return modify_expr;
+  *modify_expr_p = modify_expr;
+  return GS_UNHANDLED;
+}
+
+/*  Special case handling for volatiles: we need to generate a barrier
+    between the reading and the writing.  */
+
+static enum gimplify_status
+java_gimplify_self_mod_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED, 
+			     tree *post_p ATTRIBUTE_UNUSED)
+{
+  tree lhs = TREE_OPERAND (*expr_p, 0);
+
+  if (TREE_CODE (lhs) == COMPONENT_REF
+      && TREE_THIS_VOLATILE (TREE_OPERAND (lhs, 1)))
+    TREE_THIS_VOLATILE (lhs) = 1;
+
+  return GS_UNHANDLED;
 }
 
     

@@ -1,3 +1,14 @@
+2006-06-09  Andrew Haley  <aph@redhat.com>
+
+	PR java/1305
+	PR java/27908
+	* builtins.c (initialize_builtins): Add __sync_synchronize().
+	* class.c (add_field): Mark volatile fields.
+	* java-gimplify.c (java_gimplify_expr): Call new functions to
+	handle self-modifying exprs and COMPONENT_REFs.
+	(java_gimplify_component_ref): New.
+	(java_gimplify_modify_expr): Add handling for volatiles.
+
 2006-06-08  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (libgcj Runtime Properties): Document
