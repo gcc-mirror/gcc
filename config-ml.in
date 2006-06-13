@@ -108,11 +108,6 @@ ml_realsrcdir=${srcdir}
 ml_verbose=--verbose
 for option in ${ac_configure_args}
 do
-  # strip single quotes surrounding individual options
-  case $option in
-  \'*\') eval option=$option ;;
-  esac
-
   case $option in
   --*) ;;
   -*) option=-$option ;;
@@ -551,6 +546,7 @@ multi-do:
 		flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
 		if (cd ../$${dir}/$${lib}; $(MAKE) $(FLAGS_TO_PASS) \
 				CFLAGS="$(CFLAGS) $${flags}" \
+				CCASFLAGS="$(CCASFLAGS) $${flags}" \
 				FCFLAGS="$(FCFLAGS) $${flags}" \
 				FFLAGS="$(FFLAGS) $${flags}" \
 				ADAFLAGS="$(ADAFLAGS) $${flags}" \

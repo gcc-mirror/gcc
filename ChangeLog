@@ -1,3 +1,8 @@
+2006-06-13  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* config-ml.in: Alter CCASFLAGS to include special
+	multilib options the same as is done for CFLAGS.
+
 2006-06-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* configure.in: Don't enable libgomp on hpux10.
@@ -2090,7 +2095,7 @@
 	of libf2c.
 	* configure, Makefile.in: Regenerate.
 
-2004-05-13  Tobias SchlÃ¼ter  <tobi@gcc.gnu.org>
+2004-05-13  Tobias SchlÃÂ¼ter  <tobi@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
 
