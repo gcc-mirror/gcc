@@ -56,3 +56,10 @@ AM_MAKEFLAGS = \
 	"PICFLAG=$(PICFLAG)" \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
+
+# No html, or install-html support.
+.PHONY: html install-html
+
+html:
+install-html:
+

@@ -1,3 +1,9 @@
+2006-06-13  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.am: Add html and install-html stubs.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2005-06-14  Tom Tromey  <tromey@redhat.com>
 
 	* Imported zlib 1.2.3; merged local changes.
