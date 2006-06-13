@@ -1,6 +1,6 @@
 // natSharedLibLoader.cc - Implementation of SharedLibHelper native methods.
 
-/* Copyright (C) 2001, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 2001, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,11 +9,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
-
-// If we're using the Boehm GC, then we need this include to override dlopen.
-#ifdef HAVE_BOEHM_GC
-#include <gc.h>
-#endif /* HAVE_BOEHM_GC */
+#include <platform.h>
 
 #include <gcj/cni.h>
 #include <jvm.h>
@@ -23,6 +19,15 @@ details.  */
 #include <java/io/IOException.h>
 #include <java/lang/UnsupportedOperationException.h>
 #include <java/lang/UnknownError.h>
+
+// If we're using the Boehm GC, then we need this include to override dlopen.
+#ifdef HAVE_BOEHM_GC
+// Set GC_DEBUG before including gc.h!
+#ifdef LIBGCJ_GC_DEBUG
+# define GC_DEBUG
+#endif
+#include <gc.h>
+#endif /* HAVE_BOEHM_GC */
 
 #ifdef HAVE_DLOPEN
 #include <dlfcn.h>
