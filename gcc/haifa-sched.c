@@ -4673,8 +4673,13 @@ check_cfg (rtx head, rtx tail)
 		    gcc_assert (EDGE_COUNT (bb->succs) == 1
 				&& BARRIER_P (NEXT_INSN (head)));
 		  else if (any_condjump_p (head))
-		    gcc_assert (EDGE_COUNT (bb->succs) > 1
-				&& !BARRIER_P (NEXT_INSN (head)));
+		    gcc_assert (/* Usual case.  */
+                                (EDGE_COUNT (bb->succs) > 1
+                                 && !BARRIER_P (NEXT_INSN (head)))
+                                /* Or jump to the next instruction.  */
+                                || (EDGE_COUNT (bb->succs) == 1
+                                    && (BB_HEAD (EDGE_I (bb->succs, 0)->dest)
+                                        == JUMP_LABEL (head))));
 		}
 	      if (BB_END (bb) == head)
 		{
