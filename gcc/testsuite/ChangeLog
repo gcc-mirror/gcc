@@ -1,3 +1,9 @@
+2006-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/27894
+	* g++.dg/tree-ssa/pr26757.C: New test.
+	* g++.dg/tree-ssa/pr27894.C: New test.
+
 2006-06-13  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* gcc.c-torture/compile/20060609-1.c: New test.
