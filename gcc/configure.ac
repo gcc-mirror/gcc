@@ -817,6 +817,10 @@ AC_ARG_ENABLE(languages,
 esac],
 [enable_languages=c])
 
+# Used by documentation targets
+AC_SUBST(datarootdir)
+AC_SUBST(docdir)
+AC_SUBST(htmldir)
 
 # -------------------------
 # Checks for other programs

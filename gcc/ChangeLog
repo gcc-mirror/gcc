@@ -1,3 +1,10 @@
+2006-06-13  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Define HTMLS_BUILD, HTMLS_INSTALL,
+	html__strip_dir, html__mkdir_p. Enhance install-html target.
+	* configure.ac: AC_SUBST datarootdir, docdir and htmldir. 
+	* configure: Regenerate.
+
 2006-06-13  Fariborz Jahanian <fjahanian@apple.com>
 
 	* fold-const.c (fold_cond_expr_with_comparison): Check for 
