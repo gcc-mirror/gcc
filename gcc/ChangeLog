@@ -1,3 +1,9 @@
+2006-06-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27830
+	* tree-inline.c (copy_body_r): For copying the operand
+	of an ADDR_EXPR make sure to fold &* afterwards.
+
 2006-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_expr): Treat VIEW_CONVERT_EXPR like other
