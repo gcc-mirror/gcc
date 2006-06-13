@@ -721,6 +721,15 @@ struct saved_scope GTY(())
 
 extern GTY(()) struct saved_scope *scope_chain;
 
+struct cxx_int_tree_map GTY(())
+{
+  unsigned int uid;
+  tree to;
+};
+
+extern unsigned int cxx_int_tree_map_hash (const void *);
+extern int cxx_int_tree_map_eq (const void *, const void *);
+
 /* Global state pertinent to the current function.  */
 
 struct language_function GTY(())
@@ -747,6 +756,7 @@ struct language_function GTY(())
   htab_t GTY((param_is(struct named_label_entry))) x_named_labels;
   struct cp_binding_level *bindings;
   VEC(tree,gc) *x_local_names;
+  htab_t GTY((param_is (struct cxx_int_tree_map))) extern_decl_map;
 };
 
 /* The current C++-specific per-function global variables.  */

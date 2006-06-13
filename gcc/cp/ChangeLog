@@ -1,3 +1,17 @@
+2006-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/27793
+	* cp-tree.h (cxx_int_tree_map): New struct.
+	(struct language_function): Add extern_decl_map field.
+	* name-lookup.c (pushdecl_maybe_friend): Add x -> t mapping
+	to cp_function_chain->extern_decl_map hash table instead of
+	copying over DECL_UID.
+	* cp-gimplify.c (cxx_int_tree_map_eq, cxx_int_tree_map_hash): New
+	functions.
+	(cp_genericize_r): Remap DECL_EXTERN local decls using
+	cp_function_chain->extern_decl_map hash table.
+	* decl.c (finish_function): Clear extern_decl_map.
+
 2006-06-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27601
