@@ -1,5 +1,10 @@
 2006-06-13  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/27536
+	* except.c (output_ttype): Expand type with EXPAND_INITIALIZER.
+
+2006-06-13  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/27830
 	* tree-inline.c (copy_body_r): For copying the operand
 	of an ADDR_EXPR make sure to fold &* afterwards.
