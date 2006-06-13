@@ -1,3 +1,9 @@
+2005-06-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR bootstrap/22541
+	From Dan Kegel <dank@kegel.com>:
+	* Makefile.in: Strip "dir/../" combinations from SYSTEM_INCLUDE_DIR.
+
 2006-06-13  Paolo Bonzini  <bonzini@gnu.org>
 
         PR middle-end/27733
