@@ -1,3 +1,9 @@
+2006-06-13  Richard Earnshaw  <rearnsha@arm.com>
+	    Alexandre Oliva <aoliva@redhat.com>
+
+	* (ZW_GNU_GETTEXT_SISTER_DIR): Add optional
+	argument for where to search for NLS config file.
+
 2006-05-31  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gettext-sister.m4 (ZW_GNU_GETTEXT_SISTER_DIR): Provide some

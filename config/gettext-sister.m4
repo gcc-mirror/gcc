@@ -19,8 +19,9 @@ INCINTL=	AC_SUBST(INCINTL)
 XGETTEXT=	AC_SUBST(XGETTEXT)
 GMSGFMT=	AC_SUBST(GMSGFMT)
 POSUB=		AC_SUBST(POSUB)
-if test -f ../intl/config.intl; then
-  . ../intl/config.intl
+
+if test -f  ifelse([$1],,[../intl],[$1])/config.intl; then
+  .  ifelse([$1],,[../intl],[$1])/config.intl
 fi
 AC_MSG_CHECKING([whether NLS is requested])
 if test x"$USE_NLS" != xyes; then
