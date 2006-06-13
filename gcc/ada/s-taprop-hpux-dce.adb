@@ -63,9 +63,6 @@ with Interfaces.C;
 --  used for int
 --           size_t
 
-with System.Parameters;
---  used for Size_Type
-
 with System.Task_Primitives.Interrupt_Operations;
 --  used for Get_Interrupt_ID
 
