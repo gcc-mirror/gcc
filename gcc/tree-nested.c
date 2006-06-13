@@ -1048,7 +1048,7 @@ convert_nonlocal_reference (tree *tp, int *walk_subtrees, void *data)
       walk_body (convert_nonlocal_reference, info, &OMP_PARALLEL_BODY (t));
 
       if (info->new_local_var_chain)
-	declare_tmp_vars (info->new_local_var_chain, OMP_PARALLEL_BODY (t));
+	declare_vars (info->new_local_var_chain, OMP_PARALLEL_BODY (t), false);
       info->new_local_var_chain = save_local_var_chain;
       info->suppress_expansion = save_suppress;
       break;
@@ -1185,6 +1185,9 @@ get_local_debug_decl (struct nesting_info *info, tree decl, tree field)
 
   TREE_CHAIN (new_decl) = info->debug_var_chain;
   info->debug_var_chain = new_decl;
+
+  /* Do not emit debug info twice.  */
+  DECL_IGNORED_P (decl) = 1;
 
   return new_decl;
 }
@@ -1331,7 +1334,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
       walk_body (convert_local_reference, info, &OMP_PARALLEL_BODY (t));
 
       if (info->new_local_var_chain)
-	declare_tmp_vars (info->new_local_var_chain, OMP_PARALLEL_BODY (t));
+	declare_vars (info->new_local_var_chain, OMP_PARALLEL_BODY (t), false);
       info->new_local_var_chain = save_local_var_chain;
       info->suppress_expansion = save_suppress;
       break;
@@ -1804,11 +1807,11 @@ finalize_nesting_tree_1 (struct nesting_info *root)
   /* Make sure all new local variables get inserted into the
      proper BIND_EXPR.  */
   if (root->new_local_var_chain)
-    declare_tmp_vars (root->new_local_var_chain,
-		      DECL_SAVED_TREE (root->context));
+    declare_vars (root->new_local_var_chain, DECL_SAVED_TREE (root->context),
+		  false);
   if (root->debug_var_chain)
-    declare_tmp_vars (root->debug_var_chain,
-		      DECL_SAVED_TREE (root->context));
+    declare_vars (root->debug_var_chain, DECL_SAVED_TREE (root->context),
+		  true);
 
   /* Dump the translated tree function.  */
   dump_function (TDI_nested, root->context);
