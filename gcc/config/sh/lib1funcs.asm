@@ -3843,3 +3843,51 @@ LOCAL(div_table_inv):
 #endif /* SH3 / SH4 */
 
 #endif /* L_div_table */
+
+#ifdef L_udiv_qrnnd_16
+#if !__SHMEDIA__
+	HIDDEN_FUNC(GLOBAL(udiv_qrnnd_16))
+	/* r0: rn r1: qn */ /* r0: n1 r4: n0 r5: d r6: d1 */ /* r2: __m */
+	/* n1 < d, but n1 might be larger than d1.  */
+	.global GLOBAL(udiv_qrnnd_16)
+	.balign 8
+GLOBAL(udiv_qrnnd_16):
+	div0u
+	cmp/hi r6,r0
+	bt .Lots
+	.rept 16
+	div1 r6,r0 
+	.endr
+	extu.w r0,r1
+	bt 0f
+	add r6,r0
+0:	rotcl r1
+	mulu.w r1,r5
+	xtrct r4,r0
+	swap.w r0,r0
+	sts macl,r2
+	cmp/hs r2,r0
+	sub r2,r0
+	bt 0f
+	addc r5,r0
+	add #-1,r1
+	bt 0f
+1:	add #-1,r1
+	rts
+	add r5,r0
+	.balign 8
+.Lots:
+	sub r5,r0
+	swap.w r4,r1
+	xtrct r0,r1
+	clrt
+	mov r1,r0
+	addc r5,r0
+	mov #-1,r1
+	SL1(bf, 1b,
+	shlr16 r1)
+0:	rts
+	nop
+	ENDFUNC(GLOBAL(udiv_qrnnd_16))
+#endif /* !__SHMEDIA__ */
+#endif /* L_udiv_qrnnd_16 */

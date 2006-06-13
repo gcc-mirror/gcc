@@ -1,3 +1,17 @@
+2006-06-06  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR target/28014:
+	* config/sh/t-sh (LIB1ASMFUNCS): Add _udiv_qrnnd16
+	* config/sh/sh.c (print_operand): Add !SHMEDIA functionality to 'M'.
+	* config/sh/lib1funcs.h (SL, SL1): Define.
+	* config/sh/lib1funcs.asm (__udiv_qrnnd16): New hidden function.
+	* longlong.h (__sh__): Define umul_ppmm, udiv_qrnnd and sub_ddmmss.
+	* config/sh/t-sh ($(T)unwind-dw2-Os-4-200.o): New rule.
+	(OBJS_Os_4_200): New variable.
+	($(T)libgcc-Os-4-200.a): Use it.
+	* sh.md (udivsi3): For TARGET_DIVIDE_CALL_TABLE, avoid function call
+	when dividing 1 and/or by 0.
+
 2006-06-13  Roger Sayle  <roger@eyesopen.com>
 
 	* configure.ac (HAS_MCONTEXT_T_UNDERSCORES): Include <sys/signal.h>

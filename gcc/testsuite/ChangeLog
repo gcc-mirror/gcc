@@ -1,3 +1,8 @@
+2006-06-13  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR target/28014:
+	* g++.dg/eh/div.C: New test.
+
 2006-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/27894

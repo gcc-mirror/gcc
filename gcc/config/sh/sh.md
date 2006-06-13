@@ -1829,6 +1829,21 @@
   /* Emit the move of the address to a pseudo outside of the libcall.  */
   if (TARGET_DIVIDE_CALL_TABLE)
     {
+      /* libgcc2:__udivmoddi4 is not supposed to use an actual division, since
+	 that causes problems when the divide code is supposed to come from a
+	 separate library.  Division by zero is undefined, so dividing 1 can be
+	 implemented by comparing with the divisor.  */
+      if (operands[1] == const1_rtx && currently_expanding_to_rtl)
+	{
+	  emit_insn (gen_cmpsi (operands[1], operands[2]));
+	  emit_insn (gen_sgeu (operands[0]));
+	  DONE;
+	}
+      else if (operands[2] == const0_rtx)
+	{
+	  emit_move_insn (operands[0], operands[2]);
+	  DONE;
+	}
       function_symbol (operands[3], \"__udivsi3_i4i\", SFUNC_GOT);
       last = gen_udivsi3_i4_int (operands[0], operands[3]);
     }

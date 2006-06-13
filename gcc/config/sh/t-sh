@@ -5,7 +5,7 @@ sh-c.o: $(srcdir)/config/sh/sh-c.c \
 LIB1ASMSRC = sh/lib1funcs.asm
 LIB1ASMFUNCS = _ashiftrt _ashiftrt_n _ashiftlt _lshiftrt _movmem \
   _movmem_i4 _mulsi3 _sdivsi3 _sdivsi3_i4 _udivsi3 _udivsi3_i4 _set_fpscr \
-  _div_table \
+  _div_table _udiv_qrnnd_16 \
   $(LIB1ASMFUNCS_CACHE)
 
 # We want fine grained libraries, so use the new code to build the
@@ -98,8 +98,11 @@ $(T)sdivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.asm $(GCC_PAS
 	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $@ -DL_sdivsi3_i4i -x assembler-with-cpp $<
 $(T)udivsi3_i4i-Os-4-200.o: $(srcdir)/config/sh/lib1funcs-Os-4-200.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $@ -DL_udivsi3_i4i -x assembler-with-cpp $<
-$(T)libgcc-Os-4-200.a: $(T)sdivsi3_i4i-Os-4-200.o $(T)udivsi3_i4i-Os-4-200.o $(GCC_PASSES)
-	$(AR_CREATE_FOR_TARGET) $@ $(T)sdivsi3_i4i-Os-4-200.o $(T)udivsi3_i4i-Os-4-200.o
+$(T)unwind-dw2-Os-4-200.o: $(srcdir)/unwind-dw2.c $(srcdir)/unwind-generic.h unwind-pe.h unwind.inc unwind-dw2-fde.h unwind-dw2.h $(CONFIG_H) coretypes.h $(TM_H) $(MACHMODE_H) longlong.h config.status stmp-int-hdrs tsystem.h $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) $(vis_hide) -fexceptions -Os -c -o $@ $<
+OBJS_Os_4_200=$(T)sdivsi3_i4i-Os-4-200.o $(T)udivsi3_i4i-Os-4-200.o $(T)unwind-dw2-Os-4-200.o
+$(T)libgcc-Os-4-200.a: $(OBJS_Os_4_200) $(GCC_PASSES)
+	$(AR_CREATE_FOR_TARGET) $@ $(OBJS_Os_4_200)
 
 # Local Variables:
 # mode: Makefile
