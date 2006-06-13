@@ -30,7 +30,8 @@ extern tree create_tmp_var_name (const char *);
 extern tree create_tmp_var (tree, const char *);
 extern tree get_initialized_tmp_var (tree, tree *, tree *);
 extern tree get_formal_tmp_var (tree, tree *);
-extern void declare_tmp_vars (tree, tree);
+
+extern void declare_vars (tree, tree, bool);
 
 extern void annotate_all_with_locus (tree *, location_t);
 

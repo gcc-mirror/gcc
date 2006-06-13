@@ -1,3 +1,19 @@
+2006-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/26754
+	* gimplify.c (declare_tmp_vars): Rename into declare_vars.
+	Add debug_info parameter.  Chain the vars to the BLOCK instead
+	of the BIND_EXPR if debug info are requested for them.
+	(pop_gimplify_context): Adjust for above change.
+	(gimple_add_tmp_var): Likewise.
+	* tree-gimple.h (declare_tmp_vars): Rename into declare_vars.
+	Add bool parameter.
+	* tree-nested.c (convert_nonlocal_reference): Adjust for above change.
+	(convert_local_reference): Likewise.
+	(get_local_debug_decl): Set DECL_IGNORED_P on the original variable.
+	(finalize_nesting_tree_1): Request that debug info be emitted
+	for debug_var_chain.
+
 2006-06-13  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* haifa-sched.c (unlink_other_notes, unlink_line_notes): Fix the patch

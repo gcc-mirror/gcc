@@ -180,7 +180,7 @@ pop_gimplify_context (tree body)
     DECL_GIMPLE_FORMAL_TEMP_P (t) = 0;
 
   if (body)
-    declare_tmp_vars (c->temps, body);
+    declare_vars (c->temps, body, false);
   else
     record_vars (c->temps);
 
@@ -645,15 +645,16 @@ get_initialized_tmp_var (tree val, tree *pre_p, tree *post_p)
   return internal_get_tmp_var (val, pre_p, post_p, false);
 }
 
-/* Declares all the variables in VARS in SCOPE.  */
+/* Declares all the variables in VARS in SCOPE.  If DEBUG_INFO is
+   true, generate debug info for them; otherwise don't.  */
 
 void
-declare_tmp_vars (tree vars, tree scope)
+declare_vars (tree vars, tree scope, bool debug_info)
 {
   tree last = vars;
   if (last)
     {
-      tree temps;
+      tree temps, block;
 
       /* C99 mode puts the default 'return 0;' for main outside the outer
 	 braces.  So drill down until we find an actual scope.  */
@@ -663,8 +664,27 @@ declare_tmp_vars (tree vars, tree scope)
       gcc_assert (TREE_CODE (scope) == BIND_EXPR);
 
       temps = nreverse (last);
-      TREE_CHAIN (last) = BIND_EXPR_VARS (scope);
-      BIND_EXPR_VARS (scope) = temps;
+
+      block = BIND_EXPR_BLOCK (scope);
+      if (!block || !debug_info)
+	{
+	  TREE_CHAIN (last) = BIND_EXPR_VARS (scope);
+	  BIND_EXPR_VARS (scope) = temps;
+	}
+      else
+	{
+	  /* We need to attach the nodes both to the BIND_EXPR and to its
+	     associated BLOCK for debugging purposes.  The key point here
+	     is that the BLOCK_VARS of the BIND_EXPR_BLOCK of a BIND_EXPR
+	     is a subchain of the BIND_EXPR_VARS of the BIND_EXPR.  */
+	  if (BLOCK_VARS (block))
+	    BLOCK_VARS (block) = chainon (BLOCK_VARS (block), temps);
+	  else
+	    {
+	      BIND_EXPR_VARS (scope) = chainon (BIND_EXPR_VARS (scope), temps);
+	      BLOCK_VARS (block) = temps;
+	    }
+	}
     }
 }
 
@@ -694,7 +714,7 @@ gimple_add_tmp_var (tree tmp)
   else if (cfun)
     record_vars (tmp);
   else
-    declare_tmp_vars (tmp, DECL_SAVED_TREE (current_function_decl));
+    declare_vars (tmp, DECL_SAVED_TREE (current_function_decl), false);
 }
 
 /* Determines whether to assign a locus to the statement STMT.  */
