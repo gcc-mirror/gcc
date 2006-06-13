@@ -1,3 +1,10 @@
+2006-06-13  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	* gcc.c-torture/compile/20060609-1.c: New test.
+	
+	PR target/27863
+	* gcc.c-torture/compile/pr27863.c: New test.
+
 2006-06-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27830
