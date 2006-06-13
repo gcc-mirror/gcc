@@ -259,6 +259,10 @@ initialize_builtins (void)
 		  "__builtin_expect",
 		  BUILTIN_CONST | BUILTIN_NOTHROW);
 		  
+  define_builtin (BUILT_IN_SYNCHRONIZE, "__sync_synchronize",
+		  build_function_type (void_type_node, void_list_node),
+		  "__sync_synchronize", BUILTIN_NOTHROW);
+
   build_common_builtin_nodes ();
 }
 

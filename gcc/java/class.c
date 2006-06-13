@@ -785,7 +785,11 @@ add_field (tree class, tree name, tree field_type, int flags)
   if (flags & ACC_PROTECTED) FIELD_PROTECTED (field) = 1;
   if (flags & ACC_PRIVATE) FIELD_PRIVATE (field) = 1;
   if (flags & ACC_FINAL) FIELD_FINAL (field) = 1;
-  if (flags & ACC_VOLATILE) FIELD_VOLATILE (field) = 1;
+  if (flags & ACC_VOLATILE) 
+    {
+      FIELD_VOLATILE (field) = 1;
+      TREE_THIS_VOLATILE (field) = 1;
+    }
   if (flags & ACC_TRANSIENT) FIELD_TRANSIENT (field) = 1;
   if (is_static)
     {
