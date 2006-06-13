@@ -1251,13 +1251,16 @@ unlink_other_notes (rtx insn, rtx tail)
       if (next)
 	PREV_INSN (next) = prev;
 
-      /* Basic block can begin with either LABEL or
-         NOTE_INSN_BASIC_BLOCK.  */
-      gcc_assert (BB_HEAD (bb) != insn);
+      if (bb)
+        {
+          /* Basic block can begin with either LABEL or
+             NOTE_INSN_BASIC_BLOCK.  */
+          gcc_assert (BB_HEAD (bb) != insn);
 
-      /* Check if we are removing last insn in the BB.  */
-      if (BB_END (bb) == insn)
-        BB_END (bb) = prev;
+          /* Check if we are removing last insn in the BB.  */
+          if (BB_END (bb) == insn)
+            BB_END (bb) = prev;
+        }
 
       /* See sched_analyze to see how these are handled.  */
       if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
@@ -1283,7 +1286,7 @@ unlink_line_notes (rtx insn, rtx tail)
 {
   rtx prev = PREV_INSN (insn);
 
-  while (insn != tail && NOTE_P (insn))
+  while (insn != tail && NOTE_NOT_BB_P (insn))
     {
       rtx next = NEXT_INSN (insn);
 
@@ -1297,13 +1300,16 @@ unlink_line_notes (rtx insn, rtx tail)
 	  if (next)
 	    PREV_INSN (next) = prev;
 
-          /* Basic block can begin with either LABEL or
-             NOTE_INSN_BASIC_BLOCK.  */
-          gcc_assert (BB_HEAD (bb) != insn);
+          if (bb)
+            {
+              /* Basic block can begin with either LABEL or
+                 NOTE_INSN_BASIC_BLOCK.  */
+              gcc_assert (BB_HEAD (bb) != insn);
 
-          /* Check if we are removing last insn in the BB.  */
-          if (BB_END (bb) == insn)
-            BB_END (bb) = prev;
+              /* Check if we are removing last insn in the BB.  */
+              if (BB_END (bb) == insn)
+                BB_END (bb) = prev;
+            }
 
 	  /* Record line-number notes so they can be reused.  */
 	  LINE_NOTE (insn) = insn;
