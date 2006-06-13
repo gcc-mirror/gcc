@@ -1,3 +1,8 @@
+2006-06-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27830
+	* g++.dg/tree-ssa/pr27830.C: New testcase.
+
 2006-06-13  Matthew Sachs  <msachs@apple.com>
 
 	* lib/target-supports-dg.exp (check-flags): Include TOOL_OPTIONS in
