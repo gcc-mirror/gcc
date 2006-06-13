@@ -1,3 +1,9 @@
+2006-06-13  Matthew Sachs  <msachs@apple.com>
+
+	* lib/target-supports-dg.exp (check-flags): Include TOOL_OPTIONS in
+	the list of compiler flags; this causes those flags to be checked
+	for things like dg-skip-if.
+
 2006-06-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27601
