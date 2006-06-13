@@ -1,3 +1,8 @@
+2006-06-13  Fariborz Jahanian <fjahanian@apple.com>
+
+	* fold-const.c (fold_cond_expr_with_comparison): Check for 
+	Objective-C++ as language in deciding COND_EXPR transformation.
+
 2006-06-06  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR target/28014:
