@@ -662,7 +662,8 @@ print_operand_address (FILE *stream, rtx x)
    'R'  print the LSW of a dp value - changes if in little endian
    'S'  print the MSW of a dp value - changes if in little endian
    'T'  print the next word of a dp value - same as 'R' in big endian mode.
-   'M'  print an `x' if `m' will print `base,index'.
+   'M'  SHMEDIA: print an `x' if `m' will print `base,index'.
+        otherwise: print .b / .w / .l / .s / .d suffix if operand is a MEM.
    'N'  print 'r63' if the operand is (const_int 0).
    'd'  print a V2SF reg as dN instead of fpN.
    'm'  print a pair `base,offset' or `base,index', for LD and ST.
@@ -820,11 +821,29 @@ print_operand (FILE *stream, rtx x, int code)
 	}
       break;
     case 'M':
-      if (GET_CODE (x) == MEM
-	  && GET_CODE (XEXP (x, 0)) == PLUS
-	  && (GET_CODE (XEXP (XEXP (x, 0), 1)) == REG
-	      || GET_CODE (XEXP (XEXP (x, 0), 1)) == SUBREG))
-	fputc ('x', stream);
+      if (TARGET_SHMEDIA)
+	{
+	  if (GET_CODE (x) == MEM
+	      && GET_CODE (XEXP (x, 0)) == PLUS
+	      && (GET_CODE (XEXP (XEXP (x, 0), 1)) == REG
+		  || GET_CODE (XEXP (XEXP (x, 0), 1)) == SUBREG))
+	    fputc ('x', stream);
+	}
+      else
+	{
+	  if (GET_CODE (x) == MEM)
+	    {
+	      switch (GET_MODE (x))
+		{
+		case QImode: fputs (".b", stream); break;
+		case HImode: fputs (".w", stream); break;
+		case SImode: fputs (".l", stream); break;
+		case SFmode: fputs (".s", stream); break;
+		case DFmode: fputs (".d", stream); break;
+		default: gcc_unreachable ();
+		}
+	    }
+	}
       break;
 
     case 'm':

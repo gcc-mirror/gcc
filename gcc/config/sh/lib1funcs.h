@@ -67,3 +67,15 @@ Boston, MA 02110-1301, USA.  */
 #define DR40 fr4
 #define DR41 fr5
 #endif /* !__LITTLE_ENDIAN__ */
+
+#ifdef __sh1__
+#define SL(branch, dest, in_slot, in_slot_arg2) \
+	in_slot, in_slot_arg2; branch dest
+#define SL1(branch, dest, in_slot) \
+	in_slot; branch dest
+#else /* ! __sh1__ */
+#define SL(branch, dest, in_slot, in_slot_arg2) \
+	branch##.s dest; in_slot, in_slot_arg2
+#define SL1(branch, dest, in_slot) \
+	branch##/s dest; in_slot
+#endif /* !__sh1__ */
