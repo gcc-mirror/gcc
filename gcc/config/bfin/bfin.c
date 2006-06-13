@@ -3350,7 +3350,7 @@ bfin_reorg_loops (FILE *dump_file)
 	tail = PREV_INSN (tail);
 
       bb->aux = NULL;
-      if (recog_memoized (tail) == CODE_FOR_loop_end)
+      if (INSN_P (tail) && recog_memoized (tail) == CODE_FOR_loop_end)
 	{
 	  /* A possible loop end */
 
