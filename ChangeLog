@@ -1,3 +1,8 @@
+2006-06-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* configure.in: Don't enable libgomp on hpux10.
+	* configure: Rebuilt.
+
 2006-06-12  David Ayers  <d.ayers@inode.at>
 
 	PR bootstrap/27963
