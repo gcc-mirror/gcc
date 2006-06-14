@@ -5707,7 +5707,10 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 
       /* Allow array assignment in compiler-generated code.  */
       if (! DECL_ARTIFICIAL (current_function_decl))
-	pedwarn ("ISO C++ forbids assignment of arrays");
+	{
+	  error ("array used as initializer");
+	  return error_mark_node;
+	}
 
       from_array = TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
 		   ? 1 + (modifycode != INIT_EXPR): 0;

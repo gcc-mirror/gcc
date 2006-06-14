@@ -7,9 +7,7 @@ char foo[26];
 
 void bar()
 {
-  // the addition of the flag "-fno-const-string-literal" reverts to pre-ISO.
-  // -g++: ANSI C++ forbids assignment of arrays
-  foo = "0123456789012345678901234"; // WARNING -
+  foo = "0123456789012345678901234"; // { dg-error "array" }
 }
 
 

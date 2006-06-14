@@ -7,7 +7,7 @@ char foo[26];
 template <class T>
 void f ()
 {
-  foo = "0123456789012345678901234";  
+  foo = "0123456789012345678901234"; // { dg-error "array" }
 }
 
 template void f<int>();
