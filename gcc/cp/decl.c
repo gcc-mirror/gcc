@@ -999,7 +999,13 @@ decls_match (tree newdecl, tree olddecl)
       /* Need to check scope for variable declaration (VAR_DECL).
 	 For typedef (TYPE_DECL), scope is ignored.  */
       if (TREE_CODE (newdecl) == VAR_DECL
-	  && CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl))
+	  && CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl)
+	  /* [dcl.link]
+	     Two declarations for an object with C language linkage
+	     with the same name (ignoring the namespace that qualify
+	     it) that appear in different namespace scopes refer to
+	     the same object.  */
+	  && !(DECL_EXTERN_C_P (olddecl) && DECL_EXTERN_C_P (newdecl)))
 	return 0;
 
       if (TREE_TYPE (newdecl) == error_mark_node)
@@ -1453,14 +1459,42 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  warning (0, "prototype for %q+#D", newdecl);
 	  warning (0, "%Jfollows non-prototype definition here", olddecl);
 	}
-      else if (TREE_CODE (olddecl) == FUNCTION_DECL
+      else if ((TREE_CODE (olddecl) == FUNCTION_DECL
+		|| TREE_CODE (olddecl) == VAR_DECL)
 	       && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl))
 	{
-	  /* extern "C" int foo ();
-	     int foo () { bar (); }
-	     is OK.  */
+	  /* [dcl.link]
+	     If two declarations of the same function or object
+	     specify different linkage-specifications ..., the program
+	     is ill-formed.... Except for functions with C++ linkage,
+	     a function declaration without a linkage specification
+	     shall not precede the first linkage specification for
+	     that function.  A function can be declared without a
+	     linkage specification after an explicit linkage
+	     specification has been seen; the linkage explicitly
+	     specified in the earlier declaration is not affected by
+	     such a function declaration.
+
+	     DR 563 raises the question why the restrictions on
+	     functions should not also apply to objects.  Older
+	     versions of G++ silently ignore the linkage-specification
+	     for this example:
+
+	       namespace N { 
+                 extern int i;
+   	         extern "C" int i;
+               }
+
+             which is clearly wrong.  Therefore, we now treat objects
+	     like functions.  */
 	  if (current_lang_depth () == 0)
-	    SET_DECL_LANGUAGE (newdecl, DECL_LANGUAGE (olddecl));
+	    {
+	      /* There is no explicit linkage-specification, so we use
+		 the linkage from the previous declaration.  */
+	      if (!DECL_LANG_SPECIFIC (newdecl))
+		retrofit_lang_decl (newdecl);
+	      SET_DECL_LANGUAGE (newdecl, DECL_LANGUAGE (olddecl));
+	    }
 	  else
 	    {
 	      error ("previous declaration of %q+#D with %qL linkage",

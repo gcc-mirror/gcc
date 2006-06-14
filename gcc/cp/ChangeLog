@@ -1,3 +1,11 @@
+2006-06-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27227
+	* decl.c (decls_match): Allow an extern "C" variable declarations
+	from different namespaces to match.
+	(duplicate_decls): Disallow redeclaring a variable with a
+	different linkage specification.
+
 2006-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27793
