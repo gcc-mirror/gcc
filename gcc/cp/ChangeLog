@@ -1,3 +1,7 @@
+2006-06-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-tree.def: Fix typo.
+
 2006-06-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27227
