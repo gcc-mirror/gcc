@@ -51,6 +51,7 @@ gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
 
 gappletviewer_SOURCES = toolwrapper.c
 gappletviewer_CFLAGS = -Wall \
+	-I$(top_srcdir)/include \
 	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\"" \
 	-DTOOLPACKAGE="\"appletviewer\"" \
 	-DTOOLNAME="\"gappletviewer\""
@@ -58,6 +59,7 @@ gappletviewer_LDFLAGS = -L$(libdir) $(LIBJVM)
 
 gjarsigner_SOURCES = toolwrapper.c
 gjarsigner_CFLAGS = -Wall \
+	-I$(top_srcdir)/include \
 	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\"" \
 	-DTOOLPACKAGE="\"jarsigner\"" \
 	-DTOOLNAME="\"gjarsigner\""
@@ -65,6 +67,7 @@ gjarsigner_LDFLAGS = -L$(libdir) $(LIBJVM)
 
 gkeytool_SOURCES = toolwrapper.c
 gkeytool_CFLAGS = -Wall \
+	-I$(top_srcdir)/include \
 	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\"" \
 	-DTOOLPACKAGE="\"keytool\"" \
 	-DTOOLNAME="\"gkeytool\""
