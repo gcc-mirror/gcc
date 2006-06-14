@@ -239,9 +239,10 @@ public class BasicMenuItemUI extends MenuItemUI
     {
       if (e.getPropertyName() == "accelerator")
         {
-          InputMap map = SwingUtilities.getUIInputMap(menuItem, JComponent.WHEN_IN_FOCUSED_WINDOW);
+          InputMap map = SwingUtilities.getUIInputMap(menuItem, 
+              JComponent.WHEN_IN_FOCUSED_WINDOW);
           if (map != null)
-            map.remove((KeyStroke)e.getOldValue());
+            map.remove((KeyStroke) e.getOldValue());
           else
             map = new ComponentInputMapUIResource(menuItem);
 
@@ -499,7 +500,8 @@ public class BasicMenuItemUI extends MenuItemUI
    */
   public Dimension getPreferredSize(JComponent c)
   {
-    return getPreferredMenuItemSize(c, checkIcon, arrowIcon, defaultTextIconGap);
+    return getPreferredMenuItemSize(c, checkIcon, arrowIcon, 
+                                    defaultTextIconGap);
   }
 
   /**
@@ -535,8 +537,10 @@ public class BasicMenuItemUI extends MenuItemUI
                                      prefix + ".foreground", prefix + ".font");
     menuItem.setMargin(UIManager.getInsets(prefix + ".margin"));
     acceleratorFont = UIManager.getFont(prefix + ".acceleratorFont");
-    acceleratorForeground = UIManager.getColor(prefix + ".acceleratorForeground");
-    acceleratorSelectionForeground = UIManager.getColor(prefix + ".acceleratorSelectionForeground");
+    acceleratorForeground = UIManager.getColor(prefix 
+        + ".acceleratorForeground");
+    acceleratorSelectionForeground = UIManager.getColor(prefix 
+        + ".acceleratorSelectionForeground");
     selectionBackground = UIManager.getColor(prefix + ".selectionBackground");
     selectionForeground = UIManager.getColor(prefix + ".selectionForeground");
     acceleratorDelimiter = UIManager.getString(prefix + ".acceleratorDelimiter");
@@ -551,13 +555,15 @@ public class BasicMenuItemUI extends MenuItemUI
    */
   protected void installKeyboardActions()
   {
-    InputMap focusedWindowMap = SwingUtilities.getUIInputMap(menuItem, JComponent.WHEN_IN_FOCUSED_WINDOW);
+    InputMap focusedWindowMap = SwingUtilities.getUIInputMap(menuItem, 
+        JComponent.WHEN_IN_FOCUSED_WINDOW);
     if (focusedWindowMap == null)
       focusedWindowMap = new ComponentInputMapUIResource(menuItem);
     KeyStroke accelerator = menuItem.getAccelerator();
     if (accelerator != null)
       focusedWindowMap.put(accelerator, "doClick");
-    SwingUtilities.replaceUIInputMap(menuItem, JComponent.WHEN_IN_FOCUSED_WINDOW, focusedWindowMap);
+    SwingUtilities.replaceUIInputMap(menuItem, 
+        JComponent.WHEN_IN_FOCUSED_WINDOW, focusedWindowMap);
     
     ActionMap UIActionMap = SwingUtilities.getUIActionMap(menuItem);
     if (UIActionMap == null)
@@ -1268,8 +1274,8 @@ public class BasicMenuItemUI extends MenuItemUI
     Insets insets = m.getInsets();
     viewRect.x += insets.left;
     viewRect.y += insets.top;
-    viewRect.width -= (insets.left + insets.right);
-    viewRect.height -= (insets.top + insets.bottom);
+    viewRect.width -= insets.left + insets.right;
+    viewRect.height -= insets.top + insets.bottom;
 
     // Fetch the fonts.
     Font font = m.getFont();

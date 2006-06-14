@@ -295,8 +295,8 @@ target_vendor = @target_vendor@
 vm_classes = @vm_classes@
 
 # lib first, to compile .class files before native code, last examples
-SUBDIRS = lib doc external include native resource scripts $(EXAMPLESDIR)
-DIST_SUBDIRS = lib doc external include native resource scripts examples
+SUBDIRS = lib doc external include native resource scripts tools $(EXAMPLESDIR)
+DIST_SUBDIRS = lib doc external include native resource scripts tools examples
 ACLOCAL_AMFLAGS = -I m4 -I ../.. -I ../../config
 EXTRA_DIST = HACKING BUGS THANKYOU mauve-classpath LICENSE \
              ChangeLog-2003 ChangeLog-2004 ChangeLog-2005 \

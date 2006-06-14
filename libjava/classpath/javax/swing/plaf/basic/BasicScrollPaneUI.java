@@ -516,7 +516,7 @@ public class BasicScrollPaneUI extends ScrollPaneUI
       {
         map = createActionMap();
         if (map != null)
-          UIManager.put("Slider.actionMap", map);
+          UIManager.put("ScrollPane.actionMap", map);
       }
     return map;
   }

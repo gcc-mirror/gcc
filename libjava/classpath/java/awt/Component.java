@@ -1739,9 +1739,8 @@ public abstract class Component
         if (gfx == null && parent != null)
           {
             gfx = parent.getGraphics();
-            Rectangle bounds = getBounds();
-            gfx.setClip(bounds);
-            gfx.translate(bounds.x, bounds.y);
+            gfx.clipRect(getX(), getY(), getWidth(), getHeight());
+            gfx.translate(getX(), getY());
             return gfx;
           }
         gfx.setFont(font);

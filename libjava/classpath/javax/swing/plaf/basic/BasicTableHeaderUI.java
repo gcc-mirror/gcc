@@ -249,11 +249,11 @@ public class BasicTableHeaderUI extends TableHeaderUI
 
 		  originalCursor = header.getCursor();
                   if (p < x)
-                    header.setCursor(Cursor.getPredefinedCursor
-                                     (Cursor.W_RESIZE_CURSOR));
+                    header.setCursor(Cursor.getPredefinedCursor(
+                        Cursor.W_RESIZE_CURSOR));
                   else
-                    header.setCursor(Cursor.getPredefinedCursor
-                                     (Cursor.E_RESIZE_CURSOR));
+                    header.setCursor(Cursor.getPredefinedCursor(
+                        Cursor.E_RESIZE_CURSOR));
                 }
               else
                 {
@@ -368,7 +368,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
       int x = e.getX();
       int p = 0;
       
-      int col = model.getColumnCount()-1;
+      int col = model.getColumnCount() - 1;
       int n = model.getColumnCount();
 
       // This loop does not find the column if the mouse if out of the 
@@ -504,7 +504,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
             comp.setBackground(header.getBackground());
             comp.setForeground(header.getForeground());
             if (comp instanceof JComponent)
-              ((JComponent)comp).setBorder(cellBorder);
+              ((JComponent) comp).setBorder(cellBorder);
             rendererPane.paintComponent(gfx, comp, header, bounds.x, bounds.y,
                                         bounds.width, bounds.height);
           }
@@ -513,11 +513,11 @@ public class BasicTableHeaderUI extends TableHeaderUI
     // This displays a running rectangle that is much simplier than the total
     // animation, as it is seen in Sun's application.
     // TODO animate the collumn dragging like in Sun's jre.
-    if (draggingHeaderRect!=null)
+    if (draggingHeaderRect != null)
       {
         gfx.setColor(header.getForeground()); 
-        gfx.drawRect(draggingHeaderRect.x, draggingHeaderRect.y+2,
-                     draggingHeaderRect.width-1, draggingHeaderRect.height-6);
+        gfx.drawRect(draggingHeaderRect.x, draggingHeaderRect.y + 2,
+            draggingHeaderRect.width - 1, draggingHeaderRect.height - 6);
       }
   }
   
@@ -533,7 +533,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
     TableColumnModel cmod = header.getColumnModel();
     TableCellRenderer defaultRend = header.getDefaultRenderer();
     int ncols = cmod.getColumnCount();    
-    Dimension ret = new Dimension(0,0);
+    Dimension ret = new Dimension(0, 0);
     int spacing = 0;
 
     if (header.getTable() != null 
@@ -556,7 +556,7 @@ public class BasicTableHeaderUI extends TableHeaderUI
         comp.setBackground(header.getBackground());
         comp.setForeground(header.getForeground());
         if (comp instanceof JComponent)
-          ((JComponent)comp).setBorder(cellBorder);
+          ((JComponent) comp).setBorder(cellBorder);
 
         Dimension d = comp.getPreferredSize();
         ret.width += spacing;

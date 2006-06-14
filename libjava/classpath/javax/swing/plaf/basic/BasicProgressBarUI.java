@@ -384,7 +384,7 @@ public class BasicProgressBarUI extends ProgressBarUI
       }
 
     int index = getAnimationIndex();
-    if (animationIndex > (numFrames) / 2)
+    if (animationIndex > numFrames / 2)
       index = numFrames - getAnimationIndex();
 
     if (progressBar.getOrientation() == JProgressBar.HORIZONTAL)
@@ -671,7 +671,8 @@ public class BasicProgressBarUI extends ProgressBarUI
 	else
 	  {
 	    g.setColor(c.getForeground());
-	    g.fillRect(vr.x, vr.y + vr.height - amountFull, vr.width, amountFull);
+	    g.fillRect(vr.x, vr.y + vr.height - amountFull, vr.width, 
+                       amountFull);
 	  }
 
     if (progressBar.isStringPainted() && !progressBar.getString().equals(""))

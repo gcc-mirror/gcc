@@ -278,8 +278,9 @@ target_vendor = @target_vendor@
 vm_classes = @vm_classes@
 @CREATE_JNI_LIBRARIES_TRUE@JNIDIR = jni
 @CREATE_GTK_PEER_LIBRARIES_TRUE@JAWTDIR = jawt
-SUBDIRS = fdlibm $(JNIDIR) $(JAWTDIR) target
-DIST_SUBDIRS = fdlibm jni jawt target
+@CREATE_PLUGIN_TRUE@PLUGINDIR = plugin
+SUBDIRS = fdlibm $(JNIDIR) $(JAWTDIR) $(PLUGINDIR) target
+DIST_SUBDIRS = fdlibm jni jawt plugin target
 all: all-recursive
 
 .SUFFIXES:

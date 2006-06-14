@@ -70,7 +70,8 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
    *
    * @return a new instance of <code>BasicRadioButtonUI</code>
    */
-  public static ComponentUI createUI(final JComponent c)  {
+  public static ComponentUI createUI(final JComponent c)  
+  {
     return new BasicRadioButtonUI();
   }
 
@@ -155,8 +156,8 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
       currentIcon = b.getDisabledIcon();
 
     SwingUtilities.calculateInnerArea(b, vr);
-    String text = SwingUtilities.layoutCompoundLabel
-      (c, g.getFontMetrics(f), b.getText(), currentIcon,
+    String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
+       b.getText(), currentIcon,
        b.getVerticalAlignment(), b.getHorizontalAlignment(),
        b.getVerticalTextPosition(), b.getHorizontalTextPosition(),
        vr, ir, tr, b.getIconTextGap() + defaultTextShiftOffset);

@@ -79,6 +79,10 @@ exception statement from your version. */
   g_printerr ("%s:%d: thread %p: Error: %s: %s\n", __FILE__, __LINE__,  \
               g_thread_self (), first, second)
 
+#define PLUGIN_ERROR_THREE(first, second, third)                        \
+  g_printerr ("%s:%d: thread %p: Error: %s: %s: %s\n", __FILE__,        \
+              __LINE__, g_thread_self (), first, second, third)
+
 // Plugin information passed to about:plugins.
 #define PLUGIN_NAME "GCJ Web Browser Plugin"
 #define PLUGIN_DESC "The " PLUGIN_NAME " executes Java applets."
@@ -120,7 +124,6 @@ exception statement from your version. */
 // Security dialog messages.
 #define RESPONSE_TRUST_APPLET "Trust Applet"
 #define RESPONSE_TRUST_APPLET_ADD_TO_LIST "Trust Applet and Add to Whitelist"
-#define WHITELIST_FILENAME PLUGIN_DATA_DIRECTORY "/whitelist.txt"
 #define SECURITY_WARNING                                        \
   "%s wants to load an applet.\n"                               \
   "GNU Classpath's security implementation is not complete.\n"  \
@@ -132,7 +135,7 @@ exception statement from your version. */
   " and run this applet from now on, without asking.\n"                 \
   "The whitelist is a list of the URLs from which you trust"            \
   " applets.\n"                                                         \
-  "Your whitelist file is \"" WHITELIST_FILENAME "\"."
+  "Your whitelist file is \" %s \"."
 #define FAILURE_MESSAGE                                                 \
   "This page wants to load an applet.\n"                                \
   "The appletviewer is missing or not installed properly in \""         \
@@ -144,9 +147,15 @@ static NS_DEFINE_IID (kIPluginTagInfo2IID, NS_IPLUGINTAGINFO2_IID);
 // Browser function table.
 static NPNetscapeFuncs browserFunctions;
 
+// Data directory for plugin.
+static gchar* data_directory;
+
+// Whitelist filename
+static gchar* whitelist_filename;
+
 // Keeps track of initialization. NP_Initialize should only be
 // called once.
-bool initialized = false;
+gboolean initialized = false;
 
 // GCJPluginData stores all the data associated with a single plugin
 // instance.  A separate plugin instance is created for each <APPLET>
@@ -314,21 +323,40 @@ GCJ_New (NPMIMEType pluginType, NPP instance, uint16 mode,
                     " Browser not Mozilla-based?");
       goto cleanup_appletviewer_mutex;
     }
+    
+  // Open the user's documentbase whitelist.
+  whitelist_file = g_io_channel_new_file (whitelist_filename,
+                                          "a+", &channel_error);
+  if (!whitelist_file)
+    {
+      if (channel_error)
+        {
+          PLUGIN_ERROR_THREE ("Failed to open whitelist file",
+                              whitelist_filename,
+                              channel_error->message);
+          g_error_free (channel_error);
+          channel_error = NULL;
+        }
+      else
+        PLUGIN_ERROR_TWO ("Failed to open whitelist file",
+                          whitelist_filename);
 
+      return NPERR_GENERIC_ERROR;
+    }
+    
   if (!plugin_user_trusts_documentbase (documentbase))
     {
       PLUGIN_ERROR ("User does not trust applet.");
       np_error = NPERR_GENERIC_ERROR;
       goto cleanup_appletviewer_mutex;
     }
-
+    
   // Create appletviewer-to-plugin pipe which we refer to as the input
   // pipe.
 
   // data->in_pipe_name
-  data->in_pipe_name = g_strdup_printf (PLUGIN_DATA_DIRECTORY
-                                        "/gcj-%s-appletviewer-to-plugin",
-                                        data->instance_string);
+  data->in_pipe_name = g_strdup_printf ("%s/gcj-%s-appletviewer-to-plugin", 
+                                         data_directory, data->instance_string);
   if (!data->in_pipe_name)
     {
       PLUGIN_ERROR ("Failed to create input pipe name.");
@@ -349,9 +377,8 @@ GCJ_New (NPMIMEType pluginType, NPP instance, uint16 mode,
   // output pipe.
 
   // data->out_pipe_name
-  data->out_pipe_name = g_strdup_printf (PLUGIN_DATA_DIRECTORY
-                                         "/gcj-%s-plugin-to-appletviewer",
-                                         data->instance_string);
+  data->out_pipe_name = g_strdup_printf ("%s/gcj-%s-plugin-to-appletviewer", 
+                                         data_directory, data->instance_string);
 
   if (!data->out_pipe_name)
     {
@@ -952,7 +979,7 @@ plugin_user_trusts_documentbase (char* documentbase)
               channel_error = NULL;
             }
           else
-            PLUGIN_ERROR ("Failed to open whitelist file.");
+            PLUGIN_ERROR ("Failed to read line from whitelist file.");
           g_free (whitelist_entry);
           whitelist_entry = NULL;
           break;
@@ -1061,7 +1088,7 @@ plugin_ask_user_about_documentbase (char* documentbase)
                                    SECURITY_WARNING,
                                    documentbase);
   gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
-                                            SECURITY_DESCRIPTION);
+                                            SECURITY_DESCRIPTION, whitelist_filename);
 
   cancel_button = gtk_dialog_add_button (GTK_DIALOG (dialog),
                                          GTK_STOCK_CANCEL,
@@ -1577,7 +1604,7 @@ NP_Initialize (NPNetscapeFuncs* browserTable, NPPluginFuncs* pluginTable)
 
       return NPERR_INVALID_FUNCTABLE_ERROR;
     }
-    
+  
   // Ensure that the major version of the plugin API that the browser
   // expects is not more recent than the major version of the API that
   // we've implemented.
@@ -1606,41 +1633,23 @@ NP_Initialize (NPNetscapeFuncs* browserTable, NPPluginFuncs* pluginTable)
       return NPERR_INVALID_FUNCTABLE_ERROR;
     }
 
+  data_directory = g_strconcat(getenv("HOME"), "/.gcjwebplugin", NULL);
+  whitelist_filename = g_strconcat (data_directory, "/whitelist.txt", NULL);
   // Make sure the plugin data directory exists, creating it if
   // necessary.
-  if (!g_file_test (PLUGIN_DATA_DIRECTORY,
+  if (!g_file_test (data_directory,
                     (GFileTest) (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)))
     {
       int file_error = 0;
 
-      file_error = g_mkdir (PLUGIN_DATA_DIRECTORY, 0700);
+      file_error = g_mkdir (data_directory, 0700);
       if (file_error != 0)
         {
-          PLUGIN_ERROR_TWO ("Failed to create data directory "
-                            PLUGIN_DATA_DIRECTORY " ",
-                            strerror (errno));
+          PLUGIN_ERROR_THREE ("Failed to create data directory",
+                              data_directory,
+                              strerror (errno));
           return NPERR_GENERIC_ERROR;
         }
-    }
-
-  // Open the user's documentbase whitelist.
-  whitelist_file = g_io_channel_new_file (WHITELIST_FILENAME,
-                                          "a+", &channel_error);
-  if (!whitelist_file)
-    {
-      if (channel_error)
-        {
-          PLUGIN_ERROR_TWO ("Failed to open whitelist file "
-                            WHITELIST_FILENAME " ",
-                            channel_error->message);
-          g_error_free (channel_error);
-          channel_error = NULL;
-        }
-      else
-        PLUGIN_ERROR ("Failed to open whitelist file "
-                      WHITELIST_FILENAME);
-                      
-      return NPERR_GENERIC_ERROR;
     }
 
   // Store in a local table the browser functions that we may use.
@@ -1749,6 +1758,18 @@ NP_Shutdown (void)
     {
       g_io_channel_close (whitelist_file);
       whitelist_file = NULL;
+    }
+    
+  if (data_directory)
+    {
+      g_free (data_directory);
+      data_directory = NULL;
+    }
+    
+  if (whitelist_filename)
+    {
+      g_free (whitelist_filename);
+      whitelist_filename = NULL;
     }
   
   initialized = false;

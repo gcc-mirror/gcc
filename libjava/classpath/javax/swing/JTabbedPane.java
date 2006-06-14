@@ -990,10 +990,6 @@ public class JTabbedPane extends JComponent implements Serializable,
     checkIndex(index, -1, tabs.size());
     if (index != getSelectedIndex())
       {
-	if (getSelectedIndex() != -1 && getSelectedComponent() != null)
-	  getSelectedComponent().hide();
-	if (index != -1 && getComponentAt(index) != null)
-	  getComponentAt(index).show();
 	model.setSelectedIndex(index);
       }
   }

@@ -1,5 +1,5 @@
 /* GdkTextLayout.java
-   Copyright (C) 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -84,7 +84,7 @@ public class GdkTextLayout
 
   private native void dispose ();
 
-  private native void cairoDrawGdkTextLayout(CairoGraphics2D g, float x, float y);
+  private native void cairoDrawGdkTextLayout(long cg2d, float x, float y);
 
   static native void initStaticState();
 
@@ -216,7 +216,7 @@ public class GdkTextLayout
 
   public void draw (Graphics2D g2, float x, float y)
   {
-    cairoDrawGdkTextLayout((CairoGraphics2D)g2, x, y);
+    cairoDrawGdkTextLayout(((CairoGraphics2D) g2).nativePointer, x, y);
   }
 
   public TextHitInfo getStrongCaret (TextHitInfo hit1, 

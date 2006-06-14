@@ -1,5 +1,5 @@
 /* BufferedImage.java --
-   Copyright (C) 2000, 2002, 2003, 2004, 2005  Free Software Foundation
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2006,  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -99,6 +99,13 @@ public class BufferedImage extends Image
 
   Vector observers;
   
+  /**
+   * Creates a new buffered image.
+   * 
+   * @param w  the width.
+   * @param h  the height.
+   * @param type  the image type (see the constants defined by this class).
+   */
   public BufferedImage(int w, int h, int type)
   {
     ColorModel cm = null;
@@ -363,11 +370,28 @@ public class BufferedImage extends Image
 	return 1;
   }
 
+  /**
+   * Returns the value of the specified property, or 
+   * {@link Image#UndefinedProperty} if the property is not defined.
+   * 
+   * @param string  the property key (<code>null</code> not permitted).
+   * 
+   * @return The property value.
+   * 
+   * @throws NullPointerException if <code>string</code> is <code>null</code>.
+   */
   public Object getProperty(String string)
   {
-    if (properties == null)
-      return null;
-    return properties.get(string);
+    if (string == null)
+      throw new NullPointerException("The property name cannot be null.");
+    Object result = Image.UndefinedProperty;
+    if (properties != null)
+      {
+        Object v = properties.get(string);
+        if (v != null)
+          result = v;
+      }
+    return result;
   }
 
   public Object getProperty(String string, ImageObserver imageobserver)
@@ -375,10 +399,15 @@ public class BufferedImage extends Image
     return getProperty(string);
   }
 
-  
+  /**
+   * Returns <code>null</code> always.
+   * 
+   * @return <code>null</code> always.
+   */
   public String[] getPropertyNames()
   {
-    // FIXME: implement
+    // This method should always return null, see:
+    // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4640609
     return null;
   }
 

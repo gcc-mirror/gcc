@@ -644,6 +644,7 @@ public final class Bidi
               case Character.DIRECTIONALITY_OTHER_NEUTRALS:
               case Character.DIRECTIONALITY_SEGMENT_SEPARATOR:
               case Character.DIRECTIONALITY_PARAGRAPH_SEPARATOR:
+	      case Character.DIRECTIONALITY_WHITESPACE:
                 if (neutralStart == -1)
                   neutralStart = i;
                 break;
@@ -657,7 +658,7 @@ public final class Bidi
                                      ? prevStrong
                                      : embeddingDirection);
                     for (int j = neutralStart; j < i; ++j)
-                      types[i] = override;
+                      types[j] = override;
                   }
                 prevStrong = newStrong;
                 neutralStart = -1;

@@ -278,7 +278,7 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initStaticState 
   (JNIEnv *env, jclass clazz)
 {
-  jclass dataOutputClass;
+  jclass writerClass;
 
   (*env)->GetJavaVM(env, &vm);
 
@@ -296,9 +296,9 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initStaticState
      "(Ljava/lang/String;Z)"
      "Lgnu/java/awt/peer/gtk/GdkPixbufDecoder$ImageFormatSpec;");
 
-  
-  dataOutputClass = (*env)->FindClass(env, "java/io/DataOutput");
-  dataOutputWriteID = (*env)->GetMethodID (env, dataOutputClass,
+  writerClass = (*env)->FindClass
+    (env, "gnu/java/awt/peer/gtk/GdkPixbufDecoder$GdkPixbufWriter");
+  dataOutputWriteID = (*env)->GetMethodID (env, writerClass,
 					     "write", "([B)V");
 
   query_formats (env, clazz);
@@ -344,7 +344,7 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpDone
 struct stream_save_request
 {
   JNIEnv *env;
-  jobject *stream;
+  jobject *writer;
 };
 
 static gboolean
@@ -358,20 +358,13 @@ save_to_stream(const gchar *buf,
   jbyteArray jbuf;
   jbyte *cbuf;
 
-  /* FIXME. Don't call user code directly on this thread.
-     Store bytes and signal a "pump" thread to deliver to user code.
-     Then we don't have to drop/acquire any locks. */
-  gdk_threads_leave ();
-
   jbuf = (*(ssr->env))->NewByteArray ((ssr->env), count);
   cbuf = (*(ssr->env))->GetByteArrayElements ((ssr->env), jbuf, NULL);
   memcpy (cbuf, buf, count);
   (*(ssr->env))->ReleaseByteArrayElements ((ssr->env), jbuf, cbuf, 0);
-  (*(ssr->env))->CallVoidMethod ((ssr->env), *(ssr->stream), 
+  (*(ssr->env))->CallVoidMethod ((ssr->env), *(ssr->writer), 
 				 dataOutputWriteID, jbuf);  
   (*(ssr->env))->DeleteLocalRef((ssr->env), jbuf);
-
-  gdk_threads_enter ();
 
   return TRUE;
 }
@@ -379,9 +372,9 @@ save_to_stream(const gchar *buf,
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_streamImage
-(JNIEnv *env, jclass clazz __attribute__((unused)), 
+(JNIEnv *env, jclass clazz __attribute__((unused)),
  jintArray jarr, jstring jenctype, jint width, jint height, 
- jboolean hasAlpha, jobject stream)
+ jboolean hasAlpha, jobject writer) 
 {
   GdkPixbuf* pixbuf;  
   jint *ints;
@@ -391,7 +384,7 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_streamImage
   int i;
   struct stream_save_request ssr;
 
-  ssr.stream = &stream;
+  ssr.writer = &writer;
   ssr.env = env;
 
   ints = (*env)->GetIntArrayElements (env, jarr, NULL);

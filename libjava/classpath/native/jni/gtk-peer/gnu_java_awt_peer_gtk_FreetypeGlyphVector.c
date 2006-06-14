@@ -81,24 +81,37 @@ getFont(JNIEnv *env, jobject obj)
   return (PangoFcFont *)pfont->font;
 }
 
-JNIEXPORT jint JNICALL 
-Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyph
-  (JNIEnv *env, jobject obj, jint codepoint)
+JNIEXPORT jintArray JNICALL 
+Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphs
+  (JNIEnv *env, jobject obj, jintArray codepoints)
 {
   FT_Face ft_face;
-  jint glyph_index;
+  jintArray retArray;
   PangoFcFont *font;
+  jint *values, *cpvals;
+  jint length;
+  int i;
 
   font = getFont(env, obj);
 
   ft_face = pango_fc_font_lock_face( font );
   g_assert (ft_face != NULL);
 
-  glyph_index = FT_Get_Char_Index( ft_face, codepoint );
+  length = (*env)->GetArrayLength (env, codepoints);
+  cpvals = (*env)->GetIntArrayElements (env, codepoints, NULL);
+
+  retArray = (*env)->NewIntArray (env, length);
+  values = (*env)->GetIntArrayElements (env, retArray, NULL);
+
+  for( i = 0; i < length; i++ )
+    values[i] = FT_Get_Char_Index( ft_face, cpvals[i] );
+
+  (*env)->ReleaseIntArrayElements (env, retArray, values, 0);
+  (*env)->ReleaseIntArrayElements (env, codepoints, cpvals, 0);
 
   pango_fc_font_unlock_face (font);
 
-  return glyph_index;
+  return retArray;
 }
 
 JNIEXPORT jobject JNICALL 
@@ -143,7 +156,7 @@ Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getMetricsNative
 
   FT_Set_Transform( ft_face, NULL, NULL );
 
-  if( FT_Load_Glyph( ft_face, glyphIndex, FT_LOAD_DEFAULT ) != 0 )
+  if( FT_Load_Glyph( ft_face, glyphIndex, FT_LOAD_NO_BITMAP ) != 0 )
     {
       pango_fc_font_unlock_face( font );
       printf("Couldn't load glyph %i\n", glyphIndex);

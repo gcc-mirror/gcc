@@ -88,49 +88,65 @@ public class CairoSurface extends DataBuffer
   /**
    * Allocates and clears the buffer and creates the cairo surface.
    * @param width, height - the image size
-   * @param stride - the buffer row stride.
+   * @param stride - the buffer row stride. (in ints)
    */
   private native void create(int width, int height, int stride);
 
   /**
    * Destroys the cairo surface and frees the buffer.
    */
-  private native void destroy();
+  private native void destroy(long surfacePointer, long bufferPointer);
 
   /**
    * Gets buffer elements
    */
-  private native int nativeGetElem(int i);
+  private native int nativeGetElem(long bufferPointer, int i);
   
   /**
    * Sets buffer elements.
    */
-  private native void nativeSetElem(int i, int val);
+  private native void nativeSetElem(long bufferPointer, int i, int val);
 
   /**
    * Draws this image to a given CairoGraphics context, 
    * with an affine transform given by i2u.
    */
-  public native void drawSurface(CairoGraphics2D context, double[] i2u);
+  public native void nativeDrawSurface(long surfacePointer, long contextPointer,
+                                       double[] i2u, double alpha);
+
+  public void drawSurface(long contextPointer, double[] i2u, double alpha)
+  {
+    nativeDrawSurface(surfacePointer, contextPointer, i2u, alpha);
+  }
 
   /**
    * getPixels -return the pixels as a java array.
    */
-  native int[] getPixels(int size);
+  native int[] nativeGetPixels(long bufferPointer, int size);
+
+  public int[] getPixels(int size)
+  {
+    return nativeGetPixels(bufferPointer, size);
+  }
 
   /**
    * getPixels -return the pixels as a java array.
    */
-  native void setPixels(int[] pixels);
+  native void nativeSetPixels(long bufferPointer, int[] pixels);
 
-  native long getFlippedBuffer(int size);
+  public void setPixels(int[] pixels)
+  {
+    nativeSetPixels(bufferPointer, pixels);
+  }
+
+  native long getFlippedBuffer(long bufferPointer, int size);
 
   /**
    * Create a cairo_surface_t with specified width and height.
    * The format will be ARGB32 with premultiplied alpha and native bit 
    * and word ordering.
    */
-  CairoSurface(int width, int height)
+  public CairoSurface(int width, int height)
   {
     super(DataBuffer.TYPE_INT, width * height);
 
@@ -140,7 +156,7 @@ public class CairoSurface extends DataBuffer
     this.width = width;
     this.height = height;
 
-    create(width, height, width * 4);
+    create(width, height, width);
 
     if(surfacePointer == 0 || bufferPointer == 0)
       throw new Error("Could not allocate bitmap.");
@@ -160,7 +176,7 @@ public class CairoSurface extends DataBuffer
     width = image.width;
     height = image.height;
 
-    create(width, height, width * 4);
+    create(width, height, width);
     
     if(surfacePointer == 0 || bufferPointer == 0)
       throw new Error("Could not allocate bitmap.");
@@ -195,7 +211,7 @@ public class CairoSurface extends DataBuffer
   public void dispose()
   {
     if(surfacePointer != 0)
-      destroy();
+      destroy(surfacePointer, bufferPointer);
   }
 
   /**
@@ -211,7 +227,8 @@ public class CairoSurface extends DataBuffer
    */
   public GtkImage getGtkImage()
   {
-    return new GtkImage( width, height, getFlippedBuffer( width * height ));
+    return new GtkImage( width, height,
+                         getFlippedBuffer(bufferPointer, width * height ));
   }
 
   /**
@@ -251,7 +268,7 @@ public class CairoSurface extends DataBuffer
   {
     if(bank != 0 || i < 0 || i >= width*height)
       throw new IndexOutOfBoundsException(i+" size: "+width*height);
-    return nativeGetElem(i);
+    return nativeGetElem(bufferPointer, i);
   }
   
   /**
@@ -261,7 +278,7 @@ public class CairoSurface extends DataBuffer
   {
     if(bank != 0 || i < 0 || i >= width*height)
       throw new IndexOutOfBoundsException(i+" size: "+width*height);
-    nativeSetElem(i, val);
+    nativeSetElem(bufferPointer, i, val);
   }
 
   /**
@@ -277,12 +294,22 @@ public class CairoSurface extends DataBuffer
    * Creates a cairo_t drawing context, returns the pointer as a long.
    * Used by CairoSurfaceGraphics.
    */
-  native long newCairoContext();
+  native long nativeNewCairoContext(long surfacePointer);
+
+  public long newCairoContext()
+  {
+    return nativeNewCairoContext(surfacePointer);
+  }
 
   /**
    * Copy an area of the surface. Expects parameters must be within bounds. 
    * Count on a segfault otherwise.
    */
-  native void copyAreaNative(int x, int y, int width, int height, 
-			     int dx, int dy, int stride);
+  native void copyAreaNative2(long bufferPointer, int x, int y, int width,
+                             int height, int dx, int dy, int stride);
+  public void copyAreaNative(int x, int y, int width,
+                             int height, int dx, int dy, int stride)
+  {
+    copyAreaNative2(bufferPointer, x, y, width, height, dx, dy, stride);
+  }
 }

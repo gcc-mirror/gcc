@@ -118,6 +118,7 @@ public class PolyEdge
   public String toString()
   {
     return "Edge: " + x0 + ", " + y0 + ", " + x1 + ", " + y1 + ", slope: "
-           + slope + ", xIntersection: " + xIntersection;
+           + slope + ", xIntersection: " + xIntersection
+           + ", isClip: " + isClip;
   }
 }

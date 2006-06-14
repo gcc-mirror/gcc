@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.datatransfer;
 
+import gnu.classpath.NotImplementedException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -785,7 +787,8 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
    *
    * @exception IOException If an error occurs.
    */
-  public void writeExternal(ObjectOutput stream) throws IOException
+  public void writeExternal(ObjectOutput stream) 
+    throws IOException, NotImplementedException
   {
     // FIXME: Implement me
   }
@@ -801,7 +804,7 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
    * cannot be found.
    */
   public void readExternal(ObjectInput stream) 
-    throws IOException, ClassNotFoundException
+    throws IOException, ClassNotFoundException, NotImplementedException
   {
     // FIXME: Implement me
   }

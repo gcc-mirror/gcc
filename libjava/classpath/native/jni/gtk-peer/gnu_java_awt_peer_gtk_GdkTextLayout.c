@@ -44,6 +44,7 @@
 #include <pango/pangofc-font.h>
 #include <freetype/ftglyph.h>
 #include <freetype/ftoutln.h>
+#include "jcl.h"
 #include "native_state.h"
 #include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_GdkTextLayout.h"
@@ -239,23 +240,21 @@ Java_gnu_java_awt_peer_gtk_GdkTextLayout_dispose
  */
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkTextLayout_cairoDrawGdkTextLayout
-   (JNIEnv *env, jobject obj, jobject cairographics, jfloat x, jfloat y)
+   (JNIEnv *env, jobject obj, jlong cg2d, jfloat x, jfloat y)
 {
   /* 
    * FIXME: Some day we expect either cairo or pango will know how to make
    * a pango layout paint to a cairo surface. that day is not yet here.
    */
 
-  cairo_t *cr;
+  struct cairographics2d *gr = JLONG_TO_PTR(struct cairographics2d, cg2d);
+  cairo_t *cr = gr->cr;
   struct textlayout *tl = NULL;
   PangoLayoutIter *i = NULL;
   PangoLayoutRun *run = NULL;
   cairo_glyph_t *glyphs = NULL;
   gint n_glyphs = 0;
 
-  g_assert (cairographics != NULL);
-
-  cr = cp_gtk_get_cairo_t(env, cairographics);
   tl = (struct textlayout *)NSA_GET_TEXT_LAYOUT_PTR (env, obj);
 
   g_assert (cr != NULL);

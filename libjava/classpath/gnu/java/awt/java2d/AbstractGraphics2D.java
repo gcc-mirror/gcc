@@ -1331,8 +1331,8 @@ public abstract class AbstractGraphics2D
   {
     AffineTransform t = new AffineTransform();
     t.translate(x, y);
-    double scaleX = (double) image.getWidth(observer) / (double) width;
-    double scaleY = (double) image.getHeight(observer) / (double) height;
+    double scaleX = (double) width / (double) image.getWidth(observer);
+    double scaleY =  (double) height / (double) image.getHeight(observer);
     t.scale(scaleX, scaleY);
     return drawImage(image, t, observer);
   }
@@ -1473,15 +1473,11 @@ public abstract class AbstractGraphics2D
         antialias = (v == RenderingHints.VALUE_ANTIALIAS_ON);
       }
 
-    double offs = 0.5;
-    if (antialias)
-      offs = offs / AA_SAMPLING;
-
     Rectangle2D userBounds = s.getBounds2D();
     Rectangle2D deviceBounds = new Rectangle2D.Double();
-    ArrayList segs = getSegments(s, transform, deviceBounds, false, offs);
+    ArrayList segs = getSegments(s, transform, deviceBounds, false);
     Rectangle2D clipBounds = new Rectangle2D.Double();
-    ArrayList clipSegs = getSegments(clip, transform, clipBounds, true, offs);
+    ArrayList clipSegs = getSegments(clip, transform, clipBounds, true);
     segs.addAll(clipSegs);
     Rectangle2D inclClipBounds = new Rectangle2D.Double();
     Rectangle2D.union(clipBounds, deviceBounds, inclClipBounds);
@@ -1676,7 +1672,10 @@ public abstract class AbstractGraphics2D
 
     // Scan all relevant lines.
     int minYInt = (int) Math.ceil(icMinY);
-    for (int y = minYInt; y <= maxY; y++)
+
+    Rectangle devClip = getDeviceBounds();
+    int scanlineMax = (int) Math.min(maxY, devClip.getMaxY());
+    for (int y = minYInt; y < scanlineMax; y++)
       {
         ArrayList bucket = edgeTable[y - minYInt];
         // Update all the x intersections in the current activeEdges table
@@ -2169,8 +2168,7 @@ public abstract class AbstractGraphics2D
    * @return a list of PolyEdge that form the shape in device space
    */
   private ArrayList getSegments(Shape s, AffineTransform t,
-                                Rectangle2D deviceBounds, boolean isClip,
-                                double offs)
+                                Rectangle2D deviceBounds, boolean isClip)
   {
     // Flatten the path. TODO: Determine the best flattening factor
     // wrt to speed and quality.
@@ -2213,14 +2211,14 @@ public abstract class AbstractGraphics2D
         else if (segType == PathIterator.SEG_CLOSE)
           {
             // Close the polyline.
-            PolyEdge edge = new PolyEdge(segX, segY - offs,
-                                         polyX, polyY - offs, isClip);
+            PolyEdge edge = new PolyEdge(segX, segY,
+                                         polyX, polyY, isClip);
             segs.add(edge);
           }
         else if (segType == PathIterator.SEG_LINETO)
           {
-            PolyEdge edge = new PolyEdge(segX, segY - offs,
-                                         seg[0], seg[1] - offs, isClip);
+            PolyEdge edge = new PolyEdge(segX, segY,
+                                         seg[0], seg[1], isClip);
             segs.add(edge);
             segX = seg[0];
             segY = seg[1];

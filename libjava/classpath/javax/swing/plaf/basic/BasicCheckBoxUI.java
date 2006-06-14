@@ -57,7 +57,8 @@ public class BasicCheckBoxUI extends BasicRadioButtonUI
    *     
    * @return A new instance of <code>BasicCheckBoxUI</code>.
    */
-  public static ComponentUI createUI(JComponent c)  {
+  public static ComponentUI createUI(JComponent c)
+  {
     return new BasicCheckBoxUI();
   }
 

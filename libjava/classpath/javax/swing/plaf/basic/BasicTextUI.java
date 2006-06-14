@@ -603,10 +603,12 @@ public abstract class BasicTextUI extends TextUI
     // Fetch the colors for enabled/disabled text components.
     background = UIManager.getColor(prefix + ".background");
     inactiveBackground = UIManager.getColor(prefix + ".inactiveBackground");
-    textComponent.setDisabledTextColor
-                         (UIManager.getColor(prefix + ".inactiveForeground"));
-    textComponent.setSelectedTextColor(UIManager.getColor(prefix + ".selectionForeground"));
-    textComponent.setSelectionColor(UIManager.getColor(prefix + ".selectionBackground"));    
+    textComponent.setDisabledTextColor(UIManager.getColor(prefix 
+        + ".inactiveForeground"));
+    textComponent.setSelectedTextColor(UIManager.getColor(prefix 
+        + ".selectionForeground"));
+    textComponent.setSelectionColor(UIManager.getColor(prefix 
+        + ".selectionBackground"));    
   }
 
   /**
@@ -639,7 +641,8 @@ public abstract class BasicTextUI extends TextUI
                 Clipboard cb = Toolkit.getDefaultToolkit().getSystemSelection();
                 if (cb != null)
                   {
-                    StringSelection selection = new StringSelection(textComponent.getSelectedText());
+                    StringSelection selection = new StringSelection(
+                        textComponent.getSelectedText());
                     cb.setContents(selection, selection);
                   }
               }
@@ -853,7 +856,8 @@ public abstract class BasicTextUI extends TextUI
    */
   protected void uninstallKeyboardActions()
   {
-    SwingUtilities.replaceUIInputMap(textComponent, JComponent.WHEN_FOCUSED, null);
+    SwingUtilities.replaceUIInputMap(textComponent, JComponent.WHEN_FOCUSED, 
+                                     null);
     SwingUtilities.replaceUIActionMap(textComponent, null);
   }
 
@@ -1114,13 +1118,14 @@ public abstract class BasicTextUI extends TextUI
                        && Utilities.getRowStart(t, nextPosBelow) != p1RowStart)
                   {
                     posBelow = nextPosBelow;
-                    nextPosBelow = Utilities.getPositionBelow(t, posBelow, l1.x);
+                    nextPosBelow = Utilities.getPositionBelow(t, posBelow, 
+                                                              l1.x);
                     
                     if (posBelow == nextPosBelow)
                       break;
                   }
-                // Now posBelow is an offset on the last line which has to be damaged
-                // completely. (newPosBelow is on the same line as p1)
+                // Now posBelow is an offset on the last line which has to be 
+                // damaged completely. (newPosBelow is on the same line as p1)
                  
                 // Retrieve the rectangle of posBelow and use its y and height
                 // value to calculate the final height of the multiple line

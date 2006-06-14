@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -65,10 +67,10 @@ public class DropTargetDropEvent extends DropTargetEvent
    * actions is not a bitwise mask of DnDConstants, or dtc is null.
    * @exception NullPointerException If location is null.
    */
-  public DropTargetDropEvent (DropTargetContext dtc, Point location,
-                              int dropAction, int actions)
+  public DropTargetDropEvent(DropTargetContext dtc, Point location,
+                             int dropAction, int actions)
   {
-    this (dtc, location, dropAction, actions, false);
+    this(dtc, location, dropAction, actions, false);
   }
 
   /**
@@ -78,16 +80,16 @@ public class DropTargetDropEvent extends DropTargetEvent
    * actions is not a bitwise mask of DnDConstants, or dtc is null.
    * @exception NullPointerException If location is null.
    */
-  public DropTargetDropEvent (DropTargetContext dtc, Point location,
-                              int dropAction, int actions, boolean isLocalTx)
+  public DropTargetDropEvent(DropTargetContext dtc, Point location,
+                             int dropAction, int actions, boolean isLocalTx)
   {
-    super (dtc);
+    super(dtc);
 
     if (location == null)
-      throw new NullPointerException ();
+      throw new NullPointerException();
 
     if (dtc == null)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException();
 
     if (dropAction != DnDConstants.ACTION_NONE
         && dropAction != DnDConstants.ACTION_COPY
@@ -95,7 +97,7 @@ public class DropTargetDropEvent extends DropTargetEvent
         && dropAction != DnDConstants.ACTION_COPY_OR_MOVE
         && dropAction != DnDConstants.ACTION_LINK
         && dropAction != DnDConstants.ACTION_REFERENCE)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException();
 
     int actionsMask = DnDConstants.ACTION_NONE
                       | DnDConstants.ACTION_COPY
@@ -105,7 +107,7 @@ public class DropTargetDropEvent extends DropTargetEvent
                       | DnDConstants.ACTION_REFERENCE;
     
     if (~(actions ^ actionsMask) != 0)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException();
     
     this.dropAction = dropAction;
     this.actions = actions;
@@ -113,52 +115,53 @@ public class DropTargetDropEvent extends DropTargetEvent
     this.isLocalTx = isLocalTx;
   }
   
-  public Point getLocation ()
+  public Point getLocation()
   {
     return location;
   }
 
-  public DataFlavor[] getCurrentDataFlavors ()
+  public DataFlavor[] getCurrentDataFlavors()
   {
-    return context.getCurrentDataFlavors ();
+    return context.getCurrentDataFlavors();
   }
 
-  public List getCurrentDataFlavorsAsList ()
+  public List getCurrentDataFlavorsAsList()
   {
-    return context.getCurrentDataFlavorsAsList ();
+    return context.getCurrentDataFlavorsAsList();
   }
 
-  public boolean isDataFlavorSupported (DataFlavor flavor)
+  public boolean isDataFlavorSupported(DataFlavor flavor)
   {
-    return context.isDataFlavorSupported (flavor);
+    return context.isDataFlavorSupported(flavor);
   }
 
-  public int getSourceActions ()
+  public int getSourceActions()
   {
     return actions;
   }
 
-  public int getDropAction ()
+  public int getDropAction()
   {
     return dropAction;
   }
 
-  public Transferable getTransferable ()
+  public Transferable getTransferable()
   {
     return context.getTransferable ();
   }
 
-  public void acceptDrop (int dropAction)
+  public void acceptDrop(int dropAction)
   {
-    context.acceptDrop (dropAction);
+    context.acceptDrop(dropAction);
   }
 
-  public void rejectDrop ()
+  public void rejectDrop()
   {
-    context.rejectDrop ();
+    context.rejectDrop();
   }
 
-  public void dropComplete (boolean success)
+  public void dropComplete(boolean success)
+    throws NotImplementedException
   {
     // FIXME: implement this
   }

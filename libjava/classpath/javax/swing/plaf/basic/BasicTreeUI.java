@@ -248,7 +248,7 @@ public class BasicTreeUI
   int gap = 4;
 
   /** The max height of the nodes in the tree. */
-  int maxHeight = 0;
+  int maxHeight;
   
   /** The hash color. */
   Color hashColor;
@@ -1129,7 +1129,7 @@ public class BasicTreeUI
   {
     Enumeration expanded = tree.getExpandedDescendants(path);
     while (expanded.hasMoreElements())
-      treeState.setExpandedState(((TreePath) expanded.nextElement()), true);
+      treeState.setExpandedState((TreePath) expanded.nextElement(), true);
   }
 
   /**
@@ -1140,7 +1140,7 @@ public class BasicTreeUI
    */
   protected TreePath getLastChildPath(TreePath parent)
   {
-    return ((TreePath) parent.getLastPathComponent());
+    return (TreePath) parent.getLastPathComponent();
   }
 
   /**
@@ -1295,21 +1295,21 @@ public class BasicTreeUI
     ActionMapUIResource am = new ActionMapUIResource();
     Action action;
 
-    action= new TreeAction();
+    action = new TreeAction();
     am.put(action.getValue(Action.NAME), action);
 
     // TreeHomeAction.
-    action= new TreeHomeAction(-1, "selectFirst");
+    action = new TreeHomeAction(-1, "selectFirst");
     am.put(action.getValue(Action.NAME), action);
-    action= new TreeHomeAction(-1, "selectFirstChangeLead");
+    action = new TreeHomeAction(-1, "selectFirstChangeLead");
     am.put(action.getValue(Action.NAME), action);
-    action= new TreeHomeAction(-1, "selectFirstExtendSelection");
+    action = new TreeHomeAction(-1, "selectFirstExtendSelection");
     am.put(action.getValue(Action.NAME), action);
-    action= new TreeHomeAction(1, "selectLast");
+    action = new TreeHomeAction(1, "selectLast");
     am.put(action.getValue(Action.NAME), action);
-    action= new TreeHomeAction(1, "selectLastChangeLead");
+    action = new TreeHomeAction(1, "selectLastChangeLead");
     am.put(action.getValue(Action.NAME), action);
-    action= new TreeHomeAction(1, "selectLastExtendSelection");
+    action = new TreeHomeAction(1, "selectLastExtendSelection");
     am.put(action.getValue(Action.NAME), action);
 
     // TreeIncrementAction.
@@ -1414,8 +1414,8 @@ public class BasicTreeUI
     if (treeSelectionModel != null
         && selectionModelPropertyChangeListener != null)
       {
-        treeSelectionModel.addPropertyChangeListener
-                                        (selectionModelPropertyChangeListener);
+        treeSelectionModel.addPropertyChangeListener(
+            selectionModelPropertyChangeListener);
       }
 
     componentListener = createComponentListener();
@@ -1819,7 +1819,7 @@ public class BasicTreeUI
 
         Insets i = tree.getInsets();
         int left = getRowX(tree.getRowForPath(path), path.getPathCount() - 1)
-                   -getRightChildIndent() - width / 2 + i.left;
+                   - getRightChildIndent() - width / 2 + i.left;
         cntlClick = mouseX >= left && mouseX <= left + width;
       }
     return cntlClick;
@@ -2207,7 +2207,7 @@ public class BasicTreeUI
     {
       cancelEditing(tree);
     }
-  }// CellEditorHandler
+  } // CellEditorHandler
 
   /**
    * Repaints the lead selection row when focus is lost/grained.
@@ -2255,7 +2255,7 @@ public class BasicTreeUI
     void repaintLeadRow()
     {
       TreePath lead = tree.getLeadSelectionPath();
-      if (lead!=null)
+      if (lead != null)
         tree.repaint(tree.getPathBounds(lead));
     }
   }
@@ -2588,7 +2588,7 @@ public class BasicTreeUI
     {
       return BasicTreeUI.this.getRowX(row, depth);
     }
-  }// NodeDimensionsHandler
+  } // NodeDimensionsHandler
 
   /**
    * PropertyChangeListener for the tree. Updates the appropriate variable, or
@@ -2742,7 +2742,7 @@ public class BasicTreeUI
       tree.revalidate();
       tree.repaint();
     }
-  }// TreeExpansionHandler
+  } // TreeExpansionHandler
 
   /**
    * TreeHomeAction is used to handle end/home actions. Scrolls either the first
@@ -3040,7 +3040,7 @@ public class BasicTreeUI
       treeState.treeStructureChanged(e);
       tree.repaint();
     }
-  }// TreeModelHandler
+  } // TreeModelHandler
 
   /**
    * TreePageAction handles page up and page down events.
@@ -3125,7 +3125,7 @@ public class BasicTreeUI
             }
           else
             {
-              newVisible.y -= (visible.height - newVisible.height);
+              newVisible.y -= visible.height - newVisible.height;
               newVisible.height = visible.height;
             }
 
@@ -3169,7 +3169,7 @@ public class BasicTreeUI
     {
       return (tree != null) && tree.isEnabled();
     }
-  }// TreePageAction
+  } // TreePageAction
 
   /**
    * Listens for changes in the selection model and updates the display
@@ -3208,13 +3208,13 @@ public class BasicTreeUI
           Rectangle n = treeState.getBounds(event.getNewLeadSelectionPath(), 
                                            new Rectangle());
           
-          if (o!=null)
+          if (o != null)
             tree.repaint(o);
-          if (n!=null)
+          if (n != null)
             tree.repaint(n);
         }
     }
-  }// TreeSelectionHandler
+  } // TreeSelectionHandler
 
   /**
    * For the first selected row expandedness will be toggled.
@@ -3315,7 +3315,7 @@ public class BasicTreeUI
               // is not visible.
               TreePath parent = current.getParentPath();
               if (parent != null && 
-                  !(parent.getPathCount()==1 && !tree.isRootVisible()) )
+                  ! (parent.getPathCount() == 1 && ! tree.isRootVisible()))
                 tree.setSelectionPath(parent);
             }
         }
@@ -3647,7 +3647,7 @@ public class BasicTreeUI
     if (parent != null)
       {
         Rectangle parentBounds = getPathBounds(tree, parent);
-        paintVerticalLine(g, tree, parentBounds.x + 2* gap, 
+        paintVerticalLine(g, tree, parentBounds.x + 2 * gap, 
                           parentBounds.y + parentBounds.height / 2,
                           bounds.y + bounds.height / 2);
       }
@@ -3717,7 +3717,7 @@ public class BasicTreeUI
                                              boolean isLeaf)
   {
     Object node = path.getLastPathComponent();
-    return (! isLeaf && hasControlIcons());
+    return ! isLeaf && hasControlIcons();
   }
 
   /**

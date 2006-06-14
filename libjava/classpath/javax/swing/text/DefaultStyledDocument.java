@@ -1053,14 +1053,6 @@ public class DefaultStyledDocument extends AbstractDocument implements
 
               Edit edit = getEditForParagraphAndIndex(paragraph, index);
               edit.addAddedElement(leaf);
-
-              if (end != toRec.getEndOffset())
-                {
-                  recreateLeaves(end, toRec, onlyContent);
-                  
-                  if (onlyContent)
-                    edit.addRemovedElement(target);
-                }
             }
           else
             paragraph.replace(0, 0, new Element[] { leaf });

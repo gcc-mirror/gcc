@@ -10,7 +10,7 @@ extern "C"
 {
 #endif
 
-JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyph (JNIEnv *env, jobject, jint);
+JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphs (JNIEnv *env, jobject, jintArray);
 JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getKerning (JNIEnv *env, jobject, jint, jint);
 JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getMetricsNative (JNIEnv *env, jobject, jint);
 JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphOutlineNative (JNIEnv *env, jobject, jint);

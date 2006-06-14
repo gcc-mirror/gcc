@@ -677,7 +677,7 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
   {
     Point point = SwingUtilities.convertPoint((Component) e.getSource(),
                                               e.getPoint(), list);
-    MouseEvent newEvent= new MouseEvent((Component) e.getSource(),
+    MouseEvent newEvent = new MouseEvent((Component) e.getSource(),
                                         e.getID(), e.getWhen(),
                                         e.getModifiers(), point.x, point.y,
                                         e.getModifiers(),

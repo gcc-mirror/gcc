@@ -116,6 +116,8 @@ public class BasicArrowButton extends JButton implements SwingConstants
     this.shadow = shadow;
     this.darkShadow = darkShadow;
     this.highlight = highlight;
+    // Mark the button as not closing the popup, we handle this ourselves.
+    putClientProperty(BasicLookAndFeel.DONT_CANCEL_POPUP, Boolean.TRUE);
   }
 
   /**

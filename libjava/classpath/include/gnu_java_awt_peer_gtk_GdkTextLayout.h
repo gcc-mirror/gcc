@@ -16,7 +16,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkTextLayout_getExtents (JNIE
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkTextLayout_indexToPos (JNIEnv *env, jobject, jint, jdoubleArray);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkTextLayout_initState (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkTextLayout_dispose (JNIEnv *env, jobject);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkTextLayout_cairoDrawGdkTextLayout (JNIEnv *env, jobject, jobject, jfloat, jfloat);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkTextLayout_cairoDrawGdkTextLayout (JNIEnv *env, jobject, jlong, jfloat, jfloat);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkTextLayout_initStaticState (JNIEnv *env, jclass);
 JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_GdkTextLayout_getOutline (JNIEnv *env, jobject, jobject);
 

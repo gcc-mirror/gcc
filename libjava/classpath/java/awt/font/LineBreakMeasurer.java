@@ -1,5 +1,5 @@
 /* LineBreakMeasurer.java
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,84 +38,161 @@ exception statement from your version. */
 
 package java.awt.font;
 
-import gnu.classpath.NotImplementedException;
-
 import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.text.BreakIterator;
+import java.awt.font.TextLayout;
+import java.awt.font.FontRenderContext;
+import java.awt.Shape;
 
 public final class LineBreakMeasurer
 {
-  private AttributedCharacterIterator ci;
+  private AttributedCharacterIterator text;
+  private int position;
   private FontRenderContext frc;
-  private BreakIterator bi;
+  private TextLayout totalLayout;
+  private int numChars;
 
-  /**
-   * Constructs a <code>LineBreakMeasurer</code> object.
-   */
-  public LineBreakMeasurer (AttributedCharacterIterator text,
-                            FontRenderContext frc)
+  public LineBreakMeasurer(AttributedCharacterIterator text, 
+			   BreakIterator breakIter, FontRenderContext frc)
   {
-    this (text, null, frc);
-  }
-
-  /**
-   * Constructs a <code>LineBreakMeasurer</code> object.
-   */
-  public LineBreakMeasurer (AttributedCharacterIterator text,
-                            BreakIterator breakIter, FontRenderContext frc) 
-  {
-    this.ci = text;
-    this.bi = breakIter;
+    this.text = text;
     this.frc = frc;
+    position = 0;
+    totalLayout = new TextLayout(text, frc);
+    numChars = totalLayout.getCharacterCount();
   }
 
-  public void deleteChar (AttributedCharacterIterator newParagraph,
-                          int deletePos)
-    throws NotImplementedException
+  public LineBreakMeasurer(AttributedCharacterIterator text, 
+			   FontRenderContext frc)
   {
-    throw new Error ("not implemented");
+    this.text = text;
+    this.frc = frc;
+    position = 0;
+    totalLayout = new TextLayout(text, frc);
+    numChars = totalLayout.getCharacterCount();
   }
 
-  public int getPosition ()
+  public void deleteChar(AttributedCharacterIterator newParagraph, 
+			 int deletePos)
   {
-    return ci.getIndex ();
+    totalLayout = new TextLayout(newParagraph, frc);
+    if( deletePos < 0 || deletePos > totalLayout.getCharacterCount() )
+      throw new NullPointerException("Invalid deletePos:"+deletePos);
+    numChars = totalLayout.getCharacterCount();
+    text = newParagraph;
+    position = 0;
   }
 
-  public void insertChar (AttributedCharacterIterator newParagraph,
-                          int insertPos)
-    throws NotImplementedException
+  public void insertChar(AttributedCharacterIterator newParagraph, 
+			 int insertPos)
   {
-    throw new Error ("not implemented");
+    totalLayout = new TextLayout(newParagraph, frc);
+    if( insertPos < 0 || insertPos > totalLayout.getCharacterCount() )
+      throw new NullPointerException("Invalid insertPos:"+insertPos);
+    numChars = totalLayout.getCharacterCount();
+    text = newParagraph;
+    position = 0;
   }
 
-  public TextLayout nextLayout (float wrappingWidth)
-    throws NotImplementedException
+  public TextLayout nextLayout(float wrappingWidth)
   {
-    throw new Error ("not implemented");
+    return nextLayout( wrappingWidth, numChars, false );
   }
 
-  public TextLayout nextLayout (float wrappingWidth, int offsetLimit,
-                                boolean requireNextWord)
-    throws NotImplementedException
+  public TextLayout nextLayout(float wrappingWidth, int offsetLimit, 
+			       boolean requireNextWord)
   {
-    throw new Error ("not implemented");
+    int next = nextOffset( wrappingWidth, offsetLimit, requireNextWord );
+    AttributedCharacterIterator aci = (new AttributedString( text, 
+							     position, next )
+				       ).getIterator();
+    position = next;
+    return new TextLayout( aci, frc );
   }
 
-  public int nextOffset (float wrappingWidth)
-    throws NotImplementedException
+  public int nextOffset(float wrappingWidth)
   {
-    throw new Error ("not implemented");
+    return nextOffset( wrappingWidth, numChars, false );
   }
 
-  public int nextOffset (float wrappingWidth, int offsetLimit,
-                         boolean requireNextWord)
-    throws NotImplementedException
+  public int nextOffset(float wrappingWidth, int offsetLimit, 
+			boolean requireNextWord)
   {
-    throw new Error ("not implemented");
+    Shape s = totalLayout.getBlackBoxBounds( position, offsetLimit );
+    double remainingLength = s.getBounds2D().getWidth();
+
+    int guessOffset = (int)( ( (double)wrappingWidth / (double)remainingLength)
+			     * ( (double)numChars - (double)position ) );
+    guessOffset += position;
+    if( guessOffset > offsetLimit )
+      guessOffset = offsetLimit;
+
+    s = totalLayout.getBlackBoxBounds( position, guessOffset );
+    double guessLength = s.getBounds2D().getWidth();
+
+    boolean makeSmaller = ( guessLength > wrappingWidth );
+    int inc = makeSmaller ? -1 : 1;
+    boolean keepGoing = true;
+
+    do
+      {
+	guessOffset = guessOffset + inc;
+	if( guessOffset <= position || guessOffset > offsetLimit )
+	  {
+	    keepGoing = false;
+	  }
+	else
+	  {
+	    s = totalLayout.getBlackBoxBounds( position, guessOffset );
+	    guessLength = s.getBounds2D().getWidth();
+	    if( makeSmaller && ( guessLength <= wrappingWidth) )	  
+	      keepGoing = false;
+	    if( !makeSmaller && ( guessLength >= wrappingWidth) )
+	      keepGoing = false;
+	  }
+      }
+    while( keepGoing );
+
+    if( !makeSmaller )
+      guessOffset--;
+
+    if( guessOffset >= offsetLimit )
+      return offsetLimit;
+
+    text.setIndex( guessOffset );
+    if( !requireNextWord )
+      {
+	char c = text.previous();
+	while( !Character.isWhitespace( c ) && c != '-' && 
+	       guessOffset > position )
+	  { 
+	    guessOffset--; 
+	    c = text.previous();
+	  }
+      }
+    else
+      {
+	char c = text.next();
+	while( !Character.isWhitespace( c ) && c != '-' && 
+	       guessOffset < offsetLimit )
+	  {
+	    guessOffset++;
+	    c = text.next();
+	  }
+      }
+
+    return guessOffset;
   }
 
-  public void setPosition (int newPosition)
+  public void setPosition(int newPosition)
   {
-    ci.setIndex (newPosition);
+    position = newPosition;
+  }
+
+  public int getPosition()
+  {
+    return position;
   }
 }
+

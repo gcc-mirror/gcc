@@ -84,6 +84,17 @@ AC_ARG_ENABLE(multilib,
   *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
  esac], [multilib=yes])dnl
 
+AC_ARG_ENABLE(plugin,
+  AS_HELP_STRING([--enable-plugin],
+                 [build gcjwebplugin web browser plugin]),
+    [case "$enableval" in
+      yes) plugin_enabled=yes ;;
+      no)  plugin_enabled=no ;;
+      *)   AC_MSG_ERROR([Unknown argument to enable/disable plugin]);;
+     esac],
+    [plugin_enabled=no]
+)
+
 # It may not be safe to run linking tests in AC_PROG_CC/AC_PROG_CXX.
 GCC_NO_EXECUTABLES
 
@@ -320,6 +331,8 @@ test -f libgcj.spec || touch libgcj.spec
 
 # Set up to configure Classpath.
 # FIXME: no supported way to pass args in autoconf.
+ac_configure_args="$ac_configure_args --with-fastjar=$JAR"
+ac_configure_args="$ac_configure_args --enable-tool-wrappers"
 ac_configure_args="$ac_configure_args --disable-load-library"
 ac_configure_args="$ac_configure_args --${LIBGCJDEBUG}-debug"
 ac_configure_args="$ac_configure_args --enable-default-toolkit=$TOOLKIT"
@@ -330,7 +343,9 @@ ac_configure_args="$ac_configure_args --disable-core-jni"
 dnl FIXME?
 ac_configure_args="$ac_configure_args --disable-examples"
 ac_configure_args="$ac_configure_args --with-glibj=build"
-ac_configure_args="$ac_configure_args --disable-plugin"
+if test "$plugin_enabled" != yes; then
+  ac_configure_args="$ac_configure_args --disable-plugin"
+fi
 if test "$use_gtk_awt" != yes; then
   ac_configure_args="$ac_configure_args --disable-gtk-peer"
 fi

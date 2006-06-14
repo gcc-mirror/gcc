@@ -79,7 +79,9 @@ import javax.swing.plaf.IconUIResource;
 import javax.swing.plaf.InsetsUIResource;
 
 /**
- * BasicLookAndFeel
+ * A basic implementation of Swing's Look and Feel framework. This can serve
+ * as a base for custom look and feel implementations.
+ *
  * @author Andrew Selkirk
  */
 public abstract class BasicLookAndFeel extends LookAndFeel
@@ -126,8 +128,11 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       Component target = ev.getComponent();
       if (target instanceof Container)
         target = ((Container) target).findComponentAt(ev.getPoint());
-      if (! m.isComponentPartOfCurrentMenu(target))
-        m.clearSelectedPath();
+      if (m.getSelectedPath().length > 0
+          && ! m.isComponentPartOfCurrentMenu(target))
+        {
+          m.clearSelectedPath();
+        }
     }
 
   }
@@ -193,10 +198,21 @@ public abstract class BasicLookAndFeel extends LookAndFeel
   static final long serialVersionUID = -6096995660290287879L;
 
   /**
+   * This is a key for a client property that tells the PopupHelper that
+   * it shouldn't close popups when the mouse event target has this
+   * property set. This is used when the component handles popup closing
+   * itself.
+   */
+  static final String DONT_CANCEL_POPUP = "noCancelPopup";
+
+  /**
    * Helps closing menu popups when user clicks outside of the menu area.
    */
   private transient PopupHelper popupHelper;
 
+  /**
+   * Maps the audio actions for this l&f.
+   */
   private ActionMap audioActionMap;
 
   /**
@@ -425,9 +441,15 @@ public abstract class BasicLookAndFeel extends LookAndFeel
   }
 
   /**
-   * loadResourceBundle
-   * @param defaults TODO
+   * Loads the resource bundle in 'resources/basic' and adds the contained
+   * key/value pairs to the <code>defaults</code> table.
+   *
+   * @param defaults the UI defaults to load the resources into
    */
+  // FIXME: This method is not used atm and private and thus could be removed.
+  // However, I consider this method useful for providing localized
+  // descriptions and similar stuff and therefore think that we should use it
+  // instead and provide the resource bundles.
   private void loadResourceBundle(UIDefaults defaults)
   {
     ResourceBundle bundle;
@@ -446,7 +468,9 @@ public abstract class BasicLookAndFeel extends LookAndFeel
   }
 
   /**
-   * initComponentDefaults
+   * Populates the <code>defaults</code> table with UI default values for
+   * colors, fonts, keybindings and much more.
+   *
    * @param defaults  the defaults table (<code>null</code> not permitted).
    */
   protected void initComponentDefaults(UIDefaults defaults)
@@ -509,7 +533,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
           return BasicIconFactory.getMenuItemCheckIcon();
         }
       },
-      "CheckBox.margin",new InsetsUIResource(2, 2, 2, 2),
+      "CheckBox.margin", new InsetsUIResource(2, 2, 2, 2),
       "CheckBox.textIconGap", new Integer(4),
       "CheckBox.textShiftOffset", new Integer(0),
       "CheckBoxMenuItem.acceleratorFont", new FontUIResource("Dialog",
@@ -599,7 +623,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "ctrl F4", "close",
         "KP_DOWN", "down",
         "ctrl F10", "maximize",
-        "ctrl alt shift F6","selectPreviousFrame"
+        "ctrl alt shift F6", "selectPreviousFrame"
       }),
       "DesktopIcon.border", new BorderUIResource.CompoundBorderUIResource(null,
                                                                           null),
@@ -1069,14 +1093,14 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "PAGE_DOWN", "positiveBlockIncrement",
         "END",  "maxScroll",
         "HOME",  "minScroll",
-        "LEFT",  "positiveUnitIncrement",
+        "LEFT",  "negativeUnitIncrement",
         "KP_UP", "negativeUnitIncrement",
         "KP_DOWN", "positiveUnitIncrement",
         "UP",  "negativeUnitIncrement",
-        "RIGHT", "negativeUnitIncrement",
-        "KP_LEFT", "positiveUnitIncrement",
+        "RIGHT", "positiveUnitIncrement",
+        "KP_LEFT", "negativeUnitIncrement",
         "DOWN",  "positiveUnitIncrement",
-        "KP_RIGHT", "negativeUnitIncrement"
+        "KP_RIGHT", "positiveUnitIncrement"
       }),
       "ScrollBar.foreground", new ColorUIResource(light),
       "ScrollBar.maximumThumbSize", new DimensionUIResource(4096, 4096),
@@ -1091,7 +1115,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "ScrollPane.ancestorInputMap", new UIDefaults.LazyInputMap(new Object[] {
         "PAGE_UP", "scrollUp",
         "KP_LEFT", "unitScrollLeft",
-        "ctrl PAGE_DOWN","scrollRight",
+        "ctrl PAGE_DOWN", "scrollRight",
         "PAGE_DOWN", "scrollDown",
         "KP_RIGHT", "unitScrollRight",
         "LEFT",  "unitScrollLeft",
@@ -1167,7 +1191,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "SplitPaneDivider.border", BasicBorders.getSplitPaneDividerBorder(),
       "SplitPaneDivider.draggingColor", new ColorUIResource(Color.DARK_GRAY),
       "TabbedPane.ancestorInputMap", new UIDefaults.LazyInputMap(new Object[] {
-        "ctrl PAGE_DOWN","navigatePageDown",
+        "ctrl PAGE_DOWN", "navigatePageDown",
         "ctrl PAGE_UP", "navigatePageUp",
         "ctrl UP", "requestFocus",
         "ctrl KP_UP", "requestFocus"
@@ -1220,13 +1244,13 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "COPY", "copy",
         "ctrl KP_UP", "selectPreviousRowChangeLead",
         "PASTE", "paste",
-        "shift PAGE_DOWN","scrollDownExtendSelection",
+        "shift PAGE_DOWN", "scrollDownExtendSelection",
         "PAGE_DOWN", "scrollDownChangeSelection",
         "END",  "selectLastColumn",
         "shift END", "selectLastColumnExtendSelection",
         "HOME",  "selectFirstColumn",
         "ctrl END", "selectLastRow",
-        "ctrl shift END","selectLastRowExtendSelection",
+        "ctrl shift END", "selectLastRowExtendSelection",
         "LEFT",  "selectPreviousColumn",
         "shift HOME", "selectFirstColumnExtendSelection",
         "UP",  "selectPreviousRow",
@@ -1234,7 +1258,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "ctrl HOME", "selectFirstRow",
         "shift LEFT", "selectPreviousColumnExtendSelection",
         "DOWN",  "selectNextRow",
-        "ctrl shift HOME","selectFirstRowExtendSelection",
+        "ctrl shift HOME", "selectFirstRowExtendSelection",
         "shift UP", "selectPreviousRowExtendSelection",
         "F2",  "startEditing",
         "shift RIGHT", "selectNextColumnExtendSelection",
