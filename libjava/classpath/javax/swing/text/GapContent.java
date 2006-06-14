@@ -918,7 +918,7 @@ public class GapContent
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final int d = a[mid];
         if (d == key)
           return mid;

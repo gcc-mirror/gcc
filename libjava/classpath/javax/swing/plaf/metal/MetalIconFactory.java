@@ -967,7 +967,7 @@ public class MetalIconFactory implements Serializable
      * This mask is used to paint the gradient in the shape of the thumb.
      */
     int[][] gradientMask = new int[][] { {0, 12}, {0, 12}, {0, 12}, {0, 12},
-                                         {0, 12}, {0, 12}, {0, 12}, {1, 12},
+                                         {0, 12}, {0, 12}, {0, 12}, {1, 11},
                                          {2, 10}, {3, 9}, {4, 8}, {5, 7},
                                          {6, 6}};
 
@@ -1623,7 +1623,7 @@ public class MetalIconFactory implements Serializable
      * This mask is used to paint the gradient in the shape of the thumb.
      */
     int[][] gradientMask = new int[][] { {0, 12}, {0, 12}, {0, 12}, {0, 12},
-                                         {0, 12}, {0, 12}, {0, 12}, {1, 12},
+                                         {0, 12}, {0, 12}, {0, 12}, {1, 11},
                                          {2, 10}, {3, 9}, {4, 8}, {5, 7},
                                          {6, 6}};
 

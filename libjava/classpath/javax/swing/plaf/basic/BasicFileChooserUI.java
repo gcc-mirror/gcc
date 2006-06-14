@@ -699,10 +699,10 @@ public class BasicFileChooserUI extends FileChooserUI
   String fileDescText;
 
   /** Is a directory selected? */
-  boolean dirSelected = false;
+  boolean dirSelected;
 
   /** The current directory. */
-  File currDir = null;
+  File currDir;
 
   // FIXME: describe what is contained in the bottom panel
   /** The bottom panel. */

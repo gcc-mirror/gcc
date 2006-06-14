@@ -767,10 +767,22 @@ public class RepaintManager
   public Image getVolatileOffscreenBuffer(Component comp, int proposedWidth,
                                           int proposedHeight)
   {
-    int maxWidth = doubleBufferMaximumSize.width;
-    int maxHeight = doubleBufferMaximumSize.height;
-    return comp.createVolatileImage(Math.min(maxWidth, proposedWidth),
-                                    Math.min(maxHeight, proposedHeight));
+    Component root = getRoot(comp);
+    Image buffer = (Image) offscreenBuffers.get(root);
+    if (buffer == null 
+        || buffer.getWidth(null) < proposedWidth 
+        || buffer.getHeight(null) < proposedHeight
+        || !(buffer instanceof VolatileImage))
+      {
+        int width = Math.max(proposedWidth, root.getWidth());
+        width = Math.min(doubleBufferMaximumSize.width, width);
+        int height = Math.max(proposedHeight, root.getHeight());
+        height = Math.min(doubleBufferMaximumSize.height, height);
+        buffer = root.createVolatileImage(width, height);
+        if (buffer != null)
+          offscreenBuffers.put(root, buffer);
+      }
+    return buffer;
   }
   
 

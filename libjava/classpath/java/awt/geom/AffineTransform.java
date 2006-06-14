@@ -414,7 +414,9 @@ public class AffineTransform implements Cloneable, Serializable
   public static AffineTransform getTranslateInstance(double tx, double ty)
   {
     AffineTransform t = new AffineTransform();
-    t.setToTranslation(tx, ty);
+    t.m02 = tx;
+    t.m12 = ty;
+    t.type = (tx == 0 && ty == 0) ? TYPE_UNIFORM_SCALE : TYPE_TRANSLATION;
     return t;
   }
 

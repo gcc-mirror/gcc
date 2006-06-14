@@ -40,6 +40,7 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.Graphics;
 import java.awt.Color;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Graphics2D;
@@ -63,7 +64,6 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
     this.surface = surface;
     cairo_t = surface.newCairoContext();
     setup( cairo_t );
-    setClip(0, 0, surface.width, surface.height);
   }
 
   /**
@@ -75,7 +75,6 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
     surface = copyFrom.surface;
     cairo_t = surface.newCairoContext();
     copy( copyFrom, cairo_t );
-    setClip(0, 0, surface.width, surface.height);
   }
   
   public Graphics create()
@@ -85,7 +84,7 @@ public class CairoSurfaceGraphics extends CairoGraphics2D
   
   public GraphicsConfiguration getDeviceConfiguration()
   {
-    throw new UnsupportedOperationException();
+    return GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
   }
   
   protected Rectangle2D getRealBounds()

@@ -128,7 +128,7 @@ main (int argc, const char** argv)
 	  goto destroy;
 	}
 
-      vm_args.options[vm_args.nOptions++].optionString = "-Djava.class.path=" DATA_DIR "/" PACKAGE "/tools.zip";
+      vm_args.options[vm_args.nOptions++].optionString = "-Djava.class.path=" TOOLS_ZIP;
     }
 
   /* Terminate vm_args.options with a NULL element. */
@@ -188,7 +188,7 @@ main (int argc, const char** argv)
       (*env)->SetObjectArrayElement (env, args_array, i, str);
     }
 
-  class_id = (*env)->FindClass (env, "gnu/classpath/tools/" TOOLNAME "/Main");
+  class_id = (*env)->FindClass (env, "gnu/classpath/tools/" TOOLPACKAGE "/Main");
   if (class_id == NULL)
     {
       fprintf (stderr, TOOLNAME ": FindClass failed.\n");

@@ -1066,6 +1066,10 @@ class VirtualMachine
       stack[sp] = ((e1 != 0) || (stack[sp] != 0)) ? 1 : 0;
       break;
 
+    case 0x5C: // NOT
+      stack[sp] = (stack[sp] != 0) ? 0 : 1;
+      break;
+
     case 0x5e: // SDB, Set Delta Base in the graphics state
       deltaBase = stack[sp--];
       break;
@@ -1764,7 +1768,7 @@ class VirtualMachine
     /* 50 */ "LT", "LTEQ", "GT", "GTEQ",
     /* 54 */ "EQ", "NEQ", "INST_56", "INST_57",
     /* 58 */ "IF", "EIF", "AND", "OR",
-    /* 5c */ "INST_5C", "INST_5D", "SDB", "SDS",
+    /* 5c */ "NOT", "INST_5D", "SDB", "SDS",
     /* 60 */ "ADD", "SUB", "DIV", "MUL",
     /* 64 */ "ABS", "NEG", "FLOOR", "CEILING",
     /* 68 */ "ROUND[0]", "ROUND[1]", "ROUND[2]", "ROUND[3]",

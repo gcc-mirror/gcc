@@ -56,6 +56,9 @@ public class FreetypeGlyphVector extends GlyphVector
   private Font font;
   private GdkFontPeer peer; // ATTN: Accessed from native code.
 
+  private Rectangle2D logicalBounds;
+
+  private float[] glyphPositions;
   /**
    * The string represented by this GlyphVector.
    */
@@ -81,10 +84,21 @@ public class FreetypeGlyphVector extends GlyphVector
    */
   private AffineTransform[] glyphTransforms;
 
+  private GlyphMetrics[] metricsCache;
+
   /**
    * Create a glyphvector from a given (Freetype) font and a String.
    */
   public FreetypeGlyphVector(Font f, String s, FontRenderContext frc)
+  {
+    this(f, s, frc, Font.LAYOUT_LEFT_TO_RIGHT);
+  }
+
+  /**
+   * Create a glyphvector from a given (Freetype) font and a String.
+   */
+  public FreetypeGlyphVector(Font f, String s, FontRenderContext frc,
+			     int flags)
   {
     this.s = s;
     this.font = f;
@@ -94,6 +108,14 @@ public class FreetypeGlyphVector extends GlyphVector
     peer = (GdkFontPeer)font.getPeer();
 
     getGlyphs();
+    if( flags == Font.LAYOUT_RIGHT_TO_LEFT )
+      {
+	// reverse the glyph ordering.
+	int[] temp = new int[ nGlyphs ];
+	for(int i = 0; i < nGlyphs; i++)
+	  temp[ i ] = glyphCodes[ nGlyphs - i - 1];
+	glyphCodes = temp;
+      }
     performDefaultLayout();
   }
 
@@ -121,21 +143,25 @@ public class FreetypeGlyphVector extends GlyphVector
   {
     nGlyphs = s.codePointCount( 0, s.length() );
     glyphCodes = new int[ nGlyphs ];
+    int[] codePoints = new int[ nGlyphs ];
     int stringIndex = 0;
+
     for(int i = 0; i < nGlyphs; i++)
       {
-	glyphCodes[i] = getGlyph( s.codePointAt(stringIndex) );
+	codePoints[i] = s.codePointAt( stringIndex );
 	// UTF32 surrogate handling
-	if( s.codePointAt( stringIndex ) != (int)s.charAt( stringIndex ) )
+	if( codePoints[i] != (int)s.charAt( stringIndex ) )
 	  stringIndex ++;
 	stringIndex ++;
       }
+
+   glyphCodes = getGlyphs( codePoints );
   }
 
   /**
    * Returns the glyph code within the font for a given character
    */
-  public native int getGlyph(int codepoint);
+  public native int[] getGlyphs(int[] codepoints);
 
   /**
    * Returns the kerning of a glyph pair
@@ -180,12 +206,15 @@ public class FreetypeGlyphVector extends GlyphVector
    */
   public void performDefaultLayout()
   {
+    logicalBounds = null; // invalidate caches.
+    glyphPositions = null;
+
     glyphTransforms = new AffineTransform[ nGlyphs ]; 
     double x = 0;
+
     for(int i = 0; i < nGlyphs; i++)
       {
 	GlyphMetrics gm = getGlyphMetrics( i );
-	Rectangle2D r = gm.getBounds2D();
 	glyphTransforms[ i ] = AffineTransform.getTranslateInstance(x, 0);
 	x += gm.getAdvanceX();
 	if( i > 0 )
@@ -235,19 +264,48 @@ public class FreetypeGlyphVector extends GlyphVector
 				   gm.getAdvanceX(), r.getHeight() );
   }
 
+  /*
+   * FIXME: Not all glyph types are supported.
+   * (The JDK doesn't really seem to do so either)
+   */
+  public void setupGlyphMetrics()
+  {
+    metricsCache = new GlyphMetrics[ nGlyphs ];
+
+    for(int i = 0; i < nGlyphs; i++)
+      {
+	GlyphMetrics gm = (GlyphMetrics)
+	  peer.getGlyphMetrics( glyphCodes[ i ] );
+	if( gm == null )
+	  {
+	    double[] val = getMetricsNative( glyphCodes[ i ] );
+	    if( val == null )
+	      gm = null;
+	    else
+	      {
+		gm = new GlyphMetrics( true, 
+				       (float)val[1], 
+				       (float)val[2], 
+				       new Rectangle2D.Double
+				       ( val[3], val[4], 
+					 val[5], val[6] ),
+				       GlyphMetrics.STANDARD );
+		peer.putGlyphMetrics( glyphCodes[ i ], gm );
+	      }
+	  }
+	metricsCache[ i ] = gm;
+      }
+  }
+
   /**
    * Returns the metrics of a single glyph.
    */
   public GlyphMetrics getGlyphMetrics(int glyphIndex)
   {
-    double[] val = getMetricsNative( glyphCodes[ glyphIndex ] );
-    if( val == null )
-      return null;
-    
-    return new GlyphMetrics( true, (float)val[1], (float)val[2], 
-			     new Rectangle2D.Double( val[3], val[4], 
-						     val[5], val[6] ),
-			     GlyphMetrics.STANDARD );
+    if( metricsCache == null )
+      setupGlyphMetrics();
+
+    return metricsCache[ glyphIndex ];
   }
 
   /**
@@ -275,6 +333,9 @@ public class FreetypeGlyphVector extends GlyphVector
   public float[] getGlyphPositions(int beginGlyphIndex, int numEntries, 
 				   float[] positionReturn)
   {
+    if( glyphPositions != null )
+      return glyphPositions;
+
     float[] rval;
 
     if( positionReturn == null )
@@ -289,6 +350,7 @@ public class FreetypeGlyphVector extends GlyphVector
 	rval[i * 2 + 1] = (float)p.getY();
       }
 
+    glyphPositions = rval;
     return rval;
   }
 
@@ -316,11 +378,19 @@ public class FreetypeGlyphVector extends GlyphVector
   {
     if( nGlyphs == 0 )
       return new Rectangle2D.Double(0, 0, 0, 0);
+    if( logicalBounds != null )
+      return logicalBounds;
 
     Rectangle2D rect = (Rectangle2D)getGlyphLogicalBounds( 0 );
     for( int i = 1; i < nGlyphs; i++ )
-      rect = rect.createUnion( (Rectangle2D)getGlyphLogicalBounds( i ) );
+      {
+	Rectangle2D r2 = (Rectangle2D)getGlyphLogicalBounds( i );
+	Point2D p = getGlyphPosition( i );
+	r2.setRect( p.getX(), p.getY(), r2.getWidth(), r2.getHeight() );
+	rect = rect.createUnion( r2 );
+      }
 
+    logicalBounds = rect;
     return rect;
   }
 
@@ -360,7 +430,9 @@ public class FreetypeGlyphVector extends GlyphVector
   public Shape getOutline(float x, float y)
   {
     AffineTransform tx = AffineTransform.getTranslateInstance( x, y );
-    return tx.createTransformedShape( getOutline() );
+    GeneralPath gp = (GeneralPath)getOutline();
+    gp.transform( tx );
+    return gp;
   }
 
   /**
@@ -380,6 +452,8 @@ public class FreetypeGlyphVector extends GlyphVector
     // FIXME: Scaling, etc.?
     glyphTransforms[ glyphIndex ].setToTranslation( newPos.getX(), 
 						    newPos.getY() );
+    logicalBounds = null;
+    glyphPositions = null;
   }
 
   /**
@@ -388,5 +462,7 @@ public class FreetypeGlyphVector extends GlyphVector
   public void setGlyphTransform(int glyphIndex, AffineTransform newTX)
   {
     glyphTransforms[ glyphIndex ].setTransform( newTX );
+    logicalBounds = null;
+    glyphPositions = null;
   }
 }

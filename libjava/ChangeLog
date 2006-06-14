@@ -1,3 +1,124 @@
+2006-06-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* configure.ac (--enable-plugin): New option.
+	(ac_configure_args): Add --enable-tool-wrappers.
+	(ac_configure_args): Add --disable-plugin unless --enable-plugin
+	was specified.
+	* gcj/Makefile.in: Regenerate.
+	* sources.am (gnu_java_net_source_files): Add
+	classpath/gnu/java/net/IndexListParser.java.
+	(property_files): Remove
+	classpath/resource/gnu/classpath/tools/jarsigner/MessageBundle.properties,
+	classpath/resource/gnu/classpath/tools/keytool/MessageBundle.properties.
+	Add
+	classpath/resource/gnu/classpath/tools/appletviewer/MessagesBundle.properties,
+	classpath/resource/gnu/classpath/tools/appletviewer/MessagesBundle_de.properties,
+	classpath/resource/gnu/classpath/tools/getopt/Messages.properties,
+	classpath/resource/gnu/classpath/tools/jar/messages.properties,
+	classpath/resource/gnu/classpath/tools/jarsigner/messages.properties,
+	classpath/resource/gnu/classpath/tools/keytool/messages.properties,
+	classpath/resource/gnu/classpath/tools/native2ascii/messages.properties,
+	classpath/resource/gnu/classpath/tools/serialver/messages.properties.
+	* classpath/Makefile.in: Regenerate.
+	* classpath/native/jni/gtk-peer/cairographics2d.h,
+	classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_CairoGraphics2D.c,
+	classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c,
+	classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c,
+	classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_ComponentGraphics.c,
+	classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkVolatileImage.c,
+	classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_CairoSurface.c,
+	classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkTextLayout.c:
+	Merge from GNU Classpath.
+	* classpath/native/Makefile.in: Regenerate.
+	* classpath/native/jawt/Makefile.in: Regenerate.
+	* classpath/native/jawt/Makefile.am: Install libjawt.so in GCJ's
+	versioned library directory.
+	* classpath/native/Makefile.am: Add plugin directory if
+	--enable-plugin was specified.
+	* classpath/native/plugin/Makefile.in: Regenerate.  *
+	classpath/native/plugin/Makefile.am: Install libgcjwebplugin.so in
+	GCJ's versioned library directory.
+	* classpath/resource/gnu/classpath/tools/native2ascii/messages.properties:
+	New file.
+	* classpath/resource/gnu/classpath/tools/getopt/Messages.properties:
+	Likewise.
+	* classpath/resource/gnu/classpath/tools/jarsigner/messages.properties:
+	Likewise.
+	* classpath/resource/gnu/classpath/tools/jarsigner/MessageBundle.properties:
+	Remove file.
+	* classpath/resource/gnu/classpath/tools/keytool/messages.properties:
+	New file.
+	* classpath/resource/gnu/classpath/tools/keytool/MessageBundle.properties:
+	Remove file.
+	* classpath/resource/gnu/classpath/tools/appletviewer/MessagesBundle_de.properties:
+	New file.
+	* classpath/resource/gnu/classpath/tools/appletviewer/MessagesBundle.properties:
+	Likewise.
+	* classpath/resource/gnu/classpath/tools/jar/messages.properties:
+	Likewise.
+	* classpath/resource/gnu/classpath/tools/serialver/messages.properties:
+	Likewise.
+	* classpath/gnu/java/net/IndexListParser.java:
+	Likewise.
+	* classpath/gnu/java/awt/peer/gtk/VolatileImageGraphics.java,
+	classpath/gnu/java/awt/peer/gtk/CairoGraphics2D.java,
+	classpath/gnu/java/awt/peer/gtk/CairoSurface.java,
+	classpath/gnu/java/awt/peer/gtk/GdkFontPeer.java,
+	classpath/gnu/java/awt/peer/gtk/GdkPixbufDecoder.java,
+	classpath/gnu/java/awt/peer/gtk/FreetypeGlyphVector.java,
+	classpath/gnu/java/awt/peer/gtk/GdkTextLayout.java,
+	classpath/gnu/java/awt/peer/gtk/ComponentGraphics.java,
+	classpath/gnu/java/awt/peer/gtk/CairoSurfaceGraphics.java,
+	classpath/gnu/java/awt/peer/gtk/GtkVolatileImage.java,
+	classpath/gnu/java/awt/font/opentype/truetype/VirtualMachine.java,
+	classpath/gnu/java/awt/java2d/PolyEdge.java,
+	classpath/gnu/java/awt/java2d/AbstractGraphics2D.java: Merge from
+	GNU Classpath.
+	* classpath/tools/toolwrapper.c: Replace tools.zip reference with
+	libgcj-tools-4.2.0.jar.
+	* classpath/tools/Makefile.in: Regenerate.
+	* classpath/tools/Makefile.am: Rename tools.zip to
+	libgcj-tools-4.2.0.jar.  Install libgcj-tools-4.2.0.jar in
+	$(datadir)/java.
+	* classpath/javax/swing/JTabbedPane.java,
+	classpath/javax/swing/text/DefaultStyledDocument.java,
+	classpath/javax/swing/text/html/HTMLDocument.java,
+	classpath/javax/swing/text/GapContent.java,
+	classpath/javax/swing/JComponent.java,
+	classpath/javax/swing/RepaintManager.java,
+	classpath/javax/swing/plaf/basic/BasicComboBoxRenderer.java,
+	classpath/javax/swing/plaf/basic/BasicScrollBarUI.java,
+	classpath/javax/swing/plaf/basic/BasicTabbedPaneUI.java,
+	classpath/javax/swing/plaf/basic/BasicScrollPaneUI.java,
+	classpath/javax/swing/plaf/basic/BasicLookAndFeel.java,
+	classpath/javax/swing/plaf/metal/MetalButtonUI.java,
+	classpath/java/text/Bidi.java,
+	classpath/java/awt/image/BufferedImage.java,
+	classpath/java/awt/datatransfer/DataFlavor.java,
+	classpath/java/awt/geom/AffineTransform.java,
+	classpath/java/awt/dnd/DropTargetDropEvent.java,
+	classpath/java/awt/dnd/DropTargetContext.java,
+	classpath/java/awt/font/TextLayout.java,
+	classpath/include/gnu_java_awt_peer_gtk_ComponentGraphics.h,
+	classpath/include/gnu_java_awt_peer_gtk_CairoGraphics2D.h,
+	classpath/include/gnu_java_awt_peer_gtk_FreetypeGlyphVector.h,
+	classpath/include/gnu_java_awt_peer_gtk_GdkTextLayout.h,
+	classpath/include/gnu_java_awt_peer_gtk_GtkVolatileImage.h,
+	classpath/include/gnu_java_awt_peer_gtk_CairoSurface.h: Merge from
+	GNU Classpath.
+	* classpath/include/gnu_java_awt_peer_gtk_GdkGraphics.h,
+	classpath/include/gnu_java_awt_peer_gtk_GdkGraphics2D.h,
+	classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c,
+	classpath/native/jni/gtk-peer/gtkcairopeer.h,
+	classpath/native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c:
+	Remove files.
+	* classpath/Makefile.am (SUBDIRS, DIST_SUBDIRS): Include tools
+	directory.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2006-06-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* configure.host (hppa*-*): Set 'enable_hash_synchronization_default'

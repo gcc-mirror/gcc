@@ -921,8 +921,8 @@ public class BasicComboBoxUI extends ComboBoxUI
     Object prototype = comboBox.getPrototypeDisplayValue();
     if (prototype != null)
       {
-        Component comp = renderer.getListCellRendererComponent
-          (listBox, prototype, -1, false, false);
+        Component comp = renderer.getListCellRendererComponent(listBox, 
+            prototype, -1, false, false);
         currentValuePane.add(comp);
         comp.setFont(comboBox.getFont());
         Dimension renderSize = comp.getPreferredSize();
@@ -938,8 +938,8 @@ public class BasicComboBoxUI extends ComboBoxUI
           {
             for (int i = 0; i < size; ++i)
               {
-                Component comp = renderer.getListCellRendererComponent
-                (listBox, model.getElementAt(i), -1, false, false);
+                Component comp = renderer.getListCellRendererComponent(listBox, 
+                    model.getElementAt(i), -1, false, false);
                 currentValuePane.add(comp);
                 comp.setFont(comboBox.getFont());
                 Dimension renderSize = comp.getPreferredSize();

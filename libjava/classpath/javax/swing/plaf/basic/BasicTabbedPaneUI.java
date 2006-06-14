@@ -530,6 +530,20 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
 
       int tabPlacement = tabPane.getTabPlacement();
       Insets insets = tabPane.getInsets();
+
+      int selectedIndex = tabPane.getSelectedIndex();
+      
+      Component selectedComponent = null;
+      if (selectedIndex >= 0)
+        selectedComponent = tabPane.getComponentAt(selectedIndex);
+      // The RI doesn't seem to change the component if the new selected
+      // component == null. This is probably so that applications can add
+      // one single component for every tab. 
+      if (selectedComponent != null)
+        {
+          setVisibleComponent(selectedComponent);
+        }
+
       int childCount = tabPane.getComponentCount();
       if (childCount > 0)
         {
@@ -1409,6 +1423,11 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
    * the UIManager property 'TabbedPane.tabsOpaque'.
    */
   private boolean tabsOpaque;
+
+  /**
+   * The currently visible component.
+   */
+  private Component visibleComponent;
 
   /**
    * Creates a new BasicTabbedPaneUI object.
@@ -2479,7 +2498,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
    */
   protected Component getVisibleComponent()
   {
-    return tabPane.getComponentAt(tabPane.getSelectedIndex());
+    return visibleComponent;
   }
 
   /**
@@ -2489,8 +2508,19 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
    */
   protected void setVisibleComponent(Component component)
   {
-    component.setVisible(true);
-    tabPane.setSelectedComponent(component);
+    // Make old component invisible.
+    if (visibleComponent != null && visibleComponent != component
+        && visibleComponent.getParent() == tabPane)
+      {
+        visibleComponent.setVisible(false);
+      }
+
+    // Make new component visible.
+    if (component != null && ! component.isVisible())
+      {
+        component.setVisible(true);
+      }
+    visibleComponent = component;
   }
 
   /**

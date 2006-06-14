@@ -417,8 +417,8 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     int w = 0;
     int h = 0;
 
-    boolean tmp = ((loc == SwingConstants.NORTH)
-                  || (loc == SwingConstants.SOUTH) || (loc == -1));
+    boolean tmp = (loc == SwingConstants.NORTH)
+                  || (loc == SwingConstants.SOUTH) || (loc == -1);
 
     cachedOrientation = toolBar.getOrientation();
     cachedBounds = toolBar.getSize();
@@ -1084,7 +1084,8 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
       isDragging = true;
 
       if (dragWindow != null)
-	dragWindow.setOffset(new Point(cachedBounds.width/2, cachedBounds.height/2));
+	dragWindow.setOffset(new Point(cachedBounds.width / 2, 
+            cachedBounds.height / 2));
 
       dragTo(e.getPoint(), origin);
     }
