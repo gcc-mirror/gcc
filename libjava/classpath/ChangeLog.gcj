@@ -1,3 +1,10 @@
+2006-06-14  Tom Tromey  <tromey@redhat.com>
+
+	PR java/28024:
+	* aclocal.m4, configure: Rebuilt.
+	* m4/acinclude.m4 (REGEN_WITH_JAY): Use backquote, not $(...).
+	* configure.ac (QT_INCLUDE_DIR): Use backquote, not $(...).
+
 2006-06-09  Tom Tromey  <tromey@redhat.com>
 
 	PR classpath/23863:
