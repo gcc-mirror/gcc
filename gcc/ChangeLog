@@ -1,3 +1,7 @@
+2006-06-13  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/muldiv.md (mulpsi3): Expect arbitrary constants.
+
 2006-06-13  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Define HTMLS_BUILD, HTMLS_INSTALL,
