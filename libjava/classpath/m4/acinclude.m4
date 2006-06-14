@@ -409,13 +409,13 @@ AC_DEFUN([REGEN_WITH_JAY],
         AC_MSG_ERROR("jay executable not found");
       fi
     else
-      JAY_DIR_PATH=$(dirname "${withval}")
+      JAY_DIR_PATH=`dirname "${withval}"`
       JAY="${withval}"
       AC_SUBST(JAY)
     fi
     JAY_SKELETON="${JAY_DIR_PATH}/skeleton"
     AC_CHECK_FILE(${JAY_SKELETON}, AC_SUBST(JAY_SKELETON),
-	AC_MSG_ERROR("Expected skeleton file in $(dirname ${withval})"))
+	AC_MSG_ERROR("Expected skeleton file in `dirname ${withval}`"))
     JAY_FOUND=yes
   ],
   [

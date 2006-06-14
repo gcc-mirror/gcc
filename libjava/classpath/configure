@@ -10007,7 +10007,7 @@ ac_x_header_dirs='
 /usr/openwin/share/include'
 
 if test "$ac_x_includes" = no; then
-  # Guess where to find include files, by looking for Xlib.h.
+  # Guess where to find include files, by looking for Intrinsic.h.
   # First, try using that file with no special directory specified.
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -10015,7 +10015,7 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>
 _ACEOF
 if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
@@ -10042,7 +10042,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
   for ac_dir in $ac_x_header_dirs; do
-  if test -r "$ac_dir/X11/Xlib.h"; then
+  if test -r "$ac_dir/X11/Intrinsic.h"; then
     ac_x_includes=$ac_dir
     break
   fi
@@ -10063,11 +10063,11 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>
 int
 main ()
 {
-XrmInitialize ()
+XtMalloc (0)
   ;
   return 0;
 }
@@ -11929,7 +11929,7 @@ echo "${ECHO_T}$QT_LIBS" >&6
   fi
 
     if test "x$HAVE_QT4" = "xyes"; then
-                  QT_INCLUDE_DIR=$($PKG_CONFIG --variable=includedir QtGui)
+                  QT_INCLUDE_DIR=`$PKG_CONFIG --variable=includedir QtGui`
       EXTRA_QT_INCLUDE_DIR="$QT_INCLUDE_DIR/Qt"
       as_ac_File=`echo "ac_cv_file_$QT_INCLUDE_DIR/QWidget" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $QT_INCLUDE_DIR/QWidget" >&5
@@ -15159,7 +15159,7 @@ echo "$as_me: error: \"jay executable not found\"" >&2;}
    { (exit 1); exit 1; }; };
       fi
     else
-      JAY_DIR_PATH=$(dirname "${withval}")
+      JAY_DIR_PATH=`dirname "${withval}"`
       JAY="${withval}"
 
     fi
@@ -15185,8 +15185,8 @@ echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
 if test `eval echo '${'$as_ac_File'}'` = yes; then
   :
 else
-  { { echo "$as_me:$LINENO: error: \"Expected skeleton file in $(dirname ${withval})\"" >&5
-echo "$as_me: error: \"Expected skeleton file in $(dirname ${withval})\"" >&2;}
+  { { echo "$as_me:$LINENO: error: \"Expected skeleton file in \`dirname ${withval}\`\"" >&5
+echo "$as_me: error: \"Expected skeleton file in \`dirname ${withval}\`\"" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
