@@ -33,36 +33,36 @@ SH_FLAG="-Wl,--rpath -Wl,$BUILD_DIR/../../gcc \
 ST_FLAG="-static"
 LINK=$SH_FLAG
 CXX="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS $LINK"
+LIBS="./libtestc++.a"
 TESTS_FILE="testsuite_files_performance"
 
 for NAME in `cat $TESTS_FILE`
 do
   RUN=true
+  TESTNAME=$SRC_DIR/testsuite/$NAME
+  FILE_NAME="`basename $NAME`"
+  FILE_NAME="`echo $FILE_NAME | sed 's/.cc//g'`"
 
   # TEST_S == single thread
   # TEST_B == do both single and multi-thread
   # TEST_T == multi-thread
-  for CYCLE in `sed -n 's,.*\(TEST_[SB][0-9]*\)$,\1,p' $SRC_DIR/testsuite/$NAME`
+  for CYCLE in `sed -n 's,.*\(TEST_[SB][0-9]*\)$,\1,p' $TESTNAME`
   do
     RUN=false
     echo $NAME $CYCLE
-    FILE_NAME="`basename $NAME`"
-    FILE_NAME="`echo $FILE_NAME | sed 's/.cc//g'`"
     EXE_NAME="`echo $FILE_NAME-$CYCLE.exe`"
-    $CXX -DNOTHREAD -D$CYCLE $SRC_DIR/testsuite/$NAME -o $EXE_NAME
+    $CXX -DNOTHREAD -D$CYCLE $TESTNAME $LIBS -o $EXE_NAME
     if [ -f $EXE_NAME ]; then
       ./$EXE_NAME
     fi
   done
 
-  for CYCLE in `sed -n 's,.*\(TEST_[TB][0-9]*\)$,\1,p' $SRC_DIR/testsuite/$NAME`
+  for CYCLE in `sed -n 's,.*\(TEST_[TB][0-9]*\)$,\1,p' $TESTNAME`
   do
     RUN=false
     echo $NAME $CYCLE thread
-    FILE_NAME="`basename $NAME`"
-    FILE_NAME="`echo $FILE_NAME | sed 's/.cc//g'`"
     EXE_NAME="`echo $FILE_NAME-$CYCLE.exe`"
-    $CXX $THREAD_FLAG -D$CYCLE $SRC_DIR/testsuite/$NAME -o $EXE_NAME
+    $CXX $THREAD_FLAG -D$CYCLE $TESTNAME $LIBS -o $EXE_NAME
     if [ -f $EXE_NAME ]; then
       ./$EXE_NAME
     fi
@@ -70,11 +70,13 @@ do
 
   if $RUN; then
     echo $NAME
-    FILE_NAME="`basename $NAME`"
-    EXE_NAME="`echo $FILE_NAME | sed 's/cc$/exe/'`"
-    $CXX $SRC_DIR/testsuite/$NAME -o $EXE_NAME
+    EXE_NAME="`echo $FILE_NAME.exe`"
+    $CXX $TESTNAME $LIBS -o $EXE_NAME
     if [ -f $EXE_NAME ]; then
-      ./$EXE_NAME
+	./$EXE_NAME >& tmp.$FILE_NAME
+    fi
+    if [ -s tmp.$FILE_NAME ]; then
+	mv tmp.$FILE_NAME $FILE_NAME.xml
     fi
   fi
 done

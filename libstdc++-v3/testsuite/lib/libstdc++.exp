@@ -405,10 +405,14 @@ proc v3-build_support { } {
     }
 
     # Build the support objects.
-    set source_files \
-	[list testsuite_abi.cc testsuite_allocator.cc testsuite_character.cc testsuite_hooks.cc ]
+    set source_files [list testsuite_abi.cc testsuite_allocator.cc \
+			  testsuite_character.cc testsuite_hooks.cc \
+	       	 rng/twister_rand_gen.cc io/verified_cmd_line_input.cc \
+       	 io/prog_bar.cc regression/res_mng/dbg_ex_allocator_base.cc \
+	     performance/time/elapsed_timer.cc ]
     foreach f $source_files {
-	set object_file [file rootname $f].o
+	set obj [file rootname $f].o
+	set object_file [file tail $obj]
 	# Compile with "-w" so that warnings issued by the compiler
 	# do not prevent compilation.
 	if { [v3_target_compile $srcdir/util/$f $object_file "object" \
@@ -419,10 +423,27 @@ proc v3-build_support { } {
 	append v3-test_objs "$object_file "
     }
 
-    # Build the shared support objects.
+    # Collect into libtestc++.a
+    set arcommand "ar -rc ./libtestc++.a ${v3-test_objs}"
+    set result [lindex [local_exec "$arcommand" "" "" 300] 0]
+    verbose "link result is $result"
+    if { $result == 0 } {
+	set ranlibcommand "ranlib ./libtestc++.a"
+	set result [lindex [local_exec "$ranlibcommand" "" "" 300] 0]
+	if { $result != 0 } {
+	    error "could not link libtestc++.a"
+	    
+	    # We cannot actually use libtestc++.a because it's hard to
+	    # position this library after the test file being compiled
+	    # on the constructed compile line. However, we use this as
+	    # a convenience for performance testing.  
+	    #set v3-test_objs "./libtestc++.a"
+	}
+    }
+
+    # Build any shared objects needed for regression testing.
     if { ${v3-sharedlib} == 1 } {
-	set source_files \
-	    [list testsuite_shared.cc]
+	set source_files [list testsuite_shared.cc]
 	foreach f $source_files {
 	    set object_file [file rootname $f].so
 	    # Compile with "-w" so that warnings issued by the compiler

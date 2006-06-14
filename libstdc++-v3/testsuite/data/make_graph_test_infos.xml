@@ -1,0 +1,313 @@
+<?xml version = "1.0"?>
+<tests>
+	<test name = "random_int_find_find_timing_test_tree">
+		<file name = "random_int_find_timing.xml"></file>
+		<cntnr name = "n_map"></cntnr>
+		<cntnr name = "splay_tree_map"></cntnr>
+		<cntnr name = "ov_tree_map"></cntnr>
+		<cntnr name = "rb_tree_map"></cntnr>
+	</test>   
+	<test name = "tree_split_join_timing_test">
+		<file name = "tree_split_join_timing.xml"></file>
+		<cntnr name = "n_set"></cntnr>
+		<cntnr name = "splay_tree_set"></cntnr>
+		<cntnr name = "ov_tree_set"></cntnr>
+		<cntnr name = "rb_tree_set"></cntnr>
+	</test>
+	<test name = "tree_order_statistics_timing_test">
+		<file name = "tree_order_statistics_timing.xml"></file>
+		<cntnr name = "n_set"></cntnr>
+		<cntnr name = "splay_tree_ost_set"></cntnr>
+		<cntnr name = "rb_tree_ost_set"></cntnr>
+	</test>
+	<test name = "hash_random_int_erase_mem_usage_test">
+		<file name = "hash_random_int_erase_mem_usage.xml"></file>
+		<cntnr name = "n_hash_set_ncah"></cntnr>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_set"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+		<cntnr name = "gp_hash_mask_linp_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+	</test>
+	<test name = "cc_hash_random_int_subscript_timing_test_insert">
+		<file name = "random_int_subscript_insert_timing.xml"></file>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "n_hash_map_ncah"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map"></cntnr>
+	</test>
+	<test name = "cc_hash_random_int_subscript_timing_test_find">
+		<file name = "random_int_subscript_find_timing.xml"></file>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "n_hash_map_ncah"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map"></cntnr>
+	</test>
+	<test name = "gp_hash_random_int_subscript_timing_test_insert">
+		<file name = "random_int_subscript_insert_timing.xml"></file>
+		<cntnr name = "gp_hash_mod_quadp_prime_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "n_hash_map_ncah"></cntnr>
+		<cntnr name = "gp_hash_mask_linp_exp_nea_lc_1div8_1div2_nsth_map"></cntnr>
+	</test>
+	<test name = "gp_hash_random_int_subscript_timing_test_find">
+		<file name = "random_int_subscript_find_timing.xml"></file>
+		<cntnr name = "gp_hash_mod_quadp_prime_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "n_hash_map_ncah"></cntnr>
+		<cntnr name = "gp_hash_mask_linp_exp_nea_lc_1div8_1div2_nsth_map"></cntnr>
+	</test>
+	<test name = "ccgp_hash_random_int_subscript_timing_test_insert">
+		<file name = "random_int_subscript_insert_timing.xml"></file>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "gp_hash_mod_quadp_prime_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "gp_hash_mask_linp_exp_nea_lc_1div8_1div2_nsth_map"></cntnr>
+	</test>
+	<test name = "cc_hash_random_int_find_timing_test">
+		<file name = "random_int_find_timing.xml"></file>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "n_hash_map_ncah"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map"></cntnr>
+	</test>
+	<test name = "gp_hash_random_int_find_timing_test">
+		<file name = "random_int_find_timing.xml"></file>
+		<cntnr name = "gp_hash_mod_quadp_prime_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "n_hash_map_ncah"></cntnr>
+		<cntnr name = "gp_hash_mask_linp_exp_nea_lc_1div8_1div2_nsth_map"></cntnr>
+	</test>
+	<test name = "hash_zlob_random_int_find_timing_test">
+		<file name = "hash_zlob_random_int_find_timing.xml"></file>
+		<cntnr name = "n_hash_map_ncah"></cntnr>
+		<cntnr name = "gp_hash_mod_quadp_prime_nea_lc_1div8_1div2_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map"></cntnr>
+	</test>
+	<test name = "text_find_timing_test_hash">
+		<file name = "text_find_timing.xml"></file>
+		<cntnr name = "n_hash_map_ncah"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div1_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mod_prime_nea_lc_1div8_1div1_nsth_map"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_sth_map"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_map"></cntnr>
+	</test>
+	<test name = "text_find_timing_test_tree_like">
+		<file name = "text_find_timing.xml"></file>
+		<cntnr name = "n_map"></cntnr>
+		<cntnr name = "rb_tree_map"></cntnr>
+		<cntnr name = "splay_tree_map"></cntnr>
+		<cntnr name = "ov_tree_map"></cntnr>
+		<cntnr name = "pat_trie_map"></cntnr>
+	</test>
+	<test name = "tree_text_insert_timing_test_node_tree">
+		<file name = "tree_text_insert_timing.xml"></file>
+		<cntnr name = "n_map"></cntnr>
+		<cntnr name = "rb_tree_map"></cntnr>
+		<cntnr name = "splay_tree_map"></cntnr>
+	</test>
+	<test name = "tree_text_insert_timing_test_vector_tree">
+		<file name = "tree_text_insert_timing.xml"></file>
+		<cntnr name = "n_map"></cntnr>
+		<cntnr name = "ov_tree_map"></cntnr>
+	</test>
+	<test name = "tree_text_insert_timing_test_pat_trie">
+		<file name = "tree_text_insert_timing.xml"></file>
+		<cntnr name = "n_map"></cntnr>
+		<cntnr name = "pat_trie_map"></cntnr>
+	</test>
+	<test name = "tree_text_lor_find_timing_test">
+		<file name = "tree_text_lor_find_timing.xml"></file>
+		<cntnr name = "n_map"></cntnr>
+		<cntnr name = "rb_tree_map"></cntnr>
+		<cntnr name = "splay_tree_map"></cntnr>
+		<cntnr name = "ov_tree_map"></cntnr>
+	</test>
+	<test name = "priority_queue_random_int_push_timing_test">
+		<file name = "priority_queue_random_int_push_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "binomial_heap"></cntnr>
+		<cntnr name = "rc_binomial_heap"></cntnr>
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "binary_priority_queue_random_int_push_timing_test">
+		<file name = "priority_queue_random_int_push_timing.xml"></file>
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "priority_queue_random_int_push_pop_timing_test">
+		<file name = "priority_queue_random_int_push_pop_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "binomial_heap"></cntnr>
+		<cntnr name = "rc_binomial_heap"></cntnr>
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "binary_priority_queue_random_int_push_pop_timing_test">
+		<file name = "priority_queue_random_int_push_pop_timing.xml"></file>
+		
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "priority_queue_text_push_timing_test">
+		<file name = "priority_queue_text_push_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "binomial_heap"></cntnr>
+		<cntnr name = "rc_binomial_heap"></cntnr>
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "pairing_priority_queue_text_push_timing_test">
+		<file name = "priority_queue_text_push_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "priority_queue_text_push_pop_timing_test">
+		<file name = "priority_queue_text_push_pop_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "binomial_heap"></cntnr>
+		<cntnr name = "rc_binomial_heap"></cntnr>
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "pairing_priority_queue_text_push_pop_timing_test">
+		<file name = "priority_queue_text_push_pop_timing.xml"></file>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "priority_queue_text_modify_up_timing_test">
+		<file name = "priority_queue_text_modify_up_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "binomial_heap"></cntnr>
+		<cntnr name = "rc_binomial_heap"></cntnr>
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "priority_queue_text_modify_down_timing_test">
+		<file name = "priority_queue_text_modify_down_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "binomial_heap"></cntnr>
+		<cntnr name = "rc_binomial_heap"></cntnr>
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "priority_queue_text_modify_up_timing_test_pairing_thin">
+		<file name = "priority_queue_text_modify_up_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+	</test>
+	<test name = "priority_queue_text_modify_down_timing_test_pairing_thin">
+		<file name = "priority_queue_text_modify_down_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+	</test>
+	<test name = "priority_queue_text_join_timing_test">
+		<file name = "priority_queue_text_join_timing.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "binomial_heap"></cntnr>
+		<cntnr name = "rc_binomial_heap"></cntnr>
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "priority_queue_text_pop_mem_usage_test">
+		<file name = "priority_queue_text_pop_mem_usage.xml"></file>
+		<cntnr name = "thin_heap"></cntnr>
+		<cntnr name = "pairing_heap"></cntnr>
+		<cntnr name = "binomial_heap"></cntnr>
+		<cntnr name = "rc_binomial_heap"></cntnr>
+		<cntnr name = "binary_heap"></cntnr>
+		<cntnr name = "n_pq_vector"></cntnr>
+		<cntnr name = "n_pq_deque"></cntnr>
+	</test>
+	<test name = "multimap_text_insert_mem_usage_test_small_s2p_hash">
+		<file name = "multimap_text_insert_mem_usage_small.xml"></file>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+		<cntnr name = "n_hash_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_insert_timing_test_small_s2p_hash">
+		<file name = "multimap_text_insert_timing_small.xml"></file>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+		<cntnr name = "n_hash_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_find_timing_test_small_s2p_hash">
+		<file name = "multimap_text_find_timing_small.xml"></file>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+		<cntnr name = "n_hash_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_insert_mem_usage_test_large_s2p_tree">
+		<file name = "multimap_text_insert_mem_usage_large.xml"></file>
+		<cntnr name = "rb_tree_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>		
+		<cntnr name = "n_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_insert_timing_test_large_s2p_tree">
+		<file name = "multimap_text_insert_timing_large.xml"></file>
+		<cntnr name = "rb_tree_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>		
+		<cntnr name = "n_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_find_timing_test_large_s2p_tree">
+		<file name = "multimap_text_find_timing_large.xml"></file>
+		<cntnr name = "rb_tree_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>		
+		<cntnr name = "n_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_insert_mem_usage_test_large_s2p_hash">
+		<file name = "multimap_text_insert_mem_usage_large.xml"></file>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+		<cntnr name = "n_hash_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_insert_timing_test_large_s2p_hash">
+		<file name = "multimap_text_insert_timing_large.xml"></file>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+		<cntnr name = "n_hash_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_find_timing_test_large_s2p_hash">
+		<file name = "multimap_text_find_timing_large.xml"></file>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+		<cntnr name = "n_hash_mmap"></cntnr>
+	</test>	
+	<test name = "multimap_text_insert_mem_usage_test_small_s2p_tree">
+		<file name = "multimap_text_insert_mem_usage_small.xml"></file>
+		<cntnr name = "rb_tree_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>	
+		<cntnr name = "n_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_insert_timing_test_small_s2p_tree">
+		<file name = "multimap_text_insert_timing_small.xml"></file>
+		<cntnr name = "rb_tree_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+		<cntnr name = "n_mmap"></cntnr>
+	</test>
+	<test name = "multimap_text_find_timing_test_small_s2p_tree">
+		<file name = "multimap_text_find_timing_small.xml"></file>
+		<cntnr name = "rb_tree_mmap_lu_mtf_set"></cntnr>
+		<cntnr name = "rb_tree_mmap_cc_hash_mask_exp_nea_lc_1div8_1div2_nsth_set"></cntnr>
+		<cntnr name = "n_mmap"></cntnr>
+	</test>
+</tests>

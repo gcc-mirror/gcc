@@ -1,3 +1,879 @@
+2006-06-14  Ami Tavory  <atavory@gmail.com>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_assoc: Delete.
+	* include/ext/pb_ds: Add.
+	* docs/html/ext/pb_assoc: Delete.
+	* docs/html/ext/pb_ds: Add.
+	* testsuite/ext/pb_assoc: Delete.
+	* testsuite/ext/pb_ds: Add.
+	* testsuite/performance/ext: Add.
+	* testsuite/performance/ext/pb_ds: Add.	
+
+	* testsuite/util/regression: New.
+	* testsuite/util/rng: New.
+	* testsuite/util/native_type: New.
+	* testsuite/util/common_type: New.
+	* testsuite/util/performance: New.
+	* testsuite/util/hash_fn: New.
+	* testsuite/util/io: New.
+	* testsuite/util/statistic: New.
+
+	* scripts/make_graph.py: New.
+	* scripts/make_graphs.py: New.
+	* testsuite/data/thirty_years_among_the_dead_preproc.txt: Add.
+	* testsuite/data/make_graph_htmls.xml: Add.
+	* testsuite/data/make_graph_test_infos.xml: Add.	
+
+	* testsuite/lib/libstdc++.exp (v3-build_support): Add in new
+	object files for regression testing.
+	* docs/html/documentation.html: Adjust links.
+	* include/Makefile.am (install-headers): Update for new sources,
+	directories.
+	* include/Makefine.in: Regenerate.
+	* scripts/testsuite_flags.in: Adjust to testsuite/util path.
+	* scripts/check_performance: Simplify, adjust for new testsuite output.
+	* testsuite/Makefile.am (check-performance): Adjust.
+	(doc-performance): New.
+	* testsuite/Makefile.in: Regenerate.
+
+	* include/ext/pb_ds: New.
+	* include/ext/pb_ds/assoc_container.hpp: Same.
+	* include/ext/pb_ds/detail: New.
+	* include/ext/pb_ds/detail/binomial_heap_base_: New.
+	* include/ext/pb_ds/detail/binomial_heap_base_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/binomial_heap_base_.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_base_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy: New.
+	* include/ext/pb_ds/detail/resize_policy/sample_size_policy.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/hash_prime_size_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/cc_hash_max_collision_check_resize_trigger_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/sample_resize_policy.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/sample_resize_trigger.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/hash_load_check_resize_trigger_size_base.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/hash_exponential_size_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/hash_load_check_resize_trigger_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/hash_standard_resize_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/container_base_dispatch.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_: New.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/constructor_destructor_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/erase_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cmp_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/resize_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/constructor_destructor_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/entry_list_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/find_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/resize_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cc_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/debug_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cond_key_dtor_entry_dealtor.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/debug_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/erase_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/size_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/standard_policies.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/resize_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/typelist_assoc_container.hpp: Same.
+	* include/ext/pb_ds/detail/tree_trace_base.hpp: Same.
+	* include/ext/pb_ds/detail/unordered_iterator: New.
+	* include/ext/pb_ds/detail/unordered_iterator/iterator.hpp: Same.
+	* include/ext/pb_ds/detail/unordered_iterator/const_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/unordered_iterator/point_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/unordered_iterator/const_point_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/typelist.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_: New.
+	* include/ext/pb_ds/detail/pat_trie_/r_erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/child_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/update_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/insert_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/split_join_branch_bag.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/head.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/const_child_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/split_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/cond_dtor_entry_dealtor.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/leaf.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/rotate_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/node_base.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/node_metadata_base.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/synth_e_access_traits.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/node_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/internal_node.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/point_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_: New.
+	* include/ext/pb_ds/detail/bin_search_tree_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/r_erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/cond_dtor_entry_dealtor.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/rotate_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/cond_key_dtor_entry_dealtor.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/node_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/point_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/bin_search_tree_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_: New.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/constructor_destructor_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/erase_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/resize_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/constructor_destructor_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/iterator_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/find_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/find_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/resize_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/debug_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/erase_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/standard_policies.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/resize_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/standard_policies.hpp: Same.
+	* include/ext/pb_ds/detail/typelist: New.
+	* include/ext/pb_ds/detail/typelist/typelist_flatten.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_contains.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_typelist_append.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_apply.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_filter.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_append.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_assoc_container_find.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_transform.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_at_index.hpp: Same.
+	* include/ext/pb_ds/detail/tree_policy: New.
+	* include/ext/pb_ds/detail/tree_policy/order_statistics_imp.hpp: Same.
+	* include/ext/pb_ds/detail/tree_policy/node_metadata_selector.hpp: Same.
+	* include/ext/pb_ds/detail/tree_policy/null_node_update_imp.hpp: Same.
+	* include/ext/pb_ds/detail/tree_policy/sample_tree_node_update.hpp: Same.
+	* include/ext/pb_ds/detail/basic_tree_policy: New.
+	* include/ext/pb_ds/detail/basic_tree_policy/basic_tree_policy_base.hpp: Same.
+	* include/ext/pb_ds/detail/basic_tree_policy/null_node_metadata.hpp: Same.
+	* include/ext/pb_ds/detail/basic_tree_policy/traits.hpp: Same.
+	* include/ext/pb_ds/detail/types_traits.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_: New.
+	* include/ext/pb_ds/detail/binary_heap_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/const_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/entry_cmp.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/const_point_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/entry_pred.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/resize_policy.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/binary_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy: New.
+	* include/ext/pb_ds/detail/trie_policy/string_trie_e_access_traits_imp.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/order_statistics_imp.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/sample_trie_node_update.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/trie_policy_base.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/prefix_search_node_update_imp.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/sample_trie_e_access_traits.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/node_metadata_selector.hpp: Same.
+	* include/ext/pb_ds/detail/trie_policy/null_node_update_imp.hpp: Same.
+	* include/ext/pb_ds/detail/cond_dealtor.hpp: Same.
+	* include/ext/pb_ds/detail/priority_queue_base_dispatch.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_: Name.
+	* include/ext/pb_ds/detail/pairing_heap_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/pairing_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/pairing_heap_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_: New.
+	* include/ext/pb_ds/detail/binomial_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_/binomial_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/type_utils.hpp: Same.
+	* include/ext/pb_ds/detail/eq_fn: New.
+	* include/ext/pb_ds/detail/eq_fn/hash_eq_fn.hpp: Same.
+	* include/ext/pb_ds/detail/eq_fn/eq_by_less.hpp: Same.
+	* include/ext/pb_ds/detail/basic_types.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_policy: New.
+	* include/ext/pb_ds/detail/list_update_policy/mtf_lu_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_policy/counter_lu_metadata.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_policy/sample_update_policy.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_policy/counter_lu_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_: New.
+	* include/ext/pb_ds/detail/thin_heap_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/thin_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/thin_heap_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_: New.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/null_metadata.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/left_child_next_sibling_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/const_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/node.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/const_point_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_: New.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/cond_dtor.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/ov_tree_map_.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/node_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/map_debug_base.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn: New.
+	* include/ext/pb_ds/detail/hash_fn/linear_probe_fn_imp.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/mod_based_range_hashing.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/ranged_probe_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/sample_probe_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/direct_mod_range_hashing_imp.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/sample_ranged_probe_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/quadratic_probe_fn_imp.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/sample_range_hashing.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/probe_fn_base.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/ranged_hash_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/mask_based_range_hashing.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/sample_ranged_hash_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/direct_mask_range_hashing_imp.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_: New.
+	* include/ext/pb_ds/detail/splay_tree_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/splay_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/node.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/splay_tree_.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_: New.
+	* include/ext/pb_ds/detail/list_update_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/entry_metadata_base.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/lu_map_.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_: New.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/rc_binomial_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/rc.hpp: Same.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_: New.
+	* include/ext/pb_ds/detail/rb_tree_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/rb_tree_.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/node.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/list_update_policy.hpp: Same.
+	* include/ext/pb_ds/exception.hpp: Same.
+	* include/ext/pb_ds/tree_policy.hpp: Same.
+	* include/ext/pb_ds/tag_and_trait.hpp: Same.
+	* include/ext/pb_ds/hash_policy.hpp: Same.
+	* include/ext/pb_ds/trie_policy.hpp: Same.
+	* include/ext/pb_ds/priority_queue.hpp: Same.
+
+	* docs/html/ext/pb_ds: New.
+	* docs/html/ext/pb_ds/container_tag.html: Same.
+	* docs/html/ext/pb_ds/trivial_iterator_tag.html: Same.
+	* docs/html/ext/pb_ds/tree_text_lor_find_timing_test_local.png
+	* docs/html/ext/pb_ds/sample_trie_e_access_traits.html: Same.
+	* docs/html/ext/pb_ds/gp_hash_table.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_tag_cd.svg
+	* docs/html/ext/pb_ds/container_cd.svg
+	* docs/html/ext/pb_ds/linear_probe_fn.html: Same.
+	* docs/html/ext/pb_ds/hash_random_int_erase_mem_usage_test_local.png
+	* docs/html/ext/pb_ds/quadratic_probe_fn.html: Same.
+	* docs/html/ext/pb_ds/assoc_regression_tests.html: Same.
+	* docs/html/ext/pb_ds/tree_tag.html: Same.
+	* docs/html/ext/pb_ds/hash_random_int_erase_mem_usage_test.html: Same.
+	* docs/html/ext/pb_ds/interface.html: Same.
+	* docs/html/ext/pb_ds/hash_zlob_random_int_find_timing_test_msvc.png
+	* docs/html/ext/pb_ds/hash_random_int_subscript_find_timing_test.html: Same.
+	* docs/html/ext/pb_ds/lu_based_containers.html: Same.
+	* docs/html/ext/pb_ds/embedded_lists_3.png
+	* docs/html/ext/pb_ds/tree_text_find_find_timing_test.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_small_s2p_hash_local.png
+	* docs/html/ext/pb_ds/assoc_performance_tests.html: Same.
+	* docs/html/ext/pb_ds/list_update.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_random_int_push_pop_timing_test_gcc.png
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test_pat_trie_local.png
+	* docs/html/ext/pb_ds/point_iterators_range_ops_1.png
+	* docs/html/ext/pb_ds/gp_hash_random_int_subscript_timing_test_insert_msvc.png
+	* docs/html/ext/pb_ds/hash_zlob_random_int_find_timing_test_gcc.png
+	* docs/html/ext/pb_ds/text_find_timing_test_tree_like_msvc.png
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_small_s2p_tree_local.png
+	* docs/html/ext/pb_ds/priority_queue_text_modify_down_timing_test_local.png
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test_pat_trie_msvc.png
+	* docs/html/ext/pb_ds/priority_queue_text_modify_down_timing_test.html: Same.
+	* docs/html/ext/pb_ds/move_to_front_lu_policy.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_large_s2p_hash_gcc.png
+	* docs/html/ext/pb_ds/hash_random_int_find_find_timing_test.html: Same.
+	* docs/html/ext/pb_ds/string_trie_e_access_traits.html: Same.
+	* docs/html/ext/pb_ds/prerequisites.html: Same.
+	* docs/html/ext/pb_ds/gp_hash_tag.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_tag_cd.png
+	* docs/html/ext/pb_ds/container_cd.png
+	* docs/html/ext/pb_ds/priority_queue_text_join_timing_test_gcc.png
+	* docs/html/ext/pb_ds/container_base.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_small_s2p_hash_msvc.png
+	* docs/html/ext/pb_ds/tree_random_int_find_find_timing_test.html: Same.
+	* docs/html/ext/pb_ds/binary_priority_queue_random_int_push_timing_test_msvc.png
+	* docs/html/ext/pb_ds/gp_hash_random_int_subscript_timing_test_find_local.png
+	* docs/html/ext/pb_ds/gp_hash_random_int_subscript_timing_test_find_gcc.png
+	* docs/html/ext/pb_ds/priority_queue_text_push_pop_timing_test_msvc.png
+	* docs/html/ext/pb_ds/random_int_find_find_timing_test_tree_msvc.png
+	* docs/html/ext/pb_ds/text_find_timing_test_hash_local.png
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test_node_tree_msvc.png
+	* docs/html/ext/pb_ds/ov_tree_tag.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_small_s2p_hash_local.png
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_large_s2p_hash_msvc.png
+	* docs/html/ext/pb_ds/priority_queue_text_pop_mem_usage_test_msvc.png
+	* docs/html/ext/pb_ds/priority_queue_text_modify_down_timing_test_pairing_thin_msvc.png
+	* docs/html/ext/pb_ds/list_update_tag.html: Same.
+	* docs/html/ext/pb_ds/balls_and_bins.png
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_small_s2p_tree_local.png
+	* docs/html/ext/pb_ds/disclaimer.html: Same.
+	* docs/html/ext/pb_ds/insert_error.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_small_s2p_hash_gcc.png
+	* docs/html/ext/pb_ds/ccgp_hash_random_int_subscript_timing_test_insert_gcc.png
+	* docs/html/ext/pb_ds/examples.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_small.html: Same.
+	* docs/html/ext/pb_ds/pairing_priority_queue_text_push_pop_timing_test_gcc.png
+	* docs/html/ext/pb_ds/sample_probe_fn.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_large_s2p_hash_local.png
+	* docs/html/ext/pb_ds/priority_queue_text_push_timing_test.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_random_int_push_timing_test_gcc.png
+	* docs/html/ext/pb_ds/null_mapped_type.html: Same.
+	* docs/html/ext/pb_ds/binary_priority_queue_random_int_push_timing_test_gcc.png
+	* docs/html/ext/pb_ds/tree_order_statistics_timing_test_gcc.png
+	* docs/html/ext/pb_ds/associative_container_tag.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_large_s2p_tree_local.png
+	* docs/html/ext/pb_ds/design.html: Same.
+	* docs/html/ext/pb_ds/cc_hash_max_collision_check_resize_trigger.html: Same.
+	* docs/html/ext/pb_ds/pairing_heap_tag.html: Same.
+	* docs/html/ext/pb_ds/tree_text_lor_find_timing_test_gcc.png
+	* docs/html/ext/pb_ds/references.html: Same.
+	* docs/html/ext/pb_ds/tree_order_statistics_timing_test_msvc.png
+	* docs/html/ext/pb_ds/hash_load_check_resize_trigger.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_pop_mem_usage_test_gcc.png
+	* docs/html/ext/pb_ds/priority_queue_text_modify_down_timing_test_pairing_thin_gcc.png
+	* docs/html/ext/pb_ds/hash_random_int_erase_mem_usage_test_gcc.png
+	* docs/html/ext/pb_ds/pq_different_underlying_dss.png
+	* docs/html/ext/pb_ds/insert_resize_sequence_diagram1.png
+	* docs/html/ext/pb_ds/pq_regression_tests.html: Same.
+	* docs/html/ext/pb_ds/sample_tree_node_update.html: Same.
+	* docs/html/ext/pb_ds/invalidation_guarantee_erase.png
+	* docs/html/ext/pb_ds/basic_invalidation_guarantee.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_large_s2p_hash_local.png
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_large_s2p_hash_gcc.png
+	* docs/html/ext/pb_ds/hash_zlob_random_int_find_timing_test_local.png
+	* docs/html/ext/pb_ds/point_iterators_range_ops_2.png
+	* docs/html/ext/pb_ds/null_probe_fn.html: Same.
+	* docs/html/ext/pb_ds/hash_prime_size_policy.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_small_s2p_hash_msvc.png
+	* docs/html/ext/pb_ds/priority_queue_text_modify_down_timing_test_gcc.png
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_large_s2p_tree_local.png
+	* docs/html/ext/pb_ds/binary_priority_queue_random_int_push_timing_test_local.png
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_large_s2p_hash_msvc.png
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_large_s2p_tree_gcc.png
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_large.html: Same.
+	* docs/html/ext/pb_ds/sample_resize_policy.html: Same.
+	* docs/html/ext/pb_ds/binomial_heap_tag.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_pop_mem_usage_test_local.png
+	* docs/html/ext/pb_ds/priority_queue_text_modify_down_timing_test_pairing_thin_local.png
+	* docs/html/ext/pb_ds/tree_text_lor_find_find_timing_test.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_join_timing_test_msvc.png
+	* docs/html/ext/pb_ds/trie_based_containers.html: Same.
+	* docs/html/ext/pb_ds/cc_hash_random_int_subscript_timing_test_insert_gcc.png
+	* docs/html/ext/pb_ds/tree_split_join_timing_test_local.png
+	* docs/html/ext/pb_ds/text_find_timing_test_hash_gcc.png
+	* docs/html/ext/pb_ds/motivation.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_small_s2p_tree_msvc.png
+	* docs/html/ext/pb_ds/tree_split_join_timing_test_gcc.png
+	* docs/html/ext/pb_ds/tree.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_small_s2p_hash_gcc.png
+	* docs/html/ext/pb_ds/cc_hash_random_int_subscript_timing_test_insert_msvc.png
+	* docs/html/ext/pb_ds/invalidation_guarantee_cd.png
+	* docs/html/ext/pb_ds/tutorial.html: Same.
+	* docs/html/ext/pb_ds/null_trie_node_update.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_modify_up_timing_test_gcc.png
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_large_s2p_tree_msvc.png
+	* docs/html/ext/pb_ds/ccgp_hash_random_int_subscript_timing_test_insert_local.png
+	* docs/html/ext/pb_ds/point_iterators_cd.png
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_small_s2p_hash_local.png
+	* docs/html/ext/pb_ds/priority_queue_random_int_push_pop_timing_test_local.png
+	* docs/html/ext/pb_ds/rb_tree_tag.html: Same.
+	* docs/html/ext/pb_ds/cc_hash_random_int_subscript_timing_test_find_msvc.png
+	* docs/html/ext/pb_ds/pairing_priority_queue_text_push_timing_test_msvc.png
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test_pat_trie_gcc.png
+	* docs/html/ext/pb_ds/exceptions.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_modify_up_timing_test_msvc.png
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_small_s2p_tree_local.png
+	* docs/html/ext/pb_ds/hash_policy_cd.png
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_small_s2p_tree_gcc.png
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_small.html: Same.
+	* docs/html/ext/pb_ds/ds_gen.html: Same.
+	* docs/html/ext/pb_ds/hash_exponential_size_policy.html: Same.
+	* docs/html/ext/pb_ds/gp_hash_random_int_subscript_timing_test_insert_local.png
+	* docs/html/ext/pb_ds/hash_random_int_erase_mem_usage_test_msvc.png
+	* docs/html/ext/pb_ds/index.html: Same.
+	* docs/html/ext/pb_ds/binary_heap_tag.html: Same.
+	* docs/html/ext/pb_ds/basic_hash_tag.html: Same.
+	* docs/html/ext/pb_ds/trie_order_statistics_node_update.html: Same.
+	* docs/html/ext/pb_ds/sample_resize_trigger.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_push_timing_test_local.png
+	* docs/html/ext/pb_ds/hash_text_find_find_timing_test.html: Same.
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test.html: Same.
+	* docs/html/ext/pb_ds/trie_tag.html: Same.
+	* docs/html/ext/pb_ds/cc_hash_random_int_subscript_timing_test_find_local.png
+	* docs/html/ext/pb_ds/pq_tests.html: Same.
+	* docs/html/ext/pb_ds/insert_resize_sequence_diagram2.png
+	* docs/html/ext/pb_ds/node_invariant_invalidations.png
+	* docs/html/ext/pb_ds/priority_queue_text_modify_down_timing_test_msvc.png
+	* docs/html/ext/pb_ds/resize_policy_cd.png
+	* docs/html/ext/pb_ds/embedded_lists_1.png
+	* docs/html/ext/pb_ds/hash_ranged_hash_range_hashing_fns.png
+	* docs/html/ext/pb_ds/null_lu_metadata.html: Same.
+	* docs/html/ext/pb_ds/tree_order_statistics_timing_test.html: Same.
+	* docs/html/ext/pb_ds/trie_prefix_search_node_update.html: Same.
+	* docs/html/ext/pb_ds/hash_range_hashing_seq_diagram.png
+	* docs/html/ext/pb_ds/point_invalidation_guarantee.html: Same.
+	* docs/html/ext/pb_ds/direct_mod_range_hashing.html: Same.
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test_vector_tree_local.png
+	* docs/html/ext/pb_ds/priority_queue_random_int_push_pop_timing_test_msvc.png
+	* docs/html/ext/pb_ds/misc.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_large_s2p_hash_local.png
+	* docs/html/ext/pb_ds/counter_lu_policy.html: Same.
+	* docs/html/ext/pb_ds/different_underlying_dss.png
+	* docs/html/ext/pb_ds/restoring_node_invariants.png
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_large.html: Same.
+	* docs/html/ext/pb_ds/pairing_priority_queue_text_push_timing_test_local.png
+	* docs/html/ext/pb_ds/sample_update_policy.html: Same.
+	* docs/html/ext/pb_ds/pairing_priority_queue_text_push_timing_test_gcc.png
+	* docs/html/ext/pb_ds/tree_order_statistics_timing_test_local.png
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_small_s2p_tree_msvc.png
+	* docs/html/ext/pb_ds/simple_list.png
+	* docs/html/ext/pb_ds/text_find_timing_test_hash_msvc.png
+	* docs/html/ext/pb_ds/assoc_examples.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_push_pop_timing_test_local.png
+	* docs/html/ext/pb_ds/hash_based_containers.html: Same.
+	* docs/html/ext/pb_ds/text_find_timing_test_tree_like_local.png
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_large_s2p_tree_local.png
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_large_s2p_tree_gcc.png
+	* docs/html/ext/pb_ds/tree_node_iterator.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_modify_up_timing_test_pairing_thin_msvc.png
+	* docs/html/ext/pb_ds/trie_node_iterator.html: Same.
+	* docs/html/ext/pb_ds/tree_based_containers.html: Same.
+	* docs/html/ext/pb_ds/hash_random_int_subscript_insert_timing_test.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_large_s2p_tree_msvc.png
+	* docs/html/ext/pb_ds/ccgp_hash_random_int_subscript_timing_test_insert_msvc.png
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_small_s2p_hash_msvc.png
+	* docs/html/ext/pb_ds/priority_queue_text_push_timing_test_gcc.png
+	* docs/html/ext/pb_ds/rationale_null_node_updator.png
+	* docs/html/ext/pb_ds/priority_queue_text_modify_up_timing_test_pairing_thin_local.png
+	* docs/html/ext/pb_ds/lu.png
+	* docs/html/ext/pb_ds/assoc_container_traits.html: Same.
+	* docs/html/ext/pb_ds/gp_hash_random_int_find_timing_test_msvc.png
+	* docs/html/ext/pb_ds/assoc_design.html: Same.
+	* docs/html/ext/pb_ds/splay_tree_tag.html: Same.
+	* docs/html/ext/pb_ds/cc_hash_random_int_subscript_timing_test_find_gcc.png
+	* docs/html/ext/pb_ds/priority_queue_random_int_push_timing_test.html: Same.
+	* docs/html/ext/pb_ds/assoc_container_tag_cd.svg
+	* docs/html/ext/pb_ds/resize_error.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_large_s2p_hash_msvc.png
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test_node_tree_gcc.png
+	* docs/html/ext/pb_ds/priority_queue_text_join_timing_test.html: Same.
+	* docs/html/ext/pb_ds/basic_tree_assoc_container_const_node_iterator.html: Same.
+	* docs/html/ext/pb_ds/gp_hash_random_int_find_timing_test_gcc.png
+	* docs/html/ext/pb_ds/trie_const_node_iterator.html: Same.
+	* docs/html/ext/pb_ds/hash_zlob_random_int_find_find_timing_test.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_small_s2p_tree_gcc.png
+	* docs/html/ext/pb_ds/sample_size_policy.html: Same.
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test_vector_tree_gcc.png
+	* docs/html/ext/pb_ds/cc_hash_table.html: Same.
+	* docs/html/ext/pb_ds/node_invariants.png
+	* docs/html/ext/pb_ds/tree_split_join_timing_test_msvc.png
+	* docs/html/ext/pb_ds/priority_queue_text_modify_up_timing_test.html: Same.
+	* docs/html/ext/pb_ds/tree_order_statistics_node_update.html: Same.
+	* docs/html/ext/pb_ds/cc_hash_random_int_find_timing_test_msvc.png
+	* docs/html/ext/pb_ds/cc_hash_random_int_subscript_timing_test_insert_local.png
+	* docs/html/ext/pb_ds/priority_queue.html: Same.
+	* docs/html/ext/pb_ds/assoc_tests.html: Same.
+	* docs/html/ext/pb_ds/assoc_container_tag_cd.png
+	* docs/html/ext/pb_ds/basic_hash_table.html: Same.
+	* docs/html/ext/pb_ds/basic_tree_tag.html: Same.
+	* docs/html/ext/pb_ds/tree_split_join_timing_test.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_modify_up_timing_test_local.png
+	* docs/html/ext/pb_ds/insert_resize_sequence_diagram3.png
+	* docs/html/ext/pb_ds/embedded_lists_2.png
+	* docs/html/ext/pb_ds/random_int_find_find_timing_test_tree_local.png
+	* docs/html/ext/pb_ds/sample_ranged_probe_fn.html: Same.
+	* docs/html/ext/pb_ds/random_int_find_find_timing_test_tree_gcc.png
+	* docs/html/ext/pb_ds/sample_trie_node_update.html: Same.
+	* docs/html/ext/pb_ds/introduction.html: Same.
+	* docs/html/ext/pb_ds/pq_performance_tests.html: Same.
+	* docs/html/ext/pb_ds/pat_trie.png
+	* docs/html/ext/pb_ds/range_invalidation_guarantee.html: Same.
+	* docs/html/ext/pb_ds/contact.html: Same.
+	* docs/html/ext/pb_ds/sample_range_hashing.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_random_int_push_timing_test_local.png
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_large_s2p_hash_gcc.png
+	* docs/html/ext/pb_ds/update_seq_diagram.png
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_large_s2p_tree_gcc.png
+	* docs/html/ext/pb_ds/direct_mask_range_hashing.html: Same.
+	* docs/html/ext/pb_ds/tests.html: Same.
+	* docs/html/ext/pb_ds/cc_hash_random_int_find_timing_test_gcc.png
+	* docs/html/ext/pb_ds/tree_node_updator_policy_cd.png
+	* docs/html/ext/pb_ds/text_find_timing_test_tree_like_gcc.png
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_large.html: Same.
+	* docs/html/ext/pb_ds/trie_node_updator_policy_cd.png
+	* docs/html/ext/pb_ds/priority_queue_random_int_push_timing_test_msvc.png
+	* docs/html/ext/pb_ds/concepts.html: Same.
+	* docs/html/ext/pb_ds/pq_examples.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_tag.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_random_int_push_pop_timing_test.html: Same.
+	* docs/html/ext/pb_ds/update_policy_cd.png
+	* docs/html/ext/pb_ds/thin_heap_tag.html: Same.
+	* docs/html/ext/pb_ds/pairing_priority_queue_text_push_pop_timing_test_msvc.png
+	* docs/html/ext/pb_ds/basic_tree.html: Same.
+	* docs/html/ext/pb_ds/null_hash_fn.html: Same.
+	* docs/html/ext/pb_ds/null_tree_node_update.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_modify_up_timing_test_pairing_thin_gcc.png
+	* docs/html/ext/pb_ds/trie.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_small_s2p_tree_msvc.png
+	* docs/html/ext/pb_ds/rc_binomial_heap_tag.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_push_timing_test_msvc.png
+	* docs/html/ext/pb_ds/pq_container_traits.html: Same.
+	* docs/html/ext/pb_ds/pq_design.html: Same.
+	* docs/html/ext/pb_ds/checked_by_tidy.gif
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test_node_tree_local.png
+	* docs/html/ext/pb_ds/multimap_text_insert_mem_usage_test_small_s2p_hash_gcc.png
+	* docs/html/ext/pb_ds/priority_queue_text_push_pop_timing_test.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_insert_timing_test_small_s2p_tree_gcc.png
+	* docs/html/ext/pb_ds/pairing_priority_queue_text_push_pop_timing_test_local.png
+	* docs/html/ext/pb_ds/acks.html: Same.
+	* docs/html/ext/pb_ds/gp_hash_random_int_find_timing_test_local.png
+	* docs/html/ext/pb_ds/cc_hash_tag.html: Same.
+	* docs/html/ext/pb_ds/sample_ranged_hash_fn.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_large_s2p_tree_msvc.png
+	* docs/html/ext/pb_ds/priority_queue_text_pop_mem_usage_test.html: Same.
+	* docs/html/ext/pb_ds/multimap_text_find_timing_test_small.html: Same.
+	* docs/html/ext/pb_ds/tree_text_lor_find_timing_test_msvc.png
+	* docs/html/ext/pb_ds/hash_range_hashing_seq_diagram2.png
+	* docs/html/ext/pb_ds/gp_hash_random_int_subscript_timing_test_find_msvc.png
+	* docs/html/ext/pb_ds/PythonPoweredSmall.gif
+	* docs/html/ext/pb_ds/cc_hash_random_int_find_timing_test_local.png
+	* docs/html/ext/pb_ds/pat_trie_tag.html: Same.
+	* docs/html/ext/pb_ds/hash_standard_resize_policy.html: Same.
+	* docs/html/ext/pb_ds/tree_text_insert_timing_test_vector_tree_msvc.png
+	* docs/html/ext/pb_ds/gp_hash_random_int_subscript_timing_test_insert_gcc.png
+	* docs/html/ext/pb_ds/join_error.html: Same.
+	* docs/html/ext/pb_ds/priority_queue_text_push_pop_timing_test_gcc.png
+	* docs/html/ext/pb_ds/priority_queue_text_join_timing_test_local.png
+
+	* testsuite/ext/pb_ds: New.
+	* testsuite/ext/pb_ds/regression: New.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/associative_containers.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/priority_queues.cc: Same.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/example: New.
+	* testsuite/ext/pb_ds/example/hash_shift_mask.cc: Same.
+	* testsuite/ext/pb_ds/example/basic_set.cc: Same.
+	* testsuite/ext/pb_ds/example/hash_illegal_resize.cc: Same.
+	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Same.
+	* testsuite/ext/pb_ds/example/store_hash.cc: Same.
+	* testsuite/ext/pb_ds/example/assoc_container_traits.cc: Same.
+	* testsuite/ext/pb_ds/example/hash_load_set_change.cc: Same.
+	* testsuite/ext/pb_ds/example/ranged_hash.cc: Same.
+	* testsuite/ext/pb_ds/example/hash_resize.cc: Same.
+	* testsuite/ext/pb_ds/example/tree_order_statistics.cc: Same.
+	* testsuite/ext/pb_ds/example/trie_prefix_search.cc: Same.
+	* testsuite/ext/pb_ds/example/basic_multiset.cc: Same.
+	* testsuite/ext/pb_ds/example/priority_queue_xref.cc: Same.
+	* testsuite/ext/pb_ds/example/hash_find_neg.cc: Same.
+	* testsuite/ext/pb_ds/example/erase_if.cc: Same.
+	* testsuite/ext/pb_ds/example/priority_queue_container_traits.cc: Same.
+	* testsuite/ext/pb_ds/example/tree_join.cc: Same.
+	* testsuite/ext/pb_ds/example/basic_map.cc: Same.
+	* testsuite/ext/pb_ds/example/trie_split.cc: Same.
+	* testsuite/ext/pb_ds/example/priority_queue_split_join.cc: Same.
+	* testsuite/ext/pb_ds/example/priority_queue_dijkstra.cc: Same.
+	* testsuite/ext/pb_ds/example/priority_queue_erase_if.cc: Same.
+	* testsuite/ext/pb_ds/example/hash_mod.cc: Same.
+	* testsuite/ext/pb_ds/example/tree_order_statistics_join.cc: Same.
+	* testsuite/ext/pb_ds/example/trie_dna.cc: Same.
+	* testsuite/ext/pb_ds/example/hash_initial_size.cc: Same.
+	* testsuite/ext/pb_ds/example/basic_priority_queue.cc: Same.
+	* testsuite/ext/pb_ds/example/tree_intervals.cc: Same.
+	* testsuite/ext/pb_ds/example/basic_multimap.cc: Same.
+	* testsuite/performance/ext: New.
+	* testsuite/performance/ext/pb_ds: New.
+	* testsuite/performance/ext/pb_ds/multimap_text_find_timing_small.cc: Same.
+	* testsuite/performance/ext/pb_ds/text_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/hash_random_int_erase_mem_usage.cc: Same.
+	* testsuite/performance/ext/pb_ds/tree_text_insert_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_modify_down_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/random_int_subscript_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_push_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/tree_split_join_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/random_int_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_timing_large.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_mem_usage.hpp: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_random_int_push_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_find_timing.hpp: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_modify_timing.hpp: Same.
+	* testsuite/performance/ext/pb_ds/tree_order_statistics_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_modify_up_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_mem_usage_large.cc: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_push_pop_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_find_timing_large.cc: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_join_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_timing_small.cc: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_random_int_push_pop_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/random_int_subscript_insert_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/tree_text_lor_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_pop_mem_usage.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_timing.hpp: Same.
+	* testsuite/performance/ext/pb_ds/hash_zlob_random_int_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_mem_usage_small.cc: Same.
+	* testsuite/data/make_graph_test_infos.xml: Same.
+	* testsuite/data/thirty_years_among_the_dead_preproc.txt: New.
+	* testsuite/data/make_graph_htmls.xml: Same.
+	* testsuite/util/regression: New.
+	* testsuite/util/regression/trait: New.
+	* testsuite/util/regression/trait/priority_queue: New.
+	* testsuite/util/regression/trait/priority_queue/trait.hpp: Same.
+	* testsuite/util/regression/trait/erase_if_fn.hpp: Same.
+	* testsuite/util/regression/trait/assoc: New.
+	* testsuite/util/regression/trait/assoc/native_type_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/node_update_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/get_set_load_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/get_set_loads_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/type_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/resize_trait.hpp: Same.
+	* testsuite/util/regression/trait/assoc/to_string.hpp: Same.
+	* testsuite/util/regression/rand: New.
+	* testsuite/util/regression/rand/priority_queue: New.
+	* testsuite/util/regression/rand/priority_queue/detail: New.
+	* testsuite/util/regression/rand/priority_queue/detail/erase_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/cmp_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/policy_access_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/defs_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/it_conversion_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/constructor_destructor_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/diagnostic_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/insert_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/clear_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/modify_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/split_join_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/operator_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/container_rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/io: New.
+	* testsuite/util/regression/rand/io/priority_queue: New.
+	* testsuite/util/regression/rand/io/priority_queue/xml_formatter.hpp: Same.
+	* testsuite/util/regression/rand/io/assoc: New.
+	* testsuite/util/regression/rand/io/assoc/xml_formatter.hpp: Same.
+	* testsuite/util/regression/rand/io/xml_formatter.hpp: Same.
+	* testsuite/util/regression/rand/assoc: New.
+	* testsuite/util/regression/rand/assoc/detail: New.
+	* testsuite/util/regression/rand/assoc/detail/subscript_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/cmp_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/policy_access_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/defs_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/it_conversion_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/diagnostic_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/clear_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/get_set_load_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/operator_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/erase_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/resize_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/constructor_destructor_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/insert_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/split_join_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/get_set_loads_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/assoc/container_rand_regression_test.hpp: Same.
+	* testsuite/util/regression/priority_queue: New.
+	* testsuite/util/regression/priority_queue/common_type.hpp: Same.
+	* testsuite/util/regression/basic_type.hpp: Same.
+	* testsuite/util/regression/assoc: New.
+	* testsuite/util/regression/assoc/common_type.hpp: Same.
+	* testsuite/util/regression/res_mng: New.
+	* testsuite/util/regression/res_mng/forced_exception.hpp: Same.
+	* testsuite/util/regression/res_mng/dbg_ex_allocator_base.cc: Same.
+	* testsuite/util/regression/res_mng/dbg_ex_allocator_base.hpp: Same.
+	* testsuite/util/regression/res_mng/dbg_ex_allocator.hpp: Same.
+	* testsuite/util/rng: New.
+	* testsuite/util/rng/twister_rand_gen.cc: Same.
+	* testsuite/util/rng/twister_rand_gen.hpp: Same.
+	* testsuite/util/native_type: New.
+	* testsuite/util/native_type/priority_queue: New.
+	* testsuite/util/native_type/priority_queue/native_priority_queue.hpp: Same.
+	* testsuite/util/native_type/priority_queue/native_pq_tag.hpp: Same.
+	* testsuite/util/native_type/assoc: New.
+	* testsuite/util/native_type/assoc/native_multimap.hpp: Same.
+	* testsuite/util/native_type/assoc/native_tree_tag.hpp: Same.
+	* testsuite/util/native_type/assoc/native_set.hpp: Same.
+	* testsuite/util/native_type/assoc/native_hash_multimap.hpp: Same.
+	* testsuite/util/native_type/assoc/native_map.hpp: Same.
+	* testsuite/util/native_type/assoc/native_hash_tag.hpp: Same.
+	* testsuite/util/native_type/assoc/native_hash_set.hpp: Same.
+	* testsuite/util/native_type/assoc/native_hash_map.hpp: Same.
+	* testsuite/util/common_type: New.
+	* testsuite/util/common_type/priority_queue
+	* testsuite/util/common_type/priority_queue/common_type.hpp: Same.
+	* testsuite/util/common_type/priority_queue/string_form.hpp: Same.
+	* testsuite/util/common_type/priority_queue/detail
+	* testsuite/util/common_type/priority_queue/detail/ds_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc: New.
+	* testsuite/util/common_type/assoc/common_type.hpp: Same.
+	* testsuite/util/common_type/assoc/string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/template_policy.hpp: Same.
+	* testsuite/util/common_type/assoc/detail: New.
+	* testsuite/util/common_type/assoc/detail/resize_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/trigger_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/ds_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/comb_hash_fn_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/size_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/probe_fn_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/tree_supports_order_statistics.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/trie_supports_prefix_search.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/list_update_policy_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/trie_supports_order_statistics.hpp: Same.
+	* testsuite/util/common_type/assoc/detail/store_hash_string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/native_set.hpp: Same.
+	* testsuite/util/performance: New.
+	* testsuite/util/performance/priority_queue: New.
+	* testsuite/util/performance/priority_queue/mem_usage: New.
+	* testsuite/util/performance/priority_queue/mem_usage/pop_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing: New.
+	* testsuite/util/performance/priority_queue/timing/push_pop_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/push_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/join_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/modify_test.hpp: Same.
+	* testsuite/util/performance/io: New.
+	* testsuite/util/performance/io/xml_formatter.hpp: Same.
+	* testsuite/util/performance/assoc: New.
+	* testsuite/util/performance/assoc/mem_usage: New.
+	* testsuite/util/performance/assoc/mem_usage/multimap_insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/mem_usage/erase_test.hpp: Same.
+	* testsuite/util/performance/assoc/multimap_common_type.hpp: Same.
+	* testsuite/util/performance/assoc/timing: New.
+	* testsuite/util/performance/assoc/timing/common_type.hpp: Same.
+	* testsuite/util/performance/assoc/timing/multimap_insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/subscript_find_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/find_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/subscript_insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/tree_order_statistics_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/multimap_find_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/tree_split_join_test.hpp: Same.
+	* testsuite/util/performance/time: New.
+	* testsuite/util/performance/time/elapsed_timer.cc: Same.
+	* testsuite/util/performance/time/elapsed_timer.hpp: Same.
+	* testsuite/util/performance/time/timing_test_base.hpp: Same.
+	* testsuite/util/performance/mem: New.
+	* testsuite/util/performance/mem/mem_track_allocator_base.hpp: Same.
+	* testsuite/util/performance/mem/mem_track_allocator.hpp: Same.
+	* testsuite/util/hash_fn: New.
+	* testsuite/util/hash_fn/limit_string_hash_fn.hpp: Same.
+	* testsuite/util/hash_fn/string_ranged_hash_fn.hpp: Same.
+	* testsuite/util/hash_fn/string_hash_fn.hpp: Same.
+	* testsuite/util/hash_fn/string_ranged_probe_fn.hpp: Same.
+	* testsuite/util/hash_fn/dna_str_limit.hpp: Same.
+	* testsuite/util/io: New.
+	* testsuite/util/io/prog_bar.cc: Same.
+	* testsuite/util/io/prog_bar.hpp: Same.
+	* testsuite/util/io/text_populate.hpp: Same.
+	* testsuite/util/io/xml.hpp: Same.
+	* testsuite/util/io/illegal_input_error.hpp: Same.
+	* testsuite/util/io/xml_test_formatter.hpp: Same.
+	* testsuite/util/io/verified_cmd_line_input.cc: Same.
+	* testsuite/util/io/verified_cmd_line_input.hpp: Same.
+	* testsuite/util/statistic: New.
+	* testsuite/util/statistic/sample_var.hpp: Same.
+	* testsuite/util/statistic/res_recorder.hpp: Same.
+	* testsuite/util/statistic/sample_mean.hpp: Same.
+	* testsuite/util/statistic/sample_mean_confidence_checker.hpp: Same.
+	
 2006-06-12  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/26970
