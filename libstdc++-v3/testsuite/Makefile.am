@@ -91,7 +91,7 @@ new-abi-baseline:
 
 # Use 'new-abi-baseline' to create an initial symbol file.  Then run
 # 'check-abi' to test for changes against that file.
-check-abi: baseline_symbols site.exp
+check-abi: site.exp baseline_symbols 
 	-@runtest --tool libstdc++ abi.exp
 
 # Runs the testsuite, but in compile only mode.
@@ -108,10 +108,20 @@ check-compile: testsuite_files ${compile_script}
 # Some of these tests create large (~75MB) files, allocate huge
 # ammounts of memory, or otherwise tie up machine resources. Thus,
 # running this is off by default.
-performance_script=${glibcxx_srcdir}/scripts/check_performance
+# XXX Need to add dependency on libtestc++.a
+check_performance_script=${glibcxx_srcdir}/scripts/check_performance
 check-performance: testsuite_files_performance ${performance_script}
-	-@(chmod + ${performance_script}; \
-	  ${performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
+	-@(chmod + ${check_performance_script}; \
+	  ${check_performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
+
+# Generates the plots and graphs for performance testing.
+doc_performance_script=${glibcxx_srcdir}/scripts/make_graphs.py
+doc-performance:
+	-@(chmod + ${doc_performance_script}; \
+	${doc_performance_script} ${glibcxx_srcdir} \
+	${glibcxx_builddir}/testsuite \
+	${glibcxx_srcdir}/testsuite/data/make_graph_htmls.xml \
+	${glibcxx_srcdir}/testsuite/data/make_graph_test_infos.xml local g++)
 
 
 .PHONY: baseline_symbols new-abi-baseline \
@@ -120,4 +130,4 @@ check-performance: testsuite_files_performance ${performance_script}
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
 	     testsuite_* site.exp abi_check baseline_symbols *TEST* *.dat \
-	     *.o *.cc
+	     *.o *.cc *.a *.so *.xml
