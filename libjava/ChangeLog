@@ -1,3 +1,8 @@
+2006-06-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* configure.host (hppa*-*): Set 'enable_hash_synchronization_default'
+	to no.
+
 2006-06-12  Andrew Haley  <aph@redhat.com>
 
 	* testsuite/libjava.lang/PR27908.out: Delete.
