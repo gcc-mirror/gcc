@@ -130,7 +130,7 @@ case "${host}" in
   hppa*-*)
 	sysdeps_dir=pa
 	libgcj_interpreter=yes
-	enable_hash_synchronization_default=yes
+	enable_hash_synchronization_default=no
 	;;
   powerpc64*-*)
 	sysdeps_dir=powerpc
