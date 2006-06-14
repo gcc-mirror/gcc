@@ -5708,7 +5708,12 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
       /* Allow array assignment in compiler-generated code.  */
       if (! DECL_ARTIFICIAL (current_function_decl))
 	{
-	  error ("array used as initializer");
+          /* This routine is used for both initialization and assignment.
+             Make sure the diagnostic message differentiates the context.  */
+          if (modifycode == INIT_EXPR)
+            error ("array used as initializer");
+          else
+            error ("invalid array assignment");
 	  return error_mark_node;
 	}
 
