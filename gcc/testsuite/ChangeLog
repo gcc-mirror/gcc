@@ -1,5 +1,10 @@
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/28018
+	* g++.old-deja/g++.benjamin/14664-2.C: Expect error for array
+	assignment.
+	* g++.old-deja/g++.pt/crash51.C: Likewise.
+
 	PR c++/27227
 	* g++.dg/lookup/linkage1.C: New test.
 	* g++.dg/lookup/linkage2.C: Likewise.
