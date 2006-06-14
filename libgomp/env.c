@@ -166,21 +166,27 @@ initialize_env (void)
   pthread_attr_init (&gomp_thread_attr);
   pthread_attr_setdetachstate (&gomp_thread_attr, PTHREAD_CREATE_DETACHED);
 
-  if (parse_unsigned_long ("OMP_STACKSIZE", &stacksize))
+  if (parse_unsigned_long ("GOMP_STACKSIZE", &stacksize))
     {
+      int err;
+
       stacksize *= 1024;
-      if (stacksize < PTHREAD_STACK_MIN)
-	gomp_error ("Stack size less than minimum of %luk",
-		    PTHREAD_STACK_MIN / 1024ul
-		    + (PTHREAD_STACK_MIN % 1024 != 0));
-      else
+      err = pthread_attr_setstacksize (&gomp_thread_attr, stacksize);
+
+#ifdef PTHREAD_STACK_MIN
+      if (err == EINVAL)
 	{
-	  int err = pthread_attr_setstacksize (&gomp_thread_attr, stacksize);
-	  if (err == EINVAL)
+	  if (stacksize < PTHREAD_STACK_MIN)
+	    gomp_error ("Stack size less than minimum of %luk",
+			PTHREAD_STACK_MIN / 1024ul
+			+ (PTHREAD_STACK_MIN % 1024 != 0));
+	  else
 	    gomp_error ("Stack size larger than system limit");
-	  else if (err != 0)
-	    gomp_error ("Stack size change failed: %s", strerror (err));
 	}
+      else
+#endif
+      if (err != 0)
+	gomp_error ("Stack size change failed: %s", strerror (err));
     }
 }
 
