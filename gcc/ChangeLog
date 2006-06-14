@@ -1,3 +1,9 @@
+2006-06-14  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR middle-end/27959
+	* reload1.c (reload): Remove registers returned by update_eliminables
+	from used_spill_regs.
+
 2006-06-13  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/muldiv.md (mulpsi3): Expect arbitrary constants.
