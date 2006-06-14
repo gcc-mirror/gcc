@@ -1,3 +1,9 @@
+2006-06-14  Richard Henderson  <rth@redhat.com>
+
+	PR libgomp/28008
+	* env.c (initialize_env): Avoid using PTHREAD_STACK_MIN when
+	undefined.  Use GOMP_STACKSIZE not OMP_STACKSIZE for environment.
+
 2006-06-09  Richard Henderson  <rth@redhat.com>
 
 	* env.c (gomp_nthreads_var): Change to unsigned long.
