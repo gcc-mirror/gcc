@@ -343,6 +343,7 @@ GLIBJ_CLASSPATH = '$(top_builddir)/lib':'$(top_builddir)/lib/glibj.zip'
 @CREATE_WRAPPERS_TRUE@gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
 @CREATE_WRAPPERS_TRUE@gappletviewer_SOURCES = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@gappletviewer_CFLAGS = -Wall \
+@CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
 @CREATE_WRAPPERS_TRUE@	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\"" \
 @CREATE_WRAPPERS_TRUE@	-DTOOLPACKAGE="\"appletviewer\"" \
 @CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"gappletviewer\""
@@ -350,6 +351,7 @@ GLIBJ_CLASSPATH = '$(top_builddir)/lib':'$(top_builddir)/lib/glibj.zip'
 @CREATE_WRAPPERS_TRUE@gappletviewer_LDFLAGS = -L$(libdir) $(LIBJVM)
 @CREATE_WRAPPERS_TRUE@gjarsigner_SOURCES = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@gjarsigner_CFLAGS = -Wall \
+@CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
 @CREATE_WRAPPERS_TRUE@	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\"" \
 @CREATE_WRAPPERS_TRUE@	-DTOOLPACKAGE="\"jarsigner\"" \
 @CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"gjarsigner\""
@@ -357,6 +359,7 @@ GLIBJ_CLASSPATH = '$(top_builddir)/lib':'$(top_builddir)/lib/glibj.zip'
 @CREATE_WRAPPERS_TRUE@gjarsigner_LDFLAGS = -L$(libdir) $(LIBJVM)
 @CREATE_WRAPPERS_TRUE@gkeytool_SOURCES = toolwrapper.c
 @CREATE_WRAPPERS_TRUE@gkeytool_CFLAGS = -Wall \
+@CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
 @CREATE_WRAPPERS_TRUE@	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\"" \
 @CREATE_WRAPPERS_TRUE@	-DTOOLPACKAGE="\"keytool\"" \
 @CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"gkeytool\""

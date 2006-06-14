@@ -1,3 +1,11 @@
+2006-06-14  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* classpath/tools/Makefile.am (gappletviewer_CFLAGS): Add
+	-I$(top_srcdir)/include.
+	(gjarsigner_CFLAGS): Likewise.
+	(gkeytool_CFLAGS): Likewise.
+	* classpath/tools/Makefile.in: Regenerate.
+
 2006-06-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* configure: Regenerate.
