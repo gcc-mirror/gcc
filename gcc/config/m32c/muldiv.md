@@ -152,7 +152,7 @@
 		  (match_operand 2 "m32c_psi_scale" "Ilb")))]
   "TARGET_A24"
   "if (GET_CODE (operands[2]) != CONST_INT
-       || INTVAL(operands[2]) < 0)
+       || ! m32c_psi_scale (operands[2], PSImode))
      {
        m32c_expand_neg_mulpsi3 (operands);
        DONE;
