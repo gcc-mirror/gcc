@@ -9922,7 +9922,7 @@
 
 2006-01-20  DJ Delorie  <dj@redhat.com>
 
-	* varasm.c (initialize_constant_valid_p): Allow pointers
+	* varasm.c (initializer_constant_valid_p): Allow pointers
 	initialized from integer constants of lesser precision.
 	(output_constant): Allow non-int-sized pointer modes to be
 	initialized from integer constants.
