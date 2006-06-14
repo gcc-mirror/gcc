@@ -11737,7 +11737,7 @@ echo "${ECHO_T}$QT_LIBS" >&6
   fi
 
     if test "x$HAVE_QT4" = "xyes"; then
-                  QT_INCLUDE_DIR=$($PKG_CONFIG --variable=includedir QtGui)
+                  QT_INCLUDE_DIR=`$PKG_CONFIG --variable=includedir QtGui`
       EXTRA_QT_INCLUDE_DIR="$QT_INCLUDE_DIR/Qt"
       as_ac_File=`echo "ac_cv_file_$QT_INCLUDE_DIR/QWidget" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $QT_INCLUDE_DIR/QWidget" >&5
@@ -14483,7 +14483,7 @@ echo "$as_me: error: \"jay executable not found\"" >&2;}
    { (exit 1); exit 1; }; };
       fi
     else
-      JAY_DIR_PATH=$(dirname "${withval}")
+      JAY_DIR_PATH=`dirname "${withval}"`
       JAY="${withval}"
 
     fi
@@ -14509,8 +14509,8 @@ echo "${ECHO_T}`eval echo '${'$as_ac_File'}'`" >&6
 if test `eval echo '${'$as_ac_File'}'` = yes; then
   :
 else
-  { { echo "$as_me:$LINENO: error: \"Expected skeleton file in $(dirname ${withval})\"" >&5
-echo "$as_me: error: \"Expected skeleton file in $(dirname ${withval})\"" >&2;}
+  { { echo "$as_me:$LINENO: error: \"Expected skeleton file in \`dirname ${withval}\`\"" >&5
+echo "$as_me: error: \"Expected skeleton file in \`dirname ${withval}\`\"" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
