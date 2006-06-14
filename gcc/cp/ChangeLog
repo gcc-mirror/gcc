@@ -1,3 +1,7 @@
+2006-06-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* typeck.c (build_modify_expr): Tidy diagnostic message.
+
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28018
