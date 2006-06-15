@@ -1,3 +1,17 @@
+2006-06-15  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_truth_not_expr): Rename from
+	invert_truthvalue.  Give it fold_* semantics to avoid
+	generating garbage.
+	(invert_truthvalue): New function.  Wrapper around
+	fold_truth_not_expr.
+	(optimize_minmax_comparison): Avoid creating garbage.
+	(fold_unary): Use fold_truth_not_expr for folding
+	TRUTH_NOT_EXPR.
+	(fold_ternary): Replace uses of invert_truthvalue with
+	fold_truth_not_expr where applicable.
+	* tree.h (fold_truth_not_expr): Prototype.
+
 2006-06-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27781

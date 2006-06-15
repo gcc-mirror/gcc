@@ -3049,14 +3049,12 @@ omit_two_operands (tree type, tree result, tree omitted1, tree omitted2)
 
    FIXME: one would think we would fold the result, but it causes
    problems with the dominator optimizer.  */
+
 tree
-invert_truthvalue (tree arg)
+fold_truth_not_expr (tree arg)
 {
   tree type = TREE_TYPE (arg);
   enum tree_code code = TREE_CODE (arg);
-
-  if (code == ERROR_MARK)
-    return arg;
 
   /* If this is a comparison, we can simply invert it, except for
      floating-point non-equality comparisons, in which case we just
@@ -3069,13 +3067,13 @@ invert_truthvalue (tree arg)
 	  && flag_trapping_math
 	  && code != ORDERED_EXPR && code != UNORDERED_EXPR
 	  && code != NE_EXPR && code != EQ_EXPR)
-	return build1 (TRUTH_NOT_EXPR, type, arg);
+	return NULL_TREE;
       else
 	{
 	  code = invert_tree_comparison (code,
 					 HONOR_NANS (TYPE_MODE (op_type)));
 	  if (code == ERROR_MARK)
-	    return build1 (TRUTH_NOT_EXPR, type, arg);
+	    return NULL_TREE;
 	  else
 	    return build2 (code, type,
 			   TREE_OPERAND (arg, 0), TREE_OPERAND (arg, 1));
@@ -3147,7 +3145,7 @@ invert_truthvalue (tree arg)
 
     case NOP_EXPR:
       if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
-        break;
+	return build1 (TRUTH_NOT_EXPR, type, arg);
 
     case CONVERT_EXPR:
     case FLOAT_EXPR:
@@ -3170,8 +3168,30 @@ invert_truthvalue (tree arg)
     default:
       break;
     }
-  gcc_assert (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE);
-  return build1 (TRUTH_NOT_EXPR, type, arg);
+
+  return NULL_TREE;
+}
+
+/* Return a simplified tree node for the truth-negation of ARG.  This
+   never alters ARG itself.  We assume that ARG is an operation that
+   returns a truth value (0 or 1).
+
+   FIXME: one would think we would fold the result, but it causes
+   problems with the dominator optimizer.  */
+
+tree
+invert_truthvalue (tree arg)
+{
+  tree tem;
+
+  if (TREE_CODE (arg) == ERROR_MARK)
+    return arg;
+
+  tem = fold_truth_not_expr (arg);
+  if (!tem)
+    tem = build1 (TRUTH_NOT_EXPR, TREE_TYPE (arg), arg);
+
+  return tem;
 }
 
 /* Given a bit-wise operation CODE applied to ARG0 and ARG1, see if both
@@ -5258,15 +5278,11 @@ optimize_minmax_comparison (enum tree_code code, tree type, tree op0, tree op1)
     {
     case NE_EXPR:  case LT_EXPR:  case LE_EXPR:
       {
-	/* FIXME: We should be able to invert code without building a
-	   scratch tree node, but doing so would require us to
-	   duplicate a part of invert_truthvalue here.  */
-	tree tem = invert_truthvalue (build2 (code, type, op0, op1));
-	tem = optimize_minmax_comparison (TREE_CODE (tem),
-					  TREE_TYPE (tem),
-					  TREE_OPERAND (tem, 0),
-					  TREE_OPERAND (tem, 1));
-	return invert_truthvalue (tem);
+	tree tem = optimize_minmax_comparison (invert_tree_comparison (code, false),
+					  type, op0, op1);
+	if (tem)
+	  return invert_truthvalue (tem);
+	return NULL_TREE;
       }
 
     case GE_EXPR:
@@ -7616,9 +7632,8 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	 and its values must be 0 or 1.
 	 ("true" is a fixed value perhaps depending on the language,
 	 but we don't handle values other than 1 correctly yet.)  */
-      tem = invert_truthvalue (arg0);
-      /* Avoid infinite recursion.  */
-      if (TREE_CODE (tem) == TRUTH_NOT_EXPR)
+      tem = fold_truth_not_expr (arg0);
+      if (!tem)
 	return NULL_TREE;
       return fold_convert (type, tem);
 
@@ -11114,8 +11129,8 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 					     TREE_OPERAND (arg0, 1))
 	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (op2))))
 	{
-	  tem = invert_truthvalue (arg0);
-	  if (COMPARISON_CLASS_P (tem))
+	  tem = fold_truth_not_expr (arg0);
+	  if (tem && COMPARISON_CLASS_P (tem))
 	    {
 	      tem = fold_cond_expr_with_comparison (type, tem, op2, op1);
 	      if (tem)
@@ -11131,9 +11146,8 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	  /* See if this can be inverted.  If it can't, possibly because
 	     it was a floating-point inequality comparison, don't do
 	     anything.  */
-	  tem = invert_truthvalue (arg0);
-
-	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
+	  tem = fold_truth_not_expr (arg0);
+	  if (tem)
 	    return fold_build3 (code, type, tem, op2, op1);
 	}
 
@@ -11210,8 +11224,8 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	  && truth_value_p (TREE_CODE (arg1)))
 	{
 	  /* Only perform transformation if ARG0 is easily inverted.  */
-	  tem = invert_truthvalue (arg0);
-	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
+	  tem = fold_truth_not_expr (arg0);
+	  if (tem)
 	    return fold_build2 (TRUTH_ORIF_EXPR, type,
 				fold_convert (type, tem),
 				arg1);
@@ -11223,8 +11237,8 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 	  && truth_value_p (TREE_CODE (op2)))
 	{
 	  /* Only perform transformation if ARG0 is easily inverted.  */
-	  tem = invert_truthvalue (arg0);
-	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
+	  tem = fold_truth_not_expr (arg0);
+	  if (tem)
 	    return fold_build2 (TRUTH_ANDIF_EXPR, type,
 				fold_convert (type, tem),
 				op2);
