@@ -1,5 +1,10 @@
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/26559
+	* g++.dg/template/builtin1.C: New test.
+
+2006-06-14  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/27227
 	* g++.dg/lookup/linkage1.C: New test.
 	* g++.dg/lookup/linkage2.C: Likewise.
