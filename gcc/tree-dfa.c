@@ -75,8 +75,6 @@ static tree find_vars_r (tree *, int *, void *);
 
 /* Array of all variables referenced in the function.  */
 htab_t referenced_vars;
-/* List of referenced variables with duplicate UID's.  */
-VEC(tree,gc) *referenced_vars_dup_list;
 
 /* Default definition for this symbols.  If set for symbol, it
    means that the first reference to this variable in the function is a
@@ -102,7 +100,6 @@ find_referenced_vars (void)
   basic_block bb;
   block_stmt_iterator si;
 
-  gcc_assert (VEC_length (tree, referenced_vars_dup_list) == 0);
   FOR_EACH_BB (bb)
     for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
       {
@@ -640,27 +637,9 @@ referenced_var_check_and_insert (tree to)
 
   if (h)
     {
-      unsigned u;
-      tree t = NULL_TREE;
-
       /* DECL_UID has already been entered in the table.  Verify that it is
-	 the same entry as TO.  */
-      gcc_assert (h->to != NULL);
-      if (h->to == to)
-        return false;
-
-      /* PRs 26757 and 27793.  Maintain a list of duplicate variable pointers
-	 with the same DECL_UID.  There isn't usually very many.
-	 TODO.  Once the C++ front end doesn't create duplicate DECL UID's, this
-	 code can be removed.  */
-      for (u = 0; u < VEC_length (tree, referenced_vars_dup_list); u++)
-	{
-	  t = VEC_index (tree, referenced_vars_dup_list, u);
-	  if (t == to)
-	    break;
-	}
-      if (t != to)
-	VEC_safe_push (tree, gc, referenced_vars_dup_list, to);
+	 the same entry as TO.  See PR 27793.  */
+      gcc_assert (h->to == to);
       return false;
     }
 

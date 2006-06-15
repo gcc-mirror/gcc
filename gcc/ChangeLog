@@ -1,3 +1,12 @@
+2006-06-15  Andrew MacLeod  <amacleod@redhat.com>
+	
+	PR middle-end/27793
+	* tree-dfa.c (referenced_vars_dup_list): Remove.
+	(find_referenced_vars): Remove assert.
+	(referenced_var_check_and_insert): Replace dup list with assert.
+	* tree-ssa.c (delete_tree_ssa): Remove dup list processing.
+	* tree-flow.h (referenced_vars_dup_list): Remove extern decl.
+
 2006-06-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (alias_get_name): Avoid creating
