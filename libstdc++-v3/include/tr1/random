@@ -825,7 +825,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     class discard_block
     {
       // __glibcxx_class_requires(typename base_type::result_type,
-      //                          ArithmeticTypeConcept);
+      //                          ArithmeticTypeConcept)
 
     public:
       /** The type of the underlying generator engine. */
@@ -991,7 +991,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * James's luxury-level-3 integer adaptation of Luescher's generator.
    */
   typedef discard_block<
-    subtract_with_carry<int, (1<<24), 10, 24>,
+    subtract_with_carry<int, (1 << 24), 10, 24>,
       223,
       24
       > ranlux3;
@@ -1000,7 +1000,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * James's luxury-level-4 integer adaptation of Luescher's generator.
    */
   typedef discard_block<
-    subtract_with_carry<int, (1<<24), 10, 24>,
+    subtract_with_carry<int, (1 << 24), 10, 24>,
       389,
       24
       > ranlux4;
@@ -1015,21 +1015,25 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     class xor_combine
     {
       // __glibcxx_class_requires(typename _UniformRandomNumberGenerator1::
-      //                          result_type, ArithmeticTypeConcept);
+      //                          result_type, ArithmeticTypeConcept)
       // __glibcxx_class_requires(typename _UniformRandomNumberGenerator2::
-      //                          result_type, ArithmeticTypeConcept);
+      //                          result_type, ArithmeticTypeConcept)
 
     public:
       /** The type of the the first underlying generator engine. */
-      typedef _UniformRandomNumberGenerator1 base1_type;
+      typedef _UniformRandomNumberGenerator1   base1_type;
       /** The type of the the second underlying generator engine. */
-      typedef _UniformRandomNumberGenerator2 base2_type;
+      typedef _UniformRandomNumberGenerator2   base2_type;
+
+    private:
+      typedef typename base1_type::result_type _Result_type1;
+      typedef typename base2_type::result_type _Result_type2;
+
+    public:
       /** The type of the generated random value. */
       typedef typename _Private::_Select<
-	(sizeof(base1_type) > sizeof(base2_type)),
-	base1_type,
-	base2_type
-	>::_Type result_type;
+	(sizeof(_Result_type1) > sizeof(_Result_type2)),
+	_Result_type1, _Result_type2>::_Type result_type;
 
       // parameter values
       static const int shift1 = __s1;
@@ -1185,7 +1189,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 #else
 
     explicit
-    random_device(const std::string& __token = "rand")
+    random_device(const std::string& __token = "mt19937")
     : _M_mt(_M_strtoul(__token)) { }
 
   private:
@@ -1193,7 +1197,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     _M_strtoul(const std::string& __str)
     {
       unsigned long __ret = 5489UL;
-      if (__str != "rand")
+      if (__str != "mt19937")
 	{
 	  const char* __nptr = __str.c_str();
 	  char* __endptr;

@@ -1,3 +1,13 @@
+2006-06-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (class xor_combine): Fix result_type typedef.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/
+	cons/default.cc: New.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/
+	requirements/typedefs.cc: Tweak.
+
+	* include/tr1/random: Minor cosmetic changes.
+
 2006-06-14  Ami Tavory  <atavory@gmail.com>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
