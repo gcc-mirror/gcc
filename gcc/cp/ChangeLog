@@ -1,21 +1,16 @@
-2006-06-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
-
-	* typeck.c (build_modify_expr): Tidy diagnostic message.
-
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
-
-	* parser.c (cp_parser_unqualified_id): Use constructor_name_p to
-	check destructor names.
-	(cp_parser_nested_name_specifier_opt): Remove invalid
-	optimization.
-
-	* parser.c (cp_parser_declarator): Robustify.
 
 	PR c++/26559
 	* pt.c (tsubst_expr): Use finish_omp_atomic.
 	(value_dependent_expression_p): All CALL_EXPRs are dependent.
 	* semantics.c (finish_omp_atomic): Rework to use standard
 	paradigms for handling non-dependent expressions.
+
+2006-06-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* typeck.c (build_modify_expr): Tidy diagnostic message.
+
+2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28018
 	* typeck.c (build_modify_expr): Disallow array assignment.
