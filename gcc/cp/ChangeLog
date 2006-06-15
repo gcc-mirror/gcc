@@ -1,5 +1,13 @@
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27665
+	* parser.c (cp_parser_unqualified_id): Use constructor_name_p to
+	identify destructors.
+	(cp_parser_nested_name_specifier_opt): Remove invalid
+	optimization.
+	(cp_parser_template_id): Refine heuristic for determining whether
+	we are entering a scope.
+
 	PR c++/27648
 	* parser.c (cp_parser_declarator): Robustify.
 
