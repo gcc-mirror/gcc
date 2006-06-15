@@ -1,3 +1,8 @@
+2006-06-15  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/vmx/pr27842.c: Remove dg-do directive; use default.
+	* gcc.dg/vmx/pr27006.c: Ditto.
+
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27648
