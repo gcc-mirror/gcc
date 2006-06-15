@@ -1,6 +1,6 @@
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/26748
+	PR c++/27648
 	* parser.c (cp_parser_declarator): Robustify.
 
 	PR c++/26559
