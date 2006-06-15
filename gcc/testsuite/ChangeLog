@@ -1,5 +1,9 @@
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/26559
+	* g++.dg/template/builtin1.C: New test.
+	* g++.dg/gomp/tpl-atomic-2.C: Remove XFAIL.
+	
 	PR c++/28018
 	* g++.old-deja/g++.benjamin/14664-2.C: Expect error for array
 	assignment.

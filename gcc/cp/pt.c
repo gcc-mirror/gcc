@@ -8546,10 +8546,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree op0, op1;
 	op0 = tsubst_expr (TREE_OPERAND (t, 0), args, complain, in_decl);
 	op1 = tsubst_expr (TREE_OPERAND (t, 1), args, complain, in_decl);
-	if (OMP_ATOMIC_DEPENDENT_P (t))
-	  c_finish_omp_atomic (OMP_ATOMIC_CODE (t), op0, op1);
-	else
-	  add_stmt (build2 (OMP_ATOMIC, void_type_node, op0, op1));
+	finish_omp_atomic (OMP_ATOMIC_CODE (t), op0, op1);
       }
       break;
 
@@ -12473,7 +12470,8 @@ dependent_scope_ref_p (tree expression, bool criterion (tree))
 }
 
 /* Returns TRUE if the EXPRESSION is value-dependent, in the sense of
-   [temp.dep.constexpr] */
+   [temp.dep.constexpr].  EXPRESSION is already known to be a constant
+   expression.  */
 
 bool
 value_dependent_expression_p (tree expression)
@@ -12564,32 +12562,10 @@ value_dependent_expression_p (tree expression)
 	      || value_dependent_expression_p (TREE_OPERAND (expression, 1)));
 
     case CALL_EXPR:
-      /* A CALL_EXPR is value-dependent if any argument is
-	 value-dependent.  Why do we have to handle CALL_EXPRs in this
-	 function at all?  First, some function calls, those for which
-	 value_dependent_expression_p is true, man appear in constant
-	 expressions.  Second, there appear to be bugs which result in
-	 other CALL_EXPRs reaching this point. */
-      {
-	tree function = TREE_OPERAND (expression, 0);
-	tree args = TREE_OPERAND (expression, 1);
-
-	if (value_dependent_expression_p (function))
-	  return true;
-
-	if (! args)
-	  return false;
-
-	if (TREE_CODE (args) == TREE_LIST)
-	  {
-	    for (; args; args = TREE_CHAIN (args))
-	      if (value_dependent_expression_p (TREE_VALUE (args)))
-		return true;
-	    return false;
-	  }
-
-	return value_dependent_expression_p (args);
-      }
+      /* A CALL_EXPR may appear in a constant expression if it is a
+	 call to a builtin function, e.g., __builtin_constant_p.  All
+	 such calls are value-dependent.  */
+      return true;
 
     default:
       /* A constant expression is value-dependent if any subexpression is
