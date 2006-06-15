@@ -1,3 +1,10 @@
+2006-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac (CFLAGS): Get them from the toplevel or from the
+	configure invocation.
+	* configure: Regenerate.
+	* Makefile.in (CFLAGS): Substitute value provided by configure.
+
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/26559
