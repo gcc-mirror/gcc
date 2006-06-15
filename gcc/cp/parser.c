@@ -3374,12 +3374,12 @@ cp_parser_unqualified_id (cp_parser* parser,
 	qualifying_scope = parser->qualifying_scope;
 
 	/* If the name is of the form "X::~X" it's OK.  */
+	token = cp_lexer_peek_token (parser->lexer);
 	if (scope && TYPE_P (scope)
-	    && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	    && token->type == CPP_NAME
 	    && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
 		== CPP_OPEN_PAREN)
-	    && (cp_lexer_peek_token (parser->lexer)->value
-		== TYPE_IDENTIFIER (scope)))
+	    && constructor_name_p (token->value, scope))
 	  {
 	    cp_lexer_consume_token (parser->lexer);
 	    return build_nt (BIT_NOT_EXPR, scope);
@@ -3550,20 +3550,6 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
   cp_token_position start = 0;
   cp_token *token;
 
-  /* If the next token corresponds to a nested name specifier, there
-     is no need to reparse it.  However, if CHECK_DEPENDENCY_P is
-     false, it may have been true before, in which case something
-     like `A<X>::B<Y>::C' may have resulted in a nested-name-specifier
-     of `A<X>::', where it should now be `A<X>::B<Y>::'.  So, when
-     CHECK_DEPENDENCY_P is false, we have to fall through into the
-     main loop.  */
-  if (check_dependency_p
-      && cp_lexer_next_token_is (parser->lexer, CPP_NESTED_NAME_SPECIFIER))
-    {
-      cp_parser_pre_parsed_nested_name_specifier (parser);
-      return parser->scope;
-    }
-
   /* Remember where the nested-name-specifier starts.  */
   if (cp_parser_uncommitted_to_tentative_parse_p (parser))
     {
@@ -3663,6 +3649,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	     class-or-namespace-name.  */
 	  parser->scope = old_scope;
 	  parser->qualifying_scope = saved_qualifying_scope;
+	  if (cp_parser_uncommitted_to_tentative_parse_p (parser))
+	    break;
 	  /* If the next token is an identifier, and the one after
 	     that is a `::', then any valid interpretation would have
 	     found a class-or-namespace-name.  */
@@ -8797,10 +8785,19 @@ cp_parser_template_id (cp_parser *parser,
     template_id = build_min_nt (TEMPLATE_ID_EXPR, template, arguments);
   else if (DECL_CLASS_TEMPLATE_P (template)
 	   || DECL_TEMPLATE_TEMPLATE_PARM_P (template))
-    template_id
-      = finish_template_type (template, arguments,
-			      cp_lexer_next_token_is (parser->lexer,
-						      CPP_SCOPE));
+    {
+      bool entering_scope;
+      /* In "template <typename T> ... A<T>::", A<T> is the abstract A
+	 template (rather than some instantiation thereof) only if
+	 is not nested within some other construct.  For example, in
+	 "template <typename T> void f(T) { A<T>::", A<T> is just an
+	 instantiation of A.  */
+      entering_scope = (template_parm_scope_p ()
+			&& cp_lexer_next_token_is (parser->lexer,
+						   CPP_SCOPE));
+      template_id
+	= finish_template_type (template, arguments, entering_scope);
+    }
   else
     {
       /* If it's not a class-template or a template-template, it should be
@@ -11283,7 +11280,7 @@ cp_parser_declarator (cp_parser* parser,
 						member_p);
     }
 
-  if (attributes && declarator != cp_error_declarator)
+  if (attributes && declarator && declarator != cp_error_declarator)
     declarator->attributes = attributes;
 
   return declarator;
