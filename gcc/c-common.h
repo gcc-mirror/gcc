@@ -948,7 +948,7 @@ extern tree c_finish_omp_master (tree);
 extern tree c_finish_omp_critical (tree, tree);
 extern tree c_finish_omp_ordered (tree);
 extern void c_finish_omp_barrier (void);
-extern void c_finish_omp_atomic (enum tree_code, tree, tree);
+extern tree c_finish_omp_atomic (enum tree_code, tree, tree);
 extern void c_finish_omp_flush (void);
 extern tree c_finish_omp_for (location_t, tree, tree, tree, tree, tree, tree);
 extern void c_split_parallel_clauses (tree, tree *, tree *);

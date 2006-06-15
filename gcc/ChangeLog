@@ -1,3 +1,11 @@
+2006-06-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/26559
+	* c-common.h (c_finish_omp_atomic): Adjust declaration.
+	* c-omp.c (c_finish_omp_atomic): Return the expression to perform,
+	rather than calling add_stmt on it.
+	* c-parser.c (c_parser_omp_atomic): Adjust accordingly.
+
 2006-06-14  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR middle-end/27959
