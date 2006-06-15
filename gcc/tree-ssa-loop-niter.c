@@ -1470,22 +1470,137 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
 
 */
 
-/* Returns a constant upper bound on the value of expression VAL.  The
-   condition ADDITIONAL must be satisfied (for example, if VAL is
-   "(unsigned) n" and ADDITIONAL is "n > 0", then we can derive that
-   VAL is at most (unsigned) MAX_INT).
- 
-   TODO -- actually do something nontrivial here.  */
+/* Returns true if we can prove that COND ==> VAL >= 0.  */
 
-static tree
-derive_constant_upper_bound (tree val, tree additional ATTRIBUTE_UNUSED)
+static bool
+implies_nonnegative_p (tree cond, tree val)
 {
   tree type = TREE_TYPE (val);
-  tree unsigned_type = unsigned_type_for (type);
+  tree compare;
 
-  if (TREE_CODE (val) != INTEGER_CST)
-    val = upper_bound_in_type (type, type);
-  return fold_convert (unsigned_type, val);
+  if (tree_expr_nonnegative_p (val))
+    return true;
+
+  if (nonzero_p (cond))
+    return false;
+
+  compare = fold_build2 (GE_EXPR,
+			 boolean_type_node, val, build_int_cst (type, 0));
+  compare = tree_simplify_using_condition_1 (cond, compare);
+
+  return nonzero_p (compare);
+}
+
+/* Returns a constant upper bound on the value of expression VAL.  VAL
+   is considered to be unsigned.  If its type is signed, its value must
+   be nonnegative.
+   
+   The condition ADDITIONAL must be satisfied (for example, if VAL is
+   "(unsigned) n" and ADDITIONAL is "n > 0", then we can derive that
+   VAL is at most (unsigned) MAX_INT).  */
+ 
+static double_int
+derive_constant_upper_bound (tree val, tree additional)
+{
+  tree type = TREE_TYPE (val);
+  tree op0, op1, subtype, maxt;
+  double_int bnd, max, mmax, cst;
+
+  if (INTEGRAL_TYPE_P (type))
+    maxt = TYPE_MAX_VALUE (type);
+  else
+    maxt = upper_bound_in_type (type, type);
+
+  max = tree_to_double_int (maxt);
+
+  switch (TREE_CODE (val))
+    {
+    case INTEGER_CST:
+      return tree_to_double_int (val);
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+      op0 = TREE_OPERAND (val, 0);
+      subtype = TREE_TYPE (op0);
+      if (!TYPE_UNSIGNED (subtype)
+	  /* If TYPE is also signed, the fact that VAL is nonnegative implies
+	     that OP0 is nonnegative.  */
+	  && TYPE_UNSIGNED (type)
+	  && !implies_nonnegative_p (additional, op0))
+	{
+	  /* If we cannot prove that the casted expression is nonnegative,
+	     we cannot establish more useful upper bound than the precision
+	     of the type gives us.  */
+	  return max;
+	}
+
+      /* We now know that op0 is an nonnegative value.  Try deriving an upper
+	 bound for it.  */
+      bnd = derive_constant_upper_bound (op0, additional);
+
+      /* If the bound does not fit in TYPE, max. value of TYPE could be
+	 attained.  */
+      if (double_int_ucmp (max, bnd) < 0)
+	return max;
+
+      return bnd;
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      op0 = TREE_OPERAND (val, 0);
+      op1 = TREE_OPERAND (val, 1);
+
+      if (TREE_CODE (op1) != INTEGER_CST
+	  || !implies_nonnegative_p (additional, op0))
+	return max;
+
+      /* Canonicalize to OP0 - CST.  */
+      cst = tree_to_double_int (op1);
+      if (TREE_CODE (val) == PLUS_EXPR)
+	cst = double_int_neg (cst);
+
+      bnd = derive_constant_upper_bound (op0, additional);
+
+      if (double_int_negative_p (cst))
+	{
+	  cst = double_int_neg (cst);
+	  /* Avoid CST == 0x80000...  */
+	  if (double_int_negative_p (cst))
+	    return max;;
+
+	  /* Case OP0 + CST.  We need to check that
+	     BND <= MAX (type) - CST.  */
+
+	  mmax = double_int_add (max, double_int_neg (cst));
+	  if (double_int_ucmp (bnd, mmax) > 0)
+	    return max;
+
+	  return double_int_add (bnd, cst);
+	}
+      else
+	{
+	  if (double_int_ucmp (bnd, cst) < 0)
+	    return max;
+
+	  bnd = double_int_add (bnd, double_int_neg (cst));
+	}
+
+      return bnd;
+
+    case FLOOR_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      op0 = TREE_OPERAND (val, 0);
+      op1 = TREE_OPERAND (val, 1);
+      if (TREE_CODE (op1) != INTEGER_CST
+	  || tree_int_cst_sign_bit (op1))
+	return max;
+
+      bnd = derive_constant_upper_bound (op0, additional);
+      return double_int_udiv (bnd, tree_to_double_int (op1), FLOOR_DIV_EXPR);
+
+    default: 
+      return max;
+    }
 }
 
 /* Records that AT_STMT is executed at most BOUND times in LOOP.  The
@@ -1495,7 +1610,9 @@ void
 record_estimate (struct loop *loop, tree bound, tree additional, tree at_stmt)
 {
   struct nb_iter_bound *elt = xmalloc (sizeof (struct nb_iter_bound));
-  tree c_bound = derive_constant_upper_bound (bound, additional);
+  double_int i_bound = derive_constant_upper_bound (bound, additional);
+  tree c_bound = double_int_to_tree (unsigned_type_for (TREE_TYPE (bound)),
+				     i_bound);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

@@ -1,3 +1,7 @@
+2006-06-15  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-18.c: New test.
+
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27665
