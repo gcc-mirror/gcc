@@ -3834,24 +3834,41 @@ finish_omp_for (location_t locus, tree decl, tree init, tree cond,
 void
 finish_omp_atomic (enum tree_code code, tree lhs, tree rhs)
 {
-  /* If either of the operands are dependent, we can't do semantic
-     processing yet.  Stuff the values away for now.  We cheat a bit
-     and use the same tree code for this, even though the operands
-     are of totally different form, thus we need to remember which
-     statements are which, thus the lang_flag bit.  */
-  /* ??? We ought to be using type_dependent_expression_p, but the
-     invocation of build_modify_expr in c_finish_omp_atomic can result
-     in the creation of CONVERT_EXPRs, which are not handled by
-     tsubst_copy_and_build.  */
-  if (uses_template_parms (lhs) || uses_template_parms (rhs))
+  tree orig_lhs;
+  tree orig_rhs;
+  bool dependent_p;
+  tree stmt;
+
+  orig_lhs = lhs;
+  orig_rhs = rhs;
+  dependent_p = false;
+  stmt = NULL_TREE;
+
+  /* Even in a template, we can detect invalid uses of the atomic
+     pragma if neither LHS nor RHS is type-dependent.  */
+  if (processing_template_decl)
     {
-      tree stmt = build2 (OMP_ATOMIC, void_type_node, lhs, rhs);
+      dependent_p = (type_dependent_expression_p (lhs) 
+		     || type_dependent_expression_p (rhs));
+      if (!dependent_p)
+	{
+	  lhs = build_non_dependent_expr (lhs);
+	  rhs = build_non_dependent_expr (rhs);
+	}
+    }
+  if (!dependent_p)
+    {
+      stmt = c_finish_omp_atomic (code, lhs, rhs);
+      if (stmt == error_mark_node)
+	return;
+    }
+  if (processing_template_decl)
+    {
+      stmt = build2 (OMP_ATOMIC, void_type_node, orig_lhs, orig_rhs);
       OMP_ATOMIC_DEPENDENT_P (stmt) = 1;
       OMP_ATOMIC_CODE (stmt) = code;
-      add_stmt (stmt);
     }
-  else
-    c_finish_omp_atomic (code, lhs, rhs);
+  add_stmt (stmt);
 }
 
 void
