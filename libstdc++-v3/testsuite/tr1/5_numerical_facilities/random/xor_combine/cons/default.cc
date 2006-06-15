@@ -1,6 +1,4 @@
-// { dg-do compile }
-//
-// 2006-06-04  Stephen M. Webb <stephen.webb@bregmasoft.com>
+// 2006-06-15  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -20,21 +18,29 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 5.1.4.6 Class template xor_combine
-// 5.1.1 [1] Table 15
+// 5.1.4.6 Class template xor_combine [tr.rand.eng.xor]
+// 5.1.1 Table 15 default ctor
 
 #include <tr1/random>
+#include <testsuite_hooks.h>
 
 void
 test01() 
-{ 
-  using namespace std::tr1;
+{
+  bool test __attribute__((unused)) = true;
 
-  typedef xor_combine
+  using namespace std::tr1;
+  xor_combine
     <
     minstd_rand, 1,
-    mt19937, 2
-    > test_type;
+    minstd_rand0, 2
+    > x;
 
-  typedef test_type::result_type result_type;
+  VERIFY( x() == 32642 );
+}
+
+int main()
+{
+  test01();
+  return 0;
 }
