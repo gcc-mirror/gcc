@@ -1,5 +1,8 @@
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/26748
+	* parser.c (cp_parser_declarator): Robustify.
+
 	PR c++/26559
 	* pt.c (tsubst_expr): Use finish_omp_atomic.
 	(value_dependent_expression_p): All CALL_EXPRs are dependent.
