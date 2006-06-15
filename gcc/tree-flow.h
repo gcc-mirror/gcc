@@ -419,8 +419,6 @@ typedef struct
 
 /* Array of all variables referenced in the function.  */
 extern GTY((param_is (struct int_tree_map))) htab_t referenced_vars;
-/* List of referenced variables in the function with duplicate UID's.  */
-extern VEC(tree,gc) *referenced_vars_dup_list;
 
 /* Default defs for undefined symbols. */
 extern GTY((param_is (struct int_tree_map))) htab_t default_defs;
