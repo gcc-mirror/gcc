@@ -2042,7 +2042,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	     mustn't be deallocated.  */
 	  callee_alloc = sym->attr.allocatable || sym->attr.pointer;
 	  gfc_trans_create_temp_array (&se->pre, &se->post, se->loop, info, tmp,
-				       false, !sym->attr.pointer, callee_alloc);
+				       false, !sym->attr.pointer, callee_alloc,
+				       true);
 
 	  /* Pass the temporary as the first argument.  */
 	  tmp = info->descriptor;

@@ -2712,7 +2712,7 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
      data field.  This is already allocated so set callee_alloc.  */
   tmp = gfc_typenode_for_spec (&expr->ts);
   gfc_trans_create_temp_array (&se->pre, &se->post, se->loop,
-			       info, tmp, false, true, false);
+			       info, tmp, false, true, false, false);
 
   /* Use memcpy to do the transfer.  */
   tmp = gfc_conv_descriptor_data_get (info->descriptor);
