@@ -1,5 +1,8 @@
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27665
+	* g++.dg/template/crash52.C: New test.
+
 	PR c++/27648
 	* g++.dg/ext/attrib22.C: New test.
 
