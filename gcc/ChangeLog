@@ -1,3 +1,11 @@
+2006-06-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27781
+	* Makefile.in (ipa-pure-const.o): Add $(TARGET_H) dependency.
+	* ipa-pure-const.c (target.h): Include.
+	(analyze_function): Do not analyze functions that do not
+	bind locally.
+
 2006-06-15  Andrew MacLeod  <amacleod@redhat.com>
 	
 	PR middle-end/27793
