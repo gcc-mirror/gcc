@@ -1,3 +1,9 @@
+2006-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Export CFLAGS and LDFLAGS
+	too.
+	* Makefile.in: Regenerate.
+
 2006-06-13  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* config-ml.in: Alter CCASFLAGS to include special

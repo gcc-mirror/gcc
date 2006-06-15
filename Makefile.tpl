@@ -180,7 +180,9 @@ POSTSTAGE1_HOST_EXPORTS = \
 	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) \
 	  $$r/$(HOST_SUBDIR)/prev-gcc/xgcc$(exeext) \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ \
-	  -B$(build_tooldir)/bin/"; export CC_FOR_BUILD;
+	  -B$(build_tooldir)/bin/"; export CC_FOR_BUILD; \
+	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
+	LDFLAGS="$(BOOT_LDFLAGS)"; export LDFLAGS;
 
 # Target libraries are put under this directory:
 TARGET_SUBDIR = @target_subdir@
