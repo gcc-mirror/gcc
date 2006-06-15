@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include <altivec.h>
 
 extern void abort (void);
