@@ -1,3 +1,12 @@
+2006-06-15  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-loop-niter.c (implies_nonnegative_p): New function.
+	(derive_constant_upper_bound): Derive more precise upper bound in
+	common cases.  Return type changed to double_int.
+	(record_estimate): Reflect the changed return type of
+	derive_constant_upper_bound.
+	* double-int.c (double_int_zext, double_int_sext): Fix.
+
 2006-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac (CFLAGS): Get them from the toplevel or from the

@@ -72,8 +72,8 @@ double_int_zext (double_int cst, unsigned prec)
   double_int mask = double_int_mask (prec);
   double_int r;
 
-  r.low = cst.low & ~mask.low;
-  r.high = cst.high & ~mask.high;
+  r.low = cst.low & mask.low;
+  r.high = cst.high & mask.high;
 
   return r;
 }
@@ -96,13 +96,13 @@ double_int_sext (double_int cst, unsigned prec)
     }
   if (((snum >> (prec - 1)) & 1) == 1)
     {
-      r.low = cst.low | mask.low;
-      r.high = cst.high | mask.high;
+      r.low = cst.low | ~mask.low;
+      r.high = cst.high | ~mask.high;
     }
   else
     {
-      r.low = cst.low & ~mask.low;
-      r.high = cst.high & ~mask.high;
+      r.low = cst.low & mask.low;
+      r.high = cst.high & mask.high;
     } 
 
   return r;
