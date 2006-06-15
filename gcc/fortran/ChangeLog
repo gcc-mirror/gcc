@@ -1,3 +1,21 @@
+2006-06-15  Thomas Koenig <Thomas.Koenig@online.de>
+
+	* trans-array.h (gfc_trans_create_temp_array):  Add bool
+	argument.
+	* trans-arrray.c (gfc_trans_create_temp_array): Add extra
+	argument "function" to show if we are translating a function.
+	If we are translating a function, perform checks whether
+	the size along any argument is negative.  In that case,
+	allocate size 0.
+	(gfc_trans_allocate_storage):  Add function argument (as
+	false) to gfc_trans_create_temp_array call.
+	* trans-expr.c (gfc_conv_function_call):  Add function
+	argument (as true) to gfc_trans_create_temp_array call.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Add
+	function argument (as false) to gfc_trans_create_temp_array
+	call.
+	* trans-intrinsic.c:  Likewise.
+
 2006-06-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24558
