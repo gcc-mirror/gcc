@@ -1,5 +1,10 @@
 2006-06-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27648
+	* parser.c (cp_parser_declarator): Robustify.
+
+2006-06-14  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/26559
 	* pt.c (value_dependent_expression_p): All CALL_EXPRs are dependent.
 

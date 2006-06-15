@@ -11175,7 +11175,7 @@ cp_parser_declarator (cp_parser* parser,
 						member_p);
     }
 
-  if (attributes && declarator != cp_error_declarator)
+  if (attributes && declarator && declarator != cp_error_declarator)
     declarator->attributes = attributes;
 
   return declarator;
