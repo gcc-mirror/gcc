@@ -332,8 +332,6 @@ free_after_compilation (struct function *f)
   f->x_stack_check_probe_note = NULL;
   f->x_arg_pointer_save_area = NULL;
   f->x_parm_birth_insn = NULL;
-  f->original_arg_vector = NULL;
-  f->original_decl_initial = NULL;
   f->epilogue_delay_list = NULL;
 }
 

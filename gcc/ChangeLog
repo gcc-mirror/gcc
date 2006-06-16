@@ -1,5 +1,16 @@
 2006-06-16  Richard Guenther  <rguenther@suse.de>
 
+	* function.h (enum function_frequency): Move declaration
+	out of struct function.
+	(struct function): Move bool fields and the enum to the bitfield
+	section.  Reorder elements to avoid padding.  Remove unused
+	fields left over from the RTL inliner removal.
+	* function.c (free_after_compilation): Do not zero removed fields.
+	* Makefile.in (ipa-reference.o): Add $(FUNCTION_H) dependency.
+	(ipa-type-escape.o): Likewise.
+
+2006-06-16  Richard Guenther  <rguenther@suse.de>
+
 	* cgraph.h (struct cgraph_local_info): Turn bool elements
 	into a bitfield.
 	(struct cgraph_node): Likewise.
