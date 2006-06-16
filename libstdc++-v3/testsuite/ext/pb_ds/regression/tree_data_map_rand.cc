@@ -54,7 +54,7 @@ main(int argc, char* a_p_argv[])
   using namespace pb_ds::test;
   typedef tree_map_tl_t map_tl_t;
 
-  return rand_regression_test(1000, 1000,
+  return rand_regression_test(10000, 10000,
 			      "tree_data_map_rand_regression_test",
 			      map_tl_t());
 }
