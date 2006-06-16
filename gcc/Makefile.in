@@ -2306,7 +2306,9 @@ ipa-utils.o : ipa-utils.c $(IPA_UTILS_H) $(CONFIG_H) $(SYSTEM_H) \
 ipa-reference.o : ipa-reference.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) langhooks.h \
    pointer-set.h $(GGC_H) $(IPA_REFERENCE_H) $(IPA_UTILS_H) $(C_COMMON_H) \
-   $(TREE_GIMPLE_H) $(CGRAPH_H) output.h $(FLAGS_H) tree-pass.h $(DIAGNOSTIC_H)  
+   $(TREE_GIMPLE_H) $(CGRAPH_H) output.h $(FLAGS_H) tree-pass.h \
+   $(DIAGNOSTIC_H) $(FUNCTION_H) 
+
 ipa-pure-const.o : ipa-pure-const.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) langhooks.h \
    pointer-set.h $(GGC_H) $(IPA_UTILS_H) $(C_COMMON_H) $(TARGET_H) \
@@ -2314,7 +2316,9 @@ ipa-pure-const.o : ipa-pure-const.c $(CONFIG_H) $(SYSTEM_H) \
 ipa-type-escape.o : ipa-type-escape.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) langhooks.h \
    pointer-set.h $(GGC_H) $(IPA_TYPE_ESCAPE_H) $(IPA_UTILS_H) $(C_COMMON_H) \
-   $(TREE_GIMPLE_H) $(CGRAPH_H) output.h $(FLAGS_H) tree-pass.h $(DIAGNOSTIC_H)  
+   $(TREE_GIMPLE_H) $(CGRAPH_H) output.h $(FLAGS_H) tree-pass.h \
+   $(DIAGNOSTIC_H) $(FUNCTION_H) 
+
 coverage.o : coverage.c $(GCOV_IO_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(TREE_H) $(FLAGS_H) output.h $(REGS_H) $(EXPR_H) \
    $(FUNCTION_H) toplev.h $(GGC_H) langhooks.h $(COVERAGE_H) gt-coverage.h \
