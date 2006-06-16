@@ -1,5 +1,8 @@
 2006-06-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27666
+	* call.c (build_conditional_expr): Robustify.
+
 	PR c++/27640
 	* pt.c (instantiate_template): Set processing_template_decl to
 	zero while performing substitutions.
