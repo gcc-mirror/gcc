@@ -7732,9 +7732,7 @@ cp_parser_linkage_specification (cp_parser* parser)
       saved_in_unbraced_linkage_specification_p
 	= parser->in_unbraced_linkage_specification_p;
       parser->in_unbraced_linkage_specification_p = true;
-      have_extern_spec = true;
       cp_parser_declaration (parser);
-      have_extern_spec = false;
       parser->in_unbraced_linkage_specification_p
 	= saved_in_unbraced_linkage_specification_p;
     }
@@ -11063,10 +11061,7 @@ cp_parser_init_declarator (cp_parser* parser,
   if (!member_p)
     {
       if (parser->in_unbraced_linkage_specification_p)
-	{
-	  decl_specifiers->storage_class = sc_extern;
-	  have_extern_spec = false;
-	}
+	decl_specifiers->storage_class = sc_extern;
       decl = start_decl (declarator, decl_specifiers,
 			 is_initialized, attributes, prefix_attributes,
 			 &pushed_scope);
@@ -12119,9 +12114,16 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 {
   cp_parameter_declarator *parameters = NULL;
   cp_parameter_declarator **tail = &parameters;
+  bool saved_in_unbraced_linkage_specification_p;
 
   /* Assume all will go well.  */
   *is_error = false;
+  /* The special considerations that apply to a function within an
+     unbraced linkage specifications do not apply to the parameters
+     to the function.  */
+  saved_in_unbraced_linkage_specification_p 
+    = parser->in_unbraced_linkage_specification_p;
+  parser->in_unbraced_linkage_specification_p = false;
 
   /* Look for more parameters.  */
   while (true)
@@ -12199,6 +12201,9 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 	  break;
 	}
     }
+
+  parser->in_unbraced_linkage_specification_p
+    = saved_in_unbraced_linkage_specification_p;
 
   return parameters;
 }
