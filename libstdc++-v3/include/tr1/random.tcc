@@ -298,7 +298,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  for (int __k = 0; __k < (__n - __m); ++__k)
 	    {
 	      _UIntType __y = ((_M_x[__k] & __upper_mask)
-			       |(_M_x[__k + 1] & __lower_mask));
+			       | (_M_x[__k + 1] & __lower_mask));
 	      _M_x[__k] = (_M_x[__k + __m] ^ (__y >> 1)
 			   ^ ((__y & 0x01) ? __a : 0));
 	    }
@@ -311,6 +311,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			   ^ ((__y & 0x01) ? __a : 0));
 	    }
 
+	  _UIntType __y = ((_M_x[__n - 1] & __upper_mask)
+			   | (_M_x[0] & __lower_mask));
+	  _M_x[__n - 1] = (_M_x[__m - 1] ^ (__y >> 1)
+			   ^ ((__y & 0x01) ? __a : 0));
 	  _M_p = 0;
 	}
 
