@@ -1,3 +1,17 @@
+2006-06-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27116
+	* fold-const.c (negate_expr_p): Do not introduce undefined
+	overflow in negating INTEGER_CSTs.
+	(fold_negate_expr): Rename from negate_expr.  Revert last
+	change for folding BIT_NOT_EXPR.  Change semantics to
+	return NULL_TREE for non-simplified negations.  Do not
+	strip type conversions and unify type handling.
+	(negate_expr): New function, wrap around fold_negate_expr
+	but ensure building a tree always.  Strip type conversions
+	here, fold to result type.
+	(fold_unary): Use fold_negate_expr for folding NEGATE_EXPR.
+
 2006-06-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/27802
