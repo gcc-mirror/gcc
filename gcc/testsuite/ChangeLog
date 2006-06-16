@@ -1,3 +1,8 @@
+2006-06-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27830
+	* g++.dg/tree-ssa/pr27830.C: New testcase.
+
 2006-06-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27689

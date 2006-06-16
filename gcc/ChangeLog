@@ -1,3 +1,9 @@
+2006-06-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27830
+	* tree-inline.c (copy_body_r): For copying the operand
+	of an ADDR_EXPR make sure to fold &* afterwards.
+
 2006-06-14  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/27858
