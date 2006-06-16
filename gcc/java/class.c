@@ -1863,10 +1863,12 @@ make_class_data (tree type)
 
   START_RECORD_CONSTRUCTOR (temp, object_type_node);
   PUSH_FIELD_VALUE (temp, "vtable",
-		    build2 (PLUS_EXPR, dtable_ptr_type,
-			    build1 (ADDR_EXPR, dtable_ptr_type,
-				    class_dtable_decl),
-			    dtable_start_offset));
+		    (flag_indirect_classes 
+		     ? null_pointer_node
+		     : build2 (PLUS_EXPR, dtable_ptr_type,
+			       build1 (ADDR_EXPR, dtable_ptr_type,
+				       class_dtable_decl),
+			       dtable_start_offset)));
   if (! flag_hash_synchronization)
     PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
   FINISH_RECORD_CONSTRUCTOR (temp);

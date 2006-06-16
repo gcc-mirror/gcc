@@ -1,3 +1,13 @@
+2006-06-16  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_NewClassFromInitializer): Don't
+	copy the whole Class instance from the initializer: instead, copy
+	everything but the first word (the vtable pointer).
+	Change prototype to (const char* class_initializer).
+	(_Jv_RegisterNewClasses): Change prototype to (const char**).
+	* java/lang/Class.h (_Jv_RegisterNewClasses): Change prototype to
+	(const char**).
+
 2006-06-15  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* classpath/Makefile.am: Do not recurse into tools directory.
