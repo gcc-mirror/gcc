@@ -1,3 +1,9 @@
+2006-06-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/27116
+	* gcc.dg/pr15785-1.c: Revert last change.
+	* gcc.dg/torture/pr27116-2.c: New testcase.
+
 2006-06-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/27802

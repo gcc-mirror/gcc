@@ -923,7 +923,7 @@ may_negate_without_overflow_p (tree t)
 }
 
 /* Determine whether an expression T can be cheaply negated using
-   the function negate_expr.  */
+   the function negate_expr without introducing undefined overflow.  */
 
 static bool
 negate_expr_p (tree t)
@@ -939,7 +939,8 @@ negate_expr_p (tree t)
   switch (TREE_CODE (t))
     {
     case INTEGER_CST:
-      if (TYPE_UNSIGNED (type) || ! flag_trapv)
+      if (TYPE_UNSIGNED (type)
+	  || (flag_wrapv && ! flag_trapv))
 	return true;
 
       /* Check that -CST will not overflow type.  */
@@ -1030,28 +1031,22 @@ negate_expr_p (tree t)
   return false;
 }
 
-/* Given T, an expression, return the negation of T.  Allow for T to be
-   null, in which case return null.  */
+/* Given T, an expression, return a folded tree for -T or NULL_TREE, if no
+   simplification is possible.
+   If negate_expr_p would return true for T, NULL_TREE will never be
+   returned.  */
 
 static tree
-negate_expr (tree t)
+fold_negate_expr (tree t)
 {
-  tree type;
+  tree type = TREE_TYPE (t);
   tree tem;
-
-  if (t == 0)
-    return 0;
-
-  type = TREE_TYPE (t);
-  STRIP_SIGN_NOPS (t);
 
   switch (TREE_CODE (t))
     {
     /* Convert - (~A) to A + 1.  */
     case BIT_NOT_EXPR:
-      if (INTEGRAL_TYPE_P (type)
-      	  && (TYPE_UNSIGNED (type)
-	      || (flag_wrapv && !flag_trapv)))
+      if (INTEGRAL_TYPE_P (type))
         return fold_build2 (PLUS_EXPR, type, TREE_OPERAND (t, 0),
                             build_int_cst (type, 1));
       break;
@@ -1068,7 +1063,7 @@ negate_expr (tree t)
       tem = fold_negate_const (t, type);
       /* Two's complement FP formats, such as c4x, may overflow.  */
       if (! TREE_OVERFLOW (tem) || ! flag_trapping_math)
-	return fold_convert (type, tem);
+	return tem;
       break;
 
     case COMPLEX_CST:
@@ -1085,7 +1080,7 @@ negate_expr (tree t)
       break;
 
     case NEGATE_EXPR:
-      return fold_convert (type, TREE_OPERAND (t, 0));
+      return TREE_OPERAND (t, 0);
 
     case PLUS_EXPR:
       if (! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
@@ -1096,18 +1091,16 @@ negate_expr (tree t)
 				     TREE_OPERAND (t, 1)))
 	    {
 	      tem = negate_expr (TREE_OPERAND (t, 1));
-	      tem = fold_build2 (MINUS_EXPR, TREE_TYPE (t),
-				 tem, TREE_OPERAND (t, 0));
-	      return fold_convert (type, tem);
+	      return fold_build2 (MINUS_EXPR, type,
+				  tem, TREE_OPERAND (t, 0));
 	    }
 
 	  /* -(A + B) -> (-A) - B.  */
 	  if (negate_expr_p (TREE_OPERAND (t, 0)))
 	    {
 	      tem = negate_expr (TREE_OPERAND (t, 0));
-	      tem = fold_build2 (MINUS_EXPR, TREE_TYPE (t),
-				 tem, TREE_OPERAND (t, 1));
-	      return fold_convert (type, tem);
+	      return fold_build2 (MINUS_EXPR, type,
+				  tem, TREE_OPERAND (t, 1));
 	    }
 	}
       break;
@@ -1116,33 +1109,27 @@ negate_expr (tree t)
       /* - (A - B) -> B - A  */
       if ((! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
 	  && reorder_operands_p (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1)))
-	return fold_convert (type,
-			     fold_build2 (MINUS_EXPR, TREE_TYPE (t),
-					  TREE_OPERAND (t, 1),
-					  TREE_OPERAND (t, 0)));
+	return fold_build2 (MINUS_EXPR, type,
+			    TREE_OPERAND (t, 1), TREE_OPERAND (t, 0));
       break;
 
     case MULT_EXPR:
-      if (TYPE_UNSIGNED (TREE_TYPE (t)))
+      if (TYPE_UNSIGNED (type))
         break;
 
       /* Fall through.  */
 
     case RDIV_EXPR:
-      if (! HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (TREE_TYPE (t))))
+      if (! HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (type)))
 	{
 	  tem = TREE_OPERAND (t, 1);
 	  if (negate_expr_p (tem))
-	    return fold_convert (type,
-				 fold_build2 (TREE_CODE (t), TREE_TYPE (t),
-					      TREE_OPERAND (t, 0),
-					      negate_expr (tem)));
+	    return fold_build2 (TREE_CODE (t), type,
+				TREE_OPERAND (t, 0), negate_expr (tem));
 	  tem = TREE_OPERAND (t, 0);
 	  if (negate_expr_p (tem))
-	    return fold_convert (type,
-				 fold_build2 (TREE_CODE (t), TREE_TYPE (t),
-					      negate_expr (tem),
-					      TREE_OPERAND (t, 1)));
+	    return fold_build2 (TREE_CODE (t), type,
+				negate_expr (tem), TREE_OPERAND (t, 1));
 	}
       break;
 
@@ -1151,20 +1138,16 @@ negate_expr (tree t)
     case FLOOR_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      if (!TYPE_UNSIGNED (TREE_TYPE (t)) && !flag_wrapv)
+      if (!TYPE_UNSIGNED (type) && !flag_wrapv)
         {
           tem = TREE_OPERAND (t, 1);
           if (negate_expr_p (tem))
-            return fold_convert (type,
-                                 fold_build2 (TREE_CODE (t), TREE_TYPE (t),
-                                              TREE_OPERAND (t, 0),
-                                              negate_expr (tem)));
+            return fold_build2 (TREE_CODE (t), type,
+				TREE_OPERAND (t, 0), negate_expr (tem));
           tem = TREE_OPERAND (t, 0);
           if (negate_expr_p (tem))
-            return fold_convert (type,
-                                 fold_build2 (TREE_CODE (t), TREE_TYPE (t),
-                                              negate_expr (tem),
-                                              TREE_OPERAND (t, 1)));
+            return fold_build2 (TREE_CODE (t), type,
+				negate_expr (tem), TREE_OPERAND (t, 1));
         }
       break;
 
@@ -1174,7 +1157,7 @@ negate_expr (tree t)
 	{
 	  tem = strip_float_extensions (t);
 	  if (tem != t && negate_expr_p (tem))
-	    return fold_convert (type, negate_expr (tem));
+	    return negate_expr (tem);
 	}
       break;
 
@@ -1215,7 +1198,27 @@ negate_expr (tree t)
       break;
     }
 
-  tem = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
+  return NULL_TREE;
+}
+
+/* Like fold_negate_expr, but return a NEGATE_EXPR tree, if T can not be
+   negated in a simpler way.  Also allow for T to be NULL_TREE, in which case
+   return NULL_TREE. */
+
+static tree
+negate_expr (tree t)
+{
+  tree type, tem;
+
+  if (t == NULL_TREE)
+    return NULL_TREE;
+
+  type = TREE_TYPE (t);
+  STRIP_SIGN_NOPS (t);
+
+  tem = fold_negate_expr (t);
+  if (!tem)
+    tem = build1 (NEGATE_EXPR, TREE_TYPE (t), t);
   return fold_convert (type, tem);
 }
 
@@ -7544,8 +7547,9 @@ fold_unary (enum tree_code code, tree type, tree op0)
       return fold_view_convert_expr (type, op0);
 
     case NEGATE_EXPR:
-      if (negate_expr_p (arg0))
-	return fold_convert (type, negate_expr (arg0));
+      tem = fold_negate_expr (arg0);
+      if (tem)
+	return fold_convert (type, tem);
       return NULL_TREE;
 
     case ABS_EXPR:
