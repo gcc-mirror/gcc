@@ -1,3 +1,10 @@
+2006-06-16  Richard Guenther  <rguenther@suse.de>
+
+	* cgraph.h (struct cgraph_local_info): Turn bool elements
+	into a bitfield.
+	(struct cgraph_node): Likewise.
+	(struct cgraph_varpool_node): Likewise.
+
 2006-06-15  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_truth_not_expr): Rename from
