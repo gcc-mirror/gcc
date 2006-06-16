@@ -1891,7 +1891,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       const size_t __len = char_traits<_CharT>::length(__format);
 
-      for (size_t __i = 0; __beg != __end && __i < __len && !__err; ++__i)
+      ios_base::iostate __tmperr = ios_base::goodbit;
+      for (size_t __i = 0; __beg != __end && __i < __len && !__tmperr; ++__i)
 	{
 	  if (__ctype.narrow(__format[__i], 0) == '%')
 	    {
@@ -1909,14 +1910,14 @@ _GLIBCXX_END_LDBL_NAMESPACE
 		  const char_type*  __days1[7];
 		  __tp._M_days_abbreviated(__days1);
 		  __beg = _M_extract_name(__beg, __end, __tm->tm_wday, __days1,
-					  7, __io, __err);
+					  7, __io, __tmperr);
 		  break;
 		case 'A':
 		  // Weekday name [tm_wday].
 		  const char_type*  __days2[7];
 		  __tp._M_days(__days2);
 		  __beg = _M_extract_name(__beg, __end, __tm->tm_wday, __days2,
-					  7, __io, __err);
+					  7, __io, __tmperr);
 		  break;
 		case 'h':
 		case 'b':
@@ -1924,77 +1925,77 @@ _GLIBCXX_END_LDBL_NAMESPACE
 		  const char_type*  __months1[12];
 		  __tp._M_months_abbreviated(__months1);
 		  __beg = _M_extract_name(__beg, __end, __tm->tm_mon, 
-					  __months1, 12, __io, __err);
+					  __months1, 12, __io, __tmperr);
 		  break;
 		case 'B':
 		  // Month name [tm_mon].
 		  const char_type*  __months2[12];
 		  __tp._M_months(__months2);
 		  __beg = _M_extract_name(__beg, __end, __tm->tm_mon, 
-					  __months2, 12, __io, __err);
+					  __months2, 12, __io, __tmperr);
 		  break;
 		case 'c':
 		  // Default time and date representation.
 		  const char_type*  __dt[2];
 		  __tp._M_date_time_formats(__dt);
-		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
 						__tm, __dt[0]);
 		  break;
 		case 'd':
 		  // Day [01, 31]. [tm_mday]
 		  __beg = _M_extract_num(__beg, __end, __tm->tm_mday, 1, 31, 2,
-					 __io, __err);
+					 __io, __tmperr);
 		  break;
 		case 'e':
 		  // Day [1, 31], with single digits preceded by
 		  // space. [tm_mday]
 		  if (__ctype.is(ctype_base::space, *__beg))
 		    __beg = _M_extract_num(++__beg, __end, __tm->tm_mday, 1, 9,
-					   1, __io, __err);
+					   1, __io, __tmperr);
 		  else
 		    __beg = _M_extract_num(__beg, __end, __tm->tm_mday, 10, 31,
-					   2, __io, __err);
+					   2, __io, __tmperr);
 		  break;
 		case 'D':
 		  // Equivalent to %m/%d/%y.[tm_mon, tm_mday, tm_year]
 		  __cs = "%m/%d/%y";
 		  __ctype.widen(__cs, __cs + 9, __wcs);
-		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
 						__tm, __wcs);
 		  break;
 		case 'H':
 		  // Hour [00, 23]. [tm_hour]
 		  __beg = _M_extract_num(__beg, __end, __tm->tm_hour, 0, 23, 2,
-					 __io, __err);
+					 __io, __tmperr);
 		  break;
 		case 'I':
 		  // Hour [01, 12]. [tm_hour]
 		  __beg = _M_extract_num(__beg, __end, __tm->tm_hour, 1, 12, 2,
-					 __io, __err);
+					 __io, __tmperr);
 		  break;
 		case 'm':
 		  // Month [01, 12]. [tm_mon]
 		  __beg = _M_extract_num(__beg, __end, __mem, 1, 12, 2, 
-					 __io, __err);
-		  if (!__err)
+					 __io, __tmperr);
+		  if (!__tmperr)
 		    __tm->tm_mon = __mem - 1;
 		  break;
 		case 'M':
 		  // Minute [00, 59]. [tm_min]
 		  __beg = _M_extract_num(__beg, __end, __tm->tm_min, 0, 59, 2,
-					 __io, __err);
+					 __io, __tmperr);
 		  break;
 		case 'n':
 		  if (__ctype.narrow(*__beg, 0) == '\n')
 		    ++__beg;
 		  else
-		    __err |= ios_base::failbit;
+		    __tmperr |= ios_base::failbit;
 		  break;
 		case 'R':
 		  // Equivalent to (%H:%M).
 		  __cs = "%H:%M";
 		  __ctype.widen(__cs, __cs + 6, __wcs);
-		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
 						__tm, __wcs);
 		  break;
 		case 'S':
@@ -2005,46 +2006,46 @@ _GLIBCXX_END_LDBL_NAMESPACE
 #else
 		  __beg = _M_extract_num(__beg, __end, __tm->tm_sec, 0, 61, 2,
 #endif
-					 __io, __err);
+					 __io, __tmperr);
 		  break;
 		case 't':
 		  if (__ctype.narrow(*__beg, 0) == '\t')
 		    ++__beg;
 		  else
-		    __err |= ios_base::failbit;
+		    __tmperr |= ios_base::failbit;
 		  break;
 		case 'T':
 		  // Equivalent to (%H:%M:%S).
 		  __cs = "%H:%M:%S";
 		  __ctype.widen(__cs, __cs + 9, __wcs);
-		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
 						__tm, __wcs);
 		  break;
 		case 'x':
 		  // Locale's date.
 		  const char_type*  __dates[2];
 		  __tp._M_date_formats(__dates);
-		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
 						__tm, __dates[0]);
 		  break;
 		case 'X':
 		  // Locale's time.
 		  const char_type*  __times[2];
 		  __tp._M_time_formats(__times);
-		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr, 
 						__tm, __times[0]);
 		  break;
 		case 'y':
 		case 'C': // C99
 		  // Two digit year. [tm_year]
 		  __beg = _M_extract_num(__beg, __end, __tm->tm_year, 0, 99, 2,
-					 __io, __err);
+					 __io, __tmperr);
 		  break;
 		case 'Y':
 		  // Year [1900). [tm_year]
 		  __beg = _M_extract_num(__beg, __end, __mem, 0, 9999, 4,
-					 __io, __err);
-		  if (!__err)
+					 __io, __tmperr);
+		  if (!__tmperr)
 		    __tm->tm_year = __mem - 1900;
 		  break;
 		case 'Z':
@@ -2054,25 +2055,25 @@ _GLIBCXX_END_LDBL_NAMESPACE
 		      int __tmp;
 		      __beg = _M_extract_name(__beg, __end, __tmp,
 				       __timepunct_cache<_CharT>::_S_timezones,
-					      14, __io, __err);
+					      14, __io, __tmperr);
 
 		      // GMT requires special effort.
-		      if (__beg != __end && !__err && __tmp == 0
+		      if (__beg != __end && !__tmperr && __tmp == 0
 			  && (*__beg == __ctype.widen('-')
 			      || *__beg == __ctype.widen('+')))
 			{
 			  __beg = _M_extract_num(__beg, __end, __tmp, 0, 23, 2,
-						 __io, __err);
+						 __io, __tmperr);
 			  __beg = _M_extract_num(__beg, __end, __tmp, 0, 59, 2,
-						 __io, __err);
+						 __io, __tmperr);
 			}
 		    }
 		  else
-		    __err |= ios_base::failbit;
+		    __tmperr |= ios_base::failbit;
 		  break;
 		default:
 		  // Not recognized.
-		  __err |= ios_base::failbit;
+		  __tmperr |= ios_base::failbit;
 		}
 	    }
 	  else
@@ -2081,9 +2082,13 @@ _GLIBCXX_END_LDBL_NAMESPACE
 	      if (__format[__i] == *__beg)
 		++__beg;
 	      else
-		__err |= ios_base::failbit;
+		__tmperr |= ios_base::failbit;
 	    }
 	}
+
+      if (__tmperr)
+	__err |= ios_base::failbit;
+  
       return __beg;
     }
 
@@ -2121,6 +2126,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
 	__member = __value;
       else
 	__err |= ios_base::failbit;
+
       return __beg;
     }
 
@@ -2196,6 +2202,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
 	__testvalid = false;
       if (!__testvalid)
 	__err |= ios_base::failbit;
+
       return __beg;
     }
 
@@ -2246,7 +2253,9 @@ _GLIBCXX_END_LDBL_NAMESPACE
       const char_type*  __days[7];
       __tp._M_days_abbreviated(__days);
       int __tmpwday;
-      __beg = _M_extract_name(__beg, __end, __tmpwday, __days, 7, __io, __err);
+      ios_base::iostate __tmperr = ios_base::goodbit;
+      __beg = _M_extract_name(__beg, __end, __tmpwday, __days, 7,
+			      __io, __tmperr);
 
       // Check to see if non-abbreviated name exists, and extract.
       // NB: Assumes both _M_days and _M_days_abbreviated organized in
@@ -2254,7 +2263,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
       // __days array with the same index points to a day, and that
       // day's abbreviated form.
       // NB: Also assumes that an abbreviated name is a subset of the name.
-      if (!__err && __beg != __end)
+      if (!__tmperr && __beg != __end)
 	{
 	  size_t __pos = __traits_type::length(__days[__tmpwday]);
 	  __tp._M_days(__days);
@@ -2267,12 +2276,14 @@ _GLIBCXX_END_LDBL_NAMESPACE
 		     && __name[__pos] == *__beg)
 		++__beg, ++__pos;
 	      if (__len != __pos)
-		__err |= ios_base::failbit;
+		__tmperr |= ios_base::failbit;
 	    }
 	}
-      if (!__err)
+      if (!__tmperr)
 	__tm->tm_wday = __tmpwday;
-      
+      else
+	__err |= ios_base::failbit;
+
       if (__beg == __end)
 	__err |= ios_base::eofbit;
       return __beg;
@@ -2291,8 +2302,9 @@ _GLIBCXX_END_LDBL_NAMESPACE
       const char_type*  __months[12];
       __tp._M_months_abbreviated(__months);
       int __tmpmon;
+      ios_base::iostate __tmperr = ios_base::goodbit;
       __beg = _M_extract_name(__beg, __end, __tmpmon, __months, 12, 
-			      __io, __err);
+			      __io, __tmperr);
 
       // Check to see if non-abbreviated name exists, and extract.
       // NB: Assumes both _M_months and _M_months_abbreviated organized in
@@ -2300,7 +2312,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
       // __months array with the same index points to a month, and that
       // month's abbreviated form.
       // NB: Also assumes that an abbreviated name is a subset of the name.
-      if (!__err && __beg != __end)
+      if (!__tmperr && __beg != __end)
 	{
 	  size_t __pos = __traits_type::length(__months[__tmpmon]);
 	  __tp._M_months(__months);
@@ -2313,11 +2325,13 @@ _GLIBCXX_END_LDBL_NAMESPACE
 		     && __name[__pos] == *__beg)
 		++__beg, ++__pos;
 	      if (__len != __pos)
-		__err |= ios_base::failbit;
+		__tmperr |= ios_base::failbit;
 	    }
 	}
-      if (!__err)
+      if (!__tmperr)
 	__tm->tm_mon = __tmpmon;
+      else
+	__err |= ios_base::failbit;
 
       if (__beg == __end)
 	__err |= ios_base::eofbit;
@@ -2347,6 +2361,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
 	__tm->tm_year = __i == 2 ? __value : __value - 1900;
       else
 	__err |= ios_base::failbit;
+
       if (__beg == __end)
 	__err |= ios_base::eofbit;
       return __beg;
