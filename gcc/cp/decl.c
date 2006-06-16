@@ -240,10 +240,6 @@ enum deprecated_states {
 
 static enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
 
-/* True if a declaration with an `extern' linkage specifier is being
-   processed.  */
-bool have_extern_spec;
-
 
 /* A TREE_LIST of VAR_DECLs.  The TREE_PURPOSE is a RECORD_TYPE or
    UNION_TYPE; the TREE_VALUE is a VAR_DECL with that type.  At the
@@ -3813,13 +3809,6 @@ start_decl (const cp_declarator *declarator,
   tree context;
 
   *pushed_scope_p = NULL_TREE;
-
-  /* This should only be done once on the top most decl.  */
-  if (have_extern_spec)
-    {
-      declspecs->storage_class = sc_extern;
-      have_extern_spec = false;
-    }
 
   /* An object declared as __attribute__((deprecated)) suppresses
      warnings of uses of other deprecated items.  */
@@ -10631,13 +10620,6 @@ start_function (cp_decl_specifier_seq *declspecs,
 		tree attrs)
 {
   tree decl1;
-
-  if (have_extern_spec)
-    {
-      declspecs->storage_class = sc_extern;
-      /* This should only be done once on the outermost decl.  */
-      have_extern_spec = false;
-    }
 
   decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1, &attrs);
   /* If the declarator is not suitable for a function definition,

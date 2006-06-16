@@ -1,3 +1,8 @@
+2006-06-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27884
+	* g++.dg/parse/linkage2.C: New test
+
 2006-06-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27116
