@@ -632,7 +632,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	  tree bitfield_type;
 	  bitfield_type = is_bitfield_expr_with_lowered_type (expr);
 	  if (bitfield_type)
-	    from = bitfield_type;
+	    from = strip_top_quals (bitfield_type);
 	}
       conv = build_conv (ck_rvalue, from, conv);
     }

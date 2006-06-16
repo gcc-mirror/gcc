@@ -1,5 +1,9 @@
 2006-06-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27979
+	* call.c (standard_conversion): Strip cv-qualifiers from bitfield
+	types.
+
 	PR c++/27884
 	* decl.c (have_extern_spec): Remove.
 	(start_decl): Do not check have_extern_spec.
