@@ -4862,6 +4862,8 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
   tree lntype, rntype, result;
   int first_bit, end_bit;
   int volatilep;
+  tree orig_lhs = lhs, orig_rhs = rhs;
+  enum tree_code orig_code = code;
 
   /* Start by getting the comparison codes.  Fail if anything is volatile.
      If one operand is a BIT_AND_EXPR with the constant one, treat it as if
@@ -4955,7 +4957,11 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
 		       build_int_cst (TREE_TYPE (ll_arg), 0));
 
       if (LOGICAL_OP_NON_SHORT_CIRCUIT)
-	return build2 (code, truth_type, lhs, rhs);
+	{
+	  if (code != orig_code || lhs != orig_lhs || rhs != orig_rhs)
+	    return build2 (code, truth_type, lhs, rhs);
+	  return NULL_TREE;
+	}
     }
 
   /* See if the comparisons can be merged.  Then get all the parameters for
