@@ -1,5 +1,8 @@
 2006-06-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27666
+	* g++.dg/expr/cond9.C: New test.
+
 	PR c++/27640
 	* g++.dg/template/ctor7.C: New test.
 
