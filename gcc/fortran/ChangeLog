@@ -1,3 +1,11 @@
+2006-06-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27965
+	* trans-array.c (gfc_conv_ss_startstride): Correct the runtime
+	conditions for bounds-checking. Check for nonzero stride.
+	Don't check the last dimension of assumed-size arrays. Fix the
+	dimension displayed in the error message.
+
 2006-06-15  Thomas Koenig <Thomas.Koenig@online.de>
 
 	* trans-array.h (gfc_trans_create_temp_array):  Add bool
