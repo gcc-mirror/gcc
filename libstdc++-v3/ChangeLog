@@ -1,5 +1,10 @@
 2006-06-15  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random.tcc (mersenne_twister<>::operator()()):
+	Reload the last position of the _M_x vector too.
+
+2006-06-15  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/random (class xor_combine): Fix result_type typedef.
 	* testsuite/tr1/5_numerical_facilities/random/xor_combine/
 	cons/default.cc: New.
