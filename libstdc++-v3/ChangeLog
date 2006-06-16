@@ -1,5 +1,15 @@
 2006-06-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random (uniform_real<>::uniform_real(_RealType,
+	_RealType)): Implement.
+	(uniform_real<>::min()): Likewise.
+	(uniform_real<>::max()): Likewise.
+	(uniform_real<>::reset()): Likewise.
+
+	* include/tr1/random (class uniform_real<>): Minor cosmetic tweaks.
+
+2006-06-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (time_get<>::_M_extract_via_format):
 	Ignore the value of the __err argument.
 	(time_get<>::do_get_weekday): Likewise.

@@ -1595,20 +1595,27 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        */
       explicit
       uniform_real(_RealType __min = _RealType(0),
-		   _RealType __max = _RealType(1));
+		   _RealType __max = _RealType(1))
+      : _M_min(__min), _M_max(__max)
+      {
+	_GLIBCXX_DEBUG_ASSERT(_M_min <= _M_max);
+      }
 
       result_type
-      min() const;
+      min() const
+      { return _M_min; }
 
       result_type
-      max() const;
+      max() const
+      { return _M_max; }
 
-      void reset();
+      void
+      reset() { }
 
       template<class _UniformRandomNumberGenerator>
         result_type
         operator()(_UniformRandomNumberGenerator& __urng)
-        { return (__urng() * (max() - min())) + min(); }
+        { return (__urng() * (_M_max - _M_min)) + _M_min; }
 
       /**
        * Inserts a %uniform_real random number distribution @p __x into the
@@ -1624,7 +1631,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         friend std::basic_ostream<_CharT, _Traits>&
         operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		   const uniform_real& __x)
-        { return __os << __x.min() << " " << __x.max(); }
+        { return __os << __x._M_min << " " << __x._M_max; }
 
       /**
        * Extracts a %unform_real random number distribution

@@ -52,7 +52,7 @@ int
 main(int argc, char* a_p_argv[])
 {
   using namespace pb_ds::test;
-  return rand_regression_test(10000, 10000,
+  return rand_regression_test(1000, 1000,
 			      "tree_no_data_map_rand_regression_test", 
 			      pq_tl_t());
 }
