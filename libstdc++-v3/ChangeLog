@@ -1,4 +1,4 @@
-2006-06-17  Paolo Carlini  <pcarlini@suse.de>
+2006-06-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get<>::_M_extract_via_format):
 	Ignore the value of the __err argument.
