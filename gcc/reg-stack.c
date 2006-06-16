@@ -2282,6 +2282,16 @@ subst_stack_regs (rtx insn, stack regstack)
   if (NOTE_P (insn) || INSN_DELETED_P (insn))
     return control_flow_insn_deleted;
 
+  /* If this a noreturn call, we can't insert pop insns after it.
+     Instead, reset the stack state to empty.  */
+  if (CALL_P (insn)
+      && find_reg_note (insn, REG_NORETURN, NULL))
+    {
+      regstack->top = -1;
+      CLEAR_HARD_REG_SET (regstack->reg_set);
+      return control_flow_insn_deleted;
+    }
+
   /* If there is a REG_UNUSED note on a stack register on this insn,
      the indicated reg must be popped.  The REG_UNUSED note is removed,
      since the form of the newly emitted pop insn references the reg,
