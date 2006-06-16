@@ -48,7 +48,6 @@
 #define PB_DS_TRIE_POLICY_HPP
 
 #include <string>
-#include <climits>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/trie_policy/trie_policy_base.hpp>
 
@@ -63,7 +62,7 @@ namespace pb_ds
   { };
 
 #define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
-  typedef detail::static_assert_dumclass<sizeof(detail::static_assert<(bool)(E)>)> UNIQUE##static_assert_type
+  typedef detail::static_assert_dumclass<sizeof(detail::static_assert<bool(E)>)> UNIQUE##_static_assert_type
 
 #define PB_DS_CLASS_T_DEC						\
   template<typename String, typename String::value_type Min_E_Val, typename String::value_type Max_E_Val, bool Reverse, typename Allocator>
@@ -73,8 +72,8 @@ namespace pb_ds
 
   // Element access traits for string types.
   template<typename String = std::string,
-	   typename String::value_type Min_E_Val = SCHAR_MIN,
-	   typename String::value_type Max_E_Val = SCHAR_MAX,
+	   typename String::value_type Min_E_Val = detail::numeric_traits<typename String::value_type>::min, 
+	   typename String::value_type Max_E_Val = detail::numeric_traits<typename String::value_type>::max, 
 	   bool Reverse = false,
 	   typename Allocator = std::allocator<char> >
   struct string_trie_e_access_traits
@@ -102,6 +101,7 @@ namespace pb_ds
 	max_e_val = Max_E_Val,
 	max_size = max_e_val - min_e_val + 1
       };
+    PB_DS_STATIC_ASSERT(min_max_size, max_size >= 2);
 
     // Returns a const_iterator to the first element of
     // const_key_reference agumnet.
@@ -118,7 +118,6 @@ namespace pb_ds
     e_pos(e_type e);
 
   private:
-    PB_DS_STATIC_ASSERT(min_max_size, max_size >= 2);
 
     inline static const_iterator
     begin_imp(const_key_reference, detail::false_type);
@@ -132,7 +131,7 @@ namespace pb_ds
     inline static const_iterator
     end_imp(const_key_reference, detail::true_type);
 
-    static detail::integral_constant<int,Reverse> s_rev_ind;
+    static detail::integral_constant<int, Reverse> s_rev_ind;
   };
 
 #include <ext/pb_ds/detail/trie_policy/string_trie_e_access_traits_imp.hpp>

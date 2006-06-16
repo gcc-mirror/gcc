@@ -171,6 +171,31 @@ namespace pb_ds
     {
       typedef B type;
     };
+
+#define __glibcxx_signed(T)	((T)(-1) < 0)
+
+#define __glibcxx_min(T) \
+  (__glibcxx_signed (T) ? (T)1 << __glibcxx_digits (T) : (T)0)
+
+#define __glibcxx_max(T) \
+  (__glibcxx_signed (T) ? ((T)1 << __glibcxx_digits (T)) - 1 : ~(T)0)
+
+#define __glibcxx_digits(T) \
+  (sizeof(T) * __CHAR_BIT__ - __glibcxx_signed (T))
+
+   template<typename Value>
+   struct numeric_traits
+   {
+     typedef Value value_type;
+     static const value_type min = __glibcxx_min(value_type);
+     static const value_type max = __glibcxx_max(value_type);
+   };
+
+  template<typename Value>
+  const Value numeric_traits<Value>::min;
+
+  template<typename Value>
+  const Value numeric_traits<Value>::max;
   } // namespace detail
 } // namespace pb_ds
 

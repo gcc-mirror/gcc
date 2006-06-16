@@ -1,3 +1,15 @@
+2006-06-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/type_utils.hpp (numeric_traits): Add,
+	const expression interface to std::numeric_limits::min and max
+	functions.
+	* include/ext/pb_ds/trie_policy.hpp (string_trie_e_access_traits):
+	Use it.
+
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp: Format.
+	* include/ext/pb_ds/detail/pat_trie_/internal_node.hpp: Same.
+
 2006-06-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random.tcc (mersenne_twister<>::operator()()):
