@@ -9233,6 +9233,7 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
   tree fndecl;
   tree gen_tmpl;
   tree spec;
+  HOST_WIDE_INT saved_processing_template_decl;
 
   if (tmpl == error_mark_node)
     return error_mark_node;
@@ -9292,9 +9293,17 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
      deferring all checks until we have the FUNCTION_DECL.  */
   push_deferring_access_checks (dk_deferred);
 
-  /* Substitute template parameters.  */
+  /* Although PROCESSING_TEMPLATE_DECL may be true at this point
+     (because, for example, we have encountered a non-dependent
+     function call in the body of a template function must determine
+     which of several overloaded functions will be called), within the
+     instantiation itself we are not processing a template.  */  
+  saved_processing_template_decl = processing_template_decl;
+  processing_template_decl = 0;
+  /* Substitute template parameters to obtain the specialization.  */
   fndecl = tsubst (DECL_TEMPLATE_RESULT (gen_tmpl),
 		   targ_ptr, complain, gen_tmpl);
+  processing_template_decl = saved_processing_template_decl;
   if (fndecl == error_mark_node)
     return error_mark_node;
 
