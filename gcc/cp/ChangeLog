@@ -1,5 +1,10 @@
 2006-06-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27689
+	* cp-tree.h (CLASSTYPE_SPECIALIZATION_OF_PRIMARY_TEMPLATE_P): New
+	macro.
+	* pt.c (unify): Use it.
+
 	PR c++/27666
 	* call.c (build_conditional_expr): Robustify.
 

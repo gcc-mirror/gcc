@@ -1,5 +1,9 @@
 2006-06-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/27689
+	* g++.dg/template/ttp18.C: New test.
+	* g++.dg/template/ttp19.C: Likewise.
+
 	PR c++/27666
 	* g++.dg/expr/cond9.C: New test.
 
