@@ -3907,8 +3907,6 @@ extern void initialize_artificial_var		(tree, tree);
 extern tree check_var_type			(tree, tree);
 extern tree reshape_init (tree, tree);
 
-extern bool have_extern_spec;
-
 /* in decl2.c */
 extern bool check_java_method			(tree);
 extern cp_cv_quals grok_method_quals		(tree, tree, cp_cv_quals);

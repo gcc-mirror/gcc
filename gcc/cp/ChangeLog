@@ -1,3 +1,16 @@
+2006-06-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27884
+	* decl.c (have_extern_spec): Remove.
+	(start_decl): Do not check have_extern_spec.
+	(start_function): Likewise.
+	* cp-tree.h (have_extern_spec): Remove.
+	* parser.c (cp_parser_linkage_specification): Don't set
+	have_extern_spec.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_parameter_declaration): Do not treat parameters as
+	within the scope of an unbraced linkage specification.
+
 2006-06-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27689
