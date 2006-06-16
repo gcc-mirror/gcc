@@ -44,93 +44,69 @@
  * Contains a resize trigger implementation.
  */
 
-#define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
-  typedef detail::static_assert_dumclass<sizeof(detail::static_assert<(bool)(E)>)> \
-  UNIQUE##static_assert_type
+#define PB_DS_STATIC_ASSERT(UNIQUE, E) \
+  typedef detail::static_assert_dumclass<sizeof(detail::static_assert<(bool)(E)>)> UNIQUE##static_assert_type
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-hash_load_check_resize_trigger(float load_min, float load_max) :
-  m_load_min(load_min),
-  m_load_max(load_max),
-  m_next_shrink_size(0),
-  m_next_grow_size(0),
-  m_resize_needed(false)
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+hash_load_check_resize_trigger(float load_min, float load_max) 
+: m_load_min(load_min), m_load_max(load_max), m_next_shrink_size(0),
+  m_next_grow_size(0), m_resize_needed(false)
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 notify_find_search_start()
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 notify_find_search_collision()
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 notify_find_search_end()
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 notify_insert_search_start()
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 notify_insert_search_collision()
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 notify_insert_search_end()
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 notify_erase_search_start()
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 notify_erase_search_collision()
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 notify_erase_search_end()
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+{ PB_DS_DBG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -138,11 +114,9 @@ PB_DS_CLASS_C_DEC::
 notify_inserted(size_type num_entries)
 {
   m_resize_needed = (num_entries >= m_next_grow_size);
-
   size_base::set_size(num_entries);
-
   PB_DS_DBG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -150,12 +124,9 @@ PB_DS_CLASS_C_DEC::
 notify_erased(size_type num_entries)
 {
   size_base::set_size(num_entries);
-
-  m_resize_needed =
-    num_entries <= m_next_shrink_size;
-
+  m_resize_needed = num_entries <= m_next_shrink_size;
   PB_DS_DBG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 inline bool
@@ -163,8 +134,7 @@ PB_DS_CLASS_C_DEC::
 is_resize_needed() const
 {
   PB_DS_DBG_ONLY(assert_valid();)
-
-    return (m_resize_needed);
+  return m_resize_needed;
 }
 
 PB_DS_CLASS_T_DEC
@@ -173,14 +143,12 @@ PB_DS_CLASS_C_DEC::
 is_grow_needed(size_type /*size*/, size_type num_entries) const
 {
   PB_DS_DBG_ASSERT(m_resize_needed);
-
-  return (num_entries >= m_next_grow_size);
+  return num_entries >= m_next_grow_size;
 }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-~hash_load_check_resize_trigger()
-{ }
+~hash_load_check_resize_trigger() { }
 
 PB_DS_CLASS_T_DEC
 void
@@ -188,24 +156,20 @@ PB_DS_CLASS_C_DEC::
 notify_resized(size_type new_size)
 {
   m_resize_needed = false;
-
-  m_next_grow_size =
-    size_type(m_load_max*  new_size - 1);
-
-  m_next_shrink_size =
-    size_type(m_load_min*  new_size);
+  m_next_grow_size = size_type(m_load_max * new_size - 1);
+  m_next_shrink_size = size_type(m_load_min * new_size);
 
 #ifdef PB_DS_HT_MAP_RESIZE_TRACE_
   std::cerr << "hlcrt::notify_resized " <<
-    static_cast<unsigned long>(new_size) <<    "    " <<
-    static_cast<unsigned long>(m_load_min) <<    "    " <<
-    static_cast<unsigned long>(m_load_max) <<    "    " <<
+    static_cast<unsigned long>(new_size) << "    " <<
+    static_cast<unsigned long>(m_load_min) << "    " <<
+    static_cast<unsigned long>(m_load_max) << "    " <<
     static_cast<unsigned long>(m_next_shrink_size) << " " <<
-    static_cast<unsigned long>(m_next_grow_size) <<    "    " << std::endl;
-#endif // #ifdef PB_DS_HT_MAP_RESIZE_TRACE_
+    static_cast<unsigned long>(m_next_grow_size) << "    " << std::endl;
+#endif 
 
   PB_DS_DBG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -213,48 +177,39 @@ PB_DS_CLASS_C_DEC::
 notify_externally_resized(size_type new_size)
 {
   m_resize_needed = false;
-
-  size_type new_grow_size =
-    size_type(m_load_max*  new_size - 1);
-
-  size_type new_shrink_size =
-    size_type(m_load_min*  new_size );
-
+  size_type new_grow_size = size_type(m_load_max * new_size - 1);
+  size_type new_shrink_size = size_type(m_load_min * new_size );
   if (new_grow_size >= m_next_grow_size)
     {
       PB_DS_DBG_ASSERT(new_shrink_size > m_next_shrink_size);
-
       m_next_grow_size = new_grow_size;
-
       PB_DS_DBG_ONLY(assert_valid();)
 
 #ifdef PB_DS_HT_MAP_RESIZE_TRACE_
 	std::cerr << "hlcrt::notify_externally_resized1 " <<
-        static_cast<unsigned long>(new_size) <<    "    " <<
-        static_cast<unsigned long>(m_load_min) <<    "    " <<
-        static_cast<unsigned long>(m_load_max) <<    "    " <<
+        static_cast<unsigned long>(new_size) << "    " <<
+        static_cast<unsigned long>(m_load_min) << "    " <<
+        static_cast<unsigned long>(m_load_max) << "    " <<
         static_cast<unsigned long>(m_next_shrink_size) << " " <<
-        static_cast<unsigned long>(m_next_grow_size) <<    "    " << std::endl;
-#endif // #ifdef PB_DS_HT_MAP_RESIZE_TRACE_
-
+        static_cast<unsigned long>(m_next_grow_size) << "    " << std::endl;
+#endif 
       return;
     }
 
   PB_DS_DBG_ASSERT(new_shrink_size <= m_next_shrink_size);
-
   m_next_shrink_size = new_shrink_size;
 
 #ifdef PB_DS_HT_MAP_RESIZE_TRACE_
   std::cerr << "hlcrt::notify_externally_resized2 " <<
-    static_cast<unsigned long>(new_size) <<    "    " <<
-    static_cast<unsigned long>(m_load_min) <<    "    " <<
-    static_cast<unsigned long>(m_load_max) <<    "    " <<
+    static_cast<unsigned long>(new_size) << "    " <<
+    static_cast<unsigned long>(m_load_min) << "    " <<
+    static_cast<unsigned long>(m_load_max) << "    " <<
     static_cast<unsigned long>(m_next_shrink_size) << " " <<
-    static_cast<unsigned long>(m_next_grow_size) <<    "    " << std::endl;
-#endif // #ifdef PB_DS_HT_MAP_RESIZE_TRACE_
+    static_cast<unsigned long>(m_next_grow_size) << "    " << std::endl;
+#endif 
 
   PB_DS_DBG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -262,13 +217,10 @@ PB_DS_CLASS_C_DEC::
 notify_cleared()
 {
   PB_DS_DBG_ONLY(assert_valid();)
-
-    size_base::set_size(0);
-
+  size_base::set_size(0);
   m_resize_needed = (0 < m_next_shrink_size);
-
   PB_DS_DBG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -276,21 +228,18 @@ PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
   PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
-
-    size_base::swap(other);
-
+  PB_DS_DBG_ONLY(other.assert_valid();)
+    
+  size_base::swap(other);
   std::swap(m_load_min, other.m_load_min);
   std::swap(m_load_max, other.m_load_max);
-
   std::swap(m_resize_needed, other.m_resize_needed);
-
   std::swap(m_next_grow_size, other.m_next_grow_size);
   std::swap(m_next_shrink_size, other.m_next_shrink_size);
 
   PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
-    }
+  PB_DS_DBG_ONLY(other.assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 inline std::pair<float, float>
@@ -298,8 +247,7 @@ PB_DS_CLASS_C_DEC::
 get_loads() const
 {
   PB_DS_STATIC_ASSERT(access, external_load_access);
-
-  return (std::make_pair(m_load_min, m_load_max));
+  return std::make_pair(m_load_min, m_load_max);
 }
 
 PB_DS_CLASS_T_DEC
@@ -308,7 +256,6 @@ PB_DS_CLASS_C_DEC::
 set_loads(std::pair<float, float> load_pair)
 {
   PB_DS_STATIC_ASSERT(access, external_load_access);
-
   const float old_load_min = m_load_min;
   const float old_load_max = m_load_max;
   const size_type old_next_shrink_size = m_next_shrink_size;
@@ -319,18 +266,15 @@ set_loads(std::pair<float, float> load_pair)
     {
       m_load_min = load_pair.first;
       m_load_max = load_pair.second;
-
-      do_resize(static_cast<size_type>(
-				       size_base::get_size() / ((m_load_min + m_load_max) / 2)));
+      do_resize(static_cast<size_type>(size_base::get_size() / ((m_load_min + m_load_max) / 2)));
     }
-  catch(...)
+  catch (...)
     {
       m_load_min = old_load_min;
       m_load_max = old_load_max;
       m_next_shrink_size = old_next_shrink_size;
       m_next_grow_size = old_next_grow_size;
       m_resize_needed = old_resize_needed;
-
       throw;
     }
 }
@@ -338,10 +282,8 @@ set_loads(std::pair<float, float> load_pair)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-do_resize(size_type /*new_size*/)
-{
-  abort();
-}
+do_resize(size_type)
+{ abort(); }
 
 #ifdef PB_DS_HASH_POLICY_DEBUG
 PB_DS_CLASS_T_DEC
@@ -350,10 +292,9 @@ PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
   PB_DS_DBG_ASSERT(m_load_max > m_load_min);
-
   PB_DS_DBG_ASSERT(m_next_grow_size >= m_next_shrink_size);
 }
-#endif // #ifdef PB_DS_HASH_POLICY_DEBUG
+#endif 
 
 #undef PB_DS_STATIC_ASSERT
 
