@@ -28,7 +28,7 @@
 @setchapternewpage odd
 
 
-@dircategory Programming
+@dircategory Software development
 @direntry
 * gnat-style: (gnat-style).      GNAT Coding Style
 @end direntry
