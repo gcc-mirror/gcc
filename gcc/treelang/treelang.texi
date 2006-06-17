@@ -100,7 +100,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @end copying
 
 @ifnottex
-@dircategory Programming
+@dircategory Software development
 @direntry
 * treelang: (treelang).                  The GNU Treelang compiler.
 @end direntry
