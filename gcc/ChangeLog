@@ -1,3 +1,10 @@
+2006-06-17  Karl Berry  <karl@gnu.org>
+
+	* doc/cpp.texi, doc/cppinternals.texi, doc/gcc.texi,
+	doc/gccint.texi, doc/install.texi (@dircategory): Use
+	"Software development" instead of "Programming", following
+	the Free Software Directory.
+
 2006-06-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/i386.c (legitimate_tls_address)

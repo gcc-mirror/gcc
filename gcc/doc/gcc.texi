@@ -62,7 +62,7 @@ included in the section entitled ``GNU Free Documentation License''.
      funds for GNU development.
 @end copying
 @ifnottex
-@dircategory Programming
+@dircategory Software development
 @direntry
 * gcc: (gcc).                  The GNU Compiler Collection.
 @end direntry
