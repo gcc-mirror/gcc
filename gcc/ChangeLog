@@ -1,3 +1,10 @@
+2006-06-17  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/i386/i386.c (legitimate_tls_address)
+	<TARGET_GNU2_TLS>: Add tp after DTPOFF.
+	* config/i386/i386.md (*tls_dynamic_gnu2_combine_32): Adjust.
+	(*tls_dynamic_gnu2_combine_64): Likewise.
+
 2006-06-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27116

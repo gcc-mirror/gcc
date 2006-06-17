@@ -6750,15 +6750,22 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 	{
 	  rtx x = ix86_tls_module_base ();
 
-	  base = force_reg (Pmode, gen_rtx_PLUS (Pmode, tp, base));
-
-	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
+	  set_unique_reg_note (get_last_insn (), REG_EQUIV,
+			       gen_rtx_MINUS (Pmode, x, tp));
 	}
 
       off = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x), UNSPEC_DTPOFF);
       off = gen_rtx_CONST (Pmode, off);
 
       dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, base, off));
+
+      if (TARGET_GNU2_TLS)
+	{
+	  dest = force_reg (Pmode, gen_rtx_PLUS (Pmode, dest, tp));
+
+	  set_unique_reg_note (get_last_insn (), REG_EQUIV, x);
+	}
+
       break;
 
     case TLS_MODEL_INITIAL_EXEC:
