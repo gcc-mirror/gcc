@@ -1,5 +1,8 @@
 2006-06-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/28016
+	* g++.dg/template/static26.C: New test.
+
 	PR c++/27979
 	* g++.dg/expr/bitfield2.C: New test. 
 

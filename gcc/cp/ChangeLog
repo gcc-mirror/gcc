@@ -1,5 +1,9 @@
 2006-06-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/28016
+	* decl.c (cp_finsh_decl): Do not emit uninstantiated static data
+	members.
+
 	PR c++/27979
 	* call.c (standard_conversion): Strip cv-qualifiers from bitfield
 	types.
