@@ -1,3 +1,10 @@
+2006-06-17  Ami Tavory  <atavory@gmail.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/util/rng/twister_rand_gen.cc: Adapt to simply use
+	tr1::mt19937.
+	* testsuite/util/rng/twister_rand_gen.hpp: Likewise.
+
 2006-06-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (uniform_real<>::uniform_real(_RealType,
