@@ -5,7 +5,7 @@
 @include gcc-common.texi
 
 @ifinfo
-@dircategory Programming
+@dircategory Software development
 @direntry
 * Cpplib: (cppinternals).      Cpplib internals.
 @end direntry
