@@ -57,7 +57,7 @@ man page gfdl(7).
 
 @ifinfo
 @format
-@dircategory Programming
+@dircategory Software development
 @direntry
 * Gcj: (gcj).               Ahead-of-time compiler for the Java language
 @end direntry
