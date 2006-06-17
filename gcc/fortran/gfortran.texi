@@ -61,7 +61,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @end copying
 
 @ifinfo
-@dircategory Programming
+@dircategory Software development
 @direntry
 * gfortran: (gfortran).                  The GNU Fortran 95 Compiler.
 @end direntry
