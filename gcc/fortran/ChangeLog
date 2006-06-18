@@ -1,6 +1,7 @@
 2006-06-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/19310
+	PR fortran/19904
 	* arith.c (gfc_range_check): Return ARITH_OK if -fno-range-check. Add
 	return of ARITH_NAN, ARITH_UNDERFLOW, and ARITH_OVERFLOW.
 	(gfc_arith_divide): If -fno-range-check allow mpfr to divide by zero.
