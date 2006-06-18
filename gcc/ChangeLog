@@ -1,3 +1,33 @@
+2006-06-08  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.h (avr_have_movw_lpmx_p): Declare.
+	(TARGET_CPU_CPP_BUILTINS): Add __AVR_HAVE_MOVW__ and 
+	__AVR_HAVE_LPMX__.
+	(AVR_HAVE_MOVW) Define.
+	(ASSEMBLER_DIALECT): Use AVR_HAVE_MOVW.
+	(ASM_SPEC): Add avr25.
+	(LINK_SPEC): Add avr25.
+	* config/avr/avr.c (avr_have_movw_lpmx_p): Add.
+	(base_arch_s): Add new member 'have_movw_lpmx'.
+	(avr_arch_types): Init 'have_movw_lpmx'.
+	(avr_mcu_types): Add 'avr25'. Move attiny13, attiny2313, attiny24,
+	attiny44, attiny84, attiny25, attiny45, attiny85, attiny261,
+	attiny461, attiny861 and at86rf401 in 'avr25' arhitecture.
+	(avr_override_options): Init 'avr_have_movw_lpmx_p'.
+	(output_movhi, output_movsisf, ashlsi3_out, avr_rtx_costs): Use 
+	AVR_HAVE_MOVW.
+	(avr_file_start): Do not output '.arh' derective.
+	* config/avr/libgcc.S (mov_l): Use __AVR_HAVE_MOVW__.
+	(__do_copy_data): Use __AVR_HAVE_LPMX__.
+	* config/avr/avr.md (mcu_enhanced): Delete.
+	(mcu_have_movw): Define.
+	(negsi2, extendhisi2, zero_extendhisi2): Use 'mcu_have_movw'.
+	(call_insn, call_value_insn): Use 'call_insn' and __AVR_HAVE_MOVW__.
+	* config/avr/t-avr(MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Add avr25.
+	(MULTILIB_MATCHES): Add attiny13, attiny2313, attiny24, attiny44,
+	attiny84, attiny25, attiny45, attiny85, attiny261, attiny461, 
+	attiny861 and at86rf401 devices.
+
 2006-06-18  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.c (MAX_LOOP_LENGTH): Define to be 2042 instead

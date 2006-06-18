@@ -37,11 +37,23 @@ fp-bit.c: $(srcdir)/config/fp-bit.c $(srcdir)/config/avr/t-avr
 
 FPBIT = fp-bit.c
 
-MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr3/mmcu=avr4/mmcu=avr5
-MULTILIB_DIRNAMES = avr2 avr3 avr4 avr5
+MULTILIB_OPTIONS = mmcu=avr2/mmcu=avr25/mmcu=avr3/mmcu=avr4/mmcu=avr5
+MULTILIB_DIRNAMES = avr2 avr25 avr3 avr4 avr5
 
 # The many avr2 matches are not listed here - this is the default.
 MULTILIB_MATCHES = \
+	mmcu?avr25=mmcu?attiny13 \
+	mmcu?avr25=mmcu?attiny2313 \
+	mmcu?avr25=mmcu?attiny24 \
+	mmcu?avr25=mmcu?attiny44 \
+	mmcu?avr25=mmcu?attiny84 \
+	mmcu?avr25=mmcu?attiny25 \
+	mmcu?avr25=mmcu?attiny45 \
+	mmcu?avr25=mmcu?attiny85 \
+	mmcu?avr25=mmcu?attiny261 \
+	mmcu?avr25=mmcu?attiny461 \
+	mmcu?avr25=mmcu?attiny861 \
+	mmcu?avr25=mmcu?at86rf401 \
 	mmcu?avr3=mmcu?atmega103 \
 	mmcu?avr3=mmcu?atmega603 \
 	mmcu?avr3=mmcu?at43usb320 \

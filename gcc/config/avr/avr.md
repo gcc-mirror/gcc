@@ -57,8 +57,8 @@
 (define_attr "type" "branch,branch1,arith,xcall"
   (const_string "arith"))
 
-(define_attr "mcu_enhanced" "yes,no"
-  (const (if_then_else (symbol_ref "AVR_ENHANCED")
+(define_attr "mcu_have_movw" "yes,no"
+  (const (if_then_else (symbol_ref "AVR_HAVE_MOVW")
 		       (const_string "yes")
 		       (const_string "no"))))
 
@@ -1455,7 +1455,7 @@
   [(set_attr_alternative "length"
 			 [(const_int 7)
 			  (const_int 8)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 7)
 					(const_int 8))])
    (set_attr "cc" "set_czn,set_n,set_czn")])
@@ -1533,7 +1533,7 @@
 	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%A1}\;clr %C0\;sbrc %B0,7\;com %C0\;mov %D0,%C0"
   [(set_attr_alternative "length"
 			 [(const_int 4)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 5)
 					(const_int 6))])
    (set_attr "cc" "set_n,set_n")])
@@ -1570,7 +1570,7 @@
 	{mov %A0,%A1\;mov %B0,%B1|movw %A0,%A1}\;clr %C0\;clr %D0"
   [(set_attr_alternative "length"
 			 [(const_int 2)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 3)
 					(const_int 4))])
    (set_attr "cc" "set_n,set_n")])
@@ -2104,7 +2104,7 @@
      return \"icall\";
   else if (which_alternative==1)
     {
-      if (AVR_ENHANCED)
+      if (AVR_HAVE_MOVW)
 	return (AS2 (movw, r30, %0) CR_TAB
 		\"icall\");
       else
@@ -2121,7 +2121,7 @@
   [(set_attr "cc" "clobber,clobber,clobber,clobber")
    (set_attr_alternative "length"
 			 [(const_int 1)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 2)
 					(const_int 3))
 			  (if_then_else (eq_attr "mcu_mega" "yes")
@@ -2141,7 +2141,7 @@
      return \"icall\";
   else if (which_alternative==1)
     {
-      if (AVR_ENHANCED)
+      if (AVR_HAVE_MOVW)
 	return (AS2 (movw, r30, %1) CR_TAB
 		\"icall\");
       else
@@ -2158,7 +2158,7 @@
   [(set_attr "cc" "clobber,clobber,clobber,clobber")
    (set_attr_alternative "length"
 			 [(const_int 1)
-			  (if_then_else (eq_attr "mcu_enhanced" "yes")
+			  (if_then_else (eq_attr "mcu_have_movw" "yes")
 					(const_int 2)
 					(const_int 3))
 			  (if_then_else (eq_attr "mcu_mega" "yes")
