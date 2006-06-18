@@ -31,6 +31,10 @@ Boston, MA 02110-1301, USA.  */
 	builtin_define (avr_base_arch_macro);	\
       if (avr_extra_arch_macro)			\
 	builtin_define (avr_extra_arch_macro);	\
+      if (avr_have_movw_lpmx_p)			\
+	builtin_define ("__AVR_HAVE_MOVW__");	\
+      if (avr_have_movw_lpmx_p)			\
+	builtin_define ("__AVR_HAVE_LPMX__");	\
       if (avr_asm_only_p)			\
 	builtin_define ("__AVR_ASM_ONLY__");	\
       if (avr_enhanced_p)			\
@@ -47,12 +51,14 @@ extern const char *avr_extra_arch_macro;
 extern int avr_mega_p;
 extern int avr_enhanced_p;
 extern int avr_asm_only_p;
+extern int avr_have_movw_lpmx_p;
 #ifndef IN_LIBGCC2
 extern GTY(()) section *progmem_section;
 #endif
 
 #define AVR_MEGA (avr_mega_p && !TARGET_SHORT_CALLS)
 #define AVR_ENHANCED (avr_enhanced_p)
+#define AVR_HAVE_MOVW (avr_have_movw_lpmx_p)
 
 #define TARGET_VERSION fprintf (stderr, " (GNU assembler syntax)");
 
@@ -626,7 +632,7 @@ sprintf (STRING, "*.%s%lu", PREFIX, (unsigned long)(NUM))
 
 #define USER_LABEL_PREFIX ""
 
-#define ASSEMBLER_DIALECT AVR_ENHANCED
+#define ASSEMBLER_DIALECT AVR_HAVE_MOVW
 
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)	\
 {						\
@@ -718,7 +724,8 @@ extern int avr_case_values_threshold;
 /* A C string constant that tells the GCC drvier program options to
    pass to `cc1plus'.  */
 
-#define ASM_SPEC "%{mmcu=*:-mmcu=%*}"
+#define ASM_SPEC "%{mmcu=avr25:-mmcu=avr2;\
+mmcu=*:-mmcu=%*}"
 
 #define LINK_SPEC " %{!mmcu*:-m avr2}\
 %{mmcu=at90s1200|\
@@ -816,7 +823,7 @@ extern int avr_case_values_threshold;
 %{mmcu=at90s8535:crts8535.o%s} \
 %{mmcu=at86rf401:crt86401.o%s} \
 %{mmcu=attiny13:crttn13.o%s} \
-%{mmcu=attiny2313:crttn2313.o%s} \
+%{mmcu=attiny2313|mmcu=avr25:crttn2313.o%s} \
 %{mmcu=attiny24:crttn24.o%s} \
 %{mmcu=attiny44:crttn44.o%s} \
 %{mmcu=attiny84:crttn84.o%s} \
