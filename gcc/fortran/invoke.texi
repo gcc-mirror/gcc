@@ -122,7 +122,7 @@ by type.  Explanations are in the following sections.
 -ffixed-line-length-@var{n}  -ffixed-line-length-none @gol
 -ffree-line-length-@var{n}  -ffree-line-length-none @gol
 -fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 @gol
--fcray-pointer  -fopenmp }
+-fcray-pointer  -fopenmp  -frange-check }
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -307,6 +307,15 @@ enables @code{!$} conditional compilation sentinels in free form
 and @code{c$}, @code{*$} and @code{!$} sentinels in fixed form
 and when linking arranges for the OpenMP runtime library to be linked
 in.
+
+@cindex -frange-check
+@cindex options, -frange-check
+@item -frange-check
+Enable range checking on results of simplification of constant expressions
+during compilation.  For example, by default, @command{gfortran} will give
+an overflow error at compile time when simplifying @code{a = EXP(1000)}.
+With @samp{-fno-range-check}, no error will be given and the variable @code{a}
+will be assigned the value @code{+Infinity}.
 
 @cindex -std=@var{std} option
 @cindex option, -std=@var{std}
