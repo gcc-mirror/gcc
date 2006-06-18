@@ -181,6 +181,10 @@ fno-backend
 Fortran RejectNegative
 Don't generate code, just do syntax and semantics checking
 
+frange-check
+Fortran
+Enable range checking during compilation
+
 fpack-derived
 Fortran
 Try to layout derived types as compact as possible

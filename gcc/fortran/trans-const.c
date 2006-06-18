@@ -209,10 +209,30 @@ gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
   mp_exp_t exp;
   char *p, *q;
   int n;
+  REAL_VALUE_TYPE real;
 
   n = gfc_validate_kind (BT_REAL, kind, false);
 
   gcc_assert (gfc_real_kinds[n].radix == 2);
+
+  type = gfc_get_real_type (kind);
+
+  /* Take care of Infinity and NaN.  */
+  if (mpfr_inf_p (f))
+    {
+      real_inf (&real);
+      if (mpfr_sgn (f) < 0)
+	real = REAL_VALUE_NEGATE(real);
+      res = build_real (type , real);
+      return res;
+    }
+
+  if (mpfr_nan_p (f))
+    {
+      real_nan (&real, "", 0, TYPE_MODE (type));
+      res = build_real (type , real);
+      return res;
+    }
 
   /* mpfr chooses too small a number of hexadecimal digits if the
      number of binary digits is not divisible by four, therefore we
@@ -234,7 +254,6 @@ gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
   else
     sprintf (q, "0x.%sp%d", p, (int) exp);
 
-  type = gfc_get_real_type (kind);
   res = build_real (type, REAL_VALUE_ATOF (q, TYPE_MODE (type)));
 
   gfc_free (q);

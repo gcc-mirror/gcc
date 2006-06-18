@@ -1,3 +1,19 @@
+2006-06-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/19310
+	* arith.c (gfc_range_check): Return ARITH_OK if -fno-range-check. Add
+	return of ARITH_NAN, ARITH_UNDERFLOW, and ARITH_OVERFLOW.
+	(gfc_arith_divide): If -fno-range-check allow mpfr to divide by zero.
+	* gfortran.h (gfc_option_t): Add new flag.
+	* invoke.texi: Document new flag.
+	* lang.opt: Add option -frange-check.
+	* options.c (gfc_init_options): Initialize new flag.
+	(gfc_handle_options): Set flag if invoked.
+	* simplify.c (range_check): Add error messages for
+	overflow, underflow, and other errors.
+	* trans-const.c (gfc_conv_mpfr_to_tree): Build NaN and Inf from mpfr
+	result.
+
 2006-06-17  Karl Berry  <karl@gnu.org>
 
 	* gfortran.texi (@dircategory): Use "Software development"
