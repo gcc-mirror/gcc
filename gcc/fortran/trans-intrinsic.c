@@ -2840,6 +2840,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           gfc_conv_expr_lhs (&arg1se, arg1->expr);
           tmp2 = gfc_conv_descriptor_data_get (arg1se.expr);
         }
+      gfc_add_block_to_block (&se->pre, &arg1se.pre);
+      gfc_add_block_to_block (&se->post, &arg1se.post);
       tmp = build2 (NE_EXPR, boolean_type_node, tmp2,
 		    fold_convert (TREE_TYPE (tmp2), null_pointer_node));
       se->expr = tmp;
@@ -2863,6 +2865,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           gfc_conv_expr (&arg1se, arg1->expr);
           arg2se.want_pointer = 1;
           gfc_conv_expr (&arg2se, arg2->expr);
+	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
+	  gfc_add_block_to_block (&se->post, &arg1se.post);
           tmp = build2 (EQ_EXPR, boolean_type_node, arg1se.expr, arg2se.expr);
           se->expr = tmp;
         }
