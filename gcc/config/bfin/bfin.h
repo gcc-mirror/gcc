@@ -548,13 +548,13 @@ enum reg_class
    (LETTER) == 'A' ? EVEN_AREGS : 	\
    (LETTER) == 'B' ? ODD_AREGS : 	\
    (LETTER) == 'b' ? IREGS :            \
-   (LETTER) == 'B' ? BREGS :            \
+   (LETTER) == 'v' ? BREGS :            \
    (LETTER) == 'f' ? MREGS : 		\
    (LETTER) == 'c' ? CIRCREGS :         \
    (LETTER) == 'C' ? CCREGS : 		\
    (LETTER) == 't' ? LT_REGS : 		\
    (LETTER) == 'k' ? LC_REGS : 		\
-   (LETTER) == 'l' ? LB_REGS : 		\
+   (LETTER) == 'u' ? LB_REGS : 		\
    (LETTER) == 'x' ? MOST_REGS :	\
    (LETTER) == 'y' ? PROLOGUE_REGS :	\
    (LETTER) == 'w' ? NON_A_CC_REGS :	\

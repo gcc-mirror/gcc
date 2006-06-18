@@ -2172,7 +2172,7 @@ Odd-numbered accumulator register.
 @item b
 I register
 
-@item B
+@item v
 B register
 
 @item f
@@ -2183,6 +2183,15 @@ Registers used for circular buffering, i.e. I, B, or L registers.
 
 @item C
 The CC register.
+
+@item t
+LT0 or LT1.
+
+@item k
+LC0 or LC1.
+
+@item u
+LB0 or LB1.
 
 @item x
 Any D, P, B, M, I or L register.
