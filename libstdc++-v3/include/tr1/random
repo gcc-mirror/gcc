@@ -840,7 +840,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       /**
        * Constructs a default %discard_block engine.
        *
-       * The underlying engine is default constrcuted as well.
+       * The underlying engine is default constructed as well.
        */
       discard_block()
       : _M_n(0) { }
@@ -851,8 +851,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * Copies an existing base class random number geenerator.
        * @param rng An existing (base class) engine object.
        */
-      explicit discard_block(const base_type& __rng)
-      : _M_b(__rng) , _M_n(0) { }
+      explicit
+      discard_block(const base_type& __rng)
+      : _M_b(__rng), _M_n(0) { }
 
       /**
        * Seed constructs a %discard_block engine.
@@ -860,7 +861,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * Constructs the underlying generator engine seeded with @p __s.
        * @param __s A seed value for the base class engine.
        */
-      explicit discard_block(unsigned long __s)
+      explicit
+      discard_block(unsigned long __s)
       : _M_b(__s), _M_n(0) { }
 
       /**
@@ -1135,7 +1137,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         friend std::basic_ostream<_CharT, _Traits>&
         operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		   const xor_combine& __x)
-        { return __os << __x.base1() << " " << __x.base1(); }
+        { return __os << __x.base1() << " " << __x.base2(); }
 
       /**
        * Extracts the current state of a %xor_combine random number
@@ -1344,7 +1346,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         friend std::basic_ostream<_CharT, _Traits>&
         operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		   const uniform_int& __x)
-        { return __os << __x._M_min << " " << __x._M_max; }
+        { return __os << __x.min() << " " << __x.max(); }
 
       /**
        * Extracts a %unform_int random number distribution
@@ -1398,20 +1400,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     double
     p() const
     { return _M_p; }
-
-    /**
-     * Gets the inclusive lower bound of the distribution range.
-     */
-    result_type
-    min() const
-    { return false; }
-
-    /**
-     * Gets the inclusive upper bound of the distribution range.
-     */
-    result_type
-    max() const
-    { return true; }
 
     /**
      * Resets the distribution state.
@@ -1500,28 +1488,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       p() const
       { return _M_p; }
 
-      /**
-       * Gets the inclusive lower bound of the distribution range.
-       */
-      result_type
-      min() const;
-
-      /**
-       * Gets the inclusive upper bound of the distribution range.
-       */
-      result_type
-      max() const;
-
       void
       reset() { }
 
       template<class _UniformRandomNumberGenerator>
         result_type
         operator()(_UniformRandomNumberGenerator& __urng)
-        {
-	  return result_type(std::floor(std::log(_RealType(1.0) - __urng())
-					/ _M_log_p)) + result_type(1);
-	}
+        { return result_type(std::ceil(std::log(__urng()) / _M_log_p)); }
 
       /**
        * Inserts a %geometric_distribution random number distribution
@@ -1631,7 +1604,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         friend std::basic_ostream<_CharT, _Traits>&
         operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 		   const uniform_real& __x)
-        { return __os << __x._M_min << " " << __x._M_max; }
+        { return __os << __x.min() << " " << __x.max(); }
 
       /**
        * Extracts a %unform_real random number distribution
