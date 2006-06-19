@@ -1,9 +1,7 @@
 /* { dg-do run } */
-/* memset doesn't take unsigned long */
-/* { dg-xfail-if "" { "m32c-*-*" } { "*" } { "" } } */
 /* { dg-options "-std=gnu99 -Wall -Wextra -O1" } */ 
 
-extern void *memset (void*, int, unsigned long);
+extern void *memset (void*, int, __SIZE_TYPE__);
 extern void abort (void);
 
 struct radix_tree_root {
