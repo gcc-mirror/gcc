@@ -376,6 +376,15 @@ get_internal_unit (st_parameter_dt *dtp)
     }
 
   memset (iunit, '\0', sizeof (gfc_unit));
+#ifdef __GTHREAD_MUTEX_INIT
+  {
+    __gthread_mutex_t tmp = __GTHREAD_MUTEX_INIT;
+    iunit->lock = tmp;
+  }
+#else
+  __GTHREAD_MUTEX_INIT_FUNCTION (&iunit->lock);
+#endif
+  __gthread_mutex_lock (&iunit->lock);
 
   iunit->recl = dtp->internal_unit_len;
   
