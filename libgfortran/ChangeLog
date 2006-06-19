@@ -1,3 +1,9 @@
+2006-06-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libgomp/27254
+	* io/unit.c (get_internal_unit): Initialize and lock thread mutex
+	for internal units.
+
 2006-06-06  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* m4/in_pack.m4: Add TODO comment about detecting temporaries,
