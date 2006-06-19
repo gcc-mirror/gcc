@@ -1,3 +1,13 @@
+2006-06-19  Richard Guenther  <rguenther@suse.de>
+
+	* ggc-page.c (extra_order_size_tab): Add entries with
+	size of struct function and basic_block.
+	(size_lookup): Extend to cover sizes up to 511.
+	(ggc_alloc_stat): Adjust user.
+	(ggc_pch_count_object): Likewise.
+	(ggc_pch_alloc_object): Likewise.
+	(ggc_pch_write_object): Likewise.
+
 2006-06-19  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-ssa-loop-niter.c (implies_ge_p): New function.

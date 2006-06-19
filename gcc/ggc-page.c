@@ -191,6 +191,8 @@ static const size_t extra_order_size_table[] = {
   sizeof (struct tree_parm_decl),
   sizeof (struct tree_var_decl),
   sizeof (struct tree_list),
+  sizeof (struct function),
+  sizeof (struct basic_block_def),
   TREE_EXP_SIZE (2),
   RTL_SIZE (2),			/* MEM, PLUS, etc.  */
   RTL_SIZE (9),			/* INSN */
@@ -1022,7 +1024,7 @@ release_pages (void)
 /* This table provides a fast way to determine ceil(log_2(size)) for
    allocation requests.  The minimum allocation size is eight bytes.  */
 
-static unsigned char size_lookup[257] =
+static unsigned char size_lookup[511] =
 {
   3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4,
   4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -1040,7 +1042,22 @@ static unsigned char size_lookup[257] =
   8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
   8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
   8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-  8
+  8, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9
 };
 
 /* Typed allocation function.  Does nothing special in this collector.  */
@@ -1061,14 +1078,14 @@ ggc_alloc_stat (size_t size MEM_STAT_DECL)
   struct page_entry *entry;
   void *result;
 
-  if (size <= 256)
+  if (size < 512)
     {
       order = size_lookup[size];
       object_size = OBJECT_SIZE (order);
     }
   else
     {
-      order = 9;
+      order = 10;
       while (size > (object_size = OBJECT_SIZE (order)))
 	order++;
     }
@@ -2023,11 +2040,11 @@ ggc_pch_count_object (struct ggc_pch_data *d, void *x ATTRIBUTE_UNUSED,
 {
   unsigned order;
 
-  if (size <= 256)
+  if (size < 512)
     order = size_lookup[size];
   else
     {
-      order = 9;
+      order = 10;
       while (size > OBJECT_SIZE (order))
 	order++;
     }
@@ -2068,11 +2085,11 @@ ggc_pch_alloc_object (struct ggc_pch_data *d, void *x ATTRIBUTE_UNUSED,
   unsigned order;
   char *result;
 
-  if (size <= 256)
+  if (size < 512)
     order = size_lookup[size];
   else
     {
-      order = 9;
+      order = 10;
       while (size > OBJECT_SIZE (order))
 	order++;
     }
@@ -2097,11 +2114,11 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
   unsigned order;
   static const char emptyBytes[256];
 
-  if (size <= 256)
+  if (size < 512)
     order = size_lookup[size];
   else
     {
-      order = 9;
+      order = 10;
       while (size > OBJECT_SIZE (order))
 	order++;
     }
