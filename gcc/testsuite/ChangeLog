@@ -1,3 +1,8 @@
+2006-06-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27090
+	* g++.dg/tree-ssa/pr27090.C: New testcase.
+
 2006-06-19  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/27861
