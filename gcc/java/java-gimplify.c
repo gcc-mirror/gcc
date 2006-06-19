@@ -223,7 +223,8 @@ java_gimplify_exit_block_expr (tree expr)
 static enum gimplify_status
 java_gimplify_component_ref (tree *expr_p, tree *pre_p, tree *post_p)
 {
-  if (TREE_THIS_VOLATILE (TREE_OPERAND (*expr_p, 1))
+  if (CLASS_FROM_SOURCE_P (output_class)
+      && TREE_THIS_VOLATILE (TREE_OPERAND (*expr_p, 1))
       && ! TREE_THIS_VOLATILE (*expr_p))
   {
     enum gimplify_status stat;
@@ -246,6 +247,7 @@ java_gimplify_component_ref (tree *expr_p, tree *pre_p, tree *post_p)
     */
   
     TREE_THIS_VOLATILE (*expr_p) = 1;
+    *expr_p = java_modify_addr_for_volatile (*expr_p);
     stat = gimplify_expr (expr_p, pre_p, post_p,
 			  is_gimple_formal_tmp_var, fb_rvalue);
     if (stat == GS_ERROR)
@@ -273,7 +275,8 @@ java_gimplify_modify_expr (tree *modify_expr_p, tree *pre_p, tree *post_p)
   tree rhs = TREE_OPERAND (modify_expr, 1);
   tree lhs_type = TREE_TYPE (lhs);
 
-  if (TREE_CODE (lhs) == COMPONENT_REF
+  if (CLASS_FROM_SOURCE_P (output_class)
+      && TREE_CODE (lhs) == COMPONENT_REF
       && TREE_THIS_VOLATILE (TREE_OPERAND (lhs, 1)))
     {
       /* Special handling for volatile fields.  
@@ -308,6 +311,7 @@ java_gimplify_modify_expr (tree *modify_expr_p, tree *pre_p, tree *post_p)
 		    sync_expr, rhs);
       TREE_SIDE_EFFECTS (rhs) = 1;
       TREE_THIS_VOLATILE (lhs) = 1;
+      lhs = java_modify_addr_for_volatile (lhs);
       TREE_OPERAND (modify_expr, 0) = lhs;
       TREE_OPERAND (modify_expr, 1) = rhs;
     }
