@@ -1,14 +1,12 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-alias-vops" } */
-/* malloc doesn't take a long */
-/* { dg-xfail-if "" { "m32c-*-*" } { "*" } { "" } } */
 struct a
 {
   int length;
   int a1[256];
 };
 
-void *malloc(long size) __attribute__((malloc));
+void *malloc(__SIZE_TYPE__ size) __attribute__((malloc));
 
 void f(void)
 {
