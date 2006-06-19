@@ -1,3 +1,29 @@
+2006-06-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (xor_combine<>::operator<<): Fix typo.
+	
+	* include/tr1/random (bernoulli_distribution::min(),
+	bernoulli_distribution::max(), geometric_distribution<>::min(),
+	geometric_distribution<>::max()): Remove.
+
+	* include/tr1/random (geometric_distribution<>::operator()):
+	Simplify formula.
+
+	* include/tr1/random: Minor cosmetic changes.
+
+	* testsuite/tr1/5_numerical_facilities/random/discard_block/
+	operators/equal.cc: New.
+	* testsuite/tr1/5_numerical_facilities/random/discard_block/
+	operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/discard_block/
+	operators/serialize.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/
+	operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/
+	operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/
+	operators/serialize.cc: Likewise.
+
 2006-06-17  Ami Tavory  <atavory@gmail.com>
 	    Paolo Carlini  <pcarlini@suse.de>
 
