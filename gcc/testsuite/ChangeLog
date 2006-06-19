@@ -1,3 +1,8 @@
+2006-06-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28045
+	* gcc.dg/torture/pr28045.c: New testcase.
+
 2006-06-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/26801
