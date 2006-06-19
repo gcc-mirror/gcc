@@ -1491,6 +1491,24 @@ implies_nonnegative_p (tree cond, tree val)
   return nonzero_p (compare);
 }
 
+/* Returns true if we can prove that COND ==> A >= B.  */
+
+static bool
+implies_ge_p (tree cond, tree a, tree b)
+{
+  tree compare = fold_build2 (GE_EXPR, boolean_type_node, a, b);
+
+  if (nonzero_p (compare))
+    return true;
+
+  if (nonzero_p (cond))
+    return false;
+
+  compare = tree_simplify_using_condition_1 (cond, compare);
+
+  return nonzero_p (compare);
+}
+
 /* Returns a constant upper bound on the value of expression VAL.  VAL
    is considered to be unsigned.  If its type is signed, its value must
    be nonnegative.
@@ -1554,8 +1572,11 @@ derive_constant_upper_bound (tree val, tree additional)
 	  || !implies_nonnegative_p (additional, op0))
 	return max;
 
-      /* Canonicalize to OP0 - CST.  */
+      /* Canonicalize to OP0 - CST.  Consider CST to be signed, in order to
+	 choose the most logical way how to treat this constant regardless
+	 of the signedness of the type.  */
       cst = tree_to_double_int (op1);
+      cst = double_int_sext (cst, TYPE_PRECISION (type));
       if (TREE_CODE (val) == PLUS_EXPR)
 	cst = double_int_neg (cst);
 
@@ -1568,7 +1589,7 @@ derive_constant_upper_bound (tree val, tree additional)
 	  if (double_int_negative_p (cst))
 	    return max;;
 
-	  /* Case OP0 + CST.  We need to check that
+	  /* OP0 + CST.  We need to check that
 	     BND <= MAX (type) - CST.  */
 
 	  mmax = double_int_add (max, double_int_neg (cst));
@@ -1579,7 +1600,25 @@ derive_constant_upper_bound (tree val, tree additional)
 	}
       else
 	{
+	  /* OP0 - CST, where CST >= 0.
+
+	     If TYPE is signed, we have already verified that OP0 >= 0, and we
+	     know that the result is nonnegative.  This implies that
+	     VAL <= BND - CST.
+
+	     If TYPE is unsigned, we must additionally know that OP0 >= CST,
+	     otherwise the operation underflows.
+	   */
+
+	  /* This should only happen if the type is unsigned; however, for
+	     programs that use overflowing signed arithmetics even with
+	     -fno-wrapv, this condition may also be true for signed values.  */
 	  if (double_int_ucmp (bnd, cst) < 0)
+	    return max;
+
+	  if (TYPE_UNSIGNED (type)
+	      && !implies_ge_p (additional,
+				op0, double_int_to_tree (type, cst)))
 	    return max;
 
 	  bnd = double_int_add (bnd, double_int_neg (cst));

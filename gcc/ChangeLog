@@ -1,3 +1,9 @@
+2006-06-19  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-loop-niter.c (implies_ge_p): New function.
+	(derive_constant_upper_bound): Handle OP0 - CST in unsigned types
+	correctly.
+
 2006-06-19  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/libgcc.S : Correct my wrong previous commit.
