@@ -1541,11 +1541,12 @@ struct tree_opt_pass pass_lower_complex =
   0,					/* tv_id */
   PROP_ssa,				/* properties_required */
   0,					/* properties_provided */
-  0,					/* properties_destroyed */
+  PROP_smt_usage,                       /* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_ggc_collect
-    | TODO_update_ssa
-    | TODO_verify_stmts,		/* todo_flags_finish */
+  | TODO_update_smt_usage
+  | TODO_update_ssa
+  | TODO_verify_stmts,		        /* todo_flags_finish */
   0					/* letter */
 };
 

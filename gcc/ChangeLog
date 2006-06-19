@@ -1,3 +1,10 @@
+2006-06-19  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/27341
+	* tree-cfg.c (gimplify_val): Call mark_new_vars_to_rename on the
+	statement we get.
+	* tree-complex.c (pass_lower_complex): Update SMT usage.	
+
 2006-06-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("doloop_si64", "doloop_si31", "doloop_di"): 

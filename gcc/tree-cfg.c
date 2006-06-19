@@ -5584,6 +5584,8 @@ gimplify_val (block_stmt_iterator *bsi, tree type, tree exp)
   TREE_BLOCK (new_stmt) = TREE_BLOCK (orig_stmt);
 
   bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
+  if (in_ssa_p)
+    mark_new_vars_to_rename (new_stmt);
 
   return t;
 }
