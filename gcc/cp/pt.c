@@ -9295,9 +9295,10 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
 
   /* Although PROCESSING_TEMPLATE_DECL may be true at this point
      (because, for example, we have encountered a non-dependent
-     function call in the body of a template function must determine
-     which of several overloaded functions will be called), within the
-     instantiation itself we are not processing a template.  */  
+     function call in the body of a template function and must now
+     determine which of several overloaded functions will be called),
+     within the instantiation itself we are not processing a
+     template.  */  
   saved_processing_template_decl = processing_template_decl;
   processing_template_decl = 0;
   /* Substitute template parameters to obtain the specialization.  */
