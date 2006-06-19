@@ -1,3 +1,10 @@
+2006-06-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("doloop_si64", "doloop_si31", "doloop_di"): 
+	Add a new alternative to the constraint strings. Add move of
+	operand 1 to 3 to the splitter definition.
+	("doloop_si_long"): Second contraint alternative removed.
+
 2006-06-08  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (avr_have_movw_lpmx_p): Declare.
