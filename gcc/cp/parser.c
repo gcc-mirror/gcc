@@ -205,7 +205,7 @@ static void cp_parser_initial_pragma
   (cp_token *);
 
 /* Manifest constants.  */
-#define CP_LEXER_BUFFER_SIZE 10000
+#define CP_LEXER_BUFFER_SIZE ((256 * 1024) / sizeof (cp_token))
 #define CP_SAVED_TOKEN_STACK 5
 
 /* A token type for keywords, as opposed to ordinary identifiers.  */
