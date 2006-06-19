@@ -40,7 +40,7 @@ Boston, MA 02110-1301, USA.  */
 	.section .text.libgcc, "ax", @progbits
 
 	.macro	mov_l  r_dest, r_src
-#if defined (__AVR_ENHANCED__)
+#if defined (__AVR_HAVE_MOVW__)
 	movw	\r_dest, \r_src
 #else
 	mov	\r_dest, \r_src
@@ -48,7 +48,7 @@ Boston, MA 02110-1301, USA.  */
 	.endm
 
 	.macro	mov_h  r_dest, r_src
-#if defined (__AVR_ENHANCED__)
+#if defined (__AVR_HAVE_MOVW__)
 	; empty
 #else
 	mov	\r_dest, \r_src
@@ -276,10 +276,10 @@ __mulsi3_skip1:
 	cpc	r_arg1H,r_arg1L
 	brne	__mulsi3_loop		; exit if multiplier = 0
 __mulsi3_exit:
-	mov	r_arg1HH,r_resHH	; result to return register
-	mov	r_arg1HL,r_resHL
-	mov	r_arg1H,r_resH
-	mov	r_arg1L,r_resL
+	mov_h	r_arg1HH,r_resHH	; result to return register
+	mov_l	r_arg1HL,r_resHL
+	mov_h	r_arg1H,r_resH
+	mov_l	r_arg1L,r_resL
 	ret
 #endif /* !defined (__AVR_ENHANCED__) */
 #undef r_arg1L 
@@ -698,7 +698,7 @@ __do_copy_data:
 	ldi	r31, hi8(__data_load_start)
 	rjmp	.do_copy_data_start
 .do_copy_data_loop:
-#if defined (__AVR_ENHANCED__)
+#if defined (__AVR_HAVE_LPMX__)
 	lpm	r0, Z+
 #else
 	lpm
