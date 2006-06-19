@@ -1,3 +1,7 @@
+2006-06-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/vla-8.c: Add.
+
 2006-06-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27090
