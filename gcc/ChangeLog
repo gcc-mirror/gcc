@@ -1,3 +1,7 @@
+2006-06-19  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/libgcc.S : Correct my wrong previous commit.
+
 2006-06-19  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/27861
