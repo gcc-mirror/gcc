@@ -1,5 +1,10 @@
 2006-06-19  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (try_combine_conversion): Strip useless
+	type conversions after folding.
+
+2006-06-19  Richard Guenther  <rguenther@suse.de>
+
 	* ggc-page.c (extra_order_size_tab): Add entries with
 	size of struct function and basic_block.
 	(size_lookup): Extend to cover sizes up to 511.

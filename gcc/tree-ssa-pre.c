@@ -3330,12 +3330,17 @@ try_combine_conversion (tree *expr_p)
 
   t = fold_unary (TREE_CODE (expr), TREE_TYPE (expr),
 		  VALUE_HANDLE_EXPR_SET (TREE_OPERAND (expr, 0))->head->expr);
+  if (!t)
+    return false;
+
+  /* Strip useless type conversions, which is safe in the optimizers but
+     not generally in fold.  */
+  STRIP_USELESS_TYPE_CONVERSION (t);
 
   /* Disallow value expressions we have no value number for already, as
      we would miss a leader for it here.  */
-  if (t
-      && !(TREE_CODE (t) == VALUE_HANDLE
-	   || is_gimple_min_invariant (t)))
+  if (!(TREE_CODE (t) == VALUE_HANDLE
+	|| is_gimple_min_invariant (t)))
     t = vn_lookup (t, NULL);
 
   if (t && t != expr)
