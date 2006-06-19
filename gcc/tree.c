@@ -5602,8 +5602,10 @@ find_var_from_fn (tree *tp, int *walk_subtrees, void *data)
 }
 
 /* Returns true if T is, contains, or refers to a type with variable
-   size.  If FN is nonzero, only return true if a modifier of the type
-   or position of FN is a variable or parameter inside FN.
+   size.  For METHOD_TYPEs and FUNCTION_TYPEs we exclude the
+   arguments, but not the return type.  If FN is nonzero, only return
+   true if a modifier of the type or position of FN is a variable or
+   parameter inside FN.
 
    This concept is more general than that of C99 'variably modified types':
    in C99, a struct type is never variably modified because a VLA may not
@@ -5644,15 +5646,9 @@ variably_modified_type_p (tree type, tree fn)
 
     case FUNCTION_TYPE:
     case METHOD_TYPE:
-      /* If TYPE is a function type, it is variably modified if any of the
-         parameters or the return type are variably modified.  */
+      /* If TYPE is a function type, it is variably modified if the
+	 return type is variably modified.  */
       if (variably_modified_type_p (TREE_TYPE (type), fn))
-	  return true;
-
-      for (t = TYPE_ARG_TYPES (type);
-	   t && t != void_list_node;
-	   t = TREE_CHAIN (t))
-	if (variably_modified_type_p (TREE_VALUE (t), fn))
 	  return true;
       break;
 
