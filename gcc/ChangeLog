@@ -1,3 +1,11 @@
+2006-06-19  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/27861
+	* expmed.c (expand_shift): On SHIFT_COUNT_TRUNCATED targets, we may
+	have stripped a SUBREG from the shift count, so we may need to
+	convert_to_mode back to the type's mode before calling make_tree.
+	Use new_amount instead of amount to avoid expanding a tree twice.
+
 2006-06-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28045

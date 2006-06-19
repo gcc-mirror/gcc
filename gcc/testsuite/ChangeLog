@@ -1,3 +1,8 @@
+2006-06-19  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/27861
+	* gcc.dg/pr27861-1.c: New test case.
+
 2006-06-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28045
