@@ -1,3 +1,12 @@
+2006-06-19  Anatoly Sokolov <aesok@post.ru>
+
+	* gcc.dg/pr18241-1.c: Use __SIZE_TYPE__ instead of unsigned long
+	in malloc prototype; remove XFAIL.
+	* gcc.dg/pr18241-2.c: Ditto.
+	* gcc.dg/20050321-1.c: Use __SIZE_TYPE__ instead of unsigned long
+	in memset prototype; remove XFAIL.
+	* gcc.dg/tree-ssa/pr23382.c: Ditto.
+
 2006-06-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/vla-8.c: Add.
