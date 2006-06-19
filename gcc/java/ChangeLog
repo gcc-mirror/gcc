@@ -1,3 +1,15 @@
+2006-06-19  Andrew Haley  <aph@redhat.com>
+
+        PR java/1305
+        PR java/27908
+	* expr.c (java_modify_addr_for_volatile): New function.
+	(expand_java_field_op): Handle volatile fields.
+	* java-gimplify.c (java_gimplify_component_ref): Call
+	java_modify_addr_for_volatile to give the field_ref the correct
+	volatile type.
+	(java_gimplify_modify_expr): Likewise.
+	* java-tree.h (java_modify_addr_for_volatile): New decl.
+
 2006-06-17  Karl Berry  <karl@gnu.org>
 
 	* gcj.texi (@dircategory): Use "Software development" instead

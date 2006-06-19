@@ -1250,6 +1250,7 @@ extern tree build_invokeinterface (tree, tree);
 extern tree build_jni_stub (tree);
 extern tree invoke_build_dtable (int, tree);
 extern tree build_field_ref (tree, tree, tree);
+extern tree java_modify_addr_for_volatile (tree);
 extern void pushdecl_force_head (tree);
 extern tree build_java_binop (enum tree_code, tree, tree, tree);
 extern tree build_java_soft_divmod (enum tree_code, tree, tree, tree);
