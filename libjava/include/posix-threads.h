@@ -1,7 +1,7 @@
 // -*- c++ -*-
 // posix-threads.h - Defines for using POSIX threads.
 
-/* Copyright (C) 1998, 1999, 2001, 2003  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2003, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -365,5 +365,19 @@ void _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
 void _Jv_ThreadWait (void);
 
 void _Jv_ThreadInterrupt (_Jv_Thread_t *data);
+
+// Increases a thread's suspend count. If the thread's previous
+// suspend count was zero, i.e., it is not suspended, this function
+// will suspend the thread. This function may be used to suspend
+// any thread from any other thread (or suspend itself).
+void _Jv_ThreadDebugSuspend (_Jv_Thread_t* data);
+
+// Decreases a thread's suspend count. If the thread's new thread
+// count is zero, the thread is resumed. This function may be used
+// by any thread to resume any other thread.
+void _Jv_ThreadDebugResume (_Jv_Thread_t* data);
+
+// Get the suspend count for a thread
+jint _Jv_ThreadDebugSuspendCount (_Jv_Thread_t* data);
 
 #endif /* __JV_POSIX_THREADS__ */

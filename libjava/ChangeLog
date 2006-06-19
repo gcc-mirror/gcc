@@ -1,3 +1,20 @@
+2006-06-19  Keith Seitz  <keiths@redhat.com>
+
+	* include/posix-threads.h (_Jv_ThreadDebugSuspend): Declare.
+	(_Jv_ThreadDebugResume): Declare.
+	(_Jv_ThreadDebugSuspendCount): Declare.
+	* posix-threads.cc (_Jv_ThreadDebugSuspend): New function.
+	(_Jv_ThreadDebugSuspendCount): New function.
+	(_Jv_ThreadDebugResume): New function.
+
+	* include/win32-threads.h (_Jv_ThreadDebugSuspend): Declare.
+	(_Jv_ThreadDebugResume): Declare.
+	(_Jv_ThreadDebugSuspendCount): Declare.
+	* win32-threads.cc (_Jv_ThreadDebugSuspend): New function.
+	(_Jv_ThreadDebugSuspendCount): New function.
+	(_Jv_ThreadDebugResume): New function.
+	
+
 2006-06-16  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/natClassLoader.cc (_Jv_NewClassFromInitializer): Don't
