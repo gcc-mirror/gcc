@@ -1,3 +1,8 @@
+2006-06-19  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/libjava.lang/PR27908.out: New.
+	* testsuite/libjava.lang/PR27908.java: New.
+
 2006-06-19  Keith Seitz  <keiths@redhat.com>
 
 	* include/posix-threads.h (_Jv_ThreadDebugSuspend): Declare.
