@@ -1,6 +1,6 @@
 // posix-threads.cc - interface between libjava and POSIX threads.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2004  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2004, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -503,6 +503,22 @@ _Jv_ThreadWait (void)
   if (non_daemon_count)
     pthread_cond_wait (&daemon_cond, &daemon_mutex);
   pthread_mutex_unlock (&daemon_mutex);
+}
+
+void
+_Jv_ThreadDebugSuspend (_Jv_Thread_t* data)
+{
+}
+
+void
+_Jv_ThreadDebugResume (_Jv_Thread_t* data)
+{
+}
+
+jint
+_Jv_ThreadDebugSuspendCount (_Jv_Thread_t* data)
+{
+  return -1;
 }
 
 #if defined(SLOW_PTHREAD_SELF)
