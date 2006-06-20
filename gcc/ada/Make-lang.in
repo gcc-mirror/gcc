@@ -818,16 +818,18 @@ ada.stagefeedback: stagefeedback-start
 	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stagefeedback/ada
 	-$(MV) ada/stamp-* stagefeedback/ada
 
-check-ada: check-gnat
+lang_checks += check-gnat
+
+check-ada: check-acats check-gnat
 
 ACATSDIR = $(TESTSUITEDIR)/ada/acats
 
-check-gnat:
+check-acats:
 	test -d $(ACATSDIR) || mkdir -p $(ACATSDIR)
 	testdir=`cd ${srcdir}/${ACATSDIR}; ${PWD_COMMAND}`; \
 	export testdir; cd $(ACATSDIR); $(SHELL) $${testdir}/run_acats $(CHAPTERS)
 
-.PHONY: check-gnat
+.PHONY: check-acats
 
 
 # Bootstrapping targets for just GNAT - use the same stage directories
