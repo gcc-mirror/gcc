@@ -23,10 +23,10 @@ struct vfoo { int x; __vector signed int v; int y; };
 union u { __vector signed int v; signed int i[4]; };
 
 struct foo x_g = { 3, 4};
-struct vfoo vx_g = { 10, (vector signed int) {11, 12, 13, 14}, 15 };
-__vector signed int v_g = (vector signed int) {22, 23, 24, 25};
-struct vfoo vx2_g = { 30, (vector signed int) {31, 32, 33, 34}, 35 };
-__vector signed int v2_g = (vector signed int) {40, 41, 42, 43};
+struct vfoo vx_g = { 10, {11, 12, 13, 14}, 15 };
+__vector signed int v_g = {22, 23, 24, 25};
+struct vfoo vx2_g = { 30, {31, 32, 33, 34}, 35 };
+__vector signed int v2_g = {40, 41, 42, 43};
 int i_1 = 99, i_2 = 33;
 double d_2 = 1.5, d_3 = 1.75;
 double ld_1 = 1.25;
