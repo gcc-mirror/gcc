@@ -1,5 +1,10 @@
+2006-06-20  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/27331
+	* gcc.dg/pr27331.c: New test.
+
 2006-06-20  James A. Morrison  <phython@gcc.gnu.org>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/18692
 	* lib/gnat.exp: New file.

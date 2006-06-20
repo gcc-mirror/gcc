@@ -1854,6 +1854,18 @@ analyze_offset (tree offset, tree *invariant, tree *constant)
     *invariant = invariant_0 ? invariant_0 : invariant_1;
 }
 
+/* Free the memory used by the data reference DR.  */
+
+static void
+free_data_ref (data_reference_p dr)
+{
+  if (DR_TYPE(dr) == ARRAY_REF_TYPE)
+    VEC_free (tree, heap, dr->object_info.access_fns);
+  else
+    VEC_free (tree, heap, dr->first_location.access_fns);
+
+  free (dr);
+}
 
 /* Function create_data_ref.
    
@@ -1954,11 +1966,23 @@ create_data_ref (tree memref, tree stmt, bool is_read)
 
       /* Update access function.  */
       access_fn = DR_ACCESS_FN (dr, 0);
+      if (automatically_generated_chrec_p (access_fn))
+	{
+	  free_data_ref (dr);
+	  return NULL;
+	}
+
       new_step = size_binop (TRUNC_DIV_EXPR,  
 			     fold_convert (ssizetype, step), type_size);
 
       init_cond = chrec_convert (chrec_type (access_fn), init_cond, stmt);
       new_step = chrec_convert (chrec_type (access_fn), new_step, stmt);
+      if (automatically_generated_chrec_p (init_cond)
+	  || automatically_generated_chrec_p (new_step))
+	{
+	  free_data_ref (dr);
+	  return NULL;
+	}
       access_fn = chrec_replace_initial_condition (access_fn, init_cond);
       access_fn = reset_evolution_in_loop (loop->num, access_fn, new_step);
 
@@ -4373,14 +4397,7 @@ free_data_refs (VEC (data_reference_p, heap) *datarefs)
   struct data_reference *dr;
 
   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
-    {
-      if (DR_TYPE(dr) == ARRAY_REF_TYPE)
-	VEC_free (tree, heap, (dr)->object_info.access_fns);
-      else
-	VEC_free (tree, heap, (dr)->first_location.access_fns);
-
-      free (dr);
-    }
+    free_data_ref (dr);
   VEC_free (data_reference_p, heap, datarefs);
 }
 
