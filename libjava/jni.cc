@@ -107,7 +107,7 @@ static java::util::IdentityHashMap *local_ref_table;
 static java::util::IdentityHashMap *global_ref_table;
 
 // The only VM.
-static JavaVM *the_vm;
+JavaVM *_Jv_the_vm;
 
 #ifdef ENABLE_JVMPI
 // The only JVMPI interface description.
@@ -2408,7 +2408,7 @@ _Jv_JNI_AttachCurrentThread (JavaVM *, jstring name, void **penv,
 }
 
 // This is the one actually used by JNI.
-static jint JNICALL
+jint JNICALL
 _Jv_JNI_AttachCurrentThread (JavaVM *vm, void **penv, void *args)
 {
   return _Jv_JNI_AttachCurrentThread (vm, NULL, penv, args, false);
@@ -2424,7 +2424,7 @@ _Jv_JNI_AttachCurrentThreadAsDaemon (JavaVM *vm, void **penv,
 static jint JNICALL
 _Jv_JNI_DestroyJavaVM (JavaVM *vm)
 {
-  JvAssert (the_vm && vm == the_vm);
+  JvAssert (_Jv_the_vm && vm == _Jv_the_vm);
 
   union
   {
@@ -2496,82 +2496,16 @@ _Jv_JNI_GetEnv (JavaVM *, void **penv, jint version)
   return 0;
 }
 
-jint JNICALL
-JNI_GetDefaultJavaVMInitArgs (void *args)
-{
-  jint version = * (jint *) args;
-  // Here we only support 1.2 and 1.4.
-  if (version != JNI_VERSION_1_2 && version != JNI_VERSION_1_4)
-    return JNI_EVERSION;
-
-  JavaVMInitArgs *ia = reinterpret_cast<JavaVMInitArgs *> (args);
-  ia->version = JNI_VERSION_1_4;
-  ia->nOptions = 0;
-  ia->options = NULL;
-  ia->ignoreUnrecognized = true;
-
-  return 0;
-}
-
-jint JNICALL
-JNI_CreateJavaVM (JavaVM **vm, void **penv, void *args)
-{
-  JvAssert (! the_vm);
-
-  jint version = * (jint *) args;
-  // We only support 1.2 and 1.4.
-  if (version != JNI_VERSION_1_2 && version != JNI_VERSION_1_4)
-    return JNI_EVERSION;
-
-  JvVMInitArgs* vm_args = reinterpret_cast<JvVMInitArgs *> (args);
-
-  jint result = _Jv_CreateJavaVM (vm_args);
-  if (result)
-    return result;
-
-  // FIXME: synchronize
-  JavaVM *nvm = (JavaVM *) _Jv_MallocUnchecked (sizeof (JavaVM));
-  if (nvm == NULL)
-    return JNI_ERR;
-  nvm->functions = &_Jv_JNI_InvokeFunctions;
-
-  jint r =_Jv_JNI_AttachCurrentThread (nvm, penv, NULL);
-  if (r < 0)
-    return r;
-
-  the_vm = nvm;
-  *vm = the_vm;
-
-  return 0;
-}
-
-jint JNICALL
-JNI_GetCreatedJavaVMs (JavaVM **vm_buffer, jsize buf_len, jsize *n_vms)
-{
-  if (buf_len <= 0)
-    return JNI_ERR;
-
-  // We only support a single VM.
-  if (the_vm != NULL)
-    {
-      vm_buffer[0] = the_vm;
-      *n_vms = 1;
-    }
-  else
-    *n_vms = 0;
-  return 0;
-}
-
 JavaVM *
 _Jv_GetJavaVM ()
 {
   // FIXME: synchronize
-  if (! the_vm)
+  if (! _Jv_the_vm)
     {
       JavaVM *nvm = (JavaVM *) _Jv_MallocUnchecked (sizeof (JavaVM));
       if (nvm != NULL)
 	nvm->functions = &_Jv_JNI_InvokeFunctions;
-      the_vm = nvm;
+      _Jv_the_vm = nvm;
     }
 
   // If this is a Java thread, we want to make sure it has an
@@ -2579,10 +2513,10 @@ _Jv_GetJavaVM ()
   if (_Jv_ThreadCurrent () != NULL)
     {
       void *ignore;
-      _Jv_JNI_AttachCurrentThread (the_vm, &ignore, NULL);
+      _Jv_JNI_AttachCurrentThread (_Jv_the_vm, &ignore, NULL);
     }
 
-  return the_vm;
+  return _Jv_the_vm;
 }
 
 static jint JNICALL

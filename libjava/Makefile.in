@@ -104,12 +104,14 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" \
+am__installdirs = "$(DESTDIR)$(dbexecdir)" \
+	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(bindir)" "$(DESTDIR)$(dbexecdir)" \
 	"$(DESTDIR)$(jardir)" "$(DESTDIR)$(pkgconfigdir)" \
 	"$(DESTDIR)$(toolexecmainlibdir)"
+dbexecLTLIBRARIES_INSTALL = $(INSTALL)
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
-LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES = $(dbexec_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_1 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
 	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo \
@@ -343,6 +345,8 @@ am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo stacktrace.lo \
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 am_libgij_la_OBJECTS = gij.lo
 libgij_la_OBJECTS = $(am_libgij_la_OBJECTS)
+am_libjvm_la_OBJECTS = jni-libjvm.lo
+libjvm_la_OBJECTS = $(am_libjvm_la_OBJECTS)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am_gcj_dbtool_OBJECTS = gnu/gcj/tools/gcj_dbtool/Main.$(OBJEXT) \
@@ -388,14 +392,14 @@ LTGCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) $(AM_GCJFLAGS) \
 	$(GCJFLAGS)
 GCJLD = $(GCJ)
 SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_la_SOURCES) \
-	$(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) \
-	$(gen_from_JIS_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) \
-	$(grmiregistry_SOURCES) $(jv_convert_SOURCES)
+	$(libgij_la_SOURCES) $(libjvm_la_SOURCES) \
+	$(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) \
+	$(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
 	$(am__libgcj_la_SOURCES_DIST) $(libgij_la_SOURCES) \
-	$(gcj_dbtool_SOURCES) $(am__gen_from_JIS_SOURCES_DIST) \
-	$(gij_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) \
-	$(jv_convert_SOURCES)
+	$(libjvm_la_SOURCES) $(gcj_dbtool_SOURCES) \
+	$(am__gen_from_JIS_SOURCES_DIST) $(gij_SOURCES) \
+	$(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -662,6 +666,7 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach o
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la $(am__append_2)
 toolexecmainlib_DATA = libgcj.spec
+dbexec_LTLIBRARIES = libjvm.la
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
 jardir = $(datadir)/java
@@ -701,7 +706,7 @@ AM_CXXFLAGS = \
         -DBOOT_CLASS_PATH="\"$(BOOT_CLASS_PATH_DIR)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
 	-DGCJ_ENDORSED_DIRS="\"$(jardir)/gcj-endorsed\"" \
-	-DGCJ_VERSIONED_LIBDIR="\"$(libdir)/gcj-$(gcc_version)\"" \
+	-DGCJ_VERSIONED_LIBDIR="\"$(dbexecdir)\"" \
 	-DPATH_SEPARATOR="\"$(CLASSPATH_SEPARATOR)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\"" \
@@ -762,6 +767,12 @@ libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	$(LIBLTDL) $(libgcj_la_LIBADD)
 
 libgcj_la_LINK = $(LIBLINK)
+libjvm_la_SOURCES = jni-libjvm.cc
+libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec
+libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
+libjvm_la_LDFLAGS = -rpath $(toolexeclibdir) \
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
+
 lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
 lib_gnu_awt_xlib_la_LIBADD = gnu/awt/xlib.lo gnu/gcj/xlib.lo
 lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
@@ -7210,6 +7221,33 @@ libgcj-test.spec: $(top_builddir)/config.status $(srcdir)/libgcj-test.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 scripts/jar: $(top_builddir)/config.status $(top_srcdir)/scripts/jar.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
+install-dbexecLTLIBRARIES: $(dbexec_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(dbexecdir)" || $(mkdir_p) "$(DESTDIR)$(dbexecdir)"
+	@list='$(dbexec_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    f=$(am__strip_dir) \
+	    echo " $(LIBTOOL) --mode=install $(dbexecLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(dbexecdir)/$$f'"; \
+	    $(LIBTOOL) --mode=install $(dbexecLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(dbexecdir)/$$f"; \
+	  else :; fi; \
+	done
+
+uninstall-dbexecLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@set -x; list='$(dbexec_LTLIBRARIES)'; for p in $$list; do \
+	  p=$(am__strip_dir) \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(dbexecdir)/$$p'"; \
+	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(dbexecdir)/$$p"; \
+	done
+
+clean-dbexecLTLIBRARIES:
+	-test -z "$(dbexec_LTLIBRARIES)" || rm -f $(dbexec_LTLIBRARIES)
+	@list='$(dbexec_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibdir)" || $(mkdir_p) "$(DESTDIR)$(toolexeclibdir)"
@@ -7572,6 +7610,8 @@ libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	$(libgcj_la_LINK) -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(libgcj_la_OBJECTS) $(libgcj_la_LIBADD) $(LIBS)
 libgij.la: $(libgij_la_OBJECTS) $(libgij_la_DEPENDENCIES) 
 	$(CXXLINK) -rpath $(toolexeclibdir) $(libgij_la_LDFLAGS) $(libgij_la_OBJECTS) $(libgij_la_LIBADD) $(LIBS)
+libjvm.la: $(libjvm_la_OBJECTS) $(libjvm_la_DEPENDENCIES) 
+	$(CXXLINK) -rpath $(dbexecdir) $(libjvm_la_LDFLAGS) $(libjvm_la_OBJECTS) $(libjvm_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
@@ -7842,6 +7882,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exception.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gij.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interpret.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jni-libjvm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jni.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/link.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/no-threads.Plo@am__quote@
@@ -8532,7 +8573,7 @@ check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(toolexecmainlibdir)"; do \
+	for dir in "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(toolexecmainlibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-recursive
@@ -8611,9 +8652,9 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-binPROGRAMS clean-generic clean-libtool \
-	clean-noinstPROGRAMS clean-toolexeclibLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-binPROGRAMS clean-dbexecLTLIBRARIES clean-generic \
+	clean-libtool clean-noinstPROGRAMS \
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -8636,8 +8677,8 @@ install-data-am: install-data-local install-jarDATA \
 	install-pkgconfigDATA
 
 install-exec-am: install-binPROGRAMS install-binSCRIPTS \
-	install-dbexecDATA install-toolexeclibLTLIBRARIES \
-	install-toolexecmainlibDATA
+	install-dbexecDATA install-dbexecLTLIBRARIES \
+	install-toolexeclibLTLIBRARIES install-toolexecmainlibDATA
 
 install-info: install-info-recursive
 
@@ -8666,36 +8707,37 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
-	uninstall-dbexecDATA uninstall-info-am uninstall-jarDATA \
-	uninstall-pkgconfigDATA uninstall-toolexeclibLTLIBRARIES \
-	uninstall-toolexecmainlibDATA
+	uninstall-dbexecDATA uninstall-dbexecLTLIBRARIES \
+	uninstall-info-am uninstall-jarDATA uninstall-pkgconfigDATA \
+	uninstall-toolexeclibLTLIBRARIES uninstall-toolexecmainlibDATA
 
 uninstall-info: uninstall-info-recursive
 
 .PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am am--refresh check \
-	check-am clean clean-binPROGRAMS clean-generic clean-libtool \
-	clean-noinstPROGRAMS clean-recursive \
-	clean-toolexeclibLTLIBRARIES ctags ctags-recursive dist \
-	dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip \
-	distcheck distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-local distclean-recursive \
-	distclean-tags distcleancheck distdir distuninstallcheck dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-binSCRIPTS install-data \
-	install-data-am install-data-local install-dbexecDATA \
-	install-exec install-exec-am install-info install-info-am \
-	install-jarDATA install-man install-pkgconfigDATA \
-	install-strip install-toolexeclibLTLIBRARIES \
-	install-toolexecmainlibDATA installcheck installcheck-am \
-	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool mostlyclean-local mostlyclean-recursive \
-	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-binSCRIPTS \
-	uninstall-dbexecDATA uninstall-info-am uninstall-jarDATA \
-	uninstall-pkgconfigDATA uninstall-toolexeclibLTLIBRARIES \
-	uninstall-toolexecmainlibDATA
+	check-am clean clean-binPROGRAMS clean-dbexecLTLIBRARIES \
+	clean-generic clean-libtool clean-noinstPROGRAMS \
+	clean-recursive clean-toolexeclibLTLIBRARIES ctags \
+	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-shar \
+	dist-tarZ dist-zip distcheck distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-local \
+	distclean-recursive distclean-tags distcleancheck distdir \
+	distuninstallcheck dvi dvi-am html html-am info info-am \
+	install install-am install-binPROGRAMS install-binSCRIPTS \
+	install-data install-data-am install-data-local \
+	install-dbexecDATA install-dbexecLTLIBRARIES install-exec \
+	install-exec-am install-info install-info-am install-jarDATA \
+	install-man install-pkgconfigDATA install-strip \
+	install-toolexeclibLTLIBRARIES install-toolexecmainlibDATA \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool mostlyclean-local \
+	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-binSCRIPTS uninstall-dbexecDATA \
+	uninstall-dbexecLTLIBRARIES uninstall-info-am \
+	uninstall-jarDATA uninstall-pkgconfigDATA \
+	uninstall-toolexeclibLTLIBRARIES uninstall-toolexecmainlibDATA
 
 
 $(db_name): gcj-dbtool$(EXEEXT)
@@ -11273,6 +11315,7 @@ create-headers: $(headers_to_make)
 
 $(libgcj_la_OBJECTS) $(gcj_dbtool_OBJECTS) $(xlib_nat_files): headers.stamp
 $(libgij_la_OBJECTS): headers.stamp
+$(libjvm_la_OBJECTS): headers.stamp
 
 # No install-html support yet.
 .PHONY: install-html
