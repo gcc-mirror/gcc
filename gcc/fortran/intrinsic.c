@@ -2139,7 +2139,7 @@ add_functions (void)
   make_generic ("tiny", GFC_ISYM_NONE, GFC_STD_F95);
 
   add_sym_3 ("transfer", 0, 1, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_transfer, NULL, gfc_resolve_transfer,
+	     gfc_check_transfer, gfc_simplify_transfer, gfc_resolve_transfer,
 	     src, BT_REAL, dr, REQUIRED, mo, BT_REAL, dr, REQUIRED,
 	     sz, BT_INTEGER, di, OPTIONAL);
 

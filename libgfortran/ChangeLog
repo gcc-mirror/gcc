@@ -1,3 +1,22 @@
+2006-06-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/28005
+	* m4/matmul.m4: aystride = 1 does not uniquely detect the
+	presence of a temporary transpose; an array element in the
+	first dimension produces the same signature.  Detect this
+	using the rank of a and add specific code.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+
 2006-06-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libgomp/27254

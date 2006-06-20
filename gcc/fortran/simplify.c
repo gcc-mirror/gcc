@@ -3715,6 +3715,19 @@ gfc_simplify_tiny (gfc_expr * e)
 
 
 gfc_expr *
+gfc_simplify_transfer (gfc_expr * source, gfc_expr *mold, gfc_expr * size)
+{
+
+  /* Reference mold and size to suppress warning.  */
+  if (gfc_init_expr && (mold || size))
+    gfc_error ("TRANSFER intrinsic not implemented for initialization at %L",
+	       &source->where);
+
+  return NULL;
+}
+
+
+gfc_expr *
 gfc_simplify_trim (gfc_expr * e)
 {
   gfc_expr *result;
