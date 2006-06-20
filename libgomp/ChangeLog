@@ -1,3 +1,13 @@
+2006-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/26175
+	PR libgomp/26477
+	* configure.ac: If neither --enable-linux-futex nor
+	--disable-linux-futex is passed, determine the default by checking
+	for compiling and/or running against NPTL.  With --enable-linux-futex,
+	check if SYS_gettid and SYS_futex are defined.
+	* configure: Rebuilt.
+
 2006-06-14  Richard Henderson  <rth@redhat.com>
 
 	PR libgomp/28008

@@ -854,8 +854,8 @@ Optional Features:
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory [default=no]
-  _g_switchUse the Linux futex system call
-                          permit yes|no [default=yes]
+  --enable-linux-futex    Use the Linux futex system call
+                          [default=default]
   --enable-multilib       build many library versions (default)
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
@@ -1369,14 +1369,14 @@ if test "${enable_linux_futex+set}" = set; then
   enableval="$enable_linux_futex"
 
       case "$enableval" in
-       yes|no) ;;
-       *) { { echo "$as_me:$LINENO: error: Argument to enable/disable linux-futex must be yes or no" >&5
-echo "$as_me: error: Argument to enable/disable linux-futex must be yes or no" >&2;}
+       yes|no|default) ;;
+       *) { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable linux-futex" >&5
+echo "$as_me: error: Unknown argument to enable/disable linux-futex" >&2;}
    { (exit 1); exit 1; }; } ;;
-      esac
+                          esac
 
 else
-  enable_linux_futex=yes
+  enable_linux_futex=default
 fi;
 
 echo "$as_me:$LINENO: result: $enable_linux_futex" >&5
@@ -8508,6 +8508,174 @@ cat >>confdefs.h <<\_ACEOF
 #define HAVE_BROKEN_POSIX_SEMAPHORES 1
 _ACEOF
 
+    ;;
+  *-linux*)
+    case "$enable_linux_futex" in
+      default)
+	# If headers don't have gettid/futex syscalls definition, then
+	# default to no, otherwise there will be compile time failures.
+	# Otherwise, default to yes.  If we don't detect we are
+	# compiled/linked against NPTL and not cross-compiling, check
+	# if programs are run by default against NPTL and if not, issue
+	# a warning.
+	enable_linux_futex=no
+	cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <sys/syscall.h>
+	   int lk;
+int
+main ()
+{
+syscall (SYS_gettid); syscall (SYS_futex, &lk, 0, 0, 0);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#ifndef _GNU_SOURCE
+	     #define _GNU_SOURCE 1
+	     #endif
+	     #include <pthread.h>
+	     pthread_t th; void *status;
+int
+main ()
+{
+pthread_tryjoin_np (th, &status);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  enable_linux_futex=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+if test x$cross_compiling = xno; then
+	       if getconf GNU_LIBPTHREAD_VERSION 2>/dev/null \
+		  | LC_ALL=C grep -i NPTL > /dev/null 2>/dev/null; then
+		 { echo "$as_me:$LINENO: WARNING: The kernel might not support futex or gettid syscalls.
+If so, please configure with --disable-linux-futex" >&5
+echo "$as_me: WARNING: The kernel might not support futex or gettid syscalls.
+If so, please configure with --disable-linux-futex" >&2;}
+	       fi
+	     fi
+	     enable_linux_futex=yes
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+	;;
+      yes)
+	cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <sys/syscall.h>
+	   int lk;
+int
+main ()
+{
+syscall (SYS_gettid); syscall (SYS_futex, &lk, 0, 0, 0);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  :
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+{ { echo "$as_me:$LINENO: error: SYS_gettid and SYS_futex required for --enable-linux-futex" >&5
+echo "$as_me: error: SYS_gettid and SYS_futex required for --enable-linux-futex" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+	;;
+    esac
     ;;
 esac
 
