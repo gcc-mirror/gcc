@@ -1,3 +1,15 @@
+2006-06-20  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (expand_expr_real_1) <VECTOR_CST>: For vector constants with
+	integer modes, attempt to directly construct an integer constant.
+
+	* fold-const.c (native_encode_vector): Determine the size of each
+	element from the vector type instead of the first vector element.
+
+	* tree.c (build_constructor_single): Mark a CONSTRUCTOR as constant,
+	if all of its elements/components are constant.
+	(build_constructor_from_list): Likewise.
+
 2006-06-20  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/27331

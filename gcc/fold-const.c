@@ -6934,12 +6934,13 @@ static int
 native_encode_vector (tree expr, unsigned char *ptr, int len)
 {
   int i, size, offset, count;
-  tree elem, elements;
+  tree itype, elem, elements;
 
-  size = 0;
   offset = 0;
   elements = TREE_VECTOR_CST_ELTS (expr);
   count = TYPE_VECTOR_SUBPARTS (TREE_TYPE (expr));
+  itype = TREE_TYPE (TREE_TYPE (expr));
+  size = GET_MODE_SIZE (TYPE_MODE (itype));
   for (i = 0; i < count; i++)
     {
       if (elements)
@@ -6952,18 +6953,15 @@ native_encode_vector (tree expr, unsigned char *ptr, int len)
 
       if (elem)
 	{
-	  size = native_encode_expr (elem, ptr+offset, len-offset);
-	  if (size == 0)
+	  if (native_encode_expr (elem, ptr+offset, len-offset) != size)
 	    return 0;
 	}
-      else if (size != 0)
+      else
 	{
 	  if (offset + size > len)
 	    return 0;
 	  memset (ptr+offset, 0, size);
 	}
-      else
-	return 0;
       offset += size;
     }
   return offset;
