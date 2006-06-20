@@ -1,3 +1,11 @@
+2006-06-20  David Ayers  <d.ayers@inode.at>
+
+	PR bootstrap/28072
+	* configure.in:	Add target-boehm-gc to noconfigdirs depending on
+	whether target-libjava is being configured instead of whether the
+	java front end is enabled.
+	* configure: Regenerate.
+	
 2006-06-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR target/27540

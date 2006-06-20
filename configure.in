@@ -1324,20 +1324,15 @@ AC_ARG_ENABLE(objc-gc,
 esac])
 
 # Make sure we only build Boehm's garbage collector if required.
-case ,${enable_languages},:${enable_libgcj}:${enable_objc_gc} in
-  *,objc,*:*:yes)
+case ,${enable_languages},:${enable_objc_gc} in
+  *,objc,*:yes)
     # Keep target-boehm-gc if requested for Objective-C.
     ;;
-  *,java,*:no:*)
-    # Remove target-boehm-gc if libgcj has been disabled explicitly.
-    noconfigdirs="$noconfigdirs target-boehm-gc"
-    ;;
-  *,java,*:*:*)
-    # Keep target-boehm-gc by default for Java.
-    ;;
   *)
-    # Otherwise remove target-boehm-gc.
-    noconfigdirs="$noconfigdirs target-boehm-gc"
+    # Otherwise remove target-boehm-gc depending on target-libjava.
+    if echo " ${noconfigdirs} " | grep "target-libjava" >/dev/null 2>&1; then
+      noconfigdirs="$noconfigdirs target-boehm-gc"
+    fi
     ;;
 esac
 
