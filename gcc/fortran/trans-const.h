@@ -49,12 +49,6 @@ void gfc_init_constants (void);
 /* Build a constant with given type from an int_cst.  */
 tree gfc_build_const (tree, tree);
 
-/* String constants.  */
-extern GTY(()) tree gfc_strconst_current_filename;
-extern GTY(()) tree gfc_strconst_bounds;
-extern GTY(()) tree gfc_strconst_fault;
-extern GTY(()) tree gfc_strconst_wrong_return;
-
 /* Integer constants 0..GFC_MAX_DIMENSIONS.  */
 extern GTY(()) tree gfc_rank_cst[GFC_MAX_DIMENSIONS + 1];
 

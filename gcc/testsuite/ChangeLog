@@ -1,3 +1,23 @@
+2006-06-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27958
+	* gcc/testsuite/gfortran.dg/substr_2.f: New test.
+
+2006-06-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27895
+	* gfortran.dg/bounds_check_3.f90: New test.
+
+2006-06-20  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/27715
+	* gfortran.dg/extended_char_comparison_1.f:  New test.
+
+2006-06-20  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/27784
+	* gfortran.dg/string_null_compare_1.f:  New test case.
+
 2006-06-18  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/27802

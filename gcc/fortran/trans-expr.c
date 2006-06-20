@@ -271,12 +271,13 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind)
       gfc_conv_expr_type (&end, ref->u.ss.end, gfc_charlen_type_node);
       gfc_add_block_to_block (&se->pre, &end.pre);
     }
-  tmp =
-    build2 (MINUS_EXPR, gfc_charlen_type_node,
-	    fold_convert (gfc_charlen_type_node, integer_one_node),
-	    start.expr);
-  tmp = build2 (PLUS_EXPR, gfc_charlen_type_node, end.expr, tmp);
-  se->string_length = fold (tmp);
+  tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node,
+		     build_int_cst (gfc_charlen_type_node, 1),
+		     start.expr);
+  tmp = fold_build2 (PLUS_EXPR, gfc_charlen_type_node, end.expr, tmp);
+  tmp = fold_build2 (MAX_EXPR, gfc_charlen_type_node, tmp,
+		     build_int_cst (gfc_charlen_type_node, 0));
+  se->string_length = tmp;
 }
 
 
@@ -452,7 +453,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	      && ref->next == NULL && (se->descriptor_only))
 	    return;
 
-	  gfc_conv_array_ref (se, &ref->u.ar);
+	  gfc_conv_array_ref (se, &ref->u.ar, sym, &expr->where);
 	  /* Return a pointer to an element.  */
 	  break;
 
@@ -2113,7 +2114,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		     happen in a function returning a pointer.  */
 		  tmp = gfc_conv_descriptor_data_get (info->descriptor);
 		  tmp = build2 (NE_EXPR, boolean_type_node, tmp, info->data);
-		  gfc_trans_runtime_check (tmp, gfc_strconst_fault, &se->pre);
+		  gfc_trans_runtime_check (tmp, gfc_msg_fault, &se->pre, NULL);
 		}
 	      se->expr = info->descriptor;
 	      /* Bundle in the string length.  */
@@ -2156,6 +2157,7 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
   tree tmp;
   tree dsc;
   tree ssc;
+  tree cond;
 
   /* Deal with single character specially.  */
   dsc = gfc_to_single_character (dlen, dest);
@@ -2166,12 +2168,16 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
       return;
     }
 
+  cond = fold_build2 (GT_EXPR, boolean_type_node, dlen,
+		      build_int_cst (gfc_charlen_type_node, 0));
+
   tmp = NULL_TREE;
   tmp = gfc_chainon_list (tmp, dlen);
   tmp = gfc_chainon_list (tmp, dest);
   tmp = gfc_chainon_list (tmp, slen);
   tmp = gfc_chainon_list (tmp, src);
   tmp = gfc_build_function_call (gfor_fndecl_copy_string, tmp);
+  tmp = fold_build3 (COND_EXPR, void_type_node, cond, tmp, build_empty_stmt ());
   gfc_add_expr_to_block (block, tmp);
 }
 

@@ -109,7 +109,7 @@ compare_string (GFC_INTEGER_4 len1, const char * s1,
   const char *s;
   int len;
 
-  res = strncmp (s1, s2, (len1 < len2) ? len1 : len2);
+  res = memcmp (s1, s2, (len1 < len2) ? len1 : len2);
   if (res != 0)
     return res;
 
