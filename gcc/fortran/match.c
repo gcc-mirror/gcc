@@ -3578,6 +3578,7 @@ gfc_match_forall (gfc_statement * st)
 
   c = gfc_get_code ();
   *c = new_st;
+  c->loc = gfc_current_locus;
 
   if (gfc_match_eos () != MATCH_YES)
     goto syntax;

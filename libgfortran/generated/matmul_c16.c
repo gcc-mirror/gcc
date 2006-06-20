@@ -210,22 +210,39 @@ matmul_c16 (gfc_array_c16 * const restrict retarray,
     }
   else if (rxstride == 1 && aystride == 1 && bxstride == 1)
     {
-      const GFC_COMPLEX_16 *restrict abase_x;
-      const GFC_COMPLEX_16 *restrict bbase_y;
-      GFC_COMPLEX_16 *restrict dest_y;
-      GFC_COMPLEX_16 s;
-
-      for (y = 0; y < ycount; y++)
+      if (GFC_DESCRIPTOR_RANK (a) != 1)
 	{
-	  bbase_y = &bbase[y*bystride];
-	  dest_y = &dest[y*rystride];
-	  for (x = 0; x < xcount; x++)
+	  const GFC_COMPLEX_16 *restrict abase_x;
+	  const GFC_COMPLEX_16 *restrict bbase_y;
+	  GFC_COMPLEX_16 *restrict dest_y;
+	  GFC_COMPLEX_16 s;
+
+	  for (y = 0; y < ycount; y++)
 	    {
-	      abase_x = &abase[x*axstride];
+	      bbase_y = &bbase[y*bystride];
+	      dest_y = &dest[y*rystride];
+	      for (x = 0; x < xcount; x++)
+		{
+		  abase_x = &abase[x*axstride];
+		  s = (GFC_COMPLEX_16) 0;
+		  for (n = 0; n < count; n++)
+		    s += abase_x[n] * bbase_y[n];
+		  dest_y[x] = s;
+		}
+	    }
+	}
+      else
+	{
+	  const GFC_COMPLEX_16 *restrict bbase_y;
+	  GFC_COMPLEX_16 s;
+
+	  for (y = 0; y < ycount; y++)
+	    {
+	      bbase_y = &bbase[y*bystride];
 	      s = (GFC_COMPLEX_16) 0;
 	      for (n = 0; n < count; n++)
-		s += abase_x[n] * bbase_y[n];
-	      dest_y[x] = s;
+		s += abase[n*axstride] * bbase_y[n];
+	      dest[y*rystride] = s;
 	    }
 	}
     }

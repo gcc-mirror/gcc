@@ -1,3 +1,43 @@
+2006-06-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25049
+	PR fortran/25050
+	* check.c (non_init_transformational): New function.
+	(find_substring_ref): New function to signal use of disallowed
+	transformational intrinsic in an initialization expression.
+	(gfc_check_all_any): Call previous if initialization expr.
+	(gfc_check_count): The same.
+	(gfc_check_cshift): The same.
+	(gfc_check_dot_product): The same.
+	(gfc_check_eoshift): The same.
+	(gfc_check_minloc_maxloc): The same.
+	(gfc_check_minval_maxval): The same.
+	(gfc_check_gfc_check_product_sum): The same.
+	(gfc_check_pack): The same.
+	(gfc_check_spread): The same.
+	(gfc_check_transpose): The same.
+	(gfc_check_unpack): The same.
+
+	PR fortran/18769
+	*intrinsic.c (add_functions): Add gfc_simplify_transfer.
+	*intrinsic.h : Add prototype for gfc_simplify_transfer.
+	*simplify.c (gfc_simplify_transfer) : New function to act as
+	placeholder for eventual implementation.  Emit error for now.
+
+	PR fortran/16206
+	* expr.c (find_array_element): Eliminate condition on length of
+	offset. Add bounds checking. Rearrange exit. Return try and
+	put gfc_constructor result as an argument.
+	(find_array_section): New function.
+	(find_substring_ref): New function.
+	(simplify_const_ref): Add calls to previous.
+	(simplify_parameter_variable): Return on NULL expr.
+	(gfc_simplify_expr): Only call gfc_expand_constructor for full
+	arrays.
+
+	PR fortran/20876
+	* match.c (gfc_match_forall): Add missing locus to gfc_code.
+
 2006-06-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/26801
