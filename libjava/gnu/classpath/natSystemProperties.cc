@@ -156,7 +156,7 @@ gnu::classpath::SystemProperties::insertSystemProperties (java::util::Properties
   SET ("java.runtime.version", JV_VERSION);
   SET ("java.vendor", "Free Software Foundation, Inc.");
   SET ("java.vendor.url", "http://gcc.gnu.org/java/");
-  SET ("java.class.version", "46.0");
+  SET ("java.class.version", "48.0");
   SET ("java.vm.specification.version", "1.0");
   SET ("java.vm.specification.name", "Java(tm) Virtual Machine Specification");
   SET ("java.vm.specification.vendor", "Sun Microsystems Inc.");

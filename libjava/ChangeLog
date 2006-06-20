@@ -1,3 +1,8 @@
+2006-06-20  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gnu/classpath/natSystemProperties.cc (insertSystemProperties):
+	Bump "java.class.version" to 48.0.
+
 2006-06-20  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (AM_CXXFLAGS): Define GCJ_VERSIONED_LIBDIR to
@@ -35,7 +40,6 @@
 	(_Jv_ThreadDebugSuspendCount): New function.
 	(_Jv_ThreadDebugResume): New function.
 	
-
 2006-06-16  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/natClassLoader.cc (_Jv_NewClassFromInitializer): Don't
