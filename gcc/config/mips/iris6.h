@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  IRIX version 6.
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2004,
-   2005
+   2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -93,7 +93,7 @@ Boston, MA 02110-1301, USA.  */
      -L/usr/lib64} \
    %{!shared:" \
      SUBTARGET_DONT_WARN_UNUSED_SPEC \
-     " %{p:libprof1.a%s}%{pg:libprof1.a%s} -lc " \
+     " %{pthread:-lpthread} %{p:libprof1.a%s}%{pg:libprof1.a%s} -lc " \
      SUBTARGET_WARN_UNUSED_SPEC "}"
 
 /* Avoid getting two warnings for libgcc.a everytime we link.  */
@@ -112,3 +112,7 @@ Boston, MA 02110-1301, USA.  */
        %{!mips4:/usr/lib64/mips3/crtn.o%s}}}"
 
 #define MIPS_TFMODE_FORMAT mips_extended_format
+
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC "%{pthread:-D_REENTRANT}"
+
