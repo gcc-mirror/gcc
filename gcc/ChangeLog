@@ -1,3 +1,11 @@
+2006-06-20  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/27331
+	* tree-data-ref.c (free_data_ref): New function.
+	(create_data_ref): Fail if the data reference has unknown access
+	function.
+	(free_data_refs): Use free_data_ref.
+
 2006-06-19  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/28075
