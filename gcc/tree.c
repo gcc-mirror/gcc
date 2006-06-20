@@ -1013,13 +1013,16 @@ build_constructor_single (tree type, tree index, tree value)
 {
   VEC(constructor_elt,gc) *v;
   constructor_elt *elt;
+  tree t;
 
   v = VEC_alloc (constructor_elt, gc, 1);
   elt = VEC_quick_push (constructor_elt, v, NULL);
   elt->index = index;
   elt->value = value;
 
-  return build_constructor (type, v);
+  t = build_constructor (type, v);
+  TREE_CONSTANT (t) = TREE_CONSTANT (value);
+  return t;
 }
 
 
@@ -1028,8 +1031,9 @@ build_constructor_single (tree type, tree index, tree value)
 tree
 build_constructor_from_list (tree type, tree vals)
 {
-  tree t;
+  tree t, val;
   VEC(constructor_elt,gc) *v = NULL;
+  bool constant_p = true;
 
   if (vals)
     {
@@ -1037,12 +1041,17 @@ build_constructor_from_list (tree type, tree vals)
       for (t = vals; t; t = TREE_CHAIN (t))
 	{
 	  constructor_elt *elt = VEC_quick_push (constructor_elt, v, NULL);
+	  val = TREE_VALUE (t);
 	  elt->index = TREE_PURPOSE (t);
-	  elt->value = TREE_VALUE (t);
+	  elt->value = val;
+	  if (!TREE_CONSTANT (val))
+	    constant_p = false;
 	}
     }
 
-  return build_constructor (type, v);
+  t = build_constructor (type, v);
+  TREE_CONSTANT (t) = constant_p;
+  return t;
 }
 
 
