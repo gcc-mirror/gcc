@@ -1,3 +1,8 @@
+2006-06-20  Steven G. Kargl  <kargls@comcast.net>
+
+	* simplify.c (gfc_simplify_rrspacing): Initialize and clear mpfr_t
+	variable.
+
 2006-06-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25049
