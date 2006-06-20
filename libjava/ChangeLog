@@ -1,3 +1,19 @@
+2006-06-20  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am (AM_CXXFLAGS): Define GCJ_VERSIONED_LIBDIR to
+	"$(dbexecdir)".
+	Build libjvm.la.
+	* Makefile.in: Regenerate.
+	* jni.cc (the_vm): Rename and export as ...
+	(_Jv_the_vm): New exported symbol.
+	(_Jv_JNI_AttachCurrentThread): Export.
+	(_Jv_JNI_DestroyJavaVM): Replace the_vm references with _Jv_the_vm
+	references.
+	(_Jv_GetJavaVM): Likewise.
+	(JNI_GetDefaultJavaVMInitArgs, JNI_CreateJavaVM,
+	JNI_GetCreatedJavaVMs): Move to ...
+	* jni-libjvm.cc: New file.
+
 2006-06-19  Andrew Haley  <aph@redhat.com>
 
 	* testsuite/libjava.lang/PR27908.out: New.

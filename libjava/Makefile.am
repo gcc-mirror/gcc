@@ -40,6 +40,8 @@ if XLIB_AWT
 toolexeclib_LTLIBRARIES += lib-gnu-awt-xlib.la
 endif
 
+dbexec_LTLIBRARIES = libjvm.la
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
 
@@ -122,7 +124,7 @@ AM_CXXFLAGS = \
         -DBOOT_CLASS_PATH="\"$(BOOT_CLASS_PATH_DIR)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
 	-DGCJ_ENDORSED_DIRS="\"$(jardir)/gcj-endorsed\"" \
-	-DGCJ_VERSIONED_LIBDIR="\"$(libdir)/gcj-$(gcc_version)\"" \
+	-DGCJ_VERSIONED_LIBDIR="\"$(dbexecdir)\"" \
 	-DPATH_SEPARATOR="\"$(CLASSPATH_SEPARATOR)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\"" \
@@ -232,6 +234,14 @@ libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	$(LIBLTDL) $(libgcj_la_LIBADD)
 libgcj_la_LINK = $(LIBLINK)
 
+## libjvm.so
+libjvm_la_SOURCES = jni-libjvm.cc
+libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec
+## See jv_convert_LDADD.
+libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
+## The mysterious backslash in the grep pattern is consumed by make.
+libjvm_la_LDFLAGS = -rpath $(toolexeclibdir) \
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 ## The .db file.  This rule is only used for native builds, so it is
 ## safe to invoke gcj-dbtool.
@@ -887,6 +897,7 @@ create-headers: $(headers_to_make)
 
 $(libgcj_la_OBJECTS) $(gcj_dbtool_OBJECTS) $(xlib_nat_files): headers.stamp
 $(libgij_la_OBJECTS): headers.stamp
+$(libjvm_la_OBJECTS): headers.stamp
 
 ## ################################################################
 
