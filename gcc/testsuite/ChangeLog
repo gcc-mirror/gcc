@@ -1,3 +1,16 @@
+2006-06-20  James A. Morrison  <phython@gcc.gnu.org>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/18692
+	* lib/gnat.exp: New file.
+	* lib/gnat-dg.exp: Likewise.
+	* gnat.dg: New directory.
+	* gnat.dg/dg.exp: New driver.
+	* gnat.dg/specs: New directory.
+	* gnat.dg/specs/specs.exp: New driver.
+	* gnat.dg/style: New directory.
+	* gnat.dg/style/style.exp: New driver.
+
 2006-06-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/16206
