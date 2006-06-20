@@ -663,6 +663,7 @@ free_dominance_info (enum cdi_direction dir)
       et_free_tree_force (bb->dom[dir]);
       bb->dom[dir] = NULL;
     }
+  et_free_pools ();
 
   n_bbs_in_dom_tree[dir] = 0;
 

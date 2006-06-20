@@ -1,3 +1,15 @@
+2006-06-20  Richard Guenther  <rguenther@suse.de>
+	Michael Matz  <matz@suse.de>
+
+	* alloc-pool.h (free_alloc_pool_if_empty): Prototype new
+	function.
+	* alloc-pool.c (free_alloc_pool_if_empty): New function.
+	* et-forest.h (et_free_pools): Prototype new function.
+	* et-forest.c (et_free_tree_force): Free parent occurrence. 
+	(et_free_pools): New function.
+	* dominance.c (free_dominance_info): Free et-forest alloc
+	pools.
+
 2006-06-20  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (expand_expr_real_1) <VECTOR_CST>: For vector constants with

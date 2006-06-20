@@ -505,7 +505,18 @@ void
 et_free_tree_force (struct et_node *t)
 {
   pool_free (et_occurrences, t->rightmost_occ);
+  if (t->parent_occ)
+    pool_free (et_occurrences, t->parent_occ);
   pool_free (et_nodes, t);
+}
+
+/* Release the alloc pools, if they are empty.  */
+
+void
+et_free_pools (void)
+{
+  free_alloc_pool_if_empty (&et_occurrences);
+  free_alloc_pool_if_empty (&et_nodes);
 }
 
 /* Sets father of et tree T to FATHER.  */

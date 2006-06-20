@@ -74,6 +74,7 @@ struct et_node
 struct et_node *et_new_tree (void *data);
 void et_free_tree (struct et_node *);
 void et_free_tree_force (struct et_node *);
+void et_free_pools (void);
 void et_set_father (struct et_node *, struct et_node *);
 void et_split (struct et_node *);
 struct et_node *et_nca (struct et_node *, struct et_node *);
