@@ -1,3 +1,9 @@
+2006-06-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28052
+	* init.c (push_base_cleanups): Skip members with invalid types.
+	* typeck.c (build_class_member_access_expr): Robustify.
+
 2006-06-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (instantiate_template): Fix typo in comment.

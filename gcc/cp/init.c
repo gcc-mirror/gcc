@@ -2898,7 +2898,9 @@ push_base_cleanups (void)
   for (member = TYPE_FIELDS (current_class_type); member;
        member = TREE_CHAIN (member))
     {
-      if (TREE_CODE (member) != FIELD_DECL || DECL_ARTIFICIAL (member))
+      if (TREE_TYPE (member) == error_mark_node
+	  || TREE_CODE (member) != FIELD_DECL
+	  || DECL_ARTIFICIAL (member))
 	continue;
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (member)))
 	{
