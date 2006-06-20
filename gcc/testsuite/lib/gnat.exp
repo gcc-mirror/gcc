@@ -1,0 +1,281 @@
+# Copyright (C) 2006 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+# This file was written by James A. Morrison (ja2morri@uwaterloo.ca)
+# based on gcc.exp written by Rob Savoye (rob@cygnus.com).
+
+# This file is loaded by the tool init file (eg: unix.exp).  It provides
+# default definitions for gnat_start, etc. and other supporting cast members.
+
+# These globals are used if no compiler arguments are provided.
+# They are also used by the various testsuites to define the environment:
+# where to find stdio.h, libc.a, etc.
+
+load_lib libgloss.exp
+load_lib prune.exp
+load_lib gcc-defs.exp
+
+#
+# GNAT_UNDER_TEST is the compiler under test.
+#
+
+#
+# default_gnat_version -- extract and print the version number of the compiler
+#
+
+proc default_gnat_version { } {
+    global GNAT_UNDER_TEST
+
+    gnat_init
+
+    # ignore any arguments after the command
+    set compiler [lindex $GNAT_UNDER_TEST 0]
+
+    if ![is_remote host] {
+	set compiler_name [which $compiler]
+    } else {
+	set compiler_name $compiler
+    }
+
+    # verify that the compiler exists
+    if { $compiler_name != 0 } then {
+	set tmp [remote_exec host "$compiler -v"]
+	set status [lindex $tmp 0]
+	set output [lindex $tmp 1]
+	regexp " version \[^\n\r\]*" $output version
+	if { $status == 0 && [info exists version] } then {
+	    clone_output "$compiler_name $version\n"
+	} else {
+	    clone_output "Couldn't determine version of $compiler_name: $output\n"
+	}
+    } else {
+	# compiler does not exist (this should have already been detected)
+	warning "$compiler does not exist"
+    }
+}
+
+# gnat_init -- called at the start of each .exp script.
+#
+# There currently isn't much to do, but always using it allows us to
+# make some enhancements without having to go back and rewrite the scripts.
+#
+
+set gnat_initialized 0
+
+proc gnat_init { args } {
+    global rootme
+    global tmpdir
+    global libdir
+    global gluefile wrap_flags
+    global gnat_initialized
+    global GNAT_UNDER_TEST
+    global TOOL_EXECUTABLE
+    global gnat_libgcc_s_path
+
+    if { $gnat_initialized == 1 } { return }
+
+    if ![info exists GNAT_UNDER_TEST] then {
+	if [info exists TOOL_EXECUTABLE] {
+	    set GNAT_UNDER_TEST $TOOL_EXECUTABLE
+	} else {
+	    set GNAT_UNDER_TEST [find_gnatmake]
+	}
+    }
+
+    if ![info exists tmpdir] then {
+	set tmpdir /tmp
+    }
+
+    set gnat_libgcc_s_path "${rootme}"
+    # Leave this here since Ada should support multilibs at some point.
+    set compiler [lindex $GNAT_UNDER_TEST 0]
+#    if { [is_remote host] == 0 && [which $compiler] != 0 } {
+#	foreach i "[exec $compiler --print-multi-lib]" {
+#	    set mldir ""
+#	    regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
+#	    set mldir [string trimright $mldir "\;@"]
+#	    if { "$mldir" == "." } {
+#		continue
+#	    }
+#	    if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] >= 1 } {
+#		append gnat_libgcc_s_path ":${rootme}/${mldir}"
+#	    }
+#	}
+#    }
+}
+
+proc gnat_target_compile { source dest type options } {
+    global rootme
+    global tmpdir
+    global gluefile wrap_flags
+    global srcdir
+    global GNAT_UNDER_TEST
+    global TOOL_OPTIONS
+    global ld_library_path
+    global gnat_libgcc_s_path
+
+    setenv ADA_INCLUDE_PATH "${rootme}/ada/rts"
+    set ld_library_path ".:${gnat_libgcc_s_path}"
+    lappend options "compiler=$GNAT_UNDER_TEST -q"
+    lappend options "incdir=${rootme}/ada/rts"
+
+    if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=$wrap_flags"
+    }
+
+    # TOOL_OPTIONS must come first, so that it doesn't override testcase
+    # specific options.
+    if [info exists TOOL_OPTIONS] {
+	set options [concat "additional_flags=$TOOL_OPTIONS" $options]
+    }
+
+    # If we have built libada along with the compiler, point the test harness
+    # at it (and associated headers).
+
+#    set sourcename [string range $source 0 [expr [string length $source] - 5]]
+#    set dest ""
+    return [target_compile $source $dest $type $options]
+}
+
+#
+# gnat_pass -- utility to record a testcase passed
+#
+
+proc gnat_pass { testcase cflags } {
+    if { "$cflags" == "" } {
+	pass "$testcase"
+    } else {
+	pass "$testcase, $cflags"
+    }
+}
+
+#
+# gnat_fail -- utility to record a testcase failed
+#
+
+proc gnat_fail { testcase cflags } {
+    if { "$cflags" == "" } {
+	fail "$testcase"
+    } else {
+	fail "$testcase, $cflags"
+    }
+}
+
+#
+# gnat_finish -- called at the end of every .exp script that calls gnat_init
+#
+# The purpose of this proc is to hide all quirks of the testing environment
+# from the testsuites.  It also exists to undo anything that gnat_init did
+# (that needs undoing).
+#
+
+proc gnat_finish { } {
+    # The testing harness apparently requires this.
+    global errorInfo
+
+    if [info exists errorInfo] then {
+	unset errorInfo
+    }
+
+    # Might as well reset these (keeps our caller from wondering whether
+    # s/he has to or not).
+    global prms_id bug_id
+    set prms_id 0
+    set bug_id 0
+}
+
+proc gnat_exit { } {
+    global gluefile
+
+    if [info exists gluefile] {
+	file_on_build delete $gluefile
+	unset gluefile
+    }
+}
+
+# Prune messages from GNAT that aren't useful.
+
+proc prune_gnat_output { text } {
+    #send_user "Before:$text\n"
+    regsub -all "(^|\n)\[^\n\]*: In (function|method) \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: At top level:\[^\n\]*" $text "" text
+
+    # prune the output from gnatmake.
+    regsub -all "(^|\n)\[^\n\]*gnatmake: [^\n\]*" $text "" text
+
+    # It would be nice to avoid passing anything to gnat that would cause it to
+    # issue these messages (since ignoring them seems like a hack on our part),
+    # but that's too difficult in the general case.  For example, sometimes
+    # you need to use -B to point gnat at crt0.o, but there are some targets
+    # that don't have crt0.o.
+    regsub -all "(^|\n)\[^\n\]*file path prefix \[^\n\]* never used" $text "" text
+    regsub -all "(^|\n)\[^\n\]*linker input file unused since linking not done" $text "" text
+
+    #send_user "After:$text\n"
+
+    return $text
+}
+
+# If this is an older version of DejaGnu (without find_gnatmake), provide one.
+# This can be deleted after next DejaGnu release.
+
+if { [info procs find_gnatmake] == "" } {
+    proc find_gnatmake {} {
+	global tool_root_dir
+
+	if ![is_remote host] {
+	    set file [lookfor_file $tool_root_dir gnatmake]
+	    if { $file == "" } {
+		set file [lookfor_file $tool_root_dir gcc/gnatmake]
+	    }
+	    if { $file != "" } {
+		set root [file dirname $file]
+		set CC "$file -I$root/ada/rts --GCC=$root/xgcc --GNATBIND=$root/gnatbind --GNATLINK=$root/gnatlink -cargs -B$root -largs --GCC=$root/xgcc -B$root -margs";
+	    } else {
+		set CC [transform gnatmake]
+	    }
+	} else {
+	    set CC [transform gnatmake]
+	}
+	return $CC
+    }
+}
+
+# If this is an older version of DejaGnu (without runtest_file_p),
+# provide one and assume the old syntax: foo1.exp bar1.c foo2.exp bar2.c.
+# This can be deleted after next DejaGnu release.
+
+if { [info procs runtest_file_p] == "" } then {
+    proc runtest_file_p { runtests testcase } {
+	if { $runtests != "" && [regexp "\[.\]\[cC\]" $runtests] } then {
+	    if { [lsearch $runtests [file tail $testcase]] >= 0 } then {
+		return 1
+	    } else {
+		return 0
+	    }
+	}
+	return 1
+    }
+}
+
+# Provide a definition of this if missing (delete after next DejaGnu release).
+
+if { [info procs prune_warnings] == "" } then {
+    proc prune_warnings { text } {
+	return $text
+    }
+}
