@@ -96,46 +96,19 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       __mod(_Tp __x)
       { return _Mod<_Tp, __a, __c, __m, __m == 0>::__calc(__x); }
 
-    // Like the above, for a == 1, c == 0, in terms of w.
-    template<typename _Tp, _Tp __w, bool>
-      struct _Mod_w
-      {
-	static _Tp
-	__calc(_Tp __x)
-	{ return __x % (_Tp(1) << __w); }
-      };
+    template<typename _UIntType, int __w, bool = 
+	     __w != std::numeric_limits<_UIntType>::digits>
+      struct _Shift
+      { static const _UIntType __value = 0; };
 
-    template<typename _Tp, _Tp __w>
-      struct _Mod_w<_Tp, __w, true>
-      {
-	static _Tp
-	__calc(_Tp __x)
-	{ return __x; }
-      };
+    template<typename _UIntType, int __w>
+      struct _Shift<_UIntType, __w, true>
+      { static const _UIntType __value = _UIntType(1) << __w; };
 
-    template<typename _Tp, _Tp __w>
-      inline _Tp
-      __mod_w(_Tp __x)
-      { return _Mod_w<_Tp, __w,
-	              __w == std::numeric_limits<_Tp>::digits>::__calc(__x); }
-
-    // Selector to return the maximum value possible that will fit in 
-    // @p __w bits of @p _Tp.
-    template<typename _Tp, _Tp __w, bool>
-      struct _Max_w
-      {
-	static _Tp
-	__value()
-	{ return (_Tp(1) << __w) - 1; }
-      };
-
-    template<typename _Tp, _Tp __w>
-      struct _Max_w<_Tp, __w, true>
-      {
-	static _Tp
-	__value()
-	{ return std::numeric_limits<_Tp>::max(); }
-      };
+    // The maximum value that will fit in @p __w bits of @p _UIntType.
+    template<typename _UIntType, int __w>
+      struct _Max
+      { static const _UIntType __value = _Shift<_UIntType, __w>::__value - 1; };
 
   } // namespace _Private
 
@@ -236,7 +209,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		     __b, __t, __c, __l>::
     seed(unsigned long __value)
     {
-      _M_x[0] = _Private::__mod_w<_UIntType, __w>(__value);
+      _M_x[0] = _Private::__mod<_UIntType, 1, 0,
+	_Private::_Shift<_UIntType, __w>::__value>(__value);
 
       for (int __i = 1; __i < state_size; ++__i)
 	{
@@ -244,7 +218,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  __x ^= __x >> (__w - 2);
 	  __x *= 1812433253ul;
 	  __x += __i;
-	  _M_x[__i] = _Private::__mod_w<_UIntType, __w>(__x);	  
+	  _M_x[__i] = _Private::__mod<_UIntType, 1, 0,
+	    _Private::_Shift<_UIntType, __w>::__value>(__x);	  
 	}
       _M_p = state_size;
     }
@@ -259,7 +234,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       seed(_Gen& __gen, false_type)
       {
 	for (int __i = 0; __i < state_size; ++__i)
-	  _M_x[__i] = _Private::__mod_w<_UIntType, __w>(__gen());
+	  _M_x[__i] = _Private::__mod<_UIntType, 1, 0,
+	    _Private::_Shift<_UIntType, __w>::__value>(__gen());
 	_M_p = state_size;
       }
 
@@ -272,12 +248,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
 		     __b, __t, __c, __l>::
     max() const
-    {
-      using _Private::_Max_w;
-      using std::numeric_limits;
-      return _Max_w<_UIntType, __w,
-	            __w == numeric_limits<_UIntType>::digits>::__value();
-    }
+    { return _Private::_Max<_UIntType, __w>::__value; }
 
   template<class _UIntType, int __w, int __n, int __m, int __r,
 	   _UIntType __a, int __u, int __s,
