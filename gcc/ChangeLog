@@ -1,3 +1,10 @@
+2006-06-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/28075
+	* tree-inline.c (setup_one_parameter): Strip useless
+	type conversion before adding it to the IR.
+	(declare_return_variable): Likewise.
+
 2006-06-19  Martin Michlmayr  <tbm@cyrius.com>
 
 	PR c/27149

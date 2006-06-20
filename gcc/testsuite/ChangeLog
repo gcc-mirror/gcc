@@ -1,4 +1,9 @@
-2006-06-19  Anatoly Sokolov <aesok@post.ru>
+2006-06-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/28075
+	* gcc.dg/tree-ssa/inline-1.c: New test.
+
+2006-06-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* gcc.dg/pr18241-1.c: Use __SIZE_TYPE__ instead of unsigned long
 	in malloc prototype; remove XFAIL.
