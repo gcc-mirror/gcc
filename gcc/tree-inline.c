@@ -1081,6 +1081,8 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 
       if (rhs == error_mark_node)
 	return;
+	
+      STRIP_USELESS_TYPE_CONVERSION (rhs);
 
       /* We want to use MODIFY_EXPR, not INIT_EXPR here so that we
 	 keep our trees in gimple form.  */
@@ -1267,6 +1269,8 @@ declare_return_variable (copy_body_data *id, tree return_slot_addr,
   use = var;
   if (!lang_hooks.types_compatible_p (TREE_TYPE (var), caller_type))
     use = fold_convert (caller_type, var);
+    
+  STRIP_USELESS_TYPE_CONVERSION (use);
 
  done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
