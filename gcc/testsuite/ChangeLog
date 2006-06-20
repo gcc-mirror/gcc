@@ -1,3 +1,8 @@
+2006-06-20  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c++/28113
+	* g++.dg/ext/altivec-3.C: Remove cast from vector initializers.
+
 2006-06-20  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/rrspacing_1.f90: New test.
