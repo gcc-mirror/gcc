@@ -207,6 +207,17 @@ free_alloc_pool (alloc_pool pool)
   free (pool);
 }
 
+/* Frees the alloc_pool, if it is empty and zero *POOL in this case.  */
+void
+free_alloc_pool_if_empty (alloc_pool *pool)
+{
+  if ((*pool)->elts_free == (*pool)->elts_allocated)
+    {
+      free_alloc_pool (*pool);
+      *pool = NULL;
+    }
+}
+
 /* Allocates one element from the pool specified.  */
 void *
 pool_alloc (alloc_pool pool)
