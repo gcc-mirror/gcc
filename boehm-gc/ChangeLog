@@ -1,3 +1,11 @@
+2006-06-20  Ranjit Mathew  <rmathew@gcc.gnu.org>
+	
+	Backport Windows 9x/ME VirtualQuery() fix from GC 6.7.
+	* os_dep.c (GC_wnt): Define.
+	(GC_init_win32): Set GC_wnt.
+	* dyn_load.c (GC_register_dynamic_libraries): Consider MEM_PRIVATE
+	sections also on Windows 9x/ME.
+
 2006-06-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.ac: Define HAS_PPC_THREAD_STATE_R0,

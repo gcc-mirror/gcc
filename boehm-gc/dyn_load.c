@@ -860,6 +860,9 @@ void GC_register_dynamic_libraries()
   }
 # endif /* DEBUG_VIRTUALQUERY */
 
+  extern GC_bool GC_wnt;  /* Is Windows NT derivative.		*/
+  			  /* Defined and set in os_dep.c.	*/
+
   void GC_register_dynamic_libraries()
   {
     MEMORY_BASIC_INFORMATION buf;
@@ -901,7 +904,12 @@ void GC_register_dynamic_libraries()
 		 * !is_frame_buffer(p, buf.RegionSize, buf.Type)
 		 * instead of just checking for MEM_IMAGE.
 		 * If something breaks, change it back. */
-		&& buf.Type == MEM_IMAGE) {  
+		/* There is some evidence that we cannot always
+		 * ignore MEM_PRIVATE sections under Windows ME
+		 * and predecessors.  Hence we now also check for
+		 * that case.	*/
+		&& (buf.Type == MEM_IMAGE ||
+		    !GC_wnt && buf.Type == MEM_PRIVATE)) {  
 #	        ifdef DEBUG_VIRTUALQUERY
 	          GC_dump_meminfo(&buf);
 #	        endif
