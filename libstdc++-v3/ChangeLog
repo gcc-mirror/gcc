@@ -1,3 +1,7 @@
+2006-06-20  Vladimir Prus  <vladimir@codesourcery.com>
+
+	* libsupc++/eh_arm.cc (__cxa_begin_cleanup): Always return 'true'.
+
 2006-06-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (xor_combine<>::operator<<): Fix typo.
