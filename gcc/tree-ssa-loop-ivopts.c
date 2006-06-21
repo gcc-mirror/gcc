@@ -1466,6 +1466,36 @@ may_be_unaligned_p (tree ref)
   return false;
 }
 
+/* Return true if EXPR may be non-addressable.   */
+
+static bool
+may_be_nonaddressable_p (tree expr)
+{
+  switch (TREE_CODE (expr))
+    {
+    case COMPONENT_REF:
+      return DECL_NONADDRESSABLE_P (TREE_OPERAND (expr, 1))
+	     || may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
+
+    case VIEW_CONVERT_EXPR:
+      /* This kind of view-conversions may wrap non-addressable objects
+	 and make them look addressable.  After some processing the
+	 non-addressability may be uncovered again, causing ADDR_EXPRs
+	 of inappropriate objects to be built.  */
+      return AGGREGATE_TYPE_P (TREE_TYPE (expr))
+	     && !AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)));
+
+    default:
+      break;
+    }
+
+  return false;
+}
+
 /* Finds addresses in *OP_P inside STMT.  */
 
 static void
@@ -1482,9 +1512,10 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
 
   /* Ignore bitfields for now.  Not really something terribly complicated
      to handle.  TODO.  */
-  if (TREE_CODE (base) == BIT_FIELD_REF
-      || (TREE_CODE (base) == COMPONENT_REF
-	  && DECL_NONADDRESSABLE_P (TREE_OPERAND (base, 1))))
+  if (TREE_CODE (base) == BIT_FIELD_REF)
+    goto fail;
+
+  if (may_be_nonaddressable_p (base))
     goto fail;
 
   if (STRICT_ALIGNMENT

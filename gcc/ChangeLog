@@ -1,3 +1,8 @@
+2006-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): New function.
+	(find_interesting_uses_address): Punt if above function returns true.
+
 2006-06-21  Richard Guenther  <rguenther@suse.de>
 
 	* configure: Regenerated.
