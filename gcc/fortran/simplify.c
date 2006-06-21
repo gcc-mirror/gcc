@@ -3011,6 +3011,7 @@ gfc_simplify_rrspacing (gfc_expr * x)
   mpfr_init (absv);
   mpfr_init (frac);
   mpfr_init (pow2);
+  mpfr_init (exp);
 
   mpfr_abs (absv, x->value.real, GFC_RND_MODE);
   mpfr_log2 (log2, absv, GFC_RND_MODE);
@@ -3027,6 +3028,7 @@ gfc_simplify_rrspacing (gfc_expr * x)
   mpfr_clear (absv);
   mpfr_clear (frac);
   mpfr_clear (pow2);
+  mpfr_clear (exp);
 
   return range_check (result, "RRSPACING");
 }
