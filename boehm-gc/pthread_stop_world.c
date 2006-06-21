@@ -13,6 +13,8 @@
   /* Doesn't exist on HP/UX 11.11. */
 #endif
 
+void suspend_self();
+
 #if DEBUG_THREADS
 
 #ifndef NSIG
@@ -127,9 +129,14 @@ extern void GC_with_callee_saves_pushed();
 
 void GC_suspend_handler(int sig)
 {
-  int old_errno = errno;
-  GC_with_callee_saves_pushed(GC_suspend_handler_inner, (ptr_t)(word)sig);
-  errno = old_errno;
+  GC_thread me = GC_lookup_thread (pthread_self());
+  if (me -> flags & SUSPENDED)
+    suspend_self();
+  else {
+    int old_errno = errno;
+    GC_with_callee_saves_pushed(GC_suspend_handler_inner, (ptr_t)(word)sig);
+    errno = old_errno;
+  }
 }
 
 #else
@@ -137,9 +144,14 @@ void GC_suspend_handler(int sig)
 /* in the signal handler frame.						*/
 void GC_suspend_handler(int sig)
 {
-  int old_errno = errno;
-  GC_suspend_handler_inner((ptr_t)(word)sig);
-  errno = old_errno;
+  GC_thread me = GC_lookup_thread(pthread_self());
+  if (me -> flags & SUSPENDED)
+    suspend_self();
+  else {
+    int old_errno = errno;
+    GC_suspend_handler_inner((ptr_t)(word)sig);
+    errno = old_errno;
+  }
 }
 #endif
 
@@ -428,6 +440,47 @@ void GC_stop_world()
       GC_printf1("World stopped from 0x%lx\n", pthread_self());
     #endif
     GC_stopping_thread = 0;  /* debugging only */
+}
+
+void suspend_self() {
+  GC_thread me = GC_lookup_thread(pthread_self());
+  if (me == NULL)
+    ABORT("attempting to suspend unknown thread");
+
+  me -> flags |= SUSPENDED;
+  GC_start_blocking();
+  while (me -> flags & SUSPENDED)
+    GC_brief_async_signal_safe_sleep();
+  GC_end_blocking();
+}
+
+void GC_suspend_thread(pthread_t thread) {
+  if (thread == pthread_self())
+    suspend_self();
+  else {
+    int result;
+    GC_thread t = GC_lookup_thread(thread);
+    if (t == NULL)
+      ABORT("attempting to suspend unknown thread");
+
+    t -> flags |= SUSPENDED;
+    result = pthread_kill (t -> id, SIG_SUSPEND);
+    switch (result) {
+    case ESRCH:
+    case 0:
+      break;
+    default:
+      ABORT("pthread_kill failed");
+    }
+  }
+}
+
+void GC_resume_thread(pthread_t thread) {
+  GC_thread t = GC_lookup_thread(thread);
+  if (t == NULL)
+    ABORT("attempting to resume unknown thread");
+
+  t -> flags &= ~SUSPENDED;
 }
 
 /* Caller holds allocation lock, and has held it continuously since	*/
