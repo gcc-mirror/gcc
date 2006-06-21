@@ -1,3 +1,15 @@
+2006-06-21  Keith Seitz  <keiths@redhat.com>
+
+	* pthread_stop_world.c (GC_suspend_handler): Redirect to suspension
+	routine if signal is received and thread is flagged SUSPENDED.
+	(suspend_self): New function.
+	(GC_suspend_thread): New function.
+	(GC_resume_thread): New function.
+	* include/gc.h (GC_suspend_thread): Declare.
+	(GC_resumet_thread): Declare.
+	* include/private/pthread_support.h (SUSPENDED): New GC_thread
+	flag.
+
 2006-06-20  Ranjit Mathew  <rmathew@gcc.gnu.org>
 	
 	Backport Windows 9x/ME VirtualQuery() fix from GC 6.7.
