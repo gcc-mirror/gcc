@@ -1,3 +1,9 @@
+2006-06-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.c (function_arg): Where one part of a
+	complex argument is in registers and the other part in the stack,
+	return a REG not a PARALLEL.
+
 2006-06-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.ac: Set gcc_gxx_include_dir to $target/include/c++
