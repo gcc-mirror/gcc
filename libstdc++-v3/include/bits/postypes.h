@@ -119,11 +119,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /// Convert to streamoff.
       operator streamoff() const { return _M_off; }
 
-      // NB: Via conversion to streamoff, two fpos objects can be compared.
-      // The standard only requires that operator== must be an equivalence
-      // relation.  In this implementation two fpos objects belong to the
-      // same equivalence class if the contained offsets compare equal.
-
       /// Remember the value of @a st.
       void
       state(_StateT __st)
@@ -193,6 +188,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator-(const fpos& __other) const
       { return _M_off - __other._M_off; }
     };
+
+  // The standard only requires that operator== must be an
+  // equivalence relation. In this implementation two fpos<StateT>
+  // objects belong to the same equivalence class if the contained
+  // offsets compare equal.
+  /// Test if equivalent to another position.
+  template<typename _StateT>
+    inline bool
+    operator==(const fpos<_StateT>& __lhs, const fpos<_StateT>& __rhs)
+    { return streamoff(__lhs) == streamoff(__rhs); }
+
+  template<typename _StateT>
+    inline bool
+    operator!=(const fpos<_StateT>& __lhs, const fpos<_StateT>& __rhs)
+    { return streamoff(__lhs) != streamoff(__rhs); }
 
   // Clauses 21.1.3.1 and 21.1.3.2 describe streampos and wstreampos
   // as implementation defined types, but clause 27.2 requires that
