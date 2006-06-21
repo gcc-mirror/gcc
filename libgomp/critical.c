@@ -72,12 +72,14 @@ GOMP_critical_name_start (void **pptr)
 	  gomp_mutex_t *nlock = gomp_malloc (sizeof (gomp_mutex_t));
 	  gomp_mutex_init (nlock);
 
-	  plock = __sync_val_compare_and_swap (pptr, plock, nlock);
-	  if (plock != nlock)
+	  plock = __sync_val_compare_and_swap (pptr, NULL, nlock);
+	  if (plock != NULL)
 	    {
 	      gomp_mutex_destroy (nlock);
 	      free (nlock);
 	    }
+	  else
+	    plock = nlock;
 #else
 	  gomp_mutex_lock (&create_lock_lock);
 	  plock = *pptr;

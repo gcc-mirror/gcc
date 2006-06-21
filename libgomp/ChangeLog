@@ -1,3 +1,9 @@
+2006-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* critical.c (GOMP_critical_name_start): Fix *pptr initialization
+	when gomp_mutex_t is larger than pointer and HAVE_SYNC_BUILTINS is
+	defined.
+
 2006-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/26175
