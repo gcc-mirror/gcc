@@ -1,3 +1,8 @@
+2006-06-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* doc/invoke.texi (-fopenmp) Move to "Options Controlling C Dialect"
+	section from the "Options for Code Generation Conventions".
+
 2006-06-21  Richard Henderson  <rth@redhat.com>
 
 	PR target/26347
