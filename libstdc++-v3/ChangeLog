@@ -1,3 +1,9 @@
+2006-06-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* acinclude.m4 (GLIBCXX_EXPORT_INSTALL_INFO): When
+	cross-compiling, put headers in $prefix/$target/include/c++.
+	* configure: Regenerated.
+
 2006-06-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random.tcc (struct _Private::_Mod_w<>,
