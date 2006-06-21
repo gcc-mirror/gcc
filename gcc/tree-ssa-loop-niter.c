@@ -886,7 +886,12 @@ tree_simplify_using_condition (tree cond, tree expr)
 
   return tree_simplify_using_condition_1 (cond, expr);
 }
-     
+
+/* The maximum number of dominator BBs we search for conditions
+   of loop header copies we use for simplifying a conditional
+   expression.  */
+#define MAX_DOMINATORS_TO_WALK 8
+
 /* Tries to simplify EXPR using the conditions on entry to LOOP.
    Record the conditions used for simplification to CONDS_USED.
    Returns the simplified expression (or EXPR unchanged, if no
@@ -899,12 +904,16 @@ simplify_using_initial_conditions (struct loop *loop, tree expr,
   edge e;
   basic_block bb;
   tree exp, cond;
+  int cnt = 0;
 
   if (TREE_CODE (expr) == INTEGER_CST)
     return expr;
 
+  /* Limit walking the dominators to avoid quadraticness in
+     the number of BBs times the number of loops in degenerate
+     cases.  */
   for (bb = loop->header;
-       bb != ENTRY_BLOCK_PTR;
+       bb != ENTRY_BLOCK_PTR && cnt < MAX_DOMINATORS_TO_WALK;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       if (!single_pred_p (bb))
@@ -926,6 +935,7 @@ simplify_using_initial_conditions (struct loop *loop, tree expr,
 				   cond);
 
       expr = exp;
+      ++cnt;
     }
 
   return expr;

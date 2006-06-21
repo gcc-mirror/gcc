@@ -1,3 +1,8 @@
+2006-06-21  Richrad Guenther  <rguenther@suse.de>
+
+	* tree-ssa-loop-niter.c (simplify_using_initial_conditions):
+	Limit iteration over the dominators.
+
 2006-06-20  Roger Sayle  <roger@eyesopen.com>
 
 	* config/mips/iris6.h (LIB_SPEC): Add support for -pthread.
