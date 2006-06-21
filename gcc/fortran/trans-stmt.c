@@ -904,7 +904,7 @@ gfc_trans_do (gfc_code * code)
     }
   gfc_add_modify_expr (&block, count, tmp);
 
-  count_one = convert (TREE_TYPE (count), integer_one_node);
+  count_one = build_int_cst (TREE_TYPE (count), 1);
 
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify_expr (&block, dovar, from);

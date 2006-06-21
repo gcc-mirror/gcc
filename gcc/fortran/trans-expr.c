@@ -152,12 +152,12 @@ gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts)
 
   present = gfc_conv_expr_present (arg->symtree->n.sym);
   tmp = build3 (COND_EXPR, TREE_TYPE (se->expr), present, se->expr,
-		convert (TREE_TYPE (se->expr), integer_zero_node));
+		build_int_cst (TREE_TYPE (se->expr), 0));
   tmp = gfc_evaluate_now (tmp, &se->pre);
   se->expr = tmp;
   if (ts.type == BT_CHARACTER)
     {
-      tmp = convert (gfc_charlen_type_node, integer_zero_node);
+      tmp = build_int_cst (gfc_charlen_type_node, 0);
       tmp = build3 (COND_EXPR, gfc_charlen_type_node, present,
 		    se->string_length, tmp);
       tmp = gfc_evaluate_now (tmp, &se->pre);
@@ -526,7 +526,7 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
      All other unary operators have an equivalent GIMPLE unary operator.  */
   if (code == TRUTH_NOT_EXPR)
     se->expr = build2 (EQ_EXPR, type, operand.expr,
-		       convert (type, integer_zero_node));
+		       build_int_cst (type, 0));
   else
     se->expr = build1 (code, type, operand.expr);
 
@@ -656,28 +656,24 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
   if ((sgn == -1) && (TREE_CODE (type) == INTEGER_TYPE))
     {
       tmp = build2 (EQ_EXPR, boolean_type_node, lhs,
-		    fold_convert (TREE_TYPE (lhs), integer_minus_one_node));
+		    build_int_cst (TREE_TYPE (lhs), -1));
       cond = build2 (EQ_EXPR, boolean_type_node, lhs,
-		     convert (TREE_TYPE (lhs), integer_one_node));
+		     build_int_cst (TREE_TYPE (lhs), 1));
 
       /* If rhs is even,
 	 result = (lhs == 1 || lhs == -1) ? 1 : 0.  */
       if ((n & 1) == 0)
         {
 	  tmp = build2 (TRUTH_OR_EXPR, boolean_type_node, tmp, cond);
-	  se->expr = build3 (COND_EXPR, type, tmp,
-			     convert (type, integer_one_node),
-			     convert (type, integer_zero_node));
+	  se->expr = build3 (COND_EXPR, type, tmp, build_int_cst (type, 1),
+			     build_int_cst (type, 0));
 	  return 1;
 	}
       /* If rhs is odd,
 	 result = (lhs == 1) ? 1 : (lhs == -1) ? -1 : 0.  */
-      tmp = build3 (COND_EXPR, type, tmp,
-		    convert (type, integer_minus_one_node),
-		    convert (type, integer_zero_node));
-      se->expr = build3 (COND_EXPR, type, cond,
-			 convert (type, integer_one_node),
-			 tmp);
+      tmp = build3 (COND_EXPR, type, tmp, build_int_cst (type, -1),
+		    build_int_cst (type, 0));
+      se->expr = build3 (COND_EXPR, type, cond, build_int_cst (type, 1), tmp);
       return 1;
     }
 
@@ -866,7 +862,7 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
     {
       /* Create a temporary variable to hold the result.  */
       tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node, len,
-			 convert (gfc_charlen_type_node, integer_one_node));
+			 build_int_cst (gfc_charlen_type_node, 1));
       tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
       tmp = build_array_type (gfc_character1_type_node, tmp);
       var = gfc_create_var (tmp, "str");
@@ -1901,8 +1897,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      gfc_init_se (&parmse, NULL);
 	      parmse.expr = null_pointer_node;
               if (arg->missing_arg_type == BT_CHARACTER)
-		parmse.string_length = convert (gfc_charlen_type_node,
-						integer_zero_node);
+		parmse.string_length = build_int_cst (gfc_charlen_type_node, 0);
 	    }
 	}
       else if (se->ss && se->ss->useflags)
