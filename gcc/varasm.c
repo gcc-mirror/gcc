@@ -655,16 +655,20 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 			  unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED,
 			  unsigned int flags ATTRIBUTE_UNUSED)
 {
+  HOST_WIDE_INT len;
+
   if (HAVE_GAS_SHF_MERGE && flag_merge_constants
       && TREE_CODE (decl) == STRING_CST
       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
       && align <= 256
-      && TREE_STRING_LENGTH (decl) >= int_size_in_bytes (TREE_TYPE (decl)))
+      && (len = int_size_in_bytes (TREE_TYPE (decl))) > 0
+      && TREE_STRING_LENGTH (decl) >= len)
     {
       enum machine_mode mode;
       unsigned int modesize;
       const char *str;
-      int i, j, len, unit;
+      HOST_WIDE_INT i;
+      int j, unit;
       char name[30];
 
       mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (decl)));
@@ -676,7 +680,6 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
 	    align = modesize;
 
 	  str = TREE_STRING_POINTER (decl);
-	  len = TREE_STRING_LENGTH (decl);
 	  unit = GET_MODE_SIZE (mode);
 
 	  /* Check for embedded NUL characters.  */

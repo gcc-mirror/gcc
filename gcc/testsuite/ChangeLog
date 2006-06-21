@@ -1,3 +1,7 @@
+2006-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/merge-all-constants-1.c: New test.
+
 2006-06-20  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c++/28113

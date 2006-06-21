@@ -1,3 +1,9 @@
+2006-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* varasm.c (mergeable_string_section): Check for embedded NULs and
+	NUL termination in the first int_size_in_bytes (TREE_TYPE (decl))
+	rather than TREE_STRING_LENGTH bytes.
+
 2006-06-21  Richard Guenther  <rguenther@suse.de>
 
 	* ggc-page.c (extra_order_size_table): Add var_ann_d,
