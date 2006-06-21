@@ -607,7 +607,7 @@ set_internal_unit (stmtblock_t * block, tree var, gfc_expr * e)
       gfc_conv_expr (&se, e);
       gfc_conv_string_parameter (&se);
       tmp = se.expr;
-      se.expr = fold_convert (pchar_type_node, integer_zero_node);
+      se.expr = build_int_cst (pchar_type_node, 0);
     }
 
   /* Character array.  */
@@ -1308,7 +1308,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   if (ts->type == BT_CHARACTER)
     NML_ADD_ARG (ts->cl->backend_decl);
   else
-    NML_ADD_ARG (convert (gfc_charlen_type_node, integer_zero_node));
+    NML_ADD_ARG (build_int_cst (gfc_charlen_type_node, 0));
 
   NML_ADD_ARG (dtype);
   tmp = build_function_call_expr (iocall[IOCALL_SET_NML_VAL], args);

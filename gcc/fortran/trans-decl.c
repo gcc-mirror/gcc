@@ -1618,7 +1618,7 @@ build_entry_thunks (gfc_namespace * ns)
 	      args = tree_cons (NULL_TREE, null_pointer_node, args);
 	      if (formal->sym->ts.type == BT_CHARACTER)
 		{
-		  tmp = convert (gfc_charlen_type_node, integer_zero_node);
+		  tmp = build_int_cst (gfc_charlen_type_node, 0);
 		  string_args = tree_cons (NULL_TREE, tmp, string_args);
 		}
 	    }

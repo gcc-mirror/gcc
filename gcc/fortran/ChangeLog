@@ -1,3 +1,14 @@
+2006-06-21  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* trans-expr.c (gfc_conv_missing_dummy, gfc_conv_unary_op,
+	gfc_conv_cst_int_power, gfc_conv_string_tmp,
+	gfc_conv_function_call): Replace calls to convert on constant
+	integer nodes by build_int_cst.
+	* trans-stmt.c (gfc_trans_do): Likewise.
+	* trans-io.c (set_internal_unit, transfer_namelist_element):
+	Likewise.
+	* trans-decl.c (build_entry_thunks): Likewise.
+
 2006-06-20  Steven G. Kargl  <kargls@comcast.net>
 
 	* simplify.c (gfc_simplify_rrspacing): Initialize and clear mpfr_t
