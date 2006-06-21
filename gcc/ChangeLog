@@ -1,3 +1,9 @@
+2006-06-21  Richard Guenther  <rguenther@suse.de>
+
+	* ggc-page.c (extra_order_size_table): Add var_ann_d,
+	tree_ssa_name, bitmap_element and phi_node with 4 arguments
+	sizes.
+
 2006-06-21  Richrad Guenther  <rguenther@suse.de>
 
 	* tree-ssa-loop-niter.c (simplify_using_initial_conditions):
