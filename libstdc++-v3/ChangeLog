@@ -1,3 +1,9 @@
+2006-06-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/postypes.h (operator==(const fpos<>&, const fpos<>&),
+	operator!=(const fpos<>&, const fpos<>&)): Add.
+	* testsuite/27_io/fpos/mbstate_t/6.cc: New.
+
 2006-06-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* acinclude.m4 (GLIBCXX_EXPORT_INSTALL_INFO): When
