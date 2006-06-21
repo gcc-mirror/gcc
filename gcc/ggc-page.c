@@ -186,13 +186,19 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 static const size_t extra_order_size_table[] = {
   sizeof (struct stmt_ann_d),
+  sizeof (struct var_ann_d),
   sizeof (struct tree_decl_non_common),
   sizeof (struct tree_field_decl),
   sizeof (struct tree_parm_decl),
   sizeof (struct tree_var_decl),
   sizeof (struct tree_list),
+  sizeof (struct tree_ssa_name),
   sizeof (struct function),
   sizeof (struct basic_block_def),
+  sizeof (bitmap_element),
+  /* PHI nodes with one to three arguments are already covered by the
+     above sizes.  */
+  sizeof (struct tree_phi_node) + sizeof (struct phi_arg_d) * 3,
   TREE_EXP_SIZE (2),
   RTL_SIZE (2),			/* MEM, PLUS, etc.  */
   RTL_SIZE (9),			/* INSN */
