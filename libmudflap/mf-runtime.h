@@ -55,8 +55,12 @@ extern unsigned char __mf_lc_shift;
 /* Multithreading support.  */
 #ifdef _MUDFLAPTH
 /* extern pthread_mutex_t __mf_biglock; */
+#ifndef _REENTRANT
 #define _REENTRANT
+#endif
+#ifndef _THREAD_SAFE
 #define _THREAD_SAFE
+#endif
 #endif
 
 /* Codes to describe the type of access to check: __mf_check arg 3 */

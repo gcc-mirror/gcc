@@ -1,10 +1,11 @@
 # Process this file with autoconf to produce a configure script, like so:
-# aclocal && autoconf && autoheader && automake
+# aclocal -I .. -I ../config && autoconf && autoheader && automake
 
 AC_PREREQ(2.59)
 AC_INIT(libmudflap, 1.0)
 AC_CONFIG_SRCDIR(mf-runtime.c)
 AC_CANONICAL_SYSTEM
+ACX_NONCANONICAL_TARGET
 
 AM_INIT_AUTOMAKE
 
@@ -174,6 +175,9 @@ case ${version_specific_libs} in
 esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
+
+includedir=${toolexecdir}/include
+AC_SUBST(includedir)
 
 pthread_create_version='""'
 if test "x$enable_shared" = "xyes" && test "x$posix_threads" != "x"; then
