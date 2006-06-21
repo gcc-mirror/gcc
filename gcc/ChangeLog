@@ -1,3 +1,9 @@
+2006-06-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.ac: Set gcc_gxx_include_dir to $target/include/c++
+	when cross-compiling.  Do not substitute libstdcxx_incdir.
+	* configure: Regenerated.
+
 2006-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* varasm.c (mergeable_string_section): Check for embedded NULs and

@@ -674,6 +674,7 @@ dnl
 dnl Assumes cross_compiling bits already done, and with_cross_host in
 dnl particular.
 dnl
+dnl This logic must match gcc/configure.ac's setting of gcc_gxx_include_dir.
 AC_DEFUN([GLIBCXX_EXPORT_INSTALL_INFO], [
   glibcxx_toolexecdir=no
   glibcxx_toolexeclibdir=no
@@ -705,7 +706,13 @@ AC_DEFUN([GLIBCXX_EXPORT_INSTALL_INFO], [
 
   # Default case for install directory for include files.
   if test $version_specific_libs = no && test $gxx_include_dir = no; then
-    gxx_include_dir='${prefix}/include/c++/${gcc_version}'
+    gxx_include_dir='include/c++/${gcc_version}'
+    if test -n "$with_cross_host" && 
+       test x"$with_cross_host" != x"no"; then	
+      gxx_include_dir='${prefix}/${target_alias}/'"$gxx_include_dir"
+    else
+      gxx_include_dir='${prefix}/'"$gxx_include_dir"
+    fi
   fi
 
   # Version-specific runtime libs processing.
