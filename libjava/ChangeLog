@@ -1,3 +1,10 @@
+2006-06-21  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* include/win32-threads.h (_Jv_ThreadDesc_t): New typedef. 
+	(_Jv_GetPlatformThreadID): New function.
+	* include/posix-threads.h (_Jv_ThreadDesc_t): New typedef.
+	(_Jv_GetPlatformThreadID): New function.
+
 2006-06-20  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gnu/classpath/natSystemProperties.cc (insertSystemProperties):

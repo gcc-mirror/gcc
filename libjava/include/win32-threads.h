@@ -72,6 +72,15 @@ _Jv_ThreadSelf (void)
 
 typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
 
+// Type identifying a win32 thread.
+typedef HANDLE _Jv_ThreadDesc_t;
+
+inline _Jv_ThreadDesc_t
+_Jv_GetPlatformThreadID(_Jv_Thread_t *t)
+{
+  return t->handle;
+}
+
 //
 // Condition variables.
 //
