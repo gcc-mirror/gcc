@@ -1,3 +1,8 @@
+2006-06-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/27861
+	* gcc.dg/pr27861-1.c: New test case.
+
 2006-06-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/27958
