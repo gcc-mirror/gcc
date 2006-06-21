@@ -47,7 +47,6 @@ typedef struct _Jv_Thread_t
 
 typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
 
-
 // Condition Variables used to implement wait/notify/sleep/interrupt.
 typedef struct
 {
@@ -80,6 +79,15 @@ inline int
 _Jv_MutexCheckMonitor (_Jv_Mutex_t *mu)
 {
   return (mu->owner != pthread_self());
+}
+
+// Type identifying a POSIX thread.
+typedef pthread_t _Jv_ThreadDesc_t;
+
+inline _Jv_ThreadDesc_t
+_Jv_GetPlatformThreadID(_Jv_Thread_t *t)
+{
+  return t->thread;
 }
 
 //
