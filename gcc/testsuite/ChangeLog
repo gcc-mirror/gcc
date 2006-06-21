@@ -1,3 +1,8 @@
+2006-06-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/27781
+	* gcc.dg/tree-ssa/pr27781.c: New testcase.
+
 2006-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/merge-all-constants-1.c: New test.

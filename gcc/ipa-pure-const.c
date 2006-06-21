@@ -51,6 +51,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "timevar.h"
 #include "diagnostic.h"
 #include "langhooks.h"
+#include "target.h"
 
 static struct pointer_set_t *visited_nodes;
 
@@ -499,9 +500,11 @@ analyze_function (struct cgraph_node *fn)
   l->pure_const_state = IPA_CONST;
   l->state_set_in_source = false;
 
-  /* If this is a volatile function, do not touch this unless it has
-     been marked as const or pure by the front end.  */
-  if (TREE_THIS_VOLATILE (decl))
+  /* If this function does not return normally or does not bind local,
+     do not touch this unless it has been marked as const or pure by the
+     front end.  */
+  if (TREE_THIS_VOLATILE (decl)
+      || !targetm.binds_local_p (decl))
     {
       l->pure_const_state = IPA_NEITHER;
       return;
