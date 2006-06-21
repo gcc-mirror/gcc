@@ -1,3 +1,18 @@
+2006-06-21  Frank Ch. Eigler  <fche@redhat.com>
+
+	PR 21274
+	mf-runtime.h installation based on ssp patch for PR 26473 from
+	Mark Mitchell  <mark@codesourcery.com>.
+	* configure.ac (ACX_NONCANONICAL_TARGET): Use it.
+	* Makefile.am (target_noncanonical): Define.
+	(libsubincludedir): New variable.
+	(nobase_libsubinclude_HEADERS): Add mf-runtime.h.
+	(include_HEADERS): Remove.
+	* configure, aclocal.m4, config.h.in: Regenerated.
+	* Makefile.in, testsuite/Makefile.in: Likewise.
+	* mf-runtime.h: Add #ifndef protection for conflicting _REENTRANT
+	and _THREAD_SAFE redefinition values.
+
 2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.am: Add install-html target. Add install-html to .PHONY
