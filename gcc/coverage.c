@@ -388,15 +388,13 @@ coverage_counter_alloc (unsigned counter, unsigned num)
 
   if (!tree_ctr_tables[counter])
     {
-      /* Generate and save a copy of this so it can be shared.  */
-      /* We don't know the size yet; make it big enough that nobody
-	 will make any clever transformation on it.  */
+      /* Generate and save a copy of this so it can be shared.  Leave
+	 the index type unspecified for now; it will be set after all
+	 functions have been compiled.  */
       char buf[20];
       tree gcov_type_node = get_gcov_type ();
-      tree domain_tree
-        = build_index_type (build_int_cst (NULL_TREE, 1000)); /* replaced later */
       tree gcov_type_array_type
-        = build_array_type (gcov_type_node, domain_tree);
+        = build_array_type (gcov_type_node, NULL_TREE);
       tree_ctr_tables[counter]
         = build_decl (VAR_DECL, NULL_TREE, gcov_type_array_type);
       TREE_STATIC (tree_ctr_tables[counter]) = 1;
@@ -416,18 +414,13 @@ tree
 tree_coverage_counter_ref (unsigned counter, unsigned no)
 {
   tree gcov_type_node = get_gcov_type ();
-  tree domain_type = TYPE_DOMAIN (TREE_TYPE (tree_ctr_tables[counter]));
 
   gcc_assert (no < fn_n_ctrs[counter] - fn_b_ctrs[counter]);
   no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
 
   /* "no" here is an array index, scaled to bytes later.  */
   return build4 (ARRAY_REF, gcov_type_node, tree_ctr_tables[counter],
-		 fold_convert (domain_type,
-			       build_int_cst (NULL_TREE, no)),
-		 TYPE_MIN_VALUE (domain_type),
-		 size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (gcov_type_node),
-			     size_int (TYPE_ALIGN_UNIT (gcov_type_node))));
+		 build_int_cst (NULL_TREE, no), NULL, NULL);
 }
 
 /* Generate a checksum for a string.  CHKSUM is the current
