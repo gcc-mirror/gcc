@@ -166,7 +166,7 @@ in the following sections.
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @gccoptlist{-ansi  -std=@var{standard}  -aux-info @var{filename} @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
--fhosted  -ffreestanding  -fms-extensions @gol
+-fhosted  -ffreestanding -fopenmp -fms-extensions @gol
 -trigraphs  -no-integrated-cpp  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch @gol
 -fsigned-bitfields  -fsigned-char @gol
@@ -779,7 +779,7 @@ See S/390 and zSeries Options.
 -fargument-noalias-global  -fargument-noalias-anything
 -fleading-underscore  -ftls-model=@var{model} @gol
 -ftrapv  -fwrapv  -fbounds-check @gol
--fvisibility  -fopenmp}
+-fvisibility}
 @end table
 
 @menu
@@ -1303,6 +1303,14 @@ This is equivalent to @option{-fno-hosted}.
 
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 freestanding and hosted environments.
+
+@item -fopenmp
+@opindex fopenmp
+@cindex openmp parallel
+Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
+@code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
+compiler generates parallel code according to the OpenMP Application
+Program Interface v2.5 @w{@uref{http://www.openmp.org/}}.
 
 @item -fms-extensions
 @opindex fms-extensions
@@ -13500,14 +13508,6 @@ before including any such headers.
 
 An overview of these techniques, their benefits and how to use them
 is at @w{@uref{http://gcc.gnu.org/wiki/Visibility}}.
-
-@item -fopenmp
-@opindex fopenmp
-@cindex openmp parallel
-Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
-@code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
-compiler generates parallel code according to the OpenMP Application
-Program Interface v2.5 @w{@uref{http://www.openmp.org/}}.
 
 @end table
 
