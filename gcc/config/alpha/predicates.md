@@ -366,7 +366,8 @@
 
   return (SYMBOL_REF_LOCAL_P (op)
 	  && SYMBOL_REF_SMALL_P (op)
-	  && SYMBOL_REF_TLS_MODEL (op) == 0);
+	  && !SYMBOL_REF_WEAK (op)
+	  && !SYMBOL_REF_TLS_MODEL (op));
 })
 
 ;; Return true if OP is a SYMBOL_REF or CONST referencing a variable
@@ -382,7 +383,8 @@
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
 
-  return !SYMBOL_REF_LOCAL_P (op) && !SYMBOL_REF_TLS_MODEL (op);
+  return ((!SYMBOL_REF_LOCAL_P (op) || SYMBOL_REF_WEAK (op))
+	  && !SYMBOL_REF_TLS_MODEL (op));
 })
 
 ;; Returns 1 if OP is a symbolic operand, i.e. a symbol_ref or a label_ref,

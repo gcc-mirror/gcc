@@ -1,3 +1,11 @@
+2006-06-21  Richard Henderson  <rth@redhat.com>
+
+	PR target/26347
+	PR target/27082
+	* config/alpha/predicates.md (small_symbolic_operand): Deny weak
+	symbols.
+	(global_symbolic_operand): Allow weak symbols, even if local_p.
+
 2006-06-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): New function.
