@@ -1,3 +1,7 @@
+2006-06-21  Richard Guenther  <rguenther@suse.de>
+
+	* configure: Regenerated.
+
 2006-06-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.c (function_arg): Where one part of a
