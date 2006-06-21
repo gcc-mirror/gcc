@@ -3894,13 +3894,24 @@ function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
       inner = GET_MODE_INNER (mode);
       reg = FP_ARG_FIRST + info.reg_offset;
-      real = gen_rtx_EXPR_LIST (VOIDmode,
-				gen_rtx_REG (inner, reg),
-				const0_rtx);
-      imag = gen_rtx_EXPR_LIST (VOIDmode,
-				gen_rtx_REG (inner, reg + info.reg_words / 2),
-				GEN_INT (GET_MODE_SIZE (inner)));
-      return gen_rtx_PARALLEL (mode, gen_rtvec (2, real, imag));
+      if (info.reg_words * UNITS_PER_WORD == GET_MODE_SIZE (inner))
+	{
+	  /* Real part in registers, imaginary part on stack.  */
+	  gcc_assert (info.stack_words == info.reg_words);
+	  return gen_rtx_REG (inner, reg);
+	}
+      else
+	{
+	  gcc_assert (info.stack_words == 0);
+	  real = gen_rtx_EXPR_LIST (VOIDmode,
+				    gen_rtx_REG (inner, reg),
+				    const0_rtx);
+	  imag = gen_rtx_EXPR_LIST (VOIDmode,
+				    gen_rtx_REG (inner,
+						 reg + info.reg_words / 2),
+				    GEN_INT (GET_MODE_SIZE (inner)));
+	  return gen_rtx_PARALLEL (mode, gen_rtvec (2, real, imag));
+	}
     }
 
   if (!info.fpr_p)

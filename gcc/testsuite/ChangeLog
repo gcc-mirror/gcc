@@ -1,3 +1,7 @@
+2006-06-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/execute/complex-7.c: New.
+
 2006-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/merge-all-constants-1.c: New test.
