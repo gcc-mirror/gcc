@@ -1,3 +1,9 @@
+2006-06-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Configuration): Remove reference to CrossGCC
+	FAQ which was gone.
+	(Building): Ditto.
+
 2006-06-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/27861
