@@ -1,3 +1,13 @@
+2006-06-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/26769
+	* Makefile.am: Add r4 and r8 versions of reshape and transpose.
+	* Makefile.in: Regenerate.
+	* generated/reshape_r4.c: New file.
+	* generated/reshape_r8.c: New file.
+	* generated/transpose_r4.c: New file.
+	* generated/transpose_r8.c: New file.
+
 2006-06-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/28005
