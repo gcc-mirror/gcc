@@ -1,5 +1,10 @@
 2006-06-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one):
+	Link against -ljvm, not -lgcj.
+
+2006-06-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
 	* Makefile.am (libjvm_la_LDFLAGS): Do not set -rpath to
 	toolexeclibdir.
 	* Makefile.in: Regenerate.
