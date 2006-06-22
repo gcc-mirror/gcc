@@ -96,6 +96,7 @@ darwin port		Mike Stump		mrs@apple.com
 darwin port		Stan Shebs		shebs@apple.com
 DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
+hpux			Steve Ellcey		sje@cup.hp.com
 netbsd			Jason Thorpe		thorpej@netbsd.org
 sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
@@ -246,7 +247,6 @@ Christian Cornelssen				ccorn@cs.tu-berlin.de
 Ian Dall					ian@beware.dropbear.id.au
 David Daney					ddaney@avtrex.com
 Zdenek Dvorak					dvorakz@suse.cz
-Steve Ellcey					sje@cup.hp.com
 Mohan Embar					gnustuff@thisiscool.com
 Marc Espie					espie@cvs.openbsd.org
 Rafael Ávila de Espíndola			rafael.espindola@gmail.com
