@@ -1,3 +1,9 @@
+2006-06-22  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/28121
+	* cfgexpand.c (tree_expand_cfg): Clean EDGE_EXECUTABLE flag from
+	the entry edge.
+
 2006-06-21  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/muldiv.md (mulhisi3_i): Only use registers for dest
