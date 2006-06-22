@@ -1,3 +1,8 @@
+2006-06-22  Ami Tavory  <atavory@gmail.com>
+
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_prime_size_policy_imp.hpp: Fix for 64-bit machines.
+
 2006-06-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/postypes.h (operator==(const fpos<>&, const fpos<>&),
