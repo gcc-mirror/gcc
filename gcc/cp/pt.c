@@ -10281,6 +10281,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 
     case TEMPLATE_PARM_INDEX:
       tparm = TREE_VALUE (TREE_VEC_ELT (tparms, 0));
+      if (tparm == error_mark_node)
+	return 1;
 
       if (TEMPLATE_PARM_LEVEL (parm)
 	  != template_decl_level (tparm))
