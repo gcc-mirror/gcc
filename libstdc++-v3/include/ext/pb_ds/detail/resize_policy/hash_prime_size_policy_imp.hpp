@@ -13,10 +13,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // General Public License for more details.
 
-// You should have received a copy of the GNU General Public License
-// along with this library; see the file COPYING.  If not, write to
-// the Free Software Foundation, 59 Temple Place - Suite 330, Boston,
-// MA 02111-1307, USA.
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+// USA.
 
 // As a special exception, you may use this file as part of a free
 // software library without restriction.  Specifically, if other files
@@ -49,46 +49,79 @@ namespace detail
 
   enum
     {
-      num_distinct_sizes = 31
+      num_distinct_sizes_32_bit = 30,
+      num_distinct_sizes_64_bit = 62,
+      num_distinct_sizes = sizeof(std::size_t) != 8 ? 
+            num_distinct_sizes_32_bit : num_distinct_sizes_64_bit,	
     };
 
-  // Taken from the SGI implementation; acknowledged in the docs.
+  // Originally taken from the SGI implementation; acknowledged in the docs.
+  // Further modified (for 64 bits) from tr1's hashtable.
 
-  static const std::size_t g_a_sizes[num_distinct_sizes] =
+  static const std::size_t g_a_sizes[num_distinct_sizes_64_bit] =
     {
-      /* Dealing cards... */
-      /* 0    */ 5ul,
-      /* 1    */ 11ul,
-      /* 2    */ 23ul,
-      /* 3    */ 53ul,
-      /* 4    */ 97ul,
-      /* 5    */ 193ul,
-      /* 6    */ 389ul,
-      /* 7    */ 769ul,
-      /* 8    */ 1543ul,
-      /* 9    */ 3079ul,
-      /* 10    */ 6151ul,
-      /* 11     */ 12289ul,
-      /* 12     */ 24593ul,
-      /* 13    */ 49157ul,
-      /* 14    */ 98317ul,
-      /* 15    */ 196613ul,
-      /* 16    */ 393241ul,
-      /* 17    */ 786433ul,
-      /* 18    */ 1572869ul,
-      /* 19    */ 3145739ul,
-      /* 20    */ 6291469ul,
-      /* 21    */ 12582917ul,
-      /* 22    */ 25165843ul,
-      /* 23    */ 50331653ul,
-      /* 24    */ 100663319ul,
-      /* 25    */ 201326611ul,
-      /* 26    */ 402653189ul,
-      /* 27    */ 805306457ul,
-      /* 28    */ 1610612741,
-      /* 29    */ 3221225473ul,
-      /* 30    */ 4294967291ul
-      /* Pot's good, let's play */
+      /* 0     */                5ul,
+      /* 1     */                11ul, 
+      /* 2     */                23ul, 
+      /* 3     */                47ul, 
+      /* 4     */                97ul, 
+      /* 5     */                199ul, 
+      /* 6     */                409ul, 
+      /* 7     */                823ul, 
+      /* 8     */                1741ul, 
+      /* 9     */                3469ul, 
+      /* 10    */                6949ul, 
+      /* 11    */                14033ul, 
+      /* 12    */                28411ul, 
+      /* 13    */                57557ul, 
+      /* 14    */                116731ul, 
+      /* 15    */                236897ul,
+      /* 16    */                480881ul, 
+      /* 17    */                976369ul,
+      /* 18    */                1982627ul, 
+      /* 19    */                4026031ul,
+      /* 20    */                8175383ul, 
+      /* 21    */                16601593ul, 
+      /* 22    */                33712729ul,
+      /* 23    */                68460391ul, 
+      /* 24    */                139022417ul, 
+      /* 25    */                282312799ul, 
+      /* 26    */                573292817ul, 
+      /* 27    */                1164186217ul,
+      /* 28    */                2364114217ul, 
+      /* 29    */                4294967291ul,
+      /* 30    */ (unsigned long)8589934583ull,
+      /* 31    */ (unsigned long)17179869143ull,
+      /* 32    */ (unsigned long)34359738337ull,
+      /* 33    */ (unsigned long)68719476731ull,
+      /* 34    */ (unsigned long)137438953447ull,
+      /* 35    */ (unsigned long)274877906899ull,
+      /* 36    */ (unsigned long)549755813881ull,
+      /* 37    */ (unsigned long)1099511627689ull,
+      /* 38    */ (unsigned long)2199023255531ull,
+      /* 39    */ (unsigned long)4398046511093ull,
+      /* 40    */ (unsigned long)8796093022151ull,
+      /* 41    */ (unsigned long)17592186044399ull,
+      /* 42    */ (unsigned long)35184372088777ull,
+      /* 43    */ (unsigned long)70368744177643ull,
+      /* 44    */ (unsigned long)140737488355213ull,
+      /* 45    */ (unsigned long)281474976710597ull,
+      /* 46    */ (unsigned long)562949953421231ull, 
+      /* 47    */ (unsigned long)1125899906842597ull,
+      /* 48    */ (unsigned long)2251799813685119ull, 
+      /* 49    */ (unsigned long)4503599627370449ull,
+      /* 50    */ (unsigned long)9007199254740881ull, 
+      /* 51    */ (unsigned long)18014398509481951ull,
+      /* 52    */ (unsigned long)36028797018963913ull, 
+      /* 53    */ (unsigned long)72057594037927931ull,
+      /* 54    */ (unsigned long)144115188075855859ull,
+      /* 55    */ (unsigned long)288230376151711717ull,
+      /* 56    */ (unsigned long)576460752303423433ull,
+      /* 57    */ (unsigned long)1152921504606846883ull,
+      /* 58    */ (unsigned long)2305843009213693951ull,
+      /* 59    */ (unsigned long)4611686018427387847ull,
+      /* 60    */ (unsigned long)9223372036854775783ull,
+      /* 61    */ (unsigned long)18446744073709551557ull,
     };
 
 } // namespace detail
