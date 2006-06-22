@@ -30,12 +30,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "xtensa-config.h"
 
-# Force each stack frame to contain an "Extra Save Area" (ESA) of at least
-# 16 bytes.  This is necessary for non-standard Xtensa configurations that
-# only support a fixed register window size of 8, where even leaf functions
-# (such as these) need the ESA for interrupt handlers.
-#define MIN_ESA 16
-
 # Define macros for the ABS and ADDX* instructions to handle cases
 # where they are not included in the Xtensa processor configuration.
 
@@ -83,7 +77,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 	.macro leaf_entry reg, size
 #if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
-	entry \reg, \size + MIN_ESA
+	entry \reg, \size
 #else
 	/* do nothing */
 #endif

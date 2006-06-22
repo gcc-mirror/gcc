@@ -1,3 +1,8 @@
+2006-06-22  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm (MIN_ESA): Delete.
+	(leaf_entry): Remove use of MIN_ESA.
+
 2006-06-22  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/28121
