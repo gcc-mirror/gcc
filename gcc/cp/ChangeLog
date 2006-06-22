@@ -1,6 +1,11 @@
+2006-06-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28109
+	* rtti.c (get_tinfo_decl_dynamic): Robustify.
+
 2006-06-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-	        * cp-tree.def: Fix typo.
+	* cp-tree.def: Fix typo.
 
 2006-06-13  Roger Sayle  <roger@eyesopen.com>
 
