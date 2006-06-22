@@ -8151,7 +8151,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  {
 	    /* Something like struct S { int N::j; };  */
 	    error ("invalid use of %<::%>");
-	    decl = NULL_TREE;
+	    return error_mark_node;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
