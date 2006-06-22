@@ -1,3 +1,8 @@
+2006-06-21  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/27861
+	* gcc.dg/pr27861-1.c: New test case.
+
 2006-06-13  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/21210
