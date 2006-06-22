@@ -1,3 +1,9 @@
+2006-06-21  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/muldiv.md (mulhisi3_i): Only use registers for dest
+	(TN-16C-A156A/E).
+	(mulhisi3_r): Likewise.
+
 2006-06-21  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/28034
