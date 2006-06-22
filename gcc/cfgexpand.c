@@ -1580,6 +1580,8 @@ tree_expand_cfg (void)
 {
   basic_block bb, init_block;
   sbitmap blocks;
+  edge_iterator ei;
+  edge e;
 
   /* Some backends want to know that we are expanding to RTL.  */
   currently_expanding_to_rtl = 1;
@@ -1622,6 +1624,11 @@ tree_expand_cfg (void)
   rtl_register_cfg_hooks ();
 
   init_block = construct_init_block ();
+
+  /* Clear EDGE_EXECUTABLE on the entry edge(s).  It is cleaned from the
+     remainining edges in expand_gimple_basic_block.  */
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+    e->flags &= ~EDGE_EXECUTABLE;
 
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR, next_bb)
     bb = expand_gimple_basic_block (bb);
