@@ -96,6 +96,7 @@ darwin port		Mike Stump		mrs@apple.com
 darwin port		Stan Shebs		shebs@apple.com
 DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
+hpux			Dave Anglin		dave.anglin@nrc.ca
 hpux			Steve Ellcey		sje@cup.hp.com
 netbsd			Jason Thorpe		thorpej@netbsd.org
 sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
