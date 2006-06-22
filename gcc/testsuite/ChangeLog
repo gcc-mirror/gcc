@@ -1,5 +1,8 @@
 2006-06-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28111
+	* g++.dg/template/friend43.C: New test.
+
 	PR c++/28110
 	* g++.dg/template/crash53.C: New test.
 

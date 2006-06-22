@@ -1,5 +1,8 @@
 2006-06-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28111
+	* pt.c (determine_specialization): Check for invalid decls.
+
 	PR c++/28110
 	* pt.c (unify) <case TEMPLATE_PARM_INDEX>: Check for invalid
 	parameters.
