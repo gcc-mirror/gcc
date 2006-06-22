@@ -1,3 +1,8 @@
+2006-06-22  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/reflect/natField.cc (getAddr): Allow setting of final
+	field when it is accessible.
+
 2006-06-21  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* include/win32-threads.h (_Jv_ThreadDesc_t): New typedef. 

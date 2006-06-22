@@ -72,6 +72,10 @@ getAddr (java::lang::reflect::Field* field, jclass caller, jobject obj,
 
   // Setting a final field is usually not allowed.
   if (checkFinal
+      // As of 1.5, you can set a non-static final field if it is
+      // accessible.
+      && (! field->isAccessible()
+	  || (field->getModifiers() & java::lang::reflect::Modifier::STATIC))
       && (field->getModifiers() & java::lang::reflect::Modifier::FINAL))
     throw new java::lang::IllegalAccessException(JvNewStringUTF 
       ("Field is final"));
