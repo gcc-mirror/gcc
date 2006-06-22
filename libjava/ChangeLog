@@ -1,3 +1,9 @@
+2006-06-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am (libjvm_la_LDFLAGS): Do not set -rpath to
+	toolexeclibdir.
+	* Makefile.in: Regenerate.
+
 2006-06-22  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/reflect/natField.cc (getAddr): Allow setting of final
