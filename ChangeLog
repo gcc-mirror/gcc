@@ -1,3 +1,7 @@
+2006-06-22  Steve Ellcey  <sje@cup.hp.com>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself as hpux maintainer.
+
 2006-06-20  David Ayers  <d.ayers@inode.at>
 
 	PR bootstrap/28072
