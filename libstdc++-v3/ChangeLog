@@ -1,3 +1,9 @@
+2006-06-22  Jonathan Lennox  <lennox@cs.columbia.edu>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_prime_size_policy_imp.hpp: Cast to size_t instead.
+
 2006-06-22  Ami Tavory  <atavory@gmail.com>
 
 	* include/ext/pb_ds/detail/resize_policy/
