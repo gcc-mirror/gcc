@@ -1354,7 +1354,7 @@ determine_specialization (tree template_id,
 
   *targs_out = NULL_TREE;
 
-  if (template_id == error_mark_node)
+  if (template_id == error_mark_node || decl == error_mark_node)
     return error_mark_node;
 
   fns = TREE_OPERAND (template_id, 0);
