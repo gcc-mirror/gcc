@@ -2,6 +2,10 @@
 
 	PR c++/27805
 	* typeck2.c (build_m_component_ref): Use error_operand_p.
+
+	PR c++/27821
+	* decl.c (grokdeclarator): Return error_mark_node on
+	invalid uses of the scope resolution operator.
 	
 2006-06-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 

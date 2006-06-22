@@ -7,6 +7,9 @@
 
 	PR c++/27805
 	* g++.dg/parse/ptrmem6.C: New test.
+
+	PR c++/27821
+	* g++.dg/template/error22.C: New test.
 	
 2006-06-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
