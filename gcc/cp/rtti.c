@@ -228,7 +228,7 @@ get_tinfo_decl_dynamic (tree exp)
   tree type;
   tree t;
 
-  if (exp == error_mark_node)
+  if (error_operand_p (exp))
     return error_mark_node;
 
   /* peel back references, so they match.  */
