@@ -122,15 +122,16 @@ am__objects_16 = matmul_i4.lo matmul_i8.lo matmul_i16.lo matmul_r4.lo \
 	matmul_c8.lo matmul_c10.lo matmul_c16.lo
 am__objects_17 = matmul_l4.lo matmul_l8.lo matmul_l16.lo
 am__objects_18 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
-	transpose_r10.lo transpose_r16.lo transpose_c4.lo \
-	transpose_c8.lo transpose_c10.lo transpose_c16.lo
+	transpose_r4.lo transpose_r8.lo transpose_r10.lo \
+	transpose_r16.lo transpose_c4.lo transpose_c8.lo \
+	transpose_c10.lo transpose_c16.lo
 am__objects_19 = shape_i4.lo shape_i8.lo shape_i16.lo
 am__objects_20 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
 am__objects_21 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
 am__objects_22 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
 am__objects_23 = reshape_i4.lo reshape_i8.lo reshape_i16.lo \
-	reshape_r10.lo reshape_r16.lo reshape_c4.lo reshape_c8.lo \
-	reshape_c10.lo reshape_c16.lo
+	reshape_r4.lo reshape_r8.lo reshape_r10.lo reshape_r16.lo \
+	reshape_c4.lo reshape_c8.lo reshape_c10.lo reshape_c16.lo
 am__objects_24 = in_pack_i4.lo in_pack_i8.lo in_pack_i16.lo \
 	in_pack_c4.lo in_pack_c8.lo in_pack_c10.lo in_pack_c16.lo
 am__objects_25 = in_unpack_i4.lo in_unpack_i8.lo in_unpack_i16.lo \
@@ -659,6 +660,8 @@ i_transpose_c = \
 generated/transpose_i4.c \
 generated/transpose_i8.c \
 generated/transpose_i16.c \
+generated/transpose_r4.c \
+generated/transpose_r8.c \
 generated/transpose_r10.c \
 generated/transpose_r16.c \
 generated/transpose_c4.c \
@@ -675,6 +678,8 @@ i_reshape_c = \
 generated/reshape_i4.c \
 generated/reshape_i8.c \
 generated/reshape_i16.c \
+generated/reshape_r4.c \
+generated/reshape_r8.c \
 generated/reshape_r10.c \
 generated/reshape_r16.c \
 generated/reshape_c4.c \
@@ -1933,6 +1938,12 @@ transpose_i8.lo: generated/transpose_i8.c
 transpose_i16.lo: generated/transpose_i16.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_i16.lo `test -f 'generated/transpose_i16.c' || echo '$(srcdir)/'`generated/transpose_i16.c
 
+transpose_r4.lo: generated/transpose_r4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_r4.lo `test -f 'generated/transpose_r4.c' || echo '$(srcdir)/'`generated/transpose_r4.c
+
+transpose_r8.lo: generated/transpose_r8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_r8.lo `test -f 'generated/transpose_r8.c' || echo '$(srcdir)/'`generated/transpose_r8.c
+
 transpose_r10.lo: generated/transpose_r10.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_r10.lo `test -f 'generated/transpose_r10.c' || echo '$(srcdir)/'`generated/transpose_r10.c
 
@@ -1995,6 +2006,12 @@ reshape_i8.lo: generated/reshape_i8.c
 
 reshape_i16.lo: generated/reshape_i16.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_i16.lo `test -f 'generated/reshape_i16.c' || echo '$(srcdir)/'`generated/reshape_i16.c
+
+reshape_r4.lo: generated/reshape_r4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_r4.lo `test -f 'generated/reshape_r4.c' || echo '$(srcdir)/'`generated/reshape_r4.c
+
+reshape_r8.lo: generated/reshape_r8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_r8.lo `test -f 'generated/reshape_r8.c' || echo '$(srcdir)/'`generated/reshape_r8.c
 
 reshape_r10.lo: generated/reshape_r10.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_r10.lo `test -f 'generated/reshape_r10.c' || echo '$(srcdir)/'`generated/reshape_r10.c

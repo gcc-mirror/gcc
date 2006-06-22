@@ -1,3 +1,10 @@
+2006-06-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/26769
+	* iresolve.c (gfc_resolve_reshape): Call reshape_r4 and
+	reshape_r8 instead of reshape_4 and reshape_8.
+	(gfc_resolve_transpose): Likewise for transpose.
+
 2006-06-21  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* trans-expr.c (gfc_conv_missing_dummy, gfc_conv_unary_op,
