@@ -1,3 +1,8 @@
+2006-06-22  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/27805
+	* typeck2.c (build_m_component_ref): Use error_operand_p.
+	
 2006-06-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28111
