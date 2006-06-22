@@ -312,6 +312,8 @@ i_transpose_c= \
 generated/transpose_i4.c \
 generated/transpose_i8.c \
 generated/transpose_i16.c \
+generated/transpose_r4.c \
+generated/transpose_r8.c \
 generated/transpose_r10.c \
 generated/transpose_r16.c \
 generated/transpose_c4.c \
@@ -328,6 +330,8 @@ i_reshape_c= \
 generated/reshape_i4.c \
 generated/reshape_i8.c \
 generated/reshape_i16.c \
+generated/reshape_r4.c \
+generated/reshape_r8.c \
 generated/reshape_r10.c \
 generated/reshape_r16.c \
 generated/reshape_c4.c \
