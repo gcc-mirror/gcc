@@ -770,7 +770,7 @@ libgcj_la_LINK = $(LIBLINK)
 libjvm_la_SOURCES = jni-libjvm.cc
 libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec
 libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
-libjvm_la_LDFLAGS = -rpath $(toolexeclibdir) \
+libjvm_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
