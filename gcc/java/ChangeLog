@@ -1,3 +1,11 @@
+2006-06-21  Andrew Haley  <aph@redhat.com>
+
+	* java-tree.h (update_aliases): Remove
+	* expr.c (expand_iinc): Remove call to update_aliases().
+	(STORE_INTERNAL): Likewise.
+	* decl.c (update_aliases, initialize_local_variable) 
+	(maybe_pushlevels): Set DECL_VALUE_EXPR for debugging decls.
+
 2006-06-19  Andrew Haley  <aph@redhat.com>
 
         PR java/1305

@@ -160,46 +160,6 @@ debug_variable_p (tree decl)
   return true;
 }
  
-/* Copy the value in decl into every live alias in the same local
-   variable slot.  Some of these will be dead stores removed by the
-   optimizer.  */
-
-void 
-update_aliases (tree decl, int index, int pc)
-{
-  tree decl_type = TREE_TYPE (decl);
-  tree tmp;
-
-  gcc_assert (! debug_variable_p (decl));
-
-  for (tmp = TREE_VEC_ELT (decl_map, index); 
-       tmp != NULL_TREE; 
-       tmp = DECL_LOCAL_SLOT_CHAIN (tmp))
-    {
-      tree tmp_type = TREE_TYPE (tmp);
-      if (tmp != decl
-	  && LOCAL_SLOT_P (tmp) == 0
-	  && (pc == -1
-	      || (pc >= DECL_LOCAL_START_PC (tmp)
-		  && pc < DECL_LOCAL_END_PC (tmp)))
-	  /* This test is < (rather than <=) because there's no point
-	     updating an alias that's about to die at the end of this
-	     instruction.  */
-	  && (tmp_type == decl_type
-	      || (INTEGRAL_TYPE_P (tmp_type)
-		  && INTEGRAL_TYPE_P (decl_type)
-		  && TYPE_PRECISION (decl_type) <= 32
-		  && TYPE_PRECISION (tmp_type) <= 32)
-	      || (TREE_CODE (tmp_type) == POINTER_TYPE
-		  && TREE_CODE (decl_type) == POINTER_TYPE)))
-	{
-	  tree src = build1 (NOP_EXPR, tmp_type, decl);
-	  gcc_assert (! LOCAL_VAR_OUT_OF_SCOPE_P (tmp));
-	  java_add_stmt (build2 (MODIFY_EXPR, tmp_type, tmp, src));
-	}
-    }
-}
-
 static tree
 push_jvm_slot (int index, tree decl)
 {
@@ -218,52 +178,6 @@ push_jvm_slot (int index, tree decl)
   TREE_VEC_ELT (decl_map, index) = decl;
 
   return decl;
-}
-
-/*  At the point of its creation a local variable decl inherits
-    whatever is already in the same slot.  In the case of a local
-    variable that is declared but unused, we won't find anything.  */
-
-static void
-initialize_local_variable (tree decl, int index)
-{
-  tree decl_type = TREE_TYPE (decl);
-  if (TREE_CODE (decl_type) == POINTER_TYPE)
-    {
-      tree tmp = TREE_VEC_ELT (base_decl_map, index);
-
-      if (tmp)
-        {
-	  /* At the point of its creation this decl inherits whatever
-	     is in the slot.  */
-	  tree src = build1 (NOP_EXPR, decl_type, tmp);
-	  java_add_stmt (build2 (MODIFY_EXPR, decl_type, decl, src));	
-	}
-    }
-  else
-    {
-      tree tmp;
-  
-      for (tmp = TREE_VEC_ELT (decl_map, index); 
-	   tmp != NULL_TREE; 
-	   tmp = DECL_LOCAL_SLOT_CHAIN (tmp))
-	{
-	  tree tmp_type = TREE_TYPE (tmp);
-	  if (tmp != decl
-	      && ! debug_variable_p (tmp)
-	      && (tmp_type == decl_type
-		  || (INTEGRAL_TYPE_P (tmp_type)
-		      && INTEGRAL_TYPE_P (decl_type)
-		      && TYPE_PRECISION (decl_type) <= 32
-		      && TYPE_PRECISION (tmp_type) <= 32
-		      && TYPE_PRECISION (tmp_type)
-			 >= TYPE_PRECISION (decl_type))))
-	    {
-	      java_add_stmt (build2 (MODIFY_EXPR, decl_type, decl, tmp));	
-	      return;
-	    }
-	}  
-    }
 }
 
 /* Find the best declaration based upon type.  If 'decl' fits 'type' better
@@ -1800,10 +1714,17 @@ maybe_pushlevels (int pc)
       current_binding_level->names = NULL;
       for ( ; decl != NULL_TREE; decl = next)
 	{
+	  int index = DECL_LOCAL_SLOT_NUMBER (decl);
+	  tree base_decl;
 	  next = TREE_CHAIN (decl);
-	  push_jvm_slot (DECL_LOCAL_SLOT_NUMBER (decl), decl);
+	  push_jvm_slot (index, decl);
 	  pushdecl (decl);
-	  initialize_local_variable (decl, DECL_LOCAL_SLOT_NUMBER (decl));
+	  base_decl
+	    = find_local_variable (index, TREE_TYPE (decl), pc);
+	  if (TREE_CODE (TREE_TYPE (base_decl)) == POINTER_TYPE)
+	    base_decl = TREE_VEC_ELT (base_decl_map, index);
+	  SET_DECL_VALUE_EXPR (decl, base_decl);
+	  DECL_HAS_VALUE_EXPR_P (decl) = 1;
 	}
     }      
 
