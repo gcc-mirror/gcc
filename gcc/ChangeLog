@@ -1,3 +1,12 @@
+2006-06-23  Richard Guenther  <rguenther@suse.de>
+
+	* ggc-page.c (init_ggc): Do not round up the extra_order_size_table
+	sizes to MAX_ALIGNMENT.  Fix the size_lookup table to honour
+	alignment requests instead.  Add verification code.
+	Add struct tree_function_decl and struct tree_binfo size to
+	extra_order_size_table.  Add missing element to size_lookup
+	table.
+
 2006-06-22  Roger Sayle  <roger@eyesopen.com>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
