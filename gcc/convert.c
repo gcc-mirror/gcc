@@ -315,8 +315,12 @@ convert_to_real (tree type, tree expr)
   switch (TREE_CODE (TREE_TYPE (expr)))
     {
     case REAL_TYPE:
-      return build1 (flag_float_store ? CONVERT_EXPR : NOP_EXPR,
-		     type, expr);
+      /* Ignore the conversion if we don't need to store intermediate
+	 results and neither type is a decimal float.  */
+      return build1 ((flag_float_store
+		     || DECIMAL_FLOAT_TYPE_P (type)
+		     || DECIMAL_FLOAT_TYPE_P (itype))
+		     ? CONVERT_EXPR : NOP_EXPR, type, expr);
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:

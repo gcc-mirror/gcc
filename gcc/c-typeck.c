@@ -596,6 +596,29 @@ c_common_type (tree t1, tree t2)
   gcc_assert (code2 == VECTOR_TYPE || code2 == COMPLEX_TYPE
 	      || code2 == REAL_TYPE || code2 == INTEGER_TYPE);
 
+  /* When one operand is a decimal float type, the other operand cannot be
+     a generic float type or a complex type.  We also disallow vector types
+     here.  */
+  if ((DECIMAL_FLOAT_TYPE_P (t1) || DECIMAL_FLOAT_TYPE_P (t2))
+      && !(DECIMAL_FLOAT_TYPE_P (t1) && DECIMAL_FLOAT_TYPE_P (t2)))
+    {
+      if (code1 == VECTOR_TYPE || code2 == VECTOR_TYPE)
+	{
+	  error ("can%'t mix operands of decimal float and vector types");
+	  return error_mark_node;
+	}
+      if (code1 == COMPLEX_TYPE || code2 == COMPLEX_TYPE)
+	{
+	  error ("can%'t mix operands of decimal float and complex types");
+	  return error_mark_node;
+	}
+      if (code1 == REAL_TYPE && code2 == REAL_TYPE)
+	{
+	  error ("can%'t mix operands of decimal float and other float types");
+	  return error_mark_node;
+	}
+    }
+
   /* If one type is a vector type, return that type.  (How the usual
      arithmetic conversions apply to the vector types extension is not
      precisely specified.)  */

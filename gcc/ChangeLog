@@ -1,3 +1,11 @@
+2006-06-23  Janis Johnson  <janis187@us.ibm.com>
+
+	* tree.h (DECIMAL_FLOAT_TYPE_P): New.
+	* c-typeck.c (c_common_type): Disallow operations on decimal float
+	types and other float types.
+	* convert.c (convert_to_real): Don't ignore conversions involving
+	decimal float types.
+
 2006-06-23  Olivier Hainque  <hainque@adacore.com>
 
 	* tree.c (max_int_size_in_bytes): New function, inspired from
