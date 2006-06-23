@@ -1,3 +1,10 @@
+2006-06-22  Roger Sayle  <roger@eyesopen.com>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/28131
+	* expr.c (expand_expr_real_1) <VECTOR_CST>: Check whether the
+	call to lang_hooks.types.type_for_mode returned NULL_TREE.
+
 2006-06-23  Ben Elliston  <bje@au.ibm.com>
 
 	* dfp.c (decimal_to_decnumber): Do not use decNumberNegate to
