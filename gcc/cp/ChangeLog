@@ -1,5 +1,9 @@
 2006-06-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28112
+	* parser.c (cp_parser_attribute_list): Skip attributes with invalid
+	arguments.  Fix comment.
+
 	PR c++/11468
 	* init.c (build_new_1): Handle error_mark_nodes returned by
 	build_java_class_ref.

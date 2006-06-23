@@ -1,3 +1,8 @@
+2006-06-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28112
+	* g++.dg/ext/attrib23.C: New test.
+
 2006-06-23  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/varsize_temp.adb: New test.
