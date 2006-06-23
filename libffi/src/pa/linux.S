@@ -73,8 +73,8 @@ ffi_call_LINUX:
 .LCFI13:
 	copy %sp, %r4
 
-	addl %arg2, %r4, %arg0                  /* arg stack */
-	stw %arg3, -48(%r3)                     /* save flags; we need it later */
+	addl %arg2, %r4, %arg0      /* arg stack */
+	stw %arg3, -48(%r3)         /* save flags; we need it later */
 
 	/* Call prep_args:
 	   %arg0(stack) -- set up above
@@ -106,90 +106,139 @@ ffi_call_LINUX:
 
 	/* Store the result according to the return type.  */
 
-checksmst3:
-	comib,<>,n FFI_TYPE_SMALL_STRUCT3, %r21, checksmst567
-	/* 3-byte structs are returned in ret0 as ??xxyyzz.  Shift
-	   left 8 bits to write to the result structure.  */
-	zdep %ret0, 23, 24, %r22
-	b done
-	stw %r22, 0(%r20)
+.Lcheckint:
+	comib,<>,n FFI_TYPE_INT, %r21, .Lcheckint8
+	b	.Ldone
+	stw	%ret0, 0(%r20)
 
-checksmst567:
-	/* 5-7 byte values are returned right justified:
+.Lcheckint8:
+	comib,<>,n FFI_TYPE_UINT8, %r21, .Lcheckint16
+	b	.Ldone
+	stb	%ret0, 0(%r20)
+
+.Lcheckint16:
+	comib,<>,n FFI_TYPE_UINT16, %r21, .Lcheckdbl
+	b	.Ldone
+	sth	%ret0, 0(%r20)
+
+.Lcheckdbl:
+	comib,<>,n FFI_TYPE_DOUBLE, %r21, .Lcheckfloat
+	b	.Ldone
+	fstd	%fr4,0(%r20)
+
+.Lcheckfloat:
+	comib,<>,n FFI_TYPE_FLOAT, %r21, .Lcheckll
+	b	.Ldone
+	fstw	%fr4L,0(%r20)
+
+.Lcheckll:
+	comib,<>,n FFI_TYPE_UINT64, %r21, .Lchecksmst2
+	stw	%ret0, 0(%r20)
+	b	.Ldone
+	stw	%ret1, 4(%r20)
+
+.Lchecksmst2:
+	comib,<>,n FFI_TYPE_SMALL_STRUCT2, %r21, .Lchecksmst3
+	/* 2-byte structs are returned in ret0 as ????xxyy.  */
+	extru	%ret0, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	b	.Ldone
+	stb	%ret0, 0(%r20)
+
+.Lchecksmst3:
+	comib,<>,n FFI_TYPE_SMALL_STRUCT3, %r21, .Lchecksmst4
+	/* 3-byte structs are returned in ret0 as ??xxyyzz.  */
+	extru	%ret0, 15, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret0, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	b	.Ldone
+	stb	%ret0, 0(%r20)
+
+.Lchecksmst4:
+	comib,<>,n FFI_TYPE_SMALL_STRUCT4, %r21, .Lchecksmst5
+	/* 4-byte structs are returned in ret0 as wwxxyyzz.  */
+	extru	%ret0, 7, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret0, 15, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret0, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	b	.Ldone
+	stb	%ret0, 0(%r20)
+
+.Lchecksmst5:
+	comib,<>,n FFI_TYPE_SMALL_STRUCT5, %r21, .Lchecksmst6
+	/* 5 byte values are returned right justified:
 	      ret0     ret1
-	   5: ??????aa bbccddee
-	   6: ????aabb ccddeeff
-	   7: ??aabbcc ddeeffgg
+	   5: ??????aa bbccddee */
+	stbs,ma	%ret0, 1(%r20)
+	extru	%ret1, 7, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret1, 15, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret1, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	b	.Ldone
+	stb	%ret1, 0(%r20)
 
-	   To store this in the result, write the first 4 bytes into a temp
-	   register using shrpw (t1 = aabbccdd), followed by a rotation of
-	   ret1:
+.Lchecksmst6:
+	comib,<>,n FFI_TYPE_SMALL_STRUCT6, %r21, .Lchecksmst7
+	/* 6 byte values are returned right justified:
+	      ret0     ret1
+	   6: ????aabb ccddeeff */
+	extru	%ret0, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	stbs,ma	%ret0, 1(%r20)
+	extru	%ret1, 7, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret1, 15, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret1, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	b	.Ldone
+	stb	%ret1, 0(%r20)
 
-	      ret0     ret1	   ret1
-	   5: ??????aa bbccddee -> eebbccdd (rotate 8)
-	   6: ????aabb ccddeeff -> eeffccdd (rotate 16)
-	   7: ??aabbcc ddeeffgg -> eeffggdd (rotate 24)
+.Lchecksmst7:
+	comib,<>,n FFI_TYPE_SMALL_STRUCT7, %r21, .Lchecksmst8
+	/* 7 byte values are returned right justified:
+	      ret0     ret1
+	   7: ??aabbcc ddeeffgg */
+	extru	%ret0, 15, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret0, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	stbs,ma	%ret0, 1(%r20)
+	extru	%ret1, 7, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret1, 15, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret1, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	b	.Ldone
+	stb	%ret1, 0(%r20)
 
-	   then we write (t1, ret1) into the result.  */
+.Lchecksmst8:
+	comib,<>,n FFI_TYPE_SMALL_STRUCT8, %r21, .Ldone
+	/* 8 byte values are returned right justified:
+	      ret0     ret1
+	   8: aabbccdd eeffgghh */
+	extru	%ret0, 7, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret0, 15, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret0, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	stbs,ma	%ret0, 1(%r20)
+	extru	%ret1, 7, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret1, 15, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	extru	%ret1, 23, 8, %r22
+	stbs,ma	%r22, 1(%r20)
+	stb	%ret1, 0(%r20)
 
-	addi,<> -FFI_TYPE_SMALL_STRUCT5,%r21,%r0
-	ldi 8, %r22
-	addi,<> -FFI_TYPE_SMALL_STRUCT6,%r21,%r0
-	ldi 16, %r22
-	addi,<> -FFI_TYPE_SMALL_STRUCT7,%r21,%r0
-	ldi 24, %r22
-
-	/* This relies on all the FFI_TYPE_*_STRUCT* defines being <0 */
-	cmpib,<=,n 0, %r21, checkint8
-	mtsar %r22
-
-	shrpw %ret0, %ret1, %sar, %ret0  /* ret0 = aabbccdd */
-	shrpw %ret1, %ret1, %sar, %ret1  /* rotate ret1 */
-	
-	stw %ret0, 0(%r20)
-	b done
-	stw %ret1, 4(%r20)
-
-checkint8:
-	comib,<>,n FFI_TYPE_UINT8, %r21, checkint16
-	b done
-	stb %ret0, 0(%r20)
-
-checkint16:
-	comib,<>,n FFI_TYPE_UINT16, %r21, checkint32
-	b done
-	sth %ret0, 0(%r20)
-
-checkint32:
-	comib,<>,n FFI_TYPE_UINT32, %r21, checkint
-	b done
-	stw %ret0, 0(%r20)
-
-checkint:
-	comib,<>,n FFI_TYPE_INT, %r21, checkll
-	b done
-	stw %ret0, 0(%r20)
-
-checkll:
-	comib,<>,n FFI_TYPE_UINT64, %r21, checkdbl
-	stw %ret0, 0(%r20)
-	b done
-	stw %ret1, 4(%r20)
-
-checkdbl:
-	comib,<>,n FFI_TYPE_DOUBLE, %r21, checkfloat
-	b done
-	fstd %fr4,0(%r20)
-
-checkfloat:
-	comib,<>,n FFI_TYPE_FLOAT, %r21, done
-	fstw %fr4L,0(%r20)
-
-	/* structure returns are either handled by one of the
-	   INT/UINT64 cases above, or, if passed by pointer,
-	   is handled by the callee.  */
-
-done:
+.Ldone:
 	/* all done, return */
 	copy %r4, %sp                           /* pop arg stack */
 	ldw 12(%r3), %r4
@@ -299,7 +348,7 @@ ffi_closure_LINUX:
 	.sleb128 -5
 
 	.byte   0x4     ;# DW_CFA_advance_loc4
-	.word   .LCFI12-.LCFI11
+	.word   .LCFI22-.LCFI21
 	.byte   0xd     ;# DW_CFA_def_cfa_register = r3
 	.uleb128 0x3
 

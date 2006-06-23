@@ -1,3 +1,46 @@
+2006-06-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from trunk:
+	2006-05-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/ffi.c (ffi_prep_args_LINUX): Load floating point arguments
+	from stack slot.
+
+	Backport from trunk:
+	2006-04-22  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/pa/ffi.c: Remove lint directives.
+
+	Backport from trunk linux relevant portions of following change:
+	2006-04-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	            Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/pa/ffitarget.h: 
+	(FFI_TYPE_SMALL_STRUCT2): Define.
+	(FFI_TYPE_SMALL_STRUCT4): Likewise.
+	(FFI_TYPE_SMALL_STRUCT8): Likewise.
+	(FFI_TYPE_SMALL_STRUCT3): Redefine.
+	(FFI_TYPE_SMALL_STRUCT5): Likewise.
+	(FFI_TYPE_SMALL_STRUCT6): Likewise.
+	(FFI_TYPE_SMALL_STRUCT7): Likewise.
+	* src/pa/ffi.c (ROUND_DOWN): Delete.
+	(fldw, fstw, fldd, fstd): Use '__asm__'.
+	(ffi_struct_type): Add support for FFI_TYPE_SMALL_STRUCT2,
+	FFI_TYPE_SMALL_STRUCT4 and FFI_TYPE_SMALL_STRUCT8.
+	(ffi_prep_args_LINUX): Update comment.
+	Simplify incrementing of stack slot variable. Change type of local
+	'n' to unsigned int.
+	(ffi_closure_inner_LINUX): Change return type to ffi_status.
+	Simplify incrementing of stack slot variable.  Reformat debug
+	statement.  Add support for FFI_TYPE_SMALL_STRUCT2,
+	FFI_TYPE_SMALL_STRUCT4 and FFI_TYPE_SMALL_STRUCT8.
+	(ffi_closure_LINUX): Add 'extern' to declaration.
+	(ffi_prep_closure): Add nops to cache flush.
+	* src/pa/linux.S (ffi_call_LINUX): Localize labels. Add support
+	for 2, 4 and 8-byte small structs. Handle unaligned destinations
+	in 3, 5, 6 and 7-byte small structs. Order argument type checks
+	so that common argument types appear first.
+
 2006-05-27  James E Wilson  <wilson@specifix.com>
 
 	PR libgcj/26483
