@@ -1696,6 +1696,9 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
       tree class_decl = build_java_class_ref (elt_type);
       static const char alloc_name[] = "_Jv_AllocObject";
 
+      if (class_decl == error_mark_node)
+	return error_mark_node;
+
       use_java_new = 1;
       if (!get_global_value_if_present (get_identifier (alloc_name),
 					&alloc_fn))
@@ -2148,8 +2151,10 @@ build_java_class_ref (tree type)
     {
       jclass_node = IDENTIFIER_GLOBAL_VALUE (get_identifier ("jclass"));
       if (jclass_node == NULL_TREE)
-	fatal_error ("call to Java constructor, while %<jclass%> undefined");
-
+	{
+	  error ("call to Java constructor, while %<jclass%> undefined");
+	  return error_mark_node;
+	}
       jclass_node = TREE_TYPE (jclass_node);
     }
 
@@ -2164,8 +2169,11 @@ build_java_class_ref (tree type)
 	  break;
 	}
     if (!field)
-      internal_error ("can't find class$");
-    }
+      {
+	error ("can't find %<class$%> in %qT", type);
+	return error_mark_node;
+      }
+  }
 
   class_decl = IDENTIFIER_GLOBAL_VALUE (name);
   if (class_decl == NULL_TREE)
