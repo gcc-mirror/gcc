@@ -1,3 +1,8 @@
+2006-06-23  Ben Elliston  <bje@au.ibm.com>
+
+	* dfp.c (decimal_to_decnumber): Do not use decNumberNegate to
+	negate dn -- manipulate it directly.
+
 2006-06-22  Roger Sayle  <roger@eyesopen.com>
 	    Steven Bosscher  <stevenb.gcc@gmail.com>
 

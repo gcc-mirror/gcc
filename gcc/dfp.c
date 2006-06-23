@@ -137,7 +137,7 @@ decimal_to_decnumber (const REAL_VALUE_TYPE *r, decNumber *dn)
 
   /* Fix up sign bit.  */
   if (r->sign != decNumberIsNegative (dn))
-    decNumberNegate (dn);
+    dn->bits ^= DECNEG;
 }
 
 /* Encode a real into an IEEE 754R decimal32 type.  */

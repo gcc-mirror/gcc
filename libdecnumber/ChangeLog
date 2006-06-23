@@ -1,3 +1,7 @@
+2006-06-23  Ben Elliston  <bje@au.ibm.com>
+
+	* decNumber.h (decNumberNegate): Remove.
+
 2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Add install-html target. Add install-html to .PHONY
