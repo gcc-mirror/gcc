@@ -1,3 +1,11 @@
+2006-06-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/11468
+	* init.c (build_new_1): Handle error_mark_nodes returned by
+	build_java_class_ref.
+	(build_java_class_ref): Do not abort compilation, but return
+	error_mark_node.  Improve error message.  Fix indentation.
+
 2006-06-23  Danny Smith   <dannysmith@users.sourceforge.net>
 
 	PR target/27789
