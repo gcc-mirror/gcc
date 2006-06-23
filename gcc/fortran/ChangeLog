@@ -1,3 +1,8 @@
+2006-06-23  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/27981
+	* match.c (gfc_match_if):  Handle errors in assignment in simple if.
+
 2006-06-22  Asher Langton  <langton2@llnl.gov>
 
 	PR fortran/24748
