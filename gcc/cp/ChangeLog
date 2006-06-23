@@ -1,5 +1,10 @@
 2006-06-23  Steve Ellcey  <sje@cup.hp.com>
 
+	PR c++/28114
+	* name-lookup.c (pushtag): Return if we have error_mark_node.
+
+2006-06-23  Steve Ellcey  <sje@cup.hp.com>
+
 	PR c++/27019
 	* typeck2.c (process_init_constructor_array): Set ce->value on errors.
 
