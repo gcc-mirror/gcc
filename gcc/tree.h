@@ -3833,6 +3833,7 @@ extern tree expr_last (tree);
 extern tree expr_only (tree);
 extern tree size_in_bytes (tree);
 extern HOST_WIDE_INT int_size_in_bytes (tree);
+extern HOST_WIDE_INT max_int_size_in_bytes (tree);
 extern tree bit_position (tree);
 extern HOST_WIDE_INT int_bit_position (tree);
 extern tree byte_position (tree);

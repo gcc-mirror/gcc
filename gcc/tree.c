@@ -1733,6 +1733,39 @@ int_size_in_bytes (tree type)
 
   return TREE_INT_CST_LOW (t);
 }
+
+/* Return the maximum size of TYPE (in bytes) as a wide integer
+   or return -1 if the size can vary or is larger than an integer.  */
+
+HOST_WIDE_INT
+max_int_size_in_bytes (tree type)
+{
+  HOST_WIDE_INT size = -1;
+  tree size_tree;
+
+  /* If this is an array type, check for a possible MAX_SIZE attached.  */
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      size_tree = TYPE_ARRAY_MAX_SIZE (type);
+
+      if (size_tree && host_integerp (size_tree, 1))
+	size = tree_low_cst (size_tree, 1);
+    }
+
+  /* If we still haven't been able to get a size, see if the language
+     can compute a maximum size.  */
+
+  if (size == -1)
+    {
+      size_tree = lang_hooks.types.max_size (type);
+
+      if (size_tree && host_integerp (size_tree, 1))
+	size = tree_low_cst (size_tree, 1);
+    }
+
+  return size;
+}
 
 /* Return the bit position of FIELD, in bits from the start of the record.
    This is a tree of type bitsizetype.  */

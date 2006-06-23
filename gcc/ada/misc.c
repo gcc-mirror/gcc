@@ -745,13 +745,40 @@ gnat_get_alias_set (tree type)
   return -1;
 }
 
-/* GNU_TYPE is a type.  Return its maxium size in bytes, if known.  */
+/* GNU_TYPE is a type.  Return its maxium size in bytes, if known,
+   as a constant when possible.  */
 
 static tree
-gnat_type_max_size (gnu_type)
-     tree gnu_type;
+gnat_type_max_size (tree gnu_type)
 {
-  return max_size (TYPE_SIZE_UNIT (gnu_type), true);
+  /* First see what we can get from TYPE_SIZE_UNIT, which might not be
+     constant even for simple expressions if it has already been gimplified
+     and replaced by a VAR_DECL.  */
+
+  tree max_unitsize = max_size (TYPE_SIZE_UNIT (gnu_type), true);
+
+  /* If we don't have a constant, see what we can get from TYPE_ADA_SIZE,
+     typically not gimplified.  */
+
+  if (!host_integerp (max_unitsize, 1)
+      && (TREE_CODE (gnu_type) == RECORD_TYPE
+	  || TREE_CODE (gnu_type) == UNION_TYPE
+	  || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+      && TYPE_ADA_SIZE (gnu_type))
+    {
+      tree max_adasize = max_size (TYPE_ADA_SIZE (gnu_type), true);
+      
+      /* If we have succeded in finding a constant, round it up to the
+	 type's alignment and return the result in byte units.  */
+
+      if (host_integerp (max_adasize, 1))
+	max_unitsize
+	  = size_binop (CEIL_DIV_EXPR,
+			round_up (max_adasize, TYPE_ALIGN (gnu_type)),
+			bitsize_unit_node);
+    }
+
+  return max_unitsize;
 }
 
 /* GNU_TYPE is a type. Determine if it should be passed by reference by

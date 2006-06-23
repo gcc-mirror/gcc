@@ -821,7 +821,6 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
   if (mode == BLKmode || memory_required)
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
-      tree size_tree;
       rtx tmp;
 
       /* Zero sized arrays are GNU C extension.  Set size to 1 to avoid
@@ -830,20 +829,10 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
 	size = 1;
 
       /* Unfortunately, we don't yet know how to allocate variable-sized
-	 temporaries.  However, sometimes we have a fixed upper limit on
-	 the size (which is stored in TYPE_ARRAY_MAX_SIZE) and can use that
-	 instead.  This is the case for Chill variable-sized strings.  */
-      if (size == -1 && TREE_CODE (type) == ARRAY_TYPE
-	  && TYPE_ARRAY_MAX_SIZE (type) != NULL_TREE
-	  && host_integerp (TYPE_ARRAY_MAX_SIZE (type), 1))
-	size = tree_low_cst (TYPE_ARRAY_MAX_SIZE (type), 1);
-
-      /* If we still haven't been able to get a size, see if the language
-	 can compute a maximum size.  */
-      if (size == -1
-	  && (size_tree = lang_hooks.types.max_size (type)) != 0
-	  && host_integerp (size_tree, 1))
-	size = tree_low_cst (size_tree, 1);
+	 temporaries.  However, sometimes we can find a fixed upper limit on
+	 the size, so try that instead.  */
+      else if (size == -1)
+	size = max_int_size_in_bytes (type);
 
       /* The size of the temporary may be too large to fit into an integer.  */
       /* ??? Not sure this should happen except for user silliness, so limit
