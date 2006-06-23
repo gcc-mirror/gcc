@@ -377,6 +377,18 @@ dim_rank_check (gfc_expr * dim, gfc_expr * array, int allow_assumed)
   return SUCCESS;
 }
 
+/* Error return for transformational intrinsics not allowed in
+   initalization expressions.  */
+ 
+static try
+non_init_transformational (void)
+{
+  gfc_error ("transformational intrinsic '%s' at %L is not permitted "
+	     "in an initialization expression", gfc_current_intrinsic,
+	     gfc_current_intrinsic_where);
+  return FAILURE;
+}
+
 /***** Check functions *****/
 
 /* Check subroutine suitable for intrinsics taking a real argument and
@@ -437,6 +449,9 @@ gfc_check_all_any (gfc_expr * mask, gfc_expr * dim)
 
   if (dim_check (dim, 1, 1) == FAILURE)
     return FAILURE;
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -723,6 +738,9 @@ gfc_check_count (gfc_expr * mask, gfc_expr * dim)
   if (dim_check (dim, 1, 1) == FAILURE)
     return FAILURE;
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -745,6 +763,9 @@ gfc_check_cshift (gfc_expr * array, gfc_expr * shift, gfc_expr * dim)
 
   if (dim_check (dim, 2, 1) == FAILURE)
     return FAILURE;
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -847,6 +868,9 @@ gfc_check_dot_product (gfc_expr * vector_a, gfc_expr * vector_b)
       return FAILURE;
     }
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -881,6 +905,9 @@ gfc_check_eoshift (gfc_expr * array, gfc_expr * shift, gfc_expr * boundary,
 
   if (dim_check (dim, 1, 1) == FAILURE)
     return FAILURE;
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -1544,6 +1571,9 @@ gfc_check_matmul (gfc_expr * matrix_a, gfc_expr * matrix_b)
       return FAILURE;
     }
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -1603,6 +1633,9 @@ gfc_check_minloc_maxloc (gfc_actual_arglist * ap)
       if (gfc_check_conformance (buffer, a, m) == FAILURE)
 	return FAILURE;
     }
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -1672,6 +1705,9 @@ gfc_check_minval_maxval (gfc_actual_arglist * ap)
       || array_check (ap->expr, 0) == FAILURE)
     return FAILURE;
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return check_reduction (ap);
 }
 
@@ -1682,6 +1718,9 @@ gfc_check_product_sum (gfc_actual_arglist * ap)
   if (numeric_check (ap->expr, 0) == FAILURE
       || array_check (ap->expr, 0) == FAILURE)
     return FAILURE;
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return check_reduction (ap);
 }
@@ -1779,6 +1818,9 @@ gfc_check_pack (gfc_expr * array, gfc_expr * mask, gfc_expr * vector)
 
       /* TODO: More constraints here.  */
     }
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
@@ -2151,6 +2193,9 @@ gfc_check_spread (gfc_expr * source, gfc_expr * dim, gfc_expr * ncopies)
   if (scalar_check (ncopies, 2) == FAILURE)
     return FAILURE;
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -2366,6 +2411,9 @@ gfc_check_transpose (gfc_expr * matrix)
   if (rank_check (matrix, 0, 2) == FAILURE)
     return FAILURE;
 
+  if (gfc_init_expr)
+    return non_init_transformational ();
+
   return SUCCESS;
 }
 
@@ -2403,6 +2451,9 @@ gfc_check_unpack (gfc_expr * vector, gfc_expr * mask, gfc_expr * field)
 
   if (same_type_check (vector, 0, field, 2) == FAILURE)
     return FAILURE;
+
+  if (gfc_init_expr)
+    return non_init_transformational ();
 
   return SUCCESS;
 }
