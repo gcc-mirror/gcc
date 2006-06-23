@@ -1,3 +1,9 @@
+2006-06-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28112
+	* parser.c (cp_parser_attribute_list): Skip attributes with invalid
+	arguments.  Fix comment.
+
 2006-06-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28109
