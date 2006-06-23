@@ -1,3 +1,8 @@
+2006-06-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* configure.host (hppa-*): Change to 'hppa*-*'.  Set
+	'enable_hash_synchronization_default' to no.
+
 2006-04-05  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* configure.host: Add -fno-omit-frame-pointer to libgcj_flags for
