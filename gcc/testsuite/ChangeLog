@@ -1,3 +1,9 @@
+2006-06-23  Danny Smith   <dannysmith@users.sourceforge.net>
+
+	PR target/27789
+	* g++.dg/ext/dllimport4.C. Add more tests for invalid
+	initialization.
+
 2006-06-22  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/27531
