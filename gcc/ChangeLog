@@ -1,3 +1,9 @@
+2006-06-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28045
+	* fold-const.c (operand_equal_p): Check if the argument types
+	have the same precision before stripping NOPs.
+
 2006-06-21  Richard Henderson  <rth@redhat.com>
 
         PR target/26347
