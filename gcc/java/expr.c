@@ -1451,7 +1451,6 @@ expand_iinc (unsigned int local_var_index, int ival, int pc)
   constant_value = build_int_cst (NULL_TREE, ival);
   res = fold_build2 (PLUS_EXPR, int_type_node, local_var, constant_value);
   java_add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (local_var), local_var, res));
-  update_aliases (local_var, local_var_index, pc);
 }
 
 
@@ -3413,7 +3412,6 @@ process_jvm_instruction (int PC, const unsigned char* byte_ops,
     decl = find_local_variable (index, type, oldpc);		\
     set_local_type (index, type);				\
     java_add_stmt (build2 (MODIFY_EXPR, type, decl, value));	\
-    update_aliases (decl, index, PC);				\
   }
 
 #define STORE(OPERAND_TYPE, OPERAND_VALUE) \
