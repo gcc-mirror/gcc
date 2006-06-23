@@ -479,10 +479,12 @@ create_tmp_var (tree type, const char *prefix)
   tree tmp_var;
 
   /* We don't allow types that are addressable (meaning we can't make copies),
-     incomplete, or of variable size.  */
-  gcc_assert (!TREE_ADDRESSABLE (type)
-	      && COMPLETE_TYPE_P (type)
-	      && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST);
+     or incomplete.  We also used to reject every variable size objects here,
+     but now support those for which a constant upper bound can be obtained.
+     The processing for variable sizes is performed in gimple_add_tmp_var,
+     point at which it really matters and possibly reached via paths not going
+     through this function, e.g. after direct calls to create_tmp_var_raw.  */
+  gcc_assert (!TREE_ADDRESSABLE (type) && COMPLETE_TYPE_P (type));
 
   tmp_var = create_tmp_var_raw (type, prefix);
   gimple_add_tmp_var (tmp_var);
@@ -688,10 +690,40 @@ declare_vars (tree vars, tree scope, bool debug_info)
     }
 }
 
+/* For VAR a VAR_DECL of variable size, try to find a constant upper bound
+   for the size and adjust DECL_SIZE/DECL_SIZE_UNIT accordingly.  Abort if
+   no such upper bound can be obtained.  */
+
+static void
+force_constant_size (tree var)
+{
+  /* The only attempt we make is by querying the maximum size of objects
+     of the variable's type.  */
+
+  HOST_WIDE_INT max_size;
+
+  gcc_assert (TREE_CODE (var) == VAR_DECL);
+
+  max_size = max_int_size_in_bytes (TREE_TYPE (var));
+
+  gcc_assert (max_size >= 0);
+
+  DECL_SIZE_UNIT (var)
+    = build_int_cst (TREE_TYPE (DECL_SIZE_UNIT (var)), max_size);
+  DECL_SIZE (var)
+    = build_int_cst (TREE_TYPE (DECL_SIZE (var)), max_size * BITS_PER_UNIT);
+}
+
 void
 gimple_add_tmp_var (tree tmp)
 {
   gcc_assert (!TREE_CHAIN (tmp) && !DECL_SEEN_IN_BIND_EXPR_P (tmp));
+
+  /* Later processing assumes that the object size is constant, which might
+     not be true at this point.  Force the use of a constant upper bound in
+     this case.  */
+  if (!host_integerp (DECL_SIZE_UNIT (tmp), 1))
+    force_constant_size (tmp);
 
   DECL_CONTEXT (tmp) = current_function_decl;
   DECL_SEEN_IN_BIND_EXPR_P (tmp) = 1;

@@ -1,3 +1,18 @@
+2006-06-23  Olivier Hainque  <hainque@adacore.com>
+
+	* tree.c (max_int_size_in_bytes): New function, inspired from
+	code in function.c:assign_temp.
+	* tree.h (max_int_size_in_bytes): Declare.
+	* function.c (assign_temp): Use it.
+	* gimplify.c (create_tmp_var): Relax the assertions on the type
+	properties, not mandating constant size any more.
+	(force_constant_size): New static function.
+	(gimple_add_tmp_var): Use it, forcing variable size to a
+	constant upper bound if it is not constant on entry.
+
+	* ada/misc.c (gnat_type_max_size): Look at TYPE_ADA_SIZE if we have
+	not been able to get a constant upper bound from TYPE_SIZE_UNIT.
+
 2006-06-23  Danny Smith   <dannysmith@users.sourceforge.net>
 
 	PR target/27789
