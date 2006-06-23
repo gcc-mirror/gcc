@@ -7757,7 +7757,11 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
     }
   /* If IN is a simple operand, use gen_move_insn.  */
   else if (OBJECT_P (in) || GET_CODE (in) == SUBREG)
-    emit_insn (gen_move_insn (out, in));
+    {
+      tem = emit_insn (gen_move_insn (out, in));
+      /* IN may contain a LABEL_REF, if so add a REG_LABEL note.  */
+      mark_jump_label (in, tem, 0);
+    }
 
 #ifdef HAVE_reload_load_address
   else if (HAVE_reload_load_address)
