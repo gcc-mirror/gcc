@@ -193,6 +193,8 @@ static const size_t extra_order_size_table[] = {
   sizeof (struct tree_var_decl),
   sizeof (struct tree_list),
   sizeof (struct tree_ssa_name),
+  sizeof (struct tree_function_decl),
+  sizeof (struct tree_binfo),
   sizeof (struct function),
   sizeof (struct basic_block_def),
   sizeof (bitmap_element),
@@ -1030,7 +1032,7 @@ release_pages (void)
 /* This table provides a fast way to determine ceil(log_2(size)) for
    allocation requests.  The minimum allocation size is eight bytes.  */
 
-static unsigned char size_lookup[511] =
+static unsigned char size_lookup[512] =
 {
   3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4,
   4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -1063,7 +1065,7 @@ static unsigned char size_lookup[511] =
   9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
   9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
   9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9
+  9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9
 };
 
 /* Typed allocation function.  Does nothing special in this collector.  */
@@ -1509,10 +1511,6 @@ init_ggc (void)
   for (order = HOST_BITS_PER_PTR; order < NUM_ORDERS; ++order)
     {
       size_t s = extra_order_size_table[order - HOST_BITS_PER_PTR];
-
-      /* If S is not a multiple of the MAX_ALIGNMENT, then round it up
-	 so that we're sure of getting aligned memory.  */
-      s = ROUND_UP (s, MAX_ALIGNMENT);
       object_size_table[order] = s;
     }
 
@@ -1528,16 +1526,56 @@ init_ggc (void)
   /* Reset the size_lookup array to put appropriately sized objects in
      the special orders.  All objects bigger than the previous power
      of two, but no greater than the special size, should go in the
-     new order.  */
+     new order.
+     Enforce alignment during lookup.  The resulting bin size must
+     have the same or bigger alignment than the apparent alignment
+     requirement from the size request (but not bigger alignment
+     than MAX_ALIGNMENT).  Consider an extra bin of size 76 (in
+     addition to the 64 and 128 byte sized bins).  A request of
+     allocation size of 72 bytes must be served from the 128 bytes
+     bin, because 72 bytes looks like a request for 8 byte aligned
+     memory, while the 76 byte bin can only serve chunks with a
+     guaranteed alignment of 4 bytes.  */
   for (order = HOST_BITS_PER_PTR; order < NUM_ORDERS; ++order)
     {
-      int o;
-      int i;
+      int i, mask;
 
-      o = size_lookup[OBJECT_SIZE (order)];
-      for (i = OBJECT_SIZE (order); size_lookup [i] == o; --i)
-	size_lookup[i] = order;
+      /* Build an alignment mask that can be used for testing
+         size % 2*align.  If (size | MAX_ALIGNMENT) & mask is non-zero
+	 then the requested size apparent alignment requirement 
+	 (which is at most MAX_ALIGNMENT) is less or equal than what
+	 the OBJECT_SIZE bin can guarantee.  */
+      mask = ~(((unsigned)-1) << ffs (OBJECT_SIZE (order)));
+      mask &= 2 * MAX_ALIGNMENT - 1;
+
+      /* All objects smaller than the OBJECT_SIZE for this ORDER could go
+	 into ORDER.  Determine the cases for which that is profitable
+	 and fulfilling the alignment requirements.  Stop searching
+	 once a smaller bin with same or better alignment guarantee is
+	 found.  */
+      for (i = OBJECT_SIZE (order); ; --i)
+	{
+	  unsigned int old_sz = OBJECT_SIZE (size_lookup [i]);
+	  if (!(old_sz & (mask >> 1))
+	      && old_sz < OBJECT_SIZE (order))
+	    break;
+
+	  /* If object of size I are presently using a larger bin, we would
+	     like to move them to ORDER.  However, we can only do that if we
+	     can be sure they will be properly aligned.  They will be properly
+	     aligned if either the ORDER bin is maximally aligned, or if
+	     objects of size I cannot be more strictly aligned than the
+	     alignment of this order.  */
+	  if ((i | MAX_ALIGNMENT) & mask
+	      && old_sz > OBJECT_SIZE (order))
+	    size_lookup[i] = order;
+	}
     }
+
+  /* Verify we got everything right with respect to alignment requests.  */
+  for (order = 1; order < 512; ++order)
+    gcc_assert (ffs (OBJECT_SIZE (size_lookup [order]))
+		>= ffs (order | MAX_ALIGNMENT));
 
   G.depth_in_use = 0;
   G.depth_max = 10;
