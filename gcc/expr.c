@@ -6945,9 +6945,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
 	  return const_vector_from_tree (exp);
 	if (GET_MODE_CLASS (mode) == MODE_INT)
-	  tmp = fold_unary (VIEW_CONVERT_EXPR,
-			    lang_hooks.types.type_for_mode (mode, 1),
-			    exp);
+	  {
+	    tree type_for_mode = lang_hooks.types.type_for_mode (mode, 1);
+	    if (type_for_mode)
+	      tmp = fold_unary (VIEW_CONVERT_EXPR, type_for_mode, exp);
+	  }
 	if (!tmp)
 	  tmp = build_constructor_from_list (type,
 					     TREE_VECTOR_CST_ELTS (exp));
