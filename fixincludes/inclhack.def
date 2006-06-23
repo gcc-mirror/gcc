@@ -1716,6 +1716,17 @@ fix = {
     test_text = "extern union mpinfou spu_info[];";
 };
 
+fix = {
+    hackname  = hpux_extern_errno;
+    mach      = "*-hp-hpux10.*";
+    mach      = "*-hp-hpux11.[0-2]*";
+    files     = errno.h;
+    select    = "^[ \t]*extern int errno;$";
+    c_fix     = format;
+    c_fix_arg = "#ifdef __cplusplus\nextern \"C\" {\n#endif\n%0\n#ifdef __cplusplus\n}\n#endif";
+    test_text = "   extern int errno;\n";
+};
+
 
 /*
  *  Fix glibc definition of HUGE_VAL in terms of hex floating point constant

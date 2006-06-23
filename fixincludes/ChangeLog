@@ -1,3 +1,9 @@
+2006-06-23  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/28084
+	* inclhack.def (hpux_extern_errno): New.
+	* fixincl.x: Regenerate.
+
 2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Add dvi info html and install-html to .PHONY
