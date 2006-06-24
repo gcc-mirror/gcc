@@ -22,7 +22,7 @@ This file is licensed under the GPL.  */
   "cc1 -E -lang-fortran -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
       %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E: -o %|.f95 |\n\
-    f951 %|.f95 %(cc1_options) %{J*} %{I*}\
+    f951 %|.f95 %{!ffixed-form:-ffree-form} %(cc1_options) %{J*} %{I*}\
       -fpreprocessed %{!nostdinc:-I finclude%s} %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
 {".f90", "@f95", 0, 0, 0},
 {".f95", "@f95", 0, 0, 0},
