@@ -172,9 +172,9 @@ proc libstdc++_init { testfile } {
     # Do a bunch of handstands and backflips for cross compiling and
     # finding simulators...
     if [is_remote host] {
-        set header [remote_download host ${blddir}/testsuite/testsuite_hooks.h]
+        set header [remote_download host ${blddir}/testsuite/util/testsuite_hooks.h]
         if { $header == "" } {
-            verbose -log "Unable to download ${blddir}/testsuite/testsuite_hooks.h to host."
+            verbose -log "Unable to download ${blddir}/testsuite/util/testsuite_hooks.h to host."
             return "untested"
         }
       set cxx [transform "g++"]
@@ -190,7 +190,7 @@ proc libstdc++_init { testfile } {
             set includes [exec sh $flags_file --build-includes]
         } else {
             set cxx [transform "g++"]
-            set includes "-I${srcdir}"
+            set includes "-I${srcdir}/util"
             set cxxldflags ""
             set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0" 
         }
