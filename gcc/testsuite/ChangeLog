@@ -1,3 +1,9 @@
+2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28081
+	* gfortran.dg/substr_3.f: New test.
+	* gfortran.dg/equiv_2.f90: Update expected error message.
+
 2006-06-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28118

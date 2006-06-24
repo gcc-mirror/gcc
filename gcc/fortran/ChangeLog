@@ -1,5 +1,11 @@
 2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR fortran/28081
+	* resolve.c (resolve_substring): Don't issue out-of-bounds
+	error messages when the range has zero size.
+
+2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR fortran/23862
 	* lang-specs.h (f95-cpp-input): Pass -ffree-form to f951 unless
 	-ffixed-form is explicitly specified.
