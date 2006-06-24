@@ -1,3 +1,10 @@
+2006-06-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28118
+	* trans-array.c (gfc_conv_expr_descriptor): When building temp,
+	use the substring reference to calculate the length if the
+	expression does not have a charlen.
+
 2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/28094
