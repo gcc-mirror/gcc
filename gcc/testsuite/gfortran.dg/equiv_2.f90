@@ -7,7 +7,7 @@
       subroutine broken_equiv2
       character*4 j
       character*2 k
-      equivalence (j(2:3), k(1:5))    ! { dg-error "out of bounds" }
+      equivalence (j(2:3), k(1:5))    ! { dg-error "exceeds the string length" }
       end subroutine
 
       subroutine broken_equiv3
