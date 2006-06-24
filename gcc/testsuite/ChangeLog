@@ -1,3 +1,8 @@
+2006-06-24  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/scalar_mode_agg_compare_loop.adb: New test.
+	* gnat.dg/scalar_mode_agg_compare.adb: New test.
+	
 2006-06-23  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/usual-arith-conv-bad.c: New test.

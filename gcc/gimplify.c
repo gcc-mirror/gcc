@@ -3582,6 +3582,27 @@ gimplify_variable_sized_compare (tree *expr_p)
   return GS_OK;
 }
 
+/*  Gimplify a comparison between two aggregate objects of integral scalar
+    mode as a comparison between the bitwise equivalent scalar values.  */
+
+static enum gimplify_status
+gimplify_scalar_mode_aggregate_compare (tree *expr_p)
+{
+  tree op0 = TREE_OPERAND (*expr_p, 0);
+  tree op1 = TREE_OPERAND (*expr_p, 1);
+
+  tree type = TREE_TYPE (op0);
+  tree scalar_type = lang_hooks.types.type_for_mode (TYPE_MODE (type), 1);
+
+  op0 = fold_build1 (VIEW_CONVERT_EXPR, scalar_type, op0);
+  op1 = fold_build1 (VIEW_CONVERT_EXPR, scalar_type, op1);
+
+  *expr_p
+    = fold_build2 (TREE_CODE (*expr_p), TREE_TYPE (*expr_p), op0, op1);
+
+  return GS_OK;
+}
+
 /*  Gimplify TRUTH_ANDIF_EXPR and TRUTH_ORIF_EXPR expressions.  EXPR_P
     points to the expression to gimplify.
 
@@ -5687,16 +5708,28 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  switch (TREE_CODE_CLASS (TREE_CODE (*expr_p)))
 	    {
 	    case tcc_comparison:
-	      /* If this is a comparison of objects of aggregate type,
-	     	 handle it specially (by converting to a call to
-	     	 memcmp).  It would be nice to only have to do this
-	     	 for variable-sized objects, but then we'd have to
-	     	 allow the same nest of reference nodes we allow for
-	     	 MODIFY_EXPR and that's too complex.  */
-	      if (!AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (*expr_p, 1))))
-		goto expr_2;
-	      ret = gimplify_variable_sized_compare (expr_p);
-	      break;
+	      /* Handle comparison of objects of non scalar mode aggregates
+	     	 with a call to memcmp.  It would be nice to only have to do
+	     	 this for variable-sized objects, but then we'd have to allow
+	     	 the same nest of reference nodes we allow for MODIFY_EXPR and
+	     	 that's too complex.
+
+		 Compare scalar mode aggregates as scalar mode values.  Using
+		 memcmp for them would be very inefficient at best, and is
+		 plain wrong if bitfields are involved.  */
+
+	      {
+		tree type = TREE_TYPE (TREE_OPERAND (*expr_p, 1));
+
+		if (!AGGREGATE_TYPE_P (type))
+		  goto expr_2;
+		else if (TYPE_MODE (type) != BLKmode)
+		  ret = gimplify_scalar_mode_aggregate_compare (expr_p);
+		else
+		  ret = gimplify_variable_sized_compare (expr_p);
+
+		break;
+		}
 
 	    /* If *EXPR_P does not need to be special-cased, handle it
 	       according to its class.  */

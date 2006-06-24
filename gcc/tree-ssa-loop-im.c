@@ -174,7 +174,6 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 
 	case BIT_FIELD_REF:
 	case VIEW_CONVERT_EXPR:
-	case ARRAY_RANGE_REF:
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
 	  nxt = &TREE_OPERAND (*addr_p, 0);
@@ -192,6 +191,7 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	  break;
 
 	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
 	  nxt = &TREE_OPERAND (*addr_p, 0);
 	  if (!cbck (*addr_p, &TREE_OPERAND (*addr_p, 1), data))
 	    return false;
