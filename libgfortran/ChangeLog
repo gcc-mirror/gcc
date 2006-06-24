@@ -1,3 +1,11 @@
+2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28094
+	* Makefile.am: Add _mod_r10.F90 and _mod_r16.F90.
+	* Makefile.in: Regenerate.
+	* generated/_mod_r10.F90: New file.
+	* generated/_mod_r16.F90: New file.
+
 2006-06-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/26769
