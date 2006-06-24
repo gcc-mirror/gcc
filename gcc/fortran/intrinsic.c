@@ -1809,7 +1809,7 @@ add_functions (void)
 
   make_generic ("mod", GFC_ISYM_MOD, GFC_STD_F77);
 
-  add_sym_2 ("modulo", 1, 1, BT_REAL, di, GFC_STD_F95,
+  add_sym_2 ("modulo", 1, 0, BT_REAL, di, GFC_STD_F95,
 	     gfc_check_a_p, gfc_simplify_modulo, gfc_resolve_modulo,
 	     a, BT_REAL, di, REQUIRED, p, BT_REAL, di, REQUIRED);
 

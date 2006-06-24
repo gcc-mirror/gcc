@@ -1,3 +1,11 @@
+2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28094
+	* trans-intrinsic.c (gfc_conv_intrinsic_mod): Support cases where
+	there is no integer kind equal to the resulting real kind.
+	* intrinsic.c (add_functions): MODULO is not allowed as an actual
+	argument.
+
 2006-06-23  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/27981
