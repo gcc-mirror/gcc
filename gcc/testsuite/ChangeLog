@@ -1,3 +1,8 @@
+2006-06-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28118
+	* gfortran.dg/actual_array_substr_1.f90: New test.
+
 2006-06-24  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/scalar_mode_agg_compare_loop.adb: New test.

@@ -4184,9 +4184,37 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       loop.temp_ss->next = gfc_ss_terminator;
       if (expr->ts.type == BT_CHARACTER)
 	{
-	  if (expr->ts.cl
-	      && expr->ts.cl->length
-	      && expr->ts.cl->length->expr_type == EXPR_CONSTANT)
+	  if (expr->ts.cl == NULL)
+	    {
+	      /* This had better be a substring reference!  */
+	      gfc_ref *char_ref = expr->ref;
+	      for (; char_ref; char_ref = char_ref->next)
+		if (char_ref->type == REF_SUBSTRING)
+		  {
+		    mpz_t char_len;
+		    expr->ts.cl = char_ref->u.ss.length;
+		    mpz_init_set_ui (char_len, 1);
+		    mpz_add (char_len, char_len,
+			     char_ref->u.ss.end->value.integer);
+		    mpz_sub (char_len, char_len,
+			     char_ref->u.ss.start->value.integer);
+		    expr->ts.cl->backend_decl
+			= gfc_conv_mpz_to_tree (char_len,
+					gfc_default_character_kind);
+		    /* Cast is necessary for *-charlen refs.  */
+		    expr->ts.cl->backend_decl
+			= convert (gfc_charlen_type_node,
+				   expr->ts.cl->backend_decl);
+		    mpz_clear (char_len);
+		      break;
+		  }
+	      gcc_assert (char_ref != NULL);
+	      loop.temp_ss->data.temp.type
+		= gfc_typenode_for_spec (&expr->ts);
+	      loop.temp_ss->string_length = expr->ts.cl->backend_decl;
+	    }
+	  else if (expr->ts.cl->length
+		     && expr->ts.cl->length->expr_type == EXPR_CONSTANT)
 	    {
 	      expr->ts.cl->backend_decl
 		= gfc_conv_mpz_to_tree (expr->ts.cl->length->value.integer,
