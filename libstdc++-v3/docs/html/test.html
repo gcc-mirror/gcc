@@ -31,7 +31,7 @@
 <h2>Contents</h2>
 <ul>
    <li><a href="#org">Testsuite organization and naming conventions</a></li>
-   <li><a href="#util">Utilities: abicheck and libv3test</a></li>
+   <li><a href="#util">Utilities: abicheck and libtestc++</a></li>
    <li><a href="#new">How to write a new test case</a></li>
    <li><a href="#check">Options for running the tests</a></li>
    <li><a href="#debug">Running debug-mode tests</a></li>
@@ -93,6 +93,7 @@ config		  Files for the dejagnu test harness.
 lib		  Files for the dejagnu test harness.
 libstdc++*     	  Files for the dejagnu test harness.
 data		  Sample text files for testing input and output.
+util		  Files for libtestc++, utilities and testing routines.
    </pre>
 
    <p>
@@ -207,14 +208,14 @@ cat 27_io/objects/char/3_xin.in | a.out
 </ul>
 
 <hr />
-<h2><a name="util">Utilities: abi_check and libv3test</a></h2>
+<h2><a name="util">Utilities: abi_check and libtestc++</a></h2>
   <p>
    The testsuite directory also contains some files that implement
    functionality that is intended to make writing test cases easier,
    or to avoid duplication, or to provide error checking in a way that
    is consistent across platforms and test harnesses. A stand-alone
    executable, called <em>abi_check</em>, and a static library called
-   <em>libv3test</em> are constructed. Both of these items are not
+   <em>libtestc++</em> are constructed. Both of these items are not
    installed, and only used during testing.
   </p>
 
@@ -329,9 +330,9 @@ cat 27_io/objects/char/3_xin.in | a.out
    <p>
    A bunch of utility functions and classes have already been
    abstracted out into the testsuite utility library, <code>
-   libv3test</code>. To use this functionality, just include the
-   appropriate header file: the library will automatically be linked
-   in as part of the testsuite run.
+   libtestc++</code>. To use this functionality, just include the
+   appropriate header file: the library or specific object files will
+   automatically be linked in as part of the testsuite run.
    </p>
 
    <p>

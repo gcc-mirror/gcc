@@ -1,3 +1,10 @@
+2006-06-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/27984
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Adjust
+	testing includes.
+	* docs/html/test.html: Adjust for testsuite changes.
+	
 2006-06-22  Jonathan Lennox  <lennox@cs.columbia.edu>
 	    Paolo Carlini  <pcarlini@suse.de>
 
