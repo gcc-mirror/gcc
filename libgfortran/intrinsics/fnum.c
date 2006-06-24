@@ -31,8 +31,6 @@ Boston, MA 02110-1301, USA.  */
 #include "config.h"
 #include "libgfortran.h"
 
-#include "../io/io.h"
-
 /* FUNCTION FNUM(UNIT)
    INTEGER FNUM
    INTEGER, INTENT(IN), :: UNIT  */

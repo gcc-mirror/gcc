@@ -31,7 +31,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "libgfortran.h"
-#include "../io/io.h"
+#include <gthr.h>
 
 extern void random_r4 (GFC_REAL_4 *);
 iexport_proto(random_r4);

@@ -1,5 +1,21 @@
 2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	* intrinsics/ierrno.c: Don't include "io/io.h".
+	* intrinsics/sleep.c: Likewise.
+	* intrinsics/perror.c: Likewise.
+	* intrinsics/stat.c: Likewise.
+	* intrinsics/kill.c: Likewise.
+	* intrinsics/time.c: Likewise.
+	* intrinsics/fnum.c: Likewise.
+	* intrinsics/rename.c: Likewise.
+	* intrinsics/symlnk.c: Likewise.
+	* intrinsics/chdir.c: Likewise.
+	* intrinsics/link.c: Likewise.
+	* intrinsics/random.c: Don't include "io/io.h". Include	<gthr.h>.
+	* intrinsics/rand.c: Likewise.
+
+2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR fortran/28094
 	* Makefile.am: Add _mod_r10.F90 and _mod_r16.F90.
 	* Makefile.in: Regenerate.
