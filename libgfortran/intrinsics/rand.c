@@ -37,7 +37,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "libgfortran.h"
-#include "../io/io.h"
+#include <gthr.h>
 
 #define GFC_RAND_A	16807
 #define GFC_RAND_M	2147483647

@@ -41,8 +41,6 @@ Boston, MA 02110-1301, USA.  */
 
 #include <errno.h>
 
-#include "../io/io.h"
-
 /* SUBROUTINE KILL(PID, SIGNAL, STATUS)
    INTEGER, INTENT(IN) :: PID, SIGNAL
    INTEGER(KIND=1), INTENT(OUT), OPTIONAL :: STATUS

@@ -49,8 +49,6 @@ Boston, MA 02110-1301, USA.  */
 
 #include <errno.h>
 
-#include "../io/io.h"
-
 /* SUBROUTINE STAT(FILE, SARRAY, STATUS)
    CHARACTER(len=*), INTENT(IN) :: FILE
    INTEGER, INTENT(OUT), :: SARRAY(13)

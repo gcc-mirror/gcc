@@ -33,8 +33,6 @@ Boston, MA 02110-1301, USA.  */
 
 #include <errno.h>
 
-#include "../io/io.h"
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif

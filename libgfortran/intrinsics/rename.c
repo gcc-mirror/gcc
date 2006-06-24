@@ -35,8 +35,6 @@ Boston, MA 02110-1301, USA.  */
 #include <stdio.h>
 #include <string.h>
 
-#include "../io/io.h"
-
 /* SUBROUTINE RENAME(PATH1, PATH2, STATUS)
    CHARACTER(len=*), INTENT(IN) :: PATH1, PATH2
    INTEGER, INTENT(OUT), OPTIONAL :: STATUS  */

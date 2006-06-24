@@ -44,8 +44,6 @@ Boston, MA 02110-1301, USA.  */
 #  endif
 #endif
 
-#include "../io/io.h"
-
 
 /* INTEGER(KIND=4) FUNCTION TIME()  */
 
