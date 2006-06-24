@@ -1,3 +1,14 @@
+2006-06-24  Olivier Hainque  <hainque@adacore.com>
+
+	* gimplify.c (gimplify_scalar_mode_aggregate_compare): New function.
+	(gimplify_expr): Use it for tcc_comparison of operands of non BLKmode
+	aggregate types.
+
+2006-06-24  Olivier Hainque  <hainque@adacore.com>
+
+	* tree-ssa-loop-im.c (for_each_index): Handle ARRAY_RANGE_REF as
+	ARRAY_REF, so have the callback called for the low bound expression.
+
 2006-06-23  Janis Johnson  <janis187@us.ibm.com>
 
 	* tree.h (DECIMAL_FLOAT_TYPE_P): New.
