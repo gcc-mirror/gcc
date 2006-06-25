@@ -1,3 +1,8 @@
+2006-06-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/io.h: Move proto for unit_to_fd...
+	* libgfortran.h: ...here.
+
 2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/ierrno.c: Don't include "io/io.h".
