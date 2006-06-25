@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.1.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-05-24 16:19-0700\n"
-"PO-Revision-Date: 2006-06-24 03:54+0800\n"
+"PO-Revision-Date: 2006-06-26 00:35+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
 "MIME-Version: 1.0\n"
@@ -5520,9 +5520,9 @@ msgid "Can't assign to INTENT(IN) variable '%s' at %L"
 msgstr ""
 
 #: fortran/expr.c:1905
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %L is not a VALUE"
-msgstr "“%s”处的值不是模式\n"
+msgstr "‘%s’在 %L 处不是一个 VALUE"
 
 #: fortran/expr.c:1912
 #, no-c-format
@@ -6044,9 +6044,9 @@ msgid "Fortran 95 requires default INTEGER in SIZE tag at %L"
 msgstr ""
 
 #: fortran/io.c:1114
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: CONVERT tag at %L"
-msgstr "不能将 %s 转换为 %s，于 %L"
+msgstr "扩展：%L 处的 CONVERT 标记"
 
 #: fortran/io.c:1283
 #, no-c-format
@@ -6109,9 +6109,9 @@ msgid "Internal unit with vector subscript at %L"
 msgstr ""
 
 #: fortran/io.c:1870
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "External IO UNIT cannot be an array at %L"
-msgstr "%C 处枚举量不能是数组"
+msgstr "%L 处的外部 IO UNIT 不能是数组"
 
 #: fortran/io.c:1880
 #, fuzzy, no-c-format
@@ -8154,14 +8154,14 @@ msgid "User operator procedure '%s' at %L must have at least one argument"
 msgstr "内建函数‘%s’ 于 %L 处必须有至少两个实参"
 
 #: fortran/resolve.c:6025
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "First argument of operator interface at %L cannot be optional"
-msgstr "%L 处运算符接口的第一个参数必须是 INTENT(IN)"
+msgstr "%L 处运算符接口的第一个参数不能是可选的"
 
 #: fortran/resolve.c:6037
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Second argument of operator interface at %L cannot be optional"
-msgstr "%L 处运算符接口的第二个参数必须是 INTENT(IN)"
+msgstr "%L 处运算符接口的第二个参数不能是可选的"
 
 #: fortran/resolve.c:6041
 #, fuzzy, no-c-format
@@ -9477,7 +9477,7 @@ msgstr "标识符的最大长度"
 
 #: fortran/lang.opt:162
 msgid "Size in bytes of the largest array that will be put on the stack"
-msgstr ""
+msgstr "以字节大小表示的可以被放入堆栈的数组的最大大小"
 
 #: fortran/lang.opt:166
 msgid "Set default accessibility of module entities to PRIVATE"
@@ -9489,7 +9489,7 @@ msgstr "不生成代码，仅做语法和语义检查"
 
 #: fortran/lang.opt:174
 msgid "Try to layout derived types as compact as possible"
-msgstr ""
+msgstr "为派生类型使用尽可能紧实的布局"
 
 #: fortran/lang.opt:178
 msgid "Copy array sections into a contiguous block on procedure entry"
@@ -9872,9 +9872,8 @@ msgid "Generate code for given CPU"
 msgstr "为给定的 CPU 生成代码"
 
 #: config/s390/s390.opt:36
-#, fuzzy
 msgid "Maintain backchain pointer"
-msgstr "提领 %<void *%> 指针"
+msgstr "维护链回上层堆栈框架的指针"
 
 #: config/s390/s390.opt:40
 msgid "Additional debug prints"
@@ -11211,11 +11210,11 @@ msgstr "在 ac0(Unix 汇编语法中的 fr0)中返回浮点结果"
 
 #: config/pdp11/pdp11.opt:44
 msgid "Do not use inline patterns for copying memory"
-msgstr ""
+msgstr "不使用内联样式来复制内存"
 
 #: config/pdp11/pdp11.opt:48
 msgid "Use inline patterns for copying memory"
-msgstr ""
+msgstr "使用内联样式来复制内存"
 
 #: config/pdp11/pdp11.opt:52
 msgid "Do not pretend that branches are expensive"
@@ -19635,17 +19634,17 @@ msgstr "从此处调用"
 #: tree-mudflap.c:847
 #, gcc-internal-format
 msgid "mudflap checking not yet implemented for ARRAY_RANGE_REF"
-msgstr ""
+msgstr "mudflap 尚未为 ARRAY_RANGE_REF 实现"
 
 #: tree-mudflap.c:1038
 #, gcc-internal-format
 msgid "mudflap cannot track %qs in stub function"
-msgstr ""
+msgstr "mudflap 不能追踪占位函数中的 %qs"
 
 #: tree-mudflap.c:1269
 #, gcc-internal-format
 msgid "mudflap cannot track unknown size extern %qs"
-msgstr ""
+msgstr "mudflap 不能追踪大小未知的外部变量 %qs"
 
 #: tree-nomudflap.c:51
 #, gcc-internal-format
