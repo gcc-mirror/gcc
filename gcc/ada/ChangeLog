@@ -1,3 +1,8 @@
+2006-06-23  Olivier Hainque  <hainque@adacore.com>
+
+	* misc.c (gnat_type_max_size): Look at TYPE_ADA_SIZE if we have
+	not been able to get a constant upper bound from TYPE_SIZE_UNIT.
+
 2006-06-20  James A. Morrison  <phython@gcc.gnu.org>
             Eric Botcazou  <ebotcazou@adacore.com>
 
