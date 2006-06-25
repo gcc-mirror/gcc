@@ -1276,6 +1276,17 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 	    }
 	}
 
+      if (f->sym->attr.flavor == FL_PROCEDURE
+	    && f->sym->attr.pure
+	    && a->expr->ts.type == BT_PROCEDURE
+	    && !a->expr->symtree->n.sym->attr.pure)
+	{
+	  if (where)
+	    gfc_error ("Expected a PURE procedure for argument '%s' at %L",
+		       f->sym->name, &a->expr->where);
+	  return 0;
+	}
+
       if (f->sym->as
 	  && f->sym->as->type == AS_ASSUMED_SHAPE
 	  && a->expr->expr_type == EXPR_VARIABLE
