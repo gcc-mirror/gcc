@@ -1,3 +1,9 @@
+2006-06-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/28151
+	* fold-const.c (const_binop): Be prepared for self returning zero.
+	Simplify code handling complex values.
+
 2006-06-24  Olivier Hainque  <hainque@adacore.com>
 
 	* gimplify.c (gimplify_scalar_mode_aggregate_compare): New function.
