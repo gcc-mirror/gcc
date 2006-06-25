@@ -1,3 +1,41 @@
+2006-06-25  Paul Thomas  <pault@gcc.gnu.org>
+ 
+	PR fortran/25056
+	* interface.c (compare_actual_formal): Signal an error if the formal
+	argument is a pure procedure and the actual is not pure.
+
+	PR fortran/27554
+	* resolve.c (resolve_actual_arglist): If the type of procedure
+	passed as an actual argument is not already declared, see if it is
+	an intrinsic.
+
+	PR fortran/25073
+	* resolve.c (resolve_select): Use bits 1 and 2 of a new int to
+	keep track of  the appearance of constant logical case expressions.
+	Signal an error is either value appears more than once.
+
+	PR fortran/20874
+	* resolve.c (resolve_fl_procedure): Signal an error if an elemental
+	function is not scalar valued.
+
+	PR fortran/20867
+	* match.c (recursive_stmt_fcn): Perform implicit typing of variables.
+
+	PR fortran/22038
+	* match.c (match_forall_iterator): Mark new variables as
+	FL_UNKNOWN if the match fails.
+
+	PR fortran/28119
+	* match.c (gfc_match_forall): Remove extraneous call to
+	gfc_match_eos.
+
+	PR fortran/25072
+	* resolve.c (resolve_code, resolve_function): Rework
+	forall_flag scheme so that it is set and has a value of
+	2, when the code->expr (ie. the forall mask) is resolved.
+	This is used to change "block" to "mask" in the non-PURE
+	error message.
+
 2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/28081

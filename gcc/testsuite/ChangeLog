@@ -1,3 +1,27 @@
+2006-06-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20867
+	* gfortran.dg/stfunc_3.f90: New test.
+
+	PR fortran/25056
+	* gfortran.dg/impure_actual_1.f90: New test.
+
+	PR fortran/20874
+	* gfortran.dg/elemental_result_1.f90: New test.
+
+	PR fortran/25073
+	* gfortran.dg/select_7.f90: New test.
+
+	PR fortran/27554
+	* intrinsic_actual_1.f: New test.
+
+	PR fortran/22038
+	PR fortran/28119
+	* gfortran.dg/forall_4.f90: New test.
+
+	PR fortran/25072
+	* gfortran.dg/forall_5.f90: New test.
+
 2006-06-25  Lee Millward  <lee.millward@gmail.com>
 
 	PR c++/28051
