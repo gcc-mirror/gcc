@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.1.0\n"
+"Project-Id-Version: gcc 4.1.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-05-24 16:19-0700\n"
-"PO-Revision-Date: 2006-03-12 12:00+0100\n"
+"PO-Revision-Date: 2006-06-25 22:35+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -3816,7 +3816,7 @@ msgstr "Argument »%s« des intrinsischen »%s« bei %L muss numerisch oder LOGI
 #: fortran/check.c:829
 #, no-c-format
 msgid "different shape for arguments '%s' and '%s' at %L for intrinsic 'dot_product'"
-msgstr ""
+msgstr "andere Form für Argumente »%s« und »%s« bei %L für intrinsisches »dot_product«"
 
 #: fortran/check.c:1079
 #, no-c-format
@@ -3851,12 +3851,12 @@ msgstr "Argument »a1« des intrinsischen »%s« bei %L muss INTEGER oder REAL s
 #: fortran/check.c:1499
 #, no-c-format
 msgid "different shape on dimension 1 for arguments '%s' and '%s' at %L for intrinsic matmul"
-msgstr ""
+msgstr "andere Form bei Dimension 1 für Argumente »%s« und »%s« bei %L für intrinsisches matmul"
 
 #: fortran/check.c:1519
 #, no-c-format
 msgid "different shape on dimension 2 for argument '%s' and dimension 1 for argument '%s' at %L for intrinsic matmul"
-msgstr ""
+msgstr "andere Form bei Dimension 2 für Argument »%s« und Dimension 1 für Argument »%s« bei %L für intrinsisches matmul"
 
 #: fortran/check.c:1528
 #, no-c-format
@@ -5546,9 +5546,9 @@ msgid "Can't assign to INTENT(IN) variable '%s' at %L"
 msgstr "Zu INTENT(IN)-Variable »%s« bei %L kann nicht zugewiesen werden"
 
 #: fortran/expr.c:1905
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %L is not a VALUE"
-msgstr "Unterprogrammaufruf von »%s« bei %L ist nicht PURE"
+msgstr "'%s' bei %L ist kein WERT"
 
 #: fortran/expr.c:1912
 #, no-c-format
@@ -5966,9 +5966,9 @@ msgid "Repeat count cannot follow P descriptor"
 msgstr "Wiederholungszähler kann nicht auf einen P-Deskriptor folgen"
 
 #: fortran/io.c:576
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: Missing positive width after L descriptor at %C"
-msgstr "Erweiterung: $-Deskriptor bei %C"
+msgstr "Erweiterung: Positive Breite hinter L-Deskriptor bei %C fehlt"
 
 #: fortran/io.c:638
 msgid "Positive exponent width required"
@@ -7447,9 +7447,8 @@ msgid "'%s' at %L has a type, which is not consistent with the CALL at %L"
 msgstr "»%s« bei %L hat einen Typen, der nicht zum CALL bei %L passt"
 
 #: fortran/resolve.c:1642
-#, fuzzy
 msgid "elemental subroutine"
-msgstr "In Unterprogramm"
+msgstr "Elementares Unterprogramm"
 
 #: fortran/resolve.c:1674
 #, no-c-format
@@ -8022,12 +8021,12 @@ msgstr "PRIVATE-Symbol »%s« kann kein Element der PUBLIC-Namensliste bei %L se
 #: fortran/resolve.c:4908
 #, no-c-format
 msgid "The array '%s' must have constant shape to be a NAMELIST object at %L"
-msgstr ""
+msgstr "Das Feld »%s« muss konstante Form haben um bei %L ein NAMELIST-Objekt zu sein"
 
 #: fortran/resolve.c:4926
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "PROCEDURE attribute conflicts with NAMELIST attribute in '%s' at %L"
-msgstr "Attribut %s steht mit Attribut %s in »%s« bei %L in Konflikt"
+msgstr "Attribut PROCEDURE steht mit Attribut NAMELIST in »%s« bei %L in Konflikt"
 
 #: fortran/resolve.c:4943
 #, no-c-format
@@ -8165,34 +8164,34 @@ msgid "ENTRY '%s' at %L has no IMPLICIT type"
 msgstr "ENTRY »%s« bei %L hat keinen IMPLICIT-Typ"
 
 #: fortran/resolve.c:6003
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "User operator procedure '%s' at %L must be a FUNCTION"
-msgstr "Schnittstelle des intrinsischen Operators bei %L muss eine FUNCTION sein"
+msgstr "Prozedur für Benutzeroperator »%s« bei %L muss eine FUNKTION sein"
 
 #: fortran/resolve.c:6009
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "User operator procedure '%s' at %L cannot be assumed character length"
-msgstr "Parameterfeld »%s« bei %L kann nicht automatische oder vermutete Form haben"
+msgstr "Prozedur für Benutzeroperator »%s« bei %L kann nicht vermutete Zeichenlänge haben"
 
 #: fortran/resolve.c:6015
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "User operator procedure '%s' at %L must have at least one argument"
-msgstr "Das intrinsische »%s« bei %L muss mindestens zwei Argumente haben"
+msgstr "Prozedur für Benutzeroperator »%s« bei %L muss mindestens ein Argument haben"
 
 #: fortran/resolve.c:6025
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "First argument of operator interface at %L cannot be optional"
-msgstr "Erstes Argument der Operatorschnittstelle bei %L muss INTENT(IN) sein"
+msgstr "Erstes Argument der Operatorschnittstelle bei %L kann nicht optional sein"
 
 #: fortran/resolve.c:6037
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Second argument of operator interface at %L cannot be optional"
-msgstr "Zweites Argument der Operatorschnittstelle bei %L muss INTENT(IN) sein"
+msgstr "Zweites Argument der Operatorschnittstelle bei %L kann nicht optional sein"
 
 #: fortran/resolve.c:6041
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Operator interface at %L must have, at most, two arguments"
-msgstr "Operatorschnittstelle bei %L hat falsche Argumentanzahl"
+msgstr "Operatorschnittstelle bei %L darf höchstens zwei Argumente haben"
 
 #: fortran/resolve.c:6074
 #, no-c-format
@@ -8200,9 +8199,9 @@ msgid "Contained procedure '%s' at %L of a PURE procedure must also be PURE"
 msgstr "Enthaltene Prozedur »%s« bei %L einer PURE-Prozedur muss auch PURE sein"
 
 #: fortran/scanner.c:536
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing '&' in continued character constant at %C"
-msgstr "Unbeendete Zeichenkonstante beginnend bei %C"
+msgstr "In fortgesetzter Zeichenkonstante bei %C fehlt »&«"
 
 #: fortran/scanner.c:971
 #, no-c-format
@@ -9389,9 +9388,8 @@ msgid "Warn about possible aliasing of dummy arguments"
 msgstr "Bei möglichem Aliasing von Dummy-Argumenten warnen"
 
 #: fortran/lang.opt:46
-#, fuzzy
 msgid "Warn about missing ampersand in continued character literals"
-msgstr "Bei fehlenden Feldern in struct-Initialisierungen warnen"
+msgstr "Bei fehlenden Und-Zeichen in fortgesetzten Zeichenkettenliteralen warnen"
 
 #: fortran/lang.opt:50
 msgid "Warn about implicit conversion"
@@ -9574,14 +9572,12 @@ msgid "Swap endianness for unformatted files"
 msgstr "Bytereihenfolge für unformatierte Dateien wechseln"
 
 #: fortran/lang.opt:230
-#, fuzzy
 msgid "Use a 4-byte record marker for unformatted files"
-msgstr "Das eigene Format für unformatierte Dateien verwenden"
+msgstr "Eine 4-Byte-Datensatzmarkierung für unformatierte Dateien verwenden"
 
 #: fortran/lang.opt:234
-#, fuzzy
 msgid "Use an 8-byte record marker for unformatted files"
-msgstr "Das eigene Format für unformatierte Dateien verwenden"
+msgstr "Eine 8-Byte-Datensatzmarkierung für unformatierte Dateien verwenden"
 
 #: treelang/lang.opt:30
 msgid "Trace lexical analysis"
@@ -20500,9 +20496,9 @@ msgid "-mfloat-abi=hard and VFP"
 msgstr "-mfloat-abi=hard und VFP"
 
 #: config/arm/arm.c:1224
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "iWMMXt and hardware floating point"
-msgstr "Hardware-Fließkomma verwenden"
+msgstr "iWMMXt und Hardware-Fließkomma"
 
 #: config/arm/arm.c:1247
 #, gcc-internal-format
@@ -24412,9 +24408,9 @@ msgid "ISO C++ prohibits overloading operator ?:"
 msgstr "ISO-C++ verbietet Überladen des Operators ?:"
 
 #: cp/decl.c:9015
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD must not have variable number of arguments"
-msgstr "»%D« muss entweder ein oder zwei Argumente nehmen"
+msgstr "»%qD« darf keine variable Argumentanzahl haben"
 
 #: cp/decl.c:9064
 #, gcc-internal-format
