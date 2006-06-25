@@ -1,3 +1,32 @@
+2006-06-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (class normal_distribution<>): Add.
+	* include/tr1/random.tcc (normal_distribution<>::operator()): Define.
+	
+	* include/tr1/random.tcc (struct _Max): Remove, "inline" in the
+	only user, mersenne_twister<>::max().
+
+	* include/tr1/random.tcc (struct _Shift): Move...
+	* include/tr1/random: ... here.
+
+	* include/tr1/random.tcc (linear_congruential<>::
+	linear_congruential(unsigned long), linear_congruential<>::
+	linear_congruential(_Gen&), mersenne_twister<>::max())): Move inline...
+	* include/tr1/random: ... here.
+
+	* include/tr1/random (exponential_distribution<>::
+	exponential_distribution(const result_type&)): Add missing
+	_GLIBCXX_DEBUG_ASSERT.
+
+	* testsuite/tr1/5_numerical_facilities/random/
+	exponential_distribution/requirements/typedefs.cc: New.
+	* testsuite/tr1/5_numerical_facilities/random/
+	normal_distribution/requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	bernoulli_distribution/requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	geometric_distribution/requirements/typedefs.cc: Likewise.
+
 2006-06-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/27984
