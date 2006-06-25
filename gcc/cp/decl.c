@@ -6812,7 +6812,11 @@ check_var_type (tree identifier, tree type)
      void S::f() { ... }
 
    when grokdeclarator is called for `S::f', the CURRENT_CLASS_TYPE
-   should not be `S'.  */
+   should not be `S'.
+
+   Returns a DECL (if a declarator is present), a TYPE (if there is no
+   declarator, in cases like "struct S;"), or the ERROR_MARK_NODE if an
+   error occurs. */
 
 tree
 grokdeclarator (const cp_declarator *declarator,

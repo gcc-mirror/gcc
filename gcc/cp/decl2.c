@@ -944,7 +944,8 @@ grokbitfield (const cp_declarator *declarator,
 {
   tree value = grokdeclarator (declarator, declspecs, BITFIELD, 0, NULL);
 
-  if (! value) return NULL_TREE; /* friends went bad.  */
+  if (value == error_mark_node) 
+    return NULL_TREE; /* friends went bad.  */
 
   /* Pass friendly classes back.  */
   if (TREE_CODE (value) == VOID_TYPE)
