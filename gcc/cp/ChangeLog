@@ -1,3 +1,11 @@
+2006-06-25  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/28051
+	* mangle.c (mangle_conv_op_name_for_type): Check for
+	invalid types.
+	* name-lookup.c (push_class_level_binding): Robustify.
+	(do_class_using_decl): Return early if name is error_mark_node.
+	
 2006-06-23  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/28114
