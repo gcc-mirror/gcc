@@ -1,6 +1,6 @@
 // { dg-do compile }
 //
-// 2006-06-04  Stephen M. Webb <stephen.webb@bregmasoft.com>
+// 2006-06-24  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -20,7 +20,7 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 5.1.7.6 Class template uniform_real [tr.rand.dist.runif]
+// 5.1.7.8 Class template normal_distribution [tr.rand.dist.norm]
 // 5.1.1 [7] Table 17
 
 #include <tr1/random>
@@ -30,7 +30,7 @@ test01()
 { 
   using namespace std::tr1;
 
-  typedef uniform_real<double> test_type;
+  typedef normal_distribution<double> test_type;
 
   typedef test_type::input_type  input_type;
   typedef test_type::result_type result_type;

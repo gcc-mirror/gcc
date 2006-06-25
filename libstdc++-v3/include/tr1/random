@@ -124,6 +124,15 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       	return __return_value;
       }
 
+    template<typename _UIntType, int __w, bool = 
+	     __w != std::numeric_limits<_UIntType>::digits>
+      struct _Shift
+      { static const _UIntType __value = 0; };
+
+    template<typename _UIntType, int __w>
+      struct _Shift<_UIntType, __w, true>
+      { static const _UIntType __value = _UIntType(1) << __w; };
+
   } // namespace std::tr1::_Private
 
 
@@ -301,7 +310,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        *
        * @param __s The initial seed value.
        */
-      explicit linear_congruential(unsigned long __s = 1);
+      explicit
+      linear_congruential(unsigned long __x0 = 1)
+      { this->seed(__x0); }
 
       /**
        * Constructs a %linear_congruential random number generator engine
@@ -310,7 +321,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * @param __g The seed generator function.
        */
       template<class _Gen>
-        linear_congruential(_Gen& __g);
+        linear_congruential(_Gen& __g)
+        { this->seed(__g); }
 
       /**
        * Reseeds the %linear_congruential random number generator engine
@@ -513,7 +525,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       { return 0; };
 
       result_type
-      max() const;
+      max() const
+      { return _Private::_Shift<_UIntType, __w>::__value - 1; }
 
       result_type
       operator()();
@@ -1657,7 +1670,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        */
       explicit
       exponential_distribution(const result_type& __lambda = result_type(1))
-      : _M_lambda(__lambda) { }
+      : _M_lambda(__lambda)
+      { 
+	_GLIBCXX_DEBUG_ASSERT(_M_lambda > 0);
+      }
 
       /**
        * Gets the inverse scale parameter of the distribution.
@@ -1712,6 +1728,104 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     private:
       result_type _M_lambda;
+    };
+
+
+  /**
+   * @brief A normal continuous distribution for random numbers.
+   *
+   * The formula for the normal probability mass function is 
+   * @f$ p(x) = \frac{1}{\sigma \sqrt{2 \pi}} 
+   *            e^{- \frac{{x - mean}^ {2}}{2 \sigma ^ {2}} } @f$.
+   */
+  template<typename _RealType = double>
+    class normal_distribution
+    {
+    public:
+      // types
+      typedef _RealType input_type;
+      typedef _RealType result_type;
+
+    public:
+      /**
+       * Constructs a normal distribution with parameters @f$ mean @f$ and
+       * @f$ \sigma @f$.
+       */
+      explicit
+      normal_distribution(const result_type& __mean = result_type(0),
+			  const result_type& __sigma = result_type(1))
+      : _M_mean(__mean), _M_sigma(__sigma), _M_saved_available(false)
+      { 
+	_GLIBCXX_DEBUG_ASSERT(_M_sigma > 0);
+      }
+
+      /**
+       * Gets the mean of the distribution.
+       */
+      _RealType
+      mean() const
+      { return _M_mean; }
+
+      /**
+       * Gets the @f$ \sigma @f$ of the distribution.
+       */
+      _RealType
+      sigma() const
+      { return _M_sigma; }
+
+      /**
+       * Resets the distribution.
+       */
+      void
+      reset()
+      { _M_saved_available = false; }
+
+      template<class _UniformRandomNumberGenerator>
+        result_type
+        operator()(_UniformRandomNumberGenerator& __urng);
+
+      /**
+       * Inserts a %normal_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %normal_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _CharT, typename _Traits>
+        friend std::basic_ostream<_CharT, _Traits>&
+        operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const normal_distribution& __x)
+        { 
+	  return __os << __x.mean() << " " << __x.sigma()
+		      << " " << __x._M_saved << " " << __x._M_saved_available;
+	}
+
+      /**
+       * Extracts a %normal_distribution random number distribution
+       * @p __u from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __u  A %normal_distribution random number generator engine.
+       *
+       * @returns The input stream with @p __u extracted or in an error state.
+       */
+      template<typename _CharT, typename _Traits>
+        friend std::basic_istream<_CharT, _Traits>&
+        operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   normal_distribution& __u)
+        {
+	  return __is >> __u._M_mean >> __u._M_sigma
+		      >> __u._M_saved >> __u._M_saved_available;
+	}
+
+    private:
+      result_type _M_mean;
+      result_type _M_sigma;
+      result_type _M_saved;
+      bool        _M_saved_available;     
     };
 
   /* @} */ // group tr1_random_distributions_continuous

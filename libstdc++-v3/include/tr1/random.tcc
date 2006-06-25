@@ -27,8 +27,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <limits>
-
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE(tr1)
@@ -96,39 +94,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       __mod(_Tp __x)
       { return _Mod<_Tp, __a, __c, __m, __m == 0>::__calc(__x); }
 
-    template<typename _UIntType, int __w, bool = 
-	     __w != std::numeric_limits<_UIntType>::digits>
-      struct _Shift
-      { static const _UIntType __value = 0; };
-
-    template<typename _UIntType, int __w>
-      struct _Shift<_UIntType, __w, true>
-      { static const _UIntType __value = _UIntType(1) << __w; };
-
-    // The maximum value that will fit in @p __w bits of @p _UIntType.
-    template<typename _UIntType, int __w>
-      struct _Max
-      { static const _UIntType __value = _Shift<_UIntType, __w>::__value - 1; };
-
   } // namespace _Private
 
-
-  /**
-   * Constructs the LCR engine with integral seed @p __x0.
-   */
-  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-    linear_congruential<_UIntType, __a, __c, __m>::
-    linear_congruential(unsigned long __x0)
-    { this->seed(__x0); }
-
-  /**
-   * Constructs the LCR engine with seed generated from @p __g.
-   */
-  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-    template<class _Gen>
-      linear_congruential<_UIntType, __a, __c, __m>::
-      linear_congruential(_Gen& __g)
-      { this->seed(__g); }
 
   /**
    * Seeds the LCR with integral value @p __x0, adjusted so that the 
@@ -238,17 +205,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    _Private::_Shift<_UIntType, __w>::__value>(__gen());
 	_M_p = state_size;
       }
-
-  template<class _UIntType, int __w, int __n, int __m, int __r,
-	   _UIntType __a, int __u, int __s,
-	   _UIntType __b, int __t, _UIntType __c, int __l>
-    typename
-    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
-		     __b, __t, __c, __l>::result_type
-    mersenne_twister<_UIntType, __w, __n, __m, __r, __a, __u, __s,
-		     __b, __t, __c, __l>::
-    max() const
-    { return _Private::_Max<_UIntType, __w>::__value; }
 
   template<class _UIntType, int __w, int __n, int __m, int __r,
 	   _UIntType __a, int __u, int __s,
@@ -395,6 +351,48 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       ++_M_n;
       return _M_b();
     }
+
+
+  /**
+   * Classic Box-Muller method.
+   *
+   * Reference:
+   * Box, G. E. P. and Muller, M. E. "A Note on the Generation of
+   * Random Normal Deviates." Ann. Math. Stat. 29, 610-611, 1958.
+   */
+  template<typename _RealType>
+    template<class _UniformRandomNumberGenerator>
+      typename normal_distribution<_RealType>::result_type
+      normal_distribution<_RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng)
+      {
+	result_type __ret;
+
+	if (_M_saved_available)
+	  {
+	    _M_saved_available = false;
+	    __ret = _M_saved;
+	  }
+	else
+	  {
+	    result_type __x, __y, __r2;
+	    do
+	      {
+		__x = result_type(2.0) * __urng() - result_type(1.0);
+		__y = result_type(2.0) * __urng() - result_type(1.0);
+		__r2 = __x * __x + __y * __y;
+	      }
+	    while (__r2 > result_type(1.0) || __r2 == result_type(0));
+
+	    const result_type __mult = std::sqrt(-result_type(2.0)
+						 * std::log(__r2) / __r2);
+	    _M_saved = __x * __mult;
+	    _M_saved_available = true;
+	    __ret = __y * __mult;
+	  }
+
+	return __ret * _M_sigma + _M_mean;
+      }
 
 _GLIBCXX_END_NAMESPACE
 }
