@@ -545,6 +545,9 @@ internal_proto(init_units);
 extern void close_units (void);
 internal_proto(close_units);
 
+extern int unit_to_fd (int);
+internal_proto(unit_to_fd);
+
 /* stop.c */
 
 extern void stop_numeric (GFC_INTEGER_4);

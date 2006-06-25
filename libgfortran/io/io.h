@@ -682,9 +682,6 @@ internal_proto(stream_ttyname);
 extern gfc_offset stream_offset (stream *s);
 internal_proto(stream_offset);
 
-extern int unit_to_fd (int);
-internal_proto(unit_to_fd);
-
 extern int unpack_filename (char *, const char *, int);
 internal_proto(unpack_filename);
 
