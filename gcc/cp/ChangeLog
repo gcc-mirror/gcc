@@ -1,4 +1,13 @@
 2006-06-25  Lee Millward  <lee.millward@gmail.com>
+	    Mark Mitchell <mark@codesuorcery.com>
+
+	PR c++/28054
+	* decl2.c (grokbitfied): Remove check for grokdeclarator
+	returning NULL_TREE, instead check for error_mark_node
+	to indicate failure.
+	* decl.c (grokdeclarator): Adjust block comment.
+	
+2006-06-25  Lee Millward  <lee.millward@gmail.com>
 
 	PR c++/28051
 	* mangle.c (mangle_conv_op_name_for_type): Check for

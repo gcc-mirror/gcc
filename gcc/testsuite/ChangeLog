@@ -2,6 +2,9 @@
 
 	PR c++/28051
 	* g++.dg/template/using13.C: New test.
+
+	PR c++/28054
+	* g++.dg/other/incomplete3.C: New test.
 	
 2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
