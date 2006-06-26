@@ -1,3 +1,8 @@
+2006-06-26  Olivier Hainque  <hainque@adacore.com>
+
+	* function.c (aggregate_value_p): Honor DECL_BY_REFERENCE on
+	a CALL_EXPR target function declaration.
+
 2006-06-26  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (build_string): Do not waste tail padding in

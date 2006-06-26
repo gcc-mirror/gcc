@@ -1749,15 +1749,21 @@ aggregate_value_p (tree exp, tree fntype)
 
   tree type = (TYPE_P (exp)) ? exp : TREE_TYPE (exp);
 
+  /* DECL node associated with FNTYPE when relevant, which we might need to
+     check for by-invisible-reference returns, typically for CALL_EXPR input
+     EXPressions.  */
+  tree fndecl = NULL_TREE;
+  
   if (fntype)
     switch (TREE_CODE (fntype))
       {
       case CALL_EXPR:
-	fntype = get_callee_fndecl (fntype);
-	fntype = fntype ? TREE_TYPE (fntype) : 0;
+	fndecl = get_callee_fndecl (fntype);
+	fntype = fndecl ? TREE_TYPE (fndecl) : 0;
 	break;
       case FUNCTION_DECL:
-	fntype = TREE_TYPE (fntype);
+	fndecl = fntype;
+	fntype = TREE_TYPE (fndecl);
 	break;
       case FUNCTION_TYPE:
       case METHOD_TYPE:
@@ -1772,11 +1778,23 @@ aggregate_value_p (tree exp, tree fntype)
 
   if (TREE_CODE (type) == VOID_TYPE)
     return 0;
+
   /* If the front end has decided that this needs to be passed by
      reference, do so.  */
   if ((TREE_CODE (exp) == PARM_DECL || TREE_CODE (exp) == RESULT_DECL)
       && DECL_BY_REFERENCE (exp))
     return 1;
+
+  /* If the EXPression is a CALL_EXPR, honor DECL_BY_REFERENCE set on the
+     called function RESULT_DECL, meaning the function returns in memory by
+     invisible reference.  This check lets front-ends not set TREE_ADDRESSABLE
+     on the function type, which used to be the way to request such a return
+     mechanism but might now be causing troubles at gimplification time if
+     temporaries with the function type need to be created.  */
+  if (TREE_CODE (exp) == CALL_EXPR && fndecl && DECL_RESULT (fndecl)
+      && DECL_BY_REFERENCE (DECL_RESULT (fndecl)))
+    return 1;
+      
   if (targetm.calls.return_in_memory (type, fntype))
     return 1;
   /* Types that are TREE_ADDRESSABLE must be constructed in memory,
