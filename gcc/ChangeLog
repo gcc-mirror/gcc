@@ -1,3 +1,9 @@
+2006-06-26  Fred Fish  <fnf@specifix.com>
+
+	* config/mips/t-sb1: New file.
+	* config.gcc (mipsisa64sb1-*-elf*): Add mips/t-sb1 to
+	tmake_file list.
+
 2006-06-26  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_print_operand): Fix sign-merging logic.
