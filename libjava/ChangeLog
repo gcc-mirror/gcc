@@ -1,5 +1,13 @@
 2006-06-26  Keith Seitz  <keiths@redhat.com>
 
+	* include/posix-threads.h: Fix coding style aberrations from
+	2006-06-19 check-in.
+	* posix-threads.cc (_Jv_ThreadDebugSuspend): Ditto.
+	* include/win32-threads.h (_Jv_ThreadDebugSuspend): Ditto.
+	* win32-threads.cc (_Jv_ThreadDebugSuspend): Ditto.
+
+2006-06-26  Keith Seitz  <keiths@redhat.com>
+
 	* include/no-gc.h (_Jv_SuspendThread): Declare.
 	(_Jv_ResumeThread): Likewise.
 	* include/boehm-gc.h (_Jv_SuspendThread): Declare.
