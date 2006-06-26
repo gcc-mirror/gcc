@@ -135,6 +135,17 @@
 	(match_dup 3))]
   "")
 
+; Peephole to generate SImode mov instructions for storing an
+; immediate double data to a memory location.
+(define_peephole2
+  [(set (match_operand:HI 0 "memory_operand" "")
+        (match_operand 1 "const_int_operand" ""))
+   (set (match_operand:HI 2 "memory_operand" "")
+        (match_operand 3 "const_int_operand" ""))]
+   "TARGET_A24 && m32c_immd_dbl_mov (operands, HImode)"
+   [(set (match_dup 4) (match_dup 5))]
+   ""
+)
 
 ; Some PSI moves must be split.
 (define_split

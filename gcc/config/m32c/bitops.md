@@ -113,6 +113,33 @@
   [(set_attr "flags" "n,n,n,sz,sz,sz,sz")]
   )
 
+(define_insn "andsi3"
+  [(set (match_operand:SI 0 "mra_operand" "=RsiSd,RsiSd,??Rmm,??Rmm,??Rmm,RsiSd")
+        (and:SI (match_operand:SI 1 "mra_operand" "%0,0,0,0,0,0")
+                (match_operand:SI 2 "mrai_operand" "i,?Rmm,i,RsiSd,?Rmm,RsiSd")))]
+  ""
+  "*
+  switch (which_alternative)
+    {
+    case 0:
+      output_asm_insn (\"and.w %X2,%h0\",operands);
+      operands[2]= GEN_INT (INTVAL (operands[2]) >> 16);
+      return \"and.w %X2,%H0\";
+    case 1:
+      return \"and.w %h2,%h0\;and.w %H2,%H0\";
+    case 2:
+      output_asm_insn (\"and.w %X2,%h0\",operands);
+      operands[2]= GEN_INT (INTVAL (operands[2]) >> 16);
+      return \"and.w %X2,%H0\";
+    case 3:
+      return \"and.w %h2,%h0\;and.w %H2,%H0\";
+    case 4:
+      return \"and.w %h2,%h0\;and.w %H2,%H0\";
+    case 5:
+      return \"and.w %h2,%h0\;and.w %H2,%H0\";
+    }"
+  [(set_attr "flags" "x,x,x,x,x,x")]
+)
 
 
 (define_insn "iorqi3_16"
@@ -264,6 +291,34 @@
    DONE;"
   )
 
+(define_insn "iorsi3"
+  [(set (match_operand:SI 0 "mra_operand" "=RsiSd,RsiSd,??Rmm,??Rmm,??Rmm,RsiSd")
+        (ior:SI (match_operand:SI 1 "mra_operand" "%0,0,0,0,0,0")
+                (match_operand:SI 2 "mrai_operand" "i,?Rmm,i,RsiSd,?Rmm,RsiSd")))]
+  ""
+  "*
+  switch (which_alternative)
+    {
+    case 0:
+      output_asm_insn (\"or.w %X2,%h0\",operands);
+      operands[2]= GEN_INT (INTVAL (operands[2]) >> 16);
+      return \"or.w %X2,%H0\";
+    case 1:
+      return \"or.w %h2,%h0\;or.w %H2,%H0\";
+    case 2:
+      output_asm_insn (\"or.w %X2,%h0\",operands);
+      operands[2]= GEN_INT (INTVAL (operands[2]) >> 16);
+      return \"or.w %X2,%H0\";
+    case 3:
+      return \"or.w %h2,%h0\;or.w %H2,%H0\";
+    case 4:
+      return \"or.w %h2,%h0\;or.w %H2,%H0\";
+    case 5:
+      return \"or.w %h2,%h0\;or.w %H2,%H0\";
+    }"
+  [(set_attr "flags" "x,x,x,x,x,x")]
+)
+
 (define_insn "xorqi3"
   [(set (match_operand:QI 0 "mra_operand" "=RhlSd,RhlSd,??Rmm,??Rmm")
 	(xor:QI (match_operand:QI 1 "mra_operand" "%0,0,0,0")
@@ -281,6 +336,34 @@
   "xor.w\t%X2,%0"
   [(set_attr "flags" "sz,sz,sz,sz")]
   )
+
+(define_insn "xorsi3"
+  [(set (match_operand:SI 0 "mra_operand" "=RsiSd,RsiSd,??Rmm,??Rmm,??Rmm,RsiSd")
+        (xor:SI (match_operand:SI 1 "mra_operand" "%0,0,0,0,0,0")
+                (match_operand:SI 2 "mrai_operand" "i,?Rmm,i,RsiSd,?Rmm,RsiSd")))]
+  ""
+  "*
+  switch (which_alternative)
+    {
+    case 0:
+      output_asm_insn (\"xor.w %X2,%h0\",operands);
+      operands[2]= GEN_INT (INTVAL (operands[2]) >> 16);
+      return \"xor.w %X2,%H0\";
+    case 1:
+      return \"xor.w %h2,%h0\;xor.w %H2,%H0\";
+    case 2:
+      output_asm_insn (\"xor.w %X2,%h0\",operands);
+      operands[2]= GEN_INT (INTVAL (operands[2]) >> 16);
+      return \"xor.w %X2,%H0\";
+    case 3:
+      return \"xor.w %h2,%h0\;xor.w %H2,%H0\";
+    case 4:
+      return \"xor.w %h2,%h0\;xor.w %H2,%H0\";
+    case 5:
+      return \"xor.w %h2,%h0\;xor.w %H2,%H0\";
+    }"
+  [(set_attr "flags" "x,x,x,x,x,x")]
+)
 
 (define_insn "one_cmplqi2"
   [(set (match_operand:QI 0 "mra_operand" "=RhlSd,??Rmm")

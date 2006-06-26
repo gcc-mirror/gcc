@@ -1,3 +1,18 @@
+2006-06-26  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_print_operand): Fix sign-merging logic.
+
+2006-06-26  Naveen H.S  <naveenh@kpitcummins.com>
+	    Jayant Sonar  <jayants@kpitcummins.com>
+	    Jaydeep Vipradas  <jaydeepv@kpitcummins.com>
+
+	* config/m32c/addsub.md (addsi3, addsi3_1, addsi3_2): New.
+	(subsi3, subsi3_1, subsi3_2): New.
+	* config/m32c/bitops.md (andsi3, iorsi3, xorsi3): New.
+	* config/m32c/mov.md (SI mov peephole): New.
+	* config/m32c/m32.c (m32c_immd_dbl_mov): New.
+	* config/m32c/m32c-protos.h (m32c_immd_dbl_mov): New.
+	
 2006-06-26  Olivier Hainque  <hainque@adacore.com>
 
 	* function.c (aggregate_value_p): Honor DECL_BY_REFERENCE on
