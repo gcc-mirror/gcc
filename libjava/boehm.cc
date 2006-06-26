@@ -673,3 +673,14 @@ _Jv_RegisterLibForGc (const void *p __attribute__ ((__unused__)))
 #endif
 }
 
+void
+_Jv_SuspendThread (_Jv_Thread_t *thread)
+{
+  GC_suspend_thread (_Jv_GetPlatformThreadID (thread));
+}
+
+void
+_Jv_ResumeThread (_Jv_Thread_t *thread)
+{
+  GC_resume_thread (_Jv_GetPlatformThreadID (thread));
+}

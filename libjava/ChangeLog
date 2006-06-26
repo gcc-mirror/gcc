@@ -1,3 +1,14 @@
+2006-06-26  Keith Seitz  <keiths@redhat.com>
+
+	* include/no-gc.h (_Jv_SuspendThread): Declare.
+	(_Jv_ResumeThread): Likewise.
+	* include/boehm-gc.h (_Jv_SuspendThread): Declare.
+	(_Jv_ResumeThread): Likewise.
+	* nogc.cc (_Jv_SuspendThread): New function.
+	(_Jv_ResumeThread): Likewise.
+	* boehm.cc (_Jv_SuspendThread): New function.
+	(_Jv_ResumeThread): Likewise.
+
 2006-06-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one):
