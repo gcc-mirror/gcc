@@ -1,5 +1,10 @@
 2006-06-26  Richard Guenther  <rguenther@suse.de>
 
+	* tree.c (build_string): Do not waste tail padding in
+	struct tree_string.
+
+2006-06-26  Richard Guenther  <rguenther@suse.de>
+
 	* ggc-page.c (init_ggc): Add missing element to size_lookup
 	table.
 
