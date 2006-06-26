@@ -1,7 +1,7 @@
 // -*- c++ -*-
 // boehm-gc.h - Defines for Boehm collector.
 
-/* Copyright (C) 1998, 1999, 2002, 2004  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2002, 2004, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -82,5 +82,11 @@ _Jv_AllocPtrFreeObj (jsize size, jclass klass);
 
 // _Jv_AllocBytes (jsize size) should go here, too.  But clients don't
 // usually include this header.
+
+// Suspend the given thread. This includes suspending the calling thread.
+extern "C" void _Jv_SuspendThread (_Jv_Thread_t *);
+
+// Resume a suspended thread.
+extern "C" void _Jv_ResumeThread (_Jv_Thread_t *);
 
 #endif /* __JV_BOEHM_GC__ */

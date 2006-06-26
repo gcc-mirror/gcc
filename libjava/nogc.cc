@@ -1,6 +1,6 @@
 // nogc.cc - Implement null garbage collector.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -165,3 +165,13 @@ _Jv_AllocTraceTwo (jsize size /* includes vtable slot */)
   return result;
 }
 #endif /* JV_HASH_SYNCHRONIZATION */
+
+void
+_Jv_SuspendThread (_Jv_Thread_t *thread)
+{
+}
+
+void
+_Jv_ResumeThread (_Jv_Thread_t *thread)
+{
+}
