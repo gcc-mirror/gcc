@@ -1,3 +1,27 @@
+2006-06-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (operator<<(std::basic_ostream<>&,
+	const linear_congruential<>&), operator>>(std::basic_istream<>&,
+	linear_congruential<>&), operator<<(std::basic_ostream<>&,
+	const mersenne_twister<>&), operator>>(std::basic_istream<>&,
+	mersenne_twister<>&), operator<<(std::basic_ostream<>&,
+	const subtract_with_carry<>&), operator>>(std::basic_istream<>&,
+	subtract_with_carry<>&), operator<<(std::basic_ostream<>&,
+	const discard_block<>&), operator>>(std::basic_istream<>&,
+	discard_block<>&), operator<<(std::basic_ostream<>&,
+	const xor_combine<>&), operator>>(std::basic_istream<>&,
+	xor_combine<>&), operator<<(std::basic_ostream<>&,
+	const uniform_int<>&), operator>>(std::basic_istream<>&,
+	uniform_int<>&), operator<<(std::basic_ostream<>&,
+	const bernoulli_distribution&), operator<<(std::basic_ostream<>&,
+	const geometric_distribution<>&), operator<<(std::basic_ostream<>&,
+	const uniform_real<>&), operator>>(std::basic_istream<>&,
+	uniform_real<>&), operator<<(std::basic_ostream<>&,
+	const exponential_distribution<>&), operator<<(std::basic_ostream<>&,
+	const normal_distribution<>&), operator>>(std::basic_istream<>&,
+	normal_distribution<>&)): Redo per TR1 specs; move out of line...
+	* include/tr1/random.tcc: ... here.
+
 2006-06-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (class normal_distribution<>): Add.
