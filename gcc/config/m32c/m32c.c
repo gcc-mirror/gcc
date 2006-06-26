@@ -2301,6 +2301,7 @@ m32c_print_operand (FILE * file, rtx x, int code)
   const char *comma;
   HOST_WIDE_INT ival;
   int unsigned_const = 0;
+  int force_sign;
 
   /* Multiplies; constants are converted to sign-extended format but
    we need unsigned, so 'u' and 'U' tell us what size unsigned we
@@ -2463,6 +2464,7 @@ m32c_print_operand (FILE * file, rtx x, int code)
     code = 0;
 
   encode_pattern (x);
+  force_sign = 0;
   for (i = 0; conversions[i].pattern; i++)
     if (conversions[i].code == code
 	&& streq (conversions[i].pattern, pattern))
@@ -2576,6 +2578,8 @@ m32c_print_operand (FILE * file, rtx x, int code)
 			  /* Integers used as addresses are unsigned.  */
 			  ival &= (TARGET_A24 ? 0xffffff : 0xffff);
 			}
+		      if (force_sign && ival >= 0)
+			fputc ('+', file);
 		      fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival);
 		      break;
 		    }
@@ -2620,13 +2624,14 @@ m32c_print_operand (FILE * file, rtx x, int code)
 	      /* Signed displacements off symbols need to have signs
 		 blended cleanly.  */
 	      if (conversions[i].format[j] == '+'
-		  && (!code || code == 'I')
+		  && (!code || code == 'D' || code == 'd')
 		  && ISDIGIT (conversions[i].format[j + 1])
-		  && GET_CODE (patternr[conversions[i].format[j + 1] - '0'])
-		  == CONST_INT
-		  && INTVAL (patternr[conversions[i].format[j + 1] - '0']) <
-		  0)
-		continue;
+		  && (GET_CODE (patternr[conversions[i].format[j + 1] - '0'])
+		      == CONST_INT))
+		{
+		  force_sign = 1;
+		  continue;
+		}
 	      fputc (conversions[i].format[j], file);
 	    }
 	break;
@@ -2786,6 +2791,102 @@ m32c_mov_ok (rtx * operands, enum machine_mode mode ATTRIBUTE_UNUSED)
 #endif
   return true;
 }
+
+/* Returns TRUE if two consecutive HImode mov instructions, generated
+   for moving an immediate double data to a double data type variable
+   location, can be combined into single SImode mov instruction.  */
+bool
+m32c_immd_dbl_mov (rtx * operands, 
+		   enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  int flag = 0, okflag = 0, offset1 = 0, offset2 = 0, offsetsign = 0;
+  const char *str1;
+  const char *str2;
+
+  if (GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF
+      && MEM_SCALAR_P (operands[0])
+      && !MEM_IN_STRUCT_P (operands[0])
+      && GET_CODE (XEXP (operands[2], 0)) == CONST
+      && GET_CODE (XEXP (XEXP (operands[2], 0), 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (XEXP (operands[2], 0), 0), 0)) == SYMBOL_REF
+      && GET_CODE (XEXP (XEXP (XEXP (operands[2], 0), 0), 1)) == CONST_INT
+      && MEM_SCALAR_P (operands[2])
+      && !MEM_IN_STRUCT_P (operands[2]))
+    flag = 1; 
+
+  else if (GET_CODE (XEXP (operands[0], 0)) == CONST
+           && GET_CODE (XEXP (XEXP (operands[0], 0), 0)) == PLUS
+           && GET_CODE (XEXP (XEXP (XEXP (operands[0], 0), 0), 0)) == SYMBOL_REF
+           && MEM_SCALAR_P (operands[0])
+           && !MEM_IN_STRUCT_P (operands[0])
+           && !(XINT (XEXP (XEXP (XEXP (operands[0], 0), 0), 1), 0) %4)
+           && GET_CODE (XEXP (operands[2], 0)) == CONST
+           && GET_CODE (XEXP (XEXP (operands[2], 0), 0)) == PLUS
+           && GET_CODE (XEXP (XEXP (XEXP (operands[2], 0), 0), 0)) == SYMBOL_REF
+           && MEM_SCALAR_P (operands[2])
+           && !MEM_IN_STRUCT_P (operands[2]))
+    flag = 2; 
+
+  else if (GET_CODE (XEXP (operands[0], 0)) == PLUS
+           &&  GET_CODE (XEXP (XEXP (operands[0], 0), 0)) == REG
+           &&  REGNO (XEXP (XEXP (operands[0], 0), 0)) == FB_REGNO 
+           &&  GET_CODE (XEXP (XEXP (operands[0], 0), 1)) == CONST_INT
+           &&  MEM_SCALAR_P (operands[0])
+           &&  !MEM_IN_STRUCT_P (operands[0])
+           &&  !(XINT (XEXP (XEXP (operands[0], 0), 1), 0) %4)
+           &&  REGNO (XEXP (XEXP (operands[2], 0), 0)) == FB_REGNO 
+           &&  GET_CODE (XEXP (XEXP (operands[2], 0), 1)) == CONST_INT
+           &&  MEM_SCALAR_P (operands[2])
+           &&  !MEM_IN_STRUCT_P (operands[2]))
+    flag = 3; 
+
+  else
+    return false;
+
+  switch (flag)
+    {
+    case 1:
+      str1 = XSTR (XEXP (operands[0], 0), 0);
+      str2 = XSTR (XEXP (XEXP (XEXP (operands[2], 0), 0), 0), 0);
+      if (strcmp (str1, str2) == 0)
+	okflag = 1; 
+      else
+	okflag = 0; 
+      break;
+    case 2:
+      str1 = XSTR (XEXP (XEXP (XEXP (operands[0], 0), 0), 0), 0);
+      str2 = XSTR (XEXP (XEXP (XEXP (operands[2], 0), 0), 0), 0);
+      if (strcmp(str1,str2) == 0)
+	okflag = 1; 
+      else
+	okflag = 0; 
+      break; 
+    case 3:
+      offset1 = XINT (XEXP (XEXP (operands[0], 0), 1), 0);
+      offset2 = XINT (XEXP (XEXP (operands[2], 0), 1), 0);
+      offsetsign = offset1 >> ((sizeof (offset1) * 8) -1);
+      if (((offset2-offset1) == 2) && offsetsign != 0)
+	okflag = 1;
+      else 
+	okflag = 0; 
+      break; 
+    default:
+      okflag = 0; 
+    } 
+      
+  if (okflag == 1)
+    {
+      HOST_WIDE_INT val;
+      operands[4] = gen_rtx_MEM (SImode, XEXP (operands[0], 0));
+
+      val = (XINT (operands[3], 0) << 16) + (XINT (operands[1], 0) & 0xFFFF);
+      operands[5] = gen_rtx_CONST_INT (VOIDmode, val);
+     
+      return true;
+    }
+
+  return false;
+}  
 
 /* Expanders */
 

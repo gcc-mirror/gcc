@@ -72,6 +72,7 @@ int  m32c_extra_constraint_p (rtx, char, const char *);
 int  m32c_extra_constraint_p2 (rtx, char, const char *);
 int  m32c_hard_regno_nregs (int, MM);
 int  m32c_hard_regno_ok (int, MM);
+bool m32c_immd_dbl_mov (rtx *, MM);
 rtx  m32c_incoming_return_addr_rtx (void);
 void m32c_initialize_trampoline (rtx, rtx, rtx);
 int  m32c_legitimate_address_p (MM, rtx, int);
