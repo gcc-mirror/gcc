@@ -1120,8 +1120,9 @@ build_string (int len, const char *str)
 {
   tree s;
   size_t length;
-  
-  length = len + sizeof (struct tree_string);
+
+  /* Do not waste bytes provided by padding of struct tree_string.  */
+  length = len + offsetof (struct tree_string, str) + 1;
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int) c_kind]++;
