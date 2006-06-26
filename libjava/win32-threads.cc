@@ -421,17 +421,17 @@ _Jv_ThreadInterrupt (_Jv_Thread_t *data)
 }
 
 void
-_Jv_ThreadDebugSuspend (_Jv_Thread_t* data)
+_Jv_ThreadDebugSuspend (_Jv_Thread_t *data)
 {
 }
 
 void
-_Jv_ThreadDebugResume (_Jv_Thread_t* data)
+_Jv_ThreadDebugResume (_Jv_Thread_t *data)
 {
 }
 
 jint
-_Jv_ThreadDebugSuspendCount (_Jv_Thread_t* data)
+_Jv_ThreadDebugSuspendCount (_Jv_Thread_t *data)
 {
   return -1;
 }
