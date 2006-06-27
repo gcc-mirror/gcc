@@ -115,7 +115,7 @@ namespace detail
     double dp = 0.1;
     double ep = 0.2; 
     double cp = 0.001;
-    double mp = 1;
+    double mp = 0.25;
     bool disp = false; // show progress
 
     try
