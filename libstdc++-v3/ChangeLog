@@ -1,3 +1,21 @@
+2006-06-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand.cc:
+	Reduce iterations by half.
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/list_update_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand.cc: Same.
+
+	* testsuite/util/regression/rand/assoc/rand_regression_test.hpp:
+	Set probability of compare from 1 to 0.25.
+	* testsuite/util/regression/rand/priority_queue/
+	rand_regression_test.hpp: Same.
+
 2006-06-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (operator<<(std::basic_ostream<>&,
