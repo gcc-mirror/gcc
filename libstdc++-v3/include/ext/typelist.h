@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,13 +48,12 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  // XXX namespace typelist
-  // struct typelist -> struct node 
-
+namespace typelist
+{
   struct null_type { };
 
   template<typename Root>
-    struct typelist
+    struct node
     {
       typedef Root 	root;
     };
@@ -71,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     struct append;
 
   template<typename Typelist_Typelist>
-    struct typelist_append;
+    struct append_typelist;
 
   template<typename Typelist, typename T>
     struct contains;
@@ -87,12 +86,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   template<typename Typelist, template<typename T> class Transform>
     struct transform;
+} // namespace typelist
 
 _GLIBCXX_END_NAMESPACE
 
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+namespace typelist 
+{
 namespace detail
 {
   // #include <ext/detail/type_utils.h>
@@ -245,32 +247,35 @@ namespace detail
       typedef chain<transform_type, rest_type> type;
     };
 
-  // #include <ext/detail/typelist_append.h>
+  // #include <ext/detail/append_typelist.h>
   template<typename Typelist_Typelist_Chain>
-    struct typelist_append_;
+    struct append_typelist_;
 
   template<typename Hd>
-    struct typelist_append_<chain<Hd, null_type> >
+    struct append_typelist_<chain<Hd, null_type> >
     {
       typedef chain<Hd, null_type> type;
     };
 
   template<typename Hd, typename Tl>
-    struct typelist_append_<chain< Hd, Tl> >
+    struct append_typelist_<chain< Hd, Tl> >
     {
     private:
-      typedef typename typelist_append_<Tl>::type rest;
+      typedef typename append_typelist_<Tl>::type rest;
       
     public:
-      typedef typename append<Hd, typelist<rest> >::type::root type;
+      typedef typename append<Hd, node<rest> >::type::root type;
     };
 } // namespace detail
+} // namespace typelist
 
 _GLIBCXX_END_NAMESPACE
 
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+namespace typelist
+{
   template<typename Fn, typename Typelist>
     struct apply
     {
@@ -292,18 +297,18 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef detail::append_<root0_type, root1_type> 		append_type;
 
     public:
-      typedef typelist<typename append_type::type> 		type;
+      typedef node<typename append_type::type> 		type;
     };
 
   template<typename Typelist_Typelist>
-    struct typelist_append
+    struct append_typelist
     {
     private:
       typedef typename Typelist_Typelist::root 		      	root_type;
-      typedef detail::typelist_append_<root_type> 		append_type;
+      typedef detail::append_typelist_<root_type> 		append_type;
 
     public:
-      typedef typelist<typename append_type::type> 		type;
+      typedef node<typename append_type::type> 		type;
     };
 
   template<typename Typelist, typename T>
@@ -325,7 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef detail::chain_filter_<root_type, Pred> 		filter_type;
 
     public:
-      typedef typelist<typename filter_type::type> 	       	type;
+      typedef node<typename filter_type::type> 	       	type;
     };
 
   template<typename Typelist, int i>
@@ -345,27 +350,27 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef detail::chain_transform_<root_type, Transform> 	transform_type;
 
     public:
-      typedef typelist<typename transform_type::type> 		type;
+      typedef node<typename transform_type::type> 		type;
     };
-
+} // namespace typelist
 _GLIBCXX_END_NAMESPACE
 
 
-#define _GLIBCXX_TYPELIST_CHAIN1(X0) __gnu_cxx::chain<X0, __gnu_cxx::null_type>
-#define _GLIBCXX_TYPELIST_CHAIN2(X0, X1) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN1(X1) >
-#define _GLIBCXX_TYPELIST_CHAIN3(X0, X1, X2) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN2(X1, X2) >
-#define _GLIBCXX_TYPELIST_CHAIN4(X0, X1, X2, X3) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN3(X1, X2, X3) >
-#define _GLIBCXX_TYPELIST_CHAIN5(X0, X1, X2, X3, X4) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN4(X1, X2, X3, X4) >
-#define _GLIBCXX_TYPELIST_CHAIN6(X0, X1, X2, X3, X4, X5) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN5(X1, X2, X3, X4, X5) >
-#define _GLIBCXX_TYPELIST_CHAIN7(X0, X1, X2, X3, X4, X5, X6) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN6(X1, X2, X3, X4, X5, X6) >
-#define _GLIBCXX_TYPELIST_CHAIN8(X0, X1, X2, X3, X4, X5, X6, X7) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN7(X1, X2, X3, X4, X5, X6, X7) >
-#define _GLIBCXX_TYPELIST_CHAIN9(X0, X1, X2, X3, X4, X5, X6, X7, X8) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN8(X1, X2, X3, X4, X5, X6, X7, X8) >
-#define _GLIBCXX_TYPELIST_CHAIN10(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN9(X1, X2, X3, X4, X5, X6, X7, X8, X9) >
-#define _GLIBCXX_TYPELIST_CHAIN11(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN10(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10) >
-#define _GLIBCXX_TYPELIST_CHAIN12(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN11(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11) >
-#define _GLIBCXX_TYPELIST_CHAIN13(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN12(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12) >
-#define _GLIBCXX_TYPELIST_CHAIN14(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN13(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13) >
-#define _GLIBCXX_TYPELIST_CHAIN15(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14) __gnu_cxx::chain<X0, _GLIBCXX_TYPELIST_CHAIN14(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14) >
+#define _GLIBCXX_TYPELIST_CHAIN1(X0) __gnu_cxx::typelist::chain<X0, __gnu_cxx::typelist::null_type>
+#define _GLIBCXX_TYPELIST_CHAIN2(X0, X1) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN1(X1) >
+#define _GLIBCXX_TYPELIST_CHAIN3(X0, X1, X2) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN2(X1, X2) >
+#define _GLIBCXX_TYPELIST_CHAIN4(X0, X1, X2, X3) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN3(X1, X2, X3) >
+#define _GLIBCXX_TYPELIST_CHAIN5(X0, X1, X2, X3, X4) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN4(X1, X2, X3, X4) >
+#define _GLIBCXX_TYPELIST_CHAIN6(X0, X1, X2, X3, X4, X5) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN5(X1, X2, X3, X4, X5) >
+#define _GLIBCXX_TYPELIST_CHAIN7(X0, X1, X2, X3, X4, X5, X6) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN6(X1, X2, X3, X4, X5, X6) >
+#define _GLIBCXX_TYPELIST_CHAIN8(X0, X1, X2, X3, X4, X5, X6, X7) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN7(X1, X2, X3, X4, X5, X6, X7) >
+#define _GLIBCXX_TYPELIST_CHAIN9(X0, X1, X2, X3, X4, X5, X6, X7, X8) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN8(X1, X2, X3, X4, X5, X6, X7, X8) >
+#define _GLIBCXX_TYPELIST_CHAIN10(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN9(X1, X2, X3, X4, X5, X6, X7, X8, X9) >
+#define _GLIBCXX_TYPELIST_CHAIN11(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN10(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10) >
+#define _GLIBCXX_TYPELIST_CHAIN12(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN11(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11) >
+#define _GLIBCXX_TYPELIST_CHAIN13(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN12(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12) >
+#define _GLIBCXX_TYPELIST_CHAIN14(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN13(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13) >
+#define _GLIBCXX_TYPELIST_CHAIN15(X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14) __gnu_cxx::typelist::chain<X0, _GLIBCXX_TYPELIST_CHAIN14(X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14) >
 
 #endif
 
