@@ -1,5 +1,10 @@
 2006-06-27  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/util/regression/rand/priority_queue/
+	rand_regression_test.hpp: Revert.
+
+2006-06-27  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/ext/typelist.h (typelist_append): To append_typelist. 
 	(typelist): To node.
 	Enclose in namespace typelist.
