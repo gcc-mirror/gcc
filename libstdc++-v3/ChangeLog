@@ -1,3 +1,25 @@
+2006-06-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/typelist.h (typelist_append): To append_typelist. 
+	(typelist): To node.
+	Enclose in namespace typelist.
+	* testsuite/util/testsuite_common_types.h: Adjust names, namespaces.
+	* testsuite/performance/23_containers/find/map.cc: Same.
+	* testsuite/performance/23_containers/create/map.cc: Same.
+	* testsuite/performance/23_containers/insert_erase/associative.cc: 
+	Same.
+	* testsuite/performance/23_containers/insert/sequence.cc: Same.
+	* testsuite/performance/23_containers/insert/associative.cc: Same.
+	* testsuite/performance/23_containers/create_from_sorted/set.cc: Same.
+	* testsuite/performance/23_containers/index/map.cc: Same.
+	* testsuite/performance/23_containers/insert_from_sorted/set.cc: Same.
+	* testsuite/performance/23_containers/create_sort/list.cc: Same.
+	* testsuite/performance/23_containers/sort_search/list.cc: Same.
+	* testsuite/performance/23_containers/producer_consumer/sequence.cc: 
+	Same.
+	* testsuite/performance/23_containers/producer_consumer/associative.cc:
+	Same.
+
 2006-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand.cc:
