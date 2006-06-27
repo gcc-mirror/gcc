@@ -1,3 +1,9 @@
+2006-06-27  Marco Trudel  <mtrudel@gmx.ch>
+
+	* boehm.cc (_Jv_SuspendThread, _Jv_ResumeThread): Define
+	conditionally on GC_PTHREADS, !GC_SOLARIS_THREADS,
+	!GC_WIN32_THREADS and !GC_DARWIN_THREADS.
+
 2006-06-27  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/28178:
