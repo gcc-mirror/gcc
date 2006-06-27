@@ -248,6 +248,12 @@ _Jv_JNI_DeleteGlobalRef (JNIEnv *, jobject obj)
 {
   // This seems weird but I think it is correct.
   obj = unwrap (obj);
+  
+  // NULL is ok here -- the JNI specification doesn't say so, but this
+  // is a no-op.
+  if (! obj)
+    return;
+
   unmark_for_gc (obj, global_ref_table);
 }
 
@@ -258,6 +264,11 @@ _Jv_JNI_DeleteLocalRef (JNIEnv *env, jobject obj)
 
   // This seems weird but I think it is correct.
   obj = unwrap (obj);
+
+  // NULL is ok here -- the JNI specification doesn't say so, but this
+  // is a no-op.
+  if (! obj)
+    return;
 
   for (frame = env->locals; frame != NULL; frame = frame->next)
     {
