@@ -1,5 +1,5 @@
 /* OutputStreamWriter.java -- Writer that converts chars to bytes
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -168,6 +168,7 @@ public class OutputStreamWriter extends Writer
       {
 	if (out != null)
 	  {
+	    converter.setFinished();
 	    flush();
 	    out.close();
 	    out = null;
@@ -200,11 +201,11 @@ public class OutputStreamWriter extends Writer
 	if (out == null)
 	  throw new IOException("Stream closed");
 
-	if (wcount > 0)
-	  {
-	    writeChars(work, 0, wcount);
-	    wcount = 0;
-	  }
+	// Always write -- if we are close()ing then we want to make
+	// sure the converter is flushed.
+	writeChars(work, 0, wcount);
+	wcount = 0;
+
 	out.flush();
       }
   }
@@ -243,7 +244,7 @@ public class OutputStreamWriter extends Writer
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
-    while (count > 0 || converter.havePendingBytes())
+    do
       {
 	// We must flush if out.count == out.buf.length.
 	// It is probably a good idea to flush if out.buf is almost full.
@@ -256,6 +257,9 @@ public class OutputStreamWriter extends Writer
 	  }
 	converter.setOutput(out.buf, out.count);
 	int converted = converter.write(buf, offset, count);
+	// Must set this before we flush the output stream, because
+	// flushing will reset 'out.count'.
+	out.count = converter.count;
 	// Flush if we cannot make progress.
 	if (converted == 0 && out.count == converter.count)
 	  {
@@ -265,8 +269,8 @@ public class OutputStreamWriter extends Writer
 	  }
 	offset += converted;
 	count -= converted;
-	out.count = converter.count;
       }
+    while (count > 0 || converter.havePendingBytes());
   }
 
   /**

@@ -1,5 +1,5 @@
 /* PrintStream.java -- OutputStream for printing output
-   Copyright (C) 1998, 1999, 2001, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -174,6 +174,8 @@ public class PrintStream extends FilterOutputStream
   {
     try
       {
+	converter.setFinished();
+	writeChars(new char[0], 0, 0);
 	flush();
 	out.close();
       }
@@ -251,7 +253,7 @@ public class PrintStream extends FilterOutputStream
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
-    while (count > 0 || converter.havePendingBytes())
+    do
       {
 	converter.setOutput(work_bytes, 0);
 	int converted = converter.write(buf, offset, count);
@@ -259,12 +261,13 @@ public class PrintStream extends FilterOutputStream
 	count -= converted;
 	out.write(work_bytes, 0, converter.count);
       }
+    while (count > 0 || converter.havePendingBytes());
   }
 
   private void writeChars(String str, int offset, int count)
     throws IOException
   {
-    while (count > 0 || converter.havePendingBytes())
+    do
       {
 	converter.setOutput(work_bytes, 0);
 	int converted = converter.write(str, offset, count, work);
@@ -272,6 +275,7 @@ public class PrintStream extends FilterOutputStream
 	count -= converted;
 	out.write(work_bytes, 0, converter.count);
       }
+    while (count > 0 || converter.havePendingBytes());
   }
 
   /**

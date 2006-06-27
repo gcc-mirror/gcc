@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000, 2001, 2003, 2005  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2003, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -170,6 +170,15 @@ public abstract class UnicodeToBytes extends IOConverter
   public boolean havePendingBytes()
   {
     return false;
+  }
+
+  /**
+   * Users should call this method when the input is coming to an
+   * end.  This signals that the next write (which might be
+   * zero-length) ought to flush any internal state.
+   */
+  public void setFinished()
+  {
   }
 
   /** Indicate that the converter is resuable.
