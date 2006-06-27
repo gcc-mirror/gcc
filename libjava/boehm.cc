@@ -673,6 +673,9 @@ _Jv_RegisterLibForGc (const void *p __attribute__ ((__unused__)))
 #endif
 }
 
+#if defined(GC_PTHREADS) && !defined(GC_SOLARIS_THREADS) \
+  && !defined(GC_WIN32_THREADS) && !defined(GC_DARWIN_THREADS)
+
 void
 _Jv_SuspendThread (_Jv_Thread_t *thread)
 {
@@ -684,3 +687,5 @@ _Jv_ResumeThread (_Jv_Thread_t *thread)
 {
   GC_resume_thread (_Jv_GetPlatformThreadID (thread));
 }
+
+#endif
