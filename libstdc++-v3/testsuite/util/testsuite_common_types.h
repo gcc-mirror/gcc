@@ -54,9 +54,9 @@
 
 namespace __gnu_test
 {
-  using __gnu_cxx::typelist;
-  using __gnu_cxx::transform;
-  using __gnu_cxx::append;
+  using __gnu_cxx::typelist::node;
+  using __gnu_cxx::typelist::transform;
+  using __gnu_cxx::typelist::append;
 
   // All the allocators to test.
   template<typename Tp, bool Thread>
@@ -69,7 +69,7 @@ namespace __gnu_test
       typedef __gnu_cxx::__mt_alloc<Tp, pool_policy>	a3;
       typedef __gnu_cxx::bitmap_allocator<Tp> 		a4;
       typedef __gnu_cxx::__pool_alloc<Tp> 		a5;
-      typedef typelist<_GLIBCXX_TYPELIST_CHAIN5(a1, a2, a3, a4, a5)> type;
+      typedef node<_GLIBCXX_TYPELIST_CHAIN5(a1, a2, a3, a4, a5)> type;
     };
 
   // Typelists for vector, string, list, deque.
@@ -385,7 +385,7 @@ template<bool Thread>
 
     template<class Container>
       void
-      operator()(__gnu_cxx::detail::type_to_type<Container>)
+      operator()(__gnu_cxx::typelist::detail::type_to_type<Container>)
       {
 	const int i = 20000;
 	test_container<Container, i, Thread>(_M_filename); 
