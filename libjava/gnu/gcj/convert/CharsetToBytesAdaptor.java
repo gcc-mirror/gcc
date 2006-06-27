@@ -39,6 +39,11 @@ public class CharsetToBytesAdaptor extends UnicodeToBytes
   private boolean closedEncoder;
 
   /**
+   * True if there are bytes pending in the encoder.
+   */
+  private boolean hasBytes;
+
+  /**
    * True if we're finished.
    */
   private boolean finished;
@@ -112,20 +117,16 @@ public class CharsetToBytesAdaptor extends UnicodeToBytes
     // Set the current position.
     outBuf.position(count);
 
-    // If we've already said that there is no more input available,
-    // then we simply try to flush again.
+    // Do the conversion.
+    CoderResult result = encoder.encode(inBuf, outBuf, closedEncoder);
+    hasBytes = result == CoderResult.OVERFLOW;
     if (closedEncoder)
       {
-	CoderResult result = encoder.flush(outBuf);
+	result = encoder.flush(outBuf);
 	if (result == CoderResult.UNDERFLOW)
 	  finished = true;
-       }
-    else
-      {
-	// Do the conversion.  If there are no characters to write,
-	// then we are finished.
-	closedEncoder = ! inBuf.hasRemaining();
-	encoder.encode(inBuf, outBuf, closedEncoder);
+	else
+	  hasBytes = true;
       }
 
     // Mark the new end of buf.
@@ -140,7 +141,12 @@ public class CharsetToBytesAdaptor extends UnicodeToBytes
    */
   public boolean havePendingBytes()
   {
-    return ! finished;
+    return hasBytes;
+  }
+
+  public void setFinished()
+  {
+    closedEncoder = true;
   }
 
   // These aren't cached.

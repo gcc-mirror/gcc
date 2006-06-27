@@ -1,3 +1,22 @@
+2006-06-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/OutputStreamWriter.java (writeChars): Use a 'do' loop.
+	Set 'out.count' earlier.
+	(close): Call setFinished on converter.
+	(flush): Always write work buffer.
+	* java/io/PrintStream.java (writeChars): Do 'do' loop.
+	(close): Call setFinished on converter.  Write a 'flush' array.
+	* java/lang/natString.cc (getBytes): Call setFinished on
+	converter.
+	* gnu/gcj/convert/CharsetToBytesAdaptor.java (hasBytes): New
+	field.
+	(write): Set hasBytes.  Changed 'finished' logic.
+	(havePendingBytes): Rewrote.
+	(setFinished): New method.
+	* gnu/gcj/convert/UnicodeToBytes.java (setFinished): New method.
+	* testsuite/libjava.lang/RH194522.java: New file.
+	* testsuite/libjava.lang/RH194522.out: New file.
+
 2006-06-27  Marco Trudel  <mtrudel@gmx.ch>
 
 	* boehm.cc (_Jv_SuspendThread, _Jv_ResumeThread): Define

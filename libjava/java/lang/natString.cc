@@ -615,6 +615,8 @@ java::lang::String::getBytes (jstring enc)
   while (todo > 0 || converter->havePendingBytes())
     {
       converter->setOutput(buffer, bufpos);
+      // We only really need to do a single write.
+      converter->setFinished();
       int converted = converter->write(this, offset, todo, NULL);
       bufpos = converter->count;
       if (converted == 0 && bufpos == converter->count)
