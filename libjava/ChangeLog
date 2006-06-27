@@ -1,3 +1,12 @@
+2006-06-27  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/28178:
+	* jni.cc (_Jv_JNI_DeleteLocalRef): Ignore null argument.
+	(_Jv_JNI_DeleteGlobalRef): Likewise.
+	* testsuite/libjava.jni/PR28178.java: New file.
+	* testsuite/libjava.jni/PR28178.c: New file.
+	* testsuite/libjava.jni/PR28178.out: New file.
+
 2006-06-26  Keith Seitz  <keiths@redhat.com>
 
 	* include/posix-threads.h: Fix coding style aberrations from
