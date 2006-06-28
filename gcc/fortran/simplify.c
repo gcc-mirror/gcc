@@ -95,10 +95,29 @@ static int xascii_table[256];
 static gfc_expr *
 range_check (gfc_expr * result, const char *name)
 {
-  if (gfc_range_check (result) == ARITH_OK)
-    return result;
 
-  gfc_error ("Result of %s overflows its kind at %L", name, &result->where);
+  switch (gfc_range_check (result))
+    {
+      case ARITH_OK:
+	return result;
+ 
+      case ARITH_OVERFLOW:
+	gfc_error ("Result of %s overflows its kind at %L", name, &result->where);
+	break;
+
+      case ARITH_UNDERFLOW:
+	gfc_error ("Result of %s underflows its kind at %L", name, &result->where);
+	break;
+
+      case ARITH_NAN:
+	gfc_error ("Result of %s is NaN at %L", name, &result->where);
+	break;
+
+      default:
+	gfc_error ("Result of %s gives range error for its kind at %L", name, &result->where);
+	break;
+    }
+
   gfc_free_expr (result);
   return &gfc_bad_expr;
 }
