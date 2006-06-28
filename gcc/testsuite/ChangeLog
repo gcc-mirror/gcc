@@ -1,3 +1,9 @@
+2006-06-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/19310
+	PR fortran/19904
+	* gfortran.dg/real_const_3.f90: New test.
+
 2006-06-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20867
