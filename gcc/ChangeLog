@@ -1,3 +1,15 @@
+2006-06-28  Roger Sayle  <roger@eyesopen.com>
+
+	* genpreds.c (generate_switch_p): New function.
+	(add_mode_tests): Push the new mode test down inside an AND expr
+	if this allows the switch-suitable MATCH_CODE to be near the root.
+	(write_match_code_switch): New function to write a MATCH_CODE as
+	a switch statement.
+	(write_predicate_stmts): New function to write a predicate RTX
+	expression as a sequence of statements.
+	(write_one_predicate_function): Use write_predicate_stmts.
+	(write_tm_constrs_h): Likewise.
+
 2006-06-26  Fred Fish  <fnf@specifix.com>
 
 	* config/mips/t-sb1: New file.
