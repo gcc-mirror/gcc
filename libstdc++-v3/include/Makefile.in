@@ -978,10 +978,19 @@ thread_host_headers = \
 	${host_builddir}/gthr-tpf.h \
 	${host_builddir}/gthr-default.h
 
-pch_input = ${host_builddir}/stdc++.h
-pch_output_builddir = ${host_builddir}/stdc++.h.gch
-pch_output_installdir = ${host_installdir}/stdc++.h.gch
-pch_source = ${glibcxx_srcdir}/include/stdc++.h
+pch1_input = ${host_builddir}/stdc++.h
+pch1_output_builddir = ${host_builddir}/stdc++.h.gch
+pch1_output_installdir = ${host_installdir}/stdc++.h.gch
+pch1_source = ${glibcxx_srcdir}/include/precompiled/stdc++.h
+pch2_input = ${host_builddir}/stdtr1c++.h
+pch2_output_builddir = ${host_builddir}/stdtr1c++.h.gch
+pch2_output_installdir = ${host_installdir}/stdtr1c++.h.gch
+pch2_source = ${glibcxx_srcdir}/include/precompiled/stdtr1c++.h
+pch3_input = ${host_builddir}/extc++.h
+pch3_output_builddir = ${host_builddir}/extc++.h.gch
+pch3_output_installdir = ${host_installdir}/extc++.h.gch
+pch3_source = ${glibcxx_srcdir}/include/precompiled/extc++.h
+pch_input = ${pch1_input} ${pch2_input} ${pch3_input}
 PCHFLAGS = -Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
 @GLIBCXX_BUILD_PCH_FALSE@pch_build = 
 @GLIBCXX_BUILD_PCH_TRUE@pch_build = ${pch_input}
@@ -1401,13 +1410,29 @@ ${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
 	    < ${toplevel_srcdir}/gcc/${glibcxx_thread_h} > $@
 
 # Build a precompiled C++ include, stdc++.h.gch.
-${pch_input}: ${allstamped} ${host_builddir}/c++config.h ${pch_source}
-	touch ${pch_input}; \
-	if [ ! -d "${pch_output_builddir}" ]; then \
-	  mkdir -p ${pch_output_builddir}; \
+${pch1_input}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
+	touch ${pch1_input}; \
+	if [ ! -d "${pch1_output_builddir}" ]; then \
+	  mkdir -p ${pch1_output_builddir}; \
 	fi; \
-	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch_source} -O0 -g -o ${pch_output_builddir}/O0g.gch; \
-	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch_source} -O2 -g -o ${pch_output_builddir}/O2g.gch;
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch1_source} -O0 -g -o ${pch1_output_builddir}/O0g.gch; \
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch1_source} -O2 -g -o ${pch1_output_builddir}/O2g.gch;
+
+# Build a precompiled TR1 include, stdtr1c++.h.gch.
+${pch2_input}: ${allstamped} ${host_builddir}/c++config.h ${pch2_source} ${pch1_input}
+	touch ${pch2_input}; \
+	if [ ! -d "${pch2_output_builddir}" ]; then \
+	  mkdir -p ${pch2_output_builddir}; \
+	fi; \
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch2_source} -O2 -g -o ${pch2_output_builddir}/O2g.gch; 
+
+# Build a precompiled extension include, extc++.h.gch.
+${pch3_input}: ${allstamped} ${host_builddir}/c++config.h ${pch3_source} ${pch2_input}
+	touch ${pch3_input}; \
+	if [ ! -d "${pch3_output_builddir}" ]; then \
+	  mkdir -p ${pch3_output_builddir}; \
+	fi; \
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) ${pch3_source} -O2 -g -o ${pch3_output_builddir}/O2g.gch; 
 
 # For robustness sake (in light of junk files or in-source
 # configuration), copy from the build or source tree to the install
@@ -1504,9 +1529,12 @@ install-headers:
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
 
 install-pch:
-	$(mkinstalldirs) $(DESTDIR)${pch_output_installdir}
-	for file in ${pch_output_builddir}/*; do \
-	  $(INSTALL_DATA) $$file $(DESTDIR)${pch_output_installdir}; done
+	$(mkinstalldirs) $(DESTDIR)${pch1_output_installdir}
+	for file in ${pch1_output_builddir}/*; do \
+	  $(INSTALL_DATA) $$file $(DESTDIR)${pch1_output_installdir}; done
+	$(mkinstalldirs) $(DESTDIR)${pch2_output_installdir}
+	for file in ${pch2_output_builddir}/*; do \
+	  $(INSTALL_DATA) $$file $(DESTDIR)${pch2_output_installdir}; done
 
 # Stop implicit '.o' make rules from ever stomping on extensionless
 # headers, in the improbable case where some foolish, crack-addled

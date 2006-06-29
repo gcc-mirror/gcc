@@ -1,5 +1,25 @@
 2006-06-29  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/Makefile.am (pch1_input, pch1_output_builddir,
+	pch1_outputj_installdir, pch1_source): Move from pch_*.
+	(pch2_input, pch2_output_builddir,
+	pch2_output_installdir, pch2_source): Clone for ext.
+	(pch3_input, pch3_output_builddir,
+	pch3_output_installdir, pch3_source): Clone for tr1.
+	(install-pch): Same.
+	* include/Makefile.in: Regenerate.
+
+	* include/precompiled: New directory.
+	* include/stdc++.h: Move...
+	* include/precompiled/stdc++.h: ... here.		
+	* include/precompiled/stdtr1c++.h: New.
+	* include/precompiled/extc++.h: New.
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Set PCH_CXXFLAGS
+	to -include bits/stdtr1c++.h.
+
+2006-06-29  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/lib/libstdc++.exp (v3_target_compile): Set timeout to
 	600.
 
