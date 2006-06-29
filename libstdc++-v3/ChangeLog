@@ -1,3 +1,8 @@
+2006-06-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Set timeout to
+	600.
+
 2006-06-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/regression/rand/priority_queue/
