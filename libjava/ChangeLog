@@ -1,3 +1,28 @@
+2006-06-29  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	* gcj/javaprims.h (_Jv_uintptr_t): New typedef similar to uintptr_t in
+	C99.
+	* include/java-stack.h: Include stdlib.h.
+	(_Jv_AddrInfo): New structure to hold address information.
+	* include/posix.h (_Jv_platform_dladdr): Declare.
+	* include/win32.h (_Jv_platform_dladdr): Declare.
+	(backtrace): Remove declaration.
+	* posix.cc: Include dlfcn.h if available.  Include java-stack.h.
+	(_Jv_platform_dladdr): Define.
+	* win32.cc: Include string.h.  Include java-stack.h.
+	(backtrace): Remove.
+	(_Jv_platform_dladdr): Define.
+	* sysdep/i386/backtrace.h (fallback_backtrace): Check that a potential
+	frame pointer value is 32-bit word-aligned.  Use operand of the CALL
+	instruction calling the current function to find its starting address.
+	* stacktrace.cc: Do not include dlfcn.h.  Include platform.h.
+	(_Jv_StackTrace::getLineNumberForFrame): Use _Jv_platform_dladdr()
+	instead of dladdr().
+	(_Jv_StackTrace::GetStackTraceElements): Use nCodeMap even for Windows.
+	(_Jv_StackTrace::GetClassContext): Use fallback_backtrace() for
+	targets with SJLJ exceptions instead of using _Unwind_Backtrace().
+	(_Jv_StackTrace::GetFirstNonSystemClassLoader): Likewise.
+
 2006-06-27  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/OutputStreamWriter.java (writeChars): Use a 'do' loop.

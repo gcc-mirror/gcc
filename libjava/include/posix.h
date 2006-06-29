@@ -194,4 +194,11 @@ _Jv_pipe (int filedes[2])
   return ::pipe (filedes);
 }
 
+// Forward declaration.  See java-stack.h for definition.
+struct _Jv_AddrInfo;
+
+// Given an address, determine the executable or shared object that defines
+// it and the nearest named symbol.
+extern int _Jv_platform_dladdr (const void *addr, _Jv_AddrInfo *info);
+
 #endif /* __JV_POSIX_H__ */

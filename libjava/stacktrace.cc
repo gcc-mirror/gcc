@@ -9,15 +9,12 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
+#include <platform.h>
 
 #include <jvm.h>
 #include <gcj/cni.h>
 #include <java-interp.h>
 #include <java-stack.h>
-
-#ifdef HAVE_DLFCN_H
-#include <dlfcn.h>
-#endif
 
 #include <stdio.h>
 
@@ -184,41 +181,36 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
       return;
     }
 #endif
-  // Use dladdr() to determine in which binary the address IP resides.
-#if defined (HAVE_DLFCN_H) && defined (HAVE_DLADDR)
-  Dl_info info;
+
+  // Use _Jv_platform_dladdr() to determine in which binary the address IP
+  // resides.
+  _Jv_AddrInfo info;
   jstring binaryName = NULL;
   const char *argv0 = _Jv_GetSafeArg(0);
 
   void *ip = frame->ip;
   _Unwind_Ptr offset = 0;
 
-  if (dladdr (ip, &info))
+  if (_Jv_platform_dladdr (ip, &info))
     {
-      if (info.dli_fname)
-	binaryName = JvNewStringUTF (info.dli_fname);
+      if (info.file_name)
+	binaryName = JvNewStringUTF (info.file_name);
       else
         return;
 
-      if (*methodName == NULL && info.dli_sname)
-	*methodName = JvNewStringUTF (info.dli_sname);
+      if (*methodName == NULL && info.sym_name)
+	*methodName = JvNewStringUTF (info.sym_name);
 
       // addr2line expects relative addresses for shared libraries.
-      if (strcmp (info.dli_fname, argv0) == 0)
+      if (strcmp (info.file_name, argv0) == 0)
         offset = (_Unwind_Ptr) ip;
       else
-        offset = (_Unwind_Ptr) ip - (_Unwind_Ptr) info.dli_fbase;
+        offset = (_Unwind_Ptr) ip - (_Unwind_Ptr) info.base;
 
-      //printf ("linenum ip: %p\n", ip);
-      //printf ("%s: 0x%x\n", info.dli_fname, offset);
-      //offset -= sizeof(void *);
-      
       // The unwinder gives us the return address. In order to get the right
       // line number for the stack trace, roll it back a little.
       offset -= 1;
 
-      // printf ("%s: 0x%x\n", info.dli_fname, offset);
-      
       finder->lookup (binaryName, (jlong) offset);
       *sourceFileName = finder->getSourceFile();
       *lineNum = finder->getLineNum();
@@ -234,7 +226,6 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
           *sourceFileName = t->toString();
         }
     }
-#endif
 }
 
 // Look up class and method info for the given stack frame, setting 
@@ -283,7 +274,7 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
 {
   ArrayList *list = new ArrayList ();
 
-#ifdef SJLJ_EXCEPTIONS
+#if defined (SJLJ_EXCEPTIONS) && ! defined (WIN32)
   // We can't use the nCodeMap without unwinder support. Instead,
   // fake the method name by giving the IP in hex - better than nothing.  
   jstring hex = JvNewStringUTF ("0x");
@@ -302,7 +293,7 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
       list->add (element);
     }
 
-#else /* SJLJ_EXCEPTIONS */
+#else /* SJLJ_EXCEPTIONS && !WIN32 */
 
   //JvSynchronized (ncodeMap);
   UpdateNCodeMap ();
@@ -370,7 +361,7 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
     }
   
   finder->close();
-#endif /* SJLJ_EXCEPTIONS */
+#endif /* SJLJ_EXCEPTIONS && !WIN32 */
 
   JArray<Object *> *array = JvNewObjectArray (list->size (), 
     &StackTraceElement::class$, NULL);
@@ -472,7 +463,13 @@ _Jv_StackTrace::GetClassContext (jclass checkClass)
   //JvSynchronized (ncodeMap);
   UpdateNCodeMap ();
 
+#ifdef SJLJ_EXCEPTIONS
+  // The Unwind interface doesn't work with the SJLJ exception model.
+  // Fall back to a platform-specific unwinder.
+  fallback_backtrace (&state);
+#else /* SJLJ_EXCEPTIONS */  
   _Unwind_Backtrace (UnwindTraceFn, &state);
+#endif /* SJLJ_EXCEPTIONS */  
 
   // Count the number of Java frames on the stack.
   int jframe_count = 0;
@@ -543,7 +540,13 @@ _Jv_StackTrace::GetFirstNonSystemClassLoader ()
   //JvSynchronized (ncodeMap);
   UpdateNCodeMap ();
   
+#ifdef SJLJ_EXCEPTIONS
+  // The Unwind interface doesn't work with the SJLJ exception model.
+  // Fall back to a platform-specific unwinder.
+  fallback_backtrace (&state);
+#else /* SJLJ_EXCEPTIONS */  
   _Unwind_Backtrace (UnwindTraceFn, &state);
+#endif /* SJLJ_EXCEPTIONS */  
 
   if (state.trace_data)
     return (ClassLoader *) state.trace_data;
