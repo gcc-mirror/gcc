@@ -1,3 +1,9 @@
+2006-06-29  Asher Langton  <langton2@llnl.gov>
+
+	PR target/25765
+	* config/i386/i386.c (ix86_output_function_epilogue): Don't
+	insert a label at the end of an function under Mach-O.
+	
 2006-06-29  Eric Christopher  <echristo@apple.com>
 	    Evan Cheng  <evan.cheng@apple.com>
 
