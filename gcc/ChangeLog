@@ -1,3 +1,9 @@
+2006-06-29  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/27428
+	* c-lex.c (c_lex_with_flags) <CPP_N_INVALID>: Increment errorcount
+	to indicate the cpplib has issued an error message for us.
+
 2006-06-29  Asher Langton  <langton2@llnl.gov>
 
 	PR target/25765
