@@ -1,3 +1,18 @@
+2006-06-29  Eric Christopher  <echristo@apple.com>
+	    Evan Cheng  <evan.cheng@apple.com>
+
+	* predicates.md (vector_all_ones_operand): New.
+	(nonimmediate_or_sse_const_operand): Ditto.
+	* config/i386/i386-protos.h (standard_sse_constant_opcode): Declare.
+	* config/i386/i386.c (standard_sse_constant_opcode): Define.
+	(standard_sse_mode_p): Ditto.
+	(standard_sse_constant_p): Add case for -1 vector.
+	(ix86_expand_vector_move): Try to use.
+	* sse.md (*mov<mode>_internal): Use nonimmediate_or_sse_const_operand.
+	Call standard_sse_constant_opcode.
+	(*movv4sf_internal): Ditto.
+	(*movv2df_internal): Ditto.
+
 2006-06-29  Roger Sayle  <roger@eyesopen.com>
 
 	* genpreds.c (write_match_code_switch): Correctly use XSTR instead
@@ -51,7 +66,7 @@
 	* config/m32c/mov.md (SI mov peephole): New.
 	* config/m32c/m32.c (m32c_immd_dbl_mov): New.
 	* config/m32c/m32c-protos.h (m32c_immd_dbl_mov): New.
-	
+
 2006-06-26  Olivier Hainque  <hainque@adacore.com>
 
 	* function.c (aggregate_value_p): Honor DECL_BY_REFERENCE on
@@ -239,7 +254,7 @@
 	function.
 	* alloc-pool.c (free_alloc_pool_if_empty): New function.
 	* et-forest.h (et_free_pools): Prototype new function.
-	* et-forest.c (et_free_tree_force): Free parent occurrence. 
+	* et-forest.c (et_free_tree_force): Free parent occurrence.
 	(et_free_pools): New function.
 	* dominance.c (free_dominance_info): Free et-forest alloc
 	pools.
@@ -325,11 +340,11 @@
 	Fix PR tree-optimization/27341
 	* tree-cfg.c (gimplify_val): Call mark_new_vars_to_rename on the
 	statement we get.
-	* tree-complex.c (pass_lower_complex): Update SMT usage.	
+	* tree-complex.c (pass_lower_complex): Update SMT usage.
 
 2006-06-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config/s390/s390.md ("doloop_si64", "doloop_si31", "doloop_di"): 
+	* config/s390/s390.md ("doloop_si64", "doloop_si31", "doloop_di"):
 	Add a new alternative to the constraint strings. Add move of
 	operand 1 to 3 to the splitter definition.
 	("doloop_si_long"): Second contraint alternative removed.
@@ -337,7 +352,7 @@
 2006-06-08  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.h (avr_have_movw_lpmx_p): Declare.
-	(TARGET_CPU_CPP_BUILTINS): Add __AVR_HAVE_MOVW__ and 
+	(TARGET_CPU_CPP_BUILTINS): Add __AVR_HAVE_MOVW__ and
 	__AVR_HAVE_LPMX__.
 	(AVR_HAVE_MOVW) Define.
 	(ASSEMBLER_DIALECT): Use AVR_HAVE_MOVW.
@@ -350,7 +365,7 @@
 	attiny44, attiny84, attiny25, attiny45, attiny85, attiny261,
 	attiny461, attiny861 and at86rf401 in 'avr25' arhitecture.
 	(avr_override_options): Init 'avr_have_movw_lpmx_p'.
-	(output_movhi, output_movsisf, ashlsi3_out, avr_rtx_costs): Use 
+	(output_movhi, output_movsisf, ashlsi3_out, avr_rtx_costs): Use
 	AVR_HAVE_MOVW.
 	(avr_file_start): Do not output '.arh' derective.
 	* config/avr/libgcc.S (mov_l): Use __AVR_HAVE_MOVW__.
@@ -361,7 +376,7 @@
 	(call_insn, call_value_insn): Use 'call_insn' and __AVR_HAVE_MOVW__.
 	* config/avr/t-avr(MULTILIB_OPTIONS, MULTILIB_DIRNAMES): Add avr25.
 	(MULTILIB_MATCHES): Add attiny13, attiny2313, attiny24, attiny44,
-	attiny84, attiny25, attiny45, attiny85, attiny261, attiny461, 
+	attiny84, attiny25, attiny45, attiny85, attiny261, attiny461,
 	attiny861 and at86rf401 devices.
 
 2006-06-18  Jie Zhang  <jie.zhang@analog.com>
@@ -450,7 +465,7 @@
 	bind locally.
 
 2006-06-15  Andrew MacLeod  <amacleod@redhat.com>
-	
+
 	PR middle-end/27793
 	* tree-dfa.c (referenced_vars_dup_list): Remove.
 	(find_referenced_vars): Remove assert.
@@ -502,12 +517,12 @@
 
 	* Makefile.in: Define HTMLS_BUILD, HTMLS_INSTALL,
 	html__strip_dir, html__mkdir_p. Enhance install-html target.
-	* configure.ac: AC_SUBST datarootdir, docdir and htmldir. 
+	* configure.ac: AC_SUBST datarootdir, docdir and htmldir.
 	* configure: Regenerate.
 
 2006-06-13  Fariborz Jahanian <fjahanian@apple.com>
 
-	* fold-const.c (fold_cond_expr_with_comparison): Check for 
+	* fold-const.c (fold_cond_expr_with_comparison): Check for
 	Objective-C++ as language in deciding COND_EXPR transformation.
 
 2006-06-06  J"orn Rennecke <joern.rennecke@st.com>
