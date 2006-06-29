@@ -607,6 +607,7 @@ write_predicate_stmts (rtx exp)
 		"    }");
 	  exp = XEXP (exp, 1);
 	}
+      break;
 
     case NOT:
       if (generate_switch_p (XEXP (exp, 0)))
