@@ -12,7 +12,10 @@ details.  */
 #include <platform.h>
 #include <sys/timeb.h>
 #include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
+
+#include <java-stack.h>
 
 #include <java/lang/ArithmeticException.h>
 #include <java/lang/UnsupportedOperationException.h>
@@ -442,28 +445,6 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
     }
 }
 
-/* Store up to SIZE return address of the current program state in
-   ARRAY and return the exact number of values stored.  */
-int
-backtrace (void **__array, int __size)
-{
-  register void *_ebp __asm__ ("ebp");
-  register void *_esp __asm__ ("esp");
-  unsigned int *rfp;
-
-  int i=0;
-  for (rfp = *(unsigned int**)_ebp;
-       rfp && i < __size;
-       rfp = *(unsigned int **)rfp)
-    {
-      int diff = *rfp - (unsigned int)rfp;
-      if ((void*)rfp < _esp || diff > 4 * 1024 || diff < 0) break;
-
-    __array[i++] = (void*)(rfp[1]-4);
-  }
-  return i;
-}
-
 int
 _Jv_pipe (int filedes[2])
 {
@@ -476,4 +457,43 @@ _Jv_platform_close_on_exec (HANDLE h)
   // Mark the handle as non-inheritable. This has
   // no effect under Win9X.
   SetHandleInformation (h, HANDLE_FLAG_INHERIT, 0);
+}
+
+// Given an address, find the object that defines it and the nearest
+// defined symbol to that address.  Returns 0 if no object defines this
+// address.
+int
+_Jv_platform_dladdr (const void *addr, _Jv_AddrInfo *info)
+{
+  // Since we do not have dladdr() on Windows, we use a trick involving
+  // VirtualQuery() to find the module (EXE or DLL) that contains a given
+  // address.  This was taken from Matt Pietrek's "Under the Hood" column
+  // for the April 1997 issue of Microsoft Systems Journal.
+
+  MEMORY_BASIC_INFORMATION mbi;
+  if (!VirtualQuery (addr, &mbi, sizeof (mbi)))
+  {
+    return 0;
+  }
+  
+  HMODULE hMod = (HMODULE) mbi.AllocationBase;
+
+  char moduleName[MAX_PATH];
+
+  // FIXME: We explicitly use the ANSI variant of the function here.
+  if (!GetModuleFileNameA (hMod, moduleName, sizeof (moduleName)))
+  {
+    return 0;
+  }
+
+  char *file_name = (char *)(malloc (strlen (moduleName) + 1));
+  strcpy (file_name, moduleName);
+  info->file_name = file_name;
+
+  // FIXME.
+  info->base = NULL;
+  info->sym_name = NULL;
+  info->sym_addr = NULL;
+
+  return 1;
 }

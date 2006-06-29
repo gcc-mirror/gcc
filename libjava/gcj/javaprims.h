@@ -624,6 +624,10 @@ typedef unsigned short _Jv_ushort __attribute__((__mode__(__HI__)));
 typedef unsigned int _Jv_uint __attribute__((__mode__(__SI__)));
 typedef unsigned int _Jv_ulong __attribute__((__mode__(__DI__)));
 
+// The type to use when treating a pointer as an integer.  Similar to
+// uintptr_t in C99.
+typedef unsigned int _Jv_uintptr_t __attribute__((__mode__(__pointer__)));
+
 class _Jv_Utf8Const
 {
   _Jv_ushort hash;
