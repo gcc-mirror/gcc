@@ -543,8 +543,8 @@ write_predicate_expr (rtx exp)
 static void
 write_match_code_switch (rtx exp)
 {
-  const char *codes = (const char *) XEXP (exp, 0);
-  const char *path = (const char *) XEXP (exp, 1);
+  const char *codes = XSTR (exp, 0);
+  const char *path = XSTR (exp, 1);
   const char *code;
 
   fputs ("  switch (GET_CODE (", stdout);
