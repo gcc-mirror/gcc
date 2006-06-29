@@ -757,7 +757,7 @@ switchfiles (int fields)
     }
   fprintf (outfile, "\
 /* { dg-options \"-I%s\" } */\n\
-/* { dg-options \"-I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
+/* { dg-options \"-I%s -fno-common\" { target hppa*-*-hpux* *-*-darwin* } } */\n\
 /* { dg-options \"-I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1.h\"\n\
 \n\
@@ -784,7 +784,7 @@ int main (void)\n\
     goto fail;
   fprintf (outfile, "\
 /* { dg-options \"-w -I%s\" } */\n\
-/* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
+/* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* *-*-darwin* } } */\n\
 /* { dg-options \"-w -I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1_x1.h\"\n\
 #include \"t%03d_test.h\"\n\
@@ -797,7 +797,7 @@ int main (void)\n\
     goto fail;
   fprintf (outfile, "\
 /* { dg-options \"-w -I%s\" } */\n\
-/* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* } } */\n\
+/* { dg-options \"-w -I%s -fno-common\" { target hppa*-*-hpux* *-*-darwin* } } */\n\
 /* { dg-options \"-w -I%s -mno-base-addresses\" { target mmix-*-* } } */\n\
 #include \"struct-layout-1_y1.h\"\n\
 #include \"t%03d_test.h\"\n\

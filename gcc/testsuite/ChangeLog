@@ -1,5 +1,8 @@
 2006-06-29  Mike Stump  <mrs@apple.com>
 
+	* gcc.dg/compat/struct-layout-1_generate.c: Don't use common
+	on darwin as we can't align commons large enough yet.
+
 	* gcc.dg/vla-8.c: Add additional testcases.
 
 2006-06-26  Steve Ellcey  <sje@cup.hp.com>
