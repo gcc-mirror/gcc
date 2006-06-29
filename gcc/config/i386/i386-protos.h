@@ -43,6 +43,7 @@ extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
 extern rtx standard_80387_constant_rtx (int);
 extern int standard_sse_constant_p (rtx);
+extern const char *standard_sse_constant_opcode (rtx, rtx);
 extern int symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
 extern bool x86_extended_QIreg_mentioned_p (rtx);
@@ -173,7 +174,7 @@ extern int ix86_data_alignment (tree, int);
 extern int ix86_local_alignment (tree, int);
 extern int ix86_constant_alignment (tree, int);
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);
-extern tree ix86_handle_selectany_attribute (tree *, tree, tree, int, bool *); 
+extern tree ix86_handle_selectany_attribute (tree *, tree, tree, int, bool *);
 
 extern unsigned int i386_pe_section_type_flags (tree, const char *, int);
 extern void i386_pe_asm_named_section (const char *, unsigned int, tree);

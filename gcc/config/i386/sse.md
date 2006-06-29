@@ -59,16 +59,13 @@
 
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:SSEMODEI 0 "nonimmediate_operand" "=x,x ,m")
-	(match_operand:SSEMODEI 1 "vector_move_operand"  "C ,xm,x"))]
+	(match_operand:SSEMODEI 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
   "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {
   switch (which_alternative)
     {
     case 0:
-      if (get_attr_mode (insn) == MODE_V4SF)
-	return "xorps\t%0, %0";
-      else
-	return "pxor\t%0, %0";
+      return standard_sse_constant_opcode (insn, operands[1]);
     case 1:
     case 2:
       if (get_attr_mode (insn) == MODE_V4SF)
@@ -101,12 +98,20 @@
 
 (define_insn "*movv4sf_internal"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "=x,x,m")
-	(match_operand:V4SF 1 "vector_move_operand" "C,xm,x"))]
+	(match_operand:V4SF 1 "nonimmediate_or_sse_const_operand" "C,xm,x"))]
   "TARGET_SSE"
-  "@
-   xorps\t%0, %0
-   movaps\t{%1, %0|%0, %1}
-   movaps\t{%1, %0|%0, %1}"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return standard_sse_constant_opcode (insn, operands[1]);
+    case 1:
+    case 2:
+      return "movaps\t{%1, %0|%0, %1}";
+    default:
+      abort();
+    }
+}
   [(set_attr "type" "sselog1,ssemov,ssemov")
    (set_attr "mode" "V4SF")])
 
@@ -135,16 +140,13 @@
 
 (define_insn "*movv2df_internal"
   [(set (match_operand:V2DF 0 "nonimmediate_operand" "=x,x,m")
-	(match_operand:V2DF 1 "vector_move_operand" "C,xm,x"))]
+	(match_operand:V2DF 1 "nonimmediate_or_sse_const_operand" "C,xm,x"))]
   "TARGET_SSE && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {
   switch (which_alternative)
     {
     case 0:
-      if (get_attr_mode (insn) == MODE_V4SF)
-	return "xorps\t%0, %0";
-      else
-	return "xorpd\t%0, %0";
+      return standard_sse_constant_opcode (insn, operands[1]);
     case 1:
     case 2:
       if (get_attr_mode (insn) == MODE_V4SF)
