@@ -1,3 +1,7 @@
+2006-06-29  Mike Stump  <mrs@apple.com>
+
+	* gcc.dg/vla-8.c: Add additional testcases.
+
 2006-06-26  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/28114
