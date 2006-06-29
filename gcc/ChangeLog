@@ -1,3 +1,9 @@
+2006-06-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/27768
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Add
+	may_aliases already in the tag's annotations to the bitmap.
+
 2006-06-28  Roger Sayle  <roger@eyesopen.com>
 
 	* genpreds.c (write_predicate_stmts) <IOR>: Add missing break.

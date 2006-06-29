@@ -1162,6 +1162,7 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
       struct alias_map_d *p_map = ai->pointers[i];
       tree tag = var_ann (p_map->var)->symbol_mem_tag;
       var_ann_t tag_ann = var_ann (tag);
+      tree var;
 
       /* Call-clobbering information is not finalized yet at this point.  */
       if (PTR_IS_REF_ALL (p_map->var))
@@ -1170,11 +1171,15 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
       p_map->total_alias_vops = 0;
       p_map->may_aliases = BITMAP_ALLOC (&alias_obstack);
 
+      /* Add any pre-existing may_aliases to the bitmap used to represent
+	 TAG's alias set in case we need to group aliases.  */
+      for (j = 0; VEC_iterate (tree, tag_ann->may_aliases, j, var); ++j)
+	bitmap_set_bit (p_map->may_aliases, DECL_UID (var));
+
       for (j = 0; j < ai->num_addressable_vars; j++)
 	{
 	  struct alias_map_d *v_map;
 	  var_ann_t v_ann;
-	  tree var;
 	  bool tag_stored_p, var_stored_p;
 	  
 	  v_map = ai->addressable_vars[j];
