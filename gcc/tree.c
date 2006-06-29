@@ -419,7 +419,7 @@ tree_size (tree node)
 	      + (TREE_VEC_LENGTH (node) - 1) * sizeof(char *));
 
     case STRING_CST:
-      return sizeof (struct tree_string) + TREE_STRING_LENGTH (node) - 1;
+      return TREE_STRING_LENGTH (node) + offsetof (struct tree_string, str) + 1;
 
     case OMP_CLAUSE:
       return (sizeof (struct tree_omp_clause)

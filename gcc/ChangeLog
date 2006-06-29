@@ -1,3 +1,9 @@
+2006-06-28  Andrew Pinski  <pinskia@gmail.com>
+
+	* tree.c (tree_size): Do not waste tail padding in
+	struct tree_string and make the size be the same as
+	build_string will generate.
+
 2006-06-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27768
