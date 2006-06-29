@@ -348,6 +348,7 @@ proc v3_target_compile { source dest type options } {
     }
 
     lappend options "compiler=$cxx_final"
+    lappend options "timeout=600"
 
     return [target_compile $source $dest $type $options]
 }
