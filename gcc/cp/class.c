@@ -5084,6 +5084,9 @@ finish_struct_1 (tree t)
       DECL_SORTED_FIELDS (TYPE_MAIN_DECL (t)) = field_vec;
     }
 
+  /* Complain if one of the field types requires lower visibility.  */
+  constrain_class_visibility (t);
+
   /* Make the rtl for any new vtables we have created, and unmark
      the base types we marked.  */
   finish_vtbls (t);

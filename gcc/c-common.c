@@ -4876,21 +4876,28 @@ handle_weakref_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 static tree
 handle_visibility_attribute (tree *node, tree name, tree args,
 			     int ARG_UNUSED (flags),
-			     bool *no_add_attrs)
+			     bool *ARG_UNUSED (no_add_attrs))
 {
   tree decl = *node;
   tree id = TREE_VALUE (args);
-
-  *no_add_attrs = true;
+  enum symbol_visibility vis;
 
   if (TYPE_P (*node))
     {
-      if (TREE_CODE (*node) != RECORD_TYPE && TREE_CODE (*node) != UNION_TYPE)
-       {
-	 warning (OPT_Wattributes, "%qE attribute ignored on non-class types",
-		  name);
-	 return NULL_TREE;
-       }
+      if (TREE_CODE (*node) == ENUMERAL_TYPE)
+	/* OK */;
+      else if (TREE_CODE (*node) != RECORD_TYPE && TREE_CODE (*node) != UNION_TYPE)
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored on non-class types",
+		   name);
+	  return NULL_TREE;
+	}
+      else if (TYPE_FIELDS (*node))
+	{
+	  error ("%qE attribute ignored because %qT is already defined",
+		 name, *node);
+	  return NULL_TREE;
+	}
     }
   else if (decl_function_context (decl) != 0 || !TREE_PUBLIC (decl))
     {
@@ -4919,23 +4926,33 @@ handle_visibility_attribute (tree *node, tree name, tree args,
     }
 
   if (strcmp (TREE_STRING_POINTER (id), "default") == 0)
-    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
+    vis = VISIBILITY_DEFAULT;
   else if (strcmp (TREE_STRING_POINTER (id), "internal") == 0)
-    DECL_VISIBILITY (decl) = VISIBILITY_INTERNAL;
+    vis = VISIBILITY_INTERNAL;
   else if (strcmp (TREE_STRING_POINTER (id), "hidden") == 0)
-    DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+    vis = VISIBILITY_HIDDEN;
   else if (strcmp (TREE_STRING_POINTER (id), "protected") == 0)
-    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;
+    vis = VISIBILITY_PROTECTED;
   else
-    error ("visibility argument must be one of \"default\", \"hidden\", \"protected\" or \"internal\"");
+    {
+      error ("visibility argument must be one of \"default\", \"hidden\", \"protected\" or \"internal\"");
+      vis = VISIBILITY_DEFAULT;
+    }
+
+  if (DECL_VISIBILITY_SPECIFIED (decl)
+      && vis != DECL_VISIBILITY (decl)
+      && lookup_attribute ("visibility", (TYPE_P (*node)
+					  ? TYPE_ATTRIBUTES (*node)
+					  : DECL_ATTRIBUTES (decl))))
+    error ("%qD redeclared with different visibility", decl);
+
+  DECL_VISIBILITY (decl) = vis;
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
 
-  /* For decls only, go ahead and attach the attribute to the node as well.
-     This is needed so we can determine whether we have VISIBILITY_DEFAULT
-     because the visibility was not specified, or because it was explicitly
-     overridden from the class visibility.  */
-  if (DECL_P (*node))
-    *no_add_attrs = false;
+  /* Go ahead and attach the attribute to the node as well.  This is needed
+     so we can determine whether we have VISIBILITY_DEFAULT because the
+     visibility was not specified, or because it was explicitly overridden
+     from the containing scope.  */
 
   return NULL_TREE;
 }
@@ -4972,6 +4989,13 @@ c_determine_visibility (tree decl)
       return true;
     }
 
+  /* Set default visibility to whatever the user supplied with
+     visibility_specified depending on #pragma GCC visibility.  */
+  if (!DECL_VISIBILITY_SPECIFIED (decl))
+    {
+      DECL_VISIBILITY (decl) = default_visibility;
+      DECL_VISIBILITY_SPECIFIED (decl) = visibility_options.inpragma;
+    }
   return false;
 }
 

@@ -1,8 +1,8 @@
 // PR c++/21581
-// Test for anonymous namespace default hidden visibility
+// Test for anonymous namespace internal linkage
 
-// { dg-require-visibility "" }
-// { dg-final-NOT { scan-hidden "_ZN.*1fEv" } }
+// { dg-do compile }
+// { dg-final { scan-assembler-not "globl.*_ZN.*1fEv" } }
 
 namespace
 {
