@@ -1602,7 +1602,7 @@ constrain_visibility (tree decl, int visibility, bool specified,
   return false;
 }
 
-/* Constrain the visibility of DECL based on the visbility of its template
+/* Constrain the visibility of DECL based on the visibility of its template
    arguments.  */
 
 static void
