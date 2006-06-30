@@ -3849,10 +3849,7 @@ convert_template_argument (tree parm,
 			   tree in_decl)
 {
   tree val;
-  tree inner_args;
   int is_type, requires_type, is_tmpl_type, requires_tmpl_type;
-
-  inner_args = INNERMOST_TEMPLATE_ARGS (args);
 
   if (TREE_CODE (arg) == TREE_LIST
       && TREE_CODE (TREE_VALUE (arg)) == OFFSET_REF)
@@ -3945,7 +3942,7 @@ convert_template_argument (tree parm,
 
 	      if (coerce_template_template_parms (parmparm, argparm,
 						  complain, in_decl,
-						  inner_args))
+						  args))
 		{
 		  val = arg;
 
