@@ -1626,7 +1626,7 @@ tree_expand_cfg (void)
   init_block = construct_init_block ();
 
   /* Clear EDGE_EXECUTABLE on the entry edge(s).  It is cleaned from the
-     remainining edges in expand_gimple_basic_block.  */
+     remaining edges in expand_gimple_basic_block.  */
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     e->flags &= ~EDGE_EXECUTABLE;
 
