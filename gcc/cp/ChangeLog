@@ -1,5 +1,9 @@
 2006-06-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/26577
+	* call.c (build_new_method_call): Force evaluation of the 
+	instance pointer, not the object.
+
 	PR c++/18698
 	* decl2.c (grokfield): Only try to treat the decl as an access 
 	declaration if the scope is a class.
