@@ -1,3 +1,9 @@
+2006-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/26577
+	* call.c (build_new_method_call): Force evaluation of the 
+	instance pointer, not the object.
+
 2006-06-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl2.c: Fix a comment typo.
