@@ -810,6 +810,8 @@ grokfield (const cp_declarator *declarator,
   if (!declspecs->any_specifiers_p
       && declarator->kind == cdk_id
       && declarator->u.id.qualifying_scope
+      && TYPE_P (declarator->u.id.qualifying_scope)
+      && IS_AGGR_TYPE (declarator->u.id.qualifying_scope)
       && TREE_CODE (declarator->u.id.unqualified_name) == IDENTIFIER_NODE)
     /* Access declaration */
     return do_class_using_decl (declarator->u.id.qualifying_scope,
