@@ -3,11 +3,11 @@
 // parsing of the class, causing some variants to have it and some not.
 
 struct __attribute__((bogus)) A
-{
+{				// { dg-warning "ignored" "" }
     virtual ~A();
     void foo(const A&);
     void bar(const A&);
-};				// { dg-warning "ignored" "" }
+};
 
 void A::foo(const A&)   {}
 void A::bar(const A& a) { foo(a); }

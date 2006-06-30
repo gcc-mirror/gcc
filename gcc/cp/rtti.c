@@ -1156,6 +1156,10 @@ create_pseudo_type_info (int tk, const char *real_name, ...)
   ti->name = get_identifier (real_name);
   ti->vtable = NULL_TREE;
 
+  /* Pretend this is public so determine_visibility doesn't give vtables
+     internal linkage.  */
+  TREE_PUBLIC (TYPE_MAIN_DECL (ti->type)) = 1;
+
   va_end (ap);
 }
 

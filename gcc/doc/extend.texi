@@ -2409,10 +2409,10 @@ consistently, so that the same entity should not be declared with
 different settings of the attribute.
 
 In C++, the visibility attribute applies to types as well as functions
-and objects, because in C++ types have linkage.  There are some bugs
-in the C++ support for this flag, for example a template which has a
-hidden type as a parameter is not properly hidden.
-@c bugzilla 26612
+and objects, because in C++ types have linkage.  A class must not have
+greater visibility than its non-static data member types and bases,
+and class members default to the visibility of their class.  Also, a
+declaration must not have greater visibility than its type.
 
 In C++, you can mark member functions and static member variables of a
 class with the visibility attribute.  This is useful if if you know a
@@ -2422,6 +2422,17 @@ class has default visibility.  Care must be taken to avoid breaking
 the One Definition Rule; for example, it is not useful to mark a
 method which is defined inside a class definition as hidden without
 marking the whole class as hidden.
+
+A C++ namespace declaration can also have the visibility attribute.
+This attribute applies only to the particular namespace body, not to
+other definitions of the same namespace; it is equivalent to using
+@samp{#pragma GCC visibility} before and after the namespace
+definition (@pxref{Visibility Pragmas}).
+
+In C++, if a template argument has limited visibility, this
+restriction is implicitly propagated to the template instantiation.
+Otherwise, template instantiations and specializations default to the
+visibility of their template.
 
 @item warn_unused_result
 @cindex @code{warn_unused_result} attribute
@@ -2604,10 +2615,7 @@ does not arise there.
 An attribute specifier list may appear as part of a @code{struct},
 @code{union} or @code{enum} specifier.  It may go either immediately
 after the @code{struct}, @code{union} or @code{enum} keyword, or after
-the closing brace.  It is ignored if the content of the structure, union
-or enumerated type is not defined in the specifier in which the
-attribute specifier list is used---that is, in usages such as
-@code{struct __attribute__((foo)) bar} with no following opening brace.
+the closing brace.  The former syntax is preferred.
 Where attribute specifiers follow the closing brace, they are considered
 to relate to the structure, union or enumerated type defined, not to any
 enclosing declaration the type specifier appears in, and the type
@@ -3382,13 +3390,14 @@ placed in either the @code{.bss_below100} section or the
 @cindex type attributes
 
 The keyword @code{__attribute__} allows you to specify special
-attributes of @code{struct} and @code{union} types when you define such
-types.  This keyword is followed by an attribute specification inside
-double parentheses.  Six attributes are currently defined for types:
-@code{aligned}, @code{packed}, @code{transparent_union}, @code{unused},
-@code{deprecated} and @code{may_alias}.  Other attributes are defined for
-functions (@pxref{Function Attributes}) and for variables
-(@pxref{Variable Attributes}).
+attributes of @code{struct} and @code{union} types when you define
+such types.  This keyword is followed by an attribute specification
+inside double parentheses.  Seven attributes are currently defined for
+types: @code{aligned}, @code{packed}, @code{transparent_union},
+@code{unused}, @code{deprecated}, @code{visibility}, and
+@code{may_alias}.  Other attributes are defined for functions
+(@pxref{Function Attributes}) and for variables (@pxref{Variable
+Attributes}).
 
 You may also specify any one of these attributes with @samp{__}
 preceding and following its keyword.  This allows you to use these
@@ -3396,14 +3405,13 @@ attributes in header files without being concerned about a possible
 macro of the same name.  For example, you may use @code{__aligned__}
 instead of @code{aligned}.
 
-You may specify the @code{aligned} and @code{transparent_union}
-attributes either in a @code{typedef} declaration or just past the
-closing curly brace of a complete enum, struct or union type
-@emph{definition} and the @code{packed} attribute only past the closing
-brace of a definition.
+You may specify type attributes either in a @code{typedef} declaration
+or in an enum, struct or union type declaration or definition.
 
-You may also specify attributes between the enum, struct or union
-tag and the name of the type rather than after the closing brace.
+For an enum, struct or union type, you may specify attributes either
+between the enum, struct or union tag and the name of the type, or
+just past the closing curly brace of the @emph{definition}.  The
+former syntax is preferred.
 
 @xref{Attribute Syntax}, for details of the exact syntax for using
 attributes.
@@ -3651,6 +3659,13 @@ If you replaced @code{short_a} with @code{short} in the variable
 declaration, the above program would abort when compiled with
 @option{-fstrict-aliasing}, which is on by default at @option{-O2} or
 above in recent GCC versions.
+
+@item visibility
+
+In C++, attribute visibility (@pxref{Function Attributes}) can also be
+applied to class, struct, union and enum types.  Unlike other type
+attributes, the attribute must appear between the initial keyword and
+the name of the type; it cannot appear after the body of the type.
 
 @subsection ARM Type Attributes
 
@@ -9454,6 +9469,7 @@ for further explanation.
 * Structure-Packing Pragmas::
 * Weak Pragmas::
 * Diagnostic Pragmas::
+* Visibility Pragmas::
 @end menu
 
 @node ARM Pragmas
@@ -9747,6 +9763,26 @@ same option is listed multiple times, the last one specified is the
 one that is in effect.  This pragma is not intended to be a general
 purpose replacement for command line options, but for implementing
 strict control over project policies.
+
+@end table
+
+@node Visibility Pragmas
+@subsection Visibility Pragmas
+
+@table @code
+@item #pragma GCC visibility push(@var{visibility})
+@itemx #pragma GCC visibility pop
+@cindex pragma, visibility
+
+This pragma allows the user to set the visibility for multiple
+declarations without having to give each a visibility attribute
+@xref{Function Attributes}, for more information about visibility and
+the attribute syntax.
+
+In C++, @samp{#pragma GCC visibility} affects only namespace-scope
+declarations.  Class members and template specializations are not
+affected; if you want to override the visibility for a particular
+member or instantiation, you must use an attribute.
 
 @end table
 

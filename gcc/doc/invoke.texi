@@ -1619,16 +1619,10 @@ when used within the DSO@.  Enabling this option can have a dramatic effect
 on load and link times of a DSO as it massively reduces the size of the
 dynamic export table when the library makes heavy use of templates.
 
-The behavior of this switch is not quite the same as marking the
-methods as hidden directly.  Normally if there is a class with default
-visibility which has a hidden method, the effect of this is that the
-method must be defined in only one shared object.  This switch does
-not have this restriction.
-
 You may mark a method as having a visibility explicitly to negate the
 effect of the switch for that method.  For example, if you do want to
-compare pointers to a particular inline method, you might mark it as
-having default visibility.
+compare pointers to a particular inline method, or the method has
+local static data, you might mark it as having default visibility.
 
 @item -fno-weak
 @opindex fno-weak
@@ -13505,6 +13499,20 @@ headers and headers from any other library you use, may not be
 expecting to be compiled with visibility other than the default.  You
 may need to explicitly say @samp{#pragma GCC visibility push(default)}
 before including any such headers.
+
+@samp{extern} declarations are not affected by @samp{-fvisibility}, so
+a lot of code can be recompiled with @samp{-fvisibility=hidden} with
+no modifications.  However, this means that calls to @samp{extern}
+functions with no explicit visibility will use the PLT, so it is more
+effective to use @samp{__attribute ((visibility))} and/or
+@samp{#pragma GCC visibility} to tell the compiler which @samp{extern}
+declarations should be treated as hidden.
+
+Note that @samp{-fvisibility} does affect C++ vague linkage
+entities. This means that, for instance, an exception class that will
+be thrown between DSOs must be explicitly marked with default
+visibility so that the @samp{type_info} nodes will be unified between
+the DSOs.
 
 An overview of these techniques, their benefits and how to use them
 is at @w{@uref{http://gcc.gnu.org/wiki/Visibility}}.

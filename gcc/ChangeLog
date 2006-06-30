@@ -1,3 +1,27 @@
+2006-06-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/26905
+	PR c++/26612
+	PR c++/27000
+	PR c++/26984
+	PR c++/19134
+	* tree.c (build_decl_stat): Don't hande #pragma visibility here.
+	* c-common.c (c_determine_visibility): Handle it here.
+	* c-decl.c (finish_decl): Call c_determine_visibility for 
+	functions, too.
+	* flags.h (enum symbol_visibility): Sort from most to least visibility.
+	* tree.h: Likewise.
+	* varasm.c (default_assemble_visibility): Likewise.
+	* c-common.c (handle_visibility_attribute): Complain about trying
+	to give visibility to an already defined class, or trying to change
+	declared visibility. Always attach the attribute.
+
+	PR c++/26905
+	PR c++/21675
+	PR c++/17470
+	* attribs.c (decl_attributes): Ignore type-in-place attributes
+	once the type has been defined.
+
 2006-06-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/27428

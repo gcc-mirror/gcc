@@ -250,6 +250,14 @@ decl_attributes (tree *node, tree attributes, int flags)
 	    }
 	}
 
+      if (TYPE_P (*anode)
+	  && (flags & (int) ATTR_FLAG_TYPE_IN_PLACE)
+	  && TYPE_SIZE (*anode) != NULL_TREE)
+	{
+	  warning (OPT_Wattributes, "type attributes ignored after type is already defined");
+	  continue;
+	}
+
       if (spec->handler != NULL)
 	returned_attrs = chainon ((*spec->handler) (anode, name, args,
 						    flags, &no_add_attrs),

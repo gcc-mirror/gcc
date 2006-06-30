@@ -2140,13 +2140,7 @@ check_explicit_specialization (tree declarator,
 	     template it specializes.  */
 	  TREE_PRIVATE (decl) = TREE_PRIVATE (gen_tmpl);
 	  TREE_PROTECTED (decl) = TREE_PROTECTED (gen_tmpl);
-	  /* The specialization has the same visibility as the
-	     template it specializes.  */
-	  if (DECL_VISIBILITY_SPECIFIED (gen_tmpl))
-	    {
-	      DECL_VISIBILITY_SPECIFIED (decl) = 1;
-	      DECL_VISIBILITY (decl) = DECL_VISIBILITY (gen_tmpl);
-	    }
+
 	  /* If DECL is a friend declaration, declared using an
 	     unqualified name, the namespace associated with DECL may
 	     have been set incorrectly.  For example, in:
@@ -3592,9 +3586,9 @@ convert_nontype_argument (tree type, tree expr)
 
       if (!constant_address_p)
 	{
-	    error ("%qE is not a valid template argument for type %qT "
-		  "because it is not a constant pointer", expr, type);
-	    return NULL_TREE;
+	  error ("%qE is not a valid template argument for type %qT "
+		 "because it is not a constant pointer", expr, type);
+	  return NULL_TREE;
 	}
     }
   /* [temp.arg.nontype]/5, bullet 3
@@ -4781,6 +4775,10 @@ lookup_template_class (tree d1,
 	/* If the type makes use of template parameters, the
 	   code that generates debugging information will crash.  */
 	DECL_IGNORED_P (TYPE_STUB_DECL (t)) = 1;
+
+      /* Possibly limit visibility based on template args.  */
+      TREE_PUBLIC (type_decl) = 1;
+      determine_visibility (type_decl);
 
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
     }
@@ -6588,6 +6586,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  SET_DECL_FRIEND_CONTEXT (r,
 				   tsubst (DECL_FRIEND_CONTEXT (t),
 					    args, complain, in_decl));
+
+	/* Possibly limit visibility based on template args.  */
+	DECL_VISIBILITY (r) = VISIBILITY_DEFAULT;
+	DECL_VISIBILITY_SPECIFIED (r) = 0;
+	determine_visibility (r);
       }
       break;
 
@@ -6760,6 +6763,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL))
 	  SET_DECL_RTL (r, NULL_RTX);
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
+	if (TREE_CODE (r) == VAR_DECL)
+	  {
+	    /* Possibly limit visibility based on template args.  */
+	    DECL_VISIBILITY (r) = VISIBILITY_DEFAULT;
+	    DECL_VISIBILITY_SPECIFIED (r) = 0;
+	    determine_visibility (r);
+	  }
 
 	if (!local_p)
 	  {

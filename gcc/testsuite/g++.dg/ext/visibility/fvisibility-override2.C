@@ -6,7 +6,7 @@
 
 class Foo
 {
-  __attribute__ ((visibility ("default"))) void method();
+  __attribute__ ((visibility ("internal"))) void method();
 };
 
 void Foo::method() { }
