@@ -1,3 +1,9 @@
+2006-06-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/18698
+	* decl2.c (grokfield): Only try to treat the decl as an access 
+	declaration if the scope is a class.
+
 2006-06-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/26905
