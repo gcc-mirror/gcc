@@ -1,3 +1,8 @@
+2006-06-30  Mike Stump  <mrs@apple.com>
+
+	* g++.dg/ext/visibility/fvisibility-override2.C: Fix for systems
+	that don't support internal visibility.
+
 2006-06-30  Andrew Pinski  <pinskia@gmail.com>
 
 	* gcc.dg/tree-ssa/inline-1.c: Fix up scan-tree-dump-times
