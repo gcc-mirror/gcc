@@ -1,3 +1,20 @@
+2006-06-30  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* classpath/tools/Makefile.am: Comment out tools wrapper creation.
+	(TOOLS_ZIP): Rename tools.zip tools.jar.
+	(noinst_DATA): Do not install tools.jar.
+	* classpath/tools/Makefile.in: Regenerate.
+	* classpath/Makefile.am (SUBDIRS): Add tools.
+	(DIST_SUBDIRS): Likewise.
+	* classpath/Makefile.in: Regenerate.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Add libgcj-tools.la.
+	(jar_DATA): Add libgcj-tools-$(gcc_version).jar.
+	(bin_PROGRAMS): Add gappletviewer, gjarsigner and gkeytool.
+	Add build logic for libgcj-tools.la,
+	libgcj-tools-$(gcc_version).jar and gappletviewer, gjarsigner and
+	gkeytool.
+	* Makefile.in: Regenerate.
+
 2006-06-29  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* gcj/javaprims.h (_Jv_uintptr_t): New typedef similar to uintptr_t in
