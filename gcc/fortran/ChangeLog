@@ -1,3 +1,9 @@
+2006-06-30  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/24748
+	* primary.c (gfc_match_rvalue): Don't call
+	match_substring for implicit non-character types.
+
 2006-06-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/19310
