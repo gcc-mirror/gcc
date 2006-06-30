@@ -14,8 +14,6 @@
 
 @SET_MAKE@
 
-
-
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -39,8 +37,6 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@CREATE_WRAPPERS_TRUE@bin_PROGRAMS = gappletviewer$(EXEEXT) \
-@CREATE_WRAPPERS_TRUE@	gjarsigner$(EXEEXT) gkeytool$(EXEEXT)
 subdir = tools
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/appletviewer.in $(srcdir)/jarsigner.in \
@@ -58,52 +54,9 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES = appletviewer jarsigner keytool
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(TOOLSdir)"
-binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
-PROGRAMS = $(bin_PROGRAMS)
-am__gappletviewer_SOURCES_DIST = toolwrapper.c
-@CREATE_WRAPPERS_TRUE@am_gappletviewer_OBJECTS =  \
-@CREATE_WRAPPERS_TRUE@	gappletviewer-toolwrapper.$(OBJEXT)
-gappletviewer_OBJECTS = $(am_gappletviewer_OBJECTS)
-gappletviewer_LDADD = $(LDADD)
-am__gjarsigner_SOURCES_DIST = toolwrapper.c
-@CREATE_WRAPPERS_TRUE@am_gjarsigner_OBJECTS =  \
-@CREATE_WRAPPERS_TRUE@	gjarsigner-toolwrapper.$(OBJEXT)
-gjarsigner_OBJECTS = $(am_gjarsigner_OBJECTS)
-gjarsigner_LDADD = $(LDADD)
-am__gkeytool_SOURCES_DIST = toolwrapper.c
-@CREATE_WRAPPERS_TRUE@am_gkeytool_OBJECTS =  \
-@CREATE_WRAPPERS_TRUE@	gkeytool-toolwrapper.$(OBJEXT)
-gkeytool_OBJECTS = $(am_gkeytool_OBJECTS)
-gkeytool_LDADD = $(LDADD)
-binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
-SCRIPTS = $(bin_SCRIPTS)
-DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
-depcomp = $(SHELL) $(top_srcdir)/depcomp
-am__depfiles_maybe = depfiles
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(gappletviewer_SOURCES) $(gjarsigner_SOURCES) \
-	$(gkeytool_SOURCES)
-DIST_SOURCES = $(am__gappletviewer_SOURCES_DIST) \
-	$(am__gjarsigner_SOURCES_DIST) $(am__gkeytool_SOURCES_DIST)
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-TOOLSDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(TOOLS_DATA)
-ETAGS = etags
-CTAGS = ctags
+SOURCES =
+DIST_SOURCES =
+DATA = $(noinst_DATA)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMDEP_FALSE = @AMDEP_FALSE@
@@ -326,49 +279,54 @@ GLIBJ_CLASSPATH = '$(top_builddir)/lib':'$(top_builddir)/lib/glibj.zip'
 
 # Setup the compiler to use the GNU Classpath library we just build
 @FOUND_GCJ_TRUE@JCOMPILER = $(GCJ) -encoding UTF-8 --bootclasspath $(GLIBJ_CLASSPATH) --classpath . -C
-@CREATE_WRAPPERS_FALSE@bin_SCRIPTS = appletviewer jarsigner keytool
-@CREATE_WRAPPERS_TRUE@bin_SCRIPTS = 
-@CREATE_WRAPPERS_TRUE@@FOUND_CACAO_FALSE@@FOUND_GCJ_FALSE@LIBJVM = 
-@CREATE_WRAPPERS_TRUE@@FOUND_CACAO_TRUE@@FOUND_GCJ_FALSE@LIBJVM = -ljvm
-@CREATE_WRAPPERS_TRUE@@FOUND_GCJ_TRUE@LIBJVM = -lgcj
 
-# Some architecture independent data to be installed.
-@CREATE_WRAPPERS_TRUE@TOOLS_DATA = $(TOOLS_ZIP)
+# if CREATE_WRAPPERS
+# bin_SCRIPTS =
+# bin_PROGRAMS = gappletviewer gjarsigner gkeytool
 
-# Where we want these data files installed.
-@CREATE_WRAPPERS_TRUE@TOOLSdir = $(datadir)/java
+# if FOUND_GCJ
+# LIBJVM = -lgcj
+# else
+# if FOUND_CACAO
+# LIBJVM = -ljvm
+# else
+# LIBJVM =
+# endif
+# endif
 
-# The zip files with classes we want to produce.
-@CREATE_WRAPPERS_TRUE@TOOLS_ZIP = libgcj-tools-$(gcc_version).jar
-@CREATE_WRAPPERS_TRUE@gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
-@CREATE_WRAPPERS_TRUE@gappletviewer_SOURCES = toolwrapper.c
-@CREATE_WRAPPERS_TRUE@gappletviewer_CFLAGS = -Wall \
-@CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
-@CREATE_WRAPPERS_TRUE@	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\"" \
-@CREATE_WRAPPERS_TRUE@	-DTOOLPACKAGE="\"appletviewer\"" \
-@CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"gappletviewer\""
+# AM_CPPFLAGS = -Wall \
+# 	-I$(top_srcdir)/include \
+# 	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\""
 
-@CREATE_WRAPPERS_TRUE@gappletviewer_LDFLAGS = -L$(libdir) $(LIBJVM)
-@CREATE_WRAPPERS_TRUE@gjarsigner_SOURCES = toolwrapper.c
-@CREATE_WRAPPERS_TRUE@gjarsigner_CFLAGS = -Wall \
-@CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
-@CREATE_WRAPPERS_TRUE@	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\"" \
-@CREATE_WRAPPERS_TRUE@	-DTOOLPACKAGE="\"jarsigner\"" \
-@CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"gjarsigner\""
+# gappletviewer_SOURCES = toolwrapper.c
+# gappletviewer_CFLAGS = \
+# 	-DTOOLPACKAGE="\"appletviewer\"" \
+# 	-DTOOLNAME="\"gappletviewer\""
+# gappletviewer_LDFLAGS = -L$(libdir) $(LIBJVM)
 
-@CREATE_WRAPPERS_TRUE@gjarsigner_LDFLAGS = -L$(libdir) $(LIBJVM)
-@CREATE_WRAPPERS_TRUE@gkeytool_SOURCES = toolwrapper.c
-@CREATE_WRAPPERS_TRUE@gkeytool_CFLAGS = -Wall \
-@CREATE_WRAPPERS_TRUE@	-I$(top_srcdir)/include \
-@CREATE_WRAPPERS_TRUE@	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\"" \
-@CREATE_WRAPPERS_TRUE@	-DTOOLPACKAGE="\"keytool\"" \
-@CREATE_WRAPPERS_TRUE@	-DTOOLNAME="\"gkeytool\""
+# gjarsigner_SOURCES = toolwrapper.c
+# gjarsigner_CFLAGS = \
+# 	-DTOOLPACKAGE="\"jarsigner\"" \
+# 	-DTOOLNAME="\"gjarsigner\""
+# gjarsigner_LDFLAGS = -L$(libdir) $(LIBJVM)
 
-@CREATE_WRAPPERS_TRUE@gkeytool_LDFLAGS = -L$(libdir) $(LIBJVM)
-EXTRA_DIST = toolwrapper.c appletviewer.in jarsigner.in keytool.in
+# gkeytool_SOURCES = toolwrapper.c
+# gkeytool_CFLAGS = \
+# 	-DTOOLPACKAGE="\"keytool\"" \
+# 	-DTOOLNAME="\"gkeytool\""
+# gkeytool_LDFLAGS = -L$(libdir) $(LIBJVM)
+
+# else
+# bin_SCRIPTS = gappletviewer gjarsigner gkeytool
+# bin_PROGRAMS =
+# endif
+EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in
 
 # All our example java source files
 TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*.java $(srcdir)/gnu/classpath/tools/*/*.java $(srcdir)/gnu/classpath/tools/*/*/*.java
+
+# The zip files with classes we want to produce.
+TOOLS_ZIP = tools.jar
 
 # Extra objects that will not exist until configure-time
 BUILT_SOURCES = $(TOOLS_ZIP)
@@ -388,11 +346,14 @@ READMES = $(srcdir)/gnu/classpath/tools/giop/README
 
 # All the files we find "interesting"
 ALL_TOOLS_FILES = $(TOOLS_JAVA_FILES) $(TOOLS_TEMPLATES) $(TOOLS_HELPS)
+
+# # Some architecture independent data to be installed.
+# TOOLS_DATA = $(TOOLS_ZIP)
+noinst_DATA = $(TOOLS_ZIP)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -428,151 +389,6 @@ jarsigner: $(top_builddir)/config.status $(srcdir)/jarsigner.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 keytool: $(top_builddir)/config.status $(srcdir)/keytool.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
-install-binPROGRAMS: $(bin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  p1=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  if test -f $$p \
-	     || test -f $$p1 \
-	  ; then \
-	    f=`echo "$$p1" | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'`; \
-	   echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) --mode=install $(binPROGRAMS_INSTALL) '$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	   $(INSTALL_PROGRAM_ENV) $(LIBTOOL) --mode=install $(binPROGRAMS_INSTALL) "$$p" "$(DESTDIR)$(bindir)/$$f" || exit 1; \
-	  else :; fi; \
-	done
-
-uninstall-binPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
-	done
-
-clean-binPROGRAMS:
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  echo " rm -f $$p $$f"; \
-	  rm -f $$p $$f ; \
-	done
-
-installcheck-binPROGRAMS: $(bin_PROGRAMS)
-	bad=0; pid=$$$$; list="$(bin_PROGRAMS)"; for p in $$list; do \
-	  case ' $(AM_INSTALLCHECK_STD_OPTIONS_EXEMPT) ' in \
-	   *" $$p "* | *" $(srcdir)/$$p "*) continue;; \
-	  esac; \
-	  f=`echo "$$p" | \
-	     sed 's,^.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/'`; \
-	  for opt in --help --version; do \
-	    if "$(DESTDIR)$(bindir)/$$f" $$opt >c$${pid}_.out \
-	         2>c$${pid}_.err </dev/null \
-		 && test -n "`cat c$${pid}_.out`" \
-		 && test -z "`cat c$${pid}_.err`"; then :; \
-	    else echo "$$f does not support $$opt" 1>&2; bad=1; fi; \
-	  done; \
-	done; rm -f c$${pid}_.???; exit $$bad
-gappletviewer$(EXEEXT): $(gappletviewer_OBJECTS) $(gappletviewer_DEPENDENCIES) 
-	@rm -f gappletviewer$(EXEEXT)
-	$(LINK) $(gappletviewer_LDFLAGS) $(gappletviewer_OBJECTS) $(gappletviewer_LDADD) $(LIBS)
-gjarsigner$(EXEEXT): $(gjarsigner_OBJECTS) $(gjarsigner_DEPENDENCIES) 
-	@rm -f gjarsigner$(EXEEXT)
-	$(LINK) $(gjarsigner_LDFLAGS) $(gjarsigner_OBJECTS) $(gjarsigner_LDADD) $(LIBS)
-gkeytool$(EXEEXT): $(gkeytool_OBJECTS) $(gkeytool_DEPENDENCIES) 
-	@rm -f gkeytool$(EXEEXT)
-	$(LINK) $(gkeytool_LDFLAGS) $(gkeytool_OBJECTS) $(gkeytool_LDADD) $(LIBS)
-install-binSCRIPTS: $(bin_SCRIPTS)
-	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(mkdir_p) "$(DESTDIR)$(bindir)"
-	@list='$(bin_SCRIPTS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  if test -f $$d$$p; then \
-	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	    echo " $(binSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	    $(binSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(bindir)/$$f"; \
-	  else :; fi; \
-	done
-
-uninstall-binSCRIPTS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(bin_SCRIPTS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
-	done
-
-mostlyclean-compile:
-	-rm -f *.$(OBJEXT)
-
-distclean-compile:
-	-rm -f *.tab.c
-
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gappletviewer-toolwrapper.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gjarsigner-toolwrapper.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gkeytool-toolwrapper.Po@am__quote@
-
-.c.o:
-@am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c $<
-
-.c.obj:
-@am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
-
-.c.lo:
-@am__fastdepCC_TRUE@	if $(LTCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Plo"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
-
-gappletviewer-toolwrapper.o: toolwrapper.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gappletviewer_CFLAGS) $(CFLAGS) -MT gappletviewer-toolwrapper.o -MD -MP -MF "$(DEPDIR)/gappletviewer-toolwrapper.Tpo" -c -o gappletviewer-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/gappletviewer-toolwrapper.Tpo" "$(DEPDIR)/gappletviewer-toolwrapper.Po"; else rm -f "$(DEPDIR)/gappletviewer-toolwrapper.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='gappletviewer-toolwrapper.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gappletviewer_CFLAGS) $(CFLAGS) -c -o gappletviewer-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c
-
-gappletviewer-toolwrapper.obj: toolwrapper.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gappletviewer_CFLAGS) $(CFLAGS) -MT gappletviewer-toolwrapper.obj -MD -MP -MF "$(DEPDIR)/gappletviewer-toolwrapper.Tpo" -c -o gappletviewer-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/gappletviewer-toolwrapper.Tpo" "$(DEPDIR)/gappletviewer-toolwrapper.Po"; else rm -f "$(DEPDIR)/gappletviewer-toolwrapper.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='gappletviewer-toolwrapper.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gappletviewer_CFLAGS) $(CFLAGS) -c -o gappletviewer-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`
-
-gjarsigner-toolwrapper.o: toolwrapper.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gjarsigner_CFLAGS) $(CFLAGS) -MT gjarsigner-toolwrapper.o -MD -MP -MF "$(DEPDIR)/gjarsigner-toolwrapper.Tpo" -c -o gjarsigner-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/gjarsigner-toolwrapper.Tpo" "$(DEPDIR)/gjarsigner-toolwrapper.Po"; else rm -f "$(DEPDIR)/gjarsigner-toolwrapper.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='gjarsigner-toolwrapper.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gjarsigner_CFLAGS) $(CFLAGS) -c -o gjarsigner-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c
-
-gjarsigner-toolwrapper.obj: toolwrapper.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gjarsigner_CFLAGS) $(CFLAGS) -MT gjarsigner-toolwrapper.obj -MD -MP -MF "$(DEPDIR)/gjarsigner-toolwrapper.Tpo" -c -o gjarsigner-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/gjarsigner-toolwrapper.Tpo" "$(DEPDIR)/gjarsigner-toolwrapper.Po"; else rm -f "$(DEPDIR)/gjarsigner-toolwrapper.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='gjarsigner-toolwrapper.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gjarsigner_CFLAGS) $(CFLAGS) -c -o gjarsigner-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`
-
-gkeytool-toolwrapper.o: toolwrapper.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gkeytool_CFLAGS) $(CFLAGS) -MT gkeytool-toolwrapper.o -MD -MP -MF "$(DEPDIR)/gkeytool-toolwrapper.Tpo" -c -o gkeytool-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/gkeytool-toolwrapper.Tpo" "$(DEPDIR)/gkeytool-toolwrapper.Po"; else rm -f "$(DEPDIR)/gkeytool-toolwrapper.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='gkeytool-toolwrapper.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gkeytool_CFLAGS) $(CFLAGS) -c -o gkeytool-toolwrapper.o `test -f 'toolwrapper.c' || echo '$(srcdir)/'`toolwrapper.c
-
-gkeytool-toolwrapper.obj: toolwrapper.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gkeytool_CFLAGS) $(CFLAGS) -MT gkeytool-toolwrapper.obj -MD -MP -MF "$(DEPDIR)/gkeytool-toolwrapper.Tpo" -c -o gkeytool-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/gkeytool-toolwrapper.Tpo" "$(DEPDIR)/gkeytool-toolwrapper.Po"; else rm -f "$(DEPDIR)/gkeytool-toolwrapper.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='toolwrapper.c' object='gkeytool-toolwrapper.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gkeytool_CFLAGS) $(CFLAGS) -c -o gkeytool-toolwrapper.obj `if test -f 'toolwrapper.c'; then $(CYGPATH_W) 'toolwrapper.c'; else $(CYGPATH_W) '$(srcdir)/toolwrapper.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -583,71 +399,12 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-install-TOOLSDATA: $(TOOLS_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(TOOLSdir)" || $(mkdir_p) "$(DESTDIR)$(TOOLSdir)"
-	@list='$(TOOLS_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(TOOLSDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(TOOLSdir)/$$f'"; \
-	  $(TOOLSDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(TOOLSdir)/$$f"; \
-	done
-
-uninstall-TOOLSDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(TOOLS_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(TOOLSdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(TOOLSdir)/$$f"; \
-	done
-
-ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
-	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '    { files[$$0] = 1; } \
-	       END { for (i in files) print i; }'`; \
-	mkid -fID $$unique
 tags: TAGS
+TAGS:
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
-		$(TAGS_FILES) $(LISP)
-	tags=; \
-	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '    { files[$$0] = 1; } \
-	       END { for (i in files) print i; }'`; \
-	if test -z "$(ETAGS_ARGS)$$tags$$unique"; then :; else \
-	  test -n "$$unique" || unique=$$empty_fix; \
-	  $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
-	    $$tags $$unique; \
-	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
-		$(TAGS_FILES) $(LISP)
-	tags=; \
-	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '    { files[$$0] = 1; } \
-	       END { for (i in files) print i; }'`; \
-	test -z "$(CTAGS_ARGS)$$tags$$unique" \
-	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
-	     $$tags $$unique
+CTAGS:
 
-GTAGS:
-	here=`$(am__cd) $(top_builddir) && pwd` \
-	  && cd $(top_srcdir) \
-	  && gtags -i $(GTAGS_ARGS) $$here
-
-distclean-tags:
-	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(DISTFILES)
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
@@ -682,11 +439,8 @@ distdir: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(DATA)
+all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(TOOLSdir)"; do \
-	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
-	done
 install: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
@@ -715,14 +469,11 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-libtool distclean-tags
+distclean-am: clean-am distclean-generic distclean-libtool
 
 dvi: dvi-am
 
@@ -734,25 +485,23 @@ info: info-am
 
 info-am:
 
-install-data-am: install-TOOLSDATA
+install-data-am:
 
-install-exec-am: install-binPROGRAMS install-binSCRIPTS
+install-exec-am:
 
 install-info: install-info-am
 
 install-man:
 
-installcheck-am: installcheck-binPROGRAMS installcheck-binSCRIPTS
+installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool
+mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
 pdf: pdf-am
 
@@ -762,25 +511,22 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-TOOLSDATA uninstall-binPROGRAMS \
-	uninstall-binSCRIPTS uninstall-info-am
+uninstall-am: uninstall-info-am
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libtool clean-local ctags dist-hook \
-	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-TOOLSDATA install-am \
-	install-binPROGRAMS install-binSCRIPTS install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-strip installcheck \
-	installcheck-am installcheck-binPROGRAMS \
-	installcheck-binSCRIPTS installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
+.PHONY: all all-am check check-am clean clean-generic clean-libtool \
+	clean-local dist-hook distclean distclean-generic \
+	distclean-libtool distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-TOOLSDATA uninstall-am \
-	uninstall-binPROGRAMS uninstall-binSCRIPTS uninstall-info-am
+	uninstall uninstall-am uninstall-info-am
 
 @FOUND_ECJ_FALSE@@FOUND_GCJX_FALSE@@FOUND_GCJ_FALSE@@FOUND_JIKES_FALSE@error dunno how to setup the JCOMPILER and compile
+
+# Where we want these data files installed.
+# TOOLSdir = $(datadir)/java
 
 # Make sure everything is included in the distribution.
 dist-hook:

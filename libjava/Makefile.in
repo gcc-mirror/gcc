@@ -44,7 +44,8 @@ target_triplet = @target@
 @XLIB_AWT_TRUE@am__append_2 = lib-gnu-awt-xlib.la
 @NATIVE_TRUE@bin_PROGRAMS = jv-convert$(EXEEXT) gij$(EXEEXT) \
 @NATIVE_TRUE@	grmic$(EXEEXT) grmiregistry$(EXEEXT) \
-@NATIVE_TRUE@	gcj-dbtool$(EXEEXT)
+@NATIVE_TRUE@	gcj-dbtool$(EXEEXT) gappletviewer$(EXEEXT) \
+@NATIVE_TRUE@	gjarsigner$(EXEEXT) gkeytool$(EXEEXT)
 @BASH_JAR_TRUE@am__append_3 = scripts/jar
 @USING_GCC_TRUE@am__append_4 = $(WARNINGS)
 @USING_BOEHMGC_TRUE@am__append_5 = boehm.cc
@@ -136,6 +137,9 @@ am__objects_1 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
 am_lib_gnu_awt_xlib_la_OBJECTS = $(am__objects_1)
 lib_gnu_awt_xlib_la_OBJECTS = $(am_lib_gnu_awt_xlib_la_OBJECTS)
 @XLIB_AWT_TRUE@am_lib_gnu_awt_xlib_la_rpath = -rpath $(toolexeclibdir)
+libgcj_tools_la_LIBADD =
+am_libgcj_tools_la_OBJECTS = classpath/tools/libgcj_tools_la-tools.lo
+libgcj_tools_la_OBJECTS = $(am_libgcj_tools_la_OBJECTS)
 am__DEPENDENCIES_1 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	gnu/classpath/debug.lo gnu/classpath/jdwp.lo \
 	gnu/classpath/jdwp/event.lo \
@@ -349,6 +353,8 @@ am_libjvm_la_OBJECTS = jni-libjvm.lo
 libjvm_la_OBJECTS = $(am_libjvm_la_OBJECTS)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
+am_gappletviewer_OBJECTS =
+gappletviewer_OBJECTS = $(am_gappletviewer_OBJECTS)
 am_gcj_dbtool_OBJECTS = gnu/gcj/tools/gcj_dbtool/Main.$(OBJEXT) \
 	gnu/gcj/tools/gcj_dbtool/natMain.$(OBJEXT)
 gcj_dbtool_OBJECTS = $(am_gcj_dbtool_OBJECTS)
@@ -360,6 +366,10 @@ gen_from_JIS_OBJECTS = $(am_gen_from_JIS_OBJECTS)
 gen_from_JIS_LDADD = $(LDADD)
 am_gij_OBJECTS =
 gij_OBJECTS = $(am_gij_OBJECTS)
+am_gjarsigner_OBJECTS =
+gjarsigner_OBJECTS = $(am_gjarsigner_OBJECTS)
+am_gkeytool_OBJECTS =
+gkeytool_OBJECTS = $(am_gkeytool_OBJECTS)
 am_grmic_OBJECTS =
 grmic_OBJECTS = $(am_grmic_OBJECTS)
 am_grmiregistry_OBJECTS =
@@ -391,15 +401,19 @@ GCJCOMPILE = $(GCJ) $(AM_GCJFLAGS) $(GCJFLAGS)
 LTGCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) $(AM_GCJFLAGS) \
 	$(GCJFLAGS)
 GCJLD = $(GCJ)
-SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_la_SOURCES) \
-	$(libgij_la_SOURCES) $(libjvm_la_SOURCES) \
-	$(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) \
-	$(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
+SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_tools_la_SOURCES) \
+	$(libgcj_la_SOURCES) $(libgij_la_SOURCES) $(libjvm_la_SOURCES) \
+	$(gappletviewer_SOURCES) $(gcj_dbtool_SOURCES) \
+	$(gen_from_JIS_SOURCES) $(gij_SOURCES) $(gjarsigner_SOURCES) \
+	$(gkeytool_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) \
+	$(jv_convert_SOURCES)
 DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
-	$(am__libgcj_la_SOURCES_DIST) $(libgij_la_SOURCES) \
-	$(libjvm_la_SOURCES) $(gcj_dbtool_SOURCES) \
+	$(libgcj_tools_la_SOURCES) $(am__libgcj_la_SOURCES_DIST) \
+	$(libgij_la_SOURCES) $(libjvm_la_SOURCES) \
+	$(gappletviewer_SOURCES) $(gcj_dbtool_SOURCES) \
 	$(am__gen_from_JIS_SOURCES_DIST) $(gij_SOURCES) \
-	$(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
+	$(gjarsigner_SOURCES) $(gkeytool_SOURCES) $(grmic_SOURCES) \
+	$(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -664,13 +678,14 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach o
 
 # This is required by TL_AC_GXX_INCLUDE_DIR.
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
-toolexeclib_LTLIBRARIES = libgcj.la libgij.la $(am__append_2)
+toolexeclib_LTLIBRARIES = libgcj.la libgij.la libgcj-tools.la \
+	$(am__append_2)
 toolexecmainlib_DATA = libgcj.spec
 dbexec_LTLIBRARIES = libjvm.la
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
 jardir = $(datadir)/java
-jar_DATA = libgcj-$(gcc_version).jar
+jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar
 @JAVA_HOME_SET_FALSE@JAVA_HOME_DIR = $(prefix)
 @JAVA_HOME_SET_TRUE@JAVA_HOME_DIR = $(JAVA_HOME)
 @JAVA_HOME_SET_FALSE@BOOT_CLASS_PATH_DIR = $(jardir)/$(jar_DATA)
@@ -767,6 +782,12 @@ libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	$(LIBLTDL) $(libgcj_la_LIBADD)
 
 libgcj_la_LINK = $(LIBLINK)
+libgcj_tools_la_SOURCES = classpath/tools/tools.jar
+libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch
+libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
+ -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+
+libgcj_tools_la_LINK = $(LIBLINK)
 libjvm_la_SOURCES = jni-libjvm.cc
 libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec
 libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
@@ -792,7 +813,7 @@ lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 propertyo_files = $(patsubst classpath/resource/%,%,$(addsuffix .lo,$(property_files)))
-CLEANFILES = libgcj-$(gcc_version).jar
+CLEANFILES = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar
 DISTCLEANFILES = native.dirs
 SUFFIXES = .class .java .h .properties .list
 gnu_CORBA_source_files = \
@@ -7037,6 +7058,27 @@ grmiregistry_LDFLAGS = --main=gnu.java.rmi.registry.RegistryImpl \
 grmiregistry_LINK = $(GCJLINK)
 grmiregistry_LDADD = -L$(here)/.libs libgcj.la
 grmiregistry_DEPENDENCIES = libgcj.la libgcj.spec
+gappletviewer_SOURCES = 
+gappletviewer_LDFLAGS = --main=gnu.classpath.tools.appletviewer.Main \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+
+gappletviewer_LINK = $(GCJLINK)
+gappletviewer_LDADD = -L$(here)/.libs libgcj-tools.la
+gappletviewer_DEPENDENCIES = libgcj-tools.la
+gjarsigner_SOURCES = 
+gjarsigner_LDFLAGS = --main=gnu.classpath.tools.jarsigner.Main \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+
+gjarsigner_LINK = $(GCJLINK)
+gjarsigner_LDADD = -L$(here)/.libs libgcj-tools.la
+gjarsigner_DEPENDENCIES = libgcj-tools.la
+gkeytool_SOURCES = 
+gkeytool_LDFLAGS = --main=gnu.classpath.tools.keytool.Main \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+
+gkeytool_LINK = $(GCJLINK)
+gkeytool_LDADD = -L$(here)/.libs libgcj-tools.la
+gkeytool_DEPENDENCIES = libgcj-tools.la
 nat_source_files = \
 gnu/classpath/natSystemProperties.cc \
 gnu/gcj/natCore.cc \
@@ -7179,7 +7221,7 @@ MULTICLEAN = true
 all: all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .class .java .h .properties .list .c .cc .lo .o .obj
+.SUFFIXES: .class .java .h .properties .list .c .cc .jar .lo .o .obj
 am--refresh:
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/sources.am $(am__configure_deps)
@@ -7341,6 +7383,17 @@ gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo:  \
 gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo:  \
 	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
+classpath/tools/$(am__dirstamp):
+	@$(mkdir_p) classpath/tools
+	@: > classpath/tools/$(am__dirstamp)
+classpath/tools/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) classpath/tools/$(DEPDIR)
+	@: > classpath/tools/$(DEPDIR)/$(am__dirstamp)
+classpath/tools/libgcj_tools_la-tools.lo:  \
+	classpath/tools/$(am__dirstamp) \
+	classpath/tools/$(DEPDIR)/$(am__dirstamp)
+libgcj-tools.la: $(libgcj_tools_la_OBJECTS) $(libgcj_tools_la_DEPENDENCIES) 
+	$(libgcj_tools_la_LINK) -rpath $(toolexeclibdir) $(libgcj_tools_la_LDFLAGS) $(libgcj_tools_la_OBJECTS) $(libgcj_tools_la_LIBADD) $(LIBS)
 java/lang/$(am__dirstamp):
 	@$(mkdir_p) java/lang
 	@: > java/lang/$(am__dirstamp)
@@ -7647,6 +7700,9 @@ clean-noinstPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
+gappletviewer$(EXEEXT): $(gappletviewer_OBJECTS) $(gappletviewer_DEPENDENCIES) 
+	@rm -f gappletviewer$(EXEEXT)
+	$(gappletviewer_LINK) $(gappletviewer_LDFLAGS) $(gappletviewer_OBJECTS) $(gappletviewer_LDADD) $(LIBS)
 gnu/gcj/tools/gcj_dbtool/$(am__dirstamp):
 	@$(mkdir_p) gnu/gcj/tools/gcj_dbtool
 	@: > gnu/gcj/tools/gcj_dbtool/$(am__dirstamp)
@@ -7673,6 +7729,12 @@ gen-from-JIS$(EXEEXT): $(gen_from_JIS_OBJECTS) $(gen_from_JIS_DEPENDENCIES)
 gij$(EXEEXT): $(gij_OBJECTS) $(gij_DEPENDENCIES) 
 	@rm -f gij$(EXEEXT)
 	$(gij_LINK) $(gij_LDFLAGS) $(gij_OBJECTS) $(gij_LDADD) $(LIBS)
+gjarsigner$(EXEEXT): $(gjarsigner_OBJECTS) $(gjarsigner_DEPENDENCIES) 
+	@rm -f gjarsigner$(EXEEXT)
+	$(gjarsigner_LINK) $(gjarsigner_LDFLAGS) $(gjarsigner_OBJECTS) $(gjarsigner_LDADD) $(LIBS)
+gkeytool$(EXEEXT): $(gkeytool_OBJECTS) $(gkeytool_DEPENDENCIES) 
+	@rm -f gkeytool$(EXEEXT)
+	$(gkeytool_LINK) $(gkeytool_LDFLAGS) $(gkeytool_OBJECTS) $(gkeytool_LDADD) $(LIBS)
 grmic$(EXEEXT): $(grmic_OBJECTS) $(grmic_DEPENDENCIES) 
 	@rm -f grmic$(EXEEXT)
 	$(grmic_LINK) $(grmic_LDFLAGS) $(grmic_OBJECTS) $(grmic_LDADD) $(LIBS)
@@ -7704,6 +7766,8 @@ uninstall-binSCRIPTS:
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f classpath/tools/libgcj_tools_la-tools.$(OBJEXT)
+	-rm -f classpath/tools/libgcj_tools_la-tools.lo
 	-rm -f gnu/classpath/natSystemProperties.$(OBJEXT)
 	-rm -f gnu/classpath/natSystemProperties.lo
 	-rm -f gnu/gcj/convert/JIS0208_to_Unicode.$(OBJEXT)
@@ -7894,6 +7958,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/verify.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32-threads.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@classpath/tools/$(DEPDIR)/libgcj_tools_la-tools.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/classpath/$(DEPDIR)/natSystemProperties.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/$(DEPDIR)/natCore.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/JIS0208_to_Unicode.Plo@am__quote@
@@ -8169,6 +8234,37 @@ gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo: gnu/gcj/xlib/natXUnmapEvent.
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo `test -f 'gnu/gcj/xlib/natXUnmapEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXUnmapEvent.cc
 
+.jar.o:
+@am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \
+@am__fastdepGCJ_TRUE@	if $(GCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ $<; \
+@am__fastdepGCJ_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Po"; else rm -f "$$depbase.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepGCJ_FALSE@	$(GCJCOMPILE) -c -o $@ $<
+
+.jar.obj:
+@am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`; \
+@am__fastdepGCJ_TRUE@	if $(GCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
+@am__fastdepGCJ_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Po"; else rm -f "$$depbase.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepGCJ_FALSE@	$(GCJCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.jar.lo:
+@am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`; \
+@am__fastdepGCJ_TRUE@	if $(LTGCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ $<; \
+@am__fastdepGCJ_TRUE@	then mv -f "$$depbase.Tpo" "$$depbase.Plo"; else rm -f "$$depbase.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepGCJ_FALSE@	$(LTGCJCOMPILE) -c -o $@ $<
+
+classpath/tools/libgcj_tools_la-tools.lo: classpath/tools/tools.jar
+@am__fastdepGCJ_TRUE@	if $(LIBTOOL) --mode=compile $(GCJ) $(libgcj_tools_la_GCJFLAGS) $(GCJFLAGS) -MT classpath/tools/libgcj_tools_la-tools.lo -MD -MP -MF "classpath/tools/$(DEPDIR)/libgcj_tools_la-tools.Tpo" -c -o classpath/tools/libgcj_tools_la-tools.lo `test -f 'classpath/tools/tools.jar' || echo '$(srcdir)/'`classpath/tools/tools.jar; \
+@am__fastdepGCJ_TRUE@	then mv -f "classpath/tools/$(DEPDIR)/libgcj_tools_la-tools.Tpo" "classpath/tools/$(DEPDIR)/libgcj_tools_la-tools.Plo"; else rm -f "classpath/tools/$(DEPDIR)/libgcj_tools_la-tools.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	source='classpath/tools/tools.jar' object='classpath/tools/libgcj_tools_la-tools.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepGCJ_FALSE@	DEPDIR=$(DEPDIR) $(GCJDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepGCJ_FALSE@	$(LIBTOOL) --mode=compile $(GCJ) $(libgcj_tools_la_GCJFLAGS) $(GCJFLAGS) -c -o classpath/tools/libgcj_tools_la-tools.lo `test -f 'classpath/tools/tools.jar' || echo '$(srcdir)/'`classpath/tools/tools.jar
+
 .java.o:
 @am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \
 @am__fastdepGCJ_TRUE@	if $(GCJCOMPILE) -MT $@ -MD -MP -MF "$$depbase.Tpo" -c -o $@ $<; \
@@ -8198,6 +8294,7 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf classpath/tools/.libs classpath/tools/_libs
 	-rm -rf gnu/classpath/.libs gnu/classpath/_libs
 	-rm -rf gnu/gcj/.libs gnu/gcj/_libs
 	-rm -rf gnu/gcj/convert/.libs gnu/gcj/convert/_libs
@@ -8597,6 +8694,8 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+	-rm -f classpath/tools/$(DEPDIR)/$(am__dirstamp)
+	-rm -f classpath/tools/$(am__dirstamp)
 	-rm -f gnu/classpath/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/classpath/$(am__dirstamp)
 	-rm -f gnu/gcj/$(DEPDIR)/$(am__dirstamp)
@@ -8658,7 +8757,7 @@ clean-am: clean-binPROGRAMS clean-dbexecLTLIBRARIES clean-generic \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -8689,7 +8788,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -8751,6 +8850,9 @@ $(propertyo_files): %.lo: classpath/resource/%
 libgcj-$(gcc_version).jar: classpath/lib/compile-classes
 	cd classpath/lib; $(JAR) -cfM \
 	    ../../libgcj-$(gcc_version).jar gnu java javax org
+
+libgcj-tools-$(gcc_version).jar: classpath/tools/tools.jar
+	cp $< $@
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f

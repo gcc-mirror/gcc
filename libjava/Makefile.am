@@ -33,7 +33,7 @@ libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
 ## What gets installed, and where.
 ##
 
-toolexeclib_LTLIBRARIES = libgcj.la libgij.la
+toolexeclib_LTLIBRARIES = libgcj.la libgij.la libgcj-tools.la
 toolexecmainlib_DATA = libgcj.spec
 
 if XLIB_AWT
@@ -46,7 +46,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
 
 jardir = $(datadir)/java
-jar_DATA = libgcj-$(gcc_version).jar
+jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar
 
 if JAVA_HOME_SET
 JAVA_HOME_DIR = $(JAVA_HOME)
@@ -68,7 +68,8 @@ db_pathtail = gcj-$(gcc_version)/$(db_name)
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
-bin_PROGRAMS = jv-convert gij grmic grmiregistry gcj-dbtool
+bin_PROGRAMS = jv-convert gij grmic grmiregistry gcj-dbtool \
+	gappletviewer gjarsigner gkeytool
 
 ## It is convenient to actually build and install the default database
 ## when gcj-dbtool is available.
@@ -234,6 +235,12 @@ libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	$(LIBLTDL) $(libgcj_la_LIBADD)
 libgcj_la_LINK = $(LIBLINK)
 
+libgcj_tools_la_SOURCES = classpath/tools/tools.jar
+libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch
+libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
+ -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+libgcj_tools_la_LINK = $(LIBLINK)
+
 ## libjvm.so
 libjvm_la_SOURCES = jni-libjvm.cc
 libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec
@@ -282,7 +289,10 @@ libgcj-$(gcc_version).jar: classpath/lib/compile-classes
 	cd classpath/lib; $(JAR) -cfM \
 	    ../../libgcj-$(gcc_version).jar gnu java javax org
 
-CLEANFILES = libgcj-$(gcc_version).jar
+libgcj-tools-$(gcc_version).jar: classpath/tools/tools.jar
+	cp $< $@
+
+CLEANFILES = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar
 DISTCLEANFILES = native.dirs
 
 mostlyclean-local:
@@ -720,6 +730,39 @@ grmiregistry_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 grmiregistry_DEPENDENCIES = libgcj.la libgcj.spec
+
+## This is a dummy definition.
+gappletviewer_SOURCES =
+gappletviewer_LDFLAGS = --main=gnu.classpath.tools.appletviewer.Main \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+gappletviewer_LINK = $(GCJLINK)
+## See jv_convert_LDADD.
+gappletviewer_LDADD = -L$(here)/.libs libgcj-tools.la
+## Depend on the spec file to make sure it is up to date before
+## linking this program.
+gappletviewer_DEPENDENCIES = libgcj-tools.la
+
+## This is a dummy definition.
+gjarsigner_SOURCES =
+gjarsigner_LDFLAGS = --main=gnu.classpath.tools.jarsigner.Main \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+gjarsigner_LINK = $(GCJLINK)
+## See jv_convert_LDADD.
+gjarsigner_LDADD = -L$(here)/.libs libgcj-tools.la
+## Depend on the spec file to make sure it is up to date before
+## linking this program.
+gjarsigner_DEPENDENCIES = libgcj-tools.la
+
+## This is a dummy definition.
+gkeytool_SOURCES =
+gkeytool_LDFLAGS = --main=gnu.classpath.tools.keytool.Main \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+gkeytool_LINK = $(GCJLINK)
+## See jv_convert_LDADD.
+gkeytool_LDADD = -L$(here)/.libs libgcj-tools.la
+## Depend on the spec file to make sure it is up to date before
+## linking this program.
+gkeytool_DEPENDENCIES = libgcj-tools.la
 
 ## ################################################################
 
