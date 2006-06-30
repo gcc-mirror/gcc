@@ -1,3 +1,8 @@
+2006-06-30  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfgexpand.c, config/i386/i386.c, genpreds.c, tree-cfg.c: Fix
+	comment typos.
+
 2006-06-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/26905

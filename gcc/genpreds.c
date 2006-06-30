@@ -373,7 +373,7 @@ add_mode_tests (struct pred_data *p)
 	case AND:
 	  /* The switch code generation in write_predicate_stmts prefers
 	     rtx code tests to be at the top of the expression tree.  So
-	     push this AND down into the second operand of an exisiting
+	     push this AND down into the second operand of an existing
 	     AND expression.  */
 	  if (generate_switch_p (XEXP (subexp, 0)))
 	    pos = &XEXP (subexp, 1);
@@ -563,7 +563,7 @@ write_match_code_switch (rtx exp)
     }
 }
 
-/* Given a predictate expression EXP, write out a sequence of stmts
+/* Given a predicate expression EXP, write out a sequence of stmts
    to evaluate it.  This is similar to write_predicate_expr but can
    generate efficient switch statements.  */
 

@@ -68,7 +68,7 @@ Boston, MA 02110-1301, USA.  */
 #define COSTS_N_BYTES(N) ((N) * 2)
 
 static const
-struct processor_costs size_cost = {	/* costs for tunning for size */
+struct processor_costs size_cost = {	/* costs for tuning for size */
   COSTS_N_BYTES (2),			/* cost of an add instruction */
   COSTS_N_BYTES (3),			/* cost of a lea instruction */
   COSTS_N_BYTES (2),			/* variable shift costs */

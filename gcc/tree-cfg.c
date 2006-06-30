@@ -3121,7 +3121,7 @@ reinstall_phi_args (edge new_edge, edge old_edge)
   PENDING_STMT (old_edge) = NULL;
 }
 
-/* Returns the basic block after that the new basic block created
+/* Returns the basic block after which the new basic block created
    by splitting edge EDGE_IN should be placed.  Tries to keep the new block
    near its "logical" location.  This is of most help to humans looking
    at debugging dumps.  */
