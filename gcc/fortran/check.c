@@ -379,7 +379,7 @@ identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
 }
 
 /* Error return for transformational intrinsics not allowed in
-   initalization expressions.  */
+   initialization expressions.  */
  
 static try
 non_init_transformational (void)
