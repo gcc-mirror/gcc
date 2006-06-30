@@ -20,6 +20,6 @@ interval foo (interval a, interval b, interval c)
 }
 
 
-/* { dg-final { scan-tree-dump-times "\(struct interval\)" 0 "final_cleanup"} } */
+/* { dg-final { scan-tree-dump-times "\\(struct interval\\)" 0 "final_cleanup"} } */
 /* { dg-final { cleanup-tree-dump "final_cleanup" } } */
 
