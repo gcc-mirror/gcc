@@ -1,3 +1,9 @@
+2006-07-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/27428
+	* c-lex.c (c_lex_with_flags) <CPP_N_INVALID>: Increment errorcount
+	to indicate the cpplib has issued an error message for us.
+
 2006-07-01  Martin Michlmayr  <tbm@cyrius.com>
 
 	* doc/gcov.texi (Invoking Gcov): Add a missing word.
