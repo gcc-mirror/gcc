@@ -1,3 +1,10 @@
+2006-07-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/19259
+	* parse.c (next_free): Error out on line starting with semicolon.
+	(next_fixed): Fix formatting.  Error out on line starting with
+	semicolon.
+
 2006-06-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* check.c: Fix a comment typo.

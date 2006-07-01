@@ -1,3 +1,9 @@
+2006-07-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/19259
+	* gfortran.dg/semicolon_fixed.c: New.
+	* gfortran.dg/semicolon_free.c: New.
+
 2006-06-30  Mike Stump  <mrs@apple.com>
 
 	* g++.dg/ext/visibility/fvisibility-override2.C: Fix for systems
