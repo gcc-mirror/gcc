@@ -428,7 +428,7 @@ message ``never executed'' is printed.
 For a call, if it was executed at least once, then a percentage
 indicating the number of times the call returned divided by the number
 of times the call was executed will be printed.  This will usually be
-100%, but may be less for functions call @code{exit} or @code{longjmp},
+100%, but may be less for functions that call @code{exit} or @code{longjmp},
 and thus may not return every time they are called.
 
 The execution counts are cumulative.  If the example program were
