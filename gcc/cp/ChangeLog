@@ -1,3 +1,9 @@
+2006-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28215
+	* method.c (make_thunk): Unset DECL_USE_TEMPLATE and 
+	DECL_TEMPLATE_INFO.
+
 2006-06-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/26577
