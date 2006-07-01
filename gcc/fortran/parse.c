@@ -410,8 +410,9 @@ static gfc_statement
 next_free (void)
 {
   match m;
-  int c, d, cnt;
+  int c, d, cnt, at_bol;
 
+  at_bol = gfc_at_bol ();
   gfc_gobble_whitespace ();
 
   c = gfc_peek_char ();
@@ -447,6 +448,14 @@ next_free (void)
 
 	  gfc_gobble_whitespace ();
 
+	  if (at_bol && gfc_peek_char () == ';')
+	    {
+	      gfc_error_now
+		("Semicolon at %C needs to be preceded by statement");
+	      gfc_next_char (); /* Eat up the semicolon.  */
+	      return ST_NONE;
+	    }
+
 	  if (gfc_match_eos () == MATCH_YES)
 	    {
 	      gfc_warning_now
@@ -472,6 +481,13 @@ next_free (void)
 	  gcc_assert (c == ' ');
 	  return decode_omp_directive ();
 	}
+    }
+
+  if (at_bol && c == ';')
+    {
+      gfc_error_now ("Semicolon at %C needs to be preceded by statement");
+      gfc_next_char (); /* Eat up the semicolon.  */
+      return ST_NONE;
     }
 
   return decode_statement ();
@@ -571,7 +587,7 @@ next_fixed (void)
   if (c == '\n')
     goto blank_line;
 
-  if (c != ' ' && c!= '0')
+  if (c != ' ' && c != '0')
     {
       gfc_buffer_error (0);
       gfc_error ("Bad continuation line at %C");
@@ -592,6 +608,12 @@ next_fixed (void)
   if (c == '!')
     goto blank_line;
   gfc_current_locus = loc;
+
+  if (c == ';')
+    {
+      gfc_error_now ("Semicolon at %C needs to be preceded by statement");
+      return ST_NONE;
+    }
 
   if (gfc_match_eos () == MATCH_YES)
     goto blank_line;
