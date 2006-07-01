@@ -1,3 +1,7 @@
+2006-07-01  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2006-06-22  John David Anglin  <dave.anglin@nrc.ca>
 
 	* MAINTAINERS (OS Port Maintainers): Add myself as hpux maintainer.
