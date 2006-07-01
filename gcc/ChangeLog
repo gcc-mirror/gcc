@@ -1,3 +1,7 @@
+2006-07-01  Martin Michlmayr  <tbm@cyrius.com>
+
+	* doc/gcov.texi (Invoking Gcov): Add a missing word.
+
 2006-06-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27768
