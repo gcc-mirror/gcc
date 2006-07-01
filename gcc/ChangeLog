@@ -1,3 +1,7 @@
+2006-07-01  Martin Michlmayr  <tbm@cyrius.com>
+
+	* doc/gcov.texi (Invoking Gcov): Add a missing word.
+
 2006-06-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfgexpand.c, config/i386/i386.c, genpreds.c, tree-cfg.c: Fix
