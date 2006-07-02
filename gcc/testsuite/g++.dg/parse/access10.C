@@ -8,6 +8,6 @@ template<int> struct A
 };
 
 // Instead of the bogus error we get 3 separate errors.
-// { dg-error "no type" "" { target *-*-* } 5 }
-// { dg-error "::" "" { target *-*-* } 5 }
-// { dg-error "~" "" { target *-*-* } 5 }
+// { dg-error "no type" "" { target *-*-* } 7 }
+// { dg-error "::" "" { target *-*-* } 7 }
+// { dg-error "~" "" { target *-*-* } 7 }
