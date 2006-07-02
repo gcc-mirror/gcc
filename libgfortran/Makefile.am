@@ -567,11 +567,9 @@ generated/_mod_i4.F90 \
 generated/_mod_i8.F90 \
 generated/_mod_i16.F90 \
 generated/_mod_r4.F90 \
-generated/_mod_r8.F90
-# There are commented out due to a bug in the way the front-end
-# handles MOD
-#generated/_mod_r10.F90
-#generated/_mod_r16.F90
+generated/_mod_r8.F90 \
+generated/_mod_r10.F90 \
+generated/_mod_r16.F90
 
 gfor_specific_src= \
 $(gfor_built_specific_src) \

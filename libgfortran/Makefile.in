@@ -205,7 +205,8 @@ am__objects_36 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
-	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo
+	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
+	_mod_r10.lo _mod_r16.lo
 am__objects_37 = $(am__objects_35) $(am__objects_36) dprod_r8.lo \
 	f2c_specifics.lo
 am_libgfortran_la_OBJECTS = $(am__objects_1) $(am__objects_31) \
@@ -916,12 +917,10 @@ generated/_mod_i4.F90 \
 generated/_mod_i8.F90 \
 generated/_mod_i16.F90 \
 generated/_mod_r4.F90 \
-generated/_mod_r8.F90
+generated/_mod_r8.F90 \
+generated/_mod_r10.F90 \
+generated/_mod_r16.F90
 
-# There are commented out due to a bug in the way the front-end
-# handles MOD
-#generated/_mod_r10.F90
-#generated/_mod_r16.F90
 gfor_specific_src = \
 $(gfor_built_specific_src) \
 $(gfor_built_specific2_src) \
@@ -1393,6 +1392,12 @@ _mod_r4.lo: generated/_mod_r4.F90
 
 _mod_r8.lo: generated/_mod_r8.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_r8.lo `test -f 'generated/_mod_r8.F90' || echo '$(srcdir)/'`generated/_mod_r8.F90
+
+_mod_r10.lo: generated/_mod_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_r10.lo `test -f 'generated/_mod_r10.F90' || echo '$(srcdir)/'`generated/_mod_r10.F90
+
+_mod_r16.lo: generated/_mod_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_r16.lo `test -f 'generated/_mod_r16.F90' || echo '$(srcdir)/'`generated/_mod_r16.F90
 
 f2c_specifics.lo: intrinsics/f2c_specifics.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o f2c_specifics.lo `test -f 'intrinsics/f2c_specifics.F90' || echo '$(srcdir)/'`intrinsics/f2c_specifics.F90

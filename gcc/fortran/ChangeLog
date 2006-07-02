@@ -1,3 +1,37 @@
+2006-07-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28094
+	* trans-intrinsic.c (gfc_conv_intrinsic_mod): Support cases where
+	there is no integer kind equal to the resulting real kind.
+	* intrinsic.c (add_functions): MODULO is not allowed as an actual
+	argument.
+
+2006-07-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27965
+	* trans-array.c (gfc_conv_ss_startstride): Correct the runtime
+	conditions for bounds-checking. Check for nonzero stride.
+	Don't check the last dimension of assumed-size arrays. Fix the
+	dimension displayed in the error message.
+
+2006-07-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/26801
+	* trans-intrinsic.c (gfc_conv_associated): Use pre and post blocks
+	of the scalarization expression.
+
+2006-07-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28081
+	* resolve.c (resolve_substring): Don't issue out-of-bounds
+	error messages when the range has zero size.
+
+2006-07-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/23862
+	* lang-specs.h (f95-cpp-input): Pass -ffree-form to f951 unless
+	-ffixed-form is explicitly specified.
+
 2006-06-30  Asher Langton  <langton2@llnl.gov>
 
 	PR fortran/24748
@@ -22,7 +56,7 @@
 	result.
 
 2006-06-25  Paul Thomas  <pault@gcc.gnu.org>
- 
+
 	PR fortran/25056
 	* interface.c (compare_actual_formal): Signal an error if the formal
 	argument is a pure procedure and the actual is not pure.

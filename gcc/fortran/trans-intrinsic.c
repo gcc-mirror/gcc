@@ -860,7 +860,7 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
   tree test;
   tree test2;
   mpfr_t huge;
-  int n;
+  int n, ikind;
 
   arg = gfc_conv_intrinsic_function_args (se, expr);
   arg2 = TREE_VALUE (TREE_CHAIN (arg));
@@ -886,7 +886,13 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
       /* Test if the value is too large to handle sensibly.  */
       gfc_set_model_kind (expr->ts.kind);
       mpfr_init (huge);
-      n = gfc_validate_kind (BT_INTEGER, expr->ts.kind, false);
+      n = gfc_validate_kind (BT_INTEGER, expr->ts.kind, true);
+      ikind = expr->ts.kind;
+      if (n < 0)
+	{
+	  n = gfc_validate_kind (BT_INTEGER, gfc_max_integer_kind, false);
+	  ikind = gfc_max_integer_kind;
+	}
       mpfr_set_z (huge, gfc_integer_kinds[n].huge, GFC_RND_MODE);
       test = gfc_conv_mpfr_to_tree (huge, expr->ts.kind);
       test2 = build2 (LT_EXPR, boolean_type_node, tmp, test);
@@ -896,7 +902,7 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
       test = build2 (GT_EXPR, boolean_type_node, tmp, test);
       test2 = build2 (TRUTH_AND_EXPR, boolean_type_node, test, test2);
 
-      itype = gfc_get_int_type (expr->ts.kind);
+      itype = gfc_get_int_type (ikind);
       if (modulo)
        tmp = build_fix_expr (&se->pre, tmp, itype, FIX_FLOOR_EXPR);
       else
@@ -2839,6 +2845,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           gfc_conv_expr_lhs (&arg1se, arg1->expr);
           tmp2 = gfc_conv_descriptor_data_get (arg1se.expr);
         }
+      gfc_add_block_to_block (&se->pre, &arg1se.pre);
+      gfc_add_block_to_block (&se->post, &arg1se.post);
       tmp = build2 (NE_EXPR, boolean_type_node, tmp2,
 		    fold_convert (TREE_TYPE (tmp2), null_pointer_node));
       se->expr = tmp;
@@ -2862,6 +2870,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           gfc_conv_expr (&arg1se, arg1->expr);
           arg2se.want_pointer = 1;
           gfc_conv_expr (&arg2se, arg2->expr);
+	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
+	  gfc_add_block_to_block (&se->post, &arg1se.post);
           tmp = build2 (EQ_EXPR, boolean_type_node, arg1se.expr, arg2se.expr);
           se->expr = tmp;
         }

@@ -2510,7 +2510,9 @@ resolve_substring (gfc_ref * ref)
 	  return FAILURE;
 	}
 
-      if (compare_bound_int (ref->u.ss.start, 1) == CMP_LT)
+      if (compare_bound_int (ref->u.ss.start, 1) == CMP_LT
+	  && (compare_bound (ref->u.ss.end, ref->u.ss.start) == CMP_EQ
+	      || compare_bound (ref->u.ss.end, ref->u.ss.start) == CMP_GT))
 	{
 	  gfc_error ("Substring start index at %L is less than one",
 		     &ref->u.ss.start->where);
@@ -2538,9 +2540,11 @@ resolve_substring (gfc_ref * ref)
 	}
 
       if (ref->u.ss.length != NULL
-	  && compare_bound (ref->u.ss.end, ref->u.ss.length->length) == CMP_GT)
+	  && compare_bound (ref->u.ss.end, ref->u.ss.length->length) == CMP_GT
+	  && (compare_bound (ref->u.ss.end, ref->u.ss.start) == CMP_EQ
+	      || compare_bound (ref->u.ss.end, ref->u.ss.start) == CMP_GT))
 	{
-	  gfc_error ("Substring end index at %L is out of bounds",
+	  gfc_error ("Substring end index at %L exceeds the string length",
 		     &ref->u.ss.start->where);
 	  return FAILURE;
 	}
