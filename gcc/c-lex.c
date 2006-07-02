@@ -362,6 +362,7 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
 	  case CPP_N_INVALID:
 	    /* cpplib has issued an error.  */
 	    *value = error_mark_node;
+	    errorcount++;
 	    break;
 
 	  case CPP_N_INTEGER:
