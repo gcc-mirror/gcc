@@ -74,6 +74,7 @@
 %{mcpu=power4: -mpower4} \
 %{mcpu=power5: -mpower4} \
 %{mcpu=power5+: -mpower4} \
+%{mcpu=power6: -mpower4 -maltivec} \
 %{mcpu=powerpc: -mppc} \
 %{mcpu=rios: -mpwr} \
 %{mcpu=rios1: -mpwr} \
