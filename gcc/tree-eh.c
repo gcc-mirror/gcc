@@ -1889,13 +1889,14 @@ tree_could_trap_p (tree expr)
       goto restart;
 
     case ARRAY_RANGE_REF:
-      /* Let us be conservative here for now.  We might be checking bounds of
-	 the access similarly to the case below.  */
-      if (!TREE_THIS_NOTRAP (expr))
+      base = TREE_OPERAND (expr, 0);
+      if (tree_could_trap_p (base))
 	return true;
 
-      base = TREE_OPERAND (expr, 0);
-      return tree_could_trap_p (base);
+      if (TREE_THIS_NOTRAP (expr))
+	return false;
+
+      return !range_in_array_bounds_p (expr);
 
     case ARRAY_REF:
       base = TREE_OPERAND (expr, 0);

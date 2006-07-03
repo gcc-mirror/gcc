@@ -1,3 +1,7 @@
+2006-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/gnat.dg/string_slice.adb: New test.
+
 2006-07-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/19259

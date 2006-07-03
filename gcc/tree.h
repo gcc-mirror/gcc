@@ -3576,6 +3576,7 @@ extern tree build_complex_type (tree);
 extern tree build_resx (int);
 extern tree array_type_nelts (tree);
 extern bool in_array_bounds_p (tree);
+extern bool range_in_array_bounds_p (tree);
 
 extern tree value_member (tree, tree);
 extern tree purpose_member (tree, tree);
