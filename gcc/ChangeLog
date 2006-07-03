@@ -1,3 +1,37 @@
+2006-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (range_in_array_bounds_p): New predicate.
+	* tree.h (range_in_array_bounds_p): Declare it.
+	* tree-eh.c (tree_could_trap_p) <ARRAY_RANGE_REF>: Use it to
+	return a less conservative answer.
+	* tree-sra.c (struct sra_elt): Add new pointer field 'groups'
+	and flag 'is_group'.
+	(IS_ELEMENT_FOR_GROUP): New macro.
+	(FOR_EACH_ACTUAL_CHILD): Likewise.
+	(next_child_for_group): New helper function.
+	(can_completely_scalarize_p): Take into account groups.
+	(sra_hash_tree): Handle RANGE_EXPR.
+	(sra_elt_eq): Likewise.
+	(lookup_element): Be prepared for handling groups.
+	(is_valid_const_index): Delete.
+	(maybe_lookup_element_for_expr) <ARRAY_REF>: Use in_array_bounds_p
+	instead of is_valid_const_index.
+	<ARRAY_RANGE_REF>: New case.
+	(sra_walk_expr) <ARRAY_REF>: Use in_array_bounds_p instead of
+	is_valid_const_index.
+	<ARRAY_RANGE_REF>: Do not unconditionally punt.
+	(scan_dump): Dump info for groups too.
+	(decide_instantiation_1): Likewise.
+	(decide_block_copy): Assert that the element is not a group.
+	Propagate decision to groups.
+	(generate_one_element_ref): Handle RANGE_EXPR.
+	(mark_no_warning): Iterate over actual childs.
+	(generate_copy_inout): Likewise.
+	(generate_element_copy): Likewise.
+	(generate_element_zero): Likewise.
+	(generate_element_init_1): Likewise.
+	(dump_sra_elt_name): Handle RANGE_EXPR.
+
 2006-07-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/26251
