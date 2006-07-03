@@ -1,3 +1,7 @@
+2006-07-03  Asher Langton  <langton2@llnl.gov>
+
+	* decl.c (match_old_style_init): Add data attribute to symbol.
+
 2006-07-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* iresolve.c (gfc_resolve_cpu_time, gfc_resolve_random_number):

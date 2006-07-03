@@ -1,3 +1,7 @@
+2006-07-03  Asher Langton  <langton2@llnl.gov>
+
+	* gfortran.dg/oldstyle_2.f90: New.
+
 2006-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/gnat.dg/string_slice.adb: New test.
