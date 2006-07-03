@@ -1,5 +1,10 @@
 2006-07-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	* iresolve.c (gfc_resolve_cpu_time, gfc_resolve_random_number):
+	Remove ATTRIBUTE_UNUSED for used argument.
+
+2006-07-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	* intrinsic.texi: Document new intrinsics.
 
 2006-07-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
