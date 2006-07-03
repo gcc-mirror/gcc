@@ -1255,7 +1255,7 @@ if test -d ${srcdir}/gcc; then
 
         # Disable languages that need other directories if these aren't available.
 	for i in $subdir_requires .; do
-	  test -d gcc/$i && continue
+	  test -f "$srcdir/gcc/$i/config-lang.in" && continue
 	  case ,${enable_languages}, in
             *,${language},*)
               # Specifically requested language; tell them.

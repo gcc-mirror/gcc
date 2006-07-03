@@ -3384,7 +3384,7 @@ changequote([,])dnl
         	*,$lang_alias,*) ;;
 		*)
 			for i in $subdir_requires; do
-				test -d "$i" && continue
+				test -f "${srcdir}/$i/config-lang.in" && continue
 				ok=false
 				break
 			done
