@@ -2219,7 +2219,7 @@ gfc_resolve_alarm_sub (gfc_code * c)
 }
 
 void
-gfc_resolve_cpu_time (gfc_code * c ATTRIBUTE_UNUSED)
+gfc_resolve_cpu_time (gfc_code * c)
 {
   const char *name;
 
@@ -2243,7 +2243,7 @@ gfc_resolve_mvbits (gfc_code * c)
 
 
 void
-gfc_resolve_random_number (gfc_code * c ATTRIBUTE_UNUSED)
+gfc_resolve_random_number (gfc_code * c)
 {
   const char *name;
   int kind;
