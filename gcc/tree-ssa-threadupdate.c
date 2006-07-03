@@ -1,5 +1,5 @@
 /* Thread edges through blocks and update the control flow and SSA graphs.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -652,6 +652,33 @@ redirect_edges (void **slot, void *data)
   return 1;
 }
 
+/* Return true if this block has no executable statements other than
+   a simple ctrl flow instruction.  When the number of outgoing edges
+   is one, this is equivalent to a "forwarder" block.  */
+
+static bool
+redirection_block_p (basic_block bb)
+{
+  block_stmt_iterator bsi;
+
+  /* Advance to the first executable statement.  */
+  bsi = bsi_start (bb);
+  while (!bsi_end_p (bsi)
+          && (TREE_CODE (bsi_stmt (bsi)) == LABEL_EXPR
+              || IS_EMPTY_STMT (bsi_stmt (bsi))))
+    bsi_next (&bsi);
+
+  /* Check if this is an empty block.  */
+  if (bsi_end_p (bsi))
+    return true;
+
+  /* Test that we've reached the terminating control statement.  */
+  return bsi_stmt (bsi)
+	 && (TREE_CODE (bsi_stmt (bsi)) == COND_EXPR
+	     || TREE_CODE (bsi_stmt (bsi)) == GOTO_EXPR
+	     || TREE_CODE (bsi_stmt (bsi)) == SWITCH_EXPR);
+}
+
 /* BB is a block which ends with a COND_EXPR or SWITCH_EXPR and when BB
    is reached via one or more specific incoming edges, we know which
    outgoing edge from BB will be traversed.
@@ -698,6 +725,17 @@ thread_block (basic_block bb)
   /* ALL indicates whether or not all incoming edges into BB should
      be threaded to a duplicate of BB.  */
   bool all = true;
+
+  /* If optimizing for size, only thread this block if we don't have
+     to duplicate it or it's an otherwise empty redirection block.  */
+  if (optimize_size
+      && EDGE_COUNT (bb->preds) > 1
+      && !redirection_block_p (bb))
+    {
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	e->aux = NULL;
+      return false;
+    }
 
   /* To avoid scanning a linear array for the element we need we instead
      use a hash table.  For normal code there should be no noticeable

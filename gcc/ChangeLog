@@ -1,3 +1,11 @@
+2006-07-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/26251
+	* tree-ssa-threadupdate.c (redirection_block_p): New function.
+	(thread_block): When optimizing for size refuse to thread jumps
+	that would require duplication of blocks other than redirection
+	blocks.
+
 2006-07-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Fix thinko in previous check-in.
