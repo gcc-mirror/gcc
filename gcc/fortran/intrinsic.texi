@@ -59,7 +59,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{BIT_SIZE}:      BIT_SIZE,  Bit size inquiry function
 * @code{BTEST}:         BTEST,     Bit test function
 * @code{CEILING}:       CEILING,   Integer ceiling function
-* @code{CHAR}:          CHAR,      Character conversion function
+* @code{CHAR}:          CHAR,      Integer-to-character conversion function
 * @code{CMPLX}:         CMPLX,     Complex conversion function
 * @code{COMMAND_ARGUMENT_COUNT}: COMMAND_ARGUMENT_COUNT,  Command line argument count
 * @code{CONJG}:         CONJG,     Complex conjugate function
@@ -90,20 +90,49 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{FDATE}:         FDATE,     Subroutine (or function) to get the current time as a string
 * @code{FLOAT}:         FLOAT,     Convert integer to default real
 * @code{FLOOR}:         FLOOR,     Integer floor function
+* @code{FLUSH}:         FLUSH,     Flush I/O unit(s)
 * @code{FNUM}:          FNUM,      File number function
+* @code{FRACTION}:      FRACTION,  Fractional part of the model representation
 * @code{FREE}:          FREE,      Memory de-allocation subroutine
+* @code{GETGID}:        GETGID,    Group ID function
+* @code{GETPID}:        GETPID,    Process ID function
+* @code{GETUID}:        GETUID,    User ID function
+* @code{HUGE}:          HUGE,      Largest number of a kind
+* @code{IACHAR}:        IACHAR,    Code in @acronym{ASCII} collating sequence
+* @code{ICHAR}:         ICHAR,     Character-to-integer conversion function
+* @code{IRAND}:         IRAND,     Integer pseudo-random number
+* @code{KIND}:          KIND,      Kind of an entity
 * @code{LOC}:           LOC,       Returns the address of a variable
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
 * @code{MALLOC}:        MALLOC,    Dynamic memory allocation function
+* @code{MAXEXPONENT}:   MAXEXPONENT, Maximum exponent of a real kind
+* @code{MINEXPONENT}:   MINEXPONENT, Minimum exponent of a real kind
+* @code{MOD}:           MOD,       Remainder function
+* @code{MODULO}:        MODULO,    Modulo function
+* @code{NEAREST}:       NEAREST,   Nearest representable number
+* @code{NINT}:          NINT,      Nearest whole number
+* @code{PRECISION}:     PRECISION, Decimal precision of a real kind
+* @code{RADIX}:         RADIX,     Base of a data model
+* @code{RAND}:          RAND,      Real pseudo-random number
+* @code{RANGE}:         RANGE,     Decimal exponent range of a real kind
 * @code{REAL}:          REAL,      Convert to real type 
+* @code{RRSPACING}:     RRSPACING, Reciprocal of the relative spacing
+* @code{SCALE}:         SCALE,     Scale a real value
 * @code{SECNDS}:        SECNDS,    Time function
+* @code{SELECTED_INT_KIND}: SELECTED_INT_KIND,  Choose integer kind
+* @code{SELECTED_REAL_KIND}: SELECTED_REAL_KIND,  Choose real kind
+* @code{SET_EXPONENT}:  SET_EXPONENT, Set the exponent of the model
+* @code{SIGN}:          SIGN,      Sign copying function
 * @code{SIGNAL}:        SIGNAL,    Signal handling subroutine (or function)
 * @code{SIN}:           SIN,       Sine function
 * @code{SINH}:          SINH,      Hyperbolic sine function
+* @code{SNGL}:          SNGL,      Convert double precision real to default real
 * @code{SQRT}:          SQRT,      Square-root function
+* @code{SRAND}:         SRAND,     Reinitialize the random number generator
 * @code{TAN}:           TAN,       Tangent function
 * @code{TANH}:          TANH,      Hyperbolic tangent function
+* @code{TINY}:          TINY,      Smallest positive number of a real kind
 @end menu
 
 @node Introduction
@@ -678,7 +707,7 @@ end program test_allocated
 
 
 @node ANINT
-@section @code{ANINT} --- Imaginary part of complex number  
+@section @code{ANINT} --- Nearest whole number
 @findex @code{ANINT} intrinsic
 @findex @code{DNINT} intrinsic
 @cindex whole number
@@ -2755,42 +2784,6 @@ end program test_exponent
 @end table
 
 
-@node FREE
-@section @code{FREE} --- Frees memory
-@findex @code{FREE} intrinsic
-@cindex FREE
-
-@table @asis
-@item @emph{Description}:
-Frees memory previously allocated by @code{MALLOC()}. The @code{FREE}
-intrinsic is an extension intended to be used with Cray pointers, and is
-provided in @command{gfortran} to allow user to compile legacy code. For
-new code using Fortran 95 pointers, the memory de-allocation intrinsic is
-@code{DEALLOCATE}.
-
-@item @emph{Option}:
-gnu
-
-@item @emph{Class}:
-subroutine
-
-@item @emph{Syntax}:
-@code{FREE(PTR)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .80
-@item @var{PTR} @tab The type shall be @code{INTEGER}. It represents the
-location of the memory that should be de-allocated.
-@end multitable
-
-@item @emph{Return value}:
-None
-
-@item @emph{Example}:
-See @code{MALLOC} for an example.
-@end table
-
-
 @node FDATE
 @section @code{FDATE} --- Get the current time as a string
 @findex @code{FDATE} intrinsic
@@ -2919,6 +2912,38 @@ end program test_floor
 
 
 
+@node FLUSH
+@section @code{FLUSH} --- Flush I/O unit(s)
+@findex @code{FLUSH}
+@cindex flush
+
+@table @asis
+@item @emph{Description}:
+Flushes Fortran unit(s) currently open for output. Without the optional
+argument, all units are flushed, otherwise just the unit specified.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+non-elemental subroutine
+
+@item @emph{Syntax}:
+@code{CALL FLUSH(UNIT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{UNIT} @tab (Optional) The type shall be @code{INTEGER}.
+@end multitable
+
+@item @emph{Note}:
+Beginning with the Fortran 2003 standard, there is a @code{FLUSH}
+statement that should be prefered over the @code{FLUSH} intrinsic.
+
+@end table
+
+
+
 @node FNUM
 @section @code{FNUM} --- File number function
 @findex @code{FNUM} intrinsic
@@ -2957,6 +2982,407 @@ program test_fnum
 end program test_fnum
 @end smallexample
 @end table
+
+
+
+@node FRACTION
+@section @code{FRACTION} --- Fractional part of the model representation
+@findex @code{FRACTION} intrinsic
+@cindex fractional part
+
+@table @asis
+@item @emph{Description}:
+@code{FRACTION(X)} returns the fractional part of the model
+representation of @code{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Y = FRACTION(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type of the argument shall be a @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as the argument.
+The fractional part of the model representation of @code{X} is returned;
+it is @code{X * RADIX(X)**(-EXPONENT(X))}.
+
+@item @emph{Example}:
+@smallexample
+program test_fraction
+  real :: x
+  x = 178.1387e-4
+  print *, fraction(x), x * radix(x)**(-exponent(x))
+end program test_fraction
+@end smallexample
+
+@end table
+
+
+
+@node FREE
+@section @code{FREE} --- Frees memory
+@findex @code{FREE} intrinsic
+@cindex FREE
+
+@table @asis
+@item @emph{Description}:
+Frees memory previously allocated by @code{MALLOC()}. The @code{FREE}
+intrinsic is an extension intended to be used with Cray pointers, and is
+provided in @command{gfortran} to allow user to compile legacy code. For
+new code using Fortran 95 pointers, the memory de-allocation intrinsic is
+@code{DEALLOCATE}.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@code{FREE(PTR)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{PTR} @tab The type shall be @code{INTEGER}. It represents the
+location of the memory that should be de-allocated.
+@end multitable
+
+@item @emph{Return value}:
+None
+
+@item @emph{Example}:
+See @code{MALLOC} for an example.
+@end table
+
+
+
+@node GETGID
+@section @code{GETGID} --- Group ID function
+@findex @code{GETGID} intrinsic
+@cindex GETGID
+
+@table @asis
+@item @emph{Description}:
+Returns the numerical group ID of the current process.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+function
+
+@item @emph{Syntax}:
+@code{I = GETGID()}
+
+@item @emph{Return value}:
+The return value of @code{GETGID} is an @code{INTEGER} of the default
+kind.
+
+
+@item @emph{Example}:
+See @code{GETPID} for an example.
+
+@end table
+
+
+
+@node GETPID
+@section @code{GETPID} --- Process ID function
+@findex @code{GETPID} intrinsic
+@cindex GETPID
+
+@table @asis
+@item @emph{Description}:
+Returns the process numerical identificator of the current process.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+function
+
+@item @emph{Syntax}:
+@code{I = GETPID()}
+
+@item @emph{Return value}:
+The return value of @code{GETPID} is an @code{INTEGER} of the default
+kind.
+
+
+@item @emph{Example}:
+@smallexample
+program info
+  print *, "The current process ID is ", getpid()
+  print *, "Your numerical user ID is ", getuid()
+  print *, "Your numerical group ID is ", getgid()
+end program info
+@end smallexample
+
+@end table
+
+
+
+@node GETUID
+@section @code{GETUID} --- User ID function
+@findex @code{GETUID} intrinsic
+@cindex GETUID
+
+@table @asis
+@item @emph{Description}:
+Returns the numerical user ID of the current process.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+function
+
+@item @emph{Syntax}:
+@code{GETUID()}
+
+@item @emph{Return value}:
+The return value of @code{GETUID} is an @code{INTEGER} of the default
+kind.
+
+
+@item @emph{Example}:
+See @code{GETPID} for an example.
+
+@end table
+
+
+
+@node HUGE
+@section @code{HUGE} --- Largest number of a kind
+@findex @code{HUGE} intrinsic
+@cindex huge
+
+@table @asis
+@item @emph{Description}:
+@code{HUGE(X)} returns the largest number that is not an infinity in
+the model of the type of @code{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Y = HUGE(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{REAL} or @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}
+
+@item @emph{Example}:
+@smallexample
+program test_huge_tiny
+  print *, huge(0), huge(0.0), huge(0.0d0)
+  print *, tiny(0.0), tiny(0.0d0)
+end program test_huge_tiny
+@end smallexample
+@end table
+
+
+
+@node IACHAR
+@section @code{IACHAR} --- Code in @acronym{ASCII} collating sequence 
+@findex @code{IACHAR} intrinsic
+@cindex @acronym{ASCII} collating sequence
+
+@table @asis
+@item @emph{Description}:
+@code{IACHAR(C)} returns the code for the @acronym{ASCII} character
+in the first character position of @code{C}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = IACHAR(C)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{C} @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
+@item @emph{Example}:
+@smallexample
+program test_iachar
+  integer i
+  i = iachar(' ')
+end program test_iachar
+@end smallexample
+@end table
+
+
+
+@node ICHAR
+@section @code{ICHAR} --- Character-to-integer conversion function
+@findex @code{ICHAR} intrinsic
+
+@table @asis
+@item @emph{Description}:
+@code{ICHAR(C)} returns the code for the character in the first character
+position of @code{C} in the system's native character set.
+The correspondence between character and their codes is not necessarily
+the same between GNU Fortran implementations.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = ICHAR(C)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{C} @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
+@item @emph{Example}:
+@smallexample
+program test_ichar
+  integer i
+  i = ichar(' ')
+end program test_ichar
+@end smallexample
+
+@item @emph{Note}:
+No intrinsic exists to convert a printable character string to a numerical
+value. For example, there is no intrinsic that, given the @code{CHARACTER}
+value 154, returns an @code{INTEGER} or @code{REAL} value with the
+value 154.
+
+Instead, you can use internal-file I/O to do this kind of conversion. For
+example:
+@smallexample
+program read_val
+  integer value
+  character(len=10) string
+
+  string = '154'
+  read (string,'(I10)') value
+  print *, value
+end program read_val
+@end smallexample
+@end table
+
+
+
+@node IRAND
+@section @code{IRAND} --- Integer pseudo-random number
+@findex @code{IRAND} intrinsic
+@cindex random number
+
+@table @asis
+@item @emph{Description}:
+@code{IRAND(FLAG)} returns a pseudo-random number from a uniform
+distribution between 0 and a system-dependent limit (which is in most
+cases 2147483647). If @var{FLAG} is 0, the next number
+in the current sequence is returned; if @var{FLAG} is 1, the generator
+is restarted by @code{CALL SRAND(0)}; if @var{FLAG} has any other value,
+it is used as a new seed with @code{SRAND}.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+non-elemental function
+
+@item @emph{Syntax}:
+@code{I = IRAND(FLAG)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{FLAG} @tab shall be a scalar @code{INTEGER} of kind 4.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of @code{INTEGER(kind=4)} type.
+
+@item @emph{Example}:
+@smallexample
+program test_irand
+  integer,parameter :: seed = 86456
+  
+  call srand(seed)
+  print *, irand(), irand(), irand(), irand()
+  print *, irand(seed), irand(), irand(), irand()
+end program test_irand
+@end smallexample
+
+@end table
+
+
+
+@node KIND
+@section @code{KIND} --- Kind of an entity
+@findex @code{KIND} intrinsic
+
+@table @asis
+@item @emph{Description}:
+@code{KIND(X)} returns the kind value of the entity @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+inquiry function
+
+@item @emph{Syntax}:
+@code{K = KIND(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab Shall be of type @code{LOGICAL}, @code{INTEGER},
+@code{REAL}, @code{COMPLEX} or @code{CHARACTER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is a scalar of type @code{INTEGER} and of the default
+integer kind.
+
+@item @emph{Example}:
+@smallexample
+program test_kind
+  integer,parameter :: kc = kind(' ')
+  integer,parameter :: kl = kind(.true.)
+
+  print *, "The default character kind is ", kc
+  print *, "The default logical kind is ", kl
+end program test_kind
+@end smallexample
+
+@end table
+
+
 
 @node LOC
 @section @code{LOC} --- Returns the address of a variable
@@ -3161,6 +3587,465 @@ end program test_malloc
 @end table
 
 
+
+@node MAXEXPONENT
+@section @code{MAXEXPONENT} --- Maximum exponent of a real kind
+@findex @code{MAXEXPONENT} intrinsic
+@cindex MAXEXPONENT
+
+@table @asis
+@item @emph{Description}:
+@code{MAXEXPONENT(X)} returns the maximum exponent in the model of the
+type of @code{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = MAXEXPONENT(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
+@item @emph{Example}:
+@smallexample
+program exponents
+  real(kind=4) :: x
+  real(kind=8) :: y
+
+  print *, minexponent(x), maxexponent(x)
+  print *, minexponent(y), maxexponent(y)
+end program exponents
+@end smallexample
+@end table
+
+
+
+@node MINEXPONENT
+@section @code{MINEXPONENT} --- Minimum exponent of a real kind
+@findex @code{MINEXPONENT} intrinsic
+@cindex MINEXPONENT
+
+@table @asis
+@item @emph{Description}:
+@code{MINEXPONENT(X)} returns the minimum exponent in the model of the
+type of @code{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = MINEXPONENT(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
+@item @emph{Example}:
+See @code{MAXEXPONENT} for an example.
+@end table
+
+
+
+@node MOD
+@section @code{MOD} --- Remainder function
+@findex @code{MOD} intrinsic
+@findex @code{AMOD} intrinsic
+@findex @code{DMOD} intrinsic
+@cindex remainder
+
+@table @asis
+@item @emph{Description}:
+@code{MOD(A,P)} computes the remainder of the division of A by P. It is
+calculated as @code{A - (INT(A/P) * P)}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = MOD(A,P)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{A} @tab shall be a scalar of type @code{INTEGER} or @code{REAL}
+@item @var{P} @tab shall be a scalar of the same type as @var{A} and not
+equal to zero
+@end multitable
+
+@item @emph{Return value}:
+The kind of the return value is the result of cross-promoting
+the kinds of the arguments.
+
+@item @emph{Example}:
+@smallexample
+program test_mod
+  print *, mod(17,3)
+  print *, mod(17.5,5.5)
+  print *, mod(17.5d0,5.5)
+  print *, mod(17.5,5.5d0)
+
+  print *, mod(-17,3)
+  print *, mod(-17.5,5.5)
+  print *, mod(-17.5d0,5.5)
+  print *, mod(-17.5,5.5d0)
+
+  print *, mod(17,-3)
+  print *, mod(17.5,-5.5)
+  print *, mod(17.5d0,-5.5)
+  print *, mod(17.5,-5.5d0)
+end program test_mod
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name             @tab Arguments      @tab Return type    @tab Option
+@item @code{AMOD(A,P)} @tab @code{REAL(4)} @tab @code{REAL(4)} @tab f95, gnu
+@item @code{DMOD(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node MODULO
+@section @code{MODULO} --- Modulo function
+@findex @code{MODULO} intrinsic
+@cindex modulo
+
+@table @asis
+@item @emph{Description}:
+@code{MODULO(A,P)} computes the @var{A} modulo @var{P}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = MODULO(A,P)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{A} @tab shall be a scalar of type @code{INTEGER} or @code{REAL}
+@item @var{P} @tab shall be a scalar of the same type and kind as @var{A}
+@end multitable
+
+@item @emph{Return value}:
+The type and kind of the result are those of the arguments.
+@table @asis
+@item If @var{A} and @var{P} are of type @code{INTEGER}:
+@code{MODULO(A,P)} has the value @var{R} such that @code{A=Q*P+R}, where
+@var{Q} is an integer and @var{R} is between 0 (inclusive) and @var{P}
+(exclusive).
+@item If @var{A} and @var{P} are of type @code{REAL}:
+@code{MODULO(A,P)} has the value of @code{A - FLOOR (A / P) * P}.
+@end table
+In all cases, if @var{P} is zero the result is processor-dependent.
+
+@item @emph{Example}:
+@smallexample
+program test_mod
+  print *, modulo(17,3)
+  print *, modulo(17.5,5.5)
+
+  print *, modulo(-17,3)
+  print *, modulo(-17.5,5.5)
+
+  print *, modulo(17,-3)
+  print *, modulo(17.5,-5.5)
+end program test_mod
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name             @tab Arguments      @tab Return type    @tab Option
+@item @code{AMOD(A,P)} @tab @code{REAL(4)} @tab @code{REAL(4)} @tab f95, gnu
+@item @code{DMOD(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node NEAREST
+@section @code{NEAREST} --- Nearest representable number
+@findex @code{NEAREST} intrinsic
+@cindex processor-representable number
+
+@table @asis
+@item @emph{Description}:
+@code{NEAREST(X, S)} returns the processor-representable number nearest
+to @code{X} in the direction indicated by the sign of @code{S}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Y = NEAREST(X, S)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{REAL}.
+@item @var{S} @tab (Optional) shall be of type @code{REAL} and
+not equal to zero.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type as @code{X}. If @code{S} is
+positive, @code{NEAREST} returns the processor-representable number
+greater than @code{X} and nearest to it. If @code{S} is negative,
+@code{NEAREST} returns the processor-representable number smaller than
+@code{X} and nearest to it.
+
+@item @emph{Example}:
+@smallexample
+program test_nearest
+  real :: x, y
+  x = nearest(42.0, 1.0)
+  y = nearest(42.0, -1.0)
+  write (*,"(3(G20.15))") x, y, x - y
+end program test_nearest
+@end smallexample
+@end table
+
+
+
+@node NINT
+@section @code{NINT} --- Nearest whole number
+@findex @code{NINT} intrinsic
+@findex @code{IDNINT} intrinsic
+@cindex whole number
+
+@table @asis
+@item @emph{Description}:
+@code{NINT(X)} rounds its argument to the nearest whole number.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = NINT(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X}    @tab The type of the argument shall be @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+Returns @var{A} with the fractional portion of its magnitude eliminated by
+rounding to the nearest whole number and with its sign preserved,
+converted to an @code{INTEGER} of the default kind.
+
+@item @emph{Example}:
+@smallexample
+program test_nint
+  real(4) x4
+  real(8) x8
+  x4 = 1.234E0_4
+  x8 = 4.321_8
+  print *, nint(x4), idnint(x8)
+end program test_nint
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .33 .33 .33
+@item Name             @tab Argument         @tab Option
+@item @code{IDNINT(X)} @tab @code{REAL(8)} @tab f95, gnu
+@end multitable
+@end table
+
+
+
+@node PRECISION
+@section @code{PRECISION} --- Decimal precision of a real kind
+@findex @code{PRECISION} intrinsic
+@cindex PRECISION
+
+@table @asis
+@item @emph{Description}:
+@code{PRECISION(X)} returns the decimal precision in the model of the
+type of @code{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = PRECISION(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{REAL} or @code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
+@item @emph{Example}:
+@smallexample
+program prec_and_range
+  real(kind=4) :: x(2)
+  complex(kind=8) :: y
+
+  print *, precision(x), range(x)
+  print *, precision(y), range(y)
+end program prec_and_range
+@end smallexample
+@end table
+
+
+
+@node RADIX
+@section @code{RADIX} --- Base of a model number
+@findex @code{RADIX} intrinsic
+@cindex base
+
+@table @asis
+@item @emph{Description}:
+@code{RADIX(X)} returns the base of the model representing the entity @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+inquiry function
+
+@item @emph{Syntax}:
+@code{R = RADIX(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab Shall be of type @code{INTEGER} or @code{REAL}
+@end multitable
+
+@item @emph{Return value}:
+The return value is a scalar of type @code{INTEGER} and of the default
+integer kind.
+
+@item @emph{Example}:
+@smallexample
+program test_radix
+  print *, "The radix for the default integer kind is", radix(0)
+  print *, "The radix for the default real kind is", radix(0.0)
+end program test_radix
+@end smallexample
+
+@end table
+
+
+
+@node RAND
+@section @code{RAND} --- Real pseudo-random number
+@findex @code{RAND} intrinsic
+@findex @code{RAN} intrinsic
+@cindex random number
+
+@table @asis
+@item @emph{Description}:
+@code{RAND(FLAG)} returns a pseudo-random number from a uniform
+distribution between 0 and 1. If @var{FLAG} is 0, the next number
+in the current sequence is returned; if @var{FLAG} is 1, the generator
+is restarted by @code{CALL SRAND(0)}; if @var{FLAG} has any other value,
+it is used as a new seed with @code{SRAND}.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+non-elemental function
+
+@item @emph{Syntax}:
+@code{X = RAND(FLAG)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{FLAG} @tab shall be a scalar @code{INTEGER} of kind 4.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of @code{REAL} type and the default kind.
+
+@item @emph{Example}:
+@smallexample
+program test_rand
+  integer,parameter :: seed = 86456
+  
+  call srand(seed)
+  print *, rand(), rand(), rand(), rand()
+  print *, rand(seed), rand(), rand(), rand()
+end program test_rand
+@end smallexample
+
+@item @emph{Note}:
+For compatibility with HP FORTRAN 77/iX, the @code{RAN} intrinsic is
+provided as an alias for @code{RAND}.
+
+@end table
+
+
+
+@node RANGE
+@section @code{RANGE} --- Decimal exponent range of a real kind
+@findex @code{RANGE} intrinsic
+@cindex RANGE
+
+@table @asis
+@item @emph{Description}:
+@code{RANGE(X)} returns the decimal exponent range in the model of the
+type of @code{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = RANGE(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{REAL} or @code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
+@item @emph{Example}:
+See @code{PRECISION} for an example.
+@end table
+
+
+
 @node REAL
 @section @code{REAL} --- Convert to real type 
 @findex @code{REAL} intrinsic
@@ -3215,8 +4100,336 @@ variable.
 program test_real
   complex :: x = (1.0, 2.0)
   print *, real(x), real(x,8), realpart(x)
-  end program test_real
+end program test_real
 @end smallexample
+@end table
+
+
+
+@node RRSPACING
+@section @code{RRSPACING} --- Reciprocal of the relative spacing
+@findex @code{RRSPACING} intrinsic
+
+@table @asis
+@item @emph{Description}:
+@code{RRSPACING(X)} returns the  reciprocal of the relative spacing of
+model numbers near @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Y = RRSPACING(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+The value returned is equal to
+@code{ABS(FRACTION(X)) * FLOAT(RADIX(X))**DIGITS(X)}.
+
+@end table
+
+
+
+@node SCALE
+@section @code{SCALE} --- Scale a real value
+@findex @code{SCALE} intrinsic
+
+@table @asis
+@item @emph{Description}:
+@code{SCALE(X,I)} returns @code{X * RADIX(X)**I}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Y = SCALE(X, I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type of the argument shall be a @code{REAL}.
+@item @var{I} @tab The type of the argument shall be a @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+Its value is @code{X * RADIX(X)**I}.
+
+@item @emph{Example}:
+@smallexample
+program test_scale
+  real :: x = 178.1387e-4
+  integer :: i = 5
+  print *, scale(x,i), x*radix(x)**i
+end program test_scale
+@end smallexample
+
+@end table
+
+
+
+@node SELECTED_INT_KIND
+@section @code{SELECTED_INT_KIND} --- Choose integer kind
+@findex @code{SELECTED_INT_KIND} intrinsic
+@cindex integer kind
+
+@table @asis
+@item @emph{Description}:
+@code{SELECTED_INT_KIND(I)} return the kind value of the smallest integer
+type that can represent all values ranging from @math{-10^I} (exclusive)
+to @math{10^I} (exclusive). If there is no integer kind that accomodates
+this range, @code{SELECTED_INT_KIND} returns @math{-1}.
+
+@item @emph{Option}:
+f95
+
+@item @emph{Class}:
+transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .30 .80
+@item @code{J = SELECTED_INT_KIND(I)}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{I} @tab shall be a scalar and of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program large_integers
+  integer,parameter :: k5 = selected_int_kind(5)
+  integer,parameter :: k15 = selected_int_kind(15)
+  integer(kind=k5) :: i5
+  integer(kind=k15) :: i15
+
+  print *, huge(i5), huge(i15)
+
+  ! The following inequalities are always true
+  print *, huge(i5) >= 10_k5**5-1
+  print *, huge(i15) >= 10_k15**15-1
+end program large_integers
+@end smallexample
+@end table
+
+
+
+@node SELECTED_REAL_KIND
+@section @code{SELECTED_REAL_KIND} --- Choose real kind
+@findex @code{SELECTED_REAL_KIND} intrinsic
+@cindex real kind
+
+@table @asis
+@item @emph{Description}:
+@code{SELECTED_REAL_KIND(P,R)} return the kind value of a real data type
+with decimal precision greater of at least @code{P} digits and exponent
+range greater at least @code{R}. 
+
+@item @emph{Option}:
+f95
+
+@item @emph{Class}:
+transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .30 .80
+@item @code{I = SELECTED_REAL_KIND(P,R)}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{P} @tab (Optional) shall be a scalar and of type @code{INTEGER}.
+@item @var{R} @tab (Optional) shall be a scalar and of type @code{INTEGER}.
+@end multitable
+At least one argument shall be present.
+
+@item @emph{Return value}:
+
+@code{SELECTED_REAL_KIND} returns the value of the kind type parameter of
+a real data type with decimal precision of at least @code{P} digits and a
+decimal exponent range of at least @code{R}. If more than one real data
+type meet the criteria, the kind of the data type with the smallest
+decimal precision is returned. If no real data type matches the criteria,
+the result is
+@table @asis
+@item -1 if the processor does not support a real data type with a
+precision greater than or equal to @code{P}
+@item -2 if the processor does not support a real type with an exponent
+range greater than or equal to @code{R}
+@item -3 if neither is supported.
+@end table
+
+@item @emph{Example}:
+@smallexample
+program real_kinds
+  integer,parameter :: p6 = selected_real_kind(6)
+  integer,parameter :: p10r100 = selected_real_kind(10,100)
+  integer,parameter :: r400 = selected_real_kind(r=400)
+  real(kind=p6) :: x
+  real(kind=p10r100) :: y
+  real(kind=r400) :: z
+
+  print *, precision(x), range(x)
+  print *, precision(y), range(y)
+  print *, precision(z), range(z)
+end program real_kinds
+@end smallexample
+@end table
+
+
+
+@node SECNDS
+@section @code{SECNDS} --- Time subroutine
+@findex @code{SECNDS} intrinsic
+@cindex SECNDS
+
+@table @asis
+@item @emph{Description}:
+@code{SECNDS(X)} gets the time in seconds from the real-time system clock.
+@var{X} is a reference time, also in seconds. If this is zero, the time in
+seconds from midnight is returned. This function is non-standard and its
+use is discouraged.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+function
+
+@item @emph{Syntax}:
+@code{T = SECNDS (X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item Name        @tab Type
+@item @var{T}     @tab REAL(4)
+@item @var{X}     @tab REAL(4)
+@end multitable
+
+@item @emph{Return value}:
+None
+
+@item @emph{Example}:
+@smallexample
+program test_secnds
+    real(4) :: t1, t2
+    print *, secnds (0.0)   ! seconds since midnight
+    t1 = secnds (0.0)       ! reference time
+    do i = 1, 10000000      ! do something
+    end do
+    t2 = secnds (t1)        ! elapsed time
+    print *, "Something took ", t2, " seconds."
+end program test_secnds
+@end smallexample
+@end table
+
+
+
+@node SET_EXPONENT
+@section @code{SET_EXPONENT} --- Set the exponent of the model
+@findex @code{SET_EXPONENT} intrinsic
+@cindex exponent
+
+@table @asis
+@item @emph{Description}:
+@code{SET_EXPONENT(X, I)} returns the real number whose fractional part
+is that that of @var{X} and whose exponent part if @var{I}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Y = SET_EXPONENT(X, I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{REAL}.
+@item @var{I} @tab shall be of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}.
+The real number whose fractional part
+is that that of @var{X} and whose exponent part if @var{I} is returned;
+it is @code{FRACTION(X) * RADIX(X)**I}.
+
+@item @emph{Example}:
+@smallexample
+program test_setexp
+  real :: x = 178.1387e-4
+  integer :: i = 17
+  print *, set_exponent(x), fraction(x) * radix(x)**i
+end program test_setexp
+@end smallexample
+
+@end table
+
+
+
+@node SIGN
+@section @code{SIGN} --- Sign copying function
+@findex @code{SIGN} intrinsic
+@findex @code{ISIGN} intrinsic
+@findex @code{DSIGN} intrinsic
+@cindex sign copying
+
+@table @asis
+@item @emph{Description}:
+@code{SIGN(A,B)} returns the value of @var{A} with the sign of @var{B}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{X = SIGN(A,B)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{A} @tab shall be a scalar of type @code{INTEGER} or @code{REAL}
+@item @var{B} @tab shall be a scalar of the same type and kind as @var{A}
+@end multitable
+
+@item @emph{Return value}:
+The kind of the return value is that of @var{A} and @var{B}.
+If @math{B\ge 0} then the result is @code{ABS(A)}, else
+it is @code{-ABS(A)}.
+
+@item @emph{Example}:
+@smallexample
+program test_sign
+  print *, sign(-12,1)
+  print *, sign(-12,0)
+  print *, sign(-12,-1)
+
+  print *, sign(-12.,1.)
+  print *, sign(-12.,0.)
+  print *, sign(-12.,-1.)
+end program test_sign
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .24 .24 .24 .24
+@item Name              @tab Arguments      @tab Return type    @tab Option
+@item @code{ISIGN(A,P)} @tab @code{INTEGER(4)} @tab @code{INTEGER(4)} @tab f95, gnu
+@item @code{DSIGN(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab f95, gnu
+@end multitable
 @end table
 
 
@@ -3277,53 +4490,6 @@ end program test_signal
 @end smallexample
 @end table
 
-
-
-
-@node SECNDS
-@section @code{SECNDS} --- Time subroutine
-@findex @code{SECNDS} intrinsic
-@cindex SECNDS
-
-@table @asis
-@item @emph{Description}:
-@code{SECNDS(X)} gets the time in seconds from the real-time system clock.
-@var{X} is a reference time, also in seconds. If this is zero, the time in
-seconds from midnight is returned. This function is non-standard and its
-use is discouraged.
-
-@item @emph{Option}:
-gnu
-
-@item @emph{Class}:
-function
-
-@item @emph{Syntax}:
-@code{T = SECNDS (X)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .80
-@item Name        @tab Type
-@item @var{T}     @tab REAL(4)
-@item @var{X}     @tab REAL(4)
-@end multitable
-
-@item @emph{Return value}:
-None
-
-@item @emph{Example}:
-@smallexample
-program test_secnds
-    real(4) :: t1, t2
-    print *, secnds (0.0)   ! seconds since midnight
-    t1 = secnds (0.0)       ! reference time
-    do i = 1, 10000000      ! do something
-    end do
-    t2 = secnds (t1)        ! elapsed time
-    print *, "Something took ", t2, " seconds."
-end program test_secnds
-@end smallexample
-@end table
 
 
 
@@ -3421,6 +4587,38 @@ end program test_sinh
 
 
 
+@node SNGL
+@section @code{SNGL} --- Convert double precision real to default real
+@findex @code{SNGL} intrinsic
+@cindex sngl
+
+@table @asis
+@item @emph{Description}:
+@code{SNGL(A)} converts the double precision real @var{A}
+to a default real value. This is an archaic form of @code{REAL}
+that is specific to one type for @var{A}.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+function
+
+@item @emph{Syntax}:
+@code{X = SNGL(A)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{A} @tab The type shall be a double precision @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type default @code{REAL}.
+
+@end table
+
+
+
 @node SQRT
 @section @code{SQRT} --- Square-root function
 @findex @code{SQRT} intrinsic
@@ -3471,6 +4669,50 @@ end program test_sqrt
 @item @code{ZSQRT(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
 @item @code{CDSQRT(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
 @end multitable
+@end table
+
+
+
+@node SRAND
+@section @code{SRAND} --- Reinitialize the random number generator
+@findex @code{SRAND} intrinsic
+@cindex random number
+
+@table @asis
+@item @emph{Description}:
+@code{SRAND} reinitializes the pseudo-random number generator
+called by @code{RAND} and @code{IRAND}. The new seed used by the
+generator is specified by the required argument @var{SEED}.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+non-elemental subroutine
+
+@item @emph{Syntax}:
+@code{CALL SRAND(SEED)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{SEED} @tab shall be a scalar @code{INTEGER(kind=4)}.
+@end multitable
+
+@item @emph{Return value}:
+Does not return.
+
+@item @emph{Example}:
+See @code{RAND} and @code{IRAND} for examples.
+
+@item @emph{Notes}:
+The Fortran 2003 standard specifies the intrinsic @code{RANDOM_SEED} to
+initialize the pseudo-random numbers generator and @code{RANDOM_NUMBER}
+to generate pseudo-random numbers. Please note that in
+@command{gfortran}, these two sets of intrinsics (@code{RAND},
+@code{IRAND} and @code{SRAND} on the one hand, @code{RANDOM_NUMBER} and
+@code{RANDOM_SEED} on the other hand) access two independent
+pseudo-random numbers generators.
+
 @end table
 
 
@@ -3565,10 +4807,39 @@ end program test_tanh
 
 
 
-@comment sub   flush
-@comment 
-@comment gen   fraction
-@comment 
+@node TINY
+@section @code{TINY} --- Smallest positive number of a real kind
+@findex @code{TINY} intrinsic
+@cindex tiny
+
+@table @asis
+@item @emph{Description}:
+@code{TINY(X)} returns the smallest positive (non zero) number
+in the model of the type of @code{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{Y = TINY(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of the same type and kind as @var{X}
+
+@item @emph{Example}:
+See @code{HUGE} for an example.
+@end table
+
+
+
 @comment gen   fstat
 @comment sub   fstat
 @comment 
@@ -3579,21 +4850,11 @@ end program test_tanh
 @comment 
 @comment sub   getenv
 @comment 
-@comment gen   getgid
-@comment 
-@comment gen   getpid
-@comment 
-@comment gen   getuid
-@comment 
 @comment sub   get_command
 @comment 
 @comment sub   get_command_argument
 @comment 
 @comment sub   get_environment_variable
-@comment 
-@comment gen   huge
-@comment 
-@comment gen   iachar
 @comment 
 @comment gen   iand
 @comment 
@@ -3605,8 +4866,6 @@ end program test_tanh
 @comment 
 @comment gen   ibset
 @comment 
-@comment gen   ichar
-@comment 
 @comment gen   ieor
 @comment 
 @comment gen   index
@@ -3617,13 +4876,9 @@ end program test_tanh
 @comment 
 @comment gen   ior
 @comment 
-@comment gen   irand
-@comment 
 @comment gen   ishft
 @comment 
 @comment gen   ishftc
-@comment 
-@comment gen   kind
 @comment 
 @comment gen   lbound
 @comment 
@@ -3650,8 +4905,6 @@ end program test_tanh
 @comment       max1
 @comment       dmax1
 @comment 
-@comment gen   maxexponent
-@comment 
 @comment gen   maxloc
 @comment 
 @comment gen   maxval
@@ -3665,24 +4918,11 @@ end program test_tanh
 @comment       min1
 @comment       dmin1
 @comment 
-@comment gen   minexponent
-@comment 
 @comment gen   minloc
 @comment 
 @comment gen   minval
 @comment 
-@comment gen   mod
-@comment       amod
-@comment       dmod
-@comment 
-@comment gen   modulo
-@comment 
 @comment sub   mvbits
-@comment 
-@comment gen   nearest
-@comment 
-@comment gen   nint
-@comment       idnint
 @comment 
 @comment gen   not
 @comment 
@@ -3690,59 +4930,32 @@ end program test_tanh
 @comment 
 @comment gen   pack
 @comment 
-@comment gen   precision
+@comment gen   perror
 @comment 
 @comment gen   present
 @comment 
 @comment gen   product
 @comment 
-@comment gen   radix
-@comment 
-@comment gen   rand
-@comment       ran 
-@comment 
 @comment sub   random_number
 @comment 
 @comment sub   random_seed
 @comment 
-@comment gen   range
-@comment 
-@comment gen   real
-@comment       float
-@comment       sngl
-@comment 
 @comment gen   repeat
 @comment 
 @comment gen   reshape
-@comment 
-@comment gen   rrspacing
-@comment 
-@comment gen   scale
 @comment 
 @comment gen   scan
 @comment 
 @comment gen   second
 @comment sub   second
 @comment 
-@comment gen   selected_int_kind
-@comment 
-@comment gen   selected_real_kind
-@comment 
-@comment gen   set_exponent
-@comment 
 @comment gen   shape
-@comment 
-@comment gen   sign
-@comment       isign
-@comment       dsign
 @comment 
 @comment gen   size
 @comment 
 @comment gen   spacing
 @comment 
 @comment gen   spread
-@comment 
-@comment sub   srand
 @comment 
 @comment gen   stat
 @comment sub   stat
@@ -3753,8 +4966,6 @@ end program test_tanh
 @comment sub   system
 @comment 
 @comment sub system_clock
-@comment 
-@comment gen   tiny
 @comment 
 @comment gen   transfer
 @comment 
@@ -3773,4 +4984,3 @@ end program test_tanh
 @comment gen   unpack
 @comment 
 @comment gen   verify
-

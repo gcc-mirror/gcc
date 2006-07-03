@@ -1,3 +1,7 @@
+2006-07-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsic.texi: Document new intrinsics.
+
 2006-07-01  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/19259
@@ -10,7 +14,7 @@
 	* check.c: Fix a comment typo.
 
 2006-06-25  Paul Thomas  <pault@gcc.gnu.org>
- 
+
 	PR fortran/25056
 	* interface.c (compare_actual_formal): Signal an error if the formal
 	argument is a pure procedure and the actual is not pure.
