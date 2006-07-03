@@ -1,5 +1,10 @@
 2006-07-03  Paolo Bonzini  <bonzini@gnu.org>
 
+	* configure.ac: Fix thinko in previous check-in.
+	* configure: Regenerate.
+
+2006-07-03  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR other/27063
 	* configure.ac (for lang...): Simplify nesting of conditionals.
 	Test subdir_requires for non-enabled languages.  Move processing
