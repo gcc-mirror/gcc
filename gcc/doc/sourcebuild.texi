@@ -673,6 +673,11 @@ other than C that this front end requires to be enabled (with the
 names given being their @code{language} settings).  For example, the
 Java front end depends on the C++ front end, so sets
 @samp{lang_requires=c++}.
+@item subdir_requires
+If defined, this variable lists (space-separated) front end directories
+other than C that this front end requires to be present.  For example,
+the Objective-C++ front end uses source files from the C++ and
+Objective-C front ends, so sets @samp{subdir_requires="cp objc"}.
 @item target_libs
 If defined, this variable lists (space-separated) targets in the top
 level @file{Makefile} to build the runtime libraries for this

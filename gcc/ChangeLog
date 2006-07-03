@@ -1,3 +1,12 @@
+2006-07-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR other/27063
+	* configure.ac (for lang...): Simplify nesting of conditionals.
+	Test subdir_requires for non-enabled languages.  Move processing
+	of lang_opt_files and lang_tree_fiels below that test.
+	* configure: Regenerate.
+	* doc/sourcebuild.texi (Front End Config): Document subdir_requires.
+
 2006-07-01  Martin Michlmayr  <tbm@cyrius.com>
 
 	* doc/gcov.texi (Invoking Gcov): Add a missing word.
