@@ -1219,6 +1219,7 @@ if test -d ${srcdir}/gcc; then
         language=
         target_libs=
         lang_dirs=
+        subdir_requires=
         boot_language=
         build_by_default=
         need_gmp=
@@ -1251,6 +1252,21 @@ if test -d ${srcdir}/gcc; then
             add_this_lang=no
             ;;
         esac
+
+        # Disable languages that need other directories if these aren't available.
+	for i in $subdir_requires .; do
+	  test -d gcc/$i && continue
+	  case ,${enable_languages}, in
+            *,${language},*)
+              # Specifically requested language; tell them.
+              AC_MSG_ERROR([The gcc/$i directory contains parts of $language but is missing])
+              ;;
+            *)
+              # Silently disable.
+              add_this_lang=no
+              ;;
+          esac
+	done
 
         # Disable languages that need GMP if it isn't available.
         case ,${enable_languages},:${have_gmp}:${need_gmp} in

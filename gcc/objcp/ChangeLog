@@ -1,3 +1,8 @@
+2006-07-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR other/27063
+	* config-lang.in: Add subdir_requires.
+
 2006-06-30  Jason Merrill  <jason@redhat.com>
 
 	* objcp-decl.c (objcp_start_struct): Pass null attributes argument
