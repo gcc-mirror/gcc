@@ -1,3 +1,9 @@
+2006-07-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/rc_string_base.h (__rc_string_base::_S_max_size):
+	Adjust, take into account rounding in _M_create.
+	(__rc_string_base::_M_create): Add early _S_max_size check.
+
 2006-07-03  Ian Lance Taylor  <ian@airs.com>
 	    Paolo Carlini  <pcarlini@suse.de>
 

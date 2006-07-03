@@ -175,11 +175,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // with a terminating character and m _CharT elements, it'd
       // look like this:
       // npos = sizeof(_Rep) + (m * sizeof(_CharT)) + sizeof(_CharT)
+      //        + sizeof(_Rep) - 1
+      // (NB: last two terms for rounding reasons, see _M_create below)
       // Solving for m:
-      // m = ((npos - sizeof(_Rep)) / sizeof(_CharT)) - 1
+      // m = ((npos - 2 * sizeof(_Rep) + 1) / sizeof(_CharT)) - 1
       // In addition, this implementation halfs this amount.
-      enum { _S_max_size = (((static_cast<size_type>(-1) - sizeof(_Rep))
-			     / sizeof(_CharT)) - 1) / 2 };
+      enum { _S_max_size = (((static_cast<size_type>(-1) - 2 * sizeof(_Rep)
+			      + 1) / sizeof(_CharT)) - 1) / 2 };
 
       // Data Member (private):
       mutable typename _Util_Base::template _Alloc_hider<_Alloc>  _M_dataplus;
@@ -386,7 +388,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // meet amortized linear time requirements of the library: see
       // http://gcc.gnu.org/ml/libstdc++/2001-07/msg00085.html.
       if (__capacity > __old_capacity && __capacity < 2 * __old_capacity)
-	__capacity = 2 * __old_capacity;
+	{
+	  __capacity = 2 * __old_capacity;
+	  // Never allocate a string bigger than _S_max_size.
+	  if (__capacity > size_type(_S_max_size))
+	    __capacity = size_type(_S_max_size);
+	}
 
       // NB: Need an array of char_type[__capacity], plus a terminating
       // null char_type() element, plus enough for the _Rep data structure,
@@ -401,7 +408,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	{
 	  const size_type __extra = __pagesize - __adj_size % __pagesize;
 	  __capacity += __extra / sizeof(_CharT);
-	  // Never allocate a string bigger than _S_max_size.
 	  if (__capacity > size_type(_S_max_size))
 	    __capacity = size_type(_S_max_size);
 	  __size = (__capacity + 1) * sizeof(_CharT) + 2 * sizeof(_Rep) - 1;
