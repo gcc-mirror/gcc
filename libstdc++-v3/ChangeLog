@@ -1,3 +1,16 @@
+2006-07-03  Ian Lance Taylor  <ian@airs.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/rc_string_base.h (__rc_string_base::_S_max_size):
+	Increase by a factor of two.
+	* include/ext/sso_string_base.h (__sso_string_base::_S_max_size):
+	Likewise.
+
+2006-07-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/sso_string_base.h (__sso_string_base::_M_create): Never
+	allocate a string bigger than _S_max_size.
+
 2006-06-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (pch1_input, pch1_output_builddir,

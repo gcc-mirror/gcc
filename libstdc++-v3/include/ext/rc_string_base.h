@@ -177,9 +177,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // npos = sizeof(_Rep) + (m * sizeof(_CharT)) + sizeof(_CharT)
       // Solving for m:
       // m = ((npos - sizeof(_Rep)) / sizeof(_CharT)) - 1
-      // In addition, this implementation quarters this amount.
+      // In addition, this implementation halfs this amount.
       enum { _S_max_size = (((static_cast<size_type>(-1) - sizeof(_Rep))
-			     / sizeof(_CharT)) - 1) / 4 };
+			     / sizeof(_CharT)) - 1) / 2 };
 
       // Data Member (private):
       mutable typename _Util_Base::template _Alloc_hider<_Alloc>  _M_dataplus;
