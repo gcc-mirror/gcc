@@ -1254,7 +1254,7 @@ if test -d ${srcdir}/gcc; then
         esac
 
         # Disable languages that need other directories if these aren't available.
-	for i in $subdir_requires .; do
+	for i in $subdir_requires; do
 	  test -f "$srcdir/gcc/$i/config-lang.in" && continue
 	  case ,${enable_languages}, in
             *,${language},*)
