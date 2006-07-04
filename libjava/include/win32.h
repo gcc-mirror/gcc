@@ -180,6 +180,6 @@ struct _Jv_AddrInfo;
 
 // Given an address, determine the executable or shared object that defines
 // it and the nearest named symbol.
-extern int _Jv_platform_dladdr (const void *addr, _Jv_AddrInfo *info);
+extern int _Jv_platform_dladdr (void *addr, _Jv_AddrInfo *info);
 
 #endif /* __JV_WIN32_H__ */

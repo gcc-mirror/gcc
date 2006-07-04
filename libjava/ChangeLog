@@ -1,5 +1,11 @@
 2006-07-04  Andreas Tobler  <a.tobler@schweiz.ch>
 
+	PR libgcj/28226:
+	* include/posix.h (_Jv_platform_dladdr): Remove const qualifier.
+	* include/win32.h (_Jv_platform_dladdr): Likewise.
+	* posix.cc (_Jv_platform_dladdr): Likewise.
+	* win32.cc (_Jv_platform_dladdr): Likewise.
+
 	* testsuite/lib/libjava.exp (libjava_init): Look for libgcj-$version.jar
 	instead of libgcj-*.jar.
 
