@@ -463,7 +463,7 @@ _Jv_platform_close_on_exec (HANDLE h)
 // defined symbol to that address.  Returns 0 if no object defines this
 // address.
 int
-_Jv_platform_dladdr (const void *addr, _Jv_AddrInfo *info)
+_Jv_platform_dladdr (void *addr, _Jv_AddrInfo *info)
 {
   // Since we do not have dladdr() on Windows, we use a trick involving
   // VirtualQuery() to find the module (EXE or DLL) that contains a given

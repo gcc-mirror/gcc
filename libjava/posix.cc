@@ -213,7 +213,7 @@ _Jv_select (int n, fd_set *readfds, fd_set  *writefds,
 // defined symbol to that address.  Returns 0 if no object defines this
 // address.
 int
-_Jv_platform_dladdr (const void *addr, _Jv_AddrInfo *info)
+_Jv_platform_dladdr (void *addr, _Jv_AddrInfo *info)
 {
   int ret_val = 0;
 
