@@ -220,7 +220,8 @@ read_sf (st_parameter_dt *dtp, int *length, int no_error)
       if (*q == ',')
 	if (dtp->u.p.sf_read_comma == 1)
 	  {
-	    notify_std (GFC_STD_GNU, "Comma in formatted numeric read.");
+	    notify_std (&dtp->common, GFC_STD_GNU,
+			"Comma in formatted numeric read.");
 	    *length = n;
 	    break;
 	  }

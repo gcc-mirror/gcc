@@ -128,7 +128,7 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 {
   /* Complain about attempts to change the unchangeable.  */
 
-  if (flags->status != STATUS_UNSPECIFIED &&
+  if (flags->status != STATUS_UNSPECIFIED && flags->status != STATUS_OLD && 
       u->flags.status != flags->status)
     generate_error (&opp->common, ERROR_BAD_OPTION,
 		    "Cannot change STATUS parameter in OPEN statement");
@@ -154,8 +154,14 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 
   if (flags->status != STATUS_UNSPECIFIED && flags->status != STATUS_OLD &&
       flags->status != STATUS_UNKNOWN)
-    generate_error (&opp->common, ERROR_BAD_OPTION,
+    {
+      if (flags->status == STATUS_SCRATCH)
+	notify_std (&opp->common, GFC_STD_GNU,
 		    "OPEN statement must have a STATUS of OLD or UNKNOWN");
+      else
+	generate_error (&opp->common, ERROR_BAD_OPTION,
+		    "OPEN statement must have a STATUS of OLD or UNKNOWN");
+    }
 
   if (u->flags.form == FORM_UNFORMATTED)
     {
@@ -615,7 +621,7 @@ st_open (st_parameter_open *opp)
 			"Conflicting ACCESS and POSITION flags in"
 			" OPEN statement");
 
-      notify_std (GFC_STD_GNU,
+      notify_std (&opp->common, GFC_STD_GNU,
 		  "Extension: APPEND as a value for ACCESS in OPEN statement");
       flags.access = ACCESS_SEQUENTIAL;
       flags.position = POSITION_APPEND;
