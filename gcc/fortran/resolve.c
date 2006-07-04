@@ -2942,6 +2942,11 @@ gfc_resolve_expr (gfc_expr * e)
 	  gfc_expand_constructor (e);
 	}
 
+      /* This provides the opportunity for the length of constructors with character
+	valued function elements to propogate the string length to the expression.  */
+      if (e->ts.type == BT_CHARACTER)
+        gfc_resolve_character_array_constructor (e);
+
       break;
 
     case EXPR_STRUCTURE:

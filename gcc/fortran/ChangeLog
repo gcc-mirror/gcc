@@ -1,3 +1,27 @@
+2006-07-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28174
+	* trans-array.c (gfc_conv_expr_descriptor): When building temp,
+	ensure that the substring reference uses a new charlen.
+	* trans-expr.c (gfc_conv_aliased_arg): Add the formal intent to
+	the argument list, lift the treatment of missing string lengths
+	from the above and implement the use of the intent.
+	(gfc_conv_function_call): Add the extra argument to the call to
+	the above.
+
+	PR fortran/28167
+	* trans-array.c (get_array_ctor_var_strlen): Treat a constant
+	substring reference.
+	* array.c (gfc_resolve_character_array_constructor): Remove 
+	static attribute and add the gfc_ prefix, make use of element
+	charlens for the expression and pick up constant string lengths
+	for expressions that are not themselves constant.
+	* gfortran.h : resolve_character_array_constructor prototype
+	added.
+	* resolve.c (gfc_resolve_expr): Call resolve_character_array_
+	constructor again after expanding the constructor, to ensure
+	that the character length is passed to the expression.
+
 2006-07-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Daniel Franke  <franke.daniel@gmail.com>
 
