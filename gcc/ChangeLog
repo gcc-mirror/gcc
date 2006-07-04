@@ -1,3 +1,11 @@
+2006-07-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR bootstrap/18058
+	* Makefile.in (BUILD_RTL): Add build/vec.o.
+	(build/gencondmd.o): Filter out -fkeep-inline-functions.
+	(build/genextract): Delete.
+	(build/genautomata): Likewise.
+
 2006-07-04  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/28207
