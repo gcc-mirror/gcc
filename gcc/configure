@@ -13959,11 +13959,14 @@ cat > conftest.big <<EOF
 EOF
   # If the assembler didn't choke, and we can objdump,
   # and we got the correct data, then succeed.
+  # The text in the here-document typically retains its unix-style line
+  # endings, while the output of objdump will use host line endings.
+  # Therefore, use diff -b for the comparisons.
   if test x$gcc_cv_objdump != x \
   && $gcc_cv_objdump -s -j .eh_frame conftest.o 2>/dev/null \
      | tail -3 > conftest.got \
-  && { cmp conftest.lit conftest.got > /dev/null 2>&1 \
-    || cmp conftest.big conftest.got > /dev/null 2>&1; }
+  && { diff -b conftest.lit conftest.got > /dev/null 2>&1 \
+    || diff -b conftest.big conftest.got > /dev/null 2>&1; }
   then
     gcc_cv_as_eh_frame=yes
   elif { ac_try='$gcc_cv_as -o conftest.o --traditional-format /dev/null'
