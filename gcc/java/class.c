@@ -1130,6 +1130,7 @@ build_fieldref_cache_entry (int index, tree fdecl ATTRIBUTE_UNUSED)
       TREE_PUBLIC (decl) = 0;
       DECL_EXTERNAL (decl) = 0;
       DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       pushdecl_top_level (decl);
     }
   return decl;
