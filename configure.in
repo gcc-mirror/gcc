@@ -2411,6 +2411,21 @@ case $build in
     stage1_cflags="-g -no-cpp-precomp -DHAVE_DESIGNATED_INITIALIZERS=0"
     ;;
 esac
+
+# This is aimed to mimic bootstrap with a non-GCC compiler to catch problems.
+if test "$GCC" = yes; then
+  saved_CFLAGS="$CFLAGS"
+
+  # Pass -fkeep-inline-functions for stage 1 if the GCC version supports it.
+  CFLAGS="$CFLAGS -fkeep-inline-functions"
+  AC_MSG_CHECKING([whether -fkeep-inline-functions is supported])
+  AC_TRY_COMPILE(,,
+    [AC_MSG_RESULT([yes]); stage1_cflags="$stage1_cflags -fkeep-inline-functions"],
+    [AC_MSG_RESULT([no])])
+
+  CFLAGS="$saved_CFLAGS"
+fi
+
 AC_SUBST(stage1_cflags)
 
 # Enable -Werror in bootstrap stage2 and later.

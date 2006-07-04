@@ -1,3 +1,10 @@
+2006-07-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR bootstrap/18058
+	* configure.in: Add -fkeep-inline-functions to CFLAGS for stage 1
+	if the bootstrap compiler is a GCC version that supports it.
+	* configure: Regenerate.
+
 2006-07-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in: Fix thinkos in previous check-in.

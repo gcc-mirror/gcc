@@ -7257,6 +7257,37 @@ case $build in
     ;;
 esac
 
+# This is aimed to mimic bootstrap with a non-GCC compiler to catch problems.
+if test "$GCC" = yes; then
+  saved_CFLAGS="$CFLAGS"
+
+  # Pass -fkeep-inline-functions for stage 1 if the GCC version supports it.
+  CFLAGS="$CFLAGS -fkeep-inline-functions"
+  echo $ac_n "checking whether -fkeep-inline-functions is supported""... $ac_c" 1>&6
+echo "configure:3894: checking whether -fkeep-inline-functions is supported" >&5
+  cat > conftest.$ac_ext <<EOF
+#line 3896 "configure"
+#include "confdefs.h"
+
+int main() {
+
+; return 0; }
+EOF
+if { (eval echo configure:3903: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  echo "$ac_t""yes" 1>&6; stage1_cflags="$stage1_cflags -fkeep-inline-functions"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  echo "$ac_t""no" 1>&6
+fi
+rm -f conftest*
+
+  CFLAGS="$saved_CFLAGS"
+fi
+
+
 
 # Enable -Werror in bootstrap stage2 and later.
 # Change the default to "no" on release branches.
