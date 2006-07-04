@@ -626,7 +626,7 @@ old_postuninstall_cmds=
 
 if test -n "$RANLIB"; then
   old_archive_cmds="$old_archive_cmds~\$RANLIB \$oldlib"
-  old_postinstall_cmds="\$RANLIB \$oldlib~$old_postinstall_cmds"
+  old_postinstall_cmds="~$old_postinstall_cmds~\$RANLIB \$oldlib"
 fi
 
 # Source the script associated with the $tagname tag configuration.

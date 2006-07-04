@@ -883,12 +883,15 @@ for ml in $MULTILIBS; do
     ldir='$(DESTDIR)$(libsubdir)'
   fi
   echo '	$(INSTALL_DATA)' ${dir}/libgcc.a ${ldir}/
+  echo '	chmod 644'  ${ldir}/libgcc.a
   echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcc.a
   echo '	$(INSTALL_DATA)' ${dir}/libgcov.a ${ldir}/
+  echo '	chmod 644'  ${ldir}/libgcov.a
   echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcov.a
 
   if [ "$SHLIB_LINK" ]; then
     echo '	$(INSTALL_DATA)' ${dir}/libgcc_eh.a ${ldir}/
+    echo '	chmod 644'  ${ldir}/libgcc_eh.a
     echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcc_eh.a
 
     shlib_slibdir_qual=
@@ -907,6 +910,7 @@ for ml in $MULTILIBS; do
 	      -e "s%@shlib_slibdir_qual@%$shlib_slibdir_qual%g"
       libunwinddir='$(DESTDIR)$(slibdir)$(shlib_slibdir_qual)/$(shlib_dir)'
       echo '	$(INSTALL_DATA)' ${dir}/libunwind.a ${libunwinddir}/
+      echo '	chmod 644' ${dir}/libunwind.a
       echo '	$(RANLIB_FOR_TARGET)' ${libunwinddir}/libunwind.a
     fi
   fi
