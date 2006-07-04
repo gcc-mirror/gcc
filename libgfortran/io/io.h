@@ -46,10 +46,6 @@ typedef enum
 bt;
 
 
-typedef enum
-{ SUCCESS = 1, FAILURE }
-try;
-
 struct st_parameter_dt;
 
 typedef struct stream
@@ -865,9 +861,6 @@ extern void list_formatted_write (st_parameter_dt *, bt, void *, int, size_t,
 internal_proto(list_formatted_write);
 
 /* error.c */
-extern try notify_std (int, const char *);
-internal_proto(notify_std);
-
 extern notification notification_std(int);
 internal_proto(notification_std);
 

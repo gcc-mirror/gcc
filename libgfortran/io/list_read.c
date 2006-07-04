@@ -2214,7 +2214,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	 and set the flag to zero to prevent further warnings.  */
       if (dtp->u.p.expanded_read == 2)
 	{
-	  notify_std (GFC_STD_GNU, "Non-standard expanded namelist read.");
+	  notify_std (&dtp->common, GFC_STD_GNU, "Non-standard expanded namelist read.");
 	  dtp->u.p.expanded_read = 0;
 	}
 

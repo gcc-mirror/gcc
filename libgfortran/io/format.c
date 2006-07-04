@@ -575,7 +575,7 @@ parse_format_list (st_parameter_dt *dtp)
     case FMT_DOLLAR:
       get_fnode (fmt, &head, &tail, FMT_DOLLAR);
       tail->repeat = 1;
-      notify_std (GFC_STD_GNU, "Extension: $ descriptor");
+      notify_std (&dtp->common, GFC_STD_GNU, "Extension: $ descriptor");
       goto between_desc;
 
     case FMT_T:
@@ -671,7 +671,7 @@ parse_format_list (st_parameter_dt *dtp)
 	    {
 	      fmt->saved_token = t;
 	      fmt->value = 1;	/* Default width */
-	      notify_std(GFC_STD_GNU, posint_required);
+	      notify_std (&dtp->common, GFC_STD_GNU, posint_required);
 	    }
 	}
 
