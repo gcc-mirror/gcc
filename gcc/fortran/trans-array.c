@@ -1341,6 +1341,7 @@ get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
 {
   gfc_ref *ref;
   gfc_typespec *ts;
+  mpz_t char_len;
 
   /* Don't bother if we already know the length is a constant.  */
   if (*len && INTEGER_CST_P (*len))
@@ -1359,6 +1360,19 @@ get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
 	  /* Use the length of the component.  */
 	  ts = &ref->u.c.component->ts;
 	  break;
+
+	case REF_SUBSTRING:
+	  if (ref->u.ss.start->expr_type != EXPR_CONSTANT
+		|| ref->u.ss.start->expr_type != EXPR_CONSTANT)
+	    break;
+	  mpz_init_set_ui (char_len, 1);
+	  mpz_add (char_len, char_len, ref->u.ss.end->value.integer);
+	  mpz_sub (char_len, char_len, ref->u.ss.start->value.integer);
+	  *len = gfc_conv_mpz_to_tree (char_len,
+				       gfc_default_character_kind);
+	  *len = convert (gfc_charlen_type_node, *len);
+	  mpz_clear (char_len);
+	  return;
 
 	default:
 	  /* TODO: Substrings are tricky because we can't evaluate the
@@ -4192,7 +4206,10 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 		if (char_ref->type == REF_SUBSTRING)
 		  {
 		    mpz_t char_len;
-		    expr->ts.cl = char_ref->u.ss.length;
+		    expr->ts.cl = gfc_get_charlen ();
+		    expr->ts.cl->next = char_ref->u.ss.length->next;
+		    char_ref->u.ss.length->next = expr->ts.cl;
+
 		    mpz_init_set_ui (char_len, 1);
 		    mpz_add (char_len, char_len,
 			     char_ref->u.ss.end->value.integer);
