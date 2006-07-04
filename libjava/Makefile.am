@@ -239,6 +239,7 @@ libgcj_tools_la_SOURCES = classpath/tools/tools.jar
 libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec
 libgcj_tools_la_LINK = $(LIBLINK)
 
 ## libjvm.so
