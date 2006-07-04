@@ -1,3 +1,19 @@
+2006-07-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	    Daniel Franke  <franke.daniel@gmail.com>
+
+	* intrinsic.c (add_subroutines): Add ITIME and IDATE.
+	* intrinsic.h (gfc_check_itime_idate,gfc_resolve_idate,
+	fc_resolve_itime): New protos.
+	* iresolve.c (gfc_resolve_itime, gfc_resolve_idate): New functions.
+	* check.c (gfc_check_itime_idate): New function.
+	* intrinsic.texi: Document the new intrinsics.
+
+2006-07-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/date_and_time.c (itime0,idate0,itime_i4,itime_i8,
+	idate_i4,idate_i8): New functions.
+
+
 2006-07-03  Asher Langton  <langton2@llnl.gov>
 
 	* decl.c (match_old_style_init): Add data attribute to symbol.

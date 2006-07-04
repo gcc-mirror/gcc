@@ -100,7 +100,9 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{HUGE}:          HUGE,      Largest number of a kind
 * @code{IACHAR}:        IACHAR,    Code in @acronym{ASCII} collating sequence
 * @code{ICHAR}:         ICHAR,     Character-to-integer conversion function
+* @code{IDATE}:         IDATE,     Current local time (day/month/year)
 * @code{IRAND}:         IRAND,     Integer pseudo-random number
+* @code{ITIME}:         ITIME,     Current local time (hour/minutes/seconds)
 * @code{KIND}:          KIND,      Kind of an entity
 * @code{LOC}:           LOC,       Returns the address of a variable
 * @code{LOG}:           LOG,       Logarithm function
@@ -3294,6 +3296,46 @@ end program read_val
 @end smallexample
 @end table
 
+@node IDATE
+@section @code{IDATE} --- Get current local time subroutine (day/month/year) 
+@findex @code{IDATE} intrinsic
+
+@table @asis
+@item @emph{Description}:
+@code{IDATE(TARRAY)} Fills @var{TARRAY} with the numerical values at the  
+current local time. The day (in the range 1-31), month (in the range 1-12), 
+and year appear in elements 1, 2, and 3 of @var{TARRAY}, respectively. 
+The year has four significant digits.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@code{CALL IDATE(TARRAY)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{TARRAY} @tab The type shall be @code{INTEGER, DIMENSION(3)} and
+the kind shall be the default integer kind.
+@end multitable
+
+@item @emph{Return value}:
+Does not return.
+
+@item @emph{Example}:
+@smallexample
+program test_idate
+  integer, dimension(3) :: tarray
+  call idate(tarray)
+  print *, tarray(1)
+  print *, tarray(2)
+  print *, tarray(3)
+end program test_idate
+@end smallexample
+@end table
 
 
 @node IRAND
@@ -3340,6 +3382,47 @@ end program test_irand
 
 @end table
 
+@node ITIME
+@section @code{ITIME} --- Get current local time subroutine (hour/minutes/seconds) 
+@findex @code{ITIME} intrinsic
+
+@table @asis
+@item @emph{Description}:
+@code{IDATE(TARRAY)} Fills @var{TARRAY} with the numerical values at the  
+current local time. The hour (in the range 1-24), minute (in the range 1-60), 
+and seconds (in the range 1-60) appear in elements 1, 2, and 3 of @var{TARRAY}, 
+respectively.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@code{CALL ITIME(TARRAY)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{TARRAY} @tab The type shall be @code{INTEGER, DIMENSION(3)}
+and the kind shall be the default integer kind.
+@end multitable
+
+@item @emph{Return value}:
+Does not return.
+
+
+@item @emph{Example}:
+@smallexample
+program test_itime
+  integer, dimension(3) :: tarray
+  call itime(tarray)
+  print *, tarray(1)
+  print *, tarray(2)
+  print *, tarray(3)
+end program test_itime
+@end smallexample
+@end table
 
 
 @node KIND
