@@ -80,21 +80,21 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
      * An adaptor class for converting the output of any Generator into
      * the input for a specific Distribution.
      */
-    template<typename _Generator, typename _Distribution>
+    template<typename _Engine, typename _Distribution>
       struct _Adaptor
       { 
-	typedef typename _Generator::result_type   generated_type;
-	typedef typename _Distribution::input_type result_type;
+	typedef typename _Engine::result_type        _Engine_result_type;
+	typedef typename _Distribution::input_type   result_type;
 
       public:
-	_Adaptor(const _Generator& __g)
+	_Adaptor(const _Engine& __g)
 	: _M_g(__g) { }
 
 	result_type
 	operator()();
 
       private:
-	_Generator _M_g;
+	_Engine _M_g;
       };
 
     /*
@@ -104,20 +104,20 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
      * Because the type traits are compile time constants only the appropriate
      * clause of the if statements will actually be emitted by the compiler.
      */
-    template<typename _Generator, typename _Distribution>
-      typename _Adaptor<_Generator, _Distribution>::result_type
-      _Adaptor<_Generator, _Distribution>::
+    template<typename _Engine, typename _Distribution>
+      typename _Adaptor<_Engine, _Distribution>::result_type
+      _Adaptor<_Engine, _Distribution>::
       operator()()
       {
 	result_type __return_value = 0;
-	if (is_integral<generated_type>::value
+	if (is_integral<_Engine_result_type>::value
 	    && is_integral<result_type>::value)
 	  __return_value = _M_g();
-      	else if (is_integral<generated_type>::value
+      	else if (is_integral<_Engine_result_type>::value
 		 && !is_integral<result_type>::value)
 	  __return_value = result_type(_M_g())
-	    / result_type(_M_g.max() - _M_g.min() + 1);
-	else if (!is_integral<generated_type>::value
+	    / result_type(_M_g.max() - _M_g.min() + result_type(1));
+	else if (!is_integral<_Engine_result_type>::value
 		 && !is_integral<result_type>::value)
 	  __return_value = result_type(_M_g())
 	    / result_type(_M_g.max() - _M_g.min());
@@ -142,17 +142,17 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    *
    * @todo the engine_value_type needs to be studied more carefully.
    */
-  template<typename _Generator, typename _Dist>
+  template<typename _Engine, typename _Dist>
     class variate_generator
     {
       // Concept requirements.
-      __glibcxx_class_requires(_Generator, _CopyConstructibleConcept)
-      //  __glibcxx_class_requires(_Generator, _GeneratorConcept)
-      //  __glibcxx_class_requires(_Dist,      _GeneratorConcept)
+      __glibcxx_class_requires(_Engine, _CopyConstructibleConcept)
+      //  __glibcxx_class_requires(_Engine, _EngineConcept)
+      //  __glibcxx_class_requires(_Dist, _EngineConcept)
 
     public:
-      typedef _Generator                             engine_type;
-      typedef _Private::_Adaptor<_Generator, _Dist>  engine_value_type;
+      typedef _Engine                                engine_type;
+      typedef _Private::_Adaptor<_Engine, _Dist>     engine_value_type;
       typedef _Dist                                  distribution_type;
       typedef typename _Dist::result_type            result_type;
 
@@ -167,7 +167,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * generator @p __eng for the random distribution @p __dist.
        *
        * @throws Any exceptions which may thrown by the copy constructors of
-       * the @p _Generator or @p _Dist objects.
+       * the @p _Engine or @p _Dist objects.
        */
       variate_generator(engine_type __eng, distribution_type __dist)
       : _M_engine(__eng), _M_dist(__dist) { }
@@ -176,11 +176,16 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * Gets the next generated value on the distribution.
        */
       result_type
-      operator()();
+      operator()()
+      { return _M_dist(_M_engine); }
 
+      /**
+       * WTF?
+       */
       template<typename _Tp>
         result_type
-        operator()(_Tp __value);
+        operator()(_Tp __value)
+        { return _M_dist(_M_engine, __value); }
 
       /**
        * Gets a reference to the underlying uniform random number generator
@@ -230,25 +235,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       engine_value_type _M_engine;
       distribution_type _M_dist;
     };
-
-  /**
-   * Gets the next random value on the given distribution.
-   */
-  template<typename _Generator, typename _Dist>
-    typename variate_generator<_Generator, _Dist>::result_type
-    variate_generator<_Generator, _Dist>::
-    operator()()
-    { return _M_dist(_M_engine); }
-
-  /**
-   * WTF?
-   */
-  template<typename _Generator, typename _Dist>
-    template<typename _Tp>
-      typename variate_generator<_Generator, _Dist>::result_type
-      variate_generator<_Generator, _Dist>::
-      operator()(_Tp __value)
-      { return _M_dist(_M_engine, __value); }
 
 
   /**
@@ -522,7 +508,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     public:
       // types
-      typedef _UIntType result_type ;
+      typedef _UIntType result_type;
 
       // parameter values
       static const int       word_size   = __w;

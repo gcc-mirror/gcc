@@ -1,3 +1,12 @@
+2006-07-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (_Adaptor<>::operator()()): Cast 1 to
+	result_type.
+	(variate_generator<>::operator()(),
+	variate_generator<>::operator()(_Tp)): Inline.
+
+	* include/tr1/random: Minor cosmetic changes.
+
 2006-07-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/rc_string_base.h (__rc_string_base::_S_max_size):
