@@ -1,3 +1,9 @@
+2006-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/27704
+	* gfortran.dg/open_status_3.f90: New test.
+	* gfortran.dg/fmt_l.f90: Update for new feature.
+
 2006-07-03  Asher Langton  <langton2@llnl.gov>
 
 	* gfortran.dg/oldstyle_2.f90: New.
