@@ -1,5 +1,8 @@
 2006-07-04  Andreas Tobler  <a.tobler@schweiz.ch>
 
+	* testsuite/lib/libjava.exp (libjava_init): Call the GCJ_UNDER_TEST with
+	the -B$specdir.
+
 	PR libgcj/28226:
 	* include/posix.h (_Jv_platform_dladdr): Remove const qualifier.
 	* include/win32.h (_Jv_platform_dladdr): Likewise.
