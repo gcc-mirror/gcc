@@ -962,8 +962,7 @@ update_equiv_regs (void)
 
 	      /* If we haven't done so, record for reload that this is an
 		 equivalencing insn.  */
-	      if (!reg_equiv[regno].is_arg_equivalence
-		  && (!MEM_P (x) || rtx_equal_p (src, x)))
+	      if (!reg_equiv[regno].is_arg_equivalence)
 		reg_equiv_init[regno]
 		  = gen_rtx_INSN_LIST (VOIDmode, insn, reg_equiv_init[regno]);
 

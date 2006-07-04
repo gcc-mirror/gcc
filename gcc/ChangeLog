@@ -1,3 +1,13 @@
+2006-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/26991
+	Backport from mainline
+	2006-02-16  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	PR rtl-optimization/25636
+	* local-alloc.c (update_equiv_regs): Lose a bogus rtx_equal_p test
+	when deciding whether an insn is an initializing insn.
+
 2006-07-04  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/28207
