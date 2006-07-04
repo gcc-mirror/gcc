@@ -1,3 +1,9 @@
+2006-07-04  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/28207
+	* config/rs6000/rs6000.c (function_arg_boundary): Double-word align
+	128-bit IBM long doubles for ABI_V4.
+
 2006-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (range_in_array_bounds_p): New predicate.
