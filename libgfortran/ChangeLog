@@ -1,3 +1,8 @@
+2006-07-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/date_and_time.c (itime0,idate0,itime_i4,itime_i8,
+	idate_i4,idate_i8): New functions.
+
 2006-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/27704

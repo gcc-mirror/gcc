@@ -2334,6 +2334,26 @@ gfc_resolve_etime_sub (gfc_code * c)
 }
 
 
+/* G77 compatibility subroutines itime() and idate().  */
+
+void
+gfc_resolve_itime (gfc_code * c)
+{
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol
+		      (gfc_get_string (PREFIX("itime_i%d"),
+				       gfc_default_integer_kind));
+}
+
+
+void
+gfc_resolve_idate (gfc_code * c)
+{
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol
+		      (gfc_get_string (PREFIX("idate_i%d"),
+				       gfc_default_integer_kind));
+}
+
+
 /* G77 compatibility subroutine second().  */
 
 void
