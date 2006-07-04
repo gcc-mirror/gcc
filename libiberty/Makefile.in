@@ -280,7 +280,7 @@ install: install_to_$(INSTALL_DEST) install-subdir
 install_to_libdir: all
 	${mkinstalldirs} $(DESTDIR)$(libdir)$(MULTISUBDIR)
 	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)n
-	( cd $(DESTDIR)$(libdir)$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
+	( cd $(DESTDIR)$(libdir)$(MULTISUBDIR) ; chmod 644 $(TARGETLIB)n ;$(RANLIB) $(TARGETLIB)n )
 	mv -f $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)n $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)
 	if test -n "${target_header_dir}"; then \
 	  case "${target_header_dir}" in \
@@ -302,7 +302,7 @@ MULTIOSDIR = `$(CC) $(LIBCFLAGS) -print-multi-os-directory`
 install_to_tooldir: all
 	${mkinstalldirs} $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)
 	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)/$(TARGETLIB)n
-	( cd $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR) ; $(RANLIB) $(TARGETLIB)n )
+	( cd $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR) ; chmod 644 $(TARGETLIB)n; $(RANLIB) $(TARGETLIB)n )
 	mv -f $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)/$(TARGETLIB)n $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)/$(TARGETLIB)
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
