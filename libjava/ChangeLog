@@ -1,3 +1,8 @@
+2006-07-04  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/lib/libjava.exp (libjava_init): Look for libgcj-$version.jar
+	instead of libgcj-*.jar.
+
 2006-07-04  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/28244:
