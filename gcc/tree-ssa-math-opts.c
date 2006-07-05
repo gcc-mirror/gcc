@@ -489,7 +489,8 @@ execute_cse_reciprocals (void)
 				sizeof (struct occurrence),
 				n_basic_blocks / 3 + 1);
 
-  calculate_dominance_info (CDI_DOMINATORS | CDI_POST_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
 
 #ifdef ENABLE_CHECKING
   FOR_EACH_BB (bb)
@@ -526,7 +527,8 @@ execute_cse_reciprocals (void)
 	}
     }
 
-  free_dominance_info (CDI_DOMINATORS | CDI_POST_DOMINATORS);
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
   free_alloc_pool (occ_pool);
   return 0;
 }
