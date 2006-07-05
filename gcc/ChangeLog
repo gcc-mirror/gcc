@@ -1,3 +1,7 @@
+2006-07-05  Mike Stump  <mrs@apple.com>
+
+	* doc/invoke.texi (Invoking G++): Clarify prose for g++.
+
 2006-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/26146

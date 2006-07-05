@@ -1089,15 +1089,14 @@ with the name @command{gcc}).
 
 @findex g++
 @findex c++
-However, C++ programs often require class libraries as well as a
-compiler that understands the C++ language---and under some
-circumstances, you might want to compile programs or header files from
-standard input, or otherwise without a suffix that flags them as C++
-programs.  You might also like to precompile a C header file with a
-@samp{.h} extension to be used in C++ compilations.  @command{g++} is a
-program that calls GCC with the default language set to C++, and
-automatically specifies linking against the C++ library.  On many
-systems, @command{g++} is also installed with the name @command{c++}.
+However, the use of @command{gcc} does not add the C++ library.
+@command{g++} is a program that calls GCC and treats @samp{.c},
+@samp{.h} and @samp{.i} files as C++ source files instead of C source
+files unless @option{-x} is used, and automatically specifies linking
+against the C++ library.  This is also useful when precompiling a C
+header file with a @samp{.h} extension for use in C++ compilations.
+On many systems, @command{g++} is also installed with the name
+@command{c++}.
 
 @cindex invoking @command{g++}
 When you compile C++ programs, you may specify many of the same
