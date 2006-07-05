@@ -1,3 +1,10 @@
+2006-07-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/28218
+
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Fix calls
+	to calculate and free the dominator information.
+	    
 2006-07-04  Peter O'Gorman  <peter@pogma.com>
 
 	* mklibgcc.in: chmod 644 before ranlib during install.
