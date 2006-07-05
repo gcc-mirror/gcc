@@ -1,3 +1,9 @@
+2006-07-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/20892
+	* interface.c (gfc_match_interface): Don't allow dummy procedures
+	to have a generic interface.
+
 2006-07-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28174
