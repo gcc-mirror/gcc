@@ -783,6 +783,7 @@ THREADINCS=
 THREADDEPS=
 THREADH=
 THREADSPEC=
+THREADSTARTFILESPEC=
 case "$THREADS" in
  posix)
     case "$host" in
@@ -834,6 +835,20 @@ case "$THREADS" in
 
  win32)
     THREADH=win32-threads.h
+    THREADCXXFLAGS=-mthreads
+    # We need thread-safe exception handling so _CRT_MT should be set to 1.
+    # But we do not want the executables created to be dependent on
+    # mingwm10.dll which provides a __mingwthr_key_dtor() that cleans up
+    # exception handling contexts.  The following kludge achieves this effect
+    # and causes a dummy __mingwthr_key_dtor() to be linked in from
+    # libmingw32.a.  This causes a memory leak of about 24 bytes per thread.
+    # A workaround is to explicitly use -mthreads while linking Java programs.
+    # See PR libgcj/28263.
+    #
+    # FIXME: In Java we are able to detect thread death at the end of
+    # Thread.run() so we should be able to clean up the exception handling
+    # contexts ourselves.
+    THREADSTARTFILESPEC='crtmt%O%s'
     ;;
 
  none)
@@ -845,6 +860,7 @@ AC_SUBST(THREADLIBS)
 AC_SUBST(THREADINCS)
 AC_SUBST(THREADDEPS)
 AC_SUBST(THREADSPEC)
+AC_SUBST(THREADSTARTFILESPEC)
 AC_SUBST(THREADLDFLAGS)
 AC_SUBST(THREADCXXFLAGS)
 AM_CONDITIONAL(USING_POSIX_THREADS, test "$THREADS" = posix)

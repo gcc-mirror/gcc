@@ -3,6 +3,9 @@
 # It is used to specify the standard libraries we need in order
 # to link with libgcj.
 #
+%rename startfile startfileorig
+*startfile: @THREADSTARTFILESPEC@ %(startfileorig)
+
 %rename lib liborig
 *lib: @LD_START_STATIC_SPEC@ -lgcj @LD_FINISH_STATIC_SPEC@ -lm @LIBICONV@ @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgcc) %(liborig)
 
