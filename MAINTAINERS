@@ -207,6 +207,7 @@ profile feedback	Jan Hubicka		jh@suse.cz
 type-safe vectors	Nathan Sidwell		nathan@codesourcery.com
 alias analysis		Daniel Berlin		dberlin@dberlin.org
 alias analysis		Diego Novillo		dnovillo@redhat.com
+reload			Ulrich Weigand		uweigand@de.ibm.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
