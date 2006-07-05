@@ -1175,6 +1175,20 @@ i[34567]86-*-solaris2*)
 		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 		tmake_file="$tmake_file i386/t-sol2-10"
 		need_64bit_hwint=yes
+		# FIXME: -m64 for i[34567]86-*-* should be allowed just
+		# like -m32 for x86_64-*-*.
+		case X"${with_cpu}" in
+		Xgeneric|Xnocona|Xx86-64|Xk8|Xopteron|Xathlon64|Xathlon-fx)
+			;;
+		X)
+			with_cpu=generic
+			;;
+		*)
+			echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
+			echo "generic nocona x86-64 k8 opteron athlon64 athlon-fx" 1>&2
+			exit 1
+			;;
+		esac
 		# Solaris 2.10 provides crt1.o, crti.o, crtn.o, and gcrt1.o as 
 		# part of the base system.
 		extra_parts="gmon.o crtbegin.o crtend.o"
