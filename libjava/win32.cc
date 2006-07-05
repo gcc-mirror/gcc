@@ -288,21 +288,6 @@ _Jv_platform_nanotime ()
   return _Jv_platform_gettimeofday () * 1000LL;
 }
 
-// The following definitions "fake out" mingw to think that -mthreads
-// was enabled and that mingwthr.dll was linked. GCJ-compiled
-// applications don't need this helper library because we can safely
-// detect thread death (return from Thread.run()).
-
-int _CRT_MT = 1;
-
-extern "C" int
-__mingwthr_key_dtor (DWORD, void (*) (void *))
-{
-  // FIXME: for now we do nothing; this causes a memory leak of
-  //        approximately 24 bytes per thread created.
-  return 0;
-}
-
 static bool dirExists (LPCTSTR dir)
 {
   DWORD dwAttrs = ::GetFileAttributes (dir);
