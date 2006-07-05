@@ -1,4 +1,9 @@
 2006-07-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/28162
+	* gcc.dg/pr28162.c: New testcase.
+
+2006-07-05  Richard Guenther  <rguenther@suse.de>
 	Andrew Pinski  <pinskia@gcc.gnu.org>
 
 	PR c++/27084
