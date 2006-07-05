@@ -1,3 +1,8 @@
+2006-07-05  Eric Christopher  <echristo@apple.com>
+
+	* configure.ac: Depend addition of -pthread on host OS.
+	* configure: Regenerate.
+
 2006-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* critical.c (GOMP_critical_name_start): Fix *pptr initialization
@@ -154,7 +159,7 @@
 
 	PR libgomp/25936
 	* configure.tgt: Link against -lrt for sem_init on HPUX v11 systems.
- 
+
 2006-02-08  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* testsuite/lib/libgomp-dg.exp: Load scanrtl.exp library.
@@ -982,7 +987,7 @@
 	* configure.tgt (x86_64-linux): Also test CC for -m32.
 	* config/linux/x86_64/futex.h (futex_wait): Fix r10 usage.
 
-	* testsuite/lib/libgomp-dg.exp (libgomp_link_flags): Add / 
+	* testsuite/lib/libgomp-dg.exp (libgomp_link_flags): Add /
 	after $gccpath.
 
 	* Makefile.am (SUBDIRS): New.
@@ -1078,7 +1083,7 @@
 
 	* iter.c (gomp_iter_runtime_next_locked): Remove.
 	* loop.c (gomp_loop_static_start, gomp_loop_dynamic_start,
-	gomp_loop_guided_start, gomp_loop_ordered_static_start, 
+	gomp_loop_guided_start, gomp_loop_ordered_static_start,
 	gomp_loop_ordered_dynamic_start, gomp_loop_ordered_guided_start,
 	gomp_loop_static_next, gomp_loop_dynamic_next, gomp_loop_guided_next,
 	gomp_loop_ordered_static_next, gomp_loop_ordered_dynamic_next,
