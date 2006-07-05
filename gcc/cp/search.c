@@ -792,8 +792,8 @@ friend_accessible_p (tree scope, tree decl, tree binfo)
     if (protected_accessible_p (decl, TREE_VALUE (t), binfo))
       return 1;
 
-  /* Nested classes are implicitly friends of their enclosing types, as
-     per core issue 45 (this is a change from the standard).  */
+  /* Nested classes have the same access as their enclosing types, as
+     per DR 45 (this is a change from the standard).  */
   if (TYPE_P (scope))
     for (t = TYPE_CONTEXT (scope); t && TYPE_P (t); t = TYPE_CONTEXT (t))
       if (protected_accessible_p (decl, t, binfo))

@@ -78,13 +78,8 @@ is_friend (tree type, tree supplicant)
   else
     /* It's a type.  */
     {
-      /* Nested classes are implicitly friends of their enclosing types, as
-	 per core issue 45 (this is a change from the standard).  */
-      for (context = supplicant;
-	   context && TYPE_P (context);
-	   context = TYPE_CONTEXT (context))
-	if (type == context)
-	  return 1;
+      if (same_type_p (supplicant, type))
+	return 1;
 
       list = CLASSTYPE_FRIEND_CLASSES (TREE_TYPE (TYPE_MAIN_DECL (type)));
       for (; list ; list = TREE_CHAIN (list))
@@ -98,13 +93,24 @@ is_friend (tree type, tree supplicant)
 	}
     }
 
-  if (declp && DECL_FUNCTION_MEMBER_P (supplicant))
-    context = DECL_CONTEXT (supplicant);
-  else if (! declp)
-    /* Local classes have the same access as the enclosing function.  */
-    context = decl_function_context (TYPE_MAIN_DECL (supplicant));
+  if (declp)
+    {
+      if (DECL_FUNCTION_MEMBER_P (supplicant))
+	context = DECL_CONTEXT (supplicant);
+      else
+	context = NULL_TREE;
+    }
   else
-    context = NULL_TREE;
+    {
+      if (TYPE_CONTEXT (supplicant)
+	  && TYPE_P (TYPE_CONTEXT (supplicant)))
+	/* Nested classes get the same access as their enclosing types, as
+	   per DR 45 (this is a change from the standard).  */
+	context = TYPE_CONTEXT (supplicant);
+      else
+	/* Local classes have the same access as the enclosing function.  */
+	context = decl_function_context (TYPE_MAIN_DECL (supplicant));
+    }
 
   /* A namespace is not friend to anybody.  */
   if (context && TREE_CODE (context) == NAMESPACE_DECL)
