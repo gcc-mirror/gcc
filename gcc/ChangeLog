@@ -1,5 +1,12 @@
 2006-07-05  Richard Guenther  <rguenther@suse.de>
 
+	PR target/28158
+	* config/i386/i386.md (*negdf2_1): Restrict pattern to
+	TARGET_SSE2 targets if using SSE math.
+	(*absdf2_1): Likewise.
+
+2006-07-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/28162
 	* fold-const.c (fold_binary): For (-A) * (-B) -> A * B
 	make sure to convert the operands to the correct type.
