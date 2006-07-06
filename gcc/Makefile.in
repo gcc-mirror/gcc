@@ -4384,8 +4384,13 @@ fastcompare fastcompare3 fastcompare4 fastcompare-lean fastcompare3-lean fastcom
 	    for file in $$dir/*$(objext); do \
 	      case "$@" in \
 		slowcompare* ) \
-		  tail +16c ./$$file > tmp-foo1; \
-		  tail +16c stage$$stage/$$file > tmp-foo2; \
+		  if tail -c +1 </dev/null >/dev/null 2>&1; then \
+		    skip16='-c +17'; \
+		  else \
+		    skip16='+17c'; \
+		  fi; \
+		  tail $$skip16 ./$$file > tmp-foo1; \
+		  tail $$skip16 stage$$stage/$$file > tmp-foo2; \
 		  cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1; \
 		  cmpret=$$?; \
 		  ;; \

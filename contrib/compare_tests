@@ -31,8 +31,14 @@ now=$tmp2
 exit_status=0
 trap "rm -f $tmp1 $tmp2 $now_s $before_s" 0 1 2 3 5 9 13 15
 
-sort -t ':' +1 "$now" > "$now_s"
-sort -t ':' +1 "$before" > "$before_s"
+if sort -k 2 </dev/null >/dev/null 2>&1; then
+  skip1='-k 2'
+else
+  skip1='+1'
+fi
+
+sort -t ':' $skip1 "$now" > "$now_s"
+sort -t ':' $skip1 "$before" > "$before_s"
 
 grep '^FAIL:' "$now_s" | sed 's/^[^:]*:[ 	]//' >$tmp1
 grep '^PASS' "$before_s" | sed 's/^[^:]*:[ 	]//' | comm -12 $tmp1 - >$tmp2
