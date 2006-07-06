@@ -1,3 +1,9 @@
+2006-07-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13983
+	PR c++/17519
+	* stor-layout.c (finish_record_layout): Copy TYPE_PACKED to variants.
+
 2006-07-04  Peter O'Gorman  <peter@pogma.com>
 
 	* mklibgcc.in: chmod 644 before ranlib during install.
