@@ -713,15 +713,13 @@ finish_static_data_member_decl (tree decl,
 				tree asmspec_tree,
 				int flags)
 {
-  gcc_assert (TREE_PUBLIC (decl));
-
   DECL_CONTEXT (decl) = current_class_type;
 
   /* We cannot call pushdecl here, because that would fill in the
      TREE_CHAIN of our decl.  Instead, we modify cp_finish_decl to do
      the right thing, namely, to put this decl out straight away.  */
 
-  if (! processing_template_decl)
+  if (! processing_template_decl && TREE_PUBLIC (decl))
     note_vague_linkage_var (decl);
 
   if (LOCAL_CLASS_P (current_class_type))

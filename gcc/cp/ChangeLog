@@ -1,3 +1,9 @@
+2006-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28279
+	* decl2.c (finish_static_data_member_decl): Don't assert
+	TREE_PUBLIC.
+
 2006-07-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13983
