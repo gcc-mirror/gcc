@@ -1,4 +1,16 @@
-2006-07-05  Benjamin Kosnik  <bkoz@redhat.com>
+2006-07-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/regression/trait/assoc/trait.hpp: Format.
+	* testsuite/util/regression/rand/priority_queue/
+	rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/assoc/rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/
+	assoc/container_rand_regression_test.hpp: Same.
+	* testsuite/util/regression/priority_queue/common_type.hpp: Same.
+	* testsuite/util/regression/assoc/common_type.hpp: Same.
+	* testsuite/util/regression/basic_type.hpp: Same.
+
+2006-07-05  Benjamin Kosnik  <bkoz@redhat.com>	
 
 	* include/Makefile.am (pch_output): New.
 	(clean-local): Use it.

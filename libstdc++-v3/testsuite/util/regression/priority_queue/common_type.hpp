@@ -52,27 +52,14 @@
 
 namespace pb_ds
 {
+namespace test
+{
+  typedef dbg_ex_allocator<basic_type> alloc_type;
 
-  namespace test
-  {
+  typedef pq_common_types<basic_type, std::less<basic_type>, alloc_type>::regression_tl pq_tl_t;
 
-    typedef
-    pb_ds::test::dbg_ex_allocator<
-      pb_ds::test::basic_type>
-    alloc_type;
-
-    typedef
-    pb_ds::test::pq_common_types<
-      pb_ds::test::basic_type,
-      std::less<
-      pb_ds::test::basic_type>,
-      alloc_type>::regression_tl
-    pq_tl_t;
-
-    typedef pq_tl_t min_pq_tl_t;
-
-  } // namespace test
-
+  typedef pq_tl_t min_pq_tl_t;
+} // namespace test
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_RAND_REGRESSION_TEST_COMMON_TYPE_HPP
+#endif
