@@ -1964,7 +1964,7 @@ nowrap_type_p (tree type)
 bool
 scev_probably_wraps_p (tree base, tree step, 
 		       tree at_stmt, struct loop *loop,
-		       bool use_oveflow_semantics)
+		       bool use_overflow_semantics)
 {
   struct nb_iter_bound *bound;
   tree delta, step_abs;
@@ -1997,7 +1997,7 @@ scev_probably_wraps_p (tree base, tree step,
 
   /* If we can use the fact that signed and pointer arithmetics does not
      wrap, we are done.  */
-  if (use_oveflow_semantics && nowrap_type_p (type))
+  if (use_overflow_semantics && nowrap_type_p (type))
     return false;
 
   /* Otherwise, compute the number of iterations before we reach the
