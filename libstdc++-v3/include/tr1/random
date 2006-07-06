@@ -1952,6 +1952,91 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       bool        _M_saved_available;     
     };
 
+
+  /**
+   * @brief A gamma continuous distribution for random numbers.
+   *
+   * The formula for the gamma probability mass function is 
+   * @f$ p(x) = \frac{1}{\Gamma(\alpha)} x^{\alpha - 1} e^{-x} } @f$.
+   */
+  template<typename _RealType = double>
+    class gamma_distribution;
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const gamma_distribution<_RealType>& __x);
+
+  template<typename _RealType>
+    class gamma_distribution
+    {
+    public:
+      // types
+      typedef _RealType input_type;
+      typedef _RealType result_type;
+
+    public:
+      /**
+       * Constructs a gamma distribution with parameters @f$ \alpha @f$.
+       */
+      explicit
+      gamma_distribution(const result_type& __alpha = result_type(1))
+      : _M_alpha(__alpha)
+      { 
+	_GLIBCXX_DEBUG_ASSERT(_M_alpha > 0);
+      }
+
+      /**
+       * Gets the @f$ \alpha @f$ of the distribution.
+       */
+      _RealType
+      alpha() const
+      { return _M_alpha; }
+
+      /**
+       * Resets the distribution.
+       */
+      void
+      reset() { }
+
+      template<class _UniformRandomNumberGenerator>
+        result_type
+        operator()(_UniformRandomNumberGenerator& __urng);
+
+      /**
+       * Inserts a %gamma_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %gamma_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+        friend std::basic_ostream<_CharT, _Traits>&
+        operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const gamma_distribution<_RealType1>& __x);
+
+      /**
+       * Extracts a %gamma_distribution random number distribution
+       * @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x  A %gamma_distribution random number generator engine.
+       *
+       * @returns The input stream with @p __x extracted or in an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+        friend std::basic_istream<_CharT, _Traits>&
+        operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   gamma_distribution<_RealType1>& __x)
+        { return __is >> __x._M_alpha; }
+
+    private:
+      result_type _M_alpha;
+    };
+
   /* @} */ // group tr1_random_distributions_continuous
   /* @} */ // group tr1_random_distributions
   /* @} */ // group tr1_random

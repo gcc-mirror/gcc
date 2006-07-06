@@ -767,5 +767,95 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return __is;
     }
 
+
+  /**
+   * Cheng's rejection algorithm GB for alpha >= 1 and a modification
+   * of Vaduva's rejection from Weibull algorithm due to Devroye for
+   * alpha < 1.
+   *
+   * References:
+   * Cheng, R. C. "The Generation of Gamma Random Variables with Non-integral
+   * Shape Parameter." Applied Statistics, 26, 71-75, 1977.
+   *
+   * Vaduva, I. "Computer Generation of Gamma Gandom Variables by Rejection
+   * and Composition Procedures." Math. Operationsforschung and Statistik,
+   * Series in Statistics, 8, 545-576, 1977.
+   *
+   * Devroye, L. "Non-Uniform Random Variates Generation." Springer-Verlag,
+   * New York, 1986, Sect. 3.4.
+   */
+  template<typename _RealType>
+    template<class _UniformRandomNumberGenerator>
+      typename gamma_distribution<_RealType>::result_type
+      gamma_distribution<_RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng)
+      {
+	result_type __x;
+
+	if (_M_alpha >= 1)
+	  {
+	    // alpha - log(4)
+	    const result_type __b = _M_alpha
+	      - result_type(1.3862943611198906188344642429163531L);
+	    const result_type __c = _M_alpha + std::sqrt(2 * _M_alpha - 1);
+
+	    // 1 + log(9 / 2)
+	    const result_type __k = 2.5040773967762740733732583523868748L;
+
+	    result_type __z, __r;
+	    do
+	      {
+		const result_type __u = __urng();
+		const result_type __v = __urng();
+
+		const result_type __y = _M_alpha * std::log(__v / (1 - __v));
+		__x = _M_alpha * std::exp(__v);
+
+		__z = __u * __v * __v;
+		__r = __b + __c * __y - __x;
+	      }
+	    while (__r < result_type(4.5) * __z - __k
+		   && __r < std::log(__z));
+	  }
+	else
+	  {
+	    const result_type __c = 1 / _M_alpha;
+	    const result_type __d =
+	      std::pow(_M_alpha, _M_alpha / (1 - _M_alpha)) * (1 - _M_alpha);
+
+	    result_type __z, __e;
+	    do
+	      {
+		__z = -std::log(__urng());
+		__e = -std::log(__urng());
+
+		__x = std::pow(__z, __c);
+	      }
+	    while (__z + __e > __d + __x);
+	  }
+
+	return __x;
+      }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const gamma_distribution<_RealType>& __x)
+    {
+      const std::ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const std::streamsize __precision = __os.precision();
+      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.fill(__os.widen(' '));
+      __os.precision(_Private::_Max_digits10<_RealType>::__value);
+
+      __os << __x.alpha();
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      __os.precision(__precision);
+      return __os;
+    }
+
 _GLIBCXX_END_NAMESPACE
 }
