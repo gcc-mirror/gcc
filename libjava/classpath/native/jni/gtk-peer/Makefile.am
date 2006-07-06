@@ -1,8 +1,4 @@
-## GCJ LOCAL: install this library in GCJ's versioned library
-## directory
-gcc_version := $(shell cat $(top_srcdir)/../../gcc/BASE-VER)
-gcjversionedlibdir = $(libdir)/gcj-$(gcc_version)
-gcjversionedlib_LTLIBRARIES = libgtkpeer.la
+nativeexeclib_LTLIBRARIES = libgtkpeer.la
 
 # GTK JNI sources.
 libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
@@ -53,10 +49,6 @@ libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
 			gthread-jni.h \
 			gtk_jawt.c \
 			gtkpeer.h
-
-## GCJ LOCAL: encode the library path and  use GCJ's library version
-libgtkpeer_la_LDFLAGS = -rpath $(gcjversionedlibdir) \
-	-version-info `grep -v '^\#' $(top_srcdir)/../libtool-version`
 
 libgtkpeer_la_LIBADD = $(top_builddir)/native/jni/classpath/native_state.lo \
 		       $(top_builddir)/native/jni/classpath/jcl.lo
