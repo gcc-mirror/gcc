@@ -1,3 +1,15 @@
+2006-07-06  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* configure.ac (ac_configure_args): Add --with-native-libdir.
+	* configure: Regenerate.
+	* classpath/native/jni/gtk-peer/Makefile.am: Remove GCJ LOCAL
+	sections.
+	* classpath/native/jni/gtk-peer/Makefile.in: Regenerate.
+	* classpath/native/jawt/Makefile.am: Remove GCJ LOCAL sections.
+	* classpath/native/jawt/Makefile.in: Regenerate.
+	* classpath/native/plugin/Makefile.am: Remove GCJ LOCAL sections.
+	* classpath/native/plugin/Makefile.in: Regenerate.
+
 2006-07-05  Ranjit Mathew  <rmathew@gcc.gnu.org>
             Danny Smith  <dannysmith@users.sourceforge.net>
 
