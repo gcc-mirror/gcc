@@ -1,5 +1,5 @@
 ;; Predicate definitions for DEC Alpha.
-;; Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -542,7 +542,7 @@
 
 ;; Similarly, but with swapped operands.
 (define_predicate "alpha_swapped_comparison_operator"
-  (match_code "eq,ge,gt,gtu,gtu"))
+  (match_code "eq,ge,gt,gtu"))
 
 ;; Return 1 if OP is a valid Alpha comparison operator against zero
 ;; for "bcc" style instructions.
