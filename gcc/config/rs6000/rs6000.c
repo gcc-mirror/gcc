@@ -3522,6 +3522,7 @@ rs6000_legitimate_address (enum machine_mode mode, rtx x, int reg_ok_strict)
   if ((GET_CODE (x) == PRE_INC || GET_CODE (x) == PRE_DEC)
       && !ALTIVEC_VECTOR_MODE (mode)
       && !SPE_VECTOR_MODE (mode)
+      && mode != TFmode
       /* Restrict addressing for DI because of our SUBREG hackery.  */
       && !(TARGET_E500_DOUBLE && (mode == DFmode || mode == DImode))
       && TARGET_UPDATE
@@ -9799,12 +9800,12 @@ effects of instruction do not correspond to semantics of RTL insn.  */
 int
 insvdi_rshift_rlwimi_p (rtx sizeop, rtx startop, rtx shiftop)
 {
-  if (INTVAL (startop) < 64
-      && INTVAL (startop) > 32
-      && (INTVAL (sizeop) + INTVAL (startop) < 64)
-      && (INTVAL (sizeop) + INTVAL (startop) > 33)
-      && (INTVAL (sizeop) + INTVAL (startop) + INTVAL (shiftop) < 96)
-      && (INTVAL (sizeop) + INTVAL (startop) + INTVAL (shiftop) >= 64)
+  if (INTVAL (startop) > 32
+      && INTVAL (startop) < 64
+      && INTVAL (sizeop) > 1
+      && INTVAL (sizeop) + INTVAL (startop) < 64
+      && INTVAL (shiftop) > 0
+      && INTVAL (sizeop) + INTVAL (shiftop) < 32
       && (64 - (INTVAL (shiftop) & 63)) >= INTVAL (sizeop))
     return 1;
 

@@ -1,3 +1,16 @@
+2006-07-06  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/28150
+	* config/rs6000/rs6000.c (rs6000_legitimate_address): Do not allow
+	PRE_{INC,DEC} of TFmode.
+
+2006-07-06  David Edelsohn  <edelsohn@gnu.org>
+	    Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/28170
+	* config/rs6000/rs6000.c (insvdi_rshift_rlwimi_p): Correct shiftop
+	bounds. Simplify.
+
 2006-07-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR target/28285
