@@ -79,8 +79,6 @@ _Jv_StackTrace::ClassForFrame (_Jv_StackFrame *frame)
 {
   JvAssert (frame->type == frame_native);
   jclass klass = NULL;
-  // use _Unwind_FindEnclosingFunction to find start of method
-  //void *entryPoint = _Unwind_FindEnclosingFunction (ip);
 
   // look it up in ncodeMap
   if (frame->start_ip)
@@ -124,12 +122,19 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
   else
 #endif
     {
+      _Unwind_Ptr ip;
+      int ip_before_insn = 0;
+      ip = _Unwind_GetIPInfo (context, &ip_before_insn);
+
+      // If the unwinder gave us a 'return' address, roll it back a little
+      // to ensure we get the correct line number for the call itself.
+      if (! ip_before_insn)
+	--ip;
+
       state->frames[pos].type = frame_native;
-      state->frames[pos].ip = (void *) _Unwind_GetIP (context);
+      state->frames[pos].ip = (void *) ip;
       state->frames[pos].start_ip = func_addr;
     }
-
-  //printf ("unwind ip: %p\n", _Unwind_GetIP (context));
 
   _Unwind_Reason_Code result = _URC_NO_REASON;
   if (state->trace_function != NULL)
@@ -206,10 +211,6 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
         offset = (_Unwind_Ptr) ip;
       else
         offset = (_Unwind_Ptr) ip - (_Unwind_Ptr) info.base;
-
-      // The unwinder gives us the return address. In order to get the right
-      // line number for the stack trace, roll it back a little.
-      offset -= 1;
 
       finder->lookup (binaryName, (jlong) offset);
       *sourceFileName = finder->getSourceFile();
