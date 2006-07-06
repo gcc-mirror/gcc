@@ -1,3 +1,9 @@
+2006-07-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27874
+	* trans-stmt.c (compute_inner_temp_size): Don't perform bounds
+	checking when calculating the bounds of scalarization.
+
 2006-07-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20892
