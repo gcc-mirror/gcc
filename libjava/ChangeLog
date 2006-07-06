@@ -1,3 +1,12 @@
+2006-07-06  Bryce McKinlay <mckinlay@redhat.com>
+
+	* stacktrace.cc (ClassForFrame): Remove commented-out code.
+	(UnwindTraceFn): Use _Unwind_GetIPInfo and adjust IP
+	only when needed.
+	(getLineNumberForFrame): Don't adjust IP here.
+	* testsuite/libjava.lang/StackTrace.java: New test case.
+	* testsuite/libjava.lang/StackTrace.out: Ditto.
+
 2006-07-06  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am (libgcj_tools_la_GCJFLAGS): Add

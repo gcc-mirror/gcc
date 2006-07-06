@@ -1,0 +1,76 @@
+// Check that stack trace's work, and stack trace line numbers, if available,
+// are correct.
+
+public class StackTrace
+{
+  public static void main(String[] args) 
+  { 
+    try
+    {
+      a();
+    }
+    catch (Exception x)
+    {
+      StackTraceElement[] trace = x.getStackTrace();
+      checkTrace(trace);
+    }
+  }
+
+  static void a() 
+  { 
+    new Inner();
+  }
+  
+  static class Inner
+  {
+    public Inner()
+    {
+      doCrash(null);
+    }  
+
+    public void doCrash(Object o)
+    {
+      o.toString();
+    }
+  }  
+  
+  static void checkTrace(StackTraceElement[] trace)
+  {
+    System.out.println("Trace length = " + trace.length);
+    checkLine(trace[0], "StackTrace$Inner", "doCrash", 33);
+    checkLine(trace[1], "StackTrace$Inner", "<init>", 28);
+    checkLine(trace[2], "StackTrace", "a", 21);
+    checkLine(trace[3], "StackTrace", "main", 10);
+  }
+  
+  static void checkLine(StackTraceElement frame, String expected_cl, 
+                	String expected_method, int expected_line)
+  {
+    if (frame.getClassName().equals(expected_cl))
+      System.out.print(expected_cl);
+    else
+      System.out.print("FAIL - expected " + expected_cl + ", got: " + 
+		       frame.getClassName());
+    
+    System.out.print(".");
+
+    if (frame.getMethodName().equals(expected_method))
+      System.out.print(expected_method);
+    else
+      System.out.print("FAIL - expected " + expected_method + ", got: " +
+		       frame.getMethodName());
+
+    System.out.print(":");
+    
+    // Permit either the correct line number or no line number. This is so
+    // we don't fail on platforms that don't yet support reading debug info 
+    // for stack traces, or when no debug info is available.
+    if (frame.getLineNumber() < 0
+        || (frame.getLineNumber() == expected_line
+            && frame.getFileName().equals("StackTrace.java")))
+      System.out.println("OK");
+    else
+      System.out.println("FAIL - expected " + expected_line + ", got: " +
+			 frame.getLineNumber());
+  }
+}
