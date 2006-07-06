@@ -1,3 +1,12 @@
+2006-07-06  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Port to hosts whose 'sort' and 'tail' implementations
+	treat operands with leading '+' as file names, as POSIX
+	has required since 2001.  However, make sure the code still
+	works on pre-POSIX hosts.
+	* ltmain.sh: Don't assume "sort +2" is equivalent to
+	"sort -k 3", since POSIX 1003.1-2001 no longer requires this.
+
 2006-07-05  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* MAINTAINERS (Various Maintainers): Add myself as reload maintainer.
