@@ -1465,6 +1465,8 @@ finalize_type_size (tree type)
 void
 finish_record_layout (record_layout_info rli, int free_p)
 {
+  tree variant;
+
   /* Compute the final size.  */
   finalize_record_size (rli);
 
@@ -1473,6 +1475,12 @@ finish_record_layout (record_layout_info rli, int free_p)
 
   /* Perform any last tweaks to the TYPE_SIZE, etc.  */
   finalize_type_size (rli->t);
+
+  /* Propagate TYPE_PACKED to variants.  With C++ templates,
+     handle_packed_attribute is too early to do this.  */
+  for (variant = TYPE_NEXT_VARIANT (rli->t); variant;
+       variant = TYPE_NEXT_VARIANT (variant))
+    TYPE_PACKED (variant) = TYPE_PACKED (rli->t);
 
   /* Lay out any static members.  This is done now because their type
      may use the record's type.  */

@@ -4082,20 +4082,6 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	*node = build_variant_type_copy (*node);
       TYPE_PACKED (*node) = 1;
-      if (TYPE_MAIN_VARIANT (*node) == *node)
-	{
-	  /* If it is the main variant, then pack the other variants
-	     too. This happens in,
-
-	     struct Foo {
-	       struct Foo const *ptr; // creates a variant w/o packed flag
-	     } __ attribute__((packed)); // packs it now.
-	   */
-	  tree probe;
-
-	  for (probe = *node; probe; probe = TYPE_NEXT_VARIANT (probe))
-	    TYPE_PACKED (probe) = 1;
-	}
     }
   else if (TREE_CODE (*node) == FIELD_DECL)
     {

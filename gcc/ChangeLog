@@ -1,3 +1,11 @@
+2006-07-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13983
+	PR c++/17519
+	* stor-layout.c (finish_record_layout): Copy TYPE_PACKED to variants.
+	* c-common.c (handle_packed_attribute): So don't copy it here.
+	* c-decl.c (finish_struct): Don't copy TYPE_ALIGN.
+
 2006-07-05  Mike Stump  <mrs@apple.com>
 
 	* doc/invoke.texi (Invoking G++): Clarify prose for g++.
