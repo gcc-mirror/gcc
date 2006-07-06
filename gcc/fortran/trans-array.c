@@ -1826,7 +1826,8 @@ gfc_conv_array_ubound (tree descriptor, int dim)
 /* Generate code to perform an array index bound check.  */
 
 static tree
-gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n)
+gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
+			     locus * where)
 {
   tree fault;
   tree tmp;
@@ -1846,8 +1847,7 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n)
   else
     asprintf (&msg, "%s, lower bound of dimension %d exceeded",
 	      gfc_msg_fault, n+1);
-  gfc_trans_runtime_check (fault, msg, &se->pre,
-			   (se->ss ? &se->ss->expr->where : NULL));
+  gfc_trans_runtime_check (fault, msg, &se->pre, where);
   gfc_free (msg);
 
   /* Check upper bound.  */
@@ -1859,8 +1859,7 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n)
   else
     asprintf (&msg, "%s, upper bound of dimension %d exceeded",
 	      gfc_msg_fault, n+1);
-  gfc_trans_runtime_check (fault, msg, &se->pre,
-			   (se->ss ? &se->ss->expr->where : NULL));
+  gfc_trans_runtime_check (fault, msg, &se->pre, where);
   gfc_free (msg);
 
   return index;
@@ -1892,8 +1891,10 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 	  /* We've already translated this value outside the loop.  */
 	  index = info->subscript[dim]->data.scalar.expr;
 
-	  index =
-	    gfc_trans_array_bound_check (se, info->descriptor, index, dim);
+	  if ((ar->as->type != AS_ASSUMED_SIZE && !ar->as->cp_was_assumed)
+	      || dim < ar->dimen - 1)
+	    index = gfc_trans_array_bound_check (se, info->descriptor,
+						 index, dim, &ar->where);
 	  break;
 
 	case DIMEN_VECTOR:
@@ -1916,8 +1917,10 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 	  index = gfc_evaluate_now (index, &se->pre);
 
 	  /* Do any bounds checking on the final info->descriptor index.  */
-	  index = gfc_trans_array_bound_check (se, info->descriptor,
-					       index, dim);
+	  if ((ar->as->type != AS_ASSUMED_SIZE && !ar->as->cp_was_assumed)
+	      || dim < ar->dimen - 1)
+	    index = gfc_trans_array_bound_check (se, info->descriptor,
+						 index, dim, &ar->where);
 	  break;
 
 	case DIMEN_RANGE:
