@@ -1,5 +1,13 @@
 2006-07-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR fortran/28129
+	* trans-array.c (gfc_trans_array_bound_check): Add a locus
+	argument, and use it in the error messages.
+	(gfc_conv_array_index_offset): Donc perform bounds checking on
+	the last dimension of assumed-size arrays.
+
+2006-07-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR fortran/27874
 	* trans-stmt.c (compute_inner_temp_size): Don't perform bounds
 	checking when calculating the bounds of scalarization.
