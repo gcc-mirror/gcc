@@ -1,3 +1,9 @@
+2006-07-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR target/28285
+	* config/alpha/predicates.md (alpha_swapped_comparison_operator):
+	Remove duplicate gtu.
+
 2006-07-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13983
