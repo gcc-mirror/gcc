@@ -44,6 +44,9 @@
  * Contains a random-operation test.
  */
 
+#ifndef PB_DS_PQ_RAND_REGRESSION_TEST_HPP
+#define PB_DS_PQ_RAND_REGRESSION_TEST_HPP
+
 #include <iostream>
 #include <vector>
 #include <regression/rand/priority_queue/container_rand_regression_test.hpp>
@@ -208,3 +211,4 @@ namespace detail
 } // namespace test
 } // namespace pb_ds
 
+#endif

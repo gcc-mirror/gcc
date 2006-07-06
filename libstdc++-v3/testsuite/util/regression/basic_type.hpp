@@ -52,67 +52,52 @@
 
 namespace pb_ds
 {
+namespace test
+{
+#define PB_DS_BASE_C_DEC \
+  std::basic_string<char, std::char_traits<char>, dbg_ex_allocator<char> >
 
-  namespace test
+  struct basic_type : public PB_DS_BASE_C_DEC
   {
+  private:
+    typedef PB_DS_BASE_C_DEC base_type;
 
-#define PB_DS_BASE_C_DEC						\
-    std::basic_string<							\
-							char,		\
-							std::char_traits< \
-											char>, \
-							dbg_ex_allocator< \
-											char> >
+  public:
+    enum
+      {
+	distinct_chars = 4
+      };
 
-    struct basic_type : public PB_DS_BASE_C_DEC
+    basic_type() { }
+
+    template<typename Gen>
+    basic_type(Gen& r_gen, size_t max)
     {
-    public:
-      enum
+      size_t rnd = r_gen.get_unsigned_long(0, static_cast<unsigned long>(max));
+      while (rnd > 0)
 	{
-	  distinct_chars = 4
-	};
+	  base_type::push_back('a' + static_cast<char>(rnd % distinct_chars));
+	  rnd /= distinct_chars;
+	}
+    }
 
-    public:
-      basic_type()
-      { }
+    basic_type(const std::string other)
+    {
+      std::string::const_iterator it = other.begin();
+      while (it != other.end())
+	{
+	  base_type::push_back(*it);
+	  ++it;
+	}
+    }
 
-      template<typename Gen>
-      basic_type(Gen& r_gen, size_t max)
-      {
-        size_t rnd =
-	  r_gen.get_unsigned_long(0, static_cast<unsigned long>(max));
-
-        while (rnd > 0)
-	  {
-            PB_DS_BASE_C_DEC::push_back('a' +
-					static_cast<char>(rnd % distinct_chars));
-
-            rnd /= distinct_chars;
-	  }
-      }
-
-      basic_type(const std::string other)
-      {
-        std::string::const_iterator it = other.begin();
-
-        while (it != other.end())
-	  {
-            PB_DS_BASE_C_DEC::push_back(*it);
-
-            ++it;
-	  }
-      }
-
-      operator std::string() const
-      {
-        return (std::string(PB_DS_BASE_C_DEC::c_str()));
-      }
-    };
+    operator std::string() const
+    { return std::string(base_type::c_str());}
+  };
 
 #undef PB_DS_BASE_C_DEC
 
-  } // namespace test
-
+} // namespace test
 } // namespace pb_ds
 
 #endif // #ifndef PB_DS_BASIC_TYPE_HPP
