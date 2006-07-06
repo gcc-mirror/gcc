@@ -1,5 +1,11 @@
 2006-07-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/13983
+	PR c++/17519
+	* class.c (check_field_decls): Check TYPE_PACKED after
+	stripping array types.
+	(finish_struct_bits): Don't copy TYPE_SIZE here.
+
 	PR c++/18681
 	* friend.c (is_friend): Fix DR 45 implementation.
 
