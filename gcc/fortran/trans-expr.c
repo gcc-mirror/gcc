@@ -1568,7 +1568,8 @@ gfc_apply_interface_mapping (gfc_interface_mapping * mapping,
    handling aliased arrays.  */
 
 static void
-gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr, int g77)
+gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
+		      int g77, sym_intent intent)
 {
   gfc_se lse;
   gfc_se rse;
@@ -1612,7 +1613,37 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr, int g77)
   loop.temp_ss->data.temp.type = base_type;
 
   if (expr->ts.type == BT_CHARACTER)
-    loop.temp_ss->string_length = expr->ts.cl->backend_decl;
+    {
+      gfc_ref *char_ref = expr->ref;
+
+      for (; expr->ts.cl == NULL && char_ref; char_ref = char_ref->next)
+	if (char_ref->type == REF_SUBSTRING)
+	  {
+	    gfc_se tmp_se;
+
+	    expr->ts.cl = gfc_get_charlen ();
+	    expr->ts.cl->next = char_ref->u.ss.length->next;
+	    char_ref->u.ss.length->next = expr->ts.cl;
+
+	    gfc_init_se (&tmp_se, NULL);
+	    gfc_conv_expr_type (&tmp_se, char_ref->u.ss.end,
+				gfc_array_index_type);
+	    tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
+			       tmp_se.expr, gfc_index_one_node);
+	    tmp = gfc_evaluate_now (tmp, &parmse->pre);
+	    gfc_init_se (&tmp_se, NULL);
+	    gfc_conv_expr_type (&tmp_se, char_ref->u.ss.start,
+				gfc_array_index_type);
+	    tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			       tmp, tmp_se.expr);
+	    expr->ts.cl->backend_decl = tmp;
+
+	    break;
+	  }
+      loop.temp_ss->data.temp.type
+		= gfc_typenode_for_spec (&expr->ts);
+      loop.temp_ss->string_length = expr->ts.cl->backend_decl;
+    }
 
   loop.temp_ss->data.temp.dimen = loop.dimen;
   loop.temp_ss->next = gfc_ss_terminator;
@@ -1645,12 +1676,13 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr, int g77)
   gfc_conv_tmp_array_ref (&lse);
   gfc_advance_se_ss_chain (&lse);
 
-  tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts.type);
-  gfc_add_expr_to_block (&body, tmp);
-
-  gcc_assert (rse.ss == gfc_ss_terminator);
-
-  gfc_trans_scalarizing_loops (&loop, &body);
+  if (intent != INTENT_OUT)
+    {
+      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts.type);
+      gfc_add_expr_to_block (&body, tmp);
+      gcc_assert (rse.ss == gfc_ss_terminator);
+      gfc_trans_scalarizing_loops (&loop, &body);
+    }
 
   /* Add the post block after the second loop, so that any
      freeing of allocated memory is done at the right time.  */
@@ -1738,10 +1770,13 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr, int g77)
   gfc_trans_scalarizing_loops (&loop2, &body);
 
   /* Wrap the whole thing up by adding the second loop to the post-block
-     and following it by the post-block of the fist loop.  In this way,
+     and following it by the post-block of the first loop.  In this way,
      if the temporary needs freeing, it is done after use!  */
-  gfc_add_block_to_block (&parmse->post, &loop2.pre);
-  gfc_add_block_to_block (&parmse->post, &loop2.post);
+  if (intent != INTENT_IN)
+    {
+      gfc_add_block_to_block (&parmse->post, &loop2.pre);
+      gfc_add_block_to_block (&parmse->post, &loop2.post);
+    }
 
   gfc_add_block_to_block (&parmse->post, &loop.post);
 
@@ -1776,7 +1811,8 @@ is_aliased_array (gfc_expr * e)
       if (ref->type == REF_ARRAY)
 	seen_array = true;
 
-      if (ref->next == NULL && ref->type == REF_COMPONENT)
+      if (ref->next == NULL
+	    && ref->type != REF_ARRAY)
 	return seen_array;
     }
   return false;
@@ -1915,13 +1951,14 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		  && !fsym->attr.pointer
 		  && fsym->as->type != AS_ASSUMED_SHAPE;
 	      f = f || !sym->attr.always_explicit;
+
 	      if (e->expr_type == EXPR_VARIABLE
 		    && is_aliased_array (e))
 		/* The actual argument is a component reference to an
 		   array of derived types.  In this case, the argument
 		   is converted to a temporary, which is passed and then
 		   written back after the procedure call.  */
-		gfc_conv_aliased_arg (&parmse, e, f);
+		gfc_conv_aliased_arg (&parmse, e, f, fsym->attr.intent);
 	      else
 	        gfc_conv_array_parameter (&parmse, e, argss, f);
 	    } 
