@@ -779,6 +779,7 @@ pch3_output_installdir = ${host_installdir}/extc++.h.gch
 pch3_source = ${glibcxx_srcdir}/include/precompiled/extc++.h
 
 pch_input = ${pch1_input} ${pch2_input} ${pch3_input}
+pch_output = ${pch1_output_builddir} ${pch2_output_builddir} ${pch3_output_builddir}
 PCHFLAGS=-Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
 if GLIBCXX_BUILD_PCH
 pch_build = ${pch_input}
@@ -1171,7 +1172,11 @@ install-pch:
 	  $(INSTALL_DATA) $$file $(DESTDIR)${pch2_output_installdir}; done
 
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = ${pch_input} ${pch_output_builddir}/*
+CLEANFILES = ${pch_input} 
+
+# To remove directories.
+clean-local:
+	rm -rf ${pch_output}
 
 # Stop implicit '.o' make rules from ever stomping on extensionless
 # headers, in the improbable case where some foolish, crack-addled
