@@ -1,5 +1,10 @@
 2006-07-06  Roger Sayle  <roger@eyesopen.com>
 
+	* c-parser.c (c_parser_skip_to_end_of_block_or_statement): Add
+	a default case to switch statement to silence compiler warnings.
+
+2006-07-06  Roger Sayle  <roger@eyesopen.com>
+
 	PR target/27968
 	* configure.ac (HAVE_AS_IX86_FFREEP): On x86 targets check whether 
 	the configured assembler supports the x87's ffreep mnemonic.

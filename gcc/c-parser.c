@@ -919,6 +919,9 @@ c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
 	  c_parser_skip_to_pragma_eol (parser);
 	  parser->error = save_error;
 	  continue;
+
+	default:
+	  break;
 	}
 
       c_parser_consume_token (parser);
