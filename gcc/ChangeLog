@@ -1,3 +1,12 @@
+2006-07-07   Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28268
+	* tree.h (build_one_cst): Declare.
+	* tree.c (build_one_cst): New function.
+	* tree-ssa-math-opts.c (get_constant_one): Remove.
+	(insert_reciprocals): Use build_one_cst.
+	* fold-const.c (fold_plusminus_mult): Likewise.
+
 2006-07-07  Roger Sayle  <roger@eyesopen.com>
 
 	* pointer-set.c (pointer_set_destroy): Correct whitespace.

@@ -6727,7 +6727,7 @@ fold_plusminus_mult_expr (enum tree_code code, tree type, tree arg0, tree arg1)
   else
     {
       arg00 = arg0;
-      arg01 = fold_convert (type, integer_one_node);
+      arg01 = build_one_cst (type);
     }
   if (TREE_CODE (arg1) == MULT_EXPR)
     {
@@ -6737,7 +6737,7 @@ fold_plusminus_mult_expr (enum tree_code code, tree type, tree arg0, tree arg1)
   else
     {
       arg10 = arg1;
-      arg11 = fold_convert (type, integer_one_node);
+      arg11 = build_one_cst (type);
     }
   same = NULL_TREE;
 
