@@ -1,7 +1,7 @@
 // Check that stack trace's work, and stack trace line numbers, if available,
 // are correct.
 
-public class StackTrace
+public class StackTrace2
 {
   public static void main(String[] args) 
   { 
@@ -37,10 +37,10 @@ public class StackTrace
   static void checkTrace(StackTraceElement[] trace)
   {
     System.out.println("Trace length = " + trace.length);
-    checkLine(trace[0], "StackTrace$Inner", "doCrash", 33);
-    checkLine(trace[1], "StackTrace$Inner", "<init>", 28);
-    checkLine(trace[2], "StackTrace", "a", 21);
-    checkLine(trace[3], "StackTrace", "main", 10);
+    checkLine(trace[0], "StackTrace2$Inner", "doCrash", 33);
+    checkLine(trace[1], "StackTrace2$Inner", "<init>", 28);
+    checkLine(trace[2], "StackTrace2", "a", 21);
+    checkLine(trace[3], "StackTrace2", "main", 10);
   }
   
   static void checkLine(StackTraceElement frame, String expected_cl, 
@@ -67,7 +67,7 @@ public class StackTrace
     // for stack traces, or when no debug info is available.
     if (frame.getLineNumber() < 0
         || (frame.getLineNumber() == expected_line
-            && frame.getFileName().equals("StackTrace.java")))
+            && frame.getFileName().equals("StackTrace2.java")))
       System.out.println("OK");
     else
       System.out.println("FAIL - expected " + expected_line + ", got: " +
