@@ -1293,6 +1293,10 @@ tree
 finish_label_stmt (tree name)
 {
   tree decl = define_label (input_location, name);
+
+  if (decl  == error_mark_node)
+    return error_mark_node;
+
   return add_stmt (build_stmt (LABEL_EXPR, decl));
 }
 

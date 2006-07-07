@@ -1,3 +1,11 @@
+2006-06-29  Lee Millward  <lee.millward@gmail.com>
+	    Andrew Pinski  <pinskia@gmail.com>
+
+	PR c++/27820
+	* decl.c (define_label): Return error_mark_node on error.
+	* semantics.c (finish_label_stmt): Don't call
+	add_stmt for invalid labels.
+	
 2006-07-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28279
