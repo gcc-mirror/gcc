@@ -53,7 +53,7 @@ JAVA_HOME_DIR = $(JAVA_HOME)
 BOOT_CLASS_PATH_DIR = $(JAVA_HOME)/lib/rt.jar
 else
 JAVA_HOME_DIR = $(prefix)
-BOOT_CLASS_PATH_DIR = $(jardir)/$(jar_DATA)
+BOOT_CLASS_PATH_DIR = $(jardir)/libgcj-$(gcc_version).jar
 endif
 
 ## FIXME: Using libdir violates GNU coding standards.
