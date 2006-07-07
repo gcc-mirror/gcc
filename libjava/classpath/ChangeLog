@@ -1,3 +1,15 @@
+2006-07-06  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Port to hosts whose 'sort' and 'tail' implementations
+	treat operands with leading '+' as file names, as POSIX
+	has required since 2001.  However, make sure the code still
+	works on pre-POSIX hosts.
+	* libjava/classpath/ltmain.sh: Don't assume "sort +2" is
+	equivalent to "sort -k 3", since POSIX 1003.1-2001 no longer
+	requires this.
+	This uses the same fix that is already in
+	libjava/libltdl/ltmain.sh.
+
 2006-07-04  Peter O'Gorman  <peter@pogma.com>
 
 	* ltconfig: chmod 644 before ranlib during install.
