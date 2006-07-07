@@ -1093,10 +1093,10 @@ However, the use of @command{gcc} does not add the C++ library.
 @command{g++} is a program that calls GCC and treats @samp{.c},
 @samp{.h} and @samp{.i} files as C++ source files instead of C source
 files unless @option{-x} is used, and automatically specifies linking
-against the C++ library.  This is also useful when precompiling a C
-header file with a @samp{.h} extension for use in C++ compilations.
-On many systems, @command{g++} is also installed with the name
-@command{c++}.
+against the C++ library.  This program is also useful when
+precompiling a C header file with a @samp{.h} extension for use in C++
+compilations.  On many systems, @command{g++} is also installed with
+the name @command{c++}.
 
 @cindex invoking @command{g++}
 When you compile C++ programs, you may specify many of the same
