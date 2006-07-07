@@ -1,3 +1,11 @@
+2006-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/address_conversion.adb: New test.
+	* gnat.dg/boolean_subtype.adb: Likewise.
+	* gnat.dg/frame_overflow.adb: Likewise.
+	* gnat.dg/pointer_array.adb: Likewise.
+	* gnat.dg/pointer_conversion.adb: Likewise.
+
 2006-07-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28237
@@ -50,7 +58,7 @@
 
 2006-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gnat.dg/gnat.dg/string_slice.adb: New test.
+	* gnat.dg/string_slice.adb: New test.
 
 2006-07-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
