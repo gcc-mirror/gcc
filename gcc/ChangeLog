@@ -1,3 +1,8 @@
+2006-07-08  Paul Brook  <paul@codesourcery.com>
+
+	PR target/27991
+	* config/m68k/m68k.md: Add r-m patterns for 68881 movxf.
+
 2006-07-07   Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28268
