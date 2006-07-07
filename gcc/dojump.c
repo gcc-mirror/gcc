@@ -53,7 +53,8 @@ init_pending_stack_adjust (void)
 /* Discard any pending stack adjustment.  This avoid relying on the
    RTL optimizers to remove useless adjustments when we know the
    stack pointer value is dead.  */
-void discard_pending_stack_adjust (void)
+void
+discard_pending_stack_adjust (void)
 {
   stack_pointer_delta -= pending_stack_adjust;
   pending_stack_adjust = 0;

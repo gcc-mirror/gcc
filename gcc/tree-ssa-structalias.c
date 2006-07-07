@@ -1,5 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
 This file is part of GCC.
@@ -3572,7 +3572,8 @@ fieldoff_compare (const void *pa, const void *pb)
 }
 
 /* Sort a fieldstack according to the field offset and sizes.  */
-void sort_fieldstack (VEC(fieldoff_s,heap) *fieldstack)
+void
+sort_fieldstack (VEC(fieldoff_s,heap) *fieldstack)
 {
   qsort (VEC_address (fieldoff_s, fieldstack), 
 	 VEC_length (fieldoff_s, fieldstack), 
@@ -4685,7 +4686,7 @@ struct tree_opt_pass pass_ipa_pta =
 };
 
 /* Initialize the heapvar for statement mapping.  */
-void 
+void
 init_alias_heapvars (void)
 {
   heapvar_for_stmt = htab_create_ggc (11, tree_map_hash, tree_map_eq, NULL);

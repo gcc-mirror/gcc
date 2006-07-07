@@ -1,5 +1,5 @@
 /* Natural loop analysis code for GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -83,7 +83,9 @@ struct graph
 /* Dumps graph G into F.  */
 
 extern void dump_graph (FILE *, struct graph *);
-void dump_graph (FILE *f, struct graph *g)
+
+void
+dump_graph (FILE *f, struct graph *g)
 {
   int i;
   struct edge *e;
