@@ -1,5 +1,5 @@
 /* Set operations on pointers
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -84,7 +84,8 @@ pointer_set_create (void)
 }
 
 /* Reclaims all memory associated with PSET.  */
-void pointer_set_destroy (struct pointer_set_t *pset)
+void
+pointer_set_destroy (struct pointer_set_t *pset)
 {
   XDELETEVEC (pset->slots);
   XDELETE (pset);

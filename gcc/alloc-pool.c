@@ -1,5 +1,5 @@
 /* Functions to support a pool of allocatable objects.
-   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005
+   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@cgsoftware.com>
 
@@ -339,7 +339,8 @@ print_statistics (void **slot, void *b)
 #endif
 
 /* Output per-alloc_pool memory usage statistics.  */
-void dump_alloc_pool_statistics (void)
+void
+dump_alloc_pool_statistics (void)
 {
 #ifdef GATHER_STATISTICS
   struct output_info info;

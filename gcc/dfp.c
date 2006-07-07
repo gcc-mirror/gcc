@@ -142,7 +142,7 @@ decimal_to_decnumber (const REAL_VALUE_TYPE *r, decNumber *dn)
 
 /* Encode a real into an IEEE 754R decimal32 type.  */
 
-void 
+void
 encode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		  long *buf, const REAL_VALUE_TYPE *r)
 {
@@ -164,8 +164,9 @@ encode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
 /* Decode an IEEE 754R decimal32 type into a real.  */
 
-void decode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
-		       REAL_VALUE_TYPE *r, const long *buf)
+void
+decode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
+		  REAL_VALUE_TYPE *r, const long *buf)
 {
   decNumber dn;
   decimal32 d32;
@@ -185,7 +186,7 @@ void decode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
 /* Encode a real into an IEEE 754R decimal64 type.  */
 
-void 
+void
 encode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		  long *buf, const REAL_VALUE_TYPE *r)
 {
@@ -213,7 +214,7 @@ encode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
 /* Decode an IEEE 754R decimal64 type into a real.  */
 
-void 
+void
 decode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		  REAL_VALUE_TYPE *r, const long *buf)
 { 
@@ -241,7 +242,7 @@ decode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
 /* Encode a real into an IEEE 754R decimal128 type.  */
 
-void 
+void
 encode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		   long *buf, const REAL_VALUE_TYPE *r)
 {
@@ -273,7 +274,7 @@ encode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
 /* Decode an IEEE 754R decimal128 type into a real.  */
 
-void 
+void
 decode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 		   REAL_VALUE_TYPE *r, const long *buf)
 {
@@ -444,10 +445,11 @@ decimal_real_convert (REAL_VALUE_TYPE *r, enum machine_mode mode,
    CROP_TRAILING_ZEROS, strip trailing zeros.  Currently, not honoring
    DIGITS or CROP_TRAILING_ZEROS.  */
 
-void decimal_real_to_decimal (char *str, const REAL_VALUE_TYPE *r_orig,
-			      size_t buf_size,
-			      size_t digits ATTRIBUTE_UNUSED,
-			      int crop_trailing_zeros ATTRIBUTE_UNUSED)
+void
+decimal_real_to_decimal (char *str, const REAL_VALUE_TYPE *r_orig,
+			 size_t buf_size,
+			 size_t digits ATTRIBUTE_UNUSED,
+			 int crop_trailing_zeros ATTRIBUTE_UNUSED)
 {
   decimal128 *d128 = (decimal128*) r_orig->sig;
 

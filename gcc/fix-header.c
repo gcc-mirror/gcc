@@ -1,6 +1,6 @@
 /* fix-header.c - Make C header file suitable for C++.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -82,17 +82,19 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #include "errors.h"
 
 #ifdef TARGET_EXTRA_INCLUDES
-void TARGET_EXTRA_INCLUDES (const char *sysroot ATTRIBUTE_UNUSED,
-			    const char *iprefix ATTRIBUTE_UNUSED,
-			    int stdinc ATTRIBUTE_UNUSED)
+void
+TARGET_EXTRA_INCLUDES (const char *sysroot ATTRIBUTE_UNUSED,
+		       const char *iprefix ATTRIBUTE_UNUSED,
+		       int stdinc ATTRIBUTE_UNUSED)
 {
 }
 #endif
 
 #ifdef TARGET_EXTRA_PRE_INCLUDES 
-void TARGET_EXTRA_PRE_INCLUDES (const char *sysroot ATTRIBUTE_UNUSED,
-			    const char *iprefix ATTRIBUTE_UNUSED,
-			    int stdinc ATTRIBUTE_UNUSED)
+void
+TARGET_EXTRA_PRE_INCLUDES (const char *sysroot ATTRIBUTE_UNUSED,
+			   const char *iprefix ATTRIBUTE_UNUSED,
+			   int stdinc ATTRIBUTE_UNUSED)
 {
 }
 #endif

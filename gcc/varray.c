@@ -240,7 +240,8 @@ print_statistics (void **slot, void *b)
 #endif
 
 /* Output per-varray memory usage statistics.  */
-void dump_varray_statistics (void)
+void
+dump_varray_statistics (void)
 {
 #ifdef GATHER_STATISTICS
   struct output_info info;

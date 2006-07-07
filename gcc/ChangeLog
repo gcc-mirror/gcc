@@ -1,3 +1,22 @@
+2006-07-07  Roger Sayle  <roger@eyesopen.com>
+
+	* pointer-set.c (pointer_set_destroy): Correct whitespace.
+	* cfgloopanal.c (dump_graph): Likewise.
+	* dojump.c (discard_pending_stack_adjust): Likewise.
+	* fix-header.c (TARGET_EXTRA_INCLUDE, TARGET_EXTRA_PRE_INCLUDES):
+	Likewise.
+	* alloc-pool.c (dump_alloc_pool_statistics): Likewise.
+	* function.c (finalize_block_changes): Likewise.
+	* gcc-common.c (ggc_free_overhead, dump_gcc_loc_statistics): Likewise.
+	* tree-ssa-dce.c (clear_control_dependence_bitmap): Likewise.
+	* rtl.c (dump_rtx_statistics): Likewise.
+	* tree-ssa-structalias.c (sort_fieldstack, init_alias_heapvars): 
+	Likewise.
+	* varray.c (dump_varray_statistics): Likewise.
+	* dfp.c (encode_decimal32, decode_decimal32, encode_decimal64,
+	decode_decimal64, encode_decimal128, decode_decimal128,
+	decimal_real_to_decimal): Likewise.
+
 2006-07-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28187
