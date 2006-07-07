@@ -1,3 +1,15 @@
+2006-07-06  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/27968
+	* configure.ac (HAVE_AS_IX86_FFREEP): On x86 targets check whether 
+	the configured assembler supports the x87's ffreep mnemonic.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* config/i386/i386.c (output_387_ffreep): New function.
+	(output_fp_compare): Use output_387_ffreep to emit ffreep insns.
+	(output_387_reg_move): Likewise.
+
 2006-07-06  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Port to hosts whose 'sort' and 'tail' implementations
@@ -10,7 +22,8 @@
 
 2006-07-06  Zdenek Dvorak <dvorakz@suse.cz>
 
-	* tree-ssa-loop-niter.c (scev_probably_wraps_p): Fix typo in argument name.
+	* tree-ssa-loop-niter.c (scev_probably_wraps_p): Fix typo in
+	argument name.
 
 2006-07-06  David Edelsohn  <edelsohn@gnu.org>
 
