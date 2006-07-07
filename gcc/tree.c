@@ -1161,6 +1161,47 @@ build_complex (tree type, tree real, tree imag)
   return t;
 }
 
+/* Return a constant of arithmetic type TYPE which is the
+   multiplcative identity of the set TYPE.  */
+
+tree
+build_one_cst (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case INTEGER_TYPE: case ENUMERAL_TYPE: case BOOLEAN_TYPE:
+    case POINTER_TYPE: case REFERENCE_TYPE:
+    case OFFSET_TYPE:
+      return build_int_cst (type, 1);
+
+    case REAL_TYPE:
+      return build_real (type, dconst1);
+
+    case VECTOR_TYPE:
+      {
+	tree scalar, cst;
+	int i;
+
+	scalar = build_one_cst (TREE_TYPE (type));
+
+	/* Create 'vect_cst_ = {cst,cst,...,cst}'  */
+	cst = NULL_TREE;
+	for (i = TYPE_VECTOR_SUBPARTS (type); --i >= 0; )
+	  cst = tree_cons (NULL_TREE, scalar, cst);
+
+	return build_vector (type, cst);
+      }
+
+    case COMPLEX_TYPE:
+      return build_complex (type,
+			    build_one_cst (TREE_TYPE (type)),
+			    fold_convert (TREE_TYPE (type), integer_zero_node));
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Build a BINFO with LEN language slots.  */
 
 tree
