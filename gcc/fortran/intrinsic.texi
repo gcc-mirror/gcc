@@ -2940,7 +2940,7 @@ non-elemental subroutine
 
 @item @emph{Note}:
 Beginning with the Fortran 2003 standard, there is a @code{FLUSH}
-statement that should be prefered over the @code{FLUSH} intrinsic.
+statement that should be preferred over the @code{FLUSH} intrinsic.
 
 @end table
 
@@ -4270,7 +4270,7 @@ end program test_scale
 @item @emph{Description}:
 @code{SELECTED_INT_KIND(I)} return the kind value of the smallest integer
 type that can represent all values ranging from @math{-10^I} (exclusive)
-to @math{10^I} (exclusive). If there is no integer kind that accomodates
+to @math{10^I} (exclusive). If there is no integer kind that accommodates
 this range, @code{SELECTED_INT_KIND} returns @math{-1}.
 
 @item @emph{Option}:
