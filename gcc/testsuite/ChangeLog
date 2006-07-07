@@ -1,3 +1,8 @@
+2006-07-07  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/27019
+	* g++.dg/ext/pr27019.C: New.
+
 2006-07-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28187
