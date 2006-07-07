@@ -1,3 +1,9 @@
+2006-07-07  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	* sysdep/i386/backtrace.h (fallback_backtrace): Scan for a function's
+	prologue to determine its beginning.  Stop unwinding when we reach
+	JvRunMain().
+
 2006-07-07  Gary Benson  <gbenson@redhat.com>
 
 	* Makefile.am (BOOT_CLASS_PATH_DIR): Only contain libgcj.jar.
