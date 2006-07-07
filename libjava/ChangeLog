@@ -1,3 +1,11 @@
+2006-07-07  Bryce McKinlay  <mckinlay@redhat.com>
+	    Geoffrey Keating <geoffk@apple.com>
+
+	* testsuite/libjava.lang/StackTrace2.java: Renamed from
+	StackTrace.java. Changed class name.
+	* testsuite/libjava.lang/StackTrace2.out: Renamed from
+	StackTrace.out. Updated for new class name.
+
 2006-07-07  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* sysdep/i386/backtrace.h (fallback_backtrace): Scan for a function's
