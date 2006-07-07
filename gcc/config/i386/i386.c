@@ -8641,6 +8641,34 @@ output_fix_trunc (rtx insn, rtx *operands, int fisttp)
   return "";
 }
 
+/* Output code for x87 ffreep insn.  The OPNO argument, which may only
+   have the values zero or one, indicates the ffreep insn's operand
+   from the OPERANDS array.  */
+
+static const char *
+output_387_ffreep (rtx *operands ATTRIBUTE_UNUSED, int opno)
+{
+  if (TARGET_USE_FFREEP)
+#if HAVE_AS_IX86_FFREEP
+    return opno ? "ffreep\t%y1" : "ffreep\t%y0";
+#else
+    switch (REGNO (operands[opno]))
+      {
+      case FIRST_STACK_REG + 0: return ".word\t0xc0df";
+      case FIRST_STACK_REG + 1: return ".word\t0xc1df";
+      case FIRST_STACK_REG + 2: return ".word\t0xc2df";
+      case FIRST_STACK_REG + 3: return ".word\t0xc3df";
+      case FIRST_STACK_REG + 4: return ".word\t0xc4df";
+      case FIRST_STACK_REG + 5: return ".word\t0xc5df";
+      case FIRST_STACK_REG + 6: return ".word\t0xc6df";
+      case FIRST_STACK_REG + 7: return ".word\t0xc7df";
+      }
+#endif
+
+  return opno ? "fstp\t%y1" : "fstp\t%y0";
+}
+
+
 /* Output code for INSN to compare OPERANDS.  EFLAGS_P is 1 when fcomi
    should be used.  UNORDERED_P is true when fucom should be used.  */
 
@@ -8685,7 +8713,7 @@ output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
       if (stack_top_dies)
 	{
 	  output_asm_insn ("ftst\n\tfnstsw\t%0", operands);
-	  return TARGET_USE_FFREEP ? "ffreep\t%y1" : "fstp\t%y1";
+	  return output_387_ffreep (operands, 1);
 	}
       else
 	return "ftst\n\tfnstsw\t%0";
@@ -8708,7 +8736,7 @@ output_fp_compare (rtx insn, rtx *operands, int eflags_p, int unordered_p)
 	    output_asm_insn ("fucomip\t{%y1, %0|%0, %y1}", operands);
 	  else
 	    output_asm_insn ("fcomip\t{%y1, %0|%0, %y1}", operands);
-	  return TARGET_USE_FFREEP ? "ffreep\t%y0" : "fstp\t%y0";
+	  return output_387_ffreep (operands, 0);
 	}
       else
 	{
@@ -18807,9 +18835,8 @@ output_387_reg_move (rtx insn, rtx *operands)
   if (REG_P (operands[1])
       && find_regno_note (insn, REG_DEAD, REGNO (operands[1])))
     {
-      if (REGNO (operands[0]) == FIRST_STACK_REG
-	  && TARGET_USE_FFREEP)
-	return "ffreep\t%y0";
+      if (REGNO (operands[0]) == FIRST_STACK_REG)
+	return output_387_ffreep (operands, 0);
       return "fstp\t%y0";
     }
   if (STACK_TOP_P (operands[0]))
