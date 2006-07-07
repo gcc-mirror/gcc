@@ -1,3 +1,9 @@
+2006-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28237
+	PR fortran/23420
+	* gfortran.dg/print_fmt_5.f90: New test.
+
 2006-07-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/28129
