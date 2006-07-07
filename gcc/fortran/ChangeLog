@@ -1,3 +1,10 @@
+2006-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28237
+	PR fortran/23420
+	* io.c (resolve_tag): Any integer that is not an assigned
+	variable is an error.
+
 2006-07-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/28129
