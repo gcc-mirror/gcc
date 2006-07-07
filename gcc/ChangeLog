@@ -1,3 +1,11 @@
+2006-07-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/28187
+	* tree-vrp.c (vrp_operand_equal_p): New function.
+	(vrp_bitmap_equal_p): Likewise.
+	(update_value_range): Use them to compare old and new
+	max and min values.
+
 2006-07-06  Roger Sayle  <roger@eyesopen.com>
 
 	* c-parser.c (c_parser_skip_to_end_of_block_or_statement): Add

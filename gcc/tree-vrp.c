@@ -290,6 +290,25 @@ get_value_range (tree var)
   return vr;
 }
 
+/* Return true, if VAL1 and VAL2 are equal values for VRP purposes.  */
+
+static inline bool
+vrp_operand_equal_p (tree val1, tree val2)
+{
+  return (val1 == val2
+	  || (val1 && val2
+	      && operand_equal_p (val1, val2, 0)));
+}
+
+/* Return true, if the bitmaps B1 and B2 are equal.  */
+
+static inline bool
+vrp_bitmap_equal_p (bitmap b1, bitmap b2)
+{
+  return (b1 == b2
+	  || (b1 && b2
+	      && bitmap_equal_p (b1, b2)));
+}
 
 /* Update the value range and equivalence set for variable VAR to
    NEW_VR.  Return true if NEW_VR is different from VAR's previous
@@ -310,11 +329,9 @@ update_value_range (tree var, value_range_t *new_vr)
   /* Update the value range, if necessary.  */
   old_vr = get_value_range (var);
   is_new = old_vr->type != new_vr->type
-           || old_vr->min != new_vr->min
-	   || old_vr->max != new_vr->max
-	   || (old_vr->equiv == NULL && new_vr->equiv)
-	   || (old_vr->equiv && new_vr->equiv == NULL)
-	   || (!bitmap_equal_p (old_vr->equiv, new_vr->equiv));
+	   || !vrp_operand_equal_p (old_vr->min, new_vr->min)
+	   || !vrp_operand_equal_p (old_vr->max, new_vr->max)
+	   || !vrp_bitmap_equal_p (old_vr->equiv, new_vr->equiv);
 
   if (is_new)
     set_value_range (old_vr, new_vr->type, new_vr->min, new_vr->max,
