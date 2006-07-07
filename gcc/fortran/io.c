@@ -1054,6 +1054,13 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
 		  return FAILURE;
 		}
 	    }
+	  else if (e->ts.type == BT_INTEGER)
+	    {
+	      gfc_error ("scalar '%s' FORMAT tag at %L is not an ASSIGNED "
+			 "variable", gfc_basic_typename (e->ts.type), &e->where);
+	      return FAILURE;
+	    }
+
 	  return SUCCESS;
 	}
       else
