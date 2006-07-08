@@ -2415,7 +2415,10 @@ define_label (location_t location, tree name)
     pedwarn ("label named wchar_t");
 
   if (DECL_INITIAL (decl) != NULL_TREE)
-    error ("duplicate label %qD", decl);
+    {
+      error ("duplicate label %qD", decl);
+      POP_TIMEVAR_AND_RETURN(TV_NAME_LOOKUP, error_mark_node);
+    }
   else
     {
       /* Mark label as having been defined.  */
