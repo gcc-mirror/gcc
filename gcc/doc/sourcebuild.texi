@@ -913,7 +913,7 @@ FIXME: discuss non-C testsuites here.
 @subsection Directives used within DejaGnu tests
 
 Test directives appear within comments in a test source file and begin
-with @code{dg-}.  Some of these are defined within DegaGnu and others
+with @code{dg-}.  Some of these are defined within DejaGnu and others
 are local to the GCC testsuite.
 
 The order in which test directives appear in a test can be important:
