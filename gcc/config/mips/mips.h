@@ -58,6 +58,7 @@ enum processor_type {
   PROCESSOR_R8000,
   PROCESSOR_R9000,
   PROCESSOR_SB1,
+  PROCESSOR_SB1A,
   PROCESSOR_SR71000,
   PROCESSOR_MAX
 };
@@ -208,7 +209,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define TARGET_MIPS5500             (mips_arch == PROCESSOR_R5500)
 #define TARGET_MIPS7000             (mips_arch == PROCESSOR_R7000)
 #define TARGET_MIPS9000             (mips_arch == PROCESSOR_R9000)
-#define TARGET_SB1                  (mips_arch == PROCESSOR_SB1)
+#define TARGET_SB1                  (mips_arch == PROCESSOR_SB1		\
+				     || mips_arch == PROCESSOR_SB1A)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
 
 /* Scheduling target defines.  */
@@ -223,7 +225,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
 #define TUNE_MIPS7000               (mips_tune == PROCESSOR_R7000)
 #define TUNE_MIPS9000               (mips_tune == PROCESSOR_R9000)
-#define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
+#define TUNE_SB1                    (mips_tune == PROCESSOR_SB1		\
+				     || mips_tune == PROCESSOR_SB1A)
 
 /* True if the pre-reload scheduler should try to create chains of
    multiply-add or multiply-subtract instructions.  For example,

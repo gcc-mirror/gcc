@@ -759,6 +759,7 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
   { "5kf", PROCESSOR_5KF, 64 },
   { "20kc", PROCESSOR_20KC, 64 },
   { "sb1", PROCESSOR_SB1, 64 },
+  { "sb1a", PROCESSOR_SB1A, 64 },
   { "sr71000", PROCESSOR_SR71000, 64 },
 
   /* End marker */
@@ -1016,6 +1017,21 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
                        4            /* memory_latency */
     },
     { /* SB1 */
+      /* These costs are the same as the SB-1A below.  */
+      COSTS_N_INSNS (4),            /* fp_add */
+      COSTS_N_INSNS (4),            /* fp_mult_sf */
+      COSTS_N_INSNS (4),            /* fp_mult_df */
+      COSTS_N_INSNS (24),           /* fp_div_sf */
+      COSTS_N_INSNS (32),           /* fp_div_df */
+      COSTS_N_INSNS (3),            /* int_mult_si */
+      COSTS_N_INSNS (4),            /* int_mult_di */
+      COSTS_N_INSNS (36),           /* int_div_si */
+      COSTS_N_INSNS (68),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* SB1-A */
+      /* These costs are the same as the SB-1 above.  */
       COSTS_N_INSNS (4),            /* fp_add */
       COSTS_N_INSNS (4),            /* fp_mult_sf */
       COSTS_N_INSNS (4),            /* fp_mult_df */
@@ -9904,6 +9920,7 @@ mips_issue_rate (void)
       return 2;
 
     case PROCESSOR_SB1:
+    case PROCESSOR_SB1A:
       /* This is actually 4, but we get better performance if we claim 3.
 	 This is partly because of unwanted speculative code motion with the
 	 larger number, and partly because in most common cases we can't
@@ -9922,10 +9939,24 @@ static int
 mips_multipass_dfa_lookahead (void)
 {
   /* Can schedule up to 4 of the 6 function units in any one cycle.  */
-  if (mips_tune == PROCESSOR_SB1)
+  if (TUNE_SB1)
     return 4;
 
   return 0;
+}
+
+/* Implements a store data bypass check.  We need this because the cprestore
+   pattern is type store, but defined using an UNSPEC.  This UNSPEC causes the
+   default routine to abort.  We just return false for that case.  */
+/* ??? Should try to give a better result here than assuming false.  */
+
+int
+mips_store_data_bypass_p (rtx out_insn, rtx in_insn)
+{
+  if (GET_CODE (PATTERN (in_insn)) == UNSPEC_VOLATILE)
+    return false;
+
+  return ! store_data_bypass_p (out_insn, in_insn);
 }
 
 /* Given that we have an rtx of the form (prefetch ... WRITE LOCALITY),
