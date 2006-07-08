@@ -1,3 +1,24 @@
+2006-07-07  James E Wilson  <wilson@specifix.com>
+
+	* config/mips/mips.md (cpu): Add sb1a.
+	* config/mips/sb1.md: Modify almost all patterns to accept sb1a in
+	addition to sb1.  Adjust comments to clarify SB-1A differences from
+	SB-1.
+	(ir_sb1a_load): New.  Modify bypasses to use it.
+	(ir_sb1a_simple_alu): Likewise.
+	* config/mips/mips.c (mips_cpu_info_table): Add sb1a.
+	(mips_rtx_cost_data): Add PROCESSOR_SB1A support.
+	(mips_issue_rate): Add PROCESSOR_SB1A.
+	(mips_multipass_dfa_lookahead): Use TUNE_SB1 instead of PROCESSOR_SB1.
+	* config/mips/mips.h (processor_type): Add PROCESSOR_SB1A.
+	(TARGET_SB1): Add PROCESSOR_SB1A check.
+	(TUNE_SB1): Likewise.
+
+	* config/mips/mips-protos.h (mips_store_data_bypass_p): New.
+	* config/mips/mips.c (mips_store_data_bypass_p): New.
+	* config/mips/sb1.md: Use mips_store_data_bypass_p instead of
+	store_data_bypass_p.
+
 2006-07-08  Paul Brook  <paul@codesourcery.com>
 
 	PR target/27991
