@@ -1,3 +1,7 @@
+2006-07-08  Matthias Klose  <doko@debian.org>
+
+	* doc/sourcebuild.texi: Fix typo.
+
 2006-07-07  Mike Stump  <mrs@apple.com>
 
 	* toplev.c (process_options): Don't give -ffunction-sections may
