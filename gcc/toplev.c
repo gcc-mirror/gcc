@@ -1783,8 +1783,10 @@ process_options (void)
     }
 
 #ifndef OBJECT_FORMAT_ELF
+#ifndef OBJECT_FORMAT_MACHO
   if (flag_function_sections && write_symbols != NO_DEBUG)
     warning (0, "-ffunction-sections may affect debugging on some targets");
+#endif
 #endif
 
   /* The presence of IEEE signaling NaNs, implies all math can trap.  */
