@@ -1,3 +1,8 @@
+2006-07-07  Mike Stump  <mrs@apple.com>
+
+	* toplev.c (process_options): Don't give -ffunction-sections may
+	affect debugging warning for Mach-O.
+
 2006-07-07  James E Wilson  <wilson@specifix.com>
 
 	* config/mips/mips.md (cpu): Add sb1a.
