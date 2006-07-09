@@ -1,3 +1,16 @@
+2006-07-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (__int_to_char<>(_CharT*,
+	long, const _CharT*, ios_base::fmtflags), __int_to_char<>(_CharT*,
+	unsigned long, const _CharT*, ios_base::fmtflags),
+	__int_to_char<>(_CharT*, long long, const _CharT*, ios_base::fmtflags),
+	__int_to_char<>(_CharT*, unsigned long long, const _CharT*,
+	ios_base::fmtflags)): Remove.
+	(__int_to_char<>(_CharT*, _ValueT, const _CharT*, ios_base::fmtflags,
+	bool)): Adjust.
+	(num_put<>::_M_insert_int(_OutIter, ios_base&, _CharT, _ValueT)):
+	Likewise.
+
 2006-07-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (class gamma_distribution<>): Add.
