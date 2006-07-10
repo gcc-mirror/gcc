@@ -1,5 +1,10 @@
 2006-07-10  Steve Ellcey  <sje@cup.hp.com>
 
+	PR c++/27019
+	* g++.dg/ext/pr27019.C: New.
+
+2006-07-10  Steve Ellcey  <sje@cup.hp.com>
+
 	PR c++/28114
 	* g++.dg/other/pr28114.C: New.
 
