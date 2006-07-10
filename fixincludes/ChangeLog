@@ -1,3 +1,9 @@
+2006-07-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	PR bootstrap/20437
+	* Makefile.in (configure, config.h.in): change into $(srcdir)
+	before autoconf or autoheader call.
+
 2006-06-23  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/28084

@@ -1218,7 +1218,8 @@ cs-tm_p.h: Makefile
 # might be on a read-only file system.  If configured for maintainer mode
 # then do allow autoconf to be run.
 
-$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4 \
+  $(srcdir)/acinclude.m4
 	(cd $(srcdir) && autoconf)
 
 gccbug:	$(srcdir)/gccbug.in

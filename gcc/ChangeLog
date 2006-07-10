@@ -1,3 +1,9 @@
+2006-07-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	PR bootstrap/20437
+	* Makefile.in (configure): add missing aclocal.m4 and acinclude.m4
+	dependencies.
+
 2006-07-08  Matthias Klose  <doko@debian.org>
 
 	* doc/sourcebuild.texi: Fix typo.

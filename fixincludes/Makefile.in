@@ -160,10 +160,10 @@ config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac
-	autoconf
+       cd $(srcdir) && autoconf
 
 $(srcdir)/config.h.in: @MAINT@ $(srcdir)/configure.ac
-	autoheader
+       cd $(srcdir) && autoheader
 
 $(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/../gcc/aclocal.m4
 	cp $(srcdir)/../gcc/aclocal.m4 .
