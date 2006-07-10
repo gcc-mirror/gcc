@@ -2949,9 +2949,8 @@ check_field_decls (tree t, tree *access_decls,
       if (TYPE_PACKED (t))
 	{
 	  if (!pod_type_p (type) && !TYPE_PACKED (type))
-	    warning
-	      (0,
-	       "ignoring packed attribute on unpacked non-POD field %q+#D",
+	    cp_warning_at
+	      ("ignoring packed attribute on unpacked non-POD field %q#D",
 	       x);
 	  else if (TYPE_ALIGN (TREE_TYPE (x)) > BITS_PER_UNIT)
 	    DECL_PACKED (x) = 1;
