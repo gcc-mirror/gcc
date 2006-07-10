@@ -111,6 +111,7 @@ struct __eh_globals_init
   {
     if (_M_init)
       __gthread_key_delete(_M_key);
+    _M_init = false;
   }
 };
 

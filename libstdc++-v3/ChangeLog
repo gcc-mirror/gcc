@@ -1,3 +1,7 @@
+2006-07-10  Mike Stump  <mrs@apple.com>
+
+	* libsupc++/eh_globals.cc (~__eh_globals_init): Unset _M_init.
+
 2006-07-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/15448
