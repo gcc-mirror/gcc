@@ -1,3 +1,8 @@
+2007-07-11  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/28051
+	* g++.dg/template/using10.C: New test.
+	
 2006-07-08  Lee Millward  <lee.millward@gmail.com>
 
 	PR c++/27820

@@ -2556,6 +2556,9 @@ push_class_level_binding (tree name, tree x)
   if (!class_binding_level)
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
 
+  if (name == error_mark_node)
+    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, false);
+
   /* Check for invalid member names.  */
   gcc_assert (TYPE_BEING_DEFINED (current_class_type));
   /* We could have been passed a tree list if this is an ambiguous
@@ -2695,6 +2698,9 @@ tree
 do_class_using_decl (tree scope, tree name)
 {
   tree value, type;
+
+  if (name == error_mark_node)
+    return NULL_TREE;
   
   if (!scope || !TYPE_P (scope))
     {
