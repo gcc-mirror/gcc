@@ -1980,8 +1980,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * Constructs a gamma distribution with parameters @f$ \alpha @f$.
        */
       explicit
-      gamma_distribution(const result_type& __alpha = result_type(1))
-      : _M_alpha(__alpha)
+      gamma_distribution(const result_type& __alpha_val = result_type(1))
+      : _M_alpha(__alpha_val)
       { 
 	_GLIBCXX_DEBUG_ASSERT(_M_alpha > 0);
       }

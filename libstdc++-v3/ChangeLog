@@ -1,5 +1,12 @@
 2006-07-11  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/28344
+	* include/tr1/random (gamma_distribution<>::
+	gamma_distribution(const result_type&)): Don't use __alpha as
+	parameter name, a predefined macro on Alpha systems.
+
+2006-07-11  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/28290
 	* include/ext/codecvt_specializations.h: Fix, adding missing
 	includes and guards.
