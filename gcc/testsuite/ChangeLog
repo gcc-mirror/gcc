@@ -1,3 +1,9 @@
+2006-07-11  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/28213
+	* gfortran.dg/hollerith4.f90: Test hollerith constants used in I/O
+	list.
+
 2006-07-07  Lee Millward  <lee.millward@gmail.com>
 
 	PR c++/27820

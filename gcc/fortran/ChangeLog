@@ -1,3 +1,9 @@
+2006-07-11  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/28213
+	* trans-io.c (ransfer_expr): Deal with Hollerith constants used in
+	I/O list.
+
 2006-07-07  Kazu Hirata  <kazu@codesourcery.com>
 
 	* intrinsic.texi: Fix typos.

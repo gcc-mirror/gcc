@@ -1700,6 +1700,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
       break;
 
     case BT_CHARACTER:
+    case BT_HOLLERITH:
       if (se->string_length)
 	arg2 = se->string_length;
       else
