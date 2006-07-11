@@ -1,3 +1,7 @@
+2006-07-10  Eric Christopher  <echristo@apple.com>
+
+	* config/t-slibgcc-darwin: Rewrite.
+
 2006-07-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	PR bootstrap/20437
@@ -60,7 +64,7 @@
 	* gcc-common.c (ggc_free_overhead, dump_gcc_loc_statistics): Likewise.
 	* tree-ssa-dce.c (clear_control_dependence_bitmap): Likewise.
 	* rtl.c (dump_rtx_statistics): Likewise.
-	* tree-ssa-structalias.c (sort_fieldstack, init_alias_heapvars): 
+	* tree-ssa-structalias.c (sort_fieldstack, init_alias_heapvars):
 	Likewise.
 	* varray.c (dump_varray_statistics): Likewise.
 	* dfp.c (encode_decimal32, decode_decimal32, encode_decimal64,
@@ -83,7 +87,7 @@
 2006-07-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/27968
-	* configure.ac (HAVE_AS_IX86_FFREEP): On x86 targets check whether 
+	* configure.ac (HAVE_AS_IX86_FFREEP): On x86 targets check whether
 	the configured assembler supports the x87's ffreep mnemonic.
 	* configure: Regenerate.
 	* config.in: Regenerate.
@@ -162,7 +166,7 @@
 
 	* tree-ssa-math-opts.c (execute_cse_reciprocals): Fix calls
 	to calculate and free the dominator information.
-	    
+
 2006-07-04  Peter O'Gorman  <peter@pogma.com>
 
 	* mklibgcc.in: chmod 644 before ranlib during install.
@@ -260,7 +264,7 @@
 	PR c++/19134
 	* tree.c (build_decl_stat): Don't hande #pragma visibility here.
 	* c-common.c (c_determine_visibility): Handle it here.
-	* c-decl.c (finish_decl): Call c_determine_visibility for 
+	* c-decl.c (finish_decl): Call c_determine_visibility for
 	functions, too.
 	* flags.h (enum symbol_visibility): Sort from most to least visibility.
 	* tree.h: Likewise.
@@ -286,7 +290,7 @@
 	PR target/25765
 	* config/i386/i386.c (ix86_output_function_epilogue): Don't
 	insert a label at the end of an function under Mach-O.
-	
+
 2006-06-29  Eric Christopher  <echristo@apple.com>
 	    Evan Cheng  <evan.cheng@apple.com>
 
