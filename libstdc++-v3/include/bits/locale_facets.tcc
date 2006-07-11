@@ -2455,43 +2455,62 @@ _GLIBCXX_END_LDBL_NAMESPACE
     collate<_CharT>::
     do_transform(const _CharT* __lo, const _CharT* __hi) const
     {
-      // strxfrm assumes zero-terminated strings so we make a copy
-      string_type __str(__lo, __hi);
-
-      const _CharT* __p = __str.c_str();
-      const _CharT* __pend = __str.data() + __str.length();
-
-      size_t __len = (__hi - __lo) * 2;
-
       string_type __ret;
 
-      // strxfrm stops when it sees a nul character so we break
-      // the string into zero-terminated substrings and pass those
-      // to strxfrm.
-      for (;;)
+      // Use alloca for an _M_transform temporary buffer up to an arbitrary,
+      // but limited, asize, to avoid abusing the stack.  Otherwise fall back
+      // to dynamic memory allocation.  This means splitting the computation
+      // itself in hunks:  a size <= 8k (thus <= 16k asize) appear sufficient
+      // for optimal performance.
+      const size_t __size = std::min(size_t(__hi - __lo), size_t(8192));
+      const size_t __asize = 2 * __size;
+
+      size_t __len = __asize;
+
+      _CharT* __c =
+	static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len));
+
+      for (size_t __hunk = __size; __lo < __hi;
+	   __lo += __hunk, __hunk = std::min(size_t(__hi - __lo), __hunk))
 	{
-	  // First try a buffer perhaps big enough.
-	  _CharT* __c =
-	    static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len));
-	  size_t __res = _M_transform(__c, __p, __len);
-	  // If the buffer was not large enough, try again with the
-	  // correct size.
-	  if (__res >= __len)
+	  // strxfrm assumes zero-terminated strings so we make a copy
+	  const string_type __str(__lo, __lo + __hunk);
+
+	  const _CharT* __p = __str.c_str();
+	  const _CharT* __pend = __str.data() + __hunk;
+
+	  // strxfrm stops when it sees a nul character so we break
+	  // the string into zero-terminated substrings and pass those
+	  // to strxfrm.
+	  for (;;)
 	    {
-	      __len = __res + 1;
-	      __c = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							  * __len));
-	      __res = _M_transform(__c, __p, __len);
+	      // First try a buffer perhaps big enough.
+	      size_t __res = _M_transform(__c, __p, __len);
+	      // If the buffer was not large enough, try again with the
+	      // correct size.
+	      if (__res >= __len)
+		{
+		  if (__len > __asize)
+		    delete [] __c;
+		  __len = __res + 1;
+		  __c = new _CharT[__len];
+		  __res = _M_transform(__c, __p, __len);
+		}
+
+	      __ret.append(__c, __res);
+	      __p += char_traits<_CharT>::length(__p);
+	      if (__p == __pend)
+		break;
+
+	      __p++;
+	      __ret.push_back(_CharT());
 	    }
-
-	  __ret.append(__c, __res);
-	  __p += char_traits<_CharT>::length(__p);
-	  if (__p == __pend)
-	    return __ret;
-
-	  __p++;
-	  __ret.push_back(_CharT());
 	}
+
+      if (__len > __asize)
+	delete [] __c;
+
+      return __ret;
     }
 
   template<typename _CharT>
