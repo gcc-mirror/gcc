@@ -1,3 +1,9 @@
+2006-07-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/28162
+	* fold-const.c (fold_binary): For (-A) * (-B) -> A * B
+	make sure to convert the operands to the correct type.
+
 2006-07-08  Matthias Klose  <doko@debian.org>
 
 	* doc/sourcebuild.texi: Fix typo.
