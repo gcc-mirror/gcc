@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
 //  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,9 +34,18 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-/** @file bits/codecvt_specializations.h
+/** @file ext/codecvt_specializations.h
  *  This file is a GNU extension to the Standard C++ Library.
  */
+
+#ifndef _EXT_CODECVT_SPECIALIZATIONS_H
+#define _EXT_CODECVT_SPECIALIZATIONS_H 1
+
+#ifdef _GLIBCXX_USE_ICONV
+
+#include <bits/c++config.h>
+#include <locale>
+#include <iconv.h>
 
   // XXX
   // Define this here so codecvt.cc can have _S_max_size definition.
@@ -506,3 +515,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
+#endif
+
+#endif

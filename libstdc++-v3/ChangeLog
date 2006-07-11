@@ -1,5 +1,11 @@
 2006-07-11  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/28290
+	* include/ext/codecvt_specializations.h: Fix, adding missing
+	includes and guards.
+
+2006-07-11  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/28277 (partial: collate bits)
 	* include/bits/locale_facets.tcc (collate<>::do_transform(
 	const _CharT*, const _CharT*)): Avoid __builtin_alloca with no
