@@ -2742,7 +2742,7 @@ do_class_using_decl (tree scope, tree name)
   int i;
 
   if (name == error_mark_node)
-    return error_mark_node;
+    return NULL_TREE;
 
   if (!scope || !TYPE_P (scope))
     {
