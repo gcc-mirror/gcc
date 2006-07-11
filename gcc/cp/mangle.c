@@ -2797,6 +2797,9 @@ mangle_conv_op_name_for_type (const tree type)
   void **slot;
   tree identifier;
 
+  if (type == error_mark_node)
+    return error_mark_node;
+
   if (conv_type_names == NULL)
     conv_type_names = htab_create_ggc (31, &hash_type, &compare_type, NULL);
 
