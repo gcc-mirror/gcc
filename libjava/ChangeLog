@@ -1,3 +1,9 @@
+2006-07-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/28352
+	* stacktrace.cc (getLineNumberForFrame): Roll back PC by 1 when
+	looking up line number for interpreted frame.
+
 2006-07-07  Bryce McKinlay  <mckinlay@redhat.com>
 	    Geoffrey Keating <geoffk@apple.com>
 
