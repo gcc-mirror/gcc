@@ -1,5 +1,10 @@
 2006-07-11  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/codecvt_specializations.h: Fix typo in commit
+	for libstdc++/28290.
+
+2006-07-11  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (collate<>::do_transform(
 	const _CharT*, const _CharT*)): Simplify previous fix for
 	libstdc++/28277, always allocate memory dynamically.
