@@ -497,13 +497,15 @@ public class ZipFile implements ZipConstants
 
     long start = checkLocalHeader(zipEntry);
     int method = zipEntry.getMethod();
-    InputStream is = new BufferedInputStream(new PartialInputStream
-      (raf, start, zipEntry.getCompressedSize()));
+    PartialInputStream pIn
+      = new PartialInputStream(raf, start, zipEntry.getCompressedSize());
+    InputStream is = new BufferedInputStream(pIn);
     switch (method)
       {
       case ZipOutputStream.STORED:
 	return is;
       case ZipOutputStream.DEFLATED:
+	pIn.addDummyByte();
 	return new InflaterInputStream(is, new Inflater(true));
       default:
 	throw new ZipException("Unknown compression method " + method);
@@ -564,12 +566,16 @@ public class ZipFile implements ZipConstants
   {
     private final RandomAccessFile raf;
     long filepos, end;
+    boolean addDummyByte;
+    byte[] singleByte;
 
     public PartialInputStream(RandomAccessFile raf, long start, long len)
     {
       this.raf = raf;
       filepos = start;
       end = start + len;
+      addDummyByte = false;
+      singleByte = new byte[1];
     }
     
     public int available()
@@ -579,20 +585,27 @@ public class ZipFile implements ZipConstants
 	return Integer.MAX_VALUE;
       return (int) amount;
     }
-    
+
     public int read() throws IOException
     {
-      if (filepos == end)
-	return -1;
-      synchronized (raf)
-	{
-	  raf.seek(filepos++);
-	  return raf.read();
-	}
+      int r = read(singleByte, 0, 1);
+      if (r != 1)
+	return r;
+      return singleByte[0] & 0xff;
     }
 
     public int read(byte[] b, int off, int len) throws IOException
     {
+      if (end - filepos == 0)
+	{
+	  if (len > 0 && addDummyByte)
+	    {
+	      addDummyByte = false;
+	      b[0] = 0;
+	      return 1;
+	    }
+	}
+
       if (len > end - filepos)
 	{
 	  len = (int) (end - filepos);
@@ -617,6 +630,11 @@ public class ZipFile implements ZipConstants
 	amount = end - filepos;
       filepos += amount;
       return amount;
+    }
+
+    public void addDummyByte()
+    {
+      addDummyByte = true;
     }
   }
 }

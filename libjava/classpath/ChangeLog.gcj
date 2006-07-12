@@ -1,3 +1,15 @@
+2006-07-12  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/ZipFile.java (getInputStream): Call addDummyByte
+	on PartialInputStream.
+	(PartialInputStream.addDummyByte): New field.
+	(PartialInputStream.singleByte): Likewise.
+	(PartialInputStream): Initialize new fields.
+	(PartialInputStream.read()): Rewrote.
+	(PartialInputStream.read(byte[],int,int)): Handle dummy byte, if
+	added.
+	(PartialInputStream.addDummyByte): New method.
+
 2006-06-14  Tom Tromey  <tromey@redhat.com>
 
 	PR java/28024:
