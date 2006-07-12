@@ -31,6 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "toplev.h"
 #include "real.h"
 #include "tree-gimple.h"
+#include "langhooks.h"
 #include "flags.h"
 #include "gfortran.h"
 #include "trans.h"
@@ -2233,6 +2234,11 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
   tree dsc;
   tree ssc;
   tree cond;
+  tree cond2;
+  tree tmp2;
+  tree tmp3;
+  tree tmp4;
+  stmtblock_t tempblock;
 
   /* Deal with single character specially.  */
   dsc = gfc_to_single_character (dlen, dest);
@@ -2243,15 +2249,63 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
       return;
     }
 
+  /* Do nothing if the destination length is zero.  */
   cond = fold_build2 (GT_EXPR, boolean_type_node, dlen,
 		      build_int_cst (gfc_charlen_type_node, 0));
 
-  tmp = NULL_TREE;
-  tmp = gfc_chainon_list (tmp, dlen);
-  tmp = gfc_chainon_list (tmp, dest);
-  tmp = gfc_chainon_list (tmp, slen);
-  tmp = gfc_chainon_list (tmp, src);
-  tmp = build_function_call_expr (gfor_fndecl_copy_string, tmp);
+  /* The following code was previously in _gfortran_copy_string:
+
+       // The two strings may overlap so we use memmove.
+       void
+       copy_string (GFC_INTEGER_4 destlen, char * dest,
+                    GFC_INTEGER_4 srclen, const char * src)
+       {
+         if (srclen >= destlen)
+           {
+             // This will truncate if too long.
+             memmove (dest, src, destlen);
+           }
+         else
+           {
+             memmove (dest, src, srclen);
+             // Pad with spaces.
+             memset (&dest[srclen], ' ', destlen - srclen);
+           }
+       }
+
+     We're now doing it here for better optimization, but the logic
+     is the same.  */
+  
+  /* Truncate string if source is too long.  */
+  cond2 = fold_build2 (GE_EXPR, boolean_type_node, slen, dlen);
+  tmp2 = gfc_chainon_list (NULL_TREE, dest);
+  tmp2 = gfc_chainon_list (tmp2, src);
+  tmp2 = gfc_chainon_list (tmp2, dlen);
+  tmp2 = build_function_call_expr (built_in_decls[BUILT_IN_MEMMOVE], tmp2);
+
+  /* Else copy and pad with spaces.  */
+  tmp3 = gfc_chainon_list (NULL_TREE, dest);
+  tmp3 = gfc_chainon_list (tmp3, src);
+  tmp3 = gfc_chainon_list (tmp3, slen);
+  tmp3 = build_function_call_expr (built_in_decls[BUILT_IN_MEMMOVE], tmp3);
+
+  tmp4 = fold_build2 (PLUS_EXPR, pchar_type_node, dest,
+		      fold_convert (pchar_type_node, slen));
+  tmp4 = gfc_chainon_list (NULL_TREE, tmp4);
+  tmp4 = gfc_chainon_list (tmp4, build_int_cst
+				   (gfc_get_int_type (gfc_c_int_kind),
+				    lang_hooks.to_target_charset (' ')));
+  tmp4 = gfc_chainon_list (tmp4, fold_build2 (MINUS_EXPR, TREE_TYPE(dlen),
+					      dlen, slen));
+  tmp4 = build_function_call_expr (built_in_decls[BUILT_IN_MEMSET], tmp4);
+
+  gfc_init_block (&tempblock);
+  gfc_add_expr_to_block (&tempblock, tmp3);
+  gfc_add_expr_to_block (&tempblock, tmp4);
+  tmp3 = gfc_finish_block (&tempblock);
+
+  /* The whole copy_string function is there.  */
+  tmp = fold_build3 (COND_EXPR, void_type_node, cond2, tmp2, tmp3);
   tmp = fold_build3 (COND_EXPR, void_type_node, cond, tmp, build_empty_stmt ());
   gfc_add_expr_to_block (block, tmp);
 }
