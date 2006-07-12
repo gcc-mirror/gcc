@@ -1627,7 +1627,9 @@ string_conv_p (tree totype, tree exp, int warn)
 
   /* This warning is not very useful, as it complains about printf.  */
   if (warn)
-    warning (OPT_Wwrite_strings, "deprecated conversion from string constant to %qT'", totype);
+    warning (OPT_Wwrite_strings,
+	     "deprecated conversion from string constant to %qT",
+	     totype);
 
   return 1;
 }
