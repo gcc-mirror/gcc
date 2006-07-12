@@ -3503,7 +3503,8 @@ add_global_decls (const file_info *file_p, const char *clean_text_p)
    separate routine above.  */
 
 static void
-edit_fn_definition (const def_dec_info *def_dec_p, const char *clean_text_p)
+edit_fn_definition (const def_dec_info *def_dec_p,
+		    const char *volatile clean_text_p)
 {
   const char *end_formals;
   const char *function_to_edit = def_dec_p->hash_entry->symbol;
