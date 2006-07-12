@@ -44,9 +44,6 @@ Boston, MA 02110-1301, USA.  */
 
 /* String functions.  */
 
-extern void copy_string (GFC_INTEGER_4, char *, GFC_INTEGER_4, const char *);
-export_proto(copy_string);
-
 extern void concat_string (GFC_INTEGER_4, char *,
 			   GFC_INTEGER_4, const char *,
 			   GFC_INTEGER_4, const char *);
@@ -78,26 +75,6 @@ export_proto(string_trim);
 
 extern void string_repeat (char *, GFC_INTEGER_4, const char *, GFC_INTEGER_4);
 export_proto(string_repeat);
-
-/* The two areas may overlap so we use memmove.  */
-
-void
-copy_string (GFC_INTEGER_4 destlen, char * dest,
-	     GFC_INTEGER_4 srclen, const char * src)
-{
-  if (srclen >= destlen)
-    {
-      /* This will truncate if too long.  */
-      memmove (dest, src, destlen);
-    }
-  else
-    {
-      memmove (dest, src, srclen);
-      /* Pad with spaces.  */
-      memset (&dest[srclen], ' ', destlen - srclen);
-    }
-}
-
 
 /* Strings of unequal length are extended with pad characters.  */
 

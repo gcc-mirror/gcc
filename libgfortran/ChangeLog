@@ -1,3 +1,8 @@
+2006-07-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28163
+	* intrinsics/string_intrinsics.c (copy_string): Remove function.
+
 2006-07-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/date_and_time.c (itime0,idate0,itime_i4,itime_i8,

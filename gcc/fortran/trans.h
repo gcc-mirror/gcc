@@ -508,7 +508,6 @@ extern GTY(()) tree gfor_fndecl_math_exponent10;
 extern GTY(()) tree gfor_fndecl_math_exponent16;
 
 /* String functions.  */
-extern GTY(()) tree gfor_fndecl_copy_string;
 extern GTY(()) tree gfor_fndecl_compare_string;
 extern GTY(()) tree gfor_fndecl_concat_string;
 extern GTY(()) tree gfor_fndecl_string_len_trim;

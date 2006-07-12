@@ -121,7 +121,6 @@ tree gfor_fndecl_math_exponent16;
 
 /* String functions.  */
 
-tree gfor_fndecl_copy_string;
 tree gfor_fndecl_compare_string;
 tree gfor_fndecl_concat_string;
 tree gfor_fndecl_string_len_trim;
@@ -1938,13 +1937,6 @@ gfc_build_intrinsic_function_decls (void)
   tree gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
 
   /* String functions.  */
-  gfor_fndecl_copy_string =
-    gfc_build_library_function_decl (get_identifier (PREFIX("copy_string")),
-				     void_type_node,
-				     4,
-				     gfc_charlen_type_node, pchar_type_node,
-				     gfc_charlen_type_node, pchar_type_node);
-
   gfor_fndecl_compare_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("compare_string")),
 				     gfc_int4_type_node,

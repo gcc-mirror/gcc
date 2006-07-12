@@ -1,3 +1,12 @@
+2006-07-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/28163
+	* trans-expr.c (gfc_trans_string_copy): Generate inline code
+	to perform string copying instead of calling a library function.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Don't build
+	decl for copy_string.
+	* trans.h (gfor_fndecl_copy_string): Remove prototype.
+
 2006-07-11  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/28213
