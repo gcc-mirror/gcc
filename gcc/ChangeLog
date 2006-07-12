@@ -1,3 +1,9 @@
+2006-07-12  Naveen.H.S  <naveenh@kpitcummins.com>
+
+	* config/m32c/muldiv.md (umulhisi3_c): Use only registers for 
+	dest.
+	(umulhisi3_r): Likewise.
+
 2006-07-12  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/27878
