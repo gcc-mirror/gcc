@@ -1,3 +1,7 @@
+2006-07-12  Gary Benson  <gbenson@redhat.com>
+
+	* java/io/File.java (renameTo): Fix security checks.
+
 2006-07-12  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/28352
