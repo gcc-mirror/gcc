@@ -4672,7 +4672,11 @@ pushtag (tree name, tree type, tag_scope scope)
 		pushdecl_class_level (decl);
 	    }
 	  else if (b->kind != sk_template_parms)
-	    decl = pushdecl_with_scope (decl, b);
+	    {
+	      decl = pushdecl_with_scope (decl, b);
+	      if (decl == error_mark_node)
+		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
+	    }
 
 	  /* FIXME what if it gets a name from typedef?  */
 	  if (ANON_AGGRNAME_P (name))
