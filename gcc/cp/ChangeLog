@@ -1,3 +1,9 @@
+2006-06-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28016
+	* decl.c (cp_finsh_decl): Do not emit uninstantiated static data
+	members.
+
 2006-07-11  Lee Millward  <lee.millward@gmail.com>
 
        PR c++/28051
