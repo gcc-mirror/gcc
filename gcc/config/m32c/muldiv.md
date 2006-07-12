@@ -107,18 +107,18 @@
 )
 
 (define_insn "umulhisi3_c"
-  [(set (match_operand:SI 0 "mra_operand" "=RsiSd,??Rmm")
-        (mult:SI (zero_extend:SI (match_operand:HI 1 "mra_operand" "%0,0"))
-                 (match_operand 2 "immediate_operand" "i,i")))]
+  [(set (match_operand:SI 0 "ra_operand" "=Rsi")
+        (mult:SI (zero_extend:SI (match_operand:HI 1 "mra_operand" "%0"))
+                 (match_operand 2 "immediate_operand" "i")))]
   ""
   "mulu.w\t%u2,%1"
   [(set_attr "flags" "o")]
 )
 
 (define_insn "umulhisi3_r"
-  [(set (match_operand:SI 0 "mra_operand" "=RsiSd,RsiSd,??Rmm,??Rmm")
-        (mult:SI (zero_extend:SI (match_operand:HI 1 "mra_operand" "%0,0,0,0"))
-                 (zero_extend:SI (match_operand:HI 2 "mra_operand" "RhiSd,?Rmm,RhiSd,?Rmm"))))]
+  [(set (match_operand:SI 0 "mra_operand" "=Rsi,Rsi")
+        (mult:SI (zero_extend:SI (match_operand:HI 1 "mra_operand" "%0,0"))
+                 (zero_extend:SI (match_operand:HI 2 "mra_operand" "RhiSd,?Rmm"))))]
   ""
   "mulu.w\t%u2,%1"
   [(set_attr "flags" "o")]
