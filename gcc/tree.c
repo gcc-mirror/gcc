@@ -1162,7 +1162,7 @@ build_complex (tree type, tree real, tree imag)
 }
 
 /* Return a constant of arithmetic type TYPE which is the
-   multiplcative identity of the set TYPE.  */
+   multiplicative identity of the set TYPE.  */
 
 tree
 build_one_cst (tree type)
