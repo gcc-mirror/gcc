@@ -182,7 +182,9 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
       _Jv_InterpClass *interp_class = 
 	 (_Jv_InterpClass *) interp_meth->defining_class->aux_info;
       *sourceFileName = interp_class->source_file_name;
-      *lineNum = interp_meth->get_source_line(frame->interp.pc);
+      // The interpreter advances the PC before executing an instruction,
+      // so roll-back 1 byte to ensure the line number is accurate.
+      *lineNum = interp_meth->get_source_line(frame->interp.pc - 1);
       return;
     }
 #endif
