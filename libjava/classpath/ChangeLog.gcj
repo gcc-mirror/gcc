@@ -1,3 +1,13 @@
+2006-07-12  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/27271:
+	* java/util/zip/ZipFile.java (getInputStream): Call addDummyByte
+	on PartialInputStream.
+	(PartialInputStream.dummyByteCount): New field.
+	(PartialInputStream.fillBuffer): Handle dummy byte.
+	(PartialInputStream.read): Likewise.
+	(PartialInputStream.addDummyByte): New method.
+
 2006-06-14  Tom Tromey  <tromey@redhat.com>
 
 	PR java/28024:

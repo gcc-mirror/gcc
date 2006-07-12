@@ -445,6 +445,7 @@ public class ZipFile implements ZipConstants
       case ZipOutputStream.STORED:
 	return inp;
       case ZipOutputStream.DEFLATED:
+        inp.addDummyByte();
         final Inflater inf = new Inflater(true);
         final int sz = (int) entry.getSize();
         return new InflaterInputStream(inp, inf)
@@ -520,6 +521,11 @@ public class ZipFile implements ZipConstants
     private long bufferOffset;
     private int pos;
     private long end;
+    // We may need to supply an extra dummy byte to our reader.
+    // See Inflater.  We use a count here to simplify the logic
+    // elsewhere in this class.  Note that we ignore the dummy
+    // byte in methods where we know it is not needed.
+    private int dummyByteCount;
 
     public PartialInputStream(RandomAccessFile raf, int bufferSize)
       throws IOException
@@ -540,8 +546,17 @@ public class ZipFile implements ZipConstants
     {
       synchronized (raf)
         {
-          raf.seek(bufferOffset);
-          raf.readFully(buffer, 0, (int) Math.min(buffer.length, end - bufferOffset));
+          long len = end - bufferOffset;
+          if (len == 0 && dummyByteCount > 0)
+            {
+              buffer[0] = 0;
+              dummyByteCount = 0;
+            }
+          else
+            {
+              raf.seek(bufferOffset);
+              raf.readFully(buffer, 0, (int) Math.min(buffer.length, len));
+            }
         }
     }
     
@@ -555,7 +570,7 @@ public class ZipFile implements ZipConstants
     
     public int read() throws IOException
     {
-      if (bufferOffset + pos >= end)
+      if (bufferOffset + pos >= end + dummyByteCount)
 	return -1;
       if (pos == buffer.length)
         {
@@ -569,9 +584,9 @@ public class ZipFile implements ZipConstants
 
     public int read(byte[] b, int off, int len) throws IOException
     {
-      if (len > end - (bufferOffset + pos))
+      if (len > end + dummyByteCount - (bufferOffset + pos))
 	{
-	  len = (int) (end - (bufferOffset + pos));
+	  len = (int) (end + dummyByteCount - (bufferOffset + pos));
 	  if (len == 0)
 	    return -1;
 	}
@@ -680,6 +695,11 @@ public class ZipFile implements ZipConstants
         {
           throw new AssertionError(uee);
         }
+    }
+
+    public void addDummyByte()
+    {
+      dummyByteCount = 1;
     }
   }
 }
