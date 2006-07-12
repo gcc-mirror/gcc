@@ -2457,28 +2457,18 @@ _GLIBCXX_END_LDBL_NAMESPACE
     {
       string_type __ret;
 
-      // Use alloca for an _M_transform temporary buffer up to an arbitrary,
-      // but limited, asize, to avoid abusing the stack.  Otherwise fall back
-      // to dynamic memory allocation.  This means splitting the computation
-      // itself in hunks:  a size <= 8k (thus <= 16k asize) appear sufficient
-      // for optimal performance.
-      const size_t __size = std::min(size_t(__hi - __lo), size_t(8192));
-      const size_t __asize = 2 * __size;
+      // strxfrm assumes zero-terminated strings so we make a copy
+      const string_type __str(__lo, __hi);
 
-      size_t __len = __asize;
+      const _CharT* __p = __str.c_str();
+      const _CharT* __pend = __str.data() + __str.length();
 
-      _CharT* __c =
-	static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len));
+      size_t __len = (__hi - __lo) * 2;
 
-      for (size_t __hunk = __size; __lo < __hi;
-	   __lo += __hunk, __hunk = std::min(size_t(__hi - __lo), __hunk))
+      _CharT* __c = new _CharT[__len];
+
+      try
 	{
-	  // strxfrm assumes zero-terminated strings so we make a copy
-	  const string_type __str(__lo, __lo + __hunk);
-
-	  const _CharT* __p = __str.c_str();
-	  const _CharT* __pend = __str.data() + __hunk;
-
 	  // strxfrm stops when it sees a nul character so we break
 	  // the string into zero-terminated substrings and pass those
 	  // to strxfrm.
@@ -2490,9 +2480,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
 	      // correct size.
 	      if (__res >= __len)
 		{
-		  if (__len > __asize)
-		    delete [] __c;
 		  __len = __res + 1;
+		  delete [] __c, __c = 0;
 		  __c = new _CharT[__len];
 		  __res = _M_transform(__c, __p, __len);
 		}
@@ -2506,9 +2495,13 @@ _GLIBCXX_END_LDBL_NAMESPACE
 	      __ret.push_back(_CharT());
 	    }
 	}
+      catch(...)
+	{
+	  delete [] __c;
+	  __throw_exception_again;
+	}
 
-      if (__len > __asize)
-	delete [] __c;
+      delete [] __c;
 
       return __ret;
     }
