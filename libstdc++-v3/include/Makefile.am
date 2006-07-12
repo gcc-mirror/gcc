@@ -782,9 +782,9 @@ pch3_output_installdir = ${host_installdir}/extc++.h.gch
 pch3_output = ${pch3_output_builddir}/O2g.gch
 
 
-pch_output = ${pch1_output} ${pch2_output} ${pch3_output}
+pch_output = ${pch1_output} ${pch2_output} 
 pch_output_dirs = \
-	${pch1_output_builddir} ${pch2_output_builddir} ${pch3_output_builddir}
+	${pch1_output_builddir} ${pch2_output_builddir} 
 PCHFLAGS=-Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
 if GLIBCXX_BUILD_PCH
 pch_build = ${pch_output}
