@@ -1,3 +1,11 @@
+2006-07-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/28187
+	* tree-vrp.c (vrp_operand_equal_p): New function.
+	(vrp_bitmap_equal_p): Likewise.
+	(update_value_range): Use them to compare old and new
+	max and min values.
+
 2006-07-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28162
