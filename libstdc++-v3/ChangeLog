@@ -1,5 +1,11 @@
 2006-07-11  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (collate<>::do_transform(
+	const _CharT*, const _CharT*)): Simplify previous fix for
+	libstdc++/28277, always allocate memory dynamically.
+
+2006-07-11  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/28344
 	* include/tr1/random (gamma_distribution<>::
 	gamma_distribution(const result_type&)): Don't use __alpha as
