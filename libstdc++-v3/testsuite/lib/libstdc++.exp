@@ -211,7 +211,7 @@ proc libstdc++_init { testfile } {
 	close $f
 
 	set lines [v3_target_compile $src "config[pid].o" object \
-		   "additional_flags=-include additional_flags=bits/stdc++.h"]
+	         "additional_flags=-include additional_flags=bits/stdtr1c++.h"]
 	if {$lines == "" } {
 #	    set PCH_CXXFLAGS "-include bits/extc++.h"
 	    set PCH_CXXFLAGS "-include bits/stdtr1c++.h"

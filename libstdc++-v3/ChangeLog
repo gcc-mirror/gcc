@@ -1,3 +1,11 @@
+2006-07-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (pch_output): Don't precompile extc++.h.
+	(pch_output_dirs): Same.
+	* include/Makefile.in: Regenerate.
+
+	* testsuite/lib/libstdc++.exp: Test PCH with stdtr1c++.h.
+	
 2006-07-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/codecvt_specializations.h: Fix typo in commit
