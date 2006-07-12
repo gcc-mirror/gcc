@@ -1,3 +1,9 @@
+2006-07-12  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/27878
+	* doc/install.texi (mips-sgi-irix6): Add note about IRIX 6.5.x,
+	x < 19, vs wchar_t support.
+
 2006-07-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/sh.h (SUBTARGET_ASM_RELAX_SPEC): Use -isa=sh4-up

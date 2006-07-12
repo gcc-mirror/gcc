@@ -3565,6 +3565,11 @@ to build despite this, running into an internal error of the native
 its maximum of 262144 bytes.  If you have root access, you can use the
 @command{systune} command to do this.
 
+@code{wchar_t} support in @samp{libstdc++} is not available for old
+IRIX 6.5.x releases, @math{x < 19}.  The problem cannot be autodetected
+and in order to build GCC for such targets you need to configure with
+@option{--disable-wchar_t}.
+
 See @uref{http://freeware.sgi.com/} for more
 information about using GCC on IRIX platforms.
 
