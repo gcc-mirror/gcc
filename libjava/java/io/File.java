@@ -1298,12 +1298,10 @@ public class File implements Serializable, Comparable
   public synchronized boolean renameTo(File dest)
   {
     SecurityManager s = System.getSecurityManager();
-    String sname = getName();
-    String dname = dest.getName();
     if (s != null)
       {
-	s.checkWrite (sname);
-	s.checkWrite (dname);
+	s.checkWrite (getPath());
+	s.checkWrite (dest.getPath());
       }
     return performRenameTo (dest);
   }
