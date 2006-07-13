@@ -776,6 +776,8 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
       exc[i].start_pc.p = &insns[pc_mapping[exc[i].start_pc.i]];
       exc[i].end_pc.p = &insns[pc_mapping[exc[i].end_pc.i]];
       exc[i].handler_pc.p = &insns[pc_mapping[exc[i].handler_pc.i]];
+      // FIXME: resolve_pool_entry can throw - we shouldn't be doing this
+      // during compilation.
       jclass handler
 	= (_Jv_Linker::resolve_pool_entry (defining_class,
 					     exc[i].handler_type.i)).clazz;
@@ -1139,6 +1141,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_invokevirtual:	// 0xb6
       {
+	SAVE_PC();
 	int index = GET2U ();
 
 	/* _Jv_Linker::resolve_pool_entry returns immediately if the
@@ -1155,7 +1158,6 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 	if (rmeth->method->accflags & Modifier::FINAL)
 	  {
 	    // We can't rely on NULLCHECK working if the method is final.
-	    SAVE_PC();
 	    if (! sp[0].o)
 	      throw_null_pointer_exception ();
 
@@ -1182,13 +1184,13 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 #ifdef DIRECT_THREADED
     invokevirtual_resolved:
       {
+	SAVE_PC();
 	rmeth = (_Jv_ResolvedMethod *) AVAL ();
 	sp -= rmeth->stack_item_count;
 
 	if (rmeth->method->accflags & Modifier::FINAL)
 	  {
 	    // We can't rely on NULLCHECK working if the method is final.
-	    SAVE_PC();
 	    if (! sp[0].o)
 	      throw_null_pointer_exception ();
 
@@ -1207,8 +1209,6 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     perform_invoke:
       {
-        SAVE_PC();
-	
 	/* here goes the magic again... */
 	ffi_cif *cif = &rmeth->cif;
 	ffi_raw *raw = (ffi_raw*) sp;
@@ -1358,6 +1358,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
       // For direct threaded we have a separate 'ldc class' operation.
     insn_ldc_class:
       {
+	SAVE_PC();
 	// We could rewrite the instruction at this point.
 	int index = INTVAL ();
 	jobject k = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
@@ -1826,6 +1827,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_idiv:
       {
+	SAVE_PC();
 	jint value2 = POPI();
 	jint value1 = POPI();
 	jint res = _Jv_divI (value1, value2);
@@ -1835,6 +1837,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_ldiv:
       {
+	SAVE_PC();
 	jlong value2 = POPL();
 	jlong value1 = POPL();
 	jlong res = _Jv_divJ (value1, value2);
@@ -1844,6 +1847,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_fdiv:
       {
+	SAVE_PC();
 	jfloat value2 = POPF();
 	jfloat value1 = POPF();
 	jfloat res = value1 / value2;
@@ -1862,6 +1866,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_irem:
       {
+	SAVE_PC();
 	jint value2 = POPI();
 	jint value1 =  POPI();
 	jint res = _Jv_remI (value1, value2);
@@ -1871,6 +1876,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_lrem:
       {
+	SAVE_PC();
 	jlong value2 = POPL();
 	jlong value1 = POPL();
 	jlong res = _Jv_remJ (value1, value2);
@@ -2539,6 +2545,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_getfield:
       {
+	SAVE_PC();
 	jint fieldref_index = GET2U ();
 	_Jv_Linker::resolve_pool_entry (meth->defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
@@ -2653,6 +2660,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_putstatic:
       {
+	SAVE_PC();
 	jint fieldref_index = GET2U ();
 	_Jv_Linker::resolve_pool_entry (meth->defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
@@ -2740,6 +2748,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_putfield:
       {
+	SAVE_PC();
 	jint fieldref_index = GET2U ();
 	_Jv_Linker::resolve_pool_entry (meth->defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
@@ -2863,6 +2872,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_invokespecial:
       {
+	SAVE_PC();
 	int index = GET2U ();
 
 	rmeth = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
@@ -2892,13 +2902,13 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 #ifdef DIRECT_THREADED
     invokespecial_resolved:
       {
+	SAVE_PC();
 	rmeth = (_Jv_ResolvedMethod *) AVAL ();
 	sp -= rmeth->stack_item_count;
 	// We don't use NULLCHECK here because we can't rely on that
 	// working for <init>.  So instead we do an explicit test.
 	if (! sp[0].o)
 	  {
-	    SAVE_PC();
 	    throw_null_pointer_exception ();
 	  }
 	fun = (void (*)()) rmeth->method->ncode;
@@ -2908,6 +2918,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_invokestatic:
       {
+	SAVE_PC();
 	int index = GET2U ();
 
 	rmeth = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
@@ -2929,6 +2940,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 #ifdef DIRECT_THREADED
     invokestatic_resolved:
       {
+	SAVE_PC();
 	rmeth = (_Jv_ResolvedMethod *) AVAL ();
 	sp -= rmeth->stack_item_count;
 	fun = (void (*)()) rmeth->method->ncode;
@@ -2938,6 +2950,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_invokeinterface:
       {
+	SAVE_PC();
 	int index = GET2U ();
 
 	rmeth = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
@@ -2969,6 +2982,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 #ifdef DIRECT_THREADED
     invokeinterface_resolved:
       {
+	SAVE_PC();
 	rmeth = (_Jv_ResolvedMethod *) AVAL ();
 	sp -= rmeth->stack_item_count;
 	jobject rcv = sp[0].o;
@@ -2983,6 +2997,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_new:
       {
+	SAVE_PC();
 	int index = GET2U ();
 	jclass klass = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 							  index)).clazz;
@@ -3021,6 +3036,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_anewarray:
       {
+	SAVE_PC();
 	int index = GET2U ();
 	jclass klass = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 							  index)).clazz;
@@ -3156,6 +3172,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_multianewarray:
       {
+	SAVE_PC();
 	int kind_index = GET2U ();
 	int dim        = GET1U ();
 
