@@ -1,3 +1,12 @@
+2006-07-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (pch*_output_anchor): Add.
+	(pch*_output): Use.
+	(CLEANFILES): Use.
+	* include/Makefile.in: Regenerate.
+	
+	* scripts/check_performance: Be verbose on compile error.
+
 2006-07-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am: Revert last change.
