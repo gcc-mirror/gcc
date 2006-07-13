@@ -1,3 +1,7 @@
+2006-07-13  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/memcpy-1.c: New.
+
 2006-07-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/ext/visibility/fvisibility-inlines-hidden-2.C: New.

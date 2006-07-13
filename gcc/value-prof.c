@@ -147,7 +147,11 @@ tree_value_profile_transformations (void)
 	    {
 	      changed = true;
 	      /* Original statement may no longer be in the same block. */
-	      bb = bb_for_stmt (stmt);
+	      if (bb != bb_for_stmt (stmt))
+		{
+	          bb = bb_for_stmt (stmt);
+		  bsi = bsi_for_stmt (stmt);
+		}
 	    }
 
 	  /* Free extra storage from compute_value_histograms.  */

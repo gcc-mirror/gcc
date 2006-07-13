@@ -281,6 +281,10 @@ cgraph_varpool_analyze_pending_decls (void)
 
       cgraph_varpool_first_unanalyzed_node = cgraph_varpool_first_unanalyzed_node->next_needed;
 
+      /* Compute the alignment early so function body expanders are
+	 already informed about increased alignment.  */
+      align_variable (decl, 0);
+
       if (DECL_INITIAL (decl))
 	{
 	  visited_nodes = pointer_set_create ();
