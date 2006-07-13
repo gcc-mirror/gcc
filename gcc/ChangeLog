@@ -1,10 +1,15 @@
+2006-07-12  Eric Christopher  <echristo@apple.com>
+
+	* config/t-slibgcc-darwin (SHLIB_LINK): Don't munge stmp-lipo.
+	(stmp-lipo): Depend on libgcc.a.
+
 2006-07-12  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree.c: Fix a comment typo.
 
 2006-07-12  Naveen.H.S  <naveenh@kpitcummins.com>
 
-	* config/m32c/muldiv.md (umulhisi3_c): Use only registers for 
+	* config/m32c/muldiv.md (umulhisi3_c): Use only registers for
 	dest.
 	(umulhisi3_r): Likewise.
 
