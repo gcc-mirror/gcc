@@ -1981,7 +1981,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		   array of derived types.  In this case, the argument
 		   is converted to a temporary, which is passed and then
 		   written back after the procedure call.  */
-		gfc_conv_aliased_arg (&parmse, e, f, fsym->attr.intent);
+		gfc_conv_aliased_arg (&parmse, e, f,
+			fsym ? fsym->attr.intent : INTENT_INOUT);
 	      else
 	        gfc_conv_array_parameter (&parmse, e, argss, f);
 

@@ -1,3 +1,11 @@
+2006-07-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/25097
+	* gfortran.dg/present_1.f90: New test.
+
+	PR fortran/20903
+	* gfortran.dg/interface_derived_type_1.f90: New test.
+
 2006-07-11  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/28213
