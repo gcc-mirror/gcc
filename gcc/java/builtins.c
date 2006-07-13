@@ -293,6 +293,11 @@ check_for_builtin (tree method, tree call)
 						   method_arguments);
 		  return result == NULL_TREE ? call : result;
 		}
+
+	      /* Builtin functions emit a direct call which is incompatible
+	         with the BC-ABI.  */
+	      if (flag_indirect_dispatch)
+	        return call;
 	      fn = built_in_decls[java_builtins[i].builtin_code];
 	      if (fn == NULL_TREE)
 		return call;

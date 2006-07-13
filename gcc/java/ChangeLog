@@ -1,3 +1,13 @@
+2006-07-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* builtins.c (check_for_builtin): If a builtin could result in a
+	direct call being generated, don't use it if flag_indirect_dispatch
+	is set.
+
+2006-07-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gcj.texi (Invocation): Corrections for Invocation API example.
+
 2006-07-04  Andrew Haley  <aph@redhat.com>
 
 	* class.c (build_fieldref_cache_entry): Set DECL_IGNORED_P on the
