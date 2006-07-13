@@ -20,10 +20,7 @@ SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -dynamiclib -nodefaultlibs \
 	-single_module -o $(SHLIB_DIR)/$(SHLIB_SONAME).tmp \
 	-Wl,-exported_symbols_list,$(SHLIB_MAP) \
 	$(SHLIB_VERSTRING) \
-	@multilib_flags@ $(SHLIB_OBJS) $(SHLIB_LC) && \
-	if [ -f stmp-lipo ]; then \
-	  rm -f stmp-lipo; \
-	else true; fi
+	@multilib_flags@ $(SHLIB_OBJS) $(SHLIB_LC)
 
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
@@ -65,7 +62,7 @@ libgcc_s.%.dylib : $(SHLIB_VERPFX).%.ver libgcc.a
 	$(LIPO_FOR_TARGET) -output $@ -create $(@)_T*
 	rm $(@)_T*
 
-stmp-lipo: libgcc_s.10.4.dylib libgcc_s.10.5.dylib
+stmp-lipo: libgcc.a libgcc_s.10.4.dylib libgcc_s.10.5.dylib
 	# When building multilibbed target libraries, all the required
 	# libraries are expected to exist in the multilib directory.
 	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
