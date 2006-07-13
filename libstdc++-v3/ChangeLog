@@ -1,5 +1,10 @@
 2006-07-12  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/Makefile.am: Revert last change.
+	* include/Makefile.in: Same.
+
+2006-07-12  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/Makefile.am (pch_output): Don't precompile extc++.h.
 	(pch_output_dirs): Same.
 	* include/Makefile.in: Regenerate.
