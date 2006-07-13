@@ -1,3 +1,7 @@
+2006-07-13  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Test Directives): Document dg-shouldfail.
+
 2006-07-13  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_varpool_analyze_pending_decls): Call
