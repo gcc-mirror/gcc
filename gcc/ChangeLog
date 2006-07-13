@@ -1,3 +1,12 @@
+2006-07-13  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_varpool_analyze_pending_decls): Call
+	align_variable.
+	* output.h (align_variable): Declare.
+	* varasm.c (align_variable): Export.
+	* value-prof.c (tree_value_profile_transformations): Recompute iterator
+	when basic block changed.
+
 2006-07-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/sh.c (sh_reorg): Ignore deleted insns whilst

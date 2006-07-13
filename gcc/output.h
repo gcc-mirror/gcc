@@ -200,6 +200,10 @@ extern void assemble_end_function (tree, const char *);
    initial value (that will be done by the caller).  */
 extern void assemble_variable (tree, int, int, int);
 
+/* Compute the alignment of variable specified by DECL.
+   DONT_OUTPUT_DATA is from assemble_variable.  */
+extern void align_variable (tree decl, bool dont_output_data);
+
 /* Output something to declare an external symbol to the assembler.
    (Most assemblers don't need this, so we normally output nothing.)
    Do nothing if DECL is not external.  */

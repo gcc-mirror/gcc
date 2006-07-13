@@ -834,7 +834,7 @@ bss_initializer_p (tree decl)
 /* Compute the alignment of variable specified by DECL.
    DONT_OUTPUT_DATA is from assemble_variable.  */
 
-static void
+void
 align_variable (tree decl, bool dont_output_data)
 {
   unsigned int align = DECL_ALIGN (decl);
