@@ -1867,6 +1867,22 @@ gfc_check_present (gfc_expr * a)
       return FAILURE;
     }
 
+/*  13.14.82  PRESENT(A)
+......
+  Argument.  A shall be the name of an optional dummy argument that is accessible
+  in the subprogram in which the PRESENT function reference appears...  */
+
+  if (a->ref != NULL
+	&& !(a->ref->next == NULL
+	       && a->ref->type == REF_ARRAY
+	       && a->ref->u.ar.type == AR_FULL))
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must not be a sub-"
+		 "object of '%s'", gfc_current_intrinsic_arg[0],
+		 gfc_current_intrinsic, &a->where, sym->name);
+      return FAILURE;
+    }
+
   return SUCCESS;
 }
 

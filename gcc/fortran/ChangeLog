@@ -1,3 +1,18 @@
+006-07-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28174
+	* trans-expr.c (gfc_conv_aliased_arg): Missing formal arg means
+	that intent is INOUT (fixes regression).
+
+	PR fortran/25097
+	* check.c (check_present): The only permitted reference is a
+	full array reference.
+
+	PR fortran/20903
+	* decl.c (variable_decl): Add error if a derived type is not
+	from the current namespace if the namespace is an interface
+	body.
+
 2006-07-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/28163

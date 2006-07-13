@@ -1176,6 +1176,20 @@ variable_decl (int elem)
       goto cleanup;
     }
 
+  /* An interface body specifies all of the procedure's characteristics and these
+     shall be consistent with those specified in the procedure definition, except
+     that the interface may specify a procedure that is not pure if the procedure
+     is defined to be pure(12.3.2).  */
+  if (current_ts.type == BT_DERIVED
+	&& gfc_current_ns->proc_name->attr.if_source == IFSRC_IFBODY
+	&& current_ts.derived->ns != gfc_current_ns)
+    {
+      gfc_error ("the type of '%s' at %C has not been declared within the "
+		 "interface", name);
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
   /* In functions that have a RESULT variable defined, the function
      name always refers to function calls.  Therefore, the name is
      not allowed to appear in specification statements.  */
