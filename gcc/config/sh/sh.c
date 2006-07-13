@@ -4466,12 +4466,17 @@ sh_reorg (void)
 
 	  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
 	    {
+	      rtx linked_insn;
+
 	      if (REG_NOTE_KIND (link) != 0)
 		continue;
-	      set = single_set (XEXP (link, 0));
-	      if (set && rtx_equal_p (reg, SET_DEST (set)))
+	      linked_insn = XEXP (link, 0);
+	      set = single_set (linked_insn);
+	      if (set
+		  && rtx_equal_p (reg, SET_DEST (set))
+		  && ! INSN_DELETED_P (linked_insn))
 		{
-		  link = XEXP (link, 0);
+		  link = linked_insn;
 		  break;
 		}
 	    }
