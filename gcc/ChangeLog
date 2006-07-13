@@ -1,3 +1,9 @@
+2006-07-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Explain difference
+	between -fvisibility-inlines-hidden and setting hidden
+	visibility explicitly.
+
 2006-07-12  Eric Christopher  <echristo@apple.com>
 
 	* config/t-slibgcc-darwin (SHLIB_LINK): Don't munge stmp-lipo.

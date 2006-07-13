@@ -1618,10 +1618,15 @@ when used within the DSO@.  Enabling this option can have a dramatic effect
 on load and link times of a DSO as it massively reduces the size of the
 dynamic export table when the library makes heavy use of templates.
 
+The behaviour of this switch is not quite the same as marking the
+methods as hidden directly, because it does not affect static variables
+local to the function or cause the compiler to deduce that
+the function is defined in only one shared object.
+
 You may mark a method as having a visibility explicitly to negate the
 effect of the switch for that method.  For example, if you do want to
-compare pointers to a particular inline method, or the method has
-local static data, you might mark it as having default visibility.
+compare pointers to a particular inline method, you might mark it as
+having default visibility.
 
 @item -fno-weak
 @opindex fno-weak
