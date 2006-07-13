@@ -1,3 +1,10 @@
+2006-07-13  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* interpret.cc (_Jv_InterpMethod::compile): Add FIXME comment.
+	(_Jv_InterpMethod::run): SAVE_PC before executing any instruction 
+	using resolve_pool_entry, as it can throw. Likewise for div/rem ops
+	that can throw ArithmeticException.
+
 2006-07-12  Gary Benson  <gbenson@redhat.com>
 
 	* java/io/File.java (renameTo): Fix security checks.
