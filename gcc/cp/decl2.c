@@ -1712,13 +1712,20 @@ determine_visibility (tree decl)
       gcc_assert (TREE_CODE (decl) != VAR_DECL
 		  || !DECL_VTABLE_OR_VTT_P (decl));
 
-      if (DECL_FUNCTION_SCOPE_P (decl))
+      if (DECL_FUNCTION_SCOPE_P (decl) && ! DECL_VISIBILITY_SPECIFIED (decl))
 	{
 	  /* Local statics and classes get the visibility of their
-	     containing function.  */
+	     containing function by default, except that
+	     -fvisibility-inlines-hidden doesn't affect them.  */
 	  tree fn = DECL_CONTEXT (decl);
-	  DECL_VISIBILITY (decl) = DECL_VISIBILITY (fn);
-	  DECL_VISIBILITY_SPECIFIED (decl) = DECL_VISIBILITY_SPECIFIED (fn);
+	  if (DECL_VISIBILITY_SPECIFIED (fn) || ! DECL_CLASS_SCOPE_P (fn))
+	    {
+	      DECL_VISIBILITY (decl) = DECL_VISIBILITY (fn);
+	      DECL_VISIBILITY_SPECIFIED (decl) = 
+		DECL_VISIBILITY_SPECIFIED (fn);
+	    }
+	  else
+	    determine_visibility_from_class (decl, DECL_CONTEXT (fn));
 
 	  /* Local classes in templates have CLASSTYPE_USE_TEMPLATE set,
 	     but have no TEMPLATE_INFO, so don't try to check it.  */
