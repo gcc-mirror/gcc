@@ -1,3 +1,7 @@
+2006-07-13  Ben Elliston  <bje@au.ibm.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself as dfp maintainer.
+
 2006-07-06  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Port to hosts whose 'sort' and 'tail' implementations
