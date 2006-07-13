@@ -54,6 +54,9 @@ do
     $CXX -DNOTHREAD -D$CYCLE $TESTNAME $LIBS -o $EXE_NAME
     if [ -f $EXE_NAME ]; then
       ./$EXE_NAME
+    else
+      echo "compile error:"
+      echo "$CXX -DNOTHREAD -D$CYCLE $TESTNAME $LIBS -o $EXE_NAME"
     fi
   done
 
@@ -65,6 +68,9 @@ do
     $CXX $THREAD_FLAG -D$CYCLE $TESTNAME $LIBS -o $EXE_NAME
     if [ -f $EXE_NAME ]; then
       ./$EXE_NAME
+    else
+      echo "compile error:"
+      echo "$CXX $THREAD_FLAG -D$CYCLE $TESTNAME $LIBS -o $EXE_NAME"
     fi
   done
 
@@ -74,6 +80,9 @@ do
     $CXX $TESTNAME $LIBS -o $EXE_NAME
     if [ -f $EXE_NAME ]; then
 	./$EXE_NAME >& tmp.$FILE_NAME
+    else
+      echo "compile error:"
+      echo "$CXX $TESTNAME $LIBS -o $EXE_NAME"
     fi
     if [ -s tmp.$FILE_NAME ]; then
 	mv tmp.$FILE_NAME $FILE_NAME.xml

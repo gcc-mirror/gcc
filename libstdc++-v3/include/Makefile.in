@@ -980,21 +980,27 @@ thread_host_headers = \
 
 pch1_source = ${glibcxx_srcdir}/include/precompiled/stdc++.h
 pch1_output_builddir = ${host_builddir}/stdc++.h.gch
+pch1_output_anchor = ${host_builddir}/stdc++.h
 pch1_output_installdir = ${host_installdir}/stdc++.h.gch
 pch1a_output = ${pch1_output_builddir}/O0g.gch
 pch1b_output = ${pch1_output_builddir}/O2g.gch
 pch1_output = ${pch1a_output} ${pch1b_output}
 pch2_source = ${glibcxx_srcdir}/include/precompiled/stdtr1c++.h
 pch2_output_builddir = ${host_builddir}/stdtr1c++.h.gch
+pch2_output_anchor = ${host_builddir}/stdtr1c++.h
 pch2_output_installdir = ${host_installdir}/stdtr1c++.h.gch
 pch2_output = ${pch2_output_builddir}/O2g.gch
 pch3_source = ${glibcxx_srcdir}/include/precompiled/extc++.h
 pch3_output_builddir = ${host_builddir}/extc++.h.gch
+pch3_output_anchor = ${host_builddir}/extc++.h
 pch3_output_installdir = ${host_installdir}/extc++.h.gch
 pch3_output = ${pch3_output_builddir}/O2g.gch
 pch_output = ${pch1_output} ${pch2_output} ${pch3_output}
 pch_output_dirs = \
 	${pch1_output_builddir} ${pch2_output_builddir} ${pch3_output_builddir}
+
+pch_output_anchors = \
+	${pch1_output_anchor} ${pch2_output_anchor} ${pch3_output_anchor}
 
 PCHFLAGS = -Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
 @GLIBCXX_BUILD_PCH_FALSE@pch_build = 
@@ -1021,7 +1027,7 @@ allcreated = \
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = ${pch_output} 
+CLEANFILES = ${pch_output} ${pch_output_anchors}
 all: all-am
 
 .SUFFIXES:
@@ -1421,12 +1427,14 @@ ${pch1a_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
 	  mkdir -p ${pch1_output_builddir}; \
 	fi; \
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O0 -g ${pch1_source} -o $@
+	touch ${pch1_output_anchor}
 
 ${pch1b_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
 	if [ ! -d "${pch1_output_builddir}" ]; then \
 	  mkdir -p ${pch1_output_builddir}; \
 	fi; \
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch1_source} -o $@
+	touch ${pch1_output_anchor}
 
 # Build a precompiled TR1 include, stdtr1c++.h.gch/O2.gch
 ${pch2_output}: ${pch2_source} ${pch1_output}
@@ -1434,6 +1442,7 @@ ${pch2_output}: ${pch2_source} ${pch1_output}
 	  mkdir -p ${pch2_output_builddir}; \
 	fi; \
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch2_source} -o $@
+	touch ${pch2_output_anchor}
 
 # Build a precompiled extension include, extc++.h.gch/O2.gch
 ${pch3_output}: ${pch3_source} ${pch2_output}
@@ -1441,6 +1450,7 @@ ${pch3_output}: ${pch3_source} ${pch2_output}
 	  mkdir -p ${pch3_output_builddir}; \
 	fi; \
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch3_source} -o $@
+	touch ${pch3_output_anchor}
 
 # For robustness sake (in light of junk files or in-source
 # configuration), copy from the build or source tree to the install
@@ -1543,6 +1553,8 @@ install-pch:
 	$(mkinstalldirs) $(DESTDIR)${pch2_output_installdir}
 	for file in ${pch2_output_builddir}/*; do \
 	  $(INSTALL_DATA) $$file $(DESTDIR)${pch2_output_installdir}; done
+	$(INSTALL_DATA) ${pch1_output_anchor} $(DESTDIR)${host_installdir}
+	$(INSTALL_DATA) ${pch2_output_anchor} $(DESTDIR)${host_installdir}
 
 # To remove directories.
 clean-local:
