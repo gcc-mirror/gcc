@@ -265,6 +265,37 @@ proc dg-xfail-if { args } {
     }
 }
 
+# Record whether the program is expected to return a nonzero status.
+
+set shouldfail 0
+
+proc dg-shouldfail { args } {
+    # Don't bother if we're already skipping the test.
+    upvar dg-do-what dg-do-what
+    if { [lindex ${dg-do-what} 1] == "N" } {
+      return
+    }
+
+    global shouldfail
+
+    set args [lreplace $args 0 0]
+    if { [llength $args] > 1 } {
+	set selector [list target [lindex $args 1]]
+	if { [dg-process-target $selector] == "S" } {
+	    # The target matches, now check the flags.  These variables
+	    # are defined in DejaGnu's dg-test, needed by check-flags.
+	    upvar dg-extra-tool-flags dg-extra-tool-flags
+	    upvar tool_flags tool_flags
+
+	    if [check-flags $args] {
+		set shouldfail 1
+	    }
+	}
+    } else {
+	set shouldfail 1
+    }
+}
+
 # Intercept the call to the DejaGnu version of dg-process-target to
 # support use of an effective-target keyword in place of a list of
 # target triplets to xfail or skip a test.

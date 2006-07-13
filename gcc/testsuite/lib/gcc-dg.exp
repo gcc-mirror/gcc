@@ -186,6 +186,28 @@ proc gcc-dg-prune { system text } {
     return $text
 }
 
+# Replace ${tool}_load with a wrapper to provide for an expected nonzero
+# exit status.  Multiple languages include this file so this handles them
+# all, not just gcc.
+if { [info procs ${tool}_load] != [list] \
+      && [info procs saved_${tool}_load] == [list] } {
+    rename ${tool}_load saved_${tool}_load
+
+    proc ${tool}_load { program args } {
+	global tool
+	global shouldfail
+	set result [saved_${tool}_load $program $args]
+	if { $shouldfail != 0 } {
+	    switch [lindex $result 0] {
+		"pass" { set status "fail" }
+		"fail" { set status "pass" }
+	    }
+	    set result [list $status [lindex $result 1]]
+	}
+	return $result
+    }
+}
+
 # Utility routines.
 
 #
@@ -436,12 +458,14 @@ if { [info procs saved-dg-test] == [list] } {
 	global additional_prunes
 	global errorInfo
 	global compiler_conditional_xfail_data
+	global shouldfail
 
 	if { [ catch { eval saved-dg-test $args } errmsg ] } {
 	    set saved_info $errorInfo
 	    set additional_files ""
 	    set additional_sources ""
 	    set additional_prunes ""
+	    set shouldfail 0
 	    if [info exists compiler_conditional_xfail_data] {
 		unset compiler_conditional_xfail_data
 	    }
@@ -450,6 +474,7 @@ if { [info procs saved-dg-test] == [list] } {
 	set additional_files ""
 	set additional_sources ""
 	set additional_prunes ""
+	set shouldfail 0
 	if [info exists compiler_conditional_xfail_data] {
 	    unset compiler_conditional_xfail_data
 	}

@@ -1,3 +1,16 @@
+2006-07-13  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (tool_load): Wrapper to support shouldfail tests.
+	(dg-test): Support shouldfail tests.
+	* lib/target-supports-dg.exp (dg-shouldfail): New.
+	* gcc.test-framework/test-framework.awk: Handle shouldfail tests.
+	* gcc.test-framework/dg-do-run-sf-exp-F.c: New test.
+	* gcc.test-framework/dg-do-run-sf-exp-P.c: New test.
+	* gcc.test-framework/dg-do-run-sft-exp-F.c: New test.
+	* gcc.test-framework/dg-do-run-sft-exp-P.c: New test.
+	* gcc.test-framework/dg-dox-run-sf-exp-XF.c: New test.
+	* gcc.test-framework/dg-dox-run-sf-exp-XP.c: New test.
+
 2006-07-13  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.target/i386/memcpy-1.c: New.
