@@ -1,6 +1,7 @@
 // Low-level functions for atomic operations: MIPS version  -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +32,7 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+  // NB: MIPS II or above required.
   _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)

@@ -1,3 +1,21 @@
+2006-07-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): New.
+        * configure.ac: Use it.
+        * configure: Regenerated.	
+        * config.h.in: Regenerated.		
+        * configure.host: Simplify.
+        * include/bits/atomicity.h: Adjust macros.	
+        * config/cpu/generic/atomicity.h: Move...
+        * config/cpu/generic/atomicity_mutex: New.
+        * config/cpu/generic/atomicity_mutex/atomicity.h: ...here.
+        * config/cpu/generic/atomic_builtins: Rename...
+        * config/cpu/generic/atomicity_builtins: ...to this.
+        * config/cpu/generic/atomicity_builtins/atomicity.h: Moved.
+	* config/cpu/mips/atomicity.h: Comment MIPS II requirement.
+
+	* scripts/testsuite_flags.in: Make --cxxflags reflect CXXFLAGS.
+	
 2006-07-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (minstd_rand0, minstd_rand, ranlux3, ranlux4):

@@ -67,13 +67,16 @@
 c_model=c_std
 c_compatibility=no
 atomic_word_dir=cpu/generic
-cpu_defines_dir=cpu/generic
+atomicity_dir="cpu/generic"
+cpu_defines_dir="cpu/generic"
+try_cpu=generic
+abi_tweaks_dir="cpu/generic"
 
 # HOST-SPECIFIC OVERRIDES
 # Set any CPU-dependent bits.
-# Here we override defaults and catch more general cases due to naming
-# conventions (e.g., chip_name* to catch all variants).
 
+# Provide a way to funnel exotic flavors and prefixed/postfixed chip
+# variants into the established source config/cpu/* sub-directories.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
   alpha*)
@@ -89,11 +92,7 @@ case "${host_cpu}" in
     try_cpu=hppa
     ;;
   mips*)
-    # NB: cpu/mips/atomicity.h needs MIPS II or above.  
-    # Of course, there is no sane way to test for this, no ABI macro,
-    # and no consistent host_cpu name differentiation. Therefore, only
-    # use it where it is known to be safe, ie it runs linux (see below).
-    try_cpu=generic
+    try_cpu=mips
     ;;
   m680[246]0)
     try_cpu=m68k
@@ -101,31 +100,21 @@ case "${host_cpu}" in
   powerpc* | rs6000)
     try_cpu=powerpc
     ;;
-  s390x)
-    try_cpu=s390
-    ;;
   sparc* | ultrasparc)
     try_cpu=sparc
     ;;
   *)
     if test -d ${glibcxx_srcdir}/config/cpu/${host_cpu}; then
       try_cpu=${host_cpu}
-    else
-      try_cpu=generic
     fi
-    ;;
 esac
 
-# Set specific CPU overrides for atomic_word_dir. Most can just use generic.
-# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
-case "${host_cpu}" in
-  cris*)
-    atomic_word_dir=cpu/cris
-    ;;
-  sparc* | ultrasparc)
-    atomic_word_dir=cpu/sparc
-    ;;
-esac
+
+# Now look for the file(s) usually tied to a CPU model, and make
+# default choices for those if they haven't been explicitly set
+# already.  
+cpu_include_dir=cpu/${try_cpu}
+
 
 # Set specific CPU overrides for cpu_defines_dir. Most can just use generic.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
@@ -135,31 +124,40 @@ case "${host_cpu}" in
     ;;
 esac
 
-# Now look for the file(s) usually tied to a CPU model, and make
-# default choices for those if they haven't been explicitly set
-# already.  
-cpu_include_dir=cpu/${try_cpu}
-abi_baseline_pair=${try_cpu}-${host_os}
-unset try_cpu
 
+# Set specific CPU overrides for atomic_word_dir. Most can just use generic.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
-  alpha* | ia64 | powerpc* | rs6000 | s390*)
-    atomicity_dir="cpu/generic/atomic_builtins"
+  alpha*)
+    atomic_word_dir=cpu/alpha
     ;;
-  *)
-    if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/atomicity.h ; then
-      atomicity_dir=$cpu_include_dir
-    else
-      atomicity_dir="cpu/generic"
-    fi
+  cris*)
+    atomic_word_dir=cpu/cris
+    ;;
+  ia64)
+    atomic_word_dir=cpu/ia64
+    ;;
+  powerpc* | rs6000)
+    atomic_word_dir=cpu/powerpc
+    ;;
+  sparc* | ultrasparc)
+    atomic_word_dir=cpu/sparc
     ;;
 esac
 
+
+# Set specific CPU overrides for atomicity_dir.
+# This can be over-ridden in GLIBCXX_ENABLE_ATOMIC_BUILTINS.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/atomicity.h ; then
+  atomicity_dir=$cpu_include_dir
+fi
+
+
 if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/cxxabi_tweaks.h ; then
   abi_tweaks_dir=$cpu_include_dir
-else
-  abi_tweaks_dir="cpu/generic"
 fi
+
 
 # Set any OS-dependent bits.
 # Set the os_include_dir.
@@ -276,39 +274,39 @@ esac
 # Set any OS-dependent and CPU-dependent bits.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host}" in
-  alpha*-*-freebsd5*)
-    abi_baseline_pair="alpha-freebsd5"
+  *-*-linux*)
+    case "${host_cpu}" in
+      i[567]86)
+        abi_baseline_pair=i486-linux-gnu
+        ;;
+      powerpc64)
+        abi_baseline_pair=powerpc64-linux-gnu
+        ;;
+      s390)
+        abi_baseline_pair=s390-linux-gnu
+        ;;
+      s390x)
+        abi_baseline_pair=s390x-linux-gnu
+        ;;
+      x86_64)
+        abi_baseline_pair=x86_64-linux-gnu
+        ;;
+      *)
+        if test -d ${glibcxx_srcdir}/config/abi/post/${try_cpu}-linux-gnu; then
+          abi_baseline_pair=${try_cpu}-linux-gnu
+        fi
+    esac
     ;;
-  arm*-*-linux*)
-    abi_baseline_pair="arm-linux-gnu"
-    ;;
-  i*86-*-freebsd4*)
-    abi_baseline_pair="i386-freebsd4"
-    ;;
-  i*86-*-freebsd5*)
-    abi_baseline_pair="i386-freebsd5"
-    ;;
-  mips*-*-linux*)
-    atomicity_dir="cpu/mips"
-    abi_baseline_pair="mips-linux-gnu"
-    cpu_include_dir="cpu/mips"
+  mips*-*-*)
+    case "${host_os}" in
+      gnu* | linux* | irix*)
+        ;;
+      *)
+        atomicity_dir="cpu/generic"
+        ;;
+    esac
     ;;
   powerpc*-*-darwin*)
     port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
-    ;;
-  powerpc64-*-linux*)
-    abi_baseline_pair="powerpc64-linux-gnu"
-    ;;
-  s390-*-linux*)
-    abi_baseline_pair="s390-linux-gnu"
-    ;;
-  s390x-*-linux*)
-    abi_baseline_pair="s390x-linux-gnu"
-    ;;
-  sparc*-*-freebsd5*)
-    abi_baseline_pair="sparc-freebsd5"
-    ;;
-  x86_64-*-linux*)
-    abi_baseline_pair="x86_64-linux-gnu"
     ;;
 esac

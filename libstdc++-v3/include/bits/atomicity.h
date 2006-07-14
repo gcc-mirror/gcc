@@ -41,6 +41,15 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+#ifdef _GLIBCXX_ATOMIC_BUILTINS
+  static inline _Atomic_word 
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  { return __sync_fetch_and_add(__mem, __val); }
+
+  static inline void
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  { __sync_fetch_and_add(__mem, __val); }
+#else
   _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val);
@@ -48,34 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val);
-
-  static inline _Atomic_word
-  __exchange_and_add_multi(volatile _Atomic_word* __mem, int __val)
-  {
-#ifdef _GLIBCXX_ATOMIC_BUILTINS
-
-    return __sync_fetch_and_add(__mem, __val);
-
-#else
-
-    return __exchange_and_add(__mem, __val);
-
 #endif
-  }
-
-  static inline void
-  __atomic_add_multi(volatile _Atomic_word* __mem, int __val)
-  { 
-#ifdef _GLIBCXX_ATOMIC_BUILTINS
-
-    __sync_fetch_and_add(__mem, __val);
-
-#else
-
-    __atomic_add(__mem, __val);
-
-#endif
-  }
 
   static inline _Atomic_word
   __exchange_and_add_single(volatile _Atomic_word* __mem, int __val)
@@ -94,16 +76,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   __exchange_and_add_dispatch(volatile _Atomic_word* __mem, int __val)
   {
 #ifdef __GTHREADS
-
     if (__gthread_active_p())
-      return __exchange_and_add_multi(__mem, __val);
+      return __exchange_and_add(__mem, __val);
     else
       return __exchange_and_add_single(__mem, __val);
-
 #else
-
     return __exchange_and_add_single(__mem, __val);
-
 #endif
   }
 
@@ -112,23 +90,19 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   __atomic_add_dispatch(volatile _Atomic_word* __mem, int __val)
   {
 #ifdef __GTHREADS
-
     if (__gthread_active_p())
-      __atomic_add_multi(__mem, __val);
+      __atomic_add(__mem, __val);
     else
       __atomic_add_single(__mem, __val);
-
 #else
-
     __atomic_add_single(__mem, __val);
-
 #endif
   }
 
 _GLIBCXX_END_NAMESPACE
 
-/* Even if the CPU doesn't need a memory barrier, we need to ensure that
-   the compiler doesn't reorder memory accesses across the barriers.  */
+// Even if the CPU doesn't need a memory barrier, we need to ensure that
+// the compiler doesn't reorder memory accesses across the barriers.
 #ifndef _GLIBCXX_READ_MEM_BARRIER
 #define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("":::"memory")
 #endif

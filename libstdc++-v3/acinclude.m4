@@ -1967,6 +1967,69 @@ AC_DEFUN([GLIBCXX_ENABLE_PCH], [
 
 
 dnl
+dnl Check for atomic builtins.
+dnl See:
+dnl http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html#Atomic-Builtins
+dnl
+dnl This checks to see if the host supports the compiler-generated
+dnl builtins for atomic operations. Note, this is intended to be an
+dnl all-or-nothing switch, so all the atomic operations that are used
+dnl should be checked.
+dnl
+dnl Note:
+dnl libgomp and libgfortran do this with a link test, instead of an asm test.
+dnl see: CHECK_SYNC_FETCH_AND_ADD
+dnl
+dnl Defines:
+dnl  _GLIBCXX_ATOMIC_BUILTINS if the compiler on this target supports atomics.
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
+  AC_MSG_CHECKING([for atomic builtins])
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
+    cat > conftest.$ac_ext << EOF
+[#]line __oline__ "configure"
+int main()
+{
+  // NB: _Atomic_word not necessarily int. 
+  typedef int atomic_type;
+  atomic_type c1;
+  atomic_type c2;
+  const atomic_type c3(0);
+  if (__sync_fetch_and_add(&c1, c2) == c3)
+    {
+      // Do something.
+    }
+   return 0;
+}
+EOF
+    old_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS="$CXXFLAGS -S"
+    if AC_TRY_EVAL(ac_compile); then
+      if grep __sync_fetch_and_add conftest.s >/dev/null 2>&1 ; then
+        enable_atomic_builtins=no
+      else
+      AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS, 1,
+        [Define if builtin atomic operations are supported on this host.])
+        enable_atomic_builtins=yes
+	atomicity_dir=cpu/generic/atomicity_builtins
+      fi
+    fi
+    CXXFLAGS="$old_CXXFLAGS"
+    rm -f conftest*
+
+   # Now, if still generic, set to mutex.
+  if test $atomicity_dir = "cpu/generic" ; then
+	atomicity_dir=cpu/generic/atomicity_mutex
+  fi
+ AC_LANG_RESTORE
+ AC_MSG_RESULT($enable_atomic_builtins)
+])
+
+
+dnl
 dnl Check for exception handling support.  If an explicit enable/disable
 dnl sjlj exceptions is given, we don't have to detect.  Otherwise the
 dnl target may or may not support call frame exceptions.

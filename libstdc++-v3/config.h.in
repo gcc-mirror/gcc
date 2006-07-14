@@ -655,7 +655,7 @@
 /* Version number of package */
 #undef VERSION
 
-/* Define if atomic builtins are provided for this platform. */
+/* Define if builtin atomic operations are supported on this host. */
 #undef _GLIBCXX_ATOMIC_BUILTINS
 
 /* Define to use concept checking code from the boost libraries. */
