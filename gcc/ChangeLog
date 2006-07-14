@@ -1,3 +1,9 @@
+2006-07-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/linux-unwind.h (s390_fallback_frame_state): Detect
+	signal frames correctly even when the signal was installed with
+	sa_restorer set.
+
 2006-07-14  Carlos O'Donell  <carlos@codesoucery.com>
 
 
