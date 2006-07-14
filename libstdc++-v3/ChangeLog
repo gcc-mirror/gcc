@@ -1,5 +1,10 @@
 2006-07-14  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random (minstd_rand0, minstd_rand, ranlux3, ranlux4):
+	Use unsigned long as implementation-defined type.
+
+2006-07-14  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/random.tcc (struct _To_Unsigned_Type): Add.
 	(subtract_with_carry<>::seed(_Gen&, false_type)): Use an
 	unsigned type in the loop, fix factor multiplier, take g
