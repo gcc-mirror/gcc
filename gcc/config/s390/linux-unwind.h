@@ -51,17 +51,33 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
   } __attribute__ ((__aligned__ (8))) sigregs_;
 
   sigregs_ *regs;
-  int *signo = NULL;
+  int *signo;
 
   /* svc $__NR_sigreturn or svc $__NR_rt_sigreturn  */
   if (pc[0] != 0x0a || (pc[1] != 119 && pc[1] != 173))
     return _URC_END_OF_STACK;
 
+  /* Legacy frames:
+       old signal mask (8 bytes)
+       pointer to sigregs (8 bytes) - points always to next location
+       sigregs
+       retcode
+     This frame layout was used on kernels < 2.6.9 for non-RT frames,
+     and on kernels < 2.4.13 for RT frames as well.  Note that we need
+     to look at RA to detect this layout -- this means that if you use
+     sa_restorer to install a different signal restorer on a legacy
+     kernel, unwinding from signal frames will not work.  */
+  if (context->ra == context->cfa + 16 + sizeof (sigregs_))
+    {
+      regs = (sigregs_ *)(context->cfa + 16);
+      signo = NULL;
+    }
+
   /* New-style RT frame:
      retcode + alignment (8 bytes)
      siginfo (128 bytes)
      ucontext (contains sigregs)  */
-  if (context->ra == context->cfa)
+  else if (pc[1] == 173 /* __NR_rt_sigreturn */)
     {
       struct ucontext_
       {
@@ -75,18 +91,13 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
       signo = context->cfa + sizeof(long);
     }
 
-  /* Old-style RT frame and all non-RT frames:
+  /* New-style non-RT frame:
      old signal mask (8 bytes)
-     pointer to sigregs  */
+     pointer to sigregs (followed by signal number)  */
   else
     {
       regs = *(sigregs_ **)(context->cfa + 8);
-
-      /* Recent kernels store the signal number immediately after
-	 the sigregs; old kernels have the return trampoline at
-	 this location.  */
-      if ((void *)(regs + 1) != context->ra)
-	signo = (int *)(regs + 1);
+      signo = (int *)(regs + 1);
     }
 
   new_cfa = regs->gprs[15] + 16*sizeof(long) + 32;
