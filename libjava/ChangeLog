@@ -1,3 +1,11 @@
+2006-07-14  Gary Benson  <gbenson@redhat.com>
+
+	* java/io/File.java (internalExists): New method.
+	(exists): Use internalExists.
+	(internalIsDirectory): New method.
+	(isDirectory): Use internalIsDirectory.
+	(createTempFile): Use internalExists and internalIsDirectory.
+
 2006-07-13  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* interpret.cc (_Jv_InterpMethod::run): Don't SAVE_PC for fdiv.
