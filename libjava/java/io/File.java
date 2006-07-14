@@ -259,6 +259,15 @@ public class File implements Serializable, Comparable
       return path.equalsIgnoreCase(other.path);
   }
 
+  /*
+   * This method tests whether or not the file represented by the
+   * object actually exists on the filesystem.
+   */
+  private boolean internalExists()
+  {
+    return _access (EXISTS);
+  }
+  
   /**
    * This method tests whether or not the file represented by the object
    * actually exists on the filesystem.
@@ -270,7 +279,7 @@ public class File implements Serializable, Comparable
   public boolean exists()
   {
     checkRead();
-    return _access (EXISTS);
+    return internalExists();
   }
 
   /**
@@ -685,6 +694,15 @@ public class File implements Serializable, Comparable
    */
   public native boolean isAbsolute();
 
+  /*
+   * This method tests whether or not the file represented by this
+   * object is a directory.
+   */
+  private boolean internalIsDirectory()
+  {
+    return _stat (DIRECTORY);
+  }
+  
   /**
    * This method tests whether or not the file represented by this object
    * is a directory.  In order for this method to return <code>true</code>,
@@ -698,7 +716,7 @@ public class File implements Serializable, Comparable
   public boolean isDirectory()
   {
     checkRead();
-    return _stat (DIRECTORY);
+    return internalIsDirectory();
   }
 
   /**
@@ -1069,10 +1087,10 @@ public class File implements Serializable, Comparable
           throw new IOException("Cannot determine system temporary directory"); 
 	
         directory = new File(dirname);
-        if (!directory.exists())
+        if (!directory.internalExists())
           throw new IOException("System temporary directory "
                                 + directory.getName() + " does not exist.");
-        if (!directory.isDirectory())
+        if (!directory.internalIsDirectory())
           throw new IOException("System temporary directory "
                                 + directory.getName()
                                 + " is not really a directory.");
