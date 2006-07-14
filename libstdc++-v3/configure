@@ -7994,7 +7994,71 @@ _ACEOF
 
 
 
-if test $atomicity_dir = cpu/generic ; then
+
+  echo "$as_me:$LINENO: checking for atomic builtins" >&5
+echo $ECHO_N "checking for atomic builtins... $ECHO_C" >&6
+
+
+  ac_ext=cc
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+  # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
+    cat > conftest.$ac_ext << EOF
+#line 8011 "configure"
+int main()
+{
+  // NB: _Atomic_word not necessarily int.
+  typedef int atomic_type;
+  atomic_type c1;
+  atomic_type c2;
+  const atomic_type c3(0);
+  if (__sync_fetch_and_add(&c1, c2) == c3)
+    {
+      // Do something.
+    }
+   return 0;
+}
+EOF
+    old_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS="$CXXFLAGS -S"
+    if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; then
+      if grep __sync_fetch_and_add conftest.s >/dev/null 2>&1 ; then
+        enable_atomic_builtins=no
+      else
+
+cat >>confdefs.h <<\_ACEOF
+#define _GLIBCXX_ATOMIC_BUILTINS 1
+_ACEOF
+
+        enable_atomic_builtins=yes
+	atomicity_dir=cpu/generic/atomicity_builtins
+      fi
+    fi
+    CXXFLAGS="$old_CXXFLAGS"
+    rm -f conftest*
+
+   # Now, if still generic, set to mutex.
+  if test $atomicity_dir = "cpu/generic" ; then
+	atomicity_dir=cpu/generic/atomicity_mutex
+  fi
+ ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+ echo "$as_me:$LINENO: result: $enable_atomic_builtins" >&5
+echo "${ECHO_T}$enable_atomic_builtins" >&6
+
+if test $atomicity_dir = cpu/generic/atomic_mutex ; then
   { echo "$as_me:$LINENO: WARNING: No native atomic operations are provided for this platform." >&5
 echo "$as_me: WARNING: No native atomic operations are provided for this platform." >&2;}
   if test $target_thread_file = single; then
@@ -109919,14 +109983,6 @@ ABI_TWEAKS_SRCDIR=config/${abi_tweaks_dir}
 
 
 
-# Atomic builtins can be inlined in bits/atomicity.h.
-if test $atomicity_dir = cpu/generic/atomic_builtins ; then
-
-cat >>confdefs.h <<\_ACEOF
-#define _GLIBCXX_ATOMIC_BUILTINS 1
-_ACEOF
-
-fi
 
 # Determine cross-compile flags and AM_CONDITIONALs.
 #AC_SUBST(GLIBCXX_IS_NATIVE)
