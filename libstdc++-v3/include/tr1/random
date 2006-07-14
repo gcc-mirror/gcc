@@ -443,12 +443,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   /**
    * The classic Minimum Standard rand0 of Lewis, Goodman, and Miller.
    */
-  typedef linear_congruential<unsigned int, 16807, 0, 2147483647> minstd_rand0;
+  typedef linear_congruential<unsigned long, 16807, 0, 2147483647> minstd_rand0;
 
   /**
    * An alternative LCR (Lehmer Generator function) .
    */
-  typedef linear_congruential<unsigned int, 48271, 0, 2147483647> minstd_rand;
+  typedef linear_congruential<unsigned long, 48271, 0, 2147483647> minstd_rand;
 
 
   /**
@@ -1056,7 +1056,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * James's luxury-level-3 integer adaptation of Luescher's generator.
    */
   typedef discard_block<
-    subtract_with_carry<int, (1 << 24), 10, 24>,
+    subtract_with_carry<unsigned long, (1 << 24), 10, 24>,
       223,
       24
       > ranlux3;
@@ -1065,7 +1065,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * James's luxury-level-4 integer adaptation of Luescher's generator.
    */
   typedef discard_block<
-    subtract_with_carry<int, (1 << 24), 10, 24>,
+    subtract_with_carry<unsigned long, (1 << 24), 10, 24>,
       389,
       24
       > ranlux4;
