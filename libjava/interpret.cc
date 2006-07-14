@@ -1847,7 +1847,6 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 
     insn_fdiv:
       {
-	SAVE_PC();
 	jfloat value2 = POPF();
 	jfloat value1 = POPF();
 	jfloat res = value1 / value2;
