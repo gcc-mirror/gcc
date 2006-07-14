@@ -1,3 +1,9 @@
+2006-07-14  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28343
+	* decl.c (cp_finish_decl): Check asmspec_tree for error_mark_node.
+	* decl2.c (grokfield): Likewise.
+
 2006-07-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* decl2.c (determine_visibility): Don't change visibility of
