@@ -1,6 +1,6 @@
 // backtrace.h - Fallback backtrace implementation. default implementation.
 
-/* Copyright (C) 2005  Free Software Foundation
+/* Copyright (C) 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,10 +13,11 @@ details.  */
 
 #include <java-stack.h>
 
-/* Store return addresses of the current program stack in
-   STATE and return the exact number of values stored.  */
-void
-fallback_backtrace (_Jv_UnwindState *)
+/* Unwind through the call stack calling TRACE_FN with STATE for every stack
+   frame.  Returns the reason why the unwinding was stopped.  */
+_Unwind_Reason_Code
+fallback_backtrace (_Unwind_Trace_Fn, _Jv_UnwindState *)
 {
+  return _URC_NO_REASON;
 }
 #endif

@@ -1,3 +1,22 @@
+2006-07-14  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	* stacktrace.cc (_Jv_StackTrace::GetStackTrace): Unconditionally use
+	_Unwind_Backtrace().
+	(_Jv_StackTrace::GetCallerInfo): Enable even for targets using SJLJ
+	EH.
+	(_Jv_StackTrace::GetClassContext): Unconditionally use
+	_Unwind_Backtrace().
+	(_Jv_StackTrace::GetFirstNonSystemClassLoader): Likewise.
+	* sysdep/i386/backtrace.h (HAVE_FALLBACK_BACKTRACE): Do not define.
+	(_Unwind_GetIPInfo): Define macro if SJLJ EH is in use.
+	(_Unwind_GetRegionStart): Likewise.
+	(_Unwind_Backtrace): Likewise.
+	(fallback_backtrace): Accept additional unwind trace function
+	argument.  Call it during unwinding.  Stop when any of _Jv_RunMain(),
+	_Jv_ThreadStart() or main() is seen during unwinding.
+	* sysdep/generic/backtrace.h (fallback_backtrace): Accept an
+	additional unwind trace function argument.
+
 2006-07-14  Gary Benson  <gbenson@redhat.com>
 
 	* java/io/File.java (internalExists): New method.
