@@ -1,3 +1,8 @@
+2006-07-14  Eliot Dresselhaus  <eliot@sonic.net>
+
+	PR target/27287
+	* config/rs6000/spe.md (frob_di_df_2): Add m->r alternative.
+
 2006-07-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux-unwind.h (s390_fallback_frame_state): Detect

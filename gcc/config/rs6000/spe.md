@@ -2211,11 +2211,13 @@
   [(set_attr "length" "8")])
 
 (define_insn "*frob_di_df_2"
-  [(set (subreg:DF (match_operand:DI 0 "register_operand" "=&r") 0)
-	(match_operand:DF 1 "register_operand" "r"))]
+  [(set (subreg:DF (match_operand:DI 0 "register_operand" "=&r,r") 0)
+	(match_operand:DF 1 "input_operand" "r,m"))]
   "TARGET_E500_DOUBLE"
-  "evmergehi %H0,%1,%1\;evmergelo %L0,%1,%1"
-  [(set_attr "length" "8")])
+  "@
+   evmergehi %H0,%1,%1\;evmergelo %L0,%1,%1
+   evldd%X1 %0,%y1"
+  [(set_attr "length" "8,4")])
 
 (define_insn "*mov_sidf_e500_subreg0"
   [(set (subreg:SI (match_operand:DF 0 "register_operand" "+r") 0)
