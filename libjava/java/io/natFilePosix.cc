@@ -330,7 +330,7 @@ java::io::File::performSetLastModified (jlong time)
   
   tb.actime = time / 1000;
   tb.modtime = time / 1000;
-  return ::utime (buf, &tb);
+  return (::utime (buf, &tb) == 0);
 #else
   return false;
 #endif
