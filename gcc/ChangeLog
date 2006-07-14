@@ -1,3 +1,15 @@
+2006-07-14  Carlos O'Donell  <carlos@codesoucery.com>
+
+
+	* dbxout.c (dbxout_begin_prologue): Emit LFBB label at function start.
+	(dbxout_function_end): Use local label LFBB. Remove hook DBX_OUTPUT_NFUN.
+	(dbxout_source_line): Use local label LFBB.
+	(dbxout_block): Likewise.
+	(dbx_output_lbrac): Remove hook DBX_OUTPUT_LBRAC.
+	(dbx_output_rbrac): Remove hook DBX_OUTPUT_RBRAC.
+	* config/rs6000/linux64.h: Remove DBX_OUTPUT_LBRAC, DBX_OUTPUT_RBRAC,
+	and DBX_OUTPUT_NFUN.
+
 2006-07-13  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/sourcebuild.texi (Test Directives): Document dg-shouldfail.
