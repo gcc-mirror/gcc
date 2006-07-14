@@ -102,6 +102,28 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  2 + std::numeric_limits<_RealType>::digits * 3010/10000;
       };
 
+    template<typename _ValueT>
+      struct _To_Unsigned_Type
+      { typedef _ValueT _Type; };
+
+    template<>
+      struct _To_Unsigned_Type<short>
+      { typedef unsigned short _Type; };
+
+    template<>
+      struct _To_Unsigned_Type<int>
+      { typedef unsigned int _Type; };
+
+    template<>
+      struct _To_Unsigned_Type<long>
+      { typedef unsigned long _Type; };
+
+#ifdef _GLIBCXX_USE_LONG_LONG
+    template<>
+      struct _To_Unsigned_Type<long long>
+      { typedef unsigned long long _Type; };
+#endif
+
   } // namespace _Private
 
 
@@ -347,6 +369,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     subtract_with_carry<_IntType, __m, __s, __r>::
     seed(unsigned long __value)
     {
+      if (__value == 0)
+	__value = 19780503;
+
       std::tr1::linear_congruential<unsigned long, 40014, 0, 2147483563>
 	__lcg(__value);
 
@@ -357,35 +382,35 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       _M_p = 0;
     }
 
-  //
-  // This implementation differs from the tr1 spec because the tr1 spec refused
-  // to make any sense to me:  the exponent of the factor in the spec goes from
-  // 1 to (n-1), but it would only make sense to me if it went from 0 to (n-1).
-  //
-  // This algorithm is still problematic because it can overflow left right and
-  // center.
-  //
   template<typename _IntType, _IntType __m, int __s, int __r>
     template<class _Gen>
-    void
-    subtract_with_carry<_IntType, __m, __s, __r>::
-    seed(_Gen& __gen, false_type)
-    {
-      const int __n = (std::numeric_limits<_IntType>::digits + 31) / 32;
-      for (int __i = 0; __i < long_lag; ++__i)
-	{
-	  _M_x[__i] = 0;
-	  unsigned long __factor = 1;
-	  for (int __j = 0; __j < __n; ++__j)
-	    {
-	      _M_x[__i] += __gen() * __factor;
-	      __factor *= 0x80000000;
-	    }
-	  _M_x[__i] = _Private::__mod<_IntType, 1, 0, modulus>(_M_x[__i]);
-	}
-      _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
-      _M_p = 0;
-    }
+      void
+      subtract_with_carry<_IntType, __m, __s, __r>::
+      seed(_Gen& __gen, false_type)
+      {
+	const int __n = (std::numeric_limits<_IntType>::digits + 31) / 32;
+
+	typedef typename _Private::_Select<(sizeof(unsigned) == 4),
+	  unsigned, unsigned long>::_Type _UInt32Type;
+
+	typedef typename _Private::_To_Unsigned_Type<_IntType>::_Type
+	  _UIntType;
+
+	for (int __i = 0; __i < long_lag; ++__i)
+	  {
+	    _UIntType __tmp = 0;
+	    _UIntType __factor = 1;
+	    for (int __j = 0; __j < __n; ++__j)
+	      {
+		__tmp += (_Private::__mod<_UInt32Type, 1, 0, 0>(__gen())
+			  * __factor);
+		__factor *= _Private::_Shift<_UIntType, 32>::__value;
+	      }
+	    _M_x[__i] = _Private::__mod<_UIntType, 1, 0, modulus>(__tmp);
+	  }
+	_M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
+	_M_p = 0;
+      }
 
   template<typename _IntType, _IntType __m, int __s, int __r>
     typename subtract_with_carry<_IntType, __m, __s, __r>::result_type
