@@ -125,7 +125,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       }
 
     template<typename _UIntType, int __w, bool = 
-	     __w != std::numeric_limits<_UIntType>::digits>
+	     __w < std::numeric_limits<_UIntType>::digits>
       struct _Shift
       { static const _UIntType __value = 0; };
 
