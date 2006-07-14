@@ -1,3 +1,8 @@
+2006-07-14  Anthony Green  <green@redhat.com>
+
+	* java/io/natFilePosix.cc (performSetLastModified): Return true on
+	success, false otherwise.
+
 2006-07-14  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* stacktrace.cc (_Jv_StackTrace::GetStackTrace): Unconditionally use
