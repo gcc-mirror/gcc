@@ -2507,7 +2507,7 @@ is detached from the runtime once it has finished making Java calls. Everything
 is wrapped with a try/catch block to provide a default handler for any uncaught 
 exceptions.
 
-The example can be compiled with @command{c++ test.cc -lgcj}.
+The example can be compiled with @command{c++ -c test.cc; gcj test.o}.
 
 @example
 // test.cc
@@ -2516,7 +2516,7 @@ The example can be compiled with @command{c++ test.cc -lgcj}.
 #include <java/io/PrintStream.h>
 #include <java/lang/Throwable.h>
 
-int main(int argc, char *argv)
+int main(int argc, char *argv[])
 @{
   using namespace java::lang;
   
