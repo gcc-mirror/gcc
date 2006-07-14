@@ -153,13 +153,7 @@ _Jv_StackTrace::GetStackTrace(void)
   _Jv_UnwindState state (trace_size);
   state.frames = (_Jv_StackFrame *) &frames;
 
-#ifdef SJLJ_EXCEPTIONS
-  // The Unwind interface doesn't work with the SJLJ exception model.
-  // Fall back to a platform-specific unwinder.
-  fallback_backtrace (&state);
-#else /* SJLJ_EXCEPTIONS */  
   _Unwind_Backtrace (UnwindTraceFn, &state);
-#endif /* SJLJ_EXCEPTIONS */
   
   // Copy the trace and return it.
   int traceSize = sizeof (_Jv_StackTrace) + 
@@ -423,7 +417,6 @@ void
 _Jv_StackTrace::GetCallerInfo (jclass checkClass, jclass *caller_class,
   _Jv_Method **caller_meth)
 {
-#ifndef SJLJ_EXCEPTIONS
   int trace_size = 20;
   _Jv_StackFrame frames[trace_size];
   _Jv_UnwindState state (trace_size);
@@ -447,9 +440,6 @@ _Jv_StackTrace::GetCallerInfo (jclass checkClass, jclass *caller_class,
     *caller_class = trace_data.foundClass;
   if (caller_meth)
     *caller_meth = trace_data.foundMeth;
-#else
-  return;
-#endif
 }
 
 // Return a java array containing the Java classes on the stack above CHECKCLASS.
@@ -466,13 +456,7 @@ _Jv_StackTrace::GetClassContext (jclass checkClass)
   //JvSynchronized (ncodeMap);
   UpdateNCodeMap ();
 
-#ifdef SJLJ_EXCEPTIONS
-  // The Unwind interface doesn't work with the SJLJ exception model.
-  // Fall back to a platform-specific unwinder.
-  fallback_backtrace (&state);
-#else /* SJLJ_EXCEPTIONS */  
   _Unwind_Backtrace (UnwindTraceFn, &state);
-#endif /* SJLJ_EXCEPTIONS */  
 
   // Count the number of Java frames on the stack.
   int jframe_count = 0;
@@ -543,13 +527,7 @@ _Jv_StackTrace::GetFirstNonSystemClassLoader ()
   //JvSynchronized (ncodeMap);
   UpdateNCodeMap ();
   
-#ifdef SJLJ_EXCEPTIONS
-  // The Unwind interface doesn't work with the SJLJ exception model.
-  // Fall back to a platform-specific unwinder.
-  fallback_backtrace (&state);
-#else /* SJLJ_EXCEPTIONS */  
   _Unwind_Backtrace (UnwindTraceFn, &state);
-#endif /* SJLJ_EXCEPTIONS */  
 
   if (state.trace_data)
     return (ClassLoader *) state.trace_data;

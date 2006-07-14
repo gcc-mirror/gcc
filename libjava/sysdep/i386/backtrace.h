@@ -13,21 +13,46 @@ details.  */
 
 #include <java-stack.h>
 
-#define HAVE_FALLBACK_BACKTRACE
+extern int main (int, char **);
 
-/* Store return addresses of the current program stack in
-   STATE and return the exact number of values stored.  */
-void
-fallback_backtrace (_Jv_UnwindState *state)
+/* The context used to keep track of our position while unwinding through
+   the call stack.  */
+struct _Unwind_Context
+{
+  /* The starting address of the method.  */
+  _Jv_uintptr_t meth_addr;
+
+  /* The return address in the method.  */
+  _Jv_uintptr_t ret_addr;
+};
+
+#ifdef SJLJ_EXCEPTIONS
+
+#undef _Unwind_GetIPInfo
+#define _Unwind_GetIPInfo(ctx,ip_before_insn) \
+  (*(ip_before_insn) = 1, (ctx)->ret_addr)
+
+#undef _Unwind_GetRegionStart
+#define _Unwind_GetRegionStart(ctx) \
+  ((ctx)->meth_addr)
+
+#undef _Unwind_Backtrace
+#define _Unwind_Backtrace(trace_fn,state_ptr) \
+  (fallback_backtrace (trace_fn, state_ptr))
+
+#endif /* SJLJ_EXCEPTIONS */
+
+/* Unwind through the call stack calling TRACE_FN with STATE for each stack
+   frame.  Returns the reason why the unwinding was stopped.  */
+_Unwind_Reason_Code
+fallback_backtrace (_Unwind_Trace_Fn trace_fn, _Jv_UnwindState *state)
 {
   register _Jv_uintptr_t *_ebp __asm__ ("ebp");
   register _Jv_uintptr_t _esp __asm__ ("esp");
   _Jv_uintptr_t rfp;
+  _Unwind_Context ctx;
 
-  int i = state->pos;
-  for (rfp = *_ebp;
-       rfp && i < state->length;
-       rfp = *(_Jv_uintptr_t *)rfp)
+  for (rfp = *_ebp; rfp; rfp = *(_Jv_uintptr_t *)rfp)
     {
       /* Sanity checks to eliminate dubious-looking frame pointer chains.
          The frame pointer should be a 32-bit word-aligned stack address.
@@ -42,12 +67,7 @@ fallback_backtrace (_Jv_UnwindState *state)
 
       /* Get the return address in the calling function.  This is stored on
          the stack just before the value of the old frame pointer.  */
-      _Jv_uintptr_t ret_addr
-        = *(_Jv_uintptr_t *)(rfp + sizeof (_Jv_uintptr_t));
-
-      state->frames[i].type = frame_native;
-      state->frames[i].ip = (void *)(ret_addr - 1);
-      state->frames[i].start_ip = NULL;
+      ctx.ret_addr = *(_Jv_uintptr_t *)(rfp + sizeof (_Jv_uintptr_t));
 
       /* Try to locate a "pushl %ebp; movl %esp, %ebp" function prologue
          by scanning backwards at even addresses below the return address.
@@ -56,7 +76,8 @@ fallback_backtrace (_Jv_UnwindState *state)
          FIXME: This is not robust and will probably give us false positives,
          but this is about the best we can do if we do not have DWARF-2 unwind
          information based exception handling.  */
-      _Jv_uintptr_t scan_addr = (ret_addr & 0xFFFFFFFE) - 2;
+      ctx.meth_addr = (_Jv_uintptr_t)NULL;
+      _Jv_uintptr_t scan_addr = (ctx.ret_addr & 0xFFFFFFFE) - 2;
       _Jv_uintptr_t limit_addr
         = (scan_addr > 1024 * 1024) ? (scan_addr - 1024 * 1024) : 2;
       for ( ; scan_addr >= limit_addr; scan_addr -= 2)
@@ -65,17 +86,26 @@ fallback_backtrace (_Jv_UnwindState *state)
           if (scan_bytes[0] == 0x55 && scan_bytes[1] == 0x89
               && scan_bytes[2] == 0xE5)
             {
-              state->frames[i].start_ip = (void *)scan_addr;
+              ctx.meth_addr = scan_addr;
               break;
             }
         }
 
-      /* No need to unwind beyond JvRunMain().  */
-      if (state->frames[i].start_ip == (void *)JvRunMain)
-        break;
+      /* Now call the unwinder callback function. */
+      if (trace_fn != NULL)
+        (*trace_fn) (&ctx, state);
 
-      i++;
+      /* No need to unwind beyond _Jv_RunMain(), _Jv_ThreadStart or
+         main().  */
+      void *jv_runmain
+        = (void *)(void (*)(JvVMInitArgs *, jclass, const char *, int,
+                            const char **, bool))_Jv_RunMain;
+      if (ctx.meth_addr == (_Jv_uintptr_t)jv_runmain
+          || ctx.meth_addr == (_Jv_uintptr_t)_Jv_ThreadStart
+          || (ctx.meth_addr - (_Jv_uintptr_t)main) < 16)
+        break;
     }
-  state->pos = i;
+
+  return _URC_NO_REASON;
 }
 #endif
