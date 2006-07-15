@@ -2164,19 +2164,7 @@ c_parser_typeof_specifier (c_parser *parser)
 	 is evaluated, this can be evaluated.  For now, we avoid
 	 evaluation when the context might.  */
       if (!skip_evaluation && was_vm)
-	{
-	  tree e = expr.value;
-
-	  /* If the expression is not of a type to which we cannot assign a line
-	     number, wrap the thing in a no-op NOP_EXPR.  */
-	  if (DECL_P (e) || CONSTANT_CLASS_P (e))
-	    e = build1 (NOP_EXPR, void_type_node, e);
-
-	  if (EXPR_P (e))
-	    SET_EXPR_LOCATION (e, input_location);
-
-	  add_stmt (e);
-	}
+	c_finish_expr_stmt (expr.value);
       pop_maybe_used (was_vm);
     }
   c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
