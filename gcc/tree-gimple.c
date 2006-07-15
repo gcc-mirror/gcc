@@ -193,11 +193,12 @@ is_gimple_stmt (tree t)
 {
   enum tree_code code = TREE_CODE (t);
 
-  if (IS_EMPTY_STMT (t))
-    return 1;
-
   switch (code)
     {
+    case NOP_EXPR:
+      /* The only valid NOP_EXPR is the empty statement.  */
+      return IS_EMPTY_STMT (t);
+
     case BIND_EXPR:
     case COND_EXPR:
       /* These are only valid if they're void.  */
