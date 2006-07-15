@@ -9,6 +9,7 @@ struct bar {
 
 int a = __builtin_offsetof(bar, foo);  // { dg-error "static data member" }
 int b = __builtin_offsetof(bar, baz);  // { dg-error "member function" }
+int b0 = __builtin_offsetof(bar, baz[0]);  // { dg-error "function" }
 int c = __builtin_offsetof(bar, ~bar);  // { dg-error "member function" }
 
 typedef int I;
