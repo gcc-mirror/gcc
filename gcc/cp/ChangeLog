@@ -7,6 +7,10 @@
 	type not being an acceptable Java parameter if 
 	it's error_mark_node.
 	
+	PR c++/28269
+	* parser.c (cp_parser_elaborated_type_specifier):
+	Return early if an invalid type was detected.
+	
 2006-07-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28249
