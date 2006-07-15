@@ -1,5 +1,9 @@
 2006-07-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28294
+	* semantics.c (finish_offsetof): Use TREE_OPERAND for COMPONENT_REFs
+	only.
+
 	PR c++/28387
 	* decl2.c (cplus_decl_attributes): Check for invalid decls.
 

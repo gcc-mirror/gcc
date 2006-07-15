@@ -2905,8 +2905,9 @@ finish_offsetof (tree expr)
       || TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE
       || TREE_CODE (TREE_TYPE (expr)) == UNKNOWN_TYPE)
     {
-      error ("cannot apply %<offsetof%> to member function %qD",
-	     TREE_OPERAND (expr, 1));
+      if (TREE_CODE (expr) == COMPONENT_REF)
+	expr = TREE_OPERAND (expr, 1);
+      error ("cannot apply %<offsetof%> to member function %qD", expr);
       return error_mark_node;
     }
   return fold_offsetof (expr);
