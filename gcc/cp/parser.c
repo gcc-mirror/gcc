@@ -10247,6 +10247,9 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	}
     }
 
+  if (type == error_mark_node)
+    return error_mark_node;
+
   /* Allow attributes on forward declarations of classes.  */
   if (attributes)
     {

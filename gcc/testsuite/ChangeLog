@@ -2,6 +2,9 @@
 
 	PR c++/28292
 	* g++.dg/other/error12.C: New test.
+
+	PR c++/28269
+	* g++.dg/template/crash54.C: New test.
 	
 2006-07-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
