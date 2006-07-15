@@ -1,3 +1,7 @@
+2006-07-14  Steven G. Kargl  <kargls@comcast.net>
+
+	* trans-expr.c (gfc_trans_string_copy): Evaluate the string lengths
+
 006-07-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28174
