@@ -90,25 +90,3 @@ etime (gfc_array_r4 *t)
   etime_sub (t, &val);
   return val;
 }
-
-/* LAPACK's test programs declares ETIME external, therefore we
-   need this.  */
-
-extern GFC_REAL_4 etime_ (GFC_REAL_4 *t);
-export_proto_np(etime_);
-
-GFC_REAL_4
-etime_ (GFC_REAL_4 *t)
-{
-  gfc_array_r4 desc;
-  GFC_REAL_4 val;
-
-  /* We only fill in the fields that are used in etime_sub.  */
-  desc.dim[0].lbound = 0;
-  desc.dim[0].ubound = 1;
-  desc.dim[0].stride = 1;
-  desc.data = t;
-
-  etime_sub (&desc, &val);
-  return val;
-}
