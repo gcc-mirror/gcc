@@ -1,3 +1,8 @@
+2006-07-15  Roger Sayle  <roger@eyesopen.com>
+
+	* tree-gimple.c (is_gimple_stmt): Sink test of IS_EMPTY_STMT into
+	a new NOP_EXPR case of the switch statement.
+
 2006-07-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR middle-end/28160
