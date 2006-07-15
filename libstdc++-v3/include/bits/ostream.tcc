@@ -421,15 +421,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename __ostream_type::sentry __cerb(__out);
       if (__cerb && __s)
 	{
-	  size_t __clen = __traits_type::length(__s);
-	  _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							       * __clen));
-	  for (size_t  __i = 0; __i < __clen; ++__i)
-	    __ws[__i] = __out.widen(__s[__i]);
-	  _CharT* __str = __ws;
-
+	  _CharT* __ws = 0;
 	  try
 	    {
+	      const size_t __clen = __traits_type::length(__s);
+	      __ws = new _CharT[__clen];
+	      for (size_t  __i = 0; __i < __clen; ++__i)
+		__ws[__i] = __out.widen(__s[__i]);
+	      _CharT* __str = __ws;
+	      
 	      const streamsize __w = __out.width();
 	      streamsize __len = static_cast<streamsize>(__clen);
 	      if (__w > __len)
@@ -444,9 +444,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		}
 	      __out._M_write(__str, __len);
 	      __out.width(0);
+
+	      delete [] __ws;
 	    }
 	  catch(...)
-	    { __out._M_setstate(ios_base::badbit); }
+	    {
+	      delete [] __ws;
+	      __out._M_setstate(ios_base::badbit);
+	    }
 	}
       else if (!__s)
 	__out.setstate(ios_base::badbit);
