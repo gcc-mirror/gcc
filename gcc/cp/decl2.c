@@ -469,8 +469,11 @@ check_member_template (tree tmpl)
 static bool
 acceptable_java_type (tree type)
 {
+  if (type == error_mark_node)
+    return false;
+
   if (TREE_CODE (type) == VOID_TYPE || TYPE_FOR_JAVA (type))
-    return 1;
+    return true;
   if (TREE_CODE (type) == POINTER_TYPE || TREE_CODE (type) == REFERENCE_TYPE)
     {
       type = TREE_TYPE (type);
@@ -526,8 +529,9 @@ check_java_method (tree method)
       tree type = TREE_VALUE (arg_types);
       if (!acceptable_java_type (type))
 	{
-	  error ("Java method %qD has non-Java parameter type %qT",
-		 method, type);
+          if (type != error_mark_node)
+	    error ("Java method %qD has non-Java parameter type %qT",
+		   method, type);
 	  jerr = true;
 	}
     }
