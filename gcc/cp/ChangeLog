@@ -1,5 +1,11 @@
 2006-07-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28249
+	* parser.c (cp_parser_check_decl_spec): New function.
+	(cp_parser_decl_specifier_seq): Factor out check for repeated
+	decl-specifiers into cp_parser_check_decl_spec. Use it.
+	(cp_parser_type_specifier_seq) Use it.
+
 	PR c++/28294
 	* semantics.c (finish_offsetof): Use TREE_OPERAND for COMPONENT_REFs
 	only.
