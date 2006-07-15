@@ -2228,10 +2228,10 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 /* Generate code to copy a string.  */
 
 static void
-gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
-		       tree slen, tree src)
+gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
+		       tree slength, tree src)
 {
-  tree tmp;
+  tree tmp, dlen, slen;
   tree dsc;
   tree ssc;
   tree cond;
@@ -2240,6 +2240,9 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlen, tree dest,
   tree tmp3;
   tree tmp4;
   stmtblock_t tempblock;
+
+  dlen = fold_convert (size_type_node, gfc_evaluate_now (dlength, block));
+  slen = fold_convert (size_type_node, gfc_evaluate_now (slength, block));
 
   /* Deal with single character specially.  */
   dsc = gfc_to_single_character (dlen, dest);
