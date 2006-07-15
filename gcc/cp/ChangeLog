@@ -1,3 +1,12 @@
+2006-07-15  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/28292
+	* decl2.c (acceptable_java_type): Robustify. Use
+	proper Boolean return type instead of return 1.
+	(check_java_method): Don't issue error about
+	type not being an acceptable Java parameter if 
+	it's error_mark_node.
+	
 2006-07-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28249
