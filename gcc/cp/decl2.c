@@ -997,7 +997,8 @@ grokbitfield (const cp_declarator *declarator,
 void
 cplus_decl_attributes (tree *decl, tree attributes, int flags)
 {
-  if (*decl == NULL_TREE || *decl == void_type_node)
+  if (*decl == NULL_TREE || *decl == void_type_node
+      || *decl == error_mark_node)
     return;
 
   if (TREE_CODE (*decl) == TEMPLATE_DECL)
