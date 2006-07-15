@@ -1,3 +1,13 @@
+2006-07-15  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR middle-end/28160
+	* stor-layout.c (place_field): Take the bit field with
+	an excessive size into account in the ms-bitfiled case.
+
+	PR middle-end/28161
+	* stor-layout.c (place_field): Use DECL_BIT_FIELD_TYPE of
+	the previous bit field.
+
 2006-07-14  Eliot Dresselhaus  <eliot@sonic.net>
 
 	PR target/27287

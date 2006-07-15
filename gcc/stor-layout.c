@@ -1022,6 +1022,7 @@ place_field (record_layout_info rli, tree field)
   if (targetm.ms_bitfield_layout_p (rli->t))
     {
       tree prev_saved = rli->prev_field;
+      tree prev_type = prev_saved ? DECL_BIT_FIELD_TYPE (prev_saved) : NULL;
 
       /* This is a bitfield if it exists.  */
       if (rli->prev_field)
@@ -1037,8 +1038,7 @@ place_field (record_layout_info rli, tree field)
 	      && !integer_zerop (DECL_SIZE (rli->prev_field))
 	      && host_integerp (DECL_SIZE (rli->prev_field), 0)
 	      && host_integerp (TYPE_SIZE (type), 0)
-	      && simple_cst_equal (TYPE_SIZE (type),
-				   TYPE_SIZE (TREE_TYPE (rli->prev_field))))
+	      && simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (prev_type)))
 	    {
 	      /* We're in the middle of a run of equal type size fields; make
 		 sure we realign if we run out of bits.  (Not decl size,
@@ -1047,17 +1047,20 @@ place_field (record_layout_info rli, tree field)
 
 	      if (rli->remaining_in_alignment < bitsize)
 		{
-		  /* out of bits; bump up to next 'word'.  */
-		  rli->offset = DECL_FIELD_OFFSET (rli->prev_field);
-		  rli->bitpos
-		    = size_binop (PLUS_EXPR, TYPE_SIZE (type),
-				  DECL_FIELD_BIT_OFFSET (rli->prev_field));
-		  rli->prev_field = field;
-		  rli->remaining_in_alignment
-		    = tree_low_cst (TYPE_SIZE (type), 1);
-		}
+		  HOST_WIDE_INT typesize = tree_low_cst (TYPE_SIZE (type), 1);
 
-	      rli->remaining_in_alignment -= bitsize;
+		  /* out of bits; bump up to next 'word'.  */
+		  rli->bitpos
+		    = size_binop (PLUS_EXPR, rli->bitpos,
+				  bitsize_int (rli->remaining_in_alignment));
+		  rli->prev_field = field;
+		  if (typesize < bitsize)
+		    rli->remaining_in_alignment = 0;
+		  else
+		    rli->remaining_in_alignment = typesize - bitsize;
+		}
+	      else
+		rli->remaining_in_alignment -= bitsize;
 	    }
 	  else
 	    {
@@ -1105,8 +1108,7 @@ place_field (record_layout_info rli, tree field)
 
       if (!DECL_BIT_FIELD_TYPE (field)
 	  || (prev_saved != NULL
-	      ? !simple_cst_equal (TYPE_SIZE (type),
-				   TYPE_SIZE (TREE_TYPE (prev_saved)))
+	      ? !simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (prev_type))
 	      : !integer_zerop (DECL_SIZE (field)) ))
 	{
 	  /* Never smaller than a byte for compatibility.  */
@@ -1119,9 +1121,16 @@ place_field (record_layout_info rli, tree field)
 	  if (DECL_SIZE (field) != NULL
 	      && host_integerp (TYPE_SIZE (TREE_TYPE (field)), 0)
 	      && host_integerp (DECL_SIZE (field), 0))
-	    rli->remaining_in_alignment
-	      = tree_low_cst (TYPE_SIZE (TREE_TYPE(field)), 1)
-		- tree_low_cst (DECL_SIZE (field), 1);
+	    {
+	      HOST_WIDE_INT bitsize = tree_low_cst (DECL_SIZE (field), 1);
+	      HOST_WIDE_INT typesize
+		= tree_low_cst (TYPE_SIZE (TREE_TYPE (field)), 1);
+
+	      if (typesize < bitsize)
+		rli->remaining_in_alignment = 0;
+	      else
+		rli->remaining_in_alignment = typesize - bitsize;
+	    }
 
 	  /* Now align (conventionally) for the new type.  */
 	  type_align = TYPE_ALIGN (TREE_TYPE (field));
