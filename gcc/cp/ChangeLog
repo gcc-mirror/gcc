@@ -1,3 +1,9 @@
+2006-07-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28294
+	* semantics.c (finish_offsetof): Use TREE_OPERAND for COMPONENT_REFs
+	only.
+
 2006-07-14  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28343
