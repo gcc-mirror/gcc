@@ -1,10 +1,33 @@
+2006-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28384
+	* trans-common.c (translate_common): If common_segment is NULL
+	emit error that common block does not exist.
+
+	PR fortran/20844
+	* io.c (check_io_constraints): It is an error if an ADVANCE
+	specifier appears without an explicit format.
+
+	PR fortran/28201
+	* resolve.c (resolve_generic_s): For a use_associated function,
+	do not search for an alternative symbol in the parent name
+	space.
+
+	PR fortran/20893
+	* resolve.c (resolve_elemental_actual): New function t combine
+	all the checks of elemental procedure actual arguments. In
+	addition, check of array valued optional args(this PR) has
+	been added.
+	(resolve_function, resolve_call): Remove parts that treated
+	elemental procedure actual arguments and call the above.
+
 2006-07-14  Steven G. Kargl  <kargls@comcast.net>
 
 	* trans-expr.c (gfc_trans_string_copy): Evaluate the string lengths
 
 006-07-13  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/28174
+	PR fortran/28353
 	* trans-expr.c (gfc_conv_aliased_arg): Missing formal arg means
 	that intent is INOUT (fixes regression).
 

@@ -962,6 +962,13 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
       current_offset += s->length;
     }
 
+  if (common_segment == NULL)
+    {
+      gfc_error ("COMMON '%s' at %L does not exist",
+		 common->name, &common->where);
+      return;
+    }
+
   if (common_segment->offset != 0)
     {
       gfc_warning ("COMMON '%s' at %L requires %d bytes of padding at start",
