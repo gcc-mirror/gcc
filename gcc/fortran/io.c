@@ -2340,6 +2340,12 @@ if (condition) \
 		     "List directed format(*) is not allowed with a "
 		     "ADVANCE=specifier at %L.", &expr->where);
 
+      io_constraint (dt->format_expr == NULL
+		       && dt->format_label == NULL
+		       && dt->namelist == NULL,
+		     "the ADVANCE=specifier at %L must appear with an "
+		     "explicit format expression", &expr->where);
+
       if (expr->expr_type == EXPR_CONSTANT && expr->ts.type == BT_CHARACTER)
 	{
 	  const char * advance = expr->value.character.string;

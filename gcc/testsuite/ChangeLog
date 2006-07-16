@@ -1,3 +1,15 @@
+2006-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20844
+	* gfortran.dg/io_constaints_2.f90: Add the test for ADVANCE
+	specifiers requiring an explicit format tag..
+
+	PR fortran/28201
+	* gfortran.dg/generic_5: New test.
+
+	PR fortran/20893
+	* gfortran.dg/elemental_optional_args_1.f90: New test.
+
 2006-07-16  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/assert.ads: New file.
