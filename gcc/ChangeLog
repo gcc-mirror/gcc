@@ -35,8 +35,7 @@
 	signal frames correctly even when the signal was installed with
 	sa_restorer set.
 
-2006-07-14  Carlos O'Donell  <carlos@codesoucery.com>
-
+2006-07-14  Carlos O'Donell  <carlos@codesourcery.com
 
 	* dbxout.c (dbxout_begin_prologue): Emit LFBB label at function start.
 	(dbxout_function_end): Use local label LFBB. Remove hook DBX_OUTPUT_NFUN.
