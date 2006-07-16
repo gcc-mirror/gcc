@@ -1,3 +1,7 @@
+2006-07-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/invoke.texi (sparc-sun-solaris2*): Add GMP version number.
+
 2006-07-15  Roger Sayle  <roger@eyesopen.com>
 
 	* tree-gimple.c (is_gimple_stmt): Sink test of IS_EMPTY_STMT into
