@@ -3218,6 +3218,38 @@ no_conflict_move_test (rtx dest, rtx set, void *p0)
     p->must_stay = true;
 }
 
+/* Encapsulate the block starting at FIRST and ending with LAST, which is
+   logically equivalent to EQUIV, so it gets manipulated as a unit if it
+   is possible to do so.  */
+
+static void
+maybe_encapsulate_block (rtx first, rtx last, rtx equiv)
+{
+  if (!flag_non_call_exceptions || !may_trap_p (equiv))
+    {
+      /* We can't attach the REG_LIBCALL and REG_RETVAL notes when the
+	 encapsulated region would not be in one basic block, i.e. when
+	 there is a control_flow_insn_p insn between FIRST and LAST.  */
+      bool attach_libcall_retval_notes = true;
+      rtx insn, next = NEXT_INSN (last);
+
+      for (insn = first; insn != next; insn = NEXT_INSN (insn))
+	if (control_flow_insn_p (insn))
+	  {
+	    attach_libcall_retval_notes = false;
+	    break;
+	  }
+
+      if (attach_libcall_retval_notes)
+	{
+	  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
+						 REG_NOTES (first));
+	  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
+						REG_NOTES (last));
+	}
+    }
+}
+
 /* Emit code to perform a series of operations on a multi-word quantity, one
    word at a time.
 
@@ -3339,10 +3371,7 @@ emit_no_conflict_block (rtx insns, rtx target, rtx op0, rtx op1, rtx equiv)
   else
     first = NEXT_INSN (prev);
 
-  /* Encapsulate the block so it gets manipulated as a unit.  */
-  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
-					 REG_NOTES (first));
-  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first, REG_NOTES (last));
+  maybe_encapsulate_block (first, last, equiv);
 
   return last;
 }
@@ -3496,30 +3525,7 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
   else
     first = NEXT_INSN (prev);
 
-  /* Encapsulate the block so it gets manipulated as a unit.  */
-  if (!flag_non_call_exceptions || !may_trap_p (equiv))
-    {
-      /* We can't attach the REG_LIBCALL and REG_RETVAL notes
-	 when the encapsulated region would not be in one basic block,
-	 i.e. when there is a control_flow_insn_p insn between FIRST and LAST.
-       */
-      bool attach_libcall_retval_notes = true;
-      next = NEXT_INSN (last);
-      for (insn = first; insn != next; insn = NEXT_INSN (insn))
-	if (control_flow_insn_p (insn))
-	  {
-	    attach_libcall_retval_notes = false;
-	    break;
-	  }
-
-      if (attach_libcall_retval_notes)
-	{
-	  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
-						 REG_NOTES (first));
-	  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
-						REG_NOTES (last));
-	}
-    }
+  maybe_encapsulate_block (first, last, equiv);
 }
 
 /* Nonzero if we can perform a comparison of mode MODE straightforwardly.
