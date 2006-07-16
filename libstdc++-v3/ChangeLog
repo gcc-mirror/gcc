@@ -1,3 +1,11 @@
+2006-07-16  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28277 (partial: valarray bits)
+	* include/std/std_valarray.h (valarray<>::shift(int),
+	valarray<>::cshift(int)): Avoid __builtin_alloca with no limit,
+	do the work in place.
+	* testsuite/26_numerics/valarray/28277.cc: New.
+
 2006-07-15  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28277 (partial: ostream bits 1)

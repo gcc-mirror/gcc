@@ -778,63 +778,78 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return std::__valarray_sum(_M_data, _M_data + _M_size);
     }
 
-  template <class _Tp>
+  template<class _Tp>
      inline valarray<_Tp>
      valarray<_Tp>::shift(int __n) const
      {
-       _Tp* const __a = static_cast<_Tp*>
-         (__builtin_alloca(sizeof(_Tp) * _M_size));
+       valarray<_Tp> __ret;
+       _Tp* __restrict__ __tmp_M_data =
+	 std::__valarray_get_storage<_Tp>(_M_size);
+
        if (__n == 0)                          // no shift
-         std::__valarray_copy_construct(_M_data, _M_data + _M_size, __a);
+         std::__valarray_copy_construct(_M_data, _M_data + _M_size,
+					__tmp_M_data);
        else if (__n > 0)         // __n > 0: shift left
          {                 
            if (size_t(__n) > _M_size)
-             std::__valarray_default_construct(__a, __a + __n);
+             std::__valarray_default_construct(__tmp_M_data,
+					       __tmp_M_data + __n);
            else
              {
                std::__valarray_copy_construct(_M_data + __n,
-					      _M_data + _M_size, __a);
-               std::__valarray_default_construct(__a + _M_size -__n,
-						 __a + _M_size);
+					      _M_data + _M_size,
+					      __tmp_M_data);
+               std::__valarray_default_construct(__tmp_M_data + _M_size - __n,
+						 __tmp_M_data + _M_size);
              }
          }
        else                        // __n < 0: shift right
          {                          
-           std::__valarray_copy_construct (_M_data, _M_data + _M_size + __n,
-					   __a - __n);
-           std::__valarray_default_construct(__a, __a - __n);
+           std::__valarray_copy_construct(_M_data, _M_data + _M_size + __n,
+					  __tmp_M_data - __n);
+           std::__valarray_default_construct(__tmp_M_data,
+					     __tmp_M_data - __n);
          }
-       return valarray<_Tp>(__a, _M_size);
+
+       __ret._M_size = _M_size;
+       __ret._M_data = __tmp_M_data;
+       return __ret;
      }
 
-  template <class _Tp>
+  template<class _Tp>
      inline valarray<_Tp>
-     valarray<_Tp>::cshift (int __n) const
+     valarray<_Tp>::cshift(int __n) const
      {
-       _Tp* const __a = static_cast<_Tp*>
-         (__builtin_alloca (sizeof(_Tp) * _M_size));
+       valarray<_Tp> __ret;
+       _Tp* __restrict__ __tmp_M_data =
+	 std::__valarray_get_storage<_Tp>(_M_size);
+
        if (__n == 0)               // no cshift
-         std::__valarray_copy_construct(_M_data, _M_data + _M_size, __a);
+         std::__valarray_copy_construct(_M_data, _M_data + _M_size,
+					__tmp_M_data);
        else if (__n > 0)           // cshift left
          {               
            std::__valarray_copy_construct(_M_data, _M_data + __n,
-					  __a + _M_size - __n);
+					  __tmp_M_data + _M_size - __n);
            std::__valarray_copy_construct(_M_data + __n, _M_data + _M_size,
-					  __a);
+					  __tmp_M_data);
          }
        else                        // cshift right
          {                       
            std::__valarray_copy_construct
-             (_M_data + _M_size + __n, _M_data + _M_size, __a);
+             (_M_data + _M_size + __n, _M_data + _M_size, __tmp_M_data);
            std::__valarray_copy_construct
-             (_M_data, _M_data + _M_size+__n, __a - __n);
+             (_M_data, _M_data + _M_size + __n, __tmp_M_data - __n);
          }
-       return valarray<_Tp>(__a, _M_size);
+
+       __ret._M_size = _M_size;
+       __ret._M_data = __tmp_M_data;
+       return __ret;
      }
 
-  template <class _Tp>
+  template<class _Tp>
     inline void
-    valarray<_Tp>::resize (size_t __n, _Tp __c)
+    valarray<_Tp>::resize(size_t __n, _Tp __c)
     {
       // This complication is so to make valarray<valarray<T> > work
       // even though it is not required by the standard.  Nobody should
