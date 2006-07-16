@@ -1,3 +1,9 @@
+2006-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/28390
+	* trans-openmp.c (gfc_trans_omp_do): Look for LASTPRIVATE in
+	code->exp.omp_clauses rather than in the 3rd function argument.
+
 2006-07-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28384
