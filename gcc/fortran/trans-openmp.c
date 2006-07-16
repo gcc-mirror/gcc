@@ -888,7 +888,7 @@ gfc_trans_omp_critical (gfc_code *code)
 
 static tree
 gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
-		  gfc_omp_clauses *clauses)
+		  gfc_omp_clauses *do_clauses)
 {
   gfc_se se;
   tree dovar, stmt, from, to, step, type, init, cond, incr;
@@ -897,6 +897,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
   stmtblock_t body;
   int simple = 0;
   bool dovar_found = false;
+  gfc_omp_clauses *clauses = code->ext.omp_clauses;
 
   code = code->block->next;
   gcc_assert (code->op == EXEC_DO);
@@ -907,7 +908,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
       pblock = &block;
     }
 
-  omp_clauses = gfc_trans_omp_clauses (pblock, clauses, code->loc);
+  omp_clauses = gfc_trans_omp_clauses (pblock, do_clauses, code->loc);
   if (clauses)
     {
       gfc_namelist *n;
