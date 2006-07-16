@@ -1,6 +1,6 @@
 2006-07-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-	* doc/invoke.texi (sparc-sun-solaris2*): Add GMP version number.
+	* doc/install.texi (sparc-sun-solaris2*): Add GMP version number.
 
 2006-07-15  Roger Sayle  <roger@eyesopen.com>
 
