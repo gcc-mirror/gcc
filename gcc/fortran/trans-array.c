@@ -570,13 +570,21 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 tree
 gfc_trans_allocate_temp_array (stmtblock_t * pre, stmtblock_t * post,
                                gfc_loopinfo * loop, gfc_ss_info * info,
-                               tree eltype, bool dynamic, bool dealloc)
+                               tree eltype, bool dynamic, bool dealloc,
+			       bool function)
 {
   tree type;
   tree desc;
   tree tmp;
   tree size;
   tree nelem;
+  tree cond;
+  tree or_expr;
+  tree thencase;
+  tree elsecase;
+  tree var;
+  stmtblock_t thenblock;
+  stmtblock_t elseblock;
   int n;
   int dim;
 
@@ -628,6 +636,8 @@ gfc_trans_allocate_temp_array (stmtblock_t * pre, stmtblock_t * post,
      size = size * sizeof(element);
   */
 
+  or_expr = NULL_TREE;
+
   for (n = 0; n < info->dimen; n++)
     {
       if (loop->to[n] == NULL_TREE)
@@ -655,16 +665,57 @@ gfc_trans_allocate_temp_array (stmtblock_t * pre, stmtblock_t * post,
       tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
 			 loop->to[n], gfc_index_one_node);
 
+      if (function)
+	{
+	  /* Check wether the size for this dimension is negative.  */
+	  cond = fold_build2 (LE_EXPR, boolean_type_node, tmp,
+			  gfc_index_zero_node);
+
+	  cond = gfc_evaluate_now (cond, pre);
+
+	  if (n == 0)
+	    or_expr = cond;
+	  else
+	    or_expr = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, or_expr, cond);
+	}
+
       size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, tmp);
       size = gfc_evaluate_now (size, pre);
     }
 
   /* Get the size of the array.  */
-  nelem = size;
-  if (size)
-    size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
-			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
 
+  if (size)
+    {
+      if (function)
+	{
+	  var = gfc_create_var (TREE_TYPE (size), "size");
+	  gfc_start_block (&thenblock);
+	  gfc_add_modify_expr (&thenblock, var, gfc_index_zero_node);
+	  thencase = gfc_finish_block (&thenblock);
+
+	  gfc_start_block (&elseblock);
+	  gfc_add_modify_expr (&elseblock, var, size);
+	  elsecase = gfc_finish_block (&elseblock);
+	  
+	  tmp = gfc_evaluate_now (or_expr, pre);
+	  tmp = build3_v (COND_EXPR, tmp, thencase, elsecase);
+	  gfc_add_expr_to_block (pre, tmp);
+	  nelem = var;
+	  size = var;
+	}
+      else
+	  nelem = size;
+
+      size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
+			  TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+    }
+  else
+    {
+      nelem = size;
+      size = NULL_TREE;
+    }
+ 
   gfc_trans_allocate_array_storage (pre, post, info, size, nelem, dynamic,
                                     dealloc);
 
@@ -1342,7 +1393,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
     }
 
   gfc_trans_allocate_temp_array (&loop->pre, &loop->post, loop,
-                                 &ss->data.info, type, dynamic, true);
+                                 &ss->data.info, type, dynamic, true, false);
 
   desc = ss->data.info.descriptor;
   offset = gfc_index_zero_node;
@@ -2880,7 +2931,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
       loop->temp_ss->data.info.dimen = n;
       gfc_trans_allocate_temp_array (&loop->pre, &loop->post, loop,
                                      &loop->temp_ss->data.info, tmp, false,
-                                     true);
+                                     true, false);
     }
 
   for (n = 0; n < loop->temp_dim; n++)

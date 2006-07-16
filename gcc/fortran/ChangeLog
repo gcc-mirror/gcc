@@ -1,3 +1,24 @@
+2006-07-16  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/27980
+	Backport from mainline
+	* trans-array.h (gfc_trans_allocate_temp_array):  Add bool
+	argument.
+	* trans-array.c (gfc_trans_allocate_temp_array): Add extra
+	argument "function" to show if we are translating a function.
+	If we are translating a function, perform checks whether
+	the size along any argument is negative.  In that case,
+	allocate size 0.
+	(gfc_trans_array_constructor):  Add funciton argument (as
+	false) to gfc_trans_allocate_temp_array.
+	(gfc_conv_loop_setup):  Likewise.
+	* trans-expr.c (gfc_trans_function_call): Add funciton
+	argument (as true) to gfc_trans_allocate_temp_array.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Add funciton
+	argument (as false) to gfc_trans_allocate_temp_array.
+	* trans-intrinsic.c (gfc_conv_intrinsic_array_transfer):
+	Likewise.
+
 2006-07-11  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/28213

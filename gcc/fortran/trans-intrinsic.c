@@ -2717,7 +2717,7 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
   /* Build a destination descriptor.  */
   tmp = gfc_typenode_for_spec (&expr->ts);
   gfc_trans_allocate_temp_array (&se->pre, &se->post, se->loop,
-				 info, tmp, false, true);
+				 info, tmp, false, true, false);
   
   /* Use memcpy to do the transfer.  */
   tmp = gfc_conv_descriptor_data_get (info->descriptor);

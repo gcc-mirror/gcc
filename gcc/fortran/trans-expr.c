@@ -2038,7 +2038,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
              returns a pointer, the temporary will be a shallow copy and
              mustn't be deallocated.  */
           gfc_trans_allocate_temp_array (&se->pre, &se->post, se->loop, info,
-                                         tmp, false, !sym->attr.pointer);
+                                         tmp, false, !sym->attr.pointer, true);
 
 	  /* Pass the temporary as the first argument.  */
 	  tmp = info->descriptor;
