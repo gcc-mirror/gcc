@@ -3832,9 +3832,9 @@ ld: warning: relocation error: R_SPARC_UA32: @dots{}
 To work around this problem, compile with @option{-gstabs+} instead of
 plain @option{-g}.
 
-When configuring the GNU Multiple Precision Library (GMP) on a Solaris 7
-or later system, the canonical target triplet must be specified as the
-@command{build} parameter on the configure line:
+When configuring the GNU Multiple Precision Library (GMP) version 4.1.x
+on a Solaris 7 or later system, the canonical target triplet must be
+specified as the @command{build} parameter on the configure line:
 
 @smallexample
 ./configure --build=sparc-sun-solaris2.7 --prefix=xxx --enable-mpfr
