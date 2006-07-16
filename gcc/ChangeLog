@@ -1,3 +1,10 @@
+2006-07-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* optabs.c (maybe_encapsulate_block): New function extracted from...
+	(emit_libcall_block): ...here.  Invoke it on the block of insns to
+	maybe emit REG_LIBCALL/REG_RETVAL notes around the block.
+	(emit_no_conflict_block): Likewise.
+
 2006-07-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Add GMP version number.

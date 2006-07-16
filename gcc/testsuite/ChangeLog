@@ -1,3 +1,9 @@
+2006-07-16  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/assert.ads: New file.
+	* gnat.dg/controlled_record.ads: Likewise.
+	* gnat.dg/controlled_record.adb: Likewise.
+
 2006-07-15  Lee Millward  <lee.millward@gmail.com>
 
 	PR c++/28292
