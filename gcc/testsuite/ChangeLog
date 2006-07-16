@@ -1,3 +1,8 @@
+2006-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/28370
+	* g++.dg/template/anon3.C: New test.
+
 2006-07-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20844
