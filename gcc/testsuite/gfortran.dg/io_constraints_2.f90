@@ -1,6 +1,7 @@
 ! { dg-do compile }
 ! Part II of the test  of the IO constraints patch, which fixes PRs:
 ! PRs 25053, 25063, 25064, 25066, 25067, 25068, 25069, 25307 and 20862.
+! Modified2006-07-08 to check the patch for PR20844.
 !
 ! Contributed by Paul Thomas  <pault@gcc.gnu.org>
 !
@@ -51,6 +52,8 @@ end module global
 ! Not allowed with an ADVANCE=specifier
  READ(buffer, fmt='(i6)', advance='YES') a      ! { dg-error "internal file" }
  READ(1, NML=NL, advance='YES')                 ! { dg-error "NAMELIST IO is not allowed" }
+
+ READ(1, advance='YES')                         ! { dg-error "must appear with an explicit format" }
 
  write(1, fmt='(i6)', advance='YES', size = c(1)) a ! { dg-error "output" }
  write(1, fmt='(i6)', advance='YES', eor = 100) a   ! { dg-error "output" }
