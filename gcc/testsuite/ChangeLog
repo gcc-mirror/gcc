@@ -1,3 +1,9 @@
+2006-07-17  J"orn Rennecke  <joern.rennecke@st.com>
+
+	PR other/28251
+	gcc.c-torture/unsorted/dump-noaddr.c: New test.
+	gcc.c-torture/unsorted/dump-noaddr.x: New driver.
+
 2006-07-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28238
