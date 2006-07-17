@@ -4340,6 +4340,7 @@ extern void print_rtl (FILE *, rtx);
 /* In print-tree.c */
 extern void debug_tree (tree);
 #ifdef BUFSIZ
+extern void dump_addr (FILE*, const char *, void *);
 extern void print_node (FILE *, const char *, tree, int);
 extern void print_node_brief (FILE *, const char *, tree, int);
 extern void indent_to (FILE *, int);

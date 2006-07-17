@@ -262,7 +262,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
--fdump-unnumbered  -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
+-fdump-noaddr -fdump-unnumbered  -fdump-translation-unit@r{[}-@var{n}@r{]} @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-ipa-all -fdump-ipa-cgraph @gol
 -fdump-tree-all @gol
@@ -4005,10 +4005,17 @@ with @samp{r} (@option{-fdump-rtl-expand}).
 Dump debugging information during parsing, to standard error.
 @end table
 
+@item -fdump-noaddr
+@opindex fdump-noaddr
+When doing debugging dumps (see @option{-d} option above), suppress
+address output.  This makes it more feasible to use diff on debugging
+dumps for compiler invocations with different compiler binaries and/or
+different text / bss / data / heap / stack / dso start locations.
+
 @item -fdump-unnumbered
 @opindex fdump-unnumbered
 When doing debugging dumps (see @option{-d} option above), suppress instruction
-numbers and line number note output.  This makes it more feasible to
+numbers, line number note and address output.  This makes it more feasible to
 use diff on debugging dumps for compiler invocations with different
 options, in particular with and without @option{-g}.
 

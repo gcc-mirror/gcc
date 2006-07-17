@@ -57,6 +57,16 @@ debug_tree (tree node)
   putc ('\n', stderr);
 }
 
+/* Print PREFIX and ADDR to FILE.  */
+void
+dump_addr (FILE *file, const char *prefix, void *addr)
+{
+  if (flag_dump_noaddr || flag_dump_unnumbered)
+    fprintf (file, "%s#", prefix);
+  else
+    fprintf (file, "%s%p", prefix, addr);
+}
+
 /* Print a node in brief fashion, with just the code, address and name.  */
 
 void
@@ -73,8 +83,8 @@ print_node_brief (FILE *file, const char *prefix, tree node, int indent)
      name if any.  */
   if (indent > 0)
     fprintf (file, " ");
-  fprintf (file, "%s <%s %p",
-	   prefix, tree_code_name[(int) TREE_CODE (node)], (char *) node);
+  fprintf (file, "%s <%s", prefix, tree_code_name[(int) TREE_CODE (node)]);
+  dump_addr (file, " ", node);
 
   if (class == tcc_declaration)
     {
@@ -218,8 +228,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   indent_to (file, indent);
 
   /* Print the slot this node is in, and its code, and address.  */
-  fprintf (file, "%s <%s %p",
-	   prefix, tree_code_name[(int) TREE_CODE (node)], (void *) node);
+  fprintf (file, "%s <%s", prefix, tree_code_name[(int) TREE_CODE (node)]);
+  dump_addr (file, " ", node);
 
   /* Print the name, if any.  */
   if (class == tcc_declaration)
@@ -505,8 +515,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	       && DECL_STRUCT_FUNCTION (node) != 0)
 	{
 	  indent_to (file, indent + 4);
-	  fprintf (file, "saved-insns %p",
-		   (void *) DECL_STRUCT_FUNCTION (node));
+	  dump_addr (file, "saved-insns ", DECL_STRUCT_FUNCTION (node));
 	}
 
       if ((TREE_CODE (node) == VAR_DECL || TREE_CODE (node) == PARM_DECL)
@@ -778,15 +787,16 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  break;
 
     	case STATEMENT_LIST:
-	  fprintf (file, " head %p tail %p stmts",
-		   (void *) node->stmt_list.head, (void *) node->stmt_list.tail);
+	  dump_addr (file, " head ", node->stmt_list.head);
+	  dump_addr (file, " tail ", node->stmt_list.tail);
+	  fprintf (file, " stmts");
 	  {
 	    tree_stmt_iterator i;
 	    for (i = tsi_start (node); !tsi_end_p (i); tsi_next (&i))
 	      {
 		/* Not printing the addresses of the (not-a-tree)
 		   'struct tree_stmt_list_node's.  */
-		fprintf (file, " %p", (void *)tsi_stmt (i));
+		dump_addr (file, " ", tsi_stmt (i));
 	      }
 	    fprintf (file, "\n");
 	    for (i = tsi_start (node); !tsi_end_p (i); tsi_next (&i))
@@ -826,11 +836,9 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	    {
 	      indent_to (file, indent + 3);
 	      if (SSA_NAME_PTR_INFO (node))
-		fprintf (file, " ptr-info %p",
-			 (void *) SSA_NAME_PTR_INFO (node));
+		dump_addr (file, " ptr-info ", SSA_NAME_PTR_INFO (node));
 	      if (SSA_NAME_VALUE (node))
-		fprintf (file, " value %p",
-			 (void *) SSA_NAME_VALUE (node));
+		dump_addr (file, " value ", SSA_NAME_VALUE (node));
 	    }
 	  break;
 

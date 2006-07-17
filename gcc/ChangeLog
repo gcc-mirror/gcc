@@ -1,3 +1,15 @@
+2006-07-17  J"orn Rennecke  <joern.rennecke@st.com>
+
+	PR other/28251
+	* tree.h (dump_addr): Declare.
+	* print-tree.c (dump_addr): New function.
+	(print_node_brief, print_node): Use it.
+	* print-rtl.c (print_rtx): Likewise.
+	* common.opt (-fdump-noaddr): New option.
+	* doc/invoke.texi (-fdump-noaddr): Document.
+	* loop-unroll.c (si_info_hash): Make hash independent of addresses.
+	(ve_info_hash): Likewise.
+
 2006-07-13  Andrew Haley  <aph@redhat.com>
 
 	PR tree-optimization/19505
