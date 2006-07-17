@@ -1,3 +1,8 @@
+2006-07-17  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28304
+	* decl2.c (check_classfn): Return NULL_TREE on error.
+
 2006-07-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28250
