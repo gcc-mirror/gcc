@@ -943,7 +943,6 @@ objective-c  objective-c-header  objective-c-cpp-output
 objective-c++ objective-c++-header objective-c++-cpp-output
 assembler  assembler-with-cpp
 ada
-f77  f77-cpp-input
 f95  f95-cpp-input
 java
 treelang
@@ -4659,14 +4658,14 @@ The @option{-finline-limit=@var{n}} option sets some of these parameters
 as follows:
 
 @table @gcctabopt
- @item max-inline-insns-single
-  is set to @var{n}/2.
- @item max-inline-insns-auto
-  is set to @var{n}/2.
- @item min-inline-insns
-  is set to 130 or @var{n}/4, whichever is smaller.
- @item max-inline-insns-rtl
-  is set to @var{n}.
+@item max-inline-insns-single
+ is set to @var{n}/2.
+@item max-inline-insns-auto
+ is set to @var{n}/2.
+@item min-inline-insns
+ is set to 130 or @var{n}/4, whichever is smaller.
+@item max-inline-insns-rtl
+ is set to @var{n}.
 @end table
 
 See below for a documentation of the individual
@@ -9381,6 +9380,8 @@ boundary.  Aligning @code{double} variables on a two word boundary will
 produce code that runs somewhat faster on a @samp{Pentium} at the
 expense of more memory.
 
+On x86-64, @option{-malign-double} is enabled by default.
+
 @strong{Warning:} if you use the @option{-malign-double} switch,
 structures containing the above types will be aligned differently than
 the published application binary interface specifications for the 386
@@ -13088,7 +13089,7 @@ it.
 @opindex fbounds-check
 For front-ends that support it, generate additional code to check that
 indices used to access arrays are within the declared range.  This is
-currently only supported by the Java and Fortran 77 front-ends, where
+currently only supported by the Java and Fortran front-ends, where
 this option defaults to true and false respectively.
 
 @item -ftrapv

@@ -1,3 +1,9 @@
+2006-07-17  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* invoke.texi: Remove mention of f77; Reformat table for
+	inline parameter options correctly; mention that -malign-double
+	is default on x86-64 targets.
+
 2006-07-17  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-chrec.c (avoid_arithmetics_in_type_p): New.
