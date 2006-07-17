@@ -353,8 +353,10 @@ dependencies = { module=all-ld; on=all-build-byacc; };
 dependencies = { module=all-ld; on=all-build-flex; };
 dependencies = { module=all-ld; on=all-intl; };
 
+dependencies = { module=configure-opcodes; on=configure-intl; };
 dependencies = { module=all-opcodes; on=all-bfd; };
 dependencies = { module=all-opcodes; on=all-libiberty; };
+dependencies = { module=all-opcodes; on=all-intl; };
 
 // Other host modules in the 'src' repository.
 dependencies = { module=all-dejagnu; on=all-tcl; };
