@@ -1,3 +1,10 @@
+2006-07-13  Andrew Haley  <aph@redhat.com>
+
+	PR tree-optimization/19505
+	* tree-cfgcleanup.c (tree_forwarder_block_p): If we have an EH
+	edge leaving this block, make sure that the destination of this
+	block has only one predecessor.
+
 2006-07-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28238

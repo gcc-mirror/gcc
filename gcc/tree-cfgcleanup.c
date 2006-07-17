@@ -239,6 +239,9 @@ static bool
 tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 {
   block_stmt_iterator bsi;
+  edge_iterator ei;
+  edge e, succ;
+  basic_block dest;
 
   /* BB must have a single outgoing edge.  */
   if (single_succ_p (bb) != 1
@@ -288,6 +291,22 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 
       if (dest->loop_father->header == dest)
 	return false;
+    }
+
+  /* If we have an EH edge leaving this block, make sure that the
+     destination of this block has only one predecessor.  This ensures
+     that we don't get into the situation where we try to remove two
+     forwarders that go to the same basic block but are handlers for
+     different EH regions.  */
+  succ = single_succ_edge (bb);
+  dest = succ->dest;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (e->flags & EDGE_EH)
+        {
+	  if (!single_pred_p (dest))
+	    return false;
+	}
     }
 
   return true;
