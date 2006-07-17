@@ -1,3 +1,13 @@
+2006-07-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28250
+	* name-lookup.c (pushdecl_maybe_friend): Return early on
+	error_mark_node.
+	* except.c (expand_start_catch_block): Use error_mark_node instead
+	of NULL_TREE for invalid decls.
+	* parser.c (cp_parser_exception_declaration): Return error_mark_node
+	on invalid catch parameter. Simplify.
+
 2006-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/28370

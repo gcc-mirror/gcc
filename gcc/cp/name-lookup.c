@@ -569,6 +569,9 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 
   timevar_push (TV_NAME_LOOKUP);
 
+  if (x == error_mark_node)
+    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+
   need_new_binding = 1;
 
   if (DECL_TEMPLATE_PARM_P (x))

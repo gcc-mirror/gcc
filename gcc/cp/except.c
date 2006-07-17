@@ -412,7 +412,7 @@ expand_start_catch_block (tree decl)
 
   /* Make sure this declaration is reasonable.  */
   if (decl && !complete_ptr_ref_or_void_ptr_p (TREE_TYPE (decl), NULL_TREE))
-    decl = NULL_TREE;
+    decl = error_mark_node;
 
   if (decl)
     type = prepare_eh_type (TREE_TYPE (decl));
@@ -438,7 +438,7 @@ expand_start_catch_block (tree decl)
 
   /* If there's no decl at all, then all we need to do is make sure
      to tell the runtime that we've begun handling the exception.  */
-  if (decl == NULL)
+  if (decl == NULL || decl == error_mark_node)
     finish_expr_stmt (do_begin_catch ());
 
   /* If the C++ object needs constructing, we need to do that before
