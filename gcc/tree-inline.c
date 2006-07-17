@@ -704,6 +704,14 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
       if (stmt)
 	{
 	  tree call, decl;
+
+	  /* With return slot optimization we can end up with
+	     non-gimple (foo *)&this->m, fix that here.  */
+	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	      && TREE_CODE (TREE_OPERAND (stmt, 1)) == NOP_EXPR
+	      && !is_gimple_val (TREE_OPERAND (TREE_OPERAND (stmt, 1), 0)))
+	    gimplify_stmt (&stmt);
+
           bsi_insert_after (&copy_bsi, stmt, BSI_NEW_STMT);
 	  call = get_call_expr_in (stmt);
 	  /* We're duplicating a CALL_EXPR.  Find any corresponding
