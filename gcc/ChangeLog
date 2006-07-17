@@ -1,3 +1,10 @@
+2006-07-17  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-chrec.c (avoid_arithmetics_in_type_p): New.
+	(convert_affine_scev, chrec_convert_aggressive): Use
+	avoid_arithmetics_in_type_p.  Do not check for the subtypes
+	separately.
+
 2006-07-17  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/28403
