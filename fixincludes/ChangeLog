@@ -1,7 +1,13 @@
+2006-07-17  Roger Sayle  <roger@eyesopen.com>
+
+	* tests/base/errno.h: New file.
+	* tests/base/architecture/ppc/math.h: Likewise.
+	* tests/base/ia64/sys/getppdp.h: Likewise.
+
 2006-07-10  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	PR bootstrap/20437
-	* Makefile.in (configure, config.h.in): change into $(srcdir)
+	* Makefile.in (configure, config.h.in): Change into $(srcdir)
 	before autoconf or autoheader call.
 
 2006-06-23  Steve Ellcey  <sje@cup.hp.com>
@@ -46,8 +52,9 @@
 
 2005-11-24  Bruce Korb  <bkorb@gnu.org>
 
-	* fixincl.c(write_replacement) "here strings" in AutoGen often/generally
-	don't have a terminating newline.  Check the last byte for '\n'.
+	* fixincl.c (write_replacement): "here strings" in AutoGen
+	often/generally don't have a terminating newline.  Check the
+	last byte for '\n'.
 
 2005-11-13  Andreas Jaeger  <aj@suse.de>
 
