@@ -1,3 +1,8 @@
+2006-07-17  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/28051
+	* g++.dg/template/using10.C: Adjust error markers.
+	
 2006-07-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28249
