@@ -1,3 +1,8 @@
+2006-07-17  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28304
+	* g++.dg/other/pr28304.C: New test.
+
 2006-07-17  J"orn Rennecke  <joern.rennecke@st.com>
 
 	PR other/28251
