@@ -41053,6 +41053,14 @@ all-stage3-ld: maybe-all-stage3-intl
 all-stage4-ld: maybe-all-stage4-intl
 all-stageprofile-ld: maybe-all-stageprofile-intl
 all-stagefeedback-ld: maybe-all-stagefeedback-intl
+configure-opcodes: maybe-configure-intl
+
+configure-stage1-opcodes: maybe-configure-stage1-intl
+configure-stage2-opcodes: maybe-configure-stage2-intl
+configure-stage3-opcodes: maybe-configure-stage3-intl
+configure-stage4-opcodes: maybe-configure-stage4-intl
+configure-stageprofile-opcodes: maybe-configure-stageprofile-intl
+configure-stagefeedback-opcodes: maybe-configure-stagefeedback-intl
 all-opcodes: maybe-all-bfd
 
 all-stage1-opcodes: maybe-all-stage1-bfd
@@ -41069,6 +41077,14 @@ all-stage3-opcodes: maybe-all-stage3-libiberty
 all-stage4-opcodes: maybe-all-stage4-libiberty
 all-stageprofile-opcodes: maybe-all-stageprofile-libiberty
 all-stagefeedback-opcodes: maybe-all-stagefeedback-libiberty
+all-opcodes: maybe-all-intl
+
+all-stage1-opcodes: maybe-all-stage1-intl
+all-stage2-opcodes: maybe-all-stage2-intl
+all-stage3-opcodes: maybe-all-stage3-intl
+all-stage4-opcodes: maybe-all-stage4-intl
+all-stageprofile-opcodes: maybe-all-stageprofile-intl
+all-stagefeedback-opcodes: maybe-all-stagefeedback-intl
 all-dejagnu: maybe-all-tcl
 all-dejagnu: maybe-all-expect
 all-dejagnu: maybe-all-tk

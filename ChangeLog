@@ -1,3 +1,9 @@
+2006-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.def: Add dependencies for configure-opcodes
+	on configure-intl and all-opcodes on all-intl.
+	* Makefile.in: Regenerated.
+
 2006-07-13  Ben Elliston  <bje@au.ibm.com>
 
 	* MAINTAINERS (Various Maintainers): Add myself as dfp maintainer.
