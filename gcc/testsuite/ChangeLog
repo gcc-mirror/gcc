@@ -1,5 +1,10 @@
 2006-07-17  Richard Sandiford  <richard@codesourcery.com>
 
+	PR middle-end/28403
+	* gcc.c-torture/execute/pr28403.c: New test.
+
+2006-07-17  Richard Sandiford  <richard@codesourcery.com>
+
 	PR middle-end/28402
 	* gcc.dg/pr28402.c: New test.
 
