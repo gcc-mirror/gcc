@@ -1,3 +1,8 @@
+2006-07-17  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28291
+	* g++.dg/ext/pr28291.C: New test.
+
 2006-07-17  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/28403
