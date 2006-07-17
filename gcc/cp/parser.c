@@ -14343,7 +14343,6 @@ cp_parser_handler (cp_parser* parser)
 static tree
 cp_parser_exception_declaration (cp_parser* parser)
 {
-  tree decl;
   cp_decl_specifier_seq type_specifiers;
   cp_declarator *declarator;
   const char *saved_message;
@@ -14376,16 +14375,10 @@ cp_parser_exception_declaration (cp_parser* parser)
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
 
-  if (type_specifiers.any_specifiers_p)
-    {
-      decl = grokdeclarator (declarator, &type_specifiers, CATCHPARM, 1, NULL);
-      if (decl == NULL_TREE)
-	error ("invalid catch parameter");
-    }
-  else
-    decl = NULL_TREE;
+  if (!type_specifiers.any_specifiers_p)
+    return error_mark_node;
 
-  return decl;
+  return grokdeclarator (declarator, &type_specifiers, CATCHPARM, 1, NULL);
 }
 
 /* Parse a throw-expression.

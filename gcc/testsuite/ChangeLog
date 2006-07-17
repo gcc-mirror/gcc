@@ -1,3 +1,9 @@
+2006-07-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28250
+	* g++.dg/eh/catch1.C: New test.
+	* g++.dg/eh/catch2.C: New test.
+
 2006-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/28370
