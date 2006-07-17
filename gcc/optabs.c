@@ -1558,7 +1558,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  if (expand_doubleword_shift (op1_mode, binoptab,
 				       outof_input, into_input, op1,
 				       outof_target, into_target,
-				       unsignedp, methods, shift_mask))
+				       unsignedp, next_methods, shift_mask))
 	    {
 	      insns = get_insns ();
 	      end_sequence ();
