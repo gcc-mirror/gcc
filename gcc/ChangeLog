@@ -1,5 +1,11 @@
 2006-07-17  Richard Sandiford  <richard@codesourcery.com>
 
+	PR middle-end/28403
+	* optabs.c (expand_doubleword_shift): Wrap the call to
+	do_compare_rtx_and_jump with NO_DEFER_POP and OK_DEFER_POP.
+
+2006-07-17  Richard Sandiford  <richard@codesourcery.com>
+
 	PR middle-end/28402
 	* optabs.c (expand_binop): Pass next_methods rather than methods
 	to expand_doubleword_shift.
