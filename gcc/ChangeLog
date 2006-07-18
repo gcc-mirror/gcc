@@ -1,3 +1,10 @@
+2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
+
+        * configure: Regenerate.
+        * Makefile.in (build_libsubdir): New configure substitution
+        (build_libobjdir): New variable.
+        (BUILD_LIBIBERTY): Use it.
+
 2006-07-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/28286

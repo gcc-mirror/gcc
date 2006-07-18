@@ -802,6 +802,7 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	libsrcdir="$$s/[+module+]"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  [+args+] $${srcdiroption} \
+	  [+ IF prev +]--with-build-libsubdir=$(HOST_SUBDIR)[+ ENDIF prev +] \
 	  [+stage_configure_flags+] [+extra_configure_flags+]
 @endif [+prefix+][+module+]-bootstrap
 [+ ENDFOR bootstrap_stage +]

@@ -86,11 +86,14 @@ objdir = @objdir@
 
 host_subdir=@host_subdir@
 build_subdir=@build_subdir@
+build_libsubdir=@build_libsubdir@
 
 ifeq ($(host_subdir),.)
 build_objdir := ../$(build_subdir)
+build_libobjdir := ../$(build_libsubdir)
 else
 build_objdir := ../../$(build_subdir)
+build_libobjdir := ../../$(build_libsubdir)
 endif
 
 # --------
@@ -831,7 +834,7 @@ ALL_CPPFLAGS = $(INCLUDES) $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
 # Build and host support libraries.
 LIBIBERTY = ../libiberty/libiberty.a
-BUILD_LIBIBERTY = $(build_objdir)/libiberty/libiberty.a
+BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
 LIBDEPS= $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) $(LIBDECNUMBER)

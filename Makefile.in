@@ -4261,6 +4261,7 @@ configure-stage1-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif bfd-bootstrap
 
@@ -4288,6 +4289,7 @@ configure-stage2-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4315,6 +4317,7 @@ configure-stage3-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4342,6 +4345,7 @@ configure-stage4-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4369,6 +4373,7 @@ configure-stageprofile-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4396,6 +4401,7 @@ configure-stagefeedback-bfd:
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif bfd-bootstrap
 
@@ -4967,6 +4973,7 @@ configure-stage1-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif opcodes-bootstrap
 
@@ -4994,6 +5001,7 @@ configure-stage2-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5021,6 +5029,7 @@ configure-stage3-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5048,6 +5057,7 @@ configure-stage4-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5075,6 +5085,7 @@ configure-stageprofile-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5102,6 +5113,7 @@ configure-stagefeedback-opcodes:
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif opcodes-bootstrap
 
@@ -5673,6 +5685,7 @@ configure-stage1-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif binutils-bootstrap
 
@@ -5700,6 +5713,7 @@ configure-stage2-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -5727,6 +5741,7 @@ configure-stage3-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -5754,6 +5769,7 @@ configure-stage4-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -5781,6 +5797,7 @@ configure-stageprofile-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -5808,6 +5825,7 @@ configure-stagefeedback-binutils:
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif binutils-bootstrap
 
@@ -11114,6 +11132,7 @@ configure-stage1-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif gas-bootstrap
 
@@ -11141,6 +11160,7 @@ configure-stage2-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11168,6 +11188,7 @@ configure-stage3-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11195,6 +11216,7 @@ configure-stage4-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11222,6 +11244,7 @@ configure-stageprofile-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11249,6 +11272,7 @@ configure-stagefeedback-gas:
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gas-bootstrap
 
@@ -11820,6 +11844,7 @@ configure-stage1-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif gcc-bootstrap
 
@@ -11847,6 +11872,7 @@ configure-stage2-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -11874,6 +11900,7 @@ configure-stage3-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -11901,6 +11928,7 @@ configure-stage4-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -11928,6 +11956,7 @@ configure-stageprofile-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -11955,6 +11984,7 @@ configure-stagefeedback-gcc:
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif gcc-bootstrap
 
@@ -15116,6 +15146,7 @@ configure-stage1-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif intl-bootstrap
 
@@ -15143,6 +15174,7 @@ configure-stage2-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -15170,6 +15202,7 @@ configure-stage3-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -15197,6 +15230,7 @@ configure-stage4-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -15224,6 +15258,7 @@ configure-stageprofile-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -15251,6 +15286,7 @@ configure-stagefeedback-intl:
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif intl-bootstrap
 
@@ -16547,6 +16583,7 @@ configure-stage1-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif ld-bootstrap
 
@@ -16574,6 +16611,7 @@ configure-stage2-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -16601,6 +16639,7 @@ configure-stage3-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -16628,6 +16667,7 @@ configure-stage4-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -16655,6 +16695,7 @@ configure-stageprofile-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -16682,6 +16723,7 @@ configure-stagefeedback-ld:
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif ld-bootstrap
 
@@ -17253,6 +17295,7 @@ configure-stage1-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libcpp-bootstrap
 
@@ -17280,6 +17323,7 @@ configure-stage2-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17307,6 +17351,7 @@ configure-stage3-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17334,6 +17379,7 @@ configure-stage4-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17361,6 +17407,7 @@ configure-stageprofile-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17388,6 +17435,7 @@ configure-stagefeedback-libcpp:
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libcpp-bootstrap
 
@@ -17959,6 +18007,7 @@ configure-stage1-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libdecnumber-bootstrap
 
@@ -17986,6 +18035,7 @@ configure-stage2-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -18013,6 +18063,7 @@ configure-stage3-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -18040,6 +18091,7 @@ configure-stage4-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -18067,6 +18119,7 @@ configure-stageprofile-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -18094,6 +18147,7 @@ configure-stagefeedback-libdecnumber:
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libdecnumber-bootstrap
 
@@ -19035,6 +19089,7 @@ configure-stage1-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libiberty-bootstrap
 
@@ -19062,6 +19117,7 @@ configure-stage2-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -19089,6 +19145,7 @@ configure-stage3-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -19116,6 +19173,7 @@ configure-stage4-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -19143,6 +19201,7 @@ configure-stageprofile-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -19170,6 +19229,7 @@ configure-stagefeedback-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif libiberty-bootstrap
 
@@ -28230,6 +28290,7 @@ configure-stage1-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	   \
 	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif zlib-bootstrap
 
@@ -28257,6 +28318,7 @@ configure-stage2-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
@@ -28284,6 +28346,7 @@ configure-stage3-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
@@ -28311,6 +28374,7 @@ configure-stage4-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
@@ -28338,6 +28402,7 @@ configure-stageprofile-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
@@ -28365,6 +28430,7 @@ configure-stagefeedback-zlib:
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  @stage2_werror_flag@ 
 @endif zlib-bootstrap
 
