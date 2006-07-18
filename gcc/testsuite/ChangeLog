@@ -1,3 +1,11 @@
+2006-07-18  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/28258
+	* g++/dg/other/error13.C: New test.
+
+	PR c++/28260
+	* g++.dg/template/friend44.C: New test.
+	
 2006-07-18  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/27495

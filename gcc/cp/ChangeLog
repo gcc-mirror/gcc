@@ -1,3 +1,13 @@
+2006-07-18  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/28258
+	* method.c (locate_copy): Check for non_reference
+	returning error_mark_node.
+
+        PR c++/28260
+	* decl.c (duplicate_decls): Return error_mark_node
+	on ambiguous declaration.
+	
 2006-07-18  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/27495
