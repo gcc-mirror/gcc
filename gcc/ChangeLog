@@ -1,3 +1,28 @@
+2006-07-18  Olivier Hainque  <hainque@adacore.com>
+
+	* tree.h (categorize_ctor_elements): Adjust prototype and add
+	descriptive comment, both in accordance with the interface change
+	described below.
+	* varasm.c (constructor_static_from_elts_p): New function.
+	Whether a constructor node is a valid static constant initializer
+	if all its elements are.
+	(initializer_constant_valid_p) <CONSTRUCTOR value>: Use it.
+	* output.h: Declare it.	
+	* expr.c (categorize_ctor_elements_1): Return whether the constructor
+	is a valid constant initializer instead of computing the number of
+	non-constant elements.  Use constructor_static_from_elts_p for this
+	purpose.  Replace the head comment with an indication that this is a
+	helper for categorize_ctor_elements.
+	(categorize_ctor_elements): Same interface change as for the _1
+	helper.  Former head comment from this helper moved here, adjusted to
+	account for the interface changes.
+	(mostly_zeros_p): Adjust call to categorize_ctor_elements.
+	(all_zeros_p): Likewise.	
+	* gimplify.c (gimplify_init_constructor): Decide whether we can make
+	static versions of the constructor from the categorize_ctor_elements
+	return value instead of the formerly computed number of non-constant
+	elements.
+
 2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
         * configure: Regenerate.

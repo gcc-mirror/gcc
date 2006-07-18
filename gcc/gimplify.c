@@ -2940,8 +2940,8 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
       {
 	struct gimplify_init_ctor_preeval_data preeval_data;
 	HOST_WIDE_INT num_type_elements, num_ctor_elements;
-	HOST_WIDE_INT num_nonzero_elements, num_nonconstant_elements;
-	bool cleared;
+	HOST_WIDE_INT num_nonzero_elements;
+	bool cleared, valid_const_initializer;
 
 	/* Aggregate types must lower constructors to initialization of
 	   individual elements.  The exception is that a CONSTRUCTOR node
@@ -2949,13 +2949,16 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	if (VEC_empty (constructor_elt, elts))
 	  break;
 
-	categorize_ctor_elements (ctor, &num_nonzero_elements,
-				  &num_nonconstant_elements,
-				  &num_ctor_elements, &cleared);
+	/* Fetch information about the constructor to direct later processing.
+	   We might want to make static versions of it in various cases, and
+	   can only do so if it known to be a valid constant initializer.  */
+	valid_const_initializer
+	  = categorize_ctor_elements (ctor, &num_nonzero_elements,
+				      &num_ctor_elements, &cleared);
 
 	/* If a const aggregate variable is being initialized, then it
 	   should never be a lose to promote the variable to be static.  */
-	if (num_nonconstant_elements == 0
+	if (valid_const_initializer
 	    && num_nonzero_elements > 1
 	    && TREE_READONLY (object)
 	    && TREE_CODE (object) == VAR_DECL)
@@ -3012,7 +3015,7 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	   for sparse arrays, though, as it's more efficient to follow
 	   the standard CONSTRUCTOR behavior of memset followed by
 	   individual element initialization.  */
-	if (num_nonconstant_elements == 0 && !cleared)
+	if (valid_const_initializer && !cleared)
 	  {
 	    HOST_WIDE_INT size = int_size_in_bytes (type);
 	    unsigned int align;

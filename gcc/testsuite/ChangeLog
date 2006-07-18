@@ -1,3 +1,8 @@
+2006-07-18  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/outer_agg_bitfield_constructor.adb: New test.
+	* gnat.dg/nested_agg_bitfield_constructor.adb: New test.
+	
 2006-07-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/28286
