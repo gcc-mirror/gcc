@@ -280,6 +280,13 @@ extern void output_shared_constant_pool (void);
 
 extern void output_object_blocks (void);
 
+/* Whether a constructor CTOR is a valid static constant initializer if all
+   its elements are.  This used to be internal to initializer_constant_valid_p
+   and has been exposed to let other functions like categorize_ctor_elements
+   evaluate the property while walking a constructor for other purposes.  */
+
+extern bool constructor_static_from_elts_p (tree);
+
 /* Return nonzero if VALUE is a valid constant-valued expression
    for use in initializing a static variable; one that can be an
    element of a "constant" initializer.
