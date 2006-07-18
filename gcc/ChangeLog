@@ -1,3 +1,9 @@
+2006-07-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c/26993
+	* c-common.c (handle_weakref_attribute): Ignore attribute in
+	the same conditions the alias attribute is ignored.
+
 2006-07-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Add GMP version number.
