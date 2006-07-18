@@ -1,3 +1,8 @@
+2006-07-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/28286
+	* c-pragma.c (handle_pragma_pack): Handle invalid constants.
+
 2006-07-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Add GMP version number.
