@@ -74,8 +74,22 @@ dnl # amount to a lot more with autoconf 2.5x.
 AC_DEFUN([GCC_TOPLEV_SUBDIRS],
 [AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_TARGET]) []dnl
 AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_BUILD]) []dnl
+
+# post-stage1 host modules use a different CC_FOR_BUILD so, in order to
+# have matching libraries, they should use host libraries: Makefile.tpl
+# arranges to pass --with-build-libsubdir=$(HOST_SUBDIR).
+# However, they still use the build modules, because the corresponding
+# host modules (e.g. bison) are only built for the host when bootstrap
+# finishes. So:
+# - build_subdir is where we find build modules, and never changes.
+# - build_libsubdir is where we find build libraries, and can be overridden.
+
 # Prefix 'build-' so this never conflicts with target_subdir.
 build_subdir="build-${build_noncanonical}"
+AC_ARG_WITH(build-libsubdir,
+[  --with-build-libsubdir=[DIR]  Directory where to find libraries for build system],
+build_libsubdir="$withval",
+build_libsubdir="$build_subdir")
 # --srcdir=. covers the toplevel, while "test -d" covers the subdirectories
 if ( test $srcdir = . && test -d gcc ) \
    || test -d $srcdir/../host-${host_noncanonical}; then
@@ -85,6 +99,7 @@ else
 fi
 # No prefix.
 target_subdir=${target_noncanonical}
+AC_SUBST([build_libsubdir]) []dnl
 AC_SUBST([build_subdir]) []dnl
 AC_SUBST([host_subdir]) []dnl
 AC_SUBST([target_subdir]) []dnl
