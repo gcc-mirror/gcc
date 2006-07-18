@@ -1,3 +1,9 @@
+2006-07-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c/26993
+	* c-common.c (handle_weakref_attribute): Ignore attribute in
+	the same conditions the alias attribute is ignored.
+
 2006-07-17  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* dbxout.c (dbxout_function_end): Do not increment scope_labelno.
