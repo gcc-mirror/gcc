@@ -1371,6 +1371,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    {
 	      error ("new declaration %q#D", newdecl);
 	      error ("ambiguates old declaration %q+#D", olddecl);
+              return error_mark_node;
 	    }
 	  else
 	    return NULL_TREE;
