@@ -1,3 +1,9 @@
+2006-07-17  Richard Henderson  <rth@redhat.com>
+
+	PR 27889
+	* tree-nested.c (create_tmp_var_for): Set DECL_COMPLEX_GIMPLE_REG_P
+	if needed.
+
 2006-07-17  Roger Sayle  <roger@eyesopen.com>
 	    Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
