@@ -53,22 +53,19 @@
  * This code could easily be integrated with the original gmon.c and perhaps
  * should be.
  */
+#include "tconfig.h"
+#include "tsystem.h"
+#include <fcntl.h> /* for creat() */
 
-#ifndef lint
-static char sccsid[] = "@(#)gmon.c	5.3 (Berkeley) 5/22/91";
-#endif /* not lint */
-
-#if 0
-#include <unistd.h>
-
-#endif
 #ifdef DEBUG
 #include <stdio.h>
 #endif
 
-#if 0
-#include "i386/gmon.h"
-#else
+static void moncontrol (int);
+extern void monstartup (char *, char *);
+extern void _mcleanup (void);
+extern void internal_mcount (void);
+
 
 struct phdr {
                 char    *lpc;
@@ -90,6 +87,7 @@ struct tostruct {
   long count;
   unsigned short link;
 };
+
 struct rawarc {
     unsigned long       raw_frompc;
     unsigned long       raw_selfpc;
@@ -97,13 +95,8 @@ struct rawarc {
 };
 #define ROUNDDOWN(x,y)  (((x)/(y))*(y))
 #define ROUNDUP(x,y)    ((((x)+(y)-1)/(y))*(y))
-#endif
 
 /* char *minbrk; */
-
-#ifdef __alpha
-extern char *sbrk ();
-#endif
 
     /*
      *	froms is actually a bunch of unsigned shorts indexing tos
@@ -126,9 +119,8 @@ static int	s_scale;
 
 extern int errno;
 
-monstartup(lowpc, highpc)
-    char	*lowpc;
-    char	*highpc;
+void
+monstartup(char *lowpc, char *highpc)
 {
     int			monsize;
     char		*buffer;
@@ -139,10 +131,10 @@ monstartup(lowpc, highpc)
 	 *	so the rest of the scaling (here and in gprof) stays in ints.
 	 */
     lowpc = (char *)
-	    ROUNDDOWN((unsigned)lowpc, HISTFRACTION*sizeof(HISTCOUNTER));
+	    ROUNDDOWN((unsigned long)lowpc, HISTFRACTION*sizeof(HISTCOUNTER));
     s_lowpc = lowpc;
     highpc = (char *)
-	    ROUNDUP((unsigned)highpc, HISTFRACTION*sizeof(HISTCOUNTER));
+	    ROUNDUP((unsigned long)highpc, HISTFRACTION*sizeof(HISTCOUNTER));
     s_highpc = highpc;
     s_textsize = highpc - lowpc;
     monsize = (s_textsize / HISTFRACTION) + sizeof(struct phdr);
@@ -203,7 +195,8 @@ monstartup(lowpc, highpc)
     moncontrol(1);
 }
 
-_mcleanup()
+void
+_mcleanup (void)
 {
     int			fd;
     int			fromindex;
@@ -220,7 +213,7 @@ _mcleanup()
     }
 #   ifdef DEBUG
 	fprintf( stderr , "[mcleanup] sbuf 0x%x ssiz %d\n" , sbuf , ssiz );
-#   endif DEBUG
+#   endif /* DEBUG */
 
     write( fd , sbuf , ssiz );
     endfrom = s_textsize / (HASHFRACTION * sizeof(*froms));
@@ -234,7 +227,7 @@ _mcleanup()
 		fprintf( stderr ,
 			"[mcleanup] frompc 0x%x selfpc 0x%x count %d\n" ,
 			frompc , tos[toindex].selfpc , tos[toindex].count );
-#	    endif DEBUG
+#	    endif /* DEBUG */
 	    rawarc.raw_frompc = (unsigned long) frompc;
 	    rawarc.raw_selfpc = (unsigned long) tos[toindex].selfpc;
 	    rawarc.raw_count = tos[toindex].count;
@@ -249,7 +242,8 @@ asm(".globl _mcount; _mcount: jmp internal_mcount");
 /* This is for compatibility with old versions of gcc which used mcount.  */
 asm(".globl mcount; mcount: jmp internal_mcount");
 
-internal_mcount()
+void
+internal_mcount (void)
 {
 	register char			*selfpc;
 	register unsigned short		*frompcindex;
@@ -271,10 +265,10 @@ internal_mcount()
 	frompcindex = (void *) __builtin_return_address (1);
 
 	if(!already_setup) {
-          extern etext();
+          extern char etext[];
 	  already_setup = 1;
 /*	  monstartup(0, etext); */
-	  monstartup(0x08040000, etext);
+	  monstartup((char*)0x08040000, etext);
 #ifdef USE_ONEXIT
 	  on_exit(_mcleanup, 0);
 #else
@@ -387,15 +381,15 @@ overflow:
  *	profiling is what mcount checks to see if
  *	all the data structures are ready.
  */
-moncontrol(mode)
-    int mode;
+static void
+moncontrol(int mode)
 {
     if (mode)
     {
       /* start */
       profil((unsigned short *)(sbuf + sizeof(struct phdr)),
 	     ssiz - sizeof(struct phdr),
-	     (int)s_lowpc, s_scale);
+	     (long)s_lowpc, s_scale);
       
       profiling = 0;
     } else {
