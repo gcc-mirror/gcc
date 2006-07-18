@@ -1,3 +1,9 @@
+2006-07-18  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/27495
+	* search.c (adjust_result_of_qualified_name_lookup): Change
+	assert to part of if statement.
+
 2006-07-17  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/28291
