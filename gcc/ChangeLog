@@ -1,3 +1,10 @@
+2006-07-18  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 28410
+	* tree-ssa-operands.c (access_can_touch_variable): Update
+	comment.
+	Return true if ALIAS is .GLOBAL_VAR.
+
 2006-07-18  David Daney  <ddaney@avtrex.com>
 
 	* gcc.c (display_help): Fix typo in help text.
