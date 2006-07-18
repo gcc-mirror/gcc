@@ -160,6 +160,8 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
     }
   else if (token == CPP_NUMBER)
     {
+      if (TREE_CODE (x) != INTEGER_CST)
+	GCC_BAD ("invalid constant in %<#pragma pack%> - ignored");
       align = TREE_INT_CST_LOW (x);
       action = set;
       if (pragma_lex (&x) != CPP_CLOSE_PAREN)
@@ -190,6 +192,8 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
 	    }
 	  else if (token == CPP_NUMBER && action == push && align == -1)
 	    {
+	      if (TREE_CODE (x) != INTEGER_CST)
+		GCC_BAD ("invalid constant in %<#pragma pack%> - ignored");
 	      align = TREE_INT_CST_LOW (x);
 	      if (align == -1)
 		action = set;
