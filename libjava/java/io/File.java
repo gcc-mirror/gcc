@@ -1388,7 +1388,7 @@ public class File implements Serializable, Comparable
     // Check the SecurityManager
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
-      sm.checkDelete (getName());
+      sm.checkDelete (getPath());
 
     DeleteFileHelper.add(this);
   }

@@ -1,3 +1,7 @@
+2006-07-18  Gary Benson  <gbenson@redhat.com>
+
+	* java/io/File.java (deleteOnExit): Fix security check.
+
 2006-07-14  Anthony Green  <green@redhat.com>
 
 	* java/io/natFilePosix.cc (performSetLastModified): Return true on
