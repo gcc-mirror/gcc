@@ -1,3 +1,14 @@
+2006-07-17  Roger Sayle  <roger@eyesopen.com>
+	    Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/i386/gmon-sol2.c: Silence compilation warnings by partially
+	synchronizing code with config/sparc/gmon-sol2.c.  Remove #if 0
+	blocks.  #include "tconfig.h" and "tsystem.h" to prototype system
+	functions such as sbrk, write, etc..  Add function prototypes.
+	Convert function declarations from K&R to ISO C.  Cast pointers
+	to "long" and "unsigned long" instead of "int" and "unsigned int".
+	Convert tokens following #endif into comments.
+
 2006-07-17  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* invoke.texi: Remove mention of f77; Reformat table for
