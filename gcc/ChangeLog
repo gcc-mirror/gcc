@@ -1,3 +1,7 @@
+2006-07-18  David Daney  <ddaney@avtrex.com>
+
+	* gcc.c (display_help): Fix typo in help text.
+
 2006-07-18  Olivier Hainque  <hainque@adacore.com>
 
 	* tree.h (categorize_ctor_elements): Adjust prototype and add
