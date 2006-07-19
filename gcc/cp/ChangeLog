@@ -1,3 +1,9 @@
+2006-07-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28235
+	* pt.c (tsubst_decl): Handling substitutions into a static data
+	member from within the scope of the tempalte itself.
+
 2006-07-18  Lee Millward  <lee.millward@gmail.com>
 
 	PR c++/28258
