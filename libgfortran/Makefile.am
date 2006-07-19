@@ -270,26 +270,6 @@ generated/product_c8.c \
 generated/product_c10.c \
 generated/product_c16.c
 
-i_dotprod_c= \
-generated/dotprod_i4.c \
-generated/dotprod_i8.c \
-generated/dotprod_i16.c \
-generated/dotprod_r4.c \
-generated/dotprod_r8.c \
-generated/dotprod_r10.c \
-generated/dotprod_r16.c
-
-i_dotprodl_c= \
-generated/dotprod_l4.c \
-generated/dotprod_l8.c \
-generated/dotprod_l16.c
-
-i_dotprodc_c= \
-generated/dotprod_c4.c \
-generated/dotprod_c8.c \
-generated/dotprod_c10.c \
-generated/dotprod_c16.c
-
 i_matmul_c= \
 generated/matmul_i4.c \
 generated/matmul_i8.c \
@@ -434,7 +414,7 @@ generated/pow_c16_i16.c
 m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/any.m4 m4/count.m4 m4/maxloc0.m4 m4/maxloc1.m4 m4/maxval.m4 \
     m4/minloc0.m4 m4/minloc1.m4 m4/minval.m4 m4/product.m4 m4/sum.m4 \
-    m4/dotprod.m4 m4/dotprodl.m4 m4/dotprodc.m4 m4/matmul.m4 m4/matmull.m4 \
+    m4/matmul.m4 m4/matmull.m4 \
     m4/ctrig.m4 m4/cexp.m4 m4/chyp.m4 m4/mtype.m4 \
     m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
@@ -442,7 +422,7 @@ m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
 
 gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
-    $(i_product_c) $(i_sum_c) $(i_dotprod_c) $(i_dotprodl_c) $(i_dotprodc_c) \
+    $(i_product_c) $(i_sum_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
@@ -653,15 +633,6 @@ $(i_product_c): m4/product.m4 $(I_M4_DEPS1)
 
 $(i_sum_c): m4/sum.m4 $(I_M4_DEPS1)
 	m4 -Dfile=$@ -I$(srcdir)/m4 sum.m4 > $(srcdir)/$@
-
-$(i_dotprod_c): m4/dotprod.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 dotprod.m4 > $(srcdir)/$@
-
-$(i_dotprodl_c): m4/dotprodl.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 dotprodl.m4 > $(srcdir)/$@
-
-$(i_dotprodc_c): m4/dotprodc.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 dotprodc.m4 > $(srcdir)/$@
 
 $(i_matmul_c): m4/matmul.m4 $(I_M4_DEPS)
 	m4 -Dfile=$@ -I$(srcdir)/m4 matmul.m4 > $(srcdir)/$@
