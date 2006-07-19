@@ -3043,16 +3043,6 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
   switch (code)
     {
-    case PLUS_EXPR:
-      /* Handle the pointer + int case.  */
-      if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
-	return cp_pointer_int_sum (PLUS_EXPR, op0, op1);
-      else if (code1 == POINTER_TYPE && code0 == INTEGER_TYPE)
-	return cp_pointer_int_sum (PLUS_EXPR, op1, op0);
-      else
-	common = 1;
-      break;
-
     case MINUS_EXPR:
       /* Subtraction of two similar pointers.
 	 We must subtract them as integers, then divide by object size.  */
@@ -3060,11 +3050,33 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (type0),
 							TREE_TYPE (type1)))
 	return pointer_diff (op0, op1, common_type (type0, type1));
-      /* Handle pointer minus int.  Just like pointer plus int.  */
-      else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
-	return cp_pointer_int_sum (MINUS_EXPR, op0, op1);
-      else
-	common = 1;
+      /* In all other cases except pointer - int, the usual arithmetic
+	 rules aply.  */
+      else if (!(code0 == POINTER_TYPE && code1 == INTEGER_TYPE))
+	{
+	  common = 1;
+	  break;
+	}
+      /* The pointer - int case is just like pointer + int; fall
+	 through.  */
+    case PLUS_EXPR:
+      if ((code0 == POINTER_TYPE || code1 == POINTER_TYPE)
+	  && (code0 == INTEGER_TYPE || code1 == INTEGER_TYPE))
+	{
+	  tree ptr_operand;
+	  tree int_operand;
+	  ptr_operand = ((code0 == POINTER_TYPE) ? op0 : op1);
+	  int_operand = ((code0 == INTEGER_TYPE) ? op0 : op1);
+	  if (processing_template_decl)
+	    {
+	      result_type = TREE_TYPE (ptr_operand);
+	      break;
+	    }
+	  return cp_pointer_int_sum (code,
+				     ptr_operand, 
+				     int_operand);
+	}
+      common = 1;
       break;
 
     case MULT_EXPR:

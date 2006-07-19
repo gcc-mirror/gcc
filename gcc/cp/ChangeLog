@@ -1,5 +1,11 @@
 2006-07-18  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/28337
+	* typeck.c (build_binary_op): Short-circuit pointer arithmetic in
+	templates.
+
+2006-07-18  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/28048
 	* semantics.c (check_accessibility_of_qualified_id): Robustify.
 
