@@ -1,3 +1,11 @@
+2006-07-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document that
+	-mlongcall does not guarantee all calls will be long.
+	* doc/extend.texi (long_call/short_call): Document that longcall
+	does not guarantee a long call will be used.
+	(longcall/shortcall): Likewise.
+
 2006-07-18  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/28283
