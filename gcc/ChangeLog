@@ -1,3 +1,12 @@
+2006-07-18  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/28283
+	* expmed.c (expand_shift): Additionally check that the shift_cost
+	is not MAX_COST and that INTVAL(op1) is less than MAX_BITS_PER_WORD
+	before implementing a LSHIFT_EXPR as a sequence of additions.
+	* config/sh/sh.c (shift_costs): Return MAX_COST to inform the
+	middle-end that DImode shifts need to be synthesized by expand.
+
 2006-07-18  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 28410
