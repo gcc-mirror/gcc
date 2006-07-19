@@ -1,3 +1,7 @@
+2006-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* except.c (duplicate_eh_regions_1): Clear next_peer.
+
 2006-07-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Document that
