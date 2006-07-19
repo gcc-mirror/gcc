@@ -11906,11 +11906,13 @@ names in the assembly language output using symbolic forms.
 @itemx -mno-longcall
 @opindex mlongcall
 @opindex mno-longcall
-Default to making all function calls indirectly, using a register, so
-that functions which reside further than 32 megabytes (33,554,432
-bytes) from the current location can be called.  This setting can be
-overridden by the @code{shortcall} function attribute, or by
-@code{#pragma longcall(0)}.
+By default assume that all calls are far away so that a longer more
+expensive calling sequence is required.  This is required for calls
+further than 32 megabytes (33,554,432 bytes) from the current location.
+A short call will be generated if the compiler knows
+the call cannot be that far away.  This setting can be overridden by
+the @code{shortcall} function attribute, or by @code{#pragma
+longcall(0)}.
 
 Some linkers are capable of detecting out-of-range calls and generating
 glue code on the fly.  On these systems, long calls are unnecessary and

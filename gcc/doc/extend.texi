@@ -1962,20 +1962,21 @@ from the USP register in the function prologue.
 This attribute specifies how a particular function is called on
 ARM@.  Both attributes override the @option{-mlong-calls} (@pxref{ARM Options})
 command line switch and @code{#pragma long_calls} settings.  The
-@code{long_call} attribute causes the compiler to always call the
-function by first loading its address into a register and then using the
-contents of that register.   The @code{short_call} attribute always places
+@code{long_call} attribute indicates that the function might be far
+away from the call site and require a different (more expensive)
+calling sequence.   The @code{short_call} attribute always places
 the offset to the function from the call site into the @samp{BL}
 instruction directly.
 
 @item longcall/shortcall
 @cindex functions called via pointer on the RS/6000 and PowerPC
-On the Blackfin, RS/6000 and PowerPC, the @code{longcall} attribute causes
-the compiler to always call this function via a pointer, just as it would if
-the @option{-mlongcall} option had been specified.  The @code{shortcall}
-attribute causes the compiler not to do this.  These attributes override
-both the @option{-mlongcall} switch and, on the RS/6000 and PowerPC, the
-@code{#pragma longcall} setting.
+On the Blackfin, RS/6000 and PowerPC, the @code{longcall} attribute
+indicates that the function might be far away from the call site and
+require a different (more expensive) calling sequence.  The
+@code{shortcall} attribute indicates that the function is always close
+enough for the shorter calling sequence to be used.  These attributes
+override both the @option{-mlongcall} switch and, on the RS/6000 and
+PowerPC, the @code{#pragma longcall} setting.
 
 @xref{RS/6000 and PowerPC Options}, for more information on whether long
 calls are necessary.
