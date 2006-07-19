@@ -1,5 +1,8 @@
 2006-07-18  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/28048
+	* semantics.c (check_accessibility_of_qualified_id): Robustify.
+
 	PR c++/28235
 	* pt.c (tsubst_decl): Handling substitutions into a static data
 	member from within the scope of the tempalte itself.
