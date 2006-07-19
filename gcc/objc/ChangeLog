@@ -1,3 +1,8 @@
+2006-07-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR obj-c++/28434
+	* objc-act.c (lookup_and_install_protocols): Skip error_mark_nodes.
+
 2006-06-06  Mike Stump  <mrs@apple.com>
 
 	* objc-act.c: Remove prototype for objc_build_volatilized_type.

@@ -1433,12 +1433,12 @@ lookup_and_install_protocols (tree protocols)
       tree ident = TREE_VALUE (proto);
       tree p = lookup_protocol (ident);
 
-      if (!p)
-	error ("cannot find protocol declaration for %qs",
-	       IDENTIFIER_POINTER (ident));
-      else
+      if (p)
 	return_value = chainon (return_value,
 				build_tree_list (NULL_TREE, p));
+      else if (ident != error_mark_node)
+	error ("cannot find protocol declaration for %qs",
+	       IDENTIFIER_POINTER (ident));
     }
 
   return return_value;
