@@ -5,7 +5,7 @@
    PR:		PR23404
    Originator:	<andreast@gcc.gnu.org> 20050830	 */
 
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 static void

@@ -1,3 +1,8 @@
+2006-07-19  David Daney  <ddaney@avtrex.com>
+
+	* testsuite/libffi.call/closure_fn6.c: Remove xfail for mips,
+	xfail remains for mips64.
+
 2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.am: Add install-html target. Add install-html to .PHONY
