@@ -6668,7 +6668,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	tree tmpl = NULL_TREE;
 	tree ctx;
 	tree type = NULL_TREE;
-	int local_p;
+	bool local_p;
 
 	if (TREE_CODE (t) == TYPE_DECL)
 	  {
@@ -6686,40 +6686,64 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      }
 	  }
 
-	/* Assume this is a non-local variable.  */
-	local_p = 0;
+	/* Check to see if we already have the specialization we
+	   need.  */
+	spec = NULL_TREE;
+	if (DECL_CLASS_SCOPE_P (t) || DECL_NAMESPACE_SCOPE_P (t))
+	  {
+	    /* T is a static data member or namespace-scope entity.
+	       We have to substitute into namespace-scope variables
+	       (even though such entities are never templates) because
+	       of cases like:
+	       
+	         template <class T> void f() { extern T t; }
 
-	if (TYPE_P (CP_DECL_CONTEXT (t)))
-	  ctx = tsubst_aggr_type (DECL_CONTEXT (t), args,
-				  complain,
-				  in_decl, /*entering_scope=*/1);
-	else if (DECL_NAMESPACE_SCOPE_P (t))
-	  ctx = DECL_CONTEXT (t);
+	       where the entity referenced is not known until
+	       instantiation time.  */
+	    local_p = false;
+	    ctx = DECL_CONTEXT (t);
+	    if (DECL_CLASS_SCOPE_P (t))
+	      {
+		ctx = tsubst_aggr_type (ctx, args,
+					complain,
+					in_decl, /*entering_scope=*/1);
+		/* If CTX is unchanged, then T is in fact the
+		   specialization we want.  That situation occurs when
+		   referencing a static data member within in its own
+		   class.  We can use pointer equality, rather than
+		   same_type_p, because DECL_CONTEXT is always
+		   canonical.  */
+		if (ctx == DECL_CONTEXT (t))
+		  spec = t;
+	      }
+
+	    if (!spec)
+	      {
+		tmpl = DECL_TI_TEMPLATE (t);
+		gen_tmpl = most_general_template (tmpl);
+		argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
+		spec = (retrieve_specialization 
+			(gen_tmpl, argvec,
+			 /*class_specializations_p=*/false));
+	      }
+	  }
 	else
 	  {
+	    /* A local variable.  */
+	    local_p = true;
 	    /* Subsequent calls to pushdecl will fill this in.  */
 	    ctx = NULL_TREE;
-	    local_p = 1;
+	    spec = retrieve_local_specialization (t);
 	  }
-
-	/* Check to see if we already have this specialization.  */
-	if (!local_p)
-	  {
-	    tmpl = DECL_TI_TEMPLATE (t);
-	    gen_tmpl = most_general_template (tmpl);
-	    argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
-	    spec = retrieve_specialization (gen_tmpl, argvec,
-					    /*class_specializations_p=*/false);
-	  }
-	else
-	  spec = retrieve_local_specialization (t);
-
+	/* If we already have the specialization we need, there is
+	   nothing more to do.  */ 
 	if (spec)
 	  {
 	    r = spec;
 	    break;
 	  }
 
+	/* Create a new node for the specialization we need.  */
 	r = copy_decl (t);
 	if (TREE_CODE (r) == VAR_DECL)
 	  {
