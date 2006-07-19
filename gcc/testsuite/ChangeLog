@@ -1,3 +1,8 @@
+2006-07-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28338
+	* g++.dg/init/ref13.C: New test.
+
 2006-07-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR obj-c++/28434

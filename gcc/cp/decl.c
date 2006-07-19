@@ -4190,12 +4190,6 @@ layout_var_decl (tree decl)
 {
   tree type;
 
-  if (TREE_STATIC (decl)
-      && !DECL_ARTIFICIAL (decl)
-      && current_function_decl
-      && DECL_CONTEXT (decl) == current_function_decl)
-    push_local_name (decl);
-
   type = TREE_TYPE (decl);
   if (type == error_mark_node)
     return;
@@ -5003,6 +4997,7 @@ initialize_local_var (tree decl, tree init)
 void
 initialize_artificial_var (tree decl, tree init)
 {
+  gcc_assert (DECL_ARTIFICIAL (decl));
   if (TREE_CODE (init) == TREE_LIST)
     init = build_constructor_from_list (NULL_TREE, init);
   gcc_assert (TREE_CODE (init) == CONSTRUCTOR);
@@ -5144,6 +5139,17 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       if (DECL_THREAD_LOCAL_P (decl) && !pod_type_p (TREE_TYPE (decl)))
 	error ("%qD cannot be thread-local because it has non-POD type %qT",
 	       decl, TREE_TYPE (decl));
+      /* If this is a local variable that will need a mangled name,
+	 register it now.  We must do this before processing the
+	 initializer for the variable, since the initialization might
+	 require a guard variable, and since the mangled name of the
+	 guard variable will depend on the mangled name of this
+	 variable.  */
+      if (!processing_template_decl
+	  && DECL_FUNCTION_SCOPE_P (decl)
+	  && TREE_STATIC (decl)
+	  && !DECL_ARTIFICIAL (decl))
+	push_local_name (decl);
       /* Convert the initializer to the type of DECL, if we have not
 	 already initialized DECL.  */
       if (!DECL_INITIALIZED_P (decl)
