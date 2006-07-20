@@ -1,3 +1,8 @@
+2006-07-20  Paul Brook  <paul@codesourcery.com>
+
+	PR 27363
+	* gcc.dg/pr27363.c: New test.
+
 2006-07-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28338

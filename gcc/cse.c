@@ -4739,6 +4739,8 @@ struct set
   unsigned src_const_hash;
   /* Table entry for constant equivalent for SET_SRC, if any.  */
   struct table_elt *src_const_elt;
+  /* Table entry for the destination address.  */
+  struct table_elt *dest_addr_elt;
 };
 
 static void
@@ -5970,6 +5972,40 @@ cse_insn (rtx insn, rtx libcall_insn)
 	 so that the destination goes into that class.  */
       sets[i].src_elt = src_eqv_elt;
 
+  /* Record destination addresses in the hash table.  This allows us to
+     check if they are invalidated by other sets.  */
+  for (i = 0; i < n_sets; i++)
+    {
+      if (sets[i].rtl)
+	{
+	  rtx x = sets[i].inner_dest;
+	  struct table_elt *elt;
+	  enum machine_mode mode;
+	  unsigned hash;
+
+	  if (MEM_P (x))
+	    {
+	      x = XEXP (x, 0);
+	      mode = GET_MODE (x);
+	      hash = HASH (x, mode);
+	      elt = lookup (x, hash, mode);
+	      if (!elt)
+		{
+		  if (insert_regs (x, NULL, 0))
+		    {
+		      rehash_using_reg (x);
+		      hash = HASH (x, mode);
+		    }
+		  elt = insert (x, NULL, hash, mode);
+		}
+
+	      sets[i].dest_addr_elt = elt;
+	    }
+	  else
+	    sets[i].dest_addr_elt = NULL;
+	}
+    }
+
   invalidate_from_clobbers (x);
 
   /* Some registers are invalidated by subroutine calls.  Memory is
@@ -6062,12 +6098,20 @@ cse_insn (rtx insn, rtx libcall_insn)
     }
 
   /* We may have just removed some of the src_elt's from the hash table.
-     So replace each one with the current head of the same class.  */
+     So replace each one with the current head of the same class.
+     Also check if destination addresses have been removed.  */
 
   for (i = 0; i < n_sets; i++)
     if (sets[i].rtl)
       {
-	if (sets[i].src_elt && sets[i].src_elt->first_same_value == 0)
+	if (sets[i].dest_addr_elt
+	    && sets[i].dest_addr_elt->first_same_value == 0)
+	  {
+	    /* The elt was removed, which means this destination s not
+	       valid after this instruction.  */
+	    sets[i].rtl = NULL_RTX;
+	  }
+	else if (sets[i].src_elt && sets[i].src_elt->first_same_value == 0)
 	  /* If elt was removed, find current head of same class,
 	     or 0 if nothing remains of that class.  */
 	  {
