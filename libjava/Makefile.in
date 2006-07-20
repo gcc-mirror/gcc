@@ -249,7 +249,7 @@ am__DEPENDENCIES_2 = gnu-CORBA.lo gnu-java-awt-peer-gtk.lo \
 am__DEPENDENCIES_3 = $(patsubst classpath/resource/%,%,$(addsuffix \
 	.lo,$(property_files)))
 am__DEPENDENCIES_4 =
-am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
+am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
 	java/lang/Class.java java/lang/Object.java \
 	gnu/classpath/natSystemProperties.cc gnu/gcj/natCore.cc \
@@ -340,8 +340,8 @@ am__objects_2 = gnu/classpath/natSystemProperties.lo \
 @USING_POSIX_THREADS_TRUE@am__objects_8 = posix-threads.lo
 @USING_WIN32_THREADS_TRUE@am__objects_9 = win32-threads.lo
 @USING_NO_THREADS_TRUE@am__objects_10 = no-threads.lo
-am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo stacktrace.lo \
-	link.lo defineclass.lo interpret.lo verify.lo \
+am_libgcj_la_OBJECTS = prims.lo jni.lo jvmti.lo exception.lo \
+	stacktrace.lo link.lo defineclass.lo interpret.lo verify.lo \
 	java/lang/Class.lo java/lang/Object.lo $(am__objects_2) \
 	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
 	$(am__objects_6) $(am__objects_7) $(am__objects_8) \
@@ -756,12 +756,12 @@ libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
-libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
-	defineclass.cc interpret.cc verify.cc java/lang/Class.java \
-	java/lang/Object.java $(nat_source_files) $(am__append_5) \
-	$(am__append_6) $(am__append_7) $(am__append_8) \
-	$(am__append_9) $(am__append_10) $(am__append_11) \
-	$(am__append_12)
+libgcj_la_SOURCES = prims.cc jni.cc jvmti.cc exception.cc \
+	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
+	java/lang/Class.java java/lang/Object.java $(nat_source_files) \
+	$(am__append_5) $(am__append_6) $(am__append_7) \
+	$(am__append_8) $(am__append_9) $(am__append_10) \
+	$(am__append_11) $(am__append_12)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
@@ -7950,6 +7950,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interpret.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jni-libjvm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jni.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jvmti.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/link.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/no-threads.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nogc.Plo@am__quote@

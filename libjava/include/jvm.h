@@ -573,6 +573,10 @@ void _Jv_FreeJNIEnv (_Jv_JNIEnv *);
 struct _Jv_JavaVM;
 _Jv_JavaVM *_Jv_GetJavaVM (); 
 
+/* Get the JVMTI environment */
+struct _Jv_JVMTIEnv;
+_Jv_JVMTIEnv *_Jv_GetJVMTIEnv (void);
+
 // Some verification functions from defineclass.cc.
 bool _Jv_VerifyFieldSignature (_Jv_Utf8Const*sig);
 bool _Jv_VerifyMethodSignature (_Jv_Utf8Const*sig);
