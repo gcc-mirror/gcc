@@ -287,6 +287,7 @@ fi
 
 # This depends on GLIBCXX CHECK_LINKER_FEATURES, but without it assumes no.
 GLIBCXX_ENABLE_SYMVERS([yes])
+GLIBCXX_ENABLE_VISIBILITY([yes])
 
 ac_ldbl_compat=no
 case "$target" in

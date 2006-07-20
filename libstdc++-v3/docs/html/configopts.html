@@ -293,6 +293,15 @@ options</a></h1>
 
  </dd>
 
+ <dt><code>--enable-visibility  </code></dt>
+ <dd><p> In 4.2 and later, enables or disables visibility attributes.
+        If enabled (as by default), and the compiler seems capable of
+        passing the simple sanity checks thrown at it, adjusts items
+        in namespace std, namespace std::tr1, and namespace __gnu_cxx
+        so that -fvisibility options work.
+    </p>
+ </dd>
+
  <dt><code>--enable-libstdcxx-pch  </code></dt>
  <dd><p>In 3.4 and later, tries to turn on the generation of
         stdc++.h.gch, a pre-compiled file including all the standard

@@ -1,6 +1,6 @@
 // Allocator details.
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@
 #include <cstdlib>
 #include <ext/pool_allocator.h>
 
-namespace __gnu_internal
+namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
 {
   static __glibcxx_mutex_define_initialized(palloc_init_mutex);
 }

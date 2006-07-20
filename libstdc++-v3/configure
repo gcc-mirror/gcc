@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CPP CPPFLAGS EGREP LIBTOOL CXXCPP enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS glibcxx_thread_h WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV SYMVER_FILE port_specific_symbol_files ENABLE_SYMVERS_TRUE ENABLE_SYMVERS_FALSE ENABLE_SYMVERS_GNU_TRUE ENABLE_SYMVERS_GNU_FALSE ENABLE_SYMVERS_GNU_NAMESPACE_TRUE ENABLE_SYMVERS_GNU_NAMESPACE_FALSE ENABLE_SYMVERS_DARWIN_TRUE ENABLE_SYMVERS_DARWIN_FALSE GLIBCXX_LDBL_COMPAT_TRUE GLIBCXX_LDBL_COMPAT_FALSE baseline_dir ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR CPU_DEFINES_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CPP CPPFLAGS EGREP LIBTOOL CXXCPP enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS glibcxx_thread_h WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV SYMVER_FILE port_specific_symbol_files ENABLE_SYMVERS_TRUE ENABLE_SYMVERS_FALSE ENABLE_SYMVERS_GNU_TRUE ENABLE_SYMVERS_GNU_FALSE ENABLE_SYMVERS_GNU_NAMESPACE_TRUE ENABLE_SYMVERS_GNU_NAMESPACE_FALSE ENABLE_SYMVERS_DARWIN_TRUE ENABLE_SYMVERS_DARWIN_FALSE ENABLE_VISIBILITY_TRUE ENABLE_VISIBILITY_FALSE GLIBCXX_LDBL_COMPAT_TRUE GLIBCXX_LDBL_COMPAT_FALSE baseline_dir ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR CPU_DEFINES_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -891,6 +891,7 @@ Optional Features:
                           [default=yes]
   --enable-symvers=STYLE  enables symbol versioning of the shared library
                           [default=yes]
+  --enable-visibility     enables visibility safe usage [default=yes]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -4732,7 +4733,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4735 "configure"' > conftest.$ac_ext
+  echo '#line 4736 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5352,7 +5353,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 5355 "configure"
+#line 5356 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -8008,7 +8009,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 8011 "configure"
+#line 8012 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -109160,6 +109161,90 @@ echo "$as_me:$LINENO: result: $glibcxx_ptrdiff_t_is_i" >&5
 echo "${ECHO_T}$glibcxx_ptrdiff_t_is_i" >&6
 
 
+ # Check whether --enable-visibility or --disable-visibility was given.
+if test "${enable_visibility+set}" = set; then
+  enableval="$enable_visibility"
+
+      case "$enableval" in
+       yes|no) ;;
+       *) { { echo "$as_me:$LINENO: error: Argument to enable/disable visibility must be yes or no" >&5
+echo "$as_me: error: Argument to enable/disable visibility must be yes or no" >&2;}
+   { (exit 1); exit 1; }; } ;;
+      esac
+
+else
+  enable_visibility=yes
+fi;
+
+
+if test x$enable_visibility = xyes ; then
+      echo "$as_me:$LINENO: checking whether the target supports hidden visibility" >&5
+echo $ECHO_N "checking whether the target supports hidden visibility... $ECHO_C" >&6
+if test "${have_attribute_visibility+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+  save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Werror"
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+void __attribute__((visibility("hidden"))) foo(void) { }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  have_attribute_visibility=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+have_attribute_visibility=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$save_CFLAGS"
+fi
+echo "$as_me:$LINENO: result: $have_attribute_visibility" >&5
+echo "${ECHO_T}$have_attribute_visibility" >&6
+  if test $have_attribute_visibility = no; then
+    enable_visibility=no
+  fi
+fi
+
+
+{ echo "$as_me:$LINENO: visibility supported: $enable_visibility" >&5
+echo "$as_me: visibility supported: $enable_visibility" >&6;}
+
+
 ac_ldbl_compat=no
 case "$target" in
   powerpc*-*-*gnu* | \
@@ -110101,6 +110186,17 @@ fi
 
 
 
+if test $enable_visibility = yes; then
+  ENABLE_VISIBILITY_TRUE=
+  ENABLE_VISIBILITY_FALSE='#'
+else
+  ENABLE_VISIBILITY_TRUE='#'
+  ENABLE_VISIBILITY_FALSE=
+fi
+
+
+
+
 if test $ac_ldbl_compat = yes; then
   GLIBCXX_LDBL_COMPAT_TRUE=
   GLIBCXX_LDBL_COMPAT_FALSE='#'
@@ -110484,6 +110580,13 @@ if test -z "${ENABLE_SYMVERS_DARWIN_TRUE}" && test -z "${ENABLE_SYMVERS_DARWIN_F
   { { echo "$as_me:$LINENO: error: conditional \"ENABLE_SYMVERS_DARWIN\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"ENABLE_SYMVERS_DARWIN\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${ENABLE_VISIBILITY_TRUE}" && test -z "${ENABLE_VISIBILITY_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"ENABLE_VISIBILITY\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"ENABLE_VISIBILITY\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -111168,6 +111271,8 @@ s,@ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@,$ENABLE_SYMVERS_GNU_NAMESPACE_TRUE,;t t
 s,@ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@,$ENABLE_SYMVERS_GNU_NAMESPACE_FALSE,;t t
 s,@ENABLE_SYMVERS_DARWIN_TRUE@,$ENABLE_SYMVERS_DARWIN_TRUE,;t t
 s,@ENABLE_SYMVERS_DARWIN_FALSE@,$ENABLE_SYMVERS_DARWIN_FALSE,;t t
+s,@ENABLE_VISIBILITY_TRUE@,$ENABLE_VISIBILITY_TRUE,;t t
+s,@ENABLE_VISIBILITY_FALSE@,$ENABLE_VISIBILITY_FALSE,;t t
 s,@GLIBCXX_LDBL_COMPAT_TRUE@,$GLIBCXX_LDBL_COMPAT_TRUE,;t t
 s,@GLIBCXX_LDBL_COMPAT_FALSE@,$GLIBCXX_LDBL_COMPAT_FALSE,;t t
 s,@baseline_dir@,$baseline_dir,;t t

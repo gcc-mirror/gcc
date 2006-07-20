@@ -35,7 +35,7 @@
 #include <bits/atomicity.h>
 #include <bits/concurrence.h>
 
-namespace __gnu_internal
+namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
 {
   // Mutex object for cache access
   static __glibcxx_mutex_define_initialized(locale_cache_mutex);

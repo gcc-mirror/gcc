@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@
 #include <ext/rope>
 #include <ext/stdio_filebuf.h>
 
-namespace __gnu_internal
+namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
 {
   const int min_len = __gnu_cxx::_Rope_constants::_S_max_rope_depth + 1;
 }
