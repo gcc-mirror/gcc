@@ -6107,7 +6107,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	if (sets[i].dest_addr_elt
 	    && sets[i].dest_addr_elt->first_same_value == 0)
 	  {
-	    /* The elt was removed, which means this destination s not
+	    /* The elt was removed, which means this destination is not
 	       valid after this instruction.  */
 	    sets[i].rtl = NULL_RTX;
 	  }
