@@ -1,3 +1,8 @@
+2006-07-19  Eric Christopher  <echristo@apple.com>
+
+	* config/t-slibgcc-darwin (stmp-lipo): Remove.
+	Rewrite dependencies for libgcc_s.1.dylib.
+
 2006-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* except.c (duplicate_eh_regions_1): Clear next_peer.
@@ -39,7 +44,7 @@
 	Whether a constructor node is a valid static constant initializer
 	if all its elements are.
 	(initializer_constant_valid_p) <CONSTRUCTOR value>: Use it.
-	* output.h: Declare it.	
+	* output.h: Declare it.
 	* expr.c (categorize_ctor_elements_1): Return whether the constructor
 	is a valid constant initializer instead of computing the number of
 	non-constant elements.  Use constructor_static_from_elts_p for this
@@ -49,7 +54,7 @@
 	helper.  Former head comment from this helper moved here, adjusted to
 	account for the interface changes.
 	(mostly_zeros_p): Adjust call to categorize_ctor_elements.
-	(all_zeros_p): Likewise.	
+	(all_zeros_p): Likewise.
 	* gimplify.c (gimplify_init_constructor): Decide whether we can make
 	static versions of the constructor from the categorize_ctor_elements
 	return value instead of the formerly computed number of non-constant
@@ -186,7 +191,7 @@
 2006-07-14  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* dbxout.c (dbxout_begin_prologue): Emit LFBB label at function start.
-	(dbxout_function_end): Use local label LFBB. Remove hook 
+	(dbxout_function_end): Use local label LFBB. Remove hook
 	DBX_OUTPUT_NFUN.
 	(dbxout_source_line): Use local label LFBB.
 	(dbxout_block): Likewise.
@@ -212,7 +217,7 @@
 
 	* config/sh/sh.c (sh_reorg): Ignore deleted insns whilst
 	walking the LOG_LINKS chain.
-  
+
 2006-07-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Explain difference
