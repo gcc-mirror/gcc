@@ -1,5 +1,10 @@
 2006-07-20  Keith Seitz  <keiths@redhat.com>
 
+	* jvmti.cc (_Jv_JVMTI_DisposeEnvironment): New function.
+	(_Jv_JVMTI_Interface): Define DisposeEnvironment method.
+
+2006-07-20  Keith Seitz  <keiths@redhat.com>
+
 	* include/jvm.h (_Jv_GetJVMTIEnv): Declare.
 	* jni.cc (_Jv_JNI_GetEnv): Handle JVMTI requests.
 	* jvmti.cc: New file.
