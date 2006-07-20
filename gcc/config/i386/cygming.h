@@ -310,6 +310,16 @@ extern int i386_pe_dllimport_name_p (const char *);
 #undef	BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 128
 
+/* Biggest alignment supported by the object file format of this
+   machine.  Use this macro to limit the alignment which can be
+   specified using the `__attribute__ ((aligned (N)))' construct.  If
+   not defined, the default value is `BIGGEST_ALIGNMENT'.  */
+#undef MAX_OFILE_ALIGNMENT
+/* IMAGE_SCN_ALIGN_8192BYTES is the largest section alignment flag
+   specified in the PECOFF60 spec.  Native MS compiler also limits
+   user-specified alignment to 8192 bytes.  */
+#define MAX_OFILE_ALIGNMENT (8192 * 8)
+
 /* Native complier aligns internal doubles in structures on dword boundaries.  */
 #undef	BIGGEST_FIELD_ALIGNMENT
 #define BIGGEST_FIELD_ALIGNMENT 64
