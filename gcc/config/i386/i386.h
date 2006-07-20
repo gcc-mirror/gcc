@@ -281,11 +281,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   { "local_cpu_detect", host_detect_local_cpu },
 #endif
 
-/* Support for configure-time defaults of some command line options.  */
+/* Support for configure-time defaults of some command line options.
+   The order here is important so that -march doesn't squash the
+   tune or cpu values.  */
 #define OPTION_DEFAULT_SPECS \
-  {"arch", "%{!march=*:-march=%(VALUE)}"}, \
   {"tune", "%{!mtune=*:%{!mcpu=*:%{!march=*:-mtune=%(VALUE)}}}" }, \
-  {"cpu", "%{!mtune=*:%{!mcpu=*:%{!march=*:-mtune=%(VALUE)}}}" }
+  {"cpu", "%{!mtune=*:%{!mcpu=*:%{!march=*:-mtune=%(VALUE)}}}" }, \
+  {"arch", "%{!march=*:-march=%(VALUE)}"}
 
 /* Specs for the compiler proper */
 
@@ -2144,7 +2146,7 @@ enum ix86_entity
   MAX_386_ENTITIES
 };
 
-enum ix86_stack_slot 
+enum ix86_stack_slot
 {
   SLOT_TEMP = 0,
   SLOT_CW_STORED,
