@@ -1,5 +1,9 @@
 2006-07-20  David Daney  <ddaney@avtrex.com>
 
+	* configure.host: Enable the interpreter for mipsel-* and mips-*.
+
+2006-07-20  David Daney  <ddaney@avtrex.com>
+
 	* include/mips-signal.h: Update copyright.
 	(struct kernel_sigaction): Removed.
 	(SIGNAL_HANDLER): Changed prototype.
