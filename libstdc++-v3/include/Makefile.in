@@ -107,6 +107,8 @@ ENABLE_SYMVERS_GNU_NAMESPACE_FALSE = @ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@
 ENABLE_SYMVERS_GNU_NAMESPACE_TRUE = @ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@
 ENABLE_SYMVERS_GNU_TRUE = @ENABLE_SYMVERS_GNU_TRUE@
 ENABLE_SYMVERS_TRUE = @ENABLE_SYMVERS_TRUE@
+ENABLE_VISIBILITY_FALSE = @ENABLE_VISIBILITY_FALSE@
+ENABLE_VISIBILITY_TRUE = @ENABLE_VISIBILITY_TRUE@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GLIBCXX_BUILD_DEBUG_FALSE = @GLIBCXX_BUILD_DEBUG_FALSE@
@@ -1359,19 +1361,28 @@ stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
 @ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@	echo 1 > stamp-namespace-version
 @ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@stamp-namespace-version:
 @ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	echo 0 > stamp-namespace-version
+
+@ENABLE_VISIBILITY_TRUE@stamp-visibility:
+@ENABLE_VISIBILITY_TRUE@	echo 1 > stamp-visibility
+@ENABLE_VISIBILITY_FALSE@stamp-visibility:
+@ENABLE_VISIBILITY_FALSE@	echo 0 > stamp-visibility
+
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      ${glibcxx_srcdir}/include/bits/c++config \
 			      stamp-${host_alias} \
 			      ${toplevel_srcdir}/gcc/DATESTAMP \
-			      stamp-namespace-version
+			      stamp-namespace-version \
+			      stamp-visibility
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
 	nsa_version=`cat stamp-namespace-version` ;\
+	visibility=`cat stamp-visibility` ;\
 	ldbl_compat='' ;\
 	grep "^[ 	]*#[ 	]*define[ 	][ 	]*_GLIBCXX_LONG_DOUBLE_COMPAT[ 	][ 	]*1[ 	]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
 	-e "s,define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION, define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION $$nsa_version," \
+	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
 	-e "$$ldbl_compat" \
             < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \

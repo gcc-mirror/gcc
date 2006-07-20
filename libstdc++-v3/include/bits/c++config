@@ -40,6 +40,15 @@
 // The current version of the C++ library in compressed ISO date format.
 #define __GLIBCXX__ 
 
+// Macros for visibility.
+#define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
+
+#if _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
+#define _GLIBCXX_VISIBILITY(V) __attribute__ ((__visibility__ (#V)))
+#else
+#define _GLIBCXX_VISIBILITY(V) 
+#endif
+
 // Macros for controlling various namespace association schemes and modes.
 #ifdef _GLIBCXX_DEBUG
 # define _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG 1
@@ -53,15 +62,15 @@
 // _GLIBCXX_BEGIN_NESTED_NAMESPACE
 // _GLIBCXX_END_NESTED_NAMESPACE
 #if _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION
-# define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) namespace X { namespace Y {
+# define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y)  namespace X { namespace Y _GLIBCXX_VISIBILITY(default) {
 # define _GLIBCXX_END_NESTED_NAMESPACE } }
 # define _GLIBCXX_BEGIN_NAMESPACE(X) _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, _6)
 # define _GLIBCXX_END_NAMESPACE _GLIBCXX_END_NESTED_NAMESPACE
 #else
-# define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X { 
+# define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY(default) { 
 # define _GLIBCXX_END_NAMESPACE } 
 # if _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG
-#  define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) namespace X { namespace Y {
+#  define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) namespace X { namespace Y _GLIBCXX_VISIBILITY(default) {
 #  define _GLIBCXX_END_NESTED_NAMESPACE  } }
 # else
 #  define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) _GLIBCXX_BEGIN_NAMESPACE(X)

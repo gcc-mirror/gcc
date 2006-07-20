@@ -2101,6 +2101,38 @@ EOF
 
 
 dnl
+dnl Allow visibility attributes to be used on namespaces, objects, etc.
+dnl
+dnl --enable-visibility enables attempt to use visibility attributes.
+dnl --disable-visibility turns off all use of visibility attributes.
+dnl  +  Usage:  GLIBCXX_ENABLE_VISIBILITY[(DEFAULT)]
+dnl       Where DEFAULT is 'yes'.
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_VISIBILITY], [
+GLIBCXX_ENABLE(visibility,$1,,[enables visibility safe usage])
+
+if test x$enable_visibility = xyes ; then
+  dnl all hail libgfortran
+  dnl Check whether the target supports hidden visibility.
+  AC_CACHE_CHECK([whether the target supports hidden visibility],
+		 have_attribute_visibility, [
+  save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Werror"
+  AC_TRY_COMPILE([void __attribute__((visibility("hidden"))) foo(void) { }],
+		 [], have_attribute_visibility=yes,
+		 have_attribute_visibility=no)
+  CFLAGS="$save_CFLAGS"])
+  if test $have_attribute_visibility = no; then
+    enable_visibility=no
+  fi
+fi
+
+GLIBCXX_CONDITIONAL(ENABLE_VISIBILITY, test $enable_visibility = yes)
+AC_MSG_NOTICE([visibility supported: $enable_visibility])
+])
+
+
+dnl
 dnl Add version tags to symbols in shared library (or not), additionally
 dnl marking other symbols as private/local (or not).
 dnl

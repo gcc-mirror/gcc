@@ -1,3 +1,28 @@
+2006-07-20  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	
+	PR libstdc++/19664 round 1
+	* acinclude.m4 (GLIBCXX_ENABLE_VISIBILITY): Check it.
+	* configure.ac: Use it.
+	* configure: Regenerate.
+	* docs/html/configopts.html: Document it.
+	* include/Makefile.am: Slip in to c++config.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config (_GLIBCXX_VISIBILITY): New.
+	(_GLIBCXX_BEGIN_NAMESPACE): Use it.
+	(_GLIBCXX_END_NAMESPACE): Use it.
+	(_GLIBCXX_BEGIN_NESTED_NAMESPACE): Use it.
+	(_GLIBCXX_END_NESTED_NAMESPACE): Use it.		
+	* src/debug.cc: Mark __gnu_internal namespace with hidden
+	visibility attribute.
+	* src/ext-inst.cc: Same.
+	* src/globals_io.cc: Same.
+	* src/globals_locale.cc: Same.
+	* src/ios_init.cc: Same.
+	* src/locale.cc: Same.
+	* src/mt_allocator.cc: Same.
+	* src/pool_allocator.cc: Same.
+
 2006-07-16  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28277 (partial: valarray bits)

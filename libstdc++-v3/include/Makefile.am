@@ -983,19 +983,31 @@ else
 stamp-namespace-version:
 	echo 0 > stamp-namespace-version
 endif
+
+if ENABLE_VISIBILITY
+stamp-visibility:
+	echo 1 > stamp-visibility
+else
+stamp-visibility:
+	echo 0 > stamp-visibility
+endif
+
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      ${glibcxx_srcdir}/include/bits/c++config \
 			      stamp-${host_alias} \
 			      ${toplevel_srcdir}/gcc/DATESTAMP \
-			      stamp-namespace-version
+			      stamp-namespace-version \
+			      stamp-visibility
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
 	nsa_version=`cat stamp-namespace-version` ;\
+	visibility=`cat stamp-visibility` ;\
 	ldbl_compat='' ;\
 	grep "^[ 	]*#[ 	]*define[ 	][ 	]*_GLIBCXX_LONG_DOUBLE_COMPAT[ 	][ 	]*1[ 	]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
 	-e "s,define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION, define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION $$nsa_version," \
+	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
 	-e "$$ldbl_compat" \
             < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \

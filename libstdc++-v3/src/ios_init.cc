@@ -40,7 +40,7 @@
 #include <ext/stdio_filebuf.h>
 #include <ext/stdio_sync_filebuf.h>
 
-namespace __gnu_internal
+namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
 {
   using namespace __gnu_cxx;
 
