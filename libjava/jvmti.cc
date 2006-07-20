@@ -16,6 +16,14 @@ details.  */
 #define RESERVED NULL
 #define UNIMPLEMENTED NULL
 
+static jvmtiError
+_Jv_JVMTI_DisposeEnvironment (jvmtiEnv *env)
+{
+  // All we need to do is free memory allocated by _Jv_GetJVMTIEnv
+  _Jv_Free (env);
+  return JVMTI_ERROR_NONE;
+}
+
 struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
 {
   RESERVED,			// reserved1
@@ -144,7 +152,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   UNIMPLEMENTED,		// GetExtensionFunctions
   UNIMPLEMENTED,		// GetExtensionEvents
   UNIMPLEMENTED,		// SetExtensionEventCallback
-  UNIMPLEMENTED,		// DisposeEnvironment
+  _Jv_JVMTI_DisposeEnvironment,	// DisposeEnvironment
   UNIMPLEMENTED,		// GetErrorName
   UNIMPLEMENTED,		// GetJLocationFormat
   UNIMPLEMENTED,		// GetSystemProperties
