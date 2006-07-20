@@ -1,3 +1,11 @@
+2006-07-20  Keith Seitz  <keiths@redhat.com>
+
+	* include/jvm.h (_Jv_GetJVMTIEnv): Declare.
+	* jni.cc (_Jv_JNI_GetEnv): Handle JVMTI requests.
+	* jvmti.cc: New file.
+	* Makefile.am (libgcj_la_SOURCES): Add jvmti.cc.
+	* Makefile.in: Regenerate. 
+
 2006-07-20  David Daney  <ddaney@avtrex.com>
 
 	* configure.host: Enable the interpreter for mipsel-* and mips-*.

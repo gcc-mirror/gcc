@@ -22,6 +22,7 @@ details.  */
 #ifdef ENABLE_JVMPI
 #include <jvmpi.h>
 #endif
+#include <jvmti.h>
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
@@ -2494,6 +2495,13 @@ _Jv_JNI_GetEnv (JavaVM *, void **penv, jint version)
       return 0;
     }
 #endif
+
+  // Handle JVMTI requests
+  if (version == JVMTI_VERSION_1_0)
+    {
+      *penv = (void *) _Jv_GetJVMTIEnv ();
+      return 0;
+    }
 
   // FIXME: do we really want to support 1.1?
   if (version != JNI_VERSION_1_4 && version != JNI_VERSION_1_2
