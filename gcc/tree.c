@@ -3499,6 +3499,28 @@ lookup_attribute (const char *attr_name, tree list)
   return NULL_TREE;
 }
 
+/* Remove any instances of attribute ATTR_NAME in LIST and return the
+   modified list.  */
+
+tree
+remove_attribute (const char *attr_name, tree list)
+{
+  tree *p;
+  size_t attr_len = strlen (attr_name);
+
+  for (p = &list; *p; )
+    {
+      tree l = *p;
+      gcc_assert (TREE_CODE (TREE_PURPOSE (l)) == IDENTIFIER_NODE);
+      if (is_attribute_with_length_p (attr_name, attr_len, TREE_PURPOSE (l)))
+	*p = TREE_CHAIN (l);
+      else
+	p = &TREE_CHAIN (l);
+    }
+
+  return list;
+}
+
 /* Return an attribute list that is the union of a1 and a2.  */
 
 tree
