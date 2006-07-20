@@ -1,3 +1,12 @@
+2006-07-20  David Daney  <ddaney@avtrex.com>
+
+	* include/mips-signal.h: Update copyright.
+	(struct kernel_sigaction): Removed.
+	(SIGNAL_HANDLER): Changed prototype.
+	(MAKE_THROW_FRAME): Added cast.
+	(INIT_SEGV): Use sigaction instead of syscall.
+	(INIT_FPE): Likewise.
+
 2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
         * configure: Regenerate.
