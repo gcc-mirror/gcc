@@ -1,3 +1,10 @@
+2006-07-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28338
+	* decl.c (layout_var_decl): Don't call push_local_name here.
+	(initialize_artificial_var): Assert artificiality.
+	(cp_finish_decl): Call push_local_name here.
+
 2006-07-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28337
