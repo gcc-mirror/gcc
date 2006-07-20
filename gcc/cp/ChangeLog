@@ -1,3 +1,25 @@
+2006-07-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28407
+	* decl.c (grokvardecl): Set DECL_THIS_STATIC on file-scope
+	const variables with implicit internal linkage.
+	* tree.c (decl_linkage): Only return lk_external if it's set.
+
+	PR c++/28409
+	* decl2.c (constrain_visibility): Ignore the anonymous namespace 
+	for extern "C" decls.
+	(VISIBILITY_STATIC): Rename to VISIBILITY_ANON.
+
+	* decl2.c (constrain_visibility): Remove specified and reason 
+	parameters.  Don't touch decls that already have explicit visibility.
+	(determine_visibility): Do copy DECL_VISIBILITY_SPECIFIED from 
+	template.
+	(determine_visibility_from_class): Reverse sense of 
+	DECL_VISIBILITY_SPECIFIED test for target-specific visibility rules.
+	(constrain_class_visibility): Only complain about member visibility
+	if the member type is another class.  Don't change visibility of the
+	current class.
+
 2006-07-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28338

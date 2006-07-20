@@ -6589,7 +6589,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	/* Possibly limit visibility based on template args.  */
 	DECL_VISIBILITY (r) = VISIBILITY_DEFAULT;
-	DECL_VISIBILITY_SPECIFIED (r) = 0;
+	if (DECL_VISIBILITY_SPECIFIED (t))
+	  {
+	    DECL_VISIBILITY_SPECIFIED (r) = 0;
+	    DECL_ATTRIBUTES (r)
+	      = remove_attribute ("visibility", DECL_ATTRIBUTES (r));
+	  }
 	determine_visibility (r);
       }
       break;
@@ -6791,7 +6796,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  {
 	    /* Possibly limit visibility based on template args.  */
 	    DECL_VISIBILITY (r) = VISIBILITY_DEFAULT;
-	    DECL_VISIBILITY_SPECIFIED (r) = 0;
+	    if (DECL_VISIBILITY_SPECIFIED (t))
+	      {
+		DECL_VISIBILITY_SPECIFIED (r) = 0;
+		DECL_ATTRIBUTES (r)
+		  = remove_attribute ("visibility", DECL_ATTRIBUTES (r));
+	      }
 	    determine_visibility (r);
 	  }
 

@@ -3696,6 +3696,11 @@ extern int is_attribute_p (const char *, tree);
 
 extern tree lookup_attribute (const char *, tree);
 
+/* Remove any instances of attribute ATTR_NAME in LIST and return the
+   modified list.  */
+
+extern tree remove_attribute (const char *, tree);
+
 /* Given two attributes lists, return a list of their union.  */
 
 extern tree merge_attributes (tree, tree);

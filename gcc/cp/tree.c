@@ -2195,6 +2195,9 @@ decl_linkage (tree decl)
   if (TREE_PUBLIC (decl))
     return lk_external;
 
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
+    return lk_external;
+
   /* Linkage of a CONST_DECL depends on the linkage of the enumeration
      type.  */
   if (TREE_CODE (decl) == CONST_DECL)
@@ -2213,6 +2216,14 @@ decl_linkage (tree decl)
      TREE_PUBLIC set.  */
   if (decl_function_context (decl))
     return lk_none;
+
+  /* Members of the anonymous namespace also have TREE_PUBLIC unset, but
+     are considered to have external linkage for language purposes.  DECLs
+     really meant to have internal linkage have DECL_THIS_STATIC set.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      || ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
+	  && !DECL_THIS_STATIC (decl)))
+    return lk_external;
 
   /* Everything else has internal linkage.  */
   return lk_internal;

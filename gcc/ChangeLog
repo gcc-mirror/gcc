@@ -1,3 +1,7 @@
+2006-07-20  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (remove_attribute): New fn.
+
 2006-07-20  Paul Brook  <paul@codesourcery.com>
 
 	PR 27363

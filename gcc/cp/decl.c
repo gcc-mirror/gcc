@@ -5246,6 +5246,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	{
 	  layout_var_decl (decl);
 	  maybe_commonize_var (decl);
+	  if (DECL_NAMESPACE_SCOPE_P (decl) && !TREE_PUBLIC (decl)
+	      && !DECL_THIS_STATIC (decl) && !DECL_ARTIFICIAL (decl))
+	    {
+	      /* This is a const variable with implicit 'static'.  Set
+		 DECL_THIS_STATIC so we can tell it from variables that are
+		 !TREE_PUBLIC because of the anonymous namespace.  */
+	      DECL_THIS_STATIC (decl) = 1;
+	    }
 	}
 
       make_rtl_for_nonlocal_decl (decl, init, asmspec);

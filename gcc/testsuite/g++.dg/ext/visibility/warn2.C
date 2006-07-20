@@ -14,6 +14,6 @@ struct B
   N::A a;
 };
 
-B f () { }			// { dg-warning "visibility" }
+N::A f () { }			// { dg-warning "visibility" }
 
 struct C: public N::A { };	// { dg-warning "visibility" }

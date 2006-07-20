@@ -2413,16 +2413,16 @@ In C++, the visibility attribute applies to types as well as functions
 and objects, because in C++ types have linkage.  A class must not have
 greater visibility than its non-static data member types and bases,
 and class members default to the visibility of their class.  Also, a
-declaration must not have greater visibility than its type.
+declaration without explicit visibility is limited to the visibility
+of its type.
 
 In C++, you can mark member functions and static member variables of a
 class with the visibility attribute.  This is useful if if you know a
 particular method or static member variable should only be used from
 one shared object; then you can mark it hidden while the rest of the
 class has default visibility.  Care must be taken to avoid breaking
-the One Definition Rule; for example, it is not useful to mark a
-method which is defined inside a class definition as hidden without
-marking the whole class as hidden.
+the One Definition Rule; for example, it is usually not useful to mark
+an inline method as hidden without marking the whole class as hidden.
 
 A C++ namespace declaration can also have the visibility attribute.
 This attribute applies only to the particular namespace body, not to
@@ -2434,6 +2434,9 @@ In C++, if a template argument has limited visibility, this
 restriction is implicitly propagated to the template instantiation.
 Otherwise, template instantiations and specializations default to the
 visibility of their template.
+
+If both the template and enclosing class have explicit visibility, the
+visibility from the template is used.
 
 @item warn_unused_result
 @cindex @code{warn_unused_result} attribute
@@ -3667,6 +3670,13 @@ In C++, attribute visibility (@pxref{Function Attributes}) can also be
 applied to class, struct, union and enum types.  Unlike other type
 attributes, the attribute must appear between the initial keyword and
 the name of the type; it cannot appear after the body of the type.
+
+Note that the type visibility is applied to vague linkage entities
+associated with the class (vtable, typeinfo node, etc.).  In
+particular, if a class is thrown as an exception in one shared object
+and caught in another, the class must have default visibility.
+Otherwise the two shared objects will be unable to use the same
+typeinfo node and exception handling will break.
 
 @subsection ARM Type Attributes
 
