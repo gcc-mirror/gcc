@@ -1,3 +1,20 @@
+2006-07-21  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/26792
+	* configure.ac: Use GCC_CHECK_UNWIND_GETIPINFO to
+	define HAVE_GETIPINFO.
+	* aclocal.m4: Add include of ../config/unwind_ipinfo.m4.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* libmath/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* libsupc++/eh_personality.cc: Check HAVE_GETIPINFO.
+
 2006-07-21  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/eh_personality.cc: Wrap extern "C" function
