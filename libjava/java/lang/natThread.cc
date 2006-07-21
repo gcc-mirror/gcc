@@ -318,6 +318,13 @@ _Jv_ThreadRun (java::lang::Thread* thread)
   thread->finish_ ();
 }
 
+_Jv_Thread_t*
+_Jv_ThreadGetData (java::lang::Thread* thread)
+{
+  natThread* nt = (natThread*) thread->data;
+  return nt->thread;
+}
+
 void
 java::lang::Thread::start (void)
 {
