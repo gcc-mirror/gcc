@@ -26,15 +26,15 @@ proc dump_compare { src options } {
 	cd ..
 	foreach dump1 [lsort [glob -nocomplain dump1/*]] {
 	    regsub dump1/ $dump1 dump2/ dump2
-	    set dumptail [file tail $dump1]
+	    set dumptail "gcc.c-torture/unsorted/[file tail $dump1]"
 	    #puts "$option $dump1"
 	    set tmp [ diff "$dump1" "$dump2" ]
 	    if { $tmp == 0 } {
-		untested "$option $dumptail comparison"
+		untested "$dumptail, $option comparison"
 	    } elseif { $tmp == 1 } {
-		pass "$option $dumptail comparison"
+		pass "$dumptail, $option comparison"
 	    } else {
-		fail "$option $dumptail comparison"
+		fail "$dumptail, $option comparison"
 	    }
 	    #exec diff $dump1 $dump2
 	}
