@@ -326,6 +326,9 @@ empty_exception_spec (lsda_header_info *info, _Unwind_Sword filter_value)
   return tmp == 0;
 }
 
+namespace __cxxabiv1
+{
+
 // Using a different personality function name causes link failures
 // when trying to mix code using different exception handling models.
 #ifdef _GLIBCXX_SJLJ_EXCEPTIONS
@@ -748,3 +751,5 @@ __cxa_call_unexpected (void *exc_obj_in)
     }
 }
 #endif
+
+} // namespace __cxxabiv1
