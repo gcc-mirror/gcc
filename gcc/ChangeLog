@@ -1,3 +1,9 @@
+2006-07-21  Mike Stump  <mrs@apple.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Note that
+	-fvisibility-inlines-hidden doesn't affect explicitly
+	instantiationed inline methods.
+
 2006-07-20  Roger Sayle  <roger@eyesopen.com>
 
 	* config.gcc (i[34567]86-*-solaris2*): Add usegas.h to $tm_file

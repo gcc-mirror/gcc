@@ -1,5 +1,7 @@
 2006-07-21  Mike Stump  <mrs@apple.com>
 
+	* g++.dg/ext/visibility/fvisibility-inlines-hidden-3.C: New test.
+
 	* gcc.c-torture/unsorted/dump-noaddr.x: Fix test case name.
 
 2006-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
