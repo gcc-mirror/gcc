@@ -31,8 +31,8 @@
  *  This is a TR1 C++ Library header. 
  */
 
-#ifndef GNU_LIBSTDCXX_TR1_UNORDERED_MAP_
-#define GNU_LIBSTDCXX_TR1_UNORDERED_MAP_
+#ifndef _TR1_UNORDERED_MAP
+#define _TR1_UNORDERED_MAP 1
 
 #include <tr1/hashtable>
 #include <tr1/functional>
@@ -164,4 +164,4 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 _GLIBCXX_END_NAMESPACE
 }
 
-#endif /* GNU_LIBSTDCXX_TR1_UNORDERED_MAP_ */
+#endif // _TR1_UNORDERED_MAP
