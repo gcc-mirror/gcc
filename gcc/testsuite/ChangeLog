@@ -1,5 +1,8 @@
 2006-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28250
+	* g++.dg/eh/catch3.C: New test.
+
 	PR c++/28363
 	* g++.dg/template/defarg10.C: New test.
 

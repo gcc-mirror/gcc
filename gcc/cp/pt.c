@@ -8491,20 +8491,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case HANDLER:
       {
-	tree decl;
+	tree decl = HANDLER_PARMS (t);
 
-	stmt = begin_handler ();
-	if (HANDLER_PARMS (t))
+	if (decl)
 	  {
-	    decl = HANDLER_PARMS (t);
 	    decl = tsubst (decl, args, complain, in_decl);
 	    /* Prevent instantiate_decl from trying to instantiate
 	       this variable.  We've already done all that needs to be
 	       done.  */
-	    DECL_TEMPLATE_INSTANTIATED (decl) = 1;
+	    if (decl != error_mark_node)
+	      DECL_TEMPLATE_INSTANTIATED (decl) = 1;
 	  }
-	else
-	  decl = NULL_TREE;
+	stmt = begin_handler ();
 	finish_handler_parms (decl, stmt);
 	tsubst_expr (HANDLER_BODY (t), args, complain, in_decl);
 	finish_handler (stmt);
