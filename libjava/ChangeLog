@@ -1,3 +1,7 @@
+2006-07-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/io/OutputStreamWriter.java (flush): Create work if null.
+
 2006-07-21  Keith Seitz  <keiths@redhat.com>
 
 	* java/lang/natThread.cc (_Jv_ThreadGetData): New function.
@@ -33,7 +37,7 @@
 
 2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2006-07-18  Gary Benson  <gbenson@redhat.com>
 
