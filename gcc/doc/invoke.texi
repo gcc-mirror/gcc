@@ -1625,7 +1625,8 @@ the function is defined in only one shared object.
 You may mark a method as having a visibility explicitly to negate the
 effect of the switch for that method.  For example, if you do want to
 compare pointers to a particular inline method, you might mark it as
-having default visibility.
+having default visibility.  Marking the enclosing class with explicit
+visibility will have no effect.
 
 Explicitly instantiated inline methods are unaffected by this option
 as their linkage might otherwise cross a shared library boundary.
