@@ -17,7 +17,13 @@ case "${with_gxx_include_dir}" in
       yes) gxx_include_dir='$(libsubdir)/include/c++' ;;
       *)
 	libstdcxx_incdir='c++/$(gcc_version)'
-	gxx_include_dir='$(prefix)/include/$(libstdcxx_incdir)' ;;
+	gxx_include_dir='include/$(libstdcxx_incdir)'
+	if test -n "$with_cross_host" && 
+           test x"$with_cross_host" != x"no"; then	
+          gxx_include_dir='${prefix}/${target_alias}/'"$gxx_include_dir"
+        else
+          gxx_include_dir='${prefix}/'"$gxx_include_dir"
+        fi;;
     esac ;;
   *) gxx_include_dir=${with_gxx_include_dir} ;;
 esac

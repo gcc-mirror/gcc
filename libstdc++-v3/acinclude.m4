@@ -675,6 +675,7 @@ dnl Assumes cross_compiling bits already done, and with_cross_host in
 dnl particular.
 dnl
 dnl This logic must match gcc/configure.ac's setting of gcc_gxx_include_dir.
+dnl config/gxx-include-dir.m4 must be kept consistant with this as well.
 AC_DEFUN([GLIBCXX_EXPORT_INSTALL_INFO], [
   glibcxx_toolexecdir=no
   glibcxx_toolexeclibdir=no
