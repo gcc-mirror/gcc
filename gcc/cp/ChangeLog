@@ -1,3 +1,10 @@
+2006-07-21  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (determine_visibility): Don't propagate visibility from
+	type to decl.
+	(constrain_class_visibility): Don't warn in system headers.
+	Don't warn about pointer fields.
+
 2006-07-20  Mike Stump  <mrs@apple.com>
 
 	* decl2.c (determine_visibility_from_class): Don't use hidden

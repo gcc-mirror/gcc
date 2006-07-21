@@ -1775,17 +1775,17 @@ determine_visibility (tree decl)
   if (class_type)
     determine_visibility_from_class (decl, class_type);
 
-  /* Don't let it have more visibility than its type.  */
-  if (TREE_CODE (decl) != TYPE_DECL)
-    if (constrain_visibility (decl, type_visibility (TREE_TYPE (decl))))
-      warning (OPT_Wattributes, "\
-lowering visibility of %q+D to match its type",
-	       decl);
-
   if (decl_anon_ns_mem_p (decl))
     /* Names in an anonymous namespace get internal linkage.
        This might change once we implement export.  */
     constrain_visibility (decl, VISIBILITY_ANON);
+  else if (TREE_CODE (decl) != TYPE_DECL)
+    {
+      /* Propagate anonymity from type to decl.  */
+      int tvis = type_visibility (TREE_TYPE (decl));
+      if (tvis == VISIBILITY_ANON)
+	constrain_visibility (decl, tvis);
+    }
 }
 
 /* By default, static data members and function members receive
@@ -1841,7 +1841,8 @@ constrain_class_visibility (tree type)
 
   int vis = type_visibility (type);
 
-  if (vis == VISIBILITY_ANON)
+  if (vis == VISIBILITY_ANON
+      || DECL_IN_SYSTEM_HEADER (TYPE_MAIN_DECL (type)))
     return;
 
   /* Don't warn about visibility if the class has explicit visibility.  */
@@ -1851,13 +1852,15 @@ constrain_class_visibility (tree type)
   for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
     if (TREE_CODE (t) == FIELD_DECL && TREE_TYPE (t) != error_mark_node)
       {
-	int subvis = type_visibility (TREE_TYPE (t));
+	tree ftype = strip_array_types (TREE_TYPE (t));
+	int subvis = type_visibility (ftype);
 
 	if (subvis == VISIBILITY_ANON)
 	  warning (0, "\
 %qT has a field %qD whose type uses the anonymous namespace",
 		   type, t);
-	else if (vis < VISIBILITY_HIDDEN
+	else if (IS_AGGR_TYPE (ftype)
+		 && vis < VISIBILITY_HIDDEN
 		 && subvis >= VISIBILITY_HIDDEN)
 	  warning (OPT_Wattributes, "\
 %qT declared with greater visibility than the type of its field %qD",

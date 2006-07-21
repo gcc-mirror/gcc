@@ -12,14 +12,8 @@ struct __attribute ((visibility ("hidden"))) A
 
 void A::f() { }
 
-// This gets a warning; it should have explicit visibility of some sort.
-A* afactory1() { return new A; }	// { dg-warning "visibility" }
-
-// This is OK.
-__attribute ((visibility ("default"))) A*
-afactory2 () { return new A; }
-
-// This gets a warning.
+// This gets a warning because B objects might rely
+// on hidden symbols from A.
 struct B
 {				// { dg-warning "visibility" }
   A a;
