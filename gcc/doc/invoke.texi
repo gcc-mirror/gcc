@@ -1627,6 +1627,10 @@ effect of the switch for that method.  For example, if you do want to
 compare pointers to a particular inline method, you might mark it as
 having default visibility.
 
+Explicitly instantiated inline methods are unaffected by this option
+as their linkage might otherwise cross a shared library boundary.
+@xref{Template Instantiation}.
+
 @item -fno-weak
 @opindex fno-weak
 Do not use weak symbol support, even if it is provided by the linker.

@@ -1801,7 +1801,9 @@ determine_visibility_from_class (tree decl, tree class_type)
       && !processing_template_decl
       && ! DECL_VISIBILITY_SPECIFIED (decl)
       && TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_DECLARED_INLINE_P (decl))
+      && DECL_DECLARED_INLINE_P (decl)
+      && (! DECL_LANG_SPECIFIC (decl)
+	  || ! DECL_EXPLICIT_INSTANTIATION (decl)))
     DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
   else if (!DECL_VISIBILITY_SPECIFIED (decl))
     {
