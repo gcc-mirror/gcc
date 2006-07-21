@@ -1,3 +1,10 @@
+2006-07-20  Roger Sayle  <roger@eyesopen.com>
+
+	* config.gcc (i[34567]86-*-solaris2*): Add usegas.h to $tm_file
+	if the target assembler is GNU binutils' gas.
+	* config/i386/sol2-10.h (ASM_SPEC): Check USE_GAS to determine
+	whether to pass GNU gas or native as command line options.
+
 2006-07-20  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (remove_attribute): New fn.

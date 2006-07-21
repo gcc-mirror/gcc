@@ -22,9 +22,17 @@ Boston, MA 02110-1301, USA.  */
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "/"
 
+/* binutils' GNU as understands --32 and --64, but the native Solaris
+   assembler requires -xarch=generic or -xarch=generic64 instead.  */
 #undef ASM_SPEC
+#ifdef USE_GAS
 #define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} " \
 		 "%{Wa,*:%*} %{m32:--32} %{m64:--64} -s %(asm_cpu)"
+#else
+#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} " \
+		 "%{Wa,*:%*} %{m32:-xarch=generic} %{m64:-xarch=generic64} " \
+		 "-s %(asm_cpu)"
+#endif
 
 #undef NO_PROFILE_COUNTERS
 
