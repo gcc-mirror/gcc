@@ -51,8 +51,8 @@
 // A. Tavori and V. Dreizin, "Generic Associative Containers", 2004.
 //    ??? Full citation?
 
-#ifndef GNU_LIBSTDCXX_TR1_HASHTABLE_
-#define GNU_LIBSTDCXX_TR1_HASHTABLE_
+#ifndef _TR1_HASHTABLE
+#define _TR1_HASHTABLE 1
 
 #include <utility>		// For std::pair
 #include <memory>
@@ -1957,7 +1957,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     }
 
 _GLIBCXX_END_NAMESPACE
-}				// Namespace std::tr1
+} // namespace std::tr1
 
-#endif /* GNU_LIBSTDCXX_TR1_HASHTABLE_ */
+#endif // _TR1_HASHTABLE
 

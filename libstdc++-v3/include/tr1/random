@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _STD_TR1_RANDOM
-#define _STD_TR1_RANDOM 1
+#ifndef _TR1_RANDOM
+#define _TR1_RANDOM 1
 
 /**
  * @file 
@@ -2046,4 +2046,4 @@ _GLIBCXX_END_NAMESPACE
 
 #include <tr1/random.tcc>
 
-#endif // _STD_TR1_RANDOM
+#endif // _TR1_RANDOM
