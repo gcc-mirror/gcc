@@ -1,3 +1,8 @@
+2006-07-21  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/28426
+	* configure: Regenerated.
+
 2006-07-21  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/OutputStreamWriter.java (flush): Create work if null.

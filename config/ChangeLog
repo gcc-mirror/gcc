@@ -1,3 +1,8 @@
+2006-07-21  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/28426
+	* gxx-include-dir.m4: Use target_alias in path for cross build.
+
 2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
         * acx.m4: Support --with-build-libsubdir and AC_SUBST
