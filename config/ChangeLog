@@ -1,3 +1,8 @@
+2006-07-21  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/26792
+	* unwind_ipinfo.m4: New.
+
 2006-07-21  David Daney  <ddaney@avtrex.com>
 
 	PR libgcj/28426
