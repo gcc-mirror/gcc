@@ -1164,6 +1164,9 @@ i[34567]86-*-solaris2*)
 	else
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
+	if test x$gas = xyes; then
+		tm_file="usegas.h ${tm_file}"
+	fi
 	case ${target} in
 	*-*-solaris2.[789] | *-*-solaris2.1[0-9]*)
 		tm_file="$tm_file tm-dwarf2.h"
