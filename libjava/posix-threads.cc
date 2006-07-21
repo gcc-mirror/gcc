@@ -505,22 +505,6 @@ _Jv_ThreadWait (void)
   pthread_mutex_unlock (&daemon_mutex);
 }
 
-void
-_Jv_ThreadDebugSuspend (_Jv_Thread_t *data)
-{
-}
-
-void
-_Jv_ThreadDebugResume (_Jv_Thread_t *data)
-{
-}
-
-jint
-_Jv_ThreadDebugSuspendCount (_Jv_Thread_t *data)
-{
-  return -1;
-}
-
 #if defined(SLOW_PTHREAD_SELF)
 
 #include "sysdep/locks.h"

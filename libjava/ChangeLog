@@ -1,3 +1,18 @@
+2006-07-21  Keith Seitz  <keiths@redhat.com>
+
+	* boehm.cc (_Jv_SuspendThread): Don't ifdef the function declaration,
+	just the contents.
+	(_Jv_ResumeThread): Likewise.
+	* posix-threads.cc: Revert 2006-06-19 _Jv_ThreadDebugSuspend,
+	_Jv_ThreadDebugResume, _Jv_ThreadDebugSuspendCount patch. Moving
+	to JVMTI instead.
+	* include/posix-threads.h: Likewise.
+	* win32-threads.cc: Likewise.
+	* include/win32-threads.h: Likewise.
+	* jvmti.cc (_Jv_JVMTI_SuspentThread): New function.
+	(_Jv_JVMTI_ResumeThread): New function.
+	(_Jv_JVMTI_Interface): Define SuspendThread and ResumeThread.
+
 2006-07-21  David Daney  <ddaney@avtrex.com>
 
 	PR libgcj/28426
