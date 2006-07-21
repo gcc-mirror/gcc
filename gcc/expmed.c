@@ -2208,7 +2208,9 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
       && GET_CODE (op1) == CONST_INT
       && INTVAL (op1) > 0
       && INTVAL (op1) < GET_MODE_BITSIZE (mode)
-      && shift_cost[mode][INTVAL (op1)] > INTVAL (op1) * add_cost[mode])
+      && INTVAL (op1) < MAX_BITS_PER_WORD
+      && shift_cost[mode][INTVAL (op1)] > INTVAL (op1) * add_cost[mode]
+      && shift_cost[mode][INTVAL (op1)] != MAX_COST)
     {
       int i;
       for (i = 0; i < INTVAL (op1); i++)
