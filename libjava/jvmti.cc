@@ -11,7 +11,55 @@ details.  */
 #include <config.h>
 
 #include <jvm.h>
+#include <java-threads.h>
+#include <java-gc.h>
 #include <jvmti.h>
+
+#include <java/lang/Thread.h>
+
+// Some commonly-used checks
+
+#define THREAD_DEFAULT_TO_CURRENT(jthread)				\
+  if (jthread == NULL) jthread = java::lang::Thread::currentThread ();
+
+#define THREAD_CHECK_VALID(jthread)					\
+  if (!java::lang::Thread::class$.isAssignableFrom (&(jthread->class$))) \
+    return JVMTI_ERROR_INVALID_THREAD;
+
+#define THREAD_CHECK_IS_ALIVE(thread)				\
+  if (!thread->isAlive ()) return JVMTI_ERROR_THREAD_NOT_ALIVE;
+
+static jvmtiError
+_Jv_JVMTI_SuspendThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
+{
+  using namespace java::lang;
+
+  THREAD_DEFAULT_TO_CURRENT (thread);
+  THREAD_CHECK_VALID (thread);
+
+  Thread *t = reinterpret_cast<Thread *> (thread);
+  THREAD_CHECK_IS_ALIVE (t);
+
+  _Jv_Thread_t *data = _Jv_ThreadGetData (t);
+  _Jv_SuspendThread (data);
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError
+_Jv_JVMTI_ResumeThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
+{
+  using namespace java::lang;
+
+  THREAD_DEFAULT_TO_CURRENT (thread);
+  THREAD_CHECK_VALID (thread);
+
+  Thread *t = reinterpret_cast<Thread *> (thread);
+  THREAD_CHECK_IS_ALIVE (t);
+
+  _Jv_Thread_t *data = _Jv_ThreadGetData (t);
+  _Jv_ResumeThread (data);
+  return JVMTI_ERROR_NONE;
+}
 
 #define RESERVED NULL
 #define UNIMPLEMENTED NULL
@@ -30,8 +78,8 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   UNIMPLEMENTED,		// SetEventNotification
   RESERVED,			// reserved3
   UNIMPLEMENTED,		// GetAllThreads
-  UNIMPLEMENTED, 		// SuspendThread
-  UNIMPLEMENTED,		// ResumeThread
+  _Jv_JVMTI_SuspendThread,	// SuspendThread
+  _Jv_JVMTI_ResumeThread,	// ResumeThread
   UNIMPLEMENTED,		// StopThread
   UNIMPLEMENTED,		// InterruptThread
   UNIMPLEMENTED,		// GetThreadInfo
