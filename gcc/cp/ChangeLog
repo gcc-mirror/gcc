@@ -1,3 +1,9 @@
+2006-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28363
+	* semantics.c (check_template_template_default_arg): Simplify
+	error handling.
+
 2006-07-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28407
