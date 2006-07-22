@@ -414,6 +414,9 @@ write_block (st_parameter_dt *dtp, int length)
       return NULL;
     }
 
+  if (is_internal_unit (dtp) && dtp->u.p.current_unit->endfile == AT_ENDFILE)
+    generate_error (&dtp->common, ERROR_END, NULL);
+
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
     dtp->u.p.size_used += (gfc_offset) length;
 
@@ -2052,9 +2055,6 @@ next_record_w (st_parameter_dt *dtp, int done)
 
     case FORMATTED_SEQUENTIAL:
 
-      if (dtp->u.p.current_unit->bytes_left == 0)
-	break;
-	
       if (is_internal_unit (dtp))
 	{
 	  if (is_array_io (dtp))
@@ -2083,7 +2083,9 @@ next_record_w (st_parameter_dt *dtp, int done)
 	      /* Now that the current record has been padded out,
 		 determine where the next record in the array is. */
 	      record = next_array_record (dtp, dtp->u.p.current_unit->ls);
-
+	      if (record == 0)
+		dtp->u.p.current_unit->endfile = AT_ENDFILE;
+	      
 	      /* Now seek to this record */
 	      record = record * dtp->u.p.current_unit->recl;
 
@@ -2124,6 +2126,9 @@ next_record_w (st_parameter_dt *dtp, int done)
 	}
       else
 	{
+	  if (dtp->u.p.current_unit->bytes_left == 0)
+	    break;
+
 	  /* If this is the last call to next_record move to the farthest
 	  position reached in preparation for completing the record.
 	  (for file unit) */
