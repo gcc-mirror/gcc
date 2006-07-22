@@ -3,7 +3,7 @@
 	PR libgfortran/28339
 	* io/transfer.c (next_record_w): Use next_array_record result to set
 	END_FILE. (write_block): Test for END_FILE before the next write occurs.
-	* io/init.c (get_internal_unit): Initialize iunit->endfile for internal
+	* io/unit.c (get_internal_unit): Initialize iunit->endfile for internal
 	unit.
 
 2006-07-19  Janne Blomqvist  <jb@gcc.gnu.org>
