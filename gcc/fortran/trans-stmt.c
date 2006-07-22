@@ -663,6 +663,7 @@ gfc_trans_arithmetic_if (gfc_code * code)
 
   /* Pre-evaluate COND.  */
   gfc_conv_expr_val (&se, code->expr);
+  se.expr = gfc_evaluate_now (se.expr, &se.pre);
 
   /* Build something to compare with.  */
   zero = gfc_build_const (TREE_TYPE (se.expr), integer_zero_node);
