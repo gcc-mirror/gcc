@@ -1,3 +1,8 @@
+2006-07-21  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* gnu/java/net/natPlainSocketImplPosix.cc (bind): Clear
+	SockAddr before using - needed for OS X/PPC.
+
 2006-07-21  Keith Seitz  <keiths@redhat.com>
 
 	* boehm.cc (_Jv_SuspendThread): Don't ifdef the function declaration,
