@@ -945,6 +945,10 @@ locate_copy (tree type, void *client_)
       if (!parms)
 	continue;
       src_type = non_reference (TREE_VALUE (parms));
+
+      if (src_type == error_mark_node)
+        return NULL_TREE;
+
       if (!same_type_ignoring_top_level_qualifiers_p (src_type, type))
 	continue;
       if (!sufficient_parms_p (TREE_CHAIN (parms)))

@@ -1,3 +1,9 @@
+2006-07-22  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/28258
+	* method.c (locate_copy): Check for non_reference
+	returning error_mark_node.
+	
 2006-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28363
