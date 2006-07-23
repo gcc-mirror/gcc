@@ -1,3 +1,9 @@
+2006-07-23  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/fold-cond-1.c: Increase test case portability by checking
+	that "g ? 1 : h" doesn't match, instead of checking for "(g | h) != 0"
+	which may be transformed to "g || h" on some platforms.
+
 2006-07-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28025
