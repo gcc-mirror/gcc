@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2004, 2005
+/* Copyright (C) 1997, 1999, 2000, 2004, 2005, 2006
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -39,6 +39,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include <thread.h>
 #include <errno.h>
 
+#ifdef __cplusplus
+#define UNUSED(x)
+#else
+#define UNUSED(x) x __attribute__((unused))
+#endif
+
 typedef thread_key_t __gthread_key_t;
 typedef struct {
   mutex_t mutex;
@@ -69,16 +75,17 @@ __gthrw(thr_keycreate)
 __gthrw(thr_getspecific)
 __gthrw(thr_setspecific)
 __gthrw(thr_create)
+__gthrw(thr_self)
 
+__gthrw(mutex_init)
+__gthrw(mutex_destroy)
 __gthrw(mutex_lock)
 __gthrw(mutex_trylock)
 __gthrw(mutex_unlock)
 
 #ifdef _LIBOBJC
 __gthrw(thr_exit)
-__gthrw(thr_keycreate)
 __gthrw(thr_getprio)
-__gthrw(thr_self)
 __gthrw(thr_setprio)
 __gthrw(thr_yield)
 
@@ -88,8 +95,6 @@ __gthrw(cond_wait)
 __gthrw(cond_broadcast)
 __gthrw(cond_signal)
 
-__gthrw(mutex_init)
-__gthrw(mutex_destroy)
 #endif
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
@@ -434,7 +439,7 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 }
 
 static inline int
-__gthread_key_delete (__gthread_key_t key)
+__gthread_key_delete (__gthread_key_t UNUSED (key))
 {
   /* Not possible.  */
   return -1;
@@ -543,5 +548,7 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
 }
 
 #endif /* _LIBOBJC */
+
+#undef UNUSED
 
 #endif /* ! GCC_GTHR_SOLARIS_H */
