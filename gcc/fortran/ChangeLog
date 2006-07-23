@@ -1,6 +1,6 @@
 2006-07-22  Steven Bosscher  <steven@gcc.gnu.org> 
 
-    PR fortran/28439
+	PR fortran/28439
 	* trans-stmt.c (gfc_trans_arithmetic_if): Evaluate the condition once.
 
 2006-07-16  Jakub Jelinek  <jakub@redhat.com>
