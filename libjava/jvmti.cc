@@ -29,7 +29,7 @@ details.  */
 #define THREAD_CHECK_IS_ALIVE(thread)				\
   if (!thread->isAlive ()) return JVMTI_ERROR_THREAD_NOT_ALIVE;
 
-static jvmtiError
+static jvmtiError JNICALL
 _Jv_JVMTI_SuspendThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
 {
   using namespace java::lang;
@@ -45,7 +45,7 @@ _Jv_JVMTI_SuspendThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   return JVMTI_ERROR_NONE;
 }
 
-static jvmtiError
+static jvmtiError JNICALL
 _Jv_JVMTI_ResumeThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
 {
   using namespace java::lang;
@@ -64,7 +64,7 @@ _Jv_JVMTI_ResumeThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
 #define RESERVED NULL
 #define UNIMPLEMENTED NULL
 
-static jvmtiError
+static jvmtiError JNICALL
 _Jv_JVMTI_DisposeEnvironment (jvmtiEnv *env)
 {
   // All we need to do is free memory allocated by _Jv_GetJVMTIEnv

@@ -1,3 +1,10 @@
+2006-07-23  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* jvmti.cc (_Jv_JVMTI_SuspendThread): Add missing JNICALL
+	attribute.
+	(_Jv_JVMTI_ResumeThread): Likewise.
+	(_Jv_JVMTI_DisposeEnvironment): Likewise.
+
 2006-07-21  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/net/natPlainSocketImplPosix.cc (bind): Clear
