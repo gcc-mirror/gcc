@@ -617,13 +617,6 @@ case "${target}" in
   i[[3456789]]86-*-mingw32*)
     target_configdirs="$target_configdirs target-mingw"
     noconfigdirs="$noconfigdirs expect target-libgloss ${libgcj}"
-
-    # Can't build gdb for mingw32 if not native.
-    case "${host}" in
-      i[[3456789]]86-*-mingw32) ;; # keep gdb tcl tk expect etc.
-      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl gnuserv"
-         ;;
-    esac
     ;;    
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
@@ -634,13 +627,6 @@ case "${target}" in
     elif test -d "$srcdir/newlib"; then
       echo "Warning: winsup is missing so newlib can't be built."
     fi
-
-    # Can't build gdb for Cygwin if not native.
-    case "${host}" in
-      *-*-cygwin*) ;; # keep gdb tcl tk expect etc.
-      *) noconfigdirs="$noconfigdirs gdb tcl tk expect itcl libgui gnuserv"
-         ;;
-    esac
     ;;    
   i[[3456789]]86-moss-msdos | i[[3456789]]86-*-moss* | \
   i[[3456789]]86-*-uwin* | i[[3456789]]86-*-interix* )
