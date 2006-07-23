@@ -1,3 +1,11 @@
+2006-07-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/28247
+	* gthr-solaris.h: Prototype __gthrw forms of thr_self, mutex_init and
+	mutex_destroy even when !_LIBOOBJC.  Remove duplicate prototype of
+	the __gthrw form of thr_keycreate.
+	(__gthread_key_delete): Silence the unused argument warning.
+
 2006-07-23  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR debug/25468
