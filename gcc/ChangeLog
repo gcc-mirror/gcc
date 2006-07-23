@@ -1,3 +1,9 @@
+2006-07-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR debug/25468
+	* config/elfos.h (ASM_OUTPUT_ASCII): Remove 'register' marks.
+	Cache the last found '\0' marker to avoid quadratic behavior.
+
 2006-07-23  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (subsi_3_zext): Fix output template.
