@@ -3681,10 +3681,8 @@ unqualified_namespace_lookup (tree name, int flags)
 
       if (b)
 	{
-	  if (b->value && hidden_name_p (b->value))
-	    /* Ignore anticipated built-in functions and friends.  */
-	    ;
-	  else
+	  if (b->value
+	      && ((flags & LOOKUP_HIDDEN) || !hidden_name_p (b->value)))
 	    binding.value = b->value;
 	  binding.type = b->type;
 	}
@@ -3987,18 +3985,18 @@ lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
 	  continue;
 
 	/* If this is the kind of thing we're looking for, we're done.  */
-	if (qualify_lookup (iter->value, flags)
-	    && !hidden_name_p (iter->value))
+	if (qualify_lookup (iter->value, flags))
 	  binding = iter->value;
 	else if ((flags & LOOKUP_PREFER_TYPES)
-		 && qualify_lookup (iter->type, flags)
-		 && !hidden_name_p (iter->type))
+		 && qualify_lookup (iter->type, flags))
 	  binding = iter->type;
 	else
 	  binding = NULL_TREE;
 
 	if (binding)
 	  {
+	    /* Only namespace-scope bindings can be hidden.  */
+	    gcc_assert (!hidden_name_p (binding));
 	    val = binding;
 	    break;
 	  }

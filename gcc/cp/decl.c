@@ -9503,7 +9503,7 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
       /* If that fails, the name will be placed in the smallest
 	 non-class, non-function-prototype scope according to 3.3.1/5.
 	 We may already have a hidden name declared as friend in this
-	 scope.  So lookup again but not ignoring hidden name.
+	 scope.  So lookup again but not ignoring hidden names.
 	 If we find one, that name will be made visible rather than
 	 creating a new tag.  */
       if (!decl)

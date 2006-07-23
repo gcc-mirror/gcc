@@ -2058,7 +2058,7 @@ finish_compound_literal (tree type, VEC(constructor_elt,gc) *initializer_list)
       DECL_NAME (var) = make_anon_name ();
     }
   /* We must call pushdecl, since the gimplifier complains if the
-     variable hase been declared via a BIND_EXPR.  */
+     variable has not been declared via a BIND_EXPR.  */
   pushdecl (var);
   /* Initialize the variable as we would any other variable with a
      brace-enclosed initializer.  */
