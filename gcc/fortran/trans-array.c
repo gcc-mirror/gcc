@@ -4524,7 +4524,13 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
         }
       if (sym->attr.allocatable)
         {
-          se->expr = gfc_conv_array_data (tmp);
+	  if (sym->attr.dummy)
+	    {
+	      gfc_conv_expr_descriptor (se, expr, ss);
+	      se->expr = gfc_conv_array_data (se->expr);
+	    }
+	  else
+	    se->expr = gfc_conv_array_data (tmp);
           return;
         }
     }
