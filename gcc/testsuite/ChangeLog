@@ -1,3 +1,10 @@
+2006-07-24  Jan Hubicka  <jh@suse.cz>
+
+	PR c/25795
+	PR c++/27369
+	* gcc.dg/pr25795.c: New test.
+	* gcc.dg/pr25795-1.c: New test.
+
 2006-07-23  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/fold-cond-1.c: Increase test case portability by checking

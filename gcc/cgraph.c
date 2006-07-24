@@ -137,7 +137,7 @@ static GTY((param_is (struct cgraph_varpool_node))) htab_t cgraph_varpool_hash;
 struct cgraph_varpool_node *cgraph_varpool_nodes_queue, *cgraph_varpool_first_unanalyzed_node;
 
 /* The linked list of cgraph varpool nodes.  */
-static GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes;
+struct cgraph_varpool_node *cgraph_varpool_nodes;
 
 /* End of the varpool queue.  Needs to be QTYed to work with PCH.  */
 static GTY(()) struct cgraph_varpool_node *cgraph_varpool_last_needed_node;
@@ -843,8 +843,10 @@ bool
 decide_is_variable_needed (struct cgraph_varpool_node *node, tree decl)
 {
   /* If the user told us it is used, then it must be so.  */
-  if (node->externally_visible
-      || lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
+  if (node->externally_visible)
+    return true;
+  if (!flag_unit_at_a_time
+      && lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
     return true;
 
   /* ??? If the assembler name is set by hand, it is possible to assemble
@@ -861,7 +863,8 @@ decide_is_variable_needed (struct cgraph_varpool_node *node, tree decl)
 
   /* Externally visible variables must be output.  The exception is
      COMDAT variables that must be output only when they are needed.  */
-  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+  if (TREE_PUBLIC (decl) && !flag_whole_program && !DECL_COMDAT (decl)
+      && !DECL_EXTERNAL (decl))
     return true;
 
   /* When not reordering top level variables, we have to assume that
