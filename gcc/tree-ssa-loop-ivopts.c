@@ -1385,7 +1385,7 @@ idx_find_step (tree base, tree *idx, void *data)
 {
   struct ifs_ivopts_data *dta = data;
   struct iv *iv;
-  tree step, iv_step, lbound, off;
+  tree step, iv_base, iv_step, lbound, off;
   struct loop *loop = dta->ivopts_data->current_loop;
 
   if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF
@@ -1438,12 +1438,11 @@ idx_find_step (tree base, tree *idx, void *data)
     /* The step for pointer arithmetics already is 1 byte.  */
     step = build_int_cst (sizetype, 1);
 
-  /* FIXME: convert_step should not be used outside chrec_convert: fix
-     this by calling chrec_convert.  */
-  iv_step = convert_step (dta->ivopts_data->current_loop,
-			  sizetype, iv->base, iv->step, dta->stmt);
-
-  if (!iv_step)
+  iv_base = iv->base;
+  iv_step = iv->step;
+  if (!convert_affine_scev (dta->ivopts_data->current_loop,
+			    sizetype, &iv_base, &iv_step, dta->stmt,
+			    false))
     {
       /* The index might wrap.  */
       return false;

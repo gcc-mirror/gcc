@@ -1664,33 +1664,6 @@ estimate_numbers_of_iterations (struct loops *loops)
     }
 }
 
-/* If A > B, returns -1.  If A == B, returns 0.  If A < B, returns 1.
-   If neither of these relations can be proved, returns 2.  */
-
-static int
-compare_trees (tree a, tree b)
-{
-  tree typea = TREE_TYPE (a), typeb = TREE_TYPE (b);
-  tree type;
-
-  if (TYPE_PRECISION (typea) > TYPE_PRECISION (typeb))
-    type = typea;
-  else
-    type = typeb;
-
-  a = fold_convert (type, a);
-  b = fold_convert (type, b);
-
-  if (nonzero_p (fold_binary (EQ_EXPR, boolean_type_node, a, b)))
-    return 0;
-  if (nonzero_p (fold_binary (LT_EXPR, boolean_type_node, a, b)))
-    return 1;
-  if (nonzero_p (fold_binary (GT_EXPR, boolean_type_node, a, b)))
-    return -1;
-
-  return 2;
-}
-
 /* Returns true if statement S1 dominates statement S2.  */
 
 static bool
@@ -1785,123 +1758,19 @@ proved_non_wrapping_p (tree at_stmt,
   return false;
 }
 
-/* Checks whether it is correct to count the induction variable BASE +
-   STEP * I at AT_STMT in a wider type NEW_TYPE, using the bounds on
-   numbers of iterations of a LOOP.  If it is possible, return the
-   value of step of the induction variable in the NEW_TYPE, otherwise
-   return NULL_TREE.  */
+/* Returns true if the arithmetics in TYPE can be assumed not to wrap.  */
 
-static tree
-convert_step_widening (struct loop *loop, tree new_type, tree base, tree step,
-		       tree at_stmt)
+bool
+nowrap_type_p (tree type)
 {
-  struct nb_iter_bound *bound;
-  tree base_in_new_type, base_plus_step_in_new_type, step_in_new_type;
-  tree delta, step_abs;
-  tree unsigned_type, valid_niter;
+  if (!flag_wrapv
+      && INTEGRAL_TYPE_P (type)
+      && !TYPE_UNSIGNED (type))
+    return true;
 
-  /* Compute the new step.  For example, {(uchar) 100, +, (uchar) 240}
-     is converted to {(uint) 100, +, (uint) 0xfffffff0} in order to
-     keep the values of the induction variable unchanged: 100, 84, 68,
-     ...
+  if (POINTER_TYPE_P (type))
+    return true;
 
-     Another example is: (uint) {(uchar)100, +, (uchar)3} is converted
-     to {(uint)100, +, (uint)3}.  
-
-     Before returning the new step, verify that the number of
-     iterations is less than DELTA / STEP_ABS (i.e. in the previous
-     example (256 - 100) / 3) such that the iv does not wrap (in which
-     case the operations are too difficult to be represented and
-     handled: the values of the iv should be taken modulo 256 in the
-     wider type; this is not implemented).  */
-  base_in_new_type = fold_convert (new_type, base);
-  base_plus_step_in_new_type = 
-    fold_convert (new_type,
-		  fold_build2 (PLUS_EXPR, TREE_TYPE (base), base, step));
-  step_in_new_type = fold_build2 (MINUS_EXPR, new_type,
-				  base_plus_step_in_new_type,
-				  base_in_new_type);
-
-  if (TREE_CODE (step_in_new_type) != INTEGER_CST)
-    return NULL_TREE;
-
-  switch (compare_trees (base_plus_step_in_new_type, base_in_new_type))
-    {
-    case -1:
-      {
-	tree extreme = upper_bound_in_type (new_type, TREE_TYPE (base));
-	delta = fold_build2 (MINUS_EXPR, new_type, extreme,
-			     base_in_new_type);
-	step_abs = step_in_new_type;
-	break;
-      }
-
-    case 1:
-      {
-	tree extreme = lower_bound_in_type (new_type, TREE_TYPE (base));
-	delta = fold_build2 (MINUS_EXPR, new_type, base_in_new_type,
-			     extreme);
-	step_abs = fold_build1 (NEGATE_EXPR, new_type, step_in_new_type);
-	break;
-      }
-
-    case 0:
-      return step_in_new_type;
-
-    default:
-      return NULL_TREE;
-    }
-
-  unsigned_type = unsigned_type_for (new_type);
-  delta = fold_convert (unsigned_type, delta);
-  step_abs = fold_convert (unsigned_type, step_abs);
-  valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type,
-			     delta, step_abs);
-
-  estimate_numbers_of_iterations_loop (loop);
-  for (bound = loop->bounds; bound; bound = bound->next)
-    if (proved_non_wrapping_p (at_stmt, bound, new_type, valid_niter))
-      return step_in_new_type;
-
-  /* Fail when the loop has no bound estimations, or when no bound can
-     be used for verifying the conversion.  */
-  return NULL_TREE;
-}
-
-/* Returns true when VAR is used in pointer arithmetics.  DEPTH is
-   used for limiting the search.  */
-
-static bool
-used_in_pointer_arithmetic_p (tree var, int depth)
-{
-  use_operand_p use_p;
-  imm_use_iterator iter;
-
-  if (depth == 0
-      || TREE_CODE (var) != SSA_NAME
-      || !has_single_use (var))
-    return false;
-
-  FOR_EACH_IMM_USE_FAST (use_p, iter, var)
-    {
-      tree stmt = USE_STMT (use_p);
-
-      if (stmt && TREE_CODE (stmt) == MODIFY_EXPR)
-	{
-	  tree rhs = TREE_OPERAND (stmt, 1);
-
-	  if (TREE_CODE (rhs) == NOP_EXPR
-	      || TREE_CODE (rhs) == CONVERT_EXPR)
-	    {
-	      if (POINTER_TYPE_P (TREE_TYPE (rhs)))
-		return true;
-	      return false;
-	    }
-	  else
-	    return used_in_pointer_arithmetic_p (TREE_OPERAND (stmt, 0),
-						 depth - 1);
-	}
-    }
   return false;
 }
 
@@ -1910,156 +1779,72 @@ used_in_pointer_arithmetic_p (tree var, int depth)
    enough with respect to the step and initial condition in order to
    keep the evolution confined in TYPEs bounds.  Return true when the
    iv is known to overflow or when the property is not computable.
-
-   Initialize INIT_IS_MAX to true when the evolution goes from
-   INIT_IS_MAX to LOWER_BOUND_IN_TYPE, false in the contrary case.
-   When this property cannot be determined, UNKNOWN_MAX is set to
-   true.  */
+ 
+   USE_OVERFLOW_SEMANTICS is true if this function should assume that
+   the rules for overflow of the given language apply (e.g., that signed
+   arithmetics in C does not overflow).  */
 
 bool
-scev_probably_wraps_p (tree type, tree base, tree step, 
+scev_probably_wraps_p (tree base, tree step, 
 		       tree at_stmt, struct loop *loop,
-		       bool *init_is_max, bool *unknown_max)
+		       bool use_oveflow_semantics)
 {
   struct nb_iter_bound *bound;
   tree delta, step_abs;
   tree unsigned_type, valid_niter;
-  tree base_plus_step, bpsps;
-  int cps, cpsps;
+  tree type = TREE_TYPE (step);
 
-  /* FIXME: The following code will not be used anymore once
-     http://gcc.gnu.org/ml/gcc-patches/2005-06/msg02025.html is
-     committed.
+  /* FIXME: We really need something like
+     http://gcc.gnu.org/ml/gcc-patches/2005-06/msg02025.html.
 
-     If AT_STMT is a cast to unsigned that is later used for
-     referencing a memory location, it is followed by a pointer
-     conversion just after.  Because pointers do not wrap, the
-     sequences that reference the memory do not wrap either.  In the
-     following example, sequences corresponding to D_13 and to D_14
-     can be proved to not wrap because they are used for computing a
-     memory access:
+     We used to test for the following situation that frequently appears
+     during address arithmetics:
 	 
        D.1621_13 = (long unsigned intD.4) D.1620_12;
        D.1622_14 = D.1621_13 * 8;
        D.1623_15 = (doubleD.29 *) D.1622_14;
-  */
-  if (at_stmt && TREE_CODE (at_stmt) == MODIFY_EXPR)
-    {
-      tree op0 = TREE_OPERAND (at_stmt, 0);
-      tree op1 = TREE_OPERAND (at_stmt, 1);
-      tree type_op1 = TREE_TYPE (op1);
 
-      if ((TYPE_UNSIGNED (type_op1)
-	   && used_in_pointer_arithmetic_p (op0, 2))
-	  || POINTER_TYPE_P (type_op1))
-	{
-	  *unknown_max = true;
-	  return false;
-	}
-    }
+     And derived that the sequence corresponding to D_14
+     can be proved to not wrap because it is used for computing a
+     memory access; however, this is not really the case -- for example,
+     if D_12 = (unsigned char) [254,+,1], then D_14 has values
+     2032, 2040, 0, 8, ..., but the code is still legal.  */
 
   if (chrec_contains_undetermined (base)
       || chrec_contains_undetermined (step)
-      || TREE_CODE (base) == REAL_CST
-      || TREE_CODE (step) == REAL_CST)
-    {
-      *unknown_max = true;
-      return true;
-    }
-
-  *unknown_max = false;
-  base_plus_step = fold_build2 (PLUS_EXPR, type, base, step);
-  bpsps = fold_build2 (PLUS_EXPR, type, base_plus_step, step);
-  cps = compare_trees (base_plus_step, base);
-  cpsps = compare_trees (bpsps, base_plus_step);
-
-  /* Check that the sequence is not wrapping in the first step: it
-     should have the same monotonicity for the first two steps.  See
-     PR23410.  */
-  if (cps != cpsps)
+      || TREE_CODE (step) != INTEGER_CST)
     return true;
 
-  switch (cps)
-    {
-    case -1:
-      {
-	tree extreme = upper_bound_in_type (type, TREE_TYPE (base));
-	delta = fold_build2 (MINUS_EXPR, type, extreme, base);
-	step_abs = step;
-	*init_is_max = false;
-	break;
-      }
-
-    case 1:
-      {
-	tree extreme = lower_bound_in_type (type, TREE_TYPE (base));
-	delta = fold_build2 (MINUS_EXPR, type, base, extreme);
-	step_abs = fold_build1 (NEGATE_EXPR, type, step);
-	*init_is_max = true;
-	break;
-      }
-
-    case 0:
-      /* This means step is equal to 0.  This should not happen.  It
-	 could happen in convert step, but not here.  Safely answer
-	 don't know as in the default case.  */
-
-    default:
-      *unknown_max = true;
-      return true;
-    }
-
-  /* If AT_STMT represents a cast operation, we may not be able to
-     take advantage of the undefinedness of signed type evolutions.
-
-     implement-c.texi states: "For conversion to a type of width
-     N, the value is reduced modulo 2^N to be within range of the
-     type;"
-
-     See PR 21959 for a test case.  Essentially, given a cast
-     operation
-     		unsigned char uc;
-		signed char sc;
-		...
-     		sc = (signed char) uc;
-		if (sc < 0)
-		  ...
-
-     where uc and sc have the scev {0, +, 1}, we would consider uc to
-     wrap around, but not sc, because it is of a signed type.  This
-     causes VRP to erroneously fold the predicate above because it
-     thinks that sc cannot be negative.  */
-  if (at_stmt && TREE_CODE (at_stmt) == MODIFY_EXPR)
-    {
-      tree rhs = TREE_OPERAND (at_stmt, 1);
-      tree outer_t = TREE_TYPE (rhs);
-
-      if (!TYPE_UNSIGNED (outer_t)
-	  && (TREE_CODE (rhs) == NOP_EXPR || TREE_CODE (rhs) == CONVERT_EXPR))
-	{
-	  tree inner_t = TREE_TYPE (TREE_OPERAND (rhs, 0));
-
-	  /* If the inner type is unsigned and its size and/or
-	     precision are smaller to that of the outer type, then the
-	     expression may wrap around.  */
-	  if (TYPE_UNSIGNED (inner_t)
-	      && (TYPE_SIZE (inner_t) <= TYPE_SIZE (outer_t)
-		  || TYPE_PRECISION (inner_t) <= TYPE_PRECISION (outer_t)))
-	    {
-	      *unknown_max = true;
-	      return true;
-	    }
-	}
-    }
-
-  /* After having set INIT_IS_MAX, we can return false: when not using
-     wrapping arithmetic, signed types don't wrap.  */
-  if (!flag_wrapv && !TYPE_UNSIGNED (type))
+  if (zero_p (step))
     return false;
 
+  /* If we can use the fact that signed and pointer arithmetics does not
+     wrap, we are done.  */
+  if (use_oveflow_semantics && nowrap_type_p (type))
+    return false;
+
+  /* Otherwise, compute the number of iterations before we reach the
+     bound of the type, and verify that the loop is exited before this
+     occurs.  */
   unsigned_type = unsigned_type_for (type);
-  delta = fold_convert (unsigned_type, delta);
-  step_abs = fold_convert (unsigned_type, step_abs);
+  base = fold_convert (unsigned_type, base);
+
+  if (tree_int_cst_sign_bit (step))
+    {
+      tree extreme = fold_convert (unsigned_type,
+				   lower_bound_in_type (type, type));
+      delta = fold_build2 (MINUS_EXPR, unsigned_type, base, extreme);
+      step_abs = fold_build1 (NEGATE_EXPR, unsigned_type,
+			      fold_convert (unsigned_type, step));
+    }
+  else
+    {
+      tree extreme = fold_convert (unsigned_type,
+				   upper_bound_in_type (type, type));
+      delta = fold_build2 (MINUS_EXPR, unsigned_type, extreme, base);
+      step_abs = fold_convert (unsigned_type, step);
+    }
+
   valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
 
   estimate_numbers_of_iterations_loop (loop);
@@ -2069,34 +1854,7 @@ scev_probably_wraps_p (tree type, tree base, tree step,
 
   /* At this point we still don't have a proof that the iv does not
      overflow: give up.  */
-  *unknown_max = true;
   return true;
-}
-
-/* Return the conversion to NEW_TYPE of the STEP of an induction
-   variable BASE + STEP * I at AT_STMT.  When it fails, return
-   NULL_TREE.  */
-
-tree
-convert_step (struct loop *loop, tree new_type, tree base, tree step,
-	      tree at_stmt)
-{
-  tree base_type;
-
-  if (chrec_contains_undetermined (base)
-      || chrec_contains_undetermined (step))
-    return NULL_TREE;
-
-  base_type = TREE_TYPE (base);
-
-  /* When not using wrapping arithmetic, signed types don't wrap.  */
-  if (!flag_wrapv && !TYPE_UNSIGNED (base_type))
-    return fold_convert (new_type, step);
-
-  if (TYPE_PRECISION (new_type) > TYPE_PRECISION (base_type))
-    return convert_step_widening (loop, new_type, base, step, at_stmt);
-
-  return fold_convert (new_type, step);
 }
 
 /* Frees the information on upper bounds on numbers of iterations of LOOP.  */

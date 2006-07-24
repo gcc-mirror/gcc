@@ -1,5 +1,30 @@
 2006-07-24  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/27795
+	PR tree-optimization/27639
+	PR tree-optimization/26719
+	Backport from mainline
+	2006-05-24  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-vrp.c (adjust_range_with_scev): Use scev_direction and adjust
+	call to scev_probably_wraps_p.
+	* tree-ssa-loop-niter.c (compare_trees, convert_step_widening,
+	used_in_pointer_arithmetic_p, convert_step): Removed.
+	(nowrap_type_p): New function.
+	(scev_probably_wraps_p): Rewritten.
+	* tree-scalar-evolution.c (instantiate_parameters_1): Do not call
+	chrec_convert if chrec_convert_aggressive might have been used.
+	* tree-chrec.c (convert_affine_scev, chrec_convert_1,
+	scev_direction): New functions.
+	(chrec_convert): Changed to a wrapper over chrec_convert_1.
+	* tree-ssa-loop-ivopts.c (idx_find_step): Use convert_affine_scev
+	instead of convert_step.
+	* tree-flow.h (scev_probably_wraps_p): Declaration changed.
+	(convert_step): Declaration removed.
+	(convert_affine_scev, nowrap_type_p, scev_direction): Declare.
+
+2006-07-24  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/28029
 	Backport
 	2006-02-15 Daniel Berlin  <dberlin@dberlin.org>

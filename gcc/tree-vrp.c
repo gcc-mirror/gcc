@@ -1760,7 +1760,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
 			tree var)
 {
   tree init, step, chrec;
-  bool init_is_max, unknown_max;
+  enum ev_direction dir;
 
   /* TODO.  Don't adjust anti-ranges.  An anti-range may provide
      better opportunities than a regular range, but I'm not sure.  */
@@ -1780,11 +1780,14 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
       || !is_gimple_min_invariant (step))
     return;
 
-  /* Do not adjust ranges when chrec may wrap.  */
-  if (scev_probably_wraps_p (chrec_type (chrec), init, step, stmt,
-			     cfg_loops->parray[CHREC_VARIABLE (chrec)],
-			     &init_is_max, &unknown_max)
-      || unknown_max)
+  dir = scev_direction (chrec);
+  if (/* Do not adjust ranges if we do not know whether the iv increases
+	 or decreases,  ... */
+      dir == EV_DIR_UNKNOWN
+      /* ... or if it may wrap.  */
+      || scev_probably_wraps_p (init, step, stmt,
+				cfg_loops->parray[CHREC_VARIABLE (chrec)],
+				true))
     return;
 
   if (!POINTER_TYPE_P (TREE_TYPE (init))
@@ -1792,7 +1795,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
     {
       /* For VARYING or UNDEFINED ranges, just about anything we get
 	 from scalar evolutions should be better.  */
-      if (init_is_max)
+      if (dir == EV_DIR_DECREASES)
 	set_value_range (vr, VR_RANGE, TYPE_MIN_VALUE (TREE_TYPE (init)),
 	                 init, vr->equiv);
       else
@@ -1804,7 +1807,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
       tree min = vr->min;
       tree max = vr->max;
 
-      if (init_is_max)
+      if (dir == EV_DIR_DECREASES)
 	{
 	  /* INIT is the maximum value.  If INIT is lower than VR->MAX
 	     but no smaller than VR->MIN, set VR->MAX to INIT.  */
