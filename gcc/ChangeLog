@@ -1,3 +1,9 @@
+2006-07-24  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* doc/invoke.texi: Remove mention of f77; Reformat table for
+	inline parameter options correctly; mention that -malign-double
+	is default on x86-64 targets.
+
 2006-07-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/27795
