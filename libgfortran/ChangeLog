@@ -1,3 +1,9 @@
+2006-07-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25289
+	* libgfortran.h: Add conditional definition of GFC_LARGE_IO_INT type.
+	* io/io.h (st_parameter_dt): Define rec as type GFC_LARGE_IO_INT.
+
 2006-07-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/28339

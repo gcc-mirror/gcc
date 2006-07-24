@@ -351,7 +351,7 @@ struct format_data;
 typedef struct st_parameter_dt
 {
   st_parameter_common common;
-  GFC_INTEGER_4 rec;
+  GFC_LARGE_IO_INT rec;
   GFC_INTEGER_4 *size, *iolength;
   gfc_array_char *internal_unit_desc;
   CHARACTER1 (format);
