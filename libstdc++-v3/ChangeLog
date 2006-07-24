@@ -1,3 +1,10 @@
+2006-07-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/cinttypes: Simply protect everything with
+	_GLIBCXX_USE_C99_INTTYPES_TR1.
+	* include/tr1/cfenv: Likewise with _GLIBCXX_USE_C99_FENV_TR1.
+	* include/tr1/cstdint: Likewise with _GLIBCXX_USE_C99_STDINT_TR1.
+
 2006-07-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/tr1/random: Make include guards consistent.

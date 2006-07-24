@@ -36,14 +36,12 @@
 
 #include <bits/c++config.h>
 
-#if _GLIBCXX_HAVE_STDINT_H
+#if _GLIBCXX_USE_C99_STDINT_TR1
+
 // For 8.22.1/1 (see C99, Notes 219, 220, 222) 
 #define __STDC_LIMIT_MACROS
 #define __STDC_CONSTANT_MACROS
 #include <stdint.h>
-#endif
-
-#if _GLIBCXX_USE_C99_STDINT_TR1
 
 // namespace std::tr1
 namespace std
