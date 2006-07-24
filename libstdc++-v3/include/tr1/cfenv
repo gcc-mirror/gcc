@@ -36,11 +36,9 @@
 
 #include <bits/c++config.h>
 
-#if _GLIBCXX_HAVE_FENV_H
-#include <fenv.h>
-#endif
-
 #if _GLIBCXX_USE_C99_FENV_TR1
+
+#include <fenv.h>
 
 #undef feclearexcept
 #undef fegetexceptflag
