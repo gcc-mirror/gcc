@@ -2369,6 +2369,38 @@ dbxout_expand_expr (tree expr)
     }
 }
 
+/* Helper function for output_used_types.  Queue one entry from the
+   used types hash to be output.  */
+
+static int
+output_used_types_helper (void **slot, void *data ATTRIBUTE_UNUSED)
+{
+  tree type = *slot;
+
+  if ((TREE_CODE (type) == RECORD_TYPE
+       || TREE_CODE (type) == UNION_TYPE
+       || TREE_CODE (type) == QUAL_UNION_TYPE
+       || TREE_CODE (type) == ENUMERAL_TYPE)
+      && TYPE_STUB_DECL (type)
+      && DECL_P (TYPE_STUB_DECL (type))
+      && ! DECL_IGNORED_P (TYPE_STUB_DECL (type)))
+    debug_queue_symbol (TYPE_STUB_DECL (type));
+  else if (TYPE_NAME (type)
+	   && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
+    debug_queue_symbol (TYPE_NAME (type));
+
+  return 1;
+}
+
+/* Force all types used by this function to be output in debug
+   information.  */
+static void
+output_used_types (void)
+{
+  if (cfun && cfun->used_types_hash)
+    htab_traverse (cfun->used_types_hash, output_used_types_helper, NULL);
+}
+
 /* Output a .stabs for the symbol defined by DECL,
    which must be a ..._DECL node in the normal namespace.
    It may be a CONST_DECL, a FUNCTION_DECL, a PARM_DECL or a VAR_DECL.
@@ -2481,6 +2513,9 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       if (!MEM_P (decl_rtl)
 	  || GET_CODE (XEXP (decl_rtl, 0)) != SYMBOL_REF)
 	break;
+
+      if (flag_debug_only_used_symbols)
+	output_used_types ();
 
       dbxout_begin_complex_stabs ();
       stabstr_I (DECL_ASSEMBLER_NAME (decl));
