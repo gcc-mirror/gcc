@@ -47,7 +47,7 @@ typedef struct
 
 } _Jv_Mutex_t;
 
-typedef struct
+typedef struct _Jv_Thread_t
 {
   int flags;            // Flags are defined in implementation.
   HANDLE handle;        // Actual handle to the thread

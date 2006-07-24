@@ -1,5 +1,10 @@
 2006-07-23  Mohan Embar  <gnustuff@thisiscool.com>
 
+	* include/win32-threads.h (_Jv_Thread_t): Explicitly
+	name the struct.
+
+2006-07-23  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* jvmti.cc (_Jv_JVMTI_SuspendThread): Add missing JNICALL
 	attribute.
 	(_Jv_JVMTI_ResumeThread): Likewise.
