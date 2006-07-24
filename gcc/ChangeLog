@@ -1,3 +1,12 @@
+2006-07-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/28029
+	Backport
+	2006-02-15 Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (get_tmt_for): Don't handle TYPE_READONLY
+	specially here.
+
 2006-07-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/28247

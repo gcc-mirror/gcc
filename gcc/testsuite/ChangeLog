@@ -1,3 +1,8 @@
+2006-07-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/28029
+	* gcc.dg/vect/pr28029.c: New testcase.
+
 2006-07-24  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/visibility-11.c: Enlarge test array to 1024 bytes to

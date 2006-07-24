@@ -1818,8 +1818,7 @@ get_tmt_for (tree ptr, struct alias_info *ai)
     {
       struct alias_map_d *curr = ai->pointers[i];
       tree curr_tag = var_ann (curr->var)->type_mem_tag;
-      if (tag_set == curr->set
-	  && TYPE_READONLY (tag_type) == TYPE_READONLY (TREE_TYPE (curr_tag)))
+      if (tag_set == curr->set)
 	{
 	  tag = curr_tag;
 	  break;
@@ -1855,10 +1854,6 @@ get_tmt_for (tree ptr, struct alias_info *ai)
   /* Make sure that the type tag has the same alias set as the
      pointed-to type.  */
   gcc_assert (tag_set == get_alias_set (tag));
-
-  /* If PTR's pointed-to type is read-only, then TAG's type must also
-     be read-only.  */
-  gcc_assert (TYPE_READONLY (tag_type) == TYPE_READONLY (TREE_TYPE (tag)));
 
   return tag;
 }
