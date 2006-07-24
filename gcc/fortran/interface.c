@@ -217,6 +217,13 @@ gfc_match_interface (void)
 	  && gfc_add_generic (&sym->attr, sym->name, NULL) == FAILURE)
 	return MATCH_ERROR;
 
+      if (sym->attr.dummy)
+	{
+	  gfc_error ("Dummy procedure '%s' at %C cannot have a "
+		     "generic interface", sym->name);
+	  return MATCH_ERROR;
+	}
+
       current_interface.sym = gfc_new_block = sym;
       break;
 
