@@ -413,6 +413,7 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
 		    bitmap updated_nodes)
 {
   struct cgraph_edge *edge;
+  const char *failed_reason;
 
   if (!node->local.inlinable || node->local.disregard_inline_limits
       || node->global.inlined_to)
@@ -421,6 +422,22 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
     return;
   bitmap_set_bit (updated_nodes, node->uid);
   node->global.estimated_growth = INT_MIN;
+
+  if (!node->local.inlinable)
+    return;
+  /* Prune out edges we won't inline into anymore.  */
+  if (!cgraph_default_inline_p (node, &failed_reason))
+    {
+      for (edge = node->callers; edge; edge = edge->next_caller)
+	if (edge->aux)
+	  {
+	    fibheap_delete_node (heap, edge->aux);
+	    edge->aux = NULL;
+	    if (edge->inline_failed)
+	      edge->inline_failed = failed_reason;
+	  }
+      return;
+    }
 
   for (edge = node->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
