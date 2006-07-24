@@ -1,3 +1,9 @@
+2006-07-23  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR c++/28460
+	* decl.c (grokvardecl): Use FROB_CONTEXT.
+	* pt.c (register_specialization): Likewise.
+
 2006-07-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28025
