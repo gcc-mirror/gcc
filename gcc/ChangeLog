@@ -1,6 +1,13 @@
 2006-07-24  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/28071
+	* tree-cfg.c (tree_split_block): Do not allocate new stmt_list nodes.
+	* tree-iterator.c (tsi_split_statement_list_before): Do not crash when
+	splitting before first stmt.
+
+2006-07-24  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/28071
 	* ipa-inline.c (update_caller_keys): Remove edges that
 	are no longer inline candidates.
 

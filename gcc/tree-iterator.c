@@ -289,7 +289,8 @@ tsi_split_statement_list_before (tree_stmt_iterator *i)
   STATEMENT_LIST_TAIL (new_sl) = STATEMENT_LIST_TAIL (old_sl);
   STATEMENT_LIST_TAIL (old_sl) = prev;
   cur->prev = NULL;
-  prev->next = NULL;
+  if (prev)
+    prev->next = NULL;
 
   return new_sl;
 }
