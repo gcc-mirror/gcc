@@ -509,7 +509,7 @@ cgraph_remove_node (struct cgraph_node *node)
 	kill_body = true;
     }
 
-  if (kill_body && !dump_enabled_p (TDI_tree_all) && flag_unit_at_a_time)
+  if (kill_body && flag_unit_at_a_time)
     {
       DECL_SAVED_TREE (node->decl) = NULL;
       DECL_STRUCT_FUNCTION (node->decl) = NULL;

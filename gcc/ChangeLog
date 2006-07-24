@@ -1,3 +1,10 @@
+2006-07-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28463
+	* cgraph.c (cgraph_remove_node): Do not check if dumps
+	are enabled.
+	* cgraphunit.c (cgraph_optimize): Likewise.
+
 2006-07-24  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/28071
