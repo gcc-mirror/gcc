@@ -1,3 +1,9 @@
+2006-07-23  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR debug/27473
+	* dbxout.c (output_used_types_helper, output_used_types): New.
+	(dbxout_symbol): Call output_used_types.
+
 2006-07-23  Jan Hubicka  <jh@suse.cz>
 
 	PR c/25795
