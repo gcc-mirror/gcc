@@ -4158,7 +4158,8 @@ tree_redirect_edge_and_branch_force (edge e, basic_block dest)
 static basic_block
 tree_split_block (basic_block bb, void *stmt)
 {
-  block_stmt_iterator bsi, bsi_tgt;
+  block_stmt_iterator bsi;
+  tree_stmt_iterator tsi_tgt;
   tree act;
   basic_block new_bb;
   edge e;
@@ -4192,13 +4193,17 @@ tree_split_block (basic_block bb, void *stmt)
 	}
     }
 
-  bsi_tgt = bsi_start (new_bb);
-  while (!bsi_end_p (bsi))
-    {
-      act = bsi_stmt (bsi);
-      bsi_remove (&bsi, false);
-      bsi_insert_after (&bsi_tgt, act, BSI_NEW_STMT);
-    }
+  if (bsi_end_p (bsi))
+    return new_bb;
+
+  /* Split the statement list - avoid re-creating new containers as this
+     brings ugly quadratic memory consumption in the inliner.  
+     (We are still quadratic since we need to update stmt BB pointers,
+     sadly.)  */
+  new_bb->stmt_list = tsi_split_statement_list_before (&bsi.tsi);
+  for (tsi_tgt = tsi_start (new_bb->stmt_list);
+       !tsi_end_p (tsi_tgt); tsi_next (&tsi_tgt))
+    set_bb_for_stmt (tsi_stmt (tsi_tgt), new_bb);
 
   return new_bb;
 }
