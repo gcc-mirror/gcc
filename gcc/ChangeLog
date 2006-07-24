@@ -1,3 +1,9 @@
+2006-07-24  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/28071
+	* ipa-inline.c (update_caller_keys): Remove edges that
+	are no longer inline candidates.
+
 2006-07-23  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR debug/27473
