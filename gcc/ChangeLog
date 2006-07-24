@@ -1,3 +1,14 @@
+2006-07-23  Jan Hubicka  <jh@suse.cz>
+
+	PR c/25795
+	PR c++/27369
+	* cgraph.c (cgraph_varpool_nodes): Export.
+	(decide_is_variable_needed): Ignored "used" attribute in
+	unit-at-a-time mode.
+	* cgraph.h (cgraph_varpool_nodes): Declare.
+	* cgraphunit.c (decide_is_function_needed): Ignored "used" attribute in
+	unit-at-a-time mode.
+
 2006-07-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/28247
