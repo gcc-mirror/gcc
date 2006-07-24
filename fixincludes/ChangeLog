@@ -1,3 +1,9 @@
+2006-07-24  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline.
+	* tests/base/errno.h: New file.
+	* tests/base/ia64/sys/getppdp.h: Likewise.
+
 2006-07-10  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/28084
