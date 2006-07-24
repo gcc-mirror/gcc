@@ -1,3 +1,10 @@
+2006-07-24  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline
+	* gcc.dg/fold-cond-1.c: Increase test case portability by checking
+	that "g ? 1 : h" doesn't match, instead of checking for "(g | h) != 0"
+	which may transformed to "g || h" on some platforms.
+
 2006-07-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28238
