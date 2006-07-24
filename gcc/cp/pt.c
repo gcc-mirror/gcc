@@ -1224,7 +1224,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend)
      template it is specializing.  */
   if (DECL_TEMPLATE_SPECIALIZATION (spec)
       && !check_specialization_namespace (tmpl))
-    DECL_CONTEXT (spec) = decl_namespace_context (tmpl);
+    DECL_CONTEXT (spec) = FROB_CONTEXT (decl_namespace_context (tmpl));
 
   if (!optimize_specialization_lookup_p (tmpl))
     DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
