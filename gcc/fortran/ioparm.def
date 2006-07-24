@@ -58,7 +58,7 @@ IOPARM (inquire, convert,       1 << 29, char1)
 #define IOPARM_dt_namelist_read_mode	(1 << 8)
 #endif
 IOPARM (dt,      common,	0,	 common)
-IOPARM (dt,      rec,		1 << 9,  int4)
+IOPARM (dt,      rec,		1 << 9,  large_io_int)
 IOPARM (dt,      size,		1 << 10, pint4)
 IOPARM (dt,      iolength,	1 << 11, pint4)
 IOPARM (dt,      internal_unit_desc, 0,  parray)

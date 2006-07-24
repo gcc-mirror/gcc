@@ -52,6 +52,7 @@ enum ioparam_type
 enum iofield_type
 {
   IOPARM_type_int4,
+  IOPARM_type_large_io_int,
   IOPARM_type_pint4,
   IOPARM_type_pchar,
   IOPARM_type_parray,
@@ -168,6 +169,7 @@ gfc_build_st_parameter (enum ioparam_type ptype, tree *types)
       switch (p->type)
 	{
 	case IOPARM_type_int4:
+	case IOPARM_type_large_io_int:
 	case IOPARM_type_pint4:
 	case IOPARM_type_parray:
 	case IOPARM_type_pchar:
@@ -214,12 +216,15 @@ void
 gfc_build_io_library_fndecls (void)
 {
   tree types[IOPARM_type_num], pad_idx, gfc_int4_type_node;
+  tree gfc_large_io_int_type_node;
   tree parm_type, dt_parm_type;
   tree gfc_c_int_type_node;
   HOST_WIDE_INT pad_size;
   enum ioparam_type ptype;
 
   types[IOPARM_type_int4] = gfc_int4_type_node = gfc_get_int_type (4);
+  types[IOPARM_type_large_io_int] = gfc_large_io_int_type_node
+			    = gfc_get_int_type (gfc_large_io_int_kind);
   types[IOPARM_type_pint4] = build_pointer_type (gfc_int4_type_node);
   types[IOPARM_type_parray] = pchar_type_node;
   types[IOPARM_type_pchar] = pchar_type_node;

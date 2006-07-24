@@ -93,6 +93,10 @@ int gfc_default_logical_kind;
 int gfc_default_complex_kind;
 int gfc_c_int_kind;
 
+/* The kind size used for record offsets. If the target system supports
+   kind=8, this will be set to 8, otherwise it is set to 4.  */
+int gfc_large_io_int_kind; 
+
 /* Query the target to determine which machine modes are available for
    computation.  Choose KIND numbers for them.  */
 
@@ -139,6 +143,17 @@ gfc_init_kinds (void)
 
       i_index += 1;
     }
+
+  /* Set the kind used to match GFC_LARGE_IO_INT in libgfortran.  This is 
+     used for large file access.  */
+
+  if (saw_i8)
+    gfc_large_io_int_kind = 8;
+  else
+    gfc_large_io_int_kind = 4;
+
+  /* If we do not at least have kind = 4, everything is pointless.  */  
+  gcc_assert(saw_i4);  
 
   /* Set the maximum integer kind.  Used with at least BOZ constants.  */
   gfc_max_integer_kind = gfc_integer_kinds[i_index - 1].kind;

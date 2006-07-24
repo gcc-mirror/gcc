@@ -1806,6 +1806,7 @@ extern int gfc_default_character_kind;
 extern int gfc_default_logical_kind;
 extern int gfc_default_complex_kind;
 extern int gfc_c_int_kind;
+extern int gfc_large_io_int_kind;
 
 /* symbol.c */
 void gfc_clear_new_implicit (void);
