@@ -1,3 +1,8 @@
+2006-07-25  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/28439
+	*trans-stmt.c (gfc_trans_arithmetic_if):  Evaluate the condition once.
+
 2006-07-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/28129
