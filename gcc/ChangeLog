@@ -1,3 +1,7 @@
+2006-07-25  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-chrec.c (chrec_convert_aggressive): Return NULL on failure.
+
 2006-07-25  Nick Clifton  <nickc@redhat.com>
 
 	* ggc-page.c (NUM_SIZE_LOOKUP): New constant - the length of the

@@ -1326,7 +1326,7 @@ chrec_convert_aggressive (tree type, tree chrec)
 
   /* If we cannot perform arithmetic in TYPE, avoid creating an scev.  */
   if (avoid_arithmetics_in_type_p (type))
-    return false;
+    return NULL_TREE;
 
   left = CHREC_LEFT (chrec);
   right = CHREC_RIGHT (chrec);
