@@ -1,3 +1,9 @@
+2006-07-25  Torsten Schoenfeld  <kaffeetisch@gmx.de>
+
+	* include/ffi.h.in (ffi_type_ulong, ffi_type_slong): Define correctly
+	for 32-bit architectures.
+	* testsuite/libffi.call/return_ul.c: New test case.
+
 2006-07-19  David Daney  <ddaney@avtrex.com>
 
 	* testsuite/libffi.call/closure_fn6.c: Remove xfail for mips,
