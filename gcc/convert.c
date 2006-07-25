@@ -388,27 +388,36 @@ convert_to_integer (tree type, tree expr)
 	  /* Only convert in ISO C99 mode.  */
 	  if (!TARGET_C99_FUNCTIONS)
 	    break;
-	  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (long_long_integer_type_node))
-	    fn = mathfn_built_in (s_intype, BUILT_IN_LLCEIL);
-	  else
+	  if (outprec < TYPE_PRECISION (long_integer_type_node)
+	      || (outprec == TYPE_PRECISION (long_integer_type_node)
+		  && !TYPE_UNSIGNED (type)))
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LCEIL);
+	  else if (outprec == TYPE_PRECISION (long_long_integer_type_node)
+		   && !TYPE_UNSIGNED (type))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_LLCEIL);
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_FLOOR):
 	  /* Only convert in ISO C99 mode.  */
 	  if (!TARGET_C99_FUNCTIONS)
 	    break;
-	  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (long_long_integer_type_node))
-	    fn = mathfn_built_in (s_intype, BUILT_IN_LLFLOOR);
-	  else
+	  if (outprec < TYPE_PRECISION (long_integer_type_node)
+	      || (outprec == TYPE_PRECISION (long_integer_type_node)
+		  && !TYPE_UNSIGNED (type)))
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LFLOOR);
+	  else if (outprec == TYPE_PRECISION (long_long_integer_type_node)
+		   && !TYPE_UNSIGNED (type))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_LLFLOOR);
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_ROUND):
-	  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (long_long_integer_type_node))
-	    fn = mathfn_built_in (s_intype, BUILT_IN_LLROUND);
-	  else
+	  if (outprec < TYPE_PRECISION (long_integer_type_node)
+	      || (outprec == TYPE_PRECISION (long_integer_type_node)
+		  && !TYPE_UNSIGNED (type)))
 	    fn = mathfn_built_in (s_intype, BUILT_IN_LROUND);
+	  else if (outprec == TYPE_PRECISION (long_long_integer_type_node)
+		   && !TYPE_UNSIGNED (type))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_LLROUND);
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_RINT):
@@ -417,10 +426,13 @@ convert_to_integer (tree type, tree expr)
 	    break;
 	  /* ... Fall through ...  */
 	CASE_FLT_FN (BUILT_IN_NEARBYINT):
-	  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (long_long_integer_type_node))
-            fn = mathfn_built_in (s_intype, BUILT_IN_LLRINT);
-	  else
-            fn = mathfn_built_in (s_intype, BUILT_IN_LRINT);
+	  if (outprec < TYPE_PRECISION (long_integer_type_node)
+	      || (outprec == TYPE_PRECISION (long_integer_type_node)
+		  && !TYPE_UNSIGNED (type)))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_LRINT);
+	  else if (outprec == TYPE_PRECISION (long_long_integer_type_node)
+		   && !TYPE_UNSIGNED (type))
+	    fn = mathfn_built_in (s_intype, BUILT_IN_LLRINT);
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_TRUNC):
