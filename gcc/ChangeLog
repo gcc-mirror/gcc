@@ -1,3 +1,9 @@
+2006-07-25  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/28473
+	* convert.c (convert_to_integer): When transforming (T)foo(x) into
+	bar(x) check that bar's result type can represent all the values of T.
+
 2006-07-25  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-chrec.c (chrec_convert_aggressive): Return NULL on failure.
