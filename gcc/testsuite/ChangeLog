@@ -1,3 +1,7 @@
+2006-07-24  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/arithmetic_if.f90:  Fix comments.
+
 2006-07-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27572
