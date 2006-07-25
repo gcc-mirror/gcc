@@ -112,13 +112,21 @@ extern "C" {
  #error "int size not supported"
 #endif
 
-#define ffi_type_ulong         ffi_type_uint64
-#define ffi_type_slong         ffi_type_sint64
 #if LONG_MAX == 2147483647
 # if FFI_LONG_LONG_MAX != 9223372036854775807
-  #error "no 64-bit data type supported"
+ #error "no 64-bit data type supported"
 # endif
 #elif LONG_MAX != 9223372036854775807
+ #error "long size not supported"
+#endif
+
+#if LONG_MAX == 2147483647
+# define ffi_type_ulong        ffi_type_uint32
+# define ffi_type_slong        ffi_type_sint32
+#elif LONG_MAX == 9223372036854775807
+# define ffi_type_ulong        ffi_type_uint64
+# define ffi_type_slong        ffi_type_sint64
+#else
  #error "long size not supported"
 #endif
 
