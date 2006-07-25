@@ -1,3 +1,11 @@
+2006-07-25  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* dbxout.c (output_used_types_helper): Push queued types
+	on a VEC.
+	(output_types_sort): New.
+	(output_used_types): Collect used types on a VEC and sort them
+	before emission.
+
 2006-07-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28463
