@@ -2373,9 +2373,10 @@ dbxout_expand_expr (tree expr)
    used types hash to be output.  */
 
 static int
-output_used_types_helper (void **slot, void *data ATTRIBUTE_UNUSED)
+output_used_types_helper (void **slot, void *data)
 {
   tree type = *slot;
+  VEC(tree, heap) **types_p = data;
 
   if ((TREE_CODE (type) == RECORD_TYPE
        || TREE_CODE (type) == UNION_TYPE
@@ -2384,13 +2385,36 @@ output_used_types_helper (void **slot, void *data ATTRIBUTE_UNUSED)
       && TYPE_STUB_DECL (type)
       && DECL_P (TYPE_STUB_DECL (type))
       && ! DECL_IGNORED_P (TYPE_STUB_DECL (type)))
-    debug_queue_symbol (TYPE_STUB_DECL (type));
+    VEC_quick_push (tree, *types_p, TYPE_STUB_DECL (type));
   else if (TYPE_NAME (type)
 	   && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
-    debug_queue_symbol (TYPE_NAME (type));
+    VEC_quick_push (tree, *types_p, TYPE_NAME (type));
 
   return 1;
 }
+
+static int
+output_types_sort (const void *pa, const void *pb)
+{
+  const tree lhs = *((const tree *)pa);
+  const tree rhs = *((const tree *)pb);
+
+  if (TYPE_P (lhs))
+    {
+      if (TYPE_P (rhs))
+	return TYPE_UID (lhs) - TYPE_UID (rhs);
+      else
+	return 1;
+    }
+  else
+    {
+      if (TYPE_P (rhs))
+	return -1;
+      else
+	return DECL_UID (lhs) - DECL_UID (rhs);
+    }
+}
+
 
 /* Force all types used by this function to be output in debug
    information.  */
@@ -2398,7 +2422,21 @@ static void
 output_used_types (void)
 {
   if (cfun && cfun->used_types_hash)
-    htab_traverse (cfun->used_types_hash, output_used_types_helper, NULL);
+    {
+      VEC(tree, heap) *types;
+      int i;
+      tree type;
+
+      types = VEC_alloc (tree, heap, htab_elements (cfun->used_types_hash));
+      htab_traverse (cfun->used_types_hash, output_used_types_helper, &types);
+
+      /* Sort by UID to prevent dependence on hash table ordering.  */
+      qsort (VEC_address (tree, types), VEC_length (tree, types),
+	     sizeof (tree), output_types_sort);
+
+      for (i = 0; VEC_iterate (tree, types, i, type); i++)
+	debug_queue_symbol (type);
+    }
 }
 
 /* Output a .stabs for the symbol defined by DECL,
