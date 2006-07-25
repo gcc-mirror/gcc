@@ -1,3 +1,10 @@
+2006-07-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27572
+	* g++.dg/other/typedef1.C: New test.
+	* g++.dg/template/typedef4.C: New test.
+	* g++.dg/template/typedef5.C: New test.
+
 2006-07-24  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/28416
