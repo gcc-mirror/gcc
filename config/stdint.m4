@@ -61,14 +61,17 @@ for i in stdint.h $inttype_headers; do
   break
 done
 if test "$acx_cv_header_stdint" = stddef.h; then
-  acx_cv_header_stdint_kind="(lacks uintptr_t)"
+  acx_cv_header_stdint_kind="(lacks uintmax_t)"
   for i in stdint.h $inttype_headers; do
+    unset ac_cv_type_uintptr_t
     unset ac_cv_type_uint32_t
     unset ac_cv_type_uint64_t
     _AS_ECHO_N([looking for an incomplete stdint.h in $i, ])
     AC_CHECK_TYPE(uint32_t,[acx_cv_header_stdint=$i],continue,[#include <sys/types.h>
 #include <$i>])
-    AC_CHECK_TYPE(uint64_t,,[acx_cv_header_stdint_kind="(lacks uintptr_t and uint64_t)"], [#include <sys/types.h>
+    AC_CHECK_TYPE(uint64_t,,,[#include <sys/types.h>
+#include <$i>])
+    AC_CHECK_TYPE(uintptr_t,,,[#include <sys/types.h>
 #include <$i>])
     break
   done
@@ -81,7 +84,7 @@ if test "$acx_cv_header_stdint" = stddef.h; then
     _AS_ECHO_N([looking for u_intXX_t types in $i, ])
     AC_CHECK_TYPE(u_int32_t,[acx_cv_header_stdint=$i],continue,[#include <sys/types.h>
 #include <$i>])
-    AC_CHECK_TYPE(u_int64_t,,[acx_cv_header_stdint_kind="(u_intXX_t style, lacks u_int64_t)"], [#include <sys/types.h>
+    AC_CHECK_TYPE(u_int64_t,,,[#include <sys/types.h>
 #include <$i>])
     break
   done
