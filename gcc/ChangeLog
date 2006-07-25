@@ -1,3 +1,7 @@
+2006-07-25  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-chrec.c (chrec_convert_aggressive): Return NULL on failure.
+
 2006-07-24  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
