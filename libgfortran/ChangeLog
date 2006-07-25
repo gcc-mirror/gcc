@@ -1,3 +1,8 @@
+2006-07-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR build/26188
+	* configure: Regenerate.
+
 2006-07-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25289
