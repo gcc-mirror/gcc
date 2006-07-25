@@ -1,3 +1,9 @@
+2006-07-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/27572
+	* decl.c (grokdeclarator): Return error_mark_node after invalid
+	typedef.
+
 2006-07-23  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR c++/28460
