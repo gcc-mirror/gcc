@@ -1029,8 +1029,8 @@ release_pages (void)
 
 /* This table provides a fast way to determine ceil(log_2(size)) for
    allocation requests.  The minimum allocation size is eight bytes.  */
-
-static unsigned char size_lookup[512] =
+#define NUM_SIZE_LOOKUP 512
+static unsigned char size_lookup[NUM_SIZE_LOOKUP] =
 {
   3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4,
   4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -1084,7 +1084,7 @@ ggc_alloc_stat (size_t size MEM_STAT_DECL)
   struct page_entry *entry;
   void *result;
 
-  if (size < 512)
+  if (size < NUM_SIZE_LOOKUP)
     {
       order = size_lookup[size];
       object_size = OBJECT_SIZE (order);
@@ -1534,8 +1534,11 @@ init_ggc (void)
       int o;
       int i;
 
-      o = size_lookup[OBJECT_SIZE (order)];
-      for (i = OBJECT_SIZE (order); size_lookup [i] == o; --i)
+      i = OBJECT_SIZE (order);
+      if (i >= NUM_SIZE_LOOKUP)
+	continue;
+
+      for (o = size_lookup[i]; o == size_lookup [i]; --i)
 	size_lookup[i] = order;
     }
 
@@ -2046,7 +2049,7 @@ ggc_pch_count_object (struct ggc_pch_data *d, void *x ATTRIBUTE_UNUSED,
 {
   unsigned order;
 
-  if (size < 512)
+  if (size < NUM_SIZE_LOOKUP)
     order = size_lookup[size];
   else
     {
@@ -2091,7 +2094,7 @@ ggc_pch_alloc_object (struct ggc_pch_data *d, void *x ATTRIBUTE_UNUSED,
   unsigned order;
   char *result;
 
-  if (size < 512)
+  if (size < NUM_SIZE_LOOKUP)
     order = size_lookup[size];
   else
     {
@@ -2120,7 +2123,7 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
   unsigned order;
   static const char emptyBytes[256];
 
-  if (size < 512)
+  if (size < NUM_SIZE_LOOKUP)
     order = size_lookup[size];
   else
     {

@@ -1,3 +1,15 @@
+2006-07-25  Nick Clifton  <nickc@redhat.com>
+
+	* ggc-page.c (NUM_SIZE_LOOKUP): New constant - the length of the
+	size_lookup[] array.
+	(ggc_alloc_stat): Use NUM_SIZE_LOOKUP.
+	(ggc_pch_count_object): Likewise.
+	(ggc_pch_alloc_object): Likewise.
+	(ggc_pch_write_object): Likewise.
+	(init_ggc): Do not attempt to initialize entries in the
+	size_lookup[] array for objects whose size is greater than than
+	the length of the array.
+
 2006-07-25  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* dbxout.c (output_used_types_helper): Push queued types
