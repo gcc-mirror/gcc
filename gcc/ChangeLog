@@ -1,3 +1,9 @@
+2006-07-26  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* function.c (reorder_fix_fragments): Delete.
+	(reorder_blocks): Don't call it.
+	(reorder_blocks_1): Put all subblocks under the origin block.
+
 2006-07-26  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/27907
