@@ -2393,6 +2393,10 @@ output_used_types_helper (void **slot, void *data)
   return 1;
 }
 
+/* This is a qsort callback which sorts types and declarations into a
+   predictable order (types, then declarations, sorted by UID
+   within).  */
+
 static int
 output_types_sort (const void *pa, const void *pb)
 {
@@ -2418,6 +2422,7 @@ output_types_sort (const void *pa, const void *pb)
 
 /* Force all types used by this function to be output in debug
    information.  */
+
 static void
 output_used_types (void)
 {
@@ -2436,6 +2441,8 @@ output_used_types (void)
 
       for (i = 0; VEC_iterate (tree, types, i, type); i++)
 	debug_queue_symbol (type);
+
+      VEC_free (tree, heap, types);
     }
 }
 
