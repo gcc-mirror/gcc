@@ -1,3 +1,9 @@
+2006-07-26  Richard Sandiford  <richard@codesourcery.com>
+
+	PR middle-end/28402
+	* optabs.c (expand_binop): Pass next_methods rather than methods
+	to expand_doubleword_shift.
+
 2006-07-25  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-chrec.c (chrec_convert_aggressive): Return NULL on failure.
