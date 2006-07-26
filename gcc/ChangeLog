@@ -1,5 +1,10 @@
 2006-07-26  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* dbxout.c (output_types_sort): Add a comment.
+	(output_used_types): Free the VEC.
+
+2006-07-26  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* function.c (reorder_fix_fragments): Delete.
 	(reorder_blocks): Don't call it.
 	(reorder_blocks_1): Put all subblocks under the origin block.
