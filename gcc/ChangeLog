@@ -1,3 +1,11 @@
+2006-07-27  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/28071
+	* regmove.c (reg_is_remote_constant_p): Avoid quadratic behaviour.
+	(reg_set_in_bb, max_reg_computed): New static variables.
+	(regmove_optimize): Free the new array.
+	(fixup_match_1): Update call of reg_is_remote_constant_p.
+
 2006-07-26  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/27882
