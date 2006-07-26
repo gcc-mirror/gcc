@@ -195,7 +195,6 @@ static struct temp_slot *find_temp_slot_from_address (rtx);
 static void pad_to_arg_alignment (struct args_size *, int, struct args_size *);
 static void pad_below (struct args_size *, enum machine_mode, tree);
 static void reorder_blocks_1 (rtx, tree, VEC(tree,heap) **);
-static void reorder_fix_fragments (tree);
 static int all_blocks (tree, tree *);
 static tree *get_block_vector (tree, int *);
 extern tree debug_find_var_in_block_tree (tree, tree);
@@ -3584,9 +3583,6 @@ reorder_blocks (void)
   reorder_blocks_1 (get_insns (), block, &block_stack);
   BLOCK_SUBBLOCKS (block) = blocks_nreverse (BLOCK_SUBBLOCKS (block));
 
-  /* Remove deleted blocks from the block fragment chains.  */
-  reorder_fix_fragments (block);
-
   VEC_free (tree, heap, block_stack);
 }
 
@@ -3615,17 +3611,18 @@ reorder_blocks_1 (rtx insns, tree current_block, VEC(tree,heap) **p_block_stack)
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
 	    {
 	      tree block = NOTE_BLOCK (insn);
+	      tree origin;
+
+	      origin = (BLOCK_FRAGMENT_ORIGIN (block)
+			? BLOCK_FRAGMENT_ORIGIN (block)
+			: block);
 
 	      /* If we have seen this block before, that means it now
 		 spans multiple address regions.  Create a new fragment.  */
 	      if (TREE_ASM_WRITTEN (block))
 		{
 		  tree new_block = copy_node (block);
-		  tree origin;
 
-		  origin = (BLOCK_FRAGMENT_ORIGIN (block)
-			    ? BLOCK_FRAGMENT_ORIGIN (block)
-			    : block);
 		  BLOCK_FRAGMENT_ORIGIN (new_block) = origin;
 		  BLOCK_FRAGMENT_CHAIN (new_block)
 		    = BLOCK_FRAGMENT_CHAIN (origin);
@@ -3642,10 +3639,13 @@ reorder_blocks_1 (rtx insns, tree current_block, VEC(tree,heap) **p_block_stack)
 		 will cause infinite recursion.  */
 	      if (block != current_block)
 		{
+		  if (block != origin)
+		    gcc_assert (BLOCK_SUPERCONTEXT (origin) == current_block);
+
 		  BLOCK_SUPERCONTEXT (block) = current_block;
 		  BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
 		  BLOCK_SUBBLOCKS (current_block) = block;
-		  current_block = block;
+		  current_block = origin;
 		}
 	      VEC_safe_push (tree, heap, *p_block_stack, block);
 	    }
@@ -3657,61 +3657,6 @@ reorder_blocks_1 (rtx insns, tree current_block, VEC(tree,heap) **p_block_stack)
 	      current_block = BLOCK_SUPERCONTEXT (current_block);
 	    }
 	}
-    }
-}
-
-/* Rationalize BLOCK_FRAGMENT_ORIGIN.  If an origin block no longer
-   appears in the block tree, select one of the fragments to become
-   the new origin block.  */
-
-static void
-reorder_fix_fragments (tree block)
-{
-  while (block)
-    {
-      tree dup_origin = BLOCK_FRAGMENT_ORIGIN (block);
-      tree new_origin = NULL_TREE;
-
-      if (dup_origin)
-	{
-	  if (! TREE_ASM_WRITTEN (dup_origin))
-	    {
-	      new_origin = BLOCK_FRAGMENT_CHAIN (dup_origin);
-
-	      /* Find the first of the remaining fragments.  There must
-		 be at least one -- the current block.  */
-	      while (! TREE_ASM_WRITTEN (new_origin))
-		new_origin = BLOCK_FRAGMENT_CHAIN (new_origin);
-	      BLOCK_FRAGMENT_ORIGIN (new_origin) = NULL_TREE;
-	    }
-	}
-      else if (! dup_origin)
-	new_origin = block;
-
-      /* Re-root the rest of the fragments to the new origin.  In the
-	 case that DUP_ORIGIN was null, that means BLOCK was the origin
-	 of a chain of fragments and we want to remove those fragments
-	 that didn't make it to the output.  */
-      if (new_origin)
-	{
-	  tree *pp = &BLOCK_FRAGMENT_CHAIN (new_origin);
-	  tree chain = *pp;
-
-	  while (chain)
-	    {
-	      if (TREE_ASM_WRITTEN (chain))
-		{
-		  BLOCK_FRAGMENT_ORIGIN (chain) = new_origin;
-		  *pp = chain;
-		  pp = &BLOCK_FRAGMENT_CHAIN (chain);
-		}
-	      chain = BLOCK_FRAGMENT_CHAIN (chain);
-	    }
-	  *pp = NULL_TREE;
-	}
-
-      reorder_fix_fragments (BLOCK_SUBBLOCKS (block));
-      block = BLOCK_CHAIN (block);
     }
 }
 
