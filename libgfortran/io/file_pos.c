@@ -340,6 +340,9 @@ st_flush (st_parameter_filepos *fpp)
       flush (u->s);
       unlock_unit (u);
     }
+  else
+    generate_error (&fpp->common, ERROR_BAD_OPTION,
+			"Can't find specified UNIT in FLUSH");
 
   library_end ();
 }
