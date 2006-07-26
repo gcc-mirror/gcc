@@ -1,3 +1,24 @@
+2006-07-26  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline
+	2006-07-14  Eliot Dresselhaus  <eliot@sonic.net>
+
+        PR target/27287
+	* config/rs6000/spe.md (frob_di_df_2): Add m->r alternative.
+
+	2006-07-06  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/28150
+	* config/rs6000/rs6000.c (rs6000_legitimate_address): Do not allow
+	PRE_{INC,DEC} of TFmode.
+
+	2006-07-06  David Edelsohn  <edelsohn@gnu.org>
+		    Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/28170
+	* config/rs6000/rs6000.c (insvdi_rshift_rlwimi_p): Correct shiftop
+	bounds. Simplify.
+
 2006-07-26  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/28403
