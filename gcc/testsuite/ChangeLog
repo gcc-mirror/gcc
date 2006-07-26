@@ -1,3 +1,10 @@
+2006-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28335
+	* gfortran.dg/no_unit_error_1.f90: New test.
+	* gfortran.dg/no_unit_error_2.f90: New test.
+	* gfortran.dg/temporary_1.f90: Remove extraneous CLOSE.
+
 2006-07-25  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/28473

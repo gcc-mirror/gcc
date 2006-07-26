@@ -15,7 +15,6 @@ program pr27662
      if (x (i, j) .ne. z (i, j)) call abort ()
    end do
  end do
- close (10)
 
 contains
  function test () result (res)
