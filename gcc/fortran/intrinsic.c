@@ -2237,8 +2237,16 @@ add_subroutines (void)
 
   /* More G77 compatibility garbage.  */
   add_sym_2s ("ctime", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
-	     gfc_check_ctime_sub, NULL, gfc_resolve_ctime_sub,
-	     tm, BT_INTEGER, di, REQUIRED, res, BT_CHARACTER, dc, REQUIRED);
+	      gfc_check_ctime_sub, NULL, gfc_resolve_ctime_sub,
+	      tm, BT_INTEGER, di, REQUIRED, res, BT_CHARACTER, dc, REQUIRED);
+
+  add_sym_1s ("idate", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	      gfc_check_itime_idate, NULL, gfc_resolve_idate,
+	      vl, BT_INTEGER, 4, REQUIRED);
+
+  add_sym_1s ("itime", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	      gfc_check_itime_idate, NULL, gfc_resolve_itime,
+	      vl, BT_INTEGER, 4, REQUIRED);
 
   add_sym_1s ("second", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_second_sub, NULL, gfc_resolve_second_sub,

@@ -3052,6 +3052,28 @@ gfc_check_hostnm_sub (gfc_expr * name, gfc_expr * status)
 
 
 try
+gfc_check_itime_idate (gfc_expr * values)
+{
+  if (array_check (values, 0) == FAILURE)
+    return FAILURE;
+
+  if (rank_check (values, 0, 1) == FAILURE)
+    return FAILURE;
+
+  if (variable_check (values, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (values, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (kind_value_check(values, 0, gfc_default_integer_kind) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_ttynam_sub (gfc_expr * unit, gfc_expr * name)
 {
   if (scalar_check (unit, 0) == FAILURE)
