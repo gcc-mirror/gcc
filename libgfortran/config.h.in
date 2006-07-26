@@ -150,6 +150,9 @@
 /* Define to 1 if you have the `chsize' function. */
 #undef HAVE_CHSIZE
 
+/* Define to 1 if you have the `clock' function. */
+#undef HAVE_CLOCK
+
 /* libm includes clog */
 #undef HAVE_CLOG
 

@@ -3477,6 +3477,9 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       /* Integer conversions are handled separately to make sure we get the
          correct rounding mode.  */
     case GFC_ISYM_INT:
+    case GFC_ISYM_INT2:
+    case GFC_ISYM_INT8:
+    case GFC_ISYM_LONG:
       gfc_conv_intrinsic_int (se, expr, FIX_TRUNC_EXPR);
       break;
 
@@ -3732,8 +3735,11 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_IRAND:
     case GFC_ISYM_ISATTY:
     case GFC_ISYM_LINK:
+    case GFC_ISYM_LSTAT:
     case GFC_ISYM_MALLOC:
     case GFC_ISYM_MATMUL:
+    case GFC_ISYM_MCLOCK:
+    case GFC_ISYM_MCLOCK8:
     case GFC_ISYM_RAND:
     case GFC_ISYM_RENAME:
     case GFC_ISYM_SECOND:

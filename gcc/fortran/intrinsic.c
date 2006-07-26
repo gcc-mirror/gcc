@@ -1535,6 +1535,26 @@ add_functions (void)
 
   make_generic ("int", GFC_ISYM_INT, GFC_STD_F77);
 
+  add_sym_1 ("int2", 1, 0, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_intconv, gfc_simplify_int2, gfc_resolve_int2,
+	     a, BT_REAL, dr, REQUIRED);
+
+  make_alias ("short", GFC_STD_GNU);
+
+  make_generic ("int2", GFC_ISYM_INT2, GFC_STD_GNU);
+
+  add_sym_1 ("int8", 1, 0, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_intconv, gfc_simplify_int8, gfc_resolve_int8,
+	     a, BT_REAL, dr, REQUIRED);
+
+  make_generic ("int8", GFC_ISYM_INT8, GFC_STD_GNU);
+
+  add_sym_1 ("long", 1, 0, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_intconv, gfc_simplify_long, gfc_resolve_long,
+	     a, BT_REAL, dr, REQUIRED);
+
+  make_generic ("long", GFC_ISYM_LONG, GFC_STD_GNU);
+
   add_sym_2 ("ior", 1, 1, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_ior, gfc_simplify_ior, gfc_resolve_ior,
 	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
@@ -1679,6 +1699,12 @@ add_functions (void)
 
   make_generic ("logical", GFC_ISYM_LOGICAL, GFC_STD_F95);
 
+  add_sym_2 ("lstat", 0, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_stat, NULL, gfc_resolve_lstat,
+	     a, BT_CHARACTER, dc, REQUIRED, b, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("lstat", GFC_ISYM_LSTAT, GFC_STD_GNU);
+
   add_sym_1 ("malloc", 0, 1, BT_INTEGER, ii, GFC_STD_GNU, gfc_check_malloc,
 	     NULL, gfc_resolve_malloc, a, BT_INTEGER, di, REQUIRED);
 
@@ -1738,6 +1764,16 @@ add_functions (void)
 		msk, BT_LOGICAL, dl, OPTIONAL);
 
   make_generic ("maxval", GFC_ISYM_MAXVAL, GFC_STD_F95);
+
+  add_sym_0 ("mclock", 1, 0, BT_INTEGER, di, GFC_STD_GNU,
+	     NULL, NULL, gfc_resolve_mclock);
+
+  make_generic ("mclock", GFC_ISYM_MCLOCK, GFC_STD_GNU);
+
+  add_sym_0 ("mclock8", 1, 0, BT_INTEGER, di, GFC_STD_GNU,
+	     NULL, NULL, gfc_resolve_mclock8);
+
+  make_generic ("mclock8", GFC_ISYM_MCLOCK8, GFC_STD_GNU);
 
   add_sym_3 ("merge", 1, 1, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_merge, NULL, gfc_resolve_merge,
@@ -2408,6 +2444,11 @@ add_subroutines (void)
   add_sym_3s ("fstat", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fstat_sub, NULL, gfc_resolve_fstat_sub,
 	      ut, BT_INTEGER, di, REQUIRED, vl, BT_INTEGER, di, REQUIRED,
+	      st, BT_INTEGER, di, OPTIONAL);
+
+  add_sym_3s ("lstat", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	      gfc_check_stat_sub, NULL, gfc_resolve_lstat_sub,
+	      name, BT_CHARACTER, dc, REQUIRED, vl, BT_INTEGER, di, REQUIRED,
 	      st, BT_INTEGER, di, OPTIONAL);
 
   add_sym_3s ("stat", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,

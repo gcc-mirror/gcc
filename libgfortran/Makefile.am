@@ -45,6 +45,7 @@ intrinsics/args.c \
 intrinsics/bessel.c \
 intrinsics/c99_functions.c \
 intrinsics/chdir.c \
+intrinsics/clock.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/ctime.c \

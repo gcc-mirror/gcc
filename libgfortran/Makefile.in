@@ -162,11 +162,11 @@ am__objects_29 = close.lo file_pos.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo size_from_kind.lo \
 	transfer.lo unit.lo unix.lo write.lo
 am__objects_30 = associated.lo abort.lo args.lo bessel.lo \
-	c99_functions.lo chdir.lo cpu_time.lo cshift0.lo ctime.lo \
-	date_and_time.lo env.lo erf.lo eoshift0.lo eoshift2.lo \
-	etime.lo exit.lo fget.lo flush.lo fnum.lo ftell.lo gerror.lo \
-	getcwd.lo getlog.lo getXid.lo hyper.lo hostnm.lo kill.lo \
-	ierrno.lo ishftc.lo link.lo malloc.lo mvbits.lo \
+	c99_functions.lo chdir.lo clock.lo cpu_time.lo cshift0.lo \
+	ctime.lo date_and_time.lo env.lo erf.lo eoshift0.lo \
+	eoshift2.lo etime.lo exit.lo fget.lo flush.lo fnum.lo ftell.lo \
+	gerror.lo getcwd.lo getlog.lo getXid.lo hyper.lo hostnm.lo \
+	kill.lo ierrno.lo ishftc.lo link.lo malloc.lo mvbits.lo \
 	pack_generic.lo perror.lo signal.lo size.lo sleep.lo \
 	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
 	random.lo rename.lo reshape_generic.lo reshape_packed.lo \
@@ -389,6 +389,7 @@ intrinsics/args.c \
 intrinsics/bessel.c \
 intrinsics/c99_functions.c \
 intrinsics/chdir.c \
+intrinsics/clock.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/ctime.c \
@@ -2214,6 +2215,9 @@ c99_functions.lo: intrinsics/c99_functions.c
 
 chdir.lo: intrinsics/chdir.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o chdir.lo `test -f 'intrinsics/chdir.c' || echo '$(srcdir)/'`intrinsics/chdir.c
+
+clock.lo: intrinsics/clock.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o clock.lo `test -f 'intrinsics/clock.c' || echo '$(srcdir)/'`intrinsics/clock.c
 
 cpu_time.lo: intrinsics/cpu_time.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cpu_time.lo `test -f 'intrinsics/cpu_time.c' || echo '$(srcdir)/'`intrinsics/cpu_time.c
