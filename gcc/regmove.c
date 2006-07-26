@@ -77,7 +77,6 @@ static int try_auto_increment (rtx, rtx, rtx, rtx, HOST_WIDE_INT, int);
 static int find_matches (rtx, struct match *);
 static void replace_in_call_usage (rtx *, unsigned int, rtx, rtx);
 static int fixup_match_1 (rtx, rtx, rtx, rtx, rtx, int, int, int);
-static int reg_is_remote_constant_p (rtx, rtx, rtx);
 static int stable_and_no_regs_but_for_p (rtx, rtx, rtx);
 static int regclass_compatible_p (int, int);
 static int replacement_quality (rtx);
@@ -839,6 +838,14 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest, int old_max_uid)
     }
 }
 
+/* reg_set_in_bb[REGNO] points to basic block iff the register is set
+   only once in the given block and has REG_EQUAL note.  */
+
+basic_block *reg_set_in_bb;
+
+/* Size of reg_set_in_bb array.  */
+static unsigned int max_reg_computed;
+
 
 /* Return whether REG is set in only one location, and is set to a
    constant, but is set in a different basic block from INSN (an
@@ -850,14 +857,41 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest, int old_max_uid)
    is used in a different basic block as well as this one?).  FIRST is
    the first insn in the function.  */
 
-static int
-reg_is_remote_constant_p (rtx reg, rtx insn, rtx first)
+static bool
+reg_is_remote_constant_p (rtx reg, rtx insn)
 {
+  basic_block bb;
   rtx p;
+  int max;
 
-  if (REG_N_SETS (REGNO (reg)) != 1)
-    return 0;
+  if (!reg_set_in_bb)
+    {
+      max_reg_computed = max = max_reg_num ();
+      reg_set_in_bb = xcalloc (max, sizeof (*reg_set_in_bb));
 
+      FOR_EACH_BB (bb)
+	for (p = BB_HEAD (bb); p != NEXT_INSN (BB_END (bb));
+	     p = NEXT_INSN (p))
+	{
+	  rtx s;
+
+	  if (!INSN_P (p))
+	    continue;
+	  s = single_set (p);
+	  /* This is the instruction which sets REG.  If there is a
+	     REG_EQUAL note, then REG is equivalent to a constant.  */
+	  if (s != 0
+	      && REG_P (SET_DEST (s))
+	      && REG_N_SETS (REGNO (SET_DEST (s))) == 1
+	      && find_reg_note (p, REG_EQUAL, NULL_RTX))
+	    reg_set_in_bb[REGNO (SET_DEST (s))] = bb;
+	}
+    }
+  gcc_assert (REGNO (reg) < max_reg_computed);
+  if (reg_set_in_bb[REGNO (reg)] == NULL)
+    return false;
+  if (reg_set_in_bb[REGNO (reg)] != BLOCK_FOR_INSN (insn))
+    return true;
   /* Look for the set.  */
   for (p = BB_HEAD (BLOCK_FOR_INSN (insn)); p != insn; p = NEXT_INSN (p))
     {
@@ -867,34 +901,13 @@ reg_is_remote_constant_p (rtx reg, rtx insn, rtx first)
 	continue;
       s = single_set (p);
       if (s != 0
-	  && REG_P (SET_DEST (s))
-	  && REGNO (SET_DEST (s)) == REGNO (reg))
+	  && REG_P (SET_DEST (s)) && REGNO (SET_DEST (s)) == REGNO (reg))
 	{
 	  /* The register is set in the same basic block.  */
-	  return 0;
+	  return false;
 	}
     }
-
-  for (p = first; p && p != insn; p = NEXT_INSN (p))
-    {
-      rtx s;
-
-      if (! INSN_P (p))
-	continue;
-      s = single_set (p);
-      if (s != 0
-	  && REG_P (SET_DEST (s))
-	  && REGNO (SET_DEST (s)) == REGNO (reg))
-	{
-	  /* This is the instruction which sets REG.  If there is a
-             REG_EQUAL note, then REG is equivalent to a constant.  */
-	  if (find_reg_note (p, REG_EQUAL, NULL_RTX))
-	    return 1;
-	  return 0;
-	}
-    }
-
-  return 0;
+  return true;
 }
 
 /* INSN is adding a CONST_INT to a REG.  We search backwards looking for
@@ -1355,7 +1368,7 @@ regmove_optimize (rtx f, int nregs)
 		 it for this optimization, as this would make it
 		 no longer equivalent to a constant.  */
 
-	      if (reg_is_remote_constant_p (src, insn, f))
+	      if (reg_is_remote_constant_p (src, insn))
 		{
 		  if (!copy_src)
 		    {
@@ -1504,6 +1517,11 @@ regmove_optimize (rtx f, int nregs)
   /* Clean up.  */
   free (regno_src_regno);
   free (regmove_bb_head);
+  if (reg_set_in_bb)
+    {
+      free (reg_set_in_bb);
+      reg_set_in_bb = NULL;
+    }
 }
 
 /* Returns nonzero if INSN's pattern has matching constraints for any operand.
@@ -1685,7 +1703,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
      then do not use it for this optimization.  We want the equivalence
      so that if we have to reload this register, we can reload the
      constant, rather than extending the lifespan of the register.  */
-  if (reg_is_remote_constant_p (src, insn, get_insns ()))
+  if (reg_is_remote_constant_p (src, insn))
     return 0;
 
   /* Scan forward to find the next instruction that
