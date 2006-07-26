@@ -1,3 +1,16 @@
+2006-07-26  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/27882
+	* cgraph.c (cgraph_remove_node): Clear needed, reachable, next, previous
+	and decl fields.
+	* cgraphunit.c (cgraph_reset_node): Expect cgraph_remove_node to kill
+	next pointer
+	(cgraph_analyze_compilation_unit): Likewise.
+	* ipa.c (cgraph_remove_unreachable_nodes): Likewise.
+	* ipa-inline.c (cgraph_decide_recursive_inlining): Likewise.
+	(cgraph_early_inlinine): Make order garbage collected.
+	* Makefile.in (gt-ipa-inline): New garbagecollected file.
+
 2006-07-26  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* dbxout.c (output_types_sort): Add a comment.

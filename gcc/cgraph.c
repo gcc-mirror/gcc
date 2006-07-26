@@ -452,6 +452,9 @@ cgraph_remove_node (struct cgraph_node *node)
 
   cgraph_node_remove_callers (node);
   cgraph_node_remove_callees (node);
+  /* Incremental inlining access removed nodes stored in the postorder list.
+     */
+  node->needed = node->reachable = false;
   while (node->nested)
     cgraph_remove_node (node->nested);
   if (node->origin)
@@ -468,6 +471,8 @@ cgraph_remove_node (struct cgraph_node *node)
     cgraph_nodes = node->next;
   if (node->next)
     node->next->previous = node->previous;
+  node->next = NULL;
+  node->previous = NULL;
   slot = htab_find_slot (cgraph_hash, node, NO_INSERT);
   if (*slot == node)
     {
@@ -515,6 +520,7 @@ cgraph_remove_node (struct cgraph_node *node)
       DECL_STRUCT_FUNCTION (node->decl) = NULL;
       DECL_INITIAL (node->decl) = error_mark_node;
     }
+  node->decl = NULL;
   cgraph_n_nodes--;
   /* Do not free the structure itself so the walk over chain can continue.  */
 }
