@@ -1,3 +1,25 @@
+2006-07-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsic.c (add_functions): Add INT2, SHORT, INT8, LONG,
+	LSTAT, MCLOCK and MCLOCK8 intrinsic functions.
+	(add_subroutines): Add LSTAT intrinsic subroutine.
+	* gfortran.h (gfc_generic_isym_id): Add GFC_ISYM_INT2,
+	GFC_ISYM_INT8, GFC_ISYM_LONG, GFC_ISYM_LSTAT, GFC_ISYM_MCLOCK
+	and GFC_ISYM_MCLOCK8.
+	* iresolve.c (gfc_resolve_int2, gfc_resolve_int8,
+	gfc_resolve_long, gfc_resolve_lstat, gfc_resolve_mclock,
+	gfc_resolve_mclock8, gfc_resolve_lstat_sub): New functions.
+	* check.c (gfc_check_intconv): New function.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Add cases for
+	the added GFC_ISYM_*.
+	* simplify.c (gfc_simplify_intconv, gfc_simplify_int2,
+	gfc_simplify_int8, gfc_simplify_long): New functions.
+	* intrinsic.h (gfc_check_intconv, gfc_simplify_int2,
+	gfc_simplify_int8, gfc_simplify_long, gfc_resolve_int2,
+	gfc_resolve_int8, gfc_resolve_long, gfc_resolve_lstat,
+	gfc_resolve_mclock, gfc_resolve_mclock8, gfc_resolve_lstat_sub):
+	Add prototypes.
+
 2006-07-24  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/28416
@@ -17,7 +39,7 @@
 
 2006-07-22  Steven Bosscher  <steven@gcc.gnu.org> 
 
-    PR fortran/28439
+	PR fortran/28439
 	* trans-stmt.c (gfc_trans_arithmetic_if): Evaluate the condition once.
 
 2006-07-16  Jakub Jelinek  <jakub@redhat.com>

@@ -854,6 +854,42 @@ gfc_resolve_int (gfc_expr * f, gfc_expr * a, gfc_expr * kind)
 
 
 void
+gfc_resolve_int2 (gfc_expr * f, gfc_expr * a)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 2;
+
+  f->value.function.name =
+    gfc_get_string ("__int_%d_%c%d", f->ts.kind, gfc_type_letter (a->ts.type),
+		    a->ts.kind);
+}
+
+
+void
+gfc_resolve_int8 (gfc_expr * f, gfc_expr * a)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 8;
+
+  f->value.function.name =
+    gfc_get_string ("__int_%d_%c%d", f->ts.kind, gfc_type_letter (a->ts.type),
+		    a->ts.kind);
+}
+
+
+void
+gfc_resolve_long (gfc_expr * f, gfc_expr * a)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 4;
+
+  f->value.function.name =
+    gfc_get_string ("__int_%d_%c%d", f->ts.kind, gfc_type_letter (a->ts.type),
+		    a->ts.kind);
+}
+
+
+void
 gfc_resolve_isatty (gfc_expr * f, gfc_expr * u)
 {
   gfc_typespec ts;
@@ -1187,6 +1223,24 @@ gfc_resolve_maxval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
   f->value.function.name =
     gfc_get_string (PREFIX("%s_%c%d"), name,
 		    gfc_type_letter (array->ts.type), array->ts.kind);
+}
+
+
+void
+gfc_resolve_mclock (gfc_expr * f)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 4;
+  f->value.function.name = PREFIX("mclock");
+}
+
+
+void
+gfc_resolve_mclock8 (gfc_expr * f)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 8;
+  f->value.function.name = PREFIX("mclock8");
 }
 
 
@@ -1800,6 +1854,16 @@ gfc_resolve_stat (gfc_expr * f, gfc_expr * n ATTRIBUTE_UNUSED,
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = gfc_get_string (PREFIX("stat_i%d"), f->ts.kind);
+}
+
+
+void
+gfc_resolve_lstat (gfc_expr * f, gfc_expr * n ATTRIBUTE_UNUSED,
+		   gfc_expr * a ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+  f->value.function.name = gfc_get_string (PREFIX("lstat_i%d"), f->ts.kind);
 }
 
 
@@ -2651,6 +2715,16 @@ gfc_resolve_stat_sub (gfc_code * c)
   const char *name;
 
   name = gfc_get_string (PREFIX("stat_i%d_sub"), gfc_default_integer_kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_lstat_sub (gfc_code * c)
+{
+  const char *name;
+
+  name = gfc_get_string (PREFIX("lstat_i%d_sub"), gfc_default_integer_kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 

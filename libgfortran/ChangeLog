@@ -1,3 +1,15 @@
+2006-07-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* configure.ac: Check for function clock.
+	* Makefile.am: Compile new file intrinsics/clock.c.
+	* intrinsics/clock.c: New file.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* intrinsics/stat.c: Rename the old stat_i?_sub functions to
+	helper functions stat_i?_sub_0, and use them for both STAT and
+	LSTAT.
+
 2006-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/28335

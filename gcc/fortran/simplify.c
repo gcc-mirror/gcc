@@ -1610,6 +1610,66 @@ gfc_simplify_int (gfc_expr * e, gfc_expr * k)
 }
 
 
+static gfc_expr *
+gfc_simplify_intconv (gfc_expr * e, int kind, const char *name)
+{
+  gfc_expr *rpart, *rtrunc, *result;
+
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (BT_INTEGER, kind, &e->where);
+
+  switch (e->ts.type)
+    {
+    case BT_INTEGER:
+      mpz_set (result->value.integer, e->value.integer);
+      break;
+
+    case BT_REAL:
+      rtrunc = gfc_copy_expr (e);
+      mpfr_trunc (rtrunc->value.real, e->value.real);
+      gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real);
+      gfc_free_expr (rtrunc);
+      break;
+
+    case BT_COMPLEX:
+      rpart = gfc_complex2real (e, kind);
+      rtrunc = gfc_copy_expr (rpart);
+      mpfr_trunc (rtrunc->value.real, rpart->value.real);
+      gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real);
+      gfc_free_expr (rpart);
+      gfc_free_expr (rtrunc);
+      break;
+
+    default:
+      gfc_error ("Argument of %s at %L is not a valid type", name, &e->where);
+      gfc_free_expr (result);
+      return &gfc_bad_expr;
+    }
+
+  return range_check (result, name);
+}
+
+gfc_expr *
+gfc_simplify_int2 (gfc_expr * e)
+{
+  return gfc_simplify_intconv (e, 2, "INT2");
+}
+
+gfc_expr *
+gfc_simplify_int8 (gfc_expr * e)
+{
+  return gfc_simplify_intconv (e, 8, "INT8");
+}
+
+gfc_expr *
+gfc_simplify_long (gfc_expr * e)
+{
+  return gfc_simplify_intconv (e, 4, "LONG");
+}
+
+
 gfc_expr *
 gfc_simplify_ifix (gfc_expr * e)
 {

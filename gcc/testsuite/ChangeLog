@@ -1,3 +1,10 @@
+2006-07-26  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/mclock.f90: New test.
+	* gfortran.dg/int_conv_1.f90: New test.
+	* gfortran.dg/stat_1.f90: New test.
+	* gfortran.dg/stat_2.f90: New test.
+
 2006-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/28335

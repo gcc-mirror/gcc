@@ -1200,6 +1200,16 @@ gfc_check_int (gfc_expr * x, gfc_expr * kind)
 
 
 try
+gfc_check_intconv (gfc_expr * x)
+{
+  if (numeric_check (x, 0) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_ior (gfc_expr * i, gfc_expr * j)
 {
   if (type_check (i, 0, BT_INTEGER) == FAILURE)
