@@ -6024,6 +6024,8 @@ force_operand (rtx value, rtx target)
 	case ZERO_EXTEND:
 	case SIGN_EXTEND:
 	case TRUNCATE:
+	case FLOAT_EXTEND:
+	case FLOAT_TRUNCATE:
 	  convert_move (target, op1, code == ZERO_EXTEND);
 	  return target;
 
