@@ -97,7 +97,7 @@ bool
 cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 {
   struct cgraph_node *first = (void *) 1;
-  struct cgraph_node *node;
+  struct cgraph_node *node, *next;
   bool changed = false;
   int insns = 0;
 
@@ -151,8 +151,9 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
      unanalyzed nodes so they look like for true extern functions to the rest
      of code.  Body of such functions is released via remove_node once the
      inline clones are eliminated.  */
-  for (node = cgraph_nodes; node; node = node->next)
+  for (node = cgraph_nodes; node; node = next)
     {
+      next = node->next;
       if (!node->aux)
 	{
 	  int local_insns;

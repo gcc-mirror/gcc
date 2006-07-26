@@ -419,11 +419,14 @@ cgraph_reset_node (struct cgraph_node *node)
 
   if (!flag_unit_at_a_time)
     {
-      struct cgraph_node *n;
+      struct cgraph_node *n, *next;
 
-      for (n = cgraph_nodes; n; n = n->next)
-	if (n->global.inlined_to == node)
-	  cgraph_remove_node (n);
+      for (n = cgraph_nodes; n; n = next)
+	{
+	  next = n->next;
+	  if (n->global.inlined_to == node)
+	    cgraph_remove_node (n);
+	}
     }
 
   cgraph_node_remove_callees (node);
@@ -1009,7 +1012,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 void
 cgraph_finalize_compilation_unit (void)
 {
-  struct cgraph_node *node;
+  struct cgraph_node *node, *next;
   /* Keep track of already processed nodes when called multiple times for
      intermodule optimization.  */
   static struct cgraph_node *first_analyzed;
@@ -1091,9 +1094,10 @@ cgraph_finalize_compilation_unit (void)
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "\nReclaiming functions:");
 
-  for (node = cgraph_nodes; node != first_analyzed; node = node->next)
+  for (node = cgraph_nodes; node != first_analyzed; node = next)
     {
       tree decl = node->decl;
+      next = node->next;
 
       if (node->local.finalized && !DECL_SAVED_TREE (decl))
 	cgraph_reset_node (node);
