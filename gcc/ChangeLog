@@ -1,3 +1,11 @@
+2006-07-27  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/28071
+	* global.c (greg_obstack): New obstack.
+	(allocate_bb_info): Use it.
+	(free_bb_info): Likewise.
+	(modify_reg_pav): Likewise.
+
 2006-07-27  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_fixed_mathfn): When long and long long are the
