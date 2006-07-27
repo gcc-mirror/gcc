@@ -1,3 +1,9 @@
+2006-07-27  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/28071
+	* hashtab.c (htab_empty): Clear out n_deleted/n_elements;
+	downsize the hashtable.
+
 2006-07-04  Peter O'Gorman  <peter@pogma.com>
 
 	* Makefile.in: chmod 644 before ranlib during install.
