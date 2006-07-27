@@ -102,6 +102,8 @@ st_close (st_parameter_close *clp)
         unlink (path);
 #endif
     }
-
+  else
+    generate_error (&clp->common, ERROR_BAD_OPTION,
+			    "Can't find specified UNIT in CLOSE");
   library_end ();
 }
