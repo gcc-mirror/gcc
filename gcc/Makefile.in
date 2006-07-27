@@ -3753,17 +3753,16 @@ $(DESTDIR)$(infodir)/%.info: doc/%.info installdirs
 	else true; fi;
 
 html__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-html__mkdir_p = mkdir -p --
  
 install-html: $(HTMLS_BUILD)
 	@$(NORMAL_INSTALL)
-	test -z "$(htmldir)" || $(html__mkdir_p) "$(DESTDIR)$(htmldir)"
+	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
 	@list='$(HTMLS_INSTALL)'; for p in $$list; do \
 	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
 	  f=$(html__strip_dir) \
 	  if test -d "$$d$$p"; then \
-	    echo " $(html__mkdir_p) '$(DESTDIR)$(htmldir)/$$f'"; \
-	    $(html__mkdir_p) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
 	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
 	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
 	  else \

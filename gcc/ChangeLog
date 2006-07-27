@@ -1,3 +1,7 @@
+2006-07-27  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* Makefile.in: Use mkinstalldirs.
+
 2006-07-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/28437
