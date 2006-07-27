@@ -2047,6 +2047,7 @@ struct bb_info
 #define BB_INFO(BB) ((struct bb_info *) (BB)->aux)
 #define BB_INFO_BY_INDEX(N) BB_INFO (BASIC_BLOCK(N))
 
+static struct bitmap_obstack greg_obstack;
 /* The function allocates the info structures of each basic block.  It
    also initialized LIVE_PAVIN and LIVE_PAVOUT as if all hard
    registers were partially available.  */
@@ -2063,14 +2064,15 @@ allocate_bb_info (void)
   init = BITMAP_ALLOC (NULL);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     bitmap_set_bit (init, i);
+  bitmap_obstack_initialize (&greg_obstack); 
   FOR_EACH_BB (bb)
     {
       bb_info = bb->aux;
-      bb_info->earlyclobber = BITMAP_ALLOC (NULL);
-      bb_info->avloc = BITMAP_ALLOC (NULL);
-      bb_info->killed = BITMAP_ALLOC (NULL);
-      bb_info->live_pavin = BITMAP_ALLOC (NULL);
-      bb_info->live_pavout = BITMAP_ALLOC (NULL);
+      bb_info->earlyclobber = BITMAP_ALLOC (&greg_obstack);
+      bb_info->avloc = BITMAP_ALLOC (&greg_obstack);
+      bb_info->killed = BITMAP_ALLOC (&greg_obstack);
+      bb_info->live_pavin = BITMAP_ALLOC (&greg_obstack);
+      bb_info->live_pavout = BITMAP_ALLOC (&greg_obstack);
       bitmap_copy (bb_info->live_pavin, init);
       bitmap_copy (bb_info->live_pavout, init);
     }
@@ -2082,18 +2084,7 @@ allocate_bb_info (void)
 static void
 free_bb_info (void)
 {
-  basic_block bb;
-  struct bb_info *bb_info;
-
-  FOR_EACH_BB (bb)
-    {
-      bb_info = BB_INFO (bb);
-      BITMAP_FREE (bb_info->live_pavout);
-      BITMAP_FREE (bb_info->live_pavin);
-      BITMAP_FREE (bb_info->killed);
-      BITMAP_FREE (bb_info->avloc);
-      BITMAP_FREE (bb_info->earlyclobber);
-    }
+  bitmap_obstack_release (&greg_obstack); 
   free_aux_for_blocks ();
 }
 
@@ -2415,7 +2406,7 @@ modify_reg_pav (void)
   CLEAR_HARD_REG_SET (stack_hard_regs);
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
     SET_HARD_REG_BIT(stack_hard_regs, i);
-  stack_regs = BITMAP_ALLOC (NULL);
+  stack_regs = BITMAP_ALLOC (&greg_obstack);
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
       COPY_HARD_REG_SET (used, reg_class_contents[reg_preferred_class (i)]);
