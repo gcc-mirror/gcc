@@ -1,3 +1,7 @@
+2006-07-27  Arjan van de Ven <arjan@linux.intel.com>
+
+	* gcc.target/i386/stack-prot-kernel.c: New test.
+
 2006-07-27  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-55.c: New test case.

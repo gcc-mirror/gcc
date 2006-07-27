@@ -1,3 +1,9 @@
+2006-07-27  Arjan van de Ven <arjan@linux.intel.com>
+
+	* config/i386/i386.md (stack_tls_protect_set_di) Use %gs rather than
+	%fs for -mcmodel=kernel.
+	(stack_tls_protect_test_di): Likewise.
+
 2006-07-27  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Use mkinstalldirs.
