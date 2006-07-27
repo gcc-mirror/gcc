@@ -6772,6 +6772,42 @@ fold_fixed_mathfn (tree fndecl, tree arglist)
 	  return build_function_call_expr (decl, arglist);
 	}
     }
+
+  /* Canonicalize llround (x) to lround (x) on LP64 targets where
+     sizeof (long long) == sizeof (long).  */
+  if (TYPE_PRECISION (long_long_integer_type_node)
+      == TYPE_PRECISION (long_integer_type_node))
+    {
+      tree newfn = NULL_TREE;
+      switch (fcode)
+	{
+	CASE_FLT_FN (BUILT_IN_LLCEIL):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LCEIL);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_LLFLOOR):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LFLOOR);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_LLROUND):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LROUND);
+	  break;
+
+	CASE_FLT_FN (BUILT_IN_LLRINT):
+	  newfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_LRINT);
+	  break;
+
+	default:
+	  break;
+	}
+
+      if (newfn)
+	{
+	  tree newcall = build_function_call_expr (newfn, arglist);
+	  return fold_convert (TREE_TYPE (TREE_TYPE (fndecl)), newcall);
+	}
+    }
+
   return 0;
 }
 
