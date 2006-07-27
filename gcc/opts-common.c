@@ -175,6 +175,10 @@ cont:
       if (option->neg_index < 0)
 	goto cont;
 
+      /* Skip joined switches.  */
+      if ((option->flags & CL_JOINED))
+	goto cont;
+
       /* Reject negative form of switches that don't take negatives as
 	 unrecognized.  */
       if (!value && (option->flags & CL_REJECT_NEGATIVE))
