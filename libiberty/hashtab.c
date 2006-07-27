@@ -421,7 +421,28 @@ htab_empty (htab_t htab)
       if (entries[i] != HTAB_EMPTY_ENTRY && entries[i] != HTAB_DELETED_ENTRY)
 	(*htab->del_f) (entries[i]);
 
-  memset (entries, 0, size * sizeof (PTR));
+  /* Instead of clearing megabyte, downsize the table.  */
+  if (size > 1024*1024 / sizeof (PTR))
+    {
+      int nindex = higher_prime_index (1024 / sizeof (PTR));
+      int nsize = prime_tab[nindex].prime;
+
+      if (htab->free_f != NULL)
+	(*htab->free_f) (htab->entries);
+      else if (htab->free_with_arg_f != NULL)
+	(*htab->free_with_arg_f) (htab->alloc_arg, htab->entries);
+      if (htab->alloc_with_arg_f != NULL)
+	htab->entries = (PTR *) (*htab->alloc_with_arg_f) (htab->alloc_arg, nsize,
+						           sizeof (PTR *));
+      else
+	htab->entries = (PTR *) (*htab->alloc_f) (nsize, sizeof (PTR *));
+     htab->size = nsize;
+     htab->size_prime_index = nindex;
+    }
+  else
+    memset (entries, 0, size * sizeof (PTR));
+  htab->n_deleted = 0;
+  htab->n_elements = 0;
 }
 
 /* Similar to htab_find_slot, but without several unwanted side effects:
