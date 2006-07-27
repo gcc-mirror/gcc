@@ -1,3 +1,7 @@
+2006-07-27  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-55.c: New test case.
+
 2006-07-26  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/27907

@@ -1,3 +1,9 @@
+2006-07-27  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_fixed_mathfn): When long and long long are the
+	same size, canonicalize llceil*, llfloor*, llround* and llrint*
+	functions to their lceil*, lfloor*, lround* and lrint* forms.
+
 2006-07-27  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	PR gcc/28508
