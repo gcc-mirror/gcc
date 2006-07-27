@@ -1,6 +1,12 @@
 2006-07-27  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/28071
+	* cselib.c (cselib_process_insn): Don't remove useless values too
+	often for very large hashtables.
+
+2006-07-27  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/28071
 	* global.c (greg_obstack): New obstack.
 	(allocate_bb_info): Use it.
 	(free_bb_info): Likewise.

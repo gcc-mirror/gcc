@@ -1437,7 +1437,11 @@ cselib_process_insn (rtx insn)
     cselib_current_insn_in_libcall = false;
   cselib_current_insn = 0;
 
-  if (n_useless_values > MAX_USELESS_VALUES)
+  if (n_useless_values > MAX_USELESS_VALUES
+      /* remove_useless_values is linear in the hash table size.  Avoid
+         quadratic behaviour for very large hashtables with very few
+	 useless elements.  */
+      && (unsigned int)n_useless_values > cselib_hash_table->n_elements / 4)
     remove_useless_values ();
 }
 
