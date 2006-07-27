@@ -1,3 +1,10 @@
+2006-07-27  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	PR gcc/28508
+	* config/m32r/m32r.md (branch_insn): Reduce pc range for short
+	branch.
+	(rev_branch_insn): Likewise.
+
 2006-07-27  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/28071
