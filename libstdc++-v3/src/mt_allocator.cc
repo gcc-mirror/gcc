@@ -35,7 +35,7 @@
 #include <bits/concurrence.h>
 #include <ext/mt_allocator.h>
 
-namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
+namespace
 {
 #ifdef __GTHREADS
   struct __freelist
@@ -64,17 +64,16 @@ namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
   _M_destroy_thread_key(void* __id)
   {
     // Return this thread id record to the front of thread_freelist.
-    __gnu_cxx::lock sentry(__gnu_internal::freelist_mutex);
+    __gnu_cxx::lock sentry(freelist_mutex);
     size_t _M_id = reinterpret_cast<size_t>(__id);
 
-    using namespace __gnu_internal;
     typedef __gnu_cxx::__pool<true>::_Thread_record _Thread_record;
     _Thread_record* __tr = &freelist._M_thread_freelist_array[_M_id - 1];
     __tr->_M_next = freelist._M_thread_freelist;
     freelist._M_thread_freelist = __tr;
   }
 #endif
-}
+} // anonymous namespace
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -466,10 +465,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     if (__gthread_active_p())
       {
 	{
-	  __gnu_cxx::lock sentry(__gnu_internal::freelist_mutex);
+	  __gnu_cxx::lock sentry(freelist_mutex);
 
-	  if (!__gnu_internal::freelist._M_thread_freelist_array
-	      || __gnu_internal::freelist._M_max_threads
+	  if (!freelist._M_thread_freelist_array
+	      || freelist._M_max_threads
 		 < _M_options._M_max_threads)
 	    {
 	      const size_t __k = sizeof(_Thread_record)
@@ -492,22 +491,22 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	      _M_thread_freelist[__i - 1]._M_next = NULL;
 	      _M_thread_freelist[__i - 1]._M_id = __i;
 
-	      if (!__gnu_internal::freelist._M_thread_freelist_array)
+	      if (!freelist._M_thread_freelist_array)
 		{
 		  // Initialize per thread key to hold pointer to
 		  // _M_thread_freelist.
-		  __gthread_key_create(&__gnu_internal::freelist._M_key,
-				       __gnu_internal::_M_destroy_thread_key);
-		  __gnu_internal::freelist._M_thread_freelist
+		  __gthread_key_create(&freelist._M_key,
+				       ::_M_destroy_thread_key);
+		  freelist._M_thread_freelist
 		    = _M_thread_freelist;
 		}
 	      else
 		{
 		  _Thread_record* _M_old_freelist
-		    = __gnu_internal::freelist._M_thread_freelist;
+		    = freelist._M_thread_freelist;
 		  _Thread_record* _M_old_array
-		    = __gnu_internal::freelist._M_thread_freelist_array;
-		  __gnu_internal::freelist._M_thread_freelist
+		    = freelist._M_thread_freelist_array;
+		  freelist._M_thread_freelist
 		    = &_M_thread_freelist[_M_old_freelist - _M_old_array];
 		  while (_M_old_freelist)
 		    {
@@ -515,16 +514,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		      if (_M_old_freelist->_M_next)
 			next_id = _M_old_freelist->_M_next - _M_old_array;
 		      else
-			next_id = __gnu_internal::freelist._M_max_threads;
+			next_id = freelist._M_max_threads;
 		      _M_thread_freelist[_M_old_freelist->_M_id - 1]._M_next
 			= &_M_thread_freelist[next_id];
 		      _M_old_freelist = _M_old_freelist->_M_next;
 		    }
 		  ::operator delete(static_cast<void*>(_M_old_array));
 		}
-	      __gnu_internal::freelist._M_thread_freelist_array
+	      freelist._M_thread_freelist_array
 		= _M_thread_freelist;
-	      __gnu_internal::freelist._M_max_threads
+	      freelist._M_max_threads
 		= _M_options._M_max_threads;
 	    }
 	}
@@ -587,21 +586,21 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     // returns it's id.
     if (__gthread_active_p())
       {
-	void* v = __gthread_getspecific(__gnu_internal::freelist._M_key);
+	void* v = __gthread_getspecific(freelist._M_key);
 	size_t _M_id = (size_t)v;
 	if (_M_id == 0)
 	  {
 	    {
-	      __gnu_cxx::lock sentry(__gnu_internal::freelist_mutex);
-	      if (__gnu_internal::freelist._M_thread_freelist)
+	      __gnu_cxx::lock sentry(freelist_mutex);
+	      if (freelist._M_thread_freelist)
 		{
-		  _M_id = __gnu_internal::freelist._M_thread_freelist->_M_id;
-		  __gnu_internal::freelist._M_thread_freelist
-		    = __gnu_internal::freelist._M_thread_freelist->_M_next;
+		  _M_id = freelist._M_thread_freelist->_M_id;
+		  freelist._M_thread_freelist
+		    = freelist._M_thread_freelist->_M_next;
 		}
 	    }
 
-	    __gthread_setspecific(__gnu_internal::freelist._M_key,
+	    __gthread_setspecific(freelist._M_key,
 				  (void*)_M_id);
 	  }
 	return _M_id >= _M_options._M_max_threads ? 0 : _M_id;
@@ -665,10 +664,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     if (__gthread_active_p())
       {
 	{
-	  __gnu_cxx::lock sentry(__gnu_internal::freelist_mutex);
+	  __gnu_cxx::lock sentry(freelist_mutex);
 
-	  if (!__gnu_internal::freelist._M_thread_freelist_array
-	      || __gnu_internal::freelist._M_max_threads
+	  if (!freelist._M_thread_freelist_array
+	      || freelist._M_max_threads
 		 < _M_options._M_max_threads)
 	    {
 	      const size_t __k = sizeof(_Thread_record)
@@ -691,22 +690,21 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	      _M_thread_freelist[__i - 1]._M_next = NULL;
 	      _M_thread_freelist[__i - 1]._M_id = __i;
 
-	      if (!__gnu_internal::freelist._M_thread_freelist_array)
+	      if (!freelist._M_thread_freelist_array)
 		{
 		  // Initialize per thread key to hold pointer to
 		  // _M_thread_freelist.
-		  __gthread_key_create(&__gnu_internal::freelist._M_key,
-				       __gnu_internal::_M_destroy_thread_key);
-		  __gnu_internal::freelist._M_thread_freelist
-		    = _M_thread_freelist;
+		  __gthread_key_create(&freelist._M_key, 
+				       ::_M_destroy_thread_key);
+		  freelist._M_thread_freelist = _M_thread_freelist;
 		}
 	      else
 		{
 		  _Thread_record* _M_old_freelist
-		    = __gnu_internal::freelist._M_thread_freelist;
+		    = freelist._M_thread_freelist;
 		  _Thread_record* _M_old_array
-		    = __gnu_internal::freelist._M_thread_freelist_array;
-		  __gnu_internal::freelist._M_thread_freelist
+		    = freelist._M_thread_freelist_array;
+		  freelist._M_thread_freelist
 		    = &_M_thread_freelist[_M_old_freelist - _M_old_array];
 		  while (_M_old_freelist)
 		    {
@@ -714,17 +712,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		      if (_M_old_freelist->_M_next)
 			next_id = _M_old_freelist->_M_next - _M_old_array;
 		      else
-			next_id = __gnu_internal::freelist._M_max_threads;
+			next_id = freelist._M_max_threads;
 		      _M_thread_freelist[_M_old_freelist->_M_id - 1]._M_next
 			= &_M_thread_freelist[next_id];
 		      _M_old_freelist = _M_old_freelist->_M_next;
 		    }
 		  ::operator delete(static_cast<void*>(_M_old_array));
 		}
-	      __gnu_internal::freelist._M_thread_freelist_array
-		= _M_thread_freelist;
-	      __gnu_internal::freelist._M_max_threads
-		= _M_options._M_max_threads;
+	      freelist._M_thread_freelist_array = _M_thread_freelist;
+	      freelist._M_max_threads = _M_options._M_max_threads;
 	    }
 	}
 

@@ -138,7 +138,6 @@ sources = \
 	debug.cc \
 	debug_list.cc \
 	functexcept.cc \
-	globals_locale.cc \
 	globals_io.cc \
 	ios.cc \
 	ios_failure.cc \

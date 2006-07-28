@@ -1,3 +1,42 @@
+2006-07-27  Benjamin Kosnik  <bkoz@wells.artheist.org>
+
+	PR libstdc++/19664 round 3	
+	* include/Makefile.am (tr1_headers): Add hashtable_policy.h.
+	* include/Makefile.in: Regenerate.
+	* include/tr1/hashtable: Move policy classes into...
+	* include/tr1/hashtable_policy.h: ... this. New.
+	
+	* src/globals_locale.cc: Move contents....
+	* src/locale_init.cc: ... to here, put in anonymous namespace.
+	* src/Makefile.am: Remove globals_locale.cc.
+	* src/Makefile.in: Regenerate.
+
+	* src/locale.cc: Convert __gnu_internal to anonymous namespace.
+	* src/debug.cc: Same.
+	* src/ext-inst.cc: Same.
+	* src/mt_allocator.cc: Same.
+	* src/pool_allocator.cc: Same.
+	
+	* include/tr1/random: Convert std::tr1::_Private to anonymous
+	namespace.
+	* include/tr1/random.tcc: Same.
+
+	* include/tr1/hashtable: Move ::Internal to std::tr1::detail and
+	enclose bits that can actually be internal in in anonymous
+	namespace.
+	* include/tr1/unordered_set: Adjust explicit qualifications for
+	namespace changes.
+	* include/tr1/unordered_map: Same.
+
+	* include/tr1/cmath: Convert __gnu_internal to nested detail namespace.
+
+	* include/bits/cpp_type_traits.h: Move __type_type into anonymous
+	namespace.
+	
+	* include/ext/rope: Change _Rope_constants to anonymous namespace.
+	* include/ext/ropeimpl.h: Same.
+	* src/ext-inst.cc: Same.
+
 2006-07-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/cinttypes: Simply protect everything with
@@ -31,6 +70,7 @@
 
 2006-07-21  Jason Merrill  <jason@redhat.com>
 
+	PR libstdc++/19664 round 2	
 	* libsupc++/eh_personality.cc: Wrap extern "C" function
 	definitions in namespace __cxxabiv1.
 

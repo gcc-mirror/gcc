@@ -61,7 +61,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   /*
    * Implementation-space details.
    */
-  namespace _Private
+  namespace
   {
     // Type selectors -- are these already implemented elsewhere?
     template<bool, typename _TpTrue, typename _TpFalse>
@@ -75,6 +75,16 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       {
 	typedef _TpFalse _Type;
       };
+
+    template<typename _UIntType, int __w, bool = 
+	     __w < std::numeric_limits<_UIntType>::digits>
+      struct _Shift
+      { static const _UIntType __value = 0; };
+
+    template<typename _UIntType, int __w>
+      struct _Shift<_UIntType, __w, true>
+      { static const _UIntType __value = _UIntType(1) << __w; };
+  } // anonymous namespace
 
     /*
      * An adaptor class for converting the output of any Generator into
@@ -124,17 +134,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       	return __return_value;
       }
 
-    template<typename _UIntType, int __w, bool = 
-	     __w < std::numeric_limits<_UIntType>::digits>
-      struct _Shift
-      { static const _UIntType __value = 0; };
-
-    template<typename _UIntType, int __w>
-      struct _Shift<_UIntType, __w, true>
-      { static const _UIntType __value = _UIntType(1) << __w; };
-
-  } // namespace std::tr1::_Private
-
 
   /**
    * Produces random numbers on a given disribution function using a un uniform
@@ -152,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     public:
       typedef _Engine                                engine_type;
-      typedef _Private::_Adaptor<_Engine, _Dist>     engine_value_type;
+      typedef _Adaptor<_Engine, _Dist>     engine_value_type;
       typedef _Dist                                  distribution_type;
       typedef typename _Dist::result_type            result_type;
 
@@ -364,8 +363,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       operator()();
 
       /**
-       * Compares two linear congruential random number generator objects of the
-       * same type for equality.
+       * Compares two linear congruential random number generator
+       * objects of the same type for equality.
        *  
        * @param __lhs A linear congruential random number generator object.
        * @param __rhs Another linear congruential random number generator obj.
@@ -378,8 +377,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       { return __lhs._M_x == __rhs._M_x; }
 
       /**
-       * Compares two linear congruential random number generator objects of the
-       * same type for inequality.
+       * Compares two linear congruential random number generator
+       * objects of the same type for inequality.
        *
        * @param __lhs A linear congruential random number generator object.
        * @param __rhs Another linear congruential random number generator obj.
@@ -553,7 +552,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       result_type
       max() const
-      { return _Private::_Shift<_UIntType, __w>::__value - 1; }
+      { return _Shift<_UIntType, __w>::__value - 1; }
 
       result_type
       operator()();
@@ -1116,8 +1115,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     public:
       /** The type of the generated random value. */
-      typedef typename _Private::_Select<
-	(sizeof(_Result_type1) > sizeof(_Result_type2)),
+      typedef typename _Select<(sizeof(_Result_type1) > sizeof(_Result_type2)),
 	_Result_type1, _Result_type2>::_Type result_type;
 
       // parameter values

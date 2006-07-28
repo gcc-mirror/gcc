@@ -70,19 +70,6 @@
 // removed.
 //
 
-// NB: g++ can not compile these if declared within the class
-// __is_pod itself.
-namespace __gnu_internal
-{
-  typedef char __one;
-  typedef char __two[2];
-
-  template<typename _Tp>
-  __one __test_type(int _Tp::*);
-  template<typename _Tp>
-  __two& __test_type(...);
-} // namespace __gnu_internal
-
 // Forward declaration hack, should really include this from somewhere.
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -352,16 +339,27 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : public __traitor<__is_arithmetic<_Tp>, __is_pointer<_Tp> >
     { };
 
-  //
-  // For the immediate use, the following is a good approximation
-  //
+  // NB: g++ can not compile these if declared within the class
+  // __is_pod itself.
+  namespace 
+  {
+    typedef char __one;
+    typedef char __two[2];
+    
+    template<typename _Tp>
+    __one __test_type(int _Tp::*);
+    
+    template<typename _Tp>
+    __two& __test_type(...);
+  }
+
+  // For the immediate use, the following is a good approximation.
   template<typename _Tp>
     struct __is_pod
     {
       enum
 	{
-	  __value = (sizeof(__gnu_internal::__test_type<_Tp>(0))
-		     != sizeof(__gnu_internal::__one))
+	  __value = (sizeof(__test_type<_Tp>(0)) != sizeof(__one))
 	};
     };
 

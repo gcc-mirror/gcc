@@ -811,6 +811,7 @@ tr1_headers = \
 	${tr1_srcdir}/functional \
 	${tr1_srcdir}/functional_iterate.h \
 	${tr1_srcdir}/hashtable \
+	${tr1_srcdir}/hashtable_policy.h \
 	${tr1_srcdir}/inttypes.h \
 	${tr1_srcdir}/limits.h \
 	${tr1_srcdir}/math.h \
