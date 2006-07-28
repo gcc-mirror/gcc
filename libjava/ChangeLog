@@ -1,3 +1,13 @@
+2006-07-28  Gary Benson  <gbenson@redhat.com>
+
+	* prims.cc (_Jv_CreateJavaVM): Move setting runtimeInitialized
+	from the start to the end of the function.  Remove references
+	to VMThrowable.trace_enabled.
+	* java/lang/natVMThrowable.cc (fillInStackTrace): Use
+	runtimeInitialized rather than trace_enabled to decide
+	whether to inhibit stack trace generation.
+	* java/lang/VMThrowable.java (trace_enabled): Removed.
+
 2006-07-23  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* include/win32-threads.h (_Jv_Thread_t): Explicitly
