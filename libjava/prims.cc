@@ -56,7 +56,6 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/OutOfMemoryError.h>
 #include <java/lang/System.h>
-#include <java/lang/VMThrowable.h>
 #include <java/lang/VMClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/io/PrintStream.h>
@@ -1404,8 +1403,6 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   if (runtimeInitialized)
     return -1;
 
-  runtimeInitialized = true;
-
   jint result = parse_init_args (vm_args);
   if (result < 0)
     return -1;
@@ -1447,10 +1444,6 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   _Jv_InitPrimClass (&_Jv_doubleClass,  "double",  'D', 8);
   _Jv_InitPrimClass (&_Jv_voidClass,    "void",    'V', 0);
 
-  // Turn stack trace generation off while creating exception objects.
-  _Jv_InitClass (&java::lang::VMThrowable::class$);
-  java::lang::VMThrowable::trace_enabled = 0;
-  
   // We have to initialize this fairly early, to avoid circular class
   // initialization.  In particular we want to start the
   // initialization of ClassLoader before we start the initialization
@@ -1464,8 +1457,6 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   _Jv_RegisterBootstrapPackages();
 
   no_memory = new java::lang::OutOfMemoryError;
-
-  java::lang::VMThrowable::trace_enabled = 1;
 
 #ifdef USE_LTDL
   LTDL_SET_PRELOADED_SYMBOLS ();
@@ -1488,6 +1479,8 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   catch (java::lang::VirtualMachineError *ignore)
     {
     }
+
+  runtimeInitialized = true;
 
   return 0;
 }
