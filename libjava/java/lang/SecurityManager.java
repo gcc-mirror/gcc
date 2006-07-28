@@ -187,7 +187,7 @@ public class SecurityManager
    * <ul>
    * <li>All methods on the stack are from system classes</li>
    * <li>All methods on the stack up to the first "privileged" caller, as
-   *  created by {@link AccessController.doPrivileged(PrivilegedAction)},
+   *  created by {@link AccessController#doPrivileged(PrivilegedAction)},
    *  are from system classes</li>
    * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
    * </ul>
@@ -209,7 +209,7 @@ public class SecurityManager
    * <ul>
    * <li>All methods on the stack are from system classes</li>
    * <li>All methods on the stack up to the first "privileged" caller, as
-   *  created by {@link AccessController.doPrivileged(PrivilegedAction)},
+   *  created by {@link AccessController#doPrivileged(PrivilegedAction)},
    *  are from system classes</li>
    * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
    * </ul>
@@ -248,7 +248,7 @@ public class SecurityManager
    * <ul>
    * <li>All methods on the stack are from system classes</li>
    * <li>All methods on the stack up to the first "privileged" caller, as
-   *  created by {@link AccessController.doPrivileged(PrivilegedAction)},
+   *  created by {@link AccessController#doPrivileged(PrivilegedAction)},
    *  are from system classes</li>
    * <li>A check of <code>java.security.AllPermission</code> succeeds.</li>
    * </ul>
@@ -425,7 +425,7 @@ public class SecurityManager
    * @throws SecurityException if permission is denied
    * @throws NullPointerException if g is null
    * @see Thread#Thread()
-   * @see ThreadGroup#ThreadGroup()
+   * @see ThreadGroup#ThreadGroup(String)
    * @see ThreadGroup#stop()
    * @see ThreadGroup#suspend()
    * @see ThreadGroup#resume()
@@ -531,7 +531,7 @@ public class SecurityManager
    * @throws NullPointerException if filename is null
    * @see File
    * @see FileInputStream#FileInputStream(String)
-   * @see RandomAccessFile#RandomAccessFile(String)
+   * @see RandomAccessFile#RandomAccessFile(String, String)
    */
   public void checkRead(String filename)
   {
@@ -598,9 +598,9 @@ public class SecurityManager
    * @see File
    * @see File#canWrite()
    * @see File#mkdir()
-   * @see File#renameTo()
+   * @see File#renameTo(File)
    * @see FileOutputStream#FileOutputStream(String)
-   * @see RandomAccessFile#RandomAccessFile(String)
+   * @see RandomAccessFile#RandomAccessFile(String, String)
    */
   public void checkWrite(String filename)
   {
@@ -819,7 +819,7 @@ public class SecurityManager
    * @param window the window to create
    * @return true if there is permission to show the window without warning
    * @throws NullPointerException if window is null
-   * @see Window#Window(Frame)
+   * @see java.awt.Window#Window(java.awt.Frame)
    */
   public boolean checkTopLevelWindow(Object window)
   {
@@ -844,7 +844,7 @@ public class SecurityManager
    * an exception.
    *
    * @throws SecurityException if permission is denied
-   * @see Toolkit#getPrintJob(Frame, String, Properties)
+   * @see java.awt.Toolkit#getPrintJob(java.awt.Frame, String, Properties)
    * @since 1.1
    */
   public void checkPrintJobAccess()
@@ -860,7 +860,7 @@ public class SecurityManager
    * rather than throwing an exception.
    *
    * @throws SecurityException if permission is denied
-   * @see Toolkit#getSystemClipboard()
+   * @see java.awt.Toolkit#getSystemClipboard()
    * @since 1.1
    */
   public void checkSystemClipboardAccess()
@@ -876,7 +876,7 @@ public class SecurityManager
    * rather than throwing an exception.
    *
    * @throws SecurityException if permission is denied
-   * @see Toolkit#getSystemEventQueue()
+   * @see java.awt.Toolkit#getSystemEventQueue()
    * @since 1.1
    */
   public void checkAwtEventQueueAccess()
@@ -1020,7 +1020,7 @@ public class SecurityManager
    * <code>RuntimePermission(permission + packageName)</code>.
    *
    * @param packageName the package name to check access to
-   * @param restriction the list of restrictions, after "package."
+   * @param restriction "package.access" or "package.definition"
    * @param permission the base permission, including the '.'
    * @throws SecurityException if permission is denied
    * @throws NullPointerException if packageName is null
