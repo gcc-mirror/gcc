@@ -287,12 +287,13 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	java/lang/reflect/natField.cc java/lang/reflect/natMethod.cc \
 	java/net/natVMNetworkInterface.cc java/net/natInetAddress.cc \
 	java/nio/channels/natVMChannels.cc \
-	java/nio/natDirectByteBufferImpl.cc java/text/natCollator.cc \
-	java/util/natResourceBundle.cc java/util/natVMTimeZone.cc \
-	java/util/logging/natLogger.cc java/util/zip/natDeflater.cc \
-	java/util/zip/natInflater.cc boehm.cc nogc.cc posix.cc \
-	win32.cc darwin.cc posix-threads.cc win32-threads.cc \
-	no-threads.cc
+	java/nio/natDirectByteBufferImpl.cc \
+	java/security/natVMAccessController.cc \
+	java/text/natCollator.cc java/util/natResourceBundle.cc \
+	java/util/natVMTimeZone.cc java/util/logging/natLogger.cc \
+	java/util/zip/natDeflater.cc java/util/zip/natInflater.cc \
+	boehm.cc nogc.cc posix.cc win32.cc darwin.cc posix-threads.cc \
+	win32-threads.cc no-threads.cc
 am__objects_2 = gnu/classpath/natSystemProperties.lo \
 	gnu/gcj/natCore.lo gnu/gcj/convert/JIS0208_to_Unicode.lo \
 	gnu/gcj/convert/JIS0212_to_Unicode.lo \
@@ -328,10 +329,11 @@ am__objects_2 = gnu/classpath/natSystemProperties.lo \
 	java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
 	java/net/natVMNetworkInterface.lo java/net/natInetAddress.lo \
 	java/nio/channels/natVMChannels.lo \
-	java/nio/natDirectByteBufferImpl.lo java/text/natCollator.lo \
-	java/util/natResourceBundle.lo java/util/natVMTimeZone.lo \
-	java/util/logging/natLogger.lo java/util/zip/natDeflater.lo \
-	java/util/zip/natInflater.lo
+	java/nio/natDirectByteBufferImpl.lo \
+	java/security/natVMAccessController.lo \
+	java/text/natCollator.lo java/util/natResourceBundle.lo \
+	java/util/natVMTimeZone.lo java/util/logging/natLogger.lo \
+	java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
 @USING_BOEHMGC_TRUE@am__objects_3 = boehm.lo
 @USING_NOGC_TRUE@am__objects_4 = nogc.lo
 @USING_POSIX_PLATFORM_TRUE@am__objects_5 = posix.lo
@@ -616,6 +618,7 @@ bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
 build_cpu = @build_cpu@
+build_libsubdir = @build_libsubdir@
 build_os = @build_os@
 build_subdir = @build_subdir@
 build_vendor = @build_vendor@
@@ -4158,7 +4161,7 @@ java_rmi_server_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(
 java_security_source_files = \
 classpath/java/security/AccessControlContext.java \
 classpath/java/security/AccessControlException.java \
-java/security/AccessController.java \
+classpath/java/security/AccessController.java \
 classpath/java/security/AlgorithmParameterGenerator.java \
 classpath/java/security/AlgorithmParameterGeneratorSpi.java \
 classpath/java/security/AlgorithmParameters.java \
@@ -4223,6 +4226,7 @@ classpath/java/security/SignedObject.java \
 classpath/java/security/Signer.java \
 classpath/java/security/UnrecoverableKeyException.java \
 classpath/java/security/UnresolvedPermission.java \
+java/security/VMAccessController.java \
 java/security/VMSecureRandom.java
 
 java_security_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_source_files)))
@@ -7136,6 +7140,7 @@ java/net/natVMNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/nio/channels/natVMChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \
+java/security/natVMAccessController.cc \
 java/text/natCollator.cc \
 java/util/natResourceBundle.cc \
 java/util/natVMTimeZone.cc \
@@ -7625,6 +7630,14 @@ java/nio/$(DEPDIR)/$(am__dirstamp):
 	@: > java/nio/$(DEPDIR)/$(am__dirstamp)
 java/nio/natDirectByteBufferImpl.lo: java/nio/$(am__dirstamp) \
 	java/nio/$(DEPDIR)/$(am__dirstamp)
+java/security/$(am__dirstamp):
+	@$(mkdir_p) java/security
+	@: > java/security/$(am__dirstamp)
+java/security/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) java/security/$(DEPDIR)
+	@: > java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/natVMAccessController.lo: java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
 java/text/$(am__dirstamp):
 	@$(mkdir_p) java/text
 	@: > java/text/$(am__dirstamp)
@@ -7926,6 +7939,8 @@ mostlyclean-compile:
 	-rm -f java/nio/channels/natVMChannels.lo
 	-rm -f java/nio/natDirectByteBufferImpl.$(OBJEXT)
 	-rm -f java/nio/natDirectByteBufferImpl.lo
+	-rm -f java/security/natVMAccessController.$(OBJEXT)
+	-rm -f java/security/natVMAccessController.lo
 	-rm -f java/text/natCollator.$(OBJEXT)
 	-rm -f java/text/natCollator.lo
 	-rm -f java/util/logging/natLogger.$(OBJEXT)
@@ -8042,6 +8057,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natVMNetworkInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/natDirectByteBufferImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/channels/$(DEPDIR)/natVMChannels.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/security/$(DEPDIR)/natVMAccessController.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/text/$(DEPDIR)/natCollator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/natResourceBundle.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/natVMTimeZone.Plo@am__quote@
@@ -8317,6 +8333,7 @@ clean-libtool:
 	-rm -rf java/net/.libs java/net/_libs
 	-rm -rf java/nio/.libs java/nio/_libs
 	-rm -rf java/nio/channels/.libs java/nio/channels/_libs
+	-rm -rf java/security/.libs java/security/_libs
 	-rm -rf java/text/.libs java/text/_libs
 	-rm -rf java/util/.libs java/util/_libs
 	-rm -rf java/util/logging/.libs java/util/logging/_libs
@@ -8739,6 +8756,8 @@ distclean-generic:
 	-rm -f java/nio/$(am__dirstamp)
 	-rm -f java/nio/channels/$(DEPDIR)/$(am__dirstamp)
 	-rm -f java/nio/channels/$(am__dirstamp)
+	-rm -f java/security/$(DEPDIR)/$(am__dirstamp)
+	-rm -f java/security/$(am__dirstamp)
 	-rm -f java/text/$(DEPDIR)/$(am__dirstamp)
 	-rm -f java/text/$(am__dirstamp)
 	-rm -f java/util/$(DEPDIR)/$(am__dirstamp)
@@ -8760,7 +8779,7 @@ clean-am: clean-binPROGRAMS clean-dbexecLTLIBRARIES clean-generic \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -8791,7 +8810,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

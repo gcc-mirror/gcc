@@ -5265,7 +5265,7 @@ java/rmi/server.list: $(java_rmi_server_source_files)
 java_security_source_files = \
 classpath/java/security/AccessControlContext.java \
 classpath/java/security/AccessControlException.java \
-java/security/AccessController.java \
+classpath/java/security/AccessController.java \
 classpath/java/security/AlgorithmParameterGenerator.java \
 classpath/java/security/AlgorithmParameterGeneratorSpi.java \
 classpath/java/security/AlgorithmParameters.java \
@@ -5330,6 +5330,7 @@ classpath/java/security/SignedObject.java \
 classpath/java/security/Signer.java \
 classpath/java/security/UnrecoverableKeyException.java \
 classpath/java/security/UnresolvedPermission.java \
+java/security/VMAccessController.java \
 java/security/VMSecureRandom.java
 
 java_security_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_source_files)))

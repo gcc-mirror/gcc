@@ -534,3 +534,45 @@ _Jv_StackTrace::GetFirstNonSystemClassLoader ()
   
   return NULL;
 }
+
+JArray<jobjectArray> *
+_Jv_StackTrace::GetClassMethodStack (_Jv_StackTrace *trace)
+{
+  jint length = 0;
+
+  UpdateNCodeMap();
+  for (int i = 0; i < trace->length; i++)
+    {
+      _Jv_StackFrame *frame = &trace->frames[i];
+      FillInFrameInfo (frame);
+
+      if (frame->klass && frame->meth)
+	length++;
+    }
+
+  jclass array_class = _Jv_GetArrayClass (&::java::lang::Object::class$, NULL);
+  JArray<jobjectArray> *result =
+    (JArray<jobjectArray> *) _Jv_NewObjectArray (2, array_class, NULL);
+  JArray<jclass> *classes = (JArray<jclass> *)
+    _Jv_NewObjectArray (length, &::java::lang::Class::class$, NULL);
+  JArray<jstring> *methods = (JArray<jstring> *)
+    _Jv_NewObjectArray (length, &::java::lang::String::class$, NULL);
+  jclass  *c = elements (classes);
+  jstring *m = elements (methods);
+
+  for (int i = 0, j = 0; i < trace->length; i++)
+    {
+      _Jv_StackFrame *frame = &trace->frames[i];
+      if (!frame->klass || !frame->meth)
+	continue;
+      c[j] = frame->klass;
+      m[j] = JvNewStringUTF (frame->meth->name->chars());
+      j++;
+    }
+
+  jobjectArray *elems = elements (result);
+  elems[0] = (jobjectArray) classes;
+  elems[1] = (jobjectArray) methods;
+
+  return result;
+}

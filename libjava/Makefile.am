@@ -826,6 +826,7 @@ java/net/natVMNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/nio/channels/natVMChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \
+java/security/natVMAccessController.cc \
 java/text/natCollator.cc \
 java/util/natResourceBundle.cc \
 java/util/natVMTimeZone.cc \

@@ -1,4 +1,16 @@
 2006-07-28  Gary Benson  <gbenson@redhat.com>
+	    Casey Marshall <csm@gnu.org>
+
+	PR libgcj/13604:
+	* include/java-stack.h (GetClassMethodStack): Declare.
+	* stacktrace.cc (GetClassMethodStack): New method.
+	* java/security/AccessController.java: Removed.
+	* java/security/VMAccessController.java: New file.
+	* java/security/natVMAccessController.cc: Likewise.
+	* Makefile.am (nat_source_files): Added the above.
+	* sources.am, Makefile.in: Rebuilt.
+
+2006-07-28  Gary Benson  <gbenson@redhat.com>
 
 	* java/lang/SecurityManager.java (currentClassLoader,
 	currentLoadedClass, classLoaderDepth, checkAccess, checkRead,
