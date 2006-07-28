@@ -298,30 +298,30 @@ java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 java/buffer.o: java/buffer.c $(CONFIG_H) java/buffer.h $(SYSTEM_H) coretypes.h \
   $(TM_H) toplev.h
 java/builtins.o: java/builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(JAVA_TREE_H) $(GGC_H) flags.h langhooks.h gt-java-builtins.h
+  $(JAVA_TREE_H) $(GGC_H) $(FLAGS_H) langhooks.h gt-java-builtins.h
 java/check-init.o: java/check-init.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h
 java/class.o: java/class.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(RTL_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
-  $(TARGET_H) function.h gt-java-class.h cgraph.h
+  $(TARGET_H) $(FUNCTION_H) gt-java-class.h $(CGRAPH_H)
 java/constants.o: java/constants.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-constants.h
 java/decl.o: java/decl.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) java/jcf.h \
-  toplev.h flags.h $(SYSTEM_H) coretypes.h $(TM_H) function.h $(EXPR_H) \
-  libfuncs.h except.h java/java-except.h $(GGC_H) real.h gt-java-decl.h \
-  $(TARGET_H) cgraph.h
-java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h real.h \
+  toplev.h $(FLAGS_H) $(SYSTEM_H) coretypes.h $(TM_H) $(FUNCTION_H) $(EXPR_H) \
+  libfuncs.h except.h java/java-except.h $(GGC_H) $(REAL_H) gt-java-decl.h \
+  $(TARGET_H) $(CGRAPH_H)
+java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
   $(RTL_H) java/javaop.h java/java-opcodes.h except.h java/java-except.h \
-  toplev.h $(SYSTEM_H) coretypes.h $(TM_H) function.h 
-java/expr.o: java/expr.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h real.h \
+  toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(FUNCTION_H) 
+java/expr.o: java/expr.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
   $(RTL_H) $(EXPR_H) java/javaop.h java/java-opcodes.h except.h \
   java/java-except.h java/java-except.h java/parse.h toplev.h \
   $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-expr.h $(TARGET_H)
 java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) java/jcf.h
-java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) flags.h \
+java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(FLAGS_H) \
   input.h java/java-except.h $(SYSTEM_H) coretypes.h $(TM_H) toplev.h \
-  java/parse.h $(GGC_H) debug.h real.h gt-java-jcf-parse.h $(TM_P_H)
+  java/parse.h $(GGC_H) debug.h $(REAL_H) gt-java-jcf-parse.h $(TM_P_H)
 java/jcf-write.o: java/jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   $(RTL_H) java/java-opcodes.h java/parse.h java/buffer.h $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-jcf-write.h $(TM_P_H)
@@ -330,7 +330,7 @@ java/jv-scan.o: java/jv-scan.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) intl.h
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
-  toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(EXPR_H) diagnostic.h \
+  toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(EXPR_H) $(DIAGNOSTIC_H) \
   langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h opts.h options.h
 java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-mangle.h $(LANGHOOKS_DEF_H)
@@ -338,9 +338,9 @@ java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(GGC_H)
 java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(RTL_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
-  $(TARGET_H) function.h gt-java-resource.h $(EXPR_H)
+  $(TARGET_H) $(FUNCTION_H) gt-java-resource.h $(EXPR_H)
 java/typeck.o: java/typeck.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
-  java/convert.h toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) real.h
+  java/convert.h toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) $(REAL_H)
 java/win32-host.o: java/win32-host.c $(CONFIG_H) $(SYSTEM_H) coretypes.h java/jcf.h
 java/verify-glue.o: java/verify-glue.c $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) \
   coretypes.h $(TM_H) java/verify.h toplev.h
@@ -349,12 +349,12 @@ java/verify-impl.o: java/verify-impl.c $(CONFIG_H) java/verify.h $(SYSTEM_H) \
 java/zextract.o: java/zextract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   java/zipfile.h
 java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) $(JAVA_TREE_H) tree-gimple.h toplev.h
+  coretypes.h $(TM_H) $(JAVA_TREE_H) $(TREE_GIMPLE_H) toplev.h
 
 java/parse-scan.o: java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(JAVA_LEX_C) java/parse.h java/lex.h input.h
 java/parse.o: java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(TM_H) function.h $(JAVA_TREE_H) $(JAVA_LEX_C) java/parse.h \
+  coretypes.h $(TM_H) $(FUNCTION_H) $(JAVA_TREE_H) $(JAVA_LEX_C) java/parse.h \
   java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h $(TARGET_H) \
   $(TREE_DUMP_H)
 
