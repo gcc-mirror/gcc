@@ -1,3 +1,8 @@
+2006-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* Makefile.in: Use $(HEADER_H) instead of header.h in dependencies
+	and variables used in dependencies.
+
 2006-07-27  Arjan van de Ven <arjan@linux.intel.com>
 
 	* config/i386/i386.md (stack_tls_protect_set_di) Use %gs rather than

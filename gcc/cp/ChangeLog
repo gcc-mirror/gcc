@@ -1,3 +1,7 @@
+2006-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* Make-lang.in: Use $(HEADER_H) instead of header.h in dependencies.
+
 2006-07-28  Lee Millward  <lee.millward@codesourcery.com>
 
         PR c++/27668
