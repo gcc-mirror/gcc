@@ -411,6 +411,7 @@ get_internal_unit (st_parameter_dt *dtp)
   iunit->flags.form = FORM_FORMATTED;
   iunit->flags.pad = PAD_YES;
   iunit->flags.status = STATUS_UNSPECIFIED;
+  iunit->endfile = NO_ENDFILE;
 
   /* Initialize the data transfer parameters.  */
 
