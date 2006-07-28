@@ -43,7 +43,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
   // XXX When we get typedef templates these class definitions
   // will be unnecessary.
-
   template<class Value,
 	   class Hash = hash<Value>,
 	   class Pred = std::equal_to<Value>,
@@ -51,17 +50,17 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool cache_hash_code = false>
     class unordered_set
     : public hashtable<Value, Value, Alloc,
-		       Internal::identity<Value>, Pred,
-		       Hash, Internal::mod_range_hashing,
-		       Internal::default_ranged_hash,
-		       Internal::prime_rehash_policy,
+		       detail::identity<Value>, Pred,
+		       Hash, detail::mod_range_hashing,
+		       detail::default_ranged_hash,
+		       detail::prime_rehash_policy,
 		       cache_hash_code, true, true>
     {
       typedef hashtable<Value, Value, Alloc,
-			Internal::identity<Value>, Pred,
-			Hash, Internal::mod_range_hashing,
-			Internal::default_ranged_hash,
-			Internal::prime_rehash_policy,
+			detail::identity<Value>, Pred,
+			Hash, detail::mod_range_hashing,
+			detail::default_ranged_hash,
+			detail::prime_rehash_policy,
 			cache_hash_code, true, true>
         Base;
 
@@ -76,9 +75,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		    const hasher& hf = hasher(),
 		    const key_equal& eql = key_equal(),
 		    const allocator_type& a = allocator_type())
-      : Base (n, hf, Internal::mod_range_hashing(),
-	      Internal::default_ranged_hash(),
-	      eql, Internal::identity<Value>(), a)
+      : Base(n, hf, detail::mod_range_hashing(),
+	     detail::default_ranged_hash(),
+	     eql, detail::identity<Value>(), a)
       { }
 
       template<typename InputIterator>
@@ -87,9 +86,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		      const hasher& hf = hasher(), 
 		      const key_equal& eql = key_equal(), 
 		      const allocator_type& a = allocator_type())
-	: Base (f, l, n, hf, Internal::mod_range_hashing(),
-		Internal::default_ranged_hash(),
-		eql, Internal::identity<Value>(), a)
+	: Base(f, l, n, hf, detail::mod_range_hashing(),
+	       detail::default_ranged_hash(),
+	       eql, detail::identity<Value>(), a)
         { }
     };
 
@@ -100,17 +99,17 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool cache_hash_code = false>
     class unordered_multiset
     : public hashtable <Value, Value, Alloc,
-			Internal::identity<Value>, Pred,
-			Hash, Internal::mod_range_hashing,
-			Internal::default_ranged_hash,
-			Internal::prime_rehash_policy,
+			detail::identity<Value>, Pred,
+			Hash, detail::mod_range_hashing,
+			detail::default_ranged_hash,
+			detail::prime_rehash_policy,
 			cache_hash_code, true, false>
     {
       typedef hashtable<Value, Value, Alloc,
-			Internal::identity<Value>, Pred,
-			Hash, Internal::mod_range_hashing,
-			Internal::default_ranged_hash,
-			Internal::prime_rehash_policy,
+			detail::identity<Value>, Pred,
+			Hash, detail::mod_range_hashing,
+			detail::default_ranged_hash,
+			detail::prime_rehash_policy,
 			cache_hash_code, true, false>
         Base;
 
@@ -125,9 +124,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			 const hasher& hf = hasher(),
 			 const key_equal& eql = key_equal(),
 			 const allocator_type& a = allocator_type())
-      : Base (n, hf, Internal::mod_range_hashing(),
-	      Internal::default_ranged_hash(),
-	      eql, Internal::identity<Value>(), a)
+      : Base(n, hf, detail::mod_range_hashing(),
+	     detail::default_ranged_hash(),
+	     eql, detail::identity<Value>(), a)
       { }
 
 
@@ -137,9 +136,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			   const hasher& hf = hasher(), 
 			   const key_equal& eql = key_equal(), 
 			   const allocator_type& a = allocator_type())
-	: Base (f, l, n, hf, Internal::mod_range_hashing(),
-		Internal::default_ranged_hash(), eql,
-		Internal::identity<Value>(), a)
+	: Base(f, l, n, hf, detail::mod_range_hashing(),
+	       detail::default_ranged_hash(), eql,
+	       detail::identity<Value>(), a)
         { }
     };
 

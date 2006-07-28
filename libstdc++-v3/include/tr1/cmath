@@ -146,21 +146,6 @@
 #undef truncf
 #undef truncl
 
-// Workaround for c++/21682.
-namespace __gnu_internal
-{
-  template<typename _Tp, typename _Up>
-    inline typename
-    std::__enable_if<typename std::tr1::__promote_2<_Tp, _Up>::__type,
-		     (std::__is_floating<_Tp>::__value
-		      || std::__is_floating<_Up>::__value)>::__type
-    atan2(_Tp __y, _Up __x)
-    {
-      typedef typename std::tr1::__promote_2<_Tp, _Up>::__type __type;
-      return std::atan2(__type(__y), __type(__x));
-    }
-}
-
 #endif
 
 // namespace std::tr1
@@ -381,10 +366,24 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     }
 
   using std::atan;
-  using std::atan2;
 
   // Workaround for c++/21682.
-  using __gnu_internal::atan2;
+  namespace detail
+  {
+    template<typename _Tp, typename _Up>
+    inline typename
+    std::__enable_if<typename std::tr1::__promote_2<_Tp, _Up>::__type,
+		     (std::__is_floating<_Tp>::__value
+		      || std::__is_floating<_Up>::__value)>::__type
+		      atan2(_Tp __y, _Up __x)
+    {
+      typedef typename std::tr1::__promote_2<_Tp, _Up>::__type __type;
+      return std::atan2(__type(__y), __type(__x));
+    }
+  } // namespace detail
+
+  using std::atan2;
+  using detail::atan2;
 
   inline float
   atanh(float __x)

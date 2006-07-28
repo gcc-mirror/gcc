@@ -34,7 +34,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   /*
    * Implementation-space details.
    */
-  namespace _Private
+  namespace
   {
     // General case for x = (ax + c) mod m -- use Schrage's algorithm to avoid
     // integer overflow.
@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       { typedef unsigned long long _Type; };
 #endif
 
-  } // namespace _Private
+  } // anonymous namespace
 
 
   /**
@@ -136,11 +136,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     linear_congruential<_UIntType, __a, __c, __m>::
     seed(unsigned long __x0)
     {
-      if ((_Private::__mod<_UIntType, 1, 0, __m>(__c) == 0)
-	  && (_Private::__mod<_UIntType, 1, 0, __m>(__x0) == 0))
-	_M_x = _Private::__mod<_UIntType, 1, 0, __m>(1);
+      if ((__mod<_UIntType, 1, 0, __m>(__c) == 0)
+	  && (__mod<_UIntType, 1, 0, __m>(__x0) == 0))
+	_M_x = __mod<_UIntType, 1, 0, __m>(1);
       else
-	_M_x = _Private::__mod<_UIntType, 1, 0, __m>(__x0);
+	_M_x = __mod<_UIntType, 1, 0, __m>(__x0);
     }
 
   /**
@@ -153,11 +153,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       seed(_Gen& __g, false_type)
       {
 	_UIntType __x0 = __g();
-	if ((_Private::__mod<_UIntType, 1, 0, __m>(__c) == 0)
-	    && (_Private::__mod<_UIntType, 1, 0, __m>(__x0) == 0))
-	  _M_x = _Private::__mod<_UIntType, 1, 0, __m>(1);
+	if ((__mod<_UIntType, 1, 0, __m>(__c) == 0)
+	    && (__mod<_UIntType, 1, 0, __m>(__x0) == 0))
+	  _M_x = __mod<_UIntType, 1, 0, __m>(1);
 	else
-	  _M_x = _Private::__mod<_UIntType, 1, 0, __m>(__x0);
+	  _M_x = __mod<_UIntType, 1, 0, __m>(__x0);
       }
 
   /**
@@ -172,7 +172,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     typename linear_congruential<_UIntType, __a, __c, __m>::result_type
     linear_congruential<_UIntType, __a, __c, __m>::
     min() const
-    { return (_Private::__mod<_UIntType, 1, 0, __m>(__c) == 0) ? 1 : 0; }
+    { return (__mod<_UIntType, 1, 0, __m>(__c) == 0) ? 1 : 0; }
 
   /**
    * Gets the maximum possible value of the generated range.
@@ -193,7 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     linear_congruential<_UIntType, __a, __c, __m>::
     operator()()
     {
-      _M_x = _Private::__mod<_UIntType, __a, __c, __m>(_M_x);
+      _M_x = __mod<_UIntType, __a, __c, __m>(_M_x);
       return _M_x;
     }
 
@@ -240,8 +240,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		     __b, __t, __c, __l>::
     seed(unsigned long __value)
     {
-      _M_x[0] = _Private::__mod<_UIntType, 1, 0,
-	_Private::_Shift<_UIntType, __w>::__value>(__value);
+      _M_x[0] = __mod<_UIntType, 1, 0,
+	_Shift<_UIntType, __w>::__value>(__value);
 
       for (int __i = 1; __i < state_size; ++__i)
 	{
@@ -249,8 +249,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  __x ^= __x >> (__w - 2);
 	  __x *= 1812433253ul;
 	  __x += __i;
-	  _M_x[__i] = _Private::__mod<_UIntType, 1, 0,
-	    _Private::_Shift<_UIntType, __w>::__value>(__x);	  
+	  _M_x[__i] = __mod<_UIntType, 1, 0,
+	    _Shift<_UIntType, __w>::__value>(__x);	  
 	}
       _M_p = state_size;
     }
@@ -265,8 +265,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       seed(_Gen& __gen, false_type)
       {
 	for (int __i = 0; __i < state_size; ++__i)
-	  _M_x[__i] = _Private::__mod<_UIntType, 1, 0,
-	    _Private::_Shift<_UIntType, __w>::__value>(__gen());
+	  _M_x[__i] = __mod<_UIntType, 1, 0,
+	    _Shift<_UIntType, __w>::__value>(__gen());
 	_M_p = state_size;
       }
 
@@ -376,7 +376,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	__lcg(__value);
 
       for (int __i = 0; __i < long_lag; ++__i)
-	_M_x[__i] = _Private::__mod<_IntType, 1, 0, modulus>(__lcg());
+	_M_x[__i] = __mod<_IntType, 1, 0, modulus>(__lcg());
 
       _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
       _M_p = 0;
@@ -390,10 +390,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       {
 	const int __n = (std::numeric_limits<_IntType>::digits + 31) / 32;
 
-	typedef typename _Private::_Select<(sizeof(unsigned) == 4),
+	typedef typename _Select<(sizeof(unsigned) == 4),
 	  unsigned, unsigned long>::_Type _UInt32Type;
 
-	typedef typename _Private::_To_Unsigned_Type<_IntType>::_Type
+	typedef typename _To_Unsigned_Type<_IntType>::_Type
 	  _UIntType;
 
 	for (int __i = 0; __i < long_lag; ++__i)
@@ -402,11 +402,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    _UIntType __factor = 1;
 	    for (int __j = 0; __j < __n; ++__j)
 	      {
-		__tmp += (_Private::__mod<_UInt32Type, 1, 0, 0>(__gen())
+		__tmp += (__mod<_UInt32Type, 1, 0, 0>(__gen())
 			  * __factor);
-		__factor *= _Private::_Shift<_UIntType, 32>::__value;
+		__factor *= _Shift<_UIntType, 32>::__value;
 	      }
-	    _M_x[__i] = _Private::__mod<_UIntType, 1, 0, modulus>(__tmp);
+	    _M_x[__i] = __mod<_UIntType, 1, 0, modulus>(__tmp);
 	  }
 	_M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
 	_M_p = 0;
@@ -622,7 +622,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::streamsize __precision = __os.precision();
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(_Private::_Max_digits10<double>::__value);
+      __os.precision(_Max_digits10<double>::__value);
 
       __os << __x.p();
 
@@ -644,7 +644,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::streamsize __precision = __os.precision();
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(_Private::_Max_digits10<_RealType>::__value);
+      __os.precision(_Max_digits10<_RealType>::__value);
 
       __os << __x.p();
 
@@ -666,7 +666,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const _CharT __space = __os.widen(' ');
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__space);
-      __os.precision(_Private::_Max_digits10<_RealType>::__value);
+      __os.precision(_Max_digits10<_RealType>::__value);
 
       __os << __x.min() << __space << __x.max();
 
@@ -701,7 +701,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::streamsize __precision = __os.precision();
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(_Private::_Max_digits10<_RealType>::__value);
+      __os.precision(_Max_digits10<_RealType>::__value);
 
       __os << __x.lambda();
 
@@ -764,7 +764,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const _CharT __space = __os.widen(' ');
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__space);
-      __os.precision(_Private::_Max_digits10<_RealType>::__value);
+      __os.precision(_Max_digits10<_RealType>::__value);
 
       __os << __x.mean() << __space
 	   << __x.sigma() << __space
@@ -872,7 +872,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::streamsize __precision = __os.precision();
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(_Private::_Max_digits10<_RealType>::__value);
+      __os.precision(_Max_digits10<_RealType>::__value);
 
       __os << __x.alpha();
 

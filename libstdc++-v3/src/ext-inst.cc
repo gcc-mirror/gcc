@@ -34,14 +34,12 @@
 #include <ext/rope>
 #include <ext/stdio_filebuf.h>
 
-namespace __gnu_internal _GLIBCXX_VISIBILITY(hidden)
+namespace
 {
-  const int min_len = __gnu_cxx::_Rope_constants::_S_max_rope_depth + 1;
+  const int min_len = _S_max_rope_depth + 1;
 }
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
-
-  using namespace __gnu_internal;
 
   template
     const unsigned long 

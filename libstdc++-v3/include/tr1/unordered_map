@@ -43,29 +43,26 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
   // XXX When we get typedef templates these class definitions
   // will be unnecessary.
-
   template<class Key, class T,
 	   class Hash = hash<Key>,
 	   class Pred = std::equal_to<Key>,
 	   class Alloc = std::allocator<std::pair<const Key, T> >,
 	   bool cache_hash_code = false>
     class unordered_map
-    : public hashtable <Key, std::pair<const Key, T>,
-			Alloc,
-			Internal::extract1st<std::pair<const Key, T> >, Pred,
-			Hash, Internal::mod_range_hashing,
-			Internal::default_ranged_hash,
-			Internal::prime_rehash_policy,
-			cache_hash_code, false, true>
+    : public hashtable<Key, std::pair<const Key, T>, Alloc,
+		       detail::extract1st<std::pair<const Key, T> >, Pred, 
+		       Hash, detail::mod_range_hashing,
+		       detail::default_ranged_hash,
+		       detail::prime_rehash_policy,
+		       cache_hash_code, false, true>
     {
-      typedef hashtable <Key, std::pair<const Key, T>,
-			 Alloc,
-			 Internal::extract1st<std::pair<const Key, T> >, Pred,
-			 Hash, Internal::mod_range_hashing,
-			 Internal::default_ranged_hash,
-			 Internal::prime_rehash_policy,
-			 cache_hash_code, false, true>
-        Base;
+      typedef hashtable<Key, std::pair<const Key, T>, Alloc,
+			detail::extract1st<std::pair<const Key, T> >, Pred,
+			Hash, detail::mod_range_hashing,
+			detail::default_ranged_hash,
+			detail::prime_rehash_policy,
+			cache_hash_code, false, true>
+      Base;
 
     public:
       typedef typename Base::size_type size_type;
@@ -78,9 +75,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		    const hasher& hf = hasher(),
 		    const key_equal& eql = key_equal(),
 		    const allocator_type& a = allocator_type())
-      : Base(n, hf, Internal::mod_range_hashing(),
-	     Internal::default_ranged_hash(),
-	     eql, Internal::extract1st<std::pair<const Key, T> >(), a)
+      : Base(n, hf, detail::mod_range_hashing(),
+	     detail::default_ranged_hash(),
+	     eql, detail::extract1st<std::pair<const Key, T> >(), a)
       { }
 
       template<typename InputIterator>
@@ -89,9 +86,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		      const hasher& hf = hasher(), 
 		      const key_equal& eql = key_equal(), 
 		      const allocator_type& a = allocator_type())
-	: Base (f, l, n, hf, Internal::mod_range_hashing(),
-		Internal::default_ranged_hash(),
-		eql, Internal::extract1st<std::pair<const Key, T> >(), a)
+	: Base (f, l, n, hf, detail::mod_range_hashing(),
+		detail::default_ranged_hash(),
+		eql, detail::extract1st<std::pair<const Key, T> >(), a)
 	{ }
     };
   
@@ -103,18 +100,18 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     class unordered_multimap
     : public hashtable <Key, std::pair<const Key, T>,
 			Alloc,
-			Internal::extract1st<std::pair<const Key, T> >, Pred,
-			Hash, Internal::mod_range_hashing,
-			Internal::default_ranged_hash,
-			Internal::prime_rehash_policy,
+			detail::extract1st<std::pair<const Key, T> >, Pred,
+			Hash, detail::mod_range_hashing,
+			detail::default_ranged_hash,
+			detail::prime_rehash_policy,
 			cache_hash_code, false, false>
     {
       typedef hashtable <Key, std::pair<const Key, T>,
 			 Alloc,
-			 Internal::extract1st<std::pair<const Key, T> >, Pred,
-			 Hash, Internal::mod_range_hashing,
-			 Internal::default_ranged_hash,
-			 Internal::prime_rehash_policy,
+			 detail::extract1st<std::pair<const Key, T> >, Pred,
+			 Hash, detail::mod_range_hashing,
+			 detail::default_ranged_hash,
+			 detail::prime_rehash_policy,
 			 cache_hash_code, false, false>
         Base;
 
@@ -129,9 +126,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			 const hasher& hf = hasher(),
 			 const key_equal& eql = key_equal(),
 			 const allocator_type& a = allocator_type())
-      : Base (n, hf, Internal::mod_range_hashing(),
-	      Internal::default_ranged_hash(),
-	      eql, Internal::extract1st<std::pair<const Key, T> >(), a)
+      : Base (n, hf, detail::mod_range_hashing(),
+	      detail::default_ranged_hash(),
+	      eql, detail::extract1st<std::pair<const Key, T> >(), a)
       { }
 
 
@@ -141,9 +138,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			   const hasher& hf = hasher(), 
 			   const key_equal& eql = key_equal(), 
 			   const allocator_type& a = allocator_type())
-	: Base (f, l, n, hf, Internal::mod_range_hashing(),
-		Internal::default_ranged_hash(),
-		eql, Internal::extract1st<std::pair<const Key, T> >(), a)
+	: Base (f, l, n, hf, detail::mod_range_hashing(),
+		detail::default_ranged_hash(),
+		eql, detail::extract1st<std::pair<const Key, T> >(), a)
         { }
     };
 
