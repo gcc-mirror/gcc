@@ -11,4 +11,4 @@ template <int> struct A
     template <B> struct C {};	// { dg-error "not a valid type" }
 };
 
-A<0> a;				// { dg-error "instantiated" }
+A<0> a;
