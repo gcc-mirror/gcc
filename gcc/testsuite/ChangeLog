@@ -1,3 +1,14 @@
+2006-07-28  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/27668
+        * g++.dg/template/crash55.C: New test.
+
+        PR c++/27962
+        * g++.dg/template/nontype16.C: New test.
+
+        * g++.dg/template/void2.C: Adjust error markers.
+        * g++.dg/template/nontype5.C: Adjust error markers.
+	
 2006-07-27  Arjan van de Ven <arjan@linux.intel.com>
 
 	* gcc.target/i386/stack-prot-kernel.c: New test.

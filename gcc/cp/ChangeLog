@@ -1,3 +1,18 @@
+2006-07-28  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/27668
+        PR c++/27962
+        * pt.c (process_template_parm) Store invalid template
+        parameters as error_mark_node in the paramater list.
+        (push_inline_template_parms_recursive): Handle invalid
+        template parameters.
+        (comp_template_parms): Likewise.
+        (check_default_tmpl_arg): Likewise.
+        (coerce_template_template_parms): Likewise.
+        (mangle_class_name_for_template): Likewise.
+        (tsubst_template_parms): Likewise.
+        * error.c (dump_template_argument_list): Likewise.
+	
 2006-07-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cp-tree.h: Fix a comment typo.
