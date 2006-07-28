@@ -1,5 +1,13 @@
 2006-07-28  Gary Benson  <gbenson@redhat.com>
 
+	* java/lang/SecurityManager.java (currentClassLoader,
+	currentLoadedClass, classLoaderDepth, checkAccess, checkRead,
+	checkWrite, checkTopLevelWindow, checkPrintJobAccess,
+	checkSystemClipboardAccess, checkAwtEventQueueAccess,
+	checkPackageList): Remerged javadoc.
+
+2006-07-28  Gary Benson  <gbenson@redhat.com>
+
 	* prims.cc (_Jv_CreateJavaVM): Move setting runtimeInitialized
 	from the start to the end of the function.  Remove references
 	to VMThrowable.trace_enabled.
