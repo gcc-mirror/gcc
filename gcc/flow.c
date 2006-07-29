@@ -1564,8 +1564,16 @@ allocate_bb_life_data (void)
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
-      bb->il.rtl->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
-      bb->il.rtl->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
+      if (bb->il.rtl->global_live_at_start)
+	{
+	  CLEAR_REG_SET (bb->il.rtl->global_live_at_start);
+	  CLEAR_REG_SET (bb->il.rtl->global_live_at_end);
+	}
+      else
+	{
+	  bb->il.rtl->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
+	  bb->il.rtl->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
+	}
     }
 
   regs_live_at_setjmp = ALLOC_REG_SET (&reg_obstack);

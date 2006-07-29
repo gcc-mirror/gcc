@@ -386,6 +386,13 @@ rtl_delete_block (basic_block b)
   /* Selectively delete the entire chain.  */
   BB_HEAD (b) = NULL;
   delete_insn_chain (insn, end);
+  if (b->il.rtl->global_live_at_start)
+    {
+      FREE_REG_SET (b->il.rtl->global_live_at_start);
+      FREE_REG_SET (b->il.rtl->global_live_at_end);
+      b->il.rtl->global_live_at_start = NULL;
+      b->il.rtl->global_live_at_end = NULL;
+    }
 }
 
 /* Records the basic block struct in BLOCK_FOR_INSN for every insn.  */
