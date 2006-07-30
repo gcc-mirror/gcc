@@ -1229,9 +1229,6 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
       internal_error (&dtp->common, "transfer_array(): Bad type");
     }
 
-  if (desc->dim[0].stride == 0)
-    desc->dim[0].stride = 1;
-
   rank = GFC_DESCRIPTOR_RANK (desc);
   for (n = 0; n < rank; n++)
     {
