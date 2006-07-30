@@ -3850,13 +3850,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      _Temporary_buffer<_RandomAccessIterator, _ValueType>
-	buf(__first, __last);
-      if (buf.begin() == 0)
+      _Temporary_buffer<_RandomAccessIterator, _ValueType> __buf(__first,
+								 __last);
+      if (__buf.begin() == 0)
 	std::__inplace_stable_sort(__first, __last);
       else
-	std::__stable_sort_adaptive(__first, __last, buf.begin(),
-				    _DistanceType(buf.size()));
+	std::__stable_sort_adaptive(__first, __last, __buf.begin(),
+				    _DistanceType(__buf.size()));
     }
 
   /**
@@ -3894,12 +3894,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				  _ValueType>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      _Temporary_buffer<_RandomAccessIterator, _ValueType> buf(__first, __last);
-      if (buf.begin() == 0)
+      _Temporary_buffer<_RandomAccessIterator, _ValueType> __buf(__first,
+								 __last);
+      if (__buf.begin() == 0)
 	std::__inplace_stable_sort(__first, __last, __comp);
       else
-	std::__stable_sort_adaptive(__first, __last, buf.begin(),
-				    _DistanceType(buf.size()), __comp);
+	std::__stable_sort_adaptive(__first, __last, __buf.begin(),
+				    _DistanceType(__buf.size()), __comp);
     }
 
   /**
