@@ -1,3 +1,22 @@
+2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsic.c (add_functions): Add ACCESS, CHMOD, RSHIFT, LSHIFT.
+	(add_subroutines): Add LTIME, GMTIME and CHMOD.
+	* intrinsic.h (gfc_check_access_func, gfc_check_chmod,
+	gfc_check_chmod_sub, gfc_check_ltime_gmtime, gfc_simplify_rshift,
+	gfc_simplify_lshift, gfc_resolve_access, gfc_resolve_chmod,
+	gfc_resolve_rshift, gfc_resolve_lshift, gfc_resolve_chmod_sub,
+	gfc_resolve_gmtime, gfc_resolve_ltime): Add prototypes.
+	* gfortran.h (gfc_generic_isym_id): Add GFC_ISYM_ACCESS,
+	GFC_ISYM_CHMOD, GFC_ISYM_LSHIFT, GFC_ISYM_RSHIFT.
+	* iresolve.c (gfc_resolve_access, gfc_resolve_chmod,
+	gfc_resolve_rshift, gfc_resolve_lshift, gfc_resolve_chmod_sub,
+	gfc_resolve_gmtime, gfc_resolve_ltime): New functions.
+	* check.c (gfc_check_access_func, gfc_check_chmod,
+	gfc_check_chmod_sub, gfc_check_ltime_gmtime): New functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_rlshift): New function.
+	(gfc_conv_intrinsic_function): Add cases for the new GFC_ISYM_*.
+
 2006-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* Make-lang.in: Use $(HEADER_H) instead of header.h in dependencies.

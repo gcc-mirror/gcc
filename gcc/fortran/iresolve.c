@@ -90,6 +90,16 @@ gfc_resolve_abs (gfc_expr * f, gfc_expr * a)
 
 
 void
+gfc_resolve_access (gfc_expr * f, gfc_expr * name ATTRIBUTE_UNUSED,
+	            gfc_expr * mode ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_c_int_kind;
+  f->value.function.name = PREFIX("access_func");
+}
+
+
+void
 gfc_resolve_acos (gfc_expr * f, gfc_expr * x)
 {
   f->ts = x->ts;
@@ -348,6 +358,32 @@ gfc_resolve_chdir_sub (gfc_code * c)
     kind = gfc_default_integer_kind;
 
   name = gfc_get_string (PREFIX("chdir_i%d_sub"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
+gfc_resolve_chmod (gfc_expr * f, gfc_expr * name ATTRIBUTE_UNUSED,
+		   gfc_expr * mode ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_c_int_kind;
+  f->value.function.name = PREFIX("chmod_func");
+}
+
+
+void
+gfc_resolve_chmod_sub (gfc_code * c)
+{
+  const char *name;
+  int kind;
+
+  if (c->ext.actual->next->next->expr != NULL)
+    kind = c->ext.actual->next->next->expr->ts.kind;
+  else
+    kind = gfc_default_integer_kind;
+
+  name = gfc_get_string (PREFIX("chmod_i%d_sub"), kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
@@ -915,6 +951,24 @@ gfc_resolve_ishft (gfc_expr * f, gfc_expr * i, gfc_expr * shift)
   f->ts = i->ts;
   f->value.function.name =
     gfc_get_string ("__ishft_%d_%d", i->ts.kind, shift->ts.kind);
+}
+
+
+void
+gfc_resolve_rshift (gfc_expr * f, gfc_expr * i, gfc_expr * shift)
+{
+  f->ts = i->ts;
+  f->value.function.name =
+    gfc_get_string ("__rshift_%d_%d", i->ts.kind, shift->ts.kind);
+}
+
+
+void
+gfc_resolve_lshift (gfc_expr * f, gfc_expr * i, gfc_expr * shift)
+{
+  f->ts = i->ts;
+  f->value.function.name =
+    gfc_get_string ("__lshift_%d_%d", i->ts.kind, shift->ts.kind);
 }
 
 
@@ -2398,7 +2452,7 @@ gfc_resolve_etime_sub (gfc_code * c)
 }
 
 
-/* G77 compatibility subroutines itime() and idate().  */
+/* G77 compatibility subroutines itime(), idate(), ltime() and gmtime().  */
 
 void
 gfc_resolve_itime (gfc_code * c)
@@ -2408,12 +2462,27 @@ gfc_resolve_itime (gfc_code * c)
 				       gfc_default_integer_kind));
 }
 
-
 void
 gfc_resolve_idate (gfc_code * c)
 {
   c->resolved_sym = gfc_get_intrinsic_sub_symbol
 		      (gfc_get_string (PREFIX("idate_i%d"),
+				       gfc_default_integer_kind));
+}
+
+void
+gfc_resolve_ltime (gfc_code * c)
+{
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol
+		      (gfc_get_string (PREFIX("ltime_i%d"),
+				       gfc_default_integer_kind));
+}
+
+void
+gfc_resolve_gmtime (gfc_code * c)
+{
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol
+		      (gfc_get_string (PREFIX("gmtime_i%d"),
 				       gfc_default_integer_kind));
 }
 

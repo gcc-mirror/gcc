@@ -880,7 +880,7 @@ add_functions (void)
     *x = "x", *sh = "shift", *stg = "string", *ssg = "substring",
     *y = "y", *sz = "size", *sta = "string_a", *stb = "string_b",
     *z = "z", *ln = "len", *ut = "unit", *han = "handler",
-    *num = "number", *tm = "time";
+    *num = "number", *tm = "time", *nm = "name", *md = "mode";
 
   int di, dr, dd, dl, dc, dz, ii;
 
@@ -915,6 +915,12 @@ add_functions (void)
   make_alias ("cdabs", GFC_STD_GNU);
 
   make_generic ("abs", GFC_ISYM_ABS, GFC_STD_F77);
+
+  add_sym_2 ("access", 0, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_access_func, NULL, gfc_resolve_access,
+	     nm, BT_CHARACTER, dc, REQUIRED, md, BT_CHARACTER, dc, REQUIRED);
+
+  make_generic ("access", GFC_ISYM_ACCESS, GFC_STD_GNU);
 
   add_sym_1 ("achar", 1, 1, BT_CHARACTER, dc, GFC_STD_F95,
 	     gfc_check_achar, gfc_simplify_achar, NULL,
@@ -1152,7 +1158,13 @@ add_functions (void)
 	     a, BT_CHARACTER, dc, REQUIRED);
 
   make_generic ("chdir", GFC_ISYM_CHDIR, GFC_STD_GNU);
-  
+
+  add_sym_2 ("chmod", 0, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_chmod, NULL, gfc_resolve_chmod,
+	     nm, BT_CHARACTER, dc, REQUIRED, md, BT_CHARACTER, dc, REQUIRED);
+
+  make_generic ("chmod", GFC_ISYM_CHMOD, GFC_STD_GNU);
+
   add_sym_3 ("cmplx", 1, 1, BT_COMPLEX, dz, GFC_STD_F77,
 	     gfc_check_cmplx, gfc_simplify_cmplx, gfc_resolve_cmplx,
 	     x, BT_UNKNOWN, dr, REQUIRED, y, BT_UNKNOWN, dr, OPTIONAL,
@@ -1579,6 +1591,18 @@ add_functions (void)
 	     ut, BT_INTEGER, di, REQUIRED);
 
   make_generic ("isatty", GFC_ISYM_ISATTY, GFC_STD_GNU);
+
+  add_sym_2 ("rshift", 1, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_ishft, NULL, gfc_resolve_rshift,
+	     i, BT_INTEGER, di, REQUIRED, sh, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("rshift", GFC_ISYM_RSHIFT, GFC_STD_GNU);
+
+  add_sym_2 ("lshift", 1, 1, BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_ishft, NULL, gfc_resolve_lshift,
+	     i, BT_INTEGER, di, REQUIRED, sh, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("lshift", GFC_ISYM_LSHIFT, GFC_STD_GNU);
 
   add_sym_2 ("ishft", 1, 1, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_ishft, gfc_simplify_ishft, gfc_resolve_ishft,
@@ -2256,7 +2280,7 @@ add_subroutines (void)
     *com = "command", *length = "length", *st = "status",
     *val = "value", *num = "number", *name = "name",
     *trim_name = "trim_name", *ut = "unit", *han = "handler",
-    *sec = "seconds", *res = "result", *of = "offset";
+    *sec = "seconds", *res = "result", *of = "offset", *md = "mode";
 
   int di, dr, dc, dl, ii;
 
@@ -2288,6 +2312,14 @@ add_subroutines (void)
 	      gfc_check_itime_idate, NULL, gfc_resolve_itime,
 	      vl, BT_INTEGER, 4, REQUIRED);
 
+  add_sym_2s ("ltime", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	      gfc_check_ltime_gmtime, NULL, gfc_resolve_ltime,
+	      tm, BT_INTEGER, di, REQUIRED, vl, BT_INTEGER, di, REQUIRED);
+
+  add_sym_2s ("gmtime", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+	      gfc_check_ltime_gmtime, NULL, gfc_resolve_gmtime,
+	      tm, BT_INTEGER, di, REQUIRED, vl, BT_INTEGER, di, REQUIRED);
+
   add_sym_1s ("second", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_second_sub, NULL, gfc_resolve_second_sub,
 	      tm, BT_REAL, dr, REQUIRED);
@@ -2295,6 +2327,11 @@ add_subroutines (void)
   add_sym_2s ("chdir", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
               gfc_check_chdir_sub, NULL, gfc_resolve_chdir_sub,
 	      name, BT_CHARACTER, dc, REQUIRED, st, BT_INTEGER, di, OPTIONAL);
+
+  add_sym_3s ("chmod", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
+              gfc_check_chmod_sub, NULL, gfc_resolve_chmod_sub,
+	      name, BT_CHARACTER, dc, REQUIRED, md, BT_CHARACTER, dc, REQUIRED,
+	      st, BT_INTEGER, di, OPTIONAL);
 
   add_sym_4s ("date_and_time", 0, 1, BT_UNKNOWN, 0, GFC_STD_F95,
 	      gfc_check_date_and_time, NULL, NULL,

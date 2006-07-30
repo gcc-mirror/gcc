@@ -41,10 +41,12 @@ io/io.h
 gfor_helper_src= \
 intrinsics/associated.c \
 intrinsics/abort.c \
+intrinsics/access.c \
 intrinsics/args.c \
 intrinsics/bessel.c \
 intrinsics/c99_functions.c \
 intrinsics/chdir.c \
+intrinsics/chmod.c \
 intrinsics/clock.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
