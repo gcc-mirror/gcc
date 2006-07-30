@@ -5458,6 +5458,9 @@
   "HAVE_AS_TLS && !TARGET_MIPS16"
   ".set\tpush\;.set\tmips32r2\t\;rdhwr\t%0,$29\;.set\tpop"
   [(set_attr "type" "unknown")
+   ; Since rdhwr always generates a trap for now, putting it in a delay
+   ; slot would make the kernel's emulation of it much slower.
+   (set_attr "can_delay" "no")
    (set_attr "mode" "<MODE>")])
 
 ; The MIPS Paired-Single Floating Point and MIPS-3D Instructions.
