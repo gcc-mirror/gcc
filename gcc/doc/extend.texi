@@ -3238,6 +3238,7 @@ Medium and large model objects may live anywhere in the 32-bit address space
 addresses).
 @end table
 
+@anchor{i386 Variable Attributes}
 @subsection i386 Variable Attributes
 
 Two attributes are currently defined for i386 configurations:
@@ -3370,6 +3371,14 @@ struct
 Here, @code{t5} will take up 2 bytes.
 @end enumerate
 @end table
+
+@subsection PowerPC Variable Attributes
+
+Two attributes are currently defined for PowerPC configurations:
+@code{ms_struct} and @code{gcc_struct}.
+
+For full documentation of these attributes please see the documentation
+in the @xref{i386 Variable Attributes}, section.
 
 @subsection Xstormy16 Variable Attributes
 
