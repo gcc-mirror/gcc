@@ -1,3 +1,8 @@
+2006-07-30  Atsushi Nemoto  <anemo@mba.ocn.ne.jp>
+
+	PR target/28126 (partial fix)
+	* config/mips/mips.md (tls_get_tp_<mode>): Set can_delay to no.
+
 2006-07-28  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/28071
