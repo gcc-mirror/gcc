@@ -1,3 +1,9 @@
+2006-07-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/28473
+	* gcc.dg/fold-convround-1.c: New test case.
+	* gcc.dg/builtins-55.c: New test case.
+
 2006-07-26  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/28403
