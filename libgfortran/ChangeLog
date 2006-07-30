@@ -1,3 +1,16 @@
+2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/date_and_time.c: Add functions for GMTIME and LTIME.
+	* intrinsics/access.c: New file.
+	* intrinsics/chmod.c: New file.
+	* configure.ac: Add checks for <sys/wait.h>, access, fork,execl
+	and wait.
+	* Makefile.am: Add new files intrinsics/access.c and
+	intrinsics/chmod.c.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.in: Regenerate.
+
 2006-07-30  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/transfer.c (transfer_array): Remove stride0 fix.
