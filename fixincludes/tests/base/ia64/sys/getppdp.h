@@ -2,12 +2,15 @@
 
     It has been auto-edited by fixincludes from:
 
-	"fixinc/tests/inc/string.h"
+	"fixinc/tests/inc/ia64/sys/getppdp.h"
 
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
-#ifndef _STRING_INCLUDED
-  #define _STRING_INCLUDED
-  #include <strings.h>
-#endif /* _STRING_INCLUDED */
+
+
+#if defined( HPUX_SPU_INFO_CHECK )
+#ifdef _KERNEL
+extern union mpinfou spu_info[];
+#endif
+#endif  /* HPUX_SPU_INFO_CHECK */
