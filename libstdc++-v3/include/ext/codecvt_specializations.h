@@ -301,12 +301,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // argument to iconv():  SUSv2 and others use 'const char**', but glibc 2.2
   // uses 'char**', which matches the POSIX 1003.1-2001 standard.
   // Using this adaptor, g++ will do the work for us.
-  template<typename _T>
+  template<typename _Tp>
     inline size_t
-    __iconv_adaptor(size_t(*__func)(iconv_t, _T, size_t*, char**, size_t*),
+    __iconv_adaptor(size_t(*__func)(iconv_t, _Tp, size_t*, char**, size_t*),
                     iconv_t __cd, char** __inbuf, size_t* __inbytes,
                     char** __outbuf, size_t* __outbytes)
-    { return __func(__cd, (_T)__inbuf, __inbytes, __outbuf, __outbytes); }
+    { return __func(__cd, (_Tp)__inbuf, __inbytes, __outbuf, __outbytes); }
 
   template<typename _InternT, typename _ExternT>
     codecvt_base::result
