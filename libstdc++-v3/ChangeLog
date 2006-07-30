@@ -1,3 +1,9 @@
+2006-07-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (stable_sort): Uglify the buf variable.
+	* include/bits/stl_tempbuf.h (_Temporary_buffer<>::
+	_M_initialize_buffer): Uglify the val parameter.
+
 2006-07-27  Benjamin Kosnik  <bkoz@wells.artheist.org>
 
 	PR libstdc++/19664 round 3	
