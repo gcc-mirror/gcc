@@ -161,9 +161,9 @@ am__objects_28 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 am__objects_29 = close.lo file_pos.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo size_from_kind.lo \
 	transfer.lo unit.lo unix.lo write.lo
-am__objects_30 = associated.lo abort.lo args.lo bessel.lo \
-	c99_functions.lo chdir.lo clock.lo cpu_time.lo cshift0.lo \
-	ctime.lo date_and_time.lo env.lo erf.lo eoshift0.lo \
+am__objects_30 = associated.lo abort.lo access.lo args.lo bessel.lo \
+	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
+	cshift0.lo ctime.lo date_and_time.lo env.lo erf.lo eoshift0.lo \
 	eoshift2.lo etime.lo exit.lo fget.lo flush.lo fnum.lo ftell.lo \
 	gerror.lo getcwd.lo getlog.lo getXid.lo hyper.lo hostnm.lo \
 	kill.lo ierrno.lo ishftc.lo link.lo malloc.lo mvbits.lo \
@@ -385,10 +385,12 @@ io/io.h
 gfor_helper_src = \
 intrinsics/associated.c \
 intrinsics/abort.c \
+intrinsics/access.c \
 intrinsics/args.c \
 intrinsics/bessel.c \
 intrinsics/c99_functions.c \
 intrinsics/chdir.c \
+intrinsics/chmod.c \
 intrinsics/clock.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
@@ -2204,6 +2206,9 @@ associated.lo: intrinsics/associated.c
 abort.lo: intrinsics/abort.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o abort.lo `test -f 'intrinsics/abort.c' || echo '$(srcdir)/'`intrinsics/abort.c
 
+access.lo: intrinsics/access.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o access.lo `test -f 'intrinsics/access.c' || echo '$(srcdir)/'`intrinsics/access.c
+
 args.lo: intrinsics/args.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o args.lo `test -f 'intrinsics/args.c' || echo '$(srcdir)/'`intrinsics/args.c
 
@@ -2215,6 +2220,9 @@ c99_functions.lo: intrinsics/c99_functions.c
 
 chdir.lo: intrinsics/chdir.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o chdir.lo `test -f 'intrinsics/chdir.c' || echo '$(srcdir)/'`intrinsics/chdir.c
+
+chmod.lo: intrinsics/chmod.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o chmod.lo `test -f 'intrinsics/chmod.c' || echo '$(srcdir)/'`intrinsics/chmod.c
 
 clock.lo: intrinsics/clock.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o clock.lo `test -f 'intrinsics/clock.c' || echo '$(srcdir)/'`intrinsics/clock.c

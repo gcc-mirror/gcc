@@ -6,6 +6,9 @@
 /* Define to 0 if the target shouldn't use #pragma weak */
 #undef GTHREAD_USE_WEAK
 
+/* Define to 1 if you have the `access' function. */
+#undef HAVE_ACCESS
+
 /* libm includes acos */
 #undef HAVE_ACOS
 
@@ -279,6 +282,9 @@
 /* libm includes erfl */
 #undef HAVE_ERFL
 
+/* Define to 1 if you have the `execl' function. */
+#undef HAVE_EXECL
+
 /* libm includes exp */
 #undef HAVE_EXP
 
@@ -320,6 +326,9 @@
 
 /* libm includes floorl */
 #undef HAVE_FLOORL
+
+/* Define to 1 if you have the `fork' function. */
+#undef HAVE_FORK
 
 /* Define if you have fpsetmask. */
 #undef HAVE_FPSETMASK
@@ -582,6 +591,9 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* Define to 1 if you have the <sys/wait.h> header file. */
+#undef HAVE_SYS_WAIT_H
+
 /* libm includes tan */
 #undef HAVE_TAN
 
@@ -629,6 +641,9 @@
 
 /* Define if target can unlink open files. */
 #undef HAVE_UNLINK_OPEN_FILE
+
+/* Define to 1 if you have the `wait' function. */
+#undef HAVE_WAIT
 
 /* Define if target has a reliable stat. */
 #undef HAVE_WORKING_STAT
