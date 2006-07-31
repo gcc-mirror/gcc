@@ -1,6 +1,11 @@
 2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/28335
+	* gfortran.dg/no_unit_error_1.f90: New test.
+
+2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28335
 	* gfortran.dg/no_unit_error_1.f90: Delete test.
 	* gfortran.dg/no_unit_error_2.f90: Delete test.
 
