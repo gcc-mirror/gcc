@@ -102,8 +102,7 @@ st_close (st_parameter_close *clp)
         unlink (path);
 #endif
     }
-  else
-    generate_error (&clp->common, ERROR_BAD_OPTION,
-			    "Can't find specified UNIT in CLOSE");
+
+  /* CLOSE on unconnected unit is legal and a no-op: F95 std., 9.3.5. */ 
   library_end ();
 }

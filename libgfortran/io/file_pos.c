@@ -341,8 +341,9 @@ st_flush (st_parameter_filepos *fpp)
       unlock_unit (u);
     }
   else
+    /* FLUSH on unconnected unit is illegal: F95 std., 9.3.5. */ 
     generate_error (&fpp->common, ERROR_BAD_OPTION,
-			"Can't find specified UNIT in FLUSH");
+			"Specified UNIT in FLUSH is not connected");
 
   library_end ();
 }
