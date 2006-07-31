@@ -1,3 +1,7 @@
+2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/lrshift_1.c: New file.
+
 2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/28335
@@ -11,12 +15,12 @@
 
 2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
-	* gcc/testsuite/gfortran.dg/chmod_3.f90: New test.
-	* gcc/testsuite/gfortran.dg/ltime_gmtime_1.f90: New test.
-	* gcc/testsuite/gfortran.dg/ltime_gmtime_2.f90: New test.
-	* gcc/testsuite/gfortran.dg/lrshift_1.f90: New test.
-	* gcc/testsuite/gfortran.dg/chmod_1.f90: New test.
-	* gcc/testsuite/gfortran.dg/chmod_2.f90: New test.
+	* gfortran.dg/chmod_3.f90: New test.
+	* gfortran.dg/ltime_gmtime_1.f90: New test.
+	* gfortran.dg/ltime_gmtime_2.f90: New test.
+	* gfortran.dg/lrshift_1.f90: New test.
+	* gfortran.dg/chmod_1.f90: New test.
+	* gfortran.dg/chmod_2.f90: New test.
 
 2006-07-28  Lee Millward  <lee.millward@codesourcery.com>
 
