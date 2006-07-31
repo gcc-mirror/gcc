@@ -1,3 +1,25 @@
+2006-07-31  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/28312
+	* classpath/native/jni/midi-alsa/Makefile.am
+	(libgjsmalsa_la_LDFLAGS): Add -avoid-version.
+	* classpath/native/jni/midi-alsa/Makefile.in: Regenerate.
+	* classpath/native/jni/midi-dssi/Makefile.am
+	(libgjsmdssi_la_LDFLAGS): Add -avoid-version.
+	* classpath/native/jni/midi-dssi/Makefile.in: Regenerate.
+	* classpath/native/jni/qt-peer/Makefile.am: Remove GCJ LOCAL
+	sections.
+	(libqtpeer_la_LDFLAGS): Add -avoid-version.
+	* classpath/native/jni/qt-peer/Makefile.in: Regenerate.
+	* classpath/native/jni/gtk-peer/Makefile.am
+	(libgtkpeer_la_LDFLAGS): Add -avoid-version.
+	* classpath/native/jni/gtk-peer/Makefile.in: Regenerate.
+	* classpath/native/jawt/Makefile.am (libjawt_la_LDFLAGS): Add
+	-avoid-version.
+	* classpath/native/jawt/Makefile.in: Regenerate.
+	* Makefile.am (libjvm_la_LDFLAGS): Add -avoid-version.
+	* Makefile.in: Regenerate.
+
 2006-07-28  Andrew Haley  <aph@redhat.com>
 
 	* gnu/gcj/runtime/natSharedLibLoader.cc (init): Don't set
