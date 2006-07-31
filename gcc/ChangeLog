@@ -1,3 +1,9 @@
+2006-07-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* Makefile.in: Revert part of previous patch:
+	Replace $(VARRAY_H) by varray.h in definition of BASIC_BLOCK_H
+	and REGS_H.
+
 2006-07-30  Eric Christopher  <echristo@apple.com>
 
 	PR target/27543
