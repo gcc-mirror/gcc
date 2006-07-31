@@ -7198,6 +7198,8 @@ grokdeclarator (const cp_declarator *declarator,
 	error ("%<long%> invalid for %qs", name);
       else if (short_p && TREE_CODE (type) == REAL_TYPE)
 	error ("%<short%> invalid for %qs", name);
+      else if ((long_p || short_p) && TREE_CODE (type) != INTEGER_TYPE)
+	error ("%<long%> or %<short%> invalid for %qs", name);
       else if ((long_p || short_p) && explicit_char)
 	error ("%<long%> or %<short%> specified with char for %qs", name);
       else if (long_p && short_p)
