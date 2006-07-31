@@ -1,3 +1,8 @@
+2006-07-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/6634
+	* g++.dg/parse/long1.C: Add more tests.
+
 2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/lrshift_1.c: New file.
