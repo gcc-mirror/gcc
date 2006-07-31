@@ -340,9 +340,7 @@ st_flush (st_parameter_filepos *fpp)
       flush (u->s);
       unlock_unit (u);
     }
-  else
-    generate_error (&fpp->common, ERROR_BAD_OPTION,
-			"Can't find specified UNIT in FLUSH");
 
+  /* CLOSE on unconnected unit is legal and a no-op: F95 std., 9.3.5. */ 
   library_end ();
 }

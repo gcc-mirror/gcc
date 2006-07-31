@@ -1,3 +1,9 @@
+2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28335
+	* close.c (st_close): Revert previous patch and add comment.
+	* file_position.c (st_flush): Revert previous patch and add comment.
+
 2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/date_and_time.c: Add functions for GMTIME and LTIME.
