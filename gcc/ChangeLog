@@ -1,3 +1,10 @@
+2006-08-01  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR debug/25468
+	Backport from mainline
+	* config/elfos.h (ASM_OUTPUT_ASCII): Remove 'register' marks.
+	Cache the last found '\0' marker to avoid quadratic behavior.
+
 2006-07-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/28473

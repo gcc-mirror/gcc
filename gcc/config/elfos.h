@@ -427,14 +427,15 @@ Boston, MA 02110-1301, USA.  */
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)				\
   do									\
     {									\
-      register const unsigned char *_ascii_bytes =			\
+      const unsigned char *_ascii_bytes =				\
 	(const unsigned char *) (STR);					\
-      register const unsigned char *limit = _ascii_bytes + (LENGTH);	\
-      register unsigned bytes_in_chunk = 0;				\
+      const unsigned char *limit = _ascii_bytes + (LENGTH);		\
+      const unsigned char *last_null = NULL;				\
+      unsigned bytes_in_chunk = 0;					\
 									\
       for (; _ascii_bytes < limit; _ascii_bytes++)			\
         {								\
-	  register const unsigned char *p;				\
+	  const unsigned char *p;					\
 									\
 	  if (bytes_in_chunk >= 60)					\
 	    {								\
@@ -442,8 +443,14 @@ Boston, MA 02110-1301, USA.  */
 	      bytes_in_chunk = 0;					\
 	    }								\
 									\
-	  for (p = _ascii_bytes; p < limit && *p != '\0'; p++)		\
-	    continue;							\
+	  if (_ascii_bytes > last_null)					\
+	    {								\
+	      for (p = _ascii_bytes; p < limit && *p != '\0'; p++)	\
+		continue;						\
+	      last_null = p;						\
+	    }								\
+	  else								\
+	    p = last_null;						\
 									\
 	  if (p < limit && (p - _ascii_bytes) <= (long)STRING_LIMIT)	\
 	    {								\
