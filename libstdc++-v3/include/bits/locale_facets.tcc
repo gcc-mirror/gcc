@@ -1114,9 +1114,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	const __cache_type* __lc = __uc(__loc);
 
 	// Use default precision if out of range.
-	streamsize __prec = __io.precision();
-	if (__prec < static_cast<streamsize>(0))
-	  __prec = static_cast<streamsize>(6);
+	const streamsize __prec = __io.precision() < 0 ? 6 : __io.precision();
 
 	const int __max_digits = numeric_limits<_ValueT>::digits10;
 
@@ -1124,14 +1122,13 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	int __len;
 	// Long enough for the max format spec.
 	char __fbuf[16];
+	__num_base::_S_format_float(__io, __fbuf, __mod);
 
 #ifdef _GLIBCXX_USE_C99
 	// First try a buffer perhaps big enough (most probably sufficient
 	// for non-ios_base::fixed outputs)
 	int __cs_size = __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-
-	__num_base::_S_format_float(__io, __fbuf, __mod);
 	__len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
 				      __fbuf, __prec, __v);
 
@@ -1157,8 +1154,6 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	const int __cs_size = __fixed ? __max_exp + __prec + 4
 	                              : __max_digits * 2 + __prec;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-
-	__num_base::_S_format_float(__io, __fbuf, __mod);
 	__len = std::__convert_from_v(_S_get_c_locale(), __cs, 0, __fbuf, 
 				      __prec, __v);
 #endif
@@ -1172,18 +1167,20 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	__ctype.widen(__cs, __cs + __len, __ws);
 	
 	// Replace decimal point.
-	const _CharT __cdec = __ctype.widen('.');
-	const _CharT __dec = __lc->_M_decimal_point;
-	const _CharT* __p = char_traits<_CharT>::find(__ws, __len, __cdec);
+	_CharT* __wp = 0;
+	const char* __p = char_traits<char>::find(__cs, __len, '.');
 	if (__p)
-	  __ws[__p - __ws] = __dec;
+	  {
+	    __wp = __ws + (__p - __cs);
+	    *__wp = __lc->_M_decimal_point;
+	  }
 	
 	// Add grouping, if necessary.
 	// N.B. Make sure to not group things like 2e20, i.e., no decimal
 	// point, scientific notation.
 	if (__lc->_M_use_grouping
-	    && (__p || __len < 3 || (__cs[1] <= '9' && __cs[2] <= '9'
-				     && __cs[1] >= '0' && __cs[2] >= '0')))
+	    && (__wp || __len < 3 || (__cs[1] <= '9' && __cs[2] <= '9'
+				      && __cs[1] >= '0' && __cs[2] >= '0')))
 	  {
 	    // Grouping can add (almost) as many separators as the
 	    // number of digits, but no more.
@@ -1199,7 +1196,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	      }
 	    
 	    _M_group_float(__lc->_M_grouping, __lc->_M_grouping_size,
-			   __lc->_M_thousands_sep, __p, __ws2 + __off,
+			   __lc->_M_thousands_sep, __wp, __ws2 + __off,
 			   __ws + __off, __len);
 	    __len += __off;
 	    
