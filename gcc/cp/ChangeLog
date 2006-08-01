@@ -1,3 +1,10 @@
+2006-07-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28523
+	* tree.c (stabilize_expr): Tweak documentation.  Add assertion.
+	(stabilize_call): Tweak documentation.
+	(stabilize_init): Only call stabilize_call for calls.
+
 2006-08-01  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/28432
