@@ -1,6 +1,6 @@
 2006-08-01  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	PR libfortran/28542
+	PR libfortran/28452
 	* gfortran.dg/random_3.f90:  New test.
 
 2006-08-01  Steve Ellcey  <sje@cup.hp.com>
