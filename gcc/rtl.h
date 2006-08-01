@@ -996,6 +996,7 @@ enum label_kind
 
 /* For a CONST_INT rtx, INTVAL extracts the integer.  */
 #define INTVAL(RTX) XCWINT(RTX, 0, CONST_INT)
+#define UINTVAL(RTX) ((unsigned HOST_WIDE_INT) INTVAL (RTX))
 
 /* For a CONST_DOUBLE:
    For a VOIDmode, there are two integers CONST_DOUBLE_LOW is the
