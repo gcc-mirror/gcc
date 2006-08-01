@@ -1,5 +1,11 @@
 2006-08-01  Steve Ellcey  <sje@cup.hp.com>
 
+	PR c++/28432
+	* g++.dg/other/pr28304.C: Change expected error message.
+	* g++.dg/other/pr28432.C: New test.
+
+2006-08-01  Steve Ellcey  <sje@cup.hp.com>
+
 	PR c++/28256
 	* g++.dg/init/brace2.C: Change expected error message, add empty init.
 

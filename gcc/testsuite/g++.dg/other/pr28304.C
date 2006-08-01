@@ -7,5 +7,5 @@ template<typename T> void A::foo(T) {}  // { dg-error "" }
 
 void bar()
 {
-    A::foo(1); // { dg-error "not a member" }
+    A::foo(1); // { dg-error "no matching function for call" }
 }

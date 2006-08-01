@@ -1209,7 +1209,8 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
     }
   else
     {
-      gcc_assert (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)));
+      if (!IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
+	return NULL_TREE;
       type = xbasetype;
       xbasetype = NULL_TREE;
     }
