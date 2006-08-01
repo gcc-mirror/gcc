@@ -82,7 +82,7 @@ file_encoding ()
 
 static const char *default_file_encoding = DEFAULT_FILE_ENCODING;
 
-#if HAVE_GETPWUID_R
+#if defined(HAVE_GETPWUID_R) && defined(_POSIX_PTHREAD_SEMANTICS)
 /* Use overload resolution to find out the signature of getpwuid_r.  */
 
   /* This is Posix getpwuid_r.  */
@@ -223,7 +223,7 @@ gnu::classpath::SystemProperties::insertSystemProperties (java::util::Properties
   uid_t user_id = getuid ();
   struct passwd *pwd_entry;
 
-#ifdef HAVE_GETPWUID_R
+#if defined(HAVE_GETPWUID_R) && defined(_POSIX_PTHREAD_SEMANTICS)
   struct passwd pwd_r;
   size_t len_r = 200;
   char *buf_r = (char *) _Jv_AllocBytes (len_r);

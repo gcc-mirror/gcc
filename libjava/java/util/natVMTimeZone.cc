@@ -1,6 +1,6 @@
 // natVMTimeZone.cc -- Native side of VMTimeZone class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006
    Free Software Foundation
 
    This file is part of libgcj.
@@ -54,7 +54,7 @@ jstring
 java::util::VMTimeZone::getSystemTimeZoneId()
 {
   struct tm tim;
-#ifndef HAVE_LOCALTIME_R
+#if !defined(HAVE_LOCALTIME_R) || !defined(_POSIX_PTHREAD_SEMANTICS)
   struct tm *lt_tim;
 #endif
 #ifdef HAVE_TM_ZONE
@@ -66,7 +66,7 @@ java::util::VMTimeZone::getSystemTimeZoneId()
   char *tzid;
 
   time(&current_time);
-#ifdef HAVE_LOCALTIME_R
+#if defined(HAVE_LOCALTIME_R) && defined(_POSIX_PTHREAD_SEMANTICS)
   localtime_r(&current_time, &tim);
 #else
   /* Fall back on non-thread safe localtime. */
