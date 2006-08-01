@@ -760,7 +760,7 @@ fix_equivalence_set (value_range_t *vr_p)
   bitmap_iterator bi;
   unsigned i;
   bitmap e = vr_p->equiv;
-  bitmap to_remove = BITMAP_ALLOC (NULL);
+  bitmap to_remove;
 
   /* Only detect inconsistencies on numeric ranges.  */
   if (vr_p->type == VR_VARYING
@@ -768,6 +768,7 @@ fix_equivalence_set (value_range_t *vr_p)
       || symbolic_range_p (vr_p))
     return;
 
+  to_remove = BITMAP_ALLOC (NULL);
   EXECUTE_IF_SET_IN_BITMAP (e, 0, i, bi)
     {
       value_range_t *equiv_vr = vr_value[i];
