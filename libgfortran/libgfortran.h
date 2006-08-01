@@ -33,6 +33,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include <math.h>
 #include <stddef.h>
+#include <float.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327
@@ -238,6 +239,24 @@ internal_proto(l8_to_l4_offset);
 #endif
 #ifdef HAVE_GFC_REAL_16
 #define GFC_REAL_16_HUGE LDBL_MAX
+#endif
+
+#define GFC_REAL_4_DIGITS FLT_MANT_DIG
+#define GFC_REAL_8_DIGITS DBL_MANT_DIG
+#ifdef HAVE_GFC_REAL_10
+#define GFC_REAL_10_DIGITS LDBL_MANT_DIG
+#endif
+#ifdef HAVE_GFC_REAL_16
+#define GFC_REAL_16_DIGITS LDBL_MANT_DIG
+#endif
+
+#define GFC_REAL_4_RADIX FLT_RADIX
+#define GFC_REAL_8_RADIX FLT_RADIX
+#ifdef HAVE_GFC_REAL_10
+#define GFC_REAL_10_RADIX FLT_RADIX
+#endif
+#ifdef HAVE_GFC_REAL_16
+#define GFC_REAL_16_RADIX FLT_RADIX
 #endif
 
 #ifndef GFC_MAX_DIMENSIONS
@@ -638,14 +657,6 @@ iexport_proto(compare_string);
 extern void random_seed (GFC_INTEGER_4 * size, gfc_array_i4 * put,
 			 gfc_array_i4 * get);
 iexport_proto(random_seed);
-
-/* normalize.c */
-
-extern GFC_REAL_4 normalize_r4_i4 (GFC_UINTEGER_4, GFC_UINTEGER_4);
-internal_proto(normalize_r4_i4);
-
-extern GFC_REAL_8 normalize_r8_i8 (GFC_UINTEGER_8, GFC_UINTEGER_8);
-internal_proto(normalize_r8_i8);
 
 /* size.c */
 
