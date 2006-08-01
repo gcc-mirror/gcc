@@ -673,11 +673,8 @@ check_classfn (tree ctype, tree function, tree template_parms)
   else if (!COMPLETE_TYPE_P (ctype))
     cxx_incomplete_type_error (function, ctype);
   else
-    {
-      error ("no %q#D member function declared in class %qT",
-	     function, ctype);
-      return NULL_TREE;
-    }
+    error ("no %q#D member function declared in class %qT",
+	   function, ctype);
 
   /* If we did not find the method in the class, add it to avoid
      spurious errors (unless the CTYPE is not yet defined, in which

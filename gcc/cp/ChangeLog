@@ -1,5 +1,11 @@
 2006-08-01  Steve Ellcey  <sje@cup.hp.com>
 
+	PR c++/28432
+	* decl2.c (check_classfn): Remove early return.
+	* search.c (lookup_member): Return NULL with bad type.
+
+2006-08-01  Steve Ellcey  <sje@cup.hp.com>
+
 	PR c++/28256
 	* decl.c (check_initializer): Check for 1 initializer on scalar types.
 
