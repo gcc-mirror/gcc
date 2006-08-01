@@ -1,3 +1,10 @@
+2006-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* tree-outof-ssa.c (check_replaceable): Do not allocate def_vars
+	bitmap when not needed.
+	* tree-ssa-pre.c (bitmap_set_and, bitmap_set_and_compl): Free temporary
+	bitmaps.
+
 2006-08-01  Dirk Mueller  <dmueller@suse.de>
 
 	* tree-vrp.c (fix_equivalence_set): Avoid bitmap memory leak.

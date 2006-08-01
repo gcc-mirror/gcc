@@ -624,7 +624,7 @@ bitmap_set_and (bitmap_set_t dest, bitmap_set_t orig)
       if (!bitmap_bit_p (dest->values, VALUE_HANDLE_ID (val)))
 	bitmap_clear_bit (dest->expressions, i);
     }
-
+  BITMAP_FREE (temp);
 }
 
 /* Perform bitmapped value set operation DEST = DEST & ~ORIG.  */
@@ -645,6 +645,7 @@ bitmap_set_and_compl (bitmap_set_t dest, bitmap_set_t orig)
       if (!bitmap_bit_p (dest->values, VALUE_HANDLE_ID (val)))
 	bitmap_clear_bit (dest->expressions, i);
     }
+  BITMAP_FREE (temp);
 }
 
 /* Return true if the bitmap set SET is empty.  */
