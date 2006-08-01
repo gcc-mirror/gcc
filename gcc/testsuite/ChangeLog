@@ -1,3 +1,11 @@
+2006-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR debug/23336
+	* lib/gcc-dg.exp (gcc-dg-debug-runtest): Suppress new tests
+	at -g1.
+	* gcc.dg/debug/enum-1.c, g++.dg/debug/enum-1.C,
+	g++.dg/debug/enum-2.C: New.
+
 2006-07-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/6634

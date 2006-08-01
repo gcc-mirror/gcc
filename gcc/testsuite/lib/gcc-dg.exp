@@ -292,7 +292,12 @@ proc gcc-dg-debug-runtest { target_compile trivial opt_opts testcases } {
 
 	foreach flags $DEBUG_TORTURE_OPTIONS {
 	    set doit 1
-	    if { [string match {*/debug-[126].c} "$nshort"] \
+
+	    # These tests check for information which may be deliberately
+	    # suppressed at -g1.
+	    if { ([string match {*/debug-[126].c} "$nshort"] \
+		   || [string match {*/enum-1.c} "$nshort"] \
+		   || [string match {*/enum-[12].C} "$nshort"]) \
 		    && [string match "*1" [lindex "$flags" 0] ] } {
 		set doit 0
 	    }

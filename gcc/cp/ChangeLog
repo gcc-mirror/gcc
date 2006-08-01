@@ -1,3 +1,9 @@
+2006-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR debug/23336
+	* pt.c (tsubst_copy_and_build): Mark used enum types.
+	* semantics.c (finish_id_expression): Likewise.
+
 2006-07-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/6634

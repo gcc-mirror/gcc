@@ -1,3 +1,11 @@
+2006-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR debug/23336
+	* c-typeck.c (build_external_type): Mark used enum types.
+	* dwarf2out.c (dwarf2out_abstract_function): Save and restore
+	cfun also.
+	(gen_subprogram_die): Whitespace fix.
+
 2006-08-01  Jan Hubicka  <jh@suse.cz>
 
 	* tree-outof-ssa.c (check_replaceable): Do not allocate def_vars
