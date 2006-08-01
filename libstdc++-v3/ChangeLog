@@ -1,3 +1,7 @@
+2006-08-01  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* docs/html/ext/tr1.html: Update.
+
 2006-07-31  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_put<>::_M_insert_float):
