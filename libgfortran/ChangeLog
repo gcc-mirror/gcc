@@ -1,6 +1,6 @@
 2006-08-01  Thomas Koenig  <Thomas.Koenig@online.de>
 
-	PR libfortran/28542
+	PR libfortran/28452
 	* Makefile.am:  Remove normalize.c.
 	* aclocal.m4:  Regenerate using aclocal 1.9.3.
 	* Makefile.in:  Regenerate using automake 1.9.3.
