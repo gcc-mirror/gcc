@@ -1,3 +1,37 @@
+2006-08-01  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/28542
+	* Makefile.am:  Remove normalize.c.
+	* aclocal.m4:  Regenerate using aclocal 1.9.3.
+	* Makefile.in:  Regenerate using automake 1.9.3.
+	* libgfortran.h:  #include <float.h>.
+	Define GFC_REAL_*_DIGITS and GFC_REAL_*_RADIX.
+	Remove prototypes for normalize_r4_i4 and normalize_r8_i8.
+	* intrinsics/random.c (top level): Add prototypes for
+	random_r10, arandom_r10, random_r16 and arandom_r16.
+	(rnumber_4):  New static function.
+	(rnumber_8):  New static function.
+	(rnumber_10): New static function.
+	(rnumber_16): New static function.
+	(top level):  Set to kiss_size to 12 if we have
+	REAL(KIND=16), to 8 otherwise.
+	Define KISS_DEFAULT_SEED_1, KISS_DEFAULT_SEED_2 and
+	KISS_DEFAULT_SEED_3.
+	(kiss_random_kernel):  Take argument to differentiate
+	between different random number generators.
+	(random_r4):  Add argument to call to kiss_random_kernel,
+	use rnumber_*.
+	(random_r8):  Likewise.
+	(random_r10):  New function.
+	(random_r16):  New function.
+	(arandom_r4):  Add argument to call to kiss_random_kernel,
+	use_rnumber_*.
+	(arandom_r8):  Likewise.
+	(arandom_r10):  New function.
+	(arandom_r16):  New function.
+	* intrinsics/rand.c (rand):  Use shift and mask.
+	* runtime/normalize.c:  Remove.
+
 2006-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/28335
