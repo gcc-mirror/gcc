@@ -1006,7 +1006,7 @@ compile_file (void)
      what's left of the symbol table output.  */
   timevar_pop (TV_PARSE);
 
-  if (flag_syntax_only)
+  if (flag_syntax_only || errorcount || sorrycount)
     return;
 
   lang_hooks.decls.final_write_globals ();

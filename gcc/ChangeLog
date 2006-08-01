@@ -1,3 +1,13 @@
+2006-08-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28250
+	PR c++/28257
+	PR c++/28259
+	PR c++/28267
+	* toplev.c (compile_file): Return early on errorcount or sorrycount.
+	* cgraphunit.c (cgraph_finalize_compilation_unit): Likewise.
+	(cgraph_optimize): Likewise.
+
 2006-08-01  Stuart Hastings  <stuart@apple.com>
 
 	* rtl.h (UINTVAL) New.
