@@ -1,3 +1,8 @@
+2006-08-01  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28256
+	* decl.c (check_initializer): Check for 1 initializer on scalar types.
+
 2006-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR debug/23336

@@ -1,3 +1,8 @@
+2006-08-01  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28256
+	* g++.dg/init/brace2.C: Change expected error message, add empty init.
+
 2006-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR debug/23336
