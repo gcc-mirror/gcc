@@ -9240,7 +9240,10 @@ tsubst_copy_and_build (tree t,
       /* As in finish_id_expression, we resolve enumeration constants
 	 to their underlying values.  */
       if (TREE_CODE (t) == CONST_DECL)
-	return DECL_INITIAL (t);
+	{
+	  used_types_insert (TREE_TYPE (t));
+	  return DECL_INITIAL (t);
+	}
       return t;
 
     default:
