@@ -1,3 +1,13 @@
+2006-08-01  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* gnu/classpath/natSystemProperties.cc: Add additional check for
+	getpwuid_r on _POSIX_PTHREAD_SEMANTICS.
+	(SystemProperties::insertSystemProperties): Likewise.
+	* java/io/natFilePosix.cc (File::performList): Add
+	additional check for readdir_r on _POSIX_PTHREAD_SEMANTICS.
+	* java/util/natVMTimeZone.cc (VMTimeZone::getSystemTimeZoneId): Add
+	additional check for localtime_r on _POSIX_PTHREAD_SEMANTICS.
+
 2006-07-31  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/28312
