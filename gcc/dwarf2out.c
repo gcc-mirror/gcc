@@ -14044,6 +14044,7 @@ prune_unused_types_prune (dw_die_ref die)
   dw_die_ref c;
 
   gcc_assert (die->die_mark);
+  prune_unused_types_update_strings (die);
 
   if (! die->die_child)
     return;
@@ -14068,7 +14069,6 @@ prune_unused_types_prune (dw_die_ref die)
 
     if (c != prev->die_sib)
       prev->die_sib = c;
-    prune_unused_types_update_strings (c);
     prune_unused_types_prune (c);
   } while (c != die->die_child);
 }

@@ -1,3 +1,13 @@
+2006-08-02  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR debug/28063
+	* gcc.dg/debug/dwarf2/dwarf-merge.c: New test.
+	* lib/target-supports.exp (get_compiler_messages): Add WANT_OUTPUT.
+	Optionally return assembly text.  Update callers.
+	(check_no_compiler_messages): Update verbose messages.
+	(check_no_messages_and_pattern): New.
+	(check_effective_target_string_merging): New.
+
 2006-08-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28250

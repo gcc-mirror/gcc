@@ -20,14 +20,20 @@
 
 # This file defines procs for determining features supported by the target.
 
-# Try to compile some code and return the messages printed by the compiler.
+# Try to compile some code and return the messages printed by the compiler,
+# and optionally the contents for assembly files.  Either a string or
+# a list of two strings are returned, depending on WANT_OUTPUT.
 #
 # BASENAME is a basename to use for temporary files.
+# WANT_OUTPUT is a flag which is 0 to request returning just the
+#   compiler messages, or 1 to return the messages and the contents
+#   of the assembly file.  TYPE should be "assembly" if WANT_OUTPUT
+#   is set.
 # TYPE is the type of compilation to perform (see target_compile).
 # CONTENTS gives the contents of the input file.
 # The rest is optional:
 # OPTIONS: additional compiler options to use.
-proc get_compiler_messages {basename type contents args} {
+proc get_compiler_messages {basename want_output type contents args} {
     global tool
 
     if { [llength $args] > 0 } {
@@ -46,9 +52,28 @@ proc get_compiler_messages {basename type contents args} {
     close $f
     set lines [${tool}_target_compile $src $output $type "$options"]
     file delete $src
-    remote_file build delete $output
 
-    return $lines
+    if { $want_output } {
+	if { $type != "assembly" } {
+	    error "WANT_OUTPUT can only be used with assembly output"
+	} elseif { ![string match "" $lines] } {
+	    # An error occurred.
+	    set result [list $lines ""]
+	} else {
+	    set text ""
+	    set chan [open "$output"]
+	    while {[gets $chan line] >= 0} {
+		append text "$line\n"
+	    }
+	    close $chan
+	    set result [list $lines $text]
+	}
+    } else {
+	set result $lines
+    }
+
+    remote_file build delete $output
+    return $result
 }
 
 proc current_target_name { } {
@@ -71,13 +96,33 @@ proc check_no_compiler_messages {prop args} {
     set target [current_target_name]
     if {![info exists et_cache($prop,target)]
 	|| $et_cache($prop,target) != $target} {
-	verbose "check_effective_target $prop: compiling source for $target" 2
+	verbose "check_no_compiler_messages $prop: compiling source for $target" 2
 	set et_cache($prop,target) $target
 	set et_cache($prop,value) \
-	    [string match "" [eval get_compiler_messages $prop $args]]
+	    [string match "" [eval get_compiler_messages $prop 0 $args]]
     }
     set value $et_cache($prop,value)
-    verbose "check_effective_target $prop: returning $value for $target" 2
+    verbose "check_no_compiler_messages $prop: returning $value for $target" 2
+    return $value
+}
+
+# Similar to check_no_compiler_messages, but also verify that the regular
+# expression PATTERN matches the compiler's output.
+proc check_no_messages_and_pattern {prop pattern args} {
+    global et_cache
+
+    set target [current_target_name]
+    if {![info exists et_cache($prop,target)]
+	|| $et_cache($prop,target) != $target} {
+	verbose "check_no_messages_and_pattern $prop: compiling source for $target" 2
+	set et_cache($prop,target) $target
+	set results [eval get_compiler_messages $prop 1 $args]
+	set et_cache($prop,value) \
+	    [expr [string match "" [lindex $results 0]] \
+		 && [regexp $pattern [lindex $results 1]]]
+    }
+    set value $et_cache($prop,value)
+    verbose "check_no_messages_and_pattern $prop: returning $value for $target" 2
     return $value
 }
 
@@ -1074,7 +1119,7 @@ proc check_effective_target_lp64 { } {
 
 proc check_effective_target_dfp_nocache { } {
     verbose "check_effective_target_dfp_nocache: compiling source" 2
-    set ret [string match "" [get_compiler_messages dfp object {
+    set ret [string match "" [get_compiler_messages dfp 0 object {
         _Decimal32 x; _Decimal64 y; _Decimal128 z;
     }]]
     verbose "check_effective_target_dfp_nocache: returning $ret" 2
@@ -1783,3 +1828,11 @@ proc check_effective_target_short_enums { } {
     }]
 }
 
+# Return 1 if target supports merging string constants at link time.
+
+proc check_effective_target_string_merging { } {
+    return [check_no_messages_and_pattern string_merging \
+		"rodata\\.str" assembly {
+		    const char *var = "String";
+		} {-O2}]
+}
