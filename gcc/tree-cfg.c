@@ -112,6 +112,7 @@ static inline bool stmt_starts_bb_p (tree, tree);
 static int tree_verify_flow_info (void);
 static void tree_make_forwarder_block (edge);
 static void tree_cfg2vcg (FILE *);
+static inline void change_bb_for_stmt (tree t, basic_block bb);
 
 /* Flowgraph optimization and cleanup.  */
 static void tree_merge_blocks (basic_block, basic_block);
@@ -1386,7 +1387,7 @@ tree_merge_blocks (basic_block a, basic_block b)
 	}
       else
 	{
-	  set_bb_for_stmt (bsi_stmt (bsi), a);
+	  change_bb_for_stmt (bsi_stmt (bsi), a);
 	  bsi_next (&bsi);
 	}
     }
@@ -2776,6 +2777,20 @@ set_bb_for_stmt (tree t, basic_block bb)
 	  VEC_replace (basic_block, label_to_block_map, uid, bb);
 	}
     }
+}
+
+/* Faster version of set_bb_for_stmt that assume that statement is being moved
+   from one basic block to another.  
+   For BB splitting we can run into quadratic case, so performance is quite
+   important and knowing that the tables are big enought, change_bb_for_stmt
+   can inline as leaf function.  */
+static inline void
+change_bb_for_stmt (tree t, basic_block bb)
+{
+  get_stmt_ann (t)->bb = bb;
+  if (TREE_CODE (t) == LABEL_EXPR)
+    VEC_replace (basic_block, label_to_block_map,
+		 LABEL_DECL_UID (LABEL_EXPR_LABEL (t)), bb);
 }
 
 /* Finds iterator for STMT.  */
@@ -4203,7 +4218,7 @@ tree_split_block (basic_block bb, void *stmt)
   new_bb->stmt_list = tsi_split_statement_list_before (&bsi.tsi);
   for (tsi_tgt = tsi_start (new_bb->stmt_list);
        !tsi_end_p (tsi_tgt); tsi_next (&tsi_tgt))
-    set_bb_for_stmt (tsi_stmt (tsi_tgt), new_bb);
+    change_bb_for_stmt (tsi_stmt (tsi_tgt), new_bb);
 
   return new_bb;
 }
