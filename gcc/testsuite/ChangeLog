@@ -1,3 +1,8 @@
+2006-08-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28557
+	* g++.dg/template/conv9.C: New test.
+
 2006-08-02  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR debug/28063
