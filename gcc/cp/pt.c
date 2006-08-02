@@ -7675,6 +7675,7 @@ tsubst_baselink (tree baselink, tree object_type,
     tree name;
     tree qualifying_scope;
     tree fns;
+    tree optype;
     tree template_args = 0;
     bool template_id_p = false;
 
@@ -7688,6 +7689,7 @@ tsubst_baselink (tree baselink, tree object_type,
        ambiguous now.  Therefore, we perform the lookup again.  */
     qualifying_scope = BINFO_TYPE (BASELINK_ACCESS_BINFO (baselink));
     fns = BASELINK_FUNCTIONS (baselink);
+    optype = BASELINK_OPTYPE (baselink);
     if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
       {
 	template_id_p = true;
@@ -7715,6 +7717,9 @@ tsubst_baselink (tree baselink, tree object_type,
 	= build_nt (TEMPLATE_ID_EXPR,
 		    BASELINK_FUNCTIONS (baselink),
 		    template_args);
+    /* Update the conversion operator type.  */
+    BASELINK_OPTYPE (baselink) 
+      = tsubst (optype, args, complain, in_decl);
 
     if (!object_type)
       object_type = current_class_type;

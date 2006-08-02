@@ -1,3 +1,8 @@
+2006-08-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28557
+	* pt.c (tsubst_baselink): Substitute into BASELINK_OPTYPE.
+
 2006-07-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28523
