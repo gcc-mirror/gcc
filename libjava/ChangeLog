@@ -1,3 +1,8 @@
+2006-08-02  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	PR libgcj/28546
+	* include/no-threads.h: Declare _Jv_Thread_t as empty class.
+
 2006-08-01  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* gnu/classpath/natSystemProperties.cc: Add additional check for

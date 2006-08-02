@@ -1,7 +1,7 @@
 // -*- c++ -*-
 // no-threads.h - Defines for using no threads.
 
-/* Copyright (C) 1998, 1999, 2004  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2004, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -25,9 +25,13 @@ details.  */
 
 typedef int _Jv_ConditionVariable_t;
 typedef int _Jv_Mutex_t;
-typedef int _Jv_Thread_t;
 typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
 
+//
+// Declarations
+//
+
+class _Jv_Thread_t { };
 
 //
 // Condition variables.
