@@ -1,3 +1,9 @@
+2006-08-02  Jan Hubicka  <jh@suse.cz>
+
+	PR gcov/profile/28480
+	* tree-cfg.c (change_bb_for_stmt): New function.
+	(tree_merge_blocks, tree_split_blocks): Use it.
+
 2006-08-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28250
