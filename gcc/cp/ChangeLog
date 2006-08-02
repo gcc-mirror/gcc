@@ -1,3 +1,14 @@
+2006-08-02  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/28479
+	Revert
+	2006-07-05  Richard Guenther  <rguenther@suse.de>
+	Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR c++/27084
+	* cp-objcp-common.c (cxx_types_compatible_p): Ignore
+	top level qualifiers for pointer type comparisons.
+
 2006-08-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28557
