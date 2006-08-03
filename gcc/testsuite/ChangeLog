@@ -1,3 +1,8 @@
+2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28274
+	* g++.dg/other/default5.C: New test.
+
 2006-08-02  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/tree-ssa/copyprop-1.C: XFAIL.

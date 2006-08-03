@@ -1,3 +1,11 @@
+2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28274
+	* decl.c (duplicate_decls): Call check_default_args here.
+	(start_preparsed_function): Do not call check_default_args.
+	* name-lookup.c (pushdecl_maybe_friend): Only call
+	check_default_args if duplicate_decls got bypassed.
+
 2006-08-02  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/28479
