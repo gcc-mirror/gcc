@@ -4611,6 +4611,15 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
       TREE_TYPE (decl) = error_mark_node;
       init = NULL_TREE;
     }
+  else if (!CP_AGGREGATE_TYPE_P (type)
+	   && init && TREE_CODE (init) == CONSTRUCTOR
+	   && BRACE_ENCLOSED_INITIALIZER_P (init)
+	   && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)) != 1)
+    {
+      error ("scalar object %qD requires one element in initializer", decl);
+      TREE_TYPE (decl) = error_mark_node;
+      init = NULL_TREE;
+    }
 
   if (TREE_CODE (decl) == CONST_DECL)
     {
