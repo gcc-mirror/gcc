@@ -887,6 +887,9 @@ cgraph_finalize_compilation_unit (void)
      intermodule optimization.  */
   static struct cgraph_node *first_analyzed;
 
+  if (errorcount || sorrycount)
+    return;
+
   finish_aliases_1 ();
 
   if (!flag_unit_at_a_time)
@@ -1229,6 +1232,9 @@ ipa_passes (void)
 void
 cgraph_optimize (void)
 {
+  if (errorcount || sorrycount)
+    return;
+
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif

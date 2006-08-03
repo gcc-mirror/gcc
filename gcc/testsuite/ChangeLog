@@ -1,5 +1,21 @@
 2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28250
+	* g++.dg/eh/catch4.C: New test.
+
+	PR c++/28257
+	* g++.dg/other/qual1.C: New test.
+
+	PR c++/28259
+	* g++.dg/inherit/error2.C: New test.
+
+	PR c++/28267
+	* g++.dg/other/new1.C: New test.
+
+	* g++.dg/warn/pr23075.C: Remove obsolete test.
+	* g++.old-deja/g++.brendan/crash52.C: Remove dg-warning marker.
+	* g++.old-deja/g++.jason/report.C: Remove dg-warning marker.
+
 	PR c++/27508
 	* g++.dg/parse/dtor9.C: New test.
 	* g++.dg/parse/dtor10.C: New test.
