@@ -602,9 +602,6 @@ pushdecl_maybe_friend (tree x, bool is_friend)
     {
       int different_binding_level = 0;
 
-      if (TREE_CODE (x) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (x))
-       check_default_args (x);
-
       if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
 	name = TREE_OPERAND (name, 0);
 
@@ -732,6 +729,9 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		}
 	    }
 	}
+
+      if (TREE_CODE (x) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (x))
+	check_default_args (x);
 
       check_template_shadow (x);
 
