@@ -223,15 +223,19 @@ cleanup:
   return result;
 }
 
-/* Adds test of COND jumping to DEST to the end of BB.  */
+/* Adds test of COND jumping to DEST on edge *E and set *E to the new fallthru
+   edge.  If the condition is always false, do not do anything.  If it is always
+   true, redirect E to DEST and return false.  In all other cases, true is
+   returned.  */
 
-static void
-add_test (rtx cond, basic_block bb, basic_block dest)
+static bool
+add_test (rtx cond, edge *e, basic_block dest)
 {
   rtx seq, jump, label;
   enum machine_mode mode;
   rtx op0 = XEXP (cond, 0), op1 = XEXP (cond, 1);
   enum rtx_code code = GET_CODE (cond);
+  basic_block bb;
 
   mode = GET_MODE (XEXP (cond, 0));
   if (mode == VOIDmode)
@@ -244,18 +248,36 @@ add_test (rtx cond, basic_block bb, basic_block dest)
   do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL_RTX, label);
 
   jump = get_last_insn ();
+  if (!JUMP_P (jump))
+    {
+      /* The condition is always false and the jump was optimized out.  */
+      end_sequence ();
+      return true;
+    }
+
+  seq = get_insns ();
+  end_sequence ();
+  bb = loop_split_edge_with (*e, seq);
+  *e = single_succ_edge (bb);
+
+  if (any_uncondjump_p (jump))
+    {
+      /* The condition is always true.  */
+      delete_insn (jump);
+      redirect_edge_and_branch_force (*e, dest);
+      return false;
+    }
+      
   JUMP_LABEL (jump) = label;
 
   /* The jump is supposed to handle an unlikely special case.  */
   REG_NOTES (jump)
 	  = gen_rtx_EXPR_LIST (REG_BR_PROB,
 			       const0_rtx, REG_NOTES (jump));
-
   LABEL_NUSES (label)++;
 
-  seq = get_insns ();
-  end_sequence ();
-  emit_insn_after (seq, BB_END (bb));
+  make_edge (bb, dest, (*e)->flags & ~EDGE_FALLTHRU);
+  return true;
 }
 
 /* Modify the loop to use the low-overhead looping insn where LOOP
@@ -273,7 +295,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   rtx sequence;
   rtx jump_insn;
   rtx jump_label;
-  int nonneg = 0, irr;
+  int nonneg = 0;
   bool increment_count;
   basic_block loop_end = desc->out_edge->src;
   enum machine_mode mode;
@@ -353,39 +375,57 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	      = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
       basic_block new_preheader
 	      = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
-      basic_block bb;
       edge te;
-      gcov_type cnt;
 
       /* Expand the condition testing the assumptions and if it does not pass,
 	 reset the count register to 0.  */
-      add_test (XEXP (ass, 0), preheader, set_zero);
-      single_succ_edge (preheader)->flags &= ~EDGE_FALLTHRU;
-      cnt = single_succ_edge (preheader)->count;
-      single_succ_edge (preheader)->probability = 0;
-      single_succ_edge (preheader)->count = 0;
-      irr = single_succ_edge (preheader)->flags & EDGE_IRREDUCIBLE_LOOP;
-      te = make_edge (preheader, new_preheader, EDGE_FALLTHRU | irr);
-      te->probability = REG_BR_PROB_BASE;
-      te->count = cnt;
+      redirect_edge_and_branch_force (single_succ_edge (preheader), new_preheader);
       set_immediate_dominator (CDI_DOMINATORS, new_preheader, preheader);
 
       set_zero->count = 0;
       set_zero->frequency = 0;
 
-      for (ass = XEXP (ass, 1); ass; ass = XEXP (ass, 1))
+      te = single_succ_edge (preheader);
+      for (; ass; ass = XEXP (ass, 1))
+	if (!add_test (XEXP (ass, 0), &te, set_zero))
+	  break;
+
+      if (ass)
 	{
-	  bb = loop_split_edge_with (te, NULL_RTX);
-	  te = single_succ_edge (bb);
-	  add_test (XEXP (ass, 0), bb, set_zero);
-	  make_edge (bb, set_zero, irr);
+	  /* We reached a condition that is always true.  This is very hard to
+	     reproduce (such a loop does not roll, and thus it would most
+	     likely get optimized out by some of the preceding optimizations).
+	     In fact, I do not have any testcase for it.  However, it would
+	     also be very hard to show that it is impossible, so we must
+	     handle this case.  */
+	  set_zero->count = preheader->count;
+	  set_zero->frequency = preheader->frequency;
 	}
-  
-      start_sequence ();
-      convert_move (counter_reg, noloop, 0);
-      sequence = get_insns ();
-      end_sequence ();
-      emit_insn_after (sequence, BB_END (set_zero));
+ 
+      if (EDGE_COUNT (set_zero->preds) == 0)
+	{
+	  /* All the conditions were simplified to false, remove the
+	     unreachable set_zero block.  */
+	  remove_bb_from_loops (set_zero);
+	  delete_basic_block (set_zero);
+	}
+      else
+	{
+	  /* Reset the counter to zero in the set_zero block.  */
+	  start_sequence ();
+	  convert_move (counter_reg, noloop, 0);
+	  sequence = get_insns ();
+	  end_sequence ();
+	  emit_insn_after (sequence, BB_END (set_zero));
+      
+	  set_immediate_dominator (CDI_DOMINATORS, set_zero,
+				   recount_dominator (CDI_DOMINATORS,
+						      set_zero));
+	}
+
+      set_immediate_dominator (CDI_DOMINATORS, new_preheader,
+			       recount_dominator (CDI_DOMINATORS,
+						  new_preheader));
     }
 
   /* Some targets (eg, C4x) need to initialize special looping

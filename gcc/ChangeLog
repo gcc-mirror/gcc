@@ -1,3 +1,14 @@
+2006-08-03  Steve Ellcey  <sje@cup.hp.com>
+
+	PR rtl-optimization/28221
+	Backport from mainline.
+	2005-11-30  Nathan Sidwell  <nathan@codesourcery.com>
+	* loop-doloop.c (add_test): Only add jump note if we did emit a jump.
+	2006-05-01  Zdenek Dvorak  <dvorakz@suse.cz>
+	PR rtl-optimization/27291
+	* loop-doloop.c (add_test, doloop_modify): Handle the case condition
+	is folded to a constant.
+
 2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28257
