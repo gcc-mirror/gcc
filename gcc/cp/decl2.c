@@ -710,7 +710,6 @@ check_classfn (tree ctype, tree function, tree template_parms)
     {
       error ("no %q#D member function declared in class %qT",
 	     function, ctype);
-      return NULL_TREE;
     }
 
   /* If we did not find the method in the class, add it to avoid
