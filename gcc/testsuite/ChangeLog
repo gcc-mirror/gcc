@@ -1,3 +1,7 @@
+2006-08-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/20060801-1.c: Add missing '}'.
+
 2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27508
