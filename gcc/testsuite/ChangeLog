@@ -1,5 +1,10 @@
 2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27508
+	* g++.dg/parse/dtor9.C: New test.
+	* g++.dg/parse/dtor10.C: New test.
+	* g++.dg/other/error7.C: Adjust error-marker.
+
 	PR c++/28274
 	* g++.dg/other/default5.C: New test.
 
