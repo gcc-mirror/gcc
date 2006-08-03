@@ -1,5 +1,9 @@
 2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/27508
+	* parser.c (cp_parser_unqualified_id): Check for invalid scopes
+	when parsing destructor names.
+
 	PR c++/28274
 	* decl.c (duplicate_decls): Call check_default_args here.
 	(start_preparsed_function): Do not call check_default_args.
