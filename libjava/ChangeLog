@@ -1,3 +1,41 @@
+2006-08-03  Tom Tromey  <tromey@redhat.com>
+
+	* jvmti.cc (REQUIRE_PHASE): New macro.
+	(_Jv_JVMTI_InterruptThread): New function.
+	(_Jv_JVMTI_CreateRawMonitor): Likewise.
+	(_Jv_JVMTI_DestroyRawMonitor): Likewise.
+	(_Jv_JVMTI_RawMonitorEnter): Likewise.
+	(_Jv_JVMTI_RawMonitorExit): Likewise.
+	(_Jv_JVMTI_RawMonitorWait): Likewise.
+	(_Jv_JVMTI_RawMonitorNotify): Likewise.
+	(_Jv_JVMTI_RawMonitorNotifyAll): Likewise.
+	(_Jv_JVMTI_Allocate): Likewise.
+	(_Jv_JVMTI_Deallocate): Likewise.
+	(_Jv_JVMTI_GetClassModifiers): Likewise.
+	(_Jv_JVMTI_GetClassMethods): Likewise.
+	(_Jv_JVMTI_IsInterface): Likewise.
+	(_Jv_JVMTI_IsArrayClass): Likewise.
+	(_Jv_JVMTI_GetClassLoader): Likewise.
+	(_Jv_JVMTI_GetObjectHashCode): Likewise.
+	(_Jv_JVMTI_GetFieldModifiers): Likewise.
+	(_Jv_JVMTI_IsFieldSynthetic): Likewise.
+	(_Jv_JVMTI_GetMethodModifiers): Likewise.
+	(_Jv_JVMTI_IsMethodNative): Likewise.
+	(_Jv_JVMTI_IsMethodSynthetic): Likewise.
+	(_Jv_JVMTI_GetClassLoaderClasses): Likewise.
+	(_Jv_JVMTI_ForceGarbageCollection): Likewise.
+	(_Jv_JVMTI_GetSystemProperty): Likewise.
+	(_Jv_JVMTI_SetSystemProperty): Likewise.
+	(_Jv_JVMTI_GetTime): Likewise.
+	(_Jv_JVMTI_GetAvailableProcessors): Likewise.
+	(_Jv_JVMTI_AddToBootstrapClassLoaderSearch): Likewise.
+	(_Jv_JVMTI_SetVerboseFlag): Likewise.
+	(_Jv_JVMTI_GetObjectSize): Likewise.
+	(_Jv_JVMTI_SetJNIFunctionTable): Likewise.
+	(_Jv_JVMTI_GetJNIFunctionTable): Likewise.
+	(_Jv_JVMTI_Interface): Updated.
+	(NULL_CHECK): New macro.
+
 2006-08-02  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	PR libgcj/28546
