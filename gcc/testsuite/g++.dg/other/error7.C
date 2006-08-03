@@ -8,5 +8,5 @@ namespace N {}
 
 void foo(void)
 {
-  N::~A();    // { dg-error "not a member" }
+  N::~A();    // { dg-error "not a class-name" }
 }

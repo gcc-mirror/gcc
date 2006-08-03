@@ -3416,9 +3416,24 @@ cp_parser_unqualified_id (cp_parser* parser,
 	object_scope = parser->object_scope;
 	qualifying_scope = parser->qualifying_scope;
 
+	/* Check for invalid scopes.  */
+	if (scope == error_mark_node)
+	  {
+	    cp_parser_skip_to_end_of_statement (parser);
+	    return error_mark_node;
+	  }
+	if (scope && TREE_CODE (scope) == NAMESPACE_DECL)
+	  {
+	    if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
+	      error ("scope %qT before %<~%> is not a class-name", scope);
+	    cp_parser_skip_to_end_of_statement (parser);
+	    return error_mark_node;
+	  }
+	gcc_assert (!scope || TYPE_P (scope));
+
 	/* If the name is of the form "X::~X" it's OK.  */
 	token = cp_lexer_peek_token (parser->lexer);
-	if (scope && TYPE_P (scope)
+	if (scope
 	    && token->type == CPP_NAME
 	    && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
 		== CPP_OPEN_PAREN)
@@ -3500,7 +3515,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	   destructor is the same as the name of the qualifying
 	   class.  That allows us to keep parsing after running
 	   into ill-formed destructor names.  */
-	if (type_decl == error_mark_node && scope && TYPE_P (scope))
+	if (type_decl == error_mark_node && scope)
 	  return build_nt (BIT_NOT_EXPR, scope);
 	else if (type_decl == error_mark_node)
 	  return error_mark_node;
