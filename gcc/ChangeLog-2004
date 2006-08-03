@@ -4691,7 +4691,7 @@
 2004-11-18  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.comn>
 
 	* config/m32r/linux.h (TARGET_ASM_FILE_END): Set
-	TARGET_ASM_FILE_END to file_end_indicate_exec_stack.3
+	TARGET_ASM_FILE_END to file_end_indicate_exec_stack.
 
 2004-11-18  Andreas Schwab  <schwab@suse.de>
 
