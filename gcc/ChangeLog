@@ -1,3 +1,10 @@
+2006-08-03  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline
+	PR target/27566
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Do
+	not reload a SPE symbol_ref into a lo_sum address.
+
 2006-08-03  Steve Ellcey  <sje@cup.hp.com>
 
 	PR rtl-optimization/28221
@@ -40,7 +47,7 @@
 	same size, canonicalize llceil*, llfloor*, llround* and llrint*
 	functions to their lceil*, lfloor*, lround* and lrint* forms.
 
-2006-07-26  David Edelsohn  <edelsohn@gnu.org>
+2006-07-26  David delsohn  <edelsohn@gnu.org>
 
 	Backport from mainline
 	2006-07-14  Eliot Dresselhaus  <eliot@sonic.net>
