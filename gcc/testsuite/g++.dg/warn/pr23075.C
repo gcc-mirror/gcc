@@ -7,8 +7,3 @@ foo (void)
 {
   return;	// { dg-error "with no value" }
 }		// { dg-bogus "control reaches end" }
-
-int
-bar (void)
-{
-}		// { dg-warning "control reaches end" }

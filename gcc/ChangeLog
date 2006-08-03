@@ -1,3 +1,12 @@
+2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28257
+	PR c++/28259
+	PR c++/28267
+	* toplev.c (compile_file): Return early on errorcount or sorrycount.
+	* cgraphunit.c (cgraph_finalize_compilation_unit): Likewise.
+	(cgraph_optimize): Likewise.
+
 2006-07-30  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/28473

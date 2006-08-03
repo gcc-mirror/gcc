@@ -682,6 +682,9 @@ cgraph_finalize_compilation_unit (void)
 {
   struct cgraph_node *node;
 
+  if (errorcount || sorrycount)
+    return;
+
   finish_aliases_1 ();
 
   if (!flag_unit_at_a_time)
@@ -1764,6 +1767,9 @@ cgraph_preserve_function_body_p (tree decl)
 void
 cgraph_optimize (void)
 {
+  if (errorcount || sorrycount)
+    return;
+
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif
