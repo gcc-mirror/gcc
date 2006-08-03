@@ -1,3 +1,14 @@
+2006-08-03  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/27770
+	* lib/target-support.exp: New target keyword "section_anchors". 
+	* gcc.dg/vect/vect.exp: Add -fsection-anchors to compilation of some
+	tests.
+	* gcc.dg/vect/section-anchors-pr27770.c: New test.
+	* gcc.dg/vect/vect-69.c: Removed. Replaced by:
+	* gcc.dg/vect/section-anchors-vect-69.c: New test.
+	* gcc.dg/vect/no-section-anchors-vect-69.c: New test.
+	
 2006-08-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/20060801-1.c: Add missing '}'.

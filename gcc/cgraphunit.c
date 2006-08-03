@@ -172,6 +172,7 @@ static void cgraph_mark_functions_to_output (void);
 static void cgraph_expand_function (struct cgraph_node *);
 static tree record_reference (tree *, int *, void *);
 static void cgraph_output_pending_asms (void);
+static void cgraph_increase_alignment (void);
 
 /* Records tree nodes seen in record_reference.  Simply using
    walk_tree_without_duplicates doesn't guarantee each node is visited
@@ -1506,6 +1507,7 @@ cgraph_optimize (void)
   /* This pass remove bodies of extern inline functions we never inlined.
      Do this later so other IPA passes see what is really going on.  */
   cgraph_remove_unreachable_nodes (false, dump_file);
+  cgraph_increase_alignment ();
   cgraph_global_info_ready = true;
   if (cgraph_dump_file)
     {
@@ -1563,6 +1565,51 @@ cgraph_optimize (void)
 	internal_error ("nodes with no released memory found");
     }
 #endif
+}
+
+/* Increase alignment of global arrays to improve vectorization potential.
+   TODO:
+   - Consider also structs that have an array field.
+   - Use ipa analysis to prune arrays that can't be vectorized?
+     This should involve global alignment analysis and in the future also
+     array padding.  */
+
+static void
+cgraph_increase_alignment (void)
+{
+  if (flag_section_anchors && flag_tree_vectorize)
+    {
+      struct cgraph_varpool_node *vnode;
+
+      /* Increase the alignment of all global arrays for vectorization.  */
+      for (vnode = cgraph_varpool_nodes_queue;
+           vnode;
+           vnode = vnode->next_needed)
+        {
+          tree vectype, decl = vnode->decl;
+          unsigned int alignment;
+
+          if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
+            continue;
+          vectype = get_vectype_for_scalar_type (TREE_TYPE (TREE_TYPE (decl)));
+          if (!vectype)
+            continue;
+          alignment = TYPE_ALIGN (vectype);
+          if (DECL_ALIGN (decl) >= alignment)
+            continue;
+
+          if (vect_can_force_dr_alignment_p (decl, alignment))
+            { 
+              DECL_ALIGN (decl) = TYPE_ALIGN (vectype);
+              DECL_USER_ALIGN (decl) = 1;
+              if (cgraph_dump_file)
+                { 
+                  fprintf (cgraph_dump_file, "Increasing alignment of decl: ");
+                  print_generic_expr (cgraph_dump_file, decl, TDF_SLIM);
+                }
+            }
+        }
+    }
 }
 
 /* Generate and emit a static constructor or destructor.  WHICH must be

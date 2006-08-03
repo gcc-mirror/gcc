@@ -1,3 +1,19 @@
+2006-08-03  Dorit Nuzman  <dorit@il.ibm.com>
+
+        PR tree-optimization/27770
+        * tree-vectorizer.h (get_vectype_for_scalar_type): Function
+        declaration removed (moved to tree-flow.h).
+        (vect_can_force_dr_alignment_p): Likewise.
+        * tree-flow.h (get_vectype_for_scalar_type): New function declaration
+        (moved from tree-vectorizer.h).
+        (vect_can_force_dr_alignment_p): Likewise.
+        * tree-vectorizer.c (vect_print_dump_info): Allow calling this function
+        from outside the vectorizer - in particular from cgraph stage.
+        * tree-vect-analyze.c (vect_compute_data_ref_alignment): Don't increase
+        the alignment of global arrays when -fsection-anchors is enabled.
+        * cgraphunit.c (cgraph_increase_alignment): New function.
+        (cgraph_optimize): Call cgraph_increase_alignment.
+
 2006-08-03  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/27566
