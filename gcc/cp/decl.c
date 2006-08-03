@@ -1573,6 +1573,9 @@ duplicate_decls (tree newdecl, tree olddecl)
 	}
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
 
+      if (TREE_CODE (newdecl) == FUNCTION_DECL)
+	check_default_args (newdecl);
+
       /* Lay the type out, unless already done.  */
       if (! same_type_p (newtype, oldtype)
 	  && TREE_TYPE (newdecl) != error_mark_node
@@ -10009,8 +10012,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
      you declare a function, these types can be incomplete, but they
      must be complete when you define the function.  */
   check_function_type (decl1, current_function_parms);
-  /* Make sure no default arg is missing.  */
-  check_default_args (decl1);
 
   /* Build the return declaration for the function.  */
   restype = TREE_TYPE (fntype);
