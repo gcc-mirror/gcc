@@ -2163,8 +2163,6 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   /* Update callgraph if needed.  */
   cgraph_remove_node (cg_edge->callee);
 
-  /* Declare the 'auto' variables added with this inlined body.  */
-  record_vars (BLOCK_VARS (id->block));
   id->block = NULL_TREE;
   successfully_inlined = TRUE;
 
@@ -2556,7 +2554,13 @@ declare_inline_vars (tree block, tree vars)
 {
   tree t;
   for (t = vars; t; t = TREE_CHAIN (t))
-    DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
+    {
+      DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
+      gcc_assert (!TREE_STATIC (t) && !TREE_ASM_WRITTEN (t));
+      cfun->unexpanded_var_list =
+	tree_cons (NULL_TREE, t,
+		   cfun->unexpanded_var_list);
+    }
 
   if (block)
     BLOCK_VARS (block) = chainon (BLOCK_VARS (block), vars);
