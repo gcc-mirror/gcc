@@ -424,16 +424,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void
       push(const value_type& __x)
       {
-	try
-        {
-          c.push_back(__x);
-          std::push_heap(c.begin(), c.end(), comp);
-        }
-	catch(...)
-        {
-          c.clear();
-          __throw_exception_again;
-        }
+	c.push_back(__x);
+	std::push_heap(c.begin(), c.end(), comp);
       }
 
       /**
@@ -451,16 +443,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       pop()
       {
 	__glibcxx_requires_nonempty();
-	try
-        {
-          std::pop_heap(c.begin(), c.end(), comp);
-          c.pop_back();
-        }
-	catch(...)
-        {
-          c.clear();
-          __throw_exception_again;
-        }
+	std::pop_heap(c.begin(), c.end(), comp);
+	c.pop_back();
       }
     };
 

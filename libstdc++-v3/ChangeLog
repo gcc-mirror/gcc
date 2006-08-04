@@ -1,3 +1,9 @@
+2006-08-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_queue.h (priority_queue<>::push,
+	priority_queue<>::pop): Remove try/catch, just follow the
+	letter of the Standard.
+
 2006-08-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_queue.h: Trivial formatting fixes.
