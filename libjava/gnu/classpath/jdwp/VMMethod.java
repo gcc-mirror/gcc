@@ -103,17 +103,17 @@ public class VMMethod
   /**
    * Returns the name of this method
    */
-  public String getName() { return null; }
+  public native String getName();
 
   /**
    * Returns the signature of this method
    */
-  public String getSignature() { return null; }
+  public native String getSignature();
 
   /**
    * Returns the method's modifier flags
    */
-  public int getModifiers() { return -1; }
+  public native int getModifiers();
 
   /**
    * "Returns line number information for the method, if present. The line
@@ -125,8 +125,8 @@ public class VMMethod
    * @return the line table
    * @throws JdwpException
    */
-  public LineTable getLineTable()
-  { return null; }
+  public native LineTable getLineTable()
+    throws JdwpException;
 
   /**
    * "Returns variable information for the method. The variable table
@@ -137,8 +137,8 @@ public class VMMethod
    * @return the variable table
    * @throws JdwpException
    */
-  public VariableTable getVariableTable()
-  { return null; }
+  public native VariableTable getVariableTable()
+    throws JdwpException;
 
   /**
    * Returns a string representation of this method (not

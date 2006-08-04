@@ -1,7 +1,7 @@
 /* VMIdManager.java -- A reference/example implementation of a manager for
    JDWP object/reference type IDs
 
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -48,11 +48,9 @@ import gnu.classpath.jdwp.id.*;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 /**
  * This class manages objects and referencetypes that are reported
@@ -75,6 +73,10 @@ import java.util.Iterator;
  *
  * <b>NOTE:</b> All IDs handled by the ID manager (all object and reference
  * type IDs) are assumed to be of type <code>long</code>.
+ *
+ * <b>NOTE:</b> This class does not manage virtual machine-specific types,
+ * like methods, fields, and frames. These already have unique IDs within
+ * the virtual machine and do not need further abstraction here.
  *
  * @author Keith Seitz  (keiths@redhat.com)
  */
@@ -99,9 +101,6 @@ public class VMIdManager
       // ObjectId and ArrayId are special cases. See newObjectId.
       _idList.put (ClassLoaderId.typeClass, ClassLoaderId.class);
       _idList.put (ClassObjectId.typeClass, ClassObjectId.class);
-      //_idList.put (FieldId.typeClass, FieldId.class);
-      //_idList.put (FrameId.typeClass, FrameId.class);
-      //_idList.put (MethodId.typeClass, MethodId.class);
       _idList.put (StringId.typeClass, StringId.class);
       _idList.put (ThreadId.typeClass, ThreadId.class);
       _idList.put (ThreadGroupId.typeClass, ThreadGroupId.class);
@@ -110,7 +109,7 @@ public class VMIdManager
     /**
      * Returns a new id for the given object
      *
-     * @param object  the object for which an id is desired
+     * @param obj  SoftReference of the object for which an id is desired
      * @returns a suitable object id
      */
     public static ObjectId newObjectId (SoftReference obj)
@@ -170,7 +169,7 @@ public class VMIdManager
     /**
      * Returns a new reference type id for the given class
      *
-     * @param clazz  the <code>Class</code> for which an id is desired
+     * @param ref  SoftReference to the desired type
      * @returns a suitable reference type id or null when the
      * reference is cleared.
      */
@@ -187,6 +186,7 @@ public class VMIdManager
 	id = new InterfaceReferenceTypeId ();
       else
 	id = new ClassReferenceTypeId ();
+      id.setReference (ref);
       synchronized (_ridLock)
 	{
 	  id.setId (++_lastRid);
