@@ -2782,7 +2782,7 @@ set_bb_for_stmt (tree t, basic_block bb)
 /* Faster version of set_bb_for_stmt that assume that statement is being moved
    from one basic block to another.  
    For BB splitting we can run into quadratic case, so performance is quite
-   important and knowing that the tables are big enought, change_bb_for_stmt
+   important and knowing that the tables are big enough, change_bb_for_stmt
    can inline as leaf function.  */
 static inline void
 change_bb_for_stmt (tree t, basic_block bb)

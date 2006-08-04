@@ -1,3 +1,7 @@
+2006-08-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-cfg.c: Fix a comment typo.
+
 2006-08-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28148
