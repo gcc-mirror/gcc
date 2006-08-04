@@ -1,3 +1,9 @@
+2006-08-04  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/24888
+	* tree-inline.c (expand_call_inline): Do not re-record variables.
+	(declare_inline_vars): Add variable to unexpanded_var_list.
+
 2006-08-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 	    Roger Sayle  <roger@eyesopen.com>
 
