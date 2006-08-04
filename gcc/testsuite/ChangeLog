@@ -1,3 +1,10 @@
+2006-08-03  Lee Millward  <lee.millward@codesourcery.com>
+
+       PR c++/28347
+       * g++.dg/ext/typedef-init.C: Add new test for typedef 
+       initialization inside templates. Adjust existing
+       error markers.
+	
 2006-08-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28148

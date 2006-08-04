@@ -1,3 +1,9 @@
+2006-08-03  Lee Millward  <lee.millward@codesourcery.com>
+
+       PR c++/28347
+       * decl.c (start_decl): Return error_mark_node if a
+       diagnostic was issed for an invalid typedef initialization.
+	
 2006-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/27508
