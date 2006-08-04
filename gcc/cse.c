@@ -4267,16 +4267,29 @@ fold_rtx (rtx x, rtx insn)
 	      enum rtx_code associate_code;
 	      rtx new_const;
 
-	      if (y == 0
-		  || 0 == (inner_const
-			   = equiv_constant (fold_rtx (XEXP (y, 1), 0)))
-		  || GET_CODE (inner_const) != CONST_INT
-		  /* If we have compiled a statement like
-		     "if (x == (x & mask1))", and now are looking at
-		     "x & mask2", we will have a case where the first operand
-		     of Y is the same as our first operand.  Unless we detect
-		     this case, an infinite loop will result.  */
-		  || XEXP (y, 0) == folded_arg0)
+	      if (is_shift
+		  && (INTVAL (const_arg1) >= GET_MODE_BITSIZE (mode)
+		      || INTVAL (const_arg1) < 0))
+		{
+		  if (SHIFT_COUNT_TRUNCATED)
+		    const_arg1 = GEN_INT (INTVAL (const_arg1)
+					  & (GET_MODE_BITSIZE (mode) - 1));
+		  else
+		    break;
+		}
+
+	      if (y == 0)
+		break;
+	      inner_const = equiv_constant (fold_rtx (XEXP (y, 1), 0));
+	      if (!inner_const || GET_CODE (inner_const) != CONST_INT)
+		break;
+
+	      /* If we have compiled a statement like
+		 "if (x == (x & mask1))", and now are looking at
+		 "x & mask2", we will have a case where the first operand
+		 of Y is the same as our first operand.  Unless we detect
+		 this case, an infinite loop will result.  */
+	      if (XEXP (y, 0) == folded_arg0)
 		break;
 
 	      /* Don't associate these operations if they are a PLUS with the
@@ -4295,6 +4308,17 @@ fold_rtx (rtx x, rtx insn)
 			  && exact_log2 (- INTVAL (const_arg1)) >= 0)))
 		break;
 
+	      if (is_shift
+		  && (INTVAL (inner_const) >= GET_MODE_BITSIZE (mode)
+		      || INTVAL (inner_const) < 0))
+		{
+		  if (SHIFT_COUNT_TRUNCATED)
+		    inner_const = GEN_INT (INTVAL (inner_const)
+					   & (GET_MODE_BITSIZE (mode) - 1));
+		  else
+		    break;
+		}
+
 	      /* Compute the code used to compose the constants.  For example,
 		 A-C1-C2 is A-(C1 + C2), so if CODE == MINUS, we want PLUS.  */
 
@@ -4312,13 +4336,16 @@ fold_rtx (rtx x, rtx insn)
 		 shift on a machine that does a sign-extend as a pair
 		 of shifts.  */
 
-	      if (is_shift && GET_CODE (new_const) == CONST_INT
+	      if (is_shift
+		  && GET_CODE (new_const) == CONST_INT
 		  && INTVAL (new_const) >= GET_MODE_BITSIZE (mode))
 		{
 		  /* As an exception, we can turn an ASHIFTRT of this
 		     form into a shift of the number of bits - 1.  */
 		  if (code == ASHIFTRT)
 		    new_const = GEN_INT (GET_MODE_BITSIZE (mode) - 1);
+		  else if (!side_effects_p (XEXP (y, 0)))
+		    return CONST0_RTX (mode);
 		  else
 		    break;
 		}
