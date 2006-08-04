@@ -3727,8 +3727,7 @@ start_decl (const cp_declarator *declarator,
       {
       case TYPE_DECL:
 	error ("typedef %qD is initialized (use __typeof__ instead)", decl);
-	initialized = 0;
-	break;
+	return error_mark_node;
 
       case FUNCTION_DECL:
 	error ("function %q#D is initialized like a variable", decl);
