@@ -1,3 +1,15 @@
+2006-08-01  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/VMFrame.java: Update to Classpath 0.91.
+	* gnu/classpath/jdwp/VMIdManager.java: Likewise.
+	* gnu/classpath/jdwp/VMMethod.java: Likewise.
+	* gnu/classpath/jdwp/VMVirtualMachine: Likewise.
+	* gnu/classpath/jdwp/natVMFrame.java: New file.
+	* gnu/classpath/jdwp/natVMMethod.java: New file.
+	* gnu/classpath/jdwp/natVMVirtualMachine.java: New file.
+	* Makefile.am (nat_source_files): Add new filles.
+	* Makefile.in: Regenerated.
+
 2006-08-03  Tom Tromey  <tromey@redhat.com>
 
 	* jvmti.cc (REQUIRE_PHASE): New macro.

@@ -252,7 +252,10 @@ am__DEPENDENCIES_4 =
 am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
 	java/lang/Class.java java/lang/Object.java \
-	gnu/classpath/natSystemProperties.cc gnu/gcj/natCore.cc \
+	gnu/classpath/natSystemProperties.cc \
+	gnu/classpath/jdwp/natVMFrame.cc \
+	gnu/classpath/jdwp/natVMMethod.cc \
+	gnu/classpath/jdwp/natVMVirtualMachine.cc gnu/gcj/natCore.cc \
 	gnu/gcj/convert/JIS0208_to_Unicode.cc \
 	gnu/gcj/convert/JIS0212_to_Unicode.cc \
 	gnu/gcj/convert/Unicode_to_JIS.cc gnu/gcj/convert/natIconv.cc \
@@ -295,7 +298,10 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	boehm.cc nogc.cc posix.cc win32.cc darwin.cc posix-threads.cc \
 	win32-threads.cc no-threads.cc
 am__objects_2 = gnu/classpath/natSystemProperties.lo \
-	gnu/gcj/natCore.lo gnu/gcj/convert/JIS0208_to_Unicode.lo \
+	gnu/classpath/jdwp/natVMFrame.lo \
+	gnu/classpath/jdwp/natVMMethod.lo \
+	gnu/classpath/jdwp/natVMVirtualMachine.lo gnu/gcj/natCore.lo \
+	gnu/gcj/convert/JIS0208_to_Unicode.lo \
 	gnu/gcj/convert/JIS0212_to_Unicode.lo \
 	gnu/gcj/convert/Unicode_to_JIS.lo gnu/gcj/convert/natIconv.lo \
 	gnu/gcj/convert/natInput_EUCJIS.lo \
@@ -618,7 +624,6 @@ bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
 build_cpu = @build_cpu@
-build_libsubdir = @build_libsubdir@
 build_os = @build_os@
 build_subdir = @build_subdir@
 build_vendor = @build_vendor@
@@ -7085,6 +7090,9 @@ gkeytool_LDADD = -L$(here)/.libs libgcj-tools.la
 gkeytool_DEPENDENCIES = libgcj-tools.la
 nat_source_files = \
 gnu/classpath/natSystemProperties.cc \
+gnu/classpath/jdwp/natVMFrame.cc \
+gnu/classpath/jdwp/natVMMethod.cc \
+gnu/classpath/jdwp/natVMVirtualMachine.cc \
 gnu/gcj/natCore.cc \
 gnu/gcj/convert/JIS0208_to_Unicode.cc \
 gnu/gcj/convert/JIS0212_to_Unicode.cc \
@@ -7417,6 +7425,19 @@ gnu/classpath/$(DEPDIR)/$(am__dirstamp):
 	@: > gnu/classpath/$(DEPDIR)/$(am__dirstamp)
 gnu/classpath/natSystemProperties.lo: gnu/classpath/$(am__dirstamp) \
 	gnu/classpath/$(DEPDIR)/$(am__dirstamp)
+gnu/classpath/jdwp/$(am__dirstamp):
+	@$(mkdir_p) gnu/classpath/jdwp
+	@: > gnu/classpath/jdwp/$(am__dirstamp)
+gnu/classpath/jdwp/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/classpath/jdwp/$(DEPDIR)
+	@: > gnu/classpath/jdwp/$(DEPDIR)/$(am__dirstamp)
+gnu/classpath/jdwp/natVMFrame.lo: gnu/classpath/jdwp/$(am__dirstamp) \
+	gnu/classpath/jdwp/$(DEPDIR)/$(am__dirstamp)
+gnu/classpath/jdwp/natVMMethod.lo: gnu/classpath/jdwp/$(am__dirstamp) \
+	gnu/classpath/jdwp/$(DEPDIR)/$(am__dirstamp)
+gnu/classpath/jdwp/natVMVirtualMachine.lo:  \
+	gnu/classpath/jdwp/$(am__dirstamp) \
+	gnu/classpath/jdwp/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/$(am__dirstamp):
 	@$(mkdir_p) gnu/gcj
 	@: > gnu/gcj/$(am__dirstamp)
@@ -7781,6 +7802,12 @@ mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f classpath/tools/libgcj_tools_la-tools.$(OBJEXT)
 	-rm -f classpath/tools/libgcj_tools_la-tools.lo
+	-rm -f gnu/classpath/jdwp/natVMFrame.$(OBJEXT)
+	-rm -f gnu/classpath/jdwp/natVMFrame.lo
+	-rm -f gnu/classpath/jdwp/natVMMethod.$(OBJEXT)
+	-rm -f gnu/classpath/jdwp/natVMMethod.lo
+	-rm -f gnu/classpath/jdwp/natVMVirtualMachine.$(OBJEXT)
+	-rm -f gnu/classpath/jdwp/natVMVirtualMachine.lo
 	-rm -f gnu/classpath/natSystemProperties.$(OBJEXT)
 	-rm -f gnu/classpath/natSystemProperties.lo
 	-rm -f gnu/gcj/convert/JIS0208_to_Unicode.$(OBJEXT)
@@ -7976,6 +8003,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@classpath/tools/$(DEPDIR)/libgcj_tools_la-tools.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/classpath/$(DEPDIR)/natSystemProperties.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/classpath/jdwp/$(DEPDIR)/natVMFrame.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/classpath/jdwp/$(DEPDIR)/natVMMethod.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/classpath/jdwp/$(DEPDIR)/natVMVirtualMachine.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/$(DEPDIR)/natCore.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/JIS0208_to_Unicode.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/JIS0212_to_Unicode.Plo@am__quote@
@@ -8313,6 +8343,7 @@ clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf classpath/tools/.libs classpath/tools/_libs
 	-rm -rf gnu/classpath/.libs gnu/classpath/_libs
+	-rm -rf gnu/classpath/jdwp/.libs gnu/classpath/jdwp/_libs
 	-rm -rf gnu/gcj/.libs gnu/gcj/_libs
 	-rm -rf gnu/gcj/convert/.libs gnu/gcj/convert/_libs
 	-rm -rf gnu/gcj/io/.libs gnu/gcj/io/_libs
@@ -8716,6 +8747,8 @@ distclean-generic:
 	-rm -f classpath/tools/$(am__dirstamp)
 	-rm -f gnu/classpath/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/classpath/$(am__dirstamp)
+	-rm -f gnu/classpath/jdwp/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/classpath/jdwp/$(am__dirstamp)
 	-rm -f gnu/gcj/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/gcj/$(am__dirstamp)
 	-rm -f gnu/gcj/convert/$(DEPDIR)/$(am__dirstamp)
@@ -8777,7 +8810,7 @@ clean-am: clean-binPROGRAMS clean-dbexecLTLIBRARIES clean-generic \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -8808,7 +8841,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

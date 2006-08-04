@@ -76,14 +76,14 @@ public class VMFrame
    * 
    * @param slot the slot containing the variable
    */
-  public Object getValue(int slot) { return null; }
+  public native Object getValue(int slot);
 
   /**
    * Assigns the given variable to the given value. 
    * @param slot The slot which contains the variable
    * @param value The value to assign the variable to
    */
-  public void setValue(int slot, Object value) { }
+  public native void setValue(int slot, Object value);
 
   /**
    * Get the object which is represented by 'this' in the context of the frame,
