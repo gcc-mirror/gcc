@@ -1,5 +1,12 @@
 2006-08-04  Jan Hubicka  <jh@suse.cz>
 
+	PR target/26655
+	PR target/28270
+	* reload.c (push_reload): Patch out the mismathcing instruction; return early.
+	(find_reload): Bail out if the instruction was patched out.
+
+2006-08-04  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/24888
 	* tree-inline.c (expand_call_inline): Do not re-record variables.
 	(declare_inline_vars): Add variable to unexpanded_var_list.

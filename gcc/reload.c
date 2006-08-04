@@ -1254,7 +1254,19 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	{
 	  error_for_asm (this_insn, "impossible register constraint "
 			 "in %<asm%>");
-	  class = ALL_REGS;
+	  /* Avoid further trouble with this insn.  */
+	  PATTERN (this_insn) = gen_rtx_USE (VOIDmode, const0_rtx);
+	  /* We used to continue here setting class to ALL_REGS, but it triggers
+	     sanity check on i386 for:
+	     void foo(long double d)
+	     {
+	       asm("" :: "a" (d));
+	     }
+	     Returning zero here ought to be safe as we take care in
+	     find_reloads to not process the reloads when instruction was
+	     replaced by USE.  */
+	    
+	  return 0;
 	}
     }
 
@@ -4132,6 +4144,12 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	  rld[i].in = rld[i].reg_rtx;
       }
 #endif
+
+  /* If we detected error and replaced asm instruction by USE, forget about the
+     reloads.  */
+  if (GET_CODE (PATTERN (insn)) == USE
+      && GET_CODE (XEXP (PATTERN (insn), 0)) == CONST_INT)
+    n_reloads = 0;
 
   /* Perhaps an output reload can be combined with another
      to reduce needs by one.  */
