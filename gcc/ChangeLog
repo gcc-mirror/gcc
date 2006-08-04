@@ -1,3 +1,9 @@
+2006-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28148
+	* varasm.c (output_constant): Give the front end another chance to
+	expand constants, after stripping NOPs.
+
 2006-08-03  Jan Hubicka  <jh@suse.cz>
 
 	* domwalk.c (walk_dominator_tree): Reorganize to non-recursive

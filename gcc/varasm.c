@@ -4048,6 +4048,9 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
   code = TREE_CODE (TREE_TYPE (exp));
   thissize = int_size_in_bytes (TREE_TYPE (exp));
 
+  /* Give the front end another chance to expand constants.  */
+  exp = lang_hooks.expand_constant (exp);
+
   /* Allow a constructor with no elements for any data type.
      This means to fill the space with zeros.  */
   if (TREE_CODE (exp) == CONSTRUCTOR

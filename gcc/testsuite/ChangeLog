@@ -1,3 +1,8 @@
+2006-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28148
+	* g++.dg/init/ptrmem3.C: New test.
+
 2006-08-03  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/27770
