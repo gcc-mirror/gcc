@@ -1,3 +1,11 @@
+2006-08-04  Matthias Klose  <doko@debian.org>
+
+	PR fastjar/28359 / CVE-2006-3619
+
+	2006-07-17  Richard Guenther  <rguenther@suse.de>
+	* jartool.c (extract_jar): Do not allow directory traversal
+	to parents of the extraction root.
+
 2006-05-24  Release Manager
 
 	* GCC 4.1.1 released.
