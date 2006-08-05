@@ -1,10 +1,14 @@
+2006-08-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/28136
+	* gcc.dg/init-bad-5.c: New test.
+
 2006-08-03  Lee Millward  <lee.millward@codesourcery.com>
 
-       PR c++/28347
-       * g++.dg/ext/typedef-init.C: Add new test for typedef 
-       initialization inside templates. Adjust existing
-       error markers.
-	
+	PR c++/28347
+	* g++.dg/ext/typedef-init.C: Add new test for typedef 
+	initialization inside templates. Adjust existing error markers.
+
 2006-08-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28148

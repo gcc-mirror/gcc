@@ -1,8 +1,14 @@
+2006-08-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/28136
+	* c-parser.c (c_parser_postfix_expression_after_paren_type): Robustify.
+
 2006-08-04  Jan Hubicka  <jh@suse.cz>
 
 	PR target/26655
 	PR target/28270
-	* reload.c (push_reload): Patch out the mismathcing instruction; return early.
+	* reload.c (push_reload): Patch out the mismatching instruction;
+	return early.
 	(find_reload): Bail out if the instruction was patched out.
 
 2006-08-04  Jan Hubicka  <jh@suse.cz>
