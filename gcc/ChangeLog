@@ -1,5 +1,9 @@
 2006-08-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c/28502
+	* c-decl.c (validate_proto_after_old_defn): Return false on invalid
+	argument.
+
 	PR c/27721
 	* c-typeck.c (build_modify_expr): Test earlier for non-lvalues.
 

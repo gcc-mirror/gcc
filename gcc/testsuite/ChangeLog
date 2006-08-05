@@ -1,5 +1,8 @@
 2006-08-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c/28502
+	* gcc.dg/proto-1.c: New test.
+
 	PR c/27721
 	* gcc.dg/lvalue-4.c: New test.
 
