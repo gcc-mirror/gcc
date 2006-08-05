@@ -1,3 +1,13 @@
+2006-08-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28587
+	* include/bits/stl_bvector.h (vector<bool>::_M_fill): New.
+	(vector<bool>::_M_fill_insert): Use it.
+	* testsuite/performance/23_containers/resize/vector_bool.cc: New.
+	
+	* testsuite/23_containers/vector/bool/modifiers/insert/1.cc: New.
+	* testsuite/23_containers/vector/bool/capacity/1.cc: Likewise.
+
 2006-08-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_queue.h (priority_queue<>::push,

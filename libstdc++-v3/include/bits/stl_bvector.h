@@ -741,6 +741,19 @@ template<typename _Alloc>
   protected:
 
     void
+    _M_fill(iterator __first, iterator __last, bool __x)
+    {
+      if (__first._M_p != __last._M_p)
+	{
+	  std::fill(__first._M_p + 1, __last._M_p, __x ? ~0 : 0);
+	  std::fill(__first, iterator(__first._M_p + 1, 0), __x);
+	  std::fill(iterator(__last._M_p, 0), __last, __x);
+	}
+      else
+	std::fill(__first, __last, __x);
+    }
+
+    void
     _M_initialize(size_type __n)
     {
       _Bit_type* __q = this->_M_allocate(__n);
@@ -873,7 +886,7 @@ template<typename _Alloc>
 	{
 	  std::copy_backward(__position, end(),
 			     this->_M_impl._M_finish + difference_type(__n));
-	  std::fill(__position, __position + difference_type(__n), __x);
+	  _M_fill(__position, __position + difference_type(__n), __x);
 	  this->_M_impl._M_finish += difference_type(__n);
 	}
       else
@@ -881,7 +894,7 @@ template<typename _Alloc>
 	  const size_type __len = size() + std::max(size(), __n);
 	  _Bit_type * __q = this->_M_allocate(__len);
 	  iterator __i = std::copy(begin(), __position, iterator(__q, 0));
-	  std::fill_n(__i, __n, __x);
+	  _M_fill(__i, __i + difference_type(__n), __x);
 	  this->_M_impl._M_finish = std::copy(__position, end(),
 					      __i + difference_type(__n));
 	  this->_M_deallocate();
