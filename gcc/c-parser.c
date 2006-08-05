@@ -5432,7 +5432,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
   struct c_expr expr;
   start_init (NULL_TREE, NULL, 0);
   type = groktypename (type_name);
-  if (C_TYPE_VARIABLE_SIZE (type))
+  if (type != error_mark_node && C_TYPE_VARIABLE_SIZE (type))
     {
       error ("compound literal has variable size");
       type = error_mark_node;
