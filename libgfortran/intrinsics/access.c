@@ -95,5 +95,4 @@ access_func (char *name, char *mode, gfc_charlen_type name_len,
   /* And make the call to access().  */
   return (access (file, m) == 0 ? 0 : errno);
 }
-export(access_func);
 #endif
