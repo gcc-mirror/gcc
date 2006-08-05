@@ -1,5 +1,8 @@
 2006-08-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c/27721
+	* c-typeck.c (build_modify_expr): Test earlier for non-lvalues.
+
 	PR c/28136
 	* c-parser.c (c_parser_postfix_expression_after_paren_type): Robustify.
 
