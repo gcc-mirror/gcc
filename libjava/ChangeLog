@@ -1,3 +1,7 @@
+2006-08-04  Mark Wielaard  <mark@klomp.org>
+
+	* jvmti.cc: Include gcj/method.h.
+
 2006-08-04  Tom Tromey  <tromey@redhat.com>
 
 	* jvmti.cc: Added MAYBE_UNUSED to 'env' parameters.

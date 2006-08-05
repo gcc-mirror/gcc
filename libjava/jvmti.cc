@@ -16,6 +16,8 @@ details.  */
 #include <java-gc.h>
 #include <jvmti.h>
 
+#include <gcj/method.h>
+
 #include <gnu/classpath/SystemProperties.h>
 #include <gnu/gcj/runtime/BootClassLoader.h>
 #include <java/lang/Class.h>
