@@ -1083,8 +1083,14 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
 
   for (;;)
     {
-      tree oldargtype = TYPE_MAIN_VARIANT (TREE_VALUE (oldargs));
-      tree newargtype = TYPE_MAIN_VARIANT (TREE_VALUE (newargs));
+      tree oldargtype = TREE_VALUE (oldargs);
+      tree newargtype = TREE_VALUE (newargs);
+
+      if (oldargtype == error_mark_node || newargtype == error_mark_node)
+	return false;
+
+      oldargtype = TYPE_MAIN_VARIANT (oldargtype);
+      newargtype = TYPE_MAIN_VARIANT (newargtype);
 
       if (END_OF_ARGLIST (oldargtype) && END_OF_ARGLIST (newargtype))
 	break;
