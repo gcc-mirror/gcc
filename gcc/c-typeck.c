@@ -3668,6 +3668,9 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
     return error_mark_node;
 
+  if (!lvalue_or_else (lhs, lv_assign))
+    return error_mark_node;
+
   STRIP_TYPE_NOPS (rhs);
 
   newrhs = rhs;
@@ -3680,9 +3683,6 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
       lhs = stabilize_reference (lhs);
       newrhs = build_binary_op (modifycode, lhs, rhs, 1);
     }
-
-  if (!lvalue_or_else (lhs, lv_assign))
-    return error_mark_node;
 
   /* Give an error for storing in something that is 'const'.  */
 
