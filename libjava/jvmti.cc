@@ -215,7 +215,8 @@ _Jv_JVMTI_Deallocate (MAYBE_UNUSED jvmtiEnv *env, unsigned char *mem)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetClassModifiers (jvmtiEnv *env, jclass klass, jint *mods)
+_Jv_JVMTI_GetClassModifiers (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
+			     jint *mods)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   // Don't bother checking KLASS' type.
@@ -227,8 +228,8 @@ _Jv_JVMTI_GetClassModifiers (jvmtiEnv *env, jclass klass, jint *mods)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetClassMethods (jvmtiEnv *env, jclass klass, jint *count_ptr,
-			   jmethodID **methods_ptr)
+_Jv_JVMTI_GetClassMethods (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
+			   jint *count_ptr, jmethodID **methods_ptr)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   // FIXME: capability can_maintain_original_method_order
@@ -249,7 +250,8 @@ _Jv_JVMTI_GetClassMethods (jvmtiEnv *env, jclass klass, jint *count_ptr,
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_IsInterface (jvmtiEnv *env, jclass klass, jboolean *result)
+_Jv_JVMTI_IsInterface (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
+		       jboolean *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (klass == NULL)
@@ -260,7 +262,8 @@ _Jv_JVMTI_IsInterface (jvmtiEnv *env, jclass klass, jboolean *result)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_IsArrayClass (jvmtiEnv *env, jclass klass, jboolean *result)
+_Jv_JVMTI_IsArrayClass (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
+			jboolean *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (klass == NULL)
@@ -271,7 +274,8 @@ _Jv_JVMTI_IsArrayClass (jvmtiEnv *env, jclass klass, jboolean *result)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetClassLoader (jvmtiEnv *env, jclass klass, jobject *result)
+_Jv_JVMTI_GetClassLoader (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
+			  jobject *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (klass == NULL)
@@ -282,7 +286,8 @@ _Jv_JVMTI_GetClassLoader (jvmtiEnv *env, jclass klass, jobject *result)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetObjectHashCode (jvmtiEnv *env, jobject obj, jint *result)
+_Jv_JVMTI_GetObjectHashCode (MAYBE_UNUSED jvmtiEnv *env, jobject obj,
+			     jint *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (obj == NULL)
@@ -293,8 +298,8 @@ _Jv_JVMTI_GetObjectHashCode (jvmtiEnv *env, jobject obj, jint *result)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetFieldModifiers (jvmtiEnv *env, jclass klass, jfieldID field,
-			     jint *result)
+_Jv_JVMTI_GetFieldModifiers (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
+			     jfieldID field, jint *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (klass == NULL)
@@ -307,8 +312,8 @@ _Jv_JVMTI_GetFieldModifiers (jvmtiEnv *env, jclass klass, jfieldID field,
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_IsFieldSynthetic (jvmtiEnv *env, jclass klass, jfieldID field,
-			    jboolean *result)
+_Jv_JVMTI_IsFieldSynthetic (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
+			    jfieldID field, jboolean *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (klass == NULL)
@@ -324,7 +329,8 @@ _Jv_JVMTI_IsFieldSynthetic (jvmtiEnv *env, jclass klass, jfieldID field,
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetMethodModifiers (jvmtiEnv *env, jmethodID method, jint *result)
+_Jv_JVMTI_GetMethodModifiers (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
+			      jint *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (method == NULL)
@@ -337,7 +343,8 @@ _Jv_JVMTI_GetMethodModifiers (jvmtiEnv *env, jmethodID method, jint *result)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_IsMethodNative (jvmtiEnv *env, jmethodID method, jboolean *result)
+_Jv_JVMTI_IsMethodNative (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
+			  jboolean *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (method == NULL)
@@ -349,7 +356,8 @@ _Jv_JVMTI_IsMethodNative (jvmtiEnv *env, jmethodID method, jboolean *result)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_IsMethodSynthetic (jvmtiEnv *env, jmethodID method, jboolean *result)
+_Jv_JVMTI_IsMethodSynthetic (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
+			     jboolean *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (method == NULL)
@@ -364,7 +372,7 @@ _Jv_JVMTI_IsMethodSynthetic (jvmtiEnv *env, jmethodID method, jboolean *result)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetClassLoaderClasses (jvmtiEnv *env,
+_Jv_JVMTI_GetClassLoaderClasses (MAYBE_UNUSED jvmtiEnv *env,
 				 jobject init_loader,
 				 jint *count_ptr,
 				 jclass **result_ptr)
@@ -394,7 +402,7 @@ _Jv_JVMTI_GetClassLoaderClasses (jvmtiEnv *env,
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_ForceGarbageCollection (jvmtiEnv *env)
+_Jv_JVMTI_ForceGarbageCollection (MAYBE_UNUSED jvmtiEnv *env)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
   _Jv_RunGC();
@@ -402,7 +410,7 @@ _Jv_JVMTI_ForceGarbageCollection (jvmtiEnv *env)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_SetJNIFunctionTable (jvmtiEnv *env,
+_Jv_JVMTI_SetJNIFunctionTable (MAYBE_UNUSED jvmtiEnv *env,
 			       const jniNativeInterface *function_table)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
@@ -412,7 +420,7 @@ _Jv_JVMTI_SetJNIFunctionTable (jvmtiEnv *env,
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetJNIFunctionTable (jvmtiEnv *env,
+_Jv_JVMTI_GetJNIFunctionTable (MAYBE_UNUSED jvmtiEnv *env,
 			       jniNativeInterface **function_table)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
@@ -432,7 +440,7 @@ _Jv_JVMTI_DisposeEnvironment (jvmtiEnv *env)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetSystemProperty (jvmtiEnv *env, const char *property,
+_Jv_JVMTI_GetSystemProperty (MAYBE_UNUSED jvmtiEnv *env, const char *property,
 			     char **result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_ONLOAD | JVMTI_PHASE_LIVE);
@@ -454,7 +462,7 @@ _Jv_JVMTI_GetSystemProperty (jvmtiEnv *env, const char *property,
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_SetSystemProperty (jvmtiEnv *env, const char *property,
+_Jv_JVMTI_SetSystemProperty (MAYBE_UNUSED jvmtiEnv *env, const char *property,
 			     const char *value)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_ONLOAD);
@@ -494,7 +502,8 @@ _Jv_JVMTI_GetAvailableProcessors (MAYBE_UNUSED jvmtiEnv *env,
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_AddToBootstrapClassLoaderSearch (jvmtiEnv *env, const char *segment)
+_Jv_JVMTI_AddToBootstrapClassLoaderSearch (MAYBE_UNUSED jvmtiEnv *env,
+					   const char *segment)
 {
   using namespace java::lang;
   using namespace java::net;
@@ -542,7 +551,8 @@ _Jv_JVMTI_SetVerboseFlag (MAYBE_UNUSED jvmtiEnv *env, jvmtiVerboseFlag flag,
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_GetObjectSize (jvmtiEnv *env, jobject object, jlong *result)
+_Jv_JVMTI_GetObjectSize (MAYBE_UNUSED jvmtiEnv *env, jobject object,
+			 jlong *result)
 {
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   if (object == NULL)
@@ -554,8 +564,8 @@ _Jv_JVMTI_GetObjectSize (jvmtiEnv *env, jobject object, jlong *result)
     {
       jclass comp = klass->getComponentType();
       jint base
-	= (jint) _Jv_GetArrayElementFromElementType(NULL,
-						    klass->getComponentType());
+	= (jint) (_Jv_uintptr_t) _Jv_GetArrayElementFromElementType(NULL,
+								    klass->getComponentType());
       // FIXME: correct for primitive types?
       jint compSize = comp->size();
       __JArray *array = (__JArray *) object;

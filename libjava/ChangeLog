@@ -1,3 +1,9 @@
+2006-08-04  Tom Tromey  <tromey@redhat.com>
+
+	* jvmti.cc: Added MAYBE_UNUSED to 'env' parameters.
+	(_Jv_JVMTI_GetObjectSize): Cast _Jv_GetArrayElementFromElementType
+	result to _Jv_uintptr_t.
+
 2006-08-01  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/VMFrame.java: Update to Classpath 0.91.
