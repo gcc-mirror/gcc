@@ -1,3 +1,8 @@
+2006-08-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/27033
+	* g++.dg/eh/spbp.C: Skip on hppa*-*-hpux* if not hppa*64*-*-*.
+
 2006-08-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/27827
