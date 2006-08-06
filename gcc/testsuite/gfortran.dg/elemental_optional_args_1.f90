@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-pedantic" }
 ! Check the fix for PR20893, in which actual arguments could violate: 
 ! "(5) If it is an array, it shall not be supplied as an actual argument to
 ! an elemental procedure unless an array of the same rank is supplied as an
@@ -21,19 +22,19 @@ CONTAINS
     end interface
 
 ! check an intrinsic function
-    write(6,*) MAX(A1,A2,A3) ! { dg-error "array and OPTIONAL" }
+    write(6,*) MAX(A1,A2,A3) ! { dg-warning "array and OPTIONAL" }
     write(6,*) MAX(A1,A3,A2)
     write(6,*) MAX(A1,A4,A3)
 ! check an internal elemental function
-    write(6,*) foo(A1,A2,A3) ! { dg-error "array and OPTIONAL" }
+    write(6,*) foo(A1,A2,A3) ! { dg-warning "array and OPTIONAL" }
     write(6,*) foo(A1,A3,A2)
     write(6,*) foo(A1,A4,A3)
 ! check an external elemental function
-    write(6,*) efoo(A1,A2,A3) ! { dg-error "array and OPTIONAL" }
+    write(6,*) efoo(A1,A2,A3) ! { dg-warning "array and OPTIONAL" }
     write(6,*) efoo(A1,A3,A2)
     write(6,*) efoo(A1,A4,A3)
 ! check an elemental subroutine
-    call foobar (A1,A2,A3) ! { dg-error "array and OPTIONAL" } 
+    call foobar (A1,A2,A3) ! { dg-warning "array and OPTIONAL" } 
     call foobar (A1,A2,A4)
     call foobar (A1,A4,A4)
   END SUBROUTINE
@@ -50,3 +51,4 @@ CONTAINS
   end subroutine foobar
 
 END
+

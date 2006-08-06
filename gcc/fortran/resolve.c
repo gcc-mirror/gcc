@@ -23,6 +23,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor,Boston, MA
 
 #include "config.h"
 #include "system.h"
+#include "flags.h"
 #include "gfortran.h"
 #include "arith.h"  /* For gfc_compare_expr().  */
 
@@ -997,18 +998,19 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
       else if (isym)
 	formal_optional = true;
 
-      if (arg->expr != NULL
+      if (pedantic && arg->expr != NULL
 	    && arg->expr->expr_type == EXPR_VARIABLE
 	    && arg->expr->symtree->n.sym->attr.optional
 	    && formal_optional
 	    && arg->expr->rank
-	    && (set_by_optional || arg->expr->rank != rank)) 
+	    && (set_by_optional || arg->expr->rank != rank)
+	    && !(isym && isym->generic_id == GFC_ISYM_CONVERSION)) 
 	{
-	  gfc_error ("'%s' at %L is an array and OPTIONAL; it cannot "
-		     "therefore be an actual argument of an ELEMENTAL " 
-		     "procedure unless there is a non-optional argument "
-		     "with the same rank (12.4.1.5)",
-		     arg->expr->symtree->n.sym->name, &arg->expr->where);
+	  gfc_warning ("'%s' at %L is an array and OPTIONAL; IF IT IS "
+		       "MISSING, it cannot be the actual argument of an "
+		       "ELEMENTAL procedure unless there is a non-optional"
+		       "argument with the same rank (12.4.1.5)",
+		       arg->expr->symtree->n.sym->name, &arg->expr->where);
 	  return FAILURE;
 	}
     }
@@ -5965,7 +5967,7 @@ gfc_elemental (gfc_symbol * sym)
 /* Warn about unused labels.  */
 
 static void
-warn_unused_label (gfc_namespace * ns)
+warn_unused_fortran_label (gfc_namespace * ns)
 {
   gfc_st_label *l;
 
@@ -6519,7 +6521,7 @@ resolve_types (gfc_namespace * ns)
 
   /* Warn about unused labels.  */
   if (gfc_option.warn_unused_labels)
-    warn_unused_label (ns);
+    warn_unused_fortran_label (ns);
 
   gfc_resolve_uops (ns->uop_root);
 }
