@@ -575,11 +575,17 @@ template<typename _Alloc>
 
     reference
     operator[](size_type __n)
-    { return *(begin() + difference_type(__n)); }
+    {
+      return *iterator(this->_M_impl._M_start._M_p
+		       + __n / int(_S_word_bit), __n % int(_S_word_bit));
+    }
 
     const_reference
     operator[](size_type __n) const
-    { return *(begin() + difference_type(__n)); }
+    {
+      return *const_iterator(this->_M_impl._M_start._M_p
+			     + __n / int(_S_word_bit), __n % int(_S_word_bit));
+    }
 
   protected:
     void
