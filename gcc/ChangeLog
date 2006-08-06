@@ -1,3 +1,7 @@
+2006-08-06  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.md (truncxfsf2): Readd.
+
 2006-08-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/27827
