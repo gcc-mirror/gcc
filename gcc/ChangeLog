@@ -1,3 +1,10 @@
+2006-08-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/27827
+
+	* conffig/i386/i386.md: Add peephole2 to avoid "fld %st"
+	instructions.
+
 2006-08-06  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (m68k_output_function_epilogue): Fix format
