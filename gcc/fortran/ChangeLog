@@ -1,3 +1,11 @@
+2006-08-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28590
+	* parse.c (parse_derived): Remove the test for sequence type
+	components of a sequence type.
+	* resolve.c (resolve_fl_derived): Put the test here so that
+	pointer components are tested.
+
 2006-08-05  Steven G. Kargl <kargls@comcast.nt>
 
 	PR fortran/28548
@@ -6,7 +14,7 @@
 	to gfc_warning.
 	(warn_unused_label) Rename to ...
 	(warn_unused_fortran_label) avoid warn_unused_label in flags.h.
-     
+
 	PR fortran/27981
 	* match.c (gfc_match_if):  Handle errors in assignment in simple if.
 
