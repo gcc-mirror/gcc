@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-g" } */
+/* { dg-skip-if "" { { hppa*-*-hpux* } && { ! hppa*64*-*-* } } { "*" } { "" } } */
 
 /* Make sure we didn't eliminate casted types because we thought they were
    unused.  */
