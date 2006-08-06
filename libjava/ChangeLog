@@ -1,5 +1,13 @@
 2006-08-06  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/28491:
+	* configure, include/config.h.in: Rebuilt.
+	* configure.ac: Look for ifaddrs.h, getifaddrs.
+	* java/net/natVMNetworkInterfacePosix.cc (getInterfaces): Use
+	getifaddrs if available.
+
+2006-08-06  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/28576:
 	* gnu/java/net/natPlainDatagramSocketImplPosix.cc (connect):
 	Implemented.

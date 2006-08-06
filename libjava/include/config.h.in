@@ -115,6 +115,9 @@
 /* Define if gethostname is declared in <unistd.h>. */
 #undef HAVE_GETHOSTNAME_DECL
 
+/* Define to 1 if you have the `getifaddrs' function. */
+#undef HAVE_GETIFADDRS
+
 /* Define to 1 if you have the `getpwuid_r' function. */
 #undef HAVE_GETPWUID_R
 
@@ -126,6 +129,9 @@
 
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
+
+/* Define to 1 if you have the <ifaddrs.h> header file. */
+#undef HAVE_IFADDRS_H
 
 /* Define if inet6 structures are defined in netinet/in.h. */
 #undef HAVE_INET6

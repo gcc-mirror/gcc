@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2005  Free Software Foundation
+/* Copyright (C) 2003, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -34,6 +34,9 @@ details.  */
 #ifdef HAVE_NET_IF_H
 #include <net/if.h>
 #endif
+#ifdef HAVE_IFADDRS_H
+#include <ifaddrs.h>
+#endif
 
 #include <gcj/cni.h>
 #include <jvm.h>
@@ -46,11 +49,59 @@ details.  */
 ::java::util::Vector*
 java::net::VMNetworkInterface::getInterfaces ()
 {
+  ::java::util::Vector* ht = new ::java::util::Vector ();
+
+#ifdef HAVE_GETIFADDRS
+
+  struct ifaddrs *addrs;
+  if (::getifaddrs (&addrs) == -1)
+    throw new ::java::net::SocketException(JvNewStringUTF (strerror (errno)));
+
+  for (struct ifaddrs *work = addrs; work != NULL; work = work->ifa_next)
+    {
+      // Sometimes the address can be NULL; I don't know why but
+      // there's nothing we can do with this.
+      if (! work->ifa_addr)
+	continue;
+      // We only return Inet4 or Inet6 addresses.
+      jbyteArray laddr;
+      if (work->ifa_addr->sa_family == AF_INET)
+	{
+	  sockaddr_in *real = reinterpret_cast<sockaddr_in *> (work->ifa_addr);
+	  laddr = JvNewByteArray(4);
+	  memcpy (elements (laddr), &real->sin_addr, 4);
+	}
+#ifdef HAVE_INET6
+      else if (work->ifa_addr->sa_family == AF_INET6)
+	{
+	  sockaddr_in6 *real
+	    = reinterpret_cast<sockaddr_in6 *> (work->ifa_addr);
+	  laddr = JvNewByteArray(16);
+	  memcpy (elements (laddr), &real->sin6_addr, 16);
+	}
+#endif
+      else
+	continue;
+
+      ::java::net::InetAddress *inaddr
+	  =  ::java::net::InetAddress::getByAddress(laddr);
+
+      // It is ok to make a new NetworkInterface for each struct; the
+      // java code will unify these as necessary; see
+      // NetworkInterface.condense().
+      jstring name = JvNewStringUTF (work->ifa_name);
+
+      ht->add (new NetworkInterface (name, inaddr));
+    }
+
+  freeifaddrs (addrs);
+
+#else /* ! HAVE_GETIFADDRS */
+
   int fd;
   int num_interfaces = 0;
   struct ifconf if_data;
   struct ifreq* if_record;
-  ::java::util::Vector* ht = new ::java::util::Vector ();
 
   if_data.ifc_len = 0;
   if_data.ifc_buf = NULL;
@@ -103,14 +154,11 @@ java::net::VMNetworkInterface::getInterfaces ()
       if_record++;
     }
 
-#ifdef HAVE_INET6
-      // FIXME: read /proc/net/if_inet6 (on Linux 2.4)
-#endif
-
   _Jv_Free (if_data.ifc_buf);
   
   if (fd >= 0)
     _Jv_close (fd);
-  
+#endif /* HAVE_GETIFADDRS */ 
+
   return ht;
 }
