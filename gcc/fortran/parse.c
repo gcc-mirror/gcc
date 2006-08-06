@@ -1498,7 +1498,6 @@ parse_derived (void)
 {
   int compiling_type, seen_private, seen_sequence, seen_component, error_flag;
   gfc_statement st;
-  gfc_component *c;
   gfc_state_data s;
 
   error_flag = 0;
@@ -1595,20 +1594,6 @@ parse_derived (void)
 	  break;
 	}
     }
-
-  /* Sanity checks on the structure.  If the structure has the
-     SEQUENCE attribute, then all component structures must also have
-     SEQUENCE.  */
-  if (error_flag == 0 && gfc_current_block ()->attr.sequence)
-    for (c = gfc_current_block ()->components; c; c = c->next)
-      {
-	if (c->ts.type == BT_DERIVED && c->ts.derived->attr.sequence == 0)
-	  {
-	    gfc_error
-	      ("Component %s of SEQUENCE type declared at %C does not "
-	       "have the SEQUENCE attribute", c->ts.derived->name);
-	  }
-      }
 
   pop_state ();
 }
