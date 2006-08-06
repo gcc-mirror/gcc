@@ -1,3 +1,9 @@
+2006-08-05  Steven G. Kargl <kargls@comcast.nt>
+
+	PR fortran/28548
+	* gfortran.dg/elemental_optional_args_1.f90: dg-error becomes
+	dg-warning.  Add -pedantic option.
+
 2006-08-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/28502

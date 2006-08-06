@@ -1,3 +1,12 @@
+2006-08-05  Steven G. Kargl <kargls@comcast.nt>
+
+	PR fortran/28548
+	* resolve.c(resolve_elemental_actual): Add flags.h to use -pedantic
+	and exclude conversion functions in conditional.  Change gfc_error
+	to gfc_warning.
+	(warn_unused_label) Rename to ...
+	(warn_unused_fortran_label) avoid warn_unused_label in flags.h.
+     
 2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsic.c (add_functions): Add ACCESS, CHMOD, RSHIFT, LSHIFT.
