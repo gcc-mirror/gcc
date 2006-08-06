@@ -39,6 +39,8 @@ details.  */
 #include <java/lang/Boolean.h>
 #include <java/lang/Integer.h>
 #include <java/net/UnknownHostException.h>
+#include <java/net/ConnectException.h>
+#include <java/lang/NullPointerException.h>
 
 union SockAddr
 {
@@ -149,17 +151,49 @@ gnu::java::net::PlainDatagramSocketImpl::bind (jint lport,
 }
 
 void
-gnu::java::net::PlainDatagramSocketImpl::connect (::java::net::InetAddress *, jint)
+gnu::java::net::PlainDatagramSocketImpl::connect (::java::net::InetAddress *host,
+						  jint rport)
 { 
-  throw new ::java::lang::InternalError (JvNewStringLatin1 (
-	    "PlainDatagramSocketImpl::connect: not implemented yet"));
+  if (! host)
+    throw new ::java::lang::NullPointerException;
+
+  union SockAddr u;
+  jbyteArray haddress = host->addr;
+  jbyte *bytes = elements (haddress);
+  int len = haddress->length;
+  struct sockaddr *ptr = (struct sockaddr *) &u.address;
+  if (len == 4)
+    {
+      u.address.sin_family = AF_INET;
+      memcpy (&u.address.sin_addr, bytes, len);
+      len = sizeof (struct sockaddr_in);
+      u.address.sin_port = htons (rport);
+    }
+#ifdef HAVE_INET6
+  else if (len == 16)
+    {
+      u.address6.sin6_family = AF_INET6;
+      memcpy (&u.address6.sin6_addr, bytes, len);
+      len = sizeof (struct sockaddr_in6);
+      u.address6.sin6_port = htons (rport);
+    }
+#endif
+  else
+    throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
+  
+  if (_Jv_connect (native_fd, ptr, len) == 0)
+    return;
+  char* strerr = strerror (errno);
+  throw new ::java::net::ConnectException (JvNewStringUTF (strerr));
 }
 
 void
 gnu::java::net::PlainDatagramSocketImpl::disconnect ()
 {
-  throw new ::java::lang::InternalError (JvNewStringLatin1 (
-	    "PlainDatagramSocketImpl::disconnect: not implemented yet"));
+  struct sockaddr addr;
+  addr.sa_family = AF_UNSPEC;
+  // Ignore errors.  This is lame but apparently required.
+  _Jv_connect (native_fd, &addr, sizeof (addr));
 }
 
 jint
@@ -289,39 +323,50 @@ gnu::java::net::PlainDatagramSocketImpl::send (::java::net::DatagramPacket *p)
 {
   JvSynchronize lock (SEND_LOCK);
   
-  // FIXME: Deal with Multicast and if the socket is connected.
-  jint rport = p->getPort();
-  union SockAddr u;
+  // FIXME: Deal with Multicast.
+
   ::java::net::InetAddress *host = p->getAddress();
-  if (! host)
-    throw new ::java::net::UnknownHostException(p->toString());
-
-  jbyteArray haddress = host->addr;
-  jbyte *bytes = elements (haddress);
-  int len = haddress->length;
-  struct sockaddr *ptr = (struct sockaddr *) &u.address;
-  jbyte *dbytes = elements (p->getData()) + p->getOffset();
-  if (len == 4)
+  if (host == NULL)
     {
-      u.address.sin_family = AF_INET;
-      memcpy (&u.address.sin_addr, bytes, len);
-      len = sizeof (struct sockaddr_in);
-      u.address.sin_port = htons (rport);
+      // If there is no host, maybe this socket was connected, in
+      // which case we try a plain send().
+      jbyte *dbytes = elements (p->getData()) + p->getOffset();
+      if (::send (native_fd, (char *) dbytes, p->getLength(), 0) >= 0)
+	return;
     }
-#ifdef HAVE_INET6
-  else if (len == 16)
-    {
-      u.address6.sin6_family = AF_INET6;
-      memcpy (&u.address6.sin6_addr, bytes, len);
-      len = sizeof (struct sockaddr_in6);
-      u.address6.sin6_port = htons (rport);
-    }
-#endif
   else
-    throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
+    {
+      jint rport = p->getPort();
+      union SockAddr u;
 
-  if (::sendto (native_fd, (char *) dbytes, p->getLength(), 0, ptr, len) >= 0)
-    return;
+      jbyteArray haddress = host->addr;
+      jbyte *bytes = elements (haddress);
+      int len = haddress->length;
+      struct sockaddr *ptr = (struct sockaddr *) &u.address;
+      jbyte *dbytes = elements (p->getData()) + p->getOffset();
+      if (len == 4)
+	{
+	  u.address.sin_family = AF_INET;
+	  memcpy (&u.address.sin_addr, bytes, len);
+	  len = sizeof (struct sockaddr_in);
+	  u.address.sin_port = htons (rport);
+	}
+#ifdef HAVE_INET6
+      else if (len == 16)
+	{
+	  u.address6.sin6_family = AF_INET6;
+	  memcpy (&u.address6.sin6_addr, bytes, len);
+	  len = sizeof (struct sockaddr_in6);
+	  u.address6.sin6_port = htons (rport);
+	}
+#endif
+      else
+	throw new ::java::net::SocketException (JvNewStringUTF ("invalid length"));
+
+      if (::sendto (native_fd, (char *) dbytes, p->getLength(), 0, ptr, len)
+	  >= 0)
+	return;
+    }
 
   char* strerr = strerror (errno);
 
