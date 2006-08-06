@@ -1,3 +1,10 @@
+2006-08-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16611
+	* include/bits/stl_bvector.h (vector<bool>::operator[],
+	vector<bool>::operator[] const): Do not use iterator::operator+,
+	hand code.
+
 2006-08-05  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28587
