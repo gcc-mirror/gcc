@@ -1,3 +1,8 @@
+2006-08-06  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c (m68k_output_function_epilogue): Fix format
+	string.  Whitespace and comment fixup.
+
 2006-08-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/28502

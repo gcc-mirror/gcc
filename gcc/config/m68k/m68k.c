@@ -1006,26 +1006,26 @@ m68k_output_function_epilogue (FILE *stream,
 	    {
 	      int offset;
 
-	      /* stack already has registers in it.  Find the offset from
-		 the bottom of stack to where the FP registers go */
+	      /* Stack already has registers in it.  Find the offset from
+		 the bottom of stack to where the FP registers go.  */
 	      if (current_frame.reg_no <= 2)
 		offset = 0;
 	      else
 		offset = current_frame.reg_no * 4;
 	      if (offset)
-		 asm_fprintf (stream,
-			     "\tfmovem %Rsp@(%wd), %I0x%x\n",
+		asm_fprintf (stream,
+			     "\tfmovem %Rsp@(%d), %I0x%x\n",
 			     offset, current_frame.fpu_rev_mask);
 	      else
-		 asm_fprintf (stream,
+		asm_fprintf (stream,
 			     "\tfmovem %Rsp@, %I0x%x\n",
 			     current_frame.fpu_rev_mask);
 	    }
-	   else
-		  asm_fprintf (stream, MOTOROLA ?
-			       "\tfmovm (%Rsp)+,%I0x%x\n" :
-			       "\tfmovem %Rsp@+,%I0x%x\n",
-			       current_frame.fpu_rev_mask);
+	  else
+	    asm_fprintf (stream, MOTOROLA ?
+			 "\tfmovm (%Rsp)+,%I0x%x\n" :
+			 "\tfmovem %Rsp@+,%I0x%x\n",
+			 current_frame.fpu_rev_mask);
 	}
       else
 	{
