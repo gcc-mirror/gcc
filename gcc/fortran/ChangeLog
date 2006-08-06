@@ -1,3 +1,11 @@
+2006-08-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28590
+	* parse.c (parse_derived): Remove the test for sequence type
+	components of a sequence type.
+	* resolve.c (resolve_fl_derived): Put the test here so that
+	pointer components are tested.
+
 2006-08-05  Steven G. Kargl <kargls@comcast.nt>
 
 	PR fortran/28548
