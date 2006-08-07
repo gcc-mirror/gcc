@@ -2,7 +2,7 @@
 
 	* gcc.dg/sparc-getcontext-1.c: Fix typo.
 	* g++.dg/eh/spbp.C: Skip on Solaris 2.5.1 and 2.6 too.
-	* g++.dg/other/unused1.C: Also match "asci?z".
+	* g++.dg/other/unused1.C: Likewise.  Also match "asci?z".
 
 2006-08-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
