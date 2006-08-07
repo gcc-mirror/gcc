@@ -1,6 +1,8 @@
-2006-08-06  Andreas Schwab  <schwab@suse.de>
+2006-08-07  Victor Kaplansky <victork@il.ibm.com>
 
-	* config/m68k/m68k.md (truncxfsf2): Readd.
+        PR tree-optimization/26969
+        * tree-vect-analyze.c (vect_analyze_loop_form): Add check of latch
+         with an empty list of PHIs.
 
 2006-08-06  Paolo Bonzini  <bonzini@gnu.org>
 
