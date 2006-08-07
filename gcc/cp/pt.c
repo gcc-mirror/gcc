@@ -4062,7 +4062,7 @@ coerce_template_parms (tree parms,
       || (nargs < nparms
 	  && require_all_arguments
 	  && (TREE_VEC_ELT (parms, nargs) != error_mark_node
-              && TREE_PURPOSE (TREE_VEC_ELT (parms, nargs))) == NULL_TREE))
+              && TREE_PURPOSE (TREE_VEC_ELT (parms, nargs)) == NULL_TREE)))
     {
       if (complain & tf_error)
 	{

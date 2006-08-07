@@ -1,3 +1,7 @@
+2006-08-07  Lee Millward  <lee.millward@codesourcery.com>
+
+	* pt.c (coerce_template_parms): Fix misplaced parenthesis.
+	
 2006-08-03  Lee Millward  <lee.millward@codesourcery.com>
 
        PR c++/28347

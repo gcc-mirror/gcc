@@ -1,3 +1,7 @@
+2006-08-07  Lee Millward  <lee.millward@codesourcery.com>
+
+	* g++.dg/template/crash54.C: Adjust error_markers.
+	
 2006-08-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/sparc-getcontext-1.c: Fix typo.
