@@ -1,5 +1,8 @@
 2006-08-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR libfortran/28603
+	* gfortran.dg/direct_io_6.f90: Skip on hppa*-*-hpux*.
+
 	PR testsuite/27611
 	* g++.dg/other/unused1.C: Skip on hppa*-*-hpux* if not hppa*64*-*-*.
 
