@@ -1078,7 +1078,12 @@ public class URLClassLoader extends SecureClassLoader
 	resource = loader.getResource(resourceName);
       }
     if (resource == null)
-      throw new ClassNotFoundException(className + " not found in " + this);
+      {
+	String message = className + " not found";
+	if (runtimeInitialized())
+	  message += " in " + this;
+	throw new ClassNotFoundException(message);
+      }
 
     // Try to read the class data, create the CodeSource, Package and
     // construct the class (and watch out for those nasty IOExceptions)
@@ -1437,4 +1442,11 @@ public class URLClassLoader extends SecureClassLoader
         return loader;
       }
   }
+
+  /**
+   * Tell whether runtime initialization is complete.
+   *
+   * @return whether runtime initialization is complete.
+   */
+  private static native boolean runtimeInitialized();  
 }
