@@ -1,9 +1,9 @@
 // PR c++/26905
 // Init should not be hidden, so calling it should use the PLT.
 
-// { dg-require-visibility "" }
 // { dg-options "-fpic" }
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
+// { dg-require-visibility "" }
 // { dg-final { scan-assembler "InitEv@PLT" } }
 
 #pragma GCC visibility push(hidden)
