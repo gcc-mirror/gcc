@@ -1,4 +1,13 @@
 2006-08-07  Gary Benson  <gbenson@redhat.com>
+	    Casey Marshall <csm@gnu.org>
+
+	* java/lang/SecurityManager.java (getSecurityContext,
+	checkPermission, checkAccess, checkRead, checkConnect,
+	checkPackageAccess, checkPackageDefinition, checkPackageList):
+	Merge with Classpath.
+	(SecurityContext): Remove.
+
+2006-08-07  Gary Benson  <gbenson@redhat.com>
 
 	* java/security/VMAccessController.java (pushContext, popContext,
 	getContext): Use Thread.currentThread() to determine when we're
