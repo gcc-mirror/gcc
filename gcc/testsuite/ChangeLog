@@ -3,6 +3,9 @@
 	* gcc.dg/sparc-getcontext-1.c: Fix typo.
 	* g++.dg/eh/spbp.C: Skip on Solaris 2.5.1 and 2.6 too.
 	* g++.dg/other/unused1.C: Likewise.  Also match "asci?z".
+	* objc.dg/dwarf-1.m: Likewise.
+	* objc.dg/dwarf-2.m: Likewise.
+	* obj-c++.dg/dwarf-2.mm: Likewise.
 
 2006-08-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
