@@ -1,5 +1,9 @@
 2006-08-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* objc.dg/dwarf-1.m: Skip on 32-bit hppa hpux.
+	* objc.dg/dwarf-2.m: Likewise.
+	* obj-c++.dg/dwarf-2.mm: Likewise.
+
 	PR libfortran/28603
 	* gfortran.dg/direct_io_6.f90: Skip on hppa*-*-hpux*.
 
