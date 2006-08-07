@@ -1,6 +1,7 @@
 2006-08-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/sparc-getcontext-1.c: Fix typo.
+	* g++.dg/eh/spbp.C: Skip on Solaris 2.5.1 and 2.6 too.
 
 2006-08-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
