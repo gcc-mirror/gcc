@@ -103,7 +103,7 @@ final class VMAccessController
    */
   static void pushContext (AccessControlContext acc)
   {
-    if (!runtimeInitialized())
+    if (Thread.currentThread() == null)
       return;
 
     if (DEBUG)
@@ -127,7 +127,7 @@ final class VMAccessController
    */
   static void popContext()
   {
-    if (!runtimeInitialized())
+    if (Thread.currentThread() == null)
       return;
 
     if (DEBUG)
@@ -161,7 +161,7 @@ final class VMAccessController
     // so that any security checks succeed.
     //
     // XXX this might not be necessary, but it seems prudent.
-    if (!runtimeInitialized())
+    if (Thread.currentThread() == null)
       return DEFAULT_CONTEXT;
 
     // If we are already in getContext, but called a method that needs
@@ -284,11 +284,4 @@ final class VMAccessController
    *    of Strings comprising the method names.
    */
   private static native Object[][] getStack();
-
-  /**
-   * Tell whether runtime initialization is complete.
-   *
-   * @return whether runtime initialization is complete.
-   */
-  private static native boolean runtimeInitialized();
 }
