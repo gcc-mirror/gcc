@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.classpath.SystemProperties;
 import gnu.java.util.DoubleEnumeration;
 import gnu.java.util.EmptyEnumeration;
 
@@ -155,6 +156,39 @@ public abstract class ClassLoader
    */
   static final ClassLoader systemClassLoader =
     VMClassLoader.getSystemClassLoader();
+
+  static
+  {
+    // Find out if we have to install a default security manager. Note
+    // that this is done here because we potentially need the system
+    // class loader to load the security manager and note also that we
+    // don't need the security manager until the system class loader
+    // is created.  If the runtime chooses to use a class loader that
+    // doesn't have the system class loader as its parent, it is
+    // responsible for setting up a security manager before doing so.
+    String secman = SystemProperties.getProperty("java.security.manager");
+    if (secman != null && SecurityManager.current == null)
+    {
+      if (secman.equals("") || secman.equals("default"))
+      {
+	SecurityManager.current = new SecurityManager();
+      }
+      else
+      {
+	try
+	{
+	  Class cl = Class.forName(secman, false, systemClassLoader);
+	  SecurityManager.current = (SecurityManager) cl.newInstance();
+	}
+	catch (Exception x)
+	{
+	  throw (InternalError)
+	    new InternalError("Unable to create SecurityManager")
+	        .initCause(x);
+	}
+      }
+    }
+  }
 
   /**
    * The default protection domain, used when defining a class with a null
@@ -496,7 +530,7 @@ public abstract class ClassLoader
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       {
-        Class c = VMSecurityManager.getClassContext(ClassLoader.class)[1];
+        Class c = VMSecurityManager.getClassContext(ClassLoader.class)[0];
         ClassLoader cl = c.getClassLoader();
 	if (cl != null && ! cl.isAncestorOf(this))
           sm.checkPermission(new RuntimePermission("getClassLoader"));
@@ -739,7 +773,7 @@ public abstract class ClassLoader
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       {
-	Class c = VMSecurityManager.getClassContext(ClassLoader.class)[1];
+	Class c = VMSecurityManager.getClassContext(ClassLoader.class)[0];
 	ClassLoader cl = c.getClassLoader();
 	if (cl != null && cl != systemClassLoader)
 	  sm.checkPermission(new RuntimePermission("getClassLoader"));

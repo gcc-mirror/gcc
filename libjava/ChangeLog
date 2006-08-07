@@ -1,4 +1,18 @@
 2006-08-07  Gary Benson  <gbenson@redhat.com>
+
+	PR libgcj/28340:
+	* java/lang/ClassLoader.java (clinit): Install a default
+	security manager if java.security.manager is defined.
+	(getParent, getSystemClassLoader): Use the correct stack
+	frame during security checks.
+	* java/net/URLClassLoader.java (findClass): Avoid calling
+	this.toString() during VM initialization.
+	(runtimeInitialized): New method.
+	* java/net/natURLClassLoader.cc: New file.
+	* Makefile.am (nat_source_files): Added the above.
+	* Makefile.in: Rebuilt.
+
+2006-08-07  Gary Benson  <gbenson@redhat.com>
 	    Casey Marshall <csm@gnu.org>
 
 	* java/lang/SecurityManager.java (getSecurityContext,
