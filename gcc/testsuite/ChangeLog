@@ -1,3 +1,7 @@
+2006-08-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/sparc-getcontext-1.c: Fix typo.
+
 2006-08-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* objc.dg/dwarf-1.m: Skip on 32-bit hppa hpux.

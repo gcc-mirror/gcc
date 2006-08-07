@@ -1,7 +1,7 @@
 /* PR middle-end/22127 */
 /* Testcase by <akr@m17n.org> */
 
-/* [ dg-do run { target sparc*-sun-solaris2.* } } */
+/* { dg-do run { target sparc*-sun-solaris2.* } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O" } */
 
