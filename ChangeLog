@@ -1,3 +1,7 @@
+2006-08-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* MAINTAINERS (Various Maintainers): Add self as RTL opt. maintainer.
+
 2006-07-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config.guess: Import from src (was more updated).
