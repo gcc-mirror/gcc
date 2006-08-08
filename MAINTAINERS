@@ -209,6 +209,7 @@ alias analysis		Daniel Berlin		dberlin@dberlin.org
 alias analysis		Diego Novillo		dnovillo@redhat.com
 reload			Ulrich Weigand		uweigand@de.ibm.com
 dfp.c, related		Ben Elliston		bje@au.ibm.com
+RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
