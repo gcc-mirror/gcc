@@ -1,5 +1,9 @@
 2006-08-09  Gary Benson  <gbenson@redhat.com>
 
+	* stacktrace.cc (accesscontrol_trace_fn): Skip non-Java frames.
+
+2006-08-09  Gary Benson  <gbenson@redhat.com>
+
 	* java/lang/System.java (setSecurityManager): Javadoc fix.
 	* java/security/VMAccessController.java (getContext): Comment fix.
 
