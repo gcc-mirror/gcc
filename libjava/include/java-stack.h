@@ -114,6 +114,7 @@ private:
     
   static _Unwind_Reason_Code calling_class_trace_fn (_Jv_UnwindState *state);
   static _Unwind_Reason_Code non_system_trace_fn (_Jv_UnwindState *state);
+  static _Unwind_Reason_Code accesscontrol_trace_fn (_Jv_UnwindState *state);
 
 public:
   static _Jv_StackTrace *GetStackTrace (void);
@@ -124,7 +125,7 @@ public:
   static void GetCallerInfo (jclass checkClass, jclass *, _Jv_Method **);
   static JArray<jclass> *GetClassContext (jclass checkClass);
   static ClassLoader *GetFirstNonSystemClassLoader (void);
-  static JArray<jobjectArray> *GetClassMethodStack (_Jv_StackTrace *trace);
+  static JArray<jobjectArray> *GetAccessControlStack ();
   
 };
 

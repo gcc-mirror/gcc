@@ -1,3 +1,14 @@
+2006-08-09  Gary Benson  <gbenson@redhat.com>
+
+	* include/java-stack.h (accesscontrol_trace_fn): Declare.
+	(GetAccessControlStack): Likewise.
+	(GetClassMethodStack): Remove.
+	* stacktrace.cc (accesscontrol_trace_fn): New method.
+	(GetAccessControlStack): Likewise.
+	(GetClassMethodStack): Remove.
+	* java/security/natVMAccessController.cc (getStack): Use
+	GetAccessControlStack.
+
 2006-08-07  Gary Benson  <gbenson@redhat.com>
 
 	PR libgcj/28340:

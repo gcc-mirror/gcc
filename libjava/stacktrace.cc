@@ -20,6 +20,7 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/Long.h>
+#include <java/security/AccessController.h>
 #include <java/util/ArrayList.h>
 #include <java/util/IdentityHashMap.h>
 #include <gnu/java/lang/MainThread.h>
@@ -535,16 +536,43 @@ _Jv_StackTrace::GetFirstNonSystemClassLoader ()
   return NULL;
 }
 
-JArray<jobjectArray> *
-_Jv_StackTrace::GetClassMethodStack (_Jv_StackTrace *trace)
+_Unwind_Reason_Code
+_Jv_StackTrace::accesscontrol_trace_fn (_Jv_UnwindState *state)
 {
-  jint length = 0;
+  _Jv_StackFrame *frame = &state->frames[state->pos];
+  FillInFrameInfo (frame);
+
+  bool *stopping = (bool *) state->trace_data;
+  if (*stopping)
+    return _URC_NORMAL_STOP;
+  
+  if (frame->klass == &::java::security::AccessController::class$
+      && frame->meth
+      && strcmp (frame->meth->name->chars(), "doPrivileged") == 0)
+    *stopping = true;
+
+  return _URC_NO_REASON;
+}
+
+JArray<jobjectArray> *
+_Jv_StackTrace::GetAccessControlStack (void)
+{
+  int trace_size = 100;
+  _Jv_StackFrame frames[trace_size];
+  _Jv_UnwindState state (trace_size);
+  state.frames = (_Jv_StackFrame *) &frames;
+  state.trace_function = accesscontrol_trace_fn;
+  bool stopping = false;
+  state.trace_data = (void *) &stopping;
 
   UpdateNCodeMap();
-  for (int i = 0; i < trace->length; i++)
+  _Unwind_Backtrace (UnwindTraceFn, &state);
+  
+  jint length = 0;
+
+  for (int i = 0; i < state.pos; i++)
     {
-      _Jv_StackFrame *frame = &trace->frames[i];
-      FillInFrameInfo (frame);
+      _Jv_StackFrame *frame = &state.frames[i];
 
       if (frame->klass && frame->meth)
 	length++;
@@ -560,9 +588,9 @@ _Jv_StackTrace::GetClassMethodStack (_Jv_StackTrace *trace)
   jclass  *c = elements (classes);
   jstring *m = elements (methods);
 
-  for (int i = 0, j = 0; i < trace->length; i++)
+  for (int i = 0, j = 0; i < state.pos; i++)
     {
-      _Jv_StackFrame *frame = &trace->frames[i];
+      _Jv_StackFrame *frame = &state.frames[i];
       if (!frame->klass || !frame->meth)
 	continue;
       c[j] = frame->klass;
