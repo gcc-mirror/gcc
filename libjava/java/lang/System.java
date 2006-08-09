@@ -167,11 +167,6 @@ public final class System
    * first. Since this permission is denied by the default security manager,
    * setting the security manager is often an irreversible action.
    *
-   * <STRONG>Spec Note:</STRONG> Don't ask me, I didn't write it.  It looks
-   * pretty vulnerable; whoever gets to the gate first gets to set the policy.
-   * There is probably some way to set the original security manager as a
-   * command line argument to the VM, but I don't know it.
-   *
    * @param sm the new SecurityManager
    * @throws SecurityException if permission is denied
    */

@@ -1,5 +1,10 @@
 2006-08-09  Gary Benson  <gbenson@redhat.com>
 
+	* java/lang/System.java (setSecurityManager): Javadoc fix.
+	* java/security/VMAccessController.java (getContext): Comment fix.
+
+2006-08-09  Gary Benson  <gbenson@redhat.com>
+
 	* include/java-stack.h (accesscontrol_trace_fn): Declare.
 	(GetAccessControlStack): Likewise.
 	(GetClassMethodStack): Remove.
