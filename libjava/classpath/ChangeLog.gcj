@@ -1,3 +1,10 @@
+2006-08-09  Tom Tromey  <tromey@redhat.com>
+
+	PR classpath/28666:
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.c
+	(Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetDisplayModes):
+	Create a 'short' array.
+
 2006-08-07  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/28609:

@@ -248,8 +248,8 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetDisplayModes
 	  	/* Retrieves refresh rate information. */
 	  	rates = XRRConfigRates(config, i, &nrates);
 	  	
-	  	/* Create a Java int array and put them in. */
-	  	shortArray = (*env)->NewIntArray(env, nrates);
+	  	/* Create a Java short array and put them in. */
+	  	shortArray = (*env)->NewShortArray(env, nrates);
 		(*env)->SetShortArrayRegion(env, shortArray, 0, nrates, (jshort *) rates);
 	  	
 	  	/* Create a GdkScreenGraphicsDevice.X11DisplayMode instance. */
