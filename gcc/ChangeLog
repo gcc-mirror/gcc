@@ -1,3 +1,10 @@
+2006-08-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov.c (no_data_file): New flag.
+	(read_count_file): Set it if data file not present.  Assume counts
+	zero if not found.
+	(output_lines): Don't name the data file, if there wasn't one.
+
 2006-08-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000.c (print_operand) <D>: Fix comment and adjust.
