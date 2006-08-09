@@ -1,3 +1,22 @@
+2006-08-09  Lee Millward  <lee.millward@codesourcery.com>
+
+       PR c++/28637
+       * pt.c (coerce_template_parms): Copy across the
+       invalid template arguments to the new template inner arguments.
+       (retrieve_specialization): Robustify.
+
+       PR c++/28638
+       * pt.c (coerce_template_template_parms): Robustify.
+
+       PR c++/28639
+       * error.c (dump_template_parms): Robustify.
+
+       PR c++/28640
+       * pt.c (redeclare_class_template): Robustify.
+
+       PR c++/28641
+       * pt.c (type_unification_real): Robustify.
+	
 2006-08-03  Lee Millward  <lee.millward@codesourcery.com>
 
        PR c++/28347

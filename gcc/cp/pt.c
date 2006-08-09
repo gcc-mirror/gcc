@@ -816,6 +816,9 @@ static tree
 retrieve_specialization (tree tmpl, tree args,
 			 bool class_specializations_p)
 {
+  if (args == error_mark_node)
+    return NULL_TREE;
+
   gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
 
   /* There should be as many levels of arguments as there are
@@ -3320,10 +3323,19 @@ redeclare_class_template (tree type, tree parms)
 
   for (i = 0; i < TREE_VEC_LENGTH (tmpl_parms); ++i)
     {
-      tree tmpl_parm = TREE_VALUE (TREE_VEC_ELT (tmpl_parms, i));
-      tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
-      tree tmpl_default = TREE_PURPOSE (TREE_VEC_ELT (tmpl_parms, i));
-      tree parm_default = TREE_PURPOSE (TREE_VEC_ELT (parms, i));
+      tree tmpl_parm;
+      tree parm;
+      tree tmpl_default;
+      tree parm_default;
+
+      if (TREE_VEC_ELT (tmpl_parms, i) == error_mark_node
+          || TREE_VEC_ELT (parms, i) == error_mark_node)
+        continue;
+
+      tmpl_parm = TREE_VALUE (TREE_VEC_ELT (tmpl_parms, i));
+      parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+      tmpl_default = TREE_PURPOSE (TREE_VEC_ELT (tmpl_parms, i));
+      parm_default = TREE_PURPOSE (TREE_VEC_ELT (parms, i));
 
       /* TMPL_PARM and PARM can be either TYPE_DECL, PARM_DECL, or
 	 TEMPLATE_DECL.  */
@@ -3785,7 +3797,8 @@ coerce_template_template_parms (tree parm_parms,
 
   for (i = 0; i < nparms; ++i)
     {
-      if (TREE_VEC_ELT (parm_parms, i) == error_mark_node)
+      if (TREE_VEC_ELT (parm_parms, i) == error_mark_node
+          || TREE_VEC_ELT (arg_parms, i) == error_mark_node)
         continue;
 
       parm = TREE_VALUE (TREE_VEC_ELT (parm_parms, i));
@@ -4073,7 +4086,10 @@ coerce_template_parms (tree parms,
       parm = TREE_VEC_ELT (parms, i);
  
       if (parm == error_mark_node)
+      {
+        TREE_VEC_ELT (new_inner_args, i) = error_mark_node;
         continue;
+      }
 
       /* Calculate the Ith argument.  */
       if (i < nargs)
@@ -9788,7 +9804,12 @@ type_unification_real (tree tparms,
     for (i = 0; i < ntparms; i++)
       if (!TREE_VEC_ELT (targs, i))
 	{
-	  tree tparm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
+	  tree tparm;
+
+          if (TREE_VEC_ELT (tparms, i) == error_mark_node)
+            continue;
+
+          tparm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
 
 	  /* If this is an undeduced nontype parameter that depends on
 	     a type parameter, try another pass; its type may have been

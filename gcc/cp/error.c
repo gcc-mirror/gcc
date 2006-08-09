@@ -1242,7 +1242,15 @@ dump_template_parms (tree info, int primary, int flags)
 
       for (ix = 0; ix != len; ix++)
 	{
-	  tree parm = TREE_VALUE (TREE_VEC_ELT (parms, ix));
+	  tree parm;
+
+          if (TREE_VEC_ELT (parms, ix) == error_mark_node)
+            {
+              pp_identifier (cxx_pp, "<template parameter error>");
+              continue;
+            }
+
+          parm = TREE_VALUE (TREE_VEC_ELT (parms, ix));
 
 	  if (ix)
 	    pp_separate_with_comma (cxx_pp);
