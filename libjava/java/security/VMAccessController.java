@@ -159,8 +159,6 @@ final class VMAccessController
   {
     // If the VM is initializing return the all-permissive context
     // so that any security checks succeed.
-    //
-    // XXX this might not be necessary, but it seems prudent.
     if (Thread.currentThread() == null)
       return DEFAULT_CONTEXT;
 
