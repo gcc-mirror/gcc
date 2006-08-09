@@ -542,12 +542,14 @@ _Jv_StackTrace::accesscontrol_trace_fn (_Jv_UnwindState *state)
   _Jv_StackFrame *frame = &state->frames[state->pos];
   FillInFrameInfo (frame);
 
+  if (!(frame->klass && frame->meth))
+    return _URC_NO_REASON;
+
   bool *stopping = (bool *) state->trace_data;
   if (*stopping)
     return _URC_NORMAL_STOP;
   
   if (frame->klass == &::java::security::AccessController::class$
-      && frame->meth
       && strcmp (frame->meth->name->chars(), "doPrivileged") == 0)
     *stopping = true;
 
