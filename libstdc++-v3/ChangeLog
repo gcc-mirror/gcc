@@ -1,3 +1,10 @@
+2006-08-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (fill(const _Deque_iterator<>&,
+	const _Deque_iterator<>&, const _Tp&)): Move...
+	* include/bits/deque.tcc: ... here.
+	* include/bits/stl_deque.h: Declare.
+
 2006-08-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/16611

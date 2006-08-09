@@ -350,6 +350,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
     operator+(ptrdiff_t __n, const _Deque_iterator<_Tp, _Ref, _Ptr>& __x)
     { return __x + __n; }
 
+  template<typename _Tp>
+    void
+    fill(const _Deque_iterator<_Tp, _Tp&, _Tp*>& __first,
+	 const _Deque_iterator<_Tp, _Tp&, _Tp*>& __last, const _Tp& __value);
+
   /**
    *  @if maint
    *  Deque base class.  This class provides the unified face for %deque's
