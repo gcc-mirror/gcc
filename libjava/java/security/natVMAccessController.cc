@@ -19,6 +19,5 @@ details.  */
 JArray<jobjectArray> *
 java::security::VMAccessController::getStack ()
 {
-  _Jv_StackTrace *trace = _Jv_StackTrace::GetStackTrace ();
-  return _Jv_StackTrace::GetClassMethodStack (trace);
+  return _Jv_StackTrace::GetAccessControlStack ();
 }
