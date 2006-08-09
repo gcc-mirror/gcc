@@ -1,3 +1,26 @@
+2006-08-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* var-tracking.c (enum micro_operation_type): Add MO_COPY.
+	(var_debug_decl): New function.
+	(var_reg_set): Follow debug decl link.  Add location even if
+	reg is already known to hold some other variable.
+	(var_mem_set): Follow debug decl link.
+	(var_reg_delete_and_set, var_mem_delete_and_set): Follow debug
+	decl link.  Delete other known locations of the variable part
+	if requested.
+	(var_reg_delete, var_mem_delete): Delete other known locations
+	of the variable part if requested.
+	(same_variable_part_p): New function.
+	(add_stores): Select MO_COPY when appropriate.
+	(vt_initialize): Handle it.
+	(compute_bb_dataflow, emit_notes_in_bb): Likewise.  Delete
+	known locations for MO_SET and MO_CLOBBER.
+	(find_variable_location_part): New function.
+	(set_variable_part, delete_variable_part): Use it.
+	(clobber_variable_part): New function.
+	* dwarf2out.c (dwarf2out_var_location): Do not follow debug
+	decl link.
+
 2006-08-07  Victor Kaplansky <victork@il.ibm.com>
 
         PR tree-optimization/26969
