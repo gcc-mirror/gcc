@@ -1,3 +1,14 @@
+2006-08-09  Lee Millward  <lee.millward@codesourcery.com>
+
+       PR c++/28637
+       * g++.dg/template/void3.C: New test.
+
+       PR c++/28638
+       * g++.dg/template/void4.C: New test.
+
+`       PR c++/28640
+       * g++.dg/template/void5.C: New test.
+	
 2006-08-07  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* g++.dg/ext/visibility/class1.C (dg-require-visibility): Move
