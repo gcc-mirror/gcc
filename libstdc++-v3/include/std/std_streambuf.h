@@ -67,7 +67,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT>
     typename __enable_if<istreambuf_iterator<_CharT>,
 			 __is_char<_CharT>::__value>::__type
-    find(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>, _CharT);
+    find(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
+	 const _CharT&);
 
   /**
    *  @brief  The actual work of input and output (interface).
@@ -174,7 +175,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         friend typename __enable_if<istreambuf_iterator<_CharT2>,
 				    __is_char<_CharT2>::__value>::__type
         find(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
-	     _CharT2);
+	     const _CharT2&);
 
       template<typename _CharT2, typename _Traits2>
         friend basic_istream<_CharT2, _Traits2>&
