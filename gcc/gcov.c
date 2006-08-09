@@ -277,6 +277,10 @@ static unsigned bbg_stamp;
 
 static char *da_file_name;
 
+/* Data file is missing.  */
+
+static int no_data_file;
+
 /* Output branch probabilities.  */
 
 static int flag_branches = 0;
@@ -964,8 +968,10 @@ read_count_file (void)
 
   if (!gcov_open (da_file_name, 1))
     {
-      fnotice (stderr, "%s:cannot open data file\n", da_file_name);
-      return 1;
+      fnotice (stderr, "%s:cannot open data file, assuming not executed\n",
+	       da_file_name);
+      no_data_file = 1;
+      return 0;
     }
   if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
@@ -1782,7 +1788,8 @@ output_lines (FILE *gcov_file, const source_t *src)
 
   fprintf (gcov_file, "%9s:%5d:Source:%s\n", "-", 0, src->name);
   fprintf (gcov_file, "%9s:%5d:Graph:%s\n", "-", 0, bbg_file_name);
-  fprintf (gcov_file, "%9s:%5d:Data:%s\n", "-", 0, da_file_name);
+  fprintf (gcov_file, "%9s:%5d:Data:%s\n", "-", 0,
+	   no_data_file ? "-" : da_file_name);
   fprintf (gcov_file, "%9s:%5d:Runs:%u\n", "-", 0,
 	   object_summary.ctrs[GCOV_COUNTER_ARCS].runs);
   fprintf (gcov_file, "%9s:%5d:Programs:%u\n", "-", 0, program_count);
