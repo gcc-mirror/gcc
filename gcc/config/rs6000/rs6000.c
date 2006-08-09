@@ -10283,13 +10283,14 @@ print_operand (FILE *file, rtx x, int code)
       return;
 
     case 'D':
-      /* Like 'J' but get to the EQ bit.  */
+      /* Like 'J' but get to the GT bit only.  */
       gcc_assert (GET_CODE (x) == REG);
 
-      /* Bit 1 is EQ bit.  */
-      i = 4 * (REGNO (x) - CR0_REGNO) + 2;
+      /* Bit 1 is GT bit.  */
+      i = 4 * (REGNO (x) - CR0_REGNO) + 1;
 
-      fprintf (file, "%d", i);
+      /* Add one for shift count in rlinm for scc.  */
+      fprintf (file, "%d", i + 1);
       return;
 
     case 'E':
@@ -11086,7 +11087,7 @@ rs6000_generate_compare (enum rtx_code code)
   /* First, the compare.  */
   compare_result = gen_reg_rtx (comp_mode);
 
-  /* SPE FP compare instructions on the GPRs.  Yuck!  */
+  /* E500 FP compare instructions on the GPRs.  Yuck!  */
   if ((TARGET_E500 && !TARGET_FPRS && TARGET_HARD_FLOAT)
       && rs6000_compare_fp_p)
     {
@@ -11096,8 +11097,8 @@ rs6000_generate_compare (enum rtx_code code)
       if (op_mode == VOIDmode)
 	op_mode = GET_MODE (rs6000_compare_op1);
 
-      /* Note: The E500 comparison instructions set the GT bit (x +
-	 1), on success.  This explains the mess.  */
+      /* The E500 FP compare instructions toggle the GT bit (CR bit 1) only.
+	 This explains the following mess.  */
 
       switch (code)
 	{
