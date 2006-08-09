@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	friend typename __enable_if<istreambuf_iterator<_CharT2>,
 	                            __is_char<_CharT2>::__value>::__type
 	find(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
-	     _CharT2);
+	     const _CharT2&);
 
     private:
       // 24.5.3 istreambuf_iterator
@@ -363,7 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     typename __enable_if<istreambuf_iterator<_CharT>,
 			 __is_char<_CharT>::__value>::__type
     find(istreambuf_iterator<_CharT> __first,
-	 istreambuf_iterator<_CharT> __last, _CharT __val)
+	 istreambuf_iterator<_CharT> __last, const _CharT& __val)
     {
       typedef istreambuf_iterator<_CharT>                  __is_iterator_type;
       typedef typename __is_iterator_type::traits_type     traits_type;

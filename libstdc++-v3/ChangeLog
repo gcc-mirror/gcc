@@ -1,5 +1,31 @@
 2006-08-09  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_bvector.h (vector<bool>::_M_copy_aligned): New.
+	(vector<bool>::vector(const vector&), operator=(const vector&),
+	reserve(size_type), _M_fill_insert(iterator, size_type, bool),
+	_M_insert_range(iterator, _ForwardIterator, _ForwardIterator,
+	std::forward_iterator_tag), _M_insert_aux(iterator, bool)): Use it.
+	* testsuite/performance/23_containers/copy_construct/
+	vector_bool.cc: New.
+
+	* testsuite/23_containers/vector/bool/cons/1.cc: New.
+	* testsuite/23_containers/vector/bool/cons/2.cc: Likewise.
+
+	* include/bits/stl_bvector.h (vector<bool>::_M_fill): Remove.
+	(fill(_Bit_iterator, _Bit_iterator, const bool&)): New.
+	(vector<bool>::_M_fill_insert(iterator, size_type, bool)): Adjust.
+
+	* include/bits/stl_bvector.h (_M_initialize_range(_InputIterator,
+	_InputIterator, std::input_iterator_tag)): Remove redundant
+	assignments.
+
+	* include/bits/stl_algo.h (find(istreambuf_iterator<>,
+	istreambuf_iterator<>, _CharT)): Adjust signature.
+	* include/bits/streambuf_iterator.h: Likewise.
+	* include/std/std_streambuf.h: Likewise.	
+
+2006-08-09  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_algobase.h (fill(const _Deque_iterator<>&,
 	const _Deque_iterator<>&, const _Tp&)): Move...
 	* include/bits/deque.tcc: ... here.
