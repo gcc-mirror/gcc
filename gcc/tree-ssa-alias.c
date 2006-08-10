@@ -2691,24 +2691,71 @@ is_aliased_with (tree tag, tree sym)
   return false;
 }
 
+/* The following is based on code in add_stmt_operand to ensure that the
+   same defs/uses/vdefs/vuses will be found after replacing a reference
+   to var (or ARRAY_REF to var) with an INDIRECT_REF to ptr whose value
+   is the address of var.  Return a memtag for the ptr, after adding the 
+   proper may_aliases to it (which are the aliases of var, if it has any,
+   or var itself).  */
+
+static tree
+add_may_alias_for_new_tag (tree tag, tree var)
+{
+  var_ann_t v_ann = var_ann (var);
+  VEC(tree, gc) *aliases = v_ann->may_aliases;
+
+  /* Case 1: |aliases| == 1  */
+  if ((aliases != NULL)
+      && (VEC_length (tree, aliases) == 1))
+    {
+      tree ali = VEC_index (tree, aliases, 0);
+
+      if (TREE_CODE (ali) == SYMBOL_MEMORY_TAG)
+        return ali;
+    }
+
+  /* Case 2: |aliases| == 0  */
+  if (aliases == NULL)
+    add_may_alias (tag, var);
+  else
+    {
+      /* Case 3: |aliases| > 1  */
+      unsigned i;
+      tree al;
+
+      for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
+        add_may_alias (tag, al);
+    }
+
+  return tag;
+}
 
 /* Create a new symbol tag for PTR.  Construct the may-alias list of this type
-   tag so that it has the aliasing of VAR. 
+   tag so that it has the aliasing of VAR, or of the relevant subvars of VAR
+   according to the location accessed by EXPR.
 
    Note, the set of aliases represented by the new symbol tag are not marked
    for renaming.  */
 
 void
-new_type_alias (tree ptr, tree var)
+new_type_alias (tree ptr, tree var, tree expr)
 {
   var_ann_t p_ann = var_ann (ptr);
   tree tag_type = TREE_TYPE (TREE_TYPE (ptr));
-  var_ann_t v_ann = var_ann (var);
   tree tag;
   subvar_t svars;
+  tree ali = NULL_TREE;
+  HOST_WIDE_INT offset, size, maxsize;
+  tree ref;
 
   gcc_assert (p_ann->symbol_mem_tag == NULL_TREE);
   gcc_assert (!MTAG_P (var));
+
+  ref = get_ref_base_and_extent (expr, &offset, &size, &maxsize);
+  gcc_assert (ref);
+
+  tag = create_memory_tag (tag_type, true);
+  p_ann->symbol_mem_tag = tag;
 
   /* Add VAR to the may-alias set of PTR's new symbol tag.  If VAR has
      subvars, add the subvars to the tag instead of the actual var.  */
@@ -2716,53 +2763,50 @@ new_type_alias (tree ptr, tree var)
       && (svars = get_subvars_for_var (var)))
     {
       subvar_t sv;
-
-      tag = create_memory_tag (tag_type, true);
-      p_ann->symbol_mem_tag = tag;
+      VEC (tree, heap) *overlaps = NULL;
+      unsigned int len;
 
       for (sv = svars; sv; sv = sv->next)
-        add_may_alias (tag, sv->var);
-    }
-  else
-    {
-      /* The following is based on code in add_stmt_operand to ensure that the
-	 same defs/uses/vdefs/vuses will be found after replacing a reference
-	 to var (or ARRAY_REF to var) with an INDIRECT_REF to ptr whose value
-	 is the address of var.  */
-      VEC(tree, gc) *aliases = v_ann->may_aliases;
-
-      if ((aliases != NULL)
-	  && (VEC_length (tree, aliases) == 1))
 	{
-	  tree ali = VEC_index (tree, aliases, 0);
+          bool exact;
 
-	  if (TREE_CODE (ali) == SYMBOL_MEMORY_TAG)
+          if (overlap_subvar (offset, maxsize, sv->var, &exact))
+            VEC_safe_push (tree, heap, overlaps, sv->var);
+        }
+      len = VEC_length (tree, overlaps);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+        fprintf (dump_file, "\nnumber of overlapping subvars = %u\n", len);
+      gcc_assert (len);
+
+      if (len == 1)
+        ali = add_may_alias_for_new_tag (tag, VEC_index (tree, overlaps, 0));
+      else if (len > 1)
+        {
+	  unsigned int k;
+	  tree sv_var;
+
+	  for (k = 0; VEC_iterate (tree, overlaps, k, sv_var); k++)
 	    {
-	      p_ann->symbol_mem_tag = ali;
-	      return;
+	      ali = add_may_alias_for_new_tag (tag, sv_var);
+
+	      if (ali != tag)
+		{
+		  /* Can happen only if 'Case 1' of add_may_alias_for_new_tag
+		     took place.  Since more than one svar was found, we add 
+		     'ali' as one of the may_aliases of the new tag.  */ 
+		  add_may_alias (tag, ali);
+		  ali = tag;
+		}
 	    }
 	}
+    }
+  else
+    ali = add_may_alias_for_new_tag (tag, var);
 
-      tag = create_memory_tag (tag_type, true);
-      p_ann->symbol_mem_tag = tag;
-
-      if (aliases == NULL)
-	add_may_alias (tag, var);
-      else
-	{
-	  unsigned i;
-	  tree al;
-
-	  for (i = 0; VEC_iterate (tree, aliases, i, al); i++)
-	    add_may_alias (tag, al);
-	}
-    }    
-
+  p_ann->symbol_mem_tag = ali;
   TREE_READONLY (tag) = TREE_READONLY (var);
   MTAG_GLOBAL (tag) = is_global_var (var);
 }
-
-
 
 /* This represents the used range of a variable.  */
 
