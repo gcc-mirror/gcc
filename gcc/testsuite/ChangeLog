@@ -1,3 +1,7 @@
+2006-08-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/static_initializer.ads: New test.
+
 2006-08-10  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.target/arm/cond-asm.c: New test.
