@@ -1,3 +1,16 @@
+2006-08-10  Gary Benson  <gbenson@redhat.com>
+
+	* include/java-stack.h (GetAccessControlStack): Change return
+	type.
+	* stacktrace.cc (accesscontrol_trace_fn): Record the number of
+	Java frames encountered.
+	(GetAccessControlStack): Return a flag indicating whether a call to
+	doPrivileged was encountered rather than an array of method names.
+	* java/security/natVMAccessController.cc (getStack): Change return
+	type.
+	* java/security/VMAccessController.java (getStack): Likewise.
+	(getContext): Change to reflect the above.
+
 2006-08-09  Gary Benson  <gbenson@redhat.com>
 
 	* stacktrace.cc (accesscontrol_trace_fn): Skip non-Java frames.

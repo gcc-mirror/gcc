@@ -178,9 +178,9 @@ final class VMAccessController
 
     inGetContext.set(Boolean.TRUE);
 
-    Object[][] stack = getStack();
+    Object[] stack = getStack();
     Class[] classes = (Class[]) stack[0];
-    String[] methods = (String[]) stack[1];
+    boolean privileged = ((Boolean) stack[1]).booleanValue();
 
     if (DEBUG)
       debug("got trace of length " + classes.length);
@@ -188,32 +188,24 @@ final class VMAccessController
     HashSet domains = new HashSet();
     HashSet seenDomains = new HashSet();
     AccessControlContext context = null;
-    int privileged = 0;
 
     // We walk down the stack, adding each ProtectionDomain for each
     // class in the call stack. If we reach a call to doPrivileged,
     // we don't add any more stack frames. We skip the first three stack
     // frames, since they comprise the calls to getStack, getContext,
     // and AccessController.getContext.
-    for (int i = 3; i < classes.length && privileged < 2; i++)
+    for (int i = 3; i < classes.length; i++)
       {
         Class clazz = classes[i];
-        String method = methods[i];
 
         if (DEBUG)
           {
-            debug("checking " + clazz + "." + method);
+            debug("checking " + clazz);
             // subject to getClassLoader RuntimePermission
             debug("loader = " + clazz.getClassLoader());
           }
 
-        // If the previous frame was a call to doPrivileged, then this is
-        // the last frame we look at.
-        if (privileged == 1)
-          privileged = 2;
-
-        if (clazz.equals (AccessController.class)
-            && method.equals ("doPrivileged"))
+        if (privileged && i == classes.length - 2)
           {
             // If there was a call to doPrivileged with a supplied context,
             // return that context. If using JAAS doAs*, it should be 
@@ -221,7 +213,6 @@ final class VMAccessController
             LinkedList l = (LinkedList) contexts.get();
             if (l != null)
               context = (AccessControlContext) l.getFirst();
-            privileged = 1;
           }
 
         // subject to getProtectionDomain RuntimePermission
@@ -270,16 +261,14 @@ final class VMAccessController
   }
 
   /**
-   * Returns a snapshot of the current call stack as a pair of arrays:
-   * the first an array of classes in the call stack, the second an array
-   * of strings containing the method names in the call stack. The two
-   * arrays match up, meaning that method <i>i</i> is declared in class
-   * <i>i</i>. The arrays are clean; it will only contain Java methods,
-   * and no element of the list should be null.
+   * Returns a snapshot of the current call stack as a two-element
+   * array. The first element is an array of classes in the call
+   * stack, and the second element is a boolean value indicating
+   * whether the trace stopped early because a call to doPrivileged
+   * was encountered.  If this boolean value is true then the call to
+   * doPrivileged will be the second-last frame in the returned trace.
    *
-   * @return A pair of arrays describing the current call stack. The first
-   *    element is an array of Class objects, and the second is an array
-   *    of Strings comprising the method names.
+   * @return A snapshot of the current call stack.
    */
-  private static native Object[][] getStack();
+  private static native Object[] getStack();
 }
