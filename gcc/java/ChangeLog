@@ -1,3 +1,14 @@
+2006-08-10  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR java/8923
+	* parse.y (build_incdec): Emit an error instead of an ICE if '++'
+	or '--' is used with a constant operand.
+	(java_complete_lhs): When processing a '++' or '--' expression,
+	don't call java_complete_tree but java_complete_lhs, so that a
+	static final variable operand is never replaced by its value. This
+	avoids an ICE later on.
+	(patch_unaryop): Fixed typo in comment.
+
 2006-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* Make-lang.in: Use $(HEADER_H) instead of header.h in dependencies.

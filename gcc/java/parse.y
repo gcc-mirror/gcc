@@ -12404,7 +12404,18 @@ java_complete_lhs (tree node)
 	 how to handle those cases. */
       wfl_op1 = TREE_OPERAND (node, 0);
       CAN_COMPLETE_NORMALLY (node) = 1;
-      TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
+      if (TREE_CODE (node) == PREDECREMENT_EXPR
+	  || TREE_CODE (node) == PREINCREMENT_EXPR
+	  || TREE_CODE (node) == POSTDECREMENT_EXPR
+	  || TREE_CODE (node) == POSTINCREMENT_EXPR)
+	{ /* We don't want static finals to be resolved to their value
+	     to avoid ICEing later. It solves PR8923. */
+	  TREE_OPERAND (node, 0) = java_complete_lhs (wfl_op1);
+	}
+      else
+	{
+	  TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
+	}
       if (TREE_OPERAND (node, 0) == error_mark_node)
 	return error_mark_node;
       node = patch_unaryop (node, wfl_op1);
@@ -14223,6 +14234,14 @@ build_incdec (int op_token, int op_location, tree op1, int is_post_p)
   /* Store the location of the operator, for better error report. The
      string of the operator will be rebuild based on the OP value. */
   EXPR_WFL_LINECOL (node) = op_location;
+
+  /* Report an error if the operand is a constant. */
+  if (TREE_CONSTANT (op1)) {
+    parse_error_context (node, "%qs cannot be used with a constant",
+                         operator_string (node));
+    return error_mark_node;
+  }
+
   return node;
 }
 
@@ -14377,7 +14396,7 @@ patch_unaryop (tree node, tree wfl_op)
 	  error_found = 1;
 	}
 
-      /* From now on, we know that op if a variable and that it has a
+      /* From now on, we know that op is a variable and that it has a
          valid wfl. We use wfl_op to locate errors related to the
          ++/-- operand. */
       if (!JNUMERIC_TYPE_P (op_type))
