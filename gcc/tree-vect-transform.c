@@ -303,7 +303,7 @@ vect_create_data_ref_ptr (tree stmt,
   /* If tag is a variable (and NOT_A_TAG) than a new symbol memory
      tag must be created with tag added to its may alias list.  */
   if (!MTAG_P (tag))
-    new_type_alias (vect_ptr, tag);
+    new_type_alias (vect_ptr, tag, DR_REF (dr));
   else
     var_ann (vect_ptr)->symbol_mem_tag = tag;
 

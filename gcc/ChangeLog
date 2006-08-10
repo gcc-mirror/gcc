@@ -1,3 +1,15 @@
+2006-08-10  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/26197
+	* tree-ssa-alias.c (new_type_alias): Takes additional argument. Calls
+	get_ref_base_and_extent and overlap_subvar to add only relevant
+	subvars as may-aliases.
+	(add_may_alias_for_new_tag): New function, factored out of
+	new_type_alias.
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Call new_type_alias
+	with additional argument.
+	* tree-flow.h (new_type_alias): Takes additional argument.
+
 2006-08-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov.c (no_data_file): New flag.
