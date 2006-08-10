@@ -1,5 +1,10 @@
 2006-08-10  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random.tcc (gamma_distribution<>::operator()): Fixes
+	from the Errata of Devroye's book.
+
+2006-08-10  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_bvector.h (_Bit_iterator_base::_M_incr(ptrdiff_t)):
 	Tidy a bit, thus reducing generated code size.
 

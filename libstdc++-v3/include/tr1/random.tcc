@@ -807,7 +807,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * Series in Statistics, 8, 545-576, 1977.
    *
    * Devroye, L. "Non-Uniform Random Variates Generation." Springer-Verlag,
-   * New York, 1986, Sect. 3.4.
+   * New York, 1986, Ch. IX, Sect. 3.4 (+ Errata!).
    */
   template<typename _RealType>
     template<class _UniformRandomNumberGenerator>
@@ -822,7 +822,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    // alpha - log(4)
 	    const result_type __b = _M_alpha
 	      - result_type(1.3862943611198906188344642429163531L);
-	    const result_type __c = _M_alpha + std::sqrt(2 * _M_alpha - 1);
+	    const result_type __l = std::sqrt(2 * _M_alpha - 1);
+	    const result_type __c = _M_alpha + __l;
+	    const result_type __1l = 1 / __l;
 
 	    // 1 + log(9 / 2)
 	    const result_type __k = 2.5040773967762740733732583523868748L;
@@ -833,8 +835,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		const result_type __u = __urng();
 		const result_type __v = __urng();
 
-		const result_type __y = _M_alpha * std::log(__v / (1 - __v));
-		__x = _M_alpha * std::exp(__v);
+		const result_type __y = __1l * std::log(__v / (1 - __v));
+		__x = _M_alpha * std::exp(__y);
 
 		__z = __u * __v * __v;
 		__r = __b + __c * __y - __x;
@@ -856,7 +858,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 		__x = std::pow(__z, __c);
 	      }
-	    while (__z + __e > __d + __x);
+	    while (__z + __e < __d + __x);
 	  }
 
 	return __x;
