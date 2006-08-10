@@ -144,11 +144,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       __n = __n % int(_S_word_bit);
       if (__n < 0)
 	{
-	  _M_offset = static_cast<unsigned int>(__n + int(_S_word_bit));
+	  __n += int(_S_word_bit);
 	  --_M_p;
 	}
-      else
-	_M_offset = static_cast<unsigned int>(__n);
+      _M_offset = static_cast<unsigned int>(__n);
     }
 
     bool
