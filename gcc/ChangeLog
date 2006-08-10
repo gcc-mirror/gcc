@@ -1,3 +1,8 @@
+2006-08-10  Paul Brook  <paul@codesourcery.com>
+
+	* final.c (final_scan_insn): Clear current_insn_predicate before
+	outputting inline asm.
+
 2006-08-10  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/26197
