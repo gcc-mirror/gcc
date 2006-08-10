@@ -16,7 +16,7 @@ details.  */
 
 #include <java/security/VMAccessController.h>
 
-JArray<jobjectArray> *
+jobjectArray
 java::security::VMAccessController::getStack ()
 {
   return _Jv_StackTrace::GetAccessControlStack ();

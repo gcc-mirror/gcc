@@ -125,7 +125,7 @@ public:
   static void GetCallerInfo (jclass checkClass, jclass *, _Jv_Method **);
   static JArray<jclass> *GetClassContext (jclass checkClass);
   static ClassLoader *GetFirstNonSystemClassLoader (void);
-  static JArray<jobjectArray> *GetAccessControlStack ();
+  static jobjectArray GetAccessControlStack ();
   
 };
 
