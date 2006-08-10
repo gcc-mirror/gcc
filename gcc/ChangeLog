@@ -1,3 +1,8 @@
+2006-08-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (build1_stat): Also propagate the TREE_CONSTANT and
+	TREE_INVARIANT flags for a VIEW_CONVERT_EXPR.
+
 2006-08-10  Paul Brook  <paul@codesourcery.com>
 
 	* final.c (final_scan_insn): Clear current_insn_predicate before
