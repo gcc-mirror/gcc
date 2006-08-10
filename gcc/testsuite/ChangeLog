@@ -1,3 +1,16 @@
+2006-08-10  Lee Millward  <lee.millward@codesourcery.com>
+
+	Revert:
+	2006-07-28  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/27668
+        * g++.dg/template/crash54.C: New test.
+
+        PR c++/27962
+        * g++.dg/template/nontype16.C: New test.
+
+        * g++.dg/template/nontype5.C: Adjust error markers
+	
 2006-08-07  Lee Millward  <lee.millward@codesourcery.com>
 
 	* g++.dg/template/crash54.C: Adjust error_markers.

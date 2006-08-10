@@ -351,12 +351,7 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
 	       NULL);
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i)
     {
-      tree parm;
-
-      if (TREE_VEC_ELT (parms, i) == error_mark_node)
-        continue;
-
-      parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+      tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
       gcc_assert (DECL_P (parm));
 
       switch (TREE_CODE (parm))
@@ -2222,15 +2217,8 @@ comp_template_parms (tree parms1, tree parms2)
 
       for (i = 0; i < TREE_VEC_LENGTH (t2); ++i)
 	{
-          tree parm1;
-          tree parm2;
-
-          if (TREE_VEC_ELT (t1, i) == error_mark_node
-              || TREE_VEC_ELT (t2, i) == error_mark_node)
-            continue;
-
-          parm1 = TREE_VALUE (TREE_VEC_ELT (t1, i));
-          parm2 = TREE_VALUE (TREE_VEC_ELT (t2, i));
+          tree parm1 = TREE_VALUE (TREE_VEC_ELT (t1, i));
+          tree parm2 = TREE_VALUE (TREE_VEC_ELT (t2, i));
 
 	  if (TREE_CODE (parm1) != TREE_CODE (parm2))
 	    return 0;
@@ -2399,7 +2387,7 @@ process_template_parm (tree list, tree next, bool is_non_type)
       TREE_INVARIANT (parm) = 1;
       TREE_READONLY (parm) = 1;
       if (invalid_nontype_parm_type_p (TREE_TYPE (parm), 1))
-	return chainon(list, error_mark_node);
+	TREE_TYPE (parm) = void_type_node;
       decl = build_decl (CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
       TREE_CONSTANT (decl) = 1;
       TREE_INVARIANT (decl) = 1;
@@ -2861,9 +2849,6 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
 	{
 	  tree parm = TREE_VEC_ELT (inner_parms, i);
 
-          if (parm == error_mark_node)
-            continue;
-
 	  if (TREE_PURPOSE (parm))
 	    seen_def_arg_p = 1;
 	  else if (seen_def_arg_p)
@@ -2929,9 +2914,6 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
       ntparms = TREE_VEC_LENGTH (inner_parms);
       for (i = 0; i < ntparms; ++i)
         {
-          if (TREE_VEC_ELT (inner_parms, i) == error_mark_node)
-            continue;
-
 	  if (TREE_PURPOSE (TREE_VEC_ELT (inner_parms, i)))
 	    {
 	      if (msg)
@@ -3803,9 +3785,6 @@ coerce_template_template_parms (tree parm_parms,
 
   for (i = 0; i < nparms; ++i)
     {
-      if (TREE_VEC_ELT (parm_parms, i) == error_mark_node)
-        continue;
-
       parm = TREE_VALUE (TREE_VEC_ELT (parm_parms, i));
       arg = TREE_VALUE (TREE_VEC_ELT (arg_parms, i));
 
@@ -4061,8 +4040,7 @@ coerce_template_parms (tree parms,
   if (nargs > nparms
       || (nargs < nparms
 	  && require_all_arguments
-	  && (TREE_VEC_ELT (parms, nargs) != error_mark_node
-              && TREE_PURPOSE (TREE_VEC_ELT (parms, nargs)) == NULL_TREE)))
+	  && TREE_PURPOSE (TREE_VEC_ELT (parms, nargs)) == NULL_TREE))
     {
       if (complain & tf_error)
 	{
@@ -4085,9 +4063,6 @@ coerce_template_parms (tree parms,
 
       /* Get the Ith template parameter.  */
       parm = TREE_VEC_ELT (parms, i);
-
-      if (parm == error_mark_node)
-        continue;
 
       /* Calculate the Ith argument.  */
       if (i < nargs)
@@ -4188,14 +4163,8 @@ mangle_class_name_for_template (const char* name, tree parms, tree arglist)
   gcc_assert (nparms == TREE_VEC_LENGTH (arglist));
   for (i = 0; i < nparms; i++)
     {
-      tree parm;
-      tree arg;
-
-      if (TREE_VEC_ELT (parms, i) == error_mark_node)
-        continue;
-
-      parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
-      arg = TREE_VEC_ELT (arglist, i);
+      tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+      tree arg = TREE_VEC_ELT (arglist, i);
 
       if (i)
 	ccat (',');
@@ -6087,16 +6056,9 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
 
       for (i = 0; i < TREE_VEC_LENGTH (new_vec); ++i)
 	{
-	  tree tuple;
-	  tree default_value;
-	  tree parm_decl;
-
-          if (parms == error_mark_node)
-            continue;
-
-          tuple = TREE_VEC_ELT (TREE_VALUE (parms), i);
-          default_value = TREE_PURPOSE (tuple);
-          parm_decl = TREE_VALUE (tuple);
+	  tree tuple = TREE_VEC_ELT (TREE_VALUE (parms), i);
+	  tree default_value = TREE_PURPOSE (tuple);
+	  tree parm_decl = TREE_VALUE (tuple);
 
 	  parm_decl = tsubst (parm_decl, args, complain, NULL_TREE);
 	  if (TREE_CODE (parm_decl) == PARM_DECL

@@ -166,14 +166,8 @@ dump_template_argument_list (tree args, int flags)
 static void
 dump_template_parameter (tree parm, int flags)
 {
-  tree p;
-  tree a;
-
-  if (parm == error_mark_node)
-    return;
-
-  p = TREE_VALUE (parm);
-  a = TREE_PURPOSE (parm);
+  tree p = TREE_VALUE (parm);
+  tree a = TREE_PURPOSE (parm);
 
   if (TREE_CODE (p) == TYPE_DECL)
     {
