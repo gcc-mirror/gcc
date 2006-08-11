@@ -1,3 +1,9 @@
+2006-08-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/27827
+	* config/i386/i386.md: Add peephole2 to avoid "fld %st"
+	instructions.
+
 2006-08-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28651
