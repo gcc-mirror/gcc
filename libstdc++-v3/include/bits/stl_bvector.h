@@ -354,17 +354,23 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
   { return __x + __n; }
 
   inline void
+  __fill_bvector(_Bit_iterator __first, _Bit_iterator __last, bool __x)
+  {
+    for (; __first != __last; ++__first)
+      *__first = __x;
+  }
+
+  inline void
   fill(_Bit_iterator __first, _Bit_iterator __last, const bool& __x)
   {
     if (__first._M_p != __last._M_p)
       {
-	std::__fill<true>::fill(__first._M_p + 1, __last._M_p, __x ? ~0 : 0);
-	std::__fill<true>::fill(__first, _Bit_iterator(__first._M_p + 1, 0),
-				__x);
-	std::__fill<true>::fill(_Bit_iterator(__last._M_p, 0), __last, __x);
+	std::fill(__first._M_p + 1, __last._M_p, __x ? ~0 : 0);
+	__fill_bvector(__first, _Bit_iterator(__first._M_p + 1, 0), __x);
+	__fill_bvector(_Bit_iterator(__last._M_p, 0), __last, __x);
       }
     else
-      std::__fill<true>::fill(__first, __last, __x);
+      __fill_bvector(__first, __last, __x);
   }
 
   template<class _Alloc>

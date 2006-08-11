@@ -1,3 +1,9 @@
+2006-08-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h (__fill_bvector(_Bit_iterator,
+	_Bit_iterator, bool)): New.
+	(fill(_Bit_iterator, _Bit_iterator, const bool&)): Use it.
+
 2006-08-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random.tcc (gamma_distribution<>::operator()): Fixes
