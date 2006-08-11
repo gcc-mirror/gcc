@@ -1,3 +1,7 @@
+2006-08-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/pr23454-2.C: New test.
+
 2006-08-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28651
