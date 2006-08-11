@@ -1,3 +1,10 @@
+2006-08-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28651
+	* simplify-rtx.c (simplify_const_relational_operation):
+	Simplify A CMP B to A - B CMP 0 only for EQ and NE comparison
+	codes.
+
 2006-08-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/27721
