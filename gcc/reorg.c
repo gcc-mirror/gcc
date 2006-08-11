@@ -3377,11 +3377,11 @@ relax_delay_slots (rtx first)
 	  continue;
 	}
 
-      /* See if this jump (with its delay slots) branches around another
-	 jump (without delay slots).  If so, invert this jump and point
-	 it to the target of the second jump.  We cannot do this for
-	 annulled jumps, though.  Again, don't convert a jump to a RETURN
-	 here.  */
+      /* See if this jump (with its delay slots) conditionally branches
+	 around an unconditional jump (without delay slots).  If so, invert
+	 this jump and point it to the target of the second jump.  We cannot
+	 do this for annulled jumps, though.  Again, don't convert a jump to
+	 a RETURN here.  */
       if (! INSN_ANNULLED_BRANCH_P (delay_insn)
 	  && any_condjump_p (delay_insn)
 	  && next && JUMP_P (next)
