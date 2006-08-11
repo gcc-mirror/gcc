@@ -1,5 +1,5 @@
 !{ dg-do run }
-!{ dg-skip-if "No large files" { hppa*-*-hpux* } { "*" } { "" } }
+!{ dg-skip-if "No large files" { *-*-aix* hppa*-*-hpux* } { "*" } { "" } }
 ! PR25289 Cannot handle record numbers larger than huge(0_4).
 ! This test checks that very large record numbers can be used.
 ! Derived from example in PR.

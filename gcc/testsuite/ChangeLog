@@ -1,3 +1,7 @@
+2006-08-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* gfortran.dg/direct_io_6.f90: Skip on *-*-aix*.
+
 2006-08-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/pr23454-2.C: New test.
