@@ -1,3 +1,8 @@
+2006-08-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28651
+	* gcc.c-torture/execute/pr28651.c: New testcase.
+
 2006-08-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/static_initializer.ads: New test.
