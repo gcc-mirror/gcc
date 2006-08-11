@@ -1,3 +1,12 @@
+2006-08-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/23454
+	Backport from mainline
+	2005-03-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* reorg.c (relax_delay_slots): Check that the jump is
+	conditional before trying to invert it.
+
 2006-08-03  Janis Johnson  <janis187@us.ibm.com>
 
 	Backport from mainline
