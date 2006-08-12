@@ -1,3 +1,11 @@
+2006-08-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/stat_1.f90: Make test pass when run under sudo.
+	* gfortran.dg/stat_2.f90: Likewise.
+	* gfortran.dg/chmod_1.f90: Likewise.
+	* gfortran.dg/chmod_2.f90: Likewise.
+	* gfortran.dg/chmod_3.f90: Likewise.
+
 2006-08-11  David Edelsohn  <edelsohn@gnu.org>
 
 	* gfortran.dg/direct_io_6.f90: Skip on *-*-aix*.
