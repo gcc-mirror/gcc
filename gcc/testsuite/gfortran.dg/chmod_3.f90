@@ -20,7 +20,7 @@
   end if
 
   i = chmod (n, "a-w")
-  if (i == 0) then
+  if (i == 0 .and. getuid() /= 0) then
     if (access(n,"w") == 0 .or. access(n,"W") == 0) call abort
   end if
 
