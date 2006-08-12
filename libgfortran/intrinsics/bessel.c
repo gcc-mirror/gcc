@@ -32,8 +32,9 @@ Boston, MA 02110-1301, USA.  */
 #include <math.h>
 #include "libgfortran.h"
 
-/* Assume we have all or none of these.  */
 #if HAVE_J0 && !HAVE_J0F
+extern float j0f (float);
+
 float
 j0f (float x)
 {
@@ -42,6 +43,8 @@ j0f (float x)
 #endif
 
 #if HAVE_J1 && !HAVE_J1F
+extern float j1f (float);
+
 float j1f (float x)
 {
   return (float) j1 ((double) x);
@@ -49,6 +52,8 @@ float j1f (float x)
 #endif
 
 #if HAVE_JN && !HAVE_JNF
+extern float jnf (int, float);
+
 float
 jnf (int n, float x)
 {
@@ -57,6 +62,8 @@ jnf (int n, float x)
 #endif
 
 #if HAVE_Y0 && !HAVE_Y0F
+extern float y0f (float);
+
 float
 y0f (float x)
 {
@@ -65,6 +72,8 @@ y0f (float x)
 #endif
 
 #if HAVE_Y1 && !HAVE_Y1F
+extern float y1f (float);
+
 float
 y1f (float x)
 {
@@ -73,6 +82,8 @@ y1f (float x)
 #endif
 
 #if HAVE_YN && !HAVE_YNF
+extern float ynf (int, float);
+
 float
 ynf (int n, float x)
 {

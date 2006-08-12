@@ -1,3 +1,7 @@
+2006-08-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/bessel.c: Add prototypes for all functions.
+
 2006-08-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/access.c (access_func): Remove export directive.
