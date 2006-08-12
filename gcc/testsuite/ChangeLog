@@ -1,3 +1,7 @@
+2006-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/pr27827.c: Only compile on ilp32 target.
+
 2006-08-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/stat_1.f90: Make test pass when run under sudo.
