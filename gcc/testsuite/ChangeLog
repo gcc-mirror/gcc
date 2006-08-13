@@ -1,3 +1,10 @@
+2006-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/26757
+	PR c++/27894
+	* g++.dg/tree-ssa/pr26757.C: New test.
+	* g++.dg/tree-ssa/pr27894.C: New test.
+
 2006-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/pr27827.c: Only compile on ilp32 target.

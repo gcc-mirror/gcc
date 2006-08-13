@@ -821,7 +821,6 @@ delete_tree_ssa (void)
   block_stmt_iterator bsi;
   referenced_var_iterator rvi;
   tree var;
-  unsigned u;
 
   /* Release any ssa_names still in use.  */
   for (i = 0; i < num_ssa_names; i++)
@@ -856,16 +855,6 @@ delete_tree_ssa (void)
       ggc_free (var->common.ann);
       var->common.ann = NULL;
     }
-
-  /* Remove any referenced variables which had duplicate UID's.  */
-  for (u = 0; u < VEC_length (tree, referenced_vars_dup_list); u++)
-    {
-      var = VEC_index (tree, referenced_vars_dup_list, u);
-      ggc_free (var->common.ann);
-      var->common.ann = NULL;
-    }
-  VEC_free (tree, gc, referenced_vars_dup_list);
-
   htab_delete (referenced_vars);
   referenced_vars = NULL;
 

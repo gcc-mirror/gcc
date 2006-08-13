@@ -76,8 +76,6 @@ static void add_referenced_var (tree, bool);
 
 /* Array of all variables referenced in the function.  */
 htab_t referenced_vars;
-/* List of referenced variables with duplicate UID's.  */
-VEC(tree,gc) *referenced_vars_dup_list;
 
 
 /*---------------------------------------------------------------------------
@@ -97,7 +95,6 @@ find_referenced_vars (void)
   basic_block bb;
   block_stmt_iterator si;
 
-  gcc_assert (VEC_length (tree, referenced_vars_dup_list) == 0);
   FOR_EACH_BB (bb)
     for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
       {
@@ -613,31 +610,18 @@ static void
 add_referenced_var (tree var, bool always)
 {
   var_ann_t v_ann;
-  tree dup = referenced_var_lookup_if_exists (DECL_UID (var));
+  tree ref;
 
   v_ann = get_var_ann (var);
   gcc_assert (DECL_P (var));
-  
-  /* PRs 26757 and 27793.  Maintain a list of duplicate variable pointers
-     with the same DECL_UID.  There isn't usually very many.  
-     TODO.  Once the C++ front end doesn't create duplicate DECL UID's, this
-     code can be removed.  */
-  if (dup && dup != var)
-    {
-      unsigned u;
-      tree t = NULL_TREE;
 
-      for (u = 0; u < VEC_length (tree, referenced_vars_dup_list); u++)
-	{
-	  t = VEC_index (tree, referenced_vars_dup_list, u);
-	  if (t == var)
-	    break;
-	}
-      if (t != var)
-	VEC_safe_push (tree, gc, referenced_vars_dup_list, var);
-    }
+  ref = referenced_var_lookup_if_exists (DECL_UID (var));  
 
-  if (always || dup == NULL_TREE)
+  /* Catch PRs 26757 and 27793.  If this assert triggers, REF and VAR are
+     two different variables in this function with the same DECL_UID.  */
+  gcc_assert (!ref || ref == var);
+
+  if (always || ref == NULL_TREE)
     {
       /* This is the first time we find this variable, add it to the
          REFERENCED_VARS array and annotate it with attributes that are

@@ -589,6 +589,24 @@ is_invisiref_parm (tree t)
 	  && DECL_BY_REFERENCE (t));
 }
 
+/* Return true if the uid in both int tree maps are equal.  */
+
+int
+cxx_int_tree_map_eq (const void *va, const void *vb)
+{
+  const struct cxx_int_tree_map *a = (const struct cxx_int_tree_map *) va;
+  const struct cxx_int_tree_map *b = (const struct cxx_int_tree_map *) vb;
+  return (a->uid == b->uid);
+}
+
+/* Hash a UID in a cxx_int_tree_map.  */
+
+unsigned int
+cxx_int_tree_map_hash (const void *item)
+{
+  return ((const struct cxx_int_tree_map *)item)->uid;
+}
+
 /* Perform any pre-gimplification lowering of C++ front end trees to
    GENERIC.  */
 
@@ -606,6 +624,25 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       *stmt_p = convert_from_reference (stmt);
       *walk_subtrees = 0;
       return NULL;
+    }
+
+  /* Map block scope extern declarations to visible declarations with the
+     same name and type in outer scopes if any.  */
+  if (cp_function_chain->extern_decl_map
+      && (TREE_CODE (stmt) == FUNCTION_DECL || TREE_CODE (stmt) == VAR_DECL)
+      && DECL_EXTERNAL (stmt))
+    {
+      struct cxx_int_tree_map *h, in;
+      in.uid = DECL_UID (stmt);
+      h = (struct cxx_int_tree_map *)
+	  htab_find_with_hash (cp_function_chain->extern_decl_map,
+			       &in, in.uid);
+      if (h)
+	{
+	  *stmt_p = h->to;
+	  *walk_subtrees = 0;
+	  return NULL;
+	}
     }
 
   /* Other than invisiref parms, don't walk the same tree twice.  */
