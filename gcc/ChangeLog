@@ -1,3 +1,14 @@
+2006-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-pass.h (TODO_update_ssa): Fix which bit is used to take
+	into account for TODO_dump_cgraph.
+	(TODO_update_ssa_no_phi): Likewise.
+	(TODO_update_ssa_full_phi): Likewise.
+	(TODO_update_ssa_only_virtuals): Likewise.
+	(TODO_remove_unused_locals): Likewise.
+	(TODO_set_props): Likewise.
+	(TODO_update_stmt_usage): Likewise.
+
 2006-08-13  Dirk Mueller  <dmueller@suse.de>
 
 	* c-common.c (strict_aliasing_warning): Fix formatting.
