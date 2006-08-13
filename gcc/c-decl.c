@@ -4309,6 +4309,18 @@ grokdeclarator (const struct c_declarator *declarator,
 		    size_varies = 1;
 		  }
 	      }
+	    else if (decl_context == TYPENAME)
+	      {
+		if (array_parm_vla_unspec_p)
+		  {
+		    /* The error is printed elsewhere.  We use this to
+		       avoid messing up with incomplete array types of
+		       the same type, that would otherwise be modified
+		       below.  */
+		    itype = build_range_type (sizetype, size_zero_node,
+					      NULL_TREE);
+		  }
+	      }
 
 	     /* Complain about arrays of incomplete types.  */
 	    if (!COMPLETE_TYPE_P (type))
@@ -4317,12 +4329,23 @@ grokdeclarator (const struct c_declarator *declarator,
 		type = error_mark_node;
 	      }
 	    else
+	    /* When itype is NULL, a shared incomplete array type is
+	       returned for all array of a given type.  Elsewhere we
+	       make sure we don't complete that type before copying
+	       it, but here we want to make sure we don't ever
+	       modify the shared type, so we gcc_assert (itype)
+	       below.  */
 	      type = build_array_type (type, itype);
 
 	    if (type != error_mark_node)
 	      {
 		if (size_varies)
 		  {
+		    /* It is ok to modify type here even if itype is
+		       NULL: if size_varies, we're in a
+		       multi-dimentional array and the inner type has
+		       variable size, so the enclosing shared array type
+		       must too.  */
 		    if (size && TREE_CODE (size) == INTEGER_CST)
 		      type
 			= build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
@@ -4334,11 +4357,13 @@ grokdeclarator (const struct c_declarator *declarator,
 		   zero.  */
 		if (size && integer_zerop (size))
 		  {
+		    gcc_assert (itype);
 		    TYPE_SIZE (type) = bitsize_zero_node;
 		    TYPE_SIZE_UNIT (type) = size_zero_node;
 		  }
 		if (array_parm_vla_unspec_p)
 		  {
+		    gcc_assert (itype);
 		    /* The type is complete.  C99 6.7.5.2p4  */
 		    TYPE_SIZE (type) = bitsize_zero_node;
 		    TYPE_SIZE_UNIT (type) = size_zero_node;
@@ -4495,21 +4520,6 @@ grokdeclarator (const struct c_declarator *declarator,
       if (declspecs->inline_p)
 	pedwarn ("typedef %q+D declared %<inline%>", decl);
       return decl;
-    }
-
-  /* Detect the case of an array type of unspecified size
-     which came, as such, direct from a typedef name.
-     We must copy the type, so that each identifier gets
-     a distinct type, so that each identifier's size can be
-     controlled separately by its own initializer.  */
-
-  if (type != 0 && typedef_type != 0
-      && TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == 0
-      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (typedef_type))
-    {
-      type = build_array_type (TREE_TYPE (type), 0);
-      if (size_varies)
-	C_TYPE_VARIABLE_SIZE (type) = 1;
     }
 
   /* If this is a type name (such as, in a cast or sizeof),

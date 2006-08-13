@@ -1,3 +1,18 @@
+2006-08-13  Alexandre Oliva  <aoliva@redhat.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/27184
+	* tree.c (build_array_type): Unify array types with
+	unspecified index_type.
+	* c-decl.c (grokdeclarator): Make sure we do not modify a
+	unified incomplete array type.
+	* c-typeck.c (store_init_value): Create distinct type before
+	filling in the index type in an initializer from a compound
+	literal.
+
+	* c-decl.c (grokdeclarator): Remove code where we copy the
+	array type over.
+
 2006-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-pass.h (TODO_update_ssa): Fix which bit is used to take
