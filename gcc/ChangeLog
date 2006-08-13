@@ -1,3 +1,7 @@
+2006-08-13  Matthias Klose  <doko@debian.org>
+
+	* doc/invoke.texi: Fix spelling errors.
+
 2006-08-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/23454
