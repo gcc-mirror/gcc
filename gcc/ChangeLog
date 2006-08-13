@@ -1,3 +1,7 @@
+2006-08-13  Dirk Mueller  <dmueller@suse.de>
+
+	* c-common.c (strict_aliasing_warning): Fix formatting.
+
 2006-08-13  Matthias Klose  <doko@debian.org>
 
 	* doc/invoke.texi: Fix spelling errors.

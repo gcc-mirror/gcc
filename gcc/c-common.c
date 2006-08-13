@@ -976,11 +976,11 @@ unsigned_conversion_warning (tree result, tree operand)
 
 /* Print a warning about casts that might indicate violation
    of strict aliasing rules if -Wstrict-aliasing is used and
-   strict aliasing mode is in effect. otype is the original
-   TREE_TYPE of expr, and type the type we're casting to. */
+   strict aliasing mode is in effect. OTYPE is the original
+   TREE_TYPE of EXPR, and TYPE the type we're casting to. */
 
 void
-strict_aliasing_warning(tree otype, tree type, tree expr)
+strict_aliasing_warning (tree otype, tree type, tree expr)
 {
   if (flag_strict_aliasing && warn_strict_aliasing
       && POINTER_TYPE_P (type) && POINTER_TYPE_P (otype)
