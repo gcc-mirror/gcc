@@ -5986,7 +5986,7 @@ Specifies maximum number of instructions out-of-line copy of self recursive inli
 function can grow into by performing recursive inlining.
 
 For functions declared inline @option{--param max-inline-insns-recursive} is
-taken into acount.  For function not declared inline, recursive inlining
+taken into account.  For function not declared inline, recursive inlining
 happens only when @option{-finline-functions} (included in @option{-O3}) is
 enabled and @option{--param max-inline-insns-recursive-auto} is used.  The
 default value is 450.
@@ -5996,7 +5996,7 @@ default value is 450.
 Specifies maximum recursion depth used by the recursive inlining.
 
 For functions declared inline @option{--param max-inline-recursive-depth} is
-taken into acount.  For function not declared inline, recursive inlining
+taken into account.  For function not declared inline, recursive inlining
 happens only when @option{-finline-functions} (included in @option{-O3}) is
 enabled and @option{--param max-inline-recursive-depth-auto} is used.  The
 default value is 450.
@@ -6199,7 +6199,7 @@ compile time increase with probably slightly better performance.  The default
 value is 100.
 
 @item max-cselib-memory-locations
-The maximum number of memory locations cselib should take into acount.
+The maximum number of memory locations cselib should take into account.
 Increasing values mean more aggressive optimization, making the compile time
 increase with probably slightly better performance.  The default value is 500.
 
