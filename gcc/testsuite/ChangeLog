@@ -1,3 +1,13 @@
+2006-08-14  Andrew Pinski  <pinskia@gmail.com>
+
+	* gcc.dg/tree-ssa/inline-1.c: Fix up scan-tree-dump-times
+	for '(' / ')' needing an extra '\'.
+
+2006-08-14  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/28075
+	* gcc.dg/tree-ssa/inline-1.c: New test.
+
 2006-08-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/26757
