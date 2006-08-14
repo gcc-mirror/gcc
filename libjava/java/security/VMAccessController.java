@@ -46,21 +46,6 @@ final class VMAccessController
   // -------------------------------------------------------------------------
 
   /**
-   * This is a per-thread stack of AccessControlContext objects (which can
-   * be null) for each call to AccessController.doPrivileged in each thread's
-   * call stack. We use this to remember which context object corresponds to
-   * which call.
-   */
-  private static final ThreadLocal contexts = new ThreadLocal();
-
-  /**
-   * This is a Boolean that, if set, tells getContext that it has already
-   * been called once, allowing us to handle recursive permission checks
-   * caused by methods getContext calls.
-   */
-  private static final ThreadLocal inGetContext = new ThreadLocal();
-
-  /**
    * And we return this all-permissive context to ensure that privileged
    * methods called from getContext succeed.
    */
@@ -103,19 +88,15 @@ final class VMAccessController
    */
   static void pushContext (AccessControlContext acc)
   {
-    if (Thread.currentThread() == null)
+    // Can't really do anything while the VM is initializing.
+    VMAccessControlState state = VMAccessControlState.getThreadState();
+    if (state == null)
       return;
 
     if (DEBUG)
       debug("pushing " + acc);
-    LinkedList stack = (LinkedList) contexts.get();
-    if (stack == null)
-      {
-         if (DEBUG)
-           debug("no stack... creating ");
-        stack = new LinkedList();
-        contexts.set(stack);
-      }
+
+    LinkedList stack = state.getContexts();
     stack.addFirst(acc);
   }
 
@@ -127,7 +108,9 @@ final class VMAccessController
    */
   static void popContext()
   {
-    if (Thread.currentThread() == null)
+    // Can't really do anything while the VM is initializing.
+    VMAccessControlState state = VMAccessControlState.getThreadState();
+    if (state == null)
       return;
 
     if (DEBUG)
@@ -135,12 +118,10 @@ final class VMAccessController
 
     // Stack should never be null, nor should it be empty, if this method
     // and its counterpart has been called properly.
-    LinkedList stack = (LinkedList) contexts.get();
-    if (stack != null)
+    LinkedList stack = state.getContexts();
+    if (!stack.isEmpty())
       {
-        stack.removeFirst();
-        if (stack.isEmpty())
-          contexts.set(null);
+	stack.removeFirst();
       }
     else if (DEBUG)
       {
@@ -159,7 +140,8 @@ final class VMAccessController
   {
     // If the VM is initializing return the all-permissive context
     // so that any security checks succeed.
-    if (Thread.currentThread() == null)
+    VMAccessControlState state = VMAccessControlState.getThreadState();
+    if (state == null)
       return DEFAULT_CONTEXT;
 
     // If we are already in getContext, but called a method that needs
@@ -168,15 +150,14 @@ final class VMAccessController
     //
     // XXX is this necessary? We should verify if there are any calls in
     // the stack below this method that require permission checks.
-    Boolean inCall = (Boolean) inGetContext.get();
-    if (inCall != null && inCall.booleanValue())
+    if (state.isInGetContext())
       {
         if (DEBUG)
           debug("already in getContext");
         return DEFAULT_CONTEXT;
       }
 
-    inGetContext.set(Boolean.TRUE);
+    state.setInGetContext(true);
 
     Object[] stack = getStack();
     Class[] classes = (Class[]) stack[0];
@@ -210,8 +191,8 @@ final class VMAccessController
             // If there was a call to doPrivileged with a supplied context,
             // return that context. If using JAAS doAs*, it should be 
 	    // a context with a SubjectDomainCombiner
-            LinkedList l = (LinkedList) contexts.get();
-            if (l != null)
+            LinkedList l = state.getContexts();
+            if (!l.isEmpty())
               context = (AccessControlContext) l.getFirst();
           }
 
@@ -256,7 +237,7 @@ final class VMAccessController
     else
       context = new AccessControlContext (result);
 
-    inGetContext.set(Boolean.FALSE);
+    state.setInGetContext(false);
     return context;
   }
 

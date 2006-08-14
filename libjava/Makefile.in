@@ -293,6 +293,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	java/nio/channels/natVMChannels.cc \
 	java/nio/natDirectByteBufferImpl.cc \
 	java/security/natVMAccessController.cc \
+	java/security/natVMAccessControlState.cc \
 	java/text/natCollator.cc java/util/natResourceBundle.cc \
 	java/util/natVMTimeZone.cc java/util/logging/natLogger.cc \
 	java/util/zip/natDeflater.cc java/util/zip/natInflater.cc \
@@ -339,6 +340,7 @@ am__objects_2 = gnu/classpath/natSystemProperties.lo \
 	java/nio/channels/natVMChannels.lo \
 	java/nio/natDirectByteBufferImpl.lo \
 	java/security/natVMAccessController.lo \
+	java/security/natVMAccessControlState.lo \
 	java/text/natCollator.lo java/util/natResourceBundle.lo \
 	java/util/natVMTimeZone.lo java/util/logging/natLogger.lo \
 	java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
@@ -4232,6 +4234,7 @@ classpath/java/security/SignedObject.java \
 classpath/java/security/Signer.java \
 classpath/java/security/UnrecoverableKeyException.java \
 classpath/java/security/UnresolvedPermission.java \
+java/security/VMAccessControlState.java \
 java/security/VMAccessController.java \
 java/security/VMSecureRandom.java
 
@@ -7151,6 +7154,7 @@ java/net/natURLClassLoader.cc \
 java/nio/channels/natVMChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \
 java/security/natVMAccessController.cc \
+java/security/natVMAccessControlState.cc \
 java/text/natCollator.cc \
 java/util/natResourceBundle.cc \
 java/util/natVMTimeZone.cc \
@@ -7663,6 +7667,9 @@ java/security/$(DEPDIR)/$(am__dirstamp):
 	@: > java/security/$(DEPDIR)/$(am__dirstamp)
 java/security/natVMAccessController.lo: java/security/$(am__dirstamp) \
 	java/security/$(DEPDIR)/$(am__dirstamp)
+java/security/natVMAccessControlState.lo:  \
+	java/security/$(am__dirstamp) \
+	java/security/$(DEPDIR)/$(am__dirstamp)
 java/text/$(am__dirstamp):
 	@$(mkdir_p) java/text
 	@: > java/text/$(am__dirstamp)
@@ -7972,6 +7979,8 @@ mostlyclean-compile:
 	-rm -f java/nio/channels/natVMChannels.lo
 	-rm -f java/nio/natDirectByteBufferImpl.$(OBJEXT)
 	-rm -f java/nio/natDirectByteBufferImpl.lo
+	-rm -f java/security/natVMAccessControlState.$(OBJEXT)
+	-rm -f java/security/natVMAccessControlState.lo
 	-rm -f java/security/natVMAccessController.$(OBJEXT)
 	-rm -f java/security/natVMAccessController.lo
 	-rm -f java/text/natCollator.$(OBJEXT)
@@ -8094,6 +8103,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natVMNetworkInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/natDirectByteBufferImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/channels/$(DEPDIR)/natVMChannels.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/security/$(DEPDIR)/natVMAccessControlState.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/security/$(DEPDIR)/natVMAccessController.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/text/$(DEPDIR)/natCollator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/util/$(DEPDIR)/natResourceBundle.Plo@am__quote@
