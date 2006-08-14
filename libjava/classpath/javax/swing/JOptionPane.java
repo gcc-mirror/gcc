@@ -48,6 +48,8 @@ import java.awt.MenuComponent;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionAdapter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
@@ -378,8 +380,46 @@ public class JOptionPane extends JComponent implements Accessible
     dialog.setResizable(false);
     dialog.pack();
     dialog.setLocationRelativeTo(parentComponent);
-    
+
+    addPropertyChangeListener(new ValuePropertyHandler(dialog));
     return dialog;
+  }
+
+  /**
+   * Handles changes of the value property. Whenever this property changes,
+   * the JOptionPane dialog should be closed.
+   */
+  private static class ValuePropertyHandler
+    implements PropertyChangeListener
+  {
+    /**
+     * The dialog to close.
+     */
+    JDialog dialog;
+
+    /**
+     * Creates a new instance.
+     *
+     * @param d the dialog to be closed
+     */
+    ValuePropertyHandler(JDialog d)
+    {
+      dialog = d;
+    }
+
+    /**
+     * Receives notification when any of the properties change.
+     */
+    public void propertyChange(PropertyChangeEvent p)
+    {
+      String prop = p.getPropertyName();
+      Object val = p.getNewValue();
+      if (prop.equals(VALUE_PROPERTY) && val != null
+          && val != UNINITIALIZED_VALUE)
+        {
+          dialog.setVisible(false);
+        }
+    }
   }
 
   /**

@@ -387,6 +387,37 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_getScreenResolution
   return res;
 }
 
+/**
+ * Report the number of mouse buttons
+ * Returns the number of buttons of the first mouse found, or -1 if no mouse
+ * seems to be connected.
+ */
+JNIEXPORT jint JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkToolkit_getMouseNumberOfButtons
+  (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)))
+{
+  jint res = -1;
+  GList *devices;
+  GdkDevice *d;
+
+  gdk_threads_enter ();
+
+  /* FIXME: Why doesn't this return the correct number? */
+  devices = gdk_devices_list();
+
+  while( res == -1 && devices != NULL )
+    {
+      d = GDK_DEVICE( devices->data );
+      if( d->source == GDK_SOURCE_MOUSE )
+	res = d->num_keys;
+      devices = devices->next;
+    }
+
+  gdk_threads_leave ();
+
+  return res;
+}
+
 #define CONVERT(type, state) \
   gdk_color_to_java_color (style->type[GTK_STATE_ ## state])
 

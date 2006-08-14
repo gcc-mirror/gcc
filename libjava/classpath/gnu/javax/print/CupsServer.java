@@ -84,24 +84,43 @@ public class CupsServer
 
   /**
    * Creates a <code>CupsServer</code> object which
-   * tries to connect to the cups server on localhost.
+   * tries to connect to a cups server. 
+   *
+   * If <code>gnu.javax.print.server</code> is explicitly set, then
+   * that hostname will be used. Otherwise it will default to localhost.
    * 
    * @param username the username
    * @param password the password for the username.
    */
   public CupsServer(String username, String password)
   {
+    this.username = username;
+    this.password = password;
+
+    this.uri = null;
     try
       {
-        this.uri = new URI("http://localhost:631");
+	String serv = System.getProperty("gnu.javax.print.server");
+	if( serv != null )
+	  this.uri = new URI("http://"+serv+":631");
+      }
+    catch(URISyntaxException use)
+      {
+	throw new RuntimeException("gnu.javax.print.CupsServer value is not a valid hostname.");
+      }
+    catch(SecurityException se)
+      {
+      }
+
+    try
+      {
+	if( this.uri == null )
+	  this.uri = new URI("http://localhost:631");
       }
     catch (URISyntaxException e)
       {
         // does not happen
       }
-    
-    this.username = username;
-    this.password = password;
   }
  
   /**
@@ -193,7 +212,7 @@ public class CupsServer
         Map printerAttributes = (Map) prAttr.get(i);
         Set uris = (Set) printerAttributes.get(PrinterUriSupported.class);
         PrinterUriSupported uri = (PrinterUriSupported) uris.toArray()[0];
-        
+
         try
           {
             CupsPrintService cups = new CupsPrintService(uri.getURI(),

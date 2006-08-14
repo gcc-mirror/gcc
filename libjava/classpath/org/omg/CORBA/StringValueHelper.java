@@ -66,11 +66,6 @@ public class StringValueHelper
   private static final String id = "IDL:omg.org/CORBA/StringValue:1.0";
 
   /**
-   * The cached typecode value, computed once.
-   */
-  private static TypeCode typecode;
-
-  /**
    * The String typecode.
    */
   private static final TypeCode tString =
@@ -175,18 +170,13 @@ public class StringValueHelper
   }
 
   /**
-   * Create and return the value box typecode, named "StringValue",
-   * with the content typecode being unbounded string.
+   * Create and return the value box typecode, named "StringValue", with the
+   * content typecode being unbounded string.
    */
   public static TypeCode type()
   {
-    if (typecode == null)
-      {
-        ORB orb = OrbRestricted.Singleton;
-        typecode =
-          orb.create_value_box_tc(id(), "StringValue", tString);
-      }
-    return typecode;
+    ORB orb = OrbRestricted.Singleton;
+    return orb.create_value_box_tc(id(), "StringValue", tString);
   }
 
   /**

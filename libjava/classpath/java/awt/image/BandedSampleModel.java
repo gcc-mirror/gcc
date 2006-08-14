@@ -1,4 +1,4 @@
-/* Copyright (C) 2004, 2005, Free Software Foundation
+/* Copyright (C) 2004, 2005, 2006, Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -36,10 +36,11 @@ exception statement from your version. */
 
 package java.awt.image;
 
+import gnu.java.awt.Buffers;
+
 /**
- * MultiPixelPackedSampleModel provides a single band model that supports
- * multiple pixels in a single unit.  Pixels have 2^n bits and 2^k pixels fit
- * per data element.
+ * A sample model that reads each sample value from a separate band in the
+ * {@link DataBuffer}.
  *
  * @author Jerry Quinn (jlquinn@optonline.net)
  */
@@ -61,17 +62,61 @@ public final class BandedSampleModel extends ComponentSampleModel
     return result;
   }
 
+  /**
+   * Creates a new <code>BandedSampleModel</code>.
+   * 
+   * @param dataType  the data buffer type.
+   * @param w  the width (in pixels).
+   * @param h  the height (in pixels).
+   * @param numBands  the number of bands.
+   */
   public BandedSampleModel(int dataType, int w, int h, int numBands)
   {
     this(dataType, w, h, w, createBankArray(numBands), new int[numBands]);
   }
 
+  /**
+   * Creates a new <code>BandedSampleModel</code>.
+   * 
+   * @param dataType  the data buffer type.
+   * @param w  the width (in pixels).
+   * @param h  the height (in pixels).
+   * @param scanlineStride  the number of data elements from a pixel in one 
+   *     row to the corresponding pixel in the next row.
+   * @param bankIndices  the bank indices.
+   * @param bandOffsets  the band offsets.
+   */
   public BandedSampleModel(int dataType, int w, int h, int scanlineStride,
 			   int[] bankIndices, int[] bandOffsets)
   {
     super(dataType, w, h, 1, scanlineStride, bankIndices, bandOffsets);
   }
+  
+  /**
+   * Creates a new data buffer that is compatible with this sample model.
+   * 
+   * @return The new data buffer.
+   */
+  public DataBuffer createDataBuffer()
+  {
+    int size = scanlineStride * height;
+    return Buffers.createBuffer(getDataType(), size, numBanks);
+  }
 
+  /**
+   * Creates a new <code>SampleModel</code> that is compatible with this
+   * model and has the specified width and height.
+   * 
+   * @param w  the width (in pixels, must be greater than zero).
+   * @param h  the height (in pixels, must be greater than zero).
+   * 
+   * @return The new sample model.
+   * 
+   * @throws IllegalArgumentException if <code>w</code> or <code>h</code> is
+   *     not greater than zero.
+   * @throws IllegalArgumentException if <code>w * h</code> exceeds 
+   *     <code>Integer.MAX_VALUE</code>.
+   */
   public SampleModel createCompatibleSampleModel(int w, int h)
   {
     // NOTE: blackdown 1.4.1 sets all offsets to 0.  Sun's 1.4.2 docs
@@ -80,32 +125,32 @@ public final class BandedSampleModel extends ComponentSampleModel
     // Compress offsets so minimum is 0, others w*scanlineStride
     int[] newoffsets = new int[bandOffsets.length];
     int[] order = new int[bandOffsets.length];
-    for (int i=0; i < bandOffsets.length; i++)
+    for (int i = 0; i < bandOffsets.length; i++)
       order[i] = i;
     // FIXME: This is N^2, but not a big issue, unless there's a lot of
     // bands...
-    for (int i=0; i < bandOffsets.length; i++)
-      for (int j=i+1; j < bandOffsets.length; i++)
-	if (bankIndices[order[i]] > bankIndices[order[j]]
-	    || (bankIndices[order[i]] == bankIndices[order[j]]
-		&& bandOffsets[order[i]] > bandOffsets[order[j]]))
-	  {
-	    int t = order[i]; order[i] = order[j]; order[j] = t;
-	  }
+    for (int i = 0; i < bandOffsets.length; i++)
+      for (int j = i + 1; j < bandOffsets.length; j++)
+        if (bankIndices[order[i]] > bankIndices[order[j]]
+            || (bankIndices[order[i]] == bankIndices[order[j]]
+            && bandOffsets[order[i]] > bandOffsets[order[j]]))
+          {
+            int t = order[i]; order[i] = order[j]; order[j] = t;
+          }
     int bank = 0;
     int offset = 0;
-    for (int i=0; i < bandOffsets.length; i++)
+    for (int i = 0; i < bandOffsets.length; i++)
       {
-	if (bankIndices[order[i]] != bank)
-	  {
-	    bank = bankIndices[order[i]];
-	    offset = 0;
-	  }
-	newoffsets[order[i]] = offset;
-	offset += w * scanlineStride;
+        if (bankIndices[order[i]] != bank)
+          {
+            bank = bankIndices[order[i]];
+            offset = 0;
+          }
+        newoffsets[order[i]] = offset;
+        offset += w * scanlineStride;
       }
     
-    return new BandedSampleModel(dataType, w, h, scanlineStride, bankIndices, newoffsets);
+    return new BandedSampleModel(dataType, w, h, w, bankIndices, newoffsets);
   }
 
 
@@ -117,7 +162,7 @@ public final class BandedSampleModel extends ComponentSampleModel
 			      +" many bands");
     int[] newoff = new int[bands.length];
     int[] newbanks = new int[bands.length];
-    for (int i=0; i < bands.length; i++)
+    for (int i = 0; i < bands.length; i++)
       {
 	int b = bands[i];
 	newoff[i] = bandOffsets[b];
@@ -134,57 +179,64 @@ public final class BandedSampleModel extends ComponentSampleModel
    * Extracts the pixel at x, y from data and stores samples into the array
    * obj.  If obj is null, a new array of getTransferType() is created.
    *
-   * @param x The x-coordinate of the pixel rectangle to store in <code>obj</code>.
-   * @param y The y-coordinate of the pixel rectangle to store in <code>obj</code>.
-   * @param obj The primitive array to store the pixels into or null to force creation.
+   * @param x The x-coordinate of the pixel rectangle to store in 
+   *     <code>obj</code>.
+   * @param y The y-coordinate of the pixel rectangle to store in 
+   *     <code>obj</code>.
+   * @param obj The primitive array to store the pixels into or null to force 
+   *     creation.
    * @param data The DataBuffer that is the source of the pixel data.
    * @return The primitive array containing the pixel data.
-   * @see java.awt.image.SampleModel#getDataElements(int, int, java.lang.Object, java.awt.image.DataBuffer)
+   * @see java.awt.image.SampleModel#getDataElements(int, int, 
+   *     java.lang.Object, java.awt.image.DataBuffer)
    */
-  public Object getDataElements(int x, int y, Object obj,
-				DataBuffer data)
+  public Object getDataElements(int x, int y, Object obj, DataBuffer data)
   {
+    if (x < 0 || y < 0)
+      throw new ArrayIndexOutOfBoundsException(
+          "x and y must not be less than 0.");
     int pixel = getSample(x, y, 0, data);
     switch (getTransferType())
     {
     case DataBuffer.TYPE_BYTE:
       {
-	byte[] b = (byte[])obj;
+	byte[] b = (byte[]) obj;
 	if (b == null) b = new byte[numBands];
-	for (int i=0; i < numBands; i++)
+	for (int i = 0; i < numBands; i++)
 	  b[i] = (byte)getSample(x, y, i, data);
 	return b;
       }
     case DataBuffer.TYPE_SHORT:
     case DataBuffer.TYPE_USHORT:
       {
-	short[] b = (short[])obj;
+	short[] b = (short[]) obj;
 	if (b == null) b = new short[numBands];
-	for (int i=0; i < numBands; i++)
+	for (int i = 0; i < numBands; i++)
 	  b[i] = (short)getSample(x, y, i, data);
 	return b;
       }
     case DataBuffer.TYPE_INT:
       {
-	int[] b = (int[])obj;
+	int[] b = (int[]) obj;
 	if (b == null) b = new int[numBands];
-	for (int i=0; i < numBands; i++)
+	for (int i = 0; i < numBands; i++)
 	  b[i] = getSample(x, y, i, data);
 	return b;
       }
     case DataBuffer.TYPE_FLOAT:
       {
-	float[] b = (float[])obj;
+	float[] b = (float[]) obj;
 	if (b == null) b = new float[numBands];
-	for (int i=0; i < numBands; i++)
+	for (int i = 0; i < numBands; i++)
 	  b[i] = getSampleFloat(x, y, i, data);
 	return b;
       }
     case DataBuffer.TYPE_DOUBLE:
       {
-	double[] b = (double[])obj;
-	if (b == null) b = new double[numBands];
-	for (int i=0; i < numBands; i++)
+	double[] b = (double[]) obj;
+	if (b == null) 
+          b = new double[numBands];
+	for (int i = 0; i < numBands; i++)
 	  b[i] = getSample(x, y, i, data);
 	return b;
       }
@@ -195,10 +247,27 @@ public final class BandedSampleModel extends ComponentSampleModel
     }
   }
 
+  /**
+   * Returns all the samples for the pixel at location <code>(x, y)</code>
+   * stored in the specified data buffer.
+   * 
+   * @param x  the x-coordinate.
+   * @param y  the y-coordinate.
+   * @param iArray  an array that will be populated with the sample values and
+   *   returned as the result.  The size of this array should be equal to the 
+   *   number of bands in the model.  If the array is <code>null</code>, a new
+   *   array is created.
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @return The samples for the specified pixel.
+   * 
+   * @see #setPixel(int, int, int[], DataBuffer)
+   */
   public int[] getPixel(int x, int y, int[] iArray, DataBuffer data)
   {
-    if (iArray == null) iArray = new int[numBands];
-    for (int i=0; i < numBands; i++)
+    if (iArray == null) 
+      iArray = new int[numBands];
+    for (int i = 0; i < numBands; i++)
       iArray[i] = getSample(x, y, i, data);
 	
     return iArray;
@@ -228,7 +297,11 @@ public final class BandedSampleModel extends ComponentSampleModel
   public int[] getPixels(int x, int y, int w, int h, int[] iArray,
 			 DataBuffer data)
   {
-    if (iArray == null) iArray = new int[w*h*numBands];
+    if (x < 0 || y < 0)
+      throw new ArrayIndexOutOfBoundsException(
+          "x and y must not be less than 0.");
+    if (iArray == null) 
+      iArray = new int[w * h * numBands];
     int outOffset = 0;
     int maxX = x + w;
     int maxY = y + h;
@@ -247,18 +320,64 @@ public final class BandedSampleModel extends ComponentSampleModel
     return iArray;	
   }
 
+  /**
+   * Returns a sample value for the pixel at (x, y) in the specified data 
+   * buffer.
+   * 
+   * @param x  the x-coordinate of the pixel.
+   * @param y  the y-coordinate of the pixel.
+   * @param b  the band (in the range <code>0</code> to 
+   *     <code>getNumBands() - 1</code>).
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @return The sample value.
+   * 
+   * @throws NullPointerException if <code>data</code> is <code>null</code>.
+   */
   public int getSample(int x, int y, int b, DataBuffer data)
   {
     int offset = bandOffsets[b] + y * scanlineStride + x;
     return data.getElem(bankIndices[b], offset);
   }
   
+  /**
+   * Returns a sample value for the pixel at (x, y) in the specified data 
+   * buffer.
+   * 
+   * @param x  the x-coordinate of the pixel.
+   * @param y  the y-coordinate of the pixel.
+   * @param b  the band (in the range <code>0</code> to 
+   *     <code>getNumBands() - 1</code>).
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @return The sample value.
+   * 
+   * @throws NullPointerException if <code>data</code> is <code>null</code>.
+   * 
+   * @see #getSample(int, int, int, DataBuffer)
+   */
   public float getSampleFloat(int x, int y, int b, DataBuffer data)
   {
     int offset = bandOffsets[b] + y * scanlineStride + x;
     return data.getElemFloat(bankIndices[b], offset);
   }
   
+  /**
+   * Returns the sample value for the pixel at (x, y) in the specified data 
+   * buffer.
+   * 
+   * @param x  the x-coordinate of the pixel.
+   * @param y  the y-coordinate of the pixel.
+   * @param b  the band (in the range <code>0</code> to 
+   *     <code>getNumBands() - 1</code>).
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @return The sample value.
+   * 
+   * @throws NullPointerException if <code>data</code> is <code>null</code>.
+   * 
+   * @see #getSample(int, int, int, DataBuffer)
+   */
   public double getSampleDouble(int x, int y, int b, DataBuffer data)
   {
     int offset = bandOffsets[b] + y * scanlineStride + x;
@@ -288,7 +407,11 @@ public final class BandedSampleModel extends ComponentSampleModel
   public int[] getSamples(int x, int y, int w, int h, int b, int[] iArray,
 			  DataBuffer data)
   {
-    if (iArray == null) iArray = new int[w*h];
+    if (x < 0 || y < 0)
+      throw new ArrayIndexOutOfBoundsException(
+          "x and y must not be less than 0.");
+    if (iArray == null) 
+      iArray = new int[w * h];
     int outOffset = 0;
     int maxX = x + w;
     int maxY = y + h;
@@ -303,7 +426,6 @@ public final class BandedSampleModel extends ComponentSampleModel
       }
     return iArray;	
   }
-
 
   /**
    * Set the pixel at x, y to the value in the first element of the primitive
@@ -338,7 +460,7 @@ public final class BandedSampleModel extends ComponentSampleModel
 	    {
 	      DataBufferByte out = (DataBufferByte) data;
 	      byte[] in = (byte[]) obj;
-	      for (int i=0; i < numBands; i++)
+	      for (int i = 0; i < numBands; i++)
 		out.getData(bankIndices[i])[offset + bandOffsets[i]] = in[i];
 	      return;
 	    }
@@ -346,7 +468,7 @@ public final class BandedSampleModel extends ComponentSampleModel
 	    {
 	      DataBufferShort out = (DataBufferShort) data;
 	      short[] in = (short[]) obj;
-	      for (int i=0; i < numBands; i++)
+	      for (int i = 0; i < numBands; i++)
 		out.getData(bankIndices[i])[offset + bandOffsets[i]] = in[i];
 	      return;
 	    }
@@ -354,7 +476,7 @@ public final class BandedSampleModel extends ComponentSampleModel
 	    {
 	      DataBufferUShort out = (DataBufferUShort) data;
 	      short[] in = (short[]) obj;
-	      for (int i=0; i < numBands; i++)
+	      for (int i = 0; i < numBands; i++)
 		out.getData(bankIndices[i])[offset + bandOffsets[i]] = in[i];
 	      return;
 	    }
@@ -362,7 +484,7 @@ public final class BandedSampleModel extends ComponentSampleModel
 	    {
 	      DataBufferInt out = (DataBufferInt) data;
 	      int[] in = (int[]) obj;
-	      for (int i=0; i < numBands; i++)
+	      for (int i = 0; i < numBands; i++)
 		out.getData(bankIndices[i])[offset + bandOffsets[i]] = in[i];
 	      return;
 	    }
@@ -370,7 +492,7 @@ public final class BandedSampleModel extends ComponentSampleModel
 	    {
 	      DataBufferFloat out = (DataBufferFloat) data;
 	      float[] in = (float[]) obj;
-	      for (int i=0; i < numBands; i++)
+	      for (int i = 0; i < numBands; i++)
 		out.getData(bankIndices[i])[offset + bandOffsets[i]] = in[i];
 	      return;
 	    }
@@ -378,7 +500,7 @@ public final class BandedSampleModel extends ComponentSampleModel
 	    {
 	      DataBufferDouble out = (DataBufferDouble) data;
 	      double[] in = (double[]) obj;
-	      for (int i=0; i < numBands; i++)
+	      for (int i = 0; i < numBands; i++)
 		out.getData(bankIndices[i])[offset + bandOffsets[i]] = in[i];
 	      return;
 	    }
@@ -388,26 +510,54 @@ public final class BandedSampleModel extends ComponentSampleModel
       }
     catch (ArrayIndexOutOfBoundsException aioobe)
       {
-	String msg = "While writing data elements" +
-	  ", x="+x+", y="+y+
-	  ", width="+width+", height="+height+
-	  ", scanlineStride="+scanlineStride+
-	  ", offset="+offset+
-	  ", data.getSize()="+data.getSize()+
-	  ", data.getOffset()="+data.getOffset()+
-	  ": " +
-	  aioobe;
+	String msg = "While writing data elements" 
+      + ", x=" + x + ", y=" + y 
+      + ", width=" + width + ", height=" + height 
+      + ", scanlineStride=" + scanlineStride 
+      + ", offset=" + offset 
+      + ", data.getSize()=" + data.getSize() 
+      + ", data.getOffset()=" + data.getOffset() 
+      + ": " + aioobe;
 	throw new ArrayIndexOutOfBoundsException(msg);
       }
     }
 
+  /**
+   * Sets the samples for the pixel at (x, y) in the specified data buffer to
+   * the specified values. 
+   * 
+   * @param x  the x-coordinate of the pixel.
+   * @param y  the y-coordinate of the pixel.
+   * @param iArray  the sample values (<code>null</code> not permitted).
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if either <code>iArray</code> or 
+   *     <code>data</code> is <code>null</code>.
+   */
   public void setPixel(int x, int y, int[] iArray, DataBuffer data)
   {
-    for (int b=0; b < numBands; b++)
+    for (int b = 0; b < numBands; b++)
       data.setElem(bankIndices[b], bandOffsets[b] + y * scanlineStride + x,
 		   iArray[b]);
   }
 
+  /**
+   * Sets the sample values for the pixels in the region specified by 
+   * (x, y, w, h) in the specified data buffer.  The array is
+   * ordered by pixels (that is, all the samples for the first pixel are 
+   * grouped together, followed by all the samples for the second pixel, and so
+   * on). 
+   *  
+   * @param x  the x-coordinate of the top-left pixel.
+   * @param y  the y-coordinate of the top-left pixel.
+   * @param w  the width of the region of pixels.
+   * @param h  the height of the region of pixels.
+   * @param iArray  the pixel sample values (<code>null</code> not permitted).
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if either <code>iArray</code> or 
+   *     <code>data</code> is <code>null</code>.
+   */
   public void setPixels(int x, int y, int w, int h, int[] iArray,
 			DataBuffer data)
   {
@@ -417,7 +567,7 @@ public final class BandedSampleModel extends ComponentSampleModel
 	for (int ww = 0; ww < w; ww++)
 	  {
 	    int offset = y * scanlineStride + (x + ww);
-	    for (int b=0; b < numBands; b++)
+	    for (int b = 0; b < numBands; b++)
 	      data.setElem(bankIndices[b], bandOffsets[b] + offset,
 			   iArray[inOffset++]);
 	  }
@@ -425,24 +575,83 @@ public final class BandedSampleModel extends ComponentSampleModel
       }
   }
 
+  /**
+   * Sets the sample value for band <code>b</code> of the pixel at location
+   * <code>(x, y)</code> in the specified data buffer.
+   * 
+   * @param x  the x-coordinate.
+   * @param y  the y-coordinate.
+   * @param b  the band index.
+   * @param s  the sample value.
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @see #getSample(int, int, int, DataBuffer)
+   */
   public void setSample(int x, int y, int b, int s, DataBuffer data)
   {
     data.setElem(bankIndices[b], bandOffsets[b] + y * scanlineStride + x, s);
   }
   
+  /**
+   * Sets the sample value for a band for the pixel at (x, y) in the 
+   * specified data buffer. 
+   * 
+   * @param x  the x-coordinate of the pixel.
+   * @param y  the y-coordinate of the pixel.
+   * @param b  the band (in the range <code>0</code> to 
+   *     <code>getNumBands() - 1</code>).
+   * @param s  the sample value.
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if <code>data</code> is <code>null</code>.
+   */
   public void setSample(int x, int y, int b, float s, DataBuffer data)
   {
-    data.setElemFloat(bankIndices[b], bandOffsets[b] + y * scanlineStride + x, s);
+    data.setElemFloat(bankIndices[b], bandOffsets[b] + y * scanlineStride + x, 
+                      s);
   }
   
+  /**
+   * Sets the sample value for a band for the pixel at (x, y) in the 
+   * specified data buffer. 
+   * 
+   * @param x  the x-coordinate of the pixel.
+   * @param y  the y-coordinate of the pixel.
+   * @param b  the band (in the range <code>0</code> to 
+   *     <code>getNumBands() - 1</code>).
+   * @param s  the sample value.
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if <code>data</code> is <code>null</code>.
+   */
   public void setSample(int x, int y, int b, double s, DataBuffer data)
   {
-    data.setElemDouble(bankIndices[b], bandOffsets[b] + y * scanlineStride + x, s);
+    data.setElemDouble(bankIndices[b], bandOffsets[b] + y * scanlineStride + x,
+                       s);
   }
   
+  /**
+   * Sets the sample values for one band for the pixels in the region 
+   * specified by (x, y, w, h) in the specified data buffer. 
+   * 
+   * @param x  the x-coordinate of the top-left pixel.
+   * @param y  the y-coordinate of the top-left pixel.
+   * @param w  the width of the region of pixels.
+   * @param h  the height of the region of pixels.
+   * @param b  the band (in the range <code>0</code> to 
+   *     </code>getNumBands() - 1</code>).
+   * @param iArray  the sample values (<code>null</code> not permitted).
+   * @param data  the data buffer (<code>null</code> not permitted).
+   * 
+   * @throws NullPointerException if either <code>iArray</code> or 
+   *     <code>data</code> is <code>null</code>.
+   */
   public void setSamples(int x, int y, int w, int h, int b, int[] iArray,
 			 DataBuffer data)
   {
+    if (x < 0 || y < 0)
+      throw new ArrayIndexOutOfBoundsException(
+          "x and y must not be less than 0.");
     int inOffset = 0;
 
     switch (getTransferType())
@@ -537,9 +746,10 @@ public final class BandedSampleModel extends ComponentSampleModel
     result.append(getClass().getName());
     result.append("[");
     result.append("scanlineStride=").append(scanlineStride);
-    for(int i=0; i < bitMasks.length; i+=1)
+    for(int i = 0; i < bitMasks.length; i+=1)
     {
-      result.append(", mask[").append(i).append("]=0x").append(Integer.toHexString(bitMasks[i]));
+      result.append(", mask[").append(i).append("]=0x").append(
+          Integer.toHexString(bitMasks[i]));
     }
     
     result.append("]");

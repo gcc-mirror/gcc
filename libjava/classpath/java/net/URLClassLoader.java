@@ -39,15 +39,21 @@ exception statement from your version. */
 
 package java.net;
 
-import java.io.BufferedReader;
+import gnu.java.net.loader.FileURLLoader;
+import gnu.java.net.loader.JarURLLoader;
+import gnu.java.net.loader.RemoteURLLoader;
+import gnu.java.net.loader.Resource;
+import gnu.java.net.loader.URLLoader;
+import gnu.java.net.loader.URLStreamHandlerCache;
+
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilePermission;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.CodeSource;
@@ -55,14 +61,10 @@ import java.security.PermissionCollection;
 import java.security.PrivilegedAction;
 import java.security.SecureClassLoader;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 
@@ -128,19 +130,17 @@ public class URLClassLoader extends SecureClassLoader
   // Class Variables
 
   /**
-   * A global cache to store mappings between URLLoader and URL,
-   * so we can avoid do all the homework each time the same URL
-   * comes.
-   * XXX - Keeps these loaders forever which prevents garbage collection.
-   */
-  private static HashMap urlloaders = new HashMap();
-
-  /**
    * A cache to store mappings between handler factory and its
    * private protocol handler cache (also a HashMap), so we can avoid
-   * create handlers each time the same protocol comes.
+   * creating handlers each time the same protocol comes.
    */
-  private static HashMap factoryCache = new HashMap(5);
+  private static URLStreamHandlerCache factoryCache
+    = new URLStreamHandlerCache();
+
+  /**
+   * The prefix for URL loaders.
+   */
+  private static final String URL_LOADER_PREFIX = "gnu.java.net.loader.Load_";
 
   // Instance variables
 
@@ -166,516 +166,6 @@ public class URLClassLoader extends SecureClassLoader
   private final AccessControlContext securityContext;
 
   // Helper classes
-
-  /**
-   * A <code>URLLoader</code> contains all logic to load resources from a
-   * given base <code>URL</code>.
-   */
-  abstract static class URLLoader
-  {
-    /**
-     * Our classloader to get info from if needed.
-     */
-    final URLClassLoader classloader;
-
-    /**
-     * The base URL from which all resources are loaded.
-     */
-    final URL baseURL;
-
-    /**
-     * A <code>CodeSource</code> without any associated certificates.
-     * It is common for classes to not have certificates associated
-     * with them.  If they come from the same <code>URLLoader</code>
-     * then it is safe to share the associated <code>CodeSource</code>
-     * between them since <code>CodeSource</code> is immutable.
-     */
-    final CodeSource noCertCodeSource;
-
-    URLLoader(URLClassLoader classloader, URL baseURL)
-    {
-      this(classloader, baseURL, baseURL);
-    }
-
-    URLLoader(URLClassLoader classloader, URL baseURL, URL overrideURL)
-    {
-      this.classloader = classloader;
-      this.baseURL = baseURL;
-      this.noCertCodeSource = new CodeSource(overrideURL, null);
-    }
-
-    /**
-     * Returns a <code>Resource</code> loaded by this
-     * <code>URLLoader</code>, or <code>null</code> when no
-     * <code>Resource</code> with the given name exists.
-     */
-    abstract Resource getResource(String s);
-
-    /**
-     * Returns the <code>Manifest</code> associated with the
-     * <code>Resource</code>s loaded by this <code>URLLoader</code> or
-     * <code>null</code> there is no such <code>Manifest</code>.
-     */
-    Manifest getManifest()
-    {
-      return null;
-    }
-
-    Vector getClassPath()
-    {
-      return null;
-    }
-  }
-
-  /**
-   * A <code>Resource</code> represents a resource in some
-   * <code>URLLoader</code>. It also contains all information (e.g.,
-   * <code>URL</code>, <code>CodeSource</code>, <code>Manifest</code> and
-   * <code>InputStream</code>) that is necessary for loading resources
-   * and creating classes from a <code>URL</code>.
-   */
-  abstract static class Resource
-  {
-    final URLLoader loader;
-
-    Resource(URLLoader loader)
-    {
-      this.loader = loader;
-    }
-
-    /**
-     * Returns the non-null <code>CodeSource</code> associated with
-     * this resource.
-     */
-    CodeSource getCodeSource()
-    {
-      Certificate[] certs = getCertificates();
-      if (certs == null)
-        return loader.noCertCodeSource;
-      else
-        return new CodeSource(loader.baseURL, certs);
-    }
-
-    /**
-     * Returns <code>Certificates</code> associated with this
-     * resource, or null when there are none.
-     */
-    Certificate[] getCertificates()
-    {
-      return null;
-    }
-
-    /**
-     * Return a <code>URL</code> that can be used to access this resource.
-     */
-    abstract URL getURL();
-
-    /**
-     * Returns the size of this <code>Resource</code> in bytes or
-     * <code>-1</code> when unknown.
-     */
-    abstract int getLength();
-
-    /**
-     * Returns the non-null <code>InputStream</code> through which
-     * this resource can be loaded.
-     */
-    abstract InputStream getInputStream() throws IOException;
-  }
-
-  /**
-   * A <code>JarURLLoader</code> is a type of <code>URLLoader</code>
-   * only loading from jar url.
-   */
-  static final class JarURLLoader extends URLLoader
-  {
-    final JarFile jarfile; // The jar file for this url
-    final URL baseJarURL; // Base jar: url for all resources loaded from jar
-
-    Vector classPath;	// The "Class-Path" attribute of this Jar's manifest
-
-    public JarURLLoader(URLClassLoader classloader, URL baseURL,
-			URL absoluteUrl)
-    {
-      super(classloader, baseURL, absoluteUrl);
-
-      // Cache url prefix for all resources in this jar url.
-      String external = baseURL.toExternalForm();
-      StringBuffer sb = new StringBuffer(external.length() + 6);
-      sb.append("jar:");
-      sb.append(external);
-      sb.append("!/");
-      String jarURL = sb.toString();
-
-      this.classPath = null;
-      URL baseJarURL = null;
-      JarFile jarfile = null;
-      try
-	{
-	  baseJarURL =
-	    new URL(null, jarURL, classloader.getURLStreamHandler("jar"));
-	  
-	  jarfile =
-	    ((JarURLConnection) baseJarURL.openConnection()).getJarFile();
-          
-	  Manifest manifest;
-	  Attributes attributes;
-	  String classPathString;
-
-          this.classPath = new Vector();
-
-          // This goes through the cached jar files listed
-          // in the INDEX.LIST file. All the jars found are added
-          // to the classPath vector so they can be loaded.
-          String dir = "META-INF/INDEX.LIST";
-          if (jarfile.getEntry(dir) != null)
-            {
-              BufferedReader br = new BufferedReader(new InputStreamReader(new URL(baseJarURL,
-                                                                                   dir).openStream()));
-              String line = br.readLine();
-              while (line != null)
-                {
-                  if (line.endsWith(".jar"))
-                    {
-                      try
-                        {
-                          this.classPath.add(new URL(baseURL, line));
-                        }
-                      catch (java.net.MalformedURLException xx)
-                        {
-                          // Give up
-                        }
-                    }
-                  line = br.readLine();
-                }
-            }
-          else if ((manifest = jarfile.getManifest()) != null
-	      && (attributes = manifest.getMainAttributes()) != null
-	      && ((classPathString 
-		   = attributes.getValue(Attributes.Name.CLASS_PATH)) 
-		  != null))
-	    {	      
-	      StringTokenizer st = new StringTokenizer(classPathString, " ");
-	      while (st.hasMoreElements ()) 
-		{  
-		  String e = st.nextToken ();
-		  try
-		    {
-		      this.classPath.add(new URL(baseURL, e));
-		    } 
-		  catch (java.net.MalformedURLException xx)
-		    {
-		      // Give up
-		    }
-		}
-	    }
-	}
-      catch (IOException ioe)
-        {
-	  /* ignored */
-        }
-
-      this.baseJarURL = baseJarURL;
-      this.jarfile = jarfile;
-    }
-
-    /** get resource with the name "name" in the jar url */
-    Resource getResource(String name)
-    {
-      if (jarfile == null)
-        return null;
-
-      if (name.startsWith("/"))
-        name = name.substring(1);
-
-      JarEntry je = jarfile.getJarEntry(name);
-      if (je != null)
-        return new JarURLResource(this, name, je);
-      else
-        return null;
-    }
-
-    Manifest getManifest()
-    {
-      try
-        {
-          return (jarfile == null) ? null : jarfile.getManifest();
-        }
-      catch (IOException ioe)
-        {
-          return null;
-        }
-    }
-
-    Vector getClassPath()
-    {
-      return classPath;
-    }
-  }
-
-  static final class JarURLResource extends Resource
-  {
-    private final JarEntry entry;
-    private final String name;
-
-    JarURLResource(JarURLLoader loader, String name, JarEntry entry)
-    {
-      super(loader);
-      this.entry = entry;
-      this.name = name;
-    }
-
-    InputStream getInputStream() throws IOException
-    {
-      return ((JarURLLoader) loader).jarfile.getInputStream(entry);
-    }
-
-    int getLength()
-    {
-      return (int) entry.getSize();
-    }
-
-    Certificate[] getCertificates()
-    {
-      // We have to get the entry from the jar file again, because the
-      // certificates will not be available until the entire entry has
-      // been read.
-      return ((JarEntry) ((JarURLLoader) loader).jarfile.getEntry(name))
-        .getCertificates();
-    }
-
-    URL getURL()
-    {
-      try
-        {
-          return new URL(((JarURLLoader) loader).baseJarURL, name,
-                         loader.classloader.getURLStreamHandler("jar"));
-        }
-      catch (MalformedURLException e)
-        {
-          InternalError ie = new InternalError();
-          ie.initCause(e);
-          throw ie;
-        }
-    }
-  }
-
-  /**
-   * Loader for remote directories.
-   */
-  static final class RemoteURLLoader extends URLLoader
-  {
-    private final String protocol;
-
-    RemoteURLLoader(URLClassLoader classloader, URL url)
-    {
-      super(classloader, url);
-      protocol = url.getProtocol();
-    }
-
-    /**
-     * Get a remote resource.
-     * Returns null if no such resource exists.
-     */
-    Resource getResource(String name)
-    {
-      try
-        {
-          URL url =
-            new URL(baseURL, name, classloader.getURLStreamHandler(protocol));
-          URLConnection connection = url.openConnection();
-
-          // Open the connection and check the stream
-          // just to be sure it exists.
-          int length = connection.getContentLength();
-          InputStream stream = connection.getInputStream();
-
-          // We can do some extra checking if it is a http request
-          if (connection instanceof HttpURLConnection)
-            {
-              int response =
-                ((HttpURLConnection) connection).getResponseCode();
-              if (response / 100 != 2)
-                return null;
-            }
-
-          if (stream != null)
-            return new RemoteResource(this, name, url, stream, length);
-          else
-            return null;
-        }
-      catch (IOException ioe)
-        {
-          return null;
-        }
-    }
-  }
-
-  /**
-   * A resource from some remote location.
-   */
-  static final class RemoteResource extends Resource
-  {
-    private final URL url;
-    private final InputStream stream;
-    private final int length;
-
-    RemoteResource(RemoteURLLoader loader, String name, URL url,
-                   InputStream stream, int length)
-    {
-      super(loader);
-      this.url = url;
-      this.stream = stream;
-      this.length = length;
-    }
-
-    InputStream getInputStream() throws IOException
-    {
-      return stream;
-    }
-
-    public int getLength()
-    {
-      return length;
-    }
-
-    public URL getURL()
-    {
-      return url;
-    }
-  }
-
-  /**
-   * A <code>FileURLLoader</code> is a type of <code>URLLoader</code>
-   * only loading from file url.
-   */
-  static final class FileURLLoader extends URLLoader
-  {
-    File dir; //the file for this file url
-
-    FileURLLoader(URLClassLoader classloader, URL url, URL absoluteUrl)
-    {
-      super(classloader, url, absoluteUrl);
-      dir = new File(absoluteUrl.getFile());
-    }
-
-    /** get resource with the name "name" in the file url */
-    Resource getResource(String name)
-    {
-      try 
- 	{
-          // Make sure that all components in name are valid by walking through
-          // them
-          File file = walkPathComponents(name);
-
-          if (file == null)
-            return null;
-
-          return new FileResource(this, file);
- 	}
-      catch (IOException e)
- 	{
- 	  // Fall through...
- 	}
-      return null;
-    }
-
-    /**
-     * Walk all path tokens and check them for validity. At no moment, we are
-     * allowed to reach a directory located "above" the root directory, stored
-     * in "dir" property. We are also not allowed to enter a non existing
-     * directory or a non directory component (plain file, symbolic link, ...).
-     * An empty or null path is valid. Pathnames components are separated by
-     * <code>File.separatorChar</code>
-     * 
-     * @param resourceFileName the name to be checked for validity.
-     * @return the canonical file pointed by the resourceFileName or null if the
-     *         walking failed
-     * @throws IOException in case of issue when creating the canonical
-     *           resulting file
-     * @see File#separatorChar
-     */
-    private File walkPathComponents(String resourceFileName) throws IOException
-    {
-      StringTokenizer stringTokenizer = new StringTokenizer(resourceFileName, File.separator);
-      File currentFile = dir;
-      int tokenCount = stringTokenizer.countTokens();
-
-      for (int i = 0; i < tokenCount - 1; i++)
-        {
-          String currentToken = stringTokenizer.nextToken();
-          
-          // If we are at the root directory and trying to go up, the walking is
-          // finished with an error
-          if ("..".equals(currentToken) && currentFile.equals(dir))
-            return null;
-          
-          currentFile = new File(currentFile, currentToken);
-
-          // If the current file doesn't exist or is not a directory, the walking is
-          // finished with an error
-          if (! (currentFile.exists() && currentFile.isDirectory()))
-            return null;
-          
-        }
-      
-      // Treat the last token differently, if it exists, because it does not need
-      // to be a directory
-      if (tokenCount > 0)
-        {
-          String currentToken = stringTokenizer.nextToken();
-          
-          if ("..".equals(currentToken) && currentFile.equals(dir))
-            return null;
-          
-          currentFile = new File(currentFile, currentToken);
-
-          // If the current file doesn't exist, the walking is
-          // finished with an error
-          if (! currentFile.exists())
-            return null;
-      }
-      
-      return currentFile.getCanonicalFile();
-    }
-  }
-
-  static final class FileResource extends Resource
-  {
-    final File file;
-
-    FileResource(FileURLLoader loader, File file)
-    {
-      super(loader);
-      this.file = file;
-    }
-
-    InputStream getInputStream() throws IOException
-    {
-      return new FileInputStream(file);
-    }
-
-    public int getLength()
-    {
-      return (int) file.length();
-    }
-
-    public URL getURL()
-    {
-      try
-        {
-          return file.toURL();
-        }
-      catch (MalformedURLException e)
-        {
-          InternalError ie = new InternalError();
-          ie.initCause(e);
-          throw ie;
-        }
-    }
-  }
-
-  // Constructors
 
   /**
    * Creates a URLClassLoader that gets classes from the supplied URLs.
@@ -774,14 +264,8 @@ public class URLClassLoader extends SecureClassLoader
     this.factory = factory;
     addURLs(urls);
 
-    // If this factory is still not in factoryCache, add it,
-    //   since we only support three protocols so far, 5 is enough
-    //   for cache initial size
-    synchronized (factoryCache)
-      {
-        if (factory != null && factoryCache.get(factory) == null)
-          factoryCache.put(factory, new HashMap(5));
-      }
+    // If this factory is still not in factoryCache, add it.
+    factoryCache.add(factory);
   }
 
   // Methods
@@ -806,72 +290,114 @@ public class URLClassLoader extends SecureClassLoader
 	// Reset the toString() value.
 	thisString = null;
 
-        // Check global cache to see if there're already url loader
-        // for this url.
-        URLLoader loader = (URLLoader) urlloaders.get(newUrl);
+        // Create a loader for this URL.
+        URLLoader loader = null;
+        String file = newUrl.getFile();
+        String protocol = newUrl.getProtocol();
+
+        // If we have a file: URL, we want to make it absolute
+        // here, before we decide whether it is really a jar.
+        URL absoluteURL;
+        if ("file".equals (protocol))
+          {
+            File dir = new File(file);
+            URL absUrl;
+            try
+              {
+                absoluteURL = dir.getCanonicalFile().toURL();
+              }
+            catch (IOException ignore)
+              {
+                try
+                  {
+                    absoluteURL = dir.getAbsoluteFile().toURL();
+                  }
+                catch (MalformedURLException _)
+                  {
+                    // This really should not happen.
+                    absoluteURL = newUrl;
+                  }
+              }
+          }
+        else
+          {
+            // This doesn't hurt, and it simplifies the logic a
+            // little.
+            absoluteURL = newUrl;
+          }
+
+        // First see if we can find a handler with the correct name.
+        try
+          {
+            Class handler = Class.forName(URL_LOADER_PREFIX + protocol);
+            Class[] argTypes = new Class[] { URLClassLoader.class,
+                                             URLStreamHandlerCache.class,
+                                             URLStreamHandlerFactory.class,
+                                             URL.class,
+                                             URL.class };
+            Constructor k = handler.getDeclaredConstructor(argTypes);
+            loader
+              = (URLLoader) k.newInstance(new Object[] { this,
+                                                         factoryCache,
+                                                         factory,
+                                                         newUrl,
+                                                         absoluteURL });
+          }
+        catch (ClassNotFoundException ignore)
+          {
+            // Fall through.
+          }
+        catch (NoSuchMethodException nsme)
+          {
+            // Programming error in the class library.
+            InternalError vme
+              = new InternalError("couldn't find URLLoader constructor");
+            vme.initCause(nsme);
+            throw vme;
+          }
+        catch (InstantiationException inste)
+          {
+            // Programming error in the class library.
+            InternalError vme
+              = new InternalError("couldn't instantiate URLLoader");
+            vme.initCause(inste);
+            throw vme;
+          }
+        catch (InvocationTargetException ite)
+          {
+            // Programming error in the class library.
+            InternalError vme
+              = new InternalError("error instantiating URLLoader");
+            vme.initCause(ite);
+            throw vme;
+          }
+        catch (IllegalAccessException illae)
+          {
+            // Programming error in the class library.
+            InternalError vme
+              = new InternalError("invalid access to URLLoader");
+            vme.initCause(illae);
+            throw vme;
+          }
+
         if (loader == null)
           {
-            String file = newUrl.getFile();
-            String protocol = newUrl.getProtocol();
-
-	    // If we have a file: URL, we want to make it absolute
-	    // here, before we decide whether it is really a jar.
-	    URL absoluteURL;
-	    if ("file".equals (protocol))
-	      {
-		File dir = new File(file);
-		URL absUrl;
-		try
-		  {
-		    absoluteURL = dir.getCanonicalFile().toURL();
-		  }
-		catch (IOException ignore)
-		  {
-		    try
-		      {
-			absoluteURL = dir.getAbsoluteFile().toURL();
-		      }
-		    catch (MalformedURLException _)
-		      {
-			// This really should not happen.
-			absoluteURL = newUrl;
-		      }
-		  }
-	      }
-	    else
-	      {
-		// This doesn't hurt, and it simplifies the logic a
-		// little.
-		absoluteURL = newUrl;
-	      }
-
-            // Check that it is not a directory
+            // If it is not a directory, use the jar loader.
             if (! (file.endsWith("/") || file.endsWith(File.separator)))
-              loader = new JarURLLoader(this, newUrl, absoluteURL);
+              loader = new JarURLLoader(this, factoryCache, factory,
+                                        newUrl, absoluteURL);
             else if ("file".equals(protocol))
-              loader = new FileURLLoader(this, newUrl, absoluteURL);
+              loader = new FileURLLoader(this, factoryCache, factory,
+                                         newUrl, absoluteURL);
             else
-              loader = new RemoteURLLoader(this, newUrl);
-
-            // Cache it.
-            urlloaders.put(newUrl, loader);
+              loader = new RemoteURLLoader(this, factoryCache, factory,
+                                           newUrl);
           }
 
 	urlinfos.add(loader);
-
-	Vector extraUrls = loader.getClassPath();
-	if (extraUrls != null)
-	  {
-	    Iterator it = extraUrls.iterator();
-	    while (it.hasNext())
-	      {
-		URL url = (URL)it.next();
-		URLLoader extraLoader = (URLLoader) urlloaders.get(url);
-		if (! urlinfos.contains (extraLoader))
-		  addURLImpl(url);
-	      }
-	  }
-
+	ArrayList extra = loader.getClassPath();
+        if (extra != null)
+          urlinfos.addAll(extra);
       }
   }
 
@@ -987,7 +513,20 @@ public class URLClassLoader extends SecureClassLoader
   {
     // Just try to find the resource by the (almost) same name
     String resourceName = className.replace('.', '/') + ".class";
-    Resource resource = findURLResource(resourceName);
+    int max = urlinfos.size();
+    Resource resource = null;
+    for (int i = 0; i < max && resource == null; i++)
+      {
+        URLLoader loader = (URLLoader)urlinfos.elementAt(i);
+        if (loader == null)
+          continue;
+
+        Class k = loader.getClass(className);
+        if (k != null)
+          return k;
+
+        resource = loader.getResource(resourceName);
+      }
     if (resource == null)
       throw new ClassNotFoundException(className + " not found in " + this);
 
@@ -1049,12 +588,13 @@ public class URLClassLoader extends SecureClassLoader
         if (packageName != null && getPackage(packageName) == null)
           {
             // define the package
-            Manifest manifest = resource.loader.getManifest();
+            Manifest manifest = resource.getLoader().getManifest();
             if (manifest == null)
               definePackage(packageName, null, null, null, null, null, null,
                             null);
             else
-              definePackage(packageName, manifest, resource.loader.baseURL);
+              definePackage(packageName, manifest,
+                            resource.getLoader().getBaseURL());
           }
 
         // And finally construct the class!
@@ -1163,34 +703,6 @@ public class URLClassLoader extends SecureClassLoader
 
     // Resource not found
     return null;
-  }
-
-  /**
-   * If the URLStreamHandlerFactory has been set this return the appropriate
-   * URLStreamHandler for the given protocol, if not set returns null.
-   *
-   * @param protocol the protocol for which we need a URLStreamHandler
-   * @return the appropriate URLStreamHandler or null
-   */
-  URLStreamHandler getURLStreamHandler(String protocol)
-  {
-    if (factory == null)
-      return null;
-
-    URLStreamHandler handler;
-    synchronized (factoryCache)
-      {
-        // Check if there're handler for the same protocol in cache.
-        HashMap cache = (HashMap) factoryCache.get(factory);
-        handler = (URLStreamHandler) cache.get(protocol);
-        if (handler == null)
-          {
-            // Add it to cache.
-            handler = factory.createURLStreamHandler(protocol);
-            cache.put(protocol, handler);
-          }
-      }
-    return handler;
   }
 
   /**

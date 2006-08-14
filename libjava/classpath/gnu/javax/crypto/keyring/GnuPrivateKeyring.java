@@ -38,6 +38,7 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.keyring;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 
 import java.io.DataInputStream;
@@ -55,29 +56,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * <p>.</p>
+ * 
  */
-public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
+public class GnuPrivateKeyring
+    extends BaseKeyring
+    implements IPrivateKeyring
 {
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private static final Logger log = Logger.getLogger(GnuPrivateKeyring.class.getName());
   public static final int USAGE = Registry.GKR_PRIVATE_KEYS
                                   | Registry.GKR_PUBLIC_CREDENTIALS;
-
   protected String mac;
-
   protected int maclen;
-
   protected String cipher;
-
   protected String mode;
-
   protected int keylen;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   public GnuPrivateKeyring(String mac, int maclen, String cipher, String mode,
                            int keylen)
@@ -97,16 +89,10 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
     this("HMAC-SHA-1", 20, "AES", "OFB", 16);
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   public boolean containsPrivateKey(String alias)
   {
-    log.entering(this.getClass().getName(), "containsPrivateKey", alias);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "containsPrivateKey", alias);
     boolean result = false;
     if (containsAlias(alias))
       for (Iterator it = get(alias).iterator(); it.hasNext();)
@@ -115,33 +101,34 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
             result = true;
             break;
           }
-
-    log.exiting(this.getClass().getName(), "containsPrivateKey",
-                Boolean.valueOf(result));
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "containsPrivateKey",
+                  Boolean.valueOf(result));
     return result;
   }
 
   public Key getPrivateKey(String alias, char[] password)
       throws UnrecoverableKeyException
   {
-    log.entering(this.getClass().getName(), "getPrivateKey",
-                 new Object[] { alias, String.valueOf(password) });
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getPrivateKey", alias);
     Key result = null;
     if (containsAlias(alias))
       {
         PasswordAuthenticatedEntry e1 = null;
-        PasswordEncryptedEntry e2 = null;
         for (Iterator it = get(alias).iterator(); it.hasNext();)
           {
             Entry e = (Entry) it.next();
+            if (Configuration.DEBUG)
+              log.finest("Entry: " + e);
             if (e instanceof PasswordAuthenticatedEntry)
               {
                 e1 = (PasswordAuthenticatedEntry) e;
                 break;
               }
           }
-
+        if (Configuration.DEBUG)
+          log.fine("e1 = " + e1);
         if (e1 != null)
           {
             try
@@ -150,9 +137,11 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
               }
             catch (Exception e)
               {
+                if (Configuration.DEBUG)
+                  log.throwing(this.getClass().getName(), "getPrivateKey", e);
                 throw new UnrecoverableKeyException("authentication failed");
               }
-
+            PasswordEncryptedEntry e2 = null;
             for (Iterator it = e1.getEntries().iterator(); it.hasNext();)
               {
                 Entry e = (Entry) it.next();
@@ -162,7 +151,6 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
                     break;
                   }
               }
-
             if (e2 != null)
               {
                 try
@@ -171,9 +159,9 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
                   }
                 catch (Exception e)
                   {
+                    log.throwing(this.getClass().getName(), "getPrivateKey", e);
                     throw new UnrecoverableKeyException("decryption failed");
                   }
-
                 for (Iterator it = e2.get(alias).iterator(); it.hasNext();)
                   {
                     Entry e = (Entry) it.next();
@@ -186,66 +174,67 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
               }
           }
       }
-
-    log.exiting(this.getClass().getName(), "getPrivateKey", result);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getPrivateKey",
+                  result == null ? "null" : result.getClass().getName());
     return result;
   }
 
   public void putPrivateKey(String alias, Key key, char[] password)
   {
-    log.entering(this.getClass().getName(), "putPrivateKey",
-                 new Object[] { alias, key, String.valueOf(password) });
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "putPrivateKey",
+                   new Object[] { alias, key.getClass().getName() });
     if (! containsPrivateKey(alias))
       {
         alias = fixAlias(alias);
         Properties p = new Properties();
         p.put("alias", alias);
         PrivateKeyEntry pke = new PrivateKeyEntry(key, new Date(), p);
+        if (Configuration.DEBUG)
+          log.fine("About to encrypt the key...");
         PasswordEncryptedEntry enc;
         enc = new PasswordEncryptedEntry(cipher, mode, keylen, new Properties());
         enc.add(pke);
-
-        PasswordAuthenticatedEntry auth;
-        auth = new PasswordAuthenticatedEntry(mac, maclen, new Properties());
-        auth.add(enc);
-
-        log.finest("About to encrypt the key...");
         try
           {
             enc.encode(null, password);
           }
         catch (IOException x)
           {
-            log.log(Level.FINER, "Exception while encrypting the key. "
-                    + "Rethrow as IllegalArgumentException", x);
+            if (Configuration.DEBUG)
+              log.log(Level.FINE, "Exception while encrypting the key. "
+                                  + "Rethrow as IllegalArgumentException", x);
             throw new IllegalArgumentException(x.toString());
           }
-
-        log.finest("About to authenticate the encrypted key...");
+        if (Configuration.DEBUG)
+          log.fine("About to authenticate the encrypted key...");
+        PasswordAuthenticatedEntry auth;
+        auth = new PasswordAuthenticatedEntry(mac, maclen, new Properties());
+        auth.add(enc);
         try
           {
             auth.encode(null, password);
           }
         catch (IOException x)
           {
-            log.log(Level.FINER, "Exception while authenticating the encrypted "
-                    + "key. Rethrow as IllegalArgumentException", x);
+            if (Configuration.DEBUG)
+              log.log(Level.FINE, "Exception while authenticating the encrypted "
+                                  + "key. Rethrow as IllegalArgumentException", x);
             throw new IllegalArgumentException(x.toString());
           }
-
         keyring.add(auth);
       }
-    else
-      log.finer("Keyring already contains alias: " + alias);
-
-    log.exiting(this.getClass().getName(), "putPrivateKey");
+    else if (Configuration.DEBUG)
+      log.fine("Keyring already contains alias: " + alias);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "putPrivateKey");
   }
 
   public boolean containsPublicKey(String alias)
   {
-    log.entering(this.getClass().getName(), "containsPublicKey", alias);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "containsPublicKey", alias);
     boolean result = false;
     if (containsAlias(alias))
       for (Iterator it = get(alias).iterator(); it.hasNext();)
@@ -254,16 +243,16 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
             result = true;
             break;
           }
-
-    log.exiting(this.getClass().getName(), "containsPublicKey",
-                Boolean.valueOf(result));
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "containsPublicKey",
+                  Boolean.valueOf(result));
     return result;
   }
 
   public PublicKey getPublicKey(String alias)
   {
-    log.entering(this.getClass().getName(), "getPublicKey", alias);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getPublicKey", alias);
     PublicKey result = null;
     if (containsAlias(alias))
       for (Iterator it = get(alias).iterator(); it.hasNext();)
@@ -275,32 +264,33 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
               break;
             }
         }
-
-    log.exiting(this.getClass().getName(), "getPublicKey", result);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getPublicKey",
+                  result == null ? "null" : result.getClass().getName());
     return result;
   }
 
   public void putPublicKey(String alias, PublicKey key)
   {
-    log.entering(this.getClass().getName(), "putPublicKey",
-                 new Object[] { alias, key });
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "putPublicKey",
+                   new Object[] { alias, key.getClass().getName() });
     if (! containsPublicKey(alias))
       {
         Properties p = new Properties();
         p.put("alias", fixAlias(alias));
         add(new PublicKeyEntry(key, new Date(), p));
       }
-    else
-      log.finer("Keyring already contains alias: " + alias);
-
-    log.exiting(this.getClass().getName(), "putPublicKey");
+    else if (Configuration.DEBUG)
+      log.fine("Keyring already contains alias: " + alias);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "putPublicKey");
   }
 
   public boolean containsCertPath(String alias)
   {
-    log.entering(this.getClass().getName(), "containsCertPath", alias);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "containsCertPath", alias);
     boolean result = false;
     if (containsAlias(alias))
       for (Iterator it = get(alias).iterator(); it.hasNext();)
@@ -309,16 +299,16 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
             result = true;
             break;
           }
-
-    log.exiting(this.getClass().getName(), "containsCertPath",
-                Boolean.valueOf(result));
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "containsCertPath",
+                  Boolean.valueOf(result));
     return result;
   }
 
   public Certificate[] getCertPath(String alias)
   {
-    log.entering(this.getClass().getName(), "getCertPath", alias);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getCertPath", alias);
     Certificate[] result = null;
     if (containsAlias(alias))
       for (Iterator it = get(alias).iterator(); it.hasNext();)
@@ -330,52 +320,49 @@ public class GnuPrivateKeyring extends BaseKeyring implements IPrivateKeyring
               break;
             }
         }
-
-    log.exiting(this.getClass().getName(), "getCertPath", result);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getCertPath", result);
     return result;
   }
 
   public void putCertPath(String alias, Certificate[] path)
   {
-    log.entering(this.getClass().getName(), "putCertPath",
-                 new Object[] { alias, path });
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "putCertPath",
+                   new Object[] { alias, path });
     if (! containsCertPath(alias))
       {
         Properties p = new Properties();
         p.put("alias", fixAlias(alias));
         add(new CertPathEntry(path, new Date(), p));
       }
-    else
-      log.finer("Keyring already contains alias: " + alias);
-
-    log.exiting(this.getClass().getName(), "putCertPath");
+    else if (Configuration.DEBUG)
+      log.fine("Keyring already contains alias: " + alias);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "putCertPath");
   }
 
   protected void load(InputStream in, char[] password) throws IOException
   {
-    log.entering(this.getClass().getName(), "load",
-                 new Object[] { in, String.valueOf(password) });
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "load");
     if (in.read() != USAGE)
       throw new MalformedKeyringException("incompatible keyring usage");
-
     if (in.read() != PasswordAuthenticatedEntry.TYPE)
-      throw new MalformedKeyringException("expecting password-authenticated entry tag");
-
+      throw new MalformedKeyringException(
+          "expecting password-authenticated entry tag");
     keyring = PasswordAuthenticatedEntry.decode(new DataInputStream(in), password);
-
-    log.exiting(this.getClass().getName(), "load");
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "load");
   }
 
   protected void store(OutputStream out, char[] password) throws IOException
   {
-    log.entering(this.getClass().getName(), "store",
-                 new Object[] { out, String.valueOf(password) });
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "store");
     out.write(USAGE);
     keyring.encode(new DataOutputStream(out), password);
-
-    log.exiting(this.getClass().getName(), "store");
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "store");
   }
 }

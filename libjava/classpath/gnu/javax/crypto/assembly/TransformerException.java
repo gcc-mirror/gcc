@@ -43,16 +43,10 @@ import java.io.PrintWriter;
 
 /**
  */
-public class TransformerException extends Exception
+public class TransformerException
+    extends Exception
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private Throwable _exception = null;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   public TransformerException()
   {
@@ -78,12 +72,6 @@ public class TransformerException extends Exception
     this._exception = cause;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instant methods
-  // -------------------------------------------------------------------------
-
   public Throwable getCause()
   {
     return _exception;
@@ -98,61 +86,53 @@ public class TransformerException extends Exception
   {
     super.printStackTrace();
     if (_exception != null)
-      {
-        _exception.printStackTrace();
-      }
+      _exception.printStackTrace();
   }
 
   /**
    * Prints this exception's stack trace to a print stream. If this exception
-   * has a root exception; the stack trace of the root exception is also
-   * printed to the print stream.
-   *
+   * has a root exception; the stack trace of the root exception is also printed
+   * to the print stream.
+   * 
    * @param ps the non-null print stream to which to print.
    */
   public void printStackTrace(PrintStream ps)
   {
     super.printStackTrace(ps);
     if (_exception != null)
-      {
-        _exception.printStackTrace(ps);
-      }
+      _exception.printStackTrace(ps);
   }
 
   /**
    * Prints this exception's stack trace to a print writer. If this exception
-   * has a root exception; the stack trace of the root exception is also
-   * printed to the print writer.
-   *
+   * has a root exception; the stack trace of the root exception is also printed
+   * to the print writer.
+   * 
    * @param pw the non-null print writer to use for output.
    */
   public void printStackTrace(PrintWriter pw)
   {
     super.printStackTrace(pw);
     if (_exception != null)
-      {
-        _exception.printStackTrace(pw);
-      }
+      _exception.printStackTrace(pw);
   }
 
   /**
    * Returns the string representation of this exception. The string
-   * representation contains this exception's class name, its detailed
-   * messsage, and if it has a root exception, the string representation of the
-   * root exception. This string representation is meant for debugging and not
-   * meant to be interpreted programmatically.
-   *
+   * representation contains this exception's class name, its detailed messsage,
+   * and if it has a root exception, the string representation of the root
+   * exception. This string representation is meant for debugging and not meant
+   * to be interpreted programmatically.
+   * 
    * @return the non-null string representation of this exception.
    * @see Throwable#getMessage()
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer(this.getClass().getName()).append(": ").append(
-                                                                                      super.toString());
+    StringBuffer sb = new StringBuffer(this.getClass().getName())
+        .append(": ").append(super.toString());
     if (_exception != null)
-      {
-        sb.append("; caused by: ").append(_exception.toString());
-      }
+      sb.append("; caused by: ").append(_exception.toString());
     return sb.toString();
   }
 }

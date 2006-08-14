@@ -81,7 +81,8 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
   protected void finalize()
     throws Throwable
   {
-    close();
+    if (!closed)
+      close();
   }
 
   public void flush()
@@ -154,11 +155,14 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
       }
     catch (IOException e)
       {
-	// Ignored.
+        throw new RuntimeException(e);
       }
   }
 
   public abstract int read()
+    throws IOException;
+
+  public abstract int read(byte[] data, int offset, int len)
     throws IOException;
 
   public int read(byte[] data)
@@ -167,25 +171,27 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     return read(data, 0, data.length);
   }
 
-  public abstract int read(byte[] data, int offset, int len)
-    throws IOException;
-
   public int readBit()
     throws IOException
   {
     checkClosed();
 
-    // Calc new bit offset here, readByte resets it.
+    // Calculate new bit offset here as readByte clears it.
     int newOffset = (bitOffset + 1) & 0x7;
 
+    // Clears bitOffset.
     byte data = readByte();
-    
-    if (bitOffset != 0)
-      {
-	seek(getStreamPosition() - 1);
-	data = (byte) (data >> (8 - newOffset));
-      }
 
+    // If newOffset is 0 it means we just read the 8th bit in a byte
+    // and therefore we want to advance to the next byte.  Otherwise
+    // we want to roll back the stream one byte so that future readBit
+    // calls read bits from the same current byte.
+    if (newOffset != 0)
+      {
+        seek(getStreamPosition() - 1);
+        data = (byte) (data >> (8 - newOffset));
+      }
+    
     bitOffset = newOffset;
     return data & 0x1;
   }
@@ -198,17 +204,13 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     if (numBits < 0 || numBits > 64)
       throw new IllegalArgumentException();
 
-    if (numBits == 0)
-      return 0L;
-
     long bits = 0L;
-    
+
     for (int i = 0; i < numBits; i++)
       {
 	bits <<= 1;
 	bits |= readBit();
       }
-
     return bits;
   }
 
@@ -216,12 +218,15 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     throws IOException
   {
     byte data = readByte();
+
     return data != 0;
   }
 
   public byte readByte()
     throws IOException
   {
+    checkClosed();
+
     int data = read();
 
     if (data == -1)
@@ -233,10 +238,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
   public void readBytes(IIOByteBuffer buffer, int len)
     throws IOException
   {
-    int result = read(buffer.getData(), buffer.getOffset(), len);
-    
-    if (result == -1 || result < len)
-      throw new EOFException();
+    readFullyPrivate(buffer.getData(), buffer.getOffset(), len);
 
     buffer.setLength(len);
   }
@@ -250,13 +252,13 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
   public double readDouble()
     throws IOException
   {
-    return (double) readLong();
+    return Double.longBitsToDouble(readLong());
   }
 
   public float readFloat()
     throws IOException
   {
-    return (float) readInt();
+    return Float.intBitsToFloat(readInt());
   }
 
   public void readFully(byte[] data)
@@ -268,8 +270,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
   public void readFully(byte[] data, int offset, int len)
     throws IOException
   {
-    for (int i = 0; i < len; ++i)
-      data[offset + i] = readByte();
+    readFullyPrivate(data, offset, len);
   }
 
   public void readFully(char[] data, int offset, int len)
@@ -317,23 +318,20 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
   public int readInt()
     throws IOException
   {
-    int result = read(buffer, 0, 4);
+    readFullyPrivate(buffer, 0, 4);
 
-    if (result == -1)
-      throw new EOFException();
-    
     if (getByteOrder() == ByteOrder.LITTLE_ENDIAN)
-      {
-	return ((buffer[0] & 0xff)
-		+ (buffer[1] << 8)
-		+ (buffer[2] << 16)
-		+ (buffer[3] << 24));
-      }
+      return (int)
+        (((int) (buffer[0] & 0xff) << 0)
+         | ((int) (buffer[1] & 0xff) << 8)
+         | ((int) (buffer[2] & 0xff) << 16)
+         | ((int) (buffer[3] & 0xff) << 24));
 
-    return ((buffer[4] << 24)
-	    + (buffer[3] << 16)
-	    + (buffer[2] << 8)
-	    + (buffer[1] & 0xff));
+    return (int)
+      (((int) (buffer[0] & 0xff) << 24)
+       + ((int) (buffer[1] & 0xff) << 16)
+       + ((int) (buffer[2] & 0xff) << 8)
+       + ((int) (buffer[3] & 0xff) << 0));
   }
 
   public String readLine()
@@ -345,26 +343,39 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     boolean eol = false;
     StringBuffer buffer = new StringBuffer();
 
-    while (!eol && (c = read()) != -1)
+    c = read();
+    if (c == -1)
+      return null;
+
+    while (!eol)
       {
 	switch(c)
 	  {
 	  case '\r':
-	    // Consume following \n'
-	    long oldPosition = getStreamPosition();
-	    if (read() != '\n')
-	       seek(oldPosition);
+            // Check for following '\n'.
+            long oldPosition = getStreamPosition();
+            c = read();
+            if (c == -1 || c == '\n')
+              eol = true;
+            else
+              {
+                seek(oldPosition);
+                eol = true;
+              }
+            continue;
+
 	  case '\n':
 	    eol = true;
-	    break;
+            continue;
+
 	  default:
 	    buffer.append((char) c);
 	    break;
 	  }
+        c = read();
+        if (c == -1)
+          eol = true;
       }
-
-    if (c == -1 && buffer.length() == 0)
-      return null;
 
     return buffer.toString();
   }
@@ -372,67 +383,61 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
   public long readLong()
     throws IOException
   {
-    int result = read(buffer, 0, 8);
+    readFullyPrivate(buffer, 0, 8);
 
-    if (result == -1)
-      throw new EOFException();
-    
     if (getByteOrder() == ByteOrder.LITTLE_ENDIAN)
-      {
-        return ((buffer[0] & 0xff)
-                + (((buffer[1] & 0xff)) << 8)
-                + (((buffer[2] & 0xff)) << 16)
-                + (((buffer[3] & 0xffL)) << 24)
-                + (((buffer[4] & 0xffL)) << 32)
-                + (((buffer[5] & 0xffL)) << 40)
-                + (((buffer[6] & 0xffL)) << 48)
-                + (((long) buffer[7]) << 56));
-      }
+      return (long)
+        (((long) (buffer[0] & 0xff) << 0)
+         | ((long) (buffer[1] & 0xff) << 8)
+         | ((long) (buffer[2] & 0xff) << 16)
+         | ((long) (buffer[3] & 0xff) << 24)
+         | ((long) (buffer[4] & 0xff) << 32)
+         | ((long) (buffer[5] & 0xff) << 40)
+         | ((long) (buffer[6] & 0xff) << 48)
+         | ((long) (buffer[7] & 0xff) << 56));
 
-    return ((((long) buffer[7]) << 56)
-            + ((buffer[6] & 0xffL) << 48)
-            + ((buffer[5] & 0xffL) << 40)
-            + ((buffer[4] & 0xffL) << 32)
-            + ((buffer[3] & 0xffL) << 24)
-            + ((buffer[2] & 0xff) << 16)
-            + ((buffer[1] & 0xff) << 8)
-            + (buffer[0] & 0xff));
+    return  (long)
+      (((long) (buffer[0] & 0xff) << 56)
+       | ((long) (buffer[1] & 0xff) << 48)
+       | ((long) (buffer[2] & 0xff) << 40)
+       | ((long) (buffer[3] & 0xff) << 32)
+       | ((long) (buffer[4] & 0xff) << 24)
+       | ((long) (buffer[5] & 0xff) << 16)
+       | ((long) (buffer[6] & 0xff) << 8)
+       | ((long) (buffer[7] & 0xff) << 0));
   }
 
   public short readShort()
     throws IOException
   {
-    int result = read(buffer, 0, 2);
+    readFullyPrivate(buffer, 0, 2);
 
-    if (result == -1)
-      throw new EOFException();
-    
     if (getByteOrder() == ByteOrder.LITTLE_ENDIAN)
-      {
-	return (short) ((buffer[0] & 0xff)
-			+ (buffer[1] << 8));
-      }
+      return (short)
+        (((short) (buffer[0] & 0xff) << 0)
+         | ((short) (buffer[1] & 0xff) << 8));
 
-    return (short) ((buffer[0] << 8)
-		    + (buffer[1] & 0xff));
+    return (short)
+      (((short) (buffer[0] & 0xff) << 8)
+       | ((short) (buffer[1] & 0xff) << 0));
   }
 
   public int readUnsignedByte()
     throws IOException
   {
-    return readByte() & 0xff;
+    return (int) readByte() & 0xff;
   }
 
   public long readUnsignedInt()
     throws IOException
   {
-    return readInt() & 0xffffffff;
+    return (long) readInt() & 0xffffffffL;
   }
 
   public int readUnsignedShort()
     throws IOException
   {
-    return readShort() & 0xffff;
+    return (int) readShort() & 0xffff;
   }
 
   public String readUTF()
@@ -442,7 +447,8 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
 
     String data;
     ByteOrder old = getByteOrder();
-    setByteOrder(ByteOrder.BIG_ENDIAN); // Strings are always big endian.
+    // Strings are always big endian.
+    setByteOrder(ByteOrder.BIG_ENDIAN);
 
     try
       {
@@ -483,7 +489,7 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     checkClosed();
     
     if (bitOffset < 0 || bitOffset > 7)
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("bitOffset not between 0 and 7 inclusive");
 
     this.bitOffset = bitOffset;
   }
@@ -511,5 +517,24 @@ public abstract class ImageInputStreamImpl implements ImageInputStream
     seek(getStreamPosition() + num);
     bitOffset = 0;
     return num;
+  }
+
+  private void readFullyPrivate (byte[] buf, int offset, int len) throws IOException
+  {
+    checkClosed();
+
+    if (len < 0)
+      throw new IndexOutOfBoundsException("Negative length: " + len);
+
+    while (len > 0)
+      {
+	// read will block until some data is available.
+	int numread = read (buf, offset, len);
+	if (numread < 0)
+	  throw new EOFException ();
+	len -= numread;
+	offset += numread;
+      }
+    bitOffset = 0;
   }
 }

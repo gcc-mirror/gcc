@@ -1,5 +1,5 @@
 /* RasterOp.java --
-   Copyright (C) 2000, 2002, 2004, 2005  Free Software Foundation
+   Copyright (C) 2000, 2002, 2004, 2005, 2006,  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -42,16 +42,64 @@ import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+/**
+ * An operation that is performed on one raster (the source) producing a new
+ * raster (the destination).
+ */
 public interface RasterOp
 {
+  /**
+   * Performs an operation on the source raster, returning the result in a
+   * writable raster.  If <code>dest</code> is <code>null</code>, a new
+   * <code>WritableRaster</code> will be created by calling the
+   * {@link #createCompatibleDestRaster(Raster)} method.  If <code>dest</code>
+   * is not <code>null</code>, the result is written to <code>dest</code> then 
+   * returned (this avoids creating a new <code>WritableRaster</code> each 
+   * time this method is called).
+   * 
+   * @param src  the source raster.
+   * @param dest  the destination raster (<code>null</code> permitted).
+   * 
+   * @return The filtered raster.
+   */
   WritableRaster filter(Raster src, WritableRaster dest);
 
+  /**
+   * Returns the bounds of the destination raster on the basis of this
+   * <code>RasterOp</code> being applied to the specified source raster.
+   * 
+   * @param src  the source raster.
+   * 
+   * @return The destination bounds.
+   */
   Rectangle2D getBounds2D(Raster src);
 
+  /**
+   * Returns a raster that can be used by this <code>RasterOp</code> as the
+   * destination raster when operating on the specified source raster.
+   * 
+   * @param src  the source raster.
+   * 
+   * @return A new writable raster that can be used as the destination raster.
+   */
   WritableRaster createCompatibleDestRaster(Raster src);
 
+  /**
+   * Returns the point on the destination raster that corresponds to the given
+   * point on the source raster.
+   * 
+   * @param srcPoint  the source point.
+   * @param destPoint  the destination point (<code>null</code> permitted).
+   * 
+   * @return The destination point.
+   */
   Point2D getPoint2D(Point2D srcPoint, Point2D destPoint);
 
+  /**
+   * Returns the rendering hints for this operation.
+   * 
+   * @return The rendering hints.
+   */
   RenderingHints getRenderingHints();
 }
 

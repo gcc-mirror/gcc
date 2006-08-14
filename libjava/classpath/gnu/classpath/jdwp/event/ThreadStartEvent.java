@@ -86,9 +86,9 @@ public class ThreadStartEvent
    * @param type  the type of parameter desired
    * @returns the desired parameter or <code>null</code>
    */
-  public Object getParameter (Class type)
+  public Object getParameter (int type)
   {
-    if (type == ThreadId.class)
+    if (type == EVENT_THREAD)
       return _thread;
 
     return null;

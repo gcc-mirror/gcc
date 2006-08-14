@@ -53,11 +53,6 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class VisibilityHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
    * Insert the Visibility into the given Any.
    * Uses {@link Any#insert_short}.
    */
@@ -80,14 +75,10 @@ public abstract class VisibilityHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
         TypeCode tshort =
           OrbRestricted.Singleton.get_primitive_tc(TCKind.tk_short);
-        typeCode =
+        return
           OrbRestricted.Singleton.create_alias_tc(id(), "Visibility", tshort);
-      }
-    return typeCode;
   }
 
   /**

@@ -94,9 +94,15 @@ public class DSSKeyPairX509Codec
    *     g   INTEGER
    *   }
    * </pre>
-   * 
-   * <p>The <i>subjectPublicKey</i> field, which is a BIT STRING, contains the
-   * DER-encoded form of the DSA public key as an INTEGER.</p>
+   * <p>
+   * Note that RFC-3280 (page 79) implies that some certificates MAY have an
+   * absent, or NULL, parameters field in their AlgorithmIdentifier element,
+   * implying that those parameters MUST be <i>inherited</i> from another
+   * certificate. This implementation, encodes a <i>NULL</i> element as the DER
+   * value of the parameters field when such is the case.
+   * <p>
+   * The <i>subjectPublicKey</i> field, which is a BIT STRING, contains the
+   * DER-encoded form of the DSA public key as an INTEGER.
    * 
    * <pre>
    *       DSAPublicKey ::= INTEGER -- public key, Y
@@ -118,20 +124,25 @@ public class DSSKeyPairX509Codec
     DERValue derOID = new DERValue(DER.OBJECT_IDENTIFIER, DSA_ALG_OID);
 
     DSSPublicKey dssKey = (DSSPublicKey) key;
-    BigInteger p = dssKey.getParams().getP();
-    BigInteger q = dssKey.getParams().getQ();
-    BigInteger g = dssKey.getParams().getG();
-    BigInteger y = dssKey.getY();
+    DERValue derParams;
+    if (dssKey.hasInheritedParameters())
+      derParams = new DERValue(DER.NULL, null);
+    else
+      {
+        BigInteger p = dssKey.getParams().getP();
+        BigInteger q = dssKey.getParams().getQ();
+        BigInteger g = dssKey.getParams().getG();
 
-    DERValue derP = new DERValue(DER.INTEGER, p);
-    DERValue derQ = new DERValue(DER.INTEGER, q);
-    DERValue derG = new DERValue(DER.INTEGER, g);
+        DERValue derP = new DERValue(DER.INTEGER, p);
+        DERValue derQ = new DERValue(DER.INTEGER, q);
+        DERValue derG = new DERValue(DER.INTEGER, g);
 
-    ArrayList params = new ArrayList(3);
-    params.add(derP);
-    params.add(derQ);
-    params.add(derG);
-    DERValue derParams = new DERValue(DER.CONSTRUCTED | DER.SEQUENCE, params);
+        ArrayList params = new ArrayList(3);
+        params.add(derP);
+        params.add(derQ);
+        params.add(derG);
+        derParams = new DERValue(DER.CONSTRUCTED | DER.SEQUENCE, params);
+      }
 
     ArrayList algorithmID = new ArrayList(2);
     algorithmID.add(derOID);
@@ -139,6 +150,7 @@ public class DSSKeyPairX509Codec
     DERValue derAlgorithmID = new DERValue(DER.CONSTRUCTED | DER.SEQUENCE,
                                            algorithmID);
 
+    BigInteger y = dssKey.getY();
     DERValue derDSAPublicKey = new DERValue(DER.INTEGER, y);
     byte[] yBytes = derDSAPublicKey.getEncoded();
     DERValue derSPK = new DERValue(DER.BIT_STRING, new BitString(yBytes));
@@ -157,11 +169,10 @@ public class DSSKeyPairX509Codec
       }
     catch (IOException x)
       {
-        InvalidParameterException e = new InvalidParameterException();
+        InvalidParameterException e = new InvalidParameterException(x.getMessage());
         e.initCause(x);
         throw e;
       }
-
     return result;
   }
 
@@ -186,7 +197,10 @@ public class DSSKeyPairX509Codec
     if (input == null)
       throw new InvalidParameterException("Input bytes MUST NOT be null");
 
-    BigInteger p, g, q, y;
+    BigInteger p = null;
+    BigInteger g = null;
+    BigInteger q = null;
+    BigInteger y;
     DERReader der = new DERReader(input);
     try
       {
@@ -204,20 +218,35 @@ public class DSSKeyPairX509Codec
         if (! algOID.equals(DSA_ALG_OID))
           throw new InvalidParameterException("Unexpected OID: " + algOID);
 
-        DERValue derParams = der.read();
-        DerUtil.checkIsConstructed(derParams, "Wrong DSS Parameters field");
-
         DERValue val = der.read();
-        DerUtil.checkIsBigInteger(val, "Wrong P field");
-        p = (BigInteger) val.getValue();
-        val = der.read();
-        DerUtil.checkIsBigInteger(val, "Wrong Q field");
-        q = (BigInteger) val.getValue();
-        val = der.read();
-        DerUtil.checkIsBigInteger(val, "Wrong G field");
-        g = (BigInteger) val.getValue();
+        // RFC-3280, page 79 states: "If the subjectPublicKeyInfo field of the
+        // certificate contains an algorithm field with null parameters or
+        // parameters are omitted, compare the certificate subjectPublicKey
+        // algorithm to the working_public_key_algorithm.  If the certificate
+        // subjectPublicKey algorithm and the working_public_key_algorithm are
+        // different, set the working_public_key_parameters to null."
+        // in other words, the parameters field of an AlgorithmIdentifier
+        // element MAY NOT be present at all, or if present MAY be NULL!
+        // the Mauve test ValidDSAParameterInheritenceTest5, in
+        // gnu.testlet.java.security.cert.pkix.pkits, is/was failing because
+        // of this.
+        if (val.getTag() == DER.NULL)
+          val = der.read();
+        else if (val.isConstructed())
+          {
+            val = der.read();
+            DerUtil.checkIsBigInteger(val, "Wrong P field");
+            p = (BigInteger) val.getValue();
+            val = der.read();
+            DerUtil.checkIsBigInteger(val, "Wrong Q field");
+            q = (BigInteger) val.getValue();
+            val = der.read();
+            DerUtil.checkIsBigInteger(val, "Wrong G field");
+            g = (BigInteger) val.getValue();
 
-        val = der.read();
+            val = der.read();
+          }
+
         if (! (val.getValue() instanceof BitString))
           throw new InvalidParameterException("Wrong SubjectPublicKey field");
 
@@ -230,11 +259,10 @@ public class DSSKeyPairX509Codec
       }
     catch (IOException x)
       {
-        InvalidParameterException e = new InvalidParameterException();
+        InvalidParameterException e = new InvalidParameterException(x.getMessage());
         e.initCause(x);
         throw e;
       }
-
     return new DSSPublicKey(Registry.X509_ENCODING_ID, p, q, g, y);
   }
 

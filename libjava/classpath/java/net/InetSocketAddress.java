@@ -86,7 +86,6 @@ public class InetSocketAddress extends SocketAddress
 
     this.addr = addr;
     this.port = port;
-    this.hostname = addr.getHostName();
   }
 
   /**
@@ -186,7 +185,7 @@ public class InetSocketAddress extends SocketAddress
 
 	if (addr == null && sa.addr != null)
 	  return false;
-	else if (addr == null && sa.addr == null)
+	else if (addr == null && sa.addr == null) // we know hostname != null
 	  return hostname.equals(sa.hostname) && sa.port == port;
 	else
 	  return addr.equals(sa.addr) && sa.port == port;
@@ -213,6 +212,9 @@ public class InetSocketAddress extends SocketAddress
    */
   public final String getHostName()
   {
+    if (hostname == null) // we know addr != null
+      hostname = addr.getHostName();
+
     return hostname;
   }
 
@@ -249,10 +251,11 @@ public class InetSocketAddress extends SocketAddress
   /**
    * Returns the <code>InetSocketAddress</code> as string
    *
-   * @return A string represenation of this address.
+   * @return A string representation of this address.
    */
   public String toString()
   {
+    // Note: if addr is null, then hostname != null.
     return (addr == null ? hostname : addr.toString()) + ":" + port;
   }
 }

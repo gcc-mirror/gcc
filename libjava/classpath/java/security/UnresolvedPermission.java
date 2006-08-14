@@ -201,6 +201,47 @@ public final class UnresolvedPermission extends Permission
   {
     return new UnresolvedPermissionCollection();
   }
+
+  /**
+   * Return the name of the class of the unresolved permission.
+   * @since 1.5
+   */
+  public String getUnresolvedType()
+  {
+    return type;
+  }
+
+  /**
+   * Return the name of the unresolved permission.
+   * @since 1.5
+   */
+  public String getUnresolvedName()
+  {
+    return name;
+  }
+
+  /**
+   * Return the actions of the unresolved permission, or null
+   * if there are no actions.
+   * @since 1.5
+   */
+  public String getUnresolvedActions()
+  {
+    return actions;
+  }
+
+  /**
+   * Return the certificates of the unresolved permission.
+   * If there are no certificates, null is returned.  Otherwise,
+   * a new array is returned.
+   * @since 1.5
+   */
+  public Certificate[] getUnresolvedCerts()
+  {
+    if (certs == null)
+      return null;
+    return (Certificate[]) certs.clone();
+  }
 } // class UnresolvedPermission
 
 /**

@@ -42,14 +42,13 @@ import gnu.java.security.Registry;
 import gnu.java.security.util.Util;
 
 /**
- * <p>An implementation of Ron Rivest's MD4 message digest algorithm.</p>
- *
- * <p>MD4 was the precursor to the stronger {@link gnu.crypto.hash.MD5}
+ * An implementation of Ron Rivest's MD4 message digest algorithm.
+ * <p>
+ * MD4 was the precursor to the stronger {@link gnu.java.security.hash.MD5}
  * algorithm, and while not considered cryptograpically secure itself, MD4 is
- * in use in various applications. It is slightly faster than MD5.</p>
- *
- * <p>References:</p>
- *
+ * in use in various applications. It is slightly faster than MD5.
+ * <p>
+ * References:
  * <ol>
  *    <li>The <a href="http://www.ietf.org/rfc/rfc1320.txt">MD4</a>
  *    Message-Digest Algorithm.<br>
@@ -58,12 +57,9 @@ import gnu.java.security.util.Util;
  *
  * @author Casey Marshall (rsdio@metastatic.org)
  */
-public class MD4 extends BaseHash
+public class MD4
+    extends BaseHash
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** An MD4 message digest is always 128-bits long, or 16 bytes. */
   private static final int DIGEST_LENGTH = 16;
 
@@ -86,13 +82,9 @@ public class MD4 extends BaseHash
 
   private int a, b, c, d;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Public constructor. Initializes the chaining variables, sets the byte
+   * Public constructor. Initializes the chaining variables, sets the byte
    * count to <code>0</code>, and creates a new block of <code>512</code> bits.
-   * </p>
    */
   public MD4()
   {
@@ -100,7 +92,7 @@ public class MD4 extends BaseHash
   }
 
   /**
-   * <p>Trivial private constructor for cloning purposes.</p>
+   * Trivial private constructor for cloning purposes.
    *
    * @param that the instance to clone.
    */
@@ -116,30 +108,18 @@ public class MD4 extends BaseHash
     this.buffer = (byte[]) that.buffer.clone();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.lang.Cloneable interface implementation ----------------------------
-
   public Object clone()
   {
     return new MD4(this);
   }
 
-  // Implementation of abstract methods in BashHash --------------------------
-
   protected byte[] getResult()
   {
-    byte[] digest = { (byte) a, (byte) (a >>> 8), (byte) (a >>> 16),
-                     (byte) (a >>> 24), (byte) b, (byte) (b >>> 8),
-                     (byte) (b >>> 16), (byte) (b >>> 24), (byte) c,
-                     (byte) (c >>> 8), (byte) (c >>> 16), (byte) (c >>> 24),
-                     (byte) d, (byte) (d >>> 8), (byte) (d >>> 16),
-                     (byte) (d >>> 24) };
-    return digest;
+    return new byte[] {
+        (byte) a, (byte)(a >>> 8), (byte)(a >>> 16), (byte)(a >>> 24),
+        (byte) b, (byte)(b >>> 8), (byte)(b >>> 16), (byte)(b >>> 24),
+        (byte) c, (byte)(c >>> 8), (byte)(c >>> 16), (byte)(c >>> 24),
+        (byte) d, (byte)(d >>> 8), (byte)(d >>> 16), (byte)(d >>> 24) };
   }
 
   protected void resetContext()
@@ -154,68 +134,97 @@ public class MD4 extends BaseHash
   {
     if (valid == null)
       {
-        valid = Boolean.valueOf(DIGEST0.equals(Util.toString(new MD4().digest())));
+        String d = Util.toString(new MD4().digest());
+        valid = Boolean.valueOf(DIGEST0.equals(d));
       }
     return valid.booleanValue();
   }
 
   protected byte[] padBuffer()
   {
-    int n = (int) (count % BLOCK_LENGTH);
+    int n = (int)(count % BLOCK_LENGTH);
     int padding = (n < 56) ? (56 - n) : (120 - n);
     byte[] pad = new byte[padding + 8];
-
     pad[0] = (byte) 0x80;
     long bits = count << 3;
     pad[padding++] = (byte) bits;
-    pad[padding++] = (byte) (bits >>> 8);
-    pad[padding++] = (byte) (bits >>> 16);
-    pad[padding++] = (byte) (bits >>> 24);
-    pad[padding++] = (byte) (bits >>> 32);
-    pad[padding++] = (byte) (bits >>> 40);
-    pad[padding++] = (byte) (bits >>> 48);
-    pad[padding] = (byte) (bits >>> 56);
-
+    pad[padding++] = (byte)(bits >>> 8);
+    pad[padding++] = (byte)(bits >>> 16);
+    pad[padding++] = (byte)(bits >>> 24);
+    pad[padding++] = (byte)(bits >>> 32);
+    pad[padding++] = (byte)(bits >>> 40);
+    pad[padding++] = (byte)(bits >>> 48);
+    pad[padding  ] = (byte)(bits >>> 56);
     return pad;
   }
 
   protected void transform(byte[] in, int i)
   {
-    int X0 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X1 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X2 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X3 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X4 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X5 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X6 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X7 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X8 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X9 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X10 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X11 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X12 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X13 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X14 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X15 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i] << 24;
-
+    int X0 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X1 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X2 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X3 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X4 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X5 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X6 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X7 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X8 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X9 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | in[i++] << 24;
+    int X10 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | in[i++] << 24;
+    int X11 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | in[i++] << 24;
+    int X12 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | in[i++] << 24;
+    int X13 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | in[i++] << 24;
+    int X14 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | in[i++] << 24;
+    int X15 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | in[i] << 24;
     int aa, bb, cc, dd;
-
     aa = a;
     bb = b;
     cc = c;

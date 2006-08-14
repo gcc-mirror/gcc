@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CosNaming;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -59,11 +60,6 @@ public abstract class NameComponentHelper
    * A {@link NameComponent} repository id.
    */
   private static String _id = "IDL:omg.org/CosNaming/NameComponent:1.0";
-
-  /**
-   * The cached type code.
-   */
-  private static TypeCode typeCode = null;
 
   /**
    * Extract the name component from this {@link Any}
@@ -116,22 +112,18 @@ public abstract class NameComponentHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-
-        StructMember[] members = new StructMember[ 2 ];
-        TypeCode member;
-        member = orb.create_string_tc(0);
-        members [ 0 ] = new StructMember("id", member, null);
-        member = orb.create_string_tc(0);
-        members [ 1 ] = new StructMember("kind", member, null);
-        typeCode =
-          orb.create_struct_tc(NameComponentHelper.id(), "NameComponent",
-                               members
-                              );
-      }
-    return typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    
+    StructMember[] members = new StructMember[ 2 ];
+    TypeCode member;
+    member = orb.create_string_tc(0);
+    members [ 0 ] = new StructMember("id", member, null);
+    member = orb.create_string_tc(0);
+    members [ 1 ] = new StructMember("kind", member, null);
+    return
+    orb.create_struct_tc(NameComponentHelper.id(), "NameComponent",
+                         members
+    );
   }
 
   /**

@@ -39,14 +39,9 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.Graphics;
-import java.awt.Color;
 import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.*;
 
 /**
  * Implementation of Graphics2D on a Cairo surface.

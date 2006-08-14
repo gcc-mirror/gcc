@@ -50,27 +50,14 @@ import javax.security.sasl.SaslServer;
 /**
  * The ANONYMOUS server-side mechanism.
  */
-public class AnonymousServer extends ServerMechanism implements SaslServer
+public class AnonymousServer
+    extends ServerMechanism
+    implements SaslServer
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public AnonymousServer()
   {
     super(Registry.SASL_ANONYMOUS_MECHANISM);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // abstract methods implementation -----------------------------------------
 
   protected void initMechanism() throws SaslException
   {
@@ -80,14 +67,10 @@ public class AnonymousServer extends ServerMechanism implements SaslServer
   {
   }
 
-  // javax.security.sasl.SaslServer interface implementation -----------------
-
   public byte[] evaluateResponse(final byte[] response) throws SaslException
   {
     if (response == null)
-      {
-        return null;
-      }
+      return null;
     try
       {
         authorizationID = new String(response, "UTF-8");

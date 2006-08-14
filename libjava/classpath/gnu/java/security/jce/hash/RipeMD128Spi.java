@@ -42,25 +42,13 @@ import gnu.java.security.Registry;
 
 /**
  * The implementation of the RIPEMD-128 <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.<p>
+ * (<b>SPI</b>) adapter.
  */
-public class RipeMD128Spi extends MessageDigestAdapter
+public class RipeMD128Spi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public RipeMD128Spi()
   {
     super(Registry.RIPEMD128_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

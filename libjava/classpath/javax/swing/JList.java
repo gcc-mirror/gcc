@@ -944,17 +944,6 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   ListSelectionModel selectionModel;
 
-
-  /**
-   * This property indicates that the list's selection is currently
-   * "adjusting" -- perhaps due to a user actively dragging the mouse over
-   * multiple list elements -- and is therefore likely to change again in
-   * the near future. A {@link ListSelectionListener} might choose to delay
-   * updating its view of the list's selection until this property is
-   * false, meaning that the adjustment has completed.
-   */
-  boolean valueIsAdjusting;
-
   /** 
    * This property indicates a <em>preference</em> for the number of rows
    * displayed in the list, and will scale the
@@ -1085,8 +1074,7 @@ public class JList extends JComponent implements Accessible, Scrollable
     fixedCellWidth = -1;
     layoutOrientation = VERTICAL;
     opaque = true;
-    valueIsAdjusting = false;
-    visibleRowCount = 7;
+    visibleRowCount = 8;
 
     cellRenderer = new DefaultListCellRenderer();
     listListener = new ListListener();
@@ -1196,11 +1184,13 @@ public class JList extends JComponent implements Accessible, Scrollable
   }
 
   /** 
-   * Gets the value of the {@link #visibleRowCount} property. 
+   * Gets the value of the {@link #visibleRowCount} property.  The default 
+   * value is 8.
    *
    * @return the current value of the property.
+   * 
+   * @see #setVisibleRowCount(int)
    */
-
   public int getVisibleRowCount()
   {
     return visibleRowCount;
@@ -1210,12 +1200,19 @@ public class JList extends JComponent implements Accessible, Scrollable
    * Sets the value of the {@link #visibleRowCount} property. 
    *
    * @param vc The new property value
+   * 
+   * @see #getVisibleRowCount()
    */
   public void setVisibleRowCount(int vc)
   {
-    visibleRowCount = vc;
-    revalidate();
-    repaint();
+    if (visibleRowCount != vc)
+      {
+        int oldValue = visibleRowCount;
+        visibleRowCount = Math.max(vc, 0);
+        firePropertyChange("visibleRowCount", oldValue, vc);
+        revalidate();
+        repaint();
+      }
   }
 
   /**
@@ -2184,23 +2181,25 @@ public class JList extends JComponent implements Accessible, Scrollable
   }
 
   /**
-   * Returns the value of the <code>valueIsAdjusting</code> property.
+   * Returns the <code>valueIsAdjusting</code> flag from the list's selection
+   * model.
    *
    * @return the value
    */
   public boolean getValueIsAdjusting()
   {
-    return valueIsAdjusting;
+    return selectionModel.getValueIsAdjusting();
   }
 
   /**
-   * Sets the <code>valueIsAdjusting</code> property.
+   * Sets the <code>valueIsAdjusting</code> flag in the list's selection 
+   * model.
    *
    * @param isAdjusting the new value
    */
   public void setValueIsAdjusting(boolean isAdjusting)
   {
-    valueIsAdjusting = isAdjusting;
+    selectionModel.setValueIsAdjusting(isAdjusting);
   }
 
   /**
@@ -2228,11 +2227,13 @@ public class JList extends JComponent implements Accessible, Scrollable
   }
 
   /**
-   * Returns the layout orientation.
+   * Returns the layout orientation, which will be one of {@link #VERTICAL}, 
+   * {@link #VERTICAL_WRAP} and {@link #HORIZONTAL_WRAP}.  The default value
+   * is {@link #VERTICAL}.
    *
-   * @return the orientation, one of <code>JList.VERTICAL</code>,
-   * <code>JList.VERTICAL_WRAP</code> and <code>JList.HORIZONTAL_WRAP</code>
+   * @return the orientation.
    *
+   * @see #setLayoutOrientation(int)
    * @since 1.4
    */
   public int getLayoutOrientation()
@@ -2241,15 +2242,21 @@ public class JList extends JComponent implements Accessible, Scrollable
   }
 
   /**
-   * Sets the layout orientation.
+   * Sets the layout orientation (this is a bound property with the name
+   * 'layoutOrientation').  Valid orientations are {@link #VERTICAL}, 
+   * {@link #VERTICAL_WRAP} and {@link #HORIZONTAL_WRAP}.
    *
-   * @param orientation the orientation to set, one of <code>JList.VERTICAL</code>,
-   * <code>JList.VERTICAL_WRAP</code> and <code>JList.HORIZONTAL_WRAP</code>
+   * @param orientation the orientation.
    *
+   * @throws IllegalArgumentException if <code>orientation</code> is not one
+   *     of the specified values.
    * @since 1.4
+   * @see #getLayoutOrientation()
    */
   public void setLayoutOrientation(int orientation)
   {
+    if (orientation < JList.VERTICAL || orientation > JList.HORIZONTAL_WRAP)
+      throw new IllegalArgumentException();
     if (layoutOrientation == orientation)
       return;
 
@@ -2282,14 +2289,16 @@ public class JList extends JComponent implements Accessible, Scrollable
   }
 
   /**
-   * Returns the next list element (beginning from <code>startIndex</code>
-   * that starts with <code>prefix</code>. Searching is done in the direction
-   * specified by <code>bias</code>.
+   * Returns the index of the next list element (beginning at 
+   * <code>startIndex</code> and moving in the specified direction through the
+   * list, looping around if necessary) that starts with <code>prefix</code>
+   * (ignoring case).
    *
    * @param prefix the prefix to search for in the cell values
    * @param startIndex the index where to start searching from
-   * @param bias the search direction, either {@link Position.Bias#Forward}
-   *     or {@link Position.Bias#Backward}
+   * @param direction the search direction, either {@link Position.Bias#Forward}
+   *     or {@link Position.Bias#Backward} (<code>null</code> is interpreted
+   *     as {@link Position.Bias#Backward}.
    *
    * @return the index of the found element or -1 if no such element has
    *     been found
@@ -2299,7 +2308,8 @@ public class JList extends JComponent implements Accessible, Scrollable
    *
    * @since 1.4
    */
-  public int getNextMatch(String prefix, int startIndex, Position.Bias bias)
+  public int getNextMatch(String prefix, int startIndex, 
+                          Position.Bias direction)
   {
     if (prefix == null)
       throw new IllegalArgumentException("The argument 'prefix' must not be"
@@ -2309,37 +2319,33 @@ public class JList extends JComponent implements Accessible, Scrollable
                                          + " be less than zero.");
 
     int size = model.getSize();
-    if (startIndex > model.getSize())
+    if (startIndex >= model.getSize())
       throw new IllegalArgumentException("The argument 'startIndex' must not"
                                          + " be greater than the number of"
                                          + " elements in the ListModel.");
 
-    int index = -1;
-    if (bias == Position.Bias.Forward)
+    int result = -1;
+    int current = startIndex;
+    int delta = -1;
+    int itemCount = model.getSize();
+    boolean finished = false;
+    prefix = prefix.toUpperCase();
+    
+    if (direction == Position.Bias.Forward)
+      delta = 1;
+    while (!finished)
       {
-        for (int i = startIndex; i < size; i++)
-          {
-            String item = model.getElementAt(i).toString();
-            if (item.startsWith(prefix))
-              {
-                index = i;
-                break;
-              }
-          }
+        String itemStr = model.getElementAt(current).toString().toUpperCase();
+        if (itemStr.startsWith(prefix))
+          return current;
+        current = (current + delta);
+        if (current == -1)
+          current += itemCount;
+        else
+          current = current % itemCount; 
+        finished = current == startIndex;
       }
-    else
-      {
-        for (int i = startIndex; i >= 0; i--)
-          {
-            String item = model.getElementAt(i).toString();
-            if (item.startsWith(prefix))
-              {
-                index = i;
-                break;
-              }
-          }
-      }
-    return index;
+    return result;
   }
   
   /**

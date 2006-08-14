@@ -42,12 +42,16 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.Provider;
 
-public final class Gnu extends Provider
+public final class Gnu
+    extends Provider
 {
   public Gnu()
   {
-    super("GNU", 1.0, "GNU provider v1.0 implementing SHA-1, MD5, DSA, RSA, X.509 Certificates and CRLs, PKIX certificate path validators, Collection cert stores, Diffie-Hellman key agreement and key pair generator");
-
+    super("GNU", 1.0,
+          "GNU provider v1.0 implementing SHA-1, MD5, DSA, RSA, X.509 "
+          + "Certificates and CRLs, PKIX certificate path validators, "
+          + "Collection cert stores, Diffie-Hellman key agreement and "
+          + "key pair generator");
     AccessController.doPrivileged (new PrivilegedAction()
     {
       public Object run()
@@ -163,29 +167,41 @@ public final class Gnu extends Provider
         put("Alg.Alias.KeyFactory.PKCS#8", "Encoded");
         put("Alg.Alias.KeyFactory.PKCS8", "Encoded");
 
-        put("MessageDigest.HAVAL", gnu.java.security.jce.hash.HavalSpi.class.getName());
+        put("MessageDigest.HAVAL",
+            gnu.java.security.jce.hash.HavalSpi.class.getName());
         put("MessageDigest.HAVAL ImplementedIn", "Software");
-        put("MessageDigest.MD2", gnu.java.security.jce.hash.MD2Spi.class.getName());
+        put("MessageDigest.MD2",
+            gnu.java.security.jce.hash.MD2Spi.class.getName());
         put("MessageDigest.MD2 ImplementedIn", "Software");
-        put("MessageDigest.MD4", gnu.java.security.jce.hash.MD4Spi.class.getName());
+        put("MessageDigest.MD4",
+            gnu.java.security.jce.hash.MD4Spi.class.getName());
         put("MessageDigest.MD4 ImplementedIn", "Software");
-        put("MessageDigest.MD5", gnu.java.security.jce.hash.MD5Spi.class.getName());
+        put("MessageDigest.MD5",
+            gnu.java.security.jce.hash.MD5Spi.class.getName());
         put("MessageDigest.MD5 ImplementedIn", "Software");
-        put("MessageDigest.RIPEMD128", gnu.java.security.jce.hash.RipeMD128Spi.class.getName());
+        put("MessageDigest.RIPEMD128",
+            gnu.java.security.jce.hash.RipeMD128Spi.class.getName());
         put("MessageDigest.RIPEMD128 ImplementedIn", "Software");
-        put("MessageDigest.RIPEMD160", gnu.java.security.jce.hash.RipeMD160Spi.class.getName());
+        put("MessageDigest.RIPEMD160",
+            gnu.java.security.jce.hash.RipeMD160Spi.class.getName());
         put("MessageDigest.RIPEMD160 ImplementedIn", "Software");
-        put("MessageDigest.SHA-160", gnu.java.security.jce.hash.Sha160Spi.class.getName());
+        put("MessageDigest.SHA-160",
+            gnu.java.security.jce.hash.Sha160Spi.class.getName());
         put("MessageDigest.SHA-160 ImplementedIn", "Software");
-        put("MessageDigest.SHA-256", gnu.java.security.jce.hash.Sha256Spi.class.getName());
+        put("MessageDigest.SHA-256",
+            gnu.java.security.jce.hash.Sha256Spi.class.getName());
         put("MessageDigest.SHA-256 ImplementedIn", "Software");
-        put("MessageDigest.SHA-384", gnu.java.security.jce.hash.Sha384Spi.class.getName());
+        put("MessageDigest.SHA-384",
+            gnu.java.security.jce.hash.Sha384Spi.class.getName());
         put("MessageDigest.SHA-384 ImplementedIn", "Software");
-        put("MessageDigest.SHA-512", gnu.java.security.jce.hash.Sha512Spi.class.getName());
+        put("MessageDigest.SHA-512",
+            gnu.java.security.jce.hash.Sha512Spi.class.getName());
         put("MessageDigest.SHA-512 ImplementedIn", "Software");
-        put("MessageDigest.TIGER", gnu.java.security.jce.hash.TigerSpi.class.getName());
+        put("MessageDigest.TIGER",
+            gnu.java.security.jce.hash.TigerSpi.class.getName());
         put("MessageDigest.TIGER ImplementedIn", "Software");
-        put("MessageDigest.WHIRLPOOL", gnu.java.security.jce.hash.WhirlpoolSpi.class.getName());
+        put("MessageDigest.WHIRLPOOL",
+            gnu.java.security.jce.hash.WhirlpoolSpi.class.getName());
         put("MessageDigest.WHIRLPOOL ImplementedIn", "Software");
 
         put("Alg.Alias.MessageDigest.SHS", "SHA-160");
@@ -224,29 +240,41 @@ public final class Gnu extends Provider
         put("SecureRandom.SHA1PRNG",
             gnu.java.security.jce.prng.Sha160RandomSpi.class.getName());
 
-        put("SecureRandom.MD2PRNG", gnu.java.security.jce.prng.MD2RandomSpi.class.getName());
+        put("SecureRandom.MD2PRNG",
+            gnu.java.security.jce.prng.MD2RandomSpi.class.getName());
         put("SecureRandom.MD2PRNG ImplementedIn", "Software");
-        put("SecureRandom.MD4PRNG", gnu.java.security.jce.prng.MD4RandomSpi.class.getName());
+        put("SecureRandom.MD4PRNG",
+            gnu.java.security.jce.prng.MD4RandomSpi.class.getName());
         put("SecureRandom.MD4PRNG ImplementedIn", "Software");
-        put("SecureRandom.MD5PRNG", gnu.java.security.jce.prng.MD5RandomSpi.class.getName());
+        put("SecureRandom.MD5PRNG",
+            gnu.java.security.jce.prng.MD5RandomSpi.class.getName());
         put("SecureRandom.MD5PRNG ImplementedIn", "Software");
-        put("SecureRandom.RIPEMD128PRNG", gnu.java.security.jce.prng.RipeMD128RandomSpi.class.getName());
+        put("SecureRandom.RIPEMD128PRNG",
+            gnu.java.security.jce.prng.RipeMD128RandomSpi.class.getName());
         put("SecureRandom.RIPEMD128PRNG ImplementedIn", "Software");
-        put("SecureRandom.RIPEMD160PRNG", gnu.java.security.jce.prng.RipeMD160RandomSpi.class.getName());
+        put("SecureRandom.RIPEMD160PRNG",
+            gnu.java.security.jce.prng.RipeMD160RandomSpi.class.getName());
         put("SecureRandom.RIPEMD160PRNG ImplementedIn", "Software");
-        put("SecureRandom.SHA-160PRNG", gnu.java.security.jce.prng.Sha160RandomSpi.class.getName());
+        put("SecureRandom.SHA-160PRNG",
+            gnu.java.security.jce.prng.Sha160RandomSpi.class.getName());
         put("SecureRandom.SHA-160PRNG ImplementedIn", "Software");
-        put("SecureRandom.SHA-256PRNG", gnu.java.security.jce.prng.Sha256RandomSpi.class.getName());
+        put("SecureRandom.SHA-256PRNG",
+            gnu.java.security.jce.prng.Sha256RandomSpi.class.getName());
         put("SecureRandom.SHA-256PRNG ImplementedIn", "Software");
-        put("SecureRandom.SHA-384PRNG", gnu.java.security.jce.prng.Sha384RandomSpi.class.getName());
+        put("SecureRandom.SHA-384PRNG",
+            gnu.java.security.jce.prng.Sha384RandomSpi.class.getName());
         put("SecureRandom.SHA-384PRNG ImplementedIn", "Software");
-        put("SecureRandom.SHA-512PRNG", gnu.java.security.jce.prng.Sha512RandomSpi.class.getName());
+        put("SecureRandom.SHA-512PRNG",
+            gnu.java.security.jce.prng.Sha512RandomSpi.class.getName());
         put("SecureRandom.SHA-512PRNG ImplementedIn", "Software");
-        put("SecureRandom.TIGERPRNG", gnu.java.security.jce.prng.TigerRandomSpi.class.getName());
+        put("SecureRandom.TIGERPRNG",
+            gnu.java.security.jce.prng.TigerRandomSpi.class.getName());
         put("SecureRandom.TIGERPRNG ImplementedIn", "Software");
-        put("SecureRandom.HAVALPRNG", gnu.java.security.jce.prng.HavalRandomSpi.class.getName());
+        put("SecureRandom.HAVALPRNG",
+            gnu.java.security.jce.prng.HavalRandomSpi.class.getName());
         put("SecureRandom.HAVALPRNG ImplementedIn", "Software");
-        put("SecureRandom.WHIRLPOOLPRNG", gnu.java.security.jce.prng.WhirlpoolRandomSpi.class.getName());
+        put("SecureRandom.WHIRLPOOLPRNG",
+            gnu.java.security.jce.prng.WhirlpoolRandomSpi.class.getName());
         put("SecureRandom.WHIRLPOOLPRNG ImplementedIn", "Software");
 
         put("Alg.Alias.SecureRandom.SHA-1PRNG", "SHA-160PRNG");

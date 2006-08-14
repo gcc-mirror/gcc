@@ -854,6 +854,7 @@ Optional Features:
                           in a compiler-specific directory
   --enable-multilib       build many library versions (default)
   --enable-plugin         build gcjwebplugin web browser plugin
+  --enable-gconf-peer     compile GConf native peers for util.preferences
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
   --enable-maintainer-mode  enable make rules and dependencies not useful
@@ -1639,6 +1640,21 @@ echo "$as_me: error: Unknown argument to enable/disable plugin" >&2;}
      esac
 else
   plugin_enabled=no
+
+fi;
+
+# Check whether --enable-gconf-peer or --disable-gconf-peer was given.
+if test "${enable_gconf_peer+set}" = set; then
+  enableval="$enable_gconf_peer"
+  case "$enableval" in
+      yes) gconf_enabled=yes ;;
+      no)  gconf_enabled=no ;;
+      *)   { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable gconf-peer" >&5
+echo "$as_me: error: Unknown argument to enable/disable gconf-peer" >&2;}
+   { (exit 1); exit 1; }; };;
+     esac
+else
+  gconf_enabled=no
 
 fi;
 
@@ -5034,6 +5050,10 @@ ac_configure_args="$ac_configure_args --with-glibj=build"
 if test "$plugin_enabled" != yes; then
   ac_configure_args="$ac_configure_args --disable-plugin"
 fi
+if test "$gconf_enabled" != yes; then
+  ac_configure_args="$ac_configure_args --disable-gconf-peer"
+  ac_configure_args="$ac_configure_args --enable-default-preferences-peer=gnu.java.util.prefs.FileBasedFactory"
+fi
 if test "$use_gtk_awt" != yes; then
   ac_configure_args="$ac_configure_args --disable-gtk-peer"
 fi
@@ -5856,7 +5876,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5859 "configure"' > conftest.$ac_ext
+  echo '#line 5879 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -6859,7 +6879,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 6862 "configure"
+#line 6882 "configure"
 struct S { ~S(); };
 void bar();
 void foo()

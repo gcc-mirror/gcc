@@ -1,5 +1,5 @@
 /* GtkPanelPeer.java -- Implements PanelPeer with GTK
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,6 @@ package gnu.java.awt.peer.gtk;
 import java.awt.AWTEvent;
 import java.awt.Panel;
 import java.awt.event.MouseEvent;
-import java.awt.event.PaintEvent;
 import java.awt.peer.PanelPeer;
 
 public class GtkPanelPeer extends GtkContainerPeer

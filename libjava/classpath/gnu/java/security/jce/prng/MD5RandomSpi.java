@@ -42,25 +42,13 @@ import gnu.java.security.Registry;
 
 /**
  * The implementation of the MD5-based SecureRandom <i>Service Provider
- * Interface</i> (<b>SPI</b>) adapter.<p>
+ * Interface</i> (<b>SPI</b>) adapter.
  */
-public class MD5RandomSpi extends SecureRandomAdapter
+public class MD5RandomSpi
+    extends SecureRandomAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public MD5RandomSpi()
   {
     super(Registry.MD5_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

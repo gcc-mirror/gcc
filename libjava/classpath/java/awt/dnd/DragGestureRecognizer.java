@@ -131,6 +131,7 @@ public abstract class DragGestureRecognizer implements Serializable
     throws NotImplementedException
   {
     events = new ArrayList();
+    // FIXME: Not implemented fully.
   }
 
   /**

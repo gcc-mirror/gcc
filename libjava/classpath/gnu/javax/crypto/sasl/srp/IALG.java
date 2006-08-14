@@ -48,19 +48,13 @@ import java.util.HashMap;
 import javax.security.sasl.SaslException;
 
 /**
- * <p>A Factory class that returns IALG (Integrity Algorithm) instances that
- * operate as described in the draft-burdis-cat-sasl-srp-04 and later.</p>
+ * A Factory class that returns IALG (Integrity Algorithm) instances that
+ * operate as described in the draft-burdis-cat-sasl-srp-04 and later.
  */
-public final class IALG implements Cloneable
+public final class IALG
+    implements Cloneable
 {
-
-  // Constants and variables
-  // --------------------------------------------------------------------------
-
   private IMac hmac;
-
-  // Constructor(s)
-  // --------------------------------------------------------------------------
 
   /** Private constructor to enforce instantiation through Factory method. */
   private IALG(final IMac hmac)
@@ -70,12 +64,9 @@ public final class IALG implements Cloneable
     this.hmac = hmac;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns an instance of a SASL-SRP IALG implementation.</p>
-   *
+   * Returns an instance of a SASL-SRP IALG implementation.
+   * 
    * @param algorithm the name of the HMAC algorithm.
    * @return an instance of this object.
    */
@@ -85,44 +76,24 @@ public final class IALG implements Cloneable
     final IMac hmac;
     hmac = MacFactory.getInstance(algorithm);
     if (hmac == null)
-      {
-        throw new SaslException("getInstance()",
-                                new NoSuchAlgorithmException(algorithm));
-      }
-    // 	   try {
-    //         byte[] sk = (byte[]) K.clone();
-    //         HashMap map = new HashMap();
-    //         map.put(IMac.MAC_KEY_MATERIAL, sk);
-    //         hmac.init(map);
-    // 	   } catch (InvalidKeyException x) {
-    //   	   throw new SaslException("getInstance()", x);
-    // 	   }
+      throw new SaslException("getInstance()",
+                              new NoSuchAlgorithmException(algorithm));
     return new IALG(hmac);
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // Cloneable interface implementation --------------------------------------
 
   public Object clone() throws CloneNotSupportedException
   {
     return new IALG((IMac) hmac.clone());
   }
 
-  // other methdds -----------------------------------------------------------
-
-  //   public void init(final byte[] K) throws SaslException {
   public void init(final KDF kdf) throws SaslException
   {
     try
       {
-        //         final byte[] sk = (byte[]) K.clone();
         final byte[] sk = kdf.derive(hmac.macSize());
         final HashMap map = new HashMap();
         map.put(IMac.MAC_KEY_MATERIAL, sk);
         hmac.init(map);
-        //System.out.println("**** Initialised IALG with: "+gnu.crypto.util.Util.dumpString(sk));
       }
     catch (InvalidKeyException x)
       {
@@ -146,8 +117,8 @@ public final class IALG implements Cloneable
   }
 
   /**
-   * <p>Returns the length (in bytes) of this SASL SRP Integrity Algorithm.</p>
-   *
+   * Returns the length (in bytes) of this SASL SRP Integrity Algorithm.
+   * 
    * @return the length, in bytes, of this integrity protection algorithm.
    */
   public int length()

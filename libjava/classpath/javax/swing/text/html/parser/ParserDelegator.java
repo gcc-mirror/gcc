@@ -52,9 +52,6 @@ import javax.swing.text.html.HTMLEditorKit.ParserCallback;
  * This class instantiates and starts the working instance of
  * html parser, being responsible for providing the default DTD.
  *
- * TODO Later this class must be derived from the totally abstract class
- * HTMLEditorKit.Parser. HTMLEditorKit that does not yet exist.
- *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class ParserDelegator

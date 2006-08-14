@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableServer;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -60,7 +61,7 @@ public abstract class ServantLocatorHelper
    */
   public static TypeCode type()
   {
-    return ORB.init().create_interface_tc(id(), "ServantLocator");
+    return OrbRestricted.Singleton.create_interface_tc(id(), "ServantLocator");
   }
 
   /**

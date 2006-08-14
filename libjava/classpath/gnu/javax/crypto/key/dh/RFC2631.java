@@ -40,59 +40,40 @@ package gnu.javax.crypto.key.dh;
 
 import gnu.java.security.hash.Sha160;
 import gnu.java.security.util.PRNG;
-import gnu.java.security.util.Prime2;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
 /**
- * <p>An implementation of the Diffie-Hellman parameter generation as defined in
- * RFC-2631.</p>
- *
- * <p>Reference:</p>
+ * An implementation of the Diffie-Hellman parameter generation as defined in
+ * RFC-2631.
+ * <p>
+ * Reference:
  * <ol>
- *    <li><a href="http://www.ietf.org/rfc/rfc2631.txt">Diffie-Hellman Key
- *    Agreement Method</a><br>
- *    Eric Rescorla.</li>
+ * <li><a href="http://www.ietf.org/rfc/rfc2631.txt">Diffie-Hellman Key
+ * Agreement Method</a><br>
+ * Eric Rescorla.</li>
  * </ol>
  */
 public class RFC2631
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   public static final int DH_PARAMS_SEED = 0;
-
   public static final int DH_PARAMS_COUNTER = 1;
-
   public static final int DH_PARAMS_Q = 2;
-
   public static final int DH_PARAMS_P = 3;
-
   public static final int DH_PARAMS_J = 4;
-
   public static final int DH_PARAMS_G = 5;
-
   private static final BigInteger TWO = BigInteger.valueOf(2L);
-
   /** The SHA instance to use. */
   private Sha160 sha = new Sha160();
-
   /** Length of private modulus and of q. */
   private int m;
-
   /** Length of public modulus p. */
   private int L;
-
   /** The optional {@link SecureRandom} instance to use. */
   private SecureRandom rnd = null;
-
   /** Our default source of randomness. */
   private PRNG prng = null;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   public RFC2631(int m, int L, SecureRandom rnd)
   {
@@ -102,12 +83,6 @@ public class RFC2631
     this.L = L;
     this.rnd = rnd;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   public BigInteger[] generateParameters()
   {
@@ -127,15 +102,16 @@ public class RFC2631
       {
         step4: while (true)
           {
-            // 4. Select an arbitrary bit string SEED such that length of SEED >= m
+            // 4. Select an arbitrary bit string SEED such that length of
+            //    SEED >= m
             nextRandomBytes(seedBytes);
             SEED = new BigInteger(1, seedBytes).setBit(m - 1).setBit(0);
             // 5. Set U = 0
             U = BigInteger.ZERO;
             // 6. For i = 0 to m' - 1
-            //       U = U + (SHA1[SEED + i] XOR SHA1[(SEED + m' + i)) * 2^(160 * i)
-            //    Note that for m=160, this reduces to the algorithm of [FIPS-186]
-            //       U = SHA1[SEED] XOR SHA1[(SEED+1) mod 2^160 ].
+            //    U = U + (SHA1[SEED + i] XOR SHA1[(SEED + m' + i)) * 2^(160 * i)
+            //    Note that for m=160, this reduces to the algorithm of FIPS-186
+            //    U = SHA1[SEED] XOR SHA1[(SEED+1) mod 2^160 ].
             for (i = 0; i < m_; i++)
               {
                 u1 = SEED.add(BigInteger.valueOf(i)).toByteArray();
@@ -145,31 +121,27 @@ public class RFC2631
                 sha.update(u2, 0, u2.length);
                 u2 = sha.digest();
                 for (j = 0; j < u1.length; j++)
-                  {
-                    u1[j] ^= u2[j];
-                  }
+                  u1[j] ^= u2[j];
                 U = U.add(new BigInteger(1, u1).multiply(TWO.pow(160 * i)));
               }
             // 5. Form q from U by computing U mod (2^m) and setting the most
-            //    significant bit (the 2^(m-1) bit) and the least significant bit to
-            //    1. In terms of boolean operations, q = U OR 2^(m-1) OR 1. Note
-            //    that 2^(m-1) < q < 2^m
+            //    significant bit (the 2^(m-1) bit) and the least significant
+            //    bit to 1. In terms of boolean operations, q = U OR 2^(m-1) OR
+            //    1. Note that 2^(m-1) < q < 2^m
             q = U.setBit(m - 1).setBit(0);
             // 6. Use a robust primality algorithm to test whether q is prime.
             // 7. If q is not prime then go to 4.
-            if (Prime2.isProbablePrime(q))
-              {
-                break step4;
-              }
+            if (q.isProbablePrime(80))
+              break step4;
           }
         // 8. Let counter = 0
         counter = 0;
         step9: while (true)
           {
             // 9. Set R = seed + 2*m' + (L' * counter)
-            R = SEED.add(BigInteger.valueOf(2 * m_)).add(
-                                                         BigInteger.valueOf(L_
-                                                                            * counter));
+            R = SEED
+                .add(BigInteger.valueOf(2 * m_))
+                .add(BigInteger.valueOf(L_ * counter));
             // 10. Set V = 0
             V = BigInteger.ZERO;
             // 12. For i = 0 to L'-1 do: V = V + SHA1(R + i) * 2^(160 * i)
@@ -187,10 +159,10 @@ public class RFC2631
             X = W.setBit(L - 1);
             // 15. Set p = X - (X mod (2*q)) + 1
             p = X.add(BigInteger.ONE).subtract(X.mod(TWO.multiply(q)));
-            // 16. If p > 2^(L-1) use a robust primality test to test whether p is
-            //     prime. Else go to 18.
-            //17. If p is prime output p, q, seed, counter and stop.
-            if (Prime2.isProbablePrime(p))
+            // 16. If p > 2^(L-1) use a robust primality test to test whether p
+            //     is prime. Else go to 18.
+            // 17. If p is prime output p, q, seed, counter and stop.
+            if (p.isProbablePrime(80))
               {
                 break algorithm;
               }
@@ -199,12 +171,9 @@ public class RFC2631
             // 19. If counter < (4096 * N) then go to 8.
             // 20. Output "failure"
             if (counter >= 4096 * N_)
-              {
-                continue algorithm;
-              }
+              continue algorithm;
           }
       }
-
     // compute g. from FIPS-186, Appendix 4:
     // 1. Generate p and q as specified in Appendix 2.
     // 2. Let e = (p - 1) / q
@@ -219,28 +188,21 @@ public class RFC2631
         // 4. Set g = h**e mod p
         g = h.modPow(e, p);
         // 5. If g = 1, go to step 3
-        if (!g.equals(BigInteger.ONE))
-          {
-            break;
-          }
+        if (! g.equals(BigInteger.ONE))
+          break;
       }
-
     return new BigInteger[] { SEED, BigInteger.valueOf(counter), q, p, e, g };
   }
 
-  // helper methods ----------------------------------------------------------
-
   /**
-   * <p>Fills the designated byte array with random data.</p>
+   * Fills the designated byte array with random data.
    *
    * @param buffer the byte array to fill with random data.
    */
   private void nextRandomBytes(byte[] buffer)
   {
     if (rnd != null)
-      {
-        rnd.nextBytes(buffer);
-      }
+      rnd.nextBytes(buffer);
     else
       getDefaultPRNG().nextBytes(buffer);
   }

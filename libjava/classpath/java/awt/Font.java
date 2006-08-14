@@ -48,6 +48,8 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.peer.FontPeer;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -114,7 +116,14 @@ public class Font implements Serializable
    * @since 1.3
    */
   public static final int TRUETYPE_FONT = 0;
-
+  
+  /**
+   * Indicates to <code>createFont</code> that the supplied font data
+   * is in Type1 format.
+   * 
+   * @since 1.5
+   */
+  public static final int TYPE1_FONT = 1;
 
   /**
    * A flag for <code>layoutGlyphVector</code>, indicating that the
@@ -573,6 +582,34 @@ public class Font implements Serializable
     throws FontFormatException, IOException
   {
     return tk().createFont(fontFormat, is);
+  }
+
+  /**
+   * Creates a new font from a File object.
+   *
+   * @see #layoutGlyphVector(FontRenderContext, char[], int, int, int)
+   *
+   * @param fontFormat - Integer code indicating the format the font data is
+   * in.Currently this can only be {@link #TRUETYPE_FONT}.
+   * @param file - a {@link File} from which font data will be read.
+   *
+   * @return A new {@link Font} of the format indicated.
+   *
+   * @throws IllegalArgumentException if <code>fontType</code> is not
+   * recognized.
+   * @throws NullPointerException if <code>file</code> is <code>null</code>.
+   * @throws FontFormatException if data in the file is invalid or cannot be read..
+   * @throws SecurityException if the caller has no read permission for the file.
+   * @throws IOException if the file cannot be read
+   *
+   * @since 1.5
+   */
+  public static Font createFont (int fontFormat, File file)
+    throws FontFormatException, IOException
+  {
+    if( file == null )
+      throw new NullPointerException("Null file argument");
+    return tk().createFont(fontFormat, new FileInputStream( file ));
   }
 
   /**

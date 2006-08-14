@@ -40,28 +40,18 @@ package gnu.javax.crypto.sasl.plain;
 
 public interface PlainRegistry
 {
-
-  // Constants
-  // -------------------------------------------------------------------------
-
   /** Name of PLAIN password file property. */
   String PASSWORD_FILE = "gnu.crypto.sasl.plain.password.file";
-
   /** Default fully qualified pathname of the PLAIN password file. */
   String DEFAULT_PASSWORD_FILE = "/etc/tpasswd";
-
   /** Name of the UID field in the plain password file. */
   String UID_FIELD = "plain.uid";
-
   /** Name of the GID field in the plain password file. */
   String GID_FIELD = "plain.gid";
-
   /** Name of the GECOS field in the plain password file. */
   String GECOS_FIELD = "plain.gecos";
-
   /** Name of the DIR field in the plain password file. */
   String DIR_FIELD = "plain.dir";
-
   /** Name of the SHELL field in the plain password file. */
   String SHELL_FIELD = "plain.shell";
 }

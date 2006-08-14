@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
@@ -148,22 +149,24 @@ class IdentityDBCmd extends Command
   void setup() throws Exception
   {
     setInputStreamParam(_idbFileName);
-    setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
-
-    log.finer("-identitydb handler will use the following options:"); //$NON-NLS-1$
-    log.finer("  -file=" + _idbFileName); //$NON-NLS-1$
-    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
-    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -provider=" + provider); //$NON-NLS-1$
-    log.finer("  -v=" + verbose); //$NON-NLS-1$
+    setKeyStoreParams(true, _providerClassName, _ksType, _ksPassword, _ksURL);
+    if (Configuration.DEBUG)
+      {
+        log.fine("-identitydb handler will use the following options:"); //$NON-NLS-1$
+        log.fine("  -file=" + _idbFileName); //$NON-NLS-1$
+        log.fine("  -storetype=" + storeType); //$NON-NLS-1$
+        log.fine("  -keystore=" + storeURL); //$NON-NLS-1$
+        log.fine("  -provider=" + provider); //$NON-NLS-1$
+        log.fine("  -v=" + verbose); //$NON-NLS-1$
+      }
   }
 
   // own methods --------------------------------------------------------------
 
   Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(Main.IDENTITYDB_CMD, true);
     result.setHeader(Messages.getString("IdentityDBCmd.7")); //$NON-NLS-1$
     result.setFooter(Messages.getString("IdentityDBCmd.8")); //$NON-NLS-1$
@@ -222,8 +225,8 @@ class IdentityDBCmd extends Command
       }
     });
     result.add(options);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 }

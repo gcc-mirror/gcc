@@ -682,7 +682,8 @@ Systems    : all
       \
       __value.tv_sec = flag / 1000; \
       __value.tv_usec = (flag % 1000) * 1000; \
-      result=(setsockopt(socketDescriptor,SOL_SOCKET,SO_TIMEOUT,&__value,sizeof(__value))==0)?TARGET_NATIVE_OK:TARGET_NATIVE_ERROR; \
+      result = ( (setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, &__value, sizeof(__value)) | \
+		  setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, &__value, sizeof(__value))) == 0) ? TARGET_NATIVE_OK : TARGET_NATIVE_ERROR; \
     } while (0)
 #endif
 

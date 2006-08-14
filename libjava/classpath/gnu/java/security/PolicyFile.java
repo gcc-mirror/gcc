@@ -1,5 +1,5 @@
 /* PolicyFile.java -- policy file reader
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,9 +37,9 @@ exception statement from your version. */
 
 package gnu.java.security;
 
-import gnu.classpath.SystemProperties;
 import gnu.classpath.debug.Component;
 import gnu.classpath.debug.SystemLogger;
+import gnu.java.security.action.GetPropertyAction;
 
 import java.io.File;
 import java.io.IOException;
@@ -148,16 +148,17 @@ public final class PolicyFile extends Policy
   // Constants and fields.
   // -------------------------------------------------------------------------
 
-  private static final Logger logger = SystemLogger.SYSTEM;
-
+  protected static final Logger logger = SystemLogger.SYSTEM;
+  // Added to cut redundant AccessController.doPrivileged calls
+  private static GetPropertyAction prop = new GetPropertyAction("file.seperator");
+  private static final String fs = (String) AccessController.doPrivileged(prop);
+  
   private static final String DEFAULT_POLICY =
-    SystemProperties.getProperty("java.home")
-    + SystemProperties.getProperty("file.separator") + "lib"
-    + SystemProperties.getProperty("file.separator") + "security"
-    + SystemProperties.getProperty("file.separator") + "java.policy";
+    (String) AccessController.doPrivileged(prop.setParameters("java.home"))
+    + fs + "lib" + fs + "security" + fs + "java.policy";
   private static final String DEFAULT_USER_POLICY =
-    SystemProperties.getProperty ("user.home") +
-    SystemProperties.getProperty ("file.separator") + ".java.policy";
+    (String) AccessController.doPrivileged(prop.setParameters("user.home")) +
+    fs + ".java.policy";
 
   private final Map cs2pc;
 
@@ -216,7 +217,7 @@ public final class PolicyFile extends Policy
               String allow = Security.getProperty ("policy.allowSystemProperty");
               if (allow == null || Boolean.getBoolean (allow))
                 {
-                  String s = SystemProperties.getProperty ("java.security.policy");
+                  String s = System.getProperty ("java.security.policy");
                   logger.log (Component.POLICY, "java.security.policy={0}", s);
                   if (s != null)
                     {

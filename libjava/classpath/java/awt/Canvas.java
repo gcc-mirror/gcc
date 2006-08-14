@@ -68,6 +68,11 @@ public class Canvas
    * Compatible with Sun's JDK.
    */
   private static final long serialVersionUID = -2284879212465893870L;
+  
+  /**
+   * The number used to generate the name returned by getName.
+   */
+  private static transient long next_canvas_number;
 
   /**
    * The graphics configuration associated with the canvas.
@@ -342,5 +347,20 @@ public class Canvas
     graphics.clearRect(0, 0, size.width, size.height);
     /* Call the paint method */
     paint(graphics);
+  }
+  
+  /**
+   * Generate a unique name for this <code>Canvas</code>.
+   *
+   * @return A unique name for this <code>Canvas</code>.
+   */
+  String generateName()
+  {
+    return "canvas" + getUniqueLong();
+  }
+
+  private static synchronized long getUniqueLong()
+  {
+    return next_canvas_number++;
   }
 }

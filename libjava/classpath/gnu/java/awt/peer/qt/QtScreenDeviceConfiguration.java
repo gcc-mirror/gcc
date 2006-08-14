@@ -1,5 +1,5 @@
 /* QtScreenDeviceConfiguration.java --
-   Copyright (C)  2005  Free Software Foundation, Inc.
+   Copyright (C)  2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,11 +37,9 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.qt;
 
-import java.awt.DisplayMode;
 import java.awt.ImageCapabilities;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
-import java.awt.GraphicsConfigTemplate;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;

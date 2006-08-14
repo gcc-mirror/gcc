@@ -97,6 +97,13 @@ public class DHKeyPairX509Codec
    * <pre>
    *       DHPublicKey ::= INTEGER -- public key, y = g^x mod p
    * </pre>
+   * <p>
+   * <b>IMPORTANT</b>: with RI's {@link javax.crypto.spec.DHGenParameterSpec}
+   * and {@link javax.crypto.spec.DHParameterSpec} classes, we may end up with
+   * Diffie-Hellman keys that have a <code>null</code> for the <code>q</code>
+   * parameter. RFC-2631 DOES NOT allow for an <i>optional</i> value for that
+   * parameter, hence we replace such null values with <code>0</code>, and do
+   * the reverse in the corresponding decode method.
    * 
    * @param key the {@link PublicKey} instance to encode. MUST be an instance of
    *          {@link GnuDHPublicKey}.
@@ -117,6 +124,8 @@ public class DHKeyPairX509Codec
     BigInteger p = dhKey.getParams().getP();
     BigInteger g = dhKey.getParams().getG();
     BigInteger q = dhKey.getQ();
+    if (q == null)
+      q = BigInteger.ZERO;
     BigInteger y = dhKey.getY();
 
     DERValue derP = new DERValue(DER.INTEGER, p);
@@ -212,6 +221,8 @@ public class DHKeyPairX509Codec
         val = der.read();
         DerUtil.checkIsBigInteger(val, "Wrong Q field");
         q = (BigInteger) val.getValue();
+        if (q.compareTo(BigInteger.ZERO) == 0)
+          q = null;
 
         val = der.read();
         if (! (val.getValue() instanceof BitString))

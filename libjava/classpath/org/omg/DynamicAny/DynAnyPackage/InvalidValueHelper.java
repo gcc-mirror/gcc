@@ -40,6 +40,7 @@ package org.omg.DynamicAny.DynAnyPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -58,23 +59,13 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class InvalidValueHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
-   * Create the InvalidValue typecode (structure,
-   * named "InvalidValue").
+   * Create the InvalidValue typecode (structure, named "InvalidValue").
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        StructMember[] members = new StructMember[ 0 ];
-        typeCode = orb.create_exception_tc(id(), "InvalidValue", members);
-      }
-    return typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    StructMember[] members = new StructMember[0];
+    return orb.create_exception_tc(id(), "InvalidValue", members);
   }
 
   /* Every user exception with no user defined

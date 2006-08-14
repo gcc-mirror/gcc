@@ -39,32 +39,83 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import gnu.classpath.Configuration;
 import gnu.java.awt.EmbeddedWindow;
+import gnu.java.awt.dnd.GtkMouseDragGestureRecognizer;
+import gnu.java.awt.dnd.peer.gtk.GtkDragSourceContextPeer;
 import gnu.java.awt.peer.ClasspathFontPeer;
-import gnu.java.awt.peer.ClasspathTextLayoutPeer;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
 
-import java.awt.*;
+import java.awt.AWTException;
+import java.awt.Button;
+import java.awt.Canvas;
+import java.awt.Checkbox;
+import java.awt.CheckboxMenuItem;
+import java.awt.Choice;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.FileDialog;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Frame;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Label;
+import java.awt.List;
+import java.awt.Menu;
+import java.awt.MenuBar;
+import java.awt.MenuItem;
+import java.awt.Panel;
+import java.awt.Point;
+import java.awt.PopupMenu;
+import java.awt.PrintJob;
+import java.awt.Rectangle;
+import java.awt.ScrollPane;
+import java.awt.Scrollbar;
+import java.awt.TextArea;
+import java.awt.TextField;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragGestureRecognizer;
+import java.awt.dnd.DragSource;
 import java.awt.dnd.peer.DragSourceContextPeer;
-import java.awt.font.FontRenderContext;
 import java.awt.im.InputMethodHighlight;
-import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
-import java.awt.image.ImageConsumer;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
-import java.awt.peer.*;
+import java.awt.peer.ButtonPeer;
+import java.awt.peer.CanvasPeer;
+import java.awt.peer.CheckboxMenuItemPeer;
+import java.awt.peer.CheckboxPeer;
+import java.awt.peer.ChoicePeer;
+import java.awt.peer.DialogPeer;
+import java.awt.peer.FileDialogPeer;
+import java.awt.peer.FontPeer;
+import java.awt.peer.FramePeer;
+import java.awt.peer.LabelPeer;
+import java.awt.peer.ListPeer;
+import java.awt.peer.MenuBarPeer;
+import java.awt.peer.MenuItemPeer;
+import java.awt.peer.MouseInfoPeer;
+import java.awt.peer.MenuPeer;
+import java.awt.peer.PanelPeer;
+import java.awt.peer.PopupMenuPeer;
+import java.awt.peer.RobotPeer;
+import java.awt.peer.ScrollPanePeer;
+import java.awt.peer.ScrollbarPeer;
+import java.awt.peer.TextAreaPeer;
+import java.awt.peer.TextFieldPeer;
+import java.awt.peer.WindowPeer;
 import java.io.InputStream;
 import java.net.URL;
-import java.text.AttributedString;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -310,6 +361,11 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   public PrintJob getPrintJob (Frame frame, String jobtitle, Properties props) 
   {
+    SecurityManager sm;
+    sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkPrintJobAccess();
+
     return null;
   }
 
@@ -528,12 +584,6 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
       }
   }
 
-  public ClasspathTextLayoutPeer getClasspathTextLayoutPeer (AttributedString str, 
-                                                             FontRenderContext frc)
-  {
-    return new GdkTextLayout(str, frc);
-  }
-
   protected EventQueue getSystemEventQueueImpl() 
   {
     synchronized (GtkToolkit.class)
@@ -555,7 +605,26 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   public DragSourceContextPeer createDragSourceContextPeer(DragGestureEvent e)
   {
-    throw new Error("not implemented");
+    return new GtkDragSourceContextPeer(e);
+  }
+  
+  public DragGestureRecognizer createDragGestureRecognizer(Class recognizer,
+                                                           DragSource ds,
+                                                           Component comp,
+                                                           int actions,
+                                                           DragGestureListener l)
+  {
+    if (recognizer.getName().equals("java.awt.dnd.MouseDragGestureRecognizer"))
+      {
+        GtkMouseDragGestureRecognizer gestureRecognizer
+          = new GtkMouseDragGestureRecognizer(ds, comp, actions, l);
+        gestureRecognizer.registerListeners();
+        return gestureRecognizer;
+      }
+    else
+      {
+        return null;
+      }
   }
 
   public Map mapInputMethodHighlight(InputMethodHighlight highlight)
@@ -593,4 +662,12 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   }
 
   public static native void gtkMain();
+
+  protected MouseInfoPeer getMouseInfoPeer()
+  {
+    return new GtkMouseInfoPeer();
+  }
+
+  public native int getMouseNumberOfButtons();
+
 } // class GtkToolkit

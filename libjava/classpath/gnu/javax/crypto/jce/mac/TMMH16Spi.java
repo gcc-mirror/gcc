@@ -51,27 +51,19 @@ import java.security.spec.AlgorithmParameterSpec;
  * The implementation of the TMMH16 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
  */
-public final class TMMH16Spi extends MacAdapter
+public final class TMMH16Spi
+    extends MacAdapter
 {
-
-  // Constructors.
-  // -----------------------------------------------------------------------
-
   public TMMH16Spi()
   {
     super(Registry.TMMH16);
   }
 
-  // Instance methods overriding MacAdapter.
-  // -----------------------------------------------------------------------
-
   protected void engineInit(Key key, AlgorithmParameterSpec params)
       throws InvalidKeyException, InvalidAlgorithmParameterException
   {
-    if (!(params instanceof TMMHParameterSpec))
-      {
-        throw new InvalidAlgorithmParameterException();
-      }
+    if (! (params instanceof TMMHParameterSpec))
+      throw new InvalidAlgorithmParameterException();
     TMMHParameterSpec spec = (TMMHParameterSpec) params;
     attributes.put(TMMH16.TAG_LENGTH, spec.getTagLength());
     attributes.put(TMMH16.KEYSTREAM, spec.getKeystream());

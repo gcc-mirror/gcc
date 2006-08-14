@@ -76,9 +76,8 @@ public class GrayFilter extends RGBImageFilter
    */
   public static Image createDisabledImage(Image src)
   {
-    return (Toolkit.getDefaultToolkit().
-	    createImage(new FilteredImageSource(src.getSource(),
-						new GrayFilter(true, 0))));
+    return (Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(
+        src.getSource(), new GrayFilter(true, 0))));
   }
   
   /**

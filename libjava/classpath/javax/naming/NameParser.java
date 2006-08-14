@@ -1,5 +1,5 @@
-/* NameParser.java --
-   Copyright (C) 2000 Free Software Foundation, Inc.
+/* NameParser.java -- JNDI name parser interface
+   Copyright (C) 2000, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,24 @@ exception statement from your version. */
 
 package javax.naming;
 
+/**
+ * Parser the string representation of the given name into the {@link Name}
+ * representation.
+ *
+ * @see Context#getNameParser(String)
+ * @see Context#getNameParser(Name)
+ */
 public interface NameParser
-{
+{ 
+  /**
+   * Parser the string name representation into the {@link Name} representation
+   * 
+   * @param name the string representation of the name
+   * @return the {@link Name} representation of the name.
+   * @throws InvalidNameException if the name violates the syntax, expected by
+   *           this parser
+   * @throws NamingException if some other naming exception occurs
+   */
   Name parse (String name) throws NamingException;
 }
 

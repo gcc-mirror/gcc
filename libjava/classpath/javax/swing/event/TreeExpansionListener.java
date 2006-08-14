@@ -37,26 +37,26 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
 import java.util.EventListener;
 
 /**
  * TreeExpansionListener public interface
  * @author Andrew Selkirk
  */
-public interface TreeExpansionListener extends EventListener {
+public interface TreeExpansionListener extends EventListener 
+{
 
-	/**
-	 * Tree collapsed
-	 * @param event Tree Expansion Event
-	 */
-	void treeCollapsed(TreeExpansionEvent event);
+  /**
+   * Tree collapsed
+   * @param event Tree Expansion Event
+   */
+  void treeCollapsed(TreeExpansionEvent event);
 
-	/**
-	 * Tree expanded
-	 * @param event Tree Expansion Event
-	 */
-	void treeExpanded(TreeExpansionEvent event);
+  /**
+   * Tree expanded
+   * @param event Tree Expansion Event
+   */
+  void treeExpanded(TreeExpansionEvent event);
 
 
-} // TreeExpansionListener
+}

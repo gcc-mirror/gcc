@@ -39,7 +39,7 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = examples
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/Makefile.jawt.in
+	$(srcdir)/Makefile.java2d.in $(srcdir)/Makefile.jawt.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
 	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
@@ -52,7 +52,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
-CONFIG_CLEAN_FILES = Makefile.jawt
+CONFIG_CLEAN_FILES = Makefile.jawt Makefile.java2d
 SOURCES =
 DIST_SOURCES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -95,6 +95,8 @@ CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
 CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
 CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
+CREATE_GCONF_PEER_LIBRARIES_FALSE = @CREATE_GCONF_PEER_LIBRARIES_FALSE@
+CREATE_GCONF_PEER_LIBRARIES_TRUE = @CREATE_GCONF_PEER_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
 CREATE_GTK_PEER_LIBRARIES_TRUE = @CREATE_GTK_PEER_LIBRARIES_TRUE@
 CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
@@ -115,6 +117,7 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATE = @DATE@
+DEFAULT_PREFS_PEER = @DEFAULT_PREFS_PEER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -145,6 +148,10 @@ FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
+GCONF_CFLAGS = @GCONF_CFLAGS@
+GCONF_LIBS = @GCONF_LIBS@
+GDK_CFLAGS = @GDK_CFLAGS@
+GDK_LIBS = @GDK_LIBS@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
@@ -195,6 +202,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PATH_TO_ESCHER = @PATH_TO_ESCHER@
 PATH_TO_GLIBJ_ZIP = @PATH_TO_GLIBJ_ZIP@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
@@ -215,6 +223,8 @@ USER_SPECIFIED_CLASSLIB_FALSE = @USER_SPECIFIED_CLASSLIB_FALSE@
 USER_SPECIFIED_CLASSLIB_TRUE = @USER_SPECIFIED_CLASSLIB_TRUE@
 USER_SPECIFIED_JAVAH_FALSE = @USER_SPECIFIED_JAVAH_FALSE@
 USER_SPECIFIED_JAVAH_TRUE = @USER_SPECIFIED_JAVAH_TRUE@
+USE_ESCHER_FALSE = @USE_ESCHER_FALSE@
+USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
@@ -290,8 +300,9 @@ GLIBJ_CLASSPATH = '$(top_builddir)/lib':'$(top_builddir)/lib/glibj.zip'
 # All our example java source files
 EXAMPLE_JAVA_FILES = $(srcdir)/gnu/classpath/examples/*/*.java $(srcdir)/gnu/classpath/examples/*/*/*.java $(srcdir)/gnu/classpath/examples/*/*/*/*.java
 
-# The example C source files
+# The example C source & header files
 EXAMPLE_C_FILES = $(srcdir)/gnu/classpath/examples/*/*.c
+EXAMPLE_CH_FILES = $(srcdir)/gnu/classpath/examples/*/*.h
 
 # The zip files with classes we want to produce.
 EXAMPLE_ZIP = examples.zip
@@ -306,7 +317,7 @@ EXAMPLE_ICONS = $(srcdir)/gnu/classpath/examples/icons/*.png
 READMES = $(srcdir)/gnu/classpath/examples/CORBA/swing/README.html
 
 # All the files we find "interesting"
-ALL_EXAMPLE_FILES = $(EXAMPLE_JAVA_FILES) $(EXAMPLE_C_FILES) $(EXAMPLE_ICONS) $(READMES)
+ALL_EXAMPLE_FILES = $(EXAMPLE_JAVA_FILES) $(EXAMPLE_C_FILES) $(EXAMPLE_CH_FILES) $(EXAMPLE_ICONS) $(READMES)
 
 # Some architecture independent data to be installed.
 example_DATA = $(EXAMPLE_ZIP) README
@@ -315,7 +326,7 @@ example_DATA = $(EXAMPLE_ZIP) README
 exampledir = $(pkgdatadir)/examples
 
 # Make sure everything is included in the distribution.
-EXTRA_DIST = README Makefile.jawt.in
+EXTRA_DIST = README Makefile.jawt.in Makefile.java2d.in
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -350,6 +361,8 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 Makefile.jawt: $(top_builddir)/config.status $(srcdir)/Makefile.jawt.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+Makefile.java2d: $(top_builddir)/config.status $(srcdir)/Makefile.java2d.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:
@@ -524,7 +537,9 @@ install-data-local:
 	  $(INSTALL_DATA) $$file $(DESTDIR)$(pkgdatadir)/examples/$$f; \
 	done
 	echo "$(INSTALL_DATA) Makefile.jawt $(DESTDIR)$(pkgdatadir)/examples/"
+	echo "$(INSTALL_DATA) Makefile.java2d $(DESTDIR)$(pkgdatadir)/examples/"
 	$(INSTALL_DATA) Makefile.jawt $(DESTDIR)$(pkgdatadir)/examples/
+	$(INSTALL_DATA) Makefile.java2d $(DESTDIR)$(pkgdatadir)/examples/
 
 uninstall-local:
 	srcdir_cnt=`echo $(srcdir) | wc -c`; \
@@ -534,7 +549,9 @@ uninstall-local:
 	  rm -f $(DESTDIR)$(pkgdatadir)/examples/$$f; \
 	done
 	echo "rm -f $(DESTDIR)$(pkgdatadir)/examples/Makefile.jawt"
+	echo "rm -f $(DESTDIR)$(pkgdatadir)/examples/Makefile.java2d"
 	rm -f $(DESTDIR)$(pkgdatadir)/examples/Makefile.jawt
+	rm -f $(DESTDIR)$(pkgdatadir)/examples/Makefile.java2d
 dist-hook:
 	srcdir_cnt=`echo $(srcdir) | wc -c`; \
 	for file in $(ALL_EXAMPLE_FILES); do \

@@ -56,6 +56,9 @@ import java.util.HashMap;
 /**
  * Main interface from the virtual machine to the JDWP back-end.
  *
+ * The thread created by this class is only used for initialization.
+ * Once it exits, the JDWP backend is fully initialized.
+ *
  * @author Keith Seitz (keiths@redhat.com)
  */
 public class Jdwp
@@ -65,7 +68,8 @@ public class Jdwp
   private static Jdwp _instance = null;
 
   /**
-   * Are we debugging?
+   * Are we debugging? Only true if debugging
+   * *and* initialized.
    */
   public static boolean isDebugging = false;
 
@@ -89,13 +93,16 @@ public class Jdwp
   // A thread group for the JDWP threads
   private ThreadGroup _group;
 
+  // Initialization synchronization
+  private Object _initLock = new Object ();
+  private int _initCount = 0;
+
   /**
    * constructor
    */
   public Jdwp ()
   {
     _shutdown = false;
-    isDebugging = true;
     _instance = this;
   }
 
@@ -271,17 +278,52 @@ public class Jdwp
       }
   }
 
+  /**
+   * Allows subcomponents to specify that they are
+   * initialized.
+   *
+   * Subcomponents include JdwpConnection and PacketProcessor.
+   */
+  public void subcomponentInitialized ()
+  {
+    synchronized (_initLock)
+      {
+	++_initCount;
+	_initLock.notify ();
+      }
+  }
+
   public void run ()
   {
     try
       {
 	_doInitialization ();
+
+	/* We need a little internal synchronization here, so that
+	   when this thread dies, the back-end will be fully initialized,
+	   ready to start servicing the VM and debugger. */
+	synchronized (_initLock)
+	  {
+	    while (_initCount != 2)
+	      _initLock.wait ();
+	  }
+	_initLock = null;
       }
     catch (Throwable t)
       {
 	System.out.println ("Exception in JDWP back-end: " + t);
 	System.exit (1);
       }
+
+    /* Force creation of the EventManager. If the event manager
+       has not been created when isDebugging is set, it is possible
+       that the VM will call Jdwp.notify (which uses EventManager)
+       while the EventManager is being created (or at least this is
+       a problem with gcj/gij). */
+    EventManager.getDefault();
+
+    // Now we are finally ready and initialized
+    isDebugging = true;
   }
 
   // A helper function to process the configure string "-Xrunjdwp:..."

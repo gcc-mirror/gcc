@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CosNaming;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -61,11 +62,6 @@ public abstract class BindingIteratorHelper
    * The {@link BindingIterator} repository id.
    */
   private static String _id = "IDL:omg.org/CosNaming/BindingIterator:1.0";
-
-  /**
-   * The cached type code value.
-   */
-  private static TypeCode typeCode = null;
 
   /**
    * Extract the binding iterator from the given {@link Any}.
@@ -167,9 +163,7 @@ public abstract class BindingIteratorHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      typeCode = ORB.init().create_interface_tc(id(), "BindingIterator");
-    return typeCode;
+    return OrbRestricted.Singleton.create_interface_tc(id(), "BindingIterator");
   }
 
   /**

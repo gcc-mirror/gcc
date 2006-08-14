@@ -165,8 +165,9 @@ public class Segment implements Cloneable, CharacterIterator
 
   /**
    * Sets the current index to point to the last character in the segment and 
-   * returns that character.  If the segment contains zero characters, this 
-   * method returns {@link #DONE}.
+   * returns that character.  If the segment contains zero characters, the 
+   * current index is set to {@link #getEndIndex()} and this method returns 
+   * {@link #DONE}.
    * 
    * @return The last character in the segment, or {@link #DONE} if the 
    *         segment contains zero characters.
@@ -174,7 +175,10 @@ public class Segment implements Cloneable, CharacterIterator
   public char last()
   {
     if (count == 0)
-      return DONE;
+      {
+        current = getEndIndex();
+        return DONE;
+      }
     
     current = getEndIndex() - 1;
     return array[current];

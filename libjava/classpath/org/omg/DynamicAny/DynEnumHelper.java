@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package org.omg.DynamicAny;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.ORB;
@@ -104,7 +106,7 @@ public abstract class DynEnumHelper
    */
   public static TypeCode type()
   {
-    return ORB.init().create_interface_tc(id(), "DynEnum");
+    return OrbRestricted.Singleton.create_interface_tc(id(), "DynEnum");
   }
 
   /**

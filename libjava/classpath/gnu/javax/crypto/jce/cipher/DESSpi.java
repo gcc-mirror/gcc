@@ -41,15 +41,12 @@ package gnu.javax.crypto.jce.cipher;
 import gnu.java.security.Registry;
 
 /**
- * The implementation of the DES <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.
+ * The implementation of the DES <i>Service Provider Interface</i> (<b>SPI</b>)
+ * adapter.
  */
-public final class DESSpi extends CipherAdapter
+public final class DESSpi
+    extends CipherAdapter
 {
-
-  // Constructors.
-  // --------------------------------------------------------------------
-
   public DESSpi()
   {
     super(Registry.DES_CIPHER);

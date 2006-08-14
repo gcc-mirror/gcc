@@ -44,25 +44,19 @@ import gnu.javax.crypto.pad.WrongPaddingException;
 import java.util.Map;
 
 /**
- * <p>An Adapter to use any {@link IPad} as a {@link Transformer} in an
- * {@link Assembly}.</p>
- *
- * <p>When using such a {@link Transformer}, in an {@link Assembly}, there must
+ * An Adapter to use any {@link IPad} as a {@link Transformer} in an
+ * {@link Assembly}.
+ * <p>
+ * When using such a {@link Transformer}, in an {@link Assembly}, there must
  * be at least one element behind this instance in the constructed chain;
- * otherwise, a {@link TransformerException} is thrown at initialisation time.</p>
+ * otherwise, a {@link TransformerException} is thrown at initialisation time.
  */
-class PaddingTransformer extends Transformer
+class PaddingTransformer
+    extends Transformer
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private IPad delegate;
 
   private int outputBlockSize = 1;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   PaddingTransformer(IPad padding)
   {
@@ -71,20 +65,13 @@ class PaddingTransformer extends Transformer
     this.delegate = padding;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   void initDelegate(Map attributes) throws TransformerException
   {
     if (tail == null)
       {
-        throw new TransformerException(
-                                       "initDelegate()",
-                                       new IllegalStateException(
-                                                                 "Padding transformer missing its tail!"));
+        IllegalStateException cause = new IllegalStateException(
+            "Padding transformer missing its tail!");
+        throw new TransformerException("initDelegate()", cause);
       }
     outputBlockSize = tail.currentBlockSize();
     delegate.init(outputBlockSize);
@@ -108,9 +95,10 @@ class PaddingTransformer extends Transformer
     byte[] tmp = inBuffer.toByteArray();
     inBuffer.reset();
     byte[] result;
-    if (wired == Direction.FORWARD)
-      { // padding
-        // buffers remaining bytes from (inBuffer + in) that are less than 1 block
+    if (wired == Direction.FORWARD) // padding
+      {
+        // buffers remaining bytes from (inBuffer + in) that are less than 1
+        // block
         if (tmp.length < outputBlockSize)
           {
             inBuffer.write(tmp, 0, tmp.length);
@@ -124,8 +112,8 @@ class PaddingTransformer extends Transformer
             System.arraycopy(tmp, 0, result, 0, newlen);
           }
       }
-    else
-      { // unpadding
+    else // unpadding
+      {
         // always keep in own buffer a max of 1 block to cater for lastUpdate
         if (tmp.length < outputBlockSize)
           {
@@ -147,14 +135,14 @@ class PaddingTransformer extends Transformer
     byte[] result;
     // process multiples of blocksize as much as possible
     // catenate result from processing inBuffer with last-update( tail )
-    if (wired == Direction.FORWARD)
-      { // padding
+    if (wired == Direction.FORWARD) // padding
+      {
         result = inBuffer.toByteArray();
         byte[] padding = delegate.pad(result, 0, result.length);
         inBuffer.write(padding, 0, padding.length);
       }
-    else
-      { // unpadding
+    else // unpadding
+      {
         byte[] tmp = inBuffer.toByteArray();
         inBuffer.reset();
         int realLength;

@@ -1,5 +1,5 @@
 /* BasicLabelUI.java
- Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+ Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
 
@@ -37,20 +37,25 @@
 
 package javax.swing.plaf.basic;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentUI;
@@ -369,14 +374,39 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
   }
 
   /**
-   * This method installs the keyboard actions for the given {@link JLabel}.
+   * Installs the keyboard actions for the given {@link JLabel}.
    *
    * @param l The {@link JLabel} to install keyboard actions for.
    */
   protected void installKeyboardActions(JLabel l)
-    throws NotImplementedException
   {
-    //FIXME: implement.
+    Component c = l.getLabelFor();
+    if (c != null)
+      {
+        int mnemonic = l.getDisplayedMnemonic();
+        if (mnemonic > 0)
+          {
+            // add a keystroke for the given mnemonic mapping to 'press';
+            InputMap keyMap = new InputMap();
+            keyMap.put(KeyStroke.getKeyStroke(mnemonic, KeyEvent.VK_ALT), 
+                "press");
+            SwingUtilities.replaceUIInputMap(l, 
+                JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
+            
+            // add an action to focus the component when 'press' happens
+            ActionMap map = new ActionMap();
+            map.put("press", new AbstractAction() {
+              public void actionPerformed(ActionEvent event)
+              {
+                JLabel label = (JLabel) event.getSource();
+                Component c = label.getLabelFor();
+                if (c != null)
+                  c.requestFocus();
+              }
+            });
+            SwingUtilities.replaceUIActionMap(l, map);
+          }
+      }   
   }
 
   /**
@@ -385,9 +415,10 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
    * @param l The {@link JLabel} to uninstall keyboard actions for.
    */
   protected void uninstallKeyboardActions(JLabel l)
-    throws NotImplementedException
   {
-    //FIXME: implement.
+    SwingUtilities.replaceUIActionMap(l, null);
+    SwingUtilities.replaceUIInputMap(l, JComponent.WHEN_IN_FOCUSED_WINDOW, 
+                                     null);
   }
 
   /**
@@ -425,6 +456,31 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
         String text = (String) e.getNewValue();
         JLabel l = (JLabel) e.getSource();
         BasicHTML.updateRenderer(l, text);
+      }
+    else if (e.getPropertyName().equals("displayedMnemonic"))
+      {
+        // update the key to action mapping
+        JLabel label = (JLabel) e.getSource();
+        if (label.getLabelFor() != null)
+          {
+            int oldMnemonic = ((Integer) e.getOldValue()).intValue();
+            int newMnemonic = ((Integer) e.getNewValue()).intValue();
+            InputMap keyMap = label.getInputMap(
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
+            keyMap.put(KeyStroke.getKeyStroke(oldMnemonic, 
+                KeyEvent.ALT_DOWN_MASK), null);
+            keyMap.put(KeyStroke.getKeyStroke(newMnemonic, 
+                KeyEvent.ALT_DOWN_MASK), "press");
+          }
+      }
+    else if (e.getPropertyName().equals("labelFor"))
+      {
+        JLabel label = (JLabel) e.getSource();
+        InputMap keyMap = label.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        int mnemonic = label.getDisplayedMnemonic();
+        if (mnemonic > 0)
+          keyMap.put(KeyStroke.getKeyStroke(mnemonic, KeyEvent.ALT_DOWN_MASK), 
+              "press");       
       }
   }
 }

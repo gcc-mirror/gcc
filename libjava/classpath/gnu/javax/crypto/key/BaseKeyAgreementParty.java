@@ -47,40 +47,27 @@ import java.security.SecureRandom;
 import java.util.Map;
 
 /**
- * <p>A base abstract class to facilitate implementations of concrete key
- * agreement protocol handlers.</p>
+ * A base abstract class to facilitate implementations of concrete key agreement
+ * protocol handlers.
  */
-public abstract class BaseKeyAgreementParty implements IKeyAgreementParty
+public abstract class BaseKeyAgreementParty
+    implements IKeyAgreementParty
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   protected static final BigInteger TWO = BigInteger.valueOf(2L);
-
   /** The canonical name of the protocol. */
   protected String name;
-
   /** Whether the instance is initialised or not. */
   protected boolean initialised = false;
-
   /** The current step index of the protocol exchange. */
   protected int step = -1;
-
   /** Whether the exchange has concluded or not. */
   protected boolean complete = false;
-
   /** The optional {@link SecureRandom} instance to use. */
   protected SecureRandom rnd = null;
-
   /** The optional {@link IRandom} instance to use. */
   protected IRandom irnd = null;
-
   /** Our default source of randomness. */
   private PRNG prng = null;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   protected BaseKeyAgreementParty(String name)
   {
@@ -88,12 +75,6 @@ public abstract class BaseKeyAgreementParty implements IKeyAgreementParty
 
     this.name = name;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   public String name()
   {
@@ -103,12 +84,8 @@ public abstract class BaseKeyAgreementParty implements IKeyAgreementParty
   public void init(Map attributes) throws KeyAgreementException
   {
     if (initialised)
-      {
-        throw new IllegalStateException("already initialised");
-      }
-
+      throw new IllegalStateException("already initialised");
     this.engineInit(attributes);
-
     initialised = true;
     this.step = -1;
     this.complete = false;
@@ -117,15 +94,10 @@ public abstract class BaseKeyAgreementParty implements IKeyAgreementParty
   public OutgoingMessage processMessage(IncomingMessage in)
       throws KeyAgreementException
   {
-    if (!initialised)
-      {
-        throw new IllegalStateException("not initialised");
-      }
+    if (! initialised)
+      throw new IllegalStateException("not initialised");
     if (complete)
-      {
-        throw new IllegalStateException("exchange has already concluded");
-      }
-
+      throw new IllegalStateException("exchange has already concluded");
     step++;
     return this.engineProcessMessage(in);
   }
@@ -137,14 +109,10 @@ public abstract class BaseKeyAgreementParty implements IKeyAgreementParty
 
   public byte[] getSharedSecret() throws KeyAgreementException
   {
-    if (!initialised)
-      {
-        throw new KeyAgreementException("not yet initialised");
-      }
-    if (!isComplete())
-      {
-        throw new KeyAgreementException("not yet computed");
-      }
+    if (! initialised)
+      throw new KeyAgreementException("not yet initialised");
+    if (! isComplete())
+      throw new KeyAgreementException("not yet computed");
     return engineSharedSecret();
   }
 
@@ -157,8 +125,6 @@ public abstract class BaseKeyAgreementParty implements IKeyAgreementParty
       }
   }
 
-  // abstract methods to be implemented by concrete subclasses ---------------
-
   protected abstract void engineInit(Map attributes)
       throws KeyAgreementException;
 
@@ -169,31 +135,25 @@ public abstract class BaseKeyAgreementParty implements IKeyAgreementParty
 
   protected abstract void engineReset();
 
-  // helper methods ----------------------------------------------------------
-
   /**
    * Fills the designated byte array with random data.
-   *
+   * 
    * @param buffer the byte array to fill with random data.
    */
   protected void nextRandomBytes(byte[] buffer)
   {
     if (rnd != null)
-      {
-        rnd.nextBytes(buffer);
-      }
+      rnd.nextBytes(buffer);
     else if (irnd != null)
-      {
-        try
-          {
-            irnd.nextBytes(buffer, 0, buffer.length);
-          }
-        catch (LimitReachedException lre)
-          {
-            irnd = null;
-            getDefaultPRNG().nextBytes(buffer);
-          }
-      }
+      try
+        {
+          irnd.nextBytes(buffer, 0, buffer.length);
+        }
+      catch (LimitReachedException lre)
+        {
+          irnd = null;
+          getDefaultPRNG().nextBytes(buffer);
+        }
     else
       getDefaultPRNG().nextBytes(buffer);
   }

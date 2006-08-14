@@ -1,5 +1,5 @@
 /* DataFlavor.java -- A type of data to transfer via the clipboard.
-   Copyright (C) 1999, 2001, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -197,31 +198,37 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
     throw new ClassNotFoundException(className);
   }
   
-  private static Class getRepresentationClassFromMime(String mimeString,
+  private static Class getRepresentationClassFromMimeThrows(String mimeString,
                                                       ClassLoader classLoader)
+    throws ClassNotFoundException
     {
       String classname = getParameter("class", mimeString);
       if (classname != null)
-        {
-          try
-            {
-              return tryToLoadClass(classname, classLoader);
-            }
-          catch(Exception e)
-            {
-	      IllegalArgumentException iae;
-              iae = new IllegalArgumentException("mimeString: "
-						 + mimeString
-			      			 + " classLoader: "
-						 + classLoader);
-	      iae.initCause(e);
-	      throw iae;
-            }
-        }
+        return tryToLoadClass(classname, classLoader);
       else
         return java.io.InputStream.class;
     }
-  
+ 
+  // Same as above, but wraps any ClassNotFoundExceptions
+  private static Class getRepresentationClassFromMime(String mimeString,
+                                                      ClassLoader classLoader)
+  {
+    try
+      {
+	return getRepresentationClassFromMimeThrows(mimeString, classLoader);
+      }
+    catch(ClassNotFoundException cnfe)
+      {
+	IllegalArgumentException iae;
+	iae = new IllegalArgumentException("mimeString: "
+					   + mimeString
+					   + " classLoader: "
+					   + classLoader);
+	iae.initCause(cnfe);
+	throw iae;
+      }
+  }
+
   /**
    * Returns the value of the named MIME type parameter, or <code>null</code>
    * if the parameter does not exist. Given the parameter name and the mime
@@ -240,7 +247,7 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
   
     String value = mimeString.substring(idx + paramName.length() + 1);
   
-    idx = value.indexOf(" ");
+    idx = value.indexOf(";");
     if (idx == -1)
       return(value);
     else
@@ -328,6 +335,14 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
   {
     this.representationClass = representationClass;
     this.mimeType = mimeType;
+
+    // Do some simple validity checks
+    String type = getPrimaryType() + "/" + getSubType();
+    if (type.indexOf(' ') != -1
+        || type.indexOf('=') != -1
+        || type.indexOf(';') != -1)
+      throw new IllegalArgumentException(mimeType);
+
     if (humanPresentableName != null)
       this.humanPresentableName = humanPresentableName;
     else
@@ -375,7 +390,7 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
                    ClassLoader classLoader)
     throws ClassNotFoundException
   {
-    this(getRepresentationClassFromMime(mimeType, classLoader),
+    this(getRepresentationClassFromMimeThrows(mimeType, classLoader),
          mimeType, humanPresentableName);
   }
 
@@ -417,7 +432,8 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
    */
   public DataFlavor(String mimeType) throws ClassNotFoundException
   {
-    this(mimeType, null);
+    this(getRepresentationClassFromMimeThrows(mimeType, null),
+	 mimeType, null);
   }
 
   /**
@@ -567,7 +583,7 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
    */
   public boolean isRepresentationClassInputStream()
   {
-    return representationClass.getName().equals("java.io.InputStream");
+    return InputStream.class.isAssignableFrom(representationClass);
   }
 
   /**
@@ -579,17 +595,7 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
    */
   public boolean isRepresentationClassSerializable()
   {
-    Class[] interfaces = representationClass.getInterfaces();
-  
-    int i = 0;
-    while (i < interfaces.length)
-      {
-        if (interfaces[i].getName().equals("java.io.Serializable"))
-          return true;
-        ++i;
-      }
-  
-    return false;
+    return Serializable.class.isAssignableFrom(representationClass);
   }
 
   /**
@@ -634,8 +640,10 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
    */
   public boolean isFlavorJavaFileListType()
   {
-    if (mimeType.equals(javaFileListFlavor.mimeType)
-        && representationClass.equals(javaFileListFlavor.representationClass))
+    if (getPrimaryType().equals(javaFileListFlavor.getPrimaryType())
+        && getSubType().equals(javaFileListFlavor.getSubType())
+        && javaFileListFlavor.representationClass
+	   .isAssignableFrom(representationClass))
       return true;
   
     return false ;
@@ -666,7 +674,11 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
   /**
    * This method test the specified <code>DataFlavor</code> for equality
    * against this object.  This will be true if the MIME type and
-   * representation type are the equal.
+   * representation class are the equal. If the primary type is 'text'
+   * then also the value of the charset parameter is compared. In such a
+   * case when the charset parameter isn't given then the charset is
+   * assumed to be equal to the default charset of the platform.  All
+   * other parameters are ignored.
    *
    * @param flavor The <code>DataFlavor</code> to test against.
    *
@@ -677,12 +689,34 @@ public class DataFlavor implements java.io.Externalizable, Cloneable
   {
     if (flavor == null)
       return false;
-  
-    if (! this.mimeType.toLowerCase().equals(flavor.mimeType.toLowerCase()))
+
+    String primary = getPrimaryType();
+    if (! primary.equals(flavor.getPrimaryType()))
       return false;
-  
+
+    String sub = getSubType();
+    if (! sub.equals(flavor.getSubType()))
+      return false;
+
     if (! this.representationClass.equals(flavor.representationClass))
       return false;
+
+    if (primary.equals("text"))
+      if (! isRepresentationClassCharBuffer()
+          && ! isRepresentationClassReader()
+          && representationClass != java.lang.String.class
+	  && ! (representationClass.isArray()
+	        && representationClass.getComponentType() == Character.TYPE))
+	{
+	  String charset = getParameter("charset");
+	  String otherset = flavor.getParameter("charset");
+	  String defaultset = Charset.defaultCharset().name();
+
+	  if (charset == null || charset.equals(defaultset))
+            return (otherset == null || otherset.equals(defaultset));
+
+	  return charset.equals(otherset);
+	}
   
     return true;
   }

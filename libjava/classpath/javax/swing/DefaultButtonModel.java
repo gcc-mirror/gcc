@@ -466,14 +466,14 @@ public class DefaultButtonModel implements ButtonModel, Serializable
     if (s)
       {
         fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED,
-                                           null, ItemEvent.SELECTED));
+                                           this, ItemEvent.SELECTED));
         if (group != null)
           group.setSelected(this, true);
       }
     else
       {
         fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED,
-                                           null, ItemEvent.DESELECTED));
+                                           this, ItemEvent.DESELECTED));
         if (group != null)
           group.setSelected(this, false);
       }

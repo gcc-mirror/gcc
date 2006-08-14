@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CosNaming.NamingContextPackage;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -59,11 +60,6 @@ public abstract class NotFoundReasonHelper
    */
   private static String _id =
     "IDL:omg.org/CosNaming/NamingContext/NotFoundReason:1.0";
-
-  /**
-   * The cached type code value.
-   */
-  private static TypeCode typeCode;
 
   /**
    * Extract the exception from the given {@link Any}.
@@ -112,15 +108,15 @@ public abstract class NotFoundReasonHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      typeCode =
-        ORB.init().create_enum_tc(id(), "NotFoundReason",
-                                  new String[]
-                                  {
-                                    "missing_node", "not_context", "not_object"
-                                  }
-                                 );
-    return typeCode;
+    return
+    OrbRestricted.Singleton.create_enum_tc(id(), "NotFoundReason",
+                              new String[]
+                                         {
+                                          "missing_node", 
+                                          "not_context", 
+                                          "not_object"
+                                         }
+    );
   }
 
   /**

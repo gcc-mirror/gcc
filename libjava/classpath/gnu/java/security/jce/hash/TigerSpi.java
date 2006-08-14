@@ -41,27 +41,15 @@ package gnu.java.security.jce.hash;
 import gnu.java.security.Registry;
 
 /**
- * <p>The implementation of the Tiger <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.</p>
+ * The implementation of the Tiger <i>Service Provider Interface</i>
+ * (<b>SPI</b>) adapter.
  */
-public class TigerSpi extends MessageDigestAdapter
+public class TigerSpi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial 0-arguments constructor. */
   public TigerSpi()
   {
     super(Registry.TIGER_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

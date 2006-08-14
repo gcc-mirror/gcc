@@ -40,12 +40,9 @@ package gnu.javax.crypto.jce.mac;
 
 import gnu.java.security.Registry;
 
-public class OMacSerpentImpl extends MacAdapter
+public class OMacSerpentImpl
+    extends MacAdapter
 {
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
   public OMacSerpentImpl()
   {
     super(Registry.OMAC_PREFIX + Registry.SERPENT_CIPHER);

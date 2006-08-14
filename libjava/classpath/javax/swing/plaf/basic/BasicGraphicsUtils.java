@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.SystemProperties;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -64,6 +66,14 @@ import javax.swing.SwingUtilities;
  */
 public class BasicGraphicsUtils
 {
+  /**
+   * Used as a key for a client property to store cached TextLayouts in. This
+   * is used for speed-up drawing of text in
+   * {@link #drawString(Graphics, String, int, int, int)}.
+   */
+  static final String CACHED_TEXT_LAYOUT =
+    "BasicGraphicsUtils.cachedTextLayout";
+
   /**
    * Constructor. It is utterly unclear why this class should
    * be constructable, but this is what the API specification
@@ -536,6 +546,170 @@ public class BasicGraphicsUtils
     g2.fill(underline);
   }
 
+  /**
+   * Draws a string on the specified component.
+   *
+   * @param c the component
+   * @param g the Graphics context
+   * @param text the string
+   * @param underlinedChar the character to be underlined
+   * @param x the X location
+   * @param y the Y location
+   */
+  static void drawString(JComponent c, Graphics g, String text,
+                                int underlinedChar, int x, int y)
+  {
+    int index = -1;
+
+    /* It is intentional that lower case is used. In some languages,
+     * the set of lowercase characters is larger than the set of
+     * uppercase ones. Therefore, it is good practice to use lowercase
+     * for such comparisons (which really means that the author of this
+     * code can vaguely remember having read some Unicode techreport
+     * with this recommendation, but is too lazy to look for the URL).
+     */
+    if ((underlinedChar >= 0) || (underlinedChar <= 0xffff))
+      index = text.toLowerCase().indexOf(
+        Character.toLowerCase((char) underlinedChar));
+
+    drawStringUnderlineCharAt(c, g, text, index, x, y);
+  }
+
+
+  /**
+   * Draws a String at the given location, underlining the character
+   * at the specified index. Drawing is performed in the current color
+   * and font of <code>g</code>.
+   *
+   * <p><img src="doc-files/BasicGraphicsUtils-5.png" width="500"
+   * height="100" alt="[An illustration showing how to use the
+   * method]" />
+   *
+   * This is an accelerated version of the method with the same name. It
+   * uses a pre-laid out TextLayout stored in a client property.
+   *
+   * @param c the component that is drawn
+   * @param g the graphics into which the String is drawn.
+   *
+   * @param text the String to draw.
+   *
+   * @param underlinedIndex the index of the underlined character in
+   *        <code>text</code>.  If <code>underlinedIndex</code> falls
+   *        outside the range <code>[0, text.length() - 1]</code>, the
+   *        text will be drawn without underlining anything.
+   *        
+   * @param x the x coordinate of the text, as it would be passed to
+   *        {@link java.awt.Graphics#drawString(java.lang.String,
+   *        int, int)}.
+   *
+   * @param y the y coordinate of the text, as it would be passed to
+   *        {@link java.awt.Graphics#drawString(java.lang.String,
+   *        int, int)}.
+   */
+  static void drawStringUnderlineCharAt(JComponent c, Graphics g, String text,
+                                        int underlinedIndex,
+                                        int x, int y)
+  {
+    Graphics2D g2;
+    Rectangle2D.Double underline;
+    FontRenderContext frc;
+    FontMetrics fmet;
+    LineMetrics lineMetrics;
+    Font font;
+    TextLayout layout;
+    double underlineX1, underlineX2;
+    boolean drawUnderline;
+    int textLength;
+
+    textLength = text.length();
+    if (textLength == 0)
+      return;
+
+    drawUnderline = (underlinedIndex >= 0) && (underlinedIndex < textLength);
+
+    // FIXME: unfortunately pango and cairo can't agree on metrics
+    // so for the time being we continue to *not* use TextLayouts.
+    if (!(g instanceof Graphics2D)
+       || SystemProperties.getProperty("gnu.javax.swing.noGraphics2D") != null)
+    {
+      /* Fall-back. This is likely to produce garbage for any text
+       * containing right-to-left (Hebrew or Arabic) characters, even
+       * if the underlined character is left-to-right.
+       */
+      g.drawString(text, x, y);
+      if (drawUnderline)
+      {
+        fmet = g.getFontMetrics();
+        g.fillRect(
+          /* x */ x + fmet.stringWidth(text.substring(0, underlinedIndex)),
+          /* y */ y + fmet.getDescent() - 1,
+          /* width */ fmet.charWidth(text.charAt(underlinedIndex)),
+          /* height */ 1);
+      }
+
+      return;
+    }
+
+    g2 = (Graphics2D) g;
+    font = g2.getFont();
+    frc = g2.getFontRenderContext();
+    lineMetrics = font.getLineMetrics(text, frc);
+    layout = (TextLayout) c.getClientProperty(CACHED_TEXT_LAYOUT);
+    if (layout == null)
+      {
+        layout = new TextLayout(text, font, frc);
+        System.err.println("Unable to use cached TextLayout for: " + text);
+      }
+
+    /* Draw the text. */
+    layout.draw(g2, x, y);
+    if (!drawUnderline)
+      return;
+
+    underlineX1 = x + layout.getLogicalHighlightShape(
+     underlinedIndex, underlinedIndex).getBounds2D().getX();
+    underlineX2 = x + layout.getLogicalHighlightShape(
+     underlinedIndex + 1, underlinedIndex + 1).getBounds2D().getX();
+
+    underline = new Rectangle2D.Double();
+    if (underlineX1 < underlineX2)
+    {
+      underline.x = underlineX1;
+      underline.width = underlineX2 - underlineX1;
+    }
+    else
+    {
+      underline.x = underlineX2;
+      underline.width = underlineX1 - underlineX2;
+    }
+
+    
+    underline.height = lineMetrics.getUnderlineThickness();
+    underline.y = lineMetrics.getUnderlineOffset();
+    if (underline.y == 0)
+    {
+      /* Some fonts do not specify an underline offset, although they
+       * actually should do so. In that case, the result of calling
+       * lineMetrics.getUnderlineOffset() will be zero. Since it would
+       * look very ugly if the underline was be positioned immediately
+       * below the baseline, we check for this and move the underline
+       * below the descent, as shown in the following ASCII picture:
+       *
+       *   #####       ##### #
+       *  #     #     #     #
+       *  #     #     #     #
+       *  #     #     #     #
+       *   #####       ######        ---- baseline (0)
+       *                    #
+       *                    #
+       * ------------------###----------- lineMetrics.getDescent()
+       */
+      underline.y = lineMetrics.getDescent();
+    }
+
+    underline.y += y;
+    g2.fill(underline);
+  }
 
   /**
    * Draws a rectangle, simulating a dotted stroke by painting only

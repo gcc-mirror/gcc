@@ -40,6 +40,7 @@ package org.omg.DynamicAny;
 
 import gnu.CORBA.Minor;
 import gnu.CORBA.NameDynAnyPairSeqHolder;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -62,20 +63,11 @@ import org.omg.CORBA.portable.OutputStream;
  */
 public abstract class NameDynAnyPairSeqHelper
 {
-  /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        TypeCode t = orb.create_sequence_tc(0, NameDynAnyPairHelper.type());
-        typeCode = orb.create_alias_tc(id(), "NameDynAnyPairSeq", t);
-      }
-    return typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    TypeCode t = orb.create_sequence_tc(0, NameDynAnyPairHelper.type());
+    return orb.create_alias_tc(id(), "NameDynAnyPairSeq", t);
   }
 
   /**

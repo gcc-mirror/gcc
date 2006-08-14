@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -692,17 +691,12 @@ public class BasicInternalFrameUI extends InternalFrameUI
     /** The MouseEvent target. */
     private transient Component mouseEventTarget;
 
-    /** The component pressed. */
-    private transient Component pressedComponent;
+    private Component dragTarget;
 
-    /** The last component entered. */
-    private transient Component lastComponentEntered;
-
-    /** Used to store/reset lastComponentEntered. */
-    private transient Component tempComponent;
-
-    /** The number of presses. */
-    private transient int pressCount;
+    /**
+     * Indicates if we are currently in a dragging operation or not.
+     */
+    private boolean isDragging;
 
     /**
      * This method is called when the mouse enters the glass pane.
@@ -767,7 +761,10 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public void mousePressed(MouseEvent e)
     {
-      activateFrame(frame);
+      // Experiments show that this seems to call the
+      // borderListener.mousePressed() method to activate the frame.
+      if (borderListener != null)
+        borderListener.mousePressed(e);
       handleEvent(e);
     }
 
@@ -783,149 +780,104 @@ public class BasicInternalFrameUI extends InternalFrameUI
     }
 
     /**
-     * This method acquires a candidate component to dispatch the MouseEvent to.
+     * This is a helper method that dispatches the GlassPane MouseEvents to the
+     * proper component.
      * 
-     * @param me
-     *          The MouseEvent to acquire a component for.
+     * @param e the mouse event to be dispatched
      */
-    private void acquireComponentForMouseEvent(MouseEvent me)
+    private void handleEvent(MouseEvent e)
     {
-      int x = me.getX();
-      int y = me.getY();
+      // Find candidate component inside the JInternalFrame.
+      Component target = frame.getLayeredPane().findComponentAt(e.getX(),
+                                                                e.getY());
 
-      // Find the candidate which should receive this event.
-      Component parent = frame.getLayeredPane();
-      if (parent == null)
-        return;
-      Component candidate = null;
-      Point p = me.getPoint();
-      while (candidate == null && parent != null)
+      // Now search upwards to find a component that actually has
+      // a MouseListener attached.
+      while (target != null
+             && target.getMouseListeners().length == 0
+             && target.getMouseMotionListeners().length == 0
+             && target.getMouseWheelListeners().length == 0)
         {
-          candidate = SwingUtilities.getDeepestComponentAt(parent, p.x, p.y);
-          if (candidate == null)
-            {
-              p = SwingUtilities.convertPoint(parent, p.x, p.y,
-                                              parent.getParent());
-              parent = parent.getParent();
-            }
+          target = target.getParent();
         }
 
-      // If the only candidate we found was the native container itself,
-      // don't dispatch any event at all. We only care about the lightweight
-      // children here.
-      if (candidate == frame.getContentPane())
-        candidate = null;
-
-      // If our candidate is new, inform the old target we're leaving.
-      if (lastComponentEntered != null && lastComponentEntered.isShowing()
-          && lastComponentEntered != candidate)
+      if (target != null)
         {
-          Point tp = SwingUtilities.convertPoint(frame.getContentPane(), x, y,
-                                                 lastComponentEntered);
-          MouseEvent exited = new MouseEvent(lastComponentEntered,
-                                             MouseEvent.MOUSE_EXITED,
-                                             me.getWhen(), me.getModifiersEx(),
-                                             tp.x, tp.y, me.getClickCount(),
-                                             me.isPopupTrigger(),
-                                             me.getButton());
-          tempComponent = lastComponentEntered;
-          lastComponentEntered = null;
-          tempComponent.dispatchEvent(exited);
-        }
-
-      // If we have a candidate, maybe enter it.
-      if (candidate != null)
-        {
-          mouseEventTarget = candidate;
-          if (candidate.isLightweight() && candidate.isShowing()
-              && candidate != frame.getContentPane()
-              && candidate != lastComponentEntered)
-            {
-              lastComponentEntered = mouseEventTarget;
-              Point cp = SwingUtilities.convertPoint(frame.getContentPane(), x,
-                                                     y, lastComponentEntered);
-              MouseEvent entered = new MouseEvent(lastComponentEntered,
-                                                  MouseEvent.MOUSE_ENTERED,
-                                                  me.getWhen(),
-                                                  me.getModifiersEx(), cp.x,
-                                                  cp.y, me.getClickCount(),
-                                                  me.isPopupTrigger(),
-                                                  me.getButton());
-              lastComponentEntered.dispatchEvent(entered);
-            }
-        }
-
-      if (me.getID() == MouseEvent.MOUSE_RELEASED
-          || me.getID() == MouseEvent.MOUSE_PRESSED && pressCount > 0
-          || me.getID() == MouseEvent.MOUSE_DRAGGED)
-        // If any of the following events occur while a button is held down,
-        // they should be dispatched to the same component to which the
-        // original MOUSE_PRESSED event was dispatched:
-        // - MOUSE_RELEASED
-        // - MOUSE_PRESSED: another button pressed while the first is held down
-        // - MOUSE_DRAGGED
-        mouseEventTarget = pressedComponent;
-      else if (me.getID() == MouseEvent.MOUSE_CLICKED)
-        {
-          // Don't dispatch CLICKED events whose target is not the same as the
-          // target for the original PRESSED event.
-          if (candidate != pressedComponent)
-            mouseEventTarget = null;
-          else if (pressCount == 0)
-            pressedComponent = null;
+          int id = e.getID();
+          switch (id)
+          {
+            case MouseEvent.MOUSE_ENTERED:
+              // Now redispatch the thing.
+              if (! isDragging || frame.isSelected())
+                {
+                  mouseEventTarget = target;
+                  redispatch(id, e, mouseEventTarget);
+                }
+              break;
+            case MouseEvent.MOUSE_EXITED:
+              if (! isDragging || frame.isSelected())
+                {
+                  redispatch(id, e, mouseEventTarget);
+                }
+              break;
+            case MouseEvent.MOUSE_PRESSED:
+              mouseEventTarget = target;
+              redispatch(id, e, mouseEventTarget);
+              // Start dragging.
+              dragTarget = target;
+              break;
+            case MouseEvent.MOUSE_RELEASED:
+              if (isDragging)
+                {
+                  redispatch(id, e, dragTarget);
+                  isDragging = false;
+                }
+              else
+                redispatch(id, e, mouseEventTarget);
+              break;
+            case MouseEvent.MOUSE_CLICKED:
+              redispatch(id, e, mouseEventTarget);
+              break;
+            case MouseEvent.MOUSE_MOVED:
+              if (target != mouseEventTarget)
+                {
+                  // Create additional MOUSE_EXITED/MOUSE_ENTERED pairs.
+                  redispatch(MouseEvent.MOUSE_EXITED, e, mouseEventTarget);
+                  mouseEventTarget = target;
+                  redispatch(MouseEvent.MOUSE_ENTERED, e, mouseEventTarget);
+                }
+              redispatch(id, e, mouseEventTarget);
+              break;
+            case MouseEvent.MOUSE_DRAGGED:
+              if (! isDragging)
+                isDragging = true;
+              redispatch(id, e, mouseEventTarget);
+              break;
+            case MouseEvent.MOUSE_WHEEL:
+              redispatch(id, e, mouseEventTarget);
+              break;
+            default:
+              assert false : "Must not reach here";
+          }
         }
     }
 
     /**
-     * This is a helper method that dispatches the GlassPane MouseEvents to the
-     * proper component.
-     * 
-     * @param e
-     *          The AWTEvent to be dispatched. Usually an instance of
-     *          MouseEvent.
+     * Redispatches the event to the real target with the specified id.
+     *
+     * @param id the new event ID
+     * @param e the original event
+     * @param target the real event target
      */
-    private void handleEvent(AWTEvent e)
+    private void redispatch(int id, MouseEvent e, Component target)
     {
-      if (e instanceof MouseEvent)
-        {
-          MouseEvent me = (MouseEvent) e;
-          acquireComponentForMouseEvent(me);
-
-          //If there is no target, return
-          if (mouseEventTarget == null)
-            return;
-          
-          //Avoid re-dispatching to ourselves and causing an infinite loop
-          if (mouseEventTarget.equals(frame.getGlassPane()))
-            return;
-
-          // Avoid dispatching ENTERED and EXITED events twice.
-          if (mouseEventTarget.isShowing()
-              && e.getID() != MouseEvent.MOUSE_ENTERED
-              && e.getID() != MouseEvent.MOUSE_EXITED)
-            {
-              MouseEvent newEvt = SwingUtilities.convertMouseEvent(
-                                                                   frame.getGlassPane(),
-                                                                   me,
-                                                                   mouseEventTarget);
-              mouseEventTarget.dispatchEvent(newEvt);
-
-              switch (e.getID())
-                {
-                case MouseEvent.MOUSE_PRESSED:
-                  if (pressCount++ == 0)
-                    pressedComponent = mouseEventTarget;
-                  break;
-                case MouseEvent.MOUSE_RELEASED:
-                  // Clear our memory of the original PRESSED event, only if
-                  // we're not expecting a CLICKED event after this. If
-                  // there is a CLICKED event after this, it will do clean up.
-                  if (--pressCount == 0 && mouseEventTarget != pressedComponent)
-                    pressedComponent = null;
-                  break;
-                }
-            }
-        }
+      Point p = SwingUtilities.convertPoint(frame.getLayeredPane(), e.getX(),
+                                            e.getY(), target);
+      MouseEvent ev = new MouseEvent(target, id, e.getWhen(),
+                                     e.getModifiers() | e.getModifiersEx(),
+                                     p.x, p.y, e.getClickCount(),
+                                     e.isPopupTrigger());
+      target.dispatchEvent(ev);
     }
   }
 
@@ -945,40 +897,60 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public void propertyChange(PropertyChangeEvent evt)
     {
-      if (evt.getPropertyName().equals(JInternalFrame.IS_MAXIMUM_PROPERTY))
+      String property = evt.getPropertyName();
+      if (property.equals(JInternalFrame.IS_MAXIMUM_PROPERTY))
         {
           if (frame.isMaximum())
             maximizeFrame(frame);
           else
             minimizeFrame(frame);
         }
-      else if (evt.getPropertyName().equals(JInternalFrame.IS_ICON_PROPERTY))
+      else if (property.equals(JInternalFrame.IS_ICON_PROPERTY))
         {
           if (frame.isIcon())
             iconifyFrame(frame);
           else
             deiconifyFrame(frame);
         }
-      else if (evt.getPropertyName().equals(JInternalFrame.IS_SELECTED_PROPERTY))
+      else if (property.equals(JInternalFrame.IS_SELECTED_PROPERTY))
         {
+          Component glassPane = frame.getGlassPane();
           if (frame.isSelected())
-            activateFrame(frame);
+            {
+              activateFrame(frame);
+              glassPane.setVisible(false);
+            }
           else
-            deactivateFrame(frame);
+            {
+              deactivateFrame(frame);
+              glassPane.setVisible(true);
+            }
         }
-      else if (evt.getPropertyName().equals(JInternalFrame.ROOT_PANE_PROPERTY)
-               || evt.getPropertyName().equals(
-                                               JInternalFrame.GLASS_PANE_PROPERTY))
+      else if (property.equals(JInternalFrame.ROOT_PANE_PROPERTY)
+               || property.equals(JInternalFrame.GLASS_PANE_PROPERTY))
         {
           Component old = (Component) evt.getOldValue();
-          old.removeMouseListener(glassPaneDispatcher);
-          old.removeMouseMotionListener(glassPaneDispatcher);
+          if (old != null)
+            {
+              old.removeMouseListener(glassPaneDispatcher);
+              old.removeMouseMotionListener(glassPaneDispatcher);
+            }
 
           Component newPane = (Component) evt.getNewValue();
-          newPane.addMouseListener(glassPaneDispatcher);
-          newPane.addMouseMotionListener(glassPaneDispatcher);
+          if (newPane != null)
+            {
+              newPane.addMouseListener(glassPaneDispatcher);
+              newPane.addMouseMotionListener(glassPaneDispatcher);
+            }
 
           frame.revalidate();
+        }
+      else if (property.equals(JInternalFrame.IS_CLOSED_PROPERTY))
+        {
+          if (evt.getNewValue() == Boolean.TRUE)
+            {
+              closeFrame(frame);
+            }
         }
       /*
        * FIXME: need to add ancestor properties to JComponents. else if

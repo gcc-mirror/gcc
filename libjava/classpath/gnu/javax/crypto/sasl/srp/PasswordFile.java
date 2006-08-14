@@ -39,7 +39,6 @@ exception statement from your version.  */
 package gnu.javax.crypto.sasl.srp;
 
 import gnu.java.security.Registry;
-import gnu.java.security.hash.IMessageDigest;
 import gnu.java.security.util.Util;
 import gnu.javax.crypto.key.srp6.SRPAlgorithm;
 import gnu.javax.crypto.sasl.NoSuchUserException;
@@ -50,9 +49,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -62,70 +61,58 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
 /**
- * <p>The implementation of SRP password files.</p>
- *
- * <p>For SRP, there are three (3) files:
+ * The implementation of SRP password files.
+ * <p>
+ * For SRP, there are three (3) files:
  * <ol>
- *    <li>The password configuration file: tpasswd.conf. It contains the pairs
- *    &lt;N,g> indexed by a number for each pair used for a user. By default,
- *    this file's pathname is constructed from the base password file pathname
- *    by prepending it with the ".conf" suffix.</li>
- *
- *    <li>The base password file: tpasswd. It contains the related password
- *    entries for all the users with values computed using SRP's default
- *    message digest algorithm: SHA-1 (with 160-bit output block size).</li>
- *
- *    <li>The extended password file: tpasswd2. Its name, by default, is
- *    constructed by adding the suffix "2" to the fully qualified pathname of
- *    the base password file. It contains, in addition to the same fields as
- *    the base password file, albeit with a different verifier value, an extra
- *    field identifying the message digest algorithm used to compute this
- *    (verifier) value.</li>
- * </ol></p>
- *
- * <p>This implementation assumes the following message digest algorithm codes:
+ * <li>The password configuration file: tpasswd.conf. It contains the pairs
+ * &lt;N,g> indexed by a number for each pair used for a user. By default, this
+ * file's pathname is constructed from the base password file pathname by
+ * prepending it with the ".conf" suffix.</li>
+ * <li>The base password file: tpasswd. It contains the related password
+ * entries for all the users with values computed using SRP's default message
+ * digest algorithm: SHA-1 (with 160-bit output block size).</li>
+ * <li>The extended password file: tpasswd2. Its name, by default, is
+ * constructed by adding the suffix "2" to the fully qualified pathname of the
+ * base password file. It contains, in addition to the same fields as the base
+ * password file, albeit with a different verifier value, an extra field
+ * identifying the message digest algorithm used to compute this (verifier)
+ * value.</li>
+ * </ol>
+ * <p>
+ * This implementation assumes the following message digest algorithm codes:
  * <ul>
- *    <li>0: the default hash algorithm, which is SHA-1 (or its alias SHA-160).</li>
- *    <li>1: MD5.</li>
- *    <li>2: RIPEMD-128.</li>
- *    <li>3: RIPEMD-160.</li>
- *    <li>4: SHA-256.</li>
- *    <li>5: SHA-384.</li>
- *    <li>6: SHA-512.</li>
- * </ul></p>
- *
- * <p><b>IMPORTANT:</b> This method computes the verifiers as described in
- * RFC-2945, which differs from the description given on the web page for
- * SRP-6.</p>
- *
- * <p>Reference:</p>
+ * <li>0: the default hash algorithm, which is SHA-1 (or its alias SHA-160).</li>
+ * <li>1: MD5.</li>
+ * <li>2: RIPEMD-128.</li>
+ * <li>3: RIPEMD-160.</li>
+ * <li>4: SHA-256.</li>
+ * <li>5: SHA-384.</li>
+ * <li>6: SHA-512.</li>
+ * </ul>
+ * <p>
+ * <b>IMPORTANT:</b> This method computes the verifiers as described in
+ * RFC-2945, which differs from the description given on the web page for SRP-6.
+ * <p>
+ * Reference:
  * <ol>
- *    <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
- *    Thomas J. Wu.</li>
+ * <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
+ * Thomas J. Wu.</li>
  * </ol>
  */
 public class PasswordFile
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   // names of property keys used in this class
   private static final String USER_FIELD = "user";
-
   private static final String VERIFIERS_FIELD = "verifier";
-
   private static final String SALT_FIELD = "salt";
-
   private static final String CONFIG_FIELD = "config";
-
   private static String DEFAULT_FILE;
   static
     {
       DEFAULT_FILE = System.getProperty(SRPRegistry.PASSWORD_FILE,
                                         SRPRegistry.DEFAULT_PASSWORD_FILE);
     }
-
   /** The SRP algorithm instances used by this object. */
   private static final HashMap srps;
   static
@@ -150,27 +137,19 @@ public class PasswordFile
     }
 
   private String confName, pwName, pw2Name;
-
   private File configFile, passwdFile, passwd2File;
-
   private long lastmodPasswdFile, lastmodPasswd2File;
-
   private HashMap entries = new HashMap();
-
   private HashMap configurations = new HashMap();
-
   // default N values to use when creating a new password.conf file
   private static final BigInteger[] Nsrp = new BigInteger[] {
-                                                             SRPAlgorithm.N_2048,
-                                                             SRPAlgorithm.N_1536,
-                                                             SRPAlgorithm.N_1280,
-                                                             SRPAlgorithm.N_1024,
-                                                             SRPAlgorithm.N_768,
-                                                             SRPAlgorithm.N_640,
-                                                             SRPAlgorithm.N_512 };
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
+      SRPAlgorithm.N_2048,
+      SRPAlgorithm.N_1536,
+      SRPAlgorithm.N_1280,
+      SRPAlgorithm.N_1024,
+      SRPAlgorithm.N_768,
+      SRPAlgorithm.N_640,
+      SRPAlgorithm.N_512 };
 
   public PasswordFile() throws IOException
   {
@@ -206,63 +185,43 @@ public class PasswordFile
     update();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns a string representing the decimal value of an integer
-   * identifying the message digest algorithm to use for the SRP computations.
-   * </p>
-   *
+   * Returns a string representing the decimal value of an integer identifying
+   * the message digest algorithm to use for the SRP computations.
+   * 
    * @param mdName the canonical name of a message digest algorithm.
    * @return a string representing the decimal value of an ID for that
-   * algorithm.
+   *         algorithm.
    */
   private static final String nameToID(final String mdName)
   {
     if (Registry.SHA_HASH.equalsIgnoreCase(mdName)
         || Registry.SHA1_HASH.equalsIgnoreCase(mdName)
         || Registry.SHA160_HASH.equalsIgnoreCase(mdName))
-      {
-        return "0";
-      }
+      return "0";
     else if (Registry.MD5_HASH.equalsIgnoreCase(mdName))
-      {
-        return "1";
-      }
+      return "1";
     else if (Registry.RIPEMD128_HASH.equalsIgnoreCase(mdName))
-      {
-        return "2";
-      }
+      return "2";
     else if (Registry.RIPEMD160_HASH.equalsIgnoreCase(mdName))
-      {
-        return "3";
-      }
+      return "3";
     else if (Registry.SHA256_HASH.equalsIgnoreCase(mdName))
-      {
-        return "4";
-      }
+      return "4";
     else if (Registry.SHA384_HASH.equalsIgnoreCase(mdName))
-      {
-        return "5";
-      }
+      return "5";
     else if (Registry.SHA512_HASH.equalsIgnoreCase(mdName))
-      {
-        return "6";
-      }
+      return "6";
     return "0";
   }
 
-  // SRP password configuration file methods ---------------------------------
-
   /**
-   * <p>Checks if the current configuration file contains the &lt;N, g> pair
-   * for the designated <code>index</code>.</p>
-   *
+   * Checks if the current configuration file contains the &lt;N, g> pair for
+   * the designated <code>index</code>.
+   * 
    * @param index a string representing 1-digit identification of an &lt;N, g>
-   * pair used.
-   * @return <code>true</code> if the designated <code>index</code> is that of
-   * a known &lt;N, g> pair, and <code>false</code> otherwise.
+   *          pair used.
+   * @return <code>true</code> if the designated <code>index</code> is that
+   *         of a known &lt;N, g> pair, and <code>false</code> otherwise.
    * @throws IOException if an exception occurs during the process.
    * @see SRPRegistry#N_2048_BITS
    * @see SRPRegistry#N_1536_BITS
@@ -280,16 +239,16 @@ public class PasswordFile
   }
 
   /**
-   * <p>Returns a pair of strings representing the pair of <code>N</code> and
-   * <code>g</code> MPIs for the designated <code>index</code>.</p>
-   *
+   * Returns a pair of strings representing the pair of <code>N</code> and
+   * <code>g</code> MPIs for the designated <code>index</code>.
+   * 
    * @param index a string representing 1-digit identification of an &lt;N, g>
-   * pair to look up.
+   *          pair to look up.
    * @return a pair of strings, arranged in an array, where the first (at index
-   * position #0) is the repesentation of the MPI <code>N</code>, and the
-   * second (at index position #1) is the representation of the MPI
-   * <code>g</code>. If the <code>index</code> refers to an unknown pair, then
-   * an empty string array is returned.
+   *         position #0) is the repesentation of the MPI <code>N</code>, and
+   *         the second (at index position #1) is the representation of the MPI
+   *         <code>g</code>. If the <code>index</code> refers to an unknown
+   *         pair, then an empty string array is returned.
    * @throws IOException if an exception occurs during the process.
    */
   public synchronized String[] lookupConfig(final String index)
@@ -298,13 +257,9 @@ public class PasswordFile
     checkCurrent();
     String[] result = null;
     if (configurations.containsKey(index))
-      {
-        result = (String[]) configurations.get(index);
-      }
+      result = (String[]) configurations.get(index);
     return result;
   }
-
-  // SRP base and extended password configuration files methods --------------
 
   public synchronized boolean contains(final String user) throws IOException
   {
@@ -318,9 +273,7 @@ public class PasswordFile
   {
     checkCurrent();
     if (entries.containsKey(user))
-      {
-        throw new UserAlreadyExistsException(user);
-      }
+      throw new UserAlreadyExistsException(user);
     final HashMap fields = new HashMap(4);
     fields.put(USER_FIELD, user); // 0
     fields.put(VERIFIERS_FIELD, newVerifiers(user, salt, passwd, index)); // 1
@@ -334,10 +287,8 @@ public class PasswordFile
       throws IOException
   {
     checkCurrent();
-    if (!entries.containsKey(user))
-      {
-        throw new NoSuchUserException(user);
-      }
+    if (! entries.containsKey(user))
+      throw new NoSuchUserException(user);
     final HashMap fields = (HashMap) entries.get(user);
     final byte[] salt;
     try
@@ -369,27 +320,23 @@ public class PasswordFile
     finally
       {
         if (pw1 != null)
-          {
-            try
-              {
-                pw1.flush();
-              }
-            finally
-              {
-                pw1.close();
-              }
-          }
+          try
+            {
+              pw1.flush();
+            }
+          finally
+            {
+              pw1.close();
+            }
         if (pw2 != null)
-          {
-            try
-              {
-                pw2.flush();
-              }
-            finally
-              {
-                pw2.close();
-              }
-          }
+          try
+            {
+              pw2.flush();
+            }
+          finally
+            {
+              pw2.close();
+            }
         try
           {
             f1.close();
@@ -410,24 +357,22 @@ public class PasswordFile
   }
 
   /**
-   * <p>Returns the triplet: verifier, salt and configuration file index, of a
+   * Returns the triplet: verifier, salt and configuration file index, of a
    * designated user, and a designated message digest algorithm name, as an
-   * array of strings.</p>
-   *
+   * array of strings.
+   * 
    * @param user the username.
    * @param mdName the canonical name of the SRP's message digest algorithm.
    * @return a string array containing, in this order, the BASE-64 encodings of
-   * the verifier, the salt and the index in the password configuration file of
-   * the MPIs N and g of the designated user.
+   *         the verifier, the salt and the index in the password configuration
+   *         file of the MPIs N and g of the designated user.
    */
   public synchronized String[] lookup(final String user, final String mdName)
       throws IOException
   {
     checkCurrent();
-    if (!entries.containsKey(user))
-      {
-        throw new NoSuchUserException(user);
-      }
+    if (! entries.containsKey(user))
+      throw new NoSuchUserException(user);
     final HashMap fields = (HashMap) entries.get(user);
     final HashMap verifiers = (HashMap) fields.get(VERIFIERS_FIELD);
     final String salt = (String) fields.get(SALT_FIELD);
@@ -435,8 +380,6 @@ public class PasswordFile
     final String verifier = (String) verifiers.get(nameToID(mdName));
     return new String[] { verifier, salt, index };
   }
-
-  // Other instance methods --------------------------------------------------
 
   private synchronized void readOrCreateConf() throws IOException
   {
@@ -469,13 +412,9 @@ public class PasswordFile
         finally
           {
             if (pw0 != null)
-              {
-                pw0.close();
-              }
+              pw0.close();
             else if (f0 != null)
-              {
-                f0.close();
-              }
+              f0.close();
           }
       }
   }
@@ -511,26 +450,27 @@ public class PasswordFile
       {
         ndx = (String) it.next();
         mpi = (String[]) configurations.get(ndx);
-        sb = new StringBuffer(ndx).append(":").append(mpi[0]).append(":").append(
-                                                                                 mpi[1]);
+        sb = new StringBuffer(ndx)
+            .append(":").append(mpi[0])
+            .append(":").append(mpi[1]);
         pw.println(sb.toString());
       }
   }
 
   /**
-   * <p>Compute the new verifiers for the designated username and password.</p>
-   *
-   * <p><b>IMPORTANT:</b> This method computes the verifiers as described in
+   * Compute the new verifiers for the designated username and password.
+   * <p>
+   * <b>IMPORTANT:</b> This method computes the verifiers as described in
    * RFC-2945, which differs from the description given on the web page for
-   * SRP-6.</p>
-   *
+   * SRP-6.
+   * 
    * @param user the user's name.
    * @param s the user's salt.
    * @param password the user's password
    * @param index the index of the &lt;N, g> pair to use for this user.
    * @return a {@link java.util.Map} of user verifiers.
    * @throws UnsupportedEncodingException if the US-ASCII decoder is not
-   * available on this platform.
+   *           available on this platform.
    */
   private HashMap newVerifiers(final String user, final byte[] s,
                                final String password, final String index)
@@ -540,7 +480,6 @@ public class PasswordFile
     final String[] mpi = (String[]) configurations.get(index);
     final BigInteger N = new BigInteger(1, Util.fromBase64(mpi[0]));
     final BigInteger g = new BigInteger(1, Util.fromBase64(mpi[1]));
-
     final HashMap result = new HashMap(srps.size());
     BigInteger x, v;
     SRP srp;
@@ -551,7 +490,6 @@ public class PasswordFile
         x = new BigInteger(1, srp.computeX(s, user, password));
         v = g.modPow(x, N);
         final String verifier = Util.toBase64(v.toByteArray());
-
         result.put(digestID, verifier);
       }
     return result;
@@ -560,7 +498,6 @@ public class PasswordFile
   private synchronized void update() throws IOException
   {
     entries.clear();
-
     FileInputStream fis;
     passwdFile = new File(pwName);
     lastmodPasswdFile = passwdFile.lastModified();
@@ -588,9 +525,7 @@ public class PasswordFile
   {
     if (passwdFile.lastModified() > lastmodPasswdFile
         || passwd2File.lastModified() > lastmodPasswd2File)
-      {
-        update();
-      }
+      update();
   }
 
   private void readPasswd(final InputStream in) throws IOException
@@ -612,16 +547,13 @@ public class PasswordFile
           {
             throw new IOException("SRP base password file corrupt");
           }
-
         final HashMap verifiers = new HashMap(6);
         verifiers.put("0", verifier);
-
         final HashMap fields = new HashMap(4);
         fields.put(USER_FIELD, user);
         fields.put(VERIFIERS_FIELD, verifiers);
         fields.put(SALT_FIELD, salt);
         fields.put(CONFIG_FIELD, index);
-
         entries.put(user, fields);
       }
   }
@@ -645,7 +577,6 @@ public class PasswordFile
           {
             throw new IOException("SRP extended password file corrupt");
           }
-
         fields = (HashMap) entries.get(user);
         if (fields != null)
           {
@@ -667,30 +598,25 @@ public class PasswordFile
       {
         user = (String) i.next();
         fields = (HashMap) entries.get(user);
-        if (!user.equals(fields.get(USER_FIELD)))
-          {
-            throw new IOException("Inconsistent SRP password data");
-          }
+        if (! user.equals(fields.get(USER_FIELD)))
+          throw new IOException("Inconsistent SRP password data");
         verifiers = (HashMap) fields.get(VERIFIERS_FIELD);
-        sb1 = new StringBuffer().append(user).append(":").append(
-                                                                 (String) verifiers.get("0")).append(
-                                                                                                     ":").append(
-                                                                                                                 (String) fields.get(SALT_FIELD)).append(
-                                                                                                                                                         ":").append(
-                                                                                                                                                                     (String) fields.get(CONFIG_FIELD));
+        sb1 = new StringBuffer(user)
+            .append(":").append((String) verifiers.get("0"))
+            .append(":").append((String) fields.get(SALT_FIELD))
+            .append(":").append((String) fields.get(CONFIG_FIELD));
         pw1.println(sb1.toString());
         // write extended information
         j = verifiers.keySet().iterator();
         while (j.hasNext())
           {
             digestID = (String) j.next();
-            if (!"0".equals(digestID))
+            if (! "0".equals(digestID))
               {
                 // #0 is the default digest, already present in tpasswd!
-                sb2 = new StringBuffer().append(digestID).append(":").append(
-                                                                             user).append(
-                                                                                          ":").append(
-                                                                                                      (String) verifiers.get(digestID));
+                sb2 = new StringBuffer(digestID)
+                    .append(":").append(user)
+                    .append(":").append((String) verifiers.get(digestID));
                 pw2.println(sb2.toString());
               }
           }

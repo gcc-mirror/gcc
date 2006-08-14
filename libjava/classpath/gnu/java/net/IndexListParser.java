@@ -125,7 +125,11 @@ public class IndexListParser
 
         br.close();
       }
-    // else INDEX.LIST does not exist
+    else
+      {
+        // INDEX.LIST does not exist
+        clearAll();
+      }
     }
     catch (Exception ex)
     {

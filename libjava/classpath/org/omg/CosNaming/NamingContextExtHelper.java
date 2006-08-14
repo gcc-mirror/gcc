@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CosNaming;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -61,11 +62,6 @@ public abstract class NamingContextExtHelper
    * The naming context repository id.
    */
   private static String _id = "IDL:omg.org/CosNaming/NamingContextExt:1.0";
-
-  /**
-   * The cached {@link NamingContextExt} typecode.
-   */
-  private static TypeCode typeCode = null;
 
   /**
    * Extract the naming context from the given {@link Any}.
@@ -168,12 +164,8 @@ public abstract class NamingContextExtHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      typeCode =
-        ORB.init().create_interface_tc(NamingContextExtHelper.id(),
-                                       "NamingContextExt"
-                                      );
-    return typeCode;
+    return OrbRestricted.Singleton.create_interface_tc(NamingContextExtHelper.id(),
+                                          "NamingContextExt");
   }
 
   /**

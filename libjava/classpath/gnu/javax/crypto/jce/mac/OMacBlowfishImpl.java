@@ -40,12 +40,9 @@ package gnu.javax.crypto.jce.mac;
 
 import gnu.java.security.Registry;
 
-public class OMacBlowfishImpl extends MacAdapter
+public class OMacBlowfishImpl
+    extends MacAdapter
 {
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
   public OMacBlowfishImpl()
   {
     super(Registry.OMAC_PREFIX + Registry.BLOWFISH_CIPHER);

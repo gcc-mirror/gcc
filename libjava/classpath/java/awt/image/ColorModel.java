@@ -1,5 +1,5 @@
 /* ColorModel.java --
-   Copyright (C) 1999, 2000, 2002, 2003, 2004  Free Software Foundation
+   Copyright (C) 1999, 2000, 2002, 2003, 2004, 2006  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,6 @@ import gnu.java.awt.Buffers;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
-import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 /**
@@ -162,32 +161,6 @@ public abstract class ColorModel implements Transparency
     this.isAlphaPremultiplied = isAlphaPremultiplied;
     this.transparency = transparency;
     this.transferType = transferType;
-  }
-
-  // This is a hook for ColorConvertOp to create a colormodel with
-  // a new colorspace
-  ColorModel cloneColorModel(ColorSpace cspace)
-  {
-    Class cls = this.getClass();
-    ColorModel cm;
-    try {
-      // This constructor will exist.
-      Constructor ctor =
-        cls.getConstructor(new Class[]{int.class, int[].class,
-				       ColorSpace.class, boolean.class,
-				       boolean.class, int.class, int.class});
-      cm = (ColorModel)ctor.
-        newInstance(new Object[]{new Integer(pixel_bits),
-				 bits, cspace, Boolean.valueOf(hasAlpha),
-				 Boolean.valueOf(isAlphaPremultiplied),
-				 new Integer(transparency),
-				 new Integer(transferType)});
-    }
-    catch (Exception e)
-    {
-      throw new IllegalArgumentException();
-    }
-    return cm;
   }
   
   public void finalize()

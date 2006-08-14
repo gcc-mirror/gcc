@@ -38,74 +38,77 @@ exception statement from your version.  */
 
 package gnu.java.security.key.dss;
 
-import gnu.classpath.SystemProperties;
 import gnu.java.security.Registry;
+import gnu.java.security.action.GetPropertyAction;
 import gnu.java.security.util.FormatUtil;
 
 import java.math.BigInteger;
+import java.security.AccessController;
 import java.security.Key;
 import java.security.interfaces.DSAKey;
 import java.security.interfaces.DSAParams;
 import java.security.spec.DSAParameterSpec;
 
 /**
- * <p>A base asbtract class for both public and private DSS (Digital Signature
+ * A base asbtract class for both public and private DSS (Digital Signature
  * Standard) keys. It encapsulates the three DSS numbers: <code>p</code>,
- * <code>q</code> and <code>g</code>.</p>
- *
- * <p>According to the JDK, cryptographic <i>Keys</i> all have a <i>format</i>.
+ * <code>q</code> and <code>g</code>.
+ * <p>
+ * According to the JDK, cryptographic <i>Keys</i> all have a <i>format</i>.
  * The format used in this implementation is called <i>Raw</i>, and basically
  * consists of the raw byte sequences of algorithm parameters. The exact order
- * of the byte sequences and the implementation details are given in each of
- * the relevant <code>getEncoded()</code> methods of each of the private and
- * public keys.</p>
- *
+ * of the byte sequences and the implementation details are given in each of the
+ * relevant <code>getEncoded()</code> methods of each of the private and
+ * public keys.
+ * <p>
+ * <b>IMPORTANT</b>: Under certain circumstances (e.g. in an X.509 certificate
+ * with inherited AlgorithmIdentifier's parameters of a SubjectPublicKeyInfo
+ * element) these three MPIs may be <code>null</code>.
+ * 
  * @see DSSPrivateKey#getEncoded
  * @see DSSPublicKey#getEncoded
  */
-public abstract class DSSKey implements Key, DSAKey
+public abstract class DSSKey
+    implements Key, DSAKey
 {
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /**
-   * A prime modulus, where <code>2<sup>L-1</sup> &lt; p &lt; 2<sup>L</sup></code>
-   * for <code>512 &lt;= L &lt;= 1024</code> and <code>L</code> a multiple of
+   * A prime modulus, where
+   * <code>2<sup>L-1</sup> &lt; p &lt; 2<sup>L</sup></code> for
+   * <code>512 &lt;= L &lt;= 1024</code> and <code>L</code> a multiple of
    * <code>64</code>.
    */
   protected final BigInteger p;
 
   /**
-   * A prime divisor of <code>p - 1</code>, where <code>2<sup>159</sup> &lt; q
+   * A prime divisor of <code>p - 1</code>, where
+   * <code>2<sup>159</sup> &lt; q
    * &lt; 2<sup>160</sup></code>.
    */
   protected final BigInteger q;
 
   /**
-   * <code>g = h<sup>(p-1)</sup>/q mod p</code>, where <code>h</code> is any
-   * integer with <code>1 &lt; h &lt; p - 1</code> such that <code>h<sup>
-   * (p-1)</sup>/q mod p > 1</code> (<code>g</code> has order <code>q mod p
+   * <code>g = h<sup>(p-1)</sup>/q mod p</code>, where <code>h</code> is
+   * any integer with <code>1 &lt; h &lt; p - 1</code> such that <code>h<sup>
+   * (p-1)</sup>/q mod p > 1</code> (<code>g</code>
+   * has order <code>q mod p
    * </code>).
    */
   protected final BigInteger g;
 
   /**
-   * Identifier of the default encoding format to use when externalizing the
-   * key material.
+   * Identifier of the default encoding format to use when externalizing the key
+   * material.
    */
   protected final int defaultFormat;
 
   /** String representation of this key. Cached for speed. */
   private transient String str;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
    * Trivial protected constructor.
    * 
    * @param defaultFormat the identifier of the encoding format to use by
-   * default when externalizing the key.
+   *          default when externalizing the key.
    * @param p the DSS parameter <code>p</code>.
    * @param q the DSS parameter <code>q</code>.
    * @param g the DSS parameter <code>g</code>.
@@ -121,20 +124,10 @@ public abstract class DSSKey implements Key, DSAKey
     this.g = g;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.security.interfaces.DSAKey interface implementation ----------------
-
   public DSAParams getParams()
   {
     return new DSAParameterSpec(p, q, g);
   }
-
-  // java.security.Key interface implementation ------------------------------
 
   public String getAlgorithm()
   {
@@ -152,27 +145,31 @@ public abstract class DSSKey implements Key, DSAKey
     return FormatUtil.getEncodingShortName(defaultFormat);
   }
 
-  // Other instance methods --------------------------------------------------
-
   /**
-   * <p>Returns <code>true</code> if the designated object is an instance of
+   * Returns <code>true</code> if the designated object is an instance of
    * {@link DSAKey} and has the same DSS (Digital Signature Standard) parameter
-   * values as this one.</p>
-   *
+   * values as this one.
+   * <p>
+   * Always returns <code>false</code> if the MPIs of this key are
+   * <i>inherited</i>. This may be the case when the key is re-constructed from
+   * an X.509 certificate with absent or NULL AlgorithmIdentifier's parameters
+   * field.
+   * 
    * @param obj the other non-null DSS key to compare to.
-   * @return <code>true</code> if the designated object is of the same type and
-   * value as this one.
+   * @return <code>true</code> if the designated object is of the same type
+   *         and value as this one.
    */
   public boolean equals(Object obj)
   {
+    if (hasInheritedParameters())
+      return false;
+
     if (obj == null)
-      {
-        return false;
-      }
-    if (!(obj instanceof DSAKey))
-      {
-        return false;
-      }
+      return false;
+
+    if (! (obj instanceof DSAKey))
+      return false;
+
     DSAKey that = (DSAKey) obj;
     return p.equals(that.getParams().getP())
            && q.equals(that.getParams().getQ())
@@ -183,19 +180,32 @@ public abstract class DSSKey implements Key, DSAKey
   {
     if (str == null)
       {
-        String ls = SystemProperties.getProperty("line.separator");
-        str = new StringBuilder().append(ls)
-        .append("defaultFormat=").append(defaultFormat).append(",").append(ls)
-        .append("p=0x").append(p.toString(16)).append(",").append(ls)
-        .append("q=0x").append(q.toString(16)).append(",").append(ls)
-        .append("g=0x").append(g.toString(16))
-        .toString();
+        String ls = (String) AccessController.doPrivileged(new GetPropertyAction("line.separator"));
+        StringBuilder sb = new StringBuilder(ls)
+            .append("defaultFormat=").append(defaultFormat).append(",")
+            .append(ls);
+        if (hasInheritedParameters())
+          sb.append("p=inherited,").append(ls)
+              .append("q=inherited,").append(ls)
+              .append("g=inherited");
+        else
+          sb.append("p=0x").append(p.toString(16)).append(",").append(ls)
+              .append("q=0x").append(q.toString(16)).append(",").append(ls)
+              .append("g=0x").append(g.toString(16));
+        str = sb.toString();
       }
-
     return str;
   }
 
-  // abstract methods to be implemented by subclasses ------------------------
-
   public abstract byte[] getEncoded(int format);
+
+  /**
+   * @return <code>true</code> if <code>p</code>, <code>q</code> and
+   *         <code>g</code> are all <code>null</code>. Returns
+   *         <code>false</code> otherwise.
+   */
+  public boolean hasInheritedParameters()
+  {
+    return p == null && q == null && g == null;
+  }
 }

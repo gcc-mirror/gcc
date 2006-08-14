@@ -53,57 +53,38 @@ import gnu.java.security.prng.IRandom;
 import gnu.java.security.prng.LimitReachedException;
 import gnu.javax.crypto.prng.PRNGFactory;
 
-public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
+public abstract class PBKDF2SecretKeyFactory
+    extends SecretKeyFactorySpi
 {
-
-  // Constants and fields.
-  // ------------------------------------------------------------------------
-
   protected String macName;
-
   private static final int DEFAULT_ITERATION_COUNT = 1000;
-
   private static final int DEFAULT_KEY_LEN = 32;
-
-  // Constructor.
-  // ------------------------------------------------------------------------
 
   protected PBKDF2SecretKeyFactory(String macName)
   {
     this.macName = macName;
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   protected SecretKey engineGenerateSecret(KeySpec spec)
       throws InvalidKeySpecException
   {
-    if (!(spec instanceof PBEKeySpec))
-      {
-        throw new InvalidKeySpecException("not a PBEKeySpec");
-      }
+    if (! (spec instanceof PBEKeySpec))
+      throw new InvalidKeySpecException("not a PBEKeySpec");
     IRandom kdf = PRNGFactory.getInstance("PBKDF2-" + macName);
     HashMap attr = new HashMap();
     attr.put(IPBE.PASSWORD, ((PBEKeySpec) spec).getPassword());
     byte[] salt = ((PBEKeySpec) spec).getSalt();
     if (salt == null)
-      {
-        salt = new byte[0];
-      }
+      salt = new byte[0];
     attr.put(IPBE.SALT, salt);
     int ic = ((PBEKeySpec) spec).getIterationCount();
     if (ic <= 0)
-      {
-        ic = DEFAULT_ITERATION_COUNT;
-      }
-    attr.put(IPBE.ITERATION_COUNT, new Integer(ic));
+      ic = DEFAULT_ITERATION_COUNT;
+    attr.put(IPBE.ITERATION_COUNT, Integer.valueOf(ic));
     kdf.init(attr);
     int len = ((PBEKeySpec) spec).getKeyLength();
     if (len <= 0)
-      {
-        len = DEFAULT_KEY_LEN;
-      }
+      len = DEFAULT_KEY_LEN;
     byte[] dk = new byte[len];
     try
       {
@@ -113,7 +94,6 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
       {
         throw new IllegalArgumentException(lre.toString());
       }
-
     return new SecretKeySpec(dk, "PBKDF2");
   }
 
@@ -128,10 +108,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     return new SecretKeySpec(key.getEncoded(), key.getAlgorithm());
   }
 
-  // Inner classes.
-  // ------------------------------------------------------------------------
-
-  public static class HMacHaval extends PBKDF2SecretKeyFactory
+  public static class HMacHaval
+      extends PBKDF2SecretKeyFactory
   {
     public HMacHaval()
     {
@@ -139,7 +117,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacMD2 extends PBKDF2SecretKeyFactory
+  public static class HMacMD2
+      extends PBKDF2SecretKeyFactory
   {
     public HMacMD2()
     {
@@ -147,7 +126,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacMD4 extends PBKDF2SecretKeyFactory
+  public static class HMacMD4
+      extends PBKDF2SecretKeyFactory
   {
     public HMacMD4()
     {
@@ -155,7 +135,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacMD5 extends PBKDF2SecretKeyFactory
+  public static class HMacMD5
+      extends PBKDF2SecretKeyFactory
   {
     public HMacMD5()
     {
@@ -163,7 +144,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacRipeMD128 extends PBKDF2SecretKeyFactory
+  public static class HMacRipeMD128
+      extends PBKDF2SecretKeyFactory
   {
     public HMacRipeMD128()
     {
@@ -171,7 +153,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacRipeMD160 extends PBKDF2SecretKeyFactory
+  public static class HMacRipeMD160
+      extends PBKDF2SecretKeyFactory
   {
     public HMacRipeMD160()
     {
@@ -179,7 +162,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacSHA1 extends PBKDF2SecretKeyFactory
+  public static class HMacSHA1
+      extends PBKDF2SecretKeyFactory
   {
     public HMacSHA1()
     {
@@ -187,7 +171,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacSHA256 extends PBKDF2SecretKeyFactory
+  public static class HMacSHA256
+      extends PBKDF2SecretKeyFactory
   {
     public HMacSHA256()
     {
@@ -195,7 +180,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacSHA384 extends PBKDF2SecretKeyFactory
+  public static class HMacSHA384
+      extends PBKDF2SecretKeyFactory
   {
     public HMacSHA384()
     {
@@ -203,7 +189,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacSHA512 extends PBKDF2SecretKeyFactory
+  public static class HMacSHA512
+      extends PBKDF2SecretKeyFactory
   {
     public HMacSHA512()
     {
@@ -211,7 +198,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacTiger extends PBKDF2SecretKeyFactory
+  public static class HMacTiger
+      extends PBKDF2SecretKeyFactory
   {
     public HMacTiger()
     {
@@ -219,7 +207,8 @@ public abstract class PBKDF2SecretKeyFactory extends SecretKeyFactorySpi
     }
   }
 
-  public static class HMacWhirlpool extends PBKDF2SecretKeyFactory
+  public static class HMacWhirlpool
+      extends PBKDF2SecretKeyFactory
   {
     public HMacWhirlpool()
     {

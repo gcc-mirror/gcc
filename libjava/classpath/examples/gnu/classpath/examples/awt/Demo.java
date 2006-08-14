@@ -20,11 +20,70 @@ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 
 package gnu.classpath.examples.awt;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.Canvas;
+import java.awt.Checkbox;
+import java.awt.CheckboxGroup;
+import java.awt.CheckboxMenuItem;
+import java.awt.Choice;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.FileDialog;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Label;
 import java.awt.List;
-import java.awt.event.*;
+import java.awt.Menu;
+import java.awt.MenuBar;
+import java.awt.MenuItem;
+import java.awt.MenuShortcut;
+import java.awt.Panel;
+import java.awt.ScrollPane;
+import java.awt.TextField;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceContext;
+import java.awt.dnd.DragSourceDragEvent;
+import java.awt.dnd.DragSourceDropEvent;
+import java.awt.dnd.DragSourceEvent;
+import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
+import java.awt.dnd.InvalidDnDOperationException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.URL;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 class Demo
 {
@@ -154,6 +213,9 @@ class Demo
       addSubWindow ("RandomTests", new TestWindow (this));
       addSubWindow ("RoundRect", new RoundRectWindow ());
       addSubWindow ("Animation", new AnimationWindow ());
+      addSubWindow ("Resolution", new ResolutionWindow ());
+      addSubWindow ("Fullscreen", new FullscreenWindow ());
+      addSubWindow ("Drag n' Drop", new DragDropWindow ());
 
       Panel sp = new Panel();
       PrettyPanel p = new PrettyPanel();
@@ -742,6 +804,234 @@ class Demo
       
       Toolkit t = Toolkit.getDefaultToolkit();
       t.beep();
+    }
+  }
+  
+  static class ResolutionWindow extends SubFrame
+  {
+    GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+    
+    public void init ()
+    {
+      initted = true;
+      
+      setTitle("Change Screen Resolution");
+      final List list = new List();
+      DisplayMode[] modes = gd.getDisplayModes();
+      
+      for (int i=0;i<modes.length;i++ )
+        list.add(modes[i].getWidth()  + "x"
+                 + modes[i].getHeight()
+                 + ((modes[i].getBitDepth() != DisplayMode.BIT_DEPTH_MULTI)
+                   ? "x" + modes[i].getBitDepth() + "bpp"
+                   : "")
+                 + ((modes[i].getRefreshRate() != DisplayMode.REFRESH_RATE_UNKNOWN)
+                   ? "@" + modes[i].getRefreshRate() + "Hz"
+                   : ""));
+      
+      ActionListener al = new ActionListener()
+      {
+        public void actionPerformed(ActionEvent ae)
+        {
+          int i = list.getSelectedIndex();
+          gd.setDisplayMode(gd.getDisplayModes()[i]);
+        }
+      };
+      
+      Button b = new Button("Switch");
+      Button c = new Button("Close");
+      
+      list.addActionListener(al);
+      b.addActionListener(al);
+      
+      c.addActionListener(new ActionListener () {
+        public void actionPerformed (ActionEvent e) {
+          dispose();
+        }
+      });
+      
+      setLayout(new GridLayout(3, 1, 5, 5));
+      add(list);
+      add(b);
+      add(c);
+      
+      pack();
+    }
+  }
+
+  static class DragDropWindow
+      extends SubFrame
+      implements ActionListener, DropTargetListener
+  {
+    DragLabel source = new DragLabel("Drag and drop me to the following Button",
+                                     Label.CENTER);
+
+    Button target = new Button();
+
+    public void init()
+    {
+      source.setForeground(Color.red);
+      add(source, BorderLayout.NORTH);
+
+      target.addActionListener(this);
+      add(target, BorderLayout.SOUTH);
+
+      new DropTarget(target, DnDConstants.ACTION_COPY_OR_MOVE, this);
+
+      setSize(205, 100);
+
+      pack();
+    }
+
+    public void actionPerformed(ActionEvent e)
+    {
+      Button b = (Button) e.getSource();
+      b.setLabel("");
+    }
+
+    public void dragEnter(DropTargetDragEvent e)
+    {
+    }
+
+    public void dragExit(DropTargetEvent e)
+    {
+    }
+
+    public void dragOver(DropTargetDragEvent e)
+    {
+    }
+
+    public void drop(DropTargetDropEvent e)
+    {
+      try
+        {
+          Transferable t = e.getTransferable();
+
+          if (e.isDataFlavorSupported(DataFlavor.stringFlavor))
+            {
+              e.acceptDrop(e.getDropAction());
+
+              String s;
+              s = (String) t.getTransferData(DataFlavor.stringFlavor);
+
+              target.setLabel(s);
+
+              e.dropComplete(true);
+            }
+          else
+            e.rejectDrop();
+        }
+      catch (java.io.IOException e2)
+        {
+        }
+      catch (UnsupportedFlavorException e2)
+        {
+        }
+    }
+
+    public void dropActionChanged(DropTargetDragEvent e)
+    {
+    }
+
+    class DragLabel
+        extends Label
+        implements DragGestureListener, DragSourceListener
+    {
+      private DragSource ds = DragSource.getDefaultDragSource();
+
+      public DragLabel(String s, int alignment)
+      {
+        super(s, alignment);
+        int action = DnDConstants.ACTION_COPY_OR_MOVE;
+        ds.createDefaultDragGestureRecognizer(this, action, this);
+      }
+
+      public void dragGestureRecognized(DragGestureEvent e)
+      {
+        try
+          {
+            Transferable t = new StringSelection(getText());
+            e.startDrag(DragSource.DefaultCopyNoDrop, t, this);
+          }
+        catch (InvalidDnDOperationException e2)
+          {
+            System.out.println(e2);
+          }
+      }
+
+      public void dragDropEnd(DragSourceDropEvent e)
+      {
+        if (e.getDropSuccess() == false)
+          return;
+
+        int action = e.getDropAction();
+        if ((action & DnDConstants.ACTION_MOVE) != 0)
+          setText("");
+      }
+
+      public void dragEnter(DragSourceDragEvent e)
+      {
+        DragSourceContext ctx = e.getDragSourceContext();
+
+        int action = e.getDropAction();
+        if ((action & DnDConstants.ACTION_COPY) != 0)
+          ctx.setCursor(DragSource.DefaultCopyDrop);
+        else
+          ctx.setCursor(DragSource.DefaultCopyNoDrop);
+      }
+
+      public void dragExit(DragSourceEvent e)
+      {
+      }
+
+      public void dragOver(DragSourceDragEvent e)
+      {
+      }
+
+      public void dropActionChanged(DragSourceDragEvent e)
+      {
+      }
+    }
+  }
+  
+  static class FullscreenWindow extends SubFrame
+  {
+    GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+    
+    public void init ()
+    {
+      initted = true;
+      
+      setTitle("Fullscreen Exclusive Mode");
+
+      ActionListener al = new ActionListener()
+      {
+        public void actionPerformed(ActionEvent ae)
+        {
+          if (gd.getFullScreenWindow() == FullscreenWindow.this)
+            gd.setFullScreenWindow(null);
+          else
+            gd.setFullScreenWindow(FullscreenWindow.this);
+        }
+      };
+      
+      Button b = new Button("Toggle Fullscreen");
+      Button c = new Button("Close");
+      
+      b.addActionListener(al);
+      
+      c.addActionListener(new ActionListener () {
+        public void actionPerformed (ActionEvent e) {
+          gd.setFullScreenWindow(null);
+          dispose();
+        }
+      });
+      
+      setLayout(new GridLayout(3, 1, 5, 5));
+      add(b);
+      add(c);
+      
+      pack();
     }
   }
 

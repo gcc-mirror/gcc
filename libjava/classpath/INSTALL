@@ -46,18 +46,23 @@ Suggested Software
 	are required unless --disable-gtk-peer is used as an argument to
 	configure.
 
-        - GTK+ 2.4.x (or higher)
+        - GTK+ 2.8.x (or higher)
         - gdk-pixbuf
 
 	- XTest Extension (libXtst) for GdkRobot support in java.awt.
 
-	For building the Cairo GdkGraphics2D backend you need at least
-	Cairo 0.5.0.
+	For building gcjwebplugin you'll need the Mozilla plugin
+	support headers and libraries.
 
 	For building the Qt AWT peer JNI native libraries you have to
 	specify --enable-qt-peer and need the following library:
 
         - Qt 4.0.1
+
+	For building the X AWT peers see information below
+	(Building and running with the X AWT peers). You will need
+	the Escher 0.2.3 library:
+	http://escher.sourceforge.net
 
 	Please note that at the moment most operating systems do not
     ship Qt4 by default. We recommend using GNU Classpath' Qt4
@@ -113,17 +118,22 @@ gives a complete list.
   --enable-java           compile Java source default=yes
   --enable-jni            compile JNI source default=yes
   --enable-gtk-peer       compile GTK native peers default=yes
-  --enable-gtk-cairo      compile cairo based Graphics2D default=no
   --enable-qt-peer        compile Qt4 native peers default=no
   --enable-default-toolkit
                           fully qualified class name of default AWT toolkit
                           default=no
   --enable-xmlj           compile native libxml/xslt library default=no
   --enable-load-library   enable to use JNI native methods default=yes
+  --enable-local-sockets  enable build of local Unix sockets
   --with-jikes            to compile the class library using jikes
                           the default is to use gcj
   --with-glibj            define what to install (zip|flat|both|none)
                           default=zip
+  --with-escher=/path/to/escher
+                          enable build of the X/Escher peers, with
+                          the escher library at /path/to/escher, either
+                          in the form of a JAR file, or a directory
+                          containing the .class files of Escher.
   --enable-Werror         whether to compile C code with -Werror which turns
                           any compiler warning into a compilation failure
                           default=no
@@ -163,6 +173,25 @@ export LD_LIBRARY_PATH CLASSPATH
 
 More information about the VMs that use GNU Classpath can be found in the
 README file.
+
+------------------------------------------------------------------
+Building and running with the X AWT peers
+------------------------------------------------------------------
+
+In order build the X peers you need the Escher library version 0.2.3
+from http://escher.sourceforge.net . Unpack (and optionally build) the
+Escher library following the instructions in the downloaded
+package. Enable the build of the X peers by passing
+--with-escher=/path/to/escher to ./configure where /path/to/escher
+either points to a directory structure or JAR file containing the
+Escher classes. For Unix systems it is preferable to also build local
+socket support by passing --enable-local-sockets, which accelerates
+the network communication to the X server significantly.
+
+In this release you have to enable the X peers at runtime by
+setting the system property awt.toolkit=gnu.java.awt.peer.x.XToolkit
+by passing -Dawt.toolkit=gnu.java.awt.peer.x.XToolkit to the java
+command when running an application.
 
 ------------------------------------------------------------------
 Misc. Notes

@@ -39,14 +39,11 @@ exception statement from your version.  */
 package gnu.java.security.hash;
 
 /**
- * <p>A base abstract class to facilitate hash implementations.</p>
+ * A base abstract class to facilitate hash implementations.
  */
-public abstract class BaseHash implements IMessageDigest
+public abstract class BaseHash
+    implements IMessageDigest
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The canonical name prefix of the hash. */
   protected String name;
 
@@ -62,12 +59,9 @@ public abstract class BaseHash implements IMessageDigest
   /** Temporary input buffer. */
   protected byte[] buffer;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Trivial constructor for use by concrete subclasses.</p>
-   *
+   * Trivial constructor for use by concrete subclasses.
+   * 
    * @param name the canonical name prefix of this instance.
    * @param hashSize the block size of the output in bytes.
    * @param blockSize the block size of the internal transform.
@@ -83,14 +77,6 @@ public abstract class BaseHash implements IMessageDigest
 
     resetContext();
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // IMessageDigest interface implementation ---------------------------------
 
   public String name()
   {
@@ -114,9 +100,7 @@ public abstract class BaseHash implements IMessageDigest
     count++;
     buffer[i] = b;
     if (i == (blockSize - 1))
-      {
-        transform(buffer, 0);
-      }
+      transform(buffer, 0);
   }
 
   public void update(byte[] b)
@@ -136,16 +120,13 @@ public abstract class BaseHash implements IMessageDigest
         System.arraycopy(b, offset, buffer, n, partLen);
         transform(buffer, 0);
         for (i = partLen; i + blockSize - 1 < len; i += blockSize)
-          {
-            transform(b, offset + i);
-          }
+          transform(b, offset + i);
+
         n = 0;
       }
 
     if (i < len)
-      {
-        System.arraycopy(b, offset + i, buffer, n, len - i);
-      }
+      System.arraycopy(b, offset + i, buffer, n, len - i);
   }
 
   public byte[] digest()
@@ -163,31 +144,27 @@ public abstract class BaseHash implements IMessageDigest
   { // reset this instance for future re-use
     count = 0L;
     for (int i = 0; i < blockSize;)
-      {
-        buffer[i++] = 0;
-      }
+      buffer[i++] = 0;
 
     resetContext();
   }
-
-  // methods to be implemented by concrete subclasses ------------------------
 
   public abstract Object clone();
 
   public abstract boolean selfTest();
 
   /**
-   * <p>Returns the byte array to use as padding before completing a hash
-   * operation.</p>
-   *
+   * Returns the byte array to use as padding before completing a hash
+   * operation.
+   * 
    * @return the bytes to pad the remaining bytes in the buffer before
-   * completing a hash operation.
+   *         completing a hash operation.
    */
   protected abstract byte[] padBuffer();
 
   /**
-   * <p>Constructs the result from the contents of the current context.</p>
-   *
+   * Constructs the result from the contents of the current context.
+   * 
    * @return the output of the completed hash operation.
    */
   protected abstract byte[] getResult();
@@ -196,11 +173,11 @@ public abstract class BaseHash implements IMessageDigest
   protected abstract void resetContext();
 
   /**
-   * <p>The block digest transformation per se.</p>
-   *
+   * The block digest transformation per se.
+   * 
    * @param in the <i>blockSize</i> long block, as an array of bytes to digest.
    * @param offset the index where the data to digest is located within the
-   * input buffer.
+   *          input buffer.
    */
   protected abstract void transform(byte[] in, int offset);
 }

@@ -40,12 +40,9 @@ package gnu.javax.crypto.jce.mac;
 
 import gnu.java.security.Registry;
 
-public class OMacRijndaelImpl extends MacAdapter
+public class OMacRijndaelImpl
+    extends MacAdapter
 {
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
   public OMacRijndaelImpl()
   {
     super(Registry.OMAC_PREFIX + Registry.RIJNDAEL_CIPHER);

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.text.html;
 
+import gnu.javax.swing.text.html.CharacterAttributeTranslator;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -585,47 +587,15 @@ public class StyleSheet extends StyleContext
   }
   
   /**
-   * Converst a color string to a color. If it is not found, null is returned.
+   * Convert the color string represenation into java.awt.Color. The valid
+   * values are like "aqua" , "#00FFFF" or "rgb(1,6,44)".
    * 
-   * @param color - the color string such as "RED" or "#NNNNNN"
-   * @return the Color, or null if not found.
+   * @param colorName the color to convert.
+   * @return the matching java.awt.color
    */
-  public Color stringToColor(String color)
+  public Color stringToColor(String colorName)
   {
-    color = color.toLowerCase();
-    if (color.equals("black") || color.equals("#000000"))
-      return Color.BLACK;
-    else if (color.equals("aqua") || color.equals("#00FFFF"))
-      return new Color(127, 255, 212);
-    else if (color.equals("gray") || color.equals("#808080"))
-      return Color.GRAY;
-    else if (color.equals("navy") || color.equals("#000080"))
-      return new Color(0, 0, 128);
-    else if (color.equals("silver") || color.equals("#C0C0C0"))
-      return Color.LIGHT_GRAY;
-    else if (color.equals("green") || color.equals("#008000"))
-      return Color.GREEN;
-    else if (color.equals("olive") || color.equals("#808000"))
-      return new Color(128, 128, 0);
-    else if (color.equals("teal") || color.equals("#008080"))
-      return new Color(0, 128, 128);
-    else if (color.equals("blue") || color.equals("#0000FF"))
-      return Color.BLUE;
-    else if (color.equals("lime") || color.equals("#00FF00"))
-      return new Color(0, 255, 0);
-    else if (color.equals("purple") || color.equals("#800080"))
-      return new Color(128, 0, 128);
-    else if (color.equals("white") || color.equals("#FFFFFF"))
-      return Color.WHITE;
-    else if (color.equals("fuchsia") || color.equals("#FF00FF"))
-      return Color.MAGENTA;
-    else if (color.equals("maroon") || color.equals("#800000"))
-      return new Color(128, 0, 0);
-    else if (color.equals("Red") || color.equals("#FF0000"))
-      return Color.RED;
-    else if (color.equals("Yellow") || color.equals("#FFFF00"))
-      return Color.YELLOW;
-    return null; 
+    return CharacterAttributeTranslator.getColor(colorName);
   }
   
   /**

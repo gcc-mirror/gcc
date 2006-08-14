@@ -120,7 +120,7 @@ public class JPopupMenu extends JComponent implements Accessible, MenuElement
   private boolean lightWeightPopupEnabled;
 
   /** SelectionModel that keeps track of menu selection. */
-  private SingleSelectionModel selectionModel;
+  protected SingleSelectionModel selectionModel;
 
   /* Popup that is used to display JPopupMenu */
   private transient Popup popup;

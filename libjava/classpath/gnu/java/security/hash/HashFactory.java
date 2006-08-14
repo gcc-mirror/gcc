@@ -45,113 +45,73 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p>A <i>Factory</i> to instantiate message digest algorithm instances.</p>
+ * A <i>Factory</i> to instantiate message digest algorithm instances.
  */
 public class HashFactory
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial constructor to enforce <i>Singleton</i> pattern. */
   private HashFactory()
   {
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Return an instance of a hash algorithm given its name.</p>
-   *
+   * Return an instance of a hash algorithm given its name.
+   * 
    * @param name the name of the hash algorithm.
    * @return an instance of the hash algorithm, or null if none found.
    * @exception InternalError if the implementation does not pass its self-
-   * test.
+   *              test.
    */
   public static IMessageDigest getInstance(String name)
   {
     if (name == null)
-      {
-        return null;
-      }
+      return null;
 
     name = name.trim();
     IMessageDigest result = null;
     if (name.equalsIgnoreCase(Registry.WHIRLPOOL_HASH))
-      {
-        result = new Whirlpool();
-      }
+      result = new Whirlpool();
     else if (name.equalsIgnoreCase(Registry.RIPEMD128_HASH)
              || name.equalsIgnoreCase(Registry.RIPEMD_128_HASH))
-      {
-        result = new RipeMD128();
-      }
+      result = new RipeMD128();
     else if (name.equalsIgnoreCase(Registry.RIPEMD160_HASH)
              || name.equalsIgnoreCase(Registry.RIPEMD_160_HASH))
-      {
-        result = new RipeMD160();
-      }
+      result = new RipeMD160();
     else if (name.equalsIgnoreCase(Registry.SHA160_HASH)
              || name.equalsIgnoreCase(Registry.SHA_1_HASH)
              || name.equalsIgnoreCase(Registry.SHA1_HASH)
              || name.equalsIgnoreCase(Registry.SHA_HASH))
-      {
-        result = new Sha160();
-      }
+      result = new Sha160();
     else if (name.equalsIgnoreCase(Registry.SHA256_HASH))
-      {
-        result = new Sha256();
-      }
+      result = new Sha256();
     else if (name.equalsIgnoreCase(Registry.SHA384_HASH))
-      {
-        result = new Sha384();
-      }
+      result = new Sha384();
     else if (name.equalsIgnoreCase(Registry.SHA512_HASH))
-      {
-        result = new Sha512();
-      }
+      result = new Sha512();
     else if (name.equalsIgnoreCase(Registry.TIGER_HASH))
-      {
-        result = new Tiger();
-      }
+      result = new Tiger();
     else if (name.equalsIgnoreCase(Registry.HAVAL_HASH))
-      {
-        result = new Haval();
-      }
+      result = new Haval();
     else if (name.equalsIgnoreCase(Registry.MD5_HASH))
-      {
-        result = new MD5();
-      }
+      result = new MD5();
     else if (name.equalsIgnoreCase(Registry.MD4_HASH))
-      {
-        result = new MD4();
-      }
+      result = new MD4();
     else if (name.equalsIgnoreCase(Registry.MD2_HASH))
-      {
-        result = new MD2();
-      }
+      result = new MD2();
     else if (name.equalsIgnoreCase(Registry.HAVAL_HASH))
-      {
-        result = new Haval();
-      }
+      result = new Haval();
 
-    if (result != null && !result.selfTest())
-      {
-        throw new InternalError(result.name());
-      }
+    if (result != null && ! result.selfTest())
+      throw new InternalError(result.name());
 
     return result;
   }
 
   /**
-   * <p>Returns a {@link Set} of names of hash algorithms supported by this
-   * <i>Factory</i>.</p>
-   *
+   * Returns a {@link Set} of names of hash algorithms supported by this
+   * <i>Factory</i>.
+   * 
    * @return a {@link Set} of hash names (Strings).
    */
   public static final Set getNames()
@@ -172,7 +132,4 @@ public class HashFactory
 
     return Collections.unmodifiableSet(hs);
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

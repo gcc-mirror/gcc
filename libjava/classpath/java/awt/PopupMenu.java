@@ -55,8 +55,13 @@ public class PopupMenu extends Menu
  * Static Variables
  */
 
-// Serialization Constant
-private static final long serialVersionUID = -4620452533522760060L;
+  /**
+   * The number used to generate the name returned by getName.
+   */
+  private static transient long next_popup_number;
+
+  // Serialization Constant
+  private static final long serialVersionUID = - 4620452533522760060L;
 
 /*************************************************************************/
 
@@ -165,6 +170,21 @@ show(Component component, int x, int y)
     if (accessibleContext == null)
       accessibleContext = new AccessibleAWTPopupMenu();
     return accessibleContext;
+  }
+  
+  /**
+   * Generate a unique name for this <code>PopupMenu</code>.
+   *
+   * @return A unique name for this <code>PopupMenu</code>.
+   */
+  String generateName()
+  {
+    return "popup" + getUniqueLong();
+  }
+
+  private static synchronized long getUniqueLong()
+  {
+    return next_popup_number++;
   }
 
 } // class PopupMenu

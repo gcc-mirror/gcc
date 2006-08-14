@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
+
 package gnu.javax.crypto.jce.key;
 
 import gnu.javax.crypto.cipher.CipherFactory;
@@ -53,12 +54,9 @@ import javax.crypto.KeyGeneratorSpi;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-public class SecretKeyGeneratorImpl extends KeyGeneratorSpi
+public class SecretKeyGeneratorImpl
+    extends KeyGeneratorSpi
 {
-
-  // Fields.
-  // -------------------------------------------------------------------------
-
   protected final int defaultKeySize;
   protected final List keySizes;
   protected final String algorithm;
@@ -66,55 +64,47 @@ public class SecretKeyGeneratorImpl extends KeyGeneratorSpi
   protected int currentKeySize;
   protected SecureRandom random;
 
-  // Constructors.
-  // -------------------------------------------------------------------------
-
-  protected SecretKeyGeneratorImpl (final String algorithm)
+  protected SecretKeyGeneratorImpl(final String algorithm)
   {
     this.algorithm = algorithm;
-    IBlockCipher cipher = CipherFactory.getInstance (algorithm);
+    IBlockCipher cipher = CipherFactory.getInstance(algorithm);
     if (cipher == null)
-      throw new IllegalArgumentException ("no such cipher: "+algorithm);
-    defaultKeySize = cipher.defaultKeySize ();
+      throw new IllegalArgumentException("no such cipher: " + algorithm);
+    defaultKeySize = cipher.defaultKeySize();
     keySizes = new LinkedList();
-    for (Iterator it = cipher.keySizes (); it.hasNext (); )
-      {
-        keySizes.add (it.next ());
-      }
+    for (Iterator it = cipher.keySizes(); it.hasNext();)
+      keySizes.add(it.next());
     init = false;
   }
 
-  // Instance methods.
-  // -------------------------------------------------------------------------
-
-  protected SecretKey engineGenerateKey ()
+  protected SecretKey engineGenerateKey()
   {
-    if (!init)
-      throw new IllegalStateException ("not initialized");
-    byte[] buf = new byte [currentKeySize];
-    random.nextBytes (buf);
-    return new SecretKeySpec (buf, algorithm);
+    if (! init)
+      throw new IllegalStateException("not initialized");
+    byte[] buf = new byte[currentKeySize];
+    random.nextBytes(buf);
+    return new SecretKeySpec(buf, algorithm);
   }
 
-  protected void engineInit (AlgorithmParameterSpec params, SecureRandom random)
-    throws InvalidAlgorithmParameterException
+  protected void engineInit(AlgorithmParameterSpec params, SecureRandom random)
+      throws InvalidAlgorithmParameterException
   {
-    throw new InvalidAlgorithmParameterException (algorithm +
-      " does not support algorithm paramaters");
+    throw new InvalidAlgorithmParameterException(
+        algorithm + " does not support algorithm paramaters");
   }
 
-  protected void engineInit (int keySize, SecureRandom random)
+  protected void engineInit(int keySize, SecureRandom random)
   {
     keySize >>>= 3; // Use bytes.
-    if (!keySizes.contains (new Integer (keySize)))
-      throw new InvalidParameterException ("unsupported key size: " + keySize);
+    if (! keySizes.contains(Integer.valueOf(keySize)))
+      throw new InvalidParameterException("unsupported key size: " + keySize);
     currentKeySize = keySize;
     this.random = random;
     init = true;
   }
 
-  protected void engineInit (SecureRandom random)
+  protected void engineInit(SecureRandom random)
   {
-    engineInit (defaultKeySize << 3, random);
+    engineInit(defaultKeySize << 3, random);
   }
 }

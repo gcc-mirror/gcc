@@ -259,7 +259,9 @@ public class MetalComboBoxButton
             Component comp = renderer.getListCellRendererComponent(listBox,
                 comboBox.getSelectedItem(), -1, false, false);
             comp.setFont(rendererPane.getFont());
-            if (model.isArmed() && model.isPressed())
+            
+            if ((model.isArmed() && model.isPressed())
+                || (comboBox.isFocusOwner() && !comboBox.isPopupVisible()))
               {
                 if (isOpaque())
                   {

@@ -45,61 +45,46 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 
 /**
- * <p>An object that implements the {@link ISignatureCodec} operations for the
- * <i>Raw</i> format to use with DSS signatures.</p>
+ * An object that implements the {@link ISignatureCodec} operations for the
+ * <i>Raw</i> format to use with DSS signatures.
  */
-public class DSSSignatureRawCodec implements ISignatureCodec
+public class DSSSignatureRawCodec
+    implements ISignatureCodec
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
-  // implicit 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // gnu.crypto.sig.ISignatureCodec interface implementation -----------------
-
   public int getFormatID()
   {
     return RAW_FORMAT;
   }
 
   /**
-   * <p>Returns the encoded form of the designated DSS (Digital Signature
-   * Standard) signature object according to the <i>Raw</i> format supported by
-   * this library.</p>
-   *
-   * <p>The <i>Raw</i> format for a DSA signature, in this implementation, is a
-   * byte sequence consisting of the following:</p>
-   *
+   * Returns the encoded form of the designated DSS (Digital Signature Standard)
+   * signature object according to the <i>Raw</i> format supported by this
+   * library.
+   * <p>
+   * The <i>Raw</i> format for a DSA signature, in this implementation, is a
+   * byte sequence consisting of the following:
    * <ol>
-   *		<li>4-byte magic consisting of the value of the literal
-   *    {@link Registry#MAGIC_RAW_DSS_SIGNATURE},</li>
-   *		<li>1-byte version consisting of the constant: 0x01,</li>
-   *		<li>4-byte count of following bytes representing the DSS parameter
-   *		<code>r</code> in internet order,</li>
-   *		<li>n-bytes representation of a {@link BigInteger} obtained by invoking
-   *    the <code>toByteArray()</code> method on the DSS parameter <code>r</code>,</li>
-   *		<li>4-byte count of following bytes representing the DSS parameter
-   *		<code>s</code>,</li>
-   *		<li>n-bytes representation of a {@link BigInteger} obtained by invoking
-   *    the <code>toByteArray()</code> method on the DSS parameter <code>s</code>.</li>
+   * <li>4-byte magic consisting of the value of the literal
+   * {@link Registry#MAGIC_RAW_DSS_SIGNATURE},</li>
+   * <li>1-byte version consisting of the constant: 0x01,</li>
+   * <li>4-byte count of following bytes representing the DSS parameter
+   * <code>r</code> in internet order,</li>
+   * <li>n-bytes representation of a {@link BigInteger} obtained by invoking
+   * the <code>toByteArray()</code> method on the DSS parameter <code>r</code>,
+   * </li>
+   * <li>4-byte count of following bytes representing the DSS parameter
+   * <code>s</code>,</li>
+   * <li>n-bytes representation of a {@link BigInteger} obtained by invoking
+   * the <code>toByteArray()</code> method on the DSS parameter <code>s</code>.
+   * </li>
    * </ol>
-   *
+   * 
    * @param signature the signature to encode, consisting of the two DSS
-   * parameters <code>r</code> and <code>s</code> as a {@link java.math.BigInteger}
-   * array.
+   *          parameters <code>r</code> and <code>s</code> as a
+   *          {@link BigInteger} array.
    * @return the <i>Raw</i> format encoding of the designated signature.
    * @exception IllegalArgumentException if the designated signature is not a
-   * DSS (Digital Signature Standard) one.
+   *              DSS (Digital Signature Standard) one.
    */
   public byte[] encodeSignature(Object signature)
   {
@@ -112,38 +97,32 @@ public class DSSSignatureRawCodec implements ISignatureCodec
       }
     catch (Exception x)
       {
-        throw new IllegalArgumentException("key");
+        throw new IllegalArgumentException("signature");
       }
-
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
     // magic
     baos.write(Registry.MAGIC_RAW_DSS_SIGNATURE[0]);
     baos.write(Registry.MAGIC_RAW_DSS_SIGNATURE[1]);
     baos.write(Registry.MAGIC_RAW_DSS_SIGNATURE[2]);
     baos.write(Registry.MAGIC_RAW_DSS_SIGNATURE[3]);
-
     // version
     baos.write(0x01);
-
     // r
     byte[] buffer = r.toByteArray();
     int length = buffer.length;
-    baos.write(length >>> 24);
+    baos.write( length >>> 24);
     baos.write((length >>> 16) & 0xFF);
     baos.write((length >>> 8) & 0xFF);
     baos.write(length & 0xFF);
     baos.write(buffer, 0, length);
-
     // s
     buffer = s.toByteArray();
     length = buffer.length;
-    baos.write(length >>> 24);
+    baos.write( length >>> 24);
     baos.write((length >>> 16) & 0xFF);
     baos.write((length >>> 8) & 0xFF);
     baos.write(length & 0xFF);
     baos.write(buffer, 0, length);
-
     return baos.toByteArray();
   }
 
@@ -154,36 +133,32 @@ public class DSSSignatureRawCodec implements ISignatureCodec
         || k[1] != Registry.MAGIC_RAW_DSS_SIGNATURE[1]
         || k[2] != Registry.MAGIC_RAW_DSS_SIGNATURE[2]
         || k[3] != Registry.MAGIC_RAW_DSS_SIGNATURE[3])
-      {
-        throw new IllegalArgumentException("magic");
-      }
-
+      throw new IllegalArgumentException("magic");
     // version
     if (k[4] != 0x01)
-      {
-        throw new IllegalArgumentException("version");
-      }
+      throw new IllegalArgumentException("version");
 
     int i = 5;
     int l;
     byte[] buffer;
-
     // r
-    l = k[i++] << 24 | (k[i++] & 0xFF) << 16 | (k[i++] & 0xFF) << 8
-        | (k[i++] & 0xFF);
+    l =  k[i++]         << 24
+      | (k[i++] & 0xFF) << 16
+      | (k[i++] & 0xFF) << 8
+      | (k[i++] & 0xFF);
     buffer = new byte[l];
     System.arraycopy(k, i, buffer, 0, l);
     i += l;
     BigInteger r = new BigInteger(1, buffer);
-
     // s
-    l = k[i++] << 24 | (k[i++] & 0xFF) << 16 | (k[i++] & 0xFF) << 8
-        | (k[i++] & 0xFF);
+    l =  k[i++]         << 24
+      | (k[i++] & 0xFF) << 16
+      | (k[i++] & 0xFF) << 8
+      | (k[i++] & 0xFF);
     buffer = new byte[l];
     System.arraycopy(k, i, buffer, 0, l);
     i += l;
     BigInteger s = new BigInteger(1, buffer);
-
     return new BigInteger[] { r, s };
   }
 }

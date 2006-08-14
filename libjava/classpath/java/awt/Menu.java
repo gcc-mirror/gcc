@@ -58,6 +58,11 @@ public class Menu extends MenuItem implements MenuContainer, Serializable
  * Static Variables
  */
 
+/**
+ * The number used to generate the name returned by getName.
+ */
+private static transient long next_menu_number;
+
 // Serialization Constant
 private static final long serialVersionUID = -8809584163345499784L;
 
@@ -485,5 +490,20 @@ paramString()
       accessibleContext = new AccessibleAWTMenu();
     return accessibleContext;
   }
+  
+  /**
+   * Generate a unique name for this <code>Menu</code>.
+   *
+   * @return A unique name for this <code>Menu</code>.
+   */
+  String generateName()
+  {
+    return "menu" + getUniqueLong();
+  }
 
+  private static synchronized long getUniqueLong()
+  {
+    return next_menu_number++;
+  }
+  
 } // class Menu

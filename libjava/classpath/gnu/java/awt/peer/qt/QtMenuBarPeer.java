@@ -1,5 +1,5 @@
 /* QtMenuBarPeer.java -- Qt peer for a menu bar.
-   Copyright (C)  2005  Free Software Foundation, Inc.
+   Copyright (C)  2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,6 @@ package gnu.java.awt.peer.qt;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.peer.MenuBarPeer;
-import java.util.Vector;
 
 public class QtMenuBarPeer extends QtMenuComponentPeer implements MenuBarPeer
 {

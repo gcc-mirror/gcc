@@ -40,14 +40,11 @@ package gnu.javax.crypto.jce.key;
 
 import gnu.java.security.Registry;
 
-public class Cast5KeyGeneratorImpl extends SecretKeyGeneratorImpl
+public class Cast5KeyGeneratorImpl
+    extends SecretKeyGeneratorImpl
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
-  public Cast5KeyGeneratorImpl ()
+  public Cast5KeyGeneratorImpl()
   {
-    super (Registry.CAST5_CIPHER);
+    super(Registry.CAST5_CIPHER);
   }
 }

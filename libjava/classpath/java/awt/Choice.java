@@ -63,6 +63,11 @@ public class Choice extends Component
  * Static Variables
  */
 
+/**
+ * The number used to generate the name returned by getName.
+ */
+private static transient long next_choice_number;
+
 // Serialization constant
 private static final long serialVersionUID = -4075310674757313071L;
 
@@ -638,5 +643,20 @@ paramString()
     if (accessibleContext == null)
       accessibleContext = new AccessibleAWTChoice();
     return accessibleContext;
+  }
+  
+  /**
+   * Generate a unique name for this <code>Choice</code>.
+   *
+   * @return A unique name for this <code>Choice</code>.
+   */
+  String generateName()
+  {
+    return "choice" + getUniqueLong();
+  }
+
+  private static synchronized long getUniqueLong()
+  {
+    return next_choice_number++;
   }
 } // class Choice 

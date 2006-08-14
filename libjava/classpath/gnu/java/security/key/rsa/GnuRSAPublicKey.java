@@ -38,42 +38,39 @@ exception statement from your version.  */
 
 package gnu.java.security.key.rsa;
 
-import gnu.classpath.SystemProperties;
 import gnu.java.security.Registry;
+import gnu.java.security.action.GetPropertyAction;
 import gnu.java.security.key.IKeyPairCodec;
 
 import java.math.BigInteger;
+import java.security.AccessController;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 
 /**
- * <p>An object that encapsulates an RSA public key.</p>
- *
- * <p>References:</p>
+ * An object that encapsulates an RSA public key.
+ * <p>
+ * References:
  * <ol>
- *    <li><a href="http://www.cosic.esat.kuleuven.ac.be/nessie/workshop/submissions/rsa-pss.zip">
- *    RSA-PSS Signature Scheme with Appendix, part B.</a><br>
- *    Primitive specification and supporting documentation.<br>
- *    Jakob Jonsson and Burt Kaliski.</li>
+ * <li><a
+ * href="http://www.cosic.esat.kuleuven.ac.be/nessie/workshop/submissions/rsa-pss.zip">
+ * RSA-PSS Signature Scheme with Appendix, part B.</a><br>
+ * Primitive specification and supporting documentation.<br>
+ * Jakob Jonsson and Burt Kaliski.</li>
  * </ol>
  */
-public class GnuRSAPublicKey extends GnuRSAKey implements PublicKey,
-    RSAPublicKey
+public class GnuRSAPublicKey
+    extends GnuRSAKey
+    implements PublicKey, RSAPublicKey
 {
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** String representation of this key. Cached for speed. */
   private transient String str;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /**
    * Conveience constructor. Calls the constructor with 3 arguments passing
    * {@link Registry#RAW_ENCODING_ID} as the identifier of the preferred
    * encoding format.
-   *
+   * 
    * @param n the modulus.
    * @param e the public exponent.
    */
@@ -97,9 +94,6 @@ public class GnuRSAPublicKey extends GnuRSAKey implements PublicKey,
                                                        : preferredFormat,
           n, e);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
 
   /**
    * A class method that takes the output of the <code>encodePublicKey()</code>
@@ -125,21 +119,17 @@ public class GnuRSAPublicKey extends GnuRSAKey implements PublicKey,
       catch (IllegalArgumentException ignored)
         {
         }
-
     // try X.509 codec
     return (GnuRSAPublicKey) new RSAKeyPairX509Codec().decodePublicKey(k);
   }
 
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the encoded form of this public key according to the designated
-   * format.</p>
-   *
+   * Returns the encoded form of this public key according to the designated
+   * format.
+   * 
    * @param format the desired format identifier of the resulting encoding.
    * @return the byte sequence encoding this key according to the designated
-   * format.
+   *         format.
    * @throws IllegalArgumentException if the format is not supported.
    * @see RSAKeyPairRawCodec
    */
@@ -162,23 +152,21 @@ public class GnuRSAPublicKey extends GnuRSAKey implements PublicKey,
   }
 
   /**
-   * <p>Returns <code>true</code> if the designated object is an instance of
-   * this class and has the same RSA parameter values as this one.</p>
-   *
+   * Returns <code>true</code> if the designated object is an instance of this
+   * class and has the same RSA parameter values as this one.
+   * 
    * @param obj the other non-null RSA key to compare to.
-   * @return <code>true</code> if the designated object is of the same type and
-   * value as this one.
+   * @return <code>true</code> if the designated object is of the same type
+   *         and value as this one.
    */
   public boolean equals(final Object obj)
   {
     if (obj == null)
-      {
-        return false;
-      }
-    if (!(obj instanceof RSAPublicKey))
-      {
-        return false;
-      }
+      return false;
+
+    if (! (obj instanceof RSAPublicKey))
+      return false;
+
     final RSAPublicKey that = (RSAPublicKey) obj;
     return super.equals(that)
            && getPublicExponent().equals(that.getPublicExponent());
@@ -188,10 +176,12 @@ public class GnuRSAPublicKey extends GnuRSAKey implements PublicKey,
   {
     if (str == null)
       {
-        String ls = SystemProperties.getProperty("line.separator");
+        String ls = (String) AccessController.doPrivileged
+            (new GetPropertyAction("line.separator"));
         str = new StringBuilder(this.getClass().getName()).append("(")
             .append(super.toString()).append(",").append(ls)
-            .append(")").toString();
+            .append(")")
+            .toString();
       }
     return str;
   }

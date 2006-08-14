@@ -47,77 +47,56 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- * <p>Serpent is a 32-round substitution-permutation network block cipher,
+ * Serpent is a 32-round substitution-permutation network block cipher,
  * operating on 128-bit blocks and accepting keys of 128, 192, and 256 bits in
  * length. At each round the plaintext is XORed with a 128 bit portion of the
  * session key -- a 4224 bit key computed from the input key -- then one of
  * eight S-boxes are applied, and finally a simple linear transformation is
  * done. Decryption does the exact same thing in reverse order, and using the
- * eight inverses of the S-boxes.</p>
- *
- * <p>Serpent was designed by Ross Anderson, Eli Biham, and Lars Knudsen as a
- * proposed cipher for the Advanced Encryption Standard.</p>
- *
- * <p>Serpent can be sped up greatly by replacing S-box substitution with a
- * sequence of binary operations, and the optimal implementation depends
- * upon finding the fastest sequence of binary operations that reproduce this
- * substitution. This implementation uses the S-boxes discovered by
- * <a href="http://www.ii.uib.no/~osvik/">Dag Arne Osvik</a>, which are
- * optimized for the Pentium family of processors.</p>
- *
- * <p>References:</p>
- *
+ * eight inverses of the S-boxes.
+ * <p>
+ * Serpent was designed by Ross Anderson, Eli Biham, and Lars Knudsen as a
+ * proposed cipher for the Advanced Encryption Standard.
+ * <p>
+ * Serpent can be sped up greatly by replacing S-box substitution with a
+ * sequence of binary operations, and the optimal implementation depends upon
+ * finding the fastest sequence of binary operations that reproduce this
+ * substitution. This implementation uses the S-boxes discovered by <a
+ * href="http://www.ii.uib.no/~osvik/">Dag Arne Osvik</a>, which are optimized
+ * for the Pentium family of processors.
+ * <p>
+ * References:
  * <ol>
- *    <li><a href="http://www.cl.cam.ac.uk/~rja14/serpent.html">Serpent: A
- *    Candidate Block Cipher for the Advanced Encryption Standard.</a></li>
+ * <li><a href="http://www.cl.cam.ac.uk/~rja14/serpent.html">Serpent: A
+ * Candidate Block Cipher for the Advanced Encryption Standard.</a></li>
  * </ol>
  */
-public class Serpent extends BaseCipher
+public class Serpent
+    extends BaseCipher
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private static final int DEFAULT_KEY_SIZE = 16;
-
   private static final int DEFAULT_BLOCK_SIZE = 16;
-
   private static final int ROUNDS = 32;
-
   /** The fractional part of the golden ratio, (sqrt(5)+1)/2. */
   private static final int PHI = 0x9e3779b9;
-
   /**
-   * KAT vector (from ecb_vk):
-   * I=9
+   * KAT vector (from ecb_vk): I=9
    * KEY=008000000000000000000000000000000000000000000000
    * CT=5587B5BCB9EE5A28BA2BACC418005240
    */
-  private static final byte[] KAT_KEY = Util.toReversedBytesFromString("008000000000000000000000000000000000000000000000");
-
-  private static final byte[] KAT_CT = Util.toReversedBytesFromString("5587B5BCB9EE5A28BA2BACC418005240");
-
+  private static final byte[] KAT_KEY = Util.toReversedBytesFromString(
+      "008000000000000000000000000000000000000000000000");
+  private static final byte[] KAT_CT =
+      Util.toReversedBytesFromString("5587B5BCB9EE5A28BA2BACC418005240");
   /** caches the result of the correctness test, once executed. */
   private static Boolean valid;
-
   private int x0, x1, x2, x3, x4;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /** Trivial zero-argument constructor. */
   public Serpent()
   {
     super(Registry.SERPENT_CIPHER, DEFAULT_BLOCK_SIZE, DEFAULT_KEY_SIZE);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.lang.Cloneable interface implementation ----------------------------
 
   public Object clone()
   {
@@ -126,20 +105,17 @@ public class Serpent extends BaseCipher
     return result;
   }
 
-  // IBlockCipherSpi interface implementation --------------------------------
-
   public Iterator blockSizes()
   {
-    return Collections.singleton(new Integer(DEFAULT_BLOCK_SIZE)).iterator();
+    return Collections.singleton(Integer.valueOf(DEFAULT_BLOCK_SIZE)).iterator();
   }
 
   public Iterator keySizes()
   {
     ArrayList keySizes = new ArrayList();
-    keySizes.add(new Integer(16));
-    keySizes.add(new Integer(24));
-    keySizes.add(new Integer(32));
-
+    keySizes.add(Integer.valueOf(16));
+    keySizes.add(Integer.valueOf(24));
+    keySizes.add(Integer.valueOf(32));
     return Collections.unmodifiableList(keySizes).iterator();
   }
 
@@ -148,24 +124,19 @@ public class Serpent extends BaseCipher
     // Not strictly true, but here to conform with the AES proposal.
     // This restriction can be removed if deemed necessary.
     if (kb.length != 16 && kb.length != 24 && kb.length != 32)
-      {
-        throw new InvalidKeyException("Key length is not 16, 24, or 32 bytes");
-      }
+      throw new InvalidKeyException("Key length is not 16, 24, or 32 bytes");
     Key key = new Key();
-
     // Here w is our "pre-key".
     int[] w = new int[4 * (ROUNDS + 1)];
     int i, j;
     for (i = 0, j = 0; i < 8 && j < kb.length; i++)
-      {
-        w[i] = (kb[j++] & 0xff) | (kb[j++] & 0xff) << 8
-               | (kb[j++] & 0xff) << 16 | (kb[j++] & 0xff) << 24;
-      }
+      w[i] = (kb[j++] & 0xff)
+           | (kb[j++] & 0xff) << 8
+           | (kb[j++] & 0xff) << 16
+           | (kb[j++] & 0xff) << 24;
     // Pad key if < 256 bits.
     if (i != 8)
-      {
-        w[i] = 1;
-      }
+      w[i] = 1;
     // Transform using w_i-8 ... w_i-1
     for (i = 8, j = 0; i < 16; i++)
       {
@@ -174,16 +145,13 @@ public class Serpent extends BaseCipher
       }
     // Translate by 8.
     for (i = 0; i < 8; i++)
-      {
-        w[i] = w[i + 8];
-      }
+      w[i] = w[i + 8];
     // Transform the rest of the key.
     for (; i < w.length; i++)
       {
         int t = w[i - 8] ^ w[i - 5] ^ w[i - 3] ^ w[i - 1] ^ PHI ^ i;
         w[i] = t << 11 | t >>> 21;
       }
-
     // After these s-boxes the pre-key (w, above) will become the
     // session key (key, below).
     sbox3(w[0], w[1], w[2], w[3]);
@@ -351,7 +319,6 @@ public class Serpent extends BaseCipher
     key.k129 = x1;
     key.k130 = x2;
     key.k131 = x3;
-
     return key;
   }
 
@@ -359,16 +326,22 @@ public class Serpent extends BaseCipher
                                    Object K, int bs)
   {
     Key key = (Key) K;
-
-    x0 = (in[i] & 0xff) | (in[i + 1] & 0xff) << 8 | (in[i + 2] & 0xff) << 16
-         | (in[i + 3] & 0xff) << 24;
-    x1 = (in[i + 4] & 0xff) | (in[i + 5] & 0xff) << 8
-         | (in[i + 6] & 0xff) << 16 | (in[i + 7] & 0xff) << 24;
-    x2 = (in[i + 8] & 0xff) | (in[i + 9] & 0xff) << 8
-         | (in[i + 10] & 0xff) << 16 | (in[i + 11] & 0xff) << 24;
-    x3 = (in[i + 12] & 0xff) | (in[i + 13] & 0xff) << 8
-         | (in[i + 14] & 0xff) << 16 | (in[i + 15] & 0xff) << 24;
-
+    x0 = (in[i     ] & 0xff)
+       | (in[i +  1] & 0xff) << 8
+       | (in[i +  2] & 0xff) << 16
+       | (in[i +  3] & 0xff) << 24;
+    x1 = (in[i +  4] & 0xff)
+       | (in[i +  5] & 0xff) << 8
+       | (in[i +  6] & 0xff) << 16
+       | (in[i +  7] & 0xff) << 24;
+    x2 = (in[i +  8] & 0xff)
+       | (in[i +  9] & 0xff) << 8
+       | (in[i + 10] & 0xff) << 16
+       | (in[i + 11] & 0xff) << 24;
+    x3 = (in[i + 12] & 0xff)
+       | (in[i + 13] & 0xff) << 8
+       | (in[i + 14] & 0xff) << 16
+       | (in[i + 15] & 0xff) << 24;
     x0 ^= key.k0;
     x1 ^= key.k1;
     x2 ^= key.k2;
@@ -412,7 +385,6 @@ public class Serpent extends BaseCipher
     x0 = x3;
     x3 = x2;
     x2 = x4;
-
     x0 ^= key.k32;
     x1 ^= key.k33;
     x2 ^= key.k34;
@@ -456,7 +428,6 @@ public class Serpent extends BaseCipher
     x0 = x3;
     x3 = x2;
     x2 = x4;
-
     x0 ^= key.k64;
     x1 ^= key.k65;
     x2 ^= key.k66;
@@ -500,7 +471,6 @@ public class Serpent extends BaseCipher
     x0 = x3;
     x3 = x2;
     x2 = x4;
-
     x0 ^= key.k96;
     x1 ^= key.k97;
     x2 ^= key.k98;
@@ -548,39 +518,44 @@ public class Serpent extends BaseCipher
     x1 ^= key.k129;
     x2 ^= key.k130;
     x3 ^= key.k131;
-
-    out[o] = (byte) x0;
-    out[o + 1] = (byte) (x0 >>> 8);
-    out[o + 2] = (byte) (x0 >>> 16);
-    out[o + 3] = (byte) (x0 >>> 24);
-    out[o + 4] = (byte) x1;
-    out[o + 5] = (byte) (x1 >>> 8);
-    out[o + 6] = (byte) (x1 >>> 16);
-    out[o + 7] = (byte) (x1 >>> 24);
-    out[o + 8] = (byte) x2;
-    out[o + 9] = (byte) (x2 >>> 8);
-    out[o + 10] = (byte) (x2 >>> 16);
-    out[o + 11] = (byte) (x2 >>> 24);
+    out[o     ] = (byte) x0;
+    out[o +  1] = (byte)(x0 >>> 8);
+    out[o +  2] = (byte)(x0 >>> 16);
+    out[o +  3] = (byte)(x0 >>> 24);
+    out[o +  4] = (byte) x1;
+    out[o +  5] = (byte)(x1 >>> 8);
+    out[o +  6] = (byte)(x1 >>> 16);
+    out[o +  7] = (byte)(x1 >>> 24);
+    out[o +  8] = (byte) x2;
+    out[o +  9] = (byte)(x2 >>> 8);
+    out[o + 10] = (byte)(x2 >>> 16);
+    out[o + 11] = (byte)(x2 >>> 24);
     out[o + 12] = (byte) x3;
-    out[o + 13] = (byte) (x3 >>> 8);
-    out[o + 14] = (byte) (x3 >>> 16);
-    out[o + 15] = (byte) (x3 >>> 24);
+    out[o + 13] = (byte)(x3 >>> 8);
+    out[o + 14] = (byte)(x3 >>> 16);
+    out[o + 15] = (byte)(x3 >>> 24);
   }
 
   public synchronized void decrypt(byte[] in, int i, byte[] out, int o,
                                    Object K, int bs)
   {
     Key key = (Key) K;
-
-    x0 = (in[i] & 0xff) | (in[i + 1] & 0xff) << 8 | (in[i + 2] & 0xff) << 16
-         | (in[i + 3] & 0xff) << 24;
-    x1 = (in[i + 4] & 0xff) | (in[i + 5] & 0xff) << 8
-         | (in[i + 6] & 0xff) << 16 | (in[i + 7] & 0xff) << 24;
-    x2 = (in[i + 8] & 0xff) | (in[i + 9] & 0xff) << 8
-         | (in[i + 10] & 0xff) << 16 | (in[i + 11] & 0xff) << 24;
-    x3 = (in[i + 12] & 0xff) | (in[i + 13] & 0xff) << 8
-         | (in[i + 14] & 0xff) << 16 | (in[i + 15] & 0xff) << 24;
-
+    x0 = (in[i     ] & 0xff)
+       | (in[i +  1] & 0xff) << 8
+       | (in[i +  2] & 0xff) << 16
+       | (in[i +  3] & 0xff) << 24;
+    x1 = (in[i +  4] & 0xff)
+       | (in[i +  5] & 0xff) << 8
+       | (in[i +  6] & 0xff) << 16
+       | (in[i +  7] & 0xff) << 24;
+    x2 = (in[i +  8] & 0xff)
+       | (in[i +  9] & 0xff) << 8
+       | (in[i + 10] & 0xff) << 16
+       | (in[i + 11] & 0xff) << 24;
+    x3 = (in[i + 12] & 0xff)
+       | (in[i + 13] & 0xff) << 8
+       | (in[i + 14] & 0xff) << 16
+       | (in[i + 15] & 0xff) << 24;
     x0 ^= key.k128;
     x1 ^= key.k129;
     x2 ^= key.k130;
@@ -629,7 +604,6 @@ public class Serpent extends BaseCipher
     x1 = x3;
     x3 = x4;
     x4 = x2;
-
     x3 ^= key.k92;
     x0 ^= key.k93;
     x1 ^= key.k94;
@@ -673,7 +647,6 @@ public class Serpent extends BaseCipher
     x1 = x3;
     x3 = x4;
     x4 = x2;
-
     x3 ^= key.k60;
     x0 ^= key.k61;
     x1 ^= key.k62;
@@ -717,7 +690,6 @@ public class Serpent extends BaseCipher
     x1 = x3;
     x3 = x4;
     x4 = x2;
-
     x3 ^= key.k28;
     x0 ^= key.k29;
     x1 ^= key.k30;
@@ -756,28 +728,26 @@ public class Serpent extends BaseCipher
     x2 = x1;
     x1 = x3;
     x3 = x4;
-
     x0 ^= key.k0;
     x1 ^= key.k1;
     x2 ^= key.k2;
     x3 ^= key.k3;
-
-    out[o] = (byte) x0;
-    out[o + 1] = (byte) (x0 >>> 8);
-    out[o + 2] = (byte) (x0 >>> 16);
-    out[o + 3] = (byte) (x0 >>> 24);
-    out[o + 4] = (byte) x1;
-    out[o + 5] = (byte) (x1 >>> 8);
-    out[o + 6] = (byte) (x1 >>> 16);
-    out[o + 7] = (byte) (x1 >>> 24);
-    out[o + 8] = (byte) x2;
-    out[o + 9] = (byte) (x2 >>> 8);
-    out[o + 10] = (byte) (x2 >>> 16);
-    out[o + 11] = (byte) (x2 >>> 24);
+    out[o     ] = (byte) x0;
+    out[o +  1] = (byte)(x0 >>> 8);
+    out[o +  2] = (byte)(x0 >>> 16);
+    out[o +  3] = (byte)(x0 >>> 24);
+    out[o +  4] = (byte) x1;
+    out[o +  5] = (byte)(x1 >>> 8);
+    out[o +  6] = (byte)(x1 >>> 16);
+    out[o +  7] = (byte)(x1 >>> 24);
+    out[o +  8] = (byte) x2;
+    out[o +  9] = (byte)(x2 >>> 8);
+    out[o + 10] = (byte)(x2 >>> 16);
+    out[o + 11] = (byte)(x2 >>> 24);
     out[o + 12] = (byte) x3;
-    out[o + 13] = (byte) (x3 >>> 8);
-    out[o + 14] = (byte) (x3 >>> 16);
-    out[o + 15] = (byte) (x3 >>> 24);
+    out[o + 13] = (byte)(x3 >>> 8);
+    out[o + 14] = (byte)(x3 >>> 16);
+    out[o + 15] = (byte)(x3 >>> 24);
   }
 
   public boolean selfTest()
@@ -786,19 +756,14 @@ public class Serpent extends BaseCipher
       {
         boolean result = super.selfTest(); // do symmetry tests
         if (result)
-          {
-            result = testKat(KAT_KEY, KAT_CT);
-          }
+          result = testKat(KAT_KEY, KAT_CT);
         valid = Boolean.valueOf(result);
       }
     return valid.booleanValue();
   }
 
-  // Own methods. ----------------------------------------------------------
-
   // These first few S-boxes operate directly on the "registers",
   // x0..x4, and perform the linear transform.
-
   private void sbox0()
   {
     x3 ^= x0;
@@ -1492,8 +1457,6 @@ public class Serpent extends BaseCipher
     x2 ^= x1;
   }
 
-  // These S-Box functions are used in the key setup.
-
   /** S-Box 0. */
   private void sbox0(int r0, int r1, int r2, int r3)
   {
@@ -1654,15 +1617,9 @@ public class Serpent extends BaseCipher
     x3 = r0;
   }
 
-  // Inner classes.
-  // -----------------------------------------------------------------------
-
-  private class Key implements Cloneable
+  private class Key
+      implements Cloneable
   {
-
-    // Constants and variables.
-    // --------------------------------------------------------------------
-
     int k0, k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11, k12, k13, k14, k15,
         k16, k17, k18, k19, k20, k21, k22, k23, k24, k25, k26, k27, k28, k29,
         k30, k31, k32, k33, k34, k35, k36, k37, k38, k39, k40, k41, k42, k43,
@@ -1673,9 +1630,6 @@ public class Serpent extends BaseCipher
         k100, k101, k102, k103, k104, k105, k106, k107, k108, k109, k110, k111,
         k112, k113, k114, k115, k116, k117, k118, k119, k120, k121, k122, k123,
         k124, k125, k126, k127, k128, k129, k130, k131;
-
-    // Constructors.
-    // --------------------------------------------------------------------
 
     /** Trivial 0-arguments constructor. */
     Key()
@@ -1818,9 +1772,6 @@ public class Serpent extends BaseCipher
       this.k130 = that.k130;
       this.k131 = that.k131;
     }
-
-    // Cloneable interface implementation.
-    // --------------------------------------------------------------------
 
     public Object clone()
     {

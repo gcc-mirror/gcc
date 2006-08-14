@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Adjustable;
-import java.awt.EventQueue;
 import java.awt.Scrollbar;
 import java.awt.event.AdjustmentEvent;
 import java.awt.peer.ScrollbarPeer;

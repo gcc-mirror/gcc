@@ -103,6 +103,11 @@ public abstract class AWTEvent extends EventObject
    */
   byte[] bdata;
 
+  /**
+   * Indicates if this event is dispatched by the KeyboardFocusManager.
+   */
+  boolean isFocusManagerEvent = false;
+
   /** Mask for selecting component events. */
   public static final long COMPONENT_EVENT_MASK = 0x00001;
 

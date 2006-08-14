@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 
 import javax.swing.JComponent;
@@ -94,12 +95,24 @@ public class BasicTextFieldUI extends BasicTextUI
   {
     if (event.getPropertyName().equals("editable"))
       {
-        boolean editable = ((Boolean) event.getNewValue()).booleanValue();
-        
         // Changing the color only if the current background is an instance of
         // ColorUIResource is the behavior of the RI.
         if (textComponent.getBackground() instanceof ColorUIResource)
-          textComponent.setBackground(editable ? background : inactiveBackground);
+          {
+            Color c = null;
+            Color old = textComponent.getBackground();
+            String prefix = getPropertyPrefix();
+            if (! textComponent.isEnabled())
+              c = SharedUIDefaults.getColor(prefix + ".disabledBackground");
+            if (c == null && ! textComponent.isEditable())
+              c = SharedUIDefaults.getColor(prefix + ".inactiveBackground");
+            if (c == null)
+              c = SharedUIDefaults.getColor(prefix + ".background");
+            if (c != null && c != old)
+              {
+                textComponent.setBackground(c);
+              }
+          }
       }
   }
 }

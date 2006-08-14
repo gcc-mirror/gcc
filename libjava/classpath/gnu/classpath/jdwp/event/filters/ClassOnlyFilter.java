@@ -87,7 +87,7 @@ public class ClassOnlyFilter
    */
   public boolean matches (Event event)
   {
-    Object type = event.getParameter (ReferenceTypeId.class);
+    Object type = event.getParameter (Event.EVENT_CLASS);
     if (type != null)
       {
 	try

@@ -44,26 +44,19 @@ import java.io.Serializable;
 import java.security.KeyManagementException;
 
 /**
- * A generic exception indicating that an unexpected condition has
- * been detected during the setup and/or processing of a key agreement
- * protocol exchange.
+ * A generic exception indicating that an unexpected condition has been detected
+ * during the setup and/or processing of a key agreement protocol exchange.
  */
-public class KeyAgreementException extends KeyManagementException implements
-    Serializable
+public class KeyAgreementException
+    extends KeyManagementException
+    implements Serializable
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** @serial The possibly <code>null</code> <i>root</i> cause exception. */
   private Throwable cause = null;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Constructs a new instance of <code>KeyAgreementException</code>. The
-   * root exception and the detailed message are <code>null</code>.</p>
+   * Constructs a new instance of <code>KeyAgreementException</code>. The
+   * root exception and the detailed message are <code>null</code>.
    */
   public KeyAgreementException()
   {
@@ -71,11 +64,11 @@ public class KeyAgreementException extends KeyManagementException implements
   }
 
   /**
-   * <p>Constructs a new instance of <code>KeyAgreementException</code> with a
-   * detailed message. The <i>root</i> exception is <code>null</code>.</p>
-   *
+   * Constructs a new instance of <code>KeyAgreementException</code> with a
+   * detailed message. The <i>root</i> exception is <code>null</code>.
+   * 
    * @param detail a possibly <code>null</code> string containing details of
-   * the exception.
+   *          the exception.
    * @see Throwable#getMessage()
    */
   public KeyAgreementException(String detail)
@@ -84,13 +77,13 @@ public class KeyAgreementException extends KeyManagementException implements
   }
 
   /**
-   * <p>Constructs a new instance of <code>KeyAgreementException</code> with a
-   * detailed message and a <i>root</i> exception.</p>
-   *
+   * Constructs a new instance of <code>KeyAgreementException</code> with a
+   * detailed message and a <i>root</i> exception.
+   * 
    * @param detail a possibly <code>null</code> string containing details of
-   * the exception.
+   *          the exception.
    * @param cause a possibly <code>null</code> root exception that caused this
-   * exception.
+   *          exception.
    * @see Throwable#getMessage()
    * @see #getCause()
    */
@@ -100,17 +93,11 @@ public class KeyAgreementException extends KeyManagementException implements
     this.cause = cause;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the cause of this throwable or <code>null</code> if the cause
-   * is nonexistent or unknown. The <i>cause</i> is the throwable that caused
-   * this exception to be thrown.</p>
-   *
+   * Returns the cause of this throwable or <code>null</code> if the cause is
+   * nonexistent or unknown. The <i>cause</i> is the throwable that caused this
+   * exception to be thrown.
+   * 
    * @return the possibly <code>null</code> exception that caused this one.
    */
   public Throwable getCause()
@@ -119,69 +106,61 @@ public class KeyAgreementException extends KeyManagementException implements
   }
 
   /**
-   * <p>Prints this exception's stack trace to <code>System.err</code>. If this
+   * Prints this exception's stack trace to <code>System.err</code>. If this
    * exception has a <i>root</i> exception; the stack trace of the <i>root</i>
-   * exception is also printed to <code>System.err</code>.</p>
+   * exception is also printed to <code>System.err</code>.
    */
   public void printStackTrace()
   {
     super.printStackTrace();
     if (cause != null)
-      {
-        cause.printStackTrace();
-      }
+      cause.printStackTrace();
   }
 
   /**
-   * <p>Prints this exception's stack trace to a print stream. If this
-   * exception has a <i>root</i> exception; the stack trace of the <i>root</i>
-   * exception is also printed to the print stream.</p>
-   *
+   * Prints this exception's stack trace to a print stream. If this exception
+   * has a <i>root</i> exception; the stack trace of the <i>root</i> exception
+   * is also printed to the print stream.
+   * 
    * @param ps the non-null print stream to which to print.
    */
   public void printStackTrace(PrintStream ps)
   {
     super.printStackTrace(ps);
     if (cause != null)
-      {
-        cause.printStackTrace(ps);
-      }
+      cause.printStackTrace(ps);
   }
 
   /**
-   * <p>Prints this exception's stack trace to a print writer. If this
-   * exception has a <i>root</i> exception; the stack trace of the <i>root</i>
-   * exception is also printed to the print writer.</p>
-   *
+   * Prints this exception's stack trace to a print writer. If this exception
+   * has a <i>root</i> exception; the stack trace of the <i>root</i> exception
+   * is also printed to the print writer.
+   * 
    * @param pw the non-null print writer to use for output.
    */
   public void printStackTrace(PrintWriter pw)
   {
     super.printStackTrace(pw);
     if (cause != null)
-      {
-        cause.printStackTrace(pw);
-      }
+      cause.printStackTrace(pw);
   }
 
   /**
-   * <p>Returns the string representation of this exception. The string
-   * representation contains this exception's class name, its detailed
-   * messsage, and if it has a <i>root</i> exception, the string representation
-   * of the root exception. This string representation is meant for debugging
-   * and is not meant to be interpreted programmatically.</p>
-   *
+   * Returns the string representation of this exception. The string
+   * representation contains this exception's class name, its detailed messsage,
+   * and if it has a <i>root</i> exception, the string representation of the
+   * root exception. This string representation is meant for debugging and is
+   * not meant to be interpreted programmatically.
+   * 
    * @return the non-null string representation of this exception.
    * @see Throwable#getMessage()
    */
   public String toString()
   {
-    StringBuffer sb = new StringBuffer(this.getClass().getName()).append(": ").append(
-                                                                                      super.toString());
+    StringBuffer sb = new StringBuffer(this.getClass().getName()).append(": ")
+        .append(super.toString());
     if (cause != null)
-      {
-        sb.append("; caused by: ").append(cause.toString());
-      }
+      sb.append("; caused by: ").append(cause.toString());
     return sb.toString();
   }
 }

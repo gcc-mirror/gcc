@@ -1,5 +1,5 @@
 /* ButtonGroup.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,10 +65,9 @@ import java.util.Vector;
  */
 public class ButtonGroup implements Serializable
 {
-  /** DOCUMENT ME! */
   private static final long serialVersionUID = 4259076101881721375L;
 
-  /** The buttons added to this button group. */
+  /** Stores references to the buttons added to this button group. */
   protected Vector buttons = new Vector();
 
   /** The currently selected button model. */
@@ -83,12 +82,20 @@ public class ButtonGroup implements Serializable
   }
 
   /**
-   * Adds a button to this group.
+   * Adds a button to this group.  If the button is in the selected state, then:
+   * <ul>
+   *   <li>if the group has no current selection, the new button becomes the 
+   *     selected button for the group;</li>
+   *   <li>if the group already has a selected button, the new button is set to
+   *     "not selected".</li>
+   * </ul>
    *
-   * @param b the button to add
+   * @param b the button to add (<code>null</code> is ignored).
    */
   public void add(AbstractButton b)
   {
+    if (b == null)
+      return;
     b.getModel().setGroup(this);
     if (b.isSelected())
       {
@@ -96,17 +103,24 @@ public class ButtonGroup implements Serializable
           sel = b.getModel();
         else
           b.setSelected(false);
-      }    buttons.addElement(b);
+      }    
+    buttons.addElement(b);
   }
 
   /**
-   * Removed a given button from this group.
+   * Removes the specified button from this group.  If the button is the 
+   * selected button, the current selection is set to <code>null</code>.  
+   * The group for the removed button's model is set to <code>null</code>.  
    *
-   * @param b the button to remove
+   * @param b the button to remove (<code>null</code> is ignored).
    */
   public void remove(AbstractButton b)
   {
+    if (b == null)
+      return;
     b.getModel().setGroup(null);
+    if (b.getModel() == sel)
+      sel = null;
     buttons.removeElement(b);
   }
 
@@ -132,19 +146,20 @@ public class ButtonGroup implements Serializable
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the button that has the specified model, or <code>null</code> if
+   * there is no such button in the group.
    *
-   * @param m DOCUMENT ME!
+   * @param m  the button model.
    *
-   * @return DOCUMENT ME!
+   * @return The button that has the specified model, or <code>null</code>.
    */
-  AbstractButton FindButton(ButtonModel m)
+  AbstractButton findButton(ButtonModel m)
   {
     for (int i = 0; i < buttons.size(); i++)
       {
-	AbstractButton a = (AbstractButton) buttons.get(i);
-	if (a.getModel() == m)
-	  return a;
+        AbstractButton a = (AbstractButton) buttons.get(i);
+        if (a.getModel() == m)
+          return a;
       }
     return null;
   }
@@ -168,7 +183,7 @@ public class ButtonGroup implements Serializable
         
         if (old != null)
           old.setSelected(false);
-        AbstractButton button = FindButton(old);
+        AbstractButton button = findButton(old);
         if (button != null)
           button.repaint();
       }
@@ -180,10 +195,10 @@ public class ButtonGroup implements Serializable
    * Checks if the given <code>ButtonModel</code> is selected in this button
    * group.
    *
-   * @param m DOCUMENT ME!
+   * @param m  the button model (<code>null</code> permitted).
    *
-   * @return true of given <code>ButtonModel</code> is selected, false
-   *         otherwise
+   * @return <code>true</code> if <code>m</code> is the selected button model
+   *     in this group, and <code>false</code> otherwise.
    */
   public boolean isSelected(ButtonModel m)
   {

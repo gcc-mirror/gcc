@@ -56,115 +56,77 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p>A <i>Factory</i> class to generate key agreement protocol handlers.</p>
+ * A <i>Factory</i> class to generate key agreement protocol handlers.
  */
 public class KeyAgreementFactory
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial constructor to enforce <i>Singleton</i> pattern. */
   private KeyAgreementFactory()
   {
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns an instance of a key agreeent protocol handler, for party
+   * Returns an instance of a key agreeent protocol handler, for party
    * <code>A</code> in a two-party <code>A..B</code> exchange, given the
    * canonical name of this protocol. Party <code>A</code> is usually the
-   * initiator of the exchange.</p>
-   *
+   * initiator of the exchange.
+   * 
    * @param name the case-insensitive key agreement protocol name.
    * @return an instance of the key agreement protocol handler for party
-   * <code>A</code>, or <code>null</code> if none found.
+   *         <code>A</code>, or <code>null</code> if none found.
    */
   public static IKeyAgreementParty getPartyAInstance(String name)
   {
     if (name == null)
-      {
-        return null;
-      }
-
+      return null;
     name = name.trim();
     IKeyAgreementParty result = null;
     if (name.equalsIgnoreCase(Registry.DH_KA))
-      {
-        result = new DiffieHellmanSender();
-      }
+      result = new DiffieHellmanSender();
     else if (name.equalsIgnoreCase(Registry.ELGAMAL_KA))
-      {
-        result = new ElGamalSender();
-      }
+      result = new ElGamalSender();
     else if (name.equalsIgnoreCase(Registry.SRP6_KA))
-      {
-        result = new SRP6User();
-      }
+      result = new SRP6User();
     else if (name.equalsIgnoreCase(Registry.SRP_SASL_KA))
-      {
-        result = new SRP6SaslClient();
-      }
+      result = new SRP6SaslClient();
     else if (name.equalsIgnoreCase(Registry.SRP_TLS_KA))
-      {
-        result = new SRP6TLSClient();
-      }
-
+      result = new SRP6TLSClient();
     return result;
   }
 
   /**
-   * <p>Returns an instance of a key agreeent protocol handler, for party
+   * Returns an instance of a key agreeent protocol handler, for party
    * <code>B</code> in a two-party <code>A..B</code> exchange, given the
-   * canonical name of this protocol.</p>
-   *
+   * canonical name of this protocol.
+   * 
    * @param name the case-insensitive key agreement protocol name.
    * @return an instance of the key agreement protocol handler for party
-   * <code>B</code>, or <code>null</code> if none found.
+   *         <code>B</code>, or <code>null</code> if none found.
    */
   public static IKeyAgreementParty getPartyBInstance(String name)
   {
     if (name == null)
-      {
-        return null;
-      }
-
+      return null;
     name = name.trim();
     IKeyAgreementParty result = null;
     if (name.equalsIgnoreCase(Registry.DH_KA))
-      {
-        result = new DiffieHellmanReceiver();
-      }
+      result = new DiffieHellmanReceiver();
     else if (name.equalsIgnoreCase(Registry.ELGAMAL_KA))
-      {
-        result = new ElGamalReceiver();
-      }
+      result = new ElGamalReceiver();
     else if (name.equalsIgnoreCase(Registry.SRP6_KA))
-      {
-        result = new SRP6Host();
-      }
+      result = new SRP6Host();
     else if (name.equalsIgnoreCase(Registry.SRP_SASL_KA))
-      {
-        result = new SRP6SaslServer();
-      }
+      result = new SRP6SaslServer();
     else if (name.equalsIgnoreCase(Registry.SRP_TLS_KA))
-      {
-        result = new SRP6TLSServer();
-      }
-
+      result = new SRP6TLSServer();
     return result;
   }
 
   /**
-   * <p>Returns a {@link Set} of key agreement protocol names supported by this
-   * <i>Factory</i>.</p>
-   *
+   * Returns a {@link Set} of key agreement protocol names supported by this
+   * <i>Factory</i>.
+   * 
    * @return a {@link Set} of key agreement protocol names (Strings).
    */
   public static final Set getNames()

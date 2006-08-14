@@ -47,145 +47,74 @@ import java.util.Collections;
 import java.util.Iterator;
 
 /**
- * <p>Square is a 128-bit key, 128-bit block cipher algorithm developed by Joan
- * Daemen, Lars Knudsen and Vincent Rijmen.</p>
- *
- * <p>References:</p>
- *
+ * Square is a 128-bit key, 128-bit block cipher algorithm developed by Joan
+ * Daemen, Lars Knudsen and Vincent Rijmen.
+ * <p>
+ * References:
  * <ol>
- *    <li><a href="http://www.esat.kuleuven.ac.be/~rijmen/square/">The block
- *    cipher Square</a>.<br>
- *    <a href="mailto:daemen.j@protonworld.com">Joan Daemen</a>,
- *    <a href="mailto:lars.knudsen@esat.kuleuven.ac.be">Lars Knudsen</a> and
- *    <a href="mailto:vincent.rijmen@esat.kuleuven.ac.be">Vincent Rijmen</a>.</li>
+ * <li><a href="http://www.esat.kuleuven.ac.be/~rijmen/square/">The block
+ * cipher Square</a>.<br>
+ * <a href="mailto:daemen.j@protonworld.com">Joan Daemen</a>, <a
+ * href="mailto:lars.knudsen@esat.kuleuven.ac.be">Lars Knudsen</a> and <a
+ * href="mailto:vincent.rijmen@esat.kuleuven.ac.be">Vincent Rijmen</a>.</li>
  * </ol>
  */
-public final class Square extends BaseCipher
+public final class Square
+    extends BaseCipher
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private static final int DEFAULT_BLOCK_SIZE = 16; // in bytes
-
   private static final int DEFAULT_KEY_SIZE = 16; // in bytes
-
   private static final int ROUNDS = 8;
-
   private static final int ROOT = 0x1F5; // for generating GF(2**8)
-
   private static final int[] OFFSET = new int[ROUNDS];
-
-  private static final String Sdata = "\uB1CE\uC395\u5AAD\uE702\u4D44\uFB91\u0C87\uA150"
-                                      + "\uCB67\u54DD\u468F\uE14E\uF0FD\uFCEB\uF9C4\u1A6E"
-                                      + "\u5EF5\uCC8D\u1C56\u43FE\u0761\uF875\u59FF\u0322"
-                                      + "\u8AD1\u13EE\u8800\u0E34\u1580\u94E3\uEDB5\u5323"
-                                      + "\u4B47\u17A7\u9035\uABD8\uB8DF\u4F57\u9A92\uDB1B"
-                                      + "\u3CC8\u9904\u8EE0\uD77D\u85BB\u402C\u3A45\uF142"
-                                      + "\u6520\u4118\u7225\u9370\u3605\uF20B\uA379\uEC08"
-                                      + "\u2731\u32B6\u7CB0\u0A73\u5B7B\uB781\uD20D\u6A26"
-                                      + "\u9E58\u9C83\u74B3\uAC30\u7A69\u770F\uAE21\uDED0"
-                                      + "\u2E97\u10A4\u98A8\uD468\u2D62\u296D\u1649\u76C7"
-                                      + "\uE8C1\u9637\uE5CA\uF4E9\u6312\uC2A6\u14BC\uD328"
-                                      + "\uAF2F\uE624\u52C6\uA009\uBD8C\uCF5D\u115F\u01C5"
-                                      + "\u9F3D\uA29B\uC93B\uBE51\u191F\u3F5C\uB2EF\u4ACD"
-                                      + "\uBFBA\u6F64\uD9F3\u3EB4\uAADC\uD506\uC07E\uF666"
-                                      + "\u6C84\u7138\uB91D\u7F9D\u488B\u2ADA\uA533\u8239"
-                                      + "\uD678\u86FA\uE42B\uA91E\u8960\u6BEA\u554C\uF7E2";
-
+  private static final String Sdata =
+      "\uB1CE\uC395\u5AAD\uE702\u4D44\uFB91\u0C87\uA150"
+    + "\uCB67\u54DD\u468F\uE14E\uF0FD\uFCEB\uF9C4\u1A6E"
+    + "\u5EF5\uCC8D\u1C56\u43FE\u0761\uF875\u59FF\u0322"
+    + "\u8AD1\u13EE\u8800\u0E34\u1580\u94E3\uEDB5\u5323"
+    + "\u4B47\u17A7\u9035\uABD8\uB8DF\u4F57\u9A92\uDB1B"
+    + "\u3CC8\u9904\u8EE0\uD77D\u85BB\u402C\u3A45\uF142"
+    + "\u6520\u4118\u7225\u9370\u3605\uF20B\uA379\uEC08"
+    + "\u2731\u32B6\u7CB0\u0A73\u5B7B\uB781\uD20D\u6A26"
+    + "\u9E58\u9C83\u74B3\uAC30\u7A69\u770F\uAE21\uDED0"
+    + "\u2E97\u10A4\u98A8\uD468\u2D62\u296D\u1649\u76C7"
+    + "\uE8C1\u9637\uE5CA\uF4E9\u6312\uC2A6\u14BC\uD328"
+    + "\uAF2F\uE624\u52C6\uA009\uBD8C\uCF5D\u115F\u01C5"
+    + "\u9F3D\uA29B\uC93B\uBE51\u191F\u3F5C\uB2EF\u4ACD"
+    + "\uBFBA\u6F64\uD9F3\u3EB4\uAADC\uD506\uC07E\uF666"
+    + "\u6C84\u7138\uB91D\u7F9D\u488B\u2ADA\uA533\u8239"
+    + "\uD678\u86FA\uE42B\uA91E\u8960\u6BEA\u554C\uF7E2";
   /** Substitution boxes for encryption and decryption. */
   private static final byte[] Se = new byte[256];
-
   private static final byte[] Sd = new byte[256];
-
   /** Transposition boxes for encryption and decryption. */
   private static final int[] Te = new int[256];
-
   private static final int[] Td = new int[256];
-
   /**
-   * KAT vector (from ecb_vk):
-   * I=87
-   * KEY=00000000000000000000020000000000
+   * KAT vector (from ecb_vk): I=87 KEY=00000000000000000000020000000000
    * CT=A9DF031B4E25E89F527EFFF89CB0BEBA
    */
-  private static final byte[] KAT_KEY = Util.toBytesFromString("00000000000000000000020000000000");
-
-  private static final byte[] KAT_CT = Util.toBytesFromString("A9DF031B4E25E89F527EFFF89CB0BEBA");
-
+  private static final byte[] KAT_KEY =
+      Util.toBytesFromString("00000000000000000000020000000000");
+  private static final byte[] KAT_CT =
+      Util.toBytesFromString("A9DF031B4E25E89F527EFFF89CB0BEBA");
   /** caches the result of the correctness test, once executed. */
   private static Boolean valid;
-
-  // Static code - to intialise lookup tables
-  // -------------------------------------------------------------------------
-
   static
     {
       int i, j;
-      /*
-       // Generate exp and log tables used in multiplication over GF(2 ** m)
-       byte[] exp = new byte[256];
-       byte[] log = new byte[256];
-
-       exp[0] = 1;
-       for (i = 1; i < 256; i++) {
-       j = exp[i - 1] << 1;
-       if ((j & 0x100) != 0) {
-       j ^= ROOT; // reduce j (mod ROOT)
-       }
-
-       exp[i] = (byte) j;
-       log[j & 0xFF] = (byte) i;
-       }
-
-       // Compute the substitution box Se[] and its inverse Sd[] based on
-       // F(x) = x**{-1} plus affine transform of the output.
-       Se[0] = 0;
-       Se[1] = 1;
-       for (i = 2; i < 256; i++) {
-       Se[i] = exp[(255 - log[i]) & 0xFF];
-       }
-
-       // Let Se[i] be represented as an 8-row vector V over GF(2); the affine
-       // transformation is A * V + T, where the rows of the 8 x 8 matrix A are
-       // contained in trans[0]...trans[7] and the 8-row vector T is contained
-       // in 0xB1.
-       int[] trans = new int[] {0x01, 0x03, 0x05, 0x0F, 0x1F, 0x3D, 0x7B, 0xD6};
-       int u, v;
-       for (i = 0; i < 256; i++) {
-       v = 0xB1;                        // affine part of the transform
-       for (j = 0; j < 8; j++) {
-       u = Se[i] & trans[j] & 0xFF; // column-wise mult. over GF(2)
-       u ^= u >>> 4;                // sum of all bits of u over GF(2)
-       u ^= u >>> 2;
-       u ^= u >>> 1;
-       u &= 1;
-       v ^= u << j;                 // row alignment of the result
-       }
-       Se[i] = (byte) v;
-       Sd[v] = (byte) i;                // inverse substitution box
-       }
-
-       System.out.println("Se="+Util.toUnicodeString(Se));
-       System.out.println("Sd="+Util.toUnicodeString(Sd));
-       */
-      /**/
       // re-construct Se box values
       int limit = Sdata.length();
       char c1;
       for (i = 0, j = 0; i < limit; i++)
         {
           c1 = Sdata.charAt(i);
-          Se[j++] = (byte) (c1 >>> 8);
+          Se[j++] = (byte)(c1 >>> 8);
           Se[j++] = (byte) c1;
         }
-
       // compute Sd box values
       for (i = 0; i < 256; i++)
-        {
-          Sd[Se[i] & 0xFF] = (byte) i;
-        }
-
+        Sd[Se[i] & 0xFF] = (byte) i;
       // generate OFFSET values
       OFFSET[0] = 1;
       for (i = 1; i < ROUNDS; i++)
@@ -193,9 +122,7 @@ public final class Square extends BaseCipher
           OFFSET[i] = mul(OFFSET[i - 1], 2);
           OFFSET[i - 1] <<= 24;
         }
-
       OFFSET[ROUNDS - 1] <<= 24;
-
       // generate Te and Td boxes if we're not reading their values
       // Notes:
       // (1) The function mul() computes the product of two elements of GF(2**8)
@@ -207,18 +134,19 @@ public final class Square extends BaseCipher
       for (i = 0; i < 256; i++)
         {
           j = Se[i] & 0xFF;
-          Te[i] = (Se[i & 3] == 0) ? 0 : mul(j, 2) << 24 | j << 16 | j << 8
-                                         | mul(j, 3);
-
+          Te[i] = (Se[i & 3] == 0) ? 0
+                                   : mul(j, 2) << 24
+                                   | j << 16
+                                   | j << 8
+                                   | mul(j, 3);
           j = Sd[i] & 0xFF;
-          Td[i] = (Sd[i & 3] == 0) ? 0 : mul(j, 14) << 24 | mul(j, 9) << 16
-                                         | mul(j, 13) << 8 | mul(j, 11);
+          Td[i] = (Sd[i & 3] == 0) ? 0
+                                   : mul(j, 14) << 24
+                                   | mul(j,  9) << 16
+                                   | mul(j, 13) << 8
+                                   | mul(j, 11);
         }
-      /**/
     }
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /** Trivial 0-arguments constructor. */
   public Square()
@@ -226,92 +154,102 @@ public final class Square extends BaseCipher
     super(Registry.SQUARE_CIPHER, DEFAULT_BLOCK_SIZE, DEFAULT_KEY_SIZE);
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   private static void square(byte[] in, int i, byte[] out, int j, int[][] K,
                              int[] T, byte[] S)
   {
-    int a = ((in[i++]) << 24 | (in[i++] & 0xFF) << 16 | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF))
-            ^ K[0][0];
-    int b = ((in[i++]) << 24 | (in[i++] & 0xFF) << 16 | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF))
-            ^ K[0][1];
-    int c = ((in[i++]) << 24 | (in[i++] & 0xFF) << 16 | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF))
-            ^ K[0][2];
-    int d = ((in[i++]) << 24 | (in[i++] & 0xFF) << 16 | (in[i++] & 0xFF) << 8 | (in[i] & 0xFF))
-            ^ K[0][3];
-
+    int a = ((in[i++])        << 24
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) <<  8
+           | (in[i++] & 0xFF)      ) ^ K[0][0];
+    int b = ((in[i++])        << 24
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) <<  8
+           | (in[i++] & 0xFF)      ) ^ K[0][1];
+    int c = ((in[i++])        << 24
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) <<  8
+           | (in[i++] & 0xFF)      ) ^ K[0][2];
+    int d = ((in[i++])        << 24
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) <<  8
+           | (in[i  ] & 0xFF)      ) ^ K[0][3];
     int r, aa, bb, cc, dd;
     for (r = 1; r < ROUNDS; r++)
       { // R - 1 full rounds
-        aa = T[(a >>> 24)] ^ rot32R(T[(b >>> 24)], 8)
-             ^ rot32R(T[(c >>> 24)], 16) ^ rot32R(T[(d >>> 24)], 24) ^ K[r][0];
-        bb = T[(a >>> 16) & 0xFF] ^ rot32R(T[(b >>> 16) & 0xFF], 8)
-             ^ rot32R(T[(c >>> 16) & 0xFF], 16)
-             ^ rot32R(T[(d >>> 16) & 0xFF], 24) ^ K[r][1];
-        cc = T[(a >>> 8) & 0xFF] ^ rot32R(T[(b >>> 8) & 0xFF], 8)
-             ^ rot32R(T[(c >>> 8) & 0xFF], 16)
-             ^ rot32R(T[(d >>> 8) & 0xFF], 24) ^ K[r][2];
-        dd = T[a & 0xFF] ^ rot32R(T[b & 0xFF], 8) ^ rot32R(T[c & 0xFF], 16)
-             ^ rot32R(T[d & 0xFF], 24) ^ K[r][3];
-
+        aa =        T[(a >>> 24)       ]
+           ^ rot32R(T[(b >>> 24)       ], 8)
+           ^ rot32R(T[(c >>> 24)       ], 16)
+           ^ rot32R(T[(d >>> 24)       ], 24) ^ K[r][0];
+        bb =        T[(a >>> 16) & 0xFF]
+           ^ rot32R(T[(b >>> 16) & 0xFF], 8)
+           ^ rot32R(T[(c >>> 16) & 0xFF], 16)
+           ^ rot32R(T[(d >>> 16) & 0xFF], 24) ^ K[r][1];
+        cc =        T[(a >>>  8) & 0xFF]
+           ^ rot32R(T[(b >>>  8) & 0xFF], 8)
+           ^ rot32R(T[(c >>>  8) & 0xFF], 16)
+           ^ rot32R(T[(d >>>  8) & 0xFF], 24) ^ K[r][2];
+        dd =        T[ a         & 0xFF]
+           ^ rot32R(T[ b         & 0xFF], 8)
+           ^ rot32R(T[ c         & 0xFF], 16)
+           ^ rot32R(T[ d         & 0xFF], 24) ^ K[r][3];
         a = aa;
         b = bb;
         c = cc;
         d = dd;
       }
-
     // last round (diffusion becomes only transposition)
-    aa = ((S[(a >>> 24)]) << 24 | (S[(b >>> 24)] & 0xFF) << 16
-          | (S[(c >>> 24)] & 0xFF) << 8 | (S[(d >>> 24)] & 0xFF))
-         ^ K[r][0];
-    bb = ((S[(a >>> 16) & 0xFF]) << 24 | (S[(b >>> 16) & 0xFF] & 0xFF) << 16
-          | (S[(c >>> 16) & 0xFF] & 0xFF) << 8 | (S[(d >>> 16) & 0xFF] & 0xFF))
-         ^ K[r][1];
-    cc = ((S[(a >>> 8) & 0xFF]) << 24 | (S[(b >>> 8) & 0xFF] & 0xFF) << 16
-          | (S[(c >>> 8) & 0xFF] & 0xFF) << 8 | (S[(d >>> 8) & 0xFF] & 0xFF))
-         ^ K[r][2];
-    dd = ((S[a & 0xFF]) << 24 | (S[b & 0xFF] & 0xFF) << 16
-          | (S[c & 0xFF] & 0xFF) << 8 | (S[d & 0xFF] & 0xFF))
-         ^ K[r][3];
-
-    out[j++] = (byte) (aa >>> 24);
-    out[j++] = (byte) (aa >>> 16);
-    out[j++] = (byte) (aa >>> 8);
+    aa = ((S[(a >>> 24)       ]       ) << 24
+        | (S[(b >>> 24)       ] & 0xFF) << 16
+        | (S[(c >>> 24)       ] & 0xFF) <<  8
+        | (S[(d >>> 24)       ] & 0xFF)      ) ^ K[r][0];
+    bb = ((S[(a >>> 16) & 0xFF]       ) << 24
+        | (S[(b >>> 16) & 0xFF] & 0xFF) << 16
+        | (S[(c >>> 16) & 0xFF] & 0xFF) <<  8
+        | (S[(d >>> 16) & 0xFF] & 0xFF)      ) ^ K[r][1];
+    cc = ((S[(a >>>  8) & 0xFF]       ) << 24
+        | (S[(b >>>  8) & 0xFF] & 0xFF) << 16
+        | (S[(c >>>  8) & 0xFF] & 0xFF) <<  8
+        | (S[(d >>>  8) & 0xFF] & 0xFF)      ) ^ K[r][2];
+    dd = ((S[ a         & 0xFF]       ) << 24
+        | (S[ b         & 0xFF] & 0xFF) << 16
+        | (S[ c         & 0xFF] & 0xFF) <<  8
+        | (S[ d         & 0xFF] & 0xFF)      ) ^ K[r][3];
+    out[j++] = (byte)(aa >>> 24);
+    out[j++] = (byte)(aa >>> 16);
+    out[j++] = (byte)(aa >>> 8);
     out[j++] = (byte) aa;
-    out[j++] = (byte) (bb >>> 24);
-    out[j++] = (byte) (bb >>> 16);
-    out[j++] = (byte) (bb >>> 8);
+    out[j++] = (byte)(bb >>> 24);
+    out[j++] = (byte)(bb >>> 16);
+    out[j++] = (byte)(bb >>> 8);
     out[j++] = (byte) bb;
-    out[j++] = (byte) (cc >>> 24);
-    out[j++] = (byte) (cc >>> 16);
-    out[j++] = (byte) (cc >>> 8);
+    out[j++] = (byte)(cc >>> 24);
+    out[j++] = (byte)(cc >>> 16);
+    out[j++] = (byte)(cc >>> 8);
     out[j++] = (byte) cc;
-    out[j++] = (byte) (dd >>> 24);
-    out[j++] = (byte) (dd >>> 16);
-    out[j++] = (byte) (dd >>> 8);
-    out[j] = (byte) dd;
+    out[j++] = (byte)(dd >>> 24);
+    out[j++] = (byte)(dd >>> 16);
+    out[j++] = (byte)(dd >>> 8);
+    out[j  ] = (byte) dd;
   }
 
   /**
-   * <p>Applies the Theta function to an input <i>in</i> in order to produce in
-   * <i>out</i> an internal session sub-key.</p>
-   *
-   * <p>Both <i>in</i> and <i>out</i> are arrays of four ints.</p>
-   *
-   * <p>Pseudo-code is:</p>
-   *
+   * Applies the Theta function to an input <i>in</i> in order to produce in
+   * <i>out</i> an internal session sub-key.
+   * <p>
+   * Both <i>in</i> and <i>out</i> are arrays of four ints.
+   * <p>
+   * Pseudo-code is:
    * <pre>
-   *    for (i = 0; i < 4; i++) {
-   *       out[i] = 0;
-   *       for (j = 0, n = 24; j < 4; j++, n -= 8) {
-   *          k = mul(in[i] >>> 24, G[0][j]) ^
-   *              mul(in[i] >>> 16, G[1][j]) ^
-   *              mul(in[i] >>>  8, G[2][j]) ^
-   *              mul(in[i]       , G[3][j]);
-   *          out[i] ^= k << n;
+   * for (i = 0; i &lt; 4; i++)
+   *   {
+   *     out[i] = 0;
+   *     for (j = 0, n = 24; j &lt; 4; j++, n -= 8)
+   *       {
+   *         k = mul(in[i] &gt;&gt;&gt; 24, G[0][j]) &circ; mul(in[i] &gt;&gt;&gt; 16, G[1][j])
+   *             &circ; mul(in[i] &gt;&gt;&gt; 8, G[2][j]) &circ; mul(in[i], G[3][j]);
+   *         out[i] &circ;= k &lt;&lt; n;
    *       }
-   *    }
+   *   }
    * </pre>
    */
   private static void transform(int[] in, int[] out)
@@ -332,8 +270,8 @@ public final class Square extends BaseCipher
   }
 
   /**
-   * <p>Left rotate a 32-bit chunk.</p>
-   *
+   * Left rotate a 32-bit chunk.
+   * 
    * @param x the 32-bit data to rotate
    * @param s number of places to left-rotate by
    * @return the newly permutated value.
@@ -344,8 +282,8 @@ public final class Square extends BaseCipher
   }
 
   /**
-   * <p>Right rotate a 32-bit chunk.</p>
-   *
+   * Right rotate a 32-bit chunk.
+   * 
    * @param x the 32-bit data to rotate
    * @param s number of places to right-rotate by
    * @return the newly permutated value.
@@ -356,12 +294,12 @@ public final class Square extends BaseCipher
   }
 
   /**
-   * <p>Returns the product of two binary numbers a and b, using the generator
-   * ROOT as the modulus: p = (a * b) mod ROOT. ROOT Generates a suitable
-   * Galois Field in GF(2**8).</p>
-   *
-   * <p>For best performance call it with abs(b) &lt; abs(a).</p>
-   *
+   * Returns the product of two binary numbers a and b, using the generator ROOT
+   * as the modulus: p = (a * b) mod ROOT. ROOT Generates a suitable Galois
+   * Field in GF(2**8).
+   * <p>
+   * For best performance call it with abs(b) &lt; abs(a).
+   * 
    * @param a operand for multiply.
    * @param b operand for multiply.
    * @return the result of (a * b) % ROOT.
@@ -369,34 +307,21 @@ public final class Square extends BaseCipher
   private static final int mul(int a, int b)
   {
     if (a == 0)
-      {
-        return 0;
-      }
-
+      return 0;
     a &= 0xFF;
     b &= 0xFF;
     int result = 0;
     while (b != 0)
       {
         if ((b & 0x01) != 0)
-          {
-            result ^= a;
-          }
-
+          result ^= a;
         b >>>= 1;
         a <<= 1;
         if (a > 0xFF)
-          {
-            a ^= ROOT;
-          }
+          a ^= ROOT;
       }
     return result & 0xFF;
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.lang.Cloneable interface implementation ----------------------------
 
   public Object clone()
   {
@@ -406,12 +331,10 @@ public final class Square extends BaseCipher
     return result;
   }
 
-  // IBlockCipherSpi interface implementation --------------------------------
-
   public Iterator blockSizes()
   {
     ArrayList al = new ArrayList();
-    al.add(new Integer(DEFAULT_BLOCK_SIZE));
+    al.add(Integer.valueOf(DEFAULT_BLOCK_SIZE));
 
     return Collections.unmodifiableList(al).iterator();
   }
@@ -419,7 +342,7 @@ public final class Square extends BaseCipher
   public Iterator keySizes()
   {
     ArrayList al = new ArrayList();
-    al.add(new Integer(DEFAULT_KEY_SIZE));
+    al.add(Integer.valueOf(DEFAULT_KEY_SIZE));
 
     return Collections.unmodifiableList(al).iterator();
   }
@@ -427,36 +350,35 @@ public final class Square extends BaseCipher
   public Object makeKey(byte[] uk, int bs) throws InvalidKeyException
   {
     if (bs != DEFAULT_BLOCK_SIZE)
-      {
-        throw new IllegalArgumentException();
-      }
+      throw new IllegalArgumentException();
     if (uk == null)
-      {
-        throw new InvalidKeyException("Empty key");
-      }
+      throw new InvalidKeyException("Empty key");
     if (uk.length != DEFAULT_KEY_SIZE)
-      {
-        throw new InvalidKeyException("Key is not 128-bit.");
-      }
-
+      throw new InvalidKeyException("Key is not 128-bit.");
     int[][] Ke = new int[ROUNDS + 1][4];
     int[][] Kd = new int[ROUNDS + 1][4];
     int[][] tK = new int[ROUNDS + 1][4];
     int i = 0;
-
-    Ke[0][0] = (uk[i++] & 0xFF) << 24 | (uk[i++] & 0xFF) << 16
-               | (uk[i++] & 0xFF) << 8 | (uk[i++] & 0xFF);
+    Ke[0][0] = (uk[i++] & 0xFF) << 24
+             | (uk[i++] & 0xFF) << 16
+             | (uk[i++] & 0xFF) << 8
+             | (uk[i++] & 0xFF);
     tK[0][0] = Ke[0][0];
-    Ke[0][1] = (uk[i++] & 0xFF) << 24 | (uk[i++] & 0xFF) << 16
-               | (uk[i++] & 0xFF) << 8 | (uk[i++] & 0xFF);
+    Ke[0][1] = (uk[i++] & 0xFF) << 24
+             | (uk[i++] & 0xFF) << 16
+             | (uk[i++] & 0xFF) << 8
+             | (uk[i++] & 0xFF);
     tK[0][1] = Ke[0][1];
-    Ke[0][2] = (uk[i++] & 0xFF) << 24 | (uk[i++] & 0xFF) << 16
-               | (uk[i++] & 0xFF) << 8 | (uk[i++] & 0xFF);
+    Ke[0][2] = (uk[i++] & 0xFF) << 24
+             | (uk[i++] & 0xFF) << 16
+             | (uk[i++] & 0xFF) << 8
+             | (uk[i++] & 0xFF);
     tK[0][2] = Ke[0][2];
-    Ke[0][3] = (uk[i++] & 0xFF) << 24 | (uk[i++] & 0xFF) << 16
-               | (uk[i++] & 0xFF) << 8 | (uk[i] & 0xFF);
+    Ke[0][3] = (uk[i++] & 0xFF) << 24
+             | (uk[i++] & 0xFF) << 16
+             | (uk[i++] & 0xFF) << 8
+             | (uk[i  ] & 0xFF);
     tK[0][3] = Ke[0][3];
-
     int j;
     for (i = 1, j = 0; i < ROUNDS + 1; i++, j++)
       {
@@ -464,41 +386,28 @@ public final class Square extends BaseCipher
         tK[i][1] = tK[j][1] ^ tK[i][0];
         tK[i][2] = tK[j][2] ^ tK[i][1];
         tK[i][3] = tK[j][3] ^ tK[i][2];
-
         System.arraycopy(tK[i], 0, Ke[i], 0, 4);
-
         transform(Ke[j], Ke[j]);
       }
-
     for (i = 0; i < ROUNDS; i++)
-      {
-        System.arraycopy(tK[ROUNDS - i], 0, Kd[i], 0, 4);
-      }
-
+      System.arraycopy(tK[ROUNDS - i], 0, Kd[i], 0, 4);
     transform(tK[0], Kd[ROUNDS]);
-
     return new Object[] { Ke, Kd };
   }
 
   public void encrypt(byte[] in, int i, byte[] out, int j, Object k, int bs)
   {
     if (bs != DEFAULT_BLOCK_SIZE)
-      {
-        throw new IllegalArgumentException();
-      }
-
-    int[][] K = (int[][]) ((Object[]) k)[0];
+      throw new IllegalArgumentException();
+    int[][] K = (int[][])((Object[]) k)[0];
     square(in, i, out, j, K, Te, Se);
   }
 
   public void decrypt(byte[] in, int i, byte[] out, int j, Object k, int bs)
   {
     if (bs != DEFAULT_BLOCK_SIZE)
-      {
-        throw new IllegalArgumentException();
-      }
-
-    int[][] K = (int[][]) ((Object[]) k)[1];
+      throw new IllegalArgumentException();
+    int[][] K = (int[][])((Object[]) k)[1];
     square(in, i, out, j, K, Td, Sd);
   }
 
@@ -508,9 +417,7 @@ public final class Square extends BaseCipher
       {
         boolean result = super.selfTest(); // do symmetry tests
         if (result)
-          {
-            result = testKat(KAT_KEY, KAT_CT);
-          }
+          result = testKat(KAT_KEY, KAT_CT);
         valid = Boolean.valueOf(result);
       }
     return valid.booleanValue();

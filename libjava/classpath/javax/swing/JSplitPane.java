@@ -708,7 +708,8 @@ public class JSplitPane extends JComponent implements Accessible
       throw new IllegalArgumentException
         ("proportion has to be between 0 and 1.");
 
-    int max = (orientation == HORIZONTAL_SPLIT) ? getWidth() : getHeight();
+    int max = ((orientation == HORIZONTAL_SPLIT) ? getWidth() : getHeight())
+              - getDividerSize();
     setDividerLocation((int) (proportionalLocation * max));
   }
 

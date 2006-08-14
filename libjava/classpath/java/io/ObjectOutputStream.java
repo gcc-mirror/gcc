@@ -253,7 +253,17 @@ public class ObjectOutputStream extends OutputStream
 	    ObjectStreamClass osc = ObjectStreamClass.lookupForClassObject(clazz);
 	    if (osc == null)
 	      throw new NotSerializableException(clazz.getName());
-	    
+
+	    if (osc.isEnum())
+	      {
+		/* TC_ENUM classDesc newHandle enumConstantName */
+		realOutput.writeByte(TC_ENUM);
+		writeObject(osc);
+		assignNewHandle(obj);
+		writeObject(((Enum) obj).name());
+		break;
+	      }
+
 	    if ((replacementEnabled || obj instanceof Serializable)
 		&& ! replaceDone)
 	      {
@@ -432,7 +442,10 @@ public class ObjectOutputStream extends OutputStream
       {
         realOutput.writeByte(TC_CLASSDESC);
         realOutput.writeUTF(osc.getName());
-        realOutput.writeLong(osc.getSerialVersionUID());
+	if (osc.isEnum())
+	  realOutput.writeLong(0L);
+	else
+	  realOutput.writeLong(osc.getSerialVersionUID());
         assignNewHandle(osc);
 
         int flags = osc.getFlags();

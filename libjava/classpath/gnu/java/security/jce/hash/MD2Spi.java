@@ -41,27 +41,15 @@ package gnu.java.security.jce.hash;
 import gnu.java.security.Registry;
 
 /**
- * <p>The implementation of the MD2 <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.</p>
+ * The implementation of the MD2 <i>Service Provider Interface</i> (<b>SPI</b>)
+ * adapter.
  */
-public class MD2Spi extends MessageDigestAdapter
+public class MD2Spi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial 0-arguments constructor. */
   public MD2Spi()
   {
     super(Registry.MD2_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

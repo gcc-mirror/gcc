@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
+
 package gnu.javax.crypto.jce.key;
 
 import java.security.InvalidKeyException;
@@ -45,36 +46,37 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.DESKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class DESSecretKeyFactoryImpl extends SecretKeyFactoryImpl
+public class DESSecretKeyFactoryImpl
+    extends SecretKeyFactoryImpl
 {
 
   public DESSecretKeyFactoryImpl()
   {
   }
 
-  protected SecretKey engineGenerateSecret (KeySpec spec)
-    throws InvalidKeySpecException
+  protected SecretKey engineGenerateSecret(KeySpec spec)
+      throws InvalidKeySpecException
   {
     if (spec instanceof DESKeySpec)
-      return new SecretKeySpec (((DESKeySpec) spec).getKey(), "DES");
-    return super.engineGenerateSecret (spec);
+      return new SecretKeySpec(((DESKeySpec) spec).getKey(), "DES");
+    return super.engineGenerateSecret(spec);
   }
 
-  protected KeySpec engineGetKeySpec (SecretKey key, Class spec)
-    throws InvalidKeySpecException
+  protected KeySpec engineGetKeySpec(SecretKey key, Class spec)
+      throws InvalidKeySpecException
   {
-    if (spec.isAssignableFrom (DESKeySpec.class))
+    if (spec.isAssignableFrom(DESKeySpec.class))
       try
         {
-          return new DESKeySpec (key.getEncoded());
+          return new DESKeySpec(key.getEncoded());
         }
       catch (InvalidKeyException ike)
         {
-          InvalidKeySpecException ikse = new InvalidKeySpecException
-            ("can't create DES key spec");
-          ikse.initCause (ike);
+          InvalidKeySpecException ikse = new InvalidKeySpecException(
+              "can't create DES key spec");
+          ikse.initCause(ike);
           throw ikse;
         }
-    return super.engineGetKeySpec (key, spec);
+    return super.engineGetKeySpec(key, spec);
   }
 }

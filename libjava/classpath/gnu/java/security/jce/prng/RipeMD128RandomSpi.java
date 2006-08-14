@@ -41,26 +41,14 @@ package gnu.java.security.jce.prng;
 import gnu.java.security.Registry;
 
 /**
- * <p>The implementation of the RIPEMD128-based SecureRandom <i>Service Provider
- * Interface</i> (<b>SPI</b>) adapter.<p>
+ * The implementation of the RIPEMD128-based SecureRandom <i>Service Provider
+ * Interface</i> (<b>SPI</b>) adapter.
  */
-public class RipeMD128RandomSpi extends SecureRandomAdapter
+public class RipeMD128RandomSpi
+    extends SecureRandomAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public RipeMD128RandomSpi()
   {
     super(Registry.RIPEMD128_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

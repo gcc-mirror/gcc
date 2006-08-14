@@ -35,18 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
+
 package gnu.javax.crypto.jce.key;
 
 import gnu.java.security.Registry;
 
-public class SerpentKeyGeneratorImpl extends SecretKeyGeneratorImpl
+public class SerpentKeyGeneratorImpl
+    extends SecretKeyGeneratorImpl
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
-  public SerpentKeyGeneratorImpl ()
+  public SerpentKeyGeneratorImpl()
   {
-    super (Registry.SERPENT_CIPHER);
+    super(Registry.SERPENT_CIPHER);
   }
 }

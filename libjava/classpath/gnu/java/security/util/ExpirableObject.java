@@ -46,26 +46,23 @@ import javax.security.auth.Destroyable;
 
 /**
  * The base class for objects with sensitive data that are automatically
- * destroyed after a timeout elapses. On creation, an object that extends
- * this class will automatically be added to a {@link Timer} object that,
- * once a timeout elapses, will automatically call the {@link
- * Destroyable#destroy()} method.
- *
- * <p>Concrete subclasses must implement the {@link doDestroy()} method
- * instead of {@link Destroyable#destroy()}; the behavior of that method
- * should match exactly the behavior desired of <code>destroy()</code>.
- *
- * <p>Note that if a {@link DestroyFailedException} occurs when the timeout
+ * destroyed after a timeout elapses. On creation, an object that extends this
+ * class will automatically be added to a {@link Timer} object that, once a
+ * timeout elapses, will automatically call the {@link Destroyable#destroy()}
+ * method.
+ * <p>
+ * Concrete subclasses must implement the {@link #doDestroy()} method instead of
+ * {@link Destroyable#destroy()}; the behavior of that method should match
+ * exactly the behavior desired of <code>destroy()</code>.
+ * <p>
+ * Note that if a {@link DestroyFailedException} occurs when the timeout
  * expires, it will not be reported.
- *
+ * 
  * @see Destroyable
  */
-public abstract class ExpirableObject implements Destroyable
+public abstract class ExpirableObject
+    implements Destroyable
 {
-
-  // Constants and fields.
-  // -------------------------------------------------------------------------
-
   /**
    * The default timeout, used in the default constructor.
    */
@@ -82,9 +79,6 @@ public abstract class ExpirableObject implements Destroyable
    */
   private final Destroyer destroyer;
 
-  // Constructors.
-  // -------------------------------------------------------------------------
-
   /**
    * Create a new expirable object that will expire after one hour.
    */
@@ -94,12 +88,11 @@ public abstract class ExpirableObject implements Destroyable
   }
 
   /**
-   * Create a new expirable object that will expire after the specified
-   * timeout.
-   *
+   * Create a new expirable object that will expire after the specified timeout.
+   * 
    * @param delay The delay before expiration.
    * @throws IllegalArgumentException If <i>delay</i> is negative, or if
-   *  <code>delay + System.currentTimeMillis()</code> is negative.
+   *           <code>delay + System.currentTimeMillis()</code> is negative.
    */
   protected ExpirableObject(final long delay)
   {
@@ -107,14 +100,11 @@ public abstract class ExpirableObject implements Destroyable
     EXPIRER.schedule(destroyer, delay);
   }
 
-  // Instance methods.
-  // -------------------------------------------------------------------------
-
   /**
-   * Destroys this object. This method calls {@link doDestroy}, then, if
-   * no exception is thrown, cancels the task that would destroy this object
-   * when the timeout is reached.
-   *
+   * Destroys this object. This method calls {@link #doDestroy}, then, if no
+   * exception is thrown, cancels the task that would destroy this object when
+   * the timeout is reached.
+   * 
    * @throws DestroyFailedException If this operation fails.
    */
   public final void destroy() throws DestroyFailedException
@@ -126,27 +116,18 @@ public abstract class ExpirableObject implements Destroyable
   /**
    * Subclasses must implement this method instead of the {@link
    * Destroyable#destroy()} method.
-   *
+   * 
    * @throws DestroyFailedException If this operation fails.
    */
   protected abstract void doDestroy() throws DestroyFailedException;
 
-  // Inner classes.
-  // -------------------------------------------------------------------------
-
   /**
    * The task that destroys the target when the timeout elapses.
    */
-  private final class Destroyer extends TimerTask
+  private final class Destroyer
+      extends TimerTask
   {
-
-    // Fields.
-    // -----------------------------------------------------------------------
-
     private final ExpirableObject target;
-
-    // Constructor.
-    // -----------------------------------------------------------------------
 
     Destroyer(final ExpirableObject target)
     {
@@ -154,14 +135,11 @@ public abstract class ExpirableObject implements Destroyable
       this.target = target;
     }
 
-    // Instance methods.
-    // -----------------------------------------------------------------------
-
     public void run()
     {
       try
         {
-          if (!target.isDestroyed())
+          if (! target.isDestroyed())
             target.doDestroy();
         }
       catch (DestroyFailedException dfe)

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.classpath.examples.CORBA.SimpleCommunication.communication;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.StructMember;
@@ -96,9 +98,9 @@ public abstract class WeThrowThisExceptionHelper
   {
     StructMember[] members = new StructMember[ 1 ];
     TypeCode member = null;
-    member = ORB.init().get_primitive_tc(TCKind.tk_long);
+    member = OrbRestricted.Singleton.get_primitive_tc(TCKind.tk_long);
     members [ 0 ] = new StructMember("ourField", member, null);
-    return ORB.init().create_struct_tc(WeThrowThisExceptionHelper.id(),
+    return OrbRestricted.Singleton.create_struct_tc(WeThrowThisExceptionHelper.id(),
                                        "WeThrowThisException", members
                                       );
   }

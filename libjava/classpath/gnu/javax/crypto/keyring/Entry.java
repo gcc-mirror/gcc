@@ -38,49 +38,51 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.keyring;
 
+import gnu.java.security.Configuration;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * An immutable class representing a single entry in a keyring.
  */
 public abstract class Entry
 {
-
-  // Fields.
-  // ------------------------------------------------------------------------
-
+  private static final Logger log = Logger.getLogger(Entry.class.getName());
+  private static final String[] TYPES = new String[] {
+      "Encrypted",
+      "PasswordEncrypted",
+      "Authenticated",
+      "PasswordAuthenticated",
+      "Compressed",
+      "Certificate",
+      "PublicKey",
+      "PrivateKey",
+      "CertPath",
+      "BinaryData" };
   /** This entry's type identifier. */
   protected int type;
-
   /** This entry's property set. */
   protected Properties properties;
-
   /** This entry's payload. */
   protected byte[] payload;
 
-  // Constructor.
-  // ------------------------------------------------------------------------
-
   /**
    * Creates a new Entry.
-   *
+   * 
    * @param type This entry's type.
    * @param properties This entry's properties.
-   * @throws IllegalArgumentException If the properties argument is null,
-   *   or if the type is out of range.
+   * @throws IllegalArgumentException If the properties argument is null, or if
+   *           the type is out of range.
    */
   protected Entry(int type, Properties properties)
   {
     if (type < 0 || type > 255)
-      {
-        throw new IllegalArgumentException("invalid packet type");
-      }
+      throw new IllegalArgumentException("invalid packet type");
     if (properties == null)
-      {
-        throw new IllegalArgumentException("no properties");
-      }
+      throw new IllegalArgumentException("no properties");
     this.type = type;
     this.properties = (Properties) properties.clone();
   }
@@ -91,20 +93,15 @@ public abstract class Entry
   protected Entry(final int type)
   {
     if (type < 0 || type > 255)
-      {
-        throw new IllegalArgumentException("invalid packet type");
-      }
+      throw new IllegalArgumentException("invalid packet type");
     this.type = type;
     properties = new Properties();
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   /**
    * Returns this entry's properties object. The properties are cloned before
    * being returned.
-   *
+   * 
    * @return The properties.
    */
   public Properties getProperties()
@@ -123,26 +120,33 @@ public abstract class Entry
   }
 
   /**
-   * This method is called when this entry needs to be written to an
-   * output stream.
-   *
+   * This method is called when this entry needs to be written to an output
+   * stream.
+   * 
    * @param out The stream to write to.
    * @throws IOException If an I/O exception occurs.
    */
   public void encode(DataOutputStream out) throws IOException
   {
     if (payload == null)
-      {
-        encodePayload();
-      }
+      encodePayload();
     if (out == null)
-      {
-        return;
-      }
+      return;
     out.write(type);
     properties.encode(out);
     out.writeInt(payload.length);
     out.write(payload);
+  }
+
+  public String toString()
+  {
+    return new StringBuilder("Entry{")
+        .append("type=").append(TYPES[type])
+        .append(", properties=").append(properties)
+        .append(", payload=")
+        .append(payload == null ? "-" : "byte[" + payload.length + "]")
+        .append( "}")
+        .toString();
   }
 
   /**
@@ -158,15 +162,12 @@ public abstract class Entry
     properties.decode(in);
     int len = in.readInt();
     if (len < 0)
-      {
-        throw new IOException("corrupt length");
-      }
+      throw new IOException("corrupt length");
+    if (Configuration.DEBUG)
+      log.fine("About to instantiate new payload byte array for " + this);
     payload = new byte[len];
     in.readFully(payload);
   }
-
-  // Abstract methods.
-  // ------------------------------------------------------------------------
 
   /**
    * This method is called of subclasses when the payload data needs to be

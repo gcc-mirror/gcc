@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package gnu.classpath.examples.CORBA.SimpleCommunication.communication;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.StructMember;
 import org.omg.CORBA.TCKind;
@@ -86,17 +88,18 @@ public abstract class StructureToReturnHelper
    */
   public static synchronized TypeCode type()
   {
-    StructMember[] members = new StructMember[ 3 ];
-    TypeCode member = ORB.init().get_primitive_tc(TCKind.tk_long);
-    members [ 0 ] = new StructMember("n", member, null);
-    member = ORB.init().create_string_tc(0);
-    members [ 1 ] = new StructMember("c", member, null);
-    member = ORB.init().get_primitive_tc(TCKind.tk_long);
-    member = ORB.init().create_array_tc(3, member);
-    members [ 2 ] = new StructMember("arra", member, null);
-    return ORB.init().create_struct_tc(StructureToReturnHelper.id(), "StructureToReturn",
-                                       members
-                                      );
+    StructMember[] members = new StructMember[3];
+    TypeCode member = OrbRestricted.Singleton.get_primitive_tc(TCKind.tk_long);
+    members[0] = new StructMember("n", member, null);
+    member = OrbRestricted.Singleton.create_string_tc(0);
+    members[1] = new StructMember("c", member, null);
+    member = OrbRestricted.Singleton.get_primitive_tc(TCKind.tk_long);
+    member = OrbRestricted.Singleton.create_array_tc(3, member);
+    members[2] = new StructMember("arra", member, null);
+    return OrbRestricted.Singleton.create_struct_tc(
+                                                    StructureToReturnHelper.id(),
+                                                    "StructureToReturn",
+                                                    members);
   }
 
   /**

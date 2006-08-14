@@ -106,7 +106,7 @@ public abstract class PolicyErrorCodeHelper
   }
 
   /**
-   * Delegates call to {@link OutputStream.write_short()}.
+   * Delegates call to {@link OutputStream#write_short()}.
    */
   public static void write(OutputStream ostream, short value)
   {

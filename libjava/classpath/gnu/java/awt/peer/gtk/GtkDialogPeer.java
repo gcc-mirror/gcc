@@ -1,5 +1,5 @@
 /* GtkDialogPeer.java -- Implements DialogPeer with GTK
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,9 +39,6 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.Dialog;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.awt.event.PaintEvent;
 import java.awt.peer.DialogPeer;
 
 public class GtkDialogPeer extends GtkWindowPeer

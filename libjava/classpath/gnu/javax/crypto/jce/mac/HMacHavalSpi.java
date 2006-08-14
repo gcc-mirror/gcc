@@ -37,31 +37,18 @@ exception statement from your version.  */
 
 
 package gnu.javax.crypto.jce.mac;
+
 import gnu.java.security.Registry;
 
 /**
  * The implementation of the HMAC-HAVAL <i>Service Provider Interface</i>
  * (<b>SPI</b>) Adapter.
- *
- * @version Revision: $
  */
-public class HMacHavalSpi extends MacAdapter
+public class HMacHavalSpi
+    extends MacAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public HMacHavalSpi()
   {
     super(Registry.HMAC_NAME_PREFIX + Registry.HAVAL_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

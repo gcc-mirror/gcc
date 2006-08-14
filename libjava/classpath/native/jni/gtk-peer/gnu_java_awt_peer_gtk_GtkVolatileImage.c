@@ -73,7 +73,8 @@ Java_gnu_java_awt_peer_gtk_GtkVolatileImage_init (JNIEnv *env,
       pixmap = gdk_pixmap_new( widget->window, width, height, -1 );
     }
   else
-    pixmap = gdk_pixmap_new( NULL, width, height, 16 );
+    pixmap = gdk_pixmap_new( NULL, width, height, 
+			     gdk_rgb_get_visual()->depth );
 
   gdk_threads_leave();
 

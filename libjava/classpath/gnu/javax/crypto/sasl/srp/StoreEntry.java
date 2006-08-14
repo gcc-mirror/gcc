@@ -39,20 +39,12 @@ exception statement from your version.  */
 package gnu.javax.crypto.sasl.srp;
 
 /**
- * <p>A simple timing-related object for use by SRP re-use code.</p>
+ * A simple timing-related object for use by SRP re-use code.
  */
 class StoreEntry
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private boolean perenial;
-
   private long timeToDie;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   StoreEntry(int ttl)
   {
@@ -70,17 +62,11 @@ class StoreEntry
       }
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns <code>true</code> if the Time-To_live period has not elapsed.</p>
-   *
+   * Returns <code>true</code> if the Time-To_live period has not elapsed.
+   * 
    * @return <code>true</code> if the Time-To-Live period (in seconds) has not
-   * elapsed yet; <code>false</code> otherwise.
+   *         elapsed yet; <code>false</code> otherwise.
    */
   boolean isAlive()
   {

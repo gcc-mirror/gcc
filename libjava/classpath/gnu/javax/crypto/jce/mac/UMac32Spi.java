@@ -51,32 +51,22 @@ import java.security.spec.AlgorithmParameterSpec;
  * The implementation of the UMAC-32 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
  */
-public final class UMac32Spi extends MacAdapter
+public final class UMac32Spi
+    extends MacAdapter
 {
-
-  // Constructors.
-  // -----------------------------------------------------------------------
-
   public UMac32Spi()
   {
     super(Registry.UMAC32);
   }
 
-  // Instance methods overriding MacAdapter.
-  // -----------------------------------------------------------------------
-
   protected void engineInit(Key key, AlgorithmParameterSpec params)
       throws InvalidKeyException, InvalidAlgorithmParameterException
   {
-    if (!(params instanceof UMac32ParameterSpec))
-      {
-        throw new InvalidAlgorithmParameterException();
-      }
+    if (! (params instanceof UMac32ParameterSpec))
+      throw new InvalidAlgorithmParameterException();
     if (params != null)
-      {
-        attributes.put(UMac32.NONCE_MATERIAL,
-                       ((UMac32ParameterSpec) params).getNonce());
-      }
+      attributes.put(UMac32.NONCE_MATERIAL,
+                     ((UMac32ParameterSpec) params).getNonce());
     try
       {
         super.engineInit(key, null);

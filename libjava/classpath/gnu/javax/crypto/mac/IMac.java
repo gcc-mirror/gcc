@@ -38,108 +38,93 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.mac;
 
-import java.util.Map;
 import java.security.InvalidKeyException;
+import java.util.Map;
 
 /**
- * <p>The basic visible methods of any MAC (Message Authentication Code)
- * algorithm.</p>
- *
- * <p>A <i>MAC</i> provides a way to check the integrity of information
+ * The basic visible methods of any MAC (Message Authentication Code) algorithm.
+ * <p>
+ * A <i>MAC</i> provides a way to check the integrity of information
  * transmitted over, or stored in, an unreliable medium, based on a secret key.
  * Typically, <i>MAC</i>s are used between two parties, that share a common
- * secret key, in order to validate information transmitted between them.</p>
- *
- * <p>When a <i>MAC</i> algorithm is based on a cryptographic hash function, it
- * is then called to a <i>HMAC</i> (Hashed Message Authentication Code) --see
- * <a href="http://www.ietf.org/rfc/rfc-2104.txt">RFC-2104</a>.</p>
- *
+ * secret key, in order to validate information transmitted between them.
+ * <p>
+ * When a <i>MAC</i> algorithm is based on a cryptographic hash function, it is
+ * then called to a <i>HMAC</i> (Hashed Message Authentication Code) --see <a
+ * href="http://www.ietf.org/rfc/rfc-2104.txt">RFC-2104</a>.
+ * <p>
  * Another type of <i>MAC</i> algorithms exist: UMAC or <i>Universal Message
- * Authentication Code</i>, described in
- * <a href="http://www.ietf.org/internet-drafts/draft-krovetz-umac-01.txt">
- * draft-krovetz-umac-01.txt</a>.</p>
- *
- * <p>With <i>UMAC</i>s, the sender and receiver share a common secret key (the
- * <i>MAC</i> key) which determines:</p>
- *
+ * Authentication Code</i>, described in <a
+ * href="http://www.ietf.org/internet-drafts/draft-krovetz-umac-01.txt">
+ * draft-krovetz-umac-01.txt</a>.
+ * <p>
+ * With <i>UMAC</i>s, the sender and receiver share a common secret key (the
+ * <i>MAC</i> key) which determines:
  * <ul>
- *    <li>The key for a <i>universal hash function</i>. This hash function is
- *    <i>non-cryptographic</i>, in the sense that it does not need to have any
- *    cryptographic <i>hardness</i> property. Rather, it needs to satisfy some
- *    combinatorial property, which can be proven to hold without relying on
- *    unproven hardness assumptions.</li>
- *
- *    <li>The key for a <i>pseudorandom function</i>. This is where one needs a
- *    cryptographic hardness assumption. The pseudorandom function may be
- *    obtained from a <i>block cipher</i> or a <i>cryptographic hash function</i>.
- *    </li>
+ * <li>The key for a <i>universal hash function</i>. This hash function is
+ * <i>non-cryptographic</i>, in the sense that it does not need to have any
+ * cryptographic <i>hardness</i> property. Rather, it needs to satisfy some
+ * combinatorial property, which can be proven to hold without relying on
+ * unproven hardness assumptions.</li>
+ * <li>The key for a <i>pseudorandom function</i>. This is where one needs a
+ * cryptographic hardness assumption. The pseudorandom function may be obtained
+ * from a <i>block cipher</i> or a <i>cryptographic hash function</i>. </li>
  * </ul>
- *
- * <p>References:</p>
- *
+ * <p>
+ * References:
  * <ol>
- *    <li><a href="http://www.ietf.org/rfc/rfc-2104.txt">RFC 2104</a>HMAC:
- *    Keyed-Hashing for Message Authentication.<br>
- *    H. Krawczyk, M. Bellare, and R. Canetti.</li>
- *
- *    <li><a href="http://www.ietf.org/internet-drafts/draft-krovetz-umac-01.txt">
- *    UMAC</a>: Message Authentication Code using Universal Hashing.<br>
- *    T. Krovetz, J. Black, S. Halevi, A. Hevia, H. Krawczyk, and P. Rogaway.</li>
+ * <li><a href="http://www.ietf.org/rfc/rfc-2104.txt">RFC 2104</a>HMAC:
+ * Keyed-Hashing for Message Authentication.<br>
+ * H. Krawczyk, M. Bellare, and R. Canetti.</li>
+ * <li><a href="http://www.ietf.org/internet-drafts/draft-krovetz-umac-01.txt">
+ * UMAC</a>: Message Authentication Code using Universal Hashing.<br>
+ * T. Krovetz, J. Black, S. Halevi, A. Hevia, H. Krawczyk, and P. Rogaway.</li>
  * </ol>
  */
 public interface IMac
 {
-
-  // Constants
-  // -------------------------------------------------------------------------
-
   /**
    * Property name of the user-supplied key material. The value associated to
    * this property name is taken to be a byte array.
    */
   String MAC_KEY_MATERIAL = "gnu.crypto.mac.key.material";
-
   /**
-   * <p>Property name of the desired truncated output size in bytes. The value
-   * associated to this property name is taken to be an integer. If no value
-   * is specified in the attributes map at initialisation time, then all bytes
-   * of the underlying hash algorithm's output are emitted.</p>
-   *
-   * <p>This implementation, follows the recommendation of the <i>RFC 2104</i>
-   * authors; specifically:</p>
-   *
+   * Property name of the desired truncated output size in bytes. The value
+   * associated to this property name is taken to be an integer. If no value is
+   * specified in the attributes map at initialisation time, then all bytes of
+   * the underlying hash algorithm's output are emitted.
+   * <p>
+   * This implementation, follows the recommendation of the <i>RFC 2104</i>
+   * authors; specifically:
    * <pre>
-   *    We recommend that the output length t be not less than half the
-   *    length of the hash output (to match the birthday attack bound)
-   *    and not less than 80 bits (a suitable lower bound on the number
-   *    of bits that need to be predicted by an attacker).
+   *     We recommend that the output length t be not less than half the
+   *     length of the hash output (to match the birthday attack bound)
+   *     and not less than 80 bits (a suitable lower bound on the number
+   *     of bits that need to be predicted by an attacker).
    * </pre>
    */
   String TRUNCATED_SIZE = "gnu.crypto.mac.truncated.size";
 
-  // Methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the canonical name of this algorithm.</p>
-   *
+   * Returns the canonical name of this algorithm.
+   * 
    * @return the canonical name of this algorithm.
    */
   String name();
 
   /**
-   * <p>Returns the output length in bytes of this <i>MAC</i> algorithm.</p>
-   *
+   * Returns the output length in bytes of this <i>MAC</i> algorithm.
+   * 
    * @return the output length in bytes of this <i>MAC</i> algorithm.
    */
   int macSize();
 
   /**
-   * <p>Initialises the algorithm with designated attributes. Permissible names
-   * and values are described in the class documentation above.</p>
-   *
+   * Initialises the algorithm with designated attributes. Permissible names and
+   * values are described in the class documentation above.
+   * 
    * @param attributes a set of name-value pairs that describe the desired
-   * future instance behaviour.
+   *          future instance behaviour.
    * @exception InvalidKeyException if the key data is invalid.
    * @exception IllegalStateException if the instance is already initialised.
    * @see #MAC_KEY_MATERIAL
@@ -147,18 +132,17 @@ public interface IMac
   void init(Map attributes) throws InvalidKeyException, IllegalStateException;
 
   /**
-   * <p>Continues a <i>MAC</i> operation using the input byte.</p>
-   *
+   * Continues a <i>MAC</i> operation using the input byte.
+   * 
    * @param b the input byte to digest.
    */
   void update(byte b);
 
   /**
-   * <p>Continues a <i>MAC</i> operation, by filling the buffer, processing
-   * data in the algorithm's MAC_SIZE-bit block(s), updating the context and
-   * count, and buffering the remaining bytes in buffer for the next
-   * operation.</p>
-   *
+   * Continues a <i>MAC</i> operation, by filling the buffer, processing data
+   * in the algorithm's MAC_SIZE-bit block(s), updating the context and count,
+   * and buffering the remaining bytes in buffer for the next operation.
+   * 
    * @param in the input block.
    * @param offset start of meaningful bytes in input block.
    * @param length number of bytes, in input block, to consider.
@@ -166,31 +150,31 @@ public interface IMac
   void update(byte[] in, int offset, int length);
 
   /**
-   * <p>Completes the <i>MAC</i> by performing final operations such as
-   * padding and resetting the instance.</p>
-   *
+   * Completes the <i>MAC</i> by performing final operations such as padding
+   * and resetting the instance.
+   * 
    * @return the array of bytes representing the <i>MAC</i> value.
    */
   byte[] digest();
 
   /**
-   * <p>Resets the algorithm instance for re-initialisation and use with other
-   * characteristics. This method always succeeds.</p>
+   * Resets the algorithm instance for re-initialisation and use with other
+   * characteristics. This method always succeeds.
    */
   void reset();
 
   /**
-   * <p>A basic test. Ensures that the MAC of a pre-determined message is equal
-   * to a known pre-computed value.</p>
-   *
+   * A basic test. Ensures that the MAC of a pre-determined message is equal to
+   * a known pre-computed value.
+   * 
    * @return <code>true</code> if the implementation passes a basic self-test.
-   * Returns <code>false</code> otherwise.
+   *         Returns <code>false</code> otherwise.
    */
   boolean selfTest();
 
   /**
-   * <p>Returns a clone copy of this instance.</p>
-   *
+   * Returns a clone copy of this instance.
+   * 
    * @return a clone copy of this instance.
    */
   Object clone() throws CloneNotSupportedException;

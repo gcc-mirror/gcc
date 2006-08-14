@@ -48,13 +48,6 @@ import java.util.EventObject;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * STUBBED
- * @see DragGestureRecognizer
- * @see DragGestureListener
- * @see DragSource
- * @since 1.2
- */
 public class DragGestureEvent extends EventObject
 {
   /**
@@ -66,52 +59,121 @@ public class DragGestureEvent extends EventObject
   private Component component;
   private final Point origin;
   private final int action;
+  private List events;
+  private DragGestureRecognizer dgr;
 
+  /**
+   * Constructs a new DragGestureEvent.
+   * @param dgr - DragGestureRecognizer firing this event
+   * @param action - user's preferred action
+   * @param origin - origin of the drag
+   * @param events - List of events that make up the gesture
+   * @throws IllegalArgumentException - if input parameters are null
+   */
   public DragGestureEvent(DragGestureRecognizer dgr, int action, Point origin,
                           List events)
-  {
+  {    
     super(dgr);
-    if (origin == null || events == null)
+    if (origin == null || events == null || dgr == null)
       throw new IllegalArgumentException();
+    
     this.origin = origin;
     this.action = action;
+    this.events = events;
+    this.dgr = dgr;
+    this.component = dgr.getComponent();
+    this.dragSource = dgr.getDragSource();
   }
 
+  /**
+   * Returns the source casted as a DragGestureRecognizer.
+   * 
+   * @return the source casted as a DragGestureRecognizer.
+   */
   public DragGestureRecognizer getSourceAsDragGestureRecognizer()
   {
-    return (DragGestureRecognizer) source;
+    return (DragGestureRecognizer) getSource();
   }
+  
+  /**
+   * Returns the Component corresponding to this.
+   * 
+   * @return the Component corresponding to this.
+   */
   public Component getComponent()
   {
-    return null;
+    return component;
   }
+  
+  /**
+   * Gets the DragSource corresponding to this.
+   * 
+   * @return the DragSource corresponding to this.
+   */
   public DragSource getDragSource()
   {
-    return null;
+    return dragSource;
   }
+  
+  /**
+   * Returns the origin of the drag.
+   * 
+   * @return the origin of the drag.
+   */
   public Point getDragOrigin()
   {
     return origin;
   }
+  
+  /**
+   * Gets an iterator representation of the List of events.
+   * 
+   * @return an iterator representation of the List of events.
+   */
   public Iterator iterator()
   {
-    return null;
+    return events.iterator();
   }
+  
+  /**
+   * Gets an array representation of the List of events.
+   * 
+   * @return an array representation of the List of events.
+   */
   public Object[] toArray()
   {
-    return null;
+    return events.toArray();
   }
+  
+  /**
+   * Gets an array representation of the List of events.
+   * 
+   * @param array - the array to store the events in.
+   * @return an array representation of the List of events.
+   */
   public Object[] toArray(Object[] array)
   {
-    return array;
+    return events.toArray(array);
   }
+  
+  /**
+   * Gets the user's preferred action.
+   * 
+   * @return the user's preferred action.
+   */
   public int getDragAction()
   {
-    return 0;
+    return action;
   }
+  
+  /**
+   * Get the event that triggered this gesture.
+   * 
+   * @return the event that triggered this gesture.
+   */
   public InputEvent getTriggerEvent()
   {
-    return null;
+    return dgr.getTriggerEvent();
   }
 
   /**
@@ -152,5 +214,6 @@ public class DragGestureEvent extends EventObject
   public void startDrag(Cursor dragCursor, Image dragImage, Point imageOffset,
                         Transferable trans, DragSourceListener l)
   {
+    dragSource.startDrag(this, dragCursor, dragImage, imageOffset, trans, l);
   }
 } // class DragGestureEvent

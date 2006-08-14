@@ -45,64 +45,38 @@ import gnu.javax.crypto.sasl.SaslUtil;
  */
 public class AnonymousUtil
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial private constructor to enforce Singleton pattern. */
   private AnonymousUtil()
   {
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   static boolean isValidTraceInformation(String traceInformation)
   {
     if (traceInformation == null)
-      {
-        return false;
-      }
+      return false;
     if (traceInformation.length() == 0)
-      {
-        return true;
-      }
+      return true;
     if (SaslUtil.validEmailAddress(traceInformation))
-      {
-        return true;
-      }
+      return true;
     return isValidToken(traceInformation);
   }
 
   static boolean isValidToken(String token)
   {
     if (token == null)
-      {
-        return false;
-      }
+      return false;
     if (token.length() == 0)
-      {
-        return false;
-      }
+      return false;
     if (token.length() > 255)
-      {
-        return false;
-      }
+      return false;
     if (token.indexOf('@') != -1)
-      {
-        return false;
-      }
+      return false;
     for (int i = 0; i < token.length(); i++)
       {
         char c = token.charAt(i);
         if (c < 0x20 || c > 0x7E)
-          {
-            return false;
-          }
+          return false;
       }
     return true;
   }

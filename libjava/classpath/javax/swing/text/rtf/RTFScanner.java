@@ -71,6 +71,11 @@ class RTFScanner
   private StringBuffer buffer;
 
   /**
+   * Lookahead token.
+   */
+  private Token lastToken;
+
+  /**
    * Constructs a new RTFScanner without initializing the {@link Reader}.
    */
   private RTFScanner()
@@ -120,7 +125,7 @@ class RTFScanner
    *
    * @throws IOException if the underlying stream has problems
    */
-  public Token readToken()
+  private Token readTokenImpl()
     throws IOException
   {
     Token token = null;
@@ -153,6 +158,27 @@ class RTFScanner
         break;
       }
 
+    return token;
+  }
+
+  Token peekToken()
+    throws IOException
+  {
+    lastToken = readTokenImpl();
+    return lastToken;
+  }
+
+  Token readToken()
+    throws IOException
+  {
+    Token token;
+    if (lastToken != null)
+      {
+        token = lastToken;
+        lastToken = null;
+      }
+    else
+      token = readTokenImpl();
     return token;
   }
 

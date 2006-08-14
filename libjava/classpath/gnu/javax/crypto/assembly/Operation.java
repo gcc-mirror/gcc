@@ -39,33 +39,25 @@ exception statement from your version.  */
 package gnu.javax.crypto.assembly;
 
 /**
- * <p>An enumeration type for specifying the operation type of a
- * {@link Transformer}.</p>
- *
- * <p>The possible values for this type are two:</p>
+ * An enumeration type for specifying the operation type of a
+ * {@link Transformer}.
+ * <p>
+ * The possible values for this type are two:
  * <ol>
- *    <li>PRE_PROCESSING: where the input data is first processed by the
- *    current {@link Transformer} before being passed to the rest of the chain;
- *    and</li>
- *    <li>POST_PROCESSING: where the input data is first passed to the rest of
- *    the chain, and the resulting bytes are then processed by the current
- *    {@link Transformer}.</li>
+ * <li>PRE_PROCESSING: where the input data is first processed by the current
+ * {@link Transformer} before being passed to the rest of the chain; and</li>
+ * <li>POST_PROCESSING: where the input data is first passed to the rest of the
+ * chain, and the resulting bytes are then processed by the current
+ * {@link Transformer}.</li>
  * </ol>
  */
 public final class Operation
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   public static final Operation PRE_PROCESSING = new Operation(1);
 
   public static final Operation POST_PROCESSING = new Operation(2);
 
   private int value;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   private Operation(int value)
   {
@@ -73,12 +65,6 @@ public final class Operation
 
     this.value = value;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   public String toString()
   {

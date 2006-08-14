@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.Color;
 import java.util.HashMap;
 
 import javax.swing.UIManager;
@@ -74,5 +75,17 @@ public class SharedUIDefaults
         sharedDefaults.put(key, o);
       }
     return o;
+  }
+
+  /**
+   * Returns a shared UI color.
+   *
+   * @param key the key
+   *
+   * @return the shared color instance
+   */
+  static Color getColor(String key)
+  {
+    return (Color) get(key);
   }
 }

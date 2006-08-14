@@ -48,68 +48,93 @@ public class GridBagConstraints implements Cloneable, Serializable
 {
   static final long serialVersionUID = -1000070633030801713L;
 
-  /** Fill in both directions.  */
-  public static final int BOTH = 1;
-  /** Don't fill.  */
+  // Fill values.
+  /**
+   * Don't fill.
+   */
   public static final int NONE = 0;
-  /** Fill horizontally.  */
+
+  /**
+   * Fill in both directions.
+   */
+  public static final int BOTH = 1;
+
+  /**
+   * Fill horizontally.
+   */
   public static final int HORIZONTAL = 2;
-  /** Fill vertically.  */
+
+  /**
+   * Fill vertically.
+   */
   public static final int VERTICAL = 3;
 
-  /** Position in the center.  */
+  // Anchor values.
+  /**
+   * Position in the center.
+   */
   public static final int CENTER = 10;
-  /** Position to the east.  */
-  public static final int EAST = 13;
-  /** Position to the north.  */
+
+  /**
+   * Position to the north.
+   */
   public static final int NORTH = 11;
-  /** Position to the northeast.  */
+
+  /**
+   * Position to the northeast.
+   */
   public static final int NORTHEAST = 12;
-  /** Position to the northwest.  */
-  public static final int NORTHWEST = 18;
-  /** Position to the south.  */
-  public static final int SOUTH = 15;
-  /** Position to the southeast.  */
+
+  /**
+   * Position to the east.
+   */
+  public static final int EAST = 13;
+
+  /**
+   * Position to the southeast.
+   */
   public static final int SOUTHEAST = 14;
-  /** Position to the southwest.  */
+
+  /**
+   * Position to the south.
+   */
+  public static final int SOUTH = 15;
+
+  /**
+   * Position to the southwest.
+   */
   public static final int SOUTHWEST = 16;
-  /** Position to the west.  */
+
+  /**
+   * Position to the west.
+   */
   public static final int WEST = 17;
 
-  /** Occupy all remaining cells except last cell.  */
+  /**
+   * Position to the northwest.
+   */
+  public static final int NORTHWEST = 18;
+
+  // gridx and gridy values.
+  /**
+   * Occupy all remaining cells except last cell.
+   */
   public static final int RELATIVE = -1;
-  /** Occupy all remaining cells.  */
+
+  /**
+   * Occupy all remaining cells.
+   */
   public static final int REMAINDER = 0;
 
   /**
-   * Position to where the first text line would end. Equals to NORTHEAST for
-   * horizontal left-to-right orientations.
+   * Position to where a page starts. Equals NORTH for horizontal orientations.
    */
-  public static final int FIRST_LINE_END = 24;
+  public static final int PAGE_START = 19;
 
   /**
-   * Position to where the first text line would start. Equals to NORTHWEST for
-   * horizontal left-to-right orientations.
+   * Position to where a page ends. Equals SOUTH for horizontal orientations.
    */
-  public static final int FIRST_LINE_START = 23;
-
-  /**
-   * Position to where the last text line would end. Equals to SOUTHEAST for
-   * horizontal left-to-right orientations.
-   */
-  public static final int LAST_LINE_END = 26;
-
-  /**
-   * Position to where the last text line would start. Equals to SOUTHWEST for
-   * horizontal left-to-right orientations.
-   */
-  public static final int LAST_LINE_START = 25;
-
-  /**
-   * Position to where a text line would end. Equals to EAST for
-   * left-to-right orientations.
-   */
-  public static final int LINE_END = 22;
+  public static final int PAGE_END = 20;
 
   /**
    * Position to where a text line would start. Equals to WEST for
@@ -118,14 +143,34 @@ public class GridBagConstraints implements Cloneable, Serializable
   public static final int LINE_START = 21;
 
   /**
-   * Position to where a page ends. Equals SOUTH for horizontal orientations.
+   * Position to where a text line would end. Equals to EAST for
+   * left-to-right orientations.
    */
-  public static final int PAGE_END = 20;
+  public static final int LINE_END = 22;
 
   /**
-   * Position to where a page starts. Equals NORTH for horizontal orientations.
+   * Position to where the first text line would start. Equals to NORTHWEST for
+   * horizontal left-to-right orientations.
    */
-  public static final int PAGE_START = 19;
+  public static final int FIRST_LINE_START = 23;
+
+  /**
+   * Position to where the first text line would end. Equals to NORTHEAST for
+   * horizontal left-to-right orientations.
+   */
+  public static final int FIRST_LINE_END = 24;
+
+  /**
+   * Position to where the last text line would start. Equals to SOUTHWEST for
+   * horizontal left-to-right orientations.
+   */
+  public static final int LAST_LINE_START = 25;
+
+  /**
+   * Position to where the last text line would end. Equals to SOUTHEAST for
+   * horizontal left-to-right orientations.
+   */
+  public static final int LAST_LINE_END = 26;
 
   public int anchor;
   public int fill;
@@ -139,7 +184,9 @@ public class GridBagConstraints implements Cloneable, Serializable
   public double weightx;
   public double weighty;
 
-  /** Create a copy of this object.  */
+  /**
+   * Create a copy of this object.
+   */
   public Object clone ()
   {
     try
@@ -155,8 +202,10 @@ public class GridBagConstraints implements Cloneable, Serializable
       }
   }
 
-  /** Create a new GridBagConstraints object with the default
-   * parameters.  */
+  /**
+   * Create a new GridBagConstraints object with the default
+   * parameters.
+   */
   public GridBagConstraints ()
   {
     this.anchor = CENTER;
@@ -172,8 +221,10 @@ public class GridBagConstraints implements Cloneable, Serializable
     this.weighty = 0;
   }
 
-  /** Create a new GridBagConstraints object with the indicated
-   * parameters.  */
+  /**
+   * Create a new GridBagConstraints object with the indicated
+   * parameters.
+   */
   public GridBagConstraints (int gridx, int gridy,
 			     int gridwidth, int gridheight,
 			     double weightx, double weighty,

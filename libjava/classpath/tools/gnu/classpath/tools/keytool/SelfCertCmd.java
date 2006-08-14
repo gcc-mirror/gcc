@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
@@ -264,24 +265,26 @@ class SelfCertCmd extends Command
     setAliasParam(_alias);
     setKeyPasswordNoPrompt(_password);
     setValidityParam(_validityStr);
-
-    log.finer("-selfcert handler will use the following options:"); //$NON-NLS-1$
-    log.finer("  -alias=" + alias); //$NON-NLS-1$
-    log.finer("  -sigalg=" + _sigAlgorithm); //$NON-NLS-1$
-    log.finer("  -dname=" + _dName); //$NON-NLS-1$
-    log.finer("  -validity=" + validityInDays); //$NON-NLS-1$
-    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
-    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -provider=" + provider); //$NON-NLS-1$
-    log.finer("  -v=" + verbose); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      {
+        log.fine("-selfcert handler will use the following options:"); //$NON-NLS-1$
+        log.fine("  -alias=" + alias); //$NON-NLS-1$
+        log.fine("  -sigalg=" + _sigAlgorithm); //$NON-NLS-1$
+        log.fine("  -dname=" + _dName); //$NON-NLS-1$
+        log.fine("  -validity=" + validityInDays); //$NON-NLS-1$
+        log.fine("  -storetype=" + storeType); //$NON-NLS-1$
+        log.fine("  -keystore=" + storeURL); //$NON-NLS-1$
+        log.fine("  -provider=" + provider); //$NON-NLS-1$
+        log.fine("  -v=" + verbose); //$NON-NLS-1$
+      }
   }
 
   void start() throws KeyStoreException, NoSuchAlgorithmException,
       UnrecoverableKeyException, IOException, UnsupportedCallbackException,
       InvalidKeyException, SignatureException, CertificateException
   {
-    log.entering(getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(getClass().getName(), "start"); //$NON-NLS-1$
     // 1. get the key entry and certificate chain associated to alias
     Key privateKey = getAliasPrivateKey();
     Certificate[] chain = store.getCertificateChain(alias);
@@ -310,16 +313,16 @@ class SelfCertCmd extends Command
 
     // 7. persist the key store
     saveKeyStore();
-
-    log.exiting(getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   // own methods --------------------------------------------------------------
 
   Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(Main.SELFCERT_CMD, true);
     result.setHeader(Messages.getString("SelfCertCmd.14")); //$NON-NLS-1$
     result.setFooter(Messages.getString("SelfCertCmd.15")); //$NON-NLS-1$
@@ -414,8 +417,8 @@ class SelfCertCmd extends Command
       }
     });
     result.add(options);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 

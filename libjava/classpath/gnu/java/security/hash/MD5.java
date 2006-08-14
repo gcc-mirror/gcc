@@ -42,26 +42,22 @@ import gnu.java.security.Registry;
 import gnu.java.security.util.Util;
 
 /**
- * <p>The MD5 message-digest algorithm takes as input a message of arbitrary
+ * The MD5 message-digest algorithm takes as input a message of arbitrary
  * length and produces as output a 128-bit "fingerprint" or "message digest" of
  * the input. It is conjectured that it is computationally infeasible to
  * produce two messages having the same message digest, or to produce any
- * message having a given prespecified target message digest.</p>
- *
- * <p>References:</p>
- *
+ * message having a given prespecified target message digest.
+ * <p>
+ * References:
  * <ol>
  *    <li>The <a href="http://www.ietf.org/rfc/rfc1321.txt">MD5</a> Message-
  *    Digest Algorithm.<br>
  *    R. Rivest.</li>
  * </ol>
  */
-public class MD5 extends BaseHash
+public class MD5
+    extends BaseHash
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private static final int BLOCK_SIZE = 64; // inner block size in bytes
 
   private static final String DIGEST0 = "D41D8CD98F00B204E9800998ECF8427E";
@@ -72,9 +68,6 @@ public class MD5 extends BaseHash
   /** 128-bit interim result. */
   private int h0, h1, h2, h3;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial 0-arguments constructor. */
   public MD5()
   {
@@ -82,7 +75,7 @@ public class MD5 extends BaseHash
   }
 
   /**
-   * <p>Private constructor for cloning purposes.</p>
+   * Private constructor for cloning purposes.
    *
    * @param md the instance to clone.
    */
@@ -98,61 +91,81 @@ public class MD5 extends BaseHash
     this.buffer = (byte[]) md.buffer.clone();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.lang.Cloneable interface implementation ----------------------------
-
   public Object clone()
   {
     return new MD5(this);
   }
 
-  // Implementation of concrete methods in BaseHash --------------------------
-
   protected synchronized void transform(byte[] in, int i)
   {
-    int X0 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X1 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X2 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X3 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X4 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X5 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X6 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X7 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X8 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X9 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | in[i++] << 24;
-    int X10 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X11 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X12 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X13 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X14 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i++] << 24;
-    int X15 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | in[i] << 24;
-
+    int X0 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X1 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X2 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X3 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X4 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X5 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X6 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X7 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X8 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X9 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           |  in[i++]         << 24;
+    int X10 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            |  in[i++]         << 24;
+    int X11 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            |  in[i++]         << 24;
+    int X12 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            |  in[i++]         << 24;
+    int X13 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            |  in[i++]         << 24;
+    int X14 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            |  in[i++]         << 24;
+    int X15 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            |  in[i]           << 24;
     int A = h0;
     int B = h1;
     int C = h2;
     int D = h3;
-
     // hex constants are from md5.c in FSF Gnu Privacy Guard 0.9.2
     // round 1
     A += ((B & C) | (~B & D)) + X0 + 0xD76AA478;
@@ -310,39 +323,31 @@ public class MD5 extends BaseHash
 
   protected byte[] padBuffer()
   {
-    int n = (int) (count % BLOCK_SIZE);
+    int n = (int)(count % BLOCK_SIZE);
     int padding = (n < 56) ? (56 - n) : (120 - n);
     byte[] result = new byte[padding + 8];
-
     // padding is always binary 1 followed by binary 0s
     result[0] = (byte) 0x80;
-
     // save number of bits, casting the long to an array of 8 bytes
     long bits = count << 3;
     result[padding++] = (byte) bits;
-    result[padding++] = (byte) (bits >>> 8);
-    result[padding++] = (byte) (bits >>> 16);
-    result[padding++] = (byte) (bits >>> 24);
-    result[padding++] = (byte) (bits >>> 32);
-    result[padding++] = (byte) (bits >>> 40);
-    result[padding++] = (byte) (bits >>> 48);
-    result[padding] = (byte) (bits >>> 56);
-
+    result[padding++] = (byte)(bits >>> 8);
+    result[padding++] = (byte)(bits >>> 16);
+    result[padding++] = (byte)(bits >>> 24);
+    result[padding++] = (byte)(bits >>> 32);
+    result[padding++] = (byte)(bits >>> 40);
+    result[padding++] = (byte)(bits >>> 48);
+    result[padding  ] = (byte)(bits >>> 56);
     return result;
   }
 
   protected byte[] getResult()
   {
-    byte[] result = new byte[] { (byte) h0, (byte) (h0 >>> 8),
-                                (byte) (h0 >>> 16), (byte) (h0 >>> 24),
-                                (byte) h1, (byte) (h1 >>> 8),
-                                (byte) (h1 >>> 16), (byte) (h1 >>> 24),
-                                (byte) h2, (byte) (h2 >>> 8),
-                                (byte) (h2 >>> 16), (byte) (h2 >>> 24),
-                                (byte) h3, (byte) (h3 >>> 8),
-                                (byte) (h3 >>> 16), (byte) (h3 >>> 24) };
-
-    return result;
+    return new byte[] {
+        (byte) h0, (byte)(h0 >>> 8), (byte)(h0 >>> 16), (byte)(h0 >>> 24),
+        (byte) h1, (byte)(h1 >>> 8), (byte)(h1 >>> 16), (byte)(h1 >>> 24),
+        (byte) h2, (byte)(h2 >>> 8), (byte)(h2 >>> 16), (byte)(h2 >>> 24),
+        (byte) h3, (byte)(h3 >>> 8), (byte)(h3 >>> 16), (byte)(h3 >>> 24) };
   }
 
   protected void resetContext()
@@ -358,7 +363,8 @@ public class MD5 extends BaseHash
   {
     if (valid == null)
       {
-        valid = Boolean.valueOf(DIGEST0.equals(Util.toString(new MD5().digest())));
+        String d = Util.toString(new MD5().digest());
+        valid = Boolean.valueOf(DIGEST0.equals(d));
       }
     return valid.booleanValue();
   }

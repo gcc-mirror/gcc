@@ -136,7 +136,6 @@ public class DSSParameters
         if (! format.equalsIgnoreCase(Registry.ASN1_ENCODING_SHORT_NAME))
           throw new IOException("Unknown or unsupported format: " + format);
       }
-
     engineInit(params);
   }
 
@@ -191,7 +190,6 @@ public class DSSParameters
         if (! format.equalsIgnoreCase(Registry.ASN1_ENCODING_SHORT_NAME))
           throw new IOException("Unknown or unsupported format: " + format);
       }
-
     return engineGetEncoded();
   }
 

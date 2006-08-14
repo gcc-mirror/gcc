@@ -316,11 +316,19 @@ public class Parser
     int eq = option.indexOf('=');
     if (eq != - 1)
       justName = option.substring(0, eq);
+    char shortName = 0;
+    if (justName.length() == 1)
+      shortName = justName.charAt(0);
     Option found = null;
     for (int i = options.size() - 1; i >= 0; --i)
       {
         Option opt = (Option) options.get(i);
         if (justName.equals(opt.getLongName()))
+          {
+            found = opt;
+            break;
+          }
+        if (shortName != 0 && opt.getShortName() == shortName)
           {
             found = opt;
             break;

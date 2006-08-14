@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
@@ -302,68 +303,76 @@ class GenKeyCmd extends Command
 
   void setup() throws Exception
   {
-    setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
+    setKeyStoreParams(true, _providerClassName, _ksType, _ksPassword, _ksURL);
     setAliasParam(_alias);
     setKeyPasswordParam(_password);
     setAlgorithmParams(_keyAlgorithm, _sigAlgorithm);
     setKeySize(_keySizeStr);
     setDName(_dName);
     setValidityParam(_validityStr);
-
-    log.finer("-genkey handler will use the following options:"); //$NON-NLS-1$
-    log.finer("  -alias=" + alias); //$NON-NLS-1$
-    log.finer("  -keyalg=" + keyPairGenerator.getAlgorithm()); //$NON-NLS-1$
-    log.finer("  -keysize=" + keySize); //$NON-NLS-1$
-    log.finer("  -sigalg=" + signatureAlgorithm.getAlgorithm()); //$NON-NLS-1$
-    log.finer("  -dname=" + distinguishedName); //$NON-NLS-1$
-    log.finer("  -validity=" + validityInDays); //$NON-NLS-1$
-    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
-    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -provider=" + provider); //$NON-NLS-1$
-    log.finer("  -v=" + verbose); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      {
+        log.fine("-genkey handler will use the following options:"); //$NON-NLS-1$
+        log.fine("  -alias=" + alias); //$NON-NLS-1$
+        log.fine("  -keyalg=" + keyPairGenerator.getAlgorithm()); //$NON-NLS-1$
+        log.fine("  -keysize=" + keySize); //$NON-NLS-1$
+        log.fine("  -sigalg=" + signatureAlgorithm.getAlgorithm()); //$NON-NLS-1$
+        log.fine("  -dname=" + distinguishedName); //$NON-NLS-1$
+        log.fine("  -validity=" + validityInDays); //$NON-NLS-1$
+        log.fine("  -storetype=" + storeType); //$NON-NLS-1$
+        log.fine("  -keystore=" + storeURL); //$NON-NLS-1$
+        log.fine("  -provider=" + provider); //$NON-NLS-1$
+        log.fine("  -v=" + verbose); //$NON-NLS-1$
+      }
   }
 
   void start() throws CertificateException, KeyStoreException,
       InvalidKeyException, SignatureException, IOException,
       NoSuchAlgorithmException
   {
-    log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      {
+        log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
+        log.fine("About to generate key-pair..."); //$NON-NLS-1$
+      }
     // 1. generate a new key-pair
-    log.finer("About to generate key-pair..."); //$NON-NLS-1$
     keyPairGenerator.initialize(keySize);
     KeyPair kp = keyPairGenerator.generateKeyPair();
     PublicKey publicKey = kp.getPublic();
     PrivateKey privateKey = kp.getPrivate();
 
     // 2. generate a self-signed certificate
-    log.finer("About to generate a self-signed certificate..."); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("About to generate a self-signed certificate..."); //$NON-NLS-1$
     byte[] derBytes = getSelfSignedCertificate(distinguishedName,
                                                publicKey,
                                                privateKey);
-    log.finest(Util.dumpString(derBytes, "derBytes ")); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine(Util.dumpString(derBytes, "derBytes ")); //$NON-NLS-1$
     CertificateFactory x509Factory = CertificateFactory.getInstance(Main.X_509);
     ByteArrayInputStream bais = new ByteArrayInputStream(derBytes);
     Certificate certificate = x509Factory.generateCertificate(bais);
-    log.finest("certificate = " + certificate); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("certificate = " + certificate); //$NON-NLS-1$
 
     // 3. store it, w/ its private key, associating them to alias
     Certificate[] chain = new Certificate[] { certificate };
-    log.finest("About to store newly generated material in key store..."); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("About to store newly generated material in key store..."); //$NON-NLS-1$
     store.setKeyEntry(alias, privateKey, keyPasswordChars, chain);
 
     // 4. persist the key store
     saveKeyStore();
-
-    log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   // own methods --------------------------------------------------------------
 
   Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(Main.GENKEY_CMD, true);
     result.setHeader(Messages.getString("GenKeyCmd.57")); //$NON-NLS-1$
     result.setFooter(Messages.getString("GenKeyCmd.58")); //$NON-NLS-1$
@@ -476,8 +485,8 @@ class GenKeyCmd extends Command
       }
     });
     result.add(options);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 
@@ -574,8 +583,8 @@ class GenKeyCmd extends Command
 
         name = sb.toString().trim();
       }
-
-    log.fine("dName=[" + name + "]"); //$NON-NLS-1$ //$NON-NLS-2$
+    if (Configuration.DEBUG)
+      log.fine("dName=[" + name + "]"); //$NON-NLS-1$ //$NON-NLS-2$
     distinguishedName = new X500DistinguishedName(name);
   }
 

@@ -1,5 +1,5 @@
 /* InputMap.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,9 +37,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,14 +44,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
  * Maps {@link KeyStroke}s to arbitrary objects, usually Strings. This
  * is used in combination with {@link ActionMap}s.
  *
  * If a component receives an input event, this is looked up in
  * the component's <code>InputMap</code>. The result is an object which
- * serves as a key to the components <code>ActionMap</code>. Finally
+ * serves as a key to the component's <code>ActionMap</code>. Finally
  * the <code>Action</code> that is stored is executed.
  *
  * @author Andrew Selkirk
@@ -68,33 +64,37 @@ public class InputMap
   private static final long serialVersionUID = -5429059542008604257L;
 
   /**
-   * inputMap
+   * Storage for the KeyStroke --> Object mappings.
    */
-  private Map inputMap = new HashMap();
+  private Map inputMap;
 
   /**
-   * parent
+   * An optional parent map.
    */
   private InputMap parent;
 
   /**
-   * Creates a new <code>InputMap</code> instance.
+   * Creates a new <code>InputMap</code> instance.  This default instance
+   * contains no mappings and has no parent.
    */
   public InputMap()
   {
-    // TODO
+    // nothing to do
   }
 
   /**
-   * Returns the binding for keystroke.
+   * Returns the binding for the specified keystroke, if there is one.
    *
-   * @param keystroke the key of the enty
+   * @param keystroke the key of the entry (<code>null</code> is ignored).
    *
-   * @return the binding associated with keystroke may be null
+   * @return The binding associated with the specified keystroke (or 
+   *     <code>null</code>).
    */
   public Object get(KeyStroke keystroke)
   {
-    Object result = inputMap.get(keystroke);
+    Object result = null;
+    if (inputMap != null)
+      result = inputMap.get(keystroke);
 
     if (result == null && parent != null)
       result = parent.get(keystroke);
@@ -102,14 +102,20 @@ public class InputMap
   }
 
   /**
-   * Puts a new entry into the <code>InputMap</code>.
-   * If actionMapKey is null an existing entry will be removed.
+   * Puts a new entry into the <code>InputMap</code>.  If 
+   * <code>actionMapKey</code> is <code>null</code> any existing entry will be 
+   * removed.
    *
-   * @param keystroke the keystroke for the entry
-   * @param actionMapKey the action.
+   * @param keystroke the keystroke for the entry (<code>null</code> is 
+   *     ignored).
+   * @param actionMapKey the action (<code>null</code> permitted).
    */
   public void put(KeyStroke keystroke, Object actionMapKey)
   {
+    if (keystroke == null)
+      return;
+    if (inputMap == null)
+      inputMap = new HashMap();
     if (actionMapKey == null)
       inputMap.remove(keystroke);
     else
@@ -117,19 +123,25 @@ public class InputMap
   }
 
   /**
-   * Remove an entry from the <code>InputMap</code>.
+   * Removes an entry from this <code>InputMap</code>.  Note that this will
+   * not remove any entry from the parent map, if there is one.
    *
-   * @param keystroke the key of the entry to remove
+   * @param keystroke the key of the entry to remove (<code>null</code> is 
+   *     ignored).
    */
   public void remove(KeyStroke keystroke)
   {
-    inputMap.remove(keystroke);
+    if (inputMap != null)
+      inputMap.remove(keystroke);
   }
 
   /**
-   * Returns the parent of this <code>InputMap</code>.
+   * Returns the parent of this <code>InputMap</code>.  The default value
+   * is <code>null</code>.
    *
-   * @return the parent, may be null.
+   * @return The parent map (possibly <code>null</code>).
+   * 
+   * @see #setParent(InputMap)
    */
   public InputMap getParent()
   {
@@ -137,9 +149,13 @@ public class InputMap
   }
 
   /**
-   * Sets a parent for this <code>InputMap</code>.
+   * Sets a parent for this <code>InputMap</code>.  If a parent is specified,
+   * the {@link #get(KeyStroke)} method will look in the parent if it cannot
+   * find an entry in this map.
    *
-   * @param parentMap the new parent
+   * @param parentMap the new parent (<code>null</code> permitted).
+   * 
+   * @see #getParent()
    */
   public void setParent(InputMap parentMap)
   {
@@ -147,31 +163,44 @@ public class InputMap
   }
 
   /**
-   * Returns the number of entries in this <code>InputMap</code>.
+   * Returns the number of entries in this <code>InputMap</code>.  This count 
+   * does not include any entries from the parent map, if there is one.
    *
-   * @return the number of entries
+   * @return The number of entries.
    */
   public int size()
   {
-    return inputMap.size();
+    int result = 0;
+    if (inputMap != null)
+      result = inputMap.size();
+    return result;
   }
 
   /**
-   * Clears the <code>InputMap</code>.
+   * Clears the entries from this <code>InputMap</code>.  The parent map, if
+   * there is one, is not cleared.
    */
   public void clear()
   {
-    inputMap.clear();
+    if (inputMap != null)
+      inputMap.clear();
   }
 
   /**
-   * Returns all keys of entries in this <code>InputMap</code>.
+   * Returns all keys of entries in this <code>InputMap</code>.  This does not
+   * include keys defined in the parent, if there is one (use the 
+   * {@link #allKeys()} method for that case).
+   * <br><br>
+   * Following the behaviour of the reference implementation, this method will
+   * return <code>null</code> when no entries have been added to the map, 
+   * and a zero length array if entries have been added but subsequently 
+   * removed (or cleared) from the map.
    *
-   * @return an array of keys
+   * @return An array of keys (may be <code>null</code> or have zero length).
    */
   public KeyStroke[] keys()
   {
-    if (size() != 0)
+    if (inputMap != null)
       {
         KeyStroke[] array = new KeyStroke[size()];
         return (KeyStroke[]) inputMap.keySet().toArray(array);
@@ -180,10 +209,10 @@ public class InputMap
   }
 
   /**
-   * Returns all keys of entries in this <code>InputMap</code>
-   * and all its parents.
+   * Returns all keys of entries in this <code>InputMap</code> and all its 
+   * parents.
    *
-   * @return an array of keys
+   * @return An array of keys (may be <code>null</code> or have zero length).
    */
   public KeyStroke[] allKeys()
   {
@@ -195,36 +224,12 @@ public class InputMap
         if (parentKeys != null)
           set.addAll(Arrays.asList(parentKeys));
       }
-    set.addAll(inputMap.keySet());
+    if (inputMap != null)
+      set.addAll(inputMap.keySet());
     if (set.size() == 0)
       return null;    
     KeyStroke[] array = new KeyStroke[set.size()];
     return (KeyStroke[]) set.toArray(array);
   }
 
-  /**
-   * writeObject
-   *
-   * @param stream the stream to write to
-   *
-   * @exception IOException If an error occurs
-   */
-  private void writeObject(ObjectOutputStream stream) throws IOException
-  {
-    // TODO
-  }
-
-  /**
-   * readObject
-   *
-   * @param stream the stream to read from
-   *
-   * @exception ClassNotFoundException If the serialized class cannot be found
-   * @exception IOException If an error occurs
-   */
-  private void readObject(ObjectInputStream stream)
-    throws ClassNotFoundException, IOException
-  {
-    // TODO
-  }
 }

@@ -44,27 +44,22 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 /**
- * <p>A {@link Transformer} Adapter allowing inclusion of a DEFLATE compression
+ * A {@link Transformer} Adapter allowing inclusion of a DEFLATE compression
  * algorithm in an {@link Assembly} chain. The {@link Direction#FORWARD}
  * transformation is a compression (deflate) of input data, while the
- * {@link Direction#REVERSED} one is a decompression (inflate) that restores
- * the original data.</p>
- *
- * <p>This {@link Transformer} uses a {@link Deflater} instance to carry on the
- * compression, and an {@link Inflater} to do the decompression.</p>
- *
- * <p>When using such a {@link Transformer}, in an {@link Assembly}, there must
+ * {@link Direction#REVERSED} one is a decompression (inflate) that restores the
+ * original data.
+ * <p>
+ * This {@link Transformer} uses a {@link Deflater} instance to carry on the
+ * compression, and an {@link Inflater} to do the decompression.
+ * <p>
+ * When using such a {@link Transformer}, in an {@link Assembly}, there must
  * be at least one element behind this instance in the constructed chain;
- * otherwise, a {@link TransformerException} is thrown at initialisation time.</p>
- *
- * @version Revision: $
+ * otherwise, a {@link TransformerException} is thrown at initialisation time.
  */
-class DeflateTransformer extends Transformer
+class DeflateTransformer
+    extends Transformer
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private Deflater compressor;
 
   private Inflater decompressor;
@@ -73,46 +68,31 @@ class DeflateTransformer extends Transformer
 
   private byte[] zlibBuffer;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   DeflateTransformer()
   {
     super();
 
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   void initDelegate(Map attributes) throws TransformerException
   {
     if (tail == null)
       {
-        throw new TransformerException(
-                                       "initDelegate()",
-                                       new IllegalStateException(
-                                                                 "Compression transformer missing its tail!"));
+        IllegalStateException cause = new IllegalStateException(
+            "Compression transformer missing its tail!");
+        throw new TransformerException("initDelegate()", cause);
       }
     outputBlockSize = tail.currentBlockSize();
     zlibBuffer = new byte[outputBlockSize];
     Direction flow = (Direction) attributes.get(DIRECTION);
     if (flow == Direction.FORWARD)
-      {
-        compressor = new Deflater();
-      }
+      compressor = new Deflater();
     else
-      {
-        decompressor = new Inflater();
-      }
+      decompressor = new Inflater();
   }
 
   int delegateBlockSize()
   {
-    //      return outputBlockSize;
     return 1;
   }
 
@@ -131,68 +111,36 @@ class DeflateTransformer extends Transformer
     if (wired == Direction.FORWARD)
       {
         compressor.setInput(in, offset, length);
-        while (!compressor.needsInput())
-          {
-            compress();
-          }
+        while (! compressor.needsInput())
+          compress();
       }
-    else
-      { // decompression: inflate first and then update tail
-        decompress(in, offset, length);
-      }
-
+    else // decompression: inflate first and then update tail
+      decompress(in, offset, length);
     result = inBuffer.toByteArray();
     inBuffer.reset();
     return result;
   }
 
-  //   byte[] lastUpdateDelegate(byte[] in, int offset, int length)
-  //   throws TransformerException {
-  //      // process multiples of blocksize as much as possible
-  //      byte[] result = this.updateDelegate(in, offset, length);
-  //      inBuffer.write(result, 0, result.length);
-  //      if (wired == Direction.FORWARD) { // compressing
-  //         if (!compressor.finished()) {
-  //            compressor.finish();
-  //            while (!compressor.finished()) {
-  //               compress();
-  //            }
-  //         }
-  //      } else { // decompressing
-  //         if (!decompressor.finished()) {
-  //            throw new TransformerException("lastUpdateDelegate()",
-  //                  new IllegalStateException("Compression transformer, after last "
-  //                  +"update, must be finished but isn't"));
-  //         }
-  //      }
-  //
-  //      result = inBuffer.toByteArray();
-  //      inBuffer.reset();
-  //      return result;
-  //   }
   byte[] lastUpdateDelegate() throws TransformerException
   {
     // process multiples of blocksize as much as possible
-    if (wired == Direction.FORWARD)
-      { // compressing
-        if (!compressor.finished())
+    if (wired == Direction.FORWARD) // compressing
+      {
+        if (! compressor.finished())
           {
             compressor.finish();
-            while (!compressor.finished())
-              {
-                compress();
-              }
+            while (! compressor.finished())
+              compress();
           }
       }
-    else
-      { // decompressing
-        if (!decompressor.finished())
+    else // decompressing
+      {
+        if (! decompressor.finished())
           {
-            throw new TransformerException(
-                                           "lastUpdateDelegate()",
-                                           new IllegalStateException(
-                                                                     "Compression transformer, after last "
-                                                                         + "update, must be finished but isn't"));
+            IllegalStateException cause = new IllegalStateException(
+                "Compression transformer, after last update, must be finished "
+                + "but isn't");
+            throw new TransformerException("lastUpdateDelegate()", cause);
           }
       }
     byte[] result = inBuffer.toByteArray();
@@ -204,9 +152,7 @@ class DeflateTransformer extends Transformer
   {
     int len = compressor.deflate(zlibBuffer);
     if (len > 0)
-      {
-        inBuffer.write(zlibBuffer, 0, len);
-      }
+      inBuffer.write(zlibBuffer, 0, len);
   }
 
   private void decompress(byte[] in, int offset, int length)
@@ -225,9 +171,7 @@ class DeflateTransformer extends Transformer
             throw new TransformerException("decompress()", x);
           }
         if (len > 0)
-          {
-            inBuffer.write(zlibBuffer, 0, len);
-          }
+          inBuffer.write(zlibBuffer, 0, len);
       }
   }
 }

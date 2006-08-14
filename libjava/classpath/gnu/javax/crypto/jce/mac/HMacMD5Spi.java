@@ -44,12 +44,9 @@ import gnu.java.security.Registry;
  * The implementation of the HMAC-MD5 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
  */
-public final class HMacMD5Spi extends MacAdapter
+public final class HMacMD5Spi
+    extends MacAdapter
 {
-
-  // Constructors.
-  // -----------------------------------------------------------------------
-
   public HMacMD5Spi()
   {
     super(Registry.HMAC_NAME_PREFIX + Registry.MD5_HASH);

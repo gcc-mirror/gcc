@@ -72,7 +72,6 @@ libqtpeer_la_SOURCES = \
         qtwindowpeer.cpp \
         slotcallbacks.cpp \
         slotcallbacks.h 
-
 libqtpeer_la_LDFLAGS = -avoid-version
 
 BUILT_SOURCES = $(libqtpeer_la_MOC)

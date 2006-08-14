@@ -188,7 +188,7 @@ public final class Connection extends JarURLConnection
 	else if (field.equals("last-modified"))
 	  {
 	    // Both creating and manipulating dateFormat need synchronization.
-	    synchronized (this.getClass())
+	    synchronized (Connection.class)
 	      {
 		if (dateFormat == null)
 		  dateFormat = new SimpleDateFormat

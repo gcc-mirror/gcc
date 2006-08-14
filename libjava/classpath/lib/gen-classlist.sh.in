@@ -18,7 +18,7 @@ echo "Adding java source files from srcdir '@top_srcdir@'."
 # We do this because it makes splitting for the gcj build much
 # cheaper.
 (cd @top_srcdir@
- @FIND@ java javax gnu org -follow -name '*.java' -print |
+ @FIND@ java javax gnu org sun -follow -name '*.java' -print |
  sort -r | sed -e 's,/\([^/]*\)$, \1,' |
  while read pkg file; do
     echo $pkg @top_srcdir@ $pkg/$file
@@ -43,7 +43,7 @@ vm_dirlist=`echo "@vm_classes@" | sed -e 's/:/ /g'`
 for dir in $vm_dirlist; do
    echo "Adding java source files from VM directory $dir"
    (cd $dir
-   for subdir in java javax gnu org com; do
+   for subdir in java javax gnu org com sun; do
       if test -d $subdir; then
 	 @FIND@ $subdir -name '*.java' -print
       fi
@@ -66,7 +66,7 @@ if test ! "${top_builddir}" -ef "@top_srcdir@"; then
 fi
 
 
-cat @top_srcdir@/lib/$1.omit vm.omit > tmp.omit
+cat $1.omit vm.omit > tmp.omit
 for dir in $vm_dirlist; do
    if test -f $dir/$1.omit; then
       cat $dir/$1.omit >> tmp.omit

@@ -221,16 +221,13 @@ public class AttributedString
             // If the attribute run starts before the beginning index, we
             // need to junk it if it is an Annotation.
             Object attrib_obj = aci.getAttribute(attrib);
-            if (rs < begin)
+	    rs -= begin;
+            if (rs < 0)
               {
                 if (attrib_obj instanceof Annotation)
                    continue;
 
-                rs = begin;
-              }
-            else
-              {
-                rs -= begin;
+                rs = 0;
               }
 
             // Create a map object.  Yes this will only contain one attribute
@@ -243,7 +240,7 @@ public class AttributedString
 
         c = aci.next();
       }
-    while(c != CharacterIterator.DONE);
+    while( aci.getIndex() < end );
 
     attribs = new AttributeRange[accum.size()];
     attribs = (AttributeRange[]) accum.toArray(attribs);

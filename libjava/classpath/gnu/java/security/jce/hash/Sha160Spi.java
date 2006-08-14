@@ -42,25 +42,13 @@ import gnu.java.security.Registry;
 
 /**
  * The implementation of the SHA-1 (160-bit) <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.<p>
+ * (<b>SPI</b>) adapter.
  */
-public class Sha160Spi extends MessageDigestAdapter
+public class Sha160Spi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public Sha160Spi()
   {
     super(Registry.SHA160_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

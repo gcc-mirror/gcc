@@ -1,5 +1,5 @@
 /* Kernel.java -- Java class for an image processing kernel
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,21 +44,32 @@ package java.awt.image;
  * values representing a 2-dimensional array in row-major order.
  *
  * @author Jerry Quinn (jlquinn@optonline.net)
- * @version 1.0
  */
 public class Kernel implements Cloneable
 {
+  /** The kernel width. */
   private final int width;
+  
+  /** The kernel height. */
   private final int height;
+  
+  /** Internal storage for the kernel's values. */
   private final float[] data;
 
   /**
-   * Creates a new <code>Kernel</code> instance.
+   * Creates a new <code>Kernel</code> instance with the specified dimensions
+   * and values.  The first <code>width * height</code> values in the specified
+   * <code>data</code> array are copied to internal storage.
    *
-   * @param width The 2D width of data.
-   * @param height The 2D height of data.
-   * @param data The source data array.
-   * @exception IllegalArgumentException if width * height < data.length.
+   * @param width  the kernel width.
+   * @param height  the kernel height.
+   * @param data  the source data array (<code>null</code> not permitted).
+   * 
+   * @throws IllegalArgumentException if <code>data.length</code> is less than
+   *     <code>width * height</code>.
+   * @throws IllegalArgumentException if <code>width</code> or 
+   *      <code>height</code> is less than zero.
+   * @throws NullPointerException if <code>data</code> is <code>null</code>.
    */
   public Kernel(int width, int height, float[] data)
     throws IllegalArgumentException
@@ -72,7 +83,10 @@ public class Kernel implements Cloneable
   }
 
   /**
-   * Return the X origin: (width - 1) / 2
+   * Returns the x-origin for the kernel, which is calculated as 
+   * <code>(width - 1) / 2</code>.
+   * 
+   * @return The x-origin for the kernel.
    */
   public final int getXOrigin()
   {
@@ -80,7 +94,10 @@ public class Kernel implements Cloneable
   }
 
   /**
-   * Return the Y origin: (height - 1) / 2
+   * Returns the y-origin for the kernel, which is calculated as
+   * <code>(height - 1) / 2</code>.
+   * 
+   * @return The y-origin for the kernel.
    */
   public final int getYOrigin()
   {
@@ -88,6 +105,8 @@ public class Kernel implements Cloneable
   }
 
   /**
+   * Returns the kernel width (as supplied to the constructor).
+   * 
    * @return The kernel width.
    */
   public final int getWidth()
@@ -96,6 +115,8 @@ public class Kernel implements Cloneable
   }
 
   /**
+   * Returns the kernel height (as supplied to the constructor).
+   * 
    * @return The kernel height.
    */
   public final int getHeight()
@@ -104,20 +125,25 @@ public class Kernel implements Cloneable
   }
 
   /**
-   * Return the kernel data.
+   * Returns an array containing a copy of the kernel data.  If the 
+   * <code>data</code> argument is non-<code>null</code>, the kernel values
+   * are copied into it and then <code>data</code> is returned as the result.
+   * If the <code>data</code> argument is <code>null</code>, this method 
+   * allocates a new array then populates and returns it.
    *
-   * If data is null, allocates a new array and returns it.  Otherwise, the
-   * kernel values are copied into data.
-   *
-   * @param data Array to copy values into, or null.
+   * @param data  an array to copy the return values into (if 
+   *     <code>null</code>, a new array is allocated).
+   *     
    * @return The array with copied values.
-   * @exception IllegalArgumentException if data != null and too small.
+   * 
+   * @throws IllegalArgumentException if <code>data.length</code> is less than 
+   *     the kernel's <code>width * height</code>.
    */
   public final float[] getKernelData(float[] data)
     throws IllegalArgumentException
   {
     if (data == null)
-      return (float[])this.data.clone();
+      return (float[]) this.data.clone();
 
     if (data.length < this.data.length)
       throw new IllegalArgumentException();
@@ -127,13 +153,15 @@ public class Kernel implements Cloneable
   }
 
   /**
+   * Returns a clone of this kernel.
+   * 
    * @return a clone of this Kernel.
    */
   public Object clone()
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException e)
       {

@@ -75,10 +75,8 @@ am_libgtkpeer_la_OBJECTS = gnu_java_awt_peer_gtk_CairoSurface.lo \
 	gnu_java_awt_peer_gtk_GdkPixbufDecoder.lo \
 	gnu_java_awt_peer_gtk_GdkRobotPeer.lo \
 	gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.lo \
-	gnu_java_awt_peer_gtk_GdkTextLayout.lo \
 	gnu_java_awt_peer_gtk_GtkButtonPeer.lo \
 	gnu_java_awt_peer_gtk_GtkCanvasPeer.lo \
-	gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.lo \
 	gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.lo \
 	gnu_java_awt_peer_gtk_GtkCheckboxPeer.lo \
 	gnu_java_awt_peer_gtk_GtkChoicePeer.lo \
@@ -104,8 +102,8 @@ am_libgtkpeer_la_OBJECTS = gnu_java_awt_peer_gtk_CairoSurface.lo \
 	gnu_java_awt_peer_gtk_GtkTextFieldPeer.lo \
 	gnu_java_awt_peer_gtk_GtkToolkit.lo \
 	gnu_java_awt_peer_gtk_GtkWindowPeer.lo \
-	gnu_java_awt_peer_gtk_GtkVolatileImage.lo gthread-jni.lo \
-	gtk_jawt.lo
+	gnu_java_awt_peer_gtk_GtkVolatileImage.lo \
+	GtkDragSourceContextPeer.lo gthread-jni.lo gtk_jawt.lo
 libgtkpeer_la_OBJECTS = $(am_libgtkpeer_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -153,6 +151,8 @@ CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
 CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
 CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
+CREATE_GCONF_PEER_LIBRARIES_FALSE = @CREATE_GCONF_PEER_LIBRARIES_FALSE@
+CREATE_GCONF_PEER_LIBRARIES_TRUE = @CREATE_GCONF_PEER_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
 CREATE_GTK_PEER_LIBRARIES_TRUE = @CREATE_GTK_PEER_LIBRARIES_TRUE@
 CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
@@ -173,6 +173,7 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATE = @DATE@
+DEFAULT_PREFS_PEER = @DEFAULT_PREFS_PEER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -203,6 +204,10 @@ FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
+GCONF_CFLAGS = @GCONF_CFLAGS@
+GCONF_LIBS = @GCONF_LIBS@
+GDK_CFLAGS = @GDK_CFLAGS@
+GDK_LIBS = @GDK_LIBS@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
@@ -253,6 +258,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PATH_TO_ESCHER = @PATH_TO_ESCHER@
 PATH_TO_GLIBJ_ZIP = @PATH_TO_GLIBJ_ZIP@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
@@ -273,6 +279,8 @@ USER_SPECIFIED_CLASSLIB_FALSE = @USER_SPECIFIED_CLASSLIB_FALSE@
 USER_SPECIFIED_CLASSLIB_TRUE = @USER_SPECIFIED_CLASSLIB_TRUE@
 USER_SPECIFIED_JAVAH_FALSE = @USER_SPECIFIED_JAVAH_FALSE@
 USER_SPECIFIED_JAVAH_TRUE = @USER_SPECIFIED_JAVAH_TRUE@
+USE_ESCHER_FALSE = @USE_ESCHER_FALSE@
+USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
@@ -351,10 +359,8 @@ libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
 			gnu_java_awt_peer_gtk_GdkPixbufDecoder.c \
 			gnu_java_awt_peer_gtk_GdkRobotPeer.c \
 			gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.c \
-			gnu_java_awt_peer_gtk_GdkTextLayout.c \
 			gnu_java_awt_peer_gtk_GtkButtonPeer.c \
 			gnu_java_awt_peer_gtk_GtkCanvasPeer.c \
-			gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.c \
 			gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.c \
 			gnu_java_awt_peer_gtk_GtkCheckboxPeer.c \
 			gnu_java_awt_peer_gtk_GtkChoicePeer.c \
@@ -381,6 +387,7 @@ libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
 			gnu_java_awt_peer_gtk_GtkToolkit.c \
 			gnu_java_awt_peer_gtk_GtkWindowPeer.c \
 			gnu_java_awt_peer_gtk_GtkVolatileImage.c \
+			GtkDragSourceContextPeer.c \
 			cairographics2d.h \
 			gthread-jni.c \
 			gdkdisplay.h \
@@ -473,6 +480,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GtkDragSourceContextPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_CairoGraphics2D.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_CairoSurface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_ComponentGraphics.Plo@am__quote@
@@ -484,10 +492,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GdkPixbufDecoder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GdkRobotPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GdkTextLayout.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GtkButtonPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GtkCanvasPeer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GtkCheckboxPeer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_awt_peer_gtk_GtkChoicePeer.Plo@am__quote@

@@ -1,5 +1,5 @@
 /* QtScrollPanePeer.java --
-   Copyright (C)  2005  Free Software Foundation, Inc.
+   Copyright (C)  2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,6 @@ exception statement from your version. */
 package gnu.java.awt.peer.qt;
 
 import java.awt.Adjustable;
-import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.ScrollPane;
 import java.awt.peer.ScrollPanePeer;

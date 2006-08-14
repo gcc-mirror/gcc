@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.OID;
 import gnu.java.security.der.BitString;
 import gnu.java.security.der.DER;
@@ -64,6 +65,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -75,20 +77,7 @@ import javax.security.auth.x500.X500Principal;
 public class X509CRL extends java.security.cert.X509CRL
   implements GnuPKIExtension
 {
-
-  // Constants and fields.
-  // ------------------------------------------------------------------------
-
-  private static final boolean DEBUG = false;
-  private static void debug(String msg)
-  {
-    if (DEBUG)
-      {
-        System.err.print(">> X509CRL: ");
-        System.err.println(msg);
-      }
-  }
-
+  private static final Logger log = Logger.getLogger(X509CRL.class.getName());
   private static final OID ID_DSA = new OID("1.2.840.10040.4.1");
   private static final OID ID_DSA_WITH_SHA1 = new OID("1.2.840.10040.4.3");
   private static final OID ID_RSA = new OID("1.2.840.113549.1.1.1");
@@ -350,7 +339,8 @@ public class X509CRL extends java.security.cert.X509CRL
     // CertificateList ::= SEQUENCE {
     DERReader der = new DERReader(in);
     DERValue val = der.read();
-    debug("start CertificateList len == " + val.getLength());
+    if (Configuration.DEBUG)
+      log.fine("start CertificateList len == " + val.getLength());
     if (!val.isConstructed())
       throw new IOException("malformed CertificateList");
     encoded = val.getEncoded();
@@ -359,7 +349,8 @@ public class X509CRL extends java.security.cert.X509CRL
     val = der.read();
     if (!val.isConstructed())
       throw new IOException("malformed TBSCertList");
-    debug("start tbsCertList  len == " + val.getLength());
+    if (Configuration.DEBUG)
+      log.fine("start tbsCertList  len == " + val.getLength());
     tbsCRLBytes = val.getEncoded();
 
     //     version    Version OPTIONAL,
@@ -372,19 +363,23 @@ public class X509CRL extends java.security.cert.X509CRL
       }
     else
       version = 1;
-    debug("read version == " + version);
+    if (Configuration.DEBUG)
+      log.fine("read version == " + version);
 
     //     signature   AlgorithmIdentifier,
-    debug("start AlgorithmIdentifier len == " + val.getLength());
+    if (Configuration.DEBUG)
+      log.fine("start AlgorithmIdentifier len == " + val.getLength());
     if (!val.isConstructed())
       throw new IOException("malformed AlgorithmIdentifier");
     DERValue algIdVal = der.read();
     algId = (OID) algIdVal.getValue();
-    debug("read object identifier == " + algId);
+    if (Configuration.DEBUG)
+      log.fine("read object identifier == " + algId);
     if (val.getLength() > algIdVal.getEncodedLength())
       {
         val = der.read();
-        debug("read parameters  len == " + val.getEncodedLength());
+        if (Configuration.DEBUG)
+          log.fine("read parameters  len == " + val.getEncodedLength());
         algParams = val.getEncoded();
         if (val.isConstructed())
           in.skip(val.getLength());
@@ -394,18 +389,21 @@ public class X509CRL extends java.security.cert.X509CRL
     val = der.read();
     issuerDN = new X500DistinguishedName(val.getEncoded());
     der.skip(val.getLength());
-    debug("read issuer == " + issuerDN);
+    if (Configuration.DEBUG)
+      log.fine("read issuer == " + issuerDN);
 
     //     thisUpdate   Time,
     thisUpdate = (Date) der.read().getValue();
-    debug("read thisUpdate == " + thisUpdate);
+    if (Configuration.DEBUG)
+      log.fine("read thisUpdate == " + thisUpdate);
 
     //     nextUpdate   Time OPTIONAL,
     val = der.read();
     if (val.getValue() instanceof Date)
       {
         nextUpdate = (Date) val.getValue();
-        debug("read nextUpdate == " + nextUpdate);
+        if (Configuration.DEBUG)
+          log.fine("read nextUpdate == " + nextUpdate);
         val = der.read();
       }
 
@@ -433,7 +431,8 @@ public class X509CRL extends java.security.cert.X509CRL
         DERValue exts = der.read();
         if (!exts.isConstructed())
           throw new IOException("malformed Extensions");
-        debug("start Extensions  len == " + exts.getLength());
+        if (Configuration.DEBUG)
+          log.fine("start Extensions  len == " + exts.getLength());
         int len = 0;
         while (len < exts.getLength())
           {
@@ -444,32 +443,42 @@ public class X509CRL extends java.security.cert.X509CRL
             extensions.put(e.getOid(), e);
             der.skip(ext.getLength());
             len += ext.getEncodedLength();
-            debug("current count == " + len);
+            if (Configuration.DEBUG)
+              log.fine("current count == " + len);
           }
         val = der.read();
       }
 
-    debug("read tag == " + val.getTag());
+    if (Configuration.DEBUG)
+      log.fine("read tag == " + val.getTag());
     if (!val.isConstructed())
       throw new IOException("malformed AlgorithmIdentifier");
-    debug("start AlgorithmIdentifier  len == " + val.getLength());
+    if (Configuration.DEBUG)
+      log.fine("start AlgorithmIdentifier  len == " + val.getLength());
     DERValue sigAlgVal = der.read();
-    debug("read tag == " + sigAlgVal.getTag());
+    if (Configuration.DEBUG)
+      log.fine("read tag == " + sigAlgVal.getTag());
     if (sigAlgVal.getTag() != DER.OBJECT_IDENTIFIER)
       throw new IOException("malformed AlgorithmIdentifier");
     sigAlg = (OID) sigAlgVal.getValue();
-    debug("signature id == " + sigAlg);
-    debug("sigAlgVal length == " + sigAlgVal.getEncodedLength());
+    if (Configuration.DEBUG)
+      {
+        log.fine("signature id == " + sigAlg);
+        log.fine("sigAlgVal length == " + sigAlgVal.getEncodedLength());
+      }
     if (val.getLength() > sigAlgVal.getEncodedLength())
       {
         val = der.read();
-        debug("sig params tag = " + val.getTag() + " len == " + val.getEncodedLength());
+        if (Configuration.DEBUG)
+          log.fine("sig params tag = " + val.getTag() + " len == "
+                   + val.getEncodedLength());
         sigAlgParams = (byte[]) val.getEncoded();
         if (val.isConstructed())
           in.skip(val.getLength());
       }
     val = der.read();
-    debug("read tag = " + val.getTag());
+    if (Configuration.DEBUG)
+      log.fine("read tag = " + val.getTag());
     rawSig = val.getEncoded();
     signature = ((BitString) val.getValue()).toByteArray();
   }

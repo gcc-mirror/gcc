@@ -114,12 +114,7 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    */
   public final long write(ByteBuffer[] srcs) throws IOException
   {
-    long result = 0;
-
-    for (int i = 0; i < srcs.length; i++)
-      result += write(srcs[i]);
-
-    return result;
+    return write(srcs, 0, srcs.length);
   }
 
   /**
@@ -169,12 +164,7 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    */
   public final long read(ByteBuffer[] dsts) throws IOException
   {
-    long result = 0;
-
-    for (int i = 0; i < dsts.length; i++)
-      read(dsts[i]);
-
-    return result;
+    return read(dsts, 0, dsts.length);
   }
 
   /**

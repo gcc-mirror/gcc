@@ -38,24 +38,31 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.LookAndFeel;
 import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputListener;
+import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.MenuBarUI;
 
@@ -64,6 +71,47 @@ import javax.swing.plaf.MenuBarUI;
  */
 public class BasicMenuBarUI extends MenuBarUI
 {
+
+  /**
+   * This action is performed for the action command 'takeFocus'.
+   */
+  private static class FocusAction
+    extends AbstractAction
+  {
+
+    /**
+     * Creates a new FocusAction.
+     */
+    FocusAction()
+    {
+      super("takeFocus");
+    }
+
+    /**
+     * Performs the action.
+     */
+    public void actionPerformed(ActionEvent event)
+    {
+      // In the JDK this action seems to pop up the first menu of the
+      // menu bar.
+      JMenuBar menuBar = (JMenuBar) event.getSource();
+      MenuSelectionManager defaultManager =
+        MenuSelectionManager.defaultManager();
+      MenuElement me[];
+      MenuElement subElements[];
+      JMenu menu = menuBar.getMenu(0);
+      if (menu != null)
+        {
+          me = new MenuElement[3];
+          me[0] = (MenuElement) menuBar;
+          me[1] = (MenuElement) menu;
+          me[2] = (MenuElement) menu.getPopupMenu();
+          defaultManager.setSelectedPath(me);
+        }
+    }
+    
+  }
+
   protected ChangeListener changeListener;
 
   /*ContainerListener that listens to the ContainerEvents fired from menu bar*/
@@ -178,9 +226,46 @@ public class BasicMenuBarUI extends MenuBarUI
    * This method installs the keyboard actions for the JMenuBar.
    */
   protected void installKeyboardActions()
-    throws NotImplementedException
   {
-    // FIXME: implement
+    // Install InputMap.
+    Object[] bindings =
+      (Object[]) SharedUIDefaults.get("MenuBar.windowBindings");
+    InputMap inputMap = LookAndFeel.makeComponentInputMap(menuBar, bindings);
+    SwingUtilities.replaceUIInputMap(menuBar,
+                                     JComponent.WHEN_IN_FOCUSED_WINDOW,
+                                     inputMap);
+
+    // Install ActionMap.
+    SwingUtilities.replaceUIActionMap(menuBar, getActionMap());
+  }
+
+  /**
+   * Creates and returns the shared action map for JTrees.
+   *
+   * @return the shared action map for JTrees
+   */
+  private ActionMap getActionMap()
+  {
+    ActionMap am = (ActionMap) UIManager.get("MenuBar.actionMap");
+    if (am == null)
+      {
+        am = createDefaultActions();
+        UIManager.getLookAndFeelDefaults().put("MenuBar.actionMap", am);
+      }
+    return am;
+  }
+
+  /**
+   * Creates the default actions when there are none specified by the L&F.
+   *
+   * @return the default actions
+   */
+  private ActionMap createDefaultActions()
+  {
+    ActionMapUIResource am = new ActionMapUIResource();
+    Action action = new FocusAction();
+    am.put(action.getValue(Action.NAME), action);
+    return am;
   }
 
   /**
@@ -226,9 +311,10 @@ public class BasicMenuBarUI extends MenuBarUI
    * This method reverses the work done in installKeyboardActions.
    */
   protected void uninstallKeyboardActions()
-    throws NotImplementedException
   {
-    // FIXME: implement. 
+    SwingUtilities.replaceUIInputMap(menuBar,
+                                     JComponent.WHEN_IN_FOCUSED_WINDOW, null);
+    SwingUtilities.replaceUIActionMap(menuBar, null);
   }
 
   /**

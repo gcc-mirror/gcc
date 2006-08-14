@@ -1392,9 +1392,9 @@ public class JTree extends JComponent implements Scrollable, Accessible
   public static final String EXPANDS_SELECTED_PATHS_PROPERTY =
     "expandsSelectedPaths";
 
-  private static final Object EXPANDED = new Object();
+  private static final Object EXPANDED = Boolean.TRUE;
 
-  private static final Object COLLAPSED = new Object();
+  private static final Object COLLAPSED = Boolean.FALSE;
 
   private boolean dragEnabled;
 
@@ -1514,6 +1514,9 @@ public class JTree extends JComponent implements Scrollable, Accessible
     
     // The root node appears expanded by default.
     nodeStates = new Hashtable();
+
+    // The cell renderer gets set by the UI.
+    cellRenderer = null;
 
     // Install the UI before installing the model. This way we avoid double
     // initialization of lots of UI and model stuff inside the UI and related

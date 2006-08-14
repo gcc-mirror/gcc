@@ -42,25 +42,13 @@ import gnu.java.security.Registry;
 
 /**
  * The implementation of the RIPEMD-160 <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.<p>
+ * (<b>SPI</b>) adapter.
  */
-public class RipeMD160Spi extends MessageDigestAdapter
+public class RipeMD160Spi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public RipeMD160Spi()
   {
     super(Registry.RIPEMD160_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

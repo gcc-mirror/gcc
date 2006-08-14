@@ -668,7 +668,7 @@ class PostScriptGraphics2D extends Graphics2D
     saveAndInvertAxis();
 
     // draw the shape s with an inverted Y axis.
-    PathIterator pi = s.getPathIterator(new AffineTransform());
+    PathIterator pi = s.getPathIterator(null);
     float[] coords = new float[6];
 
     while (! pi.isDone())
@@ -872,7 +872,7 @@ class PostScriptGraphics2D extends Graphics2D
   /** write a shape to the file */
   private void writeShape(Shape s)
   {
-    PathIterator pi = s.getPathIterator(new AffineTransform());
+    PathIterator pi = s.getPathIterator(null);
     float[] coords = new float[6];
 
     while (! pi.isDone())

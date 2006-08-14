@@ -207,10 +207,8 @@ public class KeyPairCodecFactory
         hs.add(Registry.RSA_KPG + "/" + Registry.PKCS8_ENCODING_SHORT_NAME);
         hs.add(Registry.DH_KPG + "/" + Registry.RAW_ENCODING_SHORT_NAME);
         hs.add(Registry.SRP_KPG + "/" + Registry.RAW_ENCODING_SHORT_NAME);
-
         names = Collections.unmodifiableSet(hs);
       }
-
     return names;
   }
 

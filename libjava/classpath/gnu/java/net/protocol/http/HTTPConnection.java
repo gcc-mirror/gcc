@@ -466,7 +466,8 @@ public class HTTPConnection
      */
     synchronized HTTPConnection get(String host,
                                     int port,
-                                    boolean secure)
+                                    boolean secure, 
+				    int connectionTimeout, int timeout)
     {
       String ttl =
         SystemProperties.getProperty("classpath.net.http.keepAliveTTL");
@@ -494,7 +495,7 @@ public class HTTPConnection
         }
       if (c == null)
         {
-          c = new HTTPConnection(host, port, secure);
+          c = new HTTPConnection(host, port, secure, connectionTimeout, timeout);
           c.setPool(this);
         }
       return c;

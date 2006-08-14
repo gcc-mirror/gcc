@@ -56,10 +56,6 @@ import java.util.StringTokenizer;
  */
 public class AuthInfo
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private static final ArrayList factories = new ArrayList();
   static
     {
@@ -72,14 +68,14 @@ public class AuthInfo
         {
           for (StringTokenizer st = new StringTokenizer(pkgs, "|"); st.hasMoreTokens();)
             {
-              clazz = st.nextToken();
-              if (!"gnu.crypto.sasl".equals(clazz))
+              clazz = st.nextToken().trim();
+              if (! "gnu.javax.crypto.sasl".equals(clazz))
                 {
                   clazz += ".AuthInfoProviderFactory";
                   try
                     {
-                      IAuthInfoProviderFactory factory = (IAuthInfoProviderFactory) Class.forName(
-                                                                                                  clazz).newInstance();
+                      IAuthInfoProviderFactory factory =
+                          (IAuthInfoProviderFactory) Class.forName(clazz).newInstance();
                       factories.add(factory);
                     }
                   catch (ClassCastException ignored)
@@ -99,13 +95,8 @@ public class AuthInfo
         }
       // always add ours last; unless it's already there
       if (!factories.contains(ours))
-        {
-          factories.add(ours);
-        }
+        factories.add(ours);
     }
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /** Trivial constructor to enforce Singleton pattern. */
   private AuthInfo()
@@ -113,19 +104,16 @@ public class AuthInfo
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * A convenience method to return the authentication information provider
-   * for a designated SASL mechnanism. It goes through all the installed
-   * provider factories, one at a time, and attempts to return a new instance
-   * of the provider for the designated mechanism. It stops at the first
-   * factory returning a non-null provider.
-   *
+   * A convenience method to return the authentication information provider for
+   * a designated SASL mechnanism. It goes through all the installed provider
+   * factories, one at a time, and attempts to return a new instance of the
+   * provider for the designated mechanism. It stops at the first factory
+   * returning a non-null provider.
+   * 
    * @param mechanism the name of a SASL mechanism.
    * @return an implementation that provides {@link IAuthInfoProvider} for that
-   * mechanism; or <code>null</code> if none found.
+   *         mechanism; or <code>null</code> if none found.
    */
   public static IAuthInfoProvider getProvider(String mechanism)
   {
@@ -134,9 +122,7 @@ public class AuthInfo
         IAuthInfoProviderFactory factory = (IAuthInfoProviderFactory) it.next();
         IAuthInfoProvider result = factory.getInstance(mechanism);
         if (result != null)
-          {
-            return result;
-          }
+          return result;
       }
     return null;
   }

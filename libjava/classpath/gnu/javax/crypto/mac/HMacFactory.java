@@ -47,68 +47,56 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * <p>A <i>Factory</i> to instantiate Keyed-Hash Message Authentication Code
- * (HMAC) algorithm instances.</p>
+ * A <i>Factory</i> to instantiate Keyed-Hash Message Authentication Code
+ * (HMAC) algorithm instances.
  */
-public class HMacFactory implements Registry
+public class HMacFactory
+    implements Registry
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial constructor to enforce <i>Singleton</i> pattern. */
   private HMacFactory()
   {
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Return an instance of a <i>HMAC</i> algorithm given the name of its
+   * Return an instance of a <i>HMAC</i> algorithm given the name of its
    * underlying hash function, prefixed with the literal defined in
-   * {@link Registry#HMAC_NAME_PREFIX}.</p>
-   *
+   * {@link Registry#HMAC_NAME_PREFIX}.
+   * 
    * @param name the fully qualified name of the underlying algorithm: composed
-   * as the concatenation of a literal prefix (see {@link Registry#HMAC_NAME_PREFIX})
-   * and the name of the underlying hash algorithm.
-   * @return an instance of the <i>HMAC</i> algorithm, or <code>null</code> if
-   * none can be constructed.
+   *          as the concatenation of a literal prefix (see
+   *          {@link Registry#HMAC_NAME_PREFIX}) and the name of the underlying
+   *          hash algorithm.
+   * @return an instance of the <i>HMAC</i> algorithm, or <code>null</code>
+   *         if none can be constructed.
    * @exception InternalError if the implementation does not pass its self-test.
    */
   public static IMac getInstance(String name)
   {
     if (name == null)
-      {
-        return null;
-      }
+      return null;
 
     name = name.trim();
     name = name.toLowerCase();
-    if (!name.startsWith(HMAC_NAME_PREFIX))
-      {
-        return null;
-      }
+    if (! name.startsWith(HMAC_NAME_PREFIX))
+      return null;
 
     // strip the prefix
     name = name.substring(HMAC_NAME_PREFIX.length()).trim();
     IMac result = new HMac(HashFactory.getInstance(name));
-    if (result != null && !result.selfTest())
-      {
-        throw new InternalError(result.name());
-      }
+    if (result != null && ! result.selfTest())
+      throw new InternalError(result.name());
 
     return result;
   }
 
   /**
-   * <p>Returns a {@link java.util.Set} of names of <i>HMAC</i> algorithms
-   * supported by this <i>Factory</i>.</p>
-   *
+   * <p>
+   * Returns a {@link java.util.Set} of names of <i>HMAC</i> algorithms
+   * supported by this <i>Factory</i>.
+   * </p>
+   * 
    * @return a {@link java.util.Set} of HMAC algorithm names (Strings).
    */
   public static final Set getNames()
@@ -116,13 +104,8 @@ public class HMacFactory implements Registry
     Set hashNames = HashFactory.getNames();
     HashSet hs = new HashSet();
     for (Iterator it = hashNames.iterator(); it.hasNext();)
-      {
-        hs.add(HMAC_NAME_PREFIX + ((String) it.next()));
-      }
+      hs.add(HMAC_NAME_PREFIX + ((String) it.next()));
 
     return Collections.unmodifiableSet(hs);
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

@@ -38,8 +38,7 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.sasl.plain;
 
-import gnu.classpath.SystemProperties;
-
+import gnu.java.security.action.GetPropertyAction;
 import gnu.javax.crypto.sasl.NoSuchUserException;
 import gnu.javax.crypto.sasl.UserAlreadyExistsException;
 
@@ -47,40 +46,31 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.AccessController;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
 import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
 
 /**
  * A representation of a Plain password file.
  */
 public class PasswordFile
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private static String DEFAULT_FILE;
   static
     {
-      DEFAULT_FILE = SystemProperties.getProperty(PlainRegistry.PASSWORD_FILE,
-                                                  PlainRegistry.DEFAULT_PASSWORD_FILE);
+      DEFAULT_FILE = (String) AccessController.doPrivileged
+          (new GetPropertyAction(PlainRegistry.PASSWORD_FILE,
+          PlainRegistry.DEFAULT_PASSWORD_FILE));
     }
-
   private Hashtable entries;
-
   private File passwdFile;
-
-  //   private String[] last_params;
   private long lastmod;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   public PasswordFile() throws IOException
   {
@@ -98,31 +88,20 @@ public class PasswordFile
     update();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   public synchronized void add(String user, String passwd, String[] attributes)
       throws IOException
   {
     checkCurrent();
     if (entries.containsKey(user))
-      {
-        throw new UserAlreadyExistsException(user);
-      }
+      throw new UserAlreadyExistsException(user);
     if (attributes.length != 5)
-      {
-        throw new IllegalArgumentException("Wrong number of attributes");
-      }
+      throw new IllegalArgumentException("Wrong number of attributes");
     // create the new entry
     String[] fields = new String[7];
     fields[0] = user;
     fields[1] = passwd;
     System.arraycopy(attributes, 0, fields, 2, 5);
     entries.put(user, fields);
-
     savePasswd();
   }
 
@@ -130,26 +109,20 @@ public class PasswordFile
       throws IOException
   {
     checkCurrent();
-    if (!entries.containsKey(user))
-      {
-        throw new NoSuchUserException(user);
-      }
-
+    if (! entries.containsKey(user))
+      throw new NoSuchUserException(user);
     String[] fields = (String[]) entries.get(user); // get the existing entry
     fields[1] = passwd; // modify the password field
     entries.remove(user); // delete the existing entry
     entries.put(user, fields); // add the new entry
-
     savePasswd();
   }
 
   public synchronized String[] lookup(String user) throws IOException
   {
     checkCurrent();
-    if (!entries.containsKey(user))
-      {
-        throw new NoSuchUserException(user);
-      }
+    if (! entries.containsKey(user))
+      throw new NoSuchUserException(user);
     return (String[]) entries.get(user);
   }
 
@@ -158,8 +131,6 @@ public class PasswordFile
     checkCurrent();
     return entries.containsKey(s);
   }
-
-  //----------------------------------------------------------------//
 
   private synchronized void update() throws IOException
   {
@@ -170,9 +141,7 @@ public class PasswordFile
   private void checkCurrent() throws IOException
   {
     if (passwdFile.lastModified() > lastmod)
-      {
-        update();
-      }
+      update();
   }
 
   private synchronized void readPasswd(InputStream in) throws IOException
@@ -188,68 +157,39 @@ public class PasswordFile
           {
             fields[0] = st.nextToken(); // username
             st.nextToken();
-
             fields[1] = st.nextToken(); // passwd
             if (fields[1].equals(":"))
-              {
-                fields[1] = "";
-              }
+              fields[1] = "";
             else
-              {
-                st.nextToken();
-              }
-
+              st.nextToken();
             fields[2] = st.nextToken(); // uid
             if (fields[2].equals(":"))
-              {
-                fields[2] = "";
-              }
+              fields[2] = "";
             else
-              {
-                st.nextToken();
-              }
-
+              st.nextToken();
             fields[3] = st.nextToken(); // gid
             if (fields[3].equals(":"))
-              {
-                fields[3] = "";
-              }
+              fields[3] = "";
             else
-              {
-                st.nextToken();
-              }
-
+              st.nextToken();
             fields[4] = st.nextToken(); // gecos
             if (fields[4].equals(":"))
-              {
-                fields[4] = "";
-              }
+              fields[4] = "";
             else
-              {
-                st.nextToken();
-              }
-
+              st.nextToken();
             fields[5] = st.nextToken(); // dir
             if (fields[5].equals(":"))
-              {
-                fields[5] = "";
-              }
+              fields[5] = "";
             else
-              {
-                st.nextToken();
-              }
-
+              st.nextToken();
             fields[6] = st.nextToken(); // shell
             if (fields[6].equals(":"))
-              {
-                fields[6] = "";
-              }
+              fields[6] = "";
           }
         catch (NoSuchElementException ignored)
           {
             continue;
           }
-
         entries.put(fields[0], fields);
       }
   }
@@ -273,35 +213,29 @@ public class PasswordFile
                 fields = (String[]) entries.get(key);
                 sb = new StringBuffer(fields[0]);
                 for (int i = 1; i < fields.length; i++)
-                  {
-                    sb.append(":" + fields[i]);
-                  }
+                  sb.append(":" + fields[i]);
                 pw.println(sb.toString());
               }
           }
         finally
           {
             if (pw != null)
-              {
-                try
-                  {
-                    pw.flush();
-                  }
-                finally
-                  {
-                    pw.close();
-                  }
-              }
+              try
+                {
+                  pw.flush();
+                }
+              finally
+                {
+                  pw.close();
+                }
             if (fos != null)
-              {
-                try
-                  {
-                    fos.close();
-                  }
-                catch (IOException ignored)
-                  {
-                  }
-              }
+              try
+                {
+                  fos.close();
+                }
+              catch (IOException ignored)
+                {
+                }
             lastmod = passwdFile.lastModified();
           }
       }

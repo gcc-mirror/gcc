@@ -240,7 +240,7 @@ public class ProgressMonitorInputStream extends FilterInputStream
 
   private void checkMonitorCanceled() throws InterruptedIOException
   {
-    if ( monitor.isCanceled() )
+    if (monitor.isCanceled())
       {
         throw new InterruptedIOException("ProgressMonitor was canceled");
       }

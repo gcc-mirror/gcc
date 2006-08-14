@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 
@@ -55,11 +57,6 @@ public abstract class ServiceInformationHelper
    * The service information repository id.
    */
   private static String _id = "IDL:org/omg/CORBA/ServiceInformation:1.0";
-
-  /**
-   * The caches typecode value, computed once.
-   */
-  private static TypeCode typeCode;
 
   /**
    * Extract the service information from the given Any.
@@ -109,34 +106,30 @@ public abstract class ServiceInformationHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-
-        StructMember[] members = new StructMember[ 2 ];
-        TypeCode member;
-
-        member =
-          orb.create_alias_tc("IDL:omg.org/CORBA/ServiceOptionSeq:1.0",
-                              "ServiceOptionSeq", LongSeqHelper.type()
-                             );
-
-        members [ 0 ] = new StructMember("service_options", member, null);
-
-        member = ServiceDetailHelper.type();
-        member = orb.create_sequence_tc(0, member);
-        member =
-          orb.create_alias_tc("IDL:omg.org/CORBA/ServiceDetailSeq:1.0",
-                              "ServiceDetailSeq", member
-                             );
-        members [ 1 ] = new StructMember("service_details", member, null);
-
-        typeCode =
-          orb.create_struct_tc(ServiceInformationHelper.id(),
-                               "ServiceInformation", members
-                              );
-      }
-    return typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    
+    StructMember[] members = new StructMember[ 2 ];
+    TypeCode member;
+    
+    member =
+      orb.create_alias_tc("IDL:omg.org/CORBA/ServiceOptionSeq:1.0",
+                          "ServiceOptionSeq", LongSeqHelper.type()
+      );
+    
+    members [ 0 ] = new StructMember("service_options", member, null);
+    
+    member = ServiceDetailHelper.type();
+    member = orb.create_sequence_tc(0, member);
+    member =
+      orb.create_alias_tc("IDL:omg.org/CORBA/ServiceDetailSeq:1.0",
+                          "ServiceDetailSeq", member
+      );
+    members [ 1 ] = new StructMember("service_details", member, null);
+    
+    return
+    orb.create_struct_tc(ServiceInformationHelper.id(),
+                         "ServiceInformation", members
+    );
   }
 
   /**

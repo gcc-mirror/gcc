@@ -1,3 +1,41 @@
+2006-08-14  Mark Wielaard  <mark@klomp.org>
+
+	Imported GNU Classpath 0.92
+	* HACKING: Add more importing hints. Update automake version
+	requirement.
+
+	* configure.ac (gconf-peer): New enable AC argument.
+	Add --disable-gconf-peer and --enable-default-preferences-peer
+	to classpath configure when gconf is disabled.
+	* scripts/makemake.tcl: Set gnu/java/util/prefs/gconf and
+	gnu/java/awt/dnd/peer/gtk to bc. Classify
+	gnu/java/security/Configuration.java as generated source file.
+
+	* gnu/java/lang/management/VMGarbageCollectorMXBeanImpl.java,
+	gnu/java/lang/management/VMMemoryPoolMXBeanImpl.java,
+	gnu/java/lang/management/VMClassLoadingMXBeanImpl.java,
+	gnu/java/lang/management/VMRuntimeMXBeanImpl.java,
+	gnu/java/lang/management/VMMemoryManagerMXBeanImpl.java,
+	gnu/java/lang/management/VMThreadMXBeanImpl.java,
+	gnu/java/lang/management/VMMemoryMXBeanImpl.java,
+	gnu/java/lang/management/VMCompilationMXBeanImpl.java: New VM stub
+	classes.
+	* java/lang/management/VMManagementFactory.java: Likewise.
+	* java/net/VMURLConnection.java: Likewise.
+	* gnu/java/nio/VMChannel.java: Likewise.
+
+	* java/lang/Thread.java (getState): Add stub implementation.
+	* java/lang/Class.java (isEnum): Likewise.
+	* java/lang/Class.h (isEnum): Likewise.
+
+	* gnu/awt/xlib/XToolkit.java (getClasspathTextLayoutPeer): Removed.
+
+	* javax/naming/spi/NamingManager.java: New override for StackWalker
+	functionality.
+
+	* configure, sources.am, Makefile.in, gcj/Makefile.in,
+	include/Makefile.in, testsuite/Makefile.in: Regenerated.
+
 2006-08-14  Gary Benson  <gbenson@redhat.com>
 
 	* java/lang/Thread.java (accessControlState): New field.

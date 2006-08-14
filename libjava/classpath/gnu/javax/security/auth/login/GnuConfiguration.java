@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.security.auth.AuthPermission;
 import javax.security.auth.login.AppConfigurationEntry;
@@ -127,12 +128,7 @@ import javax.security.auth.login.Configuration;
  */
 public final class GnuConfiguration extends Configuration
 {
-  // Constants and fields
-  // --------------------------------------------------------------------------
-
-  private static final boolean DEBUG = true;
-  private static final void debug(String m) {if (DEBUG) System.err.println(m);};
-
+  private static final Logger log = Logger.getLogger(GnuConfiguration.class.getName());
   /**
    * The internal map of login modules keyed by application name. Each entry in
    * this map is a {@link List} of {@link AppConfigurationEntry}s for that
@@ -179,7 +175,8 @@ public final class GnuConfiguration extends Configuration
     if (loginModules == null || loginModules.size() == 0)
       return null;
 
-    debug("DEBUG: " + appName + " -> " + loginModules.size() + " entry(ies)");
+    if (gnu.java.security.Configuration.DEBUG)
+      log.fine(appName + " -> " + loginModules.size() + " entry(ies)");
     return (AppConfigurationEntry[]) loginModules.toArray(new AppConfigurationEntry[0]);
   }
 
@@ -193,7 +190,7 @@ public final class GnuConfiguration extends Configuration
    * @throws SecurityException if the caller does not have an
    * {@link AuthPermission} for the action named
    * <code>refreshLoginConfiguration</code>.
-   * @see {@link AuthPermission}
+   * @see AuthPermission
    */
   public void refresh()
   {
@@ -215,13 +212,25 @@ public final class GnuConfiguration extends Configuration
   private void init()
   {
     if (processSecurityProperties())
-      debug(" INFO: Using login configuration defined by Security property(ies)");
+      {
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("Using login configuration defined by Security property(ies)");
+      }
     else if (processSystemProperty())
-      debug(" INFO: Using login configuration defined by System property");
+      {
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("Using login configuration defined by System property");
+      }
     else if (processUserHome())
-      debug(" INFO: Using login configuration defined in ${user.home}");
+      {
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("Using login configuration defined in ${user.home}");
+      }
     else
-      debug(" WARN: No login configuration file found");
+      {
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("No login configuration file found");
+      }
   }
 
   /**
@@ -249,16 +258,18 @@ public final class GnuConfiguration extends Configuration
           s = s.trim();
           if (s.length() != 0)
             {
-              debug("DEBUG: java.security.auth.login.config.url." + counter
-                    + " = " + s);
+              if (gnu.java.security.Configuration.DEBUG)
+                log.fine("java.security.auth.login.config.url." + counter
+                         + " = " + s);
               parseConfig(getInputStreamFromURL(s));
               result = true;
             }
         }
       catch (Throwable t)
         {
-          debug(" WARN: Exception while handling Security property at #"
-                + counter + ". Continue: " + t);
+          if (gnu.java.security.Configuration.DEBUG)
+            log.fine("Exception while handling Security property at #"
+                     + counter + ". Continue: " + t);
         }
     return result;
   }
@@ -287,7 +298,8 @@ public final class GnuConfiguration extends Configuration
       }
     catch (MalformedURLException x)
       {
-        debug(" WARN: Failed opening as URL: " + s + ". Will try as File");
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("Failed opening as URL: " + s + ". Will try as File");
         result = new FileInputStream(s);
       }
     return result;
@@ -311,7 +323,8 @@ public final class GnuConfiguration extends Configuration
             s = s.trim();
             if (s.length() != 0)
               {
-                debug("DEBUG: java.security.auth.login.config = " + s);
+                if (gnu.java.security.Configuration.DEBUG)
+                  log.fine("java.security.auth.login.config = " + s);
                 parseConfig(getInputStreamFromURL(s));
                 result = true;
               }
@@ -319,7 +332,8 @@ public final class GnuConfiguration extends Configuration
       }
     catch (Throwable t)
       {
-        debug(" WARN: Exception while handling System property. Continue: " + t);
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("Exception while handling System property. Continue: " + t);
       }
     return result;
   }
@@ -349,8 +363,9 @@ public final class GnuConfiguration extends Configuration
 
         if (jaasFile == null)
           {
-            debug(" WARN: Login Configuration file, in " + userHome
-                    + ", does not exist or is inaccessible");
+            if (gnu.java.security.Configuration.DEBUG)
+              log.fine("Login Configuration file, in " + userHome
+                       + ", does not exist or is inaccessible");
             return result;
           }
 
@@ -360,7 +375,8 @@ public final class GnuConfiguration extends Configuration
       }
     catch (Throwable t)
       {
-        debug(" WARN: Exception while handling ${user.home}: " + t);
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("Exception (ignored) while handling ${user.home}: " + t);
       }
     return result;
   }
@@ -397,54 +413,54 @@ public final class GnuConfiguration extends Configuration
     String uh = System.getProperty("user.home");
     if (uh == null || uh.trim().length() == 0)
       {
-        debug(" WARN: User home path is not set or is empty");
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("User home path is not set or is empty");
         return null;
       }
-
     uh = uh.trim();
     File result = new File(uh);
-    if (!result.exists())
+    if (! result.exists())
       {
-        debug(" WARN: User home '" + uh + "' does not exist");
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("User home '" + uh + "' does not exist");
         return null;
       }
-
-    if (!result.isDirectory())
+    if (! result.isDirectory())
       {
-        debug(" WARN: User home '" + uh + "' is not a directory");
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("User home '" + uh + "' is not a directory");
         return null;
       }
-
-    if (!result.canRead())
+    if (! result.canRead())
       {
-        debug(" WARN: User home '" + uh + "' is not readable");
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("User home '" + uh + "' is not readable");
         return null;
       }
-
     return result;
   }
 
   private File getConfigFromUserHome(File userHome, String fileName)
   {
     File result = new File(userHome, fileName);
-    if (!result.exists())
+    if (! result.exists())
       {
-        debug(" WARN: File '" + fileName + "' does not exist in user's home");
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("File '" + fileName + "' does not exist in user's home");
         return null;
       }
-
-    if (!result.isFile())
+    if (! result.isFile())
       {
-        debug(" WARN: File '" + fileName + "' in user's home is not a file");
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("File '" + fileName + "' in user's home is not a file");
         return null;
       }
-
-    if (!result.canRead())
+    if (! result.canRead())
       {
-        debug(" WARN: File '" + fileName + "' in user's home is not readable");
+        if (gnu.java.security.Configuration.DEBUG)
+          log.fine("File '" + fileName + "' in user's home is not readable");
         return null;
       }
-
     return result;
   }
 }

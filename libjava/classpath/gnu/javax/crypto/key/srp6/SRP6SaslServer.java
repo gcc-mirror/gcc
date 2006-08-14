@@ -48,54 +48,43 @@ import gnu.javax.crypto.key.OutgoingMessage;
 import java.math.BigInteger;
 
 /**
- * <p>A variation of the SRP-6 protocol as used in the SASL-SRP mechanism, for
- * the Host (server side).</p>
- *
- * <p>In this alternative, the exchange goes as follows:</p>
+ * A variation of the SRP-6 protocol as used in the SASL-SRP mechanism, for the
+ * Host (server side).
+ * <p>
+ * In this alternative, the exchange goes as follows:
+ * 
  * <pre>
- *    C -> S:  I                      (identifies self)
- *    S -> C:  N, g, s, B = 3v + g^b  (sends salt, b = random number)
- *    C -> S:  A = g^a                (a = random number)
+ *     C -&gt; S:  I                      (identifies self)
+ *     S -&gt; C:  N, g, s, B = 3v + g&circ;b  (sends salt, b = random number)
+ *     C -&gt; S:  A = g&circ;a                (a = random number)
  * </pre>
- *
- * <p>All elements are computed the same way as in the standard version.</p>
- *
- * <p>Reference:</p>
+ * 
+ * <p>
+ * All elements are computed the same way as in the standard version.
+ * <p>
+ * Reference:
  * <ol>
- *    <li><a href="http://www.ietf.org/internet-drafts/draft-burdis-cat-srp-sasl-09.txt">
- *    Secure Remote Password Authentication Mechanism</a><br>
- *    K. Burdis, R. Naffah.</li>
- *    <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
- *    Thomas J. Wu.</li>
+ * <li><a
+ * href="http://www.ietf.org/internet-drafts/draft-burdis-cat-srp-sasl-09.txt">
+ * Secure Remote Password Authentication Mechanism</a><br>
+ * K. Burdis, R. Naffah.</li>
+ * <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
+ * Thomas J. Wu.</li>
  * </ol>
  */
-public class SRP6SaslServer extends SRP6TLSServer
+public class SRP6SaslServer
+    extends SRP6TLSServer
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // default 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   protected OutgoingMessage computeSharedSecret(final IncomingMessage in)
       throws KeyAgreementException
   {
     super.computeSharedSecret(in);
-
     final byte[] sBytes = Util.trim(K);
     final IMessageDigest hash = srp.newDigest();
     hash.update(sBytes, 0, sBytes.length);
     K = new BigInteger(1, hash.digest());
-
     return null;
   }
 }

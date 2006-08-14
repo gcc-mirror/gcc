@@ -446,4 +446,16 @@ final class VMThread
 	  return false;
 	}
     }
+
+  /**
+   * Returns the current state of the thread.
+   * The value must be one of "BLOCKED", "NEW",
+   * "RUNNABLE", "TERMINATED", "TIMED_WAITING" or
+   * "WAITING".
+   *
+   * @return a string corresponding to one of the 
+   *         thread enumeration states specified above.
+   */
+  native String getState();
+
 }

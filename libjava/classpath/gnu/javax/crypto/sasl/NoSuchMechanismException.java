@@ -44,16 +44,16 @@ import javax.security.sasl.SaslException;
  * A checked exception thrown to indicate that a designated SASL mechanism
  * implementation was not found.
  */
-public class NoSuchMechanismException extends SaslException
+public class NoSuchMechanismException
+    extends SaslException
 {
-
   /**
    * Constructs a <code>NoSuchMechanismException</code> with the specified
    * detail message. In the case of this exception, the detail message
    * designates the offending mechanism name.
-   *
+   * 
    * @param arg the detail message, which in this case is the offending
-   * mechanism name.
+   *          mechanism name.
    */
   public NoSuchMechanismException(String arg)
   {

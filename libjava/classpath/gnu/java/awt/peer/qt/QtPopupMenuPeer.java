@@ -1,5 +1,5 @@
 /* QtPopupMenuPeer.java --
-   Copyright (C)  2005  Free Software Foundation, Inc.
+   Copyright (C)  2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,12 +38,9 @@ exception statement from your version. */
 package gnu.java.awt.peer.qt;
 
 import java.awt.Component;
-import java.awt.Menu;
-import java.awt.MenuItem;
 import java.awt.Point;
 import java.awt.PopupMenu;
 import java.awt.Event;
-import java.awt.event.ActionEvent;
 import java.awt.peer.PopupMenuPeer;
 
 public class QtPopupMenuPeer extends QtMenuPeer implements PopupMenuPeer

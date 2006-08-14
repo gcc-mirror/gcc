@@ -100,8 +100,6 @@ public class SmallHtmlAttributeSet
         key = en.nextElement();
         keys[i] = key;
         value = copyFrom.getAttribute(key);
-        if (value instanceof String)
-          value = ((String) value).toLowerCase();
         values[i] = value;
       }
   }

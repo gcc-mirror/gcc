@@ -44,41 +44,41 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 
 /**
- * <p>An interface to private, or "personal", keyrings, which contain private
+ * An interface to private, or "personal", keyrings, which contain private
  * credentials. The contract is that each such entry is known by a unique
- * <i>alias</i>.</p>
- *
- * <p>What about public keys? and certificate-path?</p>
+ * <i>alias</i>.
+ * <p>
+ * What about public keys? and certificate-path?
  */
-public interface IPrivateKeyring extends IKeyring
+public interface IPrivateKeyring
+    extends IKeyring
 {
-
   /**
-   * <p>Tests if this keyring contains a private key entry with the given
-   * <code>alias</code>.</p>
-   *
+   * Tests if this keyring contains a private key entry with the given
+   * <code>alias</code>.
+   * 
    * @param alias The alias to check.
    * @return <code>true</code> if this keyring contains a private key with the
-   * given <code>alias</code>; <code>false</code> otherwise.</p>
+   *         given <code>alias</code>; <code>false</code> otherwise.
    */
   boolean containsPrivateKey(String alias);
 
   /**
-   * <p>Returns the private key with the given <code>alias</code>.</p>
-   *
+   * Returns the private key with the given <code>alias</code>.
+   * 
    * @param alias The alias of the private key to find.
    * @param password The password of the private key.
    * @return The private, or secret, key if one is found; <code>null</code> if
-   * none were found.
+   *         none were found.
    * @throws UnrecoverableKeyException If the private key could not be
-   * recovered, possibly due to a bad password.
+   *           recovered, possibly due to a bad password.
    */
   Key getPrivateKey(String alias, char[] password)
       throws UnrecoverableKeyException;
 
   /**
-   * <p>Adds a private key to this keyring.</p>
-   *
+   * Adds a private key to this keyring.
+   * 
    * @param alias The alias of the private key.
    * @param key The private key.
    * @param password The password used to protect this private key.
@@ -86,55 +86,57 @@ public interface IPrivateKeyring extends IKeyring
   void putPrivateKey(String alias, Key key, char[] password);
 
   /**
-   * <p>Checks if this keyring contains a public key with the given
-   * <code>alias</code>.</p>
-   *
+   * Checks if this keyring contains a public key with the given
+   * <code>alias</code>.
+   * 
    * @param alias The alias to test.
-   * @return <code>true</code> if this keyring contains a public key entry with
-   * the given <code>alias</code>; <code>false</code> otherwise.
+   * @return <code>true</code> if this keyring contains a public key entry
+   *         with the given <code>alias</code>; <code>false</code>
+   *         otherwise.
    */
   boolean containsPublicKey(String alias);
 
   /**
-   * <p>Returns the public key with the given <code>alias</code>, or
-   * <code>null</code> if there is no such entry.</p>
-   *
+   * Returns the public key with the given <code>alias</code>, or
+   * <code>null</code> if there is no such entry.
+   * 
    * @param alias The alias of the public key to find.
    * @return The public key; or <code>null</code> if none were found.
    */
   PublicKey getPublicKey(String alias);
 
   /**
-   * <p>Sets a public key entry.</p>
-   *
+   * Sets a public key entry.
+   * 
    * @param alias The alias for this public key.
    * @param key The public key.
    */
   void putPublicKey(String alias, PublicKey key);
 
   /**
-   * <p>Checks if this keyring contains a certificate path with the given
-   * <code>alias</code>.</p>
-   *
+   * Checks if this keyring contains a certificate path with the given
+   * <code>alias</code>.
+   * 
    * @param alias The alias to check.
-   * @return <code>true</code> if this keyring contains a certificate path with
-   * the given <code>alias</code>; <code>false</code> otherwise.
+   * @return <code>true</code> if this keyring contains a certificate path
+   *         with the given <code>alias</code>; <code>false</code>
+   *         otherwise.
    */
   boolean containsCertPath(String alias);
 
   /**
-   * <p>Returns the certificate path with the given <code>alias</code>, or
-   * <code>null</code> if there is no such entry.</p>
-   *
+   * Returns the certificate path with the given <code>alias</code>, or
+   * <code>null</code> if there is no such entry.
+   * 
    * @param alias The alias of the certificate path to find.
    * @return The certificate path for the designated <code>alias</code>; or
-   * <code>null</code> if none were found.
+   *         <code>null</code> if none were found.
    */
   Certificate[] getCertPath(String alias);
 
   /**
-   * <p>Sets a certificate path entry.</p>
-   *
+   * Sets a certificate path entry.
+   * 
    * @param alias The alias for this certificate path.
    * @param path The certificate path.
    */

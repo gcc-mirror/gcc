@@ -38,15 +38,7 @@ exception statement from your version. */
 
 package gnu.java.security.key.rsa;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidParameterException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.logging.Logger;
-
+import gnu.java.security.Configuration;
 import gnu.java.security.OID;
 import gnu.java.security.Registry;
 import gnu.java.security.der.DER;
@@ -55,6 +47,15 @@ import gnu.java.security.der.DERValue;
 import gnu.java.security.der.DERWriter;
 import gnu.java.security.key.IKeyPairCodec;
 import gnu.java.security.util.DerUtil;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidParameterException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.logging.Logger;
 
 /**
  * An implementation of an {@link IKeyPairCodec} that knows how to encode /
@@ -84,7 +85,6 @@ public class RSAKeyPairPKCS8Codec
   /**
    * Returns the PKCS#8 ASN.1 <i>PrivateKeyInfo</i> representation of an RSA
    * private key. The ASN.1 specification is as follows:
-   * 
    * <pre>
    *   PrivateKeyInfo ::= SEQUENCE {
    *     version              INTEGER, -- MUST be 0
@@ -97,10 +97,12 @@ public class RSAKeyPairPKCS8Codec
    *     parameters  ANY DEFINED BY algorithm OPTIONAL
    *   }
    * </pre>
-   * 
-   * <p>The <i>privateKey</i> field, which is an OCTET STRING, contains the
-   * DER-encoded form of the RSA private key defined as:</p>
-   * 
+   * <p>
+   * As indicated in RFC-2459: "The parameters field shall have ASN.1 type NULL
+   * for this algorithm identifier.".
+   * <p>
+   * The <i>privateKey</i> field, which is an OCTET STRING, contains the
+   * DER-encoded form of the RSA private key defined as:
    * <pre>
    *   RSAPrivateKey ::= SEQUENCE {
    *     version                 INTEGER, -- MUST be 0
@@ -122,8 +124,8 @@ public class RSAKeyPairPKCS8Codec
    */
   public byte[] encodePrivateKey(PrivateKey key)
   {
-    log.entering(this.getClass().getName(), "encodePrivateKey()", key);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "encodePrivateKey()", key);
     if (! (key instanceof GnuRSAPrivateKey))
       throw new InvalidParameterException("Wrong key type");
 
@@ -141,8 +143,9 @@ public class RSAKeyPairPKCS8Codec
 
     DERValue derOID = new DERValue(DER.OBJECT_IDENTIFIER, RSA_ALG_OID);
 
-    ArrayList algorithmID = new ArrayList(1);
+    ArrayList algorithmID = new ArrayList(2);
     algorithmID.add(derOID);
+    algorithmID.add(new DERValue(DER.NULL, null));
     DERValue derAlgorithmID = new DERValue(DER.CONSTRUCTED | DER.SEQUENCE,
                                            algorithmID);
 
@@ -190,8 +193,8 @@ public class RSAKeyPairPKCS8Codec
         y.initCause(x);
         throw y;
       }
-
-    log.exiting(this.getClass().getName(), "encodePrivateKey()", result);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "encodePrivateKey()", result);
     return result;
   }
 
@@ -213,8 +216,8 @@ public class RSAKeyPairPKCS8Codec
    */
   public PrivateKey decodePrivateKey(byte[] input)
   {
-    log.entering(this.getClass().getName(), "decodePrivateKey()", input);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "decodePrivateKey()", input);
     if (input == null)
       throw new InvalidParameterException("Input bytes MUST NOT be null");
 
@@ -239,9 +242,12 @@ public class RSAKeyPairPKCS8Codec
         if (! algOID.equals(RSA_ALG_OID))
           throw new InvalidParameterException("Unexpected OID: " + algOID);
 
+        // rfc-2459 states that this field is OPTIONAL but NULL if/when present
         DERValue val = der.read();
-        byte[] pkBytes = (byte[]) val.getValue();
+        if (val.getTag() == DER.NULL)
+          val = der.read();
 
+        byte[] pkBytes = (byte[]) val.getValue();
         der = new DERReader(pkBytes);
         DERValue derRSAPrivateKey = der.read();
         DerUtil.checkIsConstructed(derRSAPrivateKey, "Wrong RSAPrivateKey field");
@@ -284,10 +290,10 @@ public class RSAKeyPairPKCS8Codec
         y.initCause(x);
         throw y;
       }
-
-    PrivateKey result = new GnuRSAPrivateKey(Registry.PKCS8_ENCODING_ID, n, e,
-                                             d, p, q, dP, dQ, qInv);
-    log.exiting(this.getClass().getName(), "decodePrivateKey()", result);
+    PrivateKey result = new GnuRSAPrivateKey(Registry.PKCS8_ENCODING_ID,
+                                             n, e, d, p, q, dP, dQ, qInv);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "decodePrivateKey()", result);
     return result;
   }
 }

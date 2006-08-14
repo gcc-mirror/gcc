@@ -200,7 +200,21 @@ public abstract class MenuComponent implements Serializable
    */
   public String getName()
   {
+    if (name == null && ! nameExplicitlySet)
+      name = generateName();
     return name;
+  }
+  
+  /**
+   * Subclasses should override this to return unique component names like
+   * "menuitem0".
+   *
+   * @return the generated name for this menu component
+   */
+  String generateName()
+  {
+    // MenuComponent is abstract.
+    return null;
   }
 
   /**

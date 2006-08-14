@@ -80,7 +80,7 @@ final class ApplyTemplatesNode
     List sortKeys2 = new ArrayList(len);
     for (int i = 0; i < len; i++)
       sortKeys2.add(((Key) sortKeys.get(i)).clone(stylesheet));
-    len = withParams.size();
+    len = withParams != null ? withParams.size() : 0;
     List withParams2 = new ArrayList(len);
     for (int i = 0; i < len; i++)
       withParams2.add(((WithParam) withParams.get(i)).clone(stylesheet));

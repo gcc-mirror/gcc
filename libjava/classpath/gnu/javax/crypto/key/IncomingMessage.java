@@ -58,30 +58,22 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 /**
- * <p>An implementation of an incoming message for use with key agreement
- * protocols.</p>
+ * An implementation of an incoming message for use with key agreement
+ * protocols.
  */
 public class IncomingMessage
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The internal buffer stream containing the message's contents. */
   protected ByteArrayInputStream in;
-
   /** The length of the message contents, according to its 4-byte header. */
   protected int length;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Constructs an incoming message given the message's encoded form,
-   * including its header bytes.</p>
-   *
+   * Constructs an incoming message given the message's encoded form, including
+   * its header bytes.
+   * 
    * @param b the encoded form, including the header bytes, of an incoming
-   * message.
+   *          message.
    * @throws KeyAgreementException if the buffer is malformed.
    */
   public IncomingMessage(byte[] b) throws KeyAgreementException
@@ -89,15 +81,13 @@ public class IncomingMessage
     this();
 
     if (b.length < 4)
-      {
-        throw new KeyAgreementException("message header too short");
-      }
-    length = b[0] << 24 | (b[1] & 0xFF) << 16 | (b[2] & 0xFF) << 8
-             | (b[3] & 0xFF);
+      throw new KeyAgreementException("message header too short");
+    length =  b[0]         << 24
+           | (b[1] & 0xFF) << 16
+           | (b[2] & 0xFF) << 8
+           | (b[3] & 0xFF);
     if (length > Registry.SASL_BUFFER_MAX_LIMIT || length < 0)
-      {
-        throw new KeyAgreementException("message size limit exceeded");
-      }
+      throw new KeyAgreementException("message size limit exceeded");
     in = new ByteArrayInputStream(b, 4, length);
   }
 
@@ -107,16 +97,13 @@ public class IncomingMessage
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns an instance of a message given its encoded contents, excluding
-   * the message's header bytes.</p>
-   *
-   * <p>Calls the method with the same name and three arguments as:
+   * Returns an instance of a message given its encoded contents, excluding the
+   * message's header bytes.
+   * <p>
+   * Calls the method with the same name and three arguments as:
    * <code>getInstance(raw, 0, raw.length)</code>.
-   *
+   * 
    * @param raw the encoded form, excluding the header bytes.
    * @return a new instance of <code>IncomingMessage</code>.
    */
@@ -126,9 +113,9 @@ public class IncomingMessage
   }
 
   /**
-   * <p>Returns an instance of a message given its encoded contents, excluding
-   * the message's header bytes.</p>
-   *
+   * Returns an instance of a message given its encoded contents, excluding the
+   * message's header bytes.
+   * 
    * @param raw the encoded form, excluding the header bytes.
    * @param offset offset where to start using raw bytes from.
    * @param len number of bytes to use.
@@ -142,8 +129,8 @@ public class IncomingMessage
   }
 
   /**
-   * <p>Converts two octets into the number that they represent.</p>
-   *
+   * Converts two octets into the number that they represent.
+   * 
    * @param b the two octets.
    * @return the length.
    */
@@ -151,31 +138,26 @@ public class IncomingMessage
   {
     int result = (b[0] & 0xFF) << 8 | (b[1] & 0xFF);
     if (result > Registry.SASL_TWO_BYTE_MAX_LIMIT)
-      {
-        throw new KeyAgreementException("encoded MPI size limit exceeded");
-      }
+      throw new KeyAgreementException("encoded MPI size limit exceeded");
     return result;
   }
 
   /**
-   * <p>Converts four octets into the number that they represent.</p>
-   *
+   * Converts four octets into the number that they represent.
+   * 
    * @param b the four octets.
    * @return the length.
    */
   public static int fourBytesToLength(byte[] b) throws KeyAgreementException
   {
-    int result = b[0] << 24 | (b[1] & 0xFF) << 16 | (b[2] & 0xFF) << 8
-                 | (b[3] & 0xFF);
+    int result =  b[0]         << 24
+               | (b[1] & 0xFF) << 16
+               | (b[2] & 0xFF) << 8
+               | (b[3] & 0xFF);
     if (result > Registry.SASL_FOUR_BYTE_MAX_LIMIT || result < 0)
-      {
-        throw new KeyAgreementException("encoded entity size limit exceeded");
-      }
+      throw new KeyAgreementException("encoded entity size limit exceeded");
     return result;
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   public boolean hasMoreElements()
   {
@@ -195,18 +177,15 @@ public class IncomingMessage
   {
     if (in.available() < 5)
       throw new KeyAgreementException("not enough bytes for a public key in message");
-
     byte[] elementLengthBytes = new byte[4];
     in.read(elementLengthBytes, 0, 4);
     int elementLength = fourBytesToLength(elementLengthBytes);
     if (in.available() < elementLength)
       throw new KeyAgreementException("illegal public key encoding");
-
     int keyTypeAndFormatID = in.read() & 0xFF;
     elementLength--;
     byte[] kb = new byte[elementLength];
     in.read(kb, 0, elementLength);
-
     // instantiate the right codec and decode
     IKeyPairCodec kpc = getKeyPairCodec(keyTypeAndFormatID);
     return kpc.decodePublicKey(kb);
@@ -225,66 +204,50 @@ public class IncomingMessage
   {
     if (in.available() < 5)
       throw new KeyAgreementException("not enough bytes for a private key in message");
-
     byte[] elementLengthBytes = new byte[4];
     in.read(elementLengthBytes, 0, 4);
     int elementLength = fourBytesToLength(elementLengthBytes);
     if (in.available() < elementLength)
       throw new KeyAgreementException("illegal private key encoding");
-
     int keyTypeAndFormatID = in.read() & 0xFF;
     elementLength--;
     byte[] kb = new byte[elementLength];
     in.read(kb, 0, elementLength);
-
     // instantiate the right codec and decode
     IKeyPairCodec kpc = getKeyPairCodec(keyTypeAndFormatID);
     return kpc.decodePrivateKey(kb);
   }
 
   /**
-   * <p>Decodes an MPI from the current message's contents.</p>
-   *
+   * Decodes an MPI from the current message's contents.
+   * 
    * @return a native representation of an MPI.
    * @throws KeyAgreementException if an encoding exception occurs during the
-   * operation.
+   *           operation.
    */
   public BigInteger readMPI() throws KeyAgreementException
   {
     if (in.available() < 2)
-      {
-        throw new KeyAgreementException(
-                                        "not enough bytes for an MPI in message");
-      }
+      throw new KeyAgreementException("not enough bytes for an MPI in message");
     byte[] elementLengthBytes = new byte[2];
     in.read(elementLengthBytes, 0, 2);
     int elementLength = twoBytesToLength(elementLengthBytes);
     if (in.available() < elementLength)
-      {
-        throw new KeyAgreementException("illegal MPI encoding");
-      }
-
+      throw new KeyAgreementException("illegal MPI encoding");
     byte[] element = new byte[elementLength];
     in.read(element, 0, element.length);
-
     return new BigInteger(1, element);
   }
 
   public String readString() throws KeyAgreementException
   {
     if (in.available() < 2)
-      {
-        throw new KeyAgreementException(
-                                        "not enough bytes for a text in message");
-      }
+      throw new KeyAgreementException("not enough bytes for a text in message");
     byte[] elementLengthBytes = new byte[2];
     in.read(elementLengthBytes, 0, 2);
     int elementLength = twoBytesToLength(elementLengthBytes);
     if (in.available() < elementLength)
-      {
-        throw new KeyAgreementException("illegal text encoding");
-      }
-
+      throw new KeyAgreementException("illegal text encoding");
     byte[] element = new byte[elementLength];
     in.read(element, 0, element.length);
     String result = null;
@@ -296,7 +259,6 @@ public class IncomingMessage
       {
         throw new KeyAgreementException("unxupported UTF8 encoding", x);
       }
-
     return result;
   }
 

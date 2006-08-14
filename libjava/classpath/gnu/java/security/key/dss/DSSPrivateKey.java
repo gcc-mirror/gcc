@@ -38,37 +38,33 @@ exception statement from your version.  */
 
 package gnu.java.security.key.dss;
 
-import gnu.classpath.SystemProperties;
+import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
+import gnu.java.security.action.GetPropertyAction;
 import gnu.java.security.key.IKeyPairCodec;
 
 import java.math.BigInteger;
+import java.security.AccessController;
 import java.security.PrivateKey;
 import java.security.interfaces.DSAPrivateKey;
 
 /**
- * <p>An object that embodies a DSS (Digital Signature Standard) private key.</p>
- *
+ * An object that embodies a DSS (Digital Signature Standard) private key.
+ * 
  * @see #getEncoded
  */
-public class DSSPrivateKey extends DSSKey implements PrivateKey, DSAPrivateKey
+public class DSSPrivateKey
+    extends DSSKey
+    implements PrivateKey, DSAPrivateKey
 {
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  private static final boolean DEBUG = false;
-
   /**
-   * <p>A randomly or pseudorandomly generated integer with <code>0 &lt; x &lt;
-   * q</code>.</p>
+   * A randomly or pseudorandomly generated integer with <code>0 &lt; x &lt;
+   * q</code>.
    */
   private final BigInteger x;
 
   /** String representation of this key. Cached for speed. */
   private transient String str;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /**
    * Convenience constructor. Calls the constructor with 5 arguments passing
@@ -104,12 +100,8 @@ public class DSSPrivateKey extends DSSKey implements PrivateKey, DSAPrivateKey
     super(preferredFormat == Registry.ASN1_ENCODING_ID ? Registry.PKCS8_ENCODING_ID
                                                        : preferredFormat,
           p, q, g);
-
     this.x = x;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
 
   /**
    * A class method that takes the output of the <code>encodePrivateKey()</code>
@@ -135,30 +127,22 @@ public class DSSPrivateKey extends DSSKey implements PrivateKey, DSAPrivateKey
       catch (IllegalArgumentException ignored)
         {
         }
-
     // try PKCS#8 codec
     return (DSSPrivateKey) new DSSKeyPairPKCS8Codec().decodePrivateKey(k);
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.security.interfaces.DSAPrivateKey interface implementation ---------
 
   public BigInteger getX()
   {
     return x;
   }
 
-  // Other instance methods --------------------------------------------------
-
   /**
-   * <p>Returns the encoded form of this private key according to the
-   * designated format.</p>
-   *
+   * Returns the encoded form of this private key according to the designated
+   * format.
+   * 
    * @param format the desired format identifier of the resulting encoding.
    * @return the byte sequence encoding this key according to the designated
-   * format.
+   *         format.
    * @exception IllegalArgumentException if the format is not supported.
    * @see DSSKeyPairRawCodec
    */
@@ -181,24 +165,22 @@ public class DSSPrivateKey extends DSSKey implements PrivateKey, DSAPrivateKey
   }
 
   /**
-   * <p>Returns <code>true</code> if the designated object is an instance of
+   * Returns <code>true</code> if the designated object is an instance of
    * {@link DSAPrivateKey} and has the same DSS (Digital Signature Standard)
-   * parameter values as this one.</p>
-   *
+   * parameter values as this one.
+   * 
    * @param obj the other non-null DSS key to compare to.
-   * @return <code>true</code> if the designated object is of the same type and
-   * value as this one.
+   * @return <code>true</code> if the designated object is of the same type
+   *         and value as this one.
    */
   public boolean equals(Object obj)
   {
     if (obj == null)
-      {
-        return false;
-      }
-    if (!(obj instanceof DSAPrivateKey))
-      {
-        return false;
-      }
+      return false;
+
+    if (! (obj instanceof DSAPrivateKey))
+      return false;
+
     DSAPrivateKey that = (DSAPrivateKey) obj;
     return super.equals(that) && x.equals(that.getX());
   }
@@ -207,13 +189,15 @@ public class DSSPrivateKey extends DSSKey implements PrivateKey, DSAPrivateKey
   {
     if (str == null)
       {
-        String ls = SystemProperties.getProperty("line.separator");
+        String ls = (String) AccessController.doPrivileged
+            (new GetPropertyAction("line.separator"));
         str = new StringBuilder(this.getClass().getName()).append("(")
-        .append(super.toString()).append(",").append(ls)
-        .append("x=0x").append(DEBUG ? x.toString(16) : "**...*").append(ls)
-        .append(")").toString();
+            .append(super.toString()).append(",").append(ls)
+            .append("x=0x").append(Configuration.DEBUG ? x.toString(16)
+                                                       : "**...*").append(ls)
+            .append(")")
+            .toString();
       }
-
     return str;
   }
 }

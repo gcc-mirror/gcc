@@ -1,21 +1,21 @@
-GNU Classpath README - Last updated: May 15, 2006
+GNU Classpath README - Last updated: August 6, 2006 (for release 0.92)
 
 GNU Classpath, Essential Libraries for Java is a project to create a
 free software implementation of the core class libraries for the java
 programming language.
 
-Additionally GNU Classpath includes a sub-project called GNU Classpath
-Tools whose goal is to provide a number of free replacements for
-standard Java development tools like javadoc, javap, javah, and
-others.  And a sub-project called GNU Inetlib, an extension library to
-provide extra network protocol support (ftp, finger, gopher) for GNU
-Classpath, but it can also standalone to ease adding http, imap, pop3
-and smtp client support to applictions. These subprojects are normally
-released independent from the core libraries.
+Additionally, GNU Classpath includes a sub-project called GNU Classpath
+Tools whose goal is to provide a number of free replacements for standard
+Java development tools like javadoc, javap, and others.  A sub-project
+called GNU Inetlib, can be used as an extension library to provide extra
+network protocol support (ftp, finger, gopher) for GNU Classpath.  It can
+also be used as a standalone to ease adding http, imap, pop3 and smtp
+client support to applictions.  These subprojects are normally released
+independently from the core libraries.
 
 This is a development snapshot release only and is not for general
-purpose use.  GNU Classpath needs to be combine with a proper
-development environments to be useable for end users.  Eventually,
+purpose use.  GNU Classpath needs to be combined with a proper
+development environment to be useable for end users.  Eventually,
 these essential libraries for java will work with as many free
 compilers and runtimes as possible.
 
@@ -31,24 +31,22 @@ with this GNU Classpath releases include
 
 	* CACAO		(http://www.cacaojvm.org/)
 	* JamVM		(http://jamvm.sourceforge.net/)
-	* Jikes RVM	(http://www.ibm.com/developerworks/oss/jikesrvm/)
-	* Kissme	(http://kissme.sourceforge.net/)
+	* Jikes RVM	(http://jikesrvm.sourceforge.net/)
 
 In general the latest releases of the above VMs will work out of the box
 with the latest GNU Classpath release (and in most cases directly with the
 development sources from CVS).
 
 Besides combining GNU Classpath with the runtimes and compilers above
-you might want to add support for encryption libraries as provided by
-GNU Crypto (http://www.gnu.org/software/gnu-crypto/).
-And for additional extension libraries (mail, xml, activation, infobus,
-servlet) check out GNU ClasspathX (http://www.gnu.org/software/classpathx).
+you might want to add support for additional extension libraries (mail,
+activation, infobus, servlet) check out the GNU ClasspathX project
+(http://www.gnu.org/software/classpathx/).
 
 Some tools come with their own customized version of GNU Classpath.
-Please check if there is a customised version available for the tool you
-use before trying the bare bones GNU Classpath release. We are working with
+Please check if there is a customized version available for the tool you
+use before trying the bare bones GNU Classpath release.  We are working with
 the tool creators to keep the differences between the core classes as small
-as possible. Please tell us if you make GNU Classpath work with a new tool.
+as possible.  Please tell us if you make GNU Classpath work with a new tool.
 
 Active projects which use modified versions of the Classpath libraries
 some of which synchronizes with the Classpath CVS head every couple of weeks:
@@ -57,9 +55,9 @@ some of which synchronizes with the Classpath CVS head every couple of weeks:
 	* JC		(http://jcvm.sourceforge.net/)
 	* JNode		(http://jnode.sourceforge.net/)
 	* MysaifuVM	(http://www2s.biglobe.ne.jp/~dat/java/project/jvm/)
-	* SableVM	(http://www.sablevm.org)
+	* SableVM	(http://www.sablevm.org/)
 
-See for a more complete list of GNU Classpath based projects the
+For a more complete list of GNU Classpath based projects, see the
 GNU Classpath website: http://www.gnu.org/software/classpath/stories.html
 
 See the file INSTALL for details on installing GNU Classpath.
@@ -69,23 +67,25 @@ See the file HACKING for working on (non-released) CVS development versions.
 
 Homepage: http://www.gnu.org/software/classpath/
 
+Bugs should be reported via bugzilla, available from the GNU Classpath
+website: http://www.gnu.org/software/classpath/bugs.html
+
 General Mailing List: classpath@gnu.org
-  --> Bugs and patches can be reported via Savannah if you have a browser
-      or via this address otherwise.
   --> To subscribe send email to classpath-request@gnu.org with a 
       subject and body of "subscribe".  To unsubscribe do the same,
       only with a body and subject of "unsubscribe".  This is a
       smartlist managed mailing list.
 
-CVS Commit, Bugs and Patches List: commit-classpath@gnu.org
-  --> To subscribe send email to commit-classpath-request@gnu.org with a 
+Patches Mailing List: classpath-patches@gnu.org
+  --> Proposed patches should be sent to the GNU Classpath patches list
+  --> To subscribe send email to classpath-patches-request@gnu.org with a 
       subject and body of "subscribe".  To unsubscribe do the same,
       only with a body and subject of "unsubscribe".  This is a
       smartlist managed mailing list.
 
 Anonymous CVS:
-  --> export CVS_RSH="ssh"
-  --> cvs -z3 -d:ext:anoncvs@savannah.gnu.org:/cvsroot/classpath co classpath
+  --> "cvs -z3 -d:pserver:anonymous@cvs.savannah.gnu.org:/sources/classpath
+      co classpath"
   --> More detailed instructions available on the Savannah project website.
       http://savannah.gnu.org/projects/classpath/
 

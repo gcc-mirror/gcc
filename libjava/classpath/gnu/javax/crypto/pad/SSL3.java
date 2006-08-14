@@ -39,38 +39,30 @@ exception statement from your version.  */
 package gnu.javax.crypto.pad;
 
 /**
- * The padding scheme used by the Secure Sockets Layer, version 3. This
- * padding scheme is used in the block-ciphered struct, e.g.:
- *
+ * The padding scheme used by the Secure Sockets Layer, version 3. This padding
+ * scheme is used in the block-ciphered struct, e.g.:
  * <pre>
- * block-ciphered struct {
- *   opaque content[SSLCompressed.length];
- *   opaque MAC[CipherSpec.hash_size];
- *   uint8 padding[GenericBlockCipher.padding_length];
- *   uint8 padding_length;
- * } GenericBlockCipher;
+ *  block-ciphered struct {
+ *    opaque content[SSLCompressed.length];
+ *    opaque MAC[CipherSpec.hash_size];
+ *    uint8 padding[GenericBlockCipher.padding_length];
+ *    uint8 padding_length;
+ *  } GenericBlockCipher;
  * </pre>
- *
- * <p>Where <i>padding_length</i> is <i>cipher_block_size</i> -
- * ((<i>SSLCompressed.length</i> + <i>CipherSpec.hash_size</i>)
- * % <i>cipher_block_size</i>) - 1. That is, the padding is enough bytes
- * to make the plaintext a multiple of the block size minus one, plus one
- * additional byte for the padding length. The padding can be any arbitrary
- * data.</p>
+ * <p>
+ * Where <i>padding_length</i> is <i>cipher_block_size</i> -
+ * ((<i>SSLCompressed.length</i> + <i>CipherSpec.hash_size</i>) %
+ * <i>cipher_block_size</i>) - 1. That is, the padding is enough bytes to make
+ * the plaintext a multiple of the block size minus one, plus one additional
+ * byte for the padding length. The padding can be any arbitrary data.
  */
-public class SSL3 extends BasePad
+public class SSL3
+    extends BasePad
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
   public SSL3()
   {
     super("ssl3");
   }
-
-  // Instance methods.
-  // -------------------------------------------------------------------------
 
   public void setup()
   {
@@ -83,7 +75,7 @@ public class SSL3 extends BasePad
     int padlen = blockSize - (len % blockSize);
     byte[] pad = new byte[padlen];
     for (int i = 0; i < padlen; i++)
-      pad[i] = (byte) (padlen - 1);
+      pad[i] = (byte)(padlen - 1);
     return pad;
   }
 

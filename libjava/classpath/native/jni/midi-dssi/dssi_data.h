@@ -1,5 +1,5 @@
 /* dssi_data.h - DSSI data
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,11 +54,6 @@ exception statement from your version. */
    enough to hold the events that happen between jack callbacks (~
    1/40th of a second).  */
 #define EVENT_BUFFER_SIZE 1024
-
-/* Helper macros for going between pointers and jlongs.  */
-#define JLONG_TO_PTR(T,P) ((T *)(long)P)
-#define PTR_TO_JLONG(P) ((jlong)(long)P)
-
 
 /* Every DSSI Synthesizer has one of these associated with it.  The
    Java class sees it as a "long" handle.  */

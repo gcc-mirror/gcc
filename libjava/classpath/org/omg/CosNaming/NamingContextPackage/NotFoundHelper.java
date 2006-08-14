@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CosNaming.NamingContextPackage;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -62,11 +63,6 @@ public abstract class NotFoundHelper
    */
   private static String _id =
     "IDL:omg.org/CosNaming/NamingContext/NotFound:1.0";
-
-  /**
-   * The cached type code value.
-   */
-  private static TypeCode typeCode = null;
 
   /**
    * Extract the exception from the given {@link Any}.
@@ -121,21 +117,17 @@ public abstract class NotFoundHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-
-        StructMember[] members = new StructMember[ 2 ];
-        TypeCode member = null;
-        member = NotFoundReasonHelper.type();
-        members [ 0 ] = new StructMember("why", member, null);
-        member = NameComponentHelper.type();
-        member = orb.create_sequence_tc(0, member);
-        member = orb.create_alias_tc(NameHelper.id(), "Name", member);
-        members [ 1 ] = new StructMember("rest_of_name", member, null);
-        typeCode = orb.create_struct_tc(id(), "NotFound", members);
-      }
-    return typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    
+    StructMember[] members = new StructMember[ 2 ];
+    TypeCode member = null;
+    member = NotFoundReasonHelper.type();
+    members [ 0 ] = new StructMember("why", member, null);
+    member = NameComponentHelper.type();
+    member = orb.create_sequence_tc(0, member);
+    member = orb.create_alias_tc(NameHelper.id(), "Name", member);
+    members [ 1 ] = new StructMember("rest_of_name", member, null);
+    return orb.create_struct_tc(id(), "NotFound", members);
   }
 
   /**

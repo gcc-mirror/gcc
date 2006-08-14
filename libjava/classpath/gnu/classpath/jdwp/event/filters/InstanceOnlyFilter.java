@@ -89,7 +89,7 @@ public class InstanceOnlyFilter
    */
   public boolean matches (Event event)
   {
-    Object eventInstance = event.getParameter (ObjectId.class);
+    Object eventInstance = event.getParameter (Event.EVENT_INSTANCE);
     if (eventInstance != null)
       {
 	Object myInstance = _instance.getReference().get ();

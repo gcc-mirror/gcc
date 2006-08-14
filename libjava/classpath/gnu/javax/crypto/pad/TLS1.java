@@ -38,41 +38,31 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.pad;
 
-import gnu.java.security.util.Util;
-
 /**
- * The padding scheme used by the Transport Layer Security protocol,
- * version 1. This padding scheme is used in the block-ciphered struct,
- * e.g.:
- *
+ * The padding scheme used by the Transport Layer Security protocol, version 1.
+ * This padding scheme is used in the block-ciphered struct, e.g.:
  * <pre>
- * block-ciphered struct {
- *   opaque content[TLSCompressed.length];
- *   opaque MAC[CipherSpec.hash_size];
- *   uint8 padding[GenericBlockCipher.padding_length];
- *   uint8 padding_length;
- * } GenericBlockCipher;
+ *  block-ciphered struct {
+ *    opaque content[TLSCompressed.length];
+ *    opaque MAC[CipherSpec.hash_size];
+ *    uint8 padding[GenericBlockCipher.padding_length];
+ *    uint8 padding_length;
+ *  } GenericBlockCipher;
  * </pre>
- *
- * <p>Where <i>padding_length</i> is any multiple of <i>cipher_block_size</i> -
- * ((<i>SSLCompressed.length</i> + <i>CipherSpec.hash_size</i>)
- * % <i>cipher_block_size</i>) - 1 that is less than 255. Every byte of the
+ * <p>
+ * Where <i>padding_length</i> is any multiple of <i>cipher_block_size</i> -
+ * ((<i>SSLCompressed.length</i> + <i>CipherSpec.hash_size</i>) %
+ * <i>cipher_block_size</i>) - 1 that is less than 255. Every byte of the
  * padding must be equal to <i>padding_length</i>. That is, the end of the
- * plaintext is <i>n</i> + 1 copies of the unsigned byte <i>n</i>.</p>
+ * plaintext is <i>n</i> + 1 copies of the unsigned byte <i>n</i>.
  */
-public class TLS1 extends BasePad
+public class TLS1
+    extends BasePad
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
   public TLS1()
   {
     super("tls1");
   }
-
-  // Instance methods.
-  // -------------------------------------------------------------------------
 
   public void setup()
   {
@@ -85,9 +75,7 @@ public class TLS1 extends BasePad
     int padlen = blockSize - (len % blockSize);
     byte[] pad = new byte[padlen];
     for (int i = 0; i < padlen; i++)
-      {
-        pad[i] = (byte) (padlen - 1);
-      }
+      pad[i] = (byte)(padlen - 1);
     return pad;
   }
 
@@ -96,10 +84,8 @@ public class TLS1 extends BasePad
   {
     int padlen = in[off + len - 1] & 0xFF;
     for (int i = off + (len - padlen - 1); i < off + len - 1; i++)
-      {
-        if ((in[i] & 0xFF) != padlen)
-          throw new WrongPaddingException();
-      }
+      if ((in[i] & 0xFF) != padlen)
+        throw new WrongPaddingException();
     return padlen + 1;
   }
 }

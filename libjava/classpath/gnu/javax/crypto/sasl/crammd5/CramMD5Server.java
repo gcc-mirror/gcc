@@ -55,28 +55,18 @@ import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
 /**
- * <p>The CRAM-MD5 SASL server-side mechanism.</p>
+ * The CRAM-MD5 SASL server-side mechanism.
  */
-public class CramMD5Server extends ServerMechanism implements SaslServer
+public class CramMD5Server
+    extends ServerMechanism
+    implements SaslServer
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private byte[] msgID;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   public CramMD5Server()
   {
     super(Registry.SASL_CRAM_MD5_MECHANISM);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // abstract methods implementation -----------------------------------------
 
   protected void initMechanism() throws SaslException
   {
@@ -86,8 +76,6 @@ public class CramMD5Server extends ServerMechanism implements SaslServer
   {
   }
 
-  // javax.security.sasl.SaslServer interface implementation -----------------
-
   public byte[] evaluateResponse(final byte[] response) throws SaslException
   {
     if (state == 0)
@@ -96,7 +84,6 @@ public class CramMD5Server extends ServerMechanism implements SaslServer
         state++;
         return msgID;
       }
-
     final String responseStr = new String(response);
     final int index = responseStr.lastIndexOf(" ");
     final String username = responseStr.substring(0, index);
@@ -109,10 +96,8 @@ public class CramMD5Server extends ServerMechanism implements SaslServer
       {
         throw new AuthenticationException("evaluateResponse()", x);
       }
-
     // Look up the password
     final char[] password = lookupPassword(username);
-
     // Compute the digest
     byte[] digest;
     try
@@ -125,19 +110,15 @@ public class CramMD5Server extends ServerMechanism implements SaslServer
       }
     try
       {
-        //         digest = (new String(Util.toString(digest).toLowerCase())).getBytes("UTF-8");
         digest = Util.toString(digest).toLowerCase().getBytes("UTF-8");
       }
     catch (UnsupportedEncodingException x)
       {
         throw new AuthenticationException("evaluateResponse()", x);
       }
-
     // Compare the received and computed digests
-    if (!Arrays.equals(digest, responseDigest))
-      {
-        throw new AuthenticationException("Digest mismatch");
-      }
+    if (! Arrays.equals(digest, responseDigest))
+      throw new AuthenticationException("Digest mismatch");
     state++;
     return null;
   }
@@ -152,33 +133,25 @@ public class CramMD5Server extends ServerMechanism implements SaslServer
     return Registry.QOP_AUTH;
   }
 
-  // Other instance methods --------------------------------------------------
-
   private char[] lookupPassword(final String userName) throws SaslException
   {
     try
       {
-        if (!authenticator.contains(userName))
-          {
-            throw new NoSuchUserException(userName);
-          }
+        if (! authenticator.contains(userName))
+          throw new NoSuchUserException(userName);
         final Map userID = new HashMap();
         userID.put(Registry.SASL_USERNAME, userName);
         final Map credentials = authenticator.lookup(userID);
         final String password = (String) credentials.get(Registry.SASL_PASSWORD);
         if (password == null)
-          {
-            throw new AuthenticationException("lookupPassword()",
-                                              new InternalError());
-          }
+          throw new AuthenticationException("lookupPassword()",
+                                            new InternalError());
         return password.toCharArray();
       }
     catch (IOException x)
       {
         if (x instanceof SaslException)
-          {
-            throw (SaslException) x;
-          }
+          throw (SaslException) x;
         throw new AuthenticationException("lookupPassword()", x);
       }
   }

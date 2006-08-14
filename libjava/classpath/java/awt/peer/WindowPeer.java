@@ -1,5 +1,5 @@
 /* WindowPeer.java -- Interface for window peers
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,8 @@ public interface WindowPeer extends ContainerPeer
   void toFront();
   
   /**
-   * FIXME: unknown.
+   * Update the always-on-top status of the Window.
+   *
    * @since 1.5
    */
   void updateAlwaysOnTop();

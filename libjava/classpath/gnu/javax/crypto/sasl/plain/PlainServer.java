@@ -54,29 +54,16 @@ import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
 /**
- * <p>The PLAIN SASL server-side mechanism.</p>
+ * The PLAIN SASL server-side mechanism.
  */
-public class PlainServer extends ServerMechanism implements SaslServer
+public class PlainServer
+    extends ServerMechanism
+    implements SaslServer
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public PlainServer()
   {
     super(Registry.SASL_PLAIN_MECHANISM);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // abstract methods implementation -----------------------------------------
 
   protected void initMechanism() throws SaslException
   {
@@ -86,43 +73,27 @@ public class PlainServer extends ServerMechanism implements SaslServer
   {
   }
 
-  // javax.security.sasl.SaslServer interface implementation -----------------
-
   public byte[] evaluateResponse(final byte[] response) throws SaslException
   {
     if (response == null)
-      {
-        return null;
-      }
+      return null;
     try
       {
         final String nullStr = new String("\0");
-        final StringTokenizer strtok = new StringTokenizer(
-                                                           new String(response),
+        final StringTokenizer strtok = new StringTokenizer(new String(response),
                                                            nullStr, true);
-
         authorizationID = strtok.nextToken();
-        if (!authorizationID.equals(nullStr))
-          {
-            strtok.nextToken();
-          }
+        if (! authorizationID.equals(nullStr))
+          strtok.nextToken();
         else
-          {
-            authorizationID = null;
-          }
+          authorizationID = null;
         final String id = strtok.nextToken();
         if (id.equals(nullStr))
-          {
-            throw new SaslException("No identity given");
-          }
+          throw new SaslException("No identity given");
         if (authorizationID == null)
-          {
-            authorizationID = id;
-          }
-        if ((!authorizationID.equals(nullStr)) && (!authorizationID.equals(id)))
-          {
-            throw new SaslException("Delegation not supported");
-          }
+          authorizationID = id;
+        if ((! authorizationID.equals(nullStr)) && (! authorizationID.equals(id)))
+          throw new SaslException("Delegation not supported");
         strtok.nextToken();
         final byte[] pwd;
         try
@@ -134,9 +105,7 @@ public class PlainServer extends ServerMechanism implements SaslServer
             throw new SaslException("evaluateResponse()", x);
           }
         if (pwd == null)
-          {
-            throw new SaslException("No password given");
-          }
+          throw new SaslException("No password given");
         final byte[] password;
         try
           {
@@ -146,10 +115,8 @@ public class PlainServer extends ServerMechanism implements SaslServer
           {
             throw new SaslException("evaluateResponse()", x);
           }
-        if (!Arrays.equals(pwd, password))
-          {
-            throw new SaslException("Password incorrect");
-          }
+        if (! Arrays.equals(pwd, password))
+          throw new SaslException("Password incorrect");
         this.complete = true;
         return null;
       }
@@ -164,32 +131,24 @@ public class PlainServer extends ServerMechanism implements SaslServer
     return Registry.QOP_AUTH;
   }
 
-  // other methods -----------------------------------------------------------
-
   private char[] lookupPassword(final String userName) throws SaslException
   {
     try
       {
-        if (!authenticator.contains(userName))
-          {
-            throw new NoSuchUserException(userName);
-          }
+        if (! authenticator.contains(userName))
+          throw new NoSuchUserException(userName);
         final Map userID = new HashMap();
         userID.put(Registry.SASL_USERNAME, userName);
         final Map credentials = authenticator.lookup(userID);
         final String password = (String) credentials.get(Registry.SASL_PASSWORD);
         if (password == null)
-          {
-            throw new SaslException("lookupPassword()", new InternalError());
-          }
+          throw new SaslException("lookupPassword()", new InternalError());
         return password.toCharArray();
       }
     catch (IOException x)
       {
         if (x instanceof SaslException)
-          {
-            throw (SaslException) x;
-          }
+          throw (SaslException) x;
         throw new SaslException("lookupPassword()", x);
       }
   }

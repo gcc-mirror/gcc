@@ -350,6 +350,7 @@ public class CardLayout implements LayoutManager2, Serializable
 	      }
 	  }
 	((Component) target).setVisible (true);
+        parent.validate();
       }
   }
 

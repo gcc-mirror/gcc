@@ -57,36 +57,25 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class DuplicateNameHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
-   * Create the DuplicateName typecode (structure,
-   * named "DuplicateName").
-   * The typecode states that the structure contains the
-   * following fields: name.
+   * Create the DuplicateName typecode (structure, named "DuplicateName"). The
+   * typecode states that the structure contains the following fields: name.
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        StructMember[] members = new StructMember[ 1 ];
+    ORB orb = OrbRestricted.Singleton;
+    StructMember[] members = new StructMember[1];
 
-        TypeCode field;
+    TypeCode field;
 
-        field = orb.get_primitive_tc(TCKind.tk_string);
-        members [ 0 ] = new StructMember("name", field, null);
-        typeCode = orb.create_exception_tc(id(), "DuplicateName", members);
-      }
-    return typeCode;
+    field = orb.get_primitive_tc(TCKind.tk_string);
+    members[0] = new StructMember("name", field, null);
+    return orb.create_exception_tc(id(), "DuplicateName", members);
   }
 
   /**
-   * Insert the DuplicateName into the given Any.
-   * This method uses the DuplicateNameHolder.
-   *
+   * Insert the DuplicateName into the given Any. This method uses the
+   * DuplicateNameHolder.
+   * 
    * @param any the Any to insert into.
    * @param that the DuplicateName to insert.
    */

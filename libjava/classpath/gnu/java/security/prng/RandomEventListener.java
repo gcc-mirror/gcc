@@ -41,10 +41,10 @@ package gnu.java.security.prng;
 import java.util.EventListener;
 
 /**
- * An interface for entropy accumulators that will be notified of random
- * events.
+ * An interface for entropy accumulators that will be notified of random events.
  */
-public interface RandomEventListener extends EventListener
+public interface RandomEventListener
+    extends EventListener
 {
   void addRandomEvent(RandomEvent event);
 }

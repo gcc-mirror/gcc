@@ -199,7 +199,7 @@ class StandaloneAppletWindow
     menuApplet.add(closeItem);
     menuApplet.add(quitItem);
     setMenuBar(menuBar);
-    setTitle("GCJ Applet Viewer: " + tag.code);
+    setTitle("GNU Classpath Applet Viewer: " + tag.code);
 
     AppletContext context = (AppletContext) contexts.get(tag.codebase);
     ((StandaloneAppletContext) context).addApplet(applet);

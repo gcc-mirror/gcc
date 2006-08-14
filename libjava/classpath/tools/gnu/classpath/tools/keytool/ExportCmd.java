@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
@@ -188,32 +189,36 @@ class ExportCmd extends Command
     setOutputStreamParam(_certFileName);
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
     setAliasParam(_alias);
-
-    log.finer("-export handler will use the following options:"); //$NON-NLS-1$
-    log.finer("  -alias=" + alias); //$NON-NLS-1$
-    log.finer("  -file=" + _certFileName); //$NON-NLS-1$
-    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
-    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -provider=" + provider); //$NON-NLS-1$
-    log.finer("  -rfc=" + rfc); //$NON-NLS-1$
-    log.finer("  -v=" + verbose); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      {
+        log.fine("-export handler will use the following options:"); //$NON-NLS-1$
+        log.fine("  -alias=" + alias); //$NON-NLS-1$
+        log.fine("  -file=" + _certFileName); //$NON-NLS-1$
+        log.fine("  -storetype=" + storeType); //$NON-NLS-1$
+        log.fine("  -keystore=" + storeURL); //$NON-NLS-1$
+        log.fine("  -provider=" + provider); //$NON-NLS-1$
+        log.fine("  -rfc=" + rfc); //$NON-NLS-1$
+        log.fine("  -v=" + verbose); //$NON-NLS-1$
+      }
   }
 
   void start() throws KeyStoreException, CertificateEncodingException,
       IOException
   {
-    log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
     ensureStoreContainsAlias();
     Certificate certificate;
     if (store.isCertificateEntry(alias))
       {
-        log.finer("Alias [" + alias + "] is a trusted certificate"); //$NON-NLS-1$ //$NON-NLS-2$
+        if (Configuration.DEBUG)
+          log.fine("Alias [" + alias + "] is a trusted certificate"); //$NON-NLS-1$ //$NON-NLS-2$
         certificate = store.getCertificate(alias);
       }
     else
       {
-        log.finer("Alias [" + alias + "] is a key entry"); //$NON-NLS-1$ //$NON-NLS-2$
+        if (Configuration.DEBUG)
+          log.fine("Alias [" + alias + "] is a key entry"); //$NON-NLS-1$ //$NON-NLS-2$
         Certificate[] chain = store.getCertificateChain(alias);
         certificate = chain[0];
       }
@@ -231,15 +236,16 @@ class ExportCmd extends Command
       outStream.write(derBytes);
 
     // stream is closed in Command.teardown()
-    log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   // own methods --------------------------------------------------------------
 
   Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(Main.EXPORT_CMD, true);
     result.setHeader(Messages.getString("ExportCmd.17")); //$NON-NLS-1$
     result.setFooter(Messages.getString("ExportCmd.18")); //$NON-NLS-1$
@@ -315,8 +321,8 @@ class ExportCmd extends Command
       }
     });
     result.add(options);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 }

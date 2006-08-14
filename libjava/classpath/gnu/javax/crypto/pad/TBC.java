@@ -38,95 +38,63 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.pad;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 import gnu.java.security.util.Util;
 
-import java.io.PrintWriter;
+import java.util.logging.Logger;
 
 /**
- * <p>The implementation of the Trailing Bit Complement (TBC) padding algorithm.</p>
- *
- * <p>In this mode, "...the data string is padded at the trailing end with the
+ * The implementation of the Trailing Bit Complement (TBC) padding algorithm.
+ * <p>
+ * In this mode, "...the data string is padded at the trailing end with the
  * complement of the trailing bit of the unpadded message: if the trailing bit
- * is <tt>1</tt>, then <tt>0</tt> bits are appended, and if the trailing bit is
- * <tt>0</tt>, then <tt>1</tt> bits are appended. As few bits are added as are
- * necessary to meet the formatting size requirement."</p>
- *
- * References:<br>
- * <a href="http://csrc.nist.gov/encryption/modes/Recommendation/Modes01.pdf">
- * Recommendation for Block Cipher Modes of Operation Methods and Techniques</a>,
- * Morris Dworkin.<p>
+ * is <tt>1</tt>, then <tt>0</tt> bits are appended, and if the trailing
+ * bit is <tt>0</tt>, then <tt>1</tt> bits are appended. As few bits are
+ * added as are necessary to meet the formatting size requirement."
+ * <p>
+ * References:
+ * <ol>
+ * <li><a
+ * href="http://csrc.nist.gov/encryption/modes/Recommendation/Modes01.pdf">
+ * Recommendation for Block Cipher Modes of Operation Methods and
+ * Techniques</a>, Morris Dworkin.</li>
+ * </ol>
  */
-public final class TBC extends BasePad
+public final class TBC
+    extends BasePad
 {
-
-  // Debugging methods and variables
-  // -------------------------------------------------------------------------
-
-  private static final String NAME = "tbc";
-
-  private static final boolean DEBUG = false;
-
-  private static final int debuglevel = 9;
-
-  private static final PrintWriter err = new PrintWriter(System.out, true);
-
-  private static void debug(String s)
-  {
-    err.println(">>> " + NAME + ": " + s);
-  }
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
+  private static final Logger log = Logger.getLogger(TBC.class.getName());
 
   /**
-   * Trivial package-private constructor for use by the <i>Factory</i> class.<p>
-   *
-   * @see gnu.crypto.pad.PadFactory
+   * Trivial package-private constructor for use by the <i>Factory</i> class.
+   * 
+   * @see PadFactory
    */
   TBC()
   {
     super(Registry.TBC_PAD);
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Implementation of abstract methods in BasePad
-  // -------------------------------------------------------------------------
-
   public void setup()
   {
     if (blockSize < 1 || blockSize > 256)
-      {
-        throw new IllegalArgumentException();
-      }
+      throw new IllegalArgumentException();
   }
 
   public byte[] pad(byte[] in, int offset, int length)
   {
     int padLength = blockSize;
     if (length % blockSize != 0)
-      {
-        padLength = blockSize - length % blockSize;
-      }
+      padLength = blockSize - length % blockSize;
     byte[] result = new byte[padLength];
     int lastBit = in[offset + length - 1] & 0x01;
     if (lastBit == 0)
-      {
-        for (int i = 0; i < padLength;)
-          {
-            result[i++] = 0x01;
-          }
-      } // else it's already set to zeroes by virtue of initialisation
-
-    if (DEBUG && debuglevel > 8)
-      {
-        debug("padding: 0x" + Util.toString(result));
-      }
+      for (int i = 0; i < padLength;)
+        result[i++] = 0x01;
+    // else it's already set to zeroes by virtue of initialisation
+    if (Configuration.DEBUG)
+      log.fine("padding: 0x" + Util.toString(result));
     return result;
   }
 
@@ -141,16 +109,10 @@ public final class TBC extends BasePad
         result++;
         limit--;
       }
-
     if (result > length)
-      {
-        throw new WrongPaddingException();
-      }
-
-    if (DEBUG && debuglevel > 8)
-      {
-        debug("padding length: " + String.valueOf(result));
-      }
+      throw new WrongPaddingException();
+    if (Configuration.DEBUG)
+      log.fine("padding length: " + result);
     return result;
   }
 }

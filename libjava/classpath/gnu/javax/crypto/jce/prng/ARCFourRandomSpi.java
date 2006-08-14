@@ -48,23 +48,16 @@ import java.security.SecureRandomSpi;
 import java.util.HashMap;
 
 /**
- * Implementation of the <i>Service Provider Interface</i> (<b>SPI</b>)
- * for the ARCFOUR keystream generator.
+ * Implementation of the <i>Service Provider Interface</i> (<b>SPI</b>) for
+ * the ARCFOUR keystream generator.
  */
-public class ARCFourRandomSpi extends SecureRandomSpi
+public class ARCFourRandomSpi
+    extends SecureRandomSpi
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** Our underlying prng instance. */
   private IRandom adaptee;
-
   /** Have we been initialized? */
   private boolean virgin;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /**
    * Default 0-arguments constructor.
@@ -76,20 +69,10 @@ public class ARCFourRandomSpi extends SecureRandomSpi
     virgin = true;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.security.SecureRandomSpi interface implementation ------------------
-
   public byte[] engineGenerateSeed(int numBytes)
   {
     if (numBytes < 1)
-      {
-        return new byte[0];
-      }
+      return new byte[0];
     byte[] result = new byte[numBytes];
     this.engineNextBytes(result);
     return result;
@@ -98,9 +81,7 @@ public class ARCFourRandomSpi extends SecureRandomSpi
   public void engineNextBytes(byte[] bytes)
   {
     if (virgin)
-      {
-        this.engineSetSeed(new byte[0]);
-      }
+      this.engineSetSeed(new byte[0]);
     try
       {
         adaptee.nextBytes(bytes, 0, bytes.length);

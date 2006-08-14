@@ -39,12 +39,10 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.Graphics;
-import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.MemoryImageSource;
-import java.awt.image.ImageConsumer;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.io.File;

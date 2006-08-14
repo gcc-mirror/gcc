@@ -43,16 +43,14 @@ import gnu.javax.crypto.mac.IMac;
 /**
  * The interface for encryption modes that also produce a message authentication
  * tag.
- *
- * <p>This interface is merely the conjuction of the {@link IMode} and
- * {@link IMac} interfaces. Encryption and decryption is done via the
- * {@link IMode#update(byte[],int,byte[],int)} method, tag generation
- * is done via the {@link IMac#digest()} method, and header updating
- * (if supported by the mode) is done via the {@link
- * IMac#update(byte[],int,int)} method.
+ * <p>
+ * This interface is merely the conjuction of the {@link IMode} and {@link IMac}
+ * interfaces. Encryption and decryption is done via the
+ * {@link IMode#update(byte[],int,byte[],int)} method, tag generation is done
+ * via the {@link IMac#digest()} method, and header updating (if supported by
+ * the mode) is done via the {@link IMac#update(byte[],int,int)} method.
  */
-public interface IAuthenticatedMode extends IMode, IMac
+public interface IAuthenticatedMode
+    extends IMode, IMac
 {
-
-  // Trivial conjunction of IMode and IMac.
 }

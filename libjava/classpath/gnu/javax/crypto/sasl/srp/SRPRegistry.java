@@ -41,35 +41,29 @@ package gnu.javax.crypto.sasl.srp;
 import gnu.java.security.Registry;
 
 /**
- * <p>A list of key names designating the values exchanged between the server
- * and client in an SRP communication authentication phase.</p>
+ * A list of key names designating the values exchanged between the server
+ * and client in an SRP communication authentication phase.
  */
 public interface SRPRegistry
 {
-
   /** Indices of (N, g) parameter values for SRP (.conf) password database. */
   String N_2048_BITS = "1";
-
   String N_1536_BITS = "2";
-
   String N_1280_BITS = "3";
-
   String N_1024_BITS = "4";
-
   String N_768_BITS = "5";
-
   String N_640_BITS = "6";
-
   String N_512_BITS = "7";
-
   /** Available hash algorithms for all SRP calculations. */
-  String[] SRP_ALGORITHMS = { Registry.SHA160_HASH, // the default one
-                             Registry.MD5_HASH, Registry.RIPEMD128_HASH,
-                             Registry.RIPEMD160_HASH,
+  String[] SRP_ALGORITHMS = {
+      Registry.SHA160_HASH, // the default one
+      Registry.MD5_HASH,
+      Registry.RIPEMD128_HASH,
+      Registry.RIPEMD160_HASH,
 
-                             Registry.SHA256_HASH, Registry.SHA384_HASH,
-                             Registry.SHA512_HASH };
-
+      Registry.SHA256_HASH,
+      Registry.SHA384_HASH,
+      Registry.SHA512_HASH };
   /**
    * The name of the default message digest algorithm to use when no name is
    * explicitely given. In this implementation it is the <b>first</b> among
@@ -77,143 +71,95 @@ public interface SRPRegistry
    * 160-bit output.
    */
   String SRP_DEFAULT_DIGEST_NAME = SRP_ALGORITHMS[0];
-
   /**
    * The property name of the message digest algorithm name to use in a given
    * SRP incarnation.
    */
   String SRP_DIGEST_NAME = "srp.digest.name";
-
   /** The public shared modulus: n. */
   String SHARED_MODULUS = "srp.N";
-
   /** The GF generator used: g. */
   String FIELD_GENERATOR = "srp.g";
-
   /** The list of server's available security options. */
   String AVAILABLE_OPTIONS = "srp.L";
-
   /** The client's chosen security options. */
   String CHOSEN_OPTIONS = "srp.o";
-
   /** The client's username. */
   String USER_NAME = "srp.U";
-
   /** The client's authorization ID. */
   String USER_ROLE = "srp.I";
-
   /** The user's salt. */
   String USER_SALT = "srp.s";
-
   /** The user's password verifier. */
   String PASSWORD_VERIFIER = "srp.v";
-
   /** The client's public ephemeral exponent: A. */
   String CLIENT_PUBLIC_KEY = "srp.A";
-
   /** The server's public ephemeral exponent: B. */
   String SERVER_PUBLIC_KEY = "srp.B";
-
   /** The client's evidence: M1. */
   String CLIENT_EVIDENCE = "srp.M1";
-
   /** The server's evidence: M2. */
   String SERVER_EVIDENCE = "srp.M2";
-
   /** Name of underlying hash algorithm for use with all SRP calculations. */
   String SRP_HASH = "gnu.crypto.sasl.srp.hash";
-
   /** Name of SRP mandatory service property. */
   String SRP_MANDATORY = "gnu.crypto.sasl.srp.mandatory";
-
   /** Name of SRP replay detection property. */
   String SRP_REPLAY_DETECTION = "gnu.crypto.sasl.srp.replay.detection";
-
   /** Name of SRP integrity protection property. */
   String SRP_INTEGRITY_PROTECTION = "gnu.crypto.sasl.srp.integrity";
-
   /** Name of SRP confidentiality protection property. */
   String SRP_CONFIDENTIALITY = "gnu.crypto.sasl.srp.confidentiality";
-
   /** Name of the main SRP password file pathname property. */
   String PASSWORD_FILE = "gnu.crypto.sasl.srp.password.file";
-
   /**
    * Name of the SRP password database property --a reference to
-   * {@link gnu.crypto.sasl.srp.PasswordFile} object.
+   * {@link PasswordFile} object.
    */
   String PASSWORD_DB = "gnu.crypto.sasl.srp.password.db";
-
   /** Default fully qualified pathname of the SRP password file. */
   String DEFAULT_PASSWORD_FILE = "/etc/tpasswd";
-
   /** Default value for replay detection security service. */
   boolean DEFAULT_REPLAY_DETECTION = true;
-
   /** Default value for integrity protection security service. */
   boolean DEFAULT_INTEGRITY = true; // implied by the previous option
-
   /** Default value for confidentiality protection security service. */
   boolean DEFAULT_CONFIDENTIALITY = false;
-
   // constants defining HMAC names
   String HMAC_SHA1 = "hmac-sha1";
-
   String HMAC_MD5 = "hmac-md5";
-
   String HMAC_RIPEMD_160 = "hmac-ripemd-160";
-
   /** Available HMAC algorithms for integrity protection. */
   String[] INTEGRITY_ALGORITHMS = { HMAC_SHA1, HMAC_MD5, HMAC_RIPEMD_160 };
-
   // constants defining Cipher names
   String AES = "aes";
-
   String BLOWFISH = "blowfish";
-
   /** Available Cipher algorithms for confidentiality protection. */
   String[] CONFIDENTIALITY_ALGORITHMS = { AES, BLOWFISH };
-
   /** String for mandatory replay detection. */
   String OPTION_MANDATORY = "mandatory";
-
   /** String for mda: the SRP digest algorithm name. */
   String OPTION_SRP_DIGEST = "mda";
-
   /** String for mandatory replay detection. */
   String OPTION_REPLAY_DETECTION = "replay_detection";
-
   /** String for mandatory integrity protection. */
   String OPTION_INTEGRITY = "integrity";
-
   /** String for mandatory confidentiality protection. */
   String OPTION_CONFIDENTIALITY = "confidentiality";
-
   /** String for mandatory replay detection. */
   String OPTION_MAX_BUFFER_SIZE = "maxbuffersize";
-
   /** String for no mandatory security service. */
   String MANDATORY_NONE = "none";
-
   /** Default mandatory security service required. */
-  //   String DEFAULT_MANDATORY = MANDATORY_NONE;
   String DEFAULT_MANDATORY = OPTION_REPLAY_DETECTION;
-
-  //   String DEFAULT_MANDATORY = OPTION_INTEGRITY;
-  //   String DEFAULT_MANDATORY = OPTION_CONFIDENTIALITY;
-
   /** Name of the UID field in the plain password file. */
   String MD_NAME_FIELD = "srp.md.name";
-
   /** Name of the GID field in the plain password file. */
   String USER_VERIFIER_FIELD = "srp.user.verifier";
-
   /** Name of the GECOS field in the plain password file. */
   String SALT_FIELD = "srp.salt";
-
   /** Name of the SHELL field in the plain password file. */
   String CONFIG_NDX_FIELD = "srp.config.ndx";
-
   /** Minimum bitlength of the SRP public modulus. */
   int MINIMUM_MODULUS_BITLENGTH = 512;
 }

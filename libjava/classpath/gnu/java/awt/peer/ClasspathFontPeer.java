@@ -145,7 +145,8 @@ public abstract class ClasspathFontPeer
             uname.equals ("SERIF") ||
             uname.equals ("MONOSPACED") ||
             uname.equals ("DIALOG") ||
-            uname.equals ("DIALOGINPUT"));
+            uname.equals ("DIALOGINPUT") ||
+            uname.equals ("DEFAULT"));
   }
 
   protected static String logicalFontNameToFaceName (String name)
@@ -161,6 +162,8 @@ public abstract class ClasspathFontPeer
       return "Helvetica";
     else if (uname.equals ("DIALOGINPUT"))
       return "Helvetica";
+    else if (uname.equals ("DEFAULT"))
+      return "Dialog.plain";
     else
       return "Helvetica";
   }
@@ -233,7 +236,7 @@ public abstract class ClasspathFontPeer
       family = (String) attribs.get (TextAttribute.FAMILY);
 
     if (name == null)
-      name = "SansSerif";
+      name = "Default";
 
     if (attribs.containsKey (TextAttribute.WEIGHT))
       {

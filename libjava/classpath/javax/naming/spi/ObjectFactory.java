@@ -1,5 +1,5 @@
 /* ObjectFactory.java --
-   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,9 +43,33 @@ import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.Name;
 
+/**
+ * Represents a factory for creating the object. ObjectFactory performs the
+ * operation, that is the opposite to the operation, performed by the
+ * {@link StateFactory}. Classes, implementing this interface, must be public
+ * and have public parameterless constructor.
+ */
 public interface ObjectFactory
 {
-  Object getObjectInstance (Object obj, Name name, Context nameCtx,
-                            Hashtable environment)
-    throws Exception;
+  /**
+   * Creates the object, using the specified name and location information. The
+   * call of this method must be thread safe.
+   * 
+   * @param refObj may provide the reference and location information. Can be null.
+   * @param name the name of the new object in the scope of the specified naming
+   *          context. Can be null if the name is not specified.
+   * @param nameCtx the context, in which the object name is specified. Can be
+   *          null if the name is specified in the scope of the default initial
+   *          context.
+   * @param environment the properties, providing additional information on how
+   *          to create an object. Can be null if not additional information is
+   *          provided.
+   * @return the newly created object or null if the object cannot be created
+   * @throws Exception if this factory suggest not to try creating of this
+   *           object by other alternative factories
+   *           
+   * @see NamingManager#getObjectInstance(Object, Name, Context, Hashtable)           
+   */
+  Object getObjectInstance(Object refObj, Name name, Context nameCtx,
+                           Hashtable environment) throws Exception;
 }

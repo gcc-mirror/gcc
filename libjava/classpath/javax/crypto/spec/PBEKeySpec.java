@@ -1,5 +1,5 @@
 /* PBEKeySpec.java -- Wrapper for password-based keys.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -76,47 +76,74 @@ public class PBEKeySpec implements KeySpec
   /** The salt. */
   private byte[] salt;
 
+  /** The password state */
+  private boolean passwordValid = true;
+  
   // Constructors.
   // ------------------------------------------------------------------------
 
   /**
    * Create a new PBE key spec with just a password.
-   *
+   * <p>
+   * A copy of the password argument is stored instead of the argument itself.
+   * 
    * @param password The password char array.
    */
   public PBEKeySpec(char[] password)
   {
-    this(password, null, 0, 0);
+    setPassword(password);
+    
+    // load the default values for unspecified variables.
+    salt = null;
+    iterationCount = 0;
+    keyLength = 0;
   }
 
   /**
    * Create a PBE key spec with a password, salt, and iteration count.
-   *
-   * @param password       The password char array.
-   * @param salt           The salt bytes.
+   * <p>
+   * A copy of the password and salt arguments are stored instead of the
+   * arguments themselves.
+   * 
+   * @param password The password char array.
+   * @param salt The salt bytes.
    * @param iterationCount The iteration count.
+   * @throws NullPointerException If salt is null
+   * @throws IllegalArgumentException If salt is an empty array, or
+   *           iterationCount is negative
    */
   public PBEKeySpec(char[] password, byte[] salt, int iterationCount)
   {
-    this(password, salt, iterationCount, 0);
+    setPassword(password);
+    setSalt(salt);
+    setIterationCount(iterationCount);
+
+    // load default values into unspecified variables.
+    keyLength = 0;
   }
 
   /**
-   * Create a PBE key spec with a password, salt, iteration count, and
-   * key length.
-   *
-   * @param password       The password char array.
-   * @param salt           The salt bytes.
+   * Create a PBE key spec with a password, salt, iteration count, and key
+   * length.
+   * <p>
+   * A copy of the password and salt arguments are stored instead of the
+   * arguments themselves.
+   * 
+   * @param password The password char array.
+   * @param salt The salt bytes.
    * @param iterationCount The iteration count.
-   * @param keyLength      The generated key length.
+   * @param keyLength The generated key length.
+   * @throws NullPointerException If salt is null
+   * @throws IllegalArgumentException If salt is an empty array, if
+   *           iterationCount or keyLength is negative
    */
   public PBEKeySpec(char[] password, byte[] salt, int iterationCount,
                     int keyLength)
   {
-    this.password = password;
-    this.salt = salt;
-    this.iterationCount = iterationCount;
-    this.keyLength = keyLength;
+    setPassword(password);
+    setSalt(salt);
+    setIterationCount(iterationCount);
+    setKeyLength(keyLength);
   }
 
   // Instance methods.
@@ -124,14 +151,19 @@ public class PBEKeySpec implements KeySpec
 
   /**
    * Clear the password array by filling it with null characters.
+   * <p>
+   * This clears the stored copy of the password, not the original char array
+   * used to create the password.
    */
   public final void clearPassword()
   {
-    if (password == null) return;
+    if (password == null)
+      return;
     for (int i = 0; i < password.length; i++)
-      {
-        password[i] = '\u0000';
-      }
+      password[i] = '\u0000';
+    
+    // since the password is cleared, it is no longer valid
+    passwordValid = false;
   }
 
   /**
@@ -155,22 +187,95 @@ public class PBEKeySpec implements KeySpec
   }
 
   /**
-   * Get the password character array.
-   *
-   * @return The password.
+   * Get the password character array copy.
+   * <p>
+   * This returns a copy of the password, not the password itself.
+   * 
+   * @return a clone of the password.
+   * @throws IllegalStateException If {@link #clearPassword()} has already been
+   *           called.
    */
   public final char[] getPassword()
   {
-    return password;
+    if (! passwordValid)
+      throw new IllegalStateException("clearPassword() has been called, the "
+                                      + "password is no longer valid");
+    return (char[]) password.clone();
   }
 
   /**
-   * Get the salt bytes.
-   *
+   * Get the salt bytes array copy.
+   * <p>
+   * This returns a copy of the salt, not the salt itself.
+   * 
    * @return The salt.
    */
   public final byte[] getSalt()
   {
-    return salt;
+    if (salt != null)
+      return (byte[]) salt.clone();
+    return null;
+  }
+
+  /**
+   * Set the password char array.
+   * <p>
+   * A copy of the password argument is stored instead of the argument itself.
+   * 
+   * @param password The password to be set
+   */
+  private void setPassword(char[] password)
+  {
+    if (password != null)
+      this.password = (char[]) password.clone();
+    else
+      this.password = new char[0];
+
+    passwordValid = true;
+  }
+
+  /**
+   * Set the salt byte array.
+   * <p>
+   * A copy of the salt arguments is stored instead of the argument itself.
+   * 
+   * @param salt The salt to be set.
+   * @throws NullPointerException If the salt is null.
+   * @throws IllegalArgumentException If the salt is an empty array.
+   */
+  private void setSalt(byte[] salt)
+  {
+    if (salt.length == 0)
+      throw new IllegalArgumentException("salt MUST NOT be an empty byte array");
+
+    this.salt = (byte[]) salt.clone();
+  }
+
+  /**
+   * Set the iterationCount.
+   * 
+   * @param iterationCount The iteration count to be set.
+   * @throws IllegalArgumentException If the iterationCount is negative.
+   */
+  private void setIterationCount(int iterationCount)
+  {
+    if (iterationCount < 0)
+      throw new IllegalArgumentException("iterationCount MUST be positive");
+
+    this.iterationCount = iterationCount;
+  }
+
+  /**
+   * Set the keyLength.
+   * 
+   * @param keyLength The keyLength to be set.
+   * @throws IllegalArgumentException if the keyLength is negative.
+   */
+  private void setKeyLength(int keyLength)
+  {
+    if (keyLength < 0)
+      throw new IllegalArgumentException("keyLength MUST be positive");
+
+    this.keyLength = keyLength;
   }
 }

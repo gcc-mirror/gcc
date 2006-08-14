@@ -65,7 +65,7 @@ public class ThreadOnlyFilter
   public ThreadOnlyFilter (ThreadId tid)
     throws InvalidThreadException
   {
-    if (tid.getReference().get () == null)
+    if (tid == null || tid.getReference().get () == null)
       throw new InvalidThreadException (tid.getId ());
 
     _tid = tid;
@@ -88,7 +88,7 @@ public class ThreadOnlyFilter
    */
   public boolean matches (Event event)
   {
-    Object thread = event.getParameter (ThreadId.class);
+    Object thread = event.getParameter (Event.EVENT_THREAD);
     if (thread != null)
       {
 	Thread eventThread = (Thread) thread;

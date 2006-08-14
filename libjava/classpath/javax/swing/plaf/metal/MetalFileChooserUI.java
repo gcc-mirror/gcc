@@ -42,6 +42,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.LayoutManager;
@@ -303,8 +304,9 @@ public class MetalFileChooserUI
             
           if (file == null)
             setFileName(null);
-          else
-            setFileName(file.getName());
+          else if (file.isFile() || filechooser.getFileSelectionMode() 
+		   != JFileChooser.FILES_ONLY)
+	    setFileName(file.getName());
           int index = -1;
           index = getModel().indexOf(file);
           if (index >= 0)
@@ -567,10 +569,17 @@ public class MetalFileChooserUI
     extends DefaultListCellRenderer
   {
     /**
+     * This is the icon that is displayed in the combobox. This wraps
+     * the standard icon and adds indendation.
+     */
+    private IndentIcon indentIcon;
+
+    /**
      * Creates a new renderer.
      */
     public DirectoryComboBoxRenderer(JFileChooser fc)
-    { 
+    {
+      indentIcon = new IndentIcon();
     }
     
     /**
@@ -586,28 +595,83 @@ public class MetalFileChooserUI
      * @return The list cell renderer.
      */
     public Component getListCellRendererComponent(JList list, Object value,
-        int index, boolean isSelected, boolean cellHasFocus)
+                                                  int index,
+                                                  boolean isSelected,
+                                                  boolean cellHasFocus)
     {
-      FileView fileView = getFileView(getFileChooser());
+      super.getListCellRendererComponent(list, value, index, isSelected,
+                                         cellHasFocus);
       File file = (File) value;
-      setIcon(fileView.getIcon(file));
-      setText(fileView.getName(file));
-      
-      if (isSelected)
-        {
-          setBackground(list.getSelectionBackground());
-          setForeground(list.getSelectionForeground());
-        }
-      else
-        {
-          setBackground(list.getBackground());
-          setForeground(list.getForeground());
-        }
+      setText(getFileChooser().getName(file));
 
-      setEnabled(list.isEnabled());
-      setFont(list.getFont());
+      // Install indented icon.
+      Icon icon = getFileChooser().getIcon(file);
+      indentIcon.setIcon(icon);
+      int depth = directoryModel.getDepth(index);
+      indentIcon.setDepth(depth);
+      setIcon(indentIcon);
+
       return this;
     }
+  }
+
+  /**
+   * An icon that wraps another icon and adds indentation.
+   */
+  class IndentIcon
+    implements Icon
+  {
+
+    /**
+     * The indentation level.
+     */
+    private static final int INDENT = 10;
+
+    /**
+     * The wrapped icon.
+     */
+    private Icon icon;
+
+    /**
+     * The current depth.
+     */
+    private int depth;
+
+    /**
+     * Sets the icon to be wrapped.
+     *
+     * @param i the icon
+     */
+    void setIcon(Icon i)
+    {
+      icon = i;
+    }
+
+    /**
+     * Sets the indentation depth.
+     *
+     * @param d the depth to set
+     */
+    void setDepth(int d)
+    {
+      depth = d;
+    }
+
+    public int getIconHeight()
+    {
+      return icon.getIconHeight();
+    }
+
+    public int getIconWidth()
+    {
+      return icon.getIconWidth() + depth * INDENT;
+    }
+
+    public void paintIcon(Component c, Graphics g, int x, int y)
+    {
+      icon.paintIcon(c, g, x + depth * INDENT, y);
+    }
+      
   }
 
   /**
@@ -956,9 +1020,12 @@ public class MetalFileChooserUI
         {
           String text = editField.getText();
           if (text != null && text != "" && !text.equals(fc.getName(editFile)))
-              if (editFile.renameTo(fc.getFileSystemView().createFileObject(
-                  fc.getCurrentDirectory(), text)))
+	    {
+	      File f = fc.getFileSystemView().
+		createFileObject(fc.getCurrentDirectory(), text);
+              if ( editFile.renameTo(f) )
                 rescanCurrentDirectory(fc);
+	    }
           list.remove(editField);
         }
       startEditing = false;
@@ -982,17 +1049,8 @@ public class MetalFileChooserUI
        */
       public void actionPerformed(ActionEvent e)
       {
-        if (e.getActionCommand().equals("notify-field-accept"))
+	if (editField != null)
           completeEditing();
-        else if (editField != null)
-          {
-            list.remove(editField);
-            startEditing = false;
-            editFile = null;
-            lastSelected = null;
-            editField = null;
-            list.repaint();
-          }
       }
     }
   }
@@ -1101,7 +1159,7 @@ public class MetalFileChooserUI
           lastSelected = selVal;
           if (f.isFile())
             setFileName(path.substring(path.lastIndexOf("/") + 1));
-          else if (fc.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY)
+          else if (fc.getFileSelectionMode() != JFileChooser.FILES_ONLY)
             setFileName(path);
         }
       fileTable.repaint();
@@ -1171,16 +1229,8 @@ public class MetalFileChooserUI
        */
       public void actionPerformed(ActionEvent e)
       {
-        if (e.getActionCommand().equals("notify-field-accept"))
+	if (editField != null)
           completeEditing();
-        else if (editField != null)
-          {
-            table.remove(editField);
-            startEditing = false;
-            editFile = null;
-            editField = null;
-            table.repaint();
-          }
       }
     }
     

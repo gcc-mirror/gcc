@@ -41,14 +41,11 @@ package gnu.java.security.prng;
 import java.util.Map;
 
 /**
- * <p>An abstract class to facilitate implementing PRNG algorithms.</p>
+ * An abstract class to facilitate implementing PRNG algorithms.
  */
-public abstract class BasePRNG implements IRandom
+public abstract class BasePRNG
+    implements IRandom
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The canonical name prefix of the PRNG algorithm. */
   protected String name;
 
@@ -61,12 +58,9 @@ public abstract class BasePRNG implements IRandom
   /** The index into buffer of where the next byte will come from. */
   protected int ndx;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Trivial constructor for use by concrete subclasses.</p>
-   *
+   * Trivial constructor for use by concrete subclasses.
+   * 
    * @param name the canonical name of this instance.
    */
   protected BasePRNG(String name)
@@ -77,14 +71,6 @@ public abstract class BasePRNG implements IRandom
     initialised = false;
     buffer = new byte[0];
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // IRandom interface implementation ----------------------------------------
 
   public String name()
   {
@@ -101,10 +87,9 @@ public abstract class BasePRNG implements IRandom
 
   public byte nextByte() throws IllegalStateException, LimitReachedException
   {
-    if (!initialised)
-      {
-        throw new IllegalStateException();
-      }
+    if (! initialised)
+      throw new IllegalStateException();
+
     return nextByteInternal();
   }
 
@@ -117,7 +102,7 @@ public abstract class BasePRNG implements IRandom
   public void nextBytes(byte[] out, int offset, int length)
       throws IllegalStateException, LimitReachedException
   {
-    if (!initialised)
+    if (! initialised)
       throw new IllegalStateException("not initialized");
 
     if (length == 0)
@@ -127,7 +112,6 @@ public abstract class BasePRNG implements IRandom
       throw new ArrayIndexOutOfBoundsException("offset=" + offset + " length="
                                                + length + " limit="
                                                + out.length);
-
     if (ndx >= buffer.length)
       {
         fillBlock();
@@ -163,9 +147,6 @@ public abstract class BasePRNG implements IRandom
     throw new UnsupportedOperationException("random state is non-modifiable");
   }
 
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   public boolean isInitialised()
   {
     return initialised;
@@ -181,8 +162,6 @@ public abstract class BasePRNG implements IRandom
 
     return buffer[ndx++];
   }
-
-  // abstract methods to implement by subclasses -----------------------------
 
   public Object clone() throws CloneNotSupportedException
   {

@@ -471,6 +471,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
   public void setSelectedItem(Object item)
   {
     dataModel.setSelectedItem(item);
+    fireActionEvent();
   }
 
   /**
@@ -1028,7 +1029,8 @@ public class JComboBox extends JComponent implements ItemSelectable,
   }
 
   /**
-   * This method hides  combo box's popup whenever TAB key is pressed.
+   * This method is fired whenever a key is pressed with the combo box
+   * in focus
    *
    * @param e The KeyEvent indicating which key was pressed.
    */
@@ -1036,15 +1038,6 @@ public class JComboBox extends JComponent implements ItemSelectable,
   {
     if (e.getKeyCode() == KeyEvent.VK_TAB)
       setPopupVisible(false);
-    else if (keySelectionManager != null)
-      {
-        int i = keySelectionManager.selectionForKey(e.getKeyChar(),
-                                                    getModel());
-        if (i >= 0)
-          setSelectedIndex(i);
-        else
-          super.processKeyEvent(e);
-      }
     else
       super.processKeyEvent(e);
   }
@@ -1066,7 +1059,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
    */
   public KeySelectionManager getKeySelectionManager()
   {
-    return null;
+    return keySelectionManager;
   }
 
   /**
@@ -1098,7 +1091,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
    */
   protected KeySelectionManager createDefaultKeySelectionManager()
   {
-    return null;
+    return new DefaultKeySelectionManager();
   }
 
   /**
@@ -1469,6 +1462,36 @@ public class JComboBox extends JComponent implements ItemSelectable,
     public void selectAllAccessibleSelection()
     {
       // Nothing to do here.
+    }
+  }
+  
+  private class DefaultKeySelectionManager
+      implements KeySelectionManager
+  {
+
+    public int selectionForKey(char aKey, ComboBoxModel aModel)
+    {
+      int selectedIndex = getSelectedIndex();
+
+      // Start at currently selected item and iterate to end of list
+      for (int i = selectedIndex + 1; i < aModel.getSize(); i++)
+        {
+          String nextItem = aModel.getElementAt(i).toString();
+
+          if (nextItem.charAt(0) == aKey)
+            return i;
+        }
+
+      // Wrap to start of list if no match yet
+      for (int i = 0; i <= selectedIndex; i++)
+        {
+          String nextItem = aModel.getElementAt(i).toString();
+
+          if (nextItem.charAt(0) == aKey)
+            return i;
+        }
+
+      return - 1;
     }
   }
 }

@@ -40,59 +40,50 @@ package gnu.javax.crypto.mode;
 
 import gnu.java.security.Registry;
 import gnu.java.security.util.Sequence;
-
 import gnu.javax.crypto.cipher.IBlockCipher;
 
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Iterator;
 
 /**
- * <p>The implementation of the Counter Mode.</p>
- *
- * <p>The algorithm steps are formally described as follows:</p>
- *
+ * The implementation of the Counter Mode.
+ * <p>
+ * The algorithm steps are formally described as follows:
+ * 
  * <pre>
- *    CTR Encryption: O[j] = E(K)(T[j]); for j = 1, 2...n;
- *                    C[j] = P[j] ^ O[j]; for j = 1, 2...n.
- *    CTR Decryption: O[j] = E(K)(T[j]); for j = 1, 2...n;
- *                    P[j] = C[j] ^ O[j]; for j = 1, 2...n.
+ *     CTR Encryption: O[j] = E(K)(T[j]); for j = 1, 2...n;
+ *                     C[j] = P[j] &circ; O[j]; for j = 1, 2...n.
+ *     CTR Decryption: O[j] = E(K)(T[j]); for j = 1, 2...n;
+ *                     P[j] = C[j] &circ; O[j]; for j = 1, 2...n.
  * </pre>
- *
- * <p>where <code>P</code> is the plaintext, <code>C</code> is the ciphertext,
+ * 
+ * <p>
+ * where <code>P</code> is the plaintext, <code>C</code> is the ciphertext,
  * <code>E(K)</code> is the underlying block cipher encryption function
- * parametrised with the session key <code>K</code>, and <code>T</code> is the
- * <i>Counter</i>.</p>
- *
- * <p>This implementation, uses a standard incrementing function with a step of
- * 1, and an initial value similar to that described in the NIST document.</p>
- *
- * <p>References:</p>
- *
+ * parametrised with the session key <code>K</code>, and <code>T</code> is
+ * the <i>Counter</i>.
+ * <p>
+ * This implementation, uses a standard incrementing function with a step of 1,
+ * and an initial value similar to that described in the NIST document.
+ * <p>
+ * References:
  * <ol>
- *    <li><a href="http://csrc.nist.gov/encryption/modes/Recommendation/Modes01.pdf">
- *    Recommendation for Block Cipher Modes of Operation Methods and Techniques</a>,
- *    Morris Dworkin.</li>
+ * <li><a
+ * href="http://csrc.nist.gov/encryption/modes/Recommendation/Modes01.pdf">
+ * Recommendation for Block Cipher Modes of Operation Methods and Techniques</a>,
+ * Morris Dworkin.</li>
  * </ol>
  */
-public class CTR extends BaseMode implements Cloneable
+public class CTR
+    extends BaseMode
+    implements Cloneable
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  /** The current counter. */
-  //    private BigInteger T;
   private int off;
-
   private byte[] counter, enc;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Trivial package-private constructor for use by the Factory class.</p>
-   *
+   * Trivial package-private constructor for use by the Factory class.
+   * 
    * @param underlyingCipher the underlying cipher implementation.
    * @param cipherBlockSize the underlying cipher block size to use.
    */
@@ -102,8 +93,8 @@ public class CTR extends BaseMode implements Cloneable
   }
 
   /**
-   * <p>Private constructor for cloning purposes.</p>
-   *
+   * Private constructor for cloning purposes.
+   * 
    * @param that the instance to clone.
    */
   private CTR(CTR that)
@@ -111,61 +102,31 @@ public class CTR extends BaseMode implements Cloneable
     this((IBlockCipher) that.cipher.clone(), that.cipherBlockSize);
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Cloneable interface implementation
-  // -------------------------------------------------------------------------
-
   public Object clone()
   {
     return new CTR(this);
   }
 
-  // Implementation of abstract methods in BaseMode
-  // -------------------------------------------------------------------------
-
   public void setup()
   {
     if (modeBlockSize > cipherBlockSize)
-      {
-        throw new IllegalArgumentException(
-                                           "mode size exceeds cipher block size");
-      }
+      throw new IllegalArgumentException("mode size exceeds cipher block size");
     off = 0;
     counter = new byte[cipherBlockSize];
     int i = cipherBlockSize - 1;
     int j = iv.length - 1;
     while (i >= 0 && j >= 0)
-      {
-        counter[i--] = iv[j--];
-      }
+      counter[i--] = iv[j--];
     enc = new byte[cipherBlockSize];
     cipher.encryptBlock(counter, 0, enc, 0);
-    //       if (modeBlockSize != cipherBlockSize) {
-    //          throw new IllegalArgumentException();
-    //       }
-
-    //       byte[] tBytes = new byte[modeBlockSize+1];
-    //       tBytes[0] = (byte) 0x80;
-    //       for (int i = 0; i < modeBlockSize; i++) {
-    //          tBytes[i+1] = (byte)(256 - modeBlockSize + i);
-    //       }
-
-    //       T = new BigInteger(1, tBytes);
   }
 
   public void teardown()
   {
     if (counter != null)
-      {
-        Arrays.fill(counter, (byte) 0);
-      }
+      Arrays.fill(counter, (byte) 0);
     if (enc != null)
-      {
-        Arrays.fill(enc, (byte) 0);
-      }
-    //       T = null;
+      Arrays.fill(enc, (byte) 0);
   }
 
   public void encryptBlock(byte[] in, int i, byte[] out, int o)
@@ -183,21 +144,11 @@ public class CTR extends BaseMode implements Cloneable
     return new Sequence(1, cipherBlockSize).iterator();
   }
 
-  // own methods
-  // -------------------------------------------------------------------------
-
   private void ctr(byte[] in, int inOffset, byte[] out, int outOffset)
   {
-    //       T = T.add(BigInteger.ONE);
-    //       byte[] O = T.toByteArray();
-    //       int ndx = O.length - modeBlockSize;
-    //       cipher.encryptBlock(O, ndx, O, ndx);
-    //       for (int i = 0; i < modeBlockSize; i++) {
-    //          out[outOffset++] = (byte)(in[inOffset++] ^ O[ndx++]);
-    //       }
     for (int i = 0; i < modeBlockSize; i++)
       {
-        out[outOffset++] = (byte) (in[inOffset++] ^ enc[off++]);
+        out[outOffset++] = (byte)(in[inOffset++] ^ enc[off++]);
         if (off == cipherBlockSize)
           {
             int j;
@@ -205,14 +156,10 @@ public class CTR extends BaseMode implements Cloneable
               {
                 counter[j]++;
                 if ((counter[j] & 0xFF) != 0)
-                  {
-                    break;
-                  }
+                  break;
               }
             if (j == 0)
-              {
-                counter[cipherBlockSize - 1]++;
-              }
+              counter[cipherBlockSize - 1]++;
             off = 0;
             cipher.encryptBlock(counter, 0, enc, 0);
           }

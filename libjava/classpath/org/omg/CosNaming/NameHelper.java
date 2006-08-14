@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CosNaming;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -60,11 +61,6 @@ public abstract class NameHelper
    * The repository id of the Name.
    */
   private static String _id = "IDL:omg.org/CosNaming/Name:1.0";
-
-  /**
-   * The cached typecode of the Name.
-   */
-  private static TypeCode typeCode;
 
   /**
    * Extract the Name the given {@link Any}.
@@ -118,13 +114,11 @@ public abstract class NameHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        typeCode = NameComponentHelper.type();
-        typeCode = ORB.init().create_sequence_tc(0, typeCode);
-        typeCode =
-          ORB.init().create_alias_tc(NameHelper.id(), "Name", typeCode);
-      }
+    TypeCode typeCode;
+    typeCode = NameComponentHelper.type();
+    typeCode = OrbRestricted.Singleton.create_sequence_tc(0, typeCode);
+    typeCode =
+      OrbRestricted.Singleton.create_alias_tc(NameHelper.id(), "Name", typeCode);
     return typeCode;
   }
 

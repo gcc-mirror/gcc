@@ -302,8 +302,10 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
      */
     public void mouseMoved(MouseEvent e)
     {
-      // Not interested in where the mouse
-      // is unless it is being dragged.
+      if (thumbRect.contains(e.getPoint()))
+        thumbRollover = true;
+      else
+        thumbRollover = false;
     }
 
     /**
@@ -486,6 +488,9 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 
   /** The scrollbar this UI is acting for. */
   protected JScrollBar scrollbar;
+  
+  /** True if the mouse is over the thumb. */
+  boolean thumbRollover;
 
   /**
    * This method adds a component to the layout.
@@ -1400,5 +1405,46 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
     else if (value < min)
       value = min;
     return value;
+  }
+  
+  /**
+   * Returns true if the mouse is over the thumb.
+   * 
+   * @return true if the mouse is over the thumb.
+   * 
+   * @since 1.5
+   */
+  public boolean isThumbRollover()
+  {
+   return thumbRollover; 
+  }
+  
+  /**
+   * Set thumbRollover to active. This indicates
+   * whether or not the mouse is over the thumb.
+   * 
+   * @param active - true if the mouse is over the thumb.
+   * 
+   * @since 1.5
+   */
+  protected void setThumbRollover(boolean active)
+  {
+    thumbRollover = active;
+  }
+  
+  /**
+   * Indicates whether the user can position the thumb with 
+   * a mouse click (i.e. middle button).
+   * 
+   * @return true if the user can position the thumb with a mouse
+   * click.
+   * 
+   * @since 1.5
+   */
+  public boolean getSupportsAbsolutePositioning()
+  {
+    // The positioning feature has not been implemented.
+    // So, false is always returned.
+    return false;
   }
 }

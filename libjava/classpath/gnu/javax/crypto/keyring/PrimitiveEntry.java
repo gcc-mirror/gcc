@@ -43,36 +43,24 @@ import java.util.Date;
 /**
  * A primitive entry is an entry that contains a single cryptographic entity.
  */
-public abstract class PrimitiveEntry extends Entry
+public abstract class PrimitiveEntry
+    extends Entry
 {
-
-  // Fields.
-  // ------------------------------------------------------------------------
-
   /** The creation date. */
   protected Date creationDate;
-
-  // Constructor.
-  // ------------------------------------------------------------------------
 
   protected PrimitiveEntry(int type, Date creationDate, Properties properties)
   {
     super(type, properties);
     if (creationDate == null)
-      {
-        this.creationDate = new Date();
-      }
+      this.creationDate = new Date();
     else
-      {
-        this.creationDate = (Date) creationDate.clone();
-      }
-    if (!this.properties.containsKey("alias")
+      this.creationDate = (Date) creationDate.clone();
+    if (! this.properties.containsKey("alias")
         || this.properties.get("alias").length() == 0)
-      {
-        throw new IllegalArgumentException(
-                                           "primitive entries MUST have an alias");
-      }
-    this.properties.put("creation-date", String.valueOf(creationDate.getTime()));
+      throw new IllegalArgumentException("primitive entries MUST have an alias");
+    this.properties.put("creation-date",
+                        String.valueOf(this.creationDate.getTime()));
   }
 
   protected PrimitiveEntry(int type)
@@ -80,12 +68,9 @@ public abstract class PrimitiveEntry extends Entry
     super(type);
   }
 
-  // Instance method.
-  // ------------------------------------------------------------------------
-
   /**
    * Returns the alias of this primitive entry.
-   *
+   * 
    * @return The alias.
    */
   public String getAlias()
@@ -95,7 +80,7 @@ public abstract class PrimitiveEntry extends Entry
 
   /**
    * Returns the creation date of this primitive entry.
-   *
+   * 
    * @return The creation date.
    */
   public Date getCreationDate()
@@ -105,7 +90,7 @@ public abstract class PrimitiveEntry extends Entry
 
   public boolean equals(Object object)
   {
-    if (!getClass().equals(object.getClass()))
+    if (! getClass().equals(object.getClass()))
       return false;
     return getAlias().equals(((PrimitiveEntry) object).getAlias());
   }
@@ -114,9 +99,7 @@ public abstract class PrimitiveEntry extends Entry
   {
     String s = properties.get("creation-date");
     if (s == null)
-      {
-        throw new MalformedKeyringException("no creation date");
-      }
+      throw new MalformedKeyringException("no creation date");
     try
       {
         creationDate = new Date(Long.parseLong(s));

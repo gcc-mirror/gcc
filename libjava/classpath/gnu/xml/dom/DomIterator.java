@@ -1,5 +1,5 @@
 /* DomIterator.java -- 
-   Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -253,7 +253,13 @@ public final class DomIterator
       {
         return here.getFirstChild();
       }
-
+    
+    // There's no way up or sideways from the root, so if we
+    // couldn't move down to a child, there's nowhere to go.
+    //
+    if (here == root)
+      return null;
+    
     //
     // Siblings ... if forward, we visit them, if backwards
     // we visit their children first.
@@ -297,7 +303,9 @@ public final class DomIterator
       {
         next = next.getParentNode();
       }
-    if (next == root)
+    
+    // If we have exceeded the root node then stop traversing.
+    if (next == root.getParentNode())
       {
         return null;
       }

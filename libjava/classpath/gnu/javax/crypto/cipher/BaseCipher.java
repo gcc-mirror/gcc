@@ -38,47 +38,39 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.cipher;
 
-import gnu.java.security.util.Util;
+import gnu.java.security.Configuration;
 
 import java.security.InvalidKeyException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * <p>A basic abstract class to facilitate implementing symmetric key block
- * ciphers.</p>
+ * A basic abstract class to facilitate implementing symmetric key block
+ * ciphers.
  */
-public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
+public abstract class BaseCipher
+    implements IBlockCipher, IBlockCipherSpi
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
+  private static final Logger log = Logger.getLogger(BaseCipher.class.getName());
   /** The canonical name prefix of the cipher. */
   protected String name;
-
   /** The default block size, in bytes. */
   protected int defaultBlockSize;
-
   /** The default key size, in bytes. */
   protected int defaultKeySize;
-
   /** The current block size, in bytes. */
   protected int currentBlockSize;
-
   /** The session key for this instance. */
   protected transient Object currentKey;
-
   /** The instance lock. */
   protected Object lock = new Object();
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Trivial constructor for use by concrete subclasses.</p>
-   *
+   * Trivial constructor for use by concrete subclasses.
+   * 
    * @param name the canonical name prefix of this instance.
    * @param defaultBlockSize the default block size in bytes.
    * @param defaultKeySize the default key size in bytes.
@@ -92,27 +84,15 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
     this.defaultKeySize = defaultKeySize;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // IBlockCipher interface implementation -----------------------------------
-
   public abstract Object clone();
 
   public String name()
   {
     StringBuffer sb = new StringBuffer(name).append('-');
     if (currentKey == null)
-      {
-        sb.append(String.valueOf(8 * defaultBlockSize));
-      }
+      sb.append(String.valueOf(8 * defaultBlockSize));
     else
-      {
-        sb.append(String.valueOf(8 * currentBlockSize));
-      }
+      sb.append(String.valueOf(8 * currentBlockSize));
     return sb.toString();
   }
 
@@ -131,17 +111,13 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
     synchronized (lock)
       {
         if (currentKey != null)
-          {
-            throw new IllegalStateException();
-          }
-
+          throw new IllegalStateException();
         Integer bs = (Integer) attributes.get(CIPHER_BLOCK_SIZE);
-        if (bs == null)
-          { // no block size was specified.
-            if (currentBlockSize == 0)
-              { // happy birthday
-                currentBlockSize = defaultBlockSize;
-              } // else it's a clone. use as is
+        if (bs == null) // no block size was specified
+          {
+            if (currentBlockSize == 0) // happy birthday
+              currentBlockSize = defaultBlockSize;
+            // else it's a clone. use as is
           }
         else
           {
@@ -153,17 +129,11 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
               {
                 ok = (currentBlockSize == ((Integer) it.next()).intValue());
                 if (ok)
-                  {
-                    break;
-                  }
+                  break;
               }
-            if (!ok)
-              {
-                throw new IllegalArgumentException(
-                                                   IBlockCipher.CIPHER_BLOCK_SIZE);
-              }
+            if (! ok)
+              throw new IllegalArgumentException(IBlockCipher.CIPHER_BLOCK_SIZE);
           }
-
         byte[] k = (byte[]) attributes.get(KEY_MATERIAL);
         currentKey = makeKey(k, currentBlockSize);
       }
@@ -172,9 +142,7 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
   public int currentBlockSize()
   {
     if (currentKey == null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     return currentBlockSize;
   }
 
@@ -182,7 +150,6 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
   {
     synchronized (lock)
       {
-        //         currentBlockSize = 0;
         currentKey = null;
       }
   }
@@ -193,10 +160,7 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
     synchronized (lock)
       {
         if (currentKey == null)
-          {
-            throw new IllegalStateException();
-          }
-
+          throw new IllegalStateException();
         encrypt(in, inOffset, out, outOffset, currentKey, currentBlockSize);
       }
   }
@@ -207,10 +171,7 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
     synchronized (lock)
       {
         if (currentKey == null)
-          {
-            throw new IllegalStateException();
-          }
-
+          throw new IllegalStateException();
         decrypt(in, inOffset, out, outOffset, currentKey, currentBlockSize);
       }
   }
@@ -219,24 +180,16 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
   {
     int ks;
     Iterator bit;
-
     // do symmetry tests for all block-size/key-size combos
     for (Iterator kit = keySizes(); kit.hasNext();)
       {
         ks = ((Integer) kit.next()).intValue();
         for (bit = blockSizes(); bit.hasNext();)
-          {
-            if (!testSymmetry(ks, ((Integer) bit.next()).intValue()))
-              {
-                return false;
-              }
-          }
+          if (! testSymmetry(ks, ((Integer) bit.next()).intValue()))
+            return false;
       }
-
     return true;
   }
-
-  // own methods -------------------------------------------------------------
 
   private boolean testSymmetry(int ks, int bs)
   {
@@ -248,24 +201,18 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
         byte[] cpt = new byte[bs];
         int i;
         for (i = 0; i < ks; i++)
-          {
-            kb[i] = (byte) i;
-          }
+          kb[i] = (byte) i;
         for (i = 0; i < bs; i++)
-          {
-            pt[i] = (byte) i;
-          }
-
+          pt[i] = (byte) i;
         Object k = makeKey(kb, bs);
         encrypt(pt, 0, ct, 0, k, bs);
         decrypt(ct, 0, cpt, 0, k, bs);
-
         return Arrays.equals(pt, cpt);
-
       }
     catch (Exception x)
       {
-        x.printStackTrace(System.err);
+        if (Configuration.DEBUG)
+          log.log(Level.FINE, "Exception in testSymmetry() for " + name(), x);
         return false;
       }
   }
@@ -281,23 +228,19 @@ public abstract class BaseCipher implements IBlockCipher, IBlockCipherSpi
       {
         int bs = pt.length;
         byte[] t = new byte[bs];
-
         Object k = makeKey(kb, bs);
-
         // test encryption
         encrypt(pt, 0, t, 0, k, bs);
-        if (!Arrays.equals(t, ct))
-          {
-            return false;
-          }
+        if (! Arrays.equals(t, ct))
+          return false;
         // test decryption
         decrypt(t, 0, t, 0, k, bs);
         return Arrays.equals(t, pt);
-
       }
     catch (Exception x)
       {
-        x.printStackTrace(System.err);
+        if (Configuration.DEBUG)
+          log.log(Level.FINE, "Exception in testKat() for " + name(), x);
         return false;
       }
   }

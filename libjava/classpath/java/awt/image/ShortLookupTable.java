@@ -1,5 +1,5 @@
 /* ShortLookupTable.java -- Java class for a pixel translation table.
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,7 +67,13 @@ public class ShortLookupTable extends LookupTable
     throws IllegalArgumentException
   {
     super(offset, data.length);
-    this.data = data;
+    
+    // tests show that Sun's implementation creates a new array to store the
+    // references from the incoming 'data' array - not sure why, but we'll 
+    // match that behaviour just in case it matters...
+    this.data = new short[data.length][];
+    for (int i = 0; i < data.length; i++)
+      this.data[i] = data[i];
   }
 
   /**
@@ -77,17 +83,25 @@ public class ShortLookupTable extends LookupTable
    * table.  The same table is applied to all pixel components.
    * 
    * @param offset Offset to be subtracted.
-   * @param data Lookup table for all components.
+   * @param data Lookup table for all components (<code>null</code> not 
+   *     permitted).
    * @exception IllegalArgumentException if offset &lt; 0.
    */
   public ShortLookupTable(int offset, short[] data)
     throws IllegalArgumentException
   {
     super(offset, 1);
+    if (data == null)
+      throw new NullPointerException("Null 'data' argument.");
     this.data = new short[][] {data};
   }
 
-  /** Return the lookup tables. */
+  /** 
+   * Return the lookup tables.  This is a reference to the actual table, so
+   * modifying the contents of the returned array will modify the lookup table. 
+   * 
+   * @return The lookup table.
+   */
   public final short[][] getTable()
   {
     return data;
@@ -117,11 +131,11 @@ public class ShortLookupTable extends LookupTable
       dst = new int[src.length];
 
     if (data.length == 1)
-      for (int i=0; i < src.length; i++)
-	dst[i] = data[0][src[i] - offset];
+      for (int i = 0; i < src.length; i++)
+        dst[i] = data[0][src[i] - offset];
     else
-      for (int i=0; i < src.length; i++)
-	dst[i] = data[i][src[i] - offset];
+      for (int i = 0; i < src.length; i++)
+        dst[i] = data[i][src[i] - offset];
       
     return dst;
   }
@@ -142,6 +156,7 @@ public class ShortLookupTable extends LookupTable
    * @param src Component values of a pixel.
    * @param dst Destination array for values, or null.
    * @return Translated values for the pixel.
+   *
    */
   public short[] lookupPixel(short[] src, short[] dst)
     throws ArrayIndexOutOfBoundsException
@@ -150,11 +165,11 @@ public class ShortLookupTable extends LookupTable
       dst = new short[src.length];
 
     if (data.length == 1)
-      for (int i=0; i < src.length; i++)
-	dst[i] = data[0][((int)src[i]) - offset];
+      for (int i = 0; i < src.length; i++)
+        dst[i] = data[0][((int) src[i]) - offset];
     else
-      for (int i=0; i < src.length; i++)
-	dst[i] = data[i][((int)src[i]) - offset];
+      for (int i = 0; i < src.length; i++)
+        dst[i] = data[i][((int) src[i]) - offset];
       
     return dst;
 

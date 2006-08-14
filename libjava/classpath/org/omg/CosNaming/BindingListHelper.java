@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CosNaming;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
@@ -56,11 +58,6 @@ public abstract class BindingListHelper
    * The binding list repository id.
    */
   private static String _id = "IDL:omg.org/CosNaming/BindingList:1.0";
-
-  /**
-   * The cached binding list type code.
-   */
-  private static TypeCode typeCode;
 
   /**
    * Extract the array of bindings from the given {@link Any}.
@@ -112,13 +109,11 @@ public abstract class BindingListHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        typeCode = BindingHelper.type();
-        typeCode = orb.create_sequence_tc(0, typeCode);
-        typeCode = orb.create_alias_tc(id(), "BindingList", typeCode);
-      }
+    TypeCode typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    typeCode = BindingHelper.type();
+    typeCode = orb.create_sequence_tc(0, typeCode);
+    typeCode = orb.create_alias_tc(id(), "BindingList", typeCode);
     return typeCode;
   }
 

@@ -38,25 +38,11 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.font.GlyphVector;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferInt;
-import java.awt.image.ColorModel;
-import java.awt.image.DirectColorModel;
-import java.awt.image.RenderedImage;
 import java.awt.image.ImageObserver;
-import java.util.WeakHashMap;
 
 public class VolatileImageGraphics extends ComponentGraphics
 {
@@ -83,7 +69,7 @@ public class VolatileImageGraphics extends ComponentGraphics
 
   public GraphicsConfiguration getDeviceConfiguration()
   {
-    return null;
+    return owner.component.getGraphicsConfiguration();
   }
 
   public Graphics create()

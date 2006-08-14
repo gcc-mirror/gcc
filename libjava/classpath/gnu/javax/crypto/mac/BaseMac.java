@@ -40,35 +40,26 @@ package gnu.javax.crypto.mac;
 
 import gnu.java.security.hash.IMessageDigest;
 
-import java.util.Map;
 import java.security.InvalidKeyException;
+import java.util.Map;
 
 /**
- * <p>A base abstract class to facilitate <i>MAC</i> (Message Authentication
- * Code) implementations.</p>
+ * A base abstract class to facilitate <i>MAC</i> (Message Authentication Code)
+ * implementations.
  */
-public abstract class BaseMac implements IMac
+public abstract class BaseMac
+    implements IMac
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The canonical name prefix of the <i>MAC</i>. */
   protected String name;
-
   /** Reference to the underlying hash algorithm instance. */
   protected IMessageDigest underlyingHash;
-
   /** The length of the truncated output in bytes. */
   protected int truncatedSize;
 
-  /** The authentication key for this instance. */
-  //   protected transient byte[] K;
-  // Constructor(s)
-  // -------------------------------------------------------------------------
   /**
-   * <p>Trivial constructor for use by concrete subclasses.</p>
-   *
+   * Trivial constructor for use by concrete subclasses.
+   * 
    * @param name the canonical name of this instance.
    */
   protected BaseMac(String name)
@@ -79,8 +70,8 @@ public abstract class BaseMac implements IMac
   }
 
   /**
-   * <p>Trivial constructor for use by concrete subclasses.</p>
-   *
+   * Trivial constructor for use by concrete subclasses.
+   * 
    * @param name the canonical name of this instance.
    * @param underlyingHash the underlying message digest algorithm instance.
    */
@@ -89,19 +80,9 @@ public abstract class BaseMac implements IMac
     this(name);
 
     if (underlyingHash != null)
-      {
-        truncatedSize = underlyingHash.hashSize();
-      }
+      truncatedSize = underlyingHash.hashSize();
     this.underlyingHash = underlyingHash;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // gnu.crypto.mac.IMac interface implementation ----------------------------
 
   public String name()
   {
@@ -136,8 +117,6 @@ public abstract class BaseMac implements IMac
 
     return result;
   }
-
-  // methods to be implemented by concrete subclasses ------------------------
 
   public abstract void init(Map attributes) throws InvalidKeyException,
       IllegalStateException;

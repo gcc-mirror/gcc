@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableInterceptor;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -57,20 +58,11 @@ import org.omg.PortableServer.ServantActivator;
 public abstract class CurrentHelper
 {
   /**
-   * The cached {@link Current} typecode, computed once.
-   */
-  private static TypeCode typeCode;
-
-  /**
    * Get the type code of the {@link Current}.
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        typeCode = ORB.init().create_interface_tc(id(), "Current");
-      }
-    return typeCode;
+    return OrbRestricted.Singleton.create_interface_tc(id(), "Current");
   }
 
   /**

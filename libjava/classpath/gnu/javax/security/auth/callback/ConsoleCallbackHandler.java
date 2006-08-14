@@ -137,7 +137,7 @@ public class ConsoleCallbackHandler extends AbstractCallbackHandler
             {
               if (choices[i].equals(replies[j]))
                 {
-                  indices.add(new Integer(i));
+                  indices.add(Integer.valueOf(i));
                 }
             }
         if (indices.size() == 0)

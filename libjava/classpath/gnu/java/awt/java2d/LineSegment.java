@@ -62,7 +62,22 @@ public class LineSegment extends Segment
    */
   public Object clone()
   {
-    return new LineSegment(P1, P2);
+    LineSegment segment = null;
+    
+    try
+      {
+        segment = (LineSegment) super.clone();
+        segment.P1 = (Point2D) P1.clone();
+        segment.P2 = (Point2D) P2.clone();
+      }
+    catch (CloneNotSupportedException cnse)
+      {
+        InternalError ie = new InternalError();
+        ie.initCause(cnse);
+        throw ie;
+      }
+    
+    return segment;
   }
 
   /**
@@ -91,12 +106,12 @@ public class LineSegment extends Segment
     P2 = p;
   }
 
-  public double[] first()
+  public double[] cp1()
   {
     return new double[]{P2.getX(), P2.getY()}; 
   }
 
-  public double[] last()
+  public double[] cp2()
   {
     return new double[]{P1.getX(), P1.getY()}; 
   }

@@ -38,26 +38,16 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Graphics;
-import java.awt.Color;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
-import java.io.File;
-import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.Hashtable;
-import java.util.Vector;
-import java.io.ByteArrayOutputStream;
-import java.io.BufferedInputStream;
-import java.net.URL;
-import gnu.classpath.Pointer;
 
 /**
  * CairoSurface - wraps a Cairo surface.
@@ -79,10 +69,10 @@ public class CairoSurface extends DataBuffer
   long bufferPointer;
 
 
-  static ColorModel nativeModel = new DirectColorModel(32, 
-						       0x000000FF,
-						       0x0000FF00,
+  static ColorModel nativeModel = new DirectColorModel(32,
 						       0x00FF0000,
+						       0x0000FF00,
+						       0x000000FF,
 						       0xFF000000);
 
   /**
@@ -177,28 +167,45 @@ public class CairoSurface extends DataBuffer
     height = image.height;
 
     create(width, height, width);
-    
+
     if(surfacePointer == 0 || bufferPointer == 0)
       throw new Error("Could not allocate bitmap.");
-    
+
     // Copy the pixel data from the GtkImage.
     int[] data = image.getPixels();
 
     // Swap ordering from GdkPixbuf to Cairo
-    for(int i = 0; i < data.length; i++ )
+    if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN)
       {
-	int alpha = (data[i] & 0xFF000000) >> 24;
-	if( alpha == 0 ) // I do not know why we need this, but it works.
-	  data[i] = 0;
-	else
+	for (int i = 0; i < data.length; i++ )
 	  {
-	    int r = (((data[i] & 0x00FF0000) >> 16) );
-	    int g = (((data[i] & 0x0000FF00) >> 8) );
-	    int b = ((data[i] & 0x000000FF) );
-	    data[i] = (( alpha << 24 ) & 0xFF000000) 
-	      | (( b << 16 ) & 0x00FF0000)
-	      | (( g << 8 )  & 0x0000FF00)
-	      | ( r  & 0x000000FF);
+	    // On a big endian system we get a RRGGBBAA data array.
+	    int alpha = data[i] & 0xFF;
+	    if( alpha == 0 ) // I do not know why we need this, but it works.
+	      data[i] = 0;
+	    else
+	      {
+		// Cairo needs a ARGB32 native array.
+		data[i] = (data[i] >>> 8) | (alpha << 24);
+	      }
+	  }
+      }
+    else
+      {
+	for (int i = 0; i < data.length; i++ )
+	  {
+	    // On a little endian system we get a AABBGGRR data array.
+	    int alpha = data[i] & 0xFF000000;
+	    if( alpha == 0 ) // I do not know why we need this, but it works.
+	      data[i] = 0;
+	    else
+	      {
+		int b = (data[i] & 0xFF0000) >> 16;
+		int g = (data[i] & 0xFF00);
+		int r = (data[i] & 0xFF) << 16;
+		// Cairo needs a ARGB32 native array.
+		data[i] = alpha | r | g | b;
+	      }
 	  }
       }
 

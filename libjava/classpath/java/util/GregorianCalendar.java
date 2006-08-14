@@ -445,7 +445,7 @@ public class GregorianCalendar extends Calendar
 
     if (isSet[WEEK_OF_MONTH])
       {
-	int weeks = (month == 1 && leap == 0) ? 4 : 5;
+	int weeks = (month == 1 && leap == 0) ? 5 : 6;
 	if (fields[WEEK_OF_MONTH] < 1 || fields[WEEK_OF_MONTH] > weeks)
 	  throw new IllegalArgumentException("Illegal WEEK_OF_MONTH.");
       }
@@ -1164,7 +1164,7 @@ public class GregorianCalendar extends Calendar
    */
   private static final int[] maximums = 
                                         {
-                                          AD, 5000000, 11, 53, 5, 31, 366,
+                                          AD, 5000000, 11, 53, 6, 31, 366,
                                           SATURDAY, 5, PM, 12, 23, 59, 59, 999,
                                           +(12 * 60 * 60 * 1000),
                                           (12 * 60 * 60 * 1000)

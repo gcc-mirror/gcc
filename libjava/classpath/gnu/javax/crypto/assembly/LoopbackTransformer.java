@@ -44,26 +44,14 @@ import java.util.Map;
  * A trivial {@link Transformer} to allow closing a chain in an {@link Assembly}.
  * This class is not visible outside this package.
  */
-final class LoopbackTransformer extends Transformer
+final class LoopbackTransformer
+    extends Transformer
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
-  /** Trivial protected constructor. */
+  /** Trivial package-private constructor. */
   LoopbackTransformer()
   {
     super();
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   public void init(Map attributes) throws TransformerException
   {
@@ -83,8 +71,6 @@ final class LoopbackTransformer extends Transformer
   {
     return lastUpdateDelegate();
   }
-
-  // abstract methods to be implemented by concrete subclasses ---------------
 
   void initDelegate(Map attributes) throws TransformerException
   {

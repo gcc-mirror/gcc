@@ -48,24 +48,18 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <p>An {@link IMode} {@link Stage} in a {@link Cascade} Cipher chain.</p>
- *
- * <p>Such a stage wraps an implementation of a Block Cipher Mode of Operation
+ * An {@link IMode} {@link Stage} in a {@link Cascade} Cipher chain.
+ * <p>
+ * Such a stage wraps an implementation of a Block Cipher Mode of Operation
  * ({@link IMode}) to allow inclusion of such an instance in a cascade of block
- * ciphers.</p>
+ * ciphers.
  */
-class ModeStage extends Stage
+class ModeStage
+    extends Stage
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private IMode delegate;
 
   private transient Set cachedBlockSizes;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   ModeStage(IMode mode, Direction forwardDirection)
   {
@@ -75,21 +69,13 @@ class ModeStage extends Stage
     cachedBlockSizes = null;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   public Set blockSizes()
   {
     if (cachedBlockSizes == null)
       {
         HashSet result = new HashSet();
         for (Iterator it = delegate.blockSizes(); it.hasNext();)
-          {
-            result.add(it.next());
-          }
+          result.add(it.next());
         cachedBlockSizes = Collections.unmodifiableSet(result);
       }
     return cachedBlockSizes;
@@ -99,9 +85,8 @@ class ModeStage extends Stage
   {
     Direction flow = (Direction) attributes.get(DIRECTION);
     attributes.put(IMode.STATE,
-                   new Integer(flow.equals(forward) ? IMode.ENCRYPTION
-                                                   : IMode.DECRYPTION));
-
+                   Integer.valueOf(flow.equals(forward) ? IMode.ENCRYPTION
+                                                        : IMode.DECRYPTION));
     delegate.init(attributes);
   }
 

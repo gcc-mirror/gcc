@@ -98,6 +98,13 @@ public class DHKeyPairPKCS8Codec
    *     q  INTEGER  -- factor of p-1
    *   }
    * </pre>
+   * <p>
+   * <b>IMPORTANT</b>: with RI's {@link javax.crypto.spec.DHGenParameterSpec}
+   * and {@link javax.crypto.spec.DHParameterSpec} classes, we may end up with
+   * Diffie-Hellman keys that have a <code>null</code> for the <code>q</code>
+   * parameter. RFC-2631 DOES NOT allow for an <i>optional</i> value for that
+   * parameter, hence we replace such null values with <code>0</code>, and do
+   * the reverse in the corresponding decode method.
    * 
    * @return the DER encoded form of the ASN.1 representation of the
    *         <i>PrivateKeyInfo</i> field in an X.509 certificate.
@@ -117,6 +124,8 @@ public class DHKeyPairPKCS8Codec
     BigInteger p = pk.getParams().getP();
     BigInteger g = pk.getParams().getG();
     BigInteger q = pk.getQ();
+    if (q == null)
+      q = BigInteger.ZERO;
     BigInteger x = pk.getX();
 
     ArrayList params = new ArrayList(3);
@@ -212,6 +221,8 @@ public class DHKeyPairPKCS8Codec
         val = der.read();
         DerUtil.checkIsBigInteger(val, "Wrong Q field");
         q = (BigInteger) val.getValue();
+        if (q.compareTo(BigInteger.ZERO) == 0)
+          q = null;
 
         val = der.read();
         byte[] xBytes = (byte[]) val.getValue();

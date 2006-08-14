@@ -219,6 +219,12 @@ public class ObjectStreamClass implements Serializable
     return (flags & ObjectStreamConstants.SC_EXTERNALIZABLE) != 0;
   }
 
+  // Returns true iff the class that this ObjectStreamClass represents
+  // implements Externalizable.
+  boolean isEnum()
+  {
+    return (flags & ObjectStreamConstants.SC_ENUM) != 0;
+  }
 
   // Returns the <code>ObjectStreamClass</code> that represents the
   // class that is the superclass of the class this
@@ -587,6 +593,9 @@ outer:
 
     if (writeObjectMethod != null)
       flags |= ObjectStreamConstants.SC_WRITE_METHOD;
+
+    if (cl.isEnum() || cl == Enum.class)
+      flags |= ObjectStreamConstants.SC_ENUM;
   }
 
 
@@ -596,7 +605,7 @@ outer:
   {
     SetAccessibleAction setAccessible = new SetAccessibleAction();
 
-    if (!isSerializable() || isExternalizable())
+    if (!isSerializable() || isExternalizable() || isEnum())
       {
 	fields = NO_FIELDS;
 	return;

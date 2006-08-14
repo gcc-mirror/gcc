@@ -59,6 +59,7 @@ public class InvalidDnDOperationException extends IllegalStateException
    */
   public InvalidDnDOperationException()
   {
+    super();
   }
 
   /**

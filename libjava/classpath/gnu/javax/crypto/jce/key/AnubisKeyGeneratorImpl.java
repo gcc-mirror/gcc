@@ -40,14 +40,11 @@ package gnu.javax.crypto.jce.key;
 
 import gnu.java.security.Registry;
 
-public class AnubisKeyGeneratorImpl extends SecretKeyGeneratorImpl
+public class AnubisKeyGeneratorImpl
+    extends SecretKeyGeneratorImpl
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
-  public AnubisKeyGeneratorImpl ()
+  public AnubisKeyGeneratorImpl()
   {
-    super (Registry.ANUBIS_CIPHER);
+    super(Registry.ANUBIS_CIPHER);
   }
 }

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.classpath.examples.CORBA.SimpleCommunication.communication;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.StructMember;
 import org.omg.CORBA.TypeCode;
@@ -81,13 +83,14 @@ public abstract class StructureToPassHelper
    */
   public static synchronized TypeCode type()
   {
-    StructMember[] members = new StructMember[ 2 ];
+    StructMember[] members = new StructMember[2];
     TypeCode member = null;
-    member = ORB.init().create_string_tc(0);
-    members [ 0 ] = new StructMember("a", member, null);
-    member = ORB.init().create_string_tc(0);
-    members [ 1 ] = new StructMember("b", member, null);
-    return ORB.init().create_struct_tc(StructureToPassHelper.id(), "StructureToPass", members);
+    member = OrbRestricted.Singleton.create_string_tc(0);
+    members[0] = new StructMember("a", member, null);
+    member = OrbRestricted.Singleton.create_string_tc(0);
+    members[1] = new StructMember("b", member, null);
+    return OrbRestricted.Singleton.create_struct_tc(StructureToPassHelper.id(),
+                                                    "StructureToPass", members);
   }
 
   /**

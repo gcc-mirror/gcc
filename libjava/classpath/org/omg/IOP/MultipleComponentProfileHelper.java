@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.IOP;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.Any;
@@ -57,24 +58,15 @@ import org.omg.CORBA.portable.InputStream;
  */
 public abstract class MultipleComponentProfileHelper
 {
-  /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        typeCode = orb.create_sequence_tc(0, TaggedComponentHelper.type());
-      }
-    return typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    return orb.create_sequence_tc(0, TaggedComponentHelper.type());
   }
   /**
-   * Insert the MultipleComponentProfile into the given Any.
-   * This method uses the MultipleComponentProfileHolder.
-   *
+   * Insert the MultipleComponentProfile into the given Any. This method uses
+   * the MultipleComponentProfileHolder.
+   * 
    * @param any the Any to insert into.
    * @param those the TaggedComponent[] to insert.
    */

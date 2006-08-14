@@ -38,8 +38,16 @@ exception statement from your version. */
 
 package java.lang;
 
+import gnu.classpath.VMStackWalker;
 import gnu.java.util.WeakIdentityHashMap;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+
 import java.security.Permission;
+
+import java.util.HashMap;
 import java.util.Map;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
@@ -131,15 +139,16 @@ public class Thread implements Runnable
 
   /** The context classloader for this Thread. */
   private ClassLoader contextClassLoader;
-  
+  private boolean contextClassLoaderIsSystemClassLoader;
+
   /** This thread's ID.  */
   private final long threadId;
 
   /** The next thread number to use. */
   private static int numAnonymousThreadsCreated;
   
-  /** The next thread ID to use.  */
-  private static long nextThreadId;
+  /** Used to generate the next thread ID to use.  */
+  private static long totalThreadsCreated;
 
   /** The default exception handler.  */
   private static UncaughtExceptionHandler defaultHandler;
@@ -248,7 +257,7 @@ public class Thread implements Runnable
    */
   public Thread(ThreadGroup group, Runnable target)
   {
-    this(group, target, "Thread-" + ++numAnonymousThreadsCreated, 0);
+    this(group, target, createAnonymousThreadName(), 0);
   }
 
   /**
@@ -347,8 +356,8 @@ public class Thread implements Runnable
 	if (group == null)
 	    group = current.group;
       }
-    else if (sm != null)
-	sm.checkAccess(group);
+    if (sm != null)
+      sm.checkAccess(group);
 
     this.group = group;
     // Use toString hack to detect null.
@@ -358,12 +367,14 @@ public class Thread implements Runnable
     
     synchronized (Thread.class)
       {
-        this.threadId = nextThreadId++;
+        this.threadId = ++totalThreadsCreated;
       }
 
     priority = current.priority;
     daemon = current.daemon;
     contextClassLoader = current.contextClassLoader;
+    contextClassLoaderIsSystemClassLoader =
+        current.contextClassLoaderIsSystemClassLoader;
 
     group.addThread(this);
     InheritableThreadLocal.newChildThread(this);
@@ -373,6 +384,9 @@ public class Thread implements Runnable
    * Used by the VM to create thread objects for threads started outside
    * of Java. Note: caller is responsible for adding the thread to
    * a group and InheritableThreadLocal.
+   * Note: This constructor should not call any methods that could result
+   * in a call to Thread.currentThread(), because that makes life harder
+   * for the VM.
    *
    * @param vmThread the native thread
    * @param name the thread name or null to use the default naming scheme
@@ -384,16 +398,32 @@ public class Thread implements Runnable
     this.vmThread = vmThread;
     this.runnable = null;
     if (name == null)
-	name = "Thread-" + ++numAnonymousThreadsCreated;
+	name = createAnonymousThreadName();
     this.name = name;
     this.priority = priority;
     this.daemon = daemon;
-    this.contextClassLoader = ClassLoader.getSystemClassLoader();
+    // By default the context class loader is the system class loader,
+    // we set a flag to signal this because we don't want to call
+    // ClassLoader.getSystemClassLoader() at this point, because on
+    // VMs that lazily create the system class loader that might result
+    // in running user code (when a custom system class loader is specified)
+    // and that user code could call Thread.currentThread().
+    // ClassLoader.getSystemClassLoader() can also return null, if the system
+    // is currently in the process of constructing the system class loader
+    // (and, as above, the constructiong sequence calls Thread.currenThread()).
+    contextClassLoaderIsSystemClassLoader = true;
     synchronized (Thread.class)
       {
-	this.threadId = nextThreadId++;
+	this.threadId = ++totalThreadsCreated;
       }
+  }
 
+  /**
+   * Generate a name for an anonymous thread.
+   */
+  private static synchronized String createAnonymousThreadName()
+  {
+    return "Thread-" + ++numAnonymousThreadsCreated;
   }
 
   /**
@@ -746,12 +776,18 @@ public class Thread implements Runnable
    */
   public synchronized ClassLoader getContextClassLoader()
   {
-    // Bypass System.getSecurityManager, for bootstrap efficiency.
+    ClassLoader loader = contextClassLoaderIsSystemClassLoader ?
+        ClassLoader.getSystemClassLoader() : contextClassLoader;
+    // Check if we may get the classloader
     SecurityManager sm = SecurityManager.current;
-    if (sm != null)
-      // XXX Don't check this if the caller's class loader is an ancestor.
-      sm.checkPermission(new RuntimePermission("getClassLoader"));
-    return contextClassLoader;
+    if (loader != null && sm != null)
+      {
+        // Get the calling classloader
+	ClassLoader cl = VMStackWalker.getCallingClassLoader();
+        if (cl != null && !cl.isAncestorOf(loader))
+          sm.checkPermission(new RuntimePermission("getClassLoader"));
+      }
+    return loader;
   }
 
   /**
@@ -772,6 +808,7 @@ public class Thread implements Runnable
     if (sm != null)
       sm.checkPermission(new RuntimePermission("setContextClassLoader"));
     this.contextClassLoader = classloader;
+    contextClassLoaderIsSystemClassLoader = false;
   }
 
   /**
@@ -1173,7 +1210,7 @@ public class Thread implements Runnable
    * @author Andrew John Hughes <gnu_andrew@member.fsf.org>
    * @since 1.5
    * @see Thread#getUncaughtExceptionHandler()
-   * @see Thread#setUncaughtExceptionHander(java.lang.Thread.UncaughtExceptionHandler)
+   * @see Thread#setUncaughtExceptionHandler(UncaughtExceptionHandler)
    * @see Thread#getDefaultUncaughtExceptionHandler()
    * @see
    * Thread#setDefaultUncaughtExceptionHandler(java.lang.Thread.UncaughtExceptionHandler)
@@ -1191,4 +1228,119 @@ public class Thread implements Runnable
      */
     void uncaughtException(Thread thr, Throwable exc);
   }
+
+  /**
+   * Returns the current state of the thread.  This
+   * is designed for monitoring thread behaviour, rather
+   * than for synchronization control.
+   *
+   * @return the current thread state.
+   */
+  public String getState()
+  {
+    VMThread t = vmThread;
+    if (t != null)
+      return t.getState();
+    if (group == null)
+      return "TERMINATED";
+    return "NEW";
+  }
+
+  /**
+   * <p>
+   * Returns a map of threads to stack traces for each
+   * live thread.  The keys of the map are {@link Thread}
+   * objects, which map to arrays of {@link StackTraceElement}s.
+   * The results obtained from Calling this method are
+   * equivalent to calling {@link getStackTrace()} on each
+   * thread in succession.  Threads may be executing while
+   * this takes place, and the results represent a snapshot
+   * of the thread at the time its {@link getStackTrace()}
+   * method is called.
+   * </p>
+   * <p>
+   * The stack trace information contains the methods called
+   * by the thread, with the most recent method forming the
+   * first element in the array.  The array will be empty
+   * if the virtual machine can not obtain information on the
+   * thread. 
+   * </p>
+   * <p>
+   * To execute this method, the current security manager
+   * (if one exists) must allow both the
+   * <code>"getStackTrace"</code> and
+   * <code>"modifyThreadGroup"</code> {@link RuntimePermission}s.
+   * </p>
+   * 
+   * @return a map of threads to arrays of {@link StackTraceElement}s.
+   * @throws SecurityException if a security manager exists, and
+   *                           prevents either or both the runtime
+   *                           permissions specified above.
+   * @since 1.5
+   * @see #getStackTrace()
+   */
+  public static Map getAllStackTraces()
+  {
+    ThreadGroup group = currentThread().group;
+    while (group.getParent() != null)
+      group = group.getParent();
+    int arraySize = group.activeCount();
+    Thread[] threadList = new Thread[arraySize];
+    int filled = group.enumerate(threadList);
+    while (filled == arraySize)
+      {
+	arraySize *= 2;
+	threadList = new Thread[arraySize];
+	filled = group.enumerate(threadList);
+      }
+    Map traces = new HashMap();
+    for (int a = 0; a < filled; ++a)
+      traces.put(threadList[a],
+		 threadList[a].getStackTrace());
+    return traces;
+  }
+
+  /**
+   * <p>
+   * Returns an array of {@link StackTraceElement}s
+   * representing the current stack trace of this thread.
+   * The first element of the array is the most recent
+   * method called, and represents the top of the stack.
+   * The elements continue in this order, with the last
+   * element representing the bottom of the stack.
+   * </p>
+   * <p>
+   * A zero element array is returned for threads which
+   * have not yet started (and thus have not yet executed
+   * any methods) or for those which have terminated.
+   * Where the virtual machine can not obtain a trace for
+   * the thread, an empty array is also returned.  The
+   * virtual machine may also omit some methods from the
+   * trace in non-zero arrays.
+   * </p>
+   * <p>
+   * To execute this method, the current security manager
+   * (if one exists) must allow both the
+   * <code>"getStackTrace"</code> and
+   * <code>"modifyThreadGroup"</code> {@link RuntimePermission}s.
+   * </p>
+   *
+   * @return a stack trace for this thread.
+   * @throws SecurityException if a security manager exists, and
+   *                           prevents the use of the
+   *                           <code>"getStackTrace"</code>
+   *                           permission.
+   * @since 1.5
+   * @see #getAllStackTraces()
+   */
+  public StackTraceElement[] getStackTrace()
+  {
+    SecurityManager sm = SecurityManager.current; // Be thread-safe.
+    if (sm != null)
+      sm.checkPermission(new RuntimePermission("getStackTrace"));
+    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+    ThreadInfo info = bean.getThreadInfo(threadId, Integer.MAX_VALUE);
+    return info.getStackTrace();
+  }
+
 }

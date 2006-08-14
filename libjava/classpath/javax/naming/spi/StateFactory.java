@@ -1,5 +1,5 @@
 /* StateFactory.java --
-   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,11 +45,35 @@ import javax.naming.Name;
 import javax.naming.NamingException;
  
 /**
+ * Represents a factory, producing the object states for binding. The operation,
+ * performed by this factory, is the reverse operation with related to the
+ * operation, performed by the {@link ObjectFactory}. Classes, implementing
+ * this interface, must be public and have public parameterless constructor.
+ * 
+ * @see DirStateFactory
+ * @see ObjectFactory
  * @author Warren Levy (warrenl@redhat.com)
- * @date June 1, 2001
  */
 public interface StateFactory
 {
+  /**
+   * Get the object state for binding.
+   * 
+   * @param obj the object, for that the binding state must be retrieved. Cannot
+   *          be null.
+   * @param name the name of this object, related to the nameCtx. Can be null if
+   *          not specified.
+   * @param nameCtx the naming context, to that the object name is related. Can
+   *          be null if the name is related to the initial default context.
+   * @param environment the properties for creating the object state. Can be
+   *          null if no properties are provided.
+   * @return the object state for binding, may be null if no changes are
+   *         returned by the factory
+   * @throws NamingException
+   * 
+   * @see NamingManager#getStateToBind
+   * @see DirectoryManager#getStateToBind
+   */
   Object getStateToBind(Object obj, Name name, Context nameCtx,
   			       Hashtable environment) throws NamingException;
 }

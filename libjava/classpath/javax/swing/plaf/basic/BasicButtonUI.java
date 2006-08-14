@@ -442,13 +442,17 @@ public class BasicButtonUI extends ButtonUI
     if (b.isEnabled())
       {
         g.setColor(b.getForeground());
-        g.drawString(text, textRect.x, textRect.y + fm.getAscent());
+        // FIXME: Underline mnemonic.
+        BasicGraphicsUtils.drawString(b, g, text, -1, textRect.x,
+                                      textRect.y + fm.getAscent());
       }
     else
       {
         String prefix = getPropertyPrefix();
         g.setColor(UIManager.getColor(prefix + "disabledText"));
-        g.drawString(text, textRect.x, textRect.y + fm.getAscent());
+        // FIXME: Underline mnemonic.
+        BasicGraphicsUtils.drawString(b, g, text, -1, textRect.x,
+                                      textRect.y + fm.getAscent());
       }
   } 
 }

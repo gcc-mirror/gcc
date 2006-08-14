@@ -49,32 +49,18 @@ import java.util.Map;
 import javax.crypto.interfaces.DHPublicKey;
 
 /**
- * <p>This implementation is the sender's part of the ElGamal key agreement
- * exchange (A in [HAC]).</p>
- *
+ * This implementation is the sender's part of the ElGamal key agreement
+ * exchange (A in [HAC]).
+ * 
  * @see ElGamalKeyAgreement
  */
-public class ElGamalSender extends ElGamalKeyAgreement
+public class ElGamalSender
+    extends ElGamalKeyAgreement
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The recipient's public key. */
   private DHPublicKey B;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // default 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // implementation of abstract methods in base class ------------------------
 
   protected void engineInit(Map attributes) throws KeyAgreementException
   {
@@ -83,9 +69,7 @@ public class ElGamalSender extends ElGamalKeyAgreement
     // a keypair and publishes its public key
     B = (DHPublicKey) attributes.get(KA_ELGAMAL_RECIPIENT_PUBLIC_KEY);
     if (B == null)
-      {
-        throw new KeyAgreementException("missing recipient public key");
-      }
+      throw new KeyAgreementException("missing recipient public key");
   }
 
   protected OutgoingMessage engineProcessMessage(IncomingMessage in)
@@ -100,15 +84,12 @@ public class ElGamalSender extends ElGamalKeyAgreement
       }
   }
 
-  // own methods -------------------------------------------------------------
-
   private OutgoingMessage computeSharedSecret(IncomingMessage in)
       throws KeyAgreementException
   {
     BigInteger p = B.getParams().getP();
     BigInteger g = B.getParams().getG();
     BigInteger yb = B.getY();
-
     // A chooses a random integer x, 1 <= x <= p-2
     // rfc-2631 restricts x to only be in [2, p-1]
     BigInteger p_minus_2 = p.subtract(TWO);
@@ -120,14 +101,11 @@ public class ElGamalSender extends ElGamalKeyAgreement
         x = new BigInteger(1, xBytes);
       }
     while (x.compareTo(TWO) >= 0 && x.compareTo(p_minus_2) <= 0);
-
     // A sends B the message: g^x mod p
     OutgoingMessage result = new OutgoingMessage();
     result.writeMPI(g.modPow(x, p));
-
     // A computes the key as K = (yb)^x mod p
     ZZ = yb.modPow(x, p); // ZZ = (yb ^ xa) mod p
-
     complete = true;
     return result;
   }

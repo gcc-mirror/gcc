@@ -144,6 +144,7 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
     super(text, icon);
     setModel(new JToggleButton.ToggleButtonModel());
     model.setSelected(selected);
+    setFocusable(false);
   }
 
   /**

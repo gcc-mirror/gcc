@@ -196,9 +196,8 @@ public class Box extends JComponent implements Accessible
    */
   public static Component createGlue()
   {
-    Filler glue = new Filler(new Dimension(0,0), new Dimension(0,0),
-                             new Dimension(Short.MAX_VALUE,Short.MAX_VALUE)
-                             );
+    Filler glue = new Filler(new Dimension(0, 0), new Dimension(0, 0),
+                             new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
     return glue;
   }
   
@@ -216,9 +215,8 @@ public class Box extends JComponent implements Accessible
    */
   public static Component createHorizontalGlue()
   {
-    Filler glue = new Filler(new Dimension(0,0), new Dimension(0,0),
-                             new Dimension(Short.MAX_VALUE, 0)
-                             );
+    Filler glue = new Filler(new Dimension(0, 0), new Dimension(0, 0),
+                             new Dimension(Short.MAX_VALUE, 0));
     return glue;
   }
   

@@ -47,11 +47,11 @@ import gnu.javax.crypto.sasl.srp.SRPClient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashMap;
 
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.Sasl;
@@ -62,53 +62,32 @@ import javax.security.sasl.SaslException;
 /**
  * The implementation of {@link SaslClientFactory}.
  */
-public class ClientFactory implements SaslClientFactory
+public class ClientFactory
+    implements SaslClientFactory
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // implicit 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
 
   public static final Set getNames()
   {
-    return Collections.unmodifiableSet(new HashSet(
-                                                   Arrays.asList(getNamesInternal(null))));
+    return Collections.unmodifiableSet(new HashSet(Arrays.asList(getNamesInternal(null))));
   }
 
   private static final String[] getNamesInternal(Map props)
   {
-    String[] all = new String[] { Registry.SASL_SRP_MECHANISM,
-                                 Registry.SASL_CRAM_MD5_MECHANISM,
-                                 Registry.SASL_PLAIN_MECHANISM,
-                                 Registry.SASL_ANONYMOUS_MECHANISM };
-
+    String[] all = new String[] {
+        Registry.SASL_SRP_MECHANISM,
+        Registry.SASL_CRAM_MD5_MECHANISM,
+        Registry.SASL_PLAIN_MECHANISM,
+        Registry.SASL_ANONYMOUS_MECHANISM };
     if (props == null)
-      {
-        return all;
-      }
+      return all;
     if (hasPolicy(Sasl.POLICY_PASS_CREDENTIALS, props))
-      {
-        return new String[0];
-      }
-
+      return new String[0];
     List result = new ArrayList(all.length);
-    ;
     for (int i = 0; i < all.length;)
-      {
-        result.add(all[i++]);
-      }
-
+      result.add(all[i++]);
     if (hasPolicy(Sasl.POLICY_NOPLAINTEXT, props))
-      {
-        result.remove(Registry.SASL_PLAIN_MECHANISM);
-      }
+      result.remove(Registry.SASL_PLAIN_MECHANISM);
     if (hasPolicy(Sasl.POLICY_NOACTIVE, props))
       {
         result.remove(Registry.SASL_CRAM_MD5_MECHANISM);
@@ -135,31 +114,18 @@ public class ClientFactory implements SaslClientFactory
   public static final ClientMechanism getInstance(String mechanism)
   {
     if (mechanism == null)
-      {
-        return null;
-      }
+      return null;
     mechanism = mechanism.trim().toUpperCase();
     if (mechanism.equals(Registry.SASL_SRP_MECHANISM))
-      {
-        return new SRPClient();
-      }
+      return new SRPClient();
     if (mechanism.equals(Registry.SASL_CRAM_MD5_MECHANISM))
-      {
-        return new CramMD5Client();
-      }
+      return new CramMD5Client();
     if (mechanism.equals(Registry.SASL_PLAIN_MECHANISM))
-      {
-        return new PlainClient();
-      }
+      return new PlainClient();
     if (mechanism.equals(Registry.SASL_ANONYMOUS_MECHANISM))
-      {
-        return new AnonymousClient();
-      }
+      return new AnonymousClient();
     return null;
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   public SaslClient createSaslClient(String[] mechanisms,
                                      String authorisationID, String protocol,
@@ -173,29 +139,21 @@ public class ClientFactory implements SaslClientFactory
         mechanism = mechanisms[i];
         result = getInstance(mechanism);
         if (result != null)
-          {
-            break;
-          }
+          break;
       }
-
     if (result != null)
       {
         HashMap attributes = new HashMap();
         if (props != null)
-          {
-            attributes.putAll(props);
-          }
+          attributes.putAll(props);
         attributes.put(Registry.SASL_AUTHORISATION_ID, authorisationID);
         attributes.put(Registry.SASL_PROTOCOL, protocol);
         attributes.put(Registry.SASL_SERVER_NAME, serverName);
         attributes.put(Registry.SASL_CALLBACK_HANDLER, cbh);
-
         result.init(attributes);
         return result;
       }
-
-    throw new SaslException(
-                            "No supported mechanism found in given mechanism list");
+    throw new SaslException("No supported mechanism found in given mechanism list");
   }
 
   public String[] getMechanismNames(Map props)

@@ -16,8 +16,9 @@ JNIEXPORT jlong JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_initFromVol
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_start_1gdk_1drawing (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_end_1gdk_1drawing (JNIEnv *env, jobject);
 JNIEXPORT jboolean JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_hasXRender (JNIEnv *env, jclass);
+JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_nativeGrab (JNIEnv *env, jclass, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_copyAreaNative (JNIEnv *env, jobject, jobject, jint, jint, jint, jint, jint, jint);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_drawVolatile (JNIEnv *env, jobject, jobject, jlong, jint, jint, jint, jint);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_ComponentGraphics_drawVolatile (JNIEnv *env, jobject, jobject, jlong, jint, jint, jint, jint, jint, jint, jint, jint);
 
 #ifdef __cplusplus
 }

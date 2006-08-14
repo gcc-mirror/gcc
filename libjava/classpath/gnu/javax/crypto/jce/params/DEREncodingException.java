@@ -38,7 +38,8 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.jce.params;
 
-class DEREncodingException extends java.io.IOException
+class DEREncodingException
+    extends java.io.IOException
 {
 
   public DEREncodingException()

@@ -60,6 +60,8 @@ Java_java_nio_VMDirectByteBuffer_allocate
       return 0;
     }
 
+  memset (buffer, 0, capacity);
+
   return JCL_NewRawDataObject (env, buffer);
 }
 

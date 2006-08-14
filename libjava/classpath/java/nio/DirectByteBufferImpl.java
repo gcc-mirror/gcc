@@ -232,6 +232,7 @@ abstract class DirectByteBufferImpl extends ByteBuffer
   private ByteBuffer duplicate(boolean readOnly)
   {
     int pos = position();
+    if (this.mark != -1)
     reset();
     int mark = position();
     position(pos);

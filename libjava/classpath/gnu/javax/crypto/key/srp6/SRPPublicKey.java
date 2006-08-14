@@ -45,32 +45,27 @@ import java.math.BigInteger;
 import java.security.PublicKey;
 
 /**
- * <p>A representation of an SRP ephemeral public key.</p>
- *
- * <p>Reference:</p>
+ * A representation of an SRP ephemeral public key.
+ * <p>
+ * Reference:
  * <ol>
- *    <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
- *    Thomas J. Wu.</li>
+ * <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
+ * Thomas J. Wu.</li>
  * </ol>
  */
-public class SRPPublicKey extends SRPKey implements PublicKey
+public class SRPPublicKey
+    extends SRPKey
+    implements PublicKey
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /**
-   * The public exponent for either the server or the client engaged in the
-   * SRP protocol exchange.
+   * The public exponent for either the server or the client engaged in the SRP
+   * protocol exchange.
    */
   private final BigInteger Y;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Public constructor for use from outside this package.</p>
-   *
+   * Public constructor for use from outside this package.
+   * 
    * @param N the public shared modulus.
    * @param g the generator.
    * @param Y the public exponent of the ephemeral key.
@@ -84,10 +79,10 @@ public class SRPPublicKey extends SRPKey implements PublicKey
   }
 
   /**
-   * <p>Default constructor. Assumes that N and g are already validated.</p>
-   *
+   * Default constructor. Assumes that N and g are already validated.
+   * 
    * @param params an array of 3 values representing N, g and Y; the latter
-   * being the client's or server's public exponent.
+   *          being the client's or server's public exponent.
    */
   SRPPublicKey(BigInteger[] params)
   {
@@ -96,26 +91,24 @@ public class SRPPublicKey extends SRPKey implements PublicKey
     this.Y = params[2];
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>A class method that takes the output of the <code>encodePublicKey()</code>
+   * A class method that takes the output of the <code>encodePublicKey()</code>
    * method of an SRP keypair codec object (an instance implementing
    * {@link IKeyPairCodec} for SRP keys, and re-constructs an instance of this
-   * object.</p>
-   *
+   * object.
+   * 
    * @param k the contents of a previously encoded instance of this object.
    * @throws ArrayIndexOutOfBoundsException if there is not enough bytes, in
-   * <code>k</code>, to represent a valid encoding of an instance of this object.
+   *           <code>k</code>, to represent a valid encoding of an instance
+   *           of this object.
    * @throws IllegalArgumentException if the byte sequence does not represent a
-   * valid encoding of an instance of this object.
+   *           valid encoding of an instance of this object.
    */
   public static SRPPublicKey valueOf(byte[] k)
   {
     // check magic...
     // we should parse here enough bytes to know which codec to use, and
-    // direct the byte array to the appropriate codec.  since we only have one
+    // direct the byte array to the appropriate codec. since we only have one
     // codec, we could have immediately tried it; nevertheless since testing
     // one byte is cheaper than instatiating a codec that will fail we test
     // the first byte before we carry on.
@@ -125,18 +118,12 @@ public class SRPPublicKey extends SRPKey implements PublicKey
         IKeyPairCodec codec = new SRPKeyPairRawCodec();
         return (SRPPublicKey) codec.decodePublicKey(k);
       }
-    else
-      {
-        throw new IllegalArgumentException("magic");
-      }
+    throw new IllegalArgumentException("magic");
   }
 
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the public exponent of the key as a {@link BigInteger}.</p>
-   *
+   * Returns the public exponent of the key as a {@link BigInteger}.
+   * 
    * @return the public exponent of the key as a {@link BigInteger}.
    */
   public BigInteger getY()
@@ -144,15 +131,13 @@ public class SRPPublicKey extends SRPKey implements PublicKey
     return Y;
   }
 
-  // Other instance methods --------------------------------------------------
-
   /**
-   * <p>Returns the encoded form of this public key according to the designated
-   * format.</p>
-   *
+   * Returns the encoded form of this public key according to the designated
+   * format.
+   * 
    * @param format the desired format identifier of the resulting encoding.
    * @return the byte sequence encoding this key according to the designated
-   * format.
+   *         format.
    * @throws IllegalArgumentException if the format is not supported.
    */
   public byte[] getEncoded(int format)
@@ -170,24 +155,20 @@ public class SRPPublicKey extends SRPKey implements PublicKey
   }
 
   /**
-   * <p>Returns <code>true</code> if the designated object is an instance of
-   * <code>SRPPublicKey</code>and has the same SRP parameter values as this one.
-   * </p>
-   *
+   * Returns <code>true</code> if the designated object is an instance of
+   * <code>SRPPublicKey</code>and has the same SRP parameter values as this
+   * one.
+   * 
    * @param obj the other non-null SRP key to compare to.
-   * @return <code>true</code> if the designated object is of the same type and
-   * value as this one.
+   * @return <code>true</code> if the designated object is of the same type
+   *         and value as this one.
    */
   public boolean equals(Object obj)
   {
     if (obj == null)
-      {
-        return false;
-      }
-    if (!(obj instanceof SRPPublicKey))
-      {
-        return false;
-      }
+      return false;
+    if (! (obj instanceof SRPPublicKey))
+      return false;
     SRPPublicKey that = (SRPPublicKey) obj;
     return super.equals(that) && Y.equals(that.getY());
   }

@@ -976,10 +976,56 @@ public class SAXParser
   public static void main(String[] args)
     throws Exception
   {
-    SAXParser parser = new SAXParser();
-    InputSource input = new InputSource(args[0]);
-    parser.parse(input, new org.xml.sax.helpers.DefaultHandler());
-    
+    boolean validating = false;
+    boolean namespaceAware = false;
+    boolean xIncludeAware = false;
+    boolean expectCallbackClass = false;
+    String callbackClass = null;
+    int pos = 0;
+    while (pos < args.length && (args[pos].startsWith("-") || expectCallbackClass))
+      {
+        if ("-x".equals(args[pos]))
+          xIncludeAware = true;
+        else if ("-v".equals(args[pos]))
+          validating = true;
+        else if ("-n".equals(args[pos]))
+          namespaceAware = true;
+        else if ("-c".equals(args[pos]))
+          expectCallbackClass = true;
+        else if (expectCallbackClass)
+          {
+            callbackClass = args[pos];
+            expectCallbackClass = false;
+          }
+        pos++;
+      }
+    if (pos >= args.length || expectCallbackClass)
+      {
+        System.out.println("Syntax: SAXParser [-n] [-v] [-x] [-c <class>] <file> [<file2> [...]]");
+        System.out.println("\t-n: use namespace aware mode");
+        System.out.println("\t-v: use validating parser");
+        System.out.println("\t-x: use XInclude aware mode");
+        System.out.println("\t-c <class>: use specified class as callback handler (must have a no-arg public constructor)");
+        System.exit(2);
+      }
+    while (pos < args.length)
+      {
+        ContentHandler handler = null;
+        if (callbackClass != null)
+          {
+            Class t = Class.forName(callbackClass);
+            handler = (ContentHandler) t.newInstance();
+          }
+        else
+          handler = new org.xml.sax.helpers.DefaultHandler();
+        SAXParser parser = new SAXParser(validating, namespaceAware,
+                                         xIncludeAware);
+        InputSource input = new InputSource(args[pos]);
+        XMLReader reader = parser.getXMLReader();
+        reader.setContentHandler(handler);
+        reader.parse(input);
+        pos++;
+      }
   }
   
 }

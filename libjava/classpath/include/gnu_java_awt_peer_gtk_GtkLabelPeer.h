@@ -13,7 +13,7 @@ extern "C"
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create (JNIEnv *env, jobject, jstring, jfloat);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkWidgetModifyFont (JNIEnv *env, jobject, jstring, jint, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkLabelPeer_nativeSetAlignment (JNIEnv *env, jobject, jfloat);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setText (JNIEnv *env, jobject, jstring);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setNativeText (JNIEnv *env, jobject, jstring);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setNativeBounds (JNIEnv *env, jobject, jint, jint, jint, jint);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkWidgetGetPreferredDimensions (JNIEnv *env, jobject, jintArray);
 

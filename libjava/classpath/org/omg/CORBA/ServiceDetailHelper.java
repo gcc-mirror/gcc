@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CORBA;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 import gnu.CORBA.ServiceDetailHolder;
 
 import org.omg.CORBA.portable.InputStream;
@@ -55,11 +56,6 @@ public abstract class ServiceDetailHelper
    * The service detail repository id.
    */
   private static String _id = "IDL:omg.org/CORBA/ServiceDetail:1.0";
-
-  /**
-   * The cached typecode value, computed once.
-   */
-  private static TypeCode typeCode;
 
   /**
    * Extract the service detail info from the given {@link Any}
@@ -137,25 +133,21 @@ public abstract class ServiceDetailHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-
-        StructMember[] members = new StructMember[ 2 ];
-
-        TypeCode type =
-          orb.create_alias_tc(_id, "ServiceDetailType",
-            orb.get_primitive_tc(TCKind.tk_ulong)
-          );
-        members [ 0 ] = new StructMember("service_detail_type", type, null);
-
-        TypeCode data =
-          orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
-        members [ 1 ] = new StructMember("service_detail", data, null);
-
-        typeCode = orb.create_struct_tc(id(), "ServiceDetail", members);
-      }
-    return typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    
+    StructMember[] members = new StructMember[ 2 ];
+    
+    TypeCode type =
+      orb.create_alias_tc(_id, "ServiceDetailType",
+                          orb.get_primitive_tc(TCKind.tk_ulong)
+      );
+    members [ 0 ] = new StructMember("service_detail_type", type, null);
+    
+    TypeCode data =
+      orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
+    members [ 1 ] = new StructMember("service_detail", data, null);
+    
+    return orb.create_struct_tc(id(), "ServiceDetail", members);
   }
 
   /**

@@ -40,6 +40,7 @@ package org.omg.PortableServer.CurrentPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -58,26 +59,19 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class NoContextHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
-   * Create the NoContext typecode (structure,
-   * named "NoContext").
+   * Create the NoContext typecode (structure, named "NoContext").
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        StructMember[] members = new StructMember[ 0 ];
-        typeCode = orb.create_exception_tc(id(), "NoContext", members);
-      }
-    return typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    StructMember[] members = new StructMember[0];
+    return orb.create_exception_tc(id(), "NoContext", members);
   }
 
-  /* Every user exception with no user defined fields can use EmptyExceptionHolder */
+  /*
+   * Every user exception with no user defined fields can use
+   * EmptyExceptionHolder
+   */
 
   /**
    * Insert the NoContext into the given Any.

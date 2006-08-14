@@ -64,6 +64,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.MenuSelectionManager;
@@ -129,7 +130,9 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       if (target instanceof Container)
         target = ((Container) target).findComponentAt(ev.getPoint());
       if (m.getSelectedPath().length > 0
-          && ! m.isComponentPartOfCurrentMenu(target))
+          && ! m.isComponentPartOfCurrentMenu(target)
+          && (((JComponent)target).getClientProperty(DONT_CANCEL_POPUP) == null
+          || !((JComponent)target).getClientProperty(DONT_CANCEL_POPUP).equals(Boolean.TRUE)))
         {
           m.clearSelectedPath();
         }
@@ -1028,6 +1031,25 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "PopupMenu.border", new BorderUIResource.BevelBorderUIResource(0),
       "PopupMenu.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "PopupMenu.foreground", new ColorUIResource(darkShadow),
+      "PopupMenu.selectedWindowInputMapBindings",
+      new Object[] {"ESCAPE", "cancel",
+                    "DOWN", "selectNext",
+                    "KP_DOWN", "selectNext",
+                    "UP", "selectPrevious",
+                    "KP_UP", "selectPrevious",
+                    "LEFT", "selectParent",
+                    "KP_LEFT", "selectParent",
+                    "RIGHT", "selectChild",
+                    "KP_RIGHT", "selectChild",
+                    "ENTER", "return",
+                    "SPACE", "return"
+      },
+      "PopupMenu.selectedWindowInputMapBindings.RightToLeft",
+      new Object[] {"LEFT", "selectChild",
+                    "KP_LEFT", "selectChild",
+                    "RIGHT", "selectParent",
+                    "KP_RIGHT", "selectParent",
+      },
       "ProgressBar.background", new ColorUIResource(Color.LIGHT_GRAY),
       "ProgressBar.border",
       new BorderUIResource.LineBorderUIResource(Color.GREEN, 2),
@@ -1607,7 +1629,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       }),
       "Tree.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "Tree.foreground", new ColorUIResource(Color.black),
-      "Tree.hash", new ColorUIResource(new Color(128, 128, 128)),
+      "Tree.hash", new ColorUIResource(new Color(184, 207, 228)),
       "Tree.leftChildIndent", new Integer(7),
       "Tree.rightChildIndent", new Integer(13),
       "Tree.rowHeight", new Integer(16),

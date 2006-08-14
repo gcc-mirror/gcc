@@ -1,5 +1,5 @@
-/* NamingEnumeration.java --
-   Copyright (C) 2000 Free Software Foundation, Inc.
+/* NamingEnumeration.java -- The JNDI enumeration
+   Copyright (C) 2000, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,9 +40,50 @@ package javax.naming;
 
 import java.util.Enumeration;
 
+/**
+ * <p>The specific type of enumeration that supports throwing various exceptions by
+ * the hasMore method. The exceptions are only thrown if the enumeration is
+ * scanned using {@link #next()} and {@link #hasMore()}. If the inherited
+ * {@link java.util.Enumeration#nextElement()} and
+ * {@link Enumeration#hasMoreElements()} are used instead, the exceptions are
+ * not throwed, and the enumeration is just iterated over available elements.
+ * </p>
+ * <p>This enumeration becomes invalid after throwing the exception. If the
+ * exception has been thrown, not other method should be called of that
+ * enumeration.</p>
+ */
 public interface NamingEnumeration extends Enumeration
 {
-  void close() throws NamingException;
-  boolean hasMore() throws NamingException;
+  /**
+   * Returns the next element in this enumeration. The naming - specific
+   * exceptions are only throws after returning all still available elements of
+   * the enumeration.
+   * 
+   * @return the next element of this enumeration
+   * @throws NamingException
+   */
   Object next() throws NamingException;
+  
+  /**
+   * Checks if there are more unvisited elements in the enumeration, throwing
+   * exceptions if there are some unvisited, but not available elements.
+   * 
+   * @return true if there are some unvisited elements, false otherwise.
+   * @throws PartialResultException if the enumeration, returned by the
+   *           {@link Context#list(Name)} or other similar method contains only
+   *           partial answer.
+   * @throws SizeLimitExceededException if remaining elements are not available
+   *           because of the previously specified size limit.
+   * @throws NamingException
+   */
+  boolean hasMore() throws NamingException;
+  
+  /**
+   * Immediately frees all resources, owned by this enumeration. If invoked, it
+   * must be the last method called for that enumeration.
+   * 
+   * @throws NamingException
+   */  
+  void close() throws NamingException;
+
 }

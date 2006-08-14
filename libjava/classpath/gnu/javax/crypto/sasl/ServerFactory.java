@@ -62,53 +62,33 @@ import javax.security.sasl.SaslServerFactory;
 /**
  * The implementation of the {@link SaslServerFactory}.
  */
-public class ServerFactory implements SaslServerFactory
+public class ServerFactory
+    implements SaslServerFactory
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // implicit 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
 
   public static final Set getNames()
   {
-    return Collections.unmodifiableSet(new HashSet(
-                                                   Arrays.asList(getNamesInternal(null))));
+    return Collections.unmodifiableSet(new HashSet(Arrays.asList(getNamesInternal(null))));
   }
 
   private static final String[] getNamesInternal(Map props)
   {
-    String[] all = new String[] { Registry.SASL_SRP_MECHANISM,
-                                 Registry.SASL_CRAM_MD5_MECHANISM,
-                                 Registry.SASL_PLAIN_MECHANISM,
-                                 Registry.SASL_ANONYMOUS_MECHANISM };
-
+    String[] all = new String[] {
+        Registry.SASL_SRP_MECHANISM,
+        Registry.SASL_CRAM_MD5_MECHANISM,
+        Registry.SASL_PLAIN_MECHANISM,
+        Registry.SASL_ANONYMOUS_MECHANISM };
     List result = new ArrayList(4);
     int i;
     for (i = 0; i < all.length;)
-      {
-        result.add(all[i++]);
-      }
-
+      result.add(all[i++]);
     if (props == null)
-      {
-        return (String[]) result.toArray(new String[0]); // all
-      }
-    if (hasPolicy(Sasl.POLICY_PASS_CREDENTIALS, props))
-      { // none
-        return new String[0];
-      }
-
+      return (String[]) result.toArray(new String[0]); // all
+    if (hasPolicy(Sasl.POLICY_PASS_CREDENTIALS, props)) // none
+      return new String[0];
     if (hasPolicy(Sasl.POLICY_NOPLAINTEXT, props))
-      {
-        result.remove(Registry.SASL_PLAIN_MECHANISM);
-      }
+      result.remove(Registry.SASL_PLAIN_MECHANISM);
     if (hasPolicy(Sasl.POLICY_NOACTIVE, props))
       {
         result.remove(Registry.SASL_CRAM_MD5_MECHANISM);
@@ -135,31 +115,18 @@ public class ServerFactory implements SaslServerFactory
   public static final ServerMechanism getInstance(String mechanism)
   {
     if (mechanism == null)
-      {
-        return null;
-      }
+      return null;
     mechanism = mechanism.trim().toUpperCase();
     if (mechanism.equals(Registry.SASL_SRP_MECHANISM))
-      {
-        return new SRPServer();
-      }
+      return new SRPServer();
     if (mechanism.equals(Registry.SASL_CRAM_MD5_MECHANISM))
-      {
-        return new CramMD5Server();
-      }
+      return new CramMD5Server();
     if (mechanism.equals(Registry.SASL_PLAIN_MECHANISM))
-      {
-        return new PlainServer();
-      }
+      return new PlainServer();
     if (mechanism.equals(Registry.SASL_ANONYMOUS_MECHANISM))
-      {
-        return new AnonymousServer();
-      }
+      return new AnonymousServer();
     return null;
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   public SaslServer createSaslServer(String mechanism, String protocol,
                                      String serverName, Map props,
@@ -170,13 +137,10 @@ public class ServerFactory implements SaslServerFactory
       {
         HashMap attributes = new HashMap();
         if (props != null)
-          {
-            attributes.putAll(props);
-          }
+          attributes.putAll(props);
         attributes.put(Registry.SASL_PROTOCOL, protocol);
         attributes.put(Registry.SASL_SERVER_NAME, serverName);
         attributes.put(Registry.SASL_CALLBACK_HANDLER, cbh);
-
         result.init(attributes);
       }
     return result;

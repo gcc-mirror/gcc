@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.java.security.pkcs;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.OID;
 import gnu.java.security.ber.BER;
 import gnu.java.security.ber.BEREncodingException;
@@ -50,7 +51,6 @@ import gnu.java.security.util.Util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -101,7 +101,8 @@ public class SignerInfo
   public SignerInfo(BERReader ber) throws IOException
   {
     DERValue val = ber.read();
-    log.finest("SignerInfo: " + val);
+    if (Configuration.DEBUG)
+      log.fine("SignerInfo: " + val);
     if (!val.isConstructed())
       throw new BEREncodingException("malformed SignerInfo");
 
@@ -110,13 +111,13 @@ public class SignerInfo
       throw new BEREncodingException("malformed Version");
 
     version = (BigInteger) val.getValue();
-    log.finest("  Version: " + version);
+    log.fine("  Version: " + version);
 
     val = ber.read();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed IssuerAndSerialNumber");
-
-    log.finest("  IssuerAndSerialNumber: " + val);
+    if (Configuration.DEBUG)
+      log.fine("  IssuerAndSerialNumber: " + val);
 
     val = ber.read();
     if (!val.isConstructed())
@@ -124,20 +125,22 @@ public class SignerInfo
 
     issuer = new X500Principal(val.getEncoded());
     ber.skip(val.getLength());
-    log.finest("    Issuer: " + issuer);
+    if (Configuration.DEBUG)
+      log.fine("    Issuer: " + issuer);
 
     val = ber.read();
     if (val.getTag() != BER.INTEGER)
       throw new BEREncodingException("malformed SerialNumber");
 
     serialNumber = (BigInteger) val.getValue();
-    log.finest("    SerialNumber: " + serialNumber);
+    if (Configuration.DEBUG)
+      log.fine("    SerialNumber: " + serialNumber);
 
     val = ber.read();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed DigestAlgorithmIdentifier");
-
-    log.finest("  DigestAlgorithmIdentifier: " + val);
+    if (Configuration.DEBUG)
+      log.fine("  DigestAlgorithmIdentifier: " + val);
 
     int count = 0;
     DERValue val2 = ber.read();
@@ -145,7 +148,8 @@ public class SignerInfo
       throw new BEREncodingException("malformed AlgorithmIdentifier");
 
     digestAlgorithmId = (OID) val2.getValue();
-    log.finest("    digestAlgorithm OID: " + digestAlgorithmId);
+    if (Configuration.DEBUG)
+      log.fine("    digestAlgorithm OID: " + digestAlgorithmId);
 
     if (BERValue.isIndefinite(val))
       {
@@ -170,10 +174,12 @@ public class SignerInfo
     else
       digestAlgorithmParams = null;
 
-    log.finest("    digestAlgorithm params: ");
-    log.finest(Util.dumpString(digestAlgorithmParams,
-                               "    digestAlgorithm params: "));
-
+    if (Configuration.DEBUG)
+      {
+        log.fine("    digestAlgorithm params: ");
+        log.fine(Util.dumpString(digestAlgorithmParams,
+                                 "    digestAlgorithm params: "));
+      }
     val = ber.read();
     if (val.getTag() == 0)
       {
@@ -187,21 +193,24 @@ public class SignerInfo
     else
       authenticatedAttributes = null;
 
-    log.finest("  AuthenticatedAttributes: ");
-    log.finest(Util.dumpString(authenticatedAttributes,
-                               "  AuthenticatedAttributes: "));
-
+    if (Configuration.DEBUG)
+      {
+        log.fine("  AuthenticatedAttributes: ");
+        log.fine(Util.dumpString(authenticatedAttributes,
+                                 "  AuthenticatedAttributes: "));
+      }
     if (!val.isConstructed())
       throw new BEREncodingException("malformed DigestEncryptionAlgorithmIdentifier");
-
-    log.finest("  DigestEncryptionAlgorithmIdentifier: " + val);
+    if (Configuration.DEBUG)
+      log.fine("  DigestEncryptionAlgorithmIdentifier: " + val);
     count = 0;
     val2 = ber.read();
     if (val2.getTag() != BER.OBJECT_IDENTIFIER)
       throw new BEREncodingException("malformed AlgorithmIdentifier");
 
     digestEncryptionAlgorithmId = (OID) val2.getValue();
-    log.finest("    digestEncryptionAlgorithm OID: " + digestEncryptionAlgorithmId);
+    if (Configuration.DEBUG)
+      log.fine("    digestEncryptionAlgorithm OID: " + digestEncryptionAlgorithmId);
 
     if (BERValue.isIndefinite(val))
       {
@@ -226,27 +235,33 @@ public class SignerInfo
     else
       digestEncryptionAlgorithmParams = null;
 
-    log.finest("    digestEncryptionAlgorithm params: ");
-    log.finest(Util.dumpString(digestEncryptionAlgorithmParams,
-                               "    digestEncryptionAlgorithm params: "));
-
+    if (Configuration.DEBUG)
+      {
+        log.fine("    digestEncryptionAlgorithm params: ");
+        log.fine(Util.dumpString(digestEncryptionAlgorithmParams,
+                                 "    digestEncryptionAlgorithm params: "));
+      }
     val = ber.read();
     if (val.getTag() != BER.OCTET_STRING)
       throw new BEREncodingException("malformed EncryptedDigest");
 
     encryptedDigest = (byte[]) val.getValue();
-    log.finest("  EncryptedDigest: ");
-    log.finest(Util.dumpString(encryptedDigest, "  EncryptedDigest: "));
-
+    if (Configuration.DEBUG)
+      {
+        log.fine("  EncryptedDigest: ");
+        log.fine(Util.dumpString(encryptedDigest, "  EncryptedDigest: "));
+      }
     if (ber.peek() == 1)
       unauthenticatedAttributes = ber.read().getEncoded();
     else
       unauthenticatedAttributes = null;
 
-    log.finest("  UnauthenticatedAttributes: ");
-    log.finest(Util.dumpString(unauthenticatedAttributes,
-                               "  UnauthenticatedAttributes: "));
-
+    if (Configuration.DEBUG)
+      {
+        log.fine("  UnauthenticatedAttributes: ");
+        log.fine(Util.dumpString(unauthenticatedAttributes,
+                                 "  UnauthenticatedAttributes: "));
+      }
     if (ber.peek() == 0)
       ber.read();
   }

@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.jarsigner;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.SystemProperties;
 import gnu.java.util.jar.JarUtils;
 
@@ -69,8 +70,8 @@ public class JarSigner
 
   void start() throws Exception
   {
-    log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
     JarFile jarFile = new JarFile(main.getJarFileName());
     SFHelper sfHelper = new SFHelper(jarFile);
 
@@ -119,19 +120,22 @@ public class JarSigner
     String signaturesFileName = main.getSigFileName();
     String sfFileName = JarUtils.META_INF + signaturesFileName
                         + JarUtils.SF_SUFFIX;
-    log.finest("Processing " + sfFileName); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("Processing " + sfFileName); //$NON-NLS-1$
     JarEntry sfEntry = new JarEntry(sfFileName);
     sfEntry.setTime(System.currentTimeMillis());
     outSignedJarFile.putNextEntry(sfEntry);
     sfHelper.writeSF(outSignedJarFile);
-    log.finer("Created .SF file"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("Created .SF file"); //$NON-NLS-1$
     if (main.isVerbose())
       System.out.println(Messages.getString("JarSigner.8") + sfFileName); //$NON-NLS-1$
 
     // 4. create the .DSA file
     String dsaFileName = JarUtils.META_INF + signaturesFileName
                          + JarUtils.DSA_SUFFIX;
-    log.finest("Processing " + dsaFileName); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("Processing " + dsaFileName); //$NON-NLS-1$
     JarEntry dsaEntry = new JarEntry(dsaFileName);
     dsaEntry.setTime(System.currentTimeMillis());
     outSignedJarFile.putNextEntry(dsaEntry);
@@ -139,7 +143,8 @@ public class JarSigner
                       main.getSignerPrivateKey(),
                       main.getSignerCertificateChain(),
                       main.isInternalSF());
-    log.finer("Created .DSA file"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("Created .DSA file"); //$NON-NLS-1$
     if (main.isVerbose())
       System.out.println(Messages.getString("JarSigner.8") + dsaFileName); //$NON-NLS-1$
 
@@ -147,12 +152,13 @@ public class JarSigner
     outSignedJarFile.close();
     fos.close();
     signedJarFile.renameTo(new File(main.getSignedJarFileName()));
-    log.finer("Renamed signed JAR file"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("Renamed signed JAR file"); //$NON-NLS-1$
     if (main.isVerbose())
       System.out.println(SystemProperties.getProperty("line.separator") //$NON-NLS-1$
                          + Messages.getString("JarSigner.14")); //$NON-NLS-1$
-
-    log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   private void copyFromTo(InputStream in, JarOutputStream out)

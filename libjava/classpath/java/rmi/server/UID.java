@@ -94,23 +94,23 @@ public final class UID
    * The time stamp, when the UID was created.
    */
   private long time;
-
+  
   /**
    * Create the new UID that would have the described features of the
    * uniqueness.
    */
   public UID()
   {
-    time = System.currentTimeMillis();
-    unique = machineId;
-    if (time > last)
+    synchronized (UID.class)
       {
-        last = time;
-        count = uidCounter = Short.MIN_VALUE;
-      }
-    else
-      {
-        synchronized (UID.class)
+        time = System.currentTimeMillis();
+        unique = machineId;
+        if (time > last)
+          {
+            last = time;
+            count = uidCounter = Short.MIN_VALUE;
+          }
+        else
           {
             if (uidCounter == Short.MAX_VALUE)
               {
@@ -126,8 +126,7 @@ public final class UID
                 uidCounter = Short.MIN_VALUE;
                 time = last = System.currentTimeMillis();
               }
-
-            count = uidCounter++;
+            count = ++uidCounter;
           }
       }
   }
@@ -210,7 +209,7 @@ public final class UID
            ^ hostIpHash;
   }
   
-  /**
+    /**
    * Get the string representation of this UID.
    * 
    * @return a string, uniquely identifying this id.
@@ -219,9 +218,8 @@ public final class UID
   {
     int max = Character.MAX_RADIX;
     // Translate into object count, counting from 0.
-    long lc = (count + Short.MIN_VALUE) & 0xFFFF;
-    return Long.toString(time, max) + ":"
-           + Long.toString(unique, max) + ":"
+    long lc = (count - Short.MIN_VALUE) & 0xFFFF;
+    return Long.toString(unique, max) + ":" + Long.toString(time, max) + "."
            + Long.toString(lc, max);
   }
 }

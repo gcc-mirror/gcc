@@ -49,32 +49,18 @@ import java.util.Map;
 import javax.crypto.interfaces.DHPrivateKey;
 
 /**
- * <p>This implementation is the receiver's part of the ElGamal key agreement
- * exchange (B in [HAC]).</p>
- *
+ * This implementation is the receiver's part of the ElGamal key agreement
+ * exchange (B in [HAC]).
+ * 
  * @see ElGamalKeyAgreement
  */
-public class ElGamalReceiver extends ElGamalKeyAgreement
+public class ElGamalReceiver
+    extends ElGamalKeyAgreement
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The recipient's private key. */
   private DHPrivateKey B;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // default 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // implementation of abstract methods in base class ------------------------
 
   protected void engineInit(Map attributes) throws KeyAgreementException
   {
@@ -83,9 +69,7 @@ public class ElGamalReceiver extends ElGamalKeyAgreement
     // a keypair and publishes its public key
     B = (DHPrivateKey) attributes.get(KA_ELGAMAL_RECIPIENT_PRIVATE_KEY);
     if (B == null)
-      {
-        throw new KeyAgreementException("missing recipient private key");
-      }
+      throw new KeyAgreementException("missing recipient private key");
   }
 
   protected OutgoingMessage engineProcessMessage(IncomingMessage in)
@@ -100,8 +84,6 @@ public class ElGamalReceiver extends ElGamalKeyAgreement
       }
   }
 
-  // own methods -------------------------------------------------------------
-
   private OutgoingMessage computeSharedSecret(IncomingMessage in)
       throws KeyAgreementException
   {
@@ -109,12 +91,8 @@ public class ElGamalReceiver extends ElGamalKeyAgreement
     // K = (g^x)^xb mod p
     BigInteger m1 = in.readMPI();
     if (m1 == null)
-      {
-        throw new KeyAgreementException("missing message (1)");
-      }
-
+      throw new KeyAgreementException("missing message (1)");
     ZZ = m1.modPow(B.getX(), B.getParams().getP()); // ZZ = (ya ^ xb) mod p
-
     complete = true;
     return null;
   }

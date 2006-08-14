@@ -45,58 +45,55 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <p>A <i>Stage</i> in a Cascade Cipher.</p>
- *
- * <p>Each stage may be either an implementation of a Block Cipher Mode of
- * Operation ({@link IMode}) or another Cascade Cipher ({@link Cascade}). Each
- * stage has also a <i>natural</i> operational direction when constructed for
- * inclusion within a {@link Cascade}. This <i>natural</i> direction dictates
- * how data flows from one stage into another when stages are chained together
- * in a cascade. One can think of a stage and its natural direction as the
- * specification of how to wire the stage into the chain. The following diagrams
- * may help understand the paradigme. The first shows two stages chained each
- * with a {@link Direction#FORWARD} direction.</p>
+ * A <i>Stage</i> in a Cascade Cipher.
+ * <p>
+ * Each stage may be either an implementation of a Block Cipher Mode of
+ * Operation ({@link IMode}) or another Cascade Cipher ({@link Cascade}).
+ * Each stage has also a <i>natural</i> operational direction when constructed
+ * for inclusion within a {@link Cascade}. This <i>natural</i> direction
+ * dictates how data flows from one stage into another when stages are chained
+ * together in a cascade. One can think of a stage and its natural direction as
+ * the specification of how to wire the stage into the chain. The following
+ * diagrams may help understand the paradigme. The first shows two stages
+ * chained each with a {@link Direction#FORWARD} direction.
+ * 
  * <pre>
- *           FORWARD         FORWARD
- *       +------+       +-------+
- *       |      |       |       |
- *       |  +--in --+   |   +--in --+
- *    ---+  | Stage |   |   | Stage |  +---
- *          +--out--+   |   +--out--+  |
- *              |       |       |      |
- *              +-------+       +------+
+ *            FORWARD         FORWARD
+ *        +------+       +-------+
+ *        |      |       |       |
+ *        |  +--in --+   |   +--in --+
+ *     ---+  | Stage |   |   | Stage |  +---
+ *           +--out--+   |   +--out--+  |
+ *               |       |       |      |
+ *               +-------+       +------+
  * </pre>
- * <p>The second diagram shows two stages, one in a {@link Direction#FORWARD}
+ * 
+ * <p>
+ * The second diagram shows two stages, one in a {@link Direction#FORWARD}
  * direction, while the other is wired in a {@link Direction#REVERSED}
- * direction.</p>
+ * direction.
+ * 
  * <pre>
- *           FORWARD         REVERSED
- *       +------+               +------+
- *       |      |               |      |
- *       |  +--in --+       +--in --+  |
- *    ---+  | Stage |       | Stage |  +---
- *          +--out--+       +--out--+
- *              |               |
- *              +---------------+
+ *            FORWARD         REVERSED
+ *        +------+               +------+
+ *        |      |               |      |
+ *        |  +--in --+       +--in --+  |
+ *     ---+  | Stage |       | Stage |  +---
+ *           +--out--+       +--out--+
+ *               |               |
+ *               +---------------+
  * </pre>
- *
+ * 
  * @see ModeStage
  * @see CascadeStage
  */
 public abstract class Stage
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   public static final String DIRECTION = "gnu.crypto.assembly.stage.direction";
 
   protected Direction forward;
 
   protected Direction wired;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   protected Stage(Direction forwardDirection)
   {
@@ -105,9 +102,6 @@ public abstract class Stage
     this.forward = forwardDirection;
     this.wired = null;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
 
   public static final Stage getInstance(IMode mode, Direction forwardDirection)
   {
@@ -120,32 +114,27 @@ public abstract class Stage
     return new CascadeStage(cascade, forwardDirection);
   }
 
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
    * Returns the {@link Set} of supported block sizes for this
    * <code>Stage</code>. Each element in the returned {@link Set} is an
    * instance of {@link Integer}.
-   *
+   * 
    * @return a {@link Set} of supported block sizes.
    */
   public abstract Set blockSizes();
 
   /**
    * Initialises the stage for operation with specific characteristics.
-   *
+   * 
    * @param attributes a set of name-value pairs that describes the desired
-   * future behaviour of this instance.
+   *          future behaviour of this instance.
    * @throws IllegalStateException if the instance is already initialised.
    * @throws InvalidKeyException if the key data is invalid.
    */
   public void init(Map attributes) throws InvalidKeyException
   {
     if (wired != null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     Direction flow = (Direction) attributes.get(DIRECTION);
     if (flow == null)
       {
@@ -158,7 +147,7 @@ public abstract class Stage
 
   /**
    * Returns the currently set block size for the stage.
-   *
+   * 
    * @return the current block size for this stage.
    * @throws IllegalStateException if the instance is not initialised.
    */
@@ -178,10 +167,10 @@ public abstract class Stage
    * Processes exactly one block of <i>plaintext</i> (if initialised in the
    * {@link Direction#FORWARD} state) or <i>ciphertext</i> (if initialised in
    * the {@link Direction#REVERSED} state).
-   *
+   * 
    * @param in the plaintext.
    * @param inOffset index of <code>in</code> from which to start considering
-   * data.
+   *          data.
    * @param out the ciphertext.
    * @param outOffset index of <code>out</code> from which to store result.
    * @throws IllegalStateException if the instance is not initialised.
@@ -189,9 +178,7 @@ public abstract class Stage
   public void update(byte[] in, int inOffset, byte[] out, int outOffset)
   {
     if (wired == null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     updateDelegate(in, inOffset, out, outOffset);
   }
 
@@ -200,13 +187,11 @@ public abstract class Stage
    * encryption / decryption test(s) for all supported block and key sizes of
    * underlying block cipher(s) wrapped by Mode leafs. The test also includes
    * one (1) variable key Known Answer Test (KAT) for each block cipher.
-   *
+   * 
    * @return <code>true</code> if the implementation passes simple
-   * <i>correctness</i> tests. Returns <code>false</code> otherwise.
+   *         <i>correctness</i> tests. Returns <code>false</code> otherwise.
    */
   public abstract boolean selfTest();
-
-  // abstract methods to be implemented by concrete subclasses ---------------
 
   abstract void initDelegate(Map attributes) throws InvalidKeyException;
 

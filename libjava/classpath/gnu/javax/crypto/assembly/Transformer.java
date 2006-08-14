@@ -44,49 +44,43 @@ import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
 /**
- * <p>A <code>Transformer</code> is an abstract representation of a two-way
+ * A <code>Transformer</code> is an abstract representation of a two-way
  * <i>transformation</i> that can be chained together with other instances of
  * this type. Examples of such transformations in this library are:
- * {@link Cascade} cipher, {@link gnu.crypto.pad.IPad} algorithm, and a
+ * {@link Cascade} cipher, {@link gnu.javax.crypto.pad.IPad} algorithm, and a
  * ZLib-based deflater/inflater algorithm. A special implementation of a
- * <code>Transformer</code> to close a chain is also provided.</p>
- *
- * <p>A <code>Transformer</code> is characterised by the followings:<p>
+ * <code>Transformer</code> to close a chain is also provided.
+ * <p>
+ * A <code>Transformer</code> is characterised by the followings:
  * <ul>
- *    <li>It can be chained to other instances, to form an {@link Assembly}.</li>
- *    <li>When configured in an {@link Assembly}, it can be set to apply its
- *    internal transformation on the input data stream before (pre-processing)
- *    or after (post-processing) passing the input data to the next element in
- *    the chain. Note that the same type <code>Transformer</code> can be used as
- *    either in pre-processing or a post-processing modes.</li>
- *    <li>A special transformer --<code>LoopbackTransformer</code>-- is used to
- *    close the chain.</li>
- *    <li>A useful type of <code>Transformer</code> --one we're interested in--
- *    has internal buffers. The distinction between a casual push (update)
- *    operation and the last one allows to correctly flush any intermediate
- *    bytes that may exist in those buffers.</li>
+ * <li>It can be chained to other instances, to form an {@link Assembly}.</li>
+ * <li>When configured in an {@link Assembly}, it can be set to apply its
+ * internal transformation on the input data stream before (pre-processing) or
+ * after (post-processing) passing the input data to the next element in the
+ * chain. Note that the same type <code>Transformer</code> can be used as
+ * either in pre-processing or a post-processing modes.</li>
+ * <li>A special transformer --<code>LoopbackTransformer</code>-- is used
+ * to close the chain.</li>
+ * <li>A useful type of <code>Transformer</code> --one we're interested in--
+ * has internal buffers. The distinction between a casual push (update)
+ * operation and the last one allows to correctly flush any intermediate bytes
+ * that may exist in those buffers.</li>
  * </ul>
- *
- * <p>To allow wiring <code>Transformer</code> instances together, a
+ * <p>
+ * To allow wiring <code>Transformer</code> instances together, a
  * <i>minimal-output-size</i> in bytes is necessary. The trivial case of a
  * value of <code>1</code> for such attribute practically means that no output
  * buffering, from the previous element, is needed --which is independant of
- * buffering the input if the <code>Transformer</code> implementation itself is
- * block-based.</p>
- *
+ * buffering the input if the <code>Transformer</code> implementation itself
+ * is block-based.
+ * 
  * @see CascadeTransformer
  * @see PaddingTransformer
  * @see DeflateTransformer
  */
 public abstract class Transformer
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   public static final String DIRECTION = "gnu.crypto.assembly.transformer.direction";
-
-  //   public static final String MODE = "gnu.crypto.assembly.transformer.mode";
 
   protected Direction wired;
 
@@ -98,9 +92,6 @@ public abstract class Transformer
 
   protected ByteArrayOutputStream outBuffer = new ByteArrayOutputStream(2048);
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial protected constructor. */
   protected Transformer()
   {
@@ -108,9 +99,6 @@ public abstract class Transformer
 
     this.wired = null;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
 
   public static final Transformer getCascadeTransformer(Cascade cascade)
   {
@@ -127,81 +115,69 @@ public abstract class Transformer
     return new DeflateTransformer();
   }
 
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
    * Sets the operational mode of this <code>Transformer</code>.
-   *
+   * 
    * @param mode the processing mode this <code>Transformer</code> is required
-   * to operate in.
-   * @throws IllegalStateException if this instance has already been assigned
-   * an operational mode.
+   *          to operate in.
+   * @throws IllegalStateException if this instance has already been assigned an
+   *           operational mode.
    */
   public void setMode(final Operation mode)
   {
     if (this.mode != null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     this.mode = mode;
   }
 
   /**
    * Returns <code>true</code> if this <code>Transformer</code> was wired in
    * pre-processing mode; <code>false</code> otherwise.
-   *
-   * @return <code>true</code> if this <code>Transformer</code> has been wired
-   * in pre-processing mode; <code>false</code> otherwise.
-   * @throws IllegalStateException if this instance has not yet been assigned
-   * an operational <i>type</i>.
+   * 
+   * @return <code>true</code> if this <code>Transformer</code> has been
+   *         wired in pre-processing mode; <code>false</code> otherwise.
+   * @throws IllegalStateException if this instance has not yet been assigned an
+   *           operational <i>type</i>.
    */
   public boolean isPreProcessing()
   {
     if (mode == null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     return (mode == Operation.PRE_PROCESSING);
   }
 
   /**
    * Returns <code>true</code> if this <code>Transformer</code> was wired in
    * post-processing mode; <code>false</code> otherwise.
-   *
-   * @return <code>true</code> if this <code>Transformer</code> has been wired
-   * in post-processing mode; <code>false</code> otherwise.
-   * @throws IllegalStateException if this instance has not yet been assigned
-   * an operational <i>type</i>.
+   * 
+   * @return <code>true</code> if this <code>Transformer</code> has been
+   *         wired in post-processing mode; <code>false</code> otherwise.
+   * @throws IllegalStateException if this instance has not yet been assigned an
+   *           operational <i>type</i>.
    */
   public boolean isPostProcessing()
   {
-    return !isPreProcessing();
+    return ! isPreProcessing();
   }
 
   /**
    * Initialises the <code>Transformer</code> for operation with specific
    * characteristics.
-   *
+   * 
    * @param attributes a set of name-value pairs that describes the desired
-   * future behaviour of this instance.
+   *          future behaviour of this instance.
    * @throws IllegalStateException if the instance is already initialised.
    */
   public void init(Map attributes) throws TransformerException
   {
     if (wired != null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     Direction flow = (Direction) attributes.get(DIRECTION);
     if (flow == null)
-      {
-        flow = Direction.FORWARD;
-      }
+      flow = Direction.FORWARD;
     wired = flow;
     inBuffer.reset();
     outBuffer.reset();
-
     tail.init(attributes); // initialise tail first
     initDelegate(attributes); // initialise this instance
   }
@@ -209,15 +185,13 @@ public abstract class Transformer
   /**
    * Returns the block-size of this <code>Transformer</code>. A value of
    * <code>1</code> indicates that this instance is block-agnostic.
-   *
+   * 
    * @return the current minimal required block size.
    */
   public int currentBlockSize()
   {
     if (wired == null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     return delegateBlockSize();
   }
 
@@ -238,12 +212,12 @@ public abstract class Transformer
    * Convenience method that calls the method with same name and three
    * arguments, using a byte array of length <code>1</code> whose contents are
    * the designated byte.
-   *
+   * 
    * @param b the byte to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #update(byte[], int, int)
    */
   public byte[] update(byte b) throws TransformerException
@@ -253,14 +227,14 @@ public abstract class Transformer
 
   /**
    * Convenience method that calls the same method with three arguments. All
-   * bytes in <code>in</code>, starting from index position <code>0</code> are
-   * considered.
-   *
+   * bytes in <code>in</code>, starting from index position <code>0</code>
+   * are considered.
+   * 
    * @param in the input data bytes.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #update(byte[], int, int)
    */
   public byte[] update(byte[] in) throws TransformerException
@@ -270,48 +244,42 @@ public abstract class Transformer
 
   /**
    * Processes a designated number of bytes from a given byte array.
-   *
+   * 
    * @param in the input data bytes.
    * @param offset index of <code>in</code> from which to start considering
-   * data.
+   *          data.
    * @param length the count of bytes to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    */
   public byte[] update(byte[] in, int offset, int length)
       throws TransformerException
   {
     if (wired == null)
-      {
-        throw new IllegalStateException();
-      }
-    byte[] result = (wired == Direction.FORWARD ? forwardUpdate(in, offset,
-                                                                length)
-                                               : inverseUpdate(in, offset,
-                                                               length));
+      throw new IllegalStateException();
+    byte[] result = (wired == Direction.FORWARD ? forwardUpdate(in, offset, length)
+                                                : inverseUpdate(in, offset, length));
     return result;
   }
 
   /**
    * Convenience method that calls the same method with three arguments. A
    * zero-long byte array is used.
-   *
+   * 
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #lastUpdate(byte[], int, int)
    */
   public byte[] lastUpdate() throws TransformerException
   {
     byte[] result = (wired == Direction.FORWARD ? lastForwardUpdate()
-                                               : lastInverseUpdate());
-    if (inBuffer.size() != 0)
-      { // we still have some buffered bytes
-        throw new TransformerException("lastUpdate(): input buffer not empty");
-      }
+                                                : lastInverseUpdate());
+    if (inBuffer.size() != 0) // we still have some buffered bytes
+      throw new TransformerException("lastUpdate(): input buffer not empty");
     return result;
   }
 
@@ -319,12 +287,12 @@ public abstract class Transformer
    * Convenience method that calls the method with same name and three
    * arguments, using a byte array of length <code>1</code> whose contents are
    * the designated byte.
-   *
+   * 
    * @param b the byte to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #lastUpdate(byte[], int, int)
    */
   public byte[] lastUpdate(byte b) throws TransformerException
@@ -334,14 +302,14 @@ public abstract class Transformer
 
   /**
    * Convenience method that calls the same method with three arguments. All
-   * bytes in <code>in</code>, starting from index position <code>0</code> are
-   * considered.
-   *
+   * bytes in <code>in</code>, starting from index position <code>0</code>
+   * are considered.
+   * 
    * @param in the input data bytes.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #lastUpdate(byte[], int, int)
    */
   public byte[] lastUpdate(byte[] in) throws TransformerException
@@ -350,18 +318,18 @@ public abstract class Transformer
   }
 
   /**
-   * Processes a designated number of bytes from a given byte array and
-   * signals, at the same time, that this is the last <i>push</i> operation on
-   * this <code>Transformer</code>.
-   *
+   * Processes a designated number of bytes from a given byte array and signals,
+   * at the same time, that this is the last <i>push</i> operation on this
+   * <code>Transformer</code>.
+   * 
    * @param in the input data bytes.
    * @param offset index of <code>in</code> from which to start considering
-   * data.
+   *          data.
    * @param length the count of bytes to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    */
   public byte[] lastUpdate(byte[] in, int offset, int length)
       throws TransformerException
@@ -378,22 +346,18 @@ public abstract class Transformer
     return result;
   }
 
-  // helper methods ----------------------------------------------------------
-
   private byte[] forwardUpdate(byte[] in, int off, int len)
       throws TransformerException
   {
-    return (isPreProcessing() ? preTransform(in, off, len) : postTransform(in,
-                                                                           off,
-                                                                           len));
+    return (isPreProcessing() ? preTransform(in, off, len)
+                              : postTransform(in, off, len));
   }
 
   private byte[] inverseUpdate(byte[] in, int off, int len)
       throws TransformerException
   {
-    return (isPreProcessing() ? postTransform(in, off, len) : preTransform(in,
-                                                                           off,
-                                                                           len));
+    return (isPreProcessing() ? postTransform(in, off, len)
+                              : preTransform(in, off, len));
   }
 
   private byte[] preTransform(byte[] in, int off, int len)
@@ -443,8 +407,6 @@ public abstract class Transformer
       }
     return result;
   }
-
-  // abstract methods to be implemented by concrete subclasses ---------------
 
   abstract void initDelegate(Map attributes) throws TransformerException;
 

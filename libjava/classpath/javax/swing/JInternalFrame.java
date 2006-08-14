@@ -38,9 +38,11 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
+import java.awt.IllegalComponentStateException;
 import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
@@ -490,12 +492,6 @@ public class JInternalFrame extends JComponent implements Accessible,
   /** Whether the JInternalFrame has become visible for the very first time. */
   private transient boolean isFirstTimeVisible = true;
 
-  /**
-   * Whether the JInternalFrame is in the transition from being a maximized
-   * frame back to a regular sized frame.
-   */
-  private transient boolean maxTransition = false;
-
   /** DOCUMENT ME! */
   private transient boolean wasIcon = false;
 
@@ -581,11 +577,12 @@ public class JInternalFrame extends JComponent implements Accessible,
     this.closable = closable;
     this.maximizable = maximizable;
     this.iconable = iconifiable;
-    storedBounds = new Rectangle();
+    isMaximum = false;
     setRootPane(createRootPane());
     // JInternalFrames are invisible and opaque by default.
     setVisible(false);
     setOpaque(true);
+    desktopIcon = new JDesktopIcon(this);
     updateUI();
     setRootPaneCheckingEnabled(true); // Done the init stage, now adds go to content pane.
   }
@@ -643,24 +640,25 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void dispose()
   {
-    setVisible(false);
-    JDesktopPane pane = getDesktopPane();
-    if (pane != null)
-      pane.setSelectedFrame(null);
-    else
+    if (isVisible())
+      setVisible(false);
+    if (isSelected())
       {
-	try
-	  {
-	    setSelected(false);
-	  }
-	catch (PropertyVetoException e)
-	  {
-	    // Do nothing if they don't want to be unselected.
-	  }
+        try
+          {
+            setSelected(false);
+          }
+        catch (PropertyVetoException e)
+          {
+            // Do nothing if they don't want to be unselected.
+          }
       }
-    isClosed = true;
+    if (! isClosed)
+      {
+        firePropertyChange(IS_CLOSED_PROPERTY, Boolean.FALSE, Boolean.TRUE);
+        isClosed = true;
+      }
     fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_CLOSED);
-    removeNotify();
   }
 
   /**
@@ -799,8 +797,6 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public JDesktopIcon getDesktopIcon()
   {
-    if (desktopIcon == null)
-      desktopIcon = new JDesktopIcon(this);
     return desktopIcon;
   }
 
@@ -904,18 +900,7 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public int getLayer()
   {
-    JDesktopPane pane = getDesktopPane();
-    if (pane != null)
-      // The cast here forces the call to the instance method getLayer()
-      // instead of the static method (this would lead to infinite
-      // recursion).
-      return pane.getLayer((Component) this);
-    
-    Integer layer = (Integer) getClientProperty(JLayeredPane.LAYER_PROPERTY);
-    if (layer != null)
-      return layer.intValue();
-    
-    return JLayeredPane.DEFAULT_LAYER.intValue();
+    return JLayeredPane.getLayer(this);
   }
 
   /**
@@ -970,7 +955,7 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public Rectangle getNormalBounds()
   {
-    if (! isMaximum() && ! maxTransition)
+    if (storedBounds == null)
       return getBounds();
     else
       return storedBounds;
@@ -1035,20 +1020,8 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void hide()
   {
-    JDesktopPane pane = getDesktopPane();
-    if (pane != null)
-      pane.setSelectedFrame(null);
-    else
-      {
-	try
-	  {
-	    setSelected(false);
-	  }
-	catch (PropertyVetoException e)
-	  {
-	    // Do nothing.
-	  }
-      }
+    if (isIcon())
+      getDesktopIcon().hide();
     super.hide();
   }
 
@@ -1162,8 +1135,9 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void moveToBack()
   {
-    if (getParent() instanceof JLayeredPane)
-      ((JLayeredPane) getParent()).moveToBack(this);
+    Container p = getParent();
+    if (p instanceof JLayeredPane)
+      ((JLayeredPane) p).moveToBack(this);
   }
 
   /**
@@ -1172,8 +1146,9 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void moveToFront()
   {
-    if (getParent() instanceof JLayeredPane)
-      ((JLayeredPane) getParent()).moveToFront(this);
+    Container p = getParent();
+    if (p != null && p instanceof JLayeredPane)
+      ((JLayeredPane) p).moveToFront(this);
   }
 
   /**
@@ -1196,6 +1171,7 @@ public class JInternalFrame extends JComponent implements Accessible,
 	// Do nothing if they don't want to be restored first.
       }
     setSize(getPreferredSize());
+    validate();
   }
 
   /**
@@ -1311,7 +1287,6 @@ public class JInternalFrame extends JComponent implements Accessible,
         dispose();
 
         firePropertyChange(IS_CLOSED_PROPERTY, false, true);
-        fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_CLOSED);
       }
   }
 
@@ -1468,7 +1443,9 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void setJMenuBar(JMenuBar b)
   {
+    JMenuBar old = getJMenuBar();
     getRootPane().setJMenuBar(b);
+    firePropertyChange(MENU_BAR_PROPERTY, old, b);
   }
 
   /**
@@ -1493,11 +1470,17 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void setLayer(Integer layer)
   {
-    JDesktopPane p = getDesktopPane();
-    if (p != null)
+    Container p = getParent();
+    if (p instanceof JLayeredPane)
       {
-	int pos = p.getPosition(this);
-	p.setLayer(this, layer.intValue(), pos);
+        JLayeredPane lp = (JLayeredPane) p;
+        lp.setLayer(this, layer.intValue(), lp.getPosition(this));
+      }
+    else
+      {
+        JLayeredPane.putLayer(this, layer.intValue());
+        if (p != null)
+          p.repaint(getX(), getY(), getWidth(), getHeight());
       }
   }
 
@@ -1508,6 +1491,9 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void setLayeredPane(JLayeredPane layered)
   {
+    if (layered == null)
+      throw new IllegalComponentStateException("LayeredPane must not be null");
+
     if (layered != getLayeredPane())
       {
 	JLayeredPane old = getLayeredPane();
@@ -1561,15 +1547,11 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void setMaximum(boolean b) throws PropertyVetoException
   {
-    if (b != isMaximum())
+    if (b != isMaximum)
       {
-	fireVetoableChange(IS_MAXIMUM_PROPERTY, b, isMaximum);
+	fireVetoableChange(IS_MAXIMUM_PROPERTY, isMaximum, b);
 	isMaximum = b;
-	if (b)
-	  setNormalBounds(getBounds());
-	maxTransition = ! b;
 	firePropertyChange(IS_MAXIMUM_PROPERTY, ! isMaximum, isMaximum);
-	maxTransition = false;
       }
   }
 
@@ -1593,7 +1575,7 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void setNormalBounds(Rectangle r)
   {
-    storedBounds.setBounds(r.x, r.y, r.width, r.height);
+    storedBounds = r;
   }
 
   /**
@@ -1621,8 +1603,23 @@ public class JInternalFrame extends JComponent implements Accessible,
     if (rootPane != null)
       remove(rootPane);
 
+    JRootPane old = rootPane;
     rootPane = root;
-    add(root);
+
+    if (rootPane != null)
+      {
+        boolean checkingEnabled = isRootPaneCheckingEnabled();
+        try
+          {
+            setRootPaneCheckingEnabled(false);
+            add(rootPane, BorderLayout.CENTER);
+          }
+        finally
+          {
+            setRootPaneCheckingEnabled(checkingEnabled);
+          }
+      }
+    firePropertyChange(ROOT_PANE_PROPERTY, old, rootPane);
   }
 
   /**
@@ -1652,27 +1649,26 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void setSelected(boolean selected) throws PropertyVetoException
   {
-    if (selected != isSelected())
+    if (selected != isSelected
+        && (! selected || (isIcon ? desktopIcon.isShowing() : isShowing())))
       {
-	fireVetoableChange(IS_SELECTED_PROPERTY, selected, isSelected);
+        fireVetoableChange(IS_SELECTED_PROPERTY, isSelected, selected);
 
-	if (! selected)
-	  defaultFocus = getMostRecentFocusOwner();
+        if (! selected)
+          defaultFocus = getMostRecentFocusOwner();
 
-	isSelected = selected;
+        isSelected = selected;
+        firePropertyChange(IS_SELECTED_PROPERTY, ! isSelected, isSelected);
 
-	if (selected)
-	  restoreSubcomponentFocus();
+        if (isSelected)
+          fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_ACTIVATED);
+        else
+          fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_DEACTIVATED);
 
-    if (isShowing())
-      repaint();
+        if (selected)
+          restoreSubcomponentFocus();
 
-	firePropertyChange(IS_SELECTED_PROPERTY, ! isSelected, isSelected);
-
-	if (isSelected)
-	  fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_ACTIVATED);
-	else
-	  fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_DEACTIVATED);
+        repaint();
       }
   }
 
@@ -1687,14 +1683,9 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void setTitle(String title)
   {
-    if (title == null && this.title == null)
-      return;
-    if (title == null || this.title == null || ! this.title.equals(title))
-      {
-        String old = this.title;
-        this.title = title;
-        firePropertyChange(TITLE_PROPERTY, old, this.title);
-      }
+    String old = this.title;
+    this.title = title;
+    firePropertyChange(TITLE_PROPERTY, old, this.title);
   }
 
   /**
@@ -1707,12 +1698,21 @@ public class JInternalFrame extends JComponent implements Accessible,
   {
     if (! isVisible())
       {
+        if (isFirstTimeVisible)
+          {
+            isFirstTimeVisible = false;
+            fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_OPENED);
+          }
+
+        getDesktopIcon().setVisible(true);
+
+        toFront();
         super.show();
 
-        JDesktopPane pane = getDesktopPane();
-        if (pane != null)
-          pane.setSelectedFrame(this);
-        else
+        if (isIcon())
+          return;
+
+        if (! isSelected())
           {
             try
               {
@@ -1722,11 +1722,6 @@ public class JInternalFrame extends JComponent implements Accessible,
               {
                 // Do nothing. if they don't want to be selected.
               }
-          }
-        if (isFirstTimeVisible)
-          {
-            isFirstTimeVisible = false;
-            fireInternalFrameEvent(InternalFrameEvent.INTERNAL_FRAME_OPENED);
           }
       }
   }

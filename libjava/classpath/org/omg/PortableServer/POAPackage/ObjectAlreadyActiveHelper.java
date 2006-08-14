@@ -40,6 +40,7 @@ package org.omg.PortableServer.POAPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -70,7 +71,7 @@ public abstract class ObjectAlreadyActiveHelper
   {
     if (typeCode == null)
       {
-        ORB orb = ORB.init();
+        ORB orb = OrbRestricted.Singleton;
         StructMember[] members = new StructMember[ 0 ];
         typeCode =
           orb.create_exception_tc(id(), "ObjectAlreadyActive", members);

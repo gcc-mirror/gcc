@@ -482,7 +482,17 @@ public final class URL implements Serializable
       }
     catch (URLParseError e)
       {
-	throw new MalformedURLException(e.getMessage());
+        MalformedURLException mue = new MalformedURLException(e.getMessage());
+        mue.initCause(e);
+	throw mue;
+      }
+    catch (RuntimeException e)
+      {
+        // This isn't documented, but the JDK also catches
+        // RuntimeExceptions here.
+        MalformedURLException mue = new MalformedURLException(e.getMessage());
+        mue.initCause(e);
+        throw mue;
       }
 
     if (hashAt >= 0)
@@ -535,8 +545,7 @@ public final class URL implements Serializable
    */
   public Object getContent(Class[] classes) throws IOException
   {
-    // FIXME: implement this
-    return getContent();
+    return openConnection().getContent(classes);
   }
 
   /**

@@ -56,7 +56,7 @@ public class GtkLabelPeer extends GtkComponentPeer
 
   native void nativeSetAlignment (float alignment);
 
-  public native void setText(String text);
+  public native void setNativeText(String text);
   native void setNativeBounds (int x, int y, int width, int height);
 
   // Because this is a composite widget, we need to retrieve the
@@ -69,6 +69,12 @@ public class GtkLabelPeer extends GtkComponentPeer
     create (label.getText (), getGtkAlignment (label.getAlignment ()));
   }
 
+  public void setText(String text)
+  {
+    if (text != null)
+      setNativeText(text);
+  }
+  
   public GtkLabelPeer (Label l)
   {
     super (l);

@@ -41,15 +41,6 @@ package gnu.javax.net.ssl.provider;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.SecureRandom;
-import java.security.Security;
-import java.util.LinkedList;
-import javax.crypto.spec.DHParameterSpec;
-
-import gnu.java.security.hash.HashFactory;
-import gnu.java.security.hash.IMessageDigest;
-import gnu.java.security.prng.IRandom;
-import gnu.java.security.prng.LimitReachedException;
-import gnu.java.security.util.Prime2;
 
 final class KeyPool
 {
@@ -92,7 +83,7 @@ final class KeyPool
         nextBytes(kb);
         p = new BigInteger(1, kb).setBit(0);
         if (p.compareTo(lower) >= 0 && p.compareTo(upper) <= 0 &&
-            Prime2.isProbablePrime(p) && p.gcd(E).equals(ONE))
+            p.isProbablePrime(80) && p.gcd(E).equals(ONE))
           break;
       }
 
@@ -101,7 +92,7 @@ final class KeyPool
         nextBytes(kb);
         q = new BigInteger(1, kb).setBit(0);
         n = q.multiply(p);
-        if (n.bitLength() == 512 && Prime2.isProbablePrime(q) &&
+        if (n.bitLength() == 512 && q.isProbablePrime(80) &&
             q.gcd(E).equals(ONE))
           break;
       }

@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.security.jce.sig;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 import gnu.java.security.key.dss.DSSPrivateKey;
 import gnu.java.security.key.dss.DSSPublicKey;
@@ -79,11 +80,6 @@ public class EncodedKeyFactory
 {
   private static final Logger log = Logger.getLogger(EncodedKeyFactory.class.getName());
 
-  // implicit 0-arguments constructor
-
-  // Class methods
-  // --------------------------------------------------------------------------
-
   private static Object invokeConstructor(String className, Object[] params)
       throws InvalidKeySpecException
   {
@@ -96,21 +92,15 @@ public class EncodedKeyFactory
       }
     catch (InstantiationException x)
       {
-        InvalidKeySpecException y = new InvalidKeySpecException();
-        y.initCause(x);
-        throw y;
+        throw new InvalidKeySpecException(x.getMessage(), x);
       }
     catch (IllegalAccessException x)
       {
-        InvalidKeySpecException y = new InvalidKeySpecException();
-        y.initCause(y);
-        throw y;
+        throw new InvalidKeySpecException(x.getMessage(), x);
       }
     catch (InvocationTargetException x)
       {
-        InvalidKeySpecException y = new InvalidKeySpecException();
-        y.initCause(x);
-        throw y;
+        throw new InvalidKeySpecException(x.getMessage(), x);
       }
   }
 
@@ -124,9 +114,7 @@ public class EncodedKeyFactory
       }
     catch (ClassNotFoundException x)
       {
-        InvalidKeySpecException y = new InvalidKeySpecException();
-        y.initCause(x);
-        throw y;
+        throw new InvalidKeySpecException(x.getMessage(), x);
       }
   }
 
@@ -144,9 +132,7 @@ public class EncodedKeyFactory
       }
     catch (NoSuchMethodException x)
       {
-        InvalidKeySpecException y = new InvalidKeySpecException();
-        y.initCause(x);
-        throw y;
+        throw new InvalidKeySpecException(x.getMessage(), x);
       }
   }
 
@@ -162,15 +148,11 @@ public class EncodedKeyFactory
       }
     catch (IllegalAccessException x)
       {
-        InvalidKeySpecException y = new InvalidKeySpecException();
-        y.initCause(x);
-        throw y;
+        throw new InvalidKeySpecException(x.getMessage(), x);
       }
     catch (InvocationTargetException x)
       {
-        InvalidKeySpecException y = new InvalidKeySpecException();
-        y.initCause(x);
-        throw y;
+        throw new InvalidKeySpecException(x.getMessage(), x);
       }
   }
 
@@ -184,20 +166,15 @@ public class EncodedKeyFactory
       }
     catch (NoSuchMethodException x)
       {
-        InvalidKeySpecException y = new InvalidKeySpecException();
-        y.initCause(x);
-        throw y;
+        throw new InvalidKeySpecException(x.getMessage(), x);
       }
   }
-
-  // Instance methods
-  // --------------------------------------------------------------------------
 
   protected PublicKey engineGeneratePublic(KeySpec keySpec)
       throws InvalidKeySpecException
   {
-    log.entering(this.getClass().getName(), "engineGeneratePublic()", keySpec);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "engineGeneratePublic()", keySpec);
     PublicKey result = null;
     if (keySpec instanceof DSAPublicKeySpec)
       result = decodeDSSPublicKey((DSAPublicKeySpec) keySpec);
@@ -220,10 +197,10 @@ public class EncodedKeyFactory
           }
         catch (InvalidParameterException ignored)
           {
-            log.log(Level.FINE, "Exception in DSSPublicKey.valueOf(). Ignore",
-                    ignored);
+            if (Configuration.DEBUG)
+              log.log(Level.FINE, "Exception in DSSPublicKey.valueOf(). Ignore",
+                      ignored);
           }
-
         if (! ok) // try RSA
           try
             {
@@ -232,24 +209,24 @@ public class EncodedKeyFactory
             }
           catch (InvalidParameterException ignored)
             {
-              log.log(Level.FINE,
-                      "Exception in GnuRSAPublicKey.valueOf(). Ignore",
-                      ignored);
+              if (Configuration.DEBUG)
+                log.log(Level.FINE,
+                        "Exception in GnuRSAPublicKey.valueOf(). Ignore",
+                        ignored);
             }
-
           if (! ok) // try DH
             result = decodeDHPublicKey(input);
       }
-
-    log.exiting(this.getClass().getName(), "engineGeneratePublic()", result);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "engineGeneratePublic()", result);
     return result;
   }
 
   protected PrivateKey engineGeneratePrivate(KeySpec keySpec)
       throws InvalidKeySpecException
   {
-    log.entering(this.getClass().getName(), "engineGeneratePrivate()", keySpec);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "engineGeneratePrivate()", keySpec);
     PrivateKey result = null;
     if (keySpec instanceof DSAPrivateKeySpec)
       result = decodeDSSPrivateKey((DSAPrivateKeySpec) keySpec);
@@ -272,10 +249,10 @@ public class EncodedKeyFactory
           }
         catch (InvalidParameterException ignored)
           {
-            log.log(Level.FINE, "Exception in DSSPrivateKey.valueOf(). Ignore",
-                    ignored);
+            if (Configuration.DEBUG)
+              log.log(Level.FINE, "Exception in DSSPrivateKey.valueOf(). Ignore",
+                      ignored);
           }
-
         if (! ok) // try RSA
           try
             {
@@ -284,16 +261,16 @@ public class EncodedKeyFactory
             }
           catch (InvalidParameterException ignored)
             {
-              log.log(Level.FINE,
-                      "Exception in GnuRSAPrivateKey.valueOf(). Ignore",
-                      ignored);
+              if (Configuration.DEBUG)
+                log.log(Level.FINE,
+                        "Exception in GnuRSAPrivateKey.valueOf(). Ignore",
+                        ignored);
             }
-
         if (! ok) // try DH
           result = decodeDHPrivateKey(input);
       }
-
-    log.exiting(this.getClass().getName(), "engineGeneratePrivate()", result);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "engineGeneratePrivate()", result);
     return result;
   }
 
@@ -321,7 +298,7 @@ public class EncodedKeyFactory
   /**
    * @param spec an instance of {@link DSAPublicKeySpec} to decode.
    * @return an instance of {@link DSSPublicKey} constructed from the
-   * information in the designated key-specification.
+   *         information in the designated key-specification.
    */
   private DSSPublicKey decodeDSSPublicKey(DSAPublicKeySpec spec)
   {
@@ -335,7 +312,7 @@ public class EncodedKeyFactory
   /**
    * @param spec an instance of {@link RSAPublicKeySpec} to decode.
    * @return an instance of {@link GnuRSAPublicKey} constructed from the
-   * information in the designated key-specification.
+   *         information in the designated key-specification.
    */
   private GnuRSAPublicKey decodeRSAPublicKey(RSAPublicKeySpec spec)
   {
@@ -358,7 +335,7 @@ public class EncodedKeyFactory
     BigInteger p = spec.getP();
     BigInteger g = spec.getG();
     BigInteger y = spec.getY();
-    Object[] params = new Object[] {new Integer(Registry.X509_ENCODING_ID),
+    Object[] params = new Object[] {Integer.valueOf(Registry.X509_ENCODING_ID),
                                     null, p, g, y};
     Object obj = invokeConstructor("gnu.javax.crypto.key.dh.GnuDHPublicKey",
                                    params);
@@ -384,7 +361,7 @@ public class EncodedKeyFactory
   /**
    * @param spec an instance of {@link DSAPrivateKeySpec} to decode.
    * @return an instance of {@link DSSPrivateKey} constructed from the
-   * information in the designated key-specification. 
+   *         information in the designated key-specification.
    */
   private PrivateKey decodeDSSPrivateKey(DSAPrivateKeySpec spec)
   {
@@ -398,7 +375,7 @@ public class EncodedKeyFactory
   /**
    * @param spec an instance of {@link RSAPrivateCrtKeySpec} to decode.
    * @return an instance of {@link GnuRSAPrivateKey} constructed from the
-   * information in the designated key-specification.
+   *         information in the designated key-specification.
    */
   private PrivateKey decodeRSAPrivateKey(RSAPrivateCrtKeySpec spec)
   {
@@ -428,7 +405,7 @@ public class EncodedKeyFactory
     BigInteger p = spec.getP();
     BigInteger g = spec.getG();
     BigInteger x = spec.getX();
-    Object[] params = new Object[] {new Integer(Registry.PKCS8_ENCODING_ID),
+    Object[] params = new Object[] {Integer.valueOf(Registry.PKCS8_ENCODING_ID),
                                     null, p, g, x};
     Object obj = invokeConstructor("gnu.javax.crypto.key.dh.GnuDHPrivateKey",
                                    params);

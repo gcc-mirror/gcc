@@ -134,5 +134,9 @@ public class GdkGraphicsEnvironment extends GraphicsEnvironment
   {
     throw new java.lang.UnsupportedOperationException ();
   }
-  
+
+  /**
+   * Used by GtkMouseInfoPeer.
+   */ 
+  native int[] getMouseCoordinates();
 }

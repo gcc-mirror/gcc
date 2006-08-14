@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableInterceptor;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -58,24 +59,16 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class ObjectReferenceTemplateHelper
 {
   /**
-   * The cached {@link ObjectReferenceTemplate} typecode, computed once.
-   */
-  private static TypeCode typeCode;
-
-  /**
    * Get the type code of the {@link ObjectReferenceTemplate}.
-   *
-   * @return value type type code, named ObjectReferenceTemplate,
-   * no members, abstract.
+   * 
+   * @return value type type code, named ObjectReferenceTemplate, no members,
+   *         abstract.
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      typeCode =
-        ORB.init().create_value_tc(id(), "ObjectReferenceTemplate",
-          VM_ABSTRACT.value, null, new ValueMember[ 0 ]
-        );
-    return typeCode;
+    return OrbRestricted.Singleton.create_value_tc(id(), "ObjectReferenceTemplate",
+                                      VM_ABSTRACT.value, null,
+                                      new ValueMember[0]);
   }
 
   /**
