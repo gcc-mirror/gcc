@@ -1150,8 +1150,6 @@ static const cp_parser_binary_operations_map_node binops[] = {
   { CPP_GREATER, GT_EXPR, PREC_RELATIONAL_EXPRESSION },
   { CPP_LESS_EQ, LE_EXPR, PREC_RELATIONAL_EXPRESSION },
   { CPP_GREATER_EQ, GE_EXPR, PREC_RELATIONAL_EXPRESSION },
-  { CPP_MIN, MIN_EXPR, PREC_RELATIONAL_EXPRESSION },
-  { CPP_MAX, MAX_EXPR, PREC_RELATIONAL_EXPRESSION },
 
   { CPP_EQ_EQ, EQ_EXPR, PREC_EQUALITY_EXPRESSION },
   { CPP_NOT_EQ, NE_EXPR, PREC_EQUALITY_EXPRESSION },
@@ -1853,16 +1851,6 @@ static bool
 cp_parser_is_keyword (cp_token* token, enum rid keyword)
 {
   return token->keyword == keyword;
-}
-
-/* A minimum or maximum operator has been seen.  As these are
-   deprecated, issue a warning.  */
-
-static inline void
-cp_parser_warn_min_max (void)
-{
-  if (warn_deprecated && !in_system_header)
-    warning (OPT_Wdeprecated, "minimum/maximum operators are deprecated");
 }
 
 /* If not parsing tentatively, issue a diagnostic of the form
@@ -5613,8 +5601,6 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p)
     {
       /* Get an operator token.  */
       token = cp_lexer_peek_token (parser->lexer);
-      if (token->type == CPP_MIN || token->type == CPP_MAX)
-	cp_parser_warn_min_max ();
 
       new_prec = TOKEN_PRECEDENCE (token);
 
@@ -5867,16 +5853,6 @@ cp_parser_assignment_operator_opt (cp_parser* parser)
 
     case CPP_OR_EQ:
       op = BIT_IOR_EXPR;
-      break;
-
-    case CPP_MIN_EQ:
-      op = MIN_EXPR;
-      cp_parser_warn_min_max ();
-      break;
-
-    case CPP_MAX_EQ:
-      op = MAX_EXPR;
-      cp_parser_warn_min_max ();
       break;
 
     default:
@@ -8329,27 +8305,6 @@ cp_parser_operator (cp_parser* parser)
       /* Look for the matching `]'.  */
       cp_parser_require (parser, CPP_CLOSE_SQUARE, "`]'");
       return ansi_opname (ARRAY_REF);
-
-      /* Extensions.  */
-    case CPP_MIN:
-      id = ansi_opname (MIN_EXPR);
-      cp_parser_warn_min_max ();
-      break;
-
-    case CPP_MAX:
-      id = ansi_opname (MAX_EXPR);
-      cp_parser_warn_min_max ();
-      break;
-
-    case CPP_MIN_EQ:
-      id = ansi_assopname (MIN_EXPR);
-      cp_parser_warn_min_max ();
-      break;
-
-    case CPP_MAX_EQ:
-      id = ansi_assopname (MAX_EXPR);
-      cp_parser_warn_min_max ();
-      break;
 
     default:
       /* Anything else is an error.  */

@@ -129,9 +129,6 @@ DEF_SIMPLE_OPERATOR ("->", COMPONENT_REF, "pt", 2)
 DEF_SIMPLE_OPERATOR ("[]", ARRAY_REF, "ix", 2)
 DEF_SIMPLE_OPERATOR ("++", POSTINCREMENT_EXPR, "pp", 2)
 DEF_SIMPLE_OPERATOR ("--", POSTDECREMENT_EXPR, "mm", 2)
-/* These operators are GNU extensions.  */
-DEF_SIMPLE_OPERATOR ("<?", MIN_EXPR, "v23min", 2)
-DEF_SIMPLE_OPERATOR (">?", MAX_EXPR, "v23max", 2)
 /* This one is needed for mangling.  */
 DEF_SIMPLE_OPERATOR ("::", SCOPE_REF, "sr", 2)
 
@@ -147,9 +144,6 @@ DEF_ASSN_OPERATOR ("|=", BIT_IOR_EXPR, "oR", 2)
 DEF_ASSN_OPERATOR ("^=", BIT_XOR_EXPR, "eO", 2)
 DEF_ASSN_OPERATOR ("<<=", LSHIFT_EXPR, "lS", 2)
 DEF_ASSN_OPERATOR (">>=", RSHIFT_EXPR, "rS", 2)
-/* These operators are GNU extensions.  */
-DEF_ASSN_OPERATOR ("<?=", MIN_EXPR, "v23miN", 2)
-DEF_ASSN_OPERATOR (">?=", MAX_EXPR, "v23maX", 2)
 
 /* Ternary operators.  */
 DEF_SIMPLE_OPERATOR ("?:", COND_EXPR, "qu", 3)

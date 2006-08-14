@@ -51,7 +51,10 @@ struct _cpp_file;
 
    The first group, to CPP_LAST_EQ, can be immediately followed by an
    '='.  The lexer needs operators ending in '=', like ">>=", to be in
-   the same order as their counterparts without the '=', like ">>".  */
+   the same order as their counterparts without the '=', like ">>".
+
+   See the cpp_operator table optab in expr.c if you change the order or
+   add or remove anything in the first group.  */
 
 #define TTYPE_TABLE							\
   OP(EQ,		"=")						\
@@ -68,8 +71,6 @@ struct _cpp_file;
   OP(XOR,		"^")						\
   OP(RSHIFT,		">>")						\
   OP(LSHIFT,		"<<")						\
-  OP(MIN,		"<?")	/* extension */				\
-  OP(MAX,		">?")						\
 									\
   OP(COMPL,		"~")						\
   OP(AND_AND,		"&&")	/* logical */				\
@@ -97,8 +98,6 @@ struct _cpp_file;
   OP(XOR_EQ,		"^=")						\
   OP(RSHIFT_EQ,		">>=")						\
   OP(LSHIFT_EQ,		"<<=")						\
-  OP(MIN_EQ,		"<?=")	/* extension */				\
-  OP(MAX_EQ,		">?=")						\
   /* Digraphs together, beginning with CPP_FIRST_DIGRAPH.  */		\
   OP(HASH,		"#")	/* digraphs */				\
   OP(PASTE,		"##")						\
@@ -146,9 +145,9 @@ enum cpp_ttype
   N_TTYPES,
 
   /* Positions in the table.  */
-  CPP_LAST_EQ        = CPP_MAX,
+  CPP_LAST_EQ        = CPP_LSHIFT,
   CPP_FIRST_DIGRAPH  = CPP_HASH,
-  CPP_LAST_PUNCTUATOR= CPP_DOT_STAR,
+  CPP_LAST_PUNCTUATOR= CPP_ATSIGN,
   CPP_LAST_CPP_OP    = CPP_LESS_EQ
 };
 #undef OP
