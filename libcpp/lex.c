@@ -1052,11 +1052,6 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  buffer->cur++;
 	  IF_NEXT_IS ('=', CPP_LSHIFT_EQ, CPP_LSHIFT);
 	}
-      else if (*buffer->cur == '?' && CPP_OPTION (pfile, cplusplus))
-	{
-	  buffer->cur++;
-	  IF_NEXT_IS ('=', CPP_MIN_EQ, CPP_MIN);
-	}
       else if (CPP_OPTION (pfile, digraphs))
 	{
 	  if (*buffer->cur == ':')
@@ -1082,11 +1077,6 @@ _cpp_lex_direct (cpp_reader *pfile)
 	{
 	  buffer->cur++;
 	  IF_NEXT_IS ('=', CPP_RSHIFT_EQ, CPP_RSHIFT);
-	}
-      else if (*buffer->cur == '?' && CPP_OPTION (pfile, cplusplus))
-	{
-	  buffer->cur++;
-	  IF_NEXT_IS ('=', CPP_MAX_EQ, CPP_MAX);
 	}
       break;
 
@@ -1472,8 +1462,8 @@ cpp_avoid_paste (cpp_reader *pfile, const cpp_token *token1,
 
   switch (a)
     {
-    case CPP_GREATER:	return c == '>' || c == '?';
-    case CPP_LESS:	return c == '<' || c == '?' || c == '%' || c == ':';
+    case CPP_GREATER:	return c == '>';
+    case CPP_LESS:	return c == '<' || c == '%' || c == ':';
     case CPP_PLUS:	return c == '+';
     case CPP_MINUS:	return c == '-' || c == '>';
     case CPP_DIV:	return c == '/' || c == '*'; /* Comments.  */

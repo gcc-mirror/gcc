@@ -1,3 +1,11 @@
+2006-08-14  Steve Ellcey  <sje@cup.hp.com>
+
+	PR c++/28288
+	PR c++/14556
+	* operators.def: Remove <?, ?>, <?=, and >?= operators.
+	* parser.c: Remove CPP_MIN, CPP_MAX, CPP_MIN_EQ, and CPP_MAX_EQ.
+	(cp_parser_warn_min_max): Remove.
+
 2006-08-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28559
