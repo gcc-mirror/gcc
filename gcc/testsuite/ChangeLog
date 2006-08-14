@@ -1,3 +1,7 @@
+2006-08-14  Asher Langton  <langton2@llnl.gov>
+
+        * gfortran.dg/oldstyle_2.f90: New.
+
 2006-08-14  Andrew Pinski  <pinskia@gmail.com>
 
 	* gcc.dg/tree-ssa/inline-1.c: Fix up scan-tree-dump-times

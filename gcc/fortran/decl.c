@@ -385,11 +385,13 @@ match_old_style_init (const char *name)
 {
   match m;
   gfc_symtree *st;
+  gfc_symbol *sym;
   gfc_data *newdata;
 
   /* Set up data structure to hold initializers.  */
   gfc_find_sym_tree (name, NULL, 0, &st);
-	  
+  sym = st->n.sym;
+
   newdata = gfc_get_data ();
   newdata->var = gfc_get_data_variable ();
   newdata->var->expr = gfc_get_variable_expr (st);
@@ -406,6 +408,13 @@ match_old_style_init (const char *name)
   if (gfc_pure (NULL))
     {
       gfc_error ("Initialization at %C is not allowed in a PURE procedure");
+      gfc_free (newdata);
+      return MATCH_ERROR;
+    }
+
+  /* Mark the variable as having appeared in a data statement.  */
+  if (gfc_add_data (&sym->attr, sym->name, &sym->declared_at) == FAILURE)
+    {
       gfc_free (newdata);
       return MATCH_ERROR;
     }

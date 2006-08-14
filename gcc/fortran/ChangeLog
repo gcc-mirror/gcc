@@ -1,3 +1,7 @@
+2006-08-14  Asher Langton  <langton2@llnl.gov>
+
+        * decl.c (match_old_style_init): Add data attribute to symbol.
+
 2006-08-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28590
