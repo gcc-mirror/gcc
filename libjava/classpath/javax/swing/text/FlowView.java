@@ -159,20 +159,18 @@ public abstract class FlowView extends BoxView
     }
 
     /**
-     * Lays out one row of the flow view. This is called by {@link #layout}
-     * to fill one row with child views until the available span is exhausted.
-     *
-     * The default implementation fills the row by calling
-     * {@link #createView(FlowView, int, int, int)} until the available space
-     * is exhausted, a forced break is encountered or there are no more views
-     * in the logical view. If the available space is exhausted,
-     * {@link #adjustRow(FlowView, int, int, int)} is called to fit the row
-     * into the available span.
-     *
+     * Lays out one row of the flow view. This is called by {@link #layout} to
+     * fill one row with child views until the available span is exhausted. The
+     * default implementation fills the row by calling
+     * {@link #createView(FlowView, int, int, int)} until the available space is
+     * exhausted, a forced break is encountered or there are no more views in
+     * the logical view. If the available space is exhausted,
+     * {@link #adjustRow(FlowView, int, int, int)} is called to fit the row into
+     * the available span.
+     * 
      * @param fv the flow view for which we perform the layout
      * @param rowIndex the index of the row
      * @param pos the model position for the beginning of the row
-     *
      * @return the start position of the next row
      */
     protected int layoutRow(FlowView fv, int rowIndex, int pos)
@@ -188,34 +186,39 @@ public abstract class FlowView extends BoxView
       if (span == 0)
         span = Integer.MAX_VALUE;
 
-      while (span > 0)
+      Row: while (span > 0)
         {
-          if (logicalView.getViewIndex(offset, Position.Bias.Forward) == -1)
+          if (logicalView.getViewIndex(offset, Position.Bias.Forward) == - 1)
             break;
           View view = createView(fv, offset, span, rowIndex);
           if (view == null)
             break;
+
           int viewSpan = (int) view.getPreferredSpan(axis);
-          row.append(view);
           int breakWeight = view.getBreakWeight(axis, x, span);
-          if (breakWeight >= View.ForcedBreakWeight)
-            break;
+
+          row.append(view);
+          offset += (view.getEndOffset() - view.getStartOffset());
           x += viewSpan;
           span -= viewSpan;
-          offset += (view.getEndOffset() - view.getStartOffset());
+
+          // Break if the line if the view does not fit in this row or the
+          // line just must be broken.
+          if (span < 0 || breakWeight >= View.ForcedBreakWeight)
+            {
+              int flowStart = fv.getFlowStart(axis);
+              int flowSpan = fv.getFlowSpan(axis);
+              adjustRow(fv, rowIndex, flowSpan, flowStart);
+              int rowViewCount = row.getViewCount();
+              if (rowViewCount > 0)
+                offset = row.getView(rowViewCount - 1).getEndOffset();
+              else
+                offset = - 1;
+              break Row;
+            }
         }
-      if (span < 0)
-        {
-          int flowStart = fv.getFlowStart(axis);
-          int flowSpan = fv.getFlowSpan(axis);
-          adjustRow(fv, rowIndex, flowSpan, flowStart);
-          int rowViewCount = row.getViewCount();
-          if (rowViewCount > 0)
-            offset = row.getView(rowViewCount - 1).getEndOffset();
-          else
-            offset = -1;
-        }
-      return offset != pos ? offset : -1;
+
+      return offset != pos ? offset : - 1;
     }
 
     /**
@@ -521,6 +524,7 @@ public abstract class FlowView extends BoxView
    */
   public void removeUpdate(DocumentEvent changes, Shape a, ViewFactory vf)
   {
+    layoutPool.removeUpdate(changes, a, vf);
     strategy.removeUpdate(this, changes, getInsideAllocation(a));
     layoutDirty = true;
   }
@@ -536,6 +540,7 @@ public abstract class FlowView extends BoxView
    */
   public void changedUpdate(DocumentEvent changes, Shape a, ViewFactory vf)
   {
+    layoutPool.changedUpdate(changes, a, vf);
     strategy.changedUpdate(this, changes, getInsideAllocation(a));
     layoutDirty = true;
   }
@@ -594,12 +599,14 @@ public abstract class FlowView extends BoxView
   protected SizeRequirements calculateMinorAxisRequirements(int axis,
                                                             SizeRequirements r)
   {
-    // We need to call super here so that the alignment is properly
-    // calculated.
-    SizeRequirements res = super.calculateMinorAxisRequirements(axis, r);
+    SizeRequirements res = r;
+    if (res == null)
+      res = new SizeRequirements();
     res.minimum = (int) layoutPool.getMinimumSpan(axis);
-    res.preferred = (int) layoutPool.getPreferredSpan(axis);
-    res.maximum = (int) layoutPool.getMaximumSpan(axis);
+    res.preferred = Math.max(res.minimum,
+                             (int) layoutPool.getMinimumSpan(axis));
+    res.maximum = Integer.MAX_VALUE;
+    res.alignment = 0.5F;
     return res;
   }
 }

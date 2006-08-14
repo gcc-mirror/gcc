@@ -39,7 +39,10 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = tools
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/appletviewer.in $(srcdir)/jarsigner.in \
+	$(srcdir)/appletviewer.in $(srcdir)/gappletviewer.in \
+	$(srcdir)/gjar.in $(srcdir)/gjarsigner.in \
+	$(srcdir)/gkeytool.in $(srcdir)/gnative2ascii.in \
+	$(srcdir)/gserialver.in $(srcdir)/jarsigner.in \
 	$(srcdir)/keytool.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
@@ -53,7 +56,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
-CONFIG_CLEAN_FILES = appletviewer jarsigner keytool
+CONFIG_CLEAN_FILES = gappletviewer gjarsigner gkeytool gjar \
+	gnative2ascii gserialver appletviewer jarsigner keytool
 SOURCES =
 DIST_SOURCES =
 DATA = $(noinst_DATA)
@@ -88,6 +92,8 @@ CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
 CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
 CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
+CREATE_GCONF_PEER_LIBRARIES_FALSE = @CREATE_GCONF_PEER_LIBRARIES_FALSE@
+CREATE_GCONF_PEER_LIBRARIES_TRUE = @CREATE_GCONF_PEER_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
 CREATE_GTK_PEER_LIBRARIES_TRUE = @CREATE_GTK_PEER_LIBRARIES_TRUE@
 CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
@@ -108,6 +114,7 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATE = @DATE@
+DEFAULT_PREFS_PEER = @DEFAULT_PREFS_PEER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -138,6 +145,10 @@ FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
+GCONF_CFLAGS = @GCONF_CFLAGS@
+GCONF_LIBS = @GCONF_LIBS@
+GDK_CFLAGS = @GDK_CFLAGS@
+GDK_LIBS = @GDK_LIBS@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
@@ -188,6 +199,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PATH_TO_ESCHER = @PATH_TO_ESCHER@
 PATH_TO_GLIBJ_ZIP = @PATH_TO_GLIBJ_ZIP@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
@@ -208,6 +220,8 @@ USER_SPECIFIED_CLASSLIB_FALSE = @USER_SPECIFIED_CLASSLIB_FALSE@
 USER_SPECIFIED_CLASSLIB_TRUE = @USER_SPECIFIED_CLASSLIB_TRUE@
 USER_SPECIFIED_JAVAH_FALSE = @USER_SPECIFIED_JAVAH_FALSE@
 USER_SPECIFIED_JAVAH_TRUE = @USER_SPECIFIED_JAVAH_TRUE@
+USE_ESCHER_FALSE = @USE_ESCHER_FALSE@
+USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
@@ -282,8 +296,9 @@ GLIBJ_CLASSPATH = '$(top_builddir)/lib':'$(top_builddir)/lib/glibj.zip'
 
 # if CREATE_WRAPPERS
 # bin_SCRIPTS =
-# bin_PROGRAMS = gappletviewer gjarsigner gkeytool
-
+# bin_PROGRAMS = gappletviewer gjarsigner gkeytool \
+# 	gjar gnative2ascii gserialver
+# 
 # if FOUND_GCJ
 # LIBJVM = -lgcj
 # else
@@ -293,34 +308,55 @@ GLIBJ_CLASSPATH = '$(top_builddir)/lib':'$(top_builddir)/lib/glibj.zip'
 # LIBJVM =
 # endif
 # endif
-
+# 
 # AM_CPPFLAGS = -Wall \
 # 	-I$(top_srcdir)/include \
 # 	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\""
-
+# 
 # gappletviewer_SOURCES = toolwrapper.c
 # gappletviewer_CFLAGS = \
 # 	-DTOOLPACKAGE="\"appletviewer\"" \
 # 	-DTOOLNAME="\"gappletviewer\""
 # gappletviewer_LDFLAGS = -L$(libdir) $(LIBJVM)
-
+# 
 # gjarsigner_SOURCES = toolwrapper.c
 # gjarsigner_CFLAGS = \
 # 	-DTOOLPACKAGE="\"jarsigner\"" \
 # 	-DTOOLNAME="\"gjarsigner\""
 # gjarsigner_LDFLAGS = -L$(libdir) $(LIBJVM)
-
+# 
 # gkeytool_SOURCES = toolwrapper.c
 # gkeytool_CFLAGS = \
 # 	-DTOOLPACKAGE="\"keytool\"" \
 # 	-DTOOLNAME="\"gkeytool\""
 # gkeytool_LDFLAGS = -L$(libdir) $(LIBJVM)
-
+# 
+# gjar_SOURCES = toolwrapper.c
+# gjar_CFLAGS = \
+# 	-DTOOLPACKAGE="\"jar\"" \
+# 	-DTOOLNAME="\"gjar\""
+# gjar_LDFLAGS = -L$(libdir) $(LIBJVM)
+# 
+# gnative2ascii_SOURCES = toolwrapper.c
+# gnative2ascii_CFLAGS = \
+# 	-DTOOLPACKAGE="\"native2ascii\"" \
+# 	-DTOOLNAME="\"gnative2ascii\""
+# gnative2ascii_LDFLAGS = -L$(libdir) $(LIBJVM)
+# 
+# gserialver_SOURCES = toolwrapper.c
+# gserialver_CFLAGS = \
+# 	-DTOOLPACKAGE="\"serialver\"" \
+# 	-DTOOLNAME="\"gserialver\""
+# gserialver_LDFLAGS = -L$(libdir) $(LIBJVM)
+# 
 # else
-# bin_SCRIPTS = gappletviewer gjarsigner gkeytool
+# bin_SCRIPTS = gappletviewer gjarsigner gkeytool \
+# 	gjar gnative2ascii gserialver
 # bin_PROGRAMS =
 # endif
-EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in
+EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in \
+	gjar.in gnative2ascii.in gserialver.in
+
 
 # All our example java source files
 TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*.java $(srcdir)/gnu/classpath/tools/*/*.java $(srcdir)/gnu/classpath/tools/*/*/*.java
@@ -383,6 +419,18 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+gappletviewer: $(top_builddir)/config.status $(srcdir)/gappletviewer.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+gjarsigner: $(top_builddir)/config.status $(srcdir)/gjarsigner.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+gkeytool: $(top_builddir)/config.status $(srcdir)/gkeytool.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+gjar: $(top_builddir)/config.status $(srcdir)/gjar.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+gnative2ascii: $(top_builddir)/config.status $(srcdir)/gnative2ascii.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+gserialver: $(top_builddir)/config.status $(srcdir)/gserialver.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 appletviewer: $(top_builddir)/config.status $(srcdir)/appletviewer.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 jarsigner: $(top_builddir)/config.status $(srcdir)/jarsigner.in

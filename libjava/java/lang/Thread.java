@@ -1112,4 +1112,17 @@ public class Thread implements Runnable
      */
     void uncaughtException(Thread thr, Throwable exc);
   }
+
+  /**
+   * Returns the current state of the thread.  This
+   * is designed for monitoring thread behaviour, rather
+   * than for synchronization control.
+   *
+   * @return the current thread state.
+   */
+  public String getState()
+  {
+    // FIXME - Provide real implementation.
+    return "NEW";
+  }
 }

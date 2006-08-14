@@ -35,16 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
+
 package gnu.javax.crypto.jce.key;
 
-import java.security.InvalidKeyException;
-import java.security.spec.InvalidKeySpecException;
-
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactorySpi;
-import javax.crypto.spec.SecretKeySpec;
-
-public class KhazadSecretKeyFactoryImpl extends SecretKeyFactoryImpl
+public class KhazadSecretKeyFactoryImpl
+    extends SecretKeyFactoryImpl
 {
   public KhazadSecretKeyFactoryImpl()
   {

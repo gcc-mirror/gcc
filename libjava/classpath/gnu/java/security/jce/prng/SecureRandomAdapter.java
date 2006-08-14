@@ -45,34 +45,28 @@ import java.security.SecureRandomSpi;
 import java.util.Collections;
 
 /**
- * <p>The implementation of a generic {@link java.security.SecureRandom} adapter
- * class to wrap gnu.crypto prng instances based on Message Digest algorithms.</p>
- *
- * <p>This class defines the <i>Service Provider Interface</i> (<b>SPI</b>) for
+ * The implementation of a generic {@link java.security.SecureRandom} adapter
+ * class to wrap GNU PRNG instances based on Message Digest algorithms.
+ * <p>
+ * This class defines the <i>Service Provider Interface</i> (<b>SPI</b>) for
  * the {@link java.security.SecureRandom} class, which provides the
- * functionality of a cryptographically strong pseudo-random number generator.</p>
- *
- * <p>All the abstract methods in the {@link SecureRandomSpi} class are
- * implemented by this class and all its sub-classes.</p>
+ * functionality of a cryptographically strong pseudo-random number generator.
+ * <p>
+ * All the abstract methods in the {@link SecureRandomSpi} class are implemented
+ * by this class and all its sub-classes.
  */
-abstract class SecureRandomAdapter extends SecureRandomSpi
+abstract class SecureRandomAdapter
+    extends SecureRandomSpi
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** Our underlying prng instance. */
   private MDGenerator adaptee = new MDGenerator();
 
   /** The name of the message digest algorithm used by the adaptee. */
   private String mdName;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Trivial protected constructor.</p>
-   *
+   * Trivial protected constructor.
+   * 
    * @param mdName the canonical name of the underlying hash algorithm.
    */
   protected SecureRandomAdapter(String mdName)
@@ -80,23 +74,14 @@ abstract class SecureRandomAdapter extends SecureRandomSpi
     super();
 
     this.mdName = mdName;
-    adaptee.init (Collections.singletonMap (MDGenerator.MD_NAME, mdName));
+    adaptee.init(Collections.singletonMap(MDGenerator.MD_NAME, mdName));
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.security.SecureRandomSpi interface implementation ------------------
 
   public byte[] engineGenerateSeed(int numBytes)
   {
     if (numBytes < 1)
-      {
-        return new byte[0];
-      }
+      return new byte[0];
+
     byte[] result = new byte[numBytes];
     this.engineNextBytes(result);
     return result;
@@ -104,10 +89,8 @@ abstract class SecureRandomAdapter extends SecureRandomSpi
 
   public void engineNextBytes(byte[] bytes)
   {
-    if (!adaptee.isInitialised())
-      {
-        this.engineSetSeed(new byte[0]);
-      }
+    if (! adaptee.isInitialised())
+      this.engineSetSeed(new byte[0]);
     try
       {
         adaptee.nextBytes(bytes, 0, bytes.length);
@@ -119,6 +102,6 @@ abstract class SecureRandomAdapter extends SecureRandomSpi
 
   public void engineSetSeed(byte[] seed)
   {
-    adaptee.addRandomBytes (seed);
+    adaptee.addRandomBytes(seed);
   }
 }

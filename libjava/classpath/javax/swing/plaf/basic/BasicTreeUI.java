@@ -174,6 +174,9 @@ public class BasicTreeUI
   /**
    * Set to false when editing and shouldSelectCall() returns true meaning the
    * node should be selected before editing, used in completeEditing.
+   * GNU Classpath editing is implemented differently, so this value is not
+   * actually read anywhere. However it is always set correctly to maintain 
+   * interoperability with the derived classes that read this field.
    */
   protected boolean stopEditingInCompleteEditing;
 
@@ -234,9 +237,6 @@ public class BasicTreeUI
 
   /** Set to true if the editor has a different size than the renderer. */
   protected boolean editorHasDifferentSize;
-
-  /** The action bound to KeyStrokes. */
-  TreeAction action;
 
   /** Boolean to keep track of editing. */
   boolean isEditing;
@@ -474,8 +474,18 @@ public class BasicTreeUI
    */
   protected void setCellRenderer(TreeCellRenderer tcr)
   {
-    currentCellRenderer = tcr;
+    // Finish editing before changing the renderer.
+    completeEditing();
+
+    // The renderer is set in updateRenderer.
     updateRenderer();
+
+    // Refresh the layout if necessary.
+    if (treeState != null)
+      {
+	treeState.invalidateSizes();
+	updateSize();
+      }
   }
 
   /**
@@ -845,9 +855,9 @@ public class BasicTreeUI
     updateRenderer();
     updateDepthOffset();
     setSelectionModel(tree.getSelectionModel());
-    treeState = createLayoutCache();
-    treeSelectionModel.setRowMapper(treeState);
     configureLayoutCache();
+    treeState.setRootVisible(tree.isRootVisible()); 
+    treeSelectionModel.setRowMapper(treeState);
     updateSize();
   }
 
@@ -1068,7 +1078,6 @@ public class BasicTreeUI
    */
   protected void uninstallKeyboardActions()
   {
-    action = null;
     tree.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).setParent(
                                                                               null);
     tree.getActionMap().setParent(null);
@@ -1169,10 +1178,26 @@ public class BasicTreeUI
   protected void updateRenderer()
   {
     if (tree != null)
-      currentCellRenderer = tree.getCellRenderer();
-
-    if (currentCellRenderer == null)
-      currentCellRenderer = createDefaultCellRenderer();
+      {
+	TreeCellRenderer rend = tree.getCellRenderer();
+	if (rend != null)
+	  {
+	    createdRenderer = false;
+	    currentCellRenderer = rend;
+	    if (createdCellEditor)
+	      tree.setCellEditor(null);
+	  }
+	else
+	  {
+	    tree.setCellRenderer(createDefaultCellRenderer());
+	    createdRenderer = true;
+	  }
+      }
+    else
+      {
+	currentCellRenderer = null;
+	createdRenderer = false;
+      }
 
     updateCellEditor();
   }
@@ -1237,6 +1262,11 @@ public class BasicTreeUI
   {
     LookAndFeel.installColorsAndFont(tree, "Tree.background",
                                      "Tree.foreground", "Tree.font");
+    
+    hashColor = UIManager.getColor("Tree.hash");
+    if (hashColor == null)
+      hashColor = Color.black;
+    
     tree.setOpaque(true);
 
     rightChildIndent = UIManager.getInt("Tree.rightChildIndent");
@@ -1263,8 +1293,6 @@ public class BasicTreeUI
     SwingUtilities.replaceUIInputMap(tree,
                                  JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
                                  ancestorInputMap);
-
-    action = new TreeAction();
 
     SwingUtilities.replaceUIActionMap(tree, getActionMap());
   }
@@ -1294,9 +1322,6 @@ public class BasicTreeUI
   {
     ActionMapUIResource am = new ActionMapUIResource();
     Action action;
-
-    action = new TreeAction();
-    am.put(action.getValue(Action.NAME), action);
 
     // TreeHomeAction.
     action = new TreeHomeAction(-1, "selectFirst");
@@ -1349,6 +1374,13 @@ public class BasicTreeUI
     am.put(action.getValue(Action.NAME), action);
     action = new TreePageAction(1, "scrollDownChangeLead");
     am.put(action.getValue(Action.NAME), action);
+    
+    // Tree editing actions
+    action = new TreeStartEditingAction("startEditing");
+    am.put(action.getValue(Action.NAME), action);
+    action = new TreeCancelEditingAction("cancel");
+    am.put(action.getValue(Action.NAME), action);
+    
 
     return am;
   }
@@ -1703,9 +1735,10 @@ public class BasicTreeUI
   protected void completeEditing(boolean messageStop, boolean messageCancel,
                                  boolean messageTree)
   {
-    if (! stopEditingInCompleteEditing || editingComponent == null)
+    // Make no attempt to complete the non existing editing session.
+    if (!isEditing(tree))
       return;
-
+    
     if (messageStop)
       {
         getCellEditor().stopCellEditing();
@@ -1812,14 +1845,25 @@ public class BasicTreeUI
     boolean cntlClick = false;
     if (! treeModel.isLeaf(path.getLastPathComponent()))
       {
-        int width = 8; // Only guessing.
+        int width;
         Icon expandedIcon = getExpandedIcon();
         if (expandedIcon != null)
           width = expandedIcon.getIconWidth();
+        else
+          // Only guessing. This is the width of
+          // the tree control icon in Metal L&F.
+          width = 18;
 
         Insets i = tree.getInsets();
-        int left = getRowX(tree.getRowForPath(path), path.getPathCount() - 1)
-                   - getRightChildIndent() - width / 2 + i.left;
+        
+        int depth;
+        if (isRootVisible())
+          depth = path.getPathCount()-1;
+        else
+          depth = path.getPathCount()-2;
+        
+        int left = getRowX(tree.getRowForPath(path), depth)
+                   - width + i.left;
         cntlClick = mouseX >= left && mouseX <= left + width;
       }
     return cntlClick;
@@ -1848,7 +1892,8 @@ public class BasicTreeUI
    */
   protected void toggleExpandState(TreePath path)
   {
-    if (tree.isExpanded(path))
+    // tree.isExpanded(path) would do the same, but treeState knows faster.
+    if (treeState.isExpanded(path))
       tree.collapsePath(path);
     else
       tree.expandPath(path);
@@ -1975,94 +2020,35 @@ public class BasicTreeUI
     Object node = pathForRow.getLastPathComponent();
     return treeModel.isLeaf(node);
   }
-
+  
   /**
-   * This class implements the actions that we want to happen when specific keys
-   * are pressed for the JTree. The actionPerformed method is called when a key
-   * that has been registered for the JTree is received.
+   * The action to start editing at the current lead selection path.
    */
-  class TreeAction
+  class TreeStartEditingAction
       extends AbstractAction
   {
-
     /**
-     * What to do when this action is called.
+     * Creates the new tree cancel editing action.
+     * 
+     * @param name the name of the action (used in toString).
+     */
+    public TreeStartEditingAction(String name)
+    {
+      super(name);
+    }    
+    
+    /**
+     * Start editing at the current lead selection path.
      * 
      * @param e the ActionEvent that caused this action.
      */
     public void actionPerformed(ActionEvent e)
     {
-      String command = e.getActionCommand();
       TreePath lead = tree.getLeadSelectionPath();
-
-      if (command.equals("selectPreviousChangeLead")
-          || command.equals("selectPreviousExtendSelection")
-          || command.equals("selectPrevious") || command.equals("selectNext")
-          || command.equals("selectNextExtendSelection")
-          || command.equals("selectNextChangeLead"))
-        (new TreeIncrementAction(0, "")).actionPerformed(e);
-      else if (command.equals("selectParent") || command.equals("selectChild"))
-        (new TreeTraverseAction(0, "")).actionPerformed(e);
-      else if (command.equals("selectAll"))
-        {
-          TreePath[] paths = new TreePath[treeState.getRowCount()];
-          for (int i = 0; i < paths.length; i++)
-            paths[i] = treeState.getPathForRow(i);
-          tree.addSelectionPaths(paths);
-        }
-      else if (command.equals("startEditing"))
+      if (!tree.isEditing()) 
         tree.startEditingAtPath(lead);
-      else if (command.equals("toggle"))
-        {
-          if (tree.isEditing())
-            tree.stopEditing();
-          else
-            {
-              Object last = lead.getLastPathComponent();
-              TreePath path = new TreePath(getPathToRoot(last, 0));
-              if (! treeModel.isLeaf(last))
-                toggleExpandState(path);
-            }
-        }
-      else if (command.equals("clearSelection"))
-        tree.clearSelection();
-
-      if (tree.isEditing() && ! command.equals("startEditing"))
-        tree.stopEditing();
-
-      tree.scrollPathToVisible(tree.getLeadSelectionPath());
     }
-  }
-
-  /**
-   * This class is used to mimic the behaviour of the JDK when registering
-   * keyboard actions. It is the same as the private class used in JComponent
-   * for the same reason. This class receives an action event and dispatches it
-   * to the true receiver after altering the actionCommand property of the
-   * event.
-   */
-  private static class ActionListenerProxy
-      extends AbstractAction
-  {
-    ActionListener target;
-
-    String bindingCommandName;
-
-    public ActionListenerProxy(ActionListener li, String cmd)
-    {
-      target = li;
-      bindingCommandName = cmd;
-    }
-
-    public void actionPerformed(ActionEvent e)
-    {
-      ActionEvent derivedEvent = new ActionEvent(e.getSource(), e.getID(),
-                                                 bindingCommandName,
-                                                 e.getModifiers());
-
-      target.actionPerformed(derivedEvent);
-    }
-  }
+  }  
 
   /**
    * Updates the preferred size when scrolling, if necessary.
@@ -2290,9 +2276,49 @@ public class BasicTreeUI
      * @param e the key typed
      */
     public void keyTyped(KeyEvent e)
-    throws NotImplementedException
     {
-      // TODO: What should be done here, if anything?
+      char typed = Character.toLowerCase(e.getKeyChar());
+      for (int row = tree.getLeadSelectionRow() + 1;
+        row < tree.getRowCount(); row++)
+        {
+           if (checkMatch(row, typed))
+             {
+               tree.setSelectionRow(row);
+               tree.scrollRowToVisible(row);
+               return;
+             }
+        }
+      
+      // Not found below, search above:
+      for (int row = 0; row < tree.getLeadSelectionRow(); row++)
+        {
+           if (checkMatch(row, typed))
+             {
+               tree.setSelectionRow(row);
+               tree.scrollRowToVisible(row);               
+               return;
+             }
+        }
+    }
+    
+    /**
+     * Check if the given tree row starts with this character
+     * 
+     * @param row the tree row
+     * @param typed the typed char, must be converted to lowercase
+     * @return true if the given tree row starts with this character
+     */
+    boolean checkMatch(int row, char typed)
+    {
+      TreePath path = treeState.getPathForRow(row);
+      String node = path.getLastPathComponent().toString();
+      if (node.length() > 0)
+        {
+          char x = node.charAt(0);
+          if (typed == Character.toLowerCase(x))
+            return true;
+        }
+      return false;
     }
 
     /**
@@ -2301,9 +2327,8 @@ public class BasicTreeUI
      * @param e the key pressed
      */
     public void keyPressed(KeyEvent e)
-    throws NotImplementedException
     {
-      // TODO: What should be done here, if anything?
+      // Nothing to do here.
     }
 
     /**
@@ -2312,9 +2337,8 @@ public class BasicTreeUI
      * @param e the key released
      */
     public void keyReleased(KeyEvent e)
-    throws NotImplementedException
     {
-      // TODO: What should be done here, if anything?
+      // Nothing to do here.
     }
   }
 
@@ -2341,14 +2365,23 @@ public class BasicTreeUI
      */
     public void mousePressed(MouseEvent e)
     {
+      // Any mouse click cancels the previous waiting edit action, initiated
+      // by the single click on the selected node.
+      if (startEditTimer != null)
+        {
+          startEditTimer.stop();
+          startEditTimer = null;
+        }
 
       if (tree != null && tree.isEnabled())
         {
-          // Maybe stop editing and return.
-          if (isEditing(tree) && tree.getInvokesStopCellEditing()
-              && !stopEditing(tree))
-            return;
-
+          // Always end the current editing session if clicked on the
+          // tree and outside the bounds of the editing component.
+          if (isEditing(tree))
+            if (!stopEditing(tree))
+            // Return if we have failed to cancel the editing session.
+              return;
+ 
           int x = e.getX();
           int y = e.getY();
           TreePath path = getClosestPathForLocation(tree, x, y);
@@ -2361,11 +2394,47 @@ public class BasicTreeUI
 
               if (x > bounds.x && x <= (bounds.x + bounds.width))
                 {
-                  if (! startEditing(path, e))
-                    selectPathForEvent(path, e);
+                  TreePath currentLead = tree.getLeadSelectionPath();
+                  if (currentLead != null && currentLead.equals(path)
+                      && e.getClickCount() == 1 && tree.isEditable())
+                    {
+                      // Schedule the editing session.
+                      final TreePath editPath = path;
+                      
+                      // The code below handles the required click-pause-click
+                      // functionality which must be present in the tree UI. 
+                      // If the next click comes after the
+                      // time longer than the double click interval AND
+                      // the same node stays focused for the WAIT_TILL_EDITING
+                      // duration, the timer starts the editing session.
+                      if (startEditTimer != null)
+                        startEditTimer.stop();
+
+                      startEditTimer = new Timer(WAIT_TILL_EDITING,
+                         new ActionListener()
+                           {
+                              public void actionPerformed(ActionEvent e)
+                                {
+                                   startEditing(editPath, EDIT);
+                                }
+                            });
+                      
+                      startEditTimer.setRepeats(false);
+                      startEditTimer.start();
+                    }
+                  else
+                    {
+                      if (e.getClickCount() == 2)
+                        toggleExpandState(path);
+                      else
+                        selectPathForEvent(path, e);
+                    }
                 }
             }
         }
+
+      // We need to request the focus.
+      tree.requestFocusInWindow();
     }
 
     /**
@@ -2830,6 +2899,9 @@ public class BasicTreeUI
                 }
             }
         }
+
+      // Ensure that the lead path is visible after the increment action.
+      tree.scrollPathToVisible(tree.getLeadSelectionPath());
     }
 
     /**
@@ -2945,6 +3017,9 @@ public class BasicTreeUI
           tree.setAnchorSelectionPath(newPath);
           tree.setLeadSelectionPath(newPath);
         }
+      
+      // Ensure that the lead path is visible after the increment action.
+      tree.scrollPathToVisible(tree.getLeadSelectionPath());
     }
 
     /**
@@ -3249,6 +3324,9 @@ public class BasicTreeUI
           // and anchor.
           tree.setLeadSelectionPath(leadPath);
           tree.setAnchorSelectionPath(anchorPath);
+
+          // Ensure that the lead path is visible after the increment action.
+          tree.scrollPathToVisible(tree.getLeadSelectionPath());
         }
     }
 
@@ -3336,6 +3414,9 @@ public class BasicTreeUI
               tree.expandPath(current);
             }
         }
+      
+      // Ensure that the lead path is visible after the increment action.
+      tree.scrollPathToVisible(tree.getLeadSelectionPath());
     }
 
     /**
@@ -3644,7 +3725,13 @@ public class BasicTreeUI
   {
     Rectangle bounds = getPathBounds(tree, path);
     TreePath parent = path.getParentPath();
-    if (parent != null)
+    
+    boolean paintLine;
+    if (isRootVisible())
+      paintLine = parent != null;
+    else
+      paintLine = parent != null && parent.getPathCount() > 1;
+    if (paintLine)
       {
         Rectangle parentBounds = getPathBounds(tree, parent);
         paintVerticalLine(g, tree, parentBounds.x + 2 * gap, 

@@ -38,23 +38,21 @@ exception statement from your version.  */
 
 package gnu.java.security.key.rsa;
 
-import gnu.classpath.SystemProperties;
 import gnu.java.security.Registry;
+import gnu.java.security.action.GetPropertyAction;
 import gnu.java.security.util.FormatUtil;
 
 import java.math.BigInteger;
+import java.security.AccessController;
 import java.security.Key;
 import java.security.interfaces.RSAKey;
 
 /**
- * <p>A base asbtract class for both public and private RSA keys.</p>
+ * A base asbtract class for both public and private RSA keys.
  */
-public abstract class GnuRSAKey implements Key, RSAKey
+public abstract class GnuRSAKey
+    implements Key, RSAKey
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The public modulus of an RSA key pair. */
   private final BigInteger n;
 
@@ -62,16 +60,13 @@ public abstract class GnuRSAKey implements Key, RSAKey
   private final BigInteger e;
 
   /**
-   * Identifier of the default encoding format to use when externalizing the
-   * key material.
+   * Identifier of the default encoding format to use when externalizing the key
+   * material.
    */
   protected final int defaultFormat;
 
   /** String representation of this key. Cached for speed. */
   private transient String str;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /**
    * Trivial protected constructor.
@@ -91,20 +86,10 @@ public abstract class GnuRSAKey implements Key, RSAKey
     this.e = e;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.security.interfaces.RSAKey interface implementation ----------------
-
   public BigInteger getModulus()
   {
     return getN();
   }
-
-  // java.security.Key interface implementation ------------------------------
 
   public String getAlgorithm()
   {
@@ -122,11 +107,9 @@ public abstract class GnuRSAKey implements Key, RSAKey
     return FormatUtil.getEncodingShortName(defaultFormat);
   }
 
-  // Other instance methods --------------------------------------------------
-
   /**
-   * <p>Returns the modulus <code>n</code>.</p>
-   *
+   * Returns the modulus <code>n</code>.
+   * 
    * @return the modulus <code>n</code>.
    */
   public BigInteger getN()
@@ -135,8 +118,8 @@ public abstract class GnuRSAKey implements Key, RSAKey
   }
 
   /**
-   * <p>Returns the public exponent <code>e</code>.</p>
-   *
+   * Returns the public exponent <code>e</code>.
+   * 
    * @return the public exponent <code>e</code>.
    */
   public BigInteger getPublicExponent()
@@ -145,8 +128,8 @@ public abstract class GnuRSAKey implements Key, RSAKey
   }
 
   /**
-   * <p>Same as {@link #getPublicExponent()}.</p>
-   *
+   * Same as {@link #getPublicExponent()}.
+   * 
    * @return the public exponent <code>e</code>.
    */
   public BigInteger getE()
@@ -155,23 +138,21 @@ public abstract class GnuRSAKey implements Key, RSAKey
   }
 
   /**
-   * <p>Returns <code>true</code> if the designated object is an instance of
-   * {@link RSAKey} and has the same RSA parameter values as this one.</p>
-   *
+   * Returns <code>true</code> if the designated object is an instance of
+   * {@link RSAKey} and has the same RSA parameter values as this one.
+   * 
    * @param obj the other non-null RSA key to compare to.
-   * @return <code>true</code> if the designated object is of the same type and
-   * value as this one.
+   * @return <code>true</code> if the designated object is of the same type
+   *         and value as this one.
    */
   public boolean equals(final Object obj)
   {
     if (obj == null)
-      {
-        return false;
-      }
-    if (!(obj instanceof RSAKey))
-      {
-        return false;
-      }
+      return false;
+
+    if (! (obj instanceof RSAKey))
+      return false;
+
     final RSAKey that = (RSAKey) obj;
     return n.equals(that.getModulus());
   }
@@ -180,8 +161,9 @@ public abstract class GnuRSAKey implements Key, RSAKey
   {
     if (str == null)
       {
-        String ls = SystemProperties.getProperty("line.separator");
-        str = new StringBuilder().append(ls)
+        String ls = (String) AccessController.doPrivileged
+            (new GetPropertyAction("line.separator"));
+        str = new StringBuilder(ls)
             .append("defaultFormat=").append(defaultFormat).append(",").append(ls)
             .append("n=0x").append(n.toString(16)).append(",").append(ls)
             .append("e=0x").append(e.toString(16))
@@ -189,8 +171,6 @@ public abstract class GnuRSAKey implements Key, RSAKey
       }
     return str;
   }
-
-  // abstract methods to be implemented by subclasses ------------------------
 
   public abstract byte[] getEncoded(int format);
 }

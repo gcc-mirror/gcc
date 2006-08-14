@@ -38,8 +38,10 @@ host_triplet = @host@
 target_triplet = @target@
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure \
-	$(top_srcdir)/gnu/classpath/Configuration.java.in AUTHORS \
-	COPYING ChangeLog INSTALL NEWS TODO compile config.guess \
+	$(top_srcdir)/gnu/classpath/Configuration.java.in \
+	$(top_srcdir)/gnu/java/security/Configuration.java.in \
+	$(top_srcdir)/resource/META-INF/services/java.util.prefs.PreferencesFactory.in \
+	AUTHORS COPYING ChangeLog INSTALL NEWS TODO config.guess \
 	config.sub depcomp install-sh ltcf-c.sh ltcf-cxx.sh \
 	ltcf-gcj.sh ltconfig ltmain.sh missing mkinstalldirs
 subdir = .
@@ -57,7 +59,9 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
-CONFIG_CLEAN_FILES = gnu/classpath/Configuration.java
+CONFIG_CLEAN_FILES = gnu/classpath/Configuration.java \
+	gnu/java/security/Configuration.java \
+	resource/META-INF/services/java.util.prefs.PreferencesFactory
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -109,6 +113,8 @@ CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
 CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
 CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
+CREATE_GCONF_PEER_LIBRARIES_FALSE = @CREATE_GCONF_PEER_LIBRARIES_FALSE@
+CREATE_GCONF_PEER_LIBRARIES_TRUE = @CREATE_GCONF_PEER_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
 CREATE_GTK_PEER_LIBRARIES_TRUE = @CREATE_GTK_PEER_LIBRARIES_TRUE@
 CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
@@ -129,6 +135,7 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATE = @DATE@
+DEFAULT_PREFS_PEER = @DEFAULT_PREFS_PEER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -159,6 +166,10 @@ FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
+GCONF_CFLAGS = @GCONF_CFLAGS@
+GCONF_LIBS = @GCONF_LIBS@
+GDK_CFLAGS = @GDK_CFLAGS@
+GDK_LIBS = @GDK_LIBS@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
@@ -209,6 +220,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PATH_TO_ESCHER = @PATH_TO_ESCHER@
 PATH_TO_GLIBJ_ZIP = @PATH_TO_GLIBJ_ZIP@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
@@ -229,6 +241,8 @@ USER_SPECIFIED_CLASSLIB_FALSE = @USER_SPECIFIED_CLASSLIB_FALSE@
 USER_SPECIFIED_CLASSLIB_TRUE = @USER_SPECIFIED_CLASSLIB_TRUE@
 USER_SPECIFIED_JAVAH_FALSE = @USER_SPECIFIED_JAVAH_FALSE@
 USER_SPECIFIED_JAVAH_TRUE = @USER_SPECIFIED_JAVAH_TRUE@
+USE_ESCHER_FALSE = @USE_ESCHER_FALSE@
+USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
@@ -340,6 +354,10 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 gnu/classpath/Configuration.java: $(top_builddir)/config.status $(top_srcdir)/gnu/classpath/Configuration.java.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+gnu/java/security/Configuration.java: $(top_builddir)/config.status $(top_srcdir)/gnu/java/security/Configuration.java.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+resource/META-INF/services/java.util.prefs.PreferencesFactory: $(top_builddir)/config.status $(top_srcdir)/resource/META-INF/services/java.util.prefs.PreferencesFactory.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
@@ -487,7 +505,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/../.. $(distdir)/examples $(distdir)/gnu/classpath $(distdir)/lib $(distdir)/m4 $(distdir)/scripts $(distdir)/tools
+	$(mkdir_p) $(distdir)/../.. $(distdir)/examples $(distdir)/gnu/classpath $(distdir)/gnu/java/security $(distdir)/lib $(distdir)/m4 $(distdir)/resource/META-INF/services $(distdir)/scripts $(distdir)/tools
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

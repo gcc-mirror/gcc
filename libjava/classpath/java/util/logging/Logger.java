@@ -1209,7 +1209,7 @@ public class Logger
   
   /**
    * Reset and close handlers attached to this logger. This function is package
-   * private because it must only be avaiable to the LogManager.
+   * private because it must only be available to the LogManager.
    */
   void resetLogger()
   {

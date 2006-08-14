@@ -174,7 +174,7 @@ public class TreePath implements Serializable
           return false;
         for (index = 0; index < path.length; index++)
           {
-            if (!treepath[index].equals(path[index]))
+            if (!path[index].equals(treepath[index]))
               return false;
           }
 

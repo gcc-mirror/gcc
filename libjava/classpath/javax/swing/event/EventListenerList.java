@@ -108,7 +108,7 @@ public class EventListenerList
    * An array with all currently registered listeners.  The array has
    * twice as many elements as there are listeners.  For an even
    * integer <code>i</code>, <code>listenerList[i]</code> indicates
-   * the registered class, and <code>listenerList[i+1]</code> is the
+   * the registered class, and <code>listenerList[i + 1]</code> is the
    * listener.
    */
   protected transient Object[] listenerList = NO_LISTENERS;

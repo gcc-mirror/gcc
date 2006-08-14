@@ -40,7 +40,6 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.Component;
 import java.awt.Event;
-import java.awt.MenuItem;
 import java.awt.Point;
 import java.awt.PopupMenu;
 import java.awt.peer.PopupMenuPeer;

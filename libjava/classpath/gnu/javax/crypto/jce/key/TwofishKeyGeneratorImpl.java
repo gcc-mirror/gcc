@@ -35,18 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
+
 package gnu.javax.crypto.jce.key;
 
 import gnu.java.security.Registry;
 
-public class TwofishKeyGeneratorImpl extends SecretKeyGeneratorImpl
+public class TwofishKeyGeneratorImpl
+    extends SecretKeyGeneratorImpl
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
-  public TwofishKeyGeneratorImpl ()
+  public TwofishKeyGeneratorImpl()
   {
-    super (Registry.TWOFISH_CIPHER);
+    super(Registry.TWOFISH_CIPHER);
   }
 }

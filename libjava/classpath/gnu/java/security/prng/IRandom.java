@@ -41,139 +41,133 @@ package gnu.java.security.prng;
 import java.util.Map;
 
 /**
- * <p>The basic visible methods of any pseudo-random number generator.</p>
- *
- * <p>The [HAC] defines a PRNG (as implemented in this library) as follows:</p>
- *
+ * The basic visible methods of any pseudo-random number generator.
+ * <p>
+ * The [HAC] defines a PRNG (as implemented in this library) as follows:
  * <ul>
- *    <li>"5.6 Definition: A pseudorandom bit generator (PRBG) is said to pass
- *    the <em>next-bit test</em> if there is no polynomial-time algorithm which,
- *    on input of the first <code>L</code> bits of an output sequence <code>S</code>,
- *    can predict the <code>(L+1)</code>st bit of <code>S</code> with a
- *    probability significantly grater than <code>1/2</code>."</li>
- *
- *    <li>"5.8 Definition: A PRBG that passes the <em>next-bit test</em>
- *    (possibly under some plausible but unproved mathematical assumption such
- *    as the intractability of factoring integers) is called a
- *    <em>cryptographically secure pseudorandom bit generator</em> (CSPRBG)."</li>
+ * <li>"5.6 Definition: A pseudorandom bit generator (PRBG) is said to pass the
+ * <em>next-bit test</em> if there is no polynomial-time algorithm which, on
+ * input of the first <code>L</code> bits of an output sequence <code>S</code>,
+ * can predict the <code>(L+1)</code><sup>st</sup> bit of <code>S</code> with a
+ * probability significantly greater than <code>1/2</code>."</li>
+ * <li>"5.8 Definition: A PRBG that passes the <em>next-bit test</em>
+ * (possibly under some plausible but unproved mathematical assumption such as
+ * the intractability of factoring integers) is called a <em>cryptographically
+ * secure pseudorandom bit generator</em> (CSPRBG)."</li>
  * </ul>
- *
- * <p><b>IMPLEMENTATION NOTE</b>: Although all the concrete classes in this
+ * <p>
+ * <b>IMPLEMENTATION NOTE</b>: Although all the concrete classes in this
  * package implement the {@link Cloneable} interface, it is important to note
- * here that such an operation, for those algorithms that use an underlting
+ * here that such an operation, for those algorithms that use an underlying
  * symmetric key block cipher, <b>DOES NOT</b> clone any session key material
  * that may have been used in initialising the source PRNG (the instance to be
- * cloned). Instead a clone of an already initialised PRNG, that uses and
+ * cloned). Instead a clone of an already initialised PRNG, that uses an
  * underlying symmetric key block cipher, is another instance with a clone of
- * the same cipher that operates with the <b>same block size</b> but without any
- * knowledge of neither key material nor key size.</p>
- *
- * <p>References:</p>
- *
+ * the same cipher that operates with the <b>same block size</b> but without
+ * any knowledge of neither key material nor key size.
+ * <p>
+ * References:
  * <ol>
- *    <li><a href="http://www.cacr.math.uwaterloo.ca/hac">[HAC]</a>: Handbook of
- *    Applied Cryptography.<br>
- *    CRC Press, Inc. ISBN 0-8493-8523-7, 1997<br>
- *    Menezes, A., van Oorschot, P. and S. Vanstone.</li>
+ * <li><a href="http://www.cacr.math.uwaterloo.ca/hac">[HAC]</a>: Handbook of
+ * Applied Cryptography.<br>
+ * CRC Press, Inc. ISBN 0-8493-8523-7, 1997<br>
+ * Menezes, A., van Oorschot, P. and S. Vanstone.</li>
  * </ol>
  */
-public interface IRandom extends Cloneable
+public interface IRandom
+    extends Cloneable
 {
-
-  // Constants
-  // -------------------------------------------------------------------------
-
-  // Methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the canonical name of this instance.</p>
-   *
-   * @return the canonical name of this instance. */
+   * Returns the canonical name of this instance.
+   * 
+   * @return the canonical name of this instance.
+   */
   String name();
 
   /**
-   * <p>Initialises the pseudo-random number generator scheme with the
-   * appropriate attributes.</p>
-   *
+   * Initialises the pseudo-random number generator scheme with the appropriate
+   * attributes.
+   * 
    * @param attributes a set of name-value pairs that describe the desired
-   * future instance behaviour.
+   *          future instance behaviour.
    * @exception IllegalArgumentException if at least one of the defined name/
-   * value pairs contains invalid data.
+   *              value pairs contains invalid data.
    */
   void init(Map attributes);
 
   /**
-   * <p>Returns the next 8 bits of random data generated from this instance.</p>
-   *
+   * Returns the next 8 bits of random data generated from this instance.
+   * 
    * @return the next 8 bits of random data generated from this instance.
    * @exception IllegalStateException if the instance is not yet initialised.
    * @exception LimitReachedException if this instance has reached its
-   * theoretical limit for generating non-repetitive pseudo-random data.
+   *              theoretical limit for generating non-repetitive pseudo-random
+   *              data.
    */
   byte nextByte() throws IllegalStateException, LimitReachedException;
 
   /**
-   * <p>Fills the designated byte array, starting from byte at index
-   * <code>offset</code>, for a maximum of <code>length</code> bytes with the
-   * output of this generator instance.
-   *
+   * Fills the designated byte array, starting from byte at index
+   * <code>offset</code>, for a maximum of <code>length</code> bytes with
+   * the output of this generator instance.
+   * 
    * @param out the placeholder to contain the generated random bytes.
    * @param offset the starting index in <i>out</i> to consider. This method
-   * does nothing if this parameter is not within <code>0</code> and
-   * <code>out.length</code>.
-   * @param length the maximum number of required random bytes. This method
-   * does nothing if this parameter is less than <code>1</code>.
+   *          does nothing if this parameter is not within <code>0</code> and
+   *          <code>out.length</code>.
+   * @param length the maximum number of required random bytes. This method does
+   *          nothing if this parameter is less than <code>1</code>.
    * @exception IllegalStateException if the instance is not yet initialised.
    * @exception LimitReachedException if this instance has reached its
-   * theoretical limit for generating non-repetitive pseudo-random data.
+   *              theoretical limit for generating non-repetitive pseudo-random
+   *              data.
    */
   void nextBytes(byte[] out, int offset, int length)
       throws IllegalStateException, LimitReachedException;
 
   /**
-   * <p>Supplement, or possibly replace, the random state of this PRNG with
-   * a random byte.</p>
-   *
-   * <p>Implementations are not required to implement this method in any
-   * meaningful way; this may be a no-operation, and implementations may
-   * throw an {@link UnsupportedOperationException}.</p>
-   *
+   * Supplement, or possibly replace, the random state of this PRNG with a
+   * random byte.
+   * <p>
+   * Implementations are not required to implement this method in any meaningful
+   * way; this may be a no-operation, and implementations may throw an
+   * {@link UnsupportedOperationException}.
+   * 
    * @param b The byte to add.
    */
   void addRandomByte(byte b);
 
   /**
-   * <p>Supplement, or possibly replace, the random state of this PRNG with
-   * a sequence of new random bytes.</p>
-   *
-   * <p>Implementations are not required to implement this method in any
-   * meaningful way; this may be a no-operation, and implementations may
-   * throw an {@link UnsupportedOperationException}.</p>
-   *
+   * Supplement, or possibly replace, the random state of this PRNG with a
+   * sequence of new random bytes.
+   * <p>
+   * Implementations are not required to implement this method in any meaningful
+   * way; this may be a no-operation, and implementations may throw an
+   * {@link UnsupportedOperationException}.
+   * 
    * @param in The buffer of new random bytes to add.
    */
   void addRandomBytes(byte[] in);
 
   /**
-   * <p>Supplement, or possibly replace, the random state of this PRNG with
-   * a sequence of new random bytes.</p>
-   *
-   * <p>Implementations are not required to implement this method in any
-   * meaningful way; this may be a no-operation, and implementations may
-   * throw an {@link UnsupportedOperationException}.</p>
-   *
+   * Supplement, or possibly replace, the random state of this PRNG with a
+   * sequence of new random bytes.
+   * <p>
+   * Implementations are not required to implement this method in any meaningful
+   * way; this may be a no-operation, and implementations may throw an
+   * {@link UnsupportedOperationException}.
+   * 
    * @param in The buffer of new random bytes to add.
    * @param offset The offset from whence to begin reading random bytes.
    * @param length The number of random bytes to add.
-   * @exception IndexOutOfBoundsException If <i>offset</i>, <i>length</i>,
-   * or <i>offset</i>+<i>length</i> is out of bounds.
+   * @exception IndexOutOfBoundsException If <i>offset</i>, <i>length</i>, or
+   *              <i>offset</i>+<i>length</i> is out of bounds.
    */
   void addRandomBytes(byte[] in, int offset, int length);
 
   /**
-   * <p>Returns a clone copy of this instance.</p>
-   *
+   * Returns a clone copy of this instance.
+   * 
    * @return a clone copy of this instance.
    */
   Object clone() throws CloneNotSupportedException;

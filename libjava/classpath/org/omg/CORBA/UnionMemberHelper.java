@@ -94,7 +94,7 @@ public abstract class UnionMemberHelper
               {
                 if (active)
                   {
-                    return ORB.init().create_recursive_tc(id());
+                    return OrbRestricted.Singleton.create_recursive_tc(id());
                   }
                 active = true;
 

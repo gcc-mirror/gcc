@@ -38,10 +38,10 @@ exception statement from your version.  */
 
 package gnu.java.security.key.rsa;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 import gnu.java.security.key.IKeyPairGenerator;
 import gnu.java.security.util.PRNG;
-import gnu.java.security.util.Prime2;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -53,25 +53,23 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * <p>A key-pair generator for asymetric keys to use in conjunction with the RSA
- * scheme.</p>
- *
- * <p>Reference:</p>
+ * A key-pair generator for asymetric keys to use in conjunction with the RSA
+ * scheme.
+ * <p>
+ * Reference:
  * <ol>
- *    <li><a href="http://www.cosic.esat.kuleuven.ac.be/nessie/workshop/submissions/rsa-pss.zip">
- *    RSA-PSS Signature Scheme with Appendix</a>, part B. Primitive
- *    specification and supporting documentation. Jakob Jonsson and Burt Kaliski.
- *    </li>
- *    <li><a href="http://www.cacr.math.uwaterloo.ca/hac/">Handbook of Applied
- *    Cryptography</a>, Alfred J. Menezes, Paul C. van Oorschot and Scott A.
- *    Vanstone. Section 11.3 RSA and related signature schemes.</li>
+ * <li><a
+ * href="http://www.cosic.esat.kuleuven.ac.be/nessie/workshop/submissions/rsa-pss.zip">
+ * RSA-PSS Signature Scheme with Appendix</a>, part B. Primitive specification
+ * and supporting documentation. Jakob Jonsson and Burt Kaliski. </li>
+ * <li><a href="http://www.cacr.math.uwaterloo.ca/hac/">Handbook of Applied
+ * Cryptography</a>, Alfred J. Menezes, Paul C. van Oorschot and Scott A.
+ * Vanstone. Section 11.3 RSA and related signature schemes.</li>
  * </ol>
  */
-public class RSAKeyPairGenerator implements IKeyPairGenerator
+public class RSAKeyPairGenerator
+    implements IKeyPairGenerator
 {
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private static final Logger log = Logger.getLogger(RSAKeyPairGenerator.class.getName());
 
   /** The BigInteger constant 1. */
@@ -90,8 +88,8 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
   public static final String SOURCE_OF_RANDOMNESS = "gnu.crypto.rsa.prng";
 
   /**
-   * Property name of an optional {@link RSAKeyGenParameterSpec} instance to
-   * use for this generator's <code>n</code>, and <code>e</code> values. The
+   * Property name of an optional {@link RSAKeyGenParameterSpec} instance to use
+   * for this generator's <code>n</code>, and <code>e</code> values. The
    * default is to generate <code>n</code> and use a fixed value for
    * <code>e</.code> (Fermat's F4 number).
    */
@@ -128,15 +126,7 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
   /** Preferred encoding format of generated keys. */
   private int preferredFormat;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // implicit 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // gnu.crypto.key.IKeyPairGenerator interface implementation ---------------
 
   public String name()
   {
@@ -144,22 +134,20 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
   }
 
   /**
-   * <p>Configures this instance.</p>
-   *
+   * Configures this instance.
+   * 
    * @param attributes the map of name/value pairs to use.
-   * @exception IllegalArgumentException if the designated MODULUS_LENGTH
-   * value is less than 1024.
+   * @exception IllegalArgumentException if the designated MODULUS_LENGTH value
+   *              is less than 1024.
    */
   public void setup(Map attributes)
   {
-    log.entering(this.getClass().getName(), "setup", attributes);
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "setup", attributes);
     // do we have a SecureRandom, or should we use our own?
     rnd = (SecureRandom) attributes.get(SOURCE_OF_RANDOMNESS);
-
     // are we given a set of RSA params or we shall use our own?
     RSAKeyGenParameterSpec params = (RSAKeyGenParameterSpec) attributes.get(RSA_PARAMETERS);
-
     // find out the modulus length
     if (params != null)
       {
@@ -171,32 +159,30 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
         Integer l = (Integer) attributes.get(MODULUS_LENGTH);
         L = (l == null ? DEFAULT_MODULUS_LENGTH : l.intValue());
       }
-
     if (L < 1024)
-      {
-        throw new IllegalArgumentException(MODULUS_LENGTH);
-      }
+      throw new IllegalArgumentException(MODULUS_LENGTH);
 
     // what is the preferred encoding format
     Integer formatID = (Integer) attributes.get(PREFERRED_ENCODING_FORMAT);
     preferredFormat = formatID == null ? DEFAULT_ENCODING_FORMAT
                                        : formatID.intValue();
-
-    log.exiting(this.getClass().getName(), "setup");
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "setup");
   }
 
   /**
-   * <p>The algorithm used here is described in <i>nessie-pss-B.pdf</i>
-   * document which is part of the RSA-PSS submission to NESSIE.</p>
-   *
+   * <p>
+   * The algorithm used here is described in <i>nessie-pss-B.pdf</i> document
+   * which is part of the RSA-PSS submission to NESSIE.
+   * </p>
+   * 
    * @return an RSA keypair.
    */
   public KeyPair generate()
   {
-    log.entering(this.getClass().getName(), "generate");
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "generate");
     BigInteger p, q, n, d;
-
     // 1. Generate a prime p in the interval [2**(M-1), 2**M - 1], where
     // M = CEILING(L/2), and such that GCD(p, e) = 1
     int M = (L + 1) / 2;
@@ -208,12 +194,9 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
         nextRandomBytes(kb);
         p = new BigInteger(1, kb).setBit(0);
         if (p.compareTo(lower) >= 0 && p.compareTo(upper) <= 0
-            && Prime2.isProbablePrime(p) && p.gcd(e).equals(ONE))
-          {
-            break step1;
-          }
+            && p.isProbablePrime(80) && p.gcd(e).equals(ONE))
+          break step1;
       }
-
     // 2. Generate a prime q such that the product of p and q is an L-bit
     // number, and such that GCD(q, e) = 1
     step2: while (true)
@@ -221,45 +204,34 @@ public class RSAKeyPairGenerator implements IKeyPairGenerator
         nextRandomBytes(kb);
         q = new BigInteger(1, kb).setBit(0);
         n = p.multiply(q);
-        if (n.bitLength() == L && Prime2.isProbablePrime(q)
-            && q.gcd(e).equals(ONE))
-          {
-            break step2;
-          }
-
+        if (n.bitLength() == L && q.isProbablePrime(80) && q.gcd(e).equals(ONE))
+          break step2;
         // TODO: test for p != q
       }
-
     // TODO: ensure p < q
-
     // 3. Put n = pq. The public key is (n, e).
     // 4. Compute the parameters necessary for the private key K (see
     // Section 2.2).
     BigInteger phi = p.subtract(ONE).multiply(q.subtract(ONE));
     d = e.modInverse(phi);
-
     // 5. Output the public key and the private key.
     PublicKey pubK = new GnuRSAPublicKey(preferredFormat, n, e);
     PrivateKey secK = new GnuRSAPrivateKey(preferredFormat, p, q, e, d);
-
     KeyPair result = new KeyPair(pubK, secK);
-    log.exiting(this.getClass().getName(), "generate", result);
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "generate", result);
     return result;
   }
 
-  // helper methods ----------------------------------------------------------
-
   /**
-   * <p>Fills the designated byte array with random data.</p>
-   *
+   * Fills the designated byte array with random data.
+   * 
    * @param buffer the byte array to fill with random data.
    */
   private void nextRandomBytes(byte[] buffer)
   {
     if (rnd != null)
-      {
-        rnd.nextBytes(buffer);
-      }
+      rnd.nextBytes(buffer);
     else
       getDefaultPRNG().nextBytes(buffer);
   }

@@ -56,8 +56,12 @@ public class PlainDocument extends AbstractDocument
   public static final String lineLimitAttribute = "lineLimit";
   public static final String tabSizeAttribute = "tabSize";
 
-  private BranchElement rootElement;
-  private int tabSize;
+  /**
+   * The default root element of this document. This is made type Element
+   * because the RI seems to accept other types of elements as well from
+   * createDefaultRoot() (when overridden by a subclass).
+   */
+  private Element rootElement;
   
   public PlainDocument()
   {
@@ -67,8 +71,10 @@ public class PlainDocument extends AbstractDocument
   public PlainDocument(AbstractDocument.Content content)
   {
     super(content);
-    tabSize = 8;
-    rootElement = (BranchElement) createDefaultRoot();
+    rootElement = createDefaultRoot();
+
+    // This property has been determined using a Mauve test.
+    putProperty("tabSize", new Integer(8));
   }
 
   private void reindex()
@@ -105,10 +111,10 @@ public class PlainDocument extends AbstractDocument
   protected AbstractDocument.AbstractElement createDefaultRoot()
   {
     BranchElement root =
-      (BranchElement) createBranchElement(null, SimpleAttributeSet.EMPTY);
+      (BranchElement) createBranchElement(null, null);
 
     Element[] array = new Element[1];
-    array[0] = createLeafElement(root, SimpleAttributeSet.EMPTY, 0, 1);
+    array[0] = createLeafElement(root, null, 0, 1);
     root.replace(0, 0, array);
     
     return root;
@@ -117,116 +123,97 @@ public class PlainDocument extends AbstractDocument
   protected void insertUpdate(DefaultDocumentEvent event,
                               AttributeSet attributes)
   {
+
+    String text = null;
     int offset = event.getOffset();
-    int eventLength = event.getLength();
-    int end = offset + event.getLength();
-    int oldElementIndex, elementIndex = rootElement.getElementIndex(offset);
-    Element firstElement = rootElement.getElement(elementIndex);
-    oldElementIndex = elementIndex;
-        
-    // If we're inserting immediately after a newline we have to fix the 
-    // Element structure (but only if we are dealing with a line which
-    // has not existed as Element before).
-    if (offset > 0 && firstElement.getStartOffset() != offset)
+    int length = event.getLength();
+    try
       {
+        text = getText(offset, length);
+      }
+    catch (BadLocationException ex)
+      {
+        AssertionError err = new AssertionError();
+        err.initCause(ex);
+        throw err;
+      }
+
+    boolean hasLineBreak = text.indexOf('\n') != -1;
+    boolean prevCharIsLineBreak = false;
+    try
+      {
+        prevCharIsLineBreak =
+          offset > 0 && getText(offset - 1, 1).charAt(0) == '\n';
+      }
+    catch (BadLocationException ex)
+      {
+        AssertionError err = new AssertionError();
+        err.initCause(ex);
+        throw err;
+      }
+    boolean lastCharIsLineBreak = text.charAt(text.length() - 1) == '\n';
+    int lineIndex = -1;
+    int lineStart = -1;
+    int lineEnd = -1;
+    Element[] removed = null;
+    BranchElement root = (BranchElement) rootElement;
+    boolean updateStructure = true;
+
+    if (prevCharIsLineBreak && ! lastCharIsLineBreak)
+      {
+        // We must fix the structure a little if the previous char
+        // is a linebreak and the last char isn't.
+        lineIndex = root.getElementIndex(offset - 1);
+        Element prevLine = root.getElement(lineIndex);
+        Element nextLine = root.getElement(lineIndex + 1);
+        lineStart = prevLine.getStartOffset();
+        lineEnd = nextLine.getEndOffset();
+        removed = new Element[]{ prevLine, nextLine };
+      }
+    else if (hasLineBreak)
+      {
+        lineIndex = root.getElementIndex(offset);
+        Element line = root.getElement(lineIndex);
+        lineStart = line.getStartOffset();
+        lineEnd = line.getEndOffset();
+        removed = new Element[]{ line };
+      }
+    else
+      {
+        updateStructure = false;
+      }
+
+    if (updateStructure)
+      {
+        // Break the lines between lineStart and lineEnd.
+        ArrayList lines = new ArrayList();
+        int len = lineEnd - lineStart;
         try
-        {
-          String s = getText(offset - 1, 1);
-          if (s.equals("\n") )
-            {
-              int newEl2EndOffset = end;
-              boolean replaceNext = false;
-              if (rootElement.getElementCount() > elementIndex + 1)
-                {
-                  replaceNext = true;
-                  newEl2EndOffset = 
-                    rootElement.getElement(elementIndex + 1).getEndOffset();
-                }
-              Element newEl1 = 
-                createLeafElement(rootElement, firstElement.getAttributes(), 
-                                  firstElement.getStartOffset(), offset);
-              Element newEl2 = 
-                createLeafElement (rootElement, firstElement.getAttributes(), 
-                                   offset, newEl2EndOffset);
-              if (replaceNext)
-                rootElement.replace(elementIndex, 2, new Element[] { newEl1, newEl2 });
-              else
-                rootElement.replace(elementIndex, 1, new Element[] { newEl1, newEl2 });
-              firstElement = newEl2;
-              elementIndex ++;
-            }
-        }
-        catch (BadLocationException ble)
-        {          
-          // This shouldn't happen.
-          AssertionError ae = new AssertionError();
-          ae.initCause(ble);
-          throw ae;
-        }        
-      }
-
-    // added and removed are Element arrays used to add an ElementEdit
-    // to the DocumentEvent if there were entire lines added or removed.
-    Element[] removed = new Element[1];
-    Element[] added;
-    try 
-      {
-        String str = content.getString(offset, eventLength);
-        ArrayList elts = new ArrayList();
-
-        // Determine how many NEW lines were added by finding the newline
-        // characters within the newly inserted text
-        int j = firstElement.getStartOffset();
-        int i = str.indexOf('\n', 0);
-        int contentLength = content.length();
-          
-        while (i != -1 && i <= eventLength)
-          {            
-            // For each new line, create a new element
-            elts.add(createLeafElement(rootElement, SimpleAttributeSet.EMPTY,
-                                       j, offset + i + 1));
-                  
-            j = offset + i + 1;
-            if (j >= contentLength)
-                break;
-            i = str.indexOf('\n', i + 1);
-          }
-
-        // If there were new lines added we have to add an ElementEdit to 
-        // the DocumentEvent and we have to call rootElement.replace to 
-        // insert the new lines
-        if (elts.size() != 0)
           {
-            // If we have created new lines test whether there are remaining
-            // characters in firstElement after the inserted text and if so
-            // create a new element for them.
-            if (j < firstElement.getEndOffset())
-              elts.add(createLeafElement(rootElement, SimpleAttributeSet.EMPTY, j, firstElement.getEndOffset()));
-
-            // Set up the ElementEdit by filling the added and removed 
-            // arrays with the proper Elements
-            added = new Element[elts.size()];
-            elts.toArray(added);
-            
-            removed[0] = firstElement;
-            
-            // Now create and add the ElementEdit
-            ElementEdit e = new ElementEdit(rootElement, elementIndex, removed,
-                                            added);
-            event.addEdit(e);
-            
-            // And call replace to actually make the changes
-            ((BranchElement) rootElement).replace(elementIndex, 1, added);
+            text = getText(lineStart, len);
           }
+        catch (BadLocationException ex)
+          {
+            AssertionError err = new AssertionError();
+            err.initCause(ex);
+            throw err;
+          }
+        int prevLineBreak = 0;
+        int lineBreak = text.indexOf('\n');
+        do
+          {
+            lineBreak++;
+            lines.add(createLeafElement(root, null, lineStart + prevLineBreak,
+                                        lineStart + lineBreak));
+            prevLineBreak = lineBreak;
+            lineBreak = text.indexOf('\n', prevLineBreak);
+          } while (prevLineBreak < len);
+
+        // Update the element structure and prepare document event.
+        Element[] added = (Element[]) lines.toArray(new Element[lines.size()]);
+        event.addEdit(new ElementEdit(root, lineIndex, removed, added));
+        root.replace(lineIndex, removed.length, added);
       }
-    catch (BadLocationException e)
-      {
-        // This shouldn't happen so we throw an AssertionError
-        AssertionError ae = new AssertionError();
-        ae.initCause(e);
-        throw ae;
-      }
-    
     super.insertUpdate(event, attributes);
   }
 
@@ -264,7 +251,7 @@ public class PlainDocument extends AbstractDocument
         event.addEdit(e);
 
         // collapse elements if the removal spans more than 1 line
-        rootElement.replace(i1, i2 - i1 + 1, added);
+        ((BranchElement) rootElement).replace(i1, i2 - i1 + 1, added);
       }
   }
 

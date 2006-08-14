@@ -49,51 +49,42 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>An implementation of the <i>key derivation function</i> KDF2 from PKCS #5:
+ * An implementation of the <i>key derivation function</i> KDF2 from PKCS #5:
  * Password-Based Cryptography (<b>PBE</b>). This KDF is essentially a way to
  * transform a password and a salt into a stream of random bytes, which may then
- * be used to initialize a cipher or a MAC.</p>
- *
- * <p>This version uses a MAC as its pseudo-random function, and the password is
- * used as the key.</p>
- *
- * <p>References:</p>
+ * be used to initialize a cipher or a MAC.
+ * <p>
+ * This version uses a MAC as its pseudo-random function, and the password is
+ * used as the key.
+ * <p>
+ * References:
  * <ol>
- *    <li>B. Kaliski, <a href="http://www.ietf.org/rfc/rfc2898.txt">RFC 2898:
- *    Password-Based Cryptography Specification, Version 2.0</a></li>
+ * <li>B. Kaliski, <a href="http://www.ietf.org/rfc/rfc2898.txt">RFC 2898:
+ * Password-Based Cryptography Specification, Version 2.0</a></li>
  * </ol>
  */
-public class PBKDF2 extends BasePRNG implements Cloneable
+public class PBKDF2
+    extends BasePRNG
+    implements Cloneable
 {
-
-  // Contstants and variables
-  // -------------------------------------------------------------------------
-
   /**
-   * The bytes fed into the MAC. This is initially the concatenation of the
-   * salt and the block number.
+   * The bytes fed into the MAC. This is initially the concatenation of the salt
+   * and the block number.
    */
   private byte[] in;
-
   /** The iteration count. */
   private int iterationCount;
-
   /** The salt. */
   private byte[] salt;
-
   /** The MAC (the pseudo-random function we use). */
   private IMac mac;
-
   /** The number of hLen-sized blocks generated. */
   private long count;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Creates a new PBKDF2 object. The argument is the MAC that will serve as
-   * the pseudo-random function. The MAC does not need to be initialized.</p>
-   *
+   * Creates a new PBKDF2 object. The argument is the MAC that will serve as the
+   * pseudo-random function. The MAC does not need to be initialized.
+   * 
    * @param mac The pseudo-random function.
    */
   public PBKDF2(IMac mac)
@@ -103,30 +94,19 @@ public class PBKDF2 extends BasePRNG implements Cloneable
     iterationCount = -1;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   public void setup(Map attributes)
   {
     Map macAttrib = new HashMap();
     macAttrib.put(HMac.USE_WITH_PKCS5_V2, Boolean.TRUE);
-
     byte[] s = (byte[]) attributes.get(IPBE.SALT);
     if (s == null)
       {
         if (salt == null)
-          {
-            throw new IllegalArgumentException("no salt specified");
-          } // Otherwise re-use.
+          throw new IllegalArgumentException("no salt specified");
+        // Otherwise re-use.
       }
     else
-      {
-        salt = s;
-      }
-
+      salt = s;
     byte[] macKeyMaterial;
     char[] password = (char[]) attributes.get(IPBE.PASSWORD);
     if (password != null)
@@ -136,7 +116,6 @@ public class PBKDF2 extends BasePRNG implements Cloneable
           encoding = IPBE.DEFAULT_PASSWORD_ENCODING;
         else
           encoding = encoding.trim();
-
         try
           {
             macKeyMaterial = new String(password).getBytes(encoding);
@@ -152,10 +131,10 @@ public class PBKDF2 extends BasePRNG implements Cloneable
 
     if (macKeyMaterial != null)
       macAttrib.put(IMac.MAC_KEY_MATERIAL, macKeyMaterial);
-    else if (!initialised)
-      throw new IllegalArgumentException("Neither password nor key-material were specified");
+    else if (! initialised)
+      throw new IllegalArgumentException(
+          "Neither password nor key-material were specified");
     // otherwise re-use previous password/key-material
-
     try
       {
         mac.init(macAttrib);
@@ -164,27 +143,19 @@ public class PBKDF2 extends BasePRNG implements Cloneable
       {
         throw new IllegalArgumentException(x.getMessage());
       }
-
     Integer ic = (Integer) attributes.get(IPBE.ITERATION_COUNT);
     if (ic != null)
-      {
-        iterationCount = ic.intValue();
-      }
+      iterationCount = ic.intValue();
     if (iterationCount <= 0)
-      {
-        throw new IllegalArgumentException("bad iteration count");
-      }
-
+      throw new IllegalArgumentException("bad iteration count");
     count = 0L;
     buffer = new byte[mac.macSize()];
     try
       {
         fillBlock();
-        //      } catch (Exception x) {
       }
     catch (LimitReachedException x)
       {
-        //         x.printStackTrace(System.err);
         throw new Error(x.getMessage());
       }
   }
@@ -192,34 +163,22 @@ public class PBKDF2 extends BasePRNG implements Cloneable
   public void fillBlock() throws LimitReachedException
   {
     if (++count > ((1L << 32) - 1))
-      {
-        throw new LimitReachedException();
-      }
-    //      for (int i = 0; i < buffer.length; i++) {
-    //         buffer[i] = 0;
-    //      }
+      throw new LimitReachedException();
     Arrays.fill(buffer, (byte) 0x00);
     int limit = salt.length;
-    //      in = new byte[salt.length + 4];
     in = new byte[limit + 4];
     System.arraycopy(salt, 0, in, 0, salt.length);
-    //      in[salt.length  ] = (byte)(count >>> 24);
-    //      in[salt.length+1] = (byte)(count >>> 16);
-    //      in[salt.length+2] = (byte)(count >>>  8);
-    //      in[salt.length+3] = (byte) count;
-    in[limit++] = (byte) (count >>> 24);
-    in[limit++] = (byte) (count >>> 16);
-    in[limit++] = (byte) (count >>> 8);
-    in[limit] = (byte) count;
+    in[limit++] = (byte)(count >>> 24);
+    in[limit++] = (byte)(count >>> 16);
+    in[limit++] = (byte)(count >>> 8);
+    in[limit  ] = (byte) count;
     for (int i = 0; i < iterationCount; i++)
       {
         mac.reset();
         mac.update(in, 0, in.length);
         in = mac.digest();
         for (int j = 0; j < buffer.length; j++)
-          {
-            buffer[j] ^= in[j];
-          }
+          buffer[j] ^= in[j];
       }
   }
 }

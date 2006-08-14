@@ -42,58 +42,48 @@ import gnu.java.security.Registry;
 import gnu.javax.crypto.cipher.IBlockCipher;
 
 /**
- * The cipher feedback mode. CFB mode is a stream mode that operates on
- * <i>s</i> bit blocks, where 1 &lt;= <i>s</i> &lt;= <i>b</i>, if
- * <i>b</i> is the underlying cipher's block size. Encryption is:
- *
- <pre>
- I[1] = IV
- I[j] = LSB(b-s, I[j-1]) | C[j-1]   for j = 2...n
- O[j] = CIPH(K, I[j])               for j = 1,2...n
- C[j] = P[j] ^ MSB(s, O[j])         for j = 1,2...n
- </pre>
- *
- * <p>And decryption is:</p>
- * 
- <pre>
- I[1] = IV
- I[j] = LSB(b-s, I[j-1]) | C[j-1]   for j = 2...n
- O[j] = CIPH(K, I[j])               for j = 1,2...n
- P[j] = C[j] ^ MSB(s, O[j])         for j = 1,2...n
- </pre>
- *
- * <p>CFB mode requires an initialization vector, which need not be kept
- * secret.</p>
- *
- * <p>References:</p>
+ * The cipher feedback mode. CFB mode is a stream mode that operates on <i>s</i>
+ * bit blocks, where 1 &lt;= <i>s</i> &lt;= <i>b</i>, if <i>b</i> is the
+ * underlying cipher's block size. Encryption is:
+ * <pre>
+ *  I[1] = IV
+ *  I[j] = LSB(b-s, I[j-1]) | C[j-1]   for j = 2...n
+ *  O[j] = CIPH(K, I[j])               for j = 1,2...n
+ *  C[j] = P[j] &circ; MSB(s, O[j])         for j = 1,2...n
+ * </pre>
+ * <p>
+ * And decryption is:
+ * <pre>
+ *  I[1] = IV
+ *  I[j] = LSB(b-s, I[j-1]) | C[j-1]   for j = 2...n
+ *  O[j] = CIPH(K, I[j])               for j = 1,2...n
+ *  P[j] = C[j] &circ; MSB(s, O[j])         for j = 1,2...n
+ * </pre>
+ * <p>
+ * CFB mode requires an initialization vector, which need not be kept secret.
+ * <p>
+ * References:
  * <ol>
- * <li>Bruce Schneier, <i>Applied Cryptography: Protocols, Algorithms,
- * and Source Code in C, Second Edition</i>. (1996 John Wiley and Sons)
- * ISBN 0-471-11709-9.</li>
- *
- * <li><a href="http://csrc.nist.gov/encryption/modes/Recommendation/Modes01.pdf">
+ * <li>Bruce Schneier, <i>Applied Cryptography: Protocols, Algorithms, and
+ * Source Code in C, Second Edition</i>. (1996 John Wiley and Sons) ISBN
+ * 0-471-11709-9.</li>
+ * <li><a
+ * href="http://csrc.nist.gov/encryption/modes/Recommendation/Modes01.pdf">
  * Recommendation for Block Cipher Modes of Operation Methods and Techniques</a>,
  * Morris Dworkin.</li>
  * </ol>
  */
-public class CFB extends BaseMode
+public class CFB
+    extends BaseMode
 {
-
-  // Constants and variables.
-  // -----------------------------------------------------------------------
-
   /** The shift register, the input block to the block cipher. */
   private byte[] shiftRegister;
-
   /** The output block from the block cipher. */
   private byte[] scratch;
 
-  // Constructors.
-  // -----------------------------------------------------------------------
-
   /**
    * Package-private constructor for the factory class.
-   *
+   * 
    * @param underlyingCipher The cipher implementation.
    * @param cipherBlockSize The cipher's block size.
    */
@@ -104,16 +94,13 @@ public class CFB extends BaseMode
 
   /**
    * Cloneing constructor.
-   *
+   * 
    * @param that The instance being cloned.
    */
   private CFB(CFB that)
   {
     this((IBlockCipher) that.cipher.clone(), that.cipherBlockSize);
   }
-
-  // Instance methods implementing BaseMode.
-  // -----------------------------------------------------------------------
 
   public Object clone()
   {
@@ -123,25 +110,20 @@ public class CFB extends BaseMode
   public void setup()
   {
     if (modeBlockSize > cipherBlockSize)
-      {
-        throw new IllegalArgumentException(
-                                           "CFB block size cannot be larger than the cipher block size");
-      }
+      throw new IllegalArgumentException(
+          "CFB block size cannot be larger than the cipher block size");
     shiftRegister = new byte[cipherBlockSize];
     scratch = new byte[cipherBlockSize];
-    System.arraycopy(iv, 0, shiftRegister, 0, Math.min(iv.length,
-                                                       cipherBlockSize));
+    System.arraycopy(iv, 0,
+                     shiftRegister, 0,
+                     Math.min(iv.length, cipherBlockSize));
   }
 
   public void teardown()
   {
     if (shiftRegister != null)
-      {
-        for (int i = 0; i < shiftRegister.length; i++)
-          {
-            shiftRegister[i] = 0;
-          }
-      }
+      for (int i = 0; i < shiftRegister.length; i++)
+        shiftRegister[i] = 0;
     shiftRegister = null;
   }
 
@@ -149,13 +131,12 @@ public class CFB extends BaseMode
   {
     cipher.encryptBlock(shiftRegister, 0, scratch, 0);
     for (int i = 0; i < modeBlockSize; i++)
-      {
-        out[outOffset + i] = (byte) (in[inOffset + i] ^ scratch[i]);
-      }
-    System.arraycopy(shiftRegister, modeBlockSize, shiftRegister, 0,
+      out[outOffset + i] = (byte)(in[inOffset + i] ^ scratch[i]);
+    System.arraycopy(shiftRegister, modeBlockSize,
+                     shiftRegister, 0,
                      cipherBlockSize - modeBlockSize);
-    System.arraycopy(out, outOffset, shiftRegister, cipherBlockSize
-                                                    - modeBlockSize,
+    System.arraycopy(out, outOffset,
+                     shiftRegister, cipherBlockSize - modeBlockSize,
                      modeBlockSize);
   }
 
@@ -163,13 +144,12 @@ public class CFB extends BaseMode
   {
     cipher.encryptBlock(shiftRegister, 0, scratch, 0);
     for (int i = 0; i < modeBlockSize; i++)
-      {
-        out[outOffset + i] = (byte) (in[inOffset + i] ^ scratch[i]);
-      }
-    System.arraycopy(shiftRegister, modeBlockSize, shiftRegister, 0,
+      out[outOffset + i] = (byte)(in[inOffset + i] ^ scratch[i]);
+    System.arraycopy(shiftRegister, modeBlockSize,
+                     shiftRegister, 0,
                      cipherBlockSize - modeBlockSize);
-    System.arraycopy(in, inOffset, shiftRegister, cipherBlockSize
-                                                  - modeBlockSize,
+    System.arraycopy(in, inOffset,
+                     shiftRegister, cipherBlockSize - modeBlockSize,
                      modeBlockSize);
   }
 }

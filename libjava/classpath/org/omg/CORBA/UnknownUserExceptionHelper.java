@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CORBA;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -57,30 +58,21 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class UnknownUserExceptionHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
    * Create the UnknownUserException typecode (structure,
    * named "UnknownUserException", containing a single field of
    * type {@link Any}, named "except".
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
+        ORB orb = OrbRestricted.Singleton;
         StructMember[] members = new StructMember[ 1 ];
 
         TypeCode field;
 
         field = orb.get_primitive_tc(TCKind.tk_any);
         members [ 0 ] = new StructMember("except", field, null);
-        typeCode =
+        return
           orb.create_exception_tc(id(), "UnknownUserException", members);
-      }
-    return typeCode;
   }
 
   /**

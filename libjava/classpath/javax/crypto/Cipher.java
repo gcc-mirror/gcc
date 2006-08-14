@@ -639,13 +639,7 @@ public class Cipher
   public final int getOutputSize(int inputLength) throws IllegalStateException
   {
     if (cipherSpi == null)
-      {
-        return inputLength;
-      }
-    if (state != ENCRYPT_MODE && state != DECRYPT_MODE)
-      {
-        throw new IllegalStateException("neither encrypting nor decrypting");
-      }
+      return inputLength;
     return cipherSpi.engineGetOutputSize(inputLength);
   }
 

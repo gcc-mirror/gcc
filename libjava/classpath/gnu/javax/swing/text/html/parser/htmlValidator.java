@@ -233,7 +233,9 @@ public abstract class htmlValidator
                 Element fe = (Element) v;
 
                 // notify the content model that we add the proposed tag
-                getCurrentContentModel().show(fe);
+                node ccm = getCurrentContentModel();
+                if (ccm != null)
+                  ccm.show(fe);
                 openFictionalTag(fe);
 
                 Object vv = tagIsValidForContext(tElement);
@@ -301,13 +303,12 @@ public abstract class htmlValidator
   }
 
   /**
-   * Check if this tag is valid for the current context.
-   * Return Boolean.True if it is OK, Boolean.False
-   * if it is surely not OK or the Element that the
-   * content model recommends to insert making the situation
-   * ok. If Boolean.True is returned, the content model current
-   * position is moved forward. Otherwise this position remains
-   * the same.
+   * Check if this tag is valid for the current context. Return Boolean.True if
+   * it is OK, Boolean.False if it is surely not OK or the Element that the
+   * content model recommends to insert making the situation ok. If Boolean.True
+   * is returned, the content model current position is moved forward. Otherwise
+   * this position remains the same.
+   * 
    * @param tElement
    * @return
    */
@@ -321,7 +322,7 @@ public abstract class htmlValidator
 
     // Check exclusions and inclusions.
     ListIterator iter = stack.listIterator(stack.size());
-    hTag t;
+    hTag t = null;
     final int idx = tElement.getElement().index;
 
     // Check only known tags.
@@ -331,19 +332,27 @@ public abstract class htmlValidator
         while (iter.hasPrevious())
           {
             t = (hTag) iter.previous();
-            if (!t.forcibly_closed)
+            if (! t.forcibly_closed)
               {
-                if (t.element.exclusions != null &&
-                    t.element.exclusions.get(idx)
-                   )
+                if (t.element.exclusions != null
+                    && t.element.exclusions.get(idx))
                   return Boolean.FALSE;
 
                 if (t.element.inclusions != null)
                   inclusions.or(t.element.inclusions);
               }
           }
-        if (!inclusions.get(idx))
-          return Boolean.FALSE;
+        if (! inclusions.get(idx))
+          {
+            // If we need to insert something, and cannot do this, but
+            // it is allowed to insert the paragraph here, insert the
+            // paragraph.
+            Element P = dtd.getElement(HTML_401F.P);
+            if (inclusions.get(P.index))
+              return P;
+            else
+              return Boolean.FALSE;
+          }
       }
     return Boolean.TRUE;
   }

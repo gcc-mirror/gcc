@@ -1,5 +1,5 @@
 /* BeanContextSupport.java --
-   Copyright (C) 2003, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package java.beans.beancontext;
 
 import gnu.classpath.NotImplementedException;
 
+import java.beans.Beans;
 import java.beans.DesignMode;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -59,7 +60,12 @@ import java.util.Iterator;
 import java.util.Locale;
 
 /**
+ * This is a helper class for implementing a bean context.  It is
+ * intended to be used either by subclassing or by calling methods
+ * of this implementation from another.
+ *
  * @author Michael Koch
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.2
  */
 public class BeanContextSupport extends BeanContextChildSupport
@@ -180,27 +186,102 @@ public class BeanContextSupport extends BeanContextChildSupport
     initialize ();
   }
 
-  public boolean add (Object targetChild)
+  /**
+   * <p>
+   * Add a child to the bean context.  A child can be a simple
+   * <code>Object</code>, a <code>BeanContextChild</code>
+   * or another <code>BeanContext</code>.  
+   * </p>
+   * <p>
+   * The children of a <code>BeanContext</code> form a set.  As
+   * a result, this method returns <code>false</code> if the given
+   * object is already a child of this context.
+   * </p>
+   * <p>
+   * If the child is a <code>BeanContextChild</code>, or a proxy
+   * for such a child, the <code>setBeanContext()</code> method
+   * is invoked on the child.  If this operation is vetoed by the
+   * child, via throwing a <code>PropertyVetoException</code>,
+   * then the current completion state of the <code>add()</code>
+   * operation is rolled back and a <code>IllegalStateException</code>
+   * is thrown.  If the <code>BeanContextChild</code> is successfully
+   * added, then the context registers with its
+   * <code>PropertyChangeListener</code> and
+   * <code>VetoableChangeListener</code> for "beanContext" events.
+   * </p>
+   * <p>
+   * If the child implements <code>java.beans.Visibility</code>,
+   * then its ability to use a GUI is set based on that of
+   * this context.
+   * </p>
+   * <p> 
+   * A <code>BeanContextMembershipEvent</code> is fired when the
+   * child is successfully added to the bean context.
+   * </p>
+   * <p>
+   * This method is synchronized over the global hierarchy lock.
+   * </p>
+   *
+   * @param targetChild the child to add.
+   * @return false if the child has already been added.
+   * @throws IllegalArgumentException if the child is null.
+   * @throws IllegalStateException if the child vetos the setting
+   *                               of its context.
+   */
+  public boolean add(Object targetChild)
   {
-    if (targetChild == null)
-      throw new IllegalArgumentException();
+    synchronized (globalHierarchyLock)
+      {
+	if (targetChild == null)
+	  throw new IllegalArgumentException();
 
-    BCSChild child;
-    synchronized (children)
-      {
-        if (children.containsKey(targetChild)
-            || ! validatePendingAdd(targetChild))
-          return false;
-        child = createBCSChild(targetChild, beanContextChildPeer);
-        children.put(targetChild, child);
+	BCSChild child;
+	synchronized (children)
+	  {
+	    if (children.containsKey(targetChild)
+		|| ! validatePendingAdd(targetChild))
+	      return false;
+	    child = createBCSChild(targetChild, beanContextChildPeer);
+	    children.put(targetChild, child);
+	  }
+	synchronized (targetChild)
+	  {
+	    BeanContextChild bcChild = null;
+	    if (targetChild instanceof BeanContextChild)
+	      bcChild = (BeanContextChild) targetChild;
+	    if (targetChild instanceof BeanContextProxy)
+	      bcChild = ((BeanContextProxy) targetChild).getBeanContextProxy();
+	    if (bcChild != null)
+	      try
+		{
+		  bcChild.setBeanContext(this);
+		  bcChild.addVetoableChangeListener("beanContext", this);
+		  bcChild.addPropertyChangeListener("beanContext", this);
+		}
+	      catch (PropertyVetoException e)
+		{
+		  synchronized (children)
+		    {
+		      children.remove(targetChild);
+		    }
+		  throw new IllegalStateException("The child refused to " +
+						  "associate itself with " +
+						  "this context.", e);
+		}
+	    if (targetChild instanceof Visibility)
+	      {
+		Visibility visibleChild = (Visibility) targetChild;
+		if (okToUseGui)
+		  visibleChild.okToUseGui();
+		else
+		  visibleChild.dontUseGui();
+	      }
+	    childJustAddedHook(targetChild, child);
+	  }
+	fireChildrenAdded(new BeanContextMembershipEvent(this,
+							 new Object[]{ targetChild }));
+	return true;
       }
-    synchronized (targetChild)
-      {
-        childJustAddedHook(targetChild, child);
-      }
-    fireChildrenAdded(new BeanContextMembershipEvent(this,
-                                                     new Object[] { targetChild }));
-    return true;
   }
 
   public boolean addAll (Collection c)
@@ -219,10 +300,18 @@ public class BeanContextSupport extends BeanContextChildSupport
       }
   }
 
-  public boolean avoidingGui ()
+  /**
+   * Returns true if this bean needs a GUI
+   * but is being prevented from using one.
+   *
+   * @return true if <code>needsGui()</code>
+   *              is true but the bean has been
+   *              told not to use it.
+   */
+  public boolean avoidingGui()
     throws NotImplementedException
   {
-    throw new Error ("Not implemented");
+    return needsGui() && (!okToUseGui);
   }
 
   protected Iterator bcsChildren ()
@@ -321,10 +410,13 @@ public class BeanContextSupport extends BeanContextChildSupport
     throw new Error ("Not implemented");
   }
 
-  public void dontUseGui ()
-    throws NotImplementedException
+  /**
+   * Informs this bean that is should not make
+   * use of the GUI.
+   */
+  public void dontUseGui()
   {
-    throw new Error ("Not implemented");
+    okToUseGui = false;
   }
 
   protected final void fireChildrenAdded (BeanContextMembershipEvent bcme)
@@ -426,10 +518,20 @@ public class BeanContextSupport extends BeanContextChildSupport
     children = new HashMap();
   }
 
+  /**
+   * This is a convenience method for instantiating a bean inside this
+   * context.  It delegates to the appropriate method in
+   * <code>java.beans.Beans</code> using the context's classloader.
+   *
+   * @param beanName the name of the class of bean to instantiate.
+   * @throws IOException if an I/O error occurs in loading the class.
+   * @throws ClassNotFoundException if the class, <code>beanName</code>,
+   *                                can not be found.
+   */
   public Object instantiateChild (String beanName)
-    throws IOException, ClassNotFoundException, NotImplementedException
+    throws IOException, ClassNotFoundException
   {
-    throw new Error ("Not implemented");
+    return Beans.instantiate(getClass().getClassLoader(), beanName, this);
   }
 
   public boolean isDesignTime ()
@@ -437,6 +539,11 @@ public class BeanContextSupport extends BeanContextChildSupport
     return designTime;
   }
 
+  /**
+   * Returns true if this bean context has no children.
+   *
+   * @return true if there are no children.
+   */
   public boolean isEmpty ()
   {
     synchronized (children)
@@ -459,22 +566,38 @@ public class BeanContextSupport extends BeanContextChildSupport
       }
   }
 
-  public boolean needsGui ()
-    throws NotImplementedException
+  /**
+   * Returns false as this bean does not a
+   * GUI for its operation.
+   *
+   * @return false
+   */
+  public boolean needsGui()
   {
-    throw new Error ("Not implemented");
+    return false;
   }
 
+  /**
+   * Informs this bean that it is okay to make use of
+   * the GUI.
+   */
   public void okToUseGui ()
-    throws NotImplementedException
   {
-    throw new Error ("Not implemented");
+    okToUseGui = true;
   }
 
+  /**
+   * Subclasses may use this method to catch property changes
+   * arising from the children of this context.  At present,
+   * we just listen for the beans being assigned to a different
+   * context and remove them from here if such an event occurs.
+   *
+   * @param pce the property change event.
+   */
   public void propertyChange (PropertyChangeEvent pce)
-    throws NotImplementedException
   {
-    throw new Error ("Not implemented");
+    if (pce.getNewValue() != this)
+      remove(pce.getSource(), false);
   }
 
   public final void readChildren (ObjectInputStream ois)
@@ -483,18 +606,100 @@ public class BeanContextSupport extends BeanContextChildSupport
     throw new Error ("Not implemented");
   }
 
+  /**
+   * Remove the specified child from the context.  This is
+   * the same as calling <code>remove(Object,boolean)</code>
+   * with a request for the <code>setBeanContext()</code> method
+   * of the child to be called (i.e. the second argument is true).
+   *
+   * @param targetChild the child to remove.
+   */
   public boolean remove (Object targetChild)
   {
     return remove(targetChild, true);
   }
 
+  /**
+   * <p>
+   * Removes a child from the bean context.  A child can be a simple
+   * <code>Object</code>, a <code>BeanContextChild</code>
+   * or another <code>BeanContext</code>.  If the given child is not
+   * a child of this context, this method returns <code>false</code>.
+   * </p>
+   * <p>
+   * If the child is a <code>BeanContextChild</code>, or a proxy
+   * for such a child, the <code>setBeanContext()</code> method
+   * is invoked on the child (if specified).  If this operation is vetoed
+   * by the child, via throwing a <code>PropertyVetoException</code>,
+   * then the current completion state of the <code>remove()</code>
+   * operation is rolled back and a <code>IllegalStateException</code>
+   * is thrown.  If the <code>BeanContextChild</code> is successfully
+   * removed, then the context deregisters with its
+   * <code>PropertyChangeListener</code> and
+   * <code>VetoableChangeListener</code> for "beanContext" events.
+   * </p>
+   * <p> 
+   * A <code>BeanContextMembershipEvent</code> is fired when the
+   * child is successfully removed from the bean context.
+   * </p>
+   * <p>
+   * This method is synchronized over the global hierarchy lock.
+   * </p>
+   *
+   * @param targetChild the child to add.
+   * @param callChildSetBC true if the <code>setBeanContext()</code>
+   *                       method of the child should be called.
+   * @return false if the child doesn't exist.
+   * @throws IllegalArgumentException if the child is null.
+   * @throws IllegalStateException if the child vetos the setting
+   *                               of its context.
+   */
   protected boolean remove (Object targetChild, boolean callChildSetBC)
-    throws NotImplementedException
   {
-    if (targetChild == null)
-      throw new IllegalArgumentException();
-    
-    throw new Error ("Not implemented");
+    synchronized (globalHierarchyLock)
+      {
+	if (targetChild == null)
+	  throw new IllegalArgumentException();
+
+	BCSChild child;
+	synchronized (children)
+	  {
+	    if (!children.containsKey(targetChild)
+		|| !validatePendingRemove(targetChild))
+	      return false;
+	    child = (BCSChild) children.remove(targetChild);
+	  }
+	synchronized (targetChild)
+	  {
+	    BeanContextChild bcChild = null;
+	    if (targetChild instanceof BeanContextChild)
+	      bcChild = (BeanContextChild) targetChild;
+	    if (targetChild instanceof BeanContextProxy)
+	      bcChild = ((BeanContextProxy) targetChild).getBeanContextProxy();
+	    if (bcChild != null)
+	      try
+		{
+		  if (callChildSetBC)
+		    bcChild.setBeanContext(null);
+		  bcChild.removeVetoableChangeListener("beanContext", this);
+		  bcChild.removePropertyChangeListener("beanContext", this);
+		}
+	      catch (PropertyVetoException e)
+		{
+		  synchronized (children)
+		    {
+		      children.put(targetChild, child);
+		    }
+		  throw new IllegalStateException("The child refused to " +
+						  "disassociate itself with " +
+						  "this context.", e);
+		}
+	    childJustRemovedHook(targetChild, child);
+	  }
+	fireChildrenRemoved(new BeanContextMembershipEvent(this,
+							 new Object[]{ targetChild }));
+	return true;
+      }
   }
 
   public boolean removeAll (Collection c)
@@ -578,10 +783,16 @@ public class BeanContextSupport extends BeanContextChildSupport
     return true;
   }
 
+  /**
+   * Subclasses may use this method to veto changes arising
+   * from the children of this context.
+   *
+   * @param pce the vetoable property change event fired.
+   */
   public void vetoableChange (PropertyChangeEvent pce)
-    throws PropertyVetoException, NotImplementedException
+    throws PropertyVetoException
   {
-    throw new Error ("Not implemented");
+    /* Purposefully left empty */
   }
 
   public final void writeChildren (ObjectOutputStream oos)

@@ -424,7 +424,23 @@ public class ObjectInputStream extends InputStream
  	  clearHandles();
  	  throw new WriteAbortedException("Exception thrown during writing of stream", e);
  	}
-	
+
+       case TC_ENUM:
+	 {
+	   /* TC_ENUM classDesc newHandle enumConstantName */
+	   if (dump)
+	     dumpElementln("ENUM=");
+	   ObjectStreamClass osc = (ObjectStreamClass) readObject();
+	   String constantName = (String) readObject();
+	   if (dump)
+	     dumpElementln("CONSTANT NAME = " + constantName);
+	   Class clazz = osc.forClass();
+	   Enum instance = Enum.valueOf(clazz, constantName);
+	   assignNewHandle(instance);
+	   ret_val = instance;
+	   break;
+	 }
+
        default:
  	throw new IOException("Unknown marker on stream: " + marker);
       }

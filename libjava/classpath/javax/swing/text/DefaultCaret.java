@@ -221,9 +221,12 @@ public class DefaultCaret extends Rectangle
       if (name.equals("document"))
         {
           Document oldDoc = (Document) e.getOldValue();
-          oldDoc.removeDocumentListener(documentListener);
+          if (oldDoc != null)
+            oldDoc.removeDocumentListener(documentListener);
+          
           Document newDoc = (Document) e.getNewValue();
-          newDoc.addDocumentListener(documentListener);
+          if (newDoc != null)
+            newDoc.addDocumentListener(documentListener);
         }
       else if (name.equals("editable"))
         {
@@ -549,7 +552,6 @@ public class DefaultCaret extends Rectangle
    */
   public void mousePressed(MouseEvent event)
   {
-    int button = event.getButton();
     
     // The implementation assumes that consuming the event makes the AWT event
     // mechanism forget about this event instance and not transfer focus.
@@ -562,23 +564,37 @@ public class DefaultCaret extends Rectangle
     // - a middle-click positions the caret and pastes the clipboard
     //   contents.
     // - a middle-click when shift is held down is ignored
-    
-    if (button == MouseEvent.BUTTON1)
-      if (event.isShiftDown())
-        moveCaret(event);
-      else
-        positionCaret(event);
-      else if(button == MouseEvent.BUTTON2)
-        if (event.isShiftDown())
-          event.consume();
+
+    if (SwingUtilities.isLeftMouseButton(event))
+      {
+        // Handle the caret.
+        if (event.isShiftDown() && getDot() != -1)
+          {
+            moveCaret(event);
+          }
         else
           {
             positionCaret(event);
-            
+          }
+
+        // Handle the focus.
+        if (textComponent != null && textComponent.isEnabled()
+            && textComponent.isRequestFocusEnabled())
+          {
+            textComponent.requestFocus();
+          }
+
+        // TODO: Handle double click for selecting words.
+      }
+    else if(event.getButton() == MouseEvent.BUTTON2)
+      {
+        // Special handling for X11-style pasting.
+        if (! event.isShiftDown())
+          {
+            positionCaret(event);
             textComponent.paste();
           }
-      else
-        event.consume();
+      }
   }
 
   /**
@@ -708,7 +724,11 @@ public class DefaultCaret extends Rectangle
     propertyChangeListener = new PropertyChangeHandler();
     textComponent.addPropertyChangeListener(propertyChangeListener);
     documentListener = new DocumentHandler();
-    textComponent.getDocument().addDocumentListener(documentListener);
+    
+    Document doc = textComponent.getDocument();
+    if (doc != null)
+      doc.addDocumentListener(documentListener);
+    
     active = textComponent.isEditable() && textComponent.isEnabled();
 
     repaint();
@@ -891,10 +911,10 @@ public class DefaultCaret extends Rectangle
       }
     catch (BadLocationException e)
       {
-    	AssertionError ae;
-    	ae = new AssertionError("Unexpected bad caret location: " + dot);
-    	ae.initCause(e);
-    	throw ae;
+        // Let's ignore that. This shouldn't really occur. But if it
+        // does (it seems that this happens when the model is mutating),
+        // it causes no real damage. Uncomment this for debugging.
+        // e.printStackTrace();
       }
 
     if (rect == null)
@@ -1128,16 +1148,34 @@ public class DefaultCaret extends Rectangle
           }
         catch (BadLocationException e)
           {
-	    AssertionError ae;
-	    ae = new AssertionError("Unexpected bad caret location: " + dot);
-	    ae.initCause(e);
-	    throw ae;
+            // Let's ignore that. This shouldn't really occur. But if it
+            // does (it seems that this happens when the model is mutating),
+            // it causes no real damage. Uncomment this for debugging.
+            // e.printStackTrace();
           }
         if (area != null)
           damage(area);
       }
     repaint();
   }  
+
+  /**
+   * Returns <code>true</code> if this <code>Caret</code> is blinking,
+   * and <code>false</code> if not. The returned value is independent of
+   * the visiblity of this <code>Caret</code> as returned by {@link #isVisible()}.
+   *
+   * @return <code>true</code> if this <code>Caret</code> is blinking,
+   *         and <code>false</code> if not.
+   * @see #isVisible()
+   * @since 1.5
+   */
+  public boolean isActive()
+  {
+    if (blinkTimer != null)
+      return blinkTimer.isRunning();
+
+    return false;
+  }
 
   /**
    * Returns <code>true</code> if this <code>Caret</code> is currently visible,

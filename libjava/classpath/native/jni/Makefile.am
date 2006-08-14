@@ -20,14 +20,19 @@ if CREATE_QT_PEER_LIBRARIES
   CLASSPATH_QT_PEER_DIR = qt-peer
 endif
 
+if CREATE_GCONF_PEER_LIBRARIES
+  CLASSPATH_GCONF_PEER_DIR = gconf-peer
+endif
+
 if CREATE_XMLJ_LIBRARY
   XMLJDIR = xmlj
 endif
 
 SUBDIRS = classpath $(JNIDIRS) \
-  $(ALSADIR) $(DSSIDIR) $(GTKDIR) $(CLASSPATH_QT_PEER_DIR) $(XMLJDIR)
+  $(ALSADIR) $(DSSIDIR) $(GTKDIR) $(CLASSPATH_QT_PEER_DIR) $(XMLJDIR) \
+  $(CLASSPATH_GCONF_PEER_DIR)
 DIST_SUBDIRS = classpath java-io java-lang java-net java-nio java-util \
-               gtk-peer qt-peer xmlj midi-alsa midi-dssi
+               gtk-peer gconf-peer qt-peer xmlj midi-alsa midi-dssi
 
 all-local:
 	cd $(top_srcdir) && $(SHELL) ./scripts/check_jni_methods.sh

@@ -49,24 +49,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p>The GNU Crypto implementation of the Java Cryptographic Extension (JCE)
- * Provider.</p>
- *
+ * The additional GNU algorithm implementation as a Java Cryptographic Extension
+ * (JCE) Provider.
+ * 
  * @see java.security.Provider
  */
-public final class GnuCrypto extends Provider
+public final class GnuCrypto
+    extends Provider
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
-  /**
-   * <p>The <a href="http://www.gnu.org/software/gnu-crypto/">GNU Crypto</a>
-   * Provider.</p>
-   */
   public GnuCrypto()
   {
     super(Registry.GNU_CRYPTO, 2.1, "GNU Crypto JCE Provider");
@@ -120,8 +110,7 @@ public final class GnuCrypto extends Provider
             gnu.javax.crypto.jce.cipher.PBES2.HMacHaval.AES.class.getName());
         put("Cipher.PBEWithHMacHavalAndAnubis",
             gnu.javax.crypto.jce.cipher.PBES2.HMacHaval.Anubis.class.getName());
-        put(
-            "Cipher.PBEWithHMacHavalAndBlowfish",
+        put("Cipher.PBEWithHMacHavalAndBlowfish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacHaval.Blowfish.class.getName());
         put("Cipher.PBEWithHMacHavalAndCast5",
             gnu.javax.crypto.jce.cipher.PBES2.HMacHaval.Cast5.class.getName());
@@ -133,8 +122,7 @@ public final class GnuCrypto extends Provider
             gnu.javax.crypto.jce.cipher.PBES2.HMacHaval.Serpent.class.getName());
         put("Cipher.PBEWithHMacHavalAndSquare",
             gnu.javax.crypto.jce.cipher.PBES2.HMacHaval.Square.class.getName());
-        put(
-            "Cipher.PBEWithHMacHavalAndTripleDES",
+        put("Cipher.PBEWithHMacHavalAndTripleDES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacHaval.TripleDES.class.getName());
         put("Cipher.PBEWithHMacHavalAndTwofish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacHaval.Twofish.class.getName());
@@ -228,8 +216,7 @@ public final class GnuCrypto extends Provider
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.AES.class.getName());
         put("Cipher.PBEWithHMacSHA256AndAnubis",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.Anubis.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA256AndBlowfish",
+        put("Cipher.PBEWithHMacSHA256AndBlowfish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.Blowfish.class.getName());
         put("Cipher.PBEWithHMacSHA256AndCast5",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.Cast5.class.getName());
@@ -237,24 +224,20 @@ public final class GnuCrypto extends Provider
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.DES.class.getName());
         put("Cipher.PBEWithHMacSHA256AndKhazad",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.Khazad.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA256AndSerpent",
+        put("Cipher.PBEWithHMacSHA256AndSerpent",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.Serpent.class.getName());
         put("Cipher.PBEWithHMacSHA256AndSquare",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.Square.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA256AndTripleDES",
+        put("Cipher.PBEWithHMacSHA256AndTripleDES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.TripleDES.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA256AndTwofish",
+        put("Cipher.PBEWithHMacSHA256AndTwofish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA256.Twofish.class.getName());
 
         put("Cipher.PBEWithHMacSHA384AndAES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.AES.class.getName());
         put("Cipher.PBEWithHMacSHA384AndAnubis",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.Anubis.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA384AndBlowfish",
+        put("Cipher.PBEWithHMacSHA384AndBlowfish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.Blowfish.class.getName());
         put("Cipher.PBEWithHMacSHA384AndCast5",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.Cast5.class.getName());
@@ -262,24 +245,20 @@ public final class GnuCrypto extends Provider
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.DES.class.getName());
         put("Cipher.PBEWithHMacSHA384AndKhazad",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.Khazad.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA384AndSerpent",
+        put("Cipher.PBEWithHMacSHA384AndSerpent",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.Serpent.class.getName());
         put("Cipher.PBEWithHMacSHA384AndSquare",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.Square.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA384AndTripleDES",
+        put("Cipher.PBEWithHMacSHA384AndTripleDES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.TripleDES.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA384AndTwofish",
+        put("Cipher.PBEWithHMacSHA384AndTwofish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA384.Twofish.class.getName());
 
         put("Cipher.PBEWithHMacSHA512AndAES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.AES.class.getName());
         put("Cipher.PBEWithHMacSHA512AndAnubis",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.Anubis.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA512AndBlowfish",
+        put("Cipher.PBEWithHMacSHA512AndBlowfish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.Blowfish.class.getName());
         put("Cipher.PBEWithHMacSHA512AndCast5",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.Cast5.class.getName());
@@ -287,24 +266,20 @@ public final class GnuCrypto extends Provider
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.DES.class.getName());
         put("Cipher.PBEWithHMacSHA512AndKhazad",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.Khazad.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA512AndSerpent",
+        put("Cipher.PBEWithHMacSHA512AndSerpent",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.Serpent.class.getName());
         put("Cipher.PBEWithHMacSHA512AndSquare",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.Square.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA512AndTripleDES",
+        put("Cipher.PBEWithHMacSHA512AndTripleDES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.TripleDES.class.getName());
-        put(
-            "Cipher.PBEWithHMacSHA512AndTwofish",
+        put("Cipher.PBEWithHMacSHA512AndTwofish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacSHA512.Twofish.class.getName());
 
         put("Cipher.PBEWithHMacTigerAndAES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacTiger.AES.class.getName());
         put("Cipher.PBEWithHMacTigerAndAnubis",
             gnu.javax.crypto.jce.cipher.PBES2.HMacTiger.Anubis.class.getName());
-        put(
-            "Cipher.PBEWithHMacTigerAndBlowfish",
+        put("Cipher.PBEWithHMacTigerAndBlowfish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacTiger.Blowfish.class.getName());
         put("Cipher.PBEWithHMacTigerAndCast5",
             gnu.javax.crypto.jce.cipher.PBES2.HMacTiger.Cast5.class.getName());
@@ -316,44 +291,44 @@ public final class GnuCrypto extends Provider
             gnu.javax.crypto.jce.cipher.PBES2.HMacTiger.Serpent.class.getName());
         put("Cipher.PBEWithHMacTigerAndSquare",
             gnu.javax.crypto.jce.cipher.PBES2.HMacTiger.Square.class.getName());
-        put(
-            "Cipher.PBEWithHMacTigerAndTripleDES",
+        put("Cipher.PBEWithHMacTigerAndTripleDES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacTiger.TripleDES.class.getName());
         put("Cipher.PBEWithHMacTigerAndTwofish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacTiger.Twofish.class.getName());
 
         put("Cipher.PBEWithHMacWhirlpoolAndAES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.AES.class.getName());
-        put(
-            "Cipher.PBEWithHMacWhirlpoolAndAnubis",
+        put("Cipher.PBEWithHMacWhirlpoolAndAnubis",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.Anubis.class.getName());
-        put(
-            "Cipher.PBEWithHMacWhirlpoolAndBlowfish",
+        put("Cipher.PBEWithHMacWhirlpoolAndBlowfish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.Blowfish.class.getName());
-        put(
-            "Cipher.PBEWithHMacWhirlpoolAndCast5",
+        put("Cipher.PBEWithHMacWhirlpoolAndCast5",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.Cast5.class.getName());
         put("Cipher.PBEWithHMacWhirlpoolAndDES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.DES.class.getName());
-        put(
-            "Cipher.PBEWithHMacWhirlpoolAndKhazad",
+        put("Cipher.PBEWithHMacWhirlpoolAndKhazad",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.Khazad.class.getName());
-        put(
-            "Cipher.PBEWithHMacWhirlpoolAndSerpent",
+        put("Cipher.PBEWithHMacWhirlpoolAndSerpent",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.Serpent.class.getName());
-        put(
-            "Cipher.PBEWithHMacWhirlpoolAndSquare",
+        put("Cipher.PBEWithHMacWhirlpoolAndSquare",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.Square.class.getName());
-        put(
-            "Cipher.PBEWithHMacWhirlpoolAndTripleDES",
+        put("Cipher.PBEWithHMacWhirlpoolAndTripleDES",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.TripleDES.class.getName());
-        put(
-            "Cipher.PBEWithHMacWhirlpoolAndTwofish",
+        put("Cipher.PBEWithHMacWhirlpoolAndTwofish",
             gnu.javax.crypto.jce.cipher.PBES2.HMacWhirlpool.Twofish.class.getName());
 
+        // Key Wrapping Algorithm cipher
+        put("Cipher." + Registry.AES128_KWA,
+            gnu.javax.crypto.jce.cipher.AES128KeyWrapSpi.class.getName());
+        put("Cipher." + Registry.AES192_KWA,
+            gnu.javax.crypto.jce.cipher.AES192KeyWrapSpi.class.getName());
+        put("Cipher." + Registry.AES256_KWA,
+            gnu.javax.crypto.jce.cipher.AES256KeyWrapSpi.class.getName());
+        put("Cipher." + Registry.TRIPLEDES_KWA,
+            gnu.javax.crypto.jce.cipher.TripleDESKeyWrapSpi.class.getName());
+
         // SecretKeyFactory interface to PBKDF2.
-        put(
-            "SecretKeyFactory.PBKDF2WithHMacHaval",
+        put("SecretKeyFactory.PBKDF2WithHMacHaval",
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacHaval.class.getName());
         put("SecretKeyFactory.PBKDF2WithHMacMD2",
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacMD2.class.getName());
@@ -361,30 +336,23 @@ public final class GnuCrypto extends Provider
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacMD4.class.getName());
         put("SecretKeyFactory.PBKDF2WithHMacMD5",
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacMD5.class.getName());
-        put(
-            "SecretKeyFactory.PBKDF2WithHMacSHA1",
+        put("SecretKeyFactory.PBKDF2WithHMacSHA1",
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacSHA1.class.getName());
-        put(
-            "SecretKeyFactory.PBKDF2WithHMacSHA256",
+        put("SecretKeyFactory.PBKDF2WithHMacSHA256",
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacSHA256.class.getName());
-        put(
-            "SecretKeyFactory.PBKDF2WithHMacSHA384",
+        put("SecretKeyFactory.PBKDF2WithHMacSHA384",
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacSHA384.class.getName());
-        put(
-            "SecretKeyFactory.PBKDF2WithHMacSHA512",
+        put("SecretKeyFactory.PBKDF2WithHMacSHA512",
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacSHA512.class.getName());
-        put(
-            "SecretKeyFactory.PBKDF2WithHMacTiger",
+        put("SecretKeyFactory.PBKDF2WithHMacTiger",
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacTiger.class.getName());
-        put(
-            "SecretKeyFactory.PBKDF2WithHMacWhirlpool",
+        put("SecretKeyFactory.PBKDF2WithHMacWhirlpool",
             gnu.javax.crypto.jce.PBKDF2SecretKeyFactory.HMacWhirlpool.class.getName());
 
         // Simple SecretKeyFactory implementations.
         put("SecretKeyFactory.Anubis",
             gnu.javax.crypto.jce.key.AnubisSecretKeyFactoryImpl.class.getName());
-        put(
-            "SecretKeyFactory.Blowfish",
+        put("SecretKeyFactory.Blowfish",
             gnu.javax.crypto.jce.key.BlowfishSecretKeyFactoryImpl.class.getName());
         put("SecretKeyFactory.Cast5",
             gnu.javax.crypto.jce.key.Cast5SecretKeyFactoryImpl.class.getName());
@@ -392,11 +360,9 @@ public final class GnuCrypto extends Provider
             gnu.javax.crypto.jce.key.DESSecretKeyFactoryImpl.class.getName());
         put("SecretKeyFactory.Khazad",
             gnu.javax.crypto.jce.key.KhazadSecretKeyFactoryImpl.class.getName());
-        put(
-            "SecretKeyFactory.Rijndael",
+        put("SecretKeyFactory.Rijndael",
             gnu.javax.crypto.jce.key.RijndaelSecretKeyFactoryImpl.class.getName());
-        put(
-            "SecretKeyFactory.Serpent",
+        put("SecretKeyFactory.Serpent",
             gnu.javax.crypto.jce.key.SerpentSecretKeyFactoryImpl.class.getName());
         put("SecretKeyFactory.Square",
             gnu.javax.crypto.jce.key.SquareSecretKeyFactoryImpl.class.getName());
@@ -409,7 +375,19 @@ public final class GnuCrypto extends Provider
 
         put("AlgorithmParameters.BlockCipherParameters",
             gnu.javax.crypto.jce.params.BlockCipherParameters.class.getName());
-
+        put("Alg.Alias.AlgorithmParameters.Anubis", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.Blowfish", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.Cast5", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.DES", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.Khazad", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.Rijndael", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.AES", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.Serpent", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.Square", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.TripleDES", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.DESede", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.3-DES", "BlockCipherParameters");
+        put("Alg.Alias.AlgorithmParameters.3DES", "BlockCipherParameters");
 
         // KeyGenerator Adapter implementations
         put("KeyGenerator.Anubis",
@@ -541,19 +519,25 @@ public final class GnuCrypto extends Provider
         put("Alg.Alias.Cipher.RSA", "RSAES-PKCS1-v1_5");
 
         // SecureRandom
-        put("SecureRandom.ARCFOUR", gnu.javax.crypto.jce.prng.ARCFourRandomSpi.class.getName());
+        put("SecureRandom.ARCFOUR",
+            gnu.javax.crypto.jce.prng.ARCFourRandomSpi.class.getName());
         put("SecureRandom.ARCFOUR ImplementedIn", "Software");
-        put("SecureRandom.CSPRNG", gnu.javax.crypto.jce.prng.CSPRNGSpi.class.getName());
+        put("SecureRandom.CSPRNG",
+            gnu.javax.crypto.jce.prng.CSPRNGSpi.class.getName());
         put("SecureRandom.CSPRNG ImplementedIn", "Software");
-        put("SecureRandom.ICM", gnu.javax.crypto.jce.prng.ICMRandomSpi.class.getName());
+        put("SecureRandom.ICM",
+            gnu.javax.crypto.jce.prng.ICMRandomSpi.class.getName());
         put("SecureRandom.ICM ImplementedIn", "Software");
-        put("SecureRandom.UMAC-KDF", gnu.javax.crypto.jce.prng.UMacRandomSpi.class.getName());
+        put("SecureRandom.UMAC-KDF",
+            gnu.javax.crypto.jce.prng.UMacRandomSpi.class.getName());
         put("SecureRandom.UMAC-KDF ImplementedIn", "Software");
-        put("SecureRandom.Fortuna", gnu.javax.crypto.jce.prng.FortunaImpl.class.getName ());
+        put("SecureRandom.Fortuna",
+            gnu.javax.crypto.jce.prng.FortunaImpl.class.getName());
         put("SecureRandom.Fortuna ImplementedIn", "Software");
 
         // KeyStore
-        put("KeyStore.GKR", gnu.javax.crypto.jce.keyring.GnuKeyring.class.getName());
+        put("KeyStore.GKR",
+            gnu.javax.crypto.jce.keyring.GnuKeyring.class.getName());
         put("Alg.Alias.KeyStore.GnuKeyring", "GKR");
 
         // KeyPairGenerator ---------------------------------------------------
@@ -587,13 +571,10 @@ public final class GnuCrypto extends Provider
     });
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns a {@link Set} of names of symmetric key block cipher algorithms
-   * available from this {@link Provider}.</p>
-   *
+   * Returns a {@link Set} of names of symmetric key block cipher algorithms
+   * available from this {@link Provider}.
+   * 
    * @return a {@link Set} of cipher names (Strings).
    */
   public static final Set getCipherNames()
@@ -605,16 +586,13 @@ public final class GnuCrypto extends Provider
   }
 
   /**
-   * <p>Returns a {@link Set} of names of MAC algorithms available from
-   * this {@link Provider}.</p>
-   *
+   * Returns a {@link Set} of names of MAC algorithms available from this
+   * {@link Provider}.
+   * 
    * @return a {@link Set} of MAC names (Strings).
    */
   public static final Set getMacNames()
   {
     return MacFactory.getNames();
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

@@ -152,8 +152,11 @@ class LightweightDispatcher
         target = findTarget(parent, loc);
         while (target == null && parent != null)
           {
-            if (parent.getMouseListeners().length > 0
-                || parent.getMouseMotionListeners().length > 0)
+            if (parent.mouseListener != null
+                || parent.mouseMotionListener != null
+                || (parent.eventMask
+                    & (AWTEvent.MOUSE_EVENT_MASK
+                        | AWTEvent.MOUSE_MOTION_EVENT_MASK)) != 0)
               {
                 target = parent;
               }
@@ -175,24 +178,22 @@ class LightweightDispatcher
                   new MouseEvent(lastTarget, MouseEvent.MOUSE_EXITED,
                                  ev.getWhen(), ev.getModifiers(), p1.x, p1.y,
                                  ev.getClickCount(), ev.isPopupTrigger());
+                //System.err.println("event: " + mouseExited);
                 lastTarget.dispatchEvent(mouseExited);
               }
             
-            // If a target exists dispatch the MOUSE_ENTERED event only if
-            // there is currently no component from which a drag operation
-            // started (dragTarget == null) or the target is that component
-            // (dragTarget == target)
-            // That way a user can click and hold on a button (putting it into
-            // the armed state), move the cursor above other buttons without
-            // affecting their rollover state and get back to the initial
-            // button.
-            if (target != null && (dragTarget == null || dragTarget == target))
+            // If a target exists dispatch the MOUSE_ENTERED event.
+            // Experimenting shows that the MOUSE_ENTERED is also dispatched
+            // when the mouse is dragging.
+            if (target != null)
               {
                 Point p = convertPointToChild(window, ev.getPoint(), target);
                 MouseEvent mouseEntered =
-                  new MouseEvent(target, MouseEvent.MOUSE_ENTERED, ev.getWhen(),
+                  new MouseEvent(target,
+                                 MouseEvent.MOUSE_ENTERED, ev.getWhen(),
                                  ev.getModifiers(), p.x, p.y, ev.getClickCount(),
                                  ev.isPopupTrigger());
+                //System.err.println("event: " + mouseEntered);
                 target.dispatchEvent(mouseEntered);
               }
           }
@@ -219,7 +220,11 @@ class LightweightDispatcher
             // it was released.
             if (dragTarget != null && dragButton == ev.getButton())
               {
-                target = dragTarget;
+                // Only post MOUSE_RELEASED to dragTarget (set in
+                // MOUSE_PRESSED) when the dragTarget is actually visible.
+                // Otherwise post the event to the normal target.
+                if (dragTarget.isVisible())
+                  target = dragTarget;
                 dragTarget = null;
               }
             
@@ -287,18 +292,21 @@ class LightweightDispatcher
    */
   private Component findTarget(Container c, Point loc)
   {
-    Component[] children = c.getComponents();
+    int numComponents = c.getComponentCount();
     Component target = null;
     if (c != null)
       {
-        for (int i = 0; i < children.length; i++)
+        for (int i = 0; i < numComponents; i++)
           {
-            Component child = children[i];
+            Component child = c.getComponent(i);
             if (child.isShowing())
               {
                 if (child.contains(loc.x - child.getX(), loc.y - child.getY())
-                    && (child.getMouseListeners().length > 0 
-                        || child.getMouseMotionListeners().length > 0))
+                    && (child.mouseListener != null 
+                        || child.mouseMotionListener != null
+                        || (child.eventMask
+                            & (AWTEvent.MOUSE_EVENT_MASK
+                                | AWTEvent.MOUSE_MOTION_EVENT_MASK)) != 0))
                   {
                     target = child;
                     break;

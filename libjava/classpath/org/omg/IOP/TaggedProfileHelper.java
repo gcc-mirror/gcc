@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.IOP;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 import gnu.CORBA.CDR.BufferredCdrInput;
 import gnu.CORBA.CDR.BufferedCdrOutput;
 
@@ -62,40 +63,30 @@ import java.io.IOException;
 public abstract class TaggedProfileHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
    * Create the TaggedProfile typecode (structure, named "TaggedProfile"). The
    * typecode states that the structure contains the following fields: tag,
    * profile_data.
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        StructMember[] members = new StructMember[2];
+    ORB orb = OrbRestricted.Singleton;
+    StructMember[] members = new StructMember[2];
 
-        TypeCode field;
+    TypeCode field;
 
-        field = orb.create_alias_tc("IDL:omg.org/IOP/ProfileId:1.0",
-                                    "ProfileId",
-                                    orb.get_primitive_tc(TCKind.tk_ulong));
-        members[0] = new StructMember("tag", field, null);
+    field = orb.create_alias_tc("IDL:omg.org/IOP/ProfileId:1.0", "ProfileId",
+                                orb.get_primitive_tc(TCKind.tk_ulong));
+    members[0] = new StructMember("tag", field, null);
 
-        field = orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
-        members[1] = new StructMember("profile_data", field, null);
-        typeCode = orb.create_struct_tc(id(), "TaggedProfile", members);
-      }
-    return typeCode;
+    field = orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
+    members[1] = new StructMember("profile_data", field, null);
+    return orb.create_struct_tc(id(), "TaggedProfile", members);
   }
 
   /**
    * Insert the TaggedProfile into the given Any. This method uses the
    * TaggedProfileHolder.
-   *
+   * 
    * @param any the Any to insert into.
    * @param that the TaggedProfile to insert.
    */

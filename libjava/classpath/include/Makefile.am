@@ -38,16 +38,18 @@ $(top_srcdir)/include/gnu_xml_libxmlj_transform_GnomeTransformer.h \
 $(top_srcdir)/include/gnu_xml_libxmlj_transform_GnomeTransformerFactory.h
 
 GTKPEER_H_FILES = \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_CairoSurface.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_CairoGraphics2D.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_ComponentGraphics.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_ComponentGraphicsCopy.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_FreetypeGlyphVector.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkFontPeer.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkGraphics.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkGraphics2D.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkPixbufDecoder.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkRobotPeer.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkTextLayout.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkButtonPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkCanvasPeer.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkCheckboxPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkChoicePeer.h \
@@ -73,7 +75,9 @@ $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkTextAreaPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkTextFieldPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkToolkit.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkWindowPeer.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.h
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkVolatileImage.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.h \
+$(top_srcdir)/include/GtkDragSourceContextPeer.h
 
 QTPEER_H_FILES = \
 $(top_srcdir)/include/gnu_java_awt_peer_qt_QtCheckboxPeer.h \
@@ -113,14 +117,19 @@ $(top_srcdir)/include/gnu_java_awt_peer_qt_QtFileDialogPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_qt_QtContainerPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_qt_QtEmbeddedWindowPeer.h 
 
+GCONF_PREFS_FILES = \
+$(top_srcdir)/include/gnu_java_util_prefs_gconf_GConfNativePeer.h
+
 H_FILES = \
 $(SOUND_H_FILES) \
 $(XMLJ_H_FILES) \
 $(GTKPEER_H_FILES) \
 $(QTPEER_H_FILES) \
+$(GCONF_PREFS_FILES) \
 $(top_srcdir)/include/gnu_java_net_VMPlainDatagramSocketImpl.h \
 $(top_srcdir)/include/gnu_java_net_VMPlainSocketImpl.h \
 $(top_srcdir)/include/gnu_java_net_local_LocalSocketImpl.h \
+$(top_srcdir)/include/gnu_java_nio_VMChannel.h \
 $(top_srcdir)/include/gnu_java_nio_VMPipe.h \
 $(top_srcdir)/include/gnu_java_nio_VMSelector.h \
 $(top_srcdir)/include/gnu_java_nio_channels_FileChannelImpl.h \
@@ -137,6 +146,7 @@ $(top_srcdir)/include/java_lang_VMSystem.h \
 $(top_srcdir)/include/java_lang_reflect_VMArray.h \
 $(top_srcdir)/include/java_net_VMInetAddress.h \
 $(top_srcdir)/include/java_net_VMNetworkInterface.h \
+$(top_srcdir)/include/java_net_VMURLConnection.h \
 $(top_srcdir)/include/java_nio_VMDirectByteBuffer.h \
 $(top_srcdir)/include/java_nio_MappedByteBufferImpl.h \
 $(top_srcdir)/include/java_util_VMTimeZone.h
@@ -166,12 +176,17 @@ $(top_srcdir)/include/gnu_javax_sound_midi_alsa_%.h: $(top_builddir)/$(CLASSDIR)
 $(top_srcdir)/include/gnu_javax_sound_midi_dssi_%.h: $(top_builddir)/$(CLASSDIR)/gnu/javax/sound/midi/dssi/%.class
 	$(JAVAH) -o $@ gnu.javax.sound.midi.dssi.$*
 
+$(top_srcdir)/include/gnu_java_util_prefs_gconf_%.h: $(top_builddir)/$(CLASSDIR)/gnu/java/util/prefs/gconf/%.class
+	$(JAVAH) -o $@ gnu.java.util.prefs.gconf.$*
+
 $(top_srcdir)/include/gnu_java_net_VMPlainDatagramSocketImpl.h: $(top_srcdir)/vm/reference/gnu/java/net/VMPlainDatagramSocketImpl.java
 	$(JAVAH) -o $@ gnu.java.net.VMPlainDatagramSocketImpl
 $(top_srcdir)/include/gnu_java_net_VMPlainSocketImpl.h: $(top_srcdir)/vm/reference/gnu/java/net/VMPlainSocketImpl.java
 	$(JAVAH) -o $@ gnu.java.net.VMPlainSocketImpl
 $(top_srcdir)/include/gnu_java_net_local_LocalSocketImpl.h: $(top_srcdir)/gnu/java/net/local/LocalSocketImpl.java
 	$(JAVAH) -o $@ gnu.java.net.local.LocalSocketImpl
+$(top_srcdir)/include/gnu_java_nio_VMChannel.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMChannel.java
+	$(JAVAH) -o $@ gnu.java.nio.VMChannel
 $(top_srcdir)/include/gnu_java_nio_VMPipe.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMPipe.java
 	$(JAVAH) -o $@ gnu.java.nio.VMPipe
 $(top_srcdir)/include/gnu_java_nio_VMSelector.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMSelector.java
@@ -198,6 +213,8 @@ $(top_srcdir)/include/java_net_VMInetAddress.h: $(top_srcdir)/vm/reference/java/
 	$(JAVAH) -o $@ java.net.VMInetAddress
 $(top_srcdir)/include/java_net_VMNetworkInterface.h: $(top_srcdir)/vm/reference/java/net/VMNetworkInterface.java
 	$(JAVAH) -o $@ java.net.VMNetworkInterface
+$(top_srcdir)/include/java_net_VMURLConnection.h: $(top_srcdir)/vm/reference/java/net/VMURLConnection.java
+	$(JAVAH) -o $@ java.net.VMURLConnection
 $(top_srcdir)/include/java_nio_VMDirectByteBuffer.h: $(top_srcdir)/vm/reference/java/nio/VMDirectByteBuffer.java
 	$(JAVAH) -o $@ java.nio.VMDirectByteBuffer
 $(top_srcdir)/include/java_nio_MappedByteBufferImpl.h: $(top_srcdir)/java/nio/MappedByteBufferImpl.java

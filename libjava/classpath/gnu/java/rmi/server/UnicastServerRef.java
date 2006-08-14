@@ -150,7 +150,7 @@ public class UnicastServerRef
             Class cls = obj.getClass();
 
             // where ist the _Stub? (check superclasses also)
-            Class expCls = expCls = findStubSkelClass(cls);
+            Class expCls = findStubSkelClass(cls);
 
             if (expCls != null)
               {

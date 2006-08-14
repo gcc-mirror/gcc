@@ -374,14 +374,9 @@ public class SecureRandom extends Random
     if (numBits == 0)
       return 0;
 
-    byte[] tmp = new byte[numBits / 8 + (1 * (numBits % 8))];
-
-    secureRandomSpi.engineNextBytes(tmp);
-    randomBytesUsed += tmp.length;
-    counter++;
-
+    byte[] tmp = new byte[(numBits + 7) / 8];
+    this.nextBytes(tmp);
     int ret = 0;
-
     for (int i = 0; i < tmp.length; i++)
       ret |= (tmp[i] & 0xFF) << (8 * i);
 

@@ -43,26 +43,12 @@ import gnu.java.security.Registry;
 /**
  * The implementation of the <code>CAST5</code> (a.k.a. CAST-128) <i>Service
  * Provider Interface</i> (<b>SPI</b>) Adapter.
- *
- * @version Revision: $
  */
-public class Cast5Spi extends CipherAdapter
+public class Cast5Spi
+    extends CipherAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public Cast5Spi()
   {
     super(Registry.CAST5_CIPHER);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

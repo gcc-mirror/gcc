@@ -84,6 +84,7 @@ public class MetalScrollButton extends BasicArrowButton
     super(direction);
     buttonWidth = width;
     this.freeStanding = freeStanding;
+    setFocusable(false);
   }
   
   /**

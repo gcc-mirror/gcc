@@ -1,5 +1,5 @@
 /* Insets.java -- information about a container border
-   Copyright (C) 1999, 2000, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -149,14 +149,13 @@ public class Insets implements Cloneable, Serializable
 
   /**
    * Returns a string representation of this object, which will be non-null.
-   * The format is unspecified, but appears to be <code>XXX what is it?</code>.
    *
    * @return a string representation of this object
    */
   public String toString()
   {
-    return getClass().getName() + "(top=" + top + ",bottom=" + bottom +
-      ",left=" + left + ",right=" + right + ')';
+    return getClass().getName() + "[top=" + top + ",left=" + left
+      + ",bottom=" + bottom + ",right=" + right + ']';
   }
 
   /**

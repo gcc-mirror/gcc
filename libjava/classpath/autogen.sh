@@ -41,11 +41,14 @@ if autoconf --version < /dev/null > /dev/null 2>&1 ; then
 	    2.59*)
 		have_autoconf=true
 		;;
+	    2.60*)
+		have_autoconf=true
+		;;
 	esac
 fi
 if $have_autoconf ; then : ; else
 	echo
-	echo "You must have autoconf 2.59 installed to compile $PROJECT."
+	echo "You must have autoconf 2.59 or 2.60 installed for $PROJECT."
 	echo "Install the appropriate package for your distribution,"
 	echo "or get the source tarball at http://ftp.gnu.org/gnu/autoconf/"
 	DIE=1

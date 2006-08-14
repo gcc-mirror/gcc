@@ -106,17 +106,34 @@ class UnixFileSystemView extends FileSystemView
 
   /**
    * Returns the name of a file as it would be displayed by the underlying 
-   * system.  This method is NOT YET IMPLEMENTED.
+   * system.
    *
    * @param f  the file.
    *
-   * @return <code>null</code>.
+   * @return the name of a file as it would be displayed by the underlying 
+   *         system
    */
   public String getSystemDisplayName(File f)
-    throws NotImplementedException
   {
-    // FIXME: Implement;
-    return null;
+    String name = null;
+    if (f != null)
+      {
+        if (isRoot(f))
+          name = f.getAbsolutePath();
+        else
+          {
+            try
+              {
+                String path = f.getCanonicalPath();
+                name = path.substring(path.lastIndexOf(File.separator) + 1);
+              }
+            catch (IOException e)
+              {
+                name = f.getName();
+              }
+          }
+      }
+    return name;
   }
 
   /**

@@ -46,6 +46,7 @@ import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.KeyAgreementSpi;
 import javax.crypto.SecretKey;
+import javax.crypto.ShortBufferException;
 import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
@@ -63,7 +64,7 @@ public final class DiffieHellmanImpl
   private DHPrivateKey key;
 
   /** The current result. */
-  private BigInteger result;
+  private byte[] result;
 
   /** True if the caller told us we are done. */
   private boolean last_phase_done;
@@ -96,43 +97,49 @@ public final class DiffieHellmanImpl
     if (! s1.getG().equals(s2.getG()) || ! s1.getP().equals(s2.getP())
         || s1.getL() != s2.getL())
       throw new InvalidKeyException("Incompatible key");
-
-    result = pub.getY().modPow(key.getX(), s1.getP());
     if (! lastPhase)
-      throw new IllegalArgumentException("This key-agreement MUST be concluded in one step only");
-
+      throw new IllegalArgumentException(
+          "This key-agreement MUST be concluded in one step only");
+    BigInteger resultBI = pub.getY().modPow(key.getX(), s1.getP());
+    result = resultBI.toByteArray();
+    if (result[0] == 0x00)
+      {
+        byte[] buf = new byte[result.length - 1];
+        System.arraycopy(result, 1, buf, 0, buf.length);
+        result = buf;
+      }
     last_phase_done = true;
     return null;
   }
 
   protected byte[] engineGenerateSecret()
   {
-    if (result == null || ! last_phase_done)
-      throw new IllegalStateException("Not finished");
-
-    byte[] buf = result.toByteArray();
-    if (buf[0] == 0x00)
-      {
-        byte[] buf2 = new byte[buf.length - 1];
-        System.arraycopy(buf, 1, buf2, 0, buf2.length);
-        buf = buf2;
-      }
-
-    return buf;
+    checkState();
+    byte[] res = (byte[]) result.clone();
+    reset();
+    return res;
   }
 
   protected int engineGenerateSecret(byte[] secret, int offset)
+      throws ShortBufferException
   {
-    byte[] s = engineGenerateSecret();
-    System.arraycopy(s, 0, secret, offset, s.length);
-    return s.length;
+    checkState();
+    if (result.length > secret.length - offset)
+      throw new ShortBufferException();
+    System.arraycopy(result, 0, secret, offset, result.length);
+    int res = result.length;
+    reset();
+    return res;
   }
 
   protected SecretKey engineGenerateSecret(String algorithm)
       throws InvalidKeyException
   {
-    byte[] s = engineGenerateSecret();
-    return new SecretKeySpec(s, algorithm);
+    checkState();
+    byte[] s = (byte[]) result.clone();
+    SecretKey res = new SecretKeySpec(s, algorithm);
+    reset();
+    return res;
   }
 
   protected void engineInit(Key key, SecureRandom random)
@@ -140,10 +147,8 @@ public final class DiffieHellmanImpl
   {
     if (! (key instanceof DHPrivateKey))
       throw new InvalidKeyException("Key MUST be a DHPrivateKey");
-
     this.key = (DHPrivateKey) key;
-    result = null;
-    last_phase_done = false;
+    reset();
   }
 
   protected void engineInit(Key key, AlgorithmParameterSpec params,
@@ -151,5 +156,17 @@ public final class DiffieHellmanImpl
       throws InvalidKeyException
   {
     engineInit(key, random);
+  }
+
+  private void reset()
+  {
+    result = null;
+    last_phase_done = false;
+  }
+
+  private void checkState()
+  {
+    if (result == null || ! last_phase_done)
+      throw new IllegalStateException("Not finished");
   }
 }

@@ -1168,7 +1168,7 @@ public class BigInteger extends Number implements Comparable
       throw new ArithmeticException("non-positive modulo");
 
     if (exponent.isNegative())
-      return modInverse(m);
+      return modInverse(m).modPow(exponent.negate(), m);
     if (exponent.isOne())
       return mod(m);
 

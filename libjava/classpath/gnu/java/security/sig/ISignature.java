@@ -41,28 +41,24 @@ package gnu.java.security.sig;
 import java.util.Map;
 
 /**
- * <p>The visible methods of every signature-with-appendix scheme.</p>
- *
- * <p>The Handbook of Applied Cryptography (HAC), by A. Menezes &amp; al. states:
+ * The visible methods of every signature-with-appendix scheme.
+ * <p>
+ * The Handbook of Applied Cryptography (HAC), by A. Menezes &amp; al. states:
  * "Digital signature schemes which require the message as input to the
- * verification algorithm are called <i>digital signature schemes with
- * appendix</i>. ... They rely on cryptographic hash functions rather than
- * customised redundancy functions, and are less prone to existential forgery
- * attacks."</p>
- *
- * <p>References:</p>
+ * verification algorithm are called <i>digital signature schemes with appendix</i>.
+ * ... They rely on cryptographic hash functions rather than customised
+ * redundancy functions, and are less prone to existential forgery attacks."
+ * <p>
+ * References:
  * <ol>
- *    <li><a href="http://www.cacr.math.uwaterloo.ca/hac/">Handbook of Applied
- *    Cryptography</a>, Alfred J. Menezes, Paul C. van Oorschot and Scott A.
- *    Vanstone. Section 11.2.2 Digital signature schemes with appendix.</li>
+ * <li><a href="http://www.cacr.math.uwaterloo.ca/hac/">Handbook of Applied
+ * Cryptography</a>, Alfred J. Menezes, Paul C. van Oorschot and Scott A.
+ * Vanstone. Section 11.2.2 Digital signature schemes with appendix.</li>
  * </ol>
  */
-public interface ISignature extends Cloneable
+public interface ISignature
+    extends Cloneable
 {
-
-  // Constants
-  // -------------------------------------------------------------------------
-
   /** Property name of the verifier's public key. */
   public static final String VERIFIER_KEY = "gnu.crypto.sig.public.key";
 
@@ -71,96 +67,93 @@ public interface ISignature extends Cloneable
 
   /**
    * Property name of an optional {@link java.security.SecureRandom},
-   * {@link java.util.Random}, or {@link gnu.crypto.prng.IRandom} instance to
-   * use. The default is to use a classloader singleton from
-   * {@link gnu.crypto.util.PRNG}.
+   * {@link java.util.Random}, or {@link gnu.java.security.prng.IRandom}
+   * instance to use. The default is to use a classloader singleton from
+   * {@link gnu.java.security.util.PRNG}.
    */
   public static final String SOURCE_OF_RANDOMNESS = "gnu.crypto.sig.prng";
 
-  // Methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the canonical name of this signature scheme.</p>
-   *
+   * Returns the canonical name of this signature scheme.
+   * 
    * @return the canonical name of this instance.
    */
   String name();
 
   /**
-   * <p>Initialises this instance for signature verification.</p>
-   *
+   * Initialises this instance for signature verification.
+   * 
    * @param attributes the attributes to use for setting up this instance.
    * @throws IllegalArgumentException if the designated public key is not
-   * appropriate for this signature scheme.
+   *           appropriate for this signature scheme.
    * @see #SOURCE_OF_RANDOMNESS
    * @see #VERIFIER_KEY
    */
   void setupVerify(Map attributes) throws IllegalArgumentException;
 
   /**
-   * <p>Initialises this instance for signature generation.</p>
-   *
+   * Initialises this instance for signature generation.
+   * 
    * @param attributes the attributes to use for setting up this instance.
    * @throws IllegalArgumentException if the designated private key is not
-   * appropriate for this signature scheme.
+   *           appropriate for this signature scheme.
    * @see #SOURCE_OF_RANDOMNESS
    * @see #SIGNER_KEY
    */
   void setupSign(Map attributes) throws IllegalArgumentException;
 
   /**
-   * <p>Digests one byte of a message for signing or verification purposes.</p>
-   *
+   * Digests one byte of a message for signing or verification purposes.
+   * 
    * @param b the message byte to digest.
-   * @throws IllegalStateException if this instance was not setup for
-   * signature generation/verification.
+   * @throws IllegalStateException if this instance was not setup for signature
+   *           generation/verification.
    */
   void update(byte b) throws IllegalStateException;
 
   /**
-   * <p>Digests a sequence of bytes from a message for signing or verification
-   * purposes.</p>
-   *
+   * Digests a sequence of bytes from a message for signing or verification
+   * purposes.
+   * 
    * @param buffer the byte sequence to consider.
    * @param offset the byte poisition in <code>buffer</code> of the first byte
-   * to consider.
-   * @param length the number of bytes in <code>buffer</code> starting from the
-   * byte at index <code>offset</code> to digest.
-   * @throws IllegalStateException if this instance was not setup for
-   * signature generation/verification.
+   *          to consider.
+   * @param length the number of bytes in <code>buffer</code> starting from
+   *          the byte at index <code>offset</code> to digest.
+   * @throws IllegalStateException if this instance was not setup for signature
+   *           generation/verification.
    */
   void update(byte[] buffer, int offset, int length)
       throws IllegalStateException;
 
   /**
-   * <p>Terminates a signature generation phase by digesting and processing the
-   * context of the underlying message digest algorithm instance.</p>
-   *
+   * Terminates a signature generation phase by digesting and processing the
+   * context of the underlying message digest algorithm instance.
+   * 
    * @return a {@link Object} representing the native output of the signature
-   * scheme implementation.
-   * @throws IllegalStateException if this instance was not setup for
-   * signature generation.
+   *         scheme implementation.
+   * @throws IllegalStateException if this instance was not setup for signature
+   *           generation.
    */
   Object sign() throws IllegalStateException;
 
   /**
-   * <p>Terminates a signature verification phase by digesting and processing
-   * the context of the underlying message digest algorithm instance.</p>
-   *
+   * Terminates a signature verification phase by digesting and processing the
+   * context of the underlying message digest algorithm instance.
+   * 
    * @param signature a native signature object previously generated by an
-   * invocation of the <code>sign()</code> method.
+   *          invocation of the <code>sign()</code> method.
    * @return <code>true</code> iff the outpout of the verification phase
-   * confirms that the designated signature object has been generated using the
-   * corresponding public key of the recepient.
-   * @throws IllegalStateException if this instance was not setup for
-   * signature verification.
+   *         confirms that the designated signature object has been generated
+   *         using the corresponding public key of the recepient.
+   * @throws IllegalStateException if this instance was not setup for signature
+   *           verification.
    */
   boolean verify(Object signature) throws IllegalStateException;
 
   /**
-   * <p>Returns a clone copy of this instance.</p>
-   *
+   * Returns a clone copy of this instance.
+   * 
    * @return a clone copy of this instance.
    */
   Object clone();

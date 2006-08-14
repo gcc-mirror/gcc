@@ -45,7 +45,6 @@ import gnu.java.security.prng.BasePRNG;
 import gnu.java.security.prng.LimitReachedException;
 import gnu.java.security.prng.RandomEvent;
 import gnu.java.security.prng.RandomEventListener;
-
 import gnu.javax.crypto.cipher.CipherFactory;
 import gnu.javax.crypto.cipher.IBlockCipher;
 
@@ -53,9 +52,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
 import java.security.InvalidKeyException;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -63,68 +60,54 @@ import java.util.Map;
 
 /**
  * The Fortuna continuously-seeded pseudo-random number generator. This
- * generator is composed of two major pieces: the entropy accumulator
- * and the generator function. The former takes in random bits and
- * incorporates them into the generator's state. The latter takes this
- * base entropy and generates pseudo-random bits from it.
- *
- * <p>There are some things users of this class <em>must</em> be aware of:
- *
+ * generator is composed of two major pieces: the entropy accumulator and the
+ * generator function. The former takes in random bits and incorporates them
+ * into the generator's state. The latter takes this base entropy and generates
+ * pseudo-random bits from it.
+ * <p>
+ * There are some things users of this class <em>must</em> be aware of:
  * <dl>
  * <dt>Adding Random Data</dt>
  * <dd>This class does not do any polling of random sources, but rather
- * provides an interface for adding random events. Applications that use
- * this code <em>must</em> provide this mechanism. We use this design
- * because an application writer who knows the system he is targeting
- * is in a better position to judge what random data is available.</dd>
- *
+ * provides an interface for adding random events. Applications that use this
+ * code <em>must</em> provide this mechanism. We use this design because an
+ * application writer who knows the system he is targeting is in a better
+ * position to judge what random data is available.</dd>
  * <dt>Storing the Seed</dt>
- * <dd>This class implements {@link Serializable} in such a way that it
- * writes a 64 byte seed to the stream, and reads it back again when being
- * deserialized. This is the extent of seed file management, however, and
- * those using this class are encouraged to think deeply about when, how
- * often, and where to store the seed.</dd>
+ * <dd>This class implements {@link Serializable} in such a way that it writes
+ * a 64 byte seed to the stream, and reads it back again when being
+ * deserialized. This is the extent of seed file management, however, and those
+ * using this class are encouraged to think deeply about when, how often, and
+ * where to store the seed.</dd>
  * </dl>
- *
- * <p><b>References:</b></p>
- *
+ * <p>
+ * <b>References:</b>
  * <ul>
- * <li>Niels Ferguson and Bruce Schneier, <i>Practical Cryptography</i>,
- * pp. 155--184. Wiley Publishing, Indianapolis. (2003 Niels Ferguson and
- * Bruce Schneier). ISBN 0-471-22357-3.</li>
+ * <li>Niels Ferguson and Bruce Schneier, <i>Practical Cryptography</i>, pp.
+ * 155--184. Wiley Publishing, Indianapolis. (2003 Niels Ferguson and Bruce
+ * Schneier). ISBN 0-471-22357-3.</li>
  * </ul>
  */
-public class Fortuna extends BasePRNG implements Serializable,
-    RandomEventListener
+public class Fortuna
+    extends BasePRNG
+    implements Serializable, RandomEventListener
 {
-
   private static final long serialVersionUID = 0xFACADE;
-
   private static final int SEED_FILE_SIZE = 64;
-
   private static final int NUM_POOLS = 32;
-
   private static final int MIN_POOL_SIZE = 64;
-
   private final Generator generator;
-
   private final IMessageDigest[] pools;
-
   private long lastReseed;
-
   private int pool;
-
   private int pool0Count;
-
   private int reseedCount;
-
   public static final String SEED = "gnu.crypto.prng.fortuna.seed";
 
   public Fortuna()
   {
     super(Registry.FORTUNA_PRNG);
-    generator = new Generator(
-                              CipherFactory.getInstance(Registry.RIJNDAEL_CIPHER),
+    generator = new Generator(CipherFactory.getInstance(Registry.RIJNDAEL_CIPHER),
                               HashFactory.getInstance(Registry.SHA256_HASH));
     pools = new IMessageDigest[NUM_POOLS];
     for (int i = 0; i < NUM_POOLS; i++)
@@ -144,11 +127,11 @@ public class Fortuna extends BasePRNG implements Serializable,
     generator.init(attributes);
     try
       {
-        fillBlock ();
+        fillBlock();
       }
     catch (LimitReachedException shouldNotHappen)
       {
-        throw new RuntimeException (shouldNotHappen);
+        throw new RuntimeException(shouldNotHappen);
       }
   }
 
@@ -160,10 +143,8 @@ public class Fortuna extends BasePRNG implements Serializable,
         reseedCount++;
         byte[] seed = new byte[0];
         for (int i = 0; i < NUM_POOLS; i++)
-          {
-            if (reseedCount % (1 << i) == 0)
-              generator.addRandomBytes(pools[i].digest());
-          }
+          if (reseedCount % (1 << i) == 0)
+            generator.addRandomBytes(pools[i].digest());
         lastReseed = System.currentTimeMillis();
         pool0Count = 0;
       }
@@ -223,23 +204,19 @@ public class Fortuna extends BasePRNG implements Serializable,
   }
 
   /**
-   * The Fortuna generator function. The generator is a PRNG in its own
-   * right; Fortuna itself is basically a wrapper around this generator
-   * that manages reseeding in a secure way.
+   * The Fortuna generator function. The generator is a PRNG in its own right;
+   * Fortuna itself is basically a wrapper around this generator that manages
+   * reseeding in a secure way.
    */
-  public static class Generator extends BasePRNG implements Cloneable
+  public static class Generator
+      extends BasePRNG
+      implements Cloneable
   {
-
     private static final int LIMIT = 1 << 20;
-
     private final IBlockCipher cipher;
-
     private final IMessageDigest hash;
-
     private final byte[] counter;
-
     private final byte[] key;
-
     private boolean seeded;
 
     public Generator(final IBlockCipher cipher, final IMessageDigest hash)
@@ -270,9 +247,8 @@ public class Fortuna extends BasePRNG implements Serializable,
 
     public void nextBytes(byte[] out, int offset, int length)
     {
-      if (!seeded)
+      if (! seeded)
         throw new IllegalStateException("generator not seeded");
-
       int count = 0;
       do
         {
@@ -286,7 +262,6 @@ public class Fortuna extends BasePRNG implements Serializable,
               throw new Error(shouldNeverHappen);
             }
           count += amount;
-
           for (int i = 0; i < key.length; i += counter.length)
             {
               fillBlock();
@@ -318,7 +293,7 @@ public class Fortuna extends BasePRNG implements Serializable,
 
     public void fillBlock()
     {
-      if (!seeded)
+      if (! seeded)
         throw new IllegalStateException("generator not seeded");
       cipher.encryptBlock(counter, 0, buffer, 0);
       incrementCounter();
@@ -332,13 +307,12 @@ public class Fortuna extends BasePRNG implements Serializable,
       byte[] seed = (byte[]) attributes.get(SEED);
       if (seed != null)
         addRandomBytes(seed);
-      fillBlock ();
+      fillBlock();
     }
 
     /**
-     * Resets the cipher's key. This is done after every reseed, which
-     * combines the old key and the seed, and processes that throigh the
-     * hash function.
+     * Resets the cipher's key. This is done after every reseed, which combines
+     * the old key and the seed, and processes that throigh the hash function.
      */
     private void resetKey()
     {
@@ -359,8 +333,8 @@ public class Fortuna extends BasePRNG implements Serializable,
     }
 
     /**
-     * Increment `counter' as a sixteen-byte little-endian unsigned integer
-     * by one.
+     * Increment `counter' as a sixteen-byte little-endian unsigned integer by
+     * one.
      */
     private void incrementCounter()
     {

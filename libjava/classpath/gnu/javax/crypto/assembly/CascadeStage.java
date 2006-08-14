@@ -44,18 +44,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <p>A Cascade <i>Stage</i> in a Cascade Cipher.</p>
+ * A Cascade <i>Stage</i> in a Cascade Cipher.
  */
-class CascadeStage extends Stage
+class CascadeStage
+    extends Stage
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private Cascade delegate;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   CascadeStage(Cascade cascade, Direction forwardDirection)
   {
@@ -63,12 +57,6 @@ class CascadeStage extends Stage
 
     this.delegate = cascade;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   public Set blockSizes()
   {
@@ -79,9 +67,7 @@ class CascadeStage extends Stage
   {
     Direction flow = (Direction) attributes.get(DIRECTION);
     attributes.put(DIRECTION, flow.equals(forward) ? forward
-                                                  : Direction.reverse(forward));
-    //      delegate.init(flow.equals(forward) ? forward : backward);
-    //      delegate.init(flow.equals(forward) ? forward : Direction.reverse(forward));
+                                                   : Direction.reverse(forward));
     delegate.init(attributes);
   }
 

@@ -40,14 +40,11 @@ package gnu.javax.crypto.jce.key;
 
 import gnu.java.security.Registry;
 
-public class BlowfishKeyGeneratorImpl extends SecretKeyGeneratorImpl
+public class BlowfishKeyGeneratorImpl
+    extends SecretKeyGeneratorImpl
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
-  public BlowfishKeyGeneratorImpl ()
+  public BlowfishKeyGeneratorImpl()
   {
-    super (Registry.BLOWFISH_CIPHER);
+    super(Registry.BLOWFISH_CIPHER);
   }
 }

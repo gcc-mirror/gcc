@@ -1,5 +1,5 @@
 /* Image.java -- superclass for images
-   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import java.awt.image.ReplicateScaleFilter;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.0
- * @status updated to 1.4
+ * @status updated to 1.5
  */
 public abstract class Image
 {
@@ -100,6 +100,12 @@ public abstract class Image
    * @since 1.1
    */
   public static final int SCALE_AREA_AVERAGING = 16;
+
+  /**
+   * The acceleration priority of the image
+   * @since 1.5
+   */
+  protected float accelerationPriority;
 
   /**
    * A default constructor for subclasses.
@@ -205,4 +211,32 @@ public abstract class Image
    * includes the actual image data.
    */
   public abstract void flush();
+
+  /**
+   * Sets the acceleration priority of the image.
+   * This is a value from 0 (lowest) to 1 (highest), which may
+   * be used as a hint for image acceleration. 
+   * E.g. higher priority images may be stored in video memory.
+   * @param priority - the priority
+   * @throws IllegalArgumentException if priority is not >= 0 and <= 1.
+   *
+   * @since 1.5
+   */
+  public void setAccelerationPriority(float priority)
+  {
+    if( priority < 0f || priority > 1f)
+      throw new IllegalArgumentException("Invalid priority value.");
+    accelerationPriority = priority;
+  }
+
+  /**
+   * Returns the acceleration priority of the image.
+   *
+   * @see #setAccelerationPriority(float)
+   * @since 1.5
+   */
+  public float getAccelerationPriority()
+  {
+    return accelerationPriority;
+  }
 } // class Image

@@ -39,23 +39,17 @@ exception statement from your version.  */
 package gnu.javax.crypto.jce.mac;
 
 import gnu.java.security.Registry;
-import javax.crypto.MacSpi;
 
-public abstract class OMacImpl extends MacAdapter
+public abstract class OMacImpl
+    extends MacAdapter
 {
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
   protected OMacImpl(String name)
   {
     super(Registry.OMAC_PREFIX + name);
   }
 
-  // Inner classes.
-  // -------------------------------------------------------------------------
-
-  public class Anubis extends OMacImpl
+  public class Anubis
+      extends OMacImpl
   {
     public Anubis()
     {
@@ -63,7 +57,8 @@ public abstract class OMacImpl extends MacAdapter
     }
   }
 
-  public class Blowfish extends OMacImpl
+  public class Blowfish
+      extends OMacImpl
   {
     public Blowfish()
     {
@@ -71,7 +66,8 @@ public abstract class OMacImpl extends MacAdapter
     }
   }
 
-  public class Cast5 extends OMacImpl
+  public class Cast5
+      extends OMacImpl
   {
     public Cast5()
     {
@@ -79,7 +75,8 @@ public abstract class OMacImpl extends MacAdapter
     }
   }
 
-  public class DES extends OMacImpl
+  public class DES
+      extends OMacImpl
   {
     public DES()
     {
@@ -87,7 +84,8 @@ public abstract class OMacImpl extends MacAdapter
     }
   }
 
-  public class Khazad extends OMacImpl
+  public class Khazad
+      extends OMacImpl
   {
     public Khazad()
     {
@@ -95,7 +93,8 @@ public abstract class OMacImpl extends MacAdapter
     }
   }
 
-  public class Rijndael extends OMacImpl
+  public class Rijndael
+      extends OMacImpl
   {
     public Rijndael()
     {
@@ -103,7 +102,8 @@ public abstract class OMacImpl extends MacAdapter
     }
   }
 
-  public class Serpent extends OMacImpl
+  public class Serpent
+      extends OMacImpl
   {
     public Serpent()
     {
@@ -111,7 +111,8 @@ public abstract class OMacImpl extends MacAdapter
     }
   }
 
-  public class Square extends OMacImpl
+  public class Square
+      extends OMacImpl
   {
     public Square()
     {
@@ -119,7 +120,8 @@ public abstract class OMacImpl extends MacAdapter
     }
   }
 
-  public class TripleDES extends OMacImpl
+  public class TripleDES
+      extends OMacImpl
   {
     public TripleDES()
     {
@@ -127,7 +129,8 @@ public abstract class OMacImpl extends MacAdapter
     }
   }
 
-  public class Twofish extends OMacImpl
+  public class Twofish
+      extends OMacImpl
   {
     public Twofish()
     {

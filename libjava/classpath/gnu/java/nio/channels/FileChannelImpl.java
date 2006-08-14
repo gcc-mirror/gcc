@@ -40,6 +40,7 @@ package gnu.java.nio.channels;
 
 import gnu.classpath.Configuration;
 import gnu.java.nio.FileLockImpl;
+import gnu.java.nio.VMChannel;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -102,6 +103,7 @@ public final class FileChannelImpl extends FileChannel
   // we want to make sure this has the value -1.  This is the most
   // efficient way to accomplish that.
   private int fd = -1;
+  private VMChannel ch;
 
   private int mode;
 
@@ -123,6 +125,7 @@ public final class FileChannelImpl extends FileChannel
     description = path;
     fd = open (path, mode);
     this.mode = mode;
+    this.ch = VMChannel.getVMChannel(this);
 
     // First open the file and then check if it is a a directory
     // to avoid race condition.
@@ -155,6 +158,7 @@ public final class FileChannelImpl extends FileChannel
     this.fd = fd;
     this.mode = mode;
     this.description = "descriptor(" + fd + ")";
+    this.ch = VMChannel.getVMChannel(this);
   }
 
   private native int open (String path, int mode) throws FileNotFoundException;
@@ -181,6 +185,7 @@ public final class FileChannelImpl extends FileChannel
 
   public int read (ByteBuffer dst) throws IOException
   {
+    /*
     int result;
     byte[] buffer = new byte [dst.remaining ()];
     
@@ -190,6 +195,8 @@ public final class FileChannelImpl extends FileChannel
       dst.put (buffer, 0, result);
 
     return result;
+    */
+    return ch.read(dst);
   }
 
   public int read (ByteBuffer dst, long position)
@@ -214,33 +221,12 @@ public final class FileChannelImpl extends FileChannel
   public long read (ByteBuffer[] dsts, int offset, int length)
     throws IOException
   {
-    long result = 0;
-
-    for (int i = offset; i < offset + length; i++)
-      {
-        result += read (dsts [i]);
-      }
-
-    return result;
+    return ch.readScattering(dsts, offset, length);
   }
 
   public int write (ByteBuffer src) throws IOException
   {
-    int len = src.remaining ();
-    if (src.hasArray())
-      {
-	byte[] buffer = src.array();
-	write(buffer, src.arrayOffset() + src.position(), len);
-	src.position(src.position() + len);
-      }
-    else
-      {
-	// Use a more efficient native method! FIXME!
-	byte[] buffer = new byte [len];
-    	src.get (buffer, 0, len);
-	write (buffer, 0, len);
-      }
-    return len;
+    return ch.write(src);
   }
     
   public int write (ByteBuffer src, long position)
@@ -274,14 +260,7 @@ public final class FileChannelImpl extends FileChannel
   public long write(ByteBuffer[] srcs, int offset, int length)
     throws IOException
   {
-    long result = 0;
-
-    for (int i = offset;i < offset + length;i++)
-      {
-        result += write (srcs[i]);
-      }
-    
-    return result;
+    return ch.writeGathering(srcs, offset, length);
   }
 				   
   public native MappedByteBuffer mapImpl (char mode, long position, int size)
@@ -562,5 +541,13 @@ public final class FileChannelImpl extends FileChannel
 	    + "[fd=" + fd
 	    + ",mode=" + mode + ","
 	    + description + "]");
+  }
+
+  /**
+   * @return The native file descriptor.
+   */
+  public int getNativeFD()
+  {
+    return fd;
   }
 }

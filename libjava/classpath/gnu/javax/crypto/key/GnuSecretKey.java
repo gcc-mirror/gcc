@@ -42,27 +42,20 @@ import gnu.java.security.util.Util;
 import java.security.Key;
 
 /**
- * A secret key composed of a sequence of raw, unformatted octets. This class
- * is analogous to the {@link javax.crypto.spec.SecretKeySpec} class, but is
+ * A secret key composed of a sequence of raw, unformatted octets. This class is
+ * analogous to the {@link javax.crypto.spec.SecretKeySpec} class, but is
  * provided for platforms that do not or cannot contain that class.
  */
-public class GnuSecretKey implements Key
+public class GnuSecretKey
+    implements Key
 {
-
-  // Field.
-  // ------------------------------------------------------------------------
-
   private final byte[] key;
-
   private final String algorithm;
-
-  // Constructors.
-  // ------------------------------------------------------------------------
 
   /**
    * Creates a new secret key. The supplied byte array is copied by this
    * constructor.
-   *
+   * 
    * @param key The raw, secret key.
    * @param algorithm The algorithm name, which can be null or empty.
    */
@@ -73,7 +66,7 @@ public class GnuSecretKey implements Key
 
   /**
    * Creates a new secret key from a portion of a byte array.
-   *
+   * 
    * @param key The raw, secret key.
    * @param offset The offset at which the key begins.
    * @param length The number of bytes that comprise the key.
@@ -86,12 +79,9 @@ public class GnuSecretKey implements Key
     this.algorithm = algorithm;
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   /**
    * Returns the algorithm name, if any.
-   *
+   * 
    * @return The algorithm name.
    */
   public String getAlgorithm()
@@ -103,7 +93,7 @@ public class GnuSecretKey implements Key
    * Returns the encoded key, which is merely the byte array this class was
    * created with. A reference to the internal byte array is returned, so the
    * caller can delete this key from memory by modifying the returned array.
-   *
+   * 
    * @return The raw key.
    */
   public byte[] getEncoded()
@@ -113,7 +103,7 @@ public class GnuSecretKey implements Key
 
   /**
    * Returns the string "RAW".
-   *
+   * 
    * @return The string "RAW".
    */
   public String getFormat()
@@ -123,22 +113,14 @@ public class GnuSecretKey implements Key
 
   public boolean equals(Object o)
   {
-    if (!(o instanceof GnuSecretKey))
-      {
-        return false;
-      }
+    if (! (o instanceof GnuSecretKey))
+      return false;
     if (key.length != ((GnuSecretKey) o).key.length)
-      {
-        return false;
-      }
+      return false;
     byte[] key2 = ((GnuSecretKey) o).key;
     for (int i = 0; i < key.length; i++)
-      {
-        if (key[i] != key2[i])
-          {
-            return false;
-          }
-      }
+      if (key[i] != key2[i])
+        return false;
     return true;
   }
 

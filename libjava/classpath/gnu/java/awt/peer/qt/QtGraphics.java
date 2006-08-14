@@ -1,5 +1,5 @@
 /* QtGraphics.java --
-   Copyright (C)  2005  Free Software Foundation, Inc.
+   Copyright (C)  2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 package gnu.java.awt.peer.qt;
 
 import java.awt.AlphaComposite;
+import java.awt.AWTPermission;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
@@ -57,7 +58,6 @@ import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.PathIterator;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -605,8 +605,16 @@ public abstract class QtGraphics extends Graphics2D
 	composite = comp;
       }
     else
-      throw new UnsupportedOperationException("We don't support custom"+
-					      " composites yet.");
+      {
+	// FIXME: this check is only required "if this Graphics2D
+	// context is drawing to a Component on the display screen".
+	SecurityManager sm = System.getSecurityManager();
+	if (sm != null)
+	  sm.checkPermission(new AWTPermission("readDisplayPixels"));
+
+	throw new UnsupportedOperationException("We don't support custom"+
+						" composites yet.");
+      }
   }
 
   public Composite getComposite()

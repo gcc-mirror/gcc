@@ -51,34 +51,28 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 
 /**
- * <p>The RSA-PKCS1-V1.5 signature scheme is a digital signature scheme with
+ * The RSA-PKCS1-V1.5 signature scheme is a digital signature scheme with
  * appendix (SSA) combining the RSA algorithm with the EMSA-PKCS1-v1_5 encoding
- * method.</p>
- *
- * <p>References:</p>
+ * method.
+ * <p>
+ * References:
  * <ol>
- *    <li><a href="http://www.cosic.esat.kuleuven.ac.be/nessie/workshop/submissions/rsa-pss.zip">
- *    RSA-PSS Signature Scheme with Appendix, part B.</a><br>
- *    Primitive specification and supporting documentation.<br>
- *    Jakob Jonsson and Burt Kaliski.</li>
- *
- *    <li><a href="http://www.ietf.org/rfc/rfc3447.txt">Public-Key Cryptography
- *    Standards (PKCS) #1:</a><br>
- *    RSA Cryptography Specifications Version 2.1.<br>
- *    Jakob Jonsson and Burt Kaliski.</li>
+ * <li><a
+ * href="http://www.cosic.esat.kuleuven.ac.be/nessie/workshop/submissions/rsa-pss.zip">
+ * RSA-PSS Signature Scheme with Appendix, part B.</a><br>
+ * Primitive specification and supporting documentation.<br>
+ * Jakob Jonsson and Burt Kaliski.</li>
+ * <li><a href="http://www.ietf.org/rfc/rfc3447.txt">Public-Key Cryptography
+ * Standards (PKCS) #1:</a><br>
+ * RSA Cryptography Specifications Version 2.1.<br>
+ * Jakob Jonsson and Burt Kaliski.</li>
  * </ol>
  */
-public class RSAPKCS1V1_5Signature extends BaseSignature
+public class RSAPKCS1V1_5Signature
+    extends BaseSignature
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The underlying EMSA-PKCS1-v1.5 instance for this object. */
   private EMSA_PKCS1_V1_5 pkcs1;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /**
    * Default 0-arguments constructor. Uses SHA-1 as the default hash.
@@ -89,9 +83,9 @@ public class RSAPKCS1V1_5Signature extends BaseSignature
   }
 
   /**
-   * <p>Constructs an instance of this object using the designated message
-   * digest algorithm as its underlying hash function.</p>
-   *
+   * Constructs an instance of this object using the designated message digest
+   * algorithm as its underlying hash function.
+   * 
    * @param mdName the canonical name of the underlying hash function.
    */
   public RSAPKCS1V1_5Signature(final String mdName)
@@ -117,14 +111,6 @@ public class RSAPKCS1V1_5Signature extends BaseSignature
     this.pkcs1 = (EMSA_PKCS1_V1_5) that.pkcs1.clone();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // Implementation of abstract methods in superclass ------------------------
-
   public Object clone()
   {
     return new RSAPKCS1V1_5Signature(this);
@@ -133,49 +119,46 @@ public class RSAPKCS1V1_5Signature extends BaseSignature
   protected void setupForVerification(final PublicKey k)
       throws IllegalArgumentException
   {
-    if (!(k instanceof RSAPublicKey))
-      {
-        throw new IllegalArgumentException();
-      }
+    if (! (k instanceof RSAPublicKey))
+      throw new IllegalArgumentException();
+
     publicKey = k;
   }
 
   protected void setupForSigning(final PrivateKey k)
       throws IllegalArgumentException
   {
-    if (!(k instanceof RSAPrivateKey))
-      {
-        throw new IllegalArgumentException();
-      }
+    if (! (k instanceof RSAPrivateKey))
+      throw new IllegalArgumentException();
+
     privateKey = k;
   }
 
   protected Object generateSignature() throws IllegalStateException
   {
     // 1. EMSA-PKCS1-v1_5 encoding: Apply the EMSA-PKCS1-v1_5 encoding
-    //    operation (Section 9.2) to the message M to produce an encoded
-    //    message EM of length k octets:
+    // operation (Section 9.2) to the message M to produce an encoded
+    // message EM of length k octets:
     //
-    //    EM = EMSA-PKCS1-V1_5-ENCODE (M, k).
+    // EM = EMSA-PKCS1-V1_5-ENCODE (M, k).
     //
-    //    If the encoding operation outputs "message too long," output
-    //    "message too long" and stop.  If the encoding operation outputs
-    //    "intended encoded message length too short," output "RSA modulus
-    //    too short" and stop.
+    // If the encoding operation outputs "message too long," output
+    // "message too long" and stop. If the encoding operation outputs
+    // "intended encoded message length too short," output "RSA modulus
+    // too short" and stop.
     final int modBits = ((RSAPrivateKey) privateKey).getModulus().bitLength();
     final int k = (modBits + 7) / 8;
     final byte[] EM = pkcs1.encode(md.digest(), k);
-
     // 2. RSA signature:
-    //    a. Convert the encoded message EM to an integer message epresentative
-    //       m (see Section 4.2):  m = OS2IP (EM).
+    // a. Convert the encoded message EM to an integer message epresentative
+    // m (see Section 4.2): m = OS2IP (EM).
     final BigInteger m = new BigInteger(1, EM);
-    //    b. Apply the RSASP1 signature primitive (Section 5.2.1) to the RSA
-    //       private key K and the message representative m to produce an
-    //       integer signature representative s:  s = RSASP1 (K, m).
+    // b. Apply the RSASP1 signature primitive (Section 5.2.1) to the RSA
+    // private key K and the message representative m to produce an
+    // integer signature representative s: s = RSASP1 (K, m).
     final BigInteger s = RSA.sign(privateKey, m);
-    //    c. Convert the signature representative s to a signature S of length
-    //       k octets (see Section 4.1):  S = I2OSP (s, k).
+    // c. Convert the signature representative s to a signature S of length
+    // k octets (see Section 4.1): S = I2OSP (s, k).
     // 3. Output the signature S.
     return RSA.I2OSP(s, k);
   }
@@ -184,28 +167,24 @@ public class RSAPKCS1V1_5Signature extends BaseSignature
       throws IllegalStateException
   {
     if (publicKey == null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     final byte[] S = (byte[]) sig;
     // 1. Length checking: If the length of the signature S is not k octets,
-    //    output "invalid signature" and stop.
+    // output "invalid signature" and stop.
     final int modBits = ((RSAPublicKey) publicKey).getModulus().bitLength();
     final int k = (modBits + 7) / 8;
     if (S.length != k)
-      {
-        return false;
-      }
+      return false;
     // 2. RSA verification:
-    //    a. Convert the signature S to an integer signature representative
-    //       s (see Section 4.2): s = OS2IP (S).
+    // a. Convert the signature S to an integer signature representative
+    // s (see Section 4.2): s = OS2IP (S).
     final BigInteger s = new BigInteger(1, S);
-    //    b. Apply the RSAVP1 verification primitive (Section 5.2.2) to the
-    //       RSA public key (n, e) and the signature representative s to
-    //       produce an integer message representative m:
-    //          m = RSAVP1 ((n, e), s).
-    //       If RSAVP1 outputs "signature representative out of range,"
-    //       output "invalid signature" and stop.
+    // b. Apply the RSAVP1 verification primitive (Section 5.2.2) to the
+    // RSA public key (n, e) and the signature representative s to
+    // produce an integer message representative m:
+    // m = RSAVP1 ((n, e), s).
+    // If RSAVP1 outputs "signature representative out of range,"
+    // output "invalid signature" and stop.
     final BigInteger m;
     try
       {
@@ -215,10 +194,10 @@ public class RSAPKCS1V1_5Signature extends BaseSignature
       {
         return false;
       }
-    //    c. Convert the message representative m to an encoded message EM
-    //       of length k octets (see Section 4.1): EM = I2OSP (m, k).
-    //       If I2OSP outputs "integer too large," output "invalid signature"
-    //       and stop.
+    // c. Convert the message representative m to an encoded message EM
+    // of length k octets (see Section 4.1): EM = I2OSP (m, k).
+    // If I2OSP outputs "integer too large," output "invalid signature"
+    // and stop.
     final byte[] EM;
     try
       {
@@ -229,17 +208,17 @@ public class RSAPKCS1V1_5Signature extends BaseSignature
         return false;
       }
     // 3. EMSA-PKCS1-v1_5 encoding: Apply the EMSA-PKCS1-v1_5 encoding
-    //    operation (Section 9.2) to the message M to produce a second
-    //    encoded message EM' of length k octets:
-    //       EM' = EMSA-PKCS1-V1_5-ENCODE (M, k).
-    //    If the encoding operation outputs "message too long," output
-    //    "message too long" and stop.  If the encoding operation outputs
-    //    "intended encoded message length too short," output "RSA modulus
-    //    too short" and stop.
+    // operation (Section 9.2) to the message M to produce a second
+    // encoded message EM' of length k octets:
+    // EM' = EMSA-PKCS1-V1_5-ENCODE (M, k).
+    // If the encoding operation outputs "message too long," output
+    // "message too long" and stop. If the encoding operation outputs
+    // "intended encoded message length too short," output "RSA modulus
+    // too short" and stop.
     final byte[] EMp = pkcs1.encode(md.digest(), k);
     // 4. Compare the encoded message EM and the second encoded message EM'.
-    //    If they are the same, output "valid signature"; otherwise, output
-    //    "invalid signature."
+    // If they are the same, output "valid signature"; otherwise, output
+    // "invalid signature."
     return Arrays.equals(EM, EMp);
   }
 }

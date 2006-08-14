@@ -371,6 +371,7 @@ public class BasicSliderUI extends SliderUI
      */
     public void mouseDragged(MouseEvent e)
     {
+      dragging = true;
       if (slider.isEnabled())
         {
           currentMouseX = e.getX();
@@ -450,6 +451,7 @@ public class BasicSliderUI extends SliderUI
      */
     public void mouseReleased(MouseEvent e)
     {
+      dragging = false;
       if (slider.isEnabled())
         {
           currentMouseX = e.getX();
@@ -593,6 +595,9 @@ public class BasicSliderUI extends SliderUI
   
   /** True if the slider has focus. */
   private transient boolean hasFocus;
+  
+  /** True if the user is dragging the slider. */
+  boolean dragging;
 
   /**
    * Creates a new Basic look and feel Slider UI.
@@ -604,6 +609,18 @@ public class BasicSliderUI extends SliderUI
     super();
   }
 
+  /**
+   * Returns true if the user is dragging the slider.
+   * 
+   * @return true if the slider is being dragged.
+   * 
+   * @since 1.5
+   */
+  protected boolean isDragging()
+  {
+    return dragging;
+  }
+  
   /**
    * Gets the shadow color to be used for this slider. The shadow color is the
    * color used for drawing the top and left edges of the track.

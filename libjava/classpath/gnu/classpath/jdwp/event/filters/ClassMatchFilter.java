@@ -41,7 +41,6 @@ package gnu.classpath.jdwp.event.filters;
 
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.exception.InvalidStringException;
-import gnu.classpath.jdwp.id.ReferenceTypeId;
 
 /**
  * An event filter which includes events matching a 
@@ -91,7 +90,7 @@ public class ClassMatchFilter
    */
   public boolean matches (Event event)
   {
-    Object type = event.getParameter (ReferenceTypeId.class);
+    Object type = event.getParameter (Event.EVENT_CLASS);
     if (type != null)
       {
 	Class eventClass = (Class) type;

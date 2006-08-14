@@ -254,14 +254,11 @@ public class GridLayout implements LayoutManager, Serializable
     this.cols = newCols;
   }
 
-  /** Set the horizontal gap
+  /** Set the horizontal gap.  An Exception is not thrown if hgap < 0.
    * @param hgap The horizontal gap
-   * @exception IllegalArgumentException If the hgap value is less than zero.
    */
   public void setHgap (int hgap)
   {
-    if (hgap < 0)
-      throw new IllegalArgumentException ("horizontal gap must be nonnegative");
     this.hgap = hgap;
   }
 
@@ -280,21 +277,18 @@ public class GridLayout implements LayoutManager, Serializable
     this.rows = newRows;
   }
 
-  /** Set the vertical gap.
+  /** Set the vertical gap.  An Exception is not thrown if vgap < 0.
    * @param vgap The vertical gap
-   * @exception IllegalArgumentException If the vgap value is less than zero.
    */
   public void setVgap (int vgap)
   {
-    if (vgap < 0)
-      throw new IllegalArgumentException ("vertical gap must be nonnegative");
     this.vgap = vgap;
   }
 
   /** Return String description of this object.  */
   public String toString ()
   {
-    return ("[" + getClass ().getName ()
+    return (getClass ().getName () + "["
 	    + ",hgap=" + hgap + ",vgap=" + vgap
 	    + ",rows=" + rows + ",cols=" + cols
 	    + "]");

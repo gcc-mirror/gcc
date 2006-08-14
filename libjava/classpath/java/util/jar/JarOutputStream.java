@@ -101,7 +101,7 @@ public class JarOutputStream extends ZipOutputStream
 
   /**
    * Prepares the JarOutputStream for writing the next entry. 
-   * This implementation just calls <code>super.putNextEntre()</code>.
+   * This implementation just calls <code>super.putNextEntry()</code>.
    *
    * @param entry The information for the next entry
    * @exception IOException when some unexpected I/O exception occurred

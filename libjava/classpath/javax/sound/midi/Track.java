@@ -54,10 +54,10 @@ public class Track
   /**
    * The list of MidiEvents for this track. 
    */
-  Vector events;
+  Vector events = new Vector();
   
   // A HashSet to speed processing
-  private HashSet eventSet;
+  private HashSet eventSet = new HashSet();
 
   // This is only instantiable within this package.
   Track()

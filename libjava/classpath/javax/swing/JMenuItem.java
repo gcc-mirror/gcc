@@ -184,7 +184,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
       out statement below for now. */
     //borderPainted = false;
     focusPainted = false;
-    horizontalAlignment = JButton.LEFT;
+    horizontalAlignment = JButton.LEADING;
     horizontalTextPosition = JButton.TRAILING;
   }
 

@@ -74,7 +74,7 @@ public class EventDispatcher extends Thread
               {
                 try
                   {
-                    wait();
+                    queue.wait();
                   }
                 catch (InterruptedException _)
                   {
@@ -107,6 +107,7 @@ public class EventDispatcher extends Thread
     synchronized (queue)
       {
         queue.add(runner);
+	queue.notify();
       }
   }
 }

@@ -13,7 +13,7 @@ for p in ${vmdirs}; do
 		 for u in ${dirs}; do
 			 mkdir -p ${destMetaDir}/${u};
 		 done;
-		 files=`find . -name "CVS" -prune -o -type f -print`;
+		 files=`find . -name "CVS" -prune -o -name "*.in" -prune -o -type f -print`;
 		 for u in ${files}; do
 			 cp ${u} ${destMetaDir}/${u};
 		 done

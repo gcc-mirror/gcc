@@ -47,67 +47,46 @@ import gnu.javax.crypto.prng.UMacGenerator;
 import java.util.HashMap;
 
 /**
- * <p>The SASL-SRP KDF implementation, which is also used, depending on how it
- * was instantiated, as a secure Pseudo Random Number Generator.</p>
+ * The SASL-SRP KDF implementation, which is also used, depending on how it was
+ * instantiated, as a secure Pseudo Random Number Generator.
  */
 public class KDF
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  private static final int AES_BLOCK_SIZE = 16; // default block size for the AES
-
+  private static final int AES_BLOCK_SIZE = 16; // default block size for AES
   private static final int AES_KEY_SIZE = 16; // default key size for the AES
-
   private static final byte[] buffer = new byte[1];
-
   /** Our default source of randomness. */
   private static final PRNG prng = PRNG.getInstance();
-
-  /** The shared secret K to use. */
-  //   private byte[] keyMaterial;
   /** The underlying UMAC Generator instance. */
   private UMacGenerator umac = null;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Constructs an instance of the <code>KDF</code> initialised with the
-   * designated shared secret bytes.</p>
-   *
+   * Constructs an instance of the <code>KDF</code> initialised with the
+   * designated shared secret bytes.
+   * 
    * @param keyMaterial the SASL SRP shared secret (K) bytes.
    */
   private KDF(final byte[] keyMaterial, final int ndx)
   {
     super();
 
-    //      if (ndx != 0) {
-    //         this.keyMaterial = (byte[]) keyMaterial.clone();
-    //      }
     final HashMap map = new HashMap();
     map.put(UMacGenerator.CIPHER, Registry.AES_CIPHER);
-    map.put(UMacGenerator.INDEX, new Integer(ndx));
-    map.put(IBlockCipher.CIPHER_BLOCK_SIZE, new Integer(AES_BLOCK_SIZE));
+    map.put(UMacGenerator.INDEX, Integer.valueOf(ndx));
+    map.put(IBlockCipher.CIPHER_BLOCK_SIZE, Integer.valueOf(AES_BLOCK_SIZE));
     final byte[] key = new byte[AES_KEY_SIZE];
     System.arraycopy(keyMaterial, 0, key, 0, AES_KEY_SIZE);
     map.put(IBlockCipher.KEY_MATERIAL, key);
-
     umac = new UMacGenerator();
     umac.init(map);
-    //System.out.println("**** Initialised KDF with: "+gnu.crypto.util.Util.dumpString(key));
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>A Factory mehod that returns an instance of a <code>KDF</code> based on
-   * supplied seed data.</p>
-   *
+   * A Factory mehod that returns an instance of a <code>KDF</code> based on
+   * supplied seed data.
+   * 
    * @param K the SASL SRP shared secret for a <code>KDF</code> to be used for
-   * <i>CALG</i> and <i>IALG</i> setup. <code>null</code> otherwise.
+   *          <i>CALG</i> and <i>IALG</i> setup. <code>null</code> otherwise.
    * @return an instance of a <code>KDF</code>.
    */
   static final KDF getInstance(final byte[] K)
@@ -134,36 +113,28 @@ public class KDF
     return (buffer[0] & 0xFF);
   }
 
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns a designated number of bytes suitable for use in the SASL SRP
-   * mechanism.</p>
-   *
+   * Returns a designated number of bytes suitable for use in the SASL SRP
+   * mechanism.
+   * 
    * @param length the number of bytes needed.
    * @return a byte array containing the generated/selected bytes.
    */
   public synchronized byte[] derive(final int length)
   {
     final byte[] result = new byte[length];
-    //      if (keyMaterial == null || length > keyMaterial.length) {
     try
       {
         umac.nextBytes(result, 0, length);
       }
-    catch (IllegalStateException x)
-      { // should not happen
+    catch (IllegalStateException x) // should not happen
+      {
         x.printStackTrace(System.err);
       }
-    catch (LimitReachedException x)
-      { // idem
+    catch (LimitReachedException x) // idem
+      {
         x.printStackTrace(System.err);
       }
-    //      } else {
-    //         System.arraycopy(keyMaterial, 0, result, 0, length);
-    //      }
-
     return result;
   }
 }

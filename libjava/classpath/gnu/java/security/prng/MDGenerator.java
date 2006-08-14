@@ -45,19 +45,17 @@ import gnu.java.security.hash.IMessageDigest;
 import java.util.Map;
 
 /**
- * <p>A simple pseudo-random number generator that relies on a hash algorithm,
- * that (a) starts its operation by hashing a <code>seed</code>, and then (b)
- * continuously re-hashing its output. If no hash algorithm name is specified
- * in the {@link Map} of attributes used to initialise the instance then the
+ * A simple pseudo-random number generator that relies on a hash algorithm, that
+ * (a) starts its operation by hashing a <code>seed</code>, and then (b)
+ * continuously re-hashing its output. If no hash algorithm name is specified in
+ * the {@link Map} of attributes used to initialise the instance then the
  * SHA-160 algorithm is used as the underlying hash function. Also, if no
- * <code>seed</code> is given, an empty octet sequence is used.</p>
+ * <code>seed</code> is given, an empty octet sequence is used.
  */
-public class MDGenerator extends BasePRNG implements Cloneable
+public class MDGenerator
+    extends BasePRNG
+    implements Cloneable
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** Property name of underlying hash algorithm for this generator. */
   public static final String MD_NAME = "gnu.crypto.prng.md.hash.name";
 
@@ -67,22 +65,11 @@ public class MDGenerator extends BasePRNG implements Cloneable
   /** The underlying hash instance. */
   private IMessageDigest md;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial 0-arguments constructor. */
   public MDGenerator()
   {
     super(Registry.MD_PRNG);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // Implementation of abstract methods in BaseRandom ------------------------
 
   public void setup(Map attributes)
   {
@@ -95,22 +82,15 @@ public class MDGenerator extends BasePRNG implements Cloneable
             // ensure we have a reliable implementation of this hash
             md = HashFactory.getInstance(Registry.SHA160_HASH);
           }
-        else
-          { // a clone. reset it for reuse
-            md.reset();
-          }
+        else // a clone. reset it for reuse
+          md.reset();
       }
-    else
-      { // ensure we have a reliable implementation of this hash
-        md = HashFactory.getInstance(underlyingMD);
-      }
-
+    else // ensure we have a reliable implementation of this hash
+      md = HashFactory.getInstance(underlyingMD);
     // get the seeed
     byte[] seed = (byte[]) attributes.get(SEEED);
     if (seed == null)
-      {
-        seed = new byte[0];
-      }
+      seed = new byte[0];
 
     md.update(seed, 0, seed.length);
   }
@@ -122,21 +102,19 @@ public class MDGenerator extends BasePRNG implements Cloneable
     md.update(buffer, 0, buffer.length);
   }
 
-  public void addRandomByte (final byte b)
+  public void addRandomByte(final byte b)
   {
     if (md == null)
-      throw new IllegalStateException ("not initialized");
-    md.update (b);
+      throw new IllegalStateException("not initialized");
+    md.update(b);
   }
 
-  public void addRandomBytes (final byte[] buf, final int off, final int len)
+  public void addRandomBytes(final byte[] buf, final int off, final int len)
   {
     if (md == null)
-      throw new IllegalStateException ("not initialized");
-    md.update (buf, off, len);
+      throw new IllegalStateException("not initialized");
+    md.update(buf, off, len);
   }
-
-  // Cloneable interface implementation ---------------------------------------
 
   public Object clone() throws CloneNotSupportedException
   {

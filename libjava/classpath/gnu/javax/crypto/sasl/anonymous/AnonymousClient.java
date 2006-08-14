@@ -44,34 +44,21 @@ import gnu.javax.crypto.sasl.IllegalMechanismStateException;
 
 import java.io.UnsupportedEncodingException;
 
+import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
-import javax.security.sasl.AuthenticationException;
 
 /**
- * <p>The ANONYMOUS client-side mechanism.</p>
+ * The ANONYMOUS client-side mechanism.
  */
-public class AnonymousClient extends ClientMechanism implements SaslClient
+public class AnonymousClient
+    extends ClientMechanism
+    implements SaslClient
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public AnonymousClient()
   {
     super(Registry.SASL_ANONYMOUS_MECHANISM);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // abstract methods implementation -----------------------------------------
 
   protected void initMechanism() throws SaslException
   {
@@ -80,8 +67,6 @@ public class AnonymousClient extends ClientMechanism implements SaslClient
   protected void resetMechanism() throws SaslException
   {
   }
-
-  // javax.security.sasl.SaslClient interface implementation -----------------
 
   public boolean hasInitialResponse()
   {
@@ -99,13 +84,10 @@ public class AnonymousClient extends ClientMechanism implements SaslClient
 
   private byte[] response() throws SaslException
   {
-    if (!AnonymousUtil.isValidTraceInformation(authorizationID))
-      {
-        throw new AuthenticationException(
-                                          "Authorisation ID is not a valid email address");
-      }
+    if (! AnonymousUtil.isValidTraceInformation(authorizationID))
+      throw new AuthenticationException(
+          "Authorisation ID is not a valid email address");
     complete = true;
-    //      return authorizationID.getBytes();
     final byte[] result;
     try
       {

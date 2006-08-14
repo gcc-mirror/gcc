@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableInterceptor;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 import gnu.CORBA.Interceptor.ForwardRequestHolder;
 
 import org.omg.CORBA.Any;
@@ -58,32 +59,23 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class ForwardRequestHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
-       * Create the ForwardRequest typecode (structure, named "ForwardRequest"). The
+   * Create the ForwardRequest typecode (structure, named "ForwardRequest"). The
    * typecode states that the structure contains the following fields: forward.
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        StructMember[] members = new StructMember[ 1 ];
+    ORB orb = OrbRestricted.Singleton;
+    StructMember[] members = new StructMember[1];
 
-        TypeCode field = ObjectHelper.type();
-        members [ 0 ] = new StructMember("forward", field, null);
-        typeCode = orb.create_exception_tc(id(), "ForwardRequest", members);
-      }
-    return typeCode;
+    TypeCode field = ObjectHelper.type();
+    members[0] = new StructMember("forward", field, null);
+    return orb.create_exception_tc(id(), "ForwardRequest", members);
   }
 
   /**
    * Insert the ForwardRequest into the given Any. This method uses the
    * ForwardRequestHolder.
-   *
+   * 
    * @param any the Any to insert into.
    * @param that the ForwardRequest to insert.
    */

@@ -95,6 +95,17 @@ AC_ARG_ENABLE(plugin,
     [plugin_enabled=no]
 )
 
+AC_ARG_ENABLE(gconf-peer,
+  AS_HELP_STRING([--enable-gconf-peer],
+                 [compile GConf native peers for util.preferences]),
+    [case "$enableval" in
+      yes) gconf_enabled=yes ;;
+      no)  gconf_enabled=no ;;
+      *)   AC_MSG_ERROR([Unknown argument to enable/disable gconf-peer]);;
+     esac],
+    [gconf_enabled=no]
+)
+
 # It may not be safe to run linking tests in AC_PROG_CC/AC_PROG_CXX.
 GCC_NO_EXECUTABLES
 
@@ -345,6 +356,10 @@ ac_configure_args="$ac_configure_args --disable-examples"
 ac_configure_args="$ac_configure_args --with-glibj=build"
 if test "$plugin_enabled" != yes; then
   ac_configure_args="$ac_configure_args --disable-plugin"
+fi
+if test "$gconf_enabled" != yes; then
+  ac_configure_args="$ac_configure_args --disable-gconf-peer"
+  ac_configure_args="$ac_configure_args --enable-default-preferences-peer=gnu.java.util.prefs.FileBasedFactory"
 fi
 if test "$use_gtk_awt" != yes; then
   ac_configure_args="$ac_configure_args --disable-gtk-peer"

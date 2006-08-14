@@ -51,6 +51,11 @@ public class Attribute
   implements Serializable
 {
   /**
+   * Compatible with JDK 1.5
+   */
+  private static final long serialVersionUID = 2484220110589082382L;
+
+  /**
    * The attribute name.
    */
   final String m_name;

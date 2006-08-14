@@ -65,8 +65,8 @@ import java.awt.Shape;
  * &#x2019;up&#x2019;
  * direction, one in the &#x2019;down&#x2019; direction) Point <b>B</b> in 
  * the image is inside (one intersection &#x2019;down&#x2019;)
- * Point <b>C</b> in the image is outside (two intersections 
- * &#x2019;down&#x2019;)
+ * Point <b>C</b> in the image is inside (two intersections in the 
+ * &#x2019;down&#x2019; direction)
  *
  * @see Line2D
  * @see CubicCurve2D
@@ -247,10 +247,12 @@ public final class GeneralPath implements Shape, Cloneable
 
   /**
    * Closes the current subpath by drawing a line
-   * back to the point of the last moveTo.
+   * back to the point of the last moveTo, unless the path is already closed.
    */
   public void closePath()
   {
+    if (index >= 1 && types[index - 1] == PathIterator.SEG_CLOSE)
+      return;
     ensureSize(index + 1);
     types[index] = PathIterator.SEG_CLOSE;
     xpoints[index] = xpoints[subpath];

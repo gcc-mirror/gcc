@@ -116,11 +116,11 @@ public class ClassPrepareEvent
    * @param type  the type of parameter desired
    * @returns the desired parameter or <code>null</code>
    */
-  public Object getParameter (Class type)
+  public Object getParameter (int type)
   {
-    if (type == ThreadId.class)
+    if (type == EVENT_THREAD)
       return _thread;
-    else if (type == ReferenceTypeId.class)
+    else if (type == EVENT_CLASS)
       return _class;
 
     return null;

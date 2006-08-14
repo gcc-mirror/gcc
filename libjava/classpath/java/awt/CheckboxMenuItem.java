@@ -63,6 +63,11 @@ public class CheckboxMenuItem extends MenuItem
  * Static Variables
  */
 
+/**
+ * The number used to generate the name returned by getName.
+ */
+private static transient long next_chkmenuitem_number;
+
 // Serialization constant
 private static final long serialVersionUID = 6190621106981774043L;
 
@@ -351,6 +356,21 @@ paramString()
     if (accessibleContext == null)
       accessibleContext = new AccessibleAWTCheckboxMenuItem();
     return accessibleContext;
+  }
+  
+  /**
+   * Generate a unique name for this <code>CheckboxMenuItem</code>.
+   *
+   * @return A unique name for this <code>CheckboxMenuItem</code>.
+   */
+  String generateName()
+  {
+    return "chkmenuitem" + getUniqueLong();
+  }
+
+  private static synchronized long getUniqueLong()
+  {
+    return next_chkmenuitem_number++;
   }
 
 } // class CheckboxMenuItem

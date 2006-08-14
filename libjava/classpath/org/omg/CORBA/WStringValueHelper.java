@@ -66,11 +66,6 @@ public class WStringValueHelper
   private static final String id = "IDL:omg.org/CORBA/WStringValue:1.0";
 
   /**
-   * The cached typecode value, computed once.
-   */
-  private static TypeCode typecode;
-
-  /**
    * The Wide String typecode.
    */
   private static final TypeCode twString =
@@ -175,18 +170,13 @@ public class WStringValueHelper
   }
 
   /**
-   * Create and return the value box typecode, named "WStringValue",
-   * with the content typecode being unbounded string.
+   * Create and return the value box typecode, named "WStringValue", with the
+   * content typecode being unbounded string.
    */
   public static TypeCode type()
   {
-    if (typecode == null)
-      {
-        ORB orb = OrbRestricted.Singleton;
-        typecode =
-          orb.create_value_box_tc(id(), "WStringValue", twString);
-      }
-    return typecode;
+    ORB orb = OrbRestricted.Singleton;
+    return orb.create_value_box_tc(id(), "WStringValue", twString);
   }
 
   /**

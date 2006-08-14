@@ -41,26 +41,14 @@ package gnu.java.security.jce.hash;
 import gnu.java.security.Registry;
 
 /**
- * <p>The implementation of the SHA-2-1 (256-bit) <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.</p>
+ * The implementation of the SHA-2-1 (256-bit) <i>Service Provider Interface</i>
+ * (<b>SPI</b>) adapter.
  */
-public class Sha256Spi extends MessageDigestAdapter
+public class Sha256Spi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public Sha256Spi()
   {
     super(Registry.SHA256_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

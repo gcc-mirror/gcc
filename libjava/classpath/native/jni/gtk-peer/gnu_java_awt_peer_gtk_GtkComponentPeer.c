@@ -339,6 +339,42 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetSensitive
   gdk_threads_leave ();
 }
 
+JNIEXPORT jboolean JNICALL
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetHasFocus
+(JNIEnv *env, jobject obj)
+{
+  void *ptr;
+  jboolean retval;
+
+  gdk_threads_enter ();
+
+  ptr = NSA_GET_PTR (env, obj);
+  
+  retval = GTK_WIDGET_HAS_FOCUS((GTK_WIDGET (ptr)));
+
+  gdk_threads_leave ();
+
+  return retval;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetCanFocus
+(JNIEnv *env, jobject obj)
+{
+  void *ptr;
+  jboolean retval;
+
+  gdk_threads_enter ();
+
+  ptr = NSA_GET_PTR (env, obj);
+  
+  retval = GTK_WIDGET_CAN_FOCUS((GTK_WIDGET (ptr)));
+
+  gdk_threads_leave ();
+
+  return retval;
+}
+
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetRequestFocus
   (JNIEnv *env, jobject obj)

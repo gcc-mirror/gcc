@@ -137,6 +137,35 @@ public class FreetypeGlyphVector extends GlyphVector
   }
 
   /**
+   * Cloning constructor
+   */  
+  private FreetypeGlyphVector( FreetypeGlyphVector gv )
+  {
+    font = gv.font;
+    peer = gv.peer;
+    frc = gv.frc;
+    s = gv.s;
+    nGlyphs = gv.nGlyphs;
+    logicalBounds = gv.logicalBounds.getBounds2D();
+
+    if( gv.metricsCache != null )
+      {
+	metricsCache = new GlyphMetrics[ nGlyphs ];
+	System.arraycopy(gv.metricsCache, 0, metricsCache, 0, nGlyphs);
+      }
+
+    glyphCodes = new int[ nGlyphs ];
+    glyphPositions = new float[ nGlyphs ];
+    glyphTransforms = new AffineTransform[ nGlyphs ];
+    for(int i = 0; i < nGlyphs; i++ )
+      {
+	glyphTransforms[ i ] = new AffineTransform( gv.glyphTransforms[ i ] );
+	glyphCodes[i] = gv.glyphCodes[ i ];
+	glyphPositions[i] = gv.glyphPositions[ i ];
+      }
+  }
+
+  /**
    * Create the array of glyph codes.
    */
   private void getGlyphs()
@@ -171,6 +200,12 @@ public class FreetypeGlyphVector extends GlyphVector
   private native double[] getMetricsNative( int glyphCode );
 
   private native GeneralPath getGlyphOutlineNative(int glyphIndex);
+
+
+  public Object clone()
+  {
+    return new FreetypeGlyphVector( this );
+  }
 
   /**
    * Duh, compares two instances.
@@ -260,8 +295,11 @@ public class FreetypeGlyphVector extends GlyphVector
     if( gm == null )
       return null; 
     Rectangle2D r = gm.getBounds2D();
-    return new Rectangle2D.Double( r.getX() - gm.getLSB(), r.getY(),
-				   gm.getAdvanceX(), r.getHeight() );
+    Point2D p = getGlyphPosition( glyphIndex );
+    return new Rectangle2D.Double( p.getX() + r.getX() - gm.getLSB(), 
+				   p.getY() + r.getY(),
+				   gm.getAdvanceX(), 
+				   r.getHeight() );
   }
 
   /*
@@ -385,8 +423,6 @@ public class FreetypeGlyphVector extends GlyphVector
     for( int i = 1; i < nGlyphs; i++ )
       {
 	Rectangle2D r2 = (Rectangle2D)getGlyphLogicalBounds( i );
-	Point2D p = getGlyphPosition( i );
-	r2.setRect( p.getX(), p.getY(), r2.getWidth(), r2.getHeight() );
 	rect = rect.createUnion( r2 );
       }
 

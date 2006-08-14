@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.tools.common.ProviderUtil;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
@@ -74,6 +75,7 @@ public class Main
   static final String STOREPASSWD_CMD = "storepasswd"; //$NON-NLS-1$
   static final String KEYPASSWD_CMD = "keypasswd"; //$NON-NLS-1$
   static final String DELETE_CMD = "delete"; //$NON-NLS-1$
+  static final String CACERT_CMD = "cacert"; //$NON-NLS-1$
 
   static final String _GENKEY = "-" + GENKEY_CMD; //$NON-NLS-1$
   static final String _IMPORT = "-" + IMPORT_CMD; //$NON-NLS-1$
@@ -88,6 +90,7 @@ public class Main
   static final String _KEYPASSWD = "-" + KEYPASSWD_CMD; //$NON-NLS-1$
   static final String _DELETE = "-" + DELETE_CMD; //$NON-NLS-1$
   static final String _HELP = "-help"; //$NON-NLS-1$
+  static final String _CACERT = "-" + CACERT_CMD; //$NON-NLS-1$
 
   static final String ALIAS_OPT = "alias"; //$NON-NLS-1$
   static final String SIGALG_OPT = "sigalg"; //$NON-NLS-1$
@@ -119,16 +122,20 @@ public class Main
   private int gnuCallbacksNdx = -2;
   /** The command line parser. */
   private Parser cmdLineParser;
+  /** The shutdown hook. */
+  private ShutdownHook shutdownThread;
 
   private Main()
   {
     super();
+    shutdownThread = new ShutdownHook();
+    Runtime.getRuntime().addShutdownHook(shutdownThread);
   }
 
   public static final void main(String[] args)
   {
-    log.entering(Main.class.getName(), "main", args); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(Main.class.getName(), "main", args); //$NON-NLS-1$
     Main tool = new Main();
     int result = 1;
     try
@@ -145,21 +152,25 @@ public class Main
       }
     catch (SecurityException x)
       {
-        log.throwing(Main.class.getName(), "main", x); //$NON-NLS-1$
+        if (Configuration.DEBUG)
+          log.throwing(Main.class.getName(), "main", x); //$NON-NLS-1$
         System.err.println(Messages.getFormattedString("Main.6", //$NON-NLS-1$
                                                        x.getMessage()));
       }
     catch (Exception x)
       {
-        log.throwing(Main.class.getName(), "main", x); //$NON-NLS-1$
+        if (Configuration.DEBUG)
+          log.throwing(Main.class.getName(), "main", x); //$NON-NLS-1$
         System.err.println(Messages.getFormattedString("Main.8", x)); //$NON-NLS-1$
       }
     finally
       {
         tool.teardown();
+        if (tool.shutdownThread != null)
+          Runtime.getRuntime().removeShutdownHook(tool.shutdownThread);
       }
-
-    log.exiting(Main.class.getName(), "main", Integer.valueOf(result)); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(Main.class.getName(), "main", Integer.valueOf(result)); //$NON-NLS-1$
     System.exit(result);
   }
 
@@ -167,19 +178,19 @@ public class Main
 
   private void setup()
   {
-    log.entering(this.getClass().getName(), "setup"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "setup"); //$NON-NLS-1$
     cmdLineParser = getParser();
     gnuCryptoProviderNdx = ProviderUtil.addProvider(new GnuCrypto());
     gnuCallbacksNdx = ProviderUtil.addProvider(new GnuCallbacks());
-
-    log.exiting(this.getClass().getName(), "setup"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "setup"); //$NON-NLS-1$
   }
 
   private void start(String[] args) throws Exception
   {
-    log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
     if (args == null || args.length == 0)
       throw new OptionException(""); //$NON-NLS-1$
 
@@ -213,6 +224,8 @@ public class Main
           cmd = new KeyPasswdCmd();
         else if (_DELETE.equals(opt))
           cmd = new DeleteCmd();
+        else if (_CACERT.equals(opt))
+          cmd = new CACertCmd();
         else if (_HELP.equals(opt))
           throw new OptionException(""); //$NON-NLS-1$
         else
@@ -224,14 +237,14 @@ public class Main
         args = cmd.processArgs(cmdArgs);
         cmd.doCommand();
       }
-
-    log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   private Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(KEYTOOL_TOOL, true);
     result.setHeader(Messages.getString("Main.19")); //$NON-NLS-1$
     result.setFooter(Messages.getString("Main.20")); //$NON-NLS-1$
@@ -260,16 +273,18 @@ public class Main
                                    Messages.getString("Main.32"))); //$NON-NLS-1$
     cmdGroup.add(new NoParseOption(DELETE_CMD,
                                    Messages.getString("Main.33"))); //$NON-NLS-1$
+    cmdGroup.add(new NoParseOption(CACERT_CMD,
+                                   Messages.getString("Main.5"))); //$NON-NLS-1$
     result.add(cmdGroup);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 
-  private void teardown()
+  void teardown()
   {
-    log.entering(this.getClass().getName(), "teardown"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "teardown"); //$NON-NLS-1$
     // if we added our own providers remove them
     if (gnuCryptoProviderNdx > 0)
       ProviderUtil.removeProvider(Registry.GNU_CRYPTO);
@@ -277,7 +292,8 @@ public class Main
     if (gnuCallbacksNdx > 0)
       ProviderUtil.removeProvider("GNU-CALLBACKS"); //$NON-NLS-1$
 
-    log.exiting(this.getClass().getName(), "teardown"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "teardown"); //$NON-NLS-1$
   }
 
   private void printHelp()
@@ -307,6 +323,15 @@ public class Main
     public void parsed(String argument) throws OptionException
     {
       // do nothing
+    }
+  }
+
+  private class ShutdownHook
+      extends Thread
+  {
+    public void run()
+    {
+      teardown();
     }
   }
 }

@@ -45,105 +45,69 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p>A <i>Factory</i> to instantiate symmetric block cipher instances.</p>
+ * A <i>Factory</i> to instantiate symmetric block cipher instances.
  */
-public class CipherFactory implements Registry
+public class CipherFactory
+    implements Registry
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial constructor to enforce Singleton pattern. */
   private CipherFactory()
   {
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns an instance of a block cipher given its name.</p>
-   *
+   * Returns an instance of a block cipher given its name.
+   * 
    * @param name the case-insensitive name of the symmetric-key block cipher
-   * algorithm.
+   *          algorithm.
    * @return an instance of the designated cipher algorithm, or
-   * <code>null</code> if none is found.
-   * @exception InternalError if the implementation does not pass its
-   * self-test.
+   *         <code>null</code> if none is found.
+   * @exception InternalError if the implementation does not pass its self-test.
    */
   public static final IBlockCipher getInstance(String name)
   {
     if (name == null)
-      {
-        return null;
-      }
-
+      return null;
     name = name.trim();
     IBlockCipher result = null;
     if (name.equalsIgnoreCase(ANUBIS_CIPHER))
-      {
-        result = new Anubis();
-      }
+      result = new Anubis();
     else if (name.equalsIgnoreCase(BLOWFISH_CIPHER))
-      {
-        result = new Blowfish();
-      }
+      result = new Blowfish();
     else if (name.equalsIgnoreCase(DES_CIPHER))
-      {
-        result = new DES();
-      }
+      result = new DES();
     else if (name.equalsIgnoreCase(KHAZAD_CIPHER))
-      {
-        result = new Khazad();
-      }
+      result = new Khazad();
     else if (name.equalsIgnoreCase(RIJNDAEL_CIPHER)
              || name.equalsIgnoreCase(AES_CIPHER))
-      {
-        result = new Rijndael();
-      }
+      result = new Rijndael();
     else if (name.equalsIgnoreCase(SERPENT_CIPHER))
-      {
-        result = new Serpent();
-      }
+      result = new Serpent();
     else if (name.equalsIgnoreCase(SQUARE_CIPHER))
-      {
-        result = new Square();
-      }
+      result = new Square();
     else if (name.equalsIgnoreCase(TRIPLEDES_CIPHER)
              || name.equalsIgnoreCase(DESEDE_CIPHER))
-      {
-        result = new TripleDES();
-      }
+      result = new TripleDES();
     else if (name.equalsIgnoreCase(TWOFISH_CIPHER))
-      {
-        result = new Twofish();
-      }
+      result = new Twofish();
     else if (name.equalsIgnoreCase(CAST5_CIPHER)
-             || (name.equalsIgnoreCase(CAST128_CIPHER) || (name.equalsIgnoreCase(CAST_128_CIPHER))))
-      {
-        result = new Cast5();
-      }
+             || (name.equalsIgnoreCase(CAST128_CIPHER)
+                 || (name.equalsIgnoreCase(CAST_128_CIPHER))))
+      result = new Cast5();
     else if (name.equalsIgnoreCase(NULL_CIPHER))
-      {
-        result = new NullCipher();
-      }
+      result = new NullCipher();
 
-    if (result != null && !result.selfTest())
-      {
-        throw new InternalError(result.name());
-      }
+    if (result != null && ! result.selfTest())
+      throw new InternalError(result.name());
 
     return result;
   }
 
   /**
-   * <p>Returns a {@link Set} of symmetric key block cipher implementation
-   * names supported by this <i>Factory</i>.</p>
-   *
+   * Returns a {@link Set} of symmetric key block cipher implementation names
+   * supported by this <i>Factory</i>.
+   * 
    * @return a {@link Set} of block cipher names (Strings).
    */
   public static final Set getNames()
@@ -160,10 +124,6 @@ public class CipherFactory implements Registry
     hs.add(TWOFISH_CIPHER);
     hs.add(CAST5_CIPHER);
     hs.add(NULL_CIPHER);
-
     return Collections.unmodifiableSet(hs);
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

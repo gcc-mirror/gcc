@@ -42,44 +42,40 @@ import gnu.java.security.Registry;
 import gnu.javax.crypto.cipher.IBlockCipher;
 
 /**
- * <p>The implementation of the Electronic Codebook mode.</p>
- *
- * <p>The Electronic Codebook (ECB) mode is a confidentiality mode that is
- * defined as follows:</p>
- *
+ * The implementation of the Electronic Codebook mode.
+ * <p>
+ * The Electronic Codebook (ECB) mode is a confidentiality mode that is defined
+ * as follows:
  * <ul>
- *    <li>ECB Encryption: C<sub>j</sub> = CIPH<sub>K</sub>(P<sub>j</sub>) for j = 1...n</li>
- *    <li>ECB Decryption: P<sub>j</sub> = CIPH<sup>-1</sup><sub>K</sub>(C<sub>j</sub>) for j = 1...n</li>
+ * <li>ECB Encryption: C<sub>j</sub> = CIPH<sub>K</sub>(P<sub>j</sub>)
+ * for j = 1...n</li>
+ * <li>ECB Decryption: P<sub>j</sub> = CIPH<sup>-1</sup><sub>K</sub>(C<sub>j</sub>)
+ * for j = 1...n</li>
  * </ul>
- *
- * <p>In ECB encryption, the forward cipher function is applied directly, and
+ * <p>
+ * In ECB encryption, the forward cipher function is applied directly, and
  * independently, to each block of the plaintext. The resulting sequence of
- * output blocks is the ciphertext.</p>
- *
- * <p>In ECB decryption, the inverse cipher function is applied directly, and
+ * output blocks is the ciphertext.
+ * <p>
+ * In ECB decryption, the inverse cipher function is applied directly, and
  * independently, to each block of the ciphertext. The resulting sequence of
- * output blocks is the plaintext.</p>
- *
- * <p>References:</p>
- *
+ * output blocks is the plaintext.
+ * <p>
+ * References:
  * <ol>
- *    <li><a href="http://csrc.nist.gov/encryption/modes/Recommendation/Modes01.pdf">
- *    Recommendation for Block Cipher Modes of Operation Methods and Techniques</a>,
- *    Morris Dworkin.</li>
+ * <li><a
+ * href="http://csrc.nist.gov/encryption/modes/Recommendation/Modes01.pdf">
+ * Recommendation for Block Cipher Modes of Operation Methods and Techniques</a>,
+ * Morris Dworkin.</li>
  * </ol>
  */
-public class ECB extends BaseMode implements Cloneable
+public class ECB
+    extends BaseMode
+    implements Cloneable
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Trivial package-private constructor for use by the Factory class.</p>
-   *
+   * Trivial package-private constructor for use by the Factory class.
+   * 
    * @param underlyingCipher the underlying cipher implementation.
    * @param cipherBlockSize the underlying cipher block size to use.
    */
@@ -89,8 +85,8 @@ public class ECB extends BaseMode implements Cloneable
   }
 
   /**
-   * <p>Private constructor for cloning purposes.</p>
-   *
+   * Private constructor for cloning purposes.
+   * 
    * @param that the mode to clone.
    */
   private ECB(ECB that)
@@ -98,27 +94,15 @@ public class ECB extends BaseMode implements Cloneable
     this((IBlockCipher) that.cipher.clone(), that.cipherBlockSize);
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.lang.Cloneable interface implementation ----------------------------
-
   public Object clone()
   {
     return new ECB(this);
   }
 
-  // Implementation of abstract methods in BaseMode --------------------------
-
   public void setup()
   {
     if (modeBlockSize != cipherBlockSize)
-      {
-        throw new IllegalArgumentException(IMode.MODE_BLOCK_SIZE);
-      }
+      throw new IllegalArgumentException(IMode.MODE_BLOCK_SIZE);
   }
 
   public void teardown()

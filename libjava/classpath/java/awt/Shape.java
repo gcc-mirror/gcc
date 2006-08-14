@@ -1,5 +1,5 @@
 /* Shape.java -- the classic Object-Oriented shape interface
-   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -176,7 +176,8 @@ public interface Shape
    * not required, that the Shape isolate iterations from future changes to
    * the boundary, and document this fact.
    *
-   * @param transform an optional transform to apply to the iterator
+   * @param transform an optional transform to apply to the 
+   *                  iterator (<code>null</code> permitted).
    * @return a new iterator over the boundary
    * @since 1.2
    */
@@ -185,7 +186,7 @@ public interface Shape
   /**
    * Return an iterator along the flattened version of the shape boundary.
    * Only SEG_MOVETO, SEG_LINETO, and SEG_CLOSE points are returned in the
-   * iterator. The flatness paramter controls how far points are allowed to
+   * iterator. The flatness parameter controls how far points are allowed to
    * differ from the real curve; although a limit on accuracy may cause this
    * parameter to be enlarged if needed.
    *
@@ -194,10 +195,11 @@ public interface Shape
    * use. It is recommended, but not required, that the Shape isolate
    * iterations from future changes to the boundary, and document this fact.
    *
-   * @param transform an optional transform to apply to the iterator
+   * @param transform an optional transform to apply to the 
+   *                  iterator (<code>null</code> permitted).
    * @param flatness the maximum distance for deviation from the real boundary
    * @return a new iterator over the boundary
    * @since 1.2
    */
   PathIterator getPathIterator(AffineTransform transform, double flatness);
-} // interface Shape
+} 

@@ -41,31 +41,20 @@ package gnu.javax.crypto.sasl.srp;
 import java.util.HashMap;
 
 /**
- * <p>The server-side implementation of the SRP security context store.</p>
+ * The server-side implementation of the SRP security context store.
  */
 public class ServerStore
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The underlying singleton. */
   private static ServerStore singleton = null;
-
   /** The map of sid --> Security Context record. */
   private static final HashMap sid2ssc = new HashMap();
-
   /** The map of sid --> Session timing record. */
   private static final HashMap sid2ttl = new HashMap();
-
   /** A synchronisation lock. */
   private static final Object lock = new Object();
-
   /** A counter to generate legible SIDs. */
   private static int counter = 0;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /** Private constructor to enforce Singleton pattern. */
   private ServerStore()
@@ -75,48 +64,38 @@ public class ServerStore
     // TODO: add a cleaning timer thread
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the classloader Singleton.</p>
-   *
+   * Returns the classloader Singleton.
+   * 
    * @return the classloader Singleton instance.
    */
   static synchronized final ServerStore instance()
   {
     if (singleton == null)
-      {
-        singleton = new ServerStore();
-      }
+      singleton = new ServerStore();
     return singleton;
   }
 
   /**
-   * <p>Returns a legible new session identifier.</p>
-   *
+   * Returns a legible new session identifier.
+   * 
    * @return a new session identifier.
    */
   static synchronized final byte[] getNewSessionID()
   {
     final String sid = String.valueOf(++counter);
-    return new StringBuffer("SID-").append(
-                                           "0000000000".substring(
-                                                                  0,
-                                                                  10 - sid.length())).append(
-                                                                                             sid).toString().getBytes();
+    return new StringBuffer("SID-")
+        .append("0000000000".substring(0, 10 - sid.length())).append(sid)
+        .toString().getBytes();
   }
 
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns a boolean flag indicating if the designated session is still
-   * alive or not.</p>
-   *
+   * Returns a boolean flag indicating if the designated session is still alive
+   * or not.
+   * 
    * @param sid the identifier of the session to check.
    * @return <code>true</code> if the designated session is still alive.
-   * <code>false</code> otherwise.
+   *         <code>false</code> otherwise.
    */
   boolean isAlive(final byte[] sid)
   {
@@ -130,8 +109,8 @@ public class ServerStore
             if (ctx != null)
               {
                 result = ctx.isAlive();
-                if (!result)
-                  { // invalidate it en-passant
+                if (! result) // invalidate it en-passant
+                  {
                     sid2ssc.remove(key);
                     sid2ttl.remove(key);
                   }
@@ -142,9 +121,9 @@ public class ServerStore
   }
 
   /**
-   * <p>Records a mapping between a session identifier and the Security Context
-   * of the designated SRP server mechanism instance.</p>
-   *
+   * Records a mapping between a session identifier and the Security Context of
+   * the designated SRP server mechanism instance.
+   * 
    * @param ttl the session's Time-To-Live indicator (in seconds).
    * @param ctx the server's security context.
    */
@@ -159,11 +138,11 @@ public class ServerStore
   }
 
   /**
-   * <p>Updates the mapping between the designated session identifier and the
-   * designated server's SASL Security Context. In the process, computes
-   * and return the underlying mechanism server's evidence that shall be
-   * returned to the client in a session re-use exchange.</p>
-   *
+   * Updates the mapping between the designated session identifier and the
+   * designated server's SASL Security Context. In the process, computes and
+   * return the underlying mechanism server's evidence that shall be returned to
+   * the client in a session re-use exchange.
+   * 
    * @param sid the identifier of the session to restore.
    * @return an SRP server's security context.
    */
@@ -180,8 +159,8 @@ public class ServerStore
   }
 
   /**
-   * <p>Removes all information related to the designated session ID.</p>
-   *
+   * Removes all information related to the designated session ID.
+   * 
    * @param sid the identifier of the seesion to invalidate.
    */
   void invalidateSession(final byte[] sid)

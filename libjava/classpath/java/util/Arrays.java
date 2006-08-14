@@ -1,5 +1,5 @@
 /* Arrays.java -- Utility class with methods to operate on arrays
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -97,7 +97,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final byte d = a[mid];
         if (d == key)
           return mid;
@@ -131,7 +131,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final char d = a[mid];
         if (d == key)
           return mid;
@@ -165,7 +165,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final short d = a[mid];
         if (d == key)
           return mid;
@@ -199,7 +199,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final int d = a[mid];
         if (d == key)
           return mid;
@@ -233,7 +233,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final long d = a[mid];
         if (d == key)
           return mid;
@@ -268,7 +268,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final int r = Float.compare(a[mid], key);
         if (r == 0)
           return mid;
@@ -303,7 +303,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final int r = Double.compare(a[mid], key);
         if (r == 0)
           return mid;
@@ -369,7 +369,7 @@ public class Arrays
     int mid = 0;
     while (low <= hi)
       {
-        mid = (low + hi) >> 1;
+        mid = (low + hi) >>> 1;
         final int d = Collections.compare(key, a[mid], c);
         if (d == 0)
           return mid;
@@ -2341,8 +2341,10 @@ public class Arrays
    * value modification. The returned list implements both Serializable and
    * RandomAccess.
    *
-   * @param a the array to return a view of
+   * @param a the array to return a view of (<code>null</code> not permitted)
    * @return a fixed-size list, changes to which "write through" to the array
+   * 
+   * @throws NullPointerException if <code>a</code> is <code>null</code>.
    * @see Serializable
    * @see RandomAccess
    * @see Arrays.ArrayList

@@ -147,7 +147,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkWidgetModifyFont
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setText
+Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setNativeText
   (JNIEnv *env, jobject obj, jstring text)
 {
   const char *str;

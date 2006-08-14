@@ -238,7 +238,7 @@ class TransformerImpl
       outputProperties.getProperty(OutputKeys.CDATA_SECTION_ELEMENTS);
     boolean indent =
       "yes".equals(outputProperties.getProperty(OutputKeys.INDENT));
-    if (created)
+    if (created && parent instanceof DomDocument)
       {
         // Discover document element
         DomDocument resultDoc = (DomDocument) parent;
@@ -320,7 +320,7 @@ class TransformerImpl
       }
     if (indent)
       {
-        if (created)
+        if (created && parent instanceof DomDocument)
           {
             DomDocument domDoc = (DomDocument) parent;
             domDoc.setBuilding(true);
@@ -332,7 +332,7 @@ class TransformerImpl
           (Document) parent :
           parent.getOwnerDocument();
         reindent(resultDoc, parent, 0);
-        if (created)
+        if (created && parent instanceof DomDocument)
           {
             DomDocument domDoc = (DomDocument) parent;
             domDoc.setBuilding(false);
@@ -576,6 +576,19 @@ class TransformerImpl
           }
         catch (IOException e)
           {
+            if (errorListener != null)
+              {
+                try
+                  {
+                    errorListener.error(new TransformerException(e));
+                  }
+                catch (TransformerException e2)
+                  {
+                    e2.printStackTrace(System.err);
+                  }
+              }
+            else
+              e.printStackTrace(System.err);
           }
       }
   }

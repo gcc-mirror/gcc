@@ -83,7 +83,15 @@ public class FontRenderContext
 
   public boolean equals (FontRenderContext rhs)
   {
-    return (affineTransform.equals (rhs.getTransform ())
+    if (rhs == null)
+      return false;
+
+    if (affineTransform == null && rhs.affineTransform != null
+        || affineTransform != null && rhs.affineTransform == null)
+      return false;
+
+    return ((affineTransform == rhs.affineTransform
+             || affineTransform.equals (rhs.getTransform ()))
             && isAntiAliased == rhs.isAntiAliased ()
             && usesFractionalMetrics == rhs.usesFractionalMetrics ());
   }

@@ -1,5 +1,5 @@
 /* GtkClipboardNotifier.java -- Helper for announcing GtkSelection changes.
-   Copyright (C) 2005  Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.datatransfer.*;
-import java.util.*;
 
 class GtkClipboardNotifier extends Thread
 {

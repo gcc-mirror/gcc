@@ -67,7 +67,7 @@ public class VmDeathEvent
    * @param type  the type of parameter desired
    * @returns the desired parameter or <code>null</code>
    */
-  public Object getParameter (Class type)
+  public Object getParameter (int type)
   {
     return null;
   }

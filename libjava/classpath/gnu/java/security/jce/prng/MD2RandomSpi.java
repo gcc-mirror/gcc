@@ -42,25 +42,13 @@ import gnu.java.security.Registry;
 
 /**
  * The implementation of the MD2-based SecureRandom <i>Service Provider
- * Interface</i> (<b>SPI</b>) adapter.<p>
+ * Interface</i> (<b>SPI</b>) adapter.
  */
-public class MD2RandomSpi extends SecureRandomAdapter
+public class MD2RandomSpi
+    extends SecureRandomAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public MD2RandomSpi()
   {
     super(Registry.MD2_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

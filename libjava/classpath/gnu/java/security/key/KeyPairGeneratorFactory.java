@@ -48,68 +48,48 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p>A Factory to instantiate asymmetric keypair generators.</p>
+ * A Factory to instantiate asymmetric keypair generators.
  */
 public class KeyPairGeneratorFactory
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial constructor to enforce Singleton pattern. */
   private KeyPairGeneratorFactory()
   {
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns an instance of a keypair generator given its name.</p>
-   *
+   * Returns an instance of a keypair generator given its name.
+   * 
    * @param name the case-insensitive key generator name.
-   * @return an instance of the keypair generator, or <code>null</code> if none
-   * found.
+   * @return an instance of the keypair generator, or <code>null</code> if
+   *         none found.
    */
   public static IKeyPairGenerator getInstance(String name)
   {
     if (name == null)
-      {
-        return null;
-      }
+      return null;
 
     name = name.trim();
     IKeyPairGenerator result = null;
     if (name.equalsIgnoreCase(Registry.DSA_KPG)
         || name.equalsIgnoreCase(Registry.DSS_KPG))
-      {
-        result = new DSSKeyPairGenerator();
-      }
+      result = new DSSKeyPairGenerator();
     else if (name.equalsIgnoreCase(Registry.RSA_KPG))
-      {
-        result = new RSAKeyPairGenerator();
-      }
+      result = new RSAKeyPairGenerator();
     else if (name.equalsIgnoreCase(Registry.DH_KPG))
-      {
-        result = makeInstance ("gnu.javax.crypto.key.dh.GnuDHKeyPairGenerator");
-      }
+      result = makeInstance("gnu.javax.crypto.key.dh.GnuDHKeyPairGenerator");
     else if (name.equalsIgnoreCase(Registry.SRP_KPG))
-      {
-        result = makeInstance ("gnu.javax.crypto.key.srp6.SRPKeyPairGenerator");
-      }
+      result = makeInstance("gnu.javax.crypto.key.srp6.SRPKeyPairGenerator");
 
     return result;
   }
 
   /**
-   * <p>Returns a {@link Set} of keypair generator names supported by this
+   * Returns a {@link Set} of keypair generator names supported by this
    * <i>Factory</i>. Those keypair generators may be used in conjunction with
-   * the digital signature schemes with appendix supported by this library.</p>
-   *
+   * the digital signature schemes with appendix supported by this library.
+   * 
    * @return a {@link Set} of keypair generator names (Strings).
    */
   public static final Set getNames()
@@ -120,26 +100,21 @@ public class KeyPairGeneratorFactory
     hs.add(Registry.RSA_KPG);
     hs.add(Registry.DH_KPG);
     hs.add(Registry.SRP_KPG);
-
     return Collections.unmodifiableSet(hs);
   }
 
-  private static IKeyPairGenerator makeInstance (String clazz)
+  private static IKeyPairGenerator makeInstance(String clazz)
   {
     try
       {
-        Class c = Class.forName (clazz);
-        Constructor ctor = c.getConstructor (new Class[0]);
-        return (IKeyPairGenerator) ctor.newInstance (new Object[0]);
+        Class c = Class.forName(clazz);
+        Constructor ctor = c.getConstructor(new Class[0]);
+        return (IKeyPairGenerator) ctor.newInstance(new Object[0]);
       }
     catch (Exception x)
       {
         throw new IllegalArgumentException(
-            "strong crypto key pair generator not available: " + clazz,
-            x);
+            "strong crypto key pair generator not available: " + clazz, x);
       }
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

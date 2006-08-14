@@ -1,5 +1,6 @@
 /* Label.java -- Java label widget
-   Copyright (C) 1999, 2000, 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2005, 2006,  Free Software 
+   Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,275 +46,250 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 
 /**
-  * This component is used for displaying simple text strings that cannot
-  * be edited by the user.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey (tromey@cygnus.com)
-  * @author Andrew John Hughes  (gnu_andrew@member.fsf.org)
-  */
+ * This component is used for displaying simple text strings that cannot
+ * be edited by the user.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Andrew John Hughes  (gnu_andrew@member.fsf.org)
+ */
 public class Label extends Component implements Accessible
 {
 
-/*
- * Static Variables
- */
-
-/**
-  * Alignment constant aligning the text to the left of its window.
-  */
-public static final int LEFT = 0;
-
-/**
-  * Alignment constant aligning the text in the center of its window.
-  */
-public static final int CENTER = 1;
-
-/**
-  * Alignment constant aligning the text to the right of its window.
-  */
-public static final int RIGHT = 2;
-
-// Serialization version constant:
-private static final long serialVersionUID = 3094126758329070636L;
-
-/*************************************************************************/
-
-/*
- * Instance Variables
- */
-
-/**
-  * @serial Indicates the alignment of the text within this label's window.
-  * This is one of the constants in this class.  The default value is 
-  * <code>LEFT</code>.
-  */
-private int alignment;
-
-/**
-  * @serial The text displayed in the label
-  */
-private String text;
-
-/*************************************************************************/
-
-/*
- * Constructors
- */
-
-/**
-  * Initializes a new instance of <code>Label</code> with no text.
-  *
-  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
-  */
-public
-Label()
-{
-  this("", LEFT);
-}
-
-/*************************************************************************/
-
-/**
-  * Initializes a new instance of <code>Label</code> with the specified
-  * text that is aligned to the left.
-  *
-  * @param text The text of the label.
-  *
-  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
-  */
-public
-Label(String text)
-{
-  this(text, LEFT);
-}
-
-/*************************************************************************/
-
-/**
-  * Initializes a new instance of <code>Label</code> with the specified
-  * text and alignment.
-  *
-  * @param text The text of the label.
-  * @param alignment The desired alignment for the text in this label,
-  * which must be one of <code>LEFT</code>, <code>CENTER</code>, or
-  * <code>RIGHT</code>.
-  *
-  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
-  */
-public
-Label(String text, int alignment)
-{
-  setAlignment (alignment);
-  setText (text);
-
-  if (GraphicsEnvironment.isHeadless())
-    throw new HeadlessException ();
-}
-
-/*************************************************************************/
-
-/*
- * Instance Variables
- */
-
-/**
-  * Returns the constant indicating the alignment of the text in this
-  * label.  The value returned will be one of the alignment constants
-  * from this class.
-  *
-  * @return The alignment of the text in the label.
-  */
-public int
-getAlignment()
-{
-  return(alignment);
-}
-
-/*************************************************************************/
-
-/**
-  * Sets the text alignment of this label to the specified value.
-  *
-  * @param alignment The desired alignment for the text in this label,
-  * which must be one of <code>LEFT</code>, <code>CENTER</code>, or
-  * <code>RIGHT</code>.
-  */
-public synchronized void
-setAlignment(int alignment)
-{
-  if (alignment != CENTER && alignment != LEFT && alignment != RIGHT)
-    throw new IllegalArgumentException ("invalid alignment: " + alignment);
-  this.alignment = alignment;
-  if (peer != null)
-    {
-      LabelPeer lp = (LabelPeer) peer;
-      lp.setAlignment (alignment);
-    }
-}
-
-/*************************************************************************/
-
-/**
-  * Returns the text displayed in this label.
-  *
-  * @return The text for this label.
-  */
-public String
-getText()
-{
-  return(text);
-}
-
-/*************************************************************************/
-
-/**
-  * Sets the text in this label to the specified value.
-  *
-  * @param text The new text for this label.
-  */
-public synchronized void
-setText(String text)
-{
-  if ((this.text == null && text != null)
-      || (this.text != null && ! this.text.equals(text)))
-    {
-      this.text = text;
-
-      if (peer != null)
-	{
-	  LabelPeer lp = (LabelPeer) peer;
-	  lp.setText (text);
-	}
-      invalidate();
-    }
-}
-
-/*************************************************************************/
-
-/**
-  * Notifies this label that it has been added to a container, causing
-  * the peer to be created.  This method is called internally by the AWT
-  * system.
-  */
-public void
-addNotify()
-{
-  if (peer == null)
-    peer = getToolkit ().createLabel (this);
-  super.addNotify ();
-}
-
-/*************************************************************************/
-
-/**
-  * Returns a parameter string useful for debugging.
-  *
-  * @return A debugging string.
-  */
-protected String
-paramString()
-{
-  return ("text=" + getText() + ",alignment=" +
-	  getAlignment() + "," + super.paramString());
-}
-
-/**
- * This class provides accessibility support for the label.
- */
-protected class AccessibleAWTLabel
-  extends AccessibleAWTComponent
-{
   /**
-   * For compatability with Sun's JDK 1.4.2 rev. 5
+   * Alignment constant aligning the text to the left of its window.
    */
-  private static final long serialVersionUID = -3568967560160480438L;
+  public static final int LEFT = 0;
 
   /**
-   * Constructor for the accessible label.
+   * Alignment constant aligning the text in the center of its window.
    */
-  public AccessibleAWTLabel()
-  {
-  }
+  public static final int CENTER = 1;
 
   /**
-   * Returns the accessible name for the label.  This is
-   * the text used in the label.
+   * Alignment constant aligning the text to the right of its window.
+   */
+  public static final int RIGHT = 2;
+
+  // Serialization version constant:
+  private static final long serialVersionUID = 3094126758329070636L;
+
+  /**
+   * @serial Indicates the alignment of the text within this label's window.
+   * This is one of the constants in this class.  The default value is 
+   * <code>LEFT</code>.
+   */
+  private int alignment;
+
+  /**
+   * @serial The text displayed in the label
+   */
+  private String text;
+
+  /**
+   * Initializes a new instance of <code>Label</code> with no text.
    *
-   * @return a <code>String</code> containing the accessible
-   *         name for this label.
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
    */
-  public String getAccessibleName()
+  public Label()
   {
-    return getText();
+    this("", LEFT);
   }
 
   /**
-   * Returns the accessible role for the label.
+   * Initializes a new instance of <code>Label</code> with the specified
+   * text that is aligned to the left.
    *
-   * @return an instance of <code>AccessibleRole</code>, describing
-   *         the role of the label.
+   * @param text The text of the label.
+   *
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
    */
-  public AccessibleRole getAccessibleRole()
+  public Label(String text)
   {
-    return AccessibleRole.LABEL;
+    this(text, LEFT);
+  }
+
+  /**
+   * Initializes a new instance of <code>Label</code> with the specified
+   * text and alignment.
+   *
+   * @param text The text of the label.
+   * @param alignment The desired alignment for the text in this label,
+   * which must be one of <code>LEFT</code>, <code>CENTER</code>, or
+   * <code>RIGHT</code>.
+   *
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   */
+  public Label(String text, int alignment)
+  {
+    setAlignment(alignment);
+    setText(text);
+
+    if (GraphicsEnvironment.isHeadless())
+      throw new HeadlessException();
+  }
+
+  /**
+   * Returns the constant indicating the alignment of the text in this
+   * label.  The value returned will be one of the alignment constants
+   * from this class.
+   *
+   * @return The alignment of the text in the label.
+   */
+  public int getAlignment()
+  {
+    return(alignment);
+  }
+
+  /**
+   * Sets the text alignment of this label to the specified value.
+   *
+   * @param alignment The desired alignment for the text in this label,
+   * which must be one of <code>LEFT</code>, <code>CENTER</code>, or
+   * <code>RIGHT</code>.
+   */
+  public synchronized void setAlignment(int alignment)
+  {
+    if (alignment != CENTER && alignment != LEFT && alignment != RIGHT)
+      throw new IllegalArgumentException("invalid alignment: " + alignment);
+    this.alignment = alignment;
+    if (peer != null)
+      {
+        LabelPeer lp = (LabelPeer) peer;
+        lp.setAlignment(alignment);
+      }
+  }
+
+  /**
+   * Returns the text displayed in this label.
+   *
+   * @return The text for this label.
+   */
+  public String getText()
+  {
+    return text;
+  }
+
+  /**
+   * Sets the text in this label to the specified value.
+   *
+   * @param text The new text for this label.
+   */
+  public synchronized void setText(String text)
+  {
+    if ((this.text == null && text != null)
+        || (this.text != null && ! this.text.equals(text)))
+      {
+        this.text = text;
+
+        if (peer != null)
+         {
+           LabelPeer lp = (LabelPeer) peer;
+           lp.setText(text);
+         }
+       invalidate();
+      }
+  }
+
+  /**
+   * Notifies this label that it has been added to a container, causing
+   * the peer to be created.  This method is called internally by the AWT
+   * system.
+   */
+  public void addNotify()
+  {
+    if (peer == null)
+      peer = getToolkit().createLabel(this);
+    super.addNotify();
+  }
+
+  /**
+   * Returns a parameter string useful for debugging.
+   *
+   * @return A debugging string.
+   */
+  protected String paramString()
+  {
+    return ("text=" + getText() + ",alignment=" +
+  	  getAlignment() + "," + super.paramString());
+  }
+
+  /**
+   * This class provides accessibility support for the label.
+   */
+  protected class AccessibleAWTLabel
+    extends AccessibleAWTComponent
+  {
+    /**
+     * For compatability with Sun's JDK 1.4.2 rev. 5
+     */
+    private static final long serialVersionUID = -3568967560160480438L;
+
+    /**
+     * Constructor for the accessible label.
+     */
+    public AccessibleAWTLabel()
+    {
+    }
+
+    /**
+     * Returns the accessible name for the label.  This is
+     * the text used in the label.
+     *
+     * @return a <code>String</code> containing the accessible
+     *         name for this label.
+     */
+    public String getAccessibleName()
+    {
+      return getText();
+    }
+
+    /**
+     * Returns the accessible role for the label.
+     *
+     * @return an instance of <code>AccessibleRole</code>, describing
+     *         the role of the label.
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.LABEL;
+    }
+
+  }
+
+  /**
+   * Gets the AccessibleContext associated with this <code>Label</code>.
+   * The context is created, if necessary.
+   *
+   * @return the associated context
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    /* Create the context if this is the first request */
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleAWTLabel();
+    return accessibleContext;
+  }
+
+  /**
+   * Generate a unique name for this button.
+   *
+   * @return A unique name for this button.
+   */
+  String generateName()
+  {
+    return "label" + getUniqueLong();
+  }
+  
+  /**
+   * The number used to generate the name returned by getName.
+   */
+  private static transient long nextLabelNumber;
+
+  private static synchronized long getUniqueLong()
+  {
+    return nextLabelNumber++;
   }
 
 }
-
-/**
- * Gets the AccessibleContext associated with this <code>Label</code>.
- * The context is created, if necessary.
- *
- * @return the associated context
- */
-public AccessibleContext getAccessibleContext()
-{
-  /* Create the context if this is the first request */
-  if (accessibleContext == null)
-    accessibleContext = new AccessibleAWTLabel();
-  return accessibleContext;
-}
-
-} // class Label
 

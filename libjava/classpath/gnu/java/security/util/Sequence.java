@@ -44,24 +44,18 @@ import java.util.LinkedList;
 /**
  * A monotonic sequence of integers in the finite field 2<sup>32</sup>.
  */
-public final class Sequence extends AbstractList
+public final class Sequence
+    extends AbstractList
 {
-
-  // Field.
-  // ------------------------------------------------------------------------
-
   private final Integer[] sequence;
 
-  // Constructor.
-  // ------------------------------------------------------------------------
-
   /**
-   * Create a sequence of integers from 0 to <i>end</i>, with an increment
-   * of 1. If <i>end</i> is less than 0, then the sequence will wrap around
-   * through all positive integers then negative integers until the end
-   * value is reached. Naturally, this will result in an enormous object,
-   * so don't do this.
-   *
+   * Create a sequence of integers from 0 to <i>end</i>, with an increment of
+   * 1. If <i>end</i> is less than 0, then the sequence will wrap around
+   * through all positive integers then negative integers until the end value is
+   * reached. Naturally, this will result in an enormous object, so don't do
+   * this.
+   * 
    * @param end The ending value.
    */
   public Sequence(int end)
@@ -71,10 +65,10 @@ public final class Sequence extends AbstractList
 
   /**
    * Create a sequence of integers from <i>start</i> to <i>end</i>, with an
-   * increment of 1. If <i>end</i> is less than <i>start</i>, then the sequence
-   * will wrap around until the end value is reached. Naturally, this will
-   * result in an enormous object, so don't do this.
-   *
+   * increment of 1. If <i>end</i> is less than <i>start</i>, then the
+   * sequence will wrap around until the end value is reached. Naturally, this
+   * will result in an enormous object, so don't do this.
+   * 
    * @param start The starting value.
    * @param end The ending value.
    */
@@ -88,13 +82,13 @@ public final class Sequence extends AbstractList
    * increment of <i>span</i>. If <i>end</i> is less than <i>start</i>, then
    * the sequence will wrap around until the end value is reached. Naturally,
    * this will result in an enormous object, so don't do this.
-   *
-   * <p><i>span</i> can be negative, resulting in a decresing sequence.
-   *
-   * <p>If <i>span</i> is 0, then the sequence will contain {<i>start</i>,
+   * <p>
+   * <i>span</i> can be negative, resulting in a decresing sequence.
+   * <p>
+   * If <i>span</i> is 0, then the sequence will contain {<i>start</i>,
    * <i>end</i>} if <i>start</i> != <i>end</i>, or just the singleton
    * <i>start</i> if <i>start</i> == <i>end</i>.
-   *
+   * 
    * @param start The starting value.
    * @param end The ending value.
    * @param span The increment value.
@@ -104,36 +98,26 @@ public final class Sequence extends AbstractList
     if (span == 0)
       {
         if (start != end)
-          {
-            sequence = new Integer[] { new Integer(start), new Integer(end) };
-          }
+          sequence = new Integer[] { Integer.valueOf(start),
+                                     Integer.valueOf(end) };
         else
-          {
-            sequence = new Integer[] { new Integer(start) };
-          }
+          sequence = new Integer[] { Integer.valueOf(start) };
       }
     else
       {
         LinkedList l = new LinkedList();
         for (int i = start; i != end; i += span)
-          {
-            l.add(new Integer(i));
-          }
-        l.add(new Integer(end));
+          l.add(Integer.valueOf(i));
+
+        l.add(Integer.valueOf(end));
         sequence = (Integer[]) l.toArray(new Integer[l.size()]);
       }
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   public Object get(int index)
   {
     if (index < 0 || index >= size())
-      {
-        throw new IndexOutOfBoundsException("index=" + index + ", size="
-                                            + size());
-      }
+      throw new IndexOutOfBoundsException("index=" + index + ", size=" + size());
     return sequence[index];
   }
 

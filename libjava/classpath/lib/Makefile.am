@@ -8,11 +8,11 @@ sinclude $(JAVA_DEPEND)
 ## GCJ LOCAL: prune .svn directories
 propertydirs :=  $(shell cd $(top_srcdir)/resource && $(FIND) gnu java javax org META-INF -type d ! -name CVS -print | fgrep -v .svn)
 propertyfiles :=  $(shell cd $(top_srcdir)/resource && $(FIND) gnu java javax org -name \*\.properties -print)
-metafiles :=  $(shell cd $(top_srcdir)/resource && $(FIND) META-INF -name CVS -prune -o -type f -print | fgrep -v .svn)
+metafiles :=  $(shell cd $(top_srcdir)/resource && $(FIND) META-INF -name CVS -prune -o -name \*\.in -prune -o -type f -print | fgrep -v .svn)
 ## END GCJ LOCAL
 iconfiles :=  $(shell cd $(top_srcdir) && $(FIND) gnu/javax/swing/plaf/gtk/icons -name *.png -type f -print)
 
-compile_classpath = $(vm_classes):$(top_srcdir):$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax:$(top_srcdir)/external/relaxngDatatype:.:$(USER_CLASSLIB)
+compile_classpath = $(vm_classes):$(top_srcdir):$(top_srcdir)/external/w3c_dom:$(top_srcdir)/external/sax:$(top_srcdir)/external/relaxngDatatype:.:$(USER_CLASSLIB):$(PATH_TO_ESCHER)
 
 # handling source to bytecode compiler programs like gcj, jikes  and kjc
 if FOUND_GCJ
@@ -46,9 +46,9 @@ COLLECTIONS = collections.jar
 collections.jar: mkcollections.pl
 	./mkcollections.pl $(top_srcdir)
 if FOUND_GCJ
-	$(GCJ) -C `$(FIND) $(COLLECTIONS_PREFIX) -name '*' -type f -print`
+	$(GCJ) -C `$(FIND) $(COLLECTIONS_PREFIX) -name '*.java' -type f -print`
 else
-	$(JAVAC) `$(FIND) $(COLLECTIONS_PREFIX) -name '*' -type f -print`
+	$(JAVAC) `$(FIND) $(COLLECTIONS_PREFIX) -name '*.java' -type f -print`
 endif
 	if test "$(FASTJAR)" != ""; then \
 	  $(FASTJAR) cf $@ $(COLLECTIONS_PREFIX); \
@@ -77,6 +77,7 @@ install-data-local: genclasses compile-classes
 	cp -R java $(DESTDIR)$(pkgdatadir)
 	cp -R javax $(DESTDIR)$(pkgdatadir)
 	cp -R org $(DESTDIR)$(pkgdatadir)
+	cp -R sun $(DESTDIR)$(pkgdatadir)
 	cp -R META-INF $(DESTDIR)$(pkgdatadir)
 
 # FIXME - should mimic doc/api/Makefile.am instead...
@@ -85,6 +86,7 @@ uninstall-local:
 	rm -rf $(DESTDIR)$(pkgdatadir)/java
 	rm -rf $(DESTDIR)$(pkgdatadir)/javax
 	rm -rf $(DESTDIR)$(pkgdatadir)/org
+	rm -rf $(DESTDIR)$(pkgdatadir)/sun
 	rm -rf $(DESTDIR)$(pkgdatadir)/META-INF
 
 endif # INSTALL_CLASS_FILES
@@ -99,8 +101,8 @@ glibj.zip:
 else
 
 glibj.zip: classes compile-classes resources
-	if test "$(ZIP)" != ""; then $(ZIP) -r -D glibj.zip gnu java javax org META-INF > /dev/null; fi
-	if test "$(FASTJAR)" != ""; then $(FASTJAR) cf glibj.zip gnu java javax org META-INF; fi
+	if test "$(ZIP)" != ""; then $(ZIP) -r -D glibj.zip gnu java javax org sun META-INF > /dev/null; fi
+	if test "$(FASTJAR)" != ""; then $(FASTJAR) cf glibj.zip gnu java javax org sun META-INF; fi
 
 endif # USE_PREBUILT_GLIBJ_ZIP
 
@@ -167,11 +169,12 @@ compile-classes: classes $(JAVA_SRCS) Makefile
 	touch compile-classes
 endif
 
-EXTRA_DIST = standard.omit mkcollections.pl.in Makefile.gcj split-for-gcj.sh
+EXTRA_DIST = standard.omit.in mkcollections.pl.in Makefile.gcj split-for-gcj.sh
 CLEANFILES = compile-classes resources classes \
-	glibj.zip classes.1 classes.2 \
+	glibj.zip classes.1 classes.2 Makefile.deps \
 	$(top_builddir)/gnu/java/locale/LocaleData.java \
 	$(JAVA_DEPEND)
+DISTCLEANFILES = standard.omit
 
 clean-local:
 	-rm -rf gnu
@@ -179,16 +182,17 @@ clean-local:
 	-rm -rf javax
 	-rm -rf org
 	-rm -rf com
+	-rm -rf sun
 	-rm -rf META-INF
 	-rm -rf lists
-	-rm -f Makefile.deps
 
 dist-hook:
 	mkdir -p $(distdir)
-	cp -pdfR $(top_srcdir)/gnu $(top_srcdir)/java $(top_srcdir)/javax $(top_srcdir)/org $(top_srcdir)/vm $(top_srcdir)/resource $(distdir)/..
+	cp -pdfR $(top_srcdir)/gnu $(top_srcdir)/java $(top_srcdir)/javax $(top_srcdir)/org $(top_srcdir)/sun $(top_srcdir)/vm $(top_srcdir)/resource $(distdir)/..
 # Delete not wanted files.
-	$(FIND) $(distdir)/../gnu $(distdir)/../java $(distdir)/../javax $(distdir)/../org $(distdir)/../vm $(distdir)/../resource -name CVS -print | xargs rm -fr
-	$(FIND) $(distdir)/../gnu $(distdir)/../java $(distdir)/../javax $(distdir)/../org $(distdir)/../vm $(distdir)/../resource -name .cvsignore -print | xargs rm -f
-	$(FIND) $(distdir)/../gnu $(distdir)/../java $(distdir)/../javax $(distdir)/../org $(distdir)/../vm -name class-dependencies.conf -print | xargs rm -f
+	$(FIND) $(distdir)/../gnu $(distdir)/../java $(distdir)/../javax $(distdir)/../org $(distdir)/../sun $(distdir)/../vm $(distdir)/../resource -name CVS -print | xargs rm -fr
+	$(FIND) $(distdir)/../gnu $(distdir)/../java $(distdir)/../javax $(distdir)/../org $(distdir)/../sun $(distdir)/../vm $(distdir)/../resource -name .cvsignore -print | xargs rm -f
+	$(FIND) $(distdir)/../gnu $(distdir)/../java $(distdir)/../javax $(distdir)/../org $(distdir)/../sun $(distdir)/../vm -name class-dependencies.conf -print | xargs rm -f
 	rm -f $(distdir)/../gnu/classpath/Configuration.java
+	rm -f $(distdir)/../gnu/java/security/Configuration.java
 	rm -f $(distdir)/../gnu/java/locale/LocaleData.java

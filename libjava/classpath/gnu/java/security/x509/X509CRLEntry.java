@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.security.x509;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.OID;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * A single entry in a X.509 certificate revocation list.
@@ -63,20 +65,7 @@ import java.util.Set;
 class X509CRLEntry extends java.security.cert.X509CRLEntry
   implements GnuPKIExtension
 {
-
-  // Constants and fields.
-  // ------------------------------------------------------------------------
-
-  private static final boolean DEBUG = false;
-  private static void debug(String msg)
-  {
-    if (DEBUG)
-      {
-        System.err.print(">> X509CRLEntry: ");
-        System.err.println(msg);
-      }
-  }
-
+  private static final Logger log = Logger.getLogger(X509CRLEntry.class.getName());
   /** The DER encoded form of this CRL entry. */
   private byte[] encoded;
 
@@ -230,26 +219,29 @@ class X509CRLEntry extends java.security.cert.X509CRLEntry
   {
     // RevokedCertificate ::= SEQUENCE {
     DERValue entry = der.read();
-    debug("start CRL entry   len == " + entry.getLength());
+    if (Configuration.DEBUG)
+      log.fine("start CRL entry   len == " + entry.getLength());
     if (!entry.isConstructed())
       throw new IOException("malformed revokedCertificate");
     encoded = entry.getEncoded();
     int len = 0;
-
-    debug("encoded entry:\n" + Util.hexDump(encoded, ">>>> "));
+    if (Configuration.DEBUG)
+      log.fine("encoded entry:\n" + Util.hexDump(encoded, ">>>> "));
 
     //   userCertificate   CertificateSerialNumber,
     DERValue val = der.read();
     serialNo = (BigInteger) val.getValue();
     len += val.getEncodedLength();
-    debug("userCertificate == " + serialNo + "  current count == " + len);
+    if (Configuration.DEBUG)
+      log.fine("userCertificate == " + serialNo + "  current count == " + len);
 
     //   revocationDate   Time,
     val = der.read();
     revocationDate = (Date) val.getValue();
     len += val.getEncodedLength();
-    debug("revocationDate == " + revocationDate + "  current count == " + len);
-
+    if (Configuration.DEBUG)
+      log.fine("revocationDate == " + revocationDate + "  current count == "
+               + len);
     //   crlEntryExtensions   Extensions OPTIONAL
     //                          -- if present MUST be v2
     if (len < entry.getLength())
@@ -259,19 +251,22 @@ class X509CRLEntry extends java.security.cert.X509CRLEntry
         DERValue exts = der.read();
         if (!exts.isConstructed())
           throw new IOException("malformed Extensions");
-        debug("start Extensions  len == " + exts.getLength());
+        if (Configuration.DEBUG)
+          log.fine("start Extensions  len == " + exts.getLength());
         len = 0;
         while (len < exts.getLength())
           {
             val = der.read();
             if (!val.isConstructed())
               throw new IOException("malformed Extension");
-            debug("start Extension  len == " + val.getLength());
+            if (Configuration.DEBUG)
+              log.fine("start Extension  len == " + val.getLength());
             Extension e = new Extension(val.getEncoded());
             extensions.put(e.getOid(), e);
             der.skip(val.getLength());
             len += val.getEncodedLength();
-            debug("current count == " + len);
+            if (Configuration.DEBUG)
+              log.fine("current count == " + len);
           }
       }
   }

@@ -42,25 +42,13 @@ import gnu.java.security.Registry;
 
 /**
  * The implementation of the SHA1-based SecureRandom <i>Service Provider
- * Interface</i> (<b>SPI</b>) adapter.<p>
+ * Interface</i> (<b>SPI</b>) adapter.
  */
-public class Sha160RandomSpi extends SecureRandomAdapter
+public class Sha160RandomSpi
+    extends SecureRandomAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public Sha160RandomSpi()
   {
     super(Registry.SHA160_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

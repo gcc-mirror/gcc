@@ -43,6 +43,7 @@ import gnu.CORBA.typecodes.AliasTypeCode;
 import gnu.CORBA.typecodes.PrimitiveTypeCode;
 import gnu.CORBA.typecodes.StringTypeCode;
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -59,11 +60,6 @@ public abstract class NameValuePairHelper
    * 'IDL:omg.org/CORBA/NameValuePair:1.0'.
    */
   private static String _id = "IDL:omg.org/CORBA/NameValuePair:1.0";
-
-  /**
-   * The cached type code value.
-   */
-  private static TypeCode typeCode;
 
   /**
    * Extract the NameValuePair from the given {@link Any}.
@@ -115,21 +111,18 @@ public abstract class NameValuePairHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        StructMember[] members = new StructMember[ 2 ];
+    StructMember[] members = new StructMember[2];
 
-        TypeCode t_id =
-          new AliasTypeCode(new StringTypeCode(TCKind.tk_string), "", "id");
+    TypeCode t_id = new AliasTypeCode(new StringTypeCode(TCKind.tk_string), "",
+                                      "id");
 
-        members [ 0 ] = new StructMember("id", t_id, null);
+    members[0] = new StructMember("id", t_id, null);
 
-        members [ 1 ] =
-          new StructMember("value", new PrimitiveTypeCode(TCKind.tk_any), null);
+    members[1] = new StructMember("value",
+                                  new PrimitiveTypeCode(TCKind.tk_any), null);
 
-        typeCode = ORB.init().create_struct_tc(id(), "NameValuePair", members);
-      }
-    return typeCode;
+    return OrbRestricted.Singleton.create_struct_tc(id(), "NameValuePair",
+                                                    members);
   }
 
   /**

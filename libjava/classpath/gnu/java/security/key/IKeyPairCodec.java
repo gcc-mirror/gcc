@@ -44,16 +44,13 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 /**
- * <p>The visible methods of an object that knows how to encode and decode
+ * The visible methods of an object that knows how to encode and decode
  * cryptographic asymmetric keypairs. Codecs are useful for (a) externalising
  * public and private keys for storage and on-the-wire transmission, as well as
- * (b) re-creating their internal Java representation from external sources.</p>
+ * (b) re-creating their internal Java representation from external sources.
  */
 public interface IKeyPairCodec
 {
-  // Constants
-  // -------------------------------------------------------------------------
-
   /** Constant identifying the <i>Raw</i> encoding format. */
   int RAW_FORMAT = Registry.RAW_ENCODING_ID;
 
@@ -69,62 +66,59 @@ public interface IKeyPairCodec
    */
   int ASN1_FORMAT = Registry.ASN1_ENCODING_ID;
 
-  // Method(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the unique identifier (within this library) of the format used
-   * to externalise public and private keys.</p>
-   *
+   * Returns the unique identifier (within this library) of the format used to
+   * externalise public and private keys.
+   * 
    * @return the identifier of the format, the object supports.
    */
   int getFormatID();
 
   /**
-   * <p>Encodes an instance of a public key for storage or transmission purposes.</p>
-   *
+   * Encodes an instance of a public key for storage or transmission purposes.
+   * 
    * @param key the non-null key to encode.
    * @return a byte sequence representing the encoding of the designated key
-   * according to the format supported by this codec.
+   *         according to the format supported by this codec.
    * @exception IllegalArgumentException if the designated key is not supported
-   * by this codec.
+   *              by this codec.
    */
   byte[] encodePublicKey(PublicKey key);
 
   /**
-   * <p>Encodes an instance of a private key for storage or transmission purposes.</p>
-   *
+   * Encodes an instance of a private key for storage or transmission purposes.
+   * 
    * @param key the non-null key to encode.
    * @return a byte sequence representing the encoding of the designated key
-   * according to the format supported by this codec.
+   *         according to the format supported by this codec.
    * @exception IllegalArgumentException if the designated key is not supported
-   * by this codec.
+   *              by this codec.
    */
   byte[] encodePrivateKey(PrivateKey key);
 
   /**
-   * <p>Decodes an instance of an external public key into its native Java
-   * representation.</p>
-   *
+   * Decodes an instance of an external public key into its native Java
+   * representation.
+   * 
    * @param input the source of the externalised key to decode.
    * @return a concrete instance of a public key, reconstructed from the
-   * designated input.
+   *         designated input.
    * @exception IllegalArgumentException if the designated input does not
-   * contain a known representation of a public key for the format supported by
-   * the concrete codec.
+   *              contain a known representation of a public key for the format
+   *              supported by the concrete codec.
    */
   PublicKey decodePublicKey(byte[] input);
 
   /**
-   * <p>Decodes an instance of an external private key into its native Java
-   * representation.</p>
-   *
+   * Decodes an instance of an external private key into its native Java
+   * representation.
+   * 
    * @param input the source of the externalised key to decode.
    * @return a concrete instance of a private key, reconstructed from the
-   * designated input.
+   *         designated input.
    * @exception IllegalArgumentException if the designated input does not
-   * contain a known representation of a private key for the format supported
-   * by the concrete codec.
+   *              contain a known representation of a private key for the format
+   *              supported by the concrete codec.
    */
   PrivateKey decodePrivateKey(byte[] input);
 }

@@ -53,11 +53,6 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class IDLTypeHelper
 {
   /**
-   * The cached typecode value, computed once.
-   */
-  private static TypeCode typeCode;
-
-  /**
    * Insert the IDL type into the given Any.
    */
   public static void insert(Any a, IDLType that)
@@ -81,14 +76,8 @@ public abstract class IDLTypeHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        typeCode =
-          OrbRestricted.Singleton.create_interface_tc(IDLTypeHelper.id(),
-                                                       "IDLType"
-                                                      );
-      }
-    return typeCode;
+    return OrbRestricted.Singleton.create_interface_tc(IDLTypeHelper.id(),
+                                                       "IDLType");
   }
 
   /**

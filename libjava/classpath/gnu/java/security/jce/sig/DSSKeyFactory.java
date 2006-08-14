@@ -61,10 +61,11 @@ import java.security.spec.X509EncodedKeySpec;
 
 /**
  * DSA key factory.
- *
+ * 
  * @author Casey Marshall (rsdio@metastatic.org)
  */
-public class DSSKeyFactory extends KeyFactorySpi
+public class DSSKeyFactory
+    extends KeyFactorySpi
 {
   // implicit 0-arguments constructor
 
@@ -80,7 +81,6 @@ public class DSSKeyFactory extends KeyFactorySpi
         BigInteger y = spec.getY();
         return new DSSPublicKey(Registry.X509_ENCODING_ID, p, q, g, y);
       }
-
     if (keySpec instanceof X509EncodedKeySpec)
       {
         X509EncodedKeySpec spec = (X509EncodedKeySpec) keySpec;
@@ -93,12 +93,9 @@ public class DSSKeyFactory extends KeyFactorySpi
           }
         catch (RuntimeException x)
           {
-            InvalidKeySpecException y = new InvalidKeySpecException();
-            y.initCause(x);
-            throw y;
+            throw new InvalidKeySpecException(x.getMessage(), x);
           }
       }
-
     throw new InvalidKeySpecException("Unsupported (public) key specification");
   }
 
@@ -114,7 +111,6 @@ public class DSSKeyFactory extends KeyFactorySpi
         BigInteger x = spec.getX();
         return new DSSPrivateKey(Registry.PKCS8_ENCODING_ID, p, q, g, x);
       }
-
     if (keySpec instanceof PKCS8EncodedKeySpec)
       {
         PKCS8EncodedKeySpec spec = (PKCS8EncodedKeySpec) keySpec;
@@ -127,12 +123,9 @@ public class DSSKeyFactory extends KeyFactorySpi
           }
         catch (RuntimeException x)
           {
-            InvalidKeySpecException y = new InvalidKeySpecException();
-            y.initCause(x);
-            throw y;
+            throw new InvalidKeySpecException(x.getMessage(), x);
           }
       }
-
     throw new InvalidKeySpecException("Unsupported (private) key specification");
   }
 
@@ -150,7 +143,6 @@ public class DSSKeyFactory extends KeyFactorySpi
             BigInteger y = dsaKey.getY();
             return new DSAPublicKeySpec(y, p, q, g);
           }
-
         if (keySpec.isAssignableFrom(X509EncodedKeySpec.class))
           {
             if (key instanceof DSSPublicKey)
@@ -159,19 +151,16 @@ public class DSSKeyFactory extends KeyFactorySpi
                 byte[] encoded = dssKey.getEncoded(Registry.X509_ENCODING_ID);
                 return new X509EncodedKeySpec(encoded);
               }
-
             if (Registry.X509_ENCODING_SORT_NAME.equalsIgnoreCase(key.getFormat()))
               {
                 byte[] encoded = key.getEncoded();
                 return new X509EncodedKeySpec(encoded);
               }
-
-            throw new InvalidKeySpecException("Wrong key type or unsupported (public) key specification");
+            throw new InvalidKeySpecException(
+                "Wrong key type or unsupported (public) key specification");
           }
-
         throw new InvalidKeySpecException("Unsupported (public) key specification");
       }
-
     if (key instanceof DSAPrivateKey)
       {
         if (keySpec.isAssignableFrom(DSAPrivateKeySpec.class))
@@ -183,7 +172,6 @@ public class DSSKeyFactory extends KeyFactorySpi
             BigInteger x = dsaKey.getX();
             return new DSAPrivateKeySpec(x, p, q, g);
           }
-
         if (keySpec.isAssignableFrom(PKCS8EncodedKeySpec.class))
           {
             if (key instanceof DSSPrivateKey)
@@ -192,19 +180,16 @@ public class DSSKeyFactory extends KeyFactorySpi
                 byte[] encoded = dssKey.getEncoded(Registry.PKCS8_ENCODING_ID);
                 return new PKCS8EncodedKeySpec(encoded);
               }
-
             if (Registry.PKCS8_ENCODING_SHORT_NAME.equalsIgnoreCase(key.getFormat()))
               {
                 byte[] encoded = key.getEncoded();
                 return new PKCS8EncodedKeySpec(encoded);
               }
-
-            throw new InvalidKeySpecException("Wrong key type or unsupported (private) key specification");
+            throw new InvalidKeySpecException(
+                "Wrong key type or unsupported (private) key specification");
           }
-
         throw new InvalidKeySpecException("Unsupported (private) key specification");
       }
-
     throw new InvalidKeySpecException("Wrong key type or unsupported key specification");
   }
 
@@ -222,7 +207,6 @@ public class DSSKeyFactory extends KeyFactorySpi
         BigInteger y = dsaKey.getY();
         return new DSSPublicKey(Registry.X509_ENCODING_ID, p, q, g, y);
       }
-
     if (key instanceof DSAPrivateKey)
       {
         DSAPrivateKey dsaKey = (DSAPrivateKey) key;
@@ -232,7 +216,6 @@ public class DSSKeyFactory extends KeyFactorySpi
         BigInteger x = dsaKey.getX();
         return new DSSPrivateKey(Registry.PKCS8_ENCODING_ID, p, q, g, x);
       }
-
     throw new InvalidKeyException("Wrong key type");
   }
 }

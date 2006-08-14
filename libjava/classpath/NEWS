@@ -1,3 +1,101 @@
+New in release 0.92 (Aug 9, 2006)
+
+* libjawtgnu.so has been renamed libjawt.so for binary compatibility.
+  libjawt.so should be installed in a VM-specific directory rather
+  than directly in /usr/lib.  Proprietary VMs put their libjawt.so
+  implementations in VM-specific directories but search /usr/lib first.
+  If GNU Classpath's libjawt.so is installed in /usr/lib it will create
+  problems for people who use a proprietary VM to run AWT Native
+  Interface applications.
+* The GdkGraphics2D backend has been made the default.  There is no
+  longer an explicit dependency on Cairo, the --enable-gtk-cairo
+  configure option is gone, and GTK 2.8 or higher is now required to
+  build the GTK peers.
+* A Mozilla plugin, 'gcjwebplugin', is now included.  It introduces a
+  dependency on the Mozilla plugin support headers and libraries.
+* New java implementations of png and gif imageio readers and writers.
+* A tools.texinfo document has been created and now includes
+  documentation about:
+  * appletviewer
+  * gcjwebplugin
+  * jarsigner
+  * keytool
+* Several new tools are now included:
+  * appletviewer
+  * jar
+  * native2ascii
+  * serialver
+  * keytool
+  * jarsigner
+  A new configure option --enable-tool-wrappers causes wrapper
+  binaries to be built for VMs that support the JNI Invocation API.
+* javax.sound.midi providers have been added to read and
+  write standard MIDI files.
+* A javax.sound.sampled .au and .wav file readers have been added.
+* New Java Virtual Machine Tool Interface header, jvmti.h. 
+* AWT peers for X Windows based on Escher (a pure java X protocol
+  implementation) have been added. So far it supports AWT 1.1 style
+  Graphics, image loading via ImageIO (PNG, GIF and BMP images in this
+  release), top level components as well as mouse and keyboard input.
+  It is capable of running many Swing applications. Graphics2D and
+  AWT widgets are not yet supported with this peer set.
+* GConf based util.peers backend (see the --enable-gconf-peer and
+  --enable-default-preferences-peer configure options).
+* Support for batch importing trusted certificates for use with ssl
+  connections (see script/import-cacerts.sh).
+* NIO scatter-gather channel support.
+
+Runtime interface changes:
+
+* A new class, VMURLConnection, is used to implement
+  URLConnection.guessContentTypeFromStream.  The reference
+  implementation uses libmagic (and falls back to doing nothing if
+  libmagic is not available).
+* The method gnu.java.io.PlatformHelper.toCanonicalForm() has been
+  replaced with a JNI implementation of VMFile.toCanonicalForm() for
+  GNU/Posix systems.
+* A new class, VMRuntimeMXBeanImpl, is used to implement
+  the low-level support of the runtime management bean.
+  VMs should use it to supply the input arguments and start
+  time of the VM.  In addition, one of sun.boot.class.path
+  or java.boot.class.path should be defined by the VM to
+  support the optional boot class path access functionality.
+* The Unsafe class was moved back to the place expected by the JSR 166
+  reference implementation.  We've also added a couple other new VM
+  classes to support the JSR 166 code -- sun.reflect.Reflection and
+  sun.reflect.misc.ReflectUtil.
+* Another new class, VMClassLoadingMXBeanImpl, is used to implement
+  the low-level support of the class loading management bean.
+  VMs need to supply it with information about how many classes
+  are currently loaded, how many have been unloaded and whether
+  verbose class loading output is on or off.  Provision should also
+  be made for the latter to be toggled at runtime.
+* VMThreadMXBeanImpl is used to implement the low-level support
+  of the thread management bean.  Providing this interface requires
+  providing a fair amount of information about threads, including
+  optional time and contention monitoring, and instances of the
+  new ThreadInfo class in java.lang.management.  getState() has also
+  been added to the VMThread interface; this is required by the bean
+  as well as java.lang.Thread.
+* VMMemoryMXBeanImpl is used to implement the low-level support
+  of the memory management bean.  Providing this interface requires
+  providing information about the levels of heap and non-heap memory,
+  and the number of objects eligible for garbage collection.
+* VMCompilationMXBeanImpl is used to allow for optional compilation
+  time support for Just-In-Time compilers.
+* VMMemoryPoolMXBeanImpl is used to implement the low-level support
+  of the memory pool beans.  Providing this interface requires
+  providing memory usage statistics for each supported bean.
+* VMManagementFactory provides the names of the memory pools,
+  memory managers and garbage collectors maintained by the virtual
+  machine.  These are used to create the beans by the ManagementFactory.
+* VMMemoryManagerMXBeanImpl and VMGarbageCollectorMXBeanImpl provide
+  low-level support for memory managers (including the specific subclass
+  of garbage collecting memory managers).  The interfaces for these
+  require no more than enumerating the number of collections and the
+  time spent (for garbage collectors) and a relationship to the memory
+  pools (for all), along with a validity check.
+
 New in release 0.91 (May 15, 2006)
 
 * Experimental activation (java.rmi.activation) support, including RMI

@@ -39,7 +39,6 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -47,16 +46,14 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Toolkit;
-import java.awt.Point;
-import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
-import java.awt.image.ImagingOpException;
 import java.awt.image.RenderedImage;
+import gnu.classpath.Pointer;
 
 /**
  * ComponentGraphics - context for drawing directly to a component,
@@ -66,6 +63,8 @@ import java.awt.image.RenderedImage;
  */
 public class ComponentGraphics extends CairoGraphics2D
 {
+  private static final boolean hasXRenderExtension = hasXRender();
+
   private GtkComponentPeer component;
   protected long cairo_t;
 
@@ -164,13 +163,27 @@ public class ComponentGraphics extends CairoGraphics2D
    */
   public static native boolean hasXRender();
 
+  /**
+   * This is a utility method (used by GtkComponentPeer) for grabbing the
+   * image of a component.
+   */
+  private static native Pointer nativeGrab(GtkComponentPeer component);
 
   private native void copyAreaNative(GtkComponentPeer component, int x, int y, 
 				     int width, int height, int dx, int dy);
 
   private native void drawVolatile(GtkComponentPeer component,
 				   long vimg, int x, int y, 
-				   int width, int height);
+				   int width, int height, int cx, int cy,
+                                   int cw, int ch);
+
+  /**
+   * Not really related (moveme?). Utility method used by GtkComponent.
+   */
+  public static GtkImage grab( GtkComponentPeer component )
+  {
+    return new GtkImage( nativeGrab( component ) );
+  }
 
   /**
    * Returns a Graphics2D object for a component, either an instance of this 
@@ -178,7 +191,7 @@ public class ComponentGraphics extends CairoGraphics2D
    */
   public static Graphics2D getComponentGraphics(GtkComponentPeer component)
   {
-    if( hasXRender() )
+    if( hasXRenderExtension )
       return new ComponentGraphics(component);
 
     Rectangle r = component.awtComponent.getBounds();
@@ -285,21 +298,24 @@ public class ComponentGraphics extends CairoGraphics2D
     if (img instanceof GtkVolatileImage)
       {
         GtkVolatileImage vimg = (GtkVolatileImage) img;
-	int type = transform.getType();
-	if (type == AffineTransform.TYPE_IDENTITY)
-	  {
-	    drawVolatile(component, vimg.nativePointer,
-			 x, y, vimg.width, vimg.height);
-	    return true;
-	  }
-	  else if (type == AffineTransform.TYPE_TRANSLATION)
-	  {
-	    x += transform.getTranslateX();
-	    y += transform.getTranslateY();
-	    drawVolatile(component, vimg.nativePointer,
-			 x, y, vimg.width, vimg.height);
-	    return true;
-	  }
+        int type = transform.getType();
+        if ((type == AffineTransform.TYPE_IDENTITY
+             || type == AffineTransform.TYPE_TRANSLATION)
+             && (clip == null || clip instanceof Rectangle2D))
+          {
+            Rectangle2D r = (Rectangle2D) clip;
+            if (r == null)
+              r = getRealBounds();
+            x += transform.getTranslateX();
+            y += transform.getTranslateY();
+            drawVolatile(component, vimg.nativePointer,
+                         x, y, vimg.width, vimg.height,
+                         (int) (r.getX() + transform.getTranslateX()),
+                         (int) (r.getY() + transform.getTranslateY()),
+                         (int) r.getWidth(),
+                         (int) r.getHeight());
+            return true;
+          }
 	else
 	  return super.drawImage(vimg.getSnapshot(), x, y, observer);
       }
@@ -323,24 +339,28 @@ public class ComponentGraphics extends CairoGraphics2D
     // If it is a GtkVolatileImage with an "easy" transform then
     // draw directly. Always pass a BufferedImage to super to avoid
     // deadlock (see Note in CairoGraphics.drawImage()).
-    if (img instanceof GtkVolatileImage)
+    if (img instanceof GtkVolatileImage
+        && (clip == null || clip instanceof Rectangle2D))
       {
         GtkVolatileImage vimg = (GtkVolatileImage) img;
-	int type = transform.getType();
-	if (type == AffineTransform.TYPE_IDENTITY)
-	  {
-	    drawVolatile(component, vimg.nativePointer,
-			 x, y, width, height);
-	    return true;
-	  }
-	  else if (type == AffineTransform.TYPE_TRANSLATION)
-	  {
-	    x += transform.getTranslateX();
-	    y += transform.getTranslateY();
-	    drawVolatile(component, vimg.nativePointer,
-			 x, y, width, height);
-	    return true;
-	  }
+        int type = transform.getType();
+        if ((type == AffineTransform.TYPE_IDENTITY
+             || type == AffineTransform.TYPE_TRANSLATION)
+             && (clip == null || clip instanceof Rectangle2D))
+          {
+            Rectangle2D r = (Rectangle2D) clip;
+            if (r == null)
+              r = getRealBounds();
+            x += transform.getTranslateX();
+            y += transform.getTranslateY();
+            drawVolatile(component, vimg.nativePointer,
+                         x, y, width, height,
+                         (int) (r.getX() + transform.getTranslateX()),
+                         (int) (r.getY() + transform.getTranslateY()),
+                         (int) r.getWidth(),
+                         (int) r.getHeight());
+            return true;
+          }
 	else
 	  return super.drawImage(vimg.getSnapshot(), x, y,
 				 width, height, observer);
@@ -357,6 +377,58 @@ public class ComponentGraphics extends CairoGraphics2D
         bimg = (BufferedImage) Toolkit.getDefaultToolkit().createImage(source);
       }
     return super.drawImage(bimg, x, y, width, height, observer);
+  }
+
+  public void drawLine(int x1, int y1, int x2, int y2)
+  {
+    lock();
+    try
+      {
+        super.drawLine(x1, y1, x2, y2);
+      }
+    finally
+      {
+        unlock();
+      }
+  }
+
+  public void drawRect(int x, int y, int width, int height)
+  {
+    lock();
+    try
+      {
+        super.drawRect(x, y, width, height);
+      }
+    finally
+      {
+        unlock();
+      }
+  }
+
+  public void fillRect(int x, int y, int width, int height)
+  {
+    lock();
+    try
+      {
+        super.fillRect(x, y, width, height);
+      }
+    finally
+      {
+        unlock();
+      }
+  }
+
+  public void setClip(Shape s)
+  {
+    lock();
+    try
+      {
+	super.setClip(s);
+      }
+    finally
+      {
+	unlock();
+      }
   }
 
 }

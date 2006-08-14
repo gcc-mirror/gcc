@@ -1,5 +1,5 @@
 /* PlatformHelper.java -- Isolate OS-specific IO helper methods and variables
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -94,98 +94,6 @@ public class PlatformHelper
   {
     int len = path.length();
     return len > 0 && beginWithRootPathPrefix(path) == len;
-  }
-
-  /**
-   * This routine canonicalizes input param "path" to formal path representation
-   *  for current platform, including interpreting ".." and "." .
-   */
-  public static final String toCanonicalForm(String path)
-  {
-    /*??
-    if(path.indexOf('.') < 0 && path.indexOf("..") < 0)
-        return path; 
-    */
-    String tmppath = path.replace('/', separatorChar);
-    StringBuffer canonpath;
-
-    int i;
-
-    if ((i = beginWithRootPathPrefix(tmppath)) == 0 )
-      return path;
-    
-    /* The original 
-           "canonpath = new StringBuffer(tmppath.substring(0, i))"
-       isn't very efficient because StringBuffer's 
-       ensureCapacity_unsynchronized will fail definitely each time 
-       and will enlarge buffer and copy contents.       .
-    */
-    canonpath = new StringBuffer(INITIAL_MAX_PATH);
-    canonpath.append(tmppath.substring(0, i));
-    tmppath = tmppath.substring(i);
-    // pathdepth==0 indicates there're only root path in the buffer
-    int pathdepth = 0;
-    
-    StringTokenizer st = new StringTokenizer(tmppath, separator);
-    
-    // Traverse each element of the path, handling "." and ".."
-    // Should handle "~" too?
-    if (st.hasMoreTokens())
-      do
-        {
-          String s = st.nextToken();
-        
-          // Handle "." or an empty element.  
-          if (s.equals(".") || s.equals(""))
-            continue;
-        
-          // Handle ".." by deleting the last element from the path
-          if (s.equals(".."))
-            {
-              if (pathdepth == 0)
-                continue;
-
-              // Strip of trailing separator
-              canonpath.setLength(canonpath.length() - 1/*separator.length()*/);
-              String tmpstr = canonpath.toString();
-              int idx = tmpstr.lastIndexOf(separator); 
-
-              if ((idx == -1) || ((idx + 1/*separator.length()*/) > tmpstr.length()))
-                //throw new IOException("Can't happen error"); 
-                return path; // Shouldn't happen 
-        
-              canonpath.setLength(idx + 1/*separator.length()*/);
-              pathdepth--;
-              continue;
-            }
-        
-          canonpath.append(s);
-          pathdepth++; //now it's more than root path
-
-          if (st.hasMoreTokens())
-            canonpath.append(separator);
-        }
-      while (st.hasMoreTokens());
-    
-    if (endWithSeparator(path))
-      canonpath.append(separator);
-        
-    String tmpstr = canonpath.toString();
-    //if (pathdepth > 0 && endWithSeparator(tmpstr) )
-    //    tmpstr = tmpstr.substring(0, tmpstr.length() - 1/*separator.length()*/);
-    
-    return tmpstr;
-  }
-
-  /**
-   * This routine canonicalizes input param "path" to formal path representation
-   *  for current platform, and normalize all separators to "sepchar".
-   */
-  public static final String toCanonicalForm(String path, char sepchar)
-  {
-    String tmpstr = toCanonicalForm(path);
-    tmpstr = tmpstr.replace(separatorChar, sepchar);
-    return tmpstr;
   }
 
   /**

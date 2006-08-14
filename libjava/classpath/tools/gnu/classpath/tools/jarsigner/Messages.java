@@ -38,6 +38,8 @@
 
 package gnu.classpath.tools.jarsigner;
 
+import gnu.classpath.Configuration;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,8 +101,9 @@ class Messages
       }
     catch (IllegalArgumentException x)
       {
-        log.fine("Exception while rendering a message format keyed by ["
-                 + key + "]: " + mf.toPattern());
+        if (Configuration.DEBUG)
+          log.fine("Exception while rendering a message format keyed by ["
+                   + key + "]: " + mf.toPattern());
         return constructMessage(mf.toPattern(), args);
       }
   }

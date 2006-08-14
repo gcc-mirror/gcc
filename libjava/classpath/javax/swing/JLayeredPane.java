@@ -43,6 +43,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.accessibility.Accessible;
@@ -326,13 +327,13 @@ public class JLayeredPane extends JComponent implements Accessible
   {
     int pos = -1;
     int index = getIndexOf(c);
-    Component[] components = getComponents();
-    int layer = getLayer(c);
     if (index >= 0)
       {
-        for (int i = index; i >= 0; --i)
+        pos = 0;
+        int layer = getLayer(c);
+        for (int i = index - 1; i >= 0; --i)
           {
-            if (layer == getLayer(components[i]))
+            if (layer == getLayer(getComponent(i)))
               pos++;
             else
               break;
@@ -353,9 +354,7 @@ public class JLayeredPane extends JComponent implements Accessible
    */
   public void setPosition(Component c, int position)
   {
-    int layer = getLayer(c);
-    int index = insertIndexForLayer(layer, position);
-    setComponentZOrder(c, index);
+    setLayer(c, getLayer(c), position);
   }
     
   /**
@@ -478,34 +477,85 @@ public class JLayeredPane extends JComponent implements Accessible
    */
   protected int insertIndexForLayer(int layer, int position)
   {
-    // position < 0 means insert at greatest position within layer.
-    if (position < 0)
-      position = Integer.MAX_VALUE;
+    return insertIndexForLayer(null, layer, position);
+  }
 
-    Component[] components = getComponents();
-    int index = 0;
-
-    // Try to find the start index of the specified layer.
-    int p = -1;
-    for (int i = 0; i < components.length; i++)
+  /**
+   * Similar to {@link #insertIndexForLayer(int, int)}, only that it takes a
+   * component parameter, which should be ignored in the search. This is
+   * necessary to support {@link #setLayer(Component, int, int)} which uses
+   * Container.setComponentZOrder(), which doesn't remove the component.
+   *
+   * @param comp the component to ignore
+   * @param layer the layer
+   * @param position the position
+   *
+   * @return the insertion index
+   */
+  private int insertIndexForLayer(Component comp, int layer, int position)
+  {
+    // Create the component list to search through.
+    ArrayList l = new ArrayList();
+    int count = getComponentCount();
+    for (int i = 0; i < count; i++)
       {
-        int l = getLayer(components[i]);
-        if (l > layer)
-          index++;
-        // If we are in the layer we look for, try to find the position.
-        else if (l == layer)
-          {
-            p++;
-            if (p < position)
-              index++;
-            else
-              break;
-          }
-        // No need to look further if the layer at i is smaller than layer.
-        else
-          break;
+        Component c = getComponent(i);
+        if (c != comp)
+          l.add(c);
       }
-    return index;
+
+    count = l.size();
+    int layerStart = -1;
+    int layerEnd = -1;
+    for (int i = 0; i < count; i++)
+      {
+        int layerOfComponent = getLayer((Component) l.get(i));
+        if (layerStart == -1 && layerOfComponent == layer)
+          layerStart = i;
+        if (layerOfComponent < layer)
+          {
+            // We are beyond the layer that we are looking for. Update the
+            // layerStart and layerEnd and exit the loop.
+            if (i == 0)
+              {
+                layerStart = 0;
+                layerEnd = 0;
+              }
+            else
+              layerEnd = i;
+            break;
+          }
+      }
+
+    // No layer found. The requested layer is lower than any existing layer,
+    // put the component at the end.
+    int insertIndex;
+    if (layerStart == -1 && layerEnd == -1)
+      {
+        insertIndex = count;
+      }
+    else
+      {
+        // Corner cases.
+        if (layerStart != -1 && layerEnd == -1)
+          layerEnd = count;
+        if (layerStart == -1 && layerEnd != -1)
+          layerStart = layerEnd;
+
+        // Adding to the bottom of a layer returns the end index
+        // in the layer.
+        if (position == -1)
+          insertIndex = layerEnd;
+        else
+          {
+            // Insert into a layer.
+            if (position > -1 && layerStart + position <= layerEnd)
+              insertIndex = layerStart + position;
+            else
+              insertIndex = layerEnd;
+          }
+      }
+    return insertIndex;
   }
 
   /**
@@ -559,17 +609,29 @@ public class JLayeredPane extends JComponent implements Accessible
   public void setLayer(Component c, int layer, int position)
   {
     Integer layerObj = getObjectForLayer(layer);
-    if (c instanceof JComponent)
-      {
-        JComponent jc = (JComponent) c;
-        jc.putClientProperty(LAYER_PROPERTY, layerObj);
-      }
-    else
-      componentToLayer.put (c, layerObj);
 
-    // Set position only of component is already added to this layered pane.
-    if (getIndexOf(c) != -1)
-      setPosition(c, position);
+    // Nothing to do if neither the layer nor the position is
+    // changed.
+    if (layer != getLayer(c) || position != getPosition(c))
+      {
+        // Store the layer either in the JComponent or in the hashtable
+        if (c instanceof JComponent)
+          {
+            JComponent jc = (JComponent) c;
+            jc.putClientProperty(LAYER_PROPERTY, layerObj);
+          }
+        else
+          componentToLayer.put (c, layerObj);
+
+        // Update the component in the Z order of the Container.
+        Container parent = c.getParent();
+        if (parent == this)
+          {
+            int index = insertIndexForLayer(c, layer, position);
+            setComponentZOrder(c, index);
+          }
+      }
+    repaint(c.getX(), c.getY(), c.getWidth(), c.getHeight());
   }
 
   /**
@@ -592,14 +654,17 @@ public class JLayeredPane extends JComponent implements Accessible
   {
     int layer;
     if (layerConstraint != null && layerConstraint instanceof Integer)
-      layer = ((Integer) layerConstraint).intValue();
+      {
+        layer = ((Integer) layerConstraint).intValue();
+        setLayer(comp, layer);
+      }
     else
-	  layer = getLayer(comp);
+      layer = getLayer(comp);
 
     int newIdx = insertIndexForLayer(layer, index);
-    setLayer(comp, layer);
     super.addImpl(comp, layerConstraint, newIdx);
-    repaint(comp.getX(), comp.getY(), comp.getWidth(), comp.getHeight());
+    comp.validate();
+    comp.repaint();
   }
 
   /**

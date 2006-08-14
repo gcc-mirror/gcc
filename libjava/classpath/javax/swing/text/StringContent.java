@@ -178,11 +178,13 @@ public final class StringContent
   }
 
   /**
-   * Creates a new instance containing the string "\n".
+   * Creates a new instance containing the string "\n".  This is equivalent
+   * to calling {@link #StringContent(int)} with an <code>initialLength</code>
+   * of 10.
    */
   public StringContent()
   {
-    this(1);
+    this(10);
   }
 
   /**

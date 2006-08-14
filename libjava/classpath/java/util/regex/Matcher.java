@@ -38,9 +38,9 @@ exception statement from your version. */
 
 package java.util.regex;
 
-import gnu.regexp.RE;
-import gnu.regexp.REMatch;
-import gnu.regexp.CharIndexed;
+import gnu.java.util.regex.CharIndexed;
+import gnu.java.util.regex.RE;
+import gnu.java.util.regex.REMatch;
 
 /**
  * Instance of a regular expression applied to a char sequence.

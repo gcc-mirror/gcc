@@ -46,30 +46,19 @@ import java.io.IOException;
  * A filtering input stream that computes a MAC (message authentication code)
  * over all data read from the stream.
  */
-public class MacInputStream extends FilterInputStream
+public class MacInputStream
+    extends FilterInputStream
 {
-
-  // Field.
-  // ------------------------------------------------------------------------
-
-  /**
-   * The digesting state. The MAC is updated only if this flag is true.
-   */
+  /** The digesting state. The MAC is updated only if this flag is true. */
   private boolean digesting;
-
-  /**
-   * The MAC being updated.
-   */
+  /** The MAC being updated. */
   private IMac mac;
 
-  // Constructor.
-  // ------------------------------------------------------------------------
-
   /**
-   * Creates a new MacInputStream. The stream is initially set to digest
-   * data written, the <i>mac</i> argument must have already been initialized,
-   * and the <i>mac</i> argument is <b>not</b> cloned.
-   *
+   * Creates a new MacInputStream. The stream is initially set to digest data
+   * written, the <i>mac</i> argument must have already been initialized, and
+   * the <i>mac</i> argument is <b>not</b> cloned.
+   * 
    * @param in The underlying input stream.
    * @param mac The mac instance to use.
    */
@@ -82,12 +71,9 @@ public class MacInputStream extends FilterInputStream
     digesting = true;
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   /**
    * Returns the MAC this stream is updating.
-   *
+   * 
    * @return The MAC.
    */
   public IMac getMac()
@@ -98,7 +84,7 @@ public class MacInputStream extends FilterInputStream
   /**
    * Sets the MAC this stream is updating, which must have already been
    * initialized. The argument is not cloned by this method.
-   *
+   * 
    * @param mac The new MAC.
    * @throws NullPointerException If the argument is null.
    */
@@ -110,9 +96,9 @@ public class MacInputStream extends FilterInputStream
   }
 
   /**
-   * Turns the digesting state on or off. When off, the MAC will not be
-   * updated when data is written to the stream.
-   *
+   * Turns the digesting state on or off. When off, the MAC will not be updated
+   * when data is written to the stream.
+   * 
    * @param flag The new digesting state.
    */
   public void on(boolean flag)

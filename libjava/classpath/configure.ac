@@ -6,7 +6,7 @@ dnl -----------------------------------------------------------
 dnl define([AC_CACHE_LOAD], )dnl
 dnl define([AC_CACHE_SAVE], )dnl
 
-AC_INIT([GNU Classpath],[0.92-pre],[classpath@gnu.org],[classpath])
+AC_INIT([GNU Classpath],[0.92],[classpath@gnu.org],[classpath])
 AC_CONFIG_SRCDIR(java/lang/System.java)
 
 AC_CANONICAL_TARGET
@@ -81,6 +81,36 @@ AC_ARG_ENABLE([core-jni],
               esac],
               [COMPILE_CORE_JNI=yes])
 AM_CONDITIONAL(CREATE_CORE_JNI_LIBRARIES, test "x${COMPILE_CORE_JNI}" = xyes)
+
+dnl -----------------------------------------------------------
+dnl Default Preference Backend
+dnl -----------------------------------------------------------
+AC_ARG_ENABLE(default-preferences-peer,
+  AS_HELP_STRING([--enable-default-preferences-peer],
+                 [fully qualified class name of default Preferences API Backend]))
+DEFAULT_PREFS_PEER=$enable_default_preferences_peer
+if test "$DEFAULT_PREFS_PEER" = ""; then
+   DEFAULT_PREFS_PEER=gnu.java.util.prefs.FileBasedFactory
+fi
+dnl AC_SUBST(DEFAULT_PREFS_PEER)
+
+dnl -----------------------------------------------------------
+dnl GConf native peer (enabled by default)
+dnl -----------------------------------------------------------
+AC_ARG_ENABLE([gconf-peer],
+              [AS_HELP_STRING(--disable-gconf-peer,compile GConf native peers (disabled by --disable-jni) [default=yes])],
+              [case "${enableval}" in
+                yes) COMPILE_GCONF_PEER=yes ;;
+                no) COMPILE_GCONF_PEER=no ;;
+                *) COMPILE_GCONF_PEER=yes ;;
+              esac],
+              [COMPILE_GCONF_PEER=yes])
+AM_CONDITIONAL(CREATE_GCONF_PEER_LIBRARIES, test "x${COMPILE_GCONF_PEER}" = xyes)
+
+dnl -----------------------------------------------------------
+dnl GTK native peer error checking
+dnl -----------------------------------------------------------
+AC_ARG_ENABLE([gconf-peers],,AC_MSG_ERROR([No --enable-gconf-peers (or --disable-gconf-peers) option; you want --enable-gconf-peer]))
 
 dnl ------------------------------------------------------------
 dnl Whether to compile with -Werror or not (disabled by default)
@@ -432,6 +462,24 @@ if test "x${COMPILE_JNI}" = xyes; then
     AC_SUBST(XTEST_LIBS)
   fi
 
+  dnl gconf-peer
+  if  test "x${COMPILE_GCONF_PEER}" = xyes; then
+    PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.11.2)
+    AC_SUBST(GCONF_CFLAGS)
+    AC_SUBST(GCONF_LIBS)
+    dnl we also need gdk for locking
+    PKG_CHECK_MODULES(GDK, gdk-2.0 >= 2.8)
+    AC_SUBST(GDK_CFLAGS)
+    AC_SUBST(GDK_LIBS)
+    dnl check if the config value was given form the command line,
+    dnl if not, overwrite the default if we have the gconf backend
+    dnl compiled in
+    USE_GCONF_PREFS_PEER=$enable_default_preferences_peer
+    if test "$USE_GCONF_PREFS_PEER" = ""; then
+   	DEFAULT_PREFS_PEER=gnu.java.util.prefs.GConfBasedFactory
+    fi
+  fi
+
   dnl Check for AWT related Qt4
   if test "x${COMPILE_QT_PEER}" = xyes; then
     PKG_CHECK_MODULES(QT, QtCore QtGui >= 4.1.0, HAVE_QT4="yes", HAVE_QT4="no")
@@ -446,6 +494,7 @@ if test "x${COMPILE_JNI}" = xyes; then
 	QT_CFLAGS="$QT_CFLAGS -I$EXTRA_QT_INCLUDE_DIR",
 	AC_MSG_WARN([QWidget not found])))
 	AC_CHECK_PROG(MOC, [moc], [moc])
+	AC_CHECK_PROG(MOC, [moc-qt4], [moc-qt4])
     fi
     if test "x$HAVE_QT4" = "xno"; then
       AC_MSG_NOTICE([Looking for QT_CFLAGS and QT_LIBS without pkg-config])
@@ -489,6 +538,9 @@ if test "x${COMPILE_JNI}" = xyes; then
     fi
     if test "x${MOZILLA_FOUND}" = xno; then
       PKG_CHECK_MODULES(MOZILLA, xulrunner-plugin, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
+    fi
+    if test "x${MOZILLA_FOUND}" = xno; then
+      PKG_CHECK_MODULES(MOZILLA, mozilla-firefox-plugin, [MOZILLA_FOUND=yes], [MOZILLA_FOUND=no])
     fi
     PKG_CHECK_MODULES(GLIB, glib-2.0)
 
@@ -671,6 +723,30 @@ esac;
 AM_CONDITIONAL(USE_PREBUILT_GLIBJ_ZIP, test x$use_glibj_zip = xtrue)
 AC_SUBST(PATH_TO_GLIBJ_ZIP)
 
+dnl -----------------------------------------------------------
+dnl Build with Escher based X peers.
+dnl -----------------------------------------------------------
+AC_ARG_WITH([escher],
+	 AS_HELP_STRING([--with-escher=ABS.PATH],
+	                [specify path to escher dir or JAR for X peers]))
+case "$with_escher" in
+"")
+        use_escher=false
+        ;;
+"no")
+        use_escher=false
+        ;;
+"yes")
+        AC_MSG_ERROR([Please suply an absolute path to Escher library])
+        ;;
+*)
+        use_escher=true
+        PATH_TO_ESCHER=$with_escher
+        ;;
+esac;
+
+AM_CONDITIONAL(USE_ESCHER, test x$use_escher = xtrue)
+AC_SUBST(PATH_TO_ESCHER)
 
 dnl -----------------------------------------------------------
 dnl Check if local socket support should be included.
@@ -695,6 +771,10 @@ then
 fi
 AM_CONDITIONAL(ENABLE_LOCAL_SOCKETS, test "x$ENABLE_LOCAL_SOCKETS" = "xyes")
 
+dnl -----------------------------------------------------------
+dnl Add the default preference peer
+dnl -----------------------------------------------------------
+AC_SUBST(DEFAULT_PREFS_PEER)
 
 dnl -----------------------------------------------------------
 dnl output files
@@ -707,6 +787,7 @@ external/sax/Makefile
 external/w3c_dom/Makefile
 external/relaxngDatatype/Makefile
 gnu/classpath/Configuration.java
+gnu/java/security/Configuration.java
 include/Makefile
 native/Makefile
 native/fdlibm/Makefile
@@ -719,6 +800,7 @@ native/jni/java-net/Makefile
 native/jni/java-nio/Makefile
 native/jni/java-util/Makefile
 native/jni/gtk-peer/Makefile
+native/jni/gconf-peer/Makefile
 native/jni/qt-peer/Makefile
 native/jni/xmlj/Makefile
 native/jni/midi-alsa/Makefile
@@ -728,6 +810,7 @@ native/target/Makefile
 native/target/Linux/Makefile
 native/target/generic/Makefile
 resource/Makefile
+resource/META-INF/services/java.util.prefs.PreferencesFactory
 scripts/Makefile
 scripts/classpath.spec
 lib/Makefile
@@ -735,7 +818,25 @@ lib/gen-classlist.sh
 lib/copy-vmresources.sh
 tools/Makefile
 examples/Makefile
-examples/Makefile.jawt])
+examples/Makefile.jawt
+examples/Makefile.java2d])
+
+if test "x${COMPILE_WRAPPERS}" = xno
+then
+AC_CONFIG_FILES([tools/gappletviewer
+tools/gjarsigner
+tools/gkeytool
+tools/gjar
+tools/gnative2ascii
+tools/gserialver])
+AC_CONFIG_COMMANDS([gappletviewer],[chmod 755 tools/gappletviewer])
+AC_CONFIG_COMMANDS([gjarsigner],[chmod 755 tools/gjarsigner])
+AC_CONFIG_COMMANDS([gkeytool],[chmod 755 tools/gkeytool])
+AC_CONFIG_COMMANDS([gjar],[chmod 755 tools/gjar])
+AC_CONFIG_COMMANDS([gnative2ascii],[chmod 755 tools/gnative2ascii])
+AC_CONFIG_COMMANDS([gserialver],[chmod 755 tools/gserialver])
+fi
+
 
 if test "x${COMPILE_WRAPPERS}" = xno
 then
@@ -750,3 +851,10 @@ fi
 AC_CONFIG_COMMANDS([gen-classlist],[chmod 755 lib/gen-classlist.sh])
 AC_CONFIG_COMMANDS([copy-vmresources],[chmod 755 lib/copy-vmresources.sh])
 AC_OUTPUT
+
+# Create standard.omit based on decisions we just made.
+cat ${srcdir}/lib/standard.omit.in > lib/standard.omit
+if test x$use_escher != xtrue; then
+   echo gnu/java/awt/peer/x/.*java$ >> lib/standard.omit
+fi
+

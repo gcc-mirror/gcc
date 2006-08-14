@@ -35,18 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
+
 package gnu.javax.crypto.jce.key;
 
 import gnu.java.security.Registry;
 
-public class TripleDESKeyGeneratorImpl extends SecretKeyGeneratorImpl
+public class TripleDESKeyGeneratorImpl
+    extends SecretKeyGeneratorImpl
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
-  public TripleDESKeyGeneratorImpl ()
+  public TripleDESKeyGeneratorImpl()
   {
-    super (Registry.TRIPLEDES_CIPHER);
+    super(Registry.TRIPLEDES_CIPHER);
   }
 }

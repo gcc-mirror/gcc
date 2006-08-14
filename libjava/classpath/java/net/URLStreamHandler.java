@@ -369,13 +369,11 @@ public abstract class URLStreamHandler
   }
 
   /**
-   * Provides the default equals calculation. May be overidden by handlers for
-   * other protocols that have different requirements for equals(). This method
-   * requires that none of its arguments is null. This is guaranteed by the
-   * fact that it is only called by java.net.URL class.
+   * This is the default method for computing whether two URLs are
+   * equivalent.  This method assumes that neither URL is null.
    *
    * @param url1 An URL object
-   * @param url2 An URL object
+   * @param url2 Another URL object
    *
    * @return True if both given URLs are equal, false otherwise.
    */
@@ -383,16 +381,21 @@ public abstract class URLStreamHandler
   {
     // This comparison is very conservative.  It assumes that any
     // field can be null.
-    return (url1.getPort() == url2.getPort()
+    int port1 = url1.getPort();
+    if (port1 == -1)
+      port1 = url1.getDefaultPort();
+    int port2 = url2.getPort();
+    if (port2 == -1)
+      port2 = url2.getDefaultPort();
+    // Note that we don't bother checking the 'authority'; it is
+    // redundant.
+    return (port1 == port2
            && ((url1.getProtocol() == null && url2.getProtocol() == null)
            || (url1.getProtocol() != null
            && url1.getProtocol().equals(url2.getProtocol())))
            && ((url1.getUserInfo() == null && url2.getUserInfo() == null)
            || (url1.getUserInfo() != null
            && url1.getUserInfo().equals(url2.getUserInfo())))
-           && ((url1.getAuthority() == null && url2.getAuthority() == null)
-           || (url1.getAuthority() != null
-           && url1.getAuthority().equals(url2.getAuthority())))
            && ((url1.getHost() == null && url2.getHost() == null)
            || (url1.getHost() != null && url1.getHost().equals(url2.getHost())))
            && ((url1.getPath() == null && url2.getPath() == null)

@@ -40,12 +40,9 @@ package gnu.javax.crypto.jce.mac;
 
 import gnu.java.security.Registry;
 
-public class OMacKhazadImpl extends MacAdapter
+public class OMacKhazadImpl
+    extends MacAdapter
 {
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
   public OMacKhazadImpl()
   {
     super(Registry.OMAC_PREFIX + Registry.KHAZAD_CIPHER);

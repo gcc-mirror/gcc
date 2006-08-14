@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
+
 package gnu.javax.crypto.jce.key;
 
 import gnu.java.security.Registry;
@@ -43,31 +44,25 @@ import gnu.javax.crypto.cipher.DES;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-public class DESKeyGeneratorImpl extends SecretKeyGeneratorImpl
+public class DESKeyGeneratorImpl
+    extends SecretKeyGeneratorImpl
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
-  public DESKeyGeneratorImpl ()
+  public DESKeyGeneratorImpl()
   {
-    super (Registry.DES_CIPHER);
+    super(Registry.DES_CIPHER);
   }
 
-  // Instance methods.
-  // -------------------------------------------------------------------------
-
-  protected SecretKey engineGenerateKey ()
+  protected SecretKey engineGenerateKey()
   {
-    if (!init)
-      throw new IllegalStateException ("not initialized");
-    byte[] buf = new byte [currentKeySize];
+    if (! init)
+      throw new IllegalStateException("not initialized");
+    byte[] buf = new byte[currentKeySize];
     do
       {
-        random.nextBytes (buf);
+        random.nextBytes(buf);
       }
-    while (DES.isWeak (buf) || DES.isSemiWeak (buf));
-    DES.adjustParity (buf, 0);
-    return new SecretKeySpec (buf, algorithm);
+    while (DES.isWeak(buf) || DES.isSemiWeak(buf));
+    DES.adjustParity(buf, 0);
+    return new SecretKeySpec(buf, algorithm);
   }
 }

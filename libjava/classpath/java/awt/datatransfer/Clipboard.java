@@ -1,5 +1,5 @@
 /* Clipboard.java -- Class for transferring data via cut and paste.
-   Copyright (C) 1999, 2001, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -182,6 +182,9 @@ public class Clipboard
 
   public void addFlavorListener(FlavorListener listener)
   {
+    if (listener == null)
+      return;
+
     synchronized(listeners)
       {
 	listeners.add(listener);
@@ -190,6 +193,9 @@ public class Clipboard
 
   public void removeFlavorListener(FlavorListener listener)
   {
+    if (listener == null)
+      return;
+
     synchronized(listeners)
       {
 	listeners.remove(listener);

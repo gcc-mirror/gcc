@@ -50,6 +50,8 @@ public class GtkVolatileImage extends VolatileImage
   int width, height;
   private ImageCapabilities caps;
 
+  final GtkComponentPeer component;
+
   /**
    * Don't touch, accessed from native code.
    */
@@ -85,6 +87,7 @@ public class GtkVolatileImage extends VolatileImage
     this.width = width;
     this.height = height;
     this.caps = caps;
+    this.component = component;
     nativePointer = init( component, width, height );
   }
 

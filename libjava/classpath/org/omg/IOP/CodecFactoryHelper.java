@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.IOP;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.CompletionStatus;
@@ -56,18 +58,11 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class CodecFactoryHelper
 {
   /**
-   * The cached {@link CodecFactory} typecode, computed once.
-   */
-  private static TypeCode typeCode;
-
-  /**
    * Get the type code of the {@link CodecFactory}.
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      typeCode = ORB.init().create_interface_tc(id(), "CodecFactory");
-    return typeCode;
+    return OrbRestricted.Singleton.create_interface_tc(id(), "CodecFactory");
   }
 
   /**

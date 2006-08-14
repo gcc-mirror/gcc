@@ -1,5 +1,5 @@
 /* Point.java -- represents a point in 2-D space
-   Copyright (C) 1999, 2002 Free Software Foundation
+   Copyright (C) 1999, 2002, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -83,7 +83,7 @@ public class Point extends Point2D implements Serializable
 
   /**
    * Initializes a new instance of <code>Point</code> representing the
-   * coordiates (0,0).
+   * coordinates (0, 0).
    *
    * @since 1.1
    */
@@ -93,7 +93,7 @@ public class Point extends Point2D implements Serializable
 
   /**
    * Initializes a new instance of <code>Point</code> with coordinates
-   * identical to the coordinates of the specified points.
+   * identical to the coordinates of the specified point.
    *
    * @param p the point to copy the coordinates from
    * @throws NullPointerException if p is null
@@ -178,15 +178,16 @@ public class Point extends Point2D implements Serializable
 
   /**
    * Sets this object's coordinates to the specified values.  This method
-   * performs normal casting from double to int, so you may lose precision.
+   * rounds to the nearest integer coordinates by adding 0.5 and calling 
+   * {@link Math#floor(double)}.
    *
    * @param x the new X coordinate
    * @param y the new Y coordinate
    */
   public void setLocation(double x, double y)
   {
-    this.x = (int) x;
-    this.y = (int) y;
+    this.x = (int) Math.floor(x + 0.5);
+    this.y = (int) Math.floor(y + 0.5);
   }
 
   /**

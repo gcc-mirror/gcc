@@ -113,7 +113,7 @@ public abstract class AbstractSpinnerModel implements SpinnerModel
   {
     ChangeListener[] listeners = getChangeListeners();
 
-    for(int i = 0; i < listeners.length; ++i)
+    for (int i = 0; i < listeners.length; ++i)
       listeners[i].stateChanged(changeEvent);
   }
 }

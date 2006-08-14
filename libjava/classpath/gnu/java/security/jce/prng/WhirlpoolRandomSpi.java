@@ -42,25 +42,13 @@ import gnu.java.security.Registry;
 
 /**
  * The implementation of the Whirlpool-based SecureRandom <i>Service Provider
- * Interface</i> (<b>SPI</b>) adapter.<p>
+ * Interface</i> (<b>SPI</b>) adapter.
  */
-public class WhirlpoolRandomSpi extends SecureRandomAdapter
+public class WhirlpoolRandomSpi
+    extends SecureRandomAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public WhirlpoolRandomSpi()
   {
     super(Registry.WHIRLPOOL_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

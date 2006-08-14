@@ -24,6 +24,7 @@ JNIEXPORT jboolean JNICALL Java_java_io_VMFile_isFile (JNIEnv *env, jclass, jstr
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_canWrite (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_canRead (JNIEnv *env, jclass, jstring);
 JNIEXPORT jboolean JNICALL Java_java_io_VMFile_isDirectory (JNIEnv *env, jclass, jstring);
+JNIEXPORT jstring JNICALL Java_java_io_VMFile_toCanonicalForm (JNIEnv *env, jclass, jstring);
 #undef java_io_VMFile_IS_CASE_SENSITIVE
 #define java_io_VMFile_IS_CASE_SENSITIVE 1L
 #undef java_io_VMFile_IS_DOS_8_3

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.IOP;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
@@ -65,10 +67,10 @@ public abstract class ComponentIdHelper
    */
   public static TypeCode type()
   {
-    ORB orb = ORB.init();
-    return orb.create_alias_tc("IDL:omg.org/IOP/ComponentId:1.0", "ComponentId",
-                               orb.get_primitive_tc(TCKind.tk_ulong)
-                              );
+    ORB orb = OrbRestricted.Singleton;
+    return orb.create_alias_tc("IDL:omg.org/IOP/ComponentId:1.0",
+                               "ComponentId",
+                               orb.get_primitive_tc(TCKind.tk_ulong));
   }
 
   /**

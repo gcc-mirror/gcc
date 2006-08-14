@@ -192,6 +192,42 @@ public class FileHandler
   extends StreamHandler
 {
   /**
+   * A literal that prefixes all file-handler related properties in the
+   * logging.properties file.
+   */
+  private static final String PROPERTY_PREFIX = "java.util.logging.FileHandler";
+  /**
+   * The name of the property to set for specifying a file naming (incl. path)
+   * pattern to use with rotating log files.
+   */
+  private static final String PATTERN_KEY = PROPERTY_PREFIX + ".pattern";
+  /**
+   * The default pattern to use when the <code>PATTERN_KEY</code> property was
+   * not specified in the logging.properties file.
+   */
+  private static final String DEFAULT_PATTERN = "%h/java%u.log";
+  /**
+   * The name of the property to set for specifying an approximate maximum
+   * amount, in bytes, to write to any one log output file. A value of zero
+   * (which is the default) implies a no limit.
+   */
+  private static final String LIMIT_KEY = PROPERTY_PREFIX + ".limit";
+  private static final int DEFAULT_LIMIT = 0;
+  /**
+   * The name of the property to set for specifying how many output files to
+   * cycle through. The default value is 1.
+   */
+  private static final String COUNT_KEY = PROPERTY_PREFIX + ".count";
+  private static final int DEFAULT_COUNT = 1;
+  /**
+   * The name of the property to set for specifying whether this handler should
+   * append, or not, its output to existing files. The default value is
+   * <code>false</code> meaning NOT to append.
+   */
+  private static final String APPEND_KEY = PROPERTY_PREFIX + ".append";
+  private static final boolean DEFAULT_APPEND = false;
+
+  /**
    * The number of bytes a log file is approximately allowed to reach
    * before it is closed and the handler switches to the next file in
    * the rotating set.  A value of zero means that files can grow
@@ -252,16 +288,10 @@ public class FileHandler
   public FileHandler()
     throws IOException, SecurityException
   {
-    this(/* pattern: use configiguration */ null,
-
-	 LogManager.getIntProperty("java.util.logging.FileHandler.limit",
-				   /* default */ 0),
-
-	 LogManager.getIntProperty("java.util.logging.FileHandler.count",
-				   /* default */ 1),
-
-	 LogManager.getBooleanProperty("java.util.logging.FileHandler.append",
-				       /* default */ false));
+    this(LogManager.getLogManager().getProperty(PATTERN_KEY),
+	 LogManager.getIntProperty(LIMIT_KEY, DEFAULT_LIMIT),
+	 LogManager.getIntProperty(COUNT_KEY, DEFAULT_COUNT),
+	 LogManager.getBooleanProperty(APPEND_KEY, DEFAULT_APPEND));
   }
 
 
@@ -269,10 +299,7 @@ public class FileHandler
   public FileHandler(String pattern)
     throws IOException, SecurityException
   {
-    this(pattern,
-	 /* limit */ 0,
-	 /* count */ 1,
-	 /* append */ false);
+    this(pattern, DEFAULT_LIMIT, DEFAULT_COUNT, DEFAULT_APPEND);
   }
 
 
@@ -280,10 +307,7 @@ public class FileHandler
   public FileHandler(String pattern, boolean append)
     throws IOException, SecurityException
   {
-    this(pattern,
-	 /* limit */ 0,
-	 /* count */ 1,
-	 append);
+    this(pattern, DEFAULT_LIMIT, DEFAULT_COUNT, append);
   }
 
 
@@ -292,9 +316,7 @@ public class FileHandler
     throws IOException, SecurityException
   {
     this(pattern, limit, count, 
-	 LogManager.getBooleanProperty(
-	   "java.util.logging.FileHandler.append",
-	   /* default */ false));
+	 LogManager.getBooleanProperty(APPEND_KEY, DEFAULT_APPEND));
   }
 
 
@@ -350,7 +372,7 @@ public class FileHandler
     throws IOException, SecurityException
   {
     super(/* output stream, created below */ null,
-	  "java.util.logging.FileHandler",
+	  PROPERTY_PREFIX,
 	  /* default level */ Level.ALL,
 	  /* formatter */ null,
 	  /* default formatter */ XMLFormatter.class);
@@ -358,14 +380,14 @@ public class FileHandler
     if ((limit <0) || (count < 1))
       throw new IllegalArgumentException();
 
-    this.pattern = pattern;
+    this.pattern = pattern != null ? pattern : DEFAULT_PATTERN;
     this.limit = limit;
     this.count = count;
     this.append = append;
     this.written = 0;
     this.logFiles = new LinkedList ();
 
-    setOutputStream (createFileStream (pattern, limit, count, append,
+    setOutputStream (createFileStream (this.pattern, limit, count, append,
                                        /* generation */ 0));
   }
 
@@ -389,10 +411,9 @@ public class FileHandler
      * LogManager configuration property.
      */
     if (pattern == null)
-      pattern = LogManager.getLogManager().getProperty(
-                              "java.util.logging.FileHandler.pattern");
+      pattern = LogManager.getLogManager().getProperty(PATTERN_KEY);
     if (pattern == null)
-      pattern = "%h/java%u.log";
+      pattern = DEFAULT_PATTERN;
 
     if (count > 1 && !has (pattern, 'g'))
       pattern = pattern + ".%g";

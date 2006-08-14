@@ -51,31 +51,17 @@ import java.util.Map;
 import javax.crypto.interfaces.DHPrivateKey;
 
 /**
- * <p>This implementation is the sender's part of the basic version of the
- * Diffie-Hellman key agreement exchange (A in [HAC]).</p>
- *
+ * This implementation is the sender's part of the basic version of the
+ * Diffie-Hellman key agreement exchange (A in [HAC]).
+ * 
  * @see DiffieHellmanKeyAgreement
  */
-public class DiffieHellmanSender extends DiffieHellmanKeyAgreement
+public class DiffieHellmanSender
+    extends DiffieHellmanKeyAgreement
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private BigInteger x; // the sender's random secret
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // default 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // implementation of abstract methods in base class ------------------------
 
   protected void engineInit(Map attributes) throws KeyAgreementException
   {
@@ -83,18 +69,12 @@ public class DiffieHellmanSender extends DiffieHellmanKeyAgreement
     rnd = null;
     irnd = null;
     if (random instanceof SecureRandom)
-      {
-        rnd = (SecureRandom) random;
-      }
+      rnd = (SecureRandom) random;
     else if (random instanceof IRandom)
-      {
-        irnd = (IRandom) random;
-      }
+      irnd = (IRandom) random;
     ownerKey = (DHPrivateKey) attributes.get(KA_DIFFIE_HELLMAN_OWNER_PRIVATE_KEY);
     if (ownerKey == null)
-      {
-        throw new KeyAgreementException("missing owner's private key");
-      }
+      throw new KeyAgreementException("missing owner's private key");
   }
 
   protected OutgoingMessage engineProcessMessage(IncomingMessage in)
@@ -111,14 +91,11 @@ public class DiffieHellmanSender extends DiffieHellmanKeyAgreement
       }
   }
 
-  // own methods -------------------------------------------------------------
-
   private OutgoingMessage sendRandomSecret(IncomingMessage in)
       throws KeyAgreementException
   {
     BigInteger p = ownerKey.getParams().getP();
     BigInteger g = ownerKey.getParams().getG();
-
     // A chooses a random integer x, 1 <= x <= p-2
     // rfc-2631 restricts x to only be in [2, p-1]
     BigInteger p_minus_2 = p.subtract(TWO);
@@ -128,12 +105,10 @@ public class DiffieHellmanSender extends DiffieHellmanKeyAgreement
         nextRandomBytes(xBytes);
         x = new BigInteger(1, xBytes);
       }
-    while (!(x.compareTo(TWO) >= 0 && x.compareTo(p_minus_2) <= 0));
-
+    while (! (x.compareTo(TWO) >= 0 && x.compareTo(p_minus_2) <= 0));
     // A sends B the message: g^x mod p
     OutgoingMessage result = new OutgoingMessage();
     result.writeMPI(g.modPow(x, p));
-
     return result;
   }
 
@@ -142,13 +117,9 @@ public class DiffieHellmanSender extends DiffieHellmanKeyAgreement
   {
     BigInteger m1 = in.readMPI();
     if (m1 == null)
-      {
-        throw new KeyAgreementException("missing message (2)");
-      }
-
+      throw new KeyAgreementException("missing message (2)");
     BigInteger p = ownerKey.getParams().getP();
-    ZZ = m1.modPow(x, p); // ZZ = (yb ^ xa)  mod p
-
+    ZZ = m1.modPow(x, p); // ZZ = (yb ^ xa) mod p
     complete = true;
     return null;
   }

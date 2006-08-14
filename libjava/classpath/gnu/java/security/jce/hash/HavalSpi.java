@@ -41,26 +41,14 @@ package gnu.java.security.jce.hash;
 import gnu.java.security.Registry;
 
 /**
- * The implementation of the <code>HAVAL</code> <i>Service Provider Interface</i>
- * (<b>SPI</b>) Adapter.<p>
+ * The implementation of the HAVAL <i>Service Provider Interface</i>
+ * (<b>SPI</b>) adapter.
  */
-public class HavalSpi extends MessageDigestAdapter
+public class HavalSpi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public HavalSpi()
   {
     super(Registry.HAVAL_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

@@ -38,13 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.AWTEvent;
 import java.awt.Button;
-import java.awt.Component;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.awt.peer.ButtonPeer;
 
 // A composite widget.  GtkButtons have transparent backgrounds.  An

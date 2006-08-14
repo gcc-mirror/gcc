@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import gnu.classpath.Configuration;
 import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.font.opentype.NameDecoder;
 
@@ -50,9 +49,7 @@ import java.awt.font.GlyphVector;
 import java.awt.font.GlyphMetrics;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.Point2D;
 import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;

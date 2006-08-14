@@ -1,5 +1,5 @@
 /* VMFile.java -- Class for methods natively accessing files
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -210,10 +210,10 @@ final class VMFile
 
   /**
    * This method returns a canonical representation of the pathname of
-   * the given path.  The actual form of the canonical representation is
-   * different.  On the GNU system, the canonical form differs from the
-   * absolute form in that all relative file references to "." and ".."
-   * are resolved and removed.
+   * this file.  The actual form of the canonical representation is
+   * system-dependent.  On the GNU system, conversion to canonical
+   * form involves the removal of redundant separators, references to
+   * "." and "..", and symbolic links.
    * <p>
    * Note that this method, unlike the other methods which return path
    * names, can throw an IOException.  This is because native method 
@@ -221,9 +221,5 @@ final class VMFile
    *
    * @exception IOException If an error occurs
    */
-  public static String toCanonicalForm(String path) throws IOException
-  {
-	// FIXME: this only works on UNIX
-	return PlatformHelper.toCanonicalForm(path);
-  }
+  public static native String toCanonicalForm(String path) throws IOException;
 }

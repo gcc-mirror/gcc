@@ -85,7 +85,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Sets the current theme to a new instance of {@link DefaultMetalTheme}.
+   * Sets the current theme to a new instance of {@link OceanTheme}.
    */
   protected void createDefaultTheme()
   {
@@ -709,6 +709,8 @@ public class MetalLookAndFeel extends BasicLookAndFeel
    * @param theme  the theme (<code>null</code> not permitted).
    * 
    * @throws NullPointerException if <code>theme</code> is <code>null</code>.
+   * 
+   * @see #getCurrentTheme()
    */
   public static void setCurrentTheme(MetalTheme theme)
   {
@@ -1183,19 +1185,25 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "SplitPaneDivider.draggingColor", Color.DARK_GRAY,
 
       "TabbedPane.background", getControlShadow(),
+      "TabbedPane.contentBorderInsets", new InsetsUIResource(2, 2, 3, 3),
+      "TabbedPane.contentOpaque", Boolean.TRUE,
       "TabbedPane.darkShadow", getControlDarkShadow(),
       "TabbedPane.focus", getPrimaryControlDarkShadow(),
       "TabbedPane.font", new FontUIResource("Dialog", Font.BOLD, 12),
       "TabbedPane.foreground", getControlTextColor(),
       "TabbedPane.highlight", getControlHighlight(),
       "TabbedPane.light", getControl(),
-      "TabbedPane.selected", getControl(),
+      "TabbedPane.selected", getControl(), // overridden in OceanTheme
       "TabbedPane.selectHighlight", getControlHighlight(),
       "TabbedPane.selectedTabPadInsets", new InsetsUIResource(2, 2, 2, 1),
       "TabbedPane.shadow", getControlShadow(),
-      "TabbedPane.tabAreaBackground", getControl(),
-      "TabbedPane.tabAreaInsets", new InsetsUIResource(4, 2, 0, 6),
+      "TabbedPane.tabAreaBackground", getControl(), // overridden in OceanTheme
+      "TabbedPane.tabAreaInsets", new InsetsUIResource(4, 2, 0, 6), // dito
       "TabbedPane.tabInsets", new InsetsUIResource(0, 9, 1, 9),
+      
+      // new properties in OceanTheme:
+      // TabbedPane.contentAreaColor
+      // TabbedPane.unselectedBackground
       
       "Table.background", getWindowBackground(),
       "Table.focusCellBackground", getWindowBackground(),
@@ -1243,6 +1251,7 @@ public class MetalLookAndFeel extends BasicLookAndFeel
       "TextPane.selectionBackground", getTextHighlightColor(),
       "TextPane.selectionForeground", getHighlightedTextColor(),
 
+      "TitledBorder.border", new LineBorderUIResource(getPrimaryControl(), 1),
       "TitledBorder.font", new FontUIResource("Dialog", Font.BOLD, 12),
       "TitledBorder.titleColor", getSystemTextColor(),
 
@@ -1335,12 +1344,17 @@ public class MetalLookAndFeel extends BasicLookAndFeel
   }
 
   /**
-   * Returns the current theme setting for the Metal L&amp;F.
+   * Returns the current theme for the Metal look and feel.  The default is
+   * an instance of {@link OceanTheme}.
    *
-   * @return the current theme setting for the Metal L&amp;F
+   * @return The current theme (never <code>null</code>).
+   * 
+   * @see #setCurrentTheme(MetalTheme)
    */
   public static MetalTheme getCurrentTheme()
   {
+    if (theme == null)
+      theme = new OceanTheme();
     return theme;
   }
 

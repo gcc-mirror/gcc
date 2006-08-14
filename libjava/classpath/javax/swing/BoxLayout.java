@@ -426,7 +426,7 @@ public class BoxLayout implements LayoutManager2, Serializable
 
         Insets in = container.getInsets();
         int width = container.getWidth() - in.left - in.right;
-        int height = container.getHeight() - in.top -in.bottom;
+        int height = container.getHeight() - in.top - in.bottom;
 
         if (isHorizontalIn(container))
           {

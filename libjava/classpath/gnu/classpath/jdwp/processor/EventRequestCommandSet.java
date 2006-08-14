@@ -147,7 +147,7 @@ public class EventRequestCommandSet
             if (id == 0)
               refId = null;
             else
-              refId = idMan.readReferenceTypeId(bb);
+              refId = idMan.getReferenceType(id);
             boolean caught = (bb.get() == 0) ? false : true;
             boolean unCaught = (bb.get() == 0) ? false : true;
             filter = new ExceptionOnlyFilter(refId, caught, unCaught);

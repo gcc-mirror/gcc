@@ -66,6 +66,11 @@ public class List extends Component
  * Static Variables
  */
 
+/**
+ * The number used to generate the name returned by getName.
+ */
+private static transient long next_list_number;  
+
 // Serialization constant
 private static final long serialVersionUID = -3304312411574666869L;
 
@@ -161,7 +166,11 @@ List(int rows)
 public 
 List(int rows, boolean multipleMode)
 {
-  this.rows = rows;
+  if (rows == 0)
+    this.rows = 4;
+  else
+    this.rows = rows;
+  
   this.multipleMode = multipleMode;
   selected = new int[0];
 
@@ -645,13 +654,13 @@ clear()
   * @param item The new item value.
   * @param index The index of the item to replace.
   *
-  * @exception IllegalArgumentException If the index is not valid.
+  * @exception ArrayIndexOutOfBoundsException If the index is not valid.
   */
 public synchronized void
-replaceItem(String item, int index) throws IllegalArgumentException
+replaceItem(String item, int index) throws ArrayIndexOutOfBoundsException
 {
   if ((index < 0) || (index >= items.size()))
-    throw new IllegalArgumentException("Bad list index: " + index);
+    throw new ArrayIndexOutOfBoundsException("Bad list index: " + index);
 
   items.insertElementAt(item, index + 1);
   items.removeElementAt (index);
@@ -818,15 +827,11 @@ isSelected(int index)
 /**
   * This method ensures that the item at the specified index is visible.
   *
-  * @exception IllegalArgumentException If the specified index is out of
-  * range.
+  * @param index The index of the item to be made visible.
   */
 public synchronized void
 makeVisible(int index) throws IllegalArgumentException
 {
-  if ((index < 0) || (index >= items.size()))
-    throw new IllegalArgumentException("Bad list index: " + index);
-
   visibleIndex = index;
   if (peer != null)
     {
@@ -1265,5 +1270,20 @@ paramString()
     if (accessibleContext == null)
       accessibleContext = new AccessibleAWTList();
     return accessibleContext;
+  }
+  
+  /**
+   * Generate a unique name for this <code>List</code>.
+   *
+   * @return A unique name for this <code>List</code>.
+   */
+  String generateName()
+  {
+    return "list" + getUniqueLong();
+  }
+
+  private static synchronized long getUniqueLong()
+  {
+    return next_list_number++;
   }
 } // class List

@@ -43,13 +43,12 @@ import gnu.classpath.NotImplementedException;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Shape;
-import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.text.CharacterIterator;
 import java.text.AttributedCharacterIterator;
-import java.text.AttributedString;
 import java.text.Bidi;
 import java.util.Map;
 
@@ -73,6 +72,12 @@ public final class TextLayout implements Cloneable
   private int[][] runIndices;
 
   /**
+   * Character indices.
+   * Fixt index is the glyphvector, second index is the (first) glyph.
+   */
+  private int[][] charIndices;
+
+  /**
    * Base directionality, determined from the first char.
    */
   private boolean leftToRight;
@@ -85,7 +90,7 @@ public final class TextLayout implements Cloneable
   /**
    * The default caret policy.
    */
-  static TextLayout.CaretPolicy DEFAULT_CARET_POLICY = new CaretPolicy();
+  public static final TextLayout.CaretPolicy DEFAULT_CARET_POLICY = new CaretPolicy();
 
   /**
    * Constructs a TextLayout.
@@ -139,6 +144,7 @@ public final class TextLayout implements Cloneable
 					    Font.LAYOUT_LEFT_TO_RIGHT :
 					    Font.LAYOUT_RIGHT_TO_LEFT );
       }
+    setCharIndices();
   }
 
   public TextLayout (String string, Map attributes, FontRenderContext frc)  
@@ -147,9 +153,97 @@ public final class TextLayout implements Cloneable
   }
 
   public TextLayout (AttributedCharacterIterator text, FontRenderContext frc)
-    throws NotImplementedException
   {
-    throw new Error ("not implemented");
+    // FIXME: Very rudimentary.
+    this(getText(text), getFont(text), frc);
+  }
+
+  /**
+   * Package-private constructor to make a textlayout from an existing one.
+   * This is used by TextMeasurer for returning sub-layouts, and it 
+   * saves a lot of time in not having to relayout the text.
+   */
+  TextLayout(TextLayout t, int startIndex, int endIndex)
+  {
+    font = t.font;
+    frc = t.frc;
+    boundsCache = null;
+    lm = t.lm;
+    leftToRight = t.leftToRight;
+
+    if( endIndex > t.getCharacterCount() )
+      endIndex = t.getCharacterCount();
+    string = t.string.substring( startIndex, endIndex );
+
+    int startingRun = t.charIndices[startIndex][0];
+    int nRuns = 1 + t.charIndices[endIndex - 1][0] - startingRun;
+    runIndices = new int[ nRuns ][2];
+
+    runs = new GlyphVector[ nRuns ];
+    for( int i = 0; i < nRuns; i++ )
+      {
+	GlyphVector run = t.runs[ i + startingRun ];
+	// Copy only the relevant parts of the first and last runs.
+	int beginGlyphIndex = (i > 0) ? 0 : t.charIndices[startIndex][1];
+	int numEntries = ( i < nRuns - 1) ? run.getNumGlyphs() : 
+	  1 + t.charIndices[endIndex - 1][1] - beginGlyphIndex;
+	
+	int[] codes = run.getGlyphCodes(beginGlyphIndex, numEntries, null);
+	runs[ i ] = font.createGlyphVector( frc, codes );
+	runIndices[ i ][0] = t.runIndices[i + startingRun][0] - startIndex;
+	runIndices[ i ][1] = t.runIndices[i + startingRun][1] - startIndex;
+      }
+    runIndices[ nRuns - 1 ][1] = endIndex - 1;
+
+    setCharIndices();
+    determineWhiteSpace();
+  }
+
+  private void setCharIndices()
+  {
+    charIndices = new int[ getCharacterCount() ][2];
+    int i = 0;
+    int currentChar = 0;
+    for(int run = 0; run < runs.length; run++)
+      {
+	currentChar = -1;
+	for( int gi = 0; gi < runs[ run ].getNumGlyphs(); gi++)
+	  {
+	    if( runs[ run ].getGlyphCharIndex( gi ) != currentChar )
+	      {
+		charIndices[ i ][0] = run;
+		charIndices[ i ][1] = gi;
+		currentChar = runs[ run ].getGlyphCharIndex( gi );
+		i++;
+	      }
+	  }
+      }
+  }
+
+  private static String getText(AttributedCharacterIterator iter)
+  {
+    StringBuffer sb = new StringBuffer();
+    int idx = iter.getIndex();
+    for(char c = iter.first(); c != CharacterIterator.DONE; c = iter.next()) 
+      sb.append(c);
+    iter.setIndex( idx );
+    return sb.toString();
+  }
+
+  private static Font getFont(AttributedCharacterIterator iter)
+  {
+    Font f = (Font)iter.getAttribute(TextAttribute.FONT);
+    if( f == null )
+      {
+	int size;
+	Float i = (Float)iter.getAttribute(TextAttribute.SIZE);
+	if( i != null )
+	  size = (int)i.floatValue();
+	else
+	  size = 14;
+	f = new Font("Dialog", Font.PLAIN, size );
+      }
+    return f;
   }
 
   /**
@@ -179,10 +273,14 @@ public final class TextLayout implements Cloneable
 	  gotDirection = true;
 	  break;
 	}
+    determineWhiteSpace();
+  }
 
+  private void determineWhiteSpace()
+  {
     // Determine if there's whitespace in the thing.
     // Ignore trailing chars.
-    i = string.length() - 1; 
+    int i = string.length() - 1; 
     hasWhitespace = false;
     while( i >= 0 && Character.isWhitespace( string.charAt(i) ) )
       i--;
@@ -251,56 +349,42 @@ public final class TextLayout implements Cloneable
 
   public Shape getBlackBoxBounds (int firstEndpoint, int secondEndpoint)
   {
-    if( firstEndpoint < 0 || secondEndpoint > getCharacterCount() )
+    if( secondEndpoint - firstEndpoint <= 0 )
+      return new Rectangle2D.Float(); // Hmm? 
+
+    if( firstEndpoint < 0 || secondEndpoint > getCharacterCount())
       return new Rectangle2D.Float();
 
     GeneralPath gp = new GeneralPath();
-    int i = 0; // run index
+    
+    int ri = charIndices[ firstEndpoint ][0];
+    int gi = charIndices[ firstEndpoint ][1];
+
     double advance = 0;
-
-    // go to first run
-    while( runIndices[i + 1][1] < firstEndpoint ) 
+   
+    for( int i = 0; i < ri; i++ )
+      advance += runs[i].getLogicalBounds().getWidth();
+    
+    for( int i = ri; i <= charIndices[ secondEndpoint - 1 ][0]; i++ )
       {
-	advance += runs[i].getLogicalBounds().getWidth();
-	i++;
-      }
+	int dg;
+	if( i == charIndices[ secondEndpoint - 1 ][0] )
+	  dg = charIndices[ secondEndpoint - 1][1];
+	else
+	  dg = runs[i].getNumGlyphs() - 1;
 
-    int j = 0; // index into the run.
-    if( runIndices[i][1] - runIndices[i][0] > 1 )
-      {
-	while( runs[i].getGlyphCharIndex( j + 1 ) <
-	       (firstEndpoint - runIndices[i][0] ) )j++;
-      }
-
-    gp.append(runs[i].getGlyphVisualBounds( j ), false);
-    boolean keepGoing = true;;
-
-    do
-      {
-	while( j < runs[i].getNumGlyphs() && 
-	       runs[i].getGlyphCharIndex( j ) + runIndices[i][0] < 
-	       secondEndpoint )
+	for( int j = 0; j <= dg; j++ )
 	  {
 	    Rectangle2D r2 = (runs[i].getGlyphVisualBounds( j )).
 	      getBounds2D();
 	    Point2D p = runs[i].getGlyphPosition( j );
-	    r2.setRect( advance + p.getX(), r2.getY(), 
+	    r2.setRect( advance + r2.getX(), r2.getY(), 
 			r2.getWidth(), r2.getHeight() );
 	    gp.append(r2, false);
-	    j++;
 	  }
 
-	if( j >= runs[i].getNumGlyphs() )
-	  {
-	    advance += runs[i].getLogicalBounds().getWidth();
-	    i++; 
-	    j = 0;
-	  }
-	else
-	  keepGoing = false;
+	advance += runs[i].getLogicalBounds().getWidth();
       }
-    while( keepGoing );
-
     return gp;
   }
 
@@ -384,55 +468,42 @@ public final class TextLayout implements Cloneable
   public Shape getLogicalHighlightShape (int firstEndpoint, int secondEndpoint,
                                          Rectangle2D bounds)
   {
-    if( firstEndpoint < 0 || secondEndpoint > getCharacterCount() )
+    if( secondEndpoint - firstEndpoint <= 0 )
+      return new Rectangle2D.Float(); // Hmm? 
+
+    if( firstEndpoint < 0 || secondEndpoint > getCharacterCount())
       return new Rectangle2D.Float();
 
-    int i = 0; // run index
+    Rectangle2D r = null;
+    int ri = charIndices[ firstEndpoint ][0];
+    int gi = charIndices[ firstEndpoint ][1];
+
     double advance = 0;
+   
+    for( int i = 0; i < ri; i++ )
+      advance += runs[i].getLogicalBounds().getWidth();
 
-    // go to first run
-    if( i > 0 )
-      while( runIndices[i + 1][1] < firstEndpoint ) 
-	{
-	  advance += runs[i].getLogicalBounds().getWidth();
-	  i++;
-	}
-
-    int j = 0; // index into the run.
-    if( runIndices[i][1] - runIndices[i][0] > 1 )
+    for( int i = ri; i <= charIndices[ secondEndpoint - 1 ][0]; i++ )
       {
-	while( runs[i].getGlyphCharIndex( j + 1 ) <
-	       (firstEndpoint - runIndices[i][0] ) )j++;
-      }
-
-    Rectangle2D r = (runs[i].getGlyphLogicalBounds( j )).getBounds2D();
-    boolean keepGoing = true;;
-
-    do
-      {
-	while( j < runs[i].getNumGlyphs() && 
-	       runs[i].getGlyphCharIndex( j ) + runIndices[i][0] < 
-	       secondEndpoint )
-	  {
-	    Rectangle2D r2 = (runs[i].getGlyphLogicalBounds( j )).
-	      getBounds2D();
-	    Point2D p = runs[i].getGlyphPosition( j );
-	    r2.setRect( advance + p.getX(), r2.getY(), 
-			r2.getWidth(), r2.getHeight() );
-	    r = r.createUnion( r2 );
-	    j++;
-	  }
-
-	if( j >= runs[i].getNumGlyphs() )
-	  {
-	    advance += runs[i].getLogicalBounds().getWidth();
-	    i++; 
-	    j = 0;
-	  }
+	int dg; // last index in this run to use.
+	if( i == charIndices[ secondEndpoint - 1 ][0] )
+	  dg = charIndices[ secondEndpoint - 1][1];
 	else
-	  keepGoing = false;
+	  dg = runs[i].getNumGlyphs() - 1;
+
+	for(; gi <= dg; gi++ )
+	  {
+	    Rectangle2D r2 = (runs[i].getGlyphLogicalBounds( gi )).
+	      getBounds2D();
+	    if( r == null )
+	      r = r2;
+	    else
+	      r = r.createUnion(r2);
+	  }
+	gi = 0; // reset glyph index into run for next run.
+
+	advance += runs[i].getLogicalBounds().getWidth();
       }
-    while( keepGoing );
 
     return r;
   }
@@ -593,8 +664,9 @@ public final class TextLayout implements Cloneable
   }
 
   public TextHitInfo hitTestChar (float x, float y, Rectangle2D bounds)
+    throws NotImplementedException
   {
-    return hitTestChar( x, y, getBounds() );
+    throw new Error ("not implemented");
   }
 
   public boolean isLeftToRight ()

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableServer;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.NO_IMPLEMENT;
@@ -61,7 +63,7 @@ public abstract class CurrentHelper
    */
   public static TypeCode type()
   {
-    return ORB.init().create_interface_tc(id(), "Current");
+    return OrbRestricted.Singleton.create_interface_tc(id(), "Current");
   }
 
   /**

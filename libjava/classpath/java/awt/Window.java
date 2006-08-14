@@ -39,8 +39,6 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.event.ComponentEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
@@ -80,6 +78,8 @@ public class Window extends Container implements Accessible
   private int state = 0;
   /** @since 1.4 */
   private boolean focusableWindowState = true;
+  /** @since 1.5 */
+  private boolean alwaysOnTop = false;
 
   // A list of other top-level windows owned by this window.
   private transient Vector ownedWindows = new Vector();
@@ -130,7 +130,6 @@ public class Window extends Container implements Accessible
     // cycle roots.
     focusCycleRoot = true;
     setLayout(new BorderLayout());
-    addWindowFocusListener();
     
     GraphicsEnvironment g = GraphicsEnvironment.getLocalGraphicsEnvironment();
     graphicsConfiguration = g.getDefaultScreenDevice().getDefaultConfiguration();
@@ -140,67 +139,6 @@ public class Window extends Container implements Accessible
   {
     this();
     graphicsConfiguration = gc;
-  }
-  
-  private void addWindowFocusListener()
-  {
-    addWindowFocusListener(new WindowAdapter()
-    {
-      public void windowGainedFocus(WindowEvent event)
-      {
-        EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
-        if (windowFocusOwner != null)
-          {
-            synchronized (eq)
-              {
-                KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-                Component currentFocusOwner = manager.getGlobalPermanentFocusOwner();
-                if (currentFocusOwner != null)
-                  {
-                    eq.postEvent(new FocusEvent(currentFocusOwner,
-                                                FocusEvent.FOCUS_LOST, false,
-                                                windowFocusOwner));
-                    eq.postEvent(new FocusEvent(windowFocusOwner,
-                                                FocusEvent.FOCUS_GAINED, false,
-                                                currentFocusOwner));
-                  }
-                else
-                  eq.postEvent(new FocusEvent(windowFocusOwner,
-                                              FocusEvent.FOCUS_GAINED, false));
-              }
-          }
-        else
-          eq.postEvent(new FocusEvent(Window.this, FocusEvent.FOCUS_GAINED,
-                                      false));
-      }
-
-      public void windowLostFocus(WindowEvent event)
-      {
-        EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
-        if (windowFocusOwner != null)
-          {
-            synchronized (eq)
-              {
-                KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-                Component currentFocusOwner = manager.getGlobalPermanentFocusOwner();
-                if (currentFocusOwner != null)
-                  {
-                    eq.postEvent(new FocusEvent(currentFocusOwner,
-                                                FocusEvent.FOCUS_GAINED, false,
-                                                windowFocusOwner));
-                    eq.postEvent(new FocusEvent(windowFocusOwner,
-                                                FocusEvent.FOCUS_LOST, false,
-                                                currentFocusOwner));
-                  }
-                else
-                  eq.postEvent(new FocusEvent(windowFocusOwner,
-                                              FocusEvent.FOCUS_LOST, false));
-              }
-          }
-        else
-          eq.postEvent(new FocusEvent(Window.this, FocusEvent.FOCUS_LOST, false));
-      }
-    });
   }
   
   /**
@@ -420,13 +358,17 @@ public class Window extends Container implements Accessible
   /**
    * Sends this window to the back so that all other windows display in
    * front of it.
+   *
+   * If the window is set to be always-on-top, this will remove its
+   * always-on-top status.
    */
   public void toBack()
   {
     if (peer != null)
       {
-	WindowPeer wp = (WindowPeer) peer;
-	wp.toBack();
+	if( alwaysOnTop )
+	  setAlwaysOnTop( false );
+	( (WindowPeer) peer ).toBack();
       }
   }
 
@@ -437,10 +379,7 @@ public class Window extends Container implements Accessible
   public void toFront()
   {
     if (peer != null)
-      {
-        WindowPeer wp = (WindowPeer) peer;
-        wp.toFront();
-      }
+      ( (WindowPeer) peer ).toFront();
   }
 
   /**
@@ -1233,6 +1172,55 @@ public class Window extends Container implements Accessible
   public final Container getFocusCycleRootAncestor()
   {
     return null;
+  }
+
+  /**
+   * Returns whether the Windows is an always-on-top window,
+   * meaning whether the window can be obscured by other windows or not.
+   *
+   * @return <code>true</code> if the windows is always-on-top,
+   * <code>false</code> otherwise.
+   * @since 1.5
+   */
+  public final boolean isAlwaysOnTop()
+  {
+    return alwaysOnTop;
+  }
+
+  /**
+   * Sets the always-on-top state of this window (if supported).
+   *
+   * Setting a window to always-on-top means it will not be obscured
+   * by any other windows (with the exception of other always-on-top 
+   * windows). Not all platforms may support this.
+   *
+   * If an window's always-on-top status is changed to false, the window
+   * will remain at the front but not be anchored there.
+   *
+   * Calling toBack() on an always-on-top window will change its
+   * always-on-top status to false.
+   *
+   * @since 1.5
+   */
+  public final void setAlwaysOnTop(boolean alwaysOnTop)
+  {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkPermission( new AWTPermission("setWindowAlwaysOnTop") );
+
+    if( this.alwaysOnTop == alwaysOnTop )
+      return;
+    
+    if( alwaysOnTop )
+      toFront();
+
+    firePropertyChange("alwaysOnTop", this.alwaysOnTop, alwaysOnTop );
+    this.alwaysOnTop = alwaysOnTop;
+
+    if (peer != null) 
+      ( (WindowPeer) peer).updateAlwaysOnTop();
+    else
+      System.out.println("Null peer?!");
   }
 
   /**

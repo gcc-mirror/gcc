@@ -1,5 +1,6 @@
 /* VetoableChangeSupport.java -- support to manage vetoable change listeners
-   Copyright (C) 1998, 1999, 2000, 2002, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2005, 2006,  
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -120,14 +121,15 @@ public class VetoableChangeSupport implements Serializable
    * vetoable change events will be sent to this listener. The listener add
    * is not unique: that is, <em>n</em> adds with the same listener will
    * result in <em>n</em> events being sent to that listener for every
-   * vetoable change. Adding a null listener may cause a NullPointerException
-   * down the road. This method will unwrap a VetoableChangeListenerProxy,
+   * vetoable change. This method will unwrap a VetoableChangeListenerProxy,
    * registering the underlying delegate to the named property list.
    *
-   * @param l the listener to add
+   * @param l the listener to add (<code>null</code> ignored).
    */
   public synchronized void addVetoableChangeListener(VetoableChangeListener l)
   {
+    if (l == null)
+      return;
     if (l instanceof VetoableChangeListenerProxy)
       {
         VetoableChangeListenerProxy p = (VetoableChangeListenerProxy) l;
@@ -215,19 +217,19 @@ public class VetoableChangeSupport implements Serializable
    * being sent to that listener when that property is changed. The effect is
    * cumulative, too; if you are registered to listen to receive events on
    * all vetoable changes, and then you register on a particular property,
-   * you will receive change events for that property twice. Adding a null
-   * listener may cause a NullPointerException down the road. This method
+   * you will receive change events for that property twice. This method
    * will unwrap a VetoableChangeListenerProxy, registering the underlying
    * delegate to the named property list if the names match, and discarding
    * it otherwise.
    *
    * @param propertyName the name of the property to listen on
    * @param l the listener to add
-   * @throws NullPointerException if propertyName is null
    */
   public synchronized void addVetoableChangeListener(String propertyName,
                                                      VetoableChangeListener l)
   {
+    if (propertyName == null || l == null)
+      return;
     while (l instanceof VetoableChangeListenerProxy)
       {
         VetoableChangeListenerProxy p = (VetoableChangeListenerProxy) l;

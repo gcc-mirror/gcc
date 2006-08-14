@@ -116,6 +116,16 @@ public class Cursor implements java.io.Serializable
   */
   public static final int MOVE_CURSOR = 13;
 
+  private static String[] NAMES = { "Default Cursor", "Crosshair Cursor",
+                                  "Text Cursor", "Wait Cursor",
+                                  "Southwest Resize Cursor",
+                                  "Southeast Resize Cursor",
+                                  "Northwest Resize Cursor",
+                                  "Northeast Resize Cursor",
+                                  "North Resize Cursor", "South Resize Cursor",
+                                  "West Resize Cursor", "East Resize Cursor",
+                                  "Hand Cursor", "Move Cursor" };
+  
   public static final int CUSTOM_CURSOR    = 0xFFFFFFFF;
 
   private static final int PREDEFINED_COUNT = 14;
@@ -142,7 +152,10 @@ public class Cursor implements java.io.Serializable
       throw new IllegalArgumentException ("invalid cursor " + type);
 
     this.type = type;
-    // FIXME: lookup and set name?
+
+    name = NAMES[type];
+      
+    // FIXME: lookup?
   }
 
   /** This constructor is used internally only. 

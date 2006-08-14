@@ -41,57 +41,41 @@ package java.awt.font;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.text.BreakIterator;
-import java.awt.font.TextLayout;
-import java.awt.font.FontRenderContext;
 import java.awt.Shape;
 
 public final class LineBreakMeasurer
 {
   private AttributedCharacterIterator text;
   private int position;
-  private FontRenderContext frc;
-  private TextLayout totalLayout;
+  private TextMeasurer tm; 
   private int numChars;
 
   public LineBreakMeasurer(AttributedCharacterIterator text, 
 			   BreakIterator breakIter, FontRenderContext frc)
   {
-    this.text = text;
-    this.frc = frc;
-    position = 0;
-    totalLayout = new TextLayout(text, frc);
-    numChars = totalLayout.getCharacterCount();
+    this( text, frc );
   }
 
   public LineBreakMeasurer(AttributedCharacterIterator text, 
 			   FontRenderContext frc)
   {
     this.text = text;
-    this.frc = frc;
     position = 0;
-    totalLayout = new TextLayout(text, frc);
-    numChars = totalLayout.getCharacterCount();
+    numChars = text.getEndIndex();
+    tm = new TextMeasurer( text, frc );
   }
 
   public void deleteChar(AttributedCharacterIterator newParagraph, 
 			 int deletePos)
   {
-    totalLayout = new TextLayout(newParagraph, frc);
-    if( deletePos < 0 || deletePos > totalLayout.getCharacterCount() )
-      throw new NullPointerException("Invalid deletePos:"+deletePos);
-    numChars = totalLayout.getCharacterCount();
-    text = newParagraph;
+    tm.deleteChar( newParagraph, deletePos );
     position = 0;
   }
 
   public void insertChar(AttributedCharacterIterator newParagraph, 
 			 int insertPos)
   {
-    totalLayout = new TextLayout(newParagraph, frc);
-    if( insertPos < 0 || insertPos > totalLayout.getCharacterCount() )
-      throw new NullPointerException("Invalid insertPos:"+insertPos);
-    numChars = totalLayout.getCharacterCount();
-    text = newParagraph;
+    tm.insertChar( newParagraph, insertPos );
     position = 0;
   }
 
@@ -104,11 +88,9 @@ public final class LineBreakMeasurer
 			       boolean requireNextWord)
   {
     int next = nextOffset( wrappingWidth, offsetLimit, requireNextWord );
-    AttributedCharacterIterator aci = (new AttributedString( text, 
-							     position, next )
-				       ).getIterator();
+    TextLayout tl = tm.getLayout( position, next );
     position = next;
-    return new TextLayout( aci, frc );
+    return tl;
   }
 
   public int nextOffset(float wrappingWidth)
@@ -119,68 +101,39 @@ public final class LineBreakMeasurer
   public int nextOffset(float wrappingWidth, int offsetLimit, 
 			boolean requireNextWord)
   {
-    Shape s = totalLayout.getBlackBoxBounds( position, offsetLimit );
-    double remainingLength = s.getBounds2D().getWidth();
+    int guessOffset = tm.getLineBreakIndex(position, wrappingWidth);
+    if( offsetLimit > numChars )
+      offsetLimit = numChars;
 
-    int guessOffset = (int)( ( (double)wrappingWidth / (double)remainingLength)
-			     * ( (double)numChars - (double)position ) );
-    guessOffset += position;
     if( guessOffset > offsetLimit )
-      guessOffset = offsetLimit;
-
-    s = totalLayout.getBlackBoxBounds( position, guessOffset );
-    double guessLength = s.getBounds2D().getWidth();
-
-    boolean makeSmaller = ( guessLength > wrappingWidth );
-    int inc = makeSmaller ? -1 : 1;
-    boolean keepGoing = true;
-
-    do
       {
-	guessOffset = guessOffset + inc;
-	if( guessOffset <= position || guessOffset > offsetLimit )
-	  {
-	    keepGoing = false;
-	  }
-	else
-	  {
-	    s = totalLayout.getBlackBoxBounds( position, guessOffset );
-	    guessLength = s.getBounds2D().getWidth();
-	    if( makeSmaller && ( guessLength <= wrappingWidth) )	  
-	      keepGoing = false;
-	    if( !makeSmaller && ( guessLength >= wrappingWidth) )
-	      keepGoing = false;
-	  }
+	text.setIndex( offsetLimit );
+	return offsetLimit;
       }
-    while( keepGoing );
-
-    if( !makeSmaller )
-      guessOffset--;
-
-    if( guessOffset >= offsetLimit )
-      return offsetLimit;
 
     text.setIndex( guessOffset );
+
+    // If we're on a breaking character, return directly
+    if( Character.isWhitespace( text.current() ) )
+      return guessOffset;
+
+    // Otherwise jump forward or backward to the last such char.
     if( !requireNextWord )
-      {
-	char c = text.previous();
-	while( !Character.isWhitespace( c ) && c != '-' && 
-	       guessOffset > position )
-	  { 
-	    guessOffset--; 
-	    c = text.previous();
-	  }
-      }
+      while( !Character.isWhitespace( text.previous() ) && 
+	     guessOffset > position )
+	guessOffset--; 
     else
+      while( !Character.isWhitespace( text.next() ) && 
+	     guessOffset < offsetLimit )
+	guessOffset++;
+    
+    if( guessOffset > offsetLimit )
       {
-	char c = text.next();
-	while( !Character.isWhitespace( c ) && c != '-' && 
-	       guessOffset < offsetLimit )
-	  {
-	    guessOffset++;
-	    c = text.next();
-	  }
+	text.setIndex( offsetLimit );
+	return offsetLimit;
       }
+
+    text.setIndex( guessOffset );
 
     return guessOffset;
   }

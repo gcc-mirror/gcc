@@ -184,7 +184,7 @@ public class DefaultListModel extends AbstractListModel
 
   /**
    * Inserts an element at a particular index in the list. Each element at
-   * index <code>i >= index</code> is shifted to position <code>i+1</code>.
+   * index <code>i >= index</code> is shifted to position <code>i + 1</code>.
    * If <code>index</code> is equal to <code>size()</code>, this is
    * equivalent to appending an element to the array. Any
    * <code>index</code> greater than <code>size()</code> is illegal.
@@ -420,7 +420,7 @@ public class DefaultListModel extends AbstractListModel
 
   /**
    * Inserts an element at a particular index in the list. Each element at
-   * index <code>i >= index</code> is shifted to position <code>i+1</code>.
+   * index <code>i >= index</code> is shifted to position <code>i + 1</code>.
    * If <code>index</code> is equal to <code>size()</code>, this is
    * equivalent to appending an element to the array. Any
    * <code>index</code> greater than <code>size()</code> is illegal.

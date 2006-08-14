@@ -42,36 +42,31 @@ import gnu.java.security.Registry;
 import gnu.javax.crypto.cipher.IBlockCipher;
 
 /**
- * The Cipher Block Chaining mode. This mode introduces feedback into
- * the cipher by XORing the previous ciphertext block with the plaintext
- * block before encipherment. That is, encrypting looks like this:</p>
- *
- * <blockquote><p>C<sub>i</sub> = E<sub>K</sub>(P<sub>i</sub> ^
- * C<sub>i-1</sub></p></blockquote>
- *
- * <p>Similarly, decrypting is:</p>
- *
- * <blockquote><p>P<sub>i</sub> = C<sub>i-1</sub> ^
- * D<sub>K</sub>(C<sub>i</sub>)</p></blockquote>
+ * The Cipher Block Chaining mode. This mode introduces feedback into the cipher
+ * by XORing the previous ciphertext block with the plaintext block before
+ * encipherment. That is, encrypting looks like this:
+ * 
+ * <pre>
+ *  C<sub>i</sub> = E<sub>K</sub>(P<sub>i</sub>&circ; C<sub>i-1</sub>)
+ * </pre>
+ * <p>
+ * Similarly, decrypting is:
+ * <pre>
+ *  P<sub>i</sub> = C<sub>i-1</sub> &circ; D<sub>K</sub>(C<sub>i</sub>)
+ * </pre>
  */
-public class CBC extends BaseMode implements Cloneable
+public class CBC
+    extends BaseMode
+    implements Cloneable
 {
-
-  // Constants and Variables
-  //------------------------------------------------------------------
-
   /** The last (de|en)crypted block */
   private byte[] lastBlock;
-
   /** An intermediate buffer. */
   private byte[] scratch;
 
-  // Constructors
-  // -----------------------------------------------------------------
-
   /**
    * Package-private constructor for the factory class.
-   *
+   * 
    * @param underlyingCipher The cipher implementation.
    * @param cipherBlockSize The cipher's block size.
    */
@@ -86,31 +81,20 @@ public class CBC extends BaseMode implements Cloneable
     this((IBlockCipher) that.cipher.clone(), that.cipherBlockSize);
   }
 
-  // Cloneable interface implementation
-  // -----------------------------------------------------------------
-
   public Object clone()
   {
     return new CBC(this);
   }
 
-  // Implementation of abstract methods in BaseMode
-  // -----------------------------------------------------------------
-
   public void setup()
   {
     if (modeBlockSize != cipherBlockSize)
-      {
-        throw new IllegalArgumentException();
-      }
+      throw new IllegalArgumentException();
     scratch = new byte[cipherBlockSize];
     lastBlock = new byte[cipherBlockSize];
-
     // lastBlock gets initialized to the initialization vector.
     for (int i = 0; i < lastBlock.length && i < iv.length; i++)
-      {
-        lastBlock[i] = iv[i];
-      }
+      lastBlock[i] = iv[i];
   }
 
   public void teardown()
@@ -122,9 +106,7 @@ public class CBC extends BaseMode implements Cloneable
   public void encryptBlock(byte[] in, int i, byte[] out, int o)
   {
     for (int k = 0; k < scratch.length; k++)
-      {
-        scratch[k] = (byte) (lastBlock[k] ^ in[k + i]);
-      }
+      scratch[k] = (byte)(lastBlock[k] ^ in[k + i]);
     cipher.encryptBlock(scratch, 0, out, o);
     System.arraycopy(out, o, lastBlock, 0, cipherBlockSize);
   }
@@ -135,9 +117,7 @@ public class CBC extends BaseMode implements Cloneable
     System.arraycopy(in, i, buf, 0, cipherBlockSize);
     cipher.decryptBlock(in, i, scratch, 0);
     for (int k = 0; k < scratch.length; k++)
-      {
-        out[o + k] = (byte) (lastBlock[k] ^ scratch[k]);
-      }
+      out[o + k] = (byte)(lastBlock[k] ^ scratch[k]);
     System.arraycopy(buf, 0, lastBlock, 0, cipherBlockSize);
   }
 }

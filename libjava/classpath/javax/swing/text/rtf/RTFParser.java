@@ -140,9 +140,17 @@ class RTFParser
     parseHeader();
     parseDocument();
   
-    Token t2 = scanner.readToken();
-    if (t2.type != Token.RCURLY)
-      throw new RTFParseException("expected right curly braces");
+    Token t2 = scanner.peekToken();
+    if (t2.type == Token.RCURLY)
+      {
+        // Eat the token.
+        scanner.readToken();
+      }
+    else
+      {
+        // Ignore this for maximum robustness when file is broken.
+        System.err.println("RTF warning: expected right curly braces");
+      }
 
   }
 

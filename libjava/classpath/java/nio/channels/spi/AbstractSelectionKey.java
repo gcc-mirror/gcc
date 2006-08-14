@@ -1,5 +1,5 @@
 /* AbstractSelectionKey.java --
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ public abstract class AbstractSelectionKey extends SelectionKey
   /**
    * Cancels this key.
    */
-  public final void cancel()
+  public final synchronized void cancel()
   {
     if (isValid())
       {
@@ -71,7 +71,7 @@ public abstract class AbstractSelectionKey extends SelectionKey
    *
    * @return true if this key is valid, false otherwise
    */
-  public final boolean isValid()
+  public final synchronized boolean isValid()
   {
     return ! cancelled;
   }

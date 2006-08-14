@@ -38,7 +38,9 @@ version.  */
 
 package gnu.classpath.debug;
 
-import gnu.classpath.SystemProperties;
+import gnu.java.security.action.GetPropertyAction;
+
+import java.security.AccessController;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -49,8 +51,8 @@ public final class SystemLogger
   static
   {
     SYSTEM.setFilter (PreciseFilter.GLOBAL);
-
-    String defaults = SystemProperties.getProperty ("gnu.classpath.debug.components");
+    String defaults = (String) AccessController.doPrivileged
+      (new GetPropertyAction("gnu.classpath.debug.components"));
 
     if (defaults != null)
       {

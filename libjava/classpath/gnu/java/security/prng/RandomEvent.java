@@ -41,12 +41,11 @@ package gnu.java.security.prng;
 import java.util.EventObject;
 
 /**
- * An interface for entropy accumulators that will be notified of random
- * events.
+ * A type for entropy accumulators that will be notified of random events.
  */
-public class RandomEvent extends EventObject
+public class RandomEvent
+    extends EventObject
 {
-
   private final byte sourceNumber;
 
   private final byte poolNumber;
@@ -61,7 +60,7 @@ public class RandomEvent extends EventObject
     this.poolNumber = poolNumber;
     if (data.length == 0 || data.length > 32)
       throw new IllegalArgumentException(
-                                         "random events take between 1 and 32 bytes of data");
+          "random events take between 1 and 32 bytes of data");
     this.data = (byte[]) data.clone();
   }
 

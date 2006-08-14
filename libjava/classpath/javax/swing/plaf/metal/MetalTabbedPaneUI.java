@@ -1,5 +1,5 @@
 /* MetalTabbedPaneUI.java
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -170,7 +170,9 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
    */
   protected LayoutManager createLayoutManager()
   {
-    return new TabbedPaneLayout();
+    return (tabPane.getTabLayoutPolicy() == JTabbedPane.WRAP_TAB_LAYOUT)
+           ? new MetalTabbedPaneUI.TabbedPaneLayout()
+           : super.createLayoutManager();
   }
   
   /**
@@ -326,7 +328,6 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     int bottom = h - 1;
     int right = w - 1;
 
-    
     int tabCount = tabPane.getTabCount();
     int currentRun = getRunForTab(tabCount, tabIndex);
     int firstIndex = tabRuns[currentRun];
@@ -396,14 +397,17 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       {
         if (tabPane.getSelectedIndex() == tabIndex - 1)
           {
-            g.drawLine(0, 5, 0, bottom);
-            g.setColor(oceanSelectedBorder);
-            g.drawLine(0, 0, 0, 5);
+            g.drawLine(0, 6, 0, bottom);
+            if (tabIndex != firstIndex)
+              {
+                g.setColor(oceanSelectedBorder);
+                g.drawLine(0, 0, 0, 5);
+              }
           }
         else if (isSelected)
           {
             g.drawLine(0, 5, 0, bottom);
-            if (tabIndex != 0)
+            if (tabIndex != firstIndex)
               {
                 g.setColor(darkShadow);
                 g.drawLine(0, 0, 0, 5);
@@ -463,9 +467,10 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       {
         Color c;
         if (tabPane.getSelectedIndex() == tabIndex - 1)
-          c = UIManager.getColor("TabbedPane.tabAreaBackground");
+          c = selectColor;
         else
           c = getUnselectedBackground(tabIndex - 1);
+        g.setColor(c);
         g.fillRect(right - 5, 0, 5, 3);
         g.fillRect(right - 2, 3, 2, 2);
       }
@@ -522,10 +527,13 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       }
     else if (isOcean && tabPane.getSelectedIndex() == tabIndex - 1)
       {
-        g.setColor(oceanSelectedBorder);
-        g.drawLine(right, 0, right, 6);
+        if (tabIndex != firstIndex)
+          {
+            g.setColor(oceanSelectedBorder);
+            g.drawLine(right, 0, right, 6);
+          }
         g.setColor(darkShadow);
-        g.drawLine(right, 6, right, bottom);
+        g.drawLine(right, 7, right, bottom);
       }
     else if (tabIndex != firstIndex)
       {
@@ -598,8 +606,10 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
     if (isOcean && isSelected)
       {
         g.drawLine(0, 0, 0, bottom - 5);
-        if ((currentRun == 0 && tabIndex != 0)
-            || (currentRun > 0 && tabIndex != tabRuns[currentRun - 1]))
+        
+        // Paint a connecting line to the tab below for all
+        // but the first tab in the last run.
+        if (tabIndex != tabRuns[runCount-1])
           {
             g.setColor(darkShadow);
             g.drawLine(0, bottom - 5, 0, bottom);
@@ -685,6 +695,103 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
         g.fillRect(x + 4, y + 2, w - 4, h - 2);
         g.fillRect(x + 2, y + 5, 2, h - 5);
     }
+  }
+  
+  /**
+   * This method paints the focus rectangle around the selected tab.
+   *
+   * @param g The Graphics object to paint with.
+   * @param tabPlacement The JTabbedPane's tab placement.
+   * @param rects The array of rectangles keeping track of size and position.
+   * @param tabIndex The tab index.
+   * @param iconRect The icon bounds.
+   * @param textRect The text bounds.
+   * @param isSelected Whether this tab is selected.
+   */
+  protected void paintFocusIndicator(Graphics g, int tabPlacement,
+                                     Rectangle[] rects, int tabIndex,
+                                     Rectangle iconRect, Rectangle textRect,
+                                     boolean isSelected)
+  {
+    if (tabPane.hasFocus() && isSelected)
+      {
+        Rectangle rect = rects[tabIndex];
+
+        g.setColor(focus);
+        g.translate(rect.x, rect.y);
+        
+        switch (tabPlacement)
+          {
+          case LEFT:
+            // Top line
+            g.drawLine(7, 2, rect.width-2, 2);
+            
+            // Right line
+            g.drawLine(rect.width-1, 2, rect.width-1, rect.height-3);
+            
+            // Bottom line
+            g.drawLine(rect.width-2, rect.height-2, 3, rect.height-2);
+            
+            // Left line
+            g.drawLine(2, rect.height-3, 2, 7);
+
+            // Slant
+            g.drawLine(2, 6, 6, 2);
+            break;
+          case RIGHT:
+            // Top line
+            g.drawLine(1, 2, rect.width-8, 2);
+            
+            // Slant
+            g.drawLine(rect.width-7, 2, rect.width-3, 6);
+            
+            // Right line
+            g.drawLine(rect.width-3, 7, rect.width-3, rect.height-3);
+            
+            // Bottom line
+            g.drawLine(rect.width-3, rect.height-2, 2, rect.height-2);
+
+            // Left line
+            g.drawLine(1, rect.height-2, 1, 2);
+            break;
+          case BOTTOM:
+            // Top line
+            g.drawLine(2, 1, rect.width-2, 1);
+            
+            // Right line
+            g.drawLine(rect.width-1, 2, rect.width-1, rect.height-3);
+            
+            // Bottom line
+            g.drawLine(7, rect.height-3, rect.width-2, rect.height-3);
+            
+            // Slant
+            g.drawLine(6, rect.height-3, 2, rect.height-7);
+            
+            // Left line
+            g.drawLine(2, rect.height-8, 2, 2);
+            
+            break;
+          case TOP:
+          default:
+            // Top line
+            g.drawLine(6, 2, rect.width-2, 2);
+            
+            // Right line
+            g.drawLine(rect.width-1, 2, rect.width-1, rect.height-3);
+            
+            // Bottom line
+            g.drawLine(3, rect.height-3, rect.width-2, rect.height-3);
+            
+            // Left line
+            g.drawLine(2, rect.height-3, 2, 7);
+            
+            // Slant
+            g.drawLine(2, 6, 6, 2);
+            
+          }
+        
+        g.translate(-rect.x, -rect.y);
+      }
   }
   
   /**
@@ -1144,4 +1251,19 @@ public class MetalTabbedPaneUI extends BasicTabbedPaneUI
       bg = unselectedBackground;
     return bg;
   }
+  
+  protected int getTabLabelShiftX(int tabPlacement,
+                                  int index,
+                                  boolean isSelected)
+  {
+    return 0;
+  }
+
+  protected int getTabLabelShiftY(int tabPlacement,
+                                  int index,
+                                  boolean isSelected)
+  {
+    return 0;
+  }
+  
 }

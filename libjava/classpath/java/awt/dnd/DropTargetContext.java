@@ -37,12 +37,11 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Component;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.peer.DropTargetContextPeer;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -86,7 +85,7 @@ public class DropTargetContext implements Serializable
 
   private DropTarget dropTarget;
   private int targetActions;
-  private java.awt.dnd.peer.DropTargetContextPeer dtcp;
+  private DropTargetContextPeer dtcp;
 
   // package private
   DropTargetContext(DropTarget dropTarget)
@@ -104,7 +103,7 @@ public class DropTargetContext implements Serializable
     return dropTarget.getComponent();
   }
 
-  public void addNotify(java.awt.dnd.peer.DropTargetContextPeer dtcp)
+  public void addNotify(DropTargetContextPeer dtcp)
   {
     this.dtcp = dtcp;
   }
@@ -130,39 +129,39 @@ public class DropTargetContext implements Serializable
    * @exception InvalidDnDOperationException If a drop is not outstanding.
    */
   public void dropComplete(boolean success)
-    throws NotImplementedException
   {
-    // FIXME: implement this
+    if (dtcp != null)
+      dtcp.dropComplete(success);
   }
 
   protected void acceptDrag(int dragOperation)
-    throws NotImplementedException
   {
-    // FIXME: implement this
+    if (dtcp != null)
+      dtcp.acceptDrag(dragOperation);
   }
 
   protected void rejectDrag()
-    throws NotImplementedException
   {
-    // FIXME: implement this
+    if (dtcp != null)
+      dtcp.rejectDrag();
   }
 
   protected void acceptDrop(int dropOperation)
-    throws NotImplementedException
   {
-    // FIXME: implement this
+    if (dtcp != null)
+      dtcp.acceptDrop(dropOperation);
   }
 
   protected void rejectDrop()
-    throws NotImplementedException
   {
-    // FIXME: implement this
+    if (dtcp != null)
+      dtcp.rejectDrop();    
   }
 
   protected DataFlavor[] getCurrentDataFlavors()
-    throws NotImplementedException
   {
-    // FIXME: implement this
+    if (dtcp != null)
+      dtcp.getTransferDataFlavors();
     return null;
   }
 
@@ -182,9 +181,11 @@ public class DropTargetContext implements Serializable
    * @exception InvalidDnDOperationException If a drag is not outstanding.
    */
   protected Transferable getTransferable() 
-    throws InvalidDnDOperationException, NotImplementedException
+    throws InvalidDnDOperationException
   {
-    // FIXME: implement this
+    // FIXME: Implement this
+    if (dtcp != null)
+      return dtcp.getTransferable();
     return null;
   }
 

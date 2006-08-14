@@ -45,12 +45,12 @@ import gnu.java.security.hash.IMessageDigest;
 import java.io.ByteArrayOutputStream;
 
 /**
- * <p>An implementation of the EMSA-PKCS1-V1.5 encoding scheme.</p>
- *
- * <p>EMSA-PKCS1-V1.5 is parameterised by the choice of hash function Hash and
- * hLen which denotes the length in octets of the hash function output.</p>
- *
- * <p>References:</p>
+ * An implementation of the EMSA-PKCS1-V1.5 encoding scheme.
+ * <p>
+ * EMSA-PKCS1-V1.5 is parameterised by the choice of hash function Hash and
+ * hLen which denotes the length in octets of the hash function output.
+ * <p>
+ * References:
  * <ol>
  *    <li><a href="http://www.ietf.org/rfc/rfc3447.txt">Public-Key Cryptography
  *    Standards (PKCS) #1:</a><br>
@@ -58,12 +58,9 @@ import java.io.ByteArrayOutputStream;
  *    Jakob Jonsson and Burt Kaliski.</li>
  * </ol>
  */
-public class EMSA_PKCS1_V1_5 implements Cloneable
+public class EMSA_PKCS1_V1_5
+    implements Cloneable
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /* Notes.
    1. For the six hash functions mentioned in Appendix B.1, the DER encoding
    T of the DigestInfo value is equal to the following:
@@ -75,67 +72,46 @@ public class EMSA_PKCS1_V1_5 implements Cloneable
    SHA-384: (0x)30 41 30 0d 06 09 60 86 48 01 65 03 04 02 02 05 00 04 30 || H
    SHA-512: (0x)30 51 30 0d 06 09 60 86 48 01 65 03 04 02 03 05 00 04 40 || H
    */
-  private static final byte[] MD2_PREFIX = { (byte) 0x30, (byte) 0x20,
-                                            (byte) 0x30, (byte) 0x0c,
-                                            (byte) 0x06, (byte) 0x08,
-                                            (byte) 0x2a, (byte) 0x86,
-                                            (byte) 0x48, (byte) 0x86,
-                                            (byte) 0xf7, (byte) 0x0d,
-                                            (byte) 0x02, (byte) 0x02,
-                                            (byte) 0x05, (byte) 0x00,
-                                            (byte) 0x04, (byte) 0x10 };
+  private static final byte[] MD2_PREFIX = {
+      (byte) 0x30, (byte) 0x20, (byte) 0x30, (byte) 0x0c, (byte) 0x06,
+      (byte) 0x08, (byte) 0x2a, (byte) 0x86, (byte) 0x48, (byte) 0x86,
+      (byte) 0xf7, (byte) 0x0d, (byte) 0x02, (byte) 0x02, (byte) 0x05,
+      (byte) 0x00, (byte) 0x04, (byte) 0x10
+  };
 
-  private static final byte[] MD5_PREFIX = { (byte) 0x30, (byte) 0x20,
-                                            (byte) 0x30, (byte) 0x0c,
-                                            (byte) 0x06, (byte) 0x08,
-                                            (byte) 0x2a, (byte) 0x86,
-                                            (byte) 0x48, (byte) 0x86,
-                                            (byte) 0xf7, (byte) 0x0d,
-                                            (byte) 0x02, (byte) 0x05,
-                                            (byte) 0x05, (byte) 0x00,
-                                            (byte) 0x04, (byte) 0x10 };
+  private static final byte[] MD5_PREFIX = {
+      (byte) 0x30, (byte) 0x20, (byte) 0x30, (byte) 0x0c, (byte) 0x06,
+      (byte) 0x08, (byte) 0x2a, (byte) 0x86, (byte) 0x48, (byte) 0x86,
+      (byte) 0xf7, (byte) 0x0d, (byte) 0x02, (byte) 0x05, (byte) 0x05,
+      (byte) 0x00, (byte) 0x04, (byte) 0x10
+  };
 
-  private static final byte[] SHA160_PREFIX = { (byte) 0x30, (byte) 0x21,
-                                               (byte) 0x30, (byte) 0x09,
-                                               (byte) 0x06, (byte) 0x05,
-                                               (byte) 0x2b, (byte) 0x0e,
-                                               (byte) 0x03, (byte) 0x02,
-                                               (byte) 0x1a, (byte) 0x05,
-                                               (byte) 0x00, (byte) 0x04,
-                                               (byte) 0x14 };
+  private static final byte[] SHA160_PREFIX = {
+      (byte) 0x30, (byte) 0x21, (byte) 0x30, (byte) 0x09, (byte) 0x06,
+      (byte) 0x05, (byte) 0x2b, (byte) 0x0e, (byte) 0x03, (byte) 0x02,
+      (byte) 0x1a, (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x14
+  };
 
-  private static final byte[] SHA256_PREFIX = { (byte) 0x30, (byte) 0x31,
-                                               (byte) 0x30, (byte) 0x0d,
-                                               (byte) 0x06, (byte) 0x09,
-                                               (byte) 0x60, (byte) 0x86,
-                                               (byte) 0x48, (byte) 0x01,
-                                               (byte) 0x65, (byte) 0x03,
-                                               (byte) 0x04, (byte) 0x02,
-                                               (byte) 0x01, (byte) 0x05,
-                                               (byte) 0x00, (byte) 0x04,
-                                               (byte) 0x20 };
+  private static final byte[] SHA256_PREFIX = {
+      (byte) 0x30, (byte) 0x31, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
+      (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
+      (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x01,
+      (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x20
+  };
 
-  private static final byte[] SHA384_PREFIX = { (byte) 0x30, (byte) 0x41,
-                                               (byte) 0x30, (byte) 0x0d,
-                                               (byte) 0x06, (byte) 0x09,
-                                               (byte) 0x60, (byte) 0x86,
-                                               (byte) 0x48, (byte) 0x01,
-                                               (byte) 0x65, (byte) 0x03,
-                                               (byte) 0x04, (byte) 0x02,
-                                               (byte) 0x02, (byte) 0x05,
-                                               (byte) 0x00, (byte) 0x04,
-                                               (byte) 0x30 };
+  private static final byte[] SHA384_PREFIX = {
+      (byte) 0x30, (byte) 0x41, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
+      (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
+      (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x02,
+      (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x30
+  };
 
-  private static final byte[] SHA512_PREFIX = { (byte) 0x30, (byte) 0x51,
-                                               (byte) 0x30, (byte) 0x0d,
-                                               (byte) 0x06, (byte) 0x09,
-                                               (byte) 0x60, (byte) 0x86,
-                                               (byte) 0x48, (byte) 0x01,
-                                               (byte) 0x65, (byte) 0x03,
-                                               (byte) 0x04, (byte) 0x02,
-                                               (byte) 0x03, (byte) 0x05,
-                                               (byte) 0x00, (byte) 0x04,
-                                               (byte) 0x40 };
+  private static final byte[] SHA512_PREFIX = {
+      (byte) 0x30, (byte) 0x51, (byte) 0x30, (byte) 0x0d, (byte) 0x06,
+      (byte) 0x09, (byte) 0x60, (byte) 0x86, (byte) 0x48, (byte) 0x01,
+      (byte) 0x65, (byte) 0x03, (byte) 0x04, (byte) 0x02, (byte) 0x03,
+      (byte) 0x05, (byte) 0x00, (byte) 0x04, (byte) 0x40
+  };
 
   /** The underlying hash function to use with this instance. */
   private IMessageDigest hash;
@@ -146,11 +122,8 @@ public class EMSA_PKCS1_V1_5 implements Cloneable
   /** The DER part of DigestInfo not containing the hash value itself. */
   private byte[] prefix;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Trivial private constructor to enforce use through Factory method.</p>
+   * Trivial private constructor to enforce use through Factory method.
    *
    * @param hash the message digest instance to use with this scheme instance.
    */
@@ -162,41 +135,24 @@ public class EMSA_PKCS1_V1_5 implements Cloneable
     hLen = hash.hashSize();
     final String name = hash.name();
     if (name.equals(Registry.MD2_HASH))
-      {
-        prefix = MD2_PREFIX;
-      }
+      prefix = MD2_PREFIX;
     else if (name.equals(Registry.MD5_HASH))
-      {
-        prefix = MD5_PREFIX;
-      }
+      prefix = MD5_PREFIX;
     else if (name.equals(Registry.SHA160_HASH))
-      {
-        prefix = SHA160_PREFIX;
-      }
+      prefix = SHA160_PREFIX;
     else if (name.equals(Registry.SHA256_HASH))
-      {
-        prefix = SHA256_PREFIX;
-      }
+      prefix = SHA256_PREFIX;
     else if (name.equals(Registry.SHA384_HASH))
-      {
-        prefix = SHA384_PREFIX;
-      }
+      prefix = SHA384_PREFIX;
     else if (name.equals(Registry.SHA512_HASH))
-      {
-        prefix = SHA512_PREFIX;
-      }
+      prefix = SHA512_PREFIX;
     else
-      {
-        throw new UnsupportedOperationException(); // should not happen
-      }
+      throw new UnsupportedOperationException(); // should not happen
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns an instance of this object given a designated name of a hash
-   * function.</p>
+   * Returns an instance of this object given a designated name of a hash
+   * function.
    *
    * @param mdName the canonical name of a hash function.
    * @return an instance of this object configured for use with the designated
@@ -208,32 +164,26 @@ public class EMSA_PKCS1_V1_5 implements Cloneable
   {
     final IMessageDigest hash = HashFactory.getInstance(mdName);
     final String name = hash.name();
-    if (!(name.equals(Registry.MD2_HASH) || name.equals(Registry.MD5_HASH)
+    if (! (name.equals(Registry.MD2_HASH)
+          || name.equals(Registry.MD5_HASH)
           || name.equals(Registry.SHA160_HASH)
           || name.equals(Registry.SHA256_HASH)
-          || name.equals(Registry.SHA384_HASH) || name.equals(Registry.SHA512_HASH)))
-      {
-        throw new UnsupportedOperationException("hash with no OID: " + name);
-      }
+          || name.equals(Registry.SHA384_HASH)
+          || name.equals(Registry.SHA512_HASH)))
+      throw new UnsupportedOperationException("hash with no OID: " + name);
+
     return new EMSA_PKCS1_V1_5(hash);
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // Cloneable interface implementation --------------------------------------
 
   public Object clone()
   {
     return getInstance(hash.name());
   }
 
-  // own methods -------------------------------------------------------------
-
   /**
-   * <p>Frames the hash of a message, along with an ID of the hash function in
+   * Frames the hash of a message, along with an ID of the hash function in
    * a DER sequence according to the specifications of EMSA-PKCS1-V1.5 as
-   * described in RFC-3447 (see class documentation).</p>
+   * described in RFC-3447 (see class documentation).
    *
    * @param mHash the byte sequence resulting from applying the message digest
    * algorithm Hash to the message <i>M</i>.
@@ -270,17 +220,13 @@ public class EMSA_PKCS1_V1_5 implements Cloneable
     // 3. If emLen < tLen + 11, output "intended encoded message length too
     //    short" and stop.
     if (emLen < tLen + 11)
-      {
-        throw new IllegalArgumentException("emLen too short");
-      }
+      throw new IllegalArgumentException("emLen too short");
     // 4. Generate an octet string PS consisting of emLen - tLen - 3 octets
     //    with hexadecimal value 0xff.  The length of PS will be at least 8
     //    octets.
     final byte[] PS = new byte[emLen - tLen - 3];
     for (int i = 0; i < PS.length; i++)
-      {
-        PS[i] = (byte) 0xFF;
-      }
+      PS[i] = (byte) 0xFF;
     // 5. Concatenate PS, the DER encoding T, and other padding to form the
     //    encoded message EM as: EM = 0x00 || 0x01 || PS || 0x00 || T.
     baos.reset();

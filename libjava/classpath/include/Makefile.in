@@ -85,6 +85,8 @@ CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
 CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
 CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
+CREATE_GCONF_PEER_LIBRARIES_FALSE = @CREATE_GCONF_PEER_LIBRARIES_FALSE@
+CREATE_GCONF_PEER_LIBRARIES_TRUE = @CREATE_GCONF_PEER_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
 CREATE_GTK_PEER_LIBRARIES_TRUE = @CREATE_GTK_PEER_LIBRARIES_TRUE@
 CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
@@ -105,6 +107,7 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATE = @DATE@
+DEFAULT_PREFS_PEER = @DEFAULT_PREFS_PEER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -135,6 +138,10 @@ FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
+GCONF_CFLAGS = @GCONF_CFLAGS@
+GCONF_LIBS = @GCONF_LIBS@
+GDK_CFLAGS = @GDK_CFLAGS@
+GDK_LIBS = @GDK_LIBS@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
@@ -185,6 +192,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PATH_TO_ESCHER = @PATH_TO_ESCHER@
 PATH_TO_GLIBJ_ZIP = @PATH_TO_GLIBJ_ZIP@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
@@ -205,6 +213,8 @@ USER_SPECIFIED_CLASSLIB_FALSE = @USER_SPECIFIED_CLASSLIB_FALSE@
 USER_SPECIFIED_CLASSLIB_TRUE = @USER_SPECIFIED_CLASSLIB_TRUE@
 USER_SPECIFIED_JAVAH_FALSE = @USER_SPECIFIED_JAVAH_FALSE@
 USER_SPECIFIED_JAVAH_TRUE = @USER_SPECIFIED_JAVAH_TRUE@
+USE_ESCHER_FALSE = @USE_ESCHER_FALSE@
+USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
@@ -304,16 +314,18 @@ $(top_srcdir)/include/gnu_xml_libxmlj_transform_GnomeTransformer.h \
 $(top_srcdir)/include/gnu_xml_libxmlj_transform_GnomeTransformerFactory.h
 
 GTKPEER_H_FILES = \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_CairoSurface.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_CairoGraphics2D.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_ComponentGraphics.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_ComponentGraphicsCopy.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_FreetypeGlyphVector.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkFontPeer.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkGraphics.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkGraphics2D.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkPixbufDecoder.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkRobotPeer.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkTextLayout.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkButtonPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkCanvasPeer.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkCheckboxPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkChoicePeer.h \
@@ -339,7 +351,9 @@ $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkTextAreaPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkTextFieldPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkToolkit.h \
 $(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkWindowPeer.h \
-$(top_srcdir)/include/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.h
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_GtkVolatileImage.h \
+$(top_srcdir)/include/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.h \
+$(top_srcdir)/include/GtkDragSourceContextPeer.h
 
 QTPEER_H_FILES = \
 $(top_srcdir)/include/gnu_java_awt_peer_qt_QtCheckboxPeer.h \
@@ -379,14 +393,19 @@ $(top_srcdir)/include/gnu_java_awt_peer_qt_QtFileDialogPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_qt_QtContainerPeer.h \
 $(top_srcdir)/include/gnu_java_awt_peer_qt_QtEmbeddedWindowPeer.h 
 
+GCONF_PREFS_FILES = \
+$(top_srcdir)/include/gnu_java_util_prefs_gconf_GConfNativePeer.h
+
 H_FILES = \
 $(SOUND_H_FILES) \
 $(XMLJ_H_FILES) \
 $(GTKPEER_H_FILES) \
 $(QTPEER_H_FILES) \
+$(GCONF_PREFS_FILES) \
 $(top_srcdir)/include/gnu_java_net_VMPlainDatagramSocketImpl.h \
 $(top_srcdir)/include/gnu_java_net_VMPlainSocketImpl.h \
 $(top_srcdir)/include/gnu_java_net_local_LocalSocketImpl.h \
+$(top_srcdir)/include/gnu_java_nio_VMChannel.h \
 $(top_srcdir)/include/gnu_java_nio_VMPipe.h \
 $(top_srcdir)/include/gnu_java_nio_VMSelector.h \
 $(top_srcdir)/include/gnu_java_nio_channels_FileChannelImpl.h \
@@ -403,6 +422,7 @@ $(top_srcdir)/include/java_lang_VMSystem.h \
 $(top_srcdir)/include/java_lang_reflect_VMArray.h \
 $(top_srcdir)/include/java_net_VMInetAddress.h \
 $(top_srcdir)/include/java_net_VMNetworkInterface.h \
+$(top_srcdir)/include/java_net_VMURLConnection.h \
 $(top_srcdir)/include/java_nio_VMDirectByteBuffer.h \
 $(top_srcdir)/include/java_nio_MappedByteBufferImpl.h \
 $(top_srcdir)/include/java_util_VMTimeZone.h
@@ -612,12 +632,17 @@ uninstall-am: uninstall-info-am
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_javax_sound_midi_dssi_%.h: $(top_builddir)/$(CLASSDIR)/gnu/javax/sound/midi/dssi/%.class
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.javax.sound.midi.dssi.$*
 
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_util_prefs_gconf_%.h: $(top_builddir)/$(CLASSDIR)/gnu/java/util/prefs/gconf/%.class
+@CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.util.prefs.gconf.$*
+
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_net_VMPlainDatagramSocketImpl.h: $(top_srcdir)/vm/reference/gnu/java/net/VMPlainDatagramSocketImpl.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.net.VMPlainDatagramSocketImpl
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_net_VMPlainSocketImpl.h: $(top_srcdir)/vm/reference/gnu/java/net/VMPlainSocketImpl.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.net.VMPlainSocketImpl
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_net_local_LocalSocketImpl.h: $(top_srcdir)/gnu/java/net/local/LocalSocketImpl.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.net.local.LocalSocketImpl
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_nio_VMChannel.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMChannel.java
+@CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.nio.VMChannel
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_nio_VMPipe.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMPipe.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ gnu.java.nio.VMPipe
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/gnu_java_nio_VMSelector.h: $(top_srcdir)/vm/reference/gnu/java/nio/VMSelector.java
@@ -644,6 +669,8 @@ uninstall-am: uninstall-info-am
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.net.VMInetAddress
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_net_VMNetworkInterface.h: $(top_srcdir)/vm/reference/java/net/VMNetworkInterface.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.net.VMNetworkInterface
+@CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_net_VMURLConnection.h: $(top_srcdir)/vm/reference/java/net/VMURLConnection.java
+@CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.net.VMURLConnection
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_nio_VMDirectByteBuffer.h: $(top_srcdir)/vm/reference/java/nio/VMDirectByteBuffer.java
 @CREATE_JNI_HEADERS_TRUE@	$(JAVAH) -o $@ java.nio.VMDirectByteBuffer
 @CREATE_JNI_HEADERS_TRUE@$(top_srcdir)/include/java_nio_MappedByteBufferImpl.h: $(top_srcdir)/java/nio/MappedByteBufferImpl.java

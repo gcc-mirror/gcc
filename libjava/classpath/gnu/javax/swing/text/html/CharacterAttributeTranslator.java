@@ -83,7 +83,7 @@ public class CharacterAttributeTranslator
    * @param colorName the color to convert.
    * @return the matching java.awt.color
    */
-  private static Color getColor(String colorName)
+  public static Color getColor(String colorName)
   {
     colorName = colorName.toLowerCase();
     try

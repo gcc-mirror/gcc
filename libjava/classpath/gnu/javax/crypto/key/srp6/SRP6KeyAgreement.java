@@ -49,97 +49,71 @@ import gnu.javax.crypto.sasl.srp.SRP;
 import java.math.BigInteger;
 
 /**
- * <p>The Secure Remote Password (SRP) key agreement protocol, also known as
- * SRP-6, is designed by Thomas J. Wu (see references). The protocol, and its
- * elements are described as follows:</p>
- *
+ * The Secure Remote Password (SRP) key agreement protocol, also known as SRP-6,
+ * is designed by Thomas J. Wu (see references). The protocol, and its elements
+ * are described as follows:
  * <pre>
- * N    A large safe prime (N = 2q+1, where q is prime)
- *      All arithmetic is done modulo N.
- * g    A generator modulo N
- * s    User's salt
- * I    Username
- * p    Cleartext Password
- * H()  One-way hash function
- * ^    (Modular) Exponentiation
- * u    Random scrambling parameter
- * a,b  Secret ephemeral values
- * A,B  Public ephemeral values
- * x    Private key (derived from p and s)
- * v    Password verifier
- *
- * The host stores passwords using the following formula:
- * x = H(s | H(I ":" p))           (s is chosen randomly)
- * v = g^x                   (computes password verifier)
- *
- * The host then keeps {I, s, v} in its password database.
- *
- * The authentication protocol itself goes as follows:
- * User -> Host:  I, A = g^a         (identifies self, a = random number)
- * Host -> User:  s, B = 3v + g^b    (sends salt, b = random number)
- *
- * Both:  u = H(A, B)
- *
- * User:  x = H(s, p)                (user enters password)
- * User:  S = (B - 3g^x) ^ (a + ux)  (computes session key)
- * User:  K = H(S)
- *
- * Host:  S = (Av^u) ^ b             (computes session key)
- * Host:  K = H(S)
+ *  N    A large safe prime (N = 2q+1, where q is prime)
+ *       All arithmetic is done modulo N.
+ *  g    A generator modulo N
+ *  s    User's salt
+ *  I    Username
+ *  p    Cleartext Password
+ *  H()  One-way hash function
+ *  &circ;    (Modular) Exponentiation
+ *  u    Random scrambling parameter
+ *  a,b  Secret ephemeral values
+ *  A,B  Public ephemeral values
+ *  x    Private key (derived from p and s)
+ *  v    Password verifier
+ * 
+ *  The host stores passwords using the following formula:
+ *  x = H(s | H(I &quot;:&quot; p))           (s is chosen randomly)
+ *  v = g&circ;x                         (computes password verifier)
+ * 
+ *  The host then keeps {I, s, v} in its password database.
+ * 
+ *  The authentication protocol itself goes as follows:
+ *  User -&gt; Host:  I, A = g&circ;a         (identifies self, a = random number)
+ *  Host -&gt; User:  s, B = 3v + g&circ;b    (sends salt, b = random number)
+ * 
+ *  Both:  u = H(A, B)
+ * 
+ *  User:  x = H(s, p)               (user enters password)
+ *  User:  S = (B - 3g&circ;x) &circ; (a + ux) (computes session key)
+ *  User:  K = H(S)
+ * 
+ *  Host:  S = (Av&circ;u) &circ; b            (computes session key)
+ *  Host:  K = H(S)
  * </pre>
- *
- * <p>Reference:</p>
+ * <p>
+ * Reference:
  * <ol>
- *    <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
- *    Thomas J. Wu.</li>
+ * <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
+ * Thomas J. Wu.</li>
  * </ol>
  */
-public abstract class SRP6KeyAgreement extends BaseKeyAgreementParty
+public abstract class SRP6KeyAgreement
+    extends BaseKeyAgreementParty
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   public static final String SOURCE_OF_RANDOMNESS = "gnu.crypto.srp6.ka.prng";
-
   public static final String SHARED_MODULUS = "gnu.crypto.srp6.ka.N";
-
   public static final String GENERATOR = "gnu.crypto.srp6.ka.g";
-
   public static final String HASH_FUNCTION = "gnu.crypto.srp6.ka.H";
-
   public static final String USER_IDENTITY = "gnu.crypto.srp6.ka.I";
-
   public static final String USER_PASSWORD = "gnu.crypto.srp6.ka.p";
-
   public static final String HOST_PASSWORD_DB = "gnu.crypto.srp6.ka.password.db";
-
   protected static final BigInteger THREE = BigInteger.valueOf(3L);
-
   protected SRP srp;
-
   protected BigInteger N;
-
   protected BigInteger g;
-
   /** The shared secret key. */
   protected BigInteger K;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   protected SRP6KeyAgreement()
   {
     super(Registry.SRP6_KA);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // implementation of common abstract methods in BaseKeyAGreementParty ------
 
   protected byte[] engineSharedSecret() throws KeyAgreementException
   {
@@ -148,25 +122,20 @@ public abstract class SRP6KeyAgreement extends BaseKeyAgreementParty
 
   protected void engineReset()
   {
-    //      mda = null;
     srp = null;
     N = null;
     g = null;
     K = null;
   }
 
-  // helper methods ----------------------------------------------------------
-
   protected BigInteger uValue(final BigInteger A, final BigInteger B)
   {
-    //      IMessageDigest hash = (IMessageDigest) mda.clone();
     final IMessageDigest hash = srp.newDigest();
     byte[] b;
     b = Util.trim(A);
     hash.update(b, 0, b.length);
     b = Util.trim(B);
     hash.update(b, 0, b.length);
-
     return new BigInteger(1, hash.digest());
   }
 }

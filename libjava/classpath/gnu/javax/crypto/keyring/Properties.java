@@ -42,26 +42,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 /**
  * A set of <code>(name =&gt; value)</code> pairs used in keyring entries.
- * Keys and values are simple strings, with the key never being empty and
- * always treated case-insensitively.
+ * Keys and values are simple strings, with the key never being empty and always
+ * treated case-insensitively.
  */
-public class Properties implements Cloneable
+public class Properties
+    implements Cloneable
 {
-
-  // Field.
-  // ------------------------------------------------------------------------
-
   private HashMap props;
-
-  // Constructor.
-  // ------------------------------------------------------------------------
 
   /**
    * Creates a new properties object.
@@ -70,9 +63,6 @@ public class Properties implements Cloneable
   {
     props = new HashMap();
   }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
 
   /**
    * Removes all properties from this object.
@@ -84,7 +74,7 @@ public class Properties implements Cloneable
 
   /**
    * Creates a copy of this properties object.
-   *
+   * 
    * @return The copy.
    */
   public Object clone()
@@ -96,86 +86,75 @@ public class Properties implements Cloneable
 
   /**
    * Tests if this object contains a given property name.
-   *
+   * 
    * @param key The key to test.
    * @return True if this object contains the given key.
    */
   public boolean containsKey(String key)
   {
     if (key == null || key.length() == 0)
-      {
-        return false;
-      }
+      return false;
     return props.containsKey(canonicalize(key));
   }
 
   /**
    * Tests if this object contains a given property value.
-   *
+   * 
    * @param value The value to test.
    * @return True if this object contains the given value.
    */
   public boolean containsValue(String value)
   {
     if (value == null)
-      {
-        return false;
-      }
+      return false;
     return props.containsValue(value);
   }
 
   /**
    * Adds a new property to this object.
-   *
+   * 
    * @param key The key, which can neither be null nor empty.
    * @param value The value, which cannot be null.
    * @return The old value mapped by the key, if any.
-   * @throws IllegalArgumentException If either the key or value parameter
-
-   *   is null, or if the key is empty.
+   * @throws IllegalArgumentException If either the key or value parameter is
+   *           null, or if the key is empty.
    */
   public String put(String key, String value)
   {
     if (key == null || value == null || key.length() == 0)
-      {
-        throw new IllegalArgumentException("key nor value can be null");
-      }
+      throw new IllegalArgumentException("key nor value can be null");
     return (String) props.put(canonicalize(key), value);
   }
 
   /**
-   * Returns the value mapped by the given key, or null if there is no
-   * such mapping.
-   *
+   * Returns the value mapped by the given key, or null if there is no such
+   * mapping.
+   * 
    * @param key
    */
   public String get(String key)
   {
     if (key == null || key.length() == 0)
-      {
-        return null;
-      }
+      return null;
     return (String) props.get(canonicalize(key));
   }
 
   /**
    * Removes a key and its value from this object.
-   *
+   * 
    * @param key The key of the property to remove.
    * @return The old value mapped by the key, if any.
    */
   public String remove(String key)
   {
     if (key == null || key.length() == 0)
-      {
-        return null;
-      }
+      return null;
     return (String) props.remove(canonicalize(key));
   }
 
   /**
    * Decodes a set of properties from the given input stream.
-   *
+   * 
    * @param in The input stream.
    * @throws IOException If an I/O error occurs.
    */
@@ -184,7 +163,7 @@ public class Properties implements Cloneable
     int len = in.readInt();
     MeteredInputStream min = new MeteredInputStream(in, len);
     DataInputStream in2 = new DataInputStream(min);
-    while (!min.limitReached())
+    while (! min.limitReached())
       {
         String name = in2.readUTF();
         String value = in2.readUTF();
@@ -194,7 +173,7 @@ public class Properties implements Cloneable
 
   /**
    * Encodes this set of properties to the given output stream.
-   *
+   * 
    * @param out The output stream to encode to.
    * @throws IOException If an I/O error occurs.
    */
@@ -216,9 +195,6 @@ public class Properties implements Cloneable
   {
     return props.toString();
   }
-
-  // Own methods.
-  // ------------------------------------------------------------------------
 
   private String canonicalize(String key)
   {

@@ -35,18 +35,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version.  */
 
+
 package gnu.javax.crypto.jce.key;
 
 import gnu.java.security.Registry;
 
-public class RijndaelKeyGeneratorImpl extends SecretKeyGeneratorImpl
+public class RijndaelKeyGeneratorImpl
+    extends SecretKeyGeneratorImpl
 {
-
-  // Constructors.
-  // -------------------------------------------------------------------------
-
-  public RijndaelKeyGeneratorImpl ()
+  public RijndaelKeyGeneratorImpl()
   {
-    super (Registry.RIJNDAEL_CIPHER);
+    super(Registry.RIJNDAEL_CIPHER);
   }
 }

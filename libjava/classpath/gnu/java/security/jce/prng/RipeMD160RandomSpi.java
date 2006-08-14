@@ -42,25 +42,13 @@ import gnu.java.security.Registry;
 
 /**
  * The implementation of the RIPEMD160-based SecureRandom <i>Service Provider
- * Interface</i> (<b>SPI</b>) adapter.<p>
+ * Interface</i> (<b>SPI</b>) adapter.
  */
-public class RipeMD160RandomSpi extends SecureRandomAdapter
+public class RipeMD160RandomSpi
+    extends SecureRandomAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public RipeMD160RandomSpi()
   {
     super(Registry.RIPEMD160_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

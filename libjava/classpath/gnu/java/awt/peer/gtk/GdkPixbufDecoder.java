@@ -38,13 +38,10 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import gnu.classpath.Configuration;
-
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.ImageConsumer;
-import java.awt.image.ImageProducer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.io.DataInput;

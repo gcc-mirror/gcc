@@ -45,6 +45,7 @@ import java.awt.Insets;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
+import java.util.Enumeration;
 import java.util.Locale;
 
 import javax.swing.border.Border;
@@ -117,6 +118,87 @@ public class UIManager implements Serializable
     }
   }
 
+  /**
+   * A UIDefaults subclass that multiplexes between itself and a 'fallback'
+   * UIDefaults instance. This is used to protect the L&F UIDefaults from beeing
+   * overwritten by applications.
+   */
+  private static class MultiplexUIDefaults
+    extends UIDefaults
+  {
+    private class MultiplexEnumeration
+      implements Enumeration
+    {
+      Enumeration[] enums;
+      int i;
+      MultiplexEnumeration(Enumeration e1, Enumeration e2)
+      {
+        enums = new Enumeration[]{ e1, e2 };
+        i = 0;
+      }
+
+      public boolean hasMoreElements()
+      {
+        return enums[i].hasMoreElements() || i < enums.length - 1;
+      }
+
+      public Object nextElement()
+      {
+        Object val = enums[i].nextElement();
+        if (! enums[i].hasMoreElements() && i < enums.length - 1)
+          i++;
+        return val;
+      }
+        
+    }
+
+    UIDefaults fallback;
+
+    MultiplexUIDefaults(UIDefaults d)
+    {
+      fallback = d;
+    }
+
+    public Object get(Object key)
+    {
+      Object val = super.get(key);
+      if (val == null)
+        val = fallback.get(key);
+      return val;
+    }
+
+    public Object get(Object key, Locale l)
+    {
+      Object val = super.get(key, l);
+      if (val == null)
+        val = fallback.get(key, l);
+      return val;
+    }
+
+    public Object remove(Object key)
+    {
+      Object val = super.remove(key);
+      if (val == null)
+        val = fallback.remove(key);
+      return val;
+    }
+
+    public int size()
+    {
+      return super.size() + fallback.size();
+    }
+
+    public Enumeration keys()
+    {
+      return new MultiplexEnumeration(super.keys(), fallback.keys());
+    }
+
+    public Enumeration elements()
+    {
+      return new MultiplexEnumeration(super.elements(), fallback.elements());
+    }
+  }
+
   private static final long serialVersionUID = -5547433830339189365L;
 
   /** The installed look and feel(s). */
@@ -131,12 +213,9 @@ public class UIManager implements Serializable
   /** The current look and feel. */
   static LookAndFeel currentLookAndFeel;
   
-  static UIDefaults currentUIDefaults;
+  static MultiplexUIDefaults currentUIDefaults;
 
-  /**
-   * UIDefaults set by the user.
-   */
-  static UIDefaults userUIDefaults;
+  static UIDefaults lookAndFeelDefaults;
 
   /** Property change listener mechanism. */
   static PropertyChangeSupport listeners
@@ -149,9 +228,7 @@ public class UIManager implements Serializable
       {
         if (defaultlaf != null)
           {
-            Class lafClass = Class.forName(defaultlaf);
-            LookAndFeel laf = (LookAndFeel) lafClass.newInstance();
-            setLookAndFeel(laf);
+            setLookAndFeel(defaultlaf);
           }
         else
           {
@@ -162,6 +239,7 @@ public class UIManager implements Serializable
       {
         System.err.println("cannot initialize Look and Feel: " + defaultlaf);
         System.err.println("error: " + ex.toString());
+        ex.printStackTrace();
         System.err.println("falling back to Metal Look and Feel");
         try
           {
@@ -312,12 +390,7 @@ public class UIManager implements Serializable
    */
   public static Object get(Object key)
   {
-    Object val = null;
-    if (userUIDefaults != null)
-      val = userUIDefaults.get(key);
-    if (val == null)
-      val = getLookAndFeelDefaults().get(key);
-    return val;
+    return getDefaults().get(key);
   }
 
   /**
@@ -330,12 +403,7 @@ public class UIManager implements Serializable
    */
   public static Object get(Object key, Locale locale)
   {
-    Object val = null;
-    if (userUIDefaults != null)
-      val = userUIDefaults.get(key, locale);
-    if (val == null)
-      val = getLookAndFeelDefaults().get(key, locale);
-    return val;
+    return getDefaults().get(key, locale);
   }
 
   /**
@@ -414,6 +482,8 @@ public class UIManager implements Serializable
    */
   public static UIDefaults getDefaults()
   {
+    if (currentUIDefaults == null)
+      currentUIDefaults = new MultiplexUIDefaults(null);
     return currentUIDefaults;
   }
 
@@ -546,7 +616,7 @@ public class UIManager implements Serializable
    */
   public static UIDefaults getLookAndFeelDefaults()
   {
-    return currentUIDefaults;
+    return lookAndFeelDefaults;
   }
 
   /**
@@ -587,13 +657,7 @@ public class UIManager implements Serializable
    */
   public static ComponentUI getUI(JComponent target)
   {
-    ComponentUI ui = null;
-    if (userUIDefaults != null
-        && userUIDefaults.get(target.getUIClassID()) != null)
-      ui = userUIDefaults.getUI(target);
-    if (ui == null)
-      ui = currentUIDefaults.getUI(target);
-    return ui;
+    return getDefaults().getUI(target);
   }
 
   /**
@@ -625,11 +689,7 @@ public class UIManager implements Serializable
    */
   public static Object put(Object key, Object value)
   {
-    Object old = get(key);
-    if (userUIDefaults == null)
-      userUIDefaults = new UIDefaults();
-    userUIDefaults.put(key, value);
-    return old;
+    return getDefaults().put(key, value);
   }
 
   /**
@@ -654,7 +714,8 @@ public class UIManager implements Serializable
     throws UnsupportedLookAndFeelException
   {
     if (newLookAndFeel != null && ! newLookAndFeel.isSupportedLookAndFeel())
-      throw new UnsupportedLookAndFeelException(newLookAndFeel.getName());
+      throw new UnsupportedLookAndFeelException(newLookAndFeel.getName()
+                                         + " not supported on this platform");
     LookAndFeel oldLookAndFeel = currentLookAndFeel;
     if (oldLookAndFeel != null)
       oldLookAndFeel.uninitialize();
@@ -664,7 +725,12 @@ public class UIManager implements Serializable
     if (newLookAndFeel != null)
       {
         newLookAndFeel.initialize();
-        currentUIDefaults = newLookAndFeel.getDefaults();
+        lookAndFeelDefaults = newLookAndFeel.getDefaults();
+        if (currentUIDefaults == null)
+          currentUIDefaults =
+            new MultiplexUIDefaults(lookAndFeelDefaults);
+        else
+          currentUIDefaults.fallback = lookAndFeelDefaults;
       }
     else
       {
@@ -689,7 +755,8 @@ public class UIManager implements Serializable
     throws ClassNotFoundException, InstantiationException, IllegalAccessException,
     UnsupportedLookAndFeelException
   {
-    Class c = Class.forName(className);
+    Class c = Class.forName(className, true,
+                            Thread.currentThread().getContextClassLoader());
     LookAndFeel a = (LookAndFeel) c.newInstance(); // throws class-cast-exception
     setLookAndFeel(a);
   }

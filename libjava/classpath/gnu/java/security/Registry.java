@@ -44,10 +44,6 @@ package gnu.java.security;
  */
 public interface Registry
 {
-
-  // Constants
-  // -------------------------------------------------------------------------
-
   /** The name of our Providers. */
   String GNU_SECURITY = "GNU";
   String GNU_CRYPTO = "GNU-CRYPTO";
@@ -92,6 +88,18 @@ public interface Registry
   String CAST128_CIPHER = "cast128";
 
   String CAST_128_CIPHER = "cast-128";
+
+  // Key Wrapping Algorithm names and synonyms ...............................
+
+  String KWA_PREFIX = "kw-";
+  String AES_KWA = KWA_PREFIX + AES_CIPHER;
+  String AES128_KWA = AES_KWA + "128";
+  String AES192_KWA = AES_KWA + "192";
+  String AES256_KWA = AES_KWA + "256";
+  String RIJNDAEL_KWA = KWA_PREFIX + RIJNDAEL_CIPHER;
+
+  String TRIPLEDES_KWA = KWA_PREFIX + TRIPLEDES_CIPHER;
+  String DESEDE_KWA = KWA_PREFIX + DESEDE_CIPHER;
 
   // Message digest algorithms and synonyms...................................
 
@@ -176,6 +184,9 @@ public interface Registry
 
   /** TLSv1 padding scheme. */
   String TLS1_PAD = "tls1";
+
+  /** ISO 10126-2 padding scheme. */
+  String ISO10126_PAD = "iso10126";
 
   // Pseudo-random number generators..........................................
 
@@ -300,38 +311,38 @@ public interface Registry
   // D (0x44) for DSS, R (0x52) for RSA, H (0x48) for Diffie-Hellman, or S
   // (0x53) for SRP-6, and finally P (0x50) for Public, p (0x70) for private,
   // or S (0x53) for signature.
-  byte[] MAGIC_RAW_DSS_PUBLIC_KEY = new byte[] { 0x47, RAW_ENCODING_ID, 0x44,
-                                                0x50 };
+  byte[] MAGIC_RAW_DSS_PUBLIC_KEY = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x44, 0x50 };
 
-  byte[] MAGIC_RAW_DSS_PRIVATE_KEY = new byte[] { 0x47, RAW_ENCODING_ID, 0x44,
-                                                 0x70 };
+  byte[] MAGIC_RAW_DSS_PRIVATE_KEY = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x44, 0x70 };
 
-  byte[] MAGIC_RAW_DSS_SIGNATURE = new byte[] { 0x47, RAW_ENCODING_ID, 0x44,
-                                               0x53 };
+  byte[] MAGIC_RAW_DSS_SIGNATURE = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x44, 0x53 };
 
-  byte[] MAGIC_RAW_RSA_PUBLIC_KEY = new byte[] { 0x47, RAW_ENCODING_ID, 0x52,
-                                                0x50 };
+  byte[] MAGIC_RAW_RSA_PUBLIC_KEY = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x52, 0x50 };
 
-  byte[] MAGIC_RAW_RSA_PRIVATE_KEY = new byte[] { 0x47, RAW_ENCODING_ID, 0x52,
-                                                 0x70 };
+  byte[] MAGIC_RAW_RSA_PRIVATE_KEY = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x52, 0x70 };
 
-  byte[] MAGIC_RAW_RSA_PSS_SIGNATURE = new byte[] { 0x47, RAW_ENCODING_ID,
-                                                   0x52, 0x53 };
+  byte[] MAGIC_RAW_RSA_PSS_SIGNATURE = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x52, 0x53 };
 
-  byte[] MAGIC_RAW_RSA_PKCS1V1_5_SIGNATURE = new byte[] { 0x47, RAW_ENCODING_ID,
-                                                          0x52, 0x54 };
+  byte[] MAGIC_RAW_RSA_PKCS1V1_5_SIGNATURE = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x52, 0x54 };
 
-  byte[] MAGIC_RAW_DH_PUBLIC_KEY = new byte[] { 0x47, RAW_ENCODING_ID, 0x48,
-                                               0x50 };
+  byte[] MAGIC_RAW_DH_PUBLIC_KEY = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x48, 0x50 };
 
-  byte[] MAGIC_RAW_DH_PRIVATE_KEY = new byte[] { 0x47, RAW_ENCODING_ID, 0x48,
-                                                0x70 };
+  byte[] MAGIC_RAW_DH_PRIVATE_KEY = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x48, 0x70 };
 
-  byte[] MAGIC_RAW_SRP_PUBLIC_KEY = new byte[] { 0x47, RAW_ENCODING_ID, 0x53,
-                                                0x50 };
+  byte[] MAGIC_RAW_SRP_PUBLIC_KEY = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x53, 0x50 };
 
-  byte[] MAGIC_RAW_SRP_PRIVATE_KEY = new byte[] { 0x47, RAW_ENCODING_ID, 0x53,
-                                                 0x70 };
+  byte[] MAGIC_RAW_SRP_PRIVATE_KEY = new byte[] {
+      0x47, RAW_ENCODING_ID, 0x53, 0x70 };
 
   // SASL Property names .....................................................
 
@@ -344,8 +355,7 @@ public interface Registry
   String SASL_PASSWORD = SASL_PREFIX + ".password";
 
   /** Name of authentication information provider packages. */
-  String SASL_AUTH_INFO_PROVIDER_PKGS = SASL_PREFIX
-                                        + ".auth.info.provider.pkgs";
+  String SASL_AUTH_INFO_PROVIDER_PKGS = SASL_PREFIX + ".auth.info.provider.pkgs";
 
   /** SASL authorization ID. */
   String SASL_AUTHORISATION_ID = SASL_PREFIX + ".authorisation.ID";
@@ -452,7 +462,4 @@ public interface Registry
   int GKR_CIPHER_AES_128_OFB = 0;
 
   int GKR_CIPHER_AES_128_CBC = 1;
-
-  // Methods
-  // -------------------------------------------------------------------------
 }

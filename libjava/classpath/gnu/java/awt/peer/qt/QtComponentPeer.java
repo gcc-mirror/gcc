@@ -1,5 +1,5 @@
 /* QtComponentPeer.java --
-   Copyright (C)  2005  Free Software Foundation, Inc.
+   Copyright (C)  2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,6 @@ import java.awt.AWTEvent;
 import java.awt.AWTException;
 import java.awt.BufferCapabilities;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;

@@ -1,5 +1,5 @@
 /* PKIXCertPathValidatorImpl.java -- PKIX certificate path validator.
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.security.provider;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.OID;
 import gnu.java.security.Registry;
 import gnu.java.security.key.dss.DSSPublicKey;
@@ -81,63 +82,48 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
- * An implementation of the Public Key Infrastructure's X.509
- * certificate path validation algorithm.
- *
- * <p>See <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC 3280:
- * Internet X.509 Public Key Infrastructure Certificate and
- * Certificate Revocation List (CRL) Profile</a>.
- *
+ * An implementation of the Public Key Infrastructure's X.509 certificate path
+ * validation algorithm.
+ * <p>
+ * See <a href="http://www.ietf.org/rfc/rfc3280.txt">RFC 3280: Internet X.509
+ * Public Key Infrastructure Certificate and Certificate Revocation List (CRL)
+ * Profile</a>.
+ * 
  * @author Casey Marshall (rsdio@metastatic.org)
  */
-public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
+public class PKIXCertPathValidatorImpl
+    extends CertPathValidatorSpi
 {
-
-  // Constants.
-  // -------------------------------------------------------------------------
-
-  private static final boolean DEBUG = false;
-  private static void debug (String msg)
-  {
-    System.err.print (">> PKIXCertPathValidatorImpl: ");
-    System.err.println (msg);
-  }
+  private static final Logger log = Logger.getLogger(PKIXCertPathValidatorImpl.class.getName());
 
   public static final String ANY_POLICY = "2.5.29.32.0";
-
-  // Constructor.
-  // -------------------------------------------------------------------------
 
   public PKIXCertPathValidatorImpl()
   {
     super();
   }
 
-  // Instance methods.
-  // -------------------------------------------------------------------------
-
   public CertPathValidatorResult engineValidate(CertPath path,
                                                 CertPathParameters params)
-    throws CertPathValidatorException, InvalidAlgorithmParameterException
+      throws CertPathValidatorException, InvalidAlgorithmParameterException
   {
-    if (!(params instanceof PKIXParameters))
+    if (! (params instanceof PKIXParameters))
       throw new InvalidAlgorithmParameterException("not a PKIXParameters object");
-
     // First check if the certificate path is valid.
     //
     // This means that:
     //
-    //   (a)  for all x in {1, ..., n-1}, the subject of certificate x is
-    //        the issuer of certificate x+1;
+    // (a) for all x in {1, ..., n-1}, the subject of certificate x is
+    // the issuer of certificate x+1;
     //
-    //   (b)  for all x in {1, ..., n}, the certificate was valid at the
-    //        time in question.
+    // (b) for all x in {1, ..., n}, the certificate was valid at the
+    // time in question.
     //
     // Because this is the X.509 algorithm, we also check if all
     // cerificates are of type X509Certificate.
-
     PolicyNodeImpl rootNode = new PolicyNodeImpl();
     Set initPolicies = ((PKIXParameters) params).getInitialPolicies();
     rootNode.setValidPolicy(ANY_POLICY);
@@ -160,7 +146,6 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
       {
         throw new CertPathValidatorException("invalid certificate path");
       }
-
     String sigProvider = ((PKIXParameters) params).getSigProvider();
     PublicKey prevKey = null;
     Date now = ((PKIXParameters) params).getDate();
@@ -178,7 +163,7 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
             throw new CertPathValidatorException(ce.toString());
           }
         Set uce = getCritExts(p[i]);
-        for (Iterator check = checks.iterator(); check.hasNext(); )
+        for (Iterator check = checks.iterator(); check.hasNext();)
           {
             try
               {
@@ -188,23 +173,21 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
               {
               }
           }
-
         PolicyConstraint constr = null;
         if (p[i] instanceof GnuPKIExtension)
           {
-            Extension pcx =
-              ((GnuPKIExtension) p[i]).getExtension (PolicyConstraint.ID);
+            Extension pcx = ((GnuPKIExtension) p[i]).getExtension(PolicyConstraint.ID);
             if (pcx != null)
               constr = (PolicyConstraint) pcx.getValue();
           }
         else
           {
-            byte[] pcx = p[i].getExtensionValue (PolicyConstraint.ID.toString());
+            byte[] pcx = p[i].getExtensionValue(PolicyConstraint.ID.toString());
             if (pcx != null)
               {
                 try
                   {
-                    constr = new PolicyConstraint (pcx);
+                    constr = new PolicyConstraint(pcx);
                   }
                 catch (Exception x)
                   {
@@ -212,14 +195,10 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
               }
           }
         if (constr != null && constr.getRequireExplicitPolicy() >= 0)
-          {
-            policyConstraints.add (new int[]
-              { p.length-i, constr.getRequireExplicitPolicy() });
-          }
-
-        updatePolicyTree(p[i], rootNode, p.length-i, (PKIXParameters) params,
-                         checkExplicitPolicy (p.length-i, policyConstraints));
-
+          policyConstraints.add(new int[] { p.length - i,
+                                            constr.getRequireExplicitPolicy() });
+        updatePolicyTree(p[i], rootNode, p.length - i, (PKIXParameters) params,
+                         checkExplicitPolicy(p.length - i, policyConstraints));
         // The rest of the tests involve this cert's relationship with the
         // next in the path. If this cert is the end entity, we can stop.
         if (i == 0)
@@ -236,36 +215,35 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
                 // If the DSA public key is missing its parameters, use those
                 // from the previous cert's key.
                 if (dsa == null || dsa.getP() == null || dsa.getG() == null
-                      || dsa.getQ() == null)
+                    || dsa.getQ() == null)
                   {
                     if (prevKey == null)
                       throw new InvalidKeyException("DSA keys not chainable");
-                    if (!(prevKey instanceof DSAPublicKey))
+                    if (! (prevKey instanceof DSAPublicKey))
                       throw new InvalidKeyException("DSA keys not chainable");
                     dsa = ((DSAPublicKey) prevKey).getParams();
                     pubKey = new DSSPublicKey(Registry.X509_ENCODING_ID,
-                                              dsa.getP(),
-                                              dsa.getQ(),
+                                              dsa.getP(), dsa.getQ(),
                                               dsa.getG(),
                                               ((DSAPublicKey) pubKey).getY());
                   }
               }
             if (sigProvider == null)
-              p[i-1].verify(pubKey);
+              p[i - 1].verify(pubKey);
             else
-              p[i-1].verify(pubKey, sigProvider);
+              p[i - 1].verify(pubKey, sigProvider);
             prevKey = pubKey;
           }
         catch (Exception e)
           {
             throw new CertPathValidatorException(e.toString());
           }
-        if (!p[i].getSubjectDN().equals(p[i-1].getIssuerDN()))
+        if (! p[i].getSubjectDN().equals(p[i - 1].getIssuerDN()))
           throw new CertPathValidatorException("issuer DN mismatch");
-        boolean[] issuerUid = p[i-1].getIssuerUniqueID();
+        boolean[] issuerUid = p[i - 1].getIssuerUniqueID();
         boolean[] subjectUid = p[i].getSubjectUniqueID();
         if (issuerUid != null && subjectUid != null)
-          if (!Arrays.equals(issuerUid, subjectUid))
+          if (! Arrays.equals(issuerUid, subjectUid))
             throw new CertPathValidatorException("UID mismatch");
 
         // Check the certificate against the revocation lists.
@@ -282,7 +260,7 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
               }
             List certStores = ((PKIXParameters) params).getCertStores();
             List crls = new LinkedList();
-            for (Iterator it = certStores.iterator(); it.hasNext(); )
+            for (Iterator it = certStores.iterator(); it.hasNext();)
               {
                 CertStore cs = (CertStore) it.next();
                 try
@@ -297,30 +275,30 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
             if (crls.isEmpty())
               throw new CertPathValidatorException("no CRLs for issuer");
             boolean certOk = false;
-            for (Iterator it = crls.iterator(); it.hasNext(); )
+            for (Iterator it = crls.iterator(); it.hasNext();)
               {
                 CRL crl = (CRL) it.next();
-                if (!(crl instanceof X509CRL))
+                if (! (crl instanceof X509CRL))
                   continue;
                 X509CRL xcrl = (X509CRL) crl;
-                if (!checkCRL(xcrl, p, now, p[i], pubKey, certStores))
+                if (! checkCRL(xcrl, p, now, p[i], pubKey, certStores))
                   continue;
-                if (xcrl.isRevoked(p[i-1]))
+                if (xcrl.isRevoked(p[i - 1]))
                   throw new CertPathValidatorException("certificate is revoked");
                 else
                   certOk = true;
               }
-            if (!certOk)
-              throw new CertPathValidatorException("certificate's validity could not be determined");
+            if (! certOk)
+              throw new CertPathValidatorException(
+                  "certificate's validity could not be determined");
           }
       }
     rootNode.setReadOnly();
-
     // Now ensure that the first certificate in the chain was issued
     // by a trust anchor.
     Exception cause = null;
     Set anchors = ((PKIXParameters) params).getTrustAnchors();
-    for (Iterator i = anchors.iterator(); i.hasNext(); )
+    for (Iterator i = anchors.iterator(); i.hasNext();)
       {
         TrustAnchor anchor = (TrustAnchor) i.next();
         X509Certificate anchorCert = null;
@@ -338,7 +316,7 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
           {
             if (anchorCert != null)
               anchorCert.checkValidity(now);
-            p[p.length-1].verify(anchorKey);
+            p[p.length - 1].verify(anchorKey);
             if (anchorCert != null && anchorCert.getBasicConstraints() >= 0
                 && anchorCert.getBasicConstraints() < p.length)
               continue;
@@ -358,7 +336,7 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
                   selector.addIssuerName(anchor.getCAName());
                 List certStores = ((PKIXParameters) params).getCertStores();
                 List crls = new LinkedList();
-                for (Iterator it = certStores.iterator(); it.hasNext(); )
+                for (Iterator it = certStores.iterator(); it.hasNext();)
                   {
                     CertStore cs = (CertStore) it.next();
                     try
@@ -372,10 +350,10 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
                   }
                 if (crls.isEmpty())
                   continue;
-                for (Iterator it = crls.iterator(); it.hasNext(); )
+                for (Iterator it = crls.iterator(); it.hasNext();)
                   {
                     CRL crl = (CRL) it.next();
-                    if (!(crl instanceof X509CRL))
+                    if (! (crl instanceof X509CRL))
                       continue;
                     X509CRL xcrl = (X509CRL) crl;
                     try
@@ -389,11 +367,10 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
                     Date nextUpdate = xcrl.getNextUpdate();
                     if (nextUpdate != null && nextUpdate.compareTo(now) < 0)
                       continue;
-                    if (xcrl.isRevoked(p[p.length-1]))
+                    if (xcrl.isRevoked(p[p.length - 1]))
                       throw new CertPathValidatorException("certificate is revoked");
                   }
               }
-
             // The chain is valid; return the result.
             return new PKIXCertPathValidatorResult(anchor, rootNode,
                                                    p[0].getPublicKey());
@@ -404,44 +381,39 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
             continue;
           }
       }
-
     // The path is not valid.
     CertPathValidatorException cpve =
-      new CertPathValidatorException("path validation failed");
+        new CertPathValidatorException("path validation failed");
     if (cause != null)
-      cpve.initCause (cause);
+      cpve.initCause(cause);
     throw cpve;
   }
 
-  // Own methods.
-  // -------------------------------------------------------------------------
-
   /**
-   * Check if a given CRL is acceptable for checking the revocation status
-   * of certificates in the path being checked.
-   *
-   * <p>The CRL is accepted iff:</p>
-   *
+   * Check if a given CRL is acceptable for checking the revocation status of
+   * certificates in the path being checked.
+   * <p>
+   * The CRL is accepted iff:
    * <ol>
    * <li>The <i>nextUpdate</i> field (if present) is in the future.</li>
    * <li>The CRL does not contain any unsupported critical extensions.</li>
    * <li>The CRL is signed by one of the certificates in the path, or,</li>
-   * <li>The CRL is signed by the given public key and was issued by the
-   * public key's subject, or,</li>
-   * <li>The CRL is signed by a certificate in the given cert stores, and
-   * that cert is signed by one of the certificates in the path.</li>
+   * <li>The CRL is signed by the given public key and was issued by the public
+   * key's subject, or,</li>
+   * <li>The CRL is signed by a certificate in the given cert stores, and that
+   * cert is signed by one of the certificates in the path.</li>
    * </ol>
-   *
+   * 
    * @param crl The CRL being checked.
    * @param path The path this CRL is being checked against.
    * @param now The value to use as 'now'.
-   * @param pubKeySubject The subject of the public key.
+   * @param pubKeyCert The certificate authenticating the public key.
    * @param pubKey The public key to check.
    * @return True if the CRL is acceptable.
    */
-  private static boolean checkCRL(X509CRL crl, X509Certificate[] path, Date now,
-                                  X509Certificate pubKeyCert, PublicKey pubKey,
-                                  List certStores)
+  private static boolean checkCRL(X509CRL crl, X509Certificate[] path,
+                                  Date now, X509Certificate pubKeyCert,
+                                  PublicKey pubKey, List certStores)
   {
     Date nextUpdate = crl.getNextUpdate();
     if (nextUpdate != null && nextUpdate.compareTo(now) < 0)
@@ -450,12 +422,12 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
       return false;
     for (int i = 0; i < path.length; i++)
       {
-        if (!path[i].getSubjectDN().equals(crl.getIssuerDN()))
+        if (! path[i].getSubjectDN().equals(crl.getIssuerDN()))
           continue;
         boolean[] keyUsage = path[i].getKeyUsage();
         if (keyUsage != null)
           {
-            if (!keyUsage[KeyUsage.CRL_SIGN])
+            if (! keyUsage[KeyUsage.CRL_SIGN])
               continue;
           }
         try
@@ -474,7 +446,7 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
             boolean[] keyUsage = pubKeyCert.getKeyUsage();
             if (keyUsage != null)
               {
-                if (!keyUsage[KeyUsage.CRL_SIGN])
+                if (! keyUsage[KeyUsage.CRL_SIGN])
                   throw new Exception();
               }
             crl.verify(pubKey);
@@ -489,7 +461,7 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
         X509CertSelectorImpl select = new X509CertSelectorImpl();
         select.addSubjectName(crl.getIssuerDN());
         List certs = new LinkedList();
-        for (Iterator it = certStores.iterator(); it.hasNext(); )
+        for (Iterator it = certStores.iterator(); it.hasNext();)
           {
             CertStore cs = (CertStore) it.next();
             try
@@ -500,17 +472,17 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
               {
               }
           }
-        for (Iterator it = certs.iterator(); it.hasNext(); )
+        for (Iterator it = certs.iterator(); it.hasNext();)
           {
             X509Certificate c = (X509Certificate) it.next();
             for (int i = 0; i < path.length; i++)
               {
-                if (!c.getIssuerDN().equals(path[i].getSubjectDN()))
+                if (! c.getIssuerDN().equals(path[i].getSubjectDN()))
                   continue;
                 boolean[] keyUsage = c.getKeyUsage();
                 if (keyUsage != null)
                   {
-                    if (!keyUsage[KeyUsage.CRL_SIGN])
+                    if (! keyUsage[KeyUsage.CRL_SIGN])
                       continue;
                   }
                 try
@@ -542,10 +514,10 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
     if (cert instanceof GnuPKIExtension)
       {
         Collection exts = ((GnuPKIExtension) cert).getExtensions();
-        for (Iterator it = exts.iterator(); it.hasNext(); )
+        for (Iterator it = exts.iterator(); it.hasNext();)
           {
             Extension ext = (Extension) it.next();
-            if (ext.isCritical() && !ext.isSupported())
+            if (ext.isCritical() && ! ext.isSupported())
               s.add(ext.getOid().toString());
           }
       }
@@ -558,13 +530,13 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
    * Perform a basic sanity check on the CA certificate at <code>index</code>.
    */
   private static void basicSanity(X509Certificate[] path, int index)
-    throws CertPathValidatorException
+      throws CertPathValidatorException
   {
     X509Certificate cert = path[index];
     int pathLen = 0;
     for (int i = index - 1; i > 0; i--)
       {
-        if (!path[i].getIssuerDN().equals(path[i].getSubjectDN()))
+        if (! path[i].getIssuerDN().equals(path[i].getSubjectDN()))
           pathLen++;
       }
     Extension e = null;
@@ -585,25 +557,30 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
     if (e == null)
       throw new CertPathValidatorException("no basicConstraints");
     BasicConstraints bc = (BasicConstraints) e.getValue();
-    if (!bc.isCA())
-      throw new CertPathValidatorException("certificate cannot be used to verify signatures");
-    if (bc.getPathLengthConstraint() >= 0 && bc.getPathLengthConstraint() < pathLen)
+    if (! bc.isCA())
+      throw new CertPathValidatorException(
+          "certificate cannot be used to verify signatures");
+    if (bc.getPathLengthConstraint() >= 0
+        && bc.getPathLengthConstraint() < pathLen)
       throw new CertPathValidatorException("path is too long");
 
     boolean[] keyUsage = cert.getKeyUsage();
     if (keyUsage != null)
       {
-        if (!keyUsage[KeyUsage.KEY_CERT_SIGN])
-          throw new CertPathValidatorException("certificate cannot be used to sign certificates");
+        if (! keyUsage[KeyUsage.KEY_CERT_SIGN])
+          throw new CertPathValidatorException(
+              "certificate cannot be used to sign certificates");
       }
   }
 
-  private static void updatePolicyTree(X509Certificate cert, PolicyNodeImpl root,
-                                       int depth, PKIXParameters params,
+  private static void updatePolicyTree(X509Certificate cert,
+                                       PolicyNodeImpl root, int depth,
+                                       PKIXParameters params,
                                        boolean explicitPolicy)
-    throws CertPathValidatorException
+      throws CertPathValidatorException
   {
-    if (DEBUG) debug("updatePolicyTree depth == " + depth);
+    if (Configuration.DEBUG)
+      log.fine("updatePolicyTree depth == " + depth);
     Set nodes = new HashSet();
     LinkedList stack = new LinkedList();
     Iterator current = null;
@@ -614,21 +591,24 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
         while (current.hasNext())
           {
             PolicyNodeImpl p = (PolicyNodeImpl) current.next();
-            if (DEBUG) debug("visiting node == " + p);
+            if (Configuration.DEBUG)
+              log.fine("visiting node == " + p);
             if (p.getDepth() == depth - 1)
               {
-                if (DEBUG) debug("added node");
+                if (Configuration.DEBUG)
+                  log.fine("added node");
                 nodes.add(p);
               }
             else
               {
-                if (DEBUG) debug("skipped node");
+                if (Configuration.DEBUG)
+                  log.fine("skipped node");
                 stack.addLast(current);
                 current = p.getChildren();
               }
           }
       }
-    while (!stack.isEmpty());
+    while (! stack.isEmpty());
 
     Extension e = null;
     CertificatePolicies policies = null;
@@ -646,18 +626,23 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
     else
       cp = Collections.EMPTY_LIST;
     boolean match = false;
-    if (DEBUG) debug("nodes are == " + nodes);
-    if (DEBUG) debug("cert policies are == " + cp);
-    for (Iterator it = nodes.iterator(); it.hasNext(); )
+    if (Configuration.DEBUG)
+      {
+        log.fine("nodes are == " + nodes);
+        log.fine("cert policies are == " + cp);
+      }
+    for (Iterator it = nodes.iterator(); it.hasNext();)
       {
         PolicyNodeImpl parent = (PolicyNodeImpl) it.next();
-        if (DEBUG) debug("adding policies to " + parent);
-        for (Iterator it2 = cp.iterator(); it2.hasNext(); )
+        if (Configuration.DEBUG)
+          log.fine("adding policies to " + parent);
+        for (Iterator it2 = cp.iterator(); it2.hasNext();)
           {
             OID policy = (OID) it2.next();
-            if (DEBUG) debug("trying to add policy == " + policy);
-            if (policy.toString().equals(ANY_POLICY) &&
-                params.isAnyPolicyInhibited())
+            if (Configuration.DEBUG)
+              log.fine("trying to add policy == " + policy);
+            if (policy.toString().equals(ANY_POLICY)
+                && params.isAnyPolicyInhibited())
               continue;
             PolicyNodeImpl child = new PolicyNodeImpl();
             child.setValidPolicy(policy.toString());
@@ -672,32 +657,34 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
                 parent.addChild(child);
                 match = true;
               }
-            else if (ANY_POLICY.equals (policy.toString()))
+            else if (ANY_POLICY.equals(policy.toString()))
               {
-                parent.addChild (child);
+                parent.addChild(child);
                 match = true;
               }
             if (match && policies != null)
               {
-                List qualifiers = policies.getPolicyQualifierInfos (policy);
+                List qualifiers = policies.getPolicyQualifierInfos(policy);
                 if (qualifiers != null)
-                  child.addAllPolicyQualifiers (qualifiers);
+                  child.addAllPolicyQualifiers(qualifiers);
               }
           }
       }
-    if (!match && (params.isExplicitPolicyRequired() || explicitPolicy))
+    if (! match && (params.isExplicitPolicyRequired() || explicitPolicy))
       throw new CertPathValidatorException("policy tree building failed");
   }
 
-  private boolean checkExplicitPolicy (int depth, List explicitPolicies)
+  private boolean checkExplicitPolicy(int depth, List explicitPolicies)
   {
-    if (DEBUG) debug ("checkExplicitPolicy depth=" + depth);
-    for (Iterator it = explicitPolicies.iterator(); it.hasNext(); )
+    if (Configuration.DEBUG)
+      log.fine("checkExplicitPolicy depth=" + depth);
+    for (Iterator it = explicitPolicies.iterator(); it.hasNext();)
       {
         int[] i = (int[]) it.next();
         int caDepth = i[0];
         int limit = i[1];
-        if (DEBUG) debug ("  caDepth=" + caDepth + " limit=" + limit);
+        if (Configuration.DEBUG)
+          log.fine("  caDepth=" + caDepth + " limit=" + limit);
         if (depth - caDepth >= limit)
           return true;
       }

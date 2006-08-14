@@ -56,24 +56,14 @@ import javax.security.sasl.SaslException;
 /**
  * The CRAM-MD5 SASL client-side mechanism.
  */
-public class CramMD5Client extends ClientMechanism implements SaslClient
+public class CramMD5Client
+    extends ClientMechanism
+    implements SaslClient
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public CramMD5Client()
   {
     super(Registry.SASL_CRAM_MD5_MECHANISM);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // abstract methods implementation -----------------------------------------
 
   protected void initMechanism() throws SaslException
   {
@@ -83,8 +73,6 @@ public class CramMD5Client extends ClientMechanism implements SaslClient
   {
   }
 
-  // javax.security.sasl.SaslClient interface implementation -----------------
-
   public boolean hasInitialResponse()
   {
     return false;
@@ -93,30 +81,22 @@ public class CramMD5Client extends ClientMechanism implements SaslClient
   public byte[] evaluateChallenge(final byte[] challenge) throws SaslException
   {
     if (challenge == null)
-      {
-        throw new SaslException("null challenge");
-      }
+      throw new SaslException("null challenge");
     try
       {
         final String username;
         final char[] password;
         Callback[] callbacks;
-
-        if ((!properties.containsKey(Registry.SASL_USERNAME))
-            && (!properties.containsKey(Registry.SASL_PASSWORD)))
+        if ((! properties.containsKey(Registry.SASL_USERNAME))
+            && (! properties.containsKey(Registry.SASL_PASSWORD)))
           {
             callbacks = new Callback[2];
-
             final NameCallback nameCB;
             final String defaultName = System.getProperty("user.name");
             if (defaultName == null)
-              {
-                nameCB = new NameCallback("username: ");
-              }
+              nameCB = new NameCallback("username: ");
             else
-              {
-                nameCB = new NameCallback("username: ", defaultName);
-              }
+              nameCB = new NameCallback("username: ", defaultName);
             final PasswordCallback pwdCB = new PasswordCallback("password: ",
                                                                 false);
             callbacks[0] = nameCB;
@@ -128,47 +108,35 @@ public class CramMD5Client extends ClientMechanism implements SaslClient
         else
           {
             if (properties.containsKey(Registry.SASL_USERNAME))
-              {
-                username = (String) properties.get(Registry.SASL_USERNAME);
-              }
+              username = (String) properties.get(Registry.SASL_USERNAME);
             else
               {
                 callbacks = new Callback[1];
                 final NameCallback nameCB;
                 final String defaultName = System.getProperty("user.name");
                 if (defaultName == null)
-                  {
-                    nameCB = new NameCallback("username: ");
-                  }
+                  nameCB = new NameCallback("username: ");
                 else
-                  {
-                    nameCB = new NameCallback("username: ", defaultName);
-                  }
+                  nameCB = new NameCallback("username: ", defaultName);
                 callbacks[0] = nameCB;
                 this.handler.handle(callbacks);
                 username = nameCB.getName();
               }
 
             if (properties.containsKey(Registry.SASL_PASSWORD))
-              {
-                password = ((String) properties.get(Registry.SASL_PASSWORD)).toCharArray();
-              }
+              password = ((String) properties.get(Registry.SASL_PASSWORD)).toCharArray();
             else
               {
                 callbacks = new Callback[1];
-                final PasswordCallback pwdCB = new PasswordCallback(
-                                                                    "password: ",
+                final PasswordCallback pwdCB = new PasswordCallback("password: ",
                                                                     false);
                 callbacks[0] = pwdCB;
                 this.handler.handle(callbacks);
                 password = pwdCB.getPassword();
               }
           }
-
         if (password == null)
-          {
-            throw new SaslException("null password supplied");
-          }
+          throw new SaslException("null password supplied");
         final byte[] digest;
         try
           {
@@ -181,7 +149,6 @@ public class CramMD5Client extends ClientMechanism implements SaslClient
         final String response = username + " "
                                 + Util.toString(digest).toLowerCase();
         this.complete = true;
-
         return response.getBytes("UTF-8");
       }
     catch (UnsupportedCallbackException x)

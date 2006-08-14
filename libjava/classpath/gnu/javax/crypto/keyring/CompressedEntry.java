@@ -42,21 +42,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import java.util.Iterator;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-public class CompressedEntry extends EnvelopeEntry
+public class CompressedEntry
+    extends EnvelopeEntry
 {
-
-  // Constants and fields.
-  // ------------------------------------------------------------------------
-
   public static final int TYPE = 4;
-
-  // Constructor.
-  // ------------------------------------------------------------------------
 
   public CompressedEntry(Properties properties)
   {
@@ -69,24 +62,16 @@ public class CompressedEntry extends EnvelopeEntry
     this(new Properties());
   }
 
-  // Class methods.
-  // ------------------------------------------------------------------------
-
   public static CompressedEntry decode(DataInputStream in) throws IOException
   {
     CompressedEntry entry = new CompressedEntry();
     entry.properties.decode(in);
     String alg = entry.properties.get("algorithm");
     if (alg == null)
-      {
-        throw new MalformedKeyringException("no compression algorithm");
-      }
-    if (!alg.equalsIgnoreCase("DEFLATE"))
-      {
-        throw new MalformedKeyringException(
-                                            "unsupported compression algorithm: "
-                                                + alg);
-      }
+      throw new MalformedKeyringException("no compression algorithm");
+    if (! alg.equalsIgnoreCase("DEFLATE"))
+      throw new MalformedKeyringException("unsupported compression algorithm: "
+                                          + alg);
     int len = in.readInt();
     MeteredInputStream min = new MeteredInputStream(in, len);
     InflaterInputStream infin = new InflaterInputStream(min);
@@ -95,18 +80,13 @@ public class CompressedEntry extends EnvelopeEntry
     return entry;
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   protected void encodePayload() throws IOException
   {
     ByteArrayOutputStream buf = new ByteArrayOutputStream(1024);
     DeflaterOutputStream dout = new DeflaterOutputStream(buf);
     DataOutputStream out2 = new DataOutputStream(dout);
     for (Iterator it = entries.iterator(); it.hasNext();)
-      {
-        ((Entry) it.next()).encode(out2);
-      }
+      ((Entry) it.next()).encode(out2);
     dout.finish();
     payload = buf.toByteArray();
   }

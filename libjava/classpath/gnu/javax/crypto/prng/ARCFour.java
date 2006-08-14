@@ -45,50 +45,41 @@ import gnu.java.security.prng.LimitReachedException;
 import java.util.Map;
 
 /**
- * RC4 is a stream cipher developed by Ron Rivest. Until 1994 RC4 was a
- * trade secret of RSA Data Security, Inc., when it was released
- * anonymously to a mailing list. This version is a descendent of that
- * code, and since there is no proof that the leaked version was in fact
- * RC4 and because "RC4" is a trademark, it is called "ARCFOUR", short for
- * "Allegedly RC4".
- *
- * <p>This class only implements the <i>keystream</i> of ARCFOUR. To use
- * this as a stream cipher, one would say:</p>
- *
- * <pre>    out = in ^ arcfour.nextByte();</pre>
- *
- * <p>This operation works for encryption and decryption.</p>
- *
- * <p>References:</p>
- *
+ * RC4 is a stream cipher developed by Ron Rivest. Until 1994 RC4 was a trade
+ * secret of RSA Data Security, Inc., when it was released anonymously to a
+ * mailing list. This version is a descendent of that code, and since there is
+ * no proof that the leaked version was in fact RC4 and because "RC4" is a
+ * trademark, it is called "ARCFOUR", short for "Allegedly RC4".
+ * <p>
+ * This class only implements the <i>keystream</i> of ARCFOUR. To use this as a
+ * stream cipher, one would say:
+ * <pre>
+ * out = in &circ; arcfour.nextByte();
+ * </pre>
+ * <p>
+ * This operation works for encryption and decryption.
+ * <p>
+ * References:
  * <ol>
- * <li>Schneier, Bruce: <i>Applied Cryptography: Protocols, Algorithms,
- * and Source Code in C, Second Edition.</i> (1996 John Wiley and Sons),
- * pp. 397--398. ISBN 0-471-11709-9</li>
+ * <li>Schneier, Bruce: <i>Applied Cryptography: Protocols, Algorithms, and
+ * Source Code in C, Second Edition.</i> (1996 John Wiley and Sons), pp.
+ * 397--398. ISBN 0-471-11709-9</li>
  * <li>K. Kaukonen and R. Thayer, "A Stream Cipher Encryption Algorithm
  * 'Arcfour'", Internet Draft (expired), <a
  * href="http://www.mozilla.org/projects/security/pki/nss/draft-kaukonen-cipher-arcfour-03.txt">draft-kaukonen-cipher-arcfour-03.txt</a></li>
  * </ol>
  */
-public class ARCFour extends BasePRNG implements Cloneable
+public class ARCFour
+    extends BasePRNG
+    implements Cloneable
 {
-
-  // Constants and variables.
-  // -----------------------------------------------------------------------
-
   /** The attributes property name for the key bytes. */
   public static final String ARCFOUR_KEY_MATERIAL = "gnu.crypto.prng.arcfour.key-material";
-
   /** The size of the internal S-box. */
   public static final int ARCFOUR_SBOX_SIZE = 256;
-
   /** The S-box. */
   private byte[] s;
-
   private byte m, n;
-
-  // Constructors.
-  // -----------------------------------------------------------------------
 
   /** Default 0-arguments constructor. */
   public ARCFour()
@@ -96,37 +87,23 @@ public class ARCFour extends BasePRNG implements Cloneable
     super(Registry.ARCFOUR_PRNG);
   }
 
-  // Methods implementing BasePRNG.
-  // -----------------------------------------------------------------------
-
   public void setup(Map attributes)
   {
     byte[] kb = (byte[]) attributes.get(ARCFOUR_KEY_MATERIAL);
-
     if (kb == null)
-      {
-        throw new IllegalArgumentException("ARCFOUR needs a key");
-      }
-
+      throw new IllegalArgumentException("ARCFOUR needs a key");
     s = new byte[ARCFOUR_SBOX_SIZE];
     m = n = 0;
     byte[] k = new byte[ARCFOUR_SBOX_SIZE];
-
     for (int i = 0; i < ARCFOUR_SBOX_SIZE; i++)
-      {
-        s[i] = (byte) i;
-      }
-
+      s[i] = (byte) i;
     if (kb.length > 0)
-      {
-        for (int i = 0, j = 0; i < ARCFOUR_SBOX_SIZE; i++)
-          {
-            k[i] = kb[j++];
-            if (j >= kb.length)
-              j = 0;
-          }
-      }
-
+      for (int i = 0, j = 0; i < ARCFOUR_SBOX_SIZE; i++)
+        {
+          k[i] = kb[j++];
+          if (j >= kb.length)
+            j = 0;
+        }
     for (int i = 0, j = 0; i < ARCFOUR_SBOX_SIZE; i++)
       {
         j = j + s[i] + k[i];
@@ -134,7 +111,6 @@ public class ARCFour extends BasePRNG implements Cloneable
         s[i] = s[j & 0xff];
         s[j & 0xff] = temp;
       }
-
     buffer = new byte[ARCFOUR_SBOX_SIZE];
     try
       {
@@ -150,11 +126,11 @@ public class ARCFour extends BasePRNG implements Cloneable
     for (int i = 0; i < buffer.length; i++)
       {
         m++;
-        n = (byte) (n + s[m & 0xff]);
+        n = (byte)(n + s[m & 0xff]);
         byte temp = s[m & 0xff];
         s[m & 0xff] = s[n & 0xff];
         s[n & 0xff] = temp;
-        temp = (byte) (s[m & 0xff] + s[n & 0xff]);
+        temp = (byte)(s[m & 0xff] + s[n & 0xff]);
         buffer[i] = s[temp & 0xff];
       }
   }

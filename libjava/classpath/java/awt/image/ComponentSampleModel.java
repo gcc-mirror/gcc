@@ -272,9 +272,7 @@ public class ComponentSampleModel extends SampleModel
     // Maybe this value should be precalculated in the constructor?
     int highestOffset = 0;
     for (int b = 0; b < numBands; b++)
-      {
-        highestOffset = Math.max(highestOffset, bandOffsets[b]);
-      }
+      highestOffset = Math.max(highestOffset, bandOffsets[b]);    
     int size = pixelStride * (width - 1) + scanlineStride * (height - 1) 
         + highestOffset + 1;
     
@@ -678,6 +676,9 @@ public class ComponentSampleModel extends SampleModel
    */
   public int[] getPixel(int x, int y, int[] iArray, DataBuffer data)
   {
+    if (x < 0 || x >= width || y < 0 || y >= height)
+      throw new ArrayIndexOutOfBoundsException("Pixel (" + x + ", " + y 
+                                               + ") is out of bounds.");
     int offset = pixelStride * x + scanlineStride * y;
     if (iArray == null)
       iArray = new int[numBands];
@@ -736,10 +737,16 @@ public class ComponentSampleModel extends SampleModel
    * 
    * @return The sample value.
    * 
+   * @throws ArrayIndexOutOfBoundsException if <code>(x, y)</code> is outside 
+   *     the bounds <code>[0, 0, width, height]</code>.
+   *     
    * @see #setSample(int, int, int, int, DataBuffer)
    */
   public int getSample(int x, int y, int b, DataBuffer data)
   {
+    if (x < 0 || x >= width || y < 0 || y >= height)
+      throw new ArrayIndexOutOfBoundsException("Sample (" + x + ", " + y 
+                                               + ") is out of bounds.");
     return data.getElem(bankIndices[b], getOffset(x, y, b));
   }
 

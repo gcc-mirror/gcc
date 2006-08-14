@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package gnu.classpath.examples.CORBA.SimpleCommunication.communication;
 
+
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.StructMember;
@@ -128,18 +131,18 @@ public abstract class TreeNodeHelper
                 // To avoid the infinite recursion loop, the
                 // recursive reference is handled in specific way.
                 if (active)
-                  return ORB.init().create_recursive_tc(_id);
+                  return OrbRestricted.Singleton.create_recursive_tc(_id);
                 active = true;
 
                 // List all memebers of the TreeNode structure.
                 StructMember[] members = new StructMember[ 2 ];
                 TypeCode memberType;
-                memberType = ORB.init().create_string_tc(0);
+                memberType = OrbRestricted.Singleton.create_string_tc(0);
                 members [ 0 ] = new StructMember("name", memberType, null);
-                memberType = ORB.init().create_recursive_tc("");
+                memberType = OrbRestricted.Singleton.create_recursive_tc("");
                 members [ 1 ] = new StructMember("children", memberType, null);
                 typeCode =
-                  ORB.init().create_struct_tc(TreeNodeHelper.id(), "TreeNode", members);
+                  OrbRestricted.Singleton.create_struct_tc(TreeNodeHelper.id(), "TreeNode", members);
                 active = false;
               }
           }

@@ -38,11 +38,12 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.sasl;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.util.Util;
 
-import java.io.OutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStream;
+import java.util.logging.Logger;
 
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
@@ -52,43 +53,14 @@ import javax.security.sasl.SaslServer;
  * An output stream that uses either a {@link SaslClient} or a {@link SaslServer}
  * to process the data through these entities' security layer filter(s).
  */
-public class SaslOutputStream extends OutputStream
+public class SaslOutputStream
+    extends OutputStream
 {
-
-  // Debugging methods and variables
-  // -------------------------------------------------------------------------
-
-  private static final String NAME = "SaslOutputStream";
-
-  //   private static final String ERROR = "ERROR";
-  //   private static final String WARN =  " WARN";
-  //   private static final String INFO =  " INFO";
-  private static final String TRACE = "DEBUG";
-
-  private static final boolean DEBUG = true;
-
-  private static final int debuglevel = 3;
-
-  private static final PrintWriter err = new PrintWriter(System.out, true);
-
-  private static void debug(String level, Object obj)
-  {
-    err.println("[" + level + "] " + NAME + ": " + String.valueOf(obj));
-  }
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
+  private static final Logger log = Logger.getLogger(SaslOutputStream.class.getName());
   private SaslClient client;
-
   private SaslServer server;
-
   private int maxRawSendSize;
-
   private OutputStream dest;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   public SaslOutputStream(SaslClient client, OutputStream dest)
       throws IOException
@@ -96,7 +68,8 @@ public class SaslOutputStream extends OutputStream
     super();
 
     this.client = client;
-    maxRawSendSize = Integer.parseInt((String) client.getNegotiatedProperty(Sasl.RAW_SEND_SIZE));
+    String size = (String) client.getNegotiatedProperty(Sasl.RAW_SEND_SIZE);
+    maxRawSendSize = Integer.parseInt(size);
     server = null;
     this.dest = dest;
   }
@@ -107,16 +80,11 @@ public class SaslOutputStream extends OutputStream
     super();
 
     this.server = server;
-    maxRawSendSize = Integer.parseInt((String) server.getNegotiatedProperty(Sasl.RAW_SEND_SIZE));
+    String size = (String) server.getNegotiatedProperty(Sasl.RAW_SEND_SIZE);
+    maxRawSendSize = Integer.parseInt(size);
     client = null;
     this.dest = dest;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Overloaded java.io.OutputStream methods
-  // -------------------------------------------------------------------------
 
   public void close() throws IOException
   {
@@ -148,71 +116,60 @@ public class SaslOutputStream extends OutputStream
    */
   public void write(byte[] b, int off, int len) throws IOException
   {
-    if (b == null)
-      {
-        throw new NullPointerException("b");
-      }
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "write");
     if ((off < 0) || (off > b.length) || (len < 0) || ((off + len) > b.length)
         || ((off + len) < 0))
-      {
-        throw new IndexOutOfBoundsException("off=" + String.valueOf(off)
-                                            + ", len=" + String.valueOf(len)
-                                            + ", b.length="
-                                            + String.valueOf(b.length));
-      }
+      throw new IndexOutOfBoundsException("off=" + off + ", len=" + len
+                                          + ", b.length=" + b.length);
     if (len == 0)
       {
+        if (Configuration.DEBUG)
+          log.exiting(this.getClass().getName(), "write");
         return;
       }
-    if (DEBUG && debuglevel > 8)
-      debug(TRACE, "==> write()");
-
     int chunckSize, length, chunck = 1;
     byte[] output = null, result;
-    if (DEBUG && debuglevel > 6)
-      debug(TRACE, "About to wrap " + String.valueOf(len) + " byte(s)...");
+    if (Configuration.DEBUG)
+      log.finer("About to wrap " + len + " byte(s)...");
     while (len > 0)
       {
         chunckSize = (len > maxRawSendSize ? maxRawSendSize : len);
-
-        if (DEBUG && debuglevel > 6)
-          debug(TRACE, "Outgoing buffer (before security) (hex): "
-                       + Util.dumpString(b, off, chunckSize));
-        if (DEBUG && debuglevel > 6)
-          debug(TRACE, "Outgoing buffer (before security) (str): \""
-                       + new String(b, off, chunckSize) + "\"");
-
+        if (Configuration.DEBUG)
+          {
+            log.finer("Outgoing buffer (before security) (hex): "
+                      + Util.dumpString(b, off, chunckSize));
+            log.finer("Outgoing buffer (before security) (str): \""
+                      + new String(b, off, chunckSize) + "\"");
+          }
         if (client != null)
           output = client.wrap(b, off, chunckSize);
         else
           output = server.wrap(b, off, chunckSize);
 
-        if (DEBUG && debuglevel > 6)
-          debug(TRACE, "Outgoing buffer (after security) (hex): "
-                       + Util.dumpString(output));
-        if (DEBUG && debuglevel > 6)
-          debug(TRACE, "Outgoing buffer (after security) (str): \""
-                       + new String(output) + "\"");
-
+        if (Configuration.DEBUG)
+          {
+            log.finer("Outgoing buffer (after security) (hex): "
+                      + Util.dumpString(output));
+            log.finer("Outgoing buffer (after security) (str): \""
+                      + new String(output) + "\"");
+          }
         length = output.length;
         result = new byte[length + 4];
-        result[0] = (byte) (length >>> 24);
-        result[1] = (byte) (length >>> 16);
-        result[2] = (byte) (length >>> 8);
+        result[0] = (byte)(length >>> 24);
+        result[1] = (byte)(length >>> 16);
+        result[2] = (byte)(length >>> 8);
         result[3] = (byte) length;
         System.arraycopy(output, 0, result, 4, length);
-
         dest.write(result);
-
         off += chunckSize;
         len -= chunckSize;
-        if (DEBUG && debuglevel > 6)
-          debug(TRACE, "Wrapped chunck #" + String.valueOf(chunck));
+        if (Configuration.DEBUG)
+          log.finer("Wrapped chunck #" + chunck);
         chunck++;
       }
-
     dest.flush();
-    if (DEBUG && debuglevel > 8)
-      debug(TRACE, "<== write()");
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "write");
   }
 }

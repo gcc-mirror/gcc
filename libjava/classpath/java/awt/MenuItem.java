@@ -63,9 +63,15 @@ public class MenuItem extends MenuComponent
 /*
  * Static Variables
  */
+  
 
-// Serialization Constant
-private static final long serialVersionUID = -21757335363267194L;
+  /**
+   * The number used to generate the name returned by getName.
+   */
+  private static transient long next_menuitem_number;
+
+  // Serialization Constant
+  private static final long serialVersionUID = - 21757335363267194L;
 
 /*************************************************************************/
 
@@ -597,6 +603,21 @@ public AccessibleContext getAccessibleContext()
   if (accessibleContext == null)
     accessibleContext = new AccessibleAWTMenuItem();
   return accessibleContext;
+}
+
+/**
+ * Generate a unique name for this <code>MenuItem</code>.
+ *
+ * @return A unique name for this <code>MenuItem</code>.
+ */
+String generateName()
+{
+  return "menuitem" + getUniqueLong();
+}
+
+private static synchronized long getUniqueLong()
+{
+  return next_menuitem_number++;
 }
 
 } // class MenuItem 

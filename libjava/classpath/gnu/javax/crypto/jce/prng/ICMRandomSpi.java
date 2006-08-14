@@ -38,44 +38,27 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.jce.prng;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
+import gnu.java.security.prng.LimitReachedException;
 import gnu.javax.crypto.cipher.IBlockCipher;
 import gnu.javax.crypto.prng.ICMGenerator;
-import gnu.java.security.prng.LimitReachedException;
 
-import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.security.SecureRandomSpi;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.logging.Logger;
 
 /**
- * <p>An <em>Adapter</em> class around {@link ICMGenerator} to allow using this
- * algorithm as a JCE {@link java.security.SecureRandom}.</p>
+ * An <em>Adapter</em> class around {@link ICMGenerator} to allow using this
+ * algorithm as a JCE {@link java.security.SecureRandom}.
  */
-public class ICMRandomSpi extends SecureRandomSpi
+public class ICMRandomSpi
+    extends SecureRandomSpi
 {
-
-  // Debugging methods and variables
-  // -------------------------------------------------------------------------
-
-  private static final String NAME = "ICMRandomSpi";
-
-  private static final boolean DEBUG = false;
-
-  private static final int debuglevel = 0;
-
-  private static final PrintWriter err = new PrintWriter(System.out, true);
-
-  private static void debug(String s)
-  {
-    err.println(">>> " + NAME + ": " + s);
-  }
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  /** Class-wide prng to generate random material for the underlying prng.*/
+  private static final Logger log = Logger.getLogger(ICMRandomSpi.class.getName());
+  /** Class-wide prng to generate random material for the underlying prng. */
   private static final ICMGenerator prng; // blank final
   static
     {
@@ -86,28 +69,18 @@ public class ICMRandomSpi extends SecureRandomSpi
   // error messages
   private static final String MSG = "Exception while setting up an "
                                     + Registry.ICM_PRNG + " SPI: ";
-
   private static final String RETRY = "Retry...";
-
   private static final String LIMIT_REACHED_MSG = "Limit reached: ";
-
   private static final String RESEED = "Re-seed...";
-
   /** Our underlying prng instance. */
   private ICMGenerator adaptee = new ICMGenerator();
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // default 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
 
   private static void resetLocalPRNG()
   {
-    if (DEBUG && debuglevel > 8)
-      debug(">>> resetLocalPRNG()");
+    if (Configuration.DEBUG)
+      log.entering(ICMRandomSpi.class.getName(), "resetLocalPRNG");
     HashMap attributes = new HashMap();
     attributes.put(ICMGenerator.CIPHER, Registry.AES_CIPHER);
     byte[] key = new byte[128 / 8]; // AES default key size
@@ -122,50 +95,39 @@ public class ICMRandomSpi extends SecureRandomSpi
     // choose a random value between 1 and aesBlockSize / 2
     int limit = aesBlockSize / 2;
     while (ndxLen < 1 || ndxLen > limit)
-      {
-        ndxLen = rand.nextInt(limit + 1);
-      }
-    attributes.put(ICMGenerator.SEGMENT_INDEX_LENGTH, new Integer(ndxLen));
+      ndxLen = rand.nextInt(limit + 1);
+    attributes.put(ICMGenerator.SEGMENT_INDEX_LENGTH, Integer.valueOf(ndxLen));
     byte[] index = new byte[ndxLen];
     rand.nextBytes(index);
     attributes.put(ICMGenerator.SEGMENT_INDEX, new BigInteger(1, index));
-
     prng.setup(attributes);
-    if (DEBUG && debuglevel > 8)
-      debug("<<< resetLocalPRNG()");
+    if (Configuration.DEBUG)
+      log.exiting(ICMRandomSpi.class.getName(), "resetLocalPRNG");
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.security.SecureRandomSpi interface implementation ------------------
 
   public byte[] engineGenerateSeed(int numBytes)
   {
-    if (DEBUG && debuglevel > 8)
-      debug(">>> engineGenerateSeed()");
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "engineGenerateSeed");
     if (numBytes < 1)
       {
-        if (DEBUG && debuglevel > 8)
-          debug("<<< engineGenerateSeed()");
+        if (Configuration.DEBUG)
+          log.exiting(this.getClass().getName(), "engineGenerateSeed");
         return new byte[0];
       }
     byte[] result = new byte[numBytes];
     this.engineNextBytes(result);
-    if (DEBUG && debuglevel > 8)
-      debug("<<< engineGenerateSeed()");
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "engineGenerateSeed");
     return result;
   }
 
   public void engineNextBytes(byte[] bytes)
   {
-    if (DEBUG && debuglevel > 8)
-      debug(">>> engineNextBytes()");
-    if (!adaptee.isInitialised())
-      {
-        this.engineSetSeed(new byte[0]);
-      }
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "engineNextBytes");
+    if (! adaptee.isInitialised())
+      this.engineSetSeed(new byte[0]);
     while (true)
       {
         try
@@ -175,30 +137,28 @@ public class ICMRandomSpi extends SecureRandomSpi
           }
         catch (LimitReachedException x)
           { // reseed the generator
-            if (DEBUG)
+            if (Configuration.DEBUG)
               {
-                debug(LIMIT_REACHED_MSG + String.valueOf(x));
-                x.printStackTrace(err);
-                debug(RESEED);
+                log.fine(LIMIT_REACHED_MSG + String.valueOf(x));
+                log.fine(RESEED);
               }
             resetLocalPRNG();
           }
       }
-    if (DEBUG && debuglevel > 8)
-      debug("<<< engineNextBytes()");
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "engineNextBytes");
   }
 
   public void engineSetSeed(byte[] seed)
   {
-    if (DEBUG && debuglevel > 8)
-      debug(">>> engineSetSeed()");
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "engineSetSeed");
     // compute the total number of random bytes required to setup adaptee
     int materialLength = 0;
     materialLength += 16; // key material size
     materialLength += 16; // offset size
     materialLength += 8; // index size == half of an AES block
     byte[] material = new byte[materialLength];
-
     // use as much as possible bytes from the seed
     int materialOffset = 0;
     int materialLeft = material.length;
@@ -209,8 +169,8 @@ public class ICMRandomSpi extends SecureRandomSpi
         materialOffset += lenToCopy;
         materialLeft -= lenToCopy;
       }
-    if (materialOffset > 0)
-      { // generate the rest
+    if (materialOffset > 0) // generate the rest
+      {
         while (true)
           {
             try
@@ -224,22 +184,20 @@ public class ICMRandomSpi extends SecureRandomSpi
               }
             catch (LimitReachedException x)
               {
-                if (DEBUG)
+                if (Configuration.DEBUG)
                   {
-                    debug(MSG + String.valueOf(x));
-                    debug(RETRY);
+                    log.fine(MSG + String.valueOf(x));
+                    log.fine(RETRY);
                   }
               }
           }
       }
-
     // setup the underlying adaptee instance
     HashMap attributes = new HashMap();
-
     // use AES cipher with 128-bit block size
     attributes.put(ICMGenerator.CIPHER, Registry.AES_CIPHER);
     // use an index the size of quarter of an AES block
-    attributes.put(ICMGenerator.SEGMENT_INDEX_LENGTH, new Integer(4));
+    attributes.put(ICMGenerator.SEGMENT_INDEX_LENGTH, Integer.valueOf(4));
     // specify the key
     byte[] key = new byte[16];
     System.arraycopy(material, 0, key, 0, 16);
@@ -252,9 +210,8 @@ public class ICMRandomSpi extends SecureRandomSpi
     byte[] index = new byte[8];
     System.arraycopy(material, 32, index, 0, 8);
     attributes.put(ICMGenerator.SEGMENT_INDEX, new BigInteger(1, index));
-
     adaptee.init(attributes);
-    if (DEBUG && debuglevel > 8)
-      debug("<<< engineSetSeed()");
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "engineSetSeed");
   }
 }

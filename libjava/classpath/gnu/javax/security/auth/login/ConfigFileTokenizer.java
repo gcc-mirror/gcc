@@ -38,14 +38,17 @@ exception statement from your version. */
 
 package gnu.javax.security.auth.login;
 
+import gnu.java.security.Configuration;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.logging.Logger;
 
 /**
  * A UTF-8 friendly, JAAS Login Module Configuration file tokenizer written in
  * the deault syntax. This class emulates, to a certain extent, the behavior of
- * a {@link java.io.SrteamTokenizer} instance <code>st</code>, when set as
+ * a {@link java.io.StreamTokenizer} instance <code>st</code>, when set as
  * follows:
  * 
  *  <pre>
@@ -76,12 +79,7 @@ import java.io.Reader;
  */
 public class ConfigFileTokenizer
 {
-  // Constants and fields
-  // --------------------------------------------------------------------------
-
-  private static final boolean DEBUG = false;
-  private static final void debug(String m) {if (DEBUG) System.err.println(m);};
-
+  private static final Logger log = Logger.getLogger(ConfigFileParser.class.getName());
   /** A constant indicating that the end of the stream has been read. */
   public static final int TT_EOF = -1;
   /** A constant indicating that a word token has been read. */
@@ -235,9 +233,12 @@ public class ConfigFileTokenizer
 
   private void abort(String m) throws IOException
   {
-    debug("DEBUG: " + m);
-    debug("DEBUG: sb = " + sb);
-    debug("DEBUG: sbNdx = " + sbNdx);
+    if (Configuration.DEBUG)
+      {
+        log.fine(m);
+        log.fine("sb = " + sb);
+        log.fine("sbNdx = " + sbNdx);
+      }
     throw new IOException(m);
   }
 }

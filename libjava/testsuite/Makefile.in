@@ -239,6 +239,7 @@ bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
 build_cpu = @build_cpu@
+build_libsubdir = @build_libsubdir@
 build_os = @build_os@
 build_subdir = @build_subdir@
 build_vendor = @build_vendor@

@@ -1,5 +1,5 @@
 /* jni.h
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005  Free Software Foundation
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -1584,6 +1584,45 @@ typedef struct JavaVMInitArgs
   jboolean ignoreUnrecognized;
 } JavaVMInitArgs;
 
+typedef struct JDK1_1InitArgs
+{
+  /* VM version.  Should be JNI_VERSION_1_1.  Note that before JDK
+     1.1.2, this field was named 'reserved0'.  (I don't know what the
+     current 'reserved0' field was named then.)  */
+  jint version;
+
+  /* A null-terminated array of environment strings, each of the form
+     "KEY=VALUE".  This is used to set system properties.  Note that
+     before JDK 1.1.2, this field was named 'reserved1'.  */
+  char **properties;
+
+  jint checkSource;
+  jint nativeStackSize;
+  jint javaStackSize;
+  jint minHeapSize;
+  jint maxHeapSize;
+  jint verifyMode;
+  const char *classpath;
+
+  jint (JNICALL *vfprintf) (FILE *file, const char *fmt, va_list args);
+  void (JNICALL *exit) (jint value);
+  void (JNICALL *abort) (void);
+
+  jint enableClassGC;
+  jint enableVerboseGC;
+  jint disableAsyncGC;
+
+  jint reserved0;
+  jint reserved1;
+  jint reserved2;
+} JDK1_1InitArgs;
+
+typedef struct JDK1_1AttachArgs
+{
+  /* Dummy field since C cannot have empty structs.  The name and type
+     are chosen to comply with the spec.  */
+  void *__padding;
+} JDK1_1AttachArgs;
 
 
 /* Keep c-font-lock-extra-types in alphabetical order. */

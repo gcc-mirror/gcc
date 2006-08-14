@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
@@ -258,24 +259,26 @@ class CertReqCmd extends Command
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
     setAliasParam(_alias);
     setKeyPasswordNoPrompt(_password);
-
-    log.finer("-certreq handler will use the following options:"); //$NON-NLS-1$
-    log.finer("  -alias=" + alias); //$NON-NLS-1$
-    log.finer("  -sigalg=" + _sigAlgorithm); //$NON-NLS-1$
-    log.finer("  -file=" + _certReqFileName); //$NON-NLS-1$
-    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
-    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -provider=" + provider); //$NON-NLS-1$
-    log.finer("  -v=" + verbose); //$NON-NLS-1$
-    log.finer("  -attributes=" + nullAttributes); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      {
+        log.fine("-certreq handler will use the following options:"); //$NON-NLS-1$
+        log.fine("  -alias=" + alias); //$NON-NLS-1$
+        log.fine("  -sigalg=" + _sigAlgorithm); //$NON-NLS-1$
+        log.fine("  -file=" + _certReqFileName); //$NON-NLS-1$
+        log.fine("  -storetype=" + storeType); //$NON-NLS-1$
+        log.fine("  -keystore=" + storeURL); //$NON-NLS-1$
+        log.fine("  -provider=" + provider); //$NON-NLS-1$
+        log.fine("  -v=" + verbose); //$NON-NLS-1$
+        log.fine("  -attributes=" + nullAttributes); //$NON-NLS-1$
+      }
   }
 
   void start() throws KeyStoreException, NoSuchAlgorithmException, IOException,
       UnsupportedCallbackException, UnrecoverableKeyException,
       InvalidKeyException, SignatureException
   {
-    log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
     // 1. get the key entry and certificate chain associated to alias
     Key privateKey = getAliasPrivateKey();
     Certificate[] chain = store.getCertificateChain(alias);
@@ -305,16 +308,16 @@ class CertReqCmd extends Command
       }
 
     writer.close();
-
-    log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   // own methods --------------------------------------------------------------
 
   Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(Main.CERTREQ_CMD, true);
     result.setHeader(Messages.getString("CertReqCmd.25")); //$NON-NLS-1$
     result.setFooter(Messages.getString("CertReqCmd.24")); //$NON-NLS-1$
@@ -408,8 +411,8 @@ class CertReqCmd extends Command
       }
     });
     result.add(options);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 

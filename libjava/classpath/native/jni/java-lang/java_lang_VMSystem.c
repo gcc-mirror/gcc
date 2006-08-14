@@ -113,11 +113,11 @@ Java_java_lang_VMSystem_setErr (JNIEnv * env,
 
 /*
  * Class:     java_lang_VMSystem
- * Method:    currentTimeMillis
+ * Method:    nanoTime
  * Signature: ()J
  */
 JNIEXPORT jlong JNICALL
-Java_java_lang_VMSystem_currentTimeMillis
+Java_java_lang_VMSystem_nanoTime
   (JNIEnv * env __attribute__ ((__unused__)),
    jclass thisClass __attribute__ ((__unused__)))
 {
@@ -129,8 +129,9 @@ Java_java_lang_VMSystem_currentTimeMillis
     (*env)->FatalError (env, "gettimeofday call failed.");
 
   result = (jlong) tp.tv_sec;
-  result *= 1000;
-  result += (tp.tv_usec / 1000);
+  result *= (jlong)1000000L;
+  result += (jlong)tp.tv_usec;
+  result *= (jlong)1000;
 
   return result;
 }

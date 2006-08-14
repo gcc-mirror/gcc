@@ -1,5 +1,5 @@
 /* TabSet.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,23 +39,54 @@ package javax.swing.text;
 
 import java.io.Serializable;
 
+/**
+ * A set of tab stops.  Instances of this class are immutable.
+ */
 public class TabSet implements Serializable
 {
   /** The serialization UID (compatible with JDK1.5). */
   private static final long serialVersionUID = 2367703481999080593L;
 
+  /** Storage for the tab stops. */
   TabStop[] tabs;
 
+  /**
+   * Creates a new <code>TabSet</code> containing the specified tab stops.
+   * 
+   * @param t  the tab stops (<code>null</code> permitted).
+   */
   public TabSet(TabStop[] t) 
   {
-    tabs = t;
+    if (t != null)
+      tabs = (TabStop[]) t.clone();
+    else 
+      tabs = new TabStop[0];
   }
  
+  /**
+   * Returns the tab stop with the specified index.
+   * 
+   * @param i  the index.
+   * 
+   * @return The tab stop.
+   * 
+   * @throws IllegalArgumentException if <code>i</code> is not in the range 
+   *     <code>0</code> to <code>getTabCount() - 1</code>.
+   */
   public TabStop getTab(int i) 
   {
+    if (i < 0 || i >= tabs.length)
+      throw new IllegalArgumentException("Index out of bounds.");
     return tabs[i];
   }
 
+  /**
+   * Returns the tab following the specified location.
+   * 
+   * @param location  the location.
+   * 
+   * @return The tab following the specified location (or <code>null</code>).
+   */
   public TabStop getTabAfter(float location) 
   {
     int idx = getTabIndexAfter(location);
@@ -65,11 +96,23 @@ public class TabSet implements Serializable
       return tabs[idx];        
   }
 
+  /**
+   * Returns the number of tab stops in this tab set.
+   * 
+   * @return The number of tab stops in this tab set.
+   */
   public int getTabCount() 
   {
     return tabs.length;
   }
 
+  /**
+   * Returns the index of the specified tab, or -1 if the tab is not found.
+   * 
+   * @param tab  the tab (<code>null</code> permitted).
+   * 
+   * @return The index of the specified tab, or -1.
+   */
   public int getTabIndex(TabStop tab) 
   {
     for (int i = 0; i < tabs.length; ++i)
@@ -78,28 +121,88 @@ public class TabSet implements Serializable
     return -1;
   }
 
+  /**
+   * Returns the index of the tab at or after the specified location.
+   * 
+   * @param location  the tab location.
+   * 
+   * @return The index of the tab stop, or -1.
+   */
   public int getTabIndexAfter(float location) 
   {
-    int idx = -1;
-    for (int i = 0; i < tabs.length; ++i)
+    for (int i = 0; i < tabs.length; i++)
       {
-        if (location < tabs[i].getPosition())
-          idx = i;
+        if (location <= tabs[i].getPosition())
+          return i;
       }
-    return idx;
+    return -1;
+  }
+  
+  /**
+   * Tests this <code>TabSet</code> for equality with an arbitrary object.
+   * 
+   * @param obj  the object (<code>null</code> permitted).
+   * 
+   * @return <code>true</code> if this <code>TabSet</code> is equal to
+   *     <code>obj</code>, and <code>false</code> otherwise.
+   *     
+   * @since 1.5
+   */
+  public boolean equals(Object obj)
+  {
+    if (obj == this)
+      return true;
+    if (!(obj instanceof TabSet))
+      return false;
+    TabSet that = (TabSet) obj;
+    int tabCount = getTabCount();
+    if (tabCount != that.getTabCount())
+      return false;
+    for (int i = 0; i < tabCount; i++)
+      {
+        if (!this.getTab(i).equals(that.getTab(i)))
+          return false;
+      }
+    return true;
+  }
+  
+  /**
+   * Returns a hash code for this <code>TabSet</code>.
+   * 
+   * @return A hash code.
+   * 
+   * @since 1.5
+   */
+  public int hashCode() 
+  {
+    // this hash code won't match Sun's, but that shouldn't matter...
+    int result = 193;
+    int tabs = getTabCount();
+    for (int i = 0; i < tabs; i++)
+      {
+        TabStop t = getTab(i);
+        if (t != null)
+          result = 37 * result + t.hashCode();
+      }
+    return result;
   }
 
+  /**
+   * Returns a string representation of this <code>TabSet</code>.
+   * 
+   * @return A string representation of this <code>TabSet</code>.
+   */
   public String toString()
   {
     StringBuffer sb = new StringBuffer();
-    sb.append("[");
+    sb.append("[ ");
     for (int i = 0; i < tabs.length; ++i)
       {
         if (i != 0)
           sb.append(" - ");
         sb.append(tabs[i].toString());
       }
-    sb.append("]");
+    sb.append(" ]");
     return sb.toString();
   }
 }

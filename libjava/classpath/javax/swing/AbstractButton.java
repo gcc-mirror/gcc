@@ -199,7 +199,7 @@ public abstract class AbstractButton extends JComponent
   Icon pressed_icon;
 
   /** The icon displayed when the button is disabled. */
-  Icon disabeldIcon;
+  Icon disabledIcon;
 
   /** The icon displayed when the button is selected. */
   Icon selectedIcon;
@@ -923,7 +923,7 @@ public abstract class AbstractButton extends JComponent
     // constructor).
     // This way the behavior of the JDK is matched.
     if(text != null)
-        this.text = text;
+      setText(text);
 
     if (icon != null)
       default_icon = icon;
@@ -1297,9 +1297,11 @@ public abstract class AbstractButton extends JComponent
    * alignment is a numeric constant from {@link SwingConstants}. It must
    * be one of: <code>RIGHT</code>, <code>LEFT</code>, <code>CENTER</code>,
    * <code>LEADING</code> or <code>TRAILING</code>.  The default is
-   * <code>RIGHT</code>.
+   * <code>CENTER</code>.
    * 
    * @return The current horizontal alignment
+   * 
+   * @see #setHorizontalAlignment(int)
    */
   public int getHorizontalAlignment()
   {
@@ -1311,17 +1313,21 @@ public abstract class AbstractButton extends JComponent
    * alignment is a numeric constant from {@link SwingConstants}. It must
    * be one of: <code>RIGHT</code>, <code>LEFT</code>, <code>CENTER</code>,
    * <code>LEADING</code> or <code>TRAILING</code>.  The default is
-   * <code>RIGHT</code>.
+   * <code>CENTER</code>.
    *
    * @param a The new horizontal alignment
    * @throws IllegalArgumentException If alignment is not one of the legal
    * constants.
+   * 
+   * @see #getHorizontalAlignment()
    */
   public void setHorizontalAlignment(int a)
   {
     if (horizontalAlignment == a)
       return;
-
+    if (a != LEFT && a != CENTER && a != RIGHT && a != LEADING 
+        && a != TRAILING)
+      throw new IllegalArgumentException("Invalid alignment.");
     int old = horizontalAlignment;
     horizontalAlignment = a;
     firePropertyChange(HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY, old, a);
@@ -1358,6 +1364,9 @@ public abstract class AbstractButton extends JComponent
   {
     if (horizontalTextPosition == t)
       return;
+    if (t != LEFT && t != CENTER && t != RIGHT && t != LEADING 
+        && t != TRAILING)
+      throw new IllegalArgumentException("Invalid alignment.");
 
     int old = horizontalTextPosition;
     horizontalTextPosition = t;
@@ -1373,6 +1382,8 @@ public abstract class AbstractButton extends JComponent
    * <code>BOTTOM</code>. The default is <code>CENTER</code>.
    *
    * @return The current vertical alignment
+   * 
+   * @see #setVerticalAlignment(int)
    */
   public int getVerticalAlignment()
   {
@@ -1388,12 +1399,16 @@ public abstract class AbstractButton extends JComponent
    * @param a The new vertical alignment
    * @throws IllegalArgumentException If alignment is not one of the legal
    * constants.
+   * 
+   * @see #getVerticalAlignment()
    */
   public void setVerticalAlignment(int a)
   {
     if (verticalAlignment == a)
       return;
-    
+    if (a != TOP && a != CENTER && a != BOTTOM)
+      throw new IllegalArgumentException("Invalid alignment.");
+
     int old = verticalAlignment;
     verticalAlignment = a;
     firePropertyChange(VERTICAL_ALIGNMENT_CHANGED_PROPERTY, old, a);
@@ -1430,6 +1445,8 @@ public abstract class AbstractButton extends JComponent
   {
     if (verticalTextPosition == t)
       return;
+    if (t != TOP && t != CENTER && t != BOTTOM)
+      throw new IllegalArgumentException("Invalid alignment.");
     
     int old = verticalTextPosition;
     verticalTextPosition = t;
@@ -1708,14 +1725,14 @@ public abstract class AbstractButton extends JComponent
    */
   public Icon getDisabledIcon()
   {
-    if (disabeldIcon == null && default_icon instanceof ImageIcon)
+    if (disabledIcon == null && default_icon instanceof ImageIcon)
       {
         Image iconImage = ((ImageIcon) default_icon).getImage();
         Image grayImage = GrayFilter.createDisabledImage(iconImage);
-        disabeldIcon = new ImageIcon(grayImage);
+        disabledIcon = new ImageIcon(grayImage);
       }
       
-    return disabeldIcon;
+    return disabledIcon;
   }
 
   /**
@@ -1729,7 +1746,11 @@ public abstract class AbstractButton extends JComponent
    */
   public void setDisabledIcon(Icon d)
   {
-    disabeldIcon = d;
+    if (disabledIcon == d)
+      return;
+    Icon old = disabledIcon;
+    disabledIcon = d;
+    firePropertyChange(DISABLED_ICON_CHANGED_PROPERTY, old, d);
     revalidate();
     repaint();
   }
@@ -2092,7 +2113,8 @@ public abstract class AbstractButton extends JComponent
   }
 
   /**
-   * Set the button's rollover icon. The look and feel class should
+   * Set the button's rollover icon and sets the <code>rolloverEnabled</code>
+   * property to <code>true</code>. The look and feel class should
    * paint this icon when the "rolloverEnabled" property of the button is
    * <code>true</code> and the mouse rolls over the button.
    *
@@ -2106,6 +2128,7 @@ public abstract class AbstractButton extends JComponent
     Icon old = rolloverIcon;
     rolloverIcon = r;
     firePropertyChange(ROLLOVER_ICON_CHANGED_PROPERTY, old, rolloverIcon);
+    setRolloverEnabled(true);
     revalidate();
     repaint();
   }
@@ -2124,12 +2147,13 @@ public abstract class AbstractButton extends JComponent
   }
 
   /**
-   * Set the button's rollover selected icon. The look and feel class
-   * should paint this icon when the "rolloverEnabled" property of the button
-   * is <code>true</code>, the "selected" property of the button's model is
-   * <code>true</code>, and the mouse rolls over the button.
+   * Set the button's rollover selected icon and sets the 
+   * <code>rolloverEnabled</code> property to <code>true</code>. The look and 
+   * feel class should paint this icon when the "rolloverEnabled" property of 
+   * the button is <code>true</code>, the "selected" property of the button's 
+   * model is <code>true</code>, and the mouse rolls over the button.
    *
-   * @param r The new rollover selected icon
+   * @param r The new rollover selected icon.
    */
   public void setRolloverSelectedIcon(Icon r)
   {
@@ -2139,6 +2163,7 @@ public abstract class AbstractButton extends JComponent
     Icon old = rolloverSelectedIcon;
     rolloverSelectedIcon = r;
     firePropertyChange(ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY, old, r);
+    setRolloverEnabled(true);
     revalidate();
     repaint();
   }

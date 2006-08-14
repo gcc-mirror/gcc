@@ -40,12 +40,9 @@ package gnu.javax.crypto.jce.mac;
 
 import gnu.java.security.Registry;
 
-public class OMacCast5Impl extends MacAdapter
+public class OMacCast5Impl
+    extends MacAdapter
 {
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
   public OMacCast5Impl()
   {
     super(Registry.OMAC_PREFIX + Registry.CAST5_CIPHER);

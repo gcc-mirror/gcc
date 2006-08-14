@@ -1,5 +1,6 @@
 /* Vector.java -- Class that provides growable arrays.
-   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2006,  
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +38,7 @@ exception statement from your version. */
 
 
 package java.util;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -479,7 +481,7 @@ public class Vector extends AbstractList
   }
 
   /**
-   * Removes the first (the lowestindex) occurance of the given object from
+   * Removes the first (the lowest index) occurrence of the given object from
    * the Vector. If such a remove was performed (the object was found), true
    * is returned. If there was no such object, false is returned.
    *

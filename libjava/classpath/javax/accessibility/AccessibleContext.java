@@ -496,7 +496,7 @@ public abstract class AccessibleContext
   }
 
   /**
-   * Get any supported accessible compoent. The default implementation returns
+   * Get any supported accessible component. The default implementation returns
    * null.
    *
    * @return the supported component, or null

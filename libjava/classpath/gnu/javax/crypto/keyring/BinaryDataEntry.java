@@ -40,29 +40,22 @@ package gnu.javax.crypto.keyring;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-
 import java.util.Date;
 
 /**
- * A binary data entry is a primitive entry that simply contains some amount
- * of arbitrary binary data and an optional content type.
+ * A binary data entry is a primitive entry that simply contains some amount of
+ * arbitrary binary data and an optional content type.
  */
-public class BinaryDataEntry extends PrimitiveEntry
+public class BinaryDataEntry
+    extends PrimitiveEntry
 {
-
-  // Fields.
-  // ------------------------------------------------------------------------
-
   public static final int TYPE = 9;
-
-  // Constructors.
-  // ------------------------------------------------------------------------
 
   /**
    * Creates a new binary data entry.
-   *
-   * @param contentType The content type of this entry. This parameter can
-   *   be <code>null</code> if no content type is needed.
+   * 
+   * @param contentType The content type of this entry. This parameter can be
+   *          <code>null</code> if no content type is needed.
    * @param data The data.
    * @param creationDate The creation date.
    * @param properties This entry's properties.
@@ -72,23 +65,16 @@ public class BinaryDataEntry extends PrimitiveEntry
   {
     super(TYPE, creationDate, properties);
     if (data == null)
-      {
-        throw new IllegalArgumentException("no data");
-      }
+      throw new IllegalArgumentException("no data");
     payload = (byte[]) data.clone();
     if (contentType != null)
-      {
-        this.properties.put("content-type", contentType);
-      }
+      this.properties.put("content-type", contentType);
   }
 
   private BinaryDataEntry()
   {
     super(TYPE);
   }
-
-  // Class methods.
-  // ------------------------------------------------------------------------
 
   public static BinaryDataEntry decode(DataInputStream in) throws IOException
   {
@@ -97,13 +83,10 @@ public class BinaryDataEntry extends PrimitiveEntry
     return entry;
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   /**
    * Returns the content type of this entry, or <code>null</code> if this
    * property is not set.
-   *
+   * 
    * @return The content type.
    */
   public String getContentType()
@@ -113,7 +96,7 @@ public class BinaryDataEntry extends PrimitiveEntry
 
   /**
    * Returns this object's data field.
-   *
+   * 
    * @return The data.
    */
   public byte[] getData()

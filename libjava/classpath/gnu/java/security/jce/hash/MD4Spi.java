@@ -41,27 +41,15 @@ package gnu.java.security.jce.hash;
 import gnu.java.security.Registry;
 
 /**
- * <p>The implementation of the MD4 <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.</p>
+ * The implementation of the MD4 <i>Service Provider Interface</i> (<b>SPI</b>)
+ * adapter.
  */
-public class MD4Spi extends MessageDigestAdapter
+public class MD4Spi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial 0-arguments constructor. */
   public MD4Spi()
   {
     super(Registry.MD4_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

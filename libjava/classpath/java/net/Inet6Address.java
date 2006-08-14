@@ -39,13 +39,16 @@ exception statement from your version. */
 package java.net;
 
 import java.util.Arrays;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
 
 /*
  * Written using on-line Java Platform 1.4 API Specification and
  * RFC 1884 (http://www.ietf.org/rfc/rfc1884.txt)
  * 
  * @author Michael Koch
- * @status Believed complete and correct.
+ * @status Updated to 1.5. Serialization compatibility is tested.
  */
 public final class Inet6Address extends InetAddress
 {
@@ -55,6 +58,39 @@ public final class Inet6Address extends InetAddress
    * Needed for serialization
    */
   byte[] ipaddress;
+
+  /**
+   * The scope ID, if any. 
+   * @since 1.5
+   * @serial 
+   */
+  private int scope_id;
+
+  /**
+   * The scope ID, if any. 
+   * @since 1.5
+   * @serial 
+   */
+  private boolean scope_id_set;
+
+  /**
+   * Whether ifname is set or not.
+   * @since 1.5
+   * @serial 
+   */
+  private boolean scope_ifname_set;
+
+  /**
+   * Name of the network interface, used only by the serialization methods
+   * @since 1.5
+   * @serial 
+   */
+  private String ifname;
+
+  /**
+   * Scope network interface, or <code>null</code>.
+   */
+  private transient NetworkInterface nif; 
 
   /**
    * Create an Inet6Address object
@@ -67,6 +103,10 @@ public final class Inet6Address extends InetAddress
     super(addr, host);
     // Super constructor clones the addr.  Get a reference to the clone.
     this.ipaddress = this.addr;
+    ifname = null;
+    scope_ifname_set = scope_id_set = false;
+    scope_id = 0;
+    nif = null;
   }
 
   /**
@@ -199,6 +239,75 @@ public final class Inet6Address extends InetAddress
   }
 
   /**
+   * Creates a scoped Inet6Address where the scope has an integer id.
+   *
+   * @throws UnkownHostException if the address is an invalid number of bytes.
+   * @since 1.5
+   */  
+  public static Inet6Address getByAddress(String host, byte[] addr, 
+					  int scopeId)
+    throws UnknownHostException
+  {
+    if( addr.length != 16 )
+      throw new UnknownHostException("Illegal address length: " + addr.length
+				     + " bytes.");
+    Inet6Address ip = new Inet6Address( addr, host );
+    ip.scope_id = scopeId;
+    ip.scope_id_set = true;
+    return ip;
+  }
+
+  /**
+   * Creates a scoped Inet6Address where the scope is a given
+   * NetworkInterface.
+   *
+   * @throws UnkownHostException if the address is an invalid number of bytes.
+   * @since 1.5
+   */  
+  public static Inet6Address getByAddress(String host, byte[] addr, 
+					  NetworkInterface nif)
+    throws UnknownHostException
+  {
+    if( addr.length != 16 )
+      throw new UnknownHostException("Illegal address length: " + addr.length
+				     + " bytes.");
+    Inet6Address ip = new Inet6Address( addr, host );
+    ip.nif = nif;
+
+    return ip;
+  }
+
+  /**
+   * Returns the <code>NetworkInterface</code> of the address scope
+   * if it is a scoped address and the scope is given in the form of a
+   * NetworkInterface. 
+   * (I.e. the address was created using  the 
+   * getByAddress(String, byte[], NetworkInterface) method)
+   * Otherwise this method returns <code>null</code>.
+   * @since 1.5
+   */
+  public NetworkInterface getScopedInterface()
+  {
+    return nif;
+  }
+
+  /**
+   * Returns the scope ID of the address scope if it is a scoped adress using
+   * an integer to identify the scope.
+   *
+   * Otherwise this method returns 0.
+   * @since 1.5
+   */
+  public int getScopeId()
+  {
+    // check scope_id_set because some JDK-serialized objects seem to have
+    // scope_id set to a nonzero value even when scope_id_set == false
+    if( scope_id_set )
+      return scope_id; 
+    return 0;
+  }
+
+  /**
    * Returns the IP address string in textual presentation
    */
   public String getHostAddress()
@@ -214,12 +323,17 @@ public final class Inet6Address extends InetAddress
 
 	sbuf.append(Integer.toHexString(x));
       }
+    if( nif != null )
+      sbuf.append( "%" + nif.getName() );
+    else if( scope_id_set )
+      sbuf.append( "%" + scope_id );
 
     return sbuf.toString();
   }
 
   /**
    * Returns a hashcode for this IP address
+   * (The hashcode is independent of scope)
    */
   public int hashCode()
   {
@@ -234,10 +348,23 @@ public final class Inet6Address extends InetAddress
     if (! (obj instanceof Inet6Address))
       return false;
 
-    // this.ipaddress is never set in this class except to
-    // the value of the super class' addr.  The super classes
-    // equals(Object) will do the compare.
-    return super.equals(obj);
+    Inet6Address ip = (Inet6Address)obj;
+    if (ipaddress.length != ip.ipaddress.length)
+      return false;
+
+    for (int i = 0; i < ip.ipaddress.length; i++)
+      if (ipaddress[i] != ip.ipaddress[i])
+	return false;
+
+    if( ip.nif != null && nif != null )
+      return nif.equals( ip.nif );
+    if( ip.nif != nif )
+      return false;
+    if( ip.scope_id_set != scope_id_set )
+      return false;
+    if( scope_id_set )
+      return (scope_id == ip.scope_id);
+    return true;
   }
 
   /**
@@ -257,5 +384,39 @@ public final class Inet6Address extends InetAddress
       return false;
 
     return true;
+  }
+
+  /**
+   * Required for 1.5-compatible serialization.
+   * @since 1.5
+   */
+  private void readObject(ObjectInputStream s)
+    throws IOException, ClassNotFoundException
+  {  
+    s.defaultReadObject();
+    try
+      {
+	if( scope_ifname_set )
+	  nif = NetworkInterface.getByName( ifname );
+      }
+    catch( SocketException se )
+      {
+	// FIXME: Ignore this? or throw an IOException?
+      }
+  }
+
+  /**
+   * Required for 1.5-compatible serialization.
+   * @since 1.5
+   */
+  private void writeObject(ObjectOutputStream s)
+    throws IOException
+  {
+    if( nif != null )
+      {
+	ifname = nif.getName();
+	scope_ifname_set = true;
+      }
+    s.defaultWriteObject();
   }
 }

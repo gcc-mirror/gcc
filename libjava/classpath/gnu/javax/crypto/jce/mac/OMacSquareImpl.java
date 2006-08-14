@@ -40,12 +40,9 @@ package gnu.javax.crypto.jce.mac;
 
 import gnu.java.security.Registry;
 
-public class OMacSquareImpl extends MacAdapter
+public class OMacSquareImpl
+    extends MacAdapter
 {
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
   public OMacSquareImpl()
   {
     super(Registry.OMAC_PREFIX + Registry.SQUARE_CIPHER);

@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
+import gnu.classpath.NotImplementedException;
+
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.GraphicsEnvironment;
@@ -70,9 +72,12 @@ public class DragSource implements Serializable
   public static final Cursor DefaultLinkNoDrop = null;
 
   private transient FlavorMap flavorMap = SystemFlavorMap.getDefaultFlavorMap ();
-
   private transient DragSourceListener dragSourceListener;
   private transient DragSourceMotionListener dragSourceMotionListener;
+  
+  private static DragSource ds;
+  private DragSourceContextPeer peer;
+  private DragSourceContext context;
 
   /**
    * Initializes the drag source.
@@ -82,19 +87,34 @@ public class DragSource implements Serializable
   public DragSource()
   {
     if (GraphicsEnvironment.isHeadless())
-      throw new HeadlessException ();
+      {
+        ds = null;
+        throw new HeadlessException();
+      }
   }
 
   /**
+   * Gets the default drag source.
+   * 
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
    */
   public static DragSource getDefaultDragSource()
   {
-    return new DragSource();
+    if (GraphicsEnvironment.isHeadless())
+      {
+        ds = null;
+        throw new HeadlessException();
+      }
+    
+    if (ds == null)
+      ds = new DragSource();
+    return ds;
   }
 
   public static boolean isDragImageSupported()
+    throws NotImplementedException
   {
+    // FIXME: Implement this
     return false;
   }
 
@@ -110,6 +130,43 @@ public class DragSource implements Serializable
                         Transferable trans, DragSourceListener dsl,
                         FlavorMap map)
   {
+    // http://www.javaworld.com/javaworld/jw-03-1999/jw-03-dragndrop.html
+
+    // This function creates a DragSourceContext object. This object tracks the
+    // state of the operation by listening to a native peer. In this situation,
+    // the DragSource may be obtained from the event or by an instance variable.
+    // This function also creates a new DragSourceContextPeer.
+
+    // This function sends the same message to the context, which then forwards
+    // it to the peer, passing itself as a parameter. Now, the native system has
+    // access to the Transferable through the context.
+
+    // FIXME: Add check to determine if dragging.
+    
+    try
+      {
+        flavorMap = map;
+        
+        if (peer == null)
+          peer = Toolkit.getDefaultToolkit().createDragSourceContextPeer(trigger);
+        
+        if (context == null)
+          context = createDragSourceContext(peer, trigger,
+                                                            dragCursor,
+                                                            dragImage,
+                                                            imageOffset, trans,
+                                                            dsl);
+
+        if (peer == null)
+          throw new InvalidDnDOperationException();
+
+        peer.startDrag(context, dragCursor, dragImage, imageOffset);
+      }
+    catch (Exception e)
+      {
+        throw new InvalidDnDOperationException("Drag and Drop system is "
+                                + "unable to initiate a drag operation.");
+      }
   }
 
   /**
@@ -156,7 +213,7 @@ public class DragSource implements Serializable
   /**
    * Creates the DragSourceContext to handle this drag.
    *
-   * @exception IllegalArgumentException FIXME
+   * @exception IllegalArgumentException 
    * @exception NullPointerException If dscp, dgl, dragImage or t is null.
    */
   protected DragSourceContext
@@ -164,7 +221,7 @@ public class DragSource implements Serializable
                             Cursor cursor, Image image, Point offset,
                             Transferable t, DragSourceListener dsl)
   {
-    return null;
+    return new DragSourceContext(peer, dge, cursor, image, offset, t, dsl);
   }
 
   public FlavorMap getFlavorMap()
@@ -172,42 +229,22 @@ public class DragSource implements Serializable
     return flavorMap;
   }
 
-  /**
-   * Dummy DragGestureRecognizer when Toolkit doesn't support drag and drop.
-   */
-  static class NoDragGestureRecognizer extends DragGestureRecognizer
+  public DragGestureRecognizer createDragGestureRecognizer(Class recognizer,
+                                                           Component c,
+                                                           int actions,
+                                                           DragGestureListener dgl)
   {
-    NoDragGestureRecognizer(DragSource ds, Component c, int actions,
-                            DragGestureListener dgl)
-    {
-      super(ds, c, actions, dgl);
-    }
-
-    protected void registerListeners() { }
-    protected void unregisterListeners() { }
+    return Toolkit.getDefaultToolkit().createDragGestureRecognizer(recognizer,
+                                                                   this, c,
+                                                                   actions, dgl);
   }
 
-  public DragGestureRecognizer
-    createDragGestureRecognizer(Class recognizer, Component c, int actions,
-                                DragGestureListener dgl)
+  public DragGestureRecognizer createDefaultDragGestureRecognizer(Component c,
+                                                                  int actions,
+                                                                  DragGestureListener dgl)
   {
-    DragGestureRecognizer dgr;
-    dgr = Toolkit.getDefaultToolkit ()
-                  .createDragGestureRecognizer (recognizer, this, c, actions,
-                                                dgl);
-
-    if (dgr == null)
-      dgr = new NoDragGestureRecognizer(this, c, actions, dgl);
-
-    return dgr;
-  }
-
-  public DragGestureRecognizer
-    createDefaultDragGestureRecognizer(Component c, int actions,
-                                       DragGestureListener dgl)
-  {
-    return createDragGestureRecognizer (MouseDragGestureRecognizer.class, c,
-                                        actions, dgl);
+    return createDragGestureRecognizer(MouseDragGestureRecognizer.class, c,
+                                       actions, dgl);
   }
 
   /**
@@ -274,5 +311,18 @@ public class DragSource implements Serializable
 
     // Return an empty EventListener array.
     return new EventListener [0];
+  }
+  
+  /**
+   * TODO
+   * @return
+   * 
+   * @since 1.5
+   */
+  public static int getDragThreshold()
+    throws NotImplementedException
+  {
+    // FIXME: Not implemented.
+    return 4;
   }
 } // class DragSource

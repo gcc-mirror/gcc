@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.CosNaming.NamingContextExtPackage;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.TypeCode;
@@ -58,11 +60,6 @@ public abstract class URLStringHelper
    */
   private static String _id =
     "IDL:omg.org/CosNaming/NamingContextExt/URLString:1.0";
-
-  /**
-   * The cached type code (string alias).
-   */
-  private static TypeCode typeCode;
 
   /**
    * Just extracts string from this {@link Any}.
@@ -99,13 +96,11 @@ public abstract class URLStringHelper
   /**
    * Return the "URLString", alias of String, typecode.
    */
-  public static synchronized TypeCode type()
+  public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        typeCode = ORB.init().create_string_tc(0);
-        typeCode = ORB.init().create_alias_tc(id(), "URLString", typeCode);
-      }
+    TypeCode typeCode;
+    typeCode = OrbRestricted.Singleton.create_string_tc(0);
+    typeCode = OrbRestricted.Singleton.create_alias_tc(id(), "URLString", typeCode);
     return typeCode;
   }
 

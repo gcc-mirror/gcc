@@ -401,7 +401,10 @@ public abstract class View implements SwingConstants
     Element el = getElement();
     DocumentEvent.ElementChange ec = ev.getChange(el);
     if (ec != null)
-        updateChildren(ec, ev, vf);
+      {
+        if (! updateChildren(ec, ev, vf))
+          ec = null;
+      }
     forwardUpdate(ec, ev, shape, vf);
     updateLayout(ec, ev, shape);
   }
@@ -493,27 +496,66 @@ public abstract class View implements SwingConstants
     int count = getViewCount();
     if (count > 0)
       {
+        // Determine start index.
         int startOffset = ev.getOffset();
-        int endOffset = startOffset + ev.getLength();
         int startIndex = getViewIndex(startOffset, Position.Bias.Backward);
-        int endIndex = getViewIndex(endOffset, Position.Bias.Forward);
-        int index = -1;
-        int addLength = -1;
-        if (ec != null)
+
+        // For REMOVE events we have to forward the event to the last element,
+        // for the case that an Element has been removed that represente
+        // the offset.
+        if (startIndex == -1 && ev.getType() == DocumentEvent.EventType.REMOVE
+            && startOffset >= getEndOffset())
           {
-            index = ec.getIndex();
-            addLength = ec.getChildrenAdded().length;
+            startIndex = getViewCount() - 1;
           }
 
-        if (startIndex >= 0 && endIndex >= 0)
+        // When startIndex is on a view boundary, forward event to the
+        // previous view too.
+        if (startIndex >= 0)
           {
-            for (int i = startIndex; i <= endIndex; i++)
+            View v = getView(startIndex);
+            if (v != null)
               {
-                // Skip newly added child views.
-                if (index >= 0 && i >= index && i < (index+addLength))
-                  continue;
+                if (v.getStartOffset() == startOffset && startOffset > 0)
+                  startIndex = Math.max(0, startIndex - 1);
+              }
+          }
+        startIndex = Math.max(0, startIndex);
+
+        // Determine end index.
+        int endIndex = startIndex;
+        if (ev.getType() != DocumentEvent.EventType.REMOVE)
+          {
+            endIndex = getViewIndex(startOffset + ev.getLength(),
+                                    Position.Bias.Forward);
+            if (endIndex < 0)
+              endIndex = getViewCount() - 1;
+          }
+
+        // Determine hole that comes from added elements (we don't forward
+        // the event to newly added views.
+        int startAdded = endIndex + 1;
+        int endAdded = startAdded;
+        Element[] added = (ec != null) ? ec.getChildrenAdded() : null;
+        if (added != null && added.length > 0)
+          {
+            startAdded = ec.getIndex();
+            endAdded = startAdded + added.length - 1;
+          }
+
+        // Forward event to all views between startIndex and endIndex,
+        // and leave out all views in the hole.
+        for (int i = startIndex; i <= endIndex; i++)
+          {
+            // Skip newly added child views.
+            if (! (i >= startAdded && i <= endAdded))
+              {
                 View child = getView(i);
-                forwardUpdateToView(child, ev, shape, vf);
+                if (child != null)
+                  {
+                    Shape childAlloc = getChildAllocation(i, shape);
+                    forwardUpdateToView(child, ev, childAlloc, vf);
+                  }
               }
           }
       }
@@ -611,9 +653,46 @@ public abstract class View implements SwingConstants
     if (b2 != Position.Bias.Forward && b2 != Position.Bias.Backward)
       throw new IllegalArgumentException
 	("b2 must be either Position.Bias.Forward or Position.Bias.Backward");
-    Rectangle s1 = (Rectangle) modelToView(p1, a, b1);
-    Rectangle s2 = (Rectangle) modelToView(p2, a, b2);
-    return SwingUtilities.computeUnion(s1.x, s1.y, s1.width, s1.height, s2);
+
+    Shape s1 = modelToView(p1, a, b1);
+    // Special case for p2 == end index.
+    Shape s2;
+    if (p2 != getEndOffset())
+      {
+        s2 = modelToView(p2, a, b2);
+      }
+    else
+      {
+        try
+          {
+            s2 = modelToView(p2, a, b2);
+          }
+        catch (BadLocationException ex)
+          {
+            // Assume the end rectangle to be at the right edge of the
+            // view.
+            Rectangle aRect = a instanceof Rectangle ? (Rectangle) a
+                                                     : a.getBounds();
+            s2 = new Rectangle(aRect.x + aRect.width - 1, aRect.y, 1,
+                               aRect.height);
+          }
+      }
+
+    // Need to modify the rectangle, so we create a copy in all cases.
+    Rectangle r1 = s1.getBounds();
+    Rectangle r2 = s2 instanceof Rectangle ? (Rectangle) s2
+                                           : s2.getBounds();
+
+    // For multiline view, let the resulting rectangle span the whole view.
+    if (r1.y != r2.y)
+      {
+        Rectangle aRect = a instanceof Rectangle ? (Rectangle) a
+                                                 : a.getBounds();
+        r1.x = aRect.x;
+        r1.width = aRect.width;
+      }
+
+    return SwingUtilities.computeUnion(r2.x, r2.y, r2.width, r2.height, r1);
   }
 
   /**

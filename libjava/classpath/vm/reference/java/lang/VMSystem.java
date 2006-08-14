@@ -135,7 +135,10 @@ final class VMSystem
    * @return the current time
    * @see java.util.Date
    */
-   public static native long currentTimeMillis();
+   public static long currentTimeMillis()
+   {
+     return nanoTime() / 1000000L;
+   }
 
   /**
    * <p>
@@ -162,10 +165,7 @@ final class VMSystem
    * @return the time of a system timer in nanoseconds.
    * @since 1.5 
    */
-   public static long nanoTime()
-   {
-     return currentTimeMillis() * 1000;
-   }
+  public static native long nanoTime();
 
   /**
    * Returns a list of 'name=value' pairs representing the current environment

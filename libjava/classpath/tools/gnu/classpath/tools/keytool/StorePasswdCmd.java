@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.SystemProperties;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
@@ -159,30 +160,32 @@ class StorePasswdCmd extends Command
   {
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
     setNewKeystorePassword(_newPassword);
-
-    log.finer("-storepasswd handler will use the following options:"); //$NON-NLS-1$
-    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
-    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -provider=" + provider); //$NON-NLS-1$
-    log.finer("  -v=" + verbose); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      {
+        log.fine("-storepasswd handler will use the following options:"); //$NON-NLS-1$
+        log.fine("  -storetype=" + storeType); //$NON-NLS-1$
+        log.fine("  -keystore=" + storeURL); //$NON-NLS-1$
+        log.fine("  -provider=" + provider); //$NON-NLS-1$
+        log.fine("  -v=" + verbose); //$NON-NLS-1$
+      }
   }
 
   void start() throws KeyStoreException, NoSuchAlgorithmException,
       CertificateException, IOException
   {
-    log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
     saveKeyStore(newStorePasswordChars);
-
-    log.exiting(getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   // own methods --------------------------------------------------------------
 
   Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(Main.STOREPASSWD_CMD, true);
     result.setHeader(Messages.getString("StorePasswdCmd.18")); //$NON-NLS-1$
     result.setFooter(Messages.getString("StorePasswdCmd.17")); //$NON-NLS-1$
@@ -241,8 +244,8 @@ class StorePasswdCmd extends Command
       }
     });
     result.add(options);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 

@@ -38,7 +38,11 @@ exception statement from your version. */
 
 package javax.naming;
 
- 
+/**
+ * Thrown from the {@link javax.naming.NamingEnumeration}, this exception
+ * indicates that the enumeration represents only part of the existing
+ * elements that would be an answer to the specified request.
+ */ 
 public class PartialResultException extends NamingException
 {
   private static final long serialVersionUID = 2572144970049426786L;

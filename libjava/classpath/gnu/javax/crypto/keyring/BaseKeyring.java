@@ -38,86 +38,58 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.keyring;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import gnu.java.security.Registry;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import gnu.java.security.Registry;
-
-public abstract class BaseKeyring implements IKeyring
+public abstract class BaseKeyring
+    implements IKeyring
 {
-
-  // Fields.
-  // ------------------------------------------------------------------------
-
-  /**
-   * The top-level keyring data.
-   */
+  /** The top-level keyring data. */
   protected PasswordAuthenticatedEntry keyring;
-
   protected CompressedEntry keyring2;
-
-  // Constructors.
-  // ------------------------------------------------------------------------
 
   public BaseKeyring()
   {
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   public void load(Map attributes) throws IOException
   {
     InputStream in = (InputStream) attributes.get(KEYRING_DATA_IN);
     if (in == null)
-      {
-        throw new IllegalArgumentException("no input stream");
-      }
+      throw new IllegalArgumentException("no input stream");
     char[] password = (char[]) attributes.get(KEYRING_PASSWORD);
     if (password == null)
-      {
-        password = new char[0];
-      }
+      password = new char[0];
 
     if (in.read() != Registry.GKR_MAGIC[0]
         || in.read() != Registry.GKR_MAGIC[1]
         || in.read() != Registry.GKR_MAGIC[2]
         || in.read() != Registry.GKR_MAGIC[3])
-      {
-        throw new MalformedKeyringException("magic");
-      }
+      throw new MalformedKeyringException("magic");
 
     load(in, password);
-
     List l = keyring.getEntries();
     if (l.size() == 1 && (l.get(0) instanceof CompressedEntry))
-      {
-        keyring2 = (CompressedEntry) l.get(0);
-      }
+      keyring2 = (CompressedEntry) l.get(0);
   }
 
   public void store(Map attributes) throws IOException
   {
     OutputStream out = (OutputStream) attributes.get(KEYRING_DATA_OUT);
     if (out == null)
-      {
-        throw new IllegalArgumentException("no output stream");
-      }
+      throw new IllegalArgumentException("no output stream");
     char[] password = (char[]) attributes.get(KEYRING_PASSWORD);
     if (password == null)
-      {
-        password = new char[0];
-      }
+      password = new char[0];
     if (keyring == null)
-      {
-        throw new IllegalStateException("empty keyring");
-      }
+      throw new IllegalStateException("empty keyring");
 
     out.write(Registry.GKR_MAGIC);
     store(out, password);
@@ -131,45 +103,35 @@ public abstract class BaseKeyring implements IKeyring
   public int size()
   {
     if (keyring == null)
-      {
-        throw new IllegalStateException ("keyring not loaded");
-      }
+      throw new IllegalStateException("keyring not loaded");
     return ((StringTokenizer) aliases()).countTokens();
   }
 
   public Enumeration aliases()
   {
     if (keyring == null)
-      {
-        throw new IllegalStateException ("keyring not loaded");
-      }
+      throw new IllegalStateException("keyring not loaded");
     return new StringTokenizer(keyring.getAliasList(), ";");
   }
 
   public boolean containsAlias(String alias)
   {
     if (keyring == null)
-      {
-        throw new IllegalStateException("keyring not loaded");
-      }
+      throw new IllegalStateException("keyring not loaded");
     return keyring.containsAlias(alias);
   }
 
   public List get(String alias)
   {
     if (keyring == null)
-      {
-        throw new IllegalStateException("keyring not loaded");
-      }
+      throw new IllegalStateException("keyring not loaded");
     return keyring.get(alias);
   }
 
   public void add(Entry entry)
   {
     if (keyring == null)
-      {
-        throw new IllegalStateException("keyring not loaded");
-      }
+      throw new IllegalStateException("keyring not loaded");
     if (keyring2 != null)
       keyring2.add(entry);
     else
@@ -179,9 +141,7 @@ public abstract class BaseKeyring implements IKeyring
   public void remove(String alias)
   {
     if (keyring == null)
-      {
-        throw new IllegalStateException("keyring not loaded");
-      }
+      throw new IllegalStateException("keyring not loaded");
     keyring.remove(alias);
   }
 

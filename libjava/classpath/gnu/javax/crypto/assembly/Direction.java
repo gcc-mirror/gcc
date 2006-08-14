@@ -39,31 +39,25 @@ exception statement from your version.  */
 package gnu.javax.crypto.assembly;
 
 /**
- * <p>An enumeration type for wiring {@link Stage} instances into {@link
- * Cascade} Cipher chains, as well as for operating a {@link Cascade} in a
- * given direction.</p>
- *
- * <p>The possible values for this type are two:</p>
+ * An enumeration type for wiring {@link Stage} instances into {@link Cascade}
+ * Cipher chains, as well as for operating a {@link Cascade} in a given
+ * direction.
+ * <p>
+ * The possible values for this type are two:
  * <ol>
- *    <li>FORWARD: equivalent to {@link gnu.crypto.mode.IMode#ENCRYPTION}, and
- *    its inverse value</li>
- *    <li>REVERSED: equivalent to {@link gnu.crypto.mode.IMode#DECRYPTION}.</li>
+ * <li>FORWARD: equivalent to {@link gnu.javax.crypto.mode.IMode#ENCRYPTION},
+ * and its inverse value</li>
+ * <li>REVERSED: equivalent to {@link gnu.javax.crypto.mode.IMode#DECRYPTION}.
+ * </li>
  * </ol>
  */
 public final class Direction
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   public static final Direction FORWARD = new Direction(1);
 
   public static final Direction REVERSED = new Direction(2);
 
   private int value;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   private Direction(int value)
   {
@@ -72,16 +66,10 @@ public final class Direction
     this.value = value;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   public static final Direction reverse(Direction d)
   {
     return (d.equals(FORWARD) ? REVERSED : FORWARD);
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   public String toString()
   {

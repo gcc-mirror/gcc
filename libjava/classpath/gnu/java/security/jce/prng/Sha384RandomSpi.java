@@ -41,26 +41,14 @@ package gnu.java.security.jce.prng;
 import gnu.java.security.Registry;
 
 /**
- * <p>The implementation of the SHA-384 based SecureRandom <i>Service Provider
- * Interface</i> (<b>SPI</b>) adapter.</p>
+ * The implementation of the SHA-384 based SecureRandom <i>Service Provider
+ * Interface</i> (<b>SPI</b>) adapter.
  */
-public class Sha384RandomSpi extends SecureRandomAdapter
+public class Sha384RandomSpi
+    extends SecureRandomAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public Sha384RandomSpi()
   {
     super(Registry.SHA384_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package gnu.java.security.pkcs;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.OID;
 import gnu.java.security.ber.BER;
 import gnu.java.security.ber.BEREncodingException;
@@ -52,9 +53,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.math.BigInteger;
-
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
@@ -62,7 +61,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -174,21 +172,22 @@ public class PKCS7SignedData
     if (!val.isConstructed())
       throw new BEREncodingException("malformed SignedData");
 
-    log.finest("SignedData: " + val);
+    if (Configuration.DEBUG)
+      log.fine("SignedData: " + val);
 
     val = ber.read();
     if (val.getTag() != BER.INTEGER)
       throw new BEREncodingException("expecting Version");
     version = (BigInteger) val.getValue();
-
-    log.finest("  Version: " + version);
+    if (Configuration.DEBUG)
+      log.fine("  Version: " + version);
 
     digestAlgorithms = new HashSet();
     val = ber.read();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed DigestAlgorithmIdentifiers");
-
-    log.finest("  DigestAlgorithmIdentifiers: " + val);
+    if (Configuration.DEBUG)
+      log.fine("  DigestAlgorithmIdentifiers: " + val);
     int count = 0;
     DERValue val2 = ber.read();
     while (val2 != BER.END_OF_SEQUENCE &&
@@ -196,14 +195,14 @@ public class PKCS7SignedData
       {
         if (!val2.isConstructed())
           throw new BEREncodingException("malformed AlgorithmIdentifier");
-
-        log.finest("    AlgorithmIdentifier: " + val2);
+        if (Configuration.DEBUG)
+          log.fine("    AlgorithmIdentifier: " + val2);
         count += val2.getEncodedLength();
         val2 = ber.read();
         if (val2.getTag() != BER.OBJECT_IDENTIFIER)
           throw new BEREncodingException("malformed AlgorithmIdentifier");
-
-        log.finest("      digestAlgorithmIdentifiers OID: " + val2.getValue());
+        if (Configuration.DEBUG)
+          log.fine("      digestAlgorithmIdentifiers OID: " + val2.getValue());
         List algId = new ArrayList(2);
         algId.add(val2.getValue());
         val2 = ber.read();
@@ -224,23 +223,27 @@ public class PKCS7SignedData
         else
           algId.add(null);
 
-        log.finest("      digestAlgorithmIdentifiers params: ");
-        log.finest(Util.dumpString((byte[]) algId.get(1),
-                                   "      digestAlgorithmIdentifiers params: "));
+        if (Configuration.DEBUG)
+          {
+            log.fine("      digestAlgorithmIdentifiers params: ");
+            log.fine(Util.dumpString((byte[]) algId.get(1),
+                                     "      digestAlgorithmIdentifiers params: "));
+          }
         digestAlgorithms.add(algId);
       }
 
     val = ber.read();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed ContentInfo");
-
-    log.finest("  ContentInfo: " + val);
+    if (Configuration.DEBUG)
+      log.fine("  ContentInfo: " + val);
     val2 = ber.read();
     if (val2.getTag() != BER.OBJECT_IDENTIFIER)
       throw new BEREncodingException("malformed ContentType");
 
     contentType = (OID) val2.getValue();
-    log.finest("    ContentType OID: " + contentType);
+    if (Configuration.DEBUG)
+      log.fine("    ContentType OID: " + contentType);
     if (BERValue.isIndefinite(val)
         || (val.getLength() > 0 && val.getLength() > val2.getEncodedLength()))
       {
@@ -252,17 +255,18 @@ public class PKCS7SignedData
               val2 = ber.read();
           }
       }
-
-    log.finest("    Content: ");
-    log.finest(Util.dumpString(content, "    Content: "));
-
+    if (Configuration.DEBUG)
+      {
+        log.fine("    Content: ");
+        log.fine(Util.dumpString(content, "    Content: "));
+      }
     val = ber.read();
     if (val.getTag() == 0)
       {
         if (!val.isConstructed())
           throw new BEREncodingException("malformed ExtendedCertificatesAndCertificates");
-
-        log.finest("  ExtendedCertificatesAndCertificates: " + val);
+        if (Configuration.DEBUG)
+          log.fine("  ExtendedCertificatesAndCertificates: " + val);
         count = 0;
         val2 = ber.read();
         List certs = new LinkedList();
@@ -271,7 +275,8 @@ public class PKCS7SignedData
           {
             Certificate cert =
               x509.generateCertificate(new ByteArrayInputStream(val2.getEncoded()));
-            log.finest("    Certificate: " + cert);
+            if (Configuration.DEBUG)
+              log.fine("    Certificate: " + cert);
             certs.add(cert);
             count += val2.getEncodedLength();
             ber.skip(val2.getLength());
@@ -286,8 +291,8 @@ public class PKCS7SignedData
       {
         if (!val.isConstructed())
           throw new BEREncodingException("malformed CertificateRevocationLists");
-
-        log.finest("  CertificateRevocationLists: " + val);
+        if (Configuration.DEBUG)
+          log.fine("  CertificateRevocationLists: " + val);
         count = 0;
         val2 = ber.read();
         List crls = new LinkedList();
@@ -295,7 +300,8 @@ public class PKCS7SignedData
                (val.getLength() > 0 && val.getLength() > count))
           {
             CRL crl = x509.generateCRL(new ByteArrayInputStream(val2.getEncoded()));
-            log.finest("    CRL: " + crl);
+            if (Configuration.DEBUG)
+              log.fine("    CRL: " + crl);
             crls.add(crl);
             count += val2.getEncodedLength();
             ber.skip(val2.getLength());
@@ -309,8 +315,8 @@ public class PKCS7SignedData
     signerInfos = new HashSet();
     if (!val.isConstructed())
       throw new BEREncodingException("malformed SignerInfos");
-
-    log.finest("  SignerInfos: " + val);
+    if (Configuration.DEBUG)
+      log.fine("  SignerInfos: " + val);
 
     // FIXME read this more carefully.
     // Since we are just reading a file (probably) we just read until we

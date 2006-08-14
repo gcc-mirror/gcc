@@ -37,8 +37,6 @@ exception statement from your version. */
 
 package java.awt.dnd;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -161,9 +159,8 @@ public class DropTargetDropEvent extends DropTargetEvent
   }
 
   public void dropComplete(boolean success)
-    throws NotImplementedException
   {
-    // FIXME: implement this
+    context.dropComplete(success);
   }
 
   public boolean isLocalTransfer()

@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.awt.java2d;
 
 
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 
 /**
@@ -78,34 +79,89 @@ public class CubicSegment extends Segment
    */
   public Object clone()
   {
-    return new CubicSegment(P1.getX(), P1.getY(), cp1.getX(), cp1.getY(),
-                            cp2.getX(), cp2.getY(), P2.getX(), P2.getY());
+    CubicSegment segment = null;
+    
+    try
+      {
+        segment = (CubicSegment) super.clone();
+        
+        segment.P1 = (Point2D) P1.clone();
+        segment.P2 = (Point2D) P2.clone();
+        segment.cp1 = (Point2D) cp1.clone();
+        segment.cp2 = (Point2D) cp2.clone();
+      }
+    catch (CloneNotSupportedException cnse)
+      {
+        InternalError ie = new InternalError();
+        ie.initCause(cnse);
+        throw ie;
+      }
+  
+    return segment;
   }
 
   /**
-   * Get the "top" and "bottom" segments of this segment.
-   * First array element is p0 + normal, second is p0 - normal.
+   * Get the "top" and "bottom" segments of this segment. First array element is
+   * p0 + normal, second is p0 - normal.
    */
   public Segment[] getDisplacedSegments(double radius)
   {
+    // It is, apparently, impossible to derive a curve parallel to a bezier
+    // curve (unless it's a straight line), so we have no choice but to
+    // approximate the displaced segments. Similar to FlattenPathIterator.
+
+    Segment segmentTop = null;
+    Segment segmentBottom = null;
     this.radius = radius;
-    double x0 = P1.getX();
-    double y0 = P1.getY();
-    double x1 = cp1.getX();
-    double y1 = cp1.getY();
-    double x2 = cp2.getX();
-    double y2 = cp2.getY();
-    double x3 = P2.getX();
-    double y3 = P2.getY();
-    double[] p1 = normal(x0, y0, x1, y1);
-    double[] p2 = normal(x2, y2, x3, y3);
 
-    
-    // FIXME: Doesn't compile.
-    // return new Segment[]{s1, s2};
-    return new Segment[0];
+    CubicCurve2D[] curves = new CubicCurve2D[10];
+    curves[0] = new CubicCurve2D.Double(P1.getX(), P1.getY(), cp1.getX(),
+                                        cp1.getY(), cp2.getX(), cp2.getY(),
+                                        P2.getX(), P2.getY());
+    int numCurves = 1;
+
+    // Hard-coded a recursion limit of 10 and flatness of 1... should we make
+    // this an option somewhere?
+    while (numCurves > 0)
+      {
+        // The curve is flat enough, or we've reached our recursion limit,
+        // so take the current start/end points and add it as a line segment
+        // to our final approximated curves
+        if (curves[numCurves - 1].getFlatnessSq() <= (radius / 3) || numCurves == 10)
+          {
+            Segment[] displaced = new LineSegment(
+                                                  curves[numCurves - 1].getP1(),
+                                                  curves[numCurves - 1].getP2()).getDisplacedSegments(radius);
+            if (segmentTop == null)
+              {
+                segmentTop = displaced[0];
+                segmentBottom = displaced[1];
+              }
+            else
+              {
+                segmentTop.add(displaced[0]);
+                segmentBottom.add(displaced[1]);
+              }
+            numCurves--;
+          }
+
+        // Otherwise, subdivide again and continue
+        else
+          {
+            CubicCurve2D left = new CubicCurve2D.Double();
+            CubicCurve2D right = new CubicCurve2D.Double();
+            curves[numCurves - 1].subdivide(left, right);
+            curves[numCurves - 1] = right;
+            curves[numCurves] = left;
+            curves[numCurves - 1] = right;
+            curves[numCurves] = left;
+            numCurves++;
+          }
+      }
+
+    return new Segment[] { segmentTop, segmentBottom };
   }
-
+  
   public void reverse()
   {
     Point2D temp = P1;
@@ -116,12 +172,12 @@ public class CubicSegment extends Segment
     cp2 = temp;
   }
 
-  public double[] first()
+  public double[] cp1()
   {
     return new double[]{cp1.getX(), cp1.getY()}; 
   }
 
-  public double[] last()
+  public double[] cp2()
   {
     return new double[]{cp2.getX(), cp2.getY()}; 
   }

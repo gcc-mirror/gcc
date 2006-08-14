@@ -42,24 +42,38 @@ import java.awt.geom.Point2D;
 
 public abstract class Segment implements Cloneable
 {
-  // segment type, PathIterator segment types are used.
+  // Start and end points of THIS segment
   public Point2D P1;
   public Point2D P2;
+  
+  // Segments can be linked together internally as a linked list
+  public Segment first;
   public Segment next;
   public Segment last;
+  
+  // Half the stroke width
   protected double radius;
 
+  /**
+   * Create a new, empty segment
+   */
   public Segment()
   {
     P1 = P2 = null;
+    first = this;
     next = null;
     last = this;
   }
 
+  /**
+   * Add a segment to the polygon
+   * @param newsegment segment to add
+   */
   public void add(Segment newsegment)
   {
+    newsegment.first = first;
     last.next = newsegment;
-    last = last.next;
+    last = last.next.last;
   }
 
   /**
@@ -68,6 +82,7 @@ public abstract class Segment implements Cloneable
   public void reverseAll()
   {
     reverse();
+    first = last;
     Segment v = next;
     Segment former = this;
     next = null;
@@ -91,7 +106,7 @@ public abstract class Segment implements Cloneable
 
   /**
    * Get the normal vector to the slope of the line.
-   * Returns: 0.5*width*(norm of derivative of the (x0,y0)-(x1,y1) vector)
+   * @return vector of length radius, normal to the (x0,y0)-(x1,y1) vector)
    */
   protected double[] normal(double x0, double y0, double x1, double y1)
   {
@@ -117,6 +132,9 @@ public abstract class Segment implements Cloneable
     return new double[]{ dx, dy };
   }
 
+  /**
+   * Reverse the current segment
+   */
   public abstract void reverse();
 
   /**
@@ -125,7 +143,16 @@ public abstract class Segment implements Cloneable
    */
   public abstract Segment[] getDisplacedSegments(double radius);
 
-  public abstract double[] first();
-  public abstract double[] last();
+  /**
+   * Returns the coordinates of the first control point, or the start point
+   * for a line segment.
+   */
+  public abstract double[] cp1();
+  
+  /**
+   * Returns the coordinates of the second control point, or the end point
+   * for a line segment.
+   */
+  public abstract double[] cp2();
 
 }

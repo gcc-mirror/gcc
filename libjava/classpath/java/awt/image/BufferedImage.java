@@ -100,11 +100,33 @@ public class BufferedImage extends Image
   Vector observers;
   
   /**
-   * Creates a new buffered image.
+   * Creates a new <code>BufferedImage</code> with the specified width, height
+   * and type.  Valid <code>type</code> values are:
    * 
-   * @param w  the width.
-   * @param h  the height.
-   * @param type  the image type (see the constants defined by this class).
+   * <ul>
+   *   <li>{@link #TYPE_INT_RGB}</li>
+   *   <li>{@link #TYPE_INT_ARGB}</li>
+   *   <li>{@link #TYPE_INT_ARGB_PRE}</li>
+   *   <li>{@link #TYPE_INT_BGR}</li>
+   *   <li>{@link #TYPE_3BYTE_BGR}</li>
+   *   <li>{@link #TYPE_4BYTE_ABGR}</li>
+   *   <li>{@link #TYPE_4BYTE_ABGR_PRE}</li>
+   *   <li>{@link #TYPE_USHORT_565_RGB}</li>
+   *   <li>{@link #TYPE_USHORT_555_RGB}</li>
+   *   <li>{@link #TYPE_BYTE_GRAY}</li>
+   *   <li>{@link #TYPE_USHORT_GRAY}</li>
+   *   <li>{@link #TYPE_BYTE_BINARY}</li>
+   *   <li>{@link #TYPE_BYTE_INDEXED}</li>
+   * </ul>
+   * 
+   * @param w  the width (must be > 0).
+   * @param h  the height (must be > 0).
+   * @param type  the image type (see the list of valid types above).
+   * 
+   * @throws IllegalArgumentException if <code>w</code> or <code>h</code> is
+   *     less than or equal to zero.
+   * @throws IllegalArgumentException if <code>type</code> is not one of the
+   *     specified values.
    */
   public BufferedImage(int w, int h, int type)
   {
@@ -181,13 +203,15 @@ public class BufferedImage extends Image
 	case TYPE_4BYTE_ABGR_PRE:
 	  bits = bits4;
 	  break;
-	case TYPE_BYTE_GRAY:
-	  bits = bits1byte;
-	  break;
-	case TYPE_USHORT_GRAY:
-	  bits = bits1ushort;
-	  dataType = DataBuffer.TYPE_USHORT;
-	  break;
+        case TYPE_BYTE_GRAY:
+          bits = bits1byte;
+          cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+          break;
+        case TYPE_USHORT_GRAY:
+          bits = bits1ushort;
+          cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+          dataType = DataBuffer.TYPE_USHORT;
+          break;
 	}
 	cm = new ComponentColorModel(cs, bits, alpha, premultiplied,
 				     alpha ?
@@ -203,6 +227,8 @@ public class BufferedImage extends Image
 	String msg2 = "type not implemented yet";
 	throw new UnsupportedOperationException(msg2);
 	// FIXME: build color-cube and create color model
+      default:
+        throw new IllegalArgumentException("Unknown image type " + type);
       }
     
     init(cm,
@@ -504,7 +530,10 @@ public class BufferedImage extends Image
           int[] pixels = getRGB(x, y, 
                                 width, height, 
                                 (int[])null, offset, stride);
-          ColorModel model = getColorModel();
+          // We already convert the color to RGB in the getRGB call, so
+          // we pass a simple RGB color model to the consumers.
+          ColorModel model = new DirectColorModel(32, 0xff0000, 0xff00, 0xff,
+                                                  0xff000000);
 
           consumers.add(ic);
 

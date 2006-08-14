@@ -39,23 +39,10 @@ exception statement from your version.  */
 package gnu.javax.crypto.pad;
 
 /**
- * <p>A checked exception that indicates that a padding algorithm did not find the
- * expected padding bytes when unpadding some data.</p>
+ * A checked exception that indicates that a padding algorithm did not find the
+ * expected padding bytes when unpadding some data.
  */
-public class WrongPaddingException extends Exception
+public class WrongPaddingException
+    extends Exception
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
-  // implicit 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instant methods
-  // -------------------------------------------------------------------------
 }

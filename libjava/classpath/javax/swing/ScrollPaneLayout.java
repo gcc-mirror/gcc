@@ -82,7 +82,8 @@ public class ScrollPaneLayout
 	// Nothing to do here.
   }
 
-  public void syncWithScrollPane(JScrollPane scrollPane) {
+  public void syncWithScrollPane(JScrollPane scrollPane) 
+  {
     viewport = scrollPane.getViewport();
     rowHead = scrollPane.getRowHeader();
     colHead = scrollPane.getColumnHeader();
@@ -145,7 +146,8 @@ public class ScrollPaneLayout
       throw new IllegalArgumentException();
   }
 
-  public void removeLayoutComponent(Component component) {
+  public void removeLayoutComponent(Component component) 
+  {
     if (component == viewport)
       viewport = null;
     else if (component == vsb)
@@ -448,7 +450,8 @@ public class ScrollPaneLayout
    * @deprecated As of Swing 1.1 replaced by
    *     {@link javax.swing.JScrollPane#getViewportBorderBounds}.
    */
-  public Rectangle getViewportBorderBounds(JScrollPane scrollPane) {
+  public Rectangle getViewportBorderBounds(JScrollPane scrollPane) 
+  {
     return null;
   }
 

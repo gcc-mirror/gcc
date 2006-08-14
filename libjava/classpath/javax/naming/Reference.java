@@ -43,54 +43,118 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 /**
+ * This class represents a reference to an object that is located outside of the
+ * naming/directory system.
+ * 
+ * @see Referenceable
+ * 
  * @author Tom Tromey (tromey@redhat.com)
- * @date May 16, 2001
  */
 public class Reference implements Cloneable, Serializable
 {
   private static final long serialVersionUID = - 1673475790065791735L;
-
+  
+  /**
+   * The list of addresses, stored in this reference. The object may be 
+   * have by several different addresses.
+   */
+  protected Vector addrs;
+  
+  /**
+   * The name of the class factory to create an instance of the object,
+   * referenced by this reference.
+   */
+  protected String classFactory;
+  
+  /**
+   * The location, from where the class factory should be loaded.
+   */
+  protected String classFactoryLocation;
+  
+  /**
+   * The name of the class of the object, to that this reference refers.
+   */
+  protected String className;
+  
+  /**
+   * Create a new reference that is referencting to the object of the
+   * specified class.
+   */
   public Reference (String className)
   {
     this.className = className;
     addrs = new Vector ();
   }
-
+  
+  /**
+   * Create a new reference that is referencing to the object of the
+   * specified class with the given address.
+   */
   public Reference (String className, RefAddr addr)
   {
     this.className = className;
     addrs = new Vector ();
     addrs.add (addr);
   }
-
-  public Reference (String className, String factory, String factoryLocation)
+   
+  /**
+   * Create a new reference that is referencing to the object of the
+   * specified class, specifying the class and location of the factory that
+   * produces these objects.
+   * 
+   * @param className the object class name
+   * @param factoryClassName the object factory class name
+   * @param factoryLocation the object factory location
+   */
+  public Reference (String className, String factoryClassName, 
+                    String factoryLocation)
   {
     this.className = className;
-    this.classFactory = factory;
+    this.classFactory = factoryClassName;
     this.classFactoryLocation = factoryLocation;
     addrs = new Vector ();
   }
 
+  /**
+   * Create a new reference that is referencing to the object of the
+   * specified class, specifying the class and location of the factory that
+   * produces these objects and also the address of this object.
+   * 
+   * @param className the object class name
+   * @param addr the address of the object
+   * @param factoryClassName the object factory class name
+   * @param factoryLocation the object factory location
+   */
   public Reference (String className, RefAddr addr,
-		    String factory, String factoryLocation)
+		    String factoryClassName, String factoryLocation)
   {
     this.className = className;
-    this.classFactory = factory;
+    this.classFactory = factoryClassName;
     this.classFactoryLocation = factoryLocation;
     addrs = new Vector ();
     addrs.add (addr);
   }
 
+  /**
+   * Add the new address for this object at the given position of the 
+   * address list.
+   */
   public void add (int posn, RefAddr addr)
   {
     addrs.add (posn, addr);
   }
-
+  
+  /**
+   * Appends the new object address to the end of the address list.
+   */
   public void add (RefAddr addr)
   {
     addrs.add (addr);
   }
-
+  
+  /**
+   * Removes all defined addresses of the object.
+   */
   public void clear ()
   {
     addrs.clear ();
@@ -109,7 +173,10 @@ public class Reference implements Cloneable, Serializable
   {
     return (a == null) ? (b == null) : a.equals (b);
   }
-
+  
+  /**
+   * Compares two addresses for equality, by value.
+   */
   public boolean equals (Object obj)
   {
     if (! (obj instanceof Reference))
@@ -120,12 +187,23 @@ public class Reference implements Cloneable, Serializable
 	    && equals (className, r.className)
 	    && addrs.equals (r.addrs));
   }
-
+  
+  /**
+   * Get the address of this object at the given position.
+   */
   public RefAddr get (int posn)
   {
     return (RefAddr) addrs.get (posn);
   }
-
+  
+  /**
+   * Get the given type of address for this object.
+   * 
+   * @param addrType the needed type of address
+   * 
+   * @return the address of this object, having the specified type. If there
+   *           is no address of such type, null is returned.
+   */
   public RefAddr get (String addrType)
   {
     for (int i = 0; i < addrs.size (); ++i)
@@ -136,27 +214,50 @@ public class Reference implements Cloneable, Serializable
       }
     return null;
   }
-
+  
+  /**
+   * Get the enumeration over all defined addresses of the object.
+   */
   public Enumeration getAll ()
   {
     return addrs.elements ();
   }
-
+  
+  /**
+   * Get the name of the class of the referenced object.
+   * 
+   * @see #className
+   */
   public String getClassName ()
   {
     return className;
   }
-
+  
+  /**
+   * Get the location of the factory class of the referenced object.
+   * 
+   * @see #classFactoryLocation
+   */
   public String getFactoryClassLocation ()
   {
     return classFactoryLocation;
   }
 
+  /**
+   * Get the name of the factory class of the referenced object
+   * 
+   * @see #classFactory
+   */
   public String getFactoryClassName ()
   {
     return classFactory;
   }
-
+  
+  /**
+   * Get the hashcode of this reference. 
+   * 
+   * @return the sum of the hash codes of the addresses.  
+   */
   public int hashCode ()
   {
     // The spec says the hash code is the sum of the hash codes of the
@@ -166,17 +267,30 @@ public class Reference implements Cloneable, Serializable
       h += addrs.get (i).hashCode ();
     return h;
   }
-
+  
+  /**
+   * Remove the address at the given position.
+   * 
+   * @param posn the position of the address to remove
+   * 
+   * @return the removed address
+   */
   public Object remove (int posn)
   {
     return addrs.remove (posn);
   }
-
+  
+  /**
+   * Return the number of the defined addresses.
+   */
   public int size ()
   {
     return addrs.size ();
   }
-
+  
+  /**
+   * Return the string representation.
+   */
   public String toString ()
   {
     String x = getClass ().toString () + "[";
@@ -189,8 +303,4 @@ public class Reference implements Cloneable, Serializable
     return x + "]";
   }
 
-  protected Vector addrs;
-  protected String classFactory;
-  protected String classFactoryLocation;
-  protected String className;
 }

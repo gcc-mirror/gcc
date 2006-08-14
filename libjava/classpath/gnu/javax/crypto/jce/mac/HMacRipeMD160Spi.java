@@ -44,12 +44,9 @@ import gnu.java.security.Registry;
  * The implementation of the HMAC-RIPEMD-160 <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
  */
-public final class HMacRipeMD160Spi extends MacAdapter
+public final class HMacRipeMD160Spi
+    extends MacAdapter
 {
-
-  // Constructors.
-  // -----------------------------------------------------------------------
-
   public HMacRipeMD160Spi()
   {
     super(Registry.HMAC_NAME_PREFIX + Registry.RIPEMD160_HASH);

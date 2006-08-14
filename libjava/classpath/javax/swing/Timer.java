@@ -1,5 +1,5 @@
 /* Timer.java --
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -264,9 +264,13 @@ public class Timer
    * firing the first event.
    *
    * @param d The time gap between the subsequent events, in milliseconds
+   * 
+   * @throws IllegalArgumentException if <code>d</code> is less than zero.
    */
   public void setDelay(int d)
   {
+    if (d < 0) 
+      throw new IllegalArgumentException("Invalid delay: " + d);
     delay = d;
   }
 
@@ -287,9 +291,13 @@ public class Timer
    * subsequent events.
    *
    * @param i the initial delay, in milliseconds
+   * 
+   * @throws IllegalArgumentException if <code>i</code> is less than zero.
    */
   public void setInitialDelay(int i)
   {
+    if (i < 0)
+      throw new IllegalArgumentException("Invalid initial delay: " + i);
     initialDelay = i;
   }
 

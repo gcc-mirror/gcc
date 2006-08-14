@@ -41,6 +41,7 @@ import gnu.classpath.SystemProperties;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.TexturePaint;
@@ -106,7 +107,7 @@ class MetalUtils
 
             for (int mX = x + xOff; mX < (x + w); mX += 4)
               {
-                g.drawLine(mX, mY, mX, mY);
+                g.fillRect(mX, mY, 1, 1);
               }
 
             // increase x offset
@@ -305,6 +306,15 @@ class MetalUtils
                                       float g1, float g2, Color c1, Color c2,
                                       Color c3, int[][] mask)
   {
+    
+    if (g instanceof Graphics2D
+        && SystemProperties.getProperty("gnu.javax.swing.noGraphics2D") == null)
+      {
+        paintHorizontalGradient2D((Graphics2D) g, x, y, w, h, g1, g2, c1, c2,
+                                  c3, mask);
+        return;
+      }
+
     // Calculate the coordinates.
     int y0 = y;
     int y1 = y + h;
@@ -339,7 +349,7 @@ class MetalUtils
             y0 = mask[xc - x0][0] + y;
             y1 = mask[xc - x0][1] + y;
           }
-        g.drawLine(xc, y0, xc, y1);
+        g.fillRect(xc, y0, 1, y1 - y0);
       }
     // Paint solid c2 area.
     g.setColor(c2);
@@ -353,7 +363,7 @@ class MetalUtils
           {
             y0 = mask[xc - x0][0] + y;
             y1 = mask[xc - x0][1] + y;
-            g.drawLine(xc, y0, xc, y1);
+            g.fillRect(xc, y0, 1, y1 - y0);
           }
       }
 
@@ -377,7 +387,7 @@ class MetalUtils
             y0 = mask[xc - x0][0] + y;
             y1 = mask[xc - x0][1] + y;
           }
-        g.drawLine(xc, y0, xc, y1);
+        g.fillRect(xc, y0, 1, y1 - y0);
       }
 
     // Paint third gradient area (c1->c3).
@@ -421,9 +431,17 @@ class MetalUtils
    *        described above
    */
   static void paintVerticalGradient(Graphics g, int x, int y, int w, int h,
-                                    double g1, double g2, Color c1, Color c2,
+                                    float g1, float g2, Color c1, Color c2,
                                     Color c3, int[][] mask)
   {
+    if (g instanceof Graphics2D
+        && SystemProperties.getProperty("gnu.javax.swing.noGraphics2D") == null)
+       {
+         paintVerticalGradient2D((Graphics2D) g, x, y, w, h, g1, g2, c1, c2,
+                                   c3, mask);
+         return;
+       }
+
     // Calculate the coordinates.
     int x0 = x;
     int x1 = x + w;
@@ -458,7 +476,7 @@ class MetalUtils
             x0 = mask[yc - y0][0] + x;
             x1 = mask[yc - y0][1] + x;
           }
-        g.drawLine(x0, yc, x1, yc);
+        g.fillRect(x0, yc, x1 - x0, 1);
       }
     // Paint solid c2 area.
     g.setColor(c2);
@@ -472,7 +490,7 @@ class MetalUtils
           {
             x0 = mask[yc - y0][0] + x;
             x1 = mask[yc - y0][1] + x;
-            g.drawLine(x0, yc, x1, yc);
+            g.fillRect(x0, yc, x1 - x0, 1);
           }
       }
 
@@ -496,7 +514,7 @@ class MetalUtils
             x0 = mask[yc - y0][0] + x;
             x1 = mask[yc - y0][1] + x;
           }
-        g.drawLine(x0, yc, x1, yc);
+        g.fillRect(x0, yc, x1 - x0, 1);
       }
 
     // Paint third gradient area (c1->c3).
@@ -519,7 +537,61 @@ class MetalUtils
             x0 = mask[yc - y0][0] + x;
             x1 = mask[yc - y0][1] + x;
           }
-        g.drawLine(x0, yc, x1, yc);
+        g.fillRect(x0, yc, x1 - x0, 1);
       }
+  }
+
+  /**
+   * Paints a horizontal gradient using Graphics2D functionality.
+   *
+   * @param g the Graphics2D instance
+   * @param x the X coordinate of the upper left corner of the rectangle
+   * @param y the Y coordinate of the upper left corner of the rectangle
+   * @param w the width of the rectangle
+   * @param h the height of the rectangle
+   * @param g1 the relative width of the c1->c2 gradients
+   * @param g2 the relative width of the c2 solid area
+   * @param c1 the color 1
+   * @param c2 the color 2
+   * @param c3 the color 3
+   * @param mask the mask that should be used when painting the gradient as
+   *        described above
+   */
+  private static void paintHorizontalGradient2D(Graphics2D g, int x, int y,
+                                                int w, int h, float g1,
+                                                float g2, Color c1,
+                                                Color c2, Color c3,
+                                                int[][] mask)
+  {
+    // FIXME: Handle the mask somehow, or do Graphics2D clipping instead.
+    GradientPaint p1 = new GradientPaint(x, y, c1, x + w * g1, y, c2);
+    g.setPaint(p1);
+    // This fills the first gradient and the solid area in one go.
+    g.fillRect(x, y, (int) (w * (g1 + g2)), h);
+
+    GradientPaint p2 = new GradientPaint(x + (w * (g1 + g2)), y, c2, x + w, y,
+                                         c3);
+    g.setPaint(p2);
+    g.fillRect((int) (x + (w * (g1 + g2))), y,
+               (int) (w * (1. - (g1 + g2))), h);
+  }
+
+  private static void paintVerticalGradient2D(Graphics2D g, int x, int y,
+                                              int w, int h, float g1,
+                                              float g2, Color c1,
+                                              Color c2, Color c3,
+                                              int[][] mask)
+  {
+    // FIXME: Handle the mask somehow, or do Graphics2D clipping instead.
+    GradientPaint p1 = new GradientPaint(x, y, c1, x, y + h * g1, c2);
+    g.setPaint(p1);
+    // This fills the first gradient and the solid area in one go.
+    g.fillRect(x, y, w, (int) (h * (g1 + g2)));
+
+    GradientPaint p2 = new GradientPaint(x, y + (h * (g1 + g2)), c2, x, y + h,
+                                         c3);
+    g.setPaint(p2);
+    g.fillRect(x, (int) (y + (h * (g1 + g2))), w,
+               (int) (h * (1. - (g1 + g2))));
   }
 }

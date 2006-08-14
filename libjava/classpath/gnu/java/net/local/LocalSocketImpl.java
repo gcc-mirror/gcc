@@ -57,7 +57,8 @@ final class LocalSocketImpl extends SocketImpl
   private boolean created;
   private InputStream in;
   private OutputStream out;
-  private int socket_fd;
+  // Package private to avoid synthetic accessor method.
+  int socket_fd;
   private LocalSocketAddress local;
   private LocalSocketAddress remote;
 
@@ -104,7 +105,7 @@ final class LocalSocketImpl extends SocketImpl
   protected native void create (boolean stream) throws IOException;
   protected native void listen (int timeout) throws IOException;
   protected native void accept (LocalSocketImpl socket) throws IOException;
-  protected native int available () throws IOException;
+  protected native int available (int fd) throws IOException;
   protected native void close () throws IOException;
   protected native void sendUrgentData (int data) throws IOException;
   protected native void shutdownInput () throws IOException;
@@ -113,8 +114,14 @@ final class LocalSocketImpl extends SocketImpl
   native void unlink () throws IOException;
   native void localBind (LocalSocketAddress addr) throws IOException;
   native void localConnect (LocalSocketAddress addr) throws IOException;
-  native int read (byte[] buf, int off, int len) throws IOException;
-  native void write (byte[] buf, int off, int len) throws IOException;
+  native int read (int fd, byte[] buf, int off, int len) throws IOException;
+  native void write (int fd, byte[] buf, int off, int len) throws IOException;
+
+  protected int available()
+    throws IOException
+  {
+    return available(socket_fd);
+  }
 
   void doCreate () throws IOException
   {
@@ -263,7 +270,7 @@ final class LocalSocketImpl extends SocketImpl
 
     public int read (byte[] buf, int off, int len) throws IOException
     {
-      int ret = impl.read (buf, off, len);
+      int ret = impl.read (socket_fd, buf, off, len);
 
       if (ret == 0)
         {
@@ -316,7 +323,7 @@ final class LocalSocketImpl extends SocketImpl
 
     public void write (byte[] buf, int off, int len) throws IOException
     {
-      impl.write (buf, off, len);
+      impl.write (socket_fd, buf, off, len);
     }
   }
 }

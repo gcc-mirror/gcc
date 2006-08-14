@@ -53,8 +53,8 @@ public class GtkCanvasPeer extends GtkComponentPeer implements CanvasPeer
 
   // Preferred size for a drawing widget is always what the user
   // requested.
-  public Dimension getPreferredSize ()
+  public Dimension preferredSize()
   {
-    return awtComponent.getSize ();
+    return awtComponent.getSize();
   }
 }

@@ -61,10 +61,13 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(nativeexeclibdir)"
 nativeexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(nativeexeclib_LTLIBRARIES)
+am__DEPENDENCIES_1 =
 libjavanet_la_DEPENDENCIES =  \
-	$(top_builddir)/native/jni/classpath/jcl.lo
+	$(top_builddir)/native/jni/classpath/jcl.lo \
+	$(am__DEPENDENCIES_1)
 am__libjavanet_la_SOURCES_DIST = javanet.c javanet.h \
 	java_net_VMInetAddress.c java_net_VMNetworkInterface.c \
+	java_net_VMURLConnection.c \
 	gnu_java_net_VMPlainDatagramSocketImpl.c \
 	gnu_java_net_VMPlainSocketImpl.c \
 	gnu_java_net_local_LocalSocketImpl.c local.c local.h
@@ -72,7 +75,7 @@ am__libjavanet_la_SOURCES_DIST = javanet.c javanet.h \
 @ENABLE_LOCAL_SOCKETS_TRUE@am__objects_1 = gnu_java_net_local_LocalSocketImpl.lo \
 @ENABLE_LOCAL_SOCKETS_TRUE@	local.lo
 am_libjavanet_la_OBJECTS = javanet.lo java_net_VMInetAddress.lo \
-	java_net_VMNetworkInterface.lo \
+	java_net_VMNetworkInterface.lo java_net_VMURLConnection.lo \
 	gnu_java_net_VMPlainDatagramSocketImpl.lo \
 	gnu_java_net_VMPlainSocketImpl.lo $(am__objects_1)
 libjavanet_la_OBJECTS = $(am_libjavanet_la_OBJECTS)
@@ -122,6 +125,8 @@ CREATE_CORE_JNI_LIBRARIES_FALSE = @CREATE_CORE_JNI_LIBRARIES_FALSE@
 CREATE_CORE_JNI_LIBRARIES_TRUE = @CREATE_CORE_JNI_LIBRARIES_TRUE@
 CREATE_DSSI_LIBRARIES_FALSE = @CREATE_DSSI_LIBRARIES_FALSE@
 CREATE_DSSI_LIBRARIES_TRUE = @CREATE_DSSI_LIBRARIES_TRUE@
+CREATE_GCONF_PEER_LIBRARIES_FALSE = @CREATE_GCONF_PEER_LIBRARIES_FALSE@
+CREATE_GCONF_PEER_LIBRARIES_TRUE = @CREATE_GCONF_PEER_LIBRARIES_TRUE@
 CREATE_GTK_PEER_LIBRARIES_FALSE = @CREATE_GTK_PEER_LIBRARIES_FALSE@
 CREATE_GTK_PEER_LIBRARIES_TRUE = @CREATE_GTK_PEER_LIBRARIES_TRUE@
 CREATE_JNI_HEADERS_FALSE = @CREATE_JNI_HEADERS_FALSE@
@@ -142,6 +147,7 @@ CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATE = @DATE@
+DEFAULT_PREFS_PEER = @DEFAULT_PREFS_PEER@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO_C = @ECHO_C@
@@ -172,6 +178,10 @@ FREETYPE2_CFLAGS = @FREETYPE2_CFLAGS@
 FREETYPE2_LIBS = @FREETYPE2_LIBS@
 GCJ = @GCJ@
 GCJX = @GCJX@
+GCONF_CFLAGS = @GCONF_CFLAGS@
+GCONF_LIBS = @GCONF_LIBS@
+GDK_CFLAGS = @GDK_CFLAGS@
+GDK_LIBS = @GDK_LIBS@
 GJDOC = @GJDOC@
 GLIB_CFLAGS = @GLIB_CFLAGS@
 GLIB_LIBS = @GLIB_LIBS@
@@ -222,6 +232,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PATH_TO_ESCHER = @PATH_TO_ESCHER@
 PATH_TO_GLIBJ_ZIP = @PATH_TO_GLIBJ_ZIP@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
@@ -242,6 +253,8 @@ USER_SPECIFIED_CLASSLIB_FALSE = @USER_SPECIFIED_CLASSLIB_FALSE@
 USER_SPECIFIED_CLASSLIB_TRUE = @USER_SPECIFIED_CLASSLIB_TRUE@
 USER_SPECIFIED_JAVAH_FALSE = @USER_SPECIFIED_JAVAH_FALSE@
 USER_SPECIFIED_JAVAH_TRUE = @USER_SPECIFIED_JAVAH_TRUE@
+USE_ESCHER_FALSE = @USE_ESCHER_FALSE@
+USE_ESCHER_TRUE = @USE_ESCHER_TRUE@
 USE_PREBUILT_GLIBJ_ZIP_FALSE = @USE_PREBUILT_GLIBJ_ZIP_FALSE@
 USE_PREBUILT_GLIBJ_ZIP_TRUE = @USE_PREBUILT_GLIBJ_ZIP_TRUE@
 VERSION = @VERSION@
@@ -316,11 +329,12 @@ libjavanet_la_SOURCES = javanet.c \
 			javanet.h \
 			java_net_VMInetAddress.c \
 			java_net_VMNetworkInterface.c \
+			java_net_VMURLConnection.c \
 			gnu_java_net_VMPlainDatagramSocketImpl.c \
                         gnu_java_net_VMPlainSocketImpl.c \
 			$(local_sources)
 
-libjavanet_la_LIBADD = $(top_builddir)/native/jni/classpath/jcl.lo
+libjavanet_la_LIBADD = $(top_builddir)/native/jni/classpath/jcl.lo $(LIBMAGIC)
 AM_LDFLAGS = @CLASSPATH_MODULE@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@
 AM_CFLAGS = @WARNING_CFLAGS@ @STRICT_WARNING_CFLAGS@ @ERROR_CFLAGS@
@@ -398,6 +412,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnu_java_net_local_LocalSocketImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_net_VMInetAddress.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_net_VMNetworkInterface.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/java_net_VMURLConnection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/javanet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/local.Plo@am__quote@
 

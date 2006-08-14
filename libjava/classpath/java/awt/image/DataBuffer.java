@@ -114,8 +114,7 @@ public abstract class DataBuffer
    */
   protected DataBuffer(int dataType, int size)
   {
-    this.dataType = dataType;
-    this.size = size;
+    this(dataType, size, 1);
   }
 
   /**
@@ -132,9 +131,7 @@ public abstract class DataBuffer
    * @param numBanks the number of data banks.
    */
   protected DataBuffer(int dataType, int size, int numBanks) {
-    this(dataType, size);
-    banks = numBanks;
-    offsets = new int[numBanks];
+    this(dataType, size, numBanks, 0);
   }
 
   /**
@@ -153,11 +150,14 @@ public abstract class DataBuffer
    * @param offset the offset to the first element for all banks.
    */
   protected DataBuffer(int dataType, int size, int numBanks, int offset) {
-    this(dataType, size, numBanks);
-    
-    java.util.Arrays.fill(offsets, offset);          
-    
+    banks = numBanks;
+    this.dataType = dataType;
+    this.size = size;
     this.offset = offset;
+
+    offsets = new int[ numBanks ];
+    for(int i = 0; i < numBanks; i++ )
+      offsets[i] = offset;
   }
 
   /**
@@ -179,10 +179,11 @@ public abstract class DataBuffer
    *         <code>numBanks != offsets.length</code>.
    */
   protected DataBuffer(int dataType, int size, int numBanks, int[] offsets) {
-    this(dataType, size);
     if (numBanks != offsets.length) 
       throw new ArrayIndexOutOfBoundsException();
-    
+
+    this.dataType = dataType;
+    this.size = size;
     banks = numBanks;
     this.offsets = offsets;
     

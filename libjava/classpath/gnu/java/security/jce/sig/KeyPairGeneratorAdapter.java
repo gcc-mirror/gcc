@@ -49,36 +49,30 @@ import java.security.spec.AlgorithmParameterSpec;
 
 /**
  * The implementation of a generic {@link java.security.KeyPairGenerator}
- * adapter class to wrap gnu.crypto keypair generator instances.<p>
- *
- * This class defines the <i>Service Provider Interface</i> (<b>SPI</b>) for the
- * {@link java.security.KeyPairGenerator} class, which is used to generate pairs
- * of public and private keys.<p>
- *
+ * adapter class to wrap GNU keypair generator instances.
+ * <p>
+ * This class defines the <i>Service Provider Interface</i> (<b>SPI</b>) for
+ * the {@link java.security.KeyPairGenerator} class, which is used to generate
+ * pairs of public and private keys.
+ * <p>
  * All the abstract methods in the {@link java.security.KeyPairGeneratorSpi}
- * class are implemented by this class and all its sub-classes.<p>
- *
- * In case the client does not explicitly initialize the KeyPairGenerator (via
- * a call to an <code>initialize()</code> method), the GNU Crypto provider
- * supplies (and document) default values to be used. For example, the GNU
- * Crypto provider uses a default <i>modulus</i> size (keysize) of 1024 bits for
- * the DSS (Digital Signature Standard) a.k.a <i>DSA</i>.<p>
+ * class are implemented by this class and all its sub-classes.
+ * <p>
+ * In case the client does not explicitly initialize the KeyPairGenerator (via a
+ * call to an <code>initialize()</code> method), the GNU provider supplies
+ * (and document) default values to be used. For example, the GNU provider uses
+ * a default <i>modulus</i> size (keysize) of 1024 bits for the DSS (Digital
+ * Signature Standard) a.k.a <i>DSA</i>.
  */
-public abstract class KeyPairGeneratorAdapter extends KeyPairGenerator
+public abstract class KeyPairGeneratorAdapter
+    extends KeyPairGenerator
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** Our underlying keypair instance. */
   protected IKeyPairGenerator adaptee;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
    * Trivial protected constructor.
-   *
+   * 
    * @param kpgName the canonical name of the keypair generator algorithm.
    */
   protected KeyPairGeneratorAdapter(String kpgName)
@@ -87,12 +81,6 @@ public abstract class KeyPairGeneratorAdapter extends KeyPairGenerator
 
     this.adaptee = KeyPairGeneratorFactory.getInstance(kpgName);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // java.security.KeyPairGeneratorSpi interface implementation
-  // -------------------------------------------------------------------------
 
   public abstract void initialize(int keysize, SecureRandom random);
 

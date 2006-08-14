@@ -79,7 +79,6 @@ public class DHKeyFactory
         BigInteger y = spec.getY();
         return new GnuDHPublicKey(Registry.X509_ENCODING_ID, null, p, g, y);
       }
-
     if (keySpec instanceof X509EncodedKeySpec)
       {
         X509EncodedKeySpec spec = (X509EncodedKeySpec) keySpec;
@@ -97,7 +96,6 @@ public class DHKeyFactory
             throw y;
           }
       }
-
     throw new InvalidKeySpecException("Unsupported (public) key specification");
   }
 
@@ -112,7 +110,6 @@ public class DHKeyFactory
         BigInteger x = spec.getX();
         return new GnuDHPrivateKey(Registry.PKCS8_ENCODING_ID, null, p, g, x);
       }
-
     if (keySpec instanceof PKCS8EncodedKeySpec)
       {
         PKCS8EncodedKeySpec spec = (PKCS8EncodedKeySpec) keySpec;
@@ -130,7 +127,6 @@ public class DHKeyFactory
             throw y;
           }
       }
-
     throw new InvalidKeySpecException("Unsupported (private) key specification");
   }
 
@@ -147,7 +143,6 @@ public class DHKeyFactory
             BigInteger y = dssKey.getY();
             return new DHPublicKeySpec(y, p, g);
           }
-
         if (keySpec.isAssignableFrom(X509EncodedKeySpec.class))
           {
             if (key instanceof GnuDHPublicKey)
@@ -156,19 +151,16 @@ public class DHKeyFactory
                 byte[] encoded = dhKey.getEncoded(Registry.X509_ENCODING_ID);
                 return new X509EncodedKeySpec(encoded);
               }
-
             if (Registry.X509_ENCODING_SORT_NAME.equalsIgnoreCase(key.getFormat()))
               {
                 byte[] encoded = key.getEncoded();
                 return new X509EncodedKeySpec(encoded);
               }
-
-            throw new InvalidKeySpecException("Wrong key type or unsupported (public) key specification");
+            throw new InvalidKeySpecException(
+                "Wrong key type or unsupported (public) key specification");
           }
-
         throw new InvalidKeySpecException("Unsupported (public) key specification");
       }
-
     if (key instanceof DHPrivateKey)
       {
         if (keySpec.isAssignableFrom(DHPrivateKeySpec.class))
@@ -179,7 +171,6 @@ public class DHKeyFactory
             BigInteger x = dhKey.getX();
             return new DHPrivateKeySpec(x, p, g);
           }
-
         if (keySpec.isAssignableFrom(PKCS8EncodedKeySpec.class))
           {
             if (key instanceof GnuDHPrivateKey)
@@ -188,27 +179,25 @@ public class DHKeyFactory
                 byte[] encoded = dhKey.getEncoded(Registry.PKCS8_ENCODING_ID);
                 return new PKCS8EncodedKeySpec(encoded);
               }
-
             if (Registry.PKCS8_ENCODING_SHORT_NAME.equalsIgnoreCase(key.getFormat()))
               {
                 byte[] encoded = key.getEncoded();
                 return new PKCS8EncodedKeySpec(encoded);
               }
-
-            throw new InvalidKeySpecException("Wrong key type or unsupported (private) key specification");
+            throw new InvalidKeySpecException(
+                "Wrong key type or unsupported (private) key specification");
           }
-
-        throw new InvalidKeySpecException("Unsupported (private) key specification");
+        throw new InvalidKeySpecException(
+            "Unsupported (private) key specification");
       }
-
-    throw new InvalidKeySpecException("Wrong key type or unsupported key specification");
+    throw new InvalidKeySpecException(
+        "Wrong key type or unsupported key specification");
   }
 
   protected Key engineTranslateKey(Key key) throws InvalidKeyException
   {
     if ((key instanceof GnuDHPublicKey) || (key instanceof GnuDHPrivateKey))
       return key;
-
     if (key instanceof DHPublicKey)
       {
         DHPublicKey dsaKey = (DHPublicKey) key;
@@ -217,7 +206,6 @@ public class DHKeyFactory
         BigInteger y = dsaKey.getY();
         return new GnuDHPublicKey(Registry.X509_ENCODING_ID, null, p, g, y);
       }
-
     if (key instanceof DHPrivateKey)
       {
         DHPrivateKey dsaKey = (DHPrivateKey) key;
@@ -226,7 +214,6 @@ public class DHKeyFactory
         BigInteger x = dsaKey.getX();
         return new GnuDHPrivateKey(Registry.PKCS8_ENCODING_ID, null, p, g, x);
       }
-
     throw new InvalidKeyException("Wrong key type");
   }
 }

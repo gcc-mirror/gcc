@@ -1,5 +1,5 @@
 /* SelectionKey.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,7 +60,7 @@ public abstract class SelectionKey
   /**
    * Attaches obj to the key and returns the old attached object.
    */
-  public final Object attach(Object obj)
+  public final synchronized Object attach(Object obj)
   {
     Object old = attached;
     attached = obj;
@@ -70,7 +70,7 @@ public abstract class SelectionKey
   /**
    * Returns the object attached to the key.
    */
-  public final Object attachment()
+  public final synchronized Object attachment()
   {
     return attached;
   }

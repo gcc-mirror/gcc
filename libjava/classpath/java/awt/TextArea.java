@@ -125,9 +125,11 @@ public class TextArea extends TextComponent implements java.io.Serializable
    * the specified text.  Conceptually the <code>TextArea</code> has 0
    * rows and 0 columns but its initial bounds are defined by its peer
    * or by the container in which it is packed.  Both horizontal and
-   * veritcal scrollbars will be displayed.
+   * veritcal scrollbars will be displayed.  The TextArea initially contains
+   * the specified text.  If text specified as <code>null<code>, it will
+   * be set to "".
    *
-   * @param text The text to display in this text area.
+   * @param text The text to display in this text area (<code>null</code> permitted).
    *
    * @exception HeadlessException if GraphicsEnvironment.isHeadless () is true
    */
@@ -156,9 +158,10 @@ public class TextArea extends TextComponent implements java.io.Serializable
    * Initialize a new instance of <code>TextArea</code> that can
    * display the specified number of rows and columns of text, without
    * the need to scroll.  The TextArea initially contains the
-   * specified text.
+   * specified text.  If text specified as <code>null<code>, it will
+   * be set to "".
    *
-   * @param text The text to display in this text area.
+   * @param text The text to display in this text area (<code>null</code> permitted).
    * @param rows The number of rows in this text area.
    * @param columns The number of columns in this text area.
    *
@@ -174,9 +177,10 @@ public class TextArea extends TextComponent implements java.io.Serializable
    * contains the specified text.  The TextArea can display the
    * specified number of rows and columns of text, without the need to
    * scroll.  This constructor allows specification of the scroll bar
-   * display policy.
+   * display policy.  The TextArea initially contains the specified text.  
+   * If text specified as <code>null<code>, it will be set to "". 
    *
-   * @param text The text to display in this text area.
+   * @param text The text to display in this text area (<code>null</code> permitted).
    * @param rows The number of rows in this text area.
    * @param columns The number of columns in this text area.
    * @param scrollbarVisibility The scroll bar display policy. One of
@@ -192,18 +196,20 @@ public class TextArea extends TextComponent implements java.io.Serializable
     if (GraphicsEnvironment.isHeadless ())
       throw new HeadlessException ();
 
-    if (rows < 0 || columns < 0)
-      throw new IllegalArgumentException ("Bad row or column value");
+    if (rows < 0)
+      this.rows = 0;
+    else
+      this.rows = rows;
+    
+    if (columns < 0)
+      this.columns = 0;
+    else
+      this.columns = columns;
 
-    if (scrollbarVisibility != SCROLLBARS_BOTH
-        && scrollbarVisibility != SCROLLBARS_VERTICAL_ONLY
-        && scrollbarVisibility != SCROLLBARS_HORIZONTAL_ONLY
-        && scrollbarVisibility != SCROLLBARS_NONE)
-      throw new IllegalArgumentException ("Bad scrollbar visibility value");
-
-    this.rows = rows;
-    this.columns = columns;
-    this.scrollbarVisibility = scrollbarVisibility;
+    if (scrollbarVisibility < 0 || scrollbarVisibility > 4)
+      this.scrollbarVisibility = SCROLLBARS_BOTH;
+    else
+      this.scrollbarVisibility = scrollbarVisibility;
 
     // TextAreas need to receive tab key events so we override the
     // default forward and backward traversal key sets.
@@ -478,6 +484,8 @@ public class TextArea extends TextComponent implements java.io.Serializable
 
     if (peer != null)
       peer.insert (str, peer.getText().length ());
+    else
+      setText(getText() + str);   
   }
 
   /**
@@ -504,10 +512,19 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public void insertText (String str, int pos)
   {
+    String tmp1 = null;
+    String tmp2 = null;
+    
     TextAreaPeer peer = (TextAreaPeer) getPeer ();
 
     if (peer != null)
       peer.insert (str, pos);
+    else
+      {
+        tmp1 = getText().substring(0, pos);
+        tmp2 = getText().substring(pos, getText().length());
+        setText(tmp1 + str + tmp2);
+      }
   }
 
   /**
@@ -544,10 +561,19 @@ public class TextArea extends TextComponent implements java.io.Serializable
    */
   public void replaceText (String str, int start, int end)
   {
-    TextAreaPeer peer = (TextAreaPeer) getPeer ();
+    String tmp1 = null;
+    String tmp2 = null;
+
+    TextAreaPeer peer = (TextAreaPeer) getPeer();
 
     if (peer != null)
-      peer.replaceRange (str, start, end);
+      peer.replaceRange(str, start, end);
+    else
+      {
+        tmp1 = getText().substring(0, start);
+        tmp2 = getText().substring(end, getText().length());
+        setText(tmp1 + str + tmp2);
+      }
   }
 
   /**

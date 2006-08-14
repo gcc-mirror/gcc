@@ -38,110 +38,63 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.key.srp6;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 import gnu.java.security.key.IKeyPairGenerator;
 import gnu.java.security.util.PRNG;
-import gnu.java.security.util.Prime2;
 
-import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
- *
- *
- * <p>Reference:</p>
+ * Reference:
  * <ol>
- *    <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
- *    Thomas J. Wu.</li>
+ * <li><a href="http://srp.stanford.edu/design.html">SRP Protocol Design</a><br>
+ * Thomas J. Wu.</li>
  * </ol>
  */
-public class SRPKeyPairGenerator implements IKeyPairGenerator
+public class SRPKeyPairGenerator
+    implements IKeyPairGenerator
 {
-
-  // Debugging methods and variables
-  // -------------------------------------------------------------------------
-
-  private static final String NAME = "srp";
-
-  private static final boolean DEBUG = false;
-
-  private static final int debuglevel = 5;
-
-  private static final PrintWriter err = new PrintWriter(System.out, true);
-
-  private static void debug(String s)
-  {
-    err.println(">>> " + NAME + ": " + s);
-  }
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
+  private static final Logger log = Logger.getLogger(SRPKeyPairGenerator.class.getName());
   private static final BigInteger ZERO = BigInteger.ZERO;
-
   private static final BigInteger ONE = BigInteger.ONE;
-
   private static final BigInteger TWO = BigInteger.valueOf(2L);
-
   private static final BigInteger THREE = BigInteger.valueOf(3L);
-
   /** Property name of the length (Integer) of the modulus (N) of an SRP key. */
   public static final String MODULUS_LENGTH = "gnu.crypto.srp.L";
-
   /** Property name of the Boolean indicating wether or not to use defaults. */
   public static final String USE_DEFAULTS = "gnu.crypto.srp.use.defaults";
-
   /** Property name of the modulus (N) of an SRP key. */
   public static final String SHARED_MODULUS = "gnu.crypto.srp.N";
-
   /** Property name of the generator (g) of an SRP key. */
   public static final String GENERATOR = "gnu.crypto.srp.g";
-
   /** Property name of the user's verifier (v) for a Server SRP key. */
   public static final String USER_VERIFIER = "gnu.crypto.srp.v";
-
   /**
    * Property name of an optional {@link SecureRandom} instance to use. The
    * default is to use a classloader singleton from {@link PRNG}.
    */
   public static final String SOURCE_OF_RANDOMNESS = "gnu.crypto.srp.prng";
-
   /** Default value for the modulus length. */
   private static final int DEFAULT_MODULUS_LENGTH = 1024;
-
   /** The optional {@link SecureRandom} instance to use. */
   private SecureRandom rnd = null;
-
   /** Bit length of the shared modulus. */
   private int l;
-
   /** The shared public modulus. */
   private BigInteger N;
-
   /** The Field generator. */
   private BigInteger g;
-
   /** The user's verifier MPI. */
   private BigInteger v;
-
   /** Our default source of randomness. */
   private PRNG prng = null;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // implicit 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // gnu.crypto.key.IKeyPairGenerator interface implementation ---------------
 
   public String name()
   {
@@ -152,25 +105,20 @@ public class SRPKeyPairGenerator implements IKeyPairGenerator
   {
     // do we have a SecureRandom, or should we use our own?
     rnd = (SecureRandom) attributes.get(SOURCE_OF_RANDOMNESS);
-
     N = (BigInteger) attributes.get(SHARED_MODULUS);
     if (N != null)
       {
         l = N.bitLength();
         g = (BigInteger) attributes.get(GENERATOR);
         if (g == null)
-          {
-            g = TWO;
-          }
+          g = TWO;
         SRPAlgorithm.checkParams(N, g);
       }
     else
       { // generate or use default values for N and g
         Boolean useDefaults = (Boolean) attributes.get(USE_DEFAULTS);
         if (useDefaults == null)
-          {
-            useDefaults = Boolean.TRUE;
-          }
+          useDefaults = Boolean.TRUE;
         Integer L = (Integer) attributes.get(MODULUS_LENGTH);
         l = DEFAULT_MODULUS_LENGTH;
         if (useDefaults.equals(Boolean.TRUE))
@@ -203,26 +151,23 @@ public class SRPKeyPairGenerator implements IKeyPairGenerator
                     break;
                   default:
                     throw new IllegalArgumentException(
-                                                       "unknown default shared modulus bit length");
+                        "unknown default shared modulus bit length");
                   }
                 g = TWO;
                 l = N.bitLength();
               }
           }
-        else
-          { // generate new N and g
+        else // generate new N and g
+          {
             if (L != null)
               {
                 l = L.intValue();
                 if ((l % 256) != 0 || l < 512 || l > 2048)
-                  {
-                    throw new IllegalArgumentException(
-                                                       "invalid shared modulus bit length");
-                  }
+                  throw new IllegalArgumentException(
+                      "invalid shared modulus bit length");
               }
           }
       }
-
     // are we using this generator on the server side, or the client side?
     v = (BigInteger) attributes.get(USER_VERIFIER);
   }
@@ -235,23 +180,20 @@ public class SRPKeyPairGenerator implements IKeyPairGenerator
         BigInteger q = params[0];
         N = params[1];
         g = params[2];
-        if (DEBUG && debuglevel > 0)
+        if (Configuration.DEBUG)
           {
-            debug("q: " + q.toString(16));
-            debug("N: " + N.toString(16));
-            debug("g: " + g.toString(16));
+            log.fine("q: " + q.toString(16));
+            log.fine("N: " + N.toString(16));
+            log.fine("g: " + g.toString(16));
           }
       }
-
     return (v != null ? hostKeyPair() : userKeyPair());
   }
 
-  // helper methods ----------------------------------------------------------
-
   private synchronized BigInteger[] generateParameters()
   {
-    // N    A large safe prime (N = 2q+1, where q is prime)
-    // g    A generator modulo N
+    // N A large safe prime (N = 2q+1, where q is prime)
+    // g A generator modulo N
     BigInteger q, p, g;
     byte[] qBytes = new byte[l / 8];
     do
@@ -262,11 +204,10 @@ public class SRPKeyPairGenerator implements IKeyPairGenerator
             q = new BigInteger(1, qBytes);
             q = q.setBit(0).setBit(l - 2).clearBit(l - 1);
           }
-        while (!Prime2.isProbablePrime(q));
+        while (! q.isProbablePrime(80));
         p = q.multiply(TWO).add(ONE);
       }
-    while (p.bitLength() != l || !Prime2.isProbablePrime(p));
-
+    while (p.bitLength() != l || ! p.isProbablePrime(80));
     // compute g. from FIPS-186, Appendix 4: e == 2
     BigInteger p_minus_1 = p.subtract(ONE);
     g = TWO;
@@ -277,12 +218,9 @@ public class SRPKeyPairGenerator implements IKeyPairGenerator
         // Set g = h**2 mod p
         g = h.modPow(TWO, p);
         // If g = 1, go to step 3
-        if (!g.equals(ONE))
-          {
-            break;
-          }
+        if (! g.equals(ONE))
+          break;
       }
-
     return new BigInteger[] { q, p, g };
   }
 
@@ -301,11 +239,8 @@ public class SRPKeyPairGenerator implements IKeyPairGenerator
         B = THREE.multiply(v).add(g.modPow(b, N)).mod(N);
       }
     while (B.compareTo(ZERO) == 0 || B.compareTo(N) >= 0);
-
-    KeyPair result = new KeyPair(
-                                 new SRPPublicKey(new BigInteger[] { N, g, B }),
-                                 new SRPPrivateKey(new BigInteger[] { N, g, b,
-                                                                     v }));
+    KeyPair result = new KeyPair(new SRPPublicKey(new BigInteger[] { N, g, B }),
+                                 new SRPPrivateKey(new BigInteger[] { N, g, b, v }));
     return result;
   }
 
@@ -324,9 +259,7 @@ public class SRPKeyPairGenerator implements IKeyPairGenerator
         A = g.modPow(a, N);
       }
     while (A.compareTo(ZERO) == 0 || A.compareTo(N) >= 0);
-
-    KeyPair result = new KeyPair(
-                                 new SRPPublicKey(new BigInteger[] { N, g, A }),
+    KeyPair result = new KeyPair(new SRPPublicKey(new BigInteger[] { N, g, A }),
                                  new SRPPrivateKey(new BigInteger[] { N, g, a }));
     return result;
   }
@@ -334,9 +267,7 @@ public class SRPKeyPairGenerator implements IKeyPairGenerator
   private void nextRandomBytes(byte[] buffer)
   {
     if (rnd != null)
-      {
-        rnd.nextBytes(buffer);
-      }
+      rnd.nextBytes(buffer);
     else
       getDefaultPRNG().nextBytes(buffer);
   }

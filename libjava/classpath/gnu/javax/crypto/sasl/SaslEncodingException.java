@@ -44,9 +44,9 @@ import javax.security.sasl.SaslException;
  * A checked exception, thrown when an exception occurs while decoding a SASL
  * buffer and/or a SASL data element from/to a buffer.
  */
-public class SaslEncodingException extends SaslException
+public class SaslEncodingException
+    extends SaslException
 {
-
   /** Constructs a <code>SaslEncodingException</code> with no detail message. */
   public SaslEncodingException()
   {
@@ -56,7 +56,7 @@ public class SaslEncodingException extends SaslException
   /**
    * Constructs a <code>SaslEncodingException</code> with the specified detail
    * message.
-   *
+   * 
    * @param s the detail message.
    */
   public SaslEncodingException(String s)

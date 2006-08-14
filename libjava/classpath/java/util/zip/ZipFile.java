@@ -49,8 +49,8 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 /**
  * This class represents a Zip archive.  You can ask for the contained
@@ -88,7 +88,7 @@ public class ZipFile implements ZipConstants
   private final RandomAccessFile raf;
 
   // The entries of this zip file when initialized and not yet closed.
-  private HashMap entries;
+  private LinkedHashMap entries;
 
   private boolean closed = false;
 
@@ -250,7 +250,7 @@ public class ZipFile implements ZipConstants
       throw new EOFException(name);
     int centralOffset = inp.readLeInt();
 
-    entries = new HashMap(count+count/2);
+    entries = new LinkedHashMap(count+count/2);
     inp.seek(centralOffset);
     
     for (int i = 0; i < count; i++)
@@ -347,7 +347,7 @@ public class ZipFile implements ZipConstants
    * @exception IllegalStateException when the ZipFile has already been closed.
    * @exception IOException when the entries could not be read.
    */
-  private HashMap getEntries() throws IOException
+  private LinkedHashMap getEntries() throws IOException
   {
     synchronized(raf)
       {
@@ -375,7 +375,7 @@ public class ZipFile implements ZipConstants
 
     try
       {
-	HashMap entries = getEntries();
+	LinkedHashMap entries = getEntries();
 	ZipEntry entry = (ZipEntry) entries.get(name);
         // If we didn't find it, maybe it's a directory.
         if (entry == null && !name.endsWith("/"))
@@ -414,7 +414,7 @@ public class ZipFile implements ZipConstants
   {
     checkClosed();
 
-    HashMap entries = getEntries();
+    LinkedHashMap entries = getEntries();
     String name = entry.getName();
     ZipEntry zipEntry = (ZipEntry) entries.get(name);
     if (zipEntry == null)

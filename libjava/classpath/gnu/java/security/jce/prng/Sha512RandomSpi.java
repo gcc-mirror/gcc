@@ -41,26 +41,14 @@ package gnu.java.security.jce.prng;
 import gnu.java.security.Registry;
 
 /**
- * <p>The implementation of the SHA-512 based SecureRandom <i>Service Provider
- * Interface</i> (<b>SPI</b>) adapter.</p>
+ * The implementation of the SHA-512 based SecureRandom <i>Service Provider
+ * Interface</i> (<b>SPI</b>) adapter.
  */
-public class Sha512RandomSpi extends SecureRandomAdapter
+public class Sha512RandomSpi
+    extends SecureRandomAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public Sha512RandomSpi()
   {
     super(Registry.SHA512_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

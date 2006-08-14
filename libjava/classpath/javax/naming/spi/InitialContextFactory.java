@@ -43,7 +43,28 @@ import java.util.Hashtable;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+/**
+ * <p>
+ * Defines a factory that creates the initial context for the beginning of the
+ * name resolution. JNDI allows to specify different implementations of the
+ * initial context at runtime.
+ * </p>
+ * <p>
+ * The class, implementing this interface, must be public and have a public
+ * parameterless constructor
+ * </p>
+ */
 public interface InitialContextFactory
 {
-  Context getInitialContext (Hashtable environment) throws NamingException;
+  /**
+   * Create a new initial context
+   * 
+   * @param environment the properties, used when creating the context. The
+   *          implementing class will not modify the table nor keep the
+   *          reference to it. After the method returns, the caller can safely
+   *          reuse the table for other purposes.
+   * @return the new initial context
+   * @throws NamingException if the naming exception has occured
+   */
+  Context getInitialContext(Hashtable environment) throws NamingException;
 }

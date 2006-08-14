@@ -62,28 +62,19 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
 
 /**
- * The <i>Service Provider Interface</i> (<b>SPI</b>) for the ARCFOUR
- * stream cipher.
+ * The <i>Service Provider Interface</i> (<b>SPI</b>) for the ARCFOUR stream
+ * cipher.
  */
-public class ARCFourSpi extends CipherSpi
+public class ARCFourSpi
+    extends CipherSpi
 {
-
-  // Constants and variables.
-  // -----------------------------------------------------------------------
-
   private IRandom keystream;
-
-  // Constructors.
-  // -----------------------------------------------------------------------
 
   public ARCFourSpi()
   {
     super();
     keystream = PRNGFactory.getInstance(Registry.ARCFOUR_PRNG);
   }
-
-  // Methods implementing CipherSpi.
-  // -----------------------------------------------------------------------
 
   protected int engineGetBlockSize()
   {
@@ -119,14 +110,10 @@ public class ARCFourSpi extends CipherSpi
       throws InvalidKeyException
   {
     if (mode != Cipher.ENCRYPT_MODE && mode != Cipher.DECRYPT_MODE)
-      {
-        throw new IllegalArgumentException(
-                                           "arcfour is for encryption or decryption only");
-      }
-    if (key == null || !key.getFormat().equalsIgnoreCase("RAW"))
-      {
-        throw new InvalidKeyException("key must be non-null raw bytes");
-      }
+      throw new IllegalArgumentException(
+          "arcfour is for encryption or decryption only");
+    if (key == null || ! key.getFormat().equalsIgnoreCase("RAW"))
+      throw new InvalidKeyException("key must be non-null raw bytes");
     HashMap attrib = new HashMap();
     attrib.put(ARCFour.ARCFOUR_KEY_MATERIAL, key.getEncoded());
     keystream.init(attrib);
@@ -149,16 +136,12 @@ public class ARCFourSpi extends CipherSpi
   protected byte[] engineUpdate(byte[] in, int offset, int length)
   {
     if (length < 0 || offset < 0 || length + offset > in.length)
-      {
-        throw new ArrayIndexOutOfBoundsException();
-      }
+      throw new ArrayIndexOutOfBoundsException();
     byte[] result = new byte[length];
     try
       {
         for (int i = 0; i < length; i++)
-          {
-            result[i] = (byte) (in[i + offset] ^ keystream.nextByte());
-          }
+          result[i] = (byte)(in[i + offset] ^ keystream.nextByte());
       }
     catch (LimitReachedException wontHappen)
       {
@@ -171,19 +154,13 @@ public class ARCFourSpi extends CipherSpi
   {
     if (length < 0 || inOffset < 0 || length + inOffset > in.length
         || outOffset < 0)
-      {
-        throw new ArrayIndexOutOfBoundsException();
-      }
+      throw new ArrayIndexOutOfBoundsException();
     if (outOffset + length > out.length)
-      {
-        throw new ShortBufferException();
-      }
+      throw new ShortBufferException();
     try
       {
         for (int i = 0; i < length; i++)
-          {
-            out[i + outOffset] = (byte) (in[i + inOffset] ^ keystream.nextByte());
-          }
+          out[i + outOffset] = (byte)(in[i + inOffset] ^ keystream.nextByte());
       }
     catch (LimitReachedException wontHappen)
       {

@@ -42,38 +42,31 @@ import java.security.KeyPair;
 import java.util.Map;
 
 /**
- * The visible methods of every asymmetric keypair generator.<p>
+ * The visible methods of every asymmetric keypair generator.
  */
 public interface IKeyPairGenerator
 {
-
-  // Constants
-  // -------------------------------------------------------------------------
-
-  // Methods
-  // -------------------------------------------------------------------------
-
   /**
-   * Returns the canonical name of this keypair generator.<p>
-   *
+   * Returns the canonical name of this keypair generator.
+   * 
    * @return the canonical name of this instance.
    */
   String name();
 
   /**
-   * [Re]-initialises this instance for use with a given set of attributes.<p>
-   *
+   * [Re]-initialises this instance for use with a given set of attributes.
+   * 
    * @param attributes a map of name/value pairs to use for setting up the
-   * instance.
+   *          instance.
    * @exception IllegalArgumentException if at least one of the mandatory
-   * attributes is missing or an invalid value was specified.
+   *              attributes is missing or an invalid value was specified.
    */
   void setup(Map attributes);
 
   /**
    * Generates a new keypair based on the attributes used to configure the
    * instance.
-   *
+   * 
    * @return a new keypair.
    */
   KeyPair generate();

@@ -346,28 +346,30 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
         || !root.isDisplayable ())
       return null;
 
-    if (root.visible && root.isDisplayable() && root.enabled
-        && root.focusable)
+    if (accept(root))
       return root;
 
-    Component[] componentArray = root.getComponents ();
-    
-    for (int i = 0; i < componentArray.length; i++)
+    int ncomponents = root.getComponentCount();
+    for (int i = 0; i < ncomponents; i++)
       {
-        Component component = componentArray [i];
-	
-	if (component.visible && component.isDisplayable() && component.enabled
-            && component.focusable)
-	  return component;
-
-        if (component instanceof Container)
+        Component component = root.getComponent(i);
+        if (component instanceof Container
+            && !((Container) component).isFocusCycleRoot())
           {
-            Component result = getFirstComponent ((Container) component);
-
-            if (result != null
-                && (result.visible && result.isDisplayable() && result.enabled && result.focusable))
-              return result;
+            Component first = null;
+            Container cont = (Container) component;
+            if (cont.isFocusTraversalPolicyProvider())
+              {
+                FocusTraversalPolicy childPol = cont.getFocusTraversalPolicy();
+                first = childPol.getFirstComponent(cont);
+              }
+            else
+              first = getFirstComponent(cont);
+            if (first != null)
+              return first;
           }
+        else if (accept(component))
+	  return component;
       }
 
     return null;

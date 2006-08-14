@@ -48,17 +48,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * <p>A <i>Factory</i> that instantiates instances of every supported Message
- * Authentication Code algorithms, including all <i>HMAC</i> algorithms.</p>
+ * A <i>Factory</i> that instantiates instances of every supported Message
+ * Authentication Code algorithms, including all <i>HMAC</i> algorithms.
  */
-public class MacFactory implements Registry
+public class MacFactory
+    implements Registry
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
+  private static Set names;
 
   /** Trivial constructor to enforce <i>Singleton</i> pattern. */
   private MacFactory()
@@ -66,72 +62,51 @@ public class MacFactory implements Registry
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns an instance of a <i>MAC</i> algorithm given its name.</p>
-   *
+   * Returns an instance of a <i>MAC</i> algorithm given its name.
+   * 
    * @param name the name of the MAC algorithm.
    * @return an instance of the <i>MAC</i> algorithm, or <code>null</code> if
-   * none can be constructed.
+   *         none can be constructed.
    * @exception InternalError if the implementation does not pass its self-test.
    */
   public static IMac getInstance(String name)
   {
     if (name == null)
-      {
-        return null;
-      }
+      return null;
 
     name = name.trim();
     name = name.toLowerCase();
     if (name.startsWith(HMAC_NAME_PREFIX))
-      {
-        return HMacFactory.getInstance(name);
-      }
+      return HMacFactory.getInstance(name);
 
     if (name.startsWith(OMAC_PREFIX))
       {
         name = name.substring(OMAC_PREFIX.length());
         IBlockCipher cipher = CipherFactory.getInstance(name);
         if (cipher == null)
-          {
-            return null;
-          }
+          return null;
         return new OMAC(cipher);
       }
-
     IMac result = null;
     if (name.equalsIgnoreCase(UHASH32))
-      {
-        result = new UHash32();
-      }
+      result = new UHash32();
     else if (name.equalsIgnoreCase(UMAC32))
-      {
-        result = new UMac32();
-      }
+      result = new UMac32();
     else if (name.equalsIgnoreCase(TMMH16))
-      {
-        result = new TMMH16();
-      }
-    //      else if (name.equalsIgnoreCase(TMMH32)) {
-    //         result = new TMMH32();
-    //      }
+      result = new TMMH16();
 
-    if (result != null && !result.selfTest())
-      {
-        throw new InternalError(result.name());
-      }
+    if (result != null && ! result.selfTest())
+      throw new InternalError(result.name());
 
     return result;
   }
 
   /**
-   * <p>Returns a {@link java.util.Set} of names of <i>MAC</i> algorithms
-   * supported by this <i>Factory</i>.</p>
-   *
-   * @return a {@link java.util.Set} of MAC names (Strings).
+   * Returns a {@link Set} of names of <i>MAC</i> algorithms supported by this
+   * <i>Factory</i>.
+   * 
+   * @return a {@link Set} of MAC names (Strings).
    */
   public static final Set getNames()
   {
@@ -144,21 +119,12 @@ public class MacFactory implements Registry
             hs.add(UHASH32);
             hs.add(UMAC32);
             hs.add(TMMH16);
-            //      hs.add(TMMH32);
-
             for (Iterator it = CipherFactory.getNames().iterator(); it.hasNext();)
-              {
-                hs.add(OMAC_PREFIX + it.next());
-              }
+              hs.add(OMAC_PREFIX + it.next());
 
             names = Collections.unmodifiableSet(hs);
           }
       }
     return names;
   }
-
-  private static Set names;
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

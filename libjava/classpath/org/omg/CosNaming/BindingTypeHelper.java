@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CosNaming;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -58,8 +59,6 @@ public abstract class BindingTypeHelper
    * The binding type repository id.
    */
   private static String id = "IDL:omg.org/CosNaming/BindingType:1.0";
-  private static TypeCode typeCode = null;
-
   /**
    * Extract the binding type from the given {@link Any}.
    */
@@ -105,16 +104,10 @@ public abstract class BindingTypeHelper
   /**
    * Get the type code of this enumeration.
    */
-  public static synchronized TypeCode type()
+  public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        typeCode =
-          ORB.init().create_enum_tc(id(), "BindingType",
-                                    new String[] { "nobject", "ncontext" }
-                                   );
-      }
-    return typeCode;
+    return OrbRestricted.Singleton.create_enum_tc(id(), "BindingType",
+                                     new String[] { "nobject", "ncontext" });
   }
 
   /**

@@ -41,18 +41,12 @@ package gnu.javax.crypto.cipher;
 import java.security.InvalidKeyException;
 
 /**
- * <p>Checked exception thrown to indicate that a weak key has been generated
- * and or specified instead of a valid non-weak value.</p>
+ * Checked exception thrown to indicate that a weak key has been generated and
+ * or specified instead of a valid non-weak value.
  */
-public class WeakKeyException extends InvalidKeyException
+public class WeakKeyException
+    extends InvalidKeyException
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public WeakKeyException()
   {
     super();
@@ -62,10 +56,4 @@ public class WeakKeyException extends InvalidKeyException
   {
     super(msg);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

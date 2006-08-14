@@ -50,32 +50,26 @@ import java.util.Map;
 import javax.crypto.MacSpi;
 
 /**
- * <p>The implementation of a generic {@link javax.crypto.Mac} adapter class
- * to wrap GNU Crypto MAC instances.</p>
- *
- * <p>This class defines the <i>Service Provider Interface</i> (<b>SPI</b>) for
+ * The implementation of a generic {@link javax.crypto.Mac} adapter class to
+ * wrap GNU MAC instances.
+ * <p>
+ * This class defines the <i>Service Provider Interface</i> (<b>SPI</b>) for
  * the {@link javax.crypto.Mac} class, which provides the functionality of a
  * message authentication code algorithm, such as the <i>Hashed Message
- * Authentication Code</i> (<b>HMAC</b>) algorithms.</p>
+ * Authentication Code</i> (<b>HMAC</b>) algorithms.
  */
-class MacAdapter extends MacSpi implements Cloneable
+class MacAdapter
+    extends MacSpi
+    implements Cloneable
 {
-
-  // Constants and variables
-  // -----------------------------------------------------------------------
-
   /** Our MAC instance. */
   protected IMac mac;
-
   /** Our MAC attributes. */
   protected Map attributes;
 
-  // Constructor(s)
-  // -----------------------------------------------------------------------
-
   /**
-   * <p>Creates a new Mac instance for the given name.</p>
-   *
+   * Creates a new Mac instance for the given name.
+   * 
    * @param name The name of the mac to create.
    */
   protected MacAdapter(String name)
@@ -88,7 +82,7 @@ class MacAdapter extends MacSpi implements Cloneable
    * Private constructor for cloning purposes.
    * 
    * @param mac a clone of the internal {@link IMac} instance.
-   * @param attributes a clone of the current {@link Map} of attributes. 
+   * @param attributes a clone of the current {@link Map} of attributes.
    */
   private MacAdapter(IMac mac, Map attributes)
   {
@@ -98,20 +92,10 @@ class MacAdapter extends MacSpi implements Cloneable
     this.attributes = attributes;
   }
 
-  // Class methods
-  // -----------------------------------------------------------------------
-
-  // Instance methods
-  // -----------------------------------------------------------------------
-
-  // Cloneable interface implementation ------------------------------------
-
   public Object clone() throws CloneNotSupportedException
   {
     return new MacAdapter((IMac) mac.clone(), new HashMap(attributes));
   }
-
-  // Instance methods implementing javax.crypto.MacSpi ---------------------
 
   protected byte[] engineDoFinal()
   {
@@ -128,10 +112,8 @@ class MacAdapter extends MacSpi implements Cloneable
   protected void engineInit(Key key, AlgorithmParameterSpec params)
       throws InvalidKeyException, InvalidAlgorithmParameterException
   {
-    if (!key.getFormat().equalsIgnoreCase("RAW"))
-      {
-        throw new InvalidKeyException("unknown key format " + key.getFormat());
-      }
+    if (! key.getFormat().equalsIgnoreCase("RAW"))
+      throw new InvalidKeyException("unknown key format " + key.getFormat());
     attributes.put(IMac.MAC_KEY_MATERIAL, key.getEncoded());
     mac.reset();
     mac.init(attributes);

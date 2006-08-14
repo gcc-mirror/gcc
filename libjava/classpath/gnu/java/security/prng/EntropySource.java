@@ -43,7 +43,6 @@ package gnu.java.security.prng;
  */
 public interface EntropySource
 {
-
   /**
    * Returns the estimated quality of this source. This value should be
    * between 0 and 100 (the running quality is computed as a percentage,

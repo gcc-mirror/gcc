@@ -1,5 +1,5 @@
 /* Referenceable.java --
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,19 @@ exception statement from your version. */
 
 package javax.naming;
 
+/**
+ * The object, implementing this interface, can provided the
+ * {@link Reference} about itself.
+ */
 public interface Referenceable
 {
+  /**
+   * Get the reference about this object.
+   * 
+   * @return the reference about this object, cannot be null.
+   * 
+   * @throws NamingException if the naming exception has been raised while
+   *           retrieving the reference.
+   */
   Reference getReference() throws NamingException;
 }

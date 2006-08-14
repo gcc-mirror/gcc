@@ -1,5 +1,5 @@
 /* IconUIResource.java --
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,7 +63,8 @@ public class IconUIResource implements Icon, UIResource, Serializable
 
 
   /**
-   * The icon that is wrapped by this <code>IconUIResource</code>.
+   * The icon that is wrapped by this <code>IconUIResource</code> (never 
+   * <code>null</code>).
    */
   private Icon delegate;
 
@@ -73,10 +74,12 @@ public class IconUIResource implements Icon, UIResource, Serializable
    * icon. All messages are forwarded to the delegate icon.
    *
    * @param delegate the icon that is wrapped by this
-   *        <code>IconUIResource</code>.
+   *        <code>IconUIResource</code> (<code>null</code> not permitted).
    */
   public IconUIResource(Icon delegate)
   {
+    if (delegate == null)
+      throw new IllegalArgumentException("Null 'delegate' argument.");
     this.delegate = delegate;
   }
 

@@ -42,26 +42,15 @@ import gnu.java.security.Registry;
 import gnu.java.security.sig.rsa.RSAPSSSignatureRawCodec;
 
 /**
- * The implementation of <i>Service Provider Interface</i> (<b>SPI</b>) adapter
- * for the RSA-PSS signature scheme, encoded and/or decoded in RAW format.<p>
+ * The implementation of <i>Service Provider Interface</i> (<b>SPI</b>)
+ * adapter for the RSA-PSS signature scheme, encoded and/or decoded in RAW
+ * format.
  */
-public class RSAPSSRawSignatureSpi extends SignatureAdapter
+public class RSAPSSRawSignatureSpi
+    extends SignatureAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public RSAPSSRawSignatureSpi()
   {
     super(Registry.RSA_PSS_SIG, new RSAPSSSignatureRawCodec());
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

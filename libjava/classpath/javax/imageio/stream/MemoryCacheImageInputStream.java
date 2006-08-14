@@ -38,10 +38,11 @@ exception statement from your version. */
 
 package javax.imageio.stream;
 
-import gnu.classpath.NotImplementedException;
-
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * @author Michael Koch (konqueror@gmx.de)
@@ -49,10 +50,15 @@ import java.io.InputStream;
 public class MemoryCacheImageInputStream extends ImageInputStreamImpl
 {
   private InputStream stream;
+  private BufferedInputStream buffer;
+
+  private int READLIMIT = 2048;
   
   public MemoryCacheImageInputStream(InputStream stream)
   {
     this.stream = stream;
+    buffer = new BufferedInputStream(stream);
+    buffer.mark(READLIMIT);
   }
 
   public void close()
@@ -63,10 +69,13 @@ public class MemoryCacheImageInputStream extends ImageInputStreamImpl
   }
 
   public void flushBefore(long position)
-    throws IOException, NotImplementedException
+    throws IOException
   {
-    // FIXME: Implement me.
-    throw new Error("not implemented");
+    long prevFlushedPosition = getFlushedPosition();
+    super.flushBefore(position);
+    buffer.reset();
+    buffer.skip(getFlushedPosition() - prevFlushedPosition);
+    buffer.mark(READLIMIT);
   }
 
   public boolean isCached()
@@ -88,13 +97,33 @@ public class MemoryCacheImageInputStream extends ImageInputStreamImpl
     throws IOException
   {
     setBitOffset(0);
-    return stream.read();
+    int retval = buffer.read();
+    
+    if (retval != -1)
+      streamPos++;
+
+    return retval;
   }
 
   public int read(byte[] data, int offset, int len)
     throws IOException
   {
     setBitOffset(0);
-    return stream.read(data, offset, len);
+    int retval = buffer.read(data, offset, len);
+
+    if (retval != -1)
+      {
+        streamPos += retval;
+      }
+
+    return retval; 
+  }
+  
+  public void seek(long position)
+  throws IOException
+  {
+    super.seek(position);
+    buffer.reset();
+    buffer.skip(position - getFlushedPosition());
   }
 }

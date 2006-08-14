@@ -146,9 +146,9 @@ public class DefaultComboBoxModel extends AbstractListModel
     if (selected == index) // choose a new selected item
       {
         if (selected > 0)
-          selectedItem = getElementAt(selected - 1);
+          setSelectedItem(getElementAt(selected - 1));
         else 
-          selectedItem = getElementAt(selected + 1);
+          setSelectedItem(getElementAt(selected + 1));
       }
     list.removeElementAt(index);
     fireIntervalRemoved(this, index, index);

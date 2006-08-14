@@ -42,25 +42,13 @@ import gnu.java.security.Registry;
 
 /**
  * The implementation of the Whirlpool <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.<p>
+ * (<b>SPI</b>) adapter.
  */
-public class WhirlpoolSpi extends MessageDigestAdapter
+public class WhirlpoolSpi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public WhirlpoolSpi()
   {
     super(Registry.WHIRLPOOL_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

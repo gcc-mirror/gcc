@@ -61,12 +61,12 @@ public class DHKeyPairGeneratorSpi
   public void initialize(int keysize, SecureRandom random)
   {
     HashMap attributes = new HashMap();
-    attributes.put(GnuDHKeyPairGenerator.PRIME_SIZE, new Integer(keysize));
+    attributes.put(GnuDHKeyPairGenerator.PRIME_SIZE, Integer.valueOf(keysize));
     if (random != null)
       attributes.put(GnuDHKeyPairGenerator.SOURCE_OF_RANDOMNESS, random);
 
     attributes.put(GnuDHKeyPairGenerator.PREFERRED_ENCODING_FORMAT,
-                   new Integer(Registry.ASN1_ENCODING_ID));
+                   Integer.valueOf(Registry.ASN1_ENCODING_ID));
     adaptee.setup(attributes);
   }
 
@@ -87,7 +87,7 @@ public class DHKeyPairGeneratorSpi
       attributes.put(GnuDHKeyPairGenerator.SOURCE_OF_RANDOMNESS, random);
 
     attributes.put(GnuDHKeyPairGenerator.PREFERRED_ENCODING_FORMAT,
-                   new Integer(Registry.ASN1_ENCODING_ID));
+                   Integer.valueOf(Registry.ASN1_ENCODING_ID));
     adaptee.setup(attributes);
   }
 }

@@ -17,18 +17,23 @@ To import a new release:
 - Check out a classpath snapshot or take a release tar.gz file.
   I use 'cvs export' for this.  Make a tag to ensure future hackers
   know exactly what revision was checked out; tags are of the form
-  'libgcj-import-DATE'.
+  'libgcj-import-DATE' (when using a tagged checkout do:
+  - ./autogen.sh && ./configure && make dist
+  to get a proper .tar.gz for importing below).
 - Get a svn checkout of
   svn+ssh://gcc.gnu.org/svn/gcc/branches/CLASSPATH/libjava/classpath
   this contains "pure" GNU Classpath inside the GCC tree.
 - Clean it up and get the files from a new version:
-  - find classpath -type f | grep -v /\.svn | grep -v /\.cvs
+  - find classpath -type f | grep -v /\.svn | grep -v /\.cvs | xargs rm
   - tar zxf classpath-x.tar.gz
   - cp -r classpath-x/* classpath
 - Add/Remove files:
   - svn status classpath | grep ^\! | cut -c8- | xargs svn remove
   - svn status classpath | grep ^\? | cut -c8- | xargs svn add
-- If there are any empty directories now they can be removed.
+- If there are any empty directories now they can be removed. You can find
+  candidates (dirs with files removed) with:
+  - for i in `svn status classpath | grep ^D | cut -c8-`; \
+      do ls -d `dirname $i`; done | uniq
 - Update vendor branch
   - svn commit classpath
 - Note the new revision number (Xrev)
@@ -43,7 +48,7 @@ To import a new release:
     in the classpath/ChangeLog.gcj file.
    (Don't forget to svn resolved files.)
 - Use auto* to create configure, Makefile.in, etc
-  Make sure you have Automake 1.9.3 installed. Exactly that version!
+  Make sure you have Automake 1.9.6 installed. Exactly that version!
   You have to make sure to use the gcc libtool.m4 and gcc lt* scripts
   cd .../classpath
   cp ../../lt* .

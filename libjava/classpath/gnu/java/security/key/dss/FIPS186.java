@@ -40,26 +40,21 @@ package gnu.java.security.key.dss;
 
 import gnu.java.security.hash.Sha160;
 import gnu.java.security.util.PRNG;
-import gnu.java.security.util.Prime2;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
 /**
- * <p>An implementation of the DSA parameters generation as described in
- * FIPS-186.</p>
- *
- * References:<br>
+ * An implementation of the DSA parameters generation as described in FIPS-186.
+ * <p>
+ * References:
+ * <p>
  * <a href="http://www.itl.nist.gov/fipspubs/fip186.htm">Digital Signature
- * Standard (DSS)</a>, Federal Information Processing Standards Publication 186.
- * National Institute of Standards and Technology.
+ * Standard (DSS)</a>, Federal Information Processing Standards Publication
+ * 186. National Institute of Standards and Technology.
  */
 public class FIPS186
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   public static final int DSA_PARAMS_SEED = 0;
 
   public static final int DSA_PARAMS_COUNTER = 1;
@@ -73,7 +68,7 @@ public class FIPS186
   public static final int DSA_PARAMS_G = 5;
 
   /** The BigInteger constant 2. */
-  private static final BigInteger TWO = new BigInteger("2");
+  private static final BigInteger TWO = BigInteger.valueOf(2L);
 
   private static final BigInteger TWO_POW_160 = TWO.pow(160);
 
@@ -89,9 +84,6 @@ public class FIPS186
   /** Our default source of randomness. */
   private PRNG prng = null;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public FIPS186(int L, SecureRandom rnd)
   {
     super();
@@ -100,38 +92,31 @@ public class FIPS186
     this.rnd = rnd;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
    * This method generates the DSS <code>p</code>, <code>q</code>, and
    * <code>g</code> parameters only when <code>L</code> (the modulus length)
    * is not one of the following: <code>512</code>, <code>768</code> and
-   * <code>1024</code>. For those values of <code>L</code>, this implementation
-   * uses pre-computed values of <code>p</code>, <code>q</code>, and
-   * <code>g</code> given in the document <i>CryptoSpec</i> included in the
-   * security guide documentation of the standard JDK distribution.<p>
-   *
+   * <code>1024</code>. For those values of <code>L</code>, this
+   * implementation uses pre-computed values of <code>p</code>,
+   * <code>q</code>, and <code>g</code> given in the document <i>CryptoSpec</i>
+   * included in the security guide documentation of the standard JDK
+   * distribution.
+   * <p>
    * The DSS requires two primes , <code>p</code> and <code>q</code>,
    * satisfying the following three conditions:
-   *
    * <ul>
-   *    <li><code>2<sup>159</sup> &lt; q &lt; 2<sup>160</sup></code></li>
-   *    <li><code>2<sup>L-1</sup> &lt; p &lt; 2<sup>L</sup></code> for a
-   *    specified <code>L</code>, where <code>L = 512 + 64j</code> for some
-   *    <code>0 &lt;= j &lt;= 8</code></li>
-   *    <li>q divides p - 1.</li>
+   * <li><code>2<sup>159</sup> &lt; q &lt; 2<sup>160</sup></code></li>
+   * <li><code>2<sup>L-1</sup> &lt; p &lt; 2<sup>L</sup></code> for a
+   * specified <code>L</code>, where <code>L = 512 + 64j</code> for some
+   * <code>0 &lt;= j &lt;= 8</code></li>
+   * <li>q divides p - 1.</li>
    * </ul>
-   *
    * The algorithm used to find these primes is as described in FIPS-186,
    * section 2.2: GENERATION OF PRIMES. This prime generation scheme starts by
-   * using the {@link Sha160} and a user supplied <i>SEED</i>
-   * to construct a prime, <code>q</code>, in the range 2<sup>159</sup> &lt; q
-   * &lt; 2<sup>160</sup>. Once this is accomplished, the same <i>SEED</i>
-   * value is used to construct an <code>X</code> in the range <code>2<sup>L-1
+   * using the {@link Sha160} and a user supplied <i>SEED</i> to construct a
+   * prime, <code>q</code>, in the range 2<sup>159</sup> &lt; q &lt; 2<sup>160</sup>.
+   * Once this is accomplished, the same <i>SEED</i> value is used to construct
+   * an <code>X</code> in the range <code>2<sup>L-1
    * </sup> &lt; X &lt; 2<sup>L</sup>. The prime, <code>p</code>, is then
    * formed by rounding <code>X</code> to a number congruent to <code>1 mod
    * 2q</code>. In this implementation we use the same <i>SEED</i> value given
@@ -169,9 +154,8 @@ public class FIPS186
                 u = sha.digest();
               }
             for (int i = 0; i < a.length; i++)
-              {
-                a[i] ^= u[i];
-              }
+              a[i] ^= u[i];
+
             U = new BigInteger(1, a);
             // 3. Form q from U by setting the most significant bit (the
             // 2**159 bit) and the least significant bit to 1. In terms of
@@ -183,12 +167,9 @@ public class FIPS186
             // probability of a non-prime number passing the test is at
             // most 1/2**80.
             // 5. If q is not prime, go to step 1.
-            if (Prime2.isProbablePrime(q))
-              {
-                break step1;
-              }
+            if (q.isProbablePrime(80))
+              break step1;
           } // step1
-
         // 6. Let counter = 0 and offset = 2.
         counter = 0;
         offset = 2;
@@ -201,9 +182,9 @@ public class FIPS186
               {
                 for (int k = 0; k <= n; k++)
                   {
-                    a = SEED_PLUS_OFFSET.add(
-                                             BigInteger.valueOf(k & 0xFFFFFFFFL)).mod(
-                                                                                      TWO_POW_160).toByteArray();
+                    a = SEED_PLUS_OFFSET
+                        .add(BigInteger.valueOf(k & 0xFFFFFFFFL))
+                        .mod(TWO_POW_160).toByteArray();
                     sha.update(a, 0, a.length);
                     V[k] = new BigInteger(1, sha.digest());
                   }
@@ -214,9 +195,8 @@ public class FIPS186
             // Note that 0 <= W < 2**(L-1) and hence 2**(L-1) <= X < 2**L.
             W = V[0];
             for (int k = 1; k < n; k++)
-              {
-                W = W.add(V[k].multiply(TWO.pow(k * 160)));
-              }
+              W = W.add(V[k].multiply(TWO.pow(k * 160)));
+
             W = W.add(V[n].mod(TWO.pow(b)).multiply(TWO.pow(n * 160)));
             X = W.add(TWO.pow(L - 1));
             // 9. Let c = X mod 2q and set p = X - (c - 1).
@@ -228,22 +208,17 @@ public class FIPS186
               {
                 // 11. Perform a robust primality test on p.
                 // 12. If p passes the test performed in step 11, go to step 15.
-                if (Prime2.isProbablePrime(p))
-                  {
-                    break algorithm;
-                  }
+                if (p.isProbablePrime(80))
+                  break algorithm;
               }
             // 13. Let counter = counter + 1 and offset = offset + n + 1.
             counter++;
             offset += n + 1;
             // 14. If counter >= 4096 go to step 1, otherwise go to step 7.
             if (counter >= 4096)
-              {
-                continue algorithm;
-              }
+              continue algorithm;
           } // step7
       } // algorithm
-
     // compute g. from FIPS-186, Appendix 4:
     // 1. Generate p and q as specified in Appendix 2.
     // 2. Let e = (p - 1) / q
@@ -258,28 +233,21 @@ public class FIPS186
         // 4. Set g = h**e mod p
         g = h.modPow(e, p);
         // 5. If g = 1, go to step 3
-        if (!g.equals(BigInteger.ONE))
-          {
-            break;
-          }
+        if (! g.equals(BigInteger.ONE))
+          break;
       }
-
     return new BigInteger[] { SEED, BigInteger.valueOf(counter), q, p, e, g };
   }
 
-  // helper methods ----------------------------------------------------------
-
   /**
    * Fills the designated byte array with random data.
-   *
+   * 
    * @param buffer the byte array to fill with random data.
    */
   private void nextRandomBytes(byte[] buffer)
   {
     if (rnd != null)
-      {
-        rnd.nextBytes(buffer);
-      }
+      rnd.nextBytes(buffer);
     else
       getDefaultPRNG().nextBytes(buffer);
   }

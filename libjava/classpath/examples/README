@@ -46,6 +46,23 @@ You can then run the example as follows:
   export LD_LIBRARY_PATH=.:/usr/local/classpath/lib/classpath
   jamvm gnu.classpath.examples.jawt.DemoJAWT
 
+The java2d benchmarking demos include a GTK widget to measure the native
+speed of some basic java2d options, without the JNI overhead.
+
+You can invoke it with:
+
+	make -f Makefile.java2d
+
+Or you can compile by hand as follows:
+
+  gcc -g -O0 -Wall -I./gnu/classpath/examples/java2d \
+    -o cairobench gnu/classpath/examples/java2d/bench.c \
+    `pkg-config --libs --cflags gtk+-2.0`
+
+You can then run the example as follows:
+
+  ./cairobench
+
 All example code is distributed under the GNU General Public License (GPL).
 
 The example icons used in some of the examples come from gnome-icon-theme

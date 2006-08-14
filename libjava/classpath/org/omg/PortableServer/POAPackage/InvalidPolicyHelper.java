@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.PortableServer.POAPackage;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 import gnu.CORBA.Poa.InvalidPolicyHolder;
 
 import org.omg.CORBA.Any;
@@ -72,7 +73,7 @@ public abstract class InvalidPolicyHelper
   {
     if (typeCode == null)
       {
-        ORB orb = ORB.init();
+        ORB orb = OrbRestricted.Singleton;
         StructMember[] members = new StructMember[ 1 ];
 
         TypeCode field;

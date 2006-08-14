@@ -55,54 +55,33 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>A variation of the SRP6 key agreement protocol, for the server-side as
- * proposed in
- * <a href="http://www.ietf.org/internet-drafts/draft-ietf-tls-srp-05.txt">Using
+ * A variation of the SRP6 key agreement protocol, for the server-side as
+ * proposed in <a
+ * href="http://www.ietf.org/internet-drafts/draft-ietf-tls-srp-05.txt">Using
  * SRP for TLS Authentication</a>. The only difference between it and the SASL
  * variant is that the shared secret is the entity <code>S</code> and not
- * <code>H(S)</code>.</p>
+ * <code>H(S)</code>.
  */
-public class SRP6TLSServer extends SRP6KeyAgreement
+public class SRP6TLSServer
+    extends SRP6KeyAgreement
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The user's ephemeral key pair. */
   private KeyPair hostKeyPair;
-
   /** The SRP password database. */
   private SRPAuthInfoProvider passwordDB;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // default 0-arguments constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // implementation of abstract methods in base class ------------------------
 
   protected void engineInit(final Map attributes) throws KeyAgreementException
   {
     rnd = (SecureRandom) attributes.get(SOURCE_OF_RANDOMNESS);
-
     final String md = (String) attributes.get(HASH_FUNCTION);
-    if (md == null || "".equals(md.trim()))
-      {
-        throw new KeyAgreementException("missing hash function");
-      }
+    if (md == null || md.trim().length() == 0)
+      throw new KeyAgreementException("missing hash function");
     srp = SRP.instance(md);
-
     passwordDB = (SRPAuthInfoProvider) attributes.get(HOST_PASSWORD_DB);
     if (passwordDB == null)
-      {
-        throw new KeyAgreementException("missing SRP password database");
-      }
+      throw new KeyAgreementException("missing SRP password database");
   }
 
   protected OutgoingMessage engineProcessMessage(final IncomingMessage in)
@@ -125,13 +104,10 @@ public class SRP6TLSServer extends SRP6KeyAgreement
     super.engineReset();
   }
 
-  // own methods -------------------------------------------------------------
-
   private OutgoingMessage sendParameters(final IncomingMessage in)
       throws KeyAgreementException
   {
     final String I = in.readString();
-
     // get s and v for user identified by I
     // ----------------------------------------------------------------------
     final Map credentials;
@@ -148,12 +124,9 @@ public class SRP6TLSServer extends SRP6KeyAgreement
       }
 
     final BigInteger s = new BigInteger(
-                                        1,
-                                        Util.fromBase64((String) credentials.get(SRPRegistry.SALT_FIELD)));
+        1, Util.fromBase64((String) credentials.get(SRPRegistry.SALT_FIELD)));
     final BigInteger v = new BigInteger(
-                                        1,
-                                        Util.fromBase64((String) credentials.get(SRPRegistry.USER_VERIFIER_FIELD)));
-
+        1, Util.fromBase64((String) credentials.get(SRPRegistry.USER_VERIFIER_FIELD)));
     final Map configuration;
     try
       {
@@ -164,36 +137,26 @@ public class SRP6TLSServer extends SRP6KeyAgreement
       {
         throw new KeyAgreementException("computeSharedSecret()", x);
       }
-
     N = new BigInteger(
-                       1,
-                       Util.fromBase64((String) configuration.get(SRPRegistry.SHARED_MODULUS)));
+        1, Util.fromBase64((String) configuration.get(SRPRegistry.SHARED_MODULUS)));
     g = new BigInteger(
-                       1,
-                       Util.fromBase64((String) configuration.get(SRPRegistry.FIELD_GENERATOR)));
-    // ----------------------------------------------------------------------
-
+        1, Util.fromBase64((String) configuration.get(SRPRegistry.FIELD_GENERATOR)));
     // generate an ephemeral keypair
     final SRPKeyPairGenerator kpg = new SRPKeyPairGenerator();
     final Map attributes = new HashMap();
     if (rnd != null)
-      {
-        attributes.put(SRPKeyPairGenerator.SOURCE_OF_RANDOMNESS, rnd);
-      }
+      attributes.put(SRPKeyPairGenerator.SOURCE_OF_RANDOMNESS, rnd);
     attributes.put(SRPKeyPairGenerator.SHARED_MODULUS, N);
     attributes.put(SRPKeyPairGenerator.GENERATOR, g);
     attributes.put(SRPKeyPairGenerator.USER_VERIFIER, v);
     kpg.setup(attributes);
     hostKeyPair = kpg.generate();
-
     final BigInteger B = ((SRPPublicKey) hostKeyPair.getPublic()).getY();
-
     final OutgoingMessage result = new OutgoingMessage();
     result.writeMPI(N);
     result.writeMPI(g);
     result.writeMPI(s);
     result.writeMPI(B);
-
     return result;
   }
 
@@ -201,17 +164,13 @@ public class SRP6TLSServer extends SRP6KeyAgreement
       throws KeyAgreementException
   {
     final BigInteger A = in.readMPI();
-
     final BigInteger B = ((SRPPublicKey) hostKeyPair.getPublic()).getY();
     final BigInteger u = uValue(A, B); // u = H(A | B)
-
     // compute S = (Av^u) ^ b
     final BigInteger b = ((SRPPrivateKey) hostKeyPair.getPrivate()).getX();
     final BigInteger v = ((SRPPrivateKey) hostKeyPair.getPrivate()).getV();
     final BigInteger S = A.multiply(v.modPow(u, N)).modPow(b, N);
-
     K = S;
-
     complete = true;
     return null;
   }

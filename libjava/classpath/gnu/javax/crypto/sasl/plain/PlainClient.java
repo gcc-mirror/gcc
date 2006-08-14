@@ -48,29 +48,16 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 
 /**
- * <p>The PLAIN SASL client-side mechanism.</p>
+ * The PLAIN SASL client-side mechanism.
  */
-public class PlainClient extends ClientMechanism implements SaslClient
+public class PlainClient
+    extends ClientMechanism
+    implements SaslClient
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public PlainClient()
   {
     super(Registry.SASL_PLAIN_MECHANISM);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // abstract methods implementation -----------------------------------------
 
   protected void initMechanism() throws SaslException
   {
@@ -79,8 +66,6 @@ public class PlainClient extends ClientMechanism implements SaslClient
   protected void resetMechanism() throws SaslException
   {
   }
-
-  // javax.security.sasl.SaslClient interface implementation -----------------
 
   public boolean hasInitialResponse()
   {
@@ -94,22 +79,16 @@ public class PlainClient extends ClientMechanism implements SaslClient
         final String username;
         final char[] password;
         Callback[] callbacks;
-
-        if ((!properties.containsKey(Registry.SASL_USERNAME))
-            && (!properties.containsKey(Registry.SASL_PASSWORD)))
+        if ((! properties.containsKey(Registry.SASL_USERNAME))
+            && (! properties.containsKey(Registry.SASL_PASSWORD)))
           {
             callbacks = new Callback[2];
-
             final NameCallback nameCB;
             final String defaultName = System.getProperty("user.name");
             if (defaultName == null)
-              {
-                nameCB = new NameCallback("username: ");
-              }
+              nameCB = new NameCallback("username: ");
             else
-              {
-                nameCB = new NameCallback("username: ", defaultName);
-              }
+              nameCB = new NameCallback("username: ", defaultName);
             final PasswordCallback pwdCB = new PasswordCallback("password: ",
                                                                 false);
             callbacks[0] = nameCB;
@@ -121,67 +100,49 @@ public class PlainClient extends ClientMechanism implements SaslClient
         else
           {
             if (properties.containsKey(Registry.SASL_USERNAME))
-              {
-                username = (String) properties.get(Registry.SASL_USERNAME);
-              }
+              username = (String) properties.get(Registry.SASL_USERNAME);
             else
               {
                 callbacks = new Callback[1];
                 final NameCallback nameCB;
                 final String defaultName = System.getProperty("user.name");
                 if (defaultName == null)
-                  {
-                    nameCB = new NameCallback("username: ");
-                  }
+                  nameCB = new NameCallback("username: ");
                 else
-                  {
-                    nameCB = new NameCallback("username: ", defaultName);
-                  }
+                  nameCB = new NameCallback("username: ", defaultName);
                 callbacks[0] = nameCB;
                 this.handler.handle(callbacks);
                 username = nameCB.getName();
               }
-
             if (properties.containsKey(Registry.SASL_PASSWORD))
-              {
-                password = ((String) properties.get(Registry.SASL_PASSWORD)).toCharArray();
-              }
+              password = ((String) properties.get(Registry.SASL_PASSWORD)).toCharArray();
             else
               {
                 callbacks = new Callback[1];
-                final PasswordCallback pwdCB = new PasswordCallback(
-                                                                    "password: ",
+                final PasswordCallback pwdCB = new PasswordCallback("password: ",
                                                                     false);
                 callbacks[0] = pwdCB;
                 this.handler.handle(callbacks);
                 password = pwdCB.getPassword();
               }
           }
-
         if (password == null)
-          {
-            throw new SaslException("null password supplied");
-          }
+          throw new SaslException("null password supplied");
         final StringBuffer sb = new StringBuffer();
         if (authorizationID != null)
-          {
-            sb.append(authorizationID);
-          }
+          sb.append(authorizationID);
         sb.append('\0');
         sb.append(username);
         sb.append('\0');
         sb.append(password);
         this.complete = true;
-
         final byte[] response = sb.toString().getBytes("UTF-8");
         return response;
       }
     catch (Exception x)
       {
         if (x instanceof SaslException)
-          {
-            throw (SaslException) x;
-          }
+          throw (SaslException) x;
         throw new SaslException("evaluateChallenge()", x);
       }
   }

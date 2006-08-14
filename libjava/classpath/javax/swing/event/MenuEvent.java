@@ -1,5 +1,5 @@
 /* MenuEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,7 +37,6 @@ exception statement from your version. */
 
 package javax.swing.event;
 
-// Imports
 import java.util.EventObject;
 
 /**
@@ -45,15 +44,16 @@ import java.util.EventObject;
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class MenuEvent extends EventObject {
+public class MenuEvent extends EventObject 
+{
 
-	/**
-	 * Constructor MenuEvent
-	 * @param source Source object
-	 */
-	public MenuEvent(Object source) {
-		super(source);
-	} // MenuEvent()
+  /**
+   * Constructor MenuEvent
+   * @param source Source object
+   */
+  public MenuEvent(Object source) 
+  {
+    super(source);
+  }
 
-
-} // MenuEvent
+}

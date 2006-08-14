@@ -40,12 +40,9 @@ package gnu.javax.crypto.keyring;
 
 import java.io.IOException;
 
-public class MalformedKeyringException extends IOException
+public class MalformedKeyringException
+    extends IOException
 {
-
-  // Constructors.
-  // ------------------------------------------------------------------------
-
   public MalformedKeyringException()
   {
     super();

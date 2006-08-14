@@ -242,15 +242,15 @@ public abstract class LookAndFeel
   {
     if (keys == null)
       return;
-    for (int i = 0; i < keys.length - 1; i+= 2)
+    for (int i = 0; i < keys.length - 1; i += 2)
       {
         Object key = keys[i];
         KeyStroke keyStroke;
         if (key instanceof KeyStroke)
-          keyStroke = (KeyStroke)key;
+          keyStroke = (KeyStroke) key;
         else
-          keyStroke = KeyStroke.getKeyStroke((String)key);
-        retMap.put(keyStroke, keys[i+1]);
+          keyStroke = KeyStroke.getKeyStroke((String) key);
+        retMap.put(keyStroke, keys[i + 1]);
       }
   }
 
@@ -328,15 +328,15 @@ public abstract class LookAndFeel
   {
     JTextComponent.KeyBinding[] retBindings = 
       new JTextComponent.KeyBinding[keyBindingList.length / 2];
-    for (int i = 0; i < keyBindingList.length - 1; i+= 2)
+    for (int i = 0; i < keyBindingList.length - 1; i += 2)
       {
         KeyStroke stroke;
         if (keyBindingList[i] instanceof KeyStroke)
-          stroke = (KeyStroke)keyBindingList[i];
+          stroke = (KeyStroke) keyBindingList[i];
         else
-          stroke = KeyStroke.getKeyStroke((String)keyBindingList[i]);
-        retBindings[i/2] = new JTextComponent.KeyBinding(stroke, 
-            (String) keyBindingList[i+1]);
+          stroke = KeyStroke.getKeyStroke((String) keyBindingList[i]);
+        retBindings[i / 2] = new JTextComponent.KeyBinding(stroke, 
+            (String) keyBindingList[i + 1]);
       }
     return retBindings;
   }

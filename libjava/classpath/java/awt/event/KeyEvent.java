@@ -993,6 +993,27 @@ public class KeyEvent extends InputEvent
   public static final int VK_ALT_GRAPH = 65406;
 
   /**
+   * The 'begin' key VK_BEGIN
+   *
+   * @since 1.5
+   */
+  public static final int VK_BEGIN = 65368;
+
+  /**
+   * The context-menu key VK_CONTEXT_MENU
+   *
+   * @since 1.5
+   */
+  public static final int VK_CONTEXT_MENU = 525;
+
+  /**
+   * The 'Windows' key VK_WINDOWS
+   *
+   * @since 1.5
+   */
+  public static final int VK_WINDOWS = 524;
+
+  /**
    * The virtual key VK_UNDEFINED. This is used for key typed events, which
    * do not have a virtual key.
    */

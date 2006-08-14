@@ -37,29 +37,18 @@ exception statement from your version.  */
 
 
 package gnu.javax.crypto.jce.mac;
+
 import gnu.java.security.Registry;
 
 /**
- * <p>The implementation of the HMAC-SHA-384 <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.</p>
+ * The implementation of the HMAC-SHA-384 <i>Service Provider Interface</i>
+ * (<b>SPI</b>) adapter.
  */
-public class HMacSHA384Spi extends MacAdapter
+public class HMacSHA384Spi
+    extends MacAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -----------------------------------------------------------------------
-
   public HMacSHA384Spi()
   {
     super(Registry.HMAC_NAME_PREFIX + Registry.SHA384_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

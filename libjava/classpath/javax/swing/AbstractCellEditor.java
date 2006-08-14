@@ -134,9 +134,9 @@ public abstract class AbstractCellEditor
    *
    * @param listener the CellEditorListener to add
    */
-  public void addCellEditorListener (CellEditorListener listener)
+  public void addCellEditorListener(CellEditorListener listener)
   {
-    listenerList.add (CellEditorListener.class, listener);
+    listenerList.add(CellEditorListener.class, listener);
   }
 
   /**
@@ -145,9 +145,9 @@ public abstract class AbstractCellEditor
    *
    * @param listener the CellEditorListener to remove
    */
-  public void removeCellEditorListener (CellEditorListener listener)
+  public void removeCellEditorListener(CellEditorListener listener)
   {
-    listenerList.remove (CellEditorListener.class, listener);
+    listenerList.remove(CellEditorListener.class, listener);
   }
 	
   /**
@@ -161,8 +161,8 @@ public abstract class AbstractCellEditor
    */
   public CellEditorListener[] getCellEditorListeners()
   {
-    return (CellEditorListener[]) listenerList.getListeners
-      (CellEditorListener.class);
+    return (CellEditorListener[]) listenerList.getListeners(
+        CellEditorListener.class);
   }
 
   /**

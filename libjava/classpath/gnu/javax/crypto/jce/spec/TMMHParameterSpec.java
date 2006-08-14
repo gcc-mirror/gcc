@@ -45,35 +45,27 @@ import java.security.spec.AlgorithmParameterSpec;
 /**
  * This class represents the algorithm parameters for the Truncated
  * Multi-Modular Hash function for use with JCE-derived instances of
- * {@link gnu.crypto.mac.TMMH16}.
- *
- * <p>This class is little more than a container for the key stream, tag
- * length, and prefix parameters for the TMMH algorithm.
+ * {@link gnu.javax.crypto.mac.TMMH16}.
+ * <p>
+ * This class is little more than a container for the key stream, tag length,
+ * and prefix parameters for the TMMH algorithm.
  */
-public class TMMHParameterSpec implements AlgorithmParameterSpec
+public class TMMHParameterSpec
+    implements AlgorithmParameterSpec
 {
-
-  // Constants and variables.
-  // -----------------------------------------------------------------------
-
   /** The keystream. */
   protected IRandom keystream;
-
   /** The tag length. */
   protected Integer tagLength;
-
   /** The prefix. */
   protected byte[] prefix;
 
-  // Constructors.
-  // -----------------------------------------------------------------------
-
   /**
    * Create a new parameter specification.
-   *
+   * 
    * @param keystream The (PRNG) key stream.
    * @param tagLength The tag length.
-   * @param prefix    The prefix.
+   * @param prefix The prefix.
    */
   public TMMHParameterSpec(IRandom keystream, Integer tagLength, byte[] prefix)
   {
@@ -84,7 +76,7 @@ public class TMMHParameterSpec implements AlgorithmParameterSpec
 
   /**
    * Create a new parameter specification with no prefix.
-   *
+   * 
    * @param keystream The (PRNG) key stream.
    * @param tagLength The tag length.
    */
@@ -93,12 +85,9 @@ public class TMMHParameterSpec implements AlgorithmParameterSpec
     this(keystream, tagLength, null);
   }
 
-  // Instance methods.
-  // -----------------------------------------------------------------------
-
   /**
    * Return the key stream this specification was initialized with.
-   *
+   * 
    * @return The key stream.
    */
   public IRandom getKeystream()
@@ -108,7 +97,7 @@ public class TMMHParameterSpec implements AlgorithmParameterSpec
 
   /**
    * Return the tag length this specification was initialized with.
-   *
+   * 
    * @return The tag length.
    */
   public Integer getTagLength()
@@ -117,9 +106,8 @@ public class TMMHParameterSpec implements AlgorithmParameterSpec
   }
 
   /**
-   * Return the prefix, or <code>null</code> if no prefix was
-   * specified.
-   *
+   * Return the prefix, or <code>null</code> if no prefix was specified.
+   * 
    * @return The prefix.
    */
   public byte[] getPrefix()

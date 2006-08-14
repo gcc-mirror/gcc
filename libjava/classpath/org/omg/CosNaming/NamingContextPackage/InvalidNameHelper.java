@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CosNaming.NamingContextPackage;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -60,11 +61,6 @@ public abstract class InvalidNameHelper
    */
   private static String _id =
     "IDL:omg.org/CosNaming/NamingContext/InvalidName:1.0";
-
-  /**
-   * The cached type code value.
-   */
-  private static TypeCode typeCode;
 
   /**
    * Extract the exception from the given {@link Any}.
@@ -117,15 +113,8 @@ public abstract class InvalidNameHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        if (typeCode == null)
-          typeCode =
-            ORB.init().create_struct_tc(id(), "InvalidName",
-                                        new StructMember[ 0 ]
-                                       );
-      }
-    return typeCode;
+    return OrbRestricted.Singleton.create_struct_tc(id(), 
+      "InvalidName", new StructMember[0]);
   }
 
   /**

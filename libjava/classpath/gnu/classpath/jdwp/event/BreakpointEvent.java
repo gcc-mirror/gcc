@@ -62,18 +62,23 @@ public class BreakpointEvent
 
   // Location where breakpoint occurred
   private Location _location;
+  
+  //object instance
+  private Object _instance;
 
   /**
    * Constructs a new BreakpointEvent
    *
    * @param thread  thread in which event occurred
    * @param loc     location where breakpoint occurred
+   * @param instance object instance
    */
-  public BreakpointEvent(Thread thread, Location loc)
+  public BreakpointEvent(Thread thread, Location loc, Object instance)
   {
     super(JdwpConstants.EventKind.BREAKPOINT);
     _thread = thread;
     _location = loc;
+    _instance = instance;
   }
 
   /**
@@ -83,12 +88,14 @@ public class BreakpointEvent
    * @param type  the type of parameter desired
    * @returns the desired parameter or null
    */
-  public Object getParameter(Class type)
+  public Object getParameter(int type)
   {
-    if (type == ThreadId.class)
+    if (type == EVENT_THREAD)
       return _thread;
-    else if (type == Location.class)
+    else if (type == EVENT_LOCATION)
       return _location;
+    else if (type == EVENT_INSTANCE)
+      return _instance;
 
     return null;
   }

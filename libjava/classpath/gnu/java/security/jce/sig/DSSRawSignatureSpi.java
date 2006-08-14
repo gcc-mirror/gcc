@@ -42,27 +42,15 @@ import gnu.java.security.Registry;
 import gnu.java.security.sig.dss.DSSSignatureRawCodec;
 
 /**
- * The implementation of <i>Service Provider Interface</i> (<b>SPI</b>) adapter
- * for the DSS (Digital Signature Standard) signature scheme, encoded and/or
- * decoded in RAW format.<p>
+ * The implementation of <i>Service Provider Interface</i> (<b>SPI</b>)
+ * adapter for the DSS (Digital Signature Standard) signature scheme, encoded
+ * and/or decoded in RAW format.
  */
-public class DSSRawSignatureSpi extends SignatureAdapter
+public class DSSRawSignatureSpi
+    extends SignatureAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public DSSRawSignatureSpi()
   {
     super(Registry.DSS_SIG, new DSSSignatureRawCodec());
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

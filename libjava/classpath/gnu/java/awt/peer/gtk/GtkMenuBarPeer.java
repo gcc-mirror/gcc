@@ -38,12 +38,9 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Font;
 import java.awt.Menu;
 import java.awt.MenuBar;
-import java.awt.MenuComponent;
 import java.awt.peer.MenuBarPeer;
-import java.awt.peer.MenuPeer;
 
 public class GtkMenuBarPeer extends GtkMenuComponentPeer
   implements MenuBarPeer

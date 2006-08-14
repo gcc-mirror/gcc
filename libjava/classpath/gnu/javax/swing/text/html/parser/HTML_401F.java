@@ -759,23 +759,8 @@ public class HTML_401F
       defElement(BODY, 0, true, true, null,
       NONE
       ,
-      new String[] {
-        PCDATA, A, ABBR, ACRONYM,
-        APPLET, B, BASEFONT, BDO, BIG,
-        BR, BUTTON, CITE, CODE, DFN,
-        EM, FONT, I, IFRAME, IMG,
-        INPUT, KBD, LABEL, MAP, OBJECT,
-        Q, S, SAMP, SCRIPT, SELECT,
-        SMALL, SPAN, STRIKE, STRONG, SUB,
-        SUP, TEXTAREA, TT, U, VAR,
-        ADDRESS, BLOCKQUOTE, CENTER, DEL, DIR,
-        DIV, DL, FIELDSET, FORM, H1,
-        H2, H3, H4, H5, H6,
-        HR, INS, ISINDEX, MENU, NOFRAMES,
-        NOSCRIPT, OL, P, PRE, TABLE,
-        UL
-      }
-    ,
+      getBodyElements()
+      ,
       new AttributeList[] {
         attr(sID, null, null, ID, IMPLIED),
         attr(CLASS, null, null, 0, IMPLIED),
@@ -3634,7 +3619,7 @@ public class HTML_401F
    * Crate a content model, consisting of the single
    * element, specified by name.
    */
-  private ContentModel model(String element)
+  protected ContentModel model(String element)
   {
     return new ContentModel(getElement(element));
   }
@@ -3653,7 +3638,7 @@ public class HTML_401F
 
   /**
    * Create the model HEAD, BODY
-   * @return
+   * @return the HTML content model of the whole document
    */
   protected ContentModel createHtmlContentModel()
   {
@@ -3725,5 +3710,27 @@ public class HTML_401F
     li.type = ul.type = ol.type = '|';
     return li;
   }
-
+  
+  /**
+   * Get elements that are allowed in the document body, at the zero level.
+   */
+  protected String[] getBodyElements()
+  {
+    return new String[] {
+        PCDATA, A, ABBR, ACRONYM,
+        APPLET, B, BASEFONT, BDO, BIG,
+        BR, BUTTON, CITE, CODE, DFN,
+        EM, FONT, I, IFRAME, IMG,
+        INPUT, KBD, LABEL, MAP, OBJECT,
+        Q, S, SAMP, SCRIPT, SELECT,
+        SMALL, SPAN, STRIKE, STRONG, SUB,
+        SUP, TEXTAREA, TT, U, VAR,
+        ADDRESS, BLOCKQUOTE, CENTER, DEL, DIR,
+        DIV, DL, FIELDSET, FORM, H1,
+        H2, H3, H4, H5, H6,
+        HR, INS, ISINDEX, MENU, NOFRAMES,
+        NOSCRIPT, OL, P, PRE, TABLE,
+        UL
+      };
+  }
 }

@@ -1,5 +1,5 @@
 /* ByteLookupTable.java -- Java class for a pixel translation table.
-   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,14 +60,20 @@ public class ByteLookupTable extends LookupTable
    * components.
    * 
    * @param offset Offset to be subtracted.
-   * @param data Array of lookup tables.
+   * @param data Array of lookup tables (<code>null</code> not permitted).
    * @exception IllegalArgumentException if offset &lt; 0 or data.length &lt; 1.
    */
   public ByteLookupTable(int offset, byte[][] data)
     throws IllegalArgumentException
   {
     super(offset, data.length);
-    this.data = data;
+    
+    // tests show that Sun's implementation creates a new array to store the
+    // references from the incoming 'data' array - not sure why, but we'll 
+    // match that behaviour just in case it matters...
+    this.data = new byte[data.length][];
+    for (int i = 0; i < data.length; i++)
+      this.data[i] = data[i];
   }
 
   /**
@@ -77,13 +83,16 @@ public class ByteLookupTable extends LookupTable
    * table.  The same table is applied to all pixel components.
    * 
    * @param offset Offset to be subtracted.
-   * @param data Lookup table for all components.
+   * @param data Lookup table for all components (<code>null</code> not 
+   *     permitted).
    * @exception IllegalArgumentException if offset &lt; 0.
    */
   public ByteLookupTable(int offset, byte[] data)
     throws IllegalArgumentException
   {
     super(offset, 1);
+    if (data == null)
+      throw new NullPointerException("Null 'data' argument.");
     this.data = new byte[][] {data};
   }
 

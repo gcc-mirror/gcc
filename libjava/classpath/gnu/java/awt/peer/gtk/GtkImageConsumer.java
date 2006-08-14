@@ -1,5 +1,5 @@
 /* GtkImageConsumer.java
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,16 +38,11 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.image.ColorModel;
-import java.awt.image.DirectColorModel;
 import java.awt.image.ImageConsumer;
-import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.awt.image.MemoryImageSource;
 import java.util.Hashtable;
-import java.util.Vector;
 
 /**
  * Helper class to GtkImage. Sits and gathers pixels for a GtkImage and then

@@ -44,120 +44,118 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>The top-level interface to a <i>keyring:</i> a file that is used to
- * store and protect public and private cryptographic keys.</p>
- *
- * <p>A <i>keyring</i> is modelled as a mapping of one <i>alias</i> to one or
- * more <i>entries</i> (optionally of different types).</p>
- *
- * <p>See also the sub-interfaces {@link IPublicKeyring} and
- * {@link IPrivateKeyring} for special types of <i>keyrings</i> --the difference
- * being in the type of entries they contain.</p>
+ * The top-level interface to a <i>keyring:</i> a file that is used to store
+ * and protect public and private cryptographic keys.
+ * <p>
+ * A <i>keyring</i> is modelled as a mapping of one <i>alias</i> to one or
+ * more <i>entries</i> (optionally of different types).
+ * <p>
+ * See also the sub-interfaces {@link IPublicKeyring} and
+ * {@link IPrivateKeyring} for special types of <i>keyrings</i> --the
+ * difference being in the type of entries they contain.
  */
 public interface IKeyring
 {
-
   /**
-   * <p>Property name for the source of data to load the keyring from. The
-   * value mapped must be a {@link java.io.InputStream}.</p>
+   * Property name for the source of data to load the keyring from. The value
+   * mapped must be a {@link java.io.InputStream}.
    */
   public static final String KEYRING_DATA_IN = "gnu.crypto.keyring.data.in";
 
   /**
-   * <p>Property name for the data sink to store the keyring to. The value
-   * mapped must be a {@link java.io.OutputStream}.</p>
+   * Property name for the data sink to store the keyring to. The value mapped
+   * must be a {@link java.io.OutputStream}.
    */
   public static final String KEYRING_DATA_OUT = "gun.crypto.keyring.data.out";
 
   /**
-   * <p>Property name for the keyring's top-level password, used to
-   * authenticate and/or transform the store itself. The mapped value must be a
-   * char array.</p>
+   * Property name for the keyring's top-level password, used to authenticate
+   * and/or transform the store itself. The mapped value must be a char array.
    */
   public static final String KEYRING_PASSWORD = "gnu.crypto.keyring.password";
 
   /**
-   * <p>Loads a keyring into memory.</p>
-   *
-   * <p>What happens to the current contents of this keyring? are the new ones
-   * merged with the current ones or do they simply replace them?</p>
-   *
+   * Loads a keyring into memory.
+   * <p>
+   * What happens to the current contents of this keyring? are the new ones
+   * merged with the current ones or do they simply replace them?
+   * 
    * @param attributes The attributes that designate the source where the store
-   * is to be loaded from. What happens
+   *          is to be loaded from. What happens
    * @throws IllegalArgumentException If the attributes are inappropriate.
    * @throws IOException If the keyring file cannot be read.
    * @throws SecurityException If the given password is incorrect, or if the
-   * top-level authentication or decryption fails.
+   *           top-level authentication or decryption fails.
    */
   void load(Map attributes) throws IOException;
 
   /**
-   * <p>Stores the contents of this keyring to persistent storage as specified
-   * by the designated <code>attributes</code>.</p>
-   *
+   * Stores the contents of this keyring to persistent storage as specified by
+   * the designated <code>attributes</code>.
+   * 
    * @param attributes the attributes that define where the contents of this
-   * keyring will be stored.
+   *          keyring will be stored.
    * @throws IOException if an exception occurs during the process.
    */
   void store(Map attributes) throws IOException;
 
   /**
-   * <p>Resets this keyring, clearing all sensitive data. This method always
-   * suceeds.</p>
+   * Resets this keyring, clearing all sensitive data. This method always
+   * suceeds.
    */
   void reset();
 
   /**
-   * <p>Returns the number of entries in this keyring.</p>
-   *
+   * Returns the number of entries in this keyring.
+   * 
    * @return The number of current entries in this keyring.
    */
   int size();
 
   /**
-   * <p>Returns an {@link Enumeration} of all aliases (instances of
-   * {@link String}) in this keyring.</p>
-   *
-   * @return The enumeration of {@link String}s each representing an
-   * <i>alias</i> found in this keyring.
+   * Returns an {@link Enumeration} of all aliases (instances of {@link String})
+   * in this keyring.
+   * 
+   * @return The enumeration of {@link String}s each representing an <i>alias</i>
+   *         found in this keyring.
    */
   Enumeration aliases();
 
   /**
    * Tests whether or not this keyring contains the given alias.
-   *
+   * 
    * @param alias The alias to check.
    * @return true if this keyring contains the alias.
    */
   boolean containsAlias(String alias);
 
   /**
-   * <p>Returns a {@link List} of entries (instances of {@link Entry}) for the
+   * Returns a {@link List} of entries (instances of {@link Entry}) for the
    * given <code>alias</code>, or <code>null</code> if there no such entry
-   * exists.</p>
-   *
+   * exists.
+   * 
    * @param alias The alias of the entry(ies) to return.
    * @return A list of all entries (instances of {@link Entry} that have the
-   * given <code>alias</code>, or <code>null</code> if no one {@link Entry} can
-   * be found with the designated <code>alias</code>.
+   *         given <code>alias</code>, or <code>null</code> if no one
+   *         {@link Entry} can be found with the designated <code>alias</code>.
    */
   List get(String alias);
 
   /**
-   * <p>Adds a designated {@link Entry} to this keyring.</p>
-   *
-   * <p>What happens if there is already an entry with the same alias?</p>
-   *
+   * Adds a designated {@link Entry} to this keyring.
+   * <p>
+   * What happens if there is already an entry with the same alias?
+   * 
    * @param entry The entry to put in this keyring.
    */
   void add(Entry entry);
 
   /**
-   * <p>Removes an entry with the designated <code>alias</code> from this
-   * keyring. Does nothing if there was no such entry.</p>
-   *
-   * <p>What happens if there are more than one?</p>
-   *
+   * Removes an entry with the designated <code>alias</code> from this
+   * keyring. Does nothing if there was no such entry.
+   * <p>
+   * What happens if there are more than one?
+   * 
    * @param alias The alias of the entry to remove.
    */
   void remove(String alias);

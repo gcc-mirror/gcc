@@ -217,25 +217,43 @@ public abstract class CompositeView
   public Shape modelToView(int pos, Shape a, Position.Bias bias)
     throws BadLocationException
   {
-    int childIndex = getViewIndex(pos, bias);
-    if (childIndex == -1)
-      throw new BadLocationException("Position " + pos + " is not represented by view.", pos);
-      
+    boolean backward = bias == Position.Bias.Backward;
+    int testpos = backward ? Math.max(0, pos - 1) : pos;
+
     Shape ret = null;
-
-    View child = getView(childIndex);
-    Shape childAlloc = getChildAllocation(childIndex, a);
-    
-    if (childAlloc == null)
-      ret = createDefaultLocation(a, bias);
-    
-    Shape result = child.modelToView(pos, childAlloc, bias);
-
-    if (result != null)
-      ret = result;
-    else
-      ret =  createDefaultLocation(a, bias);
-
+    if (! backward || testpos >= getStartOffset())
+      {
+        int childIndex = getViewIndexAtPosition(testpos);
+        if (childIndex != -1 && childIndex < getViewCount())
+          {
+            View child = getView(childIndex);
+            if (child != null && testpos >= child.getStartOffset()
+                && testpos < child.getEndOffset())
+              {
+                Shape childAlloc = getChildAllocation(childIndex, a);
+                if (childAlloc != null)
+                  {
+                    ret = child.modelToView(pos, childAlloc, bias);
+                    // Handle corner case.
+                    if (ret == null && child.getEndOffset() == pos)
+                      {
+                        childIndex++;
+                        if (childIndex < getViewCount())
+                          {
+                            child = getView(childIndex);
+                            childAlloc = getChildAllocation(childIndex, a);
+                            ret = child.modelToView(pos, childAlloc, bias);
+                          }
+                      }
+                  }
+              }
+          }
+        else
+          {
+            throw new BadLocationException("Position " + pos
+                                           + " is not represented by view.", pos);
+          }    
+      }
     return ret;
   }
 
@@ -378,7 +396,10 @@ public abstract class CompositeView
   {
     if (b == Position.Bias.Backward && pos != 0)
       pos -= 1;
-    return getViewIndexAtPosition(pos);
+    int i = -1;
+    if (pos >= getStartOffset() && pos < getEndOffset())
+      i = getViewIndexAtPosition(pos);
+    return i;
   }
 
   /**
@@ -446,9 +467,13 @@ public abstract class CompositeView
    */
   protected View getViewAtPosition(int pos, Rectangle a)
   {
+    View view = null;
     int i = getViewIndexAtPosition(pos);
-    View view = children[i];
-    childAllocation(i, a);
+    if (i >= 0 && i < getViewCount() && a != null)
+      {
+        view = getView(i);
+        childAllocation(i, a);
+      }
     return view;
   }
 
@@ -464,17 +489,10 @@ public abstract class CompositeView
    */
   protected int getViewIndexAtPosition(int pos)
   {
-    int index = -1;
-    for (int i = 0; i < children.length; i++)
-      {
-        if (children[i].getStartOffset() <= pos
-            && children[i].getEndOffset() > pos)
-          {
-            index = i;
-            break;
-          }
-      }
-    return index;
+    // We have a 1:1 mapping of elements to views here, so we forward
+    // this to the element.
+    Element el = getElement();
+    return el.getElementIndex(pos);
   }
 
   /**

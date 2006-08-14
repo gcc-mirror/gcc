@@ -40,12 +40,9 @@ package gnu.javax.crypto.jce.mac;
 
 import gnu.java.security.Registry;
 
-public class OMacDESImpl extends MacAdapter
+public class OMacDESImpl
+    extends MacAdapter
 {
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
   public OMacDESImpl()
   {
     super(Registry.OMAC_PREFIX + Registry.DES_CIPHER);

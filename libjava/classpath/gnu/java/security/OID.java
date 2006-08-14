@@ -1,5 +1,5 @@
 /* OID.java -- numeric representation of an object identifier
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -71,6 +71,9 @@ public class OID implements Cloneable, Comparable, java.io.Serializable
   // Fields.
   // ------------------------------------------------------------------------
 
+  /* Serial version id for serialization. */
+  static final long serialVersionUID = 5722492029044597779L;
+  
   /**
    * The numeric ID structure.
    */
@@ -211,7 +214,6 @@ public class OID implements Cloneable, Comparable, java.io.Serializable
   /**
    * Construct a new OID from the given DER bytes.
    *
-   * @param root The root OID.
    * @param encoded The encoded relative OID.
    * @param relative The relative flag.
    */
@@ -228,13 +230,6 @@ public class OID implements Cloneable, Comparable, java.io.Serializable
         aioobe.printStackTrace();
         throw aioobe;
       }
-  }
-
-  /**
-   * Our private constructor.
-   */
-  private OID()
-  {
   }
 
   // Instance methods.
@@ -326,10 +321,16 @@ public class OID implements Cloneable, Comparable, java.io.Serializable
    */
   public Object clone()
   {
-    OID oid = new OID();
-    oid.components = this.components;
-    oid.strRep = this.strRep;
-    return oid;
+    try
+      {
+        return super.clone();
+      }
+    catch (CloneNotSupportedException cnse)
+      {
+        InternalError ie = new InternalError();
+        ie.initCause(cnse);
+        throw ie;
+      }
   }
 
   /* Nice idea, but possibly too expensive for whatever benefit it

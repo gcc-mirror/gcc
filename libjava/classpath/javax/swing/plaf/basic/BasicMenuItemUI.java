@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import gnu.classpath.SystemProperties;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -52,11 +54,15 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
@@ -237,7 +243,8 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void propertyChange(PropertyChangeEvent e)
     {
-      if (e.getPropertyName() == "accelerator")
+      String property = e.getPropertyName();
+      if (property.equals("accelerator"))
         {
           InputMap map = SwingUtilities.getUIInputMap(menuItem, 
               JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -249,6 +256,22 @@ public class BasicMenuItemUI extends MenuItemUI
           KeyStroke accelerator = (KeyStroke) e.getNewValue();
           if (accelerator != null)
             map.put(accelerator, "doClick");
+        }
+      // TextLayout caching for speed-up drawing of text.
+      else if ((property.equals(AbstractButton.TEXT_CHANGED_PROPERTY)
+                || property.equals("font"))
+               && SystemProperties.getProperty("gnu.javax.swing.noGraphics2D")
+               == null)
+               
+        {
+          AbstractButton b = (AbstractButton) e.getSource();
+          String text = b.getText();
+          if (text == null)
+            text = "";
+          FontRenderContext frc = new FontRenderContext(new AffineTransform(),
+                                                        false, false);
+          TextLayout layout = new TextLayout(text, b.getFont(), frc);
+          b.putClientProperty(BasicGraphicsUtils.CACHED_TEXT_LAYOUT, layout);
         }
     }
   }
@@ -833,12 +856,13 @@ public class BasicMenuItemUI extends MenuItemUI
         int mnemonicIndex = menuItem.getDisplayedMnemonicIndex();
 
         if (mnemonicIndex != -1)
-          BasicGraphicsUtils.drawStringUnderlineCharAt(g, text, mnemonicIndex,
+          BasicGraphicsUtils.drawStringUnderlineCharAt(menuItem, g, text,
+                                                       mnemonicIndex,
                                                        textRect.x,
                                                        textRect.y
                                                            + fm.getAscent());
         else
-          BasicGraphicsUtils.drawString(g, text, 0, textRect.x,
+          BasicGraphicsUtils.drawString(menuItem, g, text, 0, textRect.x,
                                         textRect.y + fm.getAscent());
       }
   }

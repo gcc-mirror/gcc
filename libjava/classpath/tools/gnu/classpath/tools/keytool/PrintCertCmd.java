@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
 import gnu.classpath.tools.getopt.OptionException;
@@ -86,31 +87,33 @@ class PrintCertCmd extends Command
   void setup() throws Exception
   {
     setInputStreamParam(_certFileName);
-
-    log.finer("-printcert handler will use the following options:"); //$NON-NLS-1$
-    log.finer("  -file=" + _certFileName); //$NON-NLS-1$
-    log.finer("  -v=" + verbose); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      {
+        log.fine("-printcert handler will use the following options:"); //$NON-NLS-1$
+        log.fine("  -file=" + _certFileName); //$NON-NLS-1$
+        log.fine("  -v=" + verbose); //$NON-NLS-1$
+      }
   }
 
   void start() throws CertificateException
   {
-    log.entering(getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(getClass().getName(), "start"); //$NON-NLS-1$
     CertificateFactory x509Factory = CertificateFactory.getInstance(Main.X_509);
     Certificate certificate = x509Factory.generateCertificate(inStream);
     PrintWriter writer = new PrintWriter(System.out, true);
     writer.println();
     printVerbose(certificate, writer);
-
-    log.exiting(getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   // own methods --------------------------------------------------------------
 
   Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(Main.PRINTCERT_CMD, true);
     result.setHeader(Messages.getString("PrintCertCmd.5")); //$NON-NLS-1$
     result.setFooter(Messages.getString("PrintCertCmd.6")); //$NON-NLS-1$
@@ -133,8 +136,8 @@ class PrintCertCmd extends Command
       }
     });
     result.add(options);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 }

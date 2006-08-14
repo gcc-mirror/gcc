@@ -38,87 +38,59 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.mac;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 import gnu.java.security.util.Util;
 import gnu.javax.crypto.cipher.CipherFactory;
 import gnu.javax.crypto.cipher.IBlockCipher;
 import gnu.javax.crypto.mode.IMode;
-import gnu.javax.crypto.mode.ModeFactory;
 
 import java.security.InvalidKeyException;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
- * <p>The One-Key CBC MAC, OMAC. This message authentication code is based on
- * a block cipher in CBC mode.</p>
- *
- * <p>References:</p>
+ * The One-Key CBC MAC, OMAC. This message authentication code is based on a
+ * block cipher in CBC mode.
+ * <p>
+ * References:
  * <ol>
  * <li>Tetsu Iwata and Kaoru Kurosawa, <i><a
  * href="http://crypt.cis.ibaraki.ac.jp/omac/docs/omac.pdf">OMAC: One-Key CBC
  * MAC</a></i>.</li>
  * </ol>
  */
-public class OMAC implements IMac
+public class OMAC
+    implements IMac
 {
-
-  // Constants and fields.
-  // ------------------------------------------------------------------------
-
-  private static final boolean DEBUG = false;
-
-  private static void debug(String msg)
-  {
-    System.out.print(">>> OMAC: ");
-    System.out.println(msg);
-  }
-
+  private static final Logger log = Logger.getLogger(OMAC.class.getName());
   private static final byte C1 = (byte) 0x87;
-
   private static final byte C2 = 0x1b;
-
   // Test key for OMAC-AES-128
-  private static final byte[] KEY0 = Util.toBytesFromString("2b7e151628aed2a6abf7158809cf4f3c");
-
+  private static final byte[] KEY0 =
+      Util.toBytesFromString("2b7e151628aed2a6abf7158809cf4f3c");
   // Test MAC for zero-length input.
-  private static final byte[] DIGEST0 = Util.toBytesFromString("bb1d6929e95937287fa37d129b756746");
-
+  private static final byte[] DIGEST0 =
+      Util.toBytesFromString("bb1d6929e95937287fa37d129b756746");
   private static Boolean valid;
-
   private final IBlockCipher cipher;
-
   private final String name;
-
   private IMode mode;
-
   private int blockSize;
-
   private int outputSize;
-
   private byte[] Lu, Lu2;
-
   private byte[] M;
-
   private byte[] Y;
-
   private boolean init;
-
   private int index;
-
-  // Constructor.
-  // ------------------------------------------------------------------------
 
   public OMAC(IBlockCipher cipher)
   {
     this.cipher = cipher;
     this.name = "OMAC-" + cipher.name();
   }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
 
   public Object clone()
   {
@@ -141,135 +113,89 @@ public class OMAC implements IMac
     attrib2.put(IBlockCipher.KEY_MATERIAL, attrib.get(MAC_KEY_MATERIAL));
     cipher.reset();
     cipher.init(attrib2);
-
     blockSize = cipher.currentBlockSize();
     Integer os = (Integer) attrib.get(TRUNCATED_SIZE);
     if (os != null)
       {
         outputSize = os.intValue();
         if (outputSize < 0 || outputSize > blockSize)
-          {
-            throw new IllegalArgumentException("truncated size out of range");
-          }
+          throw new IllegalArgumentException("truncated size out of range");
       }
     else
-      {
-        outputSize = blockSize;
-      }
+      outputSize = blockSize;
 
     byte[] L = new byte[blockSize];
     cipher.encryptBlock(L, 0, L, 0);
-
-    if (DEBUG)
-      {
-        debug("L = " + Util.toString(L).toLowerCase());
-      }
-
+    if (Configuration.DEBUG)
+      log.fine("L = " + Util.toString(L).toLowerCase());
     if (Lu != null)
       {
         Arrays.fill(Lu, (byte) 0);
         if (Lu.length != blockSize)
-          {
-            Lu = new byte[blockSize];
-          }
+          Lu = new byte[blockSize];
       }
     else
-      {
-        Lu = new byte[blockSize];
-      }
+      Lu = new byte[blockSize];
     if (Lu2 != null)
       {
         Arrays.fill(Lu2, (byte) 0);
         if (Lu2.length != blockSize)
-          {
-            Lu2 = new byte[blockSize];
-          }
+          Lu2 = new byte[blockSize];
       }
     else
-      {
-        Lu2 = new byte[blockSize];
-      }
+      Lu2 = new byte[blockSize];
 
     boolean msb = (L[0] & 0x80) != 0;
     for (int i = 0; i < blockSize; i++)
       {
-        Lu[i] = (byte) (L[i] << 1 & 0xFF);
+        Lu[i] = (byte)(L[i] << 1 & 0xFF);
         if (i + 1 < blockSize)
-          {
-            Lu[i] |= (byte) ((L[i + 1] & 0x80) >> 7);
-          }
+          Lu[i] |= (byte)((L[i + 1] & 0x80) >> 7);
       }
     if (msb)
       {
         if (blockSize == 16)
-          {
-            Lu[Lu.length - 1] ^= C1;
-          }
+          Lu[Lu.length - 1] ^= C1;
         else if (blockSize == 8)
-          {
-            Lu[Lu.length - 1] ^= C2;
-          }
+          Lu[Lu.length - 1] ^= C2;
         else
-          {
-            throw new IllegalArgumentException(
-                                               "unsupported cipher block size: "
-                                                   + blockSize);
-          }
+          throw new IllegalArgumentException("unsupported cipher block size: "
+                                             + blockSize);
       }
-    if (DEBUG)
-      {
-        debug("Lu = " + Util.toString(Lu).toLowerCase());
-      }
-
+    if (Configuration.DEBUG)
+      log.fine("Lu = " + Util.toString(Lu).toLowerCase());
     msb = (Lu[0] & 0x80) != 0;
     for (int i = 0; i < blockSize; i++)
       {
-        Lu2[i] = (byte) (Lu[i] << 1 & 0xFF);
+        Lu2[i] = (byte)(Lu[i] << 1 & 0xFF);
         if (i + 1 < blockSize)
-          {
-            Lu2[i] |= (byte) ((Lu[i + 1] & 0x80) >> 7);
-          }
+          Lu2[i] |= (byte)((Lu[i + 1] & 0x80) >> 7);
       }
     if (msb)
       {
         if (blockSize == 16)
-          {
-            Lu2[Lu2.length - 1] ^= C1;
-          }
+          Lu2[Lu2.length - 1] ^= C1;
         else
-          {
-            Lu2[Lu2.length - 1] ^= C2;
-          }
+          Lu2[Lu2.length - 1] ^= C2;
       }
-    if (DEBUG)
-      {
-        debug("Lu2 = " + Util.toString(Lu2).toLowerCase());
-      }
-
+    if (Configuration.DEBUG)
+      log.fine("Lu2 = " + Util.toString(Lu2).toLowerCase());
     if (M != null)
       {
         Arrays.fill(M, (byte) 0);
         if (M.length != blockSize)
-          {
-            M = new byte[blockSize];
-          }
+          M = new byte[blockSize];
       }
     else
-      {
-        M = new byte[blockSize];
-      }
+      M = new byte[blockSize];
     if (Y != null)
       {
         Arrays.fill(Y, (byte) 0);
         if (Y.length != blockSize)
-          {
-            Y = new byte[blockSize];
-          }
+          Y = new byte[blockSize];
       }
     else
-      {
-        Y = new byte[blockSize];
-      }
+      Y = new byte[blockSize];
 
     index = 0;
     init = true;
@@ -277,10 +203,8 @@ public class OMAC implements IMac
 
   public void update(byte b)
   {
-    if (!init)
-      {
-        throw new IllegalStateException("not initialized");
-      }
+    if (! init)
+      throw new IllegalStateException("not initialized");
     if (index == M.length)
       {
         process();
@@ -291,15 +215,11 @@ public class OMAC implements IMac
 
   public void update(byte[] buf, int off, int len)
   {
-    if (!init)
-      {
-        throw new IllegalStateException("not initialized");
-      }
+    if (! init)
+      throw new IllegalStateException("not initialized");
     if (off < 0 || len < 0 || off + len > buf.length)
-      {
-        throw new IndexOutOfBoundsException("size=" + buf.length + "; off="
-                                            + off + "; len=" + len);
-      }
+      throw new IndexOutOfBoundsException("size=" + buf.length + "; off=" + off
+                                          + "; len=" + len);
     for (int i = 0; i < len;)
       {
         if (index == blockSize)
@@ -323,30 +243,22 @@ public class OMAC implements IMac
 
   public void digest(byte[] out, int off)
   {
-    if (!init)
-      {
-        throw new IllegalStateException("not initialized");
-      }
+    if (! init)
+      throw new IllegalStateException("not initialized");
     if (off < 0 || off + outputSize > out.length)
-      {
-        throw new IndexOutOfBoundsException("size=" + out.length + "; off="
-                                            + off + "; len=" + outputSize);
-      }
+      throw new IndexOutOfBoundsException("size=" + out.length + "; off=" + off
+                                          + "; len=" + outputSize);
     byte[] T = new byte[blockSize];
     byte[] L = Lu;
     if (index < blockSize)
       {
         M[index++] = (byte) 0x80;
         while (index < blockSize)
-          {
-            M[index++] = 0;
-          }
+          M[index++] = 0;
         L = Lu2;
       }
     for (int i = 0; i < blockSize; i++)
-      {
-        T[i] = (byte) (M[i] ^ Y[i] ^ L[i]);
-      }
+      T[i] = (byte)(M[i] ^ Y[i] ^ L[i]);
     cipher.encryptBlock(T, 0, T, 0);
     System.arraycopy(T, 0, out, off, outputSize);
     reset();
@@ -356,13 +268,9 @@ public class OMAC implements IMac
   {
     index = 0;
     if (Y != null)
-      {
-        Arrays.fill(Y, (byte) 0);
-      }
+      Arrays.fill(Y, (byte) 0);
     if (M != null)
-      {
-        Arrays.fill(M, (byte) 0);
-      }
+      Arrays.fill(M, (byte) 0);
   }
 
   public boolean selfTest()
@@ -382,21 +290,14 @@ public class OMAC implements IMac
         return false;
       }
     if (digest == null)
-      {
-        return false;
-      }
+      return false;
     return Arrays.equals(DIGEST0, digest);
   }
-
-  // Own methods.
-  // ------------------------------------------------------------------------
 
   private void process()
   {
     for (int i = 0; i < blockSize; i++)
-      {
-        M[i] = (byte) (M[i] ^ Y[i]);
-      }
+      M[i] = (byte)(M[i] ^ Y[i]);
     cipher.encryptBlock(M, 0, Y, 0);
   }
 }

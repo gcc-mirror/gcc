@@ -1,5 +1,5 @@
 /* Util.java -- Miscellaneous utility methods.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -155,7 +155,7 @@ public final class Util
   }
 
   /**
-   * See {@link #hexDump(byte[],int,int)}.
+   * See {@link #hexDump(byte[],int,int,String)}.
    */
   public static String hexDump(byte[] buf, String prefix)
   {

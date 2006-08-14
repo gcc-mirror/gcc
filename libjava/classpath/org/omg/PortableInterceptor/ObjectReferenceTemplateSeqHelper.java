@@ -57,11 +57,6 @@ import org.omg.CORBA.portable.Streamable;
 public abstract class ObjectReferenceTemplateSeqHelper
 {
   /**
-   * The type code, computed once.
-   */
-  static TypeCode typecode;
-
-  /**
    * Extract the <code>ObjectReferenceTemplate[]</code> from the given
    * {@link Any}. This implementation expects the {@link Any} to hold the
    * instance of {@link ObjectReferenceTemplateSeqHolder} that is returned by
@@ -142,15 +137,11 @@ public abstract class ObjectReferenceTemplateSeqHelper
    */
   public static TypeCode type()
   {
-    if (typecode == null)
-      {
-        GeneralTypeCode t = new GeneralTypeCode(TCKind.tk_sequence);
-        t.setId(id());
-        t.setLength(0);
-        t.setContentType(ObjectReferenceTemplateHelper.type());
-        typecode = t;
-      }
-    return typecode;
+    GeneralTypeCode t = new GeneralTypeCode(TCKind.tk_sequence);
+    t.setId(id());
+    t.setLength(0);
+    t.setContentType(ObjectReferenceTemplateHelper.type());
+    return t;
   }
 
   /**

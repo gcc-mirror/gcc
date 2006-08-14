@@ -42,15 +42,9 @@ package gnu.java.security.prng;
  * A checked exception that indicates that a pseudo random number generated has
  * reached its theoretical limit in generating random bytes.
  */
-public class LimitReachedException extends Exception
+public class LimitReachedException
+    extends Exception
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public LimitReachedException()
   {
     super();
@@ -60,10 +54,4 @@ public class LimitReachedException extends Exception
   {
     super(msg);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instant methods
-  // -------------------------------------------------------------------------
 }

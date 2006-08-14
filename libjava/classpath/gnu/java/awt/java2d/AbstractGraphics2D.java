@@ -39,6 +39,7 @@ package gnu.java.awt.java2d;
 
 import java.awt.AWTError;
 import java.awt.AlphaComposite;
+import java.awt.AWTPermission;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
@@ -72,6 +73,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.ImageObserver;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -144,7 +146,7 @@ public abstract class AbstractGraphics2D
   /**
    * The transformation for this Graphics2D instance
    */
-  private AffineTransform transform;
+  protected AffineTransform transform;
 
   /**
    * The foreground.
@@ -539,6 +541,15 @@ public abstract class AbstractGraphics2D
    */
   public void setComposite(Composite comp)
   {
+    if (! (comp instanceof AlphaComposite))
+      {
+        // FIXME: this check is only required "if this Graphics2D
+        // context is drawing to a Component on the display screen".
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null)
+          sm.checkPermission(new AWTPermission("readDisplayPixels"));
+      }
+
     composite = comp;
     if (! (comp.equals(AlphaComposite.SrcOver)))
       isOptimized = false;
@@ -2054,7 +2065,34 @@ public abstract class AbstractGraphics2D
    *
    * @return the destination raster
    */
-  protected abstract WritableRaster getDestinationRaster();
+  protected WritableRaster getDestinationRaster()
+  {
+    // TODO: Ideally we would fetch the xdrawable's surface pixels for
+    // initialization of the raster.
+    Rectangle db = getDeviceBounds();
+    if (destinationRaster == null)
+      {
+        int[] bandMasks = new int[]{ 0xFF0000, 0xFF00, 0xFF };
+        destinationRaster = Raster.createPackedRaster(DataBuffer.TYPE_INT,
+                                                      db.width, db.height,
+                                                      bandMasks, null);
+        // Initialize raster with white.
+        int x0 = destinationRaster.getMinX();
+        int x1 = destinationRaster.getWidth() + x0;
+        int y0 = destinationRaster.getMinY();
+        int y1 = destinationRaster.getHeight() + y0;
+        int numBands = destinationRaster.getNumBands();
+        for (int y = y0; y < y1; y++)
+          {
+            for (int x = x0; x < x1; x++)
+              {
+                for (int b = 0; b < numBands; b++)
+                  destinationRaster.setSample(x, y, b, 255);
+              }
+          }
+      }
+    return destinationRaster;
+  }
 
   /**
    * Notifies the backend that the raster has changed in the specified

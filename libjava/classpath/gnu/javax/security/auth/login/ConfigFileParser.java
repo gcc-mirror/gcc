@@ -38,12 +38,15 @@ exception statement from your version. */
 
 package gnu.javax.security.auth.login;
 
+import gnu.java.security.Configuration;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.security.auth.login.AppConfigurationEntry;
 
@@ -88,25 +91,11 @@ import javax.security.auth.login.AppConfigurationEntry;
  */
 public final class ConfigFileParser
 {
-  // Constants and fields
-  // --------------------------------------------------------------------------
-
-  private static final boolean DEBUG = false;
-  private static final void debug(String m) {if (DEBUG) System.err.println(m);};
-
+  private static final Logger log = Logger.getLogger(ConfigFileParser.class.getName());
   private ConfigFileTokenizer cft;
   private Map map = new HashMap();
 
-  // Constructor(s)
-  // --------------------------------------------------------------------------
-
   // default 0-arguments constructor
-
-  // Class methods
-  // --------------------------------------------------------------------------
-
-  // Instance methods
-  // --------------------------------------------------------------------------
 
   /**
    * Returns the parse result as a {@link Map} where the keys are application
@@ -161,7 +150,8 @@ public final class ConfigFileParser
       }
 
     String appName = cft.sval;
-    debug("DEBUG: APP_NAME_OR_OTHER = " + appName);
+    if (Configuration.DEBUG)
+      log.fine("APP_NAME_OR_OTHER = " + appName);
     if (cft.nextToken() != '{')
       abort("Missing '{' after APP_NAME_OR_OTHER");
 
@@ -202,13 +192,15 @@ public final class ConfigFileParser
       }
 
     String clazz = validateClassName(cft.sval);
-    debug("DEBUG: MODULE_CLASS = " + clazz);
+    if (Configuration.DEBUG)
+      log.fine("MODULE_CLASS = " + clazz);
 
     if (cft.nextToken() != ConfigFileTokenizer.TT_WORD)
       abort("Was expecting FLAG but found none");
 
     String flag = cft.sval;
-    debug("DEBUG: FLAG = " + flag);
+    if (Configuration.DEBUG)
+      log.fine("DEBUG: FLAG = " + flag);
     AppConfigurationEntry.LoginModuleControlFlag f = null;
     if (flag.equalsIgnoreCase("required"))
       f = AppConfigurationEntry.LoginModuleControlFlag.REQUIRED;
@@ -230,32 +222,39 @@ public final class ConfigFileParser
           abort("Was expecting PARAM_NAME but got '" + ((char) c) + "'");
 
         paramName = cft.sval;
-        debug("DEBUG: PARAM_NAME = " + paramName);
+        if (Configuration.DEBUG)
+          log.fine("PARAM_NAME = " + paramName);
         if (cft.nextToken() != '=')
           abort("Missing '=' after PARAM_NAME");
 
         c = cft.nextToken();
         if (c != '"' && c != '\'')
-          debug(" WARN: Was expecting a quoted string but got no quote " +
-                "character. Assume unquoted string");
-
+          {
+          if (Configuration.DEBUG)
+            log.fine("Was expecting a quoted string but got no quote character."
+                     + " Assume unquoted string");
+          }
         paramValue = expandParamValue(cft.sval);
-        debug("DEBUG: PARAM_VALUE = " + paramValue);
+        if (Configuration.DEBUG)
+          log.fine("PARAM_VALUE = " + paramValue);
         options.put(paramName, paramValue);
 
         c = cft.nextToken();
       }
-
     AppConfigurationEntry ace = new AppConfigurationEntry(clazz, f, options);
-    debug("DEBUG: LOGIN_MODULE_ENTRY = " + ace);
+    if (Configuration.DEBUG)
+      log.fine("LOGIN_MODULE_ENTRY = " + ace);
     listOfACEs.add(ace);
     return true;
   }
 
   private void abort(String m) throws IOException
   {
-    debug("ERROR: " + m);
-    debug("DEBUG: Map (so far) = " + String.valueOf(map));
+    if (Configuration.DEBUG)
+      {
+        log.fine(m);
+        log.fine("Map (so far) = " + String.valueOf(map));
+      }
     throw new IOException(m);
   }
 
@@ -264,12 +263,13 @@ public final class ConfigFileParser
     if (cn.startsWith(".") || cn.endsWith("."))
       abort("MODULE_CLASS MUST NOT start or end with a '.'");
 
-    String[] tokens = cn.split(".");
+    String[] tokens = cn.split("\\.");
     for (int i = 0; i < tokens.length; i++)
       {
         String t = tokens[i];
-        if (Character.isJavaIdentifierStart(cn.toCharArray()[0]))
-          abort("");
+        if (! Character.isJavaIdentifierStart(t.charAt(0)))
+          abort("Class name [" + cn
+                + "] contains an invalid sub-package identifier: " + t);
 
         // we dont check the rest of the characters for isJavaIdentifierPart()
         // because that's what the tokenizer does.
@@ -311,14 +311,17 @@ public final class ConfigFileParser
             int j = s.indexOf("}", i + 2);
             if (j == -1)
               {
-                debug(" WARN: Found a ${ prefix with no } suffix. Ignore");
+                if (Configuration.DEBUG)
+                  log.fine("Found a ${ prefix with no } suffix. Ignore");
                 break;
               }
 
             String sysPropName = s.substring(i + 2, j);
-            debug("DEBUG: Found a reference to System property " + sysPropName);
+            if (Configuration.DEBUG)
+              log.fine("Found a reference to System property " + sysPropName);
             String sysPropValue = System.getProperty(sysPropName);
-            debug("DEBUG: Resolved " + sysPropName + " to '" + sysPropValue + "'");
+            if (Configuration.DEBUG)
+              log.fine("Resolved " + sysPropName + " to '" + sysPropValue + "'");
             if (sysPropValue != null)
               {
                 result = s.substring(0, i) + sysPropValue + s.substring(j + 1);
@@ -330,7 +333,8 @@ public final class ConfigFileParser
       }
     catch (Exception x)
       {
-        debug(" WARN: Exception while expanding " + s + ". Ignore: " + x);
+        if (Configuration.DEBUG)
+          log.fine("Exception (ignored) while expanding " + s + ": " + x);
       }
 
     return result;

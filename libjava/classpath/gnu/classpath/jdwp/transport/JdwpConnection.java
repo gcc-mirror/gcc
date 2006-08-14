@@ -1,5 +1,5 @@
 /* JdwpConnection.java -- A JDWP-speaking connection
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -165,6 +165,10 @@ public class JdwpConnection
    */
   public void run ()
   {
+    // Notify initialization thread (gnu.classpath.jdwp.Jdwp) that
+    // the JdwpConnection thread is ready.
+    Jdwp.getDefault().subcomponentInitialized ();
+
     while (!_shutdown)
       {
 	try

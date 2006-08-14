@@ -56,29 +56,17 @@ import javax.security.sasl.SaslException;
  */
 class CramMD5Util
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   private CramMD5Util()
   {
     super();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   static byte[] createMsgID() throws SaslException
   {
-    // <process-ID.clock@hostname>
     final String encoded;
     try
       {
-        encoded = Util.toBase64(Thread.currentThread().getName().getBytes(
-                                                                          "UTF-8"));
+        encoded = Util.toBase64(Thread.currentThread().getName().getBytes("UTF-8"));
       }
     catch (UnsupportedEncodingException x)
       {
@@ -92,20 +80,15 @@ class CramMD5Util
     catch (UnknownHostException ignored)
       {
       }
-
     final byte[] result;
     try
       {
-        result = new StringBuffer().append("<").append(
-                                                       encoded.substring(
-                                                                         0,
-                                                                         encoded.length())).append(
-                                                                                                   ".").append(
-                                                                                                               String.valueOf(System.currentTimeMillis())).append(
-                                                                                                                                                                  "@").append(
-                                                                                                                                                                              hostname).append(
-                                                                                                                                                                                               ">").toString().getBytes(
-                                                                                                                                                                                                                        "UTF-8");
+        result = new StringBuffer("<")
+            .append(encoded.substring(0,encoded.length()))
+            .append(".").append(String.valueOf(System.currentTimeMillis()))
+            .append("@").append(hostname).append(">")
+            .toString()
+            .getBytes("UTF-8");
       }
     catch (UnsupportedEncodingException x)
       {

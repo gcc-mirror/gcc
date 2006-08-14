@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -48,7 +46,6 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -58,6 +55,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.CellRendererPane;
 import javax.swing.DefaultCellEditor;
@@ -65,16 +63,16 @@ import javax.swing.DefaultListSelectionModel;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.plaf.InputMapUIResource;
 import javax.swing.plaf.TableUI;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -164,14 +162,37 @@ public class BasicTableUI extends TableUI
 
   public class FocusHandler implements FocusListener
   {
-    public void focusGained(FocusEvent e) 
+    public void focusGained(FocusEvent e)
     {
-      // TODO: Implement this properly.
+      // The only thing that is affected by a focus change seems to be
+      // how the lead cell is painted. So we repaint this cell.
+      repaintLeadCell();
     }
 
-    public void focusLost(FocusEvent e) 
+    public void focusLost(FocusEvent e)
     {
-      // TODO: Implement this properly.
+      // The only thing that is affected by a focus change seems to be
+      // how the lead cell is painted. So we repaint this cell.
+      repaintLeadCell();
+    }
+
+    /**
+     * Repaints the lead cell in response to a focus change, to refresh
+     * the display of the focus indicator.
+     */
+    private void repaintLeadCell()
+    {
+      int rowCount = table.getRowCount();
+      int columnCount = table.getColumnCount();
+      int rowLead = table.getSelectionModel().getLeadSelectionIndex();
+      int columnLead = table.getColumnModel().getSelectionModel().
+                                                       getLeadSelectionIndex();
+      if (rowLead >= 0 && rowLead < rowCount && columnLead >= 0
+          && columnLead < columnCount)
+        {
+          Rectangle dirtyRect = table.getCellRect(rowLead, columnLead, false);
+          table.repaint(dirtyRect);
+        }
     }
   }
 
@@ -242,19 +263,19 @@ public class BasicTableUI extends TableUI
         }
     }
 
-    public void mouseEntered(MouseEvent e) 
+    public void mouseEntered(MouseEvent e)
     {
-      // TODO: What should be done here, if anything?
+      // Nothing to do here.
     }
 
-    public void mouseExited(MouseEvent e) 
+    public void mouseExited(MouseEvent e)
     {
-      // TODO: What should be done here, if anything?
+      // Nothing to do here.
     }
 
-    public void mouseMoved(MouseEvent e) 
+    public void mouseMoved(MouseEvent e)
     {
-      // TODO: What should be done here, if anything?
+      // Nothing to do here.
     }
 
     public void mousePressed(MouseEvent e) 
@@ -287,6 +308,9 @@ public class BasicTableUI extends TableUI
               colLead != colModel.getLeadSelectionIndex())
             if (table.isEditing())
               table.editingStopped(new ChangeEvent(e));
+
+          // Must request focus explicitly.
+          table.requestFocusInWindow();
         }
     }
 
@@ -456,66 +480,100 @@ public class BasicTableUI extends TableUI
     table.setOpaque(true);
   }
 
+  /**
+   * Installs keyboard actions on the table.
+   */
   protected void installKeyboardActions() 
   {
-    InputMap ancestorMap = (InputMap) UIManager.get("Table.ancestorInputMap");
-    InputMapUIResource parentInputMap = new InputMapUIResource();
+    // Install the input map.
+    InputMap inputMap =
+      (InputMap) SharedUIDefaults.get("Table.ancestorInputMap");
+    SwingUtilities.replaceUIInputMap(table,
+                                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
+                                 inputMap);
+
     // FIXME: The JDK uses a LazyActionMap for parentActionMap
-    ActionMap parentActionMap = new ActionMapUIResource();
-    action = new TableAction();
-    Object keys[] = ancestorMap.allKeys();
-    // Register key bindings in the UI InputMap-ActionMap pair
-    for (int i = 0; i < keys.length; i++)
-      {
-        KeyStroke stroke = (KeyStroke) keys[i];
-        String actionString = (String) ancestorMap.get(stroke);
+    SwingUtilities.replaceUIActionMap(table, getActionMap());
 
-        parentInputMap.put(KeyStroke.getKeyStroke(stroke.getKeyCode(),
-                                                  stroke.getModifiers()),
-                           actionString);
-
-        parentActionMap.put(actionString, 
-                            new ActionListenerProxy(action, actionString));
-
-      }
-    // Set the UI InputMap-ActionMap pair to be the parents of the
-    // JTable's InputMap-ActionMap pair
-    parentInputMap.setParent(table.getInputMap(
-        JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).getParent());
-    parentActionMap.setParent(table.getActionMap().getParent());
-    table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
-      setParent(parentInputMap);
-    table.getActionMap().setParent(parentActionMap);
   }
 
   /**
-   * This class is used to mimmic the behaviour of the JDK when registering
-   * keyboard actions.  It is the same as the private class used in JComponent
-   * for the same reason.  This class receives an action event and dispatches
-   * it to the true receiver after altering the actionCommand property of the
-   * event.
+   * Fetches the action map from  the UI defaults, or create a new one
+   * if the action map hasn't been initialized.
+   *
+   * @return the action map
    */
-  private static class ActionListenerProxy
-    extends AbstractAction
+  private ActionMap getActionMap()
   {
-    ActionListener target;
-    String bindingCommandName;
+    ActionMap am = (ActionMap) UIManager.get("Table.actionMap");
+    if (am == null)
+      {
+        am = createDefaultActions();
+        UIManager.getLookAndFeelDefaults().put("Table.actionMap", am);
+      }
+    return am;
+  }
 
-    public ActionListenerProxy(ActionListener li, 
-                               String cmd)
-    {
-      target = li;
-      bindingCommandName = cmd;
-    }
+  private ActionMap createDefaultActions()
+  {
+    ActionMapUIResource am = new ActionMapUIResource();
+    Action action = new TableAction();
 
-    public void actionPerformed(ActionEvent e)
-    {
-      ActionEvent derivedEvent = new ActionEvent(e.getSource(),
-                                                 e.getID(),
-                                                 bindingCommandName,
-                                                 e.getModifiers());
-      target.actionPerformed(derivedEvent);
-    }
+    am.put("cut", TransferHandler.getCutAction());
+    am.put("copy", TransferHandler.getCopyAction());
+    am.put("paste", TransferHandler.getPasteAction());
+
+    am.put("cancel", action);
+    am.put("selectAll", action);
+    am.put("clearSelection", action);
+    am.put("startEditing", action);
+
+    am.put("selectNextRow", action);
+    am.put("selectNextRowCell", action);
+    am.put("selectNextRowExtendSelection", action);
+    am.put("selectNextRowChangeLead", action);
+
+    am.put("selectPreviousRow", action);
+    am.put("selectPreviousRowCell", action);
+    am.put("selectPreviousRowExtendSelection", action);
+    am.put("selectPreviousRowChangeLead", action);
+
+    am.put("selectNextColumn", action);
+    am.put("selectNextColumnCell", action);
+    am.put("selectNextColumnExtendSelection", action);
+    am.put("selectNextColumnChangeLead", action);
+
+    am.put("selectPreviousColumn", action);
+    am.put("selectPreviousColumnCell", action);
+    am.put("selectPreviousColumnExtendSelection", action);
+    am.put("selectPreviousColumnChangeLead", action);
+
+    am.put("scrollLeftChangeSelection", action);
+    am.put("scrollLeftExtendSelection", action);
+    am.put("scrollRightChangeSelection", action);
+    am.put("scrollRightExtendSelection", action);
+
+    am.put("scrollUpChangeSelection", action);
+    am.put("scrollUpExtendSelection", action);
+    am.put("scrollDownChangeSelection", action);
+    am.put("scrolldownExtendSelection", action);
+
+    am.put("selectFirstColumn", action);
+    am.put("selectFirstColumnExtendSelection", action);
+    am.put("selectLastColumn", action);
+    am.put("selectLastColumnExtendSelection", action);
+
+    am.put("selectFirstRow", action);
+    am.put("selectFirstRowExtendSelection", action);
+    am.put("selectLastRow", action);
+    am.put("selectLastRowExtendSelection", action);
+
+    am.put("addToSelection", action);
+    am.put("toggleAndAnchor", action);
+    am.put("extendTo", action);
+    am.put("moveSelectionTo", action);
+
+    return am;
   }
 
   /**
@@ -524,7 +582,8 @@ public class BasicTableUI extends TableUI
    * method is called when a key that has been registered for the JTable
    * is received.
    */
-  class TableAction extends AbstractAction
+  private static class TableAction
+    extends AbstractAction
   {
     /**
      * What to do when this action is called.
@@ -533,6 +592,8 @@ public class BasicTableUI extends TableUI
      */
     public void actionPerformed(ActionEvent e)
     {
+      JTable table = (JTable) e.getSource();
+
       DefaultListSelectionModel rowModel 
           = (DefaultListSelectionModel) table.getSelectionModel();
       DefaultListSelectionModel colModel 
@@ -543,9 +604,11 @@ public class BasicTableUI extends TableUI
       
       int colLead = colModel.getLeadSelectionIndex();
       int colMax = table.getModel().getColumnCount() - 1;
-      
-      String command = e.getActionCommand();
-      
+
+      // The command with which the action has been called is stored
+      // in this undocumented action value. This allows us to have only
+      // one Action instance to serve all keyboard input for JTable.
+      String command = (String) getValue("__command__");
       if (command.equals("selectPreviousRowExtendSelection"))
         {
           rowModel.setLeadSelectionIndex(Math.max(rowLead - 1, 0));
@@ -603,11 +666,11 @@ public class BasicTableUI extends TableUI
       else if (command.equals("scrollUpExtendSelection"))
         {
           int target;
-          if (rowLead == getFirstVisibleRowIndex())
-            target = Math.max(0, rowLead - (getLastVisibleRowIndex() 
-                - getFirstVisibleRowIndex() + 1));
+          if (rowLead == getFirstVisibleRowIndex(table))
+            target = Math.max(0, rowLead - (getLastVisibleRowIndex(table) 
+                - getFirstVisibleRowIndex(table) + 1));
           else
-            target = getFirstVisibleRowIndex();
+            target = getFirstVisibleRowIndex(table);
           
           rowModel.setLeadSelectionIndex(target);
           colModel.setLeadSelectionIndex(colLead);
@@ -620,11 +683,12 @@ public class BasicTableUI extends TableUI
       else if (command.equals("scrollRightChangeSelection"))
         {
           int target;
-          if (colLead == getLastVisibleColumnIndex())
-            target = Math.min(colMax, colLead + (getLastVisibleColumnIndex() 
-                - getFirstVisibleColumnIndex() + 1));
+          if (colLead == getLastVisibleColumnIndex(table))
+            target = Math.min(colMax, colLead
+                              + (getLastVisibleColumnIndex(table)
+                              - getFirstVisibleColumnIndex(table) + 1));
           else
-            target = getLastVisibleColumnIndex();
+            target = getLastVisibleColumnIndex(table);
           
           colModel.setSelectionInterval(target, target);
           rowModel.setSelectionInterval(rowLead, rowLead);
@@ -637,11 +701,11 @@ public class BasicTableUI extends TableUI
       else if (command.equals("scrollLeftChangeSelection"))
         {
           int target;
-          if (colLead == getFirstVisibleColumnIndex())
-            target = Math.max(0, colLead - (getLastVisibleColumnIndex() 
-                - getFirstVisibleColumnIndex() + 1));
+          if (colLead == getFirstVisibleColumnIndex(table))
+            target = Math.max(0, colLead - (getLastVisibleColumnIndex(table) 
+                                 - getFirstVisibleColumnIndex(table) + 1));
           else
-            target = getFirstVisibleColumnIndex();
+            target = getFirstVisibleColumnIndex(table);
           
           colModel.setSelectionInterval(target, target);
           rowModel.setSelectionInterval(rowLead, rowLead);
@@ -723,14 +787,18 @@ public class BasicTableUI extends TableUI
           // If there are multiple rows and columns selected, select the next
           // cell and wrap at the edges of the selection.  
           if (command.indexOf("Column") != -1) 
-            advanceMultipleSelection(colModel, colMinSelected, colMaxSelected, 
-                rowModel, rowMinSelected, rowMaxSelected, 
-                command.equals("selectPreviousColumnCell"), true);
+            advanceMultipleSelection(table, colModel, colMinSelected,
+                                     colMaxSelected, rowModel, rowMinSelected,
+                                     rowMaxSelected,
+                                    command.equals("selectPreviousColumnCell"),
+                                    true);
           
           else
-            advanceMultipleSelection(rowModel, rowMinSelected, rowMaxSelected, 
-                colModel, colMinSelected, colMaxSelected, 
-                command.equals("selectPreviousRowCell"), false);
+            advanceMultipleSelection(table, rowModel, rowMinSelected,
+                                     rowMaxSelected, colModel, colMinSelected,
+                                     colMaxSelected,
+                                     command.equals("selectPreviousRowCell"),
+                                     false);
         }
       else if (command.equals("selectNextColumn"))
         {
@@ -740,11 +808,11 @@ public class BasicTableUI extends TableUI
       else if (command.equals("scrollLeftExtendSelection"))
         {
           int target;
-          if (colLead == getFirstVisibleColumnIndex())
-            target = Math.max(0, colLead - (getLastVisibleColumnIndex() 
-                - getFirstVisibleColumnIndex() + 1));
+          if (colLead == getFirstVisibleColumnIndex(table))
+            target = Math.max(0, colLead - (getLastVisibleColumnIndex(table) 
+                                 - getFirstVisibleColumnIndex(table) + 1));
           else
-            target = getFirstVisibleColumnIndex();
+            target = getFirstVisibleColumnIndex(table);
           
           colModel.setLeadSelectionIndex(target);
           rowModel.setLeadSelectionIndex(rowLead);
@@ -752,11 +820,11 @@ public class BasicTableUI extends TableUI
       else if (command.equals("scrollDownChangeSelection"))
         {
           int target;
-          if (rowLead == getLastVisibleRowIndex())
-            target = Math.min(rowMax, rowLead + (getLastVisibleRowIndex() 
-                - getFirstVisibleRowIndex() + 1));
+          if (rowLead == getLastVisibleRowIndex(table))
+            target = Math.min(rowMax, rowLead + (getLastVisibleRowIndex(table)
+                                      - getFirstVisibleRowIndex(table) + 1));
           else
-            target = getLastVisibleRowIndex();
+            target = getLastVisibleRowIndex(table);
           
           rowModel.setSelectionInterval(target, target);
           colModel.setSelectionInterval(colLead, colLead);
@@ -764,11 +832,11 @@ public class BasicTableUI extends TableUI
       else if (command.equals("scrollRightExtendSelection"))
         {
           int target;
-          if (colLead == getLastVisibleColumnIndex())
-            target = Math.min(colMax, colLead + (getLastVisibleColumnIndex() 
-                - getFirstVisibleColumnIndex() + 1));
+          if (colLead == getLastVisibleColumnIndex(table))
+            target = Math.min(colMax, colLead + (getLastVisibleColumnIndex(table) 
+                - getFirstVisibleColumnIndex(table) + 1));
           else
-            target = getLastVisibleColumnIndex();
+            target = getLastVisibleColumnIndex(table);
           
           colModel.setLeadSelectionIndex(target);
           rowModel.setLeadSelectionIndex(rowLead);
@@ -785,11 +853,11 @@ public class BasicTableUI extends TableUI
       else if (command.equals("scrollDownExtendSelection"))
         {
           int target;
-          if (rowLead == getLastVisibleRowIndex())
-            target = Math.min(rowMax, rowLead + (getLastVisibleRowIndex() 
-                - getFirstVisibleRowIndex() + 1));
+          if (rowLead == getLastVisibleRowIndex(table))
+            target = Math.min(rowMax, rowLead + (getLastVisibleRowIndex(table) 
+                - getFirstVisibleRowIndex(table) + 1));
           else
-            target = getLastVisibleRowIndex();
+            target = getLastVisibleRowIndex(table);
           
           rowModel.setLeadSelectionIndex(target);
           colModel.setLeadSelectionIndex(colLead);
@@ -797,11 +865,11 @@ public class BasicTableUI extends TableUI
       else if (command.equals("scrollUpChangeSelection"))
         {
           int target;
-          if (rowLead == getFirstVisibleRowIndex())
-            target = Math.max(0, rowLead - (getLastVisibleRowIndex() 
-                - getFirstVisibleRowIndex() + 1));
+          if (rowLead == getFirstVisibleRowIndex(table))
+            target = Math.max(0, rowLead - (getLastVisibleRowIndex(table) 
+                - getFirstVisibleRowIndex(table) + 1));
           else
-            target = getFirstVisibleRowIndex();
+            target = getFirstVisibleRowIndex(table);
           
           rowModel.setSelectionInterval(target, target);
           colModel.setSelectionInterval(colLead, colLead);
@@ -926,7 +994,7 @@ public class BasicTableUI extends TableUI
      * Returns the column index of the first visible column.
      * @return the column index of the first visible column.
      */
-    int getFirstVisibleColumnIndex()
+    int getFirstVisibleColumnIndex(JTable table)
     {
       ComponentOrientation or = table.getComponentOrientation();
       Rectangle r = table.getVisibleRect();
@@ -939,7 +1007,7 @@ public class BasicTableUI extends TableUI
      * Returns the column index of the last visible column.
      *
      */
-    int getLastVisibleColumnIndex()
+    int getLastVisibleColumnIndex(JTable table)
     {
       ComponentOrientation or = table.getComponentOrientation();
       Rectangle r = table.getVisibleRect();
@@ -952,7 +1020,7 @@ public class BasicTableUI extends TableUI
      * Returns the row index of the first visible row.
      *
      */
-    int getFirstVisibleRowIndex()
+    int getFirstVisibleRowIndex(JTable table)
     {
       ComponentOrientation or = table.getComponentOrientation();
       Rectangle r = table.getVisibleRect();
@@ -965,7 +1033,7 @@ public class BasicTableUI extends TableUI
      * Returns the row index of the last visible row.
      *
      */
-    int getLastVisibleRowIndex()
+    int getLastVisibleRowIndex(JTable table)
     {
       ComponentOrientation or = table.getComponentOrientation();
       Rectangle r = table.getVisibleRect();
@@ -977,7 +1045,7 @@ public class BasicTableUI extends TableUI
       // area is larger than the table)
       if (table.rowAtPoint(r.getLocation()) == -1)
         {
-          if (getFirstVisibleRowIndex() == -1)
+          if (getFirstVisibleRowIndex(table) == -1)
             return -1;
           else
             return table.getModel().getRowCount() - 1;
@@ -1003,7 +1071,8 @@ public class BasicTableUI extends TableUI
      * @param reverse true if shift was held for the event
      * @param eventIsTab true if TAB was pressed, false if ENTER pressed
      */
-    void advanceMultipleSelection(ListSelectionModel firstModel, int firstMin,
+    void advanceMultipleSelection(JTable table, ListSelectionModel firstModel,
+                                  int firstMin,
                                   int firstMax, ListSelectionModel secondModel, 
                                   int secondMin, int secondMax, boolean reverse,
                                   boolean eventIsTab)
@@ -1167,30 +1236,24 @@ public class BasicTableUI extends TableUI
     table.addPropertyChangeListener(propertyChangeListener);
   }
 
-  protected void uninstallDefaults() 
+  /**
+   * Uninstalls UI defaults that have been installed by
+   * {@link #installDefaults()}.
+   */
+  protected void uninstallDefaults()
   {
-    // TODO: this method used to do the following which is not
-    // quite right (at least it breaks apps that run fine with the
-    // JDK):
-    //
-    // table.setFont(null);
-    // table.setGridColor(null);
-    // table.setForeground(null);
-    // table.setBackground(null);
-    // table.setSelectionForeground(null);
-    // table.setSelectionBackground(null);
-    //
-    // This would leave the component in a corrupt state, which is
-    // not acceptable. A possible solution would be to have component
-    // level defaults installed, that get overridden by the UI defaults
-    // and get restored in this method. I am not quite sure about this
-    // though. / Roman Kennke
+    // Nothing to do here for now.
   }
 
-  protected void uninstallKeyboardActions() 
-    throws NotImplementedException
+  /**
+   * Uninstalls the keyboard actions that have been installed by
+   * {@link #installKeyboardActions()}.
+   */
+  protected void uninstallKeyboardActions()
   {
-    // TODO: Implement this properly.
+    SwingUtilities.replaceUIInputMap(table, JComponent.
+                                     WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, null);
+    SwingUtilities.replaceUIActionMap(table, null);
   }
 
   protected void uninstallListeners() 

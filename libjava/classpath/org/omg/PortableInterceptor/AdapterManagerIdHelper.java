@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor;
 
+import gnu.CORBA.OrbRestricted;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.ORB;
@@ -57,15 +59,14 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class AdapterManagerIdHelper
 {
   /**
-   * Create the AdapterManagerId typecode (alias of CORBA long (java int),
-   * named "AdapterManagerId").
+   * Create the AdapterManagerId typecode (alias of CORBA long (java int), named
+   * "AdapterManagerId").
    */
   public static TypeCode type()
   {
-    ORB orb = ORB.init();
+    ORB orb = OrbRestricted.Singleton;
     return orb.create_alias_tc(id(), "AdapterManagerId",
-                               orb.get_primitive_tc(TCKind.tk_long)
-                              );
+                               orb.get_primitive_tc(TCKind.tk_long));
   }
 
   /**

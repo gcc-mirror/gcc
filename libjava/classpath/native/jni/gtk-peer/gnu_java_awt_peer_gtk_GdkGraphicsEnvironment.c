@@ -241,3 +241,35 @@ Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_nativeGetDefaultScreenDevice
 
     return defaultDevice;	
 }
+
+JNIEXPORT jintArray JNICALL
+Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_getMouseCoordinates
+(JNIEnv *env, jobject obj)
+{
+  jintArray retArray;
+  jint *values;
+  GdkDisplay *display;
+  gint x, y, screenIndex;
+  GdkScreen *screen;
+
+  display = (GdkDisplay *) NSA_GET_DISPLAY_PTR(env, obj);
+  g_assert (display != NULL);
+  
+  gdk_threads_enter ();
+  
+  gdk_display_get_pointer (display, &screen, &x, &y, NULL);
+  screenIndex = gdk_screen_get_number( screen );
+
+  gdk_threads_leave ();
+	
+  retArray = (*env)->NewIntArray (env, 3);
+  values = (*env)->GetIntArrayElements (env, retArray, NULL);
+  
+  values[0] = screenIndex;
+  values[1] = x;
+  values[2] = y;
+
+  (*env)->ReleaseIntArrayElements (env, retArray, values, 0);
+
+  return retArray;
+}

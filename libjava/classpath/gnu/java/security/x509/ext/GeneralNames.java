@@ -1,5 +1,5 @@
 /* GeneralNames.java -- the GeneralNames object
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,6 @@ import gnu.java.security.OID;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
 import gnu.java.security.der.DERValue;
-import gnu.java.security.x509.X500DistinguishedName;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -91,7 +90,7 @@ public class GeneralNames
         int tagClass = name.getTagClass();
         if (tagClass != DER.CONTEXT)
           throw new IOException("malformed GeneralName: Tag class is " + tagClass);
-        namePair.add(new Integer(name.getTag()));
+        namePair.add(Integer.valueOf(name.getTag()));
         DERValue val = null;
         switch (name.getTag())
           {

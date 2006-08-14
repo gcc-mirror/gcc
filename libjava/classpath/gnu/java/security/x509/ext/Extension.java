@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.security.x509.ext;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.OID;
 import gnu.java.security.der.DER;
 import gnu.java.security.der.DERReader;
@@ -48,20 +49,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class Extension
 {
-
-  // Fields.
-  // -------------------------------------------------------------------------
-
-  private static final boolean DEBUG = false;
-  private static void debug(String msg)
-  {
-    System.err.print(">> Extension: ");
-    System.err.println(msg);
-  }
-
+  private static final Logger log = Logger.getLogger(Extension.class.getName());
   /**
    * This extension's object identifier.
    */
@@ -97,7 +89,8 @@ public class Extension
 
     // Extension ::= SEQUENCE {
     DERValue val = der.read();
-    if (DEBUG) debug("read val  tag == " + val.getTag() + " len == " + val.getLength());
+    if (Configuration.DEBUG)
+      log.fine("read val  tag == " + val.getTag() + " len == " + val.getLength());
     if (!val.isConstructed())
       throw new IOException("malformed Extension");
 
@@ -106,7 +99,8 @@ public class Extension
     if (val.getTag() != DER.OBJECT_IDENTIFIER)
       throw new IOException("expecting OBJECT IDENTIFIER");
     oid = (OID) val.getValue();
-    if (DEBUG) debug("read oid == " + oid);
+    if (Configuration.DEBUG)
+      log.fine("read oid == " + oid);
 
     //   critical  BOOLEAN DEFAULT FALSE,
     val = der.read();
@@ -117,7 +111,8 @@ public class Extension
       }
     else
       critical = false;
-    if (DEBUG) debug("is critical == " + critical);
+    if (Configuration.DEBUG)
+      log.fine("is critical == " + critical);
 
     //   extnValue OCTET STRING }
     if (val.getTag() != DER.OCTET_STRING)
@@ -181,7 +176,8 @@ public class Extension
         value = new Value(encval);
         isSupported = false;
       }
-    if (DEBUG) debug("read value == " + value);
+    if (Configuration.DEBUG)
+      log.fine("read value == " + value);
   }
 
   public Extension (final OID oid, final Value value, final boolean critical)

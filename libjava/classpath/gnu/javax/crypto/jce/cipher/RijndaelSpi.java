@@ -44,12 +44,9 @@ import gnu.java.security.Registry;
  * The implementation of the Rijndael <i>Service Provider Interface</i>
  * (<b>SPI</b>) adapter.
  */
-public final class RijndaelSpi extends CipherAdapter
+public final class RijndaelSpi
+    extends CipherAdapter
 {
-
-  // Constructors.
-  // --------------------------------------------------------------------
-
   public RijndaelSpi()
   {
     super(Registry.RIJNDAEL_CIPHER, 16);

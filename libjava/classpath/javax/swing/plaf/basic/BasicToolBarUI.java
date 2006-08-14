@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import gnu.classpath.NotImplementedException;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -50,6 +48,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.FocusEvent;
@@ -62,7 +61,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Hashtable;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -77,6 +80,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.MouseInputListener;
+import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ToolBarUI;
 import javax.swing.plaf.UIResource;
@@ -87,6 +91,35 @@ import javax.swing.plaf.basic.BasicBorders.ButtonBorder;
  */
 public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 {
+
+  /**
+   * Implements the keyboard actions for JToolBar.
+   */
+  static class ToolBarAction
+    extends AbstractAction
+  {
+    /**
+     * Performs the action.
+     */
+    public void actionPerformed(ActionEvent event)
+    {
+      Object cmd = getValue("__command__");
+      JToolBar toolBar = (JToolBar) event.getSource();
+      BasicToolBarUI ui = (BasicToolBarUI) toolBar.getUI();
+
+      if (cmd.equals("navigateRight"))
+        ui.navigateFocusedComp(EAST);
+      else if (cmd.equals("navigateLeft"))
+          ui.navigateFocusedComp(WEST);
+      else if (cmd.equals("navigateUp"))
+          ui.navigateFocusedComp(NORTH);
+      else if (cmd.equals("navigateDown"))
+        ui.navigateFocusedComp(SOUTH);
+      else
+        assert false : "Shouldn't reach here";
+    }
+  }
+
   /** Static owner of all DragWindows.
    * This is package-private to avoid an accessor method.  */
   static JFrame owner = new JFrame();
@@ -619,9 +652,46 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * by the look and feel.
    */
   protected void installKeyboardActions()
-    throws NotImplementedException
   {
-    // FIXME: implement.
+    // Install the input map.
+    InputMap inputMap =
+      (InputMap) SharedUIDefaults.get("ToolBar.ancestorInputMap");
+    SwingUtilities.replaceUIInputMap(toolBar,
+                                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
+                                 inputMap);
+
+    // FIXME: The JDK uses a LazyActionMap for parentActionMap
+    SwingUtilities.replaceUIActionMap(toolBar, getActionMap());
+  }
+
+  /**
+   * Fetches the action map from  the UI defaults, or create a new one
+   * if the action map hasn't been initialized.
+   *
+   * @return the action map
+   */
+  private ActionMap getActionMap()
+  {
+    ActionMap am = (ActionMap) UIManager.get("ToolBar.actionMap");
+    if (am == null)
+      {
+        am = createDefaultActions();
+        UIManager.getLookAndFeelDefaults().put("ToolBar.actionMap", am);
+      }
+    return am;
+  }
+
+  private ActionMap createDefaultActions()
+  {
+    ActionMapUIResource am = new ActionMapUIResource();
+    Action action = new ToolBarAction();
+
+    am.put("navigateLeft", action);
+    am.put("navigateRight", action);
+    am.put("navigateUp", action);
+    am.put("navigateDown", action);
+
+    return am;
   }
 
   /**
@@ -643,7 +713,12 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     floatFrame.addWindowListener(windowListener);
 
     toolBarFocusListener = createToolBarFocusListener();
-    toolBar.addFocusListener(toolBarFocusListener);
+    if (toolBarFocusListener != null)
+      {
+        int count = toolBar.getComponentCount();
+        for (int i = 0; i < count; i++)
+          toolBar.getComponent(i).addFocusListener(toolBarFocusListener);
+      }
   }
 
   /**
@@ -758,9 +833,55 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @param direction The direction to give focus to.
    */
   protected void navigateFocusedComp(int direction)
-    throws NotImplementedException
   {
-    // FIXME: Implement.
+    int count = toolBar.getComponentCount();
+    switch (direction)
+    {
+      case EAST:
+      case SOUTH:
+        if (focusedCompIndex >= 0 && focusedCompIndex < count)
+          {
+            int i = focusedCompIndex + 1;
+            boolean focusRequested = false;
+            // Find component to focus and request focus on it.
+            while (i != focusedCompIndex && ! focusRequested)
+              {
+                if (i >= count)
+                  i = 0;
+                Component comp = toolBar.getComponentAtIndex(i++);
+                if (comp != null && comp.isFocusable()
+                    && comp.isEnabled())
+                  {
+                    comp.requestFocus();
+                    focusRequested = true;
+                  }
+              }
+          }
+        break;
+      case WEST:
+      case NORTH:
+        if (focusedCompIndex >= 0 && focusedCompIndex < count)
+          {
+            int i = focusedCompIndex - 1;
+            boolean focusRequested = false;
+            // Find component to focus and request focus on it.
+            while (i != focusedCompIndex && ! focusRequested)
+              {
+                if (i < 0)
+                  i = count - 1;
+                Component comp = toolBar.getComponentAtIndex(i--);
+                if (comp != null && comp.isFocusable()
+                    && comp.isEnabled())
+                  {
+                    comp.requestFocus();
+                    focusRequested = true;
+                  }
+              }
+          }
+        break;
+      default:
+        break;
+    }
   }
 
   /**
@@ -925,9 +1046,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * This method uninstalls keyboard actions installed by the UI.
    */
   protected void uninstallKeyboardActions()
-    throws NotImplementedException
   {
-    // FIXME: implement.
+    SwingUtilities.replaceUIInputMap(toolBar, JComponent.
+                                     WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, null);
+    SwingUtilities.replaceUIActionMap(toolBar, null);
   }
 
   /**
@@ -935,8 +1057,13 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    */
   protected void uninstallListeners()
   {
-    toolBar.removeFocusListener(toolBarFocusListener);
-    toolBarFocusListener = null;
+    if (toolBarFocusListener != null)
+      {
+        int count = toolBar.getComponentCount();
+        for (int i = 0; i < count; i++)
+          toolBar.getComponent(i).removeFocusListener(toolBarFocusListener);
+        toolBarFocusListener = null;
+      }
 
     floatFrame.removeWindowListener(windowListener);
     windowListener = null;
@@ -998,7 +1125,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
      */
     public void mouseClicked(MouseEvent e)
     {
-      // Don't care.
+      // Nothing to do here.
     }
 
     /**
@@ -1020,7 +1147,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
      */
     public void mouseEntered(MouseEvent e)
     {
-      // Don't care (yet).
+      // Nothing to do here.
     }
 
     /**
@@ -1030,7 +1157,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
      */
     public void mouseExited(MouseEvent e)
     {
-      // Don't care (yet).
+      // Nothing to do here.
     }
 
     /**
@@ -1040,7 +1167,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
      */
     public void mouseMoved(MouseEvent e)
     {
-      // TODO: What should be done here, if anything?
+      // Nothing to do here.
     }
 
     /**
@@ -1203,13 +1330,17 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     }
 
     /**
-     * FIXME: Do something.
+     * Sets the orientation of the toolbar and the
+     * drag window.
      *
-     * @param o DOCUMENT ME!
+     * @param o - the new orientation of the toolbar and drag
+     * window.
      */
     public void setOrientation(int o)
     {
-      // FIXME: implement.
+      toolBar.setOrientation(o);
+      if (dragWindow != null) 
+        dragWindow.setOrientation(o);
     }
   }
 
@@ -1290,6 +1421,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
       cachedBounds = toolBar.getPreferredSize();
       cachedOrientation = toolBar.getOrientation();
+
+      Component c = e.getChild();
+      if (toolBarFocusListener != null)
+        c.addFocusListener(toolBarFocusListener);
     }
 
     /**
@@ -1303,6 +1438,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
       setBorderToNormal(e.getChild());
       cachedBounds = toolBar.getPreferredSize();
       cachedOrientation = toolBar.getOrientation();
+
+      Component c = e.getChild();
+      if (toolBarFocusListener != null)
+        c.removeFocusListener(toolBarFocusListener);
     }
   }
 
@@ -1332,27 +1471,30 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
      */
     protected ToolBarFocusListener()
     {
-      // FIXME: implement.
+      // Nothing to do here.
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
+     * Receives notification when the toolbar or one of it's component
+     * receives the keyboard input focus.
+     * 
+     * @param e the focus event
      */
     public void focusGained(FocusEvent e)
     {
-      // FIXME: implement.
+      Component c = e.getComponent();
+      focusedCompIndex = toolBar.getComponentIndex(c);
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param e DOCUMENT ME!
+     * Receives notification when the toolbar or one of it's component
+     * looses the keyboard input focus.
+     * 
+     * @param e the focus event
      */
     public void focusLost(FocusEvent e)
     {
-      // FIXME: implement.
+      // Do nothing here.
     }
   }
 

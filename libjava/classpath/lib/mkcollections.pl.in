@@ -25,7 +25,8 @@
 my $destpath=@COLLECTIONS_PREFIX@;
 my $classpath=pop;
 my @javalangclasses=qw(UnsupportedOperationException
-		       Comparable);
+		       Comparable
+		       Iterable);
 my @javautilclasses=qw(AbstractCollection
 		       AbstractList
 		       AbstractMap

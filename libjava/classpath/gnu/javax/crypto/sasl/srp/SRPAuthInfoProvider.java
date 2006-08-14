@@ -50,37 +50,21 @@ import java.util.Map;
 import javax.security.sasl.AuthenticationException;
 
 /**
- * <p>The SRP mechanism authentication information provider implementation.</p>
+ * The SRP mechanism authentication information provider implementation.
  */
-public class SRPAuthInfoProvider implements IAuthInfoProvider
+public class SRPAuthInfoProvider
+    implements IAuthInfoProvider
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private PasswordFile passwordFile = null;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // implicit 0-args constrcutor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // IAuthInfoProvider interface implementation ------------------------------
 
   public void activate(Map context) throws AuthenticationException
   {
     try
       {
         if (context == null)
-          {
-            passwordFile = new PasswordFile();
-          }
+          passwordFile = new PasswordFile();
         else
           {
             passwordFile = (PasswordFile) context.get(SRPRegistry.PASSWORD_DB);
@@ -88,13 +72,9 @@ public class SRPAuthInfoProvider implements IAuthInfoProvider
               {
                 String pfn = (String) context.get(SRPRegistry.PASSWORD_FILE);
                 if (pfn == null)
-                  {
-                    passwordFile = new PasswordFile();
-                  }
+                  passwordFile = new PasswordFile();
                 else
-                  {
-                    passwordFile = new PasswordFile(pfn);
-                  }
+                  passwordFile = new PasswordFile(pfn);
               }
           }
       }
@@ -112,10 +92,8 @@ public class SRPAuthInfoProvider implements IAuthInfoProvider
   public boolean contains(String userName) throws AuthenticationException
   {
     if (passwordFile == null)
-      {
-        throw new AuthenticationException("contains()",
-                                          new IllegalStateException());
-      }
+      throw new AuthenticationException("contains()",
+                                        new IllegalStateException());
     boolean result = false;
     try
       {
@@ -131,20 +109,14 @@ public class SRPAuthInfoProvider implements IAuthInfoProvider
   public Map lookup(Map userID) throws AuthenticationException
   {
     if (passwordFile == null)
-      {
-        throw new AuthenticationException("lookup()",
-                                          new IllegalStateException());
-      }
+      throw new AuthenticationException("lookup()", new IllegalStateException());
     Map result = new HashMap();
     try
       {
         String userName = (String) userID.get(Registry.SASL_USERNAME);
         if (userName == null)
-          {
-            throw new NoSuchUserException("");
-          }
+          throw new NoSuchUserException("");
         String mdName = (String) userID.get(SRPRegistry.MD_NAME_FIELD);
-
         String[] data = passwordFile.lookup(userName, mdName);
         result.put(SRPRegistry.USER_VERIFIER_FIELD, data[0]);
         result.put(SRPRegistry.SALT_FIELD, data[1]);
@@ -153,9 +125,7 @@ public class SRPAuthInfoProvider implements IAuthInfoProvider
     catch (Exception x)
       {
         if (x instanceof AuthenticationException)
-          {
-            throw (AuthenticationException) x;
-          }
+          throw (AuthenticationException) x;
         throw new AuthenticationException("lookup()", x);
       }
     return result;
@@ -165,7 +135,6 @@ public class SRPAuthInfoProvider implements IAuthInfoProvider
   {
     if (passwordFile == null)
       throw new AuthenticationException("update()", new IllegalStateException());
-
     try
       {
         String userName = (String) userCredentials.get(Registry.SASL_USERNAME);
@@ -173,20 +142,14 @@ public class SRPAuthInfoProvider implements IAuthInfoProvider
         String salt = (String) userCredentials.get(SRPRegistry.SALT_FIELD);
         String config = (String) userCredentials.get(SRPRegistry.CONFIG_NDX_FIELD);
         if (salt == null || config == null)
-          {
-            passwordFile.changePasswd(userName, password);
-          }
+          passwordFile.changePasswd(userName, password);
         else
-          {
-            passwordFile.add(userName, password, Util.fromBase64(salt), config);
-          }
+          passwordFile.add(userName, password, Util.fromBase64(salt), config);
       }
     catch (Exception x)
       {
         if (x instanceof AuthenticationException)
-          {
-            throw (AuthenticationException) x;
-          }
+          throw (AuthenticationException) x;
         throw new AuthenticationException("update()", x);
       }
   }
@@ -194,10 +157,8 @@ public class SRPAuthInfoProvider implements IAuthInfoProvider
   public Map getConfiguration(String mode) throws AuthenticationException
   {
     if (passwordFile == null)
-      {
-        throw new AuthenticationException("getConfiguration()",
-                                          new IllegalStateException());
-      }
+      throw new AuthenticationException("getConfiguration()",
+                                        new IllegalStateException());
     Map result = new HashMap();
     try
       {
@@ -208,9 +169,7 @@ public class SRPAuthInfoProvider implements IAuthInfoProvider
     catch (Exception x)
       {
         if (x instanceof AuthenticationException)
-          {
-            throw (AuthenticationException) x;
-          }
+          throw (AuthenticationException) x;
         throw new AuthenticationException("getConfiguration()", x);
       }
     return result;

@@ -52,11 +52,6 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class SetOverrideTypeHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
    * Insert the definition kind into the given Any.
    */
   public static void insert(Any any, SetOverrideType that)
@@ -79,20 +74,16 @@ public abstract class SetOverrideTypeHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        String[] members =
-          new String[]
-          {
-            "SET_OVERRIDE" ,"ADD_OVERRIDE" 
-          };
-
-        typeCode =
-          OrbRestricted.Singleton.create_enum_tc(id(), "SetOverrideType",
-                                                  members
-                                                 );
-      }
-    return typeCode;
+    String[] members =
+      new String[]
+                 {
+                  "SET_OVERRIDE" ,"ADD_OVERRIDE" 
+                 };
+    
+    return
+    OrbRestricted.Singleton.create_enum_tc(id(), "SetOverrideType",
+                                           members
+    );
   }
 
   /**

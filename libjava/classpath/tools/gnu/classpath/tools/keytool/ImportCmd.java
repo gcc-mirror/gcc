@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.SystemProperties;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
@@ -291,27 +292,29 @@ class ImportCmd extends Command
   void setup() throws Exception
   {
     setInputStreamParam(_certFileName);
-    setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
+    setKeyStoreParams(true, _providerClassName, _ksType, _ksPassword, _ksURL);
     setAliasParam(_alias);
     setKeyPasswordNoPrompt(_password);
-
-    log.finer("-import handler will use the following options:"); //$NON-NLS-1$
-    log.finer("  -alias=" + alias); //$NON-NLS-1$
-    log.finer("  -file=" + _certFileName); //$NON-NLS-1$
-    log.finer("  -noprompt=" + noPrompt); //$NON-NLS-1$
-    log.finer("  -trustcacerts=" + trustCACerts); //$NON-NLS-1$
-    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
-    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -provider=" + provider); //$NON-NLS-1$
-    log.finer("  -v=" + verbose); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      {
+        log.fine("-import handler will use the following options:"); //$NON-NLS-1$
+        log.fine("  -alias=" + alias); //$NON-NLS-1$
+        log.fine("  -file=" + _certFileName); //$NON-NLS-1$
+        log.fine("  -noprompt=" + noPrompt); //$NON-NLS-1$
+        log.fine("  -trustcacerts=" + trustCACerts); //$NON-NLS-1$
+        log.fine("  -storetype=" + storeType); //$NON-NLS-1$
+        log.fine("  -keystore=" + storeURL); //$NON-NLS-1$
+        log.fine("  -provider=" + provider); //$NON-NLS-1$
+        log.fine("  -v=" + verbose); //$NON-NLS-1$
+      }
   }
 
   void start() throws CertificateException, KeyStoreException, IOException,
       UnsupportedCallbackException, NoSuchAlgorithmException,
       CertPathValidatorException, UnrecoverableKeyException
   {
-    log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
     if (trustCACerts)
       {
         String fs = SystemProperties.getProperty("file.separator"); //$NON-NLS-1$
@@ -336,16 +339,16 @@ class ImportCmd extends Command
         ensureAliasIsKeyEntry();
         importCertificateReply();
       }
-
-    log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   // own methods --------------------------------------------------------------
 
   Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(Main.IMPORT_CMD, true);
     result.setHeader(Messages.getString("ImportCmd.27")); //$NON-NLS-1$
     result.setFooter(Messages.getString("ImportCmd.26")); //$NON-NLS-1$
@@ -438,8 +441,8 @@ class ImportCmd extends Command
       }
     });
     result.add(options);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 
@@ -480,10 +483,11 @@ class ImportCmd extends Command
       UnsupportedCallbackException, CertPathValidatorException,
       UnrecoverableKeyException
   {
-    log.entering(this.getClass().getName(), "importNewTrustedCertificate"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "importNewTrustedCertificate"); //$NON-NLS-1$
     Certificate certificate = x509Factory.generateCertificate(inStream);
-    log.finest("certificate = " + certificate); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("certificate = " + certificate); //$NON-NLS-1$
     LinkedList orderedReply = new LinkedList();
     orderedReply.addLast(certificate);
 
@@ -495,8 +499,8 @@ class ImportCmd extends Command
       }
     else
       System.out.println(Messages.getString("ImportCmd.28")); //$NON-NLS-1$
-
-    log.exiting(this.getClass().getName(), "importNewTrustedCertificate"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "importNewTrustedCertificate"); //$NON-NLS-1$
   }
 
   /**
@@ -525,8 +529,8 @@ class ImportCmd extends Command
       NoSuchAlgorithmException, CertPathValidatorException,
       UnrecoverableKeyException
   {
-    log.entering(this.getClass().getName(), "importCertificateReply"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "importCertificateReply"); //$NON-NLS-1$
     Collection certificates = x509Factory.generateCertificates(inStream);
     ensureReplyIsOurs(certificates);
     // we now have established that the public keys are the same.
@@ -535,8 +539,8 @@ class ImportCmd extends Command
       importCertificate((Certificate) certificates.iterator().next());
     else
       importChain(certificates);
-
-    log.exiting(this.getClass().getName(), "importCertificateReply"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "importCertificateReply"); //$NON-NLS-1$
   }
 
   /**
@@ -564,8 +568,8 @@ class ImportCmd extends Command
       KeyStoreException, UnrecoverableKeyException, IOException,
       UnsupportedCallbackException, CertificateException
   {
-    log.entering(this.getClass().getName(), "importCertificate", certificate); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "importCertificate", certificate); //$NON-NLS-1$
     LinkedList reply = new LinkedList();
     reply.addLast(certificate);
 
@@ -576,8 +580,8 @@ class ImportCmd extends Command
     Key privateKey = getAliasPrivateKey();
     store.setKeyEntry(alias, privateKey, keyPasswordChars, newChain);
     saveKeyStore();
-
-    log.exiting(this.getClass().getName(), "importCertificate"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "importCertificate"); //$NON-NLS-1$
   }
 
   /**
@@ -608,8 +612,8 @@ class ImportCmd extends Command
       CertPathValidatorException, KeyStoreException, UnrecoverableKeyException,
       IOException, UnsupportedCallbackException, CertificateException
   {
-    log.entering(this.getClass().getName(), "importChain", chain); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "importChain", chain); //$NON-NLS-1$
     LinkedList reply = orderChain(chain);
     if (findTrustAndUpdate(reply, ! noPrompt))
       {
@@ -618,8 +622,8 @@ class ImportCmd extends Command
         store.setKeyEntry(alias, privateKey, keyPasswordChars, newChain);
         saveKeyStore();
       }
-
-    log.exiting(this.getClass().getName(), "importChain"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "importChain"); //$NON-NLS-1$
   }
 
   /**
@@ -638,10 +642,11 @@ class ImportCmd extends Command
   private void ensureReplyIsOurs(Collection certificates) throws IOException,
       UnsupportedCallbackException, KeyStoreException
   {
-    log.entering(this.getClass().getName(), "ensureReplyIsOurs"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "ensureReplyIsOurs"); //$NON-NLS-1$
     Certificate certificate = (Certificate) certificates.iterator().next();
-    log.finest("certificate = " + certificate); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.fine("certificate = " + certificate); //$NON-NLS-1$
     Certificate[] chain = store.getCertificateChain(alias);
     if (chain == null)
       throw new IllegalArgumentException(Messages.getFormattedString("ImportCmd.37", //$NON-NLS-1$
@@ -673,8 +678,8 @@ class ImportCmd extends Command
                                                      anchorPublicKey.getClass().getName() }));
     if (! sameKey)
       throw new IllegalArgumentException(Messages.getString("ImportCmd.41")); //$NON-NLS-1$
-
-    log.exiting(this.getClass().getName(), "ensureReplyIsOurs"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "ensureReplyIsOurs"); //$NON-NLS-1$
   }
 
   private boolean areEqual(DSAPublicKey pk1, DSAPublicKey pk2)
@@ -726,7 +731,8 @@ class ImportCmd extends Command
    */
   private LinkedList orderChain(Collection chain)
   {
-    log.entering(this.getClass().getName(), "orderChain"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "orderChain"); //$NON-NLS-1$
     LinkedList in = new LinkedList(chain);
     int initialCount = in.size();
     LinkedList result = new LinkedList();
@@ -750,7 +756,8 @@ class ImportCmd extends Command
                                         new Object[] { Integer.valueOf(result.size()),
                                                        Integer.valueOf(initialCount) }));
       }
-    log.entering(this.getClass().getName(), "orderChain", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "orderChain", result); //$NON-NLS-1$
     return result;
   }
 
@@ -786,7 +793,8 @@ class ImportCmd extends Command
       KeyStoreException, UnrecoverableKeyException, UnsupportedCallbackException,
       CertificateEncodingException
   {
-    log.entering(this.getClass().getName(), "findTrustAndUpdate"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "findTrustAndUpdate"); //$NON-NLS-1$
     CertPathValidator validator = CertPathValidator.getInstance("PKIX"); //$NON-NLS-1$
     X509CertPath certPath = new X509CertPath(reply);
     PKIXCertPathValidatorResult cpvr = findTrustInStore(certPath, validator);
@@ -824,16 +832,17 @@ class ImportCmd extends Command
         reply.addLast(trustedCert);
         result = true;
       }
-    log.entering(this.getClass().getName(), "findTrustAndUpdate", //$NON-NLS-1$
-                 Boolean.valueOf(result));
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "findTrustAndUpdate", //$NON-NLS-1$
+                  Boolean.valueOf(result));
     return result;
   }
 
   private PKIXCertPathValidatorResult findTrustInStore(X509CertPath certPath,
                                                        CertPathValidator validator)
   {
-    log.entering(this.getClass().getName(), "findTrustInStore"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "findTrustInStore"); //$NON-NLS-1$
     PKIXCertPathValidatorResult result;
     try
       {
@@ -847,8 +856,8 @@ class ImportCmd extends Command
                 x);
         result = null;
       }
-
-    log.exiting(this.getClass().getName(), "findTrustInStore", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "findTrustInStore", result); //$NON-NLS-1$
     return result;
   }
 
@@ -864,8 +873,9 @@ class ImportCmd extends Command
    */
   private PKIXParameters getCertPathParameters(String type, String pathName)
   {
-    log.entering(this.getClass().getName(), "getCertPathParameters", //$NON-NLS-1$
-                 new Object[] { type, pathName });
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getCertPathParameters", //$NON-NLS-1$
+                   new Object[] { type, pathName });
     FileInputStream stream = null;
     PKIXParameters result = null;
     try
@@ -877,7 +887,8 @@ class ImportCmd extends Command
       }
     catch (Exception x)
       {
-        log.log(Level.FINE, "Exception in getCertPathParameters(). Ignore", x); //$NON-NLS-1$
+        if (Configuration.DEBUG)
+          log.log(Level.FINE, "Exception in getCertPathParameters(). Ignore", x); //$NON-NLS-1$
       }
     finally
       {
@@ -890,7 +901,8 @@ class ImportCmd extends Command
             {
             }
       }
-    log.exiting(this.getClass().getName(), "getCertPathParameters", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getCertPathParameters", result); //$NON-NLS-1$
     return result;
   }
 
@@ -898,7 +910,8 @@ class ImportCmd extends Command
                                                X509CertPath certPath,
                                                PKIXParameters params)
   {
-    log.entering(this.getClass().getName(), "validate"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "validate"); //$NON-NLS-1$
     PKIXCertPathValidatorResult result = null;
     if (params != null)
       try
@@ -908,9 +921,11 @@ class ImportCmd extends Command
         }
       catch (Exception x)
         {
-          log.log(Level.FINE, "Exception in validate(). Ignore", x); //$NON-NLS-1$
+          if (Configuration.DEBUG)
+            log.log(Level.FINE, "Exception in validate(). Ignore", x); //$NON-NLS-1$
         }
-    log.exiting(this.getClass().getName(), "validate", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "validate", result); //$NON-NLS-1$
     return result;
   }
 }

@@ -71,6 +71,11 @@ import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.html.parser.ParserDelegator;
 
+/* Move these imports here after javax.swing.text.html to make it compile
+   with jikes.  */
+import gnu.javax.swing.text.html.parser.GnuParserDelegator;
+import gnu.javax.swing.text.html.parser.HTML_401Swing;
+
 /**
  * @author Lillian Angel (langel at redhat dot com)
  */
@@ -557,19 +562,18 @@ public class HTMLEditorKit
           else if (tag == HTML.Tag.HEAD)
             view = new NullView(element);
           else if (tag.equals(HTML.Tag.TABLE))
-            view = new HTMLTableView(element);
+            view = new javax.swing.text.html.TableView(element);
           else if (tag.equals(HTML.Tag.TD))
             view = new ParagraphView(element);
-            
+          else if (tag.equals(HTML.Tag.HR))
+            view = new HRuleView(element);
+          else if (tag.equals(HTML.Tag.BR))
+            view = new BRView(element);
 
           /*
           else if (tag.equals(HTML.Tag.MENU) || tag.equals(HTML.Tag.DIR)
                    || tag.equals(HTML.Tag.UL) || tag.equals(HTML.Tag.OL))
             view = new ListView(element);
-          else if (tag.equals(HTML.Tag.HR))
-            view = new HRuleView(element);
-          else if (tag.equals(HTML.Tag.BR))
-            view = new BRView(element);
           else if (tag.equals(HTML.Tag.INPUT) || tag.equals(HTML.Tag.SELECT)
                    || tag.equals(HTML.Tag.TEXTAREA))
             view = new FormView(element);
@@ -887,7 +891,9 @@ public class HTMLEditorKit
   protected Parser getParser()
   {
     if (parser == null)
-      parser = new ParserDelegator();
+      {
+        parser = new GnuParserDelegator(HTML_401Swing.getInstance());
+      }
     return parser;
   }
   

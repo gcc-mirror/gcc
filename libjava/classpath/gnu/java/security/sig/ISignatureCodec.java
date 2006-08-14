@@ -41,22 +41,15 @@ package gnu.java.security.sig;
 import gnu.java.security.Registry;
 
 /**
- * <p>The visible methods of an object that knows how to encode and decode
+ * The visible methods of an object that knows how to encode and decode
  * cryptographic signatures. Codecs are useful for (a) externalising signature
  * output data for storage and on-the-wire transmission, as well as (b) re-
- * creating their internal Java representation from external sources.</p>
+ * creating their internal Java representation from external sources.
  */
 public interface ISignatureCodec
 {
-
-  // Constants
-  // -------------------------------------------------------------------------
-
   /** Constant identifying the <i>Raw</i> encoding format. */
   int RAW_FORMAT = Registry.RAW_ENCODING_ID;
-
-  // Method(s)
-  // -------------------------------------------------------------------------
 
   int getFormatID();
 

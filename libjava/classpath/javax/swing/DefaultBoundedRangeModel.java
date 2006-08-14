@@ -1,6 +1,6 @@
 /* DefaultBoundedRangeModel.java -- Default implementation
    of BoundedRangeModel.
-   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,9 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.EventListener;
 
@@ -440,4 +443,33 @@ public class DefaultBoundedRangeModel
   {
     return (ChangeListener[]) getListeners(ChangeListener.class);
   }
+  
+  /**
+   * Provides serialization support.
+   *
+   * @param stream  the output stream (<code>null</code> not permitted).
+   *
+   * @throws IOException  if there is an I/O error.
+   */
+  private void writeObject(ObjectOutputStream stream) 
+    throws IOException 
+  {
+    stream.defaultWriteObject();
+  }
+
+  /**
+   * Provides serialization support.
+   *
+   * @param stream  the input stream (<code>null</code> not permitted).
+   *
+   * @throws IOException  if there is an I/O error.
+   * @throws ClassNotFoundException  if there is a classpath problem.
+   */
+  private void readObject(ObjectInputStream stream)
+    throws ClassNotFoundException, IOException
+  {
+    stream.defaultReadObject();
+    listenerList = new EventListenerList();
+  }
+
 }

@@ -1,5 +1,5 @@
 /* Provider.java -- Security provider information
-   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,20 +41,19 @@ import java.io.Serializable;
 import java.util.Properties;
 
 /**
- * This class represents a Java security architecture service provider.
- * The services provided by a such a provider can range from security
- * algorithms to key generation.
+ * This class represents a Java security architecture service provider. The
+ * services provided by a such a provider can range from security algorithms to
+ * key generation.
  * <p>
- * Providers are installed by name and version number.  There is one
- * standard provider supplied with the class library.  This is the
- * "GNU" provider, which can also be accessed by the alias "SUN" for
- * compatibility with the JDK.
- *
- * @version 0.0
- *
+ * Providers are installed by name and version number. See the static
+ * initializer of the {@link java.security.Security} class for the default
+ * security providers installed by this class library.
+ * 
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public abstract class Provider extends Properties implements Serializable
+public abstract class Provider
+    extends Properties
+    implements Serializable
 {
   private static final long serialVersionUID = -4298000515446427739L;
 
@@ -119,36 +118,34 @@ public abstract class Provider extends Properties implements Serializable
   }
 
   /**
-   * Sets the key property to have the specified value.
+   * Maps a key property to a designated value.
    * <p>
-   * <bold>NOT IMPLEMENTED YET</bold>[
-   * First, if there is a security manager, its <code>checkSecurityAccess</code>
-   * method is called with the string "putProviderProperty."+name, where name is
-   * the provider name, to see if it's ok to set this provider's property
-   * values.
-   * If the default implementation of <code>checkSecurityAccess</code> is used
-   * (that is, that method is not overriden), then this results in a call to the
-   * security manager's <code>checkPermission</code> method with a
-   * <code>SecurityPermission("putProviderProperty."+name)</code>
-   * permission.<br>]
-   *
+   * If there is an installed {@link SecurityManager} object in the underlying
+   * VM, its {@link SecurityManager#checkSecurityAccess(String)} method is
+   * called with the string <code>"putProviderProperty." + name</code>, where
+   * <code>name</code> is this provider's name. For the default implementation
+   * this translates into a {@link SecurityManager#checkPermission(Permission)}
+   * for a <code>SecurityPermission("putProviderProperty." + name)</code>.
+   * 
    * @param key The property key.
    * @param value The property value.
-   *
    * @return The previous value of the specified property (<code>key</code>),
    *         or <code>null</code> if it did not have one.
-   * @throws SecurityException If a security manager exists and its
-   * {@link java.lang.SecurityManager.checkSecurityAccess(java.lang.String)}
-   * method denies access to set property values.
+   * @throws SecurityException If a security manager is installed and its
+   *           {@link SecurityManager#checkSecurityAccess(String)} method
+   *           disallows adding properties at run-time.
    * @since Classpath 0.4+cvs, JDK 1.2
-   * @see java.lang.Object.equals(Object)
-   * @see java.util.Hashtable.get(Object)
+   * @see java.lang.Object#equals(Object)
+   * @see java.util.Hashtable#get(Object)
    */
   public Object put(Object key, Object value)
   {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkSecurityAccess("putProviderProperty." + this.name);
     return super.put(toCanonicalKey(key), value);
   }
-  
+
   // overrides same in java.util.Hashtable
   public Object get(Object key)
   {
@@ -157,25 +154,45 @@ public abstract class Provider extends Properties implements Serializable
 
   /**
    * This method removes the specified key entry (and its associated value)
-   * from the property mapping list.
+   * from the property mapping collection.
+   * <p>
+   * If there is an installed {@link SecurityManager} object in the underlying
+   * VM, its {@link SecurityManager#checkSecurityAccess(String)} method is
+   * called with the string <code>"removeProviderProperty." + name</code>, where
+   * <code>name</code> is this provider's name. For the default implementation
+   * this translates into a {@link SecurityManager#checkPermission(Permission)}
+   * for a <code>SecurityPermission("removeProviderProperty." + name)</code>.
    * 
    * @param key The key to remove
-   *
    * @return The previous value for this key, or <code>null</code> if no
    * previous value.
    */
   public Object remove(Object key)
   {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkSecurityAccess("removeProviderProperty." + this.name);
     return super.remove(toCanonicalKey(key));
   }
 
   /**
-   * This method clears the entire property list such that it no longer
+   * This method clears the entire property collection such that it no longer
    * contains the properties used to look up the services provided by
-   * the <code>Provider</code>.
+   * this <code>Provider</code>.
+   * <p>
+   * If there is an installed {@link SecurityManager} object in the underlying
+   * VM, its {@link SecurityManager#checkSecurityAccess(String)} method is
+   * called with the string <code>"clearProviderProperties." + name</code>,
+   * where <code>name</code> is this provider's name. For the default
+   * implementation this translates into a
+   * {@link SecurityManager#checkPermission(Permission)} for a
+   * <code>SecurityPermission("clearProviderProperties." + name)</code>.
    */
   public void clear()
   {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkSecurityAccess("clearProviderProperties." + this.name);
     super.clear();
   }
 
@@ -191,12 +208,11 @@ public abstract class Provider extends Properties implements Serializable
     return (getClass().getName() + ": name=" + getName() + " version=" +
 	    version);
   }
-  
+
   private Object toCanonicalKey(Object key)
   {
     if (key.getClass().isAssignableFrom(String.class)) // is it ours?
       return ((String) key).toUpperCase(); // use default locale
-    else
-      return key;
+    return key;
   }
 }

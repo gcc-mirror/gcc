@@ -26,8 +26,9 @@ endif
 ## gcc/libjava/Makefile.am.
 # if CREATE_WRAPPERS
 # bin_SCRIPTS =
-# bin_PROGRAMS = gappletviewer gjarsigner gkeytool
-
+# bin_PROGRAMS = gappletviewer gjarsigner gkeytool \
+# 	gjar gnative2ascii gserialver
+# 
 # if FOUND_GCJ
 # LIBJVM = -lgcj
 # else
@@ -37,34 +38,55 @@ endif
 # LIBJVM =
 # endif
 # endif
-
+# 
 # AM_CPPFLAGS = -Wall \
 # 	-I$(top_srcdir)/include \
 # 	-DTOOLS_ZIP="\"$(TOOLSdir)/$(TOOLS_ZIP)\""
-
+# 
 # gappletviewer_SOURCES = toolwrapper.c
 # gappletviewer_CFLAGS = \
 # 	-DTOOLPACKAGE="\"appletviewer\"" \
 # 	-DTOOLNAME="\"gappletviewer\""
 # gappletviewer_LDFLAGS = -L$(libdir) $(LIBJVM)
-
+# 
 # gjarsigner_SOURCES = toolwrapper.c
 # gjarsigner_CFLAGS = \
 # 	-DTOOLPACKAGE="\"jarsigner\"" \
 # 	-DTOOLNAME="\"gjarsigner\""
 # gjarsigner_LDFLAGS = -L$(libdir) $(LIBJVM)
-
+# 
 # gkeytool_SOURCES = toolwrapper.c
 # gkeytool_CFLAGS = \
 # 	-DTOOLPACKAGE="\"keytool\"" \
 # 	-DTOOLNAME="\"gkeytool\""
 # gkeytool_LDFLAGS = -L$(libdir) $(LIBJVM)
-
+# 
+# gjar_SOURCES = toolwrapper.c
+# gjar_CFLAGS = \
+# 	-DTOOLPACKAGE="\"jar\"" \
+# 	-DTOOLNAME="\"gjar\""
+# gjar_LDFLAGS = -L$(libdir) $(LIBJVM)
+# 
+# gnative2ascii_SOURCES = toolwrapper.c
+# gnative2ascii_CFLAGS = \
+# 	-DTOOLPACKAGE="\"native2ascii\"" \
+# 	-DTOOLNAME="\"gnative2ascii\""
+# gnative2ascii_LDFLAGS = -L$(libdir) $(LIBJVM)
+# 
+# gserialver_SOURCES = toolwrapper.c
+# gserialver_CFLAGS = \
+# 	-DTOOLPACKAGE="\"serialver\"" \
+# 	-DTOOLNAME="\"gserialver\""
+# gserialver_LDFLAGS = -L$(libdir) $(LIBJVM)
+# 
 # else
-# bin_SCRIPTS = gappletviewer gjarsigner gkeytool
+# bin_SCRIPTS = gappletviewer gjarsigner gkeytool \
+# 	gjar gnative2ascii gserialver
 # bin_PROGRAMS =
 # endif
-EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in
+## END GCJ LOCAL
+EXTRA_DIST = toolwrapper.c gappletviewer.in gjarsigner.in gkeytool.in \
+	gjar.in gnative2ascii.in gserialver.in
 
 # All our example java source files
 TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*.java $(srcdir)/gnu/classpath/tools/*/*.java $(srcdir)/gnu/classpath/tools/*/*/*.java

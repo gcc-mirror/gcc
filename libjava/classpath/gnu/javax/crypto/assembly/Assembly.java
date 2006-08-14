@@ -41,23 +41,19 @@ package gnu.javax.crypto.assembly;
 import java.util.Map;
 
 /**
- * <p>An <code>Assembly</code> is a construction consisting of a chain of
+ * An <code>Assembly</code> is a construction consisting of a chain of
  * {@link Transformer} elements; each wired in pre- or post- transformation
  * mode. This chain is terminated by one <code>LoopbackTransformer</code>
- * element.</p>
- *
- * <p>Once constructed, and correctly initialised, the bulk of the methods
- * available on the <code>Assembly</code> are delegated to the <i>head</i>
- * of the {@link Transformer} chain of the <code>Assembly</code>.</p>
- *
+ * element.
+ * <p>
+ * Once constructed, and correctly initialised, the bulk of the methods
+ * available on the <code>Assembly</code> are delegated to the <i>head</i> of
+ * the {@link Transformer} chain of the <code>Assembly</code>.
+ * 
  * @see Transformer
  */
 public class Assembly
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   public static final String DIRECTION = "gnu.crypto.assembly.assembly.direction";
 
   /** Flag that tells if the instance is initialised or not; and if yes how. */
@@ -65,9 +61,6 @@ public class Assembly
 
   /** The first Transformer in the chain. */
   private Transformer head;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /**
    * Trivial constructor that sets the <i>chain</i> to a
@@ -81,21 +74,15 @@ public class Assembly
     head = new LoopbackTransformer();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
    * Adds the designated {@link Transformer} and signals that it should operate
    * in pre-processing mode; i.e. it should apply its internal transformation
    * algorithm on the input data stream, <b>before</b> it passes that stream to
    * the next element in the <i>chain</i>.
-   *
+   * 
    * @param t the {@link Transformer} to add at the head of the current chain.
-   * @throws IllegalArgumentException if the designated {@link Transformer}
-   * has a non-null tail; i.e. it is already an element of a chain.
+   * @throws IllegalArgumentException if the designated {@link Transformer} has
+   *           a non-null tail; i.e. it is already an element of a chain.
    */
   public void addPreTransformer(Transformer t)
   {
@@ -107,10 +94,10 @@ public class Assembly
    * in post-processing mode; i.e. it should apply its internal transformation
    * algorithm on the input data stream, <b>after</b> it passes that stream to
    * the next element in the <i>chain</i>.
-   *
+   * 
    * @param t the {@link Transformer} to add at the head of the current chain.
-   * @throws IllegalArgumentException if the designated {@link Transformer}
-   * has a non-null tail; i.e. it is already an element of a chain.
+   * @throws IllegalArgumentException if the designated {@link Transformer} has
+   *           a non-null tail; i.e. it is already an element of a chain.
    */
   public void addPostTransformer(Transformer t)
   {
@@ -120,22 +107,18 @@ public class Assembly
   /**
    * Initialises the <code>Assembly</code> for operation with specific
    * characteristics.
-   *
+   * 
    * @param attributes a set of name-value pairs that describes the desired
-   * future behaviour of this instance.
+   *          future behaviour of this instance.
    * @throws IllegalStateException if the instance is already initialised.
    */
   public void init(Map attributes) throws TransformerException
   {
     if (wired != null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     Direction flow = (Direction) attributes.get(DIRECTION);
     if (flow == null)
-      {
-        flow = Direction.FORWARD;
-      }
+      flow = Direction.FORWARD;
     attributes.put(Transformer.DIRECTION, flow);
     head.init(attributes);
     wired = flow;
@@ -155,12 +138,12 @@ public class Assembly
    * Convenience method that calls the method with same name and three
    * arguments, using a byte array of length <code>1</code> whose contents are
    * the designated byte.
-   *
+   * 
    * @param b the byte to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #update(byte[], int, int)
    */
   public byte[] update(byte b) throws TransformerException
@@ -172,12 +155,12 @@ public class Assembly
    * Convenience method that calls the method with same name and three
    * arguments. All bytes in <code>in</code>, starting from index position
    * <code>0</code> are considered.
-   *
+   * 
    * @param in the input data bytes.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #update(byte[], int, int)
    */
   public byte[] update(byte[] in) throws TransformerException
@@ -187,34 +170,32 @@ public class Assembly
 
   /**
    * Processes a designated number of bytes from a given byte array.
-   *
+   * 
    * @param in the input data bytes.
    * @param offset index of <code>in</code> from which to start considering
-   * data.
+   *          data.
    * @param length the count of bytes to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    */
   public byte[] update(byte[] in, int offset, int length)
       throws TransformerException
   {
     if (wired == null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     return head.update(in, offset, length);
   }
 
   /**
-   * Convenience method that calls the method with same name and three
-   * arguments using a 0-long byte array.
-   *
+   * Convenience method that calls the method with same name and three arguments
+   * using a 0-long byte array.
+   * 
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #lastUpdate(byte[], int, int)
    */
   public byte[] lastUpdate() throws TransformerException
@@ -226,12 +207,12 @@ public class Assembly
    * Convenience method that calls the method with same name and three
    * arguments, using a byte array of length <code>1</code> whose contents are
    * the designated byte.
-   *
+   * 
    * @param b the byte to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #lastUpdate(byte[], int, int)
    */
   public byte[] lastUpdate(byte b) throws TransformerException
@@ -243,12 +224,12 @@ public class Assembly
    * Convenience method that calls the method with same name and three
    * arguments. All bytes in <code>in</code>, starting from index position
    * <code>0</code> are considered.
-   *
+   * 
    * @param in the input data bytes.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
    * @throws TransformerException if a transformation-related exception occurs
-   * during the operation.
+   *           during the operation.
    * @see #lastUpdate(byte[], int, int)
    */
   public byte[] lastUpdate(byte[] in) throws TransformerException
@@ -257,39 +238,33 @@ public class Assembly
   }
 
   /**
-   * Processes a designated number of bytes from a given byte array and
-   * signals, at the same time, that this is the last <i>push</i> operation for
-   * this <code>Assembly</code>.
-   *
+   * Processes a designated number of bytes from a given byte array and signals,
+   * at the same time, that this is the last <i>push</i> operation for this
+   * <code>Assembly</code>.
+   * 
    * @param in the input data bytes.
    * @param offset index of <code>in</code> from which to start considering
-   * data.
+   *          data.
    * @param length the count of bytes to process.
    * @return the result of transformation.
    * @throws IllegalStateException if the instance is not initialised.
-   * @throws TransformerException if a transformation-related exception
-   * occurs during the operation.
+   * @throws TransformerException if a transformation-related exception occurs
+   *           during the operation.
    */
   public byte[] lastUpdate(byte[] in, int offset, int length)
       throws TransformerException
   {
     if (wired == null)
-      {
-        throw new IllegalStateException();
-      }
+      throw new IllegalStateException();
     byte[] result = head.lastUpdate(in, offset, length);
     reset();
     return result;
   }
 
-  // helper methods ----------------------------------------------------------
-
   private void wireTransformer(Transformer t, Operation mode)
   {
     if (t.tail != null)
-      {
-        throw new IllegalArgumentException();
-      }
+      throw new IllegalArgumentException();
     t.setMode(mode);
     t.tail = head;
     head = t;

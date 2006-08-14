@@ -38,21 +38,6 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.keyring;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import java.security.InvalidKeyException;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.List;
-
 import gnu.java.security.Registry;
 import gnu.javax.crypto.cipher.CipherFactory;
 import gnu.javax.crypto.cipher.IBlockCipher;
@@ -62,25 +47,24 @@ import gnu.javax.crypto.pad.IPad;
 import gnu.javax.crypto.pad.PadFactory;
 import gnu.javax.crypto.pad.WrongPaddingException;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.util.HashMap;
+import java.util.Iterator;
+
 public class EncryptedEntry extends MaskableEnvelopeEntry implements Registry
 {
-
-  // Constants and fields.
-  // ------------------------------------------------------------------------
-
   public static final int TYPE = 0;
-
-  // Constructor.
-  // ------------------------------------------------------------------------
 
   public EncryptedEntry(String cipher, String mode, Properties properties)
   {
     super(TYPE, properties);
     if (cipher == null || mode == null)
-      {
-        throw new IllegalArgumentException(
-                                           "neither cipher nor mode can be null");
-      }
+      throw new IllegalArgumentException("neither cipher nor mode can be null");
     properties.put("cipher", cipher);
     properties.put("mode", mode);
     setMasked(false);
@@ -92,34 +76,22 @@ public class EncryptedEntry extends MaskableEnvelopeEntry implements Registry
     setMasked(true);
   }
 
-  // Class methods.
-  // ------------------------------------------------------------------------
-
   public static EncryptedEntry decode(DataInputStream in) throws IOException
   {
     EncryptedEntry entry = new EncryptedEntry();
     entry.defaultDecode(in);
-    if (!entry.properties.containsKey("cipher"))
-      {
-        throw new MalformedKeyringException("no cipher");
-      }
-    if (!entry.properties.containsKey("cipher"))
-      {
-        throw new MalformedKeyringException("no cipher");
-      }
+    if (! entry.properties.containsKey("cipher"))
+      throw new MalformedKeyringException("no cipher");
+    if (! entry.properties.containsKey("cipher"))
+      throw new MalformedKeyringException("no cipher");
     return entry;
   }
-
-  // Instance methods.
-  // ------------------------------------------------------------------------
 
   public void decrypt(byte[] key, byte[] iv) throws IllegalArgumentException,
       WrongPaddingException
   {
-    if (!isMasked() || payload == null)
-      {
-        return;
-      }
+    if (! isMasked() || payload == null)
+      return;
     IMode mode = getMode(key, iv, IMode.DECRYPTION);
     IPad padding = null;
     padding = PadFactory.getInstance("PKCS7");
@@ -132,12 +104,8 @@ public class EncryptedEntry extends MaskableEnvelopeEntry implements Registry
         count += mode.currentBlockSize();
       }
     int padlen = padding.unpad(buf, 0, buf.length);
-    DataInputStream in = new DataInputStream(
-                                             new ByteArrayInputStream(
-                                                                      buf,
-                                                                      0,
-                                                                      buf.length
-                                                                          - padlen));
+    int len = buf.length - padlen;
+    DataInputStream in = new DataInputStream(new ByteArrayInputStream(buf, 0, len));
     try
       {
         decodeEnvelope(in);
@@ -181,22 +149,14 @@ public class EncryptedEntry extends MaskableEnvelopeEntry implements Registry
   public void encodePayload() throws IOException
   {
     if (payload == null)
-      {
-        throw new IOException("not encrypted");
-      }
+      throw new IOException("not encrypted");
   }
-
-  // Own methods.
-  // ------------------------------------------------------------------------
 
   private IMode getMode(byte[] key, byte[] iv, int state)
   {
     IBlockCipher cipher = CipherFactory.getInstance(properties.get("cipher"));
     if (cipher == null)
-      {
-        throw new IllegalArgumentException("no such cipher: "
-                                           + properties.get("cipher"));
-      }
+      throw new IllegalArgumentException("no such cipher: " + properties.get("cipher"));
     int blockSize = cipher.defaultBlockSize();
     if (properties.containsKey("block-size"))
       {
@@ -210,17 +170,13 @@ public class EncryptedEntry extends MaskableEnvelopeEntry implements Registry
                                                + nfe.getMessage());
           }
       }
-    IMode mode = ModeFactory.getInstance(properties.get("mode"), cipher,
-                                         blockSize);
+    IMode mode = ModeFactory.getInstance(properties.get("mode"), cipher, blockSize);
     if (mode == null)
-      {
-        throw new IllegalArgumentException("no such mode: "
-                                           + properties.get("mode"));
-      }
+      throw new IllegalArgumentException("no such mode: " + properties.get("mode"));
 
     HashMap modeAttr = new HashMap();
     modeAttr.put(IMode.KEY_MATERIAL, key);
-    modeAttr.put(IMode.STATE, new Integer(state));
+    modeAttr.put(IMode.STATE, Integer.valueOf(state));
     modeAttr.put(IMode.IV, iv);
     try
       {

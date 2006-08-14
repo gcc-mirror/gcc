@@ -1,5 +1,5 @@
-/* ObjectFactoryBuilder.java --
-   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
+/* ObjectFactoryBuilder.java -- the builder that creates the object factories.
+   Copyright (C) 2001, 2004, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,14 +41,30 @@ package javax.naming.spi;
 import java.util.Hashtable;
 
 import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.Referenceable;
  
 /**
+ * Represents the builder that creates the object factories.
+ * 
+ * @see NamingManager#setObjectFactoryBuilder(ObjectFactoryBuilder)
+ * 
  * @author Warren Levy (warrenl@redhat.com)
- * @date June 1, 2001
  */
 public interface ObjectFactoryBuilder
-{
-  ObjectFactory createObjectFactory(Object obj,
+{ 
+  /**
+   * Create a new object using the supplied environment.
+   * 
+   * @param refInfo the referencing object, for which the new object must be
+   *          created (can be null). If not null, it is usually an instance of
+   *          the {@link Reference} or {@link Referenceable}.
+   * @param environment contains the additional information about the factory
+   *          being created. Can be null.
+   * @return the created object factory. The null is never returned.
+   * @throws NamingException
+   */
+  ObjectFactory createObjectFactory(Object refInfo,
   					   Hashtable environment)
 					   throws NamingException;
 }

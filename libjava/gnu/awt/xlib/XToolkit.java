@@ -28,7 +28,6 @@ import gnu.gcj.xlib.Visual;
 import gnu.java.awt.ClasspathToolkit;
 import gnu.java.awt.EmbeddedWindow;
 import gnu.java.awt.peer.ClasspathFontPeer;
-import gnu.java.awt.peer.ClasspathTextLayoutPeer;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
 
 public class XToolkit extends ClasspathToolkit
@@ -405,12 +404,6 @@ public class XToolkit extends ClasspathToolkit
     return new XFontPeer (name,style,size);
   }
 
-  public ClasspathTextLayoutPeer 
-  getClasspathTextLayoutPeer (AttributedString str, FontRenderContext frc)
-  {
-    throw new Error("not implemented");
-  }
-  
   /** Creates a font, reading the glyph definitions from a stream.
    *
    * <p>This method provides the platform-specific implementation for

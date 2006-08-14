@@ -52,11 +52,6 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class CompletionStatusHelper
 {
   /**
-   * The cached typecode value, computed once.
-   */
-  private static TypeCode typeCode;
-
-  /**
    * Extract the {@link CompletionStatus} from the
    * given {@link Any}. This implementation expects
    * the integer (Corba long) value, stating the completion
@@ -125,16 +120,12 @@ public abstract class CompletionStatusHelper
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        String[] members =
-          new String[] { "COMPLETED_YES", "COMPLETED_NO", "COMPLETED_MAYBE" };
-
-        typeCode =
-          OrbRestricted.Singleton.create_enum_tc(id(), "CompletionStatus",
-                                                  members
-                                                 );
-      }
-    return typeCode;
+    String[] members =
+      new String[] { "COMPLETED_YES", "COMPLETED_NO", "COMPLETED_MAYBE" };
+    
+    return
+      OrbRestricted.Singleton.create_enum_tc(id(), "CompletionStatus",
+                                             members
+      );
   }
 }

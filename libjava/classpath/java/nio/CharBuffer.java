@@ -107,14 +107,12 @@ public abstract class CharBuffer extends Buffer
   {
     // FIXME: implement better handling of java.lang.String.
     // Probably share data with String via reflection.
-	  
-    if ((start < 0)
-        || (start > seq.length())
-        || (end < start)
-        || (end > (seq.length() - start)))
-      throw new IndexOutOfBoundsException();
-    
+	     
     int len = end - start;
+
+    if( len < 0 )
+      throw new IndexOutOfBoundsException();
+
     char[] buffer = new char[len];
     
     for (int i = 0; i < len; i++)

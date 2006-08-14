@@ -160,7 +160,7 @@ public class NavigationFilterDemo
           pt = text.getCaret().getMagicCaretPosition();
           
           // Calculate its position above.
-          newpos = Utilities.getPositionAbove(text, pos, pt.x);
+          newpos = Utilities.getPositionAbove(text, pos, (pt != null) ? pt.x : 0);
 
           // If we have a valid position, then calculate the next word start
           // from there.
@@ -173,7 +173,7 @@ public class NavigationFilterDemo
           pt = text.getCaret().getMagicCaretPosition();
 
           // Calculate its position below.
-          newpos = Utilities.getPositionBelow(text, pos, pt.x);
+          newpos = Utilities.getPositionBelow(text, pos, (pt != null) ? pt.x : 0);
 
           // If we have a valid position, then calculate the next word start
           // from there.
@@ -192,7 +192,6 @@ public class NavigationFilterDemo
           else
             return Utilities.getPreviousWord(text, newpos);
         case SwingConstants.EAST:
-          // Simply calculate the next word's start offset.
           return Utilities.getNextWord(text, newpos);
         default:
           // Do whatever the super implementation did.

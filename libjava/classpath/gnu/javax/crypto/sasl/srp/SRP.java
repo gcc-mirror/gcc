@@ -47,26 +47,17 @@ import java.math.BigInteger;
 import java.util.HashMap;
 
 /**
- * <p>A Factory class that returns SRP Singletons that know all SRP-related
+ * A Factory class that returns SRP Singletons that know all SRP-related
  * mathematical computations and protocol-related operations for both the
- * client- and server-sides.</p>
+ * client- and server-sides.
  */
 public final class SRP
 {
-
-  // Constants and variables
-  // --------------------------------------------------------------------------
-
   /** The map of already instantiated SRP algorithm instances. */
   private static final HashMap algorithms = new HashMap();
-
   private static final byte COLON = (byte) 0x3A;
-
   /** The underlying message digest algorithm used for all SRP calculations. */
   private IMessageDigest mda;
-
-  // Constructor(s)
-  // --------------------------------------------------------------------------
 
   /** Trivial private constructor to enforce Singleton pattern. */
   private SRP(final IMessageDigest mda)
@@ -76,25 +67,18 @@ public final class SRP
     this.mda = mda;
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns an instance of this object that uses the designated message
-   * digest algorithm as its digest function.</p>
-   *
+   * Returns an instance of this object that uses the designated message digest
+   * algorithm as its digest function.
+   * 
    * @return an instance of this object for the designated digest name.
    */
   public static synchronized SRP instance(String mdName)
   {
     if (mdName != null)
-      {
-        mdName = mdName.trim().toLowerCase();
-      }
+      mdName = mdName.trim().toLowerCase();
     if (mdName == null || mdName.equals(""))
-      {
-        mdName = SRPRegistry.SRP_DEFAULT_DIGEST_NAME;
-      }
+      mdName = SRPRegistry.SRP_DEFAULT_DIGEST_NAME;
     SRP result = (SRP) algorithms.get(mdName);
     if (result == null)
       {
@@ -110,14 +94,9 @@ public final class SRP
   {
     final byte[] result = new byte[length];
     for (int i = 0; i < length; ++i)
-      {
-        result[i] = (byte) (b1[i] ^ b2[i]);
-      }
+      result[i] = (byte)(b1[i] ^ b2[i]);
     return result;
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   /** @return the message digest algorithm name used by this instance. */
   public String getAlgorithm()
@@ -125,16 +104,14 @@ public final class SRP
     return mda.name();
   }
 
-  // Message Digest algorithm related methods --------------------------------
-
   /**
-   * <p>Returns a new instance of the SRP message digest algorithm --which is
+   * Returns a new instance of the SRP message digest algorithm --which is
    * SHA-160 by default, but could be anything else provided the proper
-   * conditions as specified in the SRP specifications.</p>
-   *
+   * conditions as specified in the SRP specifications.
+   * 
    * @return a new instance of the underlying SRP message digest algorithm.
    * @throws RuntimeException if the implementation of the message digest
-   * algorithm does not support cloning.
+   *           algorithm does not support cloning.
    */
   public IMessageDigest newDigest()
   {
@@ -142,12 +119,12 @@ public final class SRP
   }
 
   /**
-   * <p>Convenience method to return the result of digesting the designated
-   * input with a new instance of the SRP message digest algorithm.</p>
-   *
+   * Convenience method to return the result of digesting the designated input
+   * with a new instance of the SRP message digest algorithm.
+   * 
    * @param src some bytes to digest.
-   * @return the bytes constituting the result of digesting the designated
-   * input with a new instance of the SRP message digest algorithm.
+   * @return the bytes constituting the result of digesting the designated input
+   *         with a new instance of the SRP message digest algorithm.
    */
   public byte[] digest(final byte[] src)
   {
@@ -157,13 +134,13 @@ public final class SRP
   }
 
   /**
-   * <p>Convenience method to return the result of digesting the designated
-   * input with a new instance of the SRP message digest algorithm.</p>
-   *
+   * Convenience method to return the result of digesting the designated input
+   * with a new instance of the SRP message digest algorithm.
+   * 
    * @param src a String whose bytes (using US-ASCII encoding) are to be
-   * digested.
-   * @return the bytes constituting the result of digesting the designated
-   * input with a new instance of the SRP message digest algorithm.
+   *          digested.
+   * @return the bytes constituting the result of digesting the designated input
+   *         with a new instance of the SRP message digest algorithm.
    * @throws UnsupportedEncodingException if US-ASCII charset is not found.
    */
   public byte[] digest(final String src) throws UnsupportedEncodingException
@@ -171,17 +148,15 @@ public final class SRP
     return digest(src.getBytes("US-ASCII"));
   }
 
-  // Other methods -----------------------------------------------------------
-
   /**
-   * <p>Convenience method to XOR N bytes from two arrays; N being the output
-   * size of the SRP message digest algorithm.</p>
-   *
+   * Convenience method to XOR N bytes from two arrays; N being the output size
+   * of the SRP message digest algorithm.
+   * 
    * @param a the first byte array.
    * @param b the second one.
    * @return N bytes which are the result of the XOR operations on the first N
-   * bytes from the designated arrays. N is the size of the SRP message digest
-   * algorithm; eg. 20 for SHA-160.
+   *         bytes from the designated arrays. N is the size of the SRP message
+   *         digest algorithm; eg. 20 for SHA-160.
    */
   public byte[] xor(final byte[] a, final byte[] b)
   {
@@ -212,7 +187,6 @@ public final class SRP
     hash.update(b, 0, b.length);
     hash.update(cn, 0, cn.length);
     hash.update(cCB, 0, cCB.length);
-
     return hash.digest();
   }
 
@@ -235,14 +209,13 @@ public final class SRP
     b = digest(o);
     hash.update(b, 0, b.length);
     hash.update(sid, 0, sid.length);
-    hash.update((byte) (ttl >>> 24));
-    hash.update((byte) (ttl >>> 16));
-    hash.update((byte) (ttl >>> 8));
+    hash.update((byte)(ttl >>> 24));
+    hash.update((byte)(ttl >>> 16));
+    hash.update((byte)(ttl >>> 8));
     hash.update((byte) ttl);
     hash.update(cIV, 0, cIV.length);
     hash.update(sIV, 0, sIV.length);
     hash.update(sCB, 0, sCB.length);
-
     return hash.digest();
   }
 
@@ -252,7 +225,6 @@ public final class SRP
     hash.update(K, 0, K.length);
     hash.update(cn, 0, cn.length);
     hash.update(sn, 0, sn.length);
-
     return hash.digest();
   }
 
@@ -276,10 +248,8 @@ public final class SRP
     hash.update(COLON);
     hash.update(p, 0, p.length);
     final byte[] up = hash.digest();
-
     hash.update(s, 0, s.length);
     hash.update(up, 0, up.length);
-
     return hash.digest();
   }
 }

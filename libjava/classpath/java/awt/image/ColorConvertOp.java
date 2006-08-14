@@ -1,5 +1,5 @@
-/* ColorModel.java --
-   Copyright (C) 2004  Free Software Foundation
+/* ColorConvertOp.java --
+   Copyright (C) 2004, 2006  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -177,8 +177,7 @@ public class ColorConvertOp implements BufferedImageOp, RasterOp
     ColorModel scm = src.getColorModel();
     for (int i = 0; i < spaces.length; i++)
     {
-      ColorModel cm = scm.cloneColorModel(spaces[i]);
-      BufferedImage tmp = createCompatibleDestImage(src, cm);
+      BufferedImage tmp = createCompatibleDestImage(src, scm);
       copyimage(src, tmp);
       src = tmp;
     }
@@ -189,6 +188,7 @@ public class ColorConvertOp implements BufferedImageOp, RasterOp
     
     // Apply final conversion
     copyimage(src, dst);
+    
     return dst;
   }
 
@@ -287,7 +287,12 @@ public class ColorConvertOp implements BufferedImageOp, RasterOp
   private void copyimage(BufferedImage src, BufferedImage dst)
   {
     Graphics2D gg = dst.createGraphics();
-    gg.setRenderingHints(hints);
+    
+    // If no hints are set there is no need to call
+    // setRenderingHints on the Graphics2D object.
+    if (hints != null)
+      gg.setRenderingHints(hints);
+    
     gg.drawImage(src, 0, 0, null);
     gg.dispose();
   }

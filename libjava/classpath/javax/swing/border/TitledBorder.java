@@ -1,5 +1,5 @@
 /* TitledBorder.java -- 
-   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006,  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -961,7 +961,8 @@ public class TitledBorder extends AbstractBorder
   public void setTitlePosition(int titlePosition)
   {
     if ((titlePosition < DEFAULT_POSITION) || (titlePosition > BELOW_BOTTOM))
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(titlePosition 
+          + " is not a valid title position.");
 
     // Swing borders are not JavaBeans, thus no need to fire an event.
     this.titlePosition = titlePosition;
@@ -982,7 +983,8 @@ public class TitledBorder extends AbstractBorder
   {
     if ((titleJustification < DEFAULT_JUSTIFICATION)
         || (titleJustification > TRAILING))
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(titleJustification 
+          + " is not a valid title justification.");
 
     // Swing borders are not JavaBeans, thus no need to fire an event.
     this.titleJustification = titleJustification;

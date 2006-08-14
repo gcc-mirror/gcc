@@ -42,25 +42,21 @@ import gnu.java.security.Registry;
 import gnu.java.security.util.Util;
 
 /**
- * <p>The <i>HAVAL</i> message-digest algorithm is a variable output length,
- * with variable number of rounds. By default, this implementation allows
- * <i>HAVAL</i> to be used as a drop-in replacement for <i>MD5</i>.</p>
- *
- * <p>References:</p>
- *
+ * The <i>HAVAL</i> message-digest algorithm is a variable output length, with
+ * variable number of rounds. By default, this implementation allows <i>HAVAL</i>
+ * to be used as a drop-in replacement for <i>MD5</i>.
+ * <p>
+ * References:
  * <ol>
- *    <li>HAVAL - A One-Way Hashing Algorithm with Variable Length of Output<br>
- *    Advances in Cryptology - AUSCRYPT'92, Lecture Notes in Computer Science,<br>
- *    Springer-Verlag, 1993; <br>
- *    Y. Zheng, J. Pieprzyk and J. Seberry.</li>
+ * <li>HAVAL - A One-Way Hashing Algorithm with Variable Length of Output<br>
+ * Advances in Cryptology - AUSCRYPT'92, Lecture Notes in Computer Science,<br>
+ * Springer-Verlag, 1993; <br>
+ * Y. Zheng, J. Pieprzyk and J. Seberry.</li>
  * </ol>
  */
-public class Haval extends BaseHash
+public class Haval
+    extends BaseHash
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   public static final int HAVAL_VERSION = 1;
 
   public static final int HAVAL_128_BIT = 16;
@@ -88,20 +84,18 @@ public class Haval extends BaseHash
 
   /**
    * Number of HAVAL rounds. Allowed values are integers in the range <code>3
-   * .. 5</code>. The default is <code>3</code>.
+   * .. 5</code>.
+   * The default is <code>3</code>.
    */
   private int rounds = HAVAL_3_ROUND;
 
   /** 128-bit interim result. */
   private int h0, h1, h2, h3, h4, h5, h6, h7;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Calls the constructor with two argument using {@link #HAVAL_128_BIT} as
-   * the value for the output size (i.e. <code>128</code> bits, and
-   * {@link #HAVAL_3_ROUND} for the value of number of rounds.</p>
+   * Calls the constructor with two argument using {@link #HAVAL_128_BIT} as the
+   * value for the output size (i.e. <code>128</code> bits, and
+   * {@link #HAVAL_3_ROUND} for the value of number of rounds.
    */
   public Haval()
   {
@@ -109,9 +103,9 @@ public class Haval extends BaseHash
   }
 
   /**
-   * <p>Calls the constructor with two arguments using the designated output
-   * size, and {@link #HAVAL_3_ROUND} for the value of number of rounds.</p>
-   *
+   * Calls the constructor with two arguments using the designated output size,
+   * and {@link #HAVAL_3_ROUND} for the value of number of rounds.
+   * 
    * @param size the output size in bytes of this instance.
    * @throws IllegalArgumentException if the designated output size is invalid.
    * @see #HAVAL_128_BIT
@@ -126,16 +120,16 @@ public class Haval extends BaseHash
   }
 
   /**
-   * <p>Constructs a <code>Haval</code> instance with the designated output
-   * size (in bytes).  Valid output <code>size</code> values are <code>16</code>,
-   * <code>20</code>, <code>24</code>, <code>28</code> and <code>32</code>.
-   * Valid values for <code>rounds</code> are in the range <code>3..5</code>
-   * inclusive.</p>
-   *
+   * Constructs a <code>Haval</code> instance with the designated output size
+   * (in bytes). Valid output <code>size</code> values are <code>16</code>,
+   * <code>20</code>, <code>24</code>, <code>28</code> and
+   * <code>32</code>. Valid values for <code>rounds</code> are in the range
+   * <code>3..5</code> inclusive.
+   * 
    * @param size the output size in bytes of this instance.
    * @param rounds the number of rounds to apply when transforming data.
    * @throws IllegalArgumentException if the designated output size is invalid,
-   * or if the number of rounds is invalid.
+   *           or if the number of rounds is invalid.
    * @see #HAVAL_128_BIT
    * @see #HAVAL_160_BIT
    * @see #HAVAL_192_BIT
@@ -149,24 +143,24 @@ public class Haval extends BaseHash
   {
     super(Registry.HAVAL_HASH, size, BLOCK_SIZE);
 
-    if (size != HAVAL_128_BIT && size != HAVAL_160_BIT && size != HAVAL_192_BIT
-        && size != HAVAL_224_BIT && size != HAVAL_256_BIT)
-      {
-        throw new IllegalArgumentException("Invalid HAVAL output size");
-      }
+    if (size != HAVAL_128_BIT
+        && size != HAVAL_160_BIT
+        && size != HAVAL_192_BIT
+        && size != HAVAL_224_BIT
+        && size != HAVAL_256_BIT)
+      throw new IllegalArgumentException("Invalid HAVAL output size");
 
-    if (rounds != HAVAL_3_ROUND && rounds != HAVAL_4_ROUND
+    if (rounds != HAVAL_3_ROUND
+        && rounds != HAVAL_4_ROUND
         && rounds != HAVAL_5_ROUND)
-      {
-        throw new IllegalArgumentException("Invalid HAVAL number of rounds");
-      }
+      throw new IllegalArgumentException("Invalid HAVAL number of rounds");
 
     this.rounds = rounds;
   }
 
   /**
-   * <p>Private constructor for cloning purposes.</p>
-   *
+   * Private constructor for cloning purposes.
+   * 
    * @param md the instance to clone.
    */
   private Haval(Haval md)
@@ -185,93 +179,142 @@ public class Haval extends BaseHash
     this.buffer = (byte[]) md.buffer.clone();
   }
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.lang.Cloneable interface implementation ----------------------------
-
   public Object clone()
   {
     return new Haval(this);
   }
 
-  // Implementation of concrete methods in BaseHash --------------------------
-
   protected synchronized void transform(byte[] in, int i)
   {
-    int X0 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X1 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X2 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X3 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X4 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X5 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X6 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X7 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X8 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X9 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-             | (in[i++] & 0xFF) << 24;
-    int X10 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X11 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X12 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X13 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X14 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X15 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X16 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X17 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X18 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X19 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X20 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X21 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X22 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X23 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X24 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X25 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X26 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X27 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X28 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X29 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X30 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-    int X31 = (in[i++] & 0xFF) | (in[i++] & 0xFF) << 8 | (in[i++] & 0xFF) << 16
-              | (in[i++] & 0xFF) << 24;
-
+    int X0 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X1 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X2 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X3 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X4 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X5 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X6 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X7 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X8 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X9 = (in[i++] & 0xFF)
+           | (in[i++] & 0xFF) << 8
+           | (in[i++] & 0xFF) << 16
+           | (in[i++] & 0xFF) << 24;
+    int X10 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X11 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X12 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X13 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X14 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X15 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X16 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X17 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X18 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X19 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X20 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X21 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X22 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X23 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X24 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X25 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X26 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X27 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X28 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X29 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X30 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
+    int X31 = (in[i++] & 0xFF)
+            | (in[i++] & 0xFF) << 8
+            | (in[i++] & 0xFF) << 16
+            | (in[i++] & 0xFF) << 24;
     int t0 = h0, t1 = h1, t2 = h2, t3 = h3, t4 = h4, t5 = h5, t6 = h6, t7 = h7;
-
     // Pass 1
     t7 = FF1(t7, t6, t5, t4, t3, t2, t1, t0, X0);
     t6 = FF1(t6, t5, t4, t3, t2, t1, t0, t7, X1);
@@ -458,7 +501,6 @@ public class Haval extends BaseHash
             t0 = FF5(t0, t7, t6, t5, t4, t3, t2, t1, X15, 0x409F60C4);
           }
       }
-
     h7 += t7;
     h6 += t6;
     h5 += t5;
@@ -471,30 +513,30 @@ public class Haval extends BaseHash
 
   protected byte[] padBuffer()
   {
-    // pad out to 118 mod 128.  other 10 bytes have special use.
-    int n = (int) (count % BLOCK_SIZE);
+    // pad out to 118 mod 128. other 10 bytes have special use.
+    int n = (int)(count % BLOCK_SIZE);
     int padding = (n < 118) ? (118 - n) : (246 - n);
     byte[] result = new byte[padding + 10];
     result[0] = (byte) 0x01;
-
     // save the version number (LSB 3), the number of rounds (3 bits in the
     // middle), the fingerprint length (MSB 2 bits and next byte) and the
     // number of bits in the unpadded message.
     int bl = hashSize * 8;
-    result[padding++] = (byte) (((bl & 0x03) << 6) | ((rounds & 0x07) << 3) | (HAVAL_VERSION & 0x07));
-    result[padding++] = (byte) (bl >>> 2);
-
+    int sigByte = (bl & 0x03) << 6;
+    sigByte |= (rounds & 0x07) << 3;
+    sigByte |= HAVAL_VERSION & 0x07;
+    result[padding++] = (byte) sigByte;
+    result[padding++] = (byte)(bl >>> 2);
     // save number of bits, casting the long to an array of 8 bytes
     long bits = count << 3;
     result[padding++] = (byte) bits;
-    result[padding++] = (byte) (bits >>> 8);
-    result[padding++] = (byte) (bits >>> 16);
-    result[padding++] = (byte) (bits >>> 24);
-    result[padding++] = (byte) (bits >>> 32);
-    result[padding++] = (byte) (bits >>> 40);
-    result[padding++] = (byte) (bits >>> 48);
-    result[padding] = (byte) (bits >>> 56);
-
+    result[padding++] = (byte)(bits >>> 8);
+    result[padding++] = (byte)(bits >>> 16);
+    result[padding++] = (byte)(bits >>> 24);
+    result[padding++] = (byte)(bits >>> 32);
+    result[padding++] = (byte)(bits >>> 40);
+    result[padding++] = (byte)(bits >>> 48);
+    result[padding  ] = (byte)(bits >>> 56);
     return result;
   }
 
@@ -505,49 +547,48 @@ public class Haval extends BaseHash
     byte[] result = new byte[hashSize];
     if (hashSize >= HAVAL_256_BIT)
       {
-        result[31] = (byte) (h7 >>> 24);
-        result[30] = (byte) (h7 >>> 16);
-        result[29] = (byte) (h7 >>> 8);
+        result[31] = (byte)(h7 >>> 24);
+        result[30] = (byte)(h7 >>> 16);
+        result[29] = (byte)(h7 >>> 8);
         result[28] = (byte) h7;
       }
     if (hashSize >= HAVAL_224_BIT)
       {
-        result[27] = (byte) (h6 >>> 24);
-        result[26] = (byte) (h6 >>> 16);
-        result[25] = (byte) (h6 >>> 8);
+        result[27] = (byte)(h6 >>> 24);
+        result[26] = (byte)(h6 >>> 16);
+        result[25] = (byte)(h6 >>> 8);
         result[24] = (byte) h6;
       }
     if (hashSize >= HAVAL_192_BIT)
       {
-        result[23] = (byte) (h5 >>> 24);
-        result[22] = (byte) (h5 >>> 16);
-        result[21] = (byte) (h5 >>> 8);
+        result[23] = (byte)(h5 >>> 24);
+        result[22] = (byte)(h5 >>> 16);
+        result[21] = (byte)(h5 >>> 8);
         result[20] = (byte) h5;
       }
     if (hashSize >= HAVAL_160_BIT)
       {
-        result[19] = (byte) (h4 >>> 24);
-        result[18] = (byte) (h4 >>> 16);
-        result[17] = (byte) (h4 >>> 8);
+        result[19] = (byte)(h4 >>> 24);
+        result[18] = (byte)(h4 >>> 16);
+        result[17] = (byte)(h4 >>> 8);
         result[16] = (byte) h4;
       }
-    result[15] = (byte) (h3 >>> 24);
-    result[14] = (byte) (h3 >>> 16);
-    result[13] = (byte) (h3 >>> 8);
+    result[15] = (byte)(h3 >>> 24);
+    result[14] = (byte)(h3 >>> 16);
+    result[13] = (byte)(h3 >>> 8);
     result[12] = (byte) h3;
-    result[11] = (byte) (h2 >>> 24);
-    result[10] = (byte) (h2 >>> 16);
-    result[9] = (byte) (h2 >>> 8);
-    result[8] = (byte) h2;
-    result[7] = (byte) (h1 >>> 24);
-    result[6] = (byte) (h1 >>> 16);
-    result[5] = (byte) (h1 >>> 8);
-    result[4] = (byte) h1;
-    result[3] = (byte) (h0 >>> 24);
-    result[2] = (byte) (h0 >>> 16);
-    result[1] = (byte) (h0 >>> 8);
-    result[0] = (byte) h0;
-
+    result[11] = (byte)(h2 >>> 24);
+    result[10] = (byte)(h2 >>> 16);
+    result[ 9] = (byte)(h2 >>> 8);
+    result[ 8] = (byte) h2;
+    result[ 7] = (byte)(h1 >>> 24);
+    result[ 6] = (byte)(h1 >>> 16);
+    result[ 5] = (byte)(h1 >>> 8);
+    result[ 4] = (byte) h1;
+    result[ 3] = (byte)(h0 >>> 24);
+    result[ 2] = (byte)(h0 >>> 16);
+    result[ 1] = (byte)(h0 >>> 8);
+    result[ 0] = (byte) h0;
     return result;
   }
 
@@ -567,12 +608,11 @@ public class Haval extends BaseHash
   {
     if (valid == null)
       {
-        valid = Boolean.valueOf(DIGEST0.equals(Util.toString(new Haval().digest())));
+        String d = Util.toString(new Haval().digest());
+        valid = Boolean.valueOf(DIGEST0.equals(d));
       }
     return valid.booleanValue();
   }
-
-  // helper methods ----------------------------------------------------------
 
   /** Tailors the last output. */
   private void tailorDigestBits()
@@ -581,17 +621,25 @@ public class Haval extends BaseHash
     switch (hashSize)
       {
       case HAVAL_128_BIT:
-        t = (h7 & 0x000000FF) | (h6 & 0xFF000000) | (h5 & 0x00FF0000)
-            | (h4 & 0x0000FF00);
+        t = (h7 & 0x000000FF)
+          | (h6 & 0xFF000000)
+          | (h5 & 0x00FF0000)
+          | (h4 & 0x0000FF00);
         h0 += t >>> 8 | t << 24;
-        t = (h7 & 0x0000FF00) | (h6 & 0x000000FF) | (h5 & 0xFF000000)
-            | (h4 & 0x00FF0000);
+        t = (h7 & 0x0000FF00)
+          | (h6 & 0x000000FF)
+          | (h5 & 0xFF000000)
+          | (h4 & 0x00FF0000);
         h1 += t >>> 16 | t << 16;
-        t = (h7 & 0x00FF0000) | (h6 & 0x0000FF00) | (h5 & 0x000000FF)
-            | (h4 & 0xFF000000);
+        t = (h7 & 0x00FF0000)
+          | (h6 & 0x0000FF00)
+          | (h5 & 0x000000FF)
+          | (h4 & 0xFF000000);
         h2 += t >>> 24 | t << 8;
-        t = (h7 & 0xFF000000) | (h6 & 0x00FF0000) | (h5 & 0x0000FF00)
-            | (h4 & 0x000000FF);
+        t = (h7 & 0xFF000000)
+          | (h6 & 0x00FF0000)
+          | (h5 & 0x0000FF00)
+          | (h4 & 0x000000FF);
         h3 += t;
         break;
       case HAVAL_160_BIT:
@@ -625,9 +673,9 @@ public class Haval extends BaseHash
         h1 += ((h7 >>> 22) & 0x1F);
         h2 += ((h7 >>> 18) & 0x0F);
         h3 += ((h7 >>> 13) & 0x1F);
-        h4 += ((h7 >>> 9) & 0x0F);
-        h5 += ((h7 >>> 4) & 0x1F);
-        h6 += (h7 & 0x0F);
+        h4 += ((h7 >>>  9) & 0x0F);
+        h5 += ((h7 >>>  4) & 0x1F);
+        h6 +=  (h7         & 0x0F);
       }
   }
 
@@ -748,8 +796,8 @@ public class Haval extends BaseHash
 
   private int f4(int x6, int x5, int x4, int x3, int x2, int x1, int x0)
   {
-    return x4 & (x5 & ~x2 ^ x3 & ~x6 ^ x1 ^ x6 ^ x0) ^ x3 & (x1 & x2 ^ x5 ^ x6)
-           ^ x2 & x6 ^ x0;
+    return x4 & (x5 & ~x2 ^ x3 & ~x6 ^ x1 ^ x6 ^ x0) ^ x3
+           & (x1 & x2 ^ x5 ^ x6) ^ x2 & x6 ^ x0;
   }
 
   private int f5(int x6, int x5, int x4, int x3, int x2, int x1, int x0)

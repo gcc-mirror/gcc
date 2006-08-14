@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.tools.keytool;
 
+import gnu.classpath.Configuration;
 import gnu.classpath.SystemProperties;
 import gnu.classpath.tools.getopt.ClasspathToolParser;
 import gnu.classpath.tools.getopt.Option;
@@ -195,22 +196,24 @@ class KeyPasswdCmd extends Command
     setKeyStoreParams(_providerClassName, _ksType, _ksPassword, _ksURL);
     setAliasParam(_alias);
     setKeyPasswordNoPrompt(_password);
-
-    log.finer("-keypasswd handler will use the following options:"); //$NON-NLS-1$
-    log.finer("  -alias=" + alias); //$NON-NLS-1$
-    log.finer("  -new=" + _newPassword); //$NON-NLS-1$
-    log.finer("  -storetype=" + storeType); //$NON-NLS-1$
-    log.finer("  -keystore=" + storeURL); //$NON-NLS-1$
-    log.finer("  -provider=" + provider); //$NON-NLS-1$
-    log.finer("  -v=" + verbose); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      {
+        log.fine("-keypasswd handler will use the following options:"); //$NON-NLS-1$
+        log.fine("  -alias=" + alias); //$NON-NLS-1$
+        log.fine("  -new=" + _newPassword); //$NON-NLS-1$
+        log.fine("  -storetype=" + storeType); //$NON-NLS-1$
+        log.fine("  -keystore=" + storeURL); //$NON-NLS-1$
+        log.fine("  -provider=" + provider); //$NON-NLS-1$
+        log.fine("  -v=" + verbose); //$NON-NLS-1$
+      }
   }
 
   void start() throws KeyStoreException, NoSuchAlgorithmException, IOException,
       UnsupportedCallbackException, UnrecoverableKeyException,
       CertificateException
   {
-    log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "start"); //$NON-NLS-1$
     // 1. get the key entry and certificate chain associated to alias
     Key privateKey = getAliasPrivateKey();
     Certificate[] chain = store.getCertificateChain(alias);
@@ -221,16 +224,16 @@ class KeyPasswdCmd extends Command
 
     // 3. persist the key store
     saveKeyStore();
-
-    log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "start"); //$NON-NLS-1$
   }
 
   // own methods --------------------------------------------------------------
 
   Parser getParser()
   {
-    log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
-
+    if (Configuration.DEBUG)
+      log.entering(this.getClass().getName(), "getParser"); //$NON-NLS-1$
     Parser result = new ClasspathToolParser(Main.KEYPASSWD_CMD, true);
     result.setHeader(Messages.getString("KeyPasswdCmd.23")); //$NON-NLS-1$
     result.setFooter(Messages.getString("KeyPasswdCmd.22")); //$NON-NLS-1$
@@ -307,8 +310,8 @@ class KeyPasswdCmd extends Command
       }
     });
     result.add(options);
-
-    log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
+    if (Configuration.DEBUG)
+      log.exiting(this.getClass().getName(), "getParser", result); //$NON-NLS-1$
     return result;
   }
 

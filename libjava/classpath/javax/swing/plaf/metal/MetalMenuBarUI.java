@@ -44,6 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicMenuBarUI;
 
 /**
@@ -75,7 +76,9 @@ public class MetalMenuBarUI extends BasicMenuBarUI
    */
   public void update(Graphics g, JComponent c)
   {
-    if (c.isOpaque() && UIManager.get("MenuBar.gradient") != null)
+    if (c.isOpaque()
+        && UIManager.get("MenuBar.gradient") != null
+        && c.getBackground() instanceof UIResource)
       {
         MetalUtils.paintGradient(g, 0, 0, c.getWidth(), c.getHeight(),
                                  SwingConstants.VERTICAL, "MenuBar.gradient");

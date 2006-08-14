@@ -1,5 +1,5 @@
-/* TabSet.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+/* TabStop.java --
+   Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,9 @@ package javax.swing.text;
 
 import java.io.Serializable;
 
+/**
+ * Represents a tab position in some text.
+ */
 public class TabStop implements Serializable
 {
   /** The serialization UID (compatible with JDK1.5). */
@@ -61,18 +64,42 @@ public class TabStop implements Serializable
   int align;
   int leader;
 
+  /**
+   * Creates a new <code>TabStop</code> for the specified tab position.
+   * 
+   * @param pos  the tab position.
+   */
   public TabStop(float pos) 
   {
     this(pos, ALIGN_LEFT, LEAD_NONE);
   }
   
+  /**
+   * Creates a new <code>TabStop</code> with the specified attributes.
+   * 
+   * @param pos  the tab position.
+   * @param align  the alignment (one of {@link #ALIGN_LEFT}, 
+   *     {@link #ALIGN_CENTER}, {@link #ALIGN_RIGHT}, {@link #ALIGN_DECIMAL} 
+   *     or {@link #ALIGN_BAR}).
+   * @param leader  the leader (one of {@link #LEAD_NONE}, {@link #LEAD_DOTS}, 
+   *     {@link #LEAD_EQUALS}, {@link #LEAD_HYPHENS}, {@link #LEAD_THICKLINE} 
+   *     or {@link #LEAD_UNDERLINE}).
+   */
   public TabStop(float pos, int align, int leader)
   {
     this.pos = pos;
     this.align = align;
     this.leader = leader;
   }
-    
+  
+  /**
+   * Tests this <code>TabStop</code> for equality with an arbitrary object.
+   * 
+   * @param other  the other object (<code>null</code> permitted).
+   * 
+   * @return <code>true</code> if this <code>TabStop</code> is equal to 
+   *     the specified object, and <code>false</code> otherwise.
+   */
   public boolean equals(Object other) 
   {
     return (other != null)
@@ -82,34 +109,60 @@ public class TabStop implements Serializable
       && (((TabStop)other).getAlignment() == this.getAlignment());
   }
 
+  /**
+   * Returns the tab alignment.  This should be one of {@link #ALIGN_LEFT}, 
+   * {@link #ALIGN_CENTER}, {@link #ALIGN_RIGHT}, {@link #ALIGN_DECIMAL} or 
+   * {@link #ALIGN_BAR}.
+   * 
+   * @return The tab alignment.
+   */
   public int getAlignment() 
   {
     return align;
   }
 
+  /**
+   * Returns the leader type.  This should be one of {@link #LEAD_NONE}, 
+   * {@link #LEAD_DOTS}, {@link #LEAD_EQUALS}, {@link #LEAD_HYPHENS}, 
+   * {@link #LEAD_THICKLINE} or {@link #LEAD_UNDERLINE}.
+   * 
+   * @return The leader type.
+   */
   public int getLeader() 
   {
     return leader;
   }
 
+  /**
+   * Returns the tab position.
+   * 
+   * @return The tab position.
+   */
   public float getPosition() 
   {
     return pos;
   }
 
+  /**
+   * Returns a hash code for this <code>TabStop</code>.
+   * 
+   * @return A hash code.
+   */
   public int hashCode() 
   {
     return (int) pos + (int) leader + (int) align;
   }
 
+  /**
+   * Returns a string describing this <code>TabStop</code>.
+   * 
+   * @return A string describing this <code>TabStop</code>.
+   */
   public String toString() 
   {
     String prefix = "";
     switch (align)
       {
-      case ALIGN_LEFT:
-        prefix = "left ";
-        break;
       case ALIGN_RIGHT:
         prefix = "right ";
         break;
@@ -130,7 +183,8 @@ public class TabStop implements Serializable
         break;
       }
     
-    return (prefix + "tab @" + pos + ((leader == LEAD_NONE) ? "" : "(w/leaders)"));
+    return prefix + "tab @" + pos 
+        + ((leader == LEAD_NONE) ? "" : " (w/leaders)");
   }
 
 }

@@ -38,8 +38,11 @@ exception statement from your version.  */
 
 package gnu.java.security.hash;
 
+import gnu.java.security.Configuration;
 import gnu.java.security.Registry;
 import gnu.java.security.util.Util;
+
+import java.util.logging.Logger;
 
 /**
  * Whirlpool, a new 512-bit hashing function operating on messages less than
@@ -59,18 +62,10 @@ import gnu.java.security.util.Util;
  *    <a href="mailto:vincent.rijmen@iaik.tugraz.at">Vincent Rijmen</a>.</li>
  * </ol>
  */
-public final class Whirlpool extends BaseHash
+public final class Whirlpool
+    extends BaseHash
 {
-  // Debugging methods and variables
-  // -------------------------------------------------------------------------
-
-  private static final boolean DEBUG = false;
-
-  private static final int debuglevel = 3;
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
+  private static final Logger log = Logger.getLogger(Whirlpool.class.getName());
   private static final int BLOCK_SIZE = 64; // inner block size in bytes
 
   /** The digest of the 0-bit long message. */
@@ -83,22 +78,22 @@ public final class Whirlpool extends BaseHash
 
   /** Whirlpool S-box; p. 19. */
   private static final String S_box = // p. 19 [WHIRLPOOL]
-      "\u1823\uc6E8\u87B8\u014F\u36A6\ud2F5\u796F\u9152" +
-      "\u60Bc\u9B8E\uA30c\u7B35\u1dE0\ud7c2\u2E4B\uFE57" +
-      "\u1577\u37E5\u9FF0\u4AdA\u58c9\u290A\uB1A0\u6B85" +
-      "\uBd5d\u10F4\ucB3E\u0567\uE427\u418B\uA77d\u95d8" +
-      "\uFBEE\u7c66\udd17\u479E\ucA2d\uBF07\uAd5A\u8333" +
-      "\u6302\uAA71\uc819\u49d9\uF2E3\u5B88\u9A26\u32B0" +
-      "\uE90F\ud580\uBEcd\u3448\uFF7A\u905F\u2068\u1AAE" +
-      "\uB454\u9322\u64F1\u7312\u4008\uc3Ec\udBA1\u8d3d" +
-      "\u9700\ucF2B\u7682\ud61B\uB5AF\u6A50\u45F3\u30EF" +
-      "\u3F55\uA2EA\u65BA\u2Fc0\udE1c\uFd4d\u9275\u068A" +
-      "\uB2E6\u0E1F\u62d4\uA896\uF9c5\u2559\u8472\u394c" +
-      "\u5E78\u388c\ud1A5\uE261\uB321\u9c1E\u43c7\uFc04" +
-      "\u5199\u6d0d\uFAdF\u7E24\u3BAB\ucE11\u8F4E\uB7EB" +
-      "\u3c81\u94F7\uB913\u2cd3\uE76E\uc403\u5644\u7FA9" +
-      "\u2ABB\uc153\udc0B\u9d6c\u3174\uF646\uAc89\u14E1" +
-      "\u163A\u6909\u70B6\ud0Ed\ucc42\u98A4\u285c\uF886";
+      "\u1823\uc6E8\u87B8\u014F\u36A6\ud2F5\u796F\u9152"
+    + "\u60Bc\u9B8E\uA30c\u7B35\u1dE0\ud7c2\u2E4B\uFE57"
+    + "\u1577\u37E5\u9FF0\u4AdA\u58c9\u290A\uB1A0\u6B85"
+    + "\uBd5d\u10F4\ucB3E\u0567\uE427\u418B\uA77d\u95d8"
+    + "\uFBEE\u7c66\udd17\u479E\ucA2d\uBF07\uAd5A\u8333"
+    + "\u6302\uAA71\uc819\u49d9\uF2E3\u5B88\u9A26\u32B0"
+    + "\uE90F\ud580\uBEcd\u3448\uFF7A\u905F\u2068\u1AAE"
+    + "\uB454\u9322\u64F1\u7312\u4008\uc3Ec\udBA1\u8d3d"
+    + "\u9700\ucF2B\u7682\ud61B\uB5AF\u6A50\u45F3\u30EF"
+    + "\u3F55\uA2EA\u65BA\u2Fc0\udE1c\uFd4d\u9275\u068A"
+    + "\uB2E6\u0E1F\u62d4\uA896\uF9c5\u2559\u8472\u394c"
+    + "\u5E78\u388c\ud1A5\uE261\uB321\u9c1E\u43c7\uFc04"
+    + "\u5199\u6d0d\uFAdF\u7E24\u3BAB\ucE11\u8F4E\uB7EB"
+    + "\u3c81\u94F7\uB913\u2cd3\uE76E\uc403\u5644\u7FA9"
+    + "\u2ABB\uc153\udc0B\u9d6c\u3174\uF646\uAc89\u14E1"
+    + "\u163A\u6909\u70B6\ud0Ed\ucc42\u98A4\u285c\uF886";
 
   /** The 64-bit lookup tables; section 7.1 p. 13. */
   private static final long[] T0 = new long[256];
@@ -130,12 +125,9 @@ public final class Whirlpool extends BaseHash
   /** work area for holding block cipher's intermediate values. */
   private long w0, w1, w2, w3, w4, w5, w6, w7;
 
-  // Static code - to intialise lookup tables --------------------------------
-
   static
     {
       long time = System.currentTimeMillis();
-
       int ROOT = 0x11D; // para. 2.1 [WHIRLPOOL]
       int i, r, j;
       long s1, s2, s4, s5, s8, s9, t;
@@ -171,7 +163,6 @@ public final class Whirlpool extends BaseHash
           T6[i] = t >>> 48 | t << 16;
           T7[i] = t >>> 56 | t <<  8;
         }
-
       for (r = 0, i = 0; r < R; )
         rc[r++] = (T0[i++] & 0xFF00000000000000L)
                 ^ (T1[i++] & 0x00FF000000000000L)
@@ -181,102 +172,90 @@ public final class Whirlpool extends BaseHash
                 ^ (T5[i++] & 0x0000000000FF0000L)
                 ^ (T6[i++] & 0x000000000000FF00L)
                 ^ (T7[i++] & 0x00000000000000FFL);
-
       time = System.currentTimeMillis() - time;
-      if (DEBUG && debuglevel > 8)
+      if (Configuration.DEBUG)
         {
-          System.out.println("==========");
-          System.out.println();
-          System.out.println("Static data");
-          System.out.println();
-          
-          System.out.println();
-          System.out.println("T0[]:");
+          log.fine("Static data");
+          log.fine("T0[]:");
+          StringBuilder sb;
           for (i = 0; i < 64; i++)
             {
+              sb = new StringBuilder();
               for (j = 0; j < 4; j++)
-                System.out.print("0x" + Util.toString(T0[i * 4 + j]) + ", ");
+                sb.append("0x").append(Util.toString(T0[i * 4 + j])).append(", ");
 
-              System.out.println();
+              log.fine(sb.toString());
             }
-          System.out.println();
-          System.out.println("T1[]:");
+          log.fine("T1[]:");
           for (i = 0; i < 64; i++)
             {
+              sb = new StringBuilder();
               for (j = 0; j < 4; j++)
-                System.out.print("0x" + Util.toString(T1[i * 4 + j]) + ", ");
+                sb.append("0x").append(Util.toString(T1[i * 4 + j])).append(", ");
 
-              System.out.println();
+              log.fine(sb.toString());
             }
-          System.out.println();
-          System.out.println("T2[]:");
+          log.fine("T2[]:");
           for (i = 0; i < 64; i++)
             {
+              sb = new StringBuilder();
               for (j = 0; j < 4; j++)
-                System.out.print("0x" + Util.toString(T2[i * 4 + j]) + ", ");
+                sb.append("0x").append(Util.toString(T2[i * 4 + j])).append(", ");
 
-              System.out.println();
+              log.fine(sb.toString());
             }
-          System.out.println();
-          System.out.println("T3[]:");
+          log.fine("T3[]:");
           for (i = 0; i < 64; i++)
             {
+              sb = new StringBuilder();
               for (j = 0; j < 4; j++)
-                System.out.print("0x" + Util.toString(T3[i * 4 + j]) + ", ");
+                sb.append("0x").append(Util.toString(T3[i * 4 + j])).append(", ");
 
-              System.out.println();
+              log.fine(sb.toString());
             }
-          System.out.println();
-          System.out.println("T4[]:");
+          log.fine("\nT4[]:");
           for (i = 0; i < 64; i++)
             {
+              sb = new StringBuilder();
               for (j = 0; j < 4; j++)
-                System.out.print("0x" + Util.toString(T4[i * 4 + j]) + ", ");
+                sb.append("0x").append(Util.toString(T4[i * 4 + j])).append(", ");
 
-              System.out.println();
+              log.fine(sb.toString());
             }
-          System.out.println();
-          System.out.println("T5[]:");
+          log.fine("T5[]:");
           for (i = 0; i < 64; i++)
             {
+              sb = new StringBuilder();
               for (j = 0; j < 4; j++)
-                System.out.print("0x" + Util.toString(T5[i * 4 + j]) + ", ");
+                sb.append("0x").append(Util.toString(T5[i * 4 + j])).append(", ");
 
-              System.out.println();
+              log.fine(sb.toString());
             }
-          System.out.println();
-          System.out.println("T6[]:");
+          log.fine("T6[]:");
           for (i = 0; i < 64; i++)
             {
+              sb = new StringBuilder();
               for (j = 0; j < 4; j++)
-                System.out.print("0x" + Util.toString(T5[i * 4 + j]) + ", ");
+                sb.append("0x").append(Util.toString(T5[i * 4 + j])).append(", ");
 
-              System.out.println();
+              log.fine(sb.toString());
             }
-          System.out.println();
-          System.out.println("T7[]:");
+          log.fine("T7[]:");
           for (i = 0; i < 64; i++)
             {
+              sb = new StringBuilder();
               for (j = 0; j < 4; j++)
-                System.out.print("0x" + Util.toString(T5[i * 4 + j]) + ", ");
+                sb.append("0x").append(Util.toString(T5[i * 4 + j])).append(", ");
 
-              System.out.println();
+              log.fine(sb.toString());
             }
-          System.out.println();
-          System.out.println("rc[]:");
+          log.fine("rc[]:");
           for (i = 0; i < R; i++)
-            System.out.println("0x" + Util.toString(rc[i]));
+            log.fine("0x" + Util.toString(rc[i]));
 
-          System.out.println();
-
-          System.out.println();
-          System.out.println("Total initialization time: " + time + " ms.");
-          System.out.println();
+          log.fine("Total initialization time: " + time + " ms.");
         }
     }
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   /** Trivial 0-arguments constructor. */
   public Whirlpool()
@@ -285,7 +264,7 @@ public final class Whirlpool extends BaseHash
   }
 
   /**
-   * <p>Private constructor for cloning purposes.</p>
+   * Private constructor for cloning purposes.
    *
    * @param md the instance to clone.
    */
@@ -305,20 +284,10 @@ public final class Whirlpool extends BaseHash
     this.buffer = (byte[]) md.buffer.clone();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // java.lang.Cloneable interface implementation ----------------------------
-
   public Object clone()
   {
     return (new Whirlpool(this));
   }
-
-  // Implementation of concrete methods in BaseHash --------------------------
 
   protected void transform(byte[] in, int offset)
   {
@@ -387,7 +356,6 @@ public final class Whirlpool extends BaseHash
        | (in[offset++] & 0xFFL) << 16
        | (in[offset++] & 0xFFL) <<  8
        | (in[offset++] & 0xFFL);
-
     // transform K into the key schedule Kr; 0 <= r <= R
     k00 = H0;
     k01 = H1;
@@ -397,7 +365,6 @@ public final class Whirlpool extends BaseHash
     k05 = H5;
     k06 = H6;
     k07 = H7;
-
     nn0 = n0 ^ k00;
     nn1 = n1 ^ k01;
     nn2 = n2 ^ k02;
@@ -406,10 +373,8 @@ public final class Whirlpool extends BaseHash
     nn5 = n5 ^ k05;
     nn6 = n6 ^ k06;
     nn7 = n7 ^ k07;
-
     // intermediate cipher output
     w0 = w1 = w2 = w3 = w4 = w5 = w6 = w7 = 0L;
-
     for (int r = 0; r < R; r++)
       {
         // 1. compute intermediate round key schedule by applying ro[rc]
@@ -478,7 +443,6 @@ public final class Whirlpool extends BaseHash
             ^ T5[(int)((k02 >> 16) & 0xFFL)]
             ^ T6[(int)((k01 >>  8) & 0xFFL)]
             ^ T7[(int)( k00        & 0xFFL)];
-
         k00 = Kr0;
         k01 = Kr1;
         k02 = Kr2;
@@ -487,7 +451,6 @@ public final class Whirlpool extends BaseHash
         k05 = Kr5;
         k06 = Kr6;
         k07 = Kr7;
-
         // 2. incrementally compute the cipher output
         w0 = T0[(int)((nn0 >> 56) & 0xFFL)]
            ^ T1[(int)((nn7 >> 48) & 0xFFL)]
@@ -553,7 +516,6 @@ public final class Whirlpool extends BaseHash
            ^ T5[(int)((nn2 >> 16) & 0xFFL)]
            ^ T6[(int)((nn1 >>  8) & 0xFFL)]
            ^ T7[(int)( nn0        & 0xFFL)] ^ Kr7;
-
         nn0 = w0;
         nn1 = w1;
         nn2 = w2;
@@ -563,7 +525,6 @@ public final class Whirlpool extends BaseHash
         nn6 = w6;
         nn7 = w7;
       }
-
     // apply the Miyaguchi-Preneel hash scheme
     H0 ^= w0 ^ n0;
     H1 ^= w1 ^ n1;
@@ -588,12 +549,9 @@ public final class Whirlpool extends BaseHash
     //		count + 33 + padding = 0 (mod BLOCK_SIZE)
     int n = (int)((count + 33) % BLOCK_SIZE);
     int padding = n == 0 ? 33 : BLOCK_SIZE - n + 33;
-
     byte[] result = new byte[padding];
-
     // padding is always binary 1 followed by binary 0s
     result[0] = (byte) 0x80;
-
     // save (right justified) the number of bits hashed
     long bits = count * 8;
     int i = padding - 8;
@@ -605,14 +563,13 @@ public final class Whirlpool extends BaseHash
     result[i++] = (byte)(bits >>> 16);
     result[i++] = (byte)(bits >>>  8);
     result[i  ] = (byte) bits;
-
     return result;
   }
 
   protected byte[] getResult()
   {
     // apply inverse mu to the context
-    byte[] result = new byte[] {
+    return new byte[] {
       (byte)(H0 >>> 56), (byte)(H0 >>> 48), (byte)(H0 >>> 40), (byte)(H0 >>> 32),
       (byte)(H0 >>> 24), (byte)(H0 >>> 16), (byte)(H0 >>>  8), (byte) H0,
       (byte)(H1 >>> 56), (byte)(H1 >>> 48), (byte)(H1 >>> 40), (byte)(H1 >>> 32),
@@ -628,10 +585,8 @@ public final class Whirlpool extends BaseHash
       (byte)(H6 >>> 56), (byte)(H6 >>> 48), (byte)(H6 >>> 40), (byte)(H6 >>> 32),
       (byte)(H6 >>> 24), (byte)(H6 >>> 16), (byte)(H6 >>>  8), (byte) H6,
       (byte)(H7 >>> 56), (byte)(H7 >>> 48), (byte)(H7 >>> 40), (byte)(H7 >>> 32),
-      (byte)(H7 >>> 24), (byte)(H7 >>> 16), (byte)(H7 >>>  8), (byte) H7
-    };
+      (byte)(H7 >>> 24), (byte)(H7 >>> 16), (byte)(H7 >>>  8), (byte) H7 };
 
-    return result;
   }
 
   protected void resetContext()
@@ -642,8 +597,10 @@ public final class Whirlpool extends BaseHash
   public boolean selfTest()
   {
     if (valid == null)
-      valid = Boolean.valueOf(DIGEST0.equals(Util.toString(new Whirlpool().digest())));
-
+      {
+        String d = Util.toString(new Whirlpool().digest());
+        valid = Boolean.valueOf(DIGEST0.equals(d));
+      }
     return valid.booleanValue();
   }
 }

@@ -43,7 +43,6 @@ import gnu.java.awt.java2d.LineSegment;
 import gnu.java.awt.java2d.QuadSegment;
 import gnu.java.awt.java2d.Segment;
 
-import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -118,6 +117,7 @@ public class BasicStroke implements Stroke
   /** The dash phase. */
   private final float phase;
 
+  // The inner and outer paths of the stroke
   private Segment start, end;
 
   /**
@@ -260,7 +260,7 @@ public class BasicStroke implements Stroke
    */
   public Shape createStrokedShape(Shape s)
   {
-    PathIterator pi = s.getPathIterator( new AffineTransform() );
+    PathIterator pi = s.getPathIterator(null);
 
     if( dash == null )
       return solidStroke( pi );
@@ -435,8 +435,8 @@ public class BasicStroke implements Stroke
             else
               addSegments(p);
 
-            x = coords[0];
-            y = coords[1];
+            x = coords[2];
+            y = coords[3];
             break;
 
           case PathIterator.SEG_CUBICTO:
@@ -452,17 +452,25 @@ public class BasicStroke implements Stroke
             else
               addSegments(p);
 
-            x = coords[0];
-            y = coords[1];
+            x = coords[4];
+            y = coords[5];
             break;
 
           case PathIterator.SEG_CLOSE:
-            p = (new LineSegment(x, y, x0, y0)).getDisplacedSegments(width/2.0);
-            addSegments(p);
+            if (x == x0 && y == y0)
+              {
+                joinSegments(new Segment[] { start.first, end.first });
+              }
+            else
+              {
+                p = (new LineSegment(x, y, x0, y0)).getDisplacedSegments(width / 2.0);
+                addSegments(p);
+              }
             convertPath(output, start);
             convertPath(output, end);
             start = end = null;
             pathOpen = false;
+            output.setWindingRule(GeneralPath.WIND_EVEN_ODD);
             break;
           }
         pi.next();
@@ -499,7 +507,7 @@ public class BasicStroke implements Stroke
   }
 
   /**
-   * Convert and add the linked list of Segments in s to a GeneralPath p.
+   * Append the Segments in s to the GeneralPath p
    */
   private void convertPath(GeneralPath p, Segment s)
   {
@@ -527,17 +535,27 @@ public class BasicStroke implements Stroke
 
     p.closePath();
   }
-
+  
   /**
-   * Add to segments to start and end, joining the outer pair and 
+   * Add the segments to start and end (the inner and outer edges of the stroke) 
    */
   private void addSegments(Segment[] segments)
   {
-    double[] p0 = start.last.last();
+    joinSegments(segments);
+    start.add(segments[0]);
+    end.add(segments[1]);
+  }
+
+  private void joinSegments(Segment[] segments)
+  {
+    double[] p0 = start.last.cp2();
     double[] p1 = new double[]{start.last.P2.getX(), start.last.P2.getY()};
-    double[] p2 = new double[]{segments[0].P1.getX(), segments[0].P1.getY()};
-    double[] p3 = segments[0].first();
+    double[] p2 = new double[]{segments[0].first.P1.getX(), segments[0].first.P1.getY()};
+    double[] p3 = segments[0].cp1();
     Point2D p;
+
+    p = lineIntersection(p0[0],p0[1],p1[0],p1[1],
+                                 p2[0],p2[1],p3[0],p3[1], false);
 
     double det = (p1[0] - p0[0])*(p3[1] - p2[1]) - 
       (p3[0] - p2[0])*(p1[1] - p0[1]);
@@ -546,42 +564,14 @@ public class BasicStroke implements Stroke
       {
         // start and segment[0] form the 'inner' part of a join, 
         // connect the overlapping segments
-        p = lineIntersection(p0[0],p0[1],p1[0],p1[1],p2[0],p2[1],p3[0],p3[1], false);
-        if( p == null ) 
-          {
-            // Dodgy.
-            start.add(new LineSegment(start.last.P2, segments[0].P1));
-            p = new Point2D.Double((segments[0].P1.getX()+ start.last.P2.getX())/2.0,
-                                   (segments[0].P1.getY()+ start.last.P2.getY())/2.0);
-          }
-        else
-          segments[0].P1 = start.last.P2 = p;
-
-        start.add( segments[0] );
-        joinSegments(end, segments[1], p);
+        joinInnerSegments(start, segments[0], p);
+        joinOuterSegments(end, segments[1], p);
       }
     else
       {
         // end and segment[1] form the 'inner' part 
-        p0 = end.last.last();
-        p1 = new double[]{end.last.P2.getX(), end.last.P2.getY()};
-        p2 = new double[]{segments[1].P1.getX(), segments[1].P1.getY()};
-        p3 = segments[1].first();
-
-        p = lineIntersection(p0[0],p0[1],p1[0],p1[1],
-                             p2[0],p2[1],p3[0],p3[1], false);
-        if( p == null )
-          {
-            // Dodgy.
-            end.add(new LineSegment(end.last.P2, segments[1].P1));
-            p = new Point2D.Double((segments[1].P1.getX()+ end.last.P2.getX())/2.0,
-                                   (segments[1].P1.getY()+ end.last.P2.getY())/2.0);
-          }
-        else
-          segments[1].P1 = end.last.P2 = p;
-
-        end.add( segments[1] );
-        joinSegments(start, segments[0], p);
+        joinInnerSegments(end, segments[1], p);
+        joinOuterSegments(start, segments[0], p);
       }
   }
 
@@ -602,7 +592,7 @@ public class BasicStroke implements Stroke
         break;
 
       case CAP_SQUARE:
-        p0 = a.last.last();
+        p0 = a.last.cp2();
         p1 = new double[]{a.last.P2.getX(), a.last.P2.getY()};
         dx = p1[0] - p0[0];
         dy = p1[1] - p0[1];
@@ -617,7 +607,7 @@ public class BasicStroke implements Stroke
         break;
 
       case CAP_ROUND:
-        p0 = a.last.last();
+        p0 = a.last.cp2();
         p1 = new double[]{a.last.P2.getX(), a.last.P2.getY()};
         dx = p1[0] - p0[0];
         dy = p1[1] - p0[1];
@@ -676,7 +666,7 @@ public class BasicStroke implements Stroke
    * insideP is the inside intersection point of the join, needed for
    * calculating miter lengths.
    */
-  private void joinSegments(Segment a, Segment b, Point2D insideP)
+  private void joinOuterSegments(Segment a, Segment b, Point2D insideP)
   {
     double[] p0, p1;
     double dx, dy, l;
@@ -685,10 +675,10 @@ public class BasicStroke implements Stroke
     switch( join )
       {
       case JOIN_MITER:
-        p0 = a.last.last();
+        p0 = a.last.cp2();
         p1 = new double[]{a.last.P2.getX(), a.last.P2.getY()};
         double[] p2 = new double[]{b.P1.getX(), b.P1.getY()};
-        double[] p3 = b.first();
+        double[] p3 = b.cp1();
         Point2D p = lineIntersection(p0[0],p0[1],p1[0],p1[1],p2[0],p2[1],p3[0],p3[1], true);
         if( p == null || insideP == null )
           a.add(new LineSegment(a.last.P2, b.P1));
@@ -705,7 +695,7 @@ public class BasicStroke implements Stroke
         break;
 
       case JOIN_ROUND:
-        p0 = a.last.last();
+        p0 = a.last.cp2();
         p1 = new double[]{a.last.P2.getX(), a.last.P2.getY()};
         dx = p1[0] - p0[0];
         dy = p1[1] - p0[1];
@@ -715,7 +705,7 @@ public class BasicStroke implements Stroke
         c1 = new Point2D.Double(p1[0] + dx, p1[1] + dy);
 
         p0 = new double[]{b.P1.getX(), b.P1.getY()};
-        p1 = b.first();
+        p1 = b.cp1();
 
         dx = p0[0] - p1[0]; // backwards direction.
         dy = p0[1] - p1[1];
@@ -730,6 +720,29 @@ public class BasicStroke implements Stroke
         a.add(new LineSegment(a.last.P2, b.P1));
         break;
       }
-    a.add(b);
   }
-} 
+
+  /**
+   * Join a and b segments, removing any overlap
+   */
+  private void joinInnerSegments(Segment a, Segment b, Point2D p)
+  {
+    double[] p0 = a.last.cp2();
+    double[] p1 = new double[] { a.last.P2.getX(), a.last.P2.getY() };
+    double[] p2 = new double[] { b.P1.getX(), b.P1.getY() };
+    double[] p3 = b.cp1();
+
+    if (p == null)
+      {
+        // Dodgy.
+        a.add(new LineSegment(a.last.P2, b.P1));
+        p = new Point2D.Double((b.P1.getX() + a.last.P2.getX()) / 2.0,
+                               (b.P1.getY() + a.last.P2.getY()) / 2.0);
+      }
+    else
+      // This assumes segments a and b are single segments, which is
+      // incorrect - if they are a linked list of segments (ie, passed in
+      // from a flattening operation), this produces strange results!!
+      a.last.P2 = b.P1 = p;
+  }
+}

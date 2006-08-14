@@ -42,60 +42,46 @@ import gnu.java.security.Registry;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
- * <p>A Factory to instantiate pseudo random number generators.</p>
+ * A Factory to instantiate pseudo random number generators.
  */
-public class PRNGFactory implements Registry
+public class PRNGFactory
+    implements Registry
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /** Trivial constructor to enforce <i>Singleton</i> pattern. */
   protected PRNGFactory()
   {
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns an instance of a padding algorithm given its name.</p>
-   *
+   * Returns an instance of a padding algorithm given its name.
+   * 
    * @param prng the case-insensitive name of the PRNG.
    * @return an instance of the pseudo-random number generator.
    * @exception InternalError if the implementation does not pass its self-
-   * test.
+   *              test.
    */
   public static final IRandom getInstance(String prng)
   {
     if (prng == null)
-      {
-        return null;
-      }
+      return null;
 
     prng = prng.trim();
     IRandom result = null;
     if (prng.equalsIgnoreCase(MD_PRNG))
-      {
-        result = new MDGenerator();
-      }
+      result = new MDGenerator();
 
     return result;
   }
 
   /**
-   * <p>Returns a {@link Set} of names of padding algorithms supported by this
-   * <i>Factory</i>.</p>
-   *
+   * Returns a {@link Set} of names of padding algorithms supported by this
+   * <i>Factory</i>.
+   * 
    * @return a {@link Set} of pseudo-random number generator algorithm names
-   * (Strings).
+   *         (Strings).
    */
   public static final Set getNames()
   {
@@ -103,7 +89,4 @@ public class PRNGFactory implements Registry
     hs.add(MD_PRNG);
     return Collections.unmodifiableSet(hs);
   }
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

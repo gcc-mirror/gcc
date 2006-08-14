@@ -67,7 +67,7 @@ final class ForEachNode
 
   TemplateNode clone(Stylesheet stylesheet)
   {
-    int len = sortKeys.size();
+    int len = sortKeys != null ? sortKeys.size() : 0;
     List sortKeys2 = new ArrayList(len);
     for (int i = 0; i < len; i++)
       sortKeys2.add(((Key) sortKeys.get(i)).clone(stylesheet));

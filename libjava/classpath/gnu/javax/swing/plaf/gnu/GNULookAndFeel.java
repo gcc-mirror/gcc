@@ -71,6 +71,7 @@ public class GNULookAndFeel extends BasicLookAndFeel
           "ScrollBar.background", new ColorUIResource(blueGray),
           "CheckBox.icon", new CheckBoxIcon(),
           "RadioButton.icon", new RadioButtonIcon(),
+          "Tree.hash", new ColorUIResource(Color.black),
 	  
 	"Tree.closedIcon",
 	  new IconUIResource(new ImageIcon

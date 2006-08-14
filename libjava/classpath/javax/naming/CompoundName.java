@@ -48,6 +48,10 @@ import java.util.Properties;
 import java.util.Vector;
 
 /**
+ * Represents hierarchical names from the single namespace. For instance,
+ * the path /home/audriusa/classpath/file.txt is the compound name, using
+ * the filesystem namespace. 
+ * 
  * @author Tom Tromey (tromey@redhat.com)
  * @date May 16, 2001
  *

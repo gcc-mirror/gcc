@@ -1,6 +1,6 @@
 /* PacketProcessor.java -- a thread which processes command packets
    from the debugger
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005, 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -137,6 +137,10 @@ public class PacketProcessor
    */
   public Object run ()
   {
+    // Notify initialization thread (gnu.classpath.jdwp.Jdwp) that
+    // the PacketProcessor thread is ready.
+    Jdwp.getDefault().subcomponentInitialized ();
+	
     try
       {
         while (!_shutdown)
@@ -144,7 +148,7 @@ public class PacketProcessor
             _processOnePacket ();
           }
       }
-    catch (IOException ex)
+    catch (Exception ex)
       {
         ex.printStackTrace();
       }

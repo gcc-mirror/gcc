@@ -38,43 +38,30 @@ exception statement from your version.  */
 
 package gnu.javax.crypto.keyring;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import java.security.PublicKey;
-import java.security.KeyFactory;
-import java.security.spec.X509EncodedKeySpec;
-
-import java.util.Date;
-
 import gnu.java.security.key.IKeyPairCodec;
 import gnu.java.security.key.KeyPairCodecFactory;
 import gnu.java.security.key.dss.DSSPublicKey;
 import gnu.java.security.key.rsa.GnuRSAPublicKey;
 import gnu.javax.crypto.key.dh.GnuDHPublicKey;
 
-public final class PublicKeyEntry extends PrimitiveEntry
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Date;
+
+public final class PublicKeyEntry
+    extends PrimitiveEntry
 {
-
-  // Constants and fields.
-  // ------------------------------------------------------------------------
-
   public static final int TYPE = 6;
-
   private PublicKey key;
-
-  // Constructor.
-  // ------------------------------------------------------------------------
 
   public PublicKeyEntry(PublicKey key, Date creationDate, Properties properties)
   {
     super(TYPE, creationDate, properties);
-
     if (key == null)
-      {
-        throw new IllegalArgumentException("no key specified");
-      }
+      throw new IllegalArgumentException("no key specified");
     this.key = key;
   }
 
@@ -83,18 +70,13 @@ public final class PublicKeyEntry extends PrimitiveEntry
     super(TYPE);
   }
 
-  // Class method.
-  // ------------------------------------------------------------------------
-
   public static PublicKeyEntry decode(DataInputStream in) throws IOException
   {
     PublicKeyEntry entry = new PublicKeyEntry();
     entry.defaultDecode(in);
     String type = entry.properties.get("type");
     if (type == null)
-      {
-        throw new MalformedKeyringException("no key type");
-      }
+      throw new MalformedKeyringException("no key type");
     if (type.equalsIgnoreCase("RAW-DSS"))
       {
         IKeyPairCodec coder = KeyPairCodecFactory.getInstance("dss");
@@ -125,33 +107,23 @@ public final class PublicKeyEntry extends PrimitiveEntry
             try
               {
                 KeyFactory kf = KeyFactory.getInstance("DSA");
-                entry.key = kf.generatePublic(new X509EncodedKeySpec(
-                                                                     entry.payload));
+                entry.key = kf.generatePublic(new X509EncodedKeySpec(entry.payload));
               }
             catch (Exception x)
               {
               }
             if (entry.key == null)
-              {
-                throw new MalformedKeyringException(
-                                                    "could not decode X.509 key");
-              }
+              throw new MalformedKeyringException("could not decode X.509 key");
           }
       }
     else
-      {
-        throw new MalformedKeyringException("unsupported public key type: "
-                                            + type);
-      }
+      throw new MalformedKeyringException("unsupported public key type: " + type);
     return entry;
   }
 
-  // Instance methods.
-  // ------------------------------------------------------------------------
-
   /**
    * Returns the public key.
-   *
+   * 
    * @return The public key.
    */
   public PublicKey getKey()
@@ -185,8 +157,6 @@ public final class PublicKeyEntry extends PrimitiveEntry
         payload = key.getEncoded();
       }
     else
-      {
-        throw new IllegalArgumentException("cannot encode public key");
-      }
+      throw new IllegalArgumentException("cannot encode public key");
   }
 }

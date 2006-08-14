@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.IOP;
 
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -57,42 +58,30 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class IORHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
-   * Create the IOR typecode (structure,
-   * named "IOR").
-   * The typecode states that the structure contains the
-   * following fields: type_id, profiles.
+   * Create the IOR typecode (structure, named "IOR"). The typecode states that
+   * the structure contains the following fields: type_id, profiles.
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        StructMember[] members = new StructMember[ 2 ];
+    ORB orb = OrbRestricted.Singleton;
+    StructMember[] members = new StructMember[2];
 
-        TypeCode field;
+    TypeCode field;
 
-        field = orb.get_primitive_tc(TCKind.tk_string);
-        members [ 0 ] = new StructMember("type_id", field, null);
+    field = orb.get_primitive_tc(TCKind.tk_string);
+    members[0] = new StructMember("type_id", field, null);
 
-        field = orb.create_sequence_tc(0, TaggedProfileHelper.type());
-        members [ 1 ] = new StructMember("profiles", field, null);
-        typeCode = orb.create_struct_tc(id(), "IOR", members);
-      }
-    return typeCode;
+    field = orb.create_sequence_tc(0, TaggedProfileHelper.type());
+    members[1] = new StructMember("profiles", field, null);
+    return orb.create_struct_tc(id(), "IOR", members);
   }
 
   /**
-  * Insert the IOR into the given Any.
-  * This method uses the IORHolder.
-  *
-  * @param any the Any to insert into.
-  * @param that the IOR to insert.
-  */
+   * Insert the IOR into the given Any. This method uses the IORHolder.
+   * 
+   * @param any the Any to insert into.
+   * @param that the IOR to insert.
+   */
   public static void insert(Any any, IOR that)
   {
     any.insert_Streamable(new IORHolder(that));

@@ -222,6 +222,36 @@ public final class System
     return VMSystem.currentTimeMillis();
   }
 
+  /** 
+   * <p>
+   * Returns the current value of a nanosecond-precise system timer.
+   * The value of the timer is an offset relative to some arbitrary fixed
+   * time, which may be in the future (making the value negative).  This
+   * method is useful for timing events where nanosecond precision is
+   * required.  This is achieved by calling this method before and after the
+   * event, and taking the difference betweent the two times:
+   * </p>
+   * <p>
+   * <code>long startTime = System.nanoTime();</code><br />
+   * <code>... <emph>event code</emph> ...</code><br />
+   * <code>long endTime = System.nanoTime();</code><br />
+   * <code>long duration = endTime - startTime;</code><br />
+   * </p>
+   * <p>
+   * Note that the value is only nanosecond-precise, and not accurate; there
+   * is no guarantee that the difference between two values is really a
+   * nanosecond.  Also, the value is prone to overflow if the offset
+   * exceeds 2^63.
+   * </p>
+   *
+   * @return the time of a system timer in nanoseconds.
+   * @since 1.5 
+   */
+  public static long nanoTime()
+  {
+    return VMSystem.nanoTime();
+  }
+
   /**
    * Copy one array onto another from <code>src[srcStart]</code> ...
    * <code>src[srcStart+len-1]</code> to <code>dest[destStart]</code> ...
@@ -319,6 +349,7 @@ public final class System
    * <dt>gnu.java.io.encoding_scheme_alias.iso-latin-_?</dt> <dd>8859_?</dd>
    * <dt>gnu.java.io.encoding_scheme_alias.latin?</dt>       <dd>8859_?</dd>
    * <dt>gnu.java.io.encoding_scheme_alias.utf-8</dt>        <dd>UTF8</dd>
+   * <dt>gnu.javax.print.server</dt>     <dd>Hostname of external CUPS server.</dd>
    * </dl>
    *
    * @return the system properties, will never be null

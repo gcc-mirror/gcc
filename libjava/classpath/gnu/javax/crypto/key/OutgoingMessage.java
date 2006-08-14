@@ -53,20 +53,12 @@ import java.security.PublicKey;
 import java.math.BigInteger;
 
 /**
- * <p>An implementation of outgoing messages for use with key agreement
- * protocols.</p>
+ * An implementation of outgoing messages for use with key agreement protocols.
  */
 public class OutgoingMessage
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The internal output stream. */
   private ByteArrayOutputStream out;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   public OutgoingMessage()
   {
@@ -75,16 +67,10 @@ public class OutgoingMessage
     out = new ByteArrayOutputStream();
   }
 
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the encoded form of the current message including the 4-byte
-   * length header.</p>
-   *
+   * Returns the encoded form of the current message including the 4-byte length
+   * header.
+   * 
    * @throws KeyAgreementException if an encoding size constraint is violated.
    */
   public byte[] toByteArray() throws KeyAgreementException
@@ -92,28 +78,25 @@ public class OutgoingMessage
     byte[] buffer = wrap();
     int length = buffer.length;
     byte[] result = new byte[length + 4];
-    result[0] = (byte) (length >>> 24);
-    result[1] = (byte) (length >>> 16);
-    result[2] = (byte) (length >>> 8);
+    result[0] = (byte)(length >>> 24);
+    result[1] = (byte)(length >>> 16);
+    result[2] = (byte)(length >>> 8);
     result[3] = (byte) length;
     System.arraycopy(buffer, 0, result, 4, length);
-
     return result;
   }
 
   /**
-   * <p>Returns the encoded form of the current message excluding the 4-byte
-   * length header.</p>
-   *
+   * Returns the encoded form of the current message excluding the 4-byte length
+   * header.
+   * 
    * @throws KeyAgreementException if an encoding size constraint is violated.
    */
   public byte[] wrap() throws KeyAgreementException
   {
     int length = out.size();
     if (length > Registry.SASL_BUFFER_MAX_LIMIT || length < 0)
-      {
-        throw new KeyAgreementException("message content is too long");
-      }
+      throw new KeyAgreementException("message content is too long");
     return out.toByteArray();
   }
 
@@ -128,9 +111,8 @@ public class OutgoingMessage
    * representing the total length, excluding these 4 bytes, of the bytes
    * representing the encoded key and the one-byte representing the key-type and
    * format; i.e.
-   * 
    * <pre>
-   *    key --&gt; 4-byte-length || 1-byte-type-and-format || encoded-key-bytes
+   * key --&gt; 4-byte-length || 1-byte-type-and-format || encoded-key-bytes
    * </pre>
    * 
    * @param k the public key to encode.
@@ -152,9 +134,8 @@ public class OutgoingMessage
    * representing the total length, excluding these 4 bytes, of the bytes
    * representing the encoded key and the one-byte representing the key-type and
    * format; i.e.
-   * 
    * <pre>
-   *    key --&gt; 4-byte-length || 1-byte-type-and-format || encoded-key-bytes
+   * key --&gt; 4-byte-length || 1-byte-type-and-format || encoded-key-bytes
    * </pre>
    * 
    * @param k the private key to encode.
@@ -166,8 +147,8 @@ public class OutgoingMessage
   }
 
   /**
-   * <p>Encodes an MPI into the message.</p>
-   *
+   * Encodes an MPI into the message.
+   * 
    * @param val the MPI to encode.
    * @throws KeyAgreementException if an encoding size constraint is violated.
    */
@@ -176,20 +157,18 @@ public class OutgoingMessage
     byte[] b = val.toByteArray();
     int length = b.length;
     if (length > Registry.SASL_TWO_BYTE_MAX_LIMIT)
-      {
-        throw new KeyAgreementException("MPI is too long");
-      }
-    byte[] lengthBytes = { (byte) (length >>> 8), (byte) length };
+      throw new KeyAgreementException("MPI is too long");
+    byte[] lengthBytes = { (byte)(length >>> 8), (byte) length };
     out.write(lengthBytes, 0, 2);
     out.write(b, 0, b.length);
   }
 
   /**
-   * <p>Encodes a string into the message.</p>
-   *
+   * Encodes a string into the message.
+   * 
    * @param s the string to encode.
-   * @throws KeyAgreementException if the UTF8 encoding is not supported on
-   * this platform, or if an encoding size constraint is violated.
+   * @throws KeyAgreementException if the UTF8 encoding is not supported on this
+   *           platform, or if an encoding size constraint is violated.
    */
   public void writeString(String s) throws KeyAgreementException
   {
@@ -204,10 +183,8 @@ public class OutgoingMessage
       }
     int length = b.length;
     if (length > Registry.SASL_TWO_BYTE_MAX_LIMIT)
-      {
-        throw new KeyAgreementException("text too long");
-      }
-    byte[] lengthBytes = { (byte) (length >>> 8), (byte) length };
+      throw new KeyAgreementException("text too long");
+    byte[] lengthBytes = { (byte)(length >>> 8), (byte) length };
     out.write(lengthBytes, 0, 2);
     out.write(b, 0, b.length);
   }
@@ -224,9 +201,11 @@ public class OutgoingMessage
     int length = b.length + 1;
     if (length > Registry.SASL_FOUR_BYTE_MAX_LIMIT)
       throw new KeyAgreementException("Encoded key is too long");
-
-    byte[] lengthBytes = { (byte) (length >>> 24), (byte) (length >>> 16),
-                          (byte) (length >>> 8), (byte) length };
+    byte[] lengthBytes = {
+        (byte)(length >>> 24),
+        (byte)(length >>> 16),
+        (byte)(length >>> 8),
+        (byte) length };
     out.write(lengthBytes, 0, 4);
     out.write(((keyType & 0x0F) << 4) | (formatID & 0x0F));
     out.write(b, 0, b.length);

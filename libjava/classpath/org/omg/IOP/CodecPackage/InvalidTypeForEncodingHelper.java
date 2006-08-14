@@ -40,6 +40,7 @@ package org.omg.IOP.CodecPackage;
 
 import gnu.CORBA.EmptyExceptionHolder;
 import gnu.CORBA.Minor;
+import gnu.CORBA.OrbRestricted;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
@@ -58,29 +59,19 @@ import org.omg.CORBA.portable.OutputStream;
 public abstract class InvalidTypeForEncodingHelper
 {
   /**
-   * The cached typecode value, computed only once.
-   */
-  private static TypeCode typeCode;
-
-  /**
-   * Create the InvalidTypeForEncoding typecode (structure,
-   * named "InvalidTypeForEncoding").
+   * Create the InvalidTypeForEncoding typecode (structure, named
+   * "InvalidTypeForEncoding").
    */
   public static TypeCode type()
   {
-    if (typeCode == null)
-      {
-        ORB orb = ORB.init();
-        StructMember[] members = new StructMember[ 0 ];
-        typeCode =
-          orb.create_exception_tc(id(), "InvalidTypeForEncoding", members);
-      }
-    return typeCode;
+    ORB orb = OrbRestricted.Singleton;
+    StructMember[] members = new StructMember[0];
+    return orb.create_exception_tc(id(), "InvalidTypeForEncoding", members);
   }
 
   /**
    * Insert the InvalidTypeForEncoding into the given Any.
-   *
+   * 
    * @param any the Any to insert into.
    * @param that the InvalidTypeForEncoding to insert.
    */

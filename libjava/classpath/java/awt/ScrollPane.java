@@ -46,6 +46,7 @@ import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 
+
 /**
   * This widget provides a scrollable region that allows a single 
   * subcomponent to be viewed through a smaller window.
@@ -75,6 +76,11 @@ public static final int SCROLLBARS_ALWAYS = 1;
   * Constant indicating that scrollbars are never displayed in this window.
   */
 public static final int SCROLLBARS_NEVER = 2;
+
+/**
+ * The number used to generate the name returned by getName.
+ */
+private static transient long next_scrollpane_number;
 
 // Serialization constant
 private static final long serialVersionUID = 7956609840827222915L;
@@ -221,7 +227,7 @@ getVAdjustable()
   * @return The viewport size.
   */
 public Dimension getViewportSize ()
-{
+{ 
   Dimension viewsize = getSize ();
   Insets insets = getInsets ();
 
@@ -231,9 +237,9 @@ public Dimension getViewportSize ()
   Component[] list = getComponents();
   if ((list == null) || (list.length <= 0))
     return viewsize;
-
+  
   Dimension dim = list[0].getPreferredSize();
-
+  
   if (dim.width <= 0 && dim.height <= 0)
     return viewsize;
 
@@ -276,7 +282,7 @@ public Dimension getViewportSize ()
     needHorizontal = true;
   else if (dim.width > (viewsize.width - vScrollbarWidth))
     mayNeedHorizontal = true;
-
+  
   if (needVertical && mayNeedHorizontal)
     needHorizontal = true;
 
@@ -288,7 +294,7 @@ public Dimension getViewportSize ()
 
   if (needVertical)
     viewsize.width -= vScrollbarWidth;
-
+  
   return viewsize;
 }
 
@@ -613,5 +619,21 @@ paramString()
       accessibleContext = new AccessibleAWTScrollPane();
     return accessibleContext;
   }
+  
+  /**
+   * Generate a unique name for this <code>ScrollPane</code>.
+   *
+   * @return A unique name for this <code>ScrollPane</code>.
+   */
+  String generateName()
+  {
+    return "scrollpane" + getUniqueLong();
+  }
+
+  private static synchronized long getUniqueLong()
+  {
+    return next_scrollpane_number++;
+  }
+  
 } // class ScrollPane 
 

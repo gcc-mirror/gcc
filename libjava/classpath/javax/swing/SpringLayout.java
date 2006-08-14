@@ -505,7 +505,7 @@ public class SpringLayout implements LayoutManager2
     }
   }
 
-  private static abstract class DeferredDimension extends Spring
+  private abstract static class DeferredDimension extends Spring
   {
     private int value;
 

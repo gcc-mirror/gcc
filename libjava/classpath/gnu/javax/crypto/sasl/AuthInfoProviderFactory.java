@@ -46,44 +46,22 @@ import gnu.javax.crypto.sasl.srp.SRPAuthInfoProvider;
 /**
  * The concrete SASL authentication information provider factory.
  */
-public class AuthInfoProviderFactory implements IAuthInfoProviderFactory
+public class AuthInfoProviderFactory
+    implements IAuthInfoProviderFactory
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   // implicit 0-args constructor
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
-
-  // IAuthInfoProviderFactory interface implementation -----------------------
 
   public IAuthInfoProvider getInstance(String mechanism)
   {
     if (mechanism == null)
-      {
-        return null;
-      }
+      return null;
     mechanism = mechanism.trim().toUpperCase();
     if (mechanism.startsWith(Registry.SASL_SRP_MECHANISM))
-      {
-        return new SRPAuthInfoProvider();
-      }
+      return new SRPAuthInfoProvider();
     if (mechanism.equals(Registry.SASL_CRAM_MD5_MECHANISM))
-      {
-        return new CramMD5AuthInfoProvider();
-      }
+      return new CramMD5AuthInfoProvider();
     if (mechanism.equals(Registry.SASL_PLAIN_MECHANISM))
-      {
-        return new PlainAuthInfoProvider();
-      }
+      return new PlainAuthInfoProvider();
     return null;
   }
 }

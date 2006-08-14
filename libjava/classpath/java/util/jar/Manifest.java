@@ -1,4 +1,4 @@
-/* Manifest.java -- Reads, writes and manipulaties jar manifest files
+/* Manifest.java -- Reads, writes and manipulates jar manifest files
    Copyright (C) 2000, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -152,7 +152,7 @@ public class Manifest implements Cloneable
   }
 
   /**
-   * Read and merge a <code>Mainfest</code> from the designated input stream.
+   * Read and merge a <code>Manifest</code> from the designated input stream.
    * 
    * @param in the input stream to read from.
    * @throws IOException if an I/O related exception occurs during the process.

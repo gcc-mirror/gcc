@@ -41,26 +41,14 @@ package gnu.java.security.jce.hash;
 import gnu.java.security.Registry;
 
 /**
- * <p>The implementation of the SHA-2-3 (512-bit) <i>Service Provider Interface</i>
- * (<b>SPI</b>) adapter.</p>
+ * The implementation of the SHA-2-3 (512-bit) <i>Service Provider Interface</i>
+ * (<b>SPI</b>) adapter.
  */
-public class Sha512Spi extends MessageDigestAdapter
+public class Sha512Spi
+    extends MessageDigestAdapter
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   public Sha512Spi()
   {
     super(Registry.SHA512_HASH);
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 }

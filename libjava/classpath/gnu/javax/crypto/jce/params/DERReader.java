@@ -43,15 +43,10 @@ import java.math.BigInteger;
 class DERReader
 {
   byte source[];
-
   int pos;
-
   static final int UNIVERSAL = 1;
-
   static final int APPLICATION = 2;
-
   static final int CONTEXT_SPECIFIC = 3;
-
   static final int PRIVATE = 4;
 
   public DERReader()
@@ -86,52 +81,36 @@ class DERReader
     return new BigInteger(getPrimitive());
   }
 
-  //Reads Primitive, definite-length method
+  // Reads Primitive, definite-length method
   private byte[] getPrimitive() throws DEREncodingException
   {
     int tmp = pos;
-
-    //Read Identifier
+    // Read Identifier
     byte identifier = source[tmp++];
     if ((0x20 & identifier) != 0)
       throw new DEREncodingException();
     int type = translateLeadIdentifierByte(identifier);
-    //System.out.println("Type: " + type);
-
-    //get tag
+    // get tag
     int tag = (0x1f & identifier);
-    //if( tag == 0x1f)
-    //	tag = getIdentifier(tmp);
-    //System.out.println("Tag: " + tag);
-
-    //get length
-    byte len = source[tmp]; //may be length of length parameter
+    // get length
+    byte len = source[tmp]; // may be length of length parameter
     long length = 0x7f & len;
     int i;
     if ((0x80 & len) != 0)
       {
-        //System.out.println("Extra Long Length");
         len &= 0x7f;
-        //System.out.println("Length of Length: " + len);
-        //get length here
+        // get length here
         length = 0;
         for (i = 0; i < len; i++)
           {
             tmp++;
             length <<= 8;
             length += (source[tmp] < 0) ? (256 + source[tmp]) : source[tmp];
-            //System.out.println("Length of Length: " + length);
           }
         tmp++;
       }
     else
       tmp++;
-
-    /*System.out.println("Position: " + tmp);
-     System.out.println("Length: " + length);
-     for( i = 0; i < 10; i++)
-     System.out.print(source[tmp + i] + " ");
-     System.out.println();*/
 
     byte tmpb[] = new byte[(int) length];
     System.arraycopy(source, tmp, tmpb, 0, (int) length);

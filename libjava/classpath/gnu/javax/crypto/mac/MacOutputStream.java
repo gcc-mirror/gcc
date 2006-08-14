@@ -43,29 +43,23 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * <p>A filtering output stream that computes a MAC (message authentication
- * code) over all data written to the stream.</p>
+ * A filtering output stream that computes a MAC (message authentication code)
+ * over all data written to the stream.
  */
-public class MacOutputStream extends FilterOutputStream
+public class MacOutputStream
+    extends FilterOutputStream
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   /** The digesting state. The MAC is updated only if this flag is true. */
   private boolean digesting;
-
   /** The MAC being updated. */
   private IMac mac;
 
-  // Constructor(s)
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Creates a new <code>MacOutputStream</code>. The stream is initially set
+   * Creates a new <code>MacOutputStream</code>. The stream is initially set
    * to digest data written, the <code>mac</code> argument must have already
-   * been initialized, and the <code>mac</code> argument is <b>not</b> cloned.</p>
-   *
+   * been initialized, and the <code>mac</code> argument is <b>not</b>
+   * cloned.
+   * 
    * @param out The underlying output stream.
    * @param mac The mac instance to use.
    */
@@ -73,19 +67,14 @@ public class MacOutputStream extends FilterOutputStream
   {
     super(out);
     if (mac == null)
-      {
-        throw new NullPointerException();
-      }
+      throw new NullPointerException();
     this.mac = mac;
     digesting = true;
   }
 
-  // Instance methods
-  // -------------------------------------------------------------------------
-
   /**
-   * <p>Returns the MAC this stream is updating.</p>
-   *
+   * Returns the MAC this stream is updating.
+   * 
    * @return The MAC.
    */
   public IMac getMac()
@@ -94,25 +83,23 @@ public class MacOutputStream extends FilterOutputStream
   }
 
   /**
-   * <p>Sets the MAC this stream is updating, which must have already been
-   * initialized. The argument is not cloned by this method.</p>
-   *
+   * Sets the MAC this stream is updating, which must have already been
+   * initialized. The argument is not cloned by this method.
+   * 
    * @param mac The non-null new MAC.
    * @throws NullPointerException If the argument is null.
    */
   public void setMac(IMac mac)
   {
     if (mac == null)
-      {
-        throw new NullPointerException();
-      }
+      throw new NullPointerException();
     this.mac = mac;
   }
 
   /**
-   * <p>Turns the digesting state on or off. When off, the MAC will not be
-   * updated when data is written to the stream.</p>
-   *
+   * Turns the digesting state on or off. When off, the MAC will not be updated
+   * when data is written to the stream.
+   * 
    * @param flag The new digesting state.
    */
   public void on(boolean flag)
@@ -123,18 +110,14 @@ public class MacOutputStream extends FilterOutputStream
   public void write(int b) throws IOException
   {
     if (digesting)
-      {
-        mac.update((byte) b);
-      }
+      mac.update((byte) b);
     out.write(b);
   }
 
   public void write(byte[] buf, int off, int len) throws IOException
   {
     if (digesting)
-      {
-        mac.update(buf, off, len);
-      }
+      mac.update(buf, off, len);
     out.write(buf, off, len);
   }
 }

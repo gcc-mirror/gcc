@@ -41,39 +41,40 @@ package gnu.javax.crypto.keyring;
 import java.security.cert.Certificate;
 
 /**
- * <p>An interface for keyrings that contain trusted (by the owner) public
- * credentials (incl. certificates).</p>
- *
+ * An interface for keyrings that contain trusted (by the owner) public
+ * credentials (incl. certificates).
+ * 
  * @see IKeyring
  */
-public interface IPublicKeyring extends IKeyring
+public interface IPublicKeyring
+    extends IKeyring
 {
-
   /**
-   * <p>Tests if this keyring contains a certificate entry with the specified
-   * <code>alias</code>.</p>
-   *
+   * Tests if this keyring contains a certificate entry with the specified
+   * <code>alias</code>.
+   * 
    * @param alias The alias of the certificate to check.
    * @return <code>true</code> if this keyring contains a certificate entry
-   * that has the given <code>alias</code>; <code>false</code> otherwise.
+   *         that has the given <code>alias</code>; <code>false</code>
+   *         otherwise.
    */
   boolean containsCertificate(String alias);
 
   /**
-   * <p>Returns a certificate that has the given <code>alias</code>, or
-   * <code>null</code> if this keyring has no such entry.</p>
-   *
+   * Returns a certificate that has the given <code>alias</code>, or
+   * <code>null</code> if this keyring has no such entry.
+   * 
    * @param alias The alias of the certificate to find.
    * @return The certificate with the designated <code>alias</code>, or
-   * <code>null</code> if none found.
+   *         <code>null</code> if none found.
    */
   Certificate getCertificate(String alias);
 
   /**
-   * <p>Adds a certificate in this keyring, with the given <code>alias</code>.</p>
-   *
-   * <p>What happens if there is already a certificate entry with this alias?</p>
-   *
+   * Adds a certificate in this keyring, with the given <code>alias</code>.
+   * <p>
+   * What happens if there is already a certificate entry with this alias?
+   * 
    * @param alias The alias of this certificate entry.
    * @param cert The certificate.
    */

@@ -38,13 +38,14 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
 import java.awt.event.PaintEvent;
 import java.awt.event.WindowEvent;
 import java.awt.peer.WindowPeer;
@@ -70,7 +71,8 @@ public class GtkWindowPeer extends GtkContainerPeer
   native void gtkWindowSetTitle (String title);
   native void gtkWindowSetResizable (boolean resizable);
   native void gtkWindowSetModal (boolean modal);
-
+  native void gtkWindowSetAlwaysOnTop ( boolean alwaysOnTop );
+  native boolean gtkWindowHasFocus();
   native void realize ();
 
   /** Returns the cached width of the AWT window component. */
@@ -275,10 +277,13 @@ public class GtkWindowPeer extends GtkContainerPeer
     else
       q().postEvent (new WindowEvent ((Window) awtComponent, id, opposite));
   }
+
+  /**
+   * Update the always-on-top status of the native window.
+   */
   public void updateAlwaysOnTop()
   {
-    // TODO Auto-generated method stub
-    
+    gtkWindowSetAlwaysOnTop( ((Window)awtComponent).isAlwaysOnTop() );
   }
 
   protected void postExposeEvent (int x, int y, int width, int height)
@@ -299,7 +304,40 @@ public class GtkWindowPeer extends GtkContainerPeer
     // TODO Auto-generated method stub
     return false;
   }
-  
+
+  public boolean requestFocus (Component request, boolean temporary, 
+                               boolean allowWindowFocus, long time)
+  {
+    assert request == awtComponent || isLightweightDescendant(request);
+    boolean retval = false;
+    if (gtkWindowHasFocus())
+      {
+        KeyboardFocusManager kfm =
+          KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        Component currentFocus = kfm.getFocusOwner();
+        if (currentFocus == request)
+          // Nothing to do in this trivial case.
+          retval = true;
+        else
+          {
+            // Requested component is a lightweight descendant of this one
+            // or the actual heavyweight.
+            // Since this (native) component is already focused, we simply
+            // change the actual focus and be done.
+            postFocusEvent(FocusEvent.FOCUS_GAINED, temporary);
+            retval = true;
+          }
+      }
+    else
+      {
+        if (allowWindowFocus)
+          {
+            retval = requestWindowFocus();
+          }
+      }
+    return retval;
+  }
+
   public Graphics getGraphics ()
   {
     Graphics g = super.getGraphics ();

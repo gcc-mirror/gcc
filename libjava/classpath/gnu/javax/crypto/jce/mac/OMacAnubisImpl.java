@@ -40,12 +40,9 @@ package gnu.javax.crypto.jce.mac;
 
 import gnu.java.security.Registry;
 
-public class OMacAnubisImpl extends MacAdapter
+public class OMacAnubisImpl
+    extends MacAdapter
 {
-
-  // Constructor.
-  // -------------------------------------------------------------------------
-
   public OMacAnubisImpl()
   {
     super(Registry.OMAC_PREFIX + Registry.ANUBIS_CIPHER);

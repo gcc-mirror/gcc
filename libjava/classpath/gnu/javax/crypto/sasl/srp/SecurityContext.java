@@ -39,40 +39,22 @@ exception statement from your version.  */
 package gnu.javax.crypto.sasl.srp;
 
 /**
- * <p>A package-private placeholder for an SRP security context.</p>
+ * A package-private placeholder for an SRP security context.
  */
 class SecurityContext
 {
-
-  // Constants and variables
-  // -------------------------------------------------------------------------
-
   private String mdName;
-
   private byte[] sid;
-
   private byte[] K;
-
   private byte[] cIV;
-
   private byte[] sIV;
-
   private boolean replayDetection;
-
   private int inCounter;
-
   private int outCounter;
-
   private IALG inMac;
-
   private IALG outMac;
-
   private CALG inCipher;
-
   private CALG outCipher;
-
-  // Constructor(s)
-  // -------------------------------------------------------------------------
 
   SecurityContext(final String mdName, final byte[] sid, final byte[] K,
                   final byte[] cIV, final byte[] sIV,
@@ -95,12 +77,6 @@ class SecurityContext
     this.inCipher = inCipher;
     this.outCipher = outCipher;
   }
-
-  // Class methods
-  // -------------------------------------------------------------------------
-
-  // Instance methods
-  // -------------------------------------------------------------------------
 
   String getMdName()
   {
