@@ -829,6 +829,7 @@ java/net/natURLClassLoader.cc \
 java/nio/channels/natVMChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \
 java/security/natVMAccessController.cc \
+java/security/natVMAccessControlState.cc \
 java/text/natCollator.cc \
 java/util/natResourceBundle.cc \
 java/util/natVMTimeZone.cc \

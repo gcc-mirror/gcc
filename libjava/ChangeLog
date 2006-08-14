@@ -1,3 +1,14 @@
+2006-08-14  Gary Benson  <gbenson@redhat.com>
+
+	* java/lang/Thread.java (accessControlState): New field.
+	* java/security/VMAccessControlState.java: New file.
+	* java/security/natVMAccessControlState.cc: Likewise.
+	* java/security/VMAccessController.java
+	(contexts, inGetContext): Removed.
+	(pushContext, popContext, getContext): Use VMAccessControlState.
+	* Makefile.am (nat_source_files): Updated.
+	* sources.am, Makefile.in: Rebuilt.
+
 2006-08-10  Gary Benson  <gbenson@redhat.com>
 
 	* include/java-stack.h (GetAccessControlStack): Change return

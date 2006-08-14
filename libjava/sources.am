@@ -5330,6 +5330,7 @@ classpath/java/security/SignedObject.java \
 classpath/java/security/Signer.java \
 classpath/java/security/UnrecoverableKeyException.java \
 classpath/java/security/UnresolvedPermission.java \
+java/security/VMAccessControlState.java \
 java/security/VMAccessController.java \
 java/security/VMSecureRandom.java
 
