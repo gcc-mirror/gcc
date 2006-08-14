@@ -4343,7 +4343,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		  {
 		    /* It is ok to modify type here even if itype is
 		       NULL: if size_varies, we're in a
-		       multi-dimentional array and the inner type has
+		       multi-dimensional array and the inner type has
 		       variable size, so the enclosing shared array type
 		       must too.  */
 		    if (size && TREE_CODE (size) == INTEGER_CST)

@@ -115,7 +115,7 @@ enum micro_operation_type
 		   or the variable is not trackable.  */
   MO_SET,	/* Set location.  */
   MO_COPY,	/* Copy the same portion of a variable from one
-		   loation to another.  */
+		   location to another.  */
   MO_CLOBBER,	/* Clobber location.  */
   MO_CALL,	/* Call insn.  */
   MO_ADJUST	/* Adjust stack pointer.  */

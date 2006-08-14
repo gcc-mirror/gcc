@@ -1,3 +1,7 @@
+2006-08-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* c-decl.c, var-tracking.c: Fix comment typos.
+
 2006-08-14  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/28634
