@@ -1,3 +1,9 @@
+2006-08-14  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/28634
+	* reorg.c (fill_slots_from_thread): Do not assume A + X - X == A
+	for floating-point modes unless flag_unsafe_math_optimizations.
+
 2006-08-13  Alexandre Oliva  <aoliva@redhat.com>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 

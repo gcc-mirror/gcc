@@ -2817,6 +2817,8 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
       dest = SET_DEST (pat), src = SET_SRC (pat);
       if ((GET_CODE (src) == PLUS || GET_CODE (src) == MINUS)
 	  && rtx_equal_p (XEXP (src, 0), dest)
+	  && (!FLOAT_MODE_P (GET_MODE (src))
+	      || flag_unsafe_math_optimizations)
 	  && ! reg_overlap_mentioned_p (dest, XEXP (src, 1))
 	  && ! side_effects_p (pat))
 	{
