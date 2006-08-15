@@ -285,13 +285,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	{
 	  const _UIntType __upper_mask = (~_UIntType()) << __r;
 	  const _UIntType __lower_mask = ~__upper_mask;
-	  const _UIntType __fx[2] = { 0, __a };
 
 	  for (int __k = 0; __k < (__n - __m); ++__k)
 	    {
 	      _UIntType __y = ((_M_x[__k] & __upper_mask)
 			       | (_M_x[__k + 1] & __lower_mask));
-	      _M_x[__k] = _M_x[__k + __m] ^ (__y >> 1) ^ __fx[__y & 0x01];
+	      _M_x[__k] = (_M_x[__k + __m] ^ (__y >> 1)
+			   ^ ((__y & 0x01) ? __a : 0));
 	    }
 
 	  for (int __k = (__n - __m); __k < (__n - 1); ++__k)
@@ -299,12 +299,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	      _UIntType __y = ((_M_x[__k] & __upper_mask)
 			       | (_M_x[__k + 1] & __lower_mask));
 	      _M_x[__k] = (_M_x[__k + (__m - __n)] ^ (__y >> 1)
-			   ^ __fx[__y & 0x01]);
+			   ^ ((__y & 0x01) ? __a : 0));
 	    }
 
 	  _UIntType __y = ((_M_x[__n - 1] & __upper_mask)
 			   | (_M_x[0] & __lower_mask));
-	  _M_x[__n - 1] = _M_x[__m - 1] ^ (__y >> 1) ^ __fx[__y & 0x01];
+	  _M_x[__n - 1] = (_M_x[__m - 1] ^ (__y >> 1)
+			   ^ ((__y & 0x01) ? __a : 0));
 	  _M_p = 0;
 	}
 

@@ -1,3 +1,8 @@
+2006-08-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random.tcc (mersenne_twister<>::operator()): Revert
+	last change (per gcc-patches/2006-08/msg00484.html).
+
 2006-08-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (class poisson_distribution<>): Add.
