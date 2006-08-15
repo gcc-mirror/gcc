@@ -841,13 +841,17 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 void
 read_x (st_parameter_dt *dtp, int n)
 {
-  if ((dtp->u.p.current_unit->flags.pad == PAD_NO || is_internal_unit (dtp))
-      && dtp->u.p.current_unit->bytes_left < n)
-    n = dtp->u.p.current_unit->bytes_left;
+  if (!is_stream_io (dtp))
+    {
+      if ((dtp->u.p.current_unit->flags.pad == PAD_NO || is_internal_unit (dtp))
+	  && dtp->u.p.current_unit->bytes_left < n)
+	n = dtp->u.p.current_unit->bytes_left;
 
-  dtp->u.p.sf_read_comma = 0;
-  if (n > 0)
-    read_sf (dtp, &n, 1);
-  dtp->u.p.sf_read_comma = 1;
-
+      dtp->u.p.sf_read_comma = 0;
+      if (n > 0)
+	read_sf (dtp, &n, 1);
+      dtp->u.p.sf_read_comma = 1;
+    }
+  else
+    dtp->rec += (GFC_IO_INT) n;
 }

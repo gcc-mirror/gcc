@@ -200,10 +200,10 @@ typedef off_t gfc_offset;
 /* Define the type used for the current record number for large file I/O.
    The size must be consistent with the size defined on the compiler side.  */
 #ifdef HAVE_GFC_INTEGER_8
-typedef GFC_INTEGER_8 GFC_LARGE_IO_INT;
+typedef GFC_INTEGER_8 GFC_IO_INT;
 #else
 #ifdef HAVE_GFC_INTEGER_4
-typedef GFC_INTEGER_4 GFC_LARGE_IO_INT;
+typedef GFC_INTEGER_4 GFC_IO_INT;
 #else
 #error "GFC_INTEGER_4 should be available for the library to compile".
 #endif

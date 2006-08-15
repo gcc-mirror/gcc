@@ -1,3 +1,34 @@
+2006-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25828
+	* libgfortran.h: Rename GFC_LARGE_IO_INT to GFC_IO_INT.
+	* io/file_pos.c (st_backspace): Ignore if access=STREAM.
+	(st_rewind): Handle case of access=STREAM.
+	* io/open.c (access_opt): Add STREAM_ACCESS.
+	(edit_modes): Set current_record to zero only if not STREAM.
+	(new_unit): Initialize maxrec, recl, and last_record for STREAM.
+	* io/read.c (read_x): Advance file position for STREAM.
+	* io/io.h (enum unit_access): Align IOPARM flags with frontend.
+	Add ACCESS_STREAM. Add prototype for is_stream_io () function.
+	Use GFC_IO_INT.
+	* io/inquire.c (inquire_via_unit): Add text for access = "STREAM".
+	* io/unit.c (is_stream_io): New function to return true if access =
+	STREAM.
+	* io/transfer.c (file_mode): Add modes for unformatted stream and
+	formatted stream. (current_mode): Return appropriate file mode based
+	on access flags.
+	(read_block): Handle formatted stream reads.
+	(read_block_direct): Handle unformatted stream reads.
+	(write_block): Handle formatted stream writes.
+	(write_buf): Handle unformatted stream writes.
+	(unformatted_read): Fix up, use temporary for size.
+	(pre_position): Position file for STREAM access.
+	(data_transfer_init): Initialize for stream access, skip irrelevent
+	error checks.
+	(next_record_r),(next_record_w), and (next_record): Do nothing for
+	stream I/O.
+	(finalize_transfer): Flush when all done if stream I/O.
+
 2006-08-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/bessel.c: Add prototypes for all functions.

@@ -75,6 +75,9 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	  case ACCESS_DIRECT:
 	    p = "DIRECT";
 	    break;
+	  case ACCESS_STREAM:
+	    p = "STREAM";
+	    break;
 	  default:
 	    internal_error (&iqp->common, "inquire_via_unit(): Bad access");
 	  }
@@ -144,6 +147,9 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 
   if ((cf & IOPARM_INQUIRE_HAS_RECL_OUT) != 0)
     *iqp->recl_out = (u != NULL) ? u->recl : 0;
+
+  if ((cf & IOPARM_INQUIRE_HAS_STRM_POS_OUT) != 0)
+    *iqp->strm_pos_out = (u != NULL) ? u->last_record : 0;
 
   if ((cf & IOPARM_INQUIRE_HAS_NEXTREC) != 0)
     *iqp->nextrec = (u != NULL) ? u->last_record + 1 : 0;
