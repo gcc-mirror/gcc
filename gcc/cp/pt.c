@@ -2352,19 +2352,24 @@ process_template_parm (tree list, tree parm, bool is_non_type)
 {
   tree decl = 0;
   tree defval;
-  int idx;
+  int idx = 0;
 
   gcc_assert (TREE_CODE (parm) == TREE_LIST);
   defval = TREE_PURPOSE (parm);
 
   if (list)
     {
-      tree p = TREE_VALUE (tree_last (list));
+      tree p = tree_last (list);
 
-      if (TREE_CODE (p) == TYPE_DECL || TREE_CODE (p) == TEMPLATE_DECL)
-	idx = TEMPLATE_TYPE_IDX (TREE_TYPE (p));
-      else
-	idx = TEMPLATE_PARM_IDX (DECL_INITIAL (p));
+      if (p && p != error_mark_node)
+        {
+          p = TREE_VALUE (p);
+          if (TREE_CODE (p) == TYPE_DECL || TREE_CODE (p) == TEMPLATE_DECL)
+            idx = TEMPLATE_TYPE_IDX (TREE_TYPE (p));
+          else
+            idx = TEMPLATE_PARM_IDX (DECL_INITIAL (p));
+        }
+
       ++idx;
     }
   else

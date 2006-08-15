@@ -1,3 +1,8 @@
+2006-08-15  Lee Millward  <lee.millward@codesourcery.com>
+
+	PR c++/28594
+	* pt.c (process_template_parm): Robustify.
+	
 2006-08-14  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/28288
