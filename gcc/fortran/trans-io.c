@@ -35,7 +35,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "trans-types.h"
 #include "trans-const.h"
 
-
 /* Members of the ioparm structure.  */
 
 enum ioparam_type
@@ -52,8 +51,9 @@ enum ioparam_type
 enum iofield_type
 {
   IOPARM_type_int4,
-  IOPARM_type_large_io_int,
+  IOPARM_type_intio,
   IOPARM_type_pint4,
+  IOPARM_type_pintio,
   IOPARM_type_pchar,
   IOPARM_type_parray,
   IOPARM_type_pad,
@@ -169,8 +169,9 @@ gfc_build_st_parameter (enum ioparam_type ptype, tree *types)
       switch (p->type)
 	{
 	case IOPARM_type_int4:
-	case IOPARM_type_large_io_int:
+	case IOPARM_type_intio:
 	case IOPARM_type_pint4:
+	case IOPARM_type_pintio:
 	case IOPARM_type_parray:
 	case IOPARM_type_pchar:
 	case IOPARM_type_pad:
@@ -216,16 +217,18 @@ void
 gfc_build_io_library_fndecls (void)
 {
   tree types[IOPARM_type_num], pad_idx, gfc_int4_type_node;
-  tree gfc_large_io_int_type_node;
+  tree gfc_intio_type_node;
   tree parm_type, dt_parm_type;
   tree gfc_c_int_type_node;
   HOST_WIDE_INT pad_size;
   enum ioparam_type ptype;
 
   types[IOPARM_type_int4] = gfc_int4_type_node = gfc_get_int_type (4);
-  types[IOPARM_type_large_io_int] = gfc_large_io_int_type_node
-			    = gfc_get_int_type (gfc_large_io_int_kind);
+  types[IOPARM_type_intio] = gfc_intio_type_node
+			    = gfc_get_int_type (gfc_intio_kind);
   types[IOPARM_type_pint4] = build_pointer_type (gfc_int4_type_node);
+  types[IOPARM_type_pintio]
+			    = build_pointer_type (gfc_intio_type_node);
   types[IOPARM_type_parray] = pchar_type_node;
   types[IOPARM_type_pchar] = pchar_type_node;
   pad_size = 16 * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (pchar_type_node));
@@ -1097,6 +1100,10 @@ gfc_trans_inquire (gfc_code * code)
   if (p->convert)
     mask |= set_string (&block, &post_block, var, IOPARM_inquire_convert,
 			p->convert);
+
+  if (p->strm_pos)
+    mask |= set_parameter_ref (&block, &post_block, var,
+			       IOPARM_inquire_strm_pos_out, p->strm_pos);
 
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
