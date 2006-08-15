@@ -56,3 +56,24 @@ int ATSYM(fn_vars) (void) {
   auto int lvar ATTR; /* { dg-warning "attribute ignored" "" } */
   return 0;
 }
+
+
+/* PR 28287 */
+/* These are invalid on all targets.  Applying to PARM_ or FIELD_DECL
+   also caused a tree checking ice on targets that support weak,  */
+#undef AT
+#define AT weak
+
+typedef int ATSYM(type) ATTR; /* { dg-warning "attribute ignored" "" } */
+
+typedef int (*ATSYM(fntype))(void) ATTR; /* { dg-warning "attribute ignored" "" } */
+
+struct ATSYM(struct) {
+  char dummy ATTR; /* { dg-warning "attribute ignored" "" } */
+};
+
+int ATSYM(fn_knrarg) (arg)
+  int arg ATTR; /* { dg-warning "attribute ignored" "" } */
+{ return 0; }
+
+int ATSYM(fn_isoarg) (int arg ATTR) { return 0; } /* { dg-warning "attribute ignored" "" } */

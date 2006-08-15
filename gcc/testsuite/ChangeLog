@@ -1,3 +1,8 @@
+2006-08-15  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c/28287
+	* gcc.dg/attr-invalid.c: Add tests for invalid weak attribute.
+
 2006-08-15  Lee Millward  <lee.millward@codesourcery.com>
 
 	PR c++/28594

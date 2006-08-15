@@ -4737,12 +4737,17 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
    struct attribute_spec.handler.  */
 
 static tree
-handle_weak_attribute (tree *node, tree ARG_UNUSED (name),
+handle_weak_attribute (tree *node, tree name,
 		       tree ARG_UNUSED (args),
 		       int ARG_UNUSED (flags),
 		       bool * ARG_UNUSED (no_add_attrs))
 {
-  declare_weak (*node);
+  if (TREE_CODE (*node) == FUNCTION_DECL
+      || TREE_CODE (*node) == VAR_DECL)
+    declare_weak (*node);
+  else
+    warning (OPT_Wattributes, "%qE attribute ignored", name);
+    	
 
   return NULL_TREE;
 }
