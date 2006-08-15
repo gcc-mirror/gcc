@@ -24,6 +24,7 @@ details.  */
 #include <java/security/AccessController.h>
 #include <java/util/ArrayList.h>
 #include <java/util/IdentityHashMap.h>
+#include <gnu/classpath/jdwp/Jdwp.h>
 #include <gnu/java/lang/MainThread.h>
 #include <gnu/gcj/runtime/NameFinder.h>
 #include <gnu/gcj/runtime/StringBuffer.h>
@@ -113,7 +114,13 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
   // correspondance between call frames in the interpreted stack and occurances
   // of _Jv_InterpMethod::run() on the native stack.
 #ifdef INTERPRETER
-  void *interp_run = (void *) &_Jv_InterpMethod::run;
+  void *interp_run = NULL;
+  
+  if (::gnu::classpath::jdwp::Jdwp::isDebugging)
+  	interp_run = (void *) &_Jv_InterpMethod::run_debug;
+  else
+    interp_run = (void *) &_Jv_InterpMethod::run;
+  	
   if (func_addr == UNWRAP_FUNCTION_DESCRIPTOR (interp_run))
     {
       state->frames[pos].type = frame_interpreter;
