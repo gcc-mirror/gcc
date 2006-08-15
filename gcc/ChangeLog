@@ -1,3 +1,9 @@
+2006-07-15  Mike Stump  <mrs@apple.com>
+
+	PR c/28280
+	* c-parser.c (c_parser_typeof_specifier): Don't use
+	c_finish_expr_stmt, open code desired semantics instead.
+
 2006-08-15  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (x86-mingw32): Add a gthr-win32.h including makefile
