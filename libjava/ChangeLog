@@ -1,3 +1,20 @@
+2006-07-28  Kyle Galloway  <kgallowa@redhat.com>
+
+  	* include/java-interp.h (_Jv_InterpMethod::run_debug): New method.
+  	* interpret.cc: Added placeholder for debug variable type info to STORE*
+  	macros.
+  	(_Jv_InterpMethod::run_debug): New method.
+  	(_Jv_InterpMethod::run_sync_object_debug): New method.
+  	(_Jv_InterpMethod::run_sync_class_debug): New method.
+  	(_Jv_InterpMethod::run_normal_debug): New method.
+  	(_Jv_InterpMethod::run_class_debug): New method.
+  	(_Jv_InterpMethod::ncode ()): Changed to select either debug or normal
+  	versions of these functions.
+  	* interpret-run.cc: New file, holds contents of old 	
+	_Jv_InterpMethod::run method.
+  	* stacktrace.cc (_Jv_StackTrace::UnwindTraceFn): Changed to select
+  	appropriate function for debug or normal mode.
+
 2006-08-14  Mark Wielaard  <mark@klomp.org>
 
 	Imported GNU Classpath 0.92
