@@ -56,7 +56,7 @@ caddr_t v_addr;			/* { dg-error "expected" } */
 {
      register prec_t bucket;
      register caddr_t p_addr;	/* { dg-error "expected|undeclared" } */
-     bucket = mem_hash+((((v_addr)>>ITEMBITS))&hash_mask);
+     bucket = mem_hash+((((v_addr)>>ITEMBITS))&hash_mask);  /* { dg-error "undeclared" } */
      do {
 	  if (bucket->v_addr == ((v_addr)>>ITEMBITS) {	/* { dg-error "expected|undeclared|no member" } */
 	       if(!(bucket->perm_set&va_op))

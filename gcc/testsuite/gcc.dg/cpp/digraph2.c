@@ -13,7 +13,7 @@ int main (int argc, char *argv[])
 
 /* Place this after main () so we get to test both the compiler above
    and the preprocessor below.  */
-%:define glue
+%:define glue                   /* { dg-error "expected declaration" } */
 #ifdef glue
 #error glue is defined!
 #endif
