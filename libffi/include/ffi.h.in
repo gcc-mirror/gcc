@@ -138,7 +138,7 @@ typedef struct _ffi_type
   size_t size;
   unsigned short alignment;
   unsigned short type;
-  /*@null@*/ struct _ffi_type **elements;
+  struct _ffi_type **elements;
 } ffi_type;
 
 /* These are defined in types.c */
@@ -160,7 +160,7 @@ extern ffi_type ffi_type_pointer;
 typedef enum {
   FFI_OK = 0,
   FFI_BAD_TYPEDEF,
-  FFI_BAD_ABI 
+  FFI_BAD_ABI
 } ffi_status;
 
 typedef unsigned FFI_TYPE;
@@ -168,8 +168,8 @@ typedef unsigned FFI_TYPE;
 typedef struct {
   ffi_abi abi;
   unsigned nargs;
-  /*@dependent@*/ ffi_type **arg_types;
-  /*@dependent@*/ ffi_type *rtype;
+  ffi_type **arg_types;
+  ffi_type *rtype;
   unsigned bytes;
   unsigned flags;
 #ifdef FFI_EXTRA_CIF_FIELDS
@@ -195,10 +195,10 @@ typedef union {
   void*     ptr;
 } ffi_raw;
 
-void ffi_raw_call (/*@dependent@*/ ffi_cif *cif, 
-		   void (*fn)(), 
-		   /*@out@*/ void *rvalue, 
-		   /*@dependent@*/ ffi_raw *avalue);
+void ffi_raw_call (ffi_cif *cif,
+		   void (*fn)(),
+		   void *rvalue,
+		   ffi_raw *avalue);
 
 void ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
 void ffi_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
@@ -208,10 +208,10 @@ size_t ffi_raw_size (ffi_cif *cif);
 /* packing, even on 64-bit machines.  I.e. on 64-bit machines		*/
 /* longs and doubles are followed by an empty 64-bit word.		*/
 
-void ffi_java_raw_call (/*@dependent@*/ ffi_cif *cif, 
-		        void (*fn)(), 
-		        /*@out@*/ void *rvalue, 
-		        /*@dependent@*/ ffi_raw *avalue);
+void ffi_java_raw_call (ffi_cif *cif,
+			void (*fn)(),
+			void *rvalue,
+			ffi_raw *avalue);
 
 void ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw);
 void ffi_java_raw_to_ptrarray (ffi_cif *cif, ffi_raw *raw, void **args);
@@ -271,16 +271,16 @@ ffi_prep_java_raw_closure (ffi_raw_closure*,
 
 /* ---- Public interface definition -------------------------------------- */
 
-ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif, 
+ffi_status ffi_prep_cif(ffi_cif *cif,
 			ffi_abi abi,
-			unsigned int nargs, 
-			/*@dependent@*/ /*@out@*/ /*@partial@*/ ffi_type *rtype, 
-			/*@dependent@*/ ffi_type **atypes);
+			unsigned int nargs,
+			ffi_type *rtype,
+			ffi_type **atypes);
 
-void ffi_call(/*@dependent@*/ ffi_cif *cif, 
-	      void (*fn)(), 
-	      /*@out@*/ void *rvalue, 
-	      /*@dependent@*/ void **avalue);
+void ffi_call(ffi_cif *cif,
+	      void (*fn)(),
+	      void *rvalue,
+	      void **avalue);
 
 /* Useful for eliminating compiler warnings */
 #define FFI_FN(f) ((void (*)())f)
