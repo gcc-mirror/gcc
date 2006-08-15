@@ -1,4 +1,4 @@
-2006-07-28  Kyle Galloway  <kgallowa@redhat.com>
+2006-08-15  Kyle Galloway  <kgallowa@redhat.com>
 
   	* include/java-interp.h (_Jv_InterpMethod::run_debug): New method.
   	* interpret.cc: Added placeholder for debug variable type info to STORE*
