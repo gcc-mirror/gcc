@@ -44,6 +44,7 @@
 #include <iosfwd>
 #include <limits>
 #include <tr1/type_traits>
+#include <tr1/cmath>
 #include <fstream>
 
 namespace std
@@ -1516,9 +1517,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     /**
      * Gets the next value in the Bernoullian sequence.
      */
-    template<class UniformRandomNumberGenerator>
+    template<class _UniformRandomNumberGenerator>
       result_type
-      operator()(UniformRandomNumberGenerator& __urng)
+      operator()(_UniformRandomNumberGenerator& __urng)
       {
 	if (__urng() < _M_p)
 	  return true;
@@ -1585,7 +1586,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef _IntType  result_type;
 
       // constructors and member function
-      
       explicit
       geometric_distribution(const _RealType& __p = _RealType(0.5))
       : _M_p(__p), _M_log_p(std::log(_M_p))
@@ -1646,6 +1646,96 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     protected:
       _RealType _M_p;
       _RealType _M_log_p;
+    };
+
+
+  /**
+   * @brief A discrete Poisson random number distribution.
+   *
+   * The formula for the poisson probability mass function is 
+   * @f$ p(i) = \frac{mean^i}{i!} e^{-mean} @f$ where @f$ mean @f$ is the
+   * parameter of the distribution.
+   */
+  template<typename _IntType = int, typename _RealType = double>
+    class poisson_distribution;
+
+  template<typename _IntType, typename _RealType,
+	   typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const poisson_distribution<_IntType, _RealType>& __x);
+
+  template<typename _IntType, typename _RealType,
+	   typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       poisson_distribution<_IntType, _RealType>& __x);
+
+  template<typename _IntType, typename _RealType>
+    class poisson_distribution
+    {
+    public:
+      // types
+      typedef _RealType input_type;
+      typedef _IntType  result_type;
+
+      // constructors and member function
+      explicit
+      poisson_distribution(const _RealType& __mean = _RealType(1));
+
+      /**
+       * Gets the distribution parameter @p mean.
+       */
+      _RealType
+      mean() const
+      { return _M_mean; }
+
+      void
+      reset() { }
+
+      template<class _UniformRandomNumberGenerator>
+        result_type
+        operator()(_UniformRandomNumberGenerator& __urng);
+
+      /**
+       * Inserts a %poisson_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %poisson_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _IntType1, typename _RealType1,
+	       typename _CharT, typename _Traits>
+        friend std::basic_ostream<_CharT, _Traits>&
+        operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const poisson_distribution<_IntType1, _RealType1>& __x);
+
+      /**
+       * Extracts a %poisson_distribution random number distribution
+       * @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x  A %poisson_distribution random number generator engine.
+       *
+       * @returns The input stream with @p __x extracted or in an error state.
+       */
+      template<typename _IntType1, typename _RealType1,
+	       typename _CharT, typename _Traits>
+        friend std::basic_istream<_CharT, _Traits>&
+        operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   poisson_distribution<_IntType1, _RealType1>& __x);
+
+    protected:
+      _RealType _M_mean;
+
+      _RealType _M_lm_thr;
+#if _GLIBCXX_USE_C99_MATH_TR1
+      _RealType _M_lfm, _M_sm, _M_d, _M_scx4, _M_2cx, _M_c2b, _M_cb;
+#endif
+      bool _M_large;
     };
 
   /* @} */ // group tr1_random_distributions_discrete

@@ -1,3 +1,24 @@
+2006-08-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (class poisson_distribution<>): Add.
+	* include/tr1/random.tcc (poisson_distribution<>::operator(),
+	operator<<(std::basic_ostream<>&, const poisson_distribution<>&),
+	operator>>(std::basic_istream<>&, poisson_distribution<>&,
+	poisson_distribution<>::poisson_distribution(const _RealType&)):
+	Define.
+	* testsuite/tr1/5_numerical_facilities/random/poisson_distribution/
+	requirements/typedefs.cc: New.
+
+	* include/tr1/random.tcc (mersenne_twister<>::operator()): Tweak
+	a bit for efficiency.
+	
+	* include/tr1/random.tcc (operator<<(std::basic_ostream<>&,
+	const normal_distribution<>&), operator>>(std::basic_istream<>&,
+	normal_distribution<>&)): Do not output _M_saved unnecessarily.
+
+	* include/tr1/random: Trivial formatting fixes.
+	* include/tr1/cmath: Likewise.
+
 2006-08-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_bvector.h (__fill_bvector(_Bit_iterator,
