@@ -493,6 +493,15 @@ is_array_io (st_parameter_dt *dtp)
 }
 
 
+/* is_stream_io () -- Determine if I/O is access="stream" mode */
+
+int
+is_stream_io (st_parameter_dt *dtp)
+{
+  return dtp->u.p.current_unit->flags.access == ACCESS_STREAM;
+}
+
+
 /*************************/
 /* Initialize everything */
 
