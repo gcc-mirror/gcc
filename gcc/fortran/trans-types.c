@@ -95,7 +95,7 @@ int gfc_c_int_kind;
 
 /* The kind size used for record offsets. If the target system supports
    kind=8, this will be set to 8, otherwise it is set to 4.  */
-int gfc_large_io_int_kind; 
+int gfc_intio_kind; 
 
 /* Query the target to determine which machine modes are available for
    computation.  Choose KIND numbers for them.  */
@@ -144,13 +144,13 @@ gfc_init_kinds (void)
       i_index += 1;
     }
 
-  /* Set the kind used to match GFC_LARGE_IO_INT in libgfortran.  This is 
+  /* Set the kind used to match GFC_INT_IO in libgfortran.  This is 
      used for large file access.  */
 
   if (saw_i8)
-    gfc_large_io_int_kind = 8;
+    gfc_intio_kind = 8;
   else
-    gfc_large_io_int_kind = 4;
+    gfc_intio_kind = 4;
 
   /* If we do not at least have kind = 4, everything is pointless.  */  
   gcc_assert(saw_i4);  

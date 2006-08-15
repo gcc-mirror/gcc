@@ -1,3 +1,22 @@
+2006-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/25828
+	* gfortran.h: Add new pointer for stream position to st_inquire.
+	Rename gfc_large_io_int_kind to gfc_intio_kind.
+	* trans-types.c (gfc_init_kinds): use gfc_intio_kind.
+	* io.c: Add new IO tag for file position going in and another for out.
+	(match_dt_element): Match new tag_spos.
+	(gfc_resolve_dt): Resolve new tag_spos.
+	(gfc_free_inquire): Free inquire->strm_pos.
+	(match_inquire_element): Match new tag_strm_out.
+	(gfc_resolve_inquire): Resolve new tag_strm_out.
+	* trans-io.c: Rename IOPARM_type_large_io_int to IOPARM_type_intio.
+	(gfc_build_st_parameter): Same.
+	(gfc_build_io_library_fndecls) Same. and add build pointer type pintio.
+	(gfc_trans_inquire): Translate strm_pos for inquire.
+	* ioparm.def: Reorder flags to accomodate addition of new inquire
+	flag for strm_pos_out and add it in.
+
 2006-08-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28590
