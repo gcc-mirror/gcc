@@ -1556,7 +1556,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		 bernoulli_distribution& __x)
       { return __is >> __x._M_p; }
 
-  protected:
+  private:
     double _M_p;
   };
 
@@ -1643,7 +1643,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  return __is;
 	}
 
-    protected:
+    private:
       _RealType _M_p;
       _RealType _M_log_p;
     };
@@ -1665,12 +1665,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const poisson_distribution<_IntType, _RealType>& __x);
 
-  template<typename _IntType, typename _RealType,
-	   typename _CharT, typename _Traits>
-    std::basic_istream<_CharT, _Traits>&
-    operator>>(std::basic_istream<_CharT, _Traits>& __is,
-	       poisson_distribution<_IntType, _RealType>& __x);
-
   template<typename _IntType, typename _RealType>
     class poisson_distribution
     {
@@ -1681,7 +1675,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       // constructors and member function
       explicit
-      poisson_distribution(const _RealType& __mean = _RealType(1));
+      poisson_distribution(const _RealType& __mean = _RealType(1))
+      : _M_mean(__mean)
+      {
+	_GLIBCXX_DEBUG_ASSERT(_M_mean > 0.0);
+	_M_initialize();
+      }
 
       /**
        * Gets the distribution parameter @p mean.
@@ -1722,20 +1721,27 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        *
        * @returns The input stream with @p __x extracted or in an error state.
        */
-      template<typename _IntType1, typename _RealType1,
-	       typename _CharT, typename _Traits>
+      template<typename _CharT, typename _Traits>
         friend std::basic_istream<_CharT, _Traits>&
         operator>>(std::basic_istream<_CharT, _Traits>& __is,
-		   poisson_distribution<_IntType1, _RealType1>& __x);
+		   poisson_distribution& __x)
+        {
+	  __is >> __x._M_mean;
+	  __x._M_initialize();
+	  return __is;
+	}
 
-    protected:
+    private:
+      void
+      _M_initialize();
+
       _RealType _M_mean;
-
+      // _M_lm_thr hosts either log(mean) or the threshold of the simple
+      // method.
       _RealType _M_lm_thr;
 #if _GLIBCXX_USE_C99_MATH_TR1
       _RealType _M_lfm, _M_sm, _M_d, _M_scx4, _M_2cx, _M_c2b, _M_cb;
 #endif
-      bool _M_large;
     };
 
   /* @} */ // group tr1_random_distributions_discrete
@@ -1834,7 +1840,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         operator>>(std::basic_istream<_CharT, _Traits>& __is,
 		   uniform_real<_RealType1>& __x);
 
-    protected:
+    private:
       _RealType _M_min;
       _RealType _M_max;
     };
@@ -2115,10 +2121,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        *
        * @returns The input stream with @p __x extracted or in an error state.
        */
-      template<typename _RealType1, typename _CharT, typename _Traits>
+      template<typename _CharT, typename _Traits>
         friend std::basic_istream<_CharT, _Traits>&
         operator>>(std::basic_istream<_CharT, _Traits>& __is,
-		   gamma_distribution<_RealType1>& __x)
+		   gamma_distribution& __x)
         { return __is >> __x._M_alpha; }
 
     private:

@@ -1,5 +1,26 @@
 2006-08-15  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random (poisson_distribution<>::_M_initialize): Add.
+	(poisson_distribution<>::poisson_distribution(const _RealType&):
+	Use it.
+	(operator>>(std::basic_istream<>&, poisson_distribution<>&)):
+	Likewise.
+	(poisson_distribution<>::_M_large): Remove.
+	* include/tr1/random.tcc (poisson_distribution<>::_M_initialize):
+	Define.
+	(operator<<(std::basic_ostream<>&, const poisson_distribution<>&)):
+	Do not output the constants.
+
+	* include/tr1/random (operator>>(std::basic_istream<>&,
+	gamma_distribution&)): Minor tweak.
+	
+	* include/tr1/random.tcc (poisson_distribution<>::operator()):
+	Minor tweak.
+
+	* include/tr1/random: Consistently, all data members private.
+
+2006-08-15  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/random.tcc (mersenne_twister<>::operator()): Revert
 	last change (per gcc-patches/2006-08/msg00484.html).
 

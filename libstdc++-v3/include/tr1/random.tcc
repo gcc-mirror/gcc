@@ -656,16 +656,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 
   template<typename _IntType, typename _RealType>
+    void
     poisson_distribution<_IntType, _RealType>::
-    poisson_distribution(const _RealType& __mean)
-    : _M_mean(__mean), _M_large(false)
+    _M_initialize()
     {
-      _GLIBCXX_DEBUG_ASSERT(_M_mean > 0.0);
-
 #if _GLIBCXX_USE_C99_MATH_TR1
       if (_M_mean >= 12)
 	{
-	  _M_large = true;
 	  const _RealType __m = std::floor(_M_mean);
 	  _M_lm_thr = std::log(_M_mean);
 	  _M_lfm = std::tr1::lgamma(__m + 1);
@@ -708,20 +705,20 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       operator()(_UniformRandomNumberGenerator& __urng)
       {
 #if _GLIBCXX_USE_C99_MATH_TR1
-	if (_M_large)
+	if (_M_mean >= 12)
 	  {
 	    _RealType __x;
 
 	    const _RealType __m = std::floor(_M_mean);
-	    // sqrt(mu * pi / 2)
-	    const _RealType __c1 = (_M_sm
-				    * 1.2533141373155002512078826424055226L);
+	    // sqrt(pi / 2)
+	    const _RealType __spi_2 = 1.2533141373155002512078826424055226L;
+	    const _RealType __c1 = _M_sm * __spi_2;
 	    const _RealType __c2 = _M_c2b + __c1; 
 	    const _RealType __c3 = __c2 + 1;
 	    const _RealType __c4 = __c3 + 1;
-	    // c4 + e^(1 / 78)
-	    const _RealType __c5 = (__c4
-				    + 1.0129030479320018583185514777512983L);
+	    // e^(1 / 78)
+	    const _RealType __e178 = 1.0129030479320018583185514777512983L;
+	    const _RealType __c5 = __c4 + __e178;
 	    const _RealType __c = _M_cb + __c5;
 	    const _RealType __cx = 2 * (2 * __m + _M_d);
 
@@ -801,45 +798,16 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
-      const _CharT __space = __os.widen(' ');
       __os.flags(std::ios_base::scientific | std::ios_base::left);
-      __os.fill(__space);
+      __os.fill(__os.widen(' '));
       __os.precision(_Max_digits10<_RealType>::__value);
 
-      __os << __x._M_large << __space << __x.mean()
-	   << __space << __x._M_lm_thr;
-#if _GLIBCXX_USE_C99_MATH_TR1
-      if (__x._M_large)
-	__os << __space << __x._M_lfm << __space << __x._M_sm
-	     << __space << __x._M_d << __space << __x._M_scx4
-	     << __space << __x._M_2cx << __space << __x._M_c2b
-	     << __space << __x._M_cb;
-#endif
+      __os << __x.mean();
 
       __os.flags(__flags);
       __os.fill(__fill);
       __os.precision(__precision);
       return __os;
-    }
-
-  template<typename _IntType, typename _RealType,
-	   typename _CharT, typename _Traits>
-    std::basic_istream<_CharT, _Traits>&
-    operator>>(std::basic_istream<_CharT, _Traits>& __is,
-	       poisson_distribution<_IntType, _RealType>& __x)
-    {
-      const std::ios_base::fmtflags __flags = __is.flags();
-      __is.flags(std::ios_base::skipws);
-
-      __is >> __x._M_large >> __x._M_mean >> __x._M_lm_thr;
-#if _GLIBCXX_USE_C99_MATH_TR1
-      if (__x._M_large)
-	__is >> __x._M_lfm >> __x._M_sm >> __x._M_d >> __x._M_scx4
-	     >> __x._M_2cx >> __x._M_c2b >> __x._M_cb;
-#endif
-
-      __is.flags(__flags);
-      return __is;
     }
 
 
