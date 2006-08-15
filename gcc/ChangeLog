@@ -1,3 +1,9 @@
+2006-08-15  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c/28287
+	* c-common.c (handle_weak_attribute): Ignore and warn if
+	not a FUNCTION_ or VAR_DECL.
+
 2006-07-15  Mike Stump  <mrs@apple.com>
 
 	PR c/28280
