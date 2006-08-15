@@ -176,21 +176,31 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   static void run_synch_object (ffi_cif*, void*, ffi_raw*, void*);
   static void run_class (ffi_cif*, void*, ffi_raw*, void*);
   static void run_synch_class (ffi_cif*, void*, ffi_raw*, void*);
+  
+  static void run_normal_debug (ffi_cif*, void*, ffi_raw*, void*);
+  static void run_synch_object_debug (ffi_cif*, void*, ffi_raw*, void*);
+  static void run_class_debug (ffi_cif*, void*, ffi_raw*, void*);
+  static void run_synch_class_debug (ffi_cif*, void*, ffi_raw*, void*);
 
-  static void run (void*, ffi_raw *, _Jv_InterpMethod *);
+  static void run (void *, ffi_raw *, _Jv_InterpMethod *);
+  static void run_debug (void *, ffi_raw *, _Jv_InterpMethod *);
+  
 
+  
   // Returns source file line number for given PC value, or -1 if line
   // number info is unavailable.
   int get_source_line(pc_t mpc);
+
+
 
 #ifdef DIRECT_THREADED
   // Convenience function for indexing bytecode PC/insn slots in
   // line tables for JDWP
   jlong insn_index (pc_t pc);
 #endif
-
- public:
-
+  
+   public:
+   
   /* Get the line table for this method.
    * start  is the lowest index in the method
    * end    is the  highest index in the method
