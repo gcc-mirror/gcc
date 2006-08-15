@@ -1,3 +1,9 @@
+2006-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/28724
+	* gimplify.c (gimplify_omp_atomic_pipeline): Convert oldival
+	to itype in assignment to oldival2.
+
 2006-07-14  Andrew Pinski  <pinksia@physics.uc.edu>
 
 	PR c/27490

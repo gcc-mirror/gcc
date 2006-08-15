@@ -5129,7 +5129,8 @@ gimplify_omp_atomic_pipeline (tree *expr_p, tree *pre_p, tree addr,
       gimplify_and_add (x, pre_p);
     }
 
-  x = build2 (MODIFY_EXPR, void_type_node, oldival2, oldival);
+  x = build2 (MODIFY_EXPR, void_type_node, oldival2,
+	      fold_convert (itype, oldival));
   gimplify_and_add (x, pre_p);
 
   args = tree_cons (NULL, fold_convert (itype, newival), NULL);
