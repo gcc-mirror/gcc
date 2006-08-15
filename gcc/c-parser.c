@@ -3486,6 +3486,8 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  last_stmt = true;
 	  c_parser_statement_after_labels (parser);
 	}
+
+      parser->error = false;
     }
   if (last_label)
     error ("label at end of compound statement");

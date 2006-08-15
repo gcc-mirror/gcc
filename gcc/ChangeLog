@@ -1,3 +1,9 @@
+2006-08-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/28649
+	* c-parser.c (c_parser_compound_statement_nostart): Reset
+	parser->error after each statement.
+
 2006-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/28713

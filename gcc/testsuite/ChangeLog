@@ -1,3 +1,11 @@
+2006-08-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/28649
+	* gcc.dg/parse-error-1.c: New test.
+	* gcc.dg/parse-error-2.c: New test.
+	* gcc.dg/cpp/digraph2.c: Add error-marker.
+	* gcc.dg/noncompile/920923-1.c: Likewise.
+
 2006-08-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/27490
