@@ -1,5 +1,11 @@
 2006-08-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/28713
+	* omp-low.c (lower_omp_parallel): Convert t to
+	receiver_decl's type.
+	(expand_omp_parallel): STRIP_NOPS from the MODIFY_EXPR
+	source before comparison.
+
 	PR middle-end/28724
 	* gimplify.c (gimplify_omp_atomic_pipeline): Convert oldival
 	to itype in assignment to oldival2.

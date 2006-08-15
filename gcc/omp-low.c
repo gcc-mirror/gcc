@@ -2475,13 +2475,17 @@ expand_omp_parallel (struct omp_region *region)
 
 	  for (si = bsi_start (entry_succ_bb); ; bsi_next (&si))
 	    {
-	      tree stmt;
+	      tree stmt, arg;
 
 	      gcc_assert (!bsi_end_p (si));
 	      stmt = bsi_stmt (si);
-	      if (TREE_CODE (stmt) == MODIFY_EXPR
-		  && TREE_CODE (TREE_OPERAND (stmt, 1)) == ADDR_EXPR
-		  && TREE_OPERAND (TREE_OPERAND (stmt, 1), 0)
+	      if (TREE_CODE (stmt) != MODIFY_EXPR)
+		continue;
+
+	      arg = TREE_OPERAND (stmt, 1);
+	      STRIP_NOPS (arg);
+	      if (TREE_CODE (arg) == ADDR_EXPR
+		  && TREE_OPERAND (arg, 0)
 		     == OMP_PARALLEL_DATA_ARG (entry_stmt))
 		{
 		  if (TREE_OPERAND (stmt, 0) == DECL_ARGUMENTS (child_fn))
@@ -4084,6 +4088,8 @@ lower_omp_parallel (tree *stmt_p, omp_context *ctx)
   if (ctx->record_type)
     {
       t = build_fold_addr_expr (ctx->sender_decl);
+      /* fixup_child_record_type might have changed receiver_decl's type.  */
+      t = fold_convert (TREE_TYPE (ctx->receiver_decl), t);
       t = build2 (MODIFY_EXPR, void_type_node, ctx->receiver_decl, t);
       append_to_statement_list (t, &new_body);
     }
