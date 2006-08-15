@@ -3425,6 +3425,9 @@ build_compound_expr (tree expr1, tree expr2)
   else if (warn_unused_value)
     warn_if_unused_value (expr1, input_location);
 
+  if (expr2 == error_mark_node)
+    return error_mark_node;
+
   return build2 (COMPOUND_EXPR, TREE_TYPE (expr2), expr1, expr2);
 }
 
