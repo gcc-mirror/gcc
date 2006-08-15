@@ -1,3 +1,10 @@
+2006-08-15  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (x86-mingw32): Add a gthr-win32.h including makefile
+	fragment to tmake_file only if threads are enabled.
+	* config/i386/t-mingw32 (LIB2FUNCS_EXTRA): Move to...
+	* config/i386/t-gthr-win32: New file. ... here.
+
 2006-08-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/28649
