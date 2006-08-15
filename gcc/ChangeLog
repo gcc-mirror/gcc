@@ -1,3 +1,11 @@
+2006-07-14  Andrew Pinski  <pinksia@physics.uc.edu>
+
+	PR c/27490
+	PR c/27489
+	* c-typeck.c (build_compound_expr): If the second expression
+	is an error mark, then just return an error mark instead of
+	creating a COMPOUND_EXPR.
+
 2006-07-14  Mike Stump  <mrs@apple.com>
 
 	* Makefile.in (LIBGCC_DEPS): Don't depend on LANGUAGES.
