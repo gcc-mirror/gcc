@@ -1669,7 +1669,7 @@ build_new (tree placement, tree type, tree nelts, tree init,
 {
   tree rval;
 
-  if (type == error_mark_node)
+  if (placement == error_mark_node || type == error_mark_node)
     return error_mark_node;
 
   if (processing_template_decl)
