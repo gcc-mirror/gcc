@@ -1,3 +1,9 @@
+2006-08-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/27489
+	* c-typeck.c (c_start_case): Handle invalid orig_type correctly.
+	Clean up.
+
 2006-08-16  Mike Stump  <mrs@apple.com>
 
 	* doc/invoke.texi (-Wno-deprecated-declarations): Fixup use of pxref.

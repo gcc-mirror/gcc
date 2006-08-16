@@ -7064,25 +7064,25 @@ struct c_switch *c_switch_stack;
 tree
 c_start_case (tree exp)
 {
-  enum tree_code code;
-  tree type, orig_type = error_mark_node;
+  tree orig_type = error_mark_node;
   struct c_switch *cs;
 
   if (exp != error_mark_node)
     {
-      code = TREE_CODE (TREE_TYPE (exp));
       orig_type = TREE_TYPE (exp);
 
-      if (!INTEGRAL_TYPE_P (orig_type)
-	  && code != ERROR_MARK)
+      if (!INTEGRAL_TYPE_P (orig_type))
 	{
-	  error ("switch quantity not an integer");
+	  if (orig_type != error_mark_node)
+	    {
+	      error ("switch quantity not an integer");
+	      orig_type = error_mark_node;
+	    }
 	  exp = integer_zero_node;
-	  orig_type = error_mark_node;
 	}
       else
 	{
-	  type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
+	  tree type = TYPE_MAIN_VARIANT (orig_type);
 
 	  if (!in_system_header
 	      && (type == long_integer_type_node
@@ -7091,7 +7091,6 @@ c_start_case (tree exp)
 		     "converted to %<int%> in ISO C");
 
 	  exp = default_conversion (exp);
-	  type = TREE_TYPE (exp);
 	}
     }
 
