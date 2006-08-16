@@ -3291,10 +3291,10 @@ unable to be fixed to display these characters distinctly.
 
 @item -Wno-deprecated-declarations
 @opindex Wno-deprecated-declarations
-Do not warn about uses of functions, variables, and types marked as
-deprecated by using the @code{deprecated} attribute.
-(@pxref{Function Attributes}, @pxref{Variable Attributes},
-@pxref{Type Attributes}.)
+Do not warn about uses of functions (@pxref{Function Attributes}),
+variables (@pxref{Variable Attributes}), and types (@pxref{Type
+Attributes}) marked as deprecated by using the @code{deprecated}
+attribute.
 
 @item -Wno-overflow
 @opindex Wno-overflow

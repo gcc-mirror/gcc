@@ -1,3 +1,8 @@
+2006-08-16  Mike Stump  <mrs@apple.com>
+
+	* doc/invoke.texi (-Wno-deprecated-declarations): Fixup use of pxref.
+	* doc/cppopts.texi (-MD): Likewise.
+
 2006-08-15  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c/28287
