@@ -1809,11 +1809,17 @@ build_component_ref (tree datum, tree component)
       do
 	{
 	  tree subdatum = TREE_VALUE (field);
+	  int quals;
+	  tree subtype;
 
 	  if (TREE_TYPE (subdatum) == error_mark_node)
 	    return error_mark_node;
 
-	  ref = build3 (COMPONENT_REF, TREE_TYPE (subdatum), datum, subdatum,
+	  quals = TYPE_QUALS (strip_array_types (TREE_TYPE (subdatum)));
+	  quals |= TYPE_QUALS (TREE_TYPE (datum));
+	  subtype = c_build_qualified_type (TREE_TYPE (subdatum), quals);
+
+	  ref = build3 (COMPONENT_REF, subtype, datum, subdatum,
 			NULL_TREE);
 	  if (TREE_READONLY (datum) || TREE_READONLY (subdatum))
 	    TREE_READONLY (ref) = 1;
