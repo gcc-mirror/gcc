@@ -1,5 +1,18 @@
 2006-08-16  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR rtl-optimization/28071
+	* basic-block.h (bb_dom_dfs_in, bb_dom_dfs_out): Declare.
+	* dominance.c (bb_dom_dfs_in, bb_dom_dfs_out): New functions.
+	* tree-into-ssa.c (struct dom_dfsnum): New.
+	(cmp_dfsnum, find_dfsnum_interval, prune_unused_phi_nodes): New
+	functions.
+	(insert_phi_nodes_for): Use prune_unused_phi_nodes instead of
+	compute_global_livein.
+	(prepare_block_for_update, prepare_use_sites_for): Mark the uses
+	in phi nodes in the correct blocks.
+
+2006-08-16  Zdenek Dvorak <dvorakz@suse.cz>
+
 	PR tree-optimization/28364
 	* tree-ssa-loop-ivopts.c (aff_combination_to_tree): Handle zero
 	correctly.

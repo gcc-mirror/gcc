@@ -779,6 +779,214 @@ mark_def_sites (struct dom_walk_data *walk_data,
     SET_BIT (gd->interesting_blocks, bb->index);
 }
 
+/* Structure used by prune_unused_phi_nodes to record bounds of the intervals
+   in the dfs numbering of the dominance tree.  */
+
+struct dom_dfsnum
+{
+  /* Basic block whose index this entry corresponds to.  */
+  unsigned bb_index;
+
+  /* The dfs number of this node.  */
+  unsigned dfs_num;
+};
+
+/* Compares two entries of type struct dom_dfsnum by dfs_num field.  Callback
+   for qsort.  */
+
+static int
+cmp_dfsnum (const void *a, const void *b)
+{
+  const struct dom_dfsnum *da = a;
+  const struct dom_dfsnum *db = b;
+
+  return (int) da->dfs_num - (int) db->dfs_num;
+}
+
+/* Among the intervals starting at the N points specified in DEFS, find
+   the one that contains S, and return its bb_index.  */
+
+static unsigned
+find_dfsnum_interval (struct dom_dfsnum *defs, unsigned n, unsigned s)
+{
+  unsigned f = 0, t = n, m;
+
+  while (t > f + 1)
+    {
+      m = (f + t) / 2;
+      if (defs[m].dfs_num <= s)
+	f = m;
+      else
+	t = m;
+    }
+
+  return defs[f].bb_index;
+}
+
+/* Clean bits from PHIS for phi nodes whose value cannot be used in USES.
+   KILLS is a bitmap of blocks where the value is defined before any use.  */
+
+static void
+prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
+{
+  VEC(int, heap) *worklist;
+  bitmap_iterator bi;
+  unsigned i, b, p, u, top;
+  bitmap live_phis;
+  basic_block def_bb, use_bb;
+  edge e;
+  edge_iterator ei;
+  bitmap to_remove;
+  struct dom_dfsnum *defs;
+  unsigned n_defs, adef;
+
+  if (bitmap_empty_p (uses))
+    {
+      bitmap_clear (phis);
+      return;
+    }
+
+  /* The phi must dominate a use, or an argument of a live phi.  Also, we
+     do not create any phi nodes in def blocks, unless they are also livein.  */
+  to_remove = BITMAP_ALLOC (NULL);
+  bitmap_and_compl (to_remove, kills, uses);
+  bitmap_and_compl_into (phis, to_remove);
+  if (bitmap_empty_p (phis))
+    {
+      BITMAP_FREE (to_remove);
+      return;
+    }
+
+  /* We want to remove the unnecessary phi nodes, but we do not want to compute
+     liveness information, as that may be linear in the size of CFG, and if
+     there are lot of different variables to rewrite, this may lead to quadratic
+     behavior.
+
+     Instead, we basically emulate standard dce.  We put all uses to worklist,
+     then for each of them find the nearest def that dominates them.  If this
+     def is a phi node, we mark it live, and if it was not live before, we
+     add the predecessors of its basic block to the worklist.
+   
+     To quickly locate the nearest def that dominates use, we use dfs numbering
+     of the dominance tree (that is already available in order to speed up
+     queries).  For each def, we have the interval given by the dfs number on
+     entry to and on exit from the corresponding subtree in the dominance tree.
+     The nearest dominator for a given use is the smallest of these intervals
+     that contains entry and exit dfs numbers for the basic block with the use.
+     If we store the bounds for all the uses to an array and sort it, we can
+     locate the nearest dominating def in logarithmic time by binary search.*/
+  bitmap_ior (to_remove, kills, phis);
+  n_defs = bitmap_count_bits (to_remove);
+  defs = XNEWVEC (struct dom_dfsnum, 2 * n_defs + 1);
+  defs[0].bb_index = 1;
+  defs[0].dfs_num = 0;
+  adef = 1;
+  EXECUTE_IF_SET_IN_BITMAP (to_remove, 0, i, bi)
+    {
+      def_bb = BASIC_BLOCK (i);
+      defs[adef].bb_index = i;
+      defs[adef].dfs_num = bb_dom_dfs_in (CDI_DOMINATORS, def_bb);
+      defs[adef + 1].bb_index = i;
+      defs[adef + 1].dfs_num = bb_dom_dfs_out (CDI_DOMINATORS, def_bb);
+      adef += 2;
+    }
+  BITMAP_FREE (to_remove);
+  gcc_assert (adef == 2 * n_defs + 1);
+  qsort (defs, adef, sizeof (struct dom_dfsnum), cmp_dfsnum);
+  gcc_assert (defs[0].bb_index == 1);
+
+  /* Now each DEFS entry contains the number of the basic block to that the
+     dfs number corresponds.  Change them to the number of basic block that
+     corresponds to the interval following the dfs number.  Also, for the
+     dfs_out numbers, increase the dfs number by one (so that it corresponds
+     to the start of the following interval, not to the end of the current
+     one).  We use WORKLIST as a stack.  */
+  worklist = VEC_alloc (int, heap, n_defs + 1);
+  VEC_quick_push (int, worklist, 1);
+  top = 1;
+  n_defs = 1;
+  for (i = 1; i < adef; i++)
+    {
+      b = defs[i].bb_index;
+      if (b == top)
+	{
+	  /* This is a closing element.  Interval corresponding to the top
+	     of the stack after removing it follows.  */
+	  VEC_pop (int, worklist);
+	  top = VEC_index (int, worklist, VEC_length (int, worklist) - 1);
+	  defs[n_defs].bb_index = top;
+	  defs[n_defs].dfs_num = defs[i].dfs_num + 1;
+	}
+      else
+	{
+	  /* Opening element.  Nothing to do, just push it to the stack and move
+	     it to the correct position.  */
+	  defs[n_defs].bb_index = defs[i].bb_index;
+	  defs[n_defs].dfs_num = defs[i].dfs_num;
+	  VEC_quick_push (int, worklist, b);
+	  top = b;
+	}
+
+      /* If this interval starts at the same point as the previous one, cancel
+	 the previous one.  */
+      if (defs[n_defs].dfs_num == defs[n_defs - 1].dfs_num)
+	defs[n_defs - 1].bb_index = defs[n_defs].bb_index;
+      else
+	n_defs++;
+    }
+  VEC_pop (int, worklist);
+  gcc_assert (VEC_empty (int, worklist));
+
+  /* Now process the uses.  */
+  live_phis = BITMAP_ALLOC (NULL);
+  EXECUTE_IF_SET_IN_BITMAP (uses, 0, i, bi)
+    {
+      VEC_safe_push (int, heap, worklist, i);
+    }
+
+  while (!VEC_empty (int, worklist))
+    {
+      b = VEC_pop (int, worklist);
+      if (b == ENTRY_BLOCK)
+	continue;
+
+      /* If there is a phi node in USE_BB, it is made live.  Otherwise,
+	 find the def that dominates the immediate dominator of USE_BB
+	 (the kill in USE_BB does not dominate the use).  */
+      if (bitmap_bit_p (phis, b))
+	p = b;
+      else
+	{
+	  use_bb = get_immediate_dominator (CDI_DOMINATORS, BASIC_BLOCK (b));
+	  p = find_dfsnum_interval (defs, n_defs,
+				    bb_dom_dfs_in (CDI_DOMINATORS, use_bb));
+	  if (!bitmap_bit_p (phis, p))
+	    continue;
+	}
+
+      /* If the phi node is already live, there is nothing to do.  */
+      if (bitmap_bit_p (live_phis, p))
+	continue;
+
+      /* Mark the phi as live, and add the new uses to the worklist.  */
+      bitmap_set_bit (live_phis, p);
+      def_bb = BASIC_BLOCK (p);
+      FOR_EACH_EDGE (e, ei, def_bb->preds)
+	{
+	  u = e->src->index;
+	  if (bitmap_bit_p (uses, u))
+	    continue;
+
+	  bitmap_set_bit (uses, u);
+	  VEC_safe_push (int, heap, worklist, u);
+	}
+    }
+
+  VEC_free (int, heap, worklist);
+  bitmap_copy (phis, live_phis);
+  BITMAP_FREE (live_phis);
+  free (defs);
+}
 
 /* Given a set of blocks with variable definitions (DEF_BLOCKS),
    return a bitmap with all the blocks in the iterated dominance
@@ -926,13 +1134,12 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
   /* Remove the blocks where we already have PHI nodes for VAR.  */
   bitmap_and_compl_into (phi_insertion_points, def_map->phi_blocks);
 
-  /* Now compute global livein for this variable.  Note this modifies
-     def_map->livein_blocks.  */
-  compute_global_livein (def_map->livein_blocks, def_map->def_blocks);
+  /* Remove obviously useless phi nodes.  */
+  prune_unused_phi_nodes (phi_insertion_points, def_map->def_blocks,
+			  def_map->livein_blocks);
 
   /* And insert the PHI nodes.  */
-  EXECUTE_IF_AND_IN_BITMAP (phi_insertion_points, def_map->livein_blocks,
-			    0, bb_index, bi)
+  EXECUTE_IF_SET_IN_BITMAP (phi_insertion_points, 0, bb_index, bi)
     {
       bb = BASIC_BLOCK (bb_index);
       if (update_p)
@@ -2009,6 +2216,8 @@ prepare_block_for_update (basic_block bb, bool insert_phi_p)
   basic_block son;
   block_stmt_iterator si;
   tree phi;
+  edge e;
+  edge_iterator ei;
 
   mark_block_for_update (bb);
 
@@ -2020,10 +2229,20 @@ prepare_block_for_update (basic_block bb, bool insert_phi_p)
 
       lhs_sym = DECL_P (lhs) ? lhs : SSA_NAME_VAR (lhs);
 
-      if (symbol_marked_for_renaming (lhs_sym))
+      if (!symbol_marked_for_renaming (lhs_sym))
+	continue;
+      mark_def_interesting (lhs_sym, phi, bb, insert_phi_p);
+
+      /* Mark the uses in phi nodes as interesting.  It would be more correct
+	 to process the arguments of the phi nodes of the successor edges of
+	 BB at the end of prepare_block_for_update, however, that turns out
+	 to be significantly more expensive.  Doing it here is conservatively
+	 correct -- it may only cause us to believe a value to be live in a
+	 block that also contains its definition, and thus insert a few more
+	 phi nodes for it.  */
+      FOR_EACH_EDGE (e, ei, bb->preds)
 	{
-	  mark_use_interesting (lhs_sym, phi, bb, insert_phi_p);
-	  mark_def_interesting (lhs_sym, phi, bb, insert_phi_p);
+	  mark_use_interesting (lhs_sym, phi, e->src, insert_phi_p);
 	}
     }
 
@@ -2101,38 +2320,9 @@ prepare_use_sites_for (tree name, bool insert_phi_p)
 
       if (TREE_CODE (stmt) == PHI_NODE)
 	{
-	  /* Mark this use of NAME interesting for the renamer.
-	     Notice that we explicitly call mark_use_interesting with
-	     INSERT_PHI_P == false.
-
-	     This is to avoid marking NAME as live-in in this block
-	     BB. If we were to mark NAME live-in to BB, then NAME
-	     would be considered live-in through ALL incoming edges to
-	     BB which is not what we want.  Since we are updating the
-	     SSA form for NAME, we don't really know what other names
-	     of NAME are coming in through other edges into BB.
-
-	     If we considered NAME live-in at BB, then the PHI
-	     placement algorithm may try to insert PHI nodes in blocks
-	     that are not only unnecessary but also the renamer would
-	     not know how to fill in.  */
-	  mark_use_interesting (name, stmt, bb, false);
-
-	  /* As discussed above, we only want to mark NAME live-in
-	     through the edge corresponding to its slot inside the PHI
-	     argument list.  So, we look for the block BB1 where NAME
-	     is flowing through.  If BB1 does not contain a definition
-	     of NAME, then consider NAME live-in at BB1.  */
-	  if (insert_phi_p)
-	    {
-	      int ix = PHI_ARG_INDEX_FROM_USE (use_p);
-	      edge e = PHI_ARG_EDGE (stmt, ix);
-	      basic_block bb1 = e->src;
-	      struct def_blocks_d *db = get_def_blocks_for (name);
-
-	      if (!bitmap_bit_p (db->def_blocks, bb1->index))
-		set_livein_block (name, bb1);
-	    }
+	  int ix = PHI_ARG_INDEX_FROM_USE (use_p);
+	  edge e = PHI_ARG_EDGE (stmt, ix);
+	  mark_use_interesting (name, stmt, e->src, insert_phi_p);
 	}
       else
 	{

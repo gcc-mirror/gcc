@@ -909,6 +909,28 @@ dominated_by_p (enum cdi_direction dir, basic_block bb1, basic_block bb2)
   return et_below (n1, n2);
 }
 
+/* Returns the entry dfs number for basic block BB, in the direction DIR.  */
+
+unsigned
+bb_dom_dfs_in (enum cdi_direction dir, basic_block bb)
+{
+  struct et_node *n = bb->dom[dir];
+
+  gcc_assert (dom_computed[dir] == DOM_OK);
+  return n->dfs_num_in;
+}
+
+/* Returns the exit dfs number for basic block BB, in the direction DIR.  */
+
+unsigned
+bb_dom_dfs_out (enum cdi_direction dir, basic_block bb)
+{
+  struct et_node *n = bb->dom[dir];
+
+  gcc_assert (dom_computed[dir] == DOM_OK);
+  return n->dfs_num_out;
+}
+
 /* Verify invariants of dominator structure.  */
 void
 verify_dominators (enum cdi_direction dir)
