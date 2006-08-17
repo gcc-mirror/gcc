@@ -1,3 +1,11 @@
+2006-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/28725
+	* env.c: Include ctype.h.
+	(parse_schedule, parse_unsigned_long, parse_boolean): Allow
+	leading and/or trailing whitespace and compare strings case
+	insensitively.
+
 2006-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/28390

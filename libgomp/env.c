@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -30,6 +30,7 @@
 
 #include "libgomp.h"
 #include "libgomp_f.h"
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -53,17 +54,19 @@ parse_schedule (void)
   if (env == NULL)
     return;
 
-  if (strncmp (env, "static", 6) == 0)
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (strncasecmp (env, "static", 6) == 0)
     {
       gomp_run_sched_var = GFS_STATIC;
       env += 6;
     }
-  else if (strncmp (env, "dynamic", 7) == 0)
+  else if (strncasecmp (env, "dynamic", 7) == 0)
     {
       gomp_run_sched_var = GFS_DYNAMIC;
       env += 7;
     }
-  else if (strncmp (env, "guided", 6) == 0)
+  else if (strncasecmp (env, "guided", 6) == 0)
     {
       gomp_run_sched_var = GFS_GUIDED;
       env += 6;
@@ -71,20 +74,20 @@ parse_schedule (void)
   else
     goto unknown;
 
+  while (isspace ((unsigned char) *env))
+    ++env;
   if (*env == '\0')
     return;
-  if (*env != ' ' && *env != ',')
+  if (*env++ != ',')
     goto unknown;
-  while (*env == ' ')
-    env++;
+  while (isspace ((unsigned char) *env))
+    ++env;
   if (*env == '\0')
-    return;
-  if (*env != ',')
-    goto unknown;
-  if (*++env == '\0')
     goto invalid;
 
   gomp_run_sched_chunk = strtoul (env, &end, 10);
+  while (isspace ((unsigned char) *end))
+    ++end;
   if (*end != '\0')
     goto invalid;
   return;
@@ -113,10 +116,14 @@ parse_unsigned_long (const char *name, unsigned long *pvalue)
   if (env == NULL)
     return false;
 
+  while (isspace ((unsigned char) *env))
+    ++env;
   if (*env == '\0')
     goto invalid;
 
   value = strtoul (env, &end, 10);
+  while (isspace ((unsigned char) *end))
+    ++end;
   if (*end != '\0')
     goto invalid;
 
@@ -140,11 +147,23 @@ parse_boolean (const char *name, bool *value)
   if (env == NULL)
     return;
 
-  if (strcmp (env, "true") == 0)
-    *value = true;
-  else if (strcmp (env, "false") == 0)
-    *value = false;
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (strncasecmp (env, "true", 4) == 0)
+    {
+      *value = true;
+      env += 4;
+    }
+  else if (strncasecmp (env, "false", 5) == 0)
+    {
+      *value = false;
+      env += 5;
+    }
   else
+    env = "X";
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env != '\0')
     gomp_error ("Invalid value for environment variable %s", name);
 }
 
