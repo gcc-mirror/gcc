@@ -152,14 +152,15 @@ __m32c_eh_return:
 ___mulsi3:
 	enter	#0
 	push.w	r2
-	mov.w	SAL,mem0
-	mov.w	SAH,mem2
-	mulu.w	SBL,mem0	/* writes to r2r0 */
+	mov.w	SAL,r0
+	mulu.w	SBL,r0		/* writes to r2r0 */
+	mov.w	r0,mem0
+	mov.w	r2,mem2
 	mov.w	SAL,r0
 	mulu.w	SBH,r0		/* writes to r2r0 */
 	add.w	r0,mem2
 	mov.w	SAH,r0
-	mulu.w	SBL,r0
+	mulu.w	SBL,r0		/* writes to r2r0 */
 	add.w	r0,mem2
 	pop.w	r2
 	exitd
