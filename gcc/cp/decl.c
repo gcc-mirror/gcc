@@ -9281,7 +9281,8 @@ xref_tag (enum tag_types tag_code, tree name,
 	       && CLASSTYPE_IS_TEMPLATE (t))
 	{
 	  error ("redeclaration of %qT as a non-template", t);
-	  t = error_mark_node;
+	  cp_error_at ("previous declaration %q+D", t);
+	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 	}
 
       /* Make injected friend class visible.  */
