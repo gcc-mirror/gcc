@@ -1,3 +1,7 @@
+2006-08-17  J"orn Rennecke  <joern.rennecke@st.com>
+
+	* gcc.c-torture/execute/pr28289.c: New test.
+
 2006-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/28744
