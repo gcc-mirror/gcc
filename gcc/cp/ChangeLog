@@ -1,5 +1,12 @@
 2006-08-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28606
+	* parser.c (cp_parser_diagnose_invalid_type_name): Handle BIT_NOT_EXPR.
+	Fix formatting.
+	(cp_parser_parse_and_diagnose_invalid_type_name): Tighten condition
+	for valid type-names.
+	(cp_parser_unqualified_id): Fix error handling for destructors.
+
 	PR c++/28710
 	* decl.c (xref_tag): Improve error message.  Return early on error.
 
