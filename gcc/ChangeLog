@@ -1,3 +1,15 @@
+2006-08-16  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/27865
+	* tree-vrp.c (adjust_range_with_scev): Do not use TYPE_{MIN,MAX}_VALUE
+	for pointer types.
+	* tree-scalar-evolution.c (fold_used_pointer_cast, pointer_offset_p,
+	fold_used_pointer, pointer_used_p): New functions.
+	(analyze_scalar_evolution_1): Use fold_used_pointer.
+	* tree-chrec.c (convert_affine_scev): Convert no-op casts correctly.
+	* tree-ssa-loop-ivopts.c (generic_type_for): Return integral type
+	for pointers.
+
 2006-08-17  Paolo Bonzini <bonzini@gnu.org>
 
 	PR c++/28573
