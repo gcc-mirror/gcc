@@ -3911,6 +3911,7 @@ reload_as_needed (int live_known)
 	  regset_head regs_to_forget;
 	  INIT_REG_SET (&regs_to_forget);
 	  note_stores (PATTERN (insn), forget_old_reloads_1, &regs_to_forget);
+
 	  /* If this is a USE and CLOBBER of a MEM, ensure that any
 	     references to eliminable registers have been removed.  */
 
