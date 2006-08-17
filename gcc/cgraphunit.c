@@ -985,9 +985,16 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	}
       if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
 	{
-	  if (node->local.finalized)
-	    cgraph_mark_needed_node (node);
-	  node->externally_visible = true;
+	  if (! TREE_PUBLIC (node->decl))
+	    warning (OPT_Wattributes,
+		     "%J%<externally_visible%> attribute have effect only on public objects",
+		     node->decl);
+	  else
+	    {
+	      if (node->local.finalized)
+		cgraph_mark_needed_node (node);
+	      node->local.externally_visible = true;
+	    }
 	}
     }
   for (vnode = cgraph_varpool_nodes; vnode != first_var; vnode = vnode->next)
@@ -1001,9 +1008,16 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	}
       if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (decl)))
 	{
-	  if (vnode->finalized)
-	    cgraph_varpool_mark_needed_node (vnode);
-	  vnode->externally_visible = true;
+	  if (! TREE_PUBLIC (vnode->decl))
+	    warning (OPT_Wattributes,
+		     "%J%<externally_visible%> attribute have effect only on public objects",
+		     vnode->decl);
+	  else
+	    {
+	      if (vnode->finalized)
+		cgraph_varpool_mark_needed_node (vnode);
+	      vnode->externally_visible = true;
+	    }
 	}
     }
 }

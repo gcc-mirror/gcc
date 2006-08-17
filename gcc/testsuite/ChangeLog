@@ -1,3 +1,11 @@
+2006-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/28744
+	* gcc.dg/attr-externally-visible-1.c: New test.
+	* gcc.dg/attr-externally-visible-2.c: New test.
+	* g++.dg/parse/attr-externally-visible-1.C: New test.
+	* g++.dg/parse/attr-externally-visible-2.C: New test.
+
 2006-08-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28606

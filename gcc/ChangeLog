@@ -1,3 +1,18 @@
+2006-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/28744
+	* cgraph.h (struct cgraph_node): Remove externally_visible
+	bitfield.
+	* cgraphunit.c (process_function_and_variable_attributes): Set
+	local.externally_visible rather than externally_visible.
+
+	PR c/28744
+	* c-common.c (handle_externally_visible_attribute): First look
+	at TREE_CODE and only if it is function or var decl, check for
+	non-public objects.  Don't warn for DECL_EXTERNAL.
+	* cgraphunit.c (process_function_and_variable_attributes): Warn
+	if externally_visible attribute is used on non-public object.
+
 2006-08-17  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/27865
