@@ -593,7 +593,6 @@ static void free_glat (void);
 static void sched_remove_insn (rtx);
 static void clear_priorities (rtx);
 static void add_jump_dependencies (rtx, rtx);
-static rtx bb_note (basic_block);
 static void calc_priorities (rtx);
 #ifdef ENABLE_CHECKING
 static int has_edge_p (VEC(edge,gc) *, int);
@@ -4549,7 +4548,7 @@ add_jump_dependencies (rtx insn, rtx jump)
 }
 
 /* Return the NOTE_INSN_BASIC_BLOCK of BB.  */
-static rtx
+rtx
 bb_note (basic_block bb)
 {
   rtx note;

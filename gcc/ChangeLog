@@ -1,3 +1,12 @@
+2006-08-17  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	PR rtl-optimization/28489
+	* sched-ebb.c (begin_schedule_ready): Create basic block
+	at the right place.
+	(advance_target_bb): Skip empty blocks.
+	* haifa-sched.c (bb_note): Make global.
+	* sched-int.h (bb_note): Add prototype.
+
 2006-08-16  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/27865

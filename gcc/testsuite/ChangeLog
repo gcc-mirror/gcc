@@ -1,3 +1,8 @@
+2006-08-17  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	PR rtl-optimization/28489
+	* gcc.c-torture/compile/pr28489.c: New test.
+
 2006-08-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28710

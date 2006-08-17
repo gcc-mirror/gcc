@@ -166,7 +166,8 @@ begin_schedule_ready (rtx insn, rtx last)
 	  gcc_assert (NOTE_INSN_BASIC_BLOCK_P (BB_END (bb)));
 	}
       else
-	bb = create_basic_block (insn, 0, last_bb);
+	/* Create an empty unreachable block after the INSN.  */
+	bb = create_basic_block (NEXT_INSN (insn), NULL_RTX, last_bb);
       
       /* split_edge () creates BB before E->DEST.  Keep in mind, that
 	 this operation extends scheduling region till the end of BB.
@@ -728,10 +729,19 @@ advance_target_bb (basic_block bb, rtx insn)
       else
 	return 0;
     }
-  else if (bb != last_bb)
-    return bb->next_bb;
   else
-    gcc_unreachable ();
+    /* Return next non empty block.  */
+    {
+      do
+	{
+	  gcc_assert (bb != last_bb);
+
+	  bb = bb->next_bb;
+	}
+      while (bb_note (bb) == BB_END (bb));
+
+      return bb;
+    }
 }
 
 /* Fix internal data after interblock movement of jump instruction.
