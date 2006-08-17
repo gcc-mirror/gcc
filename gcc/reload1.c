@@ -408,6 +408,7 @@ static void count_pseudo (int);
 static void order_regs_for_reload (struct insn_chain *);
 static void reload_as_needed (int);
 static void forget_old_reloads_1 (rtx, rtx, void *);
+static void forget_marked_reloads (regset);
 static int reload_reg_class_lower (const void *, const void *);
 static void mark_reload_reg_in_use (unsigned int, int, enum reload_type,
 				    enum machine_mode);
@@ -3907,8 +3908,9 @@ reload_as_needed (int live_known)
 
       else if (INSN_P (insn))
 	{
-	  rtx oldpat = copy_rtx (PATTERN (insn));
-
+	  regset_head regs_to_forget;
+	  INIT_REG_SET (&regs_to_forget);
+	  note_stores (PATTERN (insn), forget_old_reloads_1, &regs_to_forget);
 	  /* If this is a USE and CLOBBER of a MEM, ensure that any
 	     references to eliminable registers have been removed.  */
 
@@ -3928,6 +3930,7 @@ reload_as_needed (int live_known)
 	      if (NOTE_P (insn))
 		{
 		  update_eliminable_offsets ();
+		  CLEAR_REG_SET (&regs_to_forget);
 		  continue;
 		}
 	    }
@@ -4014,7 +4017,8 @@ reload_as_needed (int live_known)
 	     for this insn in order to be stored in
 	     (obeying register constraints).  That is correct; such reload
 	     registers ARE still valid.  */
-	  note_stores (oldpat, forget_old_reloads_1, NULL);
+	  forget_marked_reloads (&regs_to_forget);
+	  CLEAR_REG_SET (&regs_to_forget);
 
 	  /* There may have been CLOBBER insns placed after INSN.  So scan
 	     between INSN and NEXT and use them to forget old reloads.  */
@@ -4163,14 +4167,18 @@ reload_as_needed (int live_known)
    unless X is an output reload reg of the current insn.
 
    X may be a hard reg (the reload reg)
-   or it may be a pseudo reg that was reloaded from.  */
+   or it may be a pseudo reg that was reloaded from.  
+
+   When DATA is non-NULL just mark the registers in regset
+   to be forgotten later.  */
 
 static void
 forget_old_reloads_1 (rtx x, rtx ignored ATTRIBUTE_UNUSED,
-		      void *data ATTRIBUTE_UNUSED)
+		      void *data)
 {
   unsigned int regno;
   unsigned int nr;
+  regset regs = (regset) data;
 
   /* note_stores does give us subregs of hard regs,
      subreg_regno_offset requires a hard reg.  */
@@ -4198,26 +4206,56 @@ forget_old_reloads_1 (rtx x, rtx ignored ATTRIBUTE_UNUSED,
 	 This can happen if a block-local pseudo is allocated to that reg
 	 and it wasn't spilled because this block's total need is 0.
 	 Then some insn might have an optional reload and use this reg.  */
-      for (i = 0; i < nr; i++)
-	/* But don't do this if the reg actually serves as an output
-	   reload reg in the current instruction.  */
-	if (n_reloads == 0
-	    || ! TEST_HARD_REG_BIT (reg_is_output_reload, regno + i))
-	  {
-	    CLEAR_HARD_REG_BIT (reg_reloaded_valid, regno + i);
-	    CLEAR_HARD_REG_BIT (reg_reloaded_call_part_clobbered, regno + i);
-	    spill_reg_store[regno + i] = 0;
-	  }
+      if (!regs)
+	for (i = 0; i < nr; i++)
+	  /* But don't do this if the reg actually serves as an output
+	     reload reg in the current instruction.  */
+	  if (n_reloads == 0
+	      || ! TEST_HARD_REG_BIT (reg_is_output_reload, regno + i))
+	    {
+	      CLEAR_HARD_REG_BIT (reg_reloaded_valid, regno + i);
+	      CLEAR_HARD_REG_BIT (reg_reloaded_call_part_clobbered, regno + i);
+	      spill_reg_store[regno + i] = 0;
+	    }
     }
 
-  /* Since value of X has changed,
-     forget any value previously copied from it.  */
+  if (regs)
+    while (nr-- > 0)
+      SET_REGNO_REG_SET (regs, regno + nr);
+  else
+    {
+      /* Since value of X has changed,
+	 forget any value previously copied from it.  */
 
-  while (nr-- > 0)
-    /* But don't forget a copy if this is the output reload
-       that establishes the copy's validity.  */
-    if (n_reloads == 0 || reg_has_output_reload[regno + nr] == 0)
-      reg_last_reload_reg[regno + nr] = 0;
+      while (nr-- > 0)
+	/* But don't forget a copy if this is the output reload
+	   that establishes the copy's validity.  */
+	if (n_reloads == 0 || reg_has_output_reload[regno + nr] == 0)
+	  reg_last_reload_reg[regno + nr] = 0;
+     }
+}
+
+/* Forget the reloads marked in regset by previous function.  */
+static void
+forget_marked_reloads (regset regs)
+{
+  unsigned int reg;
+  reg_set_iterator rsi;
+  EXECUTE_IF_SET_IN_REG_SET (regs, 0, reg, rsi)
+    {
+      if (reg < FIRST_PSEUDO_REGISTER
+	  /* But don't do this if the reg actually serves as an output
+	     reload reg in the current instruction.  */
+	  && (n_reloads == 0
+	      || ! TEST_HARD_REG_BIT (reg_is_output_reload, reg)))
+	  {
+	    CLEAR_HARD_REG_BIT (reg_reloaded_valid, reg);
+	    CLEAR_HARD_REG_BIT (reg_reloaded_call_part_clobbered, reg);
+	    spill_reg_store[reg] = 0;
+	  }
+      if (n_reloads == 0 || reg_has_output_reload[reg] == 0)
+	reg_last_reload_reg[reg] = 0;
+    }
 }
 
 /* The following HARD_REG_SETs indicate when each hard register is

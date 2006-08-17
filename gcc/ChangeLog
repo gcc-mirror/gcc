@@ -1,3 +1,11 @@
+2006-08-17  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/27865
+	* reload1.c (forget_marked_reloads): New function.
+	(forget_old_reloads_1): When data are passed, just mark the registers
+	for later removal.
+	(reload_as_needed): Use the new mechanizm.
+
 2006-08-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/28146
