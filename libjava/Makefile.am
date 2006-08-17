@@ -543,13 +543,13 @@ if USE_LIBGCJ_BC
 ## later.
 install-exec-hook: install-toolexeclibLTLIBRARIES
 	@echo Installing dummy lib libgcj_bc.so.1.0.0; \
-	rm $(toolexeclibdir)/libgcj_bc.so; \
-	mv $(toolexeclibdir)/libgcj_bc.so.1.0.0 $(toolexeclibdir)/libgcj_bc.so; \
+	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so; \
+	mv $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1.0.0 $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so; \
 	$(libgcj_bc_dummy_LINK) -xc /dev/null -Wl,-soname,libgcj_bc.so.1 \
-	-o $(toolexeclibdir)/libgcj_bc.so.1.0.0 -lgcj || exit; \
-	rm $(toolexeclibdir)/libgcj_bc.so.1; \
-	$(LN_S) libgcj_bc.so.1.0.0 $(toolexeclibdir)/libgcj_bc.so.1; \
-	rm $(toolexeclibdir)/libgcj_bc.la;
+	-o $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1.0.0 -lgcj || exit; \
+	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1; \
+	$(LN_S) libgcj_bc.so.1.0.0 $(DESTDIR)$(toolexeclibdir)/libgcj_bc.so.1; \
+	rm $(DESTDIR)$(toolexeclibdir)/libgcj_bc.la;
 endif
 
 ## Install the headers.  It is fairly ugly that we have to do this by
