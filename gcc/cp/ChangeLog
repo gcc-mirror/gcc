@@ -1,5 +1,8 @@
 2006-08-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28710
+	* decl.c (xref_tag): Improve error message.  Return early on error.
+
 	PR c++/28711
 	* pt.c (tsubst_copy_and_build) <case CONSTRUCTOR>: Robustify.
 
