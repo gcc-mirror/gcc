@@ -123,6 +123,10 @@ rtx *reg_equiv_address;
    or zero if pseudo reg N is not equivalent to a memory slot.  */
 rtx *reg_equiv_mem;
 
+/* Element N is an EXPR_LIST of REG_EQUIVs containing MEMs with
+   alternate representations of the location of pseudo reg N.  */
+rtx *reg_equiv_alt_mem_list;
+
 /* Widest width in which each pseudo reg is referred to (via subreg).  */
 static unsigned int *reg_max_ref_width;
 
@@ -703,6 +707,7 @@ reload (rtx first, int global)
   reg_equiv_constant = XCNEWVEC (rtx, max_regno);
   reg_equiv_invariant = XCNEWVEC (rtx, max_regno);
   reg_equiv_mem = XCNEWVEC (rtx, max_regno);
+  reg_equiv_alt_mem_list = XCNEWVEC (rtx, max_regno);
   reg_equiv_address = XCNEWVEC (rtx, max_regno);
   reg_max_ref_width = XCNEWVEC (unsigned int, max_regno);
   reg_old_renumber = XCNEWVEC (short, max_regno);
@@ -1259,6 +1264,11 @@ reload (rtx first, int global)
     free (offsets_known_at);
   if (offsets_at)
     free (offsets_at);
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (reg_equiv_alt_mem_list[i])
+      free_EXPR_LIST_list (&reg_equiv_alt_mem_list[i]);
+  free (reg_equiv_alt_mem_list);
 
   free (reg_equiv_mem);
   reg_equiv_init = 0;
@@ -7849,6 +7859,11 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
     n_occurrences += count_occurrences (PATTERN (insn),
 					eliminate_regs (substed, 0,
 							NULL_RTX), 0);
+  for (i1 = reg_equiv_alt_mem_list [REGNO (reg)]; i1; i1 = XEXP (i1, 1))
+    {
+      gcc_assert (!rtx_equal_p (XEXP (i1, 0), substed));
+      n_occurrences += count_occurrences (PATTERN (insn), XEXP (i1, 0), 0);
+    }
   if (n_occurrences > n_inherited)
     return;
 
