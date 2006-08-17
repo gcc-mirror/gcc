@@ -2093,8 +2093,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
   /* If the lookup found a template-name, it means that the user forgot
   to specify an argument list. Emit a useful error message.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
-    error ("invalid use of template-name %qE without an argument list",
-      decl);
+    error ("invalid use of template-name %qE without an argument list", decl);
+  else if (TREE_CODE (id) == BIT_NOT_EXPR)
+    error ("invalid use of destructor %qD as a type", id);
   else if (!parser->scope)
     {
       /* Issue an error message.  */
@@ -2187,8 +2188,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
       cp_parser_abort_tentative_parse (parser);
       return false;
     }
-  if (!cp_parser_parse_definitely (parser)
-      || TREE_CODE (id) != IDENTIFIER_NODE)
+  if (!cp_parser_parse_definitely (parser) || TREE_CODE (id) == TYPE_DECL)
     return false;
 
   /* Emit a diagnostic for the invalid type.  */
@@ -3407,14 +3407,17 @@ cp_parser_unqualified_id (cp_parser* parser,
 	/* Check for invalid scopes.  */
 	if (scope == error_mark_node)
 	  {
-	    cp_parser_skip_to_end_of_statement (parser);
+	    if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	      cp_lexer_consume_token (parser->lexer);
 	    return error_mark_node;
 	  }
 	if (scope && TREE_CODE (scope) == NAMESPACE_DECL)
 	  {
 	    if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
 	      error ("scope %qT before %<~%> is not a class-name", scope);
-	    cp_parser_skip_to_end_of_statement (parser);
+	    cp_parser_simulate_error (parser);
+	    if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	      cp_lexer_consume_token (parser->lexer);
 	    return error_mark_node;
 	  }
 	gcc_assert (!scope || TYPE_P (scope));
@@ -3514,6 +3517,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
 	      error ("declaration of %<~%T%> as member of %qT",
 		     type_decl, scope);
+	    cp_parser_simulate_error (parser);
 	    return error_mark_node;
 	  }
 
