@@ -1,3 +1,21 @@
+2006-08-16  Jakub Jelinek  <jakub@redhat.com>
+	    Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* configure, Makefile.in: Rebuilt.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Add libgcj_bc.la.
+	(libgcj_bc_la_SOURCES): New variable.
+	(libgcj_bc_la_LDFLAGS): Likewise.
+	(libgcj_bc_la_LIBADD): Likewise.
+	(libgcj_bc_la_DEPENDENCIES): Likewise.
+	(libgcj_bc_la_LINK): Likewise.
+	(libgcj_bc_dummy_LINK): Likewise.
+	(libgcj_bc.la): New target.
+	(install-exec-hook): Likewise.
+	* libgcj.spec.in (*lib): Use LIBGCJ_SPEC.
+	* libgcj_bc.c: New file.
+	* configure.ac (LIBGCJ_SPEC): New subst.
+	* configure.host (use_libgcj_bc): New variable.
+
 2006-08-15  Kyle Galloway  <kgallowa@redhat.com>
 
   	* include/java-interp.h (_Jv_InterpMethod::run_debug): New method.
