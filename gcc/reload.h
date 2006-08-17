@@ -161,6 +161,7 @@ extern rtx *reg_equiv_invariant;
 extern rtx *reg_equiv_memory_loc;
 extern rtx *reg_equiv_address;
 extern rtx *reg_equiv_mem;
+extern rtx *reg_equiv_alt_mem_list;
 
 /* Element N is the list of insns that initialized reg N from its equivalent
    constant or memory slot.  */

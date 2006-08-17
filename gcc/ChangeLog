@@ -1,3 +1,15 @@
+2006-08-17  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/28146
+	* reload.h (reg_equiv_alt_mem_list): New declaration.
+	* reload1.c (reg_equiv_alt_mem_list): New definition.
+	(reload): Initialize it and release it.
+	(delete_output_reload): Use it.
+	* reload.c (push_reg_equiv_alt_mem): New function.
+	(find_reloads_toplev): Call it.
+	(find_reloads_address, find_reloads_address_1): Likewise.
+	(find_reloads_subreg_address): Likewise.
+
 2006-08-17  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	PR rtl-optimization/28489
