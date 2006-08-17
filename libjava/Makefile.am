@@ -36,6 +36,10 @@ libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la libgcj-tools.la
 toolexecmainlib_DATA = libgcj.spec
 
+if USE_LIBGCJ_BC
+toolexeclib_LTLIBRARIES += libgcj_bc.la
+endif
+
 if XLIB_AWT
 toolexeclib_LTLIBRARIES += lib-gnu-awt-xlib.la
 endif
@@ -277,6 +281,31 @@ lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 
+## Support for libgcj_bc: dummy shared library.
+##
+## This lets us have one soname in BC objects and another in C++ ABI objects.
+libgcj_bc_la_SOURCES = libgcj_bc.c
+libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0
+libgcj_bc_la_LIBADD = libgcj.la
+libgcj_bc_la_DEPENDENCIES = libgcj.la
+libgcj_bc_la_LINK = $(LIBLINK)
+## This is specific to Linux/{Free,Net,Open}BSD/Hurd and perhaps few others.
+## USE_LIBGCJ_BC shouldn't be set on other targets.
+libgcj_bc_dummy_LINK = $(CC) -L$(here)/.libs $(CFLAGS) $(LDFLAGS) -shared \
+	-fPIC -nostdlib
+
+## This rule creates the libgcj_bc dummy library in the .libs directory, for use
+## when testing.
+libgcj_bc.la: $(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_DEPENDENCIES)
+	$(libgcj_bc_la_LINK) $(am_libgcj_bc_la_rpath) $(libgcj_bc_la_LDFLAGS) \
+	$(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_LIBADD) $(LIBS) || exit; \
+	rm .libs/libgcj_bc.so; \
+	mv .libs/libgcj_bc.so.1.0.0 .libs/libgcj_bc.so; \
+	$(libgcj_bc_dummy_LINK) -xc /dev/null -Wl,-soname,libgcj_bc.so.1 \
+	-o .libs/libgcj_bc.so.1.0.0 -lgcj || exit; \
+	rm .libs/libgcj_bc.so.1; \
+	$(LN_S) libgcj_bc.so.1.0.0 .libs/libgcj_bc.so.1
+
 ## Note that property_files is defined in sources.am.
 propertyo_files = $(patsubst classpath/resource/%,%,$(addsuffix .lo,$(property_files)))
 
@@ -506,6 +535,22 @@ extra_headers = java/lang/Object.h java/lang/Class.h
 
 $(extra_headers) $(srcdir)/java/lang/Object.h $(srcdir)/java/lang/Class.h:
 	@:
+
+## Support for libgcj_bc: dummy shared library used only at link-time.
+if USE_LIBGCJ_BC
+## Install libgcj_bc dummy lib in the target directory. We also need to delete
+## libtool's .la file, this prevents libtool resetting the lib again 
+## later.
+install-exec-hook: install-toolexeclibLTLIBRARIES
+	@echo Installing dummy lib libgcj_bc.so.1.0.0; \
+	rm $(toolexeclibdir)/libgcj_bc.so; \
+	mv $(toolexeclibdir)/libgcj_bc.so.1.0.0 $(toolexeclibdir)/libgcj_bc.so; \
+	$(libgcj_bc_dummy_LINK) -xc /dev/null -Wl,-soname,libgcj_bc.so.1 \
+	-o $(toolexeclibdir)/libgcj_bc.so.1.0.0 -lgcj || exit; \
+	rm $(toolexeclibdir)/libgcj_bc.so.1; \
+	$(LN_S) libgcj_bc.so.1.0.0 $(toolexeclibdir)/libgcj_bc.so.1; \
+	rm $(toolexeclibdir)/libgcj_bc.la;
+endif
 
 ## Install the headers.  It is fairly ugly that we have to do this by
 ## hand.

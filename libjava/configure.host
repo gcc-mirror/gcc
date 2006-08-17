@@ -31,6 +31,8 @@
 #   fallback_backtrace_h  Header to use for fallback backtrace implementation
 #			  (only for targets that don't support DWARF2 unwind)
 #   descriptor_h	Header to use for looking past function descriptors
+#   use_libgcj_bc	Whether to build a "libgcj-bc" library for BC-ABI
+#			binaries to link against.
 
 libgcj_flags=
 libgcj_cflags=
@@ -316,6 +318,15 @@ case "${host}" in
 	descriptor_h=sysdep/descriptor-n.h
 	;;
 esac
+
+case "${host}" in
+  *linux*)
+    use_libgcj_bc=yes
+  ;;
+  *)
+    use_libgcj_bc=no
+  ;;
+esac    
 
 libgcj_cflags="${libgcj_cflags} ${libgcj_flags}"
 libgcj_cxxflags="${libgcj_cxxflags} ${libgcj_flags}"
