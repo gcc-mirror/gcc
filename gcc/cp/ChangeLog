@@ -1,3 +1,9 @@
+2006-08-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28385
+	* pt.c (tsubst) [TEMPLATE_TYPE_PARM]: Ignore quals from template
+	if arg is a function.
+
 2006-08-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28593

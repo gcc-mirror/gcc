@@ -7238,10 +7238,20 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  {
 	    if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
 	      {
+		int quals;
 		gcc_assert (TYPE_P (arg));
+
+		/* cv-quals from the template are discarded when
+		   substituting in a function or reference type.  */
+		if (TREE_CODE (arg) == FUNCTION_TYPE
+		    || TREE_CODE (arg) == METHOD_TYPE
+		    || TREE_CODE (arg) == REFERENCE_TYPE)
+		  quals = cp_type_quals (arg);
+		else
+		  quals = cp_type_quals (arg) | cp_type_quals (t);
+		  
 		return cp_build_qualified_type_real
-		  (arg, cp_type_quals (arg) | cp_type_quals (t),
-		   complain | tf_ignore_bad_quals);
+		  (arg, quals, complain | tf_ignore_bad_quals);
 	      }
 	    else if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
 	      {
