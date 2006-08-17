@@ -9201,6 +9201,9 @@ tsubst_copy_and_build (tree t,
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	bool process_index_p;
 
+	if (type == error_mark_node)
+	  return error_mark_node;
+
 	/* digest_init will do the wrong thing if we let it.  */
 	if (type && TYPE_PTRMEMFUNC_P (type))
 	  return t;
