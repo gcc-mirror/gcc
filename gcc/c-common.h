@@ -830,7 +830,7 @@ extern void c_warn_unused_result (tree *);
 
 extern void verify_sequence_points (tree);
 
-extern tree fold_offsetof (tree);
+extern tree fold_offsetof (tree, tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and

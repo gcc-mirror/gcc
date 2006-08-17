@@ -1,3 +1,10 @@
+2006-08-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* PR c++/28573
+	* g++.dg/parse/offsetof6.C: New test.
+	* g++.dg/parse/offsetof6.C: New test.
+	* g++.dg/parse/offsetof7.C: New test.
+
 2006-08-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/28602
@@ -6,7 +13,7 @@
 
 2006-08-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	PR C++/28302
+	PR c++/28302
 	* g++.dg/ext/vector3.C: New test.
 
 2006-08-16  Zdenek Dvorak  <dvorakz@suse.cz>

@@ -1,8 +1,13 @@
+2006-08-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c++/28573
+	* semantics.c (finish_offsetof): Add new argument to fold_offsetof.
+
 2006-08-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/28302
 	* typeck.c (build_unary_op <case BIT_NOT_EXPR:>): Don't call
-	perform_integral_promotions for non integral type
+	perform_integral_promotions for non integral type.
 
 2006-08-16  Jason Merrill  <jason@redhat.com>
 

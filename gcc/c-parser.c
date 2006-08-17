@@ -5203,7 +5203,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    if (type == error_mark_node)
 	      offsetof_ref = error_mark_node;
 	    else
-	      offsetof_ref = build1 (INDIRECT_REF, type, NULL);
+	      offsetof_ref = build1 (INDIRECT_REF, type, null_pointer_node);
 	    /* Parse the second argument to __builtin_offsetof.  We
 	       must have one identifier, and beyond that we want to
 	       accept sub structure and sub array references.  */
@@ -5245,7 +5245,7 @@ c_parser_postfix_expression (c_parser *parser)
 	      c_parser_error (parser, "expected identifier");
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
-	    expr.value = fold_offsetof (offsetof_ref);
+	    expr.value = fold_offsetof (offsetof_ref, NULL_TREE);
 	    expr.original_code = ERROR_MARK;
 	  }
 	  break;
