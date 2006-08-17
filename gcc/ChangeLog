@@ -1,3 +1,13 @@
+2006-08-17  Paolo Bonzini <bonzini@gnu.org>
+
+	PR c++/28573
+	* c-common.c (fold_offsetof_1): Add an argument and recurse down to it
+	or the INTEGER_CST.  Fail on a CALL_EXPR. 
+	(fold_offsetof): Pass new argument to fold_offsetof_1.
+	* c-parser.c (c_parser_postfix_expression): Don't include a NULL
+	operand into an INDIRECT_REF. 
+	* c-typeck.c (build_unary_op): Adjust call to fold_offsetof.
+
 2006-08-16  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR gcov/profile/26570
