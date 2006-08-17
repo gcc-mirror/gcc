@@ -1925,14 +1925,14 @@ strip_offset (tree expr, unsigned HOST_WIDE_INT *offset)
 }
 
 /* Returns variant of TYPE that can be used as base for different uses.
-   For integer types, we return unsigned variant of the type, which
-   avoids problems with overflows.  For pointer types, we return void *.  */
+   We return unsigned type with the same precision, which avoids problems
+   with overflows.  */
 
 static tree
 generic_type_for (tree type)
 {
   if (POINTER_TYPE_P (type))
-    return ptr_type_node;
+    return unsigned_type_for (type);
 
   if (TYPE_UNSIGNED (type))
     return type;
