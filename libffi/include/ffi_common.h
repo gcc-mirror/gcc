@@ -70,7 +70,7 @@ typedef struct
 {
   ffi_cif *cif;
   void *rvalue;
-  void **avalue __attribute__((aligned));
+  void **avalue;
 } extended_cif;
 
 /* Terse sized type definitions.  */

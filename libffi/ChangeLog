@@ -1,3 +1,7 @@
+2006-08-17  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* include/ffi_common.h (struct): Revert accidental commit.
+
 2006-08-15  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* include/ffi_common.h: Remove lint directives.
