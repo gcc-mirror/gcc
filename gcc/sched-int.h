@@ -637,6 +637,7 @@ extern void * xrecalloc (void *, size_t, size_t, size_t);
 extern void unlink_bb_notes (basic_block, basic_block);
 extern void add_block (basic_block, basic_block);
 extern void attach_life_info (void);
+extern rtx bb_note (basic_block);
 
 #ifdef ENABLE_CHECKING
 extern void check_reg_live (bool);
