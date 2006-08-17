@@ -1,5 +1,5 @@
 /* Lambda matrix and vector interface.
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
 This file is part of GCC.
@@ -200,8 +200,7 @@ void print_lambda_body_vector (FILE *, lambda_body_vector);
 lambda_loopnest gcc_loopnest_to_lambda_loopnest (struct loops *,
 						 struct loop *,
 						 VEC(tree,heap) **,
-						 VEC(tree,heap) **,
-						 bool);
+						 VEC(tree,heap) **);
 void lambda_loopnest_to_gcc_loopnest (struct loop *,
 				      VEC(tree,heap) *, VEC(tree,heap) *,
 				      lambda_loopnest, lambda_trans_matrix);

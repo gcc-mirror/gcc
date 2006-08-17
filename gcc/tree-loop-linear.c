@@ -1,5 +1,5 @@
 /* Linear Loop transforms
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>.
 
 This file is part of GCC.
@@ -243,6 +243,7 @@ try_interchange_loops (lambda_trans_matrix trans,
 void
 linear_transform_loops (struct loops *loops)
 {
+  bool modified = false;
   unsigned int i;
   VEC(tree,heap) *oldivs = NULL;
   VEC(tree,heap) *invariants = NULL;
@@ -257,7 +258,6 @@ linear_transform_loops (struct loops *loops)
       lambda_loopnest before, after;
       lambda_trans_matrix trans;
       bool problem = false;
-      bool need_perfect_nest = false;
       /* If it's not a loop nest, we don't want it.
          We also don't handle sibling loops properly, 
          which are loops of the following form:
@@ -334,12 +334,9 @@ linear_transform_loops (struct loops *loops)
 	    fprintf (dump_file, "Can't transform loop, transform is illegal:\n");
 	  continue;
 	}
-      if (!perfect_nest_p (loop_nest))
-	need_perfect_nest = true;
-      before = gcc_loopnest_to_lambda_loopnest (loops,
-						loop_nest, &oldivs, 
-						&invariants,
-						need_perfect_nest);
+
+      before = gcc_loopnest_to_lambda_loopnest (loops, loop_nest, &oldivs, 
+						&invariants);
       if (!before)
 	continue;
             
@@ -357,6 +354,8 @@ linear_transform_loops (struct loops *loops)
 	}
       lambda_loopnest_to_gcc_loopnest (loop_nest, oldivs, invariants,
 				       after, trans);
+      modified = true;
+
       if (dump_file)
 	fprintf (dump_file, "Successfully transformed loop.\n");
       free_dependence_relations (dependence_relations);
@@ -365,5 +364,7 @@ linear_transform_loops (struct loops *loops)
   VEC_free (tree, heap, oldivs);
   VEC_free (tree, heap, invariants);
   scev_reset ();
-  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa_full_phi);
+
+  if (modified)
+    rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa_full_phi);
 }
