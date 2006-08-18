@@ -337,6 +337,10 @@ namespace __gnu_cxx
       void
       _M_erase(size_type __pos, size_type __n);
 
+      void
+      _M_clear()
+      { _M_erase(size_type(0), _M_length()); }
+
       bool
       _M_compare(const __rc_string_base&) const
       { return false; }
