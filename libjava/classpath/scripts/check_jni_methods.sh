@@ -2,8 +2,6 @@
 
 # Fail if any command fails
 set -e
-# Don't override existing files
-set -C
 
 TMPFILE=/tmp/check-jni-methods.$$.1
 TMPFILE2=/tmp/check-jni-methods.$$.2
