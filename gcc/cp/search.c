@@ -1192,9 +1192,6 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
   tree type = NULL_TREE, basetype_path = NULL_TREE;
   struct lookup_field_info lfi;
 
-  if (name == error_mark_node)
-    return NULL_TREE;
-
   /* rval_binfo is the binfo associated with the found member, note,
      this can be set with useful information, even when rval is not
      set, because it must deal with ALL members, not just non-function
@@ -1203,6 +1200,9 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
      non-function member is found.  */
 
   const char *errstr = 0;
+
+  if (name == error_mark_node)
+    return NULL_TREE;
 
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
