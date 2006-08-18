@@ -1,3 +1,7 @@
+2006-08-18  Christophe Jaillet  <christophe.jaillet@wanadoo.fr>
+
+	* tree.c (is_attribute_with_length_p): Remove a duplicated assert.
+
 2006-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/28744
