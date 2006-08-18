@@ -1,3 +1,9 @@
+2006-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/27565
+	* config/rs6000/rs6000.h (LOCAL_ALIGNMENT): For SPE, only adjust
+	alignment of SPE vector types.
+
 2006-08-17  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR middle-end/25211
