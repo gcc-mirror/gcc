@@ -124,7 +124,6 @@ public class NodeReader {
             skipTill("name=\"");
             String name = readTill("\"");
             Preferences subnode = node.node(name);
-            System.out.println("Found subnode: " + subnode.absolutePath());
             readMap(subnode);
             readNodes(subnode);
             skipTill("</node>");
@@ -160,7 +159,6 @@ public class NodeReader {
             String key = readTill("\"");
             skipTill("value=\"");
             String value = readTill("\"");
-            System.out.println("Key: " + key + " Value: " + value);
             node.put(key, value);
         }
     }
