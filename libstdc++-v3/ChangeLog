@@ -1,3 +1,10 @@
+2006-08-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28765
+	* include/ext/rc_string_base.h (_M_clear): New.
+	* include/ext/sso_string_base.h (_M_clear): Likewise.
+	* include/ext/vstring.h (clear): Use it.
+
 2006-08-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (poisson_distribution<>::_M_initialize): Add.

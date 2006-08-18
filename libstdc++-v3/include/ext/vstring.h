@@ -409,7 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        */
       void
       clear()
-      { this->_M_erase(size_type(0), this->size()); }
+      { this->_M_clear(); }
 
       /**
        *  Returns true if the %string is empty.  Equivalent to *this == "".
