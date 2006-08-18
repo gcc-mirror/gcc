@@ -667,21 +667,18 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  _M_lm_thr = std::log(_M_mean);
 	  _M_lfm = std::tr1::lgamma(__m + 1);
 	  _M_sm = std::sqrt(__m);
-	  
-	  const _RealType __dx =
-	    std::sqrt(2 * __m
-	    * std::log(_RealType(40.743665431525205956834243423363677L)
-		       * __m));
+
+	  const _RealType __pi_4 = 0.7853981633974483096156608458198757L;
+	  const _RealType __dx = std::sqrt(2 * __m * std::log(32 * __m
+							      / __pi_4));
 	  _M_d = std::tr1::round(std::max(_RealType(6),
 					  std::min(__m, __dx)));
-	  const _RealType __cx = 2 * (2 * __m + _M_d);
-	  const _RealType __cx4 = __cx / 4;
-	  _M_scx4 = std::sqrt(__cx4);
-	  _M_2cx = 2 / __cx;
+	  const _RealType __cx = 2 * __m + _M_d;
+	  _M_scx = std::sqrt(__cx / 2);
+	  _M_1cx = 1 / __cx;
 
-	  const _RealType __pi_2 = 1.5707963267948966192313216916397514L;
-	  _M_c2b = std::sqrt(__pi_2 * __cx4) * std::exp(_M_2cx);
-	  _M_cb = __cx * std::exp(-_M_d * _M_2cx * (1 + _M_d / 2)) / _M_d;
+	  _M_c2b = std::sqrt(__pi_4 * __cx) * std::exp(_M_1cx);
+	  _M_cb = 2 * __cx * std::exp(-_M_d * _M_1cx * (1 + _M_d / 2)) / _M_d;
 	}
       else
 #endif
@@ -720,11 +717,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    const _RealType __e178 = 1.0129030479320018583185514777512983L;
 	    const _RealType __c5 = __c4 + __e178;
 	    const _RealType __c = _M_cb + __c5;
-	    const _RealType __cx = 2 * (2 * __m + _M_d);
+	    const _RealType __2cx = 2 * (2 * __m + _M_d);
 
-	    normal_distribution<_RealType> __nd;
-
-	    bool __keepgoing = true;
+	    bool __reject = true;
 	    do
 	      {
 		const _RealType __u = __c * __urng();
@@ -734,7 +729,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		
 		if (__u <= __c1)
 		  {
-		    const _RealType __n = __nd(__urng);
+		    const _RealType __n = _M_nd(__urng);
 		    const _RealType __y = -std::abs(__n) * _M_sm - 1;
 		    __x = std::floor(__y);
 		    __w = -__n * __n / 2;
@@ -743,10 +738,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		  }
 		else if (__u <= __c2)
 		  {
-		    const _RealType __n = __nd(__urng);
-		    const _RealType __y = 1 + std::abs(__n) * _M_scx4;
+		    const _RealType __n = _M_nd(__urng);
+		    const _RealType __y = 1 + std::abs(__n) * _M_scx;
 		    __x = std::ceil(__y);
-		    __w = __y * (2 - __y) * _M_2cx;
+		    __w = __y * (2 - __y) * _M_1cx;
 		    if (__x > _M_d)
 		      continue;
 		  }
@@ -760,22 +755,22 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		else
 		  {
 		    const _RealType __v = -std::log(__urng());
-		    const _RealType __y = _M_d + __v * __cx / _M_d;
+		    const _RealType __y = _M_d + __v * __2cx / _M_d;
 		    __x = std::ceil(__y);
-		    __w = -_M_d * _M_2cx * (1 + __y / 2);
+		    __w = -_M_d * _M_1cx * (1 + __y / 2);
 		  }
 
-		__keepgoing = (__w - __e - __x * _M_lm_thr
-			       > _M_lfm - std::tr1::lgamma(__x + __m + 1));
+		__reject = (__w - __e - __x * _M_lm_thr
+			    > _M_lfm - std::tr1::lgamma(__x + __m + 1));
 
-	      } while (__keepgoing);
+	      } while (__reject);
 
-	    return _IntType(std::tr1::round(__x + __m));
+	    return _IntType(__x + __m + 0.5);
 	  }
 	else
 #endif
 	  {
-	    _IntType __x = -1;
+	    _IntType     __x = -1;
 	    _RealType __prod = 1.0;
 
 	    do
@@ -798,16 +793,258 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const std::streamsize __precision = __os.precision();
+      const _CharT __space = __os.widen(' ');
       __os.flags(std::ios_base::scientific | std::ios_base::left);
-      __os.fill(__os.widen(' '));
+      __os.fill(__space);
       __os.precision(_Max_digits10<_RealType>::__value);
 
-      __os << __x.mean();
+      __os << __x.mean() << __space << __x._M_nd;
 
       __os.flags(__flags);
       __os.fill(__fill);
       __os.precision(__precision);
       return __os;
+    }
+
+  template<typename _IntType, typename _RealType,
+	   typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       poisson_distribution<_IntType, _RealType>& __x)
+    {
+      const std::ios_base::fmtflags __flags = __is.flags();
+      __is.flags(std::ios_base::skipws);
+
+      __is >> __x._M_mean >> __x._M_nd;
+      __x._M_initialize();
+
+      __is.flags(__flags);
+      return __is;
+    }
+
+
+  template<typename _IntType, typename _RealType>
+    void
+    binomial_distribution<_IntType, _RealType>::
+    _M_initialize()
+    {
+      const _RealType __p12 = _M_p <= 0.5 ? _M_p : 1.0 - _M_p;
+
+      _M_easy = true;
+
+#if _GLIBCXX_USE_C99_MATH_TR1
+      if (_M_t * __p12 >= 8)
+	{
+	  _M_easy = false;
+	  const _RealType __np = std::floor(_M_t * __p12);
+	  const _RealType __pa = __np / _M_t;
+	  const _RealType __1p = 1 - __pa;
+	  
+	  const _RealType __pi_4 = 0.7853981633974483096156608458198757L;
+	  const _RealType __d1x =
+	    std::sqrt(__np * __1p * std::log(32 * __np
+					     / (81 * __pi_4 * __1p)));
+	  _M_d1 = std::tr1::round(std::max(_RealType(1), __d1x));
+	  const _RealType __d2x =
+	    std::sqrt(__np * __1p * std::log(32 * _M_t * __1p
+					     / (__pi_4 * __pa)));
+	  _M_d2 = std::tr1::round(std::max(_RealType(1), __d2x));
+	  
+	  // sqrt(pi / 2)
+	  const _RealType __spi_2 = 1.2533141373155002512078826424055226L;
+	  _M_s1 = std::sqrt(__np * __1p) * (1 + _M_d1 / (4 * __np));
+	  _M_s2 = std::sqrt(__np * __1p) * (1 + _M_d2 / (4 * _M_t * __1p));
+	  _M_c = 2 * _M_d1 / __np;
+	  _M_a1 = std::exp(_M_c) * _M_s1 * __spi_2;
+	  const _RealType __a12 = _M_a1 + _M_s2 * __spi_2;
+	  const _RealType __s1s = _M_s1 * _M_s1;
+	  _M_a123 = __a12 + (std::exp(_M_d1 / (_M_t * __1p))
+			     * 2 * __s1s / _M_d1
+			     * std::exp(-_M_d1 * _M_d1 / (2 * __s1s)));
+	  const _RealType __s2s = _M_s2 * _M_s2;
+	  _M_s = (_M_a123 + 2 * __s2s / _M_d2
+		  * std::exp(-_M_d2 * _M_d2 / (2 * __s2s)));
+	  _M_lf = (std::tr1::lgamma(__np + 1)
+		   + std::tr1::lgamma(_M_t - __np + 1));
+	  _M_lp1p = std::log(__pa / __1p);
+
+	  _M_q = -std::log(1 - (__p12 - __pa) / __1p);
+	}
+      else
+#endif
+	_M_q = -std::log(1 - __p12);
+    }
+
+  template<typename _IntType, typename _RealType>
+    template<class _UniformRandomNumberGenerator>
+      typename binomial_distribution<_IntType, _RealType>::result_type
+      binomial_distribution<_IntType, _RealType>::
+      _M_waiting(_UniformRandomNumberGenerator& __urng, _IntType __t)
+      {
+	_IntType    __x = 0;
+	_RealType __sum = 0;
+
+	do
+	  {
+	    const _RealType __e = -std::log(__urng());
+	    __sum += __e / (__t - __x);
+	    __x += 1;
+	  }
+	while (__sum <= _M_q);
+
+	return __x - 1;
+      }
+
+  /**
+   * A rejection algorithm when t * p >= 8 and a simple waiting time
+   * method - the second in the referenced book - otherwise.
+   * NB: The former is available only if _GLIBCXX_USE_C99_MATH_TR1
+   * is defined.
+   *
+   * Reference:
+   * Devroye, L. "Non-Uniform Random Variates Generation." Springer-Verlag,
+   * New York, 1986, Ch. X, Sect. 4 (+ Errata!).
+   */
+  template<typename _IntType, typename _RealType>
+    template<class _UniformRandomNumberGenerator>
+      typename binomial_distribution<_IntType, _RealType>::result_type
+      binomial_distribution<_IntType, _RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng)
+      {
+	result_type __ret;
+	const _RealType __p12 = _M_p <= 0.5 ? _M_p : 1.0 - _M_p;
+
+#if _GLIBCXX_USE_C99_MATH_TR1
+	if (!_M_easy)
+	  {
+	    _RealType __x;
+
+	    const _RealType __np = std::floor(_M_t * __p12);
+	    const _RealType __pa = __np / _M_t;
+
+	    // sqrt(pi / 2)
+	    const _RealType __spi_2 = 1.2533141373155002512078826424055226L;
+	    const _RealType __a1 = _M_a1;
+	    const _RealType __a12 = __a1 + _M_s2 * __spi_2;
+	    const _RealType __a123 = _M_a123;
+	    const _RealType __s1s = _M_s1 * _M_s1;
+	    const _RealType __s2s = _M_s2 * _M_s2;
+
+	    bool __reject;
+	    do
+	      {
+		const _RealType __u = _M_s * __urng();
+
+		_RealType __v;
+
+		if (__u <= __a1)
+		  {
+		    const _RealType __n = _M_nd(__urng);
+		    const _RealType __y = _M_s1 * std::abs(__n);
+		    __reject = __y >= _M_d1;
+		    if (!__reject)
+		      {
+			const _RealType __e = -std::log(__urng());
+			__x = std::floor(__y);
+			__v = -__e - __n * __n / 2 + _M_c;
+		      }
+		  }
+		else if (__u <= __a12)
+		  {
+		    const _RealType __n = _M_nd(__urng);
+		    const _RealType __y = _M_s2 * std::abs(__n);
+		    __reject = __y >= _M_d2;
+		    if (!__reject)
+		      {
+			const _RealType __e = -std::log(__urng());
+			__x = std::floor(-__y);
+			__v = -__e - __n * __n / 2;
+		      }
+		  }
+		else if (__u <= __a123)
+		  {
+		    const _RealType __e1 = -std::log(__urng());		    
+		    const _RealType __e2 = -std::log(__urng());
+
+		    const _RealType __y = _M_d1 + 2 * __s1s * __e1 / _M_d1;
+		    __x = std::floor(__y);
+		    __v = (-__e2 + _M_d1 * (1 / (_M_t - __np)
+					    -__y / (2 * __s1s)));
+		    __reject = false;
+		  }
+		else
+		  {
+		    const _RealType __e1 = -std::log(__urng());		    
+		    const _RealType __e2 = -std::log(__urng());
+
+		    const _RealType __y = _M_d2 + 2 * __s2s * __e1 / _M_d2;
+		    __x = std::floor(-__y);
+		    __v = -__e2 - _M_d2 * __y / (2 * __s2s);
+		    __reject = false;
+		  }
+
+		__reject = __reject || __x < -__np || __x > _M_t - __np;
+		if (!__reject)
+		  {
+		    const _RealType __lfx =
+		      std::tr1::lgamma(__np + __x + 1)
+		      + std::tr1::lgamma(_M_t - (__np + __x) + 1);
+		    __reject = __v > _M_lf - __lfx + __x * _M_lp1p;
+		  }
+	      }
+	    while (__reject);
+
+	    __x += __np + 0.5;
+
+	    const _IntType __z = _M_waiting(__urng, _M_t - _IntType(__x)); 
+	    __ret = _IntType(__x) + __z;
+	  }
+	else
+#endif
+	  __ret = _M_waiting(__urng, _M_t);
+
+	if (__p12 != _M_p)
+	  __ret = _M_t - __ret;
+	return __ret;
+      }
+
+  template<typename _IntType, typename _RealType,
+	   typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const binomial_distribution<_IntType, _RealType>& __x)
+    {
+      const std::ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const std::streamsize __precision = __os.precision();
+      const _CharT __space = __os.widen(' ');
+      __os.flags(std::ios_base::scientific | std::ios_base::left);
+      __os.fill(__space);
+      __os.precision(_Max_digits10<_RealType>::__value);
+
+      __os << __x.t() << __space << __x.p() 
+	   << __space << __x._M_nd;
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      __os.precision(__precision);
+      return __os;
+    }
+
+  template<typename _IntType, typename _RealType,
+	   typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       binomial_distribution<_IntType, _RealType>& __x)
+    {
+      const std::ios_base::fmtflags __flags = __is.flags();
+      __is.flags(std::ios_base::dec | std::ios_base::skipws);
+
+      __is >> __x._M_t >> __x._M_p >> __x._M_nd;
+      __x._M_initialize();
+
+      __is.flags(__flags);
+      return __is;
     }
 
 
@@ -893,20 +1130,20 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    result_type __x, __y, __r2;
 	    do
 	      {
-		__x = result_type(2.0) * __urng() - result_type(1.0);
-		__y = result_type(2.0) * __urng() - result_type(1.0);
+		__x = result_type(2.0) * __urng() - 1.0;
+		__y = result_type(2.0) * __urng() - 1.0;
 		__r2 = __x * __x + __y * __y;
 	      }
-	    while (__r2 > result_type(1.0) || __r2 == result_type(0));
+	    while (__r2 > 1.0 || __r2 == 0.0);
 
-	    const result_type __mult = std::sqrt(-result_type(2.0)
-						 * std::log(__r2) / __r2);
+	    const result_type __mult = std::sqrt(-2 * std::log(__r2) / __r2);
 	    _M_saved = __x * __mult;
 	    _M_saved_available = true;
 	    __ret = __y * __mult;
 	  }
-
-	return __ret * _M_sigma + _M_mean;
+	
+	__ret = __ret * _M_sigma + _M_mean;
+	return __ret;
       }
 
   template<typename _RealType, typename _CharT, typename _Traits>

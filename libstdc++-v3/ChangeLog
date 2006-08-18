@@ -1,5 +1,30 @@
 2006-08-18  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random (class binomial_distribution<>): Add.
+	* include/tr1/random.tcc (binomial_distribution<>::operator(),
+	operator<<(std::basic_ostream<>&, const binomial_distribution<>&),
+	operator>>(std::basic_istream<>&, binomial_distribution<>&,
+	binomial_distribution<>::_M_waiting(), binomial_distribution<>::
+	_M_initialize()): Define.
+	* testsuite/tr1/5_numerical_facilities/random/binomial_distribution/
+	requirements/typedefs.cc: New.
+
+	* include/tr1/random (geometric_distribution<>::
+	geometric_distribution(const _RealType&)): Fix DEBUG_ASSERT
+	limits.
+
+	* include/tr1/random (poisson_distribution): Add normal_distribution
+	member, adjust consistently; minor tweaks and rearrangements of the
+	arithmetic.
+	(operator>>(std::basic_istream<>&, poisson_distribution<>&)): Move
+	out of line.
+	* include/tr1/random.tcc: Adjust.
+
+	* include/tr1/random.tcc (normal_distribution<>::operator()): Minor
+	tweaks.
+
+2006-08-18  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/28765
 	* include/ext/rc_string_base.h (_M_clear): New.
 	* include/ext/sso_string_base.h (_M_clear): Likewise.
