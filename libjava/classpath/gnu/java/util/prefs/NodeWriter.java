@@ -203,9 +203,6 @@ public class NodeWriter {
             StringTokenizer st = new StringTokenizer(path);
             parents = st.countTokens();
 
-            System.out.println("path: " + path);
-            System.out.println("parents: " + parents);
-
             for (int i=0; i<parents; i++) {
                 String name = st.nextToken();
                 indent(i+2);
