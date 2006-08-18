@@ -1,3 +1,9 @@
+2006-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/27565
+	* config/rs6000/rs6000.h (LOCAL_ALIGNMENT): For SPE, only adjust
+	alignment of SPE vector types.
+
 2006-08-18  Christophe Jaillet  <christophe.jaillet@wanadoo.fr>
 
 	* tree.c (is_attribute_with_length_p): Remove a duplicated assert.
