@@ -1,3 +1,12 @@
+2006-08-19  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25217
+	* resolve.c (resolve_fl_variable): Set a default initializer for
+	derived types with INTENT(OUT) even if 'flag' is true.
+	* trans-expr.c (gfc_conv_function_call): Insert code to
+	reinitialize INTENT(OUT) arguments of derived type with default
+	initializers.
+
 2006-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25828

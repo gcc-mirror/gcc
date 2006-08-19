@@ -1,3 +1,8 @@
+2006-08-19  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/25217
+	* gfortran.dg/derived_init_2.f90: New.
+
 2006-08-17  J"orn Rennecke  <joern.rennecke@st.com>
 
 	* gcc.c-torture/execute/pr28289.c: New test.
