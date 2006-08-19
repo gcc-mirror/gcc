@@ -71,8 +71,9 @@ fallback_backtrace (_Unwind_Trace_Fn trace_fn, _Jv_UnwindState *state)
 
       /* Try to locate a "pushl %ebp; movl %esp, %ebp" function prologue
          by scanning backwards at even addresses below the return address.
-         This instruction sequence is encoded as 0x55 0x89 0xE5.  We give up
-         if we do not find this sequence even after scanning 1024K of memory.
+         This instruction sequence is encoded either as 0x55 0x89 0xE5 or as
+         0x55 0x8B 0xEC.  We give up if we do not find this sequence even
+         after scanning 1024K of memory.
          FIXME: This is not robust and will probably give us false positives,
          but this is about the best we can do if we do not have DWARF-2 unwind
          information based exception handling.  */
@@ -83,8 +84,9 @@ fallback_backtrace (_Unwind_Trace_Fn trace_fn, _Jv_UnwindState *state)
       for ( ; scan_addr >= limit_addr; scan_addr -= 2)
         {
           unsigned char *scan_bytes = (unsigned char *)scan_addr;
-          if (scan_bytes[0] == 0x55 && scan_bytes[1] == 0x89
-              && scan_bytes[2] == 0xE5)
+          if (scan_bytes[0] == 0x55
+              && ((scan_bytes[1] == 0x89 && scan_bytes[2] == 0xE5)
+                  || (scan_bytes[1] == 0x8B && scan_bytes[2] == 0xEC)))
             {
               ctx.meth_addr = scan_addr;
               break;
