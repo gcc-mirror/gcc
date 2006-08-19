@@ -5232,8 +5232,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     }
 
   /* Assign default initializer.  */
-  if (sym->ts.type == BT_DERIVED && !(sym->value || flag)
-	&& !sym->attr.pointer)
+  if (sym->ts.type == BT_DERIVED && !sym->value && !sym->attr.pointer
+      && !sym->attr.allocatable && (!flag || sym->attr.intent == INTENT_OUT))
     sym->value = gfc_default_initializer (&sym->ts);
 
   return SUCCESS;
