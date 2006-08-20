@@ -1588,9 +1588,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       // constructors and member function
       explicit
       geometric_distribution(const _RealType& __p = _RealType(0.5))
-      : _M_p(__p), _M_log_p(std::log(__p))
+      : _M_p(__p)
       {
 	_GLIBCXX_DEBUG_ASSERT((_M_p > 0.0) && (_M_p < 1.0));
+	_M_initialize();
       }
 
       /**
@@ -1639,11 +1640,15 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		   geometric_distribution& __x)
         {
 	  __is >> __x._M_p;
-	  __x._M_log_p = std::log(__x._M_p);
+	  __x._M_initialize();
 	  return __is;
 	}
 
     private:
+      void
+      _M_initialize()
+      { _M_log_p = std::log(_M_p); }
+
       _RealType _M_p;
       _RealType _M_log_p;
     };
@@ -1746,8 +1751,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       _RealType _M_mean;
 
-      // _M_lm_thr hosts either log(mean) or the threshold of the simple
-      // method.
+      // Hosts either log(mean) or the threshold of the simple method.
       _RealType _M_lm_thr;
 #if _GLIBCXX_USE_C99_MATH_TR1
       _RealType _M_lfm, _M_sm, _M_d, _M_scx, _M_1cx, _M_c2b, _M_cb;
@@ -2204,6 +2208,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       : _M_alpha(__alpha_val)
       { 
 	_GLIBCXX_DEBUG_ASSERT(_M_alpha > 0);
+	_M_initialize();
       }
 
       /**
@@ -2251,10 +2256,20 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         friend std::basic_istream<_CharT, _Traits>&
         operator>>(std::basic_istream<_CharT, _Traits>& __is,
 		   gamma_distribution& __x)
-        { return __is >> __x._M_alpha; }
+        {
+	  __is >> __x._M_alpha;
+	  __x._M_initialize();
+	  return __is;
+	}
 
     private:
+      void
+      _M_initialize();
+
       result_type _M_alpha;
+
+      // Hosts either lambda of GB or d of modified Vaduva's.
+      result_type _M_l_d;
     };
 
   /* @} */ // group tr1_random_distributions_continuous
