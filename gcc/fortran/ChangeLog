@@ -1,3 +1,9 @@
+2006-08-20  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/25828
+	* gfortran.texi: Mention STREAM I/O among supported F2003
+	features.
+
 2006-08-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28601
