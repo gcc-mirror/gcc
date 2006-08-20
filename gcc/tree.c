@@ -3706,9 +3706,18 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
       return NULL_TREE;
     }
 
+  if (TREE_CODE (node) != FUNCTION_DECL
+      && TREE_CODE (node) != VAR_DECL)
+    {
+      *no_add_attrs = true;
+      warning (OPT_Wattributes, "%qs attribute ignored",
+	       IDENTIFIER_POINTER (name));
+      return NULL_TREE;
+    }
+
   /* Report error on dllimport ambiguities seen now before they cause
      any damage.  */
-  if (is_attribute_p ("dllimport", name))
+  else if (is_attribute_p ("dllimport", name))
     {
       /* Honor any target-specific overrides. */ 
       if (!targetm.valid_dllimport_attribute_p (node))
