@@ -1,3 +1,12 @@
+2006-08-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28341
+	* g++.dg/template/ref3.C: New test.
+	* g++.dg/template/nontype13.C: New test.
+
+	PR c++/28346
+	* g++.dg/template/ptrmem17.C: New test.
+
 2006-08-20  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/28648 c:

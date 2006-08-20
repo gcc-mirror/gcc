@@ -110,8 +110,10 @@ tree
 objcp_tsubst_copy_and_build (tree t, tree args, tsubst_flags_t complain, 
 			     tree in_decl, bool function_p ATTRIBUTE_UNUSED)
 {
-#define RECURSE(NODE) \
-  tsubst_copy_and_build (NODE, args, complain, in_decl, /*function_p=*/false)
+#define RECURSE(NODE)							\
+  tsubst_copy_and_build (NODE, args, complain, in_decl, 		\
+			 /*function_p=*/false,				\
+			 /*integral_constant_expression_p=*/false)
 
   /* The following two can only occur in Objective-C++.  */
 
