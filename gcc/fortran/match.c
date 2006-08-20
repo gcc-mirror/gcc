@@ -1798,6 +1798,9 @@ gfc_match_allocate (void)
 	  goto cleanup;
 	}
 
+      if (tail->expr->ts.type == BT_DERIVED)
+	tail->expr->ts.derived = gfc_use_derived (tail->expr->ts.derived);
+
       if (gfc_match_char (',') != MATCH_YES)
 	break;
 

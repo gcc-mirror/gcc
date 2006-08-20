@@ -1364,6 +1364,33 @@ gfc_add_component (gfc_symbol * sym, const char *name, gfc_component ** componen
 }
 
 
+/* Recursive search for a renamed derived type.  */
+
+static gfc_symbol *
+find_renamed_type (gfc_symbol * der, gfc_symtree * st)
+{
+  gfc_symbol *sym = NULL;
+
+  if (st == NULL)
+    return NULL;
+
+  sym = find_renamed_type (der, st->left);
+  if (sym != NULL)
+    return sym;
+
+  sym = find_renamed_type (der, st->right);
+  if (sym != NULL)
+    return sym;
+
+  if (strcmp (der->name, st->n.sym->name) == 0
+	&& st->n.sym->attr.use_assoc
+	&& st->n.sym->attr.flavor == FL_DERIVED
+	&& gfc_compare_derived_types (der, st->n.sym))
+    sym = st->n.sym;
+
+  return sym;
+}
+
 /* Recursive function to switch derived types of all symbol in a
    namespace.  */
 
@@ -1408,19 +1435,67 @@ gfc_use_derived (gfc_symbol * sym)
   gfc_symbol *s;
   gfc_typespec *t;
   gfc_symtree *st;
+  gfc_component *c;
   int i;
 
-  if (sym->components != NULL)
-    return sym;               /* Already defined.  */
-
   if (sym->ns->parent == NULL)
-    goto bad;
+    {
+      /* Already defined in highest possible namespace.  */
+      if (sym->components != NULL)
+	return sym;
 
+      /*  There is no scope for finding a definition elsewhere.  */
+      else
+	goto bad;
+    }
+  else
+    {
+      /* This type can only be locally associated.  */
+      if (!(sym->attr.use_assoc || sym->attr.sequence))
+	return sym;
+
+      /* Derived types must be defined within an interface.  */
+      if (gfc_current_ns->proc_name->attr.if_source == IFSRC_IFBODY)
+	return sym;
+    }
+
+  /* Look in parent namespace for a derived type of the same name.  */
   if (gfc_find_symbol (sym->name, sym->ns->parent, 1, &s))
     {
       gfc_error ("Symbol '%s' at %C is ambiguous", sym->name);
       return NULL;
     }
+
+  if (s == NULL || s->attr.flavor != FL_DERIVED)
+    {
+      /* Check to see if type has been renamed in parent namespace.
+	 Leave cleanup of local symbols until the end of the
+	 compilation because doing it here is complicated by
+	 multiple association with the same type.  */
+      s = find_renamed_type (sym, sym->ns->parent->sym_root);
+      if (s != NULL)
+	{
+	  switch_types (sym->ns->sym_root, sym, s);
+	  return s;
+	}
+
+      /* The local definition is all that there is.  */
+      if (sym->components != NULL)
+	{
+	  /* Non-pointer derived type components have already been checked
+	     but pointer types need to be correctly associated.  */
+	  for (c = sym->components; c; c = c->next)
+	    if (c->ts.type == BT_DERIVED && c->pointer)
+	      c->ts.derived = gfc_use_derived (c->ts.derived);
+
+	  return sym;
+	}
+    }
+
+  /* Although the parent namespace has a derived type of the same name, it is
+     not an identical derived type and so cannot be used.  */
+  if (s != NULL && sym->components != NULL && !gfc_compare_derived_types (s, sym))
+    return sym;
 
   if (s == NULL || s->attr.flavor != FL_DERIVED)
     goto bad;
@@ -2440,21 +2515,6 @@ free_sym_tree (gfc_symtree * sym_tree)
 }
 
 
-/* Free a derived type list.  */
-
-static void
-gfc_free_dt_list (gfc_dt_list * dt)
-{
-  gfc_dt_list *n;
-
-  for (; dt; dt = n)
-    {
-      n = dt->next;
-      gfc_free (dt);
-    }
-}
-
-
 /* Free the gfc_equiv_info's.  */
 
 static void
@@ -2516,8 +2576,6 @@ gfc_free_namespace (gfc_namespace * ns)
 
   gfc_free_equiv (ns->equiv);
   gfc_free_equiv_lists (ns->equiv_lists);
-
-  gfc_free_dt_list (ns->derived_types);
 
   for (i = GFC_INTRINSIC_BEGIN; i != GFC_INTRINSIC_END; i++)
     gfc_free_interface (ns->operator[i]);
