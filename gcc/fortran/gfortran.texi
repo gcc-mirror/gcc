@@ -1383,6 +1383,14 @@ The @code{ALLOCATABLE} attribute for dummy arguments.
 @code{ALLOCATABLE} function results
 @end itemize
 
+@item
+@cindex @code{STREAM} I/O
+@cindex @code{ACCESS='STREAM'} I/O
+The @code{OPEN} statement supports the @code{ACCESS='STREAM'} specifier,
+allowing I/O without any record structure.
+
+
+
 @end itemize
 
 
