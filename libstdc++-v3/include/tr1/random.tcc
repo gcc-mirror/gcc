@@ -1106,11 +1106,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 
   /**
-   * Classic Box-Muller method.
+   * Polar method due to Marsaglia.
    *
-   * Reference:
-   * Box, G. E. P. and Muller, M. E. "A Note on the Generation of
-   * Random Normal Deviates." Ann. Math. Stat. 29, 610-611, 1958.
+   * Devroye, L. "Non-Uniform Random Variates Generation." Springer-Verlag,
+   * New York, 1986, Ch. V, Sect. 4.4.
    */
   template<typename _RealType>
     template<class _UniformRandomNumberGenerator>
@@ -1189,6 +1188,18 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     }
 
 
+  template<typename _RealType>
+    void
+    gamma_distribution<_RealType>::
+    _M_initialize()
+    {
+      if (_M_alpha >= 1)
+	_M_l_d = std::sqrt(2 * _M_alpha - 1);
+      else
+	_M_l_d = (std::pow(_M_alpha, _M_alpha / (1 - _M_alpha))
+		  * (1 - _M_alpha));
+    }
+
   /**
    * Cheng's rejection algorithm GB for alpha >= 1 and a modification
    * of Vaduva's rejection from Weibull algorithm due to Devroye for
@@ -1213,19 +1224,18 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       {
 	result_type __x;
 
+	bool __reject;
 	if (_M_alpha >= 1)
 	  {
 	    // alpha - log(4)
 	    const result_type __b = _M_alpha
 	      - result_type(1.3862943611198906188344642429163531L);
-	    const result_type __l = std::sqrt(2 * _M_alpha - 1);
-	    const result_type __c = _M_alpha + __l;
-	    const result_type __1l = 1 / __l;
+	    const result_type __c = _M_alpha + _M_l_d;
+	    const result_type __1l = 1 / _M_l_d;
 
 	    // 1 + log(9 / 2)
 	    const result_type __k = 2.5040773967762740733732583523868748L;
 
-	    result_type __z, __r;
 	    do
 	      {
 		const result_type __u = __urng();
@@ -1234,27 +1244,29 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		const result_type __y = __1l * std::log(__v / (1 - __v));
 		__x = _M_alpha * std::exp(__y);
 
-		__z = __u * __v * __v;
-		__r = __b + __c * __y - __x;
+		const result_type __z = __u * __v * __v;
+		const result_type __r = __b + __c * __y - __x;
+
+		__reject = __r < result_type(4.5) * __z - __k;
+		if (__reject)
+		  __reject = __r < std::log(__z);
 	      }
-	    while (__r < result_type(4.5) * __z - __k
-		   && __r < std::log(__z));
+	    while (__reject);
 	  }
 	else
 	  {
 	    const result_type __c = 1 / _M_alpha;
-	    const result_type __d =
-	      std::pow(_M_alpha, _M_alpha / (1 - _M_alpha)) * (1 - _M_alpha);
 
-	    result_type __z, __e;
 	    do
 	      {
-		__z = -std::log(__urng());
-		__e = -std::log(__urng());
+		const result_type __z = -std::log(__urng());
+		const result_type __e = -std::log(__urng());
 
 		__x = std::pow(__z, __c);
+
+		__reject = __z + __e < _M_l_d + __x;
 	      }
-	    while (__z + __e < __d + __x);
+	    while (__reject);
 	  }
 
 	return __x;

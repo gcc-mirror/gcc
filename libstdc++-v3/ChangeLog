@@ -1,3 +1,17 @@
+2006-08-20  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (gamma_distribution<>::_M_initialize,
+	gamma_distribution<>::_M_l_d): Add.
+	(gamma_distribution<>::gamma_distribution(const result_type&),
+	operator>>(std::basic_istream<>&, gamma_distribution&)): Use it.
+	include/tr1/random.tcc (gamma_distribution<>::_M_initialize):
+	Define.
+	(gamma_distribution<>::operator()): Adjust.
+
+	* include/tr1/random (geometric_distribution<>::_M_initialize): Add.
+	(geometric_distribution<>::geometric_distribution(const _RealType&),
+	operator>>(std::basic_istream<>&, geometric_distribution&)): Use it.
+
 2006-08-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (class binomial_distribution<>): Add.
