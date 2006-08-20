@@ -899,13 +899,23 @@ cgraph_decide_inlining (void)
   timevar_push (TV_INLINE_HEURISTICS);
   max_count = 0;
   for (node = cgraph_nodes; node; node = node->next)
-    {
-      struct cgraph_edge *e;
-      initial_insns += node->local.self_insns;
-      for (e = node->callees; e; e = e->next_callee)
-	if (max_count < e->count)
-	  max_count = e->count;
-    }
+    if (node->analyzed && (node->needed || node->reachable))
+      {
+	struct cgraph_edge *e;
+
+	/* At the moment, no IPA passes change function bodies before inlining.
+	   Save some time by not recomputing function body sizes if early inlining
+	   already did so.  */
+	if (!flag_early_inlining)
+	  node->local.self_insns = node->global.insns
+	     = estimate_num_insns (node->decl);
+
+	initial_insns += node->local.self_insns;
+	gcc_assert (node->local.self_insns == node->global.insns);
+	for (e = node->callees; e; e = e->next_callee)
+	  if (max_count < e->count)
+	    max_count = e->count;
+      }
   overall_insns = initial_insns;
   gcc_assert (!max_count || (profile_info && flag_branch_probabilities));
 
@@ -1177,6 +1187,13 @@ cgraph_early_inlining (void)
 
   order = ggc_alloc (sizeof (*order) * cgraph_n_nodes);
   nnodes = cgraph_postorder (order);
+  for (i = nnodes - 1; i >= 0; i--)
+    {
+      node = order[i];
+      if (node->analyzed && (node->needed || node->reachable))
+        node->local.self_insns = node->global.insns
+	  = estimate_num_insns (node->decl);
+    }
   for (i = nnodes - 1; i >= 0; i--)
     {
       node = order[i];

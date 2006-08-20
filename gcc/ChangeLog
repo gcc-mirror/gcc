@@ -1,4 +1,11 @@
-006-08-20  Danny Smith  <dannysmith@users.sourceforge.net>
+2006-08-20  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/28779
+	* ipa-inline.c (cgraph_decide_inlining, cgraph_early_inlining): Compute
+	function body sizes.
+	* cgraphunit.c (cgraph_analyze_function): Don't do so.
+
+2006-08-20  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/28648 c:
 	* tree.c (handle_dll_attribute): Return early if not a
