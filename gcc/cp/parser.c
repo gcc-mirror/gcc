@@ -4004,9 +4004,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 
 	/* Only type conversions to integral or enumeration types
 	   can be used in constant-expressions.  */
-	if (parser->integral_constant_expression_p
-	    && !dependent_type_p (type)
-	    && !INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+	if (!cast_valid_in_integral_constant_expression_p (type)
 	    && (cp_parser_non_integral_constant_expression
 		(parser,
 		 "a cast to a type other than an integral or "
@@ -5490,9 +5488,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p)
 
 	  /* Only type conversions to integral or enumeration types
 	     can be used in constant-expressions.  */
-	  if (parser->integral_constant_expression_p
-	      && !dependent_type_p (type)
-	      && !INTEGRAL_OR_ENUMERATION_TYPE_P (type)
+	  if (!cast_valid_in_integral_constant_expression_p (type)
 	      && (cp_parser_non_integral_constant_expression
 		  (parser,
 		   "a cast to a type other than an integral or "
@@ -15695,13 +15691,11 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
      conversions to integral or enumeration type can be used".  */
   if (TREE_CODE (type) == TYPE_DECL)
     type = TREE_TYPE (type);
-  if (cast != error_mark_node && !dependent_type_p (type)
-      && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))
-    {
-      if (cp_parser_non_integral_constant_expression
-	  (parser, "a call to a constructor"))
-	return error_mark_node;
-    }
+  if (cast != error_mark_node
+      && !cast_valid_in_integral_constant_expression_p (type)
+      && (cp_parser_non_integral_constant_expression
+	  (parser, "a call to a constructor")))
+    return error_mark_node;
   return cast;
 }
 

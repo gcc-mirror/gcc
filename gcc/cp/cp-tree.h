@@ -4117,7 +4117,7 @@ extern void print_candidates			(tree);
 extern void instantiate_pending_templates	(int);
 extern tree tsubst_default_argument		(tree, tree, tree);
 extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t,
-						 tree, bool);
+						 tree, bool, bool);
 extern tree most_general_template		(tree);
 extern tree get_mostly_instantiated_function_type (tree);
 extern int problematic_instantiation_changed	(void);
@@ -4391,6 +4391,7 @@ extern tree fold_if_not_in_template		(tree);
 extern tree rvalue				(tree);
 extern tree convert_bitfield_to_declared_type   (tree);
 extern tree cp_save_expr			(tree);
+extern bool cast_valid_in_integral_constant_expression_p (tree);
 
 /* in typeck.c */
 extern int string_conv_p			(tree, tree, int);

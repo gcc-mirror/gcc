@@ -1,3 +1,35 @@
+2006-08-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28341
+	* tree.c (cast_valid_in_integral_constant_expression_p): New
+	function.
+	* cp-tree.h (tsubst_copy_and_build): Adjust prototype.
+	* pt.c (tsubst_expr): Add integral_constant_expression_p
+	parameter.
+	(fold_non_dependent_expr): Adjust callers of
+	tsubst_{expr,copy_and_build}.
+	(tsubst_friend_function): Likewise.
+	(tsubst_template_arg): Likewise.
+	(tsubst_default_argument): Likewise.
+	(tsubst_decl): Likewise.
+	(tsubst): Likewise.
+	(tsubst_omp_clasuses): Likewise.
+	(regenerate_decl_fromp_template): Likewise.
+	(instantiate_decl): Likewise.
+	(tsubst_initializer_list): Likewise.
+	(tsubst_enum): Likewise.
+	(tsubst_expr): Use RECUR throughout.
+	(tsubst_copy_and_build): Change definition of RECUR.  Do not allow
+	invalid casts in integral constant expressions.
+	* parser.c (cp_parser_postfix_expression): Use
+	cast_valid_in_integral_constant_expression_p.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_functional_cast): Likewise.
+
+	PR c++/28346
+	* pt.c (tsubst_qualified_id): Do not strip references from
+	OFFSET_REFs. 
+
 2006-08-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28606
