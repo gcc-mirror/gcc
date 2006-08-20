@@ -1,3 +1,38 @@
+2006-08-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28630
+	* gfortran.dg/used_types_2.f90: New test.
+
+	PR fortran/28601
+	* gfortran.dg/used_types_3.f90: New test.
+
+	PR fortran/20886
+	* gfortran.dg/generic_actual_arg.f90: New test.
+
+	PR fortran/28735
+	* gfortran.dg/module_private_array_refs_1.f90: New test.
+
+	PR fortran/28762
+	* gfortran.dg/program_name_1.f90: New test.
+
+	PR fortran/28425
+	* gfortran.dg/derived_constructor_comps_1.f90: New test.
+
+	PR fortran/28496
+	* gfortran.dg/array_initializer_2.f90: New test.
+
+	PR fortran/18111
+	* gfortran.dg/unused_artificial_dummies_1.f90: New test. 
+
+	PR fortran/28600
+	* gfortran.dg/assumed_charlen_function_4.f90: New test.
+
+	PR fortran/28771
+	* gfortran.dg/assumed_charlen_in_main.f90: New test.
+
+	PR fortran/28660
+	* gfortran.dg/dependent_decls_1.f90: New test.
+
 2006-08-19  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25217

@@ -1,3 +1,73 @@
+2006-08-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28601
+	PR fortran/28630
+	* gfortran.h : Eliminate gfc_dt_list structure and reference
+	to it in gfc_namespace.
+	* resolve.c (resolve_fl_derived): Remove the building of the
+	list of derived types for the current namespace.
+	* symbol.c (find_renamed_type): New function to find renamed
+	derived types by symbol name rather than symtree name.
+	(gfc_use_derived): Search parent namespace for identical
+	derived type and use it, even if local version is complete,
+	except in interface bodies. Ensure that renamed derived types
+	are found by call to find_renamed_type. Recurse for derived
+	type components.
+	(gfc_free_dt_list): Remove.
+	(gfc_free_namespace): Remove call to previous.
+	* trans-types.c (copy_dt_decls_ifequal): Remove.
+	(gfc_get_derived_type): Remove all the paraphenalia for
+	association of derived types, including calls to previous.
+	* match.c (gfc_match_allocate): Call gfc_use_derived to
+	associate any derived types that are being allocated.
+
+	PR fortran/20886
+	* resolve.c (resolve_actual_arglist): The passing of
+	a generic procedure name as an actual argument is an
+	error.
+
+	PR fortran/28735
+	* resolve.c (resolve_variable): Check for a symtree before
+	resolving references.
+
+	PR fortran/28762
+	* primary.c (match_variable): Return MATCH_NO if the symbol
+	is that of the program.
+
+	PR fortran/28425
+	* trans-expr.c (gfc_trans_subcomponent_assign): Translate
+	derived type component expressions other than another derived
+	type constructor.
+
+	PR fortran/28496
+	* expr.c (find_array_section): Correct errors in
+	the handling of a missing start value for the
+	index triplet in an array reference.
+
+	PR fortran/18111
+	* trans-decl.c (gfc_build_dummy_array_decl): Before resetting
+	reference to backend_decl, set it DECL_ARTIFICIAL.
+	(gfc_get_symbol_decl): Likewise for original dummy decl, when
+	a copy is made of an array.
+	(create_function_arglist): Likewise for the _entry paramter
+	in entry_masters.
+	(build_entry_thunks): Likewise for dummies in entry thunks.
+
+	PR fortran/28600
+	* trans-decl.c (gfc_get_symbol_decl): Ensure that the
+	DECL_CONTEXT of the length of a character dummy is the
+	same as that of the symbol declaration.
+
+	PR fortran/28771
+	* decl.c (add_init_expr_to_sym): Remove setting of charlen for
+	an initializer of an assumed charlen variable.
+
+	PR fortran/28660
+	* trans-decl.c (generate_expr_decls): New function.
+	(generate_dependency_declarations): New function.
+	(generate_local_decl): Call previous if not either a dummy or
+	a declaration in an entry master.
+
 2006-08-19  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/25217

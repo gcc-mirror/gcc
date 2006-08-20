@@ -728,6 +728,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
       /* We now have an expression for the element size, so create a fully
 	 qualified type.  Reset sym->backend decl or this will just return the
 	 old type.  */
+      DECL_ARTIFICIAL (sym->backend_decl) = 1;
       sym->backend_decl = NULL_TREE;
       type = gfc_sym_type (sym);
       packed = 2;
@@ -884,7 +885,15 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  if (TREE_CODE (length) == VAR_DECL
 	      && DECL_CONTEXT (length) == NULL_TREE)
 	    {
-	      gfc_add_decl_to_function (length);
+	      /* Add the string length to the same context as the symbol.  */
+	      if (DECL_CONTEXT (sym->backend_decl) == current_function_decl)
+	        gfc_add_decl_to_function (length);
+	      else
+		gfc_add_decl_to_parent_function (length);
+
+	      gcc_assert (DECL_CONTEXT (sym->backend_decl) ==
+			    DECL_CONTEXT (length));
+
 	      gfc_defer_symbol_init (sym);
 	    }
 	}
@@ -892,8 +901,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       /* Use a copy of the descriptor for dummy arrays.  */
       if (sym->attr.dimension && !TREE_USED (sym->backend_decl))
         {
-          sym->backend_decl =
-            gfc_build_dummy_array_decl (sym, sym->backend_decl);
+	  decl = gfc_build_dummy_array_decl (sym, sym->backend_decl);
+	  /* Prevent the dummy from being detected as unused if it is copied.  */
+	  if (sym->backend_decl != NULL && decl != sym->backend_decl)
+	    DECL_ARTIFICIAL (sym->backend_decl) = 1;
+	  sym->backend_decl = decl;
 	}
 
       TREE_USED (sym->backend_decl) = 1;
@@ -1284,6 +1296,7 @@ create_function_arglist (gfc_symbol * sym)
       DECL_ARG_TYPE (parm) = type;
       TREE_READONLY (parm) = 1;
       gfc_finish_decl (parm, NULL_TREE);
+      DECL_ARTIFICIAL (parm) = 1;
 
       arglist = chainon (arglist, parm);
       typelist = TREE_CHAIN (typelist);
@@ -1603,6 +1616,7 @@ build_entry_thunks (gfc_namespace * ns)
 	  if (thunk_formal)
 	    {
 	      /* Pass the argument.  */
+	      DECL_ARTIFICIAL (thunk_formal->sym->backend_decl) = 1;
 	      args = tree_cons (NULL_TREE, thunk_formal->sym->backend_decl,
 				args);
 	      if (formal->sym->ts.type == BT_CHARACTER)
@@ -2743,6 +2757,112 @@ gfc_generate_contained_functions (gfc_namespace * parent)
 }
 
 
+/* Drill down through expressions for the array specification bounds and
+   character length calling generate_local_decl for all those variables
+   that have not already been declared.  */
+
+static void
+generate_local_decl (gfc_symbol *);
+
+static void
+generate_expr_decls (gfc_symbol *sym, gfc_expr *e)
+{
+  gfc_actual_arglist *arg;
+  gfc_ref *ref;
+  int i;
+
+  if (e == NULL)
+    return;
+
+  switch (e->expr_type)
+    {
+    case EXPR_FUNCTION:
+      for (arg = e->value.function.actual; arg; arg = arg->next)
+	generate_expr_decls (sym, arg->expr);
+      break;
+
+    /* If the variable is not the same as the dependent, 'sym', and
+       it is not marked as being declared and it is in the same
+       namespace as 'sym', add it to the local declarations.  */
+    case EXPR_VARIABLE:
+      if (sym == e->symtree->n.sym
+	    || e->symtree->n.sym->mark
+	    || e->symtree->n.sym->ns != sym->ns)
+	return;
+
+      generate_local_decl (e->symtree->n.sym);
+      break;
+
+    case EXPR_OP:
+      generate_expr_decls (sym, e->value.op.op1);
+      generate_expr_decls (sym, e->value.op.op2);
+      break;
+
+    default:
+      break;
+    }
+
+  if (e->ref)
+    {
+      for (ref = e->ref; ref; ref = ref->next)
+	{
+	  switch (ref->type)
+	    {
+	    case REF_ARRAY:
+	      for (i = 0; i < ref->u.ar.dimen; i++)
+		{
+		  generate_expr_decls (sym, ref->u.ar.start[i]);
+		  generate_expr_decls (sym, ref->u.ar.end[i]);
+		  generate_expr_decls (sym, ref->u.ar.stride[i]);
+		}
+	      break;
+
+	    case REF_SUBSTRING:
+	      generate_expr_decls (sym, ref->u.ss.start);
+	      generate_expr_decls (sym, ref->u.ss.end);
+	      break;
+
+	    case REF_COMPONENT:
+	      if (ref->u.c.component->ts.type == BT_CHARACTER
+		    && ref->u.c.component->ts.cl->length->expr_type
+						!= EXPR_CONSTANT)
+		generate_expr_decls (sym, ref->u.c.component->ts.cl->length);
+
+	      if (ref->u.c.component->as)
+	        for (i = 0; i < ref->u.c.component->as->rank; i++)
+		  {
+		    generate_expr_decls (sym, ref->u.c.component->as->lower[i]);
+		    generate_expr_decls (sym, ref->u.c.component->as->upper[i]);
+		  }
+	      break;
+	    }
+	}
+    }
+}
+
+
+/* Check for dependencies in the character length and array spec. */
+
+static void
+generate_dependency_declarations (gfc_symbol *sym)
+{
+  int i;
+
+  if (sym->ts.type == BT_CHARACTER
+	&& sym->ts.cl->length->expr_type != EXPR_CONSTANT)
+    generate_expr_decls (sym, sym->ts.cl->length);
+
+  if (sym->as && sym->as->rank)
+    {
+      for (i = 0; i < sym->as->rank; i++)
+	{
+          generate_expr_decls (sym, sym->as->lower[i]);
+          generate_expr_decls (sym, sym->as->upper[i]);
+	}
+    }
+}
+
+
 /* Generate decls for all local variables.  We do this to ensure correct
    handling of expressions which only appear in the specification of
    other functions.  */
@@ -2752,6 +2872,14 @@ generate_local_decl (gfc_symbol * sym)
 {
   if (sym->attr.flavor == FL_VARIABLE)
     {
+      /* Check for dependencies in the array specification and string
+	length, adding the necessary declarations to the function.  We
+	mark the symbol now, as well as in traverse_ns, to prevent
+	getting stuck in a circular dependency.  */
+      sym->mark = 1;
+      if (!sym->attr.dummy && !sym->ns->proc_name->attr.entry_master)
+        generate_dependency_declarations (sym);
+
       if (sym->attr.referenced)
         gfc_get_symbol_decl (sym);
       else if (sym->attr.dummy && warn_unused_parameter)
