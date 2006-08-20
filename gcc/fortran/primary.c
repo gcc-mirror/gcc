@@ -2297,6 +2297,10 @@ match_variable (gfc_expr ** result, int equiv_flag, int host_flag)
     case FL_VARIABLE:
       break;
 
+    case FL_PROGRAM:
+      return MATCH_NO;
+      break;
+
     case FL_UNKNOWN:
       if (gfc_add_flavor (&sym->attr, FL_VARIABLE,
 			  sym->name, NULL) == FAILURE)
