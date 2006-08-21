@@ -1,3 +1,8 @@
+2006-08-21  J"orn Rennecke  <joern.rennecke@st.com>
+
+	* config/sh/lib1funcs-Os-4-200.asm: Guard entire file with
+	#if !__SHMEDIA__ .
+
 2006-08-21  Olivier Hainque  <hainque@adacore.com>
 
 	* gimplify.c (gimplify_init_constructor) <RECORD,UNION,ARRAY types>:

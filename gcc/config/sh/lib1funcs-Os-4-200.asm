@@ -30,6 +30,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "lib1funcs.h"
 
+#if !__SHMEDIA__
 #ifdef L_udivsi3_i4i
 
 /* 88 bytes; sh4-200 cycle counts:
@@ -323,3 +324,4 @@ L1:
 	ENDFUNC(GLOBAL(sdivsi3_i4i))
 #endif /* __SH_FPU_DOUBLE__ */
 #endif /* L_sdivsi3_i4i */
+#endif /* !__SHMEDIA__ */
