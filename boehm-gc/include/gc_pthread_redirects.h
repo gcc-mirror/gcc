@@ -68,9 +68,7 @@
 # undef pthread_detach
 #endif
 
-#ifndef GC_PTHREAD_SYM_VERSION
 # define pthread_create GC_pthread_create
-#endif
 # define pthread_join GC_pthread_join
 # define pthread_detach GC_pthread_detach
 

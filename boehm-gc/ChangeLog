@@ -1,3 +1,22 @@
+2006-08-21  Bryce McKinlay  <mckinlay@redhat.com>
+	
+	PR libgcj/13212:
+	* configure.ac: Check for pthread_getattr_np(). Remove
+	GC_PTHREAD_SYM_VERSION detection.
+	* include/gc.h (GC_register_my_thread, GC_unregister_my_thread,
+	GC_get_thread_stack_base): New declarations.
+	* pthread_support.c (GC_register_my_thread, GC_unregister_my_thread,
+	GC_get_thread_stack_base): New functions.
+	(GC_delete_thread): Don't try to free the first_thread.
+	* misc.c (GC_init_inner): Use GC_get_thread_stack_base() if possible.
+	(pthread_create_, constr): Removed.
+	(pthread_create): Don't rename.
+	* include/gc_ext_config.h.in: Rebuilt.
+	* include/gc_pthread_redirects.h (pthread_create): Define 
+	unconditionally.
+	* include/gc_config.h.in: Rebuilt.
+	* configure: Rebuilt.
+
 2006-06-21  Keith Seitz  <keiths@redhat.com>
 
 	* pthread_stop_world.c (GC_suspend_handler): Redirect to suspension

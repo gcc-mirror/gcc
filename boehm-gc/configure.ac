@@ -1,4 +1,4 @@
-# Copyright (c) 1999, 2000, 2001, 2002, 2003 by Red Hat, Inc. All rights reserved.
+# Copyright (c) 1999, 2000, 2001, 2002, 2003, 2006 by Red Hat, Inc. All rights reserved.
 # Copyright 2004 Nathanael Nerode
 # 
 # THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
@@ -329,6 +329,13 @@ case "$host" in
      ;;
 esac
 
+# Checks for pthreads functions
+#
+oldLIBS="$LIBS"
+LIBS="$LIBS $THREADLIBS"
+AC_CHECK_FUNCS([pthread_getattr_np])
+LIBS="$oldLIBS"
+
 # Configuration of machine-dependent code
 #
 # We don't set NO_EXECUTE_PERMISSION by default because gcj (and
@@ -487,25 +494,6 @@ AC_ARG_ENABLE(gc-debug,
 if test "${gc_use_mmap}" = "yes"; then
   AC_DEFINE(USE_MMAP, 1, [use MMAP instead of sbrk to get new memory])
 fi
-
-symver=
-case "$target" in
-  *-*-linux* )
-    cat > conftest.c <<EOF
-#include <pthread.h>
-void *tf (void *arg) { (void) arg; return NULL; }
-int main (void) { pthread_t th; pthread_create (&th, NULL, tf, NULL); return 0; }
-EOF
-    if $CC $CFLAGS -pthread -o conftest conftest.c > /dev/null 2>&1; then
-      symver=`readelf -s conftest 2> /dev/null | sed -n '/UND pthread_create@/{s/^.*@//;s/ .*$//;p;q}'`
-    fi
-    rm -f conftest conftest.c
-    ;;
-esac
-if test -n "$symver"; then
-  AC_DEFINE_UNQUOTED(GC_PTHREAD_SYM_VERSION, "$symver", [symbol version of pthread_create])
-fi
-
 
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then

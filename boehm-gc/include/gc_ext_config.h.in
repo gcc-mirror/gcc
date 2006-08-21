@@ -4,4 +4,4 @@ is used by libjava/include/boehm-gc.h. */
 
 #undef THREAD_LOCAL_ALLOC
 
-#undef GC_PTHREAD_SYM_VERSION
+#undef HAVE_PTHREAD_GETATTR_NP
