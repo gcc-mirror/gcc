@@ -744,7 +744,7 @@ build_throw (tree exp)
       /* Wrap the initialization in a CLEANUP_POINT_EXPR so that cleanups
 	 for temporaries within the initialization are run before the one
 	 for the exception object, preserving LIFO order.  */
-      exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
+      exp = build1 (CLEANUP_POINT_EXPR, void_type_node, exp);
 
       if (elided)
 	exp = build2 (TRY_CATCH_EXPR, void_type_node, exp,
