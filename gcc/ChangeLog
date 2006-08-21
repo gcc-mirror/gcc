@@ -1,3 +1,9 @@
+2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* config/arm/pr-support.c (__gnu_unwind_execute): Insert " + 1" in
+	necessary places to pass the correct "number of registers" values
+	to _Unwind_VRS_Pop.
+
 2006-08-18  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/27565

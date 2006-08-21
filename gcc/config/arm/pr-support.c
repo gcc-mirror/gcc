@@ -224,7 +224,7 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	    {
 	      /* Pop VFP registers with fldmx.  */
 	      op = next_unwind_byte (uws);
-	      op = ((op & 0xf0) << 12) | (op & 0xf);
+	      op = ((op & 0xf0) << 12) | ((op & 0xf) + 1);
 	      if (_Unwind_VRS_Pop (context, _UVRSC_VFP, op, _UVRSD_VFPX)
 		  != _UVRSR_OK)
 		return _URC_FAILURE;
@@ -253,7 +253,7 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	    {
 	      /* Pop iWMMXt D registers.  */
 	      op = next_unwind_byte (uws);
-	      op = ((op & 0xf0) << 12) | (op & 0xf);
+	      op = ((op & 0xf0) << 12) | ((op & 0xf) + 1);
 	      if (_Unwind_VRS_Pop (context, _UVRSC_WMMXD, op, _UVRSD_UINT64)
 		  != _UVRSR_OK)
 		return _URC_FAILURE;
@@ -284,7 +284,7 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	    {
 	      /* Pop FPA registers.  */
 	      op = next_unwind_byte (uws);
-	      op = ((op & 0xf0) << 12) | (op & 0xf);
+	      op = ((op & 0xf0) << 12) | ((op & 0xf) + 1);
 	      if (_Unwind_VRS_Pop (context, _UVRSC_FPA, op, _UVRSD_FPAX)
 		  != _UVRSR_OK)
 		return _URC_FAILURE;
@@ -294,7 +294,7 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	    {
 	      /* Pop VFP registers with fldmd.  */
 	      op = next_unwind_byte (uws);
-	      op = ((op & 0xf0) << 12) | (op & 0xf);
+	      op = ((op & 0xf0) << 12) | ((op & 0xf) + 1);
 	      if (_Unwind_VRS_Pop (context, _UVRSC_VFP, op, _UVRSD_DOUBLE)
 		  != _UVRSR_OK)
 		return _URC_FAILURE;
