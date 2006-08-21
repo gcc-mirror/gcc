@@ -1520,4 +1520,21 @@ bitmap_print (FILE *file, bitmap head, const char *prefix, const char *suffix)
   fputs (suffix, file);
 }
 
+/* Compute hash of bitmap (for purposes of hashing).  */
+hashval_t
+bitmap_hash (bitmap head)
+{
+  bitmap_element *ptr;
+  BITMAP_WORD hash = 0;
+  int ix;
+
+  for (ptr = head->first; ptr; ptr = ptr->next)
+    {
+      hash ^= ptr->indx;
+      for (ix = 0; ix != BITMAP_ELEMENT_WORDS; ix++)
+	hash ^= ptr->bits[ix];
+    }
+  return (hashval_t)hash;
+}
+
 #include "gt-bitmap.h"

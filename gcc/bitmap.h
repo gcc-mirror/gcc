@@ -21,6 +21,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #ifndef GCC_BITMAP_H
 #define GCC_BITMAP_H
+#include "hashtab.h"
 
 /* Fundamental storage type for bitmap.  */
 
@@ -163,6 +164,9 @@ extern void bitmap_obstack_free (bitmap);
 #define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
 #define bitmap_zero(a) bitmap_clear (a)
 extern unsigned bitmap_first_set_bit (bitmap);
+
+/* Compute bitmap hash (for purposes of hashing etc.)  */
+extern hashval_t bitmap_hash(bitmap);
 
 /* Allocate a bitmap from a bit obstack.  */
 #define BITMAP_ALLOC(OBSTACK) bitmap_obstack_alloc (OBSTACK)
