@@ -1,5 +1,13 @@
 2006-08-20  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-alias.c (eq_ptr_info, ptr_info_hash): New function.
+	(create_name_tags): Instead of quadratic checking use hashtable.
+	* bitmap.h: Include hashtab.h.
+	(bitmap_hash): Declare.
+	* bitmap.c (bitmap_hash): New function.
+
+2006-08-20  Jan Hubicka  <jh@suse.cz>
+
 	PR rtl-optimization/28071
 	* tree-optimize.c (tree_rest_of_compilation): Do not remove edges
 	twice.
