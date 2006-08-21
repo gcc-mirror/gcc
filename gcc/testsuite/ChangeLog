@@ -6,6 +6,9 @@
         PR c++/28505
         * g++.dg/parse/ctor7.C: New test.
         * g++.dg/parse/ctor8.C: Likewise.
+
+	PR c++/28741
+        * g++.dg/template/void7.C: New test. 
 	
 2006-08-21  Olivier Hainque  <hainque@adacore.com>
 

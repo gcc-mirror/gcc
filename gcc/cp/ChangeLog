@@ -7,6 +7,10 @@
 	 PR c++/28505
         * decl.c (grokdeclarator): Return early after
         issuing diagnostic about an incomplete type.
+
+	PR c++/28741
+        * tree.c (decl_anon_ns_mem_p): Robustify.
+        * decl2.c (determine_visibility): Likewise.
 	
 2006-08-20  Mark Mitchell  <mark@codesourcery.com>
 
