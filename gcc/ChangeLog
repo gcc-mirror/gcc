@@ -1,3 +1,9 @@
+2006-08-21  Olivier Hainque  <hainque@adacore.com>
+
+	* gimplify.c (gimplify_init_constructor) <RECORD,UNION,ARRAY types>:
+	Arrange for the temporary captures of components overlapping the lhs
+	to happen before the lhs is possibly cleared.
+	
 2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
  
 	* config/arm/pr-support.c (__gnu_unwind_execute): Insert " + 1" in
