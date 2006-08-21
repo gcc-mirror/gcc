@@ -102,7 +102,7 @@ typedef struct
 #endif
 
   /* String conversions */
-decimal128 *decimal128FromString (decimal128 *, char *, decContext *);
+decimal128 *decimal128FromString (decimal128 *, const char *, decContext *);
 char *decimal128ToString (decimal128 *, char *);
 char *decimal128ToEngString (decimal128 *, char *);
 

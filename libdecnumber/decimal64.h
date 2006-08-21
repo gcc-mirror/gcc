@@ -96,7 +96,7 @@ typedef struct
 #endif
 
   /* String conversions */
-decimal64 *decimal64FromString (decimal64 *, char *, decContext *);
+decimal64 *decimal64FromString (decimal64 *, const char *, decContext *);
 char *decimal64ToString (decimal64 *, char *);
 char *decimal64ToEngString (decimal64 *, char *);
 

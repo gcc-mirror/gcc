@@ -129,7 +129,7 @@ typedef struct
 #endif
 
   /* Conversions */
-decNumber *decNumberFromString (decNumber *, char *, decContext *);
+decNumber *decNumberFromString (decNumber *, const char *, decContext *);
 char *decNumberToString (decNumber *, char *);
 char *decNumberToEngString (decNumber *, char *);
 
