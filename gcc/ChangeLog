@@ -1,5 +1,13 @@
 2006-08-20  Jan Hubicka  <jh@suse.cz>
 
+	PR rtl-optimization/28071
+	* reload1.c (reg_has_output_reload): Turn into regset.
+	(reload_as_needed, forget_old_reloads_1, forget_marked_reloads,
+	choose_reload_regs, emit_reload_insns): Update to new
+	reg_has_output_reload.
+
+2006-08-20  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/28779
 	* ipa-inline.c (cgraph_decide_inlining, cgraph_early_inlining): Compute
 	function body sizes.

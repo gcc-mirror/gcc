@@ -87,7 +87,7 @@ static rtx *reg_last_reload_reg;
 
 /* Elt N nonzero if reg_last_reload_reg[N] has been set in this insn
    for an output reload that stores into reg N.  */
-static char *reg_has_output_reload;
+static regset_head reg_has_output_reload;
 
 /* Indicates which hard regs are reload-registers for an output reload
    in the current insn.  */
@@ -3889,7 +3889,7 @@ reload_as_needed (int live_known)
   memset (spill_reg_rtx, 0, sizeof spill_reg_rtx);
   memset (spill_reg_store, 0, sizeof spill_reg_store);
   reg_last_reload_reg = XCNEWVEC (rtx, max_regno);
-  reg_has_output_reload = XNEWVEC (char, max_regno);
+  INIT_REG_SET (&reg_has_output_reload);
   CLEAR_HARD_REG_SET (reg_reloaded_valid);
   CLEAR_HARD_REG_SET (reg_reloaded_call_part_clobbered);
 
@@ -3952,7 +3952,7 @@ reload_as_needed (int live_known)
 	     rtx's for those pseudo regs.  */
 	  else
 	    {
-	      memset (reg_has_output_reload, 0, max_regno);
+	      CLEAR_REG_SET (&reg_has_output_reload);
 	      CLEAR_HARD_REG_SET (reg_is_output_reload);
 
 	      find_reloads (insn, 1, spill_indirect_levels, live_known,
@@ -4106,7 +4106,8 @@ reload_as_needed (int live_known)
 			     the reload for inheritance.  */
 			  SET_HARD_REG_BIT (reg_is_output_reload,
 					    REGNO (reload_reg));
-			  reg_has_output_reload[REGNO (XEXP (in_reg, 0))] = 1;
+			  SET_REGNO_REG_SET (&reg_has_output_reload,
+					     REGNO (XEXP (in_reg, 0)));
 			}
 		      else
 			forget_old_reloads_1 (XEXP (in_reg, 0), NULL_RTX,
@@ -4122,7 +4123,8 @@ reload_as_needed (int live_known)
 		    {
 		      SET_HARD_REG_BIT (reg_is_output_reload,
 					REGNO (rld[i].reg_rtx));
-		      reg_has_output_reload[REGNO (XEXP (in_reg, 0))] = 1;
+		      SET_REGNO_REG_SET (&reg_has_output_reload,
+					 REGNO (XEXP (in_reg, 0)));
 		    }
 		}
 	    }
@@ -4160,7 +4162,7 @@ reload_as_needed (int live_known)
 
   /* Clean up.  */
   free (reg_last_reload_reg);
-  free (reg_has_output_reload);
+  CLEAR_REG_SET (&reg_has_output_reload);
 }
 
 /* Discard all record of any value reloaded from X,
@@ -4231,7 +4233,8 @@ forget_old_reloads_1 (rtx x, rtx ignored ATTRIBUTE_UNUSED,
       while (nr-- > 0)
 	/* But don't forget a copy if this is the output reload
 	   that establishes the copy's validity.  */
-	if (n_reloads == 0 || reg_has_output_reload[regno + nr] == 0)
+	if (n_reloads == 0
+	    || !REGNO_REG_SET_P (&reg_has_output_reload, regno + nr))
 	  reg_last_reload_reg[regno + nr] = 0;
      }
 }
@@ -4254,7 +4257,8 @@ forget_marked_reloads (regset regs)
 	    CLEAR_HARD_REG_BIT (reg_reloaded_call_part_clobbered, reg);
 	    spill_reg_store[reg] = 0;
 	  }
-      if (n_reloads == 0 || reg_has_output_reload[reg] == 0)
+      if (n_reloads == 0
+	  || !REGNO_REG_SET_P (&reg_has_output_reload, reg))
 	reg_last_reload_reg[reg] = 0;
     }
 }
@@ -6084,7 +6088,8 @@ choose_reload_regs (struct insn_chain *chain)
 	    nr = hard_regno_nregs[nregno][rld[r].mode];
 
 	  while (--nr >= 0)
-	    reg_has_output_reload[nregno + nr] = 1;
+	    SET_REGNO_REG_SET (&reg_has_output_reload,
+			       nregno + nr);
 
 	  if (i >= 0)
 	    {
@@ -7274,7 +7279,7 @@ emit_reload_insns (struct insn_chain *chain)
 
 	  if (REG_P (reg)
 	      && REGNO (reg) >= FIRST_PSEUDO_REGISTER
-	      && ! reg_has_output_reload[REGNO (reg)])
+	      && !REGNO_REG_SET_P (&reg_has_output_reload, REGNO (reg)))
 	    {
 	      int nregno = REGNO (reg);
 
@@ -7385,9 +7390,11 @@ emit_reload_insns (struct insn_chain *chain)
 		       && rld[r].in != 0
 		       && ((REG_P (rld[r].in)
 			    && REGNO (rld[r].in) >= FIRST_PSEUDO_REGISTER
-			    && ! reg_has_output_reload[REGNO (rld[r].in)])
+	                    && !REGNO_REG_SET_P (&reg_has_output_reload,
+			      			 REGNO (rld[r].in))
 			   || (REG_P (rld[r].in_reg)
-			       && ! reg_has_output_reload[REGNO (rld[r].in_reg)]))
+			       && !REGNO_REG_SET_P (&reg_has_output_reload,
+						    REGNO (rld[r].in)))))
 		       && ! reg_set_p (rld[r].reg_rtx, PATTERN (insn)))
 		{
 		  int nregno;
@@ -7545,7 +7552,8 @@ emit_reload_insns (struct insn_chain *chain)
 		  /* We have to set reg_has_output_reload here, or else 
 		     forget_old_reloads_1 will clear reg_last_reload_reg
 		     right away.  */
-		  reg_has_output_reload[nregno] = 1;
+		  SET_REGNO_REG_SET (&reg_has_output_reload,
+				     nregno);
 		}
 	    }
 	  else
