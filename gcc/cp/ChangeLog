@@ -1,3 +1,9 @@
+2006-08-21  Lee Millward  <lee.millward@codesourcery.com>
+
+	PR c++/26269
+        * decl.c (duplicate_decls): Return early if either
+        newdecl or olddecl is error_mark_node.
+	
 2006-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28341

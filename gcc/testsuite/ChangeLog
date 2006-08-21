@@ -1,3 +1,8 @@
+2006-08-21  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/26269
+        * g++.dg/other/error14.C: New test.
+	
 2006-08-21  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/self_aggregate_with_zeros.adb: New test.
