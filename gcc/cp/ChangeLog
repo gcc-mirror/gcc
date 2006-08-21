@@ -3,6 +3,10 @@
 	PR c++/26269
         * decl.c (duplicate_decls): Return early if either
         newdecl or olddecl is error_mark_node.
+
+	 PR c++/28505
+        * decl.c (grokdeclarator): Return early after
+        issuing diagnostic about an incomplete type.
 	
 2006-08-20  Mark Mitchell  <mark@codesourcery.com>
 
