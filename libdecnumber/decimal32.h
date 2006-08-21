@@ -92,7 +92,7 @@ typedef struct
 #endif
 
 /* String conversions.  */
-decimal32 *decimal32FromString (decimal32 *, char *, decContext *);
+decimal32 *decimal32FromString (decimal32 *, const char *, decContext *);
 char *decimal32ToString (decimal32 *, char *);
 char *decimal32ToEngString (decimal32 *, char *);
 

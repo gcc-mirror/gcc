@@ -173,6 +173,6 @@ typedef struct
 decContext *decContextDefault (decContext *, int32_t);
 decContext *decContextSetStatus (decContext *, uint32_t);
 const char *decContextStatusToString (decContext *);
-decContext *decContextSetStatusFromString (decContext *, char *);
+decContext *decContextSetStatusFromString (decContext *, const char *);
 
 #endif

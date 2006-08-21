@@ -287,7 +287,7 @@ decimal64ToEngString (decimal64 * d64, char *string)
 /* If an error occurs, the result will be a valid decimal64 NaN.      */
 /* ------------------------------------------------------------------ */
 decimal64 *
-decimal64FromString (decimal64 * result, char *string, decContext * set)
+decimal64FromString (decimal64 * result, const char *string, decContext * set)
 {
   decContext dc;		/* work */
   decNumber dn;			/* .. */

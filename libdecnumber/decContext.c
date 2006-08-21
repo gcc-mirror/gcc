@@ -162,7 +162,7 @@ decContextStatusToString (decContext * context)
 /*    returned.                                                       */
 /* ------------------------------------------------------------------ */
 decContext *
-decContextSetStatusFromString (decContext * context, char *string)
+decContextSetStatusFromString (decContext * context, const char *string)
 {
   if (strcmp (string, DEC_Condition_CS) == 0)
     return decContextSetStatus (context, DEC_Conversion_syntax);

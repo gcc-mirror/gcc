@@ -339,7 +339,7 @@ decNumberToEngString (decNumber * dn, char *string)
 /* If bad syntax is detected, the result will be a quiet NaN.         */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberFromString (decNumber * dn, char chars[], decContext * set)
+decNumberFromString (decNumber * dn, const char chars[], decContext * set)
 {
   Int exponent = 0;		/* working exponent [assume 0] */
   uByte bits = 0;		/* working flags [assume +ve] */
@@ -348,11 +348,11 @@ decNumberFromString (decNumber * dn, char chars[], decContext * set)
   Unit *allocres = NULL;	/* -> allocated result, iff allocated */
   Int need;			/* units needed for result */
   Int d = 0;			/* count of digits found in decimal part */
-  char *dotchar = NULL;		/* where dot was found */
-  char *cfirst;			/* -> first character of decimal part */
-  char *last = NULL;		/* -> last digit of decimal part */
-  char *firstexp;		/* -> first significant exponent digit */
-  char *c;			/* work */
+  const char *dotchar = NULL;	/* where dot was found */
+  const char *cfirst;		/* -> first character of decimal part */
+  const char *last = NULL;	/* -> last digit of decimal part */
+  const char *firstexp;		/* -> first significant exponent digit */
+  const char *c;		/* work */
   Unit *up;			/* .. */
 #if DECDPUN>1
   Int i;			/* .. */

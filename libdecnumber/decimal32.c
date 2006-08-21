@@ -288,7 +288,7 @@ decimal32ToEngString (decimal32 * d32, char *string)
 /* If an error occurs, the result will be a valid decimal32 NaN.      */
 /* ------------------------------------------------------------------ */
 decimal32 *
-decimal32FromString (decimal32 * result, char *string, decContext * set)
+decimal32FromString (decimal32 * result, const char *string, decContext * set)
 {
   decContext dc;		/* work */
   decNumber dn;			/* .. */

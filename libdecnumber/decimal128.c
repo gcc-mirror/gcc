@@ -296,7 +296,7 @@ decimal128ToEngString (decimal128 * d128, char *string)
 /* If an error occurs, the result will be a valid decimal128 NaN.     */
 /* ------------------------------------------------------------------ */
 decimal128 *
-decimal128FromString (decimal128 * result, char *string, decContext * set)
+decimal128FromString (decimal128 * result, const char *string, decContext * set)
 {
   decContext dc;		/* work */
   decNumber dn;			/* .. */
