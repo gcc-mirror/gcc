@@ -1393,7 +1393,7 @@ decl_anon_ns_mem_p (tree decl)
 {
   while (1)
     {
-      if (decl == NULL_TREE)
+      if (decl == NULL_TREE || decl == error_mark_node)
 	return false;
       if (TREE_CODE (decl) == NAMESPACE_DECL
 	  && DECL_NAME (decl) == NULL_TREE)

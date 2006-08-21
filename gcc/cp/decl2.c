@@ -1753,20 +1753,24 @@ determine_visibility (tree decl)
 		    ? TYPE_TEMPLATE_INFO (TREE_TYPE (decl))
 		    : DECL_TEMPLATE_INFO (decl));
       tree args = TI_ARGS (tinfo);
-      int depth = TMPL_ARGS_DEPTH (args);
-      tree pattern = DECL_TEMPLATE_RESULT (TI_TEMPLATE (tinfo));
-
-      if (!DECL_VISIBILITY_SPECIFIED (decl))
+      
+      if (args != error_mark_node)
 	{
-	  DECL_VISIBILITY (decl) = DECL_VISIBILITY (pattern);
-	  DECL_VISIBILITY_SPECIFIED (decl)
-	    = DECL_VISIBILITY_SPECIFIED (pattern);
-	}
+	  int depth = TMPL_ARGS_DEPTH (args);
+	  tree pattern = DECL_TEMPLATE_RESULT (TI_TEMPLATE (tinfo));
 
-      /* FIXME should TMPL_ARGS_DEPTH really return 1 for null input? */
-      if (args && depth > template_class_depth (class_type))
-	/* Limit visibility based on its template arguments.  */
-	constrain_visibility_for_template (decl, args);
+	  if (!DECL_VISIBILITY_SPECIFIED (decl))
+	    {
+	      DECL_VISIBILITY (decl) = DECL_VISIBILITY (pattern);
+	      DECL_VISIBILITY_SPECIFIED (decl)
+		= DECL_VISIBILITY_SPECIFIED (pattern);
+	    }
+
+	  /* FIXME should TMPL_ARGS_DEPTH really return 1 for null input? */
+	  if (args && depth > template_class_depth (class_type))
+	    /* Limit visibility based on its template arguments.  */
+	    constrain_visibility_for_template (decl, args);
+	}
     }
 
   if (class_type)
