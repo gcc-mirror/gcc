@@ -1124,7 +1124,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
      about the same declaration, so just pretend the types match here.  */
   if (TREE_TYPE (newdecl) == error_mark_node
       || TREE_TYPE (olddecl) == error_mark_node)
-    types_match = 1;
+    return error_mark_node.
 
   if (DECL_P (olddecl)
       && TREE_CODE (newdecl) == FUNCTION_DECL
