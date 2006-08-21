@@ -7815,7 +7815,11 @@ tsubst_qualified_id (tree qualified_id, tree args,
 	       /*template_arg_p=*/false));
     }
 
-  if (TREE_CODE (expr) != SCOPE_REF)
+  /* Expressions do not generally have reference type.  */
+  if (TREE_CODE (expr) != SCOPE_REF
+      /* However, if we're about to form a pointer-to-member, we just
+	 want the referenced member referenced.  */
+      && TREE_CODE (expr) != OFFSET_REF)
     expr = convert_from_reference (expr);
 
   return expr;
