@@ -133,6 +133,9 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   /* Pointer to a single unique cgraph node for this function.  If the
      function is to be output, this is the copy that will survive.  */
   struct cgraph_node *master_clone;
+  /* For functions with many calls sites it holds map from call expression
+     to the edge to speed up cgraph_edge function.  */
+  htab_t GTY((param_is (struct cgraph_edge))) call_site_hash;
 
   PTR GTY ((skip)) aux;
 
@@ -266,6 +269,7 @@ struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 struct cgraph_node *cgraph_node (tree);
 struct cgraph_node *cgraph_node_for_asm (tree asmname);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, tree);
+void cgraph_set_call_stmt (struct cgraph_edge *, tree);
 struct cgraph_local_info *cgraph_local_info (tree);
 struct cgraph_global_info *cgraph_global_info (tree);
 struct cgraph_rtl_info *cgraph_rtl_info (tree);

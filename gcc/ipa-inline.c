@@ -243,20 +243,27 @@ cgraph_estimate_growth (struct cgraph_node *node)
 }
 
 /* Return false when inlining WHAT into TO is not good idea
-   as it would cause too large growth of function bodies.  */
+   as it would cause too large growth of function bodies.  
+   When ONE_ONLY is true, assume that only one call site is going
+   to be inlined, otherwise figure out how many call sites in
+   TO calls WHAT and verify that all can be inlined.
+   */
 
 static bool
 cgraph_check_inline_limits (struct cgraph_node *to, struct cgraph_node *what,
-			    const char **reason)
+			    const char **reason, bool one_only)
 {
   int times = 0;
   struct cgraph_edge *e;
   int newsize;
   int limit;
 
-  for (e = to->callees; e; e = e->next_callee)
-    if (e->callee == what)
-      times++;
+  if (one_only)
+    times = 1;
+  else
+    for (e = to->callees; e; e = e->next_callee)
+      if (e->callee == what)
+	times++;
 
   if (to->global.inlined_to)
     to = to->global.inlined_to;
@@ -836,7 +843,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	{
 	  struct cgraph_node *callee;
 	  if (!cgraph_check_inline_limits (edge->caller, edge->callee,
-					   &edge->inline_failed))
+					   &edge->inline_failed, true))
 	    {
 	      if (dump_file)
 		fprintf (dump_file, " Not inlining into %s:%s.\n",
@@ -1037,7 +1044,7 @@ cgraph_decide_inlining (void)
 		  old_insns = overall_insns;
 
 		  if (cgraph_check_inline_limits (node->callers->caller, node,
-					  	  NULL))
+					  	  NULL, false))
 		    {
 		      cgraph_mark_inline (node->callers);
 		      if (dump_file)
@@ -1109,7 +1116,8 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 	  && (!early
 	      || (cgraph_estimate_size_after_inlining (1, e->caller, e->callee)
 	          <= e->caller->global.insns))
-	  && cgraph_check_inline_limits (node, e->callee, &e->inline_failed)
+	  && cgraph_check_inline_limits (node, e->callee, &e->inline_failed,
+	    				 false)
 	  && (DECL_SAVED_TREE (e->callee->decl) || e->callee->inline_decl))
 	{
 	  if (cgraph_default_inline_p (e->callee, &failed_reason))

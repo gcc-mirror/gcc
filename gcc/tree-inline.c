@@ -737,14 +737,14 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
 		    {
 		      edge = cgraph_edge (node, orig_stmt);
 		      gcc_assert (edge);
-		      edge->call_stmt = stmt;
+		      cgraph_set_call_stmt (edge, stmt);
 		    }
 		  /* FALLTHRU */
 
 		case CB_CGE_MOVE:
 		  edge = cgraph_edge (id->dst_node, orig_stmt);
 		  if (edge)
-		    edge->call_stmt = stmt;
+		    cgraph_set_call_stmt (edge, stmt);
 		  break;
 
 		default:

@@ -293,11 +293,32 @@ cgraph_node_for_asm (tree asmname)
   return NULL;
 }
 
+/* Returns a hash value for X (which really is a die_struct).  */
+
+static hashval_t
+edge_hash (const void *x)
+{
+  return htab_hash_pointer (((struct cgraph_edge *) x)->call_stmt);
+}
+
+/* Return nonzero if decl_id of die_struct X is the same as UID of decl *Y.  */
+
+static int
+edge_eq (const void *x, const void *y)
+{
+  return ((struct cgraph_edge *) x)->call_stmt == y;
+}
+
 /* Return callgraph edge representing CALL_EXPR statement.  */
 struct cgraph_edge *
 cgraph_edge (struct cgraph_node *node, tree call_stmt)
 {
-  struct cgraph_edge *e;
+  struct cgraph_edge *e, *e2;
+  int n = 0;
+
+  if (node->call_site_hash)
+    return htab_find_with_hash (node->call_site_hash, call_stmt,
+      				htab_hash_pointer (call_stmt));
 
   /* This loop may turn out to be performance problem.  In such case adding
      hashtables into call nodes with very many edges is probably best
@@ -305,9 +326,49 @@ cgraph_edge (struct cgraph_node *node, tree call_stmt)
      because we want to make possible having multiple cgraph nodes representing
      different clones of the same body before the body is actually cloned.  */
   for (e = node->callees; e; e= e->next_callee)
-    if (e->call_stmt == call_stmt)
-      break;
+    {
+      if (e->call_stmt == call_stmt)
+	break;
+      n++;
+    }
+  if (n > 100)
+    {
+      node->call_site_hash = htab_create_ggc (120, edge_hash, edge_eq, NULL);
+      for (e2 = node->callees; e2; e2 = e2->next_callee)
+	{
+          void **slot;
+	  slot = htab_find_slot_with_hash (node->call_site_hash,
+					   e2->call_stmt,
+					   htab_hash_pointer (e2->call_stmt),
+					   INSERT);
+	  gcc_assert (!*slot);
+	  *slot = e2;
+	}
+    }
   return e;
+}
+
+/* Change call_smtt of edge E to NEW_STMT.  */
+void
+cgraph_set_call_stmt (struct cgraph_edge *e, tree new_stmt)
+{
+  if (e->caller->call_site_hash)
+    {
+      htab_remove_elt_with_hash (e->caller->call_site_hash,
+				 e->call_stmt,
+				 htab_hash_pointer (e->call_stmt));
+    }
+  e->call_stmt = new_stmt;
+  if (e->caller->call_site_hash)
+    {
+      void **slot;
+      slot = htab_find_slot_with_hash (e->caller->call_site_hash,
+				       e->call_stmt,
+				       htab_hash_pointer
+				       (e->call_stmt), INSERT);
+      gcc_assert (!*slot);
+      *slot = e;
+    }
 }
 
 /* Create edge from CALLER to CALLEE in the cgraph.  */
@@ -353,6 +414,17 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
   callee->callers = edge;
   edge->count = count;
   edge->loop_nest = nest;
+  if (caller->call_site_hash)
+    {
+      void **slot;
+      slot = htab_find_slot_with_hash (caller->call_site_hash,
+				       edge->call_stmt,
+				       htab_hash_pointer
+					 (edge->call_stmt),
+				       INSERT);
+      gcc_assert (!*slot);
+      *slot = edge;
+    }
   return edge;
 }
 
@@ -380,6 +452,10 @@ cgraph_edge_remove_caller (struct cgraph_edge *e)
     e->next_callee->prev_callee = e->prev_callee;
   if (!e->prev_callee)
     e->caller->callees = e->next_callee;
+  if (e->caller->call_site_hash)
+    htab_remove_elt_with_hash (e->caller->call_site_hash,
+			       e->call_stmt,
+	  		       htab_hash_pointer (e->call_stmt));
 }
 
 /* Remove the edge E in the cgraph.  */
@@ -425,6 +501,11 @@ cgraph_node_remove_callees (struct cgraph_node *node)
   for (e = node->callees; e; e = e->next_callee)
     cgraph_edge_remove_callee (e);
   node->callees = NULL;
+  if (node->call_site_hash)
+    {
+      htab_delete (node->call_site_hash);
+      node->call_site_hash = NULL;
+    }
 }
 
 /* Remove all callers from the node.  */
@@ -521,6 +602,11 @@ cgraph_remove_node (struct cgraph_node *node)
       DECL_INITIAL (node->decl) = error_mark_node;
     }
   node->decl = NULL;
+  if (node->call_site_hash)
+    {
+      htab_delete (node->call_site_hash);
+      node->call_site_hash = NULL;
+    }
   cgraph_n_nodes--;
   /* Do not free the structure itself so the walk over chain can continue.  */
 }
