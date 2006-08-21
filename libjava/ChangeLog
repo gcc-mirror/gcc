@@ -1,3 +1,13 @@
+2006-08-21  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/lang/natThread.cc (_Jv_AttachCurrentThread): Attach thread
+	to GC.
+	(_Jv_DetachCurrentThread): Detach thread from GC.
+	* include/boehm-gc.h (_Jv_GCAttachThread, _Jv_GCDetachThread):
+	Declare.
+	* boehm.cc (_Jv_GCAttachThread): New function.
+	(_Jv_GCDetachThread): Likewise.
+
 2006-08-19  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* sysdep/i386/backtrace.h (fallback_backtrace): Add "0x55 0x8B 0xEC"

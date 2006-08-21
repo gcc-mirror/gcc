@@ -45,9 +45,6 @@
 /* support for Tru64 pthreads */
 #undef GC_OSF1_THREADS
 
-/* symbol version of pthread_create */
-#undef GC_PTHREAD_SYM_VERSION
-
 /* support for Solaris pthreads */
 #undef GC_SOLARIS_PTHREADS
 
@@ -80,6 +77,9 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `pthread_getattr_np' function. */
+#undef HAVE_PTHREAD_GETATTR_NP
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H

@@ -69,7 +69,6 @@
     extern "C" {
 # endif
 
-
 /* Define word and signed_word to be unsigned and signed types of the 	*/
 /* size as char * or void *.  There seems to be no way to do this	*/
 /* even semi-portably.  The following is probably no better/worse 	*/
@@ -912,6 +911,25 @@ GC_API void (*GC_is_visible_print_proc)
 # if defined(PCR) || defined(GC_SOLARIS_THREADS) || \
      defined(GC_PTHREADS) || defined(GC_WIN32_THREADS)
    	/* Any flavor of threads except SRC_M3.	*/
+
+/* Register the current thread as a new thread whose stack(s) should    */
+/* be traced by the GC.  						*/
+/* If a platform does not implicitly do so, this must be called before  */
+/* a thread can allocate garbage collected memory, or assign pointers	*/
+/* to the garbage collected heap.  Once registered, a thread will be	*/
+/* stopped during garbage collections.					*/
+GC_API void GC_register_my_thread GC_PROTO((void));
+
+/* Register the current thread, with the indicated stack base, as	*/
+/* a new thread whose stack(s) should be traced by the GC.  If a 	*/
+/* platform does not implicitly do so, this must be called before a	*/
+/* thread can allocate garbage collected memory, or assign pointers	*/
+/* to the garbage collected heap.  Once registered, a thread will be	*/
+/* stopped during garbage collections.					*/
+GC_API void GC_unregister_my_thread GC_PROTO((void));
+
+GC_API GC_PTR GC_get_thread_stack_base GC_PROTO((void));
+
 /* This returns a list of objects, linked through their first		*/
 /* word.  Its use can greatly reduce lock contention problems, since	*/
 /* the allocation lock can be acquired and released many fewer times.	*/

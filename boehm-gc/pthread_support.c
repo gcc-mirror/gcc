@@ -602,7 +602,9 @@ void GC_delete_thread(pthread_t id)
     } else {
         prev -> next = p -> next;
     }
-    GC_INTERNAL_FREE(p);
+
+    if (p != &first_thread)
+      GC_INTERNAL_FREE(p);
 }
 
 /* If a thread has been joined, but we have not yet		*/
@@ -1124,6 +1126,107 @@ WRAP_FUNC(pthread_detach)(pthread_t thread)
 
 GC_bool GC_in_thread_creation = FALSE;
 
+GC_PTR GC_get_thread_stack_base()
+{  
+# ifdef HAVE_PTHREAD_GETATTR_NP
+  pthread_t my_pthread;
+  pthread_attr_t attr;
+  ptr_t stack_addr;
+  size_t stack_size;
+  
+  my_pthread = pthread_self();  
+  pthread_getattr_np (my_pthread, &attr);
+  pthread_attr_getstack (&attr, (void **) &stack_addr, &stack_size);
+  pthread_attr_destroy (&attr);
+  
+#   ifdef DEBUG_THREADS
+	GC_printf1("attached thread stack address: 0x%x\n", stack_addr);
+#   endif
+
+#   ifdef STACK_GROWS_DOWN
+      return stack_addr + stack_size;
+#   else
+      return stack_addr - stack_size;
+#   endif
+
+# else
+#   ifdef DEBUG_THREADS
+	GC_printf1("Can not determine stack base for attached thread");
+#   endif
+  return 0;
+# endif
+}
+
+void GC_register_my_thread()
+{
+  GC_thread me;
+  pthread_t my_pthread;
+
+  my_pthread = pthread_self();
+#   ifdef DEBUG_THREADS
+      GC_printf1("Attaching thread 0x%lx\n", my_pthread);
+      GC_printf1("pid = %ld\n", (long) getpid());
+#   endif
+  
+  /* Check to ensure this thread isn't attached already. */
+  LOCK();
+  me = GC_lookup_thread (my_pthread);
+  UNLOCK();
+  if (me != 0)
+    {
+#   ifdef DEBUG_THREADS
+      GC_printf1("Attempt to re-attach known thread 0x%lx\n", my_pthread);
+#   endif
+      return;
+    }
+
+  LOCK();
+  GC_in_thread_creation = TRUE;
+  me = GC_new_thread(my_pthread);
+  GC_in_thread_creation = FALSE;
+
+  me -> flags |= DETACHED;  
+
+#ifdef GC_DARWIN_THREADS
+    me -> stop_info.mach_thread = mach_thread_self();
+#else
+    me -> stack_end = GC_get_thread_stack_base();    
+    if (me -> stack_end == 0)
+      GC_abort("Can not determine stack base for attached thread");
+    
+#   ifdef STACK_GROWS_DOWN
+      me -> stop_info.stack_ptr = me -> stack_end - 0x10;
+#   else
+      me -> stop_info.stack_ptr = me -> stack_end + 0x10;
+#   endif
+#endif
+
+#   ifdef IA64
+      me -> backing_store_end = (ptr_t)
+			(GC_save_regs_in_stack() & ~(GC_page_size - 1));
+      /* This is also < 100% convincing.  We should also read this 	*/
+      /* from /proc, but the hook to do so isn't there yet.		*/
+#   endif /* IA64 */
+
+#   if defined(THREAD_LOCAL_ALLOC) && !defined(DBG_HDRS_ALL)
+        GC_init_thread_local(me);
+#   endif
+  UNLOCK();
+}
+
+void GC_unregister_my_thread()
+{
+  pthread_t my_pthread;
+
+  my_pthread = pthread_self();
+
+#   ifdef DEBUG_THREADS
+      GC_printf1("Detaching thread 0x%lx\n", my_pthread);
+#   endif
+
+  GC_thread_exit_proc (0);
+}
+
 void * GC_start_routine(void * arg)
 {
     int dummy;
@@ -1200,37 +1303,8 @@ void * GC_start_routine(void * arg)
     return(result);
 }
 
-#ifdef GC_PTHREAD_SYM_VERSION
-
-/* Force constr to execute prior to main().  */
-static void constr (void) __attribute__ ((constructor));
-
-static int
-(*pthread_create_)(pthread_t *new_thread,
-		   const pthread_attr_t *attr_in,
-		   void * (*thread_execp)(void *), void *arg);
-
-static void
-constr (void)
-{
-  /* Get a pointer to the real pthread_create.  */
-  pthread_create_ = dlvsym (RTLD_NEXT, "pthread_create",
-			    GC_PTHREAD_SYM_VERSION);
-}
-
-#define GC_PTHREAD_CREATE_NAME pthread_create
-#define GC_PTHREAD_REAL_NAME (*pthread_create_)
-
-#else
-
-#define GC_PTHREAD_CREATE_NAME WRAP_FUNC(pthread_create)
-#define GC_PTHREAD_REAL_NAME REAL_FUNC(pthread_create)
-
-#endif
-
-
 int
-GC_PTHREAD_CREATE_NAME(pthread_t *new_thread,
+WRAP_FUNC(pthread_create)(pthread_t *new_thread,
 		  const pthread_attr_t *attr,
                   void *(*start_routine)(void *), void *arg)
 {
@@ -1291,7 +1365,7 @@ GC_PTHREAD_CREATE_NAME(pthread_t *new_thread,
 		   pthread_self());
 #   endif
 
-    result = GC_PTHREAD_REAL_NAME(new_thread, attr, GC_start_routine, si);
+    result = REAL_FUNC(pthread_create)(new_thread, attr, GC_start_routine, si);
 
 #   ifdef DEBUG_THREADS
         GC_printf1("Started thread 0x%X\n", *new_thread);
