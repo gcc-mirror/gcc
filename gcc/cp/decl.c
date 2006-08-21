@@ -8354,8 +8354,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      error ("  in instantiation of template %qT",
 		     current_class_type);
 
-	    type = error_mark_node;
-	    decl = NULL_TREE;
+	    return error_mark_node;
 	  }
 	else
 	  {

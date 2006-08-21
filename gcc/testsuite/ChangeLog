@@ -2,6 +2,10 @@
 
         PR c++/26269
         * g++.dg/other/error14.C: New test.
+
+        PR c++/28505
+        * g++.dg/parse/ctor7.C: New test.
+        * g++.dg/parse/ctor8.C: Likewise.
 	
 2006-08-21  Olivier Hainque  <hainque@adacore.com>
 
