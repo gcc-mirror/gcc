@@ -1,3 +1,15 @@
+2006-08-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/27115
+	* gimplify.c (voidify_wrapper_expr): Handle STATEMENT_LIST as a
+	wrapper.  Loop to handle nested wrappers.
+	(gimplify_bind_expr): Remove temp parameter.
+	(gimplify_modify_expr_rhs): Handle CLEANUP_POINT_EXPR, BIND_EXPR
+	and STATEMENT_LIST on the rhs.
+	(gimplify_statement_list): Voidify the STATEMENT_LIST.
+	(gimplify_expr): Pass pre_p to gimplify_statement_list.
+	(gimplify_target_expr): Remove special BIND_EXPR handling.
+
 2006-08-21  J"orn Rennecke  <joern.rennecke@st.com>
 
 	* config/sh/lib1funcs-Os-4-200.asm: Guard entire file with

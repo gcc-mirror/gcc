@@ -391,18 +391,15 @@ cp_gimplify_init_expr (tree *expr_p, tree *pre_p, tree *post_p)
   tree to = TREE_OPERAND (*expr_p, 0);
   tree sub;
 
-  /* If we are initializing something from a TARGET_EXPR, strip the
-     TARGET_EXPR and initialize it directly.  */
   /* What about code that pulls out the temp and uses it elsewhere?  I
      think that such code never uses the TARGET_EXPR as an initializer.  If
      I'm wrong, we'll abort because the temp won't have any RTL.  In that
      case, I guess we'll need to replace references somehow.  */
   if (TREE_CODE (from) == TARGET_EXPR)
     from = TARGET_EXPR_INITIAL (from);
-  if (TREE_CODE (from) == CLEANUP_POINT_EXPR)
-    from = TREE_OPERAND (from, 0);
 
-  /* Look through any COMPOUND_EXPRs.  */
+  /* Look through any COMPOUND_EXPRs, since build_compound_expr pushes them
+     inside the TARGET_EXPR.  */
   sub = expr_last (from);
 
   /* If we are initializing from an AGGR_INIT_EXPR, drop the INIT_EXPR and

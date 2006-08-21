@@ -957,71 +957,71 @@ voidify_wrapper_expr (tree wrapper, tree temp)
 {
   if (!VOID_TYPE_P (TREE_TYPE (wrapper)))
     {
-      tree *p, sub = wrapper;
+      tree type = TREE_TYPE (wrapper);
+      tree *p;
 
-    restart:
-      /* Set p to point to the body of the wrapper.  */
-      switch (TREE_CODE (sub))
+      /* Set p to point to the body of the wrapper.  Loop until we find
+	 something that isn't a wrapper.  */
+      for (p = &wrapper; p && *p; )
 	{
-	case BIND_EXPR:
-	  /* For a BIND_EXPR, the body is operand 1.  */
-	  p = &BIND_EXPR_BODY (sub);
-	  break;
-
-	default:
-	  p = &TREE_OPERAND (sub, 0);
-	  break;
-	}
-
-      /* Advance to the last statement.  Set all container types to void.  */
-      if (TREE_CODE (*p) == STATEMENT_LIST)
-	{
-	  tree_stmt_iterator i = tsi_last (*p);
-	  p = tsi_end_p (i) ? NULL : tsi_stmt_ptr (i);
-	}
-      else
-	{
-	  for (; TREE_CODE (*p) == COMPOUND_EXPR; p = &TREE_OPERAND (*p, 1))
+	  switch (TREE_CODE (*p))
 	    {
+	    case BIND_EXPR:
 	      TREE_SIDE_EFFECTS (*p) = 1;
 	      TREE_TYPE (*p) = void_type_node;
+	      /* For a BIND_EXPR, the body is operand 1.  */
+	      p = &BIND_EXPR_BODY (*p);
+	      break;
+
+	    case CLEANUP_POINT_EXPR:
+	    case TRY_FINALLY_EXPR:
+	    case TRY_CATCH_EXPR:
+	      TREE_SIDE_EFFECTS (*p) = 1;
+	      TREE_TYPE (*p) = void_type_node;
+	      p = &TREE_OPERAND (*p, 0);
+	      break;
+
+	    case STATEMENT_LIST:
+	      {
+		tree_stmt_iterator i = tsi_last (*p);
+		TREE_SIDE_EFFECTS (*p) = 1;
+		TREE_TYPE (*p) = void_type_node;
+		p = tsi_end_p (i) ? NULL : tsi_stmt_ptr (i);
+	      }
+	      break;
+
+	    case COMPOUND_EXPR:
+	      /* Advance to the last statement.  Set all container types to void.  */
+	      for (; TREE_CODE (*p) == COMPOUND_EXPR; p = &TREE_OPERAND (*p, 1))
+		{
+		  TREE_SIDE_EFFECTS (*p) = 1;
+		  TREE_TYPE (*p) = void_type_node;
+		}
+	      break;
+
+	    default:
+	      goto out;
 	    }
 	}
 
+    out:
       if (p == NULL || IS_EMPTY_STMT (*p))
-	;
-      /* Look through exception handling.  */
-      else if (TREE_CODE (*p) == TRY_FINALLY_EXPR
-	       || TREE_CODE (*p) == TRY_CATCH_EXPR)
+	temp = NULL_TREE;
+      else if (temp)
 	{
-	  sub = *p;
-	  goto restart;
-	}
-      /* The C++ frontend already did this for us.  */
-      else if (TREE_CODE (*p) == INIT_EXPR
-	       || TREE_CODE (*p) == TARGET_EXPR)
-	temp = TREE_OPERAND (*p, 0);
-      /* If we're returning a dereference, move the dereference
-	 outside the wrapper.  */
-      else if (TREE_CODE (*p) == INDIRECT_REF)
-	{
-	  tree ptr = TREE_OPERAND (*p, 0);
-	  temp = create_tmp_var (TREE_TYPE (ptr), "retval");
-	  *p = build2 (MODIFY_EXPR, TREE_TYPE (ptr), temp, ptr);
-	  temp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (temp)), temp);
-	  /* If this is a BIND_EXPR for a const inline function, it might not
-	     have TREE_SIDE_EFFECTS set.  That is no longer accurate.  */
-	  TREE_SIDE_EFFECTS (wrapper) = 1;
+	  /* The wrapper is on the RHS of an assignment that we're pushing
+	     down.  */
+	  gcc_assert (TREE_CODE (temp) == INIT_EXPR
+		      || TREE_CODE (temp) == MODIFY_EXPR);
+	  TREE_OPERAND (temp, 1) = *p;
+	  *p = temp;
 	}
       else
 	{
-	  if (!temp)
-	    temp = create_tmp_var (TREE_TYPE (wrapper), "retval");
-	  *p = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, *p);
-	  TREE_SIDE_EFFECTS (wrapper) = 1;
+	  temp = create_tmp_var (type, "retval");
+	  *p = build2 (INIT_EXPR, type, temp, *p);
 	}
 
-      TREE_TYPE (wrapper) = void_type_node;
       return temp;
     }
 
@@ -1050,13 +1050,13 @@ build_stack_save_restore (tree *save, tree *restore)
 /* Gimplify a BIND_EXPR.  Just voidify and recurse.  */
 
 static enum gimplify_status
-gimplify_bind_expr (tree *expr_p, tree temp, tree *pre_p)
+gimplify_bind_expr (tree *expr_p, tree *pre_p)
 {
   tree bind_expr = *expr_p;
   bool old_save_stack = gimplify_ctxp->save_stack;
   tree t;
 
-  temp = voidify_wrapper_expr (bind_expr, temp);
+  tree temp = voidify_wrapper_expr (bind_expr, NULL);
 
   /* Mark variables seen in this bind expr.  */
   for (t = BIND_EXPR_VARS (bind_expr); t ; t = TREE_CHAIN (t))
@@ -3408,6 +3408,20 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	ret = GS_UNHANDLED;
 	break;
 
+	/* If we're initializing from a container, push the initialization
+	   inside it.  */
+      case CLEANUP_POINT_EXPR:
+      case BIND_EXPR:
+      case STATEMENT_LIST:
+	{
+	  tree wrap = *from_p;
+	  tree t = voidify_wrapper_expr (wrap, *expr_p);
+	  gcc_assert (t == *expr_p);
+
+	  *expr_p = wrap;
+	  return GS_OK;
+	}
+	
       default:
 	ret = GS_UNHANDLED;
 	break;
@@ -3681,8 +3695,10 @@ gimplify_compound_expr (tree *expr_p, tree *pre_p, bool want_value)
    enlightened front-end, or by shortcut_cond_expr.  */
 
 static enum gimplify_status
-gimplify_statement_list (tree *expr_p)
+gimplify_statement_list (tree *expr_p, tree *pre_p)
 {
+  tree temp = voidify_wrapper_expr (*expr_p, NULL);
+
   tree_stmt_iterator i = tsi_start (*expr_p);
 
   while (!tsi_end_p (i))
@@ -3701,6 +3717,13 @@ gimplify_statement_list (tree *expr_p)
 	}
       else
 	tsi_next (&i);
+    }
+
+  if (temp)
+    {
+      append_to_statement_list (*expr_p, pre_p);
+      *expr_p = temp;
+      return GS_OK;
     }
 
   return GS_ALL_DONE;
@@ -4184,16 +4207,9 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt, fb_none);
       else
 	{
-          /* Special handling for BIND_EXPR can result in fewer temps.  */
-	  ret = GS_OK;
-          if (TREE_CODE (init) == BIND_EXPR)
-	    gimplify_bind_expr (&init, temp, pre_p);
-	  if (init != temp)
-	    {
-	      init = build2 (INIT_EXPR, void_type_node, temp, init);
-	      ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt,
-				   fb_none);
-	    }
+	  init = build2 (INIT_EXPR, void_type_node, temp, init);
+	  ret = gimplify_expr (&init, pre_p, post_p, is_gimple_stmt,
+			       fb_none);
 	}
       if (ret == GS_ERROR)
 	return GS_ERROR;
@@ -5507,7 +5523,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case BIND_EXPR:
-	  ret = gimplify_bind_expr (expr_p, NULL, pre_p);
+	  ret = gimplify_bind_expr (expr_p, pre_p);
 	  break;
 
 	case LOOP_EXPR:
@@ -5654,7 +5670,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case STATEMENT_LIST:
-	  ret = gimplify_statement_list (expr_p);
+	  ret = gimplify_statement_list (expr_p, pre_p);
 	  break;
 
 	case WITH_SIZE_EXPR:
