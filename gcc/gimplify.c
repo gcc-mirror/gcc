@@ -3061,6 +3061,20 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	      }
 	  }
 
+	/* If there are nonzero elements, pre-evaluate to capture elements
+	   overlapping with the lhs into temporaries.  We must do this before
+	   clearing to fetch the values before they are zeroed-out.  */
+	if (num_nonzero_elements > 0)
+	  {
+	    preeval_data.lhs_base_decl = get_base_address (object);
+	    if (!DECL_P (preeval_data.lhs_base_decl))
+	      preeval_data.lhs_base_decl = NULL;
+	    preeval_data.lhs_alias_set = get_alias_set (object);
+
+	    gimplify_init_ctor_preeval (&TREE_OPERAND (*expr_p, 1),
+					pre_p, post_p, &preeval_data);
+	  }
+
 	if (cleared)
 	  {
 	    /* Zap the CONSTRUCTOR element list, which simplifies this case.
@@ -3076,16 +3090,7 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	   elements in the constructor, add assignments to the individual
 	   scalar fields of the object.  */
 	if (!cleared || num_nonzero_elements > 0)
-	  {
-	    preeval_data.lhs_base_decl = get_base_address (object);
-	    if (!DECL_P (preeval_data.lhs_base_decl))
-	      preeval_data.lhs_base_decl = NULL;
-	    preeval_data.lhs_alias_set = get_alias_set (object);
-
-	    gimplify_init_ctor_preeval (&TREE_OPERAND (*expr_p, 1),
-					pre_p, post_p, &preeval_data);
-	    gimplify_init_ctor_eval (object, elts, pre_p, cleared);
-	  }
+	  gimplify_init_ctor_eval (object, elts, pre_p, cleared);
 
 	*expr_p = NULL_TREE;
       }

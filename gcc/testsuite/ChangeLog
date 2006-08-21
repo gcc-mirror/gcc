@@ -1,3 +1,8 @@
+2006-08-21  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/self_aggregate_with_zeros.adb: New test.
+	* gnat.dg/self_aggregate_with_array.adb: New test.
+
 2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
  
  	* g++.dg/eh/arm-vfp-unwind.C: New test.
