@@ -1,3 +1,7 @@
+2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
+ 
+ 	* g++.dg/eh/arm-vfp-unwind.C: New test.
+ 
 2006-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28341
