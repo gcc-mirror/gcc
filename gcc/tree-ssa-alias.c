@@ -678,13 +678,13 @@ compute_may_aliases (void)
   /* Compute type-based flow-insensitive aliasing for all the type
      memory tags.  */
   compute_flow_insensitive_aliasing (ai);
+  
+  /* Compute call clobbering information.  */
+  compute_call_clobbered (ai);
 
   /* Determine if we need to enable alias grouping.  */
   if (ai->total_alias_vops >= MAX_ALIASED_VOPS)
     group_aliases (ai);
-
-  /* Compute call clobbering information.  */
-  compute_call_clobbered (ai);
 
   /* If the program has too many call-clobbered variables and/or function
      calls, create .GLOBAL_VAR and use it to model call-clobbering
