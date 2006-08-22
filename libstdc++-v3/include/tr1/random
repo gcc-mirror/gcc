@@ -85,6 +85,31 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     template<typename _UIntType, int __w>
       struct _Shift<_UIntType, __w, true>
       { static const _UIntType __value = _UIntType(1) << __w; };
+
+    template<typename _ValueT>
+      struct _To_Unsigned_Type
+      { typedef _ValueT _Type; };
+
+    template<>
+      struct _To_Unsigned_Type<short>
+      { typedef unsigned short _Type; };
+
+    template<>
+      struct _To_Unsigned_Type<int>
+      { typedef unsigned int _Type; };
+
+    template<>
+      struct _To_Unsigned_Type<long>
+      { typedef unsigned long _Type; };
+
+#ifdef _GLIBCXX_USE_LONG_LONG
+    template<>
+      struct _To_Unsigned_Type<long long>
+      { typedef unsigned long long _Type; };
+#endif
+
+    typedef _Select<(sizeof(unsigned) == 4),
+		    unsigned, unsigned long>::_Type _UInt32Type;
   } // anonymous namespace
 
     /*
@@ -673,7 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * type large enough to store values up to m."
    *
    * @if maint
-   * @var _M_x     The state of te generator.  This is a ring buffer.
+   * @var _M_x     The state of the generator.  This is a ring buffer.
    * @var _M_carry The carry.
    * @var _M_p     Current index of x(i - r).
    * @endif
@@ -724,8 +749,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       { this->seed(__value); }
 
       /**
-       * Constructs a % subtract_with_carry random number generator seeded from
-       * the PAD iterated by [__first, last).
+       * Constructs a %subtract_with_carry random number generator engine
+       * seeded from the generator function @p __g.
+       *
+       * @param __g The seed generator function.
        */
       template<class _Gen>
         subtract_with_carry(_Gen& __g)
@@ -733,10 +760,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       /**
        * Seeds the initial state @f$ x_0 @f$ of the random number generator.
-       *
-       * @note This implementation follows the tr1 specification but will
-       * obviously not work correctly on all platforms, since it has hardcoded
-       * values that may overflow ints on some platforms.
        *
        * N1688[4.19] modifies this as follows.
        * If @p __value == 0, sets value to 19780503.  In any case, with a linear
@@ -854,10 +877,207 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         seed(_Gen& __g, false_type);
 
     private:
-      int         _M_p;
-      result_type _M_x[long_lag];
-      result_type _M_carry;
+      typedef typename _To_Unsigned_Type<_IntType>::_Type _UIntType;
+
+      _UIntType  _M_x[long_lag];
+      _UIntType  _M_carry;
+      int        _M_p;
     };
+
+
+  /**
+   * @brief The Marsaglia-Zaman generator (floats version).
+   *
+   * @if maint
+   * @var _M_x     The state of the generator.  This is a ring buffer.
+   * @var _M_carry The carry.
+   * @var _M_p     Current index of x(i - r).
+   * @var _M_npows Precomputed negative powers of 2.   
+   * @endif
+   */
+  template<typename _RealType, int __w, int __s, int __r>
+    class subtract_with_carry_01;
+
+  template<typename _RealType, int __w, int __s, int __r,
+	   typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const subtract_with_carry_01<_RealType, __w, __s, __r>& __x);
+
+  template<typename _RealType, int __w, int __s, int __r,
+	   typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       subtract_with_carry_01<_RealType, __w, __s, __r>& __x);
+
+  template<typename _RealType, int __w, int __s, int __r>
+    class subtract_with_carry_01
+    {
+    public:
+      /** The type of the generated random value. */
+      typedef _RealType result_type;
+      
+      // parameter values
+      static const int      word_size = __w;
+      static const int      long_lag  = __r;
+      static const int      short_lag = __s;
+
+    public:
+      /**
+       * Constructs a default-initialized % subtract_with_carry_01 random
+       * number generator.
+       */
+      subtract_with_carry_01()
+      { this->seed(); }
+
+      /**
+       * Constructs an explicitly seeded % subtract_with_carry_01 random number
+       * generator.
+       */
+      explicit
+      subtract_with_carry_01(unsigned long __value)
+      { this->seed(__value); }
+
+      /**
+       * Constructs a % subtract_with_carry_01 random number generator engine
+       * seeded from the generator function @p __g.
+       *
+       * @param __g The seed generator function.
+       */
+      template<class _Gen>
+        subtract_with_carry_01(_Gen& __g)
+        { this->seed(__g); }
+
+      /**
+       * Seeds the initial state @f$ x_0 @f$ of the random number generator.
+       */
+      void
+      seed(unsigned long __value = 19780503);
+
+      /**
+       * Seeds the initial state @f$ x_0 @f$ of the % subtract_with_carry_01
+       * random number generator.
+       */
+      template<class _Gen>
+        void
+        seed(_Gen& __g)
+        { seed(__g, typename is_fundamental<_Gen>::type()); }
+
+      /**
+       * Gets the minimum value of the range of random floats
+       * returned by this generator.
+       */
+      result_type
+      min() const
+      { return 0.0; }
+
+      /**
+       * Gets the maximum value of the range of random floats
+       * returned by this generator.
+       */
+      result_type
+      max() const
+      { return 1.0; }
+
+      /**
+       * Gets the next random number in the sequence.
+       */
+      result_type
+      operator()();
+
+      /**
+       * Compares two % subtract_with_carry_01 random number generator objects
+       * of the same type for equality.
+       *
+       * @param __lhs A % subtract_with_carry_01 random number generator object.
+       * @param __rhs Another % subtract_with_carry_01 random number generator
+       *              object.
+       *
+       * @returns true if the two objects are equal, false otherwise.
+       */
+      friend bool
+      operator==(const subtract_with_carry_01& __lhs,
+		 const subtract_with_carry_01& __rhs)
+      {
+	for (int __i = 0; __i < long_lag; ++__i)
+	  if (!std::equal(__lhs._M_x[__i], __lhs._M_x[__i] + __n,
+			  __rhs._M_x[__i]))
+	    return false;
+	return true;
+      }
+
+      /**
+       * Compares two % subtract_with_carry_01 random number generator objects
+       * of the same type for inequality.
+       *
+       * @param __lhs A % subtract_with_carry_01 random number generator object.
+       * @param __rhs Another % subtract_with_carry_01 random number generator
+       *              object.
+       *
+       * @returns true if the two objects are not equal, false otherwise.
+       */
+      friend bool
+      operator!=(const subtract_with_carry_01& __lhs,
+		 const subtract_with_carry_01& __rhs)
+      { return !(__lhs == __rhs); }
+
+      /**
+       * Inserts the current state of a % subtract_with_carry_01 random number
+       * generator engine @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A % subtract_with_carry_01 random number generator engine.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _RealType1, int __w1, int __s1, int __r1,
+	       typename _CharT, typename _Traits>
+        friend std::basic_ostream<_CharT, _Traits>&
+        operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const subtract_with_carry_01<_RealType1, __w1, __s1,
+		   __r1>& __x);
+
+      /**
+       * Extracts the current state of a % subtract_with_carry_01 random number
+       * generator engine @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x  A % subtract_with_carry_01 random number generator engine.
+       *
+       * @returns The input stream with the state of @p __x extracted or in
+       * an error state.
+       */
+      template<typename _RealType1, int __w1, int __s1, int __r1,
+	       typename _CharT, typename _Traits>
+        friend std::basic_istream<_CharT, _Traits>&
+        operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   subtract_with_carry_01<_RealType1, __w1, __s1, __r1>& __x);
+
+    private:
+      template<class _Gen>
+        void
+        seed(_Gen& __g, true_type)
+        { return seed(static_cast<unsigned long>(__g)); }
+
+      template<class _Gen>
+        void
+        seed(_Gen& __g, false_type);
+
+    private:
+      static const int __n = (__w + 31) / 32;
+
+      _UInt32Type  _M_x[long_lag][__n];
+      _RealType    _M_npows[__n];
+      _UInt32Type  _M_carry;
+      int          _M_p;
+    };
+
+  typedef subtract_with_carry_01<float, 24, 10, 24>   ranlux_base_01;
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 508. Bad parameters for ranlux64_base_01.
+  typedef subtract_with_carry_01<double, 48, 5, 12> ranlux64_base_01;  
 
 
   /**
@@ -927,7 +1147,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       : _M_b(__s), _M_n(0) { }
 
       /**
-       * Generator constructs a %discard_block engine.
+       * Generator construct a %discard_block engine.
        *
        * @param __g A seed generator function.
        */
@@ -1056,7 +1276,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * James's luxury-level-3 integer adaptation of Luescher's generator.
    */
   typedef discard_block<
-    subtract_with_carry<unsigned long, (1 << 24), 10, 24>,
+    subtract_with_carry<unsigned long, (1UL << 24), 10, 24>,
       223,
       24
       > ranlux3;
@@ -1065,10 +1285,22 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * James's luxury-level-4 integer adaptation of Luescher's generator.
    */
   typedef discard_block<
-    subtract_with_carry<unsigned long, (1 << 24), 10, 24>,
+    subtract_with_carry<unsigned long, (1UL << 24), 10, 24>,
       389,
       24
       > ranlux4;
+
+  typedef discard_block<
+    subtract_with_carry_01<float, 24, 10, 24>,
+      223,
+      24
+      > ranlux3_01;
+
+  typedef discard_block<
+    subtract_with_carry_01<float, 24, 10, 24>,
+      389,
+      24
+      > ranlux4_01;
 
 
   /**
@@ -1863,14 +2095,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       // NB: Unused when _GLIBCXX_USE_C99_MATH_TR1 is undefined.
       normal_distribution<_RealType> _M_nd;
 
-      _IntType  _M_t;
-      _RealType _M_p;
-
       _RealType _M_q;
 #if _GLIBCXX_USE_C99_MATH_TR1
       _RealType _M_d1, _M_d2, _M_s1, _M_s2, _M_c,
 	        _M_a1, _M_a123, _M_s, _M_lf, _M_lp1p;
 #endif
+      _RealType _M_p;
+      _IntType  _M_t;
+
       bool      _M_easy;
     };
 

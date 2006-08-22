@@ -28,7 +28,8 @@
 void
 test01()
 {
-  typedef std::tr1::subtract_with_carry<long, 8, 2, 4> test_type;
+  typedef std::tr1::subtract_with_carry<unsigned long, (1UL << 24), 10, 24>
+    test_type;
 
   typedef test_type::result_type result_type;
 }

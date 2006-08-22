@@ -1,3 +1,56 @@
+2006-08-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (class subtract_with_carry_01): Add.
+	* include/tr1/random.tcc (subtract_with_carry_01<>::
+	seed(unsigned long), subtract_with_carry_01<>::
+	seed(_Gen&, false_type), subtract_with_carry_01<>::
+	operator(), operator<<(std::basic_ostream<>&, const
+	subtract_with_carry_01<>&), operator>>(std::basic_istream<>&,
+	subtract_with_carry_01<>&)): Define.
+	* testsuite/tr1/5_numerical_facilities/random/ranlux3_01.cc:
+	New.
+	* testsuite/tr1/5_numerical_facilities/random/ranlux4_01.cc:
+	Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/cons/seed1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/cons/seed2.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/operators/serialize.cc: Likewise.
+
+	* docs/html/ext/howto.html: Add two implemented TR1 issues.
+
+	* include/tr1/random.tcc (struct _To_Unsigned_Type): Move...
+	* include/tr1/random: ... here.
+	(class subtract_with_carry): Use it everywhere.
+
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/seed1.cc: Qualify 1 as 1UL.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/seed2.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/default.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/gen1.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/requirements/typedefs.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/operators/equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/operators/not_equal.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/operators/serialize.cc: Likewise.
+
 2006-08-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (gamma_distribution<>::_M_initialize,

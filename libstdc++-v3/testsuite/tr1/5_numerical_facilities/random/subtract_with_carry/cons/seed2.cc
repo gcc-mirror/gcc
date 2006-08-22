@@ -31,7 +31,7 @@ test01()
   using namespace std::tr1;
 
   double seed = 2.0;
-  subtract_with_carry<unsigned long, (1 << 24), 10, 24> x(seed);
+  subtract_with_carry<unsigned long, (1UL << 24), 10, 24> x(seed);
 }
 
 int main()
