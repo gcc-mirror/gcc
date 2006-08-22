@@ -1,6 +1,6 @@
 2006-08-22  Paolo Carlini  <pcarlini@suse.de>
 
-	* include/tr1/random (class subtract_with_carry_01): Add.
+	* include/tr1/random (class subtract_with_carry_01<>): Add.
 	* include/tr1/random.tcc (subtract_with_carry_01<>::
 	seed(unsigned long), subtract_with_carry_01<>::
 	seed(_Gen&, false_type), subtract_with_carry_01<>::
@@ -30,9 +30,9 @@
 
 	* docs/html/ext/howto.html: Add two implemented TR1 issues.
 
-	* include/tr1/random.tcc (struct _To_Unsigned_Type): Move...
+	* include/tr1/random.tcc (struct _To_Unsigned_Type<>): Move...
 	* include/tr1/random: ... here.
-	(class subtract_with_carry): Use it everywhere.
+	(class subtract_with_carry<>): Use it everywhere.
 
 	* testsuite/tr1/5_numerical_facilities/random/
 	subtract_with_carry/cons/seed1.cc: Qualify 1 as 1UL.
@@ -50,6 +50,9 @@
 	subtract_with_carry/operators/not_equal.cc: Likewise.
 	* testsuite/tr1/5_numerical_facilities/random/
 	subtract_with_carry/operators/serialize.cc: Likewise.
+
+	* include/tr1/random (class binomial_distribution<>): Reorder the
+	data members to save space.
 
 2006-08-20  Paolo Carlini  <pcarlini@suse.de>
 
