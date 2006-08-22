@@ -1,3 +1,10 @@
+2006-08-22  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/28420
+	* parser.c (cp_parser_postfix_expression): Make sure that the
+	saved value for parser->type_definition_forbidden_message is
+	restored before returning to avoid an invalid free().
+
 2006-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28659
