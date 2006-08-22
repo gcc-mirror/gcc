@@ -1,3 +1,9 @@
+2006-08-22  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/28003
+	* tree-ssa-alias.c (compute_may_aliases): Compute call clobbered
+	before grouping aliases.
+
 2006-08-22  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (ix86_value_regno): Don't return FIRST_MMX_REG
