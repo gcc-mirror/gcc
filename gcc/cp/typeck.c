@@ -228,6 +228,7 @@ commonparms (tree p1, tree p2)
 static tree
 original_type (tree t)
 {
+  int quals = cp_type_quals (t);
   while (t != error_mark_node
 	 && TYPE_NAME (t) != NULL_TREE)
     {
@@ -239,7 +240,7 @@ original_type (tree t)
 	break;
       t = x;
     }
-  return t;
+  return cp_build_qualified_type (t, quals);
 }
 
 /* T1 and T2 are arithmetic or enumeration types.  Return the type
@@ -730,7 +731,13 @@ merge_types (tree t1, tree t2)
 
     default:;
     }
-  return cp_build_type_attribute_variant (t1, attributes);
+
+  if (attribute_list_equal (TYPE_ATTRIBUTES (t1), attributes))
+    return t1;
+  else if (attribute_list_equal (TYPE_ATTRIBUTES (t2), attributes))
+    return t2;
+  else
+    return cp_build_type_attribute_variant (t1, attributes);
 }
 
 /* Return the common type of two types.
