@@ -1,5 +1,15 @@
 2006-08-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random.tcc (subtract_with_carry_01<>::
+      	seed(_Gen&, false_type)): Fix _M_carry initialization.
+	
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/default.cc: Qualify 1 as 1UL.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/cons/gen1.cc: Likewise.
+
+2006-08-22  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/random (class subtract_with_carry_01<>): Add.
 	* include/tr1/random.tcc (subtract_with_carry_01<>::
 	seed(unsigned long), subtract_with_carry_01<>::

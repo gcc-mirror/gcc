@@ -40,7 +40,7 @@ test01()
 
   subtract_with_carry<unsigned long, (1UL << 24), 10, 24> x(gen);
   VERIFY( x.min() == 0 );
-  VERIFY( x.max() == ((1 << 24) - 1) );
+  VERIFY( x.max() == ((1UL << 24) - 1) );
 }
 
 int main()
