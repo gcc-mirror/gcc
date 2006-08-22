@@ -1,3 +1,9 @@
+2006-08-21  Geoffrey Keating  <geoffk@apple.com>
+
+	PR debug/28692
+	* dwarf2out.c (rtl_for_decl_init): Don't try to create RTL for
+	complex values, nor for generic vector values.
+
 2006-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28776
