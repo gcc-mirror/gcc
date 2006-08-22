@@ -1,3 +1,13 @@
+2006-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28659
+	* typeck.c (merge_types): If either of the types have the right 
+	attributes, return that one.
+
+	* tree.c (cp_build_type_attribute_variant): Make sure we aren't
+	doing this to class types.
+	* typeck.c (original_type): Deal with type quals properly.
+
 2006-08-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27115
