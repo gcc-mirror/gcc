@@ -1765,7 +1765,8 @@ pointer_offset_p (tree expr)
 /* EXPR is a scalar evolution of a pointer that is dereferenced or used in
    comparison.  This means that it must point to a part of some object in
    memory, which enables us to argue about overflows and possibly simplify
-   the EXPR.  Returns the simplified value.
+   the EXPR.  AT_STMT is the statement in which this conversion has to be
+   performed.  Returns the simplified value.
 
    Currently, for
 
@@ -1820,7 +1821,7 @@ pointer_offset_p (tree expr)
    bugs.  */
 
 static tree
-fold_used_pointer (tree expr)
+fold_used_pointer (tree expr, tree at_stmt)
 {
   tree op0, op1, new0, new1;
   enum tree_code code = TREE_CODE (expr);
@@ -1833,19 +1834,22 @@ fold_used_pointer (tree expr)
 
       if (pointer_offset_p (op1))
 	{
-	  new0 = fold_used_pointer (op0);
+	  new0 = fold_used_pointer (op0, at_stmt);
 	  new1 = fold_used_pointer_cast (op1);
 	}
       else if (code == PLUS_EXPR && pointer_offset_p (op0))
 	{
 	  new0 = fold_used_pointer_cast (op0);
-	  new1 = fold_used_pointer (op1);
+	  new1 = fold_used_pointer (op1, at_stmt);
 	}
       else
 	return expr;
 
       if (new0 == op0 && new1 == op1)
 	return expr;
+
+      new0 = chrec_convert (TREE_TYPE (expr), new0, at_stmt);
+      new1 = chrec_convert (TREE_TYPE (expr), new1, at_stmt);
 
       if (code == PLUS_EXPR)
 	expr = chrec_fold_plus (TREE_TYPE (expr), new0, new1);
@@ -1948,7 +1952,7 @@ analyze_scalar_evolution_1 (struct loop *loop, tree var, tree res)
       if (POINTER_TYPE_P (type)
 	  && !automatically_generated_chrec_p (res)
 	  && pointer_used_p (var))
-	res = fold_used_pointer (res);
+	res = fold_used_pointer (res, def);
       break;
 
     case PHI_NODE:
