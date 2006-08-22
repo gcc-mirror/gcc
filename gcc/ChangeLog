@@ -1,3 +1,8 @@
+2006-08-22  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.c (ix86_value_regno): Don't return FIRST_MMX_REG
+	if !TARGET_MMX, and don't return FIRST_SSE_REG if !TARGET_SSE.
+
 2006-08-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27115
