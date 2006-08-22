@@ -1,4 +1,4 @@
-// 2006-06-04  Stephen M. Webb <stephen.webb@bregmasoft.com>
+// 2006-08-22  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2006 Free Software Foundation, Inc.
 //
@@ -18,30 +18,20 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 5.1.4.3 class template subtract_with_carry [tr.rand.eng.sub]
-// 5.1.1 Table 16
+// 5.1.4.4 class template subtract_with_carry_01 [tr.rand.eng.sub1]
+// 5.1.1 Table 16 line 2 seed ctor
+// 5.1.1 (4) point 2: Gen is a fundamental type.
 
-#include <sstream>
 #include <tr1/random>
 #include <testsuite_hooks.h>
 
 void
-test01()
-{
-  bool test __attribute__((unused)) = true;
-  using std::tr1::subtract_with_carry;
+test01() 
+{ 
+  using namespace std::tr1;
 
-  std::stringstream str;
-  subtract_with_carry<unsigned long, (1UL << 24), 10, 24> u;
-  subtract_with_carry<unsigned long, (1UL << 24), 10, 24> v;
-  
-  u(); // advance
-  str << u;
-  
-  VERIFY( u != v );
-  
-  str >> v;
-  VERIFY( u == v );
+  double seed = 2.0;
+  subtract_with_carry_01<float, 24, 10, 24> x(seed);
 }
 
 int main()

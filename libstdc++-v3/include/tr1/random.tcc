@@ -32,7 +32,7 @@ namespace std
 _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
   /*
-   * Implementation-space details.
+   * (Further) implementation-space details.
    */
   namespace
   {
@@ -101,29 +101,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	static const std::streamsize __value =
 	  2 + std::numeric_limits<_RealType>::digits * 3010/10000;
       };
-
-    template<typename _ValueT>
-      struct _To_Unsigned_Type
-      { typedef _ValueT _Type; };
-
-    template<>
-      struct _To_Unsigned_Type<short>
-      { typedef unsigned short _Type; };
-
-    template<>
-      struct _To_Unsigned_Type<int>
-      { typedef unsigned int _Type; };
-
-    template<>
-      struct _To_Unsigned_Type<long>
-      { typedef unsigned long _Type; };
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-    template<>
-      struct _To_Unsigned_Type<long long>
-      { typedef unsigned long long _Type; };
-#endif
-
   } // anonymous namespace
 
 
@@ -376,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	__lcg(__value);
 
       for (int __i = 0; __i < long_lag; ++__i)
-	_M_x[__i] = __mod<_IntType, 1, 0, modulus>(__lcg());
+	_M_x[__i] = __mod<_UIntType, 1, 0, modulus>(__lcg());
 
       _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
       _M_p = 0;
@@ -388,13 +365,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       subtract_with_carry<_IntType, __m, __s, __r>::
       seed(_Gen& __gen, false_type)
       {
-	const int __n = (std::numeric_limits<_IntType>::digits + 31) / 32;
-
-	typedef typename _Select<(sizeof(unsigned) == 4),
-	  unsigned, unsigned long>::_Type _UInt32Type;
-
-	typedef typename _To_Unsigned_Type<_IntType>::_Type
-	  _UIntType;
+	const int __n = (std::numeric_limits<_UIntType>::digits + 31) / 32;
 
 	for (int __i = 0; __i < long_lag; ++__i)
 	  {
@@ -402,8 +373,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    _UIntType __factor = 1;
 	    for (int __j = 0; __j < __n; ++__j)
 	      {
-		__tmp += (__mod<_UInt32Type, 1, 0, 0>(__gen())
-			  * __factor);
+		__tmp += __mod<_UInt32Type, 1, 0, 0>(__gen()) * __factor;
 		__factor *= _Shift<_UIntType, 32>::__value;
 	      }
 	    _M_x[__i] = __mod<_UIntType, 1, 0, modulus>(__tmp);
@@ -423,7 +393,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	__ps += long_lag;
 
       // Calculate new x(i) without overflow or division.
-      _IntType __xi;
+      // NB: Thanks to the requirements for _IntType, _M_x[_M_p] + _M_carry
+      // cannot overflow.
+      _UIntType __xi;
       if (_M_x[__ps] >= _M_x[_M_p] + _M_carry)
 	{
 	  __xi = _M_x[__ps] - _M_x[_M_p] - _M_carry;
@@ -434,10 +406,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  __xi = modulus - _M_x[_M_p] - _M_carry + _M_x[__ps];
 	  _M_carry = 1;
 	}
-      _M_x[_M_p++] = __xi;
+      _M_x[_M_p] = __xi;
 
       // Adjust current index to loop around in ring buffer.
-      if (_M_p >= long_lag)
+      if (++_M_p >= long_lag)
 	_M_p = 0;
 
       return __xi;
@@ -476,6 +448,134 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       for (int __i = 0; __i < __r; ++__i)
 	__is >> __x._M_x[__i];
+      __is >> __x._M_carry;
+
+      __is.flags(__flags);
+      return __is;
+    }
+
+
+  template<typename _RealType, int __w, int __s, int __r>
+    void
+    subtract_with_carry_01<_RealType, __w, __s, __r>::
+    seed(unsigned long __value)
+    {
+      if (__value == 0)
+	__value = 19780503;
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 512. Seeding subtract_with_carry_01 from a single unsigned long.
+      std::tr1::linear_congruential<unsigned long, 40014, 0, 2147483563>
+	__lcg(__value);
+
+      this->seed(__lcg);
+    }
+
+  template<typename _RealType, int __w, int __s, int __r>
+    template<class _Gen>
+      void
+      subtract_with_carry_01<_RealType, __w, __s, __r>::
+      seed(_Gen& __gen, false_type)
+      {
+	for (int __i = 0; __i < long_lag; ++__i)
+	  {
+	    for (int __j = 0; __j < __n - 1; ++__j)
+	      _M_x[__i][__j] = __mod<_UInt32Type, 1, 0, 0>(__gen());
+	    _M_x[__i][__n - 1] = __mod<_UInt32Type, 1, 0,
+	      _Shift<_UInt32Type, __w % 32>::__value>(__gen());
+	  }
+	_M_carry = (_M_x[long_lag - 1][0] == 0) ? 1 : 0;
+	_M_p = 0;
+
+	// Initialize the array holding the negative powers of 2.
+	for (int __j = 0; __j < __n; ++__j)
+#if _GLIBCXX_USE_C99_MATH_TR1
+	  _M_npows[__j] = std::tr1::ldexp(_RealType(1), -__w + __j * 32);
+#else
+	  _M_npows[__j] = std::pow(_RealType(2), -__w + __j * 32);
+#endif
+      }
+
+  template<typename _RealType, int __w, int __s, int __r>
+    typename subtract_with_carry_01<_RealType, __w, __s, __r>::result_type
+    subtract_with_carry_01<_RealType, __w, __s, __r>::
+    operator()()
+    {
+      // Derive short lag index from current index.
+      int __ps = _M_p - short_lag;
+      if (__ps < 0)
+	__ps += long_lag;
+
+      _UInt32Type __new_carry;
+      for (int __j = 0; __j < __n - 1; ++__j)
+	{
+	  if (_M_x[__ps][__j] > _M_x[_M_p][__j]
+	      || (_M_x[__ps][__j] == _M_x[_M_p][__j] && _M_carry == 0))
+	    __new_carry = 0;
+	  else
+	    __new_carry = 1;
+
+	  _M_x[_M_p][__j] = _M_x[__ps][__j] - _M_x[_M_p][__j] - _M_carry;
+	  _M_carry = __new_carry;
+	}
+
+      if (_M_x[__ps][__n - 1] > _M_x[_M_p][__n - 1]
+	  || (_M_x[__ps][__n - 1] == _M_x[_M_p][__n - 1] && _M_carry == 0))
+	__new_carry = 0;
+      else
+	__new_carry = 1;
+      
+      _M_x[_M_p][__n - 1] = __mod<_UInt32Type, 1, 0,
+	_Shift<_UInt32Type, __w % 32>::__value>
+	(_M_x[__ps][__n - 1] - _M_x[_M_p][__n - 1] - _M_carry);
+      _M_carry = __new_carry;
+
+      result_type __ret = 0.0;
+      for (int __j = 0; __j < __n; ++__j)
+	__ret += _M_x[_M_p][__j] * _M_npows[__j];
+
+      // Adjust current index to loop around in ring buffer.
+      if (++_M_p >= long_lag)
+	_M_p = 0;
+
+      return __ret;
+    }
+
+  template<typename _RealType, int __w, int __s, int __r,
+	   typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const subtract_with_carry_01<_RealType, __w, __s, __r>& __x)
+    {
+      const std::ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const _CharT __space = __os.widen(' ');
+      __os.flags(std::ios_base::dec | std::ios_base::fixed
+		 | std::ios_base::left);
+      __os.fill(__space);
+
+      for (int __i = 0; __i < __r; ++__i)
+	for (int __j = 0; __j < __x.__n; ++__j)
+	  __os << __x._M_x[__i][__j] << __space;
+      __os << __x._M_carry;
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      return __os;
+    }
+
+  template<typename _RealType, int __w, int __s, int __r,
+	   typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       subtract_with_carry_01<_RealType, __w, __s, __r>& __x)
+    {
+      const std::ios_base::fmtflags __flags = __is.flags();
+      __is.flags(std::ios_base::dec | std::ios_base::skipws);
+
+      for (int __i = 0; __i < __r; ++__i)
+	for (int __j = 0; __j < __x.__n; ++__j)
+	  __is >> __x._M_x[__i][__j];
       __is >> __x._M_carry;
 
       __is.flags(__flags);

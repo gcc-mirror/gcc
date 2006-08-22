@@ -30,8 +30,8 @@ test01()
   bool test __attribute__((unused)) = true;
   using namespace std::tr1;
 
-  subtract_with_carry<unsigned long, (1 << 24), 10, 24> u;
-  subtract_with_carry<unsigned long, (1 << 24), 10, 24> v;
+  subtract_with_carry<unsigned long, (1UL << 24), 10, 24> u;
+  subtract_with_carry<unsigned long, (1UL << 24), 10, 24> v;
 
   VERIFY( u == v );
   

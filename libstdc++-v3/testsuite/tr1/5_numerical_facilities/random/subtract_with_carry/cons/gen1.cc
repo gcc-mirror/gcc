@@ -38,7 +38,7 @@ test01()
   bool test __attribute__((unused)) = true;
   using namespace std::tr1;
 
-  subtract_with_carry<unsigned long, (1 << 24), 10, 24> x(gen);
+  subtract_with_carry<unsigned long, (1UL << 24), 10, 24> x(gen);
   VERIFY( x.min() == 0 );
   VERIFY( x.max() == ((1 << 24) - 1) );
 }

@@ -30,7 +30,7 @@ test01()
   bool test __attribute__((unused)) = true;
   using namespace std::tr1;
 
-  subtract_with_carry<unsigned long, (1 << 24), 10, 24> x;
+  subtract_with_carry<unsigned long, (1UL << 24), 10, 24> x;
   VERIFY( x.min() == 0 );
   VERIFY( x.max() == ((1<<24)-1) );
   VERIFY( x() == 15039276 );
