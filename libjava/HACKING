@@ -53,7 +53,7 @@ To import a new release:
   cd .../classpath
   cp ../../lt* .
   cp ../../config.sub ../../config.guess .
-  aclocal -I m4 -I ../..
+  aclocal -I m4 -I ../.. -I ../../config
   autoconf
   autoheader
   automake

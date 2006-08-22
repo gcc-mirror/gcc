@@ -183,11 +183,11 @@ gnu::classpath::SystemProperties::insertSystemProperties (java::util::Properties
   // redefine `java.home' with `-D' if necessary.
   SET ("java.home", JAVA_HOME);
   SET ("gnu.classpath.home", PREFIX);
-  // This is set to $(libdir) because we use this to find .security
-  // files at runtime.
-  char val2[sizeof ("file://") + sizeof (LIBDIR) + 1];
+  // This is set to $(toolexeclibdir) because we use this to find
+  // .security files at runtime.
+  char val2[sizeof ("file://") + sizeof (TOOLEXECLIBDIR) + 1];
   strcpy (val2, "file://");
-  strcat (val2, LIBDIR);
+  strcat (val2, TOOLEXECLIBDIR);
   SET ("gnu.classpath.home.url", val2);
 
   SET ("file.encoding", default_file_encoding);

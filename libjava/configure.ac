@@ -1295,11 +1295,9 @@ multi_os_directory=`$CC -print-multi-os-directory`
 case $multi_os_directory in
   .)
    dbexecdir='$(libdir)/gcj-$(gcc_version)' # Avoid /.
-   ac_configure_args="$ac_configure_args --with-native-libdir=\$\(libdir\)/gcj-`cat $srcdir/../gcc/BASE-VER`"
    ;;
   *)
    dbexecdir='$(libdir)/'$multi_os_directory'/gcj-$(gcc_version)'
-   ac_configure_args="$ac_configure_args --with-native-libdir=\$\(libdir\)/$multi_os_directory/gcj-`cat $srcdir/../gcc/BASE-VER`"
    ;;
 esac
 AC_SUBST(dbexecdir)

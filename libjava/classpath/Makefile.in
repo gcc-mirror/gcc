@@ -41,14 +41,16 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/gnu/classpath/Configuration.java.in \
 	$(top_srcdir)/gnu/java/security/Configuration.java.in \
 	$(top_srcdir)/resource/META-INF/services/java.util.prefs.PreferencesFactory.in \
-	AUTHORS COPYING ChangeLog INSTALL NEWS TODO config.guess \
-	config.sub depcomp install-sh ltcf-c.sh ltcf-cxx.sh \
-	ltcf-gcj.sh ltconfig ltmain.sh missing mkinstalldirs
+	AUTHORS COPYING ChangeLog INSTALL NEWS TODO compile \
+	config.guess config.sub depcomp install-sh ltcf-c.sh \
+	ltcf-cxx.sh ltcf-gcj.sh ltconfig ltmain.sh missing \
+	mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../../libtool.m4 \
-	$(top_srcdir)/m4/acattribute.m4 $(top_srcdir)/m4/accross.m4 \
-	$(top_srcdir)/m4/acinclude.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../../config/depstand.m4 \
+	$(top_srcdir)/../../config/lead-dot.m4 \
+	$(top_srcdir)/../../libtool.m4 $(top_srcdir)/m4/acattribute.m4 \
+	$(top_srcdir)/m4/accross.m4 $(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/ax_create_stdint_h.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
@@ -306,6 +308,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+toolexeclibdir = @toolexeclibdir@
 vm_classes = @vm_classes@
 
 # lib first, to compile .class files before native code, last examples
@@ -505,7 +508,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/../.. $(distdir)/examples $(distdir)/gnu/classpath $(distdir)/gnu/java/security $(distdir)/lib $(distdir)/m4 $(distdir)/resource/META-INF/services $(distdir)/scripts $(distdir)/tools
+	$(mkdir_p) $(distdir)/../.. $(distdir)/../../config $(distdir)/examples $(distdir)/gnu/classpath $(distdir)/gnu/java/security $(distdir)/lib $(distdir)/m4 $(distdir)/resource/META-INF/services $(distdir)/scripts $(distdir)/tools
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
