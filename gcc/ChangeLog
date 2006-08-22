@@ -1,3 +1,11 @@
+2006-08-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28776
+	* tree-scalar-evolution.c (fold_used_pointer): Add at_stmt
+	parameter.  Convert arguments to arithmetic expression to the
+	chrecs type.
+	(analyze_scalar_evolution_1): Adjust caller.
+
 2006-08-22  Jan Hubicka  <jh@suse.cz>
 
 	Patch by Paolo Bonzini
