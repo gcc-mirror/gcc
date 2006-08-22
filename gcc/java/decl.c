@@ -2188,6 +2188,7 @@ java_add_stmt (tree new_stmt)
       
   i = tsi_last (stmts);
   tsi_link_after (&i, new_stmt, TSI_CONTINUE_LINKING);
+  TREE_TYPE (stmts) = void_type_node;
 
   return current_binding_level->stmts = stmts;
 }
