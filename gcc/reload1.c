@@ -7391,10 +7391,10 @@ emit_reload_insns (struct insn_chain *chain)
 		       && ((REG_P (rld[r].in)
 			    && REGNO (rld[r].in) >= FIRST_PSEUDO_REGISTER
 	                    && !REGNO_REG_SET_P (&reg_has_output_reload,
-			      			 REGNO (rld[r].in))
+			      			 REGNO (rld[r].in)))
 			   || (REG_P (rld[r].in_reg)
 			       && !REGNO_REG_SET_P (&reg_has_output_reload,
-						    REGNO (rld[r].in)))))
+						    REGNO (rld[r].in))))
 		       && ! reg_set_p (rld[r].reg_rtx, PATTERN (insn)))
 		{
 		  int nregno;

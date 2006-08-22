@@ -1,3 +1,9 @@
+2006-08-22  Jan Hubicka  <jh@suse.cz>
+
+	Patch by Paolo Bonzini
+	* reload1.c (emit_reload_insns): Fix incorrect bracketing introduced by
+	my previous patch.
+
 2006-08-22  Daniel Berlin  <dberlin@dberlin.org>
 
 	PR tree-optimization/28003
