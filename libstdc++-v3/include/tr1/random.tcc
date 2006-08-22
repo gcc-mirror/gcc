@@ -484,7 +484,15 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    _M_x[__i][__n - 1] = __mod<_UInt32Type, 1, 0,
 	      _Shift<_UInt32Type, __w % 32>::__value>(__gen());
 	  }
-	_M_carry = (_M_x[long_lag - 1][0] == 0) ? 1 : 0;
+
+	_M_carry = 1;
+	for (int __j = 0; __j < __n; ++__j)
+	  if (_M_x[long_lag - 1][__j] != 0)
+	    {
+	      _M_carry = 0;
+	      break;
+	    }
+
 	_M_p = 0;
 
 	// Initialize the array holding the negative powers of 2.
