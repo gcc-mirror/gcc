@@ -6422,7 +6422,7 @@ exec 5>>./config.log
 
 
 
-for ac_prog in gcj gcj-3.2 gcj-3.1 gcj-3.0 gcj-2.95
+for ac_prog in gcj
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -15051,11 +15051,9 @@ multi_os_directory=`$CC -print-multi-os-directory`
 case $multi_os_directory in
   .)
    dbexecdir='$(libdir)/gcj-$(gcc_version)' # Avoid /.
-   ac_configure_args="$ac_configure_args --with-native-libdir=\$\(libdir\)/gcj-`cat $srcdir/../gcc/BASE-VER`"
    ;;
   *)
    dbexecdir='$(libdir)/'$multi_os_directory'/gcj-$(gcc_version)'
-   ac_configure_args="$ac_configure_args --with-native-libdir=\$\(libdir\)/$multi_os_directory/gcj-`cat $srcdir/../gcc/BASE-VER`"
    ;;
 esac
 

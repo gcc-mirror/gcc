@@ -60,11 +60,6 @@ JAVA_HOME_DIR = $(prefix)
 BOOT_CLASS_PATH_DIR = $(jardir)/libgcj-$(gcc_version).jar
 endif
 
-## FIXME: Using libdir violates GNU coding standards.
-secdir = $(libdir)/security
-## Where to install default logging property file.
-propdir = $(libdir)
-
 ## Name of the default .db.
 db_name = classmap.db
 ## Compiler specific component of the .db file
@@ -124,7 +119,7 @@ AM_CXXFLAGS = \
 	$(WARNINGS) \
 	-D_GNU_SOURCE \
 	-DPREFIX="\"$(prefix)\"" \
-	-DLIBDIR="\"$(libdir)\"" \
+	-DTOOLEXECLIBDIR="\"$(toolexeclibdir)\"" \
         -DJAVA_HOME="\"$(JAVA_HOME_DIR)\"" \
         -DBOOT_CLASS_PATH="\"$(BOOT_CLASS_PATH_DIR)\"" \
 	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
@@ -165,9 +160,6 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 BOOTCLASSPATH = $(here)/classpath/lib
 
 ## ################################################################
-
-all_property_files = $(property_files) \
-    java/util/logging/logging.properties
 
 ##
 ## How to build libgcj.a and libgcj.jar
@@ -568,14 +560,6 @@ install-data-local:
 	  $(INSTALL_DATA) $$p $(DESTDIR)$(gxx_include_dir)/$$f; \
 	done
 	-@rm -f tmp-ilist
-## FIXME: the obvious approach using lib_DATA doesn't work with
-## automake 1.4.
-	$(mkinstalldirs) $(DESTDIR)$(secdir)
-	@for f in libgcj.security; do \
-	  echo " $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f"; \
-	  $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f; \
-	done
-	$(INSTALL_DATA) $(srcdir)/java/util/logging/logging.properties $(DESTDIR)$(propdir)/logging.properties
 ## Install inner class headers.
 	$(INSTALL_DATA) 'java/io/ObjectOutputStream$$PutField.h' $(DESTDIR)$(gxx_include_dir)/java/io/
 	$(INSTALL_DATA) 'java/io/ObjectInputStream$$GetField.h' $(DESTDIR)$(gxx_include_dir)/java/io/

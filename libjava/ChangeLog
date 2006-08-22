@@ -1,3 +1,56 @@
+2006-08-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/27890
+	* gnu/classpath/natSystemProperties.cc (insertSystemProperties):
+	Set gnu.classpath.home.url to TOOLEXECLIBDIR.
+	* configure.ac: Do not add --with-native-libdir to
+	ac_configure_args.
+	* java/security/libgcj.security: Remove file.
+	* java/util/logging/logging.properties: Likewise.
+	* classpath/m4/acinclude.m4 (CLASSPATH_TOOLEXECLIBDIR): New macro.
+	* classpath/resource/Makefile.am (loggingdir): Define to
+	toolexeclibdir.
+	(securitydir): Likewise.
+	* classpath/configure.ac: Call CLASSPATH_TOOLEXECLIBDIR.
+	Set default nativeexeclibdir using toolexeclibdir.
+	* HACKING: Fix classpath aclocal arguments.
+	* Makefile.am (secdir): Remove variable.
+	(propdir): Likewise.
+	(AM_CXXFLAGS): Replace LIBDIR definition with TOOLEXECLIBDIR
+	definition.
+	(all_property_files): Remove variable.
+	(install-data-local): Do not install libgcj.security or
+	logging.properties.
+	* configure, Makefile.in, classpath/configure,
+	classpath/Makefile.in, classpath/native/jni/java-lang/Makefile.in,
+	classpath/native/jni/midi-alsa/Makefile.in,
+	classpath/native/jni/classpath/Makefile.in,
+	classpath/native/jni/midi-dssi/Makefile.in,
+	classpath/native/jni/Makefile.in,
+	classpath/native/jni/java-nio/Makefile.in,
+	classpath/native/jni/java-net/Makefile.in,
+	classpath/native/jni/gconf-peer/Makefile.in,
+	classpath/native/jni/java-io/Makefile.in,
+	classpath/native/jni/xmlj/Makefile.in,
+	classpath/native/jni/java-util/Makefile.in,
+	classpath/native/jni/qt-peer/Makefile.in,
+	classpath/native/jni/gtk-peer/Makefile.in,
+	classpath/native/Makefile.in, classpath/native/jawt/Makefile.in,
+	classpath/native/target/Linux/Makefile.in,
+	classpath/native/target/Makefile.in,
+	classpath/native/target/generic/Makefile.in,
+	classpath/native/fdlibm/Makefile.in,
+	classpath/native/plugin/Makefile.in,
+	classpath/resource/Makefile.in, classpath/scripts/Makefile.in,
+	classpath/tools/Makefile.in, classpath/doc/Makefile.in,
+	classpath/doc/api/Makefile.in, classpath/lib/Makefile.in,
+	classpath/external/Makefile.in,
+	classpath/external/sax/Makefile.in,
+	classpath/external/w3c_dom/Makefile.in,
+	classpath/external/relaxngDatatype/Makefile.in,
+	classpath/include/Makefile.in, classpath/aclocal.m4,
+	classpath/examples/Makefile.in, aclocal.m4: Regenerate.
+
 2006-08-21  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* java/lang/natThread.cc (_Jv_AttachCurrentThread): Attach thread
