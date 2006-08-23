@@ -57,6 +57,8 @@ import java.util.Iterator;
  */
 public class VMVirtualMachine
 {
+  public static native void initialize ();
+
   /**
    * Suspend a thread
    *

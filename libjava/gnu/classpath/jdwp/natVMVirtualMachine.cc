@@ -10,6 +10,8 @@ details. */
 
 #include <config.h>
 #include <gcj/cni.h>
+#include <jvm.h>
+#include <jvmti.h>
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
@@ -27,6 +29,16 @@ details. */
 using namespace java::lang;
 using namespace gnu::classpath::jdwp::event;
 using namespace gnu::classpath::jdwp::util;
+
+// JVMTI environment
+static jvmtiEnv *_jdwp_jvmtiEnv;
+
+void
+gnu::classpath::jdwp::VMVirtualMachine::initialize ()
+{
+  JavaVM *vm = _Jv_GetJavaVM ();
+  vm->GetEnv (reinterpret_cast<void **> (&_jdwp_jvmtiEnv), JVMTI_VERSION_1_0);
+}
 
 void
 gnu::classpath::jdwp::VMVirtualMachine ::suspendThread (Thread *thread)

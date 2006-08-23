@@ -1,3 +1,10 @@
+2006-08-23  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/VMVirtualMachine.java
+	(initialize): Declare.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(initialize): Get and save JVMTI environment.
+
 2006-08-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/27890
