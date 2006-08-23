@@ -1,3 +1,9 @@
+2006-08-23  Stuart Hastings  <stuart@apple.com>
+
+	PR 28825
+	* gcc/config/i386/i386.c (ix86_expand_vector_init_duplicate,
+	ix86_expand_vector_init_one_nonzero): Remove TARGET_SSE test.
+
 2006-08-21  Geoffrey Keating  <geoffk@apple.com>
 
 	PR debug/28692
