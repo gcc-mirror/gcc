@@ -1,5 +1,10 @@
 2006-08-23  Steven G. Kargl  <kargls@comcast.net>
 
+	* gfortran.texi:  Fix last commit where a "no" was deleted and
+	a grammatical error was introduced.
+
+2006-08-23  Steven G. Kargl  <kargls@comcast.net>
+
 	* gfortran.texi:  Spell check.  Add a few contributors to
 	Chapter 9.  Expand the description of BOZ constant handling.
 
