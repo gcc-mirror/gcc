@@ -1259,7 +1259,7 @@ Most of the interface with GCC was written by @emph{Paul Brook}.
 
 The following individuals have contributed code and/or
 ideas and significant help to the gfortran project
-(in particular order):
+(in no particular order):
 
 @itemize @minus
 @item Andy Vaught
@@ -1303,7 +1303,7 @@ and much needed feedback and encouragement for the
 
 Many other individuals have helped debug,
 test and improve @command{gfortran} over the past few years,
-and we welcoming you to do the same!
+and we welcome you to do the same!
 If you already have done so,
 and you would like to see your name listed in the
 list above, please contact us.
