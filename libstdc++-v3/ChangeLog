@@ -1,3 +1,15 @@
+2006-08-22  Phillip Jordan  <phillip.m.jordan@gmail.com>
+
+	*include/tr1/boost_shared_ptr.h: Added locking policy to
+	tr1::shared_ptr<> and related classes.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/thread: New.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/thread/
+	lockfree_weaktoshared.cc: New.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/thread/
+	mutex_weaktoshared.cc: New.
+	*testsuite/tr1/2_general_utilities/memory/shared_ptr/assign/
+	shared_ptr_neg.cc: Modify.
+	
 2006-08-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random.tcc (subtract_with_carry_01<>::
