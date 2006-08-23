@@ -4656,11 +4656,13 @@ ia64_print_operand (FILE * file, rtx x, int code)
 	    int pred_val = INTVAL (XEXP (x, 0));
 
 	    /* Guess top and bottom 10% statically predicted.  */
-	    if (pred_val < REG_BR_PROB_BASE / 50)
+	    if (pred_val < REG_BR_PROB_BASE / 50
+		&& br_prob_note_reliable_p (x))
 	      which = ".spnt";
 	    else if (pred_val < REG_BR_PROB_BASE / 2)
 	      which = ".dpnt";
-	    else if (pred_val < REG_BR_PROB_BASE / 100 * 98)
+	    else if (pred_val < REG_BR_PROB_BASE / 100 * 98
+		     || !br_prob_note_reliable_p (x))
 	      which = ".dptk";
 	    else
 	      which = ".sptk";

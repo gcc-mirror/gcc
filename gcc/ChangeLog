@@ -1,3 +1,15 @@
+2006-08-24  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (probability_reliable_p): New predicate.
+	(edge_probability_reliable_p, br_prob_note_reliable_p): Likewise.
+	(predict_loops): Do not predict loop exit with less than 2%
+	probability.
+	* basic-block.h (edge_probability_reliable_p,
+	br_prob_note_reliable_p): Declare.
+	* ia64.h (ia64_print_operand): Do not disable on-chip branch
+	prediction when static predictor is not reliable.
+	* rs6000.c (output_cbranch): Likewise.
+
 2006-08-23  Stuart Hastings  <stuart@apple.com>
 
 	PR 28825

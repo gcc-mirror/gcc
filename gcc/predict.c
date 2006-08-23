@@ -178,6 +178,45 @@ tree_predicted_by_p (basic_block bb, enum br_predictor predictor)
   return false;
 }
 
+/* Return true when the probability of edge is reliable.
+  
+   The profile guessing code is good at predicting branch outcome (ie.
+   taken/not taken), that is predicted right slightly over 75% of time.
+   It is however notorously poor on predicting the probability itself.
+   In general the profile appear a lot flatter (with probabilities closer
+   to 50%) than the reality so it is bad idea to use it to drive optimization
+   such as those disabling dynamic branch prediction for well predictable
+   branches.
+
+   There are two exceptions - edges leading to noreturn edges and edges
+   predicted by number of iterations heuristics are predicted well.  This macro
+   should be able to distinguish those, but at the moment it simply check for
+   noreturn heuristic that is only one giving probability over 99% or bellow
+   1%.  In future we might want to propagate reliablity information across the
+   CFG if we find this information useful on multiple places.   */
+static bool
+probability_reliable_p (int prob)
+{
+  return (profile_status == PROFILE_READ
+	  || (profile_status == PROFILE_GUESSED
+	      && (prob <= HITRATE (1) || prob >= HITRATE (99))));
+}
+
+/* Same predicate as above, working on edges.  */
+bool
+edge_probability_reliable_p (edge e)
+{
+  return probability_reliable_p (e->probability);
+}
+
+/* Same predicate as edge_probability_reliable_p, working on notes.  */
+bool
+br_prob_note_reliable_p (rtx note)
+{
+  gcc_assert (REG_NOTE_KIND (note) == REG_BR_PROB);
+  return probability_reliable_p (INTVAL (XEXP (note, 0)));
+}
+
 static void
 predict_insn (rtx insn, enum br_predictor predictor, int probability)
 {
@@ -706,14 +745,31 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 	  /* Loop exit heuristics - predict an edge exiting the loop if the
 	     conditional has no loop header successors as not taken.  */
 	  if (!header_found)
-	    FOR_EACH_EDGE (e, ei, bb->succs)
-	      if (e->dest->index < NUM_FIXED_BLOCKS
-		  || !flow_bb_inside_loop_p (loop, e->dest))
-		predict_edge
-		  (e, PRED_LOOP_EXIT,
-		   (REG_BR_PROB_BASE
-		    - predictor_info [(int) PRED_LOOP_EXIT].hitrate)
-		   / n_exits);
+	    {
+	      /* For loop with many exits we don't want to predict all exits
+	         with the pretty large probability, because if all exits are
+		 considered in row, the loop would be predicted to iterate
+		 almost never.  The code to divide probability by number of
+		 exits is very rough.  It should compute the number of exits
+		 taken in each patch through function (not the overall number
+		 of exits that might be a lot higher for loops with wide switch
+		 statements in them) and compute n-th square root.
+
+		 We limit the minimal probability by 2% to avoid
+		 EDGE_PROBABILITY_RELIABLE from trusting the branch prediction
+		 as this was causing regression in perl benchmark containing such
+		 a wide loop.  */
+	        
+	      int probability = ((REG_BR_PROB_BASE
+		                  - predictor_info [(int) PRED_LOOP_EXIT].hitrate)
+				 / n_exits);
+	      if (probability < HITRATE (2))
+		probability = HITRATE (2);
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		if (e->dest->index < NUM_FIXED_BLOCKS
+		    || !flow_bb_inside_loop_p (loop, e->dest))
+		  predict_edge (e, PRED_LOOP_EXIT, probability);
+	    }
 	}
       
       /* Free basic blocks from get_loop_body.  */
