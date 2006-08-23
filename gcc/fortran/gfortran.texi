@@ -922,6 +922,20 @@ statements to start with a comma.
 
 As a GNU extension, @command{gfortran} allows hexadecimal constants to
 be specified using the X prefix, in addition to the standard Z prefix.
+BOZ literal constants can also be specified by adding a suffix to the string.
+For example, @code{Z'ABC'} and @code{'ABC'Z} are the same constant.
+
+The Fortran standard restricts the appearance of a BOZ literal constant to
+the @code{DATA} statement, and it is expected to be assigned to an 
+@code{INTEGER} variable.  @command{gfortran} permits a BOZ to appear
+in any initialization expression as well as assignment statements.
+
+The use of a BOZ literal constant to initialize a @code{REAL} variable will 
+lead to confusion.  A BOZ literal constant is converted to an
+@code{INTEGER} with the kind type with the largest decimal representation
+before a conversion to a @code{REAL} variable.  That is, one should not
+expect a bitwise copy of the BOZ literal constant to be assigned to the
+@code{REAL}.
 
 @node Real array indices
 @section Real array indices
@@ -1189,7 +1203,7 @@ portable.
 
 gfortran attempts to be OpenMP Application Program Interface v2.5
 compatible when invoked with the @code{-fopenmp} option.  gfortran
-then generates parallellized code according to the OpenMP directives
+then generates parallelized code according to the OpenMP directives
 used in the source.  The OpenMP Fortran runtime library
 routines are provided both in a form of Fortran 90 module named
 @code{omp_lib} and in a form of a Fortran @code{include} file named
@@ -1245,12 +1259,12 @@ Most of the interface with GCC was written by @emph{Paul Brook}.
 
 The following individuals have contributed code and/or
 ideas and significant help to the gfortran project
-(in no particular order): 
+(in particular order):
 
 @itemize @minus
 @item Andy Vaught
 @item Katherine Holcomb
-@item Tobias Schlüter
+@item Tobias Schl@"uter
 @item Steven Bosscher
 @item Toon Moene
 @item Tim Prince
@@ -1260,13 +1274,20 @@ ideas and significant help to the gfortran project
 @item Feng Wang
 @item Bud Davis
 @item Paul Thomas
-@item François-Xavier Coudert
-@item Steve Kargl
+@item Fran@,{c}ois-Xavier Coudert
+@item Steven G. Kargl
 @item Jerry Delisle
 @item Janne Blomqvist
 @item Erik Edelmann
 @item Thomas Koenig
 @item Asher Langton
+@item Jakub Jelinek
+@item Roger Sayle
+@item H.J. Lu
+@item Richard Henderson
+@item Richard Sandiford
+@item Richard Guenther
+@item Bernhard Fischer
 @end itemize
 
 The following people have contributed bug reports,
@@ -1282,7 +1303,7 @@ and much needed feedback and encouragement for the
 
 Many other individuals have helped debug,
 test and improve @command{gfortran} over the past few years,
-and we welcome you to do the same!
+and we welcoming you to do the same!
 If you already have done so,
 and you would like to see your name listed in the
 list above, please contact us.
