@@ -11498,7 +11498,8 @@ output_cbranch (rtx op, const char *label, int reversed, rtx insn)
 	 mispredicted taken branch is more expensive than a
 	 mispredicted not-taken branch.  */
       if (rs6000_always_hint
-	  || abs (prob) > REG_BR_PROB_BASE / 100 * 48)
+	  || (abs (prob) > REG_BR_PROB_BASE / 100 * 48
+	      && br_prob_note_reliable_p (note)))
 	{
 	  if (abs (prob) > REG_BR_PROB_BASE / 20
 	      && ((prob > 0) ^ need_longbranch))

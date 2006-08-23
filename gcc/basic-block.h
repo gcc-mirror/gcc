@@ -880,6 +880,8 @@ extern void rtl_predict_edge (edge, enum br_predictor, int);
 extern void predict_edge_def (edge, enum br_predictor, enum prediction);
 extern void guess_outgoing_edge_probabilities (basic_block);
 extern void remove_predictions_associated_with_edge (edge);
+extern bool edge_probability_reliable_p (edge);
+extern bool br_prob_note_reliable_p (rtx);
 
 /* In flow.c */
 extern void init_flow (void);
