@@ -85,16 +85,16 @@ int ATSYM(fn_isoarg) (int arg ATTR) { return 0; } /* { dg-warning "attribute ign
 #undef AT
 #define AT dllimport
 
-typedef int ATSYM(type) ATTR; /* { dg-warning "attribute ignored" "" } */
+typedef int ATSYM(type) ATTR;  /* { dg-warning "attribute |directive ignored" "" } */
 
-typedef int (*ATSYM(fntype))(void) ATTR; /* { dg-warning "attribute ignored" "" } */
+typedef int (*ATSYM(fntype))(void) ATTR;   /* { dg-warning "attribute |directive ignored" "" } */
 
 struct ATSYM(struct) {
-  char dummy ATTR; /* { dg-warning "attribute ignored" "" } */
+  char dummy ATTR;  /* { dg-warning "attribute |directive ignored" "" } */
 };
 
 int ATSYM(fn_knrarg) (arg)
-  int arg ATTR; /* { dg-warning "attribute ignored" "" } */
+  int arg ATTR;  /* { dg-warning "attribute |directive ignored" "" } */
 { return 0; }
 
-int ATSYM(fn_isoarg) (int arg ATTR) { return 0; } /* { dg-warning "attribute ignored" "" } */
+int ATSYM(fn_isoarg) (int arg ATTR) { return 0; }  /* { dg-warning "attribute |directive ignored" "" } */

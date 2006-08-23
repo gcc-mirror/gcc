@@ -1,3 +1,8 @@
+2006-08-23  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	gcc.dg/attr-invalid.c:  Insert an " |directive" substitution into 
+	dg-warning strings for dllimport.
+
 2006-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
         PR C++/28450
