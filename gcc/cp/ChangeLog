@@ -1,3 +1,9 @@
+2006-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/23372
+	* call.c (build_over_call): Don't make a copy here if build_call 
+	will make one too.
+
 2006-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28346
