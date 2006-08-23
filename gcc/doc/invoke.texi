@@ -1569,7 +1569,9 @@ functions for use by the C++ runtime type identification features
 (@samp{dynamic_cast} and @samp{typeid}).  If you don't use those parts
 of the language, you can save some space by using this flag.  Note that
 exception handling uses the same information, but it will generate it as
-needed.
+needed. The @samp{dynamic_cast} operator can still be used for casts that
+do not require runtime type information, i.e. casts to @code{void *} or to
+unambiguous base classes.
 
 @item -fstats
 @opindex fstats

@@ -1,3 +1,9 @@
+2006-08-11   Benjamin Smedberg <benjamin@smedbergs.us>
+
+	PR c++/28687
+	* rtti.c (build_dynamic_cast, build_dynamic_cast_1):
+	Move -fno-rtti check to be more specific.
+
 2006-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/23372

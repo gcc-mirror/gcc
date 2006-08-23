@@ -619,6 +619,13 @@ build_dynamic_cast_1 (tree type, tree expr)
 		}
 	    }
 
+	  /* Use of dynamic_cast when -fno-rtti is prohibited.  */
+	  if (!flag_rtti)
+	    {
+	      error ("%<dynamic_cast%> not permitted with -fno-rtti");
+	      return error_mark_node;
+	    }
+
 	  target_type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 	  static_type = TYPE_MAIN_VARIANT (TREE_TYPE (exprtype));
 	  td2 = get_tinfo_decl (target_type);
@@ -703,13 +710,6 @@ build_dynamic_cast (tree type, tree expr)
 {
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
-
-  /* Use of dynamic_cast when -fno-rtti is prohibited.  */
-  if (!flag_rtti)
-    {
-      error ("%<dynamic_cast%> not permitted with -fno-rtti");
-      return error_mark_node;
-    }
 
   if (processing_template_decl)
     {
