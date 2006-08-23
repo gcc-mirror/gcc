@@ -1,3 +1,9 @@
+2006-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/28450
+	* cp/init.c (build_zero_init): Handle VECTOR_TYPE and
+	COMPLEX_TYPEs.
+
 2006-08-22  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/28420

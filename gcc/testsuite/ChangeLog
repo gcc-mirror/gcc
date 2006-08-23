@@ -1,3 +1,9 @@
+2006-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+        PR C++/28450
+	* g++.dg/ext/vector4.C: New test.
+	* g++.dg/ext/complex1.C: New test.
+
 2006-08-21  Geoffrey Keating  <geoffk@apple.com>
 
 	PR debug/28692
