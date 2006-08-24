@@ -1391,8 +1391,10 @@ find_renamed_type (gfc_symbol * der, gfc_symtree * st)
   return sym;
 }
 
-/* Recursive function to switch derived types of all symbol in a
-   namespace.  */
+/* Recursive function to switch derived types of all symbols in a
+   namespace.  The formal namespaces contain references to derived
+   types that can be left hanging by gfc_use_derived, so these must
+   be switched too.  */
 
 static void
 switch_types (gfc_symtree * st, gfc_symbol * from, gfc_symbol * to)
@@ -1405,6 +1407,9 @@ switch_types (gfc_symtree * st, gfc_symbol * from, gfc_symbol * to)
   sym = st->n.sym;
   if (sym->ts.type == BT_DERIVED && sym->ts.derived == from)
     sym->ts.derived = to;
+  
+  if (sym->formal_ns && sym->formal_ns->sym_root)
+    switch_types (sym->formal_ns->sym_root, from, to);
 
   switch_types (st->left, from, to);
   switch_types (st->right, from, to);
@@ -1436,11 +1441,12 @@ gfc_use_derived (gfc_symbol * sym)
   gfc_typespec *t;
   gfc_symtree *st;
   gfc_component *c;
+  gfc_namespace *ns;
   int i;
 
-  if (sym->ns->parent == NULL)
+  if (sym->ns->parent == NULL || sym->ns != gfc_current_ns)
     {
-      /* Already defined in highest possible namespace.  */
+      /* Already defined in highest possible or sibling namespace.  */
       if (sym->components != NULL)
 	return sym;
 
@@ -1466,6 +1472,27 @@ gfc_use_derived (gfc_symbol * sym)
       return NULL;
     }
 
+  /* Look in sibling namespaces for a derived type of the same name.  */
+  if (s == NULL && sym->attr.use_assoc && sym->ns->sibling)
+    {
+      ns = sym->ns->sibling;
+      for (; ns; ns = ns->sibling)
+	{
+	  s = NULL;
+	  if (sym->ns == ns)
+	    break;
+
+	  if (gfc_find_symbol (sym->name, ns, 1, &s))
+	    {
+	      gfc_error ("Symbol '%s' at %C is ambiguous", sym->name);
+	      return NULL;
+	    }
+
+	  if (s != NULL && s->attr.flavor == FL_DERIVED)
+	    break;
+	}
+    }
+
   if (s == NULL || s->attr.flavor != FL_DERIVED)
     {
       /* Check to see if type has been renamed in parent namespace.
@@ -1477,6 +1504,28 @@ gfc_use_derived (gfc_symbol * sym)
 	{
 	  switch_types (sym->ns->sym_root, sym, s);
 	  return s;
+	}
+
+      /* See if sym is identical to renamed, use-associated derived
+	 types in sibling namespaces.  */
+      if (sym->attr.use_assoc
+	    && sym->ns->parent
+	    && sym->ns->parent->contained)
+	{
+	  ns = sym->ns->parent->contained;
+	  for (; ns; ns = ns->sibling)
+	    {
+	      if (sym->ns == ns)
+		break;
+
+	      s = find_renamed_type (sym, ns->sym_root);
+
+	      if (s != NULL)
+		{
+		  switch_types (sym->ns->sym_root, sym, s);
+		  return s;
+		}
+	    }
 	}
 
       /* The local definition is all that there is.  */

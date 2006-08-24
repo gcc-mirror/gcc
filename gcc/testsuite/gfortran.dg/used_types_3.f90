@@ -55,3 +55,4 @@ ofTypB => a%ofTypA
 a%ofTypA(i,j) = ofTypB(k,j)
 end subroutine buggy
 end module modC
+! { dg-final { cleanup-modules "modA modB modC" } }
