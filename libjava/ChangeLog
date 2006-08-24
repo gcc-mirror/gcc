@@ -1,3 +1,12 @@
+2006-08-24  Keith Seitz  <keiths@redhat.com>
+
+	* prims.cc (remoteDebug): New global.
+	(jdwpOptions): New global.
+	(parse_x_arg): Add processing for "X" options "debug" and
+	"runjdwp:"
+	(_Jv_RunMain): If debugging, start up JDWP backend.
+	Send VM_INIT and VM_DEATH when appropriate.
+
 2006-08-23  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/VMVirtualMachine.java
