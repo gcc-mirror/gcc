@@ -1,3 +1,11 @@
+2006-08-24  Daniel Franke <franke.daniel@gmail.com>,
+	    Brooks Moses <bmoses@stanford.edu>
+
+	* intrinsic.texi: Added doc-stubs for undocumented intrinsics,
+	added a "See Also" section, renamed the "Options" section to
+	"Standard", improved the index, and made numerous minor
+	typo corrections and grammatical fixes.
+
 2006-08-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28788
