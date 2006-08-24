@@ -1,4 +1,10 @@
-2006-08-11   Benjamin Smedberg <benjamin@smedbergs.us>
+2006-08-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/27714
+	* pt.c (push_template_decl_real): A friend template with class 
+	scope isn't primary.
+
+2006-08-23  Benjamin Smedberg <benjamin@smedbergs.us>
 
 	PR c++/28687
 	* rtti.c (build_dynamic_cast, build_dynamic_cast_1):
