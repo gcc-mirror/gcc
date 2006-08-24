@@ -1,3 +1,7 @@
+2006-08-24  Bill Wendling <wendling@apple.com>
+
+	* doc/tm.texi (TARGET_DEFAULT_PACK_STRUCT): Fixed English.
+	
 2006-08-24  Jan Hubicka  <jh@suse.cz>
 
 	* reload1.c (emit_reload_insns): Fix yet another typo in my patch.
