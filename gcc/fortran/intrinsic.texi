@@ -31,12 +31,17 @@ Some basic guidelines for editing this document:
 This portion of the document is incomplete and undergoing massive expansion 
 and editing.  All contributions and corrections are strongly encouraged. 
 
+Implemented intrinsics are fully functional and available to the user to apply. 
+Some intrinsics have documentation yet to be completed as indicated by 'documentation pending'.
+
 @menu
 * Introduction:         Introduction
 * @code{ABORT}:         ABORT,     Abort the program     
 * @code{ABS}:           ABS,       Absolute value     
+* @code{ACCESS}:        ACCESS,    Checks file access method
 * @code{ACHAR}:         ACHAR,     Character in @acronym{ASCII} collating sequence
-* @code{ACOS}:          ACOS,      Arc cosine function
+* @code{ACOS}:          ACOS,      Arccosine function
+* @code{ACOSH}:         ACOSH,     Hyperbolic arccosine function
 * @code{ADJUSTL}:       ADJUSTL,   Left adjust a string
 * @code{ADJUSTR}:       ADJUSTR,   Right adjust a string
 * @code{AIMAG}:         AIMAG,     Imaginary part of complex number
@@ -44,12 +49,15 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{ALARM}:         ALARM,     Set an alarm clock
 * @code{ALL}:           ALL,       Determine if all values are true
 * @code{ALLOCATED}:     ALLOCATED, Status of allocatable entity
+* @code{AND}:           AND,       Logical and
 * @code{ANINT}:         ANINT,     Nearest whole number
 * @code{ANY}:           ANY,       Determine if any values are true
 * @code{ASIN}:          ASIN,      Arcsine function
+* @code{ASINH}:         ASINH,     Hyperbolic arcsine function
 * @code{ASSOCIATED}:    ASSOCIATED, Status of a pointer or pointer/target pair
 * @code{ATAN}:          ATAN,      Arctangent function
 * @code{ATAN2}:         ATAN2,     Arctangent function
+* @code{ATANH}:         ATANH,     Hyperbolic arctangent function
 * @code{BESJ0}:         BESJ0,     Bessel function of the first kind of order 0
 * @code{BESJ1}:         BESJ1,     Bessel function of the first kind of order 1
 * @code{BESJN}:         BESJN,     Bessel function of the first kind
@@ -60,6 +68,8 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{BTEST}:         BTEST,     Bit test function
 * @code{CEILING}:       CEILING,   Integer ceiling function
 * @code{CHAR}:          CHAR,      Integer-to-character conversion function
+* @code{CHDIR}:         CHDIR,     Change working directory
+* @code{CHMOD}:         CHMOD,     Change access permissions of files
 * @code{CMPLX}:         CMPLX,     Complex conversion function
 * @code{COMMAND_ARGUMENT_COUNT}: COMMAND_ARGUMENT_COUNT,  Command line argument count
 * @code{CONJG}:         CONJG,     Complex conjugate function
@@ -81,6 +91,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{DTIME}:         DTIME,     Execution time subroutine (or function)
 * @code{EOSHIFT}:       EOSHIFT,   End-off shift function
 * @code{EPSILON}:       EPSILON,   Epsilon function
+* @code{EQV}:           EQV,       Logical equivalence
 * @code{ERF}:           ERF,       Error function
 * @code{ERFC}:          ERFC,      Complementary error function
 * @code{ETIME}:         ETIME,     Execution time subroutine (or function)
@@ -88,53 +99,141 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{EXP}:           EXP,       Exponential function
 * @code{EXPONENT}:      EXPONENT,  Exponent function
 * @code{FDATE}:         FDATE,     Subroutine (or function) to get the current time as a string
+* @code{FGET}:          FGET,      Read a single character from stdin in stream mode
+* @code{FGETC}:         FGETC,     Read a single character in stream mode
 * @code{FLOAT}:         FLOAT,     Convert integer to default real
 * @code{FLOOR}:         FLOOR,     Integer floor function
 * @code{FLUSH}:         FLUSH,     Flush I/O unit(s)
 * @code{FNUM}:          FNUM,      File number function
+* @code{FPUT}:          FPUT,      Write a single character to stdout in stream mode
+* @code{FPUTC}:         FPUTC,     Write a single character in stream mode
 * @code{FRACTION}:      FRACTION,  Fractional part of the model representation
 * @code{FREE}:          FREE,      Memory de-allocation subroutine
+* @code{FSEEK}:         FSEEK,     Low level file positioning subroutine
+* @code{FSTAT}:         FSTAT,     Get file status
+* @code{FTELL}:         FTELL,     Current stream position
+* @code{GETARG}:        GETARG,    Get command line arguments
+* @code{GET_COMMAND}:   GET_COMMAND, Subroutine to retrieve the entire command line
+* @code{GET_COMMAND_ARGUMENT}: GET_COMMAND_ARGUMENT, Subroutine to retrieve a command argument
+* @code{GETCWD}:        GETCWD,    Get current working directory
+* @code{GETENV}:        GETENV,    Get an environmental variable
+* @code{GET_ENVIRONMENT_VARIABLE}: GET_ENVIRONMENT_VARIABLE, Get an environmental variable
 * @code{GETGID}:        GETGID,    Group ID function
+* @code{GETLOG}:        GETLOG,    Get login name
 * @code{GETPID}:        GETPID,    Process ID function
 * @code{GETUID}:        GETUID,    User ID function
+* @code{GMTIME}:        GMTIME,    Convert time to GMT info
+* @code{HOSTNM}:        HOSTNM,    Get system host name
 * @code{HUGE}:          HUGE,      Largest number of a kind
 * @code{IACHAR}:        IACHAR,    Code in @acronym{ASCII} collating sequence
+* @code{IAND}:          IAND,      Bitwise logical and
+* @code{IARGC}:         IARGC,     Get number of command line arguments
+* @code{IBCLR}:         IBCLR,     Clear bit
+* @code{IBITS}:         IBITS,     Bit extraction
+* @code{IBSET}:         IBSET,     Set bit
 * @code{ICHAR}:         ICHAR,     Character-to-integer conversion function
 * @code{IDATE}:         IDATE,     Current local time (day/month/year)
+* @code{IEOR}:          IEOR,      Bitwise logical exclusive or
+* @code{IERRNO}:        IERRNO,    Function to get the last system error number
+* @code{INDEX}:         INDEX,     Position of a substring within a string
+* @code{INT}:           INT,       Convert to integer type
+* @code{IOR}:           IOR,       Bitwise logical or
 * @code{IRAND}:         IRAND,     Integer pseudo-random number
+* @code{ISHFT}:         ISHFT,     Shift bits
+* @code{ISHFTC}:        ISHFTC,    Shift bits circularly
 * @code{ITIME}:         ITIME,     Current local time (hour/minutes/seconds)
+* @code{KILL}:          KILL,      Send a signal to a process
 * @code{KIND}:          KIND,      Kind of an entity
+* @code{LBOUND}:        LBOUND,    Lower dimension bounds of an array
+* @code{LEN}:           LEN,       Length of a character entity
+* @code{LEN_TRIM}:      LEN_TRIM,  Length of a character entity without trailing blank characters
+* @code{LGE}:           LGE,       Lexical greater than or equal
+* @code{LGT}:           LGT,       Lexical greater than
+* @code{LINK}:          LINK,      Create a hard link
+* @code{LLE}:           LLE,       Lexical less than or equal
+* @code{LLT}:           LLT,       Lexical less than
+* @code{LNBLNK}:        LNBLNK,    Index of the last non-blank character in a string
 * @code{LOC}:           LOC,       Returns the address of a variable
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
+* @code{LOGICAL}:       LOGICAL,   Convert to logical type
+* @code{LSHIFT}:        LSHIFT,    Left shift bits
+* @code{LTIME}:         LTIME,     Convert time to local time info
 * @code{MALLOC}:        MALLOC,    Dynamic memory allocation function
+* @code{MATMUL}:        MATMUL,    matrix multiplication
+* @code{MAX}:           MAX,       Maximum value of an argument list
 * @code{MAXEXPONENT}:   MAXEXPONENT, Maximum exponent of a real kind
+* @code{MAXLOC}:        MAXLOC,    Location of the maximum value within an array
+* @code{MAXVAL}:        MAXVAL,    Maximum value of an array
+* @code{MERGE}:         MERGE,     Merge arrays
+* @code{MIN}:           MIN,       Minimum value of an argument list
 * @code{MINEXPONENT}:   MINEXPONENT, Minimum exponent of a real kind
+* @code{MINLOC}:        MINLOC,    Location of the minimum value within an array
+* @code{MINVAL}:        MINVAL,    Minimum value of an array
 * @code{MOD}:           MOD,       Remainder function
 * @code{MODULO}:        MODULO,    Modulo function
+* @code{MVBITS}:        MVBITS,    Move bits from one integer to another
 * @code{NEAREST}:       NEAREST,   Nearest representable number
+* @code{NEQV}:          NEQV,      Logical non-equivalence
 * @code{NINT}:          NINT,      Nearest whole number
+* @code{NOT}:           NOT,       Logical negation
+* @code{NULL}:          NULL,      Function that returns an dissassociated pointer
+* @code{OR}:            OR,        Logical inclusive disjunction
+* @code{PACK}:          PACK,      Pack an array into an array of rank one
+* @code{PERROR}:        PERROR,    Print system error message
 * @code{PRECISION}:     PRECISION, Decimal precision of a real kind
+* @code{PRESENT}:       PRESENT,   Determine whether an optional argument is specified
+* @code{PRODUCT}:       PRODUCT,   Product of array elements
 * @code{RADIX}:         RADIX,     Base of a data model
+* @code{RANDOM_NUMBER}: RANDOM_NUMBER, Pseudo-random number
+* @code{RANDOM_SEED}:   RANDOM_SEED, Initialize a pseudo-random number sequence
 * @code{RAND}:          RAND,      Real pseudo-random number
 * @code{RANGE}:         RANGE,     Decimal exponent range of a real kind
+* @code{RAN}:           RAN,       Real pseudo-random number
 * @code{REAL}:          REAL,      Convert to real type 
+* @code{RENAME}:        RENAME,    Rename a file
+* @code{REPEAT}:        REPEAT,    Repeated string concatenation
+* @code{RESHAPE}:       RESHAPE,   Function to reshape an array
 * @code{RRSPACING}:     RRSPACING, Reciprocal of the relative spacing
+* @code{RSHIFT}:        RSHIFT,    Right shift bits
 * @code{SCALE}:         SCALE,     Scale a real value
+* @code{SCAN}:          SCAN,      Scan a string for the presence of a set of characters
 * @code{SECNDS}:        SECNDS,    Time function
+@comment * @code{SECOND}:        SECOND,    (?)
+@comment * @code{SECONDS}:       SECONDS,   (?)
 * @code{SELECTED_INT_KIND}: SELECTED_INT_KIND,  Choose integer kind
 * @code{SELECTED_REAL_KIND}: SELECTED_REAL_KIND,  Choose real kind
 * @code{SET_EXPONENT}:  SET_EXPONENT, Set the exponent of the model
+* @code{SHAPE}:         SHAPE,     Determine the shape of an array
 * @code{SIGN}:          SIGN,      Sign copying function
 * @code{SIGNAL}:        SIGNAL,    Signal handling subroutine (or function)
 * @code{SIN}:           SIN,       Sine function
 * @code{SINH}:          SINH,      Hyperbolic sine function
+* @code{SIZE}:          SIZE,      Function to determine the size of an array
 * @code{SNGL}:          SNGL,      Convert double precision real to default real
+* @code{SPACING}:       SPACING,   Smallest distance between two numbers of a given type
+* @code{SPREAD}:        SPREAD,    Add a dimension to an array 
 * @code{SQRT}:          SQRT,      Square-root function
 * @code{SRAND}:         SRAND,     Reinitialize the random number generator
+* @code{STAT}:          STAT,      Get file status
+* @code{SUM}:           SUM,       Sum of array elements
+* @code{SYMLNK}:        SYMLNK,    Create a symbolic link
+* @code{SYSTEM}:        SYSTEM,    Execute a shell command
+* @code{SYSTEM_CLOCK}:  SYSTEM_CLOCK, Time function
 * @code{TAN}:           TAN,       Tangent function
 * @code{TANH}:          TANH,      Hyperbolic tangent function
+* @code{TIME}:          TIME,      Time function
 * @code{TINY}:          TINY,      Smallest positive number of a real kind
+* @code{TRANSFER}:      TRANSFER,  Transfer bit patterns
+* @code{TRANSPOSE}:     TRANSPOSE, Transpose an array of rank two
+* @code{TRIM}:          TRIM,      Function to remove trailing blank characters of a string
+* @code{UBOUND}:        UBOUND,    Upper dimension bounds of an array
+* @code{UMASK}:         UMASK,     Set the file creation mask
+* @code{UNLINK}:        UNLINK,    Remove a file from the file system
+* @code{UNMASK}:        UNMASK,    (?)
+* @code{UNPACK}:        UNPACK,    Unpack an array of rank one into an array
+* @code{VERIFY}:        VERIFY,    Scan a string for the absence of a set of characters
+* @code{XOR}:           XOR,       Logical exclusive or
 @end menu
 
 @node Introduction
@@ -180,7 +279,7 @@ the applicable option(s) is noted.
 
 @node ABORT
 @section @code{ABORT} --- Abort the program  
-@findex @code{ABORT}
+@findex @code{ABORT} intrinsic
 @cindex abort
 
 @table @asis
@@ -189,8 +288,8 @@ the applicable option(s) is noted.
 systems that support a core dump, @code{ABORT} will produce a core dump,
 which is suitable for debugging purposes.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 non-elemental subroutine
@@ -208,6 +307,10 @@ program test_abort
   if (i /= j) call abort
 end program test_abort
 @end smallexample
+
+@item @emph{See also}:
+@ref{EXIT}, @ref{KILL}
+
 @end table
 
 
@@ -226,11 +329,11 @@ end program test_abort
 @item @emph{Description}:
 @code{ABS(X)} computes the absolute value of @code{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = ABS(X)}
@@ -259,16 +362,40 @@ end program test_abs
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument            @tab Return type       @tab Option
-@item @code{CABS(Z)}  @tab @code{COMPLEX(4) Z} @tab @code{REAL(4)}    @tab f95, gnu
-@item @code{DABS(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}    @tab f95, gnu
-@item @code{IABS(I)}  @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)} @tab f95, gnu
-@item @code{ZABS(Z)}  @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab gnu
-@item @code{CDABS(Z)} @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{CABS(Z)}  @tab @code{COMPLEX(4) Z} @tab @code{REAL(4)}    @tab F77 and later
+@item @code{DABS(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}    @tab F77 and later
+@item @code{IABS(I)}  @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)} @tab F77 and later
+@item @code{ZABS(Z)}  @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
+@item @code{CDABS(Z)} @tab @code{COMPLEX(8) Z} @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
 @end table
 
+
+@node ACCESS
+@section @code{ACCESS} --- Checks file access method
+@findex @code{ACCESS} 
+@cindex file system functions
+
+Not yet implemented in gfortran.
+
+@table @asis
+@item @emph{Description}:
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
+
+@end table
 
 
 @node ACHAR
@@ -281,11 +408,11 @@ end program test_abs
 @code{ACHAR(I)} returns the character located at position @code{I}
 in the @acronym{ASCII} collating sequence.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{C = ACHAR(I)}
@@ -311,20 +438,20 @@ end program test_achar
 
 
 @node ACOS
-@section @code{ACOS} --- Arc cosine function 
+@section @code{ACOS} --- Arccosine function 
 @findex @code{ACOS} intrinsic
 @findex @code{DACOS} intrinsic
-@cindex arc cosine
+@cindex trigonometric functions (inverse)
 
 @table @asis
 @item @emph{Description}:
-@code{ACOS(X)} computes the arc cosine of @var{X}.
+@code{ACOS(X)} computes the arccosine of @var{X} (inverse of @code{COS(X)}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = ACOS(X)}
@@ -344,15 +471,41 @@ parameter is the same as @var{X}.
 @smallexample
 program test_acos
   real(8) :: x = 0.866_8
-  x = achar(x)
+  x = acos(x)
 end program test_acos
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DACOS(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DACOS(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
 @end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{COS}
+
+@end table
+
+
+@node ACOSH
+@section @code{ACOSH} --- Hyperbolic arccosine function
+@findex @code{ACOSH} intrinsic
+@cindex hyperbolic arccosine
+@cindex hyperbolic cosine (inverse)
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+Inverse function: @ref{COSH}
 @end table
 
 
@@ -367,11 +520,11 @@ end program test_acos
 @code{ADJUSTL(STR)} will left adjust a string by removing leading spaces.
 Spaces are inserted at the end of the string as needed.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{STR = ADJUSTL(STR)}
@@ -408,11 +561,11 @@ end program test_adjustl
 @code{ADJUSTR(STR)} will right adjust a string by removing trailing spaces.
 Spaces are inserted at the start of the string as needed.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{STR = ADJUSTR(STR)}
@@ -454,11 +607,11 @@ The @code{IMAG(Z)} and @code{IMAGPART(Z)} intrinsic functions are provided
 for compatibility with @command{g77}, and their use in new code is 
 strongly discouraged.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = AIMAG(Z)}
@@ -484,18 +637,18 @@ end program test_aimag
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument            @tab Return type       @tab Option
-@item @code{DIMAG(Z)} @tab @code{COMPLEX(8) Z} @tab @code{REAL(8)}    @tab f95, gnu
-@item @code{IMAG(Z)}  @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)}    @tab gnu
-@item @code{IMAGPART(Z)} @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)} @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{DIMAG(Z)} @tab @code{COMPLEX(8) Z} @tab @code{REAL(8)}    @tab F95 and later
+@item @code{IMAG(Z)}  @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)}    @tab GNU extension
+@item @code{IMAGPART(Z)} @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)} @tab GNU extension
 @end multitable
 @end table
 
 
 
 @node AINT
-@section @code{AINT} --- Imaginary part of complex number  
+@section @code{AINT} --- Truncate to a whole number
 @findex @code{AINT} intrinsic
 @findex @code{DINT} intrinsic
 @cindex whole number
@@ -504,11 +657,11 @@ end program test_aimag
 @item @emph{Description}:
 @code{AINT(X [, KIND])} truncates its argument to a whole number.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = AINT(X)} 
@@ -543,9 +696,9 @@ end program test_aint
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name           @tab Argument         @tab Return type      @tab Option
-@item @code{DINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name           @tab Argument         @tab Return type      @tab Standard
+@item @code{DINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab F77 and later
 @end multitable
 @end table
 
@@ -557,18 +710,18 @@ end program test_aint
 
 @table @asis
 @item @emph{Description}:
-@code{ALARM(SECONDS [, STATUS])} causes external subroutine @var{HANDLER}
+@code{ALARM(SECONDS, HANDLER [, STATUS])} causes external subroutine @var{HANDLER}
 to be executed after a delay of @var{SECONDS} by using @code{alarm(1)} to
 set up a signal and @code{signal(2)} to catch it. If @var{STATUS} is
 supplied, it will be returned with the number of seconds remaining until
 any previously scheduled alarm was due to be delivered, or zero if there
 was no previously scheduled alarm.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{CALL ALARM(SECONDS, HANDLER)} 
@@ -611,8 +764,8 @@ after 3 seconds.
 @code{ALL(MASK [, DIM])} determines if all the values are true in @var{MASK}
 in the array along dimension @var{DIM}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
 transformational function
@@ -677,11 +830,11 @@ end program test_all
 @item @emph{Description}:
 @code{ALLOCATED(X)} checks the status of whether @var{X} is allocated.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-inquiry function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{L = ALLOCATED(X)}
@@ -701,9 +854,29 @@ is @code{.TRUE.}; otherwise, it returns the @code{.TRUE.}
 program test_allocated
   integer :: i = 4
   real(4), allocatable :: x(:)
-  if (allocated(x) .eqv. .false.) allocate(x(i)
+  if (allocated(x) .eqv. .false.) allocate(x(i))
 end program test_allocated
 @end smallexample
+@end table
+
+
+@node AND
+@section @code{AND} --- Logical and
+@findex @code{AND} intrinsic
+@cindex logical operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
 @end table
 
 
@@ -718,11 +891,11 @@ end program test_allocated
 @item @emph{Description}:
 @code{ANINT(X [, KIND])} rounds its argument to the nearest whole number.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = ANINT(X)}
@@ -740,7 +913,7 @@ The return value is of type real with the kind type parameter of the
 argument if the optional @var{KIND} is absent; otherwise, the kind
 type parameter will be given by @var{KIND}.  If @var{X} is greater than
 zero, then @code{ANINT(X)} returns @code{AINT(X+0.5)}.  If @var{X} is
-less than or equal to zero, then return @code{AINT(X-0.5)}.
+less than or equal to zero, then it returns @code{AINT(X-0.5)}.
 
 @item @emph{Example}:
 @smallexample
@@ -755,9 +928,9 @@ end program test_anint
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument         @tab Return type      @tab Option
-@item @code{DNINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument         @tab Return type      @tab Standard
+@item @code{DNINT(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}   @tab F77 and later
 @end multitable
 @end table
 
@@ -773,8 +946,8 @@ end program test_anint
 @code{ANY(MASK [, DIM])} determines if any of the values in the logical array
 @var{MASK} along dimension @var{DIM} are @code{.TRUE.}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
 transformational function
@@ -834,17 +1007,17 @@ end program test_any
 @section @code{ASIN} --- Arcsine function 
 @findex @code{ASIN} intrinsic
 @findex @code{DASIN} intrinsic
-@cindex arcsine
+@cindex trigonometric functions (inverse)
 
 @table @asis
 @item @emph{Description}:
 @code{ASIN(X)} computes the arcsine of its @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = ASIN(X)}
@@ -857,7 +1030,7 @@ less than one.
 
 @item @emph{Return value}:
 The return value is of type @code{REAL(*)} and it lies in the
-range @math{-\pi / 2 \leq \arccos (x) \leq \pi / 2}.  The kind type
+range @math{-\pi / 2 \leq \arcsin (x) \leq \pi / 2}.  The kind type
 parameter is the same as @var{X}.
 
 @item @emph{Example}:
@@ -869,10 +1042,35 @@ end program test_asin
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DASIN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DASIN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
 @end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{SIN}
+
+@end table
+
+
+@node ASINH
+@section @code{ASINH} --- Hyperbolic arcsine function
+@findex @code{ASINH} intrinsic
+@cindex hyperbolic arcsine
+@cindex hyperbolic sine (inverse)
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
 @end table
 
 
@@ -887,11 +1085,11 @@ end program test_asin
 @code{ASSOCIATED(PTR [, TGT])} determines the status of the pointer @var{PTR}
 or if @var{PTR} is associated with the target @var{TGT}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-inquiry function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{L = ASSOCIATED(PTR)} 
@@ -946,6 +1144,9 @@ program test_associated
    if (associated(ptr,tgt) .eqv. .false.) call abort
 end program test_associated
 @end smallexample
+
+@item @emph{See also}:
+@ref{NULL}
 @end table
 
 
@@ -954,17 +1155,17 @@ end program test_associated
 @section @code{ATAN} --- Arctangent function 
 @findex @code{ATAN} intrinsic
 @findex @code{DATAN} intrinsic
-@cindex arctangent
+@cindex trigonometric functions (inverse)
 
 @table @asis
 @item @emph{Description}:
 @code{ATAN(X)} computes the arctangent of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = ATAN(X)}
@@ -987,10 +1188,14 @@ end program test_atan
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DATAN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DATAN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
 @end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{TAN}
+
 @end table
 
 
@@ -999,17 +1204,17 @@ end program test_atan
 @section @code{ATAN2} --- Arctangent function 
 @findex @code{ATAN2} intrinsic
 @findex @code{DATAN2} intrinsic
-@cindex arctangent
+@cindex trigonometric functions (inverse)
 
 @table @asis
 @item @emph{Description}:
 @code{ATAN2(Y,X)} computes the arctangent of the complex number @math{X + i Y}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = ATAN2(Y,X)}
@@ -1023,7 +1228,7 @@ If @var{Y} is zero, then @var{X} must be nonzero.
 
 @item @emph{Return value}:
 The return value has the same type and kind type parameter as @var{Y}.
-It is the principle value of the complex number @math{X + i Y}.  If
+It is the principal value of the complex number @math{X + i Y}.  If
 @var{X} is nonzero, then it lies in the range @math{-\pi \le \arccos (x) \leq \pi}.
 The sign is positive if @var{Y} is positive.  If @var{Y} is zero, then
 the return value is zero if @var{X} is positive and @math{\pi} if @var{X}
@@ -1039,11 +1244,34 @@ end program test_atan2
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type    @tab Option
-@item @code{DATAN2(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)} @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type    @tab Standard
+@item @code{DATAN2(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)} @tab F77 and later
 @end multitable
 @end table
+
+
+
+@node ATANH
+@section @code{ATANH} --- Hyperbolic arctangent function
+@findex @code{ASINH} intrinsic
+@cindex hyperbolic arctangent
+@cindex hyperbolic tangent (inverse)
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
 
 
 
@@ -1058,11 +1286,11 @@ end program test_atan2
 @code{BESJ0(X)} computes the Bessel function of the first kind of order 0
 of @var{X}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = BESJ0(X)}
@@ -1085,9 +1313,9 @@ end program test_besj0
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESJ0(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DBESJ0(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}   @tab GNU extension
 @end multitable
 @end table
 
@@ -1104,11 +1332,11 @@ end program test_besj0
 @code{BESJ1(X)} computes the Bessel function of the first kind of order 1
 of @var{X}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = BESJ1(X)}
@@ -1131,9 +1359,9 @@ end program test_besj1
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESJ1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DBESJ1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 @end table
 
@@ -1150,11 +1378,11 @@ end program test_besj1
 @code{BESJN(N, X)} computes the Bessel function of the first kind of order
 @var{N} of @var{X}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Y = BESJN(N, X)}
@@ -1177,9 +1405,9 @@ end program test_besjn
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name             @tab Argument            @tab Return type       @tab Option
-@item @code{DBESJN(X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}    @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name             @tab Argument            @tab Return type       @tab Standard
+@item @code{DBESJN(X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}    @tab GNU extension
 @item                  @tab @code{REAL(8) X}    @tab                   @tab
 @end multitable
 @end table
@@ -1197,11 +1425,11 @@ end program test_besjn
 @code{BESY0(X)} computes the Bessel function of the second kind of order 0
 of @var{X}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = BESY0(X)}
@@ -1223,9 +1451,9 @@ end program test_besy0
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESY0(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DBESY0(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 @end table
 
@@ -1242,11 +1470,11 @@ end program test_besy0
 @code{BESY1(X)} computes the Bessel function of the second kind of order 1
 of @var{X}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = BESY1(X)}
@@ -1268,9 +1496,9 @@ end program test_besy1
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESY1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DBESY1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 @end table
 
@@ -1287,11 +1515,11 @@ end program test_besy1
 @code{BESYN(N, X)} computes the Bessel function of the second kind of order
 @var{N} of @var{X}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Y = BESYN(N, X)}
@@ -1314,9 +1542,9 @@ end program test_besyn
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name               @tab Argument            @tab Return type     @tab Option
-@item @code{DBESYN(N,X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}  @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name               @tab Argument            @tab Return type     @tab Standard
+@item @code{DBESYN(N,X)} @tab @code{INTEGER(*) N} @tab @code{REAL(8)}  @tab GNU extension
 @item                    @tab @code{REAL(8)    X} @tab                 @tab 
 @end multitable
 @end table
@@ -1333,11 +1561,11 @@ end program test_besyn
 @code{BIT_SIZE(I)} returns the number of bits (integer precision plus sign bit)
 represented by the type of @var{I}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{I = BIT_SIZE(I)}
@@ -1373,11 +1601,11 @@ end program test_bit_size
 @code{BTEST(I,POS)} returns logical @code{.TRUE.} if the bit at @var{POS}
 in @var{I} is set.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{I = BTEST(I,POS)}
@@ -1416,11 +1644,11 @@ end program test_btest
 @item @emph{Description}:
 @code{CEILING(X)} returns the least integer greater than or equal to @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{I = CEILING(X[,KIND])}
@@ -1428,7 +1656,7 @@ elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
 @item @var{X} @tab The type shall be @code{REAL(*)}.
-@item @var{KIND} @tab Optional scaler integer initialization expression.
+@item @var{KIND} @tab (Optional) scalar integer initialization expression.
 @end multitable
 
 @item @emph{Return value}:
@@ -1443,6 +1671,10 @@ program test_ceiling
     print *, ceiling(y) ! returns -63
 end program test_ceiling
 @end smallexample
+
+@item @emph{See also}:
+@ref{FLOOR}, @ref{NINT}
+
 @end table
 
 
@@ -1450,17 +1682,17 @@ end program test_ceiling
 @node CHAR
 @section @code{CHAR} --- Character conversion function
 @findex @code{CHAR} intrinsic
-@cindex CHAR
+@cindex conversion function (character)
 
 @table @asis
 @item @emph{Description}:
 @code{CHAR(I,[KIND])} returns the character represented by the integer @var{I}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{C = CHAR(I[,KIND])}
@@ -1483,8 +1715,58 @@ program test_char
     print *, i, c ! returns 'J'
 end program test_char
 @end smallexample
+
+@item @emph{See also}:
+@ref{ACHAR}, @ref{ICHAR}, @ref{IACHAR}
+
 @end table
 
+
+@node CHDIR
+@section @code{CHDIR} --- Change working directory
+@findex @code{CHDIR} intrinsic
+@cindex file system functions
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+@node CHMOD
+@section @code{CHMOD} --- Change access permissions of files
+@findex @code{CHMOD} 
+@cindex file system functions
+
+Not yet implemented in gfortran.
+
+@table @asis
+@item @emph{Description}:
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
+
+@end table
 
 
 @node CMPLX
@@ -1494,19 +1776,19 @@ end program test_char
 
 @table @asis
 @item @emph{Description}:
-@code{CMPLX(X,[Y,KIND])} returns a complex number where @var{X} is converted to
+@code{CMPLX(X[,Y[,KIND]])} returns a complex number where @var{X} is converted to
 the real component.  If @var{Y} is present it is converted to the imaginary
 component.  If @var{Y} is not present then the imaginary component is set to
 0.0.  If @var{X} is complex then @var{Y} must not be present.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
-@code{C = CMPLX(X[,Y,KIND])}
+@code{C = CMPLX(X[,Y[,KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1542,11 +1824,11 @@ end program test_cmplx
 @code{COMMAND_ARGUMENT_COUNT()} returns the number of arguments passed on the
 command line when the containing program was invoked.
 
-@item @emph{Option}:
-f2003, gnu
+@item @emph{Standard}:
+F2003
 
 @item @emph{Class}:
-non-elemental function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{I = COMMAND_ARGUMENT_COUNT()}
@@ -1581,11 +1863,11 @@ end program test_command_argument_count
 @code{CONJG(Z)} returns the conjugate of @var{Z}.  If @var{Z} is @code{(x, y)}
 then the result is @code{(x, -y)}
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Z = CONJG(Z)}
@@ -1611,9 +1893,9 @@ end program test_conjg
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name             @tab Argument             @tab Return type          @tab Option
-@item @code{DCONJG(Z)} @tab @code{COMPLEX(8) Z}  @tab @code{COMPLEX(8)}    @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name             @tab Argument             @tab Return type          @tab Standard
+@item @code{DCONJG(Z)} @tab @code{COMPLEX(8) Z}  @tab @code{COMPLEX(8)}    @tab GNU extension
 @end multitable
 @end table
 
@@ -1625,17 +1907,17 @@ end program test_conjg
 @findex @code{DCOS} intrinsic
 @findex @code{ZCOS} intrinsic
 @findex @code{CDCOS} intrinsic
-@cindex cosine
+@cindex trigonometric functions
 
 @table @asis
 @item @emph{Description}:
 @code{COS(X)} computes the cosine of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = COS(X)}
@@ -1647,7 +1929,9 @@ elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value has the same type and kind as @var{X}.
+The return value is of type @code{REAL(*)} and it lies in the
+range @math{ -1 \leq \cos (x) \leq 1}.  The kind type
+parameter is the same as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -1658,13 +1942,17 @@ end program test_cos
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type     @tab Option
-@item @code{DCOS(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab f95, gnu
-@item @code{CCOS(X)}@tab @code{COMPLEX(4) X}@tab @code{COMPLEX(4)}@tab f95, gnu
-@item @code{ZCOS(X)}@tab @code{COMPLEX(8) X}@tab @code{COMPLEX(8)}@tab f95, gnu
-@item @code{CDCOS(X)}@tab @code{COMPLEX(8) X}@tab @code{COMPLEX(8)}@tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument            @tab Return type       @tab Standard
+@item @code{DCOS(X)}  @tab @code{REAL(8) X}    @tab @code{REAL(8)}    @tab F77 and later
+@item @code{CCOS(X)}  @tab @code{COMPLEX(4) X} @tab @code{COMPLEX(4)} @tab F77 and later
+@item @code{ZCOS(X)}  @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
+@item @code{CDCOS(X)} @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{ACOS}
+
 @end table
 
 
@@ -1679,11 +1967,11 @@ end program test_cos
 @item @emph{Description}:
 @code{COSH(X)} computes the hyperbolic cosine of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = COSH(X)}
@@ -1706,10 +1994,14 @@ end program test_cosh
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DCOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DCOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F77 and later
 @end multitable
+
+@item @emph{See also}:
+Inverse function: @ref{ACOSH}
+
 @end table
 
 
@@ -1726,8 +2018,8 @@ end program test_cosh
 taken to be @code{1}.  @var{DIM} is a scaler of type @code{INTEGER} in the
 range of @math{1 /leq DIM /leq n)} where @math{n} is the rank of @var{MASK}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
 transformational function
@@ -1783,11 +2075,11 @@ end program test_count
 Returns a @code{REAL} value representing the elapsed CPU time in seconds.  This
 is useful for testing segments of code to determine execution time.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{CPU_TIME(X)}
@@ -1817,7 +2109,7 @@ end program test_cpu_time
 @node CSHIFT
 @section @code{CSHIFT} --- Circular shift function
 @findex @code{CSHIFT} intrinsic
-@cindex cshift intrinsic
+@cindex bit manipulation
 
 @table @asis
 @item @emph{Description}:
@@ -1830,8 +2122,8 @@ by @var{SHIFT} places.  If rank is greater than one, then all complete rank one
 sections of @var{ARRAY} along the given dimension are shifted.  Elements
 shifted out one end of each rank one section are shifted back in the other end.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
 transformational function
@@ -1884,11 +2176,11 @@ subroutine, and vice versa.
 @var{T} is an @code{INTENT(IN)} @code{INTEGER(KIND=8)} variable.
 @var{S} is an @code{INTENT(OUT)} @code{CHARACTER} variable.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -1947,11 +2239,11 @@ Unavailable time and date parameters return blanks.
 @item @tab @code{VALUE(8)}: @tab The milliseconds of the second
 @end multitable	    
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{CALL DATE_AND_TIME([DATE, TIME, ZONE, VALUES])}
@@ -1995,17 +2287,15 @@ end program test_time_and_date
 @table @asis
 @item @emph{Description}:
 @code{DBLE(X)} Converts @var{X} to double precision real type.
-@code{DFLOAT} is an alias for @code{DBLE}
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = DBLE(X)}
-@code{X = DFLOAT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2021,9 +2311,12 @@ program test_dble
     real    :: x = 2.18
     integer :: i = 5
     complex :: z = (2.3,1.14)
-    print *, dble(x), dble(i), dfloat(z)
+    print *, dble(x), dble(i), dble(z)
 end program test_dble
 @end smallexample
+
+@item @emph{See also}:
+@ref{DFLOAT}, @ref{FLOAT}, @ref{REAL}
 @end table
 
 
@@ -2040,11 +2333,11 @@ converted to the real component.  If @var{Y} is present it is converted to the
 imaginary component.  If @var{Y} is not present then the imaginary component is
 set to 0.0.  If @var{X} is complex then @var{Y} must not be present.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{C = DCMPLX(X)}
@@ -2084,7 +2377,34 @@ end program test_dcmplx
 @table @asis
 @item @emph{Description}:
 @code{DFLOAT(X)} Converts @var{X} to double precision real type.
-@code{DFLOAT} is an alias for @code{DBLE}.  See @code{DBLE}.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{X = DFLOAT(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type double precision real.
+
+@item @emph{Example}:
+@smallexample
+program test_dfloat
+    integer :: i = 5
+    print *, dfloat(i)
+end program test_dfloat
+@end smallexample
+
+@item @emph{See also}:
+@ref{DBLE}, @ref{FLOAT}, @ref{REAL}
 @end table
 
 
@@ -2100,11 +2420,11 @@ end program test_dcmplx
 representation of @var{X}.  For example, on a system using a 32-bit
 floating point representation, a default real number would likely return 24.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-inquiry function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{C = DIGITS(X)}
@@ -2144,11 +2464,11 @@ end program test_digits
 @code{DIM(X,Y)} returns the difference @code{X-Y} if the result is positive;
 otherwise returns zero.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = DIM(X,Y)}
@@ -2175,10 +2495,10 @@ end program test_dim
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{IDIM(X,Y)} @tab @code{INTEGER(4) X,Y} @tab @code{INTEGER(4)} @tab gnu
-@item @code{DDIM(X,Y)} @tab @code{REAL(8) X,Y}  @tab @code{REAL(8)} @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name             @tab Argument              @tab Return type       @tab Standard
+@item @code{IDIM(X,Y)} @tab @code{INTEGER(4) X,Y} @tab @code{INTEGER(4)} @tab F77 and later
+@item @code{DDIM(X,Y)} @tab @code{REAL(8) X,Y}    @tab @code{REAL(8)}    @tab F77 and later
 @end multitable
 @end table
 
@@ -2198,8 +2518,8 @@ and must be arrays of rank one and of equal size. If the vectors are
 vectors are @code{COMPLEX(*)}, the result is @code{SUM(CONJG(X)*Y)}. If the 
 vectors are @code{LOGICAL}, the result is @code{ANY(X.AND.Y)}.
 
-@item @emph{Option}:
-f95
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
 transformational function
@@ -2244,11 +2564,11 @@ end program test_dot_prod
 @item @emph{Description}:
 @code{DPROD(X,Y)} returns the product @code{X*Y}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{D = DPROD(X,Y)}
@@ -2286,11 +2606,11 @@ end program test_dprod
 @item @emph{Description}:
 @code{DREAL(Z)} returns the real part of complex variable @var{Z}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{D = DREAL(Z)}
@@ -2310,6 +2630,10 @@ program test_dreal
     print *, dreal(z)
 end program test_dreal
 @end smallexample
+
+@item @emph{See also}:
+@ref{AIMAG}
+
 @end table
 
 
@@ -2347,11 +2671,11 @@ subroutine, and vice versa.
 @item @tab @code{RESULT}: @tab Run time since start in seconds.
 @end multitable
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -2394,7 +2718,7 @@ end program test_dtime
 @node EOSHIFT
 @section @code{EOSHIFT} --- End-off shift function
 @findex @code{EOSHIFT} intrinsic
-@cindex eoshift intrinsic
+@cindex bit manipulation
 
 @table @asis
 @item @emph{Description}:
@@ -2417,8 +2741,8 @@ following are copied in depending on the type of @var{ARRAY}.
 @item Character(@var{len}) @tab @var{len} blanks.
 @end multitable
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
 transformational function
@@ -2465,11 +2789,11 @@ end program test_eoshift
 @item @emph{Description}:
 @code{EPSILON(X)} returns a nearly negligible number relative to @code{1}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-inquiry function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{C = EPSILON(X)}
@@ -2495,6 +2819,30 @@ end program test_epsilon
 
 
 
+@node EQV
+@section @code{EQV} --- Logical equivalence
+@findex @code{EQV} intrinsic
+@cindex logical operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@ref{NEQV}
+@end table
+
+
+
 @node ERF
 @section @code{ERF} --- Error function 
 @findex @code{ERF} intrinsic
@@ -2504,11 +2852,11 @@ end program test_epsilon
 @item @emph{Description}:
 @code{ERF(X)} computes the error function of @var{X}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU Extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = ERF(X)}
@@ -2531,9 +2879,9 @@ end program test_erf
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DERF(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DERF(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 @end table
 
@@ -2548,11 +2896,11 @@ end program test_erf
 @item @emph{Description}:
 @code{ERFC(X)} computes the complementary error function of @var{X}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = ERFC(X)}
@@ -2575,9 +2923,9 @@ end program test_erfc
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DERFC(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DERFC(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 @end table
 
@@ -2586,7 +2934,7 @@ end program test_erfc
 @node ETIME
 @section @code{ETIME} --- Execution time subroutine (or function)
 @findex @code{ETIME} intrinsic
-@cindex ETIME subroutine 
+@cindex time functions
 
 @table @asis
 @item @emph{Description}:
@@ -2612,11 +2960,11 @@ subroutine, and vice versa.
 @item @tab @code{RESULT}: @tab Run time since start in seconds.
 @end multitable
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @multitable @columnfractions .8
@@ -2652,6 +3000,10 @@ program test_etime
     print *, tarray(2)
 end program test_etime
 @end smallexample
+
+@item @emph{See also}:
+@ref{CPU_TIME}
+
 @end table
 
 
@@ -2667,11 +3019,11 @@ end program test_etime
 is omitted it returns the canonical @emph{success} for the system.  All Fortran
 I/O units are closed. 
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-non-elemental subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{CALL EXIT([STATUS])}
@@ -2692,6 +3044,9 @@ program test_exit
   call EXIT(STATUS)
 end program test_exit
 @end smallexample
+
+@item @emph{See also}:
+@ref{ABORT}, @ref{KILL}
 @end table
 
 
@@ -2708,11 +3063,11 @@ end program test_exit
 @item @emph{Description}:
 @code{EXP(X)} computes the base @math{e} exponential of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = EXP(X)}
@@ -2735,12 +3090,12 @@ end program test_exp
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DEXP(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
-@item @code{CEXP(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
-@item @code{ZEXP(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
-@item @code{CDEXP(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument             @tab Return type         @tab Standard
+@item @code{DEXP(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}      @tab F77 and later
+@item @code{CEXP(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}   @tab F77 and later
+@item @code{ZEXP(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}   @tab GNU extension
+@item @code{CDEXP(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}   @tab GNU extension
 @end multitable
 @end table
 
@@ -2756,11 +3111,11 @@ end program test_exp
 @code{EXPONENT(X)} returns the value of the exponent part of @var{X}. If @var{X}
 is zero the value returned is zero. 
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{I = EXPONENT(X)}
@@ -2802,11 +3157,11 @@ subroutine, and vice versa.
 
 @var{DATE} is an @code{INTENT(OUT)} @code{CHARACTER} variable.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -2839,19 +3194,20 @@ end program test_fdate
 @end table
 
 @node FLOAT
+
 @section @code{FLOAT} --- Convert integer to default real
 @findex @code{FLOAT} intrinsic
-@cindex float
+@cindex conversion function (float)
 
 @table @asis
 @item @emph{Description}:
 @code{FLOAT(I)} converts the integer @var{I} to a default real value.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = FLOAT(I)}
@@ -2871,6 +3227,55 @@ program test_float
     if (float(i) /= 1.) call abort
 end program test_float
 @end smallexample
+
+@item @emph{See also}:
+@ref{DBLE}, @ref{DFLOAT}, @ref{REAL}
+@end table
+
+
+
+@node FGETC
+@section @code{FGETC} --- Read a single character in stream mode
+@findex @code{FGETC} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+@node FGET
+@section @code{FGET} --- Read a single character from stdin in stream mode
+@findex @code{FGET} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
 @end table
 
 
@@ -2883,11 +3288,11 @@ end program test_float
 @item @emph{Description}:
 @code{FLOOR(X)} returns the greatest integer less than or equal to @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{I = FLOOR(X[,KIND])}
@@ -2910,6 +3315,10 @@ program test_floor
     print *, floor(y) ! returns -64
 end program test_floor
 @end smallexample
+
+@item @emph{See also}:
+@ref{CEILING}, @ref{NINT}
+
 @end table
 
 
@@ -2924,8 +3333,8 @@ end program test_floor
 Flushes Fortran unit(s) currently open for output. Without the optional
 argument, all units are flushed, otherwise just the unit specified.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 non-elemental subroutine
@@ -2956,8 +3365,8 @@ statement that should be preferred over the @code{FLUSH} intrinsic.
 @code{FNUM(UNIT)} returns the Posix file descriptor number corresponding to the
 open Fortran I/O unit @code{UNIT}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 non-elemental function
@@ -2987,6 +3396,52 @@ end program test_fnum
 
 
 
+@node FPUT
+@section @code{FPUT} --- Write a single character to stdout in stream mode
+@findex @code{FPUT} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+@node FPUTC
+@section @code{FPUTC} --- Write a single character in stream mode
+@findex @code{FPUTC} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
 @node FRACTION
 @section @code{FRACTION} --- Fractional part of the model representation
 @findex @code{FRACTION} intrinsic
@@ -2997,11 +3452,11 @@ end program test_fnum
 @code{FRACTION(X)} returns the fractional part of the model
 representation of @code{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Y = FRACTION(X)}
@@ -3042,11 +3497,11 @@ provided in @command{gfortran} to allow user to compile legacy code. For
 new code using Fortran 95 pointers, the memory de-allocation intrinsic is
 @code{DEALLOCATE}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{FREE(PTR)}
@@ -3062,6 +3517,228 @@ None
 
 @item @emph{Example}:
 See @code{MALLOC} for an example.
+
+@item @emph{See also}:
+@ref{MALLOC}
+@end table
+
+
+
+
+@node FSTAT
+@section @code{FSTAT} --- Get file status
+@findex @code{FSTAT} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+GNU extension
+
+@item @emph{Standard}:
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+@node FSEEK
+@section @code{FSEEK} --- Low level file positioning subroutine
+@findex @code{FSEEK} 
+@cindex file system functions
+
+Not yet implemented in gfortran.
+
+@table @asis
+@item @emph{Description}:
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
+
+@end table
+
+
+
+@node FTELL
+@section @code{FTELL} --- Current stream position
+@findex @code{FTELL} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+@node GETARG
+@section @code{GETARG} --- Get command line arguments
+@findex @code{GETARG} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{IARGC}, @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}
+@end table
+
+
+
+@node GET_COMMAND
+@section @code{GET_COMMAND} --- Subroutine to retrieve the entire command line
+@findex @code{GET_COMMAND} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F2003
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+@node GET_COMMAND_ARGUMENT
+@section @code{GET_COMMAND_ARGUMENT} --- Subroutine to retrieve a command argument
+@findex @code{GET_COMMAND_ARGUMENT} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F2003
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@ref{COMMAND_ARGUMENT_COUNT}
+@end table
+
+
+
+@node GETCWD
+@section @code{GETCWD} --- Get current working directory
+@findex @code{GETCWD} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+@node GETENV
+@section @code{GETENV} --- Get an environmental variable
+@findex @code{GETENV} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@ref{GET_ENVIRONMENT_VARIABLE}
+@end table
+
+
+
+@node GET_ENVIRONMENT_VARIABLE
+@section @code{GET_ENVIRONMENT_VARIABLE} --- Get an environmental variable
+@findex @code{GET_ENVIRONMENT_VARIABLE} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F2003
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
 @end table
 
 
@@ -3075,8 +3752,8 @@ See @code{MALLOC} for an example.
 @item @emph{Description}:
 Returns the numerical group ID of the current process.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 function
@@ -3092,7 +3769,35 @@ kind.
 @item @emph{Example}:
 See @code{GETPID} for an example.
 
+@item @emph{See also}:
+@ref{GETPID}
 @end table
+
+
+
+@node GETLOG
+@section @code{GETLOG} --- Get login name
+@findex @code{GETLOG} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
 
 
 
@@ -3103,10 +3808,10 @@ See @code{GETPID} for an example.
 
 @table @asis
 @item @emph{Description}:
-Returns the process numerical identificator of the current process.
+Returns the numerical process identifier of the current process.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 function
@@ -3141,8 +3846,8 @@ end program info
 @item @emph{Description}:
 Returns the numerical user ID of the current process.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 function
@@ -3158,6 +3863,59 @@ kind.
 @item @emph{Example}:
 See @code{GETPID} for an example.
 
+@item @emph{See also}:
+@ref{GETPID}
+@end table
+
+
+
+@node GMTIME
+@section @code{GMTIME} --- Convert time to GMT info
+@findex @code{GMTIME} 
+@cindex time function
+
+Not yet implemented in gfortran.
+
+@table @asis
+@item @emph{Description}:
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
+
+@end table
+
+
+
+@node HOSTNM
+@section @code{HOSTNM} --- Get system host name
+@findex @code{HOSTNM} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
 @end table
 
 
@@ -3172,11 +3930,11 @@ See @code{GETPID} for an example.
 @code{HUGE(X)} returns the largest number that is not an infinity in
 the model of the type of @code{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Y = HUGE(X)}
@@ -3204,17 +3962,18 @@ end program test_huge_tiny
 @section @code{IACHAR} --- Code in @acronym{ASCII} collating sequence 
 @findex @code{IACHAR} intrinsic
 @cindex @acronym{ASCII} collating sequence
+@cindex conversion function (character)
 
 @table @asis
 @item @emph{Description}:
 @code{IACHAR(C)} returns the code for the @acronym{ASCII} character
 in the first character position of @code{C}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{I = IACHAR(C)}
@@ -3235,6 +3994,147 @@ program test_iachar
   i = iachar(' ')
 end program test_iachar
 @end smallexample
+
+@item @emph{See also}:
+@ref{CHAR},@ref{ICHAR}
+
+@end table
+
+
+@node IAND
+@section @code{IAND} --- Bitwise logical and
+@findex @code{IAND} intrinsic
+@cindex bit operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{IOR}, @ref{IEOR}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR},
+@end table
+
+
+
+
+@node IARGC
+@section @code{IARGC} --- Get number of command line arguments
+@findex @code{IARGC} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@ref{GETARG}, @ref{GET_COMMAND}, @ref{COMMAND_ARGUMENT_COUNT}, @ref{GET_COMMAND_ARGUMENT}
+
+@end table
+
+
+
+
+@node IBCLR
+@section @code{IBCLR} --- Clear bit
+@findex @code{IBCLR} intrinsic
+@cindex bit operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{IBITS}, @ref{IBSET}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
+@end table
+
+
+
+
+@node IBITS
+@section @code{IBITS} --- Bit extraction
+@findex @code{IBITS} intrinsic
+@cindex bit operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@ref{IBCLR}, @ref{IBSET}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
+
+@end table
+
+
+
+
+@node IBSET
+@section @code{IBSET} --- Set bit
+@findex @code{IBSET} intrinsic
+@cindex bit operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{IBCLR}, @ref{IBITS}, @ref{IAND}, @ref{IOR}, @ref{IEOR}
+
 @end table
 
 
@@ -3242,19 +4142,20 @@ end program test_iachar
 @node ICHAR
 @section @code{ICHAR} --- Character-to-integer conversion function
 @findex @code{ICHAR} intrinsic
+@cindex conversion function (character)
 
 @table @asis
 @item @emph{Description}:
 @code{ICHAR(C)} returns the code for the character in the first character
 position of @code{C} in the system's native character set.
-The correspondence between character and their codes is not necessarily
-the same between GNU Fortran implementations.
+The correspondence between characters and their codes is not necessarily
+the same across different GNU Fortran implementations.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{I = ICHAR(C)}
@@ -3307,11 +4208,11 @@ current local time. The day (in the range 1-31), month (in the range 1-12),
 and year appear in elements 1, 2, and 3 of @var{TARRAY}, respectively. 
 The year has four significant digits.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{CALL IDATE(TARRAY)}
@@ -3338,6 +4239,181 @@ end program test_idate
 @end table
 
 
+
+@node IEOR
+@section @code{IEOR} --- Bitwise logical exclusive or
+@findex @code{IEOR} intrinsic
+@cindex bit operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{IOR}, @ref{IAND}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR},
+@end table
+
+
+
+
+@node IERRNO
+@section @code{IERRNO} --- Get the last system error number
+@findex @code{IERRNO} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{PERROR}
+@end table
+
+
+
+
+@node INDEX
+@section @code{INDEX} --- Position of a substring within a string
+@findex @code{INDEX} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node INT
+@section @code{INT} --- Convert to integer type
+@findex @code{INT} intrinsic
+@findex @code{IFIX} intrinsic
+@findex @code{IDINT} intrinsic
+@cindex conversion function (integer)
+
+@table @asis
+@item @emph{Description}:
+Convert to integer type
+
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .30 .80
+@item @code{X = INT(X)}
+@item @code{X = INT(X, KIND)}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be of type @code{INTEGER(*)}, @code{REAL(*)} or @code{COMPLEX(*)}
+@item @var{KIND}  @tab (Optional) @var{KIND} shall be a scalar integer.
+@end multitable
+
+@item @emph{Return value}:
+These functions return a @code{INTEGER(*)} variable or array under 
+the following rules: 
+
+@table @asis
+@item (A)
+If @var{X} is of type @code{INTEGER(*)}, @code{INT(X) = X} 
+@item (B)
+If @var{X} is of type @code{REAL(*)} and @math{|X| < 1} @code{INT(X)} equals @var{0}. 
+If @math{|X| \geq 1}, then @code{INT(X)} equals the largest integer that does not exceed 
+the range of @var{X} and whose sign is the same as the sign of @var{X}.
+@item (C)
+If @var{X} is of type @code{COMPLEX(*)}, rule B is applied to the real part of X.
+@end table
+
+@item @emph{Example}:
+@smallexample
+program test_int
+  integer :: i = 42
+  complex :: z = (-3.7, 1.0)
+  print *, int(i)
+  print *, int(z), int(z,8)
+end program
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .40
+@item Name             @tab Argument            @tab Return type       @tab Standard
+@item @code{IFIX(X)}   @tab @code{REAL(4) X}    @tab @code{INTEGER}    @tab F77 and later
+@item @code{IDINT(X)}  @tab @code{REAL(8) X}    @tab @code{INTEGER}    @tab F77 and later
+@end multitable
+
+@comment @item @emph{See also}:
+@end table
+
+
+
+
+@node IOR
+@section @code{IOR} --- Bitwise logical or
+@findex @code{IOR} intrinsic
+@cindex bit operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{IEOR}, @ref{IAND}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR},
+@end table
+
+
+
+
 @node IRAND
 @section @code{IRAND} --- Integer pseudo-random number
 @findex @code{IRAND} intrinsic
@@ -3352,8 +4428,8 @@ in the current sequence is returned; if @var{FLAG} is 1, the generator
 is restarted by @code{CALL SRAND(0)}; if @var{FLAG} has any other value,
 it is used as a new seed with @code{SRAND}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 non-elemental function
@@ -3382,6 +4458,63 @@ end program test_irand
 
 @end table
 
+
+
+@node ISHFT
+@section @code{ISHFT} --- Shift bits
+@findex @code{ISHFT} intrinsic
+@cindex bit manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{ISHFTC}
+@end table
+
+
+
+
+@node ISHFTC
+@section @code{ISHFTC} --- Shift bits circularly
+@findex @code{ISHFTC} intrinsic
+@cindex bit manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{ISHFT}
+@end table
+
+
+
 @node ITIME
 @section @code{ITIME} --- Get current local time subroutine (hour/minutes/seconds) 
 @findex @code{ITIME} intrinsic
@@ -3393,11 +4526,11 @@ current local time. The hour (in the range 1-24), minute (in the range 1-60),
 and seconds (in the range 1-60) appear in elements 1, 2, and 3 of @var{TARRAY}, 
 respectively.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{CALL ITIME(TARRAY)}
@@ -3425,6 +4558,34 @@ end program test_itime
 @end table
 
 
+
+@node KILL
+@section @code{KILL} --- Send a signal to a process
+@findex @code{KILL} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{ABORT}, @ref{EXIT}
+@end table
+
+
+
 @node KIND
 @section @code{KIND} --- Kind of an entity
 @findex @code{KIND} intrinsic
@@ -3433,11 +4594,11 @@ end program test_itime
 @item @emph{Description}:
 @code{KIND(X)} returns the kind value of the entity @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-inquiry function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{K = KIND(X)}
@@ -3467,6 +4628,249 @@ end program test_kind
 
 
 
+@node LBOUND
+@section @code{LBOUND} --- Lower dimension bounds of an array
+@findex @code{LBOUND} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@ref{UBOUND}
+@end table
+
+
+
+
+@node LEN
+@section @code{LEN} --- Length of a character entity
+@findex @code{LEN} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{LEN_TRIM}, @ref{ADJUSTL}, @ref{ADJUSTR}
+@end table
+
+
+
+
+@node LEN_TRIM
+@section @code{LEN_TRIM} --- Length of a character entity without trailing blank characters
+@findex @code{LEN_TRIM} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{LEN}, @ref{ADJUSTL}, @ref{ADJUSTR}
+@end table
+
+
+
+
+@node LGE
+@section @code{LGE} --- Lexical greater than or equal
+@findex @code{LGE} intrinsic
+@cindex comparison (lexical)
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{LGT}, @ref{LLE}, @ref{LLT}
+@end table
+
+
+
+
+@node LGT
+@section @code{LGT} --- Lexical greater than
+@findex @code{LGT} intrinsic
+@cindex comparison (lexical)
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{LGE}, @ref{LLE}, @ref{LLT}
+@end table
+
+
+
+
+@node LINK
+@section @code{LINK} --- Create a hard link
+@findex @code{LINK} intrinsic
+@cindex file system operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{UNLINK}
+@end table
+
+
+
+
+@node LLE
+@section @code{LLE} --- Lexical less than or equal
+@findex @code{LLE} intrinsic
+@cindex comparison (lexical)
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{LGE}, @ref{LGT}, @ref{LLT}
+@end table
+
+
+
+
+@node LLT
+@section @code{LLT} --- Lexical less than
+@findex @code{LLT} intrinsic
+@cindex comparison (lexical)
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{LGE}, @ref{LGT}, @ref{LLE}
+@end table
+
+
+
+
+@node LNBLNK
+@section @code{LNBLNK} --- Index of the last non-blank character in a string
+@findex @code{LNBLNK} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{INDEX}
+@end table
+
+
+
+
 @node LOC
 @section @code{LOC} --- Returns the address of a variable
 @findex @code{LOC} intrinsic
@@ -3476,11 +4880,11 @@ end program test_kind
 @item @emph{Description}:
 @code{LOC(X)} returns the address of @var{X} as an integer.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
-inquiry function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{I = LOC(X)}
@@ -3519,11 +4923,11 @@ end program test_loc
 @item @emph{Description}:
 @code{LOG(X)} computes the logarithm of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = LOG(X)}
@@ -3549,8 +4953,8 @@ end program test_log
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{ALOG(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab f95, gnu
 @item @code{DLOG(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
 @item @code{CLOG(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
@@ -3572,11 +4976,11 @@ end program test_log
 @item @emph{Description}:
 @code{LOG10(X)} computes the base 10 logarithm of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = LOG10(X)}
@@ -3600,12 +5004,94 @@ end program test_log10
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab f95, gnu
-@item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab F95 and later
+@item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
 @end multitable
 @end table
+
+
+@node LOGICAL
+@section @code{LOGICAL} --- Convert to logical type
+@findex @code{LOGICAL} intrinsic
+@cindex conversion function (logical)
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node LSHIFT
+@section @code{LSHIFT} --- Left shift bits
+@findex @code{LSHIFT} 
+@cindex bit manipulation
+
+Not yet implemented in gfortran.
+
+@table @asis
+@item @emph{Description}:
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
+
+@end table
+
+
+
+@node LTIME
+@section @code{LTIME} --- Convert time to local time info
+@findex @code{LTIME} 
+@cindex time function
+
+Not yet implemented in gfortran.
+
+@table @asis
+@item @emph{Description}:
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
+
+@end table
+
 
 
 @node MALLOC
@@ -3622,8 +5108,8 @@ in @command{gfortran} to allow user to compile legacy code. For new code
 using Fortran 95 pointers, the memory allocation intrinsic is
 @code{ALLOCATE}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 non-elemental function
@@ -3667,8 +5153,68 @@ program test_malloc
   call free(ptr_x)
 end program test_malloc
 @end smallexample
+
+@item @emph{See also}:
+@ref{FREE}
 @end table
 
+
+@node MATMUL
+@section @code{MATMUL} --- matrix multiplication
+@findex @code{MATMUL} intrinsic
+@cindex matrix operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+@node MAX
+@section @code{MAX} --- Maximum value of an argument list
+@findex @code{MAX} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .40
+@item Name             @tab Argument            @tab Return type         @tab Standard
+@item @code{MAX0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab F77 and later
+@item @code{AMAX0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MAX(X))} @tab F77 and later
+@item @code{MAX1(X)}   @tab @code{REAL(*) X}    @tab @code{INT(MAX(X))}  @tab F77 and later
+@item @code{AMAX1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab F77 and later
+@item @code{DMAX1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab F77 and later
+@end multitable
+
+@item @emph{See also}:
+@ref{MAXLOC} @ref{MAXVAL}
+@end table
 
 
 @node MAXEXPONENT
@@ -3681,11 +5227,11 @@ end program test_malloc
 @code{MAXEXPONENT(X)} returns the maximum exponent in the model of the
 type of @code{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{I = MAXEXPONENT(X)}
@@ -3712,6 +5258,116 @@ end program exponents
 @end table
 
 
+@node MAXLOC
+@section @code{MAXLOC} --- Location of the maximum value within an array
+@findex @code{MAXLOC} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@ref{MAX}, @ref{MAXVAL}
+@end table
+
+
+
+@node MAXVAL
+@section @code{MAXVAL} --- Maximum value of an array
+@findex @code{MAXVAL} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{MAX}, @ref{MAXLOC}
+@end table
+
+
+
+
+@node MERGE
+@section @code{MERGE} --- Merge arrays
+@findex @code{MERGE} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+@node MIN
+@section @code{MIN} --- Minimum value of an argument list
+@findex @code{MIN} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .40
+@item Name             @tab Argument            @tab Return type         @tab Standard
+@item @code{MIN0(I)}   @tab @code{INTEGER(4) I} @tab @code{INTEGER(4)}   @tab F77 and later
+@item @code{AMIN0(I)}  @tab @code{INTEGER(4) I} @tab @code{REAL(MIN(X))} @tab F77 and later
+@item @code{MIN1(X)}   @tab @code{REAL(*) X}    @tab @code{INT(MIN(X))}  @tab F77 and later
+@item @code{AMIN1(X)}  @tab @code{REAL(4)    X} @tab @code{REAL(4)}      @tab F77 and later
+@item @code{DMIN1(X)}  @tab @code{REAL(8)    X} @tab @code{REAL(8)}      @tab F77 and later
+@end multitable
+
+@item @emph{See also}:
+@ref{MINLOC}, @ref{MINVAL}
+@end table
 
 @node MINEXPONENT
 @section @code{MINEXPONENT} --- Minimum exponent of a real kind
@@ -3723,11 +5379,11 @@ end program exponents
 @code{MINEXPONENT(X)} returns the minimum exponent in the model of the
 type of @code{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{I = MINEXPONENT(X)}
@@ -3746,6 +5402,58 @@ See @code{MAXEXPONENT} for an example.
 @end table
 
 
+@node MINLOC
+@section @code{MINLOC} --- Location of the minimum value within an array
+@findex @code{MINLOC} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{MIN}, @ref{MINVAL}
+
+@end table
+
+
+@node MINVAL
+@section @code{MINVAL} --- Minimum value of an array
+@findex @code{MINVAL} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{MIN}, @ref{MINLOC}
+@end table
+
+
+
 
 @node MOD
 @section @code{MOD} --- Remainder function
@@ -3759,11 +5467,11 @@ See @code{MAXEXPONENT} for an example.
 @code{MOD(A,P)} computes the remainder of the division of A by P. It is
 calculated as @code{A - (INT(A/P) * P)}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = MOD(A,P)}
@@ -3800,10 +5508,10 @@ end program test_mod
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name             @tab Arguments      @tab Return type    @tab Option
-@item @code{AMOD(A,P)} @tab @code{REAL(4)} @tab @code{REAL(4)} @tab f95, gnu
-@item @code{DMOD(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name             @tab Arguments      @tab Return type    @tab Standard
+@item @code{AMOD(A,P)} @tab @code{REAL(4)} @tab @code{REAL(4)} @tab F95 and later
+@item @code{DMOD(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab F95 and later
 @end multitable
 @end table
 
@@ -3818,11 +5526,11 @@ end program test_mod
 @item @emph{Description}:
 @code{MODULO(A,P)} computes the @var{A} modulo @var{P}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = MODULO(A,P)}
@@ -3847,7 +5555,7 @@ In all cases, if @var{P} is zero the result is processor-dependent.
 
 @item @emph{Example}:
 @smallexample
-program test_mod
+program test_modulo
   print *, modulo(17,3)
   print *, modulo(17.5,5.5)
 
@@ -3859,13 +5567,32 @@ program test_mod
 end program test_mod
 @end smallexample
 
-@item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name             @tab Arguments      @tab Return type    @tab Option
-@item @code{AMOD(A,P)} @tab @code{REAL(4)} @tab @code{REAL(4)} @tab f95, gnu
-@item @code{DMOD(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab f95, gnu
-@end multitable
 @end table
+
+
+
+@node MVBITS
+@section @code{MVBITS} --- Move bits from one integer to another
+@findex @code{MVBITS} intrinsic
+@cindex bit operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
 
 
 
@@ -3879,11 +5606,11 @@ end program test_mod
 @code{NEAREST(X, S)} returns the processor-representable number nearest
 to @code{X} in the direction indicated by the sign of @code{S}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Y = NEAREST(X, S)}
@@ -3915,6 +5642,31 @@ end program test_nearest
 
 
 
+@node NEQV
+@section @code{NEQV} --- Logical non-equivalence
+@findex @code{NEQV} intrinsic
+@cindex logical operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@ref{EQV}
+@end table
+
+
+
+
 @node NINT
 @section @code{NINT} --- Nearest whole number
 @findex @code{NINT} intrinsic
@@ -3925,11 +5677,11 @@ end program test_nearest
 @item @emph{Description}:
 @code{NINT(X)} rounds its argument to the nearest whole number.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = NINT(X)}
@@ -3957,10 +5709,141 @@ end program test_nint
 
 @item @emph{Specific names}:
 @multitable @columnfractions .33 .33 .33
-@item Name             @tab Argument         @tab Option
-@item @code{IDNINT(X)} @tab @code{REAL(8)} @tab f95, gnu
+@item Name             @tab Argument         @tab Standard
+@item @code{IDNINT(X)} @tab @code{REAL(8)}   @tab F95 and later
 @end multitable
+
+@item @emph{See also}:
+@ref{CEILING}, @ref{FLOOR}
+
 @end table
+
+
+@node NOT
+@section @code{NOT} --- Logical negation
+@findex @code{NOT} intrinsic
+@cindex logical operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node NULL
+@section @code{NULL} --- Function that returns an dissassociated pointer
+@findex @code{NULL} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@ref{ASSOCIATED}
+@end table
+
+
+
+
+@node OR
+@section @code{OR} --- Logical inclusive disjunction
+@findex @code{OR} intrinsic
+@cindex logical operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node PACK
+@section @code{PACK} --- Pack an array into an array of rank one
+@findex @code{PACK} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@ref{UNPACK}
+@end table
+
+
+
+
+@node PERROR
+@section @code{PERROR} --- Print system error message
+@findex @code{PERROR} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@ref{IERRNO}
+@end table
+
 
 
 
@@ -3974,11 +5857,11 @@ end program test_nint
 @code{PRECISION(X)} returns the decimal precision in the model of the
 type of @code{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{I = PRECISION(X)}
@@ -4006,6 +5889,58 @@ end program prec_and_range
 
 
 
+@node PRESENT
+@section @code{PRESENT} --- Determine whether an optional argument is specified
+@findex @code{PRESENT} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node PRODUCT
+@section @code{PRODUCT} --- Product of array elements
+@findex @code{PRODUCT} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@ref{SUM}
+@end table
+
+
+
+
 @node RADIX
 @section @code{RADIX} --- Base of a model number
 @findex @code{RADIX} intrinsic
@@ -4015,11 +5950,11 @@ end program prec_and_range
 @item @emph{Description}:
 @code{RADIX(X)} returns the base of the model representing the entity @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-inquiry function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{R = RADIX(X)}
@@ -4045,6 +5980,58 @@ end program test_radix
 
 
 
+@node RANDOM_NUMBER
+@section @code{RANDOM_NUMBER} --- Pseudo-random number
+@findex @code{RANDOM_NUMBER} intrinsic
+@cindex random numbers
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@ref{RANDOM_SEED}
+@end table
+
+
+
+
+@node RANDOM_SEED
+@section @code{RANDOM_SEED} --- Initialize a pseudo-random number sequence
+@findex @code{RANDOM_SEED} intrinsic
+@cindex random numbers
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@ref{RANDOM_NUMBER}
+@end table
+
+
+
+
 @node RAND
 @section @code{RAND} --- Real pseudo-random number
 @findex @code{RAND} intrinsic
@@ -4059,8 +6046,8 @@ in the current sequence is returned; if @var{FLAG} is 1, the generator
 is restarted by @code{CALL SRAND(0)}; if @var{FLAG} has any other value,
 it is used as a new seed with @code{SRAND}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 non-elemental function
@@ -4091,6 +6078,9 @@ end program test_rand
 For compatibility with HP FORTRAN 77/iX, the @code{RAN} intrinsic is
 provided as an alias for @code{RAND}.
 
+@item @emph{See also}:
+@ref{SRAND}, @ref{RANDOM_NUMBER}
+
 @end table
 
 
@@ -4105,11 +6095,11 @@ provided as an alias for @code{RAND}.
 @code{RANGE(X)} returns the decimal exponent range in the model of the
 type of @code{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Inquiry function
 
 @item @emph{Syntax}:
 @code{I = RANGE(X)}
@@ -4129,6 +6119,21 @@ See @code{PRECISION} for an example.
 
 
 
+@node RAN
+@section @code{RAN} --- Real pseudo-random number
+@findex @code{RAN} intrinsic
+@cindex random number
+
+@table @asis
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{See also}:
+@ref{RAND}, @ref{RANDOM_NUMBER}
+@end table
+
+
+
 @node REAL
 @section @code{REAL} --- Convert to real type 
 @findex @code{REAL} intrinsic
@@ -4141,11 +6146,11 @@ See @code{PRECISION} for an example.
 @code{REALPART(X)} function is provided for compatibility with @command{g77},
 and its use is strongly discouraged.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-transformational function
+Elemental function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .30 .80
@@ -4162,7 +6167,7 @@ transformational function
 @end multitable
 
 @item @emph{Return value}:
-These functions return the a @code{REAL(*)} variable or array under
+These functions return a @code{REAL(*)} variable or array under
 the following rules: 
 
 @table @asis
@@ -4185,6 +6190,84 @@ program test_real
   print *, real(x), real(x,8), realpart(x)
 end program test_real
 @end smallexample
+
+@item @emph{See also}:
+@ref{DBLE}, @ref{DFLOAT}, @ref{FLOAT}
+
+@end table
+
+
+@node RENAME
+@section @code{RENAME} --- Rename a file
+@findex @code{RENAME} intrinsic
+@cindex file system operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node REPEAT
+@section @code{REPEAT} --- Repeated string concatenation 
+@findex @code{REPEAT} intrinsic
+@cindex string manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node RESHAPE
+@section @code{RESHAPE} --- Function to reshape an array
+@findex @code{RESHAPE} intrinsic
+@cindex array manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@ref{SHAPE}
 @end table
 
 
@@ -4198,11 +6281,11 @@ end program test_real
 @code{RRSPACING(X)} returns the  reciprocal of the relative spacing of
 model numbers near @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Y = RRSPACING(X)}
@@ -4221,6 +6304,33 @@ The value returned is equal to
 
 
 
+@node RSHIFT
+@section @code{RSHIFT} --- Right shift bits
+@findex @code{RSHIFT} 
+@cindex bit manipulation
+
+Not yet implemented in gfortran.
+
+@table @asis
+@item @emph{Description}:
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
+
+@end table
+
+
+
 @node SCALE
 @section @code{SCALE} --- Scale a real value
 @findex @code{SCALE} intrinsic
@@ -4229,11 +6339,11 @@ The value returned is equal to
 @item @emph{Description}:
 @code{SCALE(X,I)} returns @code{X * RADIX(X)**I}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Y = SCALE(X, I)}
@@ -4260,6 +6370,77 @@ end program test_scale
 @end table
 
 
+@node SCAN
+@section @code{SCAN} --- Scan a string for the presence of a set of characters
+@findex @code{SCAN} intrinsic
+@cindex string manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node SECNDS
+@section @code{SECNDS} --- Time function
+@findex @code{SECNDS} intrinsic
+@cindex SECNDS
+
+@table @asis
+@item @emph{Description}:
+@code{SECNDS(X)} gets the time in seconds from the real-time system clock.
+@var{X} is a reference time, also in seconds. If this is zero, the time in
+seconds from midnight is returned. This function is non-standard and its
+use is discouraged.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+function
+
+@item @emph{Syntax}:
+@code{T = SECNDS (X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item Name        @tab Type
+@item @var{T}     @tab REAL(4)
+@item @var{X}     @tab REAL(4)
+@end multitable
+
+@item @emph{Return value}:
+None
+
+@item @emph{Example}:
+@smallexample
+program test_secnds
+    real(4) :: t1, t2
+    print *, secnds (0.0)   ! seconds since midnight
+    t1 = secnds (0.0)       ! reference time
+    do i = 1, 10000000      ! do something
+    end do
+    t2 = secnds (t1)        ! elapsed time
+    print *, "Something took ", t2, " seconds."
+end program test_secnds
+@end smallexample
+@end table
+
+
 
 @node SELECTED_INT_KIND
 @section @code{SELECTED_INT_KIND} --- Choose integer kind
@@ -4273,11 +6454,11 @@ type that can represent all values ranging from @math{-10^I} (exclusive)
 to @math{10^I} (exclusive). If there is no integer kind that accommodates
 this range, @code{SELECTED_INT_KIND} returns @math{-1}.
 
-@item @emph{Option}:
-f95
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-transformational function
+Transformational function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .30 .80
@@ -4319,11 +6500,11 @@ end program large_integers
 with decimal precision greater of at least @code{P} digits and exponent
 range greater at least @code{R}. 
 
-@item @emph{Option}:
-f95
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-transformational function
+Transformational function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .30 .80
@@ -4372,53 +6553,6 @@ end program real_kinds
 
 
 
-@node SECNDS
-@section @code{SECNDS} --- Time subroutine
-@findex @code{SECNDS} intrinsic
-@cindex SECNDS
-
-@table @asis
-@item @emph{Description}:
-@code{SECNDS(X)} gets the time in seconds from the real-time system clock.
-@var{X} is a reference time, also in seconds. If this is zero, the time in
-seconds from midnight is returned. This function is non-standard and its
-use is discouraged.
-
-@item @emph{Option}:
-gnu
-
-@item @emph{Class}:
-function
-
-@item @emph{Syntax}:
-@code{T = SECNDS (X)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .80
-@item Name        @tab Type
-@item @var{T}     @tab REAL(4)
-@item @var{X}     @tab REAL(4)
-@end multitable
-
-@item @emph{Return value}:
-None
-
-@item @emph{Example}:
-@smallexample
-program test_secnds
-    real(4) :: t1, t2
-    print *, secnds (0.0)   ! seconds since midnight
-    t1 = secnds (0.0)       ! reference time
-    do i = 1, 10000000      ! do something
-    end do
-    t2 = secnds (t1)        ! elapsed time
-    print *, "Something took ", t2, " seconds."
-end program test_secnds
-@end smallexample
-@end table
-
-
-
 @node SET_EXPONENT
 @section @code{SET_EXPONENT} --- Set the exponent of the model
 @findex @code{SET_EXPONENT} intrinsic
@@ -4429,11 +6563,11 @@ end program test_secnds
 @code{SET_EXPONENT(X, I)} returns the real number whose fractional part
 is that that of @var{X} and whose exponent part if @var{I}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Y = SET_EXPONENT(X, I)}
@@ -4463,6 +6597,32 @@ end program test_setexp
 
 
 
+@node SHAPE
+@section @code{SHAPE} --- Determine the shape of an array
+@findex @code{SHAPE} intrinsic
+@cindex array manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@ref{RESHAPE}
+@end table
+
+
+
+
 @node SIGN
 @section @code{SIGN} --- Sign copying function
 @findex @code{SIGN} intrinsic
@@ -4474,11 +6634,11 @@ end program test_setexp
 @item @emph{Description}:
 @code{SIGN(A,B)} returns the value of @var{A} with the sign of @var{B}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = SIGN(A,B)}
@@ -4508,8 +6668,8 @@ end program test_sign
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name              @tab Arguments      @tab Return type    @tab Option
+@multitable @columnfractions .20 .20 .20 .40
+@item Name              @tab Arguments      @tab Return type    @tab Standard
 @item @code{ISIGN(A,P)} @tab @code{INTEGER(4)} @tab @code{INTEGER(4)} @tab f95, gnu
 @item @code{DSIGN(A,P)} @tab @code{REAL(8)} @tab @code{REAL(8)} @tab f95, gnu
 @end multitable
@@ -4533,8 +6693,8 @@ action.  See @code{signal(2)}.
 If @code{SIGNAL} is called as a subroutine and the @var{STATUS} argument
 is supplied, it is set to the value returned by @code{signal(2)}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 subroutine, non-elemental function
@@ -4582,17 +6742,17 @@ end program test_signal
 @findex @code{DSIN} intrinsic
 @findex @code{ZSIN} intrinsic
 @findex @code{CDSIN} intrinsic
-@cindex sine
+@cindex trigonometric functions
 
 @table @asis
 @item @emph{Description}:
 @code{SIN(X)} computes the sine of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = SIN(X)}
@@ -4604,7 +6764,7 @@ elemental function
 @end multitable
 
 @item @emph{Return value}:
-The return value has same type and king than @var{X}.
+The return value has same type and kind as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -4615,13 +6775,16 @@ end program test_sin
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DSIN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
 @item @code{CSIN(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
 @item @code{ZSIN(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
 @item @code{CDSIN(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
 @end multitable
+
+@item @emph{See also}:
+@ref{ASIN}
 @end table
 
 
@@ -4636,11 +6799,11 @@ end program test_sin
 @item @emph{Description}:
 @code{SINH(X)} computes the hyperbolic sine of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = SINH(X)}
@@ -4662,10 +6825,37 @@ end program test_sinh
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DSINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DSINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
 @end multitable
+
+@item @emph{See also}:
+@ref{ASINH}
+@end table
+
+
+
+@node SIZE
+@section @code{SIZE} --- Determine the size of an array
+@findex @code{SIZE} intrinsic
+@cindex array manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
 @end table
 
 
@@ -4673,7 +6863,7 @@ end program test_sinh
 @node SNGL
 @section @code{SNGL} --- Convert double precision real to default real
 @findex @code{SNGL} intrinsic
-@cindex sngl
+@cindex conversion function (real)
 
 @table @asis
 @item @emph{Description}:
@@ -4681,8 +6871,8 @@ end program test_sinh
 to a default real value. This is an archaic form of @code{REAL}
 that is specific to one type for @var{A}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 function
@@ -4698,7 +6888,59 @@ function
 @item @emph{Return value}:
 The return value is of type default @code{REAL}.
 
+@item @emph{See also}:
+@ref{DBLE}
 @end table
+
+
+
+@node SPACING
+@section @code{SPACING} --- Smallest distance between two numbers of a given type
+@findex @code{SPACING} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node SPREAD
+@section @code{SPREAD} --- Add a dimension to an array
+@findex @code{SPREAD} intrinsic
+@cindex array manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
 
 
 
@@ -4715,11 +6957,11 @@ The return value is of type default @code{REAL}.
 @item @emph{Description}:
 @code{SQRT(X)} computes the square root of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = SQRT(X)}
@@ -4745,12 +6987,12 @@ end program test_sqrt
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DSQRT(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
-@item @code{CSQRT(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab f95, gnu
-@item @code{ZSQRT(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
-@item @code{CDSQRT(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name             @tab Argument             @tab Return type          @tab Standard
+@item @code{DSQRT(X)}  @tab @code{REAL(8) X}     @tab @code{REAL(8)}       @tab F95 and later
+@item @code{CSQRT(X)}  @tab @code{COMPLEX(4) X}  @tab @code{COMPLEX(4)}    @tab F95 and later
+@item @code{ZSQRT(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab GNU extension
+@item @code{CDSQRT(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab GNU extension
 @end multitable
 @end table
 
@@ -4767,8 +7009,8 @@ end program test_sqrt
 called by @code{RAND} and @code{IRAND}. The new seed used by the
 generator is specified by the required argument @var{SEED}.
 
-@item @emph{Option}:
-gnu
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{Class}:
 non-elemental subroutine
@@ -4794,8 +7036,132 @@ to generate pseudo-random numbers. Please note that in
 @command{gfortran}, these two sets of intrinsics (@code{RAND},
 @code{IRAND} and @code{SRAND} on the one hand, @code{RANDOM_NUMBER} and
 @code{RANDOM_SEED} on the other hand) access two independent
-pseudo-random numbers generators.
+pseudo-random number generators.
 
+@item @emph{See also}:
+@ref{RAND}, @ref{RANDOM_SEED}, @ref{RANDOM_NUMBER}
+
+@end table
+
+
+@node STAT
+@section @code{STAT} --- Get file status
+@findex @code{STAT} intrinsic
+@cindex file system operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@ref{FSTAT}
+@end table
+
+
+
+
+@node SUM
+@section @code{SUM} --- Sum of array elements
+@findex @code{SUM} intrinsic
+@cindex array manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@ref{PRODUCT}
+@end table
+
+
+
+
+@node SYMLNK
+@section @code{SYMLNK} --- Create a symbolic link
+@findex @code{SYMLNK} intrinsic
+@cindex file system operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+@item @emph{Class}:
+GNU extension
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node SYSTEM
+@section @code{SYSTEM} --- Execute a shell command
+@findex @code{SYSTEM} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node SYSTEM_CLOCK
+@section @code{SYSTEM_CLOCK} --- Time function
+@findex @code{SYSTEM_CLOCK} intrinsic
+@cindex time functions
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
 @end table
 
 
@@ -4804,17 +7170,17 @@ pseudo-random numbers generators.
 @section @code{TAN} --- Tangent function
 @findex @code{TAN} intrinsic
 @findex @code{DTAN} intrinsic
-@cindex tangent
+@cindex trigonometric functions
 
 @table @asis
 @item @emph{Description}:
 @code{TAN(X)} computes the tangent of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = TAN(X)}
@@ -4837,10 +7203,13 @@ end program test_tan
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
 @end multitable
+
+@item @emph{See also}:
+@ref{ATAN}
 @end table
 
 
@@ -4855,11 +7224,11 @@ end program test_tan
 @item @emph{Description}:
 @code{TANH(X)} computes the hyperbolic tangent of @var{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F77 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{X = TANH(X)}
@@ -4882,10 +7251,37 @@ end program test_tanh
 @end smallexample
 
 @item @emph{Specific names}:
-@multitable @columnfractions .24 .24 .24 .24
-@item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DTANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@multitable @columnfractions .20 .20 .20 .40
+@item Name            @tab Argument          @tab Return type       @tab Standard
+@item @code{DTANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab F95 and later
 @end multitable
+
+@item @emph{See also}:
+@ref{ATANH}
+@end table
+
+
+
+@node TIME
+@section @code{TIME} --- Time function
+@findex @code{TIME} intrinsic
+@cindex time functions
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Non-elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
 @end table
 
 
@@ -4900,11 +7296,11 @@ end program test_tanh
 @code{TINY(X)} returns the smallest positive (non zero) number
 in the model of the type of @code{X}.
 
-@item @emph{Option}:
-f95, gnu
+@item @emph{Standard}:
+F95 and later
 
 @item @emph{Class}:
-elemental function
+Elemental function
 
 @item @emph{Syntax}:
 @code{Y = TINY(X)}
@@ -4923,147 +7319,257 @@ See @code{HUGE} for an example.
 
 
 
-@comment gen   fstat
-@comment sub   fstat
-@comment 
-@comment sub   getarg
-@comment 
-@comment gen   getcwd
-@comment sub   getcwd
-@comment 
-@comment sub   getenv
-@comment 
-@comment sub   get_command
-@comment 
-@comment sub   get_command_argument
-@comment 
-@comment sub   get_environment_variable
-@comment 
-@comment gen   iand
-@comment 
-@comment gen   iargc
-@comment 
-@comment gen   ibclr
-@comment 
-@comment gen   ibits
-@comment 
-@comment gen   ibset
-@comment 
-@comment gen   ieor
-@comment 
-@comment gen   index
-@comment 
-@comment gen   int
-@comment       ifix
-@comment       idint
-@comment 
-@comment gen   ior
-@comment 
-@comment gen   ishft
-@comment 
-@comment gen   ishftc
-@comment 
-@comment gen   lbound
-@comment 
-@comment gen   len
-@comment 
-@comment gen   len_trim
-@comment 
-@comment gen   lge
-@comment 
-@comment gen   lgt
-@comment 
-@comment gen   lle
-@comment 
-@comment gen   llt
-@comment 
-@comment gen   logical
-@comment 
-@comment gen   matmul
-@comment 
-@comment gen   max
-@comment       max0
-@comment       amax0
-@comment       amax1
-@comment       max1
-@comment       dmax1
-@comment 
-@comment gen   maxloc
-@comment 
-@comment gen   maxval
-@comment 
-@comment gen   merge
-@comment 
-@comment gen   min
-@comment       min0
-@comment       amin0
-@comment       amin1
-@comment       min1
-@comment       dmin1
-@comment 
-@comment gen   minloc
-@comment 
-@comment gen   minval
-@comment 
-@comment sub   mvbits
-@comment 
-@comment gen   not
-@comment 
-@comment gen   null
-@comment 
-@comment gen   pack
-@comment 
-@comment gen   perror
-@comment 
-@comment gen   present
-@comment 
-@comment gen   product
-@comment 
-@comment sub   random_number
-@comment 
-@comment sub   random_seed
-@comment 
-@comment gen   repeat
-@comment 
-@comment gen   reshape
-@comment 
-@comment gen   scan
-@comment 
-@comment gen   second
-@comment sub   second
-@comment 
-@comment gen   shape
-@comment 
-@comment gen   size
-@comment 
-@comment gen   spacing
-@comment 
-@comment gen   spread
-@comment 
-@comment gen   stat
-@comment sub   stat
-@comment 
-@comment gen   sum
-@comment 
-@comment gen   system
-@comment sub   system
-@comment 
-@comment sub system_clock
-@comment 
-@comment gen   transfer
-@comment 
-@comment gen   transpose
-@comment 
-@comment gen   trim
-@comment 
-@comment gen   ubound
-@comment 
-@comment gen   umask
-@comment sub   umask
-@comment 
-@comment gen   unlink
-@comment sub   unlink
-@comment 
-@comment gen   unpack
-@comment 
-@comment gen   verify
+@node TRANSFER
+@section @code{TRANSFER} --- Transfer bit patterns
+@findex @code{TRANSFER} intrinsic
+@cindex bit manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node TRANSPOSE
+@section @code{TRANSPOSE} --- Transpose an array of rank two
+@findex @code{TRANSPOSE} intrinsic
+@cindex matrix manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node TRIM
+@section @code{TRIM} --- Function to remove trailing blank characters of a string
+@findex @code{TRIM} intrinsic
+@cindex string manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node UBOUND
+@section @code{UBOUND} --- Upper dimension bounds of an array
+@findex @code{UBOUND} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+
+@item @emph{See also}:
+@ref{LBOUND}
+@end table
+
+
+
+
+@node UMASK
+@section @code{UMASK} --- Set the file creation mask
+@findex @code{UMASK} intrinsic
+@cindex file system operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node UNLINK
+@section @code{UNLINK} --- Remove a file from the file system
+@findex @code{UNLINK} intrinsic
+@cindex file system operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{LINK}
+@end table
+
+
+
+
+@node UNMASK
+@section @code{UNMASK} --- (?)
+@findex @code{UNMASK} intrinsic
+@cindex undocumented intrinsic 
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node UNPACK
+@section @code{UNPACK} --- Unpack an array of rank one into an array
+@findex @code{UNPACK} intrinsic
+@cindex array manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+
+@item @emph{See also}:
+@ref{PACK}
+@end table
+
+
+
+
+@node VERIFY
+@section @code{VERIFY} --- Scan a string for the absence of a set of characters
+@findex @code{VERIFY} intrinsic
+@cindex string manipulation
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F95 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
+
+
+@node XOR
+@section @code{XOR} --- Logical exclusive or
+@findex @code{XOR} intrinsic
+@cindex logical operations
+
+Intrinsic implemented, documentation pending.
+
+@table @asis
+@item @emph{Description}:
+@item @emph{Standard}:
+F77 and later
+
+@item @emph{Class}:
+@item @emph{Syntax}:
+@item @emph{Arguments}:
+@item @emph{Return value}:
+@item @emph{Example}:
+@item @emph{Specific names}:
+@item @emph{See also}:
+@end table
+
+
