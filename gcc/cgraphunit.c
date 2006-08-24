@@ -1,4 +1,4 @@
-/* Callgraph based intraprocedural optimizations.
+/* Callgraph based interprocedural optimizations.
    Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -20,7 +20,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
 /* This module implements main driver of compilation process as well as
-   few basic intraprocedural optimizers.
+   few basic interprocedural optimizers.
 
    The main scope of this file is to act as an interface in between
    tree based frontends and the backend (and middle end)
@@ -173,6 +173,9 @@ static void cgraph_expand_function (struct cgraph_node *);
 static tree record_reference (tree *, int *, void *);
 static void cgraph_output_pending_asms (void);
 static void cgraph_increase_alignment (void);
+
+/* Lists all assembled variables to be sent to debugger output later on.  */
+static GTY(()) struct cgraph_varpool_node *cgraph_varpool_assembled_nodes_queue;
 
 /* Records tree nodes seen in record_reference.  Simply using
    walk_tree_without_duplicates doesn't guarantee each node is visited
@@ -856,18 +859,7 @@ cgraph_varpool_assemble_decl (struct cgraph_varpool_node *node)
       && (TREE_CODE (decl) != VAR_DECL || !DECL_HAS_VALUE_EXPR_P (decl)))
     {
       assemble_variable (decl, 0, 1, 0);
-      /* Local static variables are never seen by check_global_declarations
-	 so we need to output debug info by hand.  */
-      if (DECL_CONTEXT (decl)
-	  && (TREE_CODE (DECL_CONTEXT (decl)) == BLOCK
-	      || TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
-	  && errorcount == 0 && sorrycount == 0)
-	{
-	  timevar_push (TV_SYMOUT);
-	  (*debug_hooks->global_decl) (decl);
-	  timevar_pop (TV_SYMOUT);
-	}
-      return true;
+      return TREE_ASM_WRITTEN (decl);
     }
 
   return false;
@@ -893,10 +885,38 @@ cgraph_varpool_assemble_pending_decls (void)
 
       cgraph_varpool_nodes_queue = cgraph_varpool_nodes_queue->next_needed;
       if (cgraph_varpool_assemble_decl (node))
-	changed = true;
-      node->next_needed = NULL;
+	{
+	  changed = true;
+	  node->next_needed = cgraph_varpool_assembled_nodes_queue;
+	  cgraph_varpool_assembled_nodes_queue = node;
+	  node->finalized = 1;
+	}
+      else
+        node->next_needed = NULL;
     }
   return changed;
+}
+/* Output all variables enqueued to be assembled.  */
+static void
+cgraph_varpool_output_debug_info (void)
+{
+  timevar_push (TV_SYMOUT);
+  if (errorcount == 0 && sorrycount == 0)
+    while (cgraph_varpool_assembled_nodes_queue)
+      {
+	struct cgraph_varpool_node *node = cgraph_varpool_assembled_nodes_queue;
+
+	/* Local static variables are never seen by check_global_declarations
+	   so we need to output debug info by hand.  */
+	if (DECL_CONTEXT (node->decl)
+	    && (TREE_CODE (DECL_CONTEXT (node->decl)) == BLOCK
+		|| TREE_CODE (DECL_CONTEXT (node->decl)) == FUNCTION_DECL)
+	    && errorcount == 0 && sorrycount == 0)
+	     (*debug_hooks->global_decl) (node->decl);
+	cgraph_varpool_assembled_nodes_queue = node->next_needed;
+	node->next_needed = 0;
+      }
+  timevar_pop (TV_SYMOUT);
 }
 
 /* Output all asm statements we have stored up to be output.  */
@@ -1043,6 +1063,7 @@ cgraph_finalize_compilation_unit (void)
     {
       cgraph_output_pending_asms ();
       cgraph_assemble_pending_functions ();
+      cgraph_varpool_output_debug_info ();
       return;
     }
 
@@ -1495,6 +1516,7 @@ cgraph_optimize (void)
     {
       cgraph_output_pending_asms ();
       cgraph_varpool_assemble_pending_decls ();
+      cgraph_varpool_output_debug_info ();
       return;
     }
 
@@ -1506,7 +1528,7 @@ cgraph_optimize (void)
 
   timevar_push (TV_CGRAPHOPT);
   if (!quiet_flag)
-    fprintf (stderr, "Performing intraprocedural optimizations\n");
+    fprintf (stderr, "Performing interprocedural optimizations\n");
 
   cgraph_function_and_variable_visibility ();
   if (cgraph_dump_file)
@@ -1551,6 +1573,7 @@ cgraph_optimize (void)
       cgraph_varpool_remove_unreferenced_decls ();
 
       cgraph_varpool_assemble_pending_decls ();
+      cgraph_varpool_output_debug_info ();
     }
 
   if (cgraph_dump_file)
@@ -1891,3 +1914,4 @@ save_inline_function_body (struct cgraph_node *node)
   return first_clone;
 }
 
+#include "gt-cgraphunit.h"
