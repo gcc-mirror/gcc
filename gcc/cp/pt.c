@@ -3022,7 +3022,13 @@ push_template_decl_real (tree decl, bool is_friend)
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
   /* See if this is a primary template.  */
-  primary = template_parm_scope_p ();
+  if (is_friend && ctx)
+    /* A friend template that specifies a class context, i.e.
+         template <typename T> friend void A<T>::f();
+       is not primary.  */
+    primary = 0;
+  else
+    primary = template_parm_scope_p ();
 
   if (primary)
     {
