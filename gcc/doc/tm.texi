@@ -9473,7 +9473,7 @@ arguments of @samp{#pragma pack}.
 @defmac TARGET_DEFAULT_PACK_STRUCT
 If your target requires a structure packing default other than 0 (meaning
 the machine default), define this macro to the necessary value (in bytes).
-This must be a value that would also valid to be used with
+This must be a value that would also be valid to use with
 @samp{#pragma pack()} (that is, a small power of two).
 @end defmac
 
