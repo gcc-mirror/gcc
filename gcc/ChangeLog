@@ -1,5 +1,9 @@
 2006-08-24  Jan Hubicka  <jh@suse.cz>
 
+	* reload1.c (emit_reload_insns): Fix yet another typo in my patch.
+
+2006-08-24  Jan Hubicka  <jh@suse.cz>
+
 	PR debug/26881
 	* cgraph.c: Fix comments.
 	(cgraph_varpool_mark_needed_node): Mark only variables not already
