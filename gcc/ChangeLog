@@ -1,5 +1,18 @@
 2006-08-24  Jan Hubicka  <jh@suse.cz>
 
+	PR debug/26881
+	* cgraph.c: Fix comments.
+	(cgraph_varpool_mark_needed_node): Mark only variables not already
+	output to file.
+	* cgraphunit.c: Update comments; include gt-cgraphunit.h
+	(cgraph_varpool_assembled_nodes_queue): New static variable.
+	(cgraph_varpool_assemble_decl): Record output decls for debug out code.
+	(cgraph_varpool_output_debug_info): New function.
+	(cgraph_finalize_compilation_unit, cgraph_optimize): Call it.
+	* Makefile.in: Add gt-cgraphunit.h
+
+2006-08-24  Jan Hubicka  <jh@suse.cz>
+
 	* predict.c (probability_reliable_p): New predicate.
 	(edge_probability_reliable_p, br_prob_note_reliable_p): Likewise.
 	(predict_loops): Do not predict loop exit with less than 2%
