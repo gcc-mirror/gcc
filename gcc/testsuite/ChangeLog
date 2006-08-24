@@ -1,3 +1,14 @@
+2006-08-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28788
+	* gfortran.dg/used_types_4.f90: New test.
+	* gfortran.dg/used_types_2.f90: Add module cleanup.
+	* gfortran.dg/used_types_3.f90: The same.
+
+	PR fortran/28771
+	* gfortran.dg/assumed_charlen_in_main.f90: Modify to check
+	fix of regression.
+
 2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* g++.dg/eh/arm-vfp-unwind.C: Correct order of DejaGNU directives.
