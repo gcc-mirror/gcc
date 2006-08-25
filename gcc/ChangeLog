@@ -1,3 +1,9 @@
+2006-08-25  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/27075
+	* config/rs6000/rs6000.c (print_operand): Only use e500 %y syntax
+	for 8 byte objects.
+
 2006-08-25  J"orn Rennecke  <joern.rennecke@st.com>
 
 	PR tree-optimization/16876
