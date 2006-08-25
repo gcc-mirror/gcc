@@ -4401,7 +4401,7 @@ compiler knows this regardless of @code{EXIT_IGNORE_STACK}.
 @defmac EPILOGUE_USES (@var{regno})
 Define this macro as a C expression that is nonzero for registers that are
 used by the epilogue or the @samp{return} pattern.  The stack and frame
-pointer registers are already be assumed to be used as needed.
+pointer registers are already assumed to be used as needed.
 @end defmac
 
 @defmac EH_USES (@var{regno})
