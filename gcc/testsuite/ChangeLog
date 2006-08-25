@@ -2,6 +2,7 @@
 
 	PR c++/28056
 	* g++.dg/parse/local1.C: New test.
+	* g++.dg/other/qual1.C: Tweak error marker.
 
 2006-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
