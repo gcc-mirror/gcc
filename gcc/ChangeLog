@@ -1,3 +1,9 @@
+2006-08-25  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/28753
+	* config/rs6000/rs6000.md (movcc_internal1): Change operand 1
+	predicate to general_operand.  Add 0->y and I->r alternatives.
+
 2006-08-25  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/tm.texi: Fix a typo.
