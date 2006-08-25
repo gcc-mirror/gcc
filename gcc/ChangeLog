@@ -1,4 +1,11 @@
-2006-08-24  Bill Wendling <wendling@apple.com>
+2006-08-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/28807
+	* tree-ssa-operands.c (access_can_touch_variable): Don't say
+	the access through a base which has an alias set of 0 cannot
+	touch the variable.
+
+2006-08-24  Bill Wendling  <wendling@apple.com>
 
 	* doc/tm.texi (TARGET_DEFAULT_PACK_STRUCT): Fixed English.
 	
