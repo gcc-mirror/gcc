@@ -1,3 +1,8 @@
+2006-08-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28056
+	* g++.dg/parse/local1.C: New test.
+
 2006-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/27787

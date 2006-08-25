@@ -1,3 +1,9 @@
+2006-08-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28056
+	* decl.c (grokdeclarator): Disallow declarations with qualified
+	names in local scopes.
+
 2006-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/27787
