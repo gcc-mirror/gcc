@@ -1,3 +1,8 @@
+2006-08-25  Jan Hubicka  <jh@suse.cz>
+
+	PR target/28621
+	* config/i386/crtfastmath.c (set_fast_math): Force stack alignment.
+
 2006-08-25  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/27075
