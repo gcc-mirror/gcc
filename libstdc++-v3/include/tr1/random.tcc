@@ -87,12 +87,27 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	{ return __a * __x + __c; }
       };
 
-    // Dispatch based on modulus value to prevent divide-by-zero compile-time
-    // errors when m == 0.
-    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m>
-      inline _Tp
-      __mod(_Tp __x)
-      { return _Mod<_Tp, __a, __c, __m, __m == 0>::__calc(__x); }
+    template<typename _ValueT>
+      struct _To_Unsigned_Type
+      { typedef _ValueT _Type; };
+
+    template<>
+      struct _To_Unsigned_Type<short>
+      { typedef unsigned short _Type; };
+
+    template<>
+      struct _To_Unsigned_Type<int>
+      { typedef unsigned int _Type; };
+
+    template<>
+      struct _To_Unsigned_Type<long>
+      { typedef unsigned long _Type; };
+
+#ifdef _GLIBCXX_USE_LONG_LONG
+    template<>
+      struct _To_Unsigned_Type<long long>
+      { typedef unsigned long long _Type; };
+#endif
 
     // See N1822.
     template<typename _RealType>
@@ -136,31 +151,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	else
 	  _M_x = __mod<_UIntType, 1, 0, __m>(__x0);
       }
-
-  /**
-   * Returns a value that is less than or equal to all values potentially
-   * returned by operator(). The return value of this function does not
-   * change during the lifetime of the object..
-   *
-   * The minumum depends on the @p __c parameter: if it is zero, the
-   * minimum generated must be > 0, otherwise 0 is allowed.
-   */
-  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-    typename linear_congruential<_UIntType, __a, __c, __m>::result_type
-    linear_congruential<_UIntType, __a, __c, __m>::
-    min() const
-    { return (__mod<_UIntType, 1, 0, __m>(__c) == 0) ? 1 : 0; }
-
-  /**
-   * Gets the maximum possible value of the generated range.
-   *
-   * For a linear congruential generator, the maximum is always @p __m - 1.
-   */
-  template<class _UIntType, _UIntType __a, _UIntType __c, _UIntType __m>
-    typename linear_congruential<_UIntType, __a, __c, __m>::result_type
-    linear_congruential<_UIntType, __a, __c, __m>::
-    max() const
-    { return (__m == 0) ? std::numeric_limits<_UIntType>::max() : (__m - 1); }
 
   /**
    * Gets the next generated value in sequence.

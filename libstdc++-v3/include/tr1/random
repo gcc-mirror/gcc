@@ -67,15 +67,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     // Type selectors -- are these already implemented elsewhere?
     template<bool, typename _TpTrue, typename _TpFalse>
       struct _Select
-      {
-	typedef _TpTrue _Type;
-      };
+      { typedef _TpTrue _Type; };
 
     template<typename _TpTrue, typename _TpFalse>
       struct _Select<false, _TpTrue, _TpFalse>
-      {
-	typedef _TpFalse _Type;
-      };
+      { typedef _TpFalse _Type; };
 
     template<typename _UIntType, int __w, bool = 
 	     __w < std::numeric_limits<_UIntType>::digits>
@@ -86,27 +82,18 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       struct _Shift<_UIntType, __w, true>
       { static const _UIntType __value = _UIntType(1) << __w; };
 
+    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m, bool>
+      struct _Mod;
+
+    // Dispatch based on modulus value to prevent divide-by-zero compile-time
+    // errors when m == 0.
+    template<typename _Tp, _Tp __a, _Tp __c, _Tp __m>
+      inline _Tp
+      __mod(_Tp __x)
+      { return _Mod<_Tp, __a, __c, __m, __m == 0>::__calc(__x); }
+
     template<typename _ValueT>
-      struct _To_Unsigned_Type
-      { typedef _ValueT _Type; };
-
-    template<>
-      struct _To_Unsigned_Type<short>
-      { typedef unsigned short _Type; };
-
-    template<>
-      struct _To_Unsigned_Type<int>
-      { typedef unsigned int _Type; };
-
-    template<>
-      struct _To_Unsigned_Type<long>
-      { typedef unsigned long _Type; };
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-    template<>
-      struct _To_Unsigned_Type<long long>
-      { typedef unsigned long long _Type; };
-#endif
+      struct _To_Unsigned_Type;
 
     typedef _Select<(sizeof(unsigned) == 4),
 		    unsigned, unsigned long>::_Type _UInt32Type;
@@ -125,6 +112,30 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       public:
 	_Adaptor(const _Engine& __g)
 	: _M_g(__g) { }
+
+	result_type
+	min() const
+	{
+	  result_type __return_value = 0;
+	  if (is_integral<_Engine_result_type>::value
+	      && is_integral<result_type>::value)
+	    __return_value = _M_g.min();
+	  else if (!is_integral<result_type>::value)
+	    __return_value = result_type(0);
+	  return __return_value;
+	}
+
+	result_type
+	max() const
+	{
+	  result_type __return_value = 0;
+	  if (is_integral<_Engine_result_type>::value
+	      && is_integral<result_type>::value)
+	    __return_value = _M_g.max();
+	  else if (!is_integral<result_type>::value)
+	    __return_value = result_type(1);
+	  return __return_value;
+	}
 
 	result_type
 	operator()();
@@ -151,11 +162,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  __return_value = _M_g();
       	else if (is_integral<_Engine_result_type>::value
 		 && !is_integral<result_type>::value)
-	  __return_value = result_type(_M_g())
+	  __return_value = result_type(_M_g() - _M_g.min())
 	    / result_type(_M_g.max() - _M_g.min() + result_type(1));
 	else if (!is_integral<_Engine_result_type>::value
 		 && !is_integral<result_type>::value)
-	  __return_value = result_type(_M_g())
+	  __return_value = result_type(_M_g() - _M_g.min())
 	    / result_type(_M_g.max() - _M_g.min());
       	return __return_value;
       }
@@ -177,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     public:
       typedef _Engine                                engine_type;
-      typedef _Adaptor<_Engine, _Dist>     engine_value_type;
+      typedef _Adaptor<_Engine, _Dist>               engine_value_type;
       typedef _Dist                                  distribution_type;
       typedef typename _Dist::result_type            result_type;
 
@@ -372,15 +383,20 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       /**
        * Gets the smallest possible value in the output range.
+       *
+       * The minumum depends on the @p __c parameter: if it is zero, the
+       * minimum generated must be > 0, otherwise 0 is allowed.
        */
       result_type
-      min() const;
+      min() const
+      { return (__mod<_UIntType, 1, 0, __m>(__c) == 0) ? 1 : 0; }
 
       /**
        * Gets the largest possible value in the output range.
        */
       result_type
-      max() const;
+      max() const
+      { return __m - 1; }
 
       /**
        * Gets the next random number in the sequence.
@@ -1391,6 +1407,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       base2() const
       { return _M_b2; }
 
+      // FIXME: Cannot be always correct.  FWIW, the solution in N2032
+      // in practice isn't much better..
       result_type
       min() const
       { return _M_b1.min() ^ _M_b2.min(); }
@@ -1651,7 +1669,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       template<typename _UniformRandomNumberGenerator>
         result_type
         operator()(_UniformRandomNumberGenerator& __urng)
-        { return (__urng() % (_M_max - _M_min + 1)) + _M_min; }
+        {
+	  typedef typename _UniformRandomNumberGenerator::result_type
+	    _UResult_type;
+	  return _M_call(__urng, _M_min, _M_max,
+			 typename is_integral<_UResult_type>::type());
+	}
 
       /**
        * Gets a uniform random number in the range @f$[0, n)@f$.
@@ -1661,7 +1684,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       template<typename _UniformRandomNumberGenerator>
         result_type
         operator()(_UniformRandomNumberGenerator& __urng, result_type __n)
-        { return __urng() % __n; }
+        {
+	  typedef typename _UniformRandomNumberGenerator::result_type
+	    _UResult_type;
+	  return _M_call(__urng, 0, __n - 1,
+			 typename is_integral<_UResult_type>::type());
+	}
 
       /**
        * Inserts a %uniform_int random number distribution @p __x into the
@@ -1693,6 +1721,22 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		   uniform_int<_IntType1>& __x);
 
     private:
+      template<typename _UniformRandomNumberGenerator>
+        result_type
+        _M_call(_UniformRandomNumberGenerator& __urng,
+		result_type __min, result_type __max, true_type)
+        { return result_type(__urng() % (__max - __min + 1)) + __min; }
+
+      template<typename _UniformRandomNumberGenerator>
+        result_type
+        _M_call(_UniformRandomNumberGenerator& __urng,
+		result_type __min, result_type __max, false_type)
+        {
+	  return result_type((__urng() - __urng.min())
+			     / (__urng.max() - __urng.min())
+			     * (__max - __min + 1)) + __min;
+	}
+
       _IntType _M_min;
       _IntType _M_max;
     };
@@ -1753,7 +1797,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       result_type
       operator()(_UniformRandomNumberGenerator& __urng)
       {
-	if (__urng() < _M_p)
+	if ((__urng() - __urng.min()) < _M_p * (__urng.max() - __urng.min()))
 	  return true;
 	return false;
       }
