@@ -1,3 +1,7 @@
+2006-08-25  J"orn Rennecke  <joern.rennecke@st.com>
+
+	gcc.dg/noncompile/pr16876.c: New test.
+
 2006-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28056

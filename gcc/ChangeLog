@@ -1,3 +1,9 @@
+2006-08-25  J"orn Rennecke  <joern.rennecke@st.com>
+
+	PR tree-optimization/16876
+	* c-typeck.c (c_convert_parm_for_inlining): Don't take early
+	exit if PARM doesn't match VALUE.
+
 2006-08-25  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (ASM_OUTPUT_POOL_PROLOGUE): Do not emit a
