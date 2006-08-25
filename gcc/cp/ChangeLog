@@ -1,3 +1,11 @@
+2006-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/27787
+	* decl.c (make_typename_type): Only try and resolve it when
+	context is not dependent.  Refactor.
+	* decl2.c (check_classfn): Push to class scope before looking for
+	the function.
+
 2006-08-24  Danny Smith   <dannysmith@users.sourceforge.net>
 
 	PR driver/28528
