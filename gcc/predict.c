@@ -182,7 +182,7 @@ tree_predicted_by_p (basic_block bb, enum br_predictor predictor)
   
    The profile guessing code is good at predicting branch outcome (ie.
    taken/not taken), that is predicted right slightly over 75% of time.
-   It is however notorously poor on predicting the probability itself.
+   It is however notoriously poor on predicting the probability itself.
    In general the profile appear a lot flatter (with probabilities closer
    to 50%) than the reality so it is bad idea to use it to drive optimization
    such as those disabling dynamic branch prediction for well predictable
@@ -192,7 +192,7 @@ tree_predicted_by_p (basic_block bb, enum br_predictor predictor)
    predicted by number of iterations heuristics are predicted well.  This macro
    should be able to distinguish those, but at the moment it simply check for
    noreturn heuristic that is only one giving probability over 99% or bellow
-   1%.  In future we might want to propagate reliablity information across the
+   1%.  In future we might want to propagate reliability information across the
    CFG if we find this information useful on multiple places.   */
 static bool
 probability_reliable_p (int prob)
