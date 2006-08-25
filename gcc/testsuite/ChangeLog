@@ -1,3 +1,8 @@
+2006-08-25  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/28829
+	* gcc.dg/pr26570.c: Fix testcase.
+
 2006-08-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/28807
