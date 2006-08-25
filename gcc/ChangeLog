@@ -1,3 +1,9 @@
+2006-08-25  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/28299
+	* c-decl.c (start_function): Don't try to process prototype
+	information from old declaration that isn't a function.
+
 2006-08-25  Jan Hubicka  <jh@suse.cz>
 
 	PR target/28621

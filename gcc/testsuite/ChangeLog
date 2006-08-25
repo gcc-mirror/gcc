@@ -1,3 +1,10 @@
+2006-08-25  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/28299
+	* gcc.dg/funcdef-var-1.c, gcc.dg/funcdef-var-2.c: New tests.
+	* gcc.dg/pr20368-1.c, gcc.dg/pr20368-2.c, gcc.dg/pr20368-3.c:
+	Expect extra diagnostics.
+
 2006-08-25  J"orn Rennecke  <joern.rennecke@st.com>
 
 	gcc.dg/noncompile/pr16876.c: New test.

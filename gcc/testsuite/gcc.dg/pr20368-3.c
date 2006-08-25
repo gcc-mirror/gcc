@@ -7,6 +7,6 @@ extern __typeof (f) g; /* { dg-error "error: 'f' undeclared here \\(not in a fun
 
 int
 f (x)
-     float x;
+     float x; /* { dg-warning "warning: no previous declaration for 'f'" } */
 {
 }
