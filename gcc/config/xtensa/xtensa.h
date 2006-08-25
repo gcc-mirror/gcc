@@ -1193,35 +1193,17 @@ typedef struct xtensa_args
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 
 
-/* Define output to appear before the constant pool.  If the function
-   has been assigned to a specific ELF section, or if it goes into a
-   unique section, set the name of that section to be the literal
-   prefix.  */
+/* Define output to appear before the constant pool.  */
 #define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, FUNDECL, SIZE)          \
   do {									\
-    tree fnsection;							\
-    resolve_unique_section ((FUNDECL), 0, flag_function_sections);	\
-    fnsection = DECL_SECTION_NAME (FUNDECL);				\
-    if (fnsection != NULL_TREE)						\
-      {									\
-	const char *fnsectname = TREE_STRING_POINTER (fnsection);	\
-	fprintf (FILE, "\t.begin\tliteral_prefix %s\n",			\
-		 strcmp (fnsectname, ".text") ? fnsectname : "");	\
-      }									\
     if ((SIZE) > 0)							\
       {									\
+	resolve_unique_section ((FUNDECL), 0, flag_function_sections);	\
 	switch_to_section (function_section (FUNDECL));			\
 	fprintf (FILE, "\t.literal_position\n");			\
       }									\
   } while (0)
 
-
-/* Define code to write out the ".end literal_prefix" directive for a
-   function in a special section.  This is appended to the standard ELF
-   code for ASM_DECLARE_FUNCTION_SIZE.  */
-#define XTENSA_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
-  if (DECL_SECTION_NAME (DECL) != NULL_TREE)				\
-    fprintf (FILE, "\t.end\tliteral_prefix\n")
 
 /* A C statement (with or without semicolon) to output a constant in
    the constant pool, if it needs special treatment.  */

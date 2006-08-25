@@ -1,3 +1,11 @@
+2006-08-25  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (ASM_OUTPUT_POOL_PROLOGUE): Do not emit a
+	literal_prefix directive.
+	(XTENSA_DECLARE_FUNCTION_SIZE): Delete.
+	* config/xtensa/linux.h (ASM_DECLARE_FUNCTION_SIZE): Delete.
+	* config/xtensa/elf.h (ASM_DECLARE_FUNCTION_SIZE): Delete.
+
 2006-08-25  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/28753
