@@ -1150,7 +1150,10 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 	       || TREE_CODE (TREE_TYPE (base)) != UNION_TYPE)
 	   && !AGGREGATE_TYPE_P (TREE_TYPE (alias))
 	   && TREE_CODE (TREE_TYPE (alias)) != COMPLEX_TYPE
-	   && !POINTER_TYPE_P (TREE_TYPE (alias)))
+	   && !POINTER_TYPE_P (TREE_TYPE (alias))
+	   /* When the struct has may_alias attached to it, we need not to
+	      return true.  */
+	   && get_alias_set (base))
     {
 #ifdef ACCESS_DEBUGGING
       fprintf (stderr, "Access to ");
