@@ -1,3 +1,9 @@
+2006-08-25  Fariborz Jahanian  <fjahanian@apple.com>
+
+	PR c/28418
+	* c-gimplify.c (gimplify_compound_literal_expr): Don't add
+	variable again if DECL_SEEN_IN_BIND_EXPR_P.
+
 2006-08-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/28299
