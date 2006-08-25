@@ -522,7 +522,16 @@ pp_c_direct_abstract_declarator (c_pretty_printer *pp, tree t)
     case ARRAY_TYPE:
       pp_c_left_bracket (pp);
       if (TYPE_DOMAIN (t) && TYPE_MAX_VALUE (TYPE_DOMAIN (t)))
-        pp_expression (pp, TYPE_MAX_VALUE (TYPE_DOMAIN (t)));
+	{
+	  tree maxval = TYPE_MAX_VALUE (TYPE_DOMAIN (t));
+	  tree type = TREE_TYPE (maxval);
+
+	  if (host_integerp (maxval, 0))
+	    pp_wide_integer (pp, tree_low_cst (maxval, 0) + 1);
+	  else
+	    pp_expression (pp, fold_build2 (PLUS_EXPR, type, maxval,
+					    build_int_cst (type, 1)));
+	}
       pp_c_right_bracket (pp);
       pp_direct_abstract_declarator (pp, TREE_TYPE (t));
       break;
