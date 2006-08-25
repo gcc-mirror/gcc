@@ -1,5 +1,10 @@
 2006-08-25  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/28418
+	* gcc.c-torture/compile/compound-literal-1.c: New test.
+
+2006-08-25  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/28299
 	* gcc.dg/funcdef-var-1.c, gcc.dg/funcdef-var-2.c: New tests.
 	* gcc.dg/pr20368-1.c, gcc.dg/pr20368-2.c, gcc.dg/pr20368-3.c:
