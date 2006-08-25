@@ -37,6 +37,8 @@ Boston, MA 02110-1301, USA.  */
     {						\
       builtin_define ("__mn10300__");		\
       builtin_define ("__MN10300__");		\
+      builtin_assert ("cpu=mn10300");		\
+      builtin_assert ("machine=mn10300");	\
     }						\
   while (0)
 
