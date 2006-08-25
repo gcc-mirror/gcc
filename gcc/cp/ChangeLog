@@ -1,3 +1,11 @@
+2006-08-24  Danny Smith   <dannysmith@users.sourceforge.net>
+
+	PR driver/28528
+	* g++spec.c (lang_specific_driver): Always check if we need to
+	swallow a space-separated  arg to '-x'.
+	* lang-specs.h: Don't create ouput files for '-xc++-header'
+	if -fsyntax-only.
+
 2006-08-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27714
