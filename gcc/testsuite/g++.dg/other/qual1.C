@@ -6,6 +6,6 @@ struct A
   int i;
   void foo()
   {
-    int A::i = i;  // { dg-error "extra qualification|not a static member" }
+    int A::i = i;  // { dg-error "qualified" }
   }
 };

@@ -1,3 +1,9 @@
+2006-08-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28056
+	* g++.dg/parse/local1.C: New test.
+	* g++.dg/other/qual1.C: Tweak error marker.
+
 2006-08-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28788
