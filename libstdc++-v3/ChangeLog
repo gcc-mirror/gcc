@@ -1,3 +1,23 @@
+2006-08-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (bernoulli_distribution::operator()): Fix
+        wrt generators returning integers.
+	(uniform_int<>::_M_call): Add.
+	(uniform_int<>::operator()): Use it.
+
+	* include/tr1/random (_Adaptor<>::min, _Adaptor<>::max): Add.
+	(_Adaptor<>::operator()): Allow for nonzero _M_g.min().
+
+	* include/tr1/random.tcc (linear_congruential<>::min, max):
+	Move inline...
+	(__mod): Move ...
+	* include/tr1/random: ... here.
+	(struct _Mod): Declare.
+
+	* include/tr1/random (struct _To_Unsigned_Type): Only declare,
+	move...
+	* include/tr1/random.tcc: ... here.
+
 2006-08-22  Phillip Jordan  <phillip.m.jordan@gmail.com>
 
 	*include/tr1/boost_shared_ptr.h: Added locking policy to
