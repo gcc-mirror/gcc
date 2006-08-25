@@ -1,5 +1,9 @@
 2006-08-25  Paolo Carlini  <pcarlini@suse.de>
 
+	* docs/html/ext/tr1.html: Update.
+
+2006-08-25  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/random (bernoulli_distribution::operator()): Fix
         wrt generators returning integers.
 	(uniform_int<>::_M_call): Add.
