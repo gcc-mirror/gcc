@@ -1,3 +1,9 @@
+2006-08-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28814
+	* fold-const.c (fold_binary): Fold temporary to correct
+	type before constructing new comparison.
+
 2006-08-25  Fariborz Jahanian  <fjahanian@apple.com>
 
 	PR c/28418
