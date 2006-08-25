@@ -60,16 +60,3 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* Always enable "-fpic" for Xtensa Linux.  */
 #define XTENSA_ALWAYS_PIC 1
-
-/* Redefine the standard ELF version of ASM_DECLARE_FUNCTION_SIZE to
-   allow adding the ".end literal_prefix" directive at the end of the
-   function.  */
-#undef ASM_DECLARE_FUNCTION_SIZE
-#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)		\
-  do								\
-    {								\
-      if (!flag_inhibit_size_directive)				\
-	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
-      XTENSA_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL);		\
-    }								\
-  while (0)
