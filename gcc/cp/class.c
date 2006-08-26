@@ -134,8 +134,6 @@ static int method_name_cmp (const void *, const void *);
 static int resort_method_name_cmp (const void *, const void *);
 static void add_implicitly_declared_members (tree, int, int);
 static tree fixed_type_or_null (tree, int *, int *);
-static tree resolve_address_of_overloaded_function (tree, tree, tsubst_flags_t,
-						    bool, tree);
 static tree build_simple_base_path (tree expr, tree binfo);
 static tree build_vtbl_ref_1 (tree, tree);
 static tree build_vtbl_initializer (tree, tree, tree, tree, int *);
@@ -5673,18 +5671,21 @@ pop_lang_context (void)
 
 /* Given an OVERLOAD and a TARGET_TYPE, return the function that
    matches the TARGET_TYPE.  If there is no satisfactory match, return
-   error_mark_node, and issue an error & warning messages under control
-   of FLAGS.  Permit pointers to member function if FLAGS permits.  If
-   TEMPLATE_ONLY, the name of the overloaded function was a
-   template-id, and EXPLICIT_TARGS are the explicitly provided
-   template arguments.  */
+   error_mark_node, and issue an error & warning messages under
+   control of FLAGS.  Permit pointers to member function if FLAGS
+   permits.  If TEMPLATE_ONLY, the name of the overloaded function was
+   a template-id, and EXPLICIT_TARGS are the explicitly provided
+   template arguments.  If OVERLOAD is for one or more member
+   functions, then ACCESS_PATH is the base path used to reference
+   those member functions.  */
 
 static tree
 resolve_address_of_overloaded_function (tree target_type,
 					tree overload,
 					tsubst_flags_t flags,
 					bool template_only,
-					tree explicit_targs)
+					tree explicit_targs,
+					tree access_path)
 {
   /* Here's what the standard says:
 
@@ -5935,7 +5936,17 @@ resolve_address_of_overloaded_function (tree target_type,
      function used.  If this conversion sequence is selected, the
      function will be marked as used at this point.  */
   if (!(flags & tf_conv))
-    mark_used (fn);
+    {
+      mark_used (fn);
+      /* We could not check access when this expression was originally
+	 created since we did not know at that time to which function
+	 the expression referred.  */
+      if (DECL_FUNCTION_MEMBER_P (fn))
+	{
+	  gcc_assert (access_path);
+	  perform_or_defer_access_check (access_path, fn);
+	}
+    }
 
   if (TYPE_PTRFN_P (target_type) || TYPE_PTRMEMFUNC_P (target_type))
     return build_unary_op (ADDR_EXPR, fn, 0);
@@ -5964,6 +5975,7 @@ tree
 instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 {
   tsubst_flags_t flags_in = flags;
+  tree access_path = NULL_TREE;
 
   flags &= ~tf_ptrmem_ok;
 
@@ -5994,7 +6006,10 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
     }
 
   if (TREE_CODE (rhs) == BASELINK)
-    rhs = BASELINK_FUNCTIONS (rhs);
+    {
+      access_path = BASELINK_ACCESS_BINFO (rhs);
+      rhs = BASELINK_FUNCTIONS (rhs);
+    }
 
   /* If we are in a template, and have a NON_DEPENDENT_EXPR, we cannot
      deduce any type information.  */
@@ -6004,6 +6019,13 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 	error ("not enough type information");
       return error_mark_node;
     }
+
+  /* There only a few kinds of expressions that may have a type
+     dependent on overload resolution.  */
+  gcc_assert (TREE_CODE (rhs) == ADDR_EXPR
+	      || TREE_CODE (rhs) == COMPONENT_REF
+	      || TREE_CODE (rhs) == COMPOUND_EXPR
+	      || really_overloaded_fn (rhs));
 
   /* We don't overwrite rhs if it is an overloaded function.
      Copying it would destroy the tree link.  */
@@ -6017,32 +6039,6 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 
   switch (TREE_CODE (rhs))
     {
-    case TYPE_EXPR:
-    case CONVERT_EXPR:
-    case SAVE_EXPR:
-    case CONSTRUCTOR:
-      gcc_unreachable ();
-
-    case INDIRECT_REF:
-    case ARRAY_REF:
-      {
-	tree new_rhs;
-
-	new_rhs = instantiate_type (build_pointer_type (lhstype),
-				    TREE_OPERAND (rhs, 0), flags);
-	if (new_rhs == error_mark_node)
-	  return error_mark_node;
-
-	TREE_TYPE (rhs) = lhstype;
-	TREE_OPERAND (rhs, 0) = new_rhs;
-	return rhs;
-      }
-
-    case NOP_EXPR:
-      rhs = copy_node (TREE_OPERAND (rhs, 0));
-      TREE_TYPE (rhs) = unknown_type_node;
-      return instantiate_type (lhstype, rhs, flags);
-
     case COMPONENT_REF:
       {
 	tree member = TREE_OPERAND (rhs, 1);
@@ -6059,7 +6055,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
     case OFFSET_REF:
       rhs = TREE_OPERAND (rhs, 1);
       if (BASELINK_P (rhs))
-	return instantiate_type (lhstype, BASELINK_FUNCTIONS (rhs), flags_in);
+	return instantiate_type (lhstype, rhs, flags_in);
 
       /* This can happen if we are forming a pointer-to-member for a
 	 member template.  */
@@ -6075,7 +6071,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 	return
 	  resolve_address_of_overloaded_function (lhstype, fns, flags_in,
 						  /*template_only=*/true,
-						  args);
+						  args, access_path);
       }
 
     case OVERLOAD:
@@ -6083,99 +6079,14 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
       return
 	resolve_address_of_overloaded_function (lhstype, rhs, flags_in,
 						/*template_only=*/false,
-						/*explicit_targs=*/NULL_TREE);
+						/*explicit_targs=*/NULL_TREE,
+						access_path);
 
-    case CALL_EXPR:
-      /* This is too hard for now.  */
-      gcc_unreachable ();
-
-    case PLUS_EXPR:
-    case MINUS_EXPR:
     case COMPOUND_EXPR:
       TREE_OPERAND (rhs, 0)
 	= instantiate_type (lhstype, TREE_OPERAND (rhs, 0), flags);
       if (TREE_OPERAND (rhs, 0) == error_mark_node)
 	return error_mark_node;
-      TREE_OPERAND (rhs, 1)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
-      if (TREE_OPERAND (rhs, 1) == error_mark_node)
-	return error_mark_node;
-
-      TREE_TYPE (rhs) = lhstype;
-      return rhs;
-
-    case MULT_EXPR:
-    case TRUNC_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case CEIL_DIV_EXPR:
-    case ROUND_DIV_EXPR:
-    case RDIV_EXPR:
-    case TRUNC_MOD_EXPR:
-    case FLOOR_MOD_EXPR:
-    case CEIL_MOD_EXPR:
-    case ROUND_MOD_EXPR:
-    case FIX_ROUND_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_CEIL_EXPR:
-    case FIX_TRUNC_EXPR:
-    case FLOAT_EXPR:
-    case NEGATE_EXPR:
-    case ABS_EXPR:
-    case MAX_EXPR:
-    case MIN_EXPR:
-
-    case BIT_AND_EXPR:
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
-    case LSHIFT_EXPR:
-    case RSHIFT_EXPR:
-    case LROTATE_EXPR:
-    case RROTATE_EXPR:
-
-    case PREINCREMENT_EXPR:
-    case PREDECREMENT_EXPR:
-    case POSTINCREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
-      if (flags & tf_error)
-	error ("invalid operation on uninstantiated type");
-      return error_mark_node;
-
-    case TRUTH_AND_EXPR:
-    case TRUTH_OR_EXPR:
-    case TRUTH_XOR_EXPR:
-    case LT_EXPR:
-    case LE_EXPR:
-    case GT_EXPR:
-    case GE_EXPR:
-    case EQ_EXPR:
-    case NE_EXPR:
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-    case TRUTH_NOT_EXPR:
-      if (flags & tf_error)
-	error ("not enough type information");
-      return error_mark_node;
-
-    case COND_EXPR:
-      if (type_unknown_p (TREE_OPERAND (rhs, 0)))
-	{
-	  if (flags & tf_error)
-	    error ("not enough type information");
-	  return error_mark_node;
-	}
-      TREE_OPERAND (rhs, 1)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
-      if (TREE_OPERAND (rhs, 1) == error_mark_node)
-	return error_mark_node;
-      TREE_OPERAND (rhs, 2)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 2), flags);
-      if (TREE_OPERAND (rhs, 2) == error_mark_node)
-	return error_mark_node;
-
-      TREE_TYPE (rhs) = lhstype;
-      return rhs;
-
-    case MODIFY_EXPR:
       TREE_OPERAND (rhs, 1)
 	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
       if (TREE_OPERAND (rhs, 1) == error_mark_node)

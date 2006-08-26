@@ -1253,8 +1253,26 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
   /* [class.access]
 
      In the case of overloaded function names, access control is
-     applied to the function selected by overloaded resolution.  */
-  if (rval && protect && !is_overloaded_fn (rval))
+     applied to the function selected by overloaded resolution.  
+
+     We cannot check here, even if RVAL is only a single non-static
+     member function, since we do not know what the "this" pointer
+     will be.  For:
+
+        class A { protected: void f(); };
+        class B : public A { 
+          void g(A *p) {
+            f(); // OK
+            p->f(); // Not OK.
+          }
+        };
+
+    only the first call to "f" is valid.  However, if the function is
+    static, we can check.  */
+  if (rval && protect 
+      && !really_overloaded_fn (rval)
+      && !(TREE_CODE (rval) == FUNCTION_DECL
+	   && DECL_NONSTATIC_MEMBER_FUNCTION_P (rval)))
     perform_or_defer_access_check (basetype_path, rval);
 
   if (errstr && protect)

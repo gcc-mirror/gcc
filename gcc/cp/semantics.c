@@ -1774,26 +1774,8 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
       args = build_non_dependent_args (orig_args);
     }
 
-  /* A reference to a member function will appear as an overloaded
-     function (rather than a BASELINK) if an unqualified name was used
-     to refer to it.  */
-  if (!BASELINK_P (fn) && is_overloaded_fn (fn))
-    {
-      tree f = fn;
-
-      if (TREE_CODE (f) == TEMPLATE_ID_EXPR)
-	f = TREE_OPERAND (f, 0);
-      f = get_first_fn (f);
-      if (DECL_FUNCTION_MEMBER_P (f))
-	{
-	  tree type = currently_open_derived_class (DECL_CONTEXT (f));
-	  if (!type)
-	    type = DECL_CONTEXT (f);
-	  fn = build_baselink (TYPE_BINFO (type),
-			       TYPE_BINFO (type),
-			       fn, /*optype=*/NULL_TREE);
-	}
-    }
+  if (is_overloaded_fn (fn))
+    fn = baselink_for_fns (fn);
 
   result = NULL_TREE;
   if (BASELINK_P (fn))
@@ -2405,6 +2387,36 @@ qualified_name_lookup_error (tree scope, tree name, tree decl)
     error ("%<::%D%> has not been declared", name);
 }
 
+/* If FNS is a member function, a set of member functions, or a
+   template-id referring to one or more member functions, return a
+   BASELINK for FNS, incorporating the current access context.
+   Otherwise, return FNS unchanged.  */
+
+tree
+baselink_for_fns (tree fns)
+{
+  tree fn;
+  tree cl;
+
+  if (BASELINK_P (fns) 
+      || processing_template_decl
+      || error_operand_p (fns))
+    return fns;
+  
+  fn = fns;
+  if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
+    fn = TREE_OPERAND (fn, 0);
+  fn = get_first_fn (fn);
+  if (!DECL_FUNCTION_MEMBER_P (fn))
+    return fns;
+
+  cl = currently_open_derived_class (DECL_CONTEXT (fn));
+  if (!cl)
+    cl = DECL_CONTEXT (fn);
+  cl = TYPE_BINFO (cl);
+  return build_baselink (cl, cl, fns, /*optype=*/NULL_TREE);
+}
+
 /* ID_EXPRESSION is a representation of parsed, but unprocessed,
    id-expression.  (See cp_parser_id_expression for details.)  SCOPE,
    if non-NULL, is the type or namespace used to explicitly qualify
@@ -2793,8 +2805,12 @@ finish_id_expression (tree id_expression,
 	}
       else if (is_overloaded_fn (decl))
 	{
-	  tree first_fn = OVL_CURRENT (decl);
+	  tree first_fn;
 
+	  first_fn = decl;
+	  if (TREE_CODE (first_fn) == TEMPLATE_ID_EXPR)
+	    first_fn = TREE_OPERAND (first_fn, 0);
+	  first_fn = get_first_fn (first_fn);
 	  if (TREE_CODE (first_fn) == TEMPLATE_DECL)
 	    first_fn = DECL_TEMPLATE_RESULT (first_fn);
 
@@ -2811,6 +2827,8 @@ finish_id_expression (tree id_expression,
 	      return finish_class_member_access_expr (decl, id_expression,
 						      /*template_p=*/false);
 	    }
+
+	  decl = baselink_for_fns (decl);
 	}
       else
 	{

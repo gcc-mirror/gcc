@@ -842,6 +842,13 @@ build_qualified_name (tree type, tree scope, tree name, bool template_p)
   return t;
 }
 
+/* Returns non-zero if X is an expression for a (possibly overloaded)
+   function.  If "f" is a function or function template, "f", "c->f",
+   "c.f", "C::f", and "f<int>" will all be considered possibly
+   overloaded functions.  Returns 2 if the function is actually
+   overloaded, i.e., if it is impossible to know the the type of the
+   function without performing overload resolution.  */
+ 
 int
 is_overloaded_fn (tree x)
 {
@@ -850,24 +857,22 @@ is_overloaded_fn (tree x)
     x = TREE_OPERAND (x, 1);
   if (BASELINK_P (x))
     x = BASELINK_FUNCTIONS (x);
-  return (TREE_CODE (x) == FUNCTION_DECL
-	  || TREE_CODE (x) == TEMPLATE_ID_EXPR
-	  || DECL_FUNCTION_TEMPLATE_P (x)
-	  || TREE_CODE (x) == OVERLOAD);
+  if (TREE_CODE (x) == TEMPLATE_ID_EXPR
+      || DECL_FUNCTION_TEMPLATE_P (OVL_CURRENT (x))
+      || (TREE_CODE (x) == OVERLOAD && OVL_CHAIN (x)))
+    return 2;
+  return  (TREE_CODE (x) == FUNCTION_DECL
+	   || TREE_CODE (x) == OVERLOAD);
 }
 
-int
+/* Returns true iff X is an expression for an overloaded function
+   whose type cannot be known without performing overload
+   resolution.  */
+
+bool
 really_overloaded_fn (tree x)
 {
-  if (TREE_CODE (x) == OFFSET_REF)
-    x = TREE_OPERAND (x, 1);
-  /* A baselink is also considered an overloaded function.  */
-  if (BASELINK_P (x))
-    x = BASELINK_FUNCTIONS (x);
-
-  return ((TREE_CODE (x) == OVERLOAD && OVL_CHAIN (x))
-	  || DECL_FUNCTION_TEMPLATE_P (OVL_CURRENT (x))
-	  || TREE_CODE (x) == TEMPLATE_ID_EXPR);
+  return is_overloaded_fn (x) == 2;
 }
 
 tree

@@ -2023,6 +2023,12 @@ write_expression (tree expr)
       code = TREE_CODE (expr);
     }
 
+  if (code == BASELINK)
+    {
+      expr = BASELINK_FUNCTIONS (expr);
+      code = TREE_CODE (expr);
+    }
+
   /* Handle pointers-to-members by making them look like expression
      nodes.  */
   if (code == PTRMEM_CST)

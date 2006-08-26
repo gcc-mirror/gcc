@@ -9237,11 +9237,6 @@ cp_parser_template_argument (cp_parser* parser)
 	      argument = TREE_OPERAND (argument, 0);
 	    }
 
-	  if (TREE_CODE (argument) == BASELINK)
-	    /* We don't need the information about what class was used
-	       to name the overloaded functions.  */
-	    argument = BASELINK_FUNCTIONS (argument);
-
 	  if (TREE_CODE (argument) == VAR_DECL)
 	    {
 	      /* A variable without external linkage might still be a
