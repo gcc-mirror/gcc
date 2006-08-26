@@ -801,6 +801,9 @@ Examples of standard conforming code equivalent to the above example, are:
       DATA i,j,x /1,2,3*0.,1./
 @end smallexample
 
+Note that variables initialized in type declarations
+automatically acquire the @code{SAVE} attribute.
+
 @node Extensions to namelist
 @section Extensions to namelist
 @cindex Namelist
