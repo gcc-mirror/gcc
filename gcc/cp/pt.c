@@ -3454,7 +3454,9 @@ convert_nontype_argument_function (tree type, tree expr)
   fn_no_ptr = fn;
   if (TREE_CODE (fn_no_ptr) == ADDR_EXPR)
     fn_no_ptr = TREE_OPERAND (fn_no_ptr, 0);
-
+  if (TREE_CODE (fn_no_ptr) == BASELINK)
+    fn_no_ptr = BASELINK_FUNCTIONS (fn_no_ptr);
+ 
   /* [temp.arg.nontype]/1
 
      A template-argument for a non-type, non-template template-parameter
@@ -7192,6 +7194,15 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	max = tsubst_template_arg (omax, args, complain, in_decl);
 	max = fold_decl_constant_value (max);
 
+	if (TREE_CODE (max) != INTEGER_CST 
+	    && TREE_CODE (max) != TEMPLATE_PARM_INDEX
+	    && !at_function_scope_p ())
+	  {
+	    if (complain & tf_error)
+	      error ("array bound is not an integer constant");
+	    return error_mark_node;
+	  }
+
 	/* [temp.deduct]
 
 	   Type deduction may fail for any of the following
@@ -7204,7 +7215,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     indicated by the state of complain), so that
 	     another substitution can be found.  */
 	  return error_mark_node;
-
 	else if (TREE_CODE (max) == INTEGER_CST
 		 && INT_CST_LT (max, integer_zero_node))
 	  {
@@ -8824,7 +8834,7 @@ tsubst_copy_and_build (tree t,
 	  return build3 (COMPONENT_REF, TREE_TYPE (template),
 			 object, template, NULL_TREE);
 	else
-	  return template;
+	  return baselink_for_fns (template);
       }
 
     case INDIRECT_REF:

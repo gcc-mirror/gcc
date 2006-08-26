@@ -1,3 +1,29 @@
+2006-08-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28588
+	* class.c (resolve_address_of_overloaded_function): Add
+	access_path parameter.  Perform access checks.
+	(instantiate_type): Adjust call to
+	resolve_address_of_overloaded_function.  Remove unnecessary code.
+	* tree.c (is_overloaded_fn): Document.  Return 2 when there are
+	acutally multiple functions.
+	(really_overloaded_fn): Use is_overloaded_fn.
+	* mangle.c (write_expression): Handle BASELINKs.
+	* cp-tree.h (really_overloaded_fn): Return bool.
+	(baselink_for_fns): Declare.
+	* search.c (lookup_member): Check access for single static
+	functions here.
+	* pt.c (convert_nontype_argument_function): Handle BASELINKs.
+	(tsubst_copy_and_build): Generate BASELINKs for template-ids.
+	* semantics.c (finish_call_expr): Use baselink_for_fns.
+	(baselink_for_fns): New function.
+	(finish_id_expression): Use it.
+	* parser.c (cp_parser_template_argument): Don't strip BASELINKs.
+
+	PR c++/28595
+	* pt.c (tsubst): Issue errors about attempts to create VLAs at
+	template-instantiation time.
+
 2006-08-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28853

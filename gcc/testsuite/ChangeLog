@@ -1,3 +1,13 @@
+2006-08-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28588
+	* g++.dg/inherit/access6.C: New test.
+	* g++.dg/inherit/access7.C: Likewise.
+
+	PR c++/28595
+	* g++.dg/template/array15.C: New test.
+	* g++.dg/template/crash2.C: Tweak error markers.
+
 2006-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/28683
