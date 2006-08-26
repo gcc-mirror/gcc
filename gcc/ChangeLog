@@ -1,3 +1,13 @@
+2006-08-26  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.h (CASE_LOW_SEEN, CASE_HIGH_SEEN): New macros for manipulating
+	temporary visit flags on CASE_LABEL_EXPRs.
+	* c-common.c (match_case_to_enum): Add function comment.  Avoid
+	O(N) loop, by looking up both CASE_LOW_SEEN and CASE_HIGH_SEEN.
+	(c_do_switch_warnings):  Reorganize to record CASE_LOW_SEEN and
+	CASE_HIGH_SEEN for enumerated types.  If the switch expression is
+	a constant, only warn if that constant value isn't handled.
+
 2006-08-26  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c++/24009

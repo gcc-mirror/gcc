@@ -395,6 +395,7 @@ struct tree_common GTY(())
 	   In a STMT_EXPR, it means we want the result of the enclosed
 	   expression.
        CALL_EXPR_TAILCALL in CALL_EXPR
+       CASE_LOW_SEEN in CASE_LABEL_EXPR
 
    static_flag:
 
@@ -413,6 +414,7 @@ struct tree_common GTY(())
        EH_FILTER_MUST_NOT_THROW in EH_FILTER_EXPR
        TYPE_REF_CAN_ALIAS_ALL in
            POINTER_TYPE, REFERENCE_TYPE
+       CASE_HIGH_SEEN in CASE_LABEL_EXPR
 
    public_flag:
 
@@ -1024,6 +1026,11 @@ extern void omp_clause_range_check_failed (const tree, const char *, int,
    call optimizations.  */
 #define CALL_EXPR_TAILCALL(NODE) (CALL_EXPR_CHECK(NODE)->common.addressable_flag)
 
+/* Used as a temporary field on a CASE_LABEL_EXPR to indicate that the
+   CASE_LOW operand has been processed.  */
+#define CASE_LOW_SEEN(NODE) \
+  (CASE_LABEL_EXPR_CHECK (NODE)->common.addressable_flag)
+
 /* In a VAR_DECL, nonzero means allocate static storage.
    In a FUNCTION_DECL, nonzero if function has been defined.
    In a CONSTRUCTOR, nonzero means allocate static storage.
@@ -1036,6 +1043,11 @@ extern void omp_clause_range_check_failed (const tree, const char *, int,
    should only be executed if an exception is thrown, not on normal exit
    of its scope.  */
 #define CLEANUP_EH_ONLY(NODE) ((NODE)->common.static_flag)
+
+/* Used as a temporary field on a CASE_LABEL_EXPR to indicate that the
+   CASE_HIGH operand has been processed.  */
+#define CASE_HIGH_SEEN(NODE) \
+  (CASE_LABEL_EXPR_CHECK (NODE)->common.static_flag)
 
 /* In an expr node (usually a conversion) this means the node was made
    implicitly and should not lead to any sort of warning.  In a decl node,
