@@ -336,12 +336,11 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
 	       NULL);
   for (i = 0; i < TREE_VEC_LENGTH (parms); ++i)
     {
-      tree parm;
+      tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
 
-      if (TREE_VEC_ELT (parms, i) == error_mark_node)
-        continue;
+      if (parm == error_mark_node)
+	continue;
 
-      parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
       gcc_assert (DECL_P (parm));
 
       switch (TREE_CODE (parm))
@@ -2212,15 +2211,13 @@ comp_template_parms (tree parms1, tree parms2)
 
       for (i = 0; i < TREE_VEC_LENGTH (t2); ++i)
 	{
-          tree parm1;
-          tree parm2;
+          tree parm1 = TREE_VALUE (TREE_VEC_ELT (t1, i));
+          tree parm2 = TREE_VALUE (TREE_VEC_ELT (t2, i));
 
-          if (TREE_VEC_ELT (t1, i) == error_mark_node
-              || TREE_VEC_ELT (t2, i) == error_mark_node)
-            continue;
-
-	  parm1 = TREE_VALUE (TREE_VEC_ELT (t1, i));
-          parm2 = TREE_VALUE (TREE_VEC_ELT (t2, i));
+          /* If either of the template parameters are invalid, assume
+             they match for the sake of error recovery. */
+          if (parm1 == error_mark_node || parm2 == error_mark_node)
+            return 1;
 
 	  if (TREE_CODE (parm1) != TREE_CODE (parm2))
 	    return 0;
@@ -2352,6 +2349,7 @@ process_template_parm (tree list, tree parm, bool is_non_type)
 {
   tree decl = 0;
   tree defval;
+  tree err_parm_list;
   int idx = 0;
 
   gcc_assert (TREE_CODE (parm) == TREE_LIST);
@@ -2361,7 +2359,7 @@ process_template_parm (tree list, tree parm, bool is_non_type)
     {
       tree p = tree_last (list);
 
-      if (p && p != error_mark_node)
+      if (p && TREE_VALUE (p) != error_mark_node)
         {
           p = TREE_VALUE (p);
           if (TREE_CODE (p) == TYPE_DECL || TREE_CODE (p) == TEMPLATE_DECL)
@@ -2382,7 +2380,11 @@ process_template_parm (tree list, tree parm, bool is_non_type)
       SET_DECL_TEMPLATE_PARM_P (parm);
 
       if (TREE_TYPE (parm) == error_mark_node)
-	return chainon(list, error_mark_node);
+        {
+          err_parm_list = build_tree_list (defval, parm);
+          TREE_VALUE (err_parm_list) = error_mark_node;
+	   return chainon (list, err_parm_list);
+        }
       else
       {
 	/* [temp.param]
@@ -2391,7 +2393,11 @@ process_template_parm (tree list, tree parm, bool is_non_type)
 	   ignored when determining its type.  */
 	TREE_TYPE (parm) = TYPE_MAIN_VARIANT (TREE_TYPE (parm));
 	if (invalid_nontype_parm_type_p (TREE_TYPE (parm), 1))
-	  return chainon(list, error_mark_node);
+          {
+            err_parm_list = build_tree_list (defval, parm);
+            TREE_VALUE (err_parm_list) = error_mark_node;
+	     return chainon (list, err_parm_list);
+          }
       }
 
       /* A template parameter is not modifiable.  */
@@ -2522,11 +2528,15 @@ current_template_args (void)
 	    {
 	      t = TREE_VALUE (t);
 
-	      if (TREE_CODE (t) == TYPE_DECL
-		  || TREE_CODE (t) == TEMPLATE_DECL)
-		t = TREE_TYPE (t);
-	      else
-		t = DECL_INITIAL (t);
+	      if (t != error_mark_node)
+		{
+		  if (TREE_CODE (t) == TYPE_DECL
+		      || TREE_CODE (t) == TEMPLATE_DECL)
+		    t = TREE_TYPE (t);
+		  else
+		    t = DECL_INITIAL (t);
+		}
+
 	      TREE_VEC_ELT (a, i) = t;
 	    }
 	}
@@ -3350,9 +3360,10 @@ redeclare_class_template (tree type, tree parms)
 
       /* TMPL_PARM and PARM can be either TYPE_DECL, PARM_DECL, or
 	 TEMPLATE_DECL.  */
-      if (TREE_CODE (tmpl_parm) != TREE_CODE (parm)
-	  || (TREE_CODE (tmpl_parm) != TYPE_DECL
-	      && !same_type_p (TREE_TYPE (tmpl_parm), TREE_TYPE (parm))))
+      if (tmpl_parm != error_mark_node
+	   && (TREE_CODE (tmpl_parm) != TREE_CODE (parm)
+	   || (TREE_CODE (tmpl_parm) != TYPE_DECL
+	       && !same_type_p (TREE_TYPE (tmpl_parm), TREE_TYPE (parm)))))
 	{
 	  error ("template parameter %q+#D", tmpl_parm);
 	  error ("redeclared here as %q#D", parm);
@@ -4207,11 +4218,11 @@ mangle_class_name_for_template (const char* name, tree parms, tree arglist)
       tree parm;
       tree arg;
 
-      if (TREE_VEC_ELT (parms, i) == error_mark_node)
-        continue;
-
       parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
       arg = TREE_VEC_ELT (arglist, i);
+
+      if (parm == error_mark_node)
+	continue;
 
       if (i)
 	ccat (',');

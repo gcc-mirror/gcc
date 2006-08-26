@@ -1,3 +1,19 @@
+2006-08-26  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/28736
+        * g++.dg/template/void10.C: New test.
+
+        PR c++/28737
+        * g++.dg/template/void8.C: New test.
+
+        PR c+_+/28738
+        * g++.dg/template/void9.C: New test.
+
+        * g++.dg/template/void3.C: Adjust error markers.
+        * g++.dg/template/void4.C: Likewise.
+        * g++.dg/template/crash55.C: Likewise.
+        * g++.dg/template/void7.C: Likewise
+	
 2006-08-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28588

@@ -1,3 +1,19 @@
+2006-08-26  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/28736
+        PR c++/28737
+        PR c++/28738
+        * pt.c (process_template_parm): Store invalid template
+        parameters as a TREE_LIST with a TREE_VALUE of error_mark_node.
+        (push_inline_template_parms_recursive): Check for template
+        parameters having a TREE_VALUE of error_mark_node rather than
+        check the parameter itself.
+        (mangle_class_name_for_template): Likewise.
+        (comp_template_parms): When comparing the individual template
+        parameters, return 1 if either is error_mark_node.
+        (current_template_args): Robustify.
+        (redeclare_class_template): Likewise.
+	
 2006-08-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28588
