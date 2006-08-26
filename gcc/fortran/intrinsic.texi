@@ -1,5 +1,5 @@
 @ignore
-Copyright (C) 2005
+Copyright (C) 2005, 2006
 Free Software Foundation, Inc.
 This is part of the GFORTRAN manual.   
 For copying conditions, see the file gfortran.texi.
@@ -23,6 +23,16 @@ Some basic guidelines for editing this document:
 
 
 @end ignore
+
+@tex
+\gdef\acos{\mathop{\rm acos}\nolimits}
+\gdef\asin{\mathop{\rm asin}\nolimits}
+\gdef\atan{\mathop{\rm atan}\nolimits}
+\gdef\acosh{\mathop{\rm acosh}\nolimits}
+\gdef\asinh{\mathop{\rm asinh}\nolimits}
+\gdef\atanh{\mathop{\rm atanh}\nolimits}
+@end tex
+
 
 @node Intrinsic Procedures
 @chapter Intrinsic Procedures
@@ -49,7 +59,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{ALARM}:         ALARM,     Set an alarm clock
 * @code{ALL}:           ALL,       Determine if all values are true
 * @code{ALLOCATED}:     ALLOCATED, Status of allocatable entity
-* @code{AND}:           AND,       Logical and
+* @code{AND}:           AND,       Bitwise logical AND
 * @code{ANINT}:         ANINT,     Nearest whole number
 * @code{ANY}:           ANY,       Determine if any values are true
 * @code{ASIN}:          ASIN,      Arcsine function
@@ -75,7 +85,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{CONJG}:         CONJG,     Complex conjugate function
 * @code{COS}:           COS,       Cosine function
 * @code{COSH}:          COSH,      Hyperbolic cosine function
-* @code{COUNT}:         COUNT,     Count occurrences of .TRUE. in an array
+* @code{COUNT}:         COUNT,     Count occurrences of TRUE in an array
 * @code{CPU_TIME}:      CPU_TIME,  CPU time subroutine
 * @code{CSHIFT}:        CSHIFT,    Circular array shift function
 * @code{CTIME}:         CTIME,     Subroutine (or function) to convert a time into a string
@@ -91,7 +101,6 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{DTIME}:         DTIME,     Execution time subroutine (or function)
 * @code{EOSHIFT}:       EOSHIFT,   End-off shift function
 * @code{EPSILON}:       EPSILON,   Epsilon function
-* @code{EQV}:           EQV,       Logical equivalence
 * @code{ERF}:           ERF,       Error function
 * @code{ERFC}:          ERFC,      Complementary error function
 * @code{ETIME}:         ETIME,     Execution time subroutine (or function)
@@ -99,13 +108,13 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{EXP}:           EXP,       Exponential function
 * @code{EXPONENT}:      EXPONENT,  Exponent function
 * @code{FDATE}:         FDATE,     Subroutine (or function) to get the current time as a string
-* @code{FGET}:          FGET,      Read a single character from stdin in stream mode
+* @code{FGET}:          FGET,      Read a single character in stream mode from stdin
 * @code{FGETC}:         FGETC,     Read a single character in stream mode
 * @code{FLOAT}:         FLOAT,     Convert integer to default real
 * @code{FLOOR}:         FLOOR,     Integer floor function
 * @code{FLUSH}:         FLUSH,     Flush I/O unit(s)
 * @code{FNUM}:          FNUM,      File number function
-* @code{FPUT}:          FPUT,      Write a single character to stdout in stream mode
+* @code{FPUT}:          FPUT,      Write a single character in stream mode to stdout
 * @code{FPUTC}:         FPUTC,     Write a single character in stream mode
 * @code{FRACTION}:      FRACTION,  Fractional part of the model representation
 * @code{FREE}:          FREE,      Memory de-allocation subroutine
@@ -174,11 +183,10 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{MODULO}:        MODULO,    Modulo function
 * @code{MVBITS}:        MVBITS,    Move bits from one integer to another
 * @code{NEAREST}:       NEAREST,   Nearest representable number
-* @code{NEQV}:          NEQV,      Logical non-equivalence
 * @code{NINT}:          NINT,      Nearest whole number
 * @code{NOT}:           NOT,       Logical negation
-* @code{NULL}:          NULL,      Function that returns an dissassociated pointer
-* @code{OR}:            OR,        Logical inclusive disjunction
+* @code{NULL}:          NULL,      Function that returns an disassociated pointer
+* @code{OR}:            OR,        Bitwise logical OR
 * @code{PACK}:          PACK,      Pack an array into an array of rank one
 * @code{PERROR}:        PERROR,    Print system error message
 * @code{PRECISION}:     PRECISION, Decimal precision of a real kind
@@ -233,7 +241,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{UNMASK}:        UNMASK,    (?)
 * @code{UNPACK}:        UNPACK,    Unpack an array of rank one into an array
 * @code{VERIFY}:        VERIFY,    Scan a string for the absence of a set of characters
-* @code{XOR}:           XOR,       Logical exclusive or
+* @code{XOR}:           XOR,       Bitwise logical exclusive or
 @end menu
 
 @node Introduction
@@ -445,7 +453,7 @@ end program test_achar
 
 @table @asis
 @item @emph{Description}:
-@code{ACOS(X)} computes the arccosine of @var{X} (inverse of @code{COS(X)}.
+@code{ACOS(X)} computes the arccosine of @var{X} (inverse of @code{COS(X)}).
 
 @item @emph{Standard}:
 F77 and later
@@ -464,8 +472,8 @@ less than one.
 
 @item @emph{Return value}:
 The return value is of type @code{REAL(*)} and it lies in the
-range @math{ 0 \leq \arccos (x) \leq \pi}.  The kind type
-parameter is the same as @var{X}.
+range @math{ 0 \leq \acos(x) \leq \pi}. The kind type parameter 
+is the same as @var{X}.
 
 @item @emph{Example}:
 @smallexample
@@ -493,17 +501,37 @@ Inverse function: @ref{COS}
 @cindex hyperbolic arccosine
 @cindex hyperbolic cosine (inverse)
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{ACOSH(X)} computes the area hyperbolic cosine of @var{X} (inverse of @code{COSH(X)}).
+
 @item @emph{Standard}:
+GNU extension
+
 @item @emph{Class}:
+Elemental function
+
 @item @emph{Syntax}:
+@code{X = ACOSH(X)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude that is
+greater or equal to one.
+@end multitable
+
 @item @emph{Return value}:
+The return value is of type @code{REAL(*)} and it lies in the
+range @math{0 \leq \acosh (x) \leq \infty}.
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_acosh
+  REAL(8), DIMENSION(3) :: x = (/ 1.0, 2.0, 3.0 /)
+  WRITE (*,*) ACOSH(x)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
 Inverse function: @ref{COSH}
 @end table
@@ -861,22 +889,51 @@ end program test_allocated
 
 
 @node AND
-@section @code{AND} --- Logical and
+@section @code{AND} --- Bitwise logical AND
 @findex @code{AND} intrinsic
-@cindex logical operations
-
-Intrinsic implemented, documentation pending.
+@cindex bit operations
 
 @table @asis
 @item @emph{Description}:
+Bitwise logical @code{AND}.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  For integer arguments, programmers should consider
+the use of the @ref{IAND} intrinsic defined by the Fortran standard.
+
 @item @emph{Standard}:
+GNU extension
+
 @item @emph{Class}:
+Non-elemental function
+
 @item @emph{Syntax}:
+@code{RESULT = AND(X, Y)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@item @var{Y} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@end multitable
+
 @item @emph{Return value}:
+The return type is either @code{INTEGER(*)} or @code{LOGICAL} after
+cross-promotion of the arguments. 
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_and
+  LOGICAL :: T = .TRUE., F = ..FALSE.
+  INTEGER :: a, b
+  DATA a / Z'F' /, b / Z'3' /
+
+  WRITE (*,*) AND(T, T), AND(T, F), AND(F, T), AND(F, F)
+  WRITE (*,*) AND(a, b)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+F95 elemental function: @ref{IAND}
 @end table
 
 
@@ -1011,7 +1068,7 @@ end program test_any
 
 @table @asis
 @item @emph{Description}:
-@code{ASIN(X)} computes the arcsine of its @var{X}.
+@code{ASIN(X)} computes the arcsine of its @var{X} (inverse of @code{SIN(X)}).
 
 @item @emph{Standard}:
 F77 and later
@@ -1030,7 +1087,7 @@ less than one.
 
 @item @emph{Return value}:
 The return value is of type @code{REAL(*)} and it lies in the
-range @math{-\pi / 2 \leq \arcsin (x) \leq \pi / 2}.  The kind type
+range @math{-\pi / 2 \leq \asin (x) \leq \pi / 2}.  The kind type
 parameter is the same as @var{X}.
 
 @item @emph{Example}:
@@ -1059,18 +1116,38 @@ Inverse function: @ref{SIN}
 @cindex hyperbolic arcsine
 @cindex hyperbolic sine (inverse)
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{ASINH(X)} computes the area hyperbolic sine of @var{X} (inverse of @code{SINH(X)}).
+
 @item @emph{Standard}:
+GNU extension
+
 @item @emph{Class}:
+Elemental function
+
 @item @emph{Syntax}:
+@code{X = ASINH(X)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{REAL(*)}, with @var{X} a real number.
+@end multitable
+
 @item @emph{Return value}:
+The return value is of type @code{REAL(*)} and it lies in the
+range @math{-\infty \leq \asinh (x) \leq \infty}.
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_asinh
+  REAL(8), DIMENSION(3) :: x = (/ -1.0, 0.0, 1.0 /)
+  WRITE (*,*) ASINH(x)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+Inverse function: @ref{SINH}
 @end table
 
 
@@ -1177,7 +1254,7 @@ Elemental function
 
 @item @emph{Return value}:
 The return value is of type @code{REAL(*)} and it lies in the
-range @math{ - \pi / 2 \leq \arcsin (x) \leq \pi / 2}.
+range @math{ - \pi / 2 \leq \atan (x) \leq \pi / 2}.
 
 @item @emph{Example}:
 @smallexample
@@ -1229,7 +1306,7 @@ If @var{Y} is zero, then @var{X} must be nonzero.
 @item @emph{Return value}:
 The return value has the same type and kind type parameter as @var{Y}.
 It is the principal value of the complex number @math{X + i Y}.  If
-@var{X} is nonzero, then it lies in the range @math{-\pi \le \arccos (x) \leq \pi}.
+@var{X} is nonzero, then it lies in the range @math{-\pi \le \atan (x) \leq \pi}.
 The sign is positive if @var{Y} is positive.  If @var{Y} is zero, then
 the return value is zero if @var{X} is positive and @math{\pi} if @var{X}
 is negative.  Finally, if @var{X} is zero, then the magnitude of the result
@@ -1258,18 +1335,38 @@ end program test_atan2
 @cindex hyperbolic arctangent
 @cindex hyperbolic tangent (inverse)
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+@code{ATANH(X)} computes the area hyperbolic sine of @var{X} (inverse of @code{TANH(X)}).
+
 @item @emph{Standard}:
+GNU extension
+
 @item @emph{Class}:
+Elemental function
+
 @item @emph{Syntax}:
+@code{X = ATANH(X)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{REAL(*)} with a magnitude that is less than or equal to one.
+@end multitable
+
 @item @emph{Return value}:
+The return value is of type @code{REAL(*)} and it lies in the
+range @math{-\infty \leq \atanh(x) \leq \infty}.
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_atanh
+  REAL, DIMENSION(3) :: x = (/ -1.0, 0.0, 1.0 /)
+  WRITE (*,*) ATANH(x)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+Inverse function: @ref{TANH}
 @end table
 
 
@@ -1727,19 +1824,42 @@ end program test_char
 @findex @code{CHDIR} intrinsic
 @cindex file system functions
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Change current working directory to a specified @var{PATH}.
+
 @item @emph{Standard}:
+GNU extension
+
 @item @emph{Class}:
+Non-elemental subroutine
+
 @item @emph{Syntax}:
+@code{CALL chdir(PATH[,STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@multitable @columnfractions .15 .80
+@item @var{PATH}   @tab The type shall be @code{CHARACTER(*)} and shall specify a valid path within the file system.
+@item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
+                        a system specific and non-zero error code otherwise.
+@end multitable
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_chdir
+  CHARACTER(len=255) :: path
+  CALL getcwd(path)
+  WRITE(*,*) TRIM(path)
+  CALL chdir("/tmp")
+  CALL getcwd(path)
+  WRITE(*,*) TRIM(path)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{GETCWD}
 @end table
+
 
 
 @node CHMOD
@@ -2232,7 +2352,7 @@ Unavailable time and date parameters return blanks.
 @item @tab @code{VALUE(1)}: @tab The year
 @item @tab @code{VALUE(2)}: @tab The month
 @item @tab @code{VALUE(3)}: @tab The day of the month
-@item @tab @code{VAlUE(4)}: @tab Time difference with UTC in minutes
+@item @tab @code{VALUE(4)}: @tab Time difference with UTC in minutes
 @item @tab @code{VALUE(5)}: @tab The hour of the day
 @item @tab @code{VALUE(6)}: @tab The minutes of the hour
 @item @tab @code{VALUE(7)}: @tab The seconds of the minute
@@ -2655,7 +2775,7 @@ Subsequent invocations of @code{DTIME} return values accumulated since the
 previous invocation.
 
 On some systems, the underlying timings are represented using types with
-sufficiently small limits that overflows (wraparounds) are possible, such as
+sufficiently small limits that overflows (wrap around) are possible, such as
 32-bit types. Therefore, the values returned by this intrinsic might be, or
 become, negative, or numerically less than previous values, during a single
 run of the compiled program.
@@ -2819,30 +2939,6 @@ end program test_epsilon
 
 
 
-@node EQV
-@section @code{EQV} --- Logical equivalence
-@findex @code{EQV} intrinsic
-@cindex logical operations
-
-Intrinsic implemented, documentation pending.
-
-@table @asis
-@item @emph{Description}:
-@item @emph{Standard}:
-F77 and later
-
-@item @emph{Class}:
-@item @emph{Syntax}:
-@item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
-@item @emph{See also}:
-@ref{NEQV}
-@end table
-
-
-
 @node ERF
 @section @code{ERF} --- Error function 
 @findex @code{ERF} intrinsic
@@ -2944,7 +3040,7 @@ returns the user and system components of this time in @code{TARRAY(1)} and
 @code{TARRAY(2)} respectively. @var{RESULT} is equal to @code{TARRAY(1) + TARRAY(2)}.
 
 On some systems, the underlying timings are represented using types with
-sufficiently small limits that overflows (wraparounds) are possible, such as
+sufficiently small limits that overflows (wrap around) are possible, such as
 32-bit types. Therefore, the values returned by this intrinsic might be, or
 become, negative, or numerically less than previous values, during a single
 run of the compiled program.
@@ -3234,49 +3330,115 @@ end program test_float
 
 
 
+@node FGET
+@section @code{FGET} --- Read a single character in stream mode from stdin 
+@findex @code{FGET} intrinsic
+@cindex file operations
+@cindex stream operations
+
+@table @asis
+@item @emph{Description}:
+Read a single character in stream mode from stdin by bypassing normal 
+formatted output. Stream I/O should not be mixed with normal record-oriented 
+(formatted or unformatted) I/O on the same unit; the results are unpredictable.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  @command{Gfortran} provides the Fortran 2003 Stream facility.
+Programmers should consider the use of new stream IO feature in new code 
+for future portability. See also @ref{Fortran 2003 status}.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Non-elemental subroutine
+
+@item @emph{Syntax}:
+@code{CALL fget(C[,STATUS])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{C}      @tab The type shall be @code{CHARACTER}.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
+                        -1 on end-of-file and a system specific positive error code otherwise.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_fget
+  INTEGER, PARAMETER :: strlen = 100
+  INTEGER :: status, i = 1
+  CHARACTER(len=strlen) :: str = ""
+
+  WRITE (*,*) 'Enter text:'
+  DO
+    CALL fget(str(i:i), status)
+    if (status /= 0 .OR. i > strlen) exit
+    i = i + 1
+  END DO
+  WRITE (*,*) TRIM(str)
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{FGETC}, @ref{FPUT}, @ref{FPUTC}
+@end table
+
+
 @node FGETC
 @section @code{FGETC} --- Read a single character in stream mode
 @findex @code{FGETC} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex file operations
+@cindex stream operations
 
 @table @asis
 @item @emph{Description}:
+Read a single character in stream mode by bypassing normal formatted output. 
+Stream I/O should not be mixed with normal record-oriented (formatted or 
+unformatted) I/O on the same unit; the results are unpredictable.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  @command{Gfortran} provides the Fortran 2003 Stream facility.
+Programmers should consider the use of new stream IO feature in new code 
+for future portability. See also @ref{Fortran 2003 status}.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Non-elemental subroutine
+
 @item @emph{Syntax}:
+@code{CALL fgetc(UNIT,C[,STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@multitable @columnfractions .15 .80
+@item @var{UNIT}   @tab The type shall be @code{INTEGER}.
+@item @var{C}      @tab The type shall be @code{CHARACTER}.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
+                        -1 on end-of-file and a system specific positive error code otherwise.
+@end multitable
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_fgetc
+  INTEGER :: fd = 42, status
+  CHARACTER :: c
+
+  OPEN(UNIT=fd, FILE="/etc/passwd", ACTION="READ", STATUS = "OLD")
+  DO
+    CALL fgetc(fd, c, status)
+    IF (status /= 0) EXIT
+    call fput(c)
+  END DO
+  CLOSE(UNIT=fd)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{FGET}, @ref{FPUT}, @ref{FPUTC}
 @end table
 
-
-
-@node FGET
-@section @code{FGET} --- Read a single character from stdin in stream mode
-@findex @code{FGET} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
-
-@table @asis
-@item @emph{Description}:
-@item @emph{Standard}:
-GNU extension
-
-@item @emph{Class}:
-@item @emph{Syntax}:
-@item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
-@item @emph{See also}:
-@end table
 
 
 @node FLOOR
@@ -3362,7 +3524,7 @@ statement that should be preferred over the @code{FLUSH} intrinsic.
 
 @table @asis
 @item @emph{Description}:
-@code{FNUM(UNIT)} returns the Posix file descriptor number corresponding to the
+@code{FNUM(UNIT)} returns the POSIX file descriptor number corresponding to the
 open Fortran I/O unit @code{UNIT}.
 
 @item @emph{Standard}:
@@ -3397,24 +3559,51 @@ end program test_fnum
 
 
 @node FPUT
-@section @code{FPUT} --- Write a single character to stdout in stream mode
+@section @code{FPUT} --- Write a single character in stream mode to stdout 
 @findex @code{FPUT} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex file operations
+@cindex stream operations
 
 @table @asis
 @item @emph{Description}:
+Write a single character in stream mode to stdout by bypassing normal 
+formatted output. Stream I/O should not be mixed with normal record-oriented 
+(formatted or unformatted) I/O on the same unit; the results are unpredictable.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  @command{Gfortran} provides the Fortran 2003 Stream facility.
+Programmers should consider the use of new stream IO feature in new code 
+for future portability. See also @ref{Fortran 2003 status}.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Non-elemental subroutine
+
 @item @emph{Syntax}:
+@code{CALL fput(C[,STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@multitable @columnfractions .15 .80
+@item @var{C}      @tab The type shall be @code{CHARACTER}.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
+                        -1 on end-of-file and a system specific positive error code otherwise.
+@end multitable
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_fput
+  CHARACTER(len=*) :: str = "gfortran"
+  INTEGER :: i
+  DO i = 1, len_trim(str)
+    CALL fput(str(i:i))
+  END DO
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{FPUTC}, @ref{FGET}, @ref{FGETC}
 @end table
 
 
@@ -3422,22 +3611,53 @@ GNU extension
 @node FPUTC
 @section @code{FPUTC} --- Write a single character in stream mode
 @findex @code{FPUTC} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex file operations
+@cindex stream operations
 
 @table @asis
 @item @emph{Description}:
+Write a single character in stream mode by bypassing normal formatted 
+output. Stream I/O should not be mixed with normal record-oriented 
+(formatted or unformatted) I/O on the same unit; the results are unpredictable.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  @command{Gfortran} provides the Fortran 2003 Stream facility.
+Programmers should consider the use of new stream IO feature in new code 
+for future portability. See also @ref{Fortran 2003 status}.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Non-elemental subroutine
+
 @item @emph{Syntax}:
+@code{CALL fputc(UNIT,C[,STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@multitable @columnfractions .15 .80
+@item @var{UNIT}   @tab The type shall be @code{INTEGER}.
+@item @var{C}      @tab The type shall be @code{CHARACTER}.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER}. Returns 0 on success,
+                        -1 on end-of-file and a system specific positive error code otherwise.
+@end multitable
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_fputc
+  CHARACTER(len=*) :: str = "gfortran"
+  INTEGER :: fd = 42, i
+
+  OPEN(UNIT = fd, FILE = "out", ACTION = "WRITE", STATUS="NEW")
+  DO i = 1, len_trim(str)
+    CALL fputc(fd, str(i:i))
+  END DO
+  CLOSE(fd)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{FPUT}, @ref{FGET}, @ref{FGETC}
 @end table
 
 
@@ -3674,22 +3894,39 @@ F2003
 @node GETCWD
 @section @code{GETCWD} --- Get current working directory
 @findex @code{GETCWD} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex file system functions
 
 @table @asis
 @item @emph{Description}:
+Get current working directory.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Non-elemental subroutine.
+
 @item @emph{Syntax}:
+@code{CALL getcwd(CWD[,STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@multitable @columnfractions .15 .80
+@item @var{CWD}    @tab The type shall be @code{CHARACTER(*)}.
+@item @var{STATUS} @tab (Optional) status flag. Returns 0 on success, 
+                        a system specific and non-zero error code otherwise.
+@end multitable
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_getcwd
+  CHARACTER(len=255) :: cwd
+  CALL getcwd(cwd)
+  WRITE(*,*) TRIM(cwd)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{CHDIR}
 @end table
 
 
@@ -5642,31 +5879,6 @@ end program test_nearest
 
 
 
-@node NEQV
-@section @code{NEQV} --- Logical non-equivalence
-@findex @code{NEQV} intrinsic
-@cindex logical operations
-
-Intrinsic implemented, documentation pending.
-
-@table @asis
-@item @emph{Description}:
-@item @emph{Standard}:
-F77 and later
-
-@item @emph{Class}:
-@item @emph{Syntax}:
-@item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
-@item @emph{See also}:
-@ref{EQV}
-@end table
-
-
-
-
 @node NINT
 @section @code{NINT} --- Nearest whole number
 @findex @code{NINT} intrinsic
@@ -5745,7 +5957,7 @@ Elemental function
 
 
 @node NULL
-@section @code{NULL} --- Function that returns an dissassociated pointer
+@section @code{NULL} --- Function that returns an disassociated pointer
 @findex @code{NULL} intrinsic
 @cindex undocumented intrinsic 
 
@@ -5771,23 +5983,51 @@ Transformational function
 
 
 @node OR
-@section @code{OR} --- Logical inclusive disjunction
+@section @code{OR} --- Bitwise logical OR
 @findex @code{OR} intrinsic
-@cindex logical operations
-
-Intrinsic implemented, documentation pending.
+@cindex bit operations
 
 @table @asis
 @item @emph{Description}:
+Bitwise logical @code{OR}.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  For integer arguments, programmers should consider
+the use of the @ref{IOR} intrinsic defined by the Fortran standard.
+
 @item @emph{Standard}:
-F77 and later
+GNU extension
 
 @item @emph{Class}:
+Non-elemental function
+
 @item @emph{Syntax}:
+@code{RESULT = OR(X, Y)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@item @var{Y} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@end multitable
+
 @item @emph{Return value}:
+The return type is either @code{INTEGER(*)} or @code{LOGICAL} 
+after cross-promotion of the arguments.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_or
+  LOGICAL :: T = .TRUE., F = ..FALSE.
+  INTEGER :: a, b
+  DATA a / Z'F' /, b / Z'3' /
+
+  WRITE (*,*) OR(T, T), OR(T, F), OR(F, T), OR(F, F)
+  WRITE (*,*) OR(a, b)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+F95 elemental function: @ref{IOR}
 @end table
 
 
@@ -7549,27 +7789,52 @@ Elemental function
 @end table
 
 
-
-
 @node XOR
-@section @code{XOR} --- Logical exclusive or
+@section @code{XOR} --- Bitwise logical exclusive OR
 @findex @code{XOR} intrinsic
-@cindex logical operations
-
-Intrinsic implemented, documentation pending.
+@cindex bit operations
 
 @table @asis
 @item @emph{Description}:
+Bitwise logical exclusive or. 
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  For integer arguments, programmers should consider
+the use of the @ref{IEOR} intrinsic defined by the Fortran standard.
+
 @item @emph{Standard}:
-F77 and later
+GNU extension
 
 @item @emph{Class}:
+Non-elemental function
+
 @item @emph{Syntax}:
+@code{RESULT = XOR(X, Y)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@item @var{Y} @tab The type shall be either @code{INTEGER(*)} or @code{LOGICAL}.
+@end multitable
+
 @item @emph{Return value}:
+The return type is either @code{INTEGER(*)} or @code{LOGICAL}
+after cross-promotion of the arguments.
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_xor
+  LOGICAL :: T = .TRUE., F = .FALSE.
+  INTEGER :: a, b
+  DATA a / Z,'F' /, b / Z'3' /
+
+  WRITE (*,*) XOR(T, T), XOR(T, F), XOR(F, T), XOR(F, F)
+  WRITE (*,*) XOR(a, b)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+F95 elemental function: @ref{IEOR}
 @end table
 
 
