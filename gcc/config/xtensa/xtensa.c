@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -1470,7 +1470,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 
   if (type && (TYPE_ALIGN (type) > BITS_PER_WORD))
     {
-      int align = TYPE_ALIGN (type) / BITS_PER_WORD;
+      int align = MIN (TYPE_ALIGN (type), STACK_BOUNDARY) / BITS_PER_WORD;
       *arg_words = (*arg_words + align - 1) & -align;
     }
 
@@ -1483,6 +1483,20 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
     cfun->machine->need_a7_copy = true;
 
   return gen_rtx_REG (mode, regno);
+}
+
+
+int
+function_arg_boundary (enum machine_mode mode, tree type)
+{
+  unsigned int alignment;
+
+  alignment = type ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode);
+  if (alignment < PARM_BOUNDARY)
+    alignment = PARM_BOUNDARY;
+  if (alignment > STACK_BOUNDARY)
+    alignment = STACK_BOUNDARY;
+  return alignment;
 }
 
 
@@ -2185,7 +2199,7 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 
   if (TYPE_ALIGN (type) > BITS_PER_WORD)
     {
-      int align = TYPE_ALIGN (type) / BITS_PER_UNIT;
+      int align = MIN (TYPE_ALIGN (type), STACK_BOUNDARY) / BITS_PER_UNIT;
 
       t = build2 (PLUS_EXPR, integer_type_node, orig_ndx,
 		  build_int_cst (NULL_TREE, align - 1));
