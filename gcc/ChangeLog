@@ -1,3 +1,9 @@
+2006-08-26  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/27544
+	* doc/extend.texi (PowerPC Variable Attributes): Mention altivec.
+	(PowerPC Type Attributes): New.
+
 2006-08-26  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (function_arg_boundary): New.
