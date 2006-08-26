@@ -1,5 +1,6 @@
 /* Compiler arithmetic header.
-   Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -29,7 +30,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    to a mpz_t, so declare a function for this as well.  */
 
 void arctangent2 (mpfr_t, mpfr_t, mpfr_t);
-void gfc_mpfr_to_mpz(mpz_t, mpfr_t);
+void gfc_mpfr_to_mpz (mpz_t, mpfr_t);
 void gfc_set_model_kind (int);
 void gfc_set_model (mpfr_t);
 

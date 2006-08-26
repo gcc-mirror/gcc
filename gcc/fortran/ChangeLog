@@ -1,3 +1,9 @@
+2006-08-26  Steven G. Kargl  <kargls@comcast.net>
+
+	* arith.h: Update Copyright dates.  Fix whitespace.
+	* arith.c: Update Copyright dates.  Fix whitespace.  Fix comments.
+	(gfc_arith_done_1): Clean up pedantic_min_int and subnormal.
+
 2006-08-26  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi: Note variable initialization causes SAVE attribute.
