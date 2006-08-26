@@ -10,6 +10,7 @@ config_path = @config_path@
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir)
 
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/finclude
+libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 empty =
 space = $(empty) $(empty)
@@ -35,7 +36,7 @@ libgomp_la_SOURCES = alloc.c barrier.c critical.c env.c error.c iter.c \
 	lock.c mutex.c proc.c sem.c bar.c time.c fortran.c
 
 nodist_noinst_HEADERS = libgomp_f.h
-nodist_include_HEADERS = omp.h
+nodist_libsubinclude_HEADERS = omp.h
 if USE_FORTRAN
 nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod
 endif
