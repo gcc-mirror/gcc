@@ -3374,11 +3374,14 @@ Here, @code{t5} will take up 2 bytes.
 
 @subsection PowerPC Variable Attributes
 
-Two attributes are currently defined for PowerPC configurations:
-@code{ms_struct} and @code{gcc_struct}.
+Three attributes currently are defined for PowerPC configurations:
+@code{altivec}, @code{ms_struct} and @code{gcc_struct}.
 
-For full documentation of these attributes please see the documentation
-in the @xref{i386 Variable Attributes}, section.
+For full documentation of the struct attributes please see the
+documentation in the @xref{i386 Variable Attributes}, section.
+
+For documentation of @code{altivec} attribute please see the
+documentation in the @xref{PowerPC Type Attributes}, section.
 
 @subsection Xstormy16 Variable Attributes
 
@@ -3674,7 +3677,6 @@ declaration, the above program would abort when compiled with
 above in recent GCC versions.
 
 @item visibility
-
 In C++, attribute visibility (@pxref{Function Attributes}) can also be
 applied to class, struct, union and enum types.  Unlike other type
 attributes, the attribute must appear between the initial keyword and
@@ -3710,6 +3712,7 @@ virtual table for @code{C} is not exported.  (You can use
 @code{__attribute__} instead of @code{__declspec} if you prefer, but
 most Symbian OS code uses @code{__declspec}.)
 
+@anchor{i386 Type Attributes}
 @subsection i386 Type Attributes
 
 Two attributes are currently defined for i386 configurations:
@@ -3734,6 +3737,30 @@ compilers to match the native Microsoft compiler.
 To specify multiple attributes, separate them by commas within the
 double parentheses: for example, @samp{__attribute__ ((aligned (16),
 packed))}.
+
+@anchor{PowerPC Type Attributes}
+@subsection PowerPC Type Attributes
+
+Three attributes currently are defined for PowerPC configurations:
+@code{altivec}, @code{ms_struct} and @code{gcc_struct}.
+
+For full documentation of the struct attributes please see the
+documentation in the @xref{i386 Type Attributes}, section.
+
+The @code{altivec} attribute allows one to declare AltiVec vector data
+types supported by the AltiVec Programming Interface Manual.  The
+attribute requires an argument to specify one of three vector types:
+@code{vector__}, @code{pixel__} (always followed by unsigned short),
+and @code{bool__} (always followed by unsigned).
+
+@smallexample
+__attribute__((altivec(vector__)))
+__attribute__((altivec(pixel__))) unsigned short
+__attribute__((altivec(bool__))) unsigned
+@end smallexample
+
+These attributes mainly are intended to support the @code{__vector},
+@code{__pixel}, and @code{__bool} AltiVec keywords.
 
 @node Inline
 @section An Inline Function is As Fast As a Macro
