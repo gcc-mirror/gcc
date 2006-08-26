@@ -1,5 +1,8 @@
 2006-08-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28853
+	* g++.dg/template/ttp21.C: New test.
+
 	PR c++/28852
 	* g++.dg/other/operator1.C: Add error-marker.
 	* g++.dg/other/operator2.C: New test.
