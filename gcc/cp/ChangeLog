@@ -1,3 +1,9 @@
+2006-08-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28595
+	* pt.c (tsubst): Issue errors about attempts to create VLAs at
+	template-instantiation time.
+
 2006-08-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28853

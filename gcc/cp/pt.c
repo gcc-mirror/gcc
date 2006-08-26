@@ -7131,6 +7131,15 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	max = tsubst_template_arg (omax, args, complain, in_decl);
 	max = fold_decl_constant_value (max);
 
+	if (TREE_CODE (max) != INTEGER_CST 
+	    && TREE_CODE (max) != TEMPLATE_PARM_INDEX
+	    && !at_function_scope_p ())
+	  {
+	    if (complain & tf_error)
+	      error ("array bound is not an integer constant");
+	    return error_mark_node;
+	  }
+
 	/* [temp.deduct]
 
 	   Type deduction may fail for any of the following
@@ -7143,7 +7152,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     indicated by the state of complain), so that
 	     another substitution can be found.  */
 	  return error_mark_node;
-
 	else if (TREE_CODE (max) == INTEGER_CST
 		 && INT_CST_LT (max, integer_zero_node))
 	  {

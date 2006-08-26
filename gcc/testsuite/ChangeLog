@@ -1,3 +1,9 @@
+2006-08-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28595
+	* g++.dg/template/array15.C: New test.
+	* g++.dg/template/crash2.C: Tweak error markers.
+
 2006-08-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28853
