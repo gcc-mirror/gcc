@@ -179,7 +179,7 @@ am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
 	system_clock.lo time.lo transpose_generic.lo tty.lo umask.lo \
 	unlink.lo unpack_generic.lo in_pack_generic.lo \
-	in_unpack_generic.lo normalize.lo
+	in_unpack_generic.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
@@ -445,8 +445,7 @@ intrinsics/umask.c \
 intrinsics/unlink.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
-runtime/in_unpack_generic.c \
-runtime/normalize.c
+runtime/in_unpack_generic.c
 
 gfor_src = \
 runtime/compile_options.c \
@@ -2415,9 +2414,6 @@ in_pack_generic.lo: runtime/in_pack_generic.c
 
 in_unpack_generic.lo: runtime/in_unpack_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_generic.lo `test -f 'runtime/in_unpack_generic.c' || echo '$(srcdir)/'`runtime/in_unpack_generic.c
-
-normalize.lo: runtime/normalize.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o normalize.lo `test -f 'runtime/normalize.c' || echo '$(srcdir)/'`runtime/normalize.c
 
 .f90.o:
 	$(FCCOMPILE) -c -o $@ $<

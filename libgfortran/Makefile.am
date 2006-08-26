@@ -96,8 +96,7 @@ intrinsics/umask.c \
 intrinsics/unlink.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
-runtime/in_unpack_generic.c \
-runtime/normalize.c
+runtime/in_unpack_generic.c
 
 gfor_src= \
 runtime/compile_options.c \

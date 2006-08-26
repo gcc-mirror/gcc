@@ -45,13 +45,108 @@ export_proto(arandom_r4);
 extern void arandom_r8 (gfc_array_r8 *);
 export_proto(arandom_r8);
 
+#ifdef HAVE_GFC_REAL_10
+
+extern void random_r10 (GFC_REAL_10 *);
+iexport_proto(random_r10);
+
+extern void arandom_r10 (gfc_array_r10 *);
+export_proto(arandom_r10);
+
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+
+extern void random_r16 (GFC_REAL_16 *);
+iexport_proto(random_r16);
+
+extern void arandom_r16 (gfc_array_r16 *);
+export_proto(arandom_r16);
+
+#endif
+
 #ifdef __GTHREAD_MUTEX_INIT
 static __gthread_mutex_t random_lock = __GTHREAD_MUTEX_INIT;
 #else
 static __gthread_mutex_t random_lock;
 #endif
 
+/* Helper routines to map a GFC_UINTEGER_* to the corresponding
+   GFC_REAL_* types in the range of [0,1).  If GFC_REAL_*_RADIX are 2
+   or 16, respectively, we mask off the bits that don't fit into the
+   correct GFC_REAL_*, convert to the real type, then multiply by the
+   correct offset.
+*/
 
+
+static inline void
+rnumber_4 (GFC_REAL_4 *f, GFC_UINTEGER_4 v)
+{
+  GFC_UINTEGER_4 mask;
+#if GFC_REAL_4_RADIX == 2
+  mask = ~ (GFC_UINTEGER_4) 0u << (32 - GFC_REAL_4_DIGITS);
+#elif GFC_REAL_4_RADIX == 16
+  mask = ~ (GFC_UINTEGER_4) 0u << ((8 - GFC_REAL_4_DIGITS) * 4);
+#else
+#error "GFC_REAL_4_RADIX has unknown value"
+#endif
+  v = v & mask;
+  *f = (GFC_REAL_4) v * (GFC_REAL_4) 0x1.p-32f;
+}
+
+static inline void
+rnumber_8 (GFC_REAL_8 *f, GFC_UINTEGER_8 v)
+{
+  GFC_UINTEGER_8 mask;
+#if GFC_REAL_8_RADIX == 2
+  mask = ~ (GFC_UINTEGER_8) 0u << (64 - GFC_REAL_8_DIGITS);
+#elif GFC_REAL_8_RADIX == 16
+  mask = ~ (GFC_UINTEGER_8) 0u << (16 - GFC_REAL_8_DIGITS) * 4);
+#else
+#error "GFC_REAL_8_RADIX has unknown value"
+#endif
+  v = v & mask;
+  *f = (GFC_REAL_8) v * (GFC_REAL_8) 0x1.p-64;
+}
+
+#ifdef HAVE_GFC_REAL_10
+
+static inline void
+rnumber_10 (GFC_REAL_10 *f, GFC_UINTEGER_8 v)
+{
+  GFC_UINTEGER_8 mask;
+#if GFC_REAL_10_RADIX == 2
+  mask = ~ (GFC_UINTEGER_8) 0u << (64 - GFC_REAL_10_DIGITS);
+#elif GFC_REAL_10_RADIX == 16
+  mask = ~ (GFC_UINTEGER_10) 0u << ((16 - GFC_REAL_10_DIGITS) * 4);
+#else
+#error "GFC_REAL_10_RADIX has unknown value"
+#endif
+  v = v & mask;
+  *f = (GFC_REAL_10) v * (GFC_REAL_10) 0x1.p-64;
+}
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+
+/* For REAL(KIND=16), we only need to mask off the lower bits.  */
+
+static inline void
+rnumber_16 (GFC_REAL_16 *f, GFC_UINTEGER_8 v1, GFC_UINTEGER_8 v2)
+{
+  GFC_UINTEGER_8 mask;
+#if GFC_REAL_16_RADIX == 2
+  mask = ~ (GFC_UINTEGER_8) 0u << (128 - GFC_REAL_16_DIGITS);
+#elif GFC_REAL_16_RADIX == 16
+  mask = ~ (GFC_UINTEGER_8) 0u << ((32 - GFC_REAL_16_DIGITS) * 4);
+#else
+#error "GFC_REAL_16_RADIX has unknown value"
+#endif
+  v2 = v2 & mask;
+  *f = (GFC_REAL_16) v1 * (GFC_REAL_16) 0x1.p-64
+    + (GFC_REAL_16) v2 * (GFC_REAL_16) 0x1.p-128;
+}
+#endif
 /* libgfortran previously had a Mersenne Twister, taken from the paper:
   
 	Mersenne Twister:	623-dimensionally equidistributed
@@ -111,28 +206,77 @@ static __gthread_mutex_t random_lock;
 "There is no copyright on the code below." included the original
 KISS algorithm.  */
 
+/* We use three KISS random number generators, with different
+   seeds.
+   As a matter of Quality of Implementation, the random numbers
+   we generate for different REAL kinds, starting from the same
+   seed, are always the same up to the precision of these types.
+   We do this by using three generators with different seeds, the
+   first one always for the most significant bits, the second one
+   for bits 33..64 (if present in the REAL kind), and the third one
+   (called twice) for REAL(16).
+*/
+
 #define GFC_SL(k, n)	((k)^((k)<<(n)))
 #define GFC_SR(k, n)	((k)^((k)>>(n)))
 
-static const GFC_INTEGER_4 kiss_size = 4;
-#define KISS_DEFAULT_SEED {123456789, 362436069, 521288629, 916191069}
-static const GFC_UINTEGER_4 kiss_default_seed[4] = KISS_DEFAULT_SEED;
-static GFC_UINTEGER_4 kiss_seed[4] = KISS_DEFAULT_SEED;
+/*   Reference for the seed:
+   From: "George Marsaglia" <g...@stat.fsu.edu>
+   Newsgroups: sci.math
+   Message-ID: <e7CcnWxczriWssCjXTWc3A@comcast.com>
+  
+   The KISS RNG uses four seeds, x, y, z, c,
+   with 0<=x<2^32, 0<y<2^32, 0<=z<2^32, 0<=c<698769069
+   except that the two pairs
+   z=0,c=0 and z=2^32-1,c=698769068
+   should be avoided.
+*/
+
+#define KISS_DEFAULT_SEED_1 123456789, 362436069, 521288629, 316191069
+#define KISS_DEFAULT_SEED_2 987654321, 458629013, 582859209, 438195021
+#ifdef HAVE_GFC_REAL_16
+#define KISS_DEFAULT_SEED_3 573658661, 185639104, 582619469, 296736107
+#endif
+
+static GFC_UINTEGER_4 kiss_seed[] = {
+  KISS_DEFAULT_SEED_1,
+  KISS_DEFAULT_SEED_2,
+#ifdef HAVE_GFC_REAL_16
+  KISS_DEFAULT_SEED_3
+#endif
+};
+
+static GFC_UINTEGER_4 kiss_default_seed[] = {
+  KISS_DEFAULT_SEED_1,
+  KISS_DEFAULT_SEED_2,
+#ifdef HAVE_GFC_REAL_16
+  KISS_DEFAULT_SEED_3
+#endif
+};
+
+static const GFC_INTEGER_4 kiss_size = sizeof(kiss_seed)/sizeof(kiss_seed[0]);
+
+static GFC_UINTEGER_4 * const kiss_seed_1 = kiss_seed;
+static GFC_UINTEGER_4 * const kiss_seed_2 = kiss_seed + 4;
+
+#ifdef HAVE_GFC_REAL_16
+static GFC_UINTEGER_4 * const kiss_seed_3 = kiss_seed + 8;
+#endif
 
 /* kiss_random_kernel() returns an integer value in the range of
    (0, GFC_UINTEGER_4_HUGE].  The distribution of pseudorandom numbers
    should be uniform.  */
 
 static GFC_UINTEGER_4
-kiss_random_kernel(void)
+kiss_random_kernel(GFC_UINTEGER_4 * seed)
 {
   GFC_UINTEGER_4 kiss;
 
-  kiss_seed[0] = 69069 * kiss_seed[0] + 1327217885;
-  kiss_seed[1] = GFC_SL(GFC_SR(GFC_SL(kiss_seed[1],13),17),5);
-  kiss_seed[2] = 18000 * (kiss_seed[2] & 65535) + (kiss_seed[2] >> 16);
-  kiss_seed[3] = 30903 * (kiss_seed[3] & 65535) + (kiss_seed[3] >> 16);
-  kiss = kiss_seed[0] + kiss_seed[1] + (kiss_seed[2] << 16) + kiss_seed[3];
+  seed[0] = 69069 * seed[0] + 1327217885;
+  seed[1] = GFC_SL(GFC_SR(GFC_SL(seed[1],13),17),5);
+  seed[2] = 18000 * (seed[2] & 65535) + (seed[2] >> 16);
+  seed[3] = 30903 * (seed[3] & 65535) + (seed[3] >> 16);
+  kiss = seed[0] + seed[1] + (seed[2] << 16) + seed[3];
 
   return kiss;
 }
@@ -146,11 +290,8 @@ random_r4 (GFC_REAL_4 *x)
   GFC_UINTEGER_4 kiss;
 
   __gthread_mutex_lock (&random_lock);
-  kiss = kiss_random_kernel ();
-  /* Burn a random number, so the REAL*4 and REAL*8 functions
-     produce similar sequences of random numbers.  */
-  kiss_random_kernel ();
-  *x = normalize_r4_i4 (kiss, ~(GFC_UINTEGER_4) 0);
+  kiss = kiss_random_kernel (kiss_seed_1);
+  rnumber_4 (x, kiss);
   __gthread_mutex_unlock (&random_lock);
 }
 iexport(random_r4);
@@ -164,13 +305,57 @@ random_r8 (GFC_REAL_8 *x)
   GFC_UINTEGER_8 kiss;
 
   __gthread_mutex_lock (&random_lock);
-  kiss = ((GFC_UINTEGER_8)kiss_random_kernel ()) << 32;
-  kiss += kiss_random_kernel ();
-  *x = normalize_r8_i8 (kiss, ~(GFC_UINTEGER_8) 0);
+  kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
+  kiss += kiss_random_kernel (kiss_seed_2);
+  rnumber_8 (x, kiss);
   __gthread_mutex_unlock (&random_lock);
 }
 iexport(random_r8);
 
+#ifdef HAVE_GFC_REAL_10
+
+/*  This function produces a REAL(10) value from the uniform distribution
+    with range [0,1).  */
+
+void
+random_r10 (GFC_REAL_10 *x)
+{
+  GFC_UINTEGER_8 kiss;
+
+  __gthread_mutex_lock (&random_lock);
+  kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
+  kiss += kiss_random_kernel (kiss_seed_2);
+  rnumber_10 (x, kiss);
+  __gthread_mutex_unlock (&random_lock);
+}
+iexport(random_r10);
+
+#endif
+
+/*  This function produces a REAL(16) value from the uniform distribution
+    with range [0,1).  */
+
+#ifdef HAVE_GFC_REAL_16
+
+void
+random_r16 (GFC_REAL_16 *x)
+{
+  GFC_UINTEGER_8 kiss1, kiss2;
+
+  __gthread_mutex_lock (&random_lock);
+  kiss1 = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
+  kiss1 += kiss_random_kernel (kiss_seed_2);
+
+  kiss2 = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_3)) << 32;
+  kiss2 += kiss_random_kernel (kiss_seed_3);
+
+  rnumber_16 (x, kiss1, kiss2);
+  __gthread_mutex_unlock (&random_lock);
+}
+iexport(random_r16);
+
+
+#endif
 /*  This function fills a REAL(4) array with values from the uniform
     distribution with range [0,1).  */
 
@@ -209,11 +394,8 @@ arandom_r4 (gfc_array_r4 *x)
   while (dest)
     {
       /* random_r4 (dest); */
-      kiss = kiss_random_kernel ();
-      /* Burn a random number, so the REAL*4 and REAL*8 functions
-	 produce similar sequences of random numbers.  */
-      kiss_random_kernel ();
-      *dest = normalize_r4_i4 (kiss, ~(GFC_UINTEGER_4) 0);
+      kiss = kiss_random_kernel (kiss_seed_1);
+      rnumber_4 (dest, kiss);
 
       /* Advance to the next element.  */
       dest += stride0;
@@ -282,9 +464,9 @@ arandom_r8 (gfc_array_r8 *x)
   while (dest)
     {
       /* random_r8 (dest); */
-      kiss = ((GFC_UINTEGER_8)kiss_random_kernel ()) << 32;
-      kiss += kiss_random_kernel ();
-      *dest = normalize_r8_i8 (kiss, ~(GFC_UINTEGER_8) 0);
+      kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
+      kiss += kiss_random_kernel (kiss_seed_2);
+      rnumber_8 (dest, kiss);
 
       /* Advance to the next element.  */
       dest += stride0;
@@ -315,6 +497,154 @@ arandom_r8 (gfc_array_r8 *x)
   __gthread_mutex_unlock (&random_lock);
 }
 
+#ifdef HAVE_GFC_REAL_10
+
+/*  This function fills a REAL(10) array with values from the uniform
+    distribution with range [0,1).  */
+
+void
+arandom_r10 (gfc_array_r10 *x)
+{
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type stride[GFC_MAX_DIMENSIONS];
+  index_type stride0;
+  index_type dim;
+  GFC_REAL_10 *dest;
+  GFC_UINTEGER_8 kiss;
+  int n;
+
+  dest = x->data;
+
+  dim = GFC_DESCRIPTOR_RANK (x);
+
+  for (n = 0; n < dim; n++)
+    {
+      count[n] = 0;
+      stride[n] = x->dim[n].stride;
+      extent[n] = x->dim[n].ubound + 1 - x->dim[n].lbound;
+      if (extent[n] <= 0)
+        return;
+    }
+
+  stride0 = stride[0];
+
+  __gthread_mutex_lock (&random_lock);
+
+  while (dest)
+    {
+      /* random_r10 (dest); */
+      kiss = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
+      kiss += kiss_random_kernel (kiss_seed_2);
+      rnumber_10 (dest, kiss);
+
+      /* Advance to the next element.  */
+      dest += stride0;
+      count[0]++;
+      /* Advance to the next source element.  */
+      n = 0;
+      while (count[n] == extent[n])
+        {
+          /* When we get to the end of a dimension, reset it and increment
+             the next dimension.  */
+          count[n] = 0;
+          /* We could precalculate these products, but this is a less
+             frequently used path so probably not worth it.  */
+          dest -= stride[n] * extent[n];
+          n++;
+          if (n == dim)
+            {
+              dest = NULL;
+              break;
+            }
+          else
+            {
+              count[n]++;
+              dest += stride[n];
+            }
+        }
+    }
+  __gthread_mutex_unlock (&random_lock);
+}
+
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+
+/*  This function fills a REAL(16) array with values from the uniform
+    distribution with range [0,1).  */
+
+void
+arandom_r16 (gfc_array_r16 *x)
+{
+  index_type count[GFC_MAX_DIMENSIONS];
+  index_type extent[GFC_MAX_DIMENSIONS];
+  index_type stride[GFC_MAX_DIMENSIONS];
+  index_type stride0;
+  index_type dim;
+  GFC_REAL_16 *dest;
+  GFC_UINTEGER_8 kiss1, kiss2;
+  int n;
+
+  dest = x->data;
+
+  dim = GFC_DESCRIPTOR_RANK (x);
+
+  for (n = 0; n < dim; n++)
+    {
+      count[n] = 0;
+      stride[n] = x->dim[n].stride;
+      extent[n] = x->dim[n].ubound + 1 - x->dim[n].lbound;
+      if (extent[n] <= 0)
+        return;
+    }
+
+  stride0 = stride[0];
+
+  __gthread_mutex_lock (&random_lock);
+
+  while (dest)
+    {
+      /* random_r16 (dest); */
+      kiss1 = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_1)) << 32;
+      kiss1 += kiss_random_kernel (kiss_seed_2);
+
+      kiss2 = ((GFC_UINTEGER_8) kiss_random_kernel (kiss_seed_3)) << 32;
+      kiss2 += kiss_random_kernel (kiss_seed_3);
+
+      rnumber_16 (dest, kiss1, kiss2);
+
+      /* Advance to the next element.  */
+      dest += stride0;
+      count[0]++;
+      /* Advance to the next source element.  */
+      n = 0;
+      while (count[n] == extent[n])
+        {
+          /* When we get to the end of a dimension, reset it and increment
+             the next dimension.  */
+          count[n] = 0;
+          /* We could precalculate these products, but this is a less
+             frequently used path so probably not worth it.  */
+          dest -= stride[n] * extent[n];
+          n++;
+          if (n == dim)
+            {
+              dest = NULL;
+              break;
+            }
+          else
+            {
+              count[n]++;
+              dest += stride[n];
+            }
+        }
+    }
+  __gthread_mutex_unlock (&random_lock);
+}
+
+#endif
+
 /* random_seed is used to seed the PRNG with either a default
    set of seeds or user specified set of seeds.  random_seed
    must be called with no argument or exactly one argument.  */
@@ -330,10 +660,10 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
     {
       /* From the standard: "If no argument is present, the processor assigns
          a processor-dependent value to the seed."  */
-      kiss_seed[0] = kiss_default_seed[0];
-      kiss_seed[1] = kiss_default_seed[1];
-      kiss_seed[2] = kiss_default_seed[2];
-      kiss_seed[3] = kiss_default_seed[3];
+
+      for (i=0; i<kiss_size; i++)
+	kiss_seed[i] = kiss_default_seed[i];
+
     }
 
   if (size != NULL)
@@ -354,7 +684,7 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 
       /*  This code now should do correct strides.  */
       for (i = 0; i < kiss_size; i++)
-        kiss_seed[i] =(GFC_UINTEGER_4) put->data[i * put->dim[0].stride];
+	kiss_seed[i] =(GFC_UINTEGER_4) put->data[i * put->dim[0].stride];
     }
 
   /* Return the seed to GET data.  */

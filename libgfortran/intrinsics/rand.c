@@ -122,7 +122,15 @@ export_proto_np(PREFIX(rand));
 GFC_REAL_4
 PREFIX(rand) (GFC_INTEGER_4 *i)
 {
-  return normalize_r4_i4 (irand (i) - 1, GFC_RAND_M1 - 1);
+  GFC_UINTEGER_4 mask;
+#if GFC_REAL_4_RADIX == 2
+  mask = ~ (GFC_UINTEGER_4) 0u << (32 - GFC_REAL_4_DIGITS + 1);
+#elif GFC_REAL_4_RADIX == 16
+  mask = ~ (GFC_UINTEGER_4) 0u << ((8 - GFC_REAL_4_DIGITS) * 4 + 1);
+#else
+#error "GFC_REAL_4_RADIX has unknown value"
+#endif
+  return ((GFC_UINTEGER_4) (irand(i) -1) & mask) * (GFC_REAL_4) 0x1.p-31f;
 }
 
 #ifndef __GTHREAD_MUTEX_INIT
