@@ -1,3 +1,10 @@
+2006-08-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28853
+	* typeck2.c (cxx_incomplete_type_diagnostic): Handle template
+	template parameters.  Improve error message for template type
+	parameters.
+
 2006-08-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27714
