@@ -3797,6 +3797,9 @@ match_case_to_enum_1 (tree key, tree type, tree label)
 	     CASE_LABEL (label), buf, type);
 }
 
+/* Subroutine of c_do_switch_warnings, called via splay_tree_foreach.
+   Used to verify that case values match up with enumerator values.  */
+
 static int
 match_case_to_enum (splay_tree_node node, void *data)
 {
@@ -3807,26 +3810,22 @@ match_case_to_enum (splay_tree_node node, void *data)
   if (!CASE_LOW (label))
     return 0;
 
-  /* If TREE_ADDRESSABLE is not set, that means CASE_LOW did not appear
+  /* If CASE_LOW_SEEN is not set, that means CASE_LOW did not appear
      when we did our enum->case scan.  Reset our scratch bit after.  */
-  if (!TREE_ADDRESSABLE (label))
+  if (!CASE_LOW_SEEN (label))
     match_case_to_enum_1 (CASE_LOW (label), type, label);
   else
-    TREE_ADDRESSABLE (label) = 0;
+    CASE_LOW_SEEN (label) = 0;
 
-  /* If CASE_HIGH is non-null, we have a range.  Here we must search.
-     Note that the old code in stmt.c did not check for the values in
-     the range either, just the endpoints.  */
+  /* If CASE_HIGH is non-null, we have a range.  If CASE_HIGH_SEEN is
+     not set, that means that CASE_HIGH did not appear when we did our
+     enum->case scan.  Reset our scratch bit after.  */
   if (CASE_HIGH (label))
     {
-      tree chain, key = CASE_HIGH (label);
-
-      for (chain = TYPE_VALUES (type);
-	   chain && !tree_int_cst_equal (key, TREE_VALUE (chain));
-	   chain = TREE_CHAIN (chain))
-	continue;
-      if (!chain)
-	match_case_to_enum_1 (key, type, label);
+      if (!CASE_HIGH_SEEN (label))
+	match_case_to_enum_1 (CASE_HIGH (label), type, label);
+      else
+	CASE_HIGH_SEEN (label) = 0;
     }
 
   return 0;
@@ -3844,6 +3843,8 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 		      tree type, tree cond)
 {
   splay_tree_node default_node;
+  splay_tree_node node;
+  tree chain;
 
   if (!warn_switch && !warn_switch_enum && !warn_switch_default)
     return;
@@ -3853,79 +3854,79 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
     warning (OPT_Wswitch_default, "%Hswitch missing default case",
 	     &switch_location);
 
+  /* From here on, we only care about about enumerated types.  */
+  if (!type || TREE_CODE (type) != ENUMERAL_TYPE)
+    return;
+
   /* If the switch expression was an enumerated type, check that
      exactly all enumeration literals are covered by the cases.
      The check is made when -Wswitch was specified and there is no
      default case, or when -Wswitch-enum was specified.  */
-  if (((warn_switch && !default_node) || warn_switch_enum)
-      && type && TREE_CODE (type) == ENUMERAL_TYPE
-      && TREE_CODE (cond) != INTEGER_CST)
+
+  if (!warn_switch_enum
+      && !(warn_switch && !default_node))
+    return;
+
+  /* Clearing COND if it is not an integer constant simplifies
+     the tests inside the loop below.  */
+  if (TREE_CODE (cond) != INTEGER_CST)
+    cond = NULL_TREE;
+
+  /* The time complexity here is O(N*lg(N)) worst case, but for the
+      common case of monotonically increasing enumerators, it is
+      O(N), since the nature of the splay tree will keep the next
+      element adjacent to the root at all times.  */
+
+  for (chain = TYPE_VALUES (type); chain; chain = TREE_CHAIN (chain))
     {
-      tree chain;
-
-      /* The time complexity here is O(N*lg(N)) worst case, but for the
-	 common case of monotonically increasing enumerators, it is
-	 O(N), since the nature of the splay tree will keep the next
-	 element adjacent to the root at all times.  */
-
-      for (chain = TYPE_VALUES (type); chain; chain = TREE_CHAIN (chain))
+      tree value = TREE_VALUE (chain);
+      node = splay_tree_lookup (cases, (splay_tree_key) value);
+      if (node)
 	{
-	  splay_tree_node node
-	    = splay_tree_lookup (cases, (splay_tree_key) TREE_VALUE (chain));
-	  if (!node)
-	    {
-	      tree low_value = TREE_VALUE (chain);
-	      splay_tree_node low_bound;
-	      splay_tree_node high_bound;
-	      /* Even though there wasn't an exact match, there might be a
-		 case range which includes the enumator's value.  */
-	      low_bound = splay_tree_predecessor (cases,
-						  (splay_tree_key) low_value);
-	      high_bound = splay_tree_successor (cases,
-						 (splay_tree_key) low_value);
+	  /* Mark the CASE_LOW part of the case entry as seen.  */
+	  tree label = (tree) node->value;
+	  CASE_LOW_SEEN (label) = 1;
+	  continue;
+	}
 
-	      /* It is smaller than the LOW_VALUE, so there is no need to check
-		 unless the LOW_BOUND is in fact itself a case range.  */
-	      if (low_bound
-		  && CASE_HIGH ((tree) low_bound->value)
-		  && tree_int_cst_compare (CASE_HIGH ((tree) low_bound->value),
-					    low_value) >= 0)
-		node = low_bound;
-	      /* The low end of that range is bigger than the current value. */
-	      else if (high_bound
-		       && (tree_int_cst_compare ((tree) high_bound->key,
-						 low_value)
-			   <= 0))
-		node = high_bound;
-	    }
-	  if (node)
+      /* Even though there wasn't an exact match, there might be a
+	 case range which includes the enumator's value.  */
+      node = splay_tree_predecessor (cases, (splay_tree_key) value);
+      if (node && CASE_HIGH ((tree) node->value))
+	{
+	  tree label = (tree) node->value;
+	  int cmp = tree_int_cst_compare (CASE_HIGH (label), value);
+	  if (cmp >= 0)
 	    {
-	      /* Mark the CASE_LOW part of the case entry as seen, so
-		 that we save time later.  Choose TREE_ADDRESSABLE
-		 randomly as a bit that won't have been set to-date.  */
-	      tree label = (tree) node->value;
-	      TREE_ADDRESSABLE (label) = 1;
-	    }
-	  else
-	    {
-	      /* Warn if there are enumerators that don't correspond to
-		 case expressions.  */
-	      warning (0, "%Henumeration value %qE not handled in switch",
-		       &switch_location, TREE_PURPOSE (chain));
+	      /* If we match the upper bound exactly, mark the CASE_HIGH
+		 part of the case entry as seen.  */
+	      if (cmp == 0)
+		CASE_HIGH_SEEN (label) = 1;
+	      continue;
 	    }
 	}
 
-      /* Warn if there are case expressions that don't correspond to
-	 enumerators.  This can occur since C and C++ don't enforce
-	 type-checking of assignments to enumeration variables.
+      /* We've now determined that this enumerated literal isn't
+	 handled by the case labels of the switch statement.  */
 
-	 The time complexity here is O(N**2) worst case, since we've
-	 not sorted the enumeration values.  However, in the absence
-	 of case ranges this is O(N), since all single cases that
-	 corresponded to enumerations have been marked above.  */
+      /* If the switch expression is a constant, we only really care
+	 about whether that constant is handled by the switch.  */
+      if (cond && tree_int_cst_compare (cond, value))
+	continue;
 
-      splay_tree_foreach (cases, match_case_to_enum, type);
+      warning (0, "%Henumeration value %qE not handled in switch",
+	       &switch_location, TREE_PURPOSE (chain));
     }
+
+  /* Warn if there are case expressions that don't correspond to
+     enumerators.  This can occur since C and C++ don't enforce
+     type-checking of assignments to enumeration variables.
+
+     The time complexity here is now always O(N) worst case, since
+     we should have marked both the lower bound and upper bound of
+     every disjoint case label, with CASE_LOW_SEEN and CASE_HIGH_SEEN
+     above.  This scan also resets those fields.  */
+  splay_tree_foreach (cases, match_case_to_enum, type);
 }
 
 /* Finish an expression taking the address of LABEL (an
