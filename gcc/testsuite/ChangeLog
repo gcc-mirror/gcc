@@ -1,3 +1,7 @@
+2006-08-26  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/compile/20060826-1.c: New testcase.
+
 2006-08-26  Lee Millward  <lee.millward@codesourcery.com>
 
         PR c++/28736
