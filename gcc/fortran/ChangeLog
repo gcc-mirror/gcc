@@ -1,12 +1,19 @@
-2006-08-26  Daniel Franke <franke.daniel@gmail.com>
+2006-08-26  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi: Note variable initialization causes SAVE attribute.
+	* intrinsic.texi: Clarify support for KIND=16 and KIND=10.
+	Mention -std=f2003.  Cross reference INQUIRE from ACCESS intrinsic.
+	Add missing ) in ACOS.
+
+2006-08-26  Daniel Franke  <franke.daniel@gmail.com>
 
 	* intrinsic.texi: Update Copyright date.  Added documentation
 	for ACOSH, AND, ASINH, ATANH, CHDIR, FGET, FGETC, FPUT, FPUTC,
 	GETCWD, OR and XOR intrinsics, removed inadvertently introduced
 	doc-stubs for EQV and NEQV, corrected some typographical errors.
 
-2006-08-24  Daniel Franke <franke.daniel@gmail.com>,
-	    Brooks Moses <bmoses@stanford.edu>
+2006-08-24  Daniel Franke  <franke.daniel@gmail.com>,
+	    Brooks Moses  <bmoses@stanford.edu>
 
 	* intrinsic.texi: Added doc-stubs for undocumented intrinsics,
 	added a "See Also" section, renamed the "Options" section to
