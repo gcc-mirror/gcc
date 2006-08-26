@@ -1,3 +1,12 @@
+2006-08-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28852
+	* cp-tree.h (grok_op_properties): Return bool instead of void.
+	* decl.c (grokfndecl): Discard invalid operator declarations.
+	(copy_fn_p): Revert change for PR 27547.
+	(grok_op_properties): Return error status (true on success).
+	* pt.c (tsubst_decl): Discard invalid operator declarations.
+
 2006-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28056
