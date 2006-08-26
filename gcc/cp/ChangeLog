@@ -1,3 +1,12 @@
+2006-08-26  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/24009
+	* parser.c (struct cp_token): Add input_file_stack_index.
+	(eof_token): Update.
+	(cp_lexer_get_preprocessor_token): Save input_file_stack_tick.
+	(cp_lexer_set_source_position_from_token): Restore input file
+	stack.
+
 2006-08-26  Lee Millward  <lee.millward@codesourcery.com>
 
         PR c++/28736

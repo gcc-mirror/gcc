@@ -66,6 +66,8 @@ typedef struct cp_token GTY (())
      KEYWORD is RID_MAX) iff this name was looked up and found to be
      ambiguous.  An error has already been reported.  */
   BOOL_BITFIELD ambiguous_p : 1;
+  /* The input file stack index at which this token was found.  */
+  unsigned input_file_stack_index : INPUT_FILE_STACK_BITS;
   /* The value associated with this token, if any.  */
   tree value;
   /* The location at which this token was found.  */
@@ -79,7 +81,7 @@ DEF_VEC_ALLOC_P (cp_token_position,heap);
 
 static const cp_token eof_token =
 {
-  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, 0, 0, false, NULL_TREE,
+  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, 0, 0, false, 0, NULL_TREE,
 #if USE_MAPPED_LOCATION
   0
 #else
@@ -393,6 +395,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
    /* Get a new token from the preprocessor.  */
   token->type
     = c_lex_with_flags (&token->value, &token->location, &token->flags);
+  token->input_file_stack_index = input_file_stack_tick;
   token->keyword = RID_MAX;
   token->pragma_kind = PRAGMA_NONE;
   token->in_system_header = in_system_header;
@@ -450,7 +453,8 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
     }
 }
 
-/* Update the globals input_location and in_system_header from TOKEN.  */
+/* Update the globals input_location and in_system_header and the
+   input file stack from TOKEN.  */
 static inline void
 cp_lexer_set_source_position_from_token (cp_token *token)
 {
@@ -458,6 +462,7 @@ cp_lexer_set_source_position_from_token (cp_token *token)
     {
       input_location = token->location;
       in_system_header = token->in_system_header;
+      restore_input_file_stack (token->input_file_stack_index);
     }
 }
 

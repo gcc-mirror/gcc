@@ -1,3 +1,14 @@
+2006-08-26  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/24009
+	* input.h (restore_input_file_stack): Declare.
+	(INPUT_FILE_STACK_BITS): Define.
+	* toplev.c (fs_p, input_file_stack_history,
+	input_file_stack_restored, restore_input_file_stack): New.
+	(push_srcloc, pop_srcloc): Check for input_file_stack_tick
+	overflowing INPUT_FILE_STACK_BITS bits.  Save new state of stack.
+	(pop_srcloc): Don't free old state of stack.
+
 2006-08-26  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/27544
