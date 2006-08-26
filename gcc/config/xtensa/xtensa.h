@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -728,15 +728,7 @@ typedef struct xtensa_args
 #define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&CUM, MODE, TYPE, TRUE)
 
-/* Specify function argument alignment.  */
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
-  ((TYPE) != 0								\
-   ? (TYPE_ALIGN (TYPE) <= PARM_BOUNDARY				\
-      ? PARM_BOUNDARY							\
-      : TYPE_ALIGN (TYPE))						\
-   : (GET_MODE_ALIGNMENT (MODE) <= PARM_BOUNDARY			\
-      ? PARM_BOUNDARY							\
-      : GET_MODE_ALIGNMENT (MODE)))
+#define FUNCTION_ARG_BOUNDARY function_arg_boundary
 
 /* Profiling Xtensa code is typically done with the built-in profiling
    feature of Tensilica's instruction set simulator, which does not
