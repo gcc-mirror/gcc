@@ -6668,8 +6668,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    if (PRIMARY_TEMPLATE_P (gen_tmpl))
 	      clone_function_decl (r, /*update_method_vec_p=*/0);
 	  }
-	else if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
-	  grok_op_properties (r, (complain & tf_error) != 0);
+	else if (IDENTIFIER_OPNAME_P (DECL_NAME (r))
+		 && !grok_op_properties (r, (complain & tf_error) != 0))
+	  return error_mark_node;
 
 	if (DECL_FRIEND_P (t) && DECL_FRIEND_CONTEXT (t))
 	  SET_DECL_FRIEND_CONTEXT (r,
