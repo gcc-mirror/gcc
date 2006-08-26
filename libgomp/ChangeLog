@@ -1,3 +1,10 @@
+2006-08-26  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR libgomp/25938
+	* Makefile.am (libsubincludedir): New.
+	(nodist_include_HEADERS): Rename to nodist_libsubinclude_HEADERS.
+	* Makefile.in: Regenerate.
+
 2006-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/28725
