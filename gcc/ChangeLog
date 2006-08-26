@@ -1,3 +1,9 @@
+2006-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/28683
+	* cfgexpand.c (add_reg_br_prob_note): Check if last has exactly
+	3 following insns.
+
 2006-08-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* flow.c (verify_wide_reg): Use internal_error for consistency failure.
