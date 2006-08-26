@@ -1,5 +1,10 @@
 2006-08-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/28853
+	* typeck2.c (cxx_incomplete_type_diagnostic): Handle template
+	template parameters.  Improve error message for template type
+	parameters.
+
 	PR c++/28852
 	* cp-tree.h (grok_op_properties): Return bool instead of void.
 	* decl.c (grokfndecl): Discard invalid operator declarations.

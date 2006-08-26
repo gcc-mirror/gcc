@@ -403,7 +403,12 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
       break;
 
     case TEMPLATE_TYPE_PARM:
-      p_msg ("invalid use of template type parameter");
+      p_msg ("invalid use of template type parameter %qT", type);
+      break;
+
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
+      p_msg ("invalid use of template template parameter %qT",
+            TYPE_NAME (type));
       break;
 
     case TYPENAME_TYPE:
