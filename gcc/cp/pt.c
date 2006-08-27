@@ -1163,7 +1163,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend)
 	    {
 	      error ("specialization of %qD after instantiation",
 		     fn);
-	      return spec;
+	      return error_mark_node;
 	    }
 	  else
 	    {

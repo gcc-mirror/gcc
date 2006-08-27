@@ -1,3 +1,8 @@
+2006-08-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28058
+	* g++.dg/template/spec31.C: New test.
+
 2006-08-27  Lee Millward  <lee.millward@codesourcery.com>
 
         PR c++/26573
