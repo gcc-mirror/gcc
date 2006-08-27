@@ -3256,6 +3256,8 @@ mark_used (tree decl)
     }
 
   TREE_USED (decl) = 1;
+  if (DECL_CLONED_FUNCTION_P (decl))
+    TREE_USED (DECL_CLONED_FUNCTION (decl)) = 1;
   /* If we don't need a value, then we don't need to synthesize DECL.  */ 
   if (skip_evaluation)
     return;

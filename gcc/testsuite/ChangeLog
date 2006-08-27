@@ -1,3 +1,9 @@
+2006-08-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28058
+	* g++.dg/template/spec31.C: New test.
+	* g++.old-deja/g++.pt/spec9.C: Adjust error markers.
+
 2006-08-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/28452
