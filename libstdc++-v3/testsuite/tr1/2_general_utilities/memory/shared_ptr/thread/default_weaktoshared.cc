@@ -19,11 +19,8 @@
 // TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
 // { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* } }
-// { dg-options "-march=i586 -pthread" { target { {*-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf*} && { *i686*-*-* *i586*-*-* *athlon*-*-* *pentium4*-*-* *opteron*-*-* *k8*-*-* } } } }
-// { dg-options "-pthread" { target { {*-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf*} && { ! { *i686*-*-* *i586*-*-* *athlon*-*-* *pentium4*-*-* *opteron*-*-* *k8*-*-* } } } } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* } }
 // { dg-options "-pthreads" { target *-*-solaris* } }
-
-// Lock-free compare-and-swap is only available on newer x86 machines.
 
 #include <tr1/memory>
 #include <tr1/random>
@@ -66,10 +63,8 @@ struct A
 
 _Atomic_word A::counter = 0;
 
-using std::tr1::_S_lockfree;
-
-typedef std::tr1::__shared_ptr<A, _S_lockfree> sp_A_t;
-typedef std::tr1::__weak_ptr<A, _S_lockfree> wp_A_t;
+typedef std::tr1::shared_ptr<A> sp_A_t;
+typedef std::tr1::weak_ptr<A> wp_A_t;
 
 typedef std::vector<sp_A_t> sp_vector_t;
 typedef std::vector<wp_A_t> wp_vector_t;

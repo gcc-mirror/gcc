@@ -19,11 +19,8 @@
 // TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
 // { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* } }
-// { dg-options "-march=i586 -pthread" { target { {*-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf*} && { *i686*-*-* *i586*-*-* *athlon*-*-* *pentium4*-*-* *opteron*-*-* *k8*-*-* } } } }
-// { dg-options "-pthread" { target { {*-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf*} && { ! { *i686*-*-* *i586*-*-* *athlon*-*-* *pentium4*-*-* *opteron*-*-* *k8*-*-* } } } } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* } }
 // { dg-options "-pthreads" { target *-*-solaris* } }
-
-// Lock-free compare-and-swap is only available on newer x86 machines.
 
 #include <tr1/memory>
 #include <tr1/random>

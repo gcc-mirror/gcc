@@ -1,3 +1,13 @@
+2006-08-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28830
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/thread/
+	lockfree_weaktoshared.cc: Rename to...
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/thread/
+	default_weaktoshared.cc: ... this; test the default base class.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/thread/
+	mutex_weaktoshared.cc: Run like the other thread tests.
+
 2006-08-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/tr1.html: Update.
