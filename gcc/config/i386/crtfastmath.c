@@ -39,7 +39,7 @@
 
 static void __attribute__((constructor))
 #ifndef __x86_64__
-/* The i386 ABI only requires 4-byte stack alignment, so this is neccessary
+/* The i386 ABI only requires 4-byte stack alignment, so this is necessary
    to make sure the fxsave struct gets correct alignment.
    See PR27537 and PR28621.  */
 __attribute__ ((force_align_arg_pointer))
