@@ -2081,12 +2081,21 @@ d_pointer_to_member_type (struct d_info *di)
      g++ does not work that way.  g++ treats only the CV-qualified
      member function as a substitution source.  FIXME.  So to work
      with g++, we need to pull off the CV-qualifiers here, in order to
-     avoid calling add_substitution() in cplus_demangle_type().  */
+     avoid calling add_substitution() in cplus_demangle_type().  But
+     for a CV-qualified member which is not a function, g++ does
+     follow the ABI, so we need to handle that case here by calling
+     d_add_substitution ourselves.  */
 
   pmem = d_cv_qualifiers (di, &mem, 1);
   if (pmem == NULL)
     return NULL;
   *pmem = cplus_demangle_type (di);
+
+  if (pmem != &mem && (*pmem)->type != DEMANGLE_COMPONENT_FUNCTION_TYPE)
+    {
+      if (! d_add_substitution (di, mem))
+	return NULL;
+    }
 
   return d_make_comp (di, DEMANGLE_COMPONENT_PTRMEM_TYPE, cl, mem);
 }

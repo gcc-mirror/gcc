@@ -3805,3 +3805,9 @@ java::lang::Math::acos(double)double
 _Z4makeI7FactoryiET_IT0_Ev
 make<Factory, int>()Factory<int>
 make<Factory, int>
+#
+# From PR 28797
+--format=auto --no-params
+_Z1fM1AKiPKS1_
+f(int const A::*, int const A::* const*)
+f
