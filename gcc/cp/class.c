@@ -2856,10 +2856,6 @@ check_field_decls (tree t, tree *access_decls,
 	    }
 	}
 
-      /* ``A local class cannot have static data members.'' ARM 9.4 */
-      if (current_function_decl && TREE_STATIC (x))
-	error ("field %q+D in local class cannot be static", x);
-
       /* Perform error checking that did not get done in
 	 grokdeclarator.  */
       if (TREE_CODE (type) == FUNCTION_TYPE)
