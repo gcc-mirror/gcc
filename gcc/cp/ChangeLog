@@ -1,3 +1,9 @@
+2006-08-27  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/26573
+        * class.c (check_field_decls): Don't issue error about
+        local classes containing static data members.
+	
 2006-08-26  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c++/24009

@@ -1,3 +1,8 @@
+2006-08-27  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/26573
+        * g++.dg/other/static2.C: New test. 
+	
 2006-08-26  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/Wswitch-enum-2.c: New test case.
