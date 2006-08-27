@@ -1,3 +1,11 @@
+2006-08-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28058
+	* pt.c (register_specialization): Return error_mark_node for
+	specialization-after-instantiation.
+	* decl2.c (mark_used): Mark the main function used when one of its
+	clones is used.
+	
 2006-08-27  Lee Millward  <lee.millward@codesourcery.com>
 
         PR c++/26573
