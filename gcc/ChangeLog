@@ -1,3 +1,7 @@
+2006-08-27  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/i386/crtfastmath.c: Fix a comment typo.
+
 2006-08-26  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.h (CASE_LOW_SEEN, CASE_HIGH_SEEN): New macros for manipulating
