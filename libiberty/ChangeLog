@@ -1,5 +1,15 @@
 2006-08-27  Ian Lance Taylor  <ian@airs.com>
 
+	PR driver/27622
+	* pex-common.h (struct pex_funcs): Add toclose parameter to
+	exec_child field.
+	* pex-common.c (pex_run_in_environment): Pass toclose to
+	exec_child.
+	* pex-djgpp.c (pex_djgpp_exec_child): Add toclose parameter.
+	* pex-unix.c (pex_unix_exec_child): Likewise.
+	* pex-msdos.c (pex_msdos_exec_child): Likewise.
+	* pex-win32.c (pex_win32_exec_child): Likewise.
+
 	PR other/28797
 	* cp-demangle.c (d_pointer_to_member_type): Do add a substitution
 	for a qualified member which is not a function.

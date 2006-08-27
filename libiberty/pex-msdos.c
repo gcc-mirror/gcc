@@ -56,7 +56,8 @@ static int pex_msdos_open (struct pex_obj *, const char *, int);
 static int pex_msdos_fdindex (struct pex_msdos *, int);
 static long pex_msdos_exec_child (struct pex_obj *, int, const char *,
 				  char * const *, char * const *,
-                                  int, int, int, const char **, int *);
+				  int, int, int, int,
+				  int, const char **, int *);
 static int pex_msdos_close (struct pex_obj *, int);
 static int pex_msdos_wait (struct pex_obj *, long, int *, struct pex_time *,
 			   int, const char **, int *);
@@ -154,6 +155,7 @@ pex_msdos_close (struct pex_obj *obj, int fd)
 static long
 pex_msdos_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		      char * const * argv, char * const * env, int in, int out,
+		      int toclose ATTRIBUTE_UNUSED,
 		      int errdes ATTRIBUTE_UNUSED, const char **errmsg,
 		      int *err)
 {
