@@ -1,3 +1,8 @@
+2006-08-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR middle-end/26632
+	* gcc.dg/pr26632.c: New.
+
 2006-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/28354
