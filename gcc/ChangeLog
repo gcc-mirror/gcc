@@ -1,3 +1,9 @@
+2006-08-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR middle-end/26632
+	* convert.c (convert_to_integer): Set TREE_NO_WARNING to 1 on
+	an implicit conversion.
+
 2006-08-28  Prafulla Thakare  <prafullat@kpitcummins.com>
 
 	* config/h8300/h8300.c (TARGET_DEFAULT_TARGET_FLAGS): New.

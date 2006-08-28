@@ -487,6 +487,7 @@ convert_to_integer (tree type, tree expr)
       else if (outprec >= inprec)
 	{
 	  enum tree_code code;
+	  tree tem;
 
 	  /* If the precision of the EXPR's type is K bits and the
 	     destination mode has more bits, and the sign is changing,
@@ -504,7 +505,13 @@ convert_to_integer (tree type, tree expr)
 	  else
 	    code = NOP_EXPR;
 
-	  return fold_build1 (code, type, expr);
+	  tem = fold_unary (code, type, expr);
+	  if (tem)
+	    return tem;
+
+	  tem = build1 (code, type, expr);
+	  TREE_NO_WARNING (tem) = 1;
+	  return tem;
 	}
 
       /* If TYPE is an enumeral type or a type with a precision less
