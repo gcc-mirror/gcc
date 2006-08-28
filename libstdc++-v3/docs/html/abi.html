@@ -168,10 +168,32 @@ on ELF systems).</p>
     <li>gcc-3.3.1: libgcc_s.so.1</li>
     <li>gcc-3.3.2: libgcc_s.so.1</li>
     <li>gcc-3.3.3: libgcc_s.so.1</li>
-    <li>gcc-3.4.0: on m68k-linux and hppa-linux this is either libgcc_s.so.1
-    (when configuring <code>--with-sjlj-exceptions</code>) or
-    libgcc_s.so.2. For all others, this is libgcc_s.so.1.
+    <li>gcc-3.4.x, gcc-4.0.x, gcc-4.1.x: on m68k-linux and hppa-linux
+    this is either libgcc_s.so.1 (when configuring
+    <code>--with-sjlj-exceptions</code>) or libgcc_s.so.2. For all
+    others, this is libgcc_s.so.1.  </li> </ul>
+    <p></p>
     </li>
+
+    <li>Symbol versioning on the libgcc_s.so binary.
+    <p>mapfile: gcc/libgcc-std.ver</p>
+
+    <p>It is versioned with the following labels and version
+   definitions, where the version definition is the maximum for a
+   particular release. Labels are cumulative. If a particular release
+   is not listed, it has the same version labels as the preceeding
+   release.</p>
+    <ul>
+    <li>gcc-3.0.0: GCC_3.0</li>
+    <li>gcc-3.3.0: GCC_3.3</li>
+    <li>gcc-3.3.1: GCC_3.3.1</li>
+    <li>gcc-3.3.2: GCC_3.3.2</li>
+    <li>gcc-3.3.4: GCC_3.3.4</li>
+    <li>gcc-3.4.0: GCC_3.4</li>
+    <li>gcc-3.4.2: GCC_3.4.2</li>
+    <li>gcc-3.4.4: GCC_3.4.4</li>
+    <li>gcc-4.0.0: GCC_4.0.0</li>
+    <li>gcc-4.1.0: GCC_4.1.0</li>
     </ul>
     <p></p>
     </li>
@@ -198,31 +220,17 @@ on ELF systems).</p>
     <li>gcc-3.3.3: libstdc++.so.5.0.5</li>
     <li>gcc-3.4.0: libstdc++.so.6.0.0</li>
     <li>gcc-3.4.1: libstdc++.so.6.0.1</li>
-    </ul>
-    <p></p>
-    </li>
-
-    <li>Symbol versioning on the libgcc_s.so binary.
-    <p>mapfile: gcc/libgcc-std.ver</p>
-
-    <p>It is versioned with the following labels and version definitions:</p>
-    <ul>
-    <li>gcc-3.0.0: GCC_3.0</li>
-    <li>gcc-3.0.1: GCC_3.0</li>
-    <li>gcc-3.0.2: GCC_3.0</li>
-    <li>gcc-3.0.3: GCC_3.0</li>
-    <li>gcc-3.0.4: GCC_3.0</li>
-    <li>gcc-3.1.0: GCC_3.0</li>
-    <li>gcc-3.1.1: GCC_3.0</li>
-    <li>gcc-3.2.0: GCC_3.0</li>
-    <li>gcc-3.2.1: GCC_3.0</li>
-    <li>gcc-3.2.2: GCC_3.0</li>
-    <li>gcc-3.2.3: GCC_3.0</li>
-    <li>gcc-3.3.0: GCC_3.0</li>
-    <li>gcc-3.3.1: GCC_3.0</li>
-    <li>gcc-3.3.2: GCC_3.0</li>
-    <li>gcc-3.3.3: GCC_3.0</li>
-    <li>gcc-3.4.0: GCC_3.0</li>
+    <li>gcc-3.4.2: libstdc++.so.6.0.2</li>
+    <li>gcc-3.4.3: libstdc++.so.6.0.3</li>
+    <li>gcc-3.4.4: libstdc++.so.6.0.3</li>
+    <li>gcc-3.4.5: libstdc++.so.6.0.3</li>
+    <li>gcc-3.4.6: libstdc++.so.6.0.3</li>
+    <li>gcc-4.0.0: libstdc++.so.6.0.4</li>
+    <li>gcc-4.0.1: libstdc++.so.6.0.5</li>
+    <li>gcc-4.0.2: libstdc++.so.6.0.6</li>
+    <li>gcc-4.0.3: libstdc++.so.6.0.7</li>
+    <li>gcc-4.1.0: libstdc++.so.6.0.7</li>
+    <li>gcc-4.1.1: libstdc++.so.6.0.8</li>
     </ul>
     <p></p>
     </li>
@@ -238,7 +246,8 @@ on ELF systems).</p>
    release has both versions. (An example of this would be the
    gcc-3.2.1 release, which has GLIBCPP_3.2.1 for new symbols and
    GLIBCPP_3.2 for symbols that were introduced in the gcc-3.2.0
-   release.)
+   release.) If a particular release is not listed, it has the same
+   version labels as the preceeding release.
    </p>
     <ul>
     <li>gcc-3.0.0: (Error, not versioned)</li>
@@ -258,6 +267,13 @@ on ELF systems).</p>
     <li>gcc-3.3.3: GLIBCPP_3.2.3, CXXABI_1.2.1</li>
     <li>gcc-3.4.0: GLIBCXX_3.4, CXXABI_1.3</li>
     <li>gcc-3.4.1: GLIBCXX_3.4.1, CXXABI_1.3</li>
+    <li>gcc-3.4.2: GLIBCXX_3.4.2</li>
+    <li>gcc-3.4.3: GLIBCXX_3.4.3</li>
+    <li>gcc-4.0.0: GLIBCXX_3.4.4, CXXABI_1.3.1</li>
+    <li>gcc-4.0.1: GLIBCXX_3.4.5</li>
+    <li>gcc-4.0.2: GLIBCXX_3.4.6</li>
+    <li>gcc-4.0.3: GLIBCXX_3.4.7</li>
+    <li>gcc-4.1.1: GLIBCXX_3.4.8</li>
     </ul>
     <p></p>
     </li>
@@ -285,9 +301,9 @@ on ELF systems).</p>
     <li>gcc-3.1.x: 100 (Error, should be 101)</li>
     <li>gcc-3.2.x: 102</li>
     <li>gcc-3.3.x: 102</li>
-    <li>gcc-3.4.x: 102 (when n=1)</li>
-    <li>gcc-3.4.x: 1000 + n (when n&gt;1)</li>
-    <li>gcc-3.4.x: 999999 (when n=0)</li>
+    <li>gcc-3.4.x, gcc-4.0.x, gcc-4.1.x: 102 (when n=1)</li>
+    <li>gcc-3.4.x, gcc-4.0.x, gcc-4.1.x: 1000 + n (when n&gt;1)</li>
+    <li>gcc-3.4.x, gcc-4.0.x, gcc-4.1.x: 999999 (when n=0)</li>
     </ul>
     <p></p>
     </li>
@@ -304,7 +320,7 @@ on ELF systems).</p>
     <li>gcc-3.1.x: (Error, not versioned) </li>
     <li>gcc-3.2.x: <code>-fabi-version=1</code></li>
     <li>gcc-3.3.x: <code>-fabi-version=1</code></li>
-    <li>gcc-3.4.x: <code>-fabi-version=2</code></li>
+    <li>gcc-3.4.x, gcc-4.0.x, gcc-4.1.x: <code>-fabi-version=2</code></li>
     </ul>
     <p></p>
     </li>
@@ -319,9 +335,10 @@ on ELF systems).</p>
     </p>
 
     <p>
-    In addition, the pre-defined macro is defined in the file
-    "c++config" in the "libstdc++-v3/include/bits" directory and is
-    changed every night by an automated script.
+    This macro is defined in the file "c++config" in the
+    "libstdc++-v3/include/bits" directory. (Up to gcc-4.1.0, it was
+    changed every night by an automated script. Since gcc-4.1.0, it is
+    the same value as gcc/DATESTAMP.)
     </p>
     <p>
     It is versioned as follows:
@@ -344,10 +361,20 @@ on ELF systems).</p>
     <li>gcc-3.3.3: 20040214</li>
     <li>gcc-3.4.0: 20040419</li>
     <li>gcc-3.4.1: 20040701</li>
+    <li>gcc-3.4.2: 20040906</li>
+    <li>gcc-3.4.3: 20041105</li>
+    <li>gcc-3.4.4: 20050519</li>
+    <li>gcc-3.4.5: 20051201</li>
+    <li>gcc-3.4.6: 20060306</li>
+    <li>gcc-4.0.0: 20050421</li>
+    <li>gcc-4.0.1: 20050707</li>
+    <li>gcc-4.0.2: 20050921</li>
+    <li>gcc-4.0.3: 20060309</li>
+    <li>gcc-4.1.0: 20060228</li>
+    <li>gcc-4.1.1: 20060524</li>
     </ul>
     <p></p>
     </li>
-
 
     <li>
     <p>
@@ -384,8 +411,9 @@ on ELF systems).</p>
     <li>gcc-3.3.1: "3.3.1"</li>
     <li>gcc-3.3.2: "3.3.2"</li>
     <li>gcc-3.3.3: "3.3.3"</li>
-    <li>gcc-3.4.0: "version-unused"</li>
-    <li>gcc-3.4.1: "version-unused"</li>
+    <li>gcc-3.4.x: "version-unused"</li>
+    <li>gcc-4.0.x: "version-unused"</li>
+    <li>gcc-4.1.x: "version-unused"</li>
     </ul>
     <p></p>
     </li>
@@ -424,6 +452,17 @@ on ELF systems).</p>
     <li>gcc-3.3.3: include/c++/3.3.3</li>
     <li>gcc-3.4.0: include/c++/3.4.0</li>
     <li>gcc-3.4.1: include/c++/3.4.1</li>
+    <li>gcc-3.4.2: include/c++/3.4.2</li>
+    <li>gcc-3.4.3: include/c++/3.4.3</li>
+    <li>gcc-3.4.4: include/c++/3.4.4</li>
+    <li>gcc-3.4.5: include/c++/3.4.5</li>
+    <li>gcc-3.4.6: include/c++/3.4.6</li>
+    <li>gcc-4.0.0: include/c++/4.0.0</li>
+    <li>gcc-4.0.1: include/c++/4.0.1</li>
+    <li>gcc-4.0.2: include/c++/4.0.2</li>
+    <li>gcc-4.0.3: include/c++/4.0.3</li>
+    <li>gcc-4.1.0: include/c++/4.1.0</li>
+    <li>gcc-4.1.1: include/c++/4.1.1</li>
     </ul>
     <p></p>
     </li>
@@ -857,6 +896,29 @@ from both liba, and the dependent libstdc++.so.6, and libb, with the
 dependent libstdc++.so.5.
 </p>
 
+
+<h3 class="left">
+  <a name="Outstanding Issues">Outstanding Issues</a>
+</h3>
+
+<p> Some features in the C++ language make versioning especially
+difficult. In particular, compiler generated constructs such as
+implicit instantiations for templates, typeinfo information, and
+virtual tables all may cause ABI leakage across shared library
+boundaries. Because of this, mixing C++ ABI's is not recommended at
+this time.
+</p>
+
+<p>For more background on this issue, see these bugzilla entries:</p>
+
+<p>
+<a href="http://gcc.gnu.org/PR24660">24660: versioning weak symbols in libstdc++</a>
+</p>
+
+<p>
+<a href="http://gcc.gnu.org/PR19664">19664: libstdc++ headers should have pop/push of the visibility around the declarations</a>
+</p>
+
 <h3 class="left">
   <a name="references">Bibliography / Further Reading</a>
 </h3>
@@ -895,6 +957,24 @@ C++ Migration Guide (document 816-2459)
 Ulrich Drepper, "ELF Symbol Versioning"
 <br />
 <a href="http://people.redhat.com/drepper/symbol-versioning">http://people.redhat.com/drepper/symbol-versioning</a>
+</p>
+
+<p>
+C++ ABI for the ARM Architecture
+<br />
+<a href="http://www.arm.com/miscPDFs/8033.pdf">http://www.arm.com/miscPDFs/8033.pdf</a>
+</p>
+
+<p>
+Benjamin Kosnik, ISO C++ J16/06-0046
+<br />
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html">Dynamic Shared Objects: Survey and Issues</a>
+</p>
+
+<p>
+Benjamin Kosnik, ISO C++ J16/06-0083
+<br />
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html">Versioning With Namespaces</a>
 </p>
 
 </body>
