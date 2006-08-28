@@ -1,3 +1,8 @@
+2006-08-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28860
+	* g++.dg/template/ttp22.C: New test.
+
 2006-08-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR middle-end/26632
