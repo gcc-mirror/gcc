@@ -1,3 +1,17 @@
+2006-08-28  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/28411
+	* double-int.c (double_int_div): Use double_int_divmod.
+	(double_int_divmod, double_int_sdivmod, double_int_udivmod,
+	double_int_mod, double_int_smod, double_int_umod): New functions.
+	* double-int.h (double_int_divmod, double_int_sdivmod,
+	double_int_udivmod, double_int_mod, double_int_smod, double_int_umod):
+	Declare.
+	* tree-ssa-loop-ivopts.c (constant_multiple_of): Returns the result
+	in double_int.
+	(get_computation_aff, get_computation_cost_at): Handle double_int
+	return type of constant_multiple_of.
+
 2006-08-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR middle-end/26632
