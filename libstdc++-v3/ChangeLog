@@ -1,3 +1,11 @@
+2006-08-28  Roger Sayle  <roger@eyesopen.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (__heap_select, __introselect): New.
+	(nth_element): New implementation.
+	(partial_copy): Use __heap_select.
+	* testsuite/performance/25_algorithms/nth_element_worst_case.cc: New.
+
 2006-08-28  Paolo Carlini  <pcarlini@suse.de>
 	    Roger Sayle  <roger@eyesopen.com>
 

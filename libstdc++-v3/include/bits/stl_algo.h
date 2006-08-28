@@ -2464,7 +2464,47 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @if maint
-   *  This is a helper function for the sort routine.
+   *  This is a helper function for the sort routines.
+   *  @endif
+  */
+  template<typename _RandomAccessIterator>
+    void
+    __heap_select(_RandomAccessIterator __first,
+		  _RandomAccessIterator __middle,
+		  _RandomAccessIterator __last)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      std::make_heap(__first, __middle);
+      for (_RandomAccessIterator __i = __middle; __i < __last; ++__i)
+	if (*__i < *__first)
+	  std::__pop_heap(__first, __middle, __i, _ValueType(*__i));
+    }
+
+  /**
+   *  @if maint
+   *  This is a helper function for the sort routines.
+   *  @endif
+  */
+  template<typename _RandomAccessIterator, typename _Compare>
+    void
+    __heap_select(_RandomAccessIterator __first,
+		  _RandomAccessIterator __middle,
+		  _RandomAccessIterator __last, _Compare __comp)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      std::make_heap(__first, __middle, __comp);
+      for (_RandomAccessIterator __i = __middle; __i < __last; ++__i)
+	if (__comp(*__i, *__first))
+	  std::__pop_heap(__first, __middle, __i, _ValueType(*__i), __comp);
+    }
+
+  /**
+   *  @if maint
+   *  This is a helper function for the sort routines.
    *  @endif
   */
   template<typename _Size>
@@ -2493,7 +2533,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  the range @p [middle,last) then @p *j<*i and @p *k<*i are both false.
   */
   template<typename _RandomAccessIterator>
-    void
+    inline void
     partial_sort(_RandomAccessIterator __first,
 		 _RandomAccessIterator __middle,
 		 _RandomAccessIterator __last)
@@ -2508,10 +2548,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
 
-      std::make_heap(__first, __middle);
-      for (_RandomAccessIterator __i = __middle; __i < __last; ++__i)
-	if (*__i < *__first)
-	  std::__pop_heap(__first, __middle, __i, _ValueType(*__i));
+      std::__heap_select(__first, __middle, __last);
       std::sort_heap(__first, __middle);
     }
 
@@ -2534,7 +2571,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  are both false.
   */
   template<typename _RandomAccessIterator, typename _Compare>
-    void
+    inline void
     partial_sort(_RandomAccessIterator __first,
 		 _RandomAccessIterator __middle,
 		 _RandomAccessIterator __last,
@@ -2551,10 +2588,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
 
-      std::make_heap(__first, __middle, __comp);
-      for (_RandomAccessIterator __i = __middle; __i < __last; ++__i)
-	if (__comp(*__i, *__first))
-	  std::__pop_heap(__first, __middle, __i, _ValueType(*__i), __comp);
+      std::__heap_select(__first, __middle, __last, __comp);
       std::sort_heap(__first, __middle, __comp);
     }
 
@@ -2792,7 +2826,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       if (__first != __last)
 	{
-	  std::__introsort_loop(__first, __last, __lg(__last - __first) * 2);
+	  std::__introsort_loop(__first, __last,
+				std::__lg(__last - __first) * 2);
 	  std::__final_insertion_sort(__first, __last);
 	}
     }
@@ -2828,8 +2863,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       if (__first != __last)
 	{
-	  std::__introsort_loop(__first, __last, __lg(__last - __first) * 2,
-				__comp);
+	  std::__introsort_loop(__first, __last,
+				std::__lg(__last - __first) * 2, __comp);
 	  std::__final_insertion_sort(__first, __last, __comp);
 	}
     }
@@ -3904,6 +3939,79 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				    _DistanceType(__buf.size()), __comp);
     }
 
+
+  template<typename _RandomAccessIterator, typename _Size>
+    void
+    __introselect(_RandomAccessIterator __first, _RandomAccessIterator __nth,
+		  _RandomAccessIterator __last, _Size __depth_limit)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      while (__last - __first > 3)
+	{
+	  if (__depth_limit == 0)
+	    {
+	      std::__heap_select(__first, __nth + 1, __last);
+	      // Place the nth largest element in its final position.
+	      std::iter_swap(__first, __nth);
+	      return;
+	    }
+	  --__depth_limit;
+	  _RandomAccessIterator __cut =
+	    std::__unguarded_partition(__first, __last,
+				       _ValueType(std::__median(*__first,
+								*(__first
+								  + (__last
+								     - __first)
+								  / 2),
+								*(__last
+								  - 1))));
+	  if (__cut <= __nth)
+	    __first = __cut;
+	  else
+	    __last = __cut;
+	}
+      std::__insertion_sort(__first, __last);
+    }
+
+  template<typename _RandomAccessIterator, typename _Size, typename _Compare>
+    void
+    __introselect(_RandomAccessIterator __first, _RandomAccessIterator __nth,
+		  _RandomAccessIterator __last, _Size __depth_limit,
+		  _Compare __comp)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      while (__last - __first > 3)
+	{
+	  if (__depth_limit == 0)
+	    {
+	      std::__heap_select(__first, __nth + 1, __last, __comp);
+	      // Place the nth largest element in its final position.
+	      std::iter_swap(__first, __nth);
+	      return;
+	    }
+	  --__depth_limit;
+	  _RandomAccessIterator __cut =
+	    std::__unguarded_partition(__first, __last,
+				       _ValueType(std::__median(*__first,
+								*(__first
+								  + (__last
+								     - __first)
+								  / 2),
+								*(__last - 1),
+								__comp)),
+				       __comp);
+	  if (__cut <= __nth)
+	    __first = __cut;
+	  else
+	    __last = __cut;
+	}
+      std::__insertion_sort(__first, __last, __comp);
+    }
+
   /**
    *  @brief Sort a sequence just enough to find a particular position.
    *  @param  first   An iterator.
@@ -3920,9 +4028,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  holds that @p *j<*i is false.
   */
   template<typename _RandomAccessIterator>
-    void
-    nth_element(_RandomAccessIterator __first,
-		_RandomAccessIterator __nth,
+    inline void
+    nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth,
 		_RandomAccessIterator __last)
     {
       typedef typename iterator_traits<_RandomAccessIterator>::value_type
@@ -3935,23 +4042,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __nth);
       __glibcxx_requires_valid_range(__nth, __last);
 
-      while (__last - __first > 3)
-	{
-	  _RandomAccessIterator __cut =
-	    std::__unguarded_partition(__first, __last,
-				       _ValueType(std::__median(*__first,
-								*(__first
-								  + (__last
-								     - __first)
-								  / 2),
-								*(__last
-								  - 1))));
-	  if (__cut <= __nth)
-	    __first = __cut;
-	  else
-	    __last = __cut;
-	}
-      std::__insertion_sort(__first, __last);
+      if (__first == __last || __nth == __last)
+	return;
+
+      std::__introselect(__first, __nth, __last,
+			 std::__lg(__last - __first) * 2);
     }
 
   /**
@@ -3971,11 +4066,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  holds that @p comp(*j,*i) is false.
   */
   template<typename _RandomAccessIterator, typename _Compare>
-    void
-    nth_element(_RandomAccessIterator __first,
-		_RandomAccessIterator __nth,
-		_RandomAccessIterator __last,
-			    _Compare __comp)
+    inline void
+    nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth,
+		_RandomAccessIterator __last, _Compare __comp)
     {
       typedef typename iterator_traits<_RandomAccessIterator>::value_type
 	_ValueType;
@@ -3988,23 +4081,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __nth);
       __glibcxx_requires_valid_range(__nth, __last);
 
-      while (__last - __first > 3)
-	{
-	  _RandomAccessIterator __cut =
-	    std::__unguarded_partition(__first, __last,
-				       _ValueType(std::__median(*__first,
-								*(__first
-								  + (__last
-								     - __first)
-								  / 2),
-								*(__last - 1),
-							      __comp)), __comp);
-	  if (__cut <= __nth)
-	    __first = __cut;
-	  else
-	    __last = __cut;
-	}
-      std::__insertion_sort(__first, __last, __comp);
+      if (__first == __last || __nth == __last)
+	return;
+
+      std::__introselect(__first, __nth, __last,
+			 std::__lg(__last - __first) * 2, __comp);
     }
 
   /**
