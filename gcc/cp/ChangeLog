@@ -1,3 +1,14 @@
+2006-08-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28860
+	* cp-tree.h (maybe_process_partial_specialization): Return
+	tree instead of void.
+	* parser.c (cp_parser_class_head): Use return value of
+	maybe_process_partial_specialization.
+	* pt.c (maybe_process_partial_specialization): Return error_mark_node
+	for broken specializations, TYPE otherwise.  Check for template
+	template parameters.
+
 2006-08-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28058
