@@ -1,3 +1,7 @@
+2006-08-28  Prafulla Thakare  <prafullat@kpitcummins.com>
+
+	* config/h8300/h8300.c (TARGET_DEFAULT_TARGET_FLAGS): New.
+
 2006-08-27  Roger Sayle  <roger@eyesopen.com>
 
 	* ifcvt.c (cheap_bb_rtx_cost_p): Don't speculatively execute
