@@ -184,7 +184,7 @@ fix_argv (char * const *argvec)
 static int pex_win32_open_read (struct pex_obj *, const char *, int);
 static int pex_win32_open_write (struct pex_obj *, const char *, int);
 static long pex_win32_exec_child (struct pex_obj *, int, const char *,
-				  char * const *, int, int, int,
+				  char * const *, int, int, int, int,
 				  const char **, int *);
 static int pex_win32_close (struct pex_obj *, int);
 static int pex_win32_wait (struct pex_obj *, long, int *,
@@ -493,7 +493,9 @@ spawn_script (const char *executable, const char * const * argv)
 static long
 pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
 		      const char *executable, char * const * argv,
-		      int in, int out, int errdes, const char **errmsg,
+		      int in, int out, int errdes,
+		      int toclose ATTRIBUTE_UNUSED,
+		      const char **errmsg,
 		      int *err)
 {
   int org_in, org_out, org_errdes;

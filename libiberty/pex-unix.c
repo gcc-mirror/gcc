@@ -270,7 +270,7 @@ static void pex_child_error (struct pex_obj *, const char *, const char *, int)
 static int pex_unix_open_read (struct pex_obj *, const char *, int);
 static int pex_unix_open_write (struct pex_obj *, const char *, int);
 static long pex_unix_exec_child (struct pex_obj *, int, const char *,
-				 char * const *, int, int, int,
+				 char * const *, int, int, int, int,
 				 const char **, int *);
 static int pex_unix_close (struct pex_obj *, int);
 static int pex_unix_wait (struct pex_obj *, long, int *, struct pex_time *,
@@ -353,7 +353,7 @@ pex_child_error (struct pex_obj *obj, const char *executable,
 static long
 pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		     char * const * argv, int in, int out, int errdes,
-		     const char **errmsg, int *err)
+		     int toclose, const char **errmsg, int *err)
 {
   pid_t pid;
   /* We declare these to be volatile to avoid warnings from gcc about
@@ -400,6 +400,11 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	  if (dup2 (errdes, STDERR_FILE_NO) < 0)
 	    pex_child_error (obj, executable, "dup2", errno);
 	  if (close (errdes) < 0)
+	    pex_child_error (obj, executable, "close", errno);
+	}
+      if (toclose >= 0)
+	{
+	  if (close (toclose) < 0)
 	    pex_child_error (obj, executable, "close", errno);
 	}
       if ((flags & PEX_STDERR_TO_STDOUT) != 0)
