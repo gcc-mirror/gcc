@@ -1,3 +1,9 @@
+2006-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/28354
+	* io/write.c: Check for special case of zero precision in format
+	and pre-round the real value.
+
 2006-08-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/25828
