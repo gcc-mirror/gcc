@@ -2554,21 +2554,27 @@ tree_int_cst_sign_bit (tree t)
   return (w >> bitno) & 1;
 }
 
-/* If we can prove that TOP = cst * BOT for some constant cst in TYPE,
-   return cst.  Otherwise return NULL_TREE.  */
+/* If we can prove that TOP = cst * BOT for some constant cst,
+   store cst to MUL and return true.  Otherwise return false.
+   The returned value is always sign-extended, regardless of the
+   signedness of TOP and BOT.  */
 
-static tree
-constant_multiple_of (tree type, tree top, tree bot)
+static bool
+constant_multiple_of (tree top, tree bot, double_int *mul)
 {
-  tree res, mby, p0, p1;
+  tree mby;
   enum tree_code code;
-  bool negate;
+  double_int res, p0, p1;
+  unsigned precision = TYPE_PRECISION (TREE_TYPE (top));
 
   STRIP_NOPS (top);
   STRIP_NOPS (bot);
 
   if (operand_equal_p (top, bot, 0))
-    return build_int_cst (type, 1);
+    {
+      *mul = double_int_one;
+      return true;
+    }
 
   code = TREE_CODE (top);
   switch (code)
@@ -2576,60 +2582,40 @@ constant_multiple_of (tree type, tree top, tree bot)
     case MULT_EXPR:
       mby = TREE_OPERAND (top, 1);
       if (TREE_CODE (mby) != INTEGER_CST)
-	return NULL_TREE;
+	return false;
 
-      res = constant_multiple_of (type, TREE_OPERAND (top, 0), bot);
-      if (!res)
-	return NULL_TREE;
+      if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &res))
+	return false;
 
-      return fold_binary_to_constant (MULT_EXPR, type, res,
-				      fold_convert (type, mby));
+      *mul = double_int_sext (double_int_mul (res, tree_to_double_int (mby)),
+			      precision);
+      return true;
 
     case PLUS_EXPR:
     case MINUS_EXPR:
-      p0 = constant_multiple_of (type, TREE_OPERAND (top, 0), bot);
-      if (!p0)
-	return NULL_TREE;
-      p1 = constant_multiple_of (type, TREE_OPERAND (top, 1), bot);
-      if (!p1)
-	return NULL_TREE;
+      if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &p0)
+	  || !constant_multiple_of (TREE_OPERAND (top, 1), bot, &p1))
+	return false;
 
-      return fold_binary_to_constant (code, type, p0, p1);
+      if (code == MINUS_EXPR)
+	p1 = double_int_neg (p1);
+      *mul = double_int_sext (double_int_add (p0, p1), precision);
+      return true;
 
     case INTEGER_CST:
       if (TREE_CODE (bot) != INTEGER_CST)
-	return NULL_TREE;
+	return false;
 
-      bot = fold_convert (type, bot);
-      top = fold_convert (type, top);
-
-      /* If BOT seems to be negative, try dividing by -BOT instead, and negate
-	 the result afterwards.  */
-      if (tree_int_cst_sign_bit (bot))
-	{
-	  negate = true;
-	  bot = fold_unary_to_constant (NEGATE_EXPR, type, bot);
-	}
-      else
-	negate = false;
-
-      /* Ditto for TOP.  */
-      if (tree_int_cst_sign_bit (top))
-	{
-	  negate = !negate;
-	  top = fold_unary_to_constant (NEGATE_EXPR, type, top);
-	}
-
-      if (!zero_p (fold_binary_to_constant (TRUNC_MOD_EXPR, type, top, bot)))
-	return NULL_TREE;
-
-      res = fold_binary_to_constant (EXACT_DIV_EXPR, type, top, bot);
-      if (negate)
-	res = fold_unary_to_constant (NEGATE_EXPR, type, res);
-      return res;
+      p0 = double_int_sext (tree_to_double_int (bot), precision);
+      p1 = double_int_sext (tree_to_double_int (top), precision);
+      if (double_int_zero_p (p1))
+	return false;
+      *mul = double_int_sext (double_int_sdivmod (p0, p1, FLOOR_DIV_EXPR, &res),
+			      precision);
+      return double_int_zero_p (res);
 
     default:
-      return NULL_TREE;
+      return false;
     }
 }
 
@@ -2986,6 +2972,7 @@ get_computation_aff (struct loop *loop,
   HOST_WIDE_INT ratioi;
   struct affine_tree_combination cbase_aff, expr_aff;
   tree cstep_orig = cstep, ustep_orig = ustep;
+  double_int rat;
 
   if (TYPE_PRECISION (utype) > TYPE_PRECISION (ctype))
     {
@@ -3040,21 +3027,15 @@ get_computation_aff (struct loop *loop,
     }
   else
     {
-      ratio = constant_multiple_of (uutype, ustep_orig, cstep_orig);
-      if (!ratio)
+      if (!constant_multiple_of (ustep_orig, cstep_orig, &rat))
 	return false;
+      ratio = double_int_to_tree (uutype, rat);
 
       /* Ratioi is only used to detect special cases when the multiplicative
-	 factor is 1 or -1, so if we cannot convert ratio to HOST_WIDE_INT,
-	 we may set it to 0.  We prefer cst_and_fits_in_hwi/int_cst_value
-	 to integer_onep/integer_all_onesp, since the former ignores
-	 TREE_OVERFLOW.  */
-      if (cst_and_fits_in_hwi (ratio))
-	ratioi = int_cst_value (ratio);
-      else if (integer_onep (ratio))
-	ratioi = 1;
-      else if (integer_all_onesp (ratio))
-	ratioi = -1;
+	 factor is 1 or -1, so if rat does not fit to HOST_WIDE_INT, we may
+	 set it to 0.  */
+      if (double_int_fits_in_shwi_p (rat))
+	ratioi = double_int_to_shwi (rat);
       else
 	ratioi = 0;
     }
@@ -3775,19 +3756,13 @@ get_computation_cost_at (struct ivopts_data *data,
     }
   else
     {
-      tree rat;
+      double_int rat;
       
-      rat = constant_multiple_of (utype, ustep, cstep);
-    
-      if (!rat)
+      if (!constant_multiple_of (ustep, cstep, &rat))
 	return INFTY;
-
-      if (cst_and_fits_in_hwi (rat))
-	ratio = int_cst_value (rat);
-      else if (integer_onep (rat))
-	ratio = 1;
-      else if (integer_all_onesp (rat))
-	ratio = -1;
+    
+      if (double_int_fits_in_shwi_p (rat))
+	ratio = double_int_to_shwi (rat);
       else
 	return INFTY;
     }
