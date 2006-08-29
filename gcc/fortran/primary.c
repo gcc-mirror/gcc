@@ -1,6 +1,6 @@
 /* Primary expression subroutines
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006 Free Software
-   Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2295,14 +2295,18 @@ match_variable (gfc_expr ** result, int equiv_flag, int host_flag)
     case FL_VARIABLE:
       break;
 
-    case FL_PROGRAM:
-      return MATCH_NO;
-      break;
-
     case FL_UNKNOWN:
       if (gfc_add_flavor (&sym->attr, FL_VARIABLE,
 			  sym->name, NULL) == FAILURE)
 	return MATCH_ERROR;
+      break;
+
+    case FL_PARAMETER:
+      if (equiv_flag)
+	gfc_error ("Named constant at %C in an EQUIVALENCE");
+      else
+	gfc_error ("Cannot assign to a named constant at %C");
+      return MATCH_ERROR;
       break;
 
     case FL_PROCEDURE:
