@@ -1,6 +1,6 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
-   Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -843,21 +843,24 @@ gfc_match_assignment (void)
 
   old_loc = gfc_current_locus;
 
-  lvalue = rvalue = NULL;
+  lvalue = NULL;
   m = gfc_match (" %v =", &lvalue);
   if (m != MATCH_YES)
-    goto cleanup;
-
-  if (lvalue->symtree->n.sym->attr.flavor == FL_PARAMETER)
     {
-      gfc_error ("Cannot assign to a PARAMETER variable at %C");
-      m = MATCH_ERROR;
-      goto cleanup;
+      gfc_current_locus = old_loc;
+      gfc_free_expr (lvalue);
+      return MATCH_NO;
     }
 
+  rvalue = NULL;
   m = gfc_match (" %e%t", &rvalue);
   if (m != MATCH_YES)
-    goto cleanup;
+    {
+      gfc_current_locus = old_loc;
+      gfc_free_expr (lvalue);
+      gfc_free_expr (rvalue);
+      return m;
+    }
 
   gfc_set_sym_referenced (lvalue->symtree->n.sym);
 
@@ -868,12 +871,6 @@ gfc_match_assignment (void)
   gfc_check_do_variable (lvalue->symtree);
 
   return MATCH_YES;
-
-cleanup:
-  gfc_current_locus = old_loc;
-  gfc_free_expr (lvalue);
-  gfc_free_expr (rvalue);
-  return m;
 }
 
 
@@ -1061,9 +1058,9 @@ gfc_match_if (gfc_statement * if_type)
   gfc_undo_symbols ();
   gfc_current_locus = old_loc;
 
-  /* m can be MATCH_NO or MATCH_ERROR, here.  For MATCH_NO, continue to
-     call the various matchers.  For MATCH_ERROR, a mangled assignment
-     was found.  */
+  /* m can be MATCH_NO or MATCH_ERROR, here.  For MATCH_ERROR, a mangled
+     assignment was found.  For MATCH_NO, continue to call the various
+     matchers.  */
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
@@ -1089,30 +1086,43 @@ gfc_match_if (gfc_statement * if_type)
   gfc_clear_error ();
 
   match ("allocate", gfc_match_allocate, ST_ALLOCATE)
-    match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT)
-    match ("backspace", gfc_match_backspace, ST_BACKSPACE)
-    match ("call", gfc_match_call, ST_CALL)
-    match ("close", gfc_match_close, ST_CLOSE)
-    match ("continue", gfc_match_continue, ST_CONTINUE)
-    match ("cycle", gfc_match_cycle, ST_CYCLE)
-    match ("deallocate", gfc_match_deallocate, ST_DEALLOCATE)
-    match ("end file", gfc_match_endfile, ST_END_FILE)
-    match ("exit", gfc_match_exit, ST_EXIT)
-    match ("flush", gfc_match_flush, ST_FLUSH)
-    match ("forall", match_simple_forall, ST_FORALL)
-    match ("go to", gfc_match_goto, ST_GOTO)
-    match ("if", match_arithmetic_if, ST_ARITHMETIC_IF)
-    match ("inquire", gfc_match_inquire, ST_INQUIRE)
-    match ("nullify", gfc_match_nullify, ST_NULLIFY)
-    match ("open", gfc_match_open, ST_OPEN)
-    match ("pause", gfc_match_pause, ST_NONE)
-    match ("print", gfc_match_print, ST_WRITE)
-    match ("read", gfc_match_read, ST_READ)
-    match ("return", gfc_match_return, ST_RETURN)
-    match ("rewind", gfc_match_rewind, ST_REWIND)
-    match ("stop", gfc_match_stop, ST_STOP)
-    match ("where", match_simple_where, ST_WHERE)
-    match ("write", gfc_match_write, ST_WRITE)
+  match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT)
+  match ("backspace", gfc_match_backspace, ST_BACKSPACE)
+  match ("call", gfc_match_call, ST_CALL)
+  match ("close", gfc_match_close, ST_CLOSE)
+  match ("continue", gfc_match_continue, ST_CONTINUE)
+  match ("cycle", gfc_match_cycle, ST_CYCLE)
+  match ("deallocate", gfc_match_deallocate, ST_DEALLOCATE)
+  match ("end file", gfc_match_endfile, ST_END_FILE)
+  match ("exit", gfc_match_exit, ST_EXIT)
+  match ("flush", gfc_match_flush, ST_FLUSH)
+  match ("forall", match_simple_forall, ST_FORALL)
+  match ("go to", gfc_match_goto, ST_GOTO)
+  match ("if", match_arithmetic_if, ST_ARITHMETIC_IF)
+  match ("inquire", gfc_match_inquire, ST_INQUIRE)
+  match ("nullify", gfc_match_nullify, ST_NULLIFY)
+  match ("open", gfc_match_open, ST_OPEN)
+  match ("pause", gfc_match_pause, ST_NONE)
+  match ("print", gfc_match_print, ST_WRITE)
+  match ("read", gfc_match_read, ST_READ)
+  match ("return", gfc_match_return, ST_RETURN)
+  match ("rewind", gfc_match_rewind, ST_REWIND)
+  match ("stop", gfc_match_stop, ST_STOP)
+  match ("where", match_simple_where, ST_WHERE)
+  match ("write", gfc_match_write, ST_WRITE)
+
+  /* The gfc_match_assignment() above may have returned a MATCH_NO
+     where the assignement was to a named constant.  Check that 
+     special case here.  */
+  m = gfc_match_assignment ();
+  if (m == MATCH_NO)
+   {
+      gfc_error ("Cannot assign to a named constant at %C");
+      gfc_free_expr (expr);
+      gfc_undo_symbols ();
+      gfc_current_locus = old_loc;
+      return MATCH_ERROR;
+   }
 
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */

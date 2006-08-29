@@ -10,6 +10,6 @@ program main
     enumerator :: blue = 1  
   end enum junk  ! { dg-error "Syntax error" }
 
-  blue = 10  ! { dg-error "Expected VARIABLE" }
+  blue = 10  ! { dg-error " assign to a named constant" }
 
 end program main  ! { dg-excess-errors "" }

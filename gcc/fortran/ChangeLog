@@ -1,3 +1,13 @@
+2006-08-29  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/28866
+	* match.c: Wrap copyright.
+	(gfc_match_assignment):  Return MATCH_NO for failed lvalue.  Remove
+	gotos.  Move error handling of FL_PARAMETER to ...
+ 	* gfc_match_if: Deal with MATCH_NO from above.
+	* primary.c: Wrap copyright.
+	(match_variable): ... here.  Improve error messages.
+
 2006-08-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28788
