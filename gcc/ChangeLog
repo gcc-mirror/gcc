@@ -1,3 +1,12 @@
+2006-08-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*fop_df_comm_mixed): Match DF operands
+	instead of SF operands.
+	(*fop_df_comm_sse): Likewise.
+	(*fop_df_comm_i387): Likewise.
+	(*fop_df_1_mixed): Likewise.
+	(*fop_df_1_sse): Likewise.
+
 2006-08-29  Nathan Sidwell  <nathan@codesourcery.com>
 	    J"orn Rennecke  <joern.rennecke@st.com>
 
