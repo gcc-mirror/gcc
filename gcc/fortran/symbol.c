@@ -1495,16 +1495,10 @@ gfc_use_derived (gfc_symbol * sym)
 
   if (s == NULL || s->attr.flavor != FL_DERIVED)
     {
-      /* Check to see if type has been renamed in parent namespace.
-	 Leave cleanup of local symbols until the end of the
-	 compilation because doing it here is complicated by
-	 multiple association with the same type.  */
+      /* Check to see if type has been renamed in parent namespace.  */
       s = find_renamed_type (sym, sym->ns->parent->sym_root);
       if (s != NULL)
-	{
-	  switch_types (sym->ns->sym_root, sym, s);
-	  return s;
-	}
+	goto return_use_assoc;
 
       /* See if sym is identical to renamed, use-associated derived
 	 types in sibling namespaces.  */
@@ -1521,10 +1515,7 @@ gfc_use_derived (gfc_symbol * sym)
 	      s = find_renamed_type (sym, ns->sym_root);
 
 	      if (s != NULL)
-		{
-		  switch_types (sym->ns->sym_root, sym, s);
-		  return s;
-		}
+		goto return_use_assoc;
 	    }
 	}
 
@@ -1557,6 +1548,9 @@ gfc_use_derived (gfc_symbol * sym)
 	t->derived = s;
     }
 
+  if (sym->attr.use_assoc)
+    goto return_use_assoc;
+
   st = gfc_find_symtree (sym->ns->sym_root, sym->name);
   st->n.sym = s;
 
@@ -1571,6 +1565,14 @@ gfc_use_derived (gfc_symbol * sym)
      namelists, common lists and interface lists.  */
   gfc_free_symbol (sym);
 
+  return s;
+
+return_use_assoc:
+  /* Use associated types are not freed at this stage because some
+     references remain to 'sym'.  We retain the symbol and leave it
+     to be cleaned up by gfc_free_namespace, at the end of the
+     compilation.  */
+  switch_types (sym->ns->sym_root, sym, s);
   return s;
 
 bad:

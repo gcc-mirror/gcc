@@ -1,3 +1,10 @@
+2006-08-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28788
+	REGRESSION FIX
+	* symbol.c (gfc_use_derived): Never eliminate the symbol,
+	following reassociation of use associated derived types.
+
 2006-08-26  Steven G. Kargl  <kargls@comcast.net>
 
 	* arith.h: Update Copyright dates.  Fix whitespace.
