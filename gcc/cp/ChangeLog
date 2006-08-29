@@ -1,5 +1,9 @@
 2006-08-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/26670
+	* class.c (check_field_decls): Unset TYPE_PACKED (t) if one of the
+	fields can't be packed.
+
 	PR c++/26577
 	* cvt.c (convert_to_void): Don't automatically load from volatiles 
 	of TREE_ADDRESSABLE type.
