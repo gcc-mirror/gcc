@@ -1,3 +1,10 @@
+2006-08-29  Nathan Sidwell  <nathan@codesourcery.com>
+	    J"orn Rennecke  <joern.rennecke@st.com>
+
+	PR tree-optimization/17506
+	* tree-ssa.c (warn_uninit): If warning about a location outside of
+	the current function, note where the variable was declared.
+
 2006-08-28  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/28411
