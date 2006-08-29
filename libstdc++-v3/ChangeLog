@@ -1,3 +1,10 @@
+2006-08-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4(glibcxx_PCHFLAGS): Set to stdtr1c++.h.
+	* configure: Regenerate.
+	
+	* scripts/check_compile: Output current compile line.
+	
 2006-08-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/23773 partial

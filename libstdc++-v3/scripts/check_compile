@@ -30,6 +30,10 @@ TEST_FLAGS="-S"
 COMPILER=`$flags_script --build-cxx`
 CXX="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS $TEST_FLAGS"
 
+echo "compile line is:"
+echo $CXX
+echo ""
+
 TESTS_FILE="testsuite_files"
 
 #mkdir binaries
