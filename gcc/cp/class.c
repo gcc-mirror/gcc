@@ -2906,10 +2906,13 @@ check_field_decls (tree t, tree *access_decls,
       if (TYPE_PACKED (t))
 	{
 	  if (!pod_type_p (type) && !TYPE_PACKED (type))
-	    warning
-	      (0,
-	       "ignoring packed attribute on unpacked non-POD field %q+#D",
-	       x);
+	    {
+	      warning
+		(0,
+		 "ignoring packed attribute because of unpacked non-POD field %q+#D",
+		 x);
+	      TYPE_PACKED (t) = 0;
+	    }
 	  else if (TYPE_ALIGN (TREE_TYPE (x)) > BITS_PER_UNIT)
 	    DECL_PACKED (x) = 1;
 	}
