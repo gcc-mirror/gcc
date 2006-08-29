@@ -448,6 +448,19 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   template<typename _RealType, int __w, int __s, int __r>
     void
     subtract_with_carry_01<_RealType, __w, __s, __r>::
+    _M_initialize_npows()
+    {
+      for (int __j = 0; __j < __n; ++__j)
+#if _GLIBCXX_USE_C99_MATH_TR1
+	_M_npows[__j] = std::tr1::ldexp(_RealType(1), -__w + __j * 32);
+#else
+        _M_npows[__j] = std::pow(_RealType(2), -__w + __j * 32);
+#endif
+    }
+
+  template<typename _RealType, int __w, int __s, int __r>
+    void
+    subtract_with_carry_01<_RealType, __w, __s, __r>::
     seed(unsigned long __value)
     {
       if (__value == 0)
@@ -484,14 +497,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    }
 
 	_M_p = 0;
-
-	// Initialize the array holding the negative powers of 2.
-	for (int __j = 0; __j < __n; ++__j)
-#if _GLIBCXX_USE_C99_MATH_TR1
-	  _M_npows[__j] = std::tr1::ldexp(_RealType(1), -__w + __j * 32);
-#else
-	  _M_npows[__j] = std::pow(_RealType(2), -__w + __j * 32);
-#endif
       }
 
   template<typename _RealType, int __w, int __s, int __r>
@@ -636,6 +641,39 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       return __is;
     }
 
+
+  template<class _UniformRandomNumberGenerator1, int __s1,
+	   class _UniformRandomNumberGenerator2, int __s2>
+    void
+    xor_combine<_UniformRandomNumberGenerator1, __s1,
+		_UniformRandomNumberGenerator2, __s2>::
+    _M_initialize_max()
+    {
+      const int __lshift = std::abs(__s1 - __s2);
+
+      result_type __m1 = _M_b1.max() - _M_b1.min();
+      result_type __m2 = _M_b2.max() - _M_b2.min();
+
+      // NB: in TR1 s1 is not required to be >= s2.
+      if (__s1 >= __s2)
+	__m1 <<= __lshift;
+      else
+	__m2 <<= __lshift;
+
+      result_type __a = __m1 & __m2;
+      const result_type __b = __m1 | __m2;      
+
+      result_type __c = 0;
+      if (__a)
+	{
+	  result_type __k;
+	  for (__k = 0; __a != 1; __a >>= 1)
+	    ++__k;
+	  __c = (result_type(1) << __k) - 1;
+	}
+
+      _M_max = (__c | __b) << __lshift; 
+    }
 
   template<class _UniformRandomNumberGenerator1, int __s1,
 	   class _UniformRandomNumberGenerator2, int __s2,

@@ -1,3 +1,19 @@
+2006-08-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random (subtract_with_carry_01<>::_M_initialize_npows):
+	New.
+	(subtract_with_carry_01<>::subtract_with_carry_01(),
+	subtract_with_carry_01<>::subtract_with_carry_01(unsigned long),
+	subtract_with_carry_01<>::subtract_with_carry_01(_Gen&)): Use it.
+	* include/tr1/random.tcc: Define.
+
+	* include/tr1/random (xor_combine<>::_M_initialize_max()): New.
+	(xor_combine<>::xor_combine(), xor_combine<>::xor_combine(const
+	base1_type&, const base2_type&), xor_combine<>::xor_combine(unsigned
+	long), xor_combine<>::xor_combine(_Gen&)): Use it.
+	(xor_combine<>::min, xor_combine<>::max): Adjust.
+	* include/tr1/random.tcc: Define.
+
 2006-08-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4(glibcxx_PCHFLAGS): Set to stdtr1c++.h.
