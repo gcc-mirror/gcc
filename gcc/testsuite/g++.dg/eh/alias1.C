@@ -16,7 +16,7 @@ void
 g (int i)
 {
   if (!i_glob)
-    exit ((int)(long long) &i);
+    exit ((__SIZE_TYPE__) & i);
 }
 
 static void
