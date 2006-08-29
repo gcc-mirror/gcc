@@ -1,3 +1,8 @@
+2006-08-29  J"orn Rennecke  <joern.rennecke@st.com>
+
+	PR c++/28139
+	* g++.dg/eh/alias1.C: New test.
+
 2006-08-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28860

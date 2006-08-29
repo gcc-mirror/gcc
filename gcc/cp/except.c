@@ -458,7 +458,14 @@ expand_start_catch_block (tree decl)
   else
     {
       tree init = do_begin_catch ();
-      exp = create_temporary_var (ptr_type_node);
+      tree init_type = type;
+
+      /* Pointers are passed by values, everything else by reference.  */
+      if (!TYPE_PTR_P (type))
+	init_type = build_pointer_type (type);
+      if (init_type != TREE_TYPE (init))
+	init = build1 (NOP_EXPR, init_type, init);
+      exp = create_temporary_var (init_type);
       DECL_REGISTER (exp) = 1;
       cp_finish_decl (exp, init, /*init_const_expr=*/false,
 		      NULL_TREE, LOOKUP_ONLYCONVERTING);
