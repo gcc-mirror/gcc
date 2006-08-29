@@ -864,14 +864,17 @@ convert_to_void (tree expr, const char *implicit)
 	int is_volatile = TYPE_VOLATILE (type);
 	int is_complete = COMPLETE_TYPE_P (complete_type (type));
 
+	/* Can't load the value if we don't know the type.  */
 	if (is_volatile && !is_complete)
 	  warning (0, "object of incomplete type %qT will not be accessed in %s",
 		   type, implicit ? implicit : "void context");
-	else if (is_reference && is_volatile)
+	/* Don't load the value if this is an implicit dereference, or if
+	   the type needs to be handled by ctors/dtors.  */
+	else if (is_volatile && (is_reference || TREE_ADDRESSABLE (type)))
 	  warning (0, "object of type %qT will not be accessed in %s",
 		   TREE_TYPE (TREE_OPERAND (expr, 0)),
 		   implicit ? implicit : "void context");
-	if (is_reference || !is_volatile || !is_complete)
+	if (is_reference || !is_volatile || !is_complete || TREE_ADDRESSABLE (type))
 	  expr = TREE_OPERAND (expr, 0);
 
 	break;
