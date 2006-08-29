@@ -848,23 +848,26 @@ convert_to_void (tree expr, const char *implicit)
     
     case INDIRECT_REF:
       {
-        tree type = TREE_TYPE (expr);
-        int is_reference = TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
-                           == REFERENCE_TYPE;
-        int is_volatile = TYPE_VOLATILE (type);
-        int is_complete = COMPLETE_TYPE_P (complete_type (type));
-        
-        if (is_volatile && !is_complete)
-          warning ("object of incomplete type %qT will not be accessed in %s",
-                   type, implicit ? implicit : "void context");
-        else if (is_reference && is_volatile)
-          warning ("object of type %qT will not be accessed in %s",
-                   TREE_TYPE (TREE_OPERAND (expr, 0)),
-                   implicit ? implicit : "void context");
-        if (is_reference || !is_volatile || !is_complete)
-          expr = TREE_OPERAND (expr, 0);
-      
-        break;
+	tree type = TREE_TYPE (expr);
+	int is_reference = TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
+			   == REFERENCE_TYPE;
+	int is_volatile = TYPE_VOLATILE (type);
+	int is_complete = COMPLETE_TYPE_P (complete_type (type));
+
+	/* Can't load the value if we don't know the type.  */
+	if (is_volatile && !is_complete)
+	  warning ("object of incomplete type %qT will not be accessed in %s",
+		   type, implicit ? implicit : "void context");
+	/* Don't load the value if this is an implicit dereference, or if
+	   the type needs to be handled by ctors/dtors.  */
+	else if (is_volatile && (is_reference || TREE_ADDRESSABLE (type)))
+	  warning ("object of type %qT will not be accessed in %s",
+		   TREE_TYPE (TREE_OPERAND (expr, 0)),
+		   implicit ? implicit : "void context");
+	if (is_reference || !is_volatile || !is_complete || TREE_ADDRESSABLE (type))
+	  expr = TREE_OPERAND (expr, 0);
+
+	break;
       }
     
     case VAR_DECL:
