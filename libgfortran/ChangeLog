@@ -1,3 +1,20 @@
+2006-08-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/28005
+	* m4/matmul.m4: Working part of function ported from
+	trunk.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+
 2006-08-26  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/28542

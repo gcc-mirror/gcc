@@ -206,7 +206,45 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 	    }
 	}
     }
-  else
+  else if (rxstride == 1 && aystride == 1 && bxstride == 1)
+    {
+      if (GFC_DESCRIPTOR_RANK (a) != 1)
+	{
+	  const rtype_name *restrict abase_x;
+	  const rtype_name *restrict bbase_y;
+	  rtype_name *restrict dest_y;
+	  rtype_name s;
+
+	  for (y = 0; y < ycount; y++)
+	    {
+	      bbase_y = &bbase[y*bystride];
+	      dest_y = &dest[y*rystride];
+	      for (x = 0; x < xcount; x++)
+		{
+		  abase_x = &abase[x*axstride];
+		  s = (rtype_name) 0;
+		  for (n = 0; n < count; n++)
+		    s += abase_x[n] * bbase_y[n];
+		  dest_y[x] = s;
+		}
+	    }
+	}
+      else
+	{
+	  const rtype_name *restrict bbase_y;
+	  rtype_name s;
+
+	  for (y = 0; y < ycount; y++)
+	    {
+	      bbase_y = &bbase[y*bystride];
+	      s = (rtype_name) 0;
+	      for (n = 0; n < count; n++)
+		s += abase[n*axstride] * bbase_y[n];
+	      dest[y*rystride] = s;
+	    }
+	}
+    }
+  else if (axstride < aystride)
     {
       for (y = 0; y < ycount; y++)
 	for (x = 0; x < xcount; x++)
@@ -217,6 +255,27 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 	  for (x = 0; x < xcount; x++)
 	    /* dest[x,y] += a[x,n] * b[n,y] */
 	    dest[x*rxstride + y*rystride] += abase[x*axstride + n*aystride] * bbase[n*bxstride + y*bystride];
+    }
+  else
+    {
+      const rtype_name *restrict abase_x;
+      const rtype_name *restrict bbase_y;
+      rtype_name *restrict dest_y;
+      rtype_name s;
+
+      for (y = 0; y < ycount; y++)
+	{
+	  bbase_y = &bbase[y*bystride];
+	  dest_y = &dest[y*rystride];
+	  for (x = 0; x < xcount; x++)
+	    {
+	      abase_x = &abase[x*axstride];
+	      s = (rtype_name) 0;
+	      for (n = 0; n < count; n++)
+		s += abase_x[n*aystride] * bbase_y[n*bxstride];
+	      dest_y[x*rxstride] = s;
+	    }
+	}
     }
 }
 
