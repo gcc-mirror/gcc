@@ -1959,7 +1959,7 @@ AC_DEFUN([GLIBCXX_ENABLE_PCH], [
 
   GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_PCH, test $enable_libstdcxx_pch = yes)
   if test $enable_libstdcxx_pch = yes; then
-    glibcxx_PCHFLAGS="-include bits/stdc++.h"
+    glibcxx_PCHFLAGS="-include bits/stdtr1c++.h"
   else
     glibcxx_PCHFLAGS=""
   fi
