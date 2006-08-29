@@ -19,9 +19,9 @@
 	
 2006-08-27  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/26573
-        * class.c (check_field_decls): Don't issue error about
-        local classes containing static data members.
+	PR c++/26573
+	* class.c (check_field_decls): Don't issue error about
+	local classes containing static data members.
 	
 2006-08-26  Joseph S. Myers  <joseph@codesourcery.com>
 
@@ -34,19 +34,19 @@
 
 2006-08-26  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/28736
-        PR c++/28737
-        PR c++/28738
-        * pt.c (process_template_parm): Store invalid template
-        parameters as a TREE_LIST with a TREE_VALUE of error_mark_node.
-        (push_inline_template_parms_recursive): Check for template
-        parameters having a TREE_VALUE of error_mark_node rather than
-        check the parameter itself.
-        (mangle_class_name_for_template): Likewise.
-        (comp_template_parms): When comparing the individual template
-        parameters, return 1 if either is error_mark_node.
-        (current_template_args): Robustify.
-        (redeclare_class_template): Likewise.
+	PR c++/28736
+	PR c++/28737
+	PR c++/28738
+	* pt.c (process_template_parm): Store invalid template
+	parameters as a TREE_LIST with a TREE_VALUE of error_mark_node.
+	(push_inline_template_parms_recursive): Check for template
+	parameters having a TREE_VALUE of error_mark_node rather than
+	check the parameter itself.
+	(mangle_class_name_for_template): Likewise.
+	(comp_template_parms): When comparing the individual template
+	parameters, return 1 if either is error_mark_node.
+	(current_template_args): Robustify.
+	(redeclare_class_template): Likewise.
 	
 2006-08-26  Mark Mitchell  <mark@codesourcery.com>
 
@@ -465,7 +465,7 @@
 	* method.c (locate_copy): Check for non_reference
 	returning error_mark_node.
 
-        PR c++/28260
+	PR c++/28260
 	* decl.c (duplicate_decls): Return error_mark_node
 	on ambiguous declaration.
 	
@@ -1423,8 +1423,8 @@
 
 2006-03-22  Jason Merrill  <jason@redhat.com>
 
-        * name-lookup.c (push_namespace_with_attribs): Only apply hidden
-        visibility to anonymous namespaces if HAVE_GAS_HIDDEN.
+	* name-lookup.c (push_namespace_with_attribs): Only apply hidden
+	visibility to anonymous namespaces if HAVE_GAS_HIDDEN.
 
 2006-03-21  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1685,7 +1685,7 @@
 		bad_decls list.
 		(decl_jump_unsafe): Check for error_mark_node types.
 		(check_goto): Don't check cdtor_label.  Don't use identify_goto.
-                * semantics.c (finish_return_stmt): Do check_omp_return before
+		* semantics.c (finish_return_stmt): Do check_omp_return before
 		converting to cdtor_label goto.
 
 	2005-10-21  Richard Henderson  <rth@redhat.com>
@@ -1808,7 +1808,8 @@
 		* cp-tree.h (OMP_ATOMIC_DEPENDENT_P, OMP_ATOMIC_CODE): New.
 		(finish_omp_clauses, finish_omp_for, finish_omp_atomic): New.
 		* parser.c (cp_parser_omp_clause_copyin): Remove.
-		(cp_parser_omp_all_clauses): Use cp_parser_omp_var_list instead.                Call finish_omp_clauses.
+		(cp_parser_omp_all_clauses): Use cp_parser_omp_var_list instead.
+		Call finish_omp_clauses.
 		(cp_parser_omp_clause_if): Don't do error checking here.
 		(cp_parser_omp_clause_num_threads): Likewise.
 		(cp_parser_omp_clause_schedule): Likewise.
@@ -2130,31 +2131,31 @@
 
 2006-02-03  Lee Millward  <lee.millward@gmail.com>
 
-       * typeck.c (string_conv_p): Pass appropiate
-       OPT_Wxxxx values when calling warning().
-       (build_array_ref, cxx_mark_addressable): Likewise.
-       (check_return_expr): Likewise.
+	* typeck.c (string_conv_p): Pass appropiate
+	OPT_Wxxxx values when calling warning().
+	(build_array_ref, cxx_mark_addressable): Likewise.
+	(check_return_expr): Likewise.
 
-       * init.c (perform_member_init): Likewise.
-       (sort_mem_initializers, emit_mem_initializers): Likewise.
+	* init.c (perform_member_init): Likewise.
+	(sort_mem_initializers, emit_mem_initializers): Likewise.
 
-       * class.c (check_field_decls): Likewise.
-       (warn_about_ambiguous_bases): Likewise.
+	* class.c (check_field_decls): Likewise.
+	(warn_about_ambiguous_bases): Likewise.
 
-       * decl.c (pop_label, poplevel): Likewise.
-       (duplicate_decls, grok_op_properties): Likewise.
-       (start_preparsed_function, finish_function): Likewise.
+	* decl.c (pop_label, poplevel): Likewise.
+	(duplicate_decls, grok_op_properties): Likewise.
+	(start_preparsed_function, finish_function): Likewise.
 
-       * name-lookup.c (pushdecl_maybe_friend): Likewise.
-       (pushdecl_maybe_friend): Likewise.
+	* name-lookup.c (pushdecl_maybe_friend): Likewise.
+	(pushdecl_maybe_friend): Likewise.
 
-       * parser.c (cp_parser_warn_min_max): Likewise.
-       (cp_parser_cast_expression): Likewise.
+	* parser.c (cp_parser_warn_min_max): Likewise.
+	(cp_parser_cast_expression): Likewise.
 
-       * method.c (lazily_declare_fn): Likewise.
-       * cvt.c (convert_to_void): Likewise.
-       * mangle.c (finish_mangling): Likewise.
-       * cp-gimplify.c (gimplify_expr_stmt): Likewise.
+	* method.c (lazily_declare_fn): Likewise.
+	* cvt.c (convert_to_void): Likewise.
+	* mangle.c (finish_mangling): Likewise.
+	* cp-gimplify.c (gimplify_expr_stmt): Likewise.
 
 2006-02-03  Mark Mitchell  <mark@codesourcery.com>
 
@@ -2738,7 +2739,7 @@
 
 2005-12-06  Aldy Hernandez  <aldyh@redhat.com>
 
-       PR C++/24138
+	PR C++/24138
 	* decl.c (reshape_init_array_1): Handle max_index of -1.
 
 2005-12-06  Roger Sayle  <roger@eyesopen.com>

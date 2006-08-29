@@ -244,7 +244,7 @@
 	to happen before the lhs is possibly cleared.
 	
 2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
- 
+
 	* config/arm/pr-support.c (__gnu_unwind_execute): Insert " + 1" in
 	necessary places to pass the correct "number of registers" values
 	to _Unwind_VRS_Pop.
@@ -293,7 +293,7 @@
 
 	PR target/28648 c:
 	* tree.c (handle_dll_attribute): Return early if not a
-   	var or function decl.
+	var or function decl.
 
 2006-08-18  Joseph Myers  <joseph@codesourcery.com>
 
@@ -587,9 +587,9 @@
 
 2006-08-07  Victor Kaplansky <victork@il.ibm.com>
 
-        PR tree-optimization/26969
-        * tree-vect-analyze.c (vect_analyze_loop_form): Add check of latch
-         with an empty list of PHIs.
+	PR tree-optimization/26969
+	* tree-vect-analyze.c (vect_analyze_loop_form): Add check of latch
+	with an empty list of PHIs.
 
 2006-08-06  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -659,19 +659,19 @@
 
 2006-08-03  Dorit Nuzman  <dorit@il.ibm.com>
 
-        PR tree-optimization/27770
-        * tree-vectorizer.h (get_vectype_for_scalar_type): Function
-        declaration removed (moved to tree-flow.h).
-        (vect_can_force_dr_alignment_p): Likewise.
-        * tree-flow.h (get_vectype_for_scalar_type): New function declaration
-        (moved from tree-vectorizer.h).
-        (vect_can_force_dr_alignment_p): Likewise.
-        * tree-vectorizer.c (vect_print_dump_info): Allow calling this function
-        from outside the vectorizer - in particular from cgraph stage.
-        * tree-vect-analyze.c (vect_compute_data_ref_alignment): Don't increase
-        the alignment of global arrays when -fsection-anchors is enabled.
-        * cgraphunit.c (cgraph_increase_alignment): New function.
-        (cgraph_optimize): Call cgraph_increase_alignment.
+	PR tree-optimization/27770
+	* tree-vectorizer.h (get_vectype_for_scalar_type): Function
+	declaration removed (moved to tree-flow.h).
+	(vect_can_force_dr_alignment_p): Likewise.
+	* tree-flow.h (get_vectype_for_scalar_type): New function declaration
+	(moved from tree-vectorizer.h).
+	(vect_can_force_dr_alignment_p): Likewise.
+	* tree-vectorizer.c (vect_print_dump_info): Allow calling this function
+	from outside the vectorizer - in particular from cgraph stage.
+	* tree-vect-analyze.c (vect_compute_data_ref_alignment): Don't increase
+	the alignment of global arrays when -fsection-anchors is enabled.
+	* cgraphunit.c (cgraph_increase_alignment): New function.
+	(cgraph_optimize): Call cgraph_increase_alignment.
 
 2006-08-03  David Edelsohn  <edelsohn@gnu.org>
 
@@ -946,7 +946,7 @@
 2006-07-21  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/28427
-        * config/i386/cygming.h (MAX_OFILE_ALIGNMENT): Define.
+	* config/i386/cygming.h (MAX_OFILE_ALIGNMENT): Define.
 
 2006-07-20  Eric Christopher  <echristo@apple.com>
 
@@ -1017,10 +1017,10 @@
 
 2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        * configure: Regenerate.
-        * Makefile.in (build_libsubdir): New configure substitution
-        (build_libobjdir): New variable.
-        (BUILD_LIBIBERTY): Use it.
+	* configure: Regenerate.
+	* Makefile.in (build_libsubdir): New configure substitution
+	(build_libobjdir): New variable.
+	(BUILD_LIBIBERTY): Use it.
 
 2006-07-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
@@ -2307,9 +2307,9 @@
 2006-06-05  Dorit Nuzman  <dorit@il.ibm.com>
 	    Victor Kaplansky  <victork@il.ibm.com>
 
-        PR tree-optimization/26360
-        * tree-vectorizer.c (destroy_loop_vec_info): Remove (dead) pattern
-        stmts.
+	PR tree-optimization/26360
+	* tree-vectorizer.c (destroy_loop_vec_info): Remove (dead) pattern
+	stmts.
 
 2006-06-04  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
@@ -8489,7 +8489,7 @@
 	* recog.c (reg_fits_class_p): If cl is NO_REGS, return 0 immediately.
 	* doc/md.texi: Document new constraint-definition mechanism and the
 	C interface it provides.  Remove references to old mechanism
- 	elsewhere in the document.
+	elsewhere in the document.
 	(Machine Constraints): Use pathnames relative to gcc directory,
 	i.e. config/ARCH/FILE.  Change i386 section to refer to
 	config/i386/predicates.md; update that section to match docstrings.
@@ -9744,7 +9744,7 @@
 	* c.opt (-Wwrite-strings): Declare variable warn_write_strings.
 	Clarify documentation.
 	* c-common.h (warn_write_strings): Remove.
- 	* c-common.c (warn_write_strings): Likewise.
+	* c-common.c (warn_write_strings): Likewise.
 	* c-opts.c (c_common_init_options): Enable -Wwrite-strings by
 	default for C++.
 
@@ -10182,9 +10182,9 @@
 	PR c++/26140
 	Revert
 	2006-01-30  Richard Guenther  <rguenther@suse.de>
- 	PR c++/23372
- 	* gimplify.c (gimplify_target_expr): Handle easy cases
- 	without creating a temporary.
+	PR c++/23372
+	* gimplify.c (gimplify_target_expr): Handle easy cases
+	without creating a temporary.
 
 2006-02-07  Pete Steinmetz  <steinmtz@us.ibm.com>
 
