@@ -164,12 +164,56 @@ public final class SocketPermission extends Permission implements Serializable
    */
   public SocketPermission(String hostport, String actions)
   {
-    super(hostport);
+    super(maybeBracketIPv6Address(hostport));
 
-    setHostPort(hostport);
+    setHostPort(getName());
     setActions(actions);
   }
 
+  /**
+   * IPv6 addresses in the hostport must either be enclosed by
+   * "[" and "]" or be specified in the full uncompressed form.
+   * In the latter case proprietary JVMs will quote the address
+   * with "[" and "]", so we do to.
+   */
+  private static String maybeBracketIPv6Address(String hostport)
+  {
+    if (hostport.length() == 0 || hostport.charAt(0) == '[')
+      return hostport;
+
+    int colons = 0, last_colon = 0;
+    for (int i = 0; i < hostport.length(); i++)
+      {
+	if (hostport.charAt(i) == ':')
+	  {
+	    if (i - last_colon == 1)
+	      throw new IllegalArgumentException("Ambiguous hostport part");
+	    colons++;
+	    last_colon = i;
+	  }
+      }
+
+    switch (colons)
+      {
+      case 0:
+      case 1:
+	// a hostname or IPv4 address
+	return hostport;
+	
+      case 7:
+	// an IPv6 address with no ports
+	return "[" + hostport + "]";
+
+      case 8:
+	// an IPv6 address with ports
+	return "[" + hostport.substring(0, last_colon) + "]"
+	  + hostport.substring(last_colon);
+
+      default:
+	throw new IllegalArgumentException("Ambiguous hostport part");
+      }
+  }
+  
   /**
    * Parse the hostport argument to the constructor.
    */

@@ -112,10 +112,7 @@ public final class NetworkInterface
 	InetAddress addr = (InetAddress) addresses.nextElement();
 	try
 	  {
-	    String hostAddress = addr.getHostAddress();
-	    if (addr instanceof Inet6Address)
-	      hostAddress = "[" + hostAddress + "]";
-	    s.checkConnect(hostAddress, 58000);
+	    s.checkConnect(addr.getHostAddress(), 58000);
 	    tmpInetAddresses.add(addr);
 	  }
 	catch (SecurityException e)
