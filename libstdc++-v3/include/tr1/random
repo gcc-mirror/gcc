@@ -944,7 +944,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * number generator.
        */
       subtract_with_carry_01()
-      { this->seed(); }
+      {
+	this->seed();
+	_M_initialize_npows();
+      }
 
       /**
        * Constructs an explicitly seeded % subtract_with_carry_01 random number
@@ -952,7 +955,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        */
       explicit
       subtract_with_carry_01(unsigned long __value)
-      { this->seed(__value); }
+      {
+	this->seed(__value);
+	_M_initialize_npows();
+      }
 
       /**
        * Constructs a % subtract_with_carry_01 random number generator engine
@@ -962,7 +968,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        */
       template<class _Gen>
         subtract_with_carry_01(_Gen& __g)
-        { this->seed(__g); }
+        {
+	  this->seed(__g);
+	  _M_initialize_npows();	  
+	}
 
       /**
        * Seeds the initial state @f$ x_0 @f$ of the random number generator.
@@ -1081,6 +1090,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         seed(_Gen& __g, false_type);
 
     private:
+      void
+      _M_initialize_npows();
+
       static const int __n = (__w + 31) / 32;
 
       _UInt32Type  _M_x[long_lag][__n];
@@ -1372,17 +1384,22 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       static const int shift2 = __s2;
 
       // constructors and member function
-      xor_combine() { }
+      xor_combine()
+      : _M_b1(), _M_b2()	
+      { _M_initialize_max(); }
 
       xor_combine(const base1_type& __rng1, const base2_type& __rng2)
-      : _M_b1(__rng1), _M_b2(__rng2) { }
+      : _M_b1(__rng1), _M_b2(__rng2)
+      { _M_initialize_max(); }
 
       xor_combine(unsigned long __s)
-      : _M_b1(__s), _M_b2(__s + 1) { }
+      : _M_b1(__s), _M_b2(__s + 1)
+      { _M_initialize_max(); }
 
       template<class _Gen>
         xor_combine(_Gen& __g)
-	: _M_b1(__g), _M_b2(__g) { }
+	: _M_b1(__g), _M_b2(__g)
+        { _M_initialize_max(); }
 
       void
       seed()
@@ -1407,15 +1424,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       base2() const
       { return _M_b2; }
 
-      // FIXME: Cannot be always correct.  FWIW, the solution in N2032
-      // in practice isn't much better..
+      // XXX Per N2032, but aren't always right...
       result_type
       min() const
-      { return _M_b1.min() ^ _M_b2.min(); }
+      { return 0; }
 
       result_type
       max() const
-      { return _M_b1.max() | _M_b2.max(); }
+      { return _M_max; }
 
       /**
        * Gets the next random number in the sequence.
@@ -1492,8 +1508,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		   _UniformRandomNumberGenerator21, __s21>& __x);
 
     private:
-      base1_type _M_b1;
-      base2_type _M_b2;
+      void
+      _M_initialize_max();
+
+      base1_type  _M_b1;
+      base2_type  _M_b2;
+      result_type _M_max;
     };
 
 
