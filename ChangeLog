@@ -1,3 +1,13 @@
+2006-08-30  Corinna Vinschen  <corinna@vinschen.de>
+
+	* configure.in: Never build newlib for a Mingw host.
+	Never build newlib as Mingw target library.
+	Test the existence of winsup/cygwin for building a Cygwin newlib,
+	rather than just winsup.
+	Add winsup/mingw and winsup/w32api paths to FLAGS_FOR_TARGET if
+	building a Mingw target.
+	* configure: Regenerate.
+
 2006-08-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* MAINTAINERS (Various Maintainers): Add self as RTL opt. maintainer.
