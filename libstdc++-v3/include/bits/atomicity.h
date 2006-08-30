@@ -60,7 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #endif
 
   static inline _Atomic_word
-  __exchange_and_add_single(volatile _Atomic_word* __mem, int __val)
+  __exchange_and_add_single(_Atomic_word* __mem, int __val)
   {
     _Atomic_word __result = *__mem;
     *__mem += __val;
@@ -68,12 +68,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   }
 
   static inline void
-  __atomic_add_single(volatile _Atomic_word* __mem, int __val)
+  __atomic_add_single(_Atomic_word* __mem, int __val)
   { *__mem += __val; }
 
   static inline _Atomic_word
   __attribute__ ((__unused__))
-  __exchange_and_add_dispatch(volatile _Atomic_word* __mem, int __val)
+  __exchange_and_add_dispatch(_Atomic_word* __mem, int __val)
   {
 #ifdef __GTHREADS
     if (__gthread_active_p())
@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   static inline void
   __attribute__ ((__unused__))
-  __atomic_add_dispatch(volatile _Atomic_word* __mem, int __val)
+  __atomic_add_dispatch(_Atomic_word* __mem, int __val)
   {
 #ifdef __GTHREADS
     if (__gthread_active_p())
@@ -101,8 +101,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 _GLIBCXX_END_NAMESPACE
 
-// Even if the CPU doesn't need a memory barrier, we need to ensure that
-// the compiler doesn't reorder memory accesses across the barriers.
+// Even if the CPU doesn't need a memory barrier, we need to ensure
+// that the compiler doesn't reorder memory accesses across the
+// barriers.
 #ifndef _GLIBCXX_READ_MEM_BARRIER
 #define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("":::"memory")
 #endif
