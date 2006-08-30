@@ -2,6 +2,7 @@
    it into sp.  */
 /* { dg-do compile } */
 /* { dg-options "-O -mno-apcs-frame -mcpu=iwmmxt -mabi=iwmmxt" } */
+/* { dg-skip-if "" { *-*-* } { "-mfloat-abi=softfp" } { "" } } */
 /* { dg-require-effective-target arm32 } */
 /* { dg-final { scan-assembler "ldmfd\[ 	]sp!.*ip,\[ ]*pc" } } */
 
