@@ -1,3 +1,7 @@
+2006-08-30  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (see.o): Add $(EXPR_H) dependency.
+
 2006-08-30  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/27735

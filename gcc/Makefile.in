@@ -2340,7 +2340,7 @@ web.o : web.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(DF_H) $(OBSTACK_H) $(TIMEVAR_H) tree-pass.h
 see.o : see.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    hard-reg-set.h $(FLAGS_H) $(BASIC_BLOCK_H) $(FUNCTION_H) output.h toplev.h \
-   $(DF_H) $(OBSTACK_H) $(TIMEVAR_H) tree-pass.h
+   $(DF_H) $(OBSTACK_H) $(TIMEVAR_H) tree-pass.h $(EXPR_H)
 gcse.o : gcse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(REGS_H) hard-reg-set.h $(FLAGS_H) $(REAL_H) insn-config.h $(GGC_H) \
    $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) $(FUNCTION_H) output.h toplev.h \
