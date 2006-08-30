@@ -1,3 +1,15 @@
+2006-08-30  Benjamin Kosnik  <bkoz@redhat.com>
+            Richard Guenther  <rguenther@suse.de>
+	
+	* config/abi/pre/gnu.ver: Spell out exact signatures for atomic
+	access functions.
+
+	* include/bits/atomicity.h (__atomic_add_dispatch): Remove
+	volatile qualification for _Atomic_word argument.
+	(__atomic_add_single): Same.
+	(__exchange_and_add_dispatch): Same.
+	(__exchange_and_add_single): Same.
+	
 2006-08-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (subtract_with_carry_01<>::_M_initialize_npows):
