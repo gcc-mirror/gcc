@@ -1,3 +1,23 @@
+2006-08-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28885
+	* gfortran.dg/aliasing_dummy_2.f90: New test.
+
+	PR fortran/20067
+	* gfortran.dg/generic_5.f90: Change error message.
+
+	PR fortran/28873
+	* gfortran.dg/generic_6.f90: New test.
+
+	PR fortran/25077
+	* gfortran.dg/redefined_intrinsic_assignment.f90: New test.
+
+	PR fortran/25102
+	* gfortran.dg/invalid_interface_assignment.f90: New test.
+
+	PR fortran/24866
+	* gfortran.dg/module_proc_external_dummy.f90: New test.
+
 2006-08-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/28349

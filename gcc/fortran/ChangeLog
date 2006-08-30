@@ -1,3 +1,34 @@
+2006-08-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28885
+	REGRESSION FIX
+	* trans-expr.c (gfc_conv_aliased_arg): Ensure that the temp
+	declaration is retained for INTENT(OUT) arguments.
+
+	PR fortran/28873
+	REGRESSION FIX
+	PR fortran/20067
+	* resolve.c (resolve_generic_f): Make error message more
+	comprehensible.
+	(resolve_generic_s): Restructure search for specific procedures
+	to be similar to resolve_generic_f and change to similar error
+	message.  Ensure that symbol reference is refreshed, in case
+	the search produces a NULL.
+	(resolve_specific_s): Restructure search, as above and as
+	resolve_specific_f. Ensure that symbol reference is refreshed,
+	in case the search produces a NULL.
+
+	PR fortran/25077
+	PR fortran/25102
+	* interface.c (check_operator_interface): Throw error if the
+	interface assignment tries to change intrinsic type assigments
+	or has less than two arguments.  Also, it is an error if an
+	interface operator contains an alternate return.
+
+	PR fortran/24866
+	* parse.c (gfc_fixup_sibling_symbols): Do not modify the symbol
+	if it is a dummy in the contained namespace.
+
 2006-08-29  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/28866

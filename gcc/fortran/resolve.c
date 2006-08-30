@@ -1181,7 +1181,7 @@ generic:
 
   if (!gfc_generic_intrinsic (expr->symtree->n.sym->name))
     {
-      gfc_error ("Generic function '%s' at %L is not an intrinsic function",
+      gfc_error ("There is no specific function for the generic '%s' at %L",
 		 expr->symtree->n.sym->name, &expr->where);
       return FAILURE;
     }
@@ -1614,31 +1614,31 @@ resolve_generic_s (gfc_code * c)
 
   sym = c->symtree->n.sym;
 
-  m = resolve_generic_s0 (c, sym);
-  if (m == MATCH_YES)
-    return SUCCESS;
-  if (m == MATCH_ERROR)
-    return FAILURE;
-
-  if (sym->ns->parent != NULL && !sym->attr.use_assoc)
+  for (;;)
     {
+      m = resolve_generic_s0 (c, sym);
+      if (m == MATCH_YES)
+	return SUCCESS;
+      else if (m == MATCH_ERROR)
+	return FAILURE;
+
+generic:
+      if (sym->ns->parent == NULL)
+	break;
       gfc_find_symbol (sym->name, sym->ns->parent, 1, &sym);
-      if (sym != NULL)
-	{
-	  m = resolve_generic_s0 (c, sym);
-	  if (m == MATCH_YES)
-	    return SUCCESS;
-	  if (m == MATCH_ERROR)
-	    return FAILURE;
-	}
+
+      if (sym == NULL)
+	break;
+      if (!generic_sym (sym))
+	goto generic;
     }
 
   /* Last ditch attempt.  */
-
+  sym = c->symtree->n.sym;
   if (!gfc_generic_intrinsic (sym->name))
     {
       gfc_error
-	("Generic subroutine '%s' at %L is not an intrinsic subroutine",
+	("There is no specific subroutine for the generic '%s' at %L",
 	 sym->name, &c->loc);
       return FAILURE;
     }
@@ -1708,23 +1708,24 @@ resolve_specific_s (gfc_code * c)
 
   sym = c->symtree->n.sym;
 
-  m = resolve_specific_s0 (c, sym);
-  if (m == MATCH_YES)
-    return SUCCESS;
-  if (m == MATCH_ERROR)
-    return FAILURE;
-
-  gfc_find_symbol (sym->name, sym->ns->parent, 1, &sym);
-
-  if (sym != NULL)
+  for (;;)
     {
       m = resolve_specific_s0 (c, sym);
       if (m == MATCH_YES)
 	return SUCCESS;
       if (m == MATCH_ERROR)
 	return FAILURE;
+
+      if (sym->ns->parent == NULL)
+	break;
+
+      gfc_find_symbol (sym->name, sym->ns->parent, 1, &sym);
+
+      if (sym == NULL)
+	break;
     }
 
+  sym = c->symtree->n.sym;
   gfc_error ("Unable to resolve the specific subroutine '%s' at %L",
 	     sym->name, &c->loc);
 
