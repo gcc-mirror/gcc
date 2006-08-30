@@ -21,7 +21,7 @@
 	(*fop_df_1_mixed): Likewise.
 	(*fop_df_1_sse): Likewise.
 
-2006-08-29  Nathan Sidwell  <nathan@codesourcery.com>
+2006-08-29  Andrew Pinski  <pinskia@physics.uc.edu>
 	    J"orn Rennecke  <joern.rennecke@st.com>
 
 	PR tree-optimization/17506
