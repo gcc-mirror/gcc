@@ -419,6 +419,55 @@ if test -n "${with_target_subdir}"; then
 
   fi
 
+  # If we are being configured for Mingw, we know which functions
+  # Mingw provides and which ones we will be expected to provide.
+
+  case "${host}" in
+  *-*-mingw*)
+    AC_LIBOBJ([asprintf])
+    AC_LIBOBJ([basename])
+    AC_LIBOBJ([bcmp])
+    AC_LIBOBJ([bcopy])
+    AC_LIBOBJ([bzero])
+    AC_LIBOBJ([clock])
+    AC_LIBOBJ([ffs])
+    AC_LIBOBJ([getpagesize])
+    AC_LIBOBJ([index])
+    AC_LIBOBJ([insque])
+    AC_LIBOBJ([mempcpy])
+    AC_LIBOBJ([mkstemps])
+    AC_LIBOBJ([random])
+    AC_LIBOBJ([rindex])
+    AC_LIBOBJ([sigsetmask])
+    AC_LIBOBJ([stpcpy])
+    AC_LIBOBJ([stpncpy])
+    AC_LIBOBJ([strndup])
+    AC_LIBOBJ([strverscmp])
+    AC_LIBOBJ([vasprintf])
+    AC_LIBOBJ([waitpid])
+
+    for f in $funcs; do
+      case "$f" in
+	asprintf | basename | bcmp | bcopy | bzero | clock | ffs | getpagesize | index | insque | mempcpy | mkstemps | random | rindex | sigsetmask | stpcpy | stpncpy | strdup | strndup | strverscmp | vasprintf | waitpid)
+	  ;;
+	*)
+	  n=HAVE_`echo $f | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+	  AC_DEFINE_UNQUOTED($n)
+	  ;;
+      esac
+    done
+
+    # Mingw doesnt provide any of the variables in $vars, so we
+    # dont have to check them here.
+
+    # Of the functions in $checkfuncs, Mingw only has strerror.
+    AC_DEFINE(HAVE_STRERROR)
+
+    setobjs=yes
+    ;;
+
+  esac
+
   # We may wish to install the target headers somewhere.
   AC_ARG_ENABLE(install-libiberty,
   [  --enable-install-libiberty       Install headers for end users],
