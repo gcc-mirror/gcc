@@ -279,7 +279,7 @@ case "${host}" in
     ;;
   i[[3456789]]86-*-mingw32*)
     # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl gnuserv"
-    noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
+    noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool newlib"
     ;;
   i[[3456789]]86-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl libgui gdb"
@@ -615,17 +615,17 @@ case "${target}" in
     # 'target-newlib' will appear in skipdirs.
     ;;
   i[[3456789]]86-*-mingw32*)
-    target_configdirs="$target_configdirs target-mingw"
-    noconfigdirs="$noconfigdirs expect target-libgloss ${libgcj}"
+    target_configdirs="$target_configdirs target-winsup"
+    noconfigdirs="$noconfigdirs expect target-libgloss target-newlib ${libgcj}"
     ;;    
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
     noconfigdirs="$noconfigdirs target-gperf target-libgloss ${libgcj}"
     # always build newlib if winsup directory is present.
-    if test -d "$srcdir/winsup"; then
+    if test -d "$srcdir/winsup/cygwin"; then
       skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
     elif test -d "$srcdir/newlib"; then
-      echo "Warning: winsup is missing so newlib can't be built."
+      echo "Warning: winsup/cygwin is missing so newlib can't be built."
     fi
     ;;    
   i[[3456789]]86-moss-msdos | i[[3456789]]86-*-moss* | \
@@ -2120,6 +2120,11 @@ case " $target_configdirs " in
    ;;
   esac
   ;;
+esac
+case "$target" in
+*-mingw*)
+  # Can't be handled as Cygwin above since Mingw does not use newlib.
+  FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/winsup/mingw -L$$r/$(TARGET_SUBDIR)/winsup/w32api/lib -isystem $$s/winsup/mingw/include -isystem $$s/winsup/w32api/include' ;;
 esac
 
 # Allow the user to override the flags for
