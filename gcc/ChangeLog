@@ -1,3 +1,13 @@
+2006-08-30  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR rtl-optimization/27735
+	* cfgloopmanip.c (fix_loop_placements, fix_bb_placements, unloop):
+	Add new argument to keep track of whether an irreducible region
+	was affected.  All callers changed.
+	(fix_irreducible_loops): Removed.
+	(remove_path): Call mark_irreducible_loops if EDGE_IRREDUCIBLE_LOOP
+	flags were invalidated.
+
 2006-08-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (*fop_df_comm_mixed): Match DF operands
