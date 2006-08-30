@@ -1,3 +1,9 @@
+2006-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/26670
+	* class.c (check_field_decls): Don't unset TYPE_PACKED until all
+	the fields have been processed.
+
 2006-08-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/28349

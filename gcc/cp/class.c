@@ -2795,6 +2795,7 @@ check_field_decls (tree t, tree *access_decls,
   tree *next;
   bool has_pointers;
   int any_default_members;
+  int cant_pack = 0;
 
   /* Assume there are no access declarations.  */
   *access_decls = NULL_TREE;
@@ -2911,7 +2912,7 @@ check_field_decls (tree t, tree *access_decls,
 		(0,
 		 "ignoring packed attribute because of unpacked non-POD field %q+#D",
 		 x);
-	      TYPE_PACKED (t) = 0;
+	      cant_pack = 1;
 	    }
 	  else if (TYPE_ALIGN (TREE_TYPE (x)) > BITS_PER_UNIT)
 	    DECL_PACKED (x) = 1;
@@ -3018,11 +3019,11 @@ check_field_decls (tree t, tree *access_decls,
 	is needed to free dynamic memory.
 
      This seems enough for practical purposes.  */
-    if (warn_ecpp
-	&& has_pointers
-	&& TYPE_HAS_CONSTRUCTOR (t)
-	&& TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
-	&& !(TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
+  if (warn_ecpp
+      && has_pointers
+      && TYPE_HAS_CONSTRUCTOR (t)
+      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
+      && !(TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
     {
       warning (OPT_Weffc__, "%q#T has pointer data members", t);
 
@@ -3038,6 +3039,9 @@ check_field_decls (tree t, tree *access_decls,
 		 "  but does not override %<operator=(const %T&)%>", t);
     }
 
+  /* If any of the fields couldn't be packed, unset TYPE_PACKED.  */
+  if (cant_pack)
+    TYPE_PACKED (t) = 0;
 
   /* Check anonymous struct/anonymous union fields.  */
   finish_struct_anon (t);
