@@ -503,7 +503,12 @@ check_operator_interface (gfc_interface * intr, gfc_intrinsic_op operator)
   for (formal = intr->sym->formal; formal; formal = formal->next)
     {
       sym = formal->sym;
-
+      if (sym == NULL)
+	{
+	  gfc_error ("Alternate return cannot appear in operator "
+		     "interface at %L", &intr->where);
+	  return;
+	}
       if (args == 0)
 	{
 	  t1 = sym->ts.type;
@@ -529,6 +534,24 @@ check_operator_interface (gfc_interface * intr, gfc_intrinsic_op operator)
 	  gfc_error
 	    ("Assignment operator interface at %L must be a SUBROUTINE",
 	     &intr->where);
+	  return;
+	}
+      if (args != 2)
+	{
+	  gfc_error
+	    ("Assignment operator interface at %L must have two arguments",
+	     &intr->where);
+	  return;
+	}
+      if (sym->formal->sym->ts.type != BT_DERIVED
+	    && sym->formal->next->sym->ts.type != BT_DERIVED
+	    && (sym->formal->sym->ts.type == sym->formal->next->sym->ts.type
+		  || (gfc_numeric_ts (&sym->formal->sym->ts)
+			&& gfc_numeric_ts (&sym->formal->next->sym->ts))))
+	{
+	  gfc_error
+	    ("Assignment operator interface at %L must not redefine "
+	     "an INTRINSIC type assignment", &intr->where);
 	  return;
 	}
     }
