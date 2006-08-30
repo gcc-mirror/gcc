@@ -1707,6 +1707,12 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
       gcc_assert (rse.ss == gfc_ss_terminator);
       gfc_trans_scalarizing_loops (&loop, &body);
     }
+  else
+    {
+      /* Make sure that the temporary declaration survives.  */
+      tmp = gfc_finish_block (&body);
+      gfc_add_expr_to_block (&loop.pre, tmp);
+    }
 
   /* Add the post block after the second loop, so that any
      freeing of allocated memory is done at the right time.  */

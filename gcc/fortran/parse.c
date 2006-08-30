@@ -2706,8 +2706,9 @@ gfc_fixup_sibling_symbols (gfc_symbol * sym, gfc_namespace * siblings)
   for (ns = siblings; ns; ns = ns->sibling)
     {
       gfc_find_sym_tree (sym->name, ns, 0, &st);
-      if (!st)
-        continue;
+
+      if (!st || (st->n.sym->attr.dummy && ns == st->n.sym->ns))
+	continue;
 
       old_sym = st->n.sym;
       if ((old_sym->attr.flavor == FL_PROCEDURE
