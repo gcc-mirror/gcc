@@ -1112,7 +1112,7 @@ gfc_match_if (gfc_statement * if_type)
   match ("write", gfc_match_write, ST_WRITE)
 
   /* The gfc_match_assignment() above may have returned a MATCH_NO
-     where the assignement was to a named constant.  Check that 
+     where the assignment was to a named constant.  Check that 
      special case here.  */
   m = gfc_match_assignment ();
   if (m == MATCH_NO)

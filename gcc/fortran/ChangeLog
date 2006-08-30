@@ -1,3 +1,7 @@
+2006-08-30  Kazu Hirata  <kazu@codesourcery.com>
+
+	* match.c: Fix a comment typo.
+
 2006-08-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28885
