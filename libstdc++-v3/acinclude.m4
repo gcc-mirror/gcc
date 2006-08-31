@@ -2007,7 +2007,7 @@ int main()
 }
 EOF
     old_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS="$CXXFLAGS -S"
+    CXXFLAGS=-S
     if AC_TRY_EVAL(ac_compile); then
       if grep __sync_fetch_and_add conftest.s >/dev/null 2>&1 ; then
         enable_atomic_builtins=no

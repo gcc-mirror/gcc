@@ -1,3 +1,11 @@
+2006-08-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/28671 continued
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Don't use
+	CXXFLAGS when checking for atomic builtins.
+	* configure: Regenerate.
+	* include/bits/atomicity.h: Revert.
+	
 2006-08-31  Richard Guenther  <rguenther@suse.de>
 
 	* include/ext/mt_allocator.h: Remove volatile qualifiers

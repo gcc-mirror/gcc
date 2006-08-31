@@ -8025,7 +8025,7 @@ int main()
 }
 EOF
     old_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS="$CXXFLAGS -S"
+    CXXFLAGS=-S
     if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?

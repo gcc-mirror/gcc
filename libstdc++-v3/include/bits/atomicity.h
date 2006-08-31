@@ -41,6 +41,15 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+#ifdef _GLIBCXX_ATOMIC_BUILTINS
+  static inline _Atomic_word 
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  { return __sync_fetch_and_add(__mem, __val); }
+
+  static inline void
+  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  { __sync_fetch_and_add(__mem, __val); }
+#else
   _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val);
@@ -48,6 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   void
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val);
+#endif
 
   static inline _Atomic_word
   __exchange_and_add_single(_Atomic_word* __mem, int __val)
