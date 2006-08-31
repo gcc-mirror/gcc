@@ -156,11 +156,12 @@ _Jv_JVMTI_RawMonitorExit (MAYBE_UNUSED jvmtiEnv *env, jrawMonitorID monitor)
 }
 
 static jvmtiError JNICALL
-_Jv_JVMTI_RawMonitorWait (MAYBE_UNUSED jvmtiEnv *env, jrawMonitorID monitor)
+_Jv_JVMTI_RawMonitorWait (MAYBE_UNUSED jvmtiEnv *env, jrawMonitorID monitor,
+			  jlong millis)
 {
   if (monitor == NULL)
     return JVMTI_ERROR_INVALID_MONITOR;
-  int r = _Jv_CondWait (&monitor->condition, &monitor->mutex, 0, 0);
+  int r = _Jv_CondWait (&monitor->condition, &monitor->mutex, millis, 0);
   if (r == _JV_NOT_OWNER)
     return JVMTI_ERROR_NOT_MONITOR_OWNER;
   if (r == _JV_INTERRUPTED)
