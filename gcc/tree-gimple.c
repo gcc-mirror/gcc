@@ -115,7 +115,9 @@ is_gimple_mem_rhs (tree t)
      to be stored in memory, since it's cheap and prevents erroneous
      tailcalls (PR 17526).  */
   if (is_gimple_reg_type (TREE_TYPE (t))
-      || TYPE_MODE (TREE_TYPE (t)) != BLKmode)
+      || (TYPE_MODE (TREE_TYPE (t)) != BLKmode
+	  && (TREE_CODE (t) != CALL_EXPR
+              || ! aggregate_value_p (t, t))))
     return is_gimple_val (t);
   else
     return is_gimple_formal_tmp_rhs (t);

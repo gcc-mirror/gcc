@@ -1,3 +1,9 @@
+2006-08-31  Josh Conner  <jconner@apple.com>
+
+	PR c++/25505
+	* tree-gimple.c (is_gimple_mem_rhs): Recognize functions
+	returning aggregates.
+
 2006-08-31  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/28839
