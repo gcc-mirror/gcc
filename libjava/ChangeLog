@@ -1,3 +1,9 @@
+2006-08-31  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/28698:
+	* libgcj_bc.c (DECLARE_PRIM_TYPE): New macro.  Declare primitive
+	classes.
+
 2006-08-24  Keith Seitz  <keiths@redhat.com>
 
 	* prims.cc (remoteDebug): New global.
