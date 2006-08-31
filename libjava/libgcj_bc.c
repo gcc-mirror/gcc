@@ -92,3 +92,19 @@ void _Jv_CreateJavaVM () {}
 void _Jv_AttachCurrentThread () {}
 void _Jv_AttachCurrentThreadAsDaemon () {}
 void _Jv_DetachCurrentThread () {}
+
+
+/* Classes for primitive types.  */
+
+#define DECLARE_PRIM_TYPE(NAME)			\
+  int _Jv_##NAME##Class;
+
+DECLARE_PRIM_TYPE(byte)
+DECLARE_PRIM_TYPE(short)
+DECLARE_PRIM_TYPE(int)
+DECLARE_PRIM_TYPE(long)
+DECLARE_PRIM_TYPE(boolean)
+DECLARE_PRIM_TYPE(char)
+DECLARE_PRIM_TYPE(float)
+DECLARE_PRIM_TYPE(double)
+DECLARE_PRIM_TYPE(void)
