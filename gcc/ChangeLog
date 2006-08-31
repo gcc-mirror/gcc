@@ -1,3 +1,13 @@
+2006-08-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR other/22313
+	* dwarf2out.c (add_fde_cfi): Use a set_loc if the current label is
+	NULL, otherwise use an advance_loc4 to adjust relative to the 
+	current label.
+	(output_cfi) <DW_CFA_set_loc>: Update the current label.
+	(dwarf2out_switch_text_section): Reset the current label to avoid
+	using advance_loc4 over section boundaries.
+
 2006-08-31  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR target/24367
