@@ -1,3 +1,9 @@
+2006-08-31  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR target/24367
+	* config/s390/s390.md ("movsi", "movdi" expander): Accept rtxes like
+	r12 + SYMBOLIC_CONST.
+
 2006-08-30  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (see.o): Add $(EXPR_H) dependency.
