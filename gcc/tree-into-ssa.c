@@ -977,6 +977,13 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
 	  if (bitmap_bit_p (uses, u))
 	    continue;
 
+	  /* In case there is a kill directly in the use block, do not record
+	     the use (this is also necessary for correctness, as we assume that
+	     uses dominated by a def directly in their block have been filtered
+	     out before).  */
+	  if (bitmap_bit_p (kills, u))
+	    continue;
+
 	  bitmap_set_bit (uses, u);
 	  VEC_safe_push (int, heap, worklist, u);
 	}

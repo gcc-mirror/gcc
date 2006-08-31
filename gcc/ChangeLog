@@ -1,3 +1,9 @@
+2006-08-31  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/28839
+	* tree-into-ssa.c (prune_unused_phi_nodes): Take into account kills in
+	blocks in that phi arguments appear.
+
 2006-08-31  Roger Sayle  <roger@eyesopen.com>
 
 	PR other/22313
