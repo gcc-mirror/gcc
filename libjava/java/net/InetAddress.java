@@ -536,7 +536,20 @@ public class InetAddress implements Serializable
       return new Inet4Address(addr, host);
 
     if (addr.length == 16)
-      return new Inet6Address(addr, host);
+      {
+	for (int i = 0; i < 12; i++)
+	  {
+	    if (addr[i] != (i < 10 ? 0 : (byte) 0xFF))
+	      return new Inet6Address(addr, host);
+	  }
+	  
+	byte[] ip4addr = new byte[4];
+	ip4addr[0] = addr[12];
+	ip4addr[1] = addr[13];
+	ip4addr[2] = addr[14];
+	ip4addr[3] = addr[15];
+	return new Inet4Address(ip4addr, host);
+      }
 
     throw new UnknownHostException("IP address has illegal length");
   }
@@ -599,25 +612,7 @@ public class InetAddress implements Serializable
     // Assume that the host string is an IP address
     byte[] address = aton(hostname);
     if (address != null)
-      {
-        if (address.length == 4)
-          return new Inet4Address (address, null);
-        else if (address.length == 16)
-          {
-	    if ((address [10] == 0xFF) && (address [11] == 0xFF))
-	      {
-		byte[] ip4addr = new byte [4];
-		ip4addr [0] = address [12];
-		ip4addr [1] = address [13];
-		ip4addr [2] = address [14];
-		ip4addr [3] = address [15];
-		return new Inet4Address (ip4addr, null);
-	      }
-            return new Inet6Address (address, null);
-	  }
-	else
-          throw new UnknownHostException ("Address has invalid length");
-      }
+      return getByAddress(address);
 
     // Perform security check before resolving
     SecurityManager s = System.getSecurityManager();
@@ -658,11 +653,7 @@ public class InetAddress implements Serializable
     // Check if hostname is an IP address
     byte[] address = aton (hostname);
     if (address != null)
-      {
-	InetAddress[] result = new InetAddress [1];
-	result [0] = new InetAddress (address, null);
-	return result;
-      }
+      return new InetAddress[] {getByAddress(address)};
 
     // Perform security check before resolving
     SecurityManager s = System.getSecurityManager();
