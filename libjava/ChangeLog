@@ -1,5 +1,11 @@
 2006-09-01  Gary Benson  <gbenson@redhat.com>
 
+	* java/net/InetAddress.java (getLocalHost): Refactor to avoid
+	security check if getLocalHostname() fails and to provide more
+	meaningful exceptions it the security check fails.
+
+2006-09-01  Gary Benson  <gbenson@redhat.com>
+
 	* java/net/InetAddress.java (getByAddress): Create Inet4Address
 	objects when passed IPv4-mapped IPv6 addresses.
 	(getByName, getAllByName): Defer to the above to ensure that the

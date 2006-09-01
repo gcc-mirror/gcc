@@ -706,7 +706,10 @@ public class InetAddress implements Serializable
     
     String hostname = getLocalHostname();
     
-    if (s != null)
+    if (hostname == null || hostname.length() == 0)
+      throw new UnknownHostException();
+
+    try
       {
 	// "The Java Class Libraries" suggests that if the security
 	// manager disallows getting the local host name, then
@@ -714,37 +717,22 @@ public class InetAddress implements Serializable
 	// However, the JDK 1.2 API claims to throw SecurityException,
 	// which seems to suggest SecurityException is *not* caught.
 	// In this case, experimentation shows that former is correct.
-	try
+	if (s != null)
 	  {
 	    // This is wrong, if the name returned from getLocalHostname()
 	    // is not a fully qualified name.  FIXME.
 	    s.checkConnect (hostname, -1);
 	  }
-	catch (SecurityException ex)
-	  {
-	    hostname = null;
-	  }
+
+	localhost = new InetAddress (null, null);
+	lookup (hostname, localhost, false);
       }
-    
-    if (hostname != null && hostname.length() != 0)
+    catch (Exception ex)
       {
-	try
-	  {
-	    localhost = new InetAddress (null, null);
-	    lookup (hostname, localhost, false);
-	  }
-	catch (Exception ex)
-	  {
-	    UnknownHostException failure = new UnknownHostException(hostname);
-	    failure.initCause(ex);
-	    throw failure;
-	  }
+	UnknownHostException failure = new UnknownHostException(hostname);
+	failure.initCause(ex);
+	throw failure;
       }
-    else
-      throw new UnknownHostException();
-    
-    if (localhost == null)
-      localhost = new InetAddress (loopbackAddress, "localhost");
   }
 
   /**
