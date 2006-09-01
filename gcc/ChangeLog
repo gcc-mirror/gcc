@@ -1,3 +1,10 @@
+2006-09-01  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	PR middle-end/28814
+	* fold-const.c (fold_binary): Fold temporary to correct
+	type before constructing new comparison.
+
 2006-09-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR other/22313

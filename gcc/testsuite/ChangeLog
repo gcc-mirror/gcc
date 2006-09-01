@@ -1,3 +1,9 @@
+2006-09-01  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	PR middle-end/28814
+	* gcc.dg/torture/pr28814.c: New testcase.
+
 2006-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/28683
