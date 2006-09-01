@@ -1,5 +1,10 @@
 2006-09-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/28705
+	* semantics.c (finish_call_expr): Add assert.
+	* name-lookup.c (lookup_arg_dependent): Check we found an overload
+	or an object.
+
 	PR c++/23287
 	* parser.c (cp_parser_id_expression): Add member_p
 	argument. Update all callers.
