@@ -22,6 +22,7 @@ details.  */
 #include <gnu/gcj/runtime/BootClassLoader.h>
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
+#include <java/lang/Object.h>
 #include <java/lang/Thread.h>
 #include <java/lang/Throwable.h>
 #include <java/lang/VMClassLoader.h>
@@ -38,6 +39,20 @@ struct _Jv_rawMonitorID
   _Jv_Mutex_t mutex;
   _Jv_ConditionVariable_t condition;
 };
+
+/* A simple linked list of all JVMTI environments. Since
+   events must be delivered to environments in the order
+   in which the environments were created, new environments
+   are added to the end of the list. */
+struct jvmti_env_list
+{
+  jvmtiEnv *env;
+  struct jvmti_env_list *next;
+};
+static struct jvmti_env_list *_jvmtiEnvironments = NULL;
+static java::lang::Object *_envListLock = NULL;
+#define FOREACH_ENVIRONMENT(Ele) \
+  for (Ele = _jvmtiEnvironments; Ele != NULL; Ele = Ele->next)
 
 // Some commonly-used checks
 
@@ -57,6 +72,9 @@ struct _Jv_rawMonitorID
 
 #define NULL_CHECK(Ptr)					\
   if (Ptr == NULL) return JVMTI_ERROR_NULL_POINTER;
+
+#define ILLEGAL_ARGUMENT(Cond)				\
+  if ((Cond)) return JVMTI_ERROR_ILLEGAL_ARGUMENT
 
 static jvmtiError JNICALL
 _Jv_JVMTI_SuspendThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
@@ -195,8 +213,7 @@ static jvmtiError JNICALL
 _Jv_JVMTI_Allocate (MAYBE_UNUSED jvmtiEnv *env, jlong size,
 		    unsigned char **result)
 {
-  if (size < 0)
-    return JVMTI_ERROR_ILLEGAL_ARGUMENT;
+  ILLEGAL_ARGUMENT (size < 0);
   NULL_CHECK (result);
   if (size == 0)
     *result = NULL;
@@ -437,7 +454,32 @@ _Jv_JVMTI_GetJNIFunctionTable (MAYBE_UNUSED jvmtiEnv *env,
 static jvmtiError JNICALL
 _Jv_JVMTI_DisposeEnvironment (jvmtiEnv *env)
 {
-  // All we need to do is free memory allocated by _Jv_GetJVMTIEnv
+  NULL_CHECK (env);
+
+  if (_jvmtiEnvironments == NULL)
+    return JVMTI_ERROR_INVALID_ENVIRONMENT;
+  else
+    {
+      JvSynchronize dummy (_envListLock);
+      if (_jvmtiEnvironments->env == env)
+	{
+	  _Jv_Free (_jvmtiEnvironments);
+	  _jvmtiEnvironments = _jvmtiEnvironments->next;
+	}
+      else
+	{
+	  struct jvmti_env_list *e = _jvmtiEnvironments; 
+	  while (e->next != NULL && e->next->env != env)
+	    e = e->next;
+	  if (e->next == NULL)
+	    return JVMTI_ERROR_INVALID_ENVIRONMENT;
+
+	  struct jvmti_env_list *next = e->next->next;
+	  _Jv_Free (e->next);
+	  e->next = next;
+	}
+    }
+
   _Jv_Free (env);
   return JVMTI_ERROR_NONE;
 }
@@ -750,5 +792,31 @@ _Jv_GetJVMTIEnv (void)
   _Jv_JVMTIEnv *env
     = (_Jv_JVMTIEnv *) _Jv_MallocUnchecked (sizeof (_Jv_JVMTIEnv));
   env->p = &_Jv_JVMTI_Interface;
+
+  {
+    JvSynchronize dummy (_envListLock);
+    struct jvmti_env_list *element
+      = (struct jvmti_env_list *) _Jv_MallocUnchecked (sizeof (struct jvmti_env_list));
+    element->env = env;
+    element->next = NULL;
+
+    if (_jvmtiEnvironments == NULL)
+      _jvmtiEnvironments = element;
+    else
+      {
+	struct jvmti_env_list *e;
+	for (e = _jvmtiEnvironments; e->next != NULL; e = e->next)
+	  ;
+	e->next = element;
+      }
+  }
+
   return env;
+}
+
+void
+_Jv_JVMTI_Init ()
+{
+  _jvmtiEnvironments = NULL;
+  _envListLock = new java::lang::Object ();
 }

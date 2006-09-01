@@ -1,3 +1,22 @@
+2006-09-01  Keith Seitz  <keiths@redhat.com>
+
+	* include/jvm.h (_Jv_JVMTI_Init): Declare.
+	* jvmti.cc (_Jv_JVMTI_Init): New function.
+	* prims.cc (_Jv_CreateJavaVM): Initialize JVMTI.
+
+	* jvmti.cc (ILLEGAL_ARGUMENT): New macro.
+	(_Jv_JVMTI_Allocate): Use ILLEGAL_ARUMENT.
+
+	* jvmti.cc (_jvmtiEnvironments): New linked list of
+	JVMTI environments.
+	(FOREACH_ENVIRONMENT): New macro.
+	(_envListLock): New object to act as synchronization lock
+	for _jvmtiEnvironments.
+	(_Jv_JVMTI_DisposeEnvironment): Check for NULL environment.
+	Remove the environment from the list of known environments.
+	(_Jv_GetJVMTIEnv): Add the new environment to the list
+	of known environments.
+
 2006-09-01  Gary Benson  <gbenson@redhat.com>
 
 	* java/net/InetAddress.java (getLocalHost): Refactor to avoid
