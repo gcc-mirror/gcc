@@ -1484,6 +1484,7 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   _Jv_platform_initialize ();
 
   _Jv_JNI_Init ();
+  _Jv_JVMTI_Init ();
 
   _Jv_GCInitializeFinalizers (&::gnu::gcj::runtime::FinalizerThread::finalizerReady);
 
