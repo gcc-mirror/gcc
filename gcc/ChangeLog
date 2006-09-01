@@ -1,3 +1,12 @@
+2006-09-01  J"orn Rennecke  <joern.rennecke@st.com>
+	Richard Guenther  <rguenther@suse.de>
+	Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR middle-end/27226
+	* builtins.c (get_pointer_alignment): Handle more forms
+	of base addresses that can be used to derive more precise
+	information about alignment.
+
 2006-09-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28899
