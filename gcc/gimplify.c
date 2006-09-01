@@ -955,9 +955,9 @@ gimple_build_eh_filter (tree body, tree allowed, tree failure)
 tree
 voidify_wrapper_expr (tree wrapper, tree temp)
 {
-  if (!VOID_TYPE_P (TREE_TYPE (wrapper)))
+  tree type = TREE_TYPE (wrapper);
+  if (type && !VOID_TYPE_P (type))
     {
-      tree type = TREE_TYPE (wrapper);
       tree *p;
 
       /* Set p to point to the body of the wrapper.  Loop until we find
@@ -3415,10 +3415,23 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
       case STATEMENT_LIST:
 	{
 	  tree wrap = *from_p;
-	  tree t = voidify_wrapper_expr (wrap, *expr_p);
+	  tree t;
+
+	  ret = gimplify_expr (to_p, pre_p, post_p,
+			       is_gimple_min_lval, fb_lvalue);
+	  if (ret != GS_ERROR)
+	    ret = GS_OK;
+
+	  t = voidify_wrapper_expr (wrap, *expr_p);
 	  gcc_assert (t == *expr_p);
 
-	  *expr_p = wrap;
+	  if (want_value)
+	    {
+	      gimplify_and_add (wrap, pre_p);
+	      *expr_p = unshare_expr (*to_p);
+	    }
+	  else
+	    *expr_p = wrap;
 	  return GS_OK;
 	}
 	

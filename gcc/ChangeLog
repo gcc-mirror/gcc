@@ -1,3 +1,11 @@
+2006-09-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28899
+	* gimplify.c (gimplify_modify_expr_rhs) [BIND_EXPR]: Handle
+	want_value.
+
+	* gimplify.c (voidify_wrapper_expr): Handle null type.
+
 2006-09-01  Josh Conner  <jconner@apple.com>
 
 	PR c++/25505
