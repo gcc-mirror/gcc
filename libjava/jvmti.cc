@@ -56,25 +56,49 @@ static java::lang::Object *_envListLock = NULL;
 
 // Some commonly-used checks
 
-#define THREAD_DEFAULT_TO_CURRENT(jthread)				\
-  if (jthread == NULL) jthread = java::lang::Thread::currentThread ();
+#define THREAD_DEFAULT_TO_CURRENT(jthread)		\
+  do							\
+    {							\
+      if (jthread == NULL)				\
+	jthread = java::lang::Thread::currentThread ();	\
+    }							\
+  while (0)
 
 #define THREAD_CHECK_VALID(jthread)					\
-  if (!java::lang::Thread::class$.isAssignableFrom (&(jthread->class$))) \
-    return JVMTI_ERROR_INVALID_THREAD;
+  do									\
+    {									\
+      if (!java::lang::Thread::class$.isAssignableFrom (&(jthread->class$))) \
+	return JVMTI_ERROR_INVALID_THREAD;				\
+    }									\
+  while (0)
 
-#define THREAD_CHECK_IS_ALIVE(thread)				\
-  if (!thread->isAlive ()) return JVMTI_ERROR_THREAD_NOT_ALIVE;
+#define THREAD_CHECK_IS_ALIVE(thread)	     \
+  do					     \
+    {					     \
+      if (!thread->isAlive ())		     \
+	return JVMTI_ERROR_THREAD_NOT_ALIVE; \
+    }					     \
+  while (0)
 
 // FIXME: if current phase is not set in Phases,
 // return JVMTI_ERROR_WRONG_PHASE
 #define REQUIRE_PHASE(Env, Phases)
 
-#define NULL_CHECK(Ptr)					\
-  if (Ptr == NULL) return JVMTI_ERROR_NULL_POINTER;
+#define NULL_CHECK(Ptr)				\
+  do						\
+    {						\
+      if (Ptr == NULL)				\
+	return JVMTI_ERROR_NULL_POINTER;	\
+    }						\
+  while (0)
 
-#define ILLEGAL_ARGUMENT(Cond)				\
-  if ((Cond)) return JVMTI_ERROR_ILLEGAL_ARGUMENT
+#define ILLEGAL_ARGUMENT(Cond)			\
+  do						\
+    {						\
+      if ((Cond))				\
+	return JVMTI_ERROR_ILLEGAL_ARGUMENT;	\
+    }						\
+  while (0)
 
 static jvmtiError JNICALL
 _Jv_JVMTI_SuspendThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)

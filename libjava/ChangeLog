@@ -1,5 +1,13 @@
 2006-09-01  Keith Seitz  <keiths@redhat.com>
 
+	* jvmti.cc (THREAD_DEFAULT_TO_CURRENT): Encapsulate in do..while loop.
+	(THREAD_CHECK_VALID): Likewise.
+	(THREAD_CHECK_IS_ALIVE): Likewise.
+	(NULL_CHECK): Likewise.
+	(ILLEGAL_ARGUMENT): Likewise.
+
+2006-09-01  Keith Seitz  <keiths@redhat.com>
+
 	* include/jvm.h (_Jv_JVMTI_Init): Declare.
 	* jvmti.cc (_Jv_JVMTI_Init): New function.
 	* prims.cc (_Jv_CreateJavaVM): Initialize JVMTI.
