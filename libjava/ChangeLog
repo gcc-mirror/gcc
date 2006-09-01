@@ -1,3 +1,8 @@
+2006-09-01  Gary Benson  <gbenson@redhat.com>
+
+	* java/net/InetAddress.java (getByName, getAllByName):
+	Only perform security check when DNS lookups are required.
+
 2006-08-31  Keith Seitz  <keiths@redhat.com>
 
 	* include/jvmti_md.h: New file.
