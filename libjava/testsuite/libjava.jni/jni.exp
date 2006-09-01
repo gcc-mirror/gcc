@@ -257,8 +257,9 @@ proc gcj_jni_invocation_test_one {file} {
   # find the libgcc used by libffi.dylib.  We could pass the
   # -dylib_file option, but that's complicated, and it's much easier
   # to just make the linker find libgcc using -L options.
+  # Similar logic applies to libgcj.
   if { [istarget "*-*-darwin*"] } {
-      set cxxflags "-L../.libs -shared-libgcc -ljvm -liconv"
+      set cxxflags "-L../.libs -shared-libgcc -ljvm -lgcj -liconv"
   } else {
       global LIBJAVA
       if [info exists LIBJAVA] {
