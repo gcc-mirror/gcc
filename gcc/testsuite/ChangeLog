@@ -1,9 +1,15 @@
+2006-09-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/28705
+	* g++.dg/lookup/koenig5.C: New.
+	* g++.dg/template/crash56.C: New.
+
 2006-09-01  Josh Conner  <jconner@apple.com>
 
 	PR c++/25505
-	gcc.dg/nrv3.c: New test.
-	gcc.dg/nrv4.c: New test.
-	gcc.dg/nrv5.c: New test.
+	* gcc.dg/nrv3.c: New test.
+	* gcc.dg/nrv4.c: New test.
+	* gcc.dg/nrv5.c: New test.
 
 2006-09-01  Nathan Sidwell  <nathan@codesourcery.com>
 
