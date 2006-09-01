@@ -9200,6 +9200,14 @@ tsubst_copy_and_build (tree t,
 	  member = tsubst_baselink (member,
 				    non_reference (TREE_TYPE (object)),
 				    args, complain, in_decl);
+	else if (TREE_CODE (member) == BIT_NOT_EXPR
+		 && !TYPE_P (TREE_OPERAND (member, 0)))
+	  {
+	    tree id = TREE_OPERAND (member, 0);
+	    id = make_typename_type (object_type, id, typename_type, complain);
+	    gcc_assert (TREE_CODE (id) != TYPENAME_TYPE);
+	    member = build_nt (BIT_NOT_EXPR, id);
+	  }
 	else
 	  member = tsubst_copy (member, args, complain, in_decl);
 	if (member == error_mark_node)

@@ -1,3 +1,15 @@
+2006-09-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23287
+	* parser.c (cp_parser_id_expression): Add member_p
+	argument. Update all callers.
+	(cp_parser_unqualified_id): Likewise.  Lookup a destructor name in
+	the object's scope, if valid.
+	(cp_parser_global_scope_opt): Add object_scope_valid_p.  Update
+	callers.
+	(cp_parser_postfix_dot_deref_expression): Set object_scope.
+	* pt.c (tsubst_copy_and_build): Lookup dependent dtor name here.
+
 2006-08-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/26670

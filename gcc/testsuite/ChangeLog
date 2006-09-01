@@ -1,3 +1,8 @@
+2006-09-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23287
+	* g++.dg/parse/dtor12.C: New.
+
 2006-08-31  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/28839
