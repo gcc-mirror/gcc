@@ -1,5 +1,12 @@
 2006-09-01  Gary Benson  <gbenson@redhat.com>
 
+	* java/net/InetAddress.java (getByAddress): Create Inet4Address
+	objects when passed IPv4-mapped IPv6 addresses.
+	(getByName, getAllByName): Defer to the above to ensure that the
+	correct Inet*Address objects are returned.
+
+2006-09-01  Gary Benson  <gbenson@redhat.com>
+
 	* java/net/InetAddress.java (getByName, getAllByName):
 	Only perform security check when DNS lookups are required.
 
