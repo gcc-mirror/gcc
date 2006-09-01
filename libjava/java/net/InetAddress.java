@@ -592,13 +592,9 @@ public class InetAddress implements Serializable
     throws UnknownHostException
   {
     // If null or the empty string is supplied, the loopback address
-    // is returned. Note that this is permitted without a security check.
+    // is returned.
     if (hostname == null || hostname.length() == 0)
       return loopback;
-
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkConnect(hostname, -1);
 
     // Assume that the host string is an IP address
     byte[] address = aton(hostname);
@@ -622,6 +618,11 @@ public class InetAddress implements Serializable
 	else
           throw new UnknownHostException ("Address has invalid length");
       }
+
+    // Perform security check before resolving
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkConnect(hostname, -1);
 
     // Try to resolve the host by DNS
     InetAddress result = new InetAddress(null, null);
@@ -650,13 +651,9 @@ public class InetAddress implements Serializable
     throws UnknownHostException
   {
     // If null or the empty string is supplied, the loopback address
-    // is returned. Note that this is permitted without a security check.
+    // is returned.
     if (hostname == null || hostname.length() == 0)
       return new InetAddress[] {loopback};
-
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkConnect(hostname, -1);
 
     // Check if hostname is an IP address
     byte[] address = aton (hostname);
@@ -666,6 +663,11 @@ public class InetAddress implements Serializable
 	result [0] = new InetAddress (address, null);
 	return result;
       }
+
+    // Perform security check before resolving
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkConnect(hostname, -1);
 
     // Try to resolve the hostname by DNS
     return lookup (hostname, null, true);
