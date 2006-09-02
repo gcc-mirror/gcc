@@ -1,3 +1,19 @@
+2006-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/27567
+	* builtins.c (fold_builtin_memcpy, fold_builtin_memmove): Remove.
+	(fold_builtin_mempcpy): Rename to...
+	(fold_builtin_memory_op): ... this.  Optimize one element copy
+	into an assignment.
+	(fold_builtin_memset, fold_builtin_bzero, fold_builtin_bcopy): New
+	functions.
+	(expand_builtin_strcpy, expand_builtin_strncpy): Handle COMPOUND_EXPR.
+	(expand_builtin_memcpy, expand_builtin_mempcpy,
+	expand_builtin_memmove): Likewise.  Use fold_builtin_memory_op.
+	(fold_builtin_1): Handle BUILT_IN_MEMSET, BUILT_IN_BZERO and
+	BUILT_IN_BCOPY.  Use fold_builtin_memory_op for
+	BUILT_IN_MEM{CPY,PCPY,MOVE}.
+
 2006-09-01  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/cond.md (cbranch<mode>4): Defer splitting until after reload.
