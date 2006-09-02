@@ -40,13 +40,12 @@ Boston, MA 02110-1301, USA.  */
 
 static char *extract_string (char **);
 static const char *get_base_filename (const char *);
-static void open_repo_file (const char *);
+static FILE *open_repo_file (const char *);
 static char *afgets (FILE *);
-static void reopen_repo_file_for_write (void);
+static FILE *reopen_repo_file_for_write (void);
 
 static GTY(()) tree pending_repo;
 static char *repo_name;
-static FILE *repo_file;
 
 static const char *old_args, *old_dir, *old_main;
 
@@ -118,14 +117,14 @@ get_base_filename (const char *filename)
   return lbasename (filename);
 }
 
-static void
+static FILE *
 open_repo_file (const char *filename)
 {
   const char *p;
   const char *s = get_base_filename (filename);
 
   if (s == NULL)
-    return;
+    return NULL;
 
   p = lbasename (s);
   p = strrchr (p, '.');
@@ -136,7 +135,7 @@ open_repo_file (const char *filename)
   memcpy (repo_name, s, p - s);
   memcpy (repo_name + (p - s), ".rpo", 5);
 
-  repo_file = fopen (repo_name, "r");
+  return fopen (repo_name, "r");
 }
 
 static char *
@@ -155,6 +154,7 @@ void
 init_repo (void)
 {
   char *buf;
+  FILE *repo_file;
 
   if (! flag_use_repository)
     return;
@@ -167,7 +167,7 @@ init_repo (void)
   if (!temporary_obstack_initialized_p)
     gcc_obstack_init (&temporary_obstack);
 
-  open_repo_file (main_input_filename);
+  repo_file = open_repo_file (main_input_filename);
 
   if (repo_file == 0)
     return;
@@ -205,16 +205,18 @@ init_repo (void)
   fclose (repo_file);
 }
 
-static void
+static FILE *
 reopen_repo_file_for_write (void)
 {
-  repo_file = fopen (repo_name, "w");
+  FILE *repo_file = fopen (repo_name, "w");
 
   if (repo_file == 0)
     {
       error ("can't create repository information file %qs", repo_name);
       flag_use_repository = 0;
     }
+
+  return repo_file;
 }
 
 /* Emit any pending repos.  */
@@ -224,14 +226,15 @@ finish_repo (void)
 {
   tree t;
   char *dir, *args;
+  FILE *repo_file;
 
   if (!flag_use_repository)
     return;
 
   if (errorcount || sorrycount)
-    goto out;
+    return;
 
-  reopen_repo_file_for_write ();
+  repo_file = reopen_repo_file_for_write ();
   if (repo_file == 0)
     goto out;
 

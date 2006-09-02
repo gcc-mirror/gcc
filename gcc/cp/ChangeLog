@@ -1,3 +1,13 @@
+2006-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/26917
+	* repo.c (repo_file): Remove.
+	(open_repo_file, reopen_repo_file_for_write): Return fopened
+	FILE * instead of setting global repo_file variable.
+	(init_repo): Adjust caller.
+	(finish_repo): Likewise.  Return instead of goto out before
+	reopen_repo_file_for_write has been called.
+
 2006-09-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/28705
