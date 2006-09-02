@@ -1,3 +1,11 @@
+2006-09-02  Geoffrey Keating  <geoffk@apple.com>
+
+	Revert this change:
+	2006-03-17  Alexandre Oliva  <aoliva@redhat.com>
+	* dwarf2out.c (dwarf2out_stack_adjust): Always track the stack
+	pointer, instead of assuming it is possible to derive the
+	correct args size from a call insn.
+
 2006-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/27567
