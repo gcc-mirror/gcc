@@ -1,5 +1,9 @@
 2006-09-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/28878
+	* except.c (build_throw): Only set current_function_returns_abnormally
+	if cfun is not NULL.
+
 	PR c++/26917
 	* repo.c (repo_file): Remove.
 	(open_repo_file, reopen_repo_file_for_write): Return fopened
