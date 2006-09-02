@@ -46,6 +46,7 @@ void m32c_register_pragmas (void);
 int  m32c_regno_ok_for_base_p (int);
 int  m32c_trampoline_alignment (void);
 int  m32c_trampoline_size (void);
+void m32c_unpend_compare (void);
 
 #if defined(RTX_CODE) && defined(TREE_CODE)
 
@@ -68,6 +69,7 @@ int  m32c_expand_movmemhi (rtx *);
 int  m32c_expand_movstr (rtx *);
 void m32c_expand_neg_mulpsi3 (rtx *);
 int  m32c_expand_setmemhi (rtx *);
+void m32c_expand_scc (int, rtx *);
 int  m32c_extra_constraint_p (rtx, char, const char *);
 int  m32c_extra_constraint_p2 (rtx, char, const char *);
 int  m32c_hard_regno_nregs (int, MM);
@@ -86,6 +88,7 @@ int  m32c_mode_dependent_address (rtx);
 int  m32c_modes_tieable_p (MM, MM);
 bool m32c_mov_ok (rtx *, MM);
 char * m32c_output_compare (rtx, rtx *);
+void m32c_pend_compare (rtx *);
 int  m32c_preferred_output_reload_class (rtx, int);
 int  m32c_preferred_reload_class (rtx, int);
 int  m32c_prepare_move (rtx *, MM);

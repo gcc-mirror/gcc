@@ -22,6 +22,20 @@
 
 ; conditionals - cmp, jcc, setcc, etc.
 
+; Special note about conditional instructions: GCC always emits the
+; compare right before the insn, which is good, because m32c's mov
+; insns modify the flags.  However, this means that any conditional
+; insn that may require reloading must be kept with its compare until
+; after reload finishes, else the reload insns might clobber the
+; flags.  Thus, these rules:
+;
+; * the cmp* expanders just save the operands in compare_op0 and
+;   compare_op1 via m32c_pend_compare.
+; * conditional insns that won't need reload can call
+;   m32c_unpend_compare before their expansion.
+; * other insns must expand to include the compare operands within,
+;   then split after reload to a separate compare and conditional.
+
 ; Until support for relaxing is supported in gas, we must assume that
 ; short labels won't reach, so we must use long labels.
 ; Unfortunately, there aren't any conditional jumps with long labels,
@@ -41,7 +55,7 @@
 	      (pc)))]
   ""
   "#"
-  ""
+  "reload_completed"
   [(set (reg:CC FLG_REGNO)
 	(compare (match_dup 1)
 		 (match_dup 2)))
@@ -56,7 +70,7 @@
 	(if_then_else:QI (eq (reg:CC FLG_REGNO) (const_int 0))
 			 (match_operand:QI 1 "const_int_operand" "i,i,0")
 			 (match_operand:QI 2 "const_int_operand" "i,0,i")))]
-  "TARGET_A16"
+  "TARGET_A16 && reload_completed"
   "@
    stzx\t%1,%2,%0
    stz\t%1,%0
@@ -69,30 +83,30 @@
 	(if_then_else:QHI (eq (reg:CC FLG_REGNO) (const_int 0))
 			 (match_operand:QHI 1 "const_int_operand" "i,i,0")
 			 (match_operand:QHI 2 "const_int_operand" "i,0,i")))]
-  "TARGET_A24"
+  "TARGET_A24 && reload_completed"
   "@
    stzx.<bwl>\t%1,%2,%0
    stz.<bwl>\t%1,%0
    stnz.<bwl>\t%2,%0"
   [(set_attr "flags" "n,n,n")])
 
-(define_insn_and_split "stzx_reversed"
-  [(set (match_operand 0 "m32c_r0_operand" "")
-	(if_then_else (ne (reg:CC FLG_REGNO) (const_int 0))
-			 (match_operand 1 "const_int_operand" "")
-			 (match_operand 2 "const_int_operand" "")))]
-  "TARGET_A24 || GET_MODE (operands[0]) == QImode"
+(define_insn_and_split "stzx_reversed_<mode>"
+  [(set (match_operand:QHI 0 "m32c_r0_operand" "")
+	(if_then_else:QHI (ne (reg:CC FLG_REGNO) (const_int 0))
+			 (match_operand:QHI 1 "const_int_operand" "")
+			 (match_operand:QHI 2 "const_int_operand" "")))]
+  "(TARGET_A24 || GET_MODE (operands[0]) == QImode) && reload_completed"
   "#"
   ""
   [(set (match_dup 0)
-	(if_then_else (eq (reg:CC FLG_REGNO) (const_int 0))
+	(if_then_else:QHI (eq (reg:CC FLG_REGNO) (const_int 0))
 		      (match_dup 2)
 		      (match_dup 1)))]
   ""
   )
 
 
-(define_insn "cmp<mode>"
+(define_insn "cmp<mode>_op"
   [(set (reg:CC FLG_REGNO)
 	(compare (match_operand:QHPSI 0 "mra_operand" "RraSd")
 		 (match_operand:QHPSI 1 "mrai_operand" "RraSdi")))]
@@ -100,7 +114,14 @@
   "* return m32c_output_compare(insn, operands); "
   [(set_attr "flags" "oszc")])
 
-(define_insn "b<code>"
+(define_expand "cmp<mode>"
+  [(set (reg:CC FLG_REGNO)
+	(compare (match_operand:QHPSI 0 "mra_operand" "RraSd")
+		 (match_operand:QHPSI 1 "mrai_operand" "RraSdi")))]
+  ""
+  "m32c_pend_compare (operands); DONE;")
+
+(define_insn "b<code>_op"
   [(set (pc)
         (if_then_else (any_cond (reg:CC FLG_REGNO)
 				(const_int 0))
@@ -111,22 +132,130 @@
   [(set_attr "flags" "n")]
 )
 
+(define_expand "b<code>"
+  [(set (pc)
+        (if_then_else (any_cond (reg:CC FLG_REGNO)
+				(const_int 0))
+                      (label_ref (match_operand 0 ""))
+                      (pc)))]
+  ""
+  "m32c_unpend_compare ();"
+)
+
 ;; m32c_conditional_register_usage changes the setcc_gen_code array to
 ;; point to the _24 variants if needed.
 
-(define_insn "s<code>"
+;; We need to keep the compare and conditional sets together through
+;; reload, because reload might need to add address reloads to the
+;; set, which would clobber the flags.  By keeping them together, the
+;; reloads get put before the compare, thus preserving the flags.
+
+;; These are the post-split patterns for the conditional sets.
+
+(define_insn "s<code>_op"
   [(set (match_operand:QI 0 "register_operand" "=Rqi")
 	(any_cond:QI (reg:CC FLG_REGNO) (const_int 0)))]
-  "TARGET_A16"
+  "TARGET_A16 && reload_completed"
   "* return m32c_scc_pattern(operands, <CODE>);")
 
-(define_insn "s<code>_24"
+(define_insn "s<code>_24_op"
   [(set (match_operand:HI 0 "mra_operand" "=RhiSd")
 	(any_cond:HI (reg:CC FLG_REGNO) (const_int 0)))]
-  "TARGET_A24"
+  "TARGET_A24 && reload_completed"
   "sc<code>\t%0"
   [(set_attr "flags" "n")]
 )
+
+;; These are the pre-split patterns for the conditional sets.  Yes,
+;; there are a lot of permutations.
+
+(define_insn_and_split "s<code>_<mode>"
+  [(set (match_operand:QI 0 "register_operand" "=Rqi")
+	(any_cond:QI (match_operand:QHPSI 1 "mra_operand" "RraSd")
+		     (match_operand:QHPSI 2 "mrai_operand" "RraSdi")))]
+  "TARGET_A16"
+  "#"
+  "reload_completed"
+  [(set (reg:CC FLG_REGNO)
+	(compare (match_dup 1)
+		 (match_dup 2)))
+   (set (match_dup 0)
+	(any_cond:QI (reg:CC FLG_REGNO) (const_int 0)))]
+  ""
+  [(set_attr "flags" "x")]
+)
+
+(define_insn_and_split "s<code>_<mode>_24"
+  [(set (match_operand:HI 0 "mra_nopp_operand" "=RhiSd")
+	(any_cond:HI (match_operand:QHPSI 1 "mra_operand" "RraSd")
+		     (match_operand:QHPSI 2 "mrai_operand" "RraSdi")))]
+  "TARGET_A24"
+  "#"
+  "reload_completed"
+  [(set (reg:CC FLG_REGNO)
+	(compare (match_dup 1)
+		 (match_dup 2)))
+   (set (match_dup 0)
+	(any_cond:HI (reg:CC FLG_REGNO) (const_int 0)))]
+  ""
+  [(set_attr "flags" "x")]
+)
+
+(define_insn_and_split "movqicc_<code>_<mode>"
+  [(set (match_operand:QI 0 "register_operand" "")
+        (if_then_else:QI (eqne_cond:QI (match_operand:QHPSI 1 "mra_operand" "RraSd")
+				       (match_operand:QHPSI 2 "mrai_operand" "RraSdi"))
+			  (match_operand:QI 3 "const_int_operand" "")
+			  (match_operand:QI 4 "const_int_operand" "")))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (reg:CC FLG_REGNO)
+	(compare (match_dup 1)
+		 (match_dup 2)))
+   (set (match_dup 0)
+        (if_then_else:QI (eqne_cond:QI (reg:CC FLG_REGNO) (const_int 0))
+			 (match_dup 3)
+			 (match_dup 4)))]
+  ""
+  [(set_attr "flags" "x")]
+  )
+
+(define_insn_and_split "movhicc_<code>_<mode>"
+  [(set (match_operand:HI 0 "register_operand" "")
+        (if_then_else:HI (eqne_cond:HI (match_operand:QHPSI 1 "mra_operand" "RraSd")
+				       (match_operand:QHPSI 2 "mrai_operand" "RraSdi"))
+			  (match_operand:QI 3 "const_int_operand" "")
+			  (match_operand:QI 4 "const_int_operand" "")))]
+  "TARGET_A24"
+  "#"
+  "reload_completed"
+  [(set (reg:CC FLG_REGNO)
+	(compare (match_dup 1)
+		 (match_dup 2)))
+   (set (match_dup 0)
+        (if_then_else:HI (eqne_cond:HI (reg:CC FLG_REGNO) (const_int 0))
+			 (match_dup 3)
+			 (match_dup 4)))]
+  ""
+  [(set_attr "flags" "x")]
+  )
+
+;; And these are the expanders, which read the pending compare
+;; operands to build a combined insn.
+
+(define_expand "s<code>"
+  [(set (match_operand:QI 0 "register_operand" "=Rqi")
+	(any_cond:QI (reg:CC FLG_REGNO) (const_int 0)))]
+  "TARGET_A16"
+  "m32c_expand_scc (<CODE>, operands); DONE;")
+
+(define_expand "s<code>_24"
+  [(set (match_operand:HI 0 "mra_nopp_operand" "=RhiSd")
+	(any_cond:HI (reg:CC FLG_REGNO) (const_int 0)))]
+  "TARGET_A24"
+  "m32c_expand_scc (<CODE>, operands); DONE;")
+
 
 (define_expand "movqicc"
   [(set (match_operand:QI 0 "register_operand" "")
