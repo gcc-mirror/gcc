@@ -298,8 +298,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 	// An "array" of counters used to keep track of the amount of
 	// blocks that are on the freelist/used for each thread id.
-	// Memory to these "arrays" is allocated in _S_initialize() for
-	// _S_max_threads + global pool 0.
+	// - Note that the second part of the allocated _M_used "array"
+	//   actually hosts (atomic) counters of reclaimed blocks:  in
+	//   _M_reserve_block and in _M_reclaim_block those numbers are
+	//   subtracted from the first ones to obtain the actual size
+	//   of the "working set" of the given thread.
+	// - Memory to these "arrays" is allocated in _S_initialize()
+	//   for _S_max_threads + global pool 0.
 	size_t*				_M_free;
 	size_t*			        _M_used;
 	
