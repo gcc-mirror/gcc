@@ -1,3 +1,15 @@
+2006-09-02  Paolo Carlini  <pcarlini@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR libstdc++/24469
+	* src/mt_allocator.cc (__pool<true>::_M_reserve_block,
+	__pool<true>::_M_reclaim_block): Fix the logic to avoid
+	races, exploit atomic counters stored in second part of
+	the memory pointed by _M_used.
+	(__pool<true>::_M_initialize): Adjust _M_used allocation.
+	* include/ext/mt_allocator.h (__pool<true>::_Bin_record):
+	Update comment.
+
 2006-08-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/28671 continued
