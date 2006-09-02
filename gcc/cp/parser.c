@@ -8441,6 +8441,13 @@ cp_parser_template_parameter_list (cp_parser* parser)
 	parameter_list = process_template_parm (parameter_list,
 						parameter,
 						is_non_type);
+      else
+       {
+         tree err_parm = build_tree_list (parameter, parameter);
+         TREE_VALUE (err_parm) = error_mark_node;
+         parameter_list = chainon (parameter_list, err_parm);
+       }
+
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
       /* If it's not a `,', we're done.  */
