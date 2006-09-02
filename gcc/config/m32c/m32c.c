@@ -3488,6 +3488,42 @@ m32c_expand_neg_mulpsi3 (rtx * operands)
   emit_insn (gen_truncsipsi2 (operands[0], temp2));
 }
 
+static rtx compare_op0, compare_op1;
+
+void
+m32c_pend_compare (rtx *operands)
+{
+  compare_op0 = operands[0];
+  compare_op1 = operands[1];
+}
+
+void
+m32c_unpend_compare (void)
+{
+  switch (GET_MODE (compare_op0))
+    {
+    case QImode:
+      emit_insn (gen_cmpqi_op (compare_op0, compare_op1));
+    case HImode:
+      emit_insn (gen_cmphi_op (compare_op0, compare_op1));
+    case PSImode:
+      emit_insn (gen_cmppsi_op (compare_op0, compare_op1));
+    }
+}
+
+void
+m32c_expand_scc (int code, rtx *operands)
+{
+  enum machine_mode mode = TARGET_A16 ? QImode : HImode;
+
+  emit_insn (gen_rtx_SET (mode,
+			  operands[0],
+			  gen_rtx_fmt_ee (code,
+					  mode,
+					  compare_op0,
+					  compare_op1)));
+}
+
 /* Pattern Output Functions */
 
 /* Returns a (OP (reg:CC FLG_REGNO) (const_int 0)) from some other
@@ -3505,6 +3541,8 @@ int
 m32c_expand_movcc (rtx *operands)
 {
   rtx rel = operands[1];
+  rtx cmp;
+
   if (GET_CODE (rel) != EQ && GET_CODE (rel) != NE)
     return 1;
   if (GET_CODE (operands[2]) != CONST_INT
@@ -3517,12 +3555,17 @@ m32c_expand_movcc (rtx *operands)
       operands[2] = operands[3];
       operands[3] = tmp;
     }
-  if (TARGET_A16)
-    emit_insn (gen_stzx_16 (operands[0], operands[2], operands[3]));
-  else if (GET_MODE (operands[0]) == QImode)
-    emit_insn (gen_stzx_24_qi (operands[0], operands[2], operands[3]));
-  else
-    emit_insn (gen_stzx_24_hi (operands[0], operands[2], operands[3]));
+
+  cmp = gen_rtx_fmt_ee (GET_CODE (rel),
+			GET_MODE (rel),
+			compare_op0,
+			compare_op1);
+
+  emit_move_insn (operands[0],
+		  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+					cmp,
+					operands[2],
+					operands[3]));
   return 0;
 }
 

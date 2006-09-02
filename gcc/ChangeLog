@@ -1,3 +1,28 @@
+2006-09-01  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/cond.md (cbranch<mode>4): Defer splitting until after reload.
+	(stzx_16): Likewise.
+	("stzx_24_<mode>"): Likewise.
+	("stzx_reversed_<mode>"): Likewise, and make mode-specific.
+	("cmp<mode>_op"): New.
+	(cmp<mode>): Change to expander; just save operands.
+	(b<code>_op): New.
+	(b<code>): Change to expander, emit compare here.
+	(s<code>_op): Change to use split and expander.
+	(s<code>_24_op): Likewise.
+	(s<code>_<mode>): New.
+	(s<code>_<mode>_24): New.
+	(movqicc_<code>_<mode): New.
+	(movhicc_<code>_<mode>): New.
+	(s<code>): New.
+	(s<code>_24): New.
+	* config/m32c/m32c.c (compare_op0, compare_op1): New.
+	(m32c_pend_compare): New.
+	(m32c_unpend_compare): New.
+	(m32c_expand_scc): New.
+	(m32c_expand_movcc): Emit the compare also.
+	* config/m32c/predicates.md (mra_nopp_operand): New.
+
 2006-09-01  J"orn Rennecke  <joern.rennecke@st.com>
 	Richard Guenther  <rguenther@suse.de>
 	Adam Nemet  <anemet@caviumnetworks.com>
