@@ -396,7 +396,7 @@ namespace placeholders
 namespace
 {
    _Placeholder<_GLIBCXX_NUM_ARGS> _GLIBCXX_JOIN(_,_GLIBCXX_NUM_ARGS);
-}
+} // anonymous namespace
 }
 #endif
 

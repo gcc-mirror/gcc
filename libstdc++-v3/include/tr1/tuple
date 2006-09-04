@@ -258,7 +258,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
  namespace
  {
    swallow_assign ignore;
- };
+ }; // anonymous namespace
 
 #define _GLIBCXX_CAT(x,y) _GLIBCXX_CAT2(x,y)
 #define _GLIBCXX_CAT2(x,y) x##y
