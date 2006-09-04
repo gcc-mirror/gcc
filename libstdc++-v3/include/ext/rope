@@ -71,7 +71,7 @@ namespace
 {
   enum { _S_max_rope_depth = 45 };
   enum _Tag {_S_leaf, _S_concat, _S_substringfn, _S_function};
-}
+} // anonymous namespace
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 

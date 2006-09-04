@@ -82,7 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
      *  else do no use any synchronization primitives.
      */
     bool const __threads_enabled = __gthread_active_p();
-  }
+  } // anonymous namespace
 #endif
 
 #if defined __GTHREADS

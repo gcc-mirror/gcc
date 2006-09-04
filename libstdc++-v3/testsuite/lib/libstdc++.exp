@@ -214,8 +214,8 @@ proc libstdc++_init { testfile } {
 	         "additional_flags=-include additional_flags=bits/stdtr1c++.h"]
 	if {$lines == "" } {
 #	    set PCH_CXXFLAGS "-include bits/extc++.h"
-	    set PCH_CXXFLAGS "-include bits/stdtr1c++.h"
-#	    set PCH_CXXFLAGS "-include bits/stdc++.h"
+#	    set PCH_CXXFLAGS "-include bits/stdtr1c++.h"
+	    set PCH_CXXFLAGS "-include bits/stdc++.h"
 	} else {
 	    set PCH_CXXFLAGS ""
 	}

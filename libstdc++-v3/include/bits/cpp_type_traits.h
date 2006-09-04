@@ -83,6 +83,19 @@ struct __false_type { };
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+namespace detail
+{
+  // NB: g++ can not compile these if declared within the class
+  // __is_pod itself.
+  typedef char __one;
+  typedef char __two[2];
+
+  template<typename _Tp>
+  __one __test_type(int _Tp::*);
+  template<typename _Tp>
+  __two& __test_type(...);
+} // namespace detail
+
   template<bool>
     struct __truth_type
     { typedef __false_type __type; };
@@ -339,27 +352,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : public __traitor<__is_arithmetic<_Tp>, __is_pointer<_Tp> >
     { };
 
-  // NB: g++ can not compile these if declared within the class
-  // __is_pod itself.
-  namespace 
-  {
-    typedef char __one;
-    typedef char __two[2];
-    
-    template<typename _Tp>
-    __one __test_type(int _Tp::*);
-    
-    template<typename _Tp>
-    __two& __test_type(...);
-  }
-
   // For the immediate use, the following is a good approximation.
   template<typename _Tp>
     struct __is_pod
     {
       enum
 	{
-	  __value = (sizeof(__test_type<_Tp>(0)) != sizeof(__one))
+	  __value = (sizeof(detail::__test_type<_Tp>(0))
+		     != sizeof(detail::__one))
 	};
     };
 
