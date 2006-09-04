@@ -1163,7 +1163,7 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
 
       if (rhs == error_mark_node)
 	return;
-	
+
       STRIP_USELESS_TYPE_CONVERSION (rhs);
 
       /* We want to use MODIFY_EXPR, not INIT_EXPR here so that we
