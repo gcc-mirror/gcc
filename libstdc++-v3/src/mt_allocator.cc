@@ -275,7 +275,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	_Atomic_word* const __reclaimed_base =
 	  reinterpret_cast<_Atomic_word*>(__bin._M_used + __max_threads);
 	const _Atomic_word __reclaimed = __reclaimed_base[__thread_id];
-	const size_t __used = __bin._M_used[__thread_id] - __reclaimed;
+	const size_t __net_used = __bin._M_used[__thread_id] - __reclaimed;
 
 	// NB: For performance sake we don't resync every time, in order
 	// to spare atomic ops.  Note that if __reclaimed increased by,
@@ -289,8 +289,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    __atomic_add(&__reclaimed_base[__thread_id], -__reclaimed);
 	  }
 
-	if (__remove >= __used)
-	  __remove -= __used;
+	if (__remove >= __net_used)
+	  __remove -= __net_used;
 	else
 	  __remove = 0;
 	if (__remove > __limit && __remove > __bin._M_free[__thread_id])
