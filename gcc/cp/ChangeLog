@@ -1,12 +1,18 @@
+2006-09-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR 23287 Revert my 2006-09-01 patch.
+	* parser.c: Reverted.
+	* pt.c: Reverted.
+
 2006-09-02  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/27670
-        PR c++/27493
-        PR c++/27494
-        PR c++/27397
-        * parser.c (cp_parser_template_parameter_list): Add
-        invalid template parameters to the parameter list as
-        error_mark_node.
+	PR c++/27670
+	PR c++/27493
+	PR c++/27494
+	PR c++/27397
+	* parser.c (cp_parser_template_parameter_list): Add
+	invalid template parameters to the parameter list as
+	error_mark_node.
 
 2006-09-02  Jakub Jelinek  <jakub@redhat.com>
 

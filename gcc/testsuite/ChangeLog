@@ -1,19 +1,24 @@
+2006-09-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23287 Revert my 2006-09-01 patch
+	* g++.dg/parse/dtor12.C: Remove.
+
 2006-09-02  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c+/27670
-        * g++.dg/template/operator9.C: New test.
+	PR c+/27670
+	* g++.dg/template/operator9.C: New test.
 
-        PR c++/27493
-        * g++.dg/template/operator7.C: New test.
+	PR c++/27493
+	* g++.dg/template/operator7.C: New test.
 
-        PR c++/27494
-        * g++.dg/template/operator8.C: New test.
+	PR c++/27494
+	* g++.dg/template/operator8.C: New test.
 
-        PR c++/27397
-        * g++.dg/template/crash57.C: New test.
+	PR c++/27397
+	* g++.dg/template/crash57.C: New test.
 
-        * g++.dg/template/typedef4.C: Adjust error markers.
-        * g++.dg/template/typedef5.C: Likewise.
+	* g++.dg/template/typedef4.C: Adjust error markers.
+	* g++.dg/template/typedef5.C: Likewise.
 	
 2006-09-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -130,8 +135,8 @@
 
 2006-08-27  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/26573
-        * g++.dg/other/static2.C: New test. 
+	PR c++/26573
+	* g++.dg/other/static2.C: New test. 
 	
 2006-08-26  Roger Sayle  <roger@eyesopen.com>
 
@@ -144,19 +149,19 @@
 
 2006-08-26  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/28736
-        * g++.dg/template/void10.C: New test.
+	PR c++/28736
+	* g++.dg/template/void10.C: New test.
 
-        PR c++/28737
-        * g++.dg/template/void8.C: New test.
+	PR c++/28737
+	* g++.dg/template/void8.C: New test.
 
-        PR c+_+/28738
-        * g++.dg/template/void9.C: New test.
+	PR c+_+/28738
+	* g++.dg/template/void9.C: New test.
 
-        * g++.dg/template/void3.C: Adjust error markers.
-        * g++.dg/template/void4.C: Likewise.
-        * g++.dg/template/crash55.C: Likewise.
-        * g++.dg/template/void7.C: Likewise
+	* g++.dg/template/void3.C: Adjust error markers.
+	* g++.dg/template/void4.C: Likewise.
+	* g++.dg/template/crash55.C: Likewise.
+	* g++.dg/template/void7.C: Likewise
 	
 2006-08-26  Mark Mitchell  <mark@codesourcery.com>
 
@@ -267,7 +272,7 @@
 
 2006-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
-        PR C++/28450
+	PR C++/28450
 	* g++.dg/ext/vector4.C: New test.
 	* g++.dg/ext/complex1.C: New test.
 
@@ -292,15 +297,15 @@
 
 2006-08-21  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/26269
-        * g++.dg/other/error14.C: New test.
+	PR c++/26269
+	* g++.dg/other/error14.C: New test.
 
-        PR c++/28505
-        * g++.dg/parse/ctor7.C: New test.
-        * g++.dg/parse/ctor8.C: Likewise.
+	PR c++/28505
+	* g++.dg/parse/ctor7.C: New test.
+	* g++.dg/parse/ctor8.C: Likewise.
 
 	PR c++/28741
-        * g++.dg/template/void7.C: New test. 
+	* g++.dg/template/void7.C: New test. 
 	
 2006-08-21  Olivier Hainque  <hainque@adacore.com>
 
@@ -742,14 +747,14 @@
 
 2006-07-28  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/27668
-        * g++.dg/template/crash55.C: New test.
+	PR c++/27668
+	* g++.dg/template/crash55.C: New test.
 
-        PR c++/27962
-        * g++.dg/template/nontype16.C: New test.
+	PR c++/27962
+	* g++.dg/template/nontype16.C: New test.
 
-        * g++.dg/template/void2.C: Adjust error markers.
-        * g++.dg/template/nontype5.C: Adjust error markers.
+	* g++.dg/template/void2.C: Adjust error markers.
+	* g++.dg/template/nontype5.C: Adjust error markers.
 	
 2006-07-27  Arjan van de Ven <arjan@linux.intel.com>
 
@@ -1620,7 +1625,7 @@
 	* gcc.dg/sibcall-7.c: Do not run on ia64-*-* platforms.
 
 2006-06-05  Dorit Nuzman  <dorit@il.ibm.com>
-            Victor Kaplansky  <victork@il.ibm.com>
+	    Victor Kaplansky  <victork@il.ibm.com>
 
 	PR tree-optimizations/26360
 	* gcc.dg/vect/vect.exp: Compile tests prefixed with "no-tree-dce"

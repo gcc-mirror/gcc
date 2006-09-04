@@ -1393,9 +1393,9 @@ static bool cp_parser_translation_unit
 static tree cp_parser_primary_expression
   (cp_parser *, bool, bool, bool, cp_id_kind *);
 static tree cp_parser_id_expression
-  (cp_parser *, bool, bool, bool *, bool, bool, bool);
+  (cp_parser *, bool, bool, bool *, bool, bool);
 static tree cp_parser_unqualified_id
-  (cp_parser *, bool, bool, bool, bool, bool);
+  (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_nested_name_specifier_opt
   (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_nested_name_specifier
@@ -1720,7 +1720,7 @@ static bool cp_parser_check_template_parameters
 static tree cp_parser_simple_cast_expression
   (cp_parser *);
 static tree cp_parser_global_scope_opt
-  (cp_parser *, bool, bool);
+  (cp_parser *, bool);
 static bool cp_parser_constructor_declarator_p
   (cp_parser *, bool);
 static tree cp_parser_function_definition_from_specifiers_and_declarator
@@ -2182,8 +2182,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
 				/*check_dependency_p=*/true,
 				/*template_p=*/NULL,
 				/*declarator_p=*/true,
-				/*optional_p=*/false,
-				/*member_p=*/false);
+				/*optional_p=*/false);
   /* After the id-expression, there should be a plain identifier,
      otherwise this is not a simple variable declaration. Also, if
      the scope is dependent, we cannot do much.  */
@@ -3062,8 +3061,7 @@ cp_parser_primary_expression (cp_parser *parser,
 				     /*check_dependency_p=*/true,
 				     &template_p,
 				     /*declarator_p=*/false,
-				     /*optional_p=*/false,
-				     /*member_p=*/false);
+				     /*optional_p=*/false);
 	if (id_expression == error_mark_node)
 	  return error_mark_node;
 	token = cp_lexer_peek_token (parser->lexer);
@@ -3197,8 +3195,7 @@ cp_parser_id_expression (cp_parser *parser,
 			 bool check_dependency_p,
 			 bool *template_p,
 			 bool declarator_p,
-			 bool optional_p,
-			 bool member_p)
+			 bool optional_p)
 {
   bool global_scope_p;
   bool nested_name_specifier_p;
@@ -3209,10 +3206,8 @@ cp_parser_id_expression (cp_parser *parser,
 
   /* Look for the optional `::' operator.  */
   global_scope_p
-    = (cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false,
-				   /*object_scope_valid_p=*/member_p)
+    = (cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false)
        != NULL_TREE);
-  
   /* Look for the optional nested-name-specifier.  */
   nested_name_specifier_p
     = (cp_parser_nested_name_specifier_opt (parser,
@@ -3244,8 +3239,7 @@ cp_parser_id_expression (cp_parser *parser,
       unqualified_id = cp_parser_unqualified_id (parser, *template_p,
 						 check_dependency_p,
 						 declarator_p,
-						 /*optional_p=*/false,
-						 /*member_p=*/false);
+						 /*optional_p=*/false);
       /* Restore the SAVED_SCOPE for our caller.  */
       parser->scope = saved_scope;
       parser->object_scope = saved_object_scope;
@@ -3303,7 +3297,8 @@ cp_parser_id_expression (cp_parser *parser,
   else
     return cp_parser_unqualified_id (parser, template_keyword_p,
 				     /*check_dependency_p=*/true,
-				     declarator_p, optional_p, member_p);
+				     declarator_p,
+				     optional_p);
 }
 
 /* Parse an unqualified-id.
@@ -3333,8 +3328,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 			  bool template_keyword_p,
 			  bool check_dependency_p,
 			  bool declarator_p,
-			  bool optional_p,
-			  bool member_p)
+			  bool optional_p)
 {
   cp_token *token;
 
@@ -3462,7 +3456,6 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    if (cp_parser_parse_definitely (parser))
 	      done = true;
 	  }
-
 	/* In "N::S::~S", look in "N" as well.  */
 	if (!done && scope && qualifying_scope)
 	  {
@@ -3481,56 +3474,24 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    if (cp_parser_parse_definitely (parser))
 	      done = true;
 	  }
-	/* In "p->~T", look in the scope given by "*p" as well.  */
-	else if (!done && member_p)
+	/* In "p->S::~T", look in the scope given by "*p" as well.  */
+	else if (!done && object_scope)
 	  {
-	    if (!object_scope)
-	      {
-		/* It's a dependent expression, so just parse the
-		   dtor name.  */
-		tree id;
-
-		if (template_keyword_p)
-		  /* It's a template-id.  */
-		  id = cp_parser_template_id (parser, true,
-					      check_dependency_p,
-					      declarator_p);
-		else
-		  {
-		    /* Otherwise, it's an ordinary identifier.  */
-		    id = cp_parser_identifier (parser);
-		    /* If ID is a template type parm, then use that
-		       directly.  */
-		    if (TREE_TYPE (id)
-			&& TREE_CODE (TREE_TYPE (id)) == TEMPLATE_TYPE_PARM)
-		      id = TREE_TYPE (id);
-		  }
-
-		if (id != error_mark_node)
-		  id = build_nt (BIT_NOT_EXPR, id);
-		return id;
-	      }
-
 	    cp_parser_parse_tentatively (parser);
 	    parser->scope = object_scope;
 	    parser->object_scope = NULL_TREE;
 	    parser->qualifying_scope = NULL_TREE;
 	    type_decl
 	      = cp_parser_class_name (parser,
-					/*typename_keyword_p=*/false,
+				      /*typename_keyword_p=*/false,
 				      /*template_keyword_p=*/false,
 				      none_type,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
-	    /* The name is not qualified, so reset the parser scopes
-	       so our callers do not get confused.  */
-	    parser->object_scope = object_scope;
-	    parser->scope = NULL_TREE;
 	    if (cp_parser_parse_definitely (parser))
 	      done = true;
 	  }
-	
 	/* Look in the surrounding context.  */
 	if (!done)
 	  {
@@ -4521,12 +4482,11 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
   parser->qualifying_scope = NULL_TREE;
   parser->object_scope = NULL_TREE;
   *idk = CP_ID_KIND_NONE;
-
   /* Enter the scope corresponding to the type of the object
      given by the POSTFIX_EXPRESSION.  */
-  scope = TREE_TYPE (postfix_expression);
-  if (!dependent_p && scope)
+  if (!dependent_p && TREE_TYPE (postfix_expression) != NULL_TREE)
     {
+      scope = TREE_TYPE (postfix_expression);
       /* According to the standard, no expression should ever have
 	 reference type.  Unfortunately, we do not currently match
 	 the standard in this respect in that our internal representation
@@ -4540,8 +4500,11 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	  error ("%qE does not have class type", postfix_expression);
 	  scope = NULL_TREE;
 	}
-      else if (!dependent_p)
+      else
 	scope = complete_type_or_else (scope, NULL_TREE);
+      /* Let the name lookup machinery know that we are processing a
+	 class member access expression.  */
+      parser->context->object_type = scope;
       /* If something went wrong, we want to be able to discern that case,
 	 as opposed to the case where there was no SCOPE due to the type
 	 of expression being dependent.  */
@@ -4553,10 +4516,6 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
       if (scope == error_mark_node)
 	postfix_expression = error_mark_node;
     }
-  /* Let the name lookup machinery know that we are processing a class
-     member access expression.  */
-  parser->context->object_type = scope;
-  parser->object_scope = scope;
 
   /* Assume this expression is not a pseudo-destructor access.  */
   pseudo_destructor_p = false;
@@ -4594,8 +4553,7 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	       /*check_dependency_p=*/true,
 	       &template_p,
 	       /*declarator_p=*/false,
-	       /*optional_p=*/false,
-	       /*member_p=*/true));
+	       /*optional_p=*/false));
       /* In general, build a SCOPE_REF if the member name is qualified.
 	 However, if the name was not dependent and has already been
 	 resolved; there is no need to build the SCOPE_REF.  For example;
@@ -4800,9 +4758,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
   *type = error_mark_node;
 
   /* Look for the optional `::' operator.  */
-  cp_parser_global_scope_opt (parser,
-			      /*current_scope_valid_p=*/true,
-			      /*object_scop_valid_p=*/true);
+  cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/true);
   /* Look for the optional nested-name-specifier.  */
   nested_name_specifier_p
     = (cp_parser_nested_name_specifier_opt (parser,
@@ -5113,8 +5069,7 @@ cp_parser_new_expression (cp_parser* parser)
   /* Look for the optional `::' operator.  */
   global_scope_p
     = (cp_parser_global_scope_opt (parser,
-				   /*current_scope_valid_p=*/false,
-				   /*object_scope_valid_p=*/false)
+				   /*current_scope_valid_p=*/false)
        != NULL_TREE);
   /* Look for the `new' operator.  */
   cp_parser_require_keyword (parser, RID_NEW, "`new'");
@@ -5412,8 +5367,7 @@ cp_parser_delete_expression (cp_parser* parser)
   /* Look for the optional `::' operator.  */
   global_scope_p
     = (cp_parser_global_scope_opt (parser,
-				   /*current_scope_valid_p=*/false,
-				   /*object_scope_valid_p=*/false)
+				   /*current_scope_valid_p=*/false)
        != NULL_TREE);
   /* Look for the `delete' keyword.  */
   cp_parser_require_keyword (parser, RID_DELETE, "`delete'");
@@ -8068,8 +8022,7 @@ cp_parser_mem_initializer_id (cp_parser* parser)
   /* Look for the optional `::' operator.  */
   global_scope_p
     = (cp_parser_global_scope_opt (parser,
-				   /*current_scope_valid_p=*/false,
-				   /*object_scope_valid_p=*/false)
+				   /*current_scope_valid_p=*/false)
        != NULL_TREE);
   /* Look for the optional nested-name-specifier.  The simplest way to
      implement:
@@ -8648,8 +8601,7 @@ cp_parser_type_parameter (cp_parser* parser)
 					 /*check_dependency_p=*/true,
 					 /*template_p=*/&is_template,
 					 /*declarator_p=*/false,
-					 /*optional_p=*/false,
-					 /*member_p=*/false);
+					 /*optional_p=*/false);
 	    if (TREE_CODE (default_argument) == TYPE_DECL)
 	      /* If the id-expression was a template-id that refers to
 		 a template-class, we already have the declaration here,
@@ -9214,8 +9166,7 @@ cp_parser_template_argument (cp_parser* parser)
 				      /*check_dependency_p=*/true,
 				      &template_p,
 				      /*declarator_p=*/false,
-				      /*optional_p=*/false,
-				      /*member_p=*/false);
+				      /*optional_p=*/false);
   /* If the next token isn't a `,' or a `>', then this argument wasn't
      really finished.  */
   if (!cp_parser_next_token_ends_template_argument_p (parser))
@@ -9855,8 +9806,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       /* Look for the optional `::' operator.  */
       global_p
 	= (cp_parser_global_scope_opt (parser,
-				       /*current_scope_valid_p=*/false,
-				       /*object_scope_valid_p=*/false)
+				       /*current_scope_valid_p=*/false)
 	   != NULL_TREE);
       /* Look for the nested-name specifier.  */
       qualified_p
@@ -10081,8 +10031,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
   /* Look for the `::' operator.  */
   cp_parser_global_scope_opt (parser,
-			      /*current_scope_valid_p=*/false,
-			      /*object_scope_valid_p=*/false);
+			      /*current_scope_valid_p=*/false);
   /* Look for the nested-name-specifier.  */
   if (tag_type == typename_type)
     {
@@ -10617,8 +10566,7 @@ cp_parser_qualified_namespace_specifier (cp_parser* parser)
 {
   /* Look for the optional `::'.  */
   cp_parser_global_scope_opt (parser,
-			      /*current_scope_valid_p=*/false,
-			      /*object_scope_valid_p=*/false);
+			      /*current_scope_valid_p=*/false);
 
   /* Look for the optional nested-name-specifier.  */
   cp_parser_nested_name_specifier_opt (parser,
@@ -10663,8 +10611,7 @@ cp_parser_using_declaration (cp_parser* parser)
   /* Look for the optional global scope qualification.  */
   global_scope_p
     = (cp_parser_global_scope_opt (parser,
-				   /*current_scope_valid_p=*/false,
-				   /*object_scope_valid_p=*/false)
+				   /*current_scope_valid_p=*/false)
        != NULL_TREE);
 
   /* If we saw `typename', or didn't see `::', then there must be a
@@ -10690,8 +10637,7 @@ cp_parser_using_declaration (cp_parser* parser)
 					 /*template_keyword_p=*/false,
 					 /*check_dependency_p=*/true,
 					 /*declarator_p=*/true,
-					 /*optional_p=*/false,
-					 /*member_p=*/false);
+					 /*optional_p=*/false);
 
   /* The function we call to handle a using-declaration is different
      depending on what scope we are in.  */
@@ -10745,8 +10691,7 @@ cp_parser_using_directive (cp_parser* parser)
   /* And the `namespace' keyword.  */
   cp_parser_require_keyword (parser, RID_NAMESPACE, "`namespace'");
   /* Look for the optional `::' operator.  */
-  cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false,
-			      /*object_scope_valid_p=*/false);
+  cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false);
   /* And the optional nested-name-specifier.  */
   cp_parser_nested_name_specifier_opt (parser,
 				       /*typename_keyword_p=*/false,
@@ -11814,8 +11759,7 @@ cp_parser_ptr_operator (cp_parser* parser,
       cp_parser_parse_tentatively (parser);
       /* Look for the optional `::' operator.  */
       cp_parser_global_scope_opt (parser,
-				  /*current_scope_valid_p=*/false,
-				  /*object_scope_valid_p=*/false);
+				  /*current_scope_valid_p=*/false);
       /* Look for the nested-name specifier.  */
       cp_parser_nested_name_specifier (parser,
 				       /*typename_keyword_p=*/false,
@@ -11955,8 +11899,7 @@ cp_parser_declarator_id (cp_parser* parser, bool optional_p)
 				/*check_dependency_p=*/false,
 				/*template_p=*/NULL,
 				/*declarator_p=*/true,
-				optional_p,
-				/*member_p=*/false);
+				optional_p);
   if (id && BASELINK_P (id))
     id = BASELINK_FUNCTIONS (id);
   return id;
@@ -13161,8 +13104,7 @@ cp_parser_class_head (cp_parser* parser,
      issuing an error about it later if this really is a
      class-head.  If it turns out just to be an elaborated type
      specifier, remain silent.  */
-  if (cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false,
-				  /*object_scope_valid_p=*/false))
+  if (cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false))
     qualified_p = true;
 
   push_deferring_access_checks (dk_no_check);
@@ -14148,8 +14090,7 @@ cp_parser_base_specifier (cp_parser* parser)
     }
 
   /* Look for the optional `::' operator.  */
-  cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false,
-			      /*object_scope_valid_p=*/false);
+  cp_parser_global_scope_opt (parser, /*current_scope_valid_p=*/false);
   /* Look for the nested-name-specifier.  The simplest way to
      implement:
 
@@ -15198,8 +15139,7 @@ cp_parser_check_template_parameters (cp_parser* parser,
    present, and NULL_TREE otherwise.  */
 
 static tree
-cp_parser_global_scope_opt (cp_parser* parser, bool current_scope_valid_p,
-			    bool object_scope_valid_p)
+cp_parser_global_scope_opt (cp_parser* parser, bool current_scope_valid_p)
 {
   cp_token *token;
 
@@ -15218,15 +15158,12 @@ cp_parser_global_scope_opt (cp_parser* parser, bool current_scope_valid_p,
 
       return parser->scope;
     }
-
-  if (!current_scope_valid_p)
+  else if (!current_scope_valid_p)
     {
       parser->scope = NULL_TREE;
       parser->qualifying_scope = NULL_TREE;
+      parser->object_scope = NULL_TREE;
     }
-  
-  if (!object_scope_valid_p)
-    parser->object_scope = NULL_TREE;
 
   return NULL_TREE;
 }
@@ -15264,8 +15201,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 
   /* Look for the optional `::' operator.  */
   cp_parser_global_scope_opt (parser,
-			      /*current_scope_valid_p=*/false,
-			      /*object_scope_valid_p=*/false);
+			      /*current_scope_valid_p=*/false);
   /* Look for the nested-name-specifier.  */
   nested_name_p
     = (cp_parser_nested_name_specifier_opt (parser,
@@ -17972,8 +17908,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 				      /*check_dependency_p=*/true,
 				      /*template_p=*/NULL,
 				      /*declarator_p=*/false,
-				      /*optional_p=*/false,
-				      /*member_p=*/false);
+				      /*optional_p=*/false);
       if (name == error_mark_node)
 	goto skip_comma;
 
