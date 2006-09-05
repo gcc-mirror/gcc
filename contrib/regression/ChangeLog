@@ -1,3 +1,7 @@
+2006-09-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* btest-gcc.sh: .bad_compare has moved to toplevel from gcc/.
+
 2006-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* btest-gcc.sh: gcc.sum has moved to gcc/testsuite/gcc/gcc.sum.
