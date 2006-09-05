@@ -1,4 +1,15 @@
-2006-09-02  Anatoly Sokolov <aesok@post.ru>
+2006-09-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/26847
+	* simplify-rtx.c (struct simplify_plus_minus_op_data): Remove ix.
+	(simplify_plus_minus_op_data_cmp): For REGs, break ties on the regno.
+	(simplify_plus_minus): Count n_constants while filling ops.  Replace
+	qsort with insertion sort.  Before going through the array to simplify
+	pairs, sort it.  Delay early exit until after the first sort, exiting
+	only if no swaps occurred.  Simplify pairs in reversed order, without
+	special-casing the first iteration.  Pack ops after simplifying pairs.
+
+2006-09-05  Anatoly Sokolov <aesok@post.ru>
 
         * config/avr/avr.c (avr_mcu_types): Add support for at90pwm1 device.
         * config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
