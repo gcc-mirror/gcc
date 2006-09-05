@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -710,17 +710,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     find(const _CharT* __s, size_type __pos, size_type __n) const
     {
       __glibcxx_requires_string_len(__s, __n);
-      size_type __ret = npos;
       const size_type __size = this->size();
-      if (__pos + __n <= __size)
-	{
-	  const _CharT* __data = _M_data();
-	  const _CharT* __p = std::search(__data + __pos, __data + __size,
-					  __s, __s + __n, traits_type::eq);
-	  if (__p != __data + __size || __n == 0)
-	    __ret = __p - __data;
-	}
-      return __ret;
+      const _CharT* __data = _M_data();
+
+      if (__n == 0)
+	return __pos <= __size ? __pos : npos;
+
+      for (; __pos + __n <= __size; ++__pos)
+	if (traits_type::eq(__data[__pos], __s[0])
+	    && traits_type::compare(__data + __pos + 1, __s + 1, __n - 1) == 0)
+	  return __pos;
+      return npos;
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>

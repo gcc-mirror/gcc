@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -77,10 +77,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     S::_S_construct(const C*, const C*, const allocator<C>&,
 		    forward_iterator_tag);
 
-  // Used in str::find.
-  template
-    const C*
-    search(const C*, const C*, const C*, const C*, bool(*)(const C&, const C&));
 _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
