@@ -1,5 +1,11 @@
 2006-09-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/28900
+	* tree-if-conv.c (find_phi_replacement_condition): Gimplify
+	compound conditional before creating COND_EXPR condition.
+
+2006-09-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/28905
 	* tree-vrp.c (fix_equivalence_set): Manually implement
 	!value_ranges_intersect_p to also handle symbolic ranges.
