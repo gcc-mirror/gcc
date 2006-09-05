@@ -1,3 +1,7 @@
+2006-09-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20060905-1.c: New test.
+
 2006-09-05 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/28908
