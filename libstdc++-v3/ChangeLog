@@ -1,6 +1,13 @@
 2006-09-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.tcc (find(const _CharT*, size_type,
+	size_type)): Robustify.
+	* include/ext/vstring.tcc (find(const _CharT*, size_type,
+	size_type)): Likewise.
+
+2006-09-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (find(const _CharT*, size_type,
 	size_type)): Reimplement in terms of traits::eq and traits::compare.
 	* include/ext/vstring.tcc (find(const _CharT*, size_type,
 	size_type)): Likewise.
