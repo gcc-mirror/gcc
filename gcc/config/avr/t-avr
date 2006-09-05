@@ -64,6 +64,7 @@ MULTILIB_MATCHES = \
 	mmcu?avr4=mmcu?atmega8515 \
 	mmcu?avr4=mmcu?atmega8535 \
 	mmcu?avr4=mmcu?atmega88 \
+	mmcu?avr4=mmcu?at90pwm1 \
 	mmcu?avr4=mmcu?at90pwm2 \
 	mmcu?avr4=mmcu?at90pwm3 \
 	mmcu?avr5=mmcu?atmega16 \

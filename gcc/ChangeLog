@@ -1,3 +1,10 @@
+2006-09-02  Anatoly Sokolov <aesok@post.ru>
+
+        * config/avr/avr.c (avr_mcu_types): Add support for at90pwm1 device.
+        * config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
+        * config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
+        (avr_rtx_costs): Mark 'outer_code' argument with ATTRIBUTE_UNUSED.
+
 2006-09-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28900
