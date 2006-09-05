@@ -164,21 +164,26 @@ public final class SocketPermission extends Permission implements Serializable
    */
   public SocketPermission(String hostport, String actions)
   {
-    super(maybeBracketIPv6Address(hostport));
+    super(processHostport(hostport));
 
     setHostPort(getName());
     setActions(actions);
   }
 
   /**
-   * IPv6 addresses in the hostport must either be enclosed by
-   * "[" and "]" or be specified in the full uncompressed form.
-   * In the latter case proprietary JVMs will quote the address
-   * with "[" and "]", so we do to.
+   * There are two cases in which hostport needs rewriting before
+   * being passed to the superclass constructor.  If hostport is an
+   * empty string then it is substituted with "localhost".  And if
+   * the host part of hostport is a literal IPv6 address in the full
+   * uncompressed form not enclosed with "[" and "]" then we enclose
+   * it with them.
    */
-  private static String maybeBracketIPv6Address(String hostport)
+  private static String processHostport(String hostport)
   {
-    if (hostport.length() == 0 || hostport.charAt(0) == '[')
+    if (hostport.length() == 0)
+      return "localhost";
+
+    if (hostport.charAt(0) == '[')
       return hostport;
 
     int colons = 0, last_colon = 0;
@@ -221,11 +226,7 @@ public final class SocketPermission extends Permission implements Serializable
   {
     // Split into host and ports
     String ports;
-    if (hostport.length() == 0)
-      {
-	host = ports = "";
-      }
-    else if (hostport.charAt(0) == '[')
+    if (hostport.charAt(0) == '[')
       {
 	// host is a bracketed IPv6 address
 	int end = hostport.indexOf("]");
@@ -255,8 +256,6 @@ public final class SocketPermission extends Permission implements Serializable
 	    ports = hostport.substring(sep + 1);
 	  }
       }
-    if (ports.indexOf(":") != -1)
-      throw new IllegalArgumentException("Unexpected ':'");
 
     // Parse and validate the ports
     if (ports.length() == 0)

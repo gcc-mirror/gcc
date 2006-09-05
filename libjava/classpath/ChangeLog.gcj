@@ -1,3 +1,11 @@
+2006-09-05  Gary Benson  <gbenson@redhat.com>
+
+	* java/net/SocketPermission.java
+	(maybeBracketIPv6Address): Renamed to processHostport.
+	(processHostport): Also translate "" to "localhost".
+	(setHostPort): Remove special cases for empty hostport and for
+	extra colons in hostport (processHostport handles these now).
+	
 2006-08-31  Keith Seitz  <keiths@redhat.com>
 
 	* include/jvmti.h: Update from Classpath to get latest fixes and
