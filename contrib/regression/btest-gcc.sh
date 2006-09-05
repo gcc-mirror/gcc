@@ -123,8 +123,8 @@ echo build > $RESULT
 if [ $H_HOST = $H_TARGET ] ; then
   $SOURCE/configure --prefix=$PREFIX --target=$H_TARGET || exit 1
   if ! make $dashj bootstrap ; then
-    [ -s gcc/.bad_compare ] || exit 1
-    cat gcc/.bad_compare >> $REGRESS || exit 1
+    [ -s .bad_compare ] || exit 1
+    cat .bad_compare >> $REGRESS || exit 1
     make $dashj all || exit 1
   fi
 else
