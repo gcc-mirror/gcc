@@ -2043,6 +2043,18 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
       t = maybe_fold_tmr (expr);
       break;
 
+    case COND_EXPR:
+      if (COMPARISON_CLASS_P (TREE_OPERAND (expr, 0)))
+        {
+	  tree op0 = TREE_OPERAND (expr, 0);
+          tree tem = fold_binary (TREE_CODE (op0), TREE_TYPE (op0),
+				  TREE_OPERAND (op0, 0), TREE_OPERAND (op0, 1));
+	  if (tem && is_gimple_condexpr (tem))
+	    TREE_OPERAND (expr, 0) = tem;
+	  t = expr;
+          break;
+        }
+
     default:
       return NULL_TREE;
     }
