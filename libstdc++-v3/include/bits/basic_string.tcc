@@ -716,10 +716,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (__n == 0)
 	return __pos <= __size ? __pos : npos;
 
-      for (; __pos + __n <= __size; ++__pos)
-	if (traits_type::eq(__data[__pos], __s[0])
-	    && traits_type::compare(__data + __pos + 1, __s + 1, __n - 1) == 0)
-	  return __pos;
+      if (__n <= __size)
+	{
+	  for (; __pos + __n <= __size; ++__pos)
+	    if (traits_type::eq(__data[__pos], __s[0])
+		&& traits_type::compare(__data + __pos + 1,
+					__s + 1, __n - 1) == 0)
+	      return __pos;
+	}
       return npos;
     }
 
