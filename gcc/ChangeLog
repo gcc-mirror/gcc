@@ -1,3 +1,10 @@
+2006-09-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/28386
+	* loop.c (biased_biv_may_wrap_p): Rename to biv_may_wrap_p and
+	remove 'bias' parameter.
+	(maybe_eliminate_biv_1): Adjust for above change.
+
 2006-09-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/27616

@@ -8824,14 +8824,13 @@ biv_fits_mode_p (const struct loop *loop, struct iv_class *bl,
 }
 
 
-/* Return false iff it is provable that biv BL plus BIAS will not wrap
-   at any point in its update sequence.  Note that at the rtl level we
-   may not have information about the signedness of BL; in that case,
-   check for both signed and unsigned overflow.  */
+/* Return false iff it is provable that biv BL will not wrap at any point
+   in its update sequence.  Note that at the RTL level we may not have
+   information about the signedness of BL; in that case, check for both
+   signed and unsigned overflow.  */
 
 static bool
-biased_biv_may_wrap_p (const struct loop *loop, struct iv_class *bl,
-		       unsigned HOST_WIDE_INT bias)
+biv_may_wrap_p (const struct loop *loop, struct iv_class *bl)
 {
   HOST_WIDE_INT incr;
   bool check_signed, check_unsigned;
@@ -8867,12 +8866,12 @@ biased_biv_may_wrap_p (const struct loop *loop, struct iv_class *bl,
   mode = GET_MODE (bl->biv->src_reg);
 
   if (check_unsigned
-      && !biased_biv_fits_mode_p (loop, bl, incr, mode, bias))
+      && !biased_biv_fits_mode_p (loop, bl, incr, mode, 0))
     return true;
 
   if (check_signed)
     {
-      bias += (GET_MODE_MASK (mode) >> 1) + 1;
+      unsigned HOST_WIDE_INT bias = (GET_MODE_MASK (mode) >> 1) + 1;
       if (!biased_biv_fits_mode_p (loop, bl, incr, mode, bias))
 	return true;
     }
@@ -10306,8 +10305,7 @@ maybe_eliminate_biv_1 (const struct loop *loop, rtx x, rtx insn,
 	 valid programs.  */
       /* Without lifetime analysis, we don't know how COMPARE will be
 	 used, so we must assume the worst.  */
-      if (code != EQ && code != NE
-	  && biased_biv_may_wrap_p (loop, bl, INTVAL (arg)))
+      if (code != EQ && code != NE && biv_may_wrap_p (loop, bl))
 	return 0;
 
       /* Try to replace with any giv that has constant positive mult_val
