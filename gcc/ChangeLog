@@ -1,3 +1,12 @@
+2006-09-05  J"orn Rennecke  <joern.rennecke@st.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/28764
+	* mode-switching.c (optimize_mode_switching): Make the destination
+	block of an abnormal edge have no anticipatable mode.  Don't
+	insert mode switching code at the end of the source block of
+	an abnormal edge.
+
 2006-09-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/26847

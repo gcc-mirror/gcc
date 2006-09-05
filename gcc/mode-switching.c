@@ -465,7 +465,11 @@ optimize_mode_switching (void)
 	      if (e->flags & EDGE_COMPLEX)
 		break;
 	    if (e)
-	      RESET_BIT (transp[bb->index], j);
+	      {
+		ptr = new_seginfo (no_mode, BB_HEAD (bb), bb->index, live_now);
+		add_seginfo (info + bb->index, ptr);
+		RESET_BIT (transp[bb->index], j);
+	      }
 	  }
 
 	  for (insn = BB_HEAD (bb);
@@ -608,38 +612,11 @@ optimize_mode_switching (void)
 	      if (mode_set == NULL_RTX)
 		continue;
 
-	      /* If this is an abnormal edge, we'll insert at the end
-		 of the previous block.  */
-	      if (eg->flags & EDGE_ABNORMAL)
-		{
-		  emited = true;
-		  if (JUMP_P (BB_END (src_bb)))
-		    emit_insn_before (mode_set, BB_END (src_bb));
-		  else
-		    {
-		      /* It doesn't make sense to switch to normal
-		         mode after a CALL_INSN.  The cases in which a
-		         CALL_INSN may have an abnormal edge are
-		         sibcalls and EH edges.  In the case of
-		         sibcalls, the dest basic-block is the
-		         EXIT_BLOCK, that runs in normal mode; it is
-		         assumed that a sibcall insn requires normal
-		         mode itself, so no mode switch would be
-		         required after the call (it wouldn't make
-		         sense, anyway).  In the case of EH edges, EH
-		         entry points also start in normal mode, so a
-		         similar reasoning applies.  */
-		      gcc_assert (NONJUMP_INSN_P (BB_END (src_bb)));
-		      emit_insn_after (mode_set, BB_END (src_bb));
-		    }
-		  bb_info[j][src_bb->index].computing = mode;
-		  RESET_BIT (transp[src_bb->index], j);
-		}
-	      else
-		{
-		  need_commit = 1;
-		  insert_insn_on_edge (mode_set, eg);
-		}
+	      /* We should not get an abnormal edge here.  */
+	      gcc_assert (! (eg->flags & EDGE_ABNORMAL));
+
+	      need_commit = 1;
+	      insert_insn_on_edge (mode_set, eg);
 	    }
 
 	  FOR_EACH_BB_REVERSE (bb)
