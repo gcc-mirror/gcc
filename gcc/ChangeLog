@@ -1,3 +1,9 @@
+2006-09-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28935
+	* tree-ssa-ccp.c (fold_stmt_r): Make sure to fold the condition
+	of a COND_EXPR.
+
 2006-09-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/27616

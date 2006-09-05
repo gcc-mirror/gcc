@@ -1,3 +1,8 @@
+2006-09-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28935
+	* gcc.dg/pr28935.c: New testcase.
+
 2006-09-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20060905-1.c: New test.
