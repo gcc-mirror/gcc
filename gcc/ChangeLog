@@ -1,5 +1,11 @@
 2006-09-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/28905
+	* tree-vrp.c (fix_equivalence_set): Manually implement
+	!value_ranges_intersect_p to also handle symbolic ranges.
+
+2006-09-05  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/28935
 	* tree-ssa-ccp.c (fold_stmt_r): Make sure to fold the condition
 	of a COND_EXPR.

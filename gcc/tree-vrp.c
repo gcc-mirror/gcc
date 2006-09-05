@@ -774,14 +774,18 @@ fix_equivalence_set (value_range_t *vr_p)
       value_range_t *equiv_vr = vr_value[i];
 
       if (equiv_vr->type == VR_VARYING
-	  || equiv_vr->type == VR_UNDEFINED
-	  || symbolic_range_p (equiv_vr))
+	  || equiv_vr->type == VR_UNDEFINED)
 	continue;
 
-      if (equiv_vr->type == VR_RANGE
-	  && vr_p->type == VR_RANGE
-	  && !value_ranges_intersect_p (vr_p, equiv_vr))
-	bitmap_set_bit (to_remove, i);
+      if (vr_p->type == VR_RANGE
+	  && equiv_vr->type == VR_RANGE)
+	{
+	  /* Two ranges have an empty intersection if their end points
+	     are outside of the other range.  */
+	  if (compare_values (equiv_vr->min, vr_p->max) == 1
+	      || compare_values (equiv_vr->max, vr_p->min) == -1)
+	    bitmap_set_bit (to_remove, i);
+	}
       else if ((equiv_vr->type == VR_RANGE && vr_p->type == VR_ANTI_RANGE)
 	       || (equiv_vr->type == VR_ANTI_RANGE && vr_p->type == VR_RANGE))
 	{
