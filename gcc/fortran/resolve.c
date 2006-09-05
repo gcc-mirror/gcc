@@ -5368,6 +5368,7 @@ static try
 resolve_fl_derived (gfc_symbol *sym)
 {
   gfc_component *c;
+  gfc_dt_list * dt_list;
   int i;
 
   for (c = sym->components; c != NULL; c = c->next)
@@ -5430,6 +5431,19 @@ resolve_fl_derived (gfc_symbol *sym)
 	}
     }
     
+  /* Add derived type to the derived type list.  */
+  for (dt_list = sym->ns->derived_types; dt_list; dt_list = dt_list->next)
+    if (sym == dt_list->derived)
+      break;
+
+  if (dt_list == NULL)
+    {
+      dt_list = gfc_get_dt_list ();
+      dt_list->next = sym->ns->derived_types;
+      dt_list->derived = sym;
+      sym->ns->derived_types = dt_list;
+    }
+
   return SUCCESS;
 }
 
@@ -6528,6 +6542,21 @@ resolve_fntype (gfc_namespace * ns)
                  sym->name, &sym->declared_at, sym->ts.derived->name);
     }
 
+  /* Make sure that the type of a module derived type function is in the
+     module namespace, by copying it from the namespace's derived type
+     list, if necessary.  */
+  if (sym->ts.type == BT_DERIVED
+	&& sym->ns->proc_name->attr.flavor == FL_MODULE
+	&& sym->ts.derived->ns
+	&& sym->ns != sym->ts.derived->ns)
+    {
+      gfc_dt_list *dt = sym->ns->derived_types;
+
+      for (; dt; dt = dt->next)
+        if (gfc_compare_derived_types (sym->ts.derived, dt->derived))
+	  sym->ts.derived = dt->derived;
+    }
+
   if (ns->entries)
     for (el = ns->entries->next; el; el = el->next)
       {
@@ -6666,7 +6695,6 @@ resolve_types (gfc_namespace * ns)
     warn_unused_fortran_label (ns->st_labels);
 
   gfc_resolve_uops (ns->uop_root);
-    
 }
 
 
