@@ -3185,7 +3185,6 @@ struct simplify_plus_minus_op_data
 {
   rtx op;
   short neg;
-  short ix;
 };
 
 static int
@@ -3199,7 +3198,12 @@ simplify_plus_minus_op_data_cmp (const void *p1, const void *p2)
 	    - commutative_operand_precedence (d1->op));
   if (result)
     return result;
-  return d1->ix - d2->ix;
+
+  /* Group together equal REGs to do more simplification.  */
+  if (REG_P (d1->op) && REG_P (d2->op))
+    return REGNO (d1->op) - REGNO (d2->op);
+  else
+    return 0;
 }
 
 static rtx
@@ -3209,7 +3213,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
   struct simplify_plus_minus_op_data ops[8];
   rtx result, tem;
   int n_ops = 2, input_ops = 2;
-  int first, changed, canonicalized = 0;
+  int changed, n_constants = 0, canonicalized = 0;
   int i, j;
 
   memset (ops, 0, sizeof ops);
@@ -3286,6 +3290,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 	      break;
 
 	    case CONST_INT:
+	      n_constants++;
 	      if (this_neg)
 		{
 		  ops[i].op = neg_const_int (mode, this_op);
@@ -3302,18 +3307,10 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
     }
   while (changed);
 
+  if (n_constants > 1)
+    canonicalized = 1;
+
   gcc_assert (n_ops >= 2);
-  if (!canonicalized)
-    {
-      int n_constants = 0;
-
-      for (i = 0; i < n_ops; i++)
-	if (GET_CODE (ops[i].op) == CONST_INT)
-	  n_constants++;
-
-      if (n_constants <= 1)
-	return NULL_RTX;
-    }
 
   /* If we only have two operands, we can avoid the loops.  */
   if (n_ops == 2)
@@ -3342,22 +3339,37 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
       return simplify_const_binary_operation (code, mode, lhs, rhs);
     }
 
-  /* Now simplify each pair of operands until nothing changes.  The first
-     time through just simplify constants against each other.  */
-
-  first = 1;
+  /* Now simplify each pair of operands until nothing changes.  */
   do
     {
-      changed = first;
+      /* Insertion sort is good enough for an eight-element array.  */
+      for (i = 1; i < n_ops; i++)
+        {
+          struct simplify_plus_minus_op_data save;
+          j = i - 1;
+          if (simplify_plus_minus_op_data_cmp (&ops[j], &ops[i]) < 0)
+	    continue;
 
-      for (i = 0; i < n_ops - 1; i++)
-	for (j = i + 1; j < n_ops; j++)
+          canonicalized = 1;
+          save = ops[i];
+          do
+	    ops[j + 1] = ops[j];
+          while (j-- && simplify_plus_minus_op_data_cmp (&ops[j], &save) > 0);
+          ops[j + 1] = save;
+        }
+
+      /* This is only useful the first time through.  */
+      if (!canonicalized)
+        return NULL_RTX;
+
+      changed = 0;
+      for (i = n_ops - 1; i > 0; i--)
+	for (j = i - 1; j >= 0; j--)
 	  {
-	    rtx lhs = ops[i].op, rhs = ops[j].op;
-	    int lneg = ops[i].neg, rneg = ops[j].neg;
+	    rtx lhs = ops[j].op, rhs = ops[i].op;
+	    int lneg = ops[j].neg, rneg = ops[i].neg;
 
-	    if (lhs != 0 && rhs != 0
-		&& (! first || (CONSTANT_P (lhs) && CONSTANT_P (rhs))))
+	    if (lhs != 0 && rhs != 0)
 	      {
 		enum rtx_code ncode = PLUS;
 
@@ -3393,13 +3405,7 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 		    && ! (GET_CODE (tem) == CONST
 			  && GET_CODE (XEXP (tem, 0)) == ncode
 			  && XEXP (XEXP (tem, 0), 0) == lhs
-			  && XEXP (XEXP (tem, 0), 1) == rhs)
-		    /* Don't allow -x + -1 -> ~x simplifications in the
-		       first pass.  This allows us the chance to combine
-		       the -1 with other constants.  */
-		    && ! (first
-			  && GET_CODE (tem) == NOT
-			  && XEXP (tem, 0) == rhs))
+			  && XEXP (XEXP (tem, 0), 1) == rhs))
 		  {
 		    lneg &= rneg;
 		    if (GET_CODE (tem) == NEG)
@@ -3415,23 +3421,16 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 	      }
 	  }
 
-      first = 0;
+      /* Pack all the operands to the lower-numbered entries.  */
+      for (i = 0, j = 0; j < n_ops; j++)
+        if (ops[j].op)
+          {
+	    ops[i] = ops[j];
+	    i++;
+          }
+      n_ops = i;
     }
   while (changed);
-
-  /* Pack all the operands to the lower-numbered entries.  */
-  for (i = 0, j = 0; j < n_ops; j++)
-    if (ops[j].op)
-      {
-	ops[i] = ops[j];
-	/* Stabilize sort.  */
-	ops[i].ix = i;
-	i++;
-      }
-  n_ops = i;
-
-  /* Sort the operations based on swap_commutative_operands_p.  */
-  qsort (ops, n_ops, sizeof (*ops), simplify_plus_minus_op_data_cmp);
 
   /* Create (minus -C X) instead of (neg (const (plus X C))).  */
   if (n_ops == 2
