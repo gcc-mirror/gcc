@@ -205,6 +205,7 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "atmega88",   4, "__AVR_ATmega88__" },
   { "atmega8515", 4, "__AVR_ATmega8515__" },
   { "atmega8535", 4, "__AVR_ATmega8535__" },
+  { "at90pwm1",  4, "__AVR_AT90PWM1__" },
   { "at90pwm2",  4, "__AVR_AT90PWM2__" },
   { "at90pwm3",  4, "__AVR_AT90PWM3__" },
     /* Enhanced, > 8K.  */
@@ -4948,7 +4949,7 @@ avr_operand_rtx_cost (rtx x, enum machine_mode mode, enum rtx_code outer)
    case, *TOTAL contains the cost result.  */
 
 static bool
-avr_rtx_costs (rtx x, int code, int outer_code, int *total)
+avr_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total)
 {
   enum machine_mode mode = GET_MODE (x);
   HOST_WIDE_INT val;
