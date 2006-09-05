@@ -1,3 +1,10 @@
+2006-09-05 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/28908
+	* gfortran.dg/used_types_7.f90: New test.
+	* gfortran.dg/used_types_8.f90: New test.
+	* gfortran.dg/used_types_9.f90: New test.
+
 2006-09-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20060904-1.c: New test.

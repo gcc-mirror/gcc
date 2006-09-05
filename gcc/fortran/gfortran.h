@@ -927,6 +927,17 @@ typedef struct gfc_symtree
 }
 gfc_symtree;
 
+/* A linked list of derived types in the namespace.  */
+typedef struct gfc_dt_list
+{
+  struct gfc_symbol *derived;
+  struct gfc_dt_list *next;
+}
+gfc_dt_list;
+
+#define gfc_get_dt_list() gfc_getmem(sizeof(gfc_dt_list))
+
+
 /* A namespace describes the contents of procedure, module or
    interface block.  */
 /* ??? Anything else use these?  */
@@ -988,6 +999,9 @@ typedef struct gfc_namespace
 
   /* A list of all alternate entry points to this procedure (or NULL).  */
   gfc_entry_list *entries;
+
+  /* A list of all derived types in this procedure (or NULL).  */
+  gfc_dt_list *derived_types;
 
   /* Set to 1 if namespace is a BLOCK DATA program unit.  */
   int is_block_data;
