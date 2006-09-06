@@ -960,6 +960,8 @@ convert_to_void (tree expr, const char *implicit)
 	}
       expr = build1 (CONVERT_EXPR, void_type_node, expr);
     }
+  if (! TREE_SIDE_EFFECTS (expr))
+    expr = void_zero_node;
   return expr;
 }
 

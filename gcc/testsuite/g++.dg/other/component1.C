@@ -23,7 +23,7 @@ void Foo () {
   c.f;		        // { dg-error "statement cannot resolve" "" }
   c.f<int>;		// { dg-error "statement cannot resolve" "" }
   
-  c.g == 1;		// { dg-error "invalid use of" "" }
-  c.f == 1;		// { dg-error "invalid use of" "" }
-  c.f<int> == 1;	// { dg-error "invalid use of" "" }
+  c.g == 1;		// { dg-error "invalid" "" }
+  c.f == 1;		// { dg-error "invalid" "" }
+  c.f<int> == 1;	// { dg-error "invalid" "" }
 }
