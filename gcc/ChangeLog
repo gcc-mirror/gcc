@@ -1,3 +1,7 @@
+2006-09-06  Diego Novillo  <dnovillo@redhat.com>
+
+	* doc/contrib.texi: Update my entry.
+
 2006-09-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/frv/frv.h (EXTRA_MEMORY_CONSTRAINT): Define.
