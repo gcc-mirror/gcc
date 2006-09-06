@@ -1,5 +1,9 @@
 2006-09-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/26671
+	* typeck.c (maybe_warn_about_returning_address_of_local): Look 
+	through COMPONENT_REF and ARRAY_REF.	
+
 	PR c++/26102
 	* name-lookup.c (do_class_using_decl): Try to find the base even
 	if bases_dependent_p.
