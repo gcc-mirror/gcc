@@ -2824,18 +2824,19 @@ do_class_using_decl (tree scope, tree name)
      class type.  However, if all of the base classes are
      non-dependent, then we can avoid delaying the check until
      instantiation.  */
-  if (!scope_dependent_p && !bases_dependent_p)
+  if (!scope_dependent_p)
     {
       base_kind b_kind;
-      tree binfo;
       binfo = lookup_base (current_class_type, scope, ba_any, &b_kind);
       if (b_kind < bk_proper_base)
 	{
-	  error_not_base_type (scope, current_class_type);
-	  return NULL_TREE;
+	  if (!bases_dependent_p)
+	    {
+	      error_not_base_type (scope, current_class_type);
+	      return NULL_TREE;
+	    }
 	}
-
-      if (!name_dependent_p)
+      else if (!name_dependent_p)
 	{
 	  decl = lookup_member (binfo, name, 0, false);
 	  if (!decl)
