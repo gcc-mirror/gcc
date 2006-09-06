@@ -1,3 +1,13 @@
+2006-09-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/26102
+	* name-lookup.c (do_class_using_decl): Try to find the base even
+	if bases_dependent_p.
+	* pt.c (type_dependent_expression_p): A USING_DECL is dependent.	
+
+	PR c++/19809
+	* pt.c (tsubst_friend_function): Set DECL_INITIAL before pushdecl.
+
 2006-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR 23287 Revert my 2006-09-01 patch.
