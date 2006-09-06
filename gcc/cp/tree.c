@@ -853,7 +853,8 @@ int
 is_overloaded_fn (tree x)
 {
   /* A baselink is also considered an overloaded function.  */
-  if (TREE_CODE (x) == OFFSET_REF)
+  if (TREE_CODE (x) == OFFSET_REF
+      || TREE_CODE (x) == COMPONENT_REF)
     x = TREE_OPERAND (x, 1);
   if (BASELINK_P (x))
     x = BASELINK_FUNCTIONS (x);
@@ -880,6 +881,8 @@ get_first_fn (tree from)
 {
   gcc_assert (is_overloaded_fn (from));
   /* A baselink is also considered an overloaded function.  */
+  if (TREE_CODE (from) == COMPONENT_REF)
+    from = TREE_OPERAND (from, 1);
   if (BASELINK_P (from))
     from = BASELINK_FUNCTIONS (from);
   return OVL_CURRENT (from);

@@ -7014,8 +7014,6 @@ grokdeclarator (const cp_declarator *declarator,
 		  tree fns = TREE_OPERAND (decl, 0);
 
 		  dname = fns;
-		  if (TREE_CODE (dname) == COMPONENT_REF)
-		    dname = TREE_OPERAND (dname, 1);
 		  if (TREE_CODE (dname) != IDENTIFIER_NODE)
 		    {
 		      gcc_assert (is_overloaded_fn (dname));

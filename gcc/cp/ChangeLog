@@ -1,3 +1,12 @@
+2006-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/26696
+	* cvt.c (convert_to_void): Replace a subexpression with no side 
+	effects with void_zero_node.
+	* tree.c (is_overloaded_fn): Look through COMPONENT_REF.
+	(get_first_fn): Ditto.
+	* decl.c (grokdeclarator): No need to look through COMPONENT_REF.
+
 2006-09-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/26571
