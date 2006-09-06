@@ -646,8 +646,8 @@ engine setup, various documentation fixes and other small fixes.
 Geoff Noer for his work on getting cygwin native builds working.
 
 @item
-Diego Novillo for his SPEC performance tracking web pages and assorted
-fixes in the middle end and various back ends.
+Diego Novillo for his work on Tree SSA, OpenMP, SPEC performance
+tracking web pages and assorted fixes.
 
 @item
 David O'Brien for the FreeBSD/alpha, FreeBSD/AMD x86-64, FreeBSD/ARM,
