@@ -1376,6 +1376,9 @@ extern enum reg_class reg_class_from_letter[];
    : (C) == 'U' ? EXTRA_CONSTRAINT_FOR_U (VALUE)			\
    : 0)
 
+#define EXTRA_MEMORY_CONSTRAINT(C,STR) \
+  ((C) == 'U' || (C) == 'R' || (C) == 'T')
+
 #define CONSTRAINT_LEN(C, STR) \
   ((C) == 'D' ? 3 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
 
