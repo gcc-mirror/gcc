@@ -1,5 +1,9 @@
 2006-09-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/26571
+	* parser.c (cp_parser_diagnose_invalid_type_name): Handle the case
+	where the name is a type used incorrectly.
+
 	PR c++/26671
 	* typeck.c (maybe_warn_about_returning_address_of_local): Look 
 	through COMPONENT_REF and ARRAY_REF.	
