@@ -3149,8 +3149,8 @@ install-gcc-tooldir:
 macro_list: s-macro_list; @true
 s-macro_list : $(GCC_PASSES) 
 	echo | $(GCC_FOR_TARGET) -E -dM - | \
-	  sed -n 's/^#define \([^_][a-zA-Z0-9_]*\).*/\1/p ; \
-		s/^#define \(_[^_A-Z][a-zA-Z0-9_]*\).*/\1/p' | \
+	  sed -n -e 's/^#define \([^_][a-zA-Z0-9_]*\).*/\1/p' \
+		-e 's/^#define \(_[^_A-Z][a-zA-Z0-9_]*\).*/\1/p' | \
 	  sort -u > tmp-macro_list
 	$(SHELL) $(srcdir)/../move-if-change tmp-macro_list macro_list
 	$(STAMP) s-macro_list
