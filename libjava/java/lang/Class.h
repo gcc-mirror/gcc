@@ -234,7 +234,8 @@ jmethodID JvGetFirstMethod (jclass);
 
 #ifdef INTERPRETER
 // Finds a desired interpreter method in the given class or NULL if not found
-_Jv_InterpMethod* _Jv_FindInterpreterMethod (jclass, jmethodID);
+class _Jv_MethodBase;
+_Jv_MethodBase *_Jv_FindInterpreterMethod (jclass, jmethodID);
 #endif
 
 // Friend classes and functions to implement the ClassLoader
@@ -474,8 +475,8 @@ private:
   friend jint (::JvNumMethods) (jclass);
   friend jmethodID (::JvGetFirstMethod) (jclass);
 #ifdef INTERPRETER
-  friend _Jv_InterpMethod* (::_Jv_FindInterpreterMethod) (jclass klass,
-							  jmethodID desired_method);
+  friend _Jv_MethodBase *(::_Jv_FindInterpreterMethod) (jclass klass,
+							jmethodID desired_method);
 #endif
 
   // Friends classes and functions to implement the ClassLoader

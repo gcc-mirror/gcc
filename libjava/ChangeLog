@@ -1,3 +1,11 @@
+2006-09-06  Keith Seitz  <keiths@redhat.com>
+
+	* java/lang/Class.h (_Jv_FindInterpreterMethod): Change return type
+	to _Jv_MethodBase instead of _Jv_InterpMethod.
+	* java/lang/natClass.cc (_Jv_FindInterpreterMethod): Likewise.
+	Do not check access flags.
+	Fix some minor style anomalies.
+	
 2006-09-01  Geoffrey Keating  <geoffk@apple.com>
 
 	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one):
