@@ -28,7 +28,6 @@
 	updating_used_alone and after cleanup CFG, call
 	recalculate_used_alone.
 
-
 2006-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/28952
