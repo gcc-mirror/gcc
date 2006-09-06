@@ -1,7 +1,6 @@
 2006-09-05 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/28908
-	REGRESSION FIX
 	* gfortran.h : Restore the gfc_dt_list structure and reference
 	to it in gfc_namespace.
 	* resolve.c (resolve_fl_derived): Restore the building of the
@@ -28,12 +27,10 @@
 2006-08-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28885
-	REGRESSION FIX
 	* trans-expr.c (gfc_conv_aliased_arg): Ensure that the temp
 	declaration is retained for INTENT(OUT) arguments.
 
 	PR fortran/28873
-	REGRESSION FIX
 	PR fortran/20067
 	* resolve.c (resolve_generic_f): Make error message more
 	comprehensible.
@@ -69,7 +66,6 @@
 2006-08-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28788
-	REGRESSION FIX
 	* symbol.c (gfc_use_derived): Never eliminate the symbol,
 	following reassociation of use associated derived types.
 
