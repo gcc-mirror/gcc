@@ -80,7 +80,7 @@ static tree tree_may_unswitch_on (basic_block, struct loop *);
 
 /* Main entry point.  Perform loop unswitching on all suitable LOOPS.  */
 
-void
+unsigned int
 tree_ssa_unswitch_loops (struct loops *loops)
 {
   int i, num;
@@ -104,7 +104,8 @@ tree_ssa_unswitch_loops (struct loops *loops)
     }
 
   if (changed)
-    cleanup_tree_cfg_loop ();
+    return TODO_cleanup_cfg;
+  return 0;
 }
 
 /* Checks whether we can unswitch LOOP on condition at end of BB -- one of its

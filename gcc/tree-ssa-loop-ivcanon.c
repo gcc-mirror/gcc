@@ -330,7 +330,7 @@ canonicalize_loop_induction_variables (struct loops *loops, struct loop *loop,
 /* The main entry point of the pass.  Adds canonical induction variables
    to the suitable LOOPS.  */
 
-void
+unsigned int
 canonicalize_induction_variables (struct loops *loops)
 {
   unsigned i;
@@ -352,14 +352,15 @@ canonicalize_induction_variables (struct loops *loops)
   scev_reset ();
 
   if (changed)
-    cleanup_tree_cfg_loop ();
+    return TODO_cleanup_cfg;
+  return 0;
 }
 
 /* Unroll LOOPS completely if they iterate just few times.  Unless
    MAY_INCREASE_SIZE is true, perform the unrolling only if the
    size of the code does not increase.  */
 
-void
+unsigned int
 tree_unroll_loops_completely (struct loops *loops, bool may_increase_size)
 {
   unsigned i;
@@ -388,7 +389,8 @@ tree_unroll_loops_completely (struct loops *loops, bool may_increase_size)
   scev_reset ();
 
   if (changed)
-    cleanup_tree_cfg_loop ();
+    return TODO_cleanup_cfg;
+  return 0;
 }
 
 /* Checks whether LOOP is empty.  */
@@ -562,7 +564,7 @@ try_remove_empty_loop (struct loop *loop, bool *changed)
 
 /* Remove the empty LOOPS.  */
 
-void
+unsigned int
 remove_empty_loops (struct loops *loops)
 {
   bool changed = false;
@@ -574,6 +576,7 @@ remove_empty_loops (struct loops *loops)
   if (changed)
     {
       scev_reset ();
-      cleanup_tree_cfg_loop ();
+      return TODO_cleanup_cfg;
     }
+  return 0;
 }

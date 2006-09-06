@@ -798,11 +798,11 @@ bool empty_block_p (basic_block);
 /* In tree-ssa-loop*.c  */
 
 void tree_ssa_lim (struct loops *);
-void tree_ssa_unswitch_loops (struct loops *);
-void canonicalize_induction_variables (struct loops *);
-void tree_unroll_loops_completely (struct loops *, bool);
-void tree_ssa_prefetch_arrays (struct loops *);
-void remove_empty_loops (struct loops *);
+unsigned int tree_ssa_unswitch_loops (struct loops *);
+unsigned int canonicalize_induction_variables (struct loops *);
+unsigned int tree_unroll_loops_completely (struct loops *, bool);
+unsigned int tree_ssa_prefetch_arrays (struct loops *);
+unsigned int remove_empty_loops (struct loops *);
 void tree_ssa_iv_optimize (struct loops *);
 
 bool number_of_iterations_exit (struct loop *, edge,

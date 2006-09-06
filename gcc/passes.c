@@ -727,10 +727,16 @@ execute_todo (unsigned int flags)
   /* Always cleanup the CFG before trying to update SSA .  */
   if (flags & TODO_cleanup_cfg)
     {
+      /* CFG Cleanup can cause a constant to prop into an ARRAY_REF.  */
+      updating_used_alone = true;
+
       if (current_loops)
 	cleanup_tree_cfg_loop ();
       else
 	cleanup_tree_cfg ();
+
+      /* Update the used alone after cleanup cfg.  */
+      recalculate_used_alone ();
 
       /* When cleanup_tree_cfg merges consecutive blocks, it may
 	 perform some simplistic propagation when removing single

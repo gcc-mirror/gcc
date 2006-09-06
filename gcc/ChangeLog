@@ -1,5 +1,36 @@
 2006-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/28937
+	* tree-flow.h (tree_ssa_unswitch_loops): Return unsigned int.
+	(canonicalize_induction_variables): Likewise.
+	(tree_unroll_loops_completely): Likewise.
+	(tree_ssa_prefetch_arrays): Likewise.
+	(remove_empty_loops): Likewise.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Return
+	TODO_cleanup_cfg instead of directly calling
+	cleanup_tree_cfg_loop.
+	* tree-ssa-loop-ivcanon.c (canonicalize_induction_variables):
+	Likewise.
+	(tree_unroll_loops_completely): Likewise.
+	(remove_empty_loops): Likewise.
+	* tree-ssa-loop-prefetch.c (tree_ssa_prefetch_arrays): Likewise.
+	* tree-ssa-loop.c (tree_ssa_loop_unswitch): Use the return value
+	of tree_ssa_unswitch_loops.
+	(tree_ssa_loop_ivcanon): Use the return value of
+	canonicalize_induction_variables.
+	(tree_ssa_empty_loop): Use the return value of
+	remove_empty_loops.
+	(tree_complete_unroll): Use the return value of
+	tree_unroll_loops_completely.
+	(tree_ssa_loop_prefetch): Use the return value of
+	tree_ssa_prefetch_arrays.
+	* passes.c (execute_todo): Before Cleanup CFG, set
+	updating_used_alone and after cleanup CFG, call
+	recalculate_used_alone.
+
+
+2006-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/28952
 	* tree-vect-transform.c (vectorizable_condition): Move the check
 	for the type after the check for simple condition.

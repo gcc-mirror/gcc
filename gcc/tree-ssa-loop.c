@@ -158,8 +158,7 @@ tree_ssa_loop_unswitch (void)
   if (!current_loops)
     return 0;
 
-  tree_ssa_unswitch_loops (current_loops);
-  return 0;
+  return tree_ssa_unswitch_loops (current_loops);
 }
 
 static bool
@@ -260,8 +259,7 @@ tree_ssa_loop_ivcanon (void)
   if (!current_loops)
     return 0;
 
-  canonicalize_induction_variables (current_loops);
-  return 0;
+  return canonicalize_induction_variables (current_loops);
 }
 
 static bool
@@ -322,8 +320,7 @@ tree_ssa_empty_loop (void)
   if (!current_loops)
     return 0;
 
-  remove_empty_loops (current_loops);
-  return 0;
+  return remove_empty_loops (current_loops);
 }
 
 struct tree_opt_pass pass_empty_loop =
@@ -381,11 +378,10 @@ tree_complete_unroll (void)
   if (!current_loops)
     return 0;
 
-  tree_unroll_loops_completely (current_loops,
-				flag_unroll_loops
-				|| flag_peel_loops
-				|| optimize >= 3);
-  return 0;
+  return tree_unroll_loops_completely (current_loops,
+				       flag_unroll_loops
+					|| flag_peel_loops
+					|| optimize >= 3);
 }
 
 static bool
@@ -419,8 +415,7 @@ tree_ssa_loop_prefetch (void)
   if (!current_loops)
     return 0;
 
-  tree_ssa_prefetch_arrays (current_loops);
-  return 0;
+  return tree_ssa_prefetch_arrays (current_loops);
 }
 
 static bool
