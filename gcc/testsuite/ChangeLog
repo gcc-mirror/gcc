@@ -1,3 +1,7 @@
+2006-09-06  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/pr27226.c: Remove testcase again.
+
 2006-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/28937
