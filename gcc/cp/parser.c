@@ -2101,6 +2101,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
     error ("invalid use of template-name %qE without an argument list", decl);
   else if (TREE_CODE (id) == BIT_NOT_EXPR)
     error ("invalid use of destructor %qD as a type", id);
+  else if (TREE_CODE (decl) == TYPE_DECL)
+    /* Something like 'unsigned A a;'  */
+    error ("invalid combination of multiple type-specifiers");
   else if (!parser->scope)
     {
       /* Issue an error message.  */
