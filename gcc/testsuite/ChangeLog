@@ -1,5 +1,10 @@
 2006-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/28937
+	* g++.dg/opt/unroll2.C: New test.
+
+2006-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/28952
 	* gcc.dg/vect/pr28952.c: New test.
 

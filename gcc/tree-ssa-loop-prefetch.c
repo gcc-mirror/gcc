@@ -1006,12 +1006,13 @@ fail:
 
 /* Issue prefetch instructions for array references in LOOPS.  */
 
-void
+unsigned int
 tree_ssa_prefetch_arrays (struct loops *loops)
 {
   unsigned i;
   struct loop *loop;
   bool unrolled = false;
+  int todo_flags = 0;
 
   if (!HAVE_prefetch
       /* It is possible to ask compiler for say -mtune=i486 -march=pentium4.
@@ -1019,7 +1020,7 @@ tree_ssa_prefetch_arrays (struct loops *loops)
 	 of processor costs and i486 does not have prefetch, but
 	 -march=pentium4 causes HAVE_prefetch to be true.  Ugh.  */
       || PREFETCH_BLOCK == 0)
-    return;
+    return 0;
 
   initialize_original_copy_tables ();
 
@@ -1057,8 +1058,9 @@ tree_ssa_prefetch_arrays (struct loops *loops)
   if (unrolled)
     {
       scev_reset ();
-      cleanup_tree_cfg_loop ();
+      todo_flags |= TODO_cleanup_cfg;
     }
 
   free_original_copy_tables ();
+  return todo_flags;
 }
