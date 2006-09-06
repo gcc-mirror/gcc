@@ -1,3 +1,9 @@
+2006-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/28952
+	* tree-vect-transform.c (vectorizable_condition): Move the check
+	for the type after the check for simple condition.
+
 2006-09-05  J"orn Rennecke  <joern.rennecke@st.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -20,10 +26,10 @@
 
 2006-09-05  Anatoly Sokolov <aesok@post.ru>
 
-        * config/avr/avr.c (avr_mcu_types): Add support for at90pwm1 device.
-        * config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
-        * config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
-        (avr_rtx_costs): Mark 'outer_code' argument with ATTRIBUTE_UNUSED.
+	* config/avr/avr.c (avr_mcu_types): Add support for at90pwm1 device.
+	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
+	(avr_rtx_costs): Mark 'outer_code' argument with ATTRIBUTE_UNUSED.
 
 2006-09-05  Richard Guenther  <rguenther@suse.de>
 
