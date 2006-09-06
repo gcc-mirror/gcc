@@ -1240,25 +1240,20 @@ _Jv_getInterfaceMethod (jclass search_class, jclass &found_class, int &index,
 }
 
 #ifdef INTERPRETER
-_Jv_InterpMethod*
+_Jv_MethodBase *
 _Jv_FindInterpreterMethod (jclass klass, jmethodID desired_method)
 {
   using namespace java::lang::reflect;
 
-  _Jv_InterpClass* iclass
-    = reinterpret_cast<_Jv_InterpClass*> (klass->aux_info);
-  _Jv_MethodBase** imethods = _Jv_GetFirstMethod (iclass);
+  _Jv_InterpClass *iclass
+    = reinterpret_cast<_Jv_InterpClass *> (klass->aux_info);
+  _Jv_MethodBase **imethods = _Jv_GetFirstMethod (iclass);
 
   for (int i = 0; i < JvNumMethods (klass); ++i)
     {
-      _Jv_MethodBase* imeth = imethods[i];
-      _Jv_ushort accflags = klass->methods[i].accflags;
-      if ((accflags & (Modifier::NATIVE | Modifier::ABSTRACT)) == 0)
-	{
-	  _Jv_InterpMethod* im = reinterpret_cast<_Jv_InterpMethod*> (imeth);
-	  if (im->get_method () == desired_method)
-	    return im;
-	}
+      _Jv_MethodBase *imeth = imethods[i];
+      if (imeth->get_method () == desired_method)
+	return imeth;
     }
 
   return NULL;
