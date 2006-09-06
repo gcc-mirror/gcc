@@ -1,3 +1,8 @@
+2006-09-06  Matthias Klose  <doko@debian.org>
+
+	* Makefile.in (s-macro_list): Conform to POSIX rules in single quoted
+	strings.
+
 2006-08-25  Fariborz Jahanian  <fjahanian@apple.com>
 
 	PR c/28418
