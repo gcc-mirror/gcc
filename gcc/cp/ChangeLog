@@ -1,3 +1,13 @@
+2006-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28903
+	* pt.c (tsubst): Use fold_non_dependent_expr to fold array
+	dimensions.
+
+	PR c++/28886
+	* pt.c (unify): Avoid unnecessary calls to fold_build2 for array
+	dimensions.
+
 2006-09-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/26696

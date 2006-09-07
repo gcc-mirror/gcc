@@ -7216,9 +7216,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree max, omax = TREE_OPERAND (TYPE_MAX_VALUE (t), 0);
 
-	/* The array dimension behaves like a non-type template arg,
-	   in that we want to fold it as much as possible.  */
-	max = tsubst_template_arg (omax, args, complain, in_decl);
+	max = tsubst_expr (omax, args, complain, in_decl,
+			   /*integral_constant_expression_p=*/false);
+	max = fold_non_dependent_expr (max);
 	max = fold_decl_constant_value (max);
 
 	if (TREE_CODE (max) != INTEGER_CST 
@@ -10618,21 +10618,56 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	{
 	  tree parm_max;
 	  tree arg_max;
-
-	  parm_max = TYPE_MAX_VALUE (TYPE_DOMAIN (parm));
-	  arg_max = TYPE_MAX_VALUE (TYPE_DOMAIN (arg));
+	  bool parm_cst;
+	  bool arg_cst;
 
 	  /* Our representation of array types uses "N - 1" as the
 	     TYPE_MAX_VALUE for an array with "N" elements, if "N" is
-	     not an integer constant.  */
-	  if (TREE_CODE (parm_max) == MINUS_EXPR)
+	     not an integer constant.  We cannot unify arbitrarily
+	     complex expressions, so we eliminate the MINUS_EXPRs
+	     here.  */
+	  parm_max = TYPE_MAX_VALUE (TYPE_DOMAIN (parm));
+	  parm_cst = TREE_CODE (parm_max) == INTEGER_CST;
+	  if (!parm_cst)
 	    {
-	      arg_max = fold_build2 (PLUS_EXPR,
-				     integer_type_node,
-				     arg_max,
-				     TREE_OPERAND (parm_max, 1));
+	      gcc_assert (TREE_CODE (parm_max) == MINUS_EXPR);
 	      parm_max = TREE_OPERAND (parm_max, 0);
 	    }
+	  arg_max = TYPE_MAX_VALUE (TYPE_DOMAIN (arg));
+	  arg_cst = TREE_CODE (arg_max) == INTEGER_CST;
+	  if (!arg_cst)
+	    {
+	      /* The ARG_MAX may not be a simple MINUS_EXPR, if we are
+		 trying to unify the type of a variable with the type
+		 of a template parameter.  For example:
+
+                   template <unsigned int N>
+		   void f (char (&) [N]);
+		   int g(); 
+		   void h(int i) {
+                     char a[g(i)];
+		     f(a); 
+                   }
+
+                Here, the type of the ARG will be "int [g(i)]", and
+                may be a SAVE_EXPR, etc.  */
+	      if (TREE_CODE (arg_max) != MINUS_EXPR)
+		return 1;
+	      arg_max = TREE_OPERAND (arg_max, 0);
+	    }
+
+	  /* If only one of the bounds used a MINUS_EXPR, compensate
+	     by adding one to the other bound.  */
+	  if (parm_cst && !arg_cst)
+	    parm_max = fold_build2 (PLUS_EXPR,
+				    integer_type_node,
+				    parm_max,
+				    integer_one_node);
+	  else if (arg_cst && !parm_cst)
+	    arg_max = fold_build2 (PLUS_EXPR,
+				   integer_type_node,
+				   arg_max,
+				   integer_one_node);
 
 	  if (unify (tparms, targs, parm_max, arg_max, UNIFY_ALLOW_INTEGER))
 	    return 1;

@@ -1,3 +1,11 @@
+2006-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28903
+	* g++.dg/ext/vla3.C: New test.
+
+	PR c++/28886
+	* g++.dg/template/array16.C: New test.
+
 2006-09-06  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/pr27226.c: Remove testcase again.
