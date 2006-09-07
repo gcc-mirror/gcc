@@ -1,3 +1,9 @@
+2006-09-07  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/28284
+	* pt.c (fold_non_dependent_expr): Make sure expr is not dereferenced if it
+	is NULL.
+
 2006-09-06  Zak Kipling  <zak@transversal.com>
 
         PR c++/26195
