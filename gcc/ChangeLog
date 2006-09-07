@@ -1,3 +1,9 @@
+2006-09-06  James E Wilson  <wilson@specifix.com>
+
+	PR rtl-opt/27883
+	* flow.c (update_life_info): If UPDATE_LIFE_LOCAL and PROP_DEATH_NOTES
+	then call count_or_remove_death_notes.
+
 2006-09-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27371
