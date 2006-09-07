@@ -1,3 +1,8 @@
+2006-09-07  Eric Christopher  <echristo@apple.com>
+
+	* config/rs6000/darwin.h (HANDLE_SYSV_PRAGMA): Move from here...
+	* config/darwin.h: ... to here.
+
 2006-09-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (x86_partial_flag_reg_stall): New.
@@ -270,7 +275,7 @@
 
 	PR other/22313
 	* dwarf2out.c (add_fde_cfi): Use a set_loc if the current label is
-	NULL, otherwise use an advance_loc4 to adjust relative to the 
+	NULL, otherwise use an advance_loc4 to adjust relative to the
 	current label.
 	(output_cfi) <DW_CFA_set_loc>: Update the current label.
 	(dwarf2out_switch_text_section): Reset the current label to avoid
@@ -467,7 +472,7 @@
 2006-08-24  Bill Wendling  <wendling@apple.com>
 
 	* doc/tm.texi (TARGET_DEFAULT_PACK_STRUCT): Fixed English.
-	
+
 2006-08-24  Jan Hubicka  <jh@suse.cz>
 
 	* reload1.c (emit_reload_insns): Fix yet another typo in my patch.
@@ -556,7 +561,7 @@
 	* gimplify.c (gimplify_init_constructor) <RECORD,UNION,ARRAY types>:
 	Arrange for the temporary captures of components overlapping the lhs
 	to happen before the lhs is possibly cleared.
-	
+
 2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* config/arm/pr-support.c (__gnu_unwind_execute): Insert " + 1" in
@@ -679,10 +684,10 @@
 
 	PR c++/28573
 	* c-common.c (fold_offsetof_1): Add an argument and recurse down to it
-	or the INTEGER_CST.  Fail on a CALL_EXPR. 
+	or the INTEGER_CST.  Fail on a CALL_EXPR.
 	(fold_offsetof): Pass new argument to fold_offsetof_1.
 	* c-parser.c (c_parser_postfix_expression): Don't include a NULL
-	operand into an INDIRECT_REF. 
+	operand into an INDIRECT_REF.
 	* c-typeck.c (build_unary_op): Adjust call to fold_offsetof.
 
 2006-08-16  Zdenek Dvorak <dvorakz@suse.cz>
@@ -1020,7 +1025,7 @@
 	* rtl.h (UINTVAL) New.
 	* config/rs6000/rs6000.c (SMALL_INT) Use it.
 	* testsuite/gcc.dg/20060801-1.c: New.
-	
+
 2006-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR debug/23336
