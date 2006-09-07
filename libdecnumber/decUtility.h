@@ -24,5 +24,5 @@
 #define decDenseUnpackCoeff __decDenseUnpackCoeff
 #endif
 
-extern void decDensePackCoeff (decNumber *, uByte *, Int, Int);
-extern void decDenseUnpackCoeff (uByte *, Int, decNumber *, Int, Int);
+extern void decDensePackCoeff (const decNumber *, uByte *, Int, Int);
+extern void decDenseUnpackCoeff (const uByte *, Int, decNumber *, Int, Int);

@@ -1,3 +1,51 @@
+2006-09-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.ac (ACX_PROG_CC_WARNING_OPTS): Add -Wcast-qual.
+	* configure, config.in: Regenerate.
+
+	* decContext.c (decContextStatusToString): Constify.
+	* decContext.h (decContextStatusToString): Likewise.
+	* decNumber.c (decNumberToString, decNumberToEngString,
+	decNumberAbs, decNumberAdd, decNumberCompare, decNumberDivide,
+	decNumberDivideInteger, decNumberMax, decNumberMin,
+	decNumberMinus, decNumberPlus, decNumberMultiply,
+	decNumberNormalize, decNumberQuantize, decNumberRescale,
+	 decNumberRemainder, decNumberRemainderNear,
+	decNumberSameQuantum, decNumberSquareRoot, decNumberSubtract,
+	decNumberToIntegralValue, decNumberCopy, decToString, decAddOp,
+	decDivideOp, decMultiplyOp, decQuantizeOp, decCompareOp,
+	decCompare, decUnitCompare, decUnitAddSub, decRoundOperand,
+	decCopyFit, decSetCoeff, decGetInt, decNaNs, decGetDigits,
+	decNumberShow, decDumpAr, decCheckOperands, decCheckNumber):
+	Likewise.
+	* decNumber.h (decNumberToString, decNumberToEngString,
+	decNumberAbs, decNumberAdd, decNumberCompare, decNumberDivide,
+	decNumberDivideInteger, decNumberMax, decNumberMin,
+	decNumberMinus, decNumberMultiply, decNumberNormalize,
+	decNumberPlus, decNumberQuantize, decNumberRemainder,
+	 decNumberRemainderNear, decNumberRescale,
+	decNumberSameQuantum, decNumberSquareRoot, decNumberSubtract,
+	decNumberToIntegralValue, decNumberCopy): Likewise.
+	* decUtility.c (decDensePackCoeff, decDenseUnpackCoeff):
+	Likewise.
+	* decUtility.h (decDensePackCoeff, decDenseUnpackCoeff):
+	Likewise.
+	* decimal128.c (decimal128FromNumber, decimal128ToNumber,
+	decimal128ToString, decimal128ToEngString, decimal128Show):
+	Likewise.
+	* decimal128.h (decimal128ToString, decimal128ToEngString,
+	decimal128FromNumber, decimal128ToNumber): Likewise.
+	* decimal32.c (decimal32FromNumber, decimal32ToNumber,
+	decimal32ToString, decimal32ToEngString, decimal32Show):
+	Likewise.
+	* decimal32.h (decimal32ToString, decimal32ToEngString,
+	decimal32FromNumber, decimal32ToNumber): Likewise.
+	* decimal64.c (decimal64FromNumber, decimal64ToNumber,
+	decimal64ToString, decimal64ToEngString, decimal64Show):
+	Likewise.
+	* decimal64.h (decimal64ToString, decimal64ToEngString,
+	decimal64FromNumber, decimal64ToNumber): Likewise.
+
 2006-08-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decContext.c (decContextSetStatusFromString): Constify.

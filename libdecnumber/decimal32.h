@@ -93,11 +93,11 @@ typedef struct
 
 /* String conversions.  */
 decimal32 *decimal32FromString (decimal32 *, const char *, decContext *);
-char *decimal32ToString (decimal32 *, char *);
-char *decimal32ToEngString (decimal32 *, char *);
+char *decimal32ToString (const decimal32 *, char *);
+char *decimal32ToEngString (const decimal32 *, char *);
 
 /* decNumber conversions.  */
-decimal32 *decimal32FromNumber (decimal32 *, decNumber *, decContext *);
-decNumber *decimal32ToNumber (decimal32 *, decNumber *);
+decimal32 *decimal32FromNumber (decimal32 *, const decNumber *, decContext *);
+decNumber *decimal32ToNumber (const decimal32 *, decNumber *);
 
 #endif

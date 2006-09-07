@@ -109,7 +109,7 @@ decContextDefault (decContext * context, Int kind)
 /*    (or no) flags are set, a generic constant message is returned.  */
 /* ------------------------------------------------------------------ */
 const char *
-decContextStatusToString (decContext * context)
+decContextStatusToString (const decContext * context)
 {
   Int status = context->status;
   if (status == DEC_Conversion_syntax)

@@ -38,8 +38,8 @@
 #include "decUtility.h"		/* utility routines */
 
 #if DECTRACE || DECCHECK
-void decimal128Show (decimal128 *);	/* for debug */
-void decNumberShow (decNumber *);	/* .. */
+void decimal128Show (const decimal128 *);	/* for debug */
+void decNumberShow (const decNumber *);	/* .. */
 #endif
 
 /* Useful macro */
@@ -64,7 +64,7 @@ void decNumberShow (decNumber *);	/* .. */
 /* power of ten, or if the exponent on a zero had to be clamped.      */
 /* ------------------------------------------------------------------ */
 decimal128 *
-decimal128FromNumber (decimal128 * d128, decNumber * dn, decContext * set)
+decimal128FromNumber (decimal128 * d128, const decNumber * dn, decContext * set)
 {
   uInt status = 0;		/* status accumulator */
   Int pad = 0;			/* coefficient pad digits */
@@ -184,7 +184,7 @@ decimal128FromNumber (decimal128 * d128, decNumber * dn, decContext * set)
 /* No error is possible.                                              */
 /* ------------------------------------------------------------------ */
 decNumber *
-decimal128ToNumber (decimal128 * d128, decNumber * dn)
+decimal128ToNumber (const decimal128 * d128, decNumber * dn)
 {
   uInt msd;			/* coefficient MSD */
   decimal128 wk;		/* working copy, if needed */
@@ -263,7 +263,7 @@ decimal128ToNumber (decimal128 * d128, decNumber * dn)
 /*  No error is possible, and no status can be set.                   */
 /* ------------------------------------------------------------------ */
 char *
-decimal128ToString (decimal128 * d128, char *string)
+decimal128ToString (const decimal128 * d128, char *string)
 {
   decNumber dn;			/* work */
   decimal128ToNumber (d128, &dn);
@@ -272,7 +272,7 @@ decimal128ToString (decimal128 * d128, char *string)
 }
 
 char *
-decimal128ToEngString (decimal128 * d128, char *string)
+decimal128ToEngString (const decimal128 * d128, char *string)
 {
   decNumber dn;			/* work */
   decimal128ToNumber (d128, &dn);
@@ -321,7 +321,7 @@ decimal128FromString (decimal128 * result, const char *string, decContext * set)
 /* ------------------------------------------------------------------ */
 /* Also shows sign/cob/expconfields extracted */
 void
-decimal128Show (decimal128 * d128)
+decimal128Show (const decimal128 * d128)
 {
   char buf[DECIMAL128_Bytes * 2 + 1];
   Int i, j;

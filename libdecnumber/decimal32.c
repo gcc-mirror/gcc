@@ -38,8 +38,8 @@
 #include "decUtility.h"		/* utility routines */
 
 #if DECTRACE || DECCHECK
-void decimal32Show (decimal32 *);	/* for debug */
-void decNumberShow (decNumber *);	/* .. */
+void decimal32Show (const decimal32 *);	/* for debug */
+void decNumberShow (const decNumber *);	/* .. */
 #endif
 
 /* Useful macro */
@@ -64,7 +64,7 @@ void decNumberShow (decNumber *);	/* .. */
 /* power of ten, or if the exponent on a zero had to be clamped.      */
 /* ------------------------------------------------------------------ */
 decimal32 *
-decimal32FromNumber (decimal32 * d32, decNumber * dn, decContext * set)
+decimal32FromNumber (decimal32 * d32, const decNumber * dn, decContext * set)
 {
   uInt status = 0;		/* status accumulator */
   Int pad = 0;			/* coefficient pad digits */
@@ -181,7 +181,7 @@ decimal32FromNumber (decimal32 * d32, decNumber * dn, decContext * set)
 /* No error is possible.                                              */
 /* ------------------------------------------------------------------ */
 decNumber *
-decimal32ToNumber (decimal32 * d32, decNumber * dn)
+decimal32ToNumber (const decimal32 * d32, decNumber * dn)
 {
   uInt msd;			/* coefficient MSD */
   decimal32 wk;			/* working copy, if needed */
@@ -255,7 +255,7 @@ decimal32ToNumber (decimal32 * d32, decNumber * dn)
 /*  No error is possible, and no status can be set.                   */
 /* ------------------------------------------------------------------ */
 char *
-decimal32ToString (decimal32 * d32, char *string)
+decimal32ToString (const decimal32 * d32, char *string)
 {
   decNumber dn;			/* work */
   decimal32ToNumber (d32, &dn);
@@ -264,7 +264,7 @@ decimal32ToString (decimal32 * d32, char *string)
 }
 
 char *
-decimal32ToEngString (decimal32 * d32, char *string)
+decimal32ToEngString (const decimal32 * d32, char *string)
 {
   decNumber dn;			/* work */
   decimal32ToNumber (d32, &dn);
@@ -312,7 +312,7 @@ decimal32FromString (decimal32 * result, const char *string, decContext * set)
 /* ------------------------------------------------------------------ */
 /* Also shows sign/cob/expconfields extracted */
 void
-decimal32Show (decimal32 * d32)
+decimal32Show (const decimal32 * d32)
 {
   char buf[DECIMAL32_Bytes * 2 + 1];
   Int i, j;

@@ -64,7 +64,7 @@
 /* No error is possible.                                              */
 /* ------------------------------------------------------------------ */
 void
-decDensePackCoeff (decNumber * dn, uByte * bytes, Int len, Int shift)
+decDensePackCoeff (const decNumber * dn, uByte * bytes, Int len, Int shift)
 {
   Int cut;			/* work */
   Int n;			/* output bunch counter */
@@ -72,7 +72,7 @@ decDensePackCoeff (decNumber * dn, uByte * bytes, Int len, Int shift)
   uInt dpd;			/* densely packed decimal value */
   uInt bin;			/* binary value 0-999 */
   uByte *bout;			/* -> current output byte */
-  Unit *inu = dn->lsu;		/* -> current input unit */
+  const Unit *inu = dn->lsu;	/* -> current input unit */
   Unit uar[DECMAXUNITS];	/* working copy of units, iff shifted */
 #if DECDPUN!=3			/* not fast path */
   Unit in;			/* current input unit */
@@ -83,7 +83,8 @@ decDensePackCoeff (decNumber * dn, uByte * bytes, Int len, Int shift)
       /* shift the units array to the left by pad digits and copy */
       /* [this code is a special case of decShiftToMost, which could */
       /* be used instead if exposed and the array were copied first] */
-      Unit *target, *source, *first;	/* work */
+      Unit *target, *first;	/* work */
+      const Unit *source;	/* work */
       uInt next = 0;		/* work */
 
       source = dn->lsu + D2U (digits) - 1;	/* where msu comes from */
@@ -211,12 +212,12 @@ decDensePackCoeff (decNumber * dn, uByte * bytes, Int len, Int shift)
 /* No error is possible [the redundant 888 codes are allowed].        */
 /* ------------------------------------------------------------------ */
 void
-decDenseUnpackCoeff (uByte * bytes, Int len, decNumber * dn,
+decDenseUnpackCoeff (const uByte * bytes, Int len, decNumber * dn,
 		     Int bunches, Int odd)
 {
   uInt dpd = 0;			/* collector for 10 bits */
   Int n;			/* counter */
-  uByte *bin;			/* -> current input byte */
+  const uByte *bin;		/* -> current input byte */
   Unit *uout = dn->lsu;		/* -> current output unit */
   Unit out = 0;			/* accumulator */
   Int cut = 0;			/* power of ten in current unit */

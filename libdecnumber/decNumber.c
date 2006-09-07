@@ -206,29 +206,30 @@ typedef unsigned long long uLong;
 #endif
 
 /* Local routines */
-static decNumber *decAddOp (decNumber *, decNumber *, decNumber *,
-			    decContext *, uByte, uInt *);
+static decNumber *decAddOp (decNumber *, const decNumber *,
+			    const decNumber *, decContext *,
+			    uByte, uInt *);
 static void decApplyRound (decNumber *, decContext *, Int, uInt *);
-static Int decCompare (decNumber * lhs, decNumber * rhs);
-static decNumber *decCompareOp (decNumber *, decNumber *, decNumber *,
+static Int decCompare (const decNumber * lhs, const decNumber * rhs);
+static decNumber *decCompareOp (decNumber *, const decNumber *, const decNumber *,
 				decContext *, Flag, uInt *);
-static void decCopyFit (decNumber *, decNumber *, decContext *,
+static void decCopyFit (decNumber *, const decNumber *, decContext *,
 			Int *, uInt *);
-static decNumber *decDivideOp (decNumber *, decNumber *, decNumber *,
+static decNumber *decDivideOp (decNumber *, const decNumber *, const decNumber *,
 			       decContext *, Flag, uInt *);
 static void decFinalize (decNumber *, decContext *, Int *, uInt *);
-static Int decGetDigits (Unit *, Int);
+static Int decGetDigits (const Unit *, Int);
 #if DECSUBSET
-static Int decGetInt (decNumber *, decContext *);
+static Int decGetInt (const decNumber *, decContext *);
 #else
-static Int decGetInt (decNumber *);
+static Int decGetInt (const decNumber *);
 #endif
-static decNumber *decMultiplyOp (decNumber *, decNumber *, decNumber *,
-				 decContext *, uInt *);
-static decNumber *decNaNs (decNumber *, decNumber *, decNumber *, uInt *);
-static decNumber *decQuantizeOp (decNumber *, decNumber *, decNumber *,
-				 decContext *, Flag, uInt *);
-static void decSetCoeff (decNumber *, decContext *, Unit *,
+static decNumber *decMultiplyOp (decNumber *, const decNumber *,
+				 const decNumber *, decContext *, uInt *);
+static decNumber *decNaNs (decNumber *, const decNumber *, const decNumber *, uInt *);
+static decNumber *decQuantizeOp (decNumber *, const decNumber *,
+				 const decNumber *, decContext *, Flag, uInt *);
+static void decSetCoeff (decNumber *, decContext *, const Unit *,
 			 Int, Int *, uInt *);
 static void decSetOverflow (decNumber *, decContext *, uInt *);
 static void decSetSubnormal (decNumber *, decContext *, Int *, uInt *);
@@ -236,17 +237,17 @@ static Int decShiftToLeast (Unit *, Int, Int);
 static Int decShiftToMost (Unit *, Int, Int);
 static void decStatus (decNumber *, uInt, decContext *);
 static Flag decStrEq (const char *, const char *);
-static void decToString (decNumber *, char[], Flag);
+static void decToString (const decNumber *, char[], Flag);
 static decNumber *decTrim (decNumber *, Flag, Int *);
-static Int decUnitAddSub (Unit *, Int, Unit *, Int, Int, Unit *, Int);
-static Int decUnitCompare (Unit *, Int, Unit *, Int, Int);
+static Int decUnitAddSub (const Unit *, Int, const Unit *, Int, Int, Unit *, Int);
+static Int decUnitCompare (const Unit *, Int, const Unit *, Int, Int);
 
 #if !DECSUBSET
 /* decFinish == decFinalize when no subset arithmetic needed */
 #define decFinish(a,b,c,d) decFinalize(a,b,c,d)
 #else
 static void decFinish (decNumber *, decContext *, Int *, uInt *);
-static decNumber *decRoundOperand (decNumber *, decContext *, uInt *);
+static decNumber *decRoundOperand (const decNumber *, decContext *, uInt *);
 #endif
 
 /* Diagnostic macros, etc. */
@@ -275,15 +276,15 @@ uInt decAllocBytes = 0;		/* count of bytes allocated */
 /* fastest routines (and adds 600+ bytes), so should not normally be */
 /* used in 'production'. */
 #define DECUNUSED (void *)(0xffffffff)
-static Flag decCheckOperands (decNumber *, decNumber *, decNumber *,
-			      decContext *);
-static Flag decCheckNumber (decNumber *, decContext *);
+static Flag decCheckOperands (decNumber *, const decNumber *,
+			      const decNumber *, decContext *);
+static Flag decCheckNumber (const decNumber *, decContext *);
 #endif
 
 #if DECTRACE || DECCHECK
 /* Optional trace/debugging routines. */
-void decNumberShow (decNumber *);	/* displays the components of a number */
-static void decDumpAr (char, Unit *, Int);
+void decNumberShow (const decNumber *);	/* displays the components of a number */
+static void decDumpAr (char, const Unit *, Int);
 #endif
 
 /* ================================================================== */
@@ -305,14 +306,14 @@ static void decDumpAr (char, Unit *, Int);
 /*  No error is possible, and no status can be set.                   */
 /* ------------------------------------------------------------------ */
 char *
-decNumberToString (decNumber * dn, char *string)
+decNumberToString (const decNumber * dn, char *string)
 {
   decToString (dn, string, 0);
   return string;
 }
 
 char *
-decNumberToEngString (decNumber * dn, char *string)
+decNumberToEngString (const decNumber * dn, char *string)
 {
   decToString (dn, string, 1);
   return string;
@@ -640,7 +641,7 @@ decNumberFromString (decNumber * dn, const char chars[], decContext * set)
 /* in which case it has the same effect as decNumberMinus.            */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberAbs (decNumber * res, decNumber * rhs, decContext * set)
+decNumberAbs (decNumber * res, const decNumber * rhs, decContext * set)
 {
   decNumber dzero;		/* for 0 */
   uInt status = 0;		/* accumulator */
@@ -672,8 +673,8 @@ decNumberAbs (decNumber * res, decNumber * rhs, decContext * set)
 /* ------------------------------------------------------------------ */
 /* This just calls the routine shared with Subtract                   */
 decNumber *
-decNumberAdd (decNumber * res, decNumber * lhs, decNumber * rhs,
-	      decContext * set)
+decNumberAdd (decNumber * res, const decNumber * lhs,
+	      const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decAddOp (res, lhs, rhs, set, 0, &status);
@@ -695,8 +696,8 @@ decNumberAdd (decNumber * res, decNumber * lhs, decNumber * rhs,
 /* C must have space for one digit.                                   */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberCompare (decNumber * res, decNumber * lhs, decNumber * rhs,
-		  decContext * set)
+decNumberCompare (decNumber * res, const decNumber * lhs,
+		  const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decCompareOp (res, lhs, rhs, set, COMPARE, &status);
@@ -718,8 +719,8 @@ decNumberCompare (decNumber * res, decNumber * lhs, decNumber * rhs,
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberDivide (decNumber * res, decNumber * lhs,
-		 decNumber * rhs, decContext * set)
+decNumberDivide (decNumber * res, const decNumber * lhs,
+		 const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decDivideOp (res, lhs, rhs, set, DIVIDE, &status);
@@ -741,8 +742,8 @@ decNumberDivide (decNumber * res, decNumber * lhs,
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberDivideInteger (decNumber * res, decNumber * lhs,
-			decNumber * rhs, decContext * set)
+decNumberDivideInteger (decNumber * res, const decNumber * lhs,
+			const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decDivideOp (res, lhs, rhs, set, DIVIDEINT, &status);
@@ -764,8 +765,8 @@ decNumberDivideInteger (decNumber * res, decNumber * lhs,
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberMax (decNumber * res, decNumber * lhs, decNumber * rhs,
-	      decContext * set)
+decNumberMax (decNumber * res, const decNumber * lhs,
+	      const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decCompareOp (res, lhs, rhs, set, COMPMAX, &status);
@@ -787,8 +788,8 @@ decNumberMax (decNumber * res, decNumber * lhs, decNumber * rhs,
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberMin (decNumber * res, decNumber * lhs, decNumber * rhs,
-	      decContext * set)
+decNumberMin (decNumber * res, const decNumber * lhs,
+	      const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decCompareOp (res, lhs, rhs, set, COMPMIN, &status);
@@ -811,7 +812,7 @@ decNumberMin (decNumber * res, decNumber * lhs, decNumber * rhs,
 /* We simply use AddOp for the subtract, which will do the necessary. */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberMinus (decNumber * res, decNumber * rhs, decContext * set)
+decNumberMinus (decNumber * res, const decNumber * rhs, decContext * set)
 {
   decNumber dzero;
   uInt status = 0;		/* accumulator */
@@ -845,7 +846,7 @@ decNumberMinus (decNumber * res, decNumber * rhs, decContext * set)
 /* check operands and apply rounding and overflow/underflow testing.  */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberPlus (decNumber * res, decNumber * rhs, decContext * set)
+decNumberPlus (decNumber * res, const decNumber * rhs, decContext * set)
 {
   decNumber dzero;
   uInt status = 0;		/* accumulator */
@@ -876,8 +877,8 @@ decNumberPlus (decNumber * res, decNumber * rhs, decContext * set)
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberMultiply (decNumber * res, decNumber * lhs,
-		   decNumber * rhs, decContext * set)
+decNumberMultiply (decNumber * res, const decNumber * lhs,
+		   const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decMultiplyOp (res, lhs, rhs, set, &status);
@@ -898,7 +899,7 @@ decNumberMultiply (decNumber * res, decNumber * lhs,
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberNormalize (decNumber * res, decNumber * rhs, decContext * set)
+decNumberNormalize (decNumber * res, const decNumber * rhs, decContext * set)
 {
   decNumber *allocrhs = NULL;	/* non-NULL if rounded rhs allocated */
   uInt status = 0;		/* as usual */
@@ -1248,8 +1249,8 @@ decNumberPower (decNumber * res, decNumber * lhs,
 /* after the operation is guaranteed to be equal to that of B.        */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberQuantize (decNumber * res, decNumber * lhs,
-		   decNumber * rhs, decContext * set)
+decNumberQuantize (decNumber * res, const decNumber * lhs,
+		   const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decQuantizeOp (res, lhs, rhs, set, 1, &status);
@@ -1277,8 +1278,8 @@ decNumberQuantize (decNumber * res, decNumber * lhs,
 /* after the operation is guaranteed to be equal to B.                */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberRescale (decNumber * res, decNumber * lhs,
-		  decNumber * rhs, decContext * set)
+decNumberRescale (decNumber * res, const decNumber * lhs,
+		  const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decQuantizeOp (res, lhs, rhs, set, 0, &status);
@@ -1300,8 +1301,8 @@ decNumberRescale (decNumber * res, decNumber * lhs,
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberRemainder (decNumber * res, decNumber * lhs,
-		    decNumber * rhs, decContext * set)
+decNumberRemainder (decNumber * res, const decNumber * lhs,
+		    const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decDivideOp (res, lhs, rhs, set, REMAINDER, &status);
@@ -1323,8 +1324,8 @@ decNumberRemainder (decNumber * res, decNumber * lhs,
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberRemainderNear (decNumber * res, decNumber * lhs,
-			decNumber * rhs, decContext * set)
+decNumberRemainderNear (decNumber * res, const decNumber * lhs,
+			const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
   decDivideOp (res, lhs, rhs, set, REMNEAR, &status);
@@ -1343,7 +1344,7 @@ decNumberRemainderNear (decNumber * res, decNumber * lhs,
 /* No errors are possible and no context is needed.                   */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberSameQuantum (decNumber * res, decNumber * lhs, decNumber * rhs)
+decNumberSameQuantum (decNumber * res, const decNumber * lhs, const decNumber * rhs)
 {
   uByte merged;			/* merged flags */
   Unit ret = 0;			/* return value */
@@ -1440,7 +1441,7 @@ decNumberSameQuantum (decNumber * res, decNumber * lhs, decNumber * rhs)
 /* end sqrt                                                           */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberSquareRoot (decNumber * res, decNumber * rhs, decContext * set)
+decNumberSquareRoot (decNumber * res, const decNumber * rhs, decContext * set)
 {
   decContext workset, approxset;	/* work contexts */
   decNumber dzero;		/* used for constant zero */
@@ -1781,8 +1782,8 @@ decNumberSquareRoot (decNumber * res, decNumber * rhs, decContext * set)
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberSubtract (decNumber * res, decNumber * lhs,
-		   decNumber * rhs, decContext * set)
+decNumberSubtract (decNumber * res, const decNumber * lhs,
+		   const decNumber * rhs, decContext * set)
 {
   uInt status = 0;		/* accumulator */
 
@@ -1810,7 +1811,7 @@ decNumberSubtract (decNumber * res, decNumber * lhs,
 /* the digits setting is ignored.                                     */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberToIntegralValue (decNumber * res, decNumber * rhs, decContext * set)
+decNumberToIntegralValue (decNumber * res, const decNumber * rhs, decContext * set)
 {
   decNumber dn;
   decContext workset;		/* working context */
@@ -1860,7 +1861,7 @@ decNumberToIntegralValue (decNumber * res, decNumber * rhs, decContext * set)
 /* so special values are unchanged and no error is possible.          */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberCopy (decNumber * dest, decNumber * src)
+decNumberCopy (decNumber * dest, const decNumber * src)
 {
 
 #if DECCHECK
@@ -1881,7 +1882,8 @@ decNumberCopy (decNumber * dest, decNumber * src)
   dest->lsu[0] = src->lsu[0];
   if (src->digits > DECDPUN)
     {				/* more Units to come */
-      Unit *s, *d, *smsup;	/* work */
+      Unit *d;			/* work */
+      const Unit *s, *smsup;	/* work */
       /* memcpy for the remaining Units would be safe as they cannot */
       /* overlap.  However, this explicit loop is faster in short cases. */
       d = dest->lsu + 1;	/* -> first destination */
@@ -1987,14 +1989,14 @@ decNumberZero (decNumber * dn)
   }
 
 static void
-decToString (decNumber * dn, char *string, Flag eng)
+decToString (const decNumber * dn, char *string, Flag eng)
 {
   Int exp = dn->exponent;	/* local copy */
   Int e;			/* E-part value */
   Int pre;			/* digits before the '.' */
   Int cut;			/* for counting digits in a Unit */
   char *c = string;		/* work [output pointer] */
-  Unit *up = dn->lsu + D2U (dn->digits) - 1;	/* -> msu [input pointer] */
+  const Unit *up = dn->lsu + D2U (dn->digits) - 1;	/* -> msu [input pointer] */
   uInt u, pow;			/* work */
 
 #if DECCHECK
@@ -2214,8 +2216,8 @@ decToString (decNumber * dn, char *string, Flag eng)
 /* to make returning as fast as possible, by flagging any allocation. */
 /* ------------------------------------------------------------------ */
 static decNumber *
-decAddOp (decNumber * res, decNumber * lhs,
-	  decNumber * rhs, decContext * set, uByte negate, uInt * status)
+decAddOp (decNumber * res, const decNumber * lhs,
+	  const decNumber * rhs, decContext * set, uByte negate, uInt * status)
 {
   decNumber *alloclhs = NULL;	/* non-NULL if rounded lhs allocated */
   decNumber *allocrhs = NULL;	/* .., rhs */
@@ -2439,7 +2441,7 @@ decAddOp (decNumber * res, decNumber * lhs,
 	  Flag swapped = 0;
 	  if (padding < 0)
 	    {			/* LHS needs the padding */
-	      decNumber *t;
+	      const decNumber *t;
 	      padding = -padding;	/* will be +ve */
 	      bits = (uByte) (rhs->bits ^ negate);	/* assumed sign is now that of RHS */
 	      t = lhs;
@@ -2692,7 +2694,7 @@ decAddOp (decNumber * res, decNumber * lhs,
 /* ------------------------------------------------------------------ */
 static decNumber *
 decDivideOp (decNumber * res,
-	     decNumber * lhs, decNumber * rhs,
+	     const decNumber * lhs, const decNumber * rhs,
 	     decContext * set, Flag op, uInt * status)
 {
   decNumber *alloclhs = NULL;	/* non-NULL if rounded lhs allocated */
@@ -2709,12 +2711,13 @@ decDivideOp (decNumber * res,
   Unit *var1 = varbuff;		/* -> var1 array for long subtraction */
   Unit *varalloc = NULL;	/* -> allocated buffer, iff used */
 
-  Unit *var2;			/* -> var2 array */
+  const Unit *var2;		/* -> var2 array */
 
   Int var1units, var2units;	/* actual lengths */
   Int var2ulen;			/* logical length (units) */
   Int var1initpad = 0;		/* var1 initial padding (digits) */
-  Unit *msu1, *msu2;		/* -> msu of each var */
+  Unit *msu1;			/* -> msu of each var */
+  const Unit *msu2;		/* -> msu of each var */
   Int msu2plus;			/* msu2 plus one [does not vary] */
   eInt msu2pair;		/* msu2 pair plus one [does not vary] */
   Int maxdigits;		/* longest LHS or required acc length */
@@ -2726,7 +2729,8 @@ decDivideOp (decNumber * res,
   Int maxexponent = 0;		/* DIVIDE maximum exponent if unrounded */
   uByte bits;			/* working sign */
   uByte merged;			/* merged flags */
-  Unit *target, *source;	/* work */
+  Unit *target;			/* work */
+  const Unit *source;		/* work */
   uInt const *pow;		/* .. */
   Int shift, cut;		/* .. */
 #if DECSUBSET
@@ -3049,7 +3053,8 @@ decDivideOp (decNumber * res,
 	      if (var1units == var2ulen)
 		{		/* unit-by-unit compare needed */
 		  /* compare the two numbers, from msu */
-		  Unit *pv1, *pv2, v2;	/* units to compare */
+		  Unit *pv1, v2;	/* units to compare */
+		  const Unit *pv2;	/* units to compare */
 		  pv2 = msu2;	/* -> msu */
 		  for (pv1 = msu1;; pv1--, pv2--)
 		    {
@@ -3411,15 +3416,15 @@ decDivideOp (decNumber * res,
 /* We always have to use a buffer for the accumulator.                */
 /* ------------------------------------------------------------------ */
 static decNumber *
-decMultiplyOp (decNumber * res, decNumber * lhs,
-	       decNumber * rhs, decContext * set, uInt * status)
+decMultiplyOp (decNumber * res, const decNumber * lhs,
+	       const decNumber * rhs, decContext * set, uInt * status)
 {
   decNumber *alloclhs = NULL;	/* non-NULL if rounded lhs allocated */
   decNumber *allocrhs = NULL;	/* .., rhs */
   Unit accbuff[D2U (DECBUFFER * 2 + 1)];	/* local buffer (+1 in case DECBUFFER==0) */
   Unit *acc = accbuff;		/* -> accumulator array for exact result */
   Unit *allocacc = NULL;	/* -> allocated buffer, iff allocated */
-  Unit *mer, *mermsup;		/* work */
+  const Unit *mer, *mermsup;	/* work */
   Int accunits;			/* Units of accumulator in use */
   Int madlength;		/* Units in multiplicand */
   Int shift;			/* Units to shift multiplicand by */
@@ -3486,7 +3491,7 @@ decMultiplyOp (decNumber * res, decNumber * lhs,
       /* multiplier (rhs) and the longer as the multiplicand (lhs) */
       if (lhs->digits < rhs->digits)
 	{			/* swap... */
-	  decNumber *hold = lhs;
+	  const decNumber *hold = lhs;
 	  lhs = rhs;
 	  rhs = hold;
 	}
@@ -3593,12 +3598,12 @@ decMultiplyOp (decNumber * res, decNumber * lhs,
 /* after the operation is guaranteed to be that requested.            */
 /* ------------------------------------------------------------------ */
 static decNumber *
-decQuantizeOp (decNumber * res, decNumber * lhs,
-	       decNumber * rhs, decContext * set, Flag quant, uInt * status)
+decQuantizeOp (decNumber * res, const decNumber * lhs,
+	       const decNumber * rhs, decContext * set, Flag quant, uInt * status)
 {
   decNumber *alloclhs = NULL;	/* non-NULL if rounded lhs allocated */
   decNumber *allocrhs = NULL;	/* .., rhs */
-  decNumber *inrhs = rhs;	/* save original rhs */
+  const decNumber *inrhs = rhs;	/* save original rhs */
   Int reqdigits = set->digits;	/* requested DIGITS */
   Int reqexp;			/* requested exponent [-scale] */
   Int residue = 0;		/* rounding residue */
@@ -3776,7 +3781,7 @@ decQuantizeOp (decNumber * res, decNumber * lhs,
 /* coefficient comparison if possible.                                */
 /* ------------------------------------------------------------------ */
 decNumber *
-decCompareOp (decNumber * res, decNumber * lhs, decNumber * rhs,
+decCompareOp (decNumber * res, const decNumber * lhs, const decNumber * rhs,
 	      decContext * set, Flag op, uInt * status)
 {
   decNumber *alloclhs = NULL;	/* non-NULL if rounded lhs allocated */
@@ -3873,7 +3878,7 @@ decCompareOp (decNumber * res, decNumber * lhs, decNumber * rhs,
 	{			/* MAX or MIN, non-NaN result */
 	  Int residue = 0;	/* rounding accumulator */
 	  /* choose the operand for the result */
-	  decNumber *choice;
+	  const decNumber *choice;
 	  if (result == 0)
 	    {			/* operands are numerically equal */
 	      /* choose according to sign then exponent (see 754r) */
@@ -3940,7 +3945,7 @@ decCompareOp (decNumber * res, decNumber * lhs, decNumber * rhs,
 /* ------------------------------------------------------------------ */
 /* This could be merged into decCompareOp */
 static Int
-decCompare (decNumber * lhs, decNumber * rhs)
+decCompare (const decNumber * lhs, const decNumber * rhs)
 {
   Int result;			/* result value */
   Int sigr;			/* rhs signum */
@@ -3977,7 +3982,7 @@ decCompare (decNumber * lhs, decNumber * rhs)
   if (lhs->exponent > rhs->exponent)
     {				/* LHS exponent larger */
       /* swap sides, and sign */
-      decNumber *temp = lhs;
+      const decNumber *temp = lhs;
       lhs = rhs;
       rhs = temp;
       result = -result;
@@ -4009,13 +4014,13 @@ decCompare (decNumber * lhs, decNumber * rhs)
 /*  (the only possible failure is an allocation error)                */
 /* ------------------------------------------------------------------ */
 static Int
-decUnitCompare (Unit * a, Int alength, Unit * b, Int blength, Int exp)
+decUnitCompare (const Unit * a, Int alength, const Unit * b, Int blength, Int exp)
 {
   Unit *acc;			/* accumulator for result */
   Unit accbuff[D2U (DECBUFFER + 1)];	/* local buffer */
   Unit *allocacc = NULL;	/* -> allocated acc buffer, iff allocated */
   Int accunits, need;		/* units in use or needed for acc */
-  Unit *l, *r, *u;		/* work */
+  const Unit *l, *r, *u;	/* work */
   Int expunits, exprem, result;	/* .. */
 
   if (exp == 0)
@@ -4129,10 +4134,10 @@ decUnitCompare (Unit * a, Int alength, Unit * b, Int blength, Int exp)
 /* (IBM Warwick, UK) for some of the ideas used in this routine.      */
 /* ------------------------------------------------------------------ */
 static Int
-decUnitAddSub (Unit * a, Int alength,
-	       Unit * b, Int blength, Int bshift, Unit * c, Int m)
+decUnitAddSub (const Unit * a, Int alength,
+	       const Unit * b, Int blength, Int bshift, Unit * c, Int m)
 {
-  Unit *alsu = a;		/* A lsu [need to remember it] */
+  const Unit *alsu = a;		/* A lsu [need to remember it] */
   Unit *clsu = c;		/* C ditto */
   Unit *minC;			/* low water mark for C */
   Unit *maxC;			/* high water mark for C */
@@ -4556,7 +4561,7 @@ decShiftToLeast (Unit * uar, Int units, Int shift)
 /* is returned.                                                       */
 /* ------------------------------------------------------------------ */
 static decNumber *
-decRoundOperand (decNumber * dn, decContext * set, uInt * status)
+decRoundOperand (const decNumber * dn, decContext * set, uInt * status)
 {
   decNumber *res;		/* result structure */
   uInt newstatus = 0;		/* status from round */
@@ -4595,7 +4600,7 @@ decRoundOperand (decNumber * dn, decContext * set, uInt * status)
 /* All fields are updated as required.                                */
 /* ------------------------------------------------------------------ */
 static void
-decCopyFit (decNumber * dest, decNumber * src, decContext * set,
+decCopyFit (decNumber * dest, const decNumber * src, decContext * set,
 	    Int * residue, uInt * status)
 {
   dest->bits = src->bits;
@@ -4643,14 +4648,15 @@ decCopyFit (decNumber * dest, decNumber * src, decContext * set,
 /*                             0  1  2  3  4  5  6  7  8  9 */
 static const uByte resmap[10] = { 0, 3, 3, 3, 3, 5, 7, 7, 7, 7 };
 static void
-decSetCoeff (decNumber * dn, decContext * set, Unit * lsu,
+decSetCoeff (decNumber * dn, decContext * set, const Unit * lsu,
 	     Int len, Int * residue, uInt * status)
 {
   Int discard;			/* number of digits to discard */
   uInt discard1;		/* first discarded digit */
   uInt cut;			/* cut point in Unit */
   uInt quot, rem;		/* for divisions */
-  Unit *up, *target;		/* work */
+  Unit *target;			/* work */
+  const Unit *up;		/* work */
   Int count;			/* .. */
 #if DECDPUN<=4
   uInt temp;			/* .. */
@@ -5246,8 +5252,8 @@ decSetOverflow (decNumber * dn, decContext * set, uInt * status)
 /* necessary.  Underflow is set if the result is Inexact.             */
 /* ------------------------------------------------------------------ */
 static void
-decSetSubnormal (decNumber * dn, decContext * set, Int * residue,
-		 uInt * status)
+decSetSubnormal (decNumber * dn, decContext * set,
+		 Int * residue, uInt * status)
 {
   decContext workset;		/* work */
   Int etiny, adjust;		/* .. */
@@ -5342,15 +5348,15 @@ decSetSubnormal (decNumber * dn, decContext * set, Int * residue,
 /* ------------------------------------------------------------------ */
 #if DECSUBSET
 static Int
-decGetInt (decNumber * dn, decContext * set)
+decGetInt (const decNumber * dn, decContext * set)
 {
 #else
 static Int
-decGetInt (decNumber * dn)
+decGetInt (const decNumber * dn)
 {
 #endif
   Int theInt;			/* result accumulator */
-  Unit *up;			/* work */
+  const Unit *up;		/* work */
   Int got;			/* digits (real or not) processed */
   Int ilength = dn->digits + dn->exponent;	/* integral length */
 
@@ -5472,7 +5478,7 @@ decStrEq (const char *str1, const char *str2)
 /* to a qNaN and Invalid operation is set.                            */
 /* ------------------------------------------------------------------ */
 static decNumber *
-decNaNs (decNumber * res, decNumber * lhs, decNumber * rhs, uInt * status)
+decNaNs (decNumber * res, const decNumber * lhs, const decNumber * rhs, uInt * status)
 {
   /* This decision tree ends up with LHS being the source pointer, */
   /* and status updated if need be */
@@ -5543,9 +5549,9 @@ decStatus (decNumber * dn, uInt status, decContext * set)
 /* ------------------------------------------------------------------ */
 /* This may be called twice during some operations. */
 static Int
-decGetDigits (Unit * uar, Int len)
+decGetDigits (const Unit * uar, Int len)
 {
-  Unit *up = uar + len - 1;	/* -> msu */
+  const Unit *up = uar + len - 1;	/* -> msu */
   Int digits = len * DECDPUN;	/* maximum possible digits */
   uInt const *pow;		/* work */
 
@@ -5584,9 +5590,9 @@ decGetDigits (Unit * uar, Int len)
 /* ------------------------------------------------------------------ */
 /* this is public so other modules can use it */
 void
-decNumberShow (decNumber * dn)
+decNumberShow (const decNumber * dn)
 {
-  Unit *up;			/* work */
+  const Unit *up;		/* work */
   uInt u, d;			/* .. */
   Int cut;			/* .. */
   char isign = '+';		/* main sign */
@@ -5652,13 +5658,13 @@ decNumberShow (decNumber * dn)
 /*   len  is the length of the array in Units                         */
 /* ------------------------------------------------------------------ */
 static void
-decDumpAr (char name, Unit * ar, Int len)
+decDumpAr (char name, const Unit * ar, Int len)
 {
   Int i;
 #if DECDPUN==4
-  char *spec = "%04d ";
+  const char *spec = "%04d ";
 #else
-  char *spec = "%d ";
+  const char *spec = "%d ";
 #endif
   printf ("  :%c: ", name);
   for (i = len - 1; i >= 0; i--)
@@ -5688,8 +5694,8 @@ decDumpAr (char name, Unit * ar, Int len)
 /* The caller is expected to abandon immediately if 1 is returned.    */
 /* ------------------------------------------------------------------ */
 static Flag
-decCheckOperands (decNumber * res, decNumber * lhs,
-		  decNumber * rhs, decContext * set)
+decCheckOperands (decNumber * res, const decNumber * lhs,
+		  const decNumber * rhs, decContext * set)
 {
   Flag bad = 0;
   if (set == NULL)
@@ -5746,9 +5752,9 @@ decCheckOperands (decNumber * res, decNumber * lhs,
 /* operation in some valid context (not necessarily the current one). */
 /* ------------------------------------------------------------------ */
 Flag
-decCheckNumber (decNumber * dn, decContext * set)
+decCheckNumber (const decNumber * dn, decContext * set)
 {
-  Unit *up;			/* work */
+  const Unit *up;		/* work */
   uInt maxuint;			/* .. */
   Int ae, d, digits;		/* .. */
   Int emin, emax;		/* .. */
