@@ -1,3 +1,36 @@
+2006-09-06  Zak Kipling  <zak@transversal.com>
+
+        PR c++/26195
+	* decl.c (make_rtl_for_nonlocal_decl),
+	(start_preparsed_function): Don't use lbasename on
+	input_filename when calling get_fileinfo.
+	* semantics.c (begin_class_definition): Likewise.
+	* lex.c (cxx_make_type): Likewise.
+	(handle_pragma_interface): Call get_fileinfo on input_filename,
+	not on the parameter to the directive.
+
+2006-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/26696
+	* cvt.c (convert_to_void): Replace a subexpression with no side 
+	effects with void_zero_node.
+	* tree.c (is_overloaded_fn): Look through COMPONENT_REF.
+	(get_first_fn): Ditto.
+	* decl.c (grokdeclarator): No need to look through COMPONENT_REF.
+
+2006-09-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/26571
+	* parser.c (cp_parser_diagnose_invalid_type_name): Handle the case
+	where the name is a type used incorrectly.
+
+	PR c++/26671
+	* typeck.c (maybe_warn_about_returning_address_of_local): Look 
+	through COMPONENT_REF and ARRAY_REF.	
+
+	PR c++/19809
+	* pt.c (tsubst_friend_function): Set DECL_INITIAL before pushdecl.
+
 2006-08-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/26577
