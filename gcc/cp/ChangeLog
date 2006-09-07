@@ -1,3 +1,14 @@
+2006-09-06  Zak Kipling  <zak@transversal.com>
+
+        PR c++/26195
+	* decl.c (make_rtl_for_nonlocal_decl),
+	(start_preparsed_function): Don't use lbasename on
+	input_filename when calling get_fileinfo.
+	* semantics.c (begin_class_definition): Likewise.
+	* lex.c (cxx_make_type): Likewise.
+	(handle_pragma_interface): Call get_fileinfo on input_filename,
+	not on the parameter to the directive.
+
 2006-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28903
