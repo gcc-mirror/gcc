@@ -148,6 +148,7 @@
   (UNSPEC_DIV_INV_M2	32)
   (UNSPEC_DIV_INV_M3	33)
   (UNSPEC_DIV_INV20	34)
+  (UNSPEC_DIV_INV_TABLE	37)
   (UNSPEC_ASHIFTRT	35)
   (UNSPEC_THUNK		36)
   (UNSPEC_SP_SET	40)
@@ -2244,6 +2245,34 @@
   DONE;
 }")
 
+;; operands: scratch, tab_base, tab_ix
+;; These are unspecs because we could generate an indexed addressing mode
+;; even if -m5-32media, where INDEX_REG_CLASS == NO_REGS, and this would
+;; confuse reload.  See PR27117.
+
+(define_insn "divsi_inv_qitable"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI (unspec:QI [(match_operand:DI 1 "register_operand" "r")
+				    (match_operand:DI 2 "register_operand" "r")]
+			 UNSPEC_DIV_INV_TABLE)))]
+  "TARGET_SHMEDIA"
+  "@
+	ldx.ub	%1, %2, %0"
+  [(set_attr "type" "load_media")
+   (set_attr "highpart" "user")])
+
+;; operands: scratch, tab_base, tab_ix
+(define_insn "divsi_inv_hitable"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (unspec:HI [(match_operand:DI 1 "register_operand" "r")
+				    (match_operand:DI 2 "register_operand" "r")]
+			 UNSPEC_DIV_INV_TABLE)))]
+  "TARGET_SHMEDIA"
+  "@
+	ldx.w	%1, %2, %0"
+  [(set_attr "type" "load_media")
+   (set_attr "highpart" "user")])
+
 ;; operands: inv0, tab_base, tab_ix, norm32
 ;; scratch equiv in sdivsi3_2: r19, r21
 (define_expand "divsi_inv_m0"
@@ -2278,12 +2307,10 @@ norm32: r25
   rtx scratch1 = operands[5];
   rtx mem;
 
-  mem = gen_const_mem (QImode, gen_rtx_PLUS (DImode, tab_base, tab_ix));
-  emit_insn (gen_zero_extendqidi2 (scratch0, mem));
+  emit_insn (gen_divsi_inv_qitable (scratch0, tab_base, tab_ix));
   emit_insn (gen_ashldi3_media (scratch1, tab_ix, GEN_INT (1)));
   emit_insn (gen_mulsidi3_media (scratch0, norm32, scratch0_si));
-  mem = gen_const_mem (HImode, gen_rtx_PLUS (DImode, tab_base, scratch1));
-  emit_insn (gen_extendhidi2 (scratch1, mem));
+  emit_insn (gen_divsi_inv_hitable (scratch1, tab_base, scratch1));
   emit_insn (gen_ashrdi3_media (scratch0, scratch0, GEN_INT (24)));
   emit_insn (gen_subdisi3_media (inv0, scratch1, scratch0));
   DONE;
