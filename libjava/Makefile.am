@@ -127,8 +127,7 @@ AM_CXXFLAGS = \
 	-DGCJ_VERSIONED_LIBDIR="\"$(dbexecdir)\"" \
 	-DPATH_SEPARATOR="\"$(CLASSPATH_SEPARATOR)\"" \
 	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\"" \
-	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\"" \
-	-DTOOLEXECLIBDIR="\"$(toolexeclibdir)\""
+	-DLIBGCJ_DEFAULT_DATABASE_PATH_TAIL="\"$(db_pathtail)\""
 
 AM_GCJFLAGS = \
 	@LIBGCJ_JAVAFLAGS@ \

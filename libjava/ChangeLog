@@ -1,3 +1,8 @@
+2006-09-07  Matthias Klose  <doko@debian.org>
+
+	* Makefile.am (AM_CXXFLAGS): Remove duplicate define.
+	* Makefile.in: Regenerate.
+
 2006-09-06  Keith Seitz  <keiths@redhat.com>
 
 	* java/lang/Class.h (_Jv_FindInterpreterMethod): Change return type
