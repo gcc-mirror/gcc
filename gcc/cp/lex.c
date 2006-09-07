@@ -504,7 +504,7 @@ handle_pragma_interface (cpp_reader* dfile ATTRIBUTE_UNUSED )
   else
     filename = ggc_strdup (TREE_STRING_POINTER (fname));
 
-  finfo = get_fileinfo (filename);
+  finfo = get_fileinfo (input_filename);
 
   if (impl_file_chain == 0)
     {
@@ -810,7 +810,7 @@ cxx_make_type (enum tree_code code)
   /* Set up some flags that give proper default behavior.  */
   if (IS_AGGR_TYPE_CODE (code))
     {
-      struct c_fileinfo *finfo = get_fileinfo (lbasename (input_filename));
+      struct c_fileinfo *finfo = get_fileinfo (input_filename);
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
     }
