@@ -1,8 +1,14 @@
+2006-09-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/26957
+	* method.c (use_thunk): Clear DECL_HAS_VALUE_EXPR_P on copied
+	parms.
+
 2006-09-07  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/28284
-	* pt.c (fold_non_dependent_expr): Make sure expr is not dereferenced if it
-	is NULL.
+	* pt.c (fold_non_dependent_expr): Make sure expr is not
+	dereferenced if it is NULL.
 
 2006-09-06  Zak Kipling  <zak@transversal.com>
 
