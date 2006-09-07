@@ -897,7 +897,7 @@ convert_to_void (tree expr, const char *implicit)
 	 we don't use it and don't need to destroy it.  We'll still
 	 allocate space for it in expand_call or declare_return_variable,
 	 but we don't need to track it through all the tree phases.  */
-      if (0 && TARGET_EXPR_IMPLICIT_P (expr)
+      if (TARGET_EXPR_IMPLICIT_P (expr)
 	  && TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (expr)))
 	{
 	  tree init = TARGET_EXPR_INITIAL (expr);

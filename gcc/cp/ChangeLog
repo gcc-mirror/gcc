@@ -1,5 +1,8 @@
 2006-09-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/27371
+	* cvt.c (convert_to_void): Enable previous change.
+
 	PR c++/26957
 	* method.c (use_thunk): Clear DECL_HAS_VALUE_EXPR_P on copied
 	parms.
