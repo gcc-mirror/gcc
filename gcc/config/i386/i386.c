@@ -761,6 +761,7 @@ const int x86_use_sahf = m_PPRO | m_K6 | m_PENT4 | m_NOCONA | m_GENERIC32; /*m_G
    with partial reg. dependencies used by Athlon/P4 based chips, it is better
    to leave it off for generic32 for now.  */
 const int x86_partial_reg_stall = m_PPRO;
+const int x86_partial_flag_reg_stall = m_GENERIC;
 const int x86_use_himode_fiop = m_386 | m_486 | m_K6;
 const int x86_use_simode_fiop = ~(m_PPRO | m_ATHLON_K8 | m_PENT | m_GENERIC);
 const int x86_use_mov0 = m_K6;
