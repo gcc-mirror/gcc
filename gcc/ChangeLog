@@ -1,3 +1,9 @@
+2006-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/28862
+	* stor-layout.c (relayout_decl): Don't zero the alignment if it
+	was set by the user.
+
 2006-09-07  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/27117
