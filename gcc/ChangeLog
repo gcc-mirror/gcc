@@ -1,3 +1,10 @@
+2006-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/27371
+	* tree-inline.c (copy_result_decl_to_var): New fn.
+	(declare_return_variable): Use it.  Call declare_inline_vars here.
+	(expand_call_inline): Not here.
+
 2006-09-06  Diego Novillo  <dnovillo@redhat.com>
 
 	* doc/contrib.texi: Update my entry.
