@@ -1,3 +1,8 @@
+2006-09-07  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* gfortran.fortran-torture/execute/intrinsic_set_exponent.f90: Fix
+	nonconformance usage.
+
 2006-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/28862
