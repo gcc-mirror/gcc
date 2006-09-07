@@ -1,3 +1,8 @@
+2006-09-07  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/28946
+	* gcc.target/i386/pr28946.c: New test.
+
 2006-09-07  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.fortran-torture/compile/data_1.f90: Fix integer oveflow
