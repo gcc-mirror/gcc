@@ -1,3 +1,10 @@
+2006-09-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/27117
+	* config/sh/sh.md (divsi_inv_qitable, divsi_inv_hitable): New patterns.
+	(divsi_inv_m1): Use them.
+	(UNSPEC_DIV_INV_TABLE): New constant.
+
 2006-09-06  James E Wilson  <wilson@specifix.com>
 
 	PR rtl-opt/27883
