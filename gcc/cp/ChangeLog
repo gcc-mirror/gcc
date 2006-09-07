@@ -10,6 +10,11 @@
 
 2006-09-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/27371
+	* cvt.c (convert_to_void): Strip useless TARGET_EXPR.
+	* cp-tree.h (TARGET_EXPR_IMPLICIT_P): New macro.
+	* tree.c (build_cplus_new): Set it.
+
 	PR c++/26696
 	* cvt.c (convert_to_void): Replace a subexpression with no side 
 	effects with void_zero_node.

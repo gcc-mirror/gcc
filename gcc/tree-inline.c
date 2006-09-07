@@ -120,6 +120,7 @@ static void declare_inline_vars (tree, tree);
 static void remap_save_expr (tree *, void *, int *);
 static void add_lexical_block (tree current_block, tree new_block);
 static tree copy_decl_to_var (tree, copy_body_data *);
+static tree copy_result_decl_to_var (tree, copy_body_data *);
 static tree copy_decl_no_change (tree, copy_body_data *);
 static tree copy_decl_maybe_to_var (tree, copy_body_data *);
 
@@ -1261,7 +1262,7 @@ declare_return_variable (copy_body_data *id, tree return_slot_addr,
 
   gcc_assert (TREE_CODE (TYPE_SIZE_UNIT (callee_type)) == INTEGER_CST);
 
-  var = copy_decl_to_var (result, id);
+  var = copy_result_decl_to_var (result, id);
 
   DECL_SEEN_IN_BIND_EXPR_P (var) = 1;
   DECL_STRUCT_FUNCTION (caller)->unexpanded_var_list
@@ -1272,6 +1273,8 @@ declare_return_variable (copy_body_data *id, tree return_slot_addr,
      not be visible to the user.  */
   TREE_NO_WARNING (var) = 1;
 
+  declare_inline_vars (id->block, var);
+
   /* Build the use expr.  If the return type of the function was
      promoted, convert it back to the expected type.  */
   use = var;
@@ -1279,6 +1282,9 @@ declare_return_variable (copy_body_data *id, tree return_slot_addr,
     use = fold_convert (caller_type, var);
     
   STRIP_USELESS_TYPE_CONVERSION (use);
+
+  if (DECL_BY_REFERENCE (result))
+    var = build_fold_addr_expr (var);
 
  done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
@@ -1926,7 +1932,6 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   bool successfully_inlined = FALSE;
   tree t_step;
   tree var;
-  tree decl;
 
   /* See what we've got.  */
   id = (copy_body_data *) data;
@@ -2103,11 +2108,8 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
     modify_dest = NULL;
 
   /* Declare the return variable for the function.  */
-  decl = declare_return_variable (id, return_slot_addr,
-			          modify_dest, &use_retvar);
-  /* Do this only if declare_return_variable created a new one.  */
-  if (decl && !return_slot_addr && decl != modify_dest)
-    declare_inline_vars (id->block, decl);
+  declare_return_variable (id, return_slot_addr,
+			   modify_dest, &use_retvar);
 
   /* This is it.  Duplicate the callee body.  Assume callee is
      pre-gimplified.  Note that we must not alter the caller
@@ -2629,6 +2631,34 @@ copy_decl_to_var (tree decl, copy_body_data *id)
 
   return copy_decl_for_dup_finish (id, decl, copy);
 }
+
+/* Like copy_decl_to_var, but create a return slot object instead of a
+   pointer variable for return by invisible reference.  */
+
+static tree
+copy_result_decl_to_var (tree decl, copy_body_data *id)
+{
+  tree copy, type;
+
+  gcc_assert (TREE_CODE (decl) == PARM_DECL
+	      || TREE_CODE (decl) == RESULT_DECL);
+
+  type = TREE_TYPE (decl);
+  if (DECL_BY_REFERENCE (decl))
+    type = TREE_TYPE (type);
+
+  copy = build_decl (VAR_DECL, DECL_NAME (decl), type);
+  TREE_READONLY (copy) = TREE_READONLY (decl);
+  TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
+  if (!DECL_BY_REFERENCE (decl))
+    {
+      TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
+      DECL_COMPLEX_GIMPLE_REG_P (copy) = DECL_COMPLEX_GIMPLE_REG_P (decl);
+    }
+
+  return copy_decl_for_dup_finish (id, decl, copy);
+}
+
 
 static tree
 copy_decl_no_change (tree decl, copy_body_data *id)
