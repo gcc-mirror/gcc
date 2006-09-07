@@ -68,8 +68,8 @@ rotate_left(node_pointer p_x)
   p_y->m_p_left = p_x;
   p_x->m_p_parent = p_y;
 
-  PB_DS_DBG_ONLY(assert_node_consistent(p_x);)
-    PB_DS_DBG_ONLY(assert_node_consistent(p_y);)
+  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_x);)
+    _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y);)
 
     apply_update(p_x, (node_update* )this);
   apply_update(p_x->m_p_parent, (node_update* )this);
@@ -99,8 +99,8 @@ rotate_right(node_pointer p_x)
   p_y->m_p_right = p_x;
   p_x->m_p_parent = p_y;
 
-  PB_DS_DBG_ONLY(assert_node_consistent(p_x);)
-    PB_DS_DBG_ONLY(assert_node_consistent(p_y);)
+  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_x);)
+    _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y);)
 
     apply_update(p_x, (node_update* )this);
   apply_update(p_x->m_p_parent, (node_update* )this);
@@ -118,8 +118,8 @@ rotate_parent(node_pointer p_nd)
   else
     rotate_left(p_parent);
 
-  PB_DS_DBG_ASSERT(p_parent->m_p_parent = p_nd);
-  PB_DS_DBG_ASSERT(p_nd->m_p_left == p_parent ||
+  _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_parent = p_nd);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_left == p_parent ||
 		   p_nd->m_p_right == p_parent);
 }
 

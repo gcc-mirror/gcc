@@ -76,12 +76,12 @@ resize_imp_reassign(entry_pointer p_e, entry_array a_entries_resized, store_hash
 
 	  return;
         case erased_entry_status:
-	  PB_DS_DBG_ASSERT(0);
+	  _GLIBCXX_DEBUG_ASSERT(0);
 	  break;
         case valid_entry_status:
 	  break;
         default:
-	  PB_DS_DBG_ASSERT(0);
+	  _GLIBCXX_DEBUG_ASSERT(0);
         };
     }
 

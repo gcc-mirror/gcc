@@ -75,7 +75,7 @@ inline typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 find_imp(const_key_reference r_key)
 {
-  PB_DS_DBG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid();)
 
     node_pointer p_nd = PB_DS_BASE_C_DEC::m_p_head->m_p_parent;
 
@@ -98,7 +98,7 @@ inline const typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 find_imp(const_key_reference r_key) const
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     node_pointer p_nd = PB_DS_BASE_C_DEC::m_p_head->m_p_parent;
 

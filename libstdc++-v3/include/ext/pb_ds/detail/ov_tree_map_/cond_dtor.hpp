@@ -48,23 +48,19 @@ template<typename Size_Type>
 class cond_dtor
 {
 public:
-  cond_dtor(value_vector a_vec, iterator& r_last_it, Size_Type total_size) : m_a_vec(a_vec),
-									     m_r_last_it(r_last_it),
-									     m_max_size(total_size),
-									     m_no_action(false)
+  cond_dtor(value_vector a_vec, iterator& r_last_it, Size_Type total_size) 
+  : m_a_vec(a_vec), m_r_last_it(r_last_it), m_max_size(total_size),
+    m_no_action(false)
   { }
 
   ~cond_dtor()
   {
     if (m_no_action)
       return;
-
     iterator it = m_a_vec;
-
     while (it != m_r_last_it)
       {
 	it->~value_type();
-
 	++it;
       }
 
@@ -74,16 +70,11 @@ public:
 
   inline void
   set_no_action()
-  {
-    m_no_action = true;
-  }
+  { m_no_action = true; }
 
 protected:
   value_vector m_a_vec;
-
   iterator& m_r_last_it;
-
   const Size_Type m_max_size;
-
   bool m_no_action;
 };

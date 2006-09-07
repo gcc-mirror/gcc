@@ -44,7 +44,7 @@
  * Contains an implementation class for a binary_heap.
  */
 
-#ifdef PB_DS_BINARY_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
@@ -53,28 +53,26 @@ assert_valid() const
 {
 #ifdef PB_DS_REGRESSION
   s_entry_allocator.check_allocated(m_a_entries, m_actual_size);
-#endif // #ifdef PB_DS_REGRESSION
+#endif 
 
   resize_policy::assert_valid();
-
-  PB_DS_DBG_ASSERT(m_size <= m_actual_size);
-
+  _GLIBCXX_DEBUG_ASSERT(m_size <= m_actual_size);
   for (size_type i = 0; i < m_size; ++i)
     {
 #ifdef PB_DS_REGRESSION
       s_value_allocator.check_allocated(m_a_entries[i], 1);
-#endif // #ifdef PB_DS_REGRESSION
+#endif 
 
       if (left_child(i) < m_size)
-	PB_DS_DBG_ASSERT(!entry_cmp::operator()(m_a_entries[i], m_a_entries[left_child(i)]));
+	_GLIBCXX_DEBUG_ASSERT(!entry_cmp::operator()(m_a_entries[i], m_a_entries[left_child(i)]));
 
-      PB_DS_DBG_ASSERT(parent(left_child(i)) == i);
+      _GLIBCXX_DEBUG_ASSERT(parent(left_child(i)) == i);
 
       if (right_child(i) < m_size)
-	PB_DS_DBG_ASSERT(!entry_cmp::operator()(m_a_entries[i], m_a_entries[right_child(i)]));
+	_GLIBCXX_DEBUG_ASSERT(!entry_cmp::operator()(m_a_entries[i], m_a_entries[right_child(i)]));
 
-      PB_DS_DBG_ASSERT(parent(right_child(i)) == i);
+      _GLIBCXX_DEBUG_ASSERT(parent(right_child(i)) == i);
     }
 }
 
-#endif // #ifdef PB_DS_BINARY_HEAP_DEBUG_
+#endif 

@@ -56,7 +56,7 @@ find_imp(const_key_reference r_key) const
     {
       apply_update(m_p_l, s_metadata_type_indicator);
 
-      PB_DS_DBG_ONLY(map_debug_base::check_key_exists(r_key);)
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
 
         return m_p_l;
     }
@@ -86,7 +86,7 @@ find_imp(const_key_reference r_key) const
 	p_l = p_next;
     }
 
-  PB_DS_DBG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
 
     return NULL;
 }

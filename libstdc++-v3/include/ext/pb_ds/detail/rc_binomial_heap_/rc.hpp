@@ -52,23 +52,11 @@ namespace pb_ds
   namespace detail
   {
 
-#ifdef PB_DS_RC_BINOMIAL_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_RC_BINOMIAL_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_RC_BINOMIAL_HEAP_DEBUG_
-
-#define PB_DS_CLASS_T_DEC			\
+#define PB_DS_CLASS_T_DEC \
     template<typename Node, class Allocator>
 
-#define PB_DS_CLASS_C_DEC				\
-    rc<							\
-					Node,		\
-					Allocator>
+#define PB_DS_CLASS_C_DEC \
+    rc<Node, Allocator>
 
     template<typename Node, class Allocator>
     class rc
@@ -137,17 +125,15 @@ namespace pb_ds
       const const_iterator
       end() const;
 
-#ifdef PB_DS_RC_BINOMIAL_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
-#endif // #ifdef PB_DS_RC_BINOMIAL_HEAP_DEBUG_
+#endif 
 
 #ifdef PB_DS_RC_BINOMIAL_HEAP_TRACE_
-
       void
       trace() const;
-
-#endif // #ifdef PB_DS_RC_BINOMIAL_HEAP_TRACE_
+#endif 
 
     private:
       node_pointer m_a_entries[max_entries];
@@ -157,75 +143,62 @@ namespace pb_ds
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    rc() :
-      m_over_top(0)
-    {
-      PB_DS_DBG_ONLY(assert_valid();)
-	}
+    rc() : m_over_top(0)
+    { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    rc(const PB_DS_CLASS_C_DEC& other) :
-      m_over_top(0)
-    {
-      PB_DS_DBG_ONLY(assert_valid();)
-	}
+    rc(const PB_DS_CLASS_C_DEC& other) : m_over_top(0)
+    { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
 
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
     swap(PB_DS_CLASS_C_DEC& other)
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-	PB_DS_DBG_ONLY(other.assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
-	const size_type over_top =
-	std::max(m_over_top, other.m_over_top);
+      const size_type over_top = std::max(m_over_top, other.m_over_top);
 
       for (size_type i = 0; i < over_top; ++i)
 	std::swap(m_a_entries[i], other.m_a_entries[i]);
 
       std::swap(m_over_top, other.m_over_top);
-
-      PB_DS_DBG_ONLY(assert_valid();)
-	PB_DS_DBG_ONLY(other.assert_valid();)
-	}
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+     }
 
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
     push(entry p_nd)
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-	PB_DS_DBG_ASSERT(m_over_top < max_entries);
-
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ASSERT(m_over_top < max_entries);
       m_a_entries[m_over_top++] = p_nd;
-
-      PB_DS_DBG_ONLY(assert_valid();)
-	}
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    }
 
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
     pop()
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-	PB_DS_DBG_ASSERT(!empty());
-
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ASSERT(!empty());
       --m_over_top;
-
-      PB_DS_DBG_ONLY(assert_valid();)
-	}
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    }
 
     PB_DS_CLASS_T_DEC
     inline typename PB_DS_CLASS_C_DEC::node_pointer
     PB_DS_CLASS_C_DEC::
     top() const
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-	PB_DS_DBG_ASSERT(!empty());
-
-      return* (m_a_entries + m_over_top - 1);
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ASSERT(!empty());
+      return *(m_a_entries + m_over_top - 1);
     }
 
     PB_DS_CLASS_T_DEC
@@ -233,56 +206,45 @@ namespace pb_ds
     PB_DS_CLASS_C_DEC::
     empty() const
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-
-	return m_over_top == 0;
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      return m_over_top == 0;
     }
 
     PB_DS_CLASS_T_DEC
     inline typename PB_DS_CLASS_C_DEC::size_type
     PB_DS_CLASS_C_DEC::
     size() const
-    {
-      return m_over_top;
-    }
+    { return m_over_top; }
 
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
     clear()
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-
-	m_over_top = 0;
-
-      PB_DS_DBG_ONLY(assert_valid();)
-	}
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      m_over_top = 0;
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    }
 
     PB_DS_CLASS_T_DEC
     const typename PB_DS_CLASS_C_DEC::const_iterator
     PB_DS_CLASS_C_DEC::
     begin() const
-    {
-      return& m_a_entries[0];
-    }
+    { return& m_a_entries[0]; }
 
     PB_DS_CLASS_T_DEC
     const typename PB_DS_CLASS_C_DEC::const_iterator
     PB_DS_CLASS_C_DEC::
     end() const
-    {
-      return& m_a_entries[m_over_top];
-    }
+    { return& m_a_entries[m_over_top]; }
 
-#ifdef PB_DS_RC_BINOMIAL_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
     assert_valid() const
-    {
-      PB_DS_DBG_ASSERT(m_over_top < max_entries);
-    }
-#endif // #ifdef PB_DS_RC_BINOMIAL_HEAP_DEBUG_
+    { _GLIBCXX_DEBUG_ASSERT(m_over_top < max_entries); }
+#endif 
 
 #ifdef PB_DS_RC_BINOMIAL_HEAP_TRACE_
     PB_DS_CLASS_T_DEC
@@ -291,23 +253,16 @@ namespace pb_ds
     trace() const
     {
       std::cout << "rc" << std::endl;
-
       for (size_type i = 0; i < m_over_top; ++i)
 	std::cerr << m_a_entries[i] << std::endl;
-
       std::cout << std::endl;
     }
-#endif // #ifdef PB_DS_RC_BINOMIAL_HEAP_TRACE_
+#endif 
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
 
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
-  } // namespace detail
+} // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_RC_HPP
+#endif 

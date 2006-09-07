@@ -71,7 +71,7 @@ clear()
 
   m_size = 0;
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -95,8 +95,8 @@ inline void
 PB_DS_CLASS_C_DEC::
 pop()
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ASSERT(!empty());
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ASSERT(!empty());
 
   erase_at(m_a_entries, 0, s_no_throw_copies_ind);
 
@@ -104,10 +104,10 @@ pop()
 
   resize_for_erase_if_needed();
 
-  PB_DS_DBG_ASSERT(m_size > 0);
+  _GLIBCXX_DEBUG_ASSERT(m_size > 0);
   --m_size;
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -116,7 +116,7 @@ typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     typedef
     typename entry_pred<
@@ -128,7 +128,7 @@ erase_if(Pred pred)
 
   const size_type left = partition(pred_t(pred));
 
-  PB_DS_DBG_ASSERT(m_size >= left);
+  _GLIBCXX_DEBUG_ASSERT(m_size >= left);
 
   const size_type ersd = m_size - left;
 
@@ -157,7 +157,7 @@ erase_if(Pred pred)
 
   std::make_heap(m_a_entries, m_a_entries + m_size, static_cast<entry_cmp& >(*this));
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return ersd;
 }
@@ -167,8 +167,8 @@ inline void
 PB_DS_CLASS_C_DEC::
 erase(point_iterator it)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ASSERT(!empty());
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ASSERT(!empty());
 
   const size_type fix_pos = it.m_p_e - m_a_entries;
 
@@ -178,15 +178,15 @@ erase(point_iterator it)
 
   resize_for_erase_if_needed();
 
-  PB_DS_DBG_ASSERT(m_size > 0);
+  _GLIBCXX_DEBUG_ASSERT(m_size > 0);
   --m_size;
 
-  PB_DS_DBG_ASSERT(fix_pos <= m_size);
+  _GLIBCXX_DEBUG_ASSERT(fix_pos <= m_size);
 
   if (fix_pos != m_size)
     fix(m_a_entries + fix_pos);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -206,7 +206,7 @@ resize_for_erase_if_needed()
 
       resize_policy::notify_shrink_resize();
 
-      PB_DS_DBG_ASSERT(m_size > 0);
+      _GLIBCXX_DEBUG_ASSERT(m_size > 0);
       std::copy(m_a_entries, m_a_entries + m_size - 1, a_new_entries);
 
       s_entry_allocator.deallocate(m_a_entries, m_actual_size);
@@ -230,7 +230,7 @@ partition(Pred pred)
 
   while (right + 1 != left)
     {
-      PB_DS_DBG_ASSERT(left <= m_size);
+      _GLIBCXX_DEBUG_ASSERT(left <= m_size);
 
       if (!pred(m_a_entries[left]))
 	++left;
@@ -238,7 +238,7 @@ partition(Pred pred)
 	--right;
       else
         {
-	  PB_DS_DBG_ASSERT(left < right);
+	  _GLIBCXX_DEBUG_ASSERT(left < right);
 
 	  std::swap(m_a_entries[left], m_a_entries[right]);
 

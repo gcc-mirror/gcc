@@ -49,13 +49,13 @@ inline typename PB_DS_CLASS_C_DEC::const_reference
 PB_DS_CLASS_C_DEC::
 top() const
 {
-  PB_DS_DBG_ONLY(assert_valid(false);)
-    PB_DS_DBG_ASSERT(!base_type::empty());
+  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
+    _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
   if (m_p_max == NULL)
     const_cast<PB_DS_CLASS_C_DEC* >(this)->find_max();
 
-  PB_DS_DBG_ASSERT(m_p_max != NULL);
+  _GLIBCXX_DEBUG_ASSERT(m_p_max != NULL);
   return m_p_max->m_value;
 }
 

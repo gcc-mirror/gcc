@@ -49,7 +49,7 @@ inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
 insert_leaf(const_reference r_value)
 {
-  PB_DS_DBG_ONLY(structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
 
     if (m_size == 0)
       return (std::make_pair(
@@ -80,15 +80,15 @@ insert_leaf(const_reference r_value)
 			  PB_DS_V2F(r_value),
 			  PB_DS_V2F(p_pot->m_value)))
     {
-      PB_DS_DBG_ONLY(structure_only_assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
 
-        PB_DS_DBG_ONLY(map_debug_base::check_key_exists(
+        _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(
 							PB_DS_V2F(r_value)));
 
       return (std::make_pair(p_pot, false));
     }
 
-  PB_DS_DBG_ONLY(map_debug_base::check_key_does_not_exist(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(
 							  PB_DS_V2F(r_value)));
 
   p_nd = p_pot->m_p_left;
@@ -115,8 +115,8 @@ insert_leaf_new(const_reference r_value, node_pointer p_nd, bool left_nd)
 
   if (left_nd)
     {
-      PB_DS_DBG_ASSERT(p_nd->m_p_left == NULL);
-      PB_DS_DBG_ASSERT(Cmp_Fn::operator()(
+      _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_left == NULL);
+      _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(
 					  PB_DS_V2F(r_value),
 					  PB_DS_V2F(p_nd->m_value)));
 
@@ -127,8 +127,8 @@ insert_leaf_new(const_reference r_value, node_pointer p_nd, bool left_nd)
     }
   else
     {
-      PB_DS_DBG_ASSERT(p_nd->m_p_right == NULL);
-      PB_DS_DBG_ASSERT(Cmp_Fn::operator()(
+      _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_right == NULL);
+      _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(
 					  PB_DS_V2F(p_nd->m_value),
 					  PB_DS_V2F(r_value)));
 
@@ -142,11 +142,11 @@ insert_leaf_new(const_reference r_value, node_pointer p_nd, bool left_nd)
 
   p_new_nd->m_p_left = p_new_nd->m_p_right = NULL;
 
-  PB_DS_DBG_ONLY(assert_node_consistent(p_nd));
+  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_nd));
 
   update_to_top(p_new_nd, (node_update* )this);
 
-  PB_DS_DBG_ONLY(map_debug_base::insert_new(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(
 					    PB_DS_V2F(r_value)));
 
   return (iterator(p_new_nd));
@@ -167,7 +167,7 @@ insert_imp_empty(const_reference r_value)
 
   p_new_node->m_p_left = p_new_node->m_p_right = NULL;
 
-  PB_DS_DBG_ONLY(map_debug_base::insert_new(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(
 					    PB_DS_V2F(r_value)));
 
   update_to_top(m_p_head->m_p_parent, (node_update* )this);

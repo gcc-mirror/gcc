@@ -47,27 +47,16 @@
 #ifndef PB_DS_BINARY_HEAP_RESIZE_POLICY_HPP
 #define PB_DS_BINARY_HEAP_RESIZE_POLICY_HPP
 
+#include <debug/debug.h>
+
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_BINARY_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_BINARY_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_BINARY_HEAP_DEBUG_
+#define PB_DS_CLASS_T_DEC template<typename Size_Type>
 
-#define PB_DS_CLASS_T_DEC			\
-    template<typename Size_Type>
-
-#define PB_DS_CLASS_C_DEC					\
-    resize_policy<						\
-						Size_Type>
+#define PB_DS_CLASS_C_DEC resize_policy<Size_Type>
 
     template<typename Size_Type>
     class resize_policy
@@ -117,17 +106,15 @@ namespace pb_ds
       void
       notify_arbitrary(size_type actual_size);
 
-#ifdef PB_DS_BINARY_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
-#endif // #ifdef PB_DS_BINARY_HEAP_DEBUG_
+#endif 
 
 #ifdef PB_DS_BINARY_HEAP_TRACE_
-
       void
       trace() const;
-
-#endif // #ifdef PB_DS_BINARY_HEAP_TRACE_
+#endif 
 
     private:
       enum
@@ -138,7 +125,6 @@ namespace pb_ds
 
     private:
       size_type m_next_shrink_size;
-
       size_type m_next_grow_size;
     };
 
@@ -148,9 +134,7 @@ namespace pb_ds
     resize_policy() :
       m_next_shrink_size(0),
       m_next_grow_size(min_size)
-    {
-      PB_DS_DBG_ONLY(assert_valid();)
-	}
+    { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
 
     PB_DS_CLASS_T_DEC
     inline void
@@ -166,8 +150,7 @@ namespace pb_ds
     PB_DS_CLASS_C_DEC::
     resize_needed_for_grow(size_type size) const
     {
-      PB_DS_DBG_ASSERT(size <= m_next_grow_size);
-
+      _GLIBCXX_DEBUG_ASSERT(size <= m_next_grow_size);
       return size == m_next_grow_size;
     }
 
@@ -176,8 +159,7 @@ namespace pb_ds
     PB_DS_CLASS_C_DEC::
     resize_needed_for_shrink(size_type size) const
     {
-      PB_DS_DBG_ASSERT(size <= m_next_grow_size);
-
+      _GLIBCXX_DEBUG_ASSERT(size <= m_next_grow_size);
       return size == m_next_shrink_size;
     }
 
@@ -185,9 +167,7 @@ namespace pb_ds
     inline typename PB_DS_CLASS_C_DEC::size_type
     PB_DS_CLASS_C_DEC::
     get_new_size_for_grow() const
-    {
-      return m_next_grow_size*  factor;
-    }
+    { return m_next_grow_size*  factor; }
 
     PB_DS_CLASS_T_DEC
     inline typename PB_DS_CLASS_C_DEC::size_type
@@ -195,7 +175,6 @@ namespace pb_ds
     get_new_size_for_shrink() const
     {
       const size_type half_size = m_next_grow_size / factor;
-
       return std::max(static_cast<size_type>(min_size), half_size);
     }
 
@@ -205,10 +184,8 @@ namespace pb_ds
     get_new_size_for_arbitrary(size_type size) const
     {
       size_type ret = min_size;
-
       while (ret < size)
 	ret *= factor;
-
       return ret;
     }
 
@@ -217,33 +194,27 @@ namespace pb_ds
     PB_DS_CLASS_C_DEC::
     notify_grow_resize()
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-
-	PB_DS_DBG_ASSERT(m_next_grow_size >= min_size);
-
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ASSERT(m_next_grow_size >= min_size);
       m_next_grow_size *= factor;
-
       m_next_shrink_size = m_next_grow_size / ratio;
-
-      PB_DS_DBG_ONLY(assert_valid();)
-	}
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    }
 
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
     notify_shrink_resize()
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-
-	m_next_shrink_size /= factor;
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      m_next_shrink_size /= factor;
       if (m_next_shrink_size == 1)
 	m_next_shrink_size = 0;
 
       m_next_grow_size =
 	std::max(m_next_grow_size / factor, static_cast<size_type>(min_size));
-
-      PB_DS_DBG_ONLY(assert_valid();)
-	}
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    }
 
     PB_DS_CLASS_T_DEC
     inline void
@@ -251,24 +222,22 @@ namespace pb_ds
     notify_arbitrary(size_type actual_size)
     {
       m_next_grow_size = actual_size;
-
       m_next_shrink_size = m_next_grow_size / ratio;
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    }
 
-      PB_DS_DBG_ONLY(assert_valid();)
-	}
-
-#ifdef PB_DS_BINARY_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
     assert_valid() const
     {
-      PB_DS_DBG_ASSERT(m_next_shrink_size == 0 ||
+      _GLIBCXX_DEBUG_ASSERT(m_next_shrink_size == 0 ||
 		       m_next_shrink_size*  ratio == m_next_grow_size);
 
-      PB_DS_DBG_ASSERT(m_next_grow_size >= min_size);
+      _GLIBCXX_DEBUG_ASSERT(m_next_grow_size >= min_size);
     }
-#endif // #ifdef PB_DS_BINARY_HEAP_DEBUG_
+#endif 
 
 #ifdef PB_DS_BINARY_HEAP_TRACE_
     PB_DS_CLASS_T_DEC
@@ -279,17 +248,12 @@ namespace pb_ds
       std::cerr << "shrink = " << m_next_shrink_size <<
 	" grow = " << m_next_grow_size << std::endl;
     }
-#endif // #ifdef PB_DS_BINARY_HEAP_TRACE_
+#endif 
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
 
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
-  } // namespace detail
+} // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_BINARY_HEAP_RESIZE_POLICY_HPP
+#endif 

@@ -51,19 +51,19 @@ inline std::pair<
 PB_DS_CLASS_C_DEC::
 insert(const_reference r_val)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     entry_pointer p_l = find_imp(PB_DS_V2F(r_val));
 
   if (p_l != NULL)
     {
-      PB_DS_DBG_ONLY(map_debug_base::check_key_exists(
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(
 						      PB_DS_V2F(r_val));)
 
         return std::make_pair(point_iterator(&p_l->m_value), false);
     }
 
-  PB_DS_DBG_ONLY(map_debug_base::check_key_does_not_exist(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(
 							  PB_DS_V2F(r_val));)
 
     p_l = allocate_new_entry(r_val, PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
@@ -72,7 +72,7 @@ insert(const_reference r_val)
 
   m_p_l = p_l;
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return std::make_pair(point_iterator(&p_l->m_value), true);
 }
@@ -92,7 +92,7 @@ allocate_new_entry(const_reference r_val, false_type)
 
   cond.set_no_action();
 
-  PB_DS_DBG_ONLY(map_debug_base::insert_new(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(
 					    PB_DS_V2F(r_val));)
 
     init_entry_metadata(p_l, s_metadata_type_indicator);
@@ -109,7 +109,7 @@ allocate_new_entry(const_reference    r_val, true_type)
 
   new (&p_l->m_value) value_type(r_val);
 
-  PB_DS_DBG_ONLY(map_debug_base::insert_new(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(
 					    PB_DS_V2F(r_val));)
 
     init_entry_metadata(p_l, s_metadata_type_indicator);

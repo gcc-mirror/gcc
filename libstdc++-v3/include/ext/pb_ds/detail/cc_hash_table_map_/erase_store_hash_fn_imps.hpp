@@ -50,7 +50,7 @@ inline bool
 PB_DS_CLASS_C_DEC::
 erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     entry_pointer p_e = m_a_p_entries[r_pos_hash_pair.first];
 
@@ -60,11 +60,11 @@ erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair)
     {
       resize_base::notify_erase_search_end();
 
-      PB_DS_DBG_ONLY(map_debug_base::
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::
 		     check_key_does_not_exist(
 					      r_key);)
 
-        PB_DS_DBG_ONLY(assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
         return (false);
     }
@@ -77,14 +77,14 @@ erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair)
     {
       resize_base::notify_erase_search_end();
 
-      PB_DS_DBG_ONLY(map_debug_base::check_key_exists(
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(
 						      r_key);)
 
         erase_entry_pointer(m_a_p_entries[r_pos_hash_pair.first]);
 
       do_resize_if_needed_no_throw();
 
-      PB_DS_DBG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
         return (true);
     }
@@ -97,10 +97,10 @@ erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair)
         {
 	  resize_base::notify_erase_search_end();
 
-	  PB_DS_DBG_ONLY(map_debug_base::
+	  _GLIBCXX_DEBUG_ONLY(map_debug_base::
 			 check_key_does_not_exist(r_key);)
 
-            PB_DS_DBG_ONLY(assert_valid();)
+            _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
             return (false);
         }
@@ -113,7 +113,7 @@ erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair)
         {
 	  resize_base::notify_erase_search_end();
 
-	  PB_DS_DBG_ONLY(map_debug_base::
+	  _GLIBCXX_DEBUG_ONLY(map_debug_base::
 			 check_key_exists(
 					  r_key);)
 
@@ -121,7 +121,7 @@ erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair)
 
 	  do_resize_if_needed_no_throw();
 
-	  PB_DS_DBG_ONLY(assert_valid();)
+	  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
             return (true);
         }

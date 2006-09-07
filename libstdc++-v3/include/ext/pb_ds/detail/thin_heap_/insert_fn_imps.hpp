@@ -49,7 +49,7 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
 
@@ -63,7 +63,7 @@ push(const_reference r_val)
 
       m_p_max = base_type::m_p_root = p_nd;
 
-      PB_DS_DBG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
         return point_iterator(p_nd);
     }
@@ -76,7 +76,7 @@ push(const_reference r_val)
 
   update_max(p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return point_iterator(p_nd);
 }
@@ -139,7 +139,7 @@ fix(node_pointer p_y)
         }
       else if (p_y->m_metadata > p_y->m_p_next_sibling->m_metadata + 1)
         {
-	  PB_DS_DBG_ASSERT(p_y->m_p_l_child != NULL);
+	  _GLIBCXX_DEBUG_ASSERT(p_y->m_p_l_child != NULL);
 
 	  if (p_y->m_metadata != p_y->m_p_l_child->m_metadata + 2)
             {
@@ -172,11 +172,11 @@ inline void
 PB_DS_CLASS_C_DEC::
 fix_root(node_pointer p_y)
 {
-  PB_DS_DBG_ASSERT(p_y->m_p_prev_or_parent == NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_y->m_p_prev_or_parent == NULL);
 
   make_root(p_y);
 
-  PB_DS_DBG_ONLY(assert_node_consistent(p_y, true);)
+  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, true);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -184,12 +184,12 @@ inline void
 PB_DS_CLASS_C_DEC::
 fix_sibling_rank_1_unmarked(node_pointer p_y)
 {
-  PB_DS_DBG_ASSERT(p_y->m_p_prev_or_parent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_y->m_p_prev_or_parent != NULL);
 
-  PB_DS_DBG_ONLY(node_pointer p_w = p_y->m_p_l_child;)
-    PB_DS_DBG_ASSERT(p_w != NULL);
-  PB_DS_DBG_ASSERT(p_w->m_p_next_sibling == NULL);
-  PB_DS_DBG_ASSERT(p_y->m_p_next_sibling == NULL);
+  _GLIBCXX_DEBUG_ONLY(node_pointer p_w = p_y->m_p_l_child;)
+    _GLIBCXX_DEBUG_ASSERT(p_w != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_w->m_p_next_sibling == NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_y->m_p_next_sibling == NULL);
 
   p_y->m_p_next_sibling = p_y->m_p_l_child;
 
@@ -197,7 +197,7 @@ fix_sibling_rank_1_unmarked(node_pointer p_y)
 
   p_y->m_p_l_child = NULL;
 
-  PB_DS_DBG_ONLY(assert_node_consistent(p_y, false);)
+  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, false);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -205,12 +205,12 @@ inline void
 PB_DS_CLASS_C_DEC::
 fix_sibling_rank_1_marked(node_pointer p_y)
 {
-  PB_DS_DBG_ASSERT(p_y->m_p_prev_or_parent != NULL);
-  PB_DS_DBG_ASSERT(p_y->m_p_l_child == NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_y->m_p_prev_or_parent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_y->m_p_l_child == NULL);
 
   p_y->m_metadata = 0;
 
-  PB_DS_DBG_ONLY(assert_node_consistent(p_y, false);)
+  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, false);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -218,23 +218,23 @@ inline void
 PB_DS_CLASS_C_DEC::
 fix_sibling_general_unmarked(node_pointer p_y)
 {
-  PB_DS_DBG_ASSERT(p_y->m_p_prev_or_parent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_y->m_p_prev_or_parent != NULL);
 
   node_pointer p_w = p_y->m_p_l_child;
-  PB_DS_DBG_ASSERT(p_w != NULL);
-  PB_DS_DBG_ASSERT(p_w->m_p_next_sibling != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_w != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_w->m_p_next_sibling != NULL);
 
   p_y->m_p_l_child = p_w->m_p_next_sibling;
   p_w->m_p_next_sibling->m_p_prev_or_parent = p_y;
 
   p_w->m_p_next_sibling = p_y->m_p_next_sibling;
-  PB_DS_DBG_ASSERT(p_w->m_p_next_sibling != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_w->m_p_next_sibling != NULL);
   p_w->m_p_next_sibling->m_p_prev_or_parent = p_w;
 
   p_y->m_p_next_sibling = p_w;
   p_w->m_p_prev_or_parent = p_y;
 
-  PB_DS_DBG_ONLY(assert_node_consistent(p_y, false);)
+  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, false);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -242,11 +242,11 @@ inline void
 PB_DS_CLASS_C_DEC::
 fix_sibling_general_marked(node_pointer p_y)
 {
-  PB_DS_DBG_ASSERT(p_y->m_p_prev_or_parent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_y->m_p_prev_or_parent != NULL);
 
   --p_y->m_metadata;
 
-  PB_DS_DBG_ONLY(assert_node_consistent(p_y, false);)
+  _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_y, false);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -254,7 +254,7 @@ inline void
 PB_DS_CLASS_C_DEC::
 fix_child(node_pointer p_y)
 {
-  PB_DS_DBG_ASSERT(p_y->m_p_prev_or_parent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_y->m_p_prev_or_parent != NULL);
 
   if (p_y->m_p_next_sibling != NULL)
     p_y->m_p_next_sibling->m_p_prev_or_parent = p_y->m_p_prev_or_parent;
@@ -272,10 +272,10 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     node_pointer p_nd = it.m_p_nd;
 
-  PB_DS_DBG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
 
   const bool smaller = Cmp_Fn::operator()(r_new_val, p_nd->m_value);
 
@@ -289,7 +289,7 @@ modify(point_iterator it, const_reference r_new_val)
 
       make_root_and_link(p_nd);
 
-      PB_DS_DBG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
         return;
     }
@@ -298,13 +298,13 @@ modify(point_iterator it, const_reference r_new_val)
     {
       update_max(p_nd);
 
-      PB_DS_DBG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
         return;
     }
 
   node_pointer p_y = p_nd->m_p_prev_or_parent;
-  PB_DS_DBG_ASSERT(p_y != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_y != NULL);
 
   if (p_nd->m_p_next_sibling != NULL)
     p_nd->m_p_next_sibling->m_p_prev_or_parent = p_y;
@@ -318,7 +318,7 @@ modify(point_iterator it, const_reference r_new_val)
 
   make_root_and_link(p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC

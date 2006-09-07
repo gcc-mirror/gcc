@@ -50,11 +50,8 @@ PB_DS_CLASS_C_DEC::
 pop()
 {
   make_binomial_heap();
-
-  PB_DS_DBG_ASSERT(!base_type::empty());
-
+  _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
   base_type::pop();
-
   base_type::find_max();
 }
 
@@ -64,7 +61,6 @@ PB_DS_CLASS_C_DEC::
 clear()
 {
   base_type::clear();
-
   m_rc.clear();
 }
 
@@ -74,21 +70,19 @@ PB_DS_CLASS_C_DEC::
 make_binomial_heap()
 {
   node_pointer p_nd = base_type::m_p_root;
-
   while (p_nd != NULL)
     {
       node_pointer p_next = p_nd->m_p_next_sibling;
-
       if (p_next == NULL)
 	p_nd = p_next;
       else if (p_nd->m_metadata == p_next->m_metadata)
 	p_nd = link_with_next_sibling(p_nd);
       else if (p_nd->m_metadata < p_next->m_metadata)
 	p_nd = p_next;
-#ifdef PB_DS_RC_BINOMIAL_HEAP__DEBUG_
+#ifdef _GLIBCXX_DEBUG
       else
-	PB_DS_DBG_ASSERT(0);
-#endif // #ifdef PB_DS_RC_BINOMIAL_HEAP__DEBUG_
+	_GLIBCXX_DEBUG_ASSERT(0);
+#endif 
     }
 
   m_rc.clear();
@@ -101,14 +95,10 @@ PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
   make_binomial_heap();
-
   const size_type ersd = base_type::erase_if(pred);
-
   base_type::find_max();
-
-  PB_DS_DBG_ONLY(assert_valid();)
-
-    return ersd;
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  return ersd;
 }
 
 PB_DS_CLASS_T_DEC
@@ -117,9 +107,7 @@ PB_DS_CLASS_C_DEC::
 erase(point_iterator it)
 {
   make_binomial_heap();
-
   base_type::erase(it);
-
   base_type::find_max();
 }
 

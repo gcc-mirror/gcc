@@ -49,9 +49,9 @@ inline void
 PB_DS_CLASS_C_DEC::
 erase_entry(entry_pointer p_e)
 {
-  PB_DS_DBG_ASSERT(p_e->m_stat = valid_entry_status);
+  _GLIBCXX_DEBUG_ASSERT(p_e->m_stat = valid_entry_status);
 
-  PB_DS_DBG_ONLY(map_debug_base::erase_existing(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::erase_existing(
 						PB_DS_V2F(p_e->m_value));)
 
     typedef
@@ -62,7 +62,7 @@ erase_entry(entry_pointer p_e)
 
   p_e->m_stat = erased_entry_status;
 
-  PB_DS_DBG_ASSERT(m_num_used_e > 0);
+  _GLIBCXX_DEBUG_ASSERT(m_num_used_e > 0);
   resize_base::notify_erased(--m_num_used_e);
 }
 
@@ -90,7 +90,7 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
 
     size_type num_ersd = 0;
 
@@ -109,7 +109,7 @@ erase_if(Pred pred)
 
   do_resize_if_needed_no_throw();
 
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
 
     return (num_ersd);
 }

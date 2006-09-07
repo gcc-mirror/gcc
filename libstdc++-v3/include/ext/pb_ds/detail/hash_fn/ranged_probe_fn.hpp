@@ -50,22 +50,12 @@
 
 #include <ext/pb_ds/detail/basic_types.hpp>
 #include <utility>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
-
-#ifdef PB_DS_RANGED_PROBE_FN_DEBUG
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_RANGED_PROBE_FN_DEBUG
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_RANGED_PROBE_FN_DEBUG
-
     template<typename Key,
 	     class Hash_Fn,
 	     class Allocator,
@@ -298,26 +288,20 @@ namespace pb_ds
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     ranged_probe_fn(size_type size)
-    {
-      Comb_Probe_Fn::notify_resized(size);
-    }
+    { Comb_Probe_Fn::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn) :
       Hash_Fn(r_hash_fn)
-    {
-      Comb_Probe_Fn::notify_resized(size);
-    }
+    { Comb_Probe_Fn::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, const Comb_Probe_Fn& r_comb_probe_fn) :
       Hash_Fn(r_hash_fn),
       Comb_Probe_Fn(r_comb_probe_fn)
-    {
-      comb_probe_fn_base::notify_resized(size);
-    }
+    { comb_probe_fn_base::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
@@ -325,9 +309,7 @@ namespace pb_ds
       Hash_Fn(r_hash_fn),
       Comb_Probe_Fn(r_comb_probe_fn),
       Probe_Fn(r_probe_fn)
-    {
-      comb_probe_fn_base::notify_resized(size);
-    }
+    { comb_probe_fn_base::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     void
@@ -335,7 +317,6 @@ namespace pb_ds
     swap(PB_DS_CLASS_C_DEC& other)
     {
       comb_probe_fn_base::swap(other);
-
       std::swap((Hash_Fn& )(*this), (Hash_Fn& )other);
     }
 
@@ -343,9 +324,7 @@ namespace pb_ds
     void
     PB_DS_CLASS_C_DEC::
     notify_resized(size_type size)
-    {
-      comb_probe_fn_base::notify_resized(size);
-    }
+    { comb_probe_fn_base::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     inline typename PB_DS_CLASS_C_DEC::comp_hash
@@ -353,8 +332,7 @@ namespace pb_ds
     operator()(const_key_reference r_key) const
     {
       const size_type hash = hash_fn_base::operator()(r_key);
-
-      return (std::make_pair(comb_probe_fn_base::operator()(hash), hash));
+      return std::make_pair(comb_probe_fn_base::operator()(hash), hash);
     }
 
     PB_DS_CLASS_T_DEC
@@ -362,23 +340,21 @@ namespace pb_ds
     PB_DS_CLASS_C_DEC::
     operator()(const_key_reference /*r_key*/, size_type hash, size_type i) const
     {
-      return (comb_probe_fn_base::operator()(
-					     hash + probe_fn_base::operator()(i)));
+      return comb_probe_fn_base::operator()(hash + probe_fn_base::operator()(i));
     }
 
     PB_DS_CLASS_T_DEC
     inline typename PB_DS_CLASS_C_DEC::size_type
     PB_DS_CLASS_C_DEC::
     operator()
-#ifdef PB_DS_RANGED_PROBE_FN_DEBUG
+#ifdef _GLIBCXX_DEBUG
       (const_key_reference r_key, size_type hash) const
-#else // #ifdef PB_DS_RANGED_PROBE_FN_DEBUG
+#else 
       (const_key_reference /*r_key*/, size_type hash) const
-#endif // #ifdef PB_DS_RANGED_PROBE_FN_DEBUG
+#endif 
     {
-      PB_DS_DBG_ASSERT(hash == hash_fn_base::operator()(r_key));
-
-      return (hash);
+      _GLIBCXX_DEBUG_ASSERT(hash == hash_fn_base::operator()(r_key));
+      return hash;
     }
 
 #undef PB_DS_CLASS_T_DEC
@@ -435,9 +411,7 @@ namespace pb_ds
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     ranged_probe_fn(size_type size)
-    {
-      Comb_Probe_Fn::notify_resized(size);
-    }
+    { Comb_Probe_Fn::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
@@ -455,19 +429,12 @@ namespace pb_ds
     void
     PB_DS_CLASS_C_DEC::
     swap(PB_DS_CLASS_C_DEC& other)
-    {
-      comb_probe_fn_base::swap(other);
-    }
+    { comb_probe_fn_base::swap(other); }
 
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_RANGED_PROBE_FN_HPP
+#endif
 

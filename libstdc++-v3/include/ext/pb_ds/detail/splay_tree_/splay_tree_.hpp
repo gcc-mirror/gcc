@@ -78,34 +78,25 @@
 #ifndef PB_DS_BIN_SEARCH_TREE_HPP__DATA_TRUE_INDICATOR
 #define PB_DS_BIN_SEARCH_TREE_HPP__DATA_TRUE_INDICATOR
 #include <ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp>
-#endif // #ifndef BIN_SEARCH_TREE_HPP__DATA_TRUE_INDICATOR
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #ifndef PB_DS_BIN_SEARCH_TREE_HPP__DATA_FALSE_INDICATOR
 #define PB_DS_BIN_SEARCH_TREE_HPP__DATA_FALSE_INDICATOR
 #include <ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp>
-#endif // #ifndef BIN_SEARCH_TREE_HPP__DATA_FALSE_INDICATOR
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
+#endif 
 
 #include <utility>
 #include <vector>
 #include <assert.h>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
-
-#ifdef PB_DS_SPLAY_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_SPLAY_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_SPLAY_TREE_DEBUG_
 
 #define PB_DS_CLASS_T_DEC						\
     template<								\
@@ -118,22 +109,22 @@ namespace pb_ds
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_CLASS_NAME			\
     splay_tree_data_
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_CLASS_NAME			\
     splay_tree_no_data_
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_BASE_CLASS_NAME			\
     bin_search_tree_data_
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_BASE_CLASS_NAME			\
     bin_search_tree_no_data_
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
 #define PB_DS_CLASS_C_DEC						\
     PB_DS_CLASS_NAME<							\
@@ -155,13 +146,13 @@ namespace pb_ds
 #define PB_DS_V2F(X) (X).first
 #define PB_DS_V2S(X) (X).second
 #define PB_DS_EP2VP(X)& ((X)->m_value)
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_V2F(X) (X)
 #define PB_DS_V2S(X) Mapped_Data()
 #define PB_DS_EP2VP(X)& ((X)->m_value.first)
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
     // $p14y 7r33 7481.
     template<typename Key,
@@ -266,28 +257,19 @@ namespace pb_ds
       operator[](const_key_reference r_key)
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-	PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
-
-	  std::pair<point_iterator, bool> ins_pair =
-	  insert_leaf_imp(
-			  value_type(
-				     r_key,
-				     mapped_type()));
+	_GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+	std::pair<point_iterator, bool> ins_pair =
+	  insert_leaf_imp(value_type(r_key, mapped_type()));
 
 	ins_pair.first.m_p_nd->m_special = false;
-
-	PB_DS_DBG_ONLY(PB_DS_BASE_C_DEC::assert_valid());
-
+	_GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_valid());
 	splay(ins_pair.first.m_p_nd);
-
-	PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
-
-	  return (ins_pair.first.m_p_nd->m_value.second);
-#else // #ifdef PB_DS_DATA_TRUE_INDICATOR
+	_GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+	return ins_pair.first.m_p_nd->m_value.second;
+#else 
 	insert(r_key);
-
-	return (PB_DS_BASE_C_DEC::s_null_mapped);
-#endif // #ifdef PB_DS_DATA_TRUE
+	return PB_DS_BASE_C_DEC::s_null_mapped;
+#endif
       }
 
       inline point_iterator
@@ -326,15 +308,13 @@ namespace pb_ds
       inline const node_pointer
       find_imp(const_key_reference r_key) const;
 
-#ifdef PB_DS_SPLAY_TREE_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
 
       void
       assert_special_imp(const node_pointer p_nd) const;
-
-#endif // #ifdef PB_DS_SPLAY_TREE_DEBUG_
+#endif 
 
       void
       splay(node_pointer p_nd);
@@ -374,23 +354,14 @@ namespace pb_ds
 #include <ext/pb_ds/detail/splay_tree_/split_join_fn_imps.hpp>
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_CLASS_NAME
-
 #undef PB_DS_BASE_CLASS_NAME
-
 #undef PB_DS_BASE_C_DEC
 
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP
 #undef PB_DS_V2S
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
   } // namespace detail
 } // namespace pb_ds
 

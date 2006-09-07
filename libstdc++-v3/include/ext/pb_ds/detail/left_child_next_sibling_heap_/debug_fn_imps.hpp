@@ -44,20 +44,18 @@
  * Contains an implementation class for left_child_next_sibling_heap_.
  */
 
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
-  PB_DS_DBG_ASSERT(m_p_root == NULL || m_p_root->m_p_prev_or_parent == NULL);
+  _GLIBCXX_DEBUG_ASSERT(m_p_root == NULL || m_p_root->m_p_prev_or_parent == NULL);
 
   if (m_p_root != NULL)
     assert_node_consistent(m_p_root, Single_Link_Roots);
-
   assert_size();
-
   assert_iterators();
 }
 
@@ -73,25 +71,21 @@ assert_node_consistent(const_node_pointer p_nd, bool single_link) const
   assert_node_consistent(p_nd->m_p_next_sibling, single_link);
 
   if (single_link)
-    PB_DS_DBG_ASSERT(p_nd->m_p_prev_or_parent == NULL);
+    _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_prev_or_parent == NULL);
   else if (p_nd->m_p_next_sibling != NULL)
-    PB_DS_DBG_ASSERT(p_nd->m_p_next_sibling->m_p_prev_or_parent == p_nd);
+    _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling->m_p_prev_or_parent == p_nd);
 
   if (p_nd->m_p_l_child == NULL)
     return;
 
   const_node_pointer p_child = p_nd->m_p_l_child;
-
   while (p_child != NULL)
     {
       const_node_pointer p_next_child = p_child->m_p_next_sibling;
-
-      PB_DS_DBG_ASSERT(!Cmp_Fn::operator()(p_nd->m_value, p_child->m_value));
-
+      _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(p_nd->m_value, p_child->m_value));
       p_child = p_next_child;
     }
-
-  PB_DS_DBG_ASSERT(p_nd->m_p_l_child->m_p_prev_or_parent == p_nd);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_l_child->m_p_prev_or_parent == p_nd);
 }
 
 PB_DS_CLASS_T_DEC
@@ -100,11 +94,9 @@ PB_DS_CLASS_C_DEC::
 assert_iterators() const
 {
   const size_type calc_size = std::distance(begin(), end());
-
   if (calc_size == size())
     return;
-
-  PB_DS_DBG_ASSERT(0);
+  _GLIBCXX_DEBUG_ASSERT(0);
 }
 
 PB_DS_CLASS_T_DEC
@@ -114,17 +106,14 @@ assert_size() const
 {
   if (size_from_node(m_p_root) == m_size)
     return;
-
-  PB_DS_DBG_ASSERT(0);
+  _GLIBCXX_DEBUG_ASSERT(0);
 }
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 size_under_node(const_node_pointer p_nd)
-{
-  return 1 + size_from_node(p_nd->m_p_l_child);
-}
+{ return 1 + size_from_node(p_nd->m_p_l_child); }
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::size_type
@@ -132,14 +121,11 @@ PB_DS_CLASS_C_DEC::
 size_from_node(const_node_pointer p_nd)
 {
   size_type ret = 0;
-
   while (p_nd != NULL)
     {
       ret += 1 + size_from_node(p_nd->m_p_l_child);
-
       p_nd = p_nd->m_p_next_sibling;
     }
-
   return ret;
 }
 
@@ -149,17 +135,13 @@ PB_DS_CLASS_C_DEC::
 degree(const_node_pointer p_nd)
 {
   size_type ret = 0;
-
   const_node_pointer p_child = p_nd->m_p_l_child;
-
   while (p_child != NULL)
     {
       ++ret;
-
       p_child = p_child->m_p_next_sibling;
     }
-
   return ret;
 }
 
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#endif 

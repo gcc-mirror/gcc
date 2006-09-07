@@ -47,9 +47,7 @@
 #ifndef PB_DS_PAT_TRIE_INTERNAL_NODE_HPP
 #define PB_DS_PAT_TRIE_INTERNAL_NODE_HPP
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-#include <cassert>
-#endif 
+#include <debug/debug.h>
 
 namespace pb_ds
 {
@@ -70,16 +68,6 @@ namespace pb_ds
 
 #define PB_DS_STATIC_ASSERT(UNIQUE, E) \
     typedef static_assert_dumclass<sizeof(static_assert<(bool)(E)>)> UNIQUE##static_assert_type
-
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else 
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) { if((X)==0); }
-#define PB_DS_DBG_ONLY(X) ;
-#endif 
 
     template<typename Type_Traits,
 	     typename E_Access_Traits,
@@ -111,7 +99,7 @@ namespace pb_ds
       typedef typename internal_node_rebind::pointer internal_node_pointer;
       typedef typename internal_node_rebind::const_pointer const_internal_node_pointer;
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       typedef typename base_type::subtree_debug_info subtree_debug_info;
 
       virtual subtree_debug_info
@@ -214,7 +202,7 @@ namespace pb_ds
       const_leaf_pointer
       rightmost_descendant() const;
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       size_type
       e_ind() const;
 #endif 
@@ -277,7 +265,7 @@ namespace pb_ds
 	}
       else
 	{
-	  PB_DS_DBG_ASSERT(p_first->m_type == pat_trie_internal_node_type);
+	  _GLIBCXX_DEBUG_ASSERT(p_first->m_type == pat_trie_internal_node_type);
 	  m_pref_b_it = static_cast<internal_node_pointer>(p_first)->pref_b_it();
 	}
       m_pref_e_it = m_pref_b_it;
@@ -326,7 +314,7 @@ namespace pb_ds
 		   const_e_access_traits_pointer p_traits)
     {
       const size_type i = get_pref_pos(b_it, e_it, p_traits);
-      PB_DS_DBG_ASSERT(i < arr_size);
+      _GLIBCXX_DEBUG_ASSERT(i < arr_size);
       return m_a_p_children[i];
     }
 
@@ -337,8 +325,8 @@ namespace pb_ds
 		 const_e_access_traits_pointer p_traits)
     {
       const size_type i = get_pref_pos(b_it, e_it, p_traits);
-      PB_DS_DBG_ASSERT(i < arr_size);
-      PB_DS_DBG_ASSERT(m_a_p_children[i] != NULL);
+      _GLIBCXX_DEBUG_ASSERT(i < arr_size);
+      _GLIBCXX_DEBUG_ASSERT(m_a_p_children[i] != NULL);
       return iterator(m_a_p_children + i, m_a_p_children + i);
     }
 
@@ -364,7 +352,7 @@ namespace pb_ds
 	}
 
       size_type i = get_pref_pos(b_it, e_it, p_traits);
-      PB_DS_DBG_ASSERT(i < arr_size);
+      _GLIBCXX_DEBUG_ASSERT(i < arr_size);
 
       if (m_a_p_children[i] != NULL)
 	return m_a_p_children[i];
@@ -375,7 +363,7 @@ namespace pb_ds
 	    if (m_a_p_children[i]->m_type == pat_trie_leaf_node_type)
 	      return m_a_p_children[i];
 
-	    PB_DS_DBG_ASSERT(m_a_p_children[i]->m_type == pat_trie_internal_node_type);
+	    _GLIBCXX_DEBUG_ASSERT(m_a_p_children[i]->m_type == pat_trie_internal_node_type);
 
 	    return static_cast<internal_node_pointer>(m_a_p_children[i])->leftmost_descendant();
 	  }
@@ -390,7 +378,7 @@ namespace pb_ds
 	      const_e_access_traits_pointer p_traits)
     {
       const size_type i = get_pref_pos(b_it, e_it, p_traits);
-      PB_DS_DBG_ASSERT(i < arr_size);
+      _GLIBCXX_DEBUG_ASSERT(i < arr_size);
       if (m_a_p_children[i] == NULL)
 	{
 	  m_a_p_children[i] = p_nd;
@@ -431,7 +419,7 @@ namespace pb_ds
 	  e_it = static_cast<internal_node_pointer>(p_nd)->pref_e_it();
 	}
       i = get_pref_pos(b_it, e_it, p_traits);
-      PB_DS_DBG_ASSERT(i < arr_size);
+      _GLIBCXX_DEBUG_ASSERT(i < arr_size);
       return m_a_p_children[i];
     }
 
@@ -447,7 +435,7 @@ namespace pb_ds
 	    m_a_p_children[i] = NULL;
 	    return;
 	  }
-      PB_DS_DBG_ASSERT(i != arr_size);
+      _GLIBCXX_DEBUG_ASSERT(i != arr_size);
     }
 
     PB_DS_CLASS_T_DEC
@@ -469,7 +457,7 @@ namespace pb_ds
 		  const_e_access_traits_pointer p_traits)
     {
       const size_type i = get_pref_pos(b_it, e_it, p_traits);
-      PB_DS_DBG_ASSERT(i < arr_size);
+      _GLIBCXX_DEBUG_ASSERT(i < arr_size);
       m_a_p_children[i] = p_nd;
       p_nd->m_p_parent = this;
     }
@@ -528,7 +516,7 @@ namespace pb_ds
       node_pointer p_pot =* begin();
       if (p_pot->m_type == pat_trie_leaf_node_type)
 	return (static_cast<leaf_pointer>(p_pot));
-      PB_DS_DBG_ASSERT(p_pot->m_type == pat_trie_internal_node_type);
+      _GLIBCXX_DEBUG_ASSERT(p_pot->m_type == pat_trie_internal_node_type);
       return static_cast<internal_node_pointer>(p_pot)->leftmost_descendant();
     }
 
@@ -546,14 +534,14 @@ namespace pb_ds
     rightmost_descendant()
     {
       const size_type num_children = std::distance(begin(), end());
-      PB_DS_DBG_ASSERT(num_children >= 2);
+      _GLIBCXX_DEBUG_ASSERT(num_children >= 2);
 
       iterator it = begin();
       std::advance(it, num_children - 1);
       node_pointer p_pot =* it;
       if (p_pot->m_type == pat_trie_leaf_node_type)
 	return static_cast<leaf_pointer>(p_pot);
-      PB_DS_DBG_ASSERT(p_pot->m_type == pat_trie_internal_node_type);
+      _GLIBCXX_DEBUG_ASSERT(p_pot->m_type == pat_trie_internal_node_type);
       return static_cast<internal_node_pointer>(p_pot)->rightmost_descendant();
     }
 
@@ -565,13 +553,13 @@ namespace pb_ds
       return const_cast<internal_node_pointer>(this)->rightmost_descendant();
     }
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::size_type
     PB_DS_CLASS_C_DEC::
     e_ind() const
     { return m_e_ind; }
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::size_type
@@ -584,40 +572,36 @@ namespace pb_ds
       return i;
     }
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::subtree_debug_info
     PB_DS_CLASS_C_DEC::
     assert_valid_imp(const_e_access_traits_pointer p_traits) const
     {
-      PB_DS_DBG_ASSERT(base_type::m_type == pat_trie_internal_node_type);
-      PB_DS_DBG_ASSERT(static_cast<size_type>(std::distance(pref_b_it(), pref_e_it())) == m_e_ind);
-      PB_DS_DBG_ASSERT(std::distance(begin(), end()) >= 2);
+      _GLIBCXX_DEBUG_ASSERT(base_type::m_type == pat_trie_internal_node_type);
+      _GLIBCXX_DEBUG_ASSERT(static_cast<size_type>(std::distance(pref_b_it(), pref_e_it())) == m_e_ind);
+      _GLIBCXX_DEBUG_ASSERT(std::distance(begin(), end()) >= 2);
 
       for (typename pat_trie_internal_node::const_iterator it = begin();
 	   it != end(); ++it)
 	{
 	  const_node_pointer p_nd =* it;
-	  PB_DS_DBG_ASSERT(p_nd->m_p_parent == this);
+	  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_parent == this);
 	  subtree_debug_info child_ret = p_nd->assert_valid_imp(p_traits);
 
-	  PB_DS_DBG_ASSERT(static_cast<size_type>(std::distance(child_ret.first, child_ret.second)) >= m_e_ind);
-	  PB_DS_DBG_ASSERT(should_be_mine(child_ret.first, child_ret.second, 0, p_traits));
-	  PB_DS_DBG_ASSERT(get_pref_pos(child_ret.first, child_ret.second, p_traits) == static_cast<size_type>(it.m_p_p_cur - m_a_p_children));
+	  _GLIBCXX_DEBUG_ASSERT(static_cast<size_type>(std::distance(child_ret.first, child_ret.second)) >= m_e_ind);
+	  _GLIBCXX_DEBUG_ASSERT(should_be_mine(child_ret.first, child_ret.second, 0, p_traits));
+	  _GLIBCXX_DEBUG_ASSERT(get_pref_pos(child_ret.first, child_ret.second, p_traits) == static_cast<size_type>(it.m_p_p_cur - m_a_p_children));
 	}
       return std::make_pair(pref_b_it(), pref_e_it());
     }
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_BASE_C_DEC
 #undef PB_DS_LEAF_C_DEC
 #undef PB_DS_STATIC_ASSERT
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds

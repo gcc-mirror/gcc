@@ -50,7 +50,7 @@ inline bool
 PB_DS_CLASS_C_DEC::
 erase(const_key_reference r_key)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return (erase_in_pos_imp(r_key,
 			     ranged_hash_fn_base::operator()(r_key)));
@@ -61,7 +61,7 @@ inline bool
 PB_DS_CLASS_C_DEC::
 erase_in_pos_imp(const_key_reference r_key, size_type pos)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     entry_pointer p_e = m_a_p_entries[pos];
 
@@ -71,10 +71,10 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
     {
       resize_base::notify_erase_search_end();
 
-      PB_DS_DBG_ONLY(map_debug_base::check_key_does_not_exist(
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(
 							      r_key);)
 
-        PB_DS_DBG_ONLY(assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
         return (false);
     }
@@ -85,14 +85,14 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
     {
       resize_base::notify_erase_search_end();
 
-      PB_DS_DBG_ONLY(map_debug_base::
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::
 		     check_key_exists(r_key);)
 
         erase_entry_pointer(m_a_p_entries[pos]);
 
       do_resize_if_needed_no_throw();
 
-      PB_DS_DBG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
         return (true);
     }
@@ -105,10 +105,10 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
         {
 	  resize_base::notify_erase_search_end();
 
-	  PB_DS_DBG_ONLY(map_debug_base::
+	  _GLIBCXX_DEBUG_ONLY(map_debug_base::
 			 check_key_does_not_exist(r_key);)
 
-            PB_DS_DBG_ONLY(assert_valid();)
+            _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
             return (false);
         }
@@ -119,14 +119,14 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
         {
 	  resize_base::notify_erase_search_end();
 
-	  PB_DS_DBG_ONLY(map_debug_base::
+	  _GLIBCXX_DEBUG_ONLY(map_debug_base::
 			 check_key_exists(r_key);)
 
             erase_entry_pointer(p_e->m_p_next);
 
 	  do_resize_if_needed_no_throw();
 
-	  PB_DS_DBG_ONLY(assert_valid();)
+	  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
             return (true);
         }

@@ -57,13 +57,10 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       class dbg_ex_allocator_base;
 
       std::ostream& 
@@ -96,14 +93,11 @@ namespace pb_ds
 	  group_throw_prob_adjustor(size_t size) : m_orig_throw_prob(s_throw_prob)
 	  {
             s_throw_prob =
-	      1 - ::pow((double)(
-				 1 - s_throw_prob),(double)(0.5 / (size + 1)));
+	      1 - ::pow(double(1 - s_throw_prob), double(0.5 / (size + 1)));
 	  }
 
 	  ~group_throw_prob_adjustor()
-	  {
-            s_throw_prob = m_orig_throw_prob;
-	  }
+	  { s_throw_prob = m_orig_throw_prob; }
 
 	private:
 	  const double m_orig_throw_prob;
@@ -113,14 +107,10 @@ namespace pb_ds
 	{
 	public:
 	  zero_throw_prob_adjustor() : m_orig_throw_prob(s_throw_prob)
-	  {
-            s_throw_prob = 0;
-	  }
+	  { s_throw_prob = 0; }
 
 	  ~zero_throw_prob_adjustor()
-	  {
-            s_throw_prob = m_orig_throw_prob;
-	  }
+	  { s_throw_prob = m_orig_throw_prob; }
 
 	private:
 	  const double m_orig_throw_prob;
@@ -143,17 +133,12 @@ namespace pb_ds
         check_allocated(void* p_r, size_t size);
 
       private:
-	typedef std::pair< label, size_t> alloc_data_t;
+	typedef std::pair<label, size_t> 	alloc_data_t;
+	typedef std::map<void*, alloc_data_t> 	map_t;
+	typedef map_t::value_type 		entry_t;
+	typedef map_t::const_iterator 		const_iterator;
+	typedef map_t::const_reference 		const_reference;
 
-	typedef std::map< void* , alloc_data_t> map_t;
-
-	typedef map_t::value_type entry_t;
-
-	typedef map_t::const_iterator const_iterator;
-
-	typedef map_t::const_reference const_reference;
-
-      private:
 	static void
         print_to_ostream(std::ostream& r_os);
 
@@ -163,25 +148,16 @@ namespace pb_ds
 	static entry_t
         make_entry(void* p_r, size_t size);
 
-      private:
 	static twister_rand_gen s_g;
+	static map_t 		s_map;
+	static double 		s_throw_prob;
+	static size_t 		s_label;
 
-	static map_t s_map;
-
-	static double s_throw_prob;
-
-	static size_t s_label;
-
-	friend std::ostream& operator<<(std::ostream& r_os, const dbg_ex_allocator_base& r_dbg);
+	friend std::ostream& operator<<(std::ostream& r_os, 
+					const dbg_ex_allocator_base& r_dbg);
       };
-
-      std::ostream& 
-      operator<<(std::ostream& r_os, const dbg_ex_allocator_base& r_dbg);
-
     } // namespace detail
-
   } // namespace test
-
 } // namespace pb_ds
 
 #endif // #ifndef PB_DS_DBG_EX_ALLOCATOR_BASE_HPP

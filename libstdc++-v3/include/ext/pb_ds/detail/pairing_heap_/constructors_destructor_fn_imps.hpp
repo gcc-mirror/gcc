@@ -53,14 +53,14 @@ copy_from_range(It first_it, It last_it)
   while (first_it != last_it)
     push(*(first_it++));
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 pairing_heap_()
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -68,7 +68,7 @@ PB_DS_CLASS_C_DEC::
 pairing_heap_(const Cmp_Fn& r_cmp_fn) :
   PB_DS_BASE_C_DEC(r_cmp_fn)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -76,7 +76,7 @@ PB_DS_CLASS_C_DEC::
 pairing_heap_(const PB_DS_CLASS_C_DEC& other) :
   PB_DS_BASE_C_DEC(other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -84,11 +84,11 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     PB_DS_BASE_C_DEC::swap(other);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC

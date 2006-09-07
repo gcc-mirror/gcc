@@ -49,7 +49,7 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  PB_DS_DBG_ONLY(assert_valid(true);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
 
     node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
 
@@ -57,7 +57,7 @@ push(const_reference r_val)
 
   m_p_max = NULL;
 
-  PB_DS_DBG_ONLY(assert_valid(true);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
 
     return point_iterator(p_nd);
 }
@@ -120,7 +120,7 @@ insert_node(node_pointer p_nd)
 
       p_nd->m_metadata = 0;
 
-      PB_DS_DBG_ASSERT(base_type::m_p_root->m_p_l_child == 0);
+      _GLIBCXX_DEBUG_ASSERT(base_type::m_p_root->m_p_l_child == 0);
       base_type::m_p_root->m_p_l_child = p_nd;
 
       base_type::m_p_root->m_metadata = 1;
@@ -177,11 +177,11 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  PB_DS_DBG_ONLY(assert_valid(true);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     node_pointer p_nd = it.m_p_nd;
 
-  PB_DS_DBG_ASSERT(p_nd != NULL);
-  PB_DS_DBG_ONLY(base_type::assert_node_consistent(p_nd, false);)
+  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd, false);)
 
     const bool bubble_up = Cmp_Fn::operator()(p_nd->m_value, r_new_val);
 
@@ -204,7 +204,7 @@ modify(point_iterator it, const_reference r_new_val)
 
       m_p_max = NULL;
 
-      PB_DS_DBG_ONLY(assert_valid(true);)
+      _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
 
         return;
     }
@@ -217,6 +217,6 @@ modify(point_iterator it, const_reference r_new_val)
 
   m_p_max = NULL;
 
-  PB_DS_DBG_ONLY(assert_valid(true);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     }
 

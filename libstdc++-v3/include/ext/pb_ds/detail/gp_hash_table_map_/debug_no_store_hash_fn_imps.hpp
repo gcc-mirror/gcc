@@ -44,7 +44,7 @@
  * Contains implementations of gp_ht_map_'s debug-mode functions.
  */
 
-#ifdef PB_DS_GP_HT_MAP_DEBUG__
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
@@ -74,11 +74,11 @@ assert_entry_array_valid(const entry_array a_entries, store_hash_false_type) con
 	    break;
 	  }
         default:
-	  PB_DS_DBG_ASSERT(0);
+	  _GLIBCXX_DEBUG_ASSERT(0);
         };
     }
 
-  PB_DS_DBG_ASSERT(iterated_num_used_e == m_num_used_e);
+  _GLIBCXX_DEBUG_ASSERT(iterated_num_used_e == m_num_used_e);
 }
 
-#endif // #ifdef PB_DS_GP_HT_MAP_DEBUG__
+#endif 

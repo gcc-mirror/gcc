@@ -52,36 +52,27 @@
 #ifndef PB_DS_BIN_SEARCH_TREE_HPP__DATA_TRUE_INDICATOR
 #define PB_DS_BIN_SEARCH_TREE_HPP__DATA_TRUE_INDICATOR
 #include <ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp>
-#endif // #ifndef PB_DS_BIN_SEARCH_TREE_HPP__DATA_TRUE_INDICATOR
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #ifndef PB_DS_BIN_SEARCH_TREE_HPP__DATA_FALSE_INDICATOR
 #define PB_DS_BIN_SEARCH_TREE_HPP__DATA_FALSE_INDICATOR
 #include <ext/pb_ds/detail/bin_search_tree_/bin_search_tree_.hpp>
-#endif // #ifndef PB_DS_BIN_SEARCH_TREE_HPP__DATA_FALSE_INDICATOR
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
+#endif 
 
 #include <ext/pb_ds/detail/standard_policies.hpp>
 #include <ext/pb_ds/detail/basic_types.hpp>
 #include <utility>
 #include <vector>
 #include <assert.h>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
-
-#ifdef PB_DS_RB_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_RB_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_RB_TREE_DEBUG_
 
 #define PB_DS_CLASS_T_DEC						\
     template<								\
@@ -94,22 +85,22 @@ namespace pb_ds
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_CLASS_NAME			\
     rb_tree_data_
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
-
-#ifdef PB_DS_DATA_FALSE_INDICATOR
-#define PB_DS_CLASS_NAME			\
-    rb_tree_no_data_
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_BASE_CLASS_NAME			\
     bin_search_tree_data_
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
+
+#ifdef PB_DS_DATA_FALSE_INDICATOR
+#define PB_DS_CLASS_NAME			\
+    rb_tree_no_data_
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_BASE_CLASS_NAME			\
     bin_search_tree_no_data_
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
 #define PB_DS_CLASS_C_DEC						\
     PB_DS_CLASS_NAME<							\
@@ -131,13 +122,13 @@ namespace pb_ds
 #define PB_DS_V2F(X) (X).first
 #define PB_DS_V2S(X) (X).second
 #define PB_DS_EP2VP(X)& ((X)->m_value)
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_V2F(X) (X)
 #define PB_DS_V2S(X) Mapped_Data()
 #define PB_DS_EP2VP(X)& ((X)->m_value.first)
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
     template<typename Key,
 	     typename Mapped,
@@ -229,40 +220,30 @@ namespace pb_ds
       void
       copy_from_range(It first_it, It last_it);
 
-      inline std::pair<
-	point_iterator,
-	bool>
+      inline std::pair<point_iterator, bool>
       insert(const_reference r_value);
 
       inline mapped_reference
       operator[](const_key_reference r_key)
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-	PB_DS_DBG_ONLY(assert_valid();)
-
-	  std::pair<point_iterator, bool> ins_pair =
-	  PB_DS_BASE_C_DEC::insert_leaf(
-					value_type(
-						   r_key,
-						   mapped_type()));
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	std::pair<point_iterator, bool> ins_pair =
+	PB_DS_BASE_C_DEC::insert_leaf(value_type(r_key, mapped_type()));
 
 	if (ins_pair.second == true)
 	  {
 	    ins_pair.first.m_p_nd->m_red = true;
-
-	    PB_DS_DBG_ONLY(this->structure_only_assert_valid();)
-
-	      insert_fixup(ins_pair.first.m_p_nd);
+	    _GLIBCXX_DEBUG_ONLY(this->structure_only_assert_valid();)
+	    insert_fixup(ins_pair.first.m_p_nd);
 	  }
-
-	PB_DS_DBG_ONLY(assert_valid();)
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 
 	  return (ins_pair.first.m_p_nd->m_value.second);
-#else // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#else 
 	insert(r_key);
-
 	return (PB_DS_BASE_C_DEC::s_null_mapped);
-#endif // #ifdef PB_DS_DATA_TRUE
+#endif 
       }
 
       inline bool
@@ -288,15 +269,13 @@ namespace pb_ds
 
     private:
 
-#ifdef PB_DS_RB_TREE_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
 
       size_type
       assert_node_consistent(const node_pointer p_nd) const;
-
-#endif // #ifdef PB_DS_RB_TREE_DEBUG_
+#endif 
 
       inline static bool
       is_effectively_black(const node_pointer p_nd);
@@ -350,18 +329,10 @@ namespace pb_ds
 #include <ext/pb_ds/detail/rb_tree_map_/info_fn_imps.hpp>
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_CLASS_NAME
-
 #undef PB_DS_BASE_CLASS_NAME
-
 #undef PB_DS_BASE_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP

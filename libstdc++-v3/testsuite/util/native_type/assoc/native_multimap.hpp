@@ -57,16 +57,6 @@ namespace pb_ds
   namespace test
   {
 
-#ifdef NATIVE_HASH_SET_DEBUG
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef NATIVE_HASH_SET_DEBUG
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef NATIVE_HASH_SET_DEBUG
-
 #define PB_DS_CLASS_T_DEC						\
     template<typename Key, typename Data, class Less_Fn, class Allocator>
 
@@ -155,7 +145,6 @@ namespace pb_ds
 	  {
             if (it->second == r_val.second)
 	      return it;
-
             ++it;
 	  }
 
@@ -179,7 +168,6 @@ namespace pb_ds
 	  {
             if (it->second == r_val.second)
 	      return it;
-
             ++it;
 	  }
 
@@ -198,7 +186,7 @@ namespace pb_ds
       static std::string
       desc()
       {
-        return (make_xml_tag(            "type", "value", "std_multimap"));
+        return (make_xml_tag("type", "value", "std_multimap"));
       }
     };
 
@@ -210,21 +198,13 @@ namespace pb_ds
     PB_DS_CLASS_T_DEC
     template<typename It>
     PB_DS_CLASS_C_DEC::
-    native_multimap(It f, It l) :
-      base_type(f, l)
+    native_multimap(It f, It l) : base_type(f, l)
     { }
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_BASE_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
-  } // namespace test
+} // namespace test
 
 } // namespace pb_ds
 

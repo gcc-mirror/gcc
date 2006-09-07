@@ -59,24 +59,15 @@
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/const_iterator.hpp>
 #ifdef PB_DS_LC_NS_HEAP_TRACE_
 #include <iostream>
-#endif // #ifdef PB_DS_LC_NS_HEAP_TRACE_
+#endif 
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
-
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 #define PB_DS_CLASS_T_DEC						\
     template<								\
 						typename Value_Type,	\
@@ -84,16 +75,16 @@ namespace pb_ds
 						typename Node_Metadata,	\
 						class Allocator,	\
 						bool Single_Link_Roots>
-#else // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#else 
 #define PB_DS_CLASS_T_DEC						\
     template<								\
 						typename Value_Type,	\
 						class Cmp_Fn,		\
 						typename Node_Metadata,	\
 						class Allocator>
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#endif 
 
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 #define PB_DS_CLASS_C_DEC						\
     left_child_next_sibling_heap_<					\
 							Value_Type,	\
@@ -101,30 +92,30 @@ namespace pb_ds
 							Node_Metadata,	\
 							Allocator,	\
 							Single_Link_Roots>
-#else // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#else 
 #define PB_DS_CLASS_C_DEC						\
     left_child_next_sibling_heap_<					\
 							Value_Type,	\
 							Cmp_Fn,		\
 							Node_Metadata,	\
 							Allocator>
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#endif 
 
     /**
      * class description = "Base class for some types of h3ap$">
      **/
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
     template<typename Value_Type,
 	     class Cmp_Fn,
 	     typename Node_Metadata,
 	     class Allocator,
 	     bool Single_Link_Roots>
-#else // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#else 
     template<typename Value_Type,
 	     class Cmp_Fn,
 	     typename Node_Metadata,
 	     class Allocator>
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#endif 
     class left_child_next_sibling_heap_ : public Cmp_Fn
     {
 
@@ -152,8 +143,7 @@ namespace pb_ds
 
       enum
 	{
-	  simple_value = is_simple<
-	  Value_Type>::value
+	  simple_value = is_simple<Value_Type>::value
 	};
 
       typedef integral_constant<int, simple_value> no_throw_copies_t;
@@ -250,11 +240,9 @@ namespace pb_ds
       clear();
 
 #ifdef PB_DS_LC_NS_HEAP_TRACE_
-
       void
       trace() const;
-
-#endif // #ifdef PB_DS_LC_NS_HEAP_TRACE_
+#endif 
 
     protected:
 
@@ -289,8 +277,7 @@ namespace pb_ds
       node_pointer
       prune(Pred pred);
 
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
 
@@ -302,15 +289,12 @@ namespace pb_ds
 
       static size_type
       degree(const_node_pointer p_nd);
-
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#endif 
 
 #ifdef PB_DS_LC_NS_HEAP_TRACE_
-
       static void
       trace_node(const_node_pointer, size_type level);
-
-#endif // #ifdef PB_DS_LC_NS_HEAP_TRACE_
+#endif 
 
     protected:
       node_pointer m_p_root;
@@ -318,8 +302,7 @@ namespace pb_ds
       size_type m_size;
 
     private:
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_iterators() const;
 
@@ -328,8 +311,7 @@ namespace pb_ds
 
       static size_type
       size_from_node(const_node_pointer p_nd);
-
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#endif 
 
       node_pointer
       recursive_copy_node(const_node_pointer p_nd);
@@ -341,15 +323,13 @@ namespace pb_ds
       get_new_node_for_insert(const_reference r_val, true_type);
 
 #ifdef PB_DS_LC_NS_HEAP_TRACE_
-
       template<typename Metadata_>
       static void
       trace_node_metadata(const_node_pointer p_nd, type_to_type<Metadata_>);
 
       static void
       trace_node_metadata(const_node_pointer, type_to_type<null_left_child_next_sibling_heap_node_metadata>);
-
-#endif // #ifdef PB_DS_LC_NS_HEAP_TRACE_
+#endif 
 
     private:
       static node_allocator s_node_allocator;
@@ -367,14 +347,9 @@ namespace pb_ds
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/policy_access_fn_imps.hpp>
 
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_HPP
+#endif 

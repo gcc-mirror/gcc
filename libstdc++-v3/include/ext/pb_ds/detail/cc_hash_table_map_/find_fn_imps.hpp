@@ -49,7 +49,7 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return (find_key_pointer(r_key, traits_base::m_store_extra_indicator));
 }
@@ -59,7 +59,7 @@ inline typename PB_DS_CLASS_C_DEC::const_point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key) const
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return (const_cast<PB_DS_CLASS_C_DEC& >(*this).find_key_pointer(        r_key, traits_base::m_store_extra_indicator));
 }

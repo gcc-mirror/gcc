@@ -49,31 +49,18 @@
 #define PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_CONST_ITERATOR_HPP
 
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/const_point_iterator.hpp>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
-
 #define PB_DS_CLASS_C_DEC						\
-    left_child_next_sibling_heap_const_iterator_<			\
-								Node,	\
-								Allocator>
+    left_child_next_sibling_heap_const_iterator_<Node, Allocator>
 
 #define PB_DS_BASE_C_DEC						\
-    left_child_next_sibling_heap_node_const_point_iterator_<		\
-									Node, \
-									Allocator>
+    left_child_next_sibling_heap_node_const_point_iterator_<Node, Allocator>
 
     // Const point-type iterator.
     template<typename Node, class Allocator>
@@ -127,24 +114,18 @@ namespace pb_ds
       // Compares content to a different iterator object.
       inline bool
       operator==(const PB_DS_CLASS_C_DEC& other) const
-      {
-	return (base_type::m_p_nd == other.m_p_nd);
-      }
+      { return (base_type::m_p_nd == other.m_p_nd); }
 
       // Compares content (negatively) to a different iterator object.
       inline bool
       operator!=(const PB_DS_CLASS_C_DEC& other) const
-      {
-	return (base_type::m_p_nd != other.m_p_nd);
-      }
+      { return (base_type::m_p_nd != other.m_p_nd); }
 
       inline PB_DS_CLASS_C_DEC& 
       operator++()
       {
-	PB_DS_DBG_ASSERT(base_type::m_p_nd != NULL);
-
+	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_nd != NULL);
 	inc();
-
 	return (*this);
       }
 
@@ -152,9 +133,7 @@ namespace pb_ds
       operator++(int)
       {
 	PB_DS_CLASS_C_DEC ret_it(base_type::m_p_nd);
-
 	operator++();
-
 	return (ret_it);
       }
 
@@ -165,10 +144,8 @@ namespace pb_ds
 	if (base_type::m_p_nd->m_p_next_sibling != NULL)
 	  {
 	    base_type::m_p_nd = base_type::m_p_nd->m_p_next_sibling;
-
 	    while (base_type::m_p_nd->m_p_l_child != NULL)
 	      base_type::m_p_nd = base_type::m_p_nd->m_p_l_child;
-
 	    return;
 	  }
 
@@ -176,7 +153,6 @@ namespace pb_ds
 	  {
 	    node_pointer p_next = base_type::m_p_nd;
 	    base_type::m_p_nd = base_type::m_p_nd->m_p_prev_or_parent;
-
 	    if (base_type::m_p_nd == NULL || base_type::m_p_nd->m_p_l_child == p_next)
 	      return;
 	  }
@@ -184,14 +160,9 @@ namespace pb_ds
     };
 
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_BASE_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_CONST_ITERATOR_HPP
+#endif 

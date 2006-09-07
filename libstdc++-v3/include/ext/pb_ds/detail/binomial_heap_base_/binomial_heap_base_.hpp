@@ -53,9 +53,7 @@
  * Modified from CLRS.
  */
 
-#ifdef PB_DS_BINOMIAL_HEAP_BASE_DEBUG_
-#include <cassert>
-#endif // #ifdef PB_DS_BINOMIAL_HEAP_BASE_DEBUG_
+#include <debug/debug.h>
 #include <ext/pb_ds/detail/cond_dealtor.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/left_child_next_sibling_heap_.hpp>
@@ -66,41 +64,22 @@ namespace pb_ds
   namespace detail
   {
 
-#ifdef PB_DS_BINOMIAL_HEAP_BASE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_BINOMIAL_HEAP_BASE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_BINOMIAL_HEAP_BASE_DEBUG_
-
-#define PB_DS_CLASS_T_DEC						\
+#define PB_DS_CLASS_T_DEC \
     template<typename Value_Type, class Cmp_Fn, class Allocator>
 
-#define PB_DS_CLASS_C_DEC					\
-    binomial_heap_base_<					\
-						Value_Type,	\
-						Cmp_Fn,		\
-						Allocator>
+#define PB_DS_CLASS_C_DEC \
+    binomial_heap_base_<Value_Type, Cmp_Fn, Allocator>
 
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_BASE_C_DEC						\
-    left_child_next_sibling_heap_<			\
-									Value_Type, \
-									Cmp_Fn,	\
-									typename Allocator::size_type, \
-									Allocator, \
-									false>
-#else // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_BASE_C_DEC						\
-    left_child_next_sibling_heap_<			\
-									Value_Type, \
-									Cmp_Fn,	\
-									typename Allocator::size_type, \
-									Allocator>
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
+#define PB_DS_BASE_C_DEC \
+    left_child_next_sibling_heap_<Value_Type, Cmp_Fn, \
+				  typename Allocator::size_type, \
+				  Allocator, false>
+#else 
+#define PB_DS_BASE_C_DEC \
+    left_child_next_sibling_heap_<Value_Type, Cmp_Fn,	\
+				typename Allocator::size_type, Allocator>
+#endif 
 
     /**
      * class description = "8y|\|0|\/|i41 h34p 74813">
@@ -212,15 +191,13 @@ namespace pb_ds
       inline void
       find_max();
 
-#ifdef PB_DS_BINOMIAL_HEAP_BASE_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid(bool strictly_binomial) const;
 
       void
       assert_max() const;
-
-#endif // #ifdef PB_DS_BINOMIAL_HEAP_BASE_DEBUG_
+#endif 
 
     private:
 
@@ -236,12 +213,10 @@ namespace pb_ds
       inline node_pointer
       join(node_pointer p_lhs, node_pointer p_rhs) const;
 
-#ifdef PB_DS_BINOMIAL_HEAP_BASE_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
-      assert_node_consistent(const_node_pointer p_nd, bool strictly_binomial, bool increasing) const;
-
-#endif // #ifdef PB_DS_BINOMIAL_HEAP_BASE_DEBUG_
+      assert_node_consistent(const_node_pointer, bool, bool) const;
+#endif
 
     protected:
       node_pointer m_p_max;
@@ -255,16 +230,11 @@ namespace pb_ds
 #include <ext/pb_ds/detail/binomial_heap_base_/split_join_fn_imps.hpp>
 
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_BASE_C_DEC
 
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_BINOMIAL_HEAP_BASE_HPP
+#endif 

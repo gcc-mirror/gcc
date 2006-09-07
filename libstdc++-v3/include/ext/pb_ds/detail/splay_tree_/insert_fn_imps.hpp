@@ -49,18 +49,18 @@ inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
 insert(const_reference r_value)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     std::pair<point_iterator, bool> ins_pair =
     insert_leaf_imp(r_value);
 
   ins_pair.first.m_p_nd->m_special = false;
 
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   splay(ins_pair.first.m_p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   return (ins_pair);
 }
@@ -70,7 +70,7 @@ inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
 insert_leaf_imp(const_reference r_value)
 {
-  PB_DS_DBG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid();)
 
     if (PB_DS_BASE_C_DEC::m_size == 0)
       return (std::make_pair(
@@ -106,7 +106,7 @@ insert_leaf_imp(const_reference r_value)
 			   PB_DS_BASE_C_DEC::insert_leaf_new(r_value,  PB_DS_BASE_C_DEC::m_p_head->m_p_right, false),
 			   true));
 
-  PB_DS_DBG_ONLY(PB_DS_BASE_C_DEC::check_key_does_not_exist(
+  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::check_key_does_not_exist(
 							    PB_DS_V2F(r_value)));
 
   p_nd = p_pot->m_p_left;

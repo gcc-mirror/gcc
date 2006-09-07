@@ -50,7 +50,7 @@ inline typename PB_DS_CLASS_C_DEC::comp_hash
 PB_DS_CLASS_C_DEC::
 find_ins_pos(const_key_reference r_key, store_hash_true_type)
 {
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
 
     comp_hash pos_hash_pair = ranged_probe_fn_base::operator()(r_key);
 
@@ -76,7 +76,7 @@ find_ins_pos(const_key_reference r_key, store_hash_true_type)
 	  {
             resize_base::notify_insert_search_end();
 
-            PB_DS_DBG_ONLY(
+            _GLIBCXX_DEBUG_ONLY(
 			   map_debug_base::check_key_does_not_exist(r_key);)
 
 	      return ((ins_pos == m_num_e)?
@@ -97,13 +97,13 @@ find_ins_pos(const_key_reference r_key, store_hash_true_type)
             {
 	      resize_base::notify_insert_search_end();
 
-	      PB_DS_DBG_ONLY(map_debug_base::check_key_exists(r_key);)
+	      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
 
                 return (std::make_pair(pos, pos_hash_pair.second));
             }
 	  break;
         default:
-	  PB_DS_DBG_ASSERT(0);
+	  _GLIBCXX_DEBUG_ASSERT(0);
         };
 
       resize_base::notify_insert_search_collision();
@@ -127,18 +127,18 @@ insert_imp(const_reference r_val, store_hash_true_type)
   comp_hash pos_hash_pair =
     find_ins_pos(r_key, traits_base::m_store_extra_indicator);
 
-  PB_DS_DBG_ASSERT(pos_hash_pair.first < m_num_e);
+  _GLIBCXX_DEBUG_ASSERT(pos_hash_pair.first < m_num_e);
 
   entry_pointer p_e =& m_a_entries[pos_hash_pair.first];
 
   if (p_e->m_stat == valid_entry_status)
     {
-      PB_DS_DBG_ONLY(map_debug_base::check_key_exists(r_key));
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key));
 
       return (std::make_pair(&p_e->m_value, false));
     }
 
-  PB_DS_DBG_ONLY(map_debug_base::check_key_does_not_exist(r_key));
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key));
 
   return (std::make_pair(
 			 insert_new_imp(r_val, pos_hash_pair),

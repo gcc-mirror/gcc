@@ -47,6 +47,8 @@
 #ifndef PB_DS_PAT_TRIE_LEAF_HPP
 #define PB_DS_PAT_TRIE_LEAF_HPP
 
+#include <debug/debug.h>
+
 namespace pb_ds
 {
   namespace detail
@@ -79,16 +81,6 @@ namespace pb_ds
 							E_Access_Traits, \
 							Allocator>
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
-
     template<typename Type_Traits,
 	     class E_Access_Traits,
 	     class Metadata,
@@ -107,11 +99,11 @@ namespace pb_ds
 	E_Access_Traits>::other::const_pointer
       const_e_access_traits_pointer;
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       typedef
       typename PB_DS_BASE_C_DEC::subtree_debug_info
       subtree_debug_info;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
       typedef PB_DS_BASE_C_DEC base_type;
 
@@ -124,15 +116,13 @@ namespace pb_ds
       inline const_reference
       value() const;
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       virtual subtree_debug_info
       assert_valid_imp(const_e_access_traits_pointer p_traits) const;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
       virtual
       ~pat_trie_leaf();
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
     private:
       pat_trie_leaf(const PB_DS_CLASS_C_DEC& other);
@@ -144,64 +134,45 @@ namespace pb_ds
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     pat_trie_leaf(const_reference r_val) :
-      PB_DS_BASE_C_DEC(pat_trie_leaf_node_type),
-      m_value(r_val)
+    PB_DS_BASE_C_DEC(pat_trie_leaf_node_type), m_value(r_val)
     { }
 
     PB_DS_CLASS_T_DEC
     inline typename PB_DS_CLASS_C_DEC::reference
     PB_DS_CLASS_C_DEC::
     value()
-    {
-      return (m_value);
-    }
+    { return m_value; }
 
     PB_DS_CLASS_T_DEC
     inline typename PB_DS_CLASS_C_DEC::const_reference
     PB_DS_CLASS_C_DEC::
     value() const
-    {
-      return (m_value);
-    }
+    { return m_value; }
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::subtree_debug_info
     PB_DS_CLASS_C_DEC::
     assert_valid_imp(const_e_access_traits_pointer p_traits) const
     {
-      PB_DS_DBG_ASSERT(base_type::m_type == pat_trie_leaf_node_type);
-
+      _GLIBCXX_DEBUG_ASSERT(base_type::m_type == pat_trie_leaf_node_type);
       subtree_debug_info ret;
-
       const_reference r_val = value();
-
-      return (std::make_pair(
-			     p_traits->begin(p_traits->extract_key(r_val)),
-			     p_traits->end(p_traits->extract_key(r_val))));
+      return std::make_pair(p_traits->begin(p_traits->extract_key(r_val)),
+			     p_traits->end(p_traits->extract_key(r_val)));
     }
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    ~pat_trie_leaf()
-    { }
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+    ~pat_trie_leaf() { }
+#endif 
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_BASE_C_DEC
-
 #undef PB_DS_PAT_TRIE_SUBTREE_DEBUG_INFO_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_PAT_TRIE_NODE_BASE_HPP
+#endif 

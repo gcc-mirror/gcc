@@ -47,9 +47,7 @@
 #ifndef PB_DS_PAT_TRIE_FIND_ITERATORS_HPP
 #define PB_DS_PAT_TRIE_FIND_ITERATORS_HPP
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-#include <cassert>
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#include <debug/debug.h>
 
 namespace pb_ds
 {
@@ -96,15 +94,6 @@ namespace pb_ds
 						!Is_Forward_Iterator,	\
 						Allocator>
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
 
     // Const iterator.
     template<typename Type_Traits,
@@ -166,70 +155,60 @@ namespace pb_ds
       { }
 
       inline
-      pat_trie_const_it_(const PB_DS_CONST_ODIR_IT_C_DEC& 
-			 other) : m_p_nd(other.m_p_nd)
+      pat_trie_const_it_(const PB_DS_CONST_ODIR_IT_C_DEC& other) 
+      : m_p_nd(other.m_p_nd)
       { }
 
       inline
       PB_DS_CONST_IT_C_DEC& 
-      operator=(const PB_DS_CONST_IT_C_DEC& 
-		other)
+      operator=(const PB_DS_CONST_IT_C_DEC& other)
       {
 	m_p_nd = other.m_p_nd;
-
 	return (*this);
       }
 
       inline
       PB_DS_CONST_IT_C_DEC& 
-      operator=(const PB_DS_CONST_ODIR_IT_C_DEC& 
-		other)
+      operator=(const PB_DS_CONST_ODIR_IT_C_DEC& other)
       {
 	m_p_nd = other.m_p_nd;
-
 	return (*this);
       }
 
       inline const_pointer
       operator->() const
       {
-	PB_DS_DBG_ASSERT(m_p_nd->m_type == pat_trie_leaf_node_type);
-
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd->m_type == pat_trie_leaf_node_type);
 	return (&static_cast<leaf_pointer>(m_p_nd)->value());
       }
 
       inline const_reference
       operator*() const
       {
-	PB_DS_DBG_ASSERT(m_p_nd->m_type == pat_trie_leaf_node_type);
-
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd->m_type == pat_trie_leaf_node_type);
 	return (static_cast<leaf_pointer>(m_p_nd)->value());
       }
 
       inline bool
-      operator==(const PB_DS_CONST_IT_C_DEC
-		 & other) const
+      operator==(const PB_DS_CONST_IT_C_DEC& other) const
       {
 	return (m_p_nd == other.m_p_nd);
       }
 
       inline bool
-      operator==(const PB_DS_CONST_ODIR_IT_C_DEC
-		 & other) const
+      operator==(const PB_DS_CONST_ODIR_IT_C_DEC& other) const
       {
 	return (m_p_nd == other.m_p_nd);
       }
 
       inline bool
-      operator!=(const PB_DS_CONST_IT_C_DEC& 
-		 other) const
+      operator!=(const PB_DS_CONST_IT_C_DEC& other) const
       {
 	return (m_p_nd != other.m_p_nd);
       }
 
       inline bool
-      operator!=(const PB_DS_CONST_ODIR_IT_C_DEC& 
-		 other) const
+      operator!=(const PB_DS_CONST_ODIR_IT_C_DEC& other) const
       {
 	return (m_p_nd != other.m_p_nd);
       }
@@ -238,18 +217,14 @@ namespace pb_ds
       operator++()
       {
 	inc(integral_constant<int,Is_Forward_Iterator>());
-
 	return (*this);
       }
 
       inline PB_DS_CONST_IT_C_DEC
       operator++(int)
       {
-	PB_DS_CONST_IT_C_DEC
-	  ret_it(m_p_nd);
-
+	PB_DS_CONST_IT_C_DEC ret_it(m_p_nd);
 	operator++();
-
 	return (ret_it);
       }
 
@@ -257,27 +232,21 @@ namespace pb_ds
       operator--()
       {
 	dec(integral_constant<int,Is_Forward_Iterator>());
-
 	return (*this);
       }
 
       inline PB_DS_CONST_IT_C_DEC
       operator--(int)
       {
-	PB_DS_CONST_IT_C_DEC
-	  ret_it(m_p_nd);
-
+	PB_DS_CONST_IT_C_DEC ret_it(m_p_nd);
 	operator--();
-
 	return (ret_it);
       }
 
     protected:
       inline void
       inc(false_type)
-      {
-	dec(true_type());
-      }
+      { dec(true_type()); }
 
       void
       inc(true_type)
@@ -285,35 +254,28 @@ namespace pb_ds
 	if (m_p_nd->m_type == pat_trie_head_node_type)
 	  {
 	    m_p_nd = static_cast<head_pointer>(m_p_nd)->m_p_min;
-
 	    return;
 	  }
 
 	node_pointer p_y = m_p_nd->m_p_parent;
-
-	while (p_y->m_type != pat_trie_head_node_type&& 
+	while (p_y->m_type != pat_trie_head_node_type && 
 	       get_larger_sibling(m_p_nd) == NULL)
 	  {
 	    m_p_nd = p_y;
-
 	    p_y = p_y->m_p_parent;
 	  }
 
 	if (p_y->m_type == pat_trie_head_node_type)
 	  {
 	    m_p_nd = p_y;
-
 	    return;
 	  }
-
 	m_p_nd = leftmost_descendant(get_larger_sibling(m_p_nd));
       }
 
       inline void
       dec(false_type)
-      {
-	inc(true_type());
-      }
+      { inc(true_type()); }
 
       void
       dec(true_type)
@@ -321,27 +283,22 @@ namespace pb_ds
 	if (m_p_nd->m_type == pat_trie_head_node_type)
 	  {
 	    m_p_nd = static_cast<head_pointer>(m_p_nd)->m_p_max;
-
 	    return;
 	  }
 
 	node_pointer p_y = m_p_nd->m_p_parent;
-
-	while (p_y->m_type != pat_trie_head_node_type&& 
+	while (p_y->m_type != pat_trie_head_node_type && 
 	       get_smaller_sibling(m_p_nd) == NULL)
 	  {
 	    m_p_nd = p_y;
-
 	    p_y = p_y->m_p_parent;
 	  }
 
 	if (p_y->m_type == pat_trie_head_node_type)
 	  {
 	    m_p_nd = p_y;
-
 	    return;
 	  }
-
 	m_p_nd = rightmost_descendant(get_smaller_sibling(m_p_nd));
       }
 
@@ -352,13 +309,11 @@ namespace pb_ds
 	  static_cast<internal_node_pointer>(p_nd->m_p_parent);
 
 	typename Internal_Node::iterator it = p_parent->begin();
-
 	while (*it != p_nd)
 	  ++it;
 
 	typename Internal_Node::iterator next_it = it;
 	++next_it;
-
 	return ((next_it == p_parent->end())? NULL :* next_it);
       }
 
@@ -372,22 +327,17 @@ namespace pb_ds
 
 	if (*it == p_nd)
 	  return (NULL);
-
 	typename Internal_Node::iterator prev_it;
-
 	do
 	  {
 	    prev_it = it;
-
 	    ++it;
-
 	    if (*it == p_nd)
 	      return (*prev_it);
 	  }
 	while (true);
 
-	PB_DS_DBG_ASSERT(false);
-
+	_GLIBCXX_DEBUG_ASSERT(false);
 	return (NULL);
       }
 
@@ -405,7 +355,6 @@ namespace pb_ds
       {
 	if (p_nd->m_type == pat_trie_leaf_node_type)
 	  return (static_cast<leaf_pointer>(p_nd));
-
 	return (static_cast<internal_node_pointer>(p_nd)->rightmost_descendant());
       }
 
@@ -478,7 +427,6 @@ namespace pb_ds
       operator=(const PB_DS_IT_C_DEC& other)
       {
 	base_it_type::m_p_nd = other.m_p_nd;
-
 	return (*this);
       }
 
@@ -487,14 +435,13 @@ namespace pb_ds
       operator=(const PB_DS_ODIR_IT_C_DEC& other)
       {
 	base_it_type::m_p_nd = other.m_p_nd;
-
 	return (*this);
       }
 
       inline pointer
       operator->() const
       {
-	PB_DS_DBG_ASSERT(base_it_type::m_p_nd->m_type ==
+	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd->m_type ==
 			 pat_trie_leaf_node_type);
 
 	return (&static_cast<leaf_pointer>(base_it_type::m_p_nd)->value());
@@ -503,9 +450,7 @@ namespace pb_ds
       inline reference
       operator*() const
       {
-	PB_DS_DBG_ASSERT(base_it_type::m_p_nd->m_type ==
-			 pat_trie_leaf_node_type);
-
+	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd->m_type == pat_trie_leaf_node_type);
 	return (static_cast<leaf_pointer>(base_it_type::m_p_nd)->value());
       }
 
@@ -514,38 +459,29 @@ namespace pb_ds
       {
 	PB_DS_CONST_IT_C_DEC::
 	  operator++();
-
 	return (*this);
       }
 
       inline PB_DS_IT_C_DEC
       operator++(int)
       {
-	PB_DS_IT_C_DEC
-	  ret_it(base_it_type::m_p_nd);
-
+	PB_DS_IT_C_DEC ret_it(base_it_type::m_p_nd);
 	operator++();
-
 	return (ret_it);
       }
 
       inline PB_DS_IT_C_DEC& 
       operator--()
       {
-	PB_DS_CONST_IT_C_DEC::
-	  operator--();
-
+	PB_DS_CONST_IT_C_DEC::operator--();
 	return (*this);
       }
 
       inline PB_DS_IT_C_DEC
       operator--(int)
       {
-	PB_DS_IT_C_DEC
-	  ret_it(base_it_type::m_p_nd);
-
+	PB_DS_IT_C_DEC ret_it(base_it_type::m_p_nd);
 	operator--();
-
 	return (ret_it);
       }
 
@@ -556,19 +492,12 @@ namespace pb_ds
     };
 
 #undef PB_DS_CONST_IT_C_DEC
-
 #undef PB_DS_CONST_ODIR_IT_C_DEC
-
 #undef PB_DS_IT_C_DEC
-
 #undef PB_DS_ODIR_IT_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_PAT_TRIE_FIND_ITERATORS_HPP
+#endif 
 

@@ -49,29 +49,29 @@ inline void
 PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
     if (PB_DS_BASE_C_DEC::join_prep(other) == false)
       {
-        PB_DS_DBG_ONLY(assert_valid();)
-	  PB_DS_DBG_ONLY(other.assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(assert_valid();)
+	  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
 	  return;
       }
 
   node_pointer p_target_r = other.leftmost(other.m_p_head);
 
-  PB_DS_DBG_ASSERT(p_target_r != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r != NULL);
 
   other.splay(p_target_r);
 
-  PB_DS_DBG_ASSERT(p_target_r == other.m_p_head->m_p_parent);
-  PB_DS_DBG_ASSERT(p_target_r->m_p_left == NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r == other.m_p_head->m_p_parent);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_left == NULL);
 
   p_target_r->m_p_left = PB_DS_BASE_C_DEC::m_p_head->m_p_parent;
 
-  PB_DS_DBG_ASSERT(p_target_r->m_p_left != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_left != NULL);
   p_target_r->m_p_left->m_p_parent = p_target_r;
 
   PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_target_r;
@@ -81,8 +81,8 @@ join(PB_DS_CLASS_C_DEC& other)
 
   PB_DS_BASE_C_DEC::join_finish(other);
 
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -90,25 +90,25 @@ void
 PB_DS_CLASS_C_DEC::
 split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid());
-  PB_DS_DBG_ONLY(other.assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid());
 
   if (PB_DS_BASE_C_DEC::split_prep(r_key, other) == false)
     {
-      PB_DS_DBG_ONLY(assert_valid());
-      PB_DS_DBG_ONLY(other.assert_valid());
+      _GLIBCXX_DEBUG_ONLY(assert_valid());
+      _GLIBCXX_DEBUG_ONLY(other.assert_valid());
 
       return;
     }
 
   node_pointer p_upper_bound = upper_bound(r_key).m_p_nd;
-  PB_DS_DBG_ASSERT(p_upper_bound != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_upper_bound != NULL);
 
   splay(p_upper_bound);
-  PB_DS_DBG_ASSERT(p_upper_bound->m_p_parent == this->m_p_head);
+  _GLIBCXX_DEBUG_ASSERT(p_upper_bound->m_p_parent == this->m_p_head);
 
   node_pointer p_new_root = p_upper_bound->m_p_left;
-  PB_DS_DBG_ASSERT(p_new_root != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_new_root != NULL);
 
   PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_new_root;
   p_new_root->m_p_parent = PB_DS_BASE_C_DEC::m_p_head;
@@ -121,7 +121,7 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 
   PB_DS_BASE_C_DEC::split_finish(other);
 
-  PB_DS_DBG_ONLY(assert_valid());
-  PB_DS_DBG_ONLY(other.assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid());
 }
 

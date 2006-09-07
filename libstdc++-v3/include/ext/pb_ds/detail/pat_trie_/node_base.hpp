@@ -100,26 +100,24 @@ namespace pb_ds
 	E_Access_Traits>::other::const_pointer
       const_e_access_traits_pointer;
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       typedef
       std::pair<
 	typename E_Access_Traits::const_iterator,
 	typename E_Access_Traits::const_iterator>
       subtree_debug_info;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
     public:
       pat_trie_node_base(pat_trie_node_type type);
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid(const_e_access_traits_pointer p_traits) const;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
       virtual subtree_debug_info
       assert_valid_imp(const_e_access_traits_pointer p_traits) const = 0;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
     public:
       node_pointer m_p_parent;
@@ -129,27 +127,22 @@ namespace pb_ds
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    pat_trie_node_base(pat_trie_node_type type) :
-      m_type(type)
+    pat_trie_node_base(pat_trie_node_type type) : m_type(type)
     { }
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
     assert_valid(const_e_access_traits_pointer p_traits) const
-    {
-      assert_valid_imp(p_traits);
-    }
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+    { assert_valid_imp(p_traits); }
+#endif 
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_PAT_TRIE_SUBTREE_DEBUG_INFO_C_DEC
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_PAT_TRIE_NODE_BASE_HPP
+#endif 

@@ -49,8 +49,8 @@ bool
 PB_DS_CLASS_C_DEC::
 join_prep(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
     if (other.m_size == 0)
       return (false);
@@ -78,7 +78,7 @@ join_prep(PB_DS_CLASS_C_DEC& other)
 
   m_size += other.m_size;
 
-  PB_DS_DBG_ONLY(map_debug_base::join(other);)
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::join(other);)
 
     return (true);
 }
@@ -98,15 +98,15 @@ bool
 PB_DS_CLASS_C_DEC::
 split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
     other.clear();
 
   if (m_size == 0)
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-        PB_DS_DBG_ONLY(other.assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
         return (false);
     }
@@ -115,8 +115,8 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
     {
       value_swap(other);
 
-      PB_DS_DBG_ONLY(assert_valid();)
-        PB_DS_DBG_ONLY(other.assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
         return (false);
     }
@@ -125,8 +125,8 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 			  r_key,
 			  PB_DS_V2F(m_p_head->m_p_right->m_value)))
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-        PB_DS_DBG_ONLY(other.assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
         return (false);
     }
@@ -135,13 +135,13 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
     {
       value_swap(other);
 
-      PB_DS_DBG_ONLY(assert_valid();)
-        PB_DS_DBG_ONLY(other.assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
         return (false);
     }
 
-  PB_DS_DBG_ONLY(map_debug_base::split(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::split(
 				       r_key,(Cmp_Fn& )(*this),
 				       other);)
 
@@ -162,8 +162,8 @@ split_finish(PB_DS_CLASS_C_DEC& other)
 
   initialize_min_max();
 
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC

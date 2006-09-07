@@ -47,11 +47,9 @@
 #ifndef PB_DS_OV_TREE_NODE_ITERATORS_HPP
 #define PB_DS_OV_TREE_NODE_ITERATORS_HPP
 
-#ifdef PB_DS_OV_TREE_DEBUG_
-#include <cassert>
-#endif // #ifdef PB_DS_OV_TREE_DEBUG_
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
@@ -60,25 +58,11 @@ namespace pb_ds
 
 #define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
     typedef								\
-    static_assert_dumclass<				\
-									sizeof(static_assert<(bool)(E)>)> \
+    static_assert_dumclass<sizeof(static_assert<(bool)(E)>)> \
     UNIQUE##static_assert_type
 
-#ifdef PB_DS_OV_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X);
-#define PB_DS_DBG_VERIFY(X) PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_OV_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) ((void)0)
-#define PB_DS_DBG_VERIFY(X) X
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_OV_TREE_DEBUG_
-
 #define PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC			\
-    ov_tree_node_const_it_<					\
-						Value_Type,	\
-						Metadata_Type,	\
-						Allocator>
+    ov_tree_node_const_it_<Value_Type, Metadata_Type, Allocator>
 
     // Const node reference.
     template<typename Value_Type, typename Metadata_Type, class Allocator>
@@ -109,8 +93,7 @@ namespace pb_ds
       inline static Ptr
       mid_pointer(Ptr p_begin, Ptr p_end)
       {
-	PB_DS_DBG_ASSERT(p_end >= p_begin);
-
+	_GLIBCXX_DEBUG_ASSERT(p_end >= p_begin);
 	return (p_begin + (p_end - p_begin) / 2);
       }
 
@@ -146,47 +129,36 @@ namespace pb_ds
 
     public:
       inline
-      ov_tree_node_const_it_(const_pointer p_nd = NULL,  const_pointer p_begin_nd = NULL,  const_pointer p_end_nd = NULL,  const_metadata_pointer p_metadata = NULL) : m_p_value(const_cast<pointer>(p_nd)),
-																				       m_p_begin_value(const_cast<pointer>(p_begin_nd)),
-																				       m_p_end_value(const_cast<pointer>(p_end_nd)),
-																				       m_p_metadata(p_metadata)
+      ov_tree_node_const_it_(const_pointer p_nd = NULL,  const_pointer p_begin_nd = NULL,  const_pointer p_end_nd = NULL,  const_metadata_pointer p_metadata = NULL) : m_p_value(const_cast<pointer>(p_nd)), m_p_begin_value(const_cast<pointer>(p_begin_nd)), m_p_end_value(const_cast<pointer>(p_end_nd)), m_p_metadata(p_metadata)
       { }
 
       inline const_reference
       operator*() const
-      {
-	return (m_p_value);
-      }
+      { return m_p_value; }
 
       inline const_metadata_reference
       get_metadata() const
       {
 	enum
 	  {
-	    has_metadata =
-	    !is_same<
-	    Metadata_Type,
-	    null_node_metadata>::value
+	    has_metadata = !is_same<Metadata_Type, null_node_metadata>::value
 	  };
 
 	PB_DS_STATIC_ASSERT(should_have_metadata, has_metadata);
-
-	PB_DS_DBG_ASSERT(m_p_metadata != NULL);
-
-	return (*m_p_metadata);
+	_GLIBCXX_DEBUG_ASSERT(m_p_metadata != NULL);
+	return *m_p_metadata;
       }
 
       inline this_type
       get_l_child() const
       {
 	if (m_p_begin_value == m_p_value)
-	  return (this_type(                m_p_begin_value,  m_p_begin_value,  m_p_begin_value));
+	  return (this_type(m_p_begin_value, m_p_begin_value, m_p_begin_value));
 
 	const_metadata_pointer p_begin_metadata =
 	  m_p_metadata - (m_p_value - m_p_begin_value);
 
-	return (this_type(
-			  mid_pointer(m_p_begin_value, m_p_value),
+	return (this_type(mid_pointer(m_p_begin_value, m_p_value),
 			  m_p_begin_value,
 			  m_p_value,
 			  mid_pointer(p_begin_metadata, m_p_metadata)));
@@ -196,15 +168,14 @@ namespace pb_ds
       get_r_child() const
       {
 	if (m_p_value == m_p_end_value)
-	  return (this_type(                m_p_end_value,  m_p_end_value,  m_p_end_value));
+	  return (this_type(m_p_end_value,  m_p_end_value,  m_p_end_value));
 
 	const_metadata_pointer p_end_metadata =
 	  m_p_metadata + (m_p_end_value - m_p_value);
 
-	return (this_type(
-			  mid_pointer(m_p_value + 1, m_p_end_value),
+	return (this_type(mid_pointer(m_p_value + 1, m_p_end_value),
 			  m_p_value + 1,
-			  m_p_end_value,(m_p_metadata == NULL)?
+			  m_p_end_value,(m_p_metadata == NULL) ?
 			  NULL : mid_pointer(m_p_metadata + 1, p_end_metadata)));
       }
 
@@ -220,14 +191,12 @@ namespace pb_ds
 	if (is_other_end)
 	  return (is_end);
 
-	return (m_p_value == other.m_p_value);
+	return m_p_value == other.m_p_value;
       }
 
       inline bool
       operator!=(const this_type& other) const
-      {
-	return (!operator==(other));
-      }
+      { return !operator==(other); }
 
     public:
       pointer m_p_value;
@@ -238,10 +207,7 @@ namespace pb_ds
     };
 
 #define PB_DS_OV_TREE_NODE_ITERATOR_C_DEC			\
-    ov_tree_node_it_<						\
-						Value_Type,	\
-						Metadata_Type,	\
-						Allocator>
+    ov_tree_node_it_<Value_Type, Metadata_Type, Allocator>
 
     // Node reference.
     template<typename Value_Type, typename Metadata_Type, class Allocator>
@@ -292,22 +258,19 @@ namespace pb_ds
       // Access.
       inline reference
       operator*() const
-      {
-	return (reference(base_type::m_p_value));
-      }
+      { return reference(base_type::m_p_value); }
 
       // Returns the node reference associated with the left node.
       inline ov_tree_node_it_
       get_l_child() const
       {
 	if (base_type::m_p_begin_value == base_type::m_p_value)
-	  return (this_type(                base_type::m_p_begin_value,  base_type::m_p_begin_value,  base_type::m_p_begin_value));
+	  return (this_type(base_type::m_p_begin_value,  base_type::m_p_begin_value,  base_type::m_p_begin_value));
 
 	const_metadata_pointer p_begin_metadata =
 	  base_type::m_p_metadata - (base_type::m_p_value - base_type::m_p_begin_value);
 
-	return (this_type(
-			  base_type::mid_pointer(base_type::m_p_begin_value, base_type::m_p_value),
+	return (this_type(base_type::mid_pointer(base_type::m_p_begin_value, base_type::m_p_value),
 			  base_type::m_p_begin_value,
 			  base_type::m_p_value,
 			  base_type::mid_pointer(p_begin_metadata, base_type::m_p_metadata)));
@@ -318,13 +281,12 @@ namespace pb_ds
       get_r_child() const
       {
 	if (base_type::m_p_value == base_type::m_p_end_value)
-	  return (this_type(                base_type::m_p_end_value,  base_type::m_p_end_value,  base_type::m_p_end_value));
+	  return (this_type(base_type::m_p_end_value,  base_type::m_p_end_value,  base_type::m_p_end_value));
 
 	const_metadata_pointer p_end_metadata =
 	  base_type::m_p_metadata + (base_type::m_p_end_value - base_type::m_p_value);
 
-	return (this_type(
-			  base_type::mid_pointer(base_type::m_p_value + 1, base_type::m_p_end_value),
+	return (this_type(base_type::mid_pointer(base_type::m_p_value + 1, base_type::m_p_end_value),
 			  base_type::m_p_value + 1,
 			  base_type::m_p_end_value,(base_type::m_p_metadata == NULL)?
 			  NULL : base_type::mid_pointer(base_type::m_p_metadata + 1, p_end_metadata)));
@@ -333,16 +295,10 @@ namespace pb_ds
     };
 
 #undef PB_DS_OV_TREE_NODE_ITERATOR_C_DEC
-
 #undef PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC
-
 #undef PB_DS_STATIC_ASSERT
 
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
-  } // namespace detail
+} // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_OV_TREE_NODE_ITERATORS_HPP
+#endif 

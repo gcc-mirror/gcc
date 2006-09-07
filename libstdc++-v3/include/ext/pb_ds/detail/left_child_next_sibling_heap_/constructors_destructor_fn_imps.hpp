@@ -58,7 +58,7 @@ left_child_next_sibling_heap_() :
   m_p_root(NULL),
   m_size(0)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -68,7 +68,7 @@ left_child_next_sibling_heap_(const Cmp_Fn& r_cmp_fn) :
   m_p_root(NULL),
   m_size(0)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -80,13 +80,13 @@ left_child_next_sibling_heap_(const PB_DS_CLASS_C_DEC& other) :
 {
   m_size = other.m_size;
 
-  PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
     m_p_root = recursive_copy_node(other.m_p_root);
 
   m_size = other.m_size;
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -94,15 +94,15 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
     value_swap(other);
 
   std::swap((Cmp_Fn& )(*this), (Cmp_Fn& )other);
 
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC

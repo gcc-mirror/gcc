@@ -49,8 +49,8 @@ inline typename PB_DS_CLASS_C_DEC::const_reference
 PB_DS_CLASS_C_DEC::
 top() const
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ASSERT(!base_type::empty());
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
   return base_type::m_p_root->m_value;
 }

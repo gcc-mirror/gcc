@@ -49,13 +49,10 @@ inline void
 PB_DS_CLASS_C_DEC::
 actual_erase_node(node_pointer p_z)
 {
-  PB_DS_DBG_ASSERT(m_size > 0);
+  _GLIBCXX_DEBUG_ASSERT(m_size > 0);
   --m_size;
-
-  PB_DS_DBG_ONLY(erase_existing(PB_DS_V2F(p_z->m_value)));
-
+  _GLIBCXX_DEBUG_ONLY(erase_existing(PB_DS_V2F(p_z->m_value)));
   p_z->~node();
-
   s_node_allocator.deallocate(p_z, 1);
 }
 
@@ -67,24 +64,19 @@ update_min_max_for_erased_node(node_pointer p_z)
   if (m_size == 1)
     {
       m_p_head->m_p_left = m_p_head->m_p_right = m_p_head;
-
       return;
     }
 
   if (m_p_head->m_p_left == p_z)
     {
       iterator it(p_z);
-
       ++it;
-
       m_p_head->m_p_left = it.m_p_nd;
     }
   else if (m_p_head->m_p_right == p_z)
     {
       iterator it(p_z);
-
       --it;
-
       m_p_head->m_p_right = it.m_p_nd;
     }
 }
@@ -94,18 +86,13 @@ void
 PB_DS_CLASS_C_DEC::
 clear()
 {
-  PB_DS_DBG_ONLY(assert_valid(true, true);)
-
-    clear_imp(m_p_head->m_p_parent);
-
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true, true);)
+  clear_imp(m_p_head->m_p_parent);
   m_size = 0;
-
   initialize();
-
-  PB_DS_DBG_ONLY(map_debug_base::clear();)
-
-    PB_DS_DBG_ONLY(assert_valid(true, true);)
-    }
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::clear();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true, true);)
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -114,13 +101,9 @@ clear_imp(node_pointer p_nd)
 {
   if (p_nd == NULL)
     return;
-
   clear_imp(p_nd->m_p_left);
-
   clear_imp(p_nd->m_p_right);
-
   p_nd->~Node();
-
   s_node_allocator.deallocate(p_nd, 1);
 }
 

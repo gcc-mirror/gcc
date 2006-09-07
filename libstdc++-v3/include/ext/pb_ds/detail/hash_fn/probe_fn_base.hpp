@@ -51,48 +51,15 @@
 
 namespace pb_ds
 {
-
   namespace detail
   {
-
-#ifdef PROBE_FN_BASE_DEBUG
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PROBE_FN_BASE_DEBUG
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PROBE_FN_BASE_DEBUG
-
-#define PB_DS_CLASS_T_DEC			\
-    template<typename Allocator>
-
-#define PB_DS_CLASS_C_DEC					\
-    probe_fn_base<						\
-						Allocator>
-
     template<typename Allocator>
     class probe_fn_base
     {
     protected:
-      ~probe_fn_base();
+      ~probe_fn_base() { }
     };
-
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    ~probe_fn_base()
-    { }
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
-  } // namespace detail
-
+} // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_PROBE_FN_BASE_HPP
+#endif 

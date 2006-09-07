@@ -44,7 +44,7 @@
  * Contains an implementation class for bin_search_tree_.
  */
 
-#ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
@@ -52,20 +52,16 @@ PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
   structure_only_assert_valid();
-
   assert_consistent_with_debug_base();
-
   assert_size();
-
   assert_iterators();
-
   if (m_p_head->m_p_parent == NULL)
     {
-      PB_DS_DBG_ASSERT(m_size == 0);
+      _GLIBCXX_DEBUG_ASSERT(m_size == 0);
     }
   else
     {
-      PB_DS_DBG_ASSERT(m_size > 0);
+      _GLIBCXX_DEBUG_ASSERT(m_size > 0);
     }
 }
 
@@ -74,24 +70,21 @@ void
 PB_DS_CLASS_C_DEC::
 structure_only_assert_valid() const
 {
-  PB_DS_DBG_ASSERT(m_p_head != NULL);
-
+  _GLIBCXX_DEBUG_ASSERT(m_p_head != NULL);
   if (m_p_head->m_p_parent == NULL)
     {
-      PB_DS_DBG_ASSERT(m_p_head->m_p_left == m_p_head);
-      PB_DS_DBG_ASSERT(m_p_head->m_p_right == m_p_head);
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_left == m_p_head);
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_right == m_p_head);
     }
   else
     {
-      PB_DS_DBG_ASSERT(m_p_head->m_p_parent->m_p_parent == m_p_head);
-
-      PB_DS_DBG_ASSERT(m_p_head->m_p_left != m_p_head);
-      PB_DS_DBG_ASSERT(m_p_head->m_p_right != m_p_head);
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_parent->m_p_parent == m_p_head);
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_left != m_p_head);
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_right != m_p_head);
     }
 
   if (m_p_head->m_p_parent != NULL)
     assert_node_consistent(m_p_head->m_p_parent);
-
   assert_min();
   assert_max();
 }
@@ -116,22 +109,18 @@ assert_node_consistent_(const node_pointer p_nd) const
   assert_node_consistent_with_right(p_nd);
 
   const std::pair<const_pointer, const_pointer>
-    l_range =
-    assert_node_consistent_(p_nd->m_p_left);
+    l_range = assert_node_consistent_(p_nd->m_p_left);
 
   if (l_range.second != NULL)
-    PB_DS_DBG_ASSERT(Cmp_Fn::operator()(
-					PB_DS_V2F(*l_range.second),
-					PB_DS_V2F(p_nd->m_value)));
+    _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(PB_DS_V2F(*l_range.second),
+					     PB_DS_V2F(p_nd->m_value)));
 
   const std::pair<const_pointer, const_pointer>
-    r_range =
-    assert_node_consistent_(p_nd->m_p_right);
+    r_range = assert_node_consistent_(p_nd->m_p_right);
 
   if (r_range.first != NULL)
-    PB_DS_DBG_ASSERT(Cmp_Fn::operator()(
-					PB_DS_V2F(p_nd->m_value),
-					PB_DS_V2F(*r_range.first)));
+    _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value),
+					     PB_DS_V2F(*r_range.first)));
 
   return (std::make_pair((l_range.first != NULL)? l_range.first :& p_nd->m_value,(r_range.second != NULL)? r_range.second :& p_nd->m_value));
 }
@@ -143,12 +132,9 @@ assert_node_consistent_with_left(const node_pointer p_nd) const
 {
   if (p_nd->m_p_left == NULL)
     return;
-
-  PB_DS_DBG_ASSERT(p_nd->m_p_left->m_p_parent == p_nd);
-
-  PB_DS_DBG_ASSERT(!Cmp_Fn::operator()(
-				       PB_DS_V2F(p_nd->m_value),
-				       PB_DS_V2F(p_nd->m_p_left->m_value)));
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_left->m_p_parent == p_nd);
+  _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value),
+					    PB_DS_V2F(p_nd->m_p_left->m_value)));
 }
 
 PB_DS_CLASS_T_DEC
@@ -158,11 +144,8 @@ assert_node_consistent_with_right(const node_pointer p_nd) const
 {
   if (p_nd->m_p_right == NULL)
     return;
-
-  PB_DS_DBG_ASSERT(p_nd->m_p_right->m_p_parent == p_nd);
-
-  PB_DS_DBG_ASSERT(!Cmp_Fn::operator()(
-				       PB_DS_V2F(p_nd->m_p_right->m_value),
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_right->m_p_parent == p_nd);
+  _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_p_right->m_value),
 				       PB_DS_V2F(p_nd->m_value)));
 }
 
@@ -181,18 +164,15 @@ assert_min_imp(const node_pointer p_nd) const
 {
   if (p_nd == NULL)
     {
-      PB_DS_DBG_ASSERT(m_p_head->m_p_left == m_p_head);
-
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_left == m_p_head);
       return;
     }
 
   if (p_nd->m_p_left == NULL)
     {
-      PB_DS_DBG_ASSERT(p_nd == m_p_head->m_p_left);
-
+      _GLIBCXX_DEBUG_ASSERT(p_nd == m_p_head->m_p_left);
       return;
     }
-
   assert_min_imp(p_nd->m_p_left);
 }
 
@@ -211,15 +191,13 @@ assert_max_imp(const node_pointer p_nd) const
 {
   if (p_nd == NULL)
     {
-      PB_DS_DBG_ASSERT(m_p_head->m_p_right == m_p_head);
-
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_right == m_p_head);
       return;
     }
 
   if (p_nd->m_p_right == NULL)
     {
-      PB_DS_DBG_ASSERT(p_nd == m_p_head->m_p_right);
-
+      _GLIBCXX_DEBUG_ASSERT(p_nd == m_p_head->m_p_right);
       return;
     }
 
@@ -232,61 +210,40 @@ PB_DS_CLASS_C_DEC::
 assert_iterators() const
 {
   size_type iterated_num = 0;
-
   const_iterator prev_it = end();
-
   for (const_iterator it = begin(); it != end(); ++it)
     {
       ++iterated_num;
-
-      PB_DS_DBG_ASSERT(lower_bound(
-				   PB_DS_V2F(*it)).m_p_nd == it.m_p_nd);
-
-      const_iterator upper_bound_it = upper_bound(
-						  PB_DS_V2F(*it));
-
+      _GLIBCXX_DEBUG_ASSERT(lower_bound(PB_DS_V2F(*it)).m_p_nd == it.m_p_nd);
+      const_iterator upper_bound_it = upper_bound(PB_DS_V2F(*it));
       --upper_bound_it;
-
-      PB_DS_DBG_ASSERT(upper_bound_it.m_p_nd == it.m_p_nd);
+      _GLIBCXX_DEBUG_ASSERT(upper_bound_it.m_p_nd == it.m_p_nd);
 
       if (prev_it != end())
-	PB_DS_DBG_ASSERT(Cmp_Fn::operator()(
-					    PB_DS_V2F(*prev_it),
-					    PB_DS_V2F(*it)));
-
+	_GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(PB_DS_V2F(*prev_it),
+						 PB_DS_V2F(*it)));
       prev_it = it;
     }
 
-  PB_DS_DBG_ASSERT(iterated_num == m_size);
-
+  _GLIBCXX_DEBUG_ASSERT(iterated_num == m_size);
   size_type reverse_iterated_num = 0;
-
   const_reverse_iterator reverse_prev_it = rend();
-
   for (const_reverse_iterator reverse_it = rbegin(); reverse_it != rend();
        ++reverse_it)
     {
       ++reverse_iterated_num;
-
-      PB_DS_DBG_ASSERT(lower_bound(
+      _GLIBCXX_DEBUG_ASSERT(lower_bound(
 				   PB_DS_V2F(*reverse_it)).m_p_nd == reverse_it.m_p_nd);
 
-      const_iterator upper_bound_it = upper_bound(
-						  PB_DS_V2F(*reverse_it));
-
+      const_iterator upper_bound_it = upper_bound(PB_DS_V2F(*reverse_it));
       --upper_bound_it;
-
-      PB_DS_DBG_ASSERT(upper_bound_it.m_p_nd == reverse_it.m_p_nd);
-
+      _GLIBCXX_DEBUG_ASSERT(upper_bound_it.m_p_nd == reverse_it.m_p_nd);
       if (reverse_prev_it != rend())
-	PB_DS_DBG_ASSERT(!Cmp_Fn::operator()(
-					     PB_DS_V2F(*reverse_prev_it),
-					     PB_DS_V2F(*reverse_it)));
-
+	_GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(PB_DS_V2F(*reverse_prev_it),
+						  PB_DS_V2F(*reverse_it)));
       reverse_prev_it = reverse_it;
     }
-
-  PB_DS_DBG_ASSERT(reverse_iterated_num == m_size);
+  _GLIBCXX_DEBUG_ASSERT(reverse_iterated_num == m_size);
 }
 
 PB_DS_CLASS_T_DEC
@@ -295,7 +252,6 @@ PB_DS_CLASS_C_DEC::
 assert_consistent_with_debug_base() const
 {
   map_debug_base::check_size(m_size);
-
   assert_consistent_with_debug_base(m_p_head->m_p_parent);
 }
 
@@ -306,10 +262,7 @@ assert_consistent_with_debug_base(const node_pointer p_nd) const
 {
   if (p_nd == NULL)
     return;
-
-  map_debug_base::check_key_exists(
-				   PB_DS_V2F(p_nd->m_value));
-
+  map_debug_base::check_key_exists(PB_DS_V2F(p_nd->m_value));
   assert_consistent_with_debug_base(p_nd->m_p_left);
   assert_consistent_with_debug_base(p_nd->m_p_right);
 }
@@ -319,7 +272,7 @@ void
 PB_DS_CLASS_C_DEC::
 assert_size() const
 {
-  PB_DS_DBG_ASSERT(recursive_count(m_p_head->m_p_parent) == m_size);
+  _GLIBCXX_DEBUG_ASSERT(recursive_count(m_p_head->m_p_parent) == m_size);
 }
 
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
+#endif 

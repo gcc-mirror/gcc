@@ -49,29 +49,18 @@
 #define PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_CONST_FIND_ITERATOR_HPP
 
 #include <ext/pb_ds/tag_and_trait.hpp>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;m_p_prev_or_parent
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
-
 #define PB_DS_CLASS_T_DEC			\
     template<typename Node, class Allocator>
 
-#define PB_DS_CLASS_C_DEC						\
-    left_child_next_sibling_heap_node_const_point_iterator_<		\
-									Node, \
-									Allocator>
+#define PB_DS_CLASS_C_DEC \
+    left_child_next_sibling_heap_node_const_point_iterator_<Node, Allocator>
 
     // Const point-type iterator.
     template<typename Node, class Allocator>
@@ -79,10 +68,7 @@ namespace pb_ds
     {
 
     protected:
-      typedef
-      typename Allocator::template rebind<
-      Node>::other::pointer
-      node_pointer;
+      typedef typename Allocator::template rebind<Node>::other::pointer node_pointer;
 
     public:
 
@@ -127,49 +113,39 @@ namespace pb_ds
 
       // Default constructor.
       inline
-      left_child_next_sibling_heap_node_const_point_iterator_()
-
-	: m_p_nd(NULL)
+      left_child_next_sibling_heap_node_const_point_iterator_() : m_p_nd(NULL)
       { }
 
       // Copy constructor.
       inline
-      left_child_next_sibling_heap_node_const_point_iterator_(const PB_DS_CLASS_C_DEC& other)
-
-	: m_p_nd(other.m_p_nd)
+      left_child_next_sibling_heap_node_const_point_iterator_(const PB_DS_CLASS_C_DEC& other) : m_p_nd(other.m_p_nd)
       { }
 
       // Access.
       inline const_pointer
       operator->() const
       {
-	PB_DS_DBG_ASSERT(m_p_nd != NULL);
-
-	return (&m_p_nd->m_value);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
+	return &m_p_nd->m_value;
       }
 
       // Access.
       inline const_reference
       operator*() const
       {
-	PB_DS_DBG_ASSERT(m_p_nd != NULL);
-
-	return (m_p_nd->m_value);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
+	return m_p_nd->m_value;
       }
 
       // Compares content to a different iterator object.
       inline bool
       operator==(const PB_DS_CLASS_C_DEC& other) const
-      {
-	return (m_p_nd == other.m_p_nd);
-      }
+      { return m_p_nd == other.m_p_nd; }
 
       // Compares content (negatively) to a different iterator object.
       inline bool
       operator!=(const PB_DS_CLASS_C_DEC& other) const
-      {
-	return (m_p_nd != other.m_p_nd);
-      }
+      { return m_p_nd != other.m_p_nd; }
 
     public:
       node_pointer m_p_nd;
@@ -178,11 +154,7 @@ namespace pb_ds
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_LEFT_CHILD_NEXT_SIBLING_HEAP_CONST_FIND_ITERATOR_HPP
+#endif 

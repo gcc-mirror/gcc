@@ -56,8 +56,6 @@ constructor_insert_new_imp(const_mapped_reference r_val, size_type pos, integral
   // At this point no exceptions can be thrown.
 
   p_e->m_p_next = m_a_p_entries[pos];
-
   m_a_p_entries[pos] = p_e;
-
-  PB_DS_DBG_ONLY(map_debug_base::insert_new(r_key);)
-    }
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(r_key);)
+}

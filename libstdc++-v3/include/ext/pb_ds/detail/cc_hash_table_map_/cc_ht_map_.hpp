@@ -52,105 +52,62 @@
 #include <ext/pb_ds/detail/types_traits.hpp>
 #include <ext/pb_ds/exception.hpp>
 #include <ext/pb_ds/detail/eq_fn/hash_eq_fn.hpp>
-#ifdef PB_DS_CC_HT_MAP_DEBUG__
+#ifdef _GLIBCXX_DEBUG
 #include <ext/pb_ds/detail/map_debug_base.hpp>
-#endif // #ifdef PB_DS_CC_HT_MAP_DEBUG__
+#endif 
 #ifdef PB_DS_HT_MAP_TRACE_
 #include <iostream>
-#endif // PB_DS_HT_MAP_TRACE_
+#endif 
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_CC_HT_MAP_DEBUG__
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_CC_HT_MAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_CC_HT_MAP_DEBUG_
-
-#define PB_DS_CLASS_T_DEC						\
-    template<								\
-						typename Key,		\
-						typename Mapped,	\
-						class Hash_Fn,		\
-						class Eq_Fn,		\
-						class Allocator,	\
-						bool Store_Hash,	\
-						class Comb_Hash_Fn,	\
-						class Resize_Policy>
+#define PB_DS_CLASS_T_DEC \
+    template<typename Key, typename Mapped, class Hash_Fn, \
+	     class Eq_Fn, class Allocator, bool Store_Hash, \
+	     class Comb_Hash_Fn, class Resize_Policy>
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-#define PB_DS_CLASS_NAME			\
-    cc_ht_map_data_
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#define PB_DS_CLASS_NAME cc_ht_map_data_
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
-#define PB_DS_CLASS_NAME			\
-    cc_ht_map_no_data_
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#define PB_DS_CLASS_NAME cc_ht_map_no_data_
+#endif 
 
-#define PB_DS_CLASS_C_DEC					\
-    PB_DS_CLASS_NAME<						\
-						Key,		\
-						Mapped,		\
-						Hash_Fn,	\
-						Eq_Fn,		\
-						Allocator,	\
-						Store_Hash,	\
-						Comb_Hash_Fn,	\
-						Resize_Policy >
+#define PB_DS_CLASS_C_DEC \
+    PB_DS_CLASS_NAME<Key, Mapped, Hash_Fn, Eq_Fn, Allocator,	\
+		     Store_Hash, Comb_Hash_Fn, Resize_Policy>
 
-#define PB_DS_HASH_EQ_FN_C_DEC					\
-    hash_eq_fn<					\
-						Key,		\
-						Eq_Fn,		\
-						Allocator,	\
-						Store_Hash>
+#define PB_DS_HASH_EQ_FN_C_DEC \
+    hash_eq_fn<Key, Eq_Fn, Allocator, Store_Hash>
 
-#define PB_DS_RANGED_HASH_FN_C_DEC					\
-    ranged_hash_fn<					\
-							Key,		\
-							Hash_Fn,	\
-							Allocator,	\
-							Comb_Hash_Fn,	\
-							Store_Hash>
+#define PB_DS_RANGED_HASH_FN_C_DEC \
+    ranged_hash_fn<Key,	Hash_Fn, Allocator, Comb_Hash_Fn, Store_Hash>
 
-#define PB_DS_TYPES_TRAITS_C_DEC				\
-    types_traits<						\
-						Key,		\
-						Mapped,		\
-						Allocator,	\
-						Store_Hash>
+#define PB_DS_TYPES_TRAITS_C_DEC \
+    types_traits<Key, Mapped, Allocator, Store_Hash>
 
-#ifdef PB_DS_USE_MAP_DEBUG_BASE
-#define PB_DS_MAP_DEBUG_BASE_C_DEC					\
-    map_debug_base<					\
-								Key,	\
-								Eq_Fn,	\
-								typename Allocator::template rebind< \
-												     Key>::other::const_reference>
-#endif // #ifdef PB_DS_USE_MAP_DEBUG_BASE
+#ifdef _GLIBCXX_DEBUG
+#define PB_DS_MAP_DEBUG_BASE_C_DEC \
+    map_debug_base<Key,	Eq_Fn, typename Allocator::template rebind<Key>::other::const_reference>
+#endif 
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_V2F(X) (X).first
 #define PB_DS_V2S(X) (X).second
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_V2F(X) (X)
 #define PB_DS_V2S(X) Mapped_Data()
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
-#define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
-    typedef								\
-    static_assert_dumclass<				\
-									sizeof(static_assert<(bool)(E)>)> \
+#define PB_DS_STATIC_ASSERT(UNIQUE, E) \
+    typedef static_assert_dumclass<sizeof(static_assert<(bool)(E)>)> \
     UNIQUE##static_assert_type
 
     // <011i$i0|\|-<|-|4i|\|i|\|g |-|4$|-| 74813.
@@ -163,9 +120,9 @@ namespace pb_ds
 	     class Comb_Hash_Fn,
 	     class Resize_Policy >
     class PB_DS_CLASS_NAME:
-#ifdef PB_DS_CC_HT_MAP_DEBUG__
+#ifdef _GLIBCXX_DEBUG
       protected PB_DS_MAP_DEBUG_BASE_C_DEC,
-#endif // #ifdef PB_DS_CC_HT_MAP_DEBUG__
+#endif 
       public PB_DS_HASH_EQ_FN_C_DEC,
       public Resize_Policy,
       public PB_DS_RANGED_HASH_FN_C_DEC,
@@ -214,10 +171,7 @@ namespace pb_ds
       typename PB_DS_TYPES_TRAITS_C_DEC::const_reference
       const_reference_;
 
-#define PB_DS_GEN_POS							\
-      std::pair<							\
-							entry_pointer,	\
-							typename Allocator::size_type>
+#define PB_DS_GEN_POS std::pair<entry_pointer, typename Allocator::size_type>
 
 #include <ext/pb_ds/detail/unordered_iterator/const_point_iterator.hpp>
 #include <ext/pb_ds/detail/unordered_iterator/point_iterator.hpp>
@@ -293,21 +247,21 @@ namespace pb_ds
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       typedef point_iterator_ point_iterator;
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
       typedef const_point_iterator_ point_iterator;
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
       typedef const_point_iterator_ const_point_iterator;
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       typedef iterator_ iterator;
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
       typedef const_iterator_ iterator;
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
       typedef const_iterator_ const_iterator;
 
@@ -374,7 +328,7 @@ namespace pb_ds
       inline std::pair<point_iterator, bool>
       insert(const_reference r_val)
       {
-	return (insert_imp(r_val, traits_base::m_store_extra_indicator));
+	return insert_imp(r_val, traits_base::m_store_extra_indicator);
       }
 
       inline mapped_reference
@@ -382,11 +336,10 @@ namespace pb_ds
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 	return (subscript_imp(r_key, traits_base::m_store_extra_indicator));
-#else // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#else 
 	insert(r_key);
-
-	return (traits_base::s_null_mapped);
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+	return traits_base::s_null_mapped;
+#endif 
       }
 
       inline point_iterator
@@ -423,19 +376,15 @@ namespace pb_ds
       inline const_iterator
       end() const;
 
-#ifdef PB_DS_CC_HT_MAP_DEBUG__
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
-
-#endif // #ifdef PB_DS_CC_HT_MAP_DEBUG__
+#endif 
 
 #ifdef PB_DS_HT_MAP_TRACE_
-
       void
       trace() const;
-
-#endif // #ifdef PB_DS_HT_MAP_TRACE_
+#endif 
 
     private:
       typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
@@ -446,9 +395,9 @@ namespace pb_ds
 
       typedef Resize_Policy resize_base;
 
-#ifdef PB_DS_CC_HT_MAP_DEBUG__
+#ifdef _GLIBCXX_DEBUG
       typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
-#endif // #ifdef PB_DS_CC_HT_MAP_DEBUG__
+#endif 
 
       typedef
       typename PB_DS_TYPES_TRAITS_C_DEC::store_extra_false_type
@@ -486,10 +435,10 @@ namespace pb_ds
       do_resize(size_type new_size);
 
       void
-      resize_imp_no_exceptions(size_type new_size, entry_pointer_array a_p_entries_resized, size_type old_size);
+      resize_imp_no_exceptions(size_type, entry_pointer_array, size_type);
 
       inline entry_pointer
-      resize_imp_no_exceptions_reassign_pointer(entry_pointer p_e, entry_pointer_array a_p_entries_resized, store_hash_false_type);
+      resize_imp_no_exceptions_reassign_pointer(entry_pointer, entry_pointer_array, store_hash_false_type);
 
       inline entry_pointer
       resize_imp_no_exceptions_reassign_pointer(entry_pointer p_e, entry_pointer_array a_p_entries_resized, store_hash_true_type);
@@ -510,86 +459,59 @@ namespace pb_ds
       inline mapped_reference
       subscript_imp(const_key_reference r_key, store_hash_false_type)
       {
-	PB_DS_DBG_ONLY(assert_valid();)
-
-	  const size_type pos = ranged_hash_fn_base::operator()(r_key);
-
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+        const size_type pos = ranged_hash_fn_base::operator()(r_key);
 	entry_pointer p_e = m_a_p_entries[pos];
-
 	resize_base::notify_insert_search_start();
 
-	while (p_e != NULL&& 
-	       !hash_eq_fn_base::operator()(p_e->m_value.first, r_key))
+	while (p_e != NULL 
+	       && !hash_eq_fn_base::operator()(p_e->m_value.first, r_key))
 	  {
 	    resize_base::notify_insert_search_collision();
-
 	    p_e = p_e->m_p_next;
 	  }
 
 	resize_base::notify_insert_search_end();
-
 	if (p_e != NULL)
 	  {
-	    PB_DS_DBG_ONLY(map_debug_base::check_key_exists(r_key);)
-
-	      return (p_e->m_value.second);
+	    _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+	    return (p_e->m_value.second);
 	  }
 
-	PB_DS_DBG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
-
-	  return (insert_new_imp(
-				 value_type(
-					    r_key,
-					    mapped_type()),
-				 pos)->second);
+	_GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+	return insert_new_imp(value_type(r_key, mapped_type()), pos)->second;
       }
 
       inline mapped_reference
       subscript_imp(const_key_reference r_key, store_hash_true_type)
       {
-	PB_DS_DBG_ONLY(assert_valid();)
-
-	  comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
-
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
 	entry_pointer p_e = m_a_p_entries[pos_hash_pair.first];
-
 	resize_base::notify_insert_search_start();
-
-	while (p_e != NULL&& 
+	while (p_e != NULL && 
 	       !hash_eq_fn_base::operator()(p_e->m_value.first, p_e->m_hash, r_key, pos_hash_pair.second))
 	  {
 	    resize_base::notify_insert_search_collision();
-
 	    p_e = p_e->m_p_next;
 	  }
 
 	resize_base::notify_insert_search_end();
-
 	if (p_e != NULL)
 	  {
-	    PB_DS_DBG_ONLY(map_debug_base::check_key_exists(r_key);)
-
-	      return (p_e->m_value.second);
+	    _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+	    return p_e->m_value.second;
 	  }
 
-	PB_DS_DBG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
-
-	  return (insert_new_imp(
-				 value_type(
-					    r_key,
-					    mapped_type()),
-				 pos_hash_pair)->second);
+	_GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+	return insert_new_imp(value_type(r_key, mapped_type()), pos_hash_pair)->second;
       }
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
-      inline std::pair<
-	point_iterator,
-	bool>
+      inline std::pair<point_iterator, bool>
       insert_imp(const_reference r_val, store_hash_false_type);
 
-      inline std::pair<
-	point_iterator,
-	bool>
+      inline std::pair<point_iterator, bool>
       insert_imp(const_reference r_val, store_hash_true_type);
 
       inline pointer
@@ -599,111 +521,84 @@ namespace pb_ds
 	  pos = ranged_hash_fn_base::operator()(PB_DS_V2F(r_val));
 
 	// Following lines might throw an exception.
-	entry_pointer p_e = get_entry(            r_val, PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
+	entry_pointer p_e = get_entry(r_val, PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
 
 	// At this point no exceptions can be thrown.
-
 	p_e->m_p_next = m_a_p_entries[pos];
-
 	m_a_p_entries[pos] = p_e;
-
 	resize_base::notify_inserted(++m_num_used_e);
 
-	PB_DS_DBG_ONLY(map_debug_base::insert_new(
-						  PB_DS_V2F(r_val));)
-
-	  PB_DS_DBG_ONLY(assert_valid();)
-
-	  return (&p_e->m_value);
+	_GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	return &p_e->m_value;
       }
 
       inline pointer
       insert_new_imp(const_reference r_val, comp_hash& r_pos_hash_pair)
       {
 	// Following lines might throw an exception.
-
 	if (do_resize_if_needed())
-	  r_pos_hash_pair = ranged_hash_fn_base::operator()(
-							    PB_DS_V2F(r_val));
+	  r_pos_hash_pair = ranged_hash_fn_base::operator()(PB_DS_V2F(r_val));
 
-	entry_pointer p_e = get_entry(            r_val, PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
+	entry_pointer p_e = get_entry(r_val, PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
 
 	// At this point no exceptions can be thrown.
-
 	p_e->m_hash = r_pos_hash_pair.second;
-
 	p_e->m_p_next = m_a_p_entries[r_pos_hash_pair.first];
-
 	m_a_p_entries[r_pos_hash_pair.first] = p_e;
-
 	resize_base::notify_inserted(++m_num_used_e);
-
-	PB_DS_DBG_ONLY(map_debug_base::insert_new(
-						  PB_DS_V2F(r_val));)
-
-	  PB_DS_DBG_ONLY(assert_valid();)
-
-	  return (&p_e->m_value);
+	_GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	return &p_e->m_value;
       }
 
       inline pointer
       find_key_pointer(const_key_reference r_key, store_hash_false_type)
       {
-	entry_pointer p_e =
-	  m_a_p_entries[ranged_hash_fn_base::operator()(r_key)];
-
+	entry_pointer p_e = m_a_p_entries[ranged_hash_fn_base::operator()(r_key)];
 	resize_base::notify_find_search_start();
-
-	while (p_e != NULL&& 
+	while (p_e != NULL && 
 	       !hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), r_key))
 	  {
 	    resize_base::notify_find_search_collision();
-
 	    p_e = p_e->m_p_next;
 	  }
 
 	resize_base::notify_find_search_end();
 
-#ifdef PB_DS_CC_HT_MAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 	if (p_e == NULL)
 	  map_debug_base::check_key_does_not_exist(r_key);
 	else
 	  map_debug_base::check_key_exists(r_key);
-#endif // #ifdef PB_DS_CC_HT_MAP_DEBUG_
-
-	return (&p_e->m_value);
+#endif 
+	return &p_e->m_value;
       }
 
       inline pointer
       find_key_pointer(const_key_reference r_key, store_hash_true_type)
       {
 	comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
-
 	entry_pointer p_e = m_a_p_entries[pos_hash_pair.first];
-
 	resize_base::notify_find_search_start();
-
-	while (p_e != NULL&& 
-	       !hash_eq_fn_base::operator()(
-					    PB_DS_V2F(p_e->m_value),
+	while (p_e != NULL && 
+	       !hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value),
 					    p_e->m_hash,
 					    r_key, pos_hash_pair.second))
 	  {
 	    resize_base::notify_find_search_collision();
-
 	    p_e = p_e->m_p_next;
 	  }
 
 	resize_base::notify_find_search_end();
 
-#ifdef PB_DS_CC_HT_MAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 	if (p_e == NULL)
 	  map_debug_base::check_key_does_not_exist(r_key);
 	else
 	  map_debug_base::check_key_exists(r_key);
-#endif // #ifdef PB_DS_CC_HT_MAP_DEBUG_
-
-	return (&p_e->m_value);
+#endif 
+	return &p_e->m_value;
       }
 
       inline bool
@@ -721,19 +616,17 @@ namespace pb_ds
       {
 	inc_it_state((const_mapped_pointer& )r_p_value, r_pos);
       }
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
       void
-      inc_it_state(const_pointer& r_p_value, std::pair<entry_pointer, size_type>& r_pos) const
+      inc_it_state(const_pointer& r_p_value, 
+		   std::pair<entry_pointer, size_type>& r_pos) const
       {
-	PB_DS_DBG_ASSERT(r_p_value != NULL);
-
+	_GLIBCXX_DEBUG_ASSERT(r_p_value != NULL);
 	r_pos.first = r_pos.first->m_p_next;
-
 	if (r_pos.first != NULL)
 	  {
 	    r_p_value =& r_pos.first->m_value;
-
 	    return;
 	  }
 
@@ -741,50 +634,43 @@ namespace pb_ds
 	  if (m_a_p_entries[r_pos.second] != NULL)
 	    {
 	      r_pos.first = m_a_p_entries[r_pos.second];
-
 	      r_p_value =& r_pos.first->m_value;
-
 	      return;
 	    }
-
 	r_p_value = NULL;
       }
 
       void
-      get_start_it_state(pointer& r_p_value, std::pair<entry_pointer, size_type>& r_pos) const
+      get_start_it_state(pointer& r_p_value, 
+			 std::pair<entry_pointer, size_type>& r_pos) const
       {
 	for (r_pos.second = 0; r_pos.second < m_num_e_p; ++r_pos.second)
 	  if (m_a_p_entries[r_pos.second] != NULL)
 	    {
 	      r_pos.first = m_a_p_entries[r_pos.second];
-
 	      r_p_value =& r_pos.first->m_value;
-
 	      return;
 	    }
-
 	r_p_value = NULL;
       }
 
-#ifdef PB_DS_CC_HT_MAP_DEBUG__
+#ifdef _GLIBCXX_DEBUG
+      void
+      assert_entry_pointer_array_valid(const entry_pointer_array) const;
 
       void
-      assert_entry_pointer_array_valid(const entry_pointer_array a_p_entries) const;
+      assert_entry_pointer_valid(const entry_pointer, 
+				 store_hash_true_type) const;
 
       void
-      assert_entry_pointer_valid(const entry_pointer p_e, store_hash_true_type) const;
-
-      void
-      assert_entry_pointer_valid(const entry_pointer p_e, store_hash_false_type) const;
-
-#endif // #ifdef PB_DS_CC_HT_MAP_DEBUG__
+      assert_entry_pointer_valid(const entry_pointer, 
+				 store_hash_false_type) const;
+#endif 
 
 #ifdef PB_DS_HT_MAP_TRACE_
-
       void
       trace_list(const_entry_pointer p_l) const;
-
-#endif // #ifdef PB_DS_HT_MAP_TRACE_
+#endif 
 
     private:
       static entry_allocator s_entry_allocator;
@@ -801,7 +687,7 @@ namespace pb_ds
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       friend class iterator_;
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
       friend class const_iterator_;
 
@@ -815,11 +701,8 @@ namespace pb_ds
 
       enum
 	{
-	  store_hash_ok =
-	  !Store_Hash ||
-	  !is_same<
-	  Hash_Fn,
-	  pb_ds::null_hash_fn>::value
+	  store_hash_ok = !Store_Hash 
+	                  || !is_same<Hash_Fn, pb_ds::null_hash_fn>::value
 	};
 
       PB_DS_STATIC_ASSERT(sth, store_hash_ok);
@@ -838,25 +721,15 @@ namespace pb_ds
 #include <ext/pb_ds/detail/cc_hash_table_map_/trace_fn_imps.hpp>
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_HASH_EQ_FN_C_DEC
-
 #undef PB_DS_RANGED_HASH_FN_C_DEC
-
 #undef PB_DS_TYPES_TRAITS_C_DEC
-
 #undef PB_DS_MAP_DEBUG_BASE_C_DEC
-
 #undef PB_DS_CLASS_NAME
 
 #undef PB_DS_V2F
 #undef PB_DS_V2S
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
 #undef PB_DS_STATIC_ASSERT
 

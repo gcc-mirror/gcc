@@ -44,7 +44,7 @@
  * Contains an implementation for thin_heap_.
  */
 
-#ifdef PB_DS_THIN_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
@@ -52,11 +52,8 @@ PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
   base_type::assert_valid();
-
   assert_node_consistent(base_type::m_p_root, true);
-
   assert_max();
-
   assert_aux_null();
 }
 
@@ -66,7 +63,7 @@ PB_DS_CLASS_C_DEC::
 assert_aux_null() const
 {
   for (size_type i = 0; i < max_rank; ++i)
-    PB_DS_DBG_ASSERT(m_a_aux[i] == NULL);
+    _GLIBCXX_DEBUG_ASSERT(m_a_aux[i] == NULL);
 }
 
 PB_DS_CLASS_T_DEC
@@ -76,18 +73,15 @@ assert_max() const
 {
   if (m_p_max == NULL)
     {
-      PB_DS_DBG_ASSERT(base_type::empty());
-
+      _GLIBCXX_DEBUG_ASSERT(base_type::empty());
       return;
     }
 
-  PB_DS_DBG_ASSERT(!base_type::empty());
-
-  PB_DS_DBG_ASSERT(base_type::parent(m_p_max) == NULL);
-  PB_DS_DBG_ASSERT(m_p_max->m_p_prev_or_parent == NULL);
-
+  _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
+  _GLIBCXX_DEBUG_ASSERT(base_type::parent(m_p_max) == NULL);
+  _GLIBCXX_DEBUG_ASSERT(m_p_max->m_p_prev_or_parent == NULL);
   for (const_iterator it = base_type::begin(); it != base_type::end(); ++it)
-    PB_DS_DBG_ASSERT(!Cmp_Fn::operator()(m_p_max->m_value, it.m_p_nd->m_value));
+    _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(m_p_max->m_value, it.m_p_nd->m_value));
 }
 
 PB_DS_CLASS_T_DEC
@@ -96,32 +90,29 @@ PB_DS_CLASS_C_DEC::
 assert_node_consistent(const_node_pointer p_nd, bool root) const
 {
   base_type::assert_node_consistent(p_nd, root);
-
   if (p_nd == NULL)
     return;
 
   assert_node_consistent(p_nd->m_p_next_sibling, root);
   assert_node_consistent(p_nd->m_p_l_child, false);
-
   if (!root)
     {
       if (p_nd->m_metadata == 0)
-	PB_DS_DBG_ASSERT(p_nd->m_p_next_sibling == NULL);
+	_GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling == NULL);
       else
-	PB_DS_DBG_ASSERT(p_nd->m_metadata == p_nd->m_p_next_sibling->m_metadata + 1);
+	_GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata == p_nd->m_p_next_sibling->m_metadata + 1);
     }
 
   if (p_nd->m_p_l_child != NULL)
-    PB_DS_DBG_ASSERT(p_nd->m_p_l_child->m_metadata + 1 == base_type::degree(p_nd));
+    _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_l_child->m_metadata + 1 == base_type::degree(p_nd));
 
   const bool unmarked_valid =(p_nd->m_p_l_child == NULL&&  p_nd->m_metadata == 0) ||(p_nd->m_p_l_child != NULL&&  p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 1);
 
   const bool marked_valid =(p_nd->m_p_l_child == NULL&&  p_nd->m_metadata == 1) ||(p_nd->m_p_l_child != NULL&&  p_nd->m_metadata == p_nd->m_p_l_child->m_metadata + 2);
 
-  PB_DS_DBG_ASSERT(unmarked_valid || marked_valid);
-
+  _GLIBCXX_DEBUG_ASSERT(unmarked_valid || marked_valid);
   if (root)
-    PB_DS_DBG_ASSERT(unmarked_valid);
+    _GLIBCXX_DEBUG_ASSERT(unmarked_valid);
 }
 
-#endif // #ifdef PB_DS_THIN_HEAP_DEBUG_
+#endif 

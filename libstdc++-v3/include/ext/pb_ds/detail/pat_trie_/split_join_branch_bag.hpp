@@ -76,7 +76,7 @@ public:
   internal_node_pointer
   get_branch()
   {
-    PB_DS_DBG_ASSERT(!m_bag.empty());
+    _GLIBCXX_DEBUG_ASSERT(!m_bag.empty());
 
     internal_node_pointer p_nd =* m_bag.begin();
 

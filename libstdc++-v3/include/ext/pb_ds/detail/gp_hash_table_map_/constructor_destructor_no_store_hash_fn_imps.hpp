@@ -50,7 +50,7 @@ inline void
 PB_DS_CLASS_C_DEC::
 constructor_insert_new_imp(const_mapped_reference r_val, size_type pos, integral_constant<int,false>)
 {
-  PB_DS_DBG_ASSERT(m_a_entries[pos].m_stat != valid_entry_status);
+  _GLIBCXX_DEBUG_ASSERT(m_a_entries[pos].m_stat != valid_entry_status);
 
   entry* const p_e = m_a_entries + pos;
 
@@ -58,6 +58,6 @@ constructor_insert_new_imp(const_mapped_reference r_val, size_type pos, integral
 
   p_e->m_stat = valid_entry_status;
 
-  PB_DS_DBG_ONLY(map_debug_base::
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::
 		 insert_new(p_e->m_value.first);)
     }

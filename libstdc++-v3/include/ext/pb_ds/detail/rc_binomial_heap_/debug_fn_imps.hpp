@@ -44,7 +44,7 @@
  * Contains an implementation for rc_binomial_heap_.
  */
 
-#ifdef PB_DS_RC_BINOMIAL_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
@@ -52,11 +52,9 @@ PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
   base_type::assert_valid(false);
-
   if (!base_type::empty())
     {
-      PB_DS_DBG_ASSERT(base_type::m_p_max != NULL);
-
+      _GLIBCXX_DEBUG_ASSERT(base_type::m_p_max != NULL);
       base_type::assert_max();
     }
 
@@ -65,36 +63,27 @@ assert_valid() const
   if (m_rc.empty())
     {
       base_type::assert_valid(true);
-
-      PB_DS_DBG_ASSERT(next_2_pointer(base_type::m_p_root) == NULL);
-
+      _GLIBCXX_DEBUG_ASSERT(next_2_pointer(base_type::m_p_root) == NULL);
       return;
     }
 
   const_node_pointer p_nd = next_2_pointer(base_type::m_p_root);
-
   typename rc_t::const_iterator it = m_rc.end();
   --it;
 
   while (p_nd != NULL)
     {
-      PB_DS_DBG_ASSERT(*it == p_nd);
-
+      _GLIBCXX_DEBUG_ASSERT(*it == p_nd);
       const_node_pointer p_next = p_nd->m_p_next_sibling;
-
-      PB_DS_DBG_ASSERT(p_next != NULL);
-
-      PB_DS_DBG_ASSERT(p_nd->m_metadata == p_next->m_metadata);
-
-      PB_DS_DBG_ASSERT(p_next->m_p_next_sibling == NULL ||
+      _GLIBCXX_DEBUG_ASSERT(p_next != NULL);
+      _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata == p_next->m_metadata);
+      _GLIBCXX_DEBUG_ASSERT(p_next->m_p_next_sibling == NULL ||
 		       p_next->m_metadata < p_next->m_p_next_sibling->m_metadata);
 
       --it;
-
       p_nd = next_2_pointer(next_after_0_pointer(p_nd));
     }
-
-  PB_DS_DBG_ASSERT(it + 1 == m_rc.begin());
+  _GLIBCXX_DEBUG_ASSERT(it + 1 == m_rc.begin());
 }
 
 PB_DS_CLASS_T_DEC
@@ -135,4 +124,4 @@ next_after_0_pointer(const_node_pointer p_nd)
   return next_after_0_pointer(p_next);
 }
 
-#endif // #ifdef PB_DS_RC_BINOMIAL_HEAP__DEBUG_
+#endif 

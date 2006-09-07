@@ -56,24 +56,15 @@ namespace pb_ds
   namespace detail
   {
 
-    template<typename Key,
-	     typename Mapped,
-	     class Allocator,
-	     bool Store_Extra>
+    template<typename Key, typename Mapped, class Allocator, bool Store_Extra>
     struct vt_base_selector
     {
       typedef value_type_base< Key, Mapped, Allocator, Store_Extra> type;
     };
 
-    template<typename Key,
-	     typename Mapped,
-	     class Allocator,
-	     bool Store_Extra>
-    struct types_traits : public vt_base_selector<
-      Key,
-      Mapped,
-      Allocator,
-      Store_Extra>::type
+    template<typename Key, typename Mapped, class Allocator, bool Store_Extra>
+    struct types_traits 
+    : public vt_base_selector<Key, Mapped, Allocator, Store_Extra>::type
     {
 
       typedef typename Allocator::template rebind< Key>::other key_allocator;

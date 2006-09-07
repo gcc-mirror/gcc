@@ -47,10 +47,8 @@
 #ifndef PB_DS_BIN_SEARCH_TREE_FIND_ITERATORS_HPP
 #define PB_DS_BIN_SEARCH_TREE_FIND_ITERATORS_HPP
 
-#ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
-#include <cassert>
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
 #include <ext/pb_ds/tag_and_trait.hpp>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
@@ -101,16 +99,6 @@ namespace pb_ds
 							!Is_Forward_Iterator, \
 							Allocator>
 
-#ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
-
     // Const iterator.
     template<typename Node_Pointer,
 	     typename Value_Type,
@@ -142,124 +130,96 @@ namespace pb_ds
     public:
 
       inline
-      bin_search_tree_const_it_(const Node_Pointer p_nd = NULL) : m_p_nd(const_cast<Node_Pointer>(p_nd))
+      bin_search_tree_const_it_(const Node_Pointer p_nd = NULL) 
+      : m_p_nd(const_cast<Node_Pointer>(p_nd))
       { }
 
       inline
-      bin_search_tree_const_it_(const PB_DS_TREE_CONST_ODIR_IT_C_DEC& 
-				other) : m_p_nd(other.m_p_nd)
+      bin_search_tree_const_it_(const PB_DS_TREE_CONST_ODIR_IT_C_DEC& other) 
+      : m_p_nd(other.m_p_nd)
       { }
 
       inline
       PB_DS_TREE_CONST_IT_C_DEC& 
-      operator=(const PB_DS_TREE_CONST_IT_C_DEC& 
-		other)
+      operator=(const PB_DS_TREE_CONST_IT_C_DEC& other)
       {
 	m_p_nd = other.m_p_nd;
-
-	return (*this);
+	return *this;
       }
 
       inline
       PB_DS_TREE_CONST_IT_C_DEC& 
-      operator=(const PB_DS_TREE_CONST_ODIR_IT_C_DEC& 
-		other)
+      operator=(const PB_DS_TREE_CONST_ODIR_IT_C_DEC& other)
       {
 	m_p_nd = other.m_p_nd;
-
-	return (*this);
+	return *this;
       }
 
       inline const_pointer
       operator->() const
       {
-	PB_DS_DBG_ASSERT(m_p_nd != NULL);
-
-	return (&m_p_nd->m_value);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
+	return &m_p_nd->m_value;
       }
 
       inline const_reference
       operator*() const
       {
-	PB_DS_DBG_ASSERT(m_p_nd != NULL);
-
-	return (m_p_nd->m_value);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
+	return m_p_nd->m_value;
       }
 
       inline bool
-      operator==(const PB_DS_TREE_CONST_IT_C_DEC
-		 & other) const
-      {
-	return (m_p_nd == other.m_p_nd);
-      }
+      operator==(const PB_DS_TREE_CONST_IT_C_DEC & other) const
+      { return m_p_nd == other.m_p_nd; }
 
       inline bool
-      operator==(const PB_DS_TREE_CONST_ODIR_IT_C_DEC
-		 & other) const
-      {
-	return (m_p_nd == other.m_p_nd);
-      }
+      operator==(const PB_DS_TREE_CONST_ODIR_IT_C_DEC & other) const
+      { return m_p_nd == other.m_p_nd; }
 
       inline bool
-      operator!=(const PB_DS_TREE_CONST_IT_C_DEC& 
-		 other) const
-      {
-	return (m_p_nd != other.m_p_nd);
-      }
+      operator!=(const PB_DS_TREE_CONST_IT_C_DEC& other) const
+      { return m_p_nd != other.m_p_nd; }
 
       inline bool
-      operator!=(const PB_DS_TREE_CONST_ODIR_IT_C_DEC& 
-		 other) const
-      {
-	return (m_p_nd != other.m_p_nd);
-      }
+      operator!=(const PB_DS_TREE_CONST_ODIR_IT_C_DEC& other) const
+      { return m_p_nd != other.m_p_nd; }
 
       inline PB_DS_TREE_CONST_IT_C_DEC& 
       operator++()
       {
-	PB_DS_DBG_ASSERT(m_p_nd != NULL);
-
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
 	inc(integral_constant<int,Is_Forward_Iterator>());
-
-	return (*this);
+	return *this;
       }
 
       inline PB_DS_TREE_CONST_IT_C_DEC
       operator++(int)
       {
-	PB_DS_TREE_CONST_IT_C_DEC
-	  ret_it(m_p_nd);
-
+	PB_DS_TREE_CONST_IT_C_DEC ret_it(m_p_nd);
 	operator++();
-
-	return (ret_it);
+	return ret_it;
       }
 
       inline PB_DS_TREE_CONST_IT_C_DEC& 
       operator--()
       {
 	dec(integral_constant<int,Is_Forward_Iterator>());
-
-	return (*this);
+	return *this;
       }
 
       inline PB_DS_TREE_CONST_IT_C_DEC
       operator--(int)
       {
-	PB_DS_TREE_CONST_IT_C_DEC
-	  ret_it(m_p_nd);
-
+	PB_DS_TREE_CONST_IT_C_DEC ret_it(m_p_nd);
 	operator--();
-
-	return (ret_it);
+	return ret_it;
       }
 
     protected:
       inline void
       inc(false_type)
-      {
-	dec(true_type());
-      }
+      { dec(true_type()); }
 
       void
       inc(true_type)
@@ -268,26 +228,21 @@ namespace pb_ds
 	    m_p_nd->m_p_parent->m_p_parent == m_p_nd)
 	  {
 	    m_p_nd = m_p_nd->m_p_left;
-
 	    return;
 	  }
 
 	if (m_p_nd->m_p_right != NULL)
 	  {
 	    m_p_nd = m_p_nd->m_p_right;
-
 	    while (m_p_nd->m_p_left != NULL)
 	      m_p_nd = m_p_nd->m_p_left;
-
 	    return;
 	  }
 
 	Node_Pointer p_y = m_p_nd->m_p_parent;
-
 	while (m_p_nd == p_y->m_p_right)
 	  {
 	    m_p_nd = p_y;
-
 	    p_y = p_y->m_p_parent;
 	  }
 
@@ -297,42 +252,32 @@ namespace pb_ds
 
       inline void
       dec(false_type)
-      {
-	inc(true_type());
-      }
+      { inc(true_type()); }
 
       void
       dec(true_type)
       {
-	if (m_p_nd->special()&& 
-	    m_p_nd->m_p_parent->m_p_parent == m_p_nd)
+	if (m_p_nd->special() && m_p_nd->m_p_parent->m_p_parent == m_p_nd)
 	  {
 	    m_p_nd = m_p_nd->m_p_right;
-
 	    return;
 	  }
 
 	if (m_p_nd->m_p_left != NULL)
 	  {
 	    Node_Pointer p_y = m_p_nd->m_p_left;
-
 	    while (p_y->m_p_right != NULL)
 	      p_y = p_y->m_p_right;
-
 	    m_p_nd = p_y;
-
 	    return;
 	  }
 
 	Node_Pointer p_y = m_p_nd->m_p_parent;
-
 	while (m_p_nd == p_y->m_p_left)
 	  {
 	    m_p_nd = p_y;
-
 	    p_y = p_y->m_p_parent;
 	  }
-
 	if (m_p_nd->m_p_left != p_y)
 	  m_p_nd = p_y;
       }
@@ -358,11 +303,13 @@ namespace pb_ds
     public:
 
       inline
-      bin_search_tree_it_(const Node_Pointer p_nd = NULL) : PB_DS_TREE_CONST_IT_C_DEC((Node_Pointer)p_nd)
+      bin_search_tree_it_(const Node_Pointer p_nd = NULL) 
+      : PB_DS_TREE_CONST_IT_C_DEC((Node_Pointer)p_nd)
       { }
 
       inline
-      bin_search_tree_it_(const PB_DS_TREE_ODIR_IT_C_DEC& other) : PB_DS_TREE_CONST_IT_C_DEC(other.m_p_nd)
+      bin_search_tree_it_(const PB_DS_TREE_ODIR_IT_C_DEC& other) 
+      : PB_DS_TREE_CONST_IT_C_DEC(other.m_p_nd)
       { }
 
       inline
@@ -370,8 +317,7 @@ namespace pb_ds
       operator=(const PB_DS_TREE_IT_C_DEC& other)
       {
 	base_it_type::m_p_nd = other.m_p_nd;
-
-	return (*this);
+	return *this;
       }
 
       inline
@@ -379,64 +325,51 @@ namespace pb_ds
       operator=(const PB_DS_TREE_ODIR_IT_C_DEC& other)
       {
 	base_it_type::m_p_nd = other.m_p_nd;
-
-	return (*this);
+	return *this;
       }
 
       inline typename PB_DS_TREE_CONST_IT_C_DEC::pointer
       operator->() const
       {
-	PB_DS_DBG_ASSERT(base_it_type::m_p_nd != NULL);
-
-	return (&base_it_type::m_p_nd->m_value);
+	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd != NULL);
+	return &base_it_type::m_p_nd->m_value;
       }
 
       inline typename PB_DS_TREE_CONST_IT_C_DEC::reference
       operator*() const
       {
-	PB_DS_DBG_ASSERT(base_it_type::m_p_nd != NULL);
-
-	return (base_it_type::m_p_nd->m_value);
+	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd != NULL);
+	return base_it_type::m_p_nd->m_value;
       }
 
       inline PB_DS_TREE_IT_C_DEC& 
       operator++()
       {
-	PB_DS_TREE_CONST_IT_C_DEC::
-	  operator++();
-
-	return (*this);
+	PB_DS_TREE_CONST_IT_C_DEC:: operator++();
+	return *this;
       }
 
       inline PB_DS_TREE_IT_C_DEC
       operator++(int)
       {
-	PB_DS_TREE_IT_C_DEC
-	  ret_it(base_it_type::m_p_nd);
-
+	PB_DS_TREE_IT_C_DEC ret_it(base_it_type::m_p_nd);
 	operator++();
-
-	return (ret_it);
+	return ret_it;
       }
 
       inline PB_DS_TREE_IT_C_DEC& 
       operator--()
       {
-	PB_DS_TREE_CONST_IT_C_DEC::
-	  operator--();
-
-	return (*this);
+	PB_DS_TREE_CONST_IT_C_DEC:: operator--();
+	return *this;
       }
 
       inline PB_DS_TREE_IT_C_DEC
       operator--(int)
       {
-	PB_DS_TREE_IT_C_DEC
-	  ret_it(base_it_type::m_p_nd);
-
+	PB_DS_TREE_IT_C_DEC ret_it(base_it_type::m_p_nd);
 	operator--();
-
-	return (ret_it);
+	return ret_it;
       }
 
     protected:
@@ -444,18 +377,11 @@ namespace pb_ds
     };
 
 #undef PB_DS_TREE_CONST_IT_C_DEC
-
 #undef PB_DS_TREE_CONST_ODIR_IT_C_DEC
-
 #undef PB_DS_TREE_IT_C_DEC
-
 #undef PB_DS_TREE_ODIR_IT_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_BIN_SEARCH_TREE_FIND_ITERATORS_HPP
+#endif 
