@@ -95,7 +95,7 @@ public:
   node_pointer_pointer
   operator->()
   {
-    PB_DS_DBG_ONLY(const_iterator::assert_referencible();)
+    _GLIBCXX_DEBUG_ONLY(const_iterator::assert_referencible();)
 
       return (const_iterator::m_p_p_cur);
   }
@@ -103,7 +103,7 @@ public:
   node_pointer
   operator*()
   {
-    PB_DS_DBG_ONLY(const_iterator::assert_referencible();)
+    _GLIBCXX_DEBUG_ONLY(const_iterator::assert_referencible();)
 
       return (*const_iterator::m_p_p_cur);
   }

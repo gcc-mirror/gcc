@@ -71,7 +71,7 @@ copy_from_range(It first_it, It last_it)
 
   std::make_heap(m_a_entries, m_a_entries + m_size, static_cast<entry_cmp& >(*this));
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -81,7 +81,7 @@ binary_heap_() :
   m_actual_size(resize_policy::min_size),
   m_a_entries(s_entry_allocator.allocate(m_actual_size))
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -92,7 +92,7 @@ binary_heap_(const Cmp_Fn& r_cmp_fn) :
   m_actual_size(resize_policy::min_size),
   m_a_entries(s_entry_allocator.allocate(m_actual_size))
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -104,8 +104,8 @@ binary_heap_(const PB_DS_CLASS_C_DEC& other) :
   m_actual_size(other.m_actual_size),
   m_a_entries(s_entry_allocator.allocate(m_actual_size))
 {
-  PB_DS_DBG_ONLY(other.assert_valid();)
-    PB_DS_DBG_ASSERT(m_a_entries != other.m_a_entries);
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+    _GLIBCXX_DEBUG_ASSERT(m_a_entries != other.m_a_entries);
 
   const_iterator first_it = other.begin();
   const_iterator last_it = other.end();
@@ -129,7 +129,7 @@ binary_heap_(const PB_DS_CLASS_C_DEC& other) :
       throw;
     }
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -137,16 +137,16 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
-    PB_DS_DBG_ASSERT(m_a_entries != other.m_a_entries);
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+    _GLIBCXX_DEBUG_ASSERT(m_a_entries != other.m_a_entries);
 
   value_swap(other);
 
   std::swap((entry_cmp& )(*this), (entry_cmp& )other);
 
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC

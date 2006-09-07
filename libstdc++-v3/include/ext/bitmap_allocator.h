@@ -1,6 +1,6 @@
 // Bitmap Allocator. -*- C++ -*-
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,22 +52,13 @@
 // For __gthread_mutex_t, __gthread_mutex_lock and __gthread_mutex_unlock.
 #include <bits/gthr.h>
 
-// Define this to enable error checking withing the allocator
-// itself(to debug the allocator itself).
-//#define _BALLOC_SANITY_CHECK
+#include <debug/debug.h> // _GLIBCXX_DEBUG_ASSERT
+
 
 /** @brief The constant in the expression below is the alignment
  * required in bytes.
  */
 #define _BALLOC_ALIGN_BYTES 8
-
-#if defined _BALLOC_SANITY_CHECK
-#include <cassert>
-#define _BALLOC_ASSERT(_EXPR) assert(_EXPR)
-#else
-#define _BALLOC_ASSERT(_EXPR)
-#endif
-
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -618,7 +609,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  _M_curr_bmap = reinterpret_cast<size_t*>
 	    (_M_vbp[_M_curr_index].first) - 1;
 	  
-	  _BALLOC_ASSERT(__index <= (long)_M_vbp.size() - 1);
+	  _GLIBCXX_DEBUG_ASSERT(__index <= (long)_M_vbp.size() - 1);
 	
 	  _M_last_bmap_in_block = _M_curr_bmap
 	    - ((_M_vbp[_M_curr_index].second 
@@ -904,7 +895,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef typename 
       balloc::__mini_vector<_Block_pair> _BPVector;
 
-#if defined _BALLOC_SANITY_CHECK
+#if defined _GLIBCXX_DEBUG
       // Complexity: O(lg(N)). Where, N is the number of block of size
       // sizeof(value_type).
       void 
@@ -919,7 +910,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  (_S_mem_blocks.begin(), _S_mem_blocks.end(), 
 	   __gnu_cxx::balloc::_Functor_Ref<_FFF>(__fff));
 
-	_BALLOC_ASSERT(__bpi == _S_mem_blocks.end());
+	_GLIBCXX_DEBUG_ASSERT(__bpi == _S_mem_blocks.end());
       }
 #endif
 
@@ -937,7 +928,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       void 
       _S_refill_pool() throw(std::bad_alloc)
       {
-#if defined _BALLOC_SANITY_CHECK
+#if defined _GLIBCXX_DEBUG
 	_S_check_for_free_blocks();
 #endif
 
@@ -1110,14 +1101,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	_Difference_type __diff;
 	long __displacement;
 
-	_BALLOC_ASSERT(_S_last_dealloc_index >= 0);
+	_GLIBCXX_DEBUG_ASSERT(_S_last_dealloc_index >= 0);
 
 	
 	if (__gnu_cxx::balloc::_Inclusive_between<_Alloc_block*>
 	    (__real_p)
 	    (_S_mem_blocks[_S_last_dealloc_index]))
 	  {
-	    _BALLOC_ASSERT(_S_last_dealloc_index <= _S_mem_blocks.size() - 1);
+	    _GLIBCXX_DEBUG_ASSERT(_S_last_dealloc_index <= _S_mem_blocks.size() - 1);
 
 	    // Initial Assumption was correct!
 	    __diff = _S_last_dealloc_index;
@@ -1132,7 +1123,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 			__gnu_cxx::balloc::
 			_Inclusive_between<_Alloc_block*>(__real_p));
 
-	    _BALLOC_ASSERT(_iter != _S_mem_blocks.end());
+	    _GLIBCXX_DEBUG_ASSERT(_iter != _S_mem_blocks.end());
 
 	    __diff = _iter - _S_mem_blocks.begin();
 	    __displacement = __real_p - _S_mem_blocks[__diff].first;
@@ -1152,7 +1143,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  (_S_mem_blocks[__diff].first)
 	  - (__gnu_cxx::balloc::__num_bitmaps(_S_mem_blocks[__diff]) + 1);
 	
-	_BALLOC_ASSERT(*__puse_count != 0);
+	_GLIBCXX_DEBUG_ASSERT(*__puse_count != 0);
 
 	--(*__puse_count);
 
@@ -1182,7 +1173,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    if (_S_last_dealloc_index >= _S_mem_blocks.size())
 	      {
 		_S_last_dealloc_index =(__diff != -1 ? __diff : 0);
-		_BALLOC_ASSERT(_S_last_dealloc_index >= 0);
+		_GLIBCXX_DEBUG_ASSERT(_S_last_dealloc_index >= 0);
 	      }
 	  }
       }

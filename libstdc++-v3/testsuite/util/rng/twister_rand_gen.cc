@@ -43,23 +43,14 @@
  * @file twister_rand_gen.cc
  */
 
-#include <util/rng/twister_rand_gen.hpp>
 #include <ctime>
+#include <debug/debug.h>
+#include <util/rng/twister_rand_gen.hpp>
 
 namespace pb_ds
 {
   namespace test
   {
-#ifdef PB_DS_TWISTER_RAND_GEN_DEBUG
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_TWISTER_RAND_GEN_DEBUG
-#define PB_DS_DBG_ASSERT(X) 
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_TWISTER_RAND_GEN_DEBUG
-
     twister_rand_gen::
     twister_rand_gen(unsigned int seed)
     : m_base_generator(seed)
@@ -76,14 +67,14 @@ namespace pb_ds
     twister_rand_gen::
     get_unsigned_long(unsigned long min, unsigned long max)
     {
-      PB_DS_DBG_ASSERT(max >= min);
+      _GLIBCXX_DEBUG_ASSERT(max >= min);
 
       const double prob = get_prob();
 
       const unsigned long rand_word = 
 	(unsigned long)((max - min + 1) * prob) + min;
 
-      PB_DS_DBG_ASSERT(rand_word <= max);
+      _GLIBCXX_DEBUG_ASSERT(rand_word <= max);
 
       return rand_word;
     }
@@ -101,13 +92,9 @@ namespace pb_ds
 
       const double ret = eng_res / eng_range;
 
-      PB_DS_DBG_ASSERT(ret >=0 && ret <= 1);
+      _GLIBCXX_DEBUG_ASSERT(ret >=0 && ret <= 1);
 
       return ret;
     }
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
   } // namespace test
 } // namespace pb_ds

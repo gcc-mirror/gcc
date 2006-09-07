@@ -59,21 +59,18 @@ public:
 
 public:
   inline
-  const_iterator(node_pointer_pointer p_p_cur = NULL,  node_pointer_pointer p_p_end = NULL) : m_p_p_cur(p_p_cur),
-											      m_p_p_end(p_p_end)
+  const_iterator(node_pointer_pointer p_p_cur = NULL,  
+		 node_pointer_pointer p_p_end = NULL) 
+  : m_p_p_cur(p_p_cur), m_p_p_end(p_p_end)
   { }
 
   inline bool
   operator==(const const_iterator& other) const
-  {
-    return (m_p_p_cur == other.m_p_p_cur);
-  }
+  { return m_p_p_cur == other.m_p_p_cur; }
 
   inline bool
   operator!=(const const_iterator& other) const
-  {
-    return (m_p_p_cur != other.m_p_p_cur);
-  }
+  { return m_p_p_cur != other.m_p_p_cur; }
 
   inline const_iterator& 
   operator++()
@@ -81,48 +78,40 @@ public:
     do
       ++m_p_p_cur;
     while (m_p_p_cur != m_p_p_end&& * m_p_p_cur == NULL);
-
-    return (*this);
+    return *this;
   }
 
   inline const_iterator
   operator++(int)
   {
     const_iterator ret_it(*this);
-
     operator++();
-
-    return (ret_it);
+    return ret_it;
   }
 
   const node_pointer_pointer
   operator->() const
   {
-    PB_DS_DBG_ONLY(assert_referencible();)
-
-      return (m_p_p_cur);
+    _GLIBCXX_DEBUG_ONLY(assert_referencible();)
+    return (m_p_p_cur);
   }
 
   const_node_pointer
   operator*() const
   {
-    PB_DS_DBG_ONLY(assert_referencible();)
-
-      return (*m_p_p_cur);
+    _GLIBCXX_DEBUG_ONLY(assert_referencible();)
+    return (*m_p_p_cur);
   }
 
 protected:
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
   void
   assert_referencible() const
-  {
-    PB_DS_DBG_ASSERT(m_p_p_cur != m_p_p_end&& * m_p_p_cur != NULL);
-  }
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+  { _GLIBCXX_DEBUG_ASSERT(m_p_p_cur != m_p_p_end&& * m_p_p_cur != NULL); }
+#endif 
 
 public:
   node_pointer_pointer m_p_p_cur;
-
   node_pointer_pointer m_p_p_end;
 };
 

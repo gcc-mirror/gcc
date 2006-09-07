@@ -49,34 +49,20 @@
 #define PB_DS_HASH_EQ_FN_HPP
 
 #include <utility>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
-
-#ifdef PB_DS_HASH_EQ_FN_DEBUG
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_HASH_EQ_FN_DEBUG
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_HASH_EQ_FN_DEBUG
-
     template<typename Key, class Eq_Fn, class Allocator, bool Store_Hash>
     struct hash_eq_fn;
 
-#define PB_DS_CLASS_T_DEC					\
+#define PB_DS_CLASS_T_DEC \
     template<typename Key, class Eq_Fn, class Allocator>
 
-#define PB_DS_CLASS_C_DEC				\
-    hash_eq_fn<						\
-					Key,		\
-					Eq_Fn,		\
-					Allocator,	\
-					false>
+#define PB_DS_CLASS_C_DEC \
+    hash_eq_fn<Key, Eq_Fn, Allocator, false>
 
     /**
      * Specialization 1- The client requests that hash values not be stored.
@@ -110,9 +96,7 @@ namespace pb_ds
     inline void
     PB_DS_CLASS_C_DEC::
     swap(const PB_DS_CLASS_C_DEC& other)
-    {
-      std::swap((Eq_Fn& )(*this), (Eq_Fn& )other);
-    }
+    { std::swap((Eq_Fn& )(*this), (Eq_Fn& )other); }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
@@ -124,22 +108,16 @@ namespace pb_ds
     inline bool
     PB_DS_CLASS_C_DEC::
     operator()(const_key_reference r_lhs_key, const_key_reference r_rhs_key) const
-    {
-      return (eq_fn_base::operator()(r_lhs_key, r_rhs_key));
-    }
+    { return (eq_fn_base::operator()(r_lhs_key, r_rhs_key)); }
 
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 
-#define PB_DS_CLASS_T_DEC					\
+#define PB_DS_CLASS_T_DEC \
     template<typename Key, class Eq_Fn, class Allocator>
 
-#define PB_DS_CLASS_C_DEC				\
-    hash_eq_fn<						\
-					Key,		\
-					Eq_Fn,		\
-					Allocator,	\
-					true>
+#define PB_DS_CLASS_C_DEC \
+    hash_eq_fn<Key, Eq_Fn, Allocator, true>
 
     /**
      * Specialization 2- The client requests that hash values be stored.
@@ -161,7 +139,8 @@ namespace pb_ds
       hash_eq_fn(const Eq_Fn& r_eq_fn);
 
       inline bool
-      operator()(const_key_reference r_lhs_key, size_type lhs_hash, const_key_reference r_rhs_key, size_type rhs_hash) const;
+      operator()(const_key_reference r_lhs_key, size_type lhs_hash, 
+		 const_key_reference r_rhs_key, size_type rhs_hash) const;
 
       inline void
       swap(const PB_DS_CLASS_C_DEC& other);
@@ -181,12 +160,13 @@ namespace pb_ds
     PB_DS_CLASS_T_DEC
     inline bool
     PB_DS_CLASS_C_DEC::
-    operator()(const_key_reference r_lhs_key, size_type lhs_hash, const_key_reference r_rhs_key, size_type rhs_hash) const
+    operator()(const_key_reference r_lhs_key, size_type lhs_hash, 
+	       const_key_reference r_rhs_key, size_type rhs_hash) const
     {
-      PB_DS_DBG_ASSERT(!eq_fn_base::operator()(r_lhs_key, r_rhs_key) ||
-		       lhs_hash == rhs_hash);
+      _GLIBCXX_DEBUG_ASSERT(!eq_fn_base::operator()(r_lhs_key, r_rhs_key) 
+		            || lhs_hash == rhs_hash);
 
-      return (lhs_hash == rhs_hash&& 
+      return (lhs_hash == rhs_hash && 
 	      eq_fn_base::operator()(r_lhs_key, r_rhs_key));
     }
 
@@ -194,18 +174,12 @@ namespace pb_ds
     inline void
     PB_DS_CLASS_C_DEC::
     swap(const PB_DS_CLASS_C_DEC& other)
-    {
-      std::swap((Eq_Fn& )(*this), (Eq_Fn& )(other));
-    }
+    { std::swap((Eq_Fn& )(*this), (Eq_Fn& )(other)); }
 
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_HASH_EQ_FN_HPP
+#endif 

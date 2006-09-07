@@ -51,94 +51,56 @@
 #include <ext/pb_ds/detail/types_traits.hpp>
 #include <ext/pb_ds/detail/list_update_map_/entry_metadata_base.hpp>
 #include <ext/pb_ds/exception.hpp>
-#ifdef PB_DS_LU_MAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 #include <ext/pb_ds/detail/map_debug_base.hpp>
-#endif // #ifdef PB_DS_LU_MAP_DEBUG_
+#endif 
 #ifdef PB_DS_LU_MAP_TRACE_
 #include <iostream>
-#endif // PB_DS_LU_MAP_TRACE_
+#endif 
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_LU_MAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_LU_MAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_LU_MAP_DEBUG_
-
-#define PB_DS_CLASS_T_DEC						\
-    template<								\
-						typename Key,		\
-						typename Mapped,	\
-						class Eq_Fn,		\
-						class Allocator,	\
-						class Update_Policy>
+#define PB_DS_CLASS_T_DEC \
+    template<typename Key, typename Mapped, class Eq_Fn, \
+	     class Allocator, class Update_Policy>
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-#define PB_DS_CLASS_NAME			\
-    lu_map_data_
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#define PB_DS_CLASS_NAME lu_map_data_
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
-#define PB_DS_CLASS_NAME			\
-    lu_map_no_data_
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#define PB_DS_CLASS_NAME lu_map_no_data_
+#endif 
 
-#define PB_DS_CLASS_C_DEC					\
-    PB_DS_CLASS_NAME<						\
-						Key,		\
-						Mapped,		\
-						Eq_Fn,		\
-						Allocator,	\
-						Update_Policy>
+#define PB_DS_CLASS_C_DEC \
+    PB_DS_CLASS_NAME<Key, Mapped, Eq_Fn, Allocator, Update_Policy>
 
-#define PB_DS_TYPES_TRAITS_C_DEC				\
-    types_traits<				\
-						Key,		\
-						Mapped,		\
-						Allocator,	\
-						false>
+#define PB_DS_TYPES_TRAITS_C_DEC \
+    types_traits<Key, Mapped, Allocator, false>
 
-#ifdef PB_DS_USE_MAP_DEBUG_BASE
-#define PB_DS_MAP_DEBUG_BASE_C_DEC					\
-    map_debug_base<					\
-									Key, \
-									Eq_Fn, \
-									typename Allocator::template rebind< \
-													     Key>::other::const_reference>
-#endif // #ifdef PB_DS_USE_MAP_DEBUG_BASE
+#ifdef _GLIBCXX_DEBUG
+#define PB_DS_MAP_DEBUG_BASE_C_DEC \
+    map_debug_base<Key, Eq_Fn, \
+	      typename Allocator::template rebind<Key>::other::const_reference>
+#endif 
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_V2F(X) (X).first
 #define PB_DS_V2S(X) (X).second
 #define PB_DS_EP2VP(X)& ((X)->m_value)
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_V2F(X) (X)
 #define PB_DS_V2S(X) Mapped_Data()
 #define PB_DS_EP2VP(X)& ((X)->m_value.first)
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
-
-#ifdef PB_DS_LU_MAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_LU_MAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_LU_MAP_DEBUG_
+#endif 
 
     /* Skip to the lu, my darling. */
-
     // list-based (with updates) associative container.
     template<typename Key,
 	     typename Mapped,
@@ -146,16 +108,15 @@ namespace pb_ds
 	     class Allocator,
 	     class Update_Policy>
     class PB_DS_CLASS_NAME :
-#ifdef PB_DS_LU_MAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       protected PB_DS_MAP_DEBUG_BASE_C_DEC,
-#endif // #ifdef PB_DS_LU_MAP_DEBUG_
+#endif 
       public PB_DS_TYPES_TRAITS_C_DEC
     {
 
     private:
 
-      struct entry : public lu_map_entry_metadata_base<
-      typename Update_Policy::metadata_type>
+      struct entry : public lu_map_entry_metadata_base<typename Update_Policy::metadata_type>
       {
 	typename PB_DS_TYPES_TRAITS_C_DEC::value_type m_value;
 
@@ -172,9 +133,7 @@ namespace pb_ds
 
       typedef typename entry_allocator::reference entry_reference;
 
-      typedef
-      typename entry_allocator::const_reference
-      const_entry_reference;
+      typedef typename entry_allocator::const_reference const_entry_reference;
 
       typedef
       typename Allocator::template rebind<entry_pointer>::other
@@ -265,21 +224,21 @@ namespace pb_ds
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       typedef point_iterator_ point_iterator;
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
       typedef const_point_iterator_ point_iterator;
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
       typedef const_point_iterator_ const_point_iterator;
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       typedef iterator_ iterator;
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
       typedef const_iterator_ iterator;
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
       typedef const_iterator_ const_iterator;
 
@@ -311,39 +270,31 @@ namespace pb_ds
       operator[](const_key_reference r_key)
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-	PB_DS_DBG_ONLY(assert_valid();)
-
-	  return insert(std::make_pair(r_key, mapped_type())).first->second;
-#else // #ifdef PB_DS_DATA_TRUE_INDICATOR
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	return insert(std::make_pair(r_key, mapped_type())).first->second;
+#else 
 	insert(r_key);
-
-	return (traits_base::s_null_mapped);
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+	return traits_base::s_null_mapped;
+#endif 
       }
 
-      inline std::pair<
-	point_iterator,
-	bool>
+      inline std::pair<point_iterator, bool>
       insert(const_reference r_val);
 
       inline point_iterator
       find(const_key_reference r_key)
       {
-	PB_DS_DBG_ONLY(assert_valid();)
-
-	  entry_pointer p_e = find_imp(r_key);
-
-	return point_iterator(p_e == NULL? NULL :& p_e->m_value);
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	entry_pointer p_e = find_imp(r_key);
+	return point_iterator(p_e == NULL ? NULL: &p_e->m_value);
       }
 
       inline const_point_iterator
       find(const_key_reference r_key) const
       {
-	PB_DS_DBG_ONLY(assert_valid();)
-
-	  entry_pointer p_e = find_imp(r_key);
-
-	return const_point_iterator(p_e == NULL? NULL :& p_e->m_value);
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	entry_pointer p_e = find_imp(r_key);
+	return const_point_iterator(p_e == NULL ? NULL: &p_e->m_value);
       }
 
       inline bool
@@ -368,26 +319,22 @@ namespace pb_ds
       inline const_iterator
       end() const;
 
-#ifdef PB_DS_LU_MAP_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
-
-#endif // #ifdef PB_DS_LU_MAP_DEBUG_
+#endif 
 
 #ifdef PB_DS_LU_MAP_TRACE_
-
       void
       trace() const;
-
-#endif // PB_DS_LU_MAP_TRACE_
+#endif
 
     private:
       typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
 
-#ifdef PB_DS_LU_MAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
-#endif // #ifdef PB_DS_LU_MAP_DEBUG_
+#endif 
 
       typedef
       typename PB_DS_TYPES_TRAITS_C_DEC::
@@ -433,7 +380,6 @@ namespace pb_ds
       inc_it_state(const_pointer& r_p_value, entry_pointer& r_pos) const
       {
 	r_pos = r_pos->m_p_next;
-
 	r_p_value = (r_pos == NULL)? NULL :& r_pos->m_value;
       }
 
@@ -454,7 +400,7 @@ namespace pb_ds
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       friend class iterator_;
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
       friend class const_iterator_;
 
@@ -479,22 +425,14 @@ namespace pb_ds
 #include <ext/pb_ds/detail/list_update_map_/trace_fn_imps.hpp>
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_TYPES_TRAITS_C_DEC
-
 #undef PB_DS_MAP_DEBUG_BASE_C_DEC
-
 #undef PB_DS_CLASS_NAME
 
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP
 #undef PB_DS_V2S
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds

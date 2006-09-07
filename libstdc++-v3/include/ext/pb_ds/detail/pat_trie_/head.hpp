@@ -47,10 +47,8 @@
 #ifndef PB_DS_PAT_TRIE_IHEAD_HPP
 #define PB_DS_PAT_TRIE_IHEAD_HPP
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-#include <cassert>
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
 #include <ext/pb_ds/detail/pat_trie_/node_base.hpp>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
@@ -78,16 +76,6 @@ namespace pb_ds
 					Metadata,		\
 					Allocator>
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
-
     template<typename Type_Traits,
 	     class E_Access_Traits,
 	     class Metadata,
@@ -107,19 +95,19 @@ namespace pb_ds
 	PB_DS_BASE_C_DEC>::other::pointer
       node_pointer;
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       typedef
       typename PB_DS_BASE_C_DEC::subtree_debug_info
       subtree_debug_info;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
     public:
       pat_trie_head();
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       virtual subtree_debug_info
       assert_valid_imp(const_e_access_traits_pointer p_traits) const;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
     public:
       node_pointer m_p_min;
@@ -129,34 +117,26 @@ namespace pb_ds
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    pat_trie_head() :
-      PB_DS_BASE_C_DEC(pat_trie_head_node_type)
+    pat_trie_head() : PB_DS_BASE_C_DEC(pat_trie_head_node_type)
     { }
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
     PB_DS_CLASS_T_DEC
     typename PB_DS_CLASS_C_DEC::subtree_debug_info
     PB_DS_CLASS_C_DEC::
     assert_valid_imp(const_e_access_traits_pointer /*p_traits*/) const
     {
-      PB_DS_DBG_ASSERT(false);
-
-      return (subtree_debug_info());
+      _GLIBCXX_DEBUG_ASSERT(false);
+      return subtree_debug_info();
     }
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_BASE_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_PAT_TRIE_HEAD_HPP
+#endif
 

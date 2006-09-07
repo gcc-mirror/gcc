@@ -49,13 +49,13 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     node_pointer p_new_nd = base_type::get_new_node_for_insert(r_val);
 
   push_imp(p_new_nd);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return point_iterator(p_new_nd);
 }
@@ -78,14 +78,14 @@ push_imp(node_pointer p_nd)
       p_nd->m_p_next_sibling = p_nd->m_p_prev_or_parent = NULL;
 
       base_type::make_child_of(base_type::m_p_root, p_nd);
-      PB_DS_DBG_ONLY(base_type::assert_node_consistent(p_nd, false));
+      _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd, false));
 
       base_type::m_p_root = p_nd;
     }
   else
     {
       base_type::make_child_of(p_nd, base_type::m_p_root);
-      PB_DS_DBG_ONLY(base_type::assert_node_consistent(base_type::m_p_root, false));
+      _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(base_type::m_p_root, false));
     }
 }
 
@@ -94,7 +94,7 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     remove_node(it.m_p_nd);
 
@@ -102,6 +102,6 @@ modify(point_iterator it, const_reference r_new_val)
 
   push_imp(it.m_p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 

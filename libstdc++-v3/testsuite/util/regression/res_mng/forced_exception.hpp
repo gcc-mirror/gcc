@@ -49,15 +49,11 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     struct forced_exception
     { };
-
   } // namespace test
-
 } // namespace pb_ds
 
 #endif // #ifndef PB_DS_FORCED_EXCEPTION_HPP

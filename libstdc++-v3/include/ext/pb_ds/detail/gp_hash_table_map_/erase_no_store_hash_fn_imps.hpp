@@ -50,7 +50,7 @@ inline bool
 PB_DS_CLASS_C_DEC::
 erase_imp(const_key_reference r_key,  false_type)
 {
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
 
     size_type hash = ranged_probe_fn_base::operator()(r_key);
 
@@ -71,7 +71,7 @@ erase_imp(const_key_reference r_key,  false_type)
 	  {
 	    resize_base::notify_erase_search_end();
 
-	    PB_DS_DBG_ONLY(map_debug_base::check_key_does_not_exist(
+	    _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(
 								    r_key));
 
 	    return (false);
@@ -94,7 +94,7 @@ erase_imp(const_key_reference r_key,  false_type)
         case erased_entry_status:
 	  break;
         default:
-	  PB_DS_DBG_ASSERT(0);
+	  _GLIBCXX_DEBUG_ASSERT(0);
         };
 
       resize_base::notify_erase_search_collision();

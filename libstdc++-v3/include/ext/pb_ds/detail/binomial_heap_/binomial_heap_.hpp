@@ -50,9 +50,7 @@
  * Modified from CLRS.
  */
 
-#ifdef PB_DS_BINOMIAL_HEAP_DEBUG_
-#include <cassert>
-#endif // #ifdef PB_DS_BINOMIAL_HEAP_DEBUG_
+#include <debug/debug.h>
 #include <ext/pb_ds/detail/cond_dealtor.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/binomial_heap_base_/binomial_heap_base_.hpp>
@@ -62,30 +60,14 @@ namespace pb_ds
   namespace detail
   {
 
-#ifdef PB_DS_BINOMIAL_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_BINOMIAL_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_BINOMIAL_HEAP_DEBUG_
-
-#define PB_DS_CLASS_T_DEC						\
+#define PB_DS_CLASS_T_DEC \
     template<typename Value_Type, class Cmp_Fn, class Allocator>
 
-#define PB_DS_CLASS_C_DEC					\
-    binomial_heap_<						\
-						Value_Type,	\
-						Cmp_Fn,		\
-						Allocator>
+#define PB_DS_CLASS_C_DEC \
+    binomial_heap_<Value_Type, Cmp_Fn, Allocator>
 
-#define PB_DS_BASE_C_DEC						\
-    binomial_heap_base_<					\
-							Value_Type,	\
-							Cmp_Fn,		\
-							Allocator>
+#define PB_DS_BASE_C_DEC \
+    binomial_heap_base_<Value_Type, Cmp_Fn, Allocator>
 
     /**
      * class description = "8y|\|0|\/|i41 h34p 74813">
@@ -140,12 +122,10 @@ namespace pb_ds
       ~binomial_heap_();
 
     protected:
-#ifdef PB_DS_BINOMIAL_HEAP_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
-
-#endif // #ifdef PB_DS_BINOMIAL_HEAP_DEBUG_
+#endif 
     };
 
 #include <ext/pb_ds/detail/binomial_heap_/constructors_destructor_fn_imps.hpp>
@@ -156,10 +136,5 @@ namespace pb_ds
 #undef PB_DS_CLASS_T_DEC
 
 #undef PB_DS_BASE_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
   } // namespace detail
 } // namespace pb_ds

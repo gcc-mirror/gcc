@@ -44,7 +44,7 @@
  * Contains implementations of gp_ht_map_'s debug-mode functions.
  */
 
-#ifdef PB_DS_GP_HT_MAP_DEBUG__
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
@@ -56,7 +56,6 @@ assert_entry_array_valid(const entry_array a_entries, store_hash_true_type) cons
   for (size_type pos = 0; pos < m_num_e; ++pos)
     {
       const_entry_pointer p_e =& a_entries[pos];
-
       switch(p_e->m_stat)
         {
         case empty_entry_status:
@@ -64,26 +63,21 @@ assert_entry_array_valid(const entry_array a_entries, store_hash_true_type) cons
 	  break;
         case valid_entry_status:
 	  {
-	    const_key_reference r_key =
-	      PB_DS_V2F(p_e->m_value);
-
+	    const_key_reference r_key = PB_DS_V2F(p_e->m_value);
 	    map_debug_base::check_key_exists(r_key);
 
-	    const comp_hash pos_hash_pair =
-	      ranged_probe_fn_base::operator()(r_key);
+	    const comp_hash pos_hash_pair = ranged_probe_fn_base::operator()(r_key);
 
-	    PB_DS_DBG_ASSERT(p_e->m_hash == pos_hash_pair.second);
-
+	    _GLIBCXX_DEBUG_ASSERT(p_e->m_hash == pos_hash_pair.second);
 	    ++iterated_num_used_e;
-
 	    break;
 	  }
         default:
-	  PB_DS_DBG_ASSERT(0);
+	  _GLIBCXX_DEBUG_ASSERT(0);
         };
     }
 
-  PB_DS_DBG_ASSERT(iterated_num_used_e == m_num_used_e);
+  _GLIBCXX_DEBUG_ASSERT(iterated_num_used_e == m_num_used_e);
 }
 
-#endif // #ifdef PB_DS_GP_HT_MAP_DEBUG__
+#endif 

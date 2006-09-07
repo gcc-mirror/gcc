@@ -59,16 +59,6 @@ namespace pb_ds
   namespace test
   {
 
-#ifdef NATIVE_HASH_MULTIMAP_DEBUG
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef NATIVE_HASH_MULTIMAP_DEBUG
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef NATIVE_HASH_MULTIMAP_DEBUG
-
 #define PB_DS_CLASS_T_DEC						\
     template<								\
 						typename Key,		\
@@ -216,35 +206,24 @@ namespace pb_ds
       static std::string
       desc()
       {
-        return (make_xml_tag(            "type", "value", "__gnucxx_hash_multimap"));
+        return (make_xml_tag("type", "value", "__gnucxx_hash_multimap"));
       }
     };
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    native_hash_multimap()
-#ifdef __GNUC__
-      :
-    base_type(Init_Size)
-#endif // #ifdef __GNUC__
+    native_hash_multimap() : base_type(Init_Size)
     { }
 
     PB_DS_CLASS_T_DEC
     template<typename It>
     PB_DS_CLASS_C_DEC::
-    native_hash_multimap(It f, It l) :
-      base_type(f, l)
+    native_hash_multimap(It f, It l) : base_type(f, l)
     { }
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_BASE_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace test
 

@@ -44,7 +44,7 @@
  * Contains an implementation for rb_tree_.
  */
 
-#ifdef PB_DS_RB_TREE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::size_type
@@ -56,16 +56,12 @@ assert_node_consistent(const node_pointer p_nd) const
 
   const size_type l_height = assert_node_consistent(p_nd->m_p_left);
   const size_type r_height = assert_node_consistent(p_nd->m_p_right);
-
   if (p_nd->m_red)
     {
-      PB_DS_DBG_ASSERT(is_effectively_black(p_nd->m_p_left));
-
-      PB_DS_DBG_ASSERT(is_effectively_black(p_nd->m_p_right));
+      _GLIBCXX_DEBUG_ASSERT(is_effectively_black(p_nd->m_p_left));
+      _GLIBCXX_DEBUG_ASSERT(is_effectively_black(p_nd->m_p_right));
     }
-
-  PB_DS_DBG_ASSERT(l_height == r_height);
-
+  _GLIBCXX_DEBUG_ASSERT(l_height == r_height);
   return ((p_nd->m_red? 0 : 1) + l_height);
 }
 
@@ -75,18 +71,14 @@ PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
   PB_DS_BASE_C_DEC::assert_valid();
-
   const node_pointer p_head = PB_DS_BASE_C_DEC::m_p_head;
-
-  PB_DS_DBG_ASSERT(p_head->m_red);
-
+  _GLIBCXX_DEBUG_ASSERT(p_head->m_red);
   if (p_head->m_p_parent != NULL)
     {
-      PB_DS_DBG_ASSERT(!p_head->m_p_parent->m_red);
-
+      _GLIBCXX_DEBUG_ASSERT(!p_head->m_p_parent->m_red);
       assert_node_consistent(p_head->m_p_parent);
     }
 }
 
-#endif // #ifdef PB_DS_RB_TREE_DEBUG_
+#endif 
 

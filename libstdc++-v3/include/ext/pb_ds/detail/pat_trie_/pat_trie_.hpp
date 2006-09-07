@@ -66,41 +66,29 @@
 #include <functional>
 #include <assert.h>
 #include <list>
-#ifdef PB_DS_USE_MAP_DEBUG_BASE
+#ifdef _GLIBCXX_DEBUG
 #include <ext/pb_ds/detail/map_debug_base.hpp>
-#endif // #ifdef PB_DS_USE_MAP_DEBUG_BASE
+#endif 
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
-
 #define PB_DS_CLASS_T_DEC						\
-    template<								\
-						typename Key,		\
-						typename Mapped,	\
-						class Node_And_It_Traits, \
-						class Allocator>
+    template<typename Key, typename Mapped, class Node_And_It_Traits, \
+	     class Allocator>
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_CLASS_NAME			\
     pat_trie_data_
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_CLASS_NAME			\
     pat_trie_no_data_
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
 #define PB_DS_CLASS_C_DEC						\
     PB_DS_CLASS_NAME<							\
@@ -116,29 +104,23 @@ namespace pb_ds
 						Allocator,	\
 						false>
 
-#ifdef PB_DS_USE_MAP_DEBUG_BASE
+#ifdef _GLIBCXX_DEBUG
 #define PB_DS_MAP_DEBUG_BASE_C_DEC					\
-    map_debug_base<					\
-								Key,	\
-								eq_by_less< \
-												Key, \
-												std::less< \
-														Key> >, \
-								typename Allocator::template rebind< \
-												     Key>::other::const_reference>
-#endif // #ifdef PB_DS_USE_MAP_DEBUG_BASE
+    map_debug_base<Key,	eq_by_less<Key, \
+			std::less<Key> >, typename Allocator::template rebind<Key>::other::const_reference>
+#endif 
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_V2F(X) (X).first
 #define PB_DS_V2S(X) (X).second
 #define PB_DS_EP2VP(X)& ((X)->m_value)
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_V2F(X) (X)
 #define PB_DS_V2S(X) Mapped_Data()
 #define PB_DS_EP2VP(X)& ((X)->m_value.first)
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
 #define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
     typedef								\
@@ -154,9 +136,9 @@ namespace pb_ds
 	     class Node_And_It_Traits,
 	     class Allocator>
     class PB_DS_CLASS_NAME :
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       public PB_DS_MAP_DEBUG_BASE_C_DEC,
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
       public Node_And_It_Traits::synth_e_access_traits,
       public Node_And_It_Traits::node_update,
       public PB_DS_TYPES_TRAITS_C_DEC
@@ -228,9 +210,9 @@ namespace pb_ds
 
 #include <ext/pb_ds/detail/pat_trie_/cond_dtor_entry_dealtor.hpp>
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
 #include <ext/pb_ds/detail/pat_trie_/split_join_branch_bag.hpp>
 
@@ -571,8 +553,7 @@ namespace pb_ds
       inline static leaf_pointer
       rightmost_descendant(node_pointer p_nd);
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
 
@@ -584,11 +565,9 @@ namespace pb_ds
 
       static size_type
       recursive_count_leafs(const_node_pointer p_nd);
-
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
 #ifdef PB_DS_PAT_TRIE_TRACE_
-
       static void
       trace_node(const_node_pointer p_nd, size_type level);
 
@@ -597,18 +576,23 @@ namespace pb_ds
       trace_node_metadata(const_node_pointer p_nd, type_to_type<Metadata_>);
 
       static void
-      trace_node_metadata(const_node_pointer, type_to_type<null_node_metadata>);
-
-#endif // #ifdef PB_DS_PAT_TRIE_TRACE_
+      trace_node_metadata(const_node_pointer, 
+			  type_to_type<null_node_metadata>);
+#endif 
 
       leaf_pointer
-      split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, split_join_branch_bag& r_bag);
+      split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, 
+		 split_join_branch_bag& r_bag);
 
       node_pointer
-      rec_split(node_pointer p_nd, const_e_iterator b_it, const_e_iterator e_it, PB_DS_CLASS_C_DEC& other, split_join_branch_bag& r_bag);
+      rec_split(node_pointer p_nd, const_e_iterator b_it, 
+		const_e_iterator e_it, PB_DS_CLASS_C_DEC& other, 
+		split_join_branch_bag& r_bag);
 
       void
-      split_insert_branch(size_type e_ind, const_e_iterator b_it, typename internal_node::iterator child_b_it, size_type num_children, split_join_branch_bag& r_bag);
+      split_insert_branch(size_type e_ind, const_e_iterator b_it, 
+			  typename internal_node::iterator child_b_it, 
+			  size_type num_children, split_join_branch_bag&);
 
     private:
       static head_allocator s_head_allocator;
@@ -635,22 +619,14 @@ namespace pb_ds
 #include <ext/pb_ds/detail/pat_trie_/update_fn_imps.hpp>
 
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_NAME
-
 #undef PB_DS_TYPES_TRAITS_C_DEC
-
 #undef PB_DS_MAP_DEBUG_BASE_C_DEC
 
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP
 #undef PB_DS_V2S
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
 #undef PB_DS_STATIC_ASSERT
 

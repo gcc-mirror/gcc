@@ -93,8 +93,8 @@ inline void
 PB_DS_CLASS_C_DEC::
 make_child_of(node_pointer p_nd, node_pointer p_new_parent)
 {
-  PB_DS_DBG_ASSERT(p_nd != NULL);
-  PB_DS_DBG_ASSERT(p_new_parent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_new_parent != NULL);
 
   p_nd->m_p_next_sibling = p_new_parent->m_p_l_child;
 
@@ -130,9 +130,9 @@ swap_with_parent(node_pointer p_nd, node_pointer p_parent)
   if (p_parent == m_p_root)
     m_p_root = p_nd;
 
-  PB_DS_DBG_ASSERT(p_nd != NULL);
-  PB_DS_DBG_ASSERT(p_parent != NULL);
-  PB_DS_DBG_ASSERT(parent(p_nd) == p_parent);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_parent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(parent(p_nd) == p_parent);
 
   const bool nd_direct_child = p_parent->m_p_l_child == p_nd;
   const bool parent_root = p_parent->m_p_prev_or_parent == NULL;
@@ -144,8 +144,8 @@ swap_with_parent(node_pointer p_nd, node_pointer p_parent)
   std::swap(p_parent->m_p_l_child, p_nd->m_p_l_child);
   std::swap(p_parent->m_metadata, p_nd->m_metadata);
 
-  PB_DS_DBG_ASSERT(p_nd->m_p_l_child != NULL);
-  PB_DS_DBG_ASSERT(p_parent->m_p_prev_or_parent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_l_child != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_prev_or_parent != NULL);
 
   if (p_nd->m_p_next_sibling != NULL)
     p_nd->m_p_next_sibling->m_p_prev_or_parent = p_nd;
@@ -169,13 +169,13 @@ swap_with_parent(node_pointer p_nd, node_pointer p_parent)
     }
   else
     {
-      PB_DS_DBG_ASSERT(p_nd->m_p_l_child == p_nd);
-      PB_DS_DBG_ASSERT(p_parent->m_p_prev_or_parent == p_parent);
+      _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_l_child == p_nd);
+      _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_prev_or_parent == p_parent);
 
       p_nd->m_p_l_child = p_parent;
       p_parent->m_p_prev_or_parent = p_nd;
     }
 
-  PB_DS_DBG_ASSERT(parent(p_parent) == p_nd);
+  _GLIBCXX_DEBUG_ASSERT(parent(p_parent) == p_nd);
 }
 

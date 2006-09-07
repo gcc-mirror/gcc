@@ -51,17 +51,8 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
-#define PB_DS_CLASS_T_DEC			\
-    template<typename T>
-
-#define PB_DS_CLASS_C_DEC				\
-    dbg_ex_allocator<					\
-						T>
-
     template<typename T>
     class dbg_ex_allocator : public detail::dbg_ex_allocator_base
     {
@@ -80,127 +71,59 @@ namespace pb_ds
         typedef dbg_ex_allocator<U> other;
       };
 
-      dbg_ex_allocator() throw();
+      dbg_ex_allocator() throw() { }
 
-      dbg_ex_allocator(const PB_DS_CLASS_C_DEC& ) throw();
+      dbg_ex_allocator(const dbg_ex_allocator<T>& ) throw() { }
 
       template <class U>
-      dbg_ex_allocator(const dbg_ex_allocator<U>& ) throw();
+      dbg_ex_allocator(const dbg_ex_allocator<U>& ) throw() { }
 
-      ~dbg_ex_allocator() throw();
+      ~dbg_ex_allocator() throw() { }
 
       size_type
-      max_size() const throw();
+      max_size() const throw()
+      { return std::allocator<T>().max_size(); }
 
       pointer
       allocate(size_type num, std::allocator<void>::const_pointer hint = 0);
 
       void
-      construct(pointer p, const T& r_val);
+      construct(pointer p, const T& r_val)
+      { return std::allocator<T>().construct(p, r_val); }
 
       void
-      destroy(pointer p);
+      destroy(pointer p)
+      {	std::allocator<T>().destroy(p); }
 
       void
-      deallocate(pointer p, size_type num);
+      deallocate(pointer p, size_type num)
+      {
+	erase(p, sizeof(T) * num);
+	std::allocator<T>().deallocate(p, num);
+      }
 
       void
-      check_allocated(pointer p, size_type num);
+      check_allocated(pointer p, size_type num)
+      { detail::dbg_ex_allocator_base::check_allocated(p, sizeof(T) * num); }
     };
 
-    PB_DS_CLASS_T_DEC
-    inline bool
-    operator==(const PB_DS_CLASS_C_DEC& , const PB_DS_CLASS_C_DEC& );
-
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    dbg_ex_allocator() throw()
-    { }
-
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    dbg_ex_allocator(const PB_DS_CLASS_C_DEC& ) throw()
-    { }
-
-    PB_DS_CLASS_T_DEC
-    template<typename U>
-    PB_DS_CLASS_C_DEC::
-    dbg_ex_allocator(const dbg_ex_allocator<U>& ) throw()
-    { }
-
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    ~dbg_ex_allocator() throw()
-    { }
-
-    PB_DS_CLASS_T_DEC
-    typename PB_DS_CLASS_C_DEC::size_type
-    PB_DS_CLASS_C_DEC::
-    max_size() const throw()
-    {
-      return (std::allocator<T>().max_size());
-    }
-
-    PB_DS_CLASS_T_DEC
-    typename PB_DS_CLASS_C_DEC::pointer
-    PB_DS_CLASS_C_DEC::
+    template<typename T>
+    typename dbg_ex_allocator<T>::pointer
+    dbg_ex_allocator<T>::
     allocate(size_type num, std::allocator<void>::const_pointer hint/*= 0*/)
     {
       cond_throw();
-
       T* const a_t = std::allocator<T>().allocate(num, hint);
-
-      insert(a_t, sizeof(T)*  num);
-
-      return (a_t);
+      insert(a_t, sizeof(T) * num);
+      return a_t;
     }
 
-    PB_DS_CLASS_T_DEC
-    void
-    PB_DS_CLASS_C_DEC::
-    construct(pointer p, const T& r_val)
-    {
-      return (std::allocator<T>().construct(p, r_val));
-    }
-
-    PB_DS_CLASS_T_DEC
-    void
-    PB_DS_CLASS_C_DEC::
-    destroy(pointer p)
-    {
-      std::allocator<T>().destroy(p);
-    }
-
-    PB_DS_CLASS_T_DEC
-    void
-    PB_DS_CLASS_C_DEC::
-    deallocate(pointer p, size_type num)
-    {
-      erase(p, sizeof(T)*  num);
-
-      std::allocator<T>().deallocate(p, num);
-    }
-
-    PB_DS_CLASS_T_DEC
-    void
-    PB_DS_CLASS_C_DEC::
-    check_allocated(pointer p, size_type num)
-    {
-      detail::dbg_ex_allocator_base::check_allocated(p, sizeof(T)*  num);
-    }
-
-    PB_DS_CLASS_T_DEC
+    template<typename T>
     inline bool
-    operator==(const PB_DS_CLASS_C_DEC& , const PB_DS_CLASS_C_DEC& )
-    {
-      return (true);
-    }
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
+    operator==(const dbg_ex_allocator<T>& , const dbg_ex_allocator<T>& )
+    { return true; }
 
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_DBG_EX_ALLOCATOR_HPP
+#endif 

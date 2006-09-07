@@ -49,7 +49,7 @@ inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
 insert(const_reference r_value)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     std::pair<point_iterator, bool> ins_pair =
     PB_DS_BASE_C_DEC::insert_leaf(r_value);
@@ -58,12 +58,12 @@ insert(const_reference r_value)
     {
       ins_pair.first.m_p_nd->m_red = true;
 
-      PB_DS_DBG_ONLY(this->structure_only_assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(this->structure_only_assert_valid();)
 
         insert_fixup(ins_pair.first.m_p_nd);
     }
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return (ins_pair);
 }
@@ -73,7 +73,7 @@ inline void
 PB_DS_CLASS_C_DEC::
 insert_fixup(node_pointer p_nd)
 {
-  PB_DS_DBG_ASSERT(p_nd->m_red == true);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_red == true);
 
   while (p_nd != PB_DS_BASE_C_DEC::m_p_head->m_p_parent&& 
 	 p_nd->m_p_parent->m_red)

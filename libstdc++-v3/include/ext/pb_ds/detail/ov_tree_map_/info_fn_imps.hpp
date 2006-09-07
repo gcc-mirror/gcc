@@ -49,7 +49,7 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 size() const
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return (m_size);
 }

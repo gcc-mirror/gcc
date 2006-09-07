@@ -105,7 +105,7 @@ public:
   inline const_pointer
   operator->() const
   {
-    PB_DS_DBG_ASSERT(m_p_value != NULL);
+    _GLIBCXX_DEBUG_ASSERT(m_p_value != NULL);
 
     return (m_p_value);
   }
@@ -114,7 +114,7 @@ public:
   inline const_reference
   operator*() const
   {
-    PB_DS_DBG_ASSERT(m_p_value != NULL);
+    _GLIBCXX_DEBUG_ASSERT(m_p_value != NULL);
 
     return (*m_p_value);
   }

@@ -51,7 +51,7 @@ begin()
 {
   if (m_p_l == NULL)
     {
-      PB_DS_DBG_ASSERT(empty());
+      _GLIBCXX_DEBUG_ASSERT(empty());
 
       return (end());
     }
@@ -66,7 +66,7 @@ begin() const
 {
   if (m_p_l == NULL)
     {
-      PB_DS_DBG_ASSERT(empty());
+      _GLIBCXX_DEBUG_ASSERT(empty());
 
       return (end());
     }

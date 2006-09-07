@@ -49,13 +49,13 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     insert_value(r_val, s_no_throw_copies_ind);
 
   std::push_heap(m_a_entries, m_a_entries + m_size, static_cast<entry_cmp& >(*this));
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return point_iterator(m_a_entries);
 }
@@ -105,7 +105,7 @@ resize_for_insert_if_needed()
 {
   if (!resize_policy::resize_needed_for_grow(m_size))
     {
-      PB_DS_DBG_ASSERT(m_size < m_actual_size);
+      _GLIBCXX_DEBUG_ASSERT(m_size < m_actual_size);
 
       return;
     }
@@ -131,13 +131,13 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     swap_value_imp(it.m_p_e, r_new_val, s_no_throw_copies_ind);
 
   fix(it.m_p_e);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -160,7 +160,7 @@ fix(entry_pointer p_e)
 	  parent_i = parent(i);
         }
 
-      PB_DS_DBG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
         return;
     }
@@ -170,7 +170,7 @@ fix(entry_pointer p_e)
       const size_type left_child_i = left_child(i);
       const size_type right_child_i = right_child(i);
 
-      PB_DS_DBG_ASSERT(right_child_i > left_child_i);
+      _GLIBCXX_DEBUG_ASSERT(right_child_i > left_child_i);
 
       const bool smaller_than_left_child =
 	left_child_i < m_size&& 

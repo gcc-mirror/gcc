@@ -139,7 +139,7 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key)
 {
-  PB_DS_DBG_ONLY(structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
 
     node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;
@@ -165,7 +165,7 @@ inline typename PB_DS_CLASS_C_DEC::const_point_iterator
 PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key) const
 {
-  PB_DS_DBG_ONLY(structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
 
     node_pointer p_pot = m_p_head;
   node_pointer p_nd = m_p_head->m_p_parent;

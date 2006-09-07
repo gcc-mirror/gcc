@@ -50,15 +50,15 @@ void
 PB_DS_CLASS_C_DEC::
 split(Pred pred, PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
     other.clear();
 
   if (base_type::empty())
     {
-      PB_DS_DBG_ONLY(assert_valid();)
-        PB_DS_DBG_ONLY(other.assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
         return;
     }
@@ -69,7 +69,7 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
 
   while (p_out != NULL)
     {
-      PB_DS_DBG_ASSERT(base_type::m_size > 0);
+      _GLIBCXX_DEBUG_ASSERT(base_type::m_size > 0);
       --base_type::m_size;
 
       ++other.m_size;
@@ -83,7 +83,7 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
       p_out = p_next;
     }
 
-  PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
     node_pointer p_cur = base_type::m_p_root;
 
@@ -100,8 +100,8 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
       p_cur = p_next;
     }
 
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -109,13 +109,13 @@ inline void
 PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
     if (other.m_p_root == NULL)
       {
-        PB_DS_DBG_ONLY(assert_valid();)
-	  PB_DS_DBG_ONLY(other.assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(assert_valid();)
+	  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
 	  return;
       }
@@ -125,14 +125,14 @@ join(PB_DS_CLASS_C_DEC& other)
   else if (Cmp_Fn::operator()(base_type::m_p_root->m_value, other.m_p_root->m_value))
     {
       base_type::make_child_of(base_type::m_p_root, other.m_p_root);
-      PB_DS_DBG_ONLY(base_type::assert_node_consistent(other.m_p_root, false));
+      _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(other.m_p_root, false));
 
       base_type::m_p_root = other.m_p_root;
     }
   else
     {
       base_type::make_child_of(other.m_p_root, base_type::m_p_root);
-      PB_DS_DBG_ONLY(base_type::assert_node_consistent(base_type::m_p_root, false));
+      _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(base_type::m_p_root, false));
     }
 
   base_type::m_size += other.m_size;
@@ -140,7 +140,7 @@ join(PB_DS_CLASS_C_DEC& other)
   other.m_p_root = NULL;
   other.m_size = 0;
 
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
     }
 

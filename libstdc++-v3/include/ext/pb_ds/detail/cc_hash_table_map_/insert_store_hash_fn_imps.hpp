@@ -52,7 +52,7 @@ inline std::pair<
 PB_DS_CLASS_C_DEC::
 insert_imp(const_reference r_val, store_hash_true_type)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     const_key_reference r_key = PB_DS_V2F(r_val);
 
@@ -77,12 +77,12 @@ insert_imp(const_reference r_val, store_hash_true_type)
 
   if (p_e != NULL)
     {
-      PB_DS_DBG_ONLY(map_debug_base::check_key_exists(r_key);)
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
 
         return (std::make_pair(           & p_e->m_value, false));
     }
 
-  PB_DS_DBG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
 
     return (std::make_pair(
 			   insert_new_imp(r_val, pos_hash_pair),

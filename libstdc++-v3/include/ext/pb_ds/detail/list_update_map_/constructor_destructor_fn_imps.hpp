@@ -73,69 +73,57 @@ copy_from_range(It first_it, It last_it)
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME() :
-  m_p_l(NULL)
-{
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+PB_DS_CLASS_NAME() : m_p_l(NULL)
+{ _GLIBCXX_DEBUG_ONLY(assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 template<typename It>
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(It first_it, It last_it) :
-  m_p_l(NULL)
+PB_DS_CLASS_NAME(It first_it, It last_it) : m_p_l(NULL)
 {
   copy_from_range(first_it, last_it);
-
-  PB_DS_DBG_ONLY(assert_valid(););
+  _GLIBCXX_DEBUG_ONLY(assert_valid(););
 }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
-#ifdef PB_DS_LU_MAP_DEBUG_
-  PB_DS_MAP_DEBUG_BASE_C_DEC(),
-#endif // #ifdef PB_DS_LU_MAP_DEBUG_
-  m_p_l(NULL)
+PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) : 
+#ifdef _GLIBCXX_DEBUG
+  map_debug_base(),
+#endif
+m_p_l(NULL)
 {
   try
     {
-
       for (const_iterator it = other.begin(); it != other.end(); ++it)
         {
-	  entry_pointer p_l =
-	    allocate_new_entry(                   * it,  PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
+	  entry_pointer p_l = allocate_new_entry(*it, 
+			PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
 
 	  p_l->m_p_next = m_p_l;
-
 	  m_p_l = p_l;
         }
     }
   catch(...)
     {
       deallocate_all();
-
       throw;
     }
-
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
-
-    PB_DS_DBG_ONLY(map_debug_base::swap(other);)
-
-    std::swap(m_p_l, other.m_p_l);
-
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::swap(other);)
+  std::swap(m_p_l, other.m_p_l);
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -143,23 +131,17 @@ PB_DS_CLASS_C_DEC::
 deallocate_all()
 {
   entry_pointer p_l = m_p_l;
-
   while (p_l != NULL)
     {
       entry_pointer p_next_l = p_l->m_p_next;
-
       actual_erase_entry(p_l);
-
       p_l = p_next_l;
     }
-
   m_p_l = NULL;
 }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 ~PB_DS_CLASS_NAME()
-{
-  deallocate_all();
-}
+{ deallocate_all(); }
 

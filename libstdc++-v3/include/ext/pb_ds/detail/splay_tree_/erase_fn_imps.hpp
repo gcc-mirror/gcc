@@ -64,7 +64,7 @@ inline typename PB_DS_CLASS_C_DEC::iterator
 PB_DS_CLASS_C_DEC::
 erase(iterator it)
 {
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   if (it == PB_DS_BASE_C_DEC::end())
     return (it);
@@ -75,7 +75,7 @@ erase(iterator it)
 
   erase_node(it.m_p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   return (ret_it);
 }
@@ -85,7 +85,7 @@ inline typename PB_DS_CLASS_C_DEC::reverse_iterator
 PB_DS_CLASS_C_DEC::
 erase(reverse_iterator it)
 {
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   if (it.m_p_nd == PB_DS_BASE_C_DEC::m_p_head)
     return (it);
@@ -96,7 +96,7 @@ erase(reverse_iterator it)
 
   erase_node(it.m_p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   return (ret_it);
 }
@@ -107,7 +107,7 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     size_type num_ersd = 0;
 
@@ -125,7 +125,7 @@ erase_if(Pred pred)
 	++it;
     }
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return (num_ersd);
 }
@@ -135,12 +135,12 @@ void
 PB_DS_CLASS_C_DEC::
 erase_node(node_pointer p_nd)
 {
-  PB_DS_DBG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
 
   splay(p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ASSERT(p_nd == this->m_p_head->m_p_parent);
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ASSERT(p_nd == this->m_p_head->m_p_parent);
 
   node_pointer p_l = p_nd->m_p_left;
   node_pointer p_r = p_nd->m_p_right;
@@ -156,14 +156,14 @@ erase_node(node_pointer p_nd)
       if (p_l != NULL)
 	p_l->m_p_parent = PB_DS_BASE_C_DEC::m_p_head;
 
-      PB_DS_DBG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
         return;
     }
 
   node_pointer p_target_r = leftmost(p_r);
 
-  PB_DS_DBG_ASSERT(p_target_r != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r != NULL);
 
   p_r->m_p_parent = PB_DS_BASE_C_DEC::m_p_head;
 
@@ -171,11 +171,11 @@ erase_node(node_pointer p_nd)
 
   splay(p_target_r);
 
-  PB_DS_DBG_ONLY(p_target_r->m_p_left = NULL);
+  _GLIBCXX_DEBUG_ONLY(p_target_r->m_p_left = NULL);
 
-  PB_DS_DBG_ASSERT(p_target_r->m_p_parent == this->m_p_head);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_parent == this->m_p_head);
 
-  PB_DS_DBG_ASSERT(this->m_p_head->m_p_parent ==
+  _GLIBCXX_DEBUG_ASSERT(this->m_p_head->m_p_parent ==
 		   p_target_r);
 
   p_target_r->m_p_left = p_l;
@@ -183,7 +183,7 @@ erase_node(node_pointer p_nd)
   if (p_l != NULL)
     p_l->m_p_parent = p_target_r;
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     apply_update(p_target_r, (node_update* )this);
 }
@@ -193,7 +193,7 @@ inline typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 leftmost(node_pointer p_nd)
 {
-  PB_DS_DBG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
 
   while (p_nd->m_p_left != NULL)
     p_nd = p_nd->m_p_left;

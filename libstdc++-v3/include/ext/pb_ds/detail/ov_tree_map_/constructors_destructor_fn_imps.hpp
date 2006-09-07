@@ -59,9 +59,7 @@ PB_DS_OV_TREE_CLASS_NAME() :
   m_a_metadata(NULL),
   m_end_it(NULL),
   m_size(0)
-{
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
-    }
+{ _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -71,9 +69,7 @@ PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn& r_cmp_fn) :
   m_a_metadata(NULL),
   m_end_it(NULL),
   m_size(0)
-{
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
-    }
+{ _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -84,19 +80,17 @@ PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_updat
   m_a_metadata(NULL),
   m_end_it(NULL),
   m_size(0)
-{
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
-    }
+{ _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();) }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_OV_TREE_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
-#ifdef PB_DS_OV_TREE_DEBUG_
-  PB_DS_MAP_DEBUG_BASE_C_DEC(other),
-#endif // #ifdef PB_DS_OV_TREE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
+  map_debug_base(other),
+#endif 
 #ifdef PB_DS_TREE_TRACE
   PB_DS_TREE_TRACE_BASE_C_DEC(other),
-#endif // #ifdef PB_DS_TREE_TRACE
+#endif 
   cmp_fn_base(other),
   node_update(other),
   m_a_values(NULL),
@@ -105,9 +99,8 @@ PB_DS_OV_TREE_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
   m_size(0)
 {
   copy_from_ordered_range(other.begin(), other.end());
-
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 template<typename It>
@@ -124,7 +117,7 @@ copy_from_range(It first_it, It last_it)
     typename Allocator::template rebind<
     value_type>::other>
     map_type;
-#else // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#else 
   typedef
     std::set<
     key_type,
@@ -132,10 +125,9 @@ copy_from_range(It first_it, It last_it)
     typename Allocator::template rebind<
     Key>::other>
     map_type;
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
   map_type m(first_it, last_it);
-
   copy_from_ordered_range(m.begin(), m.end());
 }
 
@@ -146,64 +138,51 @@ PB_DS_CLASS_C_DEC::
 copy_from_ordered_range(It first_it, It last_it)
 {
   const size_type size = std::distance(first_it, last_it);
-
   if (size == 0)
     return;
 
   value_vector a_values = s_value_alloc.allocate(size);
-
   iterator target_it = a_values;
   It source_it = first_it;
   It source_end_it = last_it;
 
   cond_dtor<size_type> cd(a_values, target_it, size);
-
   while (source_it != source_end_it)
     {
-      new (const_cast<void* >(
-			      static_cast<const void* >(target_it)))
+      new (const_cast<void* >(static_cast<const void* >(target_it)))
 	value_type(*source_it++);
 
       ++target_it;
     }
 
   reallocate_metadata((node_update* )this, size);
-
   cd.set_no_action();
-
   m_a_values = a_values;
-
   m_size = size;
-
   m_end_it = m_a_values + m_size;
-
   update(PB_DS_node_begin_imp(), (node_update* )this);
 
-#ifdef PB_DS_OV_TREE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
   const_iterator dbg_it = m_a_values;
-
   while (dbg_it != m_end_it)
     {
       map_debug_base::insert_new(PB_DS_V2F(*dbg_it));
-
       dbg_it++;
     }
-
   PB_DS_CLASS_C_DEC::assert_valid();
-#endif // #ifdef PB_DS_OV_TREE_DEBUG_
+#endif 
 }
 
 PB_DS_CLASS_T_DEC
 template<typename It>
 void
 PB_DS_CLASS_C_DEC::
-copy_from_ordered_range(It first_it, It last_it, It other_first_it, It other_last_it)
+copy_from_ordered_range(It first_it, It last_it, It other_first_it, 
+			It other_last_it)
 {
   clear();
-
-  const size_type size =
-    std::distance(first_it, last_it) +
-    std::distance(other_first_it, other_last_it);
+  const size_type size = std::distance(first_it, last_it) 
+    		         + std::distance(other_first_it, other_last_it);
 
   value_vector a_values = s_value_alloc.allocate(size);
 
@@ -212,13 +191,10 @@ copy_from_ordered_range(It first_it, It last_it, It other_first_it, It other_las
   It source_end_it = last_it;
 
   cond_dtor<size_type> cd(a_values, target_it, size);
-
   while (source_it != source_end_it)
     {
-      new (const_cast<void* >(
-			      static_cast<const void* >(target_it)))
+      new (const_cast<void* >(static_cast<const void* >(target_it)))
 	value_type(*source_it++);
-
       ++target_it;
     }
 
@@ -227,37 +203,27 @@ copy_from_ordered_range(It first_it, It last_it, It other_first_it, It other_las
 
   while (source_it != source_end_it)
     {
-      new (const_cast<void* >(
-			      static_cast<const void* >(target_it)))
+      new (const_cast<void* >(static_cast<const void* >(target_it)))
 	value_type(*source_it++);
-
       ++target_it;
     }
 
   reallocate_metadata((node_update* )this, size);
-
   cd.set_no_action();
-
   m_a_values = a_values;
-
   m_size = size;
-
   m_end_it = m_a_values + m_size;
-
   update(PB_DS_node_begin_imp(), (node_update* )this);
 
-#ifdef PB_DS_OV_TREE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
   const_iterator dbg_it = m_a_values;
-
   while (dbg_it != m_end_it)
     {
       map_debug_base::insert_new(PB_DS_V2F(*dbg_it));
-
       dbg_it++;
     }
-
   PB_DS_CLASS_C_DEC::assert_valid();
-#endif // #ifdef PB_DS_OV_TREE_DEBUG_
+#endif 
 }
 
 PB_DS_CLASS_T_DEC
@@ -265,14 +231,11 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-
-    value_swap(other);
-
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  value_swap(other);
   std::swap((Cmp_Fn& )(*this), (Cmp_Fn& )other);
-
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -280,24 +243,18 @@ PB_DS_CLASS_C_DEC::
 value_swap(PB_DS_CLASS_C_DEC& other)
 {
   std::swap(m_a_values, other.m_a_values);
-
   std::swap(m_a_metadata, other.m_a_metadata);
-
   std::swap(m_size, other.m_size);
-
   std::swap(m_end_it, other.m_end_it);
-
-  PB_DS_DBG_ONLY(map_debug_base::swap(other);)
-    }
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::swap(other);)
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 ~PB_DS_OV_TREE_CLASS_NAME()
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-
-    cond_dtor<size_type> cd(m_a_values, m_end_it, m_size);
-
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  cond_dtor<size_type> cd(m_a_values, m_end_it, m_size);
   reallocate_metadata((node_update* )this, 0);
 }
 
@@ -314,12 +271,9 @@ PB_DS_CLASS_C_DEC::
 update(node_iterator nd_it, Node_Update* p_update)
 {
   const_node_iterator end_it = PB_DS_node_end_imp();
-
   if (nd_it == end_it)
     return;
-
   update(nd_it.get_l_child(), p_update);
   update(nd_it.get_r_child(), p_update);
-
   node_update::operator()(nd_it, end_it);
 }

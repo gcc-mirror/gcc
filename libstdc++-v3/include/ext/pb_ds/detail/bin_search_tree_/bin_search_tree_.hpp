@@ -58,40 +58,26 @@
 #include <ext/pb_ds/detail/tree_trace_base.hpp>
 #include <utility>
 #include <functional>
-#include <assert.h>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
-
 #define PB_DS_CLASS_T_DEC						\
-    template<								\
-						typename Key,		\
-						typename Mapped,	\
-						class Cmp_Fn,		\
-						class Node_And_It_Traits, \
-						class Allocator>
+    template<typename Key, typename Mapped, class Cmp_Fn,		\
+	     class Node_And_It_Traits, class Allocator>
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_CLASS_NAME			\
     bin_search_tree_data_
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_CLASS_NAME			\
     bin_search_tree_no_data_
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
 #define PB_DS_CLASS_C_DEC						\
     PB_DS_CLASS_NAME<							\
@@ -108,26 +94,23 @@ namespace pb_ds
 						Allocator,	\
 						false>
 
-#ifdef PB_DS_USE_MAP_DEBUG_BASE
+#ifdef _GLIBCXX_DEBUG
 #define PB_DS_MAP_DEBUG_BASE_C_DEC					\
-    map_debug_base<					\
-								Key,	\
-								eq_by_less<Key, Cmp_Fn>, \
-								typename Allocator::template rebind< \
-												     Key>::other::const_reference>
-#endif // #ifdef PB_DS_USE_MAP_DEBUG_BASE
+    map_debug_base<Key,	eq_by_less<Key, Cmp_Fn>, \
+	      typename Allocator::template rebind<Key>::other::const_reference>
+#endif 
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_V2F(X) (X).first
 #define PB_DS_V2S(X) (X).second
 #define PB_DS_EP2VP(X)& ((X)->m_value)
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
 #define PB_DS_V2F(X) (X)
 #define PB_DS_V2S(X) Mapped_Data()
 #define PB_DS_EP2VP(X)& ((X)->m_value.first)
-#endif // #ifdef PB_DS_DATA_FALSE_INDICATOR
+#endif 
 
 #ifdef PB_DS_TREE_TRACE
 #define PB_DS_TREE_TRACE_BASE_C_DEC					\
@@ -137,7 +120,7 @@ namespace pb_ds
 									Cmp_Fn,	\
 									true, \
 									Allocator>
-#endif // #ifdef PB_DS_TREE_TRACE
+#endif 
 
     /**
      * class description = "8i|\|4ree $34rc|-| 7r33 74813.">
@@ -148,12 +131,12 @@ namespace pb_ds
 	     class Node_And_It_Traits,
 	     class Allocator>
     class PB_DS_CLASS_NAME :
-#ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       public PB_DS_MAP_DEBUG_BASE_C_DEC,
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
+#endif 
 #ifdef PB_DS_TREE_TRACE
       public PB_DS_TREE_TRACE_BASE_C_DEC,
-#endif // #ifdef PB_DS_TREE_TRACE
+#endif 
       public Cmp_Fn,
       public PB_DS_TYPES_TRAITS_C_DEC,
       public Node_And_It_Traits::node_update
@@ -178,9 +161,9 @@ namespace pb_ds
     private:
       typedef cond_dealtor< node, Allocator> cond_dealtor_t;
 
-#ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
+#endif 
 
     public:
 
@@ -203,7 +186,6 @@ namespace pb_ds
       const_key_reference;
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-
       typedef typename PB_DS_TYPES_TRAITS_C_DEC::mapped_type mapped_type;
 
       typedef
@@ -221,8 +203,7 @@ namespace pb_ds
       typedef
       typename PB_DS_TYPES_TRAITS_C_DEC::const_mapped_reference
       const_mapped_reference;
-
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+#endif 
 
       typedef typename PB_DS_TYPES_TRAITS_C_DEC::value_type value_type;
 
@@ -426,8 +407,7 @@ namespace pb_ds
       size_type
       recursive_count(node_pointer p_nd) const;
 
-#ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
 
@@ -436,12 +416,10 @@ namespace pb_ds
 
       void
       assert_node_consistent(const node_pointer p_nd) const;
-
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
+#endif 
 
     private:
-#ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_iterators() const;
 
@@ -476,8 +454,7 @@ namespace pb_ds
 
       node_consistent_t
       assert_node_consistent_(const node_pointer p_nd) const;
-
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_DEBUG_
+#endif 
 
       void
       initialize();
@@ -516,15 +493,11 @@ namespace pb_ds
 
 #ifdef PB_DS_TREE_TRACE
 #undef PB_DS_TREE_TRACE_BASE_C_DEC
-#endif // #ifdef PB_DS_TREE_TRACE
+#endif 
 
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP
 #undef PB_DS_V2S
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds

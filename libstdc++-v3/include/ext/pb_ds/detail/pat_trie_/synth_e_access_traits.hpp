@@ -96,10 +96,10 @@ namespace pb_ds
       inline static const_key_reference
       extract_key(const_reference r_val);
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       bool
       operator()(const_key_reference r_lhs, const_key_reference r_rhs);
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif
 
     private:
       inline static const_key_reference
@@ -136,14 +136,11 @@ namespace pb_ds
 	{
 	  if (b_r == e_r)
 	    return (false);
-
 	  if (base_type::e_pos(*b_l) != base_type::e_pos(*b_r))
 	    return (false);
-
 	  ++b_l;
 	  ++b_r;
 	}
-
       return (!compare_after || b_r == e_r);
     }
 
@@ -168,22 +165,18 @@ namespace pb_ds
 	{
 	  if (b_r == e_r)
 	    return (false);
-
 	  const typename base_type::size_type l_pos =
 	    base_type::e_pos(*b_l);
 	  const typename base_type::size_type r_pos =
 	    base_type::e_pos(*b_r);
-
 	  if (l_pos != r_pos)
 	    return (l_pos < r_pos);
-
 	  ++b_l;
 	  ++b_r;
 	}
 
       if (!compare_after)
 	return (false);
-
       return (b_r != e_r);
     }
 
@@ -223,7 +216,7 @@ namespace pb_ds
       return (r_val.first);
     }
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
     PB_DS_SYNTH_E_ACCESS_TRAITS_T_DEC
     bool
     PB_DS_SYNTH_E_ACCESS_TRAITS_C_DEC::
@@ -231,13 +224,12 @@ namespace pb_ds
     {
       return (cmp_keys(r_lhs, r_rhs));
     }
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 
 #undef PB_DS_SYNTH_E_ACCESS_TRAITS_T_DEC
-
 #undef PB_DS_SYNTH_E_ACCESS_TRAITS_C_DEC
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_SYNTH_E_ACCESS_TRAITS_HPP
+#endif 

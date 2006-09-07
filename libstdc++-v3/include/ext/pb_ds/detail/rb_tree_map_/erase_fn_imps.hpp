@@ -64,7 +64,7 @@ inline typename PB_DS_CLASS_C_DEC::iterator
 PB_DS_CLASS_C_DEC::
 erase(iterator it)
 {
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   if (it == PB_DS_BASE_C_DEC::end())
     return (it);
@@ -75,7 +75,7 @@ erase(iterator it)
 
   erase_node(it.m_p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   return (ret_it);
 }
@@ -85,7 +85,7 @@ inline typename PB_DS_CLASS_C_DEC::reverse_iterator
 PB_DS_CLASS_C_DEC::
 erase(reverse_iterator it)
 {
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   if (it.m_p_nd == PB_DS_BASE_C_DEC::m_p_head)
     return (it);
@@ -96,7 +96,7 @@ erase(reverse_iterator it)
 
   erase_node(it.m_p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 
   return (ret_it);
 }
@@ -107,7 +107,7 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     size_type num_ersd = 0;
 
@@ -125,7 +125,7 @@ erase_if(Pred pred)
 	++it;
     }
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return (num_ersd);
 }
@@ -139,7 +139,7 @@ erase_node(node_pointer p_nd)
 
   PB_DS_BASE_C_DEC::actual_erase_node(p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid());
+  _GLIBCXX_DEBUG_ONLY(assert_valid());
 }
 
 PB_DS_CLASS_T_DEC
@@ -240,7 +240,7 @@ void
 PB_DS_CLASS_C_DEC::
 remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 {
-  PB_DS_DBG_ASSERT(p_x == NULL || p_x->m_p_parent == p_new_x_parent);
+  _GLIBCXX_DEBUG_ASSERT(p_x == NULL || p_x->m_p_parent == p_new_x_parent);
 
   while (p_x != PB_DS_BASE_C_DEC::m_p_head->m_p_parent&& 
 	 is_effectively_black(p_x))

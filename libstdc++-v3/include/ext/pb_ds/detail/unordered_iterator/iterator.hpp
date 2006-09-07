@@ -103,7 +103,7 @@ public:
   inline pointer
   operator->() const
   {
-    PB_DS_DBG_ASSERT(base_type::m_p_value != NULL);
+    _GLIBCXX_DEBUG_ASSERT(base_type::m_p_value != NULL);
 
     return (const_cast<pointer>(base_type::m_p_value));
   }
@@ -112,7 +112,7 @@ public:
   inline reference
   operator*() const
   {
-    PB_DS_DBG_ASSERT(base_type::m_p_value != NULL);
+    _GLIBCXX_DEBUG_ASSERT(base_type::m_p_value != NULL);
 
     return (const_cast<reference>(*base_type::m_p_value));
   }

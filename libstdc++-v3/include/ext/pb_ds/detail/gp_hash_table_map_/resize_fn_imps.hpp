@@ -81,7 +81,7 @@ do_resize_if_needed_no_throw()
   catch(...)
     { }
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -96,7 +96,7 @@ resize_imp(size_type new_size)
   if (new_size == m_num_e)
     return;
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     const size_type old_size = m_num_e;
 
@@ -132,7 +132,7 @@ resize_imp(size_type new_size)
 
   // At this point no exceptions can be thrown.
 
-  PB_DS_DBG_ONLY(assert_entry_array_valid(a_entries_resized, traits_base::m_store_extra_indicator);)
+  _GLIBCXX_DEBUG_ONLY(assert_entry_array_valid(a_entries_resized, traits_base::m_store_extra_indicator);)
 
     Resize_Policy::notify_resized(new_size);
 
@@ -142,7 +142,7 @@ resize_imp(size_type new_size)
 
   m_a_entries = a_entries_resized;
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC

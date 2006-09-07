@@ -49,7 +49,7 @@ inline void
 PB_DS_CLASS_C_DEC::
 erase_entry_pointer(entry_pointer& r_p_e)
 {
-  PB_DS_DBG_ONLY(map_debug_base::erase_existing(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::erase_existing(
 						PB_DS_V2F(r_p_e->m_value)));
 
   entry_pointer p_e = r_p_e;
@@ -58,7 +58,7 @@ erase_entry_pointer(entry_pointer& r_p_e)
 
   rels_entry(p_e);
 
-  PB_DS_DBG_ASSERT(m_num_used_e > 0);
+  _GLIBCXX_DEBUG_ASSERT(m_num_used_e > 0);
   resize_base::notify_erased(--m_num_used_e);
 }
 

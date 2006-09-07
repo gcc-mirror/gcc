@@ -49,7 +49,7 @@ inline bool
 PB_DS_CLASS_C_DEC::
 erase(const_key_reference r_key)
 {
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
 
     if (m_p_l == NULL)
       return false;
@@ -94,7 +94,7 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
 
     size_type num_ersd = 0;
 
@@ -126,7 +126,7 @@ erase_if(Pred pred)
 	p_l = p_l->m_p_next;
     }
 
-  PB_DS_DBG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
 
     return (num_ersd);
 }
@@ -136,9 +136,9 @@ void
 PB_DS_CLASS_C_DEC::
 erase_next(entry_pointer p_l)
 {
-  PB_DS_DBG_ASSERT(p_l != NULL);
-  PB_DS_DBG_ASSERT(p_l != m_p_l);
-  PB_DS_DBG_ASSERT(p_l->m_p_next != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_l != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_l != m_p_l);
+  _GLIBCXX_DEBUG_ASSERT(p_l->m_p_next != NULL);
 
   entry_pointer p_next_l = p_l->m_p_next->m_p_next;
 
@@ -152,7 +152,7 @@ void
 PB_DS_CLASS_C_DEC::
 actual_erase_entry(entry_pointer p_l)
 {
-  PB_DS_DBG_ONLY(map_debug_base::erase_existing(
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::erase_existing(
 						PB_DS_V2F(p_l->m_value));)
 
     p_l->~entry();

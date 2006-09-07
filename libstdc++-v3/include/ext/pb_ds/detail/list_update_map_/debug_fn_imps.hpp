@@ -44,7 +44,7 @@
  * Contains implementations of cc_ht_map_'s debug-mode functions.
  */
 
-#ifdef PB_DS_LU_MAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
@@ -52,15 +52,12 @@ PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
   size_type calc_size = 0;
-
   for (const_iterator it = begin(); it != end(); ++it)
     {
       map_debug_base::check_key_exists(PB_DS_V2F(*it));
-
       ++calc_size;
     }
-
   map_debug_base::check_size(calc_size);
 }
 
-#endif // #ifdef PB_DS_LU_MAP_DEBUG_
+#endif 

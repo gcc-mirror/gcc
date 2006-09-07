@@ -49,10 +49,10 @@ void
 PB_DS_CLASS_C_DEC::
 pop()
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ASSERT(!base_type::empty());
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
-  PB_DS_DBG_ASSERT(m_p_max != NULL);
+  _GLIBCXX_DEBUG_ASSERT(m_p_max != NULL);
 
   node_pointer p_nd = m_p_max;
 
@@ -60,7 +60,7 @@ pop()
 
   base_type::actual_erase_node(p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -125,7 +125,7 @@ add_to_aux(node_pointer p_nd)
 
   while (m_a_aux[r] != NULL)
     {
-      PB_DS_DBG_ASSERT(p_nd->m_metadata < rank_bound());
+      _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata < rank_bound());
 
       if (Cmp_Fn::operator()(m_a_aux[r]->m_value, p_nd->m_value))
 	make_child_of(m_a_aux[r], p_nd);
@@ -141,7 +141,7 @@ add_to_aux(node_pointer p_nd)
       ++r;
     }
 
-  PB_DS_DBG_ASSERT(p_nd->m_metadata < rank_bound());
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata < rank_bound());
 
   m_a_aux[r] = p_nd;
 }
@@ -151,8 +151,8 @@ inline void
 PB_DS_CLASS_C_DEC::
 make_child_of(node_pointer p_nd, node_pointer p_new_parent)
 {
-  PB_DS_DBG_ASSERT(p_nd->m_metadata == p_new_parent->m_metadata);
-  PB_DS_DBG_ASSERT(m_a_aux[p_nd->m_metadata] == p_nd ||
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata == p_new_parent->m_metadata);
+  _GLIBCXX_DEBUG_ASSERT(m_a_aux[p_nd->m_metadata] == p_nd ||
 		   m_a_aux[p_nd->m_metadata] == p_new_parent);
 
   ++p_new_parent->m_metadata;
@@ -183,7 +183,7 @@ make_from_aux()
       ++i;
     }
 
-  PB_DS_DBG_ONLY(assert_aux_null();)
+  _GLIBCXX_DEBUG_ONLY(assert_aux_null();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -224,8 +224,8 @@ void
 PB_DS_CLASS_C_DEC::
 erase(point_iterator it)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ASSERT(!base_type::empty());
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+    _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
   node_pointer p_nd = it.m_p_nd;
 
@@ -233,7 +233,7 @@ erase(point_iterator it)
 
   base_type::actual_erase_node(p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -242,11 +242,11 @@ typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     if (base_type::empty())
       {
-        PB_DS_DBG_ONLY(assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
 	  return 0;
       }
@@ -281,7 +281,7 @@ erase_if(Pred pred)
       p_cur = p_next;
     }
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return ersd;
 }

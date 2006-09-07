@@ -53,7 +53,7 @@ copy_from_range(It first_it, It last_it)
   while (first_it != last_it)
     push(*(first_it++));
 
-  PB_DS_DBG_ONLY(assert_valid(false);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -61,7 +61,7 @@ PB_DS_CLASS_C_DEC::
 binomial_heap_base_() :
   m_p_max(NULL)
 {
-  PB_DS_DBG_ONLY(assert_valid(false);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -70,7 +70,7 @@ binomial_heap_base_(const Cmp_Fn& r_cmp_fn) :
   PB_DS_BASE_C_DEC(r_cmp_fn),
   m_p_max(NULL)
 {
-  PB_DS_DBG_ONLY(assert_valid(false);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -79,7 +79,7 @@ binomial_heap_base_(const PB_DS_CLASS_C_DEC& other) :
   PB_DS_BASE_C_DEC(other),
   m_p_max(NULL)
 {
-  PB_DS_DBG_ONLY(assert_valid(false);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -87,13 +87,13 @@ void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid(false);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
 
     base_type::swap(other);
 
   std::swap(m_p_max, other.m_p_max);
 
-  PB_DS_DBG_ONLY(assert_valid(false);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(false);)
     }
 
 PB_DS_CLASS_T_DEC

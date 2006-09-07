@@ -49,35 +49,18 @@
 #define PB_DS_BINARY_HEAP_CONST_ITERATOR_HPP
 
 #include <ext/pb_ds/detail/binary_heap_/const_point_iterator.hpp>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef BINARY_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef BINARY_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef BINARY_HEAP_DEBUG_
+#define PB_DS_CLASS_C_DEC \
+    binary_heap_const_iterator_<Value_Type, Entry, Simple, Allocator>
 
-#define PB_DS_CLASS_C_DEC					\
-    binary_heap_const_iterator_<				\
-						Value_Type,	\
-						Entry,		\
-						Simple,		\
-						Allocator>
-
-#define PB_DS_BASE_C_DEC					\
-    binary_heap_const_point_iterator_<				\
-						Value_Type,	\
-						Entry,		\
-						Simple,		\
-						Allocator>
+#define PB_DS_BASE_C_DEC \
+    binary_heap_const_point_iterator_<Value_Type, Entry, Simple, Allocator>
 
     // Const point-type iterator.
     template<typename Value_Type,
@@ -135,53 +118,41 @@ namespace pb_ds
       inline bool
       operator==(const PB_DS_CLASS_C_DEC& other) const
       {
-	return (base_type::m_p_e == other.m_p_e);
+	return base_type::m_p_e == other.m_p_e;
       }
 
       // Compares content (negatively) to a different iterator object.
       inline bool
       operator!=(const PB_DS_CLASS_C_DEC& other) const
       {
-	return (base_type::m_p_e != other.m_p_e);
+	return base_type::m_p_e != other.m_p_e;
       }
 
       inline PB_DS_CLASS_C_DEC& 
       operator++()
       {
-	PB_DS_DBG_ASSERT(base_type::m_p_e != NULL);
-
+	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_e != NULL);
 	inc();
-
-	return (*this);
+	return *this;
       }
 
       inline PB_DS_CLASS_C_DEC
       operator++(int)
       {
 	PB_DS_CLASS_C_DEC ret_it(base_type::m_p_e);
-
 	operator++();
-
-	return (ret_it);
+	return ret_it;
       }
 
     private:
       void
       inc()
-      {
-	++base_type::m_p_e;
-      }
+      { ++base_type::m_p_e; }
     };
 
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_BASE_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
-
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_BINARY_HEAP_CONST_ITERATOR_HPP
+#endif 

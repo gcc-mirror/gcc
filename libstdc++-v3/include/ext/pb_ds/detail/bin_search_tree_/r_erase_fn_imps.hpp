@@ -49,10 +49,10 @@ inline void
 PB_DS_CLASS_C_DEC::
 actual_erase_node(node_pointer p_z)
 {
-  PB_DS_DBG_ASSERT(m_size > 0);
+  _GLIBCXX_DEBUG_ASSERT(m_size > 0);
   --m_size;
 
-  PB_DS_DBG_ONLY(erase_existing(PB_DS_V2F(p_z->m_value)));
+  _GLIBCXX_DEBUG_ONLY(erase_existing(PB_DS_V2F(p_z->m_value)));
 
   p_z->~node();
 
@@ -94,7 +94,7 @@ void
 PB_DS_CLASS_C_DEC::
 clear()
 {
-  PB_DS_DBG_ONLY(structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
 
     clear_imp(m_p_head->m_p_parent);
 
@@ -102,9 +102,9 @@ clear()
 
   initialize();
 
-  PB_DS_DBG_ONLY(map_debug_base::clear();)
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::clear();)
 
-    PB_DS_DBG_ONLY(structure_only_assert_valid();)
+    _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC

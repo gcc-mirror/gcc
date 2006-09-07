@@ -49,11 +49,11 @@ inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 push(const_reference r_val)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     make_0_exposed();
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
 
@@ -73,7 +73,7 @@ push(const_reference r_val)
   if (p_nd->m_p_next_sibling != NULL&&  p_nd->m_p_next_sibling->m_metadata == 0)
     m_rc.push(p_nd);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return point_iterator(p_nd);
 }
@@ -83,7 +83,7 @@ void
 PB_DS_CLASS_C_DEC::
 modify(point_iterator it, const_reference r_new_val)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     make_binomial_heap();
 
@@ -91,7 +91,7 @@ modify(point_iterator it, const_reference r_new_val)
 
   base_type::find_max();
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -101,8 +101,8 @@ link_with_next_sibling(node_pointer p_nd)
 {
   node_pointer p_next = p_nd->m_p_next_sibling;
 
-  PB_DS_DBG_ASSERT(p_next != NULL);
-  PB_DS_DBG_ASSERT(p_next->m_p_prev_or_parent == p_nd);
+  _GLIBCXX_DEBUG_ASSERT(p_next != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_next->m_p_prev_or_parent == p_nd);
 
   if (Cmp_Fn::operator()(p_nd->m_value, p_next->m_value))
     {
@@ -150,8 +150,8 @@ make_0_exposed()
 
   m_rc.pop();
 
-  PB_DS_DBG_ASSERT(p_nd->m_p_next_sibling != NULL);
-  PB_DS_DBG_ASSERT(p_nd->m_metadata == p_nd->m_p_next_sibling->m_metadata);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata == p_nd->m_p_next_sibling->m_metadata);
 
   node_pointer p_res = link_with_next_sibling(p_nd);
 

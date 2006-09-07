@@ -44,17 +44,16 @@
  * Contains an implementation class for a pairing heap.
  */
 
-#ifdef PB_DS_PAIRING_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
-  PB_DS_DBG_ASSERT(base_type::m_p_root == NULL ||
-		   base_type::m_p_root->m_p_next_sibling == NULL);
-
+  _GLIBCXX_DEBUG_ASSERT(base_type::m_p_root == NULL 
+		        || base_type::m_p_root->m_p_next_sibling == NULL);
   base_type::assert_valid();
 }
 
-#endif // #ifdef PB_DS_PAIRING_HEAP_DEBUG_
+#endif 

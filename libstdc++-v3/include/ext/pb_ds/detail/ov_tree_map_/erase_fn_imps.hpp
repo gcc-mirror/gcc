@@ -49,11 +49,11 @@ void
 PB_DS_CLASS_C_DEC::
 clear()
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     if (m_size == 0)
       {
-        PB_DS_DBG_ONLY(assert_valid();)
+        _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
 	  return;
       }
@@ -64,7 +64,7 @@ clear()
         cond_dtor<size_type> cd(m_a_values, m_end_it, m_size);
       }
 
-  PB_DS_DBG_ONLY(map_debug_base::clear();)
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::clear();)
 
     m_a_values = NULL;
 
@@ -72,7 +72,7 @@ clear()
 
   m_end_it = m_a_values;
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -81,7 +81,7 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
 #ifdef PB_DS_REGRESSION
     typename Allocator::group_throw_prob_adjustor adjust(m_size);
@@ -112,7 +112,7 @@ erase_if(Pred pred)
 
   cond_dtor<size_type> cd(a_new_values, target_it, new_size);
 
-  PB_DS_DBG_ONLY(map_debug_base::clear());
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::clear());
 
   for (source_it = begin(); source_it != m_end_it; ++source_it)
     {
@@ -122,7 +122,7 @@ erase_if(Pred pred)
 				  static_cast<const void* >(target_it)))
 	    value_type(*source_it);
 
-	  PB_DS_DBG_ONLY(map_debug_base::insert_new(
+	  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(
 						    PB_DS_V2F(*source_it)));
 
 	  ++target_it;
@@ -145,7 +145,7 @@ erase_if(Pred pred)
 
   update(node_begin(), (node_update* )this);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return (num_val_ersd);
 }
@@ -156,19 +156,19 @@ It
 PB_DS_CLASS_C_DEC::
 erase_imp(It it)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     if (it == end())
       return end();
 
-  PB_DS_DBG_ONLY(
+  _GLIBCXX_DEBUG_ONLY(
 		 PB_DS_CLASS_C_DEC::check_key_exists(PB_DS_V2F(*it));)
 
 #ifdef PB_DS_REGRESSION
     typename Allocator::group_throw_prob_adjustor adjust(m_size);
 #endif // #ifdef PB_DS_REGRESSION
 
-  PB_DS_DBG_ASSERT(m_size > 0);
+  _GLIBCXX_DEBUG_ASSERT(m_size > 0);
 
   value_vector a_values = s_value_alloc.allocate(m_size - 1);
 
@@ -179,14 +179,14 @@ erase_imp(It it)
 
   cond_dtor<size_type> cd(a_values, target_it, m_size - 1);
 
-  PB_DS_DBG_ONLY(size_type cnt = 0;)
+  _GLIBCXX_DEBUG_ONLY(size_type cnt = 0;)
 
     while (source_it != source_end_it)
       {
         if (source_it != it)
 	  {
-            PB_DS_DBG_ONLY(++cnt;)
-	      PB_DS_DBG_ASSERT(cnt != m_size);
+            _GLIBCXX_DEBUG_ONLY(++cnt;)
+	      _GLIBCXX_DEBUG_ASSERT(cnt != m_size);
 
             new (const_cast<void* >(
 				    static_cast<const void* >(target_it)))
@@ -200,13 +200,13 @@ erase_imp(It it)
         ++source_it;
       }
 
-  PB_DS_DBG_ASSERT(m_size > 0);
+  _GLIBCXX_DEBUG_ASSERT(m_size > 0);
 
   reallocate_metadata((node_update* )this, m_size - 1);
 
   cd.set_no_action();
 
-  PB_DS_DBG_ONLY(
+  _GLIBCXX_DEBUG_ONLY(
 		 PB_DS_CLASS_C_DEC::erase_existing(PB_DS_V2F(*it));)
     {
       cond_dtor<size_type> cd1(m_a_values, m_end_it, m_size);
@@ -220,7 +220,7 @@ erase_imp(It it)
 
   update(node_begin(), (node_update* )this);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     return (It(ret_it));
 }

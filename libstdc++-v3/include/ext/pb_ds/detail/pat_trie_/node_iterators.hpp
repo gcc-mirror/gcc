@@ -47,20 +47,12 @@
 #ifndef PB_DS_PAT_TRIE_NODE_ITERATORS_HPP
 #define PB_DS_PAT_TRIE_NODE_ITERATORS_HPP
 
+#include <debug/debug.h>
+
 namespace pb_ds
 {
   namespace detail
   {
-
-#ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_PAT_TRIE_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
 
 #define PB_DS_PAT_TRIE_CONST_NODE_ITERATOR_C_DEC			\
     pat_trie_const_node_it_<						\
@@ -136,7 +128,7 @@ namespace pb_ds
 				    m_p_traits->extract_key(
 							    static_cast<const_leaf_pointer>(m_p_nd)->value())));
 
-	PB_DS_DBG_ASSERT(m_p_nd->m_type == pat_trie_internal_node_type);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd->m_type == pat_trie_internal_node_type);
 
 	return (static_cast<const_internal_node_pointer>(m_p_nd)->pref_b_it());
       }
@@ -149,7 +141,7 @@ namespace pb_ds
 				  m_p_traits->extract_key(
 							  static_cast<const_leaf_pointer>(m_p_nd)->value())));
 
-	PB_DS_DBG_ASSERT(m_p_nd->m_type == pat_trie_internal_node_type);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd->m_type == pat_trie_internal_node_type);
 
 	return (static_cast<const_internal_node_pointer>(m_p_nd)->pref_e_it());
       }
@@ -198,36 +190,29 @@ namespace pb_ds
       */
 
       inline
-      pat_trie_const_node_it_(node_pointer p_nd = NULL,  const_e_access_traits_pointer p_traits = NULL) : m_p_nd(const_cast<node_pointer>(p_nd)),
-													  m_p_traits(p_traits)
+      pat_trie_const_node_it_(node_pointer p_nd = NULL,  
+			      const_e_access_traits_pointer p_traits = NULL) 
+      : m_p_nd(const_cast<node_pointer>(p_nd)), m_p_traits(p_traits)
       { }
 
       // Subtree valid prefix.
-      inline std::pair<
-	const_e_iterator,
-	const_e_iterator>
+      inline std::pair<const_e_iterator, const_e_iterator>
       valid_prefix() const
-      {
-	return (std::make_pair(
-			       pref_begin(),
-			       pref_end()));
-      }
+      { return std::make_pair(pref_begin(), pref_end()); }
 
-      // Const access; returns the __const iterator*  associated with the current leaf.
+      // Const access; returns the __const iterator* associated with
+      // the current leaf.
       inline const_reference
       operator*() const
       {
-	PB_DS_DBG_ASSERT(num_children() == 0);
-
-	return (Const_Iterator(m_p_nd));
+	_GLIBCXX_DEBUG_ASSERT(num_children() == 0);
+	return Const_Iterator(m_p_nd);
       }
 
       // Metadata access.
       inline const_metadata_reference
       get_metadata() const
-      {
-	return (m_p_nd->get_metadata());
-      }
+      { return m_p_nd->get_metadata(); }
 
       // Returns the number of children in the corresponding node.
       inline size_type
@@ -235,41 +220,32 @@ namespace pb_ds
       {
 	if (m_p_nd->m_type == pat_trie_leaf_node_type)
 	  return (0);
-
-	PB_DS_DBG_ASSERT(m_p_nd->m_type == pat_trie_internal_node_type);
-
-	return (std::distance(
-			      static_cast<internal_node_pointer>(m_p_nd)->begin(),
-			      static_cast<internal_node_pointer>(m_p_nd)->end()));
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd->m_type == pat_trie_internal_node_type);
+	return std::distance(static_cast<internal_node_pointer>(m_p_nd)->begin(),  static_cast<internal_node_pointer>(m_p_nd)->end());
       }
 
-      // Returns a __const node __iterator to the corresponding node's i-th child.
+      // Returns a __const node __iterator to the corresponding node's
+      // i-th child.
       PB_DS_PAT_TRIE_CONST_NODE_ITERATOR_C_DEC
       get_child(size_type i) const
       {
-	PB_DS_DBG_ASSERT(m_p_nd->m_type == pat_trie_internal_node_type);
-
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd->m_type == pat_trie_internal_node_type);
 	typename Internal_Node::iterator it =
 	  static_cast<internal_node_pointer>(m_p_nd)->begin();
 
 	std::advance(it, i);
-
-	return (PB_DS_PAT_TRIE_CONST_NODE_ITERATOR_C_DEC(*it, m_p_traits));
+	return PB_DS_PAT_TRIE_CONST_NODE_ITERATOR_C_DEC(*it, m_p_traits);
       }
 
       // Compares content to a different iterator object.
       inline bool
       operator==(const PB_DS_PAT_TRIE_CONST_NODE_ITERATOR_C_DEC& other) const
-      {
-	return (m_p_nd == other.m_p_nd);
-      }
+      { return (m_p_nd == other.m_p_nd); }
 
       // Compares content (negatively) to a different iterator object.
       inline bool
       operator!=(const PB_DS_PAT_TRIE_CONST_NODE_ITERATOR_C_DEC& other) const
-      {
-	return (m_p_nd != other.m_p_nd);
-      }
+      { return m_p_nd != other.m_p_nd; }
 
     private:
 
@@ -343,9 +319,8 @@ namespace pb_ds
       inline reference
       operator*() const
       {
-	PB_DS_DBG_ASSERT(base_type::num_children() == 0);
-
-	return (Iterator(base_type::m_p_nd));
+	_GLIBCXX_DEBUG_ASSERT(base_type::num_children() == 0);
+	return Iterator(base_type::m_p_nd);
 
       }
 
@@ -353,15 +328,14 @@ namespace pb_ds
       PB_DS_PAT_TRIE_NODE_ITERATOR_C_DEC
       get_child(size_type i) const
       {
-	PB_DS_DBG_ASSERT(base_type::m_p_nd->m_type ==
+	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_nd->m_type ==
 			 pat_trie_internal_node_type);
 
 	typename Internal_Node::iterator it =
 	  static_cast<internal_node_pointer>(base_type::m_p_nd)->begin();
 
 	std::advance(it, i);
-
-	return (PB_DS_PAT_TRIE_NODE_ITERATOR_C_DEC(*it, base_type::m_p_traits));
+	return PB_DS_PAT_TRIE_NODE_ITERATOR_C_DEC(*it, base_type::m_p_traits);
       }
 
     private:
@@ -369,15 +343,10 @@ namespace pb_ds
     };
 
 #undef PB_DS_PAT_TRIE_CONST_NODE_ITERATOR_C_DEC
-
 #undef PB_DS_PAT_TRIE_NODE_ITERATOR_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_PAT_TRIE_NODE_ITERATORS_HPP
+#endif 
 

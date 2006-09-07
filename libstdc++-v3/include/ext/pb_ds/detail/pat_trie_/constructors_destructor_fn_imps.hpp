@@ -63,9 +63,8 @@ PB_DS_CLASS_NAME() :
   m_size(0)
 {
   initialize();
-
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -75,79 +74,64 @@ PB_DS_CLASS_NAME(const e_access_traits& r_e_access_traits) :
   m_size(0)
 {
   initialize();
-
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
   map_debug_base(other),
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
   synth_e_access_traits(other),
   node_update(other),
   m_p_head(s_head_allocator.allocate(1)),
   m_size(0)
 {
   initialize();
-
   m_size = other.m_size;
-
-  PB_DS_DBG_ONLY(other.assert_valid();)
-
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
     if (other.m_p_head->m_p_parent == NULL)
       {
-        PB_DS_DBG_ONLY(assert_valid();)
-
-	  return;
+        _GLIBCXX_DEBUG_ONLY(assert_valid();)
+        return;
       }
-
   try
     {
-      m_p_head->m_p_parent =
-	recursive_copy_node(other.m_p_head->m_p_parent);
+      m_p_head->m_p_parent = recursive_copy_node(other.m_p_head->m_p_parent);
     }
   catch(...)
     {
       s_head_allocator.deallocate(m_p_head, 1);
-
       throw;
     }
 
   m_p_head->m_p_min = leftmost_descendant(m_p_head->m_p_parent);
   m_p_head->m_p_max = rightmost_descendant(m_p_head->m_p_parent);
-
   m_p_head->m_p_parent->m_p_parent = m_p_head;
-
-  PB_DS_DBG_ONLY(assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
-
-    value_swap(other);
-
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  value_swap(other);
   std::swap((e_access_traits& )(*this), (e_access_traits& )other);
-
-  PB_DS_DBG_ONLY(assert_valid();)
-    PB_DS_DBG_ONLY(other.assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 value_swap(PB_DS_CLASS_C_DEC& other)
 {
-  PB_DS_DBG_ONLY(map_debug_base::swap(other);)
-
-    std::swap(m_p_head, other.m_p_head);
-
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::swap(other);)
+  std::swap(m_p_head, other.m_p_head);
   std::swap(m_size, other.m_size);
 }
 
@@ -156,7 +140,6 @@ PB_DS_CLASS_C_DEC::
 ~PB_DS_CLASS_NAME()
 {
   clear();
-
   s_head_allocator.deallocate(m_p_head, 1);
 }
 
@@ -166,12 +149,9 @@ PB_DS_CLASS_C_DEC::
 initialize()
 {
   new (m_p_head) head();
-
   m_p_head->m_p_parent = NULL;
-
   m_p_head->m_p_min = m_p_head;
   m_p_head->m_p_max = m_p_head;
-
   m_size = 0;
 }
 
@@ -190,33 +170,22 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 recursive_copy_node(const_node_pointer p_other_nd)
 {
-  PB_DS_DBG_ASSERT(p_other_nd != NULL);
-
+  _GLIBCXX_DEBUG_ASSERT(p_other_nd != NULL);
   if (p_other_nd->m_type == pat_trie_leaf_node_type)
     {
-      const_leaf_pointer p_other_leaf =
-	static_cast<const_leaf_pointer>(p_other_nd);
+      const_leaf_pointer p_other_leaf = static_cast<const_leaf_pointer>(p_other_nd);
 
       leaf_pointer p_new_lf = s_leaf_allocator.allocate(1);
-
       cond_dealtor cond(p_new_lf);
-
       new (p_new_lf) leaf(p_other_leaf->value());
-
       apply_update(p_new_lf, (node_update* )this);
-
       cond.set_no_action_dtor();
-
       return (p_new_lf);
     }
 
-  PB_DS_DBG_ASSERT(p_other_nd->m_type ==
-		   pat_trie_internal_node_type);
-
+  _GLIBCXX_DEBUG_ASSERT(p_other_nd->m_type == pat_trie_internal_node_type);
   node_pointer a_p_children[internal_node::arr_size];
-
   size_type child_i = 0;
-
   const_internal_node_pointer p_other_internal_nd =
     static_cast<const_internal_node_pointer>(p_other_nd);
 
@@ -224,39 +193,28 @@ recursive_copy_node(const_node_pointer p_other_nd)
     p_other_internal_nd->begin();
 
   internal_node_pointer p_ret;
-
   try
     {
       while (child_it != p_other_internal_nd->end())
 	a_p_children[child_i++] = recursive_copy_node(*(child_it++));
-
       p_ret = s_internal_node_allocator.allocate(1);
     }
   catch(...)
     {
       while (child_i-- > 0)
 	clear_imp(a_p_children[child_i]);
-
       throw;
     }
 
-  new (p_ret) internal_node(
-			    p_other_internal_nd->get_e_ind(),
+  new (p_ret) internal_node(p_other_internal_nd->get_e_ind(),
 			    pref_begin(a_p_children[0]));
 
   --child_i;
-
-  PB_DS_DBG_ASSERT(child_i > 1);
-
+  _GLIBCXX_DEBUG_ASSERT(child_i > 1);
   do
-    p_ret->add_child(
-		     a_p_children[child_i],
-		     pref_begin(a_p_children[child_i]),
-		     pref_end(a_p_children[child_i]),
-		     this);
+    p_ret->add_child(a_p_children[child_i], pref_begin(a_p_children[child_i]),
+		     pref_end(a_p_children[child_i]), this);
   while (child_i-- > 0);
-
   apply_update(p_ret, (node_update* )this);
-
-  return (p_ret);
+  return p_ret;
 }

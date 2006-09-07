@@ -81,7 +81,7 @@ do_resize_if_needed_no_throw()
   catch(...)
     { }
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -89,7 +89,7 @@ void
 PB_DS_CLASS_C_DEC::
 resize_imp(size_type new_size)
 {
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
     if (new_size == m_num_e_p)
       return;
@@ -123,7 +123,7 @@ resize_imp(size_type new_size)
 
   Resize_Policy::notify_resized(new_size);
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 PB_DS_CLASS_T_DEC
@@ -143,13 +143,13 @@ resize_imp_no_exceptions(size_type new_size, entry_pointer_array a_p_entries_res
 
   m_num_e_p = new_size;
 
-  PB_DS_DBG_ONLY(assert_entry_pointer_array_valid(a_p_entries_resized);)
+  _GLIBCXX_DEBUG_ONLY(assert_entry_pointer_array_valid(a_p_entries_resized);)
 
     s_entry_pointer_allocator.deallocate(m_a_p_entries, old_size);
 
   m_a_p_entries = a_p_entries_resized;
 
-  PB_DS_DBG_ONLY(assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
 #include <ext/pb_ds/detail/cc_hash_table_map_/resize_no_store_hash_fn_imps.hpp>

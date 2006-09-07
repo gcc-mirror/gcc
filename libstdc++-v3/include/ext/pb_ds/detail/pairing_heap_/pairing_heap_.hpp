@@ -55,47 +55,35 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/left_child_next_sibling_heap_.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/null_metadata.hpp>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_PAIRING_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_PAIRING_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_PAIRING_HEAP_DEBUG_
-
-#define PB_DS_CLASS_T_DEC						\
+#define PB_DS_CLASS_T_DEC \
     template<typename Value_Type, class Cmp_Fn, class Allocator>
 
-#define PB_DS_CLASS_C_DEC					\
-    pairing_heap_<						\
-						Value_Type,	\
-						Cmp_Fn,		\
-						Allocator>
+#define PB_DS_CLASS_C_DEC \
+    pairing_heap_<Value_Type, Cmp_Fn, Allocator>
 
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_BASE_C_DEC						\
+#ifdef _GLIBCXX_DEBUG
+#define PB_DS_BASE_C_DEC \
     left_child_next_sibling_heap_<			\
 									Value_Type, \
 									Cmp_Fn,	\
 									null_left_child_next_sibling_heap_node_metadata, \
 									Allocator, \
 									false>
-#else // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#else 
 #define PB_DS_BASE_C_DEC						\
     left_child_next_sibling_heap_<			\
 									Value_Type, \
 									Cmp_Fn,	\
 									null_left_child_next_sibling_heap_node_metadata, \
 									Allocator>
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#endif 
 
     /**
      * class description = "P4ri|\|g h3ap$">
@@ -195,7 +183,7 @@ namespace pb_ds
       void
       copy_from_range(It first_it, It last_it);
 
-#ifdef PB_DS_PAIRING_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
 #endif
@@ -229,9 +217,6 @@ namespace pb_ds
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_BASE_C_DEC
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds

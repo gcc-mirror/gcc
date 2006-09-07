@@ -52,55 +52,33 @@
  * Tarjan and Kaplan.
  */
 
-#ifdef PB_DS_THIN_HEAP_DEBUG_
-#include <cassert>
-#endif // #ifdef PB_DS_THIN_HEAP_DEBUG_
 #include <algorithm>
 #include <ext/pb_ds/detail/cond_dealtor.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/left_child_next_sibling_heap_.hpp>
 #include <ext/pb_ds/detail/left_child_next_sibling_heap_/null_metadata.hpp>
+#include <debug/debug.h>
 
 namespace pb_ds
 {
   namespace detail
   {
 
-#ifdef PB_DS_THIN_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X) assert(X)
-#define PB_DS_DBG_VERIFY(X) assert(X)
-#define PB_DS_DBG_ONLY(X) X
-#else // #ifdef PB_DS_THIN_HEAP_DEBUG_
-#define PB_DS_DBG_ASSERT(X)
-#define PB_DS_DBG_VERIFY(X) {if((X)==0);}
-#define PB_DS_DBG_ONLY(X) ;
-#endif // #ifdef PB_DS_THIN_HEAP_DEBUG_
-
-#define PB_DS_CLASS_T_DEC						\
+#define PB_DS_CLASS_T_DEC \
     template<typename Value_Type, class Cmp_Fn, class Allocator>
 
-#define PB_DS_CLASS_C_DEC				\
-    thin_heap_<						\
-					Value_Type,	\
-					Cmp_Fn,		\
-					Allocator>
+#define PB_DS_CLASS_C_DEC \
+    thin_heap_<Value_Type, Cmp_Fn, Allocator>
 
-#ifdef PB_DS_LC_NS_HEAP_DEBUG_
+#ifdef _GLIBCXX_DEBUG
+#define PB_DS_BASE_C_DEC \
+    left_child_next_sibling_heap_<Value_Type, Cmp_Fn,	\
+			        typename Allocator::size_type, Allocator, true>
+#else 
 #define PB_DS_BASE_C_DEC						\
-    left_child_next_sibling_heap_<			\
-									Value_Type, \
-									Cmp_Fn,	\
-									typename Allocator::size_type, \
-									Allocator, \
-									true>
-#else // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
-#define PB_DS_BASE_C_DEC						\
-    left_child_next_sibling_heap_<			\
-									Value_Type, \
-									Cmp_Fn,	\
-									typename Allocator::size_type, \
-									Allocator>
-#endif // #ifdef PB_DS_LC_NS_HEAP_DEBUG_
+    left_child_next_sibling_heap_<Value_Type, Cmp_Fn, \
+				  typename Allocator::size_type, Allocator>
+#endif 
 
     /**
      * class description = "t|-|i|\| h34p">
@@ -209,22 +187,18 @@ namespace pb_ds
       void
       copy_from_range(It first_it, It last_it);
 
-#ifdef PB_DS_THIN_HEAP_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
 
       void
       assert_max() const;
-
-#endif // #ifdef PB_DS_THIN_HEAP_DEBUG_
+#endif 
 
 #ifdef PB_DS_THIN_HEAP_TRACE_
-
       void
       trace() const;
-
-#endif // #ifdef PB_DS_THIN_HEAP_TRACE_
+#endif 
 
     private:
       enum
@@ -291,15 +265,13 @@ namespace pb_ds
       inline node_pointer
       join(node_pointer p_lhs, node_pointer p_rhs) const;
 
-#ifdef PB_DS_THIN_HEAP_DEBUG_
-
+#ifdef _GLIBCXX_DEBUG
       void
       assert_node_consistent(const_node_pointer p_nd, bool root) const;
 
       void
       assert_aux_null() const;
-
-#endif // #ifdef PB_DS_THIN_HEAP_DEBUG_
+#endif 
 
     private:
       node_pointer m_p_max;
@@ -313,7 +285,6 @@ namespace pb_ds
       };
 
     // Taken from the SGI implementation; acknowledged in the docs.
-
     static const std::size_t g_a_rank_bounds[num_distinct_rank_bounds] =
       {
 	/* Dealing cards... */
@@ -377,16 +348,10 @@ namespace pb_ds
 #include <ext/pb_ds/detail/thin_heap_/split_join_fn_imps.hpp>
 
 #undef PB_DS_CLASS_C_DEC
-
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_BASE_C_DEC
-
-#undef PB_DS_DBG_ASSERT
-#undef PB_DS_DBG_VERIFY
-#undef PB_DS_DBG_ONLY
 
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_THIN_HEAP_HPP
+#endif 

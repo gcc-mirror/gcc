@@ -44,7 +44,7 @@
  * Contains an implementation class for pat_trie_.
  */
 
-#ifdef PB_DS_PAT_TRIE_DEBUG_
+#ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
 void
@@ -53,25 +53,19 @@ assert_valid() const
 {
   if (m_p_head->m_p_parent != NULL)
     m_p_head->m_p_parent->assert_valid(this);
-
   assert_iterators();
-
   assert_reverse_iterators();
-
   if (m_p_head->m_p_parent == NULL)
     {
-      PB_DS_DBG_ASSERT(m_p_head->m_p_min == m_p_head);
-      PB_DS_DBG_ASSERT(m_p_head->m_p_max == m_p_head);
-
-      PB_DS_DBG_ASSERT(empty());
-
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_min == m_p_head);
+      _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_max == m_p_head);
+      _GLIBCXX_DEBUG_ASSERT(empty());
       return;
     }
 
-  PB_DS_DBG_ASSERT(m_p_head->m_p_min->m_type == pat_trie_leaf_node_type);
-  PB_DS_DBG_ASSERT(m_p_head->m_p_max->m_type == pat_trie_leaf_node_type);
-
-  PB_DS_DBG_ASSERT(!empty());
+  _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_min->m_type == pat_trie_leaf_node_type);
+  _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_max->m_type == pat_trie_leaf_node_type);
+  _GLIBCXX_DEBUG_ASSERT(!empty());
 }
 
 PB_DS_CLASS_T_DEC
@@ -80,19 +74,14 @@ PB_DS_CLASS_C_DEC::
 assert_iterators() const
 {
   size_type calc_size = 0;
-
   for (const_iterator it = begin(); it != end(); ++it)
     {
       ++calc_size;
-
       map_debug_base::check_key_exists(PB_DS_V2F(*it));
-
-      PB_DS_DBG_ASSERT(lower_bound(PB_DS_V2F(*it)) == it);
-
-      PB_DS_DBG_ASSERT(--upper_bound(PB_DS_V2F(*it)) == it);
+      _GLIBCXX_DEBUG_ASSERT(lower_bound(PB_DS_V2F(*it)) == it);
+      _GLIBCXX_DEBUG_ASSERT(--upper_bound(PB_DS_V2F(*it)) == it);
     }
-
-  PB_DS_DBG_ASSERT(calc_size == m_size);
+  _GLIBCXX_DEBUG_ASSERT(calc_size == m_size);
 }
 
 PB_DS_CLASS_T_DEC
@@ -101,19 +90,14 @@ PB_DS_CLASS_C_DEC::
 assert_reverse_iterators() const
 {
   size_type calc_size = 0;
-
   for (const_reverse_iterator it = rbegin(); it != rend(); ++it)
     {
       ++calc_size;
-
       const_node_pointer p_nd =
-	const_cast<PB_DS_CLASS_C_DEC* >(this)->find_imp(
-							PB_DS_V2F(*it));
-
-      PB_DS_DBG_ASSERT(p_nd == it.m_p_nd);
+	const_cast<PB_DS_CLASS_C_DEC* >(this)->find_imp(PB_DS_V2F(*it));
+      _GLIBCXX_DEBUG_ASSERT(p_nd == it.m_p_nd);
     }
-
-  PB_DS_DBG_ASSERT(calc_size == m_size);
+  _GLIBCXX_DEBUG_ASSERT(calc_size == m_size);
 }
 
 PB_DS_CLASS_T_DEC
@@ -123,22 +107,17 @@ recursive_count_leafs(const_node_pointer p_nd)
 {
   if (p_nd == NULL)
     return (0);
-
   if (p_nd->m_type == pat_trie_leaf_node_type)
     return (1);
-
-  PB_DS_DBG_ASSERT(p_nd->m_type == pat_trie_internal_node_type);
-
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_internal_node_type);
   size_type ret = 0;
-
   for (typename internal_node::const_iterator it =
 	 static_cast<const_internal_node_pointer>(p_nd)->begin();
        it != static_cast<const_internal_node_pointer>(p_nd)->end();
        ++it)
     ret += recursive_count_leafs(*it);
-
-  return (ret);
+  return ret;
 }
 
-#endif // #ifdef PB_DS_PAT_TRIE_DEBUG_
+#endif 
 

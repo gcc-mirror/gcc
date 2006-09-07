@@ -49,13 +49,13 @@ void
 PB_DS_CLASS_C_DEC::
 pop()
 {
-  PB_DS_DBG_ONLY(assert_valid(true);)
-    PB_DS_DBG_ASSERT(!base_type::empty());
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
+    _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
   if (m_p_max == NULL)
     find_max();
 
-  PB_DS_DBG_ASSERT(m_p_max != NULL);
+  _GLIBCXX_DEBUG_ASSERT(m_p_max != NULL);
 
   node_pointer p_nd = m_p_max;
 
@@ -65,7 +65,7 @@ pop()
 
   m_p_max = NULL;
 
-  PB_DS_DBG_ONLY(assert_valid(true);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -73,8 +73,8 @@ void
 PB_DS_CLASS_C_DEC::
 remove_parentless_node(node_pointer p_nd)
 {
-  PB_DS_DBG_ASSERT(p_nd != NULL);
-  PB_DS_DBG_ASSERT(base_type::parent(p_nd) == NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(base_type::parent(p_nd) == NULL);
 
   node_pointer p_cur_root = p_nd == base_type::m_p_root?
     p_nd->m_p_next_sibling :
@@ -119,8 +119,8 @@ void
 PB_DS_CLASS_C_DEC::
 erase(point_iterator it)
 {
-  PB_DS_DBG_ONLY(assert_valid(true);)
-    PB_DS_DBG_ASSERT(!base_type::empty());
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
+    _GLIBCXX_DEBUG_ASSERT(!base_type::empty());
 
   base_type::bubble_to_top(it.m_p_nd);
 
@@ -130,7 +130,7 @@ erase(point_iterator it)
 
   m_p_max = NULL;
 
-  PB_DS_DBG_ONLY(assert_valid(true);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     }
 
 PB_DS_CLASS_T_DEC
@@ -139,11 +139,11 @@ typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  PB_DS_DBG_ONLY(assert_valid(true);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
 
     if (base_type::empty())
       {
-        PB_DS_DBG_ONLY(assert_valid(true);)
+        _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
 
 	  return 0;
       }
@@ -191,7 +191,7 @@ erase_if(Pred pred)
 
   m_p_max = NULL;
 
-  PB_DS_DBG_ONLY(assert_valid(true);)
+  _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
 
     return ersd;
 }
