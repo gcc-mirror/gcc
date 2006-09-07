@@ -52,10 +52,6 @@
 /* Translate config/rs6000/darwin.opt to config/darwin.h.  */
 #define TARGET_DYNAMIC_NO_PIC (TARGET_MACHO_DYNAMIC_NO_PIC)
 
-/* Handle #pragma weak and #pragma pack.  */
-#define HANDLE_SYSV_PRAGMA 1
-
-
 #define TARGET_OS_CPP_BUILTINS()                \
   do                                            \
     {                                           \
