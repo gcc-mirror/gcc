@@ -1,3 +1,39 @@
+2006-09-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (x86_partial_flag_reg_stall): New.
+
+	* config/i386/i386.h (x86_partial_flag_reg_stall): New.
+	(TARGET_PARTIAL_FLAG_REG_STALL): New.
+
+	* config/i386/i386.md (*ashldi3_cmp_rex64): Disabled for
+	TARGET_PARTIAL_FLAG_REG_STALL.
+	(*ashldi3_cconly_rex64): Likewise.
+	(*ashlsi3_cmp): Likewise.
+	(*ashlsi3_cconly): Likewise.
+	(*ashlsi3_cmp_zext): Likewise.
+	(*ashlhi3_cmp): Likewise.
+	(*ashlhi3_cconly): Likewise.
+	(*ashlqi3_cmp): Likewise.
+	(*ashlqi3_cconly): Likewise.
+	(*ashrdi3_cmp_rex64): Likewise.
+	(*ashrdi3_cconly_rex64): Likewise.
+	(*ashrsi3_cmp): Likewise.
+	(*ashrsi3_cconly): Likewise.
+	(*ashrsi3_cmp_zext): Likewise.
+	(*ashrhi3_cmp): Likewise.
+	(*ashrhi3_cconly): Likewise.
+	(*ashrqi3_cmp): Likewise.
+	(*ashrqi3_cconly): Likewise.
+	(*lshrdi3_cmp_rex64): Likewise.
+	(*lshrdi3_cconly_rex64): Likewise.
+	(*lshrsi3_cmp): Likewise.
+	(*lshrsi3_cconly): Likewise.
+	(*lshrsi3_cmp_zext): Likewise.
+	(*lshrhi3_cmp): Likewise.
+	(*lshrhi3_cconly): Likewise.
+	(*lshrqi2_cmp): Likewise.
+	(*lshrqi2_cconly): Likewise.
+
 2006-09-07 Uros Bizjak <uros@kss-loka.si>
 
 	PR target/28946
