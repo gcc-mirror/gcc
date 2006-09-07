@@ -565,6 +565,10 @@ Jason Merrill for his direction via the steering committee and leading
 the G++ effort.
 
 @item
+Martin Michlmayr for testing GCC on several architectures using the
+entire Debian archive.
+
+@item
 David Miller for his direction via the steering committee, lots of
 SPARC work, improvements in jump.c and interfacing with the Linux kernel
 developers.
