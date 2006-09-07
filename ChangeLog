@@ -1,3 +1,7 @@
+2006-09-07  Roberto Costa  <roberto.costa@st.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2006-08-30  Corinna Vinschen  <corinna@vinschen.de>
 
 	* configure.in: Never build newlib for a Mingw host.
