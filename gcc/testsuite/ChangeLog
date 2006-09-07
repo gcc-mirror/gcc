@@ -29,6 +29,11 @@
 	PR rtl-opt/27883
 	* g++.dg/opt/copysign-1.C: New test.
 
+2006-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/27371
+	* g++.dg/warn/unused-result1.C: New test.
+
 2006-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28903
