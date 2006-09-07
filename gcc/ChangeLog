@@ -1,3 +1,7 @@
+2006-09-07  Martin Michlmayr  <tbm@cyrius.com>
+
+	* doc/contrib.texi: Add myself.
+
 2006-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/28862
