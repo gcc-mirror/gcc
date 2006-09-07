@@ -103,11 +103,11 @@ typedef struct
 
   /* String conversions */
 decimal128 *decimal128FromString (decimal128 *, const char *, decContext *);
-char *decimal128ToString (decimal128 *, char *);
-char *decimal128ToEngString (decimal128 *, char *);
+char *decimal128ToString (const decimal128 *, char *);
+char *decimal128ToEngString (const decimal128 *, char *);
 
   /* decNumber conversions */
-decimal128 *decimal128FromNumber (decimal128 *, decNumber *, decContext *);
-decNumber *decimal128ToNumber (decimal128 *, decNumber *);
+decimal128 *decimal128FromNumber (decimal128 *, const decNumber *, decContext *);
+decNumber *decimal128ToNumber (const decimal128 *, decNumber *);
 
 #endif

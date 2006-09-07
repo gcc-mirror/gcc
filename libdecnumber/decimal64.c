@@ -38,8 +38,8 @@
 #include "decUtility.h"		/* utility routines */
 
 #if DECTRACE || DECCHECK
-void decimal64Show (decimal64 *);	/* for debug */
-void decNumberShow (decNumber *);	/* .. */
+void decimal64Show (const decimal64 *);	/* for debug */
+void decNumberShow (const decNumber *);	/* .. */
 #endif
 
 /* Useful macro */
@@ -64,7 +64,7 @@ void decNumberShow (decNumber *);	/* .. */
 /* power of ten, or if the exponent on a zero had to be clamped.      */
 /* ------------------------------------------------------------------ */
 decimal64 *
-decimal64FromNumber (decimal64 * d64, decNumber * dn, decContext * set)
+decimal64FromNumber (decimal64 * d64, const decNumber * dn, decContext * set)
 {
   uInt status = 0;		/* status accumulator */
   Int pad = 0;			/* coefficient pad digits */
@@ -180,7 +180,7 @@ decimal64FromNumber (decimal64 * d64, decNumber * dn, decContext * set)
 /* No error is possible.                                              */
 /* ------------------------------------------------------------------ */
 decNumber *
-decimal64ToNumber (decimal64 * d64, decNumber * dn)
+decimal64ToNumber (const decimal64 * d64, decNumber * dn)
 {
   uInt msd;			/* coefficient MSD */
   decimal64 wk;			/* working copy, if needed */
@@ -254,7 +254,7 @@ decimal64ToNumber (decimal64 * d64, decNumber * dn)
 /*  No error is possible, and no status can be set.                   */
 /* ------------------------------------------------------------------ */
 char *
-decimal64ToString (decimal64 * d64, char *string)
+decimal64ToString (const decimal64 * d64, char *string)
 {
   decNumber dn;			/* work */
   decimal64ToNumber (d64, &dn);
@@ -263,7 +263,7 @@ decimal64ToString (decimal64 * d64, char *string)
 }
 
 char *
-decimal64ToEngString (decimal64 * d64, char *string)
+decimal64ToEngString (const decimal64 * d64, char *string)
 {
   decNumber dn;			/* work */
   decimal64ToNumber (d64, &dn);
@@ -312,7 +312,7 @@ decimal64FromString (decimal64 * result, const char *string, decContext * set)
 /* ------------------------------------------------------------------ */
 /* Also shows sign/cob/expconfields extracted */
 void
-decimal64Show (decimal64 * d64)
+decimal64Show (const decimal64 * d64)
 {
   char buf[DECIMAL64_Bytes * 2 + 1];
   Int i, j;
