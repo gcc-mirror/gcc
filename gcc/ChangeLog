@@ -1,3 +1,17 @@
+2006-09-07 Uros Bizjak <uros@kss-loka.si>
+
+	PR target/28946
+	* config/i386/i386.md ("*ashldi3_cconly_rex64", "*ashlsi3_cconly",
+	"*ashlhi3_cconly", "*ashlqi3_cconly", "*ashrdi3_one_bit_cconly_rex64",
+	"*ashrdi3_cconly_rex64", "*ashrsi3_one_bit_cconly", "*ashrsi3_cconly",
+	"*ashrhi3_one_bit_cconly", "*ashrhi3_cconly",
+	"*ashrqi3_one_bit_cconly", "*ashrqi3_cconly",
+	"*lshrdi3_cconly_one_bit_rex64", "*lshrdi3_cconly_rex64",
+	"*lshrsi3_one_bit_cconly", "*lshrsi3_cconly",
+	"*lshrhi3_one_bit_cconly", "*lshrhi3_cconly",
+	"*lshrqi2_one_bit_cconly", "*lshrqi2_cconly": New patterns to
+	implement only CC setting effects of shift instructions.
+
 2006-09-07  Martin Michlmayr  <tbm@cyrius.com>
 
 	* doc/contrib.texi: Add myself.
