@@ -419,6 +419,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       TREE_CHAIN (x) = t;
       DECL_CONTEXT (x) = thunk_fndecl;
       SET_DECL_RTL (x, NULL_RTX);
+      DECL_HAS_VALUE_EXPR_P (x) = 0;
       t = x;
     }
   a = nreverse (t);
