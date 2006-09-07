@@ -1,3 +1,10 @@
+2006-09-07  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.fortran-torture/compile/data_1.f90: Fix integer oveflow
+	in integer literal constant.
+  	* gfortran.dg/enum_8.f90: Ditto.
+	* gfortran.dg/g77/20030326-1.f: Ditto.
+
 2006-09-07  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* gfortran.fortran-torture/execute/intrinsic_set_exponent.f90: Fix

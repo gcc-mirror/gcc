@@ -6,5 +6,5 @@
 ! For gfortran, see PR 13490
 !
        integer c
-       c = -2147483648 / (-1) ! { dg-warning "outside symmetric range" "" }
+       c = -2147483648 / (-1) ! { dg-error "too big for its kind" "" }
        end

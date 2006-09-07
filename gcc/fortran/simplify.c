@@ -2590,6 +2590,7 @@ gfc_simplify_not (gfc_expr * e)
 {
   gfc_expr *result;
   int i;
+  mpz_t mask;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -2599,14 +2600,19 @@ gfc_simplify_not (gfc_expr * e)
   mpz_com (result->value.integer, e->value.integer);
 
   /* Because of how GMP handles numbers, the result must be ANDed with
-     the max_int mask.  For radices <> 2, this will require change.  */
+     a mask.  For radices <> 2, this will require change.  */
 
   i = gfc_validate_kind (BT_INTEGER, e->ts.kind, false);
 
-  mpz_and (result->value.integer, result->value.integer,
-	   gfc_integer_kinds[i].max_int);
+  mpz_init (mask);
+  mpz_add (mask, gfc_integer_kinds[i].huge, gfc_integer_kinds[i].huge);
+  mpz_add_ui (mask, mask, 1);
+
+  mpz_and (result->value.integer, result->value.integer, mask);
 
   twos_complement (result->value.integer, gfc_integer_kinds[i].bit_size);
+
+  mpz_clear (mask);
 
   return range_check (result, "NOT");
 }

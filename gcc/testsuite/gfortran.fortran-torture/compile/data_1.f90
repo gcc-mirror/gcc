@@ -7,5 +7,5 @@ DATA y /a(1.)/ ! used to give an error about non-PARAMETER
 END
 ! this tests the fix for PR 13940
 SUBROUTINE a
-DATA i /x'f95f95f9'/
+DATA i /z'f95f95'/
 END

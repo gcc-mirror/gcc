@@ -195,7 +195,7 @@ gfc_arith_init_1 (void)
       /* These are the numbers that are actually representable by the
          target.  For bases other than two, this needs to be changed.  */
       if (int_info->radix != 2)
-        gfc_internal_error ("Fix min_int, max_int calculation");
+        gfc_internal_error ("Fix min_int calculation");
 
       /* See PRs 13490 and 17912, related to integer ranges.
          The pedantic_min_int exists for range checking when a program
@@ -209,10 +209,6 @@ gfc_arith_init_1 (void)
 
       mpz_init (int_info->min_int);
       mpz_sub_ui (int_info->min_int, int_info->pedantic_min_int, 1);
-
-      mpz_init (int_info->max_int);
-      mpz_add (int_info->max_int, int_info->huge, int_info->huge);
-      mpz_add_ui (int_info->max_int, int_info->max_int, 1);
 
       /* Range  */
       mpfr_set_z (a, int_info->huge, GFC_RND_MODE);
@@ -321,7 +317,6 @@ gfc_arith_done_1 (void)
   for (ip = gfc_integer_kinds; ip->kind; ip++)
     {
       mpz_clear (ip->min_int);
-      mpz_clear (ip->max_int);
       mpz_clear (ip->pedantic_min_int);
       mpz_clear (ip->huge);
     }
@@ -356,7 +351,7 @@ gfc_check_integer_range (mpz_t p, int kind)
     }
 
   if (mpz_cmp (p, gfc_integer_kinds[i].min_int) < 0
-      || mpz_cmp (p, gfc_integer_kinds[i].max_int) > 0)
+      || mpz_cmp (p, gfc_integer_kinds[i].huge) > 0)
     result = ARITH_OVERFLOW;
 
   return result;

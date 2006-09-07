@@ -5,7 +5,7 @@
 program main
   implicit none
   enum, bind (c)
-    enumerator :: pp , qq = 4294967295, rr  ! { dg-error "not initialized with integer" }
+    enumerator :: pp, qq = 4294967295, rr ! { dg-error "too big for its kind" }
   end enum  ! { dg-error "has no ENUMERATORS" }
 
   enum, bind (c)

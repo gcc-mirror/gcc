@@ -1,4 +1,12 @@
-2006-09-05 Paul Thomas <pault@gcc.gnu.org>
+2006-09-07  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.h (gfc_integer_info): Eliminate max_int.
+	* arith.c (gfc_arith_init_1): Remove initialization of max_int.
+	(gfc_arith_done_1): Remove clearing of max_int.
+	(gfc_check_integer_range): Fix range chekcing of overflow.
+	* simplify.c (gfc_simplify_not): Construct mask that was max_int.
+
+2006-09-05  Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/28908
 	* gfortran.h : Restore the gfc_dt_list structure and reference

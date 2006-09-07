@@ -1299,7 +1299,7 @@ gfc_expr;
 typedef struct
 {
   /* Values really representable by the target.  */
-  mpz_t huge, pedantic_min_int, min_int, max_int;
+  mpz_t huge, pedantic_min_int, min_int;
 
   int kind, radix, digits, bit_size, range;
 
