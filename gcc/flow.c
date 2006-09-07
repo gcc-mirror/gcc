@@ -647,6 +647,17 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
 	count_or_remove_death_notes (blocks,
 				     prop_flags & PROP_POST_REGSTACK ? -1 : 1);
     }
+  else
+    {
+      /* FIXME: This can go when the dataflow branch has been merged in.  */
+      /* For a local update, if we are creating new REG_DEAD notes, then we
+	 must delete the old ones first to avoid conflicts if they are
+	 different.  */
+      if (prop_flags & PROP_DEATH_NOTES)
+	count_or_remove_death_notes (blocks,
+				     prop_flags & PROP_POST_REGSTACK ? -1 : 1);
+    }
+				     
 
   /* Clear log links in case we are asked to (re)compute them.  */
   if (prop_flags & PROP_LOG_LINKS)
