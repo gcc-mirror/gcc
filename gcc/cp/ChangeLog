@@ -1,3 +1,10 @@
+2006-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/28906
+	* init.c (build_new_1): Build a distinct type copy
+	for the array type that was returned from
+	build_cplus_array_type.
+
 2006-09-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/27371
@@ -15,7 +22,7 @@
 
 2006-09-06  Zak Kipling  <zak@transversal.com>
 
-        PR c++/26195
+	PR c++/26195
 	* decl.c (make_rtl_for_nonlocal_decl),
 	(start_preparsed_function): Don't use lbasename on
 	input_filename when calling get_fileinfo.
