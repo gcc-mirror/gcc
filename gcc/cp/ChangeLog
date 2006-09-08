@@ -1,3 +1,9 @@
+2006-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28886
+	* pt.c (unify): Avoid unnecessary calls to fold_build2 for array
+	dimensions.
+
 2006-09-06  Zak Kipling  <zak@transversal.com>
 
         PR c++/26195
