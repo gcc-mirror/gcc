@@ -2537,6 +2537,7 @@ c_parser_parms_declarator (c_parser *parser, bool id_list_ok, tree attrs)
 	  ret->tags = 0;
 	  ret->types = list;
 	  ret->others = 0;
+	  ret->pending_sizes = 0;
 	  ret->had_vla_unspec = 0;
 	  c_parser_consume_token (parser);
 	  pop_scope ();
@@ -2579,6 +2580,7 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
       ret->tags = 0;
       ret->types = 0;
       ret->others = 0;
+      ret->pending_sizes = 0;
       ret->had_vla_unspec = 0;
       c_parser_consume_token (parser);
       return ret;
@@ -2589,6 +2591,7 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
       ret->parms = 0;
       ret->tags = 0;
       ret->others = 0;
+      ret->pending_sizes = 0;
       ret->had_vla_unspec = 0;
       /* Suppress -Wold-style-definition for this case.  */
       ret->types = error_mark_node;
@@ -2640,6 +2643,7 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
 	      ret->tags = 0;
 	      ret->types = 0;
 	      ret->others = 0;
+	      ret->pending_sizes = 0;
 	      ret->had_vla_unspec = 0;
 	      return ret;
 	    }
@@ -2666,6 +2670,7 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
 		  ret->tags = 0;
 		  ret->types = 0;
 		  ret->others = 0;
+		  ret->pending_sizes = 0;
 		  ret->had_vla_unspec = 0;
 		  return ret;
 		}

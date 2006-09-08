@@ -1,3 +1,14 @@
+2006-09-08  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/28504
+	* c-tree.h (struct c_arg_info): Add pending_sizes.
+	* c-parser.c (c_parser_parms_declarator,
+	c_parser_parms_list_declarator): Initialize pending_sizes.
+	* c-decl.c (get_parm_info): Initialize pending_sizes.
+	(get_parm_info): Set pending_sizes.
+	(grokdeclarator): Call put_pending_sizes for parameters for
+	function definition only.
+
 2006-09-07  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/27724

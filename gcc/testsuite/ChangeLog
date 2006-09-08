@@ -1,3 +1,8 @@
+2006-09-08  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/28504
+	* gcc.dg/vla-10.c: New test.
+
 2006-09-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28858
