@@ -1,3 +1,11 @@
+2006-09-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28858
+	* g++.dg/parse/template20.C: New test.
+	* g++.dg/template/operator8.C: Remove obsolete part.
+	* g++.dg/parse/def-tmpl-arg1.C: Adjust error-markers.
+	* g++.old-deja/g++.pt/crash65.C: Likewise.
+
 2006-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/28906
