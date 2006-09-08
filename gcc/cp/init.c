@@ -1628,10 +1628,14 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	 function context.  Methinks that's not it's purvey.  So we'll do
 	 our own VLA layout later.  */
       vla_p = true;
-      full_type = build_cplus_array_type (type, NULL_TREE);
       index = convert (sizetype, nelts);
       index = size_binop (MINUS_EXPR, index, size_one_node);
-      TYPE_DOMAIN (full_type) = build_index_type (index);
+      index = build_index_type (index);
+      full_type = build_cplus_array_type (type, NULL_TREE);
+      /* We need a copy of the type as build_array_type will return a shared copy
+         of the incomplete array type.  */
+      full_type = build_distinct_type_copy (full_type);
+      TYPE_DOMAIN (full_type) = index;
     }
   else
     {
