@@ -1819,8 +1819,8 @@ static void cp_parser_skip_to_end_of_block_or_statement
   (cp_parser *);
 static void cp_parser_skip_to_closing_brace
   (cp_parser *);
-static void cp_parser_skip_until_found
-  (cp_parser *, enum cpp_ttype, const char *);
+static void cp_parser_skip_to_end_of_template_parameter_list
+  (cp_parser *);
 static void cp_parser_skip_to_pragma_eol
   (cp_parser*, cp_token *);
 static bool cp_parser_error_occurred
@@ -15495,7 +15495,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
   checks = get_deferred_access_checks ();
 
   /* Look for the `>'.  */
-  cp_parser_skip_until_found (parser, CPP_GREATER, "`>'");
+  cp_parser_skip_to_end_of_template_parameter_list (parser);
   /* We just processed one more parameter list.  */
   ++parser->num_template_parameter_lists;
   /* If the next token is `template', there are more template
@@ -15838,7 +15838,7 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
 	}
     }
   else
-    cp_parser_skip_until_found (parser, CPP_GREATER, "`>'");
+    cp_parser_skip_to_end_of_template_parameter_list (parser);
   /* The `>' token might be a greater-than operator again now.  */
   parser->greater_than_is_operator_p
     = saved_greater_than_is_operator_p;
@@ -16266,53 +16266,60 @@ cp_parser_require (cp_parser* parser,
     }
 }
 
-/* Like cp_parser_require, except that tokens will be skipped until
-   the desired token is found.  An error message is still produced if
-   the next token is not as expected.  */
+/* An error message is produced if the next token is not '>'.
+   All further tokens are skipped until the desired token is
+   found or '{', '}', ';' or an unbalanced ')' or ']'.  */
 
 static void
-cp_parser_skip_until_found (cp_parser* parser,
-			    enum cpp_ttype type,
-			    const char* token_desc)
+cp_parser_skip_to_end_of_template_parameter_list (cp_parser* parser)
 {
-  cp_token *token;
+  /* Current level of '< ... >'.  */
+  unsigned level = 0;
+  /* Ignore '<' and '>' nested inside '( ... )' or '[ ... ]'.  */
   unsigned nesting_depth = 0;
 
-  if (cp_parser_require (parser, type, token_desc))
+  /* Are we ready, yet?  If not, issue error message.  */
+  if (cp_parser_require (parser, CPP_GREATER, "%<>%>"))
     return;
 
   /* Skip tokens until the desired token is found.  */
   while (true)
     {
       /* Peek at the next token.  */
-      token = cp_lexer_peek_token (parser->lexer);
-
-      /* If we've reached the token we want, consume it and stop.  */
-      if (token->type == type && !nesting_depth)
+      switch (cp_lexer_peek_token (parser->lexer)->type)
 	{
-	  cp_lexer_consume_token (parser->lexer);
-	  return;
-	}
+	case CPP_LESS:
+	  if (!nesting_depth)
+	    ++level;
+	  break;
 
-      switch (token->type)
-	{
-	case CPP_EOF:
-	case CPP_PRAGMA_EOL:
-	  /* If we've run out of tokens, stop.  */
-	  return;
+	case CPP_GREATER:
+	  if (!nesting_depth && level-- == 0)
+	    {
+	      /* We've reached the token we want, consume it and stop.  */
+	      cp_lexer_consume_token (parser->lexer);
+	      return;
+	    }
+	  break;
 
-	case CPP_OPEN_BRACE:
 	case CPP_OPEN_PAREN:
 	case CPP_OPEN_SQUARE:
 	  ++nesting_depth;
 	  break;
 
-	case CPP_CLOSE_BRACE:
 	case CPP_CLOSE_PAREN:
 	case CPP_CLOSE_SQUARE:
 	  if (nesting_depth-- == 0)
 	    return;
 	  break;
+
+	case CPP_EOF:
+	case CPP_PRAGMA_EOL:
+	case CPP_SEMICOLON:
+	case CPP_OPEN_BRACE:
+	case CPP_CLOSE_BRACE:
+	  /* The '>' was probably forgotten, don't look further.  */
+	  return;
 
 	default:
 	  break;

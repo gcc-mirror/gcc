@@ -6,4 +6,4 @@ template <typename X, typename Y = B<X> > struct A // { dg-error "" }
 {
     A();
     A(const A&);
-}; // { dg-error "" }
+};

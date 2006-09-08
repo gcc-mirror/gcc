@@ -1,3 +1,13 @@
+2006-09-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/28858
+	* parser.c (cp_parser_skip_until_found): Rename to
+	cp_parser_skip_to_end_of_template_parameter_list.  Remove last two
+	parameters.  Track levels of '< ... >'.  Stop at '{', '}', or ';'.
+	Reorganize.  Adjust comment.
+	(cp_parser_template_declaration_after_export): Adjust call.
+	(cp_parser_enclosed_template_argument_list): Likewise.
+
 2006-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/28906

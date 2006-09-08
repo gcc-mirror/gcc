@@ -8,5 +8,5 @@
 
 
 template<class T =
-struct W {};    // { dg-error "" } inside template parms
-> struct S{};
+struct W {};    // { dg-error "inside template parameter list|before" }
+> struct S{};   // { dg-error "before" }
