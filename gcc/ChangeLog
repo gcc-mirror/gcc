@@ -1,5 +1,8 @@
 2006-09-07  Jason Merrill  <jason@redhat.com>
 
+	PR middle-end/27724
+	* varasm.c (output_constant): Only strip actual no-op conversions.
+
 	PR target/13685
 	* config/i386/i386.c (override_options): Use 128-bit
 	stack boundary if -msse.
