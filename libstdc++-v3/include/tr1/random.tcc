@@ -906,7 +906,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	else
 #endif
 	  {
-	    _IntType     __x = -1;
+	    _IntType     __x = 0;
 	    _RealType __prod = 1.0;
 
 	    do
@@ -916,7 +916,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	      }
 	    while (__prod > _M_lm_thr);
 
-	    return __x;
+	    return __x - 1;
 	  }
       }
 

@@ -1,3 +1,8 @@
+2006-09-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/random.tcc (poisson_distribution<>::operator()):
+	Avoid potential warnings when _IntType is unsigned.
+
 2006-09-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/debug/debug.h (_GLIBCXX_DEBUG_ONLY): New.
