@@ -1,3 +1,9 @@
+2006-09-07  Jason Merrill  <jason@redhat.com>
+
+	PR target/13685
+	* config/i386/i386.c (override_options): Use 128-bit
+	stack boundary if -msse.
+
 2006-09-07  Eric Christopher  <echristo@apple.com>
 
 	* config/darwin.h (MACHO_SYMBOL_FLAG_VARIABLE): Update
