@@ -17,7 +17,7 @@
 
 !$omp parallel num_threads (3) private (n) reduction (.or.:v) &
 !$omp & reduction (max:i, ia, r, ra, d, da)
-!$ if (i .ne. -2147483648 .or. any (ia .ne. -2147483648)) v = .true.
+!$ if (i .ne. -huge(i)-1 .or. any (ia .ne. -huge(ia)-1)) v = .true.
 !$ if (r .ge. -1.0d38 .or. any (ra .ge. -1.0d38)) v = .true.
 !$ if (d .ge. -1.0d300 .or. any (da .ge. -1.0d300)) v = .true.
   n = omp_get_thread_num ()

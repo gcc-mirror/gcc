@@ -12,7 +12,7 @@
   ka = Z'05a5a5'
   v = .false.
   cnt = -1
-  x = Z'ffffffff'
+  x = not(0)
 
 !$omp parallel num_threads (3) private (n) reduction (.or.:v) &
 !$omp & reduction (iand:i, ia) reduction (ior:j, ja) reduction (ieor:k, ka)
