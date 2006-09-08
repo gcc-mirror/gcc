@@ -223,3 +223,8 @@ __enable_execute_stack (void *addr)                                     \
 
 #undef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES darwin_set_default_type_attributes
+
+/* This needs to move since i386 uses the first flag and other flags are
+   used in Mach-O.  */
+#undef MACHO_SYMBOL_FLAG_VARIABLE
+#define MACHO_SYMBOL_FLAG_VARIABLE ((SYMBOL_FLAG_MACH_DEP) << 3)
