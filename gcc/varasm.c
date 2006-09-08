@@ -4039,10 +4039,10 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
       if (type_size > op_size
 	  && TREE_CODE (exp) != VIEW_CONVERT_EXPR
 	  && TREE_CODE (TREE_TYPE (exp)) != UNION_TYPE)
-	internal_error ("no-op convert from %wd to %wd bytes in initializer",
-			op_size, type_size);
-
-      exp = TREE_OPERAND (exp, 0);
+	/* Keep the conversion. */
+	break;
+      else
+	exp = TREE_OPERAND (exp, 0);
     }
 
   code = TREE_CODE (TREE_TYPE (exp));
