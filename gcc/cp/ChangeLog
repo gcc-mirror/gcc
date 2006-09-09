@@ -1,3 +1,8 @@
+2006-09-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/26957
+	* method.c (use_thunk): Fix patch for 4.0 branch.
+
 2006-09-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/26957
