@@ -1538,12 +1538,17 @@ override_options (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
+  /* -fPIC is the default for x86_64.  */
+  if (TARGET_MACHO && TARGET_64BIT)
+    flag_pic = 2;
+
   /* Set the default values for switches whose default depends on TARGET_64BIT
      in case they weren't overwritten by command line options.  */
   if (TARGET_64BIT)
     {
+      /* Mach-O doesn't support omitting the frame pointer for now.  */
       if (flag_omit_frame_pointer == 2)
-	flag_omit_frame_pointer = 1;
+	flag_omit_frame_pointer = (TARGET_MACHO ? 0 : 1);
       if (flag_asynchronous_unwind_tables == 2)
 	flag_asynchronous_unwind_tables = 1;
       if (flag_pcc_struct_return == 2)
@@ -4788,6 +4793,8 @@ static int pic_labels_used;
 static void
 get_pc_thunk_name (char name[32], unsigned int regno)
 {
+  gcc_assert (!TARGET_64BIT);
+
   if (USE_HIDDEN_LINKONCE)
     sprintf (name, "__i686.get_pc_thunk.%s", reg_names[regno]);
   else
@@ -6174,7 +6181,7 @@ legitimate_pic_address_disp_p (rtx disp)
 	  if (GET_CODE (op1) != CONST_INT
 	      || INTVAL (op1) >= 16*1024*1024
 	      || INTVAL (op1) < -16*1024*1024)
-	    break;
+            break;
 	  if (GET_CODE (op0) == LABEL_REF)
 	    return true;
 	  if (GET_CODE (op0) != SYMBOL_REF)
@@ -6426,12 +6433,16 @@ legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
 	    goto report_error;
 	  }
 
-      else if (flag_pic && (SYMBOLIC_CONST (disp)
+      else if (SYMBOLIC_CONST (disp)
+	       && (flag_pic
+		   || (TARGET_MACHO
 #if TARGET_MACHO
-			    && !machopic_operand_p (disp)
+		       && MACHOPIC_INDIRECT
+		       && !machopic_operand_p (disp)
 #endif
-			    ))
+	       )))
 	{
+
 	is_legitimate_pic:
 	  if (TARGET_64BIT && (index || base))
 	    {
@@ -6544,10 +6555,13 @@ legitimize_pic_address (rtx orig, rtx reg)
   rtx base;
 
 #if TARGET_MACHO
-  if (reg == 0)
-    reg = gen_reg_rtx (Pmode);
-  /* Use the generic Mach-O PIC machinery.  */
-  return machopic_legitimize_pic_address (orig, GET_MODE (orig), reg);
+  if (TARGET_MACHO && !TARGET_64BIT)
+    {
+      if (reg == 0)
+	reg = gen_reg_rtx (Pmode);
+      /* Use the generic Mach-O PIC machinery.  */
+      return machopic_legitimize_pic_address (orig, GET_MODE (orig), reg);
+    }
 #endif
 
   if (TARGET_64BIT && legitimate_pic_address_disp_p (addr))
@@ -8909,27 +8923,32 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 
   if (flag_pic && mode == Pmode && symbolic_operand (op1, Pmode))
     {
-#if TARGET_MACHO
-      if (MACHOPIC_PURE)
+      if (TARGET_MACHO && !TARGET_64BIT)
 	{
-	  rtx temp = ((reload_in_progress
-		       || ((op0 && GET_CODE (op0) == REG)
-			   && mode == Pmode))
-		      ? op0 : gen_reg_rtx (Pmode));
-	  op1 = machopic_indirect_data_reference (op1, temp);
-	  op1 = machopic_legitimize_pic_address (op1, mode,
-						 temp == op1 ? 0 : temp);
+#if TARGET_MACHO
+	  if (MACHOPIC_PURE)
+	    {
+	      rtx temp = ((reload_in_progress
+			   || ((op0 && GET_CODE (op0) == REG)
+			       && mode == Pmode))
+			  ? op0 : gen_reg_rtx (Pmode));
+	      op1 = machopic_indirect_data_reference (op1, temp);
+	      op1 = machopic_legitimize_pic_address (op1, mode,
+						     temp == op1 ? 0 : temp);
+	    }
+	  else if (MACHOPIC_INDIRECT)
+	    op1 = machopic_indirect_data_reference (op1, 0);
+	  if (op0 == op1)
+	    return;
+#endif
 	}
-      else if (MACHOPIC_INDIRECT)
-	op1 = machopic_indirect_data_reference (op1, 0);
-      if (op0 == op1)
-	return;
-#else
-      if (GET_CODE (op0) == MEM)
-	op1 = force_reg (Pmode, op1);
       else
-	op1 = legitimize_address (op1, op1, Pmode);
-#endif /* TARGET_MACHO */
+	{
+	  if (GET_CODE (op0) == MEM)
+	    op1 = force_reg (Pmode, op1);
+	  else
+	    op1 = legitimize_address (op1, op1, Pmode);
+	}
     }
   else
     {
@@ -13329,15 +13348,21 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     pop = NULL;
   gcc_assert (!TARGET_64BIT || !pop);
 
+  if (TARGET_MACHO && !TARGET_64BIT)
+    {
 #if TARGET_MACHO
-  if (flag_pic && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
-    fnaddr = machopic_indirect_call_target (fnaddr);
-#else
-  /* Static functions and indirect calls don't need the pic register.  */
-  if (! TARGET_64BIT && flag_pic
-      && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
-      && ! SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0)))
-    use_reg (&use, pic_offset_table_rtx);
+      if (flag_pic && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+	fnaddr = machopic_indirect_call_target (fnaddr);
+#endif
+    }
+  else
+    {
+      /* Static functions and indirect calls don't need the pic register.  */
+      if (! TARGET_64BIT && flag_pic
+	  && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
+	  && ! SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0)))
+	use_reg (&use, pic_offset_table_rtx);
+    }
 
   if (TARGET_64BIT && INTVAL (callarg2) >= 0)
     {
@@ -13345,7 +13370,6 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
       emit_move_insn (al, callarg2);
       use_reg (&use, al);
     }
-#endif /* TARGET_MACHO */
 
   if (! call_insn_operand (XEXP (fnaddr, 0), Pmode))
     {
@@ -17248,6 +17272,9 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   unsigned int length;
   char *binder_name, *symbol_name, lazy_ptr_name[32];
   int label = ++current_machopic_label_num;
+
+  /* For 64-bit we shouldn't get here.  */
+  gcc_assert (!TARGET_64BIT);
 
   /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
   symb = (*targetm.strip_name_encoding) (symb);

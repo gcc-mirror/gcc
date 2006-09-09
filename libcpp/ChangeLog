@@ -1,3 +1,7 @@
+2006-09-08  Eric Christopher  <echristo@apple.com>
+
+	* configure.ac: Add 64-bit HWI support for i?86-darwin.
+
 2006-08-14  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/28288
@@ -120,7 +124,7 @@
 
 2005-11-09  Per Bothner  <per@bothner.com>
 	    Uros Bizjak  <uros@kss-loka.si>
-	
+
 	PR c/24101
 	* init.c (read_original_filename): Temporarily set
 	state.in_directive before calling _cpp_lex_direct for
@@ -162,7 +166,7 @@
 	Use in print_dep assignment.
 	* init.c (cpp_read_main_file): Pass additional arg to _cpp_find_file.
 	* internal.h (_cpp_find_file): Add new parm to declaration.
-	
+
 2005-10-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* configure.ac: Require 64-bit int for arm*-*-*eabi*.

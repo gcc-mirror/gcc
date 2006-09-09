@@ -1,3 +1,27 @@
+2006-09-08  Eric Christopher  <echristo@apple.com>
+
+	* config.gcc (i?86-*-darwin): Add 64-bit HWI support.
+	* config/t-slibgcc-darwin: Support x86_64 multilib.
+	* config/i386/i386.h (JUMP_TABLES_IN_TEXT_SECTION):
+	Return 1 for x86_64-darwin.
+	* config/i386/t-darwin: Add m64 multilib.
+	(LIB2_SIDITI_CONV_FUNCS): Use.
+	(LIB2FUNCS_EXTRA): Ditto.
+	* config/i386/darwin.h: Support x86_64.
+	* config/i386/i386.c (override_options): Turn on flag_pic
+	for x86_64-darwin. Disable flag_omit_pointer.
+	(get_pc_thunk_name): Assert !TARGET_64BIT.
+	(legitimate_address_p): Disable machopic addressing for
+	x86_64.
+	(legitimize_pic_address): Ditto.
+	(ix86_expand_move): Ditto.
+	(ix86_expand_call): Ditto.
+	(machopic_output_stub): Ditto.
+	* config/darwin.c (machopic_select_section): Support literal16.
+	(machopic_select_rtx_section): Ditto.
+	* config/darwin-sections.def: Ditto.
+	* config/darwin-64.c: New.
+
 2006-09-08  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/28504

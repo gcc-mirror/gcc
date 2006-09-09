@@ -1,4 +1,5 @@
 /* { dg-do compile { target i?86-*-* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-std=gnu99" } */
 int
 outer_function (int x, int y)

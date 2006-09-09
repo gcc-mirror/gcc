@@ -1,3 +1,21 @@
+2006-09-08  Eric Christopher  <echristo@apple.com>
+
+	* gcc.target/i386/20060512-3.c: Run test on ilp32 only.
+	* gcc.target/i386/memcpy-1.c: Ditto.
+	* gcc.target/i386/asm-1.c: Ditto.
+	* gcc.target/i386/20060512-4.c: Ditto.
+	* gcc.target/i386/compress-float-387.c: Ditto.
+	* gcc.target/i386/20060512-1.c: Ditto.
+	* gcc.target/i386/compress-float-sse.c: Ditto.
+	* gcc.target/i386/20060512-2.c: Ditto.
+	* gcc.target/i386/compress-float-sse-pic.c: Ditto.
+	* gcc.target/i386/stack-prot-kernel.c: Ditto.
+	* gcc.target/i386/compress-float-387-pic.c: Ditto.
+	* gcc.dg/pr26449.c: Ditto.
+	* gcc.dg/attr-ms_struct-2.c: Ditto.
+	* gcc.dg/attr-ms_struct-1.c: Ditto.
+	* gcc.misc-tests/linkage.exp: Fix 64-bit darwin support.
+
 2006-09-08  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/28504
@@ -127,7 +145,7 @@
 
 	* g++.dg/template/typedef4.C: Adjust error markers.
 	* g++.dg/template/typedef5.C: Likewise.
-	
+
 2006-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/28878
@@ -244,8 +262,8 @@
 2006-08-27  Lee Millward  <lee.millward@codesourcery.com>
 
 	PR c++/26573
-	* g++.dg/other/static2.C: New test. 
-	
+	* g++.dg/other/static2.C: New test.
+
 2006-08-26  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/Wswitch-enum-2.c: New test case.
@@ -270,7 +288,7 @@
 	* g++.dg/template/void4.C: Likewise.
 	* g++.dg/template/crash55.C: Likewise.
 	* g++.dg/template/void7.C: Likewise
-	
+
 2006-08-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28588
@@ -375,7 +393,7 @@
 
 2006-08-23  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	gcc.dg/attr-invalid.c:  Insert an " |directive" substitution into 
+	gcc.dg/attr-invalid.c:  Insert an " |directive" substitution into
 	dg-warning strings for dllimport.
 
 2006-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -413,17 +431,17 @@
 	* g++.dg/parse/ctor8.C: Likewise.
 
 	PR c++/28741
-	* g++.dg/template/void7.C: New test. 
-	
+	* g++.dg/template/void7.C: New test.
+
 2006-08-21  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/self_aggregate_with_zeros.adb: New test.
 	* gnat.dg/self_aggregate_with_array.adb: New test.
 
 2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
- 
+
  	* g++.dg/eh/arm-vfp-unwind.C: New test.
- 
+
 2006-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28341
@@ -462,7 +480,7 @@
 	* gfortran.dg/array_initializer_2.f90: New test.
 
 	PR fortran/18111
-	* gfortran.dg/unused_artificial_dummies_1.f90: New test. 
+	* gfortran.dg/unused_artificial_dummies_1.f90: New test.
 
 	PR fortran/28600
 	* gfortran.dg/assumed_charlen_function_4.f90: New test.
@@ -562,7 +580,7 @@
 
 	PR c++/28594
 	* g++.dg/template/void6.C: New test.
-	
+
 2006-08-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/28649
@@ -658,7 +676,7 @@
 
 	PR c++/28640
 	* g++.dg/template/void5.C: New test.
-	
+
 2006-08-07  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* g++.dg/ext/visibility/class1.C (dg-require-visibility): Move
@@ -725,7 +743,7 @@
 2006-08-03  Lee Millward  <lee.millward@codesourcery.com>
 
 	PR c++/28347
-	* g++.dg/ext/typedef-init.C: Add new test for typedef 
+	* g++.dg/ext/typedef-init.C: Add new test for typedef
 	initialization inside templates. Adjust existing error markers.
 
 2006-08-03  Mark Mitchell  <mark@codesourcery.com>
@@ -736,14 +754,14 @@
 2006-08-03  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/27770
-	* lib/target-support.exp: New target keyword "section_anchors". 
+	* lib/target-support.exp: New target keyword "section_anchors".
 	* gcc.dg/vect/vect.exp: Add -fsection-anchors to compilation of some
 	tests.
 	* gcc.dg/vect/section-anchors-pr27770.c: New test.
 	* gcc.dg/vect/vect-69.c: Removed. Replaced by:
 	* gcc.dg/vect/section-anchors-vect-69.c: New test.
 	* gcc.dg/vect/no-section-anchors-vect-69.c: New test.
-	
+
 2006-08-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/20060801-1.c: Add missing '}'.
@@ -863,7 +881,7 @@
 
 	* g++.dg/template/void2.C: Adjust error markers.
 	* g++.dg/template/nontype5.C: Adjust error markers.
-	
+
 2006-07-27  Arjan van de Ven <arjan@linux.intel.com>
 
 	* gcc.target/i386/stack-prot-kernel.c: New test.
@@ -921,7 +939,7 @@
 
 	* gcc.dg/visibility-11.c: Enlarge test array to 1024 bytes to
 	avoid memcpy optimization.
-	
+
 2006-07-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/25289
@@ -1004,7 +1022,7 @@
 
 	PR c++/28260
 	* g++.dg/template/friend44.C: New test.
-	
+
 2006-07-18  Steve Ellcey  <sje@cup.hp.com>
 
 	PR c++/27495
@@ -1014,7 +1032,7 @@
 
 	* gnat.dg/outer_agg_bitfield_constructor.adb: New test.
 	* gnat.dg/nested_agg_bitfield_constructor.adb: New test.
-	
+
 2006-07-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/28286
@@ -1087,7 +1105,7 @@
 
 	PR c++/28269
 	* g++.dg/template/crash54.C: New test.
-	
+
 2006-07-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28249
@@ -1143,7 +1161,7 @@
 
 	PR c++/27820
 	* g++.dg/other/label1.C: New test.
-	
+
 2006-07-07   Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28268
@@ -1289,7 +1307,7 @@
 
 	PR c++/28054
 	* g++.dg/other/incomplete3.C: New test.
-	
+
 2006-06-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/28081
@@ -1305,7 +1323,7 @@
 
 	* gnat.dg/scalar_mode_agg_compare_loop.adb: New test.
 	* gnat.dg/scalar_mode_agg_compare.adb: New test.
-	
+
 2006-06-23  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/usual-arith-conv-bad.c: New test.
@@ -1318,7 +1336,7 @@
 2006-06-23  Lee Millward  <lee.millward@gmail.com>
 
 	* g++.dg/template/error22.C: Fix typo.
-	
+
 2006-06-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28112
@@ -1327,7 +1345,7 @@
 2006-06-23  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/varsize_temp.adb: New test.
-	
+
 2006-06-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/11468
@@ -1361,7 +1379,7 @@
 
 	PR c++/27821
 	* g++.dg/template/error22.C: New test.
-	
+
 2006-06-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/28111
@@ -1475,7 +1493,7 @@
 	* g++.dg/template/static26.C: New test.
 
 	PR c++/27979
-	* g++.dg/expr/bitfield2.C: New test. 
+	* g++.dg/expr/bitfield2.C: New test.
 
 	PR c++/27884
 	* g++.dg/parse/linkage2.C: New test.
@@ -1531,7 +1549,7 @@
 	PR c++/26559
 	* g++.dg/template/builtin1.C: New test.
 	* g++.dg/gomp/tpl-atomic-2.C: Remove XFAIL.
-	
+
 	PR c++/28018
 	* g++.old-deja/g++.benjamin/14664-2.C: Expect error for array
 	assignment.
@@ -1560,7 +1578,7 @@
 2006-06-13  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* gcc.c-torture/compile/20060609-1.c: New test.
-	
+
 	PR target/27863
 	* gcc.c-torture/compile/pr27863.c: New test.
 

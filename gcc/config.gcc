@@ -438,7 +438,7 @@ case ${target} in
           ;;
       esac
       ;;
-    *) 
+    *)
       echo 'Unknown thread configuration for FreeBSD'
       exit 1
       ;;
@@ -693,13 +693,13 @@ arm*-*-netbsd*)
 	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
-	tm_file="dbxelf.h elfos.h linux.h arm/elf.h arm/linux-gas.h arm/linux-elf.h" 
+	tm_file="dbxelf.h elfos.h linux.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
 	tmake_file="${tmake_file} t-linux arm/t-arm"
 	case ${target} in
 	arm*-*-linux-*eabi)
 	    tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h"
 	    tmake_file="$tmake_file arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
-  	    # The BPABI long long divmod functions return a 128-bit value in 
+  	    # The BPABI long long divmod functions return a 128-bit value in
 	    # registers r0-r3.  Correctly modeling that requires the use of
 	    # TImode.
 	    need_64bit_hwint=yes
@@ -721,7 +721,7 @@ arm*-*-ecos-elf)
 	tmake_file="arm/t-arm arm/t-arm-elf"
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* )
-	# The BPABI long long divmod functions return a 128-bit value in 
+	# The BPABI long long divmod functions return a 128-bit value in
 	# registers r0-r3.  Correctly modeling that requires the use of
 	# TImode.
 	need_64bit_hwint=yes
@@ -965,7 +965,7 @@ hppa*64*-*-hpux11*)
 		     libgcc_stub.a"
 	case x${enable_threads} in
 	xyes | xposix )
-		thread_file=posix 
+		thread_file=posix
 		;;
 	esac
 	gas=yes
@@ -994,14 +994,14 @@ hppa[12]*-*-hpux11*)
 	fi
 	case x${enable_threads} in
 	xyes | xposix )
-		thread_file=posix 
+		thread_file=posix
 		;;
 	esac
 	use_collect2=yes
 	gas=yes
 	;;
 i[34567]86-*-darwin*)
-	# All the configuration is presently done generically.
+	need_64bit_hwint=yes
 	;;
 i[34567]86-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h"
@@ -1192,7 +1192,7 @@ i[34567]86-*-solaris2*)
 			exit 1
 			;;
 		esac
-		# Solaris 2.10 provides crt1.o, crti.o, crtn.o, and gcrt1.o as 
+		# Solaris 2.10 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
 		# part of the base system.
 		extra_parts="gmon.o crtbegin.o crtend.o"
 		;;
@@ -1540,7 +1540,7 @@ mips*-*-openbsd*)
 	target_cpu_default="MASK_ABICALLS"
 	tm_file="mips/mips.h openbsd.h mips/openbsd.h mips/sdb.h"
 	case ${target} in
-	mips*el-*-openbsd*) 
+	mips*el-*-openbsd*)
 	    tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=0";;
 	*)  tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=MASK_BIG_ENDIAN";;
         esac
@@ -1688,7 +1688,7 @@ powerpc-*-darwin*)
 	extra_parts="crt2.o"
 	case ${target} in
 	  *-darwin1[0-9]* | *-darwin[8-9]*)
-	    tmake_file="${tmake_file} rs6000/t-darwin8" 
+	    tmake_file="${tmake_file} rs6000/t-darwin8"
 	    tm_file="${tm_file} rs6000/darwin8.h"
 	    ;;
 	  *-darwin7*)
@@ -2001,7 +2001,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		tm_file="sh/symbian-pre.h sh/little.h ${tm_file} sh/symbian-post.h"
 		extra_objs="symbian.o"
 		extra_parts="crt1.o crti.o crtn.o crtbegin.o crtend.o crtbeginS.o crtendS.o"
-		;;	
+		;;
 	esac
 	# sed el/eb endian suffixes away to avoid confusion with sh[23]e
 	case `echo ${target} | sed 's/e[lb]-/-/'` in
