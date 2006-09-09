@@ -1,3 +1,11 @@
+2006-09-09  Paolo Bonzini  <bonzini@gnu.org>
+	    Dale Johannesen  <dalej@apple.com>
+
+	PR target/26778
+	* regclass.c (struct reg_pref): Update documentation.
+	(regclass): Set prefclass to NO_REGS if memory is the best option.
+	(record_reg_classes): Cope with a prefclass set to NO_REGS.
+
 2006-09-08  Eric Christopher  <echristo@apple.com>
 
 	* config.gcc (i?86-*-darwin): Add 64-bit HWI support.
