@@ -2011,11 +2011,13 @@ do {									\
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   ix86_output_addr_diff_elt ((FILE), (VALUE), (REL))
 
-/* Under some conditions we need jump tables in the text section, because
-   the assembler cannot handle label differences between sections.  */
+/* Under some conditions we need jump tables in the text section,
+   because the assembler cannot handle label differences between
+   sections.  This is the case for x86_64 on Mach-O for example.  */
 
 #define JUMP_TABLES_IN_TEXT_SECTION \
-  (!TARGET_64BIT && flag_pic && !HAVE_AS_GOTOFF_IN_DATA)
+  (flag_pic && ((TARGET_MACHO && TARGET_64BIT) \
+   || (!TARGET_64BIT && !HAVE_AS_GOTOFF_IN_DATA)))
 
 /* Switch to init or fini section via SECTION_OP, emit a call to FUNC,
    and switch back.  For x86 we do this only to save a few bytes that

@@ -1,4 +1,5 @@
 /* { dg-do run { target i?86-*-* } } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-std=gnu99 -msse2" } */
 #include <emmintrin.h>
 __m128i __attribute__ ((__noinline__))

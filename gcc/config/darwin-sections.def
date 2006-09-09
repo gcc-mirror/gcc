@@ -14,6 +14,7 @@ DEF_SECTION (data_coal_section, SECTION_WRITE,
 DEF_SECTION (cstring_section, SECTION_MERGE, ".cstring", 0)
 DEF_SECTION (literal4_section, SECTION_MERGE, ".literal4", 0)
 DEF_SECTION (literal8_section, SECTION_MERGE, ".literal8", 0)
+DEF_SECTION (literal16_section, SECTION_MERGE, ".literal16", 0)
 DEF_SECTION (constructor_section, 0, ".constructor", 0)
 DEF_SECTION (mod_init_section, 0, ".mod_init_func", 0)
 DEF_SECTION (mod_term_section, 0, ".mod_term_func", 0)

@@ -1136,6 +1136,11 @@ machopic_select_section (tree exp, int reloc,
 	       TREE_INT_CST_LOW (size) == 8 &&
 	       TREE_INT_CST_HIGH (size) == 0)
 	return darwin_sections[literal8_section];
+      else if (TARGET_64BIT
+	       && TREE_CODE (size) == INTEGER_CST
+	       && TREE_INT_CST_LOW (size) == 16
+	       && TREE_INT_CST_HIGH (size) == 0)
+	return darwin_sections[literal16_section];
       else
 	return base_section;
     }
@@ -1234,6 +1239,10 @@ machopic_select_rtx_section (enum machine_mode mode, rtx x,
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal4_section];
+  else if (GET_MODE_SIZE (mode) == 16
+	   && (GET_CODE (x) == CONST_INT
+	       || GET_CODE (x) == CONST_DOUBLE))
+    return darwin_sections[literal16_section];
   else if (MACHOPIC_INDIRECT
 	   && (GET_CODE (x) == SYMBOL_REF
 	       || GET_CODE (x) == CONST
