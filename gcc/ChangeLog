@@ -1,3 +1,7 @@
+2006-09-10  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.md (bungt_rev): New pattern.
+
 2006-09-09  Paolo Bonzini  <bonzini@gnu.org>
 	    Dale Johannesen  <dalej@apple.com>
 
