@@ -927,9 +927,13 @@ convert_to_void (tree expr, const char *implicit)
 	expr = void_zero_node;
       }
     else if (implicit && probe == expr && is_overloaded_fn (probe))
-      /* Only warn when there is no &.  */
-      warning (0, "%s is a reference, not call, to function %qE",
-		  implicit, expr);
+      {
+	/* Only warn when there is no &.  */
+	warning (0, "%s is a reference, not call, to function %qE",
+		 implicit, expr);
+	if (TREE_CODE (expr) == COMPONENT_REF)
+	  expr = TREE_OPERAND (expr, 0);
+      }
   }
 
   if (expr != error_mark_node && !VOID_TYPE_P (TREE_TYPE (expr)))
