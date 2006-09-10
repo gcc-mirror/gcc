@@ -1239,7 +1239,8 @@ machopic_select_rtx_section (enum machine_mode mode, rtx x,
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal4_section];
-  else if (GET_MODE_SIZE (mode) == 16
+  else if (TARGET_64BIT
+	   && GET_MODE_SIZE (mode) == 16
 	   && (GET_CODE (x) == CONST_INT
 	       || GET_CODE (x) == CONST_DOUBLE))
     return darwin_sections[literal16_section];
