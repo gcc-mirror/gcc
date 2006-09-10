@@ -1,6 +1,10 @@
+2006-09-10  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* MAINTAINERS: Add self as soft-fp maintainer.
+
 2006-09-09  Anatoly Sokolov <aesok@post.ru>
 
-	* MAINTAINERS: Add myself as avr maintainer. 
+	* MAINTAINERS: Add myself as avr maintainer.
 	Remove Marek Michalkiewicz as avr maintainer.
 
 2006-09-07  Roberto Costa  <roberto.costa@st.com>

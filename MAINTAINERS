@@ -153,6 +153,7 @@ libffi testsuite	Andreas Tobler		andreast@gcc.gnu.org
 libobjc			Nicola Pero		n.pero@mi.flashnet.it
 libobjc			Andrew Pinski		pinskia@physics.uc.edu
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
+soft-fp			Joseph Myers		jsm@polyomino.org.uk
 scheduler (+ haifa)	Jim Wilson		wilson@specifixinc.com
 scheduler (+ haifa)	Michael Meissner	gnu@the-meissners.org
 scheduler (+ haifa)	Jeff Law		law@redhat.com
