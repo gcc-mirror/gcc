@@ -3950,13 +3950,15 @@ bool
 mips_expand_unaligned_store (rtx dest, rtx src, unsigned int width, int bitpos)
 {
   rtx left, right;
+  enum machine_mode mode;
 
   if (!mips_get_unaligned_mem (&dest, width, bitpos, &left, &right))
     return false;
 
-  src = gen_lowpart (mode_for_size (width, MODE_INT, 0), src);
+  mode = mode_for_size (width, MODE_INT, 0);
+  src = gen_lowpart (mode, src);
 
-  if (GET_MODE (src) == DImode)
+  if (mode == DImode)
     {
       emit_insn (gen_mov_sdl (dest, src, left));
       emit_insn (gen_mov_sdr (copy_rtx (dest), copy_rtx (src), right));
@@ -3967,6 +3969,20 @@ mips_expand_unaligned_store (rtx dest, rtx src, unsigned int width, int bitpos)
       emit_insn (gen_mov_swr (copy_rtx (dest), copy_rtx (src), right));
     }
   return true;
+}
+
+/* Return true if X is a MEM with the same size as MODE.  */
+
+bool
+mips_mem_fits_mode_p (enum machine_mode mode, rtx x)
+{
+  rtx size;
+
+  if (!MEM_P (x))
+    return false;
+
+  size = MEM_SIZE (x);
+  return size && INTVAL (size) == GET_MODE_SIZE (mode);
 }
 
 /* Set up globals to generate code for the ISA or processor
