@@ -1,3 +1,8 @@
+2006-09-10  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/29006
+	* gcc.c-torture/execute/pr29006.c: New test.
+
 2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/28947
