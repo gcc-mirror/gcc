@@ -1,6 +1,6 @@
 // Heap implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -430,7 +430,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       //      __glibcxx_requires_heap(__first, __last);
 
       while (__last - __first > 1)
-	std::pop_heap(__first, __last--);
+	std::pop_heap(__first, _RandomAccessIterator(__last--));
     }
 
   /**
@@ -455,7 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
       while (__last - __first > 1)
-	std::pop_heap(__first, __last--, __comp);
+	std::pop_heap(__first, _RandomAccessIterator(__last--), __comp);
     }
 
 _GLIBCXX_END_NAMESPACE

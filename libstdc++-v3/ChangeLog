@@ -1,3 +1,8 @@
+2006-09-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_heap.h (sort_heap): Iterator post-decrement is
+	only required to be convertible to the iterator type.
+
 2006-09-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random.tcc (poisson_distribution<>::operator()):
