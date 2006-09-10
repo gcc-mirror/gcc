@@ -1,3 +1,9 @@
+2006-09-10  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/26983
+	* builtins.c (expand_builtin_setjmp): Force next_lab to be
+	preserved.
+
 2006-09-10  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/29006
