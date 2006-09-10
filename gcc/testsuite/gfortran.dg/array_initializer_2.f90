@@ -8,7 +8,7 @@
   integer, dimension(3), parameter :: a=(/1,2,3/)
   integer, dimension(3), parameter :: b=(/a(:)/)
   integer, dimension(3,3), parameter :: c=reshape ((/(i, i = 1,9)/),(/3,3/))
-  integer, dimension(2,3), parameter :: d=reshape ((/c(:2:-1,:)/),(/2,3/))
+  integer, dimension(2,3), parameter :: d=reshape ((/c(3:2:-1,:)/),(/2,3/))
   integer, dimension(3,3), parameter :: e=reshape ((/a(:),a(:)+3,a(:)+6/),(/3,3/))
   integer, dimension(2,3), parameter :: f=reshape ((/c(2:1:-1,:)/),(/2,3/))
   if (any (b .ne. (/1,2,3/))) call abort ()
