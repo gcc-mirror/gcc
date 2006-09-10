@@ -1903,7 +1903,8 @@ override_options (void)
      don't want additional code to keep the stack aligned when
      optimizing for code size.  */
   ix86_preferred_stack_boundary
-    = ((TARGET_MACHO || TARGET_SSE || !optimize_size) ? 128 : 32);
+    = (TARGET_64BIT || TARGET_MACHO || TARGET_SSE || !optimize_size) 
+       ? 128 : 32;
   if (ix86_preferred_stack_boundary_string)
     {
       i = atoi (ix86_preferred_stack_boundary_string);
