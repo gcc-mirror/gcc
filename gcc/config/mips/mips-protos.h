@@ -165,6 +165,7 @@ extern void mips_va_start (tree, rtx);
 
 extern bool mips_expand_unaligned_load (rtx, rtx, unsigned int, int);
 extern bool mips_expand_unaligned_store (rtx, rtx, unsigned int, int);
+extern bool mips_mem_fits_mode_p (enum machine_mode mode, rtx x);
 extern void override_options (void);
 extern void mips_conditional_register_usage (void);
 extern void mips_order_regs_for_local_alloc (void);
