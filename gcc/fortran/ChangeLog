@@ -1,4 +1,11 @@
-2006-09-09  Paul Thomas <pault@gcc.gnu.org>
+2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28923
+	expr.c (find_array_section): Only use the array lower and upper
+	bounds for the start and end of the sections, where the expr is
+	NULL.
+
+2006-09-10  Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/28914
 	* trans-array.c (gfc_trans_array_constructor_value): Create a temporary

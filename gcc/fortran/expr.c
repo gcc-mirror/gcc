@@ -1090,24 +1090,15 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
       if (begin)
 	  mpz_set (start[d], begin->value.integer);
       else
-	{
-	  if (mpz_cmp_si (stride[d], 0) < 0)
-	    mpz_set (start[d], upper->value.integer);
-	  else
-	    mpz_set (start[d], lower->value.integer);
-	}
+	mpz_set (start[d], lower->value.integer);
+
       mpz_set (ctr[d], start[d]);
 
       /* Obtain the end value for the index.  */
       if (finish)
         mpz_set (end[d], finish->value.integer);
       else
-	{
-	  if (mpz_cmp_si (stride[d], 0) < 0)
-	    mpz_set (end[d], lower->value.integer);
-	  else
-	    mpz_set (end[d], upper->value.integer);
-	}
+	mpz_set (end[d], upper->value.integer);
 
       /* Separate 'if' because elements sometimes arrive with
 	 non-null end.  */
