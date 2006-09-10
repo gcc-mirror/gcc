@@ -260,6 +260,20 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 	    /* dest[x,y] += a[x,n] * b[n,y] */
 	    dest[x*rxstride + y*rystride] += abase[x*axstride + n*aystride] * bbase[n*bxstride + y*bystride];
     }
+  else if (GFC_DESCRIPTOR_RANK (a) == 1)
+    {
+      const rtype_name *restrict bbase_y;
+      rtype_name s;
+
+      for (y = 0; y < ycount; y++)
+	{
+	  bbase_y = &bbase[y*bystride];
+	  s = (rtype_name) 0;
+	  for (n = 0; n < count; n++)
+	    s += abase[n*axstride] * bbase_y[n*bxstride];
+	  dest[y*rxstride] = s;
+	}
+    }
   else
     {
       const rtype_name *restrict abase_x;

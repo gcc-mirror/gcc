@@ -1,3 +1,21 @@
+2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/28947
+	* m4/matmul.m4: For the case where the second input argument is
+	transposed, ensure that the case with rank (a) == 1 is
+	correctly calculated.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_r8.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+
 2006-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/28354
