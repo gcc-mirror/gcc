@@ -1,3 +1,10 @@
+2006-09-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR testsuite/29007
+	* gcc.dg/long-long-cst1.c (t): Add cast to
+	__SIZE_TYPE__ before casting to int.
+	(main): Return 0 on success.
+
 2006-09-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20060910-1.c: New test.
