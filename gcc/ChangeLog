@@ -1,3 +1,9 @@
+2006-09-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/29009
+	* config/i386/i386.c (override_options): Use 128-bit
+	stack boundary always for 64bits.
+
 2006-09-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/28636
