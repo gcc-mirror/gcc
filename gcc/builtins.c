@@ -760,6 +760,12 @@ expand_builtin_setjmp (tree arglist, rtx target)
 
   emit_label (next_lab);
 
+  /* Because setjmp and longjmp are not represented in the CFG, a cfgcleanup
+     may find that the basic block starting with NEXT_LAB is unreachable.
+     The whole block, along with NEXT_LAB, would be removed (see PR26983).
+     Make sure that never happens.  */
+  LABEL_PRESERVE_P (next_lab) = 1;
+     
   expand_builtin_setjmp_receiver (next_lab);
 
   /* Set TARGET to one.  */
