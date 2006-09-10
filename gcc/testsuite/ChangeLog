@@ -55,6 +55,11 @@
 	* g++.dg/parse/def-tmpl-arg1.C: Adjust error-markers.
 	* g++.old-deja/g++.pt/crash65.C: Likewise.
 
+2006-09-07  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/27724
+	* gcc.dg/long-long-cst1.c: New test.
+
 2006-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/28906
