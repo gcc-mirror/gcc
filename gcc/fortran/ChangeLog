@@ -1,3 +1,10 @@
+2006-09-09  Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/28914
+	* trans-array.c (gfc_trans_array_constructor_value): Create a temporary
+	loop variable to hold the current loop variable in case it is modified
+	by the array constructor.
+
 2006-09-07  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.h (gfc_integer_info): Eliminate max_int.

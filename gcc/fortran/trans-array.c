@@ -1252,6 +1252,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  tree exit_label;
 	  tree loopbody;
 	  tree tmp2;
+	  tree tmp_loopvar;
 
 	  loopbody = gfc_finish_block (&body);
 
@@ -1259,6 +1260,11 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  gfc_conv_expr (&se, c->iterator->var);
 	  gfc_add_block_to_block (pblock, &se.pre);
 	  loopvar = se.expr;
+
+	  /* Make a temporary, store the current value in that
+	     and return it, once the loop is done.  */
+	  tmp_loopvar = gfc_create_var (TREE_TYPE (loopvar), "loopvar");
+	  gfc_add_modify_expr (pblock, tmp_loopvar, loopvar);
 
 	  /* Initialize the loop.  */
 	  gfc_init_se (&se, NULL);
@@ -1327,6 +1333,9 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  /* Add the exit label.  */
 	  tmp = build1_v (LABEL_EXPR, exit_label);
 	  gfc_add_expr_to_block (pblock, tmp);
+
+	  /* Restore the original value of the loop counter.  */
+	  gfc_add_modify_expr (pblock, loopvar, tmp_loopvar);
 	}
     }
   mpz_clear (size);
