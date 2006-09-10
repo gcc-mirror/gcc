@@ -10397,6 +10397,7 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
   for (cfi = fde->dw_fde_cfi; cfi; cfi = cfi->dw_cfi_next)
     switch (cfi->dw_cfi_opc)
       {
+      case DW_CFA_set_loc:
       case DW_CFA_advance_loc1:
       case DW_CFA_advance_loc2:
       case DW_CFA_advance_loc4:

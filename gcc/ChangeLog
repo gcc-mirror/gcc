@@ -1,3 +1,8 @@
+2006-09-09  Roger Sayle  <roger@eyesopen.com>
+	    Nicolas Setton <setton@adacore.com>
+
+	* dwarf2out.c (convert_cfa_to_fb_loc_list): Handle DW_CFA_set_loc.
+
 2006-09-10  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.md (bungt_rev): New pattern.
