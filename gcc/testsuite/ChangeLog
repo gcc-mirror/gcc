@@ -1,3 +1,7 @@
+2006-09-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20060910-1.c: New test.
+
 2006-09-10  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/26983
