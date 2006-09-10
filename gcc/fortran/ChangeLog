@@ -1,5 +1,11 @@
 2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/28959
+	trans-types.c (gfc_get_derived_type): Use the parent namespace of
+	the procedure if the type's own namespace does not have a parent.
+
+2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/28923
 	expr.c (find_array_section): Only use the array lower and upper
 	bounds for the start and end of the sections, where the expr is
