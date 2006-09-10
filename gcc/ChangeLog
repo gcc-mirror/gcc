@@ -1,3 +1,9 @@
+2006-09-10  Roger Sayle  <roger@eyesopen.com>
+	    Nicolas Setton <setton@adacore.com>
+
+	Backport from mainline
+	* dwarf2out.c (convert_cfa_to_fb_loc_list): Handle DW_CFA_set_loc.
+
 2006-09-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/28636
