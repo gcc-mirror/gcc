@@ -19,3 +19,5 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#endif' >> fp-bit.c
 	echo '#define QUIET_NAN_NEGATED' >> fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+LIB2_SIDITI_CONV_FUNCS=yes
