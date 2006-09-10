@@ -258,6 +258,20 @@ matmul_i8 (gfc_array_i8 * const restrict retarray,
 	    /* dest[x,y] += a[x,n] * b[n,y] */
 	    dest[x*rxstride + y*rystride] += abase[x*axstride + n*aystride] * bbase[n*bxstride + y*bystride];
     }
+  else if (GFC_DESCRIPTOR_RANK (a) == 1)
+    {
+      const GFC_INTEGER_8 *restrict bbase_y;
+      GFC_INTEGER_8 s;
+
+      for (y = 0; y < ycount; y++)
+	{
+	  bbase_y = &bbase[y*bystride];
+	  s = (GFC_INTEGER_8) 0;
+	  for (n = 0; n < count; n++)
+	    s += abase[n*axstride] * bbase_y[n*bxstride];
+	  dest[y*rxstride] = s;
+	}
+    }
   else
     {
       const GFC_INTEGER_8 *restrict abase_x;
