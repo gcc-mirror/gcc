@@ -1,4 +1,9 @@
-2006-09-09  Paul Thomas  <pault@gcc.gnu.org>
+2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28959
+	gfortran.dg/used_types_10: New test.
+
+2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/28923
 	gfortran.dg/array_initializer_2.f90: Fill in missing index start value.
