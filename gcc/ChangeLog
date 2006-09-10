@@ -1,3 +1,10 @@
+2006-09-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/28636
+	* combine.c (force_to_mode): Test for side-effects before
+	substituting by zero.
+	(simplify_shift_const): Likewise for zero or other constants.
+
 2006-09-10  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/26983
