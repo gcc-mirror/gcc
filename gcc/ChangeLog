@@ -1,3 +1,9 @@
+2006-09-11  Josh Triplett  <josh@freedesktop.org>
+
+	* doc/extend.texi (Other Builtins): Actually use the macro
+	argument in the documentation example for
+	__builtin_types_compatible_p.
+
 2006-09-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/28726
