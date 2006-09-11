@@ -1899,12 +1899,10 @@ override_options (void)
     }
 
   /* Validate -mpreferred-stack-boundary= value, or provide default.
-     The default of 128 bits is for Pentium III's SSE __m128, but we
-     don't want additional code to keep the stack aligned when
-     optimizing for code size.  */
-  ix86_preferred_stack_boundary
-    = (TARGET_64BIT || TARGET_MACHO || TARGET_SSE || !optimize_size) 
-       ? 128 : 32;
+     The default of 128 bits is for Pentium III's SSE __m128.  We can't
+     change it because of optimize_size.  Otherwise, we can't mix object
+     files compiled with -Os and -On.  */
+  ix86_preferred_stack_boundary = 128;
   if (ix86_preferred_stack_boundary_string)
     {
       i = atoi (ix86_preferred_stack_boundary_string);
