@@ -5717,7 +5717,7 @@ depending on the arguments' types.  For example:
 @smallexample
 #define foo(x)                                                  \
   (@{                                                           \
-    typeof (x) tmp;                                             \
+    typeof (x) tmp = (x);                                       \
     if (__builtin_types_compatible_p (typeof (x), long double)) \
       tmp = foo_long_double (tmp);                              \
     else if (__builtin_types_compatible_p (typeof (x), double)) \
