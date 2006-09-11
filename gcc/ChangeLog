@@ -1,3 +1,11 @@
+2006-09-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/28672
+	* var-tracking.c (dump_dataflow_set): Start dumping at
+	register zero.
+	(clobber_variable_part): Kill only the variable part in
+	registers holding it, leaving other variables alone.
+
 2006-09-11  Josh Triplett  <josh@freedesktop.org>
 
 	* doc/extend.texi (Other Builtins): Actually use the macro

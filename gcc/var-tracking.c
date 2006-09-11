@@ -1960,7 +1960,7 @@ dump_dataflow_set (dataflow_set *set)
 
   fprintf (dump_file, "Stack adjustment: " HOST_WIDE_INT_PRINT_DEC "\n",
 	   set->stack_adjust);
-  for (i = 1; i < FIRST_PSEUDO_REGISTER; i++)
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       if (set->regs[i])
 	{
@@ -2212,8 +2212,32 @@ clobber_variable_part (dataflow_set *set, rtx loc, tree decl,
 	  for (node = next; node; node = next)
 	    {
 	      next = node->next;
-	      if (REG_P (node->loc) && node->loc != loc)
-		var_reg_delete (set, node->loc, false);
+	      if (node->loc != loc)
+		{
+		  if (REG_P (node->loc))
+		    {
+		      attrs anode, anext;
+		      attrs *anextp;
+
+		      /* Remove the variable part from the register's
+			 list, but preserve any other variable parts
+			 that might be regarded as live in that same
+			 register.  */
+		      anextp = &set->regs[REGNO (node->loc)];
+		      for (anode = *anextp; anode; anode = anext)
+			{
+			  anext = anode->next;
+			  if (anode->decl == decl
+			      && anode->offset == offset)
+			    {
+			      pool_free (attrs_pool, anode);
+			      *anextp = anext;
+			    }
+			}
+		    }
+
+		  delete_variable_part (set, node->loc, decl, offset);
+		}
 	    }
 	}
     }
