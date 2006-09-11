@@ -1,3 +1,11 @@
+2006-09-11  Guenter Roeck  <guenter@roeck-us.net>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/27287
+	* config/rs6000/spe.md (frob_df_di): Remove %H.
+	(frob_di_df): Remove %H.  Change evmergelo to mr.
+	(frob_di_df_2): Remove %H.  Change evldd to two loads.
+
 2006-09-11  Hideki Iwamoto  <h-iwamoto@kit.hi-ho.ne.jp>
 
 	* doc/cpp.texi: Fix names of charset options.
