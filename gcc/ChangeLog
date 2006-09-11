@@ -1,3 +1,11 @@
+2006-09-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/13685
+	PR target/27537
+	PR target/28621
+	* config/i386/i386.c (override_options): Always default to 16
+	byte stack boundary.
+
 2006-09-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/28672
