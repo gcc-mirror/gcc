@@ -1,3 +1,7 @@
+2006-09-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/pr28726.c: New test.
+
 2006-09-11  Josh Conner  <jconner@apple.com>
 
 	* gcc.dg/nrv3.c: Increase size of structure.
