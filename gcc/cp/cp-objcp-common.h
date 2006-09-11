@@ -59,6 +59,8 @@ extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 #define LANG_HOOKS_EXPAND_DECL c_expand_decl
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE c_common_parse_file
+#undef LANG_HOOKS_STATICP
+#define LANG_HOOKS_STATICP cxx_staticp
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL cxx_dup_lang_specific_decl
 #undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME

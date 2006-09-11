@@ -1,3 +1,8 @@
+2006-09-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28991
+	* g++.dg/init/static3.C: New test.
+
 2006-09-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR testsuite/29007
