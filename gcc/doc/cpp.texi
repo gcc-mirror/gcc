@@ -3785,7 +3785,7 @@ execution character set.
 
 Currently, CPP requires its input to be ASCII or UTF-8.  The execution
 character set may be controlled by the user, with the
-@option{-ftarget-charset} and @option{-ftarget-wide-charset} options.
+@option{-fexec-charset} and @option{-fwide-exec-charset} options.
 
 @item Identifier characters.
 @anchor{Identifier characters}
