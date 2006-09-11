@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-optimized" } */
 
-typedef struct { int x; void *y; } S;
+typedef struct { int x[20]; void *y; } S;
 typedef struct { int a; S b; } T;
 S nrv_candidate (void);
 void use_result (S, int);

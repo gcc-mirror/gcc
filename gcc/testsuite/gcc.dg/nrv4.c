@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-optimized" } */
 
-typedef struct { int x; void *y; } S;
+typedef struct { int x[20]; void *y; } S;
 S nrv_candidate (void);
 void use_result (S);
 void make_escape (S *);

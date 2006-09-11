@@ -1,3 +1,9 @@
+2006-09-11  Josh Conner  <jconner@apple.com>
+
+	* gcc.dg/nrv3.c: Increase size of structure.
+	* gcc.dg/nrv4.c: Likewise.
+	* gcc.dg/nrv5.c: Likewise.
+
 2006-09-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/28890
