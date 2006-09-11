@@ -419,13 +419,16 @@ public class Request
     switch (code)
       {
       case 100:
+        break;
       case 204:
       case 205:
       case 304:
+        body = createResponseBodyStream(responseHeaders, majorVersion,
+                                        minorVersion, in, false);
         break;
       default:
         body = createResponseBodyStream(responseHeaders, majorVersion,
-                                        minorVersion, in);
+                                        minorVersion, in, true);
       }
 
     // Construct response
@@ -453,7 +456,8 @@ public class Request
   private InputStream createResponseBodyStream(Headers responseHeaders,
                                                int majorVersion,
                                                int minorVersion,
-                                               InputStream in)
+                                               InputStream in,
+                                               boolean mayHaveBody)
     throws IOException
   {
     long contentLength = -1;
@@ -466,7 +470,12 @@ public class Request
       (majorVersion == 1 && minorVersion == 0);
 
     String transferCoding = responseHeaders.getValue("Transfer-Encoding");
-    if ("chunked".equalsIgnoreCase(transferCoding))
+    if ("HEAD".equals(method) || !mayHaveBody)
+      {
+        // Special case no body.
+        in = new LimitedLengthInputStream(in, 0, true, connection, doClose);
+      }
+    else if ("chunked".equalsIgnoreCase(transferCoding))
       {
         in = new LimitedLengthInputStream(in, -1, false, connection, doClose);
           

@@ -1,3 +1,11 @@
+2006-09-11 David Daney  <ddaney@avtrex.com>
+
+	PR classpath/28580
+	* gnu/java/net/protocol/http/Request.java (readResponse):  Call 
+	createResponseBodyStream in more cases and with new parameter.
+	(createResponseBodyStream):  Added new parameter mayHaveBody. Handle
+	HEAD and !mayHaveBody responses specially.
+
 2006-09-05  Gary Benson  <gbenson@redhat.com>
 
 	* java/net/SocketPermission.java
