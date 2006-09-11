@@ -1,3 +1,7 @@
+2006-09-11  Hideki Iwamoto  <h-iwamoto@kit.hi-ho.ne.jp>
+
+	* doc/cpp.texi: Fix names of charset options.
+
 2006-09-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/29009
