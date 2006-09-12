@@ -1,3 +1,52 @@
+2006-09-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* dwarf2out.c (dwarf_file_data): New.
+	(enum dw_val_class): Add dw_val_class_file.
+	(struct dw_val_struct): Add val_file.
+	(file_table): Change to a hash table.
+	(file_table_emitted): Delete.
+	(file_table_last_lookup_index): Delete.
+	(emitcount): Delete.
+	(last_emitted_file): New.
+	(lookup_filename): Change prototype to return a struct dwarf_file_data.
+	(init_file_table): Delete.
+	(maybe_emit_file): Change prototype to take a struct dwarf_file_data.
+	(AT_addr): Add comment.
+	(add_AT_file): New.
+	(AT_file): New.
+	(get_AT_file): New.
+	(print_die): Handle dw_val_class_file.
+	(print_dwarf_line_table): Update for new file table structure.
+	(attr_checksum): Do checksum a filename.
+	(same_dw_val_p, same_attr_p): Do compare a filename.
+	(size_of_die): Handle dw_val_class_file.
+	(value_format): Likewise.
+	(output_die): Likewise.  Also, call maybe_emit_file here.
+	(struct file_info): Constify filenames.  Make file_idx a pointer
+	to a struct dwarf_file_data.
+	(struct dir_info): Constify directory names.  Remove 'used' field.
+	(struct file_name_acquire_data): New.
+	(file_name_acquire): New.
+	(output_file_names): Modify to handle new file data structures.
+	(add_src_coords_attributes): Use add_AT_file.
+	(add_call_src_coords_attributes): Likewise.
+	(dwarf2out_imported_module_or_decl): Likewise.
+	(gen_subprogram_die): Modify for new file data structures.
+	(gen_variable_die): Likewise.
+	(file_table_eq): New.
+	(file_table_hash): New.
+	(file_table_last_lookup): New.
+	(lookup_filename): Rewrite to handle new file data structures.
+	(maybe_emit_file): Rewrite to handle new file data structures.
+	(dwarf2out_source_line): Always call lookup_filename and
+	maybe_emit_file.
+	(dwarf2out_init): Create file_table here.
+	(prune_unused_types_walk_attribs): Don't call maybe_emit_file here.
+	(file_table_relative_p): New.
+	(dwarf2out_finish): Change detection of relative filenames
+	to work with new file data structures.  Move output_line_info call
+	after debug_info output.
+
 2006-09-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/13685
