@@ -679,7 +679,12 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 #ifdef HAVE_nonlocal_goto
   if (! HAVE_nonlocal_goto)
 #endif
-    emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
+    {
+      emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
+      /* This might change the hard frame pointer in ways that aren't
+	 apparent to early optimization passes, so force a clobber.  */
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, hard_frame_pointer_rtx));
+    }
 
 #if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
   if (fixed_regs[ARG_POINTER_REGNUM])
