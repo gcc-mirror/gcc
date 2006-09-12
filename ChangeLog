@@ -37,8 +37,8 @@
 
 2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        * Makefile.tpl (configure-stageN-MODULE): Pass --with-build-libsubdir
-        for stages after the first.
+	* Makefile.tpl (configure-stageN-MODULE): Pass --with-build-libsubdir
+	for stages after the first.
 
 2006-07-17  Jakub Jelinek  <jakub@redhat.com>
 
@@ -376,13 +376,13 @@
 
 	2005-12-27  Leif Ekblad  <leif@rdos.net>
 
-        * configure.in: Add support for RDOS target.
-        * configure: Regenerate.
+	* configure.in: Add support for RDOS target.
+	* configure: Regenerate.
 
 2006-02-14  Paolo Bonzini  <bonzini@gnu.org>
             Andreas Schwab  <schwab@suse.de>
 
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2006-02-12  David Edelsohn  <edelsohn@gnu.org>
 
@@ -973,7 +973,7 @@
 	non-ported target libraries in noconfigdirs.
 	<cris-*, crisv32-*> Ditto, except for non-aout, non-elf,
 	non-linux-gnu.  Remove libgcj_ex_libffi.
- 	<lang_frag loop>: Set add_this_lang=no if the language is in
+	<lang_frag loop>: Set add_this_lang=no if the language is in
 	unsupported_languages.
 	* configure: Regenerate.
 
@@ -2683,8 +2683,8 @@
 
 2003-12-21  Bernardo Innocenti  <bernie@develer.com>
 
- 	* configure.in (*-*-uclinux): Exclude newlib, libgloss and rda.
- 	* configure: Regenerated.
+	* configure.in (*-*-uclinux): Exclude newlib, libgloss and rda.
+	* configure: Regenerated.
 
 2003-12-16  Jan Hubicka  <jh@suse.cz>
 
@@ -2811,7 +2811,7 @@
 
 2003-09-30  Carlo Wood  <carlo@alinoe.com>
 
-       * MAINTAINERS (Write After Approval): Add myself.
+	* MAINTAINERS (Write After Approval): Add myself.
 
 2003-09-29  Paul Koning  <ni1d@arrl.net>
 
@@ -2855,7 +2855,7 @@
 
 2003-09-16  Dorit Naishlos  <dorit@il.ibm.com>
 
-       * MAINTAINERS (Write After Approval): Add myself.
+	* MAINTAINERS (Write After Approval): Add myself.
 
 2003-09-09  Ian Lance Taylor  <ian@wasabisystems.com>
 
@@ -11602,8 +11602,8 @@ Mon May 10 05:58:35 1993  Ken Raeburn  (raeburn@kr-pc.cygnus.com)
 
 Sun May  9 17:47:57 1993  Rob Savoye  (rob at darkstar.cygnus.com)
 
-       * Makefile.in: Use srcroot to find runtest rather than rootme.
-       Pass RUNTESTFLAGS and EXPECT down in BASE_FLAGS_TO_PASS.
+	* Makefile.in: Use srcroot to find runtest rather than rootme.
+	Pass RUNTESTFLAGS and EXPECT down in BASE_FLAGS_TO_PASS.
 
 Fri May  7 14:55:59 1993  Ian Lance Taylor  (ian@cygnus.com)
 
