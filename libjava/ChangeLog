@@ -188,20 +188,20 @@
 
 2006-08-15  Kyle Galloway  <kgallowa@redhat.com>
 
-  	* include/java-interp.h (_Jv_InterpMethod::run_debug): New method.
-  	* interpret.cc: Added placeholder for debug variable type info to STORE*
-  	macros.
-  	(_Jv_InterpMethod::run_debug): New method.
-  	(_Jv_InterpMethod::run_sync_object_debug): New method.
-  	(_Jv_InterpMethod::run_sync_class_debug): New method.
-  	(_Jv_InterpMethod::run_normal_debug): New method.
-  	(_Jv_InterpMethod::run_class_debug): New method.
-  	(_Jv_InterpMethod::ncode ()): Changed to select either debug or normal
-  	versions of these functions.
-  	* interpret-run.cc: New file, holds contents of old 	
+	* include/java-interp.h (_Jv_InterpMethod::run_debug): New method.
+	* interpret.cc: Added placeholder for debug variable type info to STORE*
+	macros.
+	(_Jv_InterpMethod::run_debug): New method.
+	(_Jv_InterpMethod::run_sync_object_debug): New method.
+	(_Jv_InterpMethod::run_sync_class_debug): New method.
+	(_Jv_InterpMethod::run_normal_debug): New method.
+	(_Jv_InterpMethod::run_class_debug): New method.
+	(_Jv_InterpMethod::ncode ()): Changed to select either debug or normal
+	versions of these functions.
+	* interpret-run.cc: New file, holds contents of old 	
 	_Jv_InterpMethod::run method.
-  	* stacktrace.cc (_Jv_StackTrace::UnwindTraceFn): Changed to select
-  	appropriate function for debug or normal mode.
+	* stacktrace.cc (_Jv_StackTrace::UnwindTraceFn): Changed to select
+	appropriate function for debug or normal mode.
 
 2006-08-14  Mark Wielaard  <mark@klomp.org>
 
@@ -1490,9 +1490,9 @@
 
 2006-05-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-        * configure.ac: Add sys/rw_lock.h to AC_CHECK_HEADERS.
-        * configure: Rebuilt.
-        * include/config.h.in: Likewise.
+	* configure.ac: Add sys/rw_lock.h to AC_CHECK_HEADERS.
+	* configure: Rebuilt.
+	* include/config.h.in: Likewise.
 	* include/posix.h: If HAVE_SYS_RW_LOCK_H is defined, include
 	<sys/rw_lock.h>.
 
@@ -2450,25 +2450,25 @@
 	(_Jv_FindClassFromSignatureNoException): New method declaration.
 	* prims.cc:
 	(_Jv_FindClassFromSignatureNoException): New method.
-        * gcj/javaprims.h:
-        (_Jv_equalsUtf8Classname): New method declaration.
-        (_Jv_isPrimitiveOrDerived): Dito.
-        * prims.cc:
+	* gcj/javaprims.h:
+	(_Jv_equalsUtf8Classname): New method declaration.
+	(_Jv_isPrimitiveOrDerived): Dito.
+	* prims.cc:
 	(_Jv_equalsUtf8Classnames): New method.
-        (_Jv_isPrimitiveOrDerived): New method.
-        * verify.cc:
-        (ref_intersection::equals): Use new classname comparison method.
-        (type::compatible): Use new classname comparison method. Added
-        check whether LHS' type is java.lang.Object .
-        (type::resolve): Added new optional debug message and simplified
-        if-expression.
-        (type::to_array): Added codepath that generates an array type
-        without resolving the element type.
+	(_Jv_isPrimitiveOrDerived): New method.
+	* verify.cc:
+	(ref_intersection::equals): Use new classname comparison method.
+	(type::compatible): Use new classname comparison method. Added
+	check whether LHS' type is java.lang.Object .
+	(type::resolve): Added new optional debug message and simplified
+	if-expression.
+	(type::to_array): Added codepath that generates an array type
+	without resolving the element type.
 
 2006-01-31  Mark Wielaard  <mark@klomp.org>
- 
- 	* NEWS: Add 4.1 updates.
- 
+
+	* NEWS: Add 4.1 updates.
+
 2006-01-30  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-interp.h (insn_index): New declaration.
@@ -3641,18 +3641,18 @@
 
 2005-07-14  Andrew Haley  <aph@redhat.com>
 
-        * gnu/java/net/protocol/file/Connection.java (unquote): New
-        method.
-        (connect): Unquote filename.
-        gnu/java/net/protocol/jar/Connection.java (getInputStream):
-        Likewise.  
-        (getJarFile): Likewise.
+	* gnu/java/net/protocol/file/Connection.java (unquote): New
+	method.
+	(connect): Unquote filename.
+	gnu/java/net/protocol/jar/Connection.java (getInputStream):
+	Likewise.  
+	(getJarFile): Likewise.
 
-        * java/net/URLConnection.java (getContentHandler): Guard cast with
-        instaceof.
+	* java/net/URLConnection.java (getContentHandler): Guard cast with
+	instaceof.
 
-        * java/net/URL.java (URL): If the file part of a spec is absolute,
-        ignore the file part of its context.
+	* java/net/URL.java (URL): If the file part of a spec is absolute,
+	ignore the file part of its context.
 
 2005-07-14  Aaron Luchko  <aluchko@redhat.com>
 
