@@ -1,5 +1,10 @@
 2006-09-12  Tom Tromey  <tromey@redhat.com>
 
+	* jvspec.c (lang_specific_driver): Read spec file even if
+	-fsyntax-only.
+
+2006-09-12  Tom Tromey  <tromey@redhat.com>
+
 	PR java/28754:
 	* expr.c (expand_java_field_op): Initialize field's declaring
 	interface if necessary.
