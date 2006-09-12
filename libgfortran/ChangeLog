@@ -179,7 +179,7 @@
 	
 2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2006-07-15  Steven G. Kargl  <kargls@comcast.net>
 
@@ -887,11 +887,11 @@
 
 2006-01-02  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR target/25259
-        * configure.ac: Use GCC_HEADER_STDINT.
-        * libgfortran.h: Include gstdint.h.
-        * aclocal.m4: Regenerate.
-        * configure: Regenerate.
+	PR target/25259
+	* configure.ac: Use GCC_HEADER_STDINT.
+	* libgfortran.h: Include gstdint.h.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
 
 2006-01-01  Steven G. Kargl  <kargls@comcast.net>
 
