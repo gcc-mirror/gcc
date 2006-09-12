@@ -1,3 +1,8 @@
+2006-09-11  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+        PR testsuite/28950
+        * gcc.target/powerpc/ppc-and-1.c: Fix regex.
+
 2006-09-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/13685
