@@ -1386,6 +1386,7 @@ resolve_function (gfc_expr * expr)
 	&& sym->ts.cl
 	&& sym->ts.cl->length == NULL
 	&& !sym->attr.dummy
+	&& expr->value.function.esym == NULL
 	&& !sym->attr.contained)
     {
       /* Internal procedures are taken care of in resolve_contained_fntype.  */

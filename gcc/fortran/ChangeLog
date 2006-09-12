@@ -1,3 +1,15 @@
+2006-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28890
+	trans-expr.c (gfc_conv_function_call): Obtain the string length
+	of a dummy character(*) function from the symbol if it is not
+	already translated.  For a call to a character(*) function, use
+	the passed, hidden string length argument, which is available
+	from the backend_decl of the formal argument.
+	resolve.c (resolve_function): It is an error if a function call
+	to a character(*) function is other than a dummy procedure or
+	an intrinsic.
+
 2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28923
@@ -91,6 +103,7 @@
 	PR fortran/28771
 	* gfortran.dg/assumed_charlen_in_main.f90: Modify to check
 	fix of regression.
+
 2006-08-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/28601
