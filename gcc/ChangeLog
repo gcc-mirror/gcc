@@ -1,5 +1,12 @@
 2006-09-12  Roger Sayle  <roger@eyesopen.com>
 
+	PR target/22223
+	* config/alpha/alpha.c (alpha_start_function): Don't emit stack
+	frame information for frames larger than 512 Kbytes on Tru64 when
+	using the native assembler.
+
+2006-09-12  Roger Sayle  <roger@eyesopen.com>
+
 	PR middle-end/4520
 	PR bootstrap/28784
 	* cselib.c (cselib_hash_rtx): Avoid hashing on the address of labels
