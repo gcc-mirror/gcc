@@ -104,7 +104,7 @@
 	* match.c: Wrap copyright.
 	(gfc_match_assignment):  Return MATCH_NO for failed lvalue.  Remove
 	gotos.  Move error handling of FL_PARAMETER to ...
- 	* gfc_match_if: Deal with MATCH_NO from above.
+	* gfc_match_if: Deal with MATCH_NO from above.
 	* primary.c: Wrap copyright.
 	(match_variable): ... here.  Improve error messages.
 
@@ -285,7 +285,7 @@
 	to gfc_warning.
 	(warn_unused_label) Rename to ...
 	(warn_unused_fortran_label) avoid warn_unused_label in flags.h.
-     
+
 2006-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsic.c (add_functions): Add ACCESS, CHMOD, RSHIFT, LSHIFT.
@@ -1144,18 +1144,18 @@
 	* options.c (gfc_init_options, gfc_handle_option): Set new option.
 	sort nearby misplaced options.
 	* intrinsic.c (add_sym, make_generic, make_alias):  Use it.
- 
+
 2006-05-02 Paul Thomas <pault@gcc.gnu.org>
 
-        PR fortran/27269
-        * module.c: Add static flag in_load_equiv.
-        (mio_expr_ref): Return if no symtree and in_load_equiv.
-        (load_equiv): If any of the equivalence members have no symtree, free
-        the equivalence and the associated expressions.
+	PR fortran/27269
+	* module.c: Add static flag in_load_equiv.
+	(mio_expr_ref): Return if no symtree and in_load_equiv.
+	(load_equiv): If any of the equivalence members have no symtree, free
+	the equivalence and the associated expressions.
 
-        PR fortran/27324
-        * trans-common.c (gfc_trans_common): Invert the order of calls to
-        finish equivalences and gfc_commit_symbols.
+	PR fortran/27324
+	* trans-common.c (gfc_trans_common): Invert the order of calls to
+	finish equivalences and gfc_commit_symbols.
 
 2006-04-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
@@ -1754,8 +1754,8 @@
 
 2006-02-19  Thomas Koenig  <Thomas.Koenig@online.de>
 
-        * gfortran.texi:  Document environment variables which
-        influence runtime behavior.
+	* gfortran.texi:  Document environment variables which
+	influence runtime behavior.
 
 2006-02-19  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -1852,11 +1852,11 @@
 
 2006-02-14  Thomas Koenig  <Thomas.Koenig@online.de>
 
-        PR fortran/25045
-        * check.c (dim_check):  Perform all checks if dim is optional.
-        (gfc_check_minloc_maxloc):  Use dim_check and dim_rank_check
-        to check dim argument.
-        (check_reduction):  Likewise.
+	PR fortran/25045
+	* check.c (dim_check):  Perform all checks if dim is optional.
+	(gfc_check_minloc_maxloc):  Use dim_check and dim_rank_check
+	to check dim argument.
+	(check_reduction):  Likewise.
 
 2006-02-14  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
 
