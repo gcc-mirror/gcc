@@ -47,8 +47,8 @@
 
 2006-06-19  Andrew Haley  <aph@redhat.com>
 
-        PR java/1305
-        PR java/27908
+	PR java/1305
+	PR java/27908
 	* expr.c (java_modify_addr_for_volatile): New function.
 	(expand_java_field_op): Handle volatile fields.
 	* java-gimplify.c (java_gimplify_component_ref): Call
@@ -361,7 +361,7 @@
 	PR java/25535
 	* constants.c (build_constants_constructor): move initializer into
 	first halfword on a 64-bit big-endian machine.
- 
+
 2006-02-04  Tom Tromey  <tromey@redhat.com>
 
 	PR java/25676:
@@ -520,7 +520,7 @@
 
 2005-11-24  Bryce McKinlay  <mckinlay@redhat.com>
 
-        * gcj.texi (gij options): Add -Xss documentation.
+	* gcj.texi (gij options): Add -Xss documentation.
 
 2005-11-08  Wil Mahan  <wmahan@gmail.com>
 
@@ -769,7 +769,7 @@
 
 2005-07-07  Bryce McKinlay  <mckinlay@redhat.com>
 
-        PR java/21045
+	PR java/21045
 	* parse.y (add_exception_to_throws): New function.
 	(purge_unchecked_exceptions): Removed.
 	(get_constructor_super): Renamed from verify_constructor_super. Now
@@ -781,9 +781,9 @@
 
 2005-07-05  Bryce McKinlay  <mckinlay@redhat.com>
 
-        PR java/19674
-        * parse.y (interface_member_declaration): Allow empty statements in
-        interface declarations.
+	PR java/19674
+	* parse.y (interface_member_declaration): Allow empty statements in
+	interface declarations.
 
 2005-07-05  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -3489,7 +3489,7 @@
 2004-05-28  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* check-init.c (check_init): Handle binops UNLT_EXPR, UNLE_EXPR,
-    	UNGT_EXPR, UNGE_EXPR, UNEQ_EXPR, and LTGT_EXPR.
+	UNGT_EXPR, UNGE_EXPR, UNEQ_EXPR, and LTGT_EXPR.
 
 2004-05-28  Bryce McKinlay  <mckinlay@redhat.com>
 
@@ -9773,8 +9773,8 @@
 
 2000-10-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-       * parse.h (INNER_ENCLOSING_SCOPE_CHECK): Check inherited type in
-       scope.
+	* parse.h (INNER_ENCLOSING_SCOPE_CHECK): Check inherited type in
+	scope.
 
 2000-10-24  Tom Tromey  <tromey@cygnus.com>
 
@@ -10980,8 +10980,8 @@
 
 2000-05-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
-       * parse.y (patch_method_invocation): Don't try to lookup methods
-       in primitive types.
+	* parse.y (patch_method_invocation): Don't try to lookup methods
+	in primitive types.
 
 2000-05-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
@@ -14553,7 +14553,7 @@
 
 	* jcf-write.c (generate_bytecode_insns):  Handle __builtin_fmod, for %.
 
-  Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (method_header): Don't set ACC_ABSTRACT flags on
 	interfaces.
