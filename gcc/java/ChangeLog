@@ -1,5 +1,9 @@
 2006-09-12  Tom Tromey  <tromey@redhat.com>
 
+	* expr.c (push_value): Always flush quick stack.
+
+2006-09-12  Tom Tromey  <tromey@redhat.com>
+
 	PR java/29013:
 	* jcf-write.c (generate_bytecode_insns) <CALL_EXPR>: Always note
 	the push of the called method's return result.
