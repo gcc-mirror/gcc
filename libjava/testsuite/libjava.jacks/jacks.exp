@@ -1,11 +1,6 @@
 # Run the Jacks test suite.
 # See http://www-124.ibm.com/developerworks/oss/cvs/jikes/~checkout~/jacks/jacks.html
 
-proc load_gcc_lib { filename } {
-    global srcdir
-    load_file $srcdir/../../gcc/testsuite/lib/$filename
-}
-
 load_gcc_lib target-libpath.exp
 
 proc gcj_jacks_setup_xfail {ary} {
