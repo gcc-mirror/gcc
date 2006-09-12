@@ -1,3 +1,10 @@
+2006-09-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/4520
+	PR bootstrap/28784
+	* cselib.c (cselib_hash_rtx): Avoid hashing on the address of labels
+	and symbols.  Instead use the implementation from cse.c's hash_rtx.
+
 2006-09-12  Jan Hubicka  <jh@suse.cz>
 
 	PR rtl-optimization/28071
