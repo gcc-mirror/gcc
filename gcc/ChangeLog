@@ -1,3 +1,10 @@
+2006-09-12  Andrew Pinski  <pinskia@physics.uc.edu>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	* dwarf2out.c (file_table_last_lookup): Move this GC'd declaration
+	outside of #ifdef DWARF2_DEBUGGING_INFO to fix bootstrap failure
+	on platforms that don't use dwarf for debug info.
+
 2006-09-12  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/28493
