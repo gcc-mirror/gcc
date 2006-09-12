@@ -1,3 +1,34 @@
+2006-09-12  Jan Hubicka  <jh@suse.cz>
+
+	PR rtl-optimization/28071
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Kill cast.
+	(vect_transform_loop): Likewise.
+	* tree-vectorizer.c (new_loop_vec_info): Likewise.
+	(new_loop_vec_info): Likewise.
+	(destroy_loop_vec_info): Likewise.
+	* tree-dfa.c (create_var_ann): Use GCC_CNEW.
+	(create_stmt_ann): Likewise.
+	(create_tree_ann): Rename to ...
+	(create_tree_common_ann): ... this one; allocate only the common part
+	of annotations.
+	* tree-vn.c (set_value_handle): Use get_tree_common_ann.
+	(get_value_handle): Likewise.
+	* tree-ssa-pre.c (phi_translate): Delay annotation allocation for
+	get_tree_common_ann.
+	* tree-vectorizer.h (set_stmt_info): Take stmt annotation.
+	(vinfo_for_stmt): Use stmt annotations.
+	* tree-flow.h (tree_ann_common_t): New type.
+	(tree_common_ann, get_tree_common_ann, create_tree_common_ann): New.
+	(tree_ann, get_tree_ann, create_tree_ann): New.
+	* tree-flow-inline.h (get_function_ann): Do more type checking.
+	(stmt_ann): Likewise.
+	(tree_ann): Rename to ...
+	(tree_common_ann): ... this one; return ony common_ann
+	(get_tree_ann): Rename to ...
+	(tree_common_ann): This one; return only common_ann.
+	* tree-vect-patterns.c (vect_pattern_recog_1): Update call
+	of set_stmt_info.
+
 2006-09-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* config.gcc (i[34567]86-*-darwin*): Set with_arch and

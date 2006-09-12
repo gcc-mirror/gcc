@@ -1401,7 +1401,7 @@ new_loop_vec_info (struct loop *loop)
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
         {
-          tree_ann_t ann = get_tree_ann (phi);
+          stmt_ann_t ann = get_stmt_ann (phi);
           set_stmt_info (ann, new_stmt_vec_info (phi, res));
         }
 
@@ -1411,7 +1411,7 @@ new_loop_vec_info (struct loop *loop)
 	  stmt_ann_t ann;
 
 	  ann = stmt_ann (stmt);
-	  set_stmt_info ((tree_ann_t)ann, new_stmt_vec_info (stmt, res));
+	  set_stmt_info (ann, new_stmt_vec_info (stmt, res));
 	}
     }
 
@@ -1462,7 +1462,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo)
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
         {
-          tree_ann_t ann = get_tree_ann (phi);
+          stmt_ann_t ann = stmt_ann (phi);
 
           stmt_info = vinfo_for_stmt (phi);
           free (stmt_info);
@@ -1492,7 +1492,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo)
 	      /* Free stmt_vec_info.  */
 	      VEC_free (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmt_info));
 	      free (stmt_info);
-	      set_stmt_info ((tree_ann_t)ann, NULL);
+	      set_stmt_info (ann, NULL);
 
 	      /* Remove dead "pattern stmts".  */
 	      if (remove_stmt_p)

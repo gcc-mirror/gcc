@@ -351,7 +351,7 @@ vect_create_data_ref_ptr (tree stmt,
 		 NULL_TREE, loop, &incr_bsi, insert_after,
 		 &indx_before_incr, &indx_after_incr);
       incr = bsi_stmt (incr_bsi);
-      set_stmt_info ((tree_ann_t)stmt_ann (incr),
+      set_stmt_info (stmt_ann (incr),
 		     new_stmt_vec_info (incr, loop_vinfo));
 
       /* Copy the points-to information if it exists. */
@@ -3114,7 +3114,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 	      /* Free the attached stmt_vec_info and remove the stmt.  */
 	      stmt_ann_t ann = stmt_ann (stmt);
 	      free (stmt_info);
-	      set_stmt_info ((tree_ann_t)ann, NULL);
+	      set_stmt_info (ann, NULL);
 	      bsi_remove (&si, true);
 	      continue;
 	    }
