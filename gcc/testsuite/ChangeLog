@@ -1,3 +1,9 @@
+2006-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/28971
+	gfortran.dg/pr28971.f90: New test to act as a backstop in case
+	this undiagnosed regression reappears.
+
 2006-09-12  Kazu Hirata  <kazu@codesourcery.com>
 
 	* lib/c-torture.exp (c-torture-compile, c-torture-execute):
