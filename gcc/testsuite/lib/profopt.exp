@@ -221,7 +221,7 @@ proc profopt-execute { src } {
         error "No feedback option specified for second compile."
     }
 
-    regsub "^$srcdir/?" $src "" testcase
+    regsub "(?q)$srcdir/" $src "" testcase
     # If we couldn't rip $srcdir out of `src' then just do the best we can.
     # The point is to reduce the unnecessary noise in the logs.  Don't strip
     # out too much because different testcases with the same name can confuse
