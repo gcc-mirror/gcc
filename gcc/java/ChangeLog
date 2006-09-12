@@ -1,3 +1,9 @@
+2006-09-12  Tom Tromey  <tromey@redhat.com>
+
+	PR java/28892:
+	* expr.c (expand_java_field_op): No error for assignments not in
+	class initializer or constructor.
+
 2006-08-22  Andrew Haley  <aph@redhat.com>
 
 	* decl.c (java_add_stmt): Give the statement list a type.
