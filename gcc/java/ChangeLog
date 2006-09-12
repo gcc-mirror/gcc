@@ -1,5 +1,11 @@
 2006-09-12  Tom Tromey  <tromey@redhat.com>
 
+	PR java/29013:
+	* jcf-write.c (generate_bytecode_insns) <CALL_EXPR>: Always note
+	the push of the called method's return result.
+
+2006-09-12  Tom Tromey  <tromey@redhat.com>
+
 	* jvspec.c (lang_specific_driver): Read spec file even if
 	-fsyntax-only.
 

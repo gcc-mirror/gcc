@@ -2651,10 +2651,14 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	    if (TREE_CODE (f) != VOID_TYPE)
 	      {
 		int size = TYPE_IS_WIDE (f) ? 2 : 1;
+		/* Always note the push here, so that we correctly
+		   compute the required maximum stack size.  */
+		NOTE_PUSH (size);
 		if (target == IGNORE_TARGET)
-		  emit_pop (size, state);
-		else
-		  NOTE_PUSH (size);
+		  {
+		    emit_pop (size, state);
+		    NOTE_POP (size);
+		  }
 	      }
 	    break;
 	  }

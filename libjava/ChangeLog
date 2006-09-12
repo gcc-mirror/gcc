@@ -1,5 +1,11 @@
 2006-09-12  Tom Tromey  <tromey@redhat.com>
 
+	PR java/29013:
+	* testsuite/libjava.lang/PR29013.out: Likewise.
+	* testsuite/libjava.lang/PR29013.java: New file.
+
+2006-09-12  Tom Tromey  <tromey@redhat.com>
+
 	* testsuite/libjava.jacks/jacks.exp (load_gcc_lib): Removed.
 
 2006-09-07  Matthias Klose  <doko@debian.org>
