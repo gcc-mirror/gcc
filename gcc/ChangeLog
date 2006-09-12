@@ -1,3 +1,9 @@
+2006-09-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/28243
+	* combine.c (distribute_notes) <REG_DEAD>: Do not consider SETs past
+	the insn to which the note was originally attached.
+
 2006-09-12  Andrew Pinski  <pinskia@physics.uc.edu>
 	    Roger Sayle  <roger@eyesopen.com>
 
