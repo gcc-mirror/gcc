@@ -1,3 +1,13 @@
+2006-09-12  David Daney  <ddaney@avtrex.com>
+
+	PR libffi/23935
+	* include/Makefile.am: Install both ffi.h and ffitarget.h in
+	$(libdir)/gcc/$(target_alias)/$(gcc_version)/include.
+	* aclocal.m4: Regenerated for automake 1.9.6.
+	* Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
 2006-08-17  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* include/ffi_common.h (struct): Revert accidental commit.
