@@ -1151,7 +1151,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 		TREE_OPERAND (newexpr, 0) = newop0 == oldop0 ? oldop0 : get_value_handle (newop0);
 		TREE_OPERAND (newexpr, 1) = listchanged ? newarglist : oldarglist;
 		TREE_OPERAND (newexpr, 2) = newop2 == oldop2 ? oldop2 : get_value_handle (newop2);
-		create_tree_ann (newexpr);
+		newexpr->common.ann = NULL;
 		vn_lookup_or_add_with_vuses (newexpr, tvuses);
 		expr = newexpr;
 		phi_trans_add (oldexpr, newexpr, pred, tvuses);
@@ -1260,7 +1260,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	      }
 	    else
 	      {
-		create_tree_ann (newexpr);
+		newexpr->common.ann = NULL;
 		vn_lookup_or_add_with_vuses (newexpr, newvuses);
 	      }
 	    expr = newexpr;
@@ -1302,7 +1302,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	      }
 	    else
 	      {
-		create_tree_ann (newexpr);
+		newexpr->common.ann = NULL;
 		vn_lookup_or_add (newexpr, NULL);
 	      }
 	    expr = newexpr;
@@ -1335,7 +1335,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	      }
 	    else
 	      {
-		create_tree_ann (newexpr);
+		newexpr->common.ann = NULL;
 		vn_lookup_or_add (newexpr, NULL);
 	      }
 	    expr = newexpr;

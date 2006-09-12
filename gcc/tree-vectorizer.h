@@ -242,11 +242,11 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_SAME_ALIGN_REFS(S)     (S)->same_align_refs
 #define STMT_VINFO_DEF_TYPE(S)            (S)->def_type
 
-static inline void set_stmt_info (tree_ann_t ann, stmt_vec_info stmt_info);
+static inline void set_stmt_info (stmt_ann_t ann, stmt_vec_info stmt_info);
 static inline stmt_vec_info vinfo_for_stmt (tree stmt);
 
 static inline void
-set_stmt_info (tree_ann_t ann, stmt_vec_info stmt_info)
+set_stmt_info (stmt_ann_t ann, stmt_vec_info stmt_info)
 {
   if (ann)
     ann->common.aux = (char *) stmt_info;
@@ -255,7 +255,7 @@ set_stmt_info (tree_ann_t ann, stmt_vec_info stmt_info)
 static inline stmt_vec_info
 vinfo_for_stmt (tree stmt)
 {
-  tree_ann_t ann = tree_ann (stmt);
+  stmt_ann_t ann = stmt_ann (stmt);
   return ann ? (stmt_vec_info) ann->common.aux : NULL;
 }
 

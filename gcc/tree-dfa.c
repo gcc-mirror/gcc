@@ -142,8 +142,7 @@ create_var_ann (tree t)
   gcc_assert (DECL_P (t));
   gcc_assert (!t->common.ann || t->common.ann->common.type == VAR_ANN);
 
-  ann = GGC_NEW (struct var_ann_d);
-  memset ((void *) ann, 0, sizeof (*ann));
+  ann = GGC_CNEW (struct var_ann_d);
 
   ann->common.type = VAR_ANN;
 
@@ -183,8 +182,7 @@ create_stmt_ann (tree t)
   gcc_assert (is_gimple_stmt (t));
   gcc_assert (!t->common.ann || t->common.ann->common.type == STMT_ANN);
 
-  ann = GGC_NEW (struct stmt_ann_d);
-  memset ((void *) ann, 0, sizeof (*ann));
+  ann = GGC_CNEW (struct stmt_ann_d);
 
   ann->common.type = STMT_ANN;
 
@@ -198,19 +196,18 @@ create_stmt_ann (tree t)
 
 /* Create a new annotation for a tree T.  */
 
-tree_ann_t
-create_tree_ann (tree t)
+tree_ann_common_t
+create_tree_common_ann (tree t)
 {
-  tree_ann_t ann;
+  tree_ann_common_t ann;
 
   gcc_assert (t);
   gcc_assert (!t->common.ann || t->common.ann->common.type == TREE_ANN_COMMON);
 
-  ann = GGC_NEW (union tree_ann_d);
-  memset ((void *) ann, 0, sizeof (*ann));
+  ann = GGC_CNEW (struct tree_ann_common_d);
 
-  ann->common.type = TREE_ANN_COMMON;
-  t->common.ann = ann;
+  ann->type = TREE_ANN_COMMON;
+  t->common.ann = (tree_ann_t) ann;
 
   return ann;
 }

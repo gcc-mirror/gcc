@@ -182,7 +182,7 @@ set_value_handle (tree e, tree v)
     SSA_NAME_VALUE (e) = v;
   else if (EXPR_P (e) || DECL_P (e) || TREE_CODE (e) == TREE_LIST
 	   || TREE_CODE (e) == CONSTRUCTOR)
-    get_tree_ann (e)->common.value_handle = v;
+    get_tree_common_ann (e)->value_handle = v;
   else
     /* Do nothing.  Constants are their own value handles.  */
     gcc_assert (is_gimple_min_invariant (e));
@@ -438,8 +438,8 @@ get_value_handle (tree expr)
   else if (EXPR_P (expr) || DECL_P (expr) || TREE_CODE (expr) == TREE_LIST
 	   || TREE_CODE (expr) == CONSTRUCTOR)
     {
-      tree_ann_t ann = tree_ann (expr);
-      return ((ann) ? ann->common.value_handle : NULL_TREE);
+      tree_ann_common_t ann = tree_common_ann (expr);
+      return ((ann) ? ann->value_handle : NULL_TREE);
     }
   else
     gcc_unreachable ();
