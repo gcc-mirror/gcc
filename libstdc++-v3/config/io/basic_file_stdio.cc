@@ -1,6 +1,7 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,7 +71,7 @@
 
 #include <limits> // For <off_t>::max() and min() and <streamsize>::max()
 
-namespace __gnu_internal
+namespace 
 {
   // Map ios_base::openmode flags to a string for use in fopen().
   // Table of valid combinations as given in [lib.filebuf.members]/2.
@@ -172,7 +173,7 @@ namespace __gnu_internal
     return __n1 + __n2 - __nleft;
   }
 #endif
-} // namespace __gnu_internal
+} // anonymous namespace
 
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -209,7 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   __basic_file<char>::sys_open(int __fd, ios_base::openmode __mode)
   {
     __basic_file* __ret = NULL;
-    const char* __c_mode = __gnu_internal::fopen_mode(__mode);
+    const char* __c_mode = fopen_mode(__mode);
     if (__c_mode && !this->is_open() && (_M_cfile = fdopen(__fd, __c_mode)))
       {
 	char* __buf = NULL;
@@ -226,7 +227,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			   int /*__prot*/)
   {
     __basic_file* __ret = NULL;
-    const char* __c_mode = __gnu_internal::fopen_mode(__mode);
+    const char* __c_mode = fopen_mode(__mode);
     if (__c_mode && !this->is_open())
       {
 #ifdef _GLIBCXX_USE_LFS
@@ -291,7 +292,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   streamsize 
   __basic_file<char>::xsputn(const char* __s, streamsize __n)
-  { return __gnu_internal::xwrite(this->fd(), __s, __n); }
+  { return xwrite(this->fd(), __s, __n); }
 
   streamsize 
   __basic_file<char>::xsputn_2(const char* __s1, streamsize __n1,
@@ -299,13 +300,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   {
     streamsize __ret = 0;
 #ifdef _GLIBCXX_HAVE_WRITEV
-    __ret = __gnu_internal::xwritev(this->fd(), __s1, __n1, __s2, __n2);
+    __ret = xwritev(this->fd(), __s1, __n1, __s2, __n2);
 #else
     if (__n1)
-      __ret = __gnu_internal::xwrite(this->fd(), __s1, __n1);
+      __ret = xwrite(this->fd(), __s1, __n1);
 
     if (__ret == __n1)
-      __ret += __gnu_internal::xwrite(this->fd(), __s2, __n2);
+      __ret += xwrite(this->fd(), __s2, __n2);
 #endif
     return __ret;
   }

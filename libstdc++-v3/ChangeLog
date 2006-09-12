@@ -1,3 +1,11 @@
+2006-09-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* libsupc++/eh_globals.cc: Remove __gnu_internal.
+	* config/io/basic_file_stdio.cc: Same.
+	* config/abi/compatibility.h: Same.
+	* config/cpu/generic/atomicity_mutex/atomicity.h: Same.
+	* config/cpu/sh/atomicity.h: Same.
+	
 2006-09-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_heap.h (sort_heap): Iterator post-decrement is
