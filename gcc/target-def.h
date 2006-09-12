@@ -1,5 +1,6 @@
 /* Default initializers for a generic GCC target.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -30,8 +31,13 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
    definition in a #ifndef, since files include tm.h before this one.  */
 
 /* Assembler output.  */
+#ifndef TARGET_ASM_OPEN_PAREN
 #define TARGET_ASM_OPEN_PAREN "("
+#endif
+#ifndef TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN ")"
+#endif
+
 #define TARGET_ASM_BYTE_OP "\t.byte\t"
 
 #define TARGET_ASM_ALIGNED_HI_OP "\t.short\t"
