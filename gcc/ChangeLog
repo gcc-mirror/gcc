@@ -1,3 +1,9 @@
+2006-09-12  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/28493
+	* builtins.c (expand_builtin_setjmp_receiver): Clobber
+	hard_frame_pointer_rtx after using it to update the frame pointer.
+
 2006-09-12  Roger Sayle  <roger@eyesopen.com>
 
 	* target-def.h (TARGET_ASM_OPEN_PAREN): Guard with an #ifndef.
