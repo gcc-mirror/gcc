@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha on Tru64 5.
-   Copyright (C) 2000, 2001, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -50,4 +50,8 @@
 /* Tru64 v5.1 has the float and long double forms of math functions.  */
 #undef TARGET_C99_FUNCTIONS
 #define TARGET_C99_FUNCTIONS  1
+
+/* The native assembler doesn't understand parenthesis.  */
+#define TARGET_ASM_OPEN_PAREN ""
+#define TARGET_ASM_CLOSE_PAREN ""
 

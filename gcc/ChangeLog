@@ -1,5 +1,12 @@
 2006-09-12  Roger Sayle  <roger@eyesopen.com>
 
+	* target-def.h (TARGET_ASM_OPEN_PAREN): Guard with an #ifndef.
+	(TARGET_ASM_CLOSE_PAREN): Likewise.
+	* config/alpha/osf5.h (TARGET_ASM_OPEN_PAREN): Define.
+	(TARGET_ASM_CLOSE_PAREN): Likewise.
+
+2006-09-12  Roger Sayle  <roger@eyesopen.com>
+
 	PR target/22223
 	* config/alpha/alpha.c (alpha_start_function): Don't emit stack
 	frame information for frames larger than 512 Kbytes on Tru64 when
