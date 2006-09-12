@@ -1,3 +1,10 @@
+2006-09-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR testsuite/29007
+	* gcc.dg/long-long-cst1.c (t): Add cast to
+	__SIZE_TYPE__ before casting to int.
+	(main): Return 0 on success.
+
 2006-09-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/28890
@@ -10,8 +17,8 @@
 
 2006-09-11  Jack Howarth  <howarth@bromo.med.uc.edu>
 
-        PR testsuite/28950
-        * gcc.target/powerpc/ppc-and-1.c: Fix regex.
+	PR testsuite/28950
+	* gcc.target/powerpc/ppc-and-1.c: Fix regex.
 
 2006-09-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
