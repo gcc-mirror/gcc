@@ -1,5 +1,11 @@
 2006-09-12  Tom Tromey  <tromey@redhat.com>
 
+	PR java/28754:
+	* expr.c (expand_java_field_op): Initialize field's declaring
+	interface if necessary.
+
+2006-09-12  Tom Tromey  <tromey@redhat.com>
+
 	PR java/28892:
 	* expr.c (expand_java_field_op): No error for assignments not in
 	class initializer or constructor.
