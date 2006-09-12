@@ -1,5 +1,8 @@
 2006-09-11  Geoffrey Keating  <geoffk@apple.com>
 
+	* config.gcc (i[34567]86-*-darwin*): Set with_arch and
+	with_cpu by default.
+
 	* dwarf2out.c (dwarf_file_data): New.
 	(enum dw_val_class): Add dw_val_class_file.
 	(struct dw_val_struct): Add val_file.
