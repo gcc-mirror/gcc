@@ -12165,12 +12165,14 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 		      continue;
 		    }
 
-		  /* If the register is being set at TEM, see if that is all
-		     TEM is doing.  If so, delete TEM.  Otherwise, make this
-		     into a REG_UNUSED note instead. Don't delete sets to
-		     global register vars.  */
-		  if ((REGNO (XEXP (note, 0)) >= FIRST_PSEUDO_REGISTER
-		       || !global_regs[REGNO (XEXP (note, 0))])
+		  /* If TEM is a (reaching) definition of the use to which the
+		     note was attached, see if that is all TEM is doing.  If so,
+		     delete TEM.  Otherwise, make this into a REG_UNUSED note
+		     instead.  Don't delete sets to global register vars.  */
+		  if ((!from_insn
+		       || INSN_CUID (tem) < INSN_CUID (from_insn))
+		      && (REGNO (XEXP (note, 0)) >= FIRST_PSEUDO_REGISTER
+			  || !global_regs[REGNO (XEXP (note, 0))])
 		      && reg_set_p (XEXP (note, 0), PATTERN (tem)))
 		    {
 		      rtx set = single_set (tem);
