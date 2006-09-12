@@ -1,3 +1,7 @@
+2006-09-12  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jacks/jacks.exp (load_gcc_lib): Removed.
+
 2006-09-07  Matthias Klose  <doko@debian.org>
 
 	* Makefile.am (AM_CXXFLAGS): Remove duplicate define.
@@ -68,6 +72,7 @@
 	* jvmti.cc (_Jv_JVMTI_RawMonitorWait): Add millis parameter.
 	Pass millis to _Jv_CondWait.
 
+>>>>>>> .r116849
 2006-08-31  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/28698:
