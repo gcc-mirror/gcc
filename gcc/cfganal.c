@@ -1054,6 +1054,8 @@ compute_dominance_frontiers_1 (bitmap *frontiers)
 	      domsb = get_immediate_dominator (CDI_DOMINATORS, b);
 	      while (runner != domsb)
 		{
+		  if (bitmap_bit_p (frontiers[runner->index], b->index))
+		    break;
 		  bitmap_set_bit (frontiers[runner->index],
 				  b->index);
 		  runner = get_immediate_dominator (CDI_DOMINATORS,
