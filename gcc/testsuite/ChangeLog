@@ -1,3 +1,7 @@
+2006-09-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/debug/dwarf2/dwarf-file1.c: New.
+
 2006-09-11  Jack Howarth  <howarth@bromo.med.uc.edu>
 
         PR testsuite/28950
