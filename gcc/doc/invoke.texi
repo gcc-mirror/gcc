@@ -9505,15 +9505,13 @@ applicable to individual functions.
 @opindex mpreferred-stack-boundary
 Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
 byte boundary.  If @option{-mpreferred-stack-boundary} is not specified,
-the default is 4 (16 bytes or 128 bits), except when optimizing for code
-size (@option{-Os}), in which case the default is the minimum correct
-alignment (4 bytes for x86, and 8 bytes for x86-64).
+the default is 4 (16 bytes or 128 bits).
 
 On Pentium and PentiumPro, @code{double} and @code{long double} values
 should be aligned to an 8 byte boundary (see @option{-malign-double}) or
 suffer significant run time performance penalties.  On Pentium III, the
-Streaming SIMD Extension (SSE) data type @code{__m128} suffers similar
-penalties if it is not 16 byte aligned.
+Streaming SIMD Extension (SSE) data type @code{__m128} may not work
+properly if it is not 16 byte aligned.
 
 To ensure proper alignment of this values on the stack, the stack boundary
 must be as aligned as that required by any value stored on the stack.
