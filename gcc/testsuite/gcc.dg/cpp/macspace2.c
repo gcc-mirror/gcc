@@ -59,3 +59,5 @@
 #define ag"abc"		/* { dg-error "requires whitespace" } */
 
 int dummy;
+/* { dg-error "missing terminating" "" { target *-*-* } 6 } */
+/* { dg-error "missing terminating" "" { target *-*-* } 10 } */

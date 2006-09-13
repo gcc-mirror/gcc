@@ -1,3 +1,11 @@
+2006-09-13  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/28768
+	PR preprocessor/14634
+	* configure.ac (HAVE_CLOCK_GETTIME): Add missing second argument
+	to AC_DEFINE.
+	* configure: Regenerate.
+
 2006-09-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* testsuite/libgomp.fortran/reduction3.f90: Change

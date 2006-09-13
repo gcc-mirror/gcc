@@ -1,3 +1,9 @@
+2006-09-13  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/28768
+	PR preprocessor/14634
+	* lex.c (lex_string): Pedwarn for unterminated literals.
+
 2006-09-08  Eric Christopher  <echristo@apple.com>
 
 	* configure.ac: Add 64-bit HWI support for i?86-darwin.
