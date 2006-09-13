@@ -1,3 +1,15 @@
+2006-09-13  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* flow.c (calculate_global_regs_live): Invalidate eh registers
+	on eh edges. Renamed invalidated_by_call to invalidated_by_eh_edge.
+	(propagate_block): Handle eh registers as if they were set at basic
+	block start.
+	* except.c (dw2_build_landing_pads): Don't emit clobbers for eh
+	registers.
+	* global.c (global_conflicts): Make eh registers to conflict with
+	pseudos live at basic block begin.
+	* basic_block.h (bb_has_eh_pred): New function.
+
 2006-09-13  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/28982

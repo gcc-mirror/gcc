@@ -1040,7 +1040,7 @@ static void
 calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 {
   basic_block *queue, *qhead, *qtail, *qend, bb;
-  regset tmp, new_live_at_end, invalidated_by_call;
+  regset tmp, new_live_at_end, invalidated_by_eh_edge;
   regset registers_made_dead;
   bool failure_strategy_required = false;
   int *block_accesses;
@@ -1063,13 +1063,24 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 
   tmp = ALLOC_REG_SET (&reg_obstack);
   new_live_at_end = ALLOC_REG_SET (&reg_obstack);
-  invalidated_by_call = ALLOC_REG_SET (&reg_obstack);
+  invalidated_by_eh_edge = ALLOC_REG_SET (&reg_obstack);
   registers_made_dead = ALLOC_REG_SET (&reg_obstack);
 
   /* Inconveniently, this is only readily available in hard reg set form.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
     if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
-      SET_REGNO_REG_SET (invalidated_by_call, i);
+      SET_REGNO_REG_SET (invalidated_by_eh_edge, i);
+
+  /* The exception handling registers die at eh edges.  */
+#ifdef EH_RETURN_DATA_REGNO
+  for (i = 0; ; ++i)
+    {
+      unsigned regno = EH_RETURN_DATA_REGNO (i);
+      if (regno == INVALID_REGNUM)
+	break;
+      SET_REGNO_REG_SET (invalidated_by_eh_edge, regno);
+    }
+#endif
 
   /* Allocate space for the sets of local properties.  */
   local_sets = XCNEWVEC (bitmap, last_basic_block);
@@ -1202,7 +1213,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	    if (e->flags & EDGE_EH)
 	      bitmap_ior_and_compl_into (new_live_at_end,
 					 sb->il.rtl->global_live_at_start,
-					 invalidated_by_call);
+					 invalidated_by_eh_edge);
 	    else
 	      IOR_REG_SET (new_live_at_end, sb->il.rtl->global_live_at_start);
 
@@ -1422,7 +1433,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 
   FREE_REG_SET (tmp);
   FREE_REG_SET (new_live_at_end);
-  FREE_REG_SET (invalidated_by_call);
+  FREE_REG_SET (invalidated_by_eh_edge);
   FREE_REG_SET (registers_made_dead);
 
   if (blocks_out)
@@ -2213,6 +2224,28 @@ propagate_block (basic_block bb, regset live, regset local_set,
       if (insn == BB_HEAD (bb))
 	break;
     }
+
+#ifdef EH_RETURN_DATA_REGNO
+  if (bb_has_eh_pred (bb))
+    {
+      unsigned int i;
+      for (i = 0; ; ++i)
+	{
+	  unsigned regno = EH_RETURN_DATA_REGNO (i);
+	  if (regno == INVALID_REGNUM)
+	    break;
+	  if (pbi->local_set)
+	    {
+	      CLEAR_REGNO_REG_SET (pbi->cond_local_set, regno);
+	      SET_REGNO_REG_SET (pbi->local_set, regno);
+	    }
+	  if (REGNO_REG_SET_P (pbi->reg_live, regno))
+	    SET_REGNO_REG_SET (pbi->new_set, regno);
+	  
+	  regs_ever_live[regno] = 1;
+	}
+    }
+#endif
 
   free_propagate_block_info (pbi);
 

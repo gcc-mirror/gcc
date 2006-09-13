@@ -1601,14 +1601,12 @@ static void
 dw2_build_landing_pads (void)
 {
   int i;
-  unsigned int j;
 
   for (i = cfun->eh->last_region_number; i > 0; --i)
     {
       struct eh_region *region;
       rtx seq;
       basic_block bb;
-      bool clobbers_hard_regs = false;
       edge e;
 
       region = VEC_index (eh_region, cfun->eh->region_array, i);
@@ -1637,30 +1635,6 @@ dw2_build_landing_pads (void)
 	else
 #endif
 	  { /* Nothing */ }
-
-      /* If the eh_return data registers are call-saved, then we
-	 won't have considered them clobbered from the call that
-	 threw.  Kill them now.  */
-      for (j = 0; ; ++j)
-	{
-	  unsigned r = EH_RETURN_DATA_REGNO (j);
-	  if (r == INVALID_REGNUM)
-	    break;
-	  if (! call_used_regs[r])
-	    {
-	      emit_insn (gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, r)));
-	      clobbers_hard_regs = true;
-	    }
-	}
-
-      if (clobbers_hard_regs)
-	{
-	  /* @@@ This is a kludge.  Not all machine descriptions define a
-	     blockage insn, but we must not allow the code we just generated
-	     to be reordered by scheduling.  So emit an ASM_INPUT to act as
-	     blockage insn.  */
-	  emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
-	}
 
       emit_move_insn (cfun->eh->exc_ptr,
 		      gen_rtx_REG (ptr_mode, EH_RETURN_DATA_REGNO (0)));
