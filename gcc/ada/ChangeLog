@@ -1,5 +1,12 @@
 2006-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/28591
+	* decl.c (components_to_record): Defer emitting debug info for the
+	record type associated with the variant until after we are sure to
+	actually use it.
+
+2006-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/21952
 	* gigi.h (gnat_internal_attribute_table): Declare.
 	* misc.c (LANG_HOOKS_ATTRIBUTE_TABLE): Define to above.

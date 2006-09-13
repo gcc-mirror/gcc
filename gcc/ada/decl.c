@@ -5659,10 +5659,12 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 		= TYPE_SIZE_UNIT (gnu_record_type);
 	    }
 
+	  /* Create the record for the variant.  Note that we defer emitting
+	     debug info for it until after we are sure to actually use it.  */
 	  components_to_record (gnu_variant_type, Component_List (variant),
 				NULL_TREE, packed, definition,
 				&gnu_our_rep_list, !all_rep_and_size, all_rep,
-				false, unchecked_union);
+				true, unchecked_union);
 
 	  gnu_qual = choices_to_gnu (gnu_discriminant,
 				     Discrete_Choices (variant));
@@ -5676,6 +5678,13 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 	    gnu_field = TYPE_FIELDS (gnu_variant_type);
 	  else
 	    {
+	      /* Emit debug info for the record.  We used to throw away
+		 empty records but we no longer do that because we need
+		 them to generate complete debug info for the variant;
+		 otherwise, the union type definition will be lacking
+		 the fields associated with these empty variants.  */
+	      write_record_type_debug_info (gnu_variant_type);
+
 	      gnu_field = create_field_decl (gnu_inner_name, gnu_variant_type,
 					     gnu_union_type, 0,
 					     (all_rep_and_size
@@ -5694,12 +5703,6 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 	  TREE_CHAIN (gnu_field) = gnu_variant_list;
 	  gnu_variant_list = gnu_field;
 	}
-
-      /* We used to delete the empty variants from the end. However,
-         we no longer do that because we need them to generate complete
-         debugging information for the variant record.  Otherwise,
-         the union type definition will be missing the fields associated
-         to these empty variants.  */
 
       /* Only make the QUAL_UNION_TYPE if there are any non-empty variants.  */
       if (gnu_variant_list)

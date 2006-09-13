@@ -1,3 +1,7 @@
+2006-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/unchecked_union.ads: New test.
+
 2006-09-13  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/28982
