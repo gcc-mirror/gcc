@@ -1687,17 +1687,11 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 		       && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)))
 		gnu_name = convert (gnu_name_type, gnu_name);
 
+	      /* Make a SAVE_EXPR to both properly account for potential side
+		 effects and handle the creation of a temporary copy.  Special
+		 code in gnat_gimplify_expr ensures that the same temporary is
+		 used as the actual and copied back after the call.  */
 	      gnu_actual = save_expr (gnu_name);
-
-	      /* Since we're going to take the address of the SAVE_EXPR, we
-		 don't want it to be marked as unchanging. So set
-		 TREE_ADDRESSABLE.  */
-	      gnu_temp = skip_simple_arithmetic (gnu_actual);
-	      if (TREE_CODE (gnu_temp) == SAVE_EXPR)
-		{
-		  TREE_ADDRESSABLE (gnu_temp) = 1;
-		  TREE_READONLY (gnu_temp) = 0;
-		}
 
 	      /* Set up to move the copy back to the original.  */
 	      gnu_temp = build_binary_op (MODIFY_EXPR, NULL_TREE,
@@ -4619,6 +4613,19 @@ gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 	  TREE_OPERAND (expr, 0) = new_var;
 	  recompute_tree_invarant_for_addr_expr (expr);
 	  return GS_ALL_DONE;
+	}
+
+      /* If we are taking the address of a SAVE_EXPR, we are typically
+	 processing a misaligned argument to be passed by reference in a
+	 procedure call.  We just mark the operand as addressable + not
+	 readonly here and let the common gimplifier code perform the
+	 temporary creation, initialization, and "instantiation" in place of
+	 the SAVE_EXPR in further operands, in particular in the copy back
+	 code inserted after the call.  */
+      else if (TREE_CODE (op) == SAVE_EXPR)
+	{
+	  TREE_ADDRESSABLE (op) = 1;
+	  TREE_READONLY (op) = 0;
 	}
 
       /* Otherwise, if we are taking the address of something that is neither
