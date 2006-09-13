@@ -1,3 +1,13 @@
+2006-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/21952
+	* gigi.h (gnat_internal_attribute_table): Declare.
+	* misc.c (LANG_HOOKS_ATTRIBUTE_TABLE): Define to above.
+	* utils.c (gnat_internal_attribute_table): New global variable.
+	(builtin_function): Always call decl_attributes on the builtin.
+	(handle_const_attribute): New static function.
+	(handle_nothrow_attribute): Likewise.
+
 2006-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* Make-lang.in: Use $(HEADER_H) instead of header.h in dependencies.
