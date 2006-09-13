@@ -1386,11 +1386,10 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
       tmp = gfc_get_character_type_len (sym->ts.kind, NULL);
       tmp = build_pointer_type (tmp);
       if (sym->attr.pointer)
-	tmp = build_pointer_type (tmp);
-
-      value = fold_convert (tmp, se->expr);
-      if (sym->attr.pointer)
-	value = build_fold_indirect_ref (value);
+        value = build_fold_indirect_ref (se->expr);
+      else
+        value = se->expr;
+      value = fold_convert (tmp, value);
     }
 
   /* If the argument is a scalar, a pointer to an array or an allocatable,
