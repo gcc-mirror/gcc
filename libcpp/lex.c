@@ -646,6 +646,10 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
     cpp_error (pfile, CPP_DL_WARNING,
 	       "null character(s) preserved in literal");
 
+  if (type == CPP_OTHER && CPP_OPTION (pfile, lang) != CLK_ASM)
+    cpp_error (pfile, CPP_DL_PEDWARN, "missing terminating %c character",
+	       (int) terminator);
+
   pfile->buffer->cur = cur;
   create_literal (pfile, token, base, cur - base, type);
 }

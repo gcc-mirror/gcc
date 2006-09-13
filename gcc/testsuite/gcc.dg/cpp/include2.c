@@ -13,4 +13,4 @@
 /* These error is No such file or directory, just once.  However, this
    message is locale-dependent, so don't test for it.  */
 /* { dg-error "silly" "" { target *-*-* } 10 } */
-
+/* { dg-error "missing" "" { target *-*-* } 11 } */

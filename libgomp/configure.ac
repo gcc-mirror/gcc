@@ -227,7 +227,7 @@ esac
 if test $ac_cv_func_clock_gettime = no; then
   AC_CHECK_LIB(rt, clock_gettime,
     [LIBS="-lrt $LIBS"
-     AC_DEFINE(HAVE_CLOCK_GETTIME,
+     AC_DEFINE(HAVE_CLOCK_GETTIME, 1,
 	       [Define to 1 if you have the `clock_gettime' function.])])
 fi
 

@@ -1,3 +1,11 @@
+2006-09-13  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/28768
+	PR preprocessor/14634
+	* gcc.dg/cpp/include2.c, gcc.dg/cpp/macspace1.c,
+	gcc.dg/cpp/macspace2.c, gcc.dg/cpp/multiline.c,
+	gcc.dg/cpp/trad/literals-2.c: Update expected diagnostics.
+
 2006-09-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/pr28243.c: New test.
