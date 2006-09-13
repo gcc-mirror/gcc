@@ -1,3 +1,8 @@
+2006-09-12  Eric Christopher  <echristo@apple.com>
+
+	* gcc.target/x86_64/abi/asm-support-darwin.s: New.
+	* gcc.target/x86_64/abi/abi-x86_64.exp: Use.
+
 2006-09-13  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/28768
