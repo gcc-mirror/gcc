@@ -1,3 +1,13 @@
+2006-09-13  Olivier Hainque  <hainque@adacore.com>
+
+	PR ada/29025
+	* trans.c (gnat_gimplify_expr) <ADDR_EXPR>: When taking the address
+	of a SAVE_EXPR, just make the operand addressable/not-readonly and
+	let the common gimplifier code make and propagate a temporary copy.
+	(call_to_gnu): Clarify the use of SAVE_EXPR for not addressable
+	out/in-out actuals and defer setting the addressable/readonly bits
+	to the gimplifier.
+
 2006-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/28591
