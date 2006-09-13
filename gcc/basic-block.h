@@ -1175,7 +1175,7 @@ extern bool rtx_equiv_p (rtx *, rtx, int, struct equiv_info *);
 /* In cfgrtl.c */
 extern bool condjump_equiv_p (struct equiv_info *, bool);
 
-/* Return true when one of the predecessor edges of BB is marked with FLAGS.  */
+/* Return true when one of the predecessor edges of BB is marked with EDGE_EH.  */
 static inline bool bb_has_eh_pred (basic_block bb)
 {
   edge e;
