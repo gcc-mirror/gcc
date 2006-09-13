@@ -1,5 +1,9 @@
 2006-09-13  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* basic_block.h (bb_has_eh_pred): Fix comment.
+
+2006-09-13  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* flow.c (calculate_global_regs_live): Invalidate eh registers
 	on eh edges. Renamed invalidated_by_call to invalidated_by_eh_edge.
 	(propagate_block): Handle eh registers as if they were set at basic
