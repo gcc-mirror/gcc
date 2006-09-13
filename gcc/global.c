@@ -743,6 +743,21 @@ global_conflicts (void)
 	    scan the instruction that makes either X or Y become live.  */
 	record_conflicts (block_start_allocnos, ax);
 
+#ifdef EH_RETURN_DATA_REGNO
+	if (bb_has_eh_pred (b))
+	  {
+	    unsigned int i;
+	    
+	    for (i = 0; ; ++i)
+	      {
+		unsigned int regno = EH_RETURN_DATA_REGNO (i);
+		if (regno == INVALID_REGNUM)
+		  break;
+		record_one_conflict (regno);
+	      }
+	  }
+#endif
+
 	/* Pseudos can't go in stack regs at the start of a basic block that
 	   is reached by an abnormal edge. Likewise for call clobbered regs,
 	   because caller-save, fixup_abnormal_edges and possibly the table

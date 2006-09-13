@@ -1175,4 +1175,18 @@ extern bool rtx_equiv_p (rtx *, rtx, int, struct equiv_info *);
 /* In cfgrtl.c */
 extern bool condjump_equiv_p (struct equiv_info *, bool);
 
+/* Return true when one of the predecessor edges of BB is marked with FLAGS.  */
+static inline bool bb_has_eh_pred (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (e->flags & EDGE_EH)
+	return true;
+    }
+  return false;
+}
+
 #endif /* GCC_BASIC_BLOCK_H */
