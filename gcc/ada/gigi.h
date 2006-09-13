@@ -309,7 +309,6 @@ extern int force_global;
    type whose bit width is Pmode.  Assume "long" is such a type here.  */
 #undef SIZE_TYPE
 #define SIZE_TYPE "long int"
-
 
 /* Data structures used to represent attributes.  */
 
@@ -331,6 +330,9 @@ struct attrib
   tree args;
   Node_Id error_point;
 };
+
+/* Table of machine-independent internal attributes.  */
+extern const struct attribute_spec gnat_internal_attribute_table[];
 
 /* Define the entries in the standard data array.  */
 enum standard_datatypes
