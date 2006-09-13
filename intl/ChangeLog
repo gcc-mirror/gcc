@@ -1,3 +1,15 @@
+2006-09-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/23541
+	PR other/26507
+	Backport from gettext repository:
+
+	2003-09-04  Bruno Haible  <bruno@clisp.org>
+	* dgettext.c: Include <locale.h> after gettextP.h, not before. This
+	ensures that libintl_dcgettext is correctly declared on Solaris.
+	(Needed because Solaris <locale.h> includes libintl.h.)
+	* dngettext.c: Likewise, for the libintl_dcngettext declaration.
+
 2006-06-07  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.in (install-info, install-dvi, install-ps, install-pdf):
