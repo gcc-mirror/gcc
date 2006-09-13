@@ -1,3 +1,15 @@
+2006-09-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR other/23541
+	PR other/26507
+	Backport from gettext repository:
+
+	2003-09-04  Bruno Haible  <bruno@clisp.org>
+	* dgettext.c: Include <locale.h> after gettextP.h, not before. This
+	ensures that libintl_dcgettext is correctly declared on Solaris.
+	(Needed because Solaris <locale.h> includes libintl.h.)
+	* dngettext.c: Likewise, for the libintl_dcngettext declaration.
+
 2006-05-24  Release Manager
 
 	* GCC 4.1.1 released.
