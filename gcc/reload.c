@@ -5541,12 +5541,18 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	/* Require index register (or constant).  Let's just handle the
 	   register case in the meantime... If the target allows
 	   auto-modify by a constant then we could try replacing a pseudo
-	   register with its equivalent constant where applicable.  */
+	   register with its equivalent constant where applicable.
+
+	   If we later decide to reload the whole PRE_MODIFY or
+	   POST_MODIFY, inc_for_reload might clobber the reload register
+	   before reading the index.  The index register might therefore
+	   need to live longer than a TYPE reload normally would, so be
+	   conservative and class it as RELOAD_OTHER.  */
 	if (REG_P (XEXP (op1, 1)))
 	  if (!REGNO_OK_FOR_INDEX_P (REGNO (XEXP (op1, 1))))
 	    find_reloads_address_1 (mode, XEXP (op1, 1), 1, code, SCRATCH,
-				    &XEXP (op1, 1), opnum, type, ind_levels,
-				    insn);
+				    &XEXP (op1, 1), opnum, RELOAD_OTHER,
+				    ind_levels, insn);
 
 	gcc_assert (REG_P (XEXP (op1, 0)));
 

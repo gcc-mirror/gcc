@@ -1,3 +1,11 @@
+2006-09-13  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/28982
+	* reload.c (find_reloads_address_1): Use RELOAD_OTHER for the
+	index of a PRE_MODIFY or POST_MODIFY address.
+	* reload1.c (inc_for_reload): Use find_replacement on the original
+	base and index registers.
+
 2006-09-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi (mpreferred-stack-boundary): Remove exception

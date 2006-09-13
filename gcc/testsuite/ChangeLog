@@ -1,3 +1,9 @@
+2006-09-13  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/28982
+	* gcc.c-torture/execute/pr28982a.c: New test.
+	* gcc.c-torture/execute/pr28982b.c: Likewise.
+
 2006-09-12  Eric Christopher  <echristo@apple.com>
 
 	* gcc.target/x86_64/abi/asm-support-darwin.s: New.
