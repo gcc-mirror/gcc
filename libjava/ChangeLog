@@ -1,3 +1,7 @@
+2006-09-14  Andreas Schwab  <schwab@suse.de>
+
+	* posix-threads.cc: Include "posix.h".
+
 2006-09-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* posix.cc (_Jv_platform_nanotime): Return nanoseconds, not
