@@ -13,6 +13,8 @@ details.  */
 
 #include <config.h>
 
+#include "posix.h"
+
 // If we're using the Boehm GC, then we need to override some of the
 // thread primitives.  This is fairly gross.
 #ifdef HAVE_BOEHM_GC
