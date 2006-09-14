@@ -1,3 +1,8 @@
+2006-09-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR debug/28980
+	* gcc.c-torture/compile/debugvlafunction-1.c: New test.
+
 2006-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/unchecked_union.ads: New test.
