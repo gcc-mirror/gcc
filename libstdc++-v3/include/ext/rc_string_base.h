@@ -36,7 +36,7 @@
 #ifndef _RC_STRING_BASE_H
 #define _RC_STRING_BASE_H 1
 
-#include <bits/atomicity.h>
+#include <ext/atomicity.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 

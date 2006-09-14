@@ -34,25 +34,13 @@
 #ifndef _BITMAP_ALLOCATOR_H
 #define _BITMAP_ALLOCATOR_H 1
 
-// For std::size_t, and ptrdiff_t.
-#include <cstddef>
-
-// For __throw_bad_alloc().
-#include <bits/functexcept.h>
-
-// For std::pair.
-#include <utility>
-
-// For greater_equal, and less_equal.
-#include <functional>
-
-// For operator new.
-#include <new>
-
-// For __gthread_mutex_t, __gthread_mutex_lock and __gthread_mutex_unlock.
-#include <bits/gthr.h>
-
+#include <cstddef> // For std::size_t, and ptrdiff_t.
+#include <bits/functexcept.h> // For __throw_bad_alloc().
+#include <utility> // For std::pair.
+#include <functional> // For greater_equal, and less_equal.
+#include <new> // For operator new.
 #include <debug/debug.h> // _GLIBCXX_DEBUG_ASSERT
+#include <ext/concurrence.h>
 
 
 /** @brief The constant in the expression below is the alignment
@@ -64,144 +52,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   using std::size_t;
   using std::ptrdiff_t;
-
-#if defined __GTHREADS
-  namespace
-  {
-    /** @brief  If true, then the application being compiled will be
-     *  using threads, so use mutexes as a synchronization primitive,
-     *  else do no use any synchronization primitives.
-     */
-    bool const __threads_enabled = __gthread_active_p();
-  } // anonymous namespace
-#endif
-
-#if defined __GTHREADS
-  /** @class  _Mutex bitmap_allocator.h bitmap_allocator.h
-   *
-   *  @brief  _Mutex is an OO-Wrapper for __gthread_mutex_t. 
-   *
-   *  It does not allow you to copy or assign an already initialized
-   *  mutex. This is used merely as a convenience for the locking
-   *  classes.
-   */
-  class _Mutex 
-  {
-    __gthread_mutex_t _M_mut;
-
-    // Prevent Copying and assignment.
-    _Mutex(_Mutex const&);
-    _Mutex& operator=(_Mutex const&);
-
-  public:
-    _Mutex()
-    {
-      if (__threads_enabled)
-	{
-#if !defined __GTHREAD_MUTEX_INIT
-	  __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mut);
-#else
-	  __gthread_mutex_t __mtemp = __GTHREAD_MUTEX_INIT;
-	  _M_mut = __mtemp;
-#endif
-	}
-    }
-
-    ~_Mutex()
-    {
-      // Gthreads does not define a Mutex Destruction Function.
-    }
-
-    __gthread_mutex_t*
-    _M_get() { return &_M_mut; }
-  };
-
-  /** @class  _Lock bitmap_allocator.h bitmap_allocator.h
-   *
-   *  @brief  _Lock is a simple manual locking class which allows you to
-   *  manually lock and unlock a mutex associated with the lock. 
-   *
-   *  There is no automatic locking or unlocking happening without the
-   *  programmer's explicit instructions. This class unlocks the mutex
-   *  ONLY if it has not been locked. However, this check does not
-   *  apply for locking, and wayward use may cause dead-locks.
-   */
-  class _Lock 
-  {
-    _Mutex* _M_pmt;
-    bool _M_locked;
-
-    // Prevent Copying and assignment.
-    _Lock(_Lock const&);
-    _Lock& operator=(_Lock const&);
-
-  public:
-    _Lock(_Mutex* __mptr)
-    : _M_pmt(__mptr), _M_locked(false)
-    { }
-
-    void
-    _M_lock()
-    {
-      if (__threads_enabled)
-	{
-	  _M_locked = true;
-	  __gthread_mutex_lock(_M_pmt->_M_get());
-	}
-    }
-
-    void
-    _M_unlock()
-    {
-      if (__threads_enabled)
-	{
-	  if (__builtin_expect(_M_locked, true))
-	    {
-	      __gthread_mutex_unlock(_M_pmt->_M_get());
-	      _M_locked = false;
-	    }
-	}
-    }
-    
-    ~_Lock() { }
-  };
-
-  /** @class  _Auto_Lock bitmap_allocator.h bitmap_allocator.h
-   *
-   *  @brief  _Auto_Lock locks the associated mutex on construction, and
-   *  unlocks on destruction.
-   *
-   *  There are no checks performed, and this class follows the RAII
-   *  principle.
-   */
-  class _Auto_Lock 
-  {
-    _Mutex* _M_pmt;
-    // Prevent Copying and assignment.
-    _Auto_Lock(_Auto_Lock const&);
-    _Auto_Lock& operator=(_Auto_Lock const&);
-
-    void
-    _M_lock()
-    {
-      if (__threads_enabled)
-	__gthread_mutex_lock(_M_pmt->_M_get());
-    }
-
-    void
-    _M_unlock()
-    {
-      if (__threads_enabled)
-	__gthread_mutex_unlock(_M_pmt->_M_get());
-    }
-
-  public:
-    _Auto_Lock(_Mutex* __mptr) : _M_pmt(__mptr)
-    { this->_M_lock(); }
-
-    ~_Auto_Lock() { this->_M_unlock(); }
-  };
-#endif 
 
   namespace balloc
   {
@@ -699,9 +549,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    */
   class free_list
   {
-    typedef size_t* value_type;
-    typedef balloc::__mini_vector<value_type> vector_type;
-    typedef vector_type::iterator iterator;
+    typedef size_t* 				value_type;
+    typedef balloc::__mini_vector<value_type> 	vector_type;
+    typedef vector_type::iterator 		iterator;
+    typedef __mutex				mutex_type;
 
     struct _LT_pointer_compare
     {
@@ -712,11 +563,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     };
 
 #if defined __GTHREADS
-    _Mutex*
+    mutex_type&
     _M_get_mutex()
     {
-      static _Mutex _S_mutex;
-      return &_S_mutex;
+      static mutex_type _S_mutex;
+      return _S_mutex;
     }
 #endif
 
@@ -807,7 +658,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     _M_insert(size_t* __addr) throw()
     {
 #if defined __GTHREADS
-      _Auto_Lock __bfl_lock(_M_get_mutex());
+      __gnu_cxx::__scoped_lock __bfl_lock(_M_get_mutex());
 #endif
       // Call _M_validate to decide what should be done with
       // this particular free list.
@@ -859,13 +710,15 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     class bitmap_allocator : private free_list
     {
     public:
-      typedef size_t    size_type;
-      typedef ptrdiff_t difference_type;
-      typedef _Tp*        pointer;
-      typedef const _Tp*  const_pointer;
-      typedef _Tp&        reference;
-      typedef const _Tp&  const_reference;
-      typedef _Tp         value_type;
+      typedef size_t    		size_type;
+      typedef ptrdiff_t 		difference_type;
+      typedef _Tp*        		pointer;
+      typedef const _Tp*  		const_pointer;
+      typedef _Tp&        		reference;
+      typedef const _Tp&  		const_reference;
+      typedef _Tp         		value_type;
+      typedef free_list::mutex_type 	mutex_type;
+
       template<typename _Tp1>
         struct rebind
 	{
@@ -971,7 +824,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _Bitmap_counter<_Alloc_block*> _S_last_request;
       static typename _BPVector::size_type _S_last_dealloc_index;
 #if defined __GTHREADS
-      static _Mutex _S_mut;
+      static mutex_type _S_mut;
 #endif
 
     public:
@@ -993,7 +846,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_allocate_single_object() throw(std::bad_alloc)
       {
 #if defined __GTHREADS
-	_Auto_Lock __bit_lock(&_S_mut);
+	__gnu_cxx::__scoped_lock __bit_lock(_S_mut);
 #endif
 
 	// The algorithm is something like this: The last_request
@@ -1091,7 +944,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_deallocate_single_object(pointer __p) throw()
       {
 #if defined __GTHREADS
-	_Auto_Lock __bit_lock(&_S_mut);
+	__gnu_cxx::__scoped_lock __bit_lock(_S_mut);
 #endif
 	_Alloc_block* __real_p = reinterpret_cast<_Alloc_block*>(__p);
 
@@ -1105,8 +958,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 	
 	if (__gnu_cxx::balloc::_Inclusive_between<_Alloc_block*>
-	    (__real_p)
-	    (_S_mem_blocks[_S_last_dealloc_index]))
+	    (__real_p) (_S_mem_blocks[_S_last_dealloc_index]))
 	  {
 	    _GLIBCXX_DEBUG_ASSERT(_S_last_dealloc_index <= _S_mem_blocks.size() - 1);
 
@@ -1116,8 +968,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  }
 	else
 	  {
-	    _Iterator _iter = 
-	      __gnu_cxx::balloc::
+	    _Iterator _iter = __gnu_cxx::balloc::
 	      __find_if(_S_mem_blocks.begin(), 
 			_S_mem_blocks.end(), 
 			__gnu_cxx::balloc::
@@ -1276,7 +1127,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #if defined __GTHREADS
   template<typename _Tp>
-    __gnu_cxx::_Mutex
+    typename bitmap_allocator<_Tp>::mutex_type
     bitmap_allocator<_Tp>::_S_mut;
 #endif
 
@@ -1284,4 +1135,3 @@ _GLIBCXX_END_NAMESPACE
 
 #endif 
 
-//  LocalWords:  namespace GTHREADS bool const gthread endif Mutex mutex

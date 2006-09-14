@@ -35,14 +35,14 @@
 #include <cassert>
 #include <cstring>
 #include <cctype>
-#include <bits/concurrence.h>
+#include <ext/concurrence.h>
 
 using namespace std;
 
 namespace
 {
-  static __glibcxx_mutex_define_initialized(iterator_base_mutex);
-} 
+  __gnu_cxx::__mutex iterator_base_mutex;
+} // anonymous namespace
 
 namespace __gnu_debug
 {
@@ -192,7 +192,7 @@ namespace __gnu_debug
     // Attach to the new sequence (if there is one)
     if (__seq)
       {
-	__gnu_cxx::lock sentry(iterator_base_mutex);
+	__gnu_cxx::__scoped_lock sentry(iterator_base_mutex);
 	_M_sequence = __seq;
 	_M_version = _M_sequence->_M_version;
 	_M_prior = 0;
@@ -217,7 +217,7 @@ namespace __gnu_debug
   _Safe_iterator_base::
   _M_detach()
   {
-    __gnu_cxx::lock sentry(iterator_base_mutex);
+    __gnu_cxx::__scoped_lock sentry(iterator_base_mutex);
     if (_M_sequence)
       {
 	// Remove us from this sequence's list

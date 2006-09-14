@@ -1,4 +1,4 @@
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004, 2006 Free Software Foundation, Inc.
 //  
 // This file is part of GCC.
 //
@@ -32,8 +32,8 @@
 #include <bits/c++config.h>
 #include <cxxabi.h>
 #include <exception>
-#include <bits/gthr.h>
-#include <bits/atomicity.h>
+#include <ext/atomicity.h>
+#include <ext/concurrence.h>
 
 // The IA64/generic ABI uses the first byte of the guard variable.
 // The ARM EABI uses the least significant bit.
@@ -42,49 +42,8 @@
 #ifdef __GTHREADS
 namespace
 {
-  // static_mutex is a single mutex controlling all static initializations.
-  // This is a static class--the need for a static initialization function
-  // to pass to __gthread_once precludes creating multiple instances, though
-  // I suppose you could achieve the same effect with a template.
-  class static_mutex
-  {
-    static __gthread_recursive_mutex_t mutex;
-
-#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION
-    static void init();
-#endif
-
-  public:
-    static void lock();
-    static void unlock();
-  };
-
-  __gthread_recursive_mutex_t static_mutex::mutex
-#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
-  = __GTHREAD_RECURSIVE_MUTEX_INIT
-#endif
-  ;
-
-#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION
-  void static_mutex::init()
-  {
-    __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION (&mutex);
-  }
-#endif
-
-  void static_mutex::lock()
-  {
-#ifdef __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION
-    static __gthread_once_t once = __GTHREAD_ONCE_INIT;
-    __gthread_once (&once, init);
-#endif
-    __gthread_recursive_mutex_lock (&mutex);
-  }
-
-  void static_mutex::unlock ()
-  {
-    __gthread_recursive_mutex_unlock (&mutex);
-  }
+  // A single mutex controlling all static initializations.
+  __gnu_cxx::__recursive_mutex static_mutex;
 }
 
 #ifndef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
@@ -125,14 +84,14 @@ namespace __gnu_cxx
   // as well check for this situation and throw an exception.
   // We use the second byte of the guard variable to remember that we're
   // in the middle of an initialization.
-  class recursive_init: public std::exception
+  class recursive_init_error: public std::exception
   {
   public:
-    recursive_init() throw() { }
-    virtual ~recursive_init() throw ();
+    recursive_init_error() throw() { }
+    virtual ~recursive_init_error() throw ();
   };
 
-  recursive_init::~recursive_init() throw() { }
+  recursive_init_error::~recursive_init_error() throw() { }
 }
 
 namespace __cxxabiv1 
@@ -158,7 +117,7 @@ namespace __cxxabiv1
     if (recursion_push (g))
       {
 #ifdef __EXCEPTIONS
-	throw __gnu_cxx::recursive_init();
+	throw __gnu_cxx::recursive_init_error();
 #else
 	// Use __builtin_trap so we don't require abort().
 	__builtin_trap ();
@@ -185,12 +144,12 @@ namespace __cxxabiv1
 	  bool unlock;
 	  mutex_wrapper (): unlock(true)
 	  {
-	    static_mutex::lock ();
+	    static_mutex.lock();
 	  }
 	  ~mutex_wrapper ()
 	  {
 	    if (unlock)
-	      static_mutex::unlock ();
+	      static_mutex.unlock();
 	  }
 	} mw;
 
@@ -213,7 +172,7 @@ namespace __cxxabiv1
     recursion_pop (g);
 #ifdef __GTHREADS
     if (__gthread_active_p ())
-      static_mutex::unlock ();
+      static_mutex.unlock();
 #endif
   }
 
@@ -224,7 +183,7 @@ namespace __cxxabiv1
     _GLIBCXX_GUARD_SET_AND_RELEASE (g);
 #ifdef __GTHREADS
     if (__gthread_active_p ())
-      static_mutex::unlock ();
+      static_mutex.unlock();
 #endif
   }
 }

@@ -1,4 +1,4 @@
-// Low-level functions for atomic operations -*- C++ -*-
+// Support for atomic operations -*- C++ -*-
 
 // Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
@@ -41,6 +41,10 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
+  // Functions for portable atomic access.
+  // To abstract locking primatives across all thread policies, use:
+  // __exchange_and_add_dispatch
+  // __atomic_add_dispatch
 #ifdef _GLIBCXX_ATOMIC_BUILTINS
   static inline _Atomic_word 
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
@@ -52,11 +56,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #else
   _Atomic_word
   __attribute__ ((__unused__))
-  __exchange_and_add(volatile _Atomic_word* __mem, int __val);
+  __exchange_and_add(volatile _Atomic_word*, int);
 
   void
   __attribute__ ((__unused__))
-  __atomic_add(volatile _Atomic_word* __mem, int __val);
+  __atomic_add(volatile _Atomic_word*, int);
 #endif
 
   static inline _Atomic_word

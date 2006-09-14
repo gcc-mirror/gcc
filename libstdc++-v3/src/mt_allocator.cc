@@ -32,7 +32,7 @@
 //
 
 #include <bits/c++config.h>
-#include <bits/concurrence.h>
+#include <ext/concurrence.h>
 #include <ext/mt_allocator.h>
 #include <cstring>
 
@@ -59,13 +59,13 @@ namespace
 
   // Ensure freelist is constructed first.
   static __freelist freelist;
-  static __glibcxx_mutex_define_initialized(freelist_mutex);
+  __gnu_cxx::__mutex freelist_mutex;
 
   static void 
   _M_destroy_thread_key(void* __id)
   {
     // Return this thread id record to the front of thread_freelist.
-    __gnu_cxx::lock sentry(freelist_mutex);
+    __gnu_cxx::__scoped_lock sentry(freelist_mutex);
     size_t _M_id = reinterpret_cast<size_t>(__id);
 
     typedef __gnu_cxx::__pool<true>::_Thread_record _Thread_record;
@@ -497,11 +497,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     if (__gthread_active_p())
       {
 	{
-	  __gnu_cxx::lock sentry(freelist_mutex);
+	  __gnu_cxx::__scoped_lock sentry(freelist_mutex);
 
 	  if (!freelist._M_thread_freelist_array
-	      || freelist._M_max_threads
-		 < _M_options._M_max_threads)
+	      || freelist._M_max_threads < _M_options._M_max_threads)
 	    {
 	      const size_t __k = sizeof(_Thread_record)
 				 * _M_options._M_max_threads;
@@ -622,7 +621,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	if (_M_id == 0)
 	  {
 	    {
-	      __gnu_cxx::lock sentry(freelist_mutex);
+	      __gnu_cxx::__scoped_lock sentry(freelist_mutex);
 	      if (freelist._M_thread_freelist)
 		{
 		  _M_id = freelist._M_thread_freelist->_M_id;
@@ -695,7 +694,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     if (__gthread_active_p())
       {
 	{
-	  __gnu_cxx::lock sentry(freelist_mutex);
+	  __gnu_cxx::__scoped_lock sentry(freelist_mutex);
 
 	  if (!freelist._M_thread_freelist_array
 	      || freelist._M_max_threads

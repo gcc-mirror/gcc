@@ -33,19 +33,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   namespace balloc
   {
-    template class __mini_vector<std::pair
-    <bitmap_allocator<char>::_Alloc_block*, 
-     bitmap_allocator<char>::_Alloc_block*> >;
-
-    template class __mini_vector<std::pair
-    <bitmap_allocator<wchar_t>::_Alloc_block*, 
-     bitmap_allocator<wchar_t>::_Alloc_block*> >;
-
+    template class __mini_vector<std::pair<bitmap_allocator<char>::_Alloc_block*, bitmap_allocator<char>::_Alloc_block*> >;
+    template class __mini_vector<std::pair<bitmap_allocator<wchar_t>::_Alloc_block*, bitmap_allocator<wchar_t>::_Alloc_block*> >;
     template class __mini_vector<size_t*>;
 
-    template size_t** __lower_bound
-    (size_t**, size_t**, 
-     size_t const&, free_list::_LT_pointer_compare);
+    template size_t** __lower_bound(size_t**, size_t**, size_t const&, 
+				    free_list::_LT_pointer_compare);
   }
 
   size_t*
@@ -53,25 +46,24 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   _M_get(size_t __sz) throw(std::bad_alloc)
   {
 #if defined __GTHREADS
-    _Lock __bfl_lock(_M_get_mutex());
-    __bfl_lock._M_lock();
+    mutex_type& __bfl_mutex = _M_get_mutex();
 #endif
-    iterator __temp = 
-      __gnu_cxx::balloc::__lower_bound
-      (_M_get_free_list().begin(), _M_get_free_list().end(), 
-       __sz, _LT_pointer_compare());
+    const vector_type& __free_list = _M_get_free_list();
+    using __gnu_cxx::balloc::__lower_bound;
+    iterator __tmp = __lower_bound(__free_list.begin(), __free_list.end(), 
+				   __sz, _LT_pointer_compare());
 
-    if (__temp == _M_get_free_list().end() || !_M_should_i_give(**__temp, __sz))
+    if (__tmp == __free_list.end() || !_M_should_i_give(**__tmp, __sz))
       {
 	// We release the lock here, because operator new is
 	// guaranteed to be thread-safe by the underlying
 	// implementation.
 #if defined __GTHREADS
-	__bfl_lock._M_unlock();
+	__bfl_mutex.unlock();
 #endif
 	// Try twice to get the memory: once directly, and the 2nd
-	// time after clearing the free list. If both fail, then
-	// throw std::bad_alloc().
+	// time after clearing the free list. If both fail, then throw
+	// std::bad_alloc().
 	int __ctr = 2;
 	while (__ctr)
 	  {
@@ -79,8 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    --__ctr;
 	    try
 	      {
-		__ret = reinterpret_cast<size_t*>
-		  (::operator new(__sz + sizeof(size_t)));
+		__ret = reinterpret_cast<size_t*>(::operator new(__sz + sizeof(size_t)));
 	      }
 	    catch(...)
 	      {
@@ -95,10 +86,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       }
     else
       {
-	size_t* __ret = *__temp;
-	_M_get_free_list().erase(__temp);
+	size_t* __ret = *__tmp;
+	_M_get_free_list().erase(__tmp);
 #if defined __GTHREADS
-	__bfl_lock._M_unlock();
+	__bfl_mutex.unlock();
 #endif
 	return __ret + 1;
       }
@@ -109,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   _M_clear()
   {
 #if defined __GTHREADS
-    _Auto_Lock __bfl_lock(_M_get_mutex());
+    __gnu_cxx::__scoped_lock __bfl_lock(_M_get_mutex());
 #endif
     vector_type& __free_list = _M_get_free_list();
     iterator __iter = __free_list.begin();

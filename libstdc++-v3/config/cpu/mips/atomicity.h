@@ -28,7 +28,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <bits/atomicity.h>
+#include <ext/atomicity.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
