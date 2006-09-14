@@ -1,3 +1,9 @@
+2006-09-14  Tom Tromey  <tromey@redhat.com>
+
+	PR boehm-gc/29068.
+	* misc.c (GC_init_inner): Don't use GC_get_thread_stack_base on
+	Solaris.
+
 2006-08-21  Bryce McKinlay  <mckinlay@redhat.com>
 	
 	PR libgcj/13212:
