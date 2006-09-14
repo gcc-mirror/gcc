@@ -1,3 +1,13 @@
+2006-09-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* posix.cc (_Jv_platform_nanotime): Return nanoseconds, not
+	microseconds; use gettimeofday when available.
+	* posix-threads.cc (_Jv_CondWait): Improve accuracy and range of
+	timeout calculation.
+	* testsuite/libjava.lang/Thread_Sleep_2.java: New.
+	* testsuite/libjava.lang/Thread_Sleep_2.out: New.
+	* testsuite/libjava.lang/Thread_Sleep_2.xfail: New.
+
 2006-09-12  Tom Tromey  <tromey@redhat.com>
 
 	PR java/29013:
