@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
@@ -297,6 +297,9 @@ enum reg_class {
 #define STATIC_CHAIN_REGNUM 2
 
 #define FRAME_POINTER_REQUIRED frame_pointer_required_p()
+
+/* Offset from the frame pointer register value to the top of the stack.  */
+#define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
 
 #define ELIMINABLE_REGS {					\
       {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
