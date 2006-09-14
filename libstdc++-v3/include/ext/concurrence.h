@@ -81,7 +81,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
 	  _M_mutex = __tmp;
 #else
-	  __GTHREAD_MUTEX_INIT_FUNCTION(_M_mutex); 
+	  __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex); 
 #endif
 	}
 #endif 
@@ -128,7 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  __gthread_recursive_mutex_t __tmp = __GTHREAD_RECURSIVE_MUTEX_INIT;
 	  _M_mutex = __tmp;
 #else
-	  __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(_M_mutex); 
+	  __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex); 
 #endif
 	}
 #endif 

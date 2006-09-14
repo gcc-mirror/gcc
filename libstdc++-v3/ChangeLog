@@ -1,4 +1,9 @@
-2006-09-13  Benjamin Kosnik  <bkoz@redhat.com>
+2006-09-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/concurrence.h (__mutex::__mutex): Pass address of
+	mutex to *_MUTEX_INIT_FUNCTION.
+	
+2006-09-13  Benjamin Kosnik  <bkoz@redhat.com>	
 
 	* include/bits/atomicity.h: Move to...
 	* include/ext/atomicity.h: ...here.	
