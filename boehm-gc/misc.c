@@ -674,7 +674,7 @@ void GC_init_inner()
 #   if !defined(THREADS) || defined(GC_PTHREADS) || defined(GC_WIN32_THREADS) \
 	|| defined(GC_SOLARIS_THREADS)
       if (GC_stackbottom == 0) {
-        # ifdef GC_PTHREADS
+        # if defined(GC_PTHREADS) && ! defined(GC_SOLARIS_THREADS)
 	/* Use thread_stack_base if available, as GC could be initialized from
 	   a thread that is not the "main" thread.  */
 	GC_stackbottom = GC_get_thread_stack_base();

@@ -1,3 +1,9 @@
+2006-09-14  Tom Tromey  <tromey@redhat.com>
+
+	PR boehm-gc/29068:
+	* boehm.cc (_Jv_GCAttachThread): Disable on Solaris.
+	(_Jv_GCDetachThread): Likewise.
+
 2006-09-14  Andreas Schwab  <schwab@suse.de>
 
 	* posix-threads.cc: Include "posix.h".
