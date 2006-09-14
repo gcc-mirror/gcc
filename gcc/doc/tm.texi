@@ -1015,8 +1015,8 @@ This target hook should return @code{true} if the promotion described by
 @code{PROMOTE_FUNCTION_MODE} should be done for the return value of
 functions.
 
-If this target hook returns @code{true}, @code{FUNCTION_VALUE} must
-perform the same promotions done by @code{PROMOTE_FUNCTION_MODE}.
+If this target hook returns @code{true}, @code{TARGET_FUNCTION_VALUE}
+must perform the same promotions done by @code{PROMOTE_FUNCTION_MODE}.
 @end deftypefn
 
 @defmac PARM_BOUNDARY
@@ -4028,23 +4028,29 @@ must have move patterns for this mode.
 This section discusses the macros that control returning scalars as
 values---values that can fit in registers.
 
-@defmac FUNCTION_VALUE (@var{valtype}, @var{func})
-A C expression to create an RTX representing the place where a
-function returns a value of data type @var{valtype}.  @var{valtype} is
-a tree node representing a data type.  Write @code{TYPE_MODE
-(@var{valtype})} to get the machine mode used to represent that type.
-On many machines, only the mode is relevant.  (Actually, on most
-machines, scalar values are returned in the same place regardless of
-mode).
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_VALUE (tree @var{ret_type},
+tree @var{fn_decl_or_type}, bool @var{outgoing})
 
-The value of the expression is usually a @code{reg} RTX for the hard
-register where the return value is stored.  The value can also be a
-@code{parallel} RTX, if the return value is in multiple places.  See
-@code{FUNCTION_ARG} for an explanation of the @code{parallel} form.
+Define this to return an RTX representing the place where a function
+returns or receives a value of data type @var{ret_type}, a tree node
+node representing a data type.  @var{fn_decl_or_type} is a tree node
+representing @code{FUNCTION_DECL} or @code{FUNCTION_TYPE} of a
+function being called.  If @var{outgoing} is false, the hook should
+compute the register in which the caller will see the return value.
+Otherwise, the hook should return an RTX representing the place where
+a function returns a value.
 
-If @code{TARGET_PROMOTE_FUNCTION_RETURN} returns true, you must apply the same
-promotion rules specified in @code{PROMOTE_MODE} if @var{valtype} is a
-scalar type.
+On many machines, only @code{TYPE_MODE (@var{ret_type})} is relevant.
+(Actually, on most machines, scalar values are returned in the same
+place regardless of mode.)  The value of the expression is usually a
+@code{reg} RTX for the hard register where the return value is stored.
+The value can also be a @code{parallel} RTX, if the return value is in
+multiple places.  See @code{FUNCTION_ARG} for an explanation of the
+@code{parallel} form.
+
+If @code{TARGET_PROMOTE_FUNCTION_RETURN} returns true, you must apply
+the same promotion rules specified in @code{PROMOTE_MODE} if
+@var{valtype} is a scalar type.
 
 If the precise function being called is known, @var{func} is a tree
 node (@code{FUNCTION_DECL}) for it; otherwise, @var{func} is a null
@@ -4052,27 +4058,24 @@ pointer.  This makes it possible to use a different value-returning
 convention for specific functions when all their calls are
 known.
 
-@code{FUNCTION_VALUE} is not used for return vales with aggregate data
-types, because these are returned in another way.  See
+Some target machines have ``register windows'' so that the register in
+which a function returns its value is not the same as the one in which
+the caller sees the value.  For such machines, you should return
+different RTX depending on @var{outgoing}.
+
+@code{TARGET_FUNCTION_VALUE} is not used for return values with
+aggregate data types, because these are returned in another way.  See
 @code{TARGET_STRUCT_VALUE_RTX} and related macros, below.
+@end deftypefn
+
+@defmac FUNCTION_VALUE (@var{valtype}, @var{func})
+This macro has been deprecated.  Use @code{TARGET_FUNCTION_VALUE} for
+a new target instead.
 @end defmac
 
 @defmac FUNCTION_OUTGOING_VALUE (@var{valtype}, @var{func})
-Define this macro if the target machine has ``register windows''
-so that the register in which a function returns its value is not
-the same as the one in which the caller sees the value.
-
-For such machines, @code{FUNCTION_VALUE} computes the register in which
-the caller will see the value.  @code{FUNCTION_OUTGOING_VALUE} should be
-defined in a similar fashion to tell the function where to put the
-value.
-
-If @code{FUNCTION_OUTGOING_VALUE} is not defined,
-@code{FUNCTION_VALUE} serves both purposes.
-
-@code{FUNCTION_OUTGOING_VALUE} is not used for return vales with
-aggregate data types, because these are returned in another way.  See
-@code{TARGET_STRUCT_VALUE_RTX} and related macros, below.
+This macro has been deprecated.  Use @code{TARGET_FUNCTION_VALUE} for
+a new target instead.
 @end defmac
 
 @defmac LIBCALL_VALUE (@var{mode})
@@ -4123,10 +4126,11 @@ at the most significant end of a register (in other words, if they are
 padded at the least significant end).  You can assume that @var{type}
 is returned in a register; the caller is required to check this.
 
-Note that the register provided by @code{FUNCTION_VALUE} must be able
-to hold the complete return value.  For example, if a 1-, 2- or 3-byte
-structure is returned at the most significant end of a 4-byte register,
-@code{FUNCTION_VALUE} should provide an @code{SImode} rtx.
+Note that the register provided by @code{TARGET_FUNCTION_VALUE} must
+be able to hold the complete return value.  For example, if a 1-, 2-
+or 3-byte structure is returned at the most significant end of a
+4-byte register, @code{TARGET_FUNCTION_VALUE} should provide an
+@code{SImode} rtx.
 @end deftypefn
 
 @node Aggregate Return
@@ -4137,10 +4141,11 @@ structure is returned at the most significant end of a 4-byte register,
 @cindex structure value address
 
 When a function value's mode is @code{BLKmode} (and in some other
-cases), the value is not returned according to @code{FUNCTION_VALUE}
-(@pxref{Scalar Return}).  Instead, the caller passes the address of a
-block of memory in which the value should be stored.  This address
-is called the @dfn{structure value address}.
+cases), the value is not returned according to
+@code{TARGET_FUNCTION_VALUE} (@pxref{Scalar Return}).  Instead, the
+caller passes the address of a block of memory in which the value
+should be stored.  This address is called the @dfn{structure value
+address}.
 
 This section describes how to control returning structure values in
 memory.

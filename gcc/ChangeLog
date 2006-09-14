@@ -1,3 +1,12 @@
+2006-09-14  Richard Guenther  <rguenther@suse.de>
+	    Kazu Hirata  <kazu@codesourcery.com>
+
+	PR middle-end/28884.
+	* doc/tm.texi (TARGET_FUNCTION_VALUE): Document.
+	(FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE): Deprecate.
+	Replace mentions of FUNCTION_VALUE and FUNCTION_OUTGOING_VALUE
+	with TARGET_FUNCTION_VALUE.
+
 2006-09-14  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/26504
