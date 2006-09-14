@@ -283,6 +283,9 @@ enum reg_class {
 
 #define FRAME_POINTER_REQUIRED frame_pointer_required_p()
 
+/* Offset from the frame pointer register value to the top of the stack.  */
+#define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
+
 #define ELIMINABLE_REGS {					\
       {ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},		\
 	{FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}		\
