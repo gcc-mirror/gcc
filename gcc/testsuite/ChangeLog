@@ -1,3 +1,11 @@
+2006-09-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* stackcheck.lst: Update list of tests requiring stack checking.
+	* norun.lst: Adjust for above change.
+	* ada95.lst: New file.
+	* run_all.sh: Add handling of tests using Ada 95 semantics and thus
+	requiring -gnat95 switch.
+
 2006-09-14  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/in_out_parameter.adb: New test.
