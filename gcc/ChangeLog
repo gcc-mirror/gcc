@@ -1,3 +1,9 @@
+2006-09-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR debug/28980
+	* dwarf2out.c (loc_descriptor_from_tree_1): Handle
+	FUNCTION_DECL.
+
 2006-09-13  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* basic_block.h (bb_has_eh_pred): Fix comment.
