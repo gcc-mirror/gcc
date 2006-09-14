@@ -399,10 +399,10 @@ Other jumps are expressed by either @code{GOTO_EXPR} or @code{RETURN_EXPR}.
 The operand of a @code{GOTO_EXPR} must be either a label or a variable
 containing the address to jump to.
 
-The operand of a @code{RETURN_EXPR} is either @code{NULL_TREE} or a
-@code{MODIFY_EXPR} which sets the return value.  It would be nice to
-move the @code{MODIFY_EXPR} into a separate statement, but the special
-return semantics in @code{expand_return} make that difficult.  It may
+The operand of a @code{RETURN_EXPR} is either @code{NULL_TREE},
+@code{RESULT_DECL}, or a @code{MODIFY_EXPR} which sets the return value.  It
+would be nice to move the @code{MODIFY_EXPR} into a separate statement, but the
+special return semantics in @code{expand_return} make that difficult.  It may
 still happen in the future, perhaps by moving most of that logic into
 @code{expand_assignment}.
 
