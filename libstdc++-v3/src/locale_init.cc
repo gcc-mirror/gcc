@@ -32,8 +32,7 @@
 #include <cctype>
 #include <cwctype>     // For towupper, etc.
 #include <locale>
-#include <bits/atomicity.h>
-#include <bits/concurrence.h>
+#include <ext/concurrence.h>
 
 namespace 
 {
@@ -200,8 +199,7 @@ namespace
   fake_time_cache_w timepunct_cache_w;
 #endif
 
-  // Mutex object for locale initialization.
-  static __glibcxx_mutex_define_initialized(locale_mutex);
+  __gnu_cxx::__mutex locale_mutex;
 } // anonymous namespace
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -209,7 +207,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   locale::locale() throw() : _M_impl(0)
   { 
     _S_initialize();
-    __gnu_cxx::lock sentry(locale_mutex);
+    __gnu_cxx::__scoped_lock sentry(locale_mutex);
     _S_global->_M_add_reference();
     _M_impl = _S_global;
   }
@@ -220,7 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _S_initialize();
     _Impl* __old;
     {
-      __gnu_cxx::lock sentry(locale_mutex);
+      __gnu_cxx::__scoped_lock sentry(locale_mutex);
       __old = _S_global;
       __other._M_impl->_M_add_reference();
       _S_global = __other._M_impl;

@@ -1,3 +1,63 @@
+2006-09-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/atomicity.h: Move to...
+	* include/ext/atomicity.h: ...here.	
+	* include/bits/concurrence.h: Move to...
+	* include/ext/concurrence.h: ...here.
+	* include/Makefile.am (ext_headers): Additions.
+	(bits_headers): Subtractions.
+	* include/Makefile.in: Regenerate.
+
+	* include/ext/bitmap_allocator.h (_Mutex), __threads_enabled,
+	_Lock, _Auto_Lock): Subsume into...
+	* include/bits/concurrence.h (__mutex): ..this. Error check
+	locking and unlocking.	
+	(lock): Uglify to...
+	(__scoped_lock): Use __mutex. 
+	(__glibcxx_mutex_define_initialized): Remove.
+	(__glibcxx_mutex_type): Remove.
+
+	* include/tr1/boost_shared_ptr.h: Formating tweaks, adjustments.
+	(_Lock_policy): Move from here...
+	* include/ext/concurrence.h: ... to here.
+	(__shared_ptr_default_lock_mode): To __default_lock_policy.
+	(_S_lockfree): To _S_atomic.
+	Document.
+
+	* libsupc++/guard.cc (static_mutex): Subsume into and fixup for...
+	* include/ext/concurrence.h (__recursive_mutex): ...this. Error
+	check locking and unlocking.
+	* libsupc++/eh_alloc.cc: Use __scoped_lock.
+
+	* config/os/aix/atomicity.h: Fixups for include paths, mutex to
+	__scoped_mutex change, removal of locking defines.
+	* config/os/irix/atomicity.h: Same.
+	* config/cpu/cris/atomicity.h: Same.
+	* config/cpu/m68k/atomicity.h: Same.
+	* config/cpu/hppa/atomicity.h: Same.
+	* config/cpu/mips/atomicity.h: Same.
+	* config/cpu/sparc/atomicity.h: Same.
+	* config/cpu/i386/atomicity.h: Same.
+	* config/cpu/i486/atomicity.h: Same.
+	* config/cpu/sh/atomicity.h: Same.
+	* config/cpu/generic/atomicity_mutex/atomicity.h: Same.
+	* include/ext/pool_allocator.h: Same.
+	* include/ext/bitmap_allocator.h: Same.
+	* include/ext/rc_string_base.h: Same.
+	* include/ext/mt_allocator.h: Same.
+	* include/bits/locale_classes.h: Same.
+	* include/bits/basic_string.h: Same.
+	* include/bits/ios_base.h: Same.
+	* include/tr1/memory: Same.
+	* src/pool_allocator.cc: Same.
+	* src/mt_allocator.cc: Same.
+	* src/locale_init.cc: Same.
+	* src/ios.cc: Same.
+	* src/locale.cc: Same.
+	* src/bitmap_allocator.cc: Same.
+	* src/ios_init.cc: Same.
+	* src/debug.cc: Same.
+	
 2006-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/eh_globals.cc: Remove __gnu_internal.

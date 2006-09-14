@@ -27,7 +27,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <bits/atomicity.h>
+#include <ext/atomicity.h>
 
 /* We cannot use the cpu/powerpc/bits/atomicity.h inline assembly
    definitions for these operations since they depend on operations
@@ -48,15 +48,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add (volatile _Atomic_word* __mem, int __val)
-  {
-    return ::fetch_and_add (const_cast<atomic_p>(__mem), __val);
-  }
+  { return ::fetch_and_add(const_cast<atomic_p>(__mem), __val); }
 
   void
   __attribute__ ((__unused__))
   __atomic_add (volatile _Atomic_word* __mem, int __val)
-  {
-    (void) ::fetch_and_add (const_cast<atomic_p>(__mem), __val);
-  }
+  { (void) ::fetch_and_add(const_cast<atomic_p>(__mem), __val); }
 
 _GLIBCXX_END_NAMESPACE

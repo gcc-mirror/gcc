@@ -34,7 +34,6 @@
 
 #include <ios>
 #include <limits>
-#include <bits/atomicity.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

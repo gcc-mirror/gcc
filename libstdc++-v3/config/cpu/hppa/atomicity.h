@@ -28,7 +28,7 @@
 // the GNU General Public License.
 
 #include <bits/c++config.h>
-#include <bits/atomicity.h>
+#include <ext/atomicity.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 

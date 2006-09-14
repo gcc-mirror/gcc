@@ -52,8 +52,8 @@
 #include <cstdlib>
 #include <new>
 #include <bits/functexcept.h>
-#include <bits/atomicity.h>
-#include <bits/concurrence.h>
+#include <ext/atomicity.h>
+#include <ext/concurrence.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -106,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _Obj* volatile*
       _M_get_free_list(size_t __bytes);
     
-      mutex_type&
+      __mutex&
       _M_get_mutex();
 
       // Returns an object of size __n, and optionally adds to size __n
@@ -218,7 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    {
 	      _Obj* volatile* __free_list = _M_get_free_list(__bytes);
 	      
-	      lock sentry(_M_get_mutex());
+	      __scoped_lock sentry(_M_get_mutex());
 	      _Obj* __restrict__ __result = *__free_list;
 	      if (__builtin_expect(__result == 0, 0))
 		__ret = static_cast<_Tp*>(_M_refill(_M_round_up(__bytes)));
@@ -248,7 +248,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	      _Obj* volatile* __free_list = _M_get_free_list(__bytes);
 	      _Obj* __q = reinterpret_cast<_Obj*>(__p);
 
-	      lock sentry(_M_get_mutex());
+	      __scoped_lock sentry(_M_get_mutex());
 	      __q ->_M_free_list_link = *__free_list;
 	      *__free_list = __q;
 	    }

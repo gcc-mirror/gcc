@@ -37,8 +37,8 @@
 
 namespace
 {
-  static __glibcxx_mutex_define_initialized(palloc_init_mutex);
-}
+  __gnu_cxx::__mutex palloc_init_mutex;
+} // anonymous namespace
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -50,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     return _S_free_list + __i;
   }
 
-  mutex_type&
+  __mutex&
   __pool_alloc_base::_M_get_mutex()
   { return palloc_init_mutex; }
 

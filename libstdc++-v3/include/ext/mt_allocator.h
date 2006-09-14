@@ -37,8 +37,7 @@
 #include <new>
 #include <cstdlib>
 #include <bits/functexcept.h>
-#include <bits/gthr.h>
-#include <bits/atomicity.h>
+#include <ext/atomicity.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 

@@ -45,8 +45,7 @@
 #include <bits/localefwd.h>
 #include <cstring>		// For strcmp.
 #include <string>
-#include <bits/atomicity.h>
-#include <bits/gthr.h>
+#include <ext/atomicity.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

@@ -74,12 +74,12 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
 
 /* This is generic/atomicity.h */
 
-#include <bits/atomicity.h>
-#include <bits/concurrence.h>
+#include <ext/atomicity.h>
+#include <ext/concurrence.h>
 
 namespace 
 {
-  __glibcxx_mutex_define_initialized(atomic_mutex);
+  __gnu_cxx::__mutex atomic_mutex;
 } // anonymous namespace
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
@@ -88,11 +88,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   {
-    __glibcxx_mutex_lock(atomic_mutex);
+    __gnu_cxx::__scoped_lock sentry(atomic_mutex);
     _Atomic_word __result;
     __result = *__mem;
     *__mem += __val;
-    __glibcxx_mutex_unlock(atomic_mutex);
     return __result;
   }
 
