@@ -87,12 +87,20 @@ _Jv_platform_nanotime ()
   if (clock_gettime (id, &now) == 0)
     {
       jlong result = (jlong) now.tv_sec;
-      result = result * 1000 * 1000 + now.tv_nsec;
+      result = result * 1000000000LL + now.tv_nsec;
       return result;
     }
   // clock_gettime failed, but we can fall through.
 #endif // HAVE_CLOCK_GETTIME
-  return _Jv_platform_gettimeofday () * 1000LL;
+#if defined (HAVE_GETTIMEOFDAY)
+ {
+   timeval tv;
+   gettimeofday (&tv, NULL);
+   return (tv.tv_sec * 1000000000LL) + tv.tv_usec * 1000LL;
+ }
+#else
+  return _Jv_platform_gettimeofday () * 1000000LL;
+#endif
 }
 
 // Platform-specific VM initialization.

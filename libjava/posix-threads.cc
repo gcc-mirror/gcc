@@ -96,16 +96,29 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
   if (millis > 0 || nanos > 0)
     {
       // Calculate the abstime corresponding to the timeout.
-      // Everything is in milliseconds.
-      //
-      // We use `unsigned long long' rather than jlong because our
-      // caller may pass up to Long.MAX_VALUE millis.  This would
-      // overflow the range of a jlong when added to the current time.
-      
-      unsigned long long startTime 
-	= (unsigned long long)java::lang::System::currentTimeMillis();
-      unsigned long long m = (unsigned long long)millis + startTime;
-      unsigned long long seconds = m / 1000; 
+      unsigned long long seconds;
+      unsigned long usec;
+
+      // For better accuracy, should use pthread_condattr_setclock
+      // and clock_gettime.
+#ifdef HAVE_GETTIMEOFDAY
+      timeval tv;
+      gettimeofday (&tv, NULL);
+      usec = tv.tv_usec;
+      seconds = tv.tv_sec;
+#else
+      unsigned long long startTime = java::lang::System::currentTimeMillis();
+      seconds = startTime / 1000;
+      /* Assume we're about half-way through this millisecond.  */
+      usec = (startTime % 1000) * 1000 + 500;
+#endif
+      /* These next two statements cannot overflow.  */
+      usec += nanos / 1000;
+      usec += (millis % 1000) * 1000;
+      /* These two statements could overflow only if tv.tv_sec was
+	 insanely large.  */
+      seconds += millis / 1000;
+      seconds += usec / 1000000;
 
       ts.tv_sec = seconds;
       if (ts.tv_sec < 0 || (unsigned long long)ts.tv_sec != seconds)
@@ -115,10 +128,8 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
           millis = nanos = 0;
         }
       else
-        {
-          m %= 1000;
-          ts.tv_nsec = m * 1000000 + (unsigned long long)nanos;
-        }
+	/* This next statement also cannot overflow.  */
+	ts.tv_nsec = (usec % 1000000) * 1000 + (nanos % 1000);
     }
 
   _Jv_Thread_t *current = _Jv_ThreadCurrentData ();
