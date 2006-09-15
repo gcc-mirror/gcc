@@ -90,6 +90,7 @@ static tree elaborate_expression_1 (Node_Id, Entity_Id, tree, tree,
 				    bool, bool);
 static tree make_packable_type (tree);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool);
+static bool same_discriminant_p (Entity_Id, Entity_Id);
 static void components_to_record (tree, Node_Id, tree, int, bool, tree *,
                                   bool, bool, bool, bool);
 static int compare_field_bitpos (const PTR, const PTR);
@@ -2429,16 +2430,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   this record has rep clauses, force the position to zero.  */
 	if (Present (Parent_Subtype (gnat_entity)))
 	  {
+	    Entity_Id gnat_parent = Parent_Subtype (gnat_entity);
 	    tree gnu_parent;
 
 	    /* A major complexity here is that the parent subtype will
-	       reference our discriminants.  But those must reference
-	       the parent component of this record.  So here we will
-	       initialize each of those components to a COMPONENT_REF.
-	       The first operand of that COMPONENT_REF is another
-	       COMPONENT_REF which will be filled in below, once
-	       the parent type can be safely built.  */
-
+	       reference our discriminants in its Discriminant_Constraint
+	       list.  But those must reference the parent component of this
+	       record which is of the parent subtype we have not built yet!
+	       To break the circle we first build a dummy COMPONENT_REF which
+	       represents the "get to the parent" operation and initialize
+	       each of those discriminants to a COMPONENT_REF of the above
+	       dummy parent referencing the corresponding discrimant of the
+	       base type of the parent subtype.  */
 	    gnu_get_parent = build3 (COMPONENT_REF, void_type_node,
 				     build0 (PLACEHOLDER_EXPR, gnu_type),
 				     build_decl (FIELD_DECL, NULL_TREE,
@@ -2460,8 +2463,35 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			     NULL_TREE),
 		     true);
 
-	    gnu_parent = gnat_to_gnu_type (Parent_Subtype (gnat_entity));
+            /* Then we build the parent subtype.  */
+	    gnu_parent = gnat_to_gnu_type (gnat_parent);
 
+	    /* Finally we fix up both kinds of twisted COMPONENT_REF we have
+	       initially built.  The discriminants must reference the fields
+	       of the parent subtype and not those of its base type for the
+	       placeholder machinery to properly work.  */
+	    if (Has_Discriminants (gnat_entity))
+	      for (gnat_field = First_Stored_Discriminant (gnat_entity);
+		   Present (gnat_field);
+		   gnat_field = Next_Stored_Discriminant (gnat_field))
+		if (Present (Corresponding_Discriminant (gnat_field)))
+		  {
+		    Entity_Id field = Empty;
+		    for (field = First_Stored_Discriminant (gnat_parent);
+			 Present (field);
+			 field = Next_Stored_Discriminant (field))
+		      if (same_discriminant_p (gnat_field, field))
+			break;
+		    gcc_assert (Present (field));
+		    TREE_OPERAND (get_gnu_tree (gnat_field), 1)
+		      = gnat_to_gnu_field_decl (field);
+		  }
+
+	    /* The "get to the parent" COMPONENT_REF must be given its
+	       proper type...  */
+	    TREE_TYPE (gnu_get_parent) = gnu_parent;
+
+	    /* ...and reference the _parent field of this record.  */
 	    gnu_field_list
 	      = create_field_decl (get_identifier
 				   (Get_Name_String (Name_uParent)),
@@ -2469,8 +2499,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				   has_rep ? TYPE_SIZE (gnu_parent) : 0,
 				   has_rep ? bitsize_zero_node : 0, 1);
 	    DECL_INTERNAL_P (gnu_field_list) = 1;
-
-	    TREE_TYPE (gnu_get_parent) = gnu_parent;
 	    TREE_OPERAND (gnu_get_parent, 1) = gnu_field_list;
 	  }
 
@@ -4290,6 +4318,21 @@ gnat_to_gnu_field_decl (Entity_Id gnat_entity)
     gnu_field = TREE_OPERAND (gnu_field, 1);
 
   return gnu_field;
+}
+
+/* Return true if DISCR1 and DISCR2 represent the same discriminant.  */
+
+static
+bool same_discriminant_p (Entity_Id discr1, Entity_Id discr2)
+{
+  while (Present (Corresponding_Discriminant (discr1)))
+    discr1 = Corresponding_Discriminant (discr1);
+
+  while (Present (Corresponding_Discriminant (discr2)))
+    discr2 = Corresponding_Discriminant (discr2);
+
+  return
+    Original_Record_Component (discr1) == Original_Record_Component (discr2);
 }
 
 /* Given GNAT_ENTITY, elaborate all expressions that are required to

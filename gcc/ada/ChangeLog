@@ -1,3 +1,12 @@
+2006-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/15802
+	* decl.c (same_discriminant_p): New static function.
+	(gnat_to_gnu_entity) <E_Record_Type>: When there is a parent
+	subtype and we have discriminants, fix up the COMPONENT_REFs
+	for the discriminants to make them reference the corresponding
+	fields of the parent subtype after it has been built.
+
 2006-09-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR ada/18817
