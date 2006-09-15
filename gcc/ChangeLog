@@ -3,6 +3,7 @@
 	* params.def (PARAM_MAX_ITERATIONS_COMPUTATION_COST): New.
 	* loop-doloop.c (doloop_optimize): Use it to limit costs of
 	expanding the number of iterations.
+	* config/bfin/bfin.c (bfin_rtx_costs): Handle UDIV, UMOD.
 
 2006-09-15  Kazu Hirata  <kazu@codesourcery.com>
 
