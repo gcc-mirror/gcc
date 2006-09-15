@@ -1,3 +1,8 @@
+2006-09-16  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* loop-doloop.c (doloop_optimize): Change type of max_cost to int.
+	Add forgotten parameter to the fprintf call.
+
 2006-09-15  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Add define.
