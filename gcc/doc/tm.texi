@@ -4028,8 +4028,7 @@ must have move patterns for this mode.
 This section discusses the macros that control returning scalars as
 values---values that can fit in registers.
 
-@deftypefn {Target Hook} rtx TARGET_FUNCTION_VALUE (tree @var{ret_type},
-tree @var{fn_decl_or_type}, bool @var{outgoing})
+@deftypefn {Target Hook} rtx TARGET_FUNCTION_VALUE (tree @var{ret_type}, tree @var{fn_decl_or_type}, bool @var{outgoing})
 
 Define this to return an RTX representing the place where a function
 returns or receives a value of data type @var{ret_type}, a tree node

@@ -1,3 +1,8 @@
+2006-09-15  Kazu Hirata  <kazu@codesourcery.com>
+
+	* doc/tm.texi (TARGET_FUNCTION_VALUE): Put @deftypefn all in
+	one line.
+
 2006-09-14  Richard Guenther  <rguenther@suse.de>
 	    Kazu Hirata  <kazu@codesourcery.com>
 
