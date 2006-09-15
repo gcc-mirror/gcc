@@ -1,3 +1,9 @@
+2006-09-15  Nick Clifton  <nickc@redhat.com>
+
+	* doc/md.texi (Processor pipeline description): Fix typo in
+	example of how to use the absence_set directive and reword the
+	description to make it slightly easier to read.
+
 2005-09-15  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* params.def (PARAM_MAX_ITERATIONS_COMPUTATION_COST): New.
