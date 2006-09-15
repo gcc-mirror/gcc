@@ -1,3 +1,8 @@
+2006-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/double_record_extension1.ads: New test.
+	* gnat.dg/specs/double_record_extension2.ads: Likewise.
+
 2006-09-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29051
