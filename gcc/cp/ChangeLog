@@ -1,3 +1,9 @@
+2006-09-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/29002
+	* init.c (build_zero_init): If we have an error mark node for
+	the array size, return.
+
 2006-09-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28991
