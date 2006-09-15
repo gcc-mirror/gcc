@@ -9,6 +9,8 @@
 	* rtl.h (emit_insn_at_entry): Declare it.
 	* integrate.c (emit_initial_value_sets): Use it.
 
+	* cfgrtl.c (emit_insn_at_entry): Use gcc_assert, not abort.
+
 2006-09-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/tm.texi (TARGET_FUNCTION_VALUE): Put @deftypefn all in

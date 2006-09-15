@@ -460,8 +460,7 @@ emit_insn_at_entry (rtx insn)
 {
   edge_iterator ei = ei_start (ENTRY_BLOCK_PTR->succs);
   edge e = ei_safe_edge (ei);
-  if (!(e->flags & EDGE_FALLTHRU))
-    abort ();
+  gcc_assert (e->flags & EDGE_FALLTHRU);
 
   insert_insn_on_edge (insn, e);
   commit_edge_insertions ();
