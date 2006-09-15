@@ -318,7 +318,7 @@ read_block (st_parameter_dt *dtp, int *length)
   else
     {
       if (sseek (dtp->u.p.current_unit->s,
-		 (gfc_offset) (dtp->rec - 1)) == FAILURE)
+		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
 	{
 	  generate_error (&dtp->common, ERROR_END, NULL);
 	  return NULL;
@@ -341,7 +341,7 @@ read_block (st_parameter_dt *dtp, int *length)
 	    }
 	}
 
-      dtp->rec += (GFC_IO_INT) nread;
+      dtp->u.p.current_unit->strm_pos += (gfc_offset) nread;
     }
   return source;
 }
@@ -400,7 +400,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
   else
     {
       if (sseek (dtp->u.p.current_unit->s,
-	  (gfc_offset) (dtp->rec - 1)) == FAILURE)
+		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
 	{
 	  generate_error (&dtp->common, ERROR_END, NULL);
 	  return;
@@ -420,7 +420,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	dtp->u.p.size_used += (gfc_offset) nread;
     }
   else
-    dtp->rec += (GFC_IO_INT) nread; 
+    dtp->u.p.current_unit->strm_pos += (gfc_offset) nread; 
 
   if (nread != *nbytes)  /* Short read, e.g. if we hit EOF.  */
     {
@@ -479,9 +479,9 @@ write_block (st_parameter_dt *dtp, int length)
   else
     {
       if (sseek (dtp->u.p.current_unit->s,
-	  (gfc_offset) (dtp->rec - 1)) == FAILURE)
+		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
 	{
-	  generate_error (&dtp->common, ERROR_END, NULL);
+	  generate_error (&dtp->common, ERROR_OS, NULL);
 	  return NULL;
 	}
 
@@ -493,7 +493,7 @@ write_block (st_parameter_dt *dtp, int length)
 	  return NULL;
 	}
 
-      dtp->rec += (GFC_IO_INT) length;
+      dtp->u.p.current_unit->strm_pos += (gfc_offset) length;
     }
 
   return dest;
@@ -531,7 +531,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
   else
     {
       if (sseek (dtp->u.p.current_unit->s,
-		 (gfc_offset) (dtp->rec - 1)) == FAILURE)
+		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
 	{
 	  generate_error (&dtp->common, ERROR_OS, NULL);
 	  return FAILURE;
@@ -550,7 +550,7 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 	dtp->u.p.size_used += (gfc_offset) nbytes;
     }
   else
-    dtp->rec += (GFC_IO_INT) nbytes; 
+    dtp->u.p.current_unit->strm_pos += (gfc_offset) nbytes; 
 
   return SUCCESS;
 }
@@ -1506,7 +1506,7 @@ pre_position (st_parameter_dt *dtp)
       /* There are no records with stream I/O.  Set the default position
 	 to the beginning of the file if no position was specified.  */
       if ((dtp->common.flags & IOPARM_DT_HAS_REC) == 0)
-        dtp->rec = 1;
+        dtp->u.p.current_unit->strm_pos = 1;
       break;
     
     case UNFORMATTED_SEQUENTIAL:
@@ -1766,12 +1766,18 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	}
 
       /* Position the file.  */
-      if (sseek (dtp->u.p.current_unit->s, (gfc_offset) (dtp->rec - 1)
-		  * dtp->u.p.current_unit->recl) == FAILURE)
+      if (!is_stream_io (dtp))
 	{
-	  generate_error (&dtp->common, ERROR_OS, NULL);
-	  return;
+	  if (sseek (dtp->u.p.current_unit->s, (gfc_offset) (dtp->rec - 1)
+		     * dtp->u.p.current_unit->recl) == FAILURE)
+	    {
+	      generate_error (&dtp->common, ERROR_OS, NULL);
+	      return;
+	    }
 	}
+      else
+	dtp->u.p.current_unit->strm_pos = dtp->rec;
+
     }
 
   /* Overwriting an existing sequential file ?
@@ -2367,10 +2373,7 @@ finalize_transfer (st_parameter_dt *dtp)
       next_record (dtp, 1);
     }
   else
-    {
-      flush (dtp->u.p.current_unit->s);
-      dtp->u.p.current_unit->last_record = dtp->rec;
-    }
+    flush (dtp->u.p.current_unit->s);
 
   sfree (dtp->u.p.current_unit->s);
 }

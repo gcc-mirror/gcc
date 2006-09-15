@@ -498,8 +498,9 @@ typedef struct gfc_unit
   /* recl           -- Record length of the file.
      last_record    -- Last record number read or written
      maxrec         -- Maximum record number in a direct access file
-     bytes_left     -- Bytes left in current record.  */
-  gfc_offset recl, last_record, maxrec, bytes_left;
+     bytes_left     -- Bytes left in current record.
+     strm_pos       -- Current position in file for STREAM I/O.  */
+  gfc_offset recl, last_record, maxrec, bytes_left, strm_pos;
 
   __gthread_mutex_t lock;
   /* Number of threads waiting to acquire this unit's lock.
