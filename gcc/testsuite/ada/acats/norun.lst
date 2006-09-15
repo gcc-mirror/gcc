@@ -1,4 +1,3 @@
-c380004
 c52103x
 c52104x
 c52104y
@@ -7,6 +6,5 @@ cb1010c
 cb1010d
 templat
 # Tests must be sorted in alphabetical order
-# c380004: should be front-end compile time error, PR ada/18817
 # c52103x, c52104x, c52104y: -fstack-check doesn't work, PR middle-end/20548
 # cb1010a, cb1010c, cb1010d: likewise
