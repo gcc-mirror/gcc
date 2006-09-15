@@ -1,3 +1,9 @@
+2006-09-15  Jim Wilson  <wilson@specifix.com>
+
+	* config/ia64/ia64.c (ia64_legitimate_constant_p, cast CONST):
+	Handle symbol offsets same as they are handled in ia64_expand_move
+	and move_operand.
+
 2006-09-16  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* loop-doloop.c (doloop_optimize): Change type of max_cost to int.
