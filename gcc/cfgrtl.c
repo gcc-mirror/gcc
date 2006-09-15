@@ -453,6 +453,20 @@ entry_of_function (void)
 	  BB_HEAD (ENTRY_BLOCK_PTR->next_bb) : get_insns ());
 }
 
+/* Emit INSN at the entry point of the function, ensuring that it is only
+   executed once per function.  */
+void
+emit_insn_at_entry (rtx insn)
+{
+  edge_iterator ei = ei_start (ENTRY_BLOCK_PTR->succs);
+  edge e = ei_safe_edge (ei);
+  if (!(e->flags & EDGE_FALLTHRU))
+    abort ();
+
+  insert_insn_on_edge (insn, e);
+  commit_edge_insertions ();
+}
+
 /* Update insns block within BB.  */
 
 void

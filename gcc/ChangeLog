@@ -5,6 +5,10 @@
 	expanding the number of iterations.
 	* config/bfin/bfin.c (bfin_rtx_costs): Handle UDIV, UMOD.
 
+	* cfgrtl.c (emit_insn_at_entry): New function.
+	* rtl.h (emit_insn_at_entry): Declare it.
+	* integrate.c (emit_initial_value_sets): Use it.
+
 2006-09-15  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/tm.texi (TARGET_FUNCTION_VALUE): Put @deftypefn all in

@@ -2074,6 +2074,7 @@ extern rtx emit (rtx);
 extern void renumber_insns (void);
 extern rtx delete_insn (rtx);
 extern rtx entry_of_function (void);
+extern void emit_insn_at_entry (rtx);
 extern void delete_insn_chain (rtx, rtx);
 extern rtx unlink_insn_chain (rtx, rtx);
 extern rtx delete_insn_and_edges (rtx);

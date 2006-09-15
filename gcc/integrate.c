@@ -294,7 +294,7 @@ emit_initial_value_sets (void)
   seq = get_insns ();
   end_sequence ();
 
-  emit_insn_after (seq, entry_of_function ());
+  emit_insn_at_entry (seq);
   return 0;
 }
 
