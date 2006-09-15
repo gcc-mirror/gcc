@@ -2797,8 +2797,11 @@ struct loop_info GTY (())
   /* The length of the loop.  */
   int length;
 
-  /* The nesting depth of the loop.  Set to -1 for a bad loop.  */
+  /* The nesting depth of the loop.  */
   int depth;
+
+  /* Nonzero if we can't optimize this loop.  */
+  int bad;
 
   /* True if we have visited this loop.  */
   int visited;
@@ -2815,27 +2818,16 @@ struct loop_info GTY (())
   /* Immediate outer loop of this loop.  */
   struct loop_info *outer;
 
-  /* Vector of blocks only within the loop, (excluding those within
-     inner loops).  */
+  /* Vector of blocks only within the loop, including those within
+     inner loops.  */
   VEC (basic_block,heap) *blocks;
+
+  /* Same information in a bitmap.  */
+  bitmap block_bitmap;
 
   /* Vector of inner loops within this loop  */
   VEC (loop_info,heap) *loops;
 };
-
-/* Information used during loop detection.  */
-typedef struct loop_work GTY(())
-{
-  /* Basic block to be scanned.  */
-  basic_block block;
-
-  /* Loop it will be within.  */
-  loop_info loop;
-} loop_work;
-
-/* Work list.  */
-DEF_VEC_O (loop_work);
-DEF_VEC_ALLOC_O (loop_work,heap);
 
 static void
 bfin_dump_loops (loop_info loops)
@@ -2849,6 +2841,8 @@ bfin_dump_loops (loop_info loops)
       unsigned ix;
 
       fprintf (dump_file, ";; loop %d: ", loop->loop_no);
+      if (loop->bad)
+	fprintf (dump_file, "(bad) ");
       fprintf (dump_file, "{head:%d, depth:%d}", loop->head->index, loop->depth);
 
       fprintf (dump_file, " blocks: [ ");
@@ -2870,19 +2864,7 @@ bfin_dump_loops (loop_info loops)
 static bool
 bfin_bb_in_loop (loop_info loop, basic_block bb)
 {
-  unsigned ix;
-  loop_info inner;
-  basic_block b;
-
-  for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, b); ix++)
-    if (b == bb)
-      return true;
-
-  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, inner); ix++)
-    if (bfin_bb_in_loop (inner, bb))
-      return true;
-
-  return false;
+  return bitmap_bit_p (loop->block_bitmap, bb->index);
 }
 
 /* Scan the blocks of LOOP (and its inferiors) looking for uses of
@@ -2893,7 +2875,6 @@ static bool
 bfin_scan_loop (loop_info loop, rtx reg, rtx loop_end)
 {
   unsigned ix;
-  loop_info inner;
   basic_block bb;
 
   for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, bb); ix++)
@@ -2912,10 +2893,6 @@ bfin_scan_loop (loop_info loop, rtx reg, rtx loop_end)
 	    return true;
 	}
     }
-  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, inner); ix++)
-    if (bfin_scan_loop (inner, reg, NULL_RTX))
-      return true;
-
   return false;
 }
 
@@ -2925,7 +2902,7 @@ static void
 bfin_optimize_loop (loop_info loop)
 {
   basic_block bb;
-  loop_info inner, outer;
+  loop_info inner;
   rtx insn, init_insn, last_insn, nop_insn;
   rtx loop_init, start_label, end_label;
   rtx reg_lc0, reg_lc1, reg_lt0, reg_lt1, reg_lb0, reg_lb1;
@@ -2935,39 +2912,33 @@ bfin_optimize_loop (loop_info loop)
   int length;
   unsigned ix;
   int inner_depth = 0;
-  int inner_num;
-  int bb_num;
 
   if (loop->visited)
     return;
 
   loop->visited = 1;
 
-  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, inner); ix++)
-    {
-      if (inner->loop_no == loop->loop_no)
-	loop->depth = -1;
-      else
-	bfin_optimize_loop (inner);
-
-      if (inner->depth < 0 || inner->depth > MAX_LOOP_DEPTH)
-	{
-	  inner->outer = NULL;
-	  VEC_ordered_remove (loop_info, loop->loops, ix);
-	}
-
-      if (inner_depth < inner->depth)
-	inner_depth = inner->depth;
-
-      loop->clobber_loop0 |= inner->clobber_loop0;
-      loop->clobber_loop1 |= inner->clobber_loop1;
-    }
-
-  if (loop->depth < 0)
+  if (loop->bad)
     {
       if (dump_file)
 	fprintf (dump_file, ";; loop %d bad when found\n", loop->loop_no);
       goto bad_loop;
+    }
+
+  /* Every loop contains in its list of inner loops every loop nested inside
+     it, even if there are intermediate loops.  This works because we're doing
+     a depth-first search here and never visit a loop more than once.  */
+  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, inner); ix++)
+    {
+      bfin_optimize_loop (inner);
+
+      if (!inner->bad && inner_depth < inner->depth)
+	{
+	  inner_depth = inner->depth;
+
+	  loop->clobber_loop0 |= inner->clobber_loop0;
+	  loop->clobber_loop1 |= inner->clobber_loop1;
+	}
     }
 
   loop->depth = inner_depth + 1;
@@ -2975,31 +2946,6 @@ bfin_optimize_loop (loop_info loop)
     {
       if (dump_file)
 	fprintf (dump_file, ";; loop %d too deep\n", loop->loop_no);
-      goto bad_loop;
-    }
-
-  /* Make sure we only have one entry point.  */
-  if (EDGE_COUNT (loop->head->preds) == 2)
-    {
-      loop->predecessor = EDGE_PRED (loop->head, 0)->src;
-      if (loop->predecessor == loop->tail)
-	/* We wanted the other predecessor.  */
-	loop->predecessor = EDGE_PRED (loop->head, 1)->src;
-
-      /* We can only place a loop insn on a fall through edge of a
-	 single exit block.  */
-      if (EDGE_COUNT (loop->predecessor->succs) != 1
-	  || !(EDGE_SUCC (loop->predecessor, 0)->flags & EDGE_FALLTHRU)
-	  /* If loop->predecessor is in loop, loop->head is not really
-	     the head of the loop.  */
-	  || bfin_bb_in_loop (loop, loop->predecessor))
-	loop->predecessor = NULL;
-    }
-
-  if (loop->predecessor == NULL)
-    {
-      if (dump_file)
-	fprintf (dump_file, ";; loop %d has bad predecessor\n", loop->loop_no);
       goto bad_loop;
     }
 
@@ -3264,49 +3210,7 @@ bad_loop:
   if (dump_file)
     fprintf (dump_file, ";; loop %d is bad\n", loop->loop_no);
 
-  /* Mark this loop bad.  */
-  if (loop->depth <= MAX_LOOP_DEPTH)
-    loop->depth = -1;
-
-  outer = loop->outer;
-
-  /* Move all inner loops to loop's outer loop.  */
-  inner_num = VEC_length (loop_info, loop->loops);
-  if (inner_num)
-    {
-      loop_info l;
-
-      if (outer)
-	VEC_reserve (loop_info, heap, outer->loops, inner_num);
-
-      for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, l); ix++)
-	{
-	  l->outer = outer;
-	  if (outer)
-	    VEC_quick_push (loop_info, outer->loops, l);
-	}
-
-      VEC_free (loop_info, heap, loop->loops);
-    }
-
-  /* Move all blocks to loop's outer loop.  */
-  bb_num = VEC_length (basic_block, loop->blocks);
-  if (bb_num)
-    {
-      basic_block b;
-
-      if (outer)
-	VEC_reserve (basic_block, heap, outer->blocks, bb_num);
-
-      for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, b); ix++)
-	{
-	  b->aux = outer;
-	  if (outer)
-	    VEC_quick_push (basic_block, outer->blocks, b);
-	}
-
-      VEC_free (basic_block, heap, loop->blocks);
-    }
+  loop->bad = 1;
 
   if (DPREG_P (loop->iter_reg))
     {
@@ -3331,18 +3235,146 @@ bad_loop:
     }
 }
 
+/* Called from bfin_reorg_loops when a potential loop end is found.  LOOP is
+   a newly set up structure describing the loop, it is this function's
+   responsibility to fill most of it.  TAIL_BB and TAIL_INSN point to the
+   loop_end insn and its enclosing basic block.  */
+
+static void
+bfin_discover_loop (loop_info loop, basic_block tail_bb, rtx tail_insn)
+{
+  unsigned dwork = 0;
+  basic_block bb;
+  VEC (basic_block,heap) *works = VEC_alloc (basic_block,heap,20);
+
+  loop->tail = tail_bb;
+  loop->head = BRANCH_EDGE (tail_bb)->dest;
+  loop->successor = FALLTHRU_EDGE (tail_bb)->dest;
+  loop->predecessor = NULL;
+  loop->loop_end = tail_insn;
+  loop->last_insn = NULL_RTX;
+  loop->iter_reg = SET_DEST (XVECEXP (PATTERN (tail_insn), 0, 1));
+  loop->depth = loop->length = 0;
+  loop->visited = 0;
+  loop->clobber_loop0 = loop->clobber_loop1 = 0;
+  loop->outer = NULL;
+  loop->loops = NULL;
+
+  loop->init = loop->loop_init = NULL_RTX;
+  loop->start_label = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (tail_insn), 0, 0)), 1), 0);
+  loop->end_label = NULL_RTX;
+  loop->bad = 0;
+
+  VEC_safe_push (basic_block, heap, works, loop->head);
+
+  while (VEC_iterate (basic_block, works, dwork++, bb))
+    {
+      edge e;
+      edge_iterator ei;
+      if (bb == EXIT_BLOCK_PTR)
+	{
+	  /* We've reached the exit block.  The loop must be bad. */
+	  if (dump_file)
+	    fprintf (dump_file,
+		     ";; Loop is bad - reached exit block while scanning\n");
+	  loop->bad = 1;
+	  break;
+	}
+
+      if (bitmap_bit_p (loop->block_bitmap, bb->index))
+	continue;
+
+      /* We've not seen this block before.  Add it to the loop's
+	 list and then add each successor to the work list.  */
+
+      VEC_safe_push (basic_block, heap, loop->blocks, bb);
+      bitmap_set_bit (loop->block_bitmap, bb->index);
+
+      if (bb != tail_bb)
+	{
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    {
+	      basic_block succ = EDGE_SUCC (bb, ei.index)->dest;
+	      if (!REGNO_REG_SET_P (succ->il.rtl->global_live_at_start,
+				    REGNO (loop->iter_reg)))
+		continue;
+	      if (!VEC_space (basic_block, works, 1))
+		{
+		  if (dwork)
+		    {
+		      VEC_block_remove (basic_block, works, 0, dwork);
+		      dwork = 0;
+		    }
+		  else
+		    VEC_reserve (basic_block, heap, works, 1);
+		}
+	      VEC_quick_push (basic_block, works, succ);
+	    }
+	}
+    }
+
+  if (!loop->bad)
+    {
+      /* Make sure we only have one entry point.  */
+      if (EDGE_COUNT (loop->head->preds) == 2)
+	{
+	  loop->predecessor = EDGE_PRED (loop->head, 0)->src;
+	  if (loop->predecessor == loop->tail)
+	    /* We wanted the other predecessor.  */
+	    loop->predecessor = EDGE_PRED (loop->head, 1)->src;
+
+	  /* We can only place a loop insn on a fall through edge of a
+	     single exit block.  */
+	  if (EDGE_COUNT (loop->predecessor->succs) != 1
+	      || !(EDGE_SUCC (loop->predecessor, 0)->flags & EDGE_FALLTHRU)
+	      /* If loop->predecessor is in loop, loop->head is not really
+		 the head of the loop.  */
+	      || bfin_bb_in_loop (loop, loop->predecessor))
+	    loop->predecessor = NULL;
+	}
+
+      if (loop->predecessor == NULL)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop has bad predecessor\n");
+	  loop->bad = 1;
+	}
+    }
+
+#ifdef ENABLE_CHECKING
+  /* Make sure nothing jumps into this loop.  This shouldn't happen as we
+     wouldn't have generated the counted loop patterns in such a case.
+     However, this test must be done after the test above to detect loops
+     with invalid headers.  */
+  if (!loop->bad)
+    for (dwork = 0; VEC_iterate (basic_block, loop->blocks, dwork, bb); dwork++)
+      {
+	edge e;
+	edge_iterator ei;
+	if (bb == loop->head)
+	  continue;
+	FOR_EACH_EDGE (e, ei, bb->preds)
+	  {
+	    basic_block pred = EDGE_PRED (bb, ei.index)->src;
+	    if (!bfin_bb_in_loop (loop, pred))
+	      abort ();
+	  }
+      }
+#endif
+  VEC_free (basic_block, heap, works);
+}
+
 static void
 bfin_reorg_loops (FILE *dump_file)
 {
+  bitmap_obstack stack;
+  bitmap tmp_bitmap;
   basic_block bb;
   loop_info loops = NULL;
   loop_info loop;
   int nloops = 0;
-  unsigned dwork = 0;
-  VEC (loop_work,heap) *works = VEC_alloc (loop_work,heap,20);
-  loop_work *work;
-  edge e;
-  edge_iterator ei;
+
+  bitmap_obstack_initialize (&stack);
 
   /* Find all the possible loop tails.  This means searching for every
      loop_end instruction.  For each one found, create a loop_info
@@ -3355,6 +3387,7 @@ bfin_reorg_loops (FILE *dump_file)
 	tail = PREV_INSN (tail);
 
       bb->aux = NULL;
+
       if (INSN_P (tail) && recog_memoized (tail) == CODE_FOR_loop_end)
 	{
 	  /* A possible loop end */
@@ -3362,30 +3395,9 @@ bfin_reorg_loops (FILE *dump_file)
 	  loop = XNEW (struct loop_info);
 	  loop->next = loops;
 	  loops = loop;
-	  loop->tail = bb;
-	  loop->head = BRANCH_EDGE (bb)->dest;
-	  loop->successor = FALLTHRU_EDGE (bb)->dest;
-	  loop->predecessor = NULL;
-	  loop->loop_end = tail;
-	  loop->last_insn = NULL_RTX;
-	  loop->iter_reg = SET_DEST (XVECEXP (PATTERN (tail), 0, 1));
-	  loop->depth = loop->length = 0;
-	  loop->visited = 0;
-	  loop->clobber_loop0 = loop->clobber_loop1 = 0;
-	  loop->blocks = VEC_alloc (basic_block, heap, 20);
-	  VEC_quick_push (basic_block, loop->blocks, bb);
-	  loop->outer = NULL;
-	  loop->loops = NULL;
 	  loop->loop_no = nloops++;
-
-	  loop->init = loop->loop_init = NULL_RTX;
-	  loop->start_label = XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (tail), 0, 0)), 1), 0);
-	  loop->end_label = NULL_RTX;
-
-	  work = VEC_safe_push (loop_work, heap, works, NULL);
-	  work->block = loop->head;
-	  work->loop = loop;
-
+	  loop->blocks = VEC_alloc (basic_block, heap, 20);
+	  loop->block_bitmap = BITMAP_ALLOC (&stack);
 	  bb->aux = loop;
 
 	  if (dump_file)
@@ -3394,75 +3406,44 @@ bfin_reorg_loops (FILE *dump_file)
 		       loop->loop_no);
 	      print_rtl_single (dump_file, tail);
 	    }
+
+	  bfin_discover_loop (loop, bb, tail);
 	}
     }
 
-  /*  Now find all the closed loops.
-      until work list empty,
-       if block's auxptr is set
-         if != loop slot
-           if block's loop's start != block
-	     mark loop as bad
-	   else
-             append block's loop's fallthrough block to worklist
-	     increment this loop's depth
-       else if block is exit block
-         mark loop as bad
-       else
-	  set auxptr
-	  for each target of block
-	    add to worklist */
-  while (VEC_iterate (loop_work, works, dwork++, work))
+  tmp_bitmap = BITMAP_ALLOC (&stack);
+  /* Compute loop nestings.  */
+  for (loop = loops; loop; loop = loop->next)
     {
-      loop = work->loop;
-      bb = work->block;
-      if (bb == EXIT_BLOCK_PTR)
-	/* We've reached the exit block.  The loop must be bad. */
-	loop->depth = -1;
-      else if (!bb->aux)
-	{
-	  /* We've not seen this block before.  Add it to the loop's
-	     list and then add each successor to the work list.  */
-	  bb->aux = loop;
-	  VEC_safe_push (basic_block, heap, loop->blocks, bb);
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    {
-	      if (!VEC_space (loop_work, works, 1))
-		{
-		  if (dwork)
-		    {
-		      VEC_block_remove (loop_work, works, 0, dwork);
-		      dwork = 0;
-		    }
-		  else
-		    VEC_reserve (loop_work, heap, works, 1);
-		}
-	      work = VEC_quick_push (loop_work, works, NULL);
-	      work->block = EDGE_SUCC (bb, ei.index)->dest;
-	      work->loop = loop;
-	    }
-	}
-      else if (bb->aux != loop)
-	{
-	  /* We've seen this block in a different loop.  If it's not
-	     the other loop's head, then this loop must be bad.
-	     Otherwise, the other loop might be a nested loop, so
-	     continue from that loop's successor.  */
-	  loop_info other = bb->aux;
+      loop_info other;
+      if (loop->bad)
+	continue;
 
-	  if (other->head != bb)
-	    loop->depth = -1;
-	  else
+      for (other = loop->next; other; other = other->next)
+	{
+	  if (other->bad)
+	    continue;
+
+	  bitmap_and (tmp_bitmap, other->block_bitmap, loop->block_bitmap);
+	  if (bitmap_empty_p (tmp_bitmap))
+	    continue;
+	  if (bitmap_equal_p (tmp_bitmap, other->block_bitmap))
 	    {
 	      other->outer = loop;
 	      VEC_safe_push (loop_info, heap, loop->loops, other);
-	      work = VEC_safe_push (loop_work, heap, works, NULL);
-	      work->loop = loop;
-	      work->block = other->successor;
+	    }
+	  else if (bitmap_equal_p (tmp_bitmap, loop->block_bitmap))
+	    {
+	      loop->outer = other;
+	      VEC_safe_push (loop_info, heap, other->loops, loop);
+	    }
+	  else
+	    {
+	      loop->bad = other->bad = 1;
 	    }
 	}
     }
-  VEC_free (loop_work, heap, works);
+  BITMAP_FREE (tmp_bitmap);
 
   if (dump_file)
     {
@@ -3487,6 +3468,7 @@ bfin_reorg_loops (FILE *dump_file)
       loops = loop->next;
       VEC_free (loop_info, heap, loop->loops);
       VEC_free (basic_block, heap, loop->blocks);
+      BITMAP_FREE (loop->block_bitmap);
       XDELETE (loop);
     }
 
