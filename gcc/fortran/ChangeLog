@@ -1,3 +1,11 @@
+2006-09-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29051
+	* decl.c (match_old_style_init): Set the 'where' field of the
+	gfc_data structure 'newdata'.
+
+	* match.c (match_case_eos): Add a comprehensible error message.
+
 2006-09-13  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* trans-expr.c (gfc_add_interface_mapping): For characters, dereference
