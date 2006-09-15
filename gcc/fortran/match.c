@@ -3019,6 +3019,15 @@ match_case_eos (void)
   if (gfc_match_eos () == MATCH_YES)
     return MATCH_YES;
 
+
+  /* If the case construct doesn't have a case-construct-name, we
+     should have matched the EOS.  */
+  if (!gfc_current_block ())
+    {
+      gfc_error ("Expected the name of the select case construct at %C");
+      return MATCH_ERROR;
+    }
+
   gfc_gobble_whitespace ();
 
   m = gfc_match_name (name);
