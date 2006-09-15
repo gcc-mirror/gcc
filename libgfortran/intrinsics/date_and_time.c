@@ -356,7 +356,7 @@ secnds (GFC_REAL_4 *x)
 		   (GFC_REAL_4)values[6] +
 	   0.001 * (GFC_REAL_4)values[7];
   temp2 = fmod (*x, 86400.0);
-  temp2 = (temp1 - temp2 > 0.0) ? temp2 : (temp2 - 86400.0);
+  temp2 = (temp1 - temp2 >= 0.0) ? temp2 : (temp2 - 86400.0);
   return temp1 - temp2;
 }
 

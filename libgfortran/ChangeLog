@@ -1,4 +1,9 @@
-2006-09-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2006-09-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29099
+	* intrinsics/date_and_time.c (secnds): Fix case of zero time.
+
+2006-09-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/29053
 	* io.h (gfc_unit): Add variable, strm_pos, to track
