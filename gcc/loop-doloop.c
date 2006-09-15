@@ -484,7 +484,7 @@ doloop_optimize (struct loop *loop)
   rtx iterations_max;
   rtx start_label;
   rtx condition;
-  unsigned level, est_niter;
+  unsigned level, est_niter, max_cost;
   struct niter_desc *desc;
   unsigned word_mode_size;
   unsigned HOST_WIDE_INT word_mode_max;
@@ -521,6 +521,17 @@ doloop_optimize (struct loop *loop)
       if (dump_file)
 	fprintf (dump_file,
 		 "Doloop: Too few iterations (%u) to be profitable.\n",
+		 est_niter);
+      return false;
+    }
+
+  max_cost
+    = COSTS_N_INSNS (PARAM_VALUE (PARAM_MAX_ITERATIONS_COMPUTATION_COST));
+  if (rtx_cost (desc->niter_expr, SET) > max_cost)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Doloop: number of iterations too costly to compute.\n",
 		 est_niter);
       return false;
     }
