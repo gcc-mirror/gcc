@@ -292,6 +292,12 @@ DEFPARAM(PARAM_MAX_ITERATIONS_TO_TRACK,
 	"max-iterations-to-track",
 	"Bound on the number of iterations the brute force # of iterations analysis algorithm evaluates",
 	1000, 0, 0)
+/* A cutoff to avoid costly computations of the number of iterations in
+   the doloop transformation.  */
+DEFPARAM(PARAM_MAX_ITERATIONS_COMPUTATION_COST,
+	"max-iterations-computation-cost",
+	"Bound on the cost of an expression to compute the number of iterations",
+	10, 0, 0)
 
 DEFPARAM(PARAM_MAX_SMS_LOOP_NUMBER,
 	 "max-sms-loop-number",
