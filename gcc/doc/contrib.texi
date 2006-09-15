@@ -65,6 +65,10 @@ improved alias analysis, plus migrating GCC to Bugzilla.
 Geoff Berry for his Java object serialization work and various patches.
 
 @item
+Uros Bizjak for the implementation of x87 math built-in functions and
+for various middle end and i386 back end improvements and bugfixes.
+
+@item
 Eric Blake for helping to make GCJ and libgcj conform to the
 specifications.
 
