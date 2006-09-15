@@ -853,5 +853,5 @@ read_x (st_parameter_dt *dtp, int n)
       dtp->u.p.sf_read_comma = 1;
     }
   else
-    dtp->rec += (GFC_IO_INT) n;
+    dtp->u.p.current_unit->strm_pos += (gfc_offset) n;
 }

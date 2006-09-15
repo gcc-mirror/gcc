@@ -440,7 +440,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
     {
       u->maxrec = max_offset;
       u->recl = 1;
-      u->last_record = 1;
+      u->strm_pos = 1;
     }
 
   memmove (u->file, opp->file, opp->file_len);

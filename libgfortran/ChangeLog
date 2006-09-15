@@ -1,3 +1,18 @@
+2006-09-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29053
+	* io.h (gfc_unit): Add variable, strm_pos, to track
+	STREAM I/O file position.
+	* file_pos.c (st_rewind): Set strm_pos to beginning.
+	* open.c (new_unit): Initialize strm_pos.
+	* read.c (read_x): Bump strm_pos.
+	* inquire.c (inquire_via_unit): Return strm_pos value.
+	* transfer.c (read_block),(read_block_direct),(write_block)
+	(write_buf): Seek to strm_pos - 1.  Update strm_pos when done.
+	(pre_position): Initialize strm_pos.
+	(data_transfer_init): Set strm_pos if DT_HAS_REC.
+	(finalize_transfer): Flush file, no need to update strm_pos.
+
 2006-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/28947
