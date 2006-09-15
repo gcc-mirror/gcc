@@ -6933,13 +6933,13 @@ The forth construction (@samp{absence_set}) means that each functional
 unit in the first string can be reserved only if each pattern of units
 whose names are in the second string is not reserved.  This is an
 asymmetric relation (actually @samp{exclusion_set} is analogous to
-this one but it is symmetric).  For example, it is useful for
-description that @acronym{VLIW} @samp{slot0} can not be reserved after
-@samp{slot1} or @samp{slot2} reservation.  We could describe it by the
-following construction
+this one but it is symmetric).  For example it might be useful in a 
+@acronym{VLIW} description to say that @samp{slot0} cannot be reserved
+after either @samp{slot1} or @samp{slot2} have been reserved.  This
+can be described as:
 
 @smallexample
-(absence_set "slot2" "slot0, slot1")
+(absence_set "slot0" "slot1, slot2")
 @end smallexample
 
 Or @samp{slot2} can not be reserved if @samp{slot0} and unit @samp{b0}
