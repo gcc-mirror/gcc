@@ -1,3 +1,9 @@
+2006-09-15  Roger Sayle  <roger@eyesopen.com>
+
+	PR ada/18817
+	* utils.c (max_size): Perform constant folding of (A ? B : C) - D
+	into A ? B - D : C - D when calculating the size of a MINUS_EXPR.
+
 2006-09-13  Olivier Hainque  <hainque@adacore.com>
 
 	PR ada/29025

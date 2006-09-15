@@ -2072,6 +2072,22 @@ max_size (tree exp, bool max_p)
 	  if (code == COMPOUND_EXPR)
 	    return max_size (TREE_OPERAND (exp, 1), max_p);
 
+	  /* Calculate "(A ? B : C) - D" as "A ? B - D : C - D" which
+	     may provide a tighter bound on max_size.  */
+	  if (code == MINUS_EXPR
+	      && TREE_CODE (TREE_OPERAND (exp, 0)) == COND_EXPR)
+	    {
+	      tree lhs = fold_build2 (MINUS_EXPR, type,
+				      TREE_OPERAND (TREE_OPERAND (exp, 0), 1),
+				      TREE_OPERAND (exp, 1));
+	      tree rhs = fold_build2 (MINUS_EXPR, type,
+				      TREE_OPERAND (TREE_OPERAND (exp, 0), 2),
+				      TREE_OPERAND (exp, 1));
+	      return fold_build2 (max_p ? MAX_EXPR : MIN_EXPR, type,
+				  max_size (lhs, max_p),
+				  max_size (rhs, max_p));
+	    }
+
 	  {
 	    tree lhs = max_size (TREE_OPERAND (exp, 0), max_p);
 	    tree rhs = max_size (TREE_OPERAND (exp, 1),
