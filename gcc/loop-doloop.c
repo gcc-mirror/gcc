@@ -532,8 +532,7 @@ doloop_optimize (struct loop *loop)
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "Doloop: number of iterations (%u) too costly to compute.\n",
-		 est_niter);
+		 "Doloop: number of iterations too costly to compute.\n");
       return false;
     }
 
