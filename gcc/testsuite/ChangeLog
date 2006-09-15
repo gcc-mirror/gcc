@@ -1,3 +1,9 @@
+2006-09-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/29002
+	* g++.dg/init/array22.C: New test.
+	* g++.dg/init/array23.C: New test.
+
 2006-09-14  Arnaud Charlet  <charlet@adacore.com>
 
 	* stackcheck.lst: Update list of tests requiring stack checking.
