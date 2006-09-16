@@ -1,10 +1,17 @@
+2006-09-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/29059
+	* tree-ssa-propagate.c (set_rhs): Reject MODIFY_EXPR right
+	away for the expr argument.
+
 2006-09-16  Steven Bosscher  <steven@gcc.gnu.org>
 
+	PR tree-opt/27742
 	* tree-vectorizer.c (vectorize_loops): Clear vect_loop_location
 	before using it for dumping after vectorizing loops.
 
-2006-09-16   Andrew Pinski  <pinskia@physics.uc.edu>
-	     Jack Howarth  <howarth@bromo.med.uc.edu>
+2006-09-16  Andrew Pinski  <pinskia@physics.uc.edu>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/29030
 	* config/rs6000/rs6000.c (rs6000_darwin64_record_arg_advance_recurse)
