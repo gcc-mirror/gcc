@@ -4607,7 +4607,10 @@ rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *cum,
       {
 	HOST_WIDE_INT bitpos = startbitpos;
 	tree ftype = TREE_TYPE (f);
-	enum machine_mode mode = TYPE_MODE (ftype);
+	enum machine_mode mode;
+	if (ftype == error_mark_node)
+	  continue;
+	mode = TYPE_MODE (ftype);
 
 	if (DECL_SIZE (f) != 0
 	    && host_integerp (bit_position (f), 1))
@@ -4975,7 +4978,10 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, tree type,
       {
 	HOST_WIDE_INT bitpos = startbitpos;
 	tree ftype = TREE_TYPE (f);
-	enum machine_mode mode = TYPE_MODE (ftype);
+	enum machine_mode mode;
+	if (ftype == error_mark_node)
+	  continue;
+	mode = TYPE_MODE (ftype);
 
 	if (DECL_SIZE (f) != 0
 	    && host_integerp (bit_position (f), 1))
