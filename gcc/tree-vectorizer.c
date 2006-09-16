@@ -2066,6 +2066,7 @@ vectorize_loops (struct loops *loops)
       vect_transform_loop (loop_vinfo, loops);
       num_vectorized_loops++;
     }
+  vect_loop_location = UNKNOWN_LOC;
 
   if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS))
     fprintf (vect_dump, "vectorized %u loops in function.\n",

@@ -1,3 +1,8 @@
+2006-09-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-vectorizer.c (vectorize_loops): Clear vect_loop_location
+	before using it for dumping after vectorizing loops.
+
 2006-09-16   Andrew Pinski  <pinskia@physics.uc.edu>
 	     Jack Howarth  <howarth@bromo.med.uc.edu>
 
