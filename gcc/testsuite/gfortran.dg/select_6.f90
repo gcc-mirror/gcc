@@ -5,6 +5,6 @@
         integer(kind=1) :: i
         real :: r(3)
         select case (i)
-        case (129) r(4) = 0 { dg-error "Unclassifiable" }
+        case (129) r(4) = 0 { dg-error "Expected the name" }
         end select
         end
