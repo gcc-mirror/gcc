@@ -152,8 +152,8 @@ decNumber *decNumberMultiply (decNumber *, const decNumber *,
 			      const decNumber *, decContext *);
 decNumber *decNumberNormalize (decNumber *, const decNumber *, decContext *);
 decNumber *decNumberPlus (decNumber *, const decNumber *, decContext *);
-decNumber *decNumberPower (decNumber *, decNumber *, decNumber *,
-			   decContext *);
+decNumber *decNumberPower (decNumber *, const decNumber *,
+			   const decNumber *, decContext *);
 decNumber *decNumberQuantize (decNumber *, const decNumber *,
 			      const decNumber *, decContext *);
 decNumber *decNumberRemainder (decNumber *, const decNumber *,

@@ -1,3 +1,8 @@
+2006-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decNumber.c (decNumberPower): Constify.
+	* decNumber.h (decNumberPower): Likewise.
+
 2006-09-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac (ACX_PROG_CC_WARNING_OPTS): Add -Wcast-qual.
