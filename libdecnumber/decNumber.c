@@ -964,13 +964,13 @@ decNumberNormalize (decNumber * res, const decNumber * rhs, decContext * set)
 /* Specification restriction: abs(n) must be <=999999999              */
 /* ------------------------------------------------------------------ */
 decNumber *
-decNumberPower (decNumber * res, decNumber * lhs,
-		decNumber * rhs, decContext * set)
+decNumberPower (decNumber * res, const decNumber * lhs,
+		const decNumber * rhs, decContext * set)
 {
   decNumber *alloclhs = NULL;	/* non-NULL if rounded lhs allocated */
   decNumber *allocrhs = NULL;	/* .., rhs */
   decNumber *allocdac = NULL;	/* -> allocated acc buffer, iff used */
-  decNumber *inrhs = rhs;	/* save original rhs */
+  const decNumber *inrhs = rhs;	/* save original rhs */
   Int reqdigits = set->digits;	/* requested DIGITS */
   Int n;			/* RHS in binary */
   Int i;			/* work */
@@ -1117,6 +1117,7 @@ decNumberPower (decNumber * res, decNumber * lhs,
       /* we'll invert the lhs now rather than inverting the result later */
       if (decNumberIsNegative (rhs))
 	{			/* was a **-n [hence digits>0] */
+	  decNumber * newlhs;
 	  decNumberCopy (&dnOne, dac);	/* dnOne=1;  [needed now or later] */
 #if DECSUBSET
 	  if (set->extended)
@@ -1138,13 +1139,14 @@ decNumberPower (decNumber * res, decNumber * lhs,
 		      status |= DEC_Insufficient_storage;
 		      break;
 		    }
-		  lhs = alloclhs;	/* use the allocated space */
+		  newlhs = alloclhs;	/* use the allocated space */
 		}
 	      else
-		lhs = (decNumber *) lhsbuff;	/* use stack storage */
+		newlhs = (decNumber *) lhsbuff;	/* use stack storage */
 	      /* [lhs now points to buffer or allocated storage] */
-	      decNumberCopy (lhs, dac);	/* copy the 1/lhs */
+	      decNumberCopy (newlhs, dac);	/* copy the 1/lhs */
 	      decNumberCopy (dac, &dnOne);	/* restore acc=1 */
+	      lhs = newlhs;
 #if DECSUBSET
 	    }
 #endif
