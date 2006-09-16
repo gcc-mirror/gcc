@@ -1,3 +1,11 @@
+2006-09-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/29059
+	* gcc.c-torture/compile/strcpy-1.c: New test.
+	* gcc.c-torture/compile/strcpy-2.c: New test.
+	* gcc.c-torture/compile/memcpy-1.c: New test.
+	* gcc.c-torture/compile/memcpy-2.c: New test.
+
 2006-09-16  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR testsuite/29055
