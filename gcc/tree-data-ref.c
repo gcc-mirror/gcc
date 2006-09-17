@@ -140,16 +140,20 @@ ptr_decl_may_alias_p (tree ptr, tree decl,
 		      struct data_reference *ptr_dr, 
 		      bool *aliased)
 {
-  tree tag;
-   
+  tree tag = NULL_TREE;
+  struct ptr_info_def *pi = DR_PTR_INFO (ptr_dr);  
+
   gcc_assert (TREE_CODE (ptr) == SSA_NAME && DECL_P (decl));
 
-  tag = get_var_ann (SSA_NAME_VAR (ptr))->symbol_mem_tag;
+  if (pi)
+    tag = pi->name_mem_tag;
+  if (!tag)
+    tag = get_var_ann (SSA_NAME_VAR (ptr))->symbol_mem_tag;
   if (!tag)
     tag = DR_MEMTAG (ptr_dr);
   if (!tag)
     return false;
-  
+   
   *aliased = is_aliased_with (tag, decl);      
   return true;
 }
@@ -164,18 +168,29 @@ ptr_ptr_may_alias_p (tree ptr_a, tree ptr_b,
 		     struct data_reference *drb, 
 		     bool *aliased)
 {  
-  tree tag_a, tag_b;
+  tree tag_a = NULL_TREE, tag_b = NULL_TREE;
+  struct ptr_info_def *pi_a = DR_PTR_INFO (dra);  
+  struct ptr_info_def *pi_b = DR_PTR_INFO (drb);  
 
-  tag_a = get_var_ann (SSA_NAME_VAR (ptr_a))->symbol_mem_tag;
-  if (!tag_a)
-    tag_a = DR_MEMTAG (dra);
-  if (!tag_a)
-    return false;
-  tag_b = get_var_ann (SSA_NAME_VAR (ptr_b))->symbol_mem_tag;
-  if (!tag_b)
-    tag_b = DR_MEMTAG (drb);
-  if (!tag_b)
-    return false;
+  if (pi_a && pi_a->name_mem_tag && pi_b && pi_b->name_mem_tag)
+    {
+      tag_a = pi_a->name_mem_tag;
+      tag_b = pi_b->name_mem_tag;
+    }
+  else
+    {
+      tag_a = get_var_ann (SSA_NAME_VAR (ptr_a))->symbol_mem_tag;
+      if (!tag_a)
+	tag_a = DR_MEMTAG (dra);
+      if (!tag_a)
+	return false;
+      
+      tag_b = get_var_ann (SSA_NAME_VAR (ptr_b))->symbol_mem_tag;
+      if (!tag_b)
+	tag_b = DR_MEMTAG (drb);
+      if (!tag_b)
+	return false;
+    }
   *aliased = (tag_a == tag_b);
   return true;
 }
@@ -244,6 +259,38 @@ record_ptr_differ_p (struct data_reference *dra,
     return false;
 }
 
+/* Determine if two record/union accesses are aliased. Return TRUE if they 
+   differ.  */
+static bool
+record_record_differ_p (struct data_reference *dra,
+			struct data_reference *drb)
+{
+  bool aliased;
+  tree base_a = DR_BASE_OBJECT (dra);
+  tree base_b = DR_BASE_OBJECT (drb);
+
+  if (TREE_CODE (base_b) != COMPONENT_REF 
+      || TREE_CODE (base_a) != COMPONENT_REF)
+    return false;
+
+  /* Peel COMPONENT_REFs to get to the base. Do not peel INDIRECT_REFs.
+     For a.b.c.d[i] we will get a, and for a.b->c.d[i] we will get a.b.  
+     Probably will be unnecessary with struct alias analysis.  */
+  while (TREE_CODE (base_b) == COMPONENT_REF)
+    base_b = TREE_OPERAND (base_b, 0);
+  while (TREE_CODE (base_a) == COMPONENT_REF)
+    base_a = TREE_OPERAND (base_a, 0);
+
+  if (TREE_CODE (base_a) == INDIRECT_REF
+      && TREE_CODE (base_b) == INDIRECT_REF
+      && ptr_ptr_may_alias_p (TREE_OPERAND (base_a, 0), 
+			      TREE_OPERAND (base_b, 0), 
+			      dra, drb, &aliased)
+      && !aliased)
+    return true;
+  else
+    return false;
+}
     
 /* Determine if an array access (BASE_A) and a record/union access (BASE_B)
    are not aliased. Return TRUE if they differ.  */
@@ -403,6 +450,13 @@ base_object_differ_p (struct data_reference *a,
      (a[i]). In case of p->c[i] use alias analysis to verify that p is not
      pointing to a.  */
   if (record_array_differ_p (a, b) || record_array_differ_p (b, a))
+    {
+      *differ_p = true;
+      return true;
+    }
+
+  /* Compare two record/union accesses (b.c[i] or p->c[i]).  */
+  if (record_record_differ_p (a, b))
     {
       *differ_p = true;
       return true;

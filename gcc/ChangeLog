@@ -1,3 +1,12 @@
+2006-09-17  Ira Rosen  <irar@il.ibm.com>
+
+        PR tree-opt/21591
+	* tree-data-ref.c (ptr_decl_may_alias_p): Look for the name memory
+        tag first.
+        (ptr_ptr_may_alias_p): Likewise.
+        (record_record_differ_p): New function.
+        (base_object_differ_p): Call record_record_differ_p.
+
 2006-09-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/29059
