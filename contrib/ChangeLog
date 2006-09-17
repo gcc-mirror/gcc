@@ -1,3 +1,8 @@
+2006-09-18  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* dg-cmp-results.sh (compare-$$.awk): Print name[old]
+	and not non-existing nm[old].
+
 2006-07-06  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Port to hosts whose 'sort' and 'tail' implementations

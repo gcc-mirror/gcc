@@ -135,7 +135,7 @@ function compare(st, nm) {
 	# Compare this new test to the first queued old one.
 	if (verbose >= 4) {
 	    printf("Comparing two lines:\n O:%s:%s\n N:%s:%s\n",
-	     status[old], nm[old], st, nm)
+	     status[old], name[old], st, nm)
 	}
         if (name[old] != nm) {
 	    # The old test wasn't run this time and
