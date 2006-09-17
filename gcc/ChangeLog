@@ -1,3 +1,9 @@
+2006-09-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c/25993
+	* c-opts.c (c_common_handle_option): Ignore the -std options
+	if the input language is assembly.
+
 2006-09-17  Ira Rosen  <irar@il.ibm.com>
 
         PR tree-opt/21591
