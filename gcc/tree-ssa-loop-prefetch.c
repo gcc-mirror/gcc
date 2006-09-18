@@ -387,18 +387,20 @@ idx_analyze_ref (tree base, tree *index, void *data)
   return true;
 }
 
-/* Tries to express REF in shape &BASE + STEP * iter + DELTA, where DELTA and
+/* Tries to express REF_P in shape &BASE + STEP * iter + DELTA, where DELTA and
    STEP are integer constants and iter is number of iterations of LOOP.  The
-   reference occurs in statement STMT.  */
+   reference occurs in statement STMT.  Strips nonaddressable component
+   references from REF_P.  */
 
 static bool
-analyze_ref (struct loop *loop, tree ref, tree *base,
+analyze_ref (struct loop *loop, tree *ref_p, tree *base,
 	     HOST_WIDE_INT *step, HOST_WIDE_INT *delta,
 	     tree stmt)
 {
   struct ar_data ar_data;
   tree off;
   HOST_WIDE_INT bit_offset;
+  tree ref = *ref_p;
 
   *step = 0;
   *delta = 0;
@@ -407,6 +409,8 @@ analyze_ref (struct loop *loop, tree ref, tree *base,
   if (TREE_CODE (ref) == COMPONENT_REF
       && DECL_NONADDRESSABLE_P (TREE_OPERAND (ref, 1)))
     ref = TREE_OPERAND (ref, 0);
+
+  *ref_p = ref;
 
   for (; TREE_CODE (ref) == COMPONENT_REF; ref = TREE_OPERAND (ref, 0))
     {
@@ -436,7 +440,7 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
   HOST_WIDE_INT step, delta;
   struct mem_ref_group *agrp;
 
-  if (!analyze_ref (loop, ref, &base, &step, &delta, stmt))
+  if (!analyze_ref (loop, &ref, &base, &step, &delta, stmt))
     return;
 
   /* Now we know that REF = &BASE + STEP * iter + DELTA, where DELTA and STEP
