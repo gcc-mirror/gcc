@@ -361,7 +361,7 @@ linux*oldld* | linux*aout* | linux*coff*)
   ;;
 
 # This must be Linux ELF.
-linux*)
+linux*|k*bsd*-gnu)
   version_type=linux
   need_lib_prefix=no
   need_version=no
