@@ -1,3 +1,13 @@
+2006-09-18  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/javax/net/ssl/provider/SSLSocket.java (isBound, isClosed,
+	isConnected): Removed old comment.
+	(getRemoteSocketAddress): Uncommented.
+	(setOOBInline, getOOBInline, setKeepAlive, getKeepAlive,
+	setTrafficClass, getTrafficClass, setReuseAddress,
+	getReuseAddress, shutdownInput, shutdownOutput, isInputShutdown,
+	isOutputShutdown): Uncommented.
+
 2006-09-11 David Daney  <ddaney@avtrex.com>
 
 	PR classpath/28580
