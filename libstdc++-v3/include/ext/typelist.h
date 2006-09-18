@@ -44,7 +44,9 @@
  */
 
 #ifndef TYPELIST_HPP
-#define TYPELIST_HPP
+#define TYPELIST_HPP 1
+
+#include <ext/type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -97,29 +99,12 @@ namespace typelist
 {
 namespace detail
 {
-  // #include <ext/detail/type_utils.h>
   template<typename Type>
     struct type_to_type
     {
       typedef Type type;
     };
 
-  template<bool Cond, typename A, typename B>
-    struct cond_type;
-  
-  template<typename A, typename B>
-    struct cond_type<true, A, B>
-    {
-      typedef A type;
-    };
-  
-  template<typename A, typename B>
-    struct cond_type<false, A, B>
-    {
-      typedef B type;
-    };
-
-  // #include <ext/detail/apply.h>
   template<typename Fn, typename Typelist_Chain>
     struct apply_;
 
@@ -142,7 +127,6 @@ namespace detail
       operator()(Fn&) { }
   };
 
-  // #include <ext/detail/append.h>
   template<typename Typelist_Chain0, typename Typelist_Chain1>
     struct append_;
 
@@ -159,7 +143,6 @@ namespace detail
       typedef Typelist_Chain 					type;
     };
 
-  // #include <ext/detail/contains.h>
   template<typename Typelist_Chain, typename T>
     struct contains_;
 
@@ -190,7 +173,6 @@ namespace detail
 	};
     };
 
-  // #include <ext/detail/filter.h>
   template<typename Typelist_Chain, template<typename T> class Pred>
     struct chain_filter_;
 
@@ -210,10 +192,9 @@ namespace detail
       
       typedef typename chain_filter_<Tl, Pred>::type 	rest_type;
       typedef chain<Hd, rest_type> 			chain_type;
-      typedef typename cond_type<include_hd, chain_type, rest_type>::type type;
+      typedef typename __conditional_type<include_hd, chain_type, rest_type>::__type type;
   };
 
-  // #include <ext/detail/at_index.h>
   template<typename Typelist_Chain, int i>
     struct chain_at_index_;
 
@@ -229,7 +210,6 @@ namespace detail
       typedef typename chain_at_index_<Tl, i - 1>::type type;
     };
 
-  // #include <ext/detail/transform.h>
   template<class Typelist_Chain, template<typename T> class Transform>
     struct chain_transform_;
 
@@ -247,7 +227,6 @@ namespace detail
       typedef chain<transform_type, rest_type> type;
     };
 
-  // #include <ext/detail/append_typelist.h>
   template<typename Typelist_Typelist_Chain>
     struct append_typelist_;
 

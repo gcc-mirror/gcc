@@ -1,4 +1,8 @@
 2006-09-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/typelist.h (cond_type): Remove, use __conditional_type.
+
+2006-09-18  Benjamin Kosnik  <bkoz@redhat.com>
 	    Peter Doerfler  <gcc@pdoerfler.com>
 	    Paolo Carlini  <pcarlini@suse.de>
 	
