@@ -774,6 +774,7 @@ ext_headers = \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \
 	${ext_srcdir}/typelist.h \
+	${ext_srcdir}/type_traits.h \
 	${ext_srcdir}/rc_string_base.h \
 	${ext_srcdir}/sso_string_base.h \
 	${ext_srcdir}/vstring.h \

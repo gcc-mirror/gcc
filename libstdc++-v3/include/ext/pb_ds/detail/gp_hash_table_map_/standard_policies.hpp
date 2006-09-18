@@ -54,10 +54,8 @@
 
 namespace pb_ds
 {
-
   namespace detail
   {
-
     template<typename Comb_Probe_Fn>
     struct default_probe_fn
     {
@@ -66,20 +64,17 @@ namespace pb_ds
 
     public:
       typedef
-      typename conditional_type<
+      typename __conditional_type<
       is_same<
       pb_ds::direct_mask_range_hashing<size_t>,
       Comb_Probe_Fn>::value,
-      pb_ds::linear_probe_fn<
-      size_type>,
-      pb_ds::quadratic_probe_fn<
-      size_type> >::type
+      pb_ds::linear_probe_fn<size_type>,
+      pb_ds::quadratic_probe_fn<size_type> >::__type
       type;
     };
 
   } // namespace detail
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_GP_HT_MAP_STANDARD_POLICIES_HPP
+#endif 
 

@@ -39,7 +39,7 @@
 #include "../functional"
 #include <typeinfo>
 #include <tr1/type_traits>
-#include <bits/cpp_type_traits.h>
+#include <ext/type_traits.h>
 #include <string>               // for std::tr1::hash
 #include <cstdlib>              // for std::abort
 #include <cmath>                // for std::frexp

@@ -105,12 +105,12 @@ namespace pb_ds
       {
       private:
 	typedef
-        typename pb_ds::detail::conditional_type<
+        typename pb_ds::detail::__conditional_type<
 	pb_ds::detail::is_same<
 	int,
 	Key>::value,
 	int_hash,
-	string_hash_fn>::type
+	string_hash_fn>::__type
         hash_fn_t;
 
 	template<typename Cntnr_T>

@@ -72,7 +72,7 @@ namespace detail
         include_hd = Pred<Hd>::value
       };
 
-    typedef typename conditional_type<include_hd, typelist_chain<Hd, rest>, rest>::type type;
+    typedef typename __conditional_type<include_hd, typelist_chain<Hd, rest>, rest>::__type type;
   };
 } // namespace detail
 

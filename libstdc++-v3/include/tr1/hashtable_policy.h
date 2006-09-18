@@ -34,6 +34,10 @@
 #ifndef _TR1_HASHTABLE_POLICY_H
 #define _TR1_HASHTABLE_POLICY_H 1
 
+#include <functional> // _Identity, _Select1st
+#include <tr1/utility>
+#include <ext/type_traits.h>
+
 namespace std
 { 
 _GLIBCXX_BEGIN_NAMESPACE(tr1)
@@ -41,18 +45,6 @@ namespace detail
 {
 namespace 
 {
-  // General utilities.
-  template<bool Flag, typename IfTrue, typename IfFalse>
-    struct IF;
-
-  template<typename IfTrue, typename IfFalse>
-    struct IF<true, IfTrue, IfFalse>
-    { typedef IfTrue type; };
- 
-  template <typename IfTrue, typename IfFalse>
-    struct IF<false, IfTrue, IfFalse>
-    { typedef IfFalse type; };
-
   // Helper function: return distance(first, last) for forward
   // iterators, or 0 for input iterators.
   template<class Iterator>
@@ -233,9 +225,9 @@ namespace
     : public node_iterator_base<Value, cache>
     {
       typedef Value                                    value_type;
-      typedef typename IF<constant_iterators, const Value*, Value*>::type
+      typedef typename __gnu_cxx::__conditional_type<constant_iterators, const Value*, Value*>::__type
                                                        pointer;
-      typedef typename IF<constant_iterators, const Value&, Value&>::type
+      typedef typename __gnu_cxx::__conditional_type<constant_iterators, const Value&, Value&>::__type
                                                        reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
@@ -370,9 +362,9 @@ namespace
     : public hashtable_iterator_base<Value, cache>
     {
       typedef Value                                    value_type;
-      typedef typename IF<constant_iterators, const Value*, Value*>::type
+      typedef typename __gnu_cxx::__conditional_type<constant_iterators, const Value*, Value*>::__type
                                                        pointer;
-      typedef typename IF<constant_iterators, const Value&, Value&>::type
+      typedef typename __gnu_cxx::__conditional_type<constant_iterators, const Value&, Value&>::__type
                                                        reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
@@ -464,25 +456,6 @@ namespace
 
   // Many of class template hashtable's template parameters are policy
   // classes.  These are defaults for the policies.
-
-  // The two key extraction policies used by the *set and *map variants.
-  // XXX pb_ds::type_to_type
-  template<typename T>
-    struct identity
-    {
-      const T&
-      operator()(const T& t) const
-      { return t; }
-    };
-
-  // XXX use std::_Select1st?
-  template<typename Pair>
-    struct extract1st
-    {
-      const typename Pair::first_type&
-      operator()(const Pair& p) const
-      { return p.first; }
-    };
 
   // Default range hashing function: use division to fold a large number
   // into the range [0, N).
@@ -624,13 +597,13 @@ namespace
     struct map_base { };
 	  
   template<typename K, typename Pair, typename Hashtable>
-    struct map_base<K, Pair, extract1st<Pair>, false, Hashtable>
+    struct map_base<K, Pair, std::_Select1st<Pair>, false, Hashtable>
     {
       typedef typename Pair::second_type mapped_type;
     };
 
   template<typename K, typename Pair, typename Hashtable>
-    struct map_base<K, Pair, extract1st<Pair>, true, Hashtable>
+  struct map_base<K, Pair, std::_Select1st<Pair>, true, Hashtable>
     {
       typedef typename Pair::second_type mapped_type;
       
@@ -639,8 +612,8 @@ namespace
     };
 
   template<typename K, typename Pair, typename Hashtable>
-    typename map_base<K, Pair, extract1st<Pair>, true, Hashtable>::mapped_type&
-    map_base<K, Pair, extract1st<Pair>, true, Hashtable>::
+    typename map_base<K, Pair, std::_Select1st<Pair>, true, Hashtable>::mapped_type&
+    map_base<K, Pair, std::_Select1st<Pair>, true, Hashtable>::
     operator[](const K& k)
     {
       Hashtable* h = static_cast<Hashtable*>(this);

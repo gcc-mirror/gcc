@@ -41,6 +41,7 @@
 #include <limits>		// For numeric_limits
 #include <typeinfo>		// For bad_cast.
 #include <bits/streambuf_iterator.h>
+#include <ext/type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -503,20 +504,6 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
 _GLIBCXX_END_LDBL_NAMESPACE
 
-  template<typename _ValueT>
-    struct __to_unsigned_type
-    { typedef _ValueT __type; };
-
-  template<>
-    struct __to_unsigned_type<long>
-    { typedef unsigned long __type; };
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-  template<>
-    struct __to_unsigned_type<long long>
-    { typedef unsigned long long __type; };
-#endif
-
 _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
   template<typename _CharT, typename _InIter>
@@ -527,7 +514,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 		     ios_base::iostate& __err, _ValueT& __v) const
       {
         typedef char_traits<_CharT>			     __traits_type;
-	typedef typename __to_unsigned_type<_ValueT>::__type __unsigned_type;
+	using __gnu_cxx::__add_unsigned;
+	typedef typename __add_unsigned<_ValueT>::__type __unsigned_type;
 	typedef __numpunct_cache<_CharT>                     __cache_type;
 	__use_cache<__cache_type> __uc;
 	const locale& __loc = __io._M_getloc();
@@ -975,6 +963,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     _M_group_int(const char* __grouping, size_t __grouping_size, _CharT __sep,
 		 ios_base&, _CharT* __new, _CharT* __cs, int& __len) const
     {
+      using __gnu_cxx::__add_unsigned;
       _CharT* __p = std::__add_grouping(__new, __sep, __grouping,
 					__grouping_size, __cs, __cs + __len);
       __len = __p - __new;
@@ -987,7 +976,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       _M_insert_int(_OutIter __s, ios_base& __io, _CharT __fill,
 		    _ValueT __v) const
       {
-	typedef typename __to_unsigned_type<_ValueT>::__type __unsigned_type;
+	using __gnu_cxx::__add_unsigned;
+	typedef typename __add_unsigned<_ValueT>::__type __unsigned_type;
 	typedef __numpunct_cache<_CharT>	             __cache_type;
 	__use_cache<__cache_type> __uc;
 	const locale& __loc = __io._M_getloc();

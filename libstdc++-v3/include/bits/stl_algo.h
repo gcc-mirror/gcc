@@ -300,8 +300,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @endif
   */
   template<typename _CharT>
-    typename __enable_if<istreambuf_iterator<_CharT>,
-			 __is_char<_CharT>::__value>::__type
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
+				    istreambuf_iterator<_CharT> >::__type
     find(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
 	 const _CharT&);
 

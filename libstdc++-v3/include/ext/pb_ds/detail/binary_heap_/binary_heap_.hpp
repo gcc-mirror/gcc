@@ -105,10 +105,10 @@ namespace pb_ds
       value_allocator;
 
       typedef
-      typename conditional_type<
+      typename __conditional_type<
 	simple_value,
 	Value_Type,
-	typename value_allocator::pointer>::type
+	typename value_allocator::pointer>::__type
       entry;
 
       typedef

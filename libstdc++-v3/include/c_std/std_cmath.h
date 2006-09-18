@@ -1,6 +1,6 @@
 // -*- C++ -*- C forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -49,6 +49,7 @@
 
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
+#include <ext/type_traits.h>
 
 #include <math.h>
 
@@ -107,11 +108,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_acosl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     acos(_Tp __x)
-    {
-      return __builtin_acos(__x);
-    }
+    { return __builtin_acos(__x); }
 
   using ::asin;
 
@@ -124,7 +124,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_asinl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+  inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					 double>::__type
     asin(_Tp __x)
     { return __builtin_asin(__x); }
 
@@ -139,7 +140,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_atanl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+  inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					 double>::__type
     atan(_Tp __x)
     { return __builtin_atan(__x); }
 
@@ -154,8 +156,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_atan2l(__y, __x); }
 
   template<typename _Tp, typename _Up>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value
-                                        && __is_integer<_Up>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value
+    					   && __is_integer<_Up>::__value, 
+					   double>::__type
     atan2(_Tp __y, _Up __x)
     { return __builtin_atan2(__y, __x); }
 
@@ -170,7 +173,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_ceill(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     ceil(_Tp __x)
     { return __builtin_ceil(__x); }
 
@@ -185,7 +189,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_cosl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     cos(_Tp __x)
     { return __builtin_cos(__x); }
 
@@ -200,7 +205,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_coshl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     cosh(_Tp __x)
     { return __builtin_cosh(__x); }
 
@@ -215,7 +221,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_expl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     exp(_Tp __x)
     { return __builtin_exp(__x); }
 
@@ -230,7 +237,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_fabsl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     fabs(_Tp __x)
     { return __builtin_fabs(__x); }
 
@@ -245,7 +253,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_floorl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     floor(_Tp __x)
     { return __builtin_floor(__x); }
 
@@ -270,7 +279,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_frexpl(__x, __exp); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     frexp(_Tp __x, int* __exp)
     { return __builtin_frexp(__x, __exp); }
 
@@ -285,7 +295,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_ldexpl(__x, __exp); }
 
   template<typename _Tp>
-  inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
   ldexp(_Tp __x, int __exp)
   { return __builtin_ldexp(__x, __exp); }
 
@@ -300,7 +311,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_logl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     log(_Tp __x)
     { return __builtin_log(__x); }
 
@@ -315,7 +327,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_log10l(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     log10(_Tp __x)
     { return __builtin_log10(__x); }
 
@@ -371,7 +384,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_sinl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     sin(_Tp __x)
     { return __builtin_sin(__x); }
 
@@ -386,7 +400,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_sinhl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     sinh(_Tp __x)
     { return __builtin_sinh(__x); }
 
@@ -401,7 +416,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_sqrtl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     sqrt(_Tp __x)
     { return __builtin_sqrt(__x); }
 
@@ -416,7 +432,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_tanl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     tan(_Tp __x)
     { return __builtin_tan(__x); }
 
@@ -431,7 +448,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_tanhl(__x); }
 
   template<typename _Tp>
-    inline typename __enable_if<double, __is_integer<_Tp>::__value>::__type
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
     tanh(_Tp __x)
     { return __builtin_tanh(__x); }
 

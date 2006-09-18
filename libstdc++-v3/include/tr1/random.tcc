@@ -86,36 +86,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	__calc(_Tp __x)
 	{ return __a * __x + __c; }
       };
-
-    template<typename _ValueT>
-      struct _To_Unsigned_Type
-      { typedef _ValueT _Type; };
-
-    template<>
-      struct _To_Unsigned_Type<short>
-      { typedef unsigned short _Type; };
-
-    template<>
-      struct _To_Unsigned_Type<int>
-      { typedef unsigned int _Type; };
-
-    template<>
-      struct _To_Unsigned_Type<long>
-      { typedef unsigned long _Type; };
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-    template<>
-      struct _To_Unsigned_Type<long long>
-      { typedef unsigned long long _Type; };
-#endif
-
-    // See N1822.
-    template<typename _RealType>
-      struct _Max_digits10
-      { 
-	static const std::streamsize __value =
-	  2 + std::numeric_limits<_RealType>::digits * 3010/10000;
-      };
   } // anonymous namespace
 
 
@@ -758,7 +728,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::streamsize __precision = __os.precision();
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(_Max_digits10<double>::__value);
+      __os.precision(__gnu_cxx::__numeric_traits<double>::__max_digits10);
 
       __os << __x.p();
 
@@ -780,7 +750,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::streamsize __precision = __os.precision();
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(_Max_digits10<_RealType>::__value);
+      __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
       __os << __x.p();
 
@@ -932,7 +902,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const _CharT __space = __os.widen(' ');
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__space);
-      __os.precision(_Max_digits10<_RealType>::__value);
+      __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
       __os << __x.mean() << __space << __x._M_nd;
 
@@ -1156,7 +1126,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const _CharT __space = __os.widen(' ');
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__space);
-      __os.precision(_Max_digits10<_RealType>::__value);
+      __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
       __os << __x.t() << __space << __x.p() 
 	   << __space << __x._M_nd;
@@ -1195,7 +1165,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const _CharT __space = __os.widen(' ');
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__space);
-      __os.precision(_Max_digits10<_RealType>::__value);
+      __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
       __os << __x.min() << __space << __x.max();
 
@@ -1230,7 +1200,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::streamsize __precision = __os.precision();
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(_Max_digits10<_RealType>::__value);
+      __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
       __os << __x.lambda();
 
@@ -1292,7 +1262,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const _CharT __space = __os.widen(' ');
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__space);
-      __os.precision(_Max_digits10<_RealType>::__value);
+      __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
       __os << __x._M_saved_available << __space
 	   << __x.mean() << __space
@@ -1418,7 +1388,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       const std::streamsize __precision = __os.precision();
       __os.flags(std::ios_base::scientific | std::ios_base::left);
       __os.fill(__os.widen(' '));
-      __os.precision(_Max_digits10<_RealType>::__value);
+      __os.precision(__gnu_cxx::__numeric_traits<_RealType>::__max_digits10);
 
       __os << __x.alpha();
 
