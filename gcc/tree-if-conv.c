@@ -666,7 +666,7 @@ find_phi_replacement_condition (struct loop *loop,
 {
   basic_block first_bb = NULL;
   basic_block second_bb = NULL;
-  tree tmp_cond;
+  tree tmp_cond, new_stmts;
 
   gcc_assert (EDGE_COUNT (bb->preds) == 2);
   first_bb = (EDGE_PRED (bb, 0))->src;
@@ -732,6 +732,9 @@ find_phi_replacement_condition (struct loop *loop,
      value as condition. Various targets use different means to communicate
      condition in vector compare operation. Using gimple value allows compiler
      to emit vector compare and select RTL without exposing compare's result.  */
+  *cond = force_gimple_operand (*cond, &new_stmts, false, NULL_TREE);
+  if (new_stmts)
+    bsi_insert_before (bsi, new_stmts, BSI_SAME_STMT);
   if (!is_gimple_reg (*cond) && !is_gimple_condexpr (*cond))
     {
       tree new_stmt;

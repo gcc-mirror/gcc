@@ -1,6 +1,12 @@
 2006-09-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	PR tree-optimization/28900
+	* gcc.dg/torture/pr28900.c: New testcase
+
+2006-09-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	J"orn Rennecke  <joern.rennecke@st.com>
 	Richard Guenther  <rguenther@suse.de>
 	Adam Nemet  <anemet@caviumnetworks.com>

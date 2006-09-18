@@ -1,6 +1,13 @@
 2006-09-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	PR tree-optimization/28900
+	* tree-if-conv.c (find_phi_replacement_condition): Gimplify
+	compound conditional before creating COND_EXPR condition.
+
+2006-09-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	J"orn Rennecke  <joern.rennecke@st.com>
 	Richard Guenther  <rguenther@suse.de>
 	Adam Nemet  <anemet@caviumnetworks.com>
