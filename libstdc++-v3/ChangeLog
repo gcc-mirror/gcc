@@ -1,3 +1,8 @@
+2006-09-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (_M_group_int): Remove
+	redundant using-declaration.
+
 2006-09-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/typelist.h (cond_type): Remove, use __conditional_type.
