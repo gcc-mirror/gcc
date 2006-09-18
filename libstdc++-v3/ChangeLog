@@ -1,3 +1,10 @@
+2006-09-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29063
+	* include/bits/valarray_array.h: Fix typo, undefine
+	_DEFINE_ARRAY_FUNCTION.
+	* include/std/std_valarray.h: Undefine _DEFINE_BINARY_OPERATOR.
+
 2006-09-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/concurrence.h (__mutex::__mutex): Pass address of
