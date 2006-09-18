@@ -1,5 +1,11 @@
 2006-09-19  Ben Elliston  <bje@au.ibm.com>
 
+	* lib/target-supports.exp (check_effective_target_tls): Compile
+	test stubs using ${tool}_target_compile, not just target_compile.
+	(check_effective_target_tls_runtime): Likewise.
+
+2006-09-19  Ben Elliston  <bje@au.ibm.com>
+
 	* gcc.c-torture/compile/20030405-1.x: Remove.
 
 	* g++.old-deja/g++.pt/const2.C (main): Examine p to prevent an
