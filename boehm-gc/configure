@@ -5444,6 +5444,32 @@ _ACEOF
 	{ echo "$as_me:$LINENO: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&5
 echo "$as_me: WARNING: \"Only HP-UX 11 POSIX threads are supported.\"" >&2;}
 	;;
+      *-*-kfreebsd*-gnu)
+       cat >>confdefs.h <<\_ACEOF
+#define GC_FREEBSD_THREADS 1
+_ACEOF
+
+       INCLUDES="$INCLUDES -pthread"
+       THREADDLLIBS=-pthread
+       cat >>confdefs.h <<\_ACEOF
+#define _REENTRANT 1
+_ACEOF
+
+         if test "${enable_parallel_mark}" = yes; then
+         cat >>confdefs.h <<\_ACEOF
+#define PARALLEL_MARK 1
+_ACEOF
+
+       fi
+       cat >>confdefs.h <<\_ACEOF
+#define THREAD_LOCAL_ALLOC 1
+_ACEOF
+
+       cat >>confdefs.h <<\_ACEOF
+#define USE_COMPILER_TLS 1
+_ACEOF
+
+               ;;
      *-*-freebsd*)
 	{ echo "$as_me:$LINENO: WARNING: \"FreeBSD does not yet fully support threads with Boehm GC.\"" >&5
 echo "$as_me: WARNING: \"FreeBSD does not yet fully support threads with Boehm GC.\"" >&2;}

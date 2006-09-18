@@ -155,6 +155,17 @@ case "$THREADS" in
      *-*-hpux10*)
 	AC_MSG_WARN("Only HP-UX 11 POSIX threads are supported.")
 	;;
+      *-*-kfreebsd*-gnu)
+       AC_DEFINE(GC_FREEBSD_THREADS)
+       INCLUDES="$INCLUDES -pthread"
+       THREADDLLIBS=-pthread
+       AC_DEFINE(_REENTRANT)
+         if test "${enable_parallel_mark}" = yes; then
+         AC_DEFINE(PARALLEL_MARK)
+       fi
+       AC_DEFINE(THREAD_LOCAL_ALLOC)
+       AC_DEFINE(USE_COMPILER_TLS, 1,[use tls for boehm])
+               ;;
      *-*-freebsd*)
 	AC_MSG_WARN("FreeBSD does not yet fully support threads with Boehm GC.")
 	AC_DEFINE(GC_FREEBSD_THREADS,1,[support FreeBSD threads])
