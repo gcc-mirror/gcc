@@ -9,7 +9,7 @@
 # Contents:
 #   Script to create a GCC release.
 #
-# Copyright (c) 2001, 2002 Free Software Foundation.
+# Copyright (c) 2001, 2002, 2006 Free Software Foundation.
 #
 # This file is part of GCC.
 #
@@ -517,6 +517,9 @@ Last modified "${TEXT_DATE}"
 ########################################################################
 # Initialization
 ########################################################################
+
+LC_ALL=C
+export LC_ALL
 
 # Today's date.
 DATE=`date "+%Y%m%d"`
