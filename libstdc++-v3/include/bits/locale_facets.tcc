@@ -963,7 +963,6 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     _M_group_int(const char* __grouping, size_t __grouping_size, _CharT __sep,
 		 ios_base&, _CharT* __new, _CharT* __cs, int& __len) const
     {
-      using __gnu_cxx::__add_unsigned;
       _CharT* __p = std::__add_grouping(__new, __sep, __grouping,
 					__grouping_size, __cs, __cs + __len);
       __len = __p - __new;
