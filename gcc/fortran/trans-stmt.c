@@ -1475,6 +1475,8 @@ gfc_trans_character_select (gfc_code *code)
   if (n != 0)
     gfc_free (labels);
 
+  gfc_add_block_to_block (&block, &se.post);
+
   return gfc_finish_block (&block);
 }
 
