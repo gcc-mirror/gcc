@@ -166,6 +166,9 @@
 /* define GC_local_malloc() & GC_local_malloc_atomic() */
 #undef THREAD_LOCAL_ALLOC
 
+/* use tls for boehm */
+#undef USE_COMPILER_TLS
+
 /* use MMAP instead of sbrk to get new memory */
 #undef USE_MMAP
 

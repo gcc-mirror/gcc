@@ -1,3 +1,13 @@
+2006-06-07  Petr Salinger  <Petr.Salinger@seznam.cz>
+
+	* configure.ac: add support for GNU/kFreeBSD, accepted by upstream
+	for gc 6.8.
+	* dyn_load.c: Likewise.
+	* include/gc.h: Likewise.
+	* private/gcconfig.h: Likewise.
+	* configure: Regenerate.
+	* include/gc_config.h.in: Regenerate.
+
 2006-09-14  Tom Tromey  <tromey@redhat.com>
 
 	PR boehm-gc/29068.
