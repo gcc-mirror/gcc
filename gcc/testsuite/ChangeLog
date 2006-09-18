@@ -1,3 +1,8 @@
+2006-09-17  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/28887
+	* gcc.dg/prefetch-loop-arrays-1.c: New test case.
+
 2006-09-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR c/25993
