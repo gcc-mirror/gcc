@@ -1,3 +1,16 @@
+2006-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29060
+	* iresolve.c (resolve_spread): Build shape for result if the
+	source shape is available and dim and ncopies are constants.
+
+2006-09-18  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/28817
+	PR fortran/21918
+	* trans-decl.c (generate_local_decl): Change from 'warning' to
+	'gfc_warning' to have line numbers correctly reported.
+
 2006-09-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29051
