@@ -2127,7 +2127,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 		       _ValueT& __v) const;
 
       template<typename _CharT2>
-        typename __enable_if<int, __is_char<_CharT2>::__value>::__type
+      typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value, int>::__type
         _M_find(const _CharT2*, size_t __len, _CharT2 __c) const
         {
 	  int __ret = -1;
@@ -2149,7 +2149,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	}
 
       template<typename _CharT2>
-        typename __enable_if<int, !__is_char<_CharT2>::__value>::__type
+      typename __gnu_cxx::__enable_if<!__is_char<_CharT2>::__value, 
+				      int>::__type
         _M_find(const _CharT2* __zero, size_t __len, _CharT2 __c) const
         {
 	  int __ret = -1;

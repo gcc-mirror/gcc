@@ -1,3 +1,56 @@
+2006-09-18  Benjamin Kosnik  <bkoz@redhat.com>
+	    Peter Doerfler  <gcc@pdoerfler.com>
+	    Paolo Carlini  <pcarlini@suse.de>
+	
+	* include/ext/type_traits.h: New. 
+	(__conditional_type): New.
+	(__numeric_traits): New.
+	(__add_unsigned): New.
+	(__remove_unsigned): New.
+	(__enable_if): New.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* include/ext/pb_ds/detail/type_utils.hpp: Use ext include,
+	remove duplicates.
+	* include/tr1/hashtable_policy.h (IF): Use __conditional_type.
+	(_Max_digits10): Same.
+	(identity): Use _Identity.
+	(extract1st): Use _Select1st.
+	* include/tr1/random (_Select): Use __conditional_type.
+	(_To_Unsigned_Type): Use __add_unsigned. Linebreak fixups.
+	* include/bits/locale_facets.tcc (__to_unsigned_type): Remove, use
+	__add_unsigned.
+	* include/tr1/random.tcc: Fixups as above.
+	* include/tr1/unordered_map: Same.
+	* include/tr1/hashtable: Same.
+	* include/tr1/unordered_set: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	standard_policies.hpp: Same.
+	* include/ext/pb_ds/detail/standard_policies.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_filter.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/binary_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/type_utils.hpp: Same.
+	* include/ext/pb_ds/trie_policy.hpp: Same.
+	* docs/html/ext/pb_ds/string_trie_e_access_traits.html: Same.
+	
+	* include/bits/cpp_type_traits.h (__enable_if): Move to ext, make
+	boolean argument first.	
+	* include/bits/locale_facets.h: Fixups for __enable_if argument
+	and namespace switch.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/stl_algo.h: Same.
+	* include/bits/stl_iterator.h: Same.
+	* include/bits/streambuf_iterator.h: Same.
+	* include/debug/safe_iterator.h: Same.
+	* include/tr1/hashtable_policy.h: Same.
+	* include/tr1/cmath: Same.
+	* include/tr1/functional: Same.
+	* include/tr1/functional_iterate.h: Same.
+	* include/std/std_streambuf.h: Same.
+	* include/c_std/std_cmath.h: Same.
+	* testsuite/util/testsuite_tr1.h: Same.
+	* testsuite/util/performance/assoc/multimap_common_type.hpp: Same.
+	
 2006-09-18  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/29063

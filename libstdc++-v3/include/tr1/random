@@ -37,7 +37,6 @@
 
 #include <algorithm>
 #include <bits/concept_check.h>
-#include <bits/cpp_type_traits.h>
 #include <cmath>
 #include <debug/debug.h>
 #include <iterator>
@@ -46,6 +45,7 @@
 #include <tr1/type_traits>
 #include <tr1/cmath>
 #include <fstream>
+#include <ext/type_traits.h>
 
 namespace std
 {
@@ -64,17 +64,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    */
   namespace
   {
-    // Type selectors -- are these already implemented elsewhere?
-    template<bool, typename _TpTrue, typename _TpFalse>
-      struct _Select
-      { typedef _TpTrue _Type; };
-
-    template<typename _TpTrue, typename _TpFalse>
-      struct _Select<false, _TpTrue, _TpFalse>
-      { typedef _TpFalse _Type; };
-
-    template<typename _UIntType, int __w, bool = 
-	     __w < std::numeric_limits<_UIntType>::digits>
+    template<typename _UIntType, int __w, 
+	     bool = __w < std::numeric_limits<_UIntType>::digits>
       struct _Shift
       { static const _UIntType __value = 0; };
 
@@ -92,11 +83,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       __mod(_Tp __x)
       { return _Mod<_Tp, __a, __c, __m, __m == 0>::__calc(__x); }
 
-    template<typename _ValueT>
-      struct _To_Unsigned_Type;
-
-    typedef _Select<(sizeof(unsigned) == 4),
-		    unsigned, unsigned long>::_Type _UInt32Type;
+    typedef __gnu_cxx::__conditional_type<(sizeof(unsigned) == 4),
+		    unsigned, unsigned long>::__type _UInt32Type;
   } // anonymous namespace
 
     /*
@@ -193,9 +181,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef typename _Dist::result_type            result_type;
 
       // tr1:5.1.1 table 5.1 requirement
-      typedef typename std::__enable_if<result_type,
-					is_arithmetic<result_type>::value
-        >::__type _IsValidType;
+      typedef typename __gnu_cxx::__enable_if<
+	is_arithmetic<result_type>::value, result_type>::__type _IsValidType;
 
     public:
       /**
@@ -277,20 +264,19 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * @addtogroup tr1_random_generators Random Number Generators
    * @ingroup tr1_random
    *
-   * These classes define objects which provide random or pseudorandom numbers,
-   * either from a discrete or a continuous interval.  The random number
-   * generator supplied as a part of this library are all uniform random number
-   * generators which provide a sequence of random number uniformly distributed
-   * over their range.
+   * These classes define objects which provide random or pseudorandom
+   * numbers, either from a discrete or a continuous interval.  The
+   * random number generator supplied as a part of this library are
+   * all uniform random number generators which provide a sequence of
+   * random number uniformly distributed over their range.
    *
-   * A number generator is a function object with an operator() that takes zero
-   * arguments and returns a number.
+   * A number generator is a function object with an operator() that
+   * takes zero arguments and returns a number.
    *
-   * A compliant random number generator must satisy the following requirements.
-   * <table border=1 cellpadding=10 cellspacing=0>
+   * A compliant random number generator must satisy the following
+   * requirements.  <table border=1 cellpadding=10 cellspacing=0>
    * <caption align=top>Random Number Generator Requirements</caption>
-   * <tr><td>To be documented.</td></tr>
-   * </table>
+   * <tr><td>To be documented.</td></tr> </table>
    * 
    * @{
    */
@@ -704,8 +690,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    * This is a model of a Generalized Fibonacci discrete random number
    * generator, sometimes referred to as the SWC generator.
    *
-   * A discrete random number generator that produces pseudorandom numbers using
-   * @f$x_{i}\leftarrow(x_{i - s} - x_{i - r} - carry_{i-1}) \bmod m @f$.
+   * A discrete random number generator that produces pseudorandom
+   * numbers using @f$x_{i}\leftarrow(x_{i - s} - x_{i - r} -
+   * carry_{i-1}) \bmod m @f$.
    *
    * The size of the state is @f$ r @f$
    * and the maximum period of the generator is @f$ m^r - m^s -1 @f$.
@@ -777,13 +764,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       /**
        * Seeds the initial state @f$ x_0 @f$ of the random number generator.
        *
-       * N1688[4.19] modifies this as follows.
-       * If @p __value == 0, sets value to 19780503.  In any case, with a linear
+       * N1688[4.19] modifies this as follows.  If @p __value == 0,
+       * sets value to 19780503.  In any case, with a linear
        * congruential generator lcg(i) having parameters @f$ m_{lcg} =
-       * 2147483563, a_{lcg} = 40014, c_{lcg} = 0, and lcg(0) = value @f$, sets
-       * @f$ x_{-r} \dots x_{-1} @f$ to
-       * @f$ lcg(1) \bmod m \dots lcg(r) \bmod m @f$ respectively.
-       * If @f$ x_{-1} = 0 @f$ set carry to 1, otherwise sets carry to 0.
+       * 2147483563, a_{lcg} = 40014, c_{lcg} = 0, and lcg(0) = value
+       * @f$, sets @f$ x_{-r} \dots x_{-1} @f$ to @f$ lcg(1) \bmod m
+       * \dots lcg(r) \bmod m @f$ respectively.  If @f$ x_{-1} = 0 @f$
+       * set carry to 1, otherwise sets carry to 0.
        */
       void
       seed(unsigned long __value = 19780503);
@@ -893,7 +880,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         seed(_Gen& __g, false_type);
 
     private:
-      typedef typename _To_Unsigned_Type<_IntType>::_Type _UIntType;
+      typedef typename __gnu_cxx::__add_unsigned<_IntType>::__type _UIntType;
 
       _UIntType  _M_x[long_lag];
       _UIntType  _M_carry;
@@ -1014,7 +1001,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * Compares two % subtract_with_carry_01 random number generator objects
        * of the same type for equality.
        *
-       * @param __lhs A % subtract_with_carry_01 random number generator object.
+       * @param __lhs A % subtract_with_carry_01 random number
+       *              generator object.
        * @param __rhs Another % subtract_with_carry_01 random number generator
        *              object.
        *
@@ -1035,7 +1023,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * Compares two % subtract_with_carry_01 random number generator objects
        * of the same type for inequality.
        *
-       * @param __lhs A % subtract_with_carry_01 random number generator object.
+       * @param __lhs A % subtract_with_carry_01 random number
+       *              generator object.
+       *
        * @param __rhs Another % subtract_with_carry_01 random number generator
        *              object.
        *
@@ -1376,8 +1366,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     public:
       /** The type of the generated random value. */
-      typedef typename _Select<(sizeof(_Result_type1) > sizeof(_Result_type2)),
-	_Result_type1, _Result_type2>::_Type result_type;
+      typedef typename __gnu_cxx::__conditional_type<(sizeof(_Result_type1) > sizeof(_Result_type2)),
+	_Result_type1, _Result_type2>::__type result_type;
 
       // parameter values
       static const int shift1 = __s1;
@@ -1518,8 +1508,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
 
   /**
-   * A standard interface to a platform-specific non-deterministic random number
-   * generator (if any are available).
+   * A standard interface to a platform-specific non-deterministic
+   * random number generator (if any are available).
    */
   class random_device
   {
@@ -2091,7 +2081,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			    const _RealType& __p = _RealType(0.5))
       : _M_t(__t), _M_p(__p), _M_nd()
       {
-	_GLIBCXX_DEBUG_ASSERT((_M_t >= 0) && (_M_p >= 0.0) && (_M_p <= 1.0));	
+	_GLIBCXX_DEBUG_ASSERT((_M_t >= 0) && (_M_p >= 0.0) && (_M_p <= 1.0));
 	_M_initialize();
       }
 
@@ -2355,7 +2345,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
        * @p __x from the input stream @p __is.
        *
        * @param __is An input stream.
-       * @param __x  A %exponential_distribution random number generator engine.
+       * @param __x A %exponential_distribution random number
+       *            generator engine.
        *
        * @returns The input stream with @p __x extracted or in an error state.
        */

@@ -50,14 +50,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool cache_hash_code = false>
     class unordered_set
     : public hashtable<Value, Value, Alloc,
-		       detail::identity<Value>, Pred,
+		       std::_Identity<Value>, Pred,
 		       Hash, detail::mod_range_hashing,
 		       detail::default_ranged_hash,
 		       detail::prime_rehash_policy,
 		       cache_hash_code, true, true>
     {
       typedef hashtable<Value, Value, Alloc,
-			detail::identity<Value>, Pred,
+			std::_Identity<Value>, Pred,
 			Hash, detail::mod_range_hashing,
 			detail::default_ranged_hash,
 			detail::prime_rehash_policy,
@@ -76,8 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		    const key_equal& eql = key_equal(),
 		    const allocator_type& a = allocator_type())
       : Base(n, hf, detail::mod_range_hashing(),
-	     detail::default_ranged_hash(),
-	     eql, detail::identity<Value>(), a)
+	     detail::default_ranged_hash(), eql, std::_Identity<Value>(), a)
       { }
 
       template<typename InputIterator>
@@ -87,8 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		      const key_equal& eql = key_equal(), 
 		      const allocator_type& a = allocator_type())
 	: Base(f, l, n, hf, detail::mod_range_hashing(),
-	       detail::default_ranged_hash(),
-	       eql, detail::identity<Value>(), a)
+	       detail::default_ranged_hash(), eql, std::_Identity<Value>(), a)
         { }
     };
 
@@ -99,14 +97,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool cache_hash_code = false>
     class unordered_multiset
     : public hashtable <Value, Value, Alloc,
-			detail::identity<Value>, Pred,
+			std::_Identity<Value>, Pred,
 			Hash, detail::mod_range_hashing,
 			detail::default_ranged_hash,
 			detail::prime_rehash_policy,
 			cache_hash_code, true, false>
     {
       typedef hashtable<Value, Value, Alloc,
-			detail::identity<Value>, Pred,
+			std::_Identity<Value>, Pred,
 			Hash, detail::mod_range_hashing,
 			detail::default_ranged_hash,
 			detail::prime_rehash_policy,
@@ -125,8 +123,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			 const key_equal& eql = key_equal(),
 			 const allocator_type& a = allocator_type())
       : Base(n, hf, detail::mod_range_hashing(),
-	     detail::default_ranged_hash(),
-	     eql, detail::identity<Value>(), a)
+	     detail::default_ranged_hash(), eql, std::_Identity<Value>(), a)
       { }
 
 
@@ -137,8 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			   const key_equal& eql = key_equal(), 
 			   const allocator_type& a = allocator_type())
 	: Base(f, l, n, hf, detail::mod_range_hashing(),
-	       detail::default_ranged_hash(), eql,
-	       detail::identity<Value>(), a)
+	       detail::default_ranged_hash(), eql, std::_Identity<Value>(), a)
         { }
     };
 

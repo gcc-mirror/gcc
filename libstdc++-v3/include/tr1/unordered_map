@@ -50,14 +50,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	   bool cache_hash_code = false>
     class unordered_map
     : public hashtable<Key, std::pair<const Key, T>, Alloc,
-		       detail::extract1st<std::pair<const Key, T> >, Pred, 
+		       std::_Select1st<std::pair<const Key, T> >, Pred, 
 		       Hash, detail::mod_range_hashing,
 		       detail::default_ranged_hash,
 		       detail::prime_rehash_policy,
 		       cache_hash_code, false, true>
     {
       typedef hashtable<Key, std::pair<const Key, T>, Alloc,
-			detail::extract1st<std::pair<const Key, T> >, Pred,
+			std::_Select1st<std::pair<const Key, T> >, Pred,
 			Hash, detail::mod_range_hashing,
 			detail::default_ranged_hash,
 			detail::prime_rehash_policy,
@@ -77,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		    const allocator_type& a = allocator_type())
       : Base(n, hf, detail::mod_range_hashing(),
 	     detail::default_ranged_hash(),
-	     eql, detail::extract1st<std::pair<const Key, T> >(), a)
+	     eql, std::_Select1st<std::pair<const Key, T> >(), a)
       { }
 
       template<typename InputIterator>
@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		      const allocator_type& a = allocator_type())
 	: Base (f, l, n, hf, detail::mod_range_hashing(),
 		detail::default_ranged_hash(),
-		eql, detail::extract1st<std::pair<const Key, T> >(), a)
+		eql, std::_Select1st<std::pair<const Key, T> >(), a)
 	{ }
     };
   
@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     class unordered_multimap
     : public hashtable <Key, std::pair<const Key, T>,
 			Alloc,
-			detail::extract1st<std::pair<const Key, T> >, Pred,
+			std::_Select1st<std::pair<const Key, T> >, Pred,
 			Hash, detail::mod_range_hashing,
 			detail::default_ranged_hash,
 			detail::prime_rehash_policy,
@@ -108,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     {
       typedef hashtable <Key, std::pair<const Key, T>,
 			 Alloc,
-			 detail::extract1st<std::pair<const Key, T> >, Pred,
+			 std::_Select1st<std::pair<const Key, T> >, Pred,
 			 Hash, detail::mod_range_hashing,
 			 detail::default_ranged_hash,
 			 detail::prime_rehash_policy,
@@ -128,7 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			 const allocator_type& a = allocator_type())
       : Base (n, hf, detail::mod_range_hashing(),
 	      detail::default_ranged_hash(),
-	      eql, detail::extract1st<std::pair<const Key, T> >(), a)
+	      eql, std::_Select1st<std::pair<const Key, T> >(), a)
       { }
 
 
@@ -140,7 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 			   const allocator_type& a = allocator_type())
 	: Base (f, l, n, hf, detail::mod_range_hashing(),
 		detail::default_ranged_hash(),
-		eql, detail::extract1st<std::pair<const Key, T> >(), a)
+		eql, std::_Select1st<std::pair<const Key, T> >(), a)
         { }
     };
 

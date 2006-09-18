@@ -347,14 +347,14 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       // have partial specialization of member templates; it would be
       // better to just specialize insert on unique_keys.  There may be a
       // cleaner workaround.
-      typedef typename detail::IF<unique_keys,
-				    std::pair<iterator, bool>, iterator>::type
+      typedef typename __gnu_cxx::__conditional_type<unique_keys,
+		       	    std::pair<iterator, bool>, iterator>::__type
         Insert_Return_Type;
 
-      typedef typename detail::IF<unique_keys,
-				    detail::extract1st<Insert_Return_Type>,
-				    detail::identity<Insert_Return_Type>
-                                   >::type
+      typedef typename __gnu_cxx::__conditional_type<unique_keys,
+					   std::_Select1st<Insert_Return_Type>,
+				  	   std::_Identity<Insert_Return_Type>
+                                   >::__type
         Insert_Conv_Type;
 
       node*

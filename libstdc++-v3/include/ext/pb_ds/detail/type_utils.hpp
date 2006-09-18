@@ -51,6 +51,7 @@
 #include <cstddef>
 #include <utility>
 #include <tr1/type_traits>
+#include <ext/type_traits.h>
 
 namespace pb_ds
 {
@@ -73,6 +74,9 @@ namespace pb_ds
     using std::tr1::integral_constant;
     typedef std::tr1::integral_constant<int, 1> true_type;
     typedef std::tr1::integral_constant<int, 0> false_type;
+
+    using __gnu_cxx::__conditional_type;
+    using __gnu_cxx::__numeric_traits;
 
     template<typename T>
     struct is_const_pointer
@@ -149,53 +153,11 @@ namespace pb_ds
 	};
     };
 
-
     template<typename Type>
     struct type_to_type
     {
       typedef Type type;
     };
-
-
-    template<bool Cond, class A, class B>
-    struct conditional_type;
-
-    template<typename A, class B>
-    struct conditional_type<true, A, B>
-    {
-      typedef A type;
-    };
-
-    template<typename A, class B>
-    struct conditional_type<false, A, B>
-    {
-      typedef B type;
-    };
-
-#define __glibcxx_signed(T)	((T)(-1) < 0)
-
-#define __glibcxx_min(T) \
-  (__glibcxx_signed (T) ? (T)1 << __glibcxx_digits (T) : (T)0)
-
-#define __glibcxx_max(T) \
-  (__glibcxx_signed (T) ? ((T)1 << __glibcxx_digits (T)) - 1 : ~(T)0)
-
-#define __glibcxx_digits(T) \
-  (sizeof(T) * __CHAR_BIT__ - __glibcxx_signed (T))
-
-   template<typename Value>
-   struct numeric_traits
-   {
-     typedef Value value_type;
-     static const value_type min = __glibcxx_min(value_type);
-     static const value_type max = __glibcxx_max(value_type);
-   };
-
-  template<typename Value>
-  const Value numeric_traits<Value>::min;
-
-  template<typename Value>
-  const Value numeric_traits<Value>::max;
   } // namespace detail
 } // namespace pb_ds
 

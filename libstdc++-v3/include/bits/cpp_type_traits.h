@@ -128,18 +128,6 @@ namespace detail
       typedef __true_type __type;
     };
 
-  // Define a nested type if some predicate holds.
-  template<typename, bool>
-    struct __enable_if
-    { 
-    };
-
-  template<typename _Tp>
-    struct __enable_if<_Tp, true>
-    {
-      typedef _Tp __type;
-    };
-
   // Holds if the template-argument is a void type.
   template<typename _Tp>
     struct __is_void

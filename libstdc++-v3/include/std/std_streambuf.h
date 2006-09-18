@@ -46,6 +46,7 @@
 #include <bits/localefwd.h>
 #include <bits/ios_base.h>
 #include <bits/cpp_type_traits.h>
+#include <ext/type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -60,13 +61,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			  basic_streambuf<_CharT, _Traits>*, bool&);
 
   template<typename _CharT>
-    typename __enable_if<_CharT*, __is_char<_CharT>::__value>::__type
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
+				    _CharT*>::__type
     __copy_aux(istreambuf_iterator<_CharT>,
 	       istreambuf_iterator<_CharT>, _CharT*);
 
   template<typename _CharT>
-    typename __enable_if<istreambuf_iterator<_CharT>,
-			 __is_char<_CharT>::__value>::__type
+    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
+				    istreambuf_iterator<_CharT> >::__type
     find(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
 	 const _CharT&);
 
@@ -166,14 +168,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __copy_streambufs_eof<>(__streambuf_type*, __streambuf_type*, bool&);
 
       template<typename _CharT2>
-        friend typename __enable_if<_CharT2*,
-				    __is_char<_CharT2>::__value>::__type
+        friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value, 
+					       _CharT2*>::__type
         __copy_aux(istreambuf_iterator<_CharT2>,
 		   istreambuf_iterator<_CharT2>, _CharT2*);
 
       template<typename _CharT2>
-        friend typename __enable_if<istreambuf_iterator<_CharT2>,
-				    __is_char<_CharT2>::__value>::__type
+        friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
+				  istreambuf_iterator<_CharT2> >::__type
         find(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
 	     const _CharT2&);
 

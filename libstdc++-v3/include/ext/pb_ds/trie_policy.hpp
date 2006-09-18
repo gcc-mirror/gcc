@@ -72,8 +72,8 @@ namespace pb_ds
 
   // Element access traits for string types.
   template<typename String = std::string,
-	   typename String::value_type Min_E_Val = detail::numeric_traits<typename String::value_type>::min, 
-	   typename String::value_type Max_E_Val = detail::numeric_traits<typename String::value_type>::max, 
+	   typename String::value_type Min_E_Val = detail::__numeric_traits<typename String::value_type>::__min, 
+	   typename String::value_type Max_E_Val = detail::__numeric_traits<typename String::value_type>::__max, 
 	   bool Reverse = false,
 	   typename Allocator = std::allocator<char> >
   struct string_trie_e_access_traits
@@ -90,7 +90,7 @@ namespace pb_ds
       };
 
     // Element const iterator type.
-    typedef typename detail::conditional_type<Reverse, typename String::const_reverse_iterator, typename String::const_iterator>::type const_iterator;
+    typedef typename detail::__conditional_type<Reverse, typename String::const_reverse_iterator, typename String::const_iterator>::__type const_iterator;
 
     // Element type.
     typedef typename std::iterator_traits<const_iterator>::value_type e_type;
