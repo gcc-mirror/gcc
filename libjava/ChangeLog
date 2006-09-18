@@ -1,5 +1,9 @@
 2006-09-18  Petr Salinger  <Petr.Salinger@seznam.cz>
 
+	* configure.host: Handle kfreebsd.
+
+2006-09-18  Petr Salinger  <Petr.Salinger@seznam.cz>
+
 	* configure: Rebuilt.
 	* shlibpath.m4: Handle GNU/kFreeBSD.
 

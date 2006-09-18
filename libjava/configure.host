@@ -242,6 +242,10 @@ EOF
 	  rm -f conftest conftest.c
 	fi
 	;;
+   i[34567]86*-kfreebsd*-gnu | x86_64*-kfreebsd*-gnu)
+        libgcj_ld_symbolic='-Wl,-Bsymbolic'
+        slow_pthread_self=
+        ;;
   i[34567]86-*-solaris2.1[0-9]* )
 	sysdeps_dir=x86-64
 	DIVIDESPEC=-f%{m32:no-}%{!m32:%{!m64:no-}}%{m64:}use-divide-subroutine
@@ -320,7 +324,7 @@ case "${host}" in
 esac
 
 case "${host}" in
-  *linux*)
+  *linux*|*-kfreebsd*-gnu)
     use_libgcj_bc=yes
   ;;
   *)
