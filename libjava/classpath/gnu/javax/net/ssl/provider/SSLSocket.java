@@ -845,7 +845,6 @@ final class SSLSocket extends javax.net.ssl.SSLSocket
       {
         return super.isBound();
       }
-    //throw new UnsupportedOperationException("1.4 methods not enabled");
   }
 
   public boolean isClosed()
@@ -858,149 +857,138 @@ final class SSLSocket extends javax.net.ssl.SSLSocket
       {
         return super.isClosed();
       }
-    //throw new UnsupportedOperationException("1.4 methods not enabled");
   }
 
-  //public SocketAddress getRemoteSocketAddress()
-  //{
-  //  if (underlyingSocket != null)
-  //    {
-  //      return underlyingSocket.getRemoteSocketAddress();
-  //    }
-  //  else
-  //    {
-  //      return super.getRemoteSocketAddress();
-  //    }
-  //}
+  public SocketAddress getRemoteSocketAddress()
+  {
+   if (underlyingSocket != null)
+     {
+       return underlyingSocket.getRemoteSocketAddress();
+     }
+   else
+     {
+       return super.getRemoteSocketAddress();
+     }
+  }
 
   public void setOOBInline(boolean flag) throws SocketException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    underlyingSocket.setOOBInline(flag);
-    //  }
-    //else
-    //  {
-    //    super.setOOBInline(flag);
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	underlyingSocket.setOOBInline(flag);
+      }
+    else
+      {
+	super.setOOBInline(flag);
+      }
   }
 
   public boolean getOOBInline() throws SocketException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    return underlyingSocket.getOOBInline();
-    //  }
-    //else
-    //  {
-    //    return super.getOOBInline();
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	return underlyingSocket.getOOBInline();
+      }
+    else
+      {
+	return super.getOOBInline();
+      }
   }
 
   public void setKeepAlive(boolean flag) throws SocketException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    underlyingSocket.setKeepAlive(flag);
-    //  }
-    //else
-    //  {
-    //    super.setKeepAlive(flag);
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	underlyingSocket.setKeepAlive(flag);
+      }
+    else
+      {
+	super.setKeepAlive(flag);
+      }
   }
 
   public boolean getKeepAlive() throws SocketException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    return underlyingSocket.getKeepAlive();
-    //  }
-    //else
-    //  {
-    //    return super.getKeepAlive();
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	return underlyingSocket.getKeepAlive();
+      }
+    else
+      {
+	return super.getKeepAlive();
+      }
   }
 
   public void setTrafficClass(int clazz) throws SocketException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    underlyingSocket.setTrafficClass(clazz);
-    //  }
-    //else
-    //  {
-    //    super.setTrafficClass(clazz);
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	underlyingSocket.setTrafficClass(clazz);
+      }
+    else
+      {
+	super.setTrafficClass(clazz);
+      }
   }
 
   public int getTrafficClass() throws SocketException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    return underlyingSocket.getTrafficClass();
-    //  }
-    //else
-    //  {
-    //    return super.getTrafficClass();
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	return underlyingSocket.getTrafficClass();
+      }
+    else
+      {
+	return super.getTrafficClass();
+      }
   }
 
   public void setReuseAddress(boolean flag) throws SocketException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    underlyingSocket.setReuseAddress(flag);
-    //  }
-    //else
-    //  {
-    //    super.setReuseAddress(flag);
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	underlyingSocket.setReuseAddress(flag);
+      }
+    else
+      {
+	super.setReuseAddress(flag);
+      }
   }
 
   public boolean getReuseAddress() throws SocketException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    return underlyingSocket.getReuseAddress();
-    //  }
-    //else
-    //  {
-    //    return super.getReuseAddress();
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	return underlyingSocket.getReuseAddress();
+      }
+    else
+      {
+	return super.getReuseAddress();
+      }
   }
 
   public void shutdownInput() throws IOException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    underlyingSocket.shutdownInput();
-    //  }
-    //else
-    //  {
-    //    super.shutdownInput();
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	underlyingSocket.shutdownInput();
+      }
+    else
+      {
+	super.shutdownInput();
+      }
   }
 
   public void shutdownOutput() throws IOException
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    underlyingSocket.shutdownOutput();
-    //  }
-    //else
-    //  {
-    //    super.shutdownOutput();
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	underlyingSocket.shutdownOutput();
+      }
+    else
+      {
+	super.shutdownOutput();
+      }
   }
 
   public boolean isConnected()
@@ -1013,33 +1001,30 @@ final class SSLSocket extends javax.net.ssl.SSLSocket
       {
         return super.isConnected();
       }
-    //throw new UnsupportedOperationException("1.4 methods not enabled");
   }
 
   public boolean isInputShutdown()
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    return underlyingSocket.isInputShutdown();
-    //  }
-    //else
-    //  {
-    //    return super.isInputShutdown();
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	return underlyingSocket.isInputShutdown();
+      }
+    else
+      {
+	return super.isInputShutdown();
+      }
   }
 
   public boolean isOutputShutdown()
   {
-    //if (underlyingSocket != null)
-    //  {
-    //    return underlyingSocket.isOutputShutdown();
-    //  }
-    //else
-    //  {
-    //    return super.isOutputShutdown();
-    //  }
-    throw new UnsupportedOperationException("1.4 methods not enabled");
+    if (underlyingSocket != null)
+      {
+	return underlyingSocket.isOutputShutdown();
+      }
+    else
+      {
+	return super.isOutputShutdown();
+      }
   }
 
   protected void finalize()
