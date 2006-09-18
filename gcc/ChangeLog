@@ -1,3 +1,15 @@
+2006-09-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	J"orn Rennecke  <joern.rennecke@st.com>
+	Richard Guenther  <rguenther@suse.de>
+	Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR middle-end/27226
+	* builtins.c (get_pointer_alignment): Handle more forms
+	of base addresses that can be used to derive more precise
+	information about alignment.
+
 2006-09-15 Uros Bizjak <uros@kss-loka.si>
 
 	PR target/28946
