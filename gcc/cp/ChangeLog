@@ -1,3 +1,13 @@
+2006-09-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR c++/29087
+	* parser.c (cp_parser_labeled_statement): Return nothing.  Do
+	not take in_statement_expr and in_compound as arguments.  Rename
+	to cp_parser_label_for_labeled_statement.  Parse only the label,
+	not the statement.
+	(cp_parser_statement): Parse the statement of a labeled-statement
+	from here, using tail recursion.
+
 2006-09-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/29002
