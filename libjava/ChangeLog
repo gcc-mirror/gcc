@@ -98,7 +98,6 @@
 	* jvmti.cc (_Jv_JVMTI_RawMonitorWait): Add millis parameter.
 	Pass millis to _Jv_CondWait.
 
->>>>>>> .r116849
 2006-08-31  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/28698:
