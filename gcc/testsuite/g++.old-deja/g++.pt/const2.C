@@ -6,4 +6,8 @@ template <class T> struct B { static const int i = 3; };
 template <class T> struct A { static const int i = B<T>::i; };
 const int *p = &A<int>::i;
 
-int main(){}
+int main ()
+{
+  // Examine p to prevent optimising linkers from discarding it.
+  return (p != 0);
+}

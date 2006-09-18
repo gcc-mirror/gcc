@@ -1,3 +1,8 @@
+2006-09-19  Ben Elliston  <bje@au.ibm.com>
+
+	* g++.old-deja/g++.pt/const2.C (main): Examine p to prevent an
+	optimising linker from discarding it.
+
 2006-09-18 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/28526
