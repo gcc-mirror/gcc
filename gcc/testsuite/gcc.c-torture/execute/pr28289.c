@@ -18,10 +18,11 @@ ix86_split_ashr (int mode)
                       : gen_x86_64_shrd) (0);
 }
 
+volatile int one = 1;
 int
-main (int argc, char **argv)
+main (void)
 {
-  ix86_split_ashr (argc);
+  ix86_split_ashr (one);
   return 1;
 }
 
