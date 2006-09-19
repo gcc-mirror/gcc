@@ -41,56 +41,58 @@
 namespace std
 { 
 _GLIBCXX_BEGIN_NAMESPACE(tr1)
-namespace detail
+namespace __detail
 {
 namespace 
 {
   // Helper function: return distance(first, last) for forward
   // iterators, or 0 for input iterators.
-  template<class Iterator>
-    inline typename std::iterator_traits<Iterator>::difference_type
-    distance_fw(Iterator first, Iterator last, std::input_iterator_tag)
+  template<class _Iterator>
+    inline typename std::iterator_traits<_Iterator>::difference_type
+    __distance_fw(_Iterator __first, _Iterator __last,
+		  std::input_iterator_tag)
     { return 0; }
 
-  template<class Iterator>
-    inline typename std::iterator_traits<Iterator>::difference_type
-    distance_fw(Iterator first, Iterator last, std::forward_iterator_tag)
-    { return std::distance(first, last); }
+  template<class _Iterator>
+    inline typename std::iterator_traits<_Iterator>::difference_type
+    __distance_fw(_Iterator __first, _Iterator __last,
+		  std::forward_iterator_tag)
+    { return std::distance(__first, __last); }
 
-  template<class Iterator>
-    inline typename std::iterator_traits<Iterator>::difference_type
-    distance_fw(Iterator first, Iterator last)
+  template<class _Iterator>
+    inline typename std::iterator_traits<_Iterator>::difference_type
+    __distance_fw(_Iterator __first, _Iterator __last)
     {
-      typedef typename std::iterator_traits<Iterator>::iterator_category tag;
-      return distance_fw(first, last, tag());
+      typedef typename std::iterator_traits<_Iterator>::iterator_category _Tag;
+      return __distance_fw(__first, __last, _Tag());
     }
 
-  // XXX This is a hack.  prime_rehash_policy's member functions, and
+  // XXX This is a hack.  _Prime_rehash_policy's member functions, and
   // certainly the list of primes, should be defined in a .cc file.
   // We're temporarily putting them in a header because we don't have a
   // place to put TR1 .cc files yet.  There's no good reason for any of
-  // prime_rehash_policy's member functions to be inline, and there's
-  // certainly no good reason for X<> to exist at all.  
-  struct lt
+  // _Prime_rehash_policy's member functions to be inline, and there's
+  // certainly no good reason for _Primes<> to exist at all.  
+  struct _LessThan
   {
-    template<typename X, typename Y>
+    template<typename _Tp, typename _Up>
       bool
-      operator()(X x, Y y)
-      { return x < y; }
+      operator()(_Tp __x, _Up __y)
+      { return __x < __y; }
   };
 
-  template<int ulongsize = sizeof(unsigned long)>
-    struct X
+  template<int __ulongsize = sizeof(unsigned long)>
+    struct _Primes
     {
-      static const int n_primes = ulongsize != 8 ? 256 : 256 + 48;
-      static const unsigned long primes[256 + 48 + 1];
+      static const int __n_primes = __ulongsize != 8 ? 256 : 256 + 48;
+      static const unsigned long __primes[256 + 48 + 1];
     };
 
-  template<int ulongsize>
-    const int X<ulongsize>::n_primes;
+  template<int __ulongsize>
+    const int _Primes<__ulongsize>::__n_primes;
 
-  template<int ulongsize>
-    const unsigned long X<ulongsize>::primes[256 + 48 + 1] =
+  template<int __ulongsize>
+    const unsigned long _Primes<__ulongsize>::__primes[256 + 48 + 1] =
     {
       2ul, 3ul, 5ul, 7ul, 11ul, 13ul, 17ul, 19ul, 23ul, 29ul, 31ul,
       37ul, 41ul, 43ul, 47ul, 53ul, 59ul, 61ul, 67ul, 71ul, 73ul, 79ul,
@@ -135,7 +137,7 @@ namespace
       4294967291ul,
       // Sentinel, so we don't have to test the result of lower_bound,
       // or, on 64-bit machines, rest of the table.
-      ulongsize != 8 ? 4294967291ul : (unsigned long)6442450933ull,
+      __ulongsize != 8 ? 4294967291ul : (unsigned long)6442450933ull,
       (unsigned long)8589934583ull,
       (unsigned long)12884901857ull, (unsigned long)17179869143ull,
       (unsigned long)25769803693ull, (unsigned long)34359738337ull,
@@ -168,306 +170,315 @@ namespace
     };
 } // anonymous namespace
 
-  // Auxiliary types used for all instantiations of hashtable: nodes
+  // Auxiliary types used for all instantiations of _Hashtable: nodes
   // and iterators.
   
   // Nodes, used to wrap elements stored in the hash table.  A policy
-  // template parameter of class template hashtable controls whether
+  // template parameter of class template _Hashtable controls whether
   // nodes also store a hash code. In some cases (e.g. strings) this
   // may be a performance win.
-  template<typename Value, bool cache_hash_code>
-    struct hash_node;
+  template<typename _Value, bool __cache_hash_code>
+    struct _Hash_node;
 
-  template<typename Value>
-    struct hash_node<Value, true>
+  template<typename _Value>
+    struct _Hash_node<_Value, true>
     {
-      Value       m_v;
-      std::size_t hash_code;
-      hash_node*  m_next;
+      _Value       _M_v;
+      std::size_t  _M_hash_code;
+      _Hash_node*  _M_next;
     };
 
-  template<typename Value>
-    struct hash_node<Value, false>
+  template<typename _Value>
+    struct _Hash_node<_Value, false>
     {
-      Value       m_v;
-      hash_node*  m_next;
+      _Value       _M_v;
+      _Hash_node*  _M_next;
     };
 
   // Local iterators, used to iterate within a bucket but not between
   // buckets.
-  template<typename Value, bool cache>
-    struct node_iterator_base
+  template<typename _Value, bool __cache>
+    struct _Node_iterator_base
     {
-      node_iterator_base(hash_node<Value, cache>* p)
-      : m_cur(p) { }
+      _Node_iterator_base(_Hash_node<_Value, __cache>* __p)
+      : _M_cur(__p) { }
       
       void
-      incr()
-      { m_cur = m_cur->m_next; }
+      _M_incr()
+      { _M_cur = _M_cur->_M_next; }
 
-      hash_node<Value, cache>* m_cur;
+      _Hash_node<_Value, __cache>*  _M_cur;
     };
 
-  template<typename Value, bool cache>
+  template<typename _Value, bool __cache>
     inline bool
-    operator==(const node_iterator_base<Value, cache>& x,
-	       const node_iterator_base<Value, cache>& y)
-    { return x.m_cur == y.m_cur; }
+    operator==(const _Node_iterator_base<_Value, __cache>& __x,
+	       const _Node_iterator_base<_Value, __cache>& __y)
+    { return __x._M_cur == __y._M_cur; }
 
-  template<typename Value, bool cache>
+  template<typename _Value, bool __cache>
     inline bool
-    operator!=(const node_iterator_base<Value, cache>& x,
-	       const node_iterator_base<Value, cache>& y)
-    { return x.m_cur != y.m_cur; }
+    operator!=(const _Node_iterator_base<_Value, __cache>& __x,
+	       const _Node_iterator_base<_Value, __cache>& __y)
+    { return __x._M_cur != __y._M_cur; }
 
-  template<typename Value, bool constant_iterators, bool cache>
-    struct node_iterator
-    : public node_iterator_base<Value, cache>
+  template<typename _Value, bool __constant_iterators, bool __cache>
+    struct _Node_iterator
+    : public _Node_iterator_base<_Value, __cache>
     {
-      typedef Value                                    value_type;
-      typedef typename __gnu_cxx::__conditional_type<constant_iterators, const Value*, Value*>::__type
+      typedef _Value                                   value_type;
+      typedef typename
+      __gnu_cxx::__conditional_type<__constant_iterators,
+				    const _Value*, _Value*>::__type
                                                        pointer;
-      typedef typename __gnu_cxx::__conditional_type<constant_iterators, const Value&, Value&>::__type
+      typedef typename
+      __gnu_cxx::__conditional_type<__constant_iterators,
+				    const _Value&, _Value&>::__type
                                                        reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
-      node_iterator()
-      : node_iterator_base<Value, cache>(0) { }
+      _Node_iterator()
+      : _Node_iterator_base<_Value, __cache>(0) { }
 
       explicit
-      node_iterator(hash_node<Value, cache>* p)
-      : node_iterator_base<Value, cache>(p) { }
+      _Node_iterator(_Hash_node<_Value, __cache>* __p)
+      : _Node_iterator_base<_Value, __cache>(__p) { }
 
       reference
       operator*() const
-      { return this->m_cur->m_v; }
+      { return this->_M_cur->_M_v; }
   
       pointer
       operator->() const
-      { return &this->m_cur->m_v; }
+      { return &this->_M_cur->_M_v; }
 
-      node_iterator&
+      _Node_iterator&
       operator++()
       { 
-	this->incr(); 
+	this->_M_incr();
 	return *this; 
       }
   
-      node_iterator
+      _Node_iterator
       operator++(int)
       { 
-	node_iterator tmp(*this);
-	this->incr();
-	return tmp;
+	_Node_iterator __tmp(*this);
+	this->_M_incr();
+	return __tmp;
       }
     };
 
-  template<typename Value, bool constant_iterators, bool cache>
-    struct node_const_iterator
-    : public node_iterator_base<Value, cache>
+  template<typename _Value, bool __constant_iterators, bool __cache>
+    struct _Node_const_iterator
+    : public _Node_iterator_base<_Value, __cache>
     {
-      typedef Value                                    value_type;
-      typedef const Value*                             pointer;
-      typedef const Value&                             reference;
+      typedef _Value                                   value_type;
+      typedef const _Value*                            pointer;
+      typedef const _Value&                            reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
-      node_const_iterator()
-      : node_iterator_base<Value, cache>(0) { }
+      _Node_const_iterator()
+      : _Node_iterator_base<_Value, __cache>(0) { }
 
       explicit
-      node_const_iterator(hash_node<Value, cache>* p)
-      : node_iterator_base<Value, cache>(p) { }
+      _Node_const_iterator(_Hash_node<_Value, __cache>* __p)
+      : _Node_iterator_base<_Value, __cache>(__p) { }
 
-      node_const_iterator(const node_iterator<Value, constant_iterators,
-			  cache>& x)
-      : node_iterator_base<Value, cache>(x.m_cur) { }
+      _Node_const_iterator(const _Node_iterator<_Value, __constant_iterators,
+			   __cache>& __x)
+      : _Node_iterator_base<_Value, __cache>(__x._M_cur) { }
 
       reference
       operator*() const
-      { return this->m_cur->m_v; }
+      { return this->_M_cur->_M_v; }
   
       pointer
       operator->() const
-      { return &this->m_cur->m_v; }
+      { return &this->_M_cur->_M_v; }
 
-      node_const_iterator&
+      _Node_const_iterator&
       operator++()
       { 
-	this->incr(); 
+	this->_M_incr();
 	return *this; 
       }
   
-      node_const_iterator
+      _Node_const_iterator
       operator++(int)
       { 
-	node_const_iterator tmp(*this);
-	this->incr();
-	return tmp;
+	_Node_const_iterator __tmp(*this);
+	this->_M_incr();
+	return __tmp;
       }
     };
 
-  template<typename Value, bool cache>
-    struct hashtable_iterator_base
+  template<typename _Value, bool __cache>
+    struct _Hashtable_iterator_base
     {
-      hashtable_iterator_base(hash_node<Value, cache>* node,
-			      hash_node<Value, cache>** bucket)
-      : m_cur_node(node), m_cur_bucket(bucket) { }
+      _Hashtable_iterator_base(_Hash_node<_Value, __cache>* __node,
+			       _Hash_node<_Value, __cache>** __bucket)
+      : _M_cur_node(__node), _M_cur_bucket(__bucket) { }
 
       void
-      incr()
+      _M_incr()
       {
-	m_cur_node = m_cur_node->m_next;
-	if (!m_cur_node)
-	  m_incr_bucket();
+	_M_cur_node = _M_cur_node->_M_next;
+	if (!_M_cur_node)
+	  _M_incr_bucket();
       }
 
       void
-      m_incr_bucket();
+      _M_incr_bucket();
 
-      hash_node<Value, cache>*  m_cur_node;
-      hash_node<Value, cache>** m_cur_bucket;
+      _Hash_node<_Value, __cache>*   _M_cur_node;
+      _Hash_node<_Value, __cache>**  _M_cur_bucket;
     };
 
   // Global iterators, used for arbitrary iteration within a hash
   // table.  Larger and more expensive than local iterators.
-  template<typename Value, bool cache>
+  template<typename _Value, bool __cache>
     void
-    hashtable_iterator_base<Value, cache>::
-    m_incr_bucket()
+    _Hashtable_iterator_base<_Value, __cache>::
+    _M_incr_bucket()
     {
-      ++m_cur_bucket;
+      ++_M_cur_bucket;
 
       // This loop requires the bucket array to have a non-null sentinel.
-      while (!*m_cur_bucket)
-	++m_cur_bucket;
-      m_cur_node = *m_cur_bucket;
+      while (!*_M_cur_bucket)
+	++_M_cur_bucket;
+      _M_cur_node = *_M_cur_bucket;
     }
 
-  template<typename Value, bool cache>
+  template<typename _Value, bool __cache>
     inline bool
-    operator==(const hashtable_iterator_base<Value, cache>& x,
-	       const hashtable_iterator_base<Value, cache>& y)
-    { return x.m_cur_node == y.m_cur_node; }
+    operator==(const _Hashtable_iterator_base<_Value, __cache>& __x,
+	       const _Hashtable_iterator_base<_Value, __cache>& __y)
+    { return __x._M_cur_node == __y._M_cur_node; }
 
-  template<typename Value, bool cache>
+  template<typename _Value, bool __cache>
     inline bool
-    operator!=(const hashtable_iterator_base<Value, cache>& x,
-	       const hashtable_iterator_base<Value, cache>& y)
-    { return x.m_cur_node != y.m_cur_node; }
+    operator!=(const _Hashtable_iterator_base<_Value, __cache>& __x,
+	       const _Hashtable_iterator_base<_Value, __cache>& __y)
+    { return __x._M_cur_node != __y._M_cur_node; }
 
-  template<typename Value, bool constant_iterators, bool cache>
-    struct hashtable_iterator
-    : public hashtable_iterator_base<Value, cache>
+  template<typename _Value, bool __constant_iterators, bool __cache>
+    struct _Hashtable_iterator
+    : public _Hashtable_iterator_base<_Value, __cache>
     {
-      typedef Value                                    value_type;
-      typedef typename __gnu_cxx::__conditional_type<constant_iterators, const Value*, Value*>::__type
+      typedef _Value                                   value_type;
+      typedef typename
+      __gnu_cxx::__conditional_type<__constant_iterators,
+				    const _Value*, _Value*>::__type
                                                        pointer;
-      typedef typename __gnu_cxx::__conditional_type<constant_iterators, const Value&, Value&>::__type
+      typedef typename
+      __gnu_cxx::__conditional_type<__constant_iterators,
+				    const _Value&, _Value&>::__type
                                                        reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
-      hashtable_iterator()
-      : hashtable_iterator_base<Value, cache>(0, 0) { }
+      _Hashtable_iterator()
+      : _Hashtable_iterator_base<_Value, __cache>(0, 0) { }
 
-      hashtable_iterator(hash_node<Value, cache>* p,
-			 hash_node<Value, cache>** b)
-      : hashtable_iterator_base<Value, cache>(p, b) { }
+      _Hashtable_iterator(_Hash_node<_Value, __cache>* __p,
+			  _Hash_node<_Value, __cache>** __b)
+      : _Hashtable_iterator_base<_Value, __cache>(__p, __b) { }
 
       explicit
-      hashtable_iterator(hash_node<Value, cache>** b)
-      : hashtable_iterator_base<Value, cache>(*b, b) { }
+      _Hashtable_iterator(_Hash_node<_Value, __cache>** __b)
+      : _Hashtable_iterator_base<_Value, __cache>(*__b, __b) { }
 
       reference
       operator*() const
-      { return this->m_cur_node->m_v; }
+      { return this->_M_cur_node->_M_v; }
   
       pointer
       operator->() const
-      { return &this->m_cur_node->m_v; }
+      { return &this->_M_cur_node->_M_v; }
 
-      hashtable_iterator&
+      _Hashtable_iterator&
       operator++()
       { 
-	this->incr();
+	this->_M_incr();
 	return *this;
       }
   
-      hashtable_iterator
+      _Hashtable_iterator
       operator++(int)
       { 
-	hashtable_iterator tmp(*this);
-	this->incr();
-	return tmp;
+	_Hashtable_iterator __tmp(*this);
+	this->_M_incr();
+	return __tmp;
       }
     };
 
-  template<typename Value, bool constant_iterators, bool cache>
-    struct hashtable_const_iterator
-    : public hashtable_iterator_base<Value, cache>
+  template<typename _Value, bool __constant_iterators, bool __cache>
+    struct _Hashtable_const_iterator
+    : public _Hashtable_iterator_base<_Value, __cache>
     {
-      typedef Value                                    value_type;
-      typedef const Value*                             pointer;
-      typedef const Value&                             reference;
+      typedef _Value                                   value_type;
+      typedef const _Value*                            pointer;
+      typedef const _Value&                            reference;
       typedef std::ptrdiff_t                           difference_type;
       typedef std::forward_iterator_tag                iterator_category;
 
-      hashtable_const_iterator()
-      : hashtable_iterator_base<Value, cache>(0, 0) { }
+      _Hashtable_const_iterator()
+      : _Hashtable_iterator_base<_Value, __cache>(0, 0) { }
 
-      hashtable_const_iterator(hash_node<Value, cache>* p,
-			       hash_node<Value, cache>** b)
-      : hashtable_iterator_base<Value, cache>(p, b) { }
+      _Hashtable_const_iterator(_Hash_node<_Value, __cache>* __p,
+				_Hash_node<_Value, __cache>** __b)
+      : _Hashtable_iterator_base<_Value, __cache>(__p, __b) { }
 
       explicit
-      hashtable_const_iterator(hash_node<Value, cache>** b)
-      : hashtable_iterator_base<Value, cache>(*b, b) { }
+      _Hashtable_const_iterator(_Hash_node<_Value, __cache>** __b)
+      : _Hashtable_iterator_base<_Value, __cache>(*__b, __b) { }
 
-      hashtable_const_iterator(const hashtable_iterator<Value,
-			       constant_iterators, cache>& x)
-      : hashtable_iterator_base<Value, cache>(x.m_cur_node, x.m_cur_bucket) { }
+      _Hashtable_const_iterator(const _Hashtable_iterator<_Value,
+				__constant_iterators, __cache>& __x)
+      : _Hashtable_iterator_base<_Value, __cache>(__x._M_cur_node,
+						  __x._M_cur_bucket) { }
 
       reference
       operator*() const
-      { return this->m_cur_node->m_v; }
+      { return this->_M_cur_node->_M_v; }
   
       pointer
       operator->() const
-      { return &this->m_cur_node->m_v; }
+      { return &this->_M_cur_node->_M_v; }
 
-      hashtable_const_iterator&
+      _Hashtable_const_iterator&
       operator++()
       { 
-	this->incr();
+	this->_M_incr();
 	return *this;
       }
   
-      hashtable_const_iterator
+      _Hashtable_const_iterator
       operator++(int)
       { 
-	hashtable_const_iterator tmp(*this);
-	this->incr();
-	return tmp;
+	_Hashtable_const_iterator __tmp(*this);
+	this->_M_incr();
+	return __tmp;
       }
     };
 
 
-  // Many of class template hashtable's template parameters are policy
+  // Many of class template _Hashtable's template parameters are policy
   // classes.  These are defaults for the policies.
 
   // Default range hashing function: use division to fold a large number
   // into the range [0, N).
-  struct mod_range_hashing
+  struct _Mod_range_hashing
   {
     typedef std::size_t first_argument_type;
     typedef std::size_t second_argument_type;
     typedef std::size_t result_type;
 
     result_type
-    operator()(first_argument_type r, second_argument_type N) const
-    { return r % N; }
+    operator()(first_argument_type __num, second_argument_type __den) const
+    { return __num % __den; }
   };
 
   // Default ranged hash function H.  In principle it should be a
@@ -475,103 +486,114 @@ namespace
   // h(k, N) = h2(h1(k), N), but that would mean making extra copies of
   // h1 and h2.  So instead we'll just use a tag to tell class template
   // hashtable to do that composition.
-  struct default_ranged_hash { };
+  struct _Default_ranged_hash { };
 
   // Default value for rehash policy.  Bucket size is (usually) the
   // smallest prime that keeps the load factor small enough.
-  struct prime_rehash_policy
+  struct _Prime_rehash_policy
   {
-    prime_rehash_policy(float z = 1.0);
-    
+    _Prime_rehash_policy(float __z = 1.0);
+
     float
     max_load_factor() const;
 
     // Return a bucket size no smaller than n.
     std::size_t
-    next_bkt(std::size_t n) const;
+    _M_next_bkt(std::size_t __n) const;
     
     // Return a bucket count appropriate for n elements
     std::size_t
-    bkt_for_elements(std::size_t n) const;
+    _M_bkt_for_elements(std::size_t __n) const;
     
-    // n_bkt is current bucket count, n_elt is current element count,
-    // and n_ins is number of elements to be inserted.  Do we need to
+    // __n_bkt is current bucket count, __n_elt is current element count,
+    // and __n_ins is number of elements to be inserted.  Do we need to
     // increase bucket count?  If so, return make_pair(true, n), where n
     // is the new bucket count.  If not, return make_pair(false, 0).
     std::pair<bool, std::size_t>
-    need_rehash(std::size_t n_bkt, std::size_t n_elt, std::size_t n_ins) const;
+    _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
+		   std::size_t __n_ins) const;
     
-    float               m_max_load_factor;
-    float               m_growth_factor;
-    mutable std::size_t m_next_resize;
+    float                _M_max_load_factor;
+    float                _M_growth_factor;
+    mutable std::size_t  _M_next_resize;
   };
 
   inline
-  prime_rehash_policy::
-  prime_rehash_policy(float z)
-  : m_max_load_factor(z), m_growth_factor(2.f), m_next_resize(0)
+  _Prime_rehash_policy::
+  _Prime_rehash_policy(float __z)
+  : _M_max_load_factor(__z), _M_growth_factor(2.f), _M_next_resize(0)
   { }
 
   inline float
-  prime_rehash_policy::
+  _Prime_rehash_policy::
   max_load_factor() const
-  { return m_max_load_factor; }
+  { return _M_max_load_factor; }
 
   // Return a prime no smaller than n.
   inline std::size_t
-  prime_rehash_policy::
-  next_bkt(std::size_t n) const
+  _Prime_rehash_policy::
+  _M_next_bkt(std::size_t __n) const
   {
-    const unsigned long* const last = X<>::primes + X<>::n_primes;
-    const unsigned long* p = std::lower_bound(X<>::primes, last, n);
-    m_next_resize = static_cast<std::size_t>(std::ceil(*p * m_max_load_factor));
-    return *p;
+    const unsigned long* const __last = (_Primes<>::__primes
+					 + _Primes<>::__n_primes);
+    const unsigned long* __p = std::lower_bound(_Primes<>::__primes, __last,
+						__n);
+    _M_next_resize = static_cast<std::size_t>(std::ceil(*__p
+							* _M_max_load_factor));
+    return *__p;
   }
 
   // Return the smallest prime p such that alpha p >= n, where alpha
   // is the load factor.
   inline std::size_t
-  prime_rehash_policy::
-  bkt_for_elements(std::size_t n) const
+  _Prime_rehash_policy::
+  _M_bkt_for_elements(std::size_t __n) const
   {
-    const unsigned long* const last = X<>::primes + X<>::n_primes;
-    const float min_bkts = n / m_max_load_factor;
-    const unsigned long* p = std::lower_bound(X<>::primes, last,
-					      min_bkts, lt());
-    m_next_resize = static_cast<std::size_t>(std::ceil(*p * m_max_load_factor));
-    return *p;
+    const unsigned long* const __last = (_Primes<>::__primes
+					 + _Primes<>::__n_primes);
+    const float __min_bkts = __n / _M_max_load_factor;
+    const unsigned long* __p = std::lower_bound(_Primes<>::__primes, __last,
+						__min_bkts, _LessThan());
+    _M_next_resize = static_cast<std::size_t>(std::ceil(*__p
+							* _M_max_load_factor));
+    return *__p;
   }
 
-  // Finds the smallest prime p such that alpha p > n_elt + n_ins.
-  // If p > n_bkt, return make_pair(true, p); otherwise return
+  // Finds the smallest prime p such that alpha p > __n_elt + __n_ins.
+  // If p > __n_bkt, return make_pair(true, p); otherwise return
   // make_pair(false, 0).  In principle this isn't very different from 
-  // bkt_for_elements.
+  // _M_bkt_for_elements.
   
   // The only tricky part is that we're caching the element count at
   // which we need to rehash, so we don't have to do a floating-point
   // multiply for every insertion.
   
   inline std::pair<bool, std::size_t>
-  prime_rehash_policy::
-  need_rehash(std::size_t n_bkt, std::size_t n_elt, std::size_t n_ins) const
+  _Prime_rehash_policy::
+  _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
+		 std::size_t __n_ins) const
   {
-    if (n_elt + n_ins > m_next_resize)
+    if (__n_elt + __n_ins > _M_next_resize)
       {
-	float min_bkts = (float(n_ins) + float(n_elt)) / m_max_load_factor;
-	if (min_bkts > n_bkt)
+	float __min_bkts = ((float(__n_ins) + float(__n_elt))
+			    / _M_max_load_factor);
+	if (__min_bkts > __n_bkt)
 	  {
-	    min_bkts = std::max(min_bkts, m_growth_factor * n_bkt);
-	    const unsigned long* const last = X<>::primes + X<>::n_primes;
-	    const unsigned long* p = std::lower_bound(X<>::primes, last,
-						      min_bkts, lt());
-	    m_next_resize = 
-	      static_cast<std::size_t>(std::ceil(*p * m_max_load_factor));
-	    return std::make_pair(true, *p);
+	    __min_bkts = std::max(__min_bkts, _M_growth_factor * __n_bkt);
+	    const unsigned long* const __last = (_Primes<>::__primes
+						 + _Primes<>::__n_primes);
+	    const unsigned long* __p = std::lower_bound(_Primes<>::__primes,
+							__last, __min_bkts,
+							_LessThan());
+	    _M_next_resize = 
+	      static_cast<std::size_t>(std::ceil(*__p * _M_max_load_factor));
+	    return std::make_pair(true, *__p);
 	  }
 	else 
 	  {
-	    m_next_resize = 
-	      static_cast<std::size_t>(std::ceil(n_bkt * m_max_load_factor));
+	    _M_next_resize =
+	      static_cast<std::size_t>(std::ceil(__n_bkt
+						 * _M_max_load_factor));
 	    return std::make_pair(false, 0);
 	  }
       }
@@ -579,78 +601,82 @@ namespace
       return std::make_pair(false, 0);
   }
 
-  // Base classes for std::tr1::hashtable.  We define these base
+  // Base classes for std::tr1::_Hashtable.  We define these base
   // classes because in some cases we want to do different things
   // depending on the value of a policy class.  In some cases the
   // policy class affects which member functions and nested typedefs
   // are defined; we handle that by specializing base class templates.
   // Several of the base class templates need to access other members
-  // of class template hashtable, so we use the "curiously recurring
+  // of class template _Hashtable, so we use the "curiously recurring
   // template pattern" for them.
 
-  // class template map_base.  If the hashtable has a value type of the
+  // class template _Map_base.  If the hashtable has a value type of the
   // form pair<T1, T2> and a key extraction policy that returns the
   // first part of the pair, the hashtable gets a mapped_type typedef.
   // If it satisfies those criteria and also has unique keys, then it
   // also gets an operator[].  
-  template<typename K, typename V, typename Ex, bool unique, typename Hashtable>
-    struct map_base { };
+  template<typename _Key, typename _Value, typename _Ex, bool __unique,
+	   typename _Hashtable>
+    struct _Map_base { };
 	  
-  template<typename K, typename Pair, typename Hashtable>
-    struct map_base<K, Pair, std::_Select1st<Pair>, false, Hashtable>
+  template<typename _Key, typename _Pair, typename _Hashtable>
+    struct _Map_base<_Key, _Pair, std::_Select1st<_Pair>, false, _Hashtable>
     {
-      typedef typename Pair::second_type mapped_type;
+      typedef typename _Pair::second_type mapped_type;
     };
 
-  template<typename K, typename Pair, typename Hashtable>
-  struct map_base<K, Pair, std::_Select1st<Pair>, true, Hashtable>
+  template<typename _Key, typename _Pair, typename _Hashtable>
+  struct _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>
     {
-      typedef typename Pair::second_type mapped_type;
+      typedef typename _Pair::second_type mapped_type;
       
       mapped_type&
-      operator[](const K& k);
+      operator[](const _Key& __k);
     };
 
-  template<typename K, typename Pair, typename Hashtable>
-    typename map_base<K, Pair, std::_Select1st<Pair>, true, Hashtable>::mapped_type&
-    map_base<K, Pair, std::_Select1st<Pair>, true, Hashtable>::
-    operator[](const K& k)
+  template<typename _Key, typename _Pair, typename _Hashtable>
+    typename _Map_base<_Key, _Pair, std::_Select1st<_Pair>,
+		       true, _Hashtable>::mapped_type&
+    _Map_base<_Key, _Pair, std::_Select1st<_Pair>, true, _Hashtable>::
+    operator[](const _Key& __k)
     {
-      Hashtable* h = static_cast<Hashtable*>(this);
-      typename Hashtable::hash_code_t code = h->m_hash_code(k);
-      std::size_t n = h->bucket_index(k, code, h->bucket_count());
+      _Hashtable* __h = static_cast<_Hashtable*>(this);
+      typename _Hashtable::_Hash_code_type __code = __h->_M_hash_code(__k);
+      std::size_t __n = __h->_M_bucket_index(__k, __code,
+					     __h->_M_bucket_count);
 
-      typename Hashtable::node* p = h->m_find_node(h->m_buckets[n], k, code);
-      if (!p)
-	return h->m_insert_bucket(std::make_pair(k, mapped_type()),
-				  n, code)->second;
-      return (p->m_v).second;
+      typename _Hashtable::_Node* __p =
+	__h->_M_find_node(__h->_M_buckets[__n], __k, __code);
+      if (!__p)
+	return __h->_M_insert_bucket(std::make_pair(__k, mapped_type()),
+				     __n, __code)->second;
+      return (__p->_M_v).second;
     }
 
-  // class template rehash_base.  Give hashtable the max_load_factor
-  // functions iff the rehash policy is prime_rehash_policy.
-  template<typename RehashPolicy, typename Hashtable>
-    struct rehash_base { };
+  // class template _Rehash_base.  Give hashtable the max_load_factor
+  // functions iff the rehash policy is _Prime_rehash_policy.
+  template<typename _RehashPolicy, typename _Hashtable>
+    struct _Rehash_base { };
 
-  template<typename Hashtable>
-    struct rehash_base<prime_rehash_policy, Hashtable>
+  template<typename _Hashtable>
+    struct _Rehash_base<_Prime_rehash_policy, _Hashtable>
     {
       float
       max_load_factor() const
       {
-	const Hashtable* This = static_cast<const Hashtable*>(this);
-	return This->rehash_policy().max_load_factor();
+	const _Hashtable* __this = static_cast<const _Hashtable*>(this);
+	return __this->__rehash_policy().max_load_factor();
       }
 
       void
-      max_load_factor(float z)
+      max_load_factor(float __z)
       {
-	Hashtable* This = static_cast<Hashtable*>(this);
-	This->rehash_policy(prime_rehash_policy(z));    
+	_Hashtable* __this = static_cast<_Hashtable*>(this);
+	__this->__rehash_policy(_Prime_rehash_policy(__z));
       }
     };
 
-  // Class template hash_code_base.  Encapsulates two policy issues that
+  // Class template _Hash_code_base.  Encapsulates two policy issues that
   // aren't quite orthogonal.
   //   (1) the difference between using a ranged hash function and using
   //       the combination of a hash function and a range-hashing function.
@@ -662,62 +688,67 @@ namespace
   // objects here, for convenience.
   
   // Primary template: unused except as a hook for specializations.  
-  template<typename Key, typename Value,
-	   typename ExtractKey, typename Equal,
-	   typename H1, typename H2, typename H,
-	   bool cache_hash_code>
-    struct hash_code_base;
+  template<typename _Key, typename _Value,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash,
+	   bool __cache_hash_code>
+    struct _Hash_code_base;
 
   // Specialization: ranged hash function, no caching hash codes.  H1
   // and H2 are provided but ignored.  We define a dummy hash code type.
-  template<typename Key, typename Value,
-	   typename ExtractKey, typename Equal,
-	   typename H1, typename H2, typename H>
-    struct hash_code_base<Key, Value, ExtractKey, Equal, H1, H2, H, false>
+  template<typename _Key, typename _Value,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash>
+    struct _Hash_code_base<_Key, _Value, _ExtractKey, _Equal, _H1, _H2,
+			   _Hash, false>
     {
     protected:
-      hash_code_base(const ExtractKey& ex, const Equal& eq,
-		     const H1&, const H2&, const H& h)
-      : m_extract(ex), m_eq(eq), m_ranged_hash(h) { }
+      _Hash_code_base(const _ExtractKey& __ex, const _Equal& __eq,
+		      const _H1&, const _H2&, const _Hash& __h)
+      : _M_extract(__ex), _M_eq(__eq), _M_ranged_hash(__h) { }
 
-      typedef void* hash_code_t;
+      typedef void* _Hash_code_type;
   
-      hash_code_t
-      m_hash_code(const Key& k) const
+      _Hash_code_type
+      _M_hash_code(const _Key& __key) const
       { return 0; }
   
       std::size_t
-      bucket_index(const Key& k, hash_code_t, std::size_t N) const
-      { return m_ranged_hash(k, N); }
+      _M_bucket_index(const _Key& __k, _Hash_code_type,
+		      std::size_t __n) const
+      { return _M_ranged_hash(__k, __n); }
 
       std::size_t
-      bucket_index(const hash_node<Value, false>* p, std::size_t N) const
-      { return m_ranged_hash(m_extract(p->m_v), N); }
+      _M_bucket_index(const _Hash_node<_Value, false>* __p,
+		      std::size_t __n) const
+      { return _M_ranged_hash(_M_extract(__p->_M_v), __n); }
   
       bool
-      compare(const Key& k, hash_code_t, hash_node<Value, false>* n) const
-      { return m_eq(k, m_extract(n->m_v)); }
+      _M_compare(const _Key& __k, _Hash_code_type,
+		 _Hash_node<_Value, false>* __n) const
+      { return _M_eq(__k, _M_extract(__n->_M_v)); }
 
       void
-      store_code(hash_node<Value, false>*, hash_code_t) const
+      _M_store_code(_Hash_node<_Value, false>*, _Hash_code_type) const
       { }
 
       void
-      copy_code(hash_node<Value, false>*, const hash_node<Value, false>*) const
+      _M_copy_code(_Hash_node<_Value, false>*,
+		   const _Hash_node<_Value, false>*) const
       { }
       
       void
-      m_swap(hash_code_base& x)
+      _M_swap(_Hash_code_base& __x)
       {
-	std::swap(m_extract, x.m_extract);
-	std::swap(m_eq, x.m_eq);
-	std::swap(m_ranged_hash, x.m_ranged_hash);
+	std::swap(_M_extract, __x._M_extract);
+	std::swap(_M_eq, __x._M_eq);
+	std::swap(_M_ranged_hash, __x._M_ranged_hash);
       }
 
     protected:
-      ExtractKey m_extract;
-      Equal      m_eq;
-      H          m_ranged_hash;
+      _ExtractKey  _M_extract;
+      _Equal       _M_eq;
+      _Hash        _M_ranged_hash;
     };
 
 
@@ -728,137 +759,146 @@ namespace
   // Specialization: ranged hash function, cache hash codes.  This
   // combination is meaningless, so we provide only a declaration
   // and no definition.  
-  template<typename Key, typename Value,
-	    typename ExtractKey, typename Equal,
-	    typename H1, typename H2, typename H>
-    struct hash_code_base<Key, Value, ExtractKey, Equal, H1, H2, H, true>;
-
+  template<typename _Key, typename _Value,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash>
+    struct _Hash_code_base<_Key, _Value, _ExtractKey, _Equal, _H1, _H2,
+			   _Hash, true>;
 
   // Specialization: hash function and range-hashing function, no
   // caching of hash codes.  H is provided but ignored.  Provides
   // typedef and accessor required by TR1.  
-  template<typename Key, typename Value,
-	   typename ExtractKey, typename Equal,
-	   typename H1, typename H2>
-    struct hash_code_base<Key, Value, ExtractKey, Equal, H1, H2,
-			  default_ranged_hash, false>
+  template<typename _Key, typename _Value,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2>
+    struct _Hash_code_base<_Key, _Value, _ExtractKey, _Equal, _H1, _H2,
+			   _Default_ranged_hash, false>
     {
-      typedef H1 hasher;
-      
+      typedef _H1 hasher;
+
       hasher
       hash_function() const
-      { return m_h1; }
+      { return _M_h1; }
 
     protected:
-      hash_code_base(const ExtractKey& ex, const Equal& eq,
-		     const H1& h1, const H2& h2, const default_ranged_hash&)
-      : m_extract(ex), m_eq(eq), m_h1(h1), m_h2(h2) { }
+      _Hash_code_base(const _ExtractKey& __ex, const _Equal& __eq,
+		      const _H1& __h1, const _H2& __h2,
+		      const _Default_ranged_hash&)
+      : _M_extract(__ex), _M_eq(__eq), _M_h1(__h1), _M_h2(__h2) { }
 
-      typedef std::size_t hash_code_t;
-      
-      hash_code_t
-      m_hash_code(const Key& k) const
-      { return m_h1(k); }
+      typedef std::size_t _Hash_code_type;
+
+      _Hash_code_type
+      _M_hash_code(const _Key& __k) const
+      { return _M_h1(__k); }
       
       std::size_t
-      bucket_index(const Key&, hash_code_t c, std::size_t N) const
-      { return m_h2(c, N); }
+      _M_bucket_index(const _Key&, _Hash_code_type __c,
+		      std::size_t __n) const
+      { return _M_h2(__c, __n); }
 
       std::size_t
-      bucket_index(const hash_node<Value, false>* p, std::size_t N) const
-      { return m_h2(m_h1(m_extract(p->m_v)), N); }
+      _M_bucket_index(const _Hash_node<_Value, false>* __p,
+		      std::size_t __n) const
+      { return _M_h2(_M_h1(_M_extract(__p->_M_v)), __n); }
 
       bool
-      compare(const Key& k, hash_code_t, hash_node<Value, false>* n) const
-      { return m_eq(k, m_extract(n->m_v)); }
+      _M_compare(const _Key& __k, _Hash_code_type,
+		 _Hash_node<_Value, false>* __n) const
+      { return _M_eq(__k, _M_extract(__n->_M_v)); }
 
       void
-      store_code(hash_node<Value, false>*, hash_code_t) const
+      _M_store_code(_Hash_node<_Value, false>*, _Hash_code_type) const
       { }
 
       void
-      copy_code(hash_node<Value, false>*, const hash_node<Value, false>*) const
+      _M_copy_code(_Hash_node<_Value, false>*,
+		   const _Hash_node<_Value, false>*) const
       { }
 
       void
-      m_swap(hash_code_base& x)
+      _M_swap(_Hash_code_base& __x)
       {
-	std::swap(m_extract, x.m_extract);
-	std::swap(m_eq, x.m_eq);
-	std::swap(m_h1, x.m_h1);
-	std::swap(m_h2, x.m_h2);
+	std::swap(_M_extract, __x._M_extract);
+	std::swap(_M_eq, __x._M_eq);
+	std::swap(_M_h1, __x._M_h1);
+	std::swap(_M_h2, __x._M_h2);
       }
 
     protected:
-      ExtractKey m_extract;
-      Equal      m_eq;
-      H1         m_h1;
-      H2         m_h2;
+      _ExtractKey  _M_extract;
+      _Equal       _M_eq;
+      _H1          _M_h1;
+      _H2          _M_h2;
     };
 
   // Specialization: hash function and range-hashing function, 
   // caching hash codes.  H is provided but ignored.  Provides
   // typedef and accessor required by TR1.
-  template<typename Key, typename Value,
-	   typename ExtractKey, typename Equal,
-	   typename H1, typename H2>
-    struct hash_code_base<Key, Value, ExtractKey, Equal, H1, H2,
-			  default_ranged_hash, true>
+  template<typename _Key, typename _Value,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2>
+    struct _Hash_code_base<_Key, _Value, _ExtractKey, _Equal, _H1, _H2,
+			   _Default_ranged_hash, true>
     {
-      typedef H1 hasher;
+      typedef _H1 hasher;
       
       hasher
       hash_function() const
-      { return m_h1; }
+      { return _M_h1; }
 
     protected:
-      hash_code_base(const ExtractKey& ex, const Equal& eq,
-		     const H1& h1, const H2& h2, const default_ranged_hash&)
-      : m_extract(ex), m_eq(eq), m_h1(h1), m_h2(h2) { }
+      _Hash_code_base(const _ExtractKey& __ex, const _Equal& __eq,
+		      const _H1& __h1, const _H2& __h2,
+		      const _Default_ranged_hash&)
+      : _M_extract(__ex), _M_eq(__eq), _M_h1(__h1), _M_h2(__h2) { }
 
-      typedef std::size_t hash_code_t;
+      typedef std::size_t _Hash_code_type;
   
-      hash_code_t
-      m_hash_code(const Key& k) const
-      { return m_h1(k); }
+      _Hash_code_type
+      _M_hash_code(const _Key& __k) const
+      { return _M_h1(__k); }
   
       std::size_t
-      bucket_index(const Key&, hash_code_t c, std::size_t N) const
-      { return m_h2(c, N); }
+      _M_bucket_index(const _Key&, _Hash_code_type __c,
+		      std::size_t __n) const
+      { return _M_h2(__c, __n); }
 
       std::size_t
-      bucket_index(const hash_node<Value, true>* p, std::size_t N) const
-      { return m_h2(p->hash_code, N); }
+      _M_bucket_index(const _Hash_node<_Value, true>* __p,
+		      std::size_t __n) const
+      { return _M_h2(__p->_M_hash_code, __n); }
 
       bool
-      compare(const Key& k, hash_code_t c, hash_node<Value, true>* n) const
-      { return c == n->hash_code && m_eq(k, m_extract(n->m_v)); }
+      _M_compare(const _Key& __k, _Hash_code_type __c,
+		 _Hash_node<_Value, true>* __n) const
+      { return __c == __n->_M_hash_code && _M_eq(__k, _M_extract(__n->_M_v)); }
 
       void
-      store_code(hash_node<Value, true>* n, hash_code_t c) const
-      { n->hash_code = c; }
+      _M_store_code(_Hash_node<_Value, true>* __n, _Hash_code_type __c) const
+      { __n->_M_hash_code = __c; }
 
       void
-      copy_code(hash_node<Value, true>* to,
-		const hash_node<Value, true>* from) const
-      { to->hash_code = from->hash_code; }
+      _M_copy_code(_Hash_node<_Value, true>* __to,
+		   const _Hash_node<_Value, true>* __from) const
+      { __to->_M_hash_code = __from->_M_hash_code; }
 
       void
-      m_swap(hash_code_base& x)
+      _M_swap(_Hash_code_base& __x)
       {
-	std::swap(m_extract, x.m_extract);
-	std::swap(m_eq, x.m_eq);
-	std::swap(m_h1, x.m_h1);
-	std::swap(m_h2, x.m_h2);
+	std::swap(_M_extract, __x._M_extract);
+	std::swap(_M_eq, __x._M_eq);
+	std::swap(_M_h1, __x._M_h1);
+	std::swap(_M_h2, __x._M_h2);
       }
       
     protected:
-      ExtractKey m_extract;
-      Equal      m_eq;
-      H1         m_h1;
-      H2         m_h2;
+      _ExtractKey  _M_extract;
+      _Equal       _M_eq;
+      _H1          _M_h1;
+      _H2          _M_h2;
     };
-} // namespace detail
+} // namespace __detail
 _GLIBCXX_END_NAMESPACE
 } // namespace std::tr1
 

@@ -368,21 +368,23 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   using std::atan;
 
   // Workaround for c++/21682.
-  namespace detail
+  namespace __detail
   {
     template<typename _Tp, typename _Up>
-      inline typename __gnu_cxx::__enable_if<std::__is_floating<_Tp>::__value
-    	                                   || std::__is_floating<_Up>::__value,
-      typename std::tr1::__promote_2<_Tp, _Up>::__type>::__type
-    atan2(_Tp __y, _Up __x)
-    {
-      typedef typename std::tr1::__promote_2<_Tp, _Up>::__type __type;
-      return std::atan2(__type(__y), __type(__x));
-    }
-  } // namespace detail
+      inline typename
+      __gnu_cxx::__enable_if<std::__is_floating<_Tp>::__value
+                             || std::__is_floating<_Up>::__value,
+			     typename
+			     std::tr1::__promote_2<_Tp, _Up>::__type>::__type
+      atan2(_Tp __y, _Up __x)
+      {
+	typedef typename std::tr1::__promote_2<_Tp, _Up>::__type __type;
+	return std::atan2(__type(__y), __type(__x));
+      }
+  } // namespace __detail
 
   using std::atan2;
-  using detail::atan2;
+  using __detail::atan2;
  
   inline float
   atanh(float __x)
