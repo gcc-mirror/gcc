@@ -1310,6 +1310,7 @@ static tree
 gfc_trans_character_select (gfc_code *code)
 {
   tree init, node, end_label, tmp, type, args, *labels;
+  tree case_label;
   stmtblock_t block, body;
   gfc_case *cp, *d;
   gfc_code *c;
@@ -1466,10 +1467,15 @@ gfc_trans_character_select (gfc_code *code)
 
   gfc_add_block_to_block (&block, &se.pre);
 
-  tmp = gfc_build_function_call (gfor_fndecl_select_string, args);
-  tmp = build1 (GOTO_EXPR, void_type_node, tmp);
-  gfc_add_expr_to_block (&block, tmp);
+  tmp = build_function_call_expr (gfor_fndecl_select_string, args);
+  case_label = gfc_create_var (TREE_TYPE (tmp), "case_label");
+  gfc_add_modify_expr (&block, case_label, tmp);
 
+  gfc_add_block_to_block (&block, &se.post);
+
+  tmp = build1 (GOTO_EXPR, void_type_node, case_label);
+  gfc_add_expr_to_block (&block, tmp);
+  
   tmp = gfc_finish_block (&body);
   gfc_add_expr_to_block (&block, tmp);
   tmp = build1_v (LABEL_EXPR, end_label);
