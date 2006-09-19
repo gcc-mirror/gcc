@@ -14,12 +14,12 @@
 
 2006-09-17  Ira Rosen  <irar@il.ibm.com>
 
-        PR tree-opt/21591
+	PR tree-opt/21591
 	* tree-data-ref.c (ptr_decl_may_alias_p): Look for the name memory
-        tag first.
-        (ptr_ptr_may_alias_p): Likewise.
-        (record_record_differ_p): New function.
-        (base_object_differ_p): Call record_record_differ_p.
+	tag first.
+	(ptr_ptr_may_alias_p): Likewise.
+	(record_record_differ_p): New function.
+	(base_object_differ_p): Call record_record_differ_p.
 
 2006-09-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -125,8 +125,8 @@
 
 2006-09-13  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/tree-ssa.texi (Jumps): RESULT_DECL can also be an operand
-        of a RETURN_EXPR
+	* doc/tree-ssa.texi (Jumps): RESULT_DECL can also be an operand
+	of a RETURN_EXPR
 
 2006-09-13  Andrew Pinski  <pinskia@physics.uc.edu>
 

@@ -36,8 +36,8 @@
 
 2006-09-17  Ira Rosen  <irar@il.ibm.com>
 
-        PR tree-opt/21591
-        * gcc.dg/vect/pr21591.c: New test.
+	PR tree-opt/21591
+	* gcc.dg/vect/pr21591.c: New test.
 
 2006-09-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
