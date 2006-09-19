@@ -82,7 +82,7 @@ subscript_imp(pb_ds::detail::false_type)
         m_native_c[test_traits::native_value(v).first] =
 	  test_traits::native_value(v).second;
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
       }
@@ -114,7 +114,7 @@ subscript_imp(pb_ds::detail::true_type)
 
         m_native_c.insert(test_traits::native_value(v));
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
       }

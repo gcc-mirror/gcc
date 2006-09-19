@@ -68,14 +68,11 @@ namespace pb_ds
     get_unsigned_long(unsigned long min, unsigned long max)
     {
       _GLIBCXX_DEBUG_ASSERT(max >= min);
-
       const double prob = get_prob();
-
       const unsigned long rand_word = 
 	(unsigned long)((max - min + 1) * prob) + min;
 
       _GLIBCXX_DEBUG_ASSERT(rand_word <= max);
-
       return rand_word;
     }
 
@@ -91,9 +88,7 @@ namespace pb_ds
 	static_cast<const double>(m_base_generator() - eng_min);
 
       const double ret = eng_res / eng_range;
-
-      _GLIBCXX_DEBUG_ASSERT(ret >=0 && ret <= 1);
-
+      _GLIBCXX_DEBUG_ASSERT(ret >= 0 && ret <= 1);
       return ret;
     }
   } // namespace test

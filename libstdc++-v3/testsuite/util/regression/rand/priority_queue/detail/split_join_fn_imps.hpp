@@ -105,7 +105,7 @@ split_join()
 			      m_p_c,
 			      & m_native_c);
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
 

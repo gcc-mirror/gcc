@@ -89,7 +89,7 @@ erase()
 			    m_p_c,
 			    & m_native_c);
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
 
@@ -141,7 +141,7 @@ erase_if()
 			      m_p_c,
 			      & m_native_c);
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
 
@@ -229,7 +229,7 @@ erase_it_imp(pb_ds::detail::true_type)
         if (range_guarantee)
 	  PB_DS_THROW_IF_FAILED(                next_ers_it == next_it,  "",  m_p_c, & m_native_c);
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
 
@@ -303,7 +303,7 @@ erase_rev_it_imp(pb_ds::detail::true_type)
         if (native_it != m_native_c.end())
 	  m_native_c.erase(native_it);
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
 

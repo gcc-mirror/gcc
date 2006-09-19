@@ -48,14 +48,15 @@
 #define PB_DS_BASIC_TYPE_HPP
 
 #include <string>
-#include <regression/res_mng/dbg_ex_allocator.hpp>
+#include <ext/throw_allocator.h>
 
 namespace pb_ds
 {
 namespace test
 {
 #define PB_DS_BASE_C_DEC \
-  std::basic_string<char, std::char_traits<char>, dbg_ex_allocator<char> >
+  std::basic_string<char, std::char_traits<char>, \
+		    __gnu_cxx::throw_allocator<char> >
 
   struct basic_type : public PB_DS_BASE_C_DEC
   {
