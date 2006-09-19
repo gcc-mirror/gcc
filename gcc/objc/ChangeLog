@@ -1,3 +1,9 @@
+2006-09-19  Eric Christopher  <echristo@apple.com>
+
+	* objc-act.c (JBLEN): Rename to OBJC_JBLEN,
+	default to something innocuous.
+	(build_next_objc_exception_stuff): Rename JBLEN.
+
 2006-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* Make-lang.in: Use $(HEADER_H) instead of header.h in dependencies.

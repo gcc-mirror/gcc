@@ -4198,7 +4198,7 @@ the caller.
 If @var{incoming} is nonzero and the address is to be found on the
 stack, return a @code{mem} which refers to the frame pointer. If
 @var{incoming} is @code{2}, the result is being used to fetch the
-structure value address at the beginning of a function.  If you need 
+structure value address at the beginning of a function.  If you need
 to emit adjusting code, you should do it at this point.
 @end deftypefn
 
@@ -6038,12 +6038,12 @@ per instruction data structures.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx @var{insn}, int @var{request}, rtx *@var{new_pat})
-This hook is called by the insn scheduler when @var{insn} has only 
-speculative dependencies and therefore can be scheduled speculatively.  
-The hook is used to check if the pattern of @var{insn} has a speculative 
-version and, in case of successful check, to generate that speculative 
-pattern.  The hook should return 1, if the instruction has a speculative form, 
-or -1, if it doesn't.  @var{request} describes the type of requested 
+This hook is called by the insn scheduler when @var{insn} has only
+speculative dependencies and therefore can be scheduled speculatively.
+The hook is used to check if the pattern of @var{insn} has a speculative
+version and, in case of successful check, to generate that speculative
+pattern.  The hook should return 1, if the instruction has a speculative form,
+or -1, if it doesn't.  @var{request} describes the type of requested
 speculation.  If the return value equals 1 then @var{new_pat} is assigned
 the generated speculative pattern.
 @end deftypefn
@@ -6056,12 +6056,12 @@ instruction should branch to recovery code, or zero otherwise.
 
 @deftypefn {Target Hook} rtx TARGET_SCHED_GEN_CHECK (rtx @var{insn}, rtx @var{label}, int @var{mutate_p})
 This hook is called by the insn scheduler to generate a pattern for recovery
-check instruction.  If @var{mutate_p} is zero, then @var{insn} is a 
-speculative instruction for which the check should be generated.  
-@var{label} is either a label of a basic block, where recovery code should 
-be emitted, or a null pointer, when requested check doesn't branch to 
-recovery code (a simple check).  If @var{mutate_p} is nonzero, then 
-a pattern for a branchy check corresponding to a simple check denoted by 
+check instruction.  If @var{mutate_p} is zero, then @var{insn} is a
+speculative instruction for which the check should be generated.
+@var{label} is either a label of a basic block, where recovery code should
+be emitted, or a null pointer, when requested check doesn't branch to
+recovery code (a simple check).  If @var{mutate_p} is nonzero, then
+a pattern for a branchy check corresponding to a simple check denoted by
 @var{insn} should be generated.  In this case @var{label} can't be null.
 @end deftypefn
 
@@ -6070,20 +6070,20 @@ This hook is used as a workaround for
 @samp{TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD} not being
 called on the first instruction of the ready list.  The hook is used to
 discard speculative instruction that stand first in the ready list from
-being scheduled on the current cycle.  For non-speculative instructions, 
+being scheduled on the current cycle.  For non-speculative instructions,
 the hook should always return nonzero.  For example, in the ia64 backend
 the hook is used to cancel data speculative insns when the ALAT table
 is nearly full.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SCHED_SET_SCHED_FLAGS (unsigned int *@var{flags}, spec_info_t @var{spec_info})
-This hook is used by the insn scheduler to find out what features should be 
+This hook is used by the insn scheduler to find out what features should be
 enabled/used.  @var{flags} initially may have either the SCHED_RGN or SCHED_EBB
-bit set.  This denotes the scheduler pass for which the data should be 
+bit set.  This denotes the scheduler pass for which the data should be
 provided.  The target backend should modify @var{flags} by modifying
 the bits corresponding to the following features: USE_DEPS_LIST, USE_GLAT,
-DETACH_LIFE_INFO, and DO_SPECULATION.  For the DO_SPECULATION feature 
-an additional structure @var{spec_info} should be filled by the target.  
+DETACH_LIFE_INFO, and DO_SPECULATION.  For the DO_SPECULATION feature
+an additional structure @var{spec_info} should be filled by the target.
 The structure describes speculation types that can be used in the scheduler.
 @end deftypefn
 
@@ -9914,4 +9914,9 @@ the front end.
 This macro determines whether to use the JCR section to register Java
 classes. By default, TARGET_USE_JCR_SECTION is defined to 1 if both
 SUPPORTS_WEAK and TARGET_HAVE_NAMED_SECTIONS are true, else 0.
+@end defmac
+
+@defmac OBJC_JBLEN
+This macro determines the size of the objective C jump buffer for the
+NeXT runtime. By default, OBJC_JBLEN is defined to an innocuous value.
 @end defmac
