@@ -1,3 +1,10 @@
+2006-09-19  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.c-torture/execute/pr28289.c (one): New variable.
+	(main): Use it instead of argc.
+	* gcc.c-torture/execute/20060102-1.c (one): New variable.
+	(main): Use it instead of argc.
+
 2006-09-19  Paul Brook  <paul@codesourcery.com>
 
 	PR target/28516
