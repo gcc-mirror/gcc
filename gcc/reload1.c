@@ -1167,6 +1167,20 @@ reload (rtx first, int global)
       {
 	rtx *pnote;
 
+	/* Clean up invalid ASMs so that they don't confuse later passes.
+	   See PR 21299.  */
+	if (asm_noperands (PATTERN (insn)) >= 0)
+	  {
+	    extract_insn (insn);
+	    if (!constrain_operands (1))
+	      {
+		error_for_asm (insn,
+			       "%<asm%> operand has impossible constraints");
+		delete_insn (insn);
+		continue;
+	      }
+	  }
+
 	if (CALL_P (insn))
 	  replace_pseudos_in (& CALL_INSN_FUNCTION_USAGE (insn),
 			      VOIDmode, CALL_INSN_FUNCTION_USAGE (insn));
