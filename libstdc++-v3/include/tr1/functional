@@ -1,6 +1,6 @@
 // TR1 functional header -*- C++ -*-
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -106,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   */
   template<typename _Functor>
     struct _Weak_result_type_impl
-      : _Maybe_get_result_type<_Has_result_type<_Functor>::value, _Functor>
+    : _Maybe_get_result_type<_Has_result_type<_Functor>::value, _Functor>
     {
     };
 
@@ -214,33 +214,33 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   // Not a unary_function or binary_function, so try a weak result type
   template<typename _Tp>
     struct _Reference_wrapper_base_impl<false, false, _Tp>
-      : _Weak_result_type<_Tp>
+    : _Weak_result_type<_Tp>
     { };
 
   // unary_function but not binary_function
   template<typename _Tp>
     struct _Reference_wrapper_base_impl<true, false, _Tp>
-      : unary_function<typename _Tp::argument_type,
-                       typename _Tp::result_type>
+    : unary_function<typename _Tp::argument_type,
+		     typename _Tp::result_type>
     { };
 
   // binary_function but not unary_function
   template<typename _Tp>
     struct _Reference_wrapper_base_impl<false, true, _Tp>
-      : binary_function<typename _Tp::first_argument_type,
-                        typename _Tp::second_argument_type,
-                        typename _Tp::result_type>
+    : binary_function<typename _Tp::first_argument_type,
+		      typename _Tp::second_argument_type,
+		      typename _Tp::result_type>
     { };
 
   // both unary_function and binary_function. import result_type to
   // avoid conflicts.
    template<typename _Tp>
     struct _Reference_wrapper_base_impl<true, true, _Tp>
-      : unary_function<typename _Tp::argument_type,
-                       typename _Tp::result_type>,
-        binary_function<typename _Tp::first_argument_type,
-                        typename _Tp::second_argument_type,
-                        typename _Tp::result_type>
+    : unary_function<typename _Tp::argument_type,
+		     typename _Tp::result_type>,
+      binary_function<typename _Tp::first_argument_type,
+		      typename _Tp::second_argument_type,
+		      typename _Tp::result_type>
     {
       typedef typename _Tp::result_type result_type;
     };
@@ -255,82 +255,82 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   */
   template<typename _Tp>
     struct _Reference_wrapper_base
-      : _Reference_wrapper_base_impl<
-          _Derives_from_unary_function<_Tp>::value,
-          _Derives_from_binary_function<_Tp>::value,
-          _Tp>
+    : _Reference_wrapper_base_impl<
+      _Derives_from_unary_function<_Tp>::value,
+      _Derives_from_binary_function<_Tp>::value,
+      _Tp>
     { };
 
   // - a function type (unary)
   template<typename _Res, typename _T1>
     struct _Reference_wrapper_base<_Res(_T1)>
-      : unary_function<_T1, _Res>
+    : unary_function<_T1, _Res>
     { };
 
   // - a function type (binary)
   template<typename _Res, typename _T1, typename _T2>
     struct _Reference_wrapper_base<_Res(_T1, _T2)>
-      : binary_function<_T1, _T2, _Res>
+    : binary_function<_T1, _T2, _Res>
     { };
 
   // - a function pointer type (unary)
   template<typename _Res, typename _T1>
     struct _Reference_wrapper_base<_Res(*)(_T1)>
-      : unary_function<_T1, _Res>
+    : unary_function<_T1, _Res>
     { };
 
   // - a function pointer type (binary)
   template<typename _Res, typename _T1, typename _T2>
     struct _Reference_wrapper_base<_Res(*)(_T1, _T2)>
-      : binary_function<_T1, _T2, _Res>
+    : binary_function<_T1, _T2, _Res>
     { };
 
   // - a pointer to member function type (unary, no qualifiers)
   template<typename _Res, typename _T1>
     struct _Reference_wrapper_base<_Res (_T1::*)()>
-      : unary_function<_T1*, _Res>
+    : unary_function<_T1*, _Res>
     { };
 
   // - a pointer to member function type (binary, no qualifiers)
   template<typename _Res, typename _T1, typename _T2>
     struct _Reference_wrapper_base<_Res (_T1::*)(_T2)>
-      : binary_function<_T1*, _T2, _Res>
+    : binary_function<_T1*, _T2, _Res>
     { };
 
   // - a pointer to member function type (unary, const)
   template<typename _Res, typename _T1>
     struct _Reference_wrapper_base<_Res (_T1::*)() const>
-      : unary_function<const _T1*, _Res>
+    : unary_function<const _T1*, _Res>
     { };
 
   // - a pointer to member function type (binary, const)
   template<typename _Res, typename _T1, typename _T2>
     struct _Reference_wrapper_base<_Res (_T1::*)(_T2) const>
-      : binary_function<const _T1*, _T2, _Res>
+    : binary_function<const _T1*, _T2, _Res>
     { };
 
   // - a pointer to member function type (unary, volatile)
   template<typename _Res, typename _T1>
     struct _Reference_wrapper_base<_Res (_T1::*)() volatile>
-      : unary_function<volatile _T1*, _Res>
+    : unary_function<volatile _T1*, _Res>
     { };
 
   // - a pointer to member function type (binary, volatile)
   template<typename _Res, typename _T1, typename _T2>
     struct _Reference_wrapper_base<_Res (_T1::*)(_T2) volatile>
-      : binary_function<volatile _T1*, _T2, _Res>
+    : binary_function<volatile _T1*, _T2, _Res>
     { };
 
   // - a pointer to member function type (unary, const volatile)
   template<typename _Res, typename _T1>
     struct _Reference_wrapper_base<_Res (_T1::*)() const volatile>
-      : unary_function<const volatile _T1*, _Res>
+    : unary_function<const volatile _T1*, _Res>
     { };
 
   // - a pointer to member function type (binary, const volatile)
   template<typename _Res, typename _T1, typename _T2>
     struct _Reference_wrapper_base<_Res (_T1::*)(_T2) const volatile>
-      : binary_function<const volatile _T1*, _T2, _Res>
+    : binary_function<const volatile _T1*, _T2, _Res>
     { };
 
   template<typename _Tp>
@@ -452,10 +452,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   public:
     template<typename _Tp>
       struct _Result_type
-        : _Mem_fn_const_or_non<
-            _Res,
-            (sizeof(__sfinae_types::__two)
-             == sizeof(__check_const<_Tp>(__get_ref<_Tp>(), (_Tp*)0)))>
+      : _Mem_fn_const_or_non<
+        _Res,
+        (sizeof(__sfinae_types::__two)
+	 == sizeof(__check_const<_Tp>(__get_ref<_Tp>(), (_Tp*)0)))>
       { };
 
     template<typename _Signature>
@@ -463,11 +463,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     template<typename _CVMem, typename _Tp>
       struct result<_CVMem(_Tp)>
-        : public _Result_type<_Tp> { };
+      : public _Result_type<_Tp> { };
 
     template<typename _CVMem, typename _Tp>
       struct result<_CVMem(_Tp&)>
-        : public _Result_type<_Tp> { };
+      : public _Result_type<_Tp> { };
 
     explicit _Mem_fn(_Res _Class::*__pm) : __pm(__pm) { }
 
@@ -1100,37 +1100,37 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   template<typename T>
     struct hash;
 
-#define tr1_hashtable_define_trivial_hash(T)            \
+#define _TR1_hashtable_define_trivial_hash(_Tp)         \
   template<>                                            \
-    struct hash<T>                                      \
-    : public std::unary_function<T, std::size_t>        \
+    struct hash<_Tp>                                    \
+    : public std::unary_function<_Tp, std::size_t>      \
     {                                                   \
       std::size_t                                       \
-      operator()(T val) const                           \
-      { return static_cast<std::size_t>(val); }         \
+      operator()(_Tp __val) const                       \
+      { return static_cast<std::size_t>(__val); }       \
     }                                                     
 
-  tr1_hashtable_define_trivial_hash(bool);
-  tr1_hashtable_define_trivial_hash(char);
-  tr1_hashtable_define_trivial_hash(signed char);
-  tr1_hashtable_define_trivial_hash(unsigned char);
-  tr1_hashtable_define_trivial_hash(wchar_t);
-  tr1_hashtable_define_trivial_hash(short);
-  tr1_hashtable_define_trivial_hash(int);
-  tr1_hashtable_define_trivial_hash(long);
-  tr1_hashtable_define_trivial_hash(unsigned short);
-  tr1_hashtable_define_trivial_hash(unsigned int);
-  tr1_hashtable_define_trivial_hash(unsigned long);
+  _TR1_hashtable_define_trivial_hash(bool);
+  _TR1_hashtable_define_trivial_hash(char);
+  _TR1_hashtable_define_trivial_hash(signed char);
+  _TR1_hashtable_define_trivial_hash(unsigned char);
+  _TR1_hashtable_define_trivial_hash(wchar_t);
+  _TR1_hashtable_define_trivial_hash(short);
+  _TR1_hashtable_define_trivial_hash(int);
+  _TR1_hashtable_define_trivial_hash(long);
+  _TR1_hashtable_define_trivial_hash(unsigned short);
+  _TR1_hashtable_define_trivial_hash(unsigned int);
+  _TR1_hashtable_define_trivial_hash(unsigned long);
 
-#undef tr1_hashtable_define_trivial_hash
+#undef _TR1_hashtable_define_trivial_hash
 
-  template<typename T>
-    struct hash<T*>
-    : public std::unary_function<T*, std::size_t>
+  template<typename _Tp>
+    struct hash<_Tp*>
+    : public std::unary_function<_Tp*, std::size_t>
     {
       std::size_t
-      operator()(T* p) const
-      { return reinterpret_cast<std::size_t>(p); }
+      operator()(_Tp* __p) const
+      { return reinterpret_cast<std::size_t>(__p); }
     };
 
   // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
@@ -1138,47 +1138,48 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
   // Dummy generic implementation (for sizeof(size_t) != 4, 8).
   template<std::size_t = sizeof(std::size_t)>
-    struct Fnv_hash
+    struct _Fnv_hash
     {
       static std::size_t
-      hash(const char* first, std::size_t length)
+      hash(const char* __first, std::size_t __length)
       {
-	std::size_t result = 0;
-	for (; length > 0; --length)
-	  result = (result * 131) + *first++;
-	return result;
+	std::size_t __result = 0;
+	for (; __length > 0; --__length)
+	  __result = (__result * 131) + *__first++;
+	return __result;
       }
     };
 
   template<>
-    struct Fnv_hash<4>
+    struct _Fnv_hash<4>
     {
       static std::size_t
-      hash(const char* first, std::size_t length)
+      hash(const char* __first, std::size_t __length)
       {
-	std::size_t result = static_cast<std::size_t>(2166136261UL);
-	for (; length > 0; --length)
+	std::size_t __result = static_cast<std::size_t>(2166136261UL);
+	for (; __length > 0; --__length)
 	  {
-	    result ^= (std::size_t)*first++;
-	    result *= 16777619UL;
+	    __result ^= (std::size_t)*__first++;
+	    __result *= 16777619UL;
 	  }
-	return result;
+	return __result;
       }
     };
   
   template<>
-    struct Fnv_hash<8>
+    struct _Fnv_hash<8>
     {
       static std::size_t
-      hash(const char* first, std::size_t length)
+      hash(const char* __first, std::size_t __length)
       {
-	std::size_t result = static_cast<std::size_t>(14695981039346656037ULL);
-	for (; length > 0; --length)
+	std::size_t __result =
+	  static_cast<std::size_t>(14695981039346656037ULL);
+	for (; __length > 0; --__length)
 	  {
-	    result ^= (std::size_t)*first++;
-	    result *= 1099511628211ULL;
+	    __result ^= (std::size_t)*__first++;
+	    __result *= 1099511628211ULL;
 	  }
-	return result;
+	return __result;
       }
     };
 
@@ -1190,8 +1191,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     : public std::unary_function<std::string, std::size_t>
     {      
       std::size_t
-      operator()(const std::string& s) const
-      { return Fnv_hash<>::hash(s.data(), s.length()); }
+      operator()(const std::string& __s) const
+      { return _Fnv_hash<>::hash(__s.data(), __s.length()); }
     };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
@@ -1200,10 +1201,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     : public std::unary_function<std::wstring, std::size_t>
     {
       std::size_t
-      operator()(const std::wstring& s) const
+      operator()(const std::wstring& __s) const
       {
-	return Fnv_hash<>::hash(reinterpret_cast<const char*>(s.data()),
-				s.length() * sizeof(wchar_t));
+	return _Fnv_hash<>::hash(reinterpret_cast<const char*>(__s.data()),
+				 __s.length() * sizeof(wchar_t));
       }
     };
 #endif
@@ -1213,15 +1214,15 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     : public std::unary_function<float, std::size_t>
     {
       std::size_t
-      operator()(float fval) const
+      operator()(float __fval) const
       {
-	std::size_t result = 0;
+	std::size_t __result = 0;
 
 	// 0 and -0 both hash to zero.
-	if (fval != 0.0f)
-	  result = Fnv_hash<>::hash(reinterpret_cast<const char*>(&fval),
-				    sizeof(fval));
-	return result;
+	if (__fval != 0.0f)
+	  __result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__fval),
+				       sizeof(__fval));
+	return __result;
       }
     };
 
@@ -1230,15 +1231,15 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     : public std::unary_function<double, std::size_t>
     {
       std::size_t
-      operator()(double dval) const
+      operator()(double __dval) const
       {
-	std::size_t result = 0;
+	std::size_t __result = 0;
 
 	// 0 and -0 both hash to zero.
-	if (dval != 0.0)
-	  result = Fnv_hash<>::hash(reinterpret_cast<const char*>(&dval),
-				    sizeof(dval));
-	return result;
+	if (__dval != 0.0)
+	  __result = _Fnv_hash<>::hash(reinterpret_cast<const char*>(&__dval),
+				       sizeof(__dval));
+	return __result;
       }
     };
 
@@ -1249,29 +1250,30 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     : public std::unary_function<long double, std::size_t>
     {
       std::size_t
-      operator()(long double ldval) const
+      operator()(long double __ldval) const
       {
-	std::size_t result = 0;
+	std::size_t __result = 0;
 
-	int exponent;
-	ldval = std::frexp(ldval, &exponent);
-	ldval = ldval < 0.0l ? -(ldval + 0.5l) : ldval;
+	int __exponent;
+	__ldval = std::frexp(__ldval, &__exponent);
+	__ldval = __ldval < 0.0l ? -(__ldval + 0.5l) : __ldval;
 
-	const long double mult = std::numeric_limits<std::size_t>::max() + 1.0l;
-	ldval *= mult;
+	const long double __mult =
+	  std::numeric_limits<std::size_t>::max() + 1.0l;
+	__ldval *= __mult;
 
 	// Try to use all the bits of the mantissa (really necessary only
 	// on 32-bit targets, at least for 80-bit floating point formats).
-	const std::size_t hibits = (std::size_t)ldval;
-	ldval = (ldval - (long double)hibits) * mult;
+	const std::size_t __hibits = (std::size_t)__ldval;
+	__ldval = (__ldval - (long double)__hibits) * __mult;
 
-	const std::size_t coeff =
+	const std::size_t __coeff =
 	  (std::numeric_limits<std::size_t>::max()
 	   / std::numeric_limits<long double>::max_exponent);
 
-	result = hibits + (std::size_t)ldval + coeff * exponent;
+	__result = __hibits + (std::size_t)__ldval + __coeff * __exponent;
 
-	return result;
+	return __result;
       }
     };
 
