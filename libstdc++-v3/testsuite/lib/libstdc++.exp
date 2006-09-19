@@ -411,8 +411,7 @@ proc v3-build_support { } {
     set source_files [list testsuite_abi.cc testsuite_allocator.cc \
 			  testsuite_character.cc testsuite_hooks.cc \
 	       	 rng/twister_rand_gen.cc io/verified_cmd_line_input.cc \
-       	 io/prog_bar.cc regression/res_mng/dbg_ex_allocator_base.cc \
-	     performance/time/elapsed_timer.cc ]
+			  io/prog_bar.cc performance/time/elapsed_timer.cc ]
     foreach f $source_files {
 	set obj [file rootname $f].o
 	set object_file [file tail $obj]

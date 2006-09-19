@@ -66,7 +66,7 @@ pop()
 	  m_native_c.pop();
         }
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
 
@@ -123,7 +123,7 @@ erase_if()
 			      m_p_c,
 			      & m_native_c);
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
 
@@ -163,7 +163,7 @@ erase_it()
             m_p_c->erase(it);
 	  }
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
 

@@ -51,7 +51,7 @@
 
 #include <list>
 #include <utility>
-#include <regression/res_mng/dbg_ex_allocator.hpp>
+#include <ext/throw_allocator.h>
 #include <debug/debug.h>
 
 namespace pb_ds
@@ -151,7 +151,7 @@ namespace pb_ds
     insert_new(const_key_reference r_key)
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      pb_ds::test::dbg_ex_allocator<char> alloc;
+      __gnu_cxx::throw_allocator<char> alloc;
       const double orig_throw_prob = alloc.get_throw_prob();
       alloc.set_throw_prob(0);
       if (find(r_key) != m_key_set.end())
@@ -310,7 +310,7 @@ namespace pb_ds
     PB_DS_CLASS_C_DEC::
     split(const_key_reference r_key, Cmp_Fn cmp_fn, PB_DS_CLASS_C_DEC& other)
     {
-      pb_ds::test::dbg_ex_allocator<char> alloc;
+      __gnu_cxx::throw_allocator<char> alloc;
       const double orig_throw_prob = alloc.get_throw_prob();
       alloc.set_throw_prob(0);
       other.clear();
@@ -331,7 +331,7 @@ namespace pb_ds
     PB_DS_CLASS_C_DEC::
     join(PB_DS_CLASS_C_DEC& other)
     {
-      pb_ds::test::dbg_ex_allocator<char> alloc;
+      __gnu_cxx::throw_allocator<char> alloc;
       const double orig_throw_prob = alloc.get_throw_prob();
       alloc.set_throw_prob(0);
       key_set_iterator it = other.m_key_set.begin();

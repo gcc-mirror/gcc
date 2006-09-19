@@ -552,6 +552,7 @@ ext_headers = \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \
+	${ext_srcdir}/throw_allocator.h \
 	${ext_srcdir}/typelist.h \
 	${ext_srcdir}/type_traits.h \
 	${ext_srcdir}/rc_string_base.h \

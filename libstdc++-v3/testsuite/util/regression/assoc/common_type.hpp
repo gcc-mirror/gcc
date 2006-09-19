@@ -54,7 +54,7 @@ namespace pb_ds
 {
 namespace test
 {
-  typedef dbg_ex_allocator<basic_type> alloc_type;
+  typedef __gnu_cxx::throw_allocator<basic_type> alloc_type;
 
   struct hash
   {

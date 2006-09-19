@@ -80,7 +80,7 @@ modify()
             m_native_c.modify(native_v, new_native_v);
 	  }
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
 

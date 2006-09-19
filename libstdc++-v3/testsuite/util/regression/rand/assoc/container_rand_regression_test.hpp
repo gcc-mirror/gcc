@@ -156,7 +156,7 @@ namespace detail
 	other_op
       };
 
-    typedef dbg_ex_allocator<char> alloc_t;
+    typedef __gnu_cxx::throw_allocator<char> alloc_t;
 
   private:
 

@@ -52,15 +52,12 @@ operator()()
   xml_result_set_regression_formatter* p_fmt = NULL;
 
   if (m_disp)
-    p_fmt = new xml_result_set_regression_formatter(
-						    string_form<Cntnr>::name(),
+    p_fmt = new xml_result_set_regression_formatter(string_form<Cntnr>::name(),
 						    string_form<Cntnr>::desc());
 
   m_g.init(m_seed);
   m_alloc.init(m_seed);
-
   prog_bar pb(m_n, std::cout, m_disp);
-
   m_i = 0;
 
   try
@@ -68,9 +65,7 @@ operator()()
       for (m_i = 0; m_i < m_n; ++m_i)
         {
 	  PB_DS_TRACE("Op #" << static_cast<unsigned long>(m_i));
-
 	  allocator::set_label(m_i);
-
 	  switch(m_i)
             {
             case 0:
@@ -110,7 +105,7 @@ operator()()
 		      PB_DS_RUN_MTHD(erase_it)
                         break;
                     default:
-		      PB_DS_THROW_IF_FAILED(                            false,       "",       m_p_c,      & m_native_c);
+		      PB_DS_THROW_IF_FAILED(false, "", m_p_c, &m_native_c);
                     }
 		  break;
                 case clear_op:
@@ -135,42 +130,35 @@ operator()()
 		      PB_DS_RUN_MTHD(split_join)
                         break;
                     default:
-		      PB_DS_THROW_IF_FAILED(                            false,       "",       m_p_c,      & m_native_c);
+		      PB_DS_THROW_IF_FAILED(false, "", m_p_c, &m_native_c);
                     }
 		  break;
                 default:
-		  PB_DS_THROW_IF_FAILED(                        false,   "",   m_p_c,  & m_native_c);
+		  PB_DS_THROW_IF_FAILED(false, "", m_p_c,  &m_native_c);
                 };
             }
-
 	  pb.inc();
         }
     }
   catch(...)
     {
-      std::cerr << "Failed at index " << static_cast<unsigned long>(m_i) <<
-	std::endl;
-
+      std::cerr << "Failed at index " << static_cast<unsigned long>(m_i) 
+		<< std::endl;
       delete m_p_c;
-
       throw;
     }
-
   delete m_p_c;
 
-  if (!m_alloc.dbg_ex_allocator<char>::empty())
+  if (!m_alloc.throw_allocator<char>::empty())
     {
       std::cerr << "detected leaks!" << std::endl;
-
       std::cerr << m_alloc << std::endl;
-
-      PB_DS_THROW_IF_FAILED(            false, "", m_p_c, & m_native_c);
+      PB_DS_THROW_IF_FAILED(false, "", m_p_c, &m_native_c);
     }
 
   if (m_disp)
     {
       std::cout << std::endl;
-
       delete p_fmt;
     }
 }
@@ -194,9 +182,8 @@ get_next_op()
   if (prob < m_ip + m_dp + m_ep + m_cp)
     return (clear_op);
 
-  PB_DS_THROW_IF_FAILED(        prob <= 1, prob, m_p_c,    & m_native_c);
-
-  return (other_op);
+  PB_DS_THROW_IF_FAILED(prob <= 1, prob, m_p_c, &m_native_c);
+  return other_op;
 }
 
 PB_DS_CLASS_T_DEC
@@ -205,22 +192,17 @@ PB_DS_CLASS_C_DEC::
 get_next_sub_op(size_t max)
 {
   const double p = m_g.get_prob();
-
   const double delta = 1 / static_cast<double>(max);
-
   size_t i = 0;
-
   while (true)
     if (p <= (i + 1)*  delta)
       {
-	PB_DS_THROW_IF_FAILED(
-			      i < max,
+	PB_DS_THROW_IF_FAILED(i < max,
 			      static_cast<unsigned long>(i) << " " <<
 			      static_cast<unsigned long>(max),
 			      m_p_c,
 			      & m_native_c);
-
-	return (i);
+	return i;
       }
     else
       ++i;

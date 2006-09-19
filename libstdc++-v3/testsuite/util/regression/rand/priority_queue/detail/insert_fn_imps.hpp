@@ -75,7 +75,7 @@ push()
 
         m_native_c.push(test_traits::native_value(v));
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
       }

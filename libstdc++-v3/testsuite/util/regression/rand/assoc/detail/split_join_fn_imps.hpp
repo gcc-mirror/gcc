@@ -134,7 +134,7 @@ split_join_imp(pb_ds::detail::true_type)
 
         m_p_c->swap(lhs);
       }
-    catch(forced_exception& )
+    catch(__gnu_cxx::forced_exception_error& )
       {
         done = false;
 

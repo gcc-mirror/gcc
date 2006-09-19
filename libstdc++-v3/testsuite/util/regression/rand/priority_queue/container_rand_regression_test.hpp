@@ -149,7 +149,7 @@ namespace pb_ds
 
 	typedef basic_type value_type;
 
-	typedef native_priority_queue< std::string, true> native_type;
+	typedef native_priority_queue<std::string, true> native_type;
 
 	enum op
 	  {
@@ -160,9 +160,9 @@ namespace pb_ds
 	    other_op
 	  };
 
-	typedef dbg_ex_allocator< char> alloc_t;
+	typedef __gnu_cxx::throw_allocator<char> alloc_t;
 
-	typedef regression_test_traits< Cntnr> test_traits;
+	typedef regression_test_traits<Cntnr> test_traits;
 
       private:
 

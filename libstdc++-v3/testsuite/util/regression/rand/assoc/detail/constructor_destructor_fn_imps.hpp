@@ -81,7 +81,7 @@ default_constructor()
     {
       m_p_c = new Cntnr;
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
     }
@@ -136,7 +136,7 @@ copy_constructor()
 
       std::swap(p_c, m_p_c);
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
     }
@@ -172,7 +172,7 @@ assignment_operator()
 
       std::swap(p_c, m_p_c);
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
     }
@@ -270,7 +270,7 @@ it_constructor_imp(pb_ds::cc_hash_tag)
 
       std::swap(p_c, m_p_c);
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
     }
@@ -384,7 +384,7 @@ it_constructor_imp(pb_ds::gp_hash_tag)
 
       std::swap(p_c, m_p_c);
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
     }
@@ -429,7 +429,7 @@ it_constructor_imp(pb_ds::tree_tag)
 
       std::swap(p_c, m_p_c);
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
     }
@@ -462,7 +462,7 @@ it_constructor_imp(pb_ds::list_update_tag)
 
       std::swap(p_c, m_p_c);
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
     }
@@ -507,7 +507,7 @@ it_constructor_imp(pb_ds::pat_trie_tag)
 
       std::swap(p_c, m_p_c);
     }
-  catch(forced_exception& )
+  catch(__gnu_cxx::forced_exception_error& )
     {
       done = false;
     }

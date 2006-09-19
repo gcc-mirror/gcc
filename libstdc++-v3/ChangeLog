@@ -1,3 +1,53 @@
+2006-09-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/regression/res_mng: Remove.
+	* testsuite/util/regression/res_mng/dbg_ex_allocator_base.cc: Merge..
+	* testsuite/util/regression/res_mng/forced_exception.hpp: Merge...
+	* testsuite/util/regression/res_mng/dbg_ex_allocator_base.hpp: Merge..
+	* testsuite/util/regression/res_mng/dbg_ex_allocator.hpp: Merge..
+	* testsuite/util/testsuite_allocator.h (throw_allocator): Merge...
+	* include/ext/throw_allocator.h (throw_allocator): ... into this.
+	* src/throw_allocator.cc: ...and this.
+	* include/Makefile.am (ext_headers): Add.
+	* include/Makefile.in: Regenerate.	
+	* src/Makefile.am (sources): New.
+	* src/Makefile.in: Regenerate.
+	* testsuite/lib/libstdc++.exp: Subtract dbg_ex_allocator_base.cc.
+
+	* include/ext/pb_ds/detail/map_debug_base.hpp: Adjust
+	includes, names, and namespaces.
+	* testsuite/23_containers/list/modifiers/insert/25288.cc: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/
+	erase_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/
+	constructor_destructor_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/
+	insert_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/
+	modify_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/
+	split_join_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/detail/
+	operator_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/
+	container_rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/
+	subscript_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/
+	operator_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/erase_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/
+	constructor_destructor_fn_imps.hpp
+	* testsuite/util/regression/rand/assoc/detail/insert_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/
+	split_join_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.hpp: Same.
+	* testsuite/util/regression/priority_queue/common_type.hpp: Same.
+	* testsuite/util/regression/assoc/common_type.hpp: Same.
+	* testsuite/util/regression/basic_type.hpp: Same.
+	* testsuite/util/rng/twister_rand_gen.cc: Tweak.
+	
 2006-09-18  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
