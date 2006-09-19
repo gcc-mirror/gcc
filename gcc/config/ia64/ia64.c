@@ -831,8 +831,9 @@ ia64_legitimate_constant_p (rtx x)
 	      op = XEXP (XEXP (op, 0), 0);
 	    }
 
-	  if (any_offset_symbol_operand (op, GET_MODE (op)))
-	    return true;
+          if (any_offset_symbol_operand (op, GET_MODE (op))
+              || function_operand (op, GET_MODE (op)))
+            return true;
 	  if (aligned_offset_symbol_operand (op, GET_MODE (op)))
 	    return (addend & 0x3fff) == 0;
 	  return false;
