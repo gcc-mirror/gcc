@@ -1,3 +1,7 @@
+2006-09-18  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+
 2006-09-18  Petr Salinger  <Petr.Salinger@seznam.cz>
 
 	* configure.host: Handle kfreebsd.

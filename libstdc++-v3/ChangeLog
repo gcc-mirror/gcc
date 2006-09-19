@@ -1,3 +1,7 @@
+2006-09-18  Tom Tromey  <tromey@redhat.com>
+
+	* configure: Rebuilt.
+
 2006-09-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (_M_group_int): Remove

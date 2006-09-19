@@ -1,3 +1,8 @@
+2006-09-18  Tom Tromey  <tromey@redhat.com>
+
+	* tls.m4 (GCC_CHECK_TLS): Pass empty argument as "help arg" to
+	GCC_ENABLE.
+
 2006-07-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR build/26188

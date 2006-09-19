@@ -887,8 +887,7 @@ Optional Features:
   --enable-fully-dynamic-string
                           do not put empty strings in per-process static
                           memory [default=no]
-  _g_switchUse thread-local storage
-                          [default=yes]
+  --enable-tls            Use thread-local storage [default=yes]
   --enable-symvers=STYLE  enables symbol versioning of the shared library
                           [default=yes]
   --enable-visibility     enables visibility safe usage [default=yes]
@@ -4733,7 +4732,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4736 "configure"' > conftest.$ac_ext
+  echo '#line 4735 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5353,7 +5352,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 5356 "configure"
+#line 5355 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -8009,7 +8008,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 8012 "configure"
+#line 8011 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.

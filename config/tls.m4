@@ -1,6 +1,6 @@
 dnl Check whether the target supports TLS.
 AC_DEFUN([GCC_CHECK_TLS], [
-  GCC_ENABLE(tls, yes, [Use thread-local storage])
+  GCC_ENABLE(tls, yes, [], [Use thread-local storage])
   AC_CACHE_CHECK([whether the target supports thread-local storage],
 		 have_tls, [
     AC_RUN_IFELSE([__thread int a; int b; int main() { return a = b; }],
