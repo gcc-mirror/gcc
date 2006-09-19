@@ -40,6 +40,9 @@
 
 #define TARGET_OBJECT_FORMAT OBJECT_MACHO
 
+/* Size of the Obj-C jump buffer.  */
+#define OBJC_JBLEN ((TARGET_64BIT) ? (26*2 + 18*2 + 129 + 1) : (26 + 18*2 + 129 + 1))
+
 /* We're not ever going to do TOCs.  */
 
 #define TARGET_TOC 0

@@ -1,3 +1,9 @@
+2006-09-19  Eric Christopher  <echristo@apple.com>
+
+	* doc/tm.texi (OBJC_JBLEN): Describe.
+	* config/i386/darwin.h (OBJC_JBLEN): Define.
+	* config/rs6000/darwin.h: Ditto.
+
 2006-09-19  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/21299
