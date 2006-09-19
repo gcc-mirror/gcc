@@ -1,5 +1,9 @@
 2006-09-19  Keith Seitz  <keiths@redhat.com>
 
+	* testsuite/libjava.jvmti/jvmti.exp: New file.
+
+2006-09-19  Keith Seitz  <keiths@redhat.com>
+
 	* jvmti.cc (THREAD_DEFAULT_TO_CURRENT): Clarify parameter list.
 	(THREAD_CHECK_VALID): Likewise.
 	(THREAD_CHECK_ALIVE): Likewise.
