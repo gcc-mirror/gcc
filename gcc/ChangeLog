@@ -1,3 +1,9 @@
+2006-09-19  Steve Ellcey  <sje@cup.hp.com>
+
+	PR  28490
+	* config/ia64/ia64.c (ia64_legitimate_constant_p): Allow function
+	pointers as legitimate constants.
+
 2006-09-19  Paul Brook  <paul@codesourcery.com>
 
 	PR target/28516
