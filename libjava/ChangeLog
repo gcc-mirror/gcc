@@ -1,3 +1,13 @@
+2006-09-19  Mark Wielaard  <mark@klomp.org>
+
+	Fixes bug #29137
+	* java/util/logging/LogManager.java (addLogger): Always check for
+	existing children of a new Logger.
+
+2006-09-19  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/logging/LogManager.java: Re-merged with Classpath.
+
 2006-09-18  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
