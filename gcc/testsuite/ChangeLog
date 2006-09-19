@@ -1,3 +1,8 @@
+2006-09-19  Paul Brook  <paul@codesourcery.com>
+
+	PR target/28516
+	* gcc.dg/nested-func-5.c: New test.
+
 2006-09-19  Ben Elliston  <bje@au.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_tls): Compile
