@@ -1,3 +1,16 @@
+2006-09-19  Keith Seitz  <keiths@redhat.com>
+
+	* jvmti.cc (THREAD_DEFAULT_TO_CURRENT): Clarify parameter list.
+	(THREAD_CHECK_VALID): Likewise.
+	(THREAD_CHECK_ALIVE): Likewise.
+	(_Jv_JVMTI_SuspendThread): Call THREAD_CHECK_VALID on a Thread not
+	jthread.
+	(_Jv_JVMTI_ResumeThread): Likewise.
+	(_Jv_JVMTI_InterruptThread): Likewise.
+
+	(_Jv_JVMTI_DisposeEnvironment): Probably unwise to dereference an object
+	that was just freed.
+
 2006-09-19  Mark Wielaard  <mark@klomp.org>
 
 	Fixes bug #29137

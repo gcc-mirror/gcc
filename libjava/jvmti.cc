@@ -56,26 +56,26 @@ static java::lang::Object *_envListLock = NULL;
 
 // Some commonly-used checks
 
-#define THREAD_DEFAULT_TO_CURRENT(jthread)		\
+#define THREAD_DEFAULT_TO_CURRENT(Ajthread)		\
   do							\
     {							\
-      if (jthread == NULL)				\
-	jthread = java::lang::Thread::currentThread ();	\
+      if (Ajthread == NULL)				\
+	Ajthread = java::lang::Thread::currentThread ();	\
     }							\
   while (0)
 
-#define THREAD_CHECK_VALID(jthread)					\
+#define THREAD_CHECK_VALID(Athread)					\
   do									\
     {									\
-      if (!java::lang::Thread::class$.isAssignableFrom (&(jthread->class$))) \
+      if (!java::lang::Thread::class$.isAssignableFrom (&(Athread->class$))) \
 	return JVMTI_ERROR_INVALID_THREAD;				\
     }									\
   while (0)
 
-#define THREAD_CHECK_IS_ALIVE(thread)	     \
+#define THREAD_CHECK_IS_ALIVE(Athread)	     \
   do					     \
     {					     \
-      if (!thread->isAlive ())		     \
+      if (!Athread->isAlive ())		     \
 	return JVMTI_ERROR_THREAD_NOT_ALIVE; \
     }					     \
   while (0)
@@ -106,9 +106,9 @@ _Jv_JVMTI_SuspendThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   using namespace java::lang;
 
   THREAD_DEFAULT_TO_CURRENT (thread);
-  THREAD_CHECK_VALID (thread);
-
+ 
   Thread *t = reinterpret_cast<Thread *> (thread);
+  THREAD_CHECK_VALID (t);
   THREAD_CHECK_IS_ALIVE (t);
 
   _Jv_Thread_t *data = _Jv_ThreadGetData (t);
@@ -122,9 +122,9 @@ _Jv_JVMTI_ResumeThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   using namespace java::lang;
 
   THREAD_DEFAULT_TO_CURRENT (thread);
-  THREAD_CHECK_VALID (thread);
 
   Thread *t = reinterpret_cast<Thread *> (thread);
+  THREAD_CHECK_VALID (t);
   THREAD_CHECK_IS_ALIVE (t);
 
   _Jv_Thread_t *data = _Jv_ThreadGetData (t);
@@ -141,8 +141,9 @@ _Jv_JVMTI_InterruptThread (MAYBE_UNUSED jvmtiEnv *env, jthread thread)
   // FIXME: capability handling?  'can_signal_thread'
   if (thread == NULL)
     return JVMTI_ERROR_INVALID_THREAD;
-  THREAD_CHECK_VALID (thread);
+
   Thread *real_thread = reinterpret_cast<Thread *> (thread);
+  THREAD_CHECK_VALID (real_thread);
   THREAD_CHECK_IS_ALIVE (real_thread);
   real_thread->interrupt();
   return JVMTI_ERROR_NONE;
@@ -487,8 +488,9 @@ _Jv_JVMTI_DisposeEnvironment (jvmtiEnv *env)
       JvSynchronize dummy (_envListLock);
       if (_jvmtiEnvironments->env == env)
 	{
+	  struct jvmti_env_list *next = _jvmtiEnvironments->next;
 	  _Jv_Free (_jvmtiEnvironments);
-	  _jvmtiEnvironments = _jvmtiEnvironments->next;
+	  _jvmtiEnvironments = next;
 	}
       else
 	{
