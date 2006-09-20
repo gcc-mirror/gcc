@@ -1,3 +1,9 @@
+2006-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/28046
+	* gcc.dg/gomp/atomic-10.c: New test.
+	* g++.dg/gomp/atomic-10.C: New test.
+
 2006-09-20  Eric Christopher  <echristo@apple.com>
 
 	* gcc.target/i386/sse3-not-fisttp.c: New.

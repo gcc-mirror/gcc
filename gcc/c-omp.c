@@ -116,6 +116,15 @@ c_finish_omp_atomic (enum tree_code code, tree lhs, tree rhs)
   if (addr == error_mark_node)
     return error_mark_node;
   addr = save_expr (addr);
+  if (TREE_CODE (addr) != SAVE_EXPR
+      && (TREE_CODE (addr) != ADDR_EXPR
+	  || TREE_CODE (TREE_OPERAND (addr, 0)) != VAR_DECL))
+    {
+      /* Make sure LHS is simple enough so that goa_lhs_expr_p can recognize
+	 it even after unsharing function body.  */
+      tree var = create_tmp_var_raw (TREE_TYPE (addr), NULL);
+      addr = build4 (TARGET_EXPR, TREE_TYPE (addr), var, addr, NULL, NULL);
+    }
   lhs = build_indirect_ref (addr, NULL);
 
   /* There are lots of warnings, errors, and conversions that need to happen
