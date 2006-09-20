@@ -40,7 +40,7 @@ details.  */
 
 #include <gcj/cni.h>
 #include <jvm.h>
-#include <java/net/Inet4Address.h>
+#include <java/net/InetAddress.h>
 #include <java/net/NetworkInterface.h>
 #include <java/net/SocketException.h>
 #include <java/net/VMNetworkInterface.h>
@@ -148,8 +148,7 @@ java::net::VMNetworkInterface::getInterfaces ()
       jbyteArray baddr = JvNewByteArray (len);
       memcpy (elements (baddr), &(sa.sin_addr), len);
       jstring if_name = JvNewStringLatin1 (if_record->ifr_name);
-      Inet4Address* address =
-        new java::net::Inet4Address (baddr, JvNewStringLatin1 (""));
+      InetAddress* address = java::net::InetAddress::getByAddress (baddr);
       ht->add (new NetworkInterface (if_name, address));
       if_record++;
     }
