@@ -1,5 +1,5 @@
 /* Inet4Address.java --
-   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,11 +57,16 @@ public final class Inet4Address extends InetAddress
   static final long serialVersionUID = 3286316764910316507L;
 
   /**
-   * needed for serialization
+   * The address family of these addresses (used for serialization).
+   */
+  private static final int FAMILY = 2; // AF_INET
+
+  /**
+   * Inet4Address objects are serialized as InetAddress objects.
    */
   private Object writeReplace() throws ObjectStreamException
   {
-    return new InetAddress(addr, hostName);
+    return new InetAddress(addr, hostName, FAMILY);
   }
   
   /**
@@ -74,7 +79,7 @@ public final class Inet4Address extends InetAddress
    */
   Inet4Address(byte[] addr, String host)
   {
-    super(addr, host);
+    super(addr, host, FAMILY);
   }
 
   /**
@@ -84,7 +89,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isMulticastAddress()
   {
-    return super.isMulticastAddress();
+    return (addr[0] & 0xf0) == 0xe0;
   }
 
   /**
@@ -92,7 +97,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isLoopbackAddress()
   {
-    return super.isLoopbackAddress();
+    return (addr[0] & 0xff) == 0x7f;
   }
 
   /**
@@ -102,7 +107,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isAnyLocalAddress()
   {
-    return super.isAnyLocalAddress();
+    return equals(InetAddress.ANY_IF);
   }
 
   /**
@@ -112,7 +117,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isLinkLocalAddress()
   {
-    return super.isLinkLocalAddress();
+    return false;
   }
 
   /**
@@ -122,7 +127,19 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isSiteLocalAddress()
   {
-    return super.isSiteLocalAddress();
+    // 10.0.0.0/8
+    if ((addr[0] & 0xff) == 0x0a)
+      return true;
+
+    // 172.16.0.0/12
+    if ((addr[0] & 0xff) == 0xac && (addr[1] & 0xf0) == 0x10)
+      return true;
+
+    // 192.168.0.0/16
+    if ((addr[0] & 0xff) == 0xc0 && (addr[1] & 0xff) == 0xa8)
+      return true;
+
+    return false;
   }
 
   /**
@@ -132,7 +149,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isMCGlobal()
   {
-    return super.isMCGlobal();
+    return false;
   }
 
   /**
@@ -142,7 +159,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isMCNodeLocal()
   {
-    return super.isMCNodeLocal();
+    return false;
   }
 
   /**
@@ -152,7 +169,12 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isMCLinkLocal()
   {
-    return super.isMCLinkLocal();
+    if (! isMulticastAddress())
+      return false;
+
+    return ((addr[0] & 0xff) == 0xe0
+	    && (addr[1] & 0xff)  == 0x00
+	    && (addr[2] & 0xff)  == 0x00);
   }
 
   /**
@@ -162,7 +184,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isMCSiteLocal()
   {
-    return super.isMCSiteLocal();
+    return false;
   }
 
   /**
@@ -172,7 +194,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isMCOrgLocal()
   {
-    return super.isMCOrgLocal();
+    return false;
   }
 
   /**
@@ -190,7 +212,23 @@ public final class Inet4Address extends InetAddress
    */
   public String getHostAddress()
   {
-    return super.getHostAddress();
+    StringBuffer sb = new StringBuffer(40);
+
+    int len = addr.length;
+    int i = 0;
+    
+    for ( ; ; )
+      {
+        sb.append(addr[i] & 0xff);
+        i++;
+	
+        if (i == len)
+          break;
+	
+        sb.append('.');
+      }
+
+    return sb.toString();
   }
 
   /**
