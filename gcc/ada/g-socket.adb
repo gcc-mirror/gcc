@@ -357,6 +357,7 @@ package body GNAT.Sockets is
 
       Set_Length (Sin'Unchecked_Access, Len);
       Set_Family (Sin'Unchecked_Access, Families (Address.Family));
+      Set_Address (Sin'Unchecked_Access, To_In_Addr (Address.Addr));
       Set_Port
         (Sin'Unchecked_Access,
          Short_To_Network (C.unsigned_short (Address.Port)));
