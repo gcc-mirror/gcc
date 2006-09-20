@@ -1,5 +1,5 @@
 /* Inet6Address.java --
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -93,6 +93,11 @@ public final class Inet6Address extends InetAddress
   private transient NetworkInterface nif; 
 
   /**
+   * The address family of these addresses (used for serialization).
+   */
+  private static final int FAMILY = 10; // AF_INET6
+
+  /**
    * Create an Inet6Address object
    *
    * @param addr The IP address
@@ -100,7 +105,7 @@ public final class Inet6Address extends InetAddress
    */
   Inet6Address(byte[] addr, String host)
   {
-    super(addr, host);
+    super(addr, host, FAMILY);
     // Super constructor clones the addr.  Get a reference to the clone.
     this.ipaddress = this.addr;
     ifname = null;
