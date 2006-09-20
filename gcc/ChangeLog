@@ -1,3 +1,9 @@
+2006-09-20  Paul Brook  <paul@codesourcery.com>
+
+	gcc/
+	* config/arm/unwind-arm.c (selfrel_offset31): Clear top bit for
+	positive offsets.
+
 2006-09-20  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/extend.texi (Decimal Float): Update for latest draft TR,
