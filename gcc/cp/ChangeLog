@@ -1,3 +1,9 @@
+2006-09-20  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/27650
+	* class.c (check_for_override): Remove dllimport from virtual
+	methods.
+
 2006-09-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR c++/29087
