@@ -337,6 +337,8 @@ selfrel_offset31 (const _uw *p)
   /* Sign extend to 32 bits.  */
   if (offset & (1 << 30))
     offset |= 1u << 31;
+  else
+    offset &= ~(1u << 31);
 
   return offset + (_uw) p;
 }
