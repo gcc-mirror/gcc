@@ -49,15 +49,11 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     struct native_tree_tag
     { };
-
   } // namespace test
-
 } // namespace pb_ds
 
 #endif // #ifndef PB_DS_NATIVE_TREE_DS_TAG_HPP

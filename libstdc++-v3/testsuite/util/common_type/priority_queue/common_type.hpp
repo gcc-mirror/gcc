@@ -49,7 +49,7 @@
 
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/priority_queue.hpp>
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 
 namespace pb_ds
 {
@@ -72,7 +72,7 @@ namespace pb_ds
 
       typedef pb_ds::priority_queue<Value_Type, Cmp_Fn, pb_ds::thin_heap_tag, Allocator> thin_heap_t;
 
-      typedef typename pb_ds::detail::typelist5<thin_heap_t, pairing_heap_t, binomial_heap_t, rc_binomial_heap_t, binary_heap_t>::type all_tl;
+      typedef typename __gnu_cxx::typelist::create5<thin_heap_t, pairing_heap_t, binomial_heap_t, rc_binomial_heap_t, binary_heap_t>::type all_tl;
 
     public:
       typedef all_tl performance_tl;

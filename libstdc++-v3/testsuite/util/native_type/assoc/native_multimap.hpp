@@ -48,38 +48,20 @@
 #define PB_DS_NATIVE_MULTIMAP_HPP
 
 #include <map>
-#include <native_type/assoc/native_tree_tag.hpp>
 #include <string>
+#include <ext/pb_ds/detail/type_utils.hpp>
+#include <native_type/assoc/native_tree_tag.hpp>
 
 namespace pb_ds
 {
-
   namespace test
   {
-
-#define PB_DS_CLASS_T_DEC						\
-    template<typename Key, typename Data, class Less_Fn, class Allocator>
-
-#define PB_DS_CLASS_C_DEC					\
-    native_multimap<						\
-						Key,		\
-						Data,		\
-						Less_Fn,	\
-						Allocator>
-
-#define PB_DS_BASE_C_DEC						\
-    std::multimap<							\
-									Key, \
-									Data, \
-									Less_Fn, \
-									typename Allocator::template rebind< \
-																std::pair< \
-																		const Key, \
-																		Data> >::other >
+#define PB_DS_BASE_C_DEC \
+    std::multimap<Key, Data, Less_Fn, \
+      typename Allocator::template rebind<std::pair<const Key, Data> >::other>
 
     template<typename Key, typename Data, class Less_Fn = std::less<Key>,
-	     class Allocator =
-	     std::allocator<char> >
+	     class Allocator = std::allocator<char> >
     class native_multimap : public PB_DS_BASE_C_DEC
     {
     private:
@@ -92,55 +74,41 @@ namespace pb_ds
 
       typedef
       typename Allocator::template rebind<
-	std::pair<
-	Key,
-	Data> >::other::const_reference
+	std::pair<Key, Data> >::other::const_reference
       const_reference;
 
       typedef typename base_type::iterator iterator;
-
       typedef typename base_type::const_iterator const_iterator;
 
-    public:
-      native_multimap();
+      native_multimap()  { }
+
+      template<typename It>
+      native_multimap(It f, It l) : base_type(f, l)
+      { }
 
       inline void
       insert(const_reference r_val)
       {
-        typedef
-	  std::pair<
-	  typename base_type::iterator,
-	  typename base_type::iterator>
-	  eq_range_t;
-
+        typedef std::pair<iterator, iterator> eq_range_t;
         eq_range_t f = base_type::equal_range(r_val.first);
 
-        typename base_type::iterator it = f.first;
-
+        iterator it = f.first;
         while (it != f.second)
 	  {
             if (it->second == r_val.second)
 	      return;
-
             ++it;
 	  }
-
         base_type::insert(r_val);
       }
 
       inline iterator
       find(const_reference r_val)
       {
-        typedef
-	std::pair<
-	typename base_type::iterator,
-	typename base_type::iterator>
-	eq_range_t;
-
+        typedef std::pair<iterator, iterator> eq_range_t;
         eq_range_t f = base_type::equal_range(r_val.first);
 
-        typename base_type::iterator it = f.first;
-
+        iterator it = f.first;
         while (it != f.second)
 	  {
             if (it->second == r_val.second)
@@ -154,55 +122,28 @@ namespace pb_ds
       inline const_iterator
       find(const_reference r_val) const
       {
-        typedef
-	std::pair<
-	typename base_type::const_iterator,
-	typename base_type::const_iterator>
-	eq_range_t;
-
+        typedef std::pair<const_iterator, const_iterator> eq_range_t;
         eq_range_t f = base_type::equal_range(r_val.first);
 
-        typename base_type::const_iterator it = f.first;
-
+        const_iterator it = f.first;
         while (it != f.second)
 	  {
             if (it->second == r_val.second)
 	      return it;
             ++it;
 	  }
-
         return base_type::end();
       }
-
-      template<typename It>
-      native_multimap(It f, It l);
-
+      
       static std::string
       name()
-      {
-        return ("n_mmap");
-      }
+      { return std::string("n_mmap"); }
 
       static std::string
       desc()
-      {
-        return (make_xml_tag("type", "value", "std_multimap"));
-      }
+      { return make_xml_tag("type", "value", "std_multimap"); }
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    native_multimap()
-    { }
-
-    PB_DS_CLASS_T_DEC
-    template<typename It>
-    PB_DS_CLASS_C_DEC::
-    native_multimap(It f, It l) : base_type(f, l)
-    { }
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
 #undef PB_DS_BASE_C_DEC
 } // namespace test
 

@@ -129,8 +129,8 @@ namespace pb_ds
 
       public:
 	typedef
-        typename pb_ds::detail::typelist_flatten<
-	typename pb_ds::detail::typelist_transform<
+        typename __gnu_cxx::typelist::flatten<
+	typename __gnu_cxx::typelist::transform<
 	Sec_Tl,
 	hash_mmap_transform>::type>::type
         type;
@@ -159,8 +159,8 @@ namespace pb_ds
 
       public:
 	typedef
-        typename pb_ds::detail::typelist_flatten<
-	typename pb_ds::detail::typelist_transform<
+        typename __gnu_cxx::typelist::flatten<
+	typename __gnu_cxx::typelist::transform<
 	Sec_Tl,
 	tree_mmap_transform>::type>::type
         type;
@@ -242,11 +242,11 @@ namespace pb_ds
 
     public:
       typedef
-      typename pb_ds::detail::typelist_append<
+      typename __gnu_cxx::typelist::append<
       hl_mmap_tl_t,
-      typename pb_ds::detail::typelist_append<
+      typename __gnu_cxx::typelist::append<
       hh_mmap_tl_t,
-      typename pb_ds::detail::typelist_append<
+      typename __gnu_cxx::typelist::append<
       th_mmap_tl_t,
       tl_mmap_tl_t>::type>::type>::type
       type;

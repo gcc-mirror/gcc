@@ -76,7 +76,7 @@ namespace detail
 
     template<typename Cntnr>
     void
-    operator()(pb_ds::detail::type_to_type<Cntnr>)
+    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
     {
       unsigned long ul = static_cast<unsigned long>(m_sd);
       container_rand_regression_test<Cntnr> t(ul, m_n, m_n, m_tp, m_ip, m_dp, 
@@ -145,7 +145,7 @@ namespace detail
     try
       {
 	detail::rand_reg_test tst(sd, n, m, tp, ip, dp, ep, cp, mp, disp);
-	pb_ds::detail::typelist_apply(tst, tl);
+	__gnu_cxx::typelist::apply(tst, tl);
       }
     catch(...)
       {

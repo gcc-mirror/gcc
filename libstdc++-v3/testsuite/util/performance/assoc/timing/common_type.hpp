@@ -73,8 +73,8 @@ namespace pb_ds
     };
 
     typedef
-    pb_ds::detail::typelist_flatten<
-      pb_ds::detail::typelist_transform<
+    __gnu_cxx::typelist::flatten<
+      __gnu_cxx::typelist::transform<
       hash_set_tl_t,
       hash_mmap_transform>::type>::type
     hash_mmap_tl_t;
@@ -97,8 +97,8 @@ namespace pb_ds
     };
 
     typedef
-    pb_ds::detail::typelist_flatten<
-      pb_ds::detail::typelist_transform<
+    __gnu_cxx::typelist::flatten<
+      __gnu_cxx::typelist::transform<
       tree_set_tl_t,
       tree_mmap_transform>::type>::type
     tree_mmap_tl_t;

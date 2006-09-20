@@ -47,10 +47,11 @@
 #ifndef PB_DS_NATIVE_HASH_SET_HPP
 #define PB_DS_NATIVE_HASH_SET_HPP
 
+#include <string>
+#include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
 #include <native_type/assoc/native_hash_tag.hpp>
 #include <io/xml.hpp>
-#include <string>
 
 // Default to using tr1.
 #define PB_DS_USE_TR1 1
@@ -77,7 +78,7 @@ namespace pb_ds
 
     template<typename Key,
 	     size_t Init_Size = 8,
-	     typename Hash_Fn = typename pb_ds::detail::default_hash_fn<Key>::type,
+         typename Hash_Fn = typename pb_ds::detail::default_hash_fn<Key>::type,
 	     typename Eq_Fn = std::equal_to<Key>,
 	     typename Less_Fn = std::less<Key>,
 	     typename Allocator = std::allocator<char>

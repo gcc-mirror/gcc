@@ -50,13 +50,10 @@
 // A sample resize policy.
 class sample_resize_policy
 {
-
 public:
 
   // Size type.
   typedef size_t size_type;
-
-public:
 
   // Default constructor.
   sample_resize_policy();
@@ -129,7 +126,6 @@ protected:
   // Queries what the new size should be.
   size_type
   get_new_size(size_type size, size_type num_used_e) const;
-
 };
 
-#endif // #ifndef PB_DS_SAMPLE_RESIZE_POLICY_HPP
+#endif 

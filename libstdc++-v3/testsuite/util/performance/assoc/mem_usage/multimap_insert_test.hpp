@@ -75,18 +75,18 @@ namespace pb_ds
 
       template<typename Cntnr>
       void
-      operator()(pb_ds::detail::type_to_type<Cntnr>);
+      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
 
     private:
       multimap_insert_test(const multimap_insert_test& );
 
       template<typename Cntnr>
       size_t
-      insert(pb_ds::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::true_type);
+      insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::true_type);
 
       template<typename Cntnr>
       size_t
-      insert(pb_ds::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::false_type);
+      insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::false_type);
 
     private:
       const It m_ins_b;
@@ -109,7 +109,7 @@ namespace pb_ds
     template<typename Cntnr>
     void
     PB_DS_CLASS_C_DEC::
-    operator()(pb_ds::detail::type_to_type<Cntnr>)
+    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
     {
       xml_result_set_performance_formatter res_set_fmt(
 						       string_form<Cntnr>::name(),
@@ -123,7 +123,7 @@ namespace pb_ds
 	  It ins_it_e = m_ins_b;
 	  std::advance(ins_it_e, ins_size);
 
-	  const size_t delta_mem = insert(pb_ds::detail::type_to_type<Cntnr>(),
+	  const size_t delta_mem = insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>(),
 					  ins_it_b,
 					  ins_it_e,
 					  pb_ds::detail::integral_constant<int,Native>());
@@ -136,7 +136,7 @@ namespace pb_ds
     template<typename Cntnr>
     size_t
     PB_DS_CLASS_C_DEC::
-    insert(pb_ds::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::true_type)
+    insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::true_type)
     {
       mem_track_allocator<char> alloc;
 
@@ -158,7 +158,7 @@ namespace pb_ds
     template<typename Cntnr>
     size_t
     PB_DS_CLASS_C_DEC::
-    insert(pb_ds::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::false_type)
+    insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::false_type)
     {
       mem_track_allocator<char> alloc;
 

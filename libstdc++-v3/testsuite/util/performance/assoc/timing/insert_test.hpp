@@ -104,14 +104,14 @@ namespace pb_ds
 
       template<typename Cntnr>
       void
-      operator()(pb_ds::detail::type_to_type<Cntnr>);
+      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
 
     private:
       insert_test(const insert_test& );
 
       template<typename Cntnr>
       void
-      insert(pb_ds::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e);
+      insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e);
 
     private:
       const It m_ins_b;
@@ -134,7 +134,7 @@ namespace pb_ds
     template<typename Cntnr>
     void
     PB_DS_CLASS_C_DEC::
-    operator()(pb_ds::detail::type_to_type<Cntnr>)
+    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
     {
       xml_result_set_performance_formatter res_set_fmt(
 						       string_form<Cntnr>::name(),
@@ -162,7 +162,7 @@ namespace pb_ds
     template<typename Cntnr>
     void
     PB_DS_CLASS_C_DEC::
-    insert(pb_ds::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e)
+    insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e)
     {
       Cntnr cntnr;
 

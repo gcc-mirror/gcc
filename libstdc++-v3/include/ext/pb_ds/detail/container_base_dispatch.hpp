@@ -47,7 +47,7 @@
 #ifndef PB_DS_ASSOC_CNTNR_BASE_DS_DISPATCHER_HPP
 #define PB_DS_ASSOC_CNTNR_BASE_DS_DISPATCHER_HPP
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 
 #define PB_DS_DATA_TRUE_INDICATOR
 #include <ext/pb_ds/detail/list_update_map_/lu_map_.hpp>
@@ -107,303 +107,232 @@
 
 namespace pb_ds
 {
-  namespace detail
+namespace detail
+{
+  // Primary template.
+  template<typename Key, typename Mapped, typename Data_Structure_Taq,
+	   typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch;
+
+  template<typename Key, typename Mapped, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, Mapped, list_update_tag, 
+				   Policy_Tl, Alloc>
     {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
+      
+    public:
+      typedef lu_map_data_<Key, Mapped, at0t, Alloc, at1t>	type;
+    };
 
-      template<typename Key,
-	       typename Mapped,
-	       class Data_Structure_Taq,
-	       class Policy_Tl,
-	       class Allocator>
-      struct container_base_dispatch;
+  template<typename Key, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, null_mapped_type, list_update_tag,
+				   Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
 
-      template<typename Key,
-	       typename Mapped,
-	       class Policy_Tl,
-	       class Allocator>
-      struct container_base_dispatch<
-	Key,
-	Mapped,
-	list_update_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        lu_map_data_<
-	  Key,
-	  Mapped,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  Allocator,
-	  typename typelist_at_index<Policy_Tl, 1>::type>
-        type;
-      };
+    public:
+      typedef lu_map_no_data_<Key, null_mapped_type, at0t, Alloc, at1t> type;
+    };
 
-      template<typename Key, class Policy_Tl, class Allocator>
-      struct container_base_dispatch<
-	Key,
-	null_mapped_type,
-	list_update_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        lu_map_no_data_<
-	  Key,
-	  null_mapped_type,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  Allocator,
-	  typename typelist_at_index<Policy_Tl, 1>::type>
-        type;
-      };
+  template<typename Key, typename Mapped, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, Mapped, pat_trie_tag, Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
 
-      template<typename Key,
-	       typename Mapped,
-	       class Policy_Tl,
-	       class Allocator>
-      struct container_base_dispatch<
-	Key,
-	Mapped,
-	pat_trie_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        pat_trie_data_<
-	  Key,
-	  Mapped,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator>
-        type;
-      };
+    public:
+      typedef pat_trie_data_<Key, Mapped, at1t, Alloc> 		type;
+    };
 
-      template<typename Key, class Policy_Tl, class Allocator>
-      struct container_base_dispatch<
-	Key,
-	null_mapped_type,
-	pat_trie_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        pat_trie_no_data_<
-	  Key,
-	  null_mapped_type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator>
-        type;
-      };
+  template<typename Key, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, null_mapped_type, pat_trie_tag,
+				   Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
 
-      template<typename Key,
-	       typename Mapped,
-	       class Policy_Tl,
-	       class Allocator>
-      struct container_base_dispatch<
-	Key,
-	Mapped,
-	rb_tree_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        rb_tree_data_<
-	  Key,
-	  Mapped,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator>
-        type;
-      };
+    public:
+      typedef pat_trie_no_data_<Key, null_mapped_type, at1t, Alloc> type;
+    };
 
-      template<typename Key, class Policy_Tl, class Allocator>
-      struct container_base_dispatch<
-	Key,
-	null_mapped_type,
-	rb_tree_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        rb_tree_no_data_<
-	  Key,
-	  null_mapped_type,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator>
-        type;
-      };
+  template<typename Key, typename Mapped, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, Mapped, rb_tree_tag, Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
 
-      template<typename Key,
-	       typename Mapped,
-	       class Policy_Tl,
-	       class Allocator>
-      struct container_base_dispatch<
-	Key,
-	Mapped,
-	splay_tree_tag,
-	Policy_Tl,
-	Allocator>
+    public:
+      typedef rb_tree_data_<Key, Mapped, at0t, at1t, Alloc> 	type;
+    };
 
-      {
-	typedef
-        splay_tree_data_<
-	  Key,
-	  Mapped,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator>
-        type;
-      };
+  template<typename Key, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, null_mapped_type, rb_tree_tag,
+				   Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
 
-      template<typename Key, class Policy_Tl, class Allocator>
-      struct container_base_dispatch<
-	Key,
-	null_mapped_type,
-	splay_tree_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        splay_tree_no_data_<
-	  Key,
-	  null_mapped_type,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator>
-        type;
-      };
+    public:
+      typedef rb_tree_no_data_<Key, null_mapped_type, at0t, at1t, Alloc> type;
+    };
 
-      template<typename Key,
-	       typename Mapped,
-	       class Policy_Tl,
-	       class Allocator>
-      struct container_base_dispatch<
-	Key,
-	Mapped,
-	ov_tree_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        ov_tree_data_<
-	  Key,
-	  Mapped,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator>
-        type;
-      };
+  template<typename Key, typename Mapped, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, Mapped, splay_tree_tag, 
+				   Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
 
-      template<typename Key, class Policy_Tl, class Allocator>
-      struct container_base_dispatch<
-	Key,
-	null_mapped_type,
-	ov_tree_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        ov_tree_no_data_<
-	  Key,
-	  null_mapped_type,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator>
-        type;
-      };
+    public:
+      typedef splay_tree_data_<Key, Mapped, at0t, at1t, Alloc> 	type;
+    };
 
-      template<typename Key,
-	       typename Mapped,
-	       class Policy_Tl,
-	       class Allocator>
-      struct container_base_dispatch<
-	Key,
-	Mapped,
-	cc_hash_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        cc_ht_map_data_<
-	  Key,
-	  Mapped,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator,
-	  typelist_at_index<Policy_Tl, 3>::type::value,
-	  typename typelist_at_index<Policy_Tl, 4>::type,
-	  typename typelist_at_index<Policy_Tl, 2>::type>
-        type;
-      };
+  template<typename Key, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, null_mapped_type, splay_tree_tag,
+				   Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
 
-      template<typename Key, class Policy_Tl, class Allocator>
-      struct container_base_dispatch<
-	Key,
-	null_mapped_type,
-	cc_hash_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        cc_ht_map_no_data_<
-	  Key,
-	  null_mapped_type,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator,
-	  typelist_at_index<Policy_Tl, 3>::type::value,
-	  typename typelist_at_index<Policy_Tl, 4>::type,
-	  typename typelist_at_index<Policy_Tl, 2>::type>
-        type;
-      };
+    public:
+      typedef splay_tree_no_data_<Key, null_mapped_type, at0t, at1t, Alloc> type;
+  };
 
-      template<typename Key,
-	       typename Mapped,
-	       class Policy_Tl,
-	       class Allocator>
-      struct container_base_dispatch<
-	Key,
-	Mapped,
-	gp_hash_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        gp_ht_map_data_<
-	  Key,
-	  Mapped,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator,
-	  typelist_at_index<Policy_Tl, 3>::type::value,
-	  typename typelist_at_index<Policy_Tl, 4>::type,
-	  typename typelist_at_index<Policy_Tl, 5>::type,
-	  typename typelist_at_index<Policy_Tl, 2>::type>
-        type;
-      };
+  template<typename Key, typename Mapped, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, Mapped, ov_tree_tag, Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
 
-      template<typename Key, class Policy_Tl, class Allocator>
-      struct container_base_dispatch<
-	Key,
-	null_mapped_type,
-	gp_hash_tag,
-	Policy_Tl,
-	Allocator>
-      {
-	typedef
-        gp_ht_map_no_data_<
-	  Key,
-	  null_mapped_type,
-	  typename typelist_at_index<Policy_Tl, 0>::type,
-	  typename typelist_at_index<Policy_Tl, 1>::type,
-	  Allocator,
-	  typelist_at_index<Policy_Tl, 3>::type::value,
-	  typename typelist_at_index<Policy_Tl, 4>::type,
-	  typename typelist_at_index<Policy_Tl, 5>::type,
-	  typename typelist_at_index<Policy_Tl, 2>::type>
-        type;
-      };
+    public:
+      typedef ov_tree_data_<Key, Mapped, at0t, at1t, Alloc> 	type;
+  };
 
-    } // namespace detail
+  template<typename Key, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, null_mapped_type, ov_tree_tag,
+				   Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
+
+    public:
+      typedef ov_tree_no_data_<Key, null_mapped_type, at0t, at1t, Alloc> type;
+  };
+
+  template<typename Key, typename Mapped, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, Mapped, cc_hash_tag, Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 2>	at2;
+      typedef typename at2::type			    	at2t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 3>	at3;
+      typedef typename at3::type				at3t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 4> 	at4;
+      typedef typename at4::type			    	at4t;
+
+    public:
+      typedef cc_ht_map_data_<Key, Mapped, at0t, at1t, Alloc, at3t::value, 
+			      at4t, at2t> 			type;
+  };
+
+  template<typename Key, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, null_mapped_type, cc_hash_tag, 
+				   Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 2>	at2;
+      typedef typename at2::type			    	at2t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 3>	at3;
+      typedef typename at3::type				at3t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 4> 	at4;
+      typedef typename at4::type			    	at4t;
+
+    public:
+      typedef cc_ht_map_no_data_<Key, null_mapped_type, at0t, at1t, Alloc, 
+				 at3t::value, at4t, at2t>    	type;
+  };
+
+  template<typename Key, typename Mapped, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, Mapped, gp_hash_tag, Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 2>	at2;
+      typedef typename at2::type			    	at2t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 3>	at3;
+      typedef typename at3::type				at3t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 4> 	at4;
+      typedef typename at4::type			    	at4t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 5> 	at5;
+      typedef typename at5::type			    	at5t;
+
+    public:
+      typedef gp_ht_map_data_<Key, Mapped, at0t, at1t, Alloc, at3t::value, 
+			      at4t, at5t, at2t> 		type;
+  };
+
+  template<typename Key, typename Policy_Tl, typename Alloc>
+    struct container_base_dispatch<Key, null_mapped_type, gp_hash_tag,
+				   Policy_Tl, Alloc>
+    {
+    private:
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 0>	at0;
+      typedef typename at0::type			    	at0t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 1> 	at1;
+      typedef typename at1::type			    	at1t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 2>	at2;
+      typedef typename at2::type			    	at2t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 3>	at3;
+      typedef typename at3::type				at3t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 4> 	at4;
+      typedef typename at4::type			    	at4t;
+      typedef __gnu_cxx::typelist::at_index<Policy_Tl, 5> 	at5;
+      typedef typename at5::type			    	at5t;
+
+    public:
+      typedef gp_ht_map_no_data_<Key, null_mapped_type, at0t, at1t, Alloc,
+				 at3t::value, at4t, at5t, at2t>	type;
+  };
+} // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_ASSOC_CNTNR_BASE_DS_DISPATCHER_HPP
+#endif 

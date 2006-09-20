@@ -44,13 +44,12 @@
  * Contains test for finding text with locality of reference.
  */
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 #include <performance/io/xml_formatter.hpp>
 #include <io/verified_cmd_line_input.hpp>
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/timing/find_test.hpp>
 #include <io/text_populate.hpp>
-#include <ext/pb_ds/detail/typelist.hpp>
 #include <native_type/assoc/native_map.hpp>
 #include <iostream>
 #include <vector>
@@ -81,13 +80,13 @@ main(int argc, char* a_p_argv[])
       test_t tst(b, b, vn, vs, vm, vn, vs, vm);
       {
 	typedef native_map<std::string, char> native_set_t;
-	tst(pb_ds::detail::type_to_type<native_set_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_set_t>());
       }
 
       {
 	typedef tree_common_types<std::string, char>::performance_tl tree_tl_t;
 	tree_tl_t tl;
-	pb_ds::detail::typelist_apply(tst, tl);
+	__gnu_cxx::typelist::apply(tst, tl);
       }
     }
   catch(...)

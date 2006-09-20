@@ -46,7 +46,6 @@
 
 namespace detail
 {
-
   enum
     {
       num_distinct_sizes_32_bit = 30,
@@ -57,7 +56,6 @@ namespace detail
 
   // Originally taken from the SGI implementation; acknowledged in the docs.
   // Further modified (for 64 bits) from tr1's hashtable.
-
   static const std::size_t g_a_sizes[num_distinct_sizes_64_bit] =
     {
       /* 0     */              5ul,
@@ -129,33 +127,26 @@ namespace detail
 PB_DS_CLASS_T_DEC
 inline
 PB_DS_CLASS_C_DEC::
-hash_prime_size_policy(size_type start_size) :
-  m_start_size(start_size)
-{
-  m_start_size =
-    get_nearest_larger_size(start_size);
-}
+hash_prime_size_policy(size_type start_size) : m_start_size(start_size)
+{ m_start_size = get_nearest_larger_size(start_size); }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
-{
-  std::swap(m_start_size, other.m_start_size);
-}
+{ std::swap(m_start_size, other.m_start_size); }
 
 PB_DS_CLASS_T_DEC
 inline PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 get_nearest_larger_size(size_type size) const
 {
-  const std::size_t* const p_upper =
-    std::upper_bound(            detail::g_a_sizes, detail::g_a_sizes + detail::num_distinct_sizes, size);
+  const std::size_t* const p_upper = std::upper_bound(detail::g_a_sizes, 
+		     detail::g_a_sizes + detail::num_distinct_sizes, size);
 
   if (p_upper == detail::g_a_sizes + detail::num_distinct_sizes)
     throw resize_error();
-
-  return (*p_upper);
+  return *p_upper;
 }
 
 PB_DS_CLASS_T_DEC
@@ -163,13 +154,12 @@ inline PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 get_nearest_smaller_size(size_type size) const
 {
-  const size_t* p_lower = std::lower_bound(        detail::g_a_sizes, detail::g_a_sizes + detail::num_distinct_sizes, size);
+  const size_t* p_lower = std::lower_bound(detail::g_a_sizes, 
+		       detail::g_a_sizes + detail::num_distinct_sizes, size);
 
   if (*p_lower >= size&&  p_lower != detail::g_a_sizes)
     --p_lower;
-
   if (*p_lower < m_start_size)
-    return (m_start_size);
-
-  return (*p_lower);
+    return m_start_size;
+  return *p_lower;
 }

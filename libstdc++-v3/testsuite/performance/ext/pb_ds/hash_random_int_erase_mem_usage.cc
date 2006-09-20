@@ -44,13 +44,12 @@
  * Contains test for erasing random integers.
  */
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 #include <performance/io/xml_formatter.hpp>
 #include <io/verified_cmd_line_input.hpp>
 #include <rng/twister_rand_gen.hpp>
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/mem_usage/erase_test.hpp>
-#include <ext/pb_ds/detail/typelist.hpp>
 #include <performance/mem/mem_track_allocator.hpp>
 #include <iostream>
 #include <vector>
@@ -94,7 +93,7 @@ main(int argc, char* a_p_argv[])
 	  tl_t;
 
 	tl_t tl;
-	pb_ds::detail::typelist_apply(tst, tl);
+	__gnu_cxx::typelist::apply(tst, tl);
       }
 
       {
@@ -104,7 +103,7 @@ main(int argc, char* a_p_argv[])
 	  std::less<int>, alloc_t>
 	  native_t;
 
-	tst(pb_ds::detail::type_to_type<native_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
       }
     }
   catch (...)

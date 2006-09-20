@@ -1,3 +1,126 @@
+2006-09-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/
+	typelist_assoc_container.hpp: Remove, unused.
+	* include/ext/pb_ds/detail/typelist/
+	typelist_assoc_container_find.hpp: Same.
+	* include/ext/pb_ds/detail/typelist: Remove.	
+	* include/ext/pb_ds/detail/typelist.hpp: Merge...
+	* include/ext/pb_ds/detail/typelist/typelist_flatten.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_contains.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_typelist_append.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_apply.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_filter.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_append.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_at_index.hpp: Same.
+	* include/ext/pb_ds/detail/typelist/typelist_transform.hpp: Same.
+	* include/ext/typelist.h: ... into this.
+	* include/Makefile.am: Subtractions.
+	* include/Makefile.in: Regenerate.
+
+	* include/ext/pb_ds/assoc_container.hpp: Fixups for new includes,
+	namespaces, and names.	
+	* include/ext/pb_ds/detail/resize_policy/sample_size_policy.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_prime_size_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	cc_hash_max_collision_check_resize_trigger_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	sample_resize_policy.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	sample_resize_trigger.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_exponential_size_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_size_base.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_standard_resize_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/container_base_dispatch.hpp: Same.
+	* testsuite/performance/ext/pb_ds/text_find_timing.cc
+	* testsuite/performance/ext/pb_ds/hash_random_int_erase_mem_usage.cc
+	* testsuite/performance/ext/pb_ds/tree_text_insert_timing.cc
+	* testsuite/performance/ext/pb_ds/priority_queue_text_push_timing.cc
+	* testsuite/performance/ext/pb_ds/random_int_subscript_find_timing.cc
+	* testsuite/performance/ext/pb_ds/tree_split_join_timing.cc
+	* testsuite/performance/ext/pb_ds/random_int_find_timing.cc
+	* testsuite/performance/ext/pb_ds/
+	multimap_text_insert_mem_usage.hpp: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_random_int_push_timing.cc
+	* testsuite/performance/ext/pb_ds/multimap_text_find_timing.hpp: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_modify_timing.hpp: Same.
+	* testsuite/performance/ext/pb_ds/tree_order_statistics_timing.cc
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_push_pop_timing.cc
+	* testsuite/performance/ext/pb_ds/priority_queue_text_join_timing.cc
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_random_int_push_pop_timing.cc
+	* testsuite/performance/ext/pb_ds/random_int_subscript_insert_timing.cc
+	* testsuite/performance/ext/pb_ds/tree_text_lor_find_timing.cc
+	* testsuite/performance/ext/pb_ds/
+	multimap_text_insert_timing.hpp: Same.
+	* testsuite/performance/ext/pb_ds/priority_queue_text_pop_mem_usage.cc
+	* testsuite/performance/ext/pb_ds/hash_zlob_random_int_find_timing.cc
+	* testsuite/performance/23_containers/find/map.cc
+	* testsuite/performance/23_containers/create/map.cc
+	* testsuite/performance/23_containers/insert_erase/associative.cc
+	* testsuite/performance/23_containers/insert/sequence.cc
+	* testsuite/performance/23_containers/insert/associative.cc
+	* testsuite/performance/23_containers/create_from_sorted/set.cc
+	* testsuite/performance/23_containers/index/map.cc
+	* testsuite/performance/23_containers/insert_from_sorted/set.cc
+	* testsuite/performance/23_containers/create_sort/list.cc
+	* testsuite/performance/23_containers/sort_search/list.cc
+	* testsuite/performance/23_containers/producer_consumer/sequence.cc
+	* testsuite/performance/23_containers/producer_consumer/associative.cc
+	* testsuite/util/regression/trait/assoc/type_trait.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/
+	rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/assoc/rand_regression_test.hpp: Same.
+	* testsuite/util/regression/assoc/common_type.hpp: Same.
+	* testsuite/util/native_type/assoc/native_multimap.hpp: Same.
+	* testsuite/util/native_type/assoc/native_tree_tag.hpp: Same.
+	* testsuite/util/native_type/assoc/native_hash_multimap.hpp: Same.
+	* testsuite/util/native_type/assoc/native_set.hpp: Same.
+	* testsuite/util/native_type/assoc/native_map.hpp: Same.
+	* testsuite/util/native_type/assoc/native_hash_set.hpp: Same.
+	* testsuite/util/native_type/assoc/native_hash_map.hpp: Same.
+	* testsuite/util/common_type/priority_queue/common_type.hpp: Same.
+	* testsuite/util/common_type/assoc/common_type.hpp: Same.
+	* testsuite/util/common_type/assoc/string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/template_policy.hpp: Same.
+	* testsuite/util/performance/priority_queue/mem_usage/pop_test.hpp: 
+	Same.
+	* testsuite/util/performance/priority_queue/timing/push_pop_test.hpp: 
+	Same.
+	* testsuite/util/performance/priority_queue/timing/join_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/push_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/modify_test.hpp: 
+	Same.
+	* testsuite/util/performance/assoc/mem_usage/multimap_insert_test.hpp: 
+	Same.
+	* testsuite/util/performance/assoc/mem_usage/erase_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/common_type.hpp: Same.
+	* testsuite/util/performance/assoc/timing/multimap_insert_test.hpp: 
+	Same.
+	* testsuite/util/performance/assoc/timing/subscript_find_test.hpp: 
+	Same.
+	* testsuite/util/performance/assoc/timing/find_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/subscript_insert_test.hpp: 
+	Same.
+	* testsuite/util/performance/assoc/timing/insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/
+	tree_order_statistics_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/multimap_find_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/tree_split_join_test.hpp: 
+	Same.
+	* testsuite/util/performance/assoc/multimap_common_type.hpp: Same.
+
+	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Fixup line numbers.
+	
 2006-09-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/hashtable_policy.h: Uglify all the names.

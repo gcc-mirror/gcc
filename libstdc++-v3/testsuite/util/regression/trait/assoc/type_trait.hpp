@@ -93,7 +93,7 @@ namespace pb_ds
         generate_value(Gen& r_gen, size_t max)
 	{
 	  return (generate_value(r_gen, max,
-				 pb_ds::detail::type_to_type<value_type>()));
+				 __gnu_cxx::typelist::detail::type_to_type<value_type>()));
 	}
 
 	static const_key_reference
@@ -118,21 +118,21 @@ namespace pb_ds
       private:
 	template<typename Gen>
 	static value_type
-        generate_value(Gen& r_gen, size_t max,  pb_ds::detail::type_to_type<pb_ds::null_mapped_type>)
+        generate_value(Gen& r_gen, size_t max,  __gnu_cxx::typelist::detail::type_to_type<pb_ds::null_mapped_type>)
 	{
 	  return (basic_type(r_gen, max));
 	}
 
 	template<typename Gen>
 	static value_type
-        generate_value(Gen& r_gen, size_t max, pb_ds::detail::type_to_type<basic_type>)
+        generate_value(Gen& r_gen, size_t max, __gnu_cxx::typelist::detail::type_to_type<basic_type>)
 	{
 	  return (basic_type(r_gen, max));
 	}
 
 	template<typename Gen>
 	static value_type
-        generate_value(Gen& r_gen, size_t max, pb_ds::detail::type_to_type<std::pair<const basic_type, basic_type> >)
+        generate_value(Gen& r_gen, size_t max, __gnu_cxx::typelist::detail::type_to_type<std::pair<const basic_type, basic_type> >)
 	{
 	  return (std::make_pair(basic_type(r_gen, max), basic_type(r_gen, max)));
 	}

@@ -65,7 +65,7 @@ namespace pb_ds
 	     class Eq_Fn =
 	     std::equal_to<Key>,
 	     class Allocator =
-	     std::allocator< std::pair<const Key, Data> > >
+	     std::allocator<std::pair<const Key, Data> > >
     struct hash_common_types
     {
     private:
@@ -109,12 +109,12 @@ namespace pb_ds
 	true>
       access_half_max_col_check_check_resize_trigger_policy;
 
-      typedef pb_ds::test::linear_probe_fn_t_< Key, Allocator> lin_p_t;
+      typedef pb_ds::test::linear_probe_fn_t_<Key, Allocator> lin_p_t;
 
-      typedef pb_ds::test::quadratic_probe_fn_t_< Key, Allocator> quad_p_t;
+      typedef pb_ds::test::quadratic_probe_fn_t_<Key, Allocator> quad_p_t;
 
       typedef
-      typename pb_ds::detail::typelist4<
+      typename __gnu_cxx::typelist::create4<
 	pb_ds::detail::false_type,
 	pb_ds::test::direct_mask_range_hashing_t_<
 	Allocator>,
@@ -124,7 +124,7 @@ namespace pb_ds
       performance_cc_policy0;
 
       typedef
-      typename pb_ds::detail::typelist4<
+      typename __gnu_cxx::typelist::create4<
 	pb_ds::detail::false_type,
 	pb_ds::test::direct_mod_range_hashing_t_<
 	Allocator>,
@@ -133,7 +133,7 @@ namespace pb_ds
       performance_cc_policy1;
 
       typedef
-      typename pb_ds::detail::typelist4<
+      typename __gnu_cxx::typelist::create4<
 	pb_ds::detail::false_type,
 	pb_ds::test::direct_mask_range_hashing_t_<
 	Allocator>,
@@ -143,7 +143,7 @@ namespace pb_ds
       performance_cc_policy2;
 
       typedef
-      typename pb_ds::detail::typelist4<
+      typename __gnu_cxx::typelist::create4<
 	pb_ds::detail::false_type,
 	pb_ds::test::direct_mod_range_hashing_t_<
 	Allocator>,
@@ -152,7 +152,7 @@ namespace pb_ds
       performance_cc_policy3;
 
       typedef
-      typename pb_ds::detail::typelist4<
+      typename __gnu_cxx::typelist::create4<
 	pb_ds::detail::true_type,
 	pb_ds::test::direct_mask_range_hashing_t_<
 	Allocator>,
@@ -162,7 +162,7 @@ namespace pb_ds
       performance_cc_policy4;
 
       typedef
-      typename pb_ds::detail::typelist4<
+      typename __gnu_cxx::typelist::create4<
 	pb_ds::detail::false_type,
 	pb_ds::test::direct_mask_range_hashing_t_<
 	Allocator>,
@@ -172,7 +172,7 @@ namespace pb_ds
       performance_cc_policy5;
 
       typedef
-      typename pb_ds::detail::typelist4<
+      typename __gnu_cxx::typelist::create4<
 	pb_ds::detail::false_type,
 	pb_ds::test::direct_mask_range_hashing_t_<
 	Allocator>,
@@ -182,7 +182,7 @@ namespace pb_ds
       regression_cc_policy0;
 
       typedef
-      typename pb_ds::detail::typelist4<
+      typename __gnu_cxx::typelist::create4<
 	pb_ds::detail::false_type,
 	pb_ds::test::direct_mask_range_hashing_t_<
 	Allocator>,
@@ -192,7 +192,7 @@ namespace pb_ds
       regression_cc_policy1;
 
       typedef
-      typename pb_ds::detail::typelist4<
+      typename __gnu_cxx::typelist::create4<
 	pb_ds::detail::true_type,
 	pb_ds::test::direct_mod_range_hashing_t_<
 	Allocator>,
@@ -201,7 +201,7 @@ namespace pb_ds
       regression_cc_policy2;
 
       typedef
-      typename pb_ds::detail::typelist5<
+      typename __gnu_cxx::typelist::create5<
 	pb_ds::detail::false_type,
 	lin_p_t,
 	pb_ds::test::direct_mask_range_hashing_t_<
@@ -212,7 +212,7 @@ namespace pb_ds
       performance_gp_policy0;
 
       typedef
-      typename pb_ds::detail::typelist5<
+      typename __gnu_cxx::typelist::create5<
 	pb_ds::detail::false_type,
 	quad_p_t,
 	pb_ds::test::direct_mod_range_hashing_t_<
@@ -222,7 +222,7 @@ namespace pb_ds
       performance_gp_policy1;
 
       typedef
-      typename pb_ds::detail::typelist5<
+      typename __gnu_cxx::typelist::create5<
 	pb_ds::detail::false_type,
 	quad_p_t,
 	pb_ds::test::direct_mod_range_hashing_t_<
@@ -232,7 +232,7 @@ namespace pb_ds
       regression_gp_policy0;
 
       typedef
-      typename pb_ds::detail::typelist5<
+      typename __gnu_cxx::typelist::create5<
 	pb_ds::detail::true_type,
 	lin_p_t,
 	pb_ds::test::direct_mask_range_hashing_t_<
@@ -243,7 +243,7 @@ namespace pb_ds
       regression_gp_policy1;
 
       typedef
-      typename pb_ds::detail::typelist6<
+      typename __gnu_cxx::typelist::create6<
 	performance_cc_policy0,
 	performance_cc_policy1,
 	performance_cc_policy2,
@@ -253,20 +253,20 @@ namespace pb_ds
       performance_cc_range_hashing_policies;
 
       typedef
-      typename pb_ds::detail::typelist3<
+      typename __gnu_cxx::typelist::create3<
 	regression_cc_policy0,
 	regression_cc_policy1,
 	regression_cc_policy2>::type
       regression_cc_range_hashing_policies;
 
       typedef
-      typename pb_ds::detail::typelist2<
+      typename __gnu_cxx::typelist::create2<
 	performance_gp_policy0,
 	performance_gp_policy1>::type
       performance_gp_range_hashing_policies;
 
       typedef
-      typename pb_ds::detail::typelist2<
+      typename __gnu_cxx::typelist::create2<
 	regression_gp_policy0,
 	regression_gp_policy1>::type
       regression_gp_range_hashing_policies;
@@ -276,7 +276,7 @@ namespace pb_ds
       {
       private:
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	Policy_Tl, 0>::type
 	store_hash_indicator;
 
@@ -286,17 +286,17 @@ namespace pb_ds
 	  };
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 1>::type
 	comb_hash_fn;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 2>::type
 	trigger_policy;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 3>::type
 	size_policy;
 
@@ -322,7 +322,7 @@ namespace pb_ds
       {
       private:
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	Policy_Tl, 0>::type
 	store_hash_indicator;
 
@@ -332,17 +332,17 @@ namespace pb_ds
 	  };
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 1>::type
 	comb_hash_fn;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 2>::type
 	trigger_policy;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 3>::type
 	size_policy;
 
@@ -368,7 +368,7 @@ namespace pb_ds
       {
       private:
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	Policy_Tl, 0>::type
 	store_hash_indicator;
 
@@ -378,22 +378,22 @@ namespace pb_ds
 	  };
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 1>::type
 	probe_fn;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 2>::type
 	comb_probe_fn;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 3>::type
 	trigger_policy;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 4>::type
 	size_policy;
 
@@ -420,7 +420,7 @@ namespace pb_ds
       {
       private:
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	Policy_Tl, 0>::type
 	store_hash_indicator;
 
@@ -430,22 +430,22 @@ namespace pb_ds
 	  };
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 1>::type
 	probe_fn;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 2>::type
 	comb_probe_fn;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 3>::type
 	trigger_policy;
 
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	  Policy_Tl, 4>::type
 	size_policy;
 
@@ -468,56 +468,56 @@ namespace pb_ds
       };
 
       typedef
-      typename pb_ds::detail::typelist_transform<
+      typename __gnu_cxx::typelist::transform<
 	performance_cc_range_hashing_policies,
 	no_access_generic_cc_hash_table_t>::type
       performance_cc_types;
 
       typedef
-      typename pb_ds::detail::typelist_transform<
+      typename __gnu_cxx::typelist::transform<
 	regression_cc_range_hashing_policies,
 	access_generic_cc_hash_table_t>::type
       regression_cc_types;
 
       typedef
-      typename pb_ds::detail::typelist_at_index<
+      typename __gnu_cxx::typelist::at_index<
 	performance_cc_types,
 	0>::type
       performance_min_cc_type;
 
       typedef
-      typename pb_ds::detail::typelist_transform<
+      typename __gnu_cxx::typelist::transform<
 	performance_gp_range_hashing_policies,
 	no_access_generic_gp_hash_table_t>::type
       performance_gp_types;
 
       typedef
-      typename pb_ds::detail::typelist_transform<
+      typename __gnu_cxx::typelist::transform<
 	regression_gp_range_hashing_policies,
 	access_generic_gp_hash_table_t>::type
       regression_gp_types;
 
       typedef
-      typename pb_ds::detail::typelist_at_index<
+      typename __gnu_cxx::typelist::at_index<
 	performance_gp_types,
 	0>::type
       performance_min_gp_type;
 
     public:
       typedef
-      typename pb_ds::detail::typelist_append<
+      typename __gnu_cxx::typelist::append<
       performance_cc_types,
       performance_gp_types>::type
       performance_tl;
 
       typedef
-      typename pb_ds::detail::typelist_append<
+      typename __gnu_cxx::typelist::append<
 	regression_gp_types,
 	regression_cc_types>::type
       regression_tl;
 
       typedef
-      typename pb_ds::detail::typelist1<
+      typename __gnu_cxx::typelist::create1<
 	performance_min_cc_type>::type
       performance_min_tl;
     };
@@ -636,7 +636,7 @@ namespace pb_ds
       };
 
       typedef
-      typename pb_ds::detail::typelist_transform<
+      typename __gnu_cxx::typelist::transform<
 	Comb_Hash_Fn_TL,
 	generic_cc_hash_table_t>::type
       performance_cc_types;
@@ -660,14 +660,14 @@ namespace pb_ds
       };
 
       typedef
-      typename pb_ds::detail::typelist_transform<
+      typename __gnu_cxx::typelist::transform<
 	Comb_Probe_Fn_TL,
 	no_access_generic_gp_hash_table_t>::type
       performance_gp_types;
 
     public:
       typedef
-      typename pb_ds::detail::typelist_append<
+      typename __gnu_cxx::typelist::append<
       performance_cc_types,
       performance_gp_types>::type
       performance_tl;
@@ -683,14 +683,14 @@ namespace pb_ds
 
       typedef pb_ds::test::move_to_front_lu_policy_t_ mtf_u;
 
-      typedef pb_ds::test::counter_lu_policy_t_< Allocator, 5> cnt_5_u;
+      typedef pb_ds::test::counter_lu_policy_t_<Allocator, 5> cnt_5_u;
 
-      typedef typename pb_ds::detail::typelist1< mtf_u>::type lu_policy0;
+      typedef typename __gnu_cxx::typelist::create1<mtf_u>::type lu_policy0;
 
-      typedef typename pb_ds::detail::typelist1< cnt_5_u>::type lu_policy1;
+      typedef typename __gnu_cxx::typelist::create1<cnt_5_u>::type lu_policy1;
 
       typedef
-      typename pb_ds::detail::typelist2<
+      typename __gnu_cxx::typelist::create2<
 	lu_policy0,
 	lu_policy1>::type
       lu_policies;
@@ -700,7 +700,7 @@ namespace pb_ds
       {
       private:
         typedef
-	typename pb_ds::detail::typelist_at_index<
+	typename __gnu_cxx::typelist::at_index<
 	Policy_Tl, 0>::type
 	update_policy_t;
 
@@ -716,26 +716,22 @@ namespace pb_ds
       };
 
       typedef
-      typename pb_ds::detail::typelist_transform<
+      typename __gnu_cxx::typelist::transform<
 	lu_policies,
 	generic_list_update_t>::type
       lu_types;
 
       typedef
-      typename pb_ds::detail::typelist_at_index<
+      typename __gnu_cxx::typelist::at_index<
 	lu_types,
 	0>::type
       min_lu_type;
 
     public:
       typedef lu_types performance_tl;
-
       typedef lu_types regression_tl;
 
-      typedef
-      typename pb_ds::detail::typelist1<
-	min_lu_type>::type
-      performance_min_tl;
+      typedef typename __gnu_cxx::typelist::create1<min_lu_type>::type performance_min_tl;
     };
 
     template<typename Key, typename Data, class Cmp_Fn = std::less<Key>,
@@ -743,10 +739,8 @@ namespace pb_ds
 		      class Node_Iterator,
 		      class Cmp_Fn_,
 		      class Allocator_>
-    class Node_Update =
-	     pb_ds::null_tree_node_update,
-	     class Allocator =
-	     std::allocator<std::pair<const Key, Data> > >
+    class Node_Update = pb_ds::null_tree_node_update,
+	     class Allocator = std::allocator<std::pair<const Key, Data> > >
     struct tree_common_types
     {
     private:
@@ -782,21 +776,21 @@ namespace pb_ds
 
     public:
       typedef
-      typename pb_ds::detail::typelist3<
+      typename __gnu_cxx::typelist::create3<
       splay_tree_assoc_container_t,
       rb_tree_assoc_container_t,
       ov_tree_assoc_container_t>::type
       performance_tl;
 
       typedef
-      typename pb_ds::detail::typelist3<
+      typename __gnu_cxx::typelist::create3<
 	ov_tree_assoc_container_t,
 	splay_tree_assoc_container_t,
 	rb_tree_assoc_container_t>::type
       regression_tl;
 
       typedef
-      typename pb_ds::detail::typelist1<
+      typename __gnu_cxx::typelist::create1<
 	rb_tree_assoc_container_t>::type
       performance_min_tl;
     };
@@ -804,40 +798,23 @@ namespace pb_ds
     template<typename Key,
 	     typename Data,
 	     class E_Access_Traits =
-	     typename pb_ds::detail::default_trie_e_access_traits<
-      Key>::type,
-	     class Tag =
-	     pb_ds::pat_trie_tag,
+	     typename pb_ds::detail::default_trie_e_access_traits<Key>::type,
+	     class Tag = pb_ds::pat_trie_tag,
 	     template<typename Const_Node_Iterator,
 		      typename Node_Iterator,
 		      class E_Access_Traits_,
 		      typename Allocator_>
-    class Node_Update =
-	     pb_ds::null_trie_node_update,
-	     class Allocator =
-	     std::allocator<char> >
+    class Node_Update = pb_ds::null_trie_node_update,
+	     class Allocator = std::allocator<char> >
     class trie_common_types
     {
     private:
-      typedef
-      pb_ds::trie<
-      Key,
-      Data,
-      E_Access_Traits,
-      Tag,
-      Node_Update,
-      Allocator>
-      type;
+      typedef pb_ds::trie<Key, Data, E_Access_Traits, Tag, Node_Update, Allocator> type;
 
     public:
-      typedef typename pb_ds::detail::typelist1< type>::type performance_tl;
-
-      typedef typename pb_ds::detail::typelist1< type>::type regression_tl;
-
-      typedef
-      typename pb_ds::detail::typelist1<
-	type>::type
-      performance_min_tl;
+      typedef typename __gnu_cxx::typelist::create1<type>::type performance_tl;
+      typedef typename __gnu_cxx::typelist::create1<type>::type regression_tl;
+      typedef typename __gnu_cxx::typelist::create1<type>::type performance_min_tl;
     };
 
   } // namespace test

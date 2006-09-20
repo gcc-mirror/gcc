@@ -47,10 +47,11 @@
 #ifndef PB_DS_NATIVE_HASH_MAP_HPP
 #define PB_DS_NATIVE_HASH_MAP_HPP
 
+#include <string>
+#include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
 #include <native_type/assoc/native_hash_tag.hpp>
 #include <io/xml.hpp>
-#include <string>
 
 // Default to using tr1.
 #define PB_DS_USE_TR1 1

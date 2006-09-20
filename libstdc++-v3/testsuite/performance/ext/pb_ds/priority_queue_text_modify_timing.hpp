@@ -44,13 +44,12 @@
  * Contains test for finding text.
  */
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 #include <performance/io/xml_formatter.hpp>
 #include <io/verified_cmd_line_input.hpp>
 #include <common_type/priority_queue/common_type.hpp>
 #include <performance/priority_queue/timing/modify_test.hpp>
 #include <io/text_populate.hpp>
-#include <ext/pb_ds/detail/typelist.hpp>
 #include <native_type/priority_queue/native_priority_queue.hpp>
 #include <iostream>
 #include <vector>
@@ -88,17 +87,17 @@ main(int argc, char* a_p_argv[])
       {
 	typedef pq_common_types<std::string>::performance_tl pq_tl_t;
 	pq_tl_t tl;
-	pb_ds::detail::typelist_apply(tst, tl);
+	__gnu_cxx::typelist::apply(tst, tl);
       }
 
       {
 	typedef native_priority_queue<std::string, true> native_pq_t;
-	tst(pb_ds::detail::type_to_type<native_pq_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_pq_t>());
       }
 
       {
 	typedef native_priority_queue<std::string, false> native_pq_t;
-	tst(pb_ds::detail::type_to_type<native_pq_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_pq_t>());
       }
     }
   catch (...)
