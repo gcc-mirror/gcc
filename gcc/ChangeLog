@@ -1,3 +1,9 @@
+2006-09-20  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/28574
+	* ifcvt.c (dead_or_predicable): Don't predicate then blocks
+	with tablejumps in them.
+
 2006-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/28046
