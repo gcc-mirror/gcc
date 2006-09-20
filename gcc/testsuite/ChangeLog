@@ -1,3 +1,7 @@
+2006-09-19  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* gfortran.dg/vect/vect-5.f90: Don't xfail lp64.
+
 2006-09-19  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.c-torture/execute/pr28289.c (one): New variable.
