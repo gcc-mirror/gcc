@@ -1,3 +1,8 @@
+2006-09-20  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/extend.texi (Decimal Float): Update for latest draft TR,
+	clean up terminology.
+
 2006-09-20  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/28574
