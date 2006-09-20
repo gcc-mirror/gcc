@@ -1,3 +1,9 @@
+2006-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/28046
+	* c-omp.c (c_finish_omp_atomic): If ADDR is not simple enough,
+	wrap it into TARGET_EXPR.
+
 2006-09-20  Eric Christopher  <echristo@apple.com>
 
 	* config/i386/i386.c (x86_fisttp): Remove.
