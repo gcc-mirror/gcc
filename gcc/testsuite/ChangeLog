@@ -1,3 +1,8 @@
+2006-09-20  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/27650
+	* g++.dg/ext/dllimport12.C: New test.
+
 2006-09-20  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/mips/mips-ps-type.c: Add -ffinite-math-only.
