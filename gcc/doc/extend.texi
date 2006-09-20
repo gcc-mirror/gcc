@@ -33,7 +33,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Long Long::		Double-word integers---@code{long long int}.
 * Complex::             Data types for complex numbers.
-* Decimal Float::	Decimal Floating Point.
+* Decimal Float::       Decimal Floating Types. 
 * Hex Floats::          Hexadecimal floating-point constants.
 * Zero Length::         Zero-length arrays.
 * Variable Length::     Arrays whose length is computed at run time.
@@ -816,8 +816,8 @@ variables are named @code{foo$real} and @code{foo$imag}.  You can
 examine and set these two fictitious variables with your debugger.
 
 @node Decimal Float
-@section Decimal Floating Point
-@cindex decimal floating point
+@section Decimal Floating Types
+@cindex decimal floating types
 @cindex @code{_Decimal32} data type
 @cindex @code{_Decimal64} data type
 @cindex @code{_Decimal128} data type
@@ -828,25 +828,41 @@ examine and set these two fictitious variables with your debugger.
 @cindex @code{DD} integer suffix
 @cindex @code{DL} integer suffix
 
-GNU C supports decimal floating point types in addition to the
-standard floating-point types.  This extension supports decimal
-floating-point arithmetic as defined in IEEE-754R, the proposed
-revision of IEEE-754.  The C language extension is defined in ISO/IEC
-DTR 24732, Draft 5.  Support for this functionality will change when
-it is accepted into the C standard and might change for new drafts
-of the proposal.  Calling conventions for any target might also change.
-Not all targets support decimal floating point.
+As an extension, the GNU C compiler supports decimal floating types as
+defined in the N1176 draft of ISO/IEC WDTR24732.  Support for decimal
+floating types in GCC will evolve as the draft technical report changes.
+Calling conventions for any target might also change.  Not all targets
+support decimal floating types.
 
-Support for decimal floating point includes the arithmetic operators
+The decimal floating types are @code{_Decimal32}, @code{_Decimal64}, and
+@code{_Decimal128}.  They use a radix of ten, unlike the floating types
+@code{float}, @code{double}, and @code{long double} whose radix is not
+specified by the C standard but is usually two.
+
+Support for decimal floating types includes the arithmetic operators
 add, subtract, multiply, divide; unary arithmetic operators;
 relational operators; equality operators; and conversions to and from
-integer and other floating-point types.  Use a suffix @samp{df} or
+integer and other floating types.  Use a suffix @samp{df} or
 @samp{DF} in a literal constant of type @code{_Decimal32}, @samp{dd}
 or @samp{DD} for @code{_Decimal64}, and @samp{dl} or @samp{DL} for
 @code{_Decimal128}.
 
-Passing a decimal floating-point value as an argument to a function
-without a prototype is undefined.
+GCC support of decimal float as specified by the draft technical report
+is incomplete:
+
+@itemize @bullet
+@item
+Translation time data type (TTDT) is not supported.
+
+@item
+Characteristics of decimal floating types are defined in header file
+@file{decfloat.h} rather than @file{float.h}.
+
+@item
+When the value of a decimal floating type cannot be represented in the
+integer type to which it is being converted, the result is undefined
+rather than the result value specified by the draft technical report.
+@end itemize
 
 Types @code{_Decimal32}, @code{_Decimal64}, and @code{_Decimal128}
 are supported by the DWARF2 debug information format.
