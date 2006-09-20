@@ -1,6 +1,7 @@
-/* Test v2sf calculations */
+/* Test v2sf calculations.  The nmadd and nmsub patterns need
+   -ffinite-math-only.  */
 /* { dg-do compile } */ 
-/* { dg-mips-options "-mips64 -O2 -mpaired-single -mhard-float -mgp64" } */
+/* { dg-mips-options "-mips64 -O2 -mpaired-single -mhard-float -mgp64 -ffinite-math-only" } */
 /* { dg-final { scan-assembler "cvt.ps.s" } } */ 
 /* { dg-final { scan-assembler "mov.ps" } } */ 
 /* { dg-final { scan-assembler "ldc1" } } */ 
