@@ -155,18 +155,18 @@ namespace pb_ds
 
       template<typename Cntnr>
       void
-      operator()(pb_ds::detail::type_to_type<Cntnr>);
+      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
 
     private:
       multimap_find_test(const multimap_find_test& );
 
       template<typename Cntnr>
       Cntnr
-      init(It ins_b, It ins_e, pb_ds::detail::type_to_type<Cntnr>, pb_ds::detail::true_type);
+      init(It ins_b, It ins_e, __gnu_cxx::typelist::detail::type_to_type<Cntnr>, pb_ds::detail::true_type);
 
       template<typename Cntnr>
       Cntnr
-      init(It ins_b, It ins_e, pb_ds::detail::type_to_type<Cntnr>, pb_ds::detail::false_type);
+      init(It ins_b, It ins_e, __gnu_cxx::typelist::detail::type_to_type<Cntnr>, pb_ds::detail::false_type);
 
     private:
       const It m_ins_b;
@@ -189,7 +189,7 @@ namespace pb_ds
     template<typename Cntnr>
     void
     PB_DS_CLASS_C_DEC::
-    operator()(pb_ds::detail::type_to_type<Cntnr>)
+    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
     {
       xml_result_set_performance_formatter res_set_fmt(
 						       string_form<Cntnr>::name(),
@@ -205,7 +205,7 @@ namespace pb_ds
 
 	  Cntnr c = init(ins_it_b,
 			 ins_it_e,
-			 pb_ds::detail::type_to_type<Cntnr>(),
+			 __gnu_cxx::typelist::detail::type_to_type<Cntnr>(),
 			 pb_ds::detail::integral_constant<int,Native>());
 
 	  pb_ds::test::detail::multimap_find_functor<It, Cntnr, Native>
@@ -222,7 +222,7 @@ namespace pb_ds
     template<typename Cntnr>
     Cntnr
     PB_DS_CLASS_C_DEC::
-    init(It ins_b, It ins_e, pb_ds::detail::type_to_type<Cntnr>, pb_ds::detail::true_type)
+    init(It ins_b, It ins_e, __gnu_cxx::typelist::detail::type_to_type<Cntnr>, pb_ds::detail::true_type)
     {
       return Cntnr(ins_b, ins_e);
     }
@@ -231,7 +231,7 @@ namespace pb_ds
     template<typename Cntnr>
     Cntnr
     PB_DS_CLASS_C_DEC::
-    init(It ins_b, It ins_e, pb_ds::detail::type_to_type<Cntnr>, pb_ds::detail::false_type)
+    init(It ins_b, It ins_e, __gnu_cxx::typelist::detail::type_to_type<Cntnr>, pb_ds::detail::false_type)
     {
       Cntnr ret;
 

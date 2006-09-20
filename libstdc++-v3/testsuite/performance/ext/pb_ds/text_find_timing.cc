@@ -44,13 +44,12 @@
  * Contains test for finding text.
  */
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 #include <performance/io/xml_formatter.hpp>
 #include <io/verified_cmd_line_input.hpp>
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/timing/find_test.hpp>
 #include <io/text_populate.hpp>
-#include <ext/pb_ds/detail/typelist.hpp>
 #include <hash_fn/string_hash_fn.hpp>
 #include <native_type/assoc/native_hash_map.hpp>
 #include <native_type/assoc/native_map.hpp>
@@ -86,22 +85,20 @@ main(int argc, char* a_p_argv[])
 
 	typedef hash_common_types<std::string, char, string_hash_fn>::performance_tl hash_tl_t;
 
-	typedef pb_ds::detail::typelist_append<pat_trie_tl_t, pb_ds::detail::typelist_append<hash_tl_t, tree_tl_t>::type>::type tl_t;
+	typedef __gnu_cxx::typelist::append<pat_trie_tl_t, __gnu_cxx::typelist::append<hash_tl_t, tree_tl_t>::type>::type tl_t;
 
 	tl_t tl;
-	pb_ds::detail::typelist_apply(tst, tl);
+	__gnu_cxx::typelist::apply(tst, tl);
       }
 
       {
 	typedef native_map<std::string, char> native_map_t;
-	tst(pb_ds::detail::type_to_type<native_map_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_map_t>());
 
-	typedef native_hash_map<std::string, char, 8, string_hash_fn> native_hash_map_t;
-	tst(pb_ds::detail::type_to_type<native_hash_map_t>());
-
-	// XXX Unfortunately, this crashes
-#if 0
 #ifdef PB_DS_USE_TR1
+	typedef native_hash_map<std::string, char, 8, string_hash_fn> native_hash_map_t;
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_hash_map_t>());
+
 	typedef
 	  native_hash_map<
 	  std::string,
@@ -117,9 +114,8 @@ main(int argc, char* a_p_argv[])
 	  true>
 	  sth_native_hash_map_t;
 
-	tst(pb_ds::detail::type_to_type<sth_native_hash_map_t>());
-#endif // #ifdef PB_DS_USE_TR1
-#endif // #if 0
+	tst(__gnu_cxx::typelist::detail::type_to_type<sth_native_hash_map_t>());
+#endif
       }
     }
   catch(...)

@@ -48,30 +48,22 @@
 #define PB_DS_NATIVE_MAP_HPP
 
 #include <map>
+#include <string>
+#include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
 #include <native_type/assoc/native_tree_tag.hpp>
 #include <io/xml.hpp>
-#include <string>
 
 namespace pb_ds
 {
-
   namespace test
   {
-
-#define PB_DS_BASE_C_DEC						\
-    std::map<								\
-									Key, \
-									Data, \
-									Cmp_Fn,	\
-									typename Allocator::template rebind< \
-																std::pair< \
-																			const Key, \
-																			Data > >::other >
+#define PB_DS_BASE_C_DEC \
+    std::map<Key, Data, Cmp_Fn,	\
+typename Allocator::template rebind<std::pair<const Key, Data > >::other >
 
     template<typename Key, typename Data, class Cmp_Fn = std::less<Key>,
-	     class Allocator =
-	     std::allocator<char> >
+	     class Allocator = std::allocator<char> >
     class native_map : public PB_DS_BASE_C_DEC
     {
     private:
@@ -80,7 +72,6 @@ namespace pb_ds
     public:
       typedef native_tree_tag container_category;
 
-    public:
       native_map() : base_type()
       { }
 
@@ -90,15 +81,11 @@ namespace pb_ds
 
       static std::string
       name()
-      {
-        return ("n_map");
-      }
+      { return std::string("n_map"); }
 
       static std::string
       desc()
-      {
-        return (make_xml_tag(            "type", "value", "std_map"));
-      }
+      { return make_xml_tag("type", "value", "std_map"); }
     };
 
 #undef PB_DS_BASE_C_DEC

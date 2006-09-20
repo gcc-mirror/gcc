@@ -50,13 +50,10 @@
 // A sample size policy.
 class sample_size_policy
 {
-
 public:
 
   // Size type.
   typedef size_t size_type;
-
-public:
 
   // Default constructor.
   sample_size_policy();
@@ -77,7 +74,6 @@ protected:
   // Given a __size size, returns a __size that is smaller.
   inline size_type
   get_nearest_smaller_size(size_type size) const;
-
 };
 
-#endif // #ifndef PB_DS_SAMPLE_SIZE_POLICY_HPP
+#endif 

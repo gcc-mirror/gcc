@@ -44,14 +44,13 @@
  * Contains test for finding random integers.
  */
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 #include <performance/io/xml_formatter.hpp>
 #include <native_type/assoc/native_hash_set.hpp>
 #include <io/verified_cmd_line_input.hpp>
 #include <rng/twister_rand_gen.hpp>
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/timing/find_test.hpp>
-#include <ext/pb_ds/detail/typelist.hpp>
 #include <iostream>
 #include <vector>
 
@@ -87,13 +86,13 @@ main(int argc, char* a_p_argv[])
       test_t tst(b, b, vn, vs, vm, vn, vs, vm);
       {
 	typedef native_hash_map< int, char> native_t;
-	tst(pb_ds::detail::type_to_type<native_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
       }
 
       {
 	typedef hash_common_types<int, char>::performance_tl tl_t;
 	tl_t tl;
-	pb_ds::detail::typelist_apply(tst, tl);
+	__gnu_cxx::typelist::apply(tst, tl);
       }
     }
   catch (...)

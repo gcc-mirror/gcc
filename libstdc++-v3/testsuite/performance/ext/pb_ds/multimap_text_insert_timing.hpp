@@ -44,7 +44,7 @@
  * Contains test for inserting text words.
  */
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 #include <io/text_populate.hpp>
 #include <performance/io/xml_formatter.hpp>
 #include <native_type/assoc/native_hash_multimap.hpp>
@@ -54,7 +54,6 @@
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/timing/multimap_insert_test.hpp>
 #include <performance/assoc/multimap_common_type.hpp>
-#include <ext/pb_ds/detail/typelist.hpp>
 #include <hash_fn/string_hash_fn.hpp>
 #include <iostream>
 #include <vector>
@@ -99,21 +98,21 @@ main(int argc, char* a_p_argv[])
 	mmap_tl_tl tl;
 	typedef multimap_insert_test<vec_t::const_iterator, false> test_type;
 	test_type tst(b, prm*  ratio_n, prm*  ratio_s, prm*  ratio_m);
-	pb_ds::detail::typelist_apply(tst, tl);
+	__gnu_cxx::typelist::apply(tst, tl);
       }
 
       {
 	typedef native_hash_multimap<std::string, int, 8, string_hash_fn> native_t;
 	typedef multimap_insert_test<vec_t::const_iterator, true> test_type;
 	test_type tst(b,  prm*  ratio_n, prm*  ratio_s, prm*  ratio_m);
-	tst(pb_ds::detail::type_to_type<native_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
       }
 
       {
 	typedef native_multimap<std::string, int> native_t;
 	typedef multimap_insert_test<vec_t::const_iterator, true> test_type;
 	test_type tst(b, prm* ratio_n, prm* ratio_s, prm* ratio_m);
-	tst(pb_ds::detail::type_to_type<native_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
       }
     }
   catch (...)

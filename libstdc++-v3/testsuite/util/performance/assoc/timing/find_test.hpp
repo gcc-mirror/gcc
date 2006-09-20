@@ -140,7 +140,7 @@ namespace pb_ds
 
       template<typename Cntnr>
       void
-      operator()(pb_ds::detail::type_to_type<Cntnr>);
+      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
 
     private:
       find_test(const find_test& );
@@ -176,7 +176,7 @@ namespace pb_ds
     template<typename Cntnr>
     void
     PB_DS_CLASS_C_DEC::
-    operator()(pb_ds::detail::type_to_type<Cntnr>)
+    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
     {
       xml_result_set_performance_formatter res_set_fmt(
 						       string_form<Cntnr>::name(),

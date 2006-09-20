@@ -47,7 +47,7 @@
 #ifndef PB_DS_ASSOC_CNTNR_HPP
 #define PB_DS_ASSOC_CNTNR_HPP
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
 #include <ext/pb_ds/detail/container_base_dispatch.hpp>
@@ -55,7 +55,7 @@
 
 namespace pb_ds
 {
-#define PB_DS_BASE_C_DEC						\
+#define PB_DS_BASE_C_DEC \
   detail::container_base_dispatch<Key, Mapped, Tag, Policy_Tl, Allocator>::type
 
   // An abstract basic associative container.
@@ -117,10 +117,9 @@ namespace pb_ds
 #undef PB_DS_BASE_C_DEC
 
 
-#define PB_DS_BASE_C_DEC						\
-  container_base<Key, Mapped, Tag, typename detail::typelist_append< \
-										   typename detail::typelist4<Hash_Fn, Eq_Fn, Resize_Policy, detail::integral_constant<int,Store_Hash> >::type, \
-										   Policy_TL>::type, Allocator>
+#define PB_DS_BASE_C_DEC \
+  container_base<Key, Mapped, Tag, typename __gnu_cxx::typelist::append< \
+  typename __gnu_cxx::typelist::create4<Hash_Fn, Eq_Fn, Resize_Policy, detail::integral_constant<int, Store_Hash> >::type, Policy_TL>::type, Allocator>
 
   // An abstract basic hash-based associative container.
   template<typename Key,
@@ -154,10 +153,10 @@ namespace pb_ds
 #undef PB_DS_BASE_C_DEC
 
 
-#define PB_DS_BASE_C_DEC						\
+#define PB_DS_BASE_C_DEC \
   basic_hash_table<Key, Mapped,	Hash_Fn, Eq_Fn, Resize_Policy, Store_Hash, \
-		   cc_hash_tag,						\
-		   typename detail::typelist1<Comb_Hash_Fn>::type, Allocator>
+		   cc_hash_tag,	\
+	  typename __gnu_cxx::typelist::create1<Comb_Hash_Fn>::type, Allocator>
 
   // A concrete collision-chaining hash-based associative container.
   template<typename Key,
@@ -291,10 +290,10 @@ namespace pb_ds
 #undef PB_DS_BASE_C_DEC
 
 
-#define PB_DS_BASE_C_DEC						\
+#define PB_DS_BASE_C_DEC \
   basic_hash_table<Key, Mapped,	Hash_Fn, Eq_Fn, Resize_Policy, Store_Hash, \
-		   gp_hash_tag,						\
-		   typename detail::typelist2<Comb_Probe_Fn, Probe_Fn>::type, Allocator>
+		   gp_hash_tag, \
+		   typename __gnu_cxx::typelist::create2<Comb_Probe_Fn, Probe_Fn>::type, Allocator>
 
   // A concrete general-probing hash-based associative container.
   template<typename Key,
@@ -490,7 +489,7 @@ namespace pb_ds
 
 #define PB_DS_BASE_C_DEC						\
   basic_tree<Key,Mapped,Tag,typename PB_DS_TREE_NODE_AND_IT_TRAITS_C_DEC::node_update, \
-	     typename detail::typelist2<Cmp_Fn, PB_DS_TREE_NODE_AND_IT_TRAITS_C_DEC >::type, Allocator>
+	     typename __gnu_cxx::typelist::create2<Cmp_Fn, PB_DS_TREE_NODE_AND_IT_TRAITS_C_DEC >::type, Allocator>
 
   // A concrete basic tree-based associative container.
   template<typename Key, typename Mapped, typename Cmp_Fn = std::less<Key>,
@@ -561,7 +560,7 @@ namespace pb_ds
 
 #define PB_DS_BASE_C_DEC						\
   basic_tree<Key,Mapped,Tag, typename PB_DS_TRIE_NODE_AND_ITS_TRAITS::node_update, \
-	     typename detail::typelist2<E_Access_Traits, PB_DS_TRIE_NODE_AND_ITS_TRAITS >::type, Allocator>
+	     typename __gnu_cxx::typelist::create2<E_Access_Traits, PB_DS_TRIE_NODE_AND_ITS_TRAITS >::type, Allocator>
 
   // A concrete basic trie-based associative container.
   template<typename Key,
@@ -632,9 +631,9 @@ namespace pb_ds
 #undef PB_DS_TRIE_NODE_AND_ITS_TRAITS
 
 
-#define PB_DS_BASE_C_DEC						\
-  container_base<Key, Mapped, list_update_tag,			\
-			typename detail::typelist2<Eq_Fn, Update_Policy>::type, Allocator>
+#define PB_DS_BASE_C_DEC \
+  container_base<Key, Mapped, list_update_tag, \
+		 typename __gnu_cxx::typelist::create2<Eq_Fn, Update_Policy>::type, Allocator>
 
   // A list-update based associative container.
   template<typename Key,

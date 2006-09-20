@@ -44,12 +44,11 @@
  * Contains test for finding random_int.
  */
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 #include <performance/io/xml_formatter.hpp>
 #include <io/verified_cmd_line_input.hpp>
 #include <common_type/priority_queue/common_type.hpp>
 #include <performance/priority_queue/timing/push_test.hpp>
-#include <ext/pb_ds/detail/typelist.hpp>
 #include <native_type/priority_queue/native_priority_queue.hpp>
 #include <rng/twister_rand_gen.hpp>
 #include <iostream>
@@ -82,17 +81,17 @@ main(int argc, char* a_p_argv[])
       {
 	typedef pq_common_types<int>::performance_tl pq_tl_t;
 	pq_tl_t tl;
-	pb_ds::detail::typelist_apply(tst, tl);
+	__gnu_cxx::typelist::apply(tst, tl);
       }
 
       {
 	typedef native_priority_queue<int, true> native_pq_t;
-	tst(pb_ds::detail::type_to_type<native_pq_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_pq_t>());
       }
 
       {
 	typedef native_priority_queue<int, false> native_pq_t;
-	tst(pb_ds::detail::type_to_type<native_pq_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_pq_t>());
       }
     }
   catch (...)

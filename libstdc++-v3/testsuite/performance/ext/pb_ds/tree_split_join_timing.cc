@@ -44,13 +44,12 @@
  * Contains test for joining trees.
  */
 
-#include <ext/pb_ds/detail/typelist.hpp>
+#include <ext/typelist.h>
 #include <performance/io/xml_formatter.hpp>
 #include <io/verified_cmd_line_input.hpp>
 #include <rng/twister_rand_gen.hpp>
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/timing/tree_split_join_test.hpp>
-#include <ext/pb_ds/detail/typelist.hpp>
 #include <iostream>
 #include <vector>
 
@@ -75,14 +74,14 @@ main(int argc, char* a_p_argv[])
 
 	typedef tree_common_types<int, pb_ds::null_mapped_type>::performance_tl tl_t;
 	tl_t tl;
-	pb_ds::detail::typelist_apply(tst, tl);
+	__gnu_cxx::typelist::apply(tst, tl);
       }
 
       {
 	typedef tree_split_join_test<false> test_t;
 	test_t tst(vn, vs, vm);
 	typedef native_set<int> native_set_t;
-	tst(pb_ds::detail::type_to_type<native_set_t>());
+	tst(__gnu_cxx::typelist::detail::type_to_type<native_set_t>());
       }
     }
   catch(...)

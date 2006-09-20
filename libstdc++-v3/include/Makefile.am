@@ -204,7 +204,6 @@ pb_subdirs = \
 	${pb_builddir}/detail/pairing_heap_ \
 	${pb_builddir}/detail/splay_tree_ \
 	${pb_builddir}/detail/list_update_map_ \
-	${pb_builddir}/detail/typelist \
 	${pb_builddir}/detail/basic_tree_policy \
 	${pb_builddir}/detail/trie_policy \
 	${pb_builddir}/detail/gp_hash_table_map_ \
@@ -503,17 +502,6 @@ pb_headers7 = \
 	${pb_srcdir}/detail/trie_policy/sample_trie_node_update.hpp \
 	${pb_srcdir}/detail/trie_policy/string_trie_e_access_traits_imp.hpp \
 	${pb_srcdir}/detail/trie_policy/trie_policy_base.hpp \
-	${pb_srcdir}/detail/typelist_assoc_container.hpp \
-	${pb_srcdir}/detail/typelist.hpp \
-	${pb_srcdir}/detail/typelist/typelist_append.hpp \
-	${pb_srcdir}/detail/typelist/typelist_apply.hpp \
-	${pb_srcdir}/detail/typelist/typelist_assoc_container_find.hpp \
-	${pb_srcdir}/detail/typelist/typelist_at_index.hpp \
-	${pb_srcdir}/detail/typelist/typelist_contains.hpp \
-	${pb_srcdir}/detail/typelist/typelist_filter.hpp \
-	${pb_srcdir}/detail/typelist/typelist_flatten.hpp \
-	${pb_srcdir}/detail/typelist/typelist_transform.hpp \
-	${pb_srcdir}/detail/typelist/typelist_typelist_append.hpp \
 	${pb_srcdir}/detail/types_traits.hpp \
 	${pb_srcdir}/detail/type_utils.hpp \
 	${pb_srcdir}/detail/unordered_iterator/const_iterator.hpp \

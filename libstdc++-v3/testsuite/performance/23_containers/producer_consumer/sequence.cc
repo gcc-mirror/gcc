@@ -249,8 +249,7 @@ main()
 
   typedef test_sequence<thread_type> test_type;
   test_type test("producer_consumer_sequence");
-  __gnu_cxx::typelist::apply<test_type, container_types> applier;
-  applier(test);
+  __gnu_cxx::typelist::apply(test, container_types());
 
   return 0;
 }

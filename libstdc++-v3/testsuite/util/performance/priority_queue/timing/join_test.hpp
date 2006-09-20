@@ -128,7 +128,7 @@ namespace pb_ds
 
       template<typename Cntnr>
       void
-      operator()(pb_ds::detail::type_to_type<Cntnr>)
+      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
       {
 	using pb_ds::test::detail::double_push_functor;
 	using pb_ds::test::detail::double_push_join_functor;
@@ -159,7 +159,7 @@ namespace pb_ds
 
       template<typename Cntnr>
       void
-      join(pb_ds::detail::type_to_type<Cntnr>, It b, It e)
+      join(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It b, It e)
       {
 	Cntnr cntnr;
 	typedef typename Cntnr::const_reference const_reference;

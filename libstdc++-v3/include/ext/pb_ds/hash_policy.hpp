@@ -51,6 +51,7 @@
 #include <vector>
 #include <cmath>
 #include <ext/pb_ds/exception.hpp>
+#include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/hash_fn/mask_based_range_hashing.hpp>
 #include <ext/pb_ds/detail/hash_fn/mod_based_range_hashing.hpp>
 #include <ext/pb_ds/detail/resize_policy/hash_load_check_resize_trigger_size_base.hpp>

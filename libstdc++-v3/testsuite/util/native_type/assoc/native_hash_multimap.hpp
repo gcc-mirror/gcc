@@ -47,57 +47,27 @@
 #ifndef PB_DS_NATIVE_HASH_MULTIMAP_HPP
 #define PB_DS_NATIVE_HASH_MULTIMAP_HPP
 
+#include <string>
+#include <ext/hash_map>
+#include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
 #include <native_type/assoc/native_hash_tag.hpp>
 #include <io/xml.hpp>
-#include <string>
-#include <ext/hash_map>
 
 namespace pb_ds
 {
-
   namespace test
   {
-
-#define PB_DS_CLASS_T_DEC						\
-    template<								\
-						typename Key,		\
-						typename Data,		\
-						size_t Init_Size,	\
-						class Hash_Fn,		\
-						class Eq_Fn,		\
-						class Less_Fn,		\
-						class Allocator>
-
-#define PB_DS_CLASS_C_DEC					\
-    native_hash_multimap<					\
-						Key,		\
-						Data,		\
-						Init_Size,	\
-						Hash_Fn,	\
-						Eq_Fn,		\
-						Less_Fn,	\
-						Allocator>
-
-#define PB_DS_BASE_C_DEC					\
-    __gnu_cxx::hash_multimap<					\
-						Key,		\
-						Data,		\
-						Hash_Fn,	\
-						Eq_Fn,		\
-						Allocator>
+#define PB_DS_BASE_C_DEC \
+    __gnu_cxx::hash_multimap<Key, Data, Hash_Fn, Eq_Fn, Allocator>
 
     template<typename Key,
 	     typename Data,
 	     size_t Init_Size = 8,
-	     class Hash_Fn =
-	     typename pb_ds::detail::default_hash_fn<Key>::type,
-	     class Eq_Fn =
-	     std::equal_to<Key>,
-	     class Less_Fn =
-	     std::less<Key>,
-	     class Allocator =
-	     std::allocator<char> >
+	     class Hash_Fn = typename pb_ds::detail::default_hash_fn<Key>::type,
+	     class Eq_Fn = std::equal_to<Key>,
+	     class Less_Fn = std::less<Key>,
+	     class Allocator = std::allocator<char> >
     class native_hash_multimap : public PB_DS_BASE_C_DEC
     {
     private:
@@ -114,119 +84,78 @@ namespace pb_ds
 
       typedef
       typename Allocator::template rebind<
-	std::pair<
-	Key,
-	Data> >::other::const_reference
+	std::pair<Key, Data> >::other::const_reference
       const_reference;
 
-    public:
-      native_hash_multimap();
+      native_hash_multimap() : base_type(Init_Size)
+      { }
+
+      template<typename It>
+      native_hash_multimap(It f, It l) : base_type(f, l)
+      { }
 
       inline void
       insert(typename base_type::const_reference r_val)
       {
-        typedef
-	  std::pair<
-	  typename base_type::iterator,
-	  typename base_type::iterator>
-	  eq_range_t;
-
+        typedef std::pair<iterator, iterator> eq_range_t;
         eq_range_t f = base_type::equal_range(r_val.first);
 
-        typename base_type::iterator it = f.first;
-
+        iterator it = f.first;
         while (it != f.second)
 	  {
             if (it->second == r_val.second)
 	      return;
-
             ++it;
 	  }
-
         base_type::insert(r_val);
       }
 
       inline iterator
       find(const_reference r_val)
       {
-        typedef
-	std::pair<
-	typename base_type::iterator,
-	typename base_type::iterator>
-	eq_range_t;
-
+        typedef std::pair<iterator, iterator> eq_range_t;
         eq_range_t f = base_type::equal_range(r_val.first);
 
-        typename base_type::iterator it = f.first;
-
+        iterator it = f.first;
         while (it != f.second)
 	  {
             if (it->second == r_val.second)
 	      return it;
-
             ++it;
 	  }
-
         return base_type::end();
       }
 
       inline const_iterator
       find(const_reference r_val) const
       {
-        typedef
-	std::pair<
-	typename base_type::const_iterator,
-	typename base_type::const_iterator>
-	eq_range_t;
-
+        typedef std::pair<const_iterator, const_iterator> eq_range_t;
         eq_range_t f = base_type::equal_range(r_val.first);
 
-        typename base_type::const_iterator it = f.first;
-
+        const_iterator it = f.first;
         while (it != f.second)
 	  {
             if (it->second == r_val.second)
 	      return it;
-
             ++it;
 	  }
-
         return base_type::end();
       }
 
-      template<typename It>
-      native_hash_multimap(It f, It l);
-
       static std::string
       name()
-      {
-        return ("n_hash_mmap");
-      }
+      { return std::string("n_hash_mmap"); }
 
       static std::string
       desc()
       {
-        return (make_xml_tag("type", "value", "__gnucxx_hash_multimap"));
+        return make_xml_tag("type", "value", "__gnucxx_hash_multimap");
       }
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    native_hash_multimap() : base_type(Init_Size)
-    { }
-
-    PB_DS_CLASS_T_DEC
-    template<typename It>
-    PB_DS_CLASS_C_DEC::
-    native_hash_multimap(It f, It l) : base_type(f, l)
-    { }
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
 #undef PB_DS_BASE_C_DEC
 
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_NATIVE_HASH_MULTIMAP_HPP
+#endif 

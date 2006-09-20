@@ -57,7 +57,6 @@ PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
   std::swap(m_start_size, other.m_start_size);
-
   std::swap(m_grow_factor, other.m_grow_factor);
 }
 
@@ -67,18 +66,14 @@ PB_DS_CLASS_C_DEC::
 get_nearest_larger_size(size_type size) const
 {
   size_type ret = m_start_size;
-
   while (ret <= size)
     {
       const size_type next_ret = ret*  m_grow_factor;
-
       if (next_ret < ret)
 	throw insert_error();
-
       ret = next_ret;
     }
-
-  return (ret);
+  return ret;
 }
 
 PB_DS_CLASS_T_DEC
@@ -87,20 +82,15 @@ PB_DS_CLASS_C_DEC::
 get_nearest_smaller_size(size_type size) const
 {
   size_type ret = m_start_size;
-
   while (true)
     {
       const size_type next_ret = ret*  m_grow_factor;
-
       if (next_ret < ret)
 	throw resize_error();
-
       if (next_ret >= size)
 	return (ret);
-
       ret = next_ret;
     }
-
-  return (ret);
+  return ret;
 }
 

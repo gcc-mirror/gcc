@@ -49,124 +49,52 @@
 
 namespace pb_ds
 {
-
   namespace detail
   {
-
+    // Primary template.
     template<typename Size_Type, bool Hold_Size>
     class hash_load_check_resize_trigger_size_base;
 
-#define PB_DS_CLASS_T_DEC			\
+    // Specializations.
     template<typename Size_Type>
-
-#define PB_DS_CLASS_C_DEC						\
-    hash_load_check_resize_trigger_size_base<				\
-								Size_Type, \
-								true>
-
-    template<typename Size_Type>
-    class hash_load_check_resize_trigger_size_base<
-      Size_Type,
-      true>
+    class hash_load_check_resize_trigger_size_base<Size_Type, true>
     {
     protected:
       typedef Size_Type size_type;
 
-    protected:
-      inline
-      hash_load_check_resize_trigger_size_base();
+      hash_load_check_resize_trigger_size_base(): m_size(0)
+      { }
 
       inline void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(hash_load_check_resize_trigger_size_base& other)
+      { std::swap(m_size, other.m_size); }
 
       inline void
-      set_size(size_type size);
+      set_size(size_type size)
+      { m_size = size; }
 
       inline size_type
-      get_size() const;
+      get_size() const
+      { return m_size; }
 
     private:
       size_type m_size;
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    hash_load_check_resize_trigger_size_base() :
-      m_size(0)
-    { }
-
-    PB_DS_CLASS_T_DEC
-    inline void
-    PB_DS_CLASS_C_DEC::
-    set_size(size_type size)
-    {
-      m_size = size;
-    }
-
-    PB_DS_CLASS_T_DEC
-    inline typename PB_DS_CLASS_C_DEC::size_type
-    PB_DS_CLASS_C_DEC::
-    get_size() const
-    {
-      return (m_size);
-    }
-
-    PB_DS_CLASS_T_DEC
-    inline void
-    PB_DS_CLASS_C_DEC::
-    swap(PB_DS_CLASS_C_DEC& other)
-    {
-      std::swap(m_size, other.m_size);
-    }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
-#define PB_DS_CLASS_T_DEC			\
     template<typename Size_Type>
-
-#define PB_DS_CLASS_C_DEC						\
-    hash_load_check_resize_trigger_size_base<				\
-								Size_Type, \
-								false>
-
-    template<typename Size_Type>
-    class hash_load_check_resize_trigger_size_base<
-      Size_Type,
-      false>
+    class hash_load_check_resize_trigger_size_base<Size_Type, false>
     {
     protected:
       typedef Size_Type size_type;
 
     protected:
       inline void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(hash_load_check_resize_trigger_size_base& other) { }
 
       inline void
-      set_size(size_type size);
+      set_size(size_type size) { }
     };
-
-    PB_DS_CLASS_T_DEC
-    inline void
-    PB_DS_CLASS_C_DEC::
-    swap(PB_DS_CLASS_C_DEC& /*other*/)
-    { }
-
-    PB_DS_CLASS_T_DEC
-    inline void
-    PB_DS_CLASS_C_DEC::
-    set_size(size_type /*size*/)
-    {
-      // Do nothing
-    }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace detail
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_HASH_LOAD_CHECK_RESIZE_TRIGGER_SIZE_BASE_HPP
+#endif

@@ -47,38 +47,30 @@
 #ifndef PB_DS_NATIVE_SET_HPP
 #define PB_DS_NATIVE_SET_HPP
 
+#include <string>
+#include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
 #include <native_type/assoc/native_tree_tag.hpp>
 #include <io/xml.hpp>
-#include <string>
 
 namespace pb_ds
 {
-
   namespace test
   {
-
-#define PB_DS_BASE_C_DEC						\
-    std::set<								\
-								Key,	\
-								Cmp_Fn,	\
-								typename Allocator::template rebind< \
-														Key>::other>
+#define PB_DS_BASE_C_DEC \
+    std::set<Key, Cmp_Fn, typename Allocator::template rebind<Key>::other>
 
     template<typename Key, class Cmp_Fn = std::less<Key>,
-	     class Allocator =
-	     std::allocator<char> >
+	     class Allocator = std::allocator<char> >
     class native_set : public PB_DS_BASE_C_DEC
     {
     private:
-      typedef PB_DS_BASE_C_DEC base_type;
+      typedef PB_DS_BASE_C_DEC 			 base_type;
 
     public:
-      typedef native_tree_tag container_category;
+      typedef native_tree_tag 			 container_category;
+      typedef typename base_type::const_iterator const_iterator;
 
-      typedef typename PB_DS_BASE_C_DEC::const_iterator const_iterator;
-
-    public:
       native_set() : base_type()
       { }
 
@@ -91,21 +83,15 @@ namespace pb_ds
 
       static std::string
       name()
-      {
-        return ("n_set");
-      }
+      { return std::string("n_set"); }
 
       static std::string
       desc()
-      {
-        return (make_xml_tag(            "type", "value", "std_set"));
-      }
+      { return make_xml_tag("type", "value", "std_set"); }
     };
 
 #undef PB_DS_BASE_C_DEC
-
   } // namespace test
-
 } // namespace pb_ds
 
 #endif // #ifndef PB_DS_NATIVE_SET_HPP

@@ -82,7 +82,7 @@ namespace test
     typedef typename tree_common_types<basic_type, Data_Type, std::less<basic_type>, pb_ds::tree_order_statistics_node_update, alloc_type>::regression_tl order_statistics_tl_t;
 
   public:
-    typedef typename pb_ds::detail::typelist_append<no_order_statistics_tl_t, order_statistics_tl_t>::type tl_t;
+    typedef typename __gnu_cxx::typelist::append<no_order_statistics_tl_t, order_statistics_tl_t>::type tl_t;
 
     typedef no_order_statistics_tl_t min_tl_t;
   };
@@ -98,7 +98,7 @@ namespace test
     typedef typename trie_common_types<basic_type, Data_Type, e_access_traits_t, pb_ds::pat_trie_tag, pb_ds::trie_prefix_search_node_update, alloc_type>::regression_tl prefix_search_tl_t;
 
   public:
-    typedef typename pb_ds::detail::typelist_append<no_updates_tl_t, typename pb_ds::detail::typelist_append<prefix_search_tl_t, order_statistics_tl_t>::type>::type tl_t;
+    typedef typename __gnu_cxx::typelist::append<no_updates_tl_t, typename __gnu_cxx::typelist::append<prefix_search_tl_t, order_statistics_tl_t>::type>::type tl_t;
 
     typedef no_updates_tl_t min_tl_t;
   };

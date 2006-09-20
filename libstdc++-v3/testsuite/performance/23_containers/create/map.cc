@@ -51,11 +51,9 @@ main()
 #endif    
 
   typedef __gnu_test::maps<int, thread_type>::type container_types;
-
   typedef test_sequence<thread_type> test_type;
   test_type test("create");
-  __gnu_cxx::typelist::apply<test_type, container_types> applier;
-  applier(test);
+  __gnu_cxx::typelist::apply(test, container_types());
 
   return 0;
 }

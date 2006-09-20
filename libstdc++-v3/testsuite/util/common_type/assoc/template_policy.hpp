@@ -47,8 +47,7 @@
 #ifndef PB_DS_TEMPLATE_POLICY_HPP
 #define PB_DS_TEMPLATE_POLICY_HPP
 
-#include <ext/pb_ds/detail/typelist.hpp>
-
+#include <ext/typelist.h>
 #include <ext/pb_ds/hash_policy.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
 #include <ext/pb_ds/list_update_policy.hpp>

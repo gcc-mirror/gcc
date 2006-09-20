@@ -50,13 +50,10 @@
 // A sample resize trigger policy.
 class sample_resize_trigger
 {
-
 public:
 
   // Size type.
   typedef size_t size_type;
-
-public:
 
   // Default constructor.
   sample_resize_trigger();
@@ -106,7 +103,8 @@ protected:
   inline void
   notify_erase_search_end();
 
-  // Notifies an element was inserted. the total number of entries in the table is num_entries.
+  // Notifies an element was inserted. the total number of entries in
+  // the table is num_entries.
   inline void
   notify_inserted(size_type num_entries);
 
@@ -118,7 +116,8 @@ protected:
   void
   notify_cleared();
 
-  // Notifies the table was resized as a result of this object's signifying that a resize is needed.
+  // Notifies the table was resized as a result of this object's
+  // signifying that a resize is needed.
   void
   notify_resized(size_type new_size);
 
@@ -139,9 +138,8 @@ private:
   // Resizes to new_size.
   virtual void
   do_resize(size_type new_size);
-
 };
 
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_SAMPLE_RESIZE_TRIGGER_HPP
+#endif 

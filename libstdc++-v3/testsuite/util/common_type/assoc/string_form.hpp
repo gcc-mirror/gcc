@@ -81,74 +81,74 @@ namespace pb_ds
 	private:
 	  template<typename D_Cntnr>
 	  static std::string
-	  name(pb_ds::detail::type_to_type<D_Cntnr>)
+	  name(__gnu_cxx::typelist::detail::type_to_type<D_Cntnr>)
 	  {
             return ("mmap_" + pb_ds_string_form<D_Cntnr>::name());
 	  }
 
 	  template<typename D_Cntnr>
 	  static std::string
-	  desc(pb_ds::detail::type_to_type<D_Cntnr>)
+	  desc(__gnu_cxx::typelist::detail::type_to_type<D_Cntnr>)
 	  {
             return (pb_ds_string_form<D_Cntnr>::desc());
 	  }
 
 	  static std::string
-	  name(pb_ds::detail::type_to_type<size_t>)
+	  name(__gnu_cxx::typelist::detail::type_to_type<size_t>)
 	  {
             return ("map");
 	  }
 
 	  static std::string
-	  desc(pb_ds::detail::type_to_type<size_t>)
+	  desc(__gnu_cxx::typelist::detail::type_to_type<size_t>)
 	  {
             return ("");
 	  }
 
 	  static std::string
-	  name(pb_ds::detail::type_to_type<basic_type>)
+	  name(__gnu_cxx::typelist::detail::type_to_type<basic_type>)
 	  {
             return ("map");
 	  }
 
 	  static std::string
-	  desc(pb_ds::detail::type_to_type<basic_type>)
+	  desc(__gnu_cxx::typelist::detail::type_to_type<basic_type>)
 	  {
             return ("");
 	  }
 
 	  static std::string
-	  name(pb_ds::detail::type_to_type<int>)
+	  name(__gnu_cxx::typelist::detail::type_to_type<int>)
 	  {
             return ("map");
 	  }
 
 	  static std::string
-	  desc(pb_ds::detail::type_to_type<int>)
+	  desc(__gnu_cxx::typelist::detail::type_to_type<int>)
 	  {
             return ("");
 	  }
 
 	  static std::string
-	  name(pb_ds::detail::type_to_type<char>)
+	  name(__gnu_cxx::typelist::detail::type_to_type<char>)
 	  {
             return ("map");
 	  }
 
 	  static std::string
-	  desc(pb_ds::detail::type_to_type<char>)
+	  desc(__gnu_cxx::typelist::detail::type_to_type<char>)
 	  {
             return ("");
 	  }
 
 	  static std::string
-	  name(pb_ds::detail::type_to_type<pb_ds::null_mapped_type>)
+	  name(__gnu_cxx::typelist::detail::type_to_type<pb_ds::null_mapped_type>)
 	  {
             return ("set");
 	  }
 
 	  static std::string
-	  desc(pb_ds::detail::type_to_type<pb_ds::null_mapped_type>)
+	  desc(__gnu_cxx::typelist::detail::type_to_type<pb_ds::null_mapped_type>)
 	  {
             return ("");
 	  }
@@ -157,13 +157,13 @@ namespace pb_ds
 	  static std::string
 	  name()
 	  {
-            return (name(pb_ds::detail::type_to_type<mapped_type>()));
+            return (name(__gnu_cxx::typelist::detail::type_to_type<mapped_type>()));
 	  }
 
 	  static std::string
 	  desc()
 	  {
-            return (desc(pb_ds::detail::type_to_type<mapped_type>()));
+            return (desc(__gnu_cxx::typelist::detail::type_to_type<mapped_type>()));
 	  }
 	};
 
