@@ -1,3 +1,9 @@
+2006-09-20  Eric Christopher  <echristo@apple.com>
+
+	* config/i386/i386.c (x86_fisttp): Remove.
+	* config/i386/i386.h (x86_fisttp): Ditto.
+	(TARGET_FISTTP): Ditto.
+
 2006-09-19  Eric Christopher  <echristo@apple.com>
 
 	* doc/tm.texi (OBJC_JBLEN): Describe.

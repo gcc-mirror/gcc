@@ -743,7 +743,6 @@ const int x86_double_with_add = ~m_386;
 const int x86_use_bit_test = m_386;
 const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON_K8 | m_K6 | m_GENERIC;
 const int x86_cmove = m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
-const int x86_fisttp = m_NOCONA;
 const int x86_3dnow_a = m_ATHLON_K8;
 const int x86_deep_branch = m_PPRO | m_K6 | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_GENERIC;
 /* Branch hints were put in P4 based on simulation result. But

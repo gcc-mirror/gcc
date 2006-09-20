@@ -1,3 +1,7 @@
+2006-09-20  Eric Christopher  <echristo@apple.com>
+
+	* gcc.target/i386/sse3-not-fisttp.c: New.
+
 2006-09-19  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* gfortran.dg/vect/vect-5.f90: Don't xfail lp64.
