@@ -1,3 +1,9 @@
+2006-09-20  Josh Conner  <jconner@apple.com>
+
+	PR middle-end/25505
+	* calls.c (expand_call): Allow reuse of structure return stack
+	temp.
+
 2006-09-20  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/unwind-arm.c (selfrel_offset31): Clear top bit for
