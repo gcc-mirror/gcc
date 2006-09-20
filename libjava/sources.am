@@ -5223,6 +5223,7 @@ classpath/java/net/NoRouteToHostException.java \
 classpath/java/net/PasswordAuthentication.java \
 classpath/java/net/PortUnreachableException.java \
 classpath/java/net/ProtocolException.java \
+classpath/java/net/ResolverCache.java \
 classpath/java/net/ServerSocket.java \
 classpath/java/net/Socket.java \
 classpath/java/net/SocketAddress.java \
@@ -5243,6 +5244,7 @@ classpath/java/net/URLStreamHandler.java \
 classpath/java/net/URLStreamHandlerFactory.java \
 classpath/java/net/UnknownHostException.java \
 classpath/java/net/UnknownServiceException.java \
+java/net/VMInetAddress.java \
 java/net/VMNetworkInterface.java \
 java/net/VMURLConnection.java
 

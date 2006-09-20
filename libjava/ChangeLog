@@ -1,3 +1,17 @@
+2006-09-20  Gary Benson  <gbenson@redhat.com>
+
+	* java/net/InetAddress.java: Mostly merged with Classpath.
+	* java/net/VMInetAddress.java: New file.
+	* sources.am, Makefile.in: Rebuilt.
+
+	* java/net/natVMNetworkInterfacePosix.cc
+	(getInterfaces): Create InetAddress objects using
+	InetAddress.getByAddress.
+	* gnu/java/net/natPlainSocketImplPosix.cc
+	(accept, getOption): Likewise.
+	* gnu/java/net/natPlainDatagramSocketImplPosix.cc
+	(peekData, receive, getLocalAddress): Likewise.
+
 2006-09-19  Keith Seitz  <keiths@redhat.com>
 
 	* testsuite/libjava.jvmti/jvmti.exp: New file.
