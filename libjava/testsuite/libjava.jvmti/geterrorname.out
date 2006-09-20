@@ -1,0 +1,49 @@
+JVMTI GetErrorName tests
+none
+null pointer
+out of memory
+access denied
+wrong phase
+internal error
+unattached thread
+invalid environment
+invalid priority
+thread not suspended
+thread suspended
+thread not alive
+class not prepared
+no more frames
+opaque frame
+duplicate
+not found
+not monitor owner
+interrupted
+unmodifiable class
+not available
+absent information
+invalid event type
+native method
+invalid thread
+invalid thread group
+invalid object
+invalid class
+invalid method ID
+invalid location
+invalid field ID
+type mismatch
+invalid slot
+invalid monitor
+invalid class format
+circular class definition
+unsupported redefinition: method added
+unsupported redefinition: schema changed
+invalid type state
+fails verification
+unsupported redefinition: hierarchy changed
+unsupported redefinition: method deleted
+unsupported version
+names do not match
+unsupported redefinition: class modifiers changed
+unsupported redefinition: method modifiers changed
+must possess capability
+illegal argument

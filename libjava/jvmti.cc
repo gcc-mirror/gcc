@@ -651,6 +651,219 @@ _Jv_JVMTI_GetObjectSize (MAYBE_UNUSED jvmtiEnv *env, jobject object,
   return JVMTI_ERROR_NONE;
 }
 
+jvmtiError
+_Jv_JVMTI_GetErrorName (MAYBE_UNUSED jvmtiEnv *env, jvmtiError error,
+			char **name_ptr)
+{
+  NULL_CHECK (name_ptr);
+
+  const char *name;
+  switch (error)
+    {
+    case JVMTI_ERROR_NONE:
+      name = "none";
+      break;
+
+    case JVMTI_ERROR_NULL_POINTER:
+      name = "null pointer";
+      break;
+
+    case JVMTI_ERROR_OUT_OF_MEMORY:
+      name = "out of memory";
+      break;
+
+    case JVMTI_ERROR_ACCESS_DENIED:
+      name = "access denied";
+      break;
+
+    case JVMTI_ERROR_WRONG_PHASE:
+      name = "wrong phase";
+      break;
+
+    case JVMTI_ERROR_INTERNAL:
+      name = "internal error";
+      break;
+
+    case JVMTI_ERROR_UNATTACHED_THREAD:
+      name = "unattached thread";
+      break;
+
+    case JVMTI_ERROR_INVALID_ENVIRONMENT:
+      name = "invalid environment";
+      break;
+
+    case JVMTI_ERROR_INVALID_PRIORITY:
+      name = "invalid priority";
+      break;
+
+    case JVMTI_ERROR_THREAD_NOT_SUSPENDED:
+      name = "thread not suspended";
+      break;
+
+    case JVMTI_ERROR_THREAD_SUSPENDED:
+      name = "thread suspended";
+      break;
+
+    case JVMTI_ERROR_THREAD_NOT_ALIVE:
+      name = "thread not alive";
+      break;
+
+    case JVMTI_ERROR_CLASS_NOT_PREPARED:
+      name = "class not prepared";
+      break;
+
+    case JVMTI_ERROR_NO_MORE_FRAMES:
+      name = "no more frames";
+      break;
+
+    case JVMTI_ERROR_OPAQUE_FRAME:
+      name = "opaque frame";
+      break;
+
+    case JVMTI_ERROR_DUPLICATE:
+      name = "duplicate";
+      break;
+
+    case JVMTI_ERROR_NOT_FOUND:
+      name = "not found";
+      break;
+
+    case JVMTI_ERROR_NOT_MONITOR_OWNER:
+      name = "not monitor owner";
+      break;
+
+    case JVMTI_ERROR_INTERRUPT:
+      name = "interrupted";
+      break;
+
+    case JVMTI_ERROR_UNMODIFIABLE_CLASS:
+      name = "unmodifiable class";
+      break;
+
+    case JVMTI_ERROR_NOT_AVAILABLE:
+      name = "not available";
+      break;
+
+    case JVMTI_ERROR_ABSENT_INFORMATION:
+      name = "absent information";
+      break;
+
+    case JVMTI_ERROR_INVALID_EVENT_TYPE:
+      name = "invalid event type";
+      break;
+
+    case JVMTI_ERROR_NATIVE_METHOD:
+      name = "native method";
+      break;
+
+    case JVMTI_ERROR_INVALID_THREAD:
+      name = "invalid thread";
+      break;
+
+    case JVMTI_ERROR_INVALID_THREAD_GROUP:
+      name = "invalid thread group";
+      break;
+
+    case JVMTI_ERROR_INVALID_OBJECT:
+      name = "invalid object";
+      break;
+
+    case JVMTI_ERROR_INVALID_CLASS:
+      name = "invalid class";
+      break;
+
+    case JVMTI_ERROR_INVALID_METHODID:
+      name = "invalid method ID";
+      break;
+
+    case JVMTI_ERROR_INVALID_LOCATION:
+      name = "invalid location";
+      break;
+
+    case JVMTI_ERROR_INVALID_FIELDID:
+      name = "invalid field ID";
+      break;
+
+    case JVMTI_ERROR_TYPE_MISMATCH:
+      name = "type mismatch";
+      break;
+
+    case JVMTI_ERROR_INVALID_SLOT:
+      name = "invalid slot";
+      break;
+
+    case JVMTI_ERROR_INVALID_MONITOR:
+      name = "invalid monitor";
+      break;
+
+    case JVMTI_ERROR_INVALID_CLASS_FORMAT:
+      name = "invalid class format";
+      break;
+
+    case JVMTI_ERROR_CIRCULAR_CLASS_DEFINITION:
+      name = "circular class definition";
+      break;
+
+    case JVMTI_ERROR_UNSUPPORTED_REDEFINITION_METHOD_ADDED:
+      name = "unsupported redefinition: method added";
+      break;
+
+    case JVMTI_ERROR_UNSUPPORTED_REDEFINITION_SCHEMA_CHANGED:
+      name = "unsupported redefinition: schema changed";
+      break;
+
+    case JVMTI_ERROR_INVALID_TYPESTATE:
+      name = "invalid type state";
+      break;
+
+    case JVMTI_ERROR_FAILS_VERIFICATION:
+      name = "fails verification";
+      break;
+
+    case JVMTI_ERROR_UNSUPPORTED_REDEFINITION_HIERARCHY_CHANGED:
+      name = "unsupported redefinition: hierarchy changed";
+      break;
+
+    case JVMTI_ERROR_UNSUPPORTED_REDEFINITION_METHOD_DELETED:
+      name = "unsupported redefinition: method deleted";
+      break;
+
+    case JVMTI_ERROR_UNSUPPORTED_VERSION:
+      name = "unsupported version";
+      break;
+
+    case JVMTI_ERROR_NAMES_DONT_MATCH:
+      name = "names do not match";
+      break;
+
+    case JVMTI_ERROR_UNSUPPORTED_REDEFINITION_CLASS_MODIFIERS_CHANGED:
+      name = "unsupported redefinition: class modifiers changed";
+      break;
+
+    case JVMTI_ERROR_UNSUPPORTED_REDEFINITION_METHOD_MODIFIERS_CHANGED:
+      name = "unsupported redefinition: method modifiers changed";
+      break;
+
+    case JVMTI_ERROR_MUST_POSSESS_CAPABILITY:
+      name = "must possess capability";
+      break;
+
+    case JVMTI_ERROR_ILLEGAL_ARGUMENT:
+      name = "illegal argument";
+      break;
+
+    default:
+      return JVMTI_ERROR_ILLEGAL_ARGUMENT;
+    }
+
+  *name_ptr = (char *) _Jv_MallocUnchecked (strlen (name) + 1);
+  if (*name_ptr == NULL)
+    return JVMTI_ERROR_OUT_OF_MEMORY;
+
+  strcpy (*name_ptr, name);
+  return JVMTI_ERROR_NONE;
+}
+
 #define RESERVED NULL
 #define UNIMPLEMENTED NULL
 
@@ -783,7 +996,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   UNIMPLEMENTED,		// GetExtensionEvents
   UNIMPLEMENTED,		// SetExtensionEventCallback
   _Jv_JVMTI_DisposeEnvironment,	// DisposeEnvironment
-  UNIMPLEMENTED,		// GetErrorName
+  _Jv_JVMTI_GetErrorName,	// GetErrorName
   UNIMPLEMENTED,		// GetJLocationFormat
   UNIMPLEMENTED,		// GetSystemProperties
   _Jv_JVMTI_GetSystemProperty,	// GetSystemProperty
