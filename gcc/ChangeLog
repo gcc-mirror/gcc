@@ -1,3 +1,9 @@
+2006-09-20  Paul Brook  <paul@codesourcery.com>
+
+	Backport from mainline.
+	* config/arm/unwind-arm.c (selfrel_offset31): Clear top bit for
+	positive offsets.
+
 2006-09-18  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/4520
