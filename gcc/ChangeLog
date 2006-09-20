@@ -1,3 +1,15 @@
+2006-09-20  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.c (CODE_FOR_mips_abs_ps): Delete.
+	* config/mips/mips.md (UNSPEC_ABS_PS): New constant.
+	(UNSPEC_RSQRT1, UNSPEC_RSQRT2, UNSPEC_RECIP1, UNSPEC_RECIP2)
+	(UNSPEC_SINGLE_CC, UNSPEC_SCC): Bump values by 1.
+	(*nmadd<mode>, *nmadd<mode>_fastmath): Require !HONOR_NANS.
+	(*nmsub<mode>, *nmsub<mode>_fastmath): Likewise.
+	(abs<mode>2, neg<mode>2): Likewise.
+	* config/mips/mips-ps-3d.md (mips_abs_ps): New define_expand.
+	(*mips_abs_ps): New define_insn.
+
 2006-09-20  Josh Conner  <jconner@apple.com>
 
 	PR middle-end/25505

@@ -10084,9 +10084,6 @@ struct builtin_description
   CMP_4S_BUILTINS (c, COND),						\
   CMP_4S_BUILTINS (cabs, COND)
 
-/* __builtin_mips_abs_ps() maps to the standard absM2 pattern.  */
-#define CODE_FOR_mips_abs_ps CODE_FOR_absv2sf2
-
 static const struct builtin_description mips_bdesc[] =
 {
   DIRECT_BUILTIN (pll_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, MASK_PAIRED_SINGLE_FLOAT),

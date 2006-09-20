@@ -1,3 +1,12 @@
+2006-09-20  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.target/mips/mips-ps-type.c: Add -ffinite-math-only.
+	* gcc.target/mips/nmadd-2.c: Likewise.
+	* gcc.target/mips/mips-ps-6.c: New test.
+	* gcc.target/mips/neg-abs-1.c: Likewise.
+	* gcc.target/mips/neg-abs-2.c: Likewise.
+	* gcc.target/mips/nmadd-3.c: New test.
+
 2006-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/28046

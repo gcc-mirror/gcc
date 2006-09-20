@@ -276,6 +276,31 @@
   [(set_attr "type" "fmul")
    (set_attr "mode" "SF")])
 
+; abs.ps
+(define_expand "mips_abs_ps"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(unspec:V2SF [(match_operand:V2SF 1 "register_operand")]
+		     UNSPEC_ABS_PS))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+{
+  /* If we can ignore NaNs, this operation is equivalent to the
+     rtl ABS code.  */
+  if (!HONOR_NANS (V2SFmode))
+    {
+      emit_insn (gen_absv2sf2 (operands[0], operands[1]));
+      DONE;
+    }
+})
+
+(define_insn "*mips_abs_ps"
+  [(set (match_operand:V2SF 0 "register_operand" "=f")
+	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")]
+		     UNSPEC_ABS_PS))]
+  "TARGET_PAIRED_SINGLE_FLOAT"
+  "abs.ps\t%0,%1"
+  [(set_attr "type" "fabs")
+   (set_attr "mode" "SF")])
+
 ;----------------------------------------------------------------------------
 ; Floating Point Comparisons for Scalars
 ;----------------------------------------------------------------------------
