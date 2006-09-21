@@ -2749,7 +2749,7 @@ copy_constant (tree exp)
       {
 	tree t = lang_hooks.expand_constant (exp);
 
-	gcc_assert (t == exp);
+	gcc_assert (t != exp);
 	return copy_constant (t);
       }
     }
