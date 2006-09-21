@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     public:
       size_type
       _M_max_size() const
-      { return (_M_dataplus._CharT_alloc_type::max_size() - 1) / 2; }
+      { return (_M_get_allocator().max_size() - 1) / 2; }
 
       _CharT*
       _M_data() const
@@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     void
     __sso_string_base<_CharT, _Traits, _Alloc>::
     _M_destroy(size_type __size) throw()
-    { _M_dataplus._CharT_alloc_type::deallocate(_M_data(), __size + 1); }
+    { _M_get_allocator().deallocate(_M_data(), __size + 1); }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
@@ -324,7 +324,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       // NB: Need an array of char_type[__capacity], plus a terminating
       // null char_type() element.
-      return _M_dataplus._CharT_alloc_type::allocate(__capacity + 1);
+      return _M_get_allocator().allocate(__capacity + 1);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
