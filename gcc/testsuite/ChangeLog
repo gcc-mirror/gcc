@@ -1,3 +1,9 @@
+2006-09-21  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/28861
+        * g++.dg/template/spec32.C: New test.
+        * g++.dg/parse/crash9.C: Adjust error markers.
+	
 2006-09-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/decfloat-constants.c: Remove 'dg-do compile', fix typo.

@@ -1,3 +1,9 @@
+2006-09-21  Lee Millward  <lee.millward@codesourcery.com>
+
+	PR c++/28861
+	* decl.c (shadow_tag): Return error_mark_node
+        if maybe_process_partial_specialization failed.
+	
 2006-09-20  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/27650

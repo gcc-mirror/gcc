@@ -3745,7 +3745,8 @@ shadow_tag (cp_decl_specifier_seq *declspecs)
 
     }
 
-  maybe_process_partial_specialization (t);
+  if (maybe_process_partial_specialization (t) == error_mark_node)
+    return NULL_TREE;
 
   /* This is where the variables in an anonymous union are
      declared.  An anonymous union declaration looks like:
