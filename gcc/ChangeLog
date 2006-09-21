@@ -1,3 +1,7 @@
+2006-09-21  Richard Sandiford  <richard@codesourcery.com>
+
+	* varasm.c (copy_constant): Fix reversed gcc_assert check.
+
 2006-09-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* ginclude/decfloat.h (DEC*_DEN): Define using the correct builtins.
