@@ -1,3 +1,9 @@
+2006-09-21  Sandro Tolaini  <tolaini@libero.it>
+
+	* os_dep.c: Port to Darwin/i386
+	* darwin_stop_world.c: Likewise
+	* include/private/gcconfig.h: Likewise
+	
 2006-06-07  Petr Salinger  <Petr.Salinger@seznam.cz>
 
 	* configure.ac: add support for GNU/kFreeBSD, accepted by upstream
