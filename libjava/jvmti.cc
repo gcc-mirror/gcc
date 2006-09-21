@@ -156,7 +156,9 @@ _Jv_JVMTI_CreateRawMonitor (MAYBE_UNUSED jvmtiEnv *env, const char *name,
   REQUIRE_PHASE (env, JVMTI_PHASE_ONLOAD | JVMTI_PHASE_LIVE);
   NULL_CHECK (name);
   NULL_CHECK (result);
-  *result = (jrawMonitorID) _Jv_Malloc (sizeof (_Jv_rawMonitorID));
+  *result = (jrawMonitorID) _Jv_MallocUnchecked (sizeof (_Jv_rawMonitorID));
+  if (*result == NULL)
+    return JVMTI_ERROR_OUT_OF_MEMORY;
   _Jv_MutexInit (&(*result)->mutex);
   _Jv_CondInit (&(*result)->condition);
   return JVMTI_ERROR_NONE;
@@ -285,7 +287,11 @@ _Jv_JVMTI_GetClassMethods (MAYBE_UNUSED jvmtiEnv *env, jclass klass,
   NULL_CHECK (methods_ptr);
   *count_ptr = JvNumMethods(klass);
 
-  *methods_ptr = (jmethodID *) _Jv_Malloc (*count_ptr * sizeof (jmethodID));
+  *methods_ptr
+    = (jmethodID *) _Jv_MallocUnchecked (*count_ptr * sizeof (jmethodID));
+  if (*methods_ptr == NULL)
+    return JVMTI_ERROR_OUT_OF_MEMORY;
+
   jmethodID start = JvGetFirstMethod (klass);
   for (jint i = 0; i < *count_ptr; ++i)
     // FIXME: correct?
@@ -437,7 +443,11 @@ _Jv_JVMTI_GetClassLoaderClasses (MAYBE_UNUSED jvmtiEnv *env,
   jobjectArray array = values->toArray();
   *count_ptr = array->length;
   jobject *elts = elements (array);
-  jclass *result = (jclass *) _Jv_Malloc (*count_ptr * sizeof (jclass));
+  jclass *result
+    = (jclass *) _Jv_MallocUnchecked (*count_ptr * sizeof (jclass));
+  if (result == NULL)
+    return JVMTI_ERROR_OUT_OF_MEMORY;
+
   // FIXME: JNI references...
   memcpy (result, elts, *count_ptr * sizeof (jclass));
 
@@ -471,7 +481,9 @@ _Jv_JVMTI_GetJNIFunctionTable (MAYBE_UNUSED jvmtiEnv *env,
   REQUIRE_PHASE (env, JVMTI_PHASE_START | JVMTI_PHASE_LIVE);
   NULL_CHECK (function_table);
   *function_table
-    = (jniNativeInterface *) _Jv_Malloc (sizeof (jniNativeInterface));
+    = (jniNativeInterface *) _Jv_MallocUnchecked (sizeof (jniNativeInterface));
+  if (*function_table == NULL)
+    return JVMTI_ERROR_OUT_OF_MEMORY;
   memcpy (*function_table, &_Jv_JNIFunctions, sizeof (jniNativeInterface));
   return JVMTI_ERROR_NONE;
 }
@@ -525,7 +537,9 @@ _Jv_JVMTI_GetSystemProperty (MAYBE_UNUSED jvmtiEnv *env, const char *property,
     return JVMTI_ERROR_NOT_AVAILABLE;
 
   int len = JvGetStringUTFLength (result_str);
-  *result = (char *) _Jv_Malloc (len + 1);
+  *result = (char *) _Jv_MallocUnchecked (len + 1);
+  if (*result == NULL)
+    return JVMTI_ERROR_OUT_OF_MEMORY;
   JvGetStringUTFRegion (result_str, 0, result_str->length(), *result);
   (*result)[len] = '\0';
 
