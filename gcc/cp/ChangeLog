@@ -1,3 +1,9 @@
+2006-09-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29016
+	* typeck.c (build_unary_op): Don't form an ADDR_EXPR around a
+	BASELINK.
+
 2006-09-21  Lee Millward  <lee.millward@codesourcery.com>
 
 	PR c++/28861
