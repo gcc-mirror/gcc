@@ -1464,8 +1464,8 @@ static tree cp_parser_builtin_offsetof
 
 static void cp_parser_statement
   (cp_parser *, tree);
-static tree cp_parser_labeled_statement
-  (cp_parser *, tree);
+static void cp_parser_label_for_labeled_statement
+  (cp_parser *);
 static tree cp_parser_expression_statement
   (cp_parser *, tree);
 static tree cp_parser_compound_statement
@@ -6082,6 +6082,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
   cp_token *token;
   location_t statement_location;
 
+ restart:
   /* There is no statement yet.  */
   statement = NULL_TREE;
   /* Peek at the next token.  */
@@ -6098,9 +6099,11 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
 	{
 	case RID_CASE:
 	case RID_DEFAULT:
-	  statement = cp_parser_labeled_statement (parser,
-						   in_statement_expr);
-	  break;
+	  /* Looks like a labeled-statement with a case label.
+	     Parse the label, and then use tail recursion to parse
+	     the statement.  */
+	  cp_parser_label_for_labeled_statement (parser);
+	  goto restart;
 
 	case RID_IF:
 	case RID_SWITCH:
@@ -6145,7 +6148,13 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
 	 labeled-statement.  */
       token = cp_lexer_peek_nth_token (parser->lexer, 2);
       if (token->type == CPP_COLON)
-	statement = cp_parser_labeled_statement (parser, in_statement_expr);
+	{
+	  /* Looks like a labeled-statement with an ordinary label.
+	     Parse the label, and then use tail recursion to parse
+	     the statement.  */
+	  cp_parser_label_for_labeled_statement (parser);
+	  goto restart;
+	}
     }
   /* Anything that starts with a `{' must be a compound-statement.  */
   else if (token->type == CPP_OPEN_BRACE)
@@ -6187,26 +6196,23 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
     SET_EXPR_LOCATION (statement, statement_location);
 }
 
-/* Parse a labeled-statement.
+/* Parse the label for a labeled-statement, i.e.
 
-   labeled-statement:
-     identifier : statement
-     case constant-expression : statement
-     default : statement
+   identifier :
+   case constant-expression :
+   default :
 
    GNU Extension:
+   case constant-expression ... constant-expression : statement
 
-   labeled-statement:
-     case constant-expression ... constant-expression : statement
-
-   Returns the new CASE_LABEL_EXPR, for a `case' or `default' label.
-   For an ordinary label, returns a LABEL_EXPR.  */
-
-static tree
-cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
+   When a label is parsed without errors, the label is added to the
+   parse tree by the finish_* functions, so this function doesn't
+   have to return the label.  */
+  
+static void
+cp_parser_label_for_labeled_statement (cp_parser* parser)
 {
   cp_token *token;
-  tree statement = error_mark_node;
 
   /* The next token should be an identifier.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -6214,7 +6220,7 @@ cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
       && token->type != CPP_KEYWORD)
     {
       cp_parser_error (parser, "expected labeled-statement");
-      return error_mark_node;
+      return;
     }
 
   switch (token->keyword)
@@ -6249,7 +6255,7 @@ cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
 	if (!parser->in_switch_statement_p)
 	  error ("case label %qE not within a switch statement", expr);
 	else
-	  statement = finish_case_label (expr, expr_hi);
+	  finish_case_label (expr, expr_hi);
       }
       break;
 
@@ -6259,22 +6265,17 @@ cp_parser_labeled_statement (cp_parser* parser, tree in_statement_expr)
       if (!parser->in_switch_statement_p)
 	error ("case label not within a switch statement");
       else
-	statement = finish_case_label (NULL_TREE, NULL_TREE);
+	finish_case_label (NULL_TREE, NULL_TREE);
       break;
 
     default:
       /* Anything else must be an ordinary label.  */
-      statement = finish_label_stmt (cp_parser_identifier (parser));
+      finish_label_stmt (cp_parser_identifier (parser));
       break;
     }
 
   /* Require the `:' token.  */
   cp_parser_require (parser, CPP_COLON, "`:'");
-  /* Parse the labeled statement.  */
-  cp_parser_statement (parser, in_statement_expr);
-
-  /* Return the label, in the case of a `case' or `default' label.  */
-  return statement;
 }
 
 /* Parse an expression-statement.
