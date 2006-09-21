@@ -1,5 +1,22 @@
 2006-09-21  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/hash_map: Remove forward declaration of equality
+	operator, not needed for friendship of all its instances.
+	* include/ext/hash_set: Likewise.
+	* include/bits/stl_set.h: Likewise for equality operator and
+	operator less.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_queue.h: Likewise.
+	* include/bits/stl_stack.h: Likewise.
+	* include/bits/streambuf_iterator.h: Likewise for copy.
+	* include/std/std_streambuf.h: Likewise for __copy_aux and find.
+	* include/tr1/boost_shared_ptr.h: Likewise for get_deleter.
+	* include/tr1/random: Likewise, remove all forward declarations
+	of inserters and extractors.
+
+2006-09-21  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/sso_string_base.h (__sso_string_base<>::_M_max_size(),
 	_M_destroy, _M_create): Use _M_get_allocator.
 

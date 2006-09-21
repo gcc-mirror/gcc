@@ -67,19 +67,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  // Forward declarations of operators == and <, needed for friend
-  // declaration.
-  template<typename _Tp, typename _Sequence = deque<_Tp> >
-    class stack;
-
-  template<typename _Tp, typename _Seq>
-    inline bool
-    operator==(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y);
-
-  template<typename _Tp, typename _Seq>
-    inline bool
-    operator<(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y);
-
   /**
    *  @brief  A standard container giving FILO behavior.
    *
@@ -107,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  push, @c pop, and @c top, which are standard %stack/FILO
    *  operations.
   */
-  template<typename _Tp, typename _Sequence>
+  template<typename _Tp, typename _Sequence = deque<_Tp> >
     class stack
     {
       // concept requirements

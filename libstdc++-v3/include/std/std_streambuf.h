@@ -60,18 +60,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __copy_streambufs_eof(basic_streambuf<_CharT, _Traits>*,
 			  basic_streambuf<_CharT, _Traits>*, bool&);
 
-  template<typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
-				    _CharT*>::__type
-    __copy_aux(istreambuf_iterator<_CharT>,
-	       istreambuf_iterator<_CharT>, _CharT*);
-
-  template<typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
-				    istreambuf_iterator<_CharT> >::__type
-    find(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
-	 const _CharT&);
-
   /**
    *  @brief  The actual work of input and output (interface).
    *

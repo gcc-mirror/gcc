@@ -65,23 +65,6 @@
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
-  // Forward declaration of operators < and ==, needed for friend declaration.
-
-  template <typename _Key, typename _Tp,
-            typename _Compare = std::less<_Key>,
-            typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
-    class multimap;
-
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
-    inline bool
-    operator==(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
-	       const multimap<_Key, _Tp, _Compare, _Alloc>& __y);
-
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
-    inline bool
-    operator<(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
-	      const multimap<_Key, _Tp, _Compare, _Alloc>& __y);
-
   /**
    *  @brief A standard container made up of (key,value) pairs, which can be
    *  retrieved based on a key, in logarithmic time.
@@ -103,7 +86,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
    *  called (*_unique versus *_equal, same as the standard).
    *  @endif
   */
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+  template <typename _Key, typename _Tp,
+	    typename _Compare = std::less<_Key>,
+	    typename _Alloc = std::allocator<std::pair<const _Key, _Tp> > >
     class multimap
     {
     public:

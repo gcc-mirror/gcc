@@ -72,23 +72,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT)
   using std::pair;
   using std::_Select1st;
 
-  // Forward declaration of equality operator; needed for friend
-  // declaration.
-  template<class _Key, class _Tp, class _HashFn = hash<_Key>,
-	   class _EqualKey = equal_to<_Key>, class _Alloc = allocator<_Tp> >
-    class hash_map;
-
-  template<class _Key, class _Tp, class _HashFn, class _EqKey, class _Alloc>
-    inline bool
-    operator==(const hash_map<_Key, _Tp, _HashFn, _EqKey, _Alloc>&,
-	       const hash_map<_Key, _Tp, _HashFn, _EqKey, _Alloc>&);
-
   /**
    *  This is an SGI extension.
    *  @ingroup SGIextensions
    *  @doctodo
    */
-  template<class _Key, class _Tp, class _HashFn, class _EqualKey, class _Alloc>
+  template<class _Key, class _Tp, class _HashFn = hash<_Key>,
+	   class _EqualKey = equal_to<_Key>, class _Alloc = allocator<_Tp> >
     class hash_map
     {
     private:
@@ -295,25 +285,16 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT)
 	 hash_map<_Key, _Tp, _HashFn, _EqlKey, _Alloc>& __hm2)
     { __hm1.swap(__hm2); }
 
-  // Forward declaration of equality operator; needed for friend declaration.
-  template<class _Key, class _Tp,
-	    class _HashFn  = hash<_Key>,
-	    class _EqualKey = equal_to<_Key>,
-	    class _Alloc =  allocator<_Tp> >
-    class hash_multimap;
-
-  template<class _Key, class _Tp, class _HF, class _EqKey, class _Alloc>
-    inline bool
-    operator==(const hash_multimap<_Key, _Tp, _HF, _EqKey, _Alloc>& __hm1,
-	       const hash_multimap<_Key, _Tp, _HF, _EqKey, _Alloc>& __hm2);
 
   /**
    *  This is an SGI extension.
    *  @ingroup SGIextensions
    *  @doctodo
    */
-  template<class _Key, class _Tp, class _HashFn, class _EqualKey,
-	    class _Alloc>
+  template<class _Key, class _Tp,
+	   class _HashFn = hash<_Key>,
+	   class _EqualKey = equal_to<_Key>,
+	   class _Alloc = allocator<_Tp> >
     class hash_multimap
     {
       // concept requirements
