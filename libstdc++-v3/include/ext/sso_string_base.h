@@ -51,21 +51,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef typename _CharT_alloc_type::size_type	    size_type;
       
     private:
-      // The maximum number of individual char_type elements of an
-      // individual string is determined by _S_max_size. This is the
-      // value that will be returned by max_size().  (Whereas npos
-      // is the maximum number of bytes the allocator can allocate.)
-      // If one was to divvy up the theoretical largest size string,
-      // with a terminating character and m _CharT elements, it'd
-      // look like this:
-      // npos = m * sizeof(_CharT) + sizeof(_CharT)
-      // Solving for m:
-      // m = npos / sizeof(_CharT) - 1
-      // In addition, this implementation halfs this amount.
-      enum { _S_max_size = (((static_cast<size_type>(-1)
-			      / sizeof(_CharT)) - 1) / 2) };
-
-      // Data Members (private):
+      // Data Members:
       typename _Util_Base::template _Alloc_hider<_CharT_alloc_type>
                                                             _M_dataplus;
       size_type                                             _M_string_length;
@@ -151,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     public:
       size_type
       _M_max_size() const
-      { return size_type(_S_max_size); }
+      { return (_M_dataplus._CharT_alloc_type::max_size() - 1) / 2; }
 
       _CharT*
       _M_data() const
@@ -322,7 +308,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 83.  String::npos vs. string::max_size()
-      if (__capacity > size_type(_S_max_size))
+      if (__capacity > _M_max_size())
 	std::__throw_length_error(__N("__sso_string_base::_M_create"));
 
       // The below implements an exponential growth policy, necessary to
@@ -331,9 +317,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       if (__capacity > __old_capacity && __capacity < 2 * __old_capacity)
 	{
 	  __capacity = 2 * __old_capacity;
-	  // Never allocate a string bigger than _S_max_size.
-	  if (__capacity > size_type(_S_max_size))
-	    __capacity = size_type(_S_max_size);
+	  // Never allocate a string bigger than max_size.
+	  if (__capacity > _M_max_size())
+	    __capacity = _M_max_size();
 	}
 
       // NB: Need an array of char_type[__capacity], plus a terminating
