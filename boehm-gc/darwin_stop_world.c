@@ -125,7 +125,18 @@ void GC_push_all_stacks() {
 			     (natural_t*)&state,
 			     &thread_state_count);
 	if(r != KERN_SUCCESS) ABORT("thread_get_state failed");
-	
+
+#if defined(I386)
+	lo = state.esp;
+
+	GC_push_one(state.eax); 
+	GC_push_one(state.ebx); 
+	GC_push_one(state.ecx); 
+	GC_push_one(state.edx); 
+	GC_push_one(state.edi); 
+	GC_push_one(state.esi); 
+	GC_push_one(state.ebp); 
+#elif defined(POWERPC)
 	lo = (void*)(state . THREAD_FLD (r1) - PPC_RED_ZONE_SIZE);
         
 	GC_push_one(state . THREAD_FLD (r0)); 
@@ -159,6 +170,9 @@ void GC_push_all_stacks() {
 	GC_push_one(state . THREAD_FLD (r29)); 
 	GC_push_one(state . THREAD_FLD (r30)); 
 	GC_push_one(state . THREAD_FLD (r31));
+#else
+# error FIXME for non-x86 || ppc architectures
+#endif
       } /* p != me */
       if(p->flags & MAIN_THREAD)
 	hi = GC_stackbottom;
