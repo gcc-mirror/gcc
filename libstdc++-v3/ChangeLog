@@ -1,3 +1,13 @@
+2006-09-21  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29134 (ext/vstring bits)
+	* include/ext/sso_string_base.h (__sso_string_base<>::_S_max_size):
+	Remove.
+	(__sso_string_base<>::_M_max_size): Use allocator' max_size.
+	(__sso_string_base<>::_M_create): Adjust.
+	* include/ext/vstring.h: Minor comment tweak.
+	* testsuite/ext/vstring/capacity/29134.cc: New.
+
 2006-09-20  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/29134

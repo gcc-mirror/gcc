@@ -74,8 +74,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       typedef std::reverse_iterator<iterator>		    reverse_iterator;
 
       // Data Member (public):
-      // NB: This is an unsigned type, and thus represents the maximum
-      // size that the allocator can hold.
       ///  Value returned by various member functions when they fail.
       static const size_type	npos = static_cast<size_type>(-1);
 
