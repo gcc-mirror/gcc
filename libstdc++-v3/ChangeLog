@@ -1,3 +1,8 @@
+2006-09-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/sso_string_base.h (__sso_string_base<>::_M_max_size(),
+	_M_destroy, _M_create): Use _M_get_allocator.
+
 2006-09-21  Ben Elliston  <bje@au.ibm.com>
 
 	* crossconfig.m4 (GLIBCXX_CROSSCONFIG): Remove invocations of
