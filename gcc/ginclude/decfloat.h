@@ -86,9 +86,9 @@ Boston, MA 02110-1301, USA.  */
 #undef DEC32_DEN
 #undef DEC64_DEN
 #undef DEC128_DEN
-#define DEC32_DEN       __DEC32_MIN__
-#define DEC64_DEN       __DEC64_MIN__
-#define DEC128_DEN      __DEC128_MIN__
+#define DEC32_DEN       __DEC32_DEN__
+#define DEC64_DEN       __DEC64_DEN__
+#define DEC128_DEN      __DEC128_DEN__
 
 /* The floating-point expression evaluation method.
          -1  indeterminate

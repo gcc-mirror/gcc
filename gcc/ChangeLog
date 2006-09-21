@@ -1,3 +1,7 @@
+2006-09-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* ginclude/decfloat.h (DEC*_DEN): Define using the correct builtins.
+
 2006-09-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR debug/29132
