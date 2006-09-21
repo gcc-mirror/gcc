@@ -1,3 +1,8 @@
+2006-09-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29016
+	* g++.dg/init/ptrfn1.C: New test.
+
 2006-09-21  Lee Millward  <lee.millward@codesourcery.com>
 
         PR c++/28861
