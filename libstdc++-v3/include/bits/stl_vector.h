@@ -399,7 +399,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       /**  Returns the size() of the largest possible %vector.  */
       size_type
       max_size() const
-      { return size_type(-1) / sizeof(value_type); }
+      { return _M_get_Tp_allocator().max_size(); }
 
       /**
        *  @brief  Resizes the %vector to the specified number of elements.

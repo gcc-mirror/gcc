@@ -73,8 +73,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   // _Key and _Value: arbitrary CopyConstructible types.
   
   // _Allocator: an allocator type ([lib.allocator.requirements]) whose
-  // value type is Value.
-  
+  // value type is Value.  As a conforming extension, we allow for
+  // value type != Value.
+
   // _ExtractKey: function object that takes a object of type Value
   // and returns a value of type _Key.
   
@@ -106,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   // bucket count.  If not, returns make_pair(false, <anything>).
   
   // ??? Right now it is hard-wired that the number of buckets never
-  // shrinks.  Should we allow RehashPolicy to change that?
+  // shrinks.  Should we allow _RehashPolicy to change that?
   
   // __cache_hash_code: bool.  true if we store the value of the hash
   // function along with the value.  This is a time-space tradeoff.
@@ -154,8 +155,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef _Value                                      value_type;
       typedef _Key                                        key_type;
       typedef _Equal                                      key_equal;
-      // mapped_type, if present, comes from map_base.
-      // hasher, if present, comes from hash_code_base.
+      // mapped_type, if present, comes from _Map_base.
+      // hasher, if present, comes from _Hash_code_base.
       typedef typename _Allocator::difference_type        difference_type;
       typedef typename _Allocator::size_type              size_type;
       typedef typename _Allocator::reference              reference;
@@ -186,6 +187,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
                                                         _Node_allocator_type;
       typedef typename _Allocator::template rebind<_Node*>::other
                                                         _Bucket_allocator_type;
+
+      typedef typename _Allocator::template rebind<_Value>::other
+                                                        _Value_allocator_type;
 
       _Node_allocator_type   _M_node_allocator;
       _Node**                _M_buckets;
@@ -268,11 +272,15 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       allocator_type
       get_allocator() const
-      { return _M_node_allocator; }
-  
+      { return allocator_type(_M_node_allocator); }
+
+      _Value_allocator_type
+      _M_get_Value_allocator() const
+      { return _Value_allocator_type(_M_node_allocator); }
+
       size_type
       max_size() const
-      { return _M_node_allocator.max_size(); }
+      { return _M_get_Value_allocator().max_size(); }
 
       // Observers
       key_equal
@@ -443,7 +451,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       _Node* __n = _M_node_allocator.allocate(1);
       try
 	{
-	  get_allocator().construct(&__n->_M_v, __v);
+	  _M_get_Value_allocator().construct(&__n->_M_v, __v);
 	  __n->_M_next = 0;
 	  return __n;
 	}
@@ -463,7 +471,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     _M_deallocate_node(_Node* __n)
     {
-      get_allocator().destroy(&__n->_M_v);
+      _M_get_Value_allocator().destroy(&__n->_M_v);
       _M_node_allocator.deallocate(__n, 1);
     }
 
@@ -555,10 +563,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
       _Hashtable(_InputIterator __f, _InputIterator __l,
-		size_type __bucket_hint,
-		const _H1& __h1, const _H2& __h2, const _Hash& __h,
-		const _Equal& __eq, const _ExtractKey& __exk,
-		const allocator_type& __a)
+		 size_type __bucket_hint,
+		 const _H1& __h1, const _H2& __h2, const _Hash& __h,
+		 const _Equal& __eq, const _ExtractKey& __exk,
+		 const allocator_type& __a)
       : __detail::_Rehash_base<_RehashPolicy, _Hashtable>(),
 	__detail::_Hash_code_base<_Key, _Value, _ExtractKey, _Equal,
 				  _H1, _H2, _Hash, __chc>(__exk, __eq,
@@ -599,7 +607,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       __detail::_Hash_code_base<_Key, _Value, _ExtractKey, _Equal,
 				_H1, _H2, _Hash, __chc>(__ht),
       __detail::_Map_base<_Key, _Value, _ExtractKey, __uk, _Hashtable>(__ht),
-      _M_node_allocator(__ht.get_allocator()),
+      _M_node_allocator(__ht._M_node_allocator),
       _M_bucket_count(__ht._M_bucket_count),
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)

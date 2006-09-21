@@ -650,7 +650,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       size_type
       max_size() const
-      { return size_type(-1); }
+      { return get_allocator().max_size(); }
 
       void
       swap(_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __t);

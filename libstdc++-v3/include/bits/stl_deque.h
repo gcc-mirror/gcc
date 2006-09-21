@@ -870,7 +870,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       /**  Returns the size() of the largest possible %deque.  */
       size_type
       max_size() const
-      { return size_type(-1); }
+      { return _M_get_Tp_allocator().max_size(); }
 
       /**
        *  @brief  Resizes the %deque to the specified number of elements.
@@ -1521,7 +1521,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
       }
 
       void
-      _M_reserve_map_at_front (size_type __nodes_to_add = 1)
+      _M_reserve_map_at_front(size_type __nodes_to_add = 1)
       {
 	if (__nodes_to_add > size_type(this->_M_impl._M_start._M_node
 				       - this->_M_impl._M_map))
