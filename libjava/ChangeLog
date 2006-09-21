@@ -1,5 +1,14 @@
 2006-09-20  Keith Seitz  <keiths@redhat.com>
 
+	* jvmti.cc (_Jv_JVMTI_CreateRawMonitor): Use _Jv_MallocUnchked
+	and return JVMTI_ERROR_OUT_OF_MEMORY if necessary.
+	(_Jv_JVMTI_GetClassMethods): Likewise.
+	(_Jv_JVMTI_GetClassLoaderClasses): Likewise.
+	(_Jv_JVMTI_GetJNIFunctionTable): Likewise.
+	(_Jv_JVMTI_GetSystemProperty): Likewise.
+
+2006-09-20  Keith Seitz  <keiths@redhat.com>
+
 	* jvmti.cc (_Jv_JVMTI_GetErrorName): New function.
 	(_Jv_JVMTI_Interface): Define GetErrorName member.
 	* testsuite/libjava.jvmti/geterrorname.java: New file.
