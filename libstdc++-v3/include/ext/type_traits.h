@@ -37,6 +37,7 @@
 #include <utility>
 #include <limits>
 #include <iosfwd> // std::streamsize
+#include <bits/cpp_type_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -126,27 +127,36 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   (__glibcxx_signed(T) ? ((T)1 << __glibcxx_digits(T)) - 1 : ~(T)0)
 
   template<typename _Value>
-    struct __numeric_traits
+    struct __numeric_traits_integer
     {
-      typedef _Value __value_type;
-      
-      // Only integer types.
-      static const __value_type __min = __glibcxx_min(__value_type);
-      static const __value_type __max = __glibcxx_max(__value_type);
-      
-      // Only floating point types. See N1822. 
-      static const std::streamsize __max_digits10 =
-	2 + std::numeric_limits<__value_type>::digits * 3010/10000;
+      // Only integers for initialization of member constant.
+      static const _Value __min = __glibcxx_min(_Value);
+      static const _Value __max = __glibcxx_max(_Value);
     };
 
   template<typename _Value>
-    const _Value __numeric_traits<_Value>::__min;
+    const _Value __numeric_traits_integer<_Value>::__min;
 
   template<typename _Value>
-    const _Value __numeric_traits<_Value>::__max;
+    const _Value __numeric_traits_integer<_Value>::__max;
 
   template<typename _Value>
-    const std::streamsize __numeric_traits<_Value>::__max_digits10;
+    struct __numeric_traits_floating
+    {
+      // Only floating point types. See N1822. 
+      static const std::streamsize __max_digits10 =
+	2 + std::numeric_limits<_Value>::digits * 3010/10000;
+    };
+
+  template<typename _Value>
+    const std::streamsize __numeric_traits_floating<_Value>::__max_digits10;
+
+  template<typename _Value>
+    struct __numeric_traits 
+    : public __conditional_type<std::__is_integer<_Value>::__value,
+				__numeric_traits_integer<_Value>,
+				__numeric_traits_floating<_Value> >::__type
+    { };
 
 _GLIBCXX_END_NAMESPACE
 
