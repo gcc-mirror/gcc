@@ -65,21 +65,6 @@
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
-  // Forward declarations of operators < and ==, needed for friend declaration.
-  template<class _Key, class _Compare = std::less<_Key>,
-	   class _Alloc = std::allocator<_Key> >
-    class set;
-
-  template<class _Key, class _Compare, class _Alloc>
-    inline bool
-    operator==(const set<_Key, _Compare, _Alloc>& __x,
-	       const set<_Key, _Compare, _Alloc>& __y);
-
-  template<class _Key, class _Compare, class _Alloc>
-    inline bool
-    operator<(const set<_Key, _Compare, _Alloc>& __x,
-	      const set<_Key, _Compare, _Alloc>& __y);
-
   /**
    *  @brief A standard container made up of unique keys, which can be
    *  retrieved in logarithmic time.
@@ -103,7 +88,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
    *  called (*_unique versus *_equal, same as the standard).
    *  @endif
   */
-  template<class _Key, class _Compare, class _Alloc>
+  template<class _Key, class _Compare = std::less<_Key>,
+	   class _Alloc = std::allocator<_Key> >
     class set
     {
       // concept requirements

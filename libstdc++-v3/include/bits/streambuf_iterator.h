@@ -43,12 +43,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
      
-  template<typename _CharT>
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
-  	                            ostreambuf_iterator<_CharT> >::__type
-    copy(istreambuf_iterator<_CharT>, istreambuf_iterator<_CharT>,
-	 ostreambuf_iterator<_CharT>);
-
   // 24.5.3 Template class istreambuf_iterator
   /// Provides input iterator semantics for streambufs.
   template<typename _CharT, typename _Traits>

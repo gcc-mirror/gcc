@@ -67,18 +67,6 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  // Forward declarations of operators < and ==, needed for friend declaration.
-  template<typename _Tp, typename _Sequence = deque<_Tp> >
-    class queue;
-
-  template<typename _Tp, typename _Seq>
-    inline bool
-    operator==(const queue<_Tp, _Seq>&, const queue<_Tp, _Seq>&);
-
-  template<typename _Tp, typename _Seq>
-    inline bool
-    operator<(const queue<_Tp, _Seq>&, const queue<_Tp, _Seq>&);
-
   /**
    *  @brief  A standard container giving FIFO behavior.
    *
@@ -103,7 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  which is a typedef for the second Sequence parameter, and @c push and
    *  @c pop, which are standard %queue/FIFO operations.
   */
-  template<typename _Tp, typename _Sequence>
+  template<typename _Tp, typename _Sequence = deque<_Tp> >
     class queue
     {
       // concept requirements

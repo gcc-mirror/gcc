@@ -72,24 +72,14 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT)
   using std::pair;
   using std::_Identity;
 
-  // Forward declaration of equality operator; needed for friend
-  // declaration.
-  template<class _Value, class _HashFcn  = hash<_Value>,
-	    class _EqualKey = equal_to<_Value>,
-	    class _Alloc = allocator<_Value> >
-    class hash_set;
-
-  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
-    inline bool
-    operator==(const hash_set<_Value, _HashFcn, _EqualKey, _Alloc>& __hs1,
-	       const hash_set<_Value, _HashFcn, _EqualKey, _Alloc>& __hs2);
-
   /**
    *  This is an SGI extension.
    *  @ingroup SGIextensions
    *  @doctodo
    */
-  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Value, class _HashFcn  = hash<_Value>,
+	   class _EqualKey = equal_to<_Value>,
+	   class _Alloc = allocator<_Value> >
     class hash_set
     {
       // concept requirements
@@ -285,24 +275,16 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT)
 	 hash_set<_Val, _HashFcn, _EqualKey, _Alloc>& __hs2)
     { __hs1.swap(__hs2); }
 
-  template<class _Value,
-	    class _HashFcn = hash<_Value>,
-	    class _EqualKey = equal_to<_Value>,
-	    class _Alloc = allocator<_Value> >
-    class hash_multiset;
-
-  template<class _Val, class _HashFcn, class _EqualKey, class _Alloc>
-    inline bool
-    operator==(const hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs1,
-	       const hash_multiset<_Val, _HashFcn, _EqualKey, _Alloc>& __hs2);
-
 
   /**
    *  This is an SGI extension.
    *  @ingroup SGIextensions
    *  @doctodo
    */
-  template<class _Value, class _HashFcn, class _EqualKey, class _Alloc>
+  template<class _Value,
+	   class _HashFcn = hash<_Value>,
+	   class _EqualKey = equal_to<_Value>,
+	   class _Alloc = allocator<_Value> >
     class hash_multiset
     {
       // concept requirements

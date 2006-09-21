@@ -483,11 +483,6 @@ template<_Lock_policy _Lp>
   { }
 
 
-// Function get_deleter must be declared before friend declaration by
-// shared_ptr.
-template<typename _Del, typename _Tp, _Lock_policy _Lp>
-  _Del* get_deleter(const __shared_ptr<_Tp, _Lp>&);
-
 /**
  *  @class shared_ptr <tr1/memory>
  *
