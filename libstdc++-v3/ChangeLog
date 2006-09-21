@@ -1,3 +1,40 @@
+2006-09-20  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29134
+	* include/bits/stl_list.h (list<>::max_size): Forward to allocator'
+	max_size.
+	* include/bits/stl_vector.h (vector<>::max_size): Likewise.
+	* include/bits/stl_deque.h (deque<>::max_size): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree<>::max_size): Likewise.
+	* include/tr1/hashtable (_Hashtable<>::max_size): Likewise.
+	* testsuite/23_containers/vector/capacity/29134.cc: Add.
+	* testsuite/23_containers/deque/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/list/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/set/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/map/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/multiset/capacity/29134.cc: Likewise.
+	* testsuite/23_containers/multimap/capacity/29134.cc: Likewise.	
+	* testsuite/tr1/6_containers/unordered/capacity/29134-set.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered/capacity/29134-map.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered/capacity/29134-multiset.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered/capacity/29134-multimap.cc:
+	Likewise.
+
+	* include/bits/deque.tcc (deque<>::_M_new_elements_at_front,
+	deque<>::_M_new_elements_at_back): Check for length errors.
+	* testsuite/23_containers/deque/capacity/29134-2.cc: New.
+	* testsuite/23_containers/vector/capacity/29134-2.cc: Likewise.
+
+	* include/tr1/hashtable (_Hashtable<>::_M_get_Value_allocator): Add.
+	(_Hashtable<>::_M_allocate_node, _M_deallocate_node): Use it.
+	* testsuite/tr1/6_containers/unordered/instantiate/set.cc: Add test.
+	* testsuite/tr1/6_containers/unordered/instantiate/map.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered/instantiate/multiset.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/unordered/instantiate/multimap.cc:
+	Likewise.
+
 2006-09-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pb_ds/detail/

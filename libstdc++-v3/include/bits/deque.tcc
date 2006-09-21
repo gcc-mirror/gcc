@@ -1,6 +1,7 @@
 // Deque implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -277,13 +278,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
             for (__cur_node = this->_M_impl._M_start._M_node;
                  __cur_node < this->_M_impl._M_finish._M_node;
                  ++__cur_node)
-            {
-              _ForwardIterator __mid = __first;
-              std::advance(__mid, _S_buffer_size());
-              std::__uninitialized_copy_a(__first, __mid, *__cur_node,
-					  _M_get_Tp_allocator());
-              __first = __mid;
-            }
+	      {
+		_ForwardIterator __mid = __first;
+		std::advance(__mid, _S_buffer_size());
+		std::__uninitialized_copy_a(__first, __mid, *__cur_node,
+					    _M_get_Tp_allocator());
+		__first = __mid;
+	      }
             std::__uninitialized_copy_a(__first, __last,
 					this->_M_impl._M_finish._M_first,
 					_M_get_Tp_allocator());
@@ -659,8 +660,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
     deque<_Tp, _Alloc>::
     _M_new_elements_at_front(size_type __new_elems)
     {
-      const size_type __new_nodes
-	= (__new_elems + _S_buffer_size() - 1) / _S_buffer_size();
+      if (this->max_size() - this->size() < __new_elems)
+	__throw_length_error(__N("deque::_M_new_elements_at_front"));
+
+      const size_type __new_nodes = ((__new_elems + _S_buffer_size() - 1)
+				     / _S_buffer_size());
       _M_reserve_map_at_front(__new_nodes);
       size_type __i;
       try
@@ -681,8 +685,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
     deque<_Tp, _Alloc>::
     _M_new_elements_at_back(size_type __new_elems)
     {
-      const size_type __new_nodes
-	= (__new_elems + _S_buffer_size() - 1) / _S_buffer_size();
+      if (this->max_size() - this->size() < __new_elems)
+	__throw_length_error(__N("deque::_M_new_elements_at_back"));
+
+      const size_type __new_nodes = ((__new_elems + _S_buffer_size() - 1)
+				     / _S_buffer_size());
       _M_reserve_map_at_back(__new_nodes);
       size_type __i;
       try
@@ -715,8 +722,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 	                 + (__add_at_front ? __nodes_to_add : 0);
 	  if (__new_nstart < this->_M_impl._M_start._M_node)
 	    std::copy(this->_M_impl._M_start._M_node,
-		    this->_M_impl._M_finish._M_node + 1,
-		    __new_nstart);
+		      this->_M_impl._M_finish._M_node + 1,
+		      __new_nstart);
 	  else
 	    std::copy_backward(this->_M_impl._M_start._M_node,
 			       this->_M_impl._M_finish._M_node + 1,
