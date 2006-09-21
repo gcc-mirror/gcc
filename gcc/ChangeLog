@@ -1,3 +1,10 @@
+2006-09-21  Roger Sayle  <roger@eyesopen.com>
+
+	PR debug/29132
+	* dwarf2out.c (dwarf2out_begin_prologue): Initialise the current label,
+	dw_fde_current_label, to be the start of the function, i.e. the same
+	value as dw_fde_begin.
+
 2006-09-20  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (CODE_FOR_mips_abs_ps): Delete.
