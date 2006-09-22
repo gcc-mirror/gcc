@@ -27,6 +27,32 @@ executable file might be covered by the GNU General Public License. */
 #ifndef __GCJ_JVMTI_MD_H__
 #define __GCJ_JVMTI_MD_H__
 
-// nothing
+#ifdef __GCJ_JNI_IMPL__
+
+/* If __GCJ_JNI_IMPL__ is defined, then we assume that we're building
+   libgcj itself, and we include functions which should not be exposed
+   to JVMTI users. */
+
+/* The number of event slots needed to keep track of event reporting
+   constraints for an environment. This will only work if the order of
+   events listed in jvmtiEvent and jvmtiEventCallbacks is kept the same
+   (which should not be a problem). */
+#define EVENT_SLOTS \
+  (int)(JVMTI_EVENT_VM_OBJECT_ALLOC - JVMTI_EVENT_VM_INIT + 1)
+
+/* Contents of the jvmtiEnv; but only inside the implementation. */
+#define _CLASSPATH_JVMTIENV_CONTENTS					\
+  /* Event handlers registered via SetEventCallbacks */			\
+  jvmtiEventCallbacks callbacks;					\
+									\
+  /* Array of event thread for which to report event. */		\
+  /* NULL means all threads. One for each callback.   */		\
+  jthread thread[EVENT_SLOTS];						\
+  									\
+  /* Array of notification modes for callbacks. */			\
+  /* One for each callback.                     */			\
+  bool enabled[EVENT_SLOTS];
+
+#endif /* __GCJ_JNI_IMPL__ */
 
 #endif /* __GCJ_JVMTI_MD_H__ */
