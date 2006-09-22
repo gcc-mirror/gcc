@@ -1,5 +1,12 @@
 2006-09-22  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/i386/driver-i386.c: Always define host_detect_local_cpu.
+	* config/i386/i386.h: Define EXTRA_SPEC_FUNCTIONS on any i386
+	or x86_64 host.  Define HAVE_LOCAL_CPU_DETECT.
+	(CC1_CPU_SPEC): Make conditional on HAVE_LOCAL_CPU_DETECT rather
+	than replicating condition above.
+	* config.host (i[34567]86-*-*): Always use driver-i386.o.
+
 	* config/darwin.h (LINK_SYSROOT_SPEC): New.
 	(LINK_SPEC): If TARGET_SYSTEM_ROOT is defined, pass it to
 	the linker by default.
