@@ -1,3 +1,9 @@
+2006-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/28964
+	* cfgexpand.c (stack_var_size_cmp): Use DECL_UID to make
+	sort of stack variables stable.
+
 2006-09-22  Peter Bergner <bergner@vnet.ibm.com>
 
 	PR middle-end/28690
