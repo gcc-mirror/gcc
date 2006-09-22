@@ -966,7 +966,7 @@ _Jv_JVMTI_SetEventCallbacks (jvmtiEnv *env,
   return JVMTI_ERROR_NONE;
 }
 
-jvmtiError
+static jvmtiError JNICALL
 _Jv_JVMTI_GetErrorName (MAYBE_UNUSED jvmtiEnv *env, jvmtiError error,
 			char **name_ptr)
 {
