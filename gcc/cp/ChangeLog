@@ -1,3 +1,8 @@
+2006-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28996
+	* cvt.c (convert_to_void): Strip COMPONENT_REF to functions.
+
 2006-09-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR c++/29087
