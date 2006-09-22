@@ -39,12 +39,15 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.Choice;
+import java.awt.AWTEvent;
 import java.awt.event.ItemEvent;
 import java.awt.peer.ChoicePeer;
 
 public class GtkChoicePeer extends GtkComponentPeer
   implements ChoicePeer
 {
+  private int selected;
+  
   public GtkChoicePeer (Choice c)
   {
     super (c);
@@ -52,30 +55,32 @@ public class GtkChoicePeer extends GtkComponentPeer
     int count = c.getItemCount ();
     if (count > 0)
       {
-	String items[] = new String[count];
 	for (int i = 0; i < count; i++)
-	  items[i] = c.getItem (i);
-	  
-	append (items);
-      }
+	  add( c.getItem(i), i );
 
-    int selected = c.getSelectedIndex();
-    if (selected >= 0)
-      select(selected);
+	selected = c.getSelectedIndex();
+	if( selected >= 0 )
+	  select( selected );
+      }
+    else
+      selected = -1;
   }
 
   native void create ();
 
-  native void append (String items[]);
   native int nativeGetSelected ();
-  native void nativeAdd (String item, int index);
-  native void nativeRemove (int index);
-  native void nativeRemoveAll ();
 
   native void connectSignals ();
 
   native void selectNative (int position);
+
   native void selectNativeUnlocked (int position);
+
+  public native void add (String item, int index);
+
+  native void nativeRemove(int index);
+
+  native void nativeRemoveAll();
 
   public void select (int position)
   {
@@ -85,42 +90,18 @@ public class GtkChoicePeer extends GtkComponentPeer
       selectNative (position);
   }
 
-  public void add (String item, int index)
+  public void remove( int index )
   {
-    int before = nativeGetSelected();
-    
-    nativeAdd (item, index);
-    
-    /* Generate an ItemEvent if we added the first one or
-       if we inserted at or before the currently selected item. */
-    if ((before < 0) || (before >= index))
-      {
-        // Must set our state before notifying listeners
-	((Choice) awtComponent).select (((Choice) awtComponent).getItem (0));
-        postItemEvent (((Choice) awtComponent).getItem (0), ItemEvent.SELECTED);
-      }
+    // Ensure the triggering of an event when removing item zero if zero is the
+    // selected item, even though the selected index doesn't change.
+    if( index == 0 && selected == 0 )
+      selected = -1; 
+    nativeRemove( index );
   }
 
-  public void remove (int index)
+  public void removeAll()
   {
-    int before = nativeGetSelected();
-    int after;
-    
-    nativeRemove (index);
-    after = nativeGetSelected();
-    
-    /* Generate an ItemEvent if we are removing the currently selected item
-       and there are at least one item left. */
-    if ((before == index) && (after >= 0))
-      {
-        // Must set our state before notifying listeners
-	((Choice) awtComponent).select (((Choice) awtComponent).getItem (0));
-        postItemEvent (((Choice) awtComponent).getItem (0), ItemEvent.SELECTED);
-      }
-  }
-
-  public void removeAll ()
-  {
+    selected = -1; // we do not want to trigger a select event here.
     nativeRemoveAll();
   }
   
@@ -129,8 +110,34 @@ public class GtkChoicePeer extends GtkComponentPeer
     add (item, position);
   }
 
-  protected void postChoiceItemEvent (String label, int stateChange)
+  /**
+   * Callback from the native side on an item-select event, 
+   * which posts an event. The event is only posted if it represents an actual
+   * change. Selected is set to the peer's state initially, so that the
+   * first call to select(int) from the constructor will not trigger an event.
+   * (it should not)
+   */
+  protected void postChoiceItemEvent ( int index )
   {
-    postItemEvent (label, stateChange);
+    if( selected != index )
+      {
+	selected = index;
+	postItemEvent (((Choice) awtComponent).getItem( selected ), 
+		       ItemEvent.SELECTED);
+      }
+  }
+
+  /**
+   * Catches the event and calls Choice.select() if the component state
+   * needs updating.
+   */
+  public void handleEvent (AWTEvent event)
+  {
+    super.handleEvent( event );
+    if( event instanceof ItemEvent )
+      if( ((ItemEvent)event).getItemSelectable() == awtComponent &&
+	  ((ItemEvent)event).getStateChange() == ItemEvent.SELECTED )
+	((Choice)awtComponent).select( selected );
   }
 }
+

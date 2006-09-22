@@ -1,3 +1,28 @@
+2006-08-02  Sven de Marothy  <sven@physto.se>
+
+	* gnu/java/awt/peer/gtk/GtkChoicePeer.java
+	(remove): Force event on removing item 0 when it's selected.
+	(handleEvent): Always call Choice.selected().
+	* java/awt/Choice.java:
+	(remove): Simplify and correct.
+
+2006-07-30  Sven de Marothy  <sven@physto.se>
+
+	* java/awt/Choice.java:
+	(accessibleAction): Call select() directly.
+	(add, insert, remove): Reimplement.
+	(dispatchEventImpl): Always call super.
+	(processItemEvent): Does not set the index.
+	* include/gnu_java_awt_peer_gtk_GtkChoicePeer.h
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c
+	(append): removed.
+	(nativeAdd): Name changed to add.
+	(selection_changed_cb): Simplify callback.
+	* gnu/java/awt/peer/gtk/GtkChoicePeer.java
+	(selected): New field.
+	(add): Replaced with native impl.
+	(handleEvent): New method.
+
 2006-07-06  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Port to hosts whose 'sort' and 'tail' implementations
