@@ -288,8 +288,6 @@ do {									\
         fprintf (FILE, "\t.align32 %d,0x60000000\n", (LOG));  \
     } while (0)
 
-/* Generate insns to call the profiler.  */
-
 #ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
 /* This is supported in cctools 465 and later.  The macro test
    above prevents using it in earlier build environments.  */
@@ -302,6 +300,8 @@ do {									\
         fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP)); \
     }
 #endif
+
+/* Generate insns to call the profiler.  */
 
 #define PROFILE_HOOK(LABEL)   output_profile_hook (LABEL)
 
