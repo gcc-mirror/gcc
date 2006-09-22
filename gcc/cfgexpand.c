@@ -350,10 +350,18 @@ stack_var_size_cmp (const void *a, const void *b)
 {
   HOST_WIDE_INT sa = stack_vars[*(const size_t *)a].size;
   HOST_WIDE_INT sb = stack_vars[*(const size_t *)b].size;
+  unsigned int uida = DECL_UID (stack_vars[*(const size_t *)a].decl);
+  unsigned int uidb = DECL_UID (stack_vars[*(const size_t *)b].decl);
 
   if (sa < sb)
     return -1;
   if (sa > sb)
+    return 1;
+  /* For stack variables of the same size use the uid of the decl
+     to make the sort stable.  */
+  if (uida < uidb)
+    return -1;
+  if (uida > uidb)
     return 1;
   return 0;
 }
