@@ -1,5 +1,10 @@
 2006-09-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/28996
+	* cvt.c (convert_to_void): Strip COMPONENT_REF to functions.
+
+2006-09-09  Jason Merrill  <jason@redhat.com>
+
 	PR c++/26957
 	* method.c (use_thunk): Fix patch for 4.0 branch.
 
