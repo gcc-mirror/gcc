@@ -592,6 +592,13 @@ set_rhs (tree *stmt_p, tree expr)
 	   || code == MODIFY_EXPR)
     return false;
 
+  if (EXPR_HAS_LOCATION (stmt)
+      && EXPR_P (expr)
+      && ! EXPR_HAS_LOCATION (expr)
+      && TREE_SIDE_EFFECTS (expr)
+      && TREE_CODE (expr) != LABEL_EXPR)
+    SET_EXPR_LOCATION (expr, EXPR_LOCATION (stmt));
+
   switch (TREE_CODE (stmt))
     {
     case RETURN_EXPR:
