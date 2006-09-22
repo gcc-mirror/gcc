@@ -149,6 +149,14 @@ public class HTTPURLConnection
     final Credentials creds = (username == null) ? null :
       new Credentials (username, password);
     
+    if ("POST".equals(method))
+      {
+        String contentType = requestHeaders.getValue("Content-Type");
+        if (null == contentType)
+          requestHeaders.addValue("Content-Type",
+                                  "application/x-www-form-urlencoded");
+      }
+
     boolean retry;
     do
       {

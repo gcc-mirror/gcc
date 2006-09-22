@@ -1,3 +1,9 @@
+2006-09-22  David Daney  <ddaney@avtrex.com>
+
+	PR classpath/28661
+	* gnu/java/net/protocol/http/HTTPURLConnection.java (connect):  Add
+	default content-type for POST method.
+
 2006-09-20  Gary Benson  <gbenson@redhat.com>
 
 	* java/net/InetAddress.java: Updated to latest.
