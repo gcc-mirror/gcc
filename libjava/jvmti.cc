@@ -15,6 +15,7 @@ details.  */
 #include <java-threads.h>
 #include <java-gc.h>
 #include <jvmti.h>
+#include "jvmti-int.h"
 
 #include <gcj/method.h>
 
@@ -31,6 +32,9 @@ details.  */
 #include <java/util/Collection.h>
 #include <java/util/HashMap.h>
 #include <java/net/URL.h>
+
+static void check_enabled_events (void);
+static void check_enabled_event (jvmtiEvent);
 
 extern struct JNINativeInterface _Jv_JNIFunctions;
 
@@ -519,6 +523,9 @@ _Jv_JVMTI_DisposeEnvironment (jvmtiEnv *env)
     }
 
   _Jv_Free (env);
+
+  check_enabled_events ();
+
   return JVMTI_ERROR_NONE;
 }
 
@@ -662,6 +669,300 @@ _Jv_JVMTI_GetObjectSize (MAYBE_UNUSED jvmtiEnv *env, jobject object,
       // str->data==str) take more space.  Do we care?
       *result = klass->size();
     }
+  return JVMTI_ERROR_NONE;
+}
+
+/* An event is enabled only if it has both an event handler
+   and it is enabled in the environment. */
+static void
+check_enabled_event (jvmtiEvent type)
+{
+  bool *enabled;
+  int offset;
+
+#define GET_OFFSET(Event)				\
+  do							\
+    {							\
+      enabled = &JVMTI::Event;				\
+      offset = offsetof (jvmtiEventCallbacks, Event);	\
+    }							\
+  while (0)
+
+  switch (type)
+    {
+    case JVMTI_EVENT_VM_INIT:
+      GET_OFFSET (VMInit);
+      break;
+
+    case JVMTI_EVENT_VM_DEATH:
+      GET_OFFSET (VMDeath);
+      break;
+
+    case JVMTI_EVENT_THREAD_START:
+      GET_OFFSET (ThreadStart);
+      break;
+
+    case JVMTI_EVENT_THREAD_END:
+      GET_OFFSET (ThreadEnd);
+      break;
+
+    case JVMTI_EVENT_CLASS_FILE_LOAD_HOOK:
+      GET_OFFSET (ClassFileLoadHook);
+      break;
+
+    case JVMTI_EVENT_CLASS_LOAD:
+      GET_OFFSET (ClassLoad);
+      break;
+
+    case JVMTI_EVENT_CLASS_PREPARE:
+      GET_OFFSET (ClassPrepare);
+      break;
+
+    case JVMTI_EVENT_VM_START:
+      GET_OFFSET (VMStart);
+      break;
+
+    case JVMTI_EVENT_EXCEPTION:
+      GET_OFFSET (Exception);
+      break;
+
+    case JVMTI_EVENT_EXCEPTION_CATCH:
+      GET_OFFSET (ExceptionCatch);
+      break;
+
+    case JVMTI_EVENT_SINGLE_STEP:
+      GET_OFFSET (SingleStep);
+      break;
+
+    case JVMTI_EVENT_FRAME_POP:
+      GET_OFFSET (FramePop);
+      break;
+
+    case JVMTI_EVENT_BREAKPOINT:
+      GET_OFFSET (Breakpoint);
+      break;
+
+    case JVMTI_EVENT_FIELD_ACCESS:
+      GET_OFFSET (FieldAccess);
+      break;
+
+    case JVMTI_EVENT_FIELD_MODIFICATION:
+      GET_OFFSET (FieldModification);
+      break;
+
+    case JVMTI_EVENT_METHOD_ENTRY:
+      GET_OFFSET (MethodEntry);
+      break;
+
+    case JVMTI_EVENT_METHOD_EXIT:
+      GET_OFFSET (MethodExit);
+      break;
+
+    case JVMTI_EVENT_NATIVE_METHOD_BIND:
+      GET_OFFSET (NativeMethodBind);
+      break;
+
+    case JVMTI_EVENT_COMPILED_METHOD_LOAD:
+      GET_OFFSET (CompiledMethodLoad);
+      break;
+
+    case JVMTI_EVENT_COMPILED_METHOD_UNLOAD:
+      GET_OFFSET (CompiledMethodUnload);
+      break;
+
+    case JVMTI_EVENT_DYNAMIC_CODE_GENERATED:
+      GET_OFFSET (DynamicCodeGenerated);
+      break;
+
+    case JVMTI_EVENT_DATA_DUMP_REQUEST:
+      GET_OFFSET (DataDumpRequest);
+      break;
+
+    case JVMTI_EVENT_MONITOR_WAIT:
+      GET_OFFSET (MonitorWait);
+      break;
+
+    case JVMTI_EVENT_MONITOR_WAITED:
+      GET_OFFSET (MonitorWaited);
+      break;
+
+    case JVMTI_EVENT_MONITOR_CONTENDED_ENTER:
+      GET_OFFSET (MonitorContendedEnter);
+      break;
+
+    case JVMTI_EVENT_MONITOR_CONTENDED_ENTERED:
+      GET_OFFSET (MonitorContendedEntered);
+      break;
+
+    case JVMTI_EVENT_GARBAGE_COLLECTION_START:
+      GET_OFFSET (GarbageCollectionStart);
+      break;
+
+    case JVMTI_EVENT_GARBAGE_COLLECTION_FINISH:
+      GET_OFFSET (GarbageCollectionFinish);
+      break;
+
+    case JVMTI_EVENT_OBJECT_FREE:
+      GET_OFFSET (ObjectFree);
+      break;
+
+    case JVMTI_EVENT_VM_OBJECT_ALLOC:
+      GET_OFFSET (VMObjectAlloc);
+      break;
+
+    default:
+      fprintf (stderr,
+	       "libgcj: check_enabled_event for unknown JVMTI event (%d)\n",
+	       (int) type);
+      return;
+    }
+#undef GET_OFFSET
+
+  int index = EVENT_INDEX (type); // safe since caller checks this
+
+  JvSynchronize dummy (_envListLock);
+  struct jvmti_env_list *e;
+  FOREACH_ENVIRONMENT (e)
+    {
+      char *addr
+	= reinterpret_cast<char *> (&e->env->callbacks) + offset;
+      void **callback = reinterpret_cast<void **> (addr);
+      if (e->env->enabled[index] && *callback != NULL)
+	{
+	  *enabled = true;
+	  return;
+	}
+    }
+
+  *enabled = false;
+}
+
+static void
+check_enabled_events ()
+{
+  check_enabled_event (JVMTI_EVENT_VM_INIT);
+  check_enabled_event (JVMTI_EVENT_VM_DEATH);
+  check_enabled_event (JVMTI_EVENT_THREAD_START);
+  check_enabled_event (JVMTI_EVENT_THREAD_END);
+  check_enabled_event (JVMTI_EVENT_CLASS_FILE_LOAD_HOOK);
+  check_enabled_event (JVMTI_EVENT_CLASS_LOAD);
+  check_enabled_event (JVMTI_EVENT_CLASS_PREPARE);
+  check_enabled_event (JVMTI_EVENT_VM_START);
+  check_enabled_event (JVMTI_EVENT_EXCEPTION);
+  check_enabled_event (JVMTI_EVENT_EXCEPTION_CATCH);
+  check_enabled_event (JVMTI_EVENT_SINGLE_STEP);
+  check_enabled_event (JVMTI_EVENT_FRAME_POP);
+  check_enabled_event (JVMTI_EVENT_BREAKPOINT);
+  check_enabled_event (JVMTI_EVENT_FIELD_ACCESS);
+  check_enabled_event (JVMTI_EVENT_FIELD_MODIFICATION);
+  check_enabled_event (JVMTI_EVENT_METHOD_ENTRY);
+  check_enabled_event (JVMTI_EVENT_METHOD_EXIT);
+  check_enabled_event (JVMTI_EVENT_NATIVE_METHOD_BIND);
+  check_enabled_event (JVMTI_EVENT_COMPILED_METHOD_LOAD);
+  check_enabled_event (JVMTI_EVENT_COMPILED_METHOD_UNLOAD);
+  check_enabled_event (JVMTI_EVENT_DYNAMIC_CODE_GENERATED);
+  check_enabled_event (JVMTI_EVENT_DATA_DUMP_REQUEST);
+  check_enabled_event (JVMTI_EVENT_MONITOR_WAIT);
+  check_enabled_event (JVMTI_EVENT_MONITOR_WAITED);
+  check_enabled_event (JVMTI_EVENT_MONITOR_CONTENDED_ENTER);
+  check_enabled_event (JVMTI_EVENT_MONITOR_CONTENDED_ENTERED);
+  check_enabled_event (JVMTI_EVENT_GARBAGE_COLLECTION_START);
+  check_enabled_event (JVMTI_EVENT_GARBAGE_COLLECTION_FINISH);
+  check_enabled_event (JVMTI_EVENT_OBJECT_FREE);
+  check_enabled_event (JVMTI_EVENT_VM_OBJECT_ALLOC);
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_SetEventNotificationMode (jvmtiEnv *env, jvmtiEventMode mode,
+				    jvmtiEvent type, jthread event_thread, ...)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_ONLOAD | JVMTI_PHASE_LIVE);
+
+  if (event_thread != NULL)
+    {
+      using namespace java::lang;
+      Thread *t = reinterpret_cast<Thread *> (event_thread);
+      THREAD_CHECK_VALID (t);
+      THREAD_CHECK_IS_ALIVE (t);
+    }
+
+  bool enabled;
+  switch (mode)
+    {
+    case JVMTI_DISABLE:
+      enabled = false;
+      break;
+    case JVMTI_ENABLE:
+      enabled = true;
+      break;
+
+    default:
+      return JVMTI_ERROR_ILLEGAL_ARGUMENT;
+    }
+
+  switch (type)
+    {
+    case JVMTI_EVENT_VM_INIT:
+    case JVMTI_EVENT_VM_DEATH:
+    case JVMTI_EVENT_THREAD_START:
+    case JVMTI_EVENT_VM_START:
+    case JVMTI_EVENT_COMPILED_METHOD_LOAD:
+    case JVMTI_EVENT_COMPILED_METHOD_UNLOAD:
+    case JVMTI_EVENT_DYNAMIC_CODE_GENERATED:
+    case JVMTI_EVENT_DATA_DUMP_REQUEST:
+      ILLEGAL_ARGUMENT (event_thread != NULL);
+      break;
+
+    case JVMTI_EVENT_THREAD_END:
+    case JVMTI_EVENT_CLASS_FILE_LOAD_HOOK:
+    case JVMTI_EVENT_CLASS_LOAD:
+    case JVMTI_EVENT_CLASS_PREPARE:
+    case JVMTI_EVENT_EXCEPTION:
+    case JVMTI_EVENT_EXCEPTION_CATCH:
+    case JVMTI_EVENT_SINGLE_STEP:
+    case JVMTI_EVENT_FRAME_POP:
+    case JVMTI_EVENT_BREAKPOINT:
+    case JVMTI_EVENT_FIELD_ACCESS:
+    case JVMTI_EVENT_FIELD_MODIFICATION:
+    case JVMTI_EVENT_METHOD_ENTRY:
+    case JVMTI_EVENT_METHOD_EXIT:
+    case JVMTI_EVENT_NATIVE_METHOD_BIND:
+    case JVMTI_EVENT_MONITOR_WAIT:
+    case JVMTI_EVENT_MONITOR_WAITED:
+    case JVMTI_EVENT_MONITOR_CONTENDED_ENTER:
+    case JVMTI_EVENT_MONITOR_CONTENDED_ENTERED:
+    case JVMTI_EVENT_GARBAGE_COLLECTION_START:
+    case JVMTI_EVENT_GARBAGE_COLLECTION_FINISH:
+    case JVMTI_EVENT_OBJECT_FREE:
+    case JVMTI_EVENT_VM_OBJECT_ALLOC:
+      break;
+
+    default:
+      return JVMTI_ERROR_INVALID_EVENT_TYPE;
+    }
+
+  env->thread[EVENT_INDEX(type)] = event_thread;
+  env->enabled[EVENT_INDEX(type)] = enabled;
+  check_enabled_event (type);
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_SetEventCallbacks (jvmtiEnv *env,
+			     const jvmtiEventCallbacks *callbacks,
+			     jint size_of_callbacks)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_ONLOAD | JVMTI_PHASE_LIVE);
+  ILLEGAL_ARGUMENT (size_of_callbacks < 0);
+
+  // Copy the list of callbacks into the environment
+  memcpy (&env->callbacks, callbacks, sizeof (jvmtiEventCallbacks));
+
+  /* Check which events are now enabeld (JVMTI makes no requirements
+     about the order in which SetEventCallbacks and SetEventNotifications
+     are called. So we must check all events here. */
+  check_enabled_events ();
+
   return JVMTI_ERROR_NONE;
 }
 
@@ -884,7 +1185,7 @@ _Jv_JVMTI_GetErrorName (MAYBE_UNUSED jvmtiEnv *env, jvmtiError error,
 struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
 {
   RESERVED,			// reserved1
-  UNIMPLEMENTED,		// SetEventNotification
+  _Jv_JVMTI_SetEventNotificationMode, // SetEventNotificationMode
   RESERVED,			// reserved3
   UNIMPLEMENTED,		// GetAllThreads
   _Jv_JVMTI_SuspendThread,	// SuspendThread
@@ -1004,7 +1305,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   RESERVED,			// reserved119
   _Jv_JVMTI_SetJNIFunctionTable, // SetJNIFunctionTable
   _Jv_JVMTI_GetJNIFunctionTable, // GetJNIFunctionTable
-  UNIMPLEMENTED,		// SetEventCallbacks
+  _Jv_JVMTI_SetEventCallbacks,	// SetEventCallbacks
   UNIMPLEMENTED,		// GenerateEvents
   UNIMPLEMENTED,		// GetExtensionFunctions
   UNIMPLEMENTED,		// GetExtensionEvents
@@ -1072,4 +1373,385 @@ _Jv_JVMTI_Init ()
 {
   _jvmtiEnvironments = NULL;
   _envListLock = new java::lang::Object ();
+
+  // No environments, so this should set all JVMTI:: members to false
+  check_enabled_events ();
+}
+
+static void
+post_event (jvmtiEnv *env, jvmtiEvent type, jthread event_thread, va_list args)
+{
+#define ARG(Type,Name) Type Name = (Type) va_arg (args, Type)
+
+#define GET_BOOLEAN_ARG(Name)			\
+  ARG (int, b);					\
+  jboolean Name = (b == 0) ? false : true
+
+#define GET_CHAR_ARG(Name)			\
+  ARG (int, c);					\
+  char Name = static_cast<char> (c)
+
+  switch (type)
+    {
+    case JVMTI_EVENT_VM_INIT:
+      if (env->callbacks.VMInit != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  env->callbacks.VMInit (env, jni_env, event_thread);
+	}
+      break;
+
+    case JVMTI_EVENT_VM_DEATH:
+      if (env->callbacks.VMDeath != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  env->callbacks.VMDeath (env, jni_env);
+	}
+      break;
+
+    case JVMTI_EVENT_THREAD_START:
+      if (env->callbacks.ThreadStart != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  env->callbacks.ThreadStart (env, jni_env, event_thread);
+	}
+      break;
+
+    case JVMTI_EVENT_THREAD_END:
+      if (env->callbacks.ThreadEnd != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  env->callbacks.ThreadEnd (env, jni_env, event_thread);
+	}
+      break;
+
+    case JVMTI_EVENT_CLASS_FILE_LOAD_HOOK:
+      if (env->callbacks.ClassFileLoadHook != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jclass, class_being_redefined);
+	  ARG (jobject, loader);
+	  ARG (const char *, name);
+	  ARG (jobject, protection_domain);
+	  ARG (jint, class_data_len);
+	  ARG (const unsigned char *, class_data);
+	  ARG (jint *, new_class_data_len);
+	  ARG (unsigned char **, new_class_data);
+	  env->callbacks.ClassFileLoadHook (env, jni_env,
+					    class_being_redefined, loader,
+					    name, protection_domain,
+					    class_data_len, class_data,
+					    new_class_data_len,
+					    new_class_data);
+	}
+      break;
+
+    case JVMTI_EVENT_CLASS_LOAD:
+      if (env->callbacks.ClassLoad != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jclass, klass);
+	  env->callbacks.ClassLoad (env, jni_env, event_thread, klass);
+	}
+      break;
+
+    case JVMTI_EVENT_CLASS_PREPARE:
+      if (env->callbacks.ClassPrepare != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jclass, klass);
+	  env->callbacks.ClassPrepare (env, jni_env, event_thread, klass);
+	}
+      break;
+
+    case JVMTI_EVENT_VM_START:
+      if (env->callbacks.VMStart != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  env->callbacks.VMStart (env, jni_env);
+	}
+      break;
+
+    case JVMTI_EVENT_EXCEPTION:
+      if (env->callbacks.Exception != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  ARG (jlocation, location);
+	  ARG (jobject, exception);
+	  ARG (jmethodID, catch_method);
+	  ARG (jlocation, catch_location);
+	  env->callbacks.Exception (env, jni_env, event_thread, method,
+				    location, exception, catch_method,
+				    catch_location);
+	}
+      break;
+
+    case JVMTI_EVENT_EXCEPTION_CATCH:
+      if (env->callbacks.ExceptionCatch != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  ARG (jlocation, location);
+	  ARG (jobject, exception);
+	  env->callbacks.ExceptionCatch (env, jni_env, event_thread, method,
+					 location, exception);
+	}
+      break;
+
+    case JVMTI_EVENT_SINGLE_STEP:
+      if (env->callbacks.SingleStep != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  ARG (jlocation, location);
+	  env->callbacks.SingleStep (env, jni_env, event_thread, method,
+				     location);
+	}
+      break;
+
+    case JVMTI_EVENT_FRAME_POP:
+      if (env->callbacks.FramePop != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  GET_BOOLEAN_ARG (was_popped_by_exception);
+	  env->callbacks.FramePop (env, jni_env, event_thread, method,
+				   was_popped_by_exception);
+	}
+      break;
+
+    case JVMTI_EVENT_BREAKPOINT:
+      if (env->callbacks.Breakpoint != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  ARG (jlocation, location);
+	  env->callbacks.Breakpoint (env, jni_env, event_thread, method,
+				     location);
+	}
+      break;
+
+    case JVMTI_EVENT_FIELD_ACCESS:
+      if (env->callbacks.FieldAccess != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  ARG (jlocation, location);
+	  ARG (jclass, field_class);
+	  ARG (jobject, object);
+	  ARG (jfieldID, field);
+	  env->callbacks.FieldAccess (env, jni_env, event_thread, method,
+				      location, field_class, object, field);
+	}
+      break;
+
+    case JVMTI_EVENT_FIELD_MODIFICATION:
+      if (env->callbacks.FieldModification != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  ARG (jlocation, location);
+	  ARG (jclass, field_class);
+	  ARG (jobject, object);
+	  ARG (jfieldID, field);
+	  GET_CHAR_ARG (signature_type);
+	  ARG (jvalue, new_value);
+	  env->callbacks.FieldModification (env, jni_env, event_thread, method,
+					    location, field_class, object,
+					    field, signature_type, new_value);
+	}
+      break;
+
+    case JVMTI_EVENT_METHOD_ENTRY:
+      if (env->callbacks.MethodEntry != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  env->callbacks.MethodEntry (env, jni_env, event_thread, method);
+	}
+      break;
+
+    case JVMTI_EVENT_METHOD_EXIT:
+      if (env->callbacks.MethodExit != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  GET_BOOLEAN_ARG (was_popped_by_exception);
+	  ARG (jvalue, return_value);
+	  env->callbacks.MethodExit (env, jni_env, event_thread, method,
+				     was_popped_by_exception, return_value);
+	}
+      break;
+
+    case JVMTI_EVENT_NATIVE_METHOD_BIND:
+      if (env->callbacks.NativeMethodBind != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jmethodID, method);
+	  ARG (void *, address);
+	  ARG (void **, new_address_ptr);
+	  env->callbacks.NativeMethodBind (env, jni_env, event_thread, method,
+					   address, new_address_ptr);
+	}
+      break;
+
+    case JVMTI_EVENT_COMPILED_METHOD_LOAD:
+      if (env->callbacks.CompiledMethodLoad != NULL)
+	{
+	  ARG (jmethodID, method);
+	  ARG (jint, code_size);
+	  ARG (const void *, code_addr);
+	  ARG (jint, map_length);
+	  ARG (const jvmtiAddrLocationMap *, map);
+	  ARG (const void *, compile_info);
+	  env->callbacks.CompiledMethodLoad (env, method, code_size, code_addr,
+					     map_length, map, compile_info);
+	}
+      break;
+
+    case JVMTI_EVENT_COMPILED_METHOD_UNLOAD:
+      if (env->callbacks.CompiledMethodUnload != NULL)
+	{
+	  ARG (jmethodID, method);
+	  ARG (const void *, code_addr);
+	  env->callbacks.CompiledMethodUnload (env, method, code_addr);
+	}
+      break;
+
+    case JVMTI_EVENT_DYNAMIC_CODE_GENERATED:
+      if (env->callbacks.DynamicCodeGenerated != NULL)
+	{
+	  ARG (const char *, name);
+	  ARG (const void *, address);
+	  ARG (jint, length);
+	  env->callbacks.DynamicCodeGenerated (env, name, address, length);
+	}
+      break;
+
+    case JVMTI_EVENT_DATA_DUMP_REQUEST:
+      if (env->callbacks.DataDumpRequest != NULL)
+	{
+	  env->callbacks.DataDumpRequest (env);
+	}
+      break;
+
+    case JVMTI_EVENT_MONITOR_WAIT:
+      if (env->callbacks.MonitorWait != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jobject, object);
+	  ARG (jlong, timeout);
+	  env->callbacks.MonitorWait (env, jni_env, event_thread, object,
+				      timeout);
+	}
+      break;
+
+    case JVMTI_EVENT_MONITOR_WAITED:
+      if (env->callbacks.MonitorWaited != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jobject, object);
+	  GET_BOOLEAN_ARG (timed_out);
+	  env->callbacks.MonitorWaited (env, jni_env, event_thread, object,
+					timed_out);
+	}
+      break;
+
+    case JVMTI_EVENT_MONITOR_CONTENDED_ENTER:
+      if (env->callbacks.MonitorContendedEnter != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jobject, object);
+	  env->callbacks.MonitorContendedEnter (env, jni_env, event_thread,
+						object);
+	}
+      break;
+
+    case JVMTI_EVENT_MONITOR_CONTENDED_ENTERED:
+      if (env->callbacks.MonitorContendedEntered != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jobject, object);
+	  env->callbacks.MonitorContendedEntered (env, jni_env, event_thread,
+						  object);
+	}
+      break;
+
+    case JVMTI_EVENT_GARBAGE_COLLECTION_START:
+      if (env->callbacks.GarbageCollectionStart != NULL)
+	{
+	  env->callbacks.GarbageCollectionStart (env);
+	}
+      break;
+
+    case JVMTI_EVENT_GARBAGE_COLLECTION_FINISH:
+      if (env->callbacks.GarbageCollectionFinish != NULL)
+	{
+	  env->callbacks.GarbageCollectionFinish (env);
+	}
+      break;
+
+    case JVMTI_EVENT_OBJECT_FREE:
+      if (env->callbacks.ObjectFree != NULL)
+	{
+	  ARG (jlong, tag);
+	  env->callbacks.ObjectFree (env, tag);
+	}
+      break;
+
+    case JVMTI_EVENT_VM_OBJECT_ALLOC:
+      if (env->callbacks.VMObjectAlloc != NULL)
+	{
+	  ARG (JNIEnv *, jni_env);
+	  ARG (jobject, object);
+	  ARG (jclass, object_class);
+	  ARG (jlong, size);
+	  env->callbacks.VMObjectAlloc (env, jni_env, event_thread,
+					object, object_class, size);
+	}
+      break;
+
+    default:
+      fprintf (stderr, "libgcj: post of unknown JVMTI event (%d)\n",
+	       (int) type);
+      break;
+    }
+  va_end (args);
+#undef ARG
+#undef GET_BOOLEAN_ARG
+#undef GET_CHAR_ARG
+}
+
+/* Post an event to requesting JVMTI environments
+ *
+ * This function should not be called without consulting the
+ * JVMTI_REQUESTED_EVENT macro first (for speed). It does no real
+ * harm (other than kill speed), since this function will still
+ * only send the event if it was properly requested by an environment.
+ */ 
+void
+_Jv_JVMTI_PostEvent (jvmtiEvent type, jthread event_thread, ...)
+{
+  va_list args;
+  va_start (args, event_thread);
+
+  JvSynchronize dummy (_envListLock);
+  struct jvmti_env_list *e;
+  FOREACH_ENVIRONMENT (e)
+    {
+      /* Events are only posted if the event was explicitly enabled,
+	 it has a registered event handler, and the event thread
+	 matches (either globally or restricted to a specific thread).
+	 Here we check all but the event handler, which will be handled
+	 by post_event. */
+      if (e->env->enabled[EVENT_INDEX(type)]
+	  && (e->env->thread[EVENT_INDEX(type)] == NULL
+	      || e->env->thread[EVENT_INDEX(type)] == event_thread))
+	{
+	  post_event (e->env, type, event_thread, args);
+	}
+    }
+
+  va_end (args);
 }

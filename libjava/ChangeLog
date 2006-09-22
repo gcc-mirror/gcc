@@ -1,3 +1,21 @@
+2006-09-21  Keith Seitz  <keiths@redhat.com>
+
+	* jvmti.cc (_Jv_JVMTI_DisposeEnvironment): Check for enabled
+	events.
+	(check_enabled_event): New function.
+	(check_enabled_events): New function.
+	(post_event): New function.
+	(_Jv_JVMTI_SetEventNotificationMode): New function.
+	(_Jv_JVMTI_SetEventCallbacks): New function.
+	(_Jv_JVMTI_Interface): Define SetEventNotificationMode and
+	SetEventCallbacks members.
+	* include/jvmti-int.h: New file.
+	* include/jvmti_md.h (EVENT_SLOTS) [__GCJ_JNI_IMP__]: Define.
+	(_CLASSPATH_JVMTIENV_CONTENTS) [__GCJ_JNI_IMPL__]: Define.
+	* testsuite/libjava.jvmti/events.java: New file.
+	* testsuite/libjava.jvmti/events.out: New file.
+	* testsuite/libjava.jvmti/natevents.cc: New file. 
+
 2006-09-21  Sandro Tolaini  <tolaini@libero.it>
 
 	* configure.ac: Don't use darwin-signal.h as signal handler for
