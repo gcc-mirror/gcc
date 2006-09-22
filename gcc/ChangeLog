@@ -1,3 +1,9 @@
+2006-09-22  Peter Bergner <bergner@vnet.ibm.com>
+
+	PR middle-end/28690
+	* explow.c (force_reg): Set REG_POINTER flag according to
+	MEM_POINTER flag.
+
 2006-09-22  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/28888

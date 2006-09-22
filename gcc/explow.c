@@ -710,6 +710,8 @@ force_reg (enum machine_mode mode, rtx x)
 
 	align = MIN (sa, ca);
       }
+    else if (MEM_P (x) && MEM_POINTER (x))
+      align = MEM_ALIGN (x);
 
     if (align)
       mark_reg_pointer (temp, align);
