@@ -164,7 +164,7 @@ examine_objects (void *pc, struct dwarf_eh_bases *bases, int dont_alloc)
 	  {
 #if __LP64__
 	    fde = getsectdatafromheader_64 ((struct mach_header_64 *) image->mh,
-					 "__TEXT", "__eh_frame", &sz);
+					    "__TEXT", "__eh_frame", &sz);
 #else
 	    fde = getsectdatafromheader (image->mh, "__TEXT",
 					 "__eh_frame", &sz);
