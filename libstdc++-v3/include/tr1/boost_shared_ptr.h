@@ -90,8 +90,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       typedef _Tp* argument_type;
 
       void
-      operator()(_Tp* p) const
-      { delete p; }
+      operator()(_Tp* __p) const
+      { delete __p; }
     };
 
   // Empty helper class except when the template argument is _S_mutex.
@@ -451,26 +451,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   struct __dynamic_cast_tag { };
   struct __polymorphic_cast_tag { };
 
-  template<class _Tp>
-    struct __shared_ptr_reference
-    { typedef _Tp& __type; };
-
-  template<>
-    struct __shared_ptr_reference<void>
-    { typedef void __type; };
-
-  template<>
-    struct __shared_ptr_reference<void const>
-    { typedef void __type; };
-
-  template<>
-    struct __shared_ptr_reference<void volatile>
-    { typedef void __type; };
-
-  template<>
-    struct __shared_ptr_reference<void const volatile>
-    { typedef void __type; };
-
 
   // Support for enable_shared_from_this.
 
@@ -497,8 +477,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   template<typename _Tp, _Lock_policy _Lp>
     class __shared_ptr
     {
-      typedef typename __shared_ptr_reference<_Tp>::__type _Reference;
-
     public:
       typedef _Tp   element_type;
       
@@ -589,7 +567,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  // delete r.release() well-formed
 	  _Tp1 * __tmp = __r.get();
 	  _M_refcount = shared_count<_Lp>(__r);
-	  __enable_shared_from_this_helper( _M_refcount, __tmp, __tmp );
+	  __enable_shared_from_this_helper(_M_refcount, __tmp, __tmp );
 	}
 
       template<typename _Tp1>
@@ -648,8 +626,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         reset(_Tp1 * __p, _Deleter __d)
         { __shared_ptr(__p, __d).swap(*this); }
 
-      // Error to instantiate if _Tp is [cv-qual] void.
-      _Reference
+      // Allow instantiation when _Tp is [cv-qual] void.
+      typename add_reference<_Tp>::type
       operator*() const // never throws
       {
 	_GLIBCXX_DEBUG_ASSERT(_M_ptr != 0);
@@ -806,33 +784,33 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       // It is not possible to avoid spurious access violations since
       // in multithreaded programs r._M_ptr may be invalidated at any point.
       template<typename _Tp1>
-        __weak_ptr(const __weak_ptr<_Tp1, _Lp>& r)
-	: _M_refcount(r._M_refcount) // never throws
+        __weak_ptr(const __weak_ptr<_Tp1, _Lp>& __r)
+	: _M_refcount(__r._M_refcount) // never throws
         {
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
-	    _M_ptr = r.lock().get();
+	    _M_ptr = __r.lock().get();
 	}
 
       template<typename _Tp1>
-        __weak_ptr(const __shared_ptr<_Tp1, _Lp>& r)
-	: _M_ptr(r._M_ptr), _M_refcount(r._M_refcount) // never throws
+        __weak_ptr(const __shared_ptr<_Tp1, _Lp>& __r)
+	: _M_ptr(__r._M_ptr), _M_refcount(__r._M_refcount) // never throws
         { __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>) }
 
       template<typename _Tp1>
         __weak_ptr&
-        operator=(const __weak_ptr<_Tp1, _Lp>& r) // never throws
+        operator=(const __weak_ptr<_Tp1, _Lp>& __r) // never throws
         {
-	  _M_ptr = r.lock().get();
-	  _M_refcount = r._M_refcount;
+	  _M_ptr = __r.lock().get();
+	  _M_refcount = __r._M_refcount;
 	  return *this;
 	}
       
       template<typename _Tp1>
         __weak_ptr&
-        operator=(const __shared_ptr<_Tp1, _Lp>& r) // never throws
+        operator=(const __shared_ptr<_Tp1, _Lp>& __r) // never throws
         {
-	  _M_ptr = r._M_ptr;
-	  _M_refcount = r._M_refcount;
+	  _M_ptr = __r._M_ptr;
+	  _M_refcount = __r._M_refcount;
 	  return *this;
 	}
 
@@ -975,27 +953,30 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     class weak_ptr : public __weak_ptr<_Tp>
     {
     public:
-      weak_ptr() : __weak_ptr<_Tp>() { }
+      weak_ptr()
+      : __weak_ptr<_Tp>() { }
       
       template<typename _Tp1>
-        weak_ptr(const __weak_ptr<_Tp1>& r) : __weak_ptr<_Tp>(r) { }
+        weak_ptr(const __weak_ptr<_Tp1>& __r)
+	: __weak_ptr<_Tp>(__r) { }
     
       template<typename _Tp1>
-        weak_ptr(const __shared_ptr<_Tp1>& r) : __weak_ptr<_Tp>(r) { }
+        weak_ptr(const __shared_ptr<_Tp1>& __r)
+	: __weak_ptr<_Tp>(__r) { }
 
       template<typename _Tp1>
         weak_ptr&
-        operator=(const weak_ptr<_Tp1>& r) // never throws
+        operator=(const weak_ptr<_Tp1>& __r) // never throws
         {
-	  this->__weak_ptr<_Tp>::operator=(r);
+	  this->__weak_ptr<_Tp>::operator=(__r);
 	  return *this;
 	}
 
       template<typename _Tp1>
         weak_ptr&
-        operator=(const shared_ptr<_Tp1>& r) // never throws
+        operator=(const shared_ptr<_Tp1>& __r) // never throws
         {
-	  this->__weak_ptr<_Tp>::operator=(r);
+	  this->__weak_ptr<_Tp>::operator=(__r);
 	  return *this;
 	}
     };

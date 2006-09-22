@@ -1,5 +1,28 @@
 2006-09-22  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits (add_reference): Robustify vs
+	reference to void.
+	* testsuite/tr1/4_metaprogramming/reference_modifications/
+	add_reference.cc: Add test.
+
+	* include/tr1/memory: include <tr1/type_traits>.
+	* include/tr1/boost_shared_ptr.h (__shared_ptr<>::operator*):
+	Use add_reference instead.
+	* testsuite/tr1/2_general_utilities/memory/enable_shared_from_this/
+	explicit_instantiation/1.cc: New.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/memory/weak_ptr/
+	explicit_instantiation/1.cc: Likewise.
+
+	* testsuite/util/testsuite_tr1.h: Tweak; avoid empty enum.
+
+	* include/tr1/type_traits_fwd.h: Spelling fix.
+
+	* include/tr1/boost_shared_ptr.h: Obvious stylistic fixes.
+
+2006-09-22  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/boost_shared_ptr.h: Trivial formatting fixes.
 
 2006-09-21  Benjamin Kosnik  <bkoz@redhat.com>

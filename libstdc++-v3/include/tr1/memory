@@ -44,6 +44,7 @@
 #include <ext/concurrence.h>
 #include <bits/functexcept.h>
 #include <debug/debug.h>
+#include <tr1/type_traits>  // tr1::add_reference
 
 #include <tr1/boost_shared_ptr.h>
 
