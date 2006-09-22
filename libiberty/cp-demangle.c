@@ -2505,6 +2505,8 @@ d_substitution (struct d_info *di, int prefix)
 		id = id * 36 + c - 'A' + 10;
 	      else
 		return NULL;
+	      if (id < 0)
+		return NULL;
 	      c = d_next_char (di);
 	    }
 	  while (c != '_');
