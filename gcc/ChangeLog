@@ -1,3 +1,9 @@
+2006-09-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (LINK_SYSROOT_SPEC): New.
+	(LINK_SPEC): If TARGET_SYSTEM_ROOT is defined, pass it to
+	the linker by default.
+
 2006-09-22  Mike Stump  <mrs@apple.com>
 
 	* config/rs6000/darwin.h (PROFILE_HOOK): Reassociate comment with
