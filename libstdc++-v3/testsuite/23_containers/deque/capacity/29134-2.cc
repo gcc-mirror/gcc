@@ -20,7 +20,6 @@
 
 #include <deque>
 #include <stdexcept>
-#include <limits>
 #include <testsuite_hooks.h>
 
 // libstdc++/29134
@@ -33,7 +32,7 @@ void test01()
 
   try
     {
-      d.resize(numeric_limits<size_t>::max());
+      d.resize(size_t(-1));
     }
   catch(const std::length_error&)
     {

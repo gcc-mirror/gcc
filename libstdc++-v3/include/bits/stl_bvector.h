@@ -581,7 +581,11 @@ template<typename _Alloc>
 
     size_type
     max_size() const
-    { return size_type(-1); }
+    {
+      const size_type __asize = _M_get_Bit_allocator().max_size();
+      return (__asize <= size_type(-1) / int(_S_word_bit) ?
+	      __asize * int(_S_word_bit) : size_type(-1));
+    }
 
     size_type
     capacity() const

@@ -16,32 +16,19 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
-// 23.2.4.2 vector capacity [lib.vector.capacity]
+// 23.2.5 class vector<bool> [lib.vector.bool]
 
 #include <vector>
-#include <stdexcept>
 #include <testsuite_hooks.h>
 
 // libstdc++/29134
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using namespace std;
 
-  vector<int> v;
+  std::vector<bool> vb;
 
-  try
-    {
-      v.resize(size_t(-1));
-    }
-  catch(const std::length_error&)
-    {
-      VERIFY( true );
-    }
-  catch(...)
-    {
-      VERIFY( false );
-    }
+  VERIFY( vb.max_size() == std::vector<bool>::size_type(-1) );
 }
 
 int main()
