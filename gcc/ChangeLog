@@ -1,3 +1,8 @@
+2006-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-propagate.c (set_rhs): Copy EXPR_LOCATION if
+	needed.
+
 2006-09-21  Richard Sandiford  <richard@codesourcery.com>
 
 	* varasm.c (copy_constant): Fix reversed gcc_assert check.
