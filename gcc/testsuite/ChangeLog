@@ -1,3 +1,8 @@
+2006-09-22  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/28888
+	* gcc.dg/pr28888.c: New test.
+
 2006-09-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29016
@@ -5,15 +10,15 @@
 
 2006-09-21  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/28861
-        * g++.dg/template/spec32.C: New test.
-        * g++.dg/parse/crash9.C: Adjust error markers.
+	PR c++/28861
+	* g++.dg/template/spec32.C: New test.
+	* g++.dg/parse/crash9.C: Adjust error markers.
 
 	PR c++/28303
-        * g++.dg/template/typedef6.C: New test.
-        * g++.dg/init/error1.C: Adjust error markers.
-        * g++.dg/parse/crash9.C: Likewise.
-        * g++.dg/template/crash55.C: Likewise.
+	* g++.dg/template/typedef6.C: New test.
+	* g++.dg/init/error1.C: Adjust error markers.
+	* g++.dg/parse/crash9.C: Likewise.
+	* g++.dg/template/crash55.C: Likewise.
 	
 2006-09-21  Janis Johnson  <janis187@us.ibm.com>
 

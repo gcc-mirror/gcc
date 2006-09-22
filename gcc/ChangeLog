@@ -1,3 +1,10 @@
+2006-09-22  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/28888
+	* tree-if-conv.c (combine_blocks): Rewritten.
+	* tree-cfg.c (tree_verify_flow_info): Check that edges with
+	EDGE_TRUE/FALSE_VALUE follow COND_EXPR.
+
 2006-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-propagate.c (set_rhs): Copy EXPR_LOCATION if
