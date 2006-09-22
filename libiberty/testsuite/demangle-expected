@@ -3811,3 +3811,8 @@ make<Factory, int>
 _Z1fM1AKiPKS1_
 f(int const A::*, int const A::* const*)
 f
+# This used to cause a core dump in the demangler -- PR 29176
+--format=auto --no-params
+SASDASDFASDF_sdfsdf
+SASDASDFASDF_sdfsdf
+SASDASDFASDF_sdfsdf

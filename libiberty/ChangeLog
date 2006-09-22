@@ -1,3 +1,9 @@
+2006-09-22  Ian Lance Taylor  <ian@airs.com>
+
+	PR other/29176
+	* cp-demangle.c (d_substitution): Check for overflow when
+	computing substitution index.
+
 2006-08-30  Corinna Vinschen  <corinna@vinschen.de>
 
 	* configure.ac: Add case for Mingw as host.
