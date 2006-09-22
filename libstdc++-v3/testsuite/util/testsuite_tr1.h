@@ -95,7 +95,7 @@ namespace __gnu_test
 
   class DerivedType : public ClassType { };
 
-  enum EnumType { };
+  enum EnumType { e0 };
 
   struct ConvType
   { operator int() const; };
@@ -181,7 +181,7 @@ namespace __gnu_test
 
   // For use in 8_c_compatibility.
   template<typename R, typename T>
-    typename __gnu_cxx::__enable_if<std::tr1::is_same<R, T>::value, 
+    typename __gnu_cxx::__enable_if<std::__are_same<R, T>::__value, 
 				    bool>::__type
     check_ret_type(T)
     { return true; }

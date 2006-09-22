@@ -1,6 +1,6 @@
 // TR1 type_traits -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -202,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   template<typename _Tp>
     struct add_reference;
 
-  /// @brief  array modififications [4.7.3].
+  /// @brief  array modifications [4.7.3].
   template<typename _Tp>
     struct remove_extent;
 

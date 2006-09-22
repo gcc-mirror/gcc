@@ -278,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 				      remove_all_extents<_Tp>::type>::value)>
     { };
 
-  // N.B. Without compiler support we cannot tell union from class types,
+  // NB: Without compiler support we cannot tell union from class types,
   // and is_empty and is_polymorphic don't work at all with the former. 
   template<typename _Tp, bool = !__is_union_or_class<_Tp>::value>
     struct __is_empty_helper
@@ -563,16 +563,23 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   template<typename _Tp>
     struct remove_reference<_Tp&>
     { typedef _Tp     type; };
-  
+
+  // NB: Careful with reference to void.
+  template<typename _Tp, bool = (is_void<_Tp>::value
+				 || is_reference<_Tp>::value)>
+    struct __add_reference_helper
+    { typedef _Tp&    type; };
+
+  template<typename _Tp>
+    struct __add_reference_helper<_Tp, true>
+    { typedef _Tp     type; };
+
   template<typename _Tp>
     struct add_reference
-    { typedef _Tp&    type; };
+    : public __add_reference_helper<_Tp>
+    { };
 
-  template<typename _Tp>
-    struct add_reference<_Tp&>
-    { typedef _Tp&    type; };
-
-  /// @brief  array modififications [4.7.3].
+  /// @brief  array modifications [4.7.3].
   template<typename _Tp>
     struct remove_extent
     { typedef _Tp     type; };
