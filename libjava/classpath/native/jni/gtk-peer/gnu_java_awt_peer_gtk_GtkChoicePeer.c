@@ -1,5 +1,5 @@
 /* gtkchoicepeer.c -- Native implementation of GtkChoicePeer
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,7 +52,7 @@ cp_gtk_choice_init_jni (void)
 
   postChoiceItemEventID = (*cp_gtk_gdk_env())->GetMethodID (cp_gtk_gdk_env(), gtkchoicepeer,
                                                "postChoiceItemEvent",
-                                               "(Ljava/lang/String;I)V");
+                                               "(I)V");
 }
 
 static void selection_changed_cb (GtkComboBox *combobox, jobject peer);
@@ -106,39 +106,7 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_connectSignals
 }
 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkChoicePeer_append 
-  (JNIEnv *env, jobject obj, jobjectArray items)
-{
-  gpointer ptr;
-  jsize count, i;
-  GtkWidget *bin;
-
-  gdk_threads_enter ();
-
-  ptr = NSA_GET_PTR (env, obj);
-  bin = choice_get_widget (GTK_WIDGET (ptr));
-  
-  count = (*env)->GetArrayLength (env, items);
-
-  for (i = 0; i < count; i++) 
-    {
-      jobject item;
-      const char *label;
-
-      item = (*env)->GetObjectArrayElement (env, items, i);
-      label = (*env)->GetStringUTFChars (env, item, NULL);
-
-      gtk_combo_box_append_text (GTK_COMBO_BOX (bin), label);
-
-      (*env)->ReleaseStringUTFChars (env, item, label);
-      (*env)->DeleteLocalRef(env, item);
-    }
-
-  gdk_threads_leave ();
-}
-
-JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeAdd 
+Java_gnu_java_awt_peer_gtk_GtkChoicePeer_add 
   (JNIEnv *env, jobject obj, jstring item, jint index)
 {
   void *ptr;
@@ -170,14 +138,16 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeRemove
 
   ptr = NSA_GET_PTR (env, obj);
   bin = choice_get_widget (GTK_WIDGET (ptr));
-  
+
+  /* First, unselect everything, to avoid problems when removing items. */
+  gtk_combo_box_set_active (GTK_COMBO_BOX (bin), -1);
   gtk_combo_box_remove_text (GTK_COMBO_BOX (bin), index);
 
   gdk_threads_leave ();
 }
 
-JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeRemoveAll 
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeRemoveAll
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
@@ -224,8 +194,7 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_selectNativeUnlocked
   
   ptr = NSA_GET_PTR (env, obj);
   bin = choice_get_widget (GTK_WIDGET (ptr));
-  
-  gtk_combo_box_set_active (GTK_COMBO_BOX (bin), index);
+  gtk_combo_box_set_active (GTK_COMBO_BOX (bin), (gint)index);
 }
 
 JNIEXPORT jint JNICALL 
@@ -251,26 +220,11 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeGetSelected
 static void
 selection_changed_cb (GtkComboBox *combobox, jobject peer)
 {
-  jstring label;
-  GtkTreeModel *model;
-  GtkTreeIter iter;
-  gchar *selected;
-  gint index;
-
-  index = gtk_combo_box_get_active(combobox);
+  gint index = gtk_combo_box_get_active(combobox);
 
   if (index >= 0)
-    {
-      model = gtk_combo_box_get_model (combobox);
-      gtk_combo_box_get_active_iter (combobox, &iter);
-      gtk_tree_model_get (model, &iter, 0, &selected, -1);
-      label = (*cp_gtk_gdk_env())->NewStringUTF (cp_gtk_gdk_env(), selected);
-
-      (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), peer,
-                                    postChoiceItemEventID,
-                                    label,
-                                    (jint) AWT_ITEM_SELECTED);
-    }
+    (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), peer,
+					 postChoiceItemEventID, (jint)index );
 }
 
 static GtkWidget *
