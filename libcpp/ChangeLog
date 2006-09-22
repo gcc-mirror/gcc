@@ -1,3 +1,9 @@
+2006-09-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.ac: Make need_64_bit_hwint case for x86-darwin
+	match exactly the glob in gcc/config.gcc.
+	* configure: Regenerate.
+
 2006-09-13  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/28768
