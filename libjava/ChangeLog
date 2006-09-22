@@ -1,3 +1,7 @@
+2006-09-22  Marco Trudel  <mtrudel@gmx.ch>
+
+	* jvmti.cc (_Jv_JVMTI_GetErrorName): Now static.  Marked JNICALL.
+
 2006-09-21  Keith Seitz  <keiths@redhat.com>
 
 	* jvmti.cc (_Jv_JVMTI_DisposeEnvironment): Check for enabled
