@@ -1,3 +1,15 @@
+2006-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/28706
+	PR c/28712
+	* tree.c (merge_attributes, attribute_list_contained): If both
+	TREE_VALUEs are TREE_LISTs, use simple_cst_list_equal instead of
+	simple_cst_equal.
+	* c-typeck.c (comptypes_internal): Don't consider aggregates
+	in different TUs as compatible if there one set of attributes is
+	not a subset of the other type's attributes.
+	(composite_type): Try harder not to create a new aggregate type.
+
 2006-09-22  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/i386/driver-i386.c: Always define host_detect_local_cpu.
