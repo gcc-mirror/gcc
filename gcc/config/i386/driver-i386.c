@@ -22,6 +22,8 @@ Boston, MA 02110-1301, USA.  */
 #include "system.h"
 #include <stdlib.h>
 
+const char *host_detect_local_cpu (int argc, const char **argv);
+
 #ifdef GCC_VERSION
 #define cpuid(num,a,b,c,d) \
   asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1" \
