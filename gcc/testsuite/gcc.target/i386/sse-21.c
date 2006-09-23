@@ -1,6 +1,6 @@
 /* Test that we don't generate a fisttp instruction when -mno-sse3.  */
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O -march=nocona -mno-sse3" } */
+/* { dg-options "-O -mfpmath=387 -march=nocona -mno-sse3" } */
 /* { dg-final { scan-assembler-not "fisttp" } } */
 struct foo
 {
