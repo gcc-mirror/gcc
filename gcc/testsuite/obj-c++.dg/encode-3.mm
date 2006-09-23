@@ -14,16 +14,22 @@ Vec<double> dd;
 const char *enc = @encode(Vec<float>);
 const char *enc2 = @encode(Vec<double>);
 
+#ifdef __LP64__
+#define L "q"
+#else
+#define L "l"
+#endif
+
 int main(void) {
-  char *encode = @encode(long);
+  const char *encode = @encode(long);
 
-  if (strcmp (encode, "l"))
+  if (strcmp (encode, L))
     abort();
 
-  if (strcmp (enc, "{Vec<float>=fflq}"))
+  if (strcmp (enc, "{Vec<float>=ff" L "q}"))
     abort();
 
-  if (strcmp (enc2, "{Vec<double>=ddlq}"))
+  if (strcmp (enc2, "{Vec<double>=dd" L "q}"))
     abort();
 
   return 0;

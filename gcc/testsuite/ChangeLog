@@ -1,3 +1,7 @@
+2006-09-22  Mike Stump  <mrs@apple.com>
+
+	* obj-c++.dg/encode-3.mm: Fix for 64-bit support.
+
 2006-09-22  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/28888
