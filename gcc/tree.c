@@ -3554,7 +3554,17 @@ merge_attributes (tree a1, tree a2)
 		   a = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
 					 TREE_CHAIN (a)))
 		{
-		  if (simple_cst_equal (TREE_VALUE (a), TREE_VALUE (a2)) == 1)
+		  if (TREE_VALUE (a) != NULL
+		      && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
+		      && TREE_VALUE (a2) != NULL
+		      && TREE_CODE (TREE_VALUE (a2)) == TREE_LIST)
+		    {
+		      if (simple_cst_list_equal (TREE_VALUE (a),
+						 TREE_VALUE (a2)) == 1)
+			break;
+		    }
+		  else if (simple_cst_equal (TREE_VALUE (a),
+					     TREE_VALUE (a2)) == 1)
 		    break;
 		}
 	      if (a == NULL_TREE)
@@ -4374,14 +4384,20 @@ attribute_list_contained (tree l1, tree l2)
 	   attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
 				    TREE_CHAIN (attr)))
 	{
-	  if (simple_cst_equal (TREE_VALUE (t2), TREE_VALUE (attr)) == 1)
+	  if (TREE_VALUE (t2) != NULL
+	      && TREE_CODE (TREE_VALUE (t2)) == TREE_LIST
+	      && TREE_VALUE (attr) != NULL
+	      && TREE_CODE (TREE_VALUE (attr)) == TREE_LIST)
+	    {
+	      if (simple_cst_list_equal (TREE_VALUE (t2),
+					 TREE_VALUE (attr)) == 1)
+		break;
+	    }
+	  else if (simple_cst_equal (TREE_VALUE (t2), TREE_VALUE (attr)) == 1)
 	    break;
 	}
 
       if (attr == 0)
-	return 0;
-
-      if (simple_cst_equal (TREE_VALUE (t2), TREE_VALUE (attr)) != 1)
 	return 0;
     }
 

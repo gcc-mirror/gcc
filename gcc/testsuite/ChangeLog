@@ -1,3 +1,11 @@
+2006-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/28706
+	* gcc.dg/pr28706.c: New test.
+
+	PR c/28712
+	* gcc.dg/pr28712.c: New test.
+
 2006-09-22  Mike Stump  <mrs@apple.com>
 
 	* obj-c++.dg/encode-3.mm: Fix for 64-bit support.
