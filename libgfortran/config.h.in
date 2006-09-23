@@ -492,6 +492,9 @@
 /* libm includes scalbnl */
 #undef HAVE_SCALBNL
 
+/* Define to 1 if you have the `setmode' function. */
+#undef HAVE_SETMODE
+
 /* Define to 1 if you have the `signal' function. */
 #undef HAVE_SIGNAL
 
