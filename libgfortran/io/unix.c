@@ -1289,6 +1289,9 @@ input_stream (void)
 stream *
 output_stream (void)
 {
+#if defined(HAVE_CRLF) && defined(HAVE_SETMODE)
+  setmode (STDOUT_FILENO, O_BINARY);
+#endif
   return fd_to_stream (STDOUT_FILENO, PROT_WRITE);
 }
 
@@ -1299,6 +1302,9 @@ output_stream (void)
 stream *
 error_stream (void)
 {
+#if defined(HAVE_CRLF) && defined(HAVE_SETMODE)
+  setmode (STDERR_FILENO, O_BINARY);
+#endif
   return fd_to_stream (STDERR_FILENO, PROT_WRITE);
 }
 
