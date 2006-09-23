@@ -264,7 +264,7 @@ extern const char *flag_random_seed;
 
 /* True if the given mode has a NaN representation and the treatment of
    NaN operands is important.  Certain optimizations, such as folding
-   x * 0 into x, are not correct for NaN operands, and are normally
+   x * 0 into 0, are not correct for NaN operands, and are normally
    disabled for modes with NaNs.  The user can ask for them to be
    done anyway using the -funsafe-math-optimizations switch.  */
 #define HONOR_NANS(MODE) \
