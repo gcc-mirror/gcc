@@ -1,3 +1,33 @@
+2006-09-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/boost_shared_ptr.h (shared_ptr<>::shared_ptr(const
+	__shared_ptr<>&), shared_ptr(const __weak_ptr<>&),
+	shared_ptr(const __shared_ptr<>&, __static_cast_tag),
+	shared_ptr(const __shared_ptr<>&, __const_cast_tag),
+	shared_ptr(const __shared_ptr<>&, __dynamic_cast_tag),
+	weak_ptr<>::weak_ptr(const __shared_ptr<>&), weak_ptr(const
+	__weak_ptr<>&)): Remove.
+	(shared_ptr<>::shared_ptr(const shared_ptr<>&),
+	shared_ptr(const weak_ptr<>&), shared_ptr(const shared_ptr<>&,
+	__static_cast_tag), shared_ptr(const shared_ptr<>&,
+	__const_cast_tag), shared_ptr(const shared_ptr<>&,
+	__dynamic_cast_tag), static_pointer_cast(const shared_ptr<>&),
+	const_pointer_cast(const shared_ptr<>&), dynamic_pointer_cast(const
+	shared_ptr<>&), weak_ptr<>::weak_ptr(const shared_ptr<>&),
+	weak_ptr(const weak_ptr<>&), weak_ptr<>::lock(), 
+	__enable_shared_from_this_helper(const __shared_count<>&, const
+	enable_shared_from_this<>*, const _Tp2*)): Add. 
+	(class enable_shared_from_this): Add.
+	* testsuite/tr1/2_general_utilities/memory/enable_shared_from_this/
+	1.cc: New.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/casts/1.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/memory/weak_ptr/lock/1.cc:
+	Likewise.
+
+	* include/tr1/boost_shared_ptr.h: Further formatting and
+	uglification fixes.
+
 2006-09-22  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/29134 (vector<bool> bits)
