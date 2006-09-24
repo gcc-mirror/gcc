@@ -112,7 +112,6 @@ runtime/pause.c \
 runtime/stop.c \
 runtime/string.c \
 runtime/select.c \
-gfortypes.h \
 libgfortran.h
 
 i_all_c= \
