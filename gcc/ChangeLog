@@ -1,3 +1,9 @@
+2006-09-24  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR target/28911
+	* config/m68k/m68k.md (negsf2, negdf2, negxf2): Use
+	-2147483647 - 1 instead of 0x80000000.
+
 2006-09-23  Revital1 Eres  <ERES@il.ibm.com>
 
 	* flags.h (HONOR_NANS): Fix typo in comment.
