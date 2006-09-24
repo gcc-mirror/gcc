@@ -1,3 +1,11 @@
+2006-09-24  Zdenek Dvorak <dvorakz@suse.cz>
+	    Adam Nemet  <anemet@caviumnetworks.com>
+
+	* tree-ssa-loop-ivopts.c (aff_combination_convert,
+	determine_common_wider_type): New functions.
+	(get_computation_aff): Use them to simplify arithmetic between
+	UBASE and CBASE if they are shortened from the same type.
+
 2006-09-24  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/28911
