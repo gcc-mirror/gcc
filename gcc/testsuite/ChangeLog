@@ -1,3 +1,9 @@
+2006-09-24  Zdenek Dvorak <dvorakz@suse.cz>
+	    Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.dg/tree-ssa/ivopts-1.c: New test.
+	* gcc.dg/tree-ssa/ivopts-2.c: New test.
+	
 2006-09-24  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/28911
