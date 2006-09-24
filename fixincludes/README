@@ -106,6 +106,10 @@ MAKING CHANGES TO INCLHACK.DEF
         rules, except that the backslash is processed before
         '\\', '\'' and '#' characters (using C character syntax).
 
+    Each test must pass or the fix is not applied.  For example,
+    all "select" expressions must be found and not one "bypass"
+    selection may be found.
+
     Examples of test specifications:
 
       hackname = broken_assert_stdio;
