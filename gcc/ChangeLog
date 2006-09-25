@@ -1,3 +1,7 @@
+2006-09-25  Matthias Klose  <doko@debian.org>
+
+	* doc/invoke.texi: Add missing full stop.
+
 2006-09-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR debug/29132
