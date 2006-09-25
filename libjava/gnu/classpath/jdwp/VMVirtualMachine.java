@@ -48,6 +48,7 @@ import gnu.classpath.jdwp.util.MethodResult;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 /**
@@ -57,6 +58,9 @@ import java.util.Iterator;
  */
 public class VMVirtualMachine
 {
+  // Thread suspension table. Maps Thread to suspend count (Integer)
+  private static Hashtable _jdwp_suspend_counts;
+
   public static native void initialize ();
 
   /**

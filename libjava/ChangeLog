@@ -1,3 +1,13 @@
+2006-09-25  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/VMVirtualMachine.java
+	(_jdwp_suspend_counts): New private variable.
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc
+	(initialize): Initialize _jdwp_suspend_counts.
+	(suspendThread): Implement.
+	(resumeThread): Implement.
+	(getSuspendCount): Implement.
+
 2006-09-22  Marco Trudel  <mtrudel@gmx.ch>
 
 	* jvmti.cc (_Jv_JVMTI_GetErrorName): Now static.  Marked JNICALL.
