@@ -786,7 +786,10 @@ void
 dump_cgraph_varpool_node (FILE *f, struct cgraph_varpool_node *node)
 {
   fprintf (f, "%s:", cgraph_varpool_node_name (node));
-  fprintf (f, " availability:%s", availability_names [cgraph_variable_initializer_availability (node)]);
+  fprintf (f, " availability:%s",
+	   cgraph_function_flags_ready
+	   ? availability_names[cgraph_variable_initializer_availability (node)]
+	   : "not-ready");
   if (DECL_INITIAL (node->decl))
     fprintf (f, " initialized");
   if (node->needed)
