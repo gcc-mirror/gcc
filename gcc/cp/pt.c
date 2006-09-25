@@ -142,7 +142,7 @@ static tree most_specialized_class (tree, tree);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
 static tree tsubst_arg_types (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
-static void check_specialization_scope (void);
+static bool check_specialization_scope (void);
 static tree process_partial_specialization (tree);
 static void set_current_access_from_decl (tree);
 static void check_default_tmpl_args (tree, tree, int, int);
@@ -535,9 +535,10 @@ begin_template_parm_list (void)
 }
 
 /* This routine is called when a specialization is declared.  If it is
-   invalid to declare a specialization here, an error is reported.  */
+   invalid to declare a specialization here, an error is reported and
+   false is returned, otherwise this routine will return true.  */
 
-static void
+static bool
 check_specialization_scope (void)
 {
   tree scope = current_scope ();
@@ -552,7 +553,10 @@ check_specialization_scope (void)
      shall be declared in the namespace of which the class template
      is a member.  */
   if (scope && TREE_CODE (scope) != NAMESPACE_DECL)
-    error ("explicit specialization in non-namespace scope %qD", scope);
+    {
+      error ("explicit specialization in non-namespace scope %qD", scope);
+      return false;
+    }
 
   /* [temp.expl.spec]
 
@@ -563,17 +567,22 @@ check_specialization_scope (void)
      explicitly specialize a class member template if its enclosing
      class templates are not explicitly specialized as well.  */
   if (current_template_parms)
-    error ("enclosing class templates are not explicitly specialized");
+    {
+      error ("enclosing class templates are not explicitly specialized");
+      return false;
+    }
+
+  return true;
 }
 
 /* We've just seen template <>.  */
 
-void
+bool
 begin_specialization (void)
 {
   begin_scope (sk_template_spec, NULL);
   note_template_header (1);
-  check_specialization_scope ();
+  return check_specialization_scope ();
 }
 
 /* Called at then end of processing a declaration preceded by

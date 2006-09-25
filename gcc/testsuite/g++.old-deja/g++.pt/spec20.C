@@ -10,7 +10,7 @@ struct S {
   template <class U> void f(U);
   template <> void f<int>(int); // { dg-error "" } invalid specialization
 
-  template <class V> struct I {};
-  template <class V> struct I<V*> {};
+  template <class V> struct I {};      // { dg-error "template" }
+  template <class V> struct I<V*> {};  // { dg-error "template" }
   template <> struct I<int>; // { dg-error "" } invalid specialization
 };
