@@ -1,3 +1,9 @@
+2006-09-25  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29179
+	* include/ext/mt_allocator.h (__pool_base): Adjust/extend
+	documentation in comments.
+
 2006-09-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/boost_shared_ptr.h (shared_ptr<>::shared_ptr(const
