@@ -1,5 +1,18 @@
 2006-09-25  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/29178:
+	* gnu/java/nio/charset/US_ASCII.java (Encoder.canEncode): New method.
+	(Encoder.canEncode): Likewise.
+	(Encoder.encodeLoop): Return unmappable for all non-ASCII characters.
+	* gnu/java/nio/charset/ByteCharset.java (Encoder.canEncode): New
+	method.
+	(Encoder.canEncode): Likewise.
+	* gnu/java/nio/charset/ISO_8859_1.java (Encoder.canEncode): New
+	method.
+	(Encoder.canEncode): Likewise.
+
+2006-09-25  Tom Tromey  <tromey@redhat.com>
+
 	* native/fdlibm/mprec.c (mprec_calloc): Renamed.
 	(Balloc): Updated.
 

@@ -156,6 +156,22 @@ abstract class ByteCharset extends Charset
 	  }
     }
 
+    public boolean canEncode(char c)
+    {
+      byte b = (c < lookup.length) ? lookup[c] : 0;
+      return b != 0 || c == 0;
+    }
+
+    public boolean canEncode(CharSequence cs)
+    {
+      for (int i = 0; i < cs.length(); ++i)
+        {
+          if (! canEncode(cs.charAt(i)))
+            return false;
+        }
+      return true;
+    }
+
     protected CoderResult encodeLoop (CharBuffer in, ByteBuffer out)
     {
       // TODO: Optimize this in the case in.hasArray() / out.hasArray()

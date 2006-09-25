@@ -134,6 +134,19 @@ final class US_ASCII extends Charset
       super (cs, 1.0f, 1.0f);
     }
 
+    public boolean canEncode(char c)
+    {
+      return c <= 0x7f;
+    }
+
+    public boolean canEncode(CharSequence cs)
+    {
+      for (int i = 0; i < cs.length(); ++i)
+        if (! canEncode(cs.charAt(i)))
+          return false;
+      return true;
+    }
+
     protected CoderResult encodeLoop (CharBuffer in, ByteBuffer out)
     {
       // TODO: Optimize this in the case in.hasArray() / out.hasArray()
@@ -141,7 +154,7 @@ final class US_ASCII extends Charset
       {
         char c = in.get ();
 
-        if (c > Byte.MAX_VALUE)
+        if (c > 0x7f)
           {
             in.position (in.position () - 1);
             return CoderResult.unmappableForLength (1);
