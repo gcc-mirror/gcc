@@ -1,4 +1,4 @@
-2006-09-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2006-09-25  Tobias Schluter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/21203
 	* error.c (show_loci): No need to risk an ICE to output a
