@@ -128,6 +128,19 @@ final class ISO_8859_1 extends Charset
       super (cs, 1.0f, 1.0f);
     }
 
+    public boolean canEncode(char c)
+    {
+      return c <= 0xff;
+    }
+
+    public boolean canEncode(CharSequence cs)
+    {
+      for (int i = 0; i < cs.length(); ++i)
+        if (! canEncode(cs.charAt(i)))
+          return false;
+      return true;
+    }
+
     protected CoderResult encodeLoop (CharBuffer in, ByteBuffer out)
     {
       // TODO: Optimize this in the case in.hasArray() / out.hasArray()
