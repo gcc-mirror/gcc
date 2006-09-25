@@ -8,6 +8,18 @@
 	Return false on error.
         * decl.c (xref_tag): Return error_mark_node if
 	redeclare_class_template returned false.
+
+	PR c++/27667
+        * cp-tree.h (begin_specialization): Return bool 
+	instead of void.
+        * pt.c (check_specialization_scope): Likwise. 
+	Adjust comment. Return false if a specialization 
+	isn't permitted in the current scope.
+        (begin_specialization): Use the return value of  
+        check_specialization_scope.
+        * parser.c (cp_parser_explicit_specialization): If
+        begin_specialization returned false, skip the rest 
+	of the specialization.
 	
 2006-09-21  Mark Mitchell  <mark@codesourcery.com>
 

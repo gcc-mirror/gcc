@@ -9,6 +9,10 @@
 
         PR c++/27329
         * g++.dg/template/crash59.C: New test.
+
+	PR c++/27667
+        * g++.dg/template/spec33.C: New test.
+        * g++.old-deja/g++.pt/spec20.C: Adjust error markers.
 	
 2006-09-24  Zdenek Dvorak <dvorakz@suse.cz>
 	    Adam Nemet  <anemet@caviumnetworks.com>
