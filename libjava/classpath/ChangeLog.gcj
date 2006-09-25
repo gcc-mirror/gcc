@@ -1,5 +1,11 @@
 2006-09-25  Tom Tromey  <tromey@redhat.com>
 
+	* native/jni/gconf-peer/Makefile.in: Rebuilt.
+	* native/jni/gconf-peer/Makefile.am (libgconfpeer_la_LDFLAGS): New
+	variable.
+
+2006-09-25  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/29178:
 	* gnu/java/nio/charset/US_ASCII.java (Encoder.canEncode): New method.
 	(Encoder.canEncode): Likewise.
