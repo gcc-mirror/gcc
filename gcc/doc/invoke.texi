@@ -2668,7 +2668,7 @@ To suppress this warning use the @samp{unused} attribute
 @item -Wunused-variable
 @opindex Wunused-variable
 Warn whenever a local variable or non-constant static variable is unused
-aside from its declaration
+aside from its declaration.
 This warning is enabled by @option{-Wall}.
 
 To suppress this warning use the @samp{unused} attribute
