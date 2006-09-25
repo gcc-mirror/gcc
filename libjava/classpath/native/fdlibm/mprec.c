@@ -101,7 +101,7 @@ typedef unsigned long __ULong;
 typedef long __Long;
 
 static void *
-_calloc_r (void *ignore, size_t x1, size_t x2)
+mprec_calloc (void *ignore, size_t x1, size_t x2)
 {
   char *result = (char *) malloc (x1 * x2);
   memset (result, 0, x1 * x2);
@@ -119,7 +119,7 @@ _DEFUN (Balloc, (ptr, k), struct _reent *ptr _AND int k)
   if (_REENT_MP_FREELIST(ptr) == NULL)
     {
       /* Allocate a list of pointers to the mprec objects */
-      _REENT_MP_FREELIST(ptr) = (struct _Bigint **) _calloc_r (ptr, 
+      _REENT_MP_FREELIST(ptr) = (struct _Bigint **) mprec_calloc (ptr, 
 						      sizeof (struct _Bigint *),
 							       new_k);
       if (_REENT_MP_FREELIST(ptr) == NULL)
@@ -150,7 +150,7 @@ _DEFUN (Balloc, (ptr, k), struct _reent *ptr _AND int k)
     {
       x = 1 << k;
       /* Allocate an mprec Bigint and stick in in the freelist */
-      rv = (_Bigint *) _calloc_r (ptr,
+      rv = (_Bigint *) mprec_calloc (ptr,
 				  1,
 				  sizeof (_Bigint) +
 				  (x-1) * sizeof(rv->_x));
