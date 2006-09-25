@@ -199,7 +199,7 @@ show_loci (locus * l1, locus * l2)
 {
   int offset, flag, i, m, c1, c2, cmax;
 
-  if (l1 == NULL)
+  if (l1 == NULL || l1->lb == NULL)
     {
       error_printf ("<During initialization>\n");
       return;
