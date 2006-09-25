@@ -15,15 +15,20 @@ details. */
 
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
+#include <java/lang/Integer.h>
+#include <java/lang/String.h>
+#include <java/lang/StringBuffer.h>
 #include <java/lang/Thread.h>
 #include <java/nio/ByteBuffer.h>
 #include <java/util/ArrayList.h>
+#include <java/util/Hashtable.h>
 #include <java/util/Iterator.h>
 
 #include <gnu/classpath/jdwp/VMFrame.h>
 #include <gnu/classpath/jdwp/VMMethod.h>
 #include <gnu/classpath/jdwp/VMVirtualMachine.h>
 #include <gnu/classpath/jdwp/event/EventRequest.h>
+#include <gnu/classpath/jdwp/exception/JdwpInternalErrorException.h>
 #include <gnu/classpath/jdwp/util/MethodResult.h>
 
 using namespace java::lang;
@@ -36,6 +41,7 @@ static jvmtiEnv *_jdwp_jvmtiEnv;
 void
 gnu::classpath::jdwp::VMVirtualMachine::initialize ()
 {
+  _jdwp_suspend_counts = new ::java::util::Hashtable ();
   JavaVM *vm = _Jv_GetJavaVM ();
   vm->GetEnv (reinterpret_cast<void **> (&_jdwp_jvmtiEnv), JVMTI_VERSION_1_0);
 }
@@ -43,17 +49,106 @@ gnu::classpath::jdwp::VMVirtualMachine::initialize ()
 void
 gnu::classpath::jdwp::VMVirtualMachine ::suspendThread (Thread *thread)
 {
+  jint value;
+  Integer *count;
+  {
+    JvSynchronize dummy (_jdwp_suspend_counts);
+    count = reinterpret_cast<Integer *> (_jdwp_suspend_counts->get (thread));
+    if (count == NULL)
+      {
+	// New -- suspend thread
+	value = 0;
+      }
+    else
+      {
+	// Thread already suspended
+	value = count->intValue ();
+      }
+
+    count = Integer::valueOf (++value);
+    _jdwp_suspend_counts->put (thread, count);
+  }
+
+  if (value == 1)
+    {
+      // Suspend the thread
+      jvmtiError err = _jdwp_jvmtiEnv->SuspendThread (thread);
+      if (err != JVMTI_ERROR_NONE)
+	{
+	  using namespace gnu::classpath::jdwp::exception;
+	  char *reason;
+	  _jdwp_jvmtiEnv->GetErrorName (err, &reason);
+	  ::java::lang::String *txt
+	      = JvNewStringLatin1 ("could not suspend thread: ");
+	  ::java::lang::StringBuffer *msg
+	      = new ::java::lang::StringBuffer (txt);
+	  msg->append (JvNewStringLatin1 (reason));
+	  _jdwp_jvmtiEnv->Deallocate ((unsigned char *) reason);
+	  throw new JdwpInternalErrorException (msg->toString ());
+	}
+    }
 }
 
 void
 gnu::classpath::jdwp::VMVirtualMachine::resumeThread (Thread *thread)
 {
+  jint value;
+  {
+    JvSynchronize dummy (_jdwp_suspend_counts);
+    Integer *count
+      = reinterpret_cast<Integer *> (_jdwp_suspend_counts->get (thread));
+    if (count == NULL)
+      {
+	// Thread not suspended: ThreadReference.Resume says to ignore it.
+	return;
+      }
+    else
+      {
+	// Decrement suspend count
+	value = count->intValue () - 1;
+      }
+
+    if (value == 0)
+      {
+	// Thread will be resumed, remove from table
+	_jdwp_suspend_counts->remove (thread);
+      }
+    else
+      {
+	// Thread stays suspended: record new suspend count
+	count = Integer::valueOf (value);
+	_jdwp_suspend_counts->put (thread, count);
+      }
+  }
+
+  if (value == 0)
+    {
+      jvmtiError err = _jdwp_jvmtiEnv->ResumeThread (thread);
+      if (err != JVMTI_ERROR_NONE)
+	{
+	  using namespace gnu::classpath::jdwp::exception;
+	  char *reason;
+	  _jdwp_jvmtiEnv->GetErrorName (err, &reason);
+	  ::java::lang::String *txt 
+	      = JvNewStringLatin1 ("could not resume thread: ");
+	  ::java::lang::StringBuffer *msg
+	      = new ::java::lang::StringBuffer (txt);
+	  msg->append (JvNewStringLatin1 (reason));
+	  _jdwp_jvmtiEnv->Deallocate ((unsigned char *) reason);
+	  throw new JdwpInternalErrorException (msg->toString ());
+	}
+    }
 }
 
 jint
 gnu::classpath::jdwp::VMVirtualMachine::getSuspendCount (Thread *thread)
 {
-  return 0;
+  jint suspensions = 0;
+  Integer *count
+    = reinterpret_cast<Integer *> (_jdwp_suspend_counts->get (thread));
+  if (count != NULL)
+    suspensions = count->intValue ();
+  return suspensions;
 }
 
 void
