@@ -1,3 +1,9 @@
+2006-09-25  Mark Wielaard  <mark@klomp.org>
+
+	Suggested by Aaron M. Ucko <ucko@debian.org>
+	Fixes bug #29203
+	* native/fdlibm/mprec.c (ulp): Define L as int32_t.
+
 2006-09-22  David Daney  <ddaney@avtrex.com>
 
 	PR classpath/28661
