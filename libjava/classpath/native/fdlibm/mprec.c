@@ -666,7 +666,7 @@ double
 _DEFUN (ulp, (_x), double _x)
 {
   union double_union x, a;
-  register __Long L;
+  register int32_t L;
 
   x.d = _x;
 
