@@ -7,7 +7,7 @@
 
 template <class _Tp> class insert_iterator<slist<_Tp> > {}; // { dg-error "not a template|not declared in this scope|expected unqualified-id|extra" }
 template <class _Value> class insert_iterator<int > { // { dg-error "template" }
-  hash_set<_Value>; // { dg-error "no type|expected" }
+  hash_set<_Value>;
 };
 
 template<int> struct A<X<> > {}; // { dg-error "not a template|not declared in this scope|expected unqualified-id|extra" }
