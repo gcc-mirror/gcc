@@ -1,3 +1,14 @@
+2006-09-25  Lee Millward  <lee.millward@codesourcery.com>
+
+        PR c++/27329
+        PR c++/26938
+        * cp-tree.h (redeclare_class_template): Adjust declaration
+        to return bool instead of void.
+        * pt.c (redeclare_class_template): Update definition.
+	Return false on error.
+        * decl.c (xref_tag): Return error_mark_node if
+	redeclare_class_template returned false.
+	
 2006-09-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29016

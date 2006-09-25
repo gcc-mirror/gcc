@@ -9712,7 +9712,10 @@ xref_tag (enum tag_types tag_code, tree name,
   else
     {
       if (template_header_p && IS_AGGR_TYPE (t))
-	redeclare_class_template (t, current_template_parms);
+        {
+	  if (!redeclare_class_template (t, current_template_parms))
+            POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+        }
       else if (!processing_template_decl
 	       && CLASS_TYPE_P (t)
 	       && CLASSTYPE_IS_TEMPLATE (t))

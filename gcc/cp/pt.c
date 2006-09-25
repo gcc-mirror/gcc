@@ -3315,7 +3315,7 @@ push_template_decl (tree decl)
      template <class T> struct S;
      template <class T> struct S {};  */
 
-void
+bool
 redeclare_class_template (tree type, tree parms)
 {
   tree tmpl;
@@ -3325,7 +3325,7 @@ redeclare_class_template (tree type, tree parms)
   if (!TYPE_TEMPLATE_INFO (type))
     {
       error ("%qT is not a template type", type);
-      return;
+      return false;
     }
 
   tmpl = TYPE_TI_TEMPLATE (type);
@@ -3333,13 +3333,13 @@ redeclare_class_template (tree type, tree parms)
     /* The type is nested in some template class.  Nothing to worry
        about here; there are no new template parameters for the nested
        type.  */
-    return;
+    return true;
 
   if (!parms)
     {
       error ("template specifiers not specified in declaration of %qD",
 	     tmpl);
-      return;
+      return false;
     }
 
   parms = INNERMOST_TEMPLATE_PARMS (parms);
@@ -3351,7 +3351,7 @@ redeclare_class_template (tree type, tree parms)
       error ("used %d template parameter(s) instead of %d",
 	     TREE_VEC_LENGTH (tmpl_parms),
 	     TREE_VEC_LENGTH (parms));
-      return;
+      return false;
     }
 
   for (i = 0; i < TREE_VEC_LENGTH (tmpl_parms); ++i)
@@ -3379,7 +3379,7 @@ redeclare_class_template (tree type, tree parms)
 	{
 	  error ("template parameter %q+#D", tmpl_parm);
 	  error ("redeclared here as %q#D", parm);
-	  return;
+	  return false;
 	}
 
       if (tmpl_default != NULL_TREE && parm_default != NULL_TREE)
@@ -3390,7 +3390,7 @@ redeclare_class_template (tree type, tree parms)
 	     by two different declarations in the same scope.  */
 	  error ("redefinition of default argument for %q#D", parm);
 	  error ("%J  original definition appeared here", tmpl_parm);
-	  return;
+	  return false;
 	}
 
       if (parm_default != NULL_TREE)
@@ -3402,6 +3402,8 @@ redeclare_class_template (tree type, tree parms)
 	   parameters for any members.  */
 	TREE_PURPOSE (TREE_VEC_ELT (parms, i)) = tmpl_default;
     }
+
+    return true;
 }
 
 /* Simplify EXPR if it is a non-dependent expression.  Returns the
