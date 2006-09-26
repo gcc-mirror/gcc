@@ -61,7 +61,7 @@ typedef struct StackFrame {
   unsigned long	savedRTOC;
 } StackFrame;
 
-unsigned long FindTopOfStack(unsigned int stack_start) {
+unsigned long FindTopOfStack(unsigned long stack_start) {
   StackFrame	*frame;
   
   if (stack_start == 0) {
