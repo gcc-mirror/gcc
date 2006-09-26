@@ -1,6 +1,6 @@
 // TR1 functional -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 // Written by Douglas Gregor <doug.gregor -at- gmail.com>
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -199,7 +199,7 @@ template<typename _Res, typename _Class _GLIBCXX_COMMA_SHIFTED
   public:
     typedef _Res result_type;
 
-    explicit _Mem_fn(_Functor __pmf) : __pmf(__pmf) { }
+    explicit _Mem_fn(_Functor __pf) : __pmf(__pf) { }
 
     // Handle objects
     _Res
@@ -253,7 +253,7 @@ template<typename _Res, typename _Class _GLIBCXX_COMMA_SHIFTED
   public:
     typedef _Res result_type;
 
-    explicit _Mem_fn(_Functor __pmf) : __pmf(__pmf) { }
+    explicit _Mem_fn(_Functor __pf) : __pmf(__pf) { }
 
     // Handle objects
     _Res
@@ -307,7 +307,7 @@ template<typename _Res, typename _Class _GLIBCXX_COMMA_SHIFTED
   public:
     typedef _Res result_type;
 
-    explicit _Mem_fn(_Functor __pmf) : __pmf(__pmf) { }
+    explicit _Mem_fn(_Functor __pf) : __pmf(__pf) { }
 
     // Handle objects
     _Res
@@ -361,7 +361,7 @@ template<typename _Res, typename _Class _GLIBCXX_COMMA_SHIFTED
   public:
     typedef _Res result_type;
 
-    explicit _Mem_fn(_Functor __pmf) : __pmf(__pmf) { }
+    explicit _Mem_fn(_Functor __pf) : __pmf(__pf) { }
 
     // Handle objects
     _Res
