@@ -1,3 +1,9 @@
+2006-09-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/29195
+	* objc-act.c (objc_push_parm): If we change the type of the
+	decl, relayout the decl.
+
 2006-09-19  Eric Christopher  <echristo@apple.com>
 
 	* objc-act.c (JBLEN): Rename to OBJC_JBLEN,
