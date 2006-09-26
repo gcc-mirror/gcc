@@ -1,4 +1,4 @@
-2006-09-26  Howard Hinnant  <hhinnant@apple.com>
+2006-09-25  Howard Hinnant  <hhinnant@apple.com>
 
 	PR libstdc++/29224
 	* include/tr1/functional_iterate.h: Avoid -Wshadow warnings.
