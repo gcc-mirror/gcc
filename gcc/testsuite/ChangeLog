@@ -1,3 +1,9 @@
+2006-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/25261
+	PR middle-end/28790
+	* gcc.dg/gomp/nestedfn-1.c: New test.
+
 2006-09-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/29195

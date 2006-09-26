@@ -1,5 +1,11 @@
 2006-09-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/25261
+	PR middle-end/28790
+	* testsuite/libgomp.c/nestedfn-4.c: New test.
+	* testsuite/libgomp.c/nestedfn-5.c: New test.
+	* testsuite/libgomp.fortran/nestedfn3.f90: New test.
+
 	PR fortran/29097
 	* testsuite/libgomp.fortran/condinc1.f: New test.
 	* testsuite/libgomp.fortran/condinc2.f: New test.
