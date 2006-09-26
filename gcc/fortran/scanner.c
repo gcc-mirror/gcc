@@ -1212,8 +1212,26 @@ static bool
 include_line (char *line)
 {
   char quote, *c, *begin, *stop;
-  
+
   c = line;
+
+  if (gfc_option.flag_openmp)
+    {
+      if (gfc_current_form == FORM_FREE)
+	{
+	  while (*c == ' ' || *c == '\t')
+	    c++;
+	  if (*c == '!' && c[1] == '$' && (c[2] == ' ' || c[2] == '\t'))
+	    c += 3;
+	}
+      else
+	{
+	  if ((*c == '!' || *c == 'c' || *c == 'C' || *c == '*')
+	      && c[1] == '$' && (c[2] == ' ' || c[2] == '\t'))
+	    c += 3;
+	}
+    }
+
   while (*c == ' ' || *c == '\t')
     c++;
 
