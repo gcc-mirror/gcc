@@ -728,17 +728,11 @@ case "${target}" in
     # <oldham@codesourcery.com>
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
-  mips*-dec-bsd*)
-    noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
-    ;;
   mips*-*-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
-  mipstx39-*-*)
-    noconfigdirs="$noconfigdirs gprof ${libgcj}"   # same as generic mips
-    ;;
   mips64*-*-linux*)
-    noconfigdirs="$noconfigdirs target-newlib ${libgcj}"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
   mips*-*-linux*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"

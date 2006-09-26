@@ -1,3 +1,9 @@
+2006-09-26  Thiemo Seufer  <ths@mips.com>
+
+	* configure.in: Remove redundant handling of mips*-dec-bsd*. Likewise
+	for mipstx39-*-*. Disable libgloss for mips64*-*-linux*.
+	* configure: Regenerate.
+
 2006-09-24  Graeme Peterson <gridly@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Remove myself.
