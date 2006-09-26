@@ -1,3 +1,11 @@
+2006-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/25261
+	PR middle-end/28790
+	* tree-nested.c (struct nesting_info): Added static_chain_added.
+	(convert_call_expr): Set static_chain_added when adding static
+	chain.  Handle OMP_PARALLEL and OMP_SECTION.
+
 2006-09-25  Matthias Klose  <doko@debian.org>
 
 	* doc/invoke.texi: Add missing full stop.
