@@ -1,3 +1,12 @@
+2006-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/29097
+	* testsuite/libgomp.fortran/condinc1.f: New test.
+	* testsuite/libgomp.fortran/condinc2.f: New test.
+	* testsuite/libgomp.fortran/condinc3.f90: New test.
+	* testsuite/libgomp.fortran/condinc4.f90: New test.
+	* testsuite/libgomp.fortran/condinc1.inc: New file.
+
 2006-09-18  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
