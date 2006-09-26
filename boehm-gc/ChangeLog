@@ -1,3 +1,8 @@
+2006-09-26  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/29180
+	* darwin_stop_world.c: Make stack_start unsigned long.
+
 2006-09-21  Sandro Tolaini  <tolaini@libero.it>
 
 	* os_dep.c: Port to Darwin/i386
