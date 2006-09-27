@@ -131,6 +131,7 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
   else
 #endif
     {
+#ifdef HAVE_GETIPINFO
       _Unwind_Ptr ip;
       int ip_before_insn = 0;
       ip = _Unwind_GetIPInfo (context, &ip_before_insn);
@@ -139,9 +140,13 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
       // to ensure we get the correct line number for the call itself.
       if (! ip_before_insn)
 	--ip;
-
+#endif
       state->frames[pos].type = frame_native;
+#ifdef HAVE_GETIPINFO
       state->frames[pos].ip = (void *) ip;
+#else
+      state->frames[pos].ip = (void *) _Unwind_GetIP (context);
+#endif
       state->frames[pos].start_ip = func_addr;
     }
 
@@ -216,6 +221,12 @@ _Jv_StackTrace::getLineNumberForFrame(_Jv_StackFrame *frame, NameFinder *finder,
         offset = (_Unwind_Ptr) ip;
       else
         offset = (_Unwind_Ptr) ip - (_Unwind_Ptr) info.base;
+
+#ifndef HAVE_GETIPINFO
+      // The unwinder gives us the return address. In order to get the right
+      // line number for the stack trace, roll it back a little.
+      offset -= 1;
+#endif
 
       finder->lookup (binaryName, (jlong) offset);
       *sourceFileName = finder->getSourceFile();

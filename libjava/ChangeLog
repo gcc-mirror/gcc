@@ -1,3 +1,14 @@
+2006-09-26  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/26792:
+	* exception.cc (PERSONALITY_FUNCTION): use _Unwind_GetIP
+	if HAVE_GETIPINFO not defined.
+	* stacktrace.cc (_Jv_StackTrace::UnwindTraceFn): Likewise.
+	(_Jv_StackTrace::getLineNumberForFrame): Likewise.
+	* configure.ac: use GCC_CHECK_UNWIND_GETIPINFO.
+	* aclocal.m4, configure, include/config.h.in, Makefile.in:
+	Rebuilt.
+
 2006-09-27  Tom Tromey  <tromey@redhat.com>
 
 	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=201712

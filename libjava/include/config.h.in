@@ -118,6 +118,9 @@
 /* Define to 1 if you have the `getifaddrs' function. */
 #undef HAVE_GETIFADDRS
 
+/* Define if _Unwind_GetIPInfo is available. */
+#undef HAVE_GETIPINFO
+
 /* Define to 1 if you have the `getpwuid_r' function. */
 #undef HAVE_GETPWUID_R
 
