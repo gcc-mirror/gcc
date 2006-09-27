@@ -2983,9 +2983,53 @@ fix = {
     test_text =
     '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
     "#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
-    "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
-    "#define PTHREAD_RWLOCK_INITIALIZER\t"
-             "{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
+    "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */";
+};
+
+
+/*
+ * Sun Solaris defines PTHREAD_RWLOCK_INITIALIZER with a "0" for some
+ *  fields of the pthread_rwlock_t structure, which are of type
+ *  upad64_t, which itself is typedef'd to int64_t, but with __STDC__
+ *  defined (e.g. by -ansi) it is a union. So change the initializer
+ *  to "{0}" instead.
+ */
+fix = {
+    hackname = solaris_rwlock_init_1;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    mach = '*-*-solaris*';
+    c_fix = format;
+    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
+                "%0\n"
+                "#else\n"
+                "%1{0, 0, 0, {{0}, {0}, {0}}, {{0}, {0}}, {{0}, {0}}}\n"
+                "#endif";
+    c_fix_arg = "(^#define[ \t]+PTHREAD_RWLOCK_INITIALIZER[ \t]+)"
+                "\\{0, 0, 0, \\{0, 0, 0\\}, \\{0, 0\\}, \\{0, 0\\}\\}[ \t]*$";
+
+    test_text =
+    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
+    "#define PTHREAD_RWLOCK_INITIALIZER\t{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
+};
+
+
+/*
+ * Sun Solaris defines PTHREAD_ONCE_INIT as an array containing a
+ * structure.  As such, it need two levels of brackets, but only
+ * contains one.  Wrap the macro definition in an extra layer.
+ */
+fix = {
+    hackname = solaris_once_init_1;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    mach = '*-*-solaris*';
+    c_fix = format;
+    c_fix_arg = "%1{%2}%3";
+    c_fix_arg = "(^#define[ \t]+PTHREAD_ONCE_INIT[ \t]+\\{)([^}]+)(\\})[ \t]*$";
+    test_text =
+    '#pragma ident	"@(#)pthread.h	1.37	04/09/28 SMI"'"\n"
+    "#define PTHREAD_ONCE_INIT\t{0, 0, 0, PTHREAD_ONCE_NOTDONE}";
 };
 
 
