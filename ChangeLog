@@ -1,3 +1,9 @@
+2006-09-27  Dave Brolley  <brolley@redhat.com>
+
+	* configure.in (RUNTEST): Look for 'runtest' in the source tree by using
+	$s instead of $r.
+	* configure: Regenerated.
+
 2006-09-26  Thiemo Seufer  <ths@mips.com>
 
 	* configure.in: Remove redundant handling of mips*-dec-bsd*. Likewise
