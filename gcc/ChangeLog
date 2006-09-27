@@ -1,3 +1,8 @@
+2006-09-27  Paul Brook  <paul@codesourcery.com>
+
+	PR target/29230
+	* config/arm/arm.md (arith_adjacentmem): Handle large offsets.
+
 2006-09-27  Richard Sandiford  <richard@codesourcery.com>
 
 	* reload1.c (alter_reg): Require the alignment of the stack slot to
