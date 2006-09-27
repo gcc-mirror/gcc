@@ -1,3 +1,11 @@
+2006-09-27  Tom Tromey  <tromey@redhat.com>
+
+	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=201712
+	* java/util/Locale.java (hashcode): No longer transient.
+	(writeObject): Use ObjectOutputStream.PutField and
+	defaultWriteObject.
+	(readObject): Use defaultReadObject.
+
 2006-09-25  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/VMVirtualMachine.java
