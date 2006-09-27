@@ -1,3 +1,10 @@
+2006-09-27  Richard Sandiford  <richard@codesourcery.com>
+
+	* reload1.c (alter_reg): Require the alignment of the stack slot to
+	be at least reg_max_ref_width bytes.
+	(scan_paradoxical_subregs): Record the largest width in
+	reg_max_ref_width.
+
 2006-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/25261
