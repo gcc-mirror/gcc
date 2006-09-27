@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -288,13 +288,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			std::memcpy(_M_names[__i], _M_names[0], __len);
 		      }
 		  }
-		char* __src = __imp->_M_names[__ix] ? __imp->_M_names[__ix]
-		                                    : __imp->_M_names[0];
+
+		// FIXME: Hack for libstdc++/29217: the numerical encodings
+		// of the time and collate categories are swapped vs the
+		// order of the names in locale::_S_categories.  We'd like to
+		// adjust the former (the latter is dictated by compatibility
+		// with glibc) but we can't for binary compatibility.
+		size_t __ix_name = __ix;
+		if (__ix == 2 || __ix == 3)
+		  __ix_name = 5 - __ix;
+
+		char* __src = __imp->_M_names[__ix_name] ?
+		              __imp->_M_names[__ix_name] : __imp->_M_names[0];
 		const size_t __len = std::strlen(__src) + 1;
 		char* __new = new char[__len];
 		std::memcpy(__new, __src, __len);
-		delete [] _M_names[__ix];
-		_M_names[__ix] = __new;
+		delete [] _M_names[__ix_name];
+		_M_names[__ix_name] = __new;
 	      }
 	  }
       }

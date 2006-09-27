@@ -2,7 +2,8 @@
 
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2005 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,11 +28,11 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-#if _GLIBCXX_USE___ENC_TRAITS
 typedef std::codecvt<char, char, std::mbstate_t> 	      c_codecvt;
-typedef std::codecvt_byname<char, char, std::mbstate_t>       c_codecvt_byname;
+
+#ifdef _GLIBCXX_USE_WCHAR_T
 typedef std::codecvt<wchar_t, char, std::mbstate_t>	      w_codecvt;
-typedef std::codecvt_byname<wchar_t, char, std::mbstate_t>    w_codecvt_byname;
+#endif
 
 class gnu_codecvt: public c_codecvt { }; 
 
@@ -43,77 +44,10 @@ public:
 
 std::locale::id gnu_facet::id;
 
-// Need some char_traits specializations for this to work.
-typedef unsigned short			unicode_t;
-
-namespace std
-{
-  template<>
-    struct char_traits<unicode_t>
-    {
-      typedef unicode_t 	char_type;
-      // Unsigned as wint_t is unsigned.
-      typedef unsigned long  	int_type;
-      typedef streampos 	pos_type;
-      typedef streamoff 	off_type;
-      typedef mbstate_t 	state_type;
-      
-      static void 
-      assign(char_type& __c1, const char_type& __c2);
-
-      static bool 
-      eq(const char_type& __c1, const char_type& __c2);
-
-      static bool 
-      lt(const char_type& __c1, const char_type& __c2);
-
-      static int 
-      compare(const char_type* __s1, const char_type* __s2, size_t __n)
-      { return memcmp(__s1, __s2, __n); }
-
-      static size_t
-      length(const char_type* __s);
-
-      static const char_type* 
-      find(const char_type* __s, size_t __n, const char_type& __a);
-
-      static char_type* 
-      move(char_type* __s1, const char_type* __s2, size_t __n);
-
-      static char_type* 
-      copy(char_type* __s1, const char_type* __s2, size_t __n)
-      { return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
-
-      static char_type* 
-      assign(char_type* __s, size_t __n, char_type __a);
-
-      static char_type 
-      to_char_type(const int_type& __c);
-
-      static int_type 
-      to_int_type(const char_type& __c);
-
-      static bool 
-      eq_int_type(const int_type& __c1, const int_type& __c2);
-
-      static int_type 
-      eof(); 
-
-      static int_type 
-      not_eof(const int_type& __c);
-    };
-}
-
 void test01()
 {
   using namespace std;
-  typedef unicode_t				int_type;
-  typedef char					ext_type;
-  typedef __enc_traits				enc_type;
-  typedef codecvt<int_type, ext_type, enc_type>	unicode_codecvt;
-
   bool test __attribute__((unused)) = true;
-  string str1, str2;
 
   // construct a locale object with the C facet
   const locale	loc01 = locale::classic();
@@ -122,13 +56,15 @@ void test01()
   // template <class Facet> locale(const locale& other, Facet* f)
   // construct a locale object with the specialized facet.
   locale loc02(locale::classic(), new gnu_codecvt);
-  VERIFY (loc01 != loc02);
-  VERIFY (loc02.name() == "*");
+  VERIFY( loc01 != loc02 );
+  VERIFY( loc02.name() == "*" );
   try
     {
-      VERIFY (has_facet<gnu_codecvt>(loc02));
-      VERIFY (has_facet<c_codecvt>(loc02));
-      VERIFY (has_facet<w_codecvt>(loc02));
+      VERIFY( has_facet<gnu_codecvt>(loc02) );
+      VERIFY( has_facet<c_codecvt>(loc02) );
+#ifdef _GLIBCXX_USE_WCHAR_T
+      VERIFY( has_facet<w_codecvt>(loc02) );
+#endif
     }
   catch(...)
     { VERIFY( false ); }
@@ -140,105 +76,85 @@ void test01()
   catch(...)
     { VERIFY( false ); }
 
-  // unicode_codecvt
-  locale loc13(locale::classic(), new unicode_codecvt);  
-  VERIFY (loc01 != loc13);
-  VERIFY (loc13.name() == "*");
-  try 
-    {
-      VERIFY (has_facet<c_codecvt>(loc13));
-      VERIFY (has_facet<w_codecvt>(loc13));
-      VERIFY (has_facet<unicode_codecvt>(loc13));
-    }
-  catch(...)
-    { VERIFY( false ); }
-
-  try 
-    { use_facet<gnu_facet>(loc13); }
-  catch(bad_cast& obj)
-    { VERIFY( true ); }
-  catch(...)
-    { VERIFY( false ); }
-
   // 2
   // locale() throw()
   locale loc03;
-  VERIFY (loc03 == loc01);
-  VERIFY (loc03.name() == "C");
+  VERIFY( loc03 == loc01 );
+  VERIFY( loc03.name() == "C" );
   locale loc04 = locale::global(loc02);
   locale loc05;
-  VERIFY (loc05 != loc03);
-  VERIFY (loc05 == loc02);
+  VERIFY( loc05 != loc03 );
+  VERIFY( loc05 == loc02 );
 
   // 3
   // explicit locale(const char* std_name)
   locale loc06 = locale("fr_FR");
-  VERIFY (loc06 != loc01);  
-  VERIFY (loc06 != loc02);  
-  VERIFY (loc06.name() == "fr_FR");
+  VERIFY( loc06 != loc01 );  
+  VERIFY( loc06 != loc02 );  
+  VERIFY( loc06.name() == "fr_FR");
   locale loc07("");
-  VERIFY (loc07 != loc02);  
-  VERIFY (loc07.name() != "");
+  VERIFY( loc07 != loc02 );  
+  VERIFY( loc07.name() != "" );
   try
     { locale loc08(static_cast<const char*>(NULL)); }
   catch(runtime_error& obj)
-    { VERIFY (true); }
+    { VERIFY( true ); }
   catch(...)
-    { VERIFY (false); }
+    { VERIFY( false ); }
 
   try
     { locale loc08("saturn_SUN*RA"); }
   catch(runtime_error& obj)
-    { VERIFY (true); }
+    { VERIFY( true ); }
   catch(...)
-    { VERIFY (false); }
+    { VERIFY( false ); }
 
   // 4
   // locale(const locale& other, const char* std_name, category)
   {
     // This is the same as 5 only use "C" for loc("C")
     locale loc09(loc06, "C", locale::ctype);
-    VERIFY (loc09.name() != "fr_FR");
-    VERIFY (loc09.name() != "C");
-    VERIFY (loc09.name() != "*");
-    VERIFY (loc09 != loc01);  
-    VERIFY (loc09 != loc06);  
+    VERIFY( loc09.name() != "fr_FR" );
+    VERIFY( loc09.name() != "C" );
+    VERIFY( loc09.name() != "*" );
+    VERIFY( loc09 != loc01 );  
+    VERIFY( loc09 != loc06 );
 
     locale loc10(loc02, "C", locale::ctype);
-    VERIFY (loc10.name() == "*");
-    VERIFY (loc10 != loc01);   // As not named, even tho facets same...
-    VERIFY (loc10 != loc02);  
+    VERIFY( loc10.name() == "*" );
+    VERIFY( loc10 != loc01 );   // As not named, even tho facets same...
+    VERIFY( loc10 != loc02 );
 
     locale loc11(loc01, "C", locale::ctype);
-    VERIFY (loc11.name() == "C");
-    VERIFY (loc11 == loc01);  
+    VERIFY( loc11.name() == "C" );
+    VERIFY( loc11 == loc01 );  
 
     try
       { locale loc12(loc01, static_cast<const char*>(NULL), locale::ctype); }
     catch(runtime_error& obj)
-      { VERIFY (true); }
+      { VERIFY( true ); }
     catch(...)
-      { VERIFY (false); }
+      { VERIFY( false ); }
 
     try
       { locale loc13(loc01, "localized by the wu-tang clan", locale::ctype); }
     catch(runtime_error& obj)
-      { VERIFY (true); }
+      { VERIFY( true ); }
     catch(...)
-      { VERIFY (false); }
+      { VERIFY( false ); }
 
     locale loc14(loc06, "C", locale::none);
-    VERIFY (loc14.name() == "fr_FR");
-    VERIFY (loc14 == loc06);  
+    VERIFY( loc14.name() == "fr_FR" );
+    VERIFY( loc14 == loc06 );
 
-    locale loc15(loc06, "C", locale::collate);
-    VERIFY (loc15.name() != "fr_FR");
-    VERIFY (loc15.name() != "C");
-    VERIFY (loc15.name() != "*");
-    VERIFY (loc15.name() != loc09.name());
-    VERIFY (loc15 != loc01);  
-    VERIFY (loc15 != loc06);  
-    VERIFY (loc15 != loc09);  
+    locale loc15(loc06, "C", locale::collate );
+    VERIFY( loc15.name() != "fr_FR" );
+    VERIFY( loc15.name() != "C" );
+    VERIFY( loc15.name() != "*" );
+    VERIFY( loc15.name() != loc09.name() );
+    VERIFY( loc15 != loc01 );  
+    VERIFY( loc15 != loc06 );  
+    VERIFY( loc15 != loc09 );  
   }
 
   // 5
@@ -246,55 +162,52 @@ void test01()
   {
     // This is the exact same as 4, with locale("C") for "C"
     locale loc09(loc06, loc01, locale::ctype);
-    VERIFY (loc09.name() != "fr_FR");
-    VERIFY (loc09.name() != "C");
-    VERIFY (loc09.name() != "*");
-    VERIFY (loc09 != loc01);  
-    VERIFY (loc09 != loc06);  
+    VERIFY( loc09.name() != "fr_FR" );
+    VERIFY( loc09.name() != "C" );
+    VERIFY( loc09.name() != "*" );
+    VERIFY( loc09 != loc01 );
+    VERIFY( loc09 != loc06 );
 
     locale loc10(loc02, loc01, locale::ctype);
-    VERIFY (loc10.name() == "*");
-    VERIFY (loc10 != loc01);   // As not named, even tho facets same...
-    VERIFY (loc10 != loc02);  
+    VERIFY( loc10.name() == "*" );
+    VERIFY( loc10 != loc01 );   // As not named, even tho facets same...
+    VERIFY( loc10 != loc02 );  
 
     locale loc11(loc01, loc01, locale::ctype);
-    VERIFY (loc11.name() == "C");
-    VERIFY (loc11 == loc01);  
+    VERIFY( loc11.name() == "C" );
+    VERIFY( loc11 == loc01 );
 
     try
       { locale loc12(loc01, static_cast<const char*>(NULL), locale::ctype); }
     catch(runtime_error& obj)
-      { VERIFY (true); }
+      { VERIFY( true ); }
     catch(...)
-      { VERIFY (false); }
+      { VERIFY( false ); }
 
     try
       { locale loc13(loc01, locale("wu-tang clan"), locale::ctype); }
     catch(runtime_error& obj)
-      { VERIFY (true); }
+      { VERIFY( true ); }
     catch(...)
-      { VERIFY (false); }
+      { VERIFY( false ); }
 
     locale loc14(loc06, loc01, locale::none);
-    VERIFY (loc14.name() == "fr_FR");
-    VERIFY (loc14 == loc06);  
+    VERIFY( loc14.name() == "fr_FR" );
+    VERIFY( loc14 == loc06 );
 
     locale loc15(loc06, loc01, locale::collate);
-    VERIFY (loc15.name() != "fr_FR");
-    VERIFY (loc15.name() != "C");
-    VERIFY (loc15.name() != "*");
-    VERIFY (loc15.name() != loc09.name());
-    VERIFY (loc15 != loc01);  
-    VERIFY (loc15 != loc06);  
-    VERIFY (loc15 != loc09);  
+    VERIFY( loc15.name() != "fr_FR" );
+    VERIFY( loc15.name() != "C" );
+    VERIFY( loc15.name() != "*" );
+    VERIFY( loc15.name() != loc09.name() );
+    VERIFY( loc15 != loc01 );
+    VERIFY( loc15 != loc06 );  
+    VERIFY( loc15 != loc09 );  
   }
 }
-#endif // _GLIBCXX_USE___ENC_TRAITS
 
 int main()
 {
-#if _GLIBCXX_USE___ENC_TRAITS
   test01();
-#endif 
   return 0;
 }

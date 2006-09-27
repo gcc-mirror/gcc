@@ -1,3 +1,15 @@
+2006-09-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29217
+	* src/localename.cc (locale::_Impl::_M_replace_categories)):
+	Compensate for the inconsistent numerical encodings of the
+	collate and time categories vs the corresponding names.
+	* testsuite/22_locale/locale/cons/29217.cc: New.
+
+	* testsuite/22_locale/locale/cons/2.cc: Enable and split
+	out the few ENC_TRAITS bits to...
+	* testsuite/22_locale/locale/cons/unicode/1.cc... here.
+
 2006-09-25  Howard Hinnant  <hhinnant@apple.com>
 
 	PR libstdc++/29224
