@@ -1,3 +1,7 @@
+2006-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* doc/install.texi: Document required versions of GMP and MPFR.
+
 2006-09-27  Paul Brook  <paul@codesourcery.com>
 
 	PR target/29230

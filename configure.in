@@ -1097,17 +1097,23 @@ CFLAGS="$CFLAGS $gmpinc"
 # Check GMP actually works
 AC_MSG_CHECKING([for correct version of gmp.h])
 AC_TRY_COMPILE([#include "gmp.h"],[
-#if __GNU_MP_VERSION < 3
+#if __GNU_MP_VERSION < 4 || (__GNU_MP_VERSION == 4 && __GNU_MP_VERSION_MINOR < 1)
 choke me
 #endif
-], [AC_MSG_RESULT([yes])],
-  [AC_MSG_RESULT([no]); have_gmp=no])
+], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_gmp=no])
 
 if test x"$have_gmp" = xyes; then
-  AC_MSG_CHECKING([for MPFR])
+  AC_MSG_CHECKING([for correct version of mpfr.h])
+  AC_TRY_COMPILE([#include "gmp.h"
+#include <mpfr.h>],[
+#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
+  choke me
+#endif
+], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy version of MPFR detected])])
 
   saved_LIBS="$LIBS"
   LIBS="$LIBS $gmplibs"
+  AC_MSG_CHECKING([for any version of mpfr.h])
   AC_TRY_LINK([#include <gmp.h>
 #include <mpfr.h>], [mpfr_t n; mpfr_init(n);],
     [AC_MSG_RESULT([yes])],  [AC_MSG_RESULT([no]); have_gmp=no])
@@ -1252,7 +1258,7 @@ if test -d ${srcdir}/gcc; then
         case ,${enable_languages},:${have_gmp}:${need_gmp} in
           *,${language},*:no:yes)
             # Specifically requested language; tell them.
-            AC_MSG_ERROR([GMP with MPFR support is required to build $language])
+            AC_MSG_ERROR([GMP 4.1 and MPFR 2.2 or newer versions required by $language])
             ;;
           *:no:yes)
             # Silently disable.

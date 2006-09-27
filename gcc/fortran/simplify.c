@@ -1,6 +1,6 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
-   Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -607,7 +607,11 @@ gfc_simplify_atan2 (gfc_expr * y, gfc_expr * x)
       return &gfc_bad_expr;
     }
 
+#if !defined(MPFR_VERSION_MAJOR)
   arctangent2 (y->value.real, x->value.real, result->value.real);
+#else
+  mpfr_atan2 (result->value.real, y->value.real, x->value.real, GFC_RND_MODE);
+#endif
 
   return range_check (result, "ATAN2");
 }
@@ -1054,8 +1058,11 @@ gfc_expr *
 gfc_simplify_exponent (gfc_expr * x)
 {
   int i;
-  mpfr_t tmp;
   gfc_expr *result;
+
+#if !defined(MPFR_VERSION_MAJOR)
+  mpfr_t tmp;
+#endif
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -1071,6 +1078,9 @@ gfc_simplify_exponent (gfc_expr * x)
       return result;
     }
 
+#if !defined(MPFR_VERSION_MAJOR)
+  /* PR fortran/28276 suffers from a buggy MPFR, and this block of code
+     does not function correctly.  */
   mpfr_init (tmp);
 
   mpfr_abs (tmp, x->value.real, GFC_RND_MODE);
@@ -1085,6 +1095,11 @@ gfc_simplify_exponent (gfc_expr * x)
     mpz_add_ui (result->value.integer,result->value.integer, 1);
 
   mpfr_clear (tmp);
+#else
+  /* Requires MPFR 2.2.0 or newer.  */
+  i = (int) mpfr_get_exp (x->value.real);
+  mpz_set_si (result->value.integer, i);
+#endif
 
   return range_check (result, "EXPONENT");
 }
@@ -2146,8 +2161,13 @@ gfc_simplify_log (gfc_expr * x)
       mpfr_init (xr);
       mpfr_init (xi);
 
-      arctangent2 (x->value.complex.i, x->value.complex.r,
-	           result->value.complex.i);
+#if !defined(MPFR_VERSION_MAJOR)
+      arctangent2 (x->value.complex.i, x->value.complex.r, result->value.complex.i);
+#else
+      mpfr_atan2 (result->value.complex.i, x->value.complex.i, x->value.complex.r,
+		  GFC_RND_MODE);
+#endif
+
 
       mpfr_mul (xr, x->value.complex.r, x->value.complex.r, GFC_RND_MODE);
       mpfr_mul (xi, x->value.complex.i, x->value.complex.i, GFC_RND_MODE);
@@ -2474,27 +2494,28 @@ gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
 {
   gfc_expr *result;
   mpfr_t tmp;
-  int direction, sgn;
+  int sgn;
+#if !defined(MPFR_VERSION_MAJOR)
+  int direction;
+#else
+  mp_exp_t emin, emax;
+#endif
 
   if (x->expr_type != EXPR_CONSTANT || s->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  gfc_set_model_kind (x->ts.kind);
-  result = gfc_copy_expr (x);
-
-  direction = mpfr_sgn (s->value.real);
-
-  if (direction == 0)
+  if (mpfr_sgn (s->value.real) == 0)
     {
-      gfc_error ("Second argument of NEAREST at %L may not be zero",
-		 &s->where);
-      gfc_free (result);
+      gfc_error ("Second argument of NEAREST at %L shall not be zero", &s->where);
       return &gfc_bad_expr;
     }
 
-  /* TODO: Use mpfr_nextabove and mpfr_nextbelow once we move to a
-     newer version of mpfr.  */
+  gfc_set_model_kind (x->ts.kind);
+  result = gfc_copy_expr (x);
 
+#if !defined(MPFR_VERSION_MAJOR)
+
+  direction = mpfr_sgn (s->value.real);
   sgn = mpfr_sgn (x->value.real);
 
   if (sgn == 0)
@@ -2539,6 +2560,28 @@ gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
       if (sgn < 0)
 	mpfr_neg (result->value.real, result->value.real, GFC_RND_MODE);
     }
+#else
+
+  /* Save current values of emin and emax.  */
+  emin = mpfr_get_emin ();
+  emax = mpfr_get_emax ();
+
+  /* Set emin and emax for the current model number.  */
+  sgn = gfc_validate_kind (BT_REAL, x->ts.kind, 0);
+  mpfr_set_emin ((mp_exp_t) gfc_real_kinds[sgn].min_exponent - 1);
+  mpfr_set_emax ((mp_exp_t) gfc_real_kinds[sgn].max_exponent - 1);
+
+  sgn = mpfr_sgn (s->value.real); 
+  mpfr_init (tmp);
+  mpfr_set_inf (tmp, sgn);
+  mpfr_nexttoward (result->value.real, tmp);
+  mpfr_subnormalize (result->value.real, 0, GFC_RND_MODE);
+ 
+  mpfr_set_emin (emin);
+  mpfr_set_emax (emax);
+ 
+  mpfr_clear(tmp);
+#endif
 
   return range_check (result, "NEAREST");
 }

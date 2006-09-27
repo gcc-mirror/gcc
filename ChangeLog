@@ -1,3 +1,9 @@
+2006-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* configure.in: Check for GMP 4.1 or newer.  Check for MPFR 2.2.0 
+	or newer.
+	* configure: Regenerated.
+
 2006-09-27  Dave Brolley  <brolley@redhat.com>
 
 	* configure.in (RUNTEST): Look for 'runtest' in the source tree by using

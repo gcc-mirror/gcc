@@ -590,12 +590,18 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 
   if (m->libm_name)
     {
-      gcc_assert (ts->kind == 4 || ts->kind == 8 || ts->kind == 10
-                 || ts->kind == 16);
-      snprintf (name, sizeof (name), "%s%s%s",
-		ts->type == BT_COMPLEX ? "c" : "",
-		m->name,
-		ts->kind == 4 ? "f" : "");
+      if (ts->kind == 4)
+	snprintf (name, sizeof (name), "%s%s%s",
+		ts->type == BT_COMPLEX ? "c" : "", m->name, "f");
+      else if (ts->kind == 8)
+	snprintf (name, sizeof (name), "%s%s",
+		ts->type == BT_COMPLEX ? "c" : "", m->name);
+      else
+	{
+	  gcc_assert (ts->kind == 10 || ts->kind == 16);
+	  snprintf (name, sizeof (name), "%s%s%s",
+		ts->type == BT_COMPLEX ? "c" : "", m->name, "l");
+	}
     }
   else
     {
