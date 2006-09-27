@@ -3769,7 +3769,7 @@ test -n "$RUNTEST" || RUNTEST="runtest"
 
 case " $configdirs " in
   *" dejagnu "*)
-    test $host = $build && RUNTEST='$$r/$(HOST_SUBDIR)/dejagnu/runtest'
+    test $host = $build && RUNTEST='$$s/$(HOST_SUBDIR)/dejagnu/runtest'
     ;;
 esac
 
