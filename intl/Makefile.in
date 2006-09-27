@@ -186,6 +186,7 @@ mostlyclean:
 clean: mostlyclean
 
 distclean: clean
+	rm -f config.status config.cache config.log config.intl config.h
 	rm -f Makefile ID TAGS
 
 maintainer-clean: distclean
@@ -202,7 +203,7 @@ Makefile: $(srcdir)/Makefile.in config.status
 
 config.intl: $(srcdir)/config.intl.in config.status
 	$(SHELL) ./config.status config.intl
-	
+
 config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
@@ -231,7 +232,6 @@ stamp-h1: $(srcdir)/config.h.in config.status
 $(srcdir)/config.h.in: @MAINT@ $(srcdir)/aclocal.m4 $(srcdir)/configure.ac
 	cd $(srcdir) && $(AUTOHEADER)
 	-rm -f stamp-h1
-	
 
 # Tell versions [3.59,3.63) of GNU make not to export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
