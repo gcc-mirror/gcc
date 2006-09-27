@@ -1,3 +1,9 @@
+2006-09-27  Paul Brook  <paul@codesourcery.com>
+
+	PR target/29230
+	Backport from mainline.
+	* config/arm/arm.md (arith_adjacentmem): Handle large offsets.
+
 2006-09-25  Matthias Klose  <doko@debian.org>
 
 	* doc/invoke.texi: Add missing full stop.

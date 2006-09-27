@@ -9391,14 +9391,14 @@
     ldm[0] = base_reg;
     if (val1 !=0 && val2 != 0)
       {
+	rtx ops[3];
+
 	if (val1 == 4 || val2 == 4)
 	  /* Other val must be 8, since we know they are adjacent and neither
 	     is zero.  */
 	  output_asm_insn (\"ldm%?ib\\t%0, {%1, %2}\", ldm);
-	else
+	else if (const_ok_for_arm (val1) || const_ok_for_arm (-val1))
 	  {
-	    rtx ops[3];
-
 	    ldm[0] = ops[0] = operands[4];
 	    ops[1] = base_reg;
 	    ops[2] = GEN_INT (val1);
@@ -9407,6 +9407,17 @@
 	      output_asm_insn (\"ldm%?ia\\t%0, {%1, %2}\", ldm);
 	    else
 	      output_asm_insn (\"ldm%?da\\t%0, {%1, %2}\", ldm);
+	  }
+	else
+	  {
+	    /* Offset is out of range for a single add, so use two ldr.  */
+	    ops[0] = ldm[1];
+	    ops[1] = base_reg;
+	    ops[2] = GEN_INT (val1);
+	    output_asm_insn (\"ldr%?\\t%0, [%1, %2]\", ops);
+	    ops[0] = ldm[2];
+	    ops[2] = GEN_INT (val2);
+	    output_asm_insn (\"ldr%?\\t%0, [%1, %2]\", ops);
 	  }
       }
     else if (val1 != 0)
