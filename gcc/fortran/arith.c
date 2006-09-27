@@ -75,6 +75,7 @@ gfc_set_model (mpfr_t x)
   mpfr_set_default_prec (mpfr_get_prec (x));
 }
 
+#if !defined(MPFR_VERSION_MAJOR)
 /* Calculate atan2 (y, x)
 
 atan2(y, x) = atan(y/x)				if x > 0,
@@ -124,7 +125,7 @@ arctangent2 (mpfr_t y, mpfr_t x, mpfr_t result)
 
   mpfr_clear (t);
 }
-
+#endif
 
 /* Given an arithmetic error code, return a pointer to a string that
    explains the error.  */
@@ -407,6 +408,7 @@ gfc_check_real_range (mpfr_t p, int kind)
     }
   else if (mpfr_cmp (q, gfc_real_kinds[i].tiny) < 0)
     {
+#if !defined(MPFR_VERSION_MAJOR)
       /* MPFR operates on a number with a given precision and enormous
 	exponential range.  To represent subnormal numbers, the exponent is
 	allowed to become smaller than emin, but always retains the full
@@ -428,13 +430,30 @@ gfc_check_real_range (mpfr_t p, int kind)
       sprintf (s, "0.%sE%d", bin, (int) e);
       mpfr_set_str (q, s, gfc_real_kinds[i].radix, GMP_RNDN);
 
+      gfc_free (s);
+      gfc_free (bin);
+#else
+      mp_exp_t emin, emax;
+
+      /* Save current values of emin and emax.  */
+      emin = mpfr_get_emin ();
+      emax = mpfr_get_emax ();
+
+      /* Set emin and emax for the current model number.  */
+      mpfr_set_emin ((mp_exp_t) gfc_real_kinds[i].min_exponent - 1);
+      mpfr_set_emax ((mp_exp_t) gfc_real_kinds[i].max_exponent - 1);
+      mpfr_subnormalize (q, 0, GFC_RND_MODE);
+
+      /* Reset emin and emax.  */
+      mpfr_set_emin (emin);
+      mpfr_set_emax (emax);
+#endif
+
+      /* Copy sign if needed.  */
       if (mpfr_sgn (p) < 0)
 	mpfr_neg (p, q, GMP_RNDN);
       else
 	mpfr_set (p, q, GMP_RNDN);
-
-      gfc_free (s);
-      gfc_free (bin);
 
       retval = ARITH_OK;
     }

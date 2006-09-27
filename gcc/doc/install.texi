@@ -290,17 +290,20 @@ Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
 @command{tar} if you have problems.
 
-@item GNU Multiple Precision Library (GMP) version 4.0 (or later)
+@item GNU Multiple Precision Library (GMP) version 4.1 (or later)
 
-Necessary to build the Fortran frontend.  If you don't have it
+Necessary to build the Fortran frontend.  If you do not have it
 installed in your library search path, you will have to configure with
 the @option{--with-gmp} or @option{--with-gmp-dir} configure option.
 
-@item MPFR Library
+@item MPFR Library version 2.2 (or later)
 
 Necessary to build the Fortran frontend.  It can be downloaded from
-@uref{http://www.mpfr.org/}.  It is also included in the current GMP
-release (4.1.3) when configured with @option{--enable-mpfr}.
+@uref{http://www.mpfr.org/}.  The version of MPFR that is bundled with
+GMP 4.1.x contains numerous bugs.  Although gfortran will appear
+to function with the buggy verions of MPFR, there are few gfortran bugs
+that will not be fixed to use this version.  It is strongly
+recommended to upgrade to at least MPFR version 2.2.
 
 The @option{--with-mpfr} or @option{--with-mpfr-dir} configure option should
 be used if your MPFR Library is not installed in your library search path.
