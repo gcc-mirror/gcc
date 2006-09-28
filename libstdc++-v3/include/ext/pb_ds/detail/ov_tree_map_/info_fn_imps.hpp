@@ -50,22 +50,17 @@ PB_DS_CLASS_C_DEC::
 size() const
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    return (m_size);
+  return m_size;
 }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 max_size() const
-{
-  return (s_value_alloc.max_size());
-}
+{ return s_value_alloc.max_size(); }
 
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
 empty() const
-{
-  return (size() == 0);
-}
+{ return size() == 0; }

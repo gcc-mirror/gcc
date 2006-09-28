@@ -143,7 +143,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
       {
         copy_from_range(other.begin(), other.end());
       }
-    catch (...)
+    catch(...)
       {
         deallocate_all();
         throw;

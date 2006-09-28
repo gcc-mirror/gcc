@@ -53,11 +53,13 @@ namespace pb_ds
 {
   namespace detail
   {
-
     template<typename Value_Type, class Metadata, class Allocator>
     struct rb_tree_node_
     {
     public:
+      typedef Value_Type value_type;
+      typedef Metadata metadata_type;
+
       typedef
       typename Allocator::template rebind<
       rb_tree_node_<
@@ -65,10 +67,6 @@ namespace pb_ds
       Metadata,
       Allocator> >::other::pointer
       node_pointer;
-
-      typedef Value_Type value_type;
-
-      typedef Metadata metadata_type;
 
       typedef
       typename Allocator::template rebind<
@@ -80,55 +78,42 @@ namespace pb_ds
 	metadata_type>::other::const_reference
       const_metadata_reference;
 
-    public:
       inline bool
       special() const
-      {
-	return (m_red);
-      }
+      { return m_red; }
 
       inline const_metadata_reference
       get_metadata() const
-      {
-	return (m_metadata);
-      }
+      { return m_metadata; }
 
       inline metadata_reference
       get_metadata()
-      {
-	return (m_metadata);
-      }
+      { return m_metadata; }
 
 #ifdef PB_DS_BIN_SEARCH_TREE_TRACE_
       void
       trace() const
       {
-	std::cout << PB_DS_V2F(m_value) <<(m_red? " <r> " : " <b> ") <<
-	  "(" << m_metadata << ")";
-
+	std::cout << PB_DS_V2F(m_value) <<(m_red? " <r> " : " <b> ") 
+		  << "(" << m_metadata << ")";
       }
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_TRACE_
+#endif
 
-    public:
       node_pointer m_p_left;
       node_pointer m_p_right;
-
       node_pointer m_p_parent;
-
       value_type m_value;
-
       bool m_red;
-
       metadata_type m_metadata;
     };
 
     template<typename Value_Type, class Allocator>
-    struct rb_tree_node_<
-      Value_Type,
-      null_node_metadata,
-      Allocator>
+    struct rb_tree_node_<Value_Type, null_node_metadata, Allocator>
     {
     public:
+      typedef Value_Type value_type;
+      typedef null_node_metadata metadata_type;
+
       typedef
       typename Allocator::template rebind<
       rb_tree_node_<
@@ -137,38 +122,23 @@ namespace pb_ds
       Allocator> >::other::pointer
       node_pointer;
 
-      typedef Value_Type value_type;
-
-      typedef null_node_metadata metadata_type;
-
-    public:
       inline bool
       special() const
-      {
-	return (m_red);
-      }
+      { return m_red; }
 
 #ifdef PB_DS_BIN_SEARCH_TREE_TRACE_
       void
       trace() const
-      {
-	std::cout << PB_DS_V2F(m_value) <<(m_red? " <r> " : " <b> ");
+      { std::cout << PB_DS_V2F(m_value) <<(m_red? " <r> " : " <b> "); }
+#endif 
 
-      }
-#endif // #ifdef PB_DS_BIN_SEARCH_TREE_TRACE_
-
-    public:
       node_pointer m_p_left;
       node_pointer m_p_right;
-
       node_pointer m_p_parent;
-
       value_type m_value;
-
       bool m_red;
     };
-
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_RB_TREE_NODE_HPP
+#endif 

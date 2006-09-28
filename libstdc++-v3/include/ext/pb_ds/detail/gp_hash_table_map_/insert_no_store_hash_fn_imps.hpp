@@ -41,8 +41,8 @@
 
 /**
  * @file insert_no_store_hash_fn_imps.hpp
- * Contains implementations of gp_ht_map_'s insert related functions, when the hash
- *    value is not stored.
+ * Contains implementations of gp_ht_map_'s insert related functions,
+ * when the hash value is not stored.
  */
 
 PB_DS_CLASS_T_DEC
@@ -51,35 +51,25 @@ PB_DS_CLASS_C_DEC::
 find_ins_pos(const_key_reference r_key, store_hash_false_type)
 {
   size_type hash = ranged_probe_fn_base::operator()(r_key);
-
   size_type i;
 
   /* The insertion position is initted to a non-legal value to indicate
    *     that it has not been initted yet.
    */
   size_type ins_pos = m_num_e;
-
   resize_base::notify_insert_search_start();
-
   for (i = 0; i < m_num_e; ++i)
     {
-      const size_type pos =
-	ranged_probe_fn_base::operator()(r_key, hash, i);
-
+      const size_type pos = ranged_probe_fn_base::operator()(r_key, hash, i);
       _GLIBCXX_DEBUG_ASSERT(pos < m_num_e);
-
       entry* const p_e = m_entries + pos;
-
       switch(p_e->m_stat)
         {
         case empty_entry_status:
 	  {
             resize_base::notify_insert_search_end();
-
-            _GLIBCXX_DEBUG_ONLY(
-			   map_debug_base::check_key_does_not_exist(r_key);)
-
-	      return ((ins_pos == m_num_e)? pos : ins_pos);
+            _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+	    return (ins_pos == m_num_e) ? pos : ins_pos;
 	  }
 	  break;
         case erased_entry_status:
@@ -87,14 +77,11 @@ find_ins_pos(const_key_reference r_key, store_hash_false_type)
 	    ins_pos = pos;
 	  break;
         case valid_entry_status:
-	  if (hash_eq_fn_base::operator()(
-					  PB_DS_V2F(p_e->m_value), r_key))
+	  if (hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), r_key))
             {
 	      resize_base::notify_insert_search_end();
-
 	      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
-
-                return (pos);
+                return pos;
             }
 	  break;
         default:
@@ -103,13 +90,10 @@ find_ins_pos(const_key_reference r_key, store_hash_false_type)
 
       resize_base::notify_insert_search_collision();
     }
-
   resize_base::notify_insert_search_end();
-
   if (ins_pos == m_num_e)
     throw insert_error();
-
-  return (ins_pos);
+  return ins_pos;
 }
 
 PB_DS_CLASS_T_DEC
@@ -118,23 +102,16 @@ PB_DS_CLASS_C_DEC::
 insert_imp(const_reference r_val, store_hash_false_type)
 {
   const_key_reference r_key = PB_DS_V2F(r_val);
-
-  const size_type pos =
-    find_ins_pos(r_key, traits_base::m_store_extra_indicator);
+  const size_type pos = find_ins_pos(r_key, 
+				     traits_base::m_store_extra_indicator);
 
   if (m_entries[pos].m_stat == valid_entry_status)
     {
       _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
-
-        return (std::make_pair(
-			       & (m_entries + pos)->m_value,
-			       false));
+      return std::make_pair(&(m_entries + pos)->m_value, false);
     }
 
   _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key));
-
-  return (std::make_pair(
-			 insert_new_imp(r_val, pos),
-			 true));
+  return std::make_pair(insert_new_imp(r_val, pos), true);
 }
 

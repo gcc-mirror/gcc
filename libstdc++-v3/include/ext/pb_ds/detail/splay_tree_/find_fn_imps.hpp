@@ -50,11 +50,9 @@ PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key)
 {
   node_pointer p_found = find_imp(r_key);
-
-  if (p_found != PB_DS_BASE_C_DEC::m_p_head)
+  if (p_found != base_type::m_p_head)
     splay(p_found);
-
-  return (point_iterator(p_found));
+  return point_iterator(p_found);
 }
 
 PB_DS_CLASS_T_DEC
@@ -63,11 +61,9 @@ PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key) const
 {
   const node_pointer p_found = find_imp(r_key);
-
-  if (p_found != PB_DS_BASE_C_DEC::m_p_head)
+  if (p_found != base_type::m_p_head)
     const_cast<PB_DS_CLASS_C_DEC* >(this)->splay(p_found);
-
-  return (point_iterator(p_found));
+  return point_iterator(p_found);
 }
 
 PB_DS_CLASS_T_DEC
@@ -75,22 +71,18 @@ inline typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 find_imp(const_key_reference r_key)
 {
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid();)
-
-    node_pointer p_nd = PB_DS_BASE_C_DEC::m_p_head->m_p_parent;
-
+  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
+  node_pointer p_nd = base_type::m_p_head->m_p_parent;
   while (p_nd != NULL)
     if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), r_key))
       {
 	if (!Cmp_Fn::operator()(r_key, PB_DS_V2F(p_nd->m_value)))
-	  return (p_nd);
-
+	  return p_nd;
 	p_nd = p_nd->m_p_left;
       }
     else
       p_nd = p_nd->m_p_right;
-
-  return PB_DS_BASE_C_DEC::m_p_head;
+  return base_type::m_p_head;
 }
 
 PB_DS_CLASS_T_DEC
@@ -99,19 +91,15 @@ PB_DS_CLASS_C_DEC::
 find_imp(const_key_reference r_key) const
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    node_pointer p_nd = PB_DS_BASE_C_DEC::m_p_head->m_p_parent;
-
+  node_pointer p_nd = base_type::m_p_head->m_p_parent;
   while (p_nd != NULL)
     if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), r_key))
       {
 	if (!Cmp_Fn::operator()(r_key, PB_DS_V2F(p_nd->m_value)))
-	  return (p_nd);
-
+	  return p_nd;
 	p_nd = p_nd->m_p_left;
       }
     else
       p_nd = p_nd->m_p_right;
-
-  return PB_DS_BASE_C_DEC::m_p_head;
+  return base_type::m_p_head;
 }

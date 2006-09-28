@@ -49,20 +49,20 @@ void
 PB_DS_CLASS_C_DEC::
 splay(node_pointer p_nd)
 {
-  while (p_nd->m_p_parent != PB_DS_BASE_C_DEC::m_p_head)
+  while (p_nd->m_p_parent != base_type::m_p_head)
     {
 #ifdef _GLIBCXX_DEBUG
       {
-	node_pointer p_head = PB_DS_BASE_C_DEC::m_p_head;
+	node_pointer p_head = base_type::m_p_head;
 	assert_special_imp(p_head);
       }
 #endif
 
-      _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_node_consistent(p_nd);)
+      _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd);)
 
-        if (p_nd->m_p_parent->m_p_parent == PB_DS_BASE_C_DEC::m_p_head)
+        if (p_nd->m_p_parent->m_p_parent == base_type::m_p_head)
 	  {
-            PB_DS_BASE_C_DEC::rotate_parent(p_nd);
+            base_type::rotate_parent(p_nd);
             _GLIBCXX_DEBUG_ASSERT(p_nd == this->m_p_head->m_p_parent);
 	  }
         else
@@ -72,7 +72,7 @@ splay(node_pointer p_nd)
 
 #ifdef _GLIBCXX_DEBUG
             const size_type total =
-	      PB_DS_BASE_C_DEC::recursive_count(p_grandparent);
+	      base_type::recursive_count(p_grandparent);
             _GLIBCXX_DEBUG_ASSERT(total >= 3);
 #endif 
 
@@ -90,19 +90,20 @@ splay(node_pointer p_nd)
             _GLIBCXX_DEBUG_ASSERT(total ==this->recursive_count(p_nd));
 	  }
 
-      _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_node_consistent(p_nd);)
+      _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd);)
   }
 }
 
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-splay_zig_zag_left(node_pointer p_nd, node_pointer p_parent, node_pointer p_grandparent)
+splay_zig_zag_left(node_pointer p_nd, node_pointer p_parent, 
+		   node_pointer p_grandparent)
 {
   _GLIBCXX_DEBUG_ASSERT(p_parent == p_nd->m_p_parent);
   _GLIBCXX_DEBUG_ASSERT(p_grandparent == p_parent->m_p_parent);
 
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_node_consistent(p_grandparent);)
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_grandparent);)
 
   _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_left == p_nd && 
 		        p_grandparent->m_p_right == p_parent);
@@ -132,12 +133,13 @@ splay_zig_zag_left(node_pointer p_nd, node_pointer p_parent, node_pointer p_gran
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-splay_zig_zag_right(node_pointer p_nd, node_pointer p_parent, node_pointer p_grandparent)
+splay_zig_zag_right(node_pointer p_nd, node_pointer p_parent, 
+		    node_pointer p_grandparent)
 {
   _GLIBCXX_DEBUG_ASSERT(p_parent == p_nd->m_p_parent);
   _GLIBCXX_DEBUG_ASSERT(p_grandparent == p_parent->m_p_parent);
 
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_node_consistent(p_grandparent);)
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_grandparent);)
 
   _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_right == p_nd && 
 	  	        p_grandparent->m_p_left == p_parent);
@@ -167,12 +169,13 @@ splay_zig_zag_right(node_pointer p_nd, node_pointer p_parent, node_pointer p_gra
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-splay_zig_zig_left(node_pointer p_nd, node_pointer p_parent, node_pointer p_grandparent)
+splay_zig_zig_left(node_pointer p_nd, node_pointer p_parent, 
+		   node_pointer p_grandparent)
 {
   _GLIBCXX_DEBUG_ASSERT(p_parent == p_nd->m_p_parent);
   _GLIBCXX_DEBUG_ASSERT(p_grandparent == p_parent->m_p_parent);
 
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_node_consistent(p_grandparent);)
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_grandparent);)
 
   _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_left == p_nd && 
 		     p_nd->m_p_parent->m_p_parent->m_p_left == p_nd->m_p_parent);
@@ -202,15 +205,14 @@ splay_zig_zig_left(node_pointer p_nd, node_pointer p_parent, node_pointer p_gran
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-splay_zig_zig_right(node_pointer p_nd, node_pointer p_parent, node_pointer p_grandparent)
+splay_zig_zig_right(node_pointer p_nd, node_pointer p_parent, 
+		    node_pointer p_grandparent)
 {
   _GLIBCXX_DEBUG_ASSERT(p_parent == p_nd->m_p_parent);
   _GLIBCXX_DEBUG_ASSERT(p_grandparent == p_parent->m_p_parent);
-
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_node_consistent(p_grandparent);)
-
-  _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_right == p_nd&& 
-		     p_nd->m_p_parent->m_p_parent->m_p_right == p_nd->m_p_parent);
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_grandparent);)
+  _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_right == p_nd && 
+	          p_nd->m_p_parent->m_p_parent->m_p_right == p_nd->m_p_parent);
 
   splay_zz_start(p_nd, p_parent, p_grandparent);
 
@@ -231,7 +233,7 @@ splay_zig_zig_right(node_pointer p_nd, node_pointer p_parent, node_pointer p_gra
   if (p_c != NULL)
     p_c->m_p_parent = p_grandparent;
 
-  PB_DS_BASE_C_DEC::update_to_top(p_grandparent, (node_update* )this);
+  base_type::update_to_top(p_grandparent, (node_update* )this);
   splay_zz_end(p_nd, p_parent, p_grandparent);
 }
 
@@ -250,15 +252,12 @@ splay_zz_start(node_pointer p_nd,
   _GLIBCXX_DEBUG_ASSERT(p_parent != NULL);
   _GLIBCXX_DEBUG_ASSERT(p_grandparent != NULL);
 
-  const bool grandparent_head =
-    p_grandparent->m_p_parent == PB_DS_BASE_C_DEC::m_p_head;
+  const bool grandparent_head = p_grandparent->m_p_parent == base_type::m_p_head;
 
   if (grandparent_head)
     {
-      PB_DS_BASE_C_DEC::m_p_head->m_p_parent =
-	PB_DS_BASE_C_DEC::m_p_head->m_p_parent;
-
-      p_nd->m_p_parent = PB_DS_BASE_C_DEC::m_p_head;
+      base_type::m_p_head->m_p_parent = base_type::m_p_head->m_p_parent;
+      p_nd->m_p_parent = base_type::m_p_head;
       return;
     }
 
@@ -275,15 +274,16 @@ splay_zz_start(node_pointer p_nd,
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-splay_zz_end(node_pointer p_nd, node_pointer p_parent, node_pointer p_grandparent)
+splay_zz_end(node_pointer p_nd, node_pointer p_parent, 
+	     node_pointer p_grandparent)
 {
-  if (p_nd->m_p_parent == PB_DS_BASE_C_DEC::m_p_head)
-    PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_nd;
+  if (p_nd->m_p_parent == base_type::m_p_head)
+    base_type::m_p_head->m_p_parent = p_nd;
 
   apply_update(p_grandparent, (node_update* )this);
   apply_update(p_parent, (node_update* )this);
   apply_update(p_nd, (node_update* )this);
 
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_node_consistent(p_nd);)
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd);)
 }
 

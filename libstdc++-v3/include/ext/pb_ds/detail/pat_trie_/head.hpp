@@ -54,32 +54,20 @@ namespace pb_ds
 {
   namespace detail
   {
+#define PB_DS_CLASS_T_DEC \
+    template<typename Type_Traits, typename E_Access_Traits,	\
+	      typename Metadata, typename Allocator>
 
-#define PB_DS_CLASS_T_DEC						\
-    template<								\
-						class Type_Traits,	\
-						class E_Access_Traits,	\
-						class Metadata,		\
-						class Allocator>
+#define PB_DS_CLASS_C_DEC \
+    pat_trie_head<Type_Traits, E_Access_Traits,	Metadata, Allocator>
 
-#define PB_DS_CLASS_C_DEC						\
-    pat_trie_head<							\
-						Type_Traits,		\
-						E_Access_Traits,	\
-						Metadata,		\
-						Allocator>
-
-#define PB_DS_BASE_C_DEC					\
-    pat_trie_node_base<						\
-					Type_Traits,		\
-					E_Access_Traits,	\
-					Metadata,		\
-					Allocator>
+#define PB_DS_BASE_C_DEC \
+    pat_trie_node_base<Type_Traits, E_Access_Traits, Metadata, Allocator>
 
     template<typename Type_Traits,
-	     class E_Access_Traits,
-	     class Metadata,
-	     class Allocator>
+	     typename E_Access_Traits,
+	     typename Metadata,
+	     typename Allocator>
     struct pat_trie_head : public PB_DS_BASE_C_DEC
     {
     private:

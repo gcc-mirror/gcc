@@ -73,7 +73,7 @@ do_resize_if_needed_no_throw()
     {
       resize_imp(resize_base::get_new_size(m_num_e, m_num_used_e));
     }
-  catch (...)
+  catch(...)
     { }
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -108,7 +108,7 @@ resize_imp(size_type new_size)
     {
       resize_imp(a_entries_resized, old_size);
     }
-  catch (...)
+  catch(...)
     {
       erase_all_valid_entries(a_entries_resized, new_size);
       m_num_e = old_size;

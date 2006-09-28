@@ -52,29 +52,21 @@ PB_DS_CLASS_C_DEC::
 insert(const_reference r_val)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    entry_pointer p_l = find_imp(PB_DS_V2F(r_val));
+  entry_pointer p_l = find_imp(PB_DS_V2F(r_val));
 
   if (p_l != NULL)
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(
-						      PB_DS_V2F(r_val));)
-
-        return std::make_pair(point_iterator(&p_l->m_value), false);
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(PB_DS_V2F(r_val));)
+      return std::make_pair(point_iterator(&p_l->m_value), false);
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(
-							  PB_DS_V2F(r_val));)
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(PB_DS_V2F(r_val));)
 
-    p_l = allocate_new_entry(r_val, PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
-
+  p_l = allocate_new_entry(r_val, traits_base::m_no_throw_copies_indicator);
   p_l->m_p_next = m_p_l;
-
   m_p_l = p_l;
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    return std::make_pair(point_iterator(&p_l->m_value), true);
+  return std::make_pair(point_iterator(&p_l->m_value), true);
 }
 
 PB_DS_CLASS_T_DEC
@@ -83,20 +75,13 @@ PB_DS_CLASS_C_DEC::
 allocate_new_entry(const_reference r_val, false_type)
 {
   entry_pointer p_l = s_entry_allocator.allocate(1);
-
   cond_dealtor_t cond(p_l);
-
-  new (const_cast<void* >(
-			  static_cast<const void* >(&p_l->m_value)))
+  new (const_cast<void* >(static_cast<const void* >(&p_l->m_value)))
     value_type(r_val);
 
   cond.set_no_action();
-
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(
-					    PB_DS_V2F(r_val));)
-
-    init_entry_metadata(p_l, s_metadata_type_indicator);
-
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
+  init_entry_metadata(p_l, s_metadata_type_indicator);
   return p_l;
 }
 
@@ -106,14 +91,9 @@ PB_DS_CLASS_C_DEC::
 allocate_new_entry(const_reference    r_val, true_type)
 {
   entry_pointer p_l = s_entry_allocator.allocate(1);
-
   new (&p_l->m_value) value_type(r_val);
-
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(
-					    PB_DS_V2F(r_val));)
-
-    init_entry_metadata(p_l, s_metadata_type_indicator);
-
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
+  init_entry_metadata(p_l, s_metadata_type_indicator);
   return p_l;
 }
 
@@ -122,9 +102,7 @@ template<typename Metadata>
 inline void
 PB_DS_CLASS_C_DEC::
 init_entry_metadata(entry_pointer p_l, type_to_type<Metadata>)
-{
-  new (&p_l->m_update_metadata) Metadata(s_update_policy());
-}
+{ new (&p_l->m_update_metadata) Metadata(s_update_policy()); }
 
 PB_DS_CLASS_T_DEC
 inline void

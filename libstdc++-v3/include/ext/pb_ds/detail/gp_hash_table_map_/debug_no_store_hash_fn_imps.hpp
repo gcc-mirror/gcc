@@ -52,11 +52,9 @@ PB_DS_CLASS_C_DEC::
 assert_entry_array_valid(const entry_array a_entries, store_hash_false_type) const
 {
   size_type iterated_num_used_e = 0;
-
   for (size_type pos = 0; pos < m_num_e; ++pos)
     {
-      const_entry_pointer p_e =& a_entries[pos];
-
+      const_entry_pointer p_e = &a_entries[pos];
       switch(p_e->m_stat)
         {
         case empty_entry_status:
@@ -64,20 +62,15 @@ assert_entry_array_valid(const entry_array a_entries, store_hash_false_type) con
 	  break;
         case valid_entry_status:
 	  {
-	    const_key_reference r_key =
-	      PB_DS_V2F(p_e->m_value);
-
+	    const_key_reference r_key = PB_DS_V2F(p_e->m_value);
 	    map_debug_base::check_key_exists(r_key);
-
 	    ++iterated_num_used_e;
-
 	    break;
 	  }
         default:
 	  _GLIBCXX_DEBUG_ASSERT(0);
         };
     }
-
   _GLIBCXX_DEBUG_ASSERT(iterated_num_used_e == m_num_used_e);
 }
 

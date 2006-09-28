@@ -50,19 +50,12 @@ PB_DS_CLASS_C_DEC::
 insert(const_reference r_value)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    std::pair<point_iterator, bool> ins_pair =
-    insert_leaf_imp(r_value);
-
+  std::pair<point_iterator, bool> ins_pair = insert_leaf_imp(r_value);
   ins_pair.first.m_p_nd->m_special = false;
-
   _GLIBCXX_DEBUG_ONLY(assert_valid());
-
   splay(ins_pair.first.m_p_nd);
-
   _GLIBCXX_DEBUG_ONLY(assert_valid());
-
-  return (ins_pair);
+  return ins_pair;
 }
 
 PB_DS_CLASS_T_DEC
@@ -70,55 +63,37 @@ inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
 insert_leaf_imp(const_reference r_value)
 {
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
+  if (base_type::m_size == 0)
+    return std::make_pair(base_type::insert_imp_empty(r_value), true);
 
-    if (PB_DS_BASE_C_DEC::m_size == 0)
-      return (std::make_pair(
-			     PB_DS_BASE_C_DEC::insert_imp_empty(r_value),
-			     true));
-
-  node_pointer p_nd = PB_DS_BASE_C_DEC::m_p_head->m_p_parent;
-  node_pointer p_pot = PB_DS_BASE_C_DEC::m_p_head;
+  node_pointer p_nd = base_type::m_p_head->m_p_parent;
+  node_pointer p_pot = base_type::m_p_head;
 
   while (p_nd != NULL)
-    if (!Cmp_Fn::operator()(
-			    PB_DS_V2F(p_nd->m_value),
-			    PB_DS_V2F(r_value)))
+    if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), PB_DS_V2F(r_value)))
       {
-	if (!Cmp_Fn::operator()(
-				PB_DS_V2F(r_value),
-				PB_DS_V2F(p_nd->m_value)))
+	if (!Cmp_Fn::operator()(PB_DS_V2F(r_value), PB_DS_V2F(p_nd->m_value)))
 	  {
-	    return std::make_pair(
-				  point_iterator(p_nd),
-				  false);
+	    return std::make_pair(point_iterator(p_nd), false);
 	  }
-
 	p_pot = p_nd;
-
 	p_nd = p_nd->m_p_left;
       }
     else
       p_nd = p_nd->m_p_right;
 
-  if (p_pot == PB_DS_BASE_C_DEC::m_p_head)
-    return (std::make_pair(
-			   PB_DS_BASE_C_DEC::insert_leaf_new(r_value,  PB_DS_BASE_C_DEC::m_p_head->m_p_right, false),
-			   true));
+  if (p_pot == base_type::m_p_head)
+    return std::make_pair(base_type::insert_leaf_new(r_value, base_type::m_p_head->m_p_right, false), true);
 
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::check_key_does_not_exist(
-							    PB_DS_V2F(r_value)));
+  _GLIBCXX_DEBUG_ONLY(base_type::check_key_does_not_exist(PB_DS_V2F(r_value)));
 
   p_nd = p_pot->m_p_left;
   if (p_nd == NULL)
-    return (std::make_pair(
-			   PB_DS_BASE_C_DEC::insert_leaf_new(                r_value, p_pot, true),
-			   true));
+    return (std::make_pair(base_type::insert_leaf_new(r_value, p_pot, true), true));
 
   while (p_nd->m_p_right != NULL)
     p_nd = p_nd->m_p_right;
 
-  return (std::make_pair(
-			 insert_leaf_new(r_value, p_nd, false),
-			 true));
+  return std::make_pair(insert_leaf_new(r_value, p_nd, false), true);
 }

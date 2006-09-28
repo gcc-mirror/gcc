@@ -53,16 +53,15 @@ namespace pb_ds
 {
   namespace detail
   {
-
     template<typename Key,
 	     typename Mapped,
-	     class Cmp_Fn,
+	     typename Cmp_Fn,
 	     template<typename Const_Node_Iterator,
 		      class Node_Iterator,
 		      class Cmp_Fn_,
 		      class Allocator_>
     class Node_Update,
-	     class Allocator>
+	     typename Allocator>
     struct tree_traits<
       Key,
       Mapped,
@@ -128,4 +127,4 @@ namespace pb_ds
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_RB_TREE_NODE_AND_IT_TRAITS_HPP
+#endif 

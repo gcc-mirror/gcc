@@ -75,43 +75,25 @@ namespace pb_ds
     template<typename Value_Type, class Cmp_Fn, class Allocator>
     class binomial_heap_ : public PB_DS_BASE_C_DEC
     {
-
     private:
       typedef PB_DS_BASE_C_DEC base_type;
-
       typedef typename base_type::node_pointer node_pointer;
-
       typedef typename base_type::const_node_pointer const_node_pointer;
 
     public:
-
-      typedef typename Allocator::size_type size_type;
-
-      typedef typename Allocator::difference_type difference_type;
-
       typedef Value_Type value_type;
-
+      typedef typename Allocator::size_type size_type;
+      typedef typename Allocator::difference_type difference_type;
       typedef typename base_type::pointer pointer;
-
       typedef typename base_type::const_pointer const_pointer;
-
       typedef typename base_type::reference reference;
-
       typedef typename base_type::const_reference const_reference;
-
       typedef typename base_type::const_point_iterator const_point_iterator;
-
       typedef typename base_type::point_iterator point_iterator;
-
       typedef typename base_type::const_iterator const_iterator;
-
       typedef typename base_type::iterator iterator;
-
       typedef typename base_type::cmp_fn cmp_fn;
-
       typedef typename base_type::allocator allocator;
-
-    public:
 
       binomial_heap_();
 

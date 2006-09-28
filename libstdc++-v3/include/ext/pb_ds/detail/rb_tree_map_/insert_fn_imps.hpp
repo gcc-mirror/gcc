@@ -50,22 +50,16 @@ PB_DS_CLASS_C_DEC::
 insert(const_reference r_value)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    std::pair<point_iterator, bool> ins_pair =
-    PB_DS_BASE_C_DEC::insert_leaf(r_value);
-
+  std::pair<point_iterator, bool> ins_pair = base_type::insert_leaf(r_value);
   if (ins_pair.second == true)
     {
       ins_pair.first.m_p_nd->m_red = true;
-
       _GLIBCXX_DEBUG_ONLY(this->structure_only_assert_valid();)
-
-        insert_fixup(ins_pair.first.m_p_nd);
+      insert_fixup(ins_pair.first.m_p_nd);
     }
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    return (ins_pair);
+  return ins_pair;
 }
 
 PB_DS_CLASS_T_DEC
@@ -74,22 +68,16 @@ PB_DS_CLASS_C_DEC::
 insert_fixup(node_pointer p_nd)
 {
   _GLIBCXX_DEBUG_ASSERT(p_nd->m_red == true);
-
-  while (p_nd != PB_DS_BASE_C_DEC::m_p_head->m_p_parent&& 
-	 p_nd->m_p_parent->m_red)
+  while (p_nd != base_type::m_p_head->m_p_parent && p_nd->m_p_parent->m_red)
     {
       if (p_nd->m_p_parent == p_nd->m_p_parent->m_p_parent->m_p_left)
         {
 	  node_pointer p_y = p_nd->m_p_parent->m_p_parent->m_p_right;
-
-	  if (p_y != NULL&&  p_y->m_red)
+	  if (p_y != NULL && p_y->m_red)
             {
 	      p_nd->m_p_parent->m_red = false;
-
 	      p_y->m_red = false;
-
 	      p_nd->m_p_parent->m_p_parent->m_red = true;
-
 	      p_nd = p_nd->m_p_parent->m_p_parent;
             }
 	  else
@@ -97,30 +85,21 @@ insert_fixup(node_pointer p_nd)
 	      if (p_nd == p_nd->m_p_parent->m_p_right)
                 {
 		  p_nd = p_nd->m_p_parent;
-
-		  PB_DS_BASE_C_DEC::rotate_left(p_nd);
+		  base_type::rotate_left(p_nd);
                 }
-
 	      p_nd->m_p_parent->m_red = false;
-
 	      p_nd->m_p_parent->m_p_parent->m_red = true;
-
-	      PB_DS_BASE_C_DEC::rotate_right(
-					     p_nd->m_p_parent->m_p_parent);
+	      base_type::rotate_right(p_nd->m_p_parent->m_p_parent);
             }
         }
       else
         {
 	  node_pointer p_y = p_nd->m_p_parent->m_p_parent->m_p_left;
-
-	  if (p_y != NULL&&  p_y->m_red)
+	  if (p_y != NULL && p_y->m_red)
             {
 	      p_nd->m_p_parent->m_red = false;
-
 	      p_y->m_red = false;
-
 	      p_nd->m_p_parent->m_p_parent->m_red = true;
-
 	      p_nd = p_nd->m_p_parent->m_p_parent;
             }
 	  else
@@ -128,21 +107,15 @@ insert_fixup(node_pointer p_nd)
 	      if (p_nd == p_nd->m_p_parent->m_p_left)
                 {
 		  p_nd = p_nd->m_p_parent;
-
-		  PB_DS_BASE_C_DEC::rotate_right(p_nd);
+		  base_type::rotate_right(p_nd);
                 }
-
 	      p_nd->m_p_parent->m_red = false;
-
 	      p_nd->m_p_parent->m_p_parent->m_red = true;
-
-	      PB_DS_BASE_C_DEC::rotate_left(
-					    p_nd->m_p_parent->m_p_parent);
+	      base_type::rotate_left(p_nd->m_p_parent->m_p_parent);
             }
         }
     }
 
-  PB_DS_BASE_C_DEC::update_to_top(p_nd, (node_update* )this);
-
-  PB_DS_BASE_C_DEC::m_p_head->m_p_parent->m_red = false;
+  base_type::update_to_top(p_nd, (node_update* )this);
+  base_type::m_p_head->m_p_parent->m_red = false;
 }

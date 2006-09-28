@@ -48,29 +48,21 @@
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-resize_imp_reassign(entry_pointer p_e, entry_array a_entries_resized, store_hash_false_type)
+resize_imp_reassign(entry_pointer p_e, entry_array a_entries_resized, 
+		    store_hash_false_type)
 {
   const_key_reference r_key = PB_DS_V2F(p_e->m_value);
-
   size_type hash = ranged_probe_fn_base::operator()(r_key);
-
   size_type i;
-
   for (i = 0; i < m_num_e; ++i)
     {
-      const size_type pos =
-	ranged_probe_fn_base::operator()(r_key, hash, i);
-
+      const size_type pos = ranged_probe_fn_base::operator()(r_key, hash, i);
       entry_pointer p_new_e = a_entries_resized + pos;
-
       switch(p_new_e->m_stat)
         {
         case empty_entry_status:
-
 	  new (&p_new_e->m_value) value_type(p_e->m_value);
-
 	  p_new_e->m_stat = valid_entry_status;
-
 	  return;
         case erased_entry_status:
 	  _GLIBCXX_DEBUG_ASSERT(0);
@@ -81,7 +73,6 @@ resize_imp_reassign(entry_pointer p_e, entry_array a_entries_resized, store_hash
 	  _GLIBCXX_DEBUG_ASSERT(0);
         };
     }
-
   throw insert_error();
 }
 

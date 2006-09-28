@@ -52,18 +52,14 @@ PB_DS_CLASS_C_DEC::
 trace() const
 {
   std::cerr << m_p_l << std::endl << std::endl;
-
   const_entry_pointer p_l = m_p_l;
-
   while (p_l != NULL)
     {
       std::cerr << PB_DS_V2F(p_l->m_value) << std::endl;
-
       p_l = p_l->m_p_next;
     }
-
   std::cerr << std::endl;
 }
 
-#endif // #ifdef PB_DS_LU_MAP_TRACE_
+#endif 
 

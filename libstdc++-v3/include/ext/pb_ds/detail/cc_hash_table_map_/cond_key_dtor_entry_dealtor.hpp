@@ -49,12 +49,8 @@ namespace pb_ds
   namespace detail
   {
 
-#define PB_DS_CLASS_T_DEC			\
-    template<typename HT_Map>
-
-#define PB_DS_CLASS_C_DEC				\
-    PB_DS_CKDED_CLASS_NAME<				\
-						HT_Map>
+#define PB_DS_CLASS_T_DEC template<typename HT_Map>
+#define PB_DS_CLASS_C_DEC PB_DS_CKDED_CLASS_NAME<HT_Map>
 
     /**
      * A conditional key destructor, used for exception handling.
@@ -64,12 +60,9 @@ namespace pb_ds
     {
     public:
       typedef typename HT_Map::entry entry;
-
       typedef typename HT_Map::entry_allocator entry_allocator;
-
       typedef typename HT_Map::key_type key_type;
 
-    public:
       inline
       PB_DS_CKDED_CLASS_NAME(entry_allocator* p_a, entry* p_e);
 
@@ -93,10 +86,8 @@ namespace pb_ds
     PB_DS_CLASS_T_DEC
     inline
     PB_DS_CLASS_C_DEC::
-    PB_DS_CKDED_CLASS_NAME(entry_allocator* p_a, entry* p_e) :
-      m_p_a(p_a),
-      m_p_e(p_e),
-      m_key_destruct(false),
+    PB_DS_CKDED_CLASS_NAME(entry_allocator* p_a, entry* p_e) 
+    : m_p_a(p_a), m_p_e(p_e), m_key_destruct(false), 
       m_no_action_destructor(false)
     { }
 
@@ -104,17 +95,13 @@ namespace pb_ds
     inline void
     PB_DS_CLASS_C_DEC::
     set_key_destruct()
-    {
-      m_key_destruct = true;
-    }
+    { m_key_destruct = true; }
 
     PB_DS_CLASS_T_DEC
     inline void
     PB_DS_CLASS_C_DEC::
     set_no_action_destructor()
-    {
-      m_no_action_destructor = true;
-    }
+    { m_no_action_destructor = true; }
 
     PB_DS_CLASS_T_DEC
     inline
@@ -123,10 +110,8 @@ namespace pb_ds
     {
       if (m_no_action_destructor)
 	return;
-
       if (m_key_destruct)
 	m_p_e->m_value.first.~key_type();
-
       m_p_a->deallocate(m_p_e, 1);
     }
 

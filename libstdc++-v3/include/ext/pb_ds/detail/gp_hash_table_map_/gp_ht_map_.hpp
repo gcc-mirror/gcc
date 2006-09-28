@@ -457,8 +457,7 @@ namespace pb_ds
 	const size_type pos = find_ins_pos(key, 
 					 traits_base::m_store_extra_indicator);
 
-	entry_pointer p_e =& m_entries[pos];
-
+	entry_pointer p_e = &m_entries[pos];
 	if (p_e->m_stat != valid_entry_status)
 	  return insert_new_imp(value_type(key, mapped_type()), pos)->second;
 

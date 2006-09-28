@@ -96,26 +96,14 @@ namespace pb_ds
 		      class Node_Iterator,
 		      class Cmp_Fn_,
 		      class Allocator_>
-    class Node_Update,
+             class Node_Update,
 	     class Allocator>
-    struct tree_traits<
-      Key,
-      null_mapped_type,
-      Cmp_Fn,
-      Node_Update,
-      splay_tree_tag,
-      Allocator> : public bin_search_tree_traits<
-      Key,
-      null_mapped_type,
-      Cmp_Fn,
-      Node_Update,
-      splay_tree_node_<
-      typename types_traits<
-      Key,
-      null_mapped_type,
-      Allocator,
-      false>::value_type,
-      typename tree_node_metadata_selector<
+    struct tree_traits<Key, null_mapped_type, Cmp_Fn, Node_Update,
+		       splay_tree_tag, Allocator> 
+    : public bin_search_tree_traits<Key, null_mapped_type, Cmp_Fn,
+				    Node_Update, 
+	   splay_tree_node_<typename types_traits<Key, null_mapped_type, Allocator, false>::value_type,
+			    typename tree_node_metadata_selector<
       Key,
       null_mapped_type,
       Cmp_Fn,

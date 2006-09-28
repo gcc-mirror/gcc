@@ -51,8 +51,8 @@ join(PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.PB_DS_BASE_C_DEC::assert_valid();)
-  if (PB_DS_BASE_C_DEC::join_prep(other) == false)
+  _GLIBCXX_DEBUG_ONLY(other.base_type::assert_valid();)
+  if (base_type::join_prep(other) == false)
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
       _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
@@ -61,11 +61,11 @@ join(PB_DS_CLASS_C_DEC& other)
 
   const node_pointer p_x = other.split_min();
   join_imp(p_x, other.m_p_head->m_p_parent);
-  PB_DS_BASE_C_DEC::join_finish(other);
+  base_type::join_finish(other);
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_valid();)
   _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.PB_DS_BASE_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.base_type::assert_valid();)
  }
 
 PB_DS_CLASS_T_DEC
@@ -77,7 +77,7 @@ join_imp(node_pointer p_x, node_pointer p_r)
   if (p_r != NULL)
     p_r->m_red = false;
 
-  const size_type h = black_height(PB_DS_BASE_C_DEC::m_p_head->m_p_parent);
+  const size_type h = black_height(base_type::m_p_head->m_p_parent);
   const size_type other_h = black_height(p_r);
   node_pointer p_x_l;
   node_pointer p_x_r;
@@ -85,28 +85,28 @@ join_imp(node_pointer p_x, node_pointer p_r)
   const bool right_join = h >= other_h;
   if (right_join)
     {
-      join_pos = find_join_pos_right(PB_DS_BASE_C_DEC::m_p_head->m_p_parent, 
+      join_pos = find_join_pos_right(base_type::m_p_head->m_p_parent, 
 				     h, other_h);
       p_x_l = join_pos.first;
       p_x_r = p_r;
     }
   else
     {
-      p_x_l = PB_DS_BASE_C_DEC::m_p_head->m_p_parent;
-      PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_r;
+      p_x_l = base_type::m_p_head->m_p_parent;
+      base_type::m_p_head->m_p_parent = p_r;
       if (p_r != NULL)
-	p_r->m_p_parent = PB_DS_BASE_C_DEC::m_p_head;
+	p_r->m_p_parent = base_type::m_p_head;
 
-      join_pos = find_join_pos_left(PB_DS_BASE_C_DEC::m_p_head->m_p_parent, 
+      join_pos = find_join_pos_left(base_type::m_p_head->m_p_parent, 
 				    h, other_h);
       p_x_r = join_pos.first;
     }
 
   node_pointer p_parent = join_pos.second;
-  if (p_parent == PB_DS_BASE_C_DEC::m_p_head)
+  if (p_parent == base_type::m_p_head)
     {
-      PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_x;
-      p_x->m_p_parent = PB_DS_BASE_C_DEC::m_p_head;
+      base_type::m_p_head->m_p_parent = p_x;
+      p_x->m_p_parent = base_type::m_p_head;
     }
   else
     {
@@ -127,11 +127,11 @@ join_imp(node_pointer p_x, node_pointer p_r)
 
   p_x->m_red = true;
 
-  PB_DS_BASE_C_DEC::initialize_min_max();
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid();)
-  PB_DS_BASE_C_DEC::update_to_top(p_x, (node_update* )this);
+  base_type::initialize_min_max();
+  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
+  base_type::update_to_top(p_x, (node_update* )this);
   insert_fixup(p_x);
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid());
+  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid());
 }
 
 PB_DS_CLASS_T_DEC
@@ -139,15 +139,15 @@ inline typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 split_min()
 {
-  node_pointer p_min = PB_DS_BASE_C_DEC::m_p_head->m_p_left;
+  node_pointer p_min = base_type::m_p_head->m_p_left;
 
 #ifdef _GLIBCXX_DEBUG
-  const node_pointer p_head = PB_DS_BASE_C_DEC::m_p_head;
+  const node_pointer p_head = base_type::m_p_head;
   _GLIBCXX_DEBUG_ASSERT(p_min != p_head);
 #endif 
 
   remove_node(p_min);
-  return (p_min);
+  return p_min;
 }
 
 PB_DS_CLASS_T_DEC
@@ -159,10 +159,10 @@ find_join_pos_right(node_pointer p_l, size_type h_l, size_type h_r)
 {
   _GLIBCXX_DEBUG_ASSERT(h_l >= h_r);
 
-  if (PB_DS_BASE_C_DEC::m_p_head->m_p_parent == NULL)
-    return (std::make_pair((node_pointer)NULL, PB_DS_BASE_C_DEC::m_p_head));
+  if (base_type::m_p_head->m_p_parent == NULL)
+    return (std::make_pair((node_pointer)NULL, base_type::m_p_head));
 
-  node_pointer p_l_parent = PB_DS_BASE_C_DEC::m_p_head;
+  node_pointer p_l_parent = base_type::m_p_head;
   while (h_l > h_r)
     {
       if (p_l->m_red == false)
@@ -195,10 +195,10 @@ PB_DS_CLASS_C_DEC::
 find_join_pos_left(node_pointer p_r, size_type h_l, size_type h_r)
 {
   _GLIBCXX_DEBUG_ASSERT(h_r > h_l);
-  if (PB_DS_BASE_C_DEC::m_p_head->m_p_parent == NULL)
+  if (base_type::m_p_head->m_p_parent == NULL)
     return (std::make_pair((node_pointer)NULL,
-			   PB_DS_BASE_C_DEC::m_p_head));
-  node_pointer p_r_parent = PB_DS_BASE_C_DEC::m_p_head;
+			   base_type::m_p_head));
+  node_pointer p_r_parent = base_type::m_p_head;
   while (h_r > h_l)
     {
       if (p_r->m_red == false)
@@ -244,20 +244,20 @@ PB_DS_CLASS_C_DEC::
 split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid());
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(base_type::assert_valid();)
 
     _GLIBCXX_DEBUG_ONLY(other.assert_valid());
-  _GLIBCXX_DEBUG_ONLY(other.PB_DS_BASE_C_DEC::assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.base_type::assert_valid();)
 
-    if (PB_DS_BASE_C_DEC::split_prep(r_key, other) == false)
+    if (base_type::split_prep(r_key, other) == false)
       {
         _GLIBCXX_DEBUG_ONLY(assert_valid());
         _GLIBCXX_DEBUG_ONLY(other.assert_valid());
         return;
       }
 
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid();)
-  _GLIBCXX_DEBUG_ONLY(other.PB_DS_BASE_C_DEC::structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.base_type::structure_only_assert_valid();)
   node_pointer p_nd = upper_bound(r_key).m_p_nd;
   do
     {
@@ -265,13 +265,13 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
       if (Cmp_Fn::operator()(r_key, PB_DS_V2F(p_nd->m_value)))
 	split_at_node(p_nd, other);
 
-      _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid();)
-      _GLIBCXX_DEBUG_ONLY(other.PB_DS_BASE_C_DEC::structure_only_assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(other.base_type::structure_only_assert_valid();)
       p_nd = p_next_nd;
     }
-  while (p_nd != PB_DS_BASE_C_DEC::m_p_head);
+  while (p_nd != base_type::m_p_head);
 
-  PB_DS_BASE_C_DEC::split_finish(other);
+  base_type::split_finish(other);
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 }
@@ -286,12 +286,12 @@ split_at_node(node_pointer p_nd, PB_DS_CLASS_C_DEC& other)
   node_pointer p_l = p_nd->m_p_left;
   node_pointer p_r = p_nd->m_p_right;
   node_pointer p_parent = p_nd->m_p_parent;
-  if (p_parent == PB_DS_BASE_C_DEC::m_p_head)
+  if (p_parent == base_type::m_p_head)
     {
-      PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_l;
+      base_type::m_p_head->m_p_parent = p_l;
       if (p_l != NULL)
         {
-	  p_l->m_p_parent = PB_DS_BASE_C_DEC::m_p_head;
+	  p_l->m_p_parent = base_type::m_p_head;
 	  p_l->m_red = false;
         }
     }
@@ -311,9 +311,9 @@ split_at_node(node_pointer p_nd, PB_DS_CLASS_C_DEC& other)
 	remove_fixup(p_l, p_parent);
     }
 
-  PB_DS_BASE_C_DEC::initialize_min_max();
+  base_type::initialize_min_max();
   other.join_imp(p_nd, p_r);
-  _GLIBCXX_DEBUG_ONLY(PB_DS_BASE_C_DEC::structure_only_assert_valid());
-  _GLIBCXX_DEBUG_ONLY(other.PB_DS_BASE_C_DEC::structure_only_assert_valid());
+  _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid());
+  _GLIBCXX_DEBUG_ONLY(other.base_type::structure_only_assert_valid());
 }
 

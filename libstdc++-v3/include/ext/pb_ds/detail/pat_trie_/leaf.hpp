@@ -127,7 +127,6 @@ namespace pb_ds
     private:
       pat_trie_leaf(const PB_DS_CLASS_C_DEC& other);
 
-    private:
       value_type m_value;
     };
 

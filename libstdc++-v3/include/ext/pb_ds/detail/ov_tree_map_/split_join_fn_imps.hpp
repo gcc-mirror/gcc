@@ -50,77 +50,55 @@ PB_DS_CLASS_C_DEC::
 split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
-    if (m_size == 0)
-      {
-        other.clear();
-
-        _GLIBCXX_DEBUG_ONLY(assert_valid();)
-	  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-
-	  return;
-      }
+  if (m_size == 0)
+    {
+      other.clear();
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      return;
+    }
 
   if (Cmp_Fn::operator()(r_key, PB_DS_V2F(*begin())))
     {
       value_swap(other);
-
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
-        _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-
-        return;
+      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      return;
     }
 
-  if (!Cmp_Fn::operator()(
-			  r_key,
-			  PB_DS_V2F(*(end() - 1))))
+  if (!Cmp_Fn::operator()(r_key, PB_DS_V2F(*(end() - 1))))
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
-        _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-
-        return;
+      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      return;
     }
 
   if (m_size == 1)
     {
       value_swap(other);
-
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
-        _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-
-        return;
+      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      return;
     }
 
   _GLIBCXX_DEBUG_ONLY(map_debug_base::join(other);)
-
-    iterator it = upper_bound(r_key);
-
+  iterator it = upper_bound(r_key);
   PB_DS_CLASS_C_DEC new_other(other, other);
-
   new_other.copy_from_ordered_range(it, end());
-
   PB_DS_CLASS_C_DEC new_this(*this, * this);
-
   new_this.copy_from_ordered_range(begin(), it);
 
   // No exceptions from this point.
-
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::split(
-				       r_key,(Cmp_Fn& )(*this),
-				       other);)
-
-    other.update(other.node_begin(), (node_update* )(&other));
-
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::split(r_key,(Cmp_Fn& )(*this), other);)
+  other.update(other.node_begin(), (node_update* )(&other));
   update(node_begin(), (node_update* )this);
-
   other.value_swap(new_other);
-
   value_swap(new_this);
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -128,52 +106,38 @@ PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-
-    if (other.m_size == 0)
-      return;
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  if (other.m_size == 0)
+    return;
 
   if (m_size == 0)
     {
       value_swap(other);
-
       return;
     }
 
-  const bool greater = Cmp_Fn::operator()(
-					  PB_DS_V2F(*(end() - 1)),
+  const bool greater = Cmp_Fn::operator()(PB_DS_V2F(*(end() - 1)),
 					  PB_DS_V2F(*other.begin()));
 
-  const bool lesser = Cmp_Fn::operator()(
-					 PB_DS_V2F(*(other.end() - 1)),
+  const bool lesser = Cmp_Fn::operator()(PB_DS_V2F(*(other.end() - 1)),
 					 PB_DS_V2F(*begin()));
 
   if (!greater&&  !lesser)
     throw join_error();
 
-  PB_DS_CLASS_C_DEC new_this(*this, * this);
+  PB_DS_CLASS_C_DEC new_this(*this, *this);
 
   if (greater)
-    new_this.copy_from_ordered_range(
-				     begin(),
-				     end(),
-				     other.begin(),
-				     other.end());
+    new_this.copy_from_ordered_range(begin(), end(), 
+				     other.begin(), other.end());
   else
-    new_this.copy_from_ordered_range(
-				     other.begin(),
-				     other.end(),
-				     begin(),
-				     end());
+    new_this.copy_from_ordered_range(other.begin(), other.end(),
+				     begin(), end());
 
   // No exceptions from this point.
-
   _GLIBCXX_DEBUG_ONLY(map_debug_base::join(other);)
-
-    value_swap(new_this);
-
+  value_swap(new_this);
   other.clear();
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+}

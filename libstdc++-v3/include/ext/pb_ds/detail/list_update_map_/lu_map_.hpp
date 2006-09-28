@@ -113,47 +113,30 @@ namespace pb_ds
 #endif 
       public PB_DS_TYPES_TRAITS_C_DEC
     {
-
     private:
+      typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
 
-      struct entry : public lu_map_entry_metadata_base<typename Update_Policy::metadata_type>
+      struct entry 
+     : public lu_map_entry_metadata_base<typename Update_Policy::metadata_type>
       {
-	typename PB_DS_TYPES_TRAITS_C_DEC::value_type m_value;
-
+	typename traits_base::value_type m_value;
 	typename Allocator::template rebind<entry>::other::pointer m_p_next;
       };
 
-      typedef
-      typename Allocator::template rebind<entry>::other
-      entry_allocator;
-
+      typedef typename Allocator::template rebind<entry>::other entry_allocator;
       typedef typename entry_allocator::pointer entry_pointer;
-
       typedef typename entry_allocator::const_pointer const_entry_pointer;
-
       typedef typename entry_allocator::reference entry_reference;
-
       typedef typename entry_allocator::const_reference const_entry_reference;
 
-      typedef
-      typename Allocator::template rebind<entry_pointer>::other
-      entry_pointer_allocator;
-
+      typedef typename Allocator::template rebind<entry_pointer>::other entry_pointer_allocator;
       typedef typename entry_pointer_allocator::pointer entry_pointer_array;
 
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::value_type value_type_;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::pointer pointer_;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_pointer
-      const_pointer_;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::reference reference_;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_reference
-      const_reference_;
+      typedef typename traits_base::value_type value_type_;
+      typedef typename traits_base::pointer pointer_;
+      typedef typename traits_base::const_pointer const_pointer_;
+      typedef typename traits_base::reference reference_;
+      typedef typename traits_base::const_reference const_reference_;
 
 #define PB_DS_GEN_POS entry_pointer
 
@@ -164,63 +147,39 @@ namespace pb_ds
 
 #undef PB_DS_GEN_POS
 
+
+#ifdef _GLIBCXX_DEBUG
+      typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
+#endif 
+
+      typedef typename traits_base:: no_throw_copies_false_type no_throw_copies_false_type;
+
+      typedef typename traits_base:: no_throw_copies_true_type no_throw_copies_true_type;
+
+      typedef cond_dealtor<entry, Allocator> cond_dealtor_t;
+
     public:
-
-      typedef typename Allocator::size_type size_type;
-
-      typedef typename Allocator::difference_type difference_type;
-
-      typedef Eq_Fn eq_fn;
-
       typedef Allocator allocator;
-
+      typedef typename Allocator::size_type size_type;
+      typedef typename Allocator::difference_type difference_type;
+      typedef Eq_Fn eq_fn;
       typedef Update_Policy update_policy;
-
       typedef typename Update_Policy::metadata_type update_metadata;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_type key_type;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_pointer key_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_key_pointer
-      const_key_pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_reference key_reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_key_reference
-      const_key_reference;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::mapped_type mapped_type;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::mapped_pointer
-      mapped_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_mapped_pointer
-      const_mapped_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::mapped_reference
-      mapped_reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_mapped_reference
-      const_mapped_reference;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::value_type value_type;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::pointer pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::const_pointer const_pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::reference reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_reference
-      const_reference;
+      typedef typename traits_base::key_type key_type;
+      typedef typename traits_base::key_pointer key_pointer;
+      typedef typename traits_base::const_key_pointer const_key_pointer;
+      typedef typename traits_base::key_reference key_reference;
+      typedef typename traits_base::const_key_reference const_key_reference;
+      typedef typename traits_base::mapped_type mapped_type;
+      typedef typename traits_base::mapped_pointer mapped_pointer;
+      typedef typename traits_base::const_mapped_pointer const_mapped_pointer;
+      typedef typename traits_base::mapped_reference mapped_reference;
+      typedef typename traits_base::const_mapped_reference const_mapped_reference;
+      typedef typename traits_base::value_type value_type;
+      typedef typename traits_base::pointer pointer;
+      typedef typename traits_base::const_pointer const_pointer;
+      typedef typename traits_base::reference reference;
+      typedef typename traits_base::const_reference const_reference;
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       typedef point_iterator_ point_iterator;
@@ -243,10 +202,9 @@ namespace pb_ds
       typedef const_iterator_ const_iterator;
 
     public:
-
       PB_DS_CLASS_NAME();
 
-      PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other);
+      PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC&);
 
       virtual
       ~PB_DS_CLASS_NAME();
@@ -255,7 +213,7 @@ namespace pb_ds
       PB_DS_CLASS_NAME(It first_it, It last_it);
 
       void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(PB_DS_CLASS_C_DEC&);
 
       inline size_type
       size() const;
@@ -279,7 +237,7 @@ namespace pb_ds
       }
 
       inline std::pair<point_iterator, bool>
-      insert(const_reference r_val);
+      insert(const_reference);
 
       inline point_iterator
       find(const_key_reference r_key)
@@ -298,11 +256,11 @@ namespace pb_ds
       }
 
       inline bool
-      erase(const_key_reference r_key);
+      erase(const_key_reference);
 
       template<typename Pred>
       inline size_type
-      erase_if(Pred pred);
+      erase_if(Pred);
 
       void
       clear();
@@ -329,90 +287,65 @@ namespace pb_ds
       trace() const;
 #endif
 
-    private:
-      typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
-
-#ifdef _GLIBCXX_DEBUG
-      typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
-#endif 
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::
-      no_throw_copies_false_type
-      no_throw_copies_false_type;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::
-      no_throw_copies_true_type
-      no_throw_copies_true_type;
-
     protected:
 
       template<typename It>
       void
-      copy_from_range(It first_it, It last_it);
+      copy_from_range(It, It);
 
     private:
-
-      inline entry_pointer
-      allocate_new_entry(const_reference r_val, false_type);
-
-      inline entry_pointer
-      allocate_new_entry(const_reference r_val, true_type);
-
-      template<typename Metadata>
-      inline static void
-      init_entry_metadata(entry_pointer p_l, type_to_type<Metadata>);
-
-      inline static void
-      init_entry_metadata(entry_pointer p_l, type_to_type<null_lu_metadata>);
-
-      void
-      deallocate_all();
-
-      void
-      erase_next(entry_pointer p_l);
-
-      void
-      actual_erase_entry(entry_pointer p_l);
-
-      void
-      inc_it_state(const_pointer& r_p_value, entry_pointer& r_pos) const
-      {
-	r_pos = r_pos->m_p_next;
-	r_p_value = (r_pos == NULL)? NULL :& r_pos->m_value;
-      }
-
-      template<typename Metadata>
-      inline static bool
-      apply_update(entry_pointer p_l, type_to_type<Metadata>);
-
-      inline static bool
-      apply_update(entry_pointer p_l, type_to_type<null_lu_metadata>);
-
-      inline entry_pointer
-      find_imp(const_key_reference r_key) const;
-
-    private:
-      mutable entry_pointer m_p_l;
-
-      typedef cond_dealtor< entry, Allocator> cond_dealtor_t;
-
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       friend class iterator_;
 #endif 
 
       friend class const_iterator_;
 
+      inline entry_pointer
+      allocate_new_entry(const_reference, false_type);
+
+      inline entry_pointer
+      allocate_new_entry(const_reference, true_type);
+
+      template<typename Metadata>
+      inline static void
+      init_entry_metadata(entry_pointer, type_to_type<Metadata>);
+
+      inline static void
+      init_entry_metadata(entry_pointer, type_to_type<null_lu_metadata>);
+
+      void
+      deallocate_all();
+
+      void
+      erase_next(entry_pointer);
+
+      void
+      actual_erase_entry(entry_pointer);
+
+      void
+      inc_it_state(const_pointer& r_p_value, entry_pointer& r_pos) const
+      {
+	r_pos = r_pos->m_p_next;
+	r_p_value = (r_pos == NULL) ? NULL : &r_pos->m_value;
+      }
+
+      template<typename Metadata>
+      inline static bool
+      apply_update(entry_pointer, type_to_type<Metadata>);
+
+      inline static bool
+      apply_update(entry_pointer, type_to_type<null_lu_metadata>);
+
+      inline entry_pointer
+      find_imp(const_key_reference) const;
+
       static entry_allocator s_entry_allocator;
-
       static Eq_Fn s_eq_fn;
-
       static Update_Policy s_update_policy;
-
       static type_to_type<update_metadata> s_metadata_type_indicator;
-
       static null_lu_metadata s_null_lu_metadata;
+
+      mutable entry_pointer m_p_l;
     };
 
 #include <ext/pb_ds/detail/list_update_map_/constructor_destructor_fn_imps.hpp>
@@ -426,10 +359,9 @@ namespace pb_ds
 
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
-#undef PB_DS_TYPES_TRAITS_C_DEC
+#undef  PB_DS_TYPES_TRAITS_C_DEC
 #undef PB_DS_MAP_DEBUG_BASE_C_DEC
 #undef PB_DS_CLASS_NAME
-
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP
 #undef PB_DS_V2S

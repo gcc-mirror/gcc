@@ -49,8 +49,7 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_entry_pointer_valid(const entry_pointer p_e, 
-			   store_hash_false_type) const
-{ map_debug_base::check_key_exists(PB_DS_V2F(p_e->m_value)); }
+assert_entry_pointer_valid(const entry_pointer p, store_hash_false_type) const
+{ map_debug_base::check_key_exists(PB_DS_V2F(p->m_value)); }
 
 #endif 

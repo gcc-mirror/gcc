@@ -55,7 +55,6 @@ namespace pb_ds
 {
   namespace detail
   {
-
 #define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
     typedef								\
     static_assert_dumclass<sizeof(static_assert<(bool)(E)>)> \

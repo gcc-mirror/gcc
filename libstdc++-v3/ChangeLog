@@ -1,3 +1,135 @@
+2006-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_store_hash_fn_imps.hpp: Formatting fixes.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cmp_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	resize_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	entry_list_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	find_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	debug_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/resize_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	cond_key_dtor_entry_dealtor.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	debug_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/size_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	resize_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/child_iterator.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/update_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/split_join_branch_bag.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/head.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/cond_dtor_entry_dealtor.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/pat_trie_.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/leaf.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/node_base.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/node_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/point_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/pat_trie_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	erase_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	constructor_destructor_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	resize_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	constructor_destructor_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	iterator_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	find_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	find_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	debug_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/resize_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	erase_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	resize_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binomial_heap_/binomial_heap_.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/
+	policy_access_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/ov_tree_map_.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/node_iterators.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/
+	constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/splay_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/node.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/splay_tree_.hpp: Same.
+	* include/ext/pb_ds/detail/splay_tree_/traits.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/
+	entry_metadata_base.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/lu_map_.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/
+	iterators_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/insert_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/
+	constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/rb_tree_.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/node.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/split_join_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/info_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/rb_tree_map_/traits.hpp: Same.
+
 2006-09-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/boost_shared_ptr.h: Use __atomic_add_dispatch and

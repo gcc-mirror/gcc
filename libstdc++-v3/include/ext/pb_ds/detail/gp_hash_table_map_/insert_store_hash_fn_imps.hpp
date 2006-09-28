@@ -41,8 +41,8 @@
 
 /**
  * @file insert_store_hash_fn_imps.hpp
- * Contains implementations of gp_ht_map_'s find related functions, when the hash
- *    value is stored.
+ * Contains implementations of gp_ht_map_'s find related functions,
+ * when the hash value is stored.
  */
 
 PB_DS_CLASS_T_DEC
@@ -70,12 +70,11 @@ find_ins_pos(const_key_reference r_key, store_hash_true_type)
         case empty_entry_status:
 	  {
             resize_base::notify_insert_search_end();
-
             _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
 
-	      return ((ins_pos == m_num_e) ?
-		      std::make_pair(pos, pos_hash_pair.second) :
-		      std::make_pair(ins_pos, pos_hash_pair.second));
+	    return ((ins_pos == m_num_e) ?
+		     std::make_pair(pos, pos_hash_pair.second) :
+		     std::make_pair(ins_pos, pos_hash_pair.second));
 	  }
 	  break;
         case erased_entry_status:

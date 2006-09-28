@@ -59,39 +59,35 @@ PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME()
 {
   initialize();
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn) :
-  PB_DS_BASE_C_DEC(r_cmp_fn)
+  base_type(r_cmp_fn)
 {
   initialize();
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update) :
-  PB_DS_BASE_C_DEC(r_cmp_fn, r_node_update)
+  base_type(r_cmp_fn, r_node_update)
 {
   initialize();
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
-  PB_DS_BASE_C_DEC(other)
+  base_type(other)
 {
   initialize();
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -99,16 +95,12 @@ PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    PB_DS_BASE_C_DEC::swap(other);
-
+  base_type::swap(other);
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
 initialize()
-{
-  PB_DS_BASE_C_DEC::m_p_head->m_red = true;
-}
+{ base_type::m_p_head->m_red = true; }
