@@ -1,3 +1,9 @@
+2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_init_ctor_preeval): Call maybe_with_size_expr
+	on the element before gimplifying it, instead of punting if it is of
+	variable size.
+
 2006-09-28  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* doc/loop.texi: New file.
