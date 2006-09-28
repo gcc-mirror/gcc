@@ -1,6 +1,7 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -250,9 +251,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __uninitialized_copy_a(_InputIterator __first, _InputIterator __last,
 			   _ForwardIterator __result,
 			   allocator<_Tp>)
-    {
-      return std::uninitialized_copy(__first, __last, __result);
-    }
+    { return std::uninitialized_copy(__first, __last, __result); }
 
   template<typename _ForwardIterator, typename _Tp, typename _Allocator>
     void
@@ -276,9 +275,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline void
     __uninitialized_fill_a(_ForwardIterator __first, _ForwardIterator __last,
 			   const _Tp& __x, allocator<_Tp2>)
-    {
-      std::uninitialized_fill(__first, __last, __x);
-    }
+    { std::uninitialized_fill(__first, __last, __x); }
 
   template<typename _ForwardIterator, typename _Size, typename _Tp,
 	   typename _Allocator>
@@ -302,13 +299,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _ForwardIterator, typename _Size, typename _Tp,
 	   typename _Tp2>
-    void
+    inline void
     __uninitialized_fill_n_a(_ForwardIterator __first, _Size __n, 
 			     const _Tp& __x,
 			     allocator<_Tp2>)
-    {
-      std::uninitialized_fill_n(__first, __n, __x);
-    }
+    { std::uninitialized_fill_n(__first, __n, __x); }
 
 
   // Extensions: __uninitialized_copy_copy, __uninitialized_copy_fill,

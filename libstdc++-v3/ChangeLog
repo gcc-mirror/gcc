@@ -1,3 +1,9 @@
+2006-09-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_uninitialized.h
+	(__uninitialized_fill_n_a(_ForwardIterator, _Size, const _Tp&,
+	allocator<>)): Inline.
+
 2006-09-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pb_ds/detail/cc_hash_table_map_/
