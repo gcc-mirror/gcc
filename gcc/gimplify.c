@@ -2670,9 +2670,8 @@ gimplify_init_ctor_preeval (tree *expr_p, tree *pre_p, tree *post_p,
       return;
     }
 
-  /* We can't preevaluate if the type contains a placeholder.  */
-  if (type_contains_placeholder_p (TREE_TYPE (*expr_p)))
-    return;
+  /* If this is a variable sized type, we must remember the size.  */
+  maybe_with_size_expr (expr_p);
 
   /* Gimplify the constructor element to something appropriate for the rhs
      of a MODIFY_EXPR.  Given that we know the lhs is an aggregate, we know

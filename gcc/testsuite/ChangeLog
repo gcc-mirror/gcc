@@ -1,3 +1,7 @@
+2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/self_aggregate_with_pointer.adb: New test.
+
 2006-09-27  Steven G. Kargl  <kargls@gcc.gnu.org>
 
 	PR fortran/28276
