@@ -161,7 +161,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 	    new (m_entries + i) entry(other.m_entries[i]);
         }
     }
-  catch (...)
+  catch(...)
     {
       deallocate_all();
       throw;

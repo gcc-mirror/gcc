@@ -49,15 +49,11 @@ inline void
 PB_DS_CLASS_C_DEC::
 erase_entry_pointer(entry_pointer& r_p_e)
 {
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::erase_existing(
-						PB_DS_V2F(r_p_e->m_value)));
+  _GLIBCXX_DEBUG_ONLY(map_debug_base::erase_existing(PB_DS_V2F(r_p_e->m_value)));
 
   entry_pointer p_e = r_p_e;
-
   r_p_e = r_p_e->m_p_next;
-
   rels_entry(p_e);
-
   _GLIBCXX_DEBUG_ASSERT(m_num_used_e > 0);
   resize_base::notify_erased(--m_num_used_e);
 }
@@ -68,34 +64,24 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
+  typedef typename PB_DS_TYPES_TRAITS_C_DEC::const_reference const_reference;
   size_type num_ersd = 0;
-
   for (size_type pos = 0; pos < m_num_e; ++pos)
     {
-      typedef
-	typename PB_DS_TYPES_TRAITS_C_DEC::const_reference
-	const_reference;
-
-      while (m_entries[pos] != NULL&& 
-	     pred(m_entries[pos]->m_value))
+      while (m_entries[pos] != NULL && pred(m_entries[pos]->m_value))
         {
 	  ++num_ersd;
-
 	  entry_pointer p_next_e = m_entries[pos]->m_p_next;
-
 	  erase_entry_pointer(m_entries[pos]);
-
 	  m_entries[pos] = p_next_e;
         }
 
       entry_pointer p_e = m_entries[pos];
-
-      while (p_e != NULL&&  p_e->m_p_next != NULL)
+      while (p_e != NULL && p_e->m_p_next != NULL)
         {
 	  if (pred(p_e->m_p_next->m_value))
             {
 	      ++num_ersd;
-
 	      erase_entry_pointer(p_e->m_p_next);
             }
 	  else
@@ -104,8 +90,7 @@ erase_if(Pred pred)
     }
 
   do_resize_if_needed_no_throw();
-
-  return (num_ersd);
+  return num_ersd;
 }
 
 PB_DS_CLASS_T_DEC
@@ -116,9 +101,7 @@ clear()
   for (size_type pos = 0; pos < m_num_e; ++pos)
     while (m_entries[pos] != NULL)
       erase_entry_pointer(m_entries[pos]);
-
   do_resize_if_needed_no_throw();
-
   resize_base::notify_cleared();
 }
 

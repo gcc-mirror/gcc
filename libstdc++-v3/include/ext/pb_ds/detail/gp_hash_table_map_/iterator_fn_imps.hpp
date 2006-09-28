@@ -60,19 +60,15 @@ begin()
 {
   pointer_ p_value;
   size_type pos;
-
   get_start_it_state(p_value, pos);
-
-  return (iterator(p_value, pos, this));
+  return iterator(p_value, pos, this);
 }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::iterator
 PB_DS_CLASS_C_DEC::
 end()
-{
-  return (s_end_it);
-}
+{ return s_end_it; }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_iterator
@@ -81,17 +77,13 @@ begin() const
 {
   const_pointer_ p_value;
   size_type pos;
-
   get_start_it_state(p_value, pos);
-
-  return (const_iterator(        p_value, pos, this));
+  return const_iterator(p_value, pos, this);
 }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_iterator
 PB_DS_CLASS_C_DEC::
 end() const
-{
-  return (s_const_end_it);
-}
+{ return s_const_end_it; }
 

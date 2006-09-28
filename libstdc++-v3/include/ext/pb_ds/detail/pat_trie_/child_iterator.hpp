@@ -48,64 +48,52 @@ struct iterator : public const_iterator
 {
 public:
   typedef std::forward_iterator_tag iterator_category;
-
   typedef typename Allocator::difference_type difference_type;
-
   typedef node_pointer value_type;
-
   typedef node_pointer_pointer pointer;
-
   typedef node_pointer_reference reference;
 
-public:
   inline
-  iterator(node_pointer_pointer p_p_cur = NULL,  node_pointer_pointer p_p_end = NULL) : const_iterator(p_p_cur, p_p_end)
+  iterator(node_pointer_pointer p_p_cur = NULL,  
+	   node_pointer_pointer p_p_end = NULL) 
+  : const_iterator(p_p_cur, p_p_end)
   { }
 
   inline bool
   operator==(const iterator& other) const
-  {
-    return (const_iterator::m_p_p_cur == other.m_p_p_cur);
-  }
+  { return const_iterator::m_p_p_cur == other.m_p_p_cur; }
 
   inline bool
   operator!=(const iterator& other) const
-  {
-    return (const_iterator::m_p_p_cur != other.m_p_p_cur);
-  }
+  { return const_iterator::m_p_p_cur != other.m_p_p_cur; }
 
   inline iterator& 
   operator++()
   {
     const_iterator::operator++();
-
-    return (*this);
+    return *this;
   }
 
   inline iterator
   operator++(int)
   {
     iterator ret_it(*this);
-
     operator++();
-
-    return (ret_it);
+    return ret_it;
   }
 
   node_pointer_pointer
   operator->()
   {
     _GLIBCXX_DEBUG_ONLY(const_iterator::assert_referencible();)
-
-      return (const_iterator::m_p_p_cur);
+    return const_iterator::m_p_p_cur;
   }
 
   node_pointer
   operator*()
   {
     _GLIBCXX_DEBUG_ONLY(const_iterator::assert_referencible();)
-
-      return (*const_iterator::m_p_p_cur);
+    return *const_iterator::m_p_p_cur;
   }
 };
 

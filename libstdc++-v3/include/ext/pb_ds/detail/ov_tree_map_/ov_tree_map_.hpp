@@ -64,7 +64,6 @@ namespace pb_ds
 {
   namespace detail
   {
-
 #define PB_DS_CLASS_T_DEC \
     template<typename Key, typename Mapped, class Cmp_Fn, \
 	     class Node_And_It_Traits, class Allocator>
@@ -128,21 +127,14 @@ namespace pb_ds
       public Node_And_It_Traits::node_update,
       public PB_DS_TYPES_TRAITS_C_DEC
     {
-
     private:
-      typedef
-      typename remove_const<
-      typename PB_DS_TYPES_TRAITS_C_DEC::value_type>::type
-      non_const_value_type;
+      typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
 
-      typedef
-      typename Allocator::template rebind<
-	non_const_value_type>::other
-      value_allocator;
+      typedef typename remove_const<typename traits_base::value_type>::type non_const_value_type;
 
+      typedef typename Allocator::template rebind<non_const_value_type>::other value_allocator;
       typedef typename value_allocator::pointer value_vector;
 
-      typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
 
       typedef Cmp_Fn cmp_fn_base;
 
@@ -150,25 +142,14 @@ namespace pb_ds
       typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
 #endif 
 
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::pointer mapped_pointer_;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_pointer
-      const_mapped_pointer_;
+      typedef typename traits_base::pointer mapped_pointer_;
+      typedef typename traits_base::const_pointer const_mapped_pointer_;
 
       typedef typename Node_And_It_Traits::metadata_type metadata_type;
 
-      typedef
-      typename Allocator::template rebind<
-	metadata_type>::other
-      metadata_allocator;
-
+      typedef typename Allocator::template rebind<metadata_type>::other metadata_allocator;
       typedef typename metadata_allocator::pointer metadata_pointer;
-
-      typedef
-      typename metadata_allocator::const_reference
-      const_metadata_reference;
-
+      typedef typename metadata_allocator::const_reference const_metadata_reference;
       typedef typename metadata_allocator::reference metadata_reference;
 
       typedef
@@ -177,59 +158,29 @@ namespace pb_ds
 
     public:
 
+      typedef Allocator allocator;
       typedef typename Allocator::size_type size_type;
-
       typedef typename Allocator::difference_type difference_type;
 
       typedef Cmp_Fn cmp_fn;
 
       typedef typename Node_And_It_Traits::node_update node_update;
 
-      typedef Allocator allocator;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_type key_type;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_pointer key_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_key_pointer
-      const_key_pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_reference key_reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_key_reference
-      const_key_reference;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::mapped_type mapped_type;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::mapped_pointer
-      mapped_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_mapped_pointer
-      const_mapped_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::mapped_reference
-      mapped_reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_mapped_reference
-      const_mapped_reference;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::value_type value_type;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::pointer pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::const_pointer const_pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::reference reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_reference
-      const_reference;
+      typedef typename traits_base::key_type key_type;
+      typedef typename traits_base::key_pointer key_pointer;
+      typedef typename traits_base::const_key_pointer const_key_pointer;
+      typedef typename traits_base::key_reference key_reference;
+      typedef typename traits_base::const_key_reference const_key_reference;
+      typedef typename traits_base::mapped_type mapped_type;
+      typedef typename traits_base::mapped_pointer mapped_pointer;
+      typedef typename traits_base::const_mapped_pointer const_mapped_pointer;
+      typedef typename traits_base::mapped_reference mapped_reference;
+      typedef typename traits_base::const_mapped_reference const_mapped_reference;
+      typedef typename traits_base::value_type value_type;
+      typedef typename traits_base::pointer pointer;
+      typedef typename traits_base::const_pointer const_pointer;
+      typedef typename traits_base::reference reference;
+      typedef typename traits_base::const_reference const_reference;
 
       typedef const_pointer const_point_iterator;
 
@@ -255,20 +206,20 @@ namespace pb_ds
 
       PB_DS_OV_TREE_CLASS_NAME();
 
-      PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn& r_cmp_fn);
+      PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn&);
 
-      PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn& r_cmp_fn, const node_update& r_node_update);
+      PB_DS_OV_TREE_CLASS_NAME(const Cmp_Fn&, const node_update&);
 
-      PB_DS_OV_TREE_CLASS_NAME(const PB_DS_CLASS_C_DEC& other);
+      PB_DS_OV_TREE_CLASS_NAME(const PB_DS_CLASS_C_DEC&);
 
       ~PB_DS_OV_TREE_CLASS_NAME();
 
       void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(PB_DS_CLASS_C_DEC&);
 
       template<typename It>
       void
-      copy_from_range(It first_it, It last_it);
+      copy_from_range(It, It);
 
       inline size_type
       max_size() const;
@@ -342,9 +293,7 @@ namespace pb_ds
 
       inline const_point_iterator
       lower_bound(const_key_reference r_key) const
-      {
-	return (const_cast<PB_DS_CLASS_C_DEC& >(*this).lower_bound(r_key));
-      }
+      { return const_cast<PB_DS_CLASS_C_DEC& >(*this).lower_bound(r_key); }
 
       inline point_iterator
       upper_bound(const_key_reference r_key)
@@ -384,11 +333,11 @@ namespace pb_ds
       { return (const_cast<PB_DS_CLASS_C_DEC& >(*this).find(r_key)); }
 
       bool
-      erase(const_key_reference r_key);
+      erase(const_key_reference);
 
       template<typename Pred>
       inline size_type
-      erase_if(Pred pred);
+      erase_if(Pred);
 
       inline iterator
       erase(iterator it)
@@ -398,10 +347,10 @@ namespace pb_ds
       clear();
 
       void
-      join(PB_DS_CLASS_C_DEC& other);
+      join(PB_DS_CLASS_C_DEC&);
 
       void
-      split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other);
+      split(const_key_reference, PB_DS_CLASS_C_DEC&);
 
       inline iterator
       begin()
@@ -438,25 +387,25 @@ namespace pb_ds
 
       template<typename Node_Update>
       void
-      update(node_iterator it, Node_Update* p_update);
+      update(node_iterator, Node_Update*);
 
       void
       reallocate_metadata(null_node_update_pointer, size_type);
 
       template<typename Node_Update_>
       void
-      reallocate_metadata(Node_Update_* p_update, size_type new_size);
+      reallocate_metadata(Node_Update_*, size_type);
 
       template<typename It>
       void
-      copy_from_ordered_range(It first_it, It last_it);
+      copy_from_ordered_range(It, It);
 
       void
-      value_swap(PB_DS_CLASS_C_DEC& other);
+      value_swap(PB_DS_CLASS_C_DEC&);
 
       template<typename It>
       void
-      copy_from_ordered_range(It first_it, It last_it, It other_first_it, It other_last_it);
+      copy_from_ordered_range(It, It, It, It);
 
       template<typename Ptr>
       inline static Ptr
@@ -543,16 +492,12 @@ namespace pb_ds
       PB_DS_node_end_imp();
 
     private:
-      value_vector m_a_values;
-
       static value_allocator s_value_alloc;
-
-      metadata_pointer m_a_metadata;
-
       static metadata_allocator s_metadata_alloc;
 
+      value_vector m_a_values;
+      metadata_pointer m_a_metadata;
       iterator m_end_it;
-
       size_type m_size;
     };
 
@@ -577,7 +522,6 @@ namespace pb_ds
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP
 #undef PB_DS_V2S
-
 #undef PB_DS_CONST_NODE_ITERATOR_NAME
 
   } // namespace detail

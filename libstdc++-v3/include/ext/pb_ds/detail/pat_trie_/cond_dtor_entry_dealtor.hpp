@@ -79,9 +79,7 @@ public:
 
 protected:
   leaf_pointer m_p_nd;
-
   bool m_no_action_dtor;
-
   bool m_call_destructor;
 };
 

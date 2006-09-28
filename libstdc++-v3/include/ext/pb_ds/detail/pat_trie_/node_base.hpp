@@ -53,26 +53,15 @@ namespace pb_ds
 {
   namespace detail
   {
+#define PB_DS_CLASS_T_DEC \
+    template<typename Type_Traits, typename E_Access_Traits,	\
+	     typename Metadata,	typename Allocator>
 
-#define PB_DS_CLASS_T_DEC						\
-    template<								\
-						class Type_Traits,	\
-						class E_Access_Traits,	\
-						class Metadata,		\
-						class Allocator>
+#define PB_DS_CLASS_C_DEC \
+    pat_trie_node_base<Type_Traits, E_Access_Traits, Metadata, Allocator>
 
-#define PB_DS_CLASS_C_DEC					\
-    pat_trie_node_base<						\
-					Type_Traits,		\
-					E_Access_Traits,	\
-					Metadata,		\
-					Allocator>
-
-#define PB_DS_PAT_TRIE_SUBTREE_DEBUG_INFO_C_DEC				\
-    pat_trie_subtree_debug_info<					\
-							Type_Traits,	\
-							E_Access_Traits, \
-							Allocator>
+#define PB_DS_PAT_TRIE_SUBTREE_DEBUG_INFO_C_DEC	\
+    pat_trie_subtree_debug_info<Type_Traits, E_Access_Traits, Allocator>
 
     enum pat_trie_node_type
       {
@@ -82,9 +71,9 @@ namespace pb_ds
       };
 
     template<typename Type_Traits,
-	     class E_Access_Traits,
-	     class Metadata,
-	     class Allocator>
+	     typename E_Access_Traits,
+	     typename Metadata,
+	     typename Allocator>
     struct pat_trie_node_base : public pat_trie_node_metadata_base<
       Metadata,
       Allocator>
@@ -108,7 +97,6 @@ namespace pb_ds
       subtree_debug_info;
 #endif 
 
-    public:
       pat_trie_node_base(pat_trie_node_type type);
 
 #ifdef _GLIBCXX_DEBUG
@@ -119,9 +107,7 @@ namespace pb_ds
       assert_valid_imp(const_e_access_traits_pointer p_traits) const = 0;
 #endif 
 
-    public:
       node_pointer m_p_parent;
-
       const pat_trie_node_type m_type;
     };
 

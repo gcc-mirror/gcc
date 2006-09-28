@@ -60,7 +60,6 @@ public:
   add_branch()
   {
     internal_node_pointer p_nd = s_internal_node_allocator.allocate(1);
-
     try
       {
 	m_bag.push_back(p_nd);
@@ -68,7 +67,6 @@ public:
     catch(...)
       {
 	s_internal_node_allocator.deallocate(p_nd, 1);
-
 	throw;
       }
   }
@@ -77,12 +75,9 @@ public:
   get_branch()
   {
     _GLIBCXX_DEBUG_ASSERT(!m_bag.empty());
-
     internal_node_pointer p_nd =* m_bag.begin();
-
     m_bag.pop_front();
-
-    return (p_nd);
+    return p_nd;
   }
 
   ~split_join_branch_bag()
@@ -90,18 +85,14 @@ public:
     while (!m_bag.empty())
       {
 	internal_node_pointer p_nd =* m_bag.begin();
-
 	s_internal_node_allocator.deallocate(p_nd, 1);
-
 	m_bag.pop_front();
       }
   }
 
   inline bool
   empty() const
-  {
-    return (m_bag.empty());
-  }
+  { return m_bag.empty(); }
 
 private:
   bag_t m_bag;

@@ -50,40 +50,35 @@ PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-
-    if (PB_DS_BASE_C_DEC::join_prep(other) == false)
-      {
-        _GLIBCXX_DEBUG_ONLY(assert_valid();)
-	  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-
-	  return;
-      }
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  if (base_type::join_prep(other) == false)
+    {
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+      return;
+    }
 
   node_pointer p_target_r = other.leftmost(other.m_p_head);
-
   _GLIBCXX_DEBUG_ASSERT(p_target_r != NULL);
-
   other.splay(p_target_r);
 
   _GLIBCXX_DEBUG_ASSERT(p_target_r == other.m_p_head->m_p_parent);
   _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_left == NULL);
 
-  p_target_r->m_p_left = PB_DS_BASE_C_DEC::m_p_head->m_p_parent;
+  p_target_r->m_p_left = base_type::m_p_head->m_p_parent;
 
   _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_left != NULL);
   p_target_r->m_p_left->m_p_parent = p_target_r;
 
-  PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_target_r;
-  p_target_r->m_p_parent = PB_DS_BASE_C_DEC::m_p_head;
-
+  base_type::m_p_head->m_p_parent = p_target_r;
+  p_target_r->m_p_parent = base_type::m_p_head;
   apply_update(p_target_r, (node_update* )this);
 
-  PB_DS_BASE_C_DEC::join_finish(other);
+  base_type::join_finish(other);
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -93,11 +88,10 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
   _GLIBCXX_DEBUG_ONLY(assert_valid());
   _GLIBCXX_DEBUG_ONLY(other.assert_valid());
 
-  if (PB_DS_BASE_C_DEC::split_prep(r_key, other) == false)
+  if (base_type::split_prep(r_key, other) == false)
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid());
       _GLIBCXX_DEBUG_ONLY(other.assert_valid());
-
       return;
     }
 
@@ -110,16 +104,13 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
   node_pointer p_new_root = p_upper_bound->m_p_left;
   _GLIBCXX_DEBUG_ASSERT(p_new_root != NULL);
 
-  PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_new_root;
-  p_new_root->m_p_parent = PB_DS_BASE_C_DEC::m_p_head;
-
+  base_type::m_p_head->m_p_parent = p_new_root;
+  p_new_root->m_p_parent = base_type::m_p_head;
   other.m_p_head->m_p_parent = p_upper_bound;
   p_upper_bound->m_p_parent = other.m_p_head;
   p_upper_bound->m_p_left = NULL;
-
   apply_update(p_upper_bound, (node_update* )this);
-
-  PB_DS_BASE_C_DEC::split_finish(other);
+  base_type::split_finish(other);
 
   _GLIBCXX_DEBUG_ONLY(assert_valid());
   _GLIBCXX_DEBUG_ONLY(other.assert_valid());

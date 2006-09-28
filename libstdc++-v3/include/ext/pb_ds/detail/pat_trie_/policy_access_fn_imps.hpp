@@ -48,30 +48,22 @@ PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::e_access_traits& 
 PB_DS_CLASS_C_DEC::
 get_e_access_traits()
-{
-  return (*this);
-}
+{ return *this; }
 
 PB_DS_CLASS_T_DEC
 const typename PB_DS_CLASS_C_DEC::e_access_traits& 
 PB_DS_CLASS_C_DEC::
 get_e_access_traits() const
-{
-  return (*this);
-}
+{ return *this; }
 
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::node_update& 
 PB_DS_CLASS_C_DEC::
 get_node_update()
-{
-  return (*this);
-}
+{ return *this; }
 
 PB_DS_CLASS_T_DEC
 const typename PB_DS_CLASS_C_DEC::node_update& 
 PB_DS_CLASS_C_DEC::
 get_node_update() const
-{
-  return (*this);
-}
+{ return *this; }

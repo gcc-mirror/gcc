@@ -164,7 +164,7 @@ namespace pb_ds
       operator=(const PB_DS_CONST_IT_C_DEC& other)
       {
 	m_p_nd = other.m_p_nd;
-	return (*this);
+	return *this;
       }
 
       inline
@@ -172,52 +172,44 @@ namespace pb_ds
       operator=(const PB_DS_CONST_ODIR_IT_C_DEC& other)
       {
 	m_p_nd = other.m_p_nd;
-	return (*this);
+	return *this;
       }
 
       inline const_pointer
       operator->() const
       {
 	_GLIBCXX_DEBUG_ASSERT(m_p_nd->m_type == pat_trie_leaf_node_type);
-	return (&static_cast<leaf_pointer>(m_p_nd)->value());
+	return &static_cast<leaf_pointer>(m_p_nd)->value();
       }
 
       inline const_reference
       operator*() const
       {
 	_GLIBCXX_DEBUG_ASSERT(m_p_nd->m_type == pat_trie_leaf_node_type);
-	return (static_cast<leaf_pointer>(m_p_nd)->value());
+	return static_cast<leaf_pointer>(m_p_nd)->value();
       }
 
       inline bool
       operator==(const PB_DS_CONST_IT_C_DEC& other) const
-      {
-	return (m_p_nd == other.m_p_nd);
-      }
+      { return (m_p_nd == other.m_p_nd); }
 
       inline bool
       operator==(const PB_DS_CONST_ODIR_IT_C_DEC& other) const
-      {
-	return (m_p_nd == other.m_p_nd);
-      }
+      { return (m_p_nd == other.m_p_nd); }
 
       inline bool
       operator!=(const PB_DS_CONST_IT_C_DEC& other) const
-      {
-	return (m_p_nd != other.m_p_nd);
-      }
+      { return (m_p_nd != other.m_p_nd); }
 
       inline bool
       operator!=(const PB_DS_CONST_ODIR_IT_C_DEC& other) const
-      {
-	return (m_p_nd != other.m_p_nd);
-      }
+      { return (m_p_nd != other.m_p_nd); }
 
       inline PB_DS_CONST_IT_C_DEC& 
       operator++()
       {
 	inc(integral_constant<int,Is_Forward_Iterator>());
-	return (*this);
+	return *this;
       }
 
       inline PB_DS_CONST_IT_C_DEC
@@ -225,14 +217,14 @@ namespace pb_ds
       {
 	PB_DS_CONST_IT_C_DEC ret_it(m_p_nd);
 	operator++();
-	return (ret_it);
+	return ret_it;
       }
 
       inline PB_DS_CONST_IT_C_DEC& 
       operator--()
       {
 	dec(integral_constant<int,Is_Forward_Iterator>());
-	return (*this);
+	return *this;
       }
 
       inline PB_DS_CONST_IT_C_DEC
@@ -240,7 +232,7 @@ namespace pb_ds
       {
 	PB_DS_CONST_IT_C_DEC ret_it(m_p_nd);
 	operator--();
-	return (ret_it);
+	return ret_it;
       }
 
     protected:
@@ -345,17 +337,16 @@ namespace pb_ds
       leftmost_descendant(node_pointer p_nd)
       {
 	if (p_nd->m_type == pat_trie_leaf_node_type)
-	  return (static_cast<leaf_pointer>(p_nd));
-
-	return (static_cast<internal_node_pointer>(p_nd)->leftmost_descendant());
+	  return static_cast<leaf_pointer>(p_nd);
+	return static_cast<internal_node_pointer>(p_nd)->leftmost_descendant();
       }
 
       inline static leaf_pointer
       rightmost_descendant(node_pointer p_nd)
       {
 	if (p_nd->m_type == pat_trie_leaf_node_type)
-	  return (static_cast<leaf_pointer>(p_nd));
-	return (static_cast<internal_node_pointer>(p_nd)->rightmost_descendant());
+	  return static_cast<leaf_pointer>(p_nd);
+	return static_cast<internal_node_pointer>(p_nd)->rightmost_descendant();
       }
 
     public:
@@ -374,7 +365,6 @@ namespace pb_ds
       public PB_DS_CONST_IT_C_DEC
 
     {
-
     private:
       typedef
       typename Allocator::template rebind<
@@ -412,8 +402,6 @@ namespace pb_ds
 
       typedef typename Type_Traits::reference reference;
 
-    public:
-
       inline
       pat_trie_it_(node_pointer p_nd = NULL) : PB_DS_CONST_IT_C_DEC((node_pointer)p_nd)
       { }
@@ -427,7 +415,7 @@ namespace pb_ds
       operator=(const PB_DS_IT_C_DEC& other)
       {
 	base_it_type::m_p_nd = other.m_p_nd;
-	return (*this);
+	return *this;
       }
 
       inline
@@ -435,23 +423,22 @@ namespace pb_ds
       operator=(const PB_DS_ODIR_IT_C_DEC& other)
       {
 	base_it_type::m_p_nd = other.m_p_nd;
-	return (*this);
+	return *this;
       }
 
       inline pointer
       operator->() const
       {
-	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd->m_type ==
-			 pat_trie_leaf_node_type);
+	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd->m_type == pat_trie_leaf_node_type);
 
-	return (&static_cast<leaf_pointer>(base_it_type::m_p_nd)->value());
+	return &static_cast<leaf_pointer>(base_it_type::m_p_nd)->value();
       }
 
       inline reference
       operator*() const
       {
 	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd->m_type == pat_trie_leaf_node_type);
-	return (static_cast<leaf_pointer>(base_it_type::m_p_nd)->value());
+	return static_cast<leaf_pointer>(base_it_type::m_p_nd)->value();
       }
 
       inline PB_DS_IT_C_DEC& 
@@ -459,7 +446,7 @@ namespace pb_ds
       {
 	PB_DS_CONST_IT_C_DEC::
 	  operator++();
-	return (*this);
+	return *this;
       }
 
       inline PB_DS_IT_C_DEC
@@ -467,14 +454,14 @@ namespace pb_ds
       {
 	PB_DS_IT_C_DEC ret_it(base_it_type::m_p_nd);
 	operator++();
-	return (ret_it);
+	return ret_it;
       }
 
       inline PB_DS_IT_C_DEC& 
       operator--()
       {
 	PB_DS_CONST_IT_C_DEC::operator--();
-	return (*this);
+	return *this;
       }
 
       inline PB_DS_IT_C_DEC
@@ -482,7 +469,7 @@ namespace pb_ds
       {
 	PB_DS_IT_C_DEC ret_it(base_it_type::m_p_nd);
 	operator--();
-	return (ret_it);
+	return ret_it;
       }
 
     protected:

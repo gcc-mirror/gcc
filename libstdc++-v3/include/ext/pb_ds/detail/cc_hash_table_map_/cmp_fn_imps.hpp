@@ -50,9 +50,7 @@ template<typename Other_HT_Map_Type>
 bool
 PB_DS_CLASS_C_DEC::
 operator==(const Other_HT_Map_Type& other) const
-{
-  return (cmp_with_other(other));
-}
+{ return cmp_with_other(other); }
 
 PB_DS_CLASS_T_DEC
 template<typename Other_Map_Type>
@@ -61,27 +59,26 @@ PB_DS_CLASS_C_DEC::
 cmp_with_other(const Other_Map_Type& other) const
 {
   if (size() != other.size())
-    return (false);
+    return false;
 
   for (typename Other_Map_Type::const_iterator it = other.begin();
        it != other.end(); ++it)
     {
-      const_key_reference r_key =(const_key_reference)PB_DS_V2F(*it);
+      const_key_reference r_key = const_key_reference(PB_DS_V2F(*it));
 
       const_mapped_pointer p_mapped_value =
 	const_cast<PB_DS_CLASS_C_DEC& >(*this).
 	find_key_pointer(r_key, traits_base::m_store_hash_indicator);
 
       if (p_mapped_value == NULL)
-	return (false);
+	return false;
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       if (p_mapped_value->second != it->second)
-	return (false);
+	return false;
 #endif
     }
-
-  return (true);
+  return true;
 }
 
 PB_DS_CLASS_T_DEC
@@ -89,6 +86,4 @@ template<typename Other_HT_Map_Type>
 bool
 PB_DS_CLASS_C_DEC::
 operator!=(const Other_HT_Map_Type& other) const
-{
-  return (!operator==(other));
-}
+{ return !operator==(other); }

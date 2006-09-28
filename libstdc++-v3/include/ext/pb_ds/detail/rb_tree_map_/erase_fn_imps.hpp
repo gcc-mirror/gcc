@@ -50,13 +50,10 @@ PB_DS_CLASS_C_DEC::
 erase(const_key_reference r_key)
 {
   point_iterator it = find(r_key);
-
-  if (it == PB_DS_BASE_C_DEC::end())
-    return (false);
-
+  if (it == base_type::end())
+    return false;
   erase(it);
-
-  return (true);
+  return true;
 }
 
 PB_DS_CLASS_T_DEC
@@ -65,19 +62,14 @@ PB_DS_CLASS_C_DEC::
 erase(iterator it)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid());
-
-  if (it == PB_DS_BASE_C_DEC::end())
-    return (it);
+  if (it == base_type::end())
+    return it;
 
   iterator ret_it = it;
-
   ++ret_it;
-
   erase_node(it.m_p_nd);
-
   _GLIBCXX_DEBUG_ONLY(assert_valid());
-
-  return (ret_it);
+  return ret_it;
 }
 
 PB_DS_CLASS_T_DEC
@@ -86,19 +78,14 @@ PB_DS_CLASS_C_DEC::
 erase(reverse_iterator it)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid());
-
-  if (it.m_p_nd == PB_DS_BASE_C_DEC::m_p_head)
-    return (it);
+  if (it.m_p_nd == base_type::m_p_head)
+    return it;
 
   reverse_iterator ret_it = it;
-
   ++ret_it;
-
   erase_node(it.m_p_nd);
-
   _GLIBCXX_DEBUG_ONLY(assert_valid());
-
-  return (ret_it);
+  return ret_it;
 }
 
 PB_DS_CLASS_T_DEC
@@ -108,17 +95,13 @@ PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    size_type num_ersd = 0;
-
-  iterator it = PB_DS_BASE_C_DEC::begin();
-
-  while (it != PB_DS_BASE_C_DEC::end())
+  size_type num_ersd = 0;
+  iterator it = base_type::begin();
+  while (it != base_type::end())
     {
       if (pred(*it))
         {
 	  ++num_ersd;
-
 	  it = erase(it);
         }
       else
@@ -126,8 +109,7 @@ erase_if(Pred pred)
     }
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    return (num_ersd);
+  return num_ersd;
 }
 
 PB_DS_CLASS_T_DEC
@@ -136,9 +118,7 @@ PB_DS_CLASS_C_DEC::
 erase_node(node_pointer p_nd)
 {
   remove_node(p_nd);
-
-  PB_DS_BASE_C_DEC::actual_erase_node(p_nd);
-
+  base_type::actual_erase_node(p_nd);
   _GLIBCXX_DEBUG_ONLY(assert_valid());
 }
 
@@ -148,11 +128,8 @@ PB_DS_CLASS_C_DEC::
 remove_node(node_pointer p_z)
 {
   update_min_max_for_erased_node(p_z);
-
   node_pointer p_y = p_z;
-
   node_pointer p_x = NULL;
-
   node_pointer p_new_x_parent = NULL;
 
   if (p_y->m_p_left == NULL)
@@ -162,68 +139,55 @@ remove_node(node_pointer p_z)
   else
     {
       p_y = p_y->m_p_right;
-
       while (p_y->m_p_left != NULL)
 	p_y = p_y->m_p_left;
-
       p_x = p_y->m_p_right;
     }
 
   if (p_y == p_z)
     {
       p_new_x_parent = p_y->m_p_parent;
-
       if (p_x != NULL)
 	p_x->m_p_parent = p_y->m_p_parent;
 
-      if (PB_DS_BASE_C_DEC::m_p_head->m_p_parent == p_z)
-	PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_x;
+      if (base_type::m_p_head->m_p_parent == p_z)
+	base_type::m_p_head->m_p_parent = p_x;
       else if (p_z->m_p_parent->m_p_left == p_z)
         {
 	  p_y->m_p_left = p_z->m_p_parent;
-
 	  p_z->m_p_parent->m_p_left = p_x;
         }
       else
         {
 	  p_y->m_p_left = NULL;
-
 	  p_z->m_p_parent->m_p_right = p_x;
         }
     }
   else
     {
       p_z->m_p_left->m_p_parent = p_y;
-
       p_y->m_p_left = p_z->m_p_left;
-
       if (p_y != p_z->m_p_right)
         {
 	  p_new_x_parent = p_y->m_p_parent;
-
 	  if (p_x != NULL)
 	    p_x->m_p_parent = p_y->m_p_parent;
-
 	  p_y->m_p_parent->m_p_left = p_x;
-
 	  p_y->m_p_right = p_z->m_p_right;
-
 	  p_z->m_p_right->m_p_parent = p_y;
         }
       else
 	p_new_x_parent = p_y;
 
-      if (PB_DS_BASE_C_DEC::m_p_head->m_p_parent == p_z)
-	PB_DS_BASE_C_DEC::m_p_head->m_p_parent = p_y;
+      if (base_type::m_p_head->m_p_parent == p_z)
+	base_type::m_p_head->m_p_parent = p_y;
       else if (p_z->m_p_parent->m_p_left == p_z)
 	p_z->m_p_parent->m_p_left = p_y;
       else
 	p_z->m_p_parent->m_p_right = p_y;
 
       p_y->m_p_parent = p_z->m_p_parent;
-
       std::swap(p_y->m_red, p_z->m_red);
-
       p_y = p_z;
     }
 
@@ -242,30 +206,23 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 {
   _GLIBCXX_DEBUG_ASSERT(p_x == NULL || p_x->m_p_parent == p_new_x_parent);
 
-  while (p_x != PB_DS_BASE_C_DEC::m_p_head->m_p_parent&& 
-	 is_effectively_black(p_x))
+  while (p_x != base_type::m_p_head->m_p_parent && is_effectively_black(p_x))
     if (p_x == p_new_x_parent->m_p_left)
       {
 	node_pointer p_w = p_new_x_parent->m_p_right;
-
 	if (p_w->m_red)
 	  {
 	    p_w->m_red = false;
-
 	    p_new_x_parent->m_red = true;
-
-	    PB_DS_BASE_C_DEC::rotate_left(p_new_x_parent);
-
+	    base_type::rotate_left(p_new_x_parent);
 	    p_w = p_new_x_parent->m_p_right;
 	  }
 
-	if (is_effectively_black(p_w->m_p_left)&& 
-	    is_effectively_black(p_w->m_p_right))
+	if (is_effectively_black(p_w->m_p_left) 
+	    && is_effectively_black(p_w->m_p_right))
 	  {
 	    p_w->m_red = true;
-
 	    p_x = p_new_x_parent;
-
 	    p_new_x_parent = p_new_x_parent->m_p_parent;
 	  }
 	else
@@ -276,48 +233,37 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 		  p_w->m_p_left->m_red = false;
 
 		p_w->m_red = true;
-
-		PB_DS_BASE_C_DEC::rotate_right(p_w);
-
+		base_type::rotate_right(p_w);
 		p_w = p_new_x_parent->m_p_right;
 	      }
 
 	    p_w->m_red = p_new_x_parent->m_red;
-
 	    p_new_x_parent->m_red = false;
 
 	    if (p_w->m_p_right != NULL)
 	      p_w->m_p_right->m_red = false;
 
-	    PB_DS_BASE_C_DEC::rotate_left(p_new_x_parent);
-
+	    base_type::rotate_left(p_new_x_parent);
 	    update_to_top(p_new_x_parent, (node_update* )this);
-
 	    break;
 	  }
       }
     else
       {
 	node_pointer p_w = p_new_x_parent->m_p_left;
-
 	if (p_w->m_red == true)
 	  {
 	    p_w->m_red = false;
-
 	    p_new_x_parent->m_red = true;
-
-	    PB_DS_BASE_C_DEC::rotate_right(p_new_x_parent);
-
+	    base_type::rotate_right(p_new_x_parent);
 	    p_w = p_new_x_parent->m_p_left;
 	  }
 
-	if (is_effectively_black(p_w->m_p_right)&& 
-	    is_effectively_black(p_w->m_p_left))
+	if (is_effectively_black(p_w->m_p_right) 
+	    && is_effectively_black(p_w->m_p_left))
 	  {
 	    p_w->m_red = true;
-
 	    p_x = p_new_x_parent;
-
 	    p_new_x_parent = p_new_x_parent->m_p_parent;
 	  }
 	else
@@ -328,23 +274,18 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 		  p_w->m_p_right->m_red = false;
 
 		p_w->m_red = true;
-
-		PB_DS_BASE_C_DEC::rotate_left(p_w);
-
+		base_type::rotate_left(p_w);
 		p_w = p_new_x_parent->m_p_left;
 	      }
 
 	    p_w->m_red = p_new_x_parent->m_red;
-
 	    p_new_x_parent->m_red = false;
 
 	    if (p_w->m_p_left != NULL)
 	      p_w->m_p_left->m_red = false;
 
-	    PB_DS_BASE_C_DEC::rotate_right(p_new_x_parent);
-
+	    base_type::rotate_right(p_new_x_parent);
 	    update_to_top(p_new_x_parent, (node_update* )this);
-
 	    break;
 	  }
       }

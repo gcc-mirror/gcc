@@ -41,8 +41,8 @@
 
 /**
  * @file erase_store_hash_fn_imps.hpp
- * Contains implementations of cc_ht_map_'s erase related functions, when the hash
- *    value is stored.
+ * Contains implementations of cc_ht_map_'s erase related functions,
+ * when the hash value is stored.
  */
 
 PB_DS_CLASS_T_DEC
@@ -51,83 +51,50 @@ PB_DS_CLASS_C_DEC::
 erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    entry_pointer p_e = m_entries[r_pos_hash_pair.first];
-
+  entry_pointer p_e = m_entries[r_pos_hash_pair.first];
   resize_base::notify_erase_search_start();
-
   if (p_e == NULL)
     {
       resize_base::notify_erase_search_end();
-
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::
-		     check_key_does_not_exist(
-					      r_key);)
-
-        _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-        return (false);
+      _GLIBCXX_DEBUG_ONLY(map_debug_base:: check_key_does_not_exist(r_key);)
+      _GLIBCXX_DEBUG_ONLY(assert_valid();)
+      return false;
     }
 
-  if (hash_eq_fn_base::operator()(
-				  PB_DS_V2F(p_e->m_value),
-				  p_e->m_hash,
-				  r_key,
-				  r_pos_hash_pair.second))
+  if (hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), p_e->m_hash,
+				  r_key, r_pos_hash_pair.second))
     {
       resize_base::notify_erase_search_end();
-
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(
-						      r_key);)
-
-        erase_entry_pointer(m_entries[r_pos_hash_pair.first]);
-
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+      erase_entry_pointer(m_entries[r_pos_hash_pair.first]);
       do_resize_if_needed_no_throw();
-
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-        return (true);
+      return true;
     }
 
   while (true)
     {
       entry_pointer p_next_e = p_e->m_p_next;
-
       if (p_next_e == NULL)
         {
 	  resize_base::notify_erase_search_end();
-
-	  _GLIBCXX_DEBUG_ONLY(map_debug_base::
-			 check_key_does_not_exist(r_key);)
-
-            _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-            return (false);
+	  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+          _GLIBCXX_DEBUG_ONLY(assert_valid();)
+          return false;
         }
 
-      if (hash_eq_fn_base::operator()(
-				      PB_DS_V2F(p_next_e->m_value),
-				      p_next_e->m_hash,
-				      r_key,
+      if (hash_eq_fn_base::operator()(PB_DS_V2F(p_next_e->m_value),
+				      p_next_e->m_hash, r_key,
 				      r_pos_hash_pair.second))
         {
 	  resize_base::notify_erase_search_end();
-
-	  _GLIBCXX_DEBUG_ONLY(map_debug_base::
-			 check_key_exists(
-					  r_key);)
-
-            erase_entry_pointer(p_e->m_p_next);
-
+	  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+          erase_entry_pointer(p_e->m_p_next);
 	  do_resize_if_needed_no_throw();
-
 	  _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-            return (true);
+          return true;
         }
-
       resize_base::notify_erase_search_collision();
-
       p_e = p_next_e;
     }
 }

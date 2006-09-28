@@ -87,7 +87,6 @@ namespace pb_ds
 	     class Allocator>
     class pat_trie_const_node_it_
     {
-
     protected:
       typedef
       typename Allocator::template rebind<
@@ -181,14 +180,11 @@ namespace pb_ds
 	metadata_type>::other::const_reference
       const_metadata_reference;
 
-    public:
-
       // Default constructor.
       /*
 	inline
 	pat_trie_const_node_it_()
       */
-
       inline
       pat_trie_const_node_it_(node_pointer p_nd = NULL,  
 			      const_e_access_traits_pointer p_traits = NULL) 
@@ -219,7 +215,7 @@ namespace pb_ds
       num_children() const
       {
 	if (m_p_nd->m_type == pat_trie_leaf_node_type)
-	  return (0);
+	  return 0;
 	_GLIBCXX_DEBUG_ASSERT(m_p_nd->m_type == pat_trie_internal_node_type);
 	return std::distance(static_cast<internal_node_pointer>(m_p_nd)->begin(),  static_cast<internal_node_pointer>(m_p_nd)->end());
       }
@@ -270,7 +266,6 @@ namespace pb_ds
       public PB_DS_PAT_TRIE_CONST_NODE_ITERATOR_C_DEC
 
     {
-
     private:
       typedef
       typename Allocator::template rebind<
@@ -303,8 +298,6 @@ namespace pb_ds
       // __Iterator's __const reference type.
       typedef value_type const_reference;
 
-    public:
-
       // Default constructor.
       /*
 	inline
@@ -328,8 +321,7 @@ namespace pb_ds
       PB_DS_PAT_TRIE_NODE_ITERATOR_C_DEC
       get_child(size_type i) const
       {
-	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_nd->m_type ==
-			 pat_trie_internal_node_type);
+	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_nd->m_type == pat_trie_internal_node_type);
 
 	typename Internal_Node::iterator it =
 	  static_cast<internal_node_pointer>(base_type::m_p_nd)->begin();

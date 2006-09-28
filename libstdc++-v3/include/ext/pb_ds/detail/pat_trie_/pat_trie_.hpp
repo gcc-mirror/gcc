@@ -75,37 +75,26 @@ namespace pb_ds
 {
   namespace detail
   {
-
-#define PB_DS_CLASS_T_DEC						\
-    template<typename Key, typename Mapped, class Node_And_It_Traits, \
-	     class Allocator>
+#define PB_DS_CLASS_T_DEC \
+    template<typename Key, typename Mapped, typename Node_And_It_Traits, \
+	     typename Allocator>
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-#define PB_DS_CLASS_NAME			\
-    pat_trie_data_
+#define PB_DS_CLASS_NAME pat_trie_data_
 #endif 
 
 #ifdef PB_DS_DATA_FALSE_INDICATOR
-#define PB_DS_CLASS_NAME			\
-    pat_trie_no_data_
+#define PB_DS_CLASS_NAME pat_trie_no_data_
 #endif 
 
-#define PB_DS_CLASS_C_DEC						\
-    PB_DS_CLASS_NAME<							\
-						Key,			\
-						Mapped,			\
-						Node_And_It_Traits,	\
-						Allocator>
+#define PB_DS_CLASS_C_DEC \
+    PB_DS_CLASS_NAME<Key, Mapped, Node_And_It_Traits, Allocator>
 
-#define PB_DS_TYPES_TRAITS_C_DEC				\
-    types_traits<				\
-						Key,		\
-						Mapped,		\
-						Allocator,	\
-						false>
+#define PB_DS_TYPES_TRAITS_C_DEC \
+    types_traits<Key, Mapped, Allocator, false>
 
 #ifdef _GLIBCXX_DEBUG
-#define PB_DS_MAP_DEBUG_BASE_C_DEC					\
+#define PB_DS_MAP_DEBUG_BASE_C_DEC \
     map_debug_base<Key,	eq_by_less<Key, \
 			std::less<Key> >, typename Allocator::template rebind<Key>::other::const_reference>
 #endif 
@@ -122,10 +111,8 @@ namespace pb_ds
 #define PB_DS_EP2VP(X)& ((X)->m_value.first)
 #endif 
 
-#define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
-    typedef								\
-    static_assert_dumclass<				\
-									sizeof(static_assert<(bool)(E)>)> \
+#define PB_DS_STATIC_ASSERT(UNIQUE, E)	\
+    typedef static_assert_dumclass<sizeof(static_assert<(bool)(E)>)> \
     UNIQUE##static_assert_type
 
     /**
@@ -133,8 +120,8 @@ namespace pb_ds
      **/
     template<typename Key,
 	     typename Mapped,
-	     class Node_And_It_Traits,
-	     class Allocator>
+	     typename Node_And_It_Traits,
+	     typename Allocator>
     class PB_DS_CLASS_NAME :
 #ifdef _GLIBCXX_DEBUG
       public PB_DS_MAP_DEBUG_BASE_C_DEC,
@@ -143,70 +130,31 @@ namespace pb_ds
       public Node_And_It_Traits::node_update,
       public PB_DS_TYPES_TRAITS_C_DEC
     {
-
     private:
+      typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
 
-      typedef
-      typename Node_And_It_Traits::synth_e_access_traits
-      synth_e_access_traits;
-
-      typedef
-      typename Allocator::template rebind<
-	synth_e_access_traits>::other::const_pointer
-      const_e_access_traits_pointer;
-
-      typedef
-      typename synth_e_access_traits::const_iterator
-      const_e_iterator;
+      typedef typename Node_And_It_Traits::synth_e_access_traits synth_e_access_traits;
+      typedef typename Allocator::template rebind<synth_e_access_traits>::other::const_pointer const_e_access_traits_pointer;
+      typedef typename synth_e_access_traits::const_iterator const_e_iterator;
 
       typedef typename Node_And_It_Traits::node node;
+      typedef typename Allocator::template rebind<node>::other::const_pointer const_node_pointer;
 
-      typedef
-      typename Allocator::template rebind<
-	node>::other::const_pointer
-      const_node_pointer;
-
-      typedef
-      typename Allocator::template rebind<
-	node>::other::pointer
-      node_pointer;
+      typedef typename Allocator::template rebind<node>::other::pointer node_pointer;
 
       typedef typename Node_And_It_Traits::head head;
-
-      typedef
-      typename Allocator::template rebind<
-	head>::other
-      head_allocator;
-
+      typedef typename Allocator::template rebind<head>::other head_allocator;
       typedef typename head_allocator::pointer head_pointer;
 
       typedef typename Node_And_It_Traits::leaf leaf;
-
-      typedef
-      typename Allocator::template rebind<
-	leaf>::other
-      leaf_allocator;
-
+      typedef typename Allocator::template rebind<leaf>::other leaf_allocator;
       typedef typename leaf_allocator::const_pointer const_leaf_pointer;
-
       typedef typename leaf_allocator::pointer leaf_pointer;
 
       typedef typename Node_And_It_Traits::internal_node internal_node;
-
-      typedef
-      typename Allocator::template rebind<
-	internal_node>::other
-      internal_node_allocator;
-
-      typedef
-      typename internal_node_allocator::const_pointer
-      const_internal_node_pointer;
-
-      typedef
-      typename internal_node_allocator::pointer
-      internal_node_pointer;
-
-      typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
+      typedef typename Allocator::template rebind<internal_node>::other internal_node_allocator;
+      typedef typename internal_node_allocator::const_pointer const_internal_node_pointer;
+      typedef typename internal_node_allocator::pointer internal_node_pointer;
 
 #include <ext/pb_ds/detail/pat_trie_/cond_dtor_entry_dealtor.hpp>
 
@@ -216,99 +164,50 @@ namespace pb_ds
 
 #include <ext/pb_ds/detail/pat_trie_/split_join_branch_bag.hpp>
 
-      typedef
-      typename Node_And_It_Traits::null_node_update_pointer
-      null_node_update_pointer;
+      typedef typename Node_And_It_Traits::null_node_update_pointer null_node_update_pointer;
 
     public:
       typedef pat_trie_tag container_category;
-
+      typedef Allocator allocator;
       typedef typename Allocator::size_type size_type;
-
       typedef typename Allocator::difference_type difference_type;
 
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_type key_type;
+      typedef typename traits_base::key_type key_type;
+      typedef typename traits_base::key_pointer key_pointer;
+      typedef typename traits_base::const_key_pointer const_key_pointer;
+      typedef typename traits_base::key_reference key_reference;
+      typedef typename traits_base::const_key_reference const_key_reference;
+      typedef typename traits_base::mapped_type mapped_type;
+      typedef typename traits_base::mapped_pointer mapped_pointer;
+      typedef typename traits_base::const_mapped_pointer const_mapped_pointer;
+      typedef typename traits_base::mapped_reference mapped_reference;
+      typedef typename traits_base::const_mapped_reference const_mapped_reference;
+      typedef typename traits_base::value_type value_type;
+      typedef typename traits_base::pointer pointer;
+      typedef typename traits_base::const_pointer const_pointer;
+      typedef typename traits_base::reference reference;
+      typedef typename traits_base::const_reference const_reference;
 
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_pointer key_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_key_pointer
-      const_key_pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_reference key_reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_key_reference
-      const_key_reference;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::mapped_type mapped_type;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::mapped_pointer
-      mapped_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_mapped_pointer
-      const_mapped_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::mapped_reference
-      mapped_reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_mapped_reference
-      const_mapped_reference;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::value_type value_type;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::pointer pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::const_pointer const_pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::reference reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_reference
-      const_reference;
-
-      typedef
-      typename Node_And_It_Traits::const_iterator
-      const_point_iterator;
-
+      typedef typename Node_And_It_Traits::const_iterator const_point_iterator;
       typedef typename Node_And_It_Traits::iterator point_iterator;
-
       typedef const_point_iterator const_iterator;
-
       typedef point_iterator iterator;
 
-      typedef
-      typename Node_And_It_Traits::const_reverse_iterator
-      const_reverse_iterator;
-
+      typedef typename Node_And_It_Traits::const_reverse_iterator const_reverse_iterator;
       typedef typename Node_And_It_Traits::reverse_iterator reverse_iterator;
-
-      typedef
-      typename Node_And_It_Traits::const_node_iterator
-      const_node_iterator;
-
+      typedef typename Node_And_It_Traits::const_node_iterator const_node_iterator;
       typedef typename Node_And_It_Traits::node_iterator node_iterator;
-
       typedef typename Node_And_It_Traits::e_access_traits e_access_traits;
-
       typedef typename Node_And_It_Traits::node_update node_update;
-
-      typedef Allocator allocator;
-
-    public:
 
       PB_DS_CLASS_NAME();
 
-      PB_DS_CLASS_NAME(const e_access_traits& r_e_access_traits);
+      PB_DS_CLASS_NAME(const e_access_traits&);
 
-      PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other);
+      PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC&);
 
       void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(PB_DS_CLASS_C_DEC&);
 
       ~PB_DS_CLASS_NAME();
 
@@ -333,74 +232,69 @@ namespace pb_ds
       const node_update& 
       get_node_update() const;
 
-      inline std::pair<
-	point_iterator,
-	bool>
-      insert(const_reference r_val);
+      inline std::pair<point_iterator, bool>
+      insert(const_reference);
 
       inline mapped_reference
       operator[](const_key_reference r_key)
       {
 #ifdef PB_DS_DATA_TRUE_INDICATOR
-	return (insert(std::make_pair(
-				      r_key,
-				      mapped_type())).first->second);
-#else // #ifdef PB_DS_DATA_TRUE_INDICATOR
+	return insert(std::make_pair(r_key, mapped_type())).first->second;
+#else 
 	insert(r_key);
-
-	return (traits_base::s_null_mapped);
-#endif // #ifdef PB_DS_DATA_TRUE
+	return traits_base::s_null_mapped;
+#endif 
       }
 
       inline point_iterator
-      find(const_key_reference r_key);
+      find(const_key_reference);
 
       inline const_point_iterator
-      find(const_key_reference r_key) const;
+      find(const_key_reference) const;
 
       inline point_iterator
-      lower_bound(const_key_reference r_key);
+      lower_bound(const_key_reference);
 
       inline const_point_iterator
-      lower_bound(const_key_reference r_key) const;
+      lower_bound(const_key_reference) const;
 
       inline point_iterator
-      upper_bound(const_key_reference r_key);
+      upper_bound(const_key_reference);
 
       inline const_point_iterator
-      upper_bound(const_key_reference r_key) const;
+      upper_bound(const_key_reference) const;
 
       void
       clear();
 
       inline bool
-      erase(const_key_reference r_key);
+      erase(const_key_reference);
 
       inline const_iterator
-      erase(const_iterator it);
+      erase(const_iterator);
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       inline iterator
-      erase(iterator it);
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+      erase(iterator);
+#endif 
 
       inline const_reverse_iterator
-      erase(const_reverse_iterator it);
+      erase(const_reverse_iterator);
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       inline reverse_iterator
-      erase(reverse_iterator it);
-#endif // #ifdef PB_DS_DATA_TRUE_INDICATOR
+      erase(reverse_iterator);
+#endif 
 
       template<typename Pred>
       inline size_type
-      erase_if(Pred pred);
+      erase_if(Pred);
 
       void
-      join(PB_DS_CLASS_C_DEC& other);
+      join(PB_DS_CLASS_C_DEC&);
 
       void
-      split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other);
+      split(const_key_reference, PB_DS_CLASS_C_DEC&);
 
       inline iterator
       begin();
@@ -439,23 +333,21 @@ namespace pb_ds
       node_end();
 
 #ifdef PB_DS_PAT_TRIE_TRACE_
-
       void
       trace() const;
-
-#endif // #ifdef PB_DS_PAT_TRIE_TRACE_
+#endif 
 
     protected:
 
       template<typename It>
       void
-      copy_from_range(It first_it, It last_it);
+      copy_from_range(It, It);
 
       void
-      value_swap(PB_DS_CLASS_C_DEC& other);
+      value_swap(PB_DS_CLASS_C_DEC&);
 
       node_pointer
-      recursive_copy_node(const_node_pointer p_other_nd);
+      recursive_copy_node(const_node_pointer);
 
     private:
 
@@ -463,95 +355,103 @@ namespace pb_ds
       initialize();
 
       inline void
-      apply_update(node_pointer p_nd, null_node_update_pointer);
+      apply_update(node_pointer, null_node_update_pointer);
 
       template<typename Node_Update_>
       inline void
-      apply_update(node_pointer p_nd, Node_Update_* p_update);
+      apply_update(node_pointer, Node_Update_*);
 
       bool
-      join_prep(PB_DS_CLASS_C_DEC& other, split_join_branch_bag& r_bag);
+      join_prep(PB_DS_CLASS_C_DEC&, split_join_branch_bag&);
 
       void
-      rec_join_prep(const_node_pointer p_l, const_node_pointer p_r, split_join_branch_bag& r_bag);
+      rec_join_prep(const_node_pointer, const_node_pointer, 
+		    split_join_branch_bag&);
 
       void
-      rec_join_prep(const_leaf_pointer p_l, const_leaf_pointer p_r, split_join_branch_bag& r_bag);
+      rec_join_prep(const_leaf_pointer, const_leaf_pointer, 
+		    split_join_branch_bag&);
 
       void
-      rec_join_prep(const_leaf_pointer p_l, const_internal_node_pointer p_r, split_join_branch_bag& r_bag);
+      rec_join_prep(const_leaf_pointer, const_internal_node_pointer, 
+		    split_join_branch_bag&);
 
       void
-      rec_join_prep(const_internal_node_pointer p_l, const_leaf_pointer p_r, split_join_branch_bag& r_bag);
+      rec_join_prep(const_internal_node_pointer, const_leaf_pointer, 
+		    split_join_branch_bag&);
 
       void
-      rec_join_prep(const_internal_node_pointer p_l, const_internal_node_pointer p_r, split_join_branch_bag& r_bag);
+      rec_join_prep(const_internal_node_pointer, const_internal_node_pointer, 
+		    split_join_branch_bag&);
 
       node_pointer
-      rec_join(node_pointer p_l, node_pointer p_r, size_type checked_ind, split_join_branch_bag& r_bag);
+      rec_join(node_pointer, node_pointer, size_type, split_join_branch_bag&);
 
       node_pointer
-      rec_join(leaf_pointer p_l, leaf_pointer p_r, split_join_branch_bag& r_bag);
+      rec_join(leaf_pointer, leaf_pointer, split_join_branch_bag&);
 
       node_pointer
-      rec_join(leaf_pointer p_l, internal_node_pointer p_r, size_type checked_ind, split_join_branch_bag& r_bag);
+      rec_join(leaf_pointer, internal_node_pointer, size_type, 
+	       split_join_branch_bag&);
 
       node_pointer
-      rec_join(internal_node_pointer p_l, leaf_pointer p_r, size_type checked_ind, split_join_branch_bag& r_bag);
+      rec_join(internal_node_pointer, leaf_pointer, size_type, 
+	       split_join_branch_bag&);
 
       node_pointer
-      rec_join(internal_node_pointer p_l, internal_node_pointer p_r, split_join_branch_bag& r_bag);
+      rec_join(internal_node_pointer, internal_node_pointer, 
+	       split_join_branch_bag&);
 
       size_type
-      keys_diff_ind(typename e_access_traits::const_iterator b_l, typename e_access_traits::const_iterator e_l, typename e_access_traits::const_iterator b_r, typename e_access_traits::const_iterator e_r);
+      keys_diff_ind(typename e_access_traits::const_iterator, typename e_access_traits::const_iterator, typename e_access_traits::const_iterator, typename e_access_traits::const_iterator);
 
       internal_node_pointer
-      insert_branch(node_pointer p_left_nd, node_pointer p_right_nd, split_join_branch_bag& r_bag);
+      insert_branch(node_pointer, node_pointer, split_join_branch_bag&);
 
       void
-      update_min_max_for_inserted_leaf(leaf_pointer p_l);
+      update_min_max_for_inserted_leaf(leaf_pointer);
 
       void
-      erase_leaf(leaf_pointer p_l);
+      erase_leaf(leaf_pointer);
 
       inline void
-      actual_erase_leaf(leaf_pointer p_lf);
+      actual_erase_leaf(leaf_pointer);
 
       void
-      clear_imp(node_pointer p_nd);
+      clear_imp(node_pointer);
 
       void
-      erase_fixup(internal_node_pointer p_nd);
+      erase_fixup(internal_node_pointer);
 
       void
-      update_min_max_for_erased_leaf(leaf_pointer p_l);
+      update_min_max_for_erased_leaf(leaf_pointer);
 
       static inline const_e_iterator
-      pref_begin(const_node_pointer p_nd);
+      pref_begin(const_node_pointer);
 
       static inline const_e_iterator
-      pref_end(const_node_pointer p_nd);
+      pref_end(const_node_pointer);
 
       inline node_pointer
-      find_imp(const_key_reference r_key);
+      find_imp(const_key_reference);
 
       inline node_pointer
-      lower_bound_imp(const_key_reference r_key);
+      lower_bound_imp(const_key_reference);
 
       inline node_pointer
-      upper_bound_imp(const_key_reference r_key);
+      upper_bound_imp(const_key_reference);
 
       inline static const_leaf_pointer
-      leftmost_descendant(const_node_pointer p_nd);
+      leftmost_descendant(const_node_pointer);
 
       inline static leaf_pointer
-      leftmost_descendant(node_pointer p_nd);
+      leftmost_descendant(node_pointer);
 
       inline static const_leaf_pointer
-      rightmost_descendant(const_node_pointer p_nd);
+      rightmost_descendant(const_node_pointer);
 
       inline static leaf_pointer
-      rightmost_descendant(node_pointer p_nd);
+      rightmost_descendant(node_pointer);
 
 #ifdef _GLIBCXX_DEBUG
       void
@@ -564,45 +464,39 @@ namespace pb_ds
       assert_reverse_iterators() const;
 
       static size_type
-      recursive_count_leafs(const_node_pointer p_nd);
+      recursive_count_leafs(const_node_pointer);
 #endif 
 
 #ifdef PB_DS_PAT_TRIE_TRACE_
       static void
-      trace_node(const_node_pointer p_nd, size_type level);
+      trace_node(const_node_pointer, size_type);
 
       template<typename Metadata_>
       static void
-      trace_node_metadata(const_node_pointer p_nd, type_to_type<Metadata_>);
+      trace_node_metadata(const_node_pointer, type_to_type<Metadata_>);
 
       static void
-      trace_node_metadata(const_node_pointer, 
-			  type_to_type<null_node_metadata>);
+      trace_node_metadata(const_node_pointer, type_to_type<null_node_metadata>);
 #endif 
 
       leaf_pointer
-      split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, 
-		 split_join_branch_bag& r_bag);
+      split_prep(const_key_reference, PB_DS_CLASS_C_DEC&, 
+		 split_join_branch_bag&);
 
       node_pointer
-      rec_split(node_pointer p_nd, const_e_iterator b_it, 
-		const_e_iterator e_it, PB_DS_CLASS_C_DEC& other, 
-		split_join_branch_bag& r_bag);
+      rec_split(node_pointer, const_e_iterator, const_e_iterator, 
+		PB_DS_CLASS_C_DEC&, split_join_branch_bag&);
 
       void
-      split_insert_branch(size_type e_ind, const_e_iterator b_it, 
-			  typename internal_node::iterator child_b_it, 
-			  size_type num_children, split_join_branch_bag&);
+      split_insert_branch(size_type, const_e_iterator, 
+			  typename internal_node::iterator, 
+			  size_type, split_join_branch_bag&);
 
-    private:
       static head_allocator s_head_allocator;
-
       static internal_node_allocator s_internal_node_allocator;
-
       static leaf_allocator s_leaf_allocator;
 
       head_pointer m_p_head;
-
       size_type m_size;
     };
 
@@ -623,11 +517,9 @@ namespace pb_ds
 #undef PB_DS_CLASS_NAME
 #undef PB_DS_TYPES_TRAITS_C_DEC
 #undef PB_DS_MAP_DEBUG_BASE_C_DEC
-
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP
 #undef PB_DS_V2S
-
 #undef PB_DS_STATIC_ASSERT
 
   } // namespace detail

@@ -48,7 +48,5 @@ PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
 is_effectively_black(const node_pointer p_nd)
-{
-  return (p_nd == NULL || !p_nd->m_red);
-}
+{ return (p_nd == NULL || !p_nd->m_red); }
 

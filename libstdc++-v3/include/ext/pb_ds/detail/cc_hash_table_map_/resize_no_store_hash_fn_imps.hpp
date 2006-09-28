@@ -54,10 +54,7 @@ resize_imp_no_exceptions_reassign_pointer(entry_pointer p_e, entry_pointer_array
     ranged_hash_fn_base::operator()(PB_DS_V2F(p_e->m_value));
 
   entry_pointer const p_next_e = p_e->m_p_next;
-
   p_e->m_p_next = a_p_entries_resized[hash_pos];
-
   a_p_entries_resized[hash_pos] = p_e;
-
-  return (p_next_e);
+  return p_next_e;
 }

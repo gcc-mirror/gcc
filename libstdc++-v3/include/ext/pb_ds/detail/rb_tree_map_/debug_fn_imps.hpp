@@ -52,7 +52,7 @@ PB_DS_CLASS_C_DEC::
 assert_node_consistent(const node_pointer p_nd) const
 {
   if (p_nd == NULL)
-    return (1);
+    return 1;
 
   const size_type l_height = assert_node_consistent(p_nd->m_p_left);
   const size_type r_height = assert_node_consistent(p_nd->m_p_right);
@@ -62,7 +62,7 @@ assert_node_consistent(const node_pointer p_nd) const
       _GLIBCXX_DEBUG_ASSERT(is_effectively_black(p_nd->m_p_right));
     }
   _GLIBCXX_DEBUG_ASSERT(l_height == r_height);
-  return ((p_nd->m_red? 0 : 1) + l_height);
+  return (p_nd->m_red ? 0 : 1) + l_height;
 }
 
 PB_DS_CLASS_T_DEC
@@ -70,8 +70,8 @@ void
 PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
-  PB_DS_BASE_C_DEC::assert_valid();
-  const node_pointer p_head = PB_DS_BASE_C_DEC::m_p_head;
+  base_type::assert_valid();
+  const node_pointer p_head = base_type::m_p_head;
   _GLIBCXX_DEBUG_ASSERT(p_head->m_red);
   if (p_head->m_p_parent != NULL)
     {

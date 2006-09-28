@@ -50,28 +50,22 @@ PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    node_pointer p_nd = find_imp(r_key);
+  node_pointer p_nd = find_imp(r_key);
 
   if (p_nd == NULL || p_nd->m_type != pat_trie_leaf_node_type)
     {
       _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
-
-        return (end());
+      return end();
     }
 
-  if (synth_e_access_traits::equal_keys(
-					PB_DS_V2F(static_cast<leaf_pointer>(p_nd)->value()),
-					r_key))
+  if (synth_e_access_traits::equal_keys(PB_DS_V2F(static_cast<leaf_pointer>(p_nd)->value()), r_key))
     {
       _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key));
-
-      return (iterator(p_nd));
+      return iterator(p_nd);
     }
 
   _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
-
-    return (end());
+  return end();
 }
 
 PB_DS_CLASS_T_DEC
@@ -81,29 +75,22 @@ find(const_key_reference r_key) const
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
-    const_node_pointer p_nd =
-    const_cast<PB_DS_CLASS_C_DEC* >(this)->find_imp(r_key);
+  const_node_pointer p_nd = const_cast<PB_DS_CLASS_C_DEC* >(this)->find_imp(r_key);
 
   if (p_nd == NULL || p_nd->m_type != pat_trie_leaf_node_type)
     {
       _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
-
-        return (end());
+      return end();
     }
 
-  if (synth_e_access_traits::equal_keys(
-					PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value()),
-					r_key))
+  if (synth_e_access_traits::equal_keys(PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value()), r_key))
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(
-						      r_key));
-
-      return (const_iterator(const_cast<node_pointer>(p_nd)));
+      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key));
+      return const_iterator(const_cast<node_pointer>(p_nd));
     }
 
   _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
-
-    return (end());
+  return end();
 }
 
 PB_DS_CLASS_T_DEC
@@ -125,17 +112,13 @@ find_imp(const_key_reference r_key)
   while (p_nd->m_type != pat_trie_leaf_node_type)
     {
       _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_internal_node_type);
-
-      node_pointer p_next_nd =
-	static_cast<internal_node_pointer>(p_nd)->get_child_node(                b_it,  e_it,  this);
+      node_pointer p_next_nd = static_cast<internal_node_pointer>(p_nd)->get_child_node(b_it,  e_it,  this);
 
       if (p_next_nd == NULL)
-	return (p_nd);
-
+	return p_nd;
       p_nd = p_next_nd;
     }
-
-  return (p_nd);
+  return p_nd;
 }
 
 PB_DS_CLASS_T_DEC
@@ -156,31 +139,23 @@ lower_bound_imp(const_key_reference r_key)
     synth_e_access_traits::end(r_key);
 
   size_type checked_ind = 0;
-
   while (true)
     {
       if (p_nd->m_type == pat_trie_leaf_node_type)
         {
-	  if (!synth_e_access_traits::cmp_keys(
-					       PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value()),
-					       r_key))
-	    return (p_nd);
-
+	  if (!synth_e_access_traits::cmp_keys(PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value()), r_key))
+	    return p_nd;
 	  iterator it(p_nd);
-
 	  ++it;
-
-	  return (it.m_p_nd);
+	  return it.m_p_nd;
         }
 
       _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_internal_node_type);
-
       const size_type new_checked_ind =
 	static_cast<internal_node_pointer>(p_nd)->get_e_ind();
 
       p_nd =
 	static_cast<internal_node_pointer>(p_nd)->get_lower_bound_child_node(                b_it, e_it, checked_ind, this);
-
       checked_ind = new_checked_ind;
     }
 }
@@ -189,17 +164,14 @@ PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 lower_bound(const_key_reference r_key)
-{
-  return (point_iterator(lower_bound_imp(r_key)));
-}
+{ return point_iterator(lower_bound_imp(r_key)); }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_point_iterator
 PB_DS_CLASS_C_DEC::
 lower_bound(const_key_reference r_key) const
 {
-  return (const_point_iterator(
-			       const_cast<PB_DS_CLASS_C_DEC* >(this)->lower_bound_imp(r_key)));
+  return const_point_iterator(const_cast<PB_DS_CLASS_C_DEC* >(this)->lower_bound_imp(r_key));
 }
 
 PB_DS_CLASS_T_DEC
@@ -210,17 +182,14 @@ upper_bound(const_key_reference r_key)
   point_iterator l_bound_it = lower_bound(r_key);
 
   _GLIBCXX_DEBUG_ASSERT(l_bound_it == end() ||
-		   !synth_e_access_traits::cmp_keys(
-						    PB_DS_V2F(*l_bound_it),
+		   !synth_e_access_traits::cmp_keys(PB_DS_V2F(*l_bound_it),
 						    r_key));
 
   if (l_bound_it == end() ||
-      synth_e_access_traits::cmp_keys(
-				      r_key,
-				      PB_DS_V2F(*l_bound_it)))
-    return (l_bound_it);
+      synth_e_access_traits::cmp_keys(r_key, PB_DS_V2F(*l_bound_it)))
+    return l_bound_it;
 
-  return (++l_bound_it);
+  return ++l_bound_it;
 }
 
 PB_DS_CLASS_T_DEC
@@ -231,17 +200,13 @@ upper_bound(const_key_reference r_key) const
   const_point_iterator l_bound_it = lower_bound(r_key);
 
   _GLIBCXX_DEBUG_ASSERT(l_bound_it == end() ||
-		   !synth_e_access_traits::cmp_keys(
-						    PB_DS_V2F(*l_bound_it),
+		   !synth_e_access_traits::cmp_keys(PB_DS_V2F(*l_bound_it),
 						    r_key));
 
   if (l_bound_it == end() ||
-      synth_e_access_traits::cmp_keys(
-				      r_key,
-				      PB_DS_V2F(*l_bound_it)))
-    return (l_bound_it);
-
-  return (++l_bound_it);
+      synth_e_access_traits::cmp_keys(r_key, PB_DS_V2F(*l_bound_it)))
+    return l_bound_it;
+  return ++l_bound_it;
 }
 
 PB_DS_CLASS_T_DEC
@@ -250,12 +215,10 @@ PB_DS_CLASS_C_DEC::
 pref_begin(const_node_pointer p_nd)
 {
   if (p_nd->m_type == pat_trie_leaf_node_type)
-    return (synth_e_access_traits::begin(
-					 PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value())));
+    return (synth_e_access_traits::begin(PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value())));
 
   _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_internal_node_type);
-
-  return (static_cast<const_internal_node_pointer>(p_nd)->pref_b_it());
+  return static_cast<const_internal_node_pointer>(p_nd)->pref_b_it();
 }
 
 PB_DS_CLASS_T_DEC
@@ -264,12 +227,10 @@ PB_DS_CLASS_C_DEC::
 pref_end(const_node_pointer p_nd)
 {
   if (p_nd->m_type == pat_trie_leaf_node_type)
-    return (synth_e_access_traits::end(
-				       PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value())));
+    return (synth_e_access_traits::end(PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value())));
 
   _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_internal_node_type);
-
-  return (static_cast<const_internal_node_pointer>(p_nd)->pref_e_it());
+  return static_cast<const_internal_node_pointer>(p_nd)->pref_e_it();
 }
 
 PB_DS_CLASS_T_DEC
@@ -278,9 +239,8 @@ PB_DS_CLASS_C_DEC::
 leftmost_descendant(const_node_pointer p_nd)
 {
   if (p_nd->m_type == pat_trie_leaf_node_type)
-    return (static_cast<const_leaf_pointer>(p_nd));
-
-  return (static_cast<const_internal_node_pointer>(p_nd)->leftmost_descendant());
+    return static_cast<const_leaf_pointer>(p_nd);
+  return static_cast<const_internal_node_pointer>(p_nd)->leftmost_descendant();
 }
 
 PB_DS_CLASS_T_DEC
@@ -289,9 +249,8 @@ PB_DS_CLASS_C_DEC::
 leftmost_descendant(node_pointer p_nd)
 {
   if (p_nd->m_type == pat_trie_leaf_node_type)
-    return (static_cast<leaf_pointer>(p_nd));
-
-  return (static_cast<internal_node_pointer>(p_nd)->leftmost_descendant());
+    return static_cast<leaf_pointer>(p_nd);
+  return static_cast<internal_node_pointer>(p_nd)->leftmost_descendant();
 }
 
 PB_DS_CLASS_T_DEC
@@ -300,9 +259,8 @@ PB_DS_CLASS_C_DEC::
 rightmost_descendant(const_node_pointer p_nd)
 {
   if (p_nd->m_type == pat_trie_leaf_node_type)
-    return (static_cast<const_leaf_pointer>(p_nd));
-
-  return (static_cast<const_internal_node_pointer>(p_nd)->rightmost_descendant());
+    return static_cast<const_leaf_pointer>(p_nd);
+  return static_cast<const_internal_node_pointer>(p_nd)->rightmost_descendant();
 }
 
 PB_DS_CLASS_T_DEC
@@ -311,8 +269,7 @@ PB_DS_CLASS_C_DEC::
 rightmost_descendant(node_pointer p_nd)
 {
   if (p_nd->m_type == pat_trie_leaf_node_type)
-    return (static_cast<leaf_pointer>(p_nd));
-
-  return (static_cast<internal_node_pointer>(p_nd)->rightmost_descendant());
+    return static_cast<leaf_pointer>(p_nd);
+  return static_cast<internal_node_pointer>(p_nd)->rightmost_descendant();
 }
 

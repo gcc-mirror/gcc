@@ -52,11 +52,9 @@ begin()
   if (m_p_l == NULL)
     {
       _GLIBCXX_DEBUG_ASSERT(empty());
-
-      return (end());
+      return end();
     }
-
-  return (iterator(&m_p_l->m_value, m_p_l, this));
+  return iterator(&m_p_l->m_value, m_p_l, this);
 }
 
 PB_DS_CLASS_T_DEC
@@ -67,28 +65,22 @@ begin() const
   if (m_p_l == NULL)
     {
       _GLIBCXX_DEBUG_ASSERT(empty());
-
-      return (end());
+      return end();
     }
-
-  return (iterator(&m_p_l->m_value, m_p_l,
-		   const_cast<PB_DS_CLASS_C_DEC* >(this)));
+  return iterator(&m_p_l->m_value, m_p_l, const_cast<PB_DS_CLASS_C_DEC* >(this));
 }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::iterator
 PB_DS_CLASS_C_DEC::
 end()
-{
-  return (iterator(NULL, NULL, this));
-}
+{ return iterator(NULL, NULL, this); }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_iterator
 PB_DS_CLASS_C_DEC::
 end() const
 {
-  return (const_iterator(NULL, NULL,
-			 const_cast<PB_DS_CLASS_C_DEC* const>(this)));
+  return const_iterator(NULL, NULL, const_cast<PB_DS_CLASS_C_DEC* const>(this));
 }
 
