@@ -1,0 +1,252 @@
+#!/usr/bin/perl
+
+# Three-way DejaGNU comparison; uses dglib.pm.  Run perldoc on this file for
+# usage.
+#
+# Author: Matthew Sachs <msachs@apple.com>
+#
+# Copyright (c) 2006 Free Software Foundation.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+=pod
+
+=head1 SYNOPSIS
+
+compareSumTests3 -- Two-way or three-way compare between DejaGNU .sum files
+
+=head1 USAGE
+
+	compareSumTests3 old1.sum [old2.sum] new.sum
+	compareSumTests3 -i 1:2 -x 2:3 old1.sum old2.sum new.sum
+
+=head1 DESCRIPTION
+
+Gives results in terms of 'new' (e.g. things that work in 'new' and don't in
+other compilers are improvements, things that don't in 'new' and do in others
+are regressions, and it tells you which of the two old compilers (or both)
+the test is a regression from.
+
+We treat any DG result other than PASS or XFAIL as a failure, e.g.
+UNRESOLVED, UNTESTED or test was not run.
+
+We merge some tests into 'logical tests' with multiple subphases.
+For instance, some tests will have compile, execute, and link
+subtests.  For these tests, if one of the phases fails, we
+indicate which phase the failure originates in.  For instance,
+in the following test results:
+
+	gcc.c-torture/compile_execute/xxxx.c: [FAIL:C,FAIL:X,PASS]
+
+the "compile_execute" replaces the compile or execute portion of the test name,
+and "FAIL:C" and "FAIL:X" indicates where the combined test failed.
+
+=head1 OPTIONS
+
+=head2 OVERVIEW
+
+=over 4
+
+=item *
+
+C<-i X:Y>: Only display differences between the two indicated runs.
+
+=item *
+
+C<-p>: Give plain output, suitable for piping to another program.
+
+=item *
+
+C<-x X:Y>: Exclude differences between the two indicated runs.
+
+=back
+
+=head2 PLAIN OUTPUT FORMAT
+
+In the plain
+output format, the category headers are not displayed and there are no tabs
+in front of each result line.  Instead, each result line has two characters
+followed by a space in front of it.  The first character will be either an 'I'
+for improvement or 'R' for regression; the second character will be a 1, 2, or 3,
+indicating which run was the odd one out.
+
+=back
+
+=head2 SELECTING CHANGE SUBSETS
+
+The following options cause only a selected subset of changes to be displayed.
+These options ask for a "run", a number which is used to select
+one of the three runs (C<old1>, C<old2>, or C<new>.)  C<1> and C<2> signify C<old1> and C<old2>
+respectively; 3 signifies C<new>. If multiple options are given, the changes displayed
+will be those which obey all of the given restrictions.
+
+Typical usage of these options is to express something like "give me all changes
+between 2 and 3, except for those where there was the same difference betwen 1 and 2
+(as between 2 and 3.)"  This would be given as:
+
+	-i 2:3 -x 1:2
+
+=over 4
+
+=item *
+
+C<-i X:Y>: Only differences which are present between the two runs given
+are displayed. For instance, if C<-i 1:2> is given and test A passes in
+runs 1 and 2 but fails in run 3, that result will not be displayed.
+
+=item *
+
+C<-x X:Y>: Differences which are identical to a difference between the two runs
+given will B<not> be displayed. For instance, if C<-x 1:2> is given and
+test A passes in run 1 and fails in runs 2 and 3, that result will not be
+displayed (since C<-x> will cause the difference between 1 and 2 to be ignored,
+and the difference in 1 and 3 parallels the difference between 1 and 2.)
+This option may only be used in conjunction with C<-i>.
+
+=back
+
+=cut
+
+use strict;
+use warnings;
+use Getopt::Long;
+
+use FindBin qw($Bin);
+use lib "$Bin";
+use dglib;
+
+my %options;
+my $error = undef;
+
+if(!GetOptions(
+	"p" => \$options{p},
+	"i=s" => \$options{i},
+	"x=s" => \$options{x},
+)) {
+	$error = "";
+} elsif(@ARGV != 2 and @ARGV != 3) {
+	$error = "";
+} elsif($options{x} and !$options{i}) {
+	$error = "-x may only be given in conjunction with -i.";
+} else {
+	foreach my $opt("i", "x") {
+		if($options{$opt} and
+		  ($options{$opt} !~ /^([123]):([123])$/ or
+		   $1 == $2)
+		) {
+			$error = "Invalid -$opt argument.";
+		}
+	}
+}
+
+if(defined($error)) {
+	print STDERR "$error\n" if $error;
+	print STDERR "Usage: compareSumTests3 [-p] [-i X:Y [-x X:Y]] old1.sum old2.sum new.sum\n";
+	print STDERR "Try 'perldoc $0' for further information.\n";
+	exit 1;
+} 
+
+my(@sumfiles) = @ARGV;
+-f $_ || die "$_ is not a regular file!\n" foreach @sumfiles;
+my(%results, @inc_changes, @exc_changes, %checksums);
+
+# We decrement the values given so that they correspond
+# to indices into our results array.
+if($options{i}) {
+	$options{i} =~ /(\d+):(\d+)/;
+	@inc_changes = ($1 - 1, $2 - 1);
+}
+if($options{x}) {
+	$options{x} =~ /(\d+):(\d+)/;
+	@exc_changes = ($1 - 1, $2 - 1);
+}
+
+
+my %analyzed_results = compareSumFiles(\@sumfiles);
+
+foreach my $cat (qw(improvements regressions miscellaneous)) {
+	if(@sumfiles == 3) {
+		my @subcounts;
+		if(!$options{p}) {
+			$subcounts[$_] = @{$analyzed_results{$cat}->[$_] || []} for(0..2);
+			print "\u$cat: ", ($subcounts[0]+$subcounts[1]+$subcounts[2]), "\n";
+		}
+
+		for(my $i = 0; $i < 3; $i++) {
+			if(!$options{p} and $cat ne "miscellaneous") {
+				if($i == 0) {
+					if($cat eq "regressions") {
+						print "\tSuccess in old1 only: $subcounts[$i]\n";
+					} else {
+						print "\tFailure in old1 only: $subcounts[$i]\n";
+					}
+				} elsif($i == 1) {
+					if($cat eq "regressions") {
+						print "\tSuccess in old2 only: $subcounts[$i]\n";
+					} else {
+						print "\tFailure in old2 only: $subcounts[$i]\n";
+					}
+				} else {
+					if($cat eq "regressions") {
+						print "\tFailure in new only: $subcounts[$i]\n";
+					} else {
+						print "\tSuccess in new only: $subcounts[$i]\n";
+					}
+				}
+			}
+
+			foreach my $test (sort {$a->{name} cmp $b->{name}} @{$analyzed_results{$cat}->[$i] || []}) {
+				if(!$options{p}) {
+					if($cat eq "miscellaneous") {
+						print "\t";
+					} else {
+						print "\t\t";
+					}
+				} else {
+					if($cat eq "regressions") {
+						print "R";
+					} else {
+						print "I";
+					}
+
+					print $i+1, " ";
+				}
+				printf "%s [%s,%s,%s]\n", $test->{name}, $test->{data}->[0], $test->{data}->[1], $test->{data}->[2];
+			}
+		}
+	} else {
+		if(!$options{p}) {
+			my $subcount = @{$analyzed_results{$cat}};
+			print "\u$cat: $subcount\n";
+		}
+
+		foreach my $test (sort {$a->{name} cmp $b->{name}} @{$analyzed_results{$cat}}) {
+			if(!$options{p}) {
+				print "\t";
+			} else {
+				if($cat eq "regressions") {
+					print "R";				} else {
+					print "I";
+				}
+
+				print "  ";
+			}
+			printf "%s [%s,%s]\n", $test->{name}, $test->{data}->[0], $test->{data}->[1], $test->{data}->[2];
+		}
+	}
+}
