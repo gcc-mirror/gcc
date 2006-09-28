@@ -75,13 +75,32 @@ MAKING CHANGES TO INCLHACK.DEF
 3.  It is relatively expensive to fire off a process to fix a source
     file, therefore write apply tests to avoid unnecessary fix
     processes.  The preferred apply tests are "select", "bypass" and
-    "c_test" because they are performed internally.  "test" sends
-    a command to a server shell that actually fires off one or more
-    processes to do the testing.  Avoid it, if you can, but it is
-    still more efficient than a fix process.  Also available is
-    "mach".  If the target machine matches any of the named
-    globbing-style patterns, then the machine name test will pass.
-    It is desired, however, to limit the use of this test.
+    "c_test" because they are performed internally.  The available
+    tests are:
+
+    * select - Run a regex on the contents of the file being considered.
+               All such regex-es must match.
+
+    * bypass - Run a regex on the contents of the file being considered.
+               No such regex may match.
+
+    * c_test - call a function in fixtests.c.  See that file.
+
+    The next two tests are relatively slow because they must be handled
+    in a separate shell process.  Some platforms do not support server
+    shells, so the whole process is even slower and more cumbersome there.
+
+    * mach   - Match the output of config.conf against a series of globbing
+               patterns.  It must match at least one of the patterns, unless
+               "not-machine" has also been specified.  If that has been
+               specified, then the config.conf output may not match any of
+               the patterns.
+
+    * test   - These should be arguments to the program, "/bin/test".
+               You may perform multiple commands, if you enclose them
+               in backquotes and echo out valid test arguments.  For
+               example, you might echo out '0 -eq 1' if you want a false
+               result, or '0 -eq 0' for a true result.
 
     These tests are required to:
 
