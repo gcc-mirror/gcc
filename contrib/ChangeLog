@@ -1,5 +1,9 @@
 2006-09-27  Matthew Sachs  <msachs@apple.com>
 
+	* compareSumTests3: POD syntax fix.
+
+2006-09-27  Matthew Sachs  <msachs@apple.com>
+
 	* dglib.pm: Initial commit.
 	* compareSumTests3: Initial commit.
 

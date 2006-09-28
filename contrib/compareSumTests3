@@ -85,8 +85,6 @@ followed by a space in front of it.  The first character will be either an 'I'
 for improvement or 'R' for regression; the second character will be a 1, 2, or 3,
 indicating which run was the odd one out.
 
-=back
-
 =head2 SELECTING CHANGE SUBSETS
 
 The following options cause only a selected subset of changes to be displayed.
