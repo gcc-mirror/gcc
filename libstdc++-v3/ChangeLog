@@ -1,3 +1,8 @@
+2006-09-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/boost_shared_ptr.h: Use __atomic_add_dispatch and
+	__exchange_and_add_dispatch everywhere.
+
 2006-09-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/typelist.h (type_to_type): Remove.
