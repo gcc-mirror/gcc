@@ -1,3 +1,10 @@
+2006-09-27  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (ENABLE_EXECUTE_STACK): New, use getpagesize not
+	__sysctl.
+	* config/rs6000/darwin.h (ENABLE_EXECUTE_STACK): Remove.
+	* config/i386/darwin.h (ENABLE_EXECUTE_STACK): Remove.
+
 2006-09-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (divsi_inv_m0): Remove unused variable.
