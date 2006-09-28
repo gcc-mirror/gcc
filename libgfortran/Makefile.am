@@ -6,11 +6,11 @@ ACLOCAL_AMFLAGS = -I ../config
 ## May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
-toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
-
+toolexeclib_LTLIBRARIES = libgfortran.la
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm $(extra_ldflags_libgfortran)
 
-## This should really go in the compiler lib dir, not the system lib dir.
+myexeclib_LTLIBRARIES = libgfortranbegin.la
+myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 
