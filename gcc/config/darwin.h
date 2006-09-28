@@ -886,4 +886,42 @@ void add_framework_path (char *);
 #define TARGET_ASM_OUTPUT_ANCHOR NULL
 #endif
 
+/* Attempt to turn on execute permission for the stack.  This may be
+    used by INITIALIZE_TRAMPOLINE of the target needs it (that is,
+    if the target machine can change execute permissions on a page).
+
+    There is no way to query the execute permission of the stack, so
+    we always issue the mprotect() call.
+
+    Unfortunately it is not possible to make this namespace-clean.
+
+    Also note that no errors should be emitted by this code; it is
+    considered dangerous for library calls to send messages to
+    stdout/stderr.  */
+
+#define ENABLE_EXECUTE_STACK                                            \
+extern void __enable_execute_stack (void *);                            \
+void                                                                    \
+__enable_execute_stack (void *addr)                                     \
+{                                                                       \
+   extern int mprotect (void *, size_t, int);                           \
+   extern int getpagesize (void);					\
+   static int size;                                                     \
+   static long mask;                                                    \
+                                                                        \
+   char *page, *end;                                                    \
+                                                                        \
+   if (size == 0)                                                       \
+     {                                                                  \
+       size = getpagesize();						\
+       mask = ~((long) size - 1);                                       \
+     }                                                                  \
+                                                                        \
+   page = (char *) (((long) addr) & mask);                              \
+   end  = (char *) ((((long) (addr + (TARGET_64BIT ? 48 : 40))) & mask) + size); \
+                                                                        \
+   /* 7 == PROT_READ | PROT_WRITE | PROT_EXEC */                        \
+   (void) mprotect (page, end - page, 7);                               \
+}
+
 #endif /* CONFIG_DARWIN_H */
