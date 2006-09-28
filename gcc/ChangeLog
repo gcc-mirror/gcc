@@ -1,3 +1,7 @@
+2006-09-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (divsi_inv_m0): Remove unused variable.
+
 2006-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* doc/install.texi: Document required versions of GMP and MPFR.
