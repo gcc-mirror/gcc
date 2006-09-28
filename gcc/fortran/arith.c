@@ -75,7 +75,7 @@ gfc_set_model (mpfr_t x)
   mpfr_set_default_prec (mpfr_get_prec (x));
 }
 
-#if !defined(MPFR_VERSION_MAJOR)
+#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
 /* Calculate atan2 (y, x)
 
 atan2(y, x) = atan(y/x)				if x > 0,
@@ -408,7 +408,7 @@ gfc_check_real_range (mpfr_t p, int kind)
     }
   else if (mpfr_cmp (q, gfc_real_kinds[i].tiny) < 0)
     {
-#if !defined(MPFR_VERSION_MAJOR)
+#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
       /* MPFR operates on a number with a given precision and enormous
 	exponential range.  To represent subnormal numbers, the exponent is
 	allowed to become smaller than emin, but always retains the full

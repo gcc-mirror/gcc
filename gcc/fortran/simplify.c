@@ -607,7 +607,7 @@ gfc_simplify_atan2 (gfc_expr * y, gfc_expr * x)
       return &gfc_bad_expr;
     }
 
-#if !defined(MPFR_VERSION_MAJOR)
+#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
   arctangent2 (y->value.real, x->value.real, result->value.real);
 #else
   mpfr_atan2 (result->value.real, y->value.real, x->value.real, GFC_RND_MODE);
@@ -1060,7 +1060,7 @@ gfc_simplify_exponent (gfc_expr * x)
   int i;
   gfc_expr *result;
 
-#if !defined(MPFR_VERSION_MAJOR)
+#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
   mpfr_t tmp;
 #endif
 
@@ -1078,7 +1078,7 @@ gfc_simplify_exponent (gfc_expr * x)
       return result;
     }
 
-#if !defined(MPFR_VERSION_MAJOR)
+#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
   /* PR fortran/28276 suffers from a buggy MPFR, and this block of code
      does not function correctly.  */
   mpfr_init (tmp);
@@ -2161,7 +2161,7 @@ gfc_simplify_log (gfc_expr * x)
       mpfr_init (xr);
       mpfr_init (xi);
 
-#if !defined(MPFR_VERSION_MAJOR)
+#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
       arctangent2 (x->value.complex.i, x->value.complex.r, result->value.complex.i);
 #else
       mpfr_atan2 (result->value.complex.i, x->value.complex.i, x->value.complex.r,
@@ -2495,7 +2495,7 @@ gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
   gfc_expr *result;
   mpfr_t tmp;
   int sgn;
-#if !defined(MPFR_VERSION_MAJOR)
+#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
   int direction;
 #else
   mp_exp_t emin, emax;
@@ -2513,7 +2513,7 @@ gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
   gfc_set_model_kind (x->ts.kind);
   result = gfc_copy_expr (x);
 
-#if !defined(MPFR_VERSION_MAJOR)
+#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
 
   direction = mpfr_sgn (s->value.real);
   sgn = mpfr_sgn (x->value.real);
