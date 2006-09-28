@@ -1,5 +1,12 @@
 2006-09-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* inclhack.def (solaris_once_init_2): New fix.
+	* tests/base/pthread.h: Update.
+
+	* fixincl.x: Regenerate.
+
+2006-09-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* inclhack.def (solaris_mutex_init_2): Remove test for
 	PTHREAD_RWLOCK_INITIALIZER.
 	(solaris_rwlock_init_1): New.
