@@ -63,9 +63,11 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(myexeclibdir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
+myexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
-LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES = $(myexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libgfortran_la_LIBADD =
 am__objects_1 = compile_options.lo environ.lo error.lo fpu.lo main.lo \
 	memory.lo pause.lo stop.lo string.lo select.lo
@@ -356,8 +358,10 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 ACLOCAL_AMFLAGS = -I ../config
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
-toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
+toolexeclib_LTLIBRARIES = libgfortran.la
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm $(extra_ldflags_libgfortran)
+myexeclib_LTLIBRARIES = libgfortranbegin.la
+myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
@@ -972,6 +976,33 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
+install-myexeclibLTLIBRARIES: $(myexeclib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(myexeclibdir)" || $(mkdir_p) "$(DESTDIR)$(myexeclibdir)"
+	@list='$(myexeclib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    f=$(am__strip_dir) \
+	    echo " $(LIBTOOL) --mode=install $(myexeclibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(myexeclibdir)/$$f'"; \
+	    $(LIBTOOL) --mode=install $(myexeclibLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(myexeclibdir)/$$f"; \
+	  else :; fi; \
+	done
+
+uninstall-myexeclibLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@set -x; list='$(myexeclib_LTLIBRARIES)'; for p in $$list; do \
+	  p=$(am__strip_dir) \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(myexeclibdir)/$$p'"; \
+	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(myexeclibdir)/$$p"; \
+	done
+
+clean-myexeclibLTLIBRARIES:
+	-test -z "$(myexeclib_LTLIBRARIES)" || rm -f $(myexeclib_LTLIBRARIES)
+	@list='$(myexeclib_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibdir)" || $(mkdir_p) "$(DESTDIR)$(toolexeclibdir)"
@@ -1002,7 +1033,7 @@ clean-toolexeclibLTLIBRARIES:
 libgfortran.la: $(libgfortran_la_OBJECTS) $(libgfortran_la_DEPENDENCIES) 
 	$(FCLINK) -rpath $(toolexeclibdir) $(libgfortran_la_LDFLAGS) $(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD) $(LIBS)
 libgfortranbegin.la: $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_DEPENDENCIES) 
-	$(LINK) -rpath $(toolexeclibdir) $(libgfortranbegin_la_LDFLAGS) $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_LIBADD) $(LIBS)
+	$(LINK) -rpath $(myexeclibdir) $(libgfortranbegin_la_LDFLAGS) $(libgfortranbegin_la_OBJECTS) $(libgfortranbegin_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -2600,7 +2631,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) all-multi config.h
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(myexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -2631,8 +2662,8 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am clean-multi
 
-clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-myexeclibLTLIBRARIES \
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am distclean-multi
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -2652,7 +2683,8 @@ info-am:
 
 install-data-am:
 
-install-exec-am: install-multi install-toolexeclibLTLIBRARIES
+install-exec-am: install-multi install-myexeclibLTLIBRARIES \
+	install-toolexeclibLTLIBRARIES
 
 install-info: install-info-am
 
@@ -2679,23 +2711,26 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-info-am uninstall-myexeclibLTLIBRARIES \
+	uninstall-toolexeclibLTLIBRARIES
 
 .PHONY: CTAGS GTAGS all all-am all-multi am--refresh check check-am \
 	clean clean-generic clean-libtool clean-multi \
-	clean-toolexeclibLTLIBRARIES ctags dist dist-all dist-bzip2 \
-	dist-gzip dist-shar dist-tarZ dist-zip distcheck distclean \
-	distclean-compile distclean-generic distclean-hdr \
-	distclean-libtool distclean-multi distclean-tags \
-	distcleancheck distdir distuninstallcheck dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am install-info \
-	install-info-am install-man install-multi install-strip \
+	clean-myexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES ctags \
+	dist dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ \
+	dist-zip distcheck distclean distclean-compile \
+	distclean-generic distclean-hdr distclean-libtool \
+	distclean-multi distclean-tags distcleancheck distdir \
+	distuninstallcheck dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-multi install-myexeclibLTLIBRARIES install-strip \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	maintainer-clean-multi mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-multi pdf \
 	pdf-am ps ps-am tags uninstall uninstall-am uninstall-info-am \
+	uninstall-myexeclibLTLIBRARIES \
 	uninstall-toolexeclibLTLIBRARIES
 
 
