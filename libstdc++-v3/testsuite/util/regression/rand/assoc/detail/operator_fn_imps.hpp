@@ -41,7 +41,7 @@
 
 /**
  * @file operator_fn_imps.hpp
- * Containsert a random regression test for a specific container type.
+ * Contains a random regression test for a specific container type.
  */
 
 PB_DS_CLASS_T_DEC
@@ -49,14 +49,20 @@ void
 PB_DS_CLASS_C_DEC::
 operator()()
 {
-  xml_result_set_regression_formatter* p_fmt = NULL;
+  typedef xml_result_set_regression_formatter formatter_type;
+  formatter_type* p_fmt = NULL;
 
   if (m_disp)
-    p_fmt = new xml_result_set_regression_formatter(string_form<Cntnr>::name(),
-						    string_form<Cntnr>::desc());
+    p_fmt = new formatter_type(string_form<Cntnr>::name(),
+			       string_form<Cntnr>::desc());
 
   m_g.init(m_seed);
+
+  // Track allocation from this point only.
+  const size_t memory_label = 775;
   m_alloc.init(m_seed);
+  m_alloc.set_label(memory_label);  
+
   prog_bar pb(m_n, std::cout, m_disp);
   m_i = 0;
 
@@ -65,10 +71,8 @@ operator()()
       for (m_i = 0; m_i < m_n; ++m_i)
         {
 	  PB_DS_TRACE("Op #" << static_cast<unsigned long>(m_i));
-
 	  allocator::set_label(m_i);
-
-	  switch(m_i)
+	  switch (m_i)
             {
             case 0:
 	      PB_DS_RUN_MTHD(default_constructor);
@@ -157,18 +161,18 @@ operator()()
 		      get_set_loads();
 		      break;
                     default:
-		      PB_DS_THROW_IF_FAILED(false, "", m_p_c, & m_native_c);
+		      PB_DS_THROW_IF_FAILED(false, "", m_p_c, &m_native_c);
                     }
 		  break;
                 default:
-		  PB_DS_THROW_IF_FAILED(false, "", m_p_c, & m_native_c);
+		  PB_DS_THROW_IF_FAILED(false, "", m_p_c, &m_native_c);
                 };
             }
 
 	  pb.inc();
         }
     }
-  catch(...)
+  catch (...)
     {
       std::cerr << "Failed at index " << static_cast<unsigned long>(m_i) 
 		<< std::endl;
@@ -176,14 +180,20 @@ operator()()
       throw;
     }
 
+  // Clean up, then check for allocation by special label, set above.
   delete m_p_c;
 
-  if (!m_alloc.throw_allocator<char>::empty())
+  try 
+    { m_alloc.check_allocated(memory_label); }
+  catch (...)
     {
       std::cerr << "detected leaks!" << std::endl;
       std::cerr << m_alloc << std::endl;
       PB_DS_THROW_IF_FAILED(false, "", m_p_c, &m_native_c);
     }
+
+  // Reset throw probability.
+  m_alloc.set_throw_prob(0);
 
   if (m_disp)
     {
@@ -200,17 +210,17 @@ get_next_op()
   const double prob = m_g.get_prob();
 
   if (prob < m_ip)
-    return (insert_op);
+    return insert_op;
 
   if (prob < m_ip + m_ep)
-    return (erase_op);
+    return erase_op;
 
   if (prob < m_ip + m_ep + m_cp)
-    return (clear_op);
+    return clear_op;
 
   PB_DS_THROW_IF_FAILED(prob <= 1, prob, m_p_c, &m_native_c);
 
-  return (other_op);
+  return other_op;
 }
 
 PB_DS_CLASS_T_DEC
@@ -222,15 +232,14 @@ get_next_sub_op(size_t max)
   const double delta = 1 / static_cast<double>(max);
   size_t i = 0;
   while (true)
-    if (p <= (i + 1)*  delta)
+    if (p <= (i + 1) * delta)
       {
 	PB_DS_THROW_IF_FAILED(i < max,
 			      static_cast<unsigned long>(i) << " " <<
 			      static_cast<unsigned long>(max),
-			      m_p_c,
-			      & m_native_c);
+			      m_p_c, &m_native_c);
 
-	return (i);
+	return i;
       }
     else
       ++i;

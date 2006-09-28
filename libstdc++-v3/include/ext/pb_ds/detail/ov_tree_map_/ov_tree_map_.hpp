@@ -353,7 +353,7 @@ namespace pb_ds
 	if (pot_it != end()&&  !Cmp_Fn::operator()(r_key, PB_DS_V2F(*pot_it)))
 	  {
 	    _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key));
-	    return (++pot_it);
+	    return ++pot_it;
 	  }
 
 	_GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key));
@@ -362,17 +362,17 @@ namespace pb_ds
 
       inline const_point_iterator
       upper_bound(const_key_reference r_key) const
-      { return const_cast<PB_DS_CLASS_C_DEC& >(*this).upper_bound(r_key); }
+      { return const_cast<PB_DS_CLASS_C_DEC&>(*this).upper_bound(r_key); }
 
       inline point_iterator
       find(const_key_reference r_key)
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 	iterator pot_it = lower_bound(r_key);
-	if (pot_it != end()&&  !Cmp_Fn::operator()(r_key, PB_DS_V2F(*pot_it)))
+	if (pot_it != end() && !Cmp_Fn::operator()(r_key, PB_DS_V2F(*pot_it)))
 	  {
 	    _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key));
-	    return (pot_it);
+	    return pot_it;
 	  }
 
 	_GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key));

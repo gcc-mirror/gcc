@@ -93,11 +93,11 @@ main(int argc, char* a_p_argv[])
 
       {
 	typedef native_map<std::string, char> native_map_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_map_t>());
+	tst(native_map_t());
 
 #ifdef PB_DS_USE_TR1
 	typedef native_hash_map<std::string, char, 8, string_hash_fn> native_hash_map_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_hash_map_t>());
+	tst(native_hash_map_t());
 
 	typedef
 	  native_hash_map<
@@ -114,7 +114,7 @@ main(int argc, char* a_p_argv[])
 	  true>
 	  sth_native_hash_map_t;
 
-	tst(__gnu_cxx::typelist::detail::type_to_type<sth_native_hash_map_t>());
+	tst(sth_native_hash_map_t());
 #endif
       }
     }

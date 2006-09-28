@@ -52,7 +52,7 @@ erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
-    entry_pointer p_e = m_a_p_entries[r_pos_hash_pair.first];
+    entry_pointer p_e = m_entries[r_pos_hash_pair.first];
 
   resize_base::notify_erase_search_start();
 
@@ -80,7 +80,7 @@ erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair)
       _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(
 						      r_key);)
 
-        erase_entry_pointer(m_a_p_entries[r_pos_hash_pair.first]);
+        erase_entry_pointer(m_entries[r_pos_hash_pair.first]);
 
       do_resize_if_needed_no_throw();
 

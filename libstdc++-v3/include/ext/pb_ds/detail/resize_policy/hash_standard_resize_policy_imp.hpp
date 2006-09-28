@@ -49,23 +49,21 @@
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-hash_standard_resize_policy() :
-  m_size(Size_Policy::get_nearest_larger_size(1))
+hash_standard_resize_policy() 
+: m_size(Size_Policy::get_nearest_larger_size(1))
 { trigger_policy_base::notify_externally_resized(m_size); }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-hash_standard_resize_policy(const Size_Policy& r_size_policy) :
-  Size_Policy(r_size_policy),
-  m_size(Size_Policy::get_nearest_larger_size(1))
+hash_standard_resize_policy(const Size_Policy& r_size_policy) 
+: Size_Policy(r_size_policy), m_size(Size_Policy::get_nearest_larger_size(1))
 { trigger_policy_base::notify_externally_resized(m_size); }
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 hash_standard_resize_policy(const Size_Policy& r_size_policy, 
-			    const Trigger_Policy& r_trigger_policy) :
-  Size_Policy(r_size_policy),
-  Trigger_Policy(r_trigger_policy),
+			    const Trigger_Policy& r_trigger_policy) 
+: Size_Policy(r_size_policy), Trigger_Policy(r_trigger_policy),
   m_size(Size_Policy::get_nearest_larger_size(1))
 { trigger_policy_base::notify_externally_resized(m_size); }
 
@@ -167,8 +165,7 @@ typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 get_new_size(size_type size, size_type num_used_e) const
 {
-  if (trigger_policy_base::
-      is_grow_needed(size, num_used_e))
+  if (trigger_policy_base::is_grow_needed(size, num_used_e))
     return size_policy_base::get_nearest_larger_size(size);
   return size_policy_base::get_nearest_smaller_size(size);
 }
@@ -197,24 +194,23 @@ PB_DS_CLASS_C_DEC::
 resize(size_type new_size)
 {
   PB_DS_STATIC_ASSERT(access, external_size_access);
-  size_type actual_new_size = size_policy_base::get_nearest_larger_size(1);
-  while (actual_new_size < new_size)
+  size_type actual_size = size_policy_base::get_nearest_larger_size(1);
+  while (actual_size < new_size)
     {
-      const size_type pot =
-	size_policy_base::get_nearest_larger_size(actual_new_size);
+      const size_type pot = size_policy_base::get_nearest_larger_size(actual_size);
 
-      if (pot == actual_new_size&&  pot < new_size)
+      if (pot == actual_size && pot < new_size)
 	throw resize_error();
-      actual_new_size = pot;
+      actual_size = pot;
     }
 
-  if (actual_new_size > 0)
-    --actual_new_size;
+  if (actual_size > 0)
+    --actual_size;
 
   const size_type old_size = m_size;
   try
     {
-      do_resize(actual_new_size - 1);
+      do_resize(actual_size - 1);
     }
   catch(insert_error& )
     {

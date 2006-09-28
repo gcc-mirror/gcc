@@ -128,25 +128,17 @@ namespace detail
     operator()();
 
   private:
-    typedef Cntnr cntnr;
-
-    typedef typename cntnr::allocator allocator;
-
-    typedef typename cntnr::size_type size_type;
-
-    typedef twister_rand_gen gen;
-
-    typedef regression_test_traits<Cntnr> test_traits;
-
-    typedef pb_ds::container_traits<Cntnr> container_traits;
-
-    typedef typename test_traits::key_type key_type;
-
-    typedef typename test_traits::const_key_reference const_key_reference;
-
-    typedef typename test_traits::value_type value_type;
-
-    typedef typename test_traits::native_type native_type;
+    typedef Cntnr 					cntnr;
+    typedef typename cntnr::allocator 			allocator;
+    typedef typename cntnr::size_type 			size_type;
+    typedef regression_test_traits<Cntnr> 		test_traits;
+    typedef typename test_traits::key_type 		key_type;
+    typedef typename test_traits::const_key_reference	const_key_reference;
+    typedef typename test_traits::value_type 		value_type;
+    typedef typename test_traits::native_type 		native_type;
+    typedef twister_rand_gen 				gen;
+    typedef pb_ds::container_traits<Cntnr> 		container_traits;
+    typedef __gnu_cxx::throw_allocator<char> 		alloc_t;
 
     enum op
       {
@@ -155,10 +147,6 @@ namespace detail
 	clear_op,
 	other_op
       };
-
-    typedef __gnu_cxx::throw_allocator<char> alloc_t;
-
-  private:
 
     op
     get_next_op();
@@ -440,7 +428,6 @@ namespace detail
     void
     print_container(const cntnr&, std::ostream& r_os = std::cerr) const;
 
-  private:
     struct destructor_printer
     {
       destructor_printer(const std::string& r_msg) 
@@ -464,27 +451,20 @@ namespace detail
       bool m_print;
     };
 
-  private:
-    const unsigned long m_seed;
-
-    const size_t m_n;
-    const size_t m_m;
-    const double m_tp;
-    const double m_ip;
-    const double m_ep;
-    const double m_cp;
-    const double m_mp;
-    const bool m_disp;
-
-    twister_rand_gen m_g;
-
-    Cntnr* m_p_c;
-
-    native_type m_native_c;
-
-    alloc_t m_alloc;
-
-    size_t m_i;
+    const unsigned long 	m_seed;
+    const size_t 		m_n;
+    const size_t 		m_m;
+    const double 		m_tp;
+    const double 		m_ip;
+    const double 		m_ep;
+    const double 		m_cp;
+    const double 		m_mp;
+    const bool 			m_disp;
+    twister_rand_gen 		m_g;
+    Cntnr* 			m_p_c;
+    native_type 		m_native_c;
+    alloc_t 			m_alloc;
+    size_t 			m_i;
   };
 
 #include <regression/rand/assoc/detail/constructor_destructor_fn_imps.hpp>

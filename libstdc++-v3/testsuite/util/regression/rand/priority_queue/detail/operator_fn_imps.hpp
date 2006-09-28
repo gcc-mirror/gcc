@@ -49,14 +49,20 @@ void
 PB_DS_CLASS_C_DEC::
 operator()()
 {
-  xml_result_set_regression_formatter* p_fmt = NULL;
+  typedef xml_result_set_regression_formatter formatter_type;
+  formatter_type* p_fmt = NULL;
 
   if (m_disp)
-    p_fmt = new xml_result_set_regression_formatter(string_form<Cntnr>::name(),
-						    string_form<Cntnr>::desc());
+    p_fmt = new formatter_type(string_form<Cntnr>::name(),
+			       string_form<Cntnr>::desc());
 
   m_g.init(m_seed);
+
+  // Track allocation from this point only.
+  const size_t memory_label = 775;
   m_alloc.init(m_seed);
+  m_alloc.set_label(memory_label);  
+
   prog_bar pb(m_n, std::cout, m_disp);
   m_i = 0;
 
@@ -140,21 +146,28 @@ operator()()
 	  pb.inc();
         }
     }
-  catch(...)
+  catch (...)
     {
       std::cerr << "Failed at index " << static_cast<unsigned long>(m_i) 
 		<< std::endl;
       delete m_p_c;
       throw;
     }
+
+  // Clean up, then check for allocation by special label, set above.
   delete m_p_c;
 
-  if (!m_alloc.throw_allocator<char>::empty())
+  try 
+    { m_alloc.check_allocated(memory_label); }
+  catch (...)
     {
       std::cerr << "detected leaks!" << std::endl;
       std::cerr << m_alloc << std::endl;
       PB_DS_THROW_IF_FAILED(false, "", m_p_c, &m_native_c);
     }
+
+  // Reset throw probability.
+  m_alloc.set_throw_prob(0);
 
   if (m_disp)
     {

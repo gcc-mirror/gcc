@@ -54,24 +54,19 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
-#define PB_DS_STATIC_ASSERT(UNIQUE, E)					\
-      typedef								\
-      pb_ds::detail::static_assert_dumclass<				\
-									sizeof(pb_ds::detail::static_assert<(bool)(E)>)> \
-      UNIQUE##static_assert_type
+#define PB_DS_STATIC_ASSERT(UNIQUE, E) \
+      typedef \
+      pb_ds::detail::static_assert_dumclass<sizeof(pb_ds::detail::static_assert<(bool)(E)>)> UNIQUE##static_assert_type
 
       template<typename Cntnr, bool Native>
       class order_statistics_functor
       {
       public:
-        order_statistics_functor(Cntnr& r_container) : m_r_container(r_container)
+        order_statistics_functor(Cntnr& container) : m_r_container(container)
 	{ }
 
 	void
@@ -80,8 +75,7 @@ namespace pb_ds
 	  enum
 	    {
 	      support_detected =
-	      pb_ds::test::detail::tree_supports_order_statistics<
-	      Cntnr>::value
+	      pb_ds::test::detail::tree_supports_order_statistics<Cntnr>::value
 	    };
 
 	  PB_DS_STATIC_ASSERT(correct_type, support_detected);
@@ -89,11 +83,8 @@ namespace pb_ds
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      typename Cntnr::const_iterator it = m_r_container.begin();
-
 	      typename Cntnr::const_iterator e = m_r_container.end();
-
 	      const size_t max_size = m_r_container.size();
-
 	      while (it != e)
 		if (m_r_container.order_of_key(*(it++)) > max_size)
 		  abort();
@@ -105,12 +96,10 @@ namespace pb_ds
       };
 
       template<typename Cntnr>
-      class order_statistics_functor<
-	Cntnr,
-	false>
+      class order_statistics_functor<Cntnr, false>
       {
       public:
-        order_statistics_functor(Cntnr& r_container) : m_r_container(r_container)
+        order_statistics_functor(Cntnr& container) : m_r_container(container)
 	{ }
 
 	void
@@ -118,18 +107,14 @@ namespace pb_ds
 	{
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
-	      typename Cntnr::const_iterator b = m_r_container.begin();
-
-	      typename Cntnr::const_iterator e = m_r_container.end();
-
-	      typename Cntnr::const_iterator it = b;
-
+	      typedef typename Cntnr::const_iterator const_iterator;
+	      const_iterator b = m_r_container.begin();
+	      const_iterator e = m_r_container.end();
+	      const_iterator it = b;
 	      const size_t max_size = m_r_container.size();
-
 	      while (it != e)
 		{
-		  typename Cntnr::const_iterator f_it = m_r_container.find(*(it++));
-
+		  const_iterator f_it = m_r_container.find(*(it++));
 		  if (static_cast<size_t>(std::distance(b, f_it)) > max_size)
 		    abort();
 		}
@@ -139,25 +124,20 @@ namespace pb_ds
       private:
 	Cntnr& m_r_container;
       };
-
     } // namespace detail
 
-#define PB_DS_CLASS_T_DEC			\
     template<bool Support_Order_Statistics>
-
-#define PB_DS_CLASS_C_DEC						\
-    tree_order_statistics_test<						\
-								Support_Order_Statistics>
-
-    template<bool Support_Order_Statistics>
-    class tree_order_statistics_test : private pb_ds::test::detail::timing_test_base
+    class tree_order_statistics_test 
+    : private pb_ds::test::detail::timing_test_base
     {
     public:
-      tree_order_statistics_test(size_t vn, size_t vs, size_t vm);
+      tree_order_statistics_test(size_t vn, size_t vs, size_t vm)
+      : m_vn(vn), m_vs(vs), m_vm(vm)
+      { }
 
       template<typename Cntnr>
       void
-      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
+      operator()(Cntnr);
 
     private:
       tree_order_statistics_test(const tree_order_statistics_test& );
@@ -176,28 +156,19 @@ namespace pb_ds
       const size_t m_vm;
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    tree_order_statistics_test(size_t vn, size_t vs, size_t vm) :
-      m_vn(vn),
-      m_vs(vs),
-      m_vm(vm)
-    { }
-
-    PB_DS_CLASS_T_DEC
+    template<bool Support_Order_Statistics>
     template<typename Cntnr>
     void
-    PB_DS_CLASS_C_DEC::
-    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+    tree_order_statistics_test<Support_Order_Statistics>::
+    operator()(Cntnr)
     {
-      xml_result_set_performance_formatter res_set_fmt(
-						       string_form<Cntnr>::name(),
-						       string_form<Cntnr>::desc());
+      typedef xml_result_set_performance_formatter formatter_type;
+      formatter_type res_set_fmt(string_form<Cntnr>::name(), 
+				 string_form<Cntnr>::desc());
 
       for (size_t v = m_vn; v < m_vm; v += m_vs)
 	{
 	  Cntnr cntnr;
-
 	  for (size_t ins = 0; ins < v; ++ ins)
             cntnr.insert((typename Cntnr::value_type)ins);
 
@@ -210,16 +181,8 @@ namespace pb_ds
 	  res_set_fmt.add_res(v, res / v);
 	}
     }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
-#undef PB_DS_STATIC_ASSERT
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_TREE_ORDER_STATISTICS_TEST_HPP
+#endif 
 

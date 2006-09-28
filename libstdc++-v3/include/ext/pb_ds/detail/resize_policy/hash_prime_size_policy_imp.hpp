@@ -127,8 +127,8 @@ namespace detail
 PB_DS_CLASS_T_DEC
 inline
 PB_DS_CLASS_C_DEC::
-hash_prime_size_policy(size_type start_size) : m_start_size(start_size)
-{ m_start_size = get_nearest_larger_size(start_size); }
+hash_prime_size_policy(size_type n) : m_start_size(n)
+{ m_start_size = get_nearest_larger_size(n); }
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -139,10 +139,10 @@ swap(PB_DS_CLASS_C_DEC& other)
 PB_DS_CLASS_T_DEC
 inline PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
-get_nearest_larger_size(size_type size) const
+get_nearest_larger_size(size_type n) const
 {
   const std::size_t* const p_upper = std::upper_bound(detail::g_a_sizes, 
-		     detail::g_a_sizes + detail::num_distinct_sizes, size);
+		     detail::g_a_sizes + detail::num_distinct_sizes, n);
 
   if (p_upper == detail::g_a_sizes + detail::num_distinct_sizes)
     throw resize_error();
@@ -152,12 +152,12 @@ get_nearest_larger_size(size_type size) const
 PB_DS_CLASS_T_DEC
 inline PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
-get_nearest_smaller_size(size_type size) const
+get_nearest_smaller_size(size_type n) const
 {
   const size_t* p_lower = std::lower_bound(detail::g_a_sizes, 
-		       detail::g_a_sizes + detail::num_distinct_sizes, size);
+		       detail::g_a_sizes + detail::num_distinct_sizes, n);
 
-  if (*p_lower >= size&&  p_lower != detail::g_a_sizes)
+  if (*p_lower >= n &&  p_lower != detail::g_a_sizes)
     --p_lower;
   if (*p_lower < m_start_size)
     return m_start_size;

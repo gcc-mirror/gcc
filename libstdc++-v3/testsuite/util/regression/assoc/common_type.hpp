@@ -58,13 +58,14 @@ namespace test
 
   struct hash
   {
-    typedef alloc_type::rebind<basic_type>::other::const_reference const_key_reference;
+    typedef alloc_type::rebind<basic_type>::other basic_type_rebind;
+    typedef basic_type_rebind::const_reference const_reference;
+    typedef basic_type::const_iterator const_iterator;
 
     size_t
-    operator()(const_key_reference r_key) const
+    operator()(const_reference r_key) const
     {
       size_t ret = 0;
-      typedef basic_type::const_iterator const_iterator;
       for (const_iterator it = r_key.begin(); it != r_key.end(); ++it)
 	ret = ret * 5 + static_cast<size_t>(*it);
       return ret;
@@ -141,4 +142,4 @@ namespace test
 } // namespace test
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_RAND_REGRESSION_TEST_COMMON_TYPE_HPP
+#endif 

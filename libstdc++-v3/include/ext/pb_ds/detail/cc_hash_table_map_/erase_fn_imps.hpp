@@ -70,25 +70,25 @@ erase_if(Pred pred)
 {
   size_type num_ersd = 0;
 
-  for (size_type pos = 0; pos < m_num_e_p; ++pos)
+  for (size_type pos = 0; pos < m_num_e; ++pos)
     {
       typedef
 	typename PB_DS_TYPES_TRAITS_C_DEC::const_reference
 	const_reference;
 
-      while (m_a_p_entries[pos] != NULL&& 
-	     pred(m_a_p_entries[pos]->m_value))
+      while (m_entries[pos] != NULL&& 
+	     pred(m_entries[pos]->m_value))
         {
 	  ++num_ersd;
 
-	  entry_pointer p_next_e = m_a_p_entries[pos]->m_p_next;
+	  entry_pointer p_next_e = m_entries[pos]->m_p_next;
 
-	  erase_entry_pointer(m_a_p_entries[pos]);
+	  erase_entry_pointer(m_entries[pos]);
 
-	  m_a_p_entries[pos] = p_next_e;
+	  m_entries[pos] = p_next_e;
         }
 
-      entry_pointer p_e = m_a_p_entries[pos];
+      entry_pointer p_e = m_entries[pos];
 
       while (p_e != NULL&&  p_e->m_p_next != NULL)
         {
@@ -113,9 +113,9 @@ void
 PB_DS_CLASS_C_DEC::
 clear()
 {
-  for (size_type pos = 0; pos < m_num_e_p; ++pos)
-    while (m_a_p_entries[pos] != NULL)
-      erase_entry_pointer(m_a_p_entries[pos]);
+  for (size_type pos = 0; pos < m_num_e; ++pos)
+    while (m_entries[pos] != NULL)
+      erase_entry_pointer(m_entries[pos]);
 
   do_resize_if_needed_no_throw();
 

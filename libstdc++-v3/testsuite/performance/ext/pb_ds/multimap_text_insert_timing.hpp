@@ -105,14 +105,14 @@ main(int argc, char* a_p_argv[])
 	typedef native_hash_multimap<std::string, int, 8, string_hash_fn> native_t;
 	typedef multimap_insert_test<vec_t::const_iterator, true> test_type;
 	test_type tst(b,  prm*  ratio_n, prm*  ratio_s, prm*  ratio_m);
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
+	tst(native_t());
       }
 
       {
 	typedef native_multimap<std::string, int> native_t;
 	typedef multimap_insert_test<vec_t::const_iterator, true> test_type;
 	test_type tst(b, prm* ratio_n, prm* ratio_s, prm* ratio_m);
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
+	tst(native_t());
       }
     }
   catch (...)

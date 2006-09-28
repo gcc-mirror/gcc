@@ -46,19 +46,12 @@
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-container_rand_regression_test(unsigned long seed, size_t n, size_t m, double tp, double ip, double ep, double cp, double mp, bool disp) :
-  m_seed((seed == 0)?
-	 twister_rand_gen::get_time_determined_seed():
-	 seed),
-  m_n(n),
-  m_m(m),
-  m_tp(tp),
-  m_ip(ip),
-  m_ep(ep),
-  m_cp(cp),
-  m_mp(mp),
-  m_disp(disp),
-  m_p_c(NULL)
+container_rand_regression_test(unsigned long seed, size_t n, size_t m, 
+			       double tp, double ip, double ep, double cp, 
+			       double mp, bool disp) 
+: m_seed((seed == 0) ? twister_rand_gen::get_time_determined_seed() : seed),
+  m_n(n), m_m(m), m_tp(tp), m_ip(ip), m_ep(ep), m_cp(cp), m_mp(mp),
+  m_disp(disp), m_p_c(NULL)
 { }
 
 PB_DS_CLASS_T_DEC
@@ -72,24 +65,21 @@ PB_DS_CLASS_C_DEC::
 default_constructor()
 {
   PB_DS_TRACE("default_constructor");
-
   bool done = true;
-
   m_alloc.set_throw_prob(m_tp);
 
   try
     {
       m_p_c = new Cntnr;
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch(__gnu_cxx::forced_exception_error&)
     {
       done = false;
     }
 
   if (m_p_c != NULL)
     PB_DS_COND_COMPARE(*m_p_c, m_native_c);
-
-  return (done);
+  return done;
 }
 
 PB_DS_CLASS_T_DEC
@@ -98,19 +88,12 @@ PB_DS_CLASS_C_DEC::
 swap()
 {
   PB_DS_TRACE("swap");
-
   m_alloc.set_throw_prob(0);
-
   Cntnr* p_c = new Cntnr;
-
   m_alloc.set_throw_prob(1);
-
   p_c->swap(*m_p_c);
-
   std::swap(p_c, m_p_c);
-
   delete p_c;
-
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);
 }
 
@@ -120,20 +103,14 @@ PB_DS_CLASS_C_DEC::
 copy_constructor()
 {
   PB_DS_TRACE("copy_constructor");
-
   bool done = true;
-
   Cntnr* p_c = NULL;
-
   m_alloc.set_throw_prob(m_tp);
-
-  typename alloc_t::group_throw_prob_adjustor
-    adjust(m_p_c->size());
+  typename alloc_t::group_throw_prob_adjustor adjust(m_p_c->size());
 
   try
     {
       p_c = new Cntnr(*m_p_c);
-
       std::swap(p_c, m_p_c);
     }
   catch(__gnu_cxx::forced_exception_error& )
@@ -142,10 +119,8 @@ copy_constructor()
     }
 
   delete p_c;
-
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);
-
-  return (done);
+  return done;
 }
 
 PB_DS_CLASS_T_DEC
@@ -154,22 +129,15 @@ PB_DS_CLASS_C_DEC::
 assignment_operator()
 {
   PB_DS_TRACE("assignment operator");
-
   bool done = true;
-
   Cntnr* p_c = NULL;
-
   m_alloc.set_throw_prob(m_tp);
-
-  typename alloc_t::group_throw_prob_adjustor
-    adjust(m_p_c->size());
+  typename alloc_t::group_throw_prob_adjustor adjust(m_p_c->size());
 
   try
     {
       p_c = new Cntnr();
-
       * p_c =* m_p_c;
-
       std::swap(p_c, m_p_c);
     }
   catch(__gnu_cxx::forced_exception_error& )
@@ -178,10 +146,8 @@ assignment_operator()
     }
 
   delete p_c;
-
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);
-
-  return (done);
+  return done;
 }
 
 PB_DS_CLASS_T_DEC
@@ -190,8 +156,7 @@ PB_DS_CLASS_C_DEC::
 it_constructor()
 {
   PB_DS_TRACE("it_constructor");
-
-  return (it_constructor_imp(typename Cntnr::container_category()));
+  return it_constructor_imp(typename Cntnr::container_category());
 }
 
 PB_DS_CLASS_T_DEC
@@ -200,13 +165,9 @@ PB_DS_CLASS_C_DEC::
 it_constructor_imp(pb_ds::cc_hash_tag)
 {
   bool done = true;
-
   Cntnr* p_c = NULL;
-
   m_alloc.set_throw_prob(m_tp);
-
-  typename alloc_t::group_throw_prob_adjustor
-    adjust(m_p_c->size());
+  typename alloc_t::group_throw_prob_adjustor adjust(m_p_c->size());
 
   try
     {
@@ -217,69 +178,52 @@ it_constructor_imp(pb_ds::cc_hash_tag)
 	  m_native_c.clear();
 	  break;
         case 1:
-	  p_c = new Cntnr(m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn());
+	  p_c = new Cntnr(m_p_c->get_hash_fn(), m_p_c->get_eq_fn());
 	  m_native_c.clear();
 	  break;
         case 2:
-	  p_c = new Cntnr(m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
+	  p_c = new Cntnr(m_p_c->get_hash_fn(), m_p_c->get_eq_fn(),
 			  m_p_c->get_comb_hash_fn());
 	  m_native_c.clear();
 	  break;
         case 3:
-	  p_c = new Cntnr(m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
+	  p_c = new Cntnr(m_p_c->get_hash_fn(), m_p_c->get_eq_fn(),
 			  m_p_c->get_comb_hash_fn(),
 			  m_p_c->get_resize_policy());
 	  m_native_c.clear();
 	  break;
         case 4:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end());
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end());
 	  break;
         case 5:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn());
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn());
 	  break;
         case 6:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn(),
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn(),
 			  m_p_c->get_eq_fn());
 	  break;
         case 7:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
-			  m_p_c->get_comb_hash_fn());
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn(),
+			  m_p_c->get_eq_fn(), m_p_c->get_comb_hash_fn());
 	  break;
         case 8:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
-			  m_p_c->get_comb_hash_fn(),
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn(),
+			  m_p_c->get_eq_fn(), m_p_c->get_comb_hash_fn(),
 			  m_p_c->get_resize_policy());
 	  break;
         default:
-	  PB_DS_THROW_IF_FAILED(                    false,  "",  m_p_c, & m_native_c);
+	  PB_DS_THROW_IF_FAILED(false, "",  m_p_c, & m_native_c);
         };
-
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch (__gnu_cxx::forced_exception_error&)
     {
       done = false;
     }
 
   delete p_c;
-
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);
-
-  return (done);
+  return done;
 }
 
 PB_DS_CLASS_T_DEC
@@ -288,13 +232,9 @@ PB_DS_CLASS_C_DEC::
 it_constructor_imp(pb_ds::gp_hash_tag)
 {
   bool done = true;
-
   Cntnr* p_c = NULL;
-
   m_alloc.set_throw_prob(m_tp);
-
-  typename alloc_t::group_throw_prob_adjustor
-    adjust(m_p_c->size());
+  typename alloc_t::group_throw_prob_adjustor adjust(m_p_c->size());
 
   try
     {
@@ -305,95 +245,68 @@ it_constructor_imp(pb_ds::gp_hash_tag)
 	  m_native_c.clear();
 	  break;
         case 1:
-	  p_c = new Cntnr(m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn());
+	  p_c = new Cntnr(m_p_c->get_hash_fn(), m_p_c->get_eq_fn());
 	  m_native_c.clear();
 	  break;
         case 2:
-	  p_c = new Cntnr(m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
+	  p_c = new Cntnr(m_p_c->get_hash_fn(), m_p_c->get_eq_fn(),
 			  m_p_c->get_comb_probe_fn());
 	  m_native_c.clear();
 	  break;
         case 3:
-	  p_c = new Cntnr(m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
+	  p_c = new Cntnr(m_p_c->get_hash_fn(), m_p_c->get_eq_fn(),
 			  m_p_c->get_comb_probe_fn());
 	  m_native_c.clear();
 	  break;
         case 4:
-	  p_c = new Cntnr(m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
-			  m_p_c->get_comb_probe_fn(),
-			  m_p_c->get_probe_fn());
+	  p_c = new Cntnr(m_p_c->get_hash_fn(), m_p_c->get_eq_fn(),
+			  m_p_c->get_comb_probe_fn(), m_p_c->get_probe_fn());
 	  m_native_c.clear();
 	  break;
         case 5:
-	  p_c = new Cntnr(m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
-			  m_p_c->get_comb_probe_fn(),
-			  m_p_c->get_probe_fn(),
+	  p_c = new Cntnr(m_p_c->get_hash_fn(), m_p_c->get_eq_fn(),
+			  m_p_c->get_comb_probe_fn(), m_p_c->get_probe_fn(),
 			  m_p_c->get_resize_policy());
 	  m_native_c.clear();
 	  break;
         case 6:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn());
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn());
 	  break;
         case 7:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn(),
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn(),
 			  m_p_c->get_eq_fn());
 	  break;
         case 8:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
-			  m_p_c->get_comb_probe_fn());
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn(),
+			  m_p_c->get_eq_fn(), m_p_c->get_comb_probe_fn());
 	  break;
         case 9:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
-			  m_p_c->get_comb_probe_fn());
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn(),
+			  m_p_c->get_eq_fn(), m_p_c->get_comb_probe_fn());
 	  break;
         case 10:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
-			  m_p_c->get_comb_probe_fn(),
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn(),
+			  m_p_c->get_eq_fn(), m_p_c->get_comb_probe_fn(),
 			  m_p_c->get_probe_fn());
 	  break;
         case 11:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_hash_fn(),
-			  m_p_c->get_eq_fn(),
-			  m_p_c->get_comb_probe_fn(),
-			  m_p_c->get_probe_fn(),
-			  m_p_c->get_resize_policy());
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_hash_fn(),
+			  m_p_c->get_eq_fn(), m_p_c->get_comb_probe_fn(),
+			  m_p_c->get_probe_fn(), m_p_c->get_resize_policy());
 	  break;
         default:
-	  PB_DS_THROW_IF_FAILED(                    false,  "",  m_p_c, & m_native_c);
+	  PB_DS_THROW_IF_FAILED(false, "",  m_p_c, & m_native_c);
         };
-
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch (__gnu_cxx::forced_exception_error&)
     {
       done = false;
     }
 
   delete p_c;
-
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);
-
-  return (done);
+  return done;
 }
 
 PB_DS_CLASS_T_DEC
@@ -402,13 +315,9 @@ PB_DS_CLASS_C_DEC::
 it_constructor_imp(pb_ds::tree_tag)
 {
   bool done = true;
-
   Cntnr* p_c = NULL;
-
   m_alloc.set_throw_prob(m_tp);
-
-  typename alloc_t::group_throw_prob_adjustor
-    adjust(m_p_c->size());
+  typename alloc_t::group_throw_prob_adjustor adjust(m_p_c->size());
 
   try
     {
@@ -419,26 +328,21 @@ it_constructor_imp(pb_ds::tree_tag)
 	  m_native_c.clear();
 	  break;
         case 1:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
-			  m_p_c->get_cmp_fn());
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), m_p_c->get_cmp_fn());
 	  break;
         default:
-	  PB_DS_THROW_IF_FAILED(                false,  "",  m_p_c, & m_native_c);
+	  PB_DS_THROW_IF_FAILED(false, "",  m_p_c, &m_native_c);
         };
-
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch (__gnu_cxx::forced_exception_error&)
     {
       done = false;
     }
 
   delete p_c;
-
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);
-
-  return (done);
+  return done;
 }
 
 PB_DS_CLASS_T_DEC
@@ -447,31 +351,23 @@ PB_DS_CLASS_C_DEC::
 it_constructor_imp(pb_ds::list_update_tag)
 {
   bool done = true;
-
   Cntnr* p_c = NULL;
-
   m_alloc.set_throw_prob(m_tp);
-
-  typename alloc_t::group_throw_prob_adjustor
-    adjust(m_p_c->size());
+  typename alloc_t::group_throw_prob_adjustor adjust(m_p_c->size());
 
   try
     {
-      p_c = new Cntnr(m_p_c->begin(),
-		      m_p_c->end());
-
+      p_c = new Cntnr(m_p_c->begin(), m_p_c->end());
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch (__gnu_cxx::forced_exception_error&)
     {
       done = false;
     }
 
   delete p_c;
-
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);
-
-  return (done);
+  return done;
 }
 
 PB_DS_CLASS_T_DEC
@@ -480,13 +376,9 @@ PB_DS_CLASS_C_DEC::
 it_constructor_imp(pb_ds::pat_trie_tag)
 {
   bool done = true;
-
   Cntnr* p_c = NULL;
-
   m_alloc.set_throw_prob(m_tp);
-
-  typename alloc_t::group_throw_prob_adjustor
-    adjust(m_p_c->size());
+  typename alloc_t::group_throw_prob_adjustor adjust(m_p_c->size());
 
   try
     {
@@ -497,25 +389,22 @@ it_constructor_imp(pb_ds::pat_trie_tag)
 	  m_native_c.clear();
 	  break;
         case 1:
-	  p_c = new Cntnr(m_p_c->begin(),
-			  m_p_c->end(),
+	  p_c = new Cntnr(m_p_c->begin(), m_p_c->end(), 
 			  m_p_c->get_e_access_traits());
 	  break;
         default:
-	  PB_DS_THROW_IF_FAILED(                    false,  "",  m_p_c, & m_native_c);
+	  PB_DS_THROW_IF_FAILED(false, "",  m_p_c, & m_native_c);
         };
 
       std::swap(p_c, m_p_c);
     }
-  catch(__gnu_cxx::forced_exception_error& )
+  catch (__gnu_cxx::forced_exception_error&)
     {
       done = false;
     }
 
   delete p_c;
-
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);
-
-  return (done);
+  return done;
 }
 

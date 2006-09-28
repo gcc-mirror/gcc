@@ -49,16 +49,10 @@
 
 namespace pb_ds
 {
-
   namespace detail
   {
-
-#define PB_DS_CLASS_T_DEC			\
-    template<typename Size_Type>
-
-#define PB_DS_CLASS_C_DEC					\
-    mask_based_range_hashing<					\
-						Size_Type>
+#define PB_DS_CLASS_T_DEC template<typename Size_Type>
+#define PB_DS_CLASS_C_DEC mask_based_range_hashing<Size_Type>
 
     template<typename Size_Type>
     class mask_based_range_hashing
@@ -66,22 +60,21 @@ namespace pb_ds
     protected:
       typedef Size_Type size_type;
 
-    protected:
       void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(mask_based_range_hashing& other)
+      { std::swap(m_mask, other.m_mask); }
 
       void
       notify_resized(size_type size);
 
       inline size_type
-      range_hash(size_type hash) const;
+      range_hash(size_type hash) const
+      { return size_type(hash & m_mask); }
 
     private:
-      size_type m_mask;
-
-      const static size_type s_num_bits_in_size_type;
-
-      const static size_type s_highest_bit_1;
+      size_type 		m_mask;
+      const static size_type 	s_num_bits_in_size_type;
+      const static size_type 	s_highest_bit_1;
     };
 
     PB_DS_CLASS_T_DEC
@@ -90,52 +83,31 @@ namespace pb_ds
       sizeof(typename PB_DS_CLASS_C_DEC::size_type) << 3;
 
     PB_DS_CLASS_T_DEC
-    const typename PB_DS_CLASS_C_DEC::size_type PB_DS_CLASS_C_DEC::s_highest_bit_1 =
-						       static_cast<typename PB_DS_CLASS_C_DEC::size_type>(1) << (s_num_bits_in_size_type - 1);
+    const typename PB_DS_CLASS_C_DEC::size_type PB_DS_CLASS_C_DEC::s_highest_bit_1 = static_cast<typename PB_DS_CLASS_C_DEC::size_type>(1) << (s_num_bits_in_size_type - 1);
 
-    PB_DS_CLASS_T_DEC
-    void
-    PB_DS_CLASS_C_DEC::
-    swap(PB_DS_CLASS_C_DEC& other)
-    {
-      std::swap(m_mask, other.m_mask);
-    }
-
+ 
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
     notify_resized(size_type size)
     {
       size_type i = 0;
-
       while (size ^ s_highest_bit_1)
 	{
 	  size <<= 1;
-
 	  ++i;
 	}
 
       m_mask = 1;
-
       i += 2;
-
       while (i++ < s_num_bits_in_size_type)
         m_mask = (m_mask << 1) ^ 1;
-    }
-
-    PB_DS_CLASS_T_DEC
-    inline typename PB_DS_CLASS_C_DEC::size_type
-    PB_DS_CLASS_C_DEC::
-    range_hash(size_type hash) const
-    {
-      return (hash&  m_mask);
     }
 
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 
   } // namespace detail
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_MASK_BASED_RANGE_HASHING_HPP
+#endif

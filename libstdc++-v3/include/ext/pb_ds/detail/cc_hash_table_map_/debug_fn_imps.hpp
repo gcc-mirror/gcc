@@ -52,7 +52,7 @@ PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
   map_debug_base::check_size(m_num_used_e);
-  assert_entry_pointer_array_valid(m_a_p_entries);
+  assert_entry_pointer_array_valid(m_entries);
 }
 
 PB_DS_CLASS_T_DEC
@@ -61,7 +61,7 @@ PB_DS_CLASS_C_DEC::
 assert_entry_pointer_array_valid(const entry_pointer_array a_p_entries) const
 {
   size_type iterated_num_used_e = 0;
-  for (size_type pos = 0; pos < m_num_e_p; ++pos)
+  for (size_type pos = 0; pos < m_num_e; ++pos)
     {
       entry_pointer p_e = a_p_entries[pos];
       while (p_e != NULL)

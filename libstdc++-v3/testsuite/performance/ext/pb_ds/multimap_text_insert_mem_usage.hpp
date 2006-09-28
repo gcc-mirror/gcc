@@ -116,7 +116,7 @@ main(int argc, char* a_p_argv[])
       test_type tst(b,  prm* ratio_n, prm* ratio_s, prm* ratio_m);
       {
 	typedef native_multimap<string_t, int, std::less<string_t>, alloc_t> native_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
+	tst(native_t());
       }
 
       {
@@ -130,7 +130,7 @@ main(int argc, char* a_p_argv[])
 	  alloc_t>
 	  native_t;
 
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
+	tst(native_t());
       }
     }
   catch (...)

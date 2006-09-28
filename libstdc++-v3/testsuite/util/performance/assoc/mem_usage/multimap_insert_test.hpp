@@ -55,134 +55,94 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
-#define PB_DS_CLASS_T_DEC			\
-    template<typename It, bool Native>
-
-#define PB_DS_CLASS_C_DEC				\
-    multimap_insert_test<				\
-						It,	\
-						Native>
-
     template<typename It, bool Native>
     class multimap_insert_test
     {
     public:
-      multimap_insert_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm);
+      multimap_insert_test(It b, size_t ins_vn, size_t ins_vs, size_t ins_vm):
+      m_ins_b(b), m_ins_vn(ins_vn), m_ins_vs(ins_vs), m_ins_vm(ins_vm)
+      { }
 
       template<typename Cntnr>
       void
-      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
+      operator()(Cntnr);
 
     private:
-      multimap_insert_test(const multimap_insert_test& );
+      multimap_insert_test(const multimap_insert_test&);
 
       template<typename Cntnr>
       size_t
-      insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::true_type);
+      insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::true_type);
 
       template<typename Cntnr>
       size_t
-      insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::false_type);
+      insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::false_type);
 
-    private:
       const It m_ins_b;
-
       const size_t m_ins_vn;
       const size_t m_ins_vs;
       const size_t m_ins_vm;
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    multimap_insert_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm) :
-      m_ins_b(ins_b),
-      m_ins_vn(ins_vn),
-      m_ins_vs(ins_vs),
-      m_ins_vm(ins_vm)
-    { }
-
-    PB_DS_CLASS_T_DEC
+    template<typename It, bool Native>
     template<typename Cntnr>
     void
-    PB_DS_CLASS_C_DEC::
-    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+    multimap_insert_test<It, Native>::
+    operator()(Cntnr)
     {
-      xml_result_set_performance_formatter res_set_fmt(
-						       string_form<Cntnr>::name(),
-						       string_form<Cntnr>::desc());
+      typedef xml_result_set_performance_formatter formatter_type;
+      formatter_type res_set_fmt(string_form<Cntnr>::name(),
+				 string_form<Cntnr>::desc());
 
-      for (size_t size_i = 0; m_ins_vn + size_i*  m_ins_vs < m_ins_vm; ++size_i)
+      for (size_t i = 0; m_ins_vn + i * m_ins_vs < m_ins_vm; ++i)
 	{
-	  const size_t ins_size = m_ins_vn + size_i*  m_ins_vs;
-
+	  const size_t ins_size = m_ins_vn + i * m_ins_vs;
 	  It ins_it_b = m_ins_b;
 	  It ins_it_e = m_ins_b;
 	  std::advance(ins_it_e, ins_size);
 
-	  const size_t delta_mem = insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>(),
-					  ins_it_b,
-					  ins_it_e,
+	  const size_t delta_mem = insert(Cntnr(), ins_it_b, ins_it_e,
 					  pb_ds::detail::integral_constant<int,Native>());
 
 	  res_set_fmt.add_res(ins_size, static_cast<double>(delta_mem));
 	}
     }
 
-    PB_DS_CLASS_T_DEC
+    template<typename It, bool Native>
     template<typename Cntnr>
     size_t
-    PB_DS_CLASS_C_DEC::
-    insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::true_type)
+    multimap_insert_test<It, Native>::
+    insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::true_type)
     {
       mem_track_allocator<char> alloc;
-
       const size_t init_mem = alloc.get_total();
-
       Cntnr cntnr;
-
       for (It ins_it = ins_it_b; ins_it != ins_it_e; ++ins_it)
         cntnr.insert((typename Cntnr::const_reference)(*ins_it));
-
       const size_t final_mem = alloc.get_total();
-
       assert(final_mem > init_mem);
-
       return (final_mem - init_mem);
     }
 
-    PB_DS_CLASS_T_DEC
+    template<typename It, bool Native>
     template<typename Cntnr>
     size_t
-    PB_DS_CLASS_C_DEC::
-    insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e, pb_ds::detail::false_type)
+    multimap_insert_test<It, Native>::
+    insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::false_type)
     {
       mem_track_allocator<char> alloc;
-
       const size_t init_mem = alloc.get_total();
-
       Cntnr cntnr;
-
       for (It ins_it = ins_it_b; ins_it != ins_it_e; ++ins_it)
         cntnr[ins_it->first].insert(ins_it->second);
-
       const size_t final_mem = alloc.get_total();
-
       assert(final_mem > init_mem);
-
       return (final_mem - init_mem);
     }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_MULTIMAP_INSERT_TEST_HPP
+#endif 
 

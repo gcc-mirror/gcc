@@ -63,7 +63,7 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
-    entry_pointer p_e = m_a_p_entries[pos];
+    entry_pointer p_e = m_entries[pos];
 
   resize_base::notify_erase_search_start();
 
@@ -88,7 +88,7 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
       _GLIBCXX_DEBUG_ONLY(map_debug_base::
 		     check_key_exists(r_key);)
 
-        erase_entry_pointer(m_a_p_entries[pos]);
+        erase_entry_pointer(m_entries[pos]);
 
       do_resize_if_needed_no_throw();
 

@@ -52,7 +52,7 @@ do_resize_if_needed()
   if (!resize_base::is_resize_needed())
     return (false);
 
-  resize_imp(resize_base::get_new_size(        m_num_e_p, m_num_used_e));
+  resize_imp(resize_base::get_new_size(        m_num_e, m_num_used_e));
 
   return (true);
 }
@@ -76,7 +76,7 @@ do_resize_if_needed_no_throw()
 
   try
     {
-      resize_imp(resize_base::get_new_size(            m_num_e_p, m_num_used_e));
+      resize_imp(resize_base::get_new_size(            m_num_e, m_num_used_e));
     }
   catch(...)
     { }
@@ -91,10 +91,10 @@ resize_imp(size_type new_size)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
-    if (new_size == m_num_e_p)
+    if (new_size == m_num_e)
       return;
 
-  const size_type old_size = m_num_e_p;
+  const size_type old_size = m_num_e;
 
   entry_pointer_array a_p_entries_resized;
 
@@ -108,7 +108,7 @@ resize_imp(size_type new_size)
 
       a_p_entries_resized = s_entry_pointer_allocator.allocate(new_size);
 
-      m_num_e_p = new_size;
+      m_num_e = new_size;
     }
   catch(...)
     {
@@ -131,23 +131,23 @@ void
 PB_DS_CLASS_C_DEC::
 resize_imp_no_exceptions(size_type new_size, entry_pointer_array a_p_entries_resized, size_type old_size)
 {
-  std::fill(a_p_entries_resized, a_p_entries_resized + m_num_e_p,(entry_pointer)NULL);
+  std::fill(a_p_entries_resized, a_p_entries_resized + m_num_e,(entry_pointer)NULL);
 
   for (size_type pos = 0; pos < old_size; ++pos)
     {
-      entry_pointer p_e = m_a_p_entries[pos];
+      entry_pointer p_e = m_entries[pos];
 
       while (p_e != NULL)
 	p_e = resize_imp_no_exceptions_reassign_pointer(p_e,  a_p_entries_resized,  traits_base::m_store_extra_indicator);
     }
 
-  m_num_e_p = new_size;
+  m_num_e = new_size;
 
   _GLIBCXX_DEBUG_ONLY(assert_entry_pointer_array_valid(a_p_entries_resized);)
 
-    s_entry_pointer_allocator.deallocate(m_a_p_entries, old_size);
+    s_entry_pointer_allocator.deallocate(m_entries, old_size);
 
-  m_a_p_entries = a_p_entries_resized;
+  m_entries = a_p_entries_resized;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }

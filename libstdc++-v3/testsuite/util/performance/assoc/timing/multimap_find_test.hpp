@@ -54,37 +54,31 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       template<typename It, class Cntnr, bool Native>
       class multimap_find_functor
       {
       public:
-        multimap_find_functor(const Cntnr& r_container,  It fnd_it_b,  It fnd_it_e) : m_r_container(r_container),
-										      m_fnd_it_b(fnd_it_b),
-										      m_fnd_it_e(fnd_it_e)
+        multimap_find_functor(const Cntnr& container, It fnd_it_b, It fnd_it_e)
+	: m_r_container(container), m_fnd_it_b(fnd_it_b), m_fnd_it_e(fnd_it_e)
 	{ }
 
 	void
         operator()(std::size_t resolution)
 	{
 	  size_t not_found_count = 0;
-
+	  typedef typename Cntnr::const_point_iterator iterator_type;
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
-	      typename Cntnr::const_point_iterator prm_end_it = m_r_container.end();
-
+	      iterator_type end = m_r_container.end();
 	      for (It fnd_it = m_fnd_it_b; fnd_it != m_fnd_it_e; ++fnd_it)
 		{
-		  typename Cntnr::const_point_iterator prm_it = m_r_container.find(fnd_it->first);
-
-		  if (prm_it == prm_end_it ||
-		      prm_it->second.find(fnd_it->second) == prm_it->second.end())
+		  iterator_type it = m_r_container.find(fnd_it->first);
+		  if (it == end ||
+		      it->second.find(fnd_it->second) == it->second.end())
                     ++not_found_count;
 		}
 	    }
@@ -95,34 +89,29 @@ namespace pb_ds
 
       private:
 	const Cntnr& m_r_container;
-
 	const It m_fnd_it_b;
 	const It m_fnd_it_e;
       };
 
       template<typename It, class Cntnr>
-      class multimap_find_functor<
-	It,
-	Cntnr,
-	true>
+      class multimap_find_functor<It, Cntnr, true>
       {
       public:
-        multimap_find_functor(const Cntnr& r_container,  It fnd_it_b,  It fnd_it_e) : m_r_container(r_container),
-										      m_fnd_it_b(fnd_it_b),
-										      m_fnd_it_e(fnd_it_e)
+        multimap_find_functor(const Cntnr& container, It fnd_it_b, It fnd_it_e)
+	: m_r_container(container), m_fnd_it_b(fnd_it_b), m_fnd_it_e(fnd_it_e)
 	{ }
 
 	void
         operator()(std::size_t resolution)
 	{
+	  typedef typename Cntnr::const_reference const_reference;
 	  size_t not_found_count = 0;
-
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      Cntnr cntnr;
-
 	      for (It fnd_it = m_fnd_it_b; fnd_it != m_fnd_it_e; ++fnd_it)
-                if (m_r_container.find((typename Cntnr::const_reference)(*fnd_it)) == m_r_container.end())
+                if (m_r_container.find(const_reference(*fnd_it)) 
+		    == m_r_container.end())
 		  ++not_found_count;
 	    }
 
@@ -132,80 +121,67 @@ namespace pb_ds
 
       private:
 	const Cntnr& m_r_container;
-
 	const It m_fnd_it_b;
 	const It m_fnd_it_e;
       };
-
     } // namespace detail
 
-#define PB_DS_CLASS_T_DEC			\
-    template<typename It, bool Native>
-
-#define PB_DS_CLASS_C_DEC				\
-    multimap_find_test<					\
-						It,	\
-						Native>
 
     template<typename It, bool Native>
     class multimap_find_test : private pb_ds::test::detail::timing_test_base
     {
     public:
-      multimap_find_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm);
+      multimap_find_test(It ins_b, size_t ins_vn, size_t vs, size_t ins_vm)
+      : m_ins_b(ins_b), m_ins_vn(ins_vn), m_ins_vs(vs), m_ins_vm(ins_vm)
+      { }
 
       template<typename Cntnr>
       void
-      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
+      operator()(Cntnr);
 
     private:
-      multimap_find_test(const multimap_find_test& );
+      multimap_find_test(const multimap_find_test&);
 
       template<typename Cntnr>
       Cntnr
-      init(It ins_b, It ins_e, __gnu_cxx::typelist::detail::type_to_type<Cntnr>, pb_ds::detail::true_type);
+      init(It ins_b, It ins_e, Cntnr, pb_ds::detail::true_type)
+      { return Cntnr(ins_b, ins_e); }
 
       template<typename Cntnr>
       Cntnr
-      init(It ins_b, It ins_e, __gnu_cxx::typelist::detail::type_to_type<Cntnr>, pb_ds::detail::false_type);
+      init(It ins_b, It ins_e, Cntnr, pb_ds::detail::false_type)
+      {
+	Cntnr ret;
+	for (It it = ins_b; it != ins_e; ++it)
+	  ret[it->first].insert(it->second);
+	return ret;
+      }
 
-    private:
       const It m_ins_b;
-
       const size_t m_ins_vn;
       const size_t m_ins_vs;
       const size_t m_ins_vm;
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    multimap_find_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm) :
-      m_ins_b(ins_b),
-      m_ins_vn(ins_vn),
-      m_ins_vs(ins_vs),
-      m_ins_vm(ins_vm)
-    { }
 
-    PB_DS_CLASS_T_DEC
+    template<typename It, bool Native>
     template<typename Cntnr>
     void
-    PB_DS_CLASS_C_DEC::
-    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+    multimap_find_test<It, Native>::
+    operator()(Cntnr)
     {
-      xml_result_set_performance_formatter res_set_fmt(
-						       string_form<Cntnr>::name(),
-						       string_form<Cntnr>::desc());
+      typedef xml_result_set_performance_formatter formatter_type;
+      formatter_type res_set_fmt(string_form<Cntnr>::name(),
+				 string_form<Cntnr>::desc());
 
-      for (size_t size_i = 0; m_ins_vn + size_i*  m_ins_vs < m_ins_vm; ++size_i)
+      for (size_t i = 0; m_ins_vn + i * m_ins_vs < m_ins_vm; ++i)
 	{
-	  const size_t v = m_ins_vn + size_i*  m_ins_vs;
-
+	  const size_t v = m_ins_vn + i * m_ins_vs;
 	  It ins_it_b = m_ins_b;
 	  It ins_it_e = m_ins_b;
 	  std::advance(ins_it_e, v);
 
-	  Cntnr c = init(ins_it_b,
-			 ins_it_e,
-			 __gnu_cxx::typelist::detail::type_to_type<Cntnr>(),
+	  Cntnr c = init(ins_it_b, ins_it_e, Cntnr(),
 			 pb_ds::detail::integral_constant<int,Native>());
 
 	  pb_ds::test::detail::multimap_find_functor<It, Cntnr, Native>
@@ -217,37 +193,8 @@ namespace pb_ds
 	  res_set_fmt.add_res(v, res / v);
 	}
     }
-
-    PB_DS_CLASS_T_DEC
-    template<typename Cntnr>
-    Cntnr
-    PB_DS_CLASS_C_DEC::
-    init(It ins_b, It ins_e, __gnu_cxx::typelist::detail::type_to_type<Cntnr>, pb_ds::detail::true_type)
-    {
-      return Cntnr(ins_b, ins_e);
-    }
-
-    PB_DS_CLASS_T_DEC
-    template<typename Cntnr>
-    Cntnr
-    PB_DS_CLASS_C_DEC::
-    init(It ins_b, It ins_e, __gnu_cxx::typelist::detail::type_to_type<Cntnr>, pb_ds::detail::false_type)
-    {
-      Cntnr ret;
-
-      for (It it = ins_b; it != ins_e; ++it)
-        ret[it->first].insert(it->second);
-
-      return ret;
-    }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_MULTIMAP_INSERT_TEST_HPP
+#endif 
 

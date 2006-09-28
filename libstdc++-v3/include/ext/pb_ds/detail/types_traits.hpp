@@ -55,47 +55,34 @@ namespace pb_ds
 {
   namespace detail
   {
-
-    template<typename Key, typename Mapped, class Allocator, bool Store_Extra>
+    template<typename Key, typename Mapped, typename Alloc, bool Store_Extra>
     struct vt_base_selector
     {
-      typedef value_type_base< Key, Mapped, Allocator, Store_Extra> type;
+      typedef value_type_base<Key, Mapped, Alloc, Store_Extra> type;
     };
 
-    template<typename Key, typename Mapped, class Allocator, bool Store_Extra>
+    template<typename Key, typename Mapped, typename Alloc, bool Store_Extra>
     struct types_traits 
-    : public vt_base_selector<Key, Mapped, Allocator, Store_Extra>::type
+    : public vt_base_selector<Key, Mapped, Alloc, Store_Extra>::type
     {
 
-      typedef typename Allocator::template rebind< Key>::other key_allocator;
-
+      typedef typename Alloc::template rebind< Key>::other key_allocator;
       typedef typename key_allocator::value_type key_type;
-
       typedef typename key_allocator::pointer key_pointer;
-
       typedef typename key_allocator::const_pointer const_key_pointer;
-
       typedef typename key_allocator::reference key_reference;
-
       typedef typename key_allocator::const_reference const_key_reference;
-
-      typedef typename Allocator::size_type size_type;
-
+      typedef typename Alloc::size_type size_type;
       typedef false_type store_extra_false_type;
-
       typedef true_type store_extra_true_type;
-
-      integral_constant<int,Store_Extra> m_store_extra_indicator;
-
       typedef false_type no_throw_copies_false_type;
-
       typedef true_type no_throw_copies_true_type;
 
-      typename no_throw_copies<Key, Mapped>::indicator
-      m_no_throw_copies_indicator;
+      integral_constant<int, Store_Extra> m_store_extra_indicator;
+      typename no_throw_copies<Key, Mapped>::indicator m_no_throw_copies_indicator;
 
       // Extra value (used when the extra value is stored with each value).
-      typedef typename comp_hash_< size_type>::comp_hash comp_hash;
+      typedef typename comp_hash_<size_type>::comp_hash comp_hash;
     };
 
   } // namespace detail

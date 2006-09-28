@@ -125,12 +125,6 @@ namespace typelist
 {
 namespace detail
 {
-  template<typename Type>
-    struct type_to_type
-    {
-      typedef Type type;
-    };
-
   template<typename Fn, typename Typelist_Chain>
     struct apply_;
 
@@ -140,7 +134,7 @@ namespace detail
       void
       operator() (Fn& f)
       {
-	f.operator()(type_to_type<Hd>());
+	f.operator()(Hd());
 	apply_<Fn, Tl> next;
 	next(f);
       }

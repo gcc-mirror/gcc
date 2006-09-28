@@ -82,12 +82,12 @@ main(int argc, char* a_p_argv[])
       test_t tst(b, b, vn, vs, vm, vn, vs, vm);
       {
 	typedef native_hash_map< int, char> native_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
+	tst(native_t());
       }
 
       {
 	typedef native_map< int, char> native_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_t>());
+	tst(native_t());
       }
 
       {

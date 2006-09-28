@@ -76,7 +76,7 @@ namespace detail
 
     template<typename Cntnr>
     void
-    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+    operator()(Cntnr)
     {
       unsigned long ul = static_cast<unsigned long>(m_sd);
       container_rand_regression_test<Cntnr> t(ul, m_n, m_n, m_tp, m_ip, 
@@ -145,12 +145,12 @@ namespace detail
 	detail::rand_reg_test tst(sd, n, m, tp, ip, ep, cp, mp, disp);
 	__gnu_cxx::typelist::apply(tst, tl);
       }
-    catch(...)
+    catch (...)
       {
 	std::cerr << "Test failed with seed " << sd << std::endl;
 	if (disp)
 	  delete p_fmt;
-	return -1;
+	throw;
       }
 
     if (disp)

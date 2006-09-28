@@ -88,12 +88,12 @@ main(int argc, char* a_p_argv[])
 
       {
 	typedef native_priority_queue<string_t, true, std::less<string_t>, mem_track_allocator<string_t> > native_pq_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_pq_t>());
+	tst(native_pq_t());
       }
 
       {
 	typedef native_priority_queue<string_t, false, std::less<string_t>, mem_track_allocator<string_t> > native_pq_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_pq_t>());
+	tst(native_pq_t());
       }
     }
   catch (...)

@@ -50,8 +50,7 @@ PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    return ((find_key_pointer(r_key, traits_base::m_store_extra_indicator)));
+   return find_key_pointer(r_key, traits_base::m_store_extra_indicator);
 }
 
 PB_DS_CLASS_T_DEC
@@ -60,24 +59,18 @@ PB_DS_CLASS_C_DEC::
 find(const_key_reference r_key) const
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-
-    return (const_cast<PB_DS_CLASS_C_DEC& >(*this).
-	    find_key_pointer(r_key, traits_base::m_store_extra_indicator));
+  return const_cast<PB_DS_CLASS_C_DEC&>(*this).find_key_pointer(r_key, traits_base::m_store_extra_indicator);
 }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 find_end()
-{
-  return (NULL);
-}
+{ return NULL; }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_point_iterator
 PB_DS_CLASS_C_DEC::
 find_end() const
-{
-  return (NULL);
-}
+{ return NULL; }
 

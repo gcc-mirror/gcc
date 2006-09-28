@@ -92,12 +92,12 @@ main(int argc, char* a_p_argv[])
 
       {
 	typedef native_priority_queue<std::string, true> native_pq_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_pq_t>());
+	tst(native_pq_t());
       }
 
       {
 	typedef native_priority_queue<std::string, false> native_pq_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_pq_t>());
+	tst(native_pq_t());
       }
     }
   catch (...)
