@@ -63,13 +63,10 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       template<typename Cntnr>
       struct pb_ds_string_form
       {
@@ -81,110 +78,76 @@ namespace pb_ds
 	private:
 	  template<typename D_Cntnr>
 	  static std::string
-	  name(__gnu_cxx::typelist::detail::type_to_type<D_Cntnr>)
-	  {
-            return ("mmap_" + pb_ds_string_form<D_Cntnr>::name());
-	  }
+	  name(D_Cntnr)
+	  { return ("mmap_" + pb_ds_string_form<D_Cntnr>::name()); }
 
 	  template<typename D_Cntnr>
 	  static std::string
-	  desc(__gnu_cxx::typelist::detail::type_to_type<D_Cntnr>)
-	  {
-            return (pb_ds_string_form<D_Cntnr>::desc());
-	  }
+	  desc(D_Cntnr)
+	  { return pb_ds_string_form<D_Cntnr>::desc(); }
 
 	  static std::string
-	  name(__gnu_cxx::typelist::detail::type_to_type<size_t>)
-	  {
-            return ("map");
-	  }
+	  name(size_t)
+	  { return ("map"); }
 
 	  static std::string
-	  desc(__gnu_cxx::typelist::detail::type_to_type<size_t>)
-	  {
-            return ("");
-	  }
+	  desc(size_t)
+	  { return (""); }
 
 	  static std::string
-	  name(__gnu_cxx::typelist::detail::type_to_type<basic_type>)
-	  {
-            return ("map");
-	  }
+	  name(basic_type)
+	  { return ("map"); }
 
 	  static std::string
-	  desc(__gnu_cxx::typelist::detail::type_to_type<basic_type>)
-	  {
-            return ("");
-	  }
+	  desc(basic_type)
+	  { return (""); }
 
 	  static std::string
-	  name(__gnu_cxx::typelist::detail::type_to_type<int>)
-	  {
-            return ("map");
-	  }
+	  name(int)
+	  { return ("map"); }
 
 	  static std::string
-	  desc(__gnu_cxx::typelist::detail::type_to_type<int>)
-	  {
-            return ("");
-	  }
+	  desc(int)
+	  { return (""); }
 
 	  static std::string
-	  name(__gnu_cxx::typelist::detail::type_to_type<char>)
-	  {
-            return ("map");
-	  }
+	  name(char)
+	  { return ("map"); }
 
 	  static std::string
-	  desc(__gnu_cxx::typelist::detail::type_to_type<char>)
-	  {
-            return ("");
-	  }
+	  desc(char)
+	  { return (""); }
 
 	  static std::string
-	  name(__gnu_cxx::typelist::detail::type_to_type<pb_ds::null_mapped_type>)
-	  {
-            return ("set");
-	  }
+	  name(pb_ds::null_mapped_type)
+	  { return ("set"); }
 
 	  static std::string
-	  desc(__gnu_cxx::typelist::detail::type_to_type<pb_ds::null_mapped_type>)
-	  {
-            return ("");
-	  }
+	  desc(pb_ds::null_mapped_type)
+	  { return (""); }
 
 	public:
 	  static std::string
 	  name()
-	  {
-            return (name(__gnu_cxx::typelist::detail::type_to_type<mapped_type>()));
-	  }
+	  { return name(mapped_type()); }
 
 	  static std::string
 	  desc()
-	  {
-            return (desc(__gnu_cxx::typelist::detail::type_to_type<mapped_type>()));
-	  }
+	  { return desc(mapped_type()); }
 	};
 
 	typedef
-        detail::ds_string_form<
-	  Cntnr,
-	  typename Cntnr::container_category>
+        detail::ds_string_form<Cntnr, typename Cntnr::container_category>
         ds_string_form_t;
 
       public:
 	static std::string
         name()
-	{
-	  return (ds_string_form_t::name() + mapped_string_form::name());
-	}
+	{ return (ds_string_form_t::name() + mapped_string_form::name()); }
 
 	static std::string
         desc()
-	{
-	  return (ds_string_form_t::desc() + mapped_string_form::desc());
-	}
+	{ return (ds_string_form_t::desc() + mapped_string_form::desc()); }
       };
 
       template<typename Cntnr>
@@ -192,47 +155,35 @@ namespace pb_ds
       {
 	static std::string
         name()
-	{
-	  return (Cntnr::name());
-	}
+	{ return Cntnr::name(); }
 
 	static std::string
         desc()
-	{
-	  return (Cntnr::desc());
-	}
+	{ return Cntnr::desc(); }
       };
 
       template<typename Cntnr, class Tag>
-      struct tag_select_string_form : public pb_ds_string_form<
-        Cntnr>
+      struct tag_select_string_form : public pb_ds_string_form<Cntnr>
       { };
 
       template<typename Cntnr>
-      struct tag_select_string_form<
-        Cntnr,
-        native_hash_tag> : public native_string_form<
-        Cntnr>
+      struct tag_select_string_form<Cntnr, native_hash_tag> 
+      : public native_string_form<Cntnr>
       { };
 
       template<typename Cntnr>
-      struct tag_select_string_form<
-        Cntnr,
-        native_tree_tag> : public native_string_form<
-        Cntnr>
+      struct tag_select_string_form<Cntnr, native_tree_tag> 
+      : public native_string_form<Cntnr>
       { };
-
     } // namespace detail
 
     template<typename Cntnr>
-    struct string_form : public detail::tag_select_string_form<
-      Cntnr,
-      typename Cntnr::container_category>
+    struct string_form 
+    : public detail::tag_select_string_form<Cntnr, 
+					    typename Cntnr::container_category>
     { };
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_STRING_FORM_HPP
+#endif
 

@@ -54,20 +54,16 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       template<typename It, class Cntnr, bool LOR>
       class find_find_functor
       {
       public:
-        find_find_functor(Cntnr& r_container,  It fnd_it_b,  It fnd_it_e) : m_r_container(r_container),
-									    m_fnd_it_b(fnd_it_b),
-									    m_fnd_it_e(fnd_it_e)
+        find_find_functor(Cntnr& contnr,  It fnd_it_b,  It fnd_it_e) 
+	: m_contnr(contnr), m_fnd_it_b(fnd_it_b), m_fnd_it_e(fnd_it_e)
 	{ }
 
 	void
@@ -76,123 +72,91 @@ namespace pb_ds
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      It fnd_it = m_fnd_it_b;
-
 	      while (fnd_it != m_fnd_it_e)
-                ++m_r_container.find((fnd_it++)->first)->second;
+                ++m_contnr.find((fnd_it++)->first)->second;
 	    }
 	}
 
       private:
-	Cntnr& m_r_container;
-
+	Cntnr& m_contnr;
 	const It m_fnd_it_b;
 	const It m_fnd_it_e;
       };
 
       template<typename It, class Cntnr>
-      class find_find_functor<
-	It,
-	Cntnr,
-	true>
+      class find_find_functor<It, Cntnr, true>
       {
       public:
-        find_find_functor(Cntnr& r_container,  It fnd_it_b,  It fnd_it_e) : m_r_container(r_container),
-									    m_fnd_it_b(fnd_it_b),
-									    m_fnd_it_e(fnd_it_e)
+        find_find_functor(Cntnr& contnr,  It fnd_it_b,  It fnd_it_e) 
+	: m_contnr(contnr), m_fnd_it_b(fnd_it_b), m_fnd_it_e(fnd_it_e)
 	{ }
 
 	void
         operator()(std::size_t resolution)
 	{
 	  It fnd_it = m_fnd_it_b;
-
 	  while (fnd_it != m_fnd_it_e)
 	    {
 	      for (std::size_t i = 0; i < resolution; ++i)
-                ++m_r_container.find(fnd_it->first)->second;
-
+                ++m_contnr.find(fnd_it->first)->second;
 	      ++fnd_it;
 	    }
 	}
 
       private:
-	Cntnr& m_r_container;
-
+	Cntnr& m_contnr;
 	const It m_fnd_it_b;
 	const It m_fnd_it_e;
       };
-
     } // namespace detail
-
-#define PB_DS_CLASS_T_DEC			\
-    template<typename It, bool LOR>
-
-#define PB_DS_CLASS_C_DEC				\
-    find_test<						\
-						It,	\
-						LOR>
 
     template<typename It, bool LOR = false>
     class find_test : private pb_ds::test::detail::timing_test_base
     {
     public:
-      find_test(It ins_b, It fnd_it_b, size_t ins_vn, size_t ins_vs, size_t ins_vm, size_t fnd_vn, size_t fnd_vs, size_t fnd_vm);
+      find_test(It ins_b, It fnd_it_b, size_t ins_vn, size_t ins_vs, 
+		size_t ins_vm, size_t fnd_vn, size_t fnd_vs, size_t fnd_vm):
+      m_ins_b(ins_b), m_fnd_it_b(fnd_it_b), m_ins_vn(ins_vn), m_ins_vs(ins_vs),
+      m_ins_vm(ins_vm), m_fnd_vn(fnd_vn), m_fnd_vs(fnd_vs), m_fnd_vm(fnd_vm)
+      { }
 
       template<typename Cntnr>
       void
-      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
+      operator()(Cntnr);
 
     private:
       find_test(const find_test& );
 
     private:
-      const It m_ins_b;
-
-      const It m_fnd_it_b;
-
-      const size_t m_ins_vn;
-      const size_t m_ins_vs;
-      const size_t m_ins_vm;
-
-      const size_t m_fnd_vn;
-      const size_t m_fnd_vs;
-      const size_t m_fnd_vm;
+      const It 		m_ins_b;
+      const It 		m_fnd_it_b;
+      const size_t 	m_ins_vn;
+      const size_t 	m_ins_vs;
+      const size_t 	m_ins_vm;
+      const size_t 	m_fnd_vn;
+      const size_t 	m_fnd_vs;
+      const size_t 	m_fnd_vm;
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    find_test(It ins_b, It fnd_it_b, size_t ins_vn, size_t ins_vs, size_t ins_vm, size_t fnd_vn, size_t fnd_vs, size_t fnd_vm) :
-      m_ins_b(ins_b),
-      m_fnd_it_b(fnd_it_b),
-      m_ins_vn(ins_vn),
-      m_ins_vs(ins_vs),
-      m_ins_vm(ins_vm),
-      m_fnd_vn(fnd_vn),
-      m_fnd_vs(fnd_vs),
-      m_fnd_vm(fnd_vm)
-    { }
-
-    PB_DS_CLASS_T_DEC
+    template<typename It, bool LOR>
     template<typename Cntnr>
     void
-    PB_DS_CLASS_C_DEC::
-    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+    find_test<It, LOR>::
+    operator()(Cntnr)
     {
-      xml_result_set_performance_formatter res_set_fmt(
-						       string_form<Cntnr>::name(),
-						       string_form<Cntnr>::desc());
+      typedef string_form<Cntnr> sform_type;
+      typedef xml_result_set_performance_formatter formatter_type;
+      formatter_type res_set_fmt(sform_type::name(), sform_type::desc());
 
-      for (size_t size_i = 0; m_ins_vn + size_i*  m_ins_vs < m_ins_vm; ++size_i)
+      for (size_t i = 0; m_ins_vn + i * m_ins_vs < m_ins_vm; ++i)
 	{
-	  const size_t v = m_ins_vn + size_i*  m_ins_vs;
-	  const size_t fnd_size = m_fnd_vn + size_i*  m_fnd_vs;
-
+	  const size_t v = m_ins_vn + i * m_ins_vs;
+	  const size_t fnd_size = m_fnd_vn + i * m_fnd_vs;
 	  It ins_it_b = m_ins_b;
 	  It ins_it_e = m_ins_b;
 	  std::advance(ins_it_e, v);
 
 	  Cntnr test_container(ins_it_b, ins_it_e);
-
 	  It fnd_it_b = m_fnd_it_b;
 	  It fnd_it_e = m_fnd_it_b;
 	  std::advance(fnd_it_e, fnd_size);
@@ -202,18 +166,11 @@ namespace pb_ds
 
 	  const double res =
             pb_ds::test::detail::timing_test_base::operator()(fn);
-
 	  res_set_fmt.add_res(v, res / fnd_size);
 	}
     }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_FIND_TEST_HPP
+#endif 
 

@@ -1,3 +1,152 @@
+2006-09-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/typelist.h (type_to_type): Remove.
+	* include/ext/throw_allocator.h (assert_allocatod): Remove.
+	(check_allocated(label)): New.
+	(print_to_string): Print numerical output correctly.
+
+	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Adjust line numbers.
+
+	* testsuite/util/regression/rand/priority_queue/detail/
+	operator_fn_imps.hpp: Set and clear label, throw
+        probability. Check only allocations of the marked label.
+	* testsuite/util/regression/rand/assoc/detail/
+	operator_fn_imps.hpp: Same.
+
+	* testsuite/performance/ext/pb_ds/text_find_timing.cc: Adjustments for
+        removal of type_to_type.
+	* testsuite/performance/ext/pb_ds/
+	hash_random_int_erase_mem_usage.cc: Same.
+	* testsuite/performance/ext/pb_ds/tree_text_insert_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_push_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	random_int_subscript_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/tree_split_join_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/random_int_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	multimap_text_insert_mem_usage.hpp: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_random_int_push_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_find_timing.hpp: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_modify_timing.hpp: Same.
+	* testsuite/performance/ext/pb_ds/
+	tree_order_statistics_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_push_pop_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_join_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_random_int_push_pop_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	random_int_subscript_insert_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/tree_text_lor_find_timing.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	multimap_text_insert_timing.hpp: Same.
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_pop_mem_usage.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	hash_zlob_random_int_find_timing.cc: Same. 
+	* testsuite/util/regression/trait/assoc/type_trait.hpp: Same.
+	* testsuite/util/regression/rand/priority_queue/
+	rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/
+	constructor_destructor_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/detail/insert_fn_imps.hpp: Same.
+	* testsuite/util/regression/rand/assoc/rand_regression_test.hpp: Same.
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.hpp: Same.
+	* testsuite/util/regression/assoc/common_type.hpp: Same.
+	* testsuite/util/regression/basic_type.hpp: Same.
+	* testsuite/util/common_type/assoc/common_type.hpp: Same.
+	* testsuite/util/common_type/assoc/string_form.hpp: Same.
+	* testsuite/util/common_type/assoc/template_policy.hpp: Same.
+	* testsuite/util/common_type/assoc/native_set.hpp: Same.
+	* testsuite/util/performance/priority_queue/mem_usage/
+	pop_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/
+	push_pop_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/join_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/push_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/
+	modify_test.hpp: Same.
+	* testsuite/util/performance/assoc/mem_usage/
+	multimap_insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/mem_usage/erase_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/
+	multimap_insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/
+	subscript_find_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/find_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/
+	subscript_insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/
+	tree_order_statistics_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/multimap_find_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/
+	tree_split_join_test.hpp: Same.
+	* testsuite/util/performance/assoc/multimap_common_type.hpp: Same.
+	* testsuite/util/testsuite_common_types.h: Same.
+
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_no_store_hash_fn_imps.hpp: Typedef
+        normalization, consistency in member names between cc and gp hash
+        tables, formatting fixes.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cc_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/resize_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	constructor_destructor_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	erase_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/find_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	constructor_destructor_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/trace_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/resize_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	constructor_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	erase_no_store_hash_fn_imps.hpp: Same.
+
+	* include/ext/pb_ds/assoc_container.hpp: Formatting fixes.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_prime_size_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_standard_resize_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/types_traits.hpp: Same.
+	* include/ext/pb_ds/detail/constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/ov_tree_map_.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/ranged_probe_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/
+	direct_mod_range_hashing_imp.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/mask_based_range_hashing.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/
+	direct_mask_range_hashing_imp.hpp: Same.
+	
 2006-09-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/29217

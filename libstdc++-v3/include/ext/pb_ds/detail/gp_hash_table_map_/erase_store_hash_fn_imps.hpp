@@ -61,7 +61,7 @@ erase_imp(const_key_reference r_key,  true_type)
     {
       const size_type pos = ranged_probe_fn_base::operator()(            r_key, pos_hash_pair.second, i);
 
-      entry* const p_e = m_a_entries + pos;
+      entry* const p_e = m_entries + pos;
 
       switch(p_e->m_stat)
         {

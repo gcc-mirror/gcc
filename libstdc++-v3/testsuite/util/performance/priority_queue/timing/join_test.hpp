@@ -116,25 +116,21 @@ namespace pb_ds
     template<typename It>
     class join_test : private pb_ds::test::detail::timing_test_base
     {
-      const It 		m_ins_b;
-      const size_t 	m_ins_vn;
-      const size_t 	m_ins_vs;
-      const size_t 	m_ins_vm;
-
     public:
       join_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm)
-	: m_ins_b(ins_b), m_ins_vn(ins_vn), m_ins_vs(ins_vs), m_ins_vm(ins_vm)
+      : m_ins_b(ins_b), m_ins_vn(ins_vn), m_ins_vs(ins_vs), m_ins_vm(ins_vm)
       { }
 
       template<typename Cntnr>
       void
-      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+      operator()(Cntnr)
       {
 	using pb_ds::test::detail::double_push_functor;
 	using pb_ds::test::detail::double_push_join_functor;
 	typedef pb_ds::test::detail::timing_test_base base_type;
-	typedef xml_result_set_performance_formatter result_type;
-	result_type res(string_form<Cntnr>::name(), string_form<Cntnr>::desc());
+	typedef xml_result_set_performance_formatter formatter_type;
+	formatter_type res(string_form<Cntnr>::name(), 
+			   string_form<Cntnr>::desc());
 	  
 	for (size_t n = 0; m_ins_vn + n*  m_ins_vs < m_ins_vm; ++n)
 	  {
@@ -148,8 +144,7 @@ namespace pb_ds
 	    double_push_join_functor<It, Cntnr> double_push_join_fn(b, e);
 	    const double double_push_join_res = base_type::operator()(double_push_join_fn);
 	      
-	    const double effective_delta = std::max(double_push_join_res - double_push_res,
-						    base_type::min_time_res());
+	    const double effective_delta = std::max(double_push_join_res - double_push_res, base_type::min_time_res());
 	    res.add_res(v, effective_delta / v);
 	  }
       }
@@ -159,16 +154,21 @@ namespace pb_ds
 
       template<typename Cntnr>
       void
-      join(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It b, It e)
+      join(Cntnr, It b, It e)
       {
 	Cntnr cntnr;
 	typedef typename Cntnr::const_reference const_reference;
 	for (It it = b; it != e; ++it)
 	  cntnr.join(const_reference(*it));
       }
+
+      const It 		m_ins_b;
+      const size_t 	m_ins_vn;
+      const size_t 	m_ins_vs;
+      const size_t 	m_ins_vm;
     };
   } // namespace test
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_JOIN_TEST_HPP
+#endif 
 

@@ -54,28 +54,22 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     template<typename Allocator>
-    struct direct_mask_range_hashing_t_ : public pb_ds::direct_mask_range_hashing<
-      typename Allocator::size_type>
+    struct direct_mask_range_hashing_t_ 
+    : public pb_ds::direct_mask_range_hashing<typename Allocator::size_type>
     {
-      typedef
-      pb_ds::direct_mask_range_hashing<
-	typename Allocator::size_type>
-      base_type;
+      typedef typename Allocator::size_type size_type;
+      typedef pb_ds::direct_mask_range_hashing<size_type> base_type;
     };
 
     template<typename Allocator>
-    struct direct_mod_range_hashing_t_ : public pb_ds::direct_mod_range_hashing<
-      typename Allocator::size_type>
+    struct direct_mod_range_hashing_t_ 
+    : public pb_ds::direct_mod_range_hashing<typename Allocator::size_type>
     {
-      typedef
-      pb_ds::direct_mod_range_hashing<
-	typename Allocator::size_type>
-      base_type;
+      typedef typename Allocator::size_type size_type;
+      typedef pb_ds::direct_mod_range_hashing<size_type> base_type;
     };
 
     template<typename Allocator,
@@ -84,22 +78,16 @@ namespace pb_ds
 	     typename Allocator::size_type Max_Load_Nom,
 	     typename Allocator::size_type Max_Load_Denom,
 	     bool External_Access>
-    struct hash_load_check_resize_trigger_t_ : public pb_ds::hash_load_check_resize_trigger<
-      External_Access,
-      typename Allocator::size_type>
+    struct hash_load_check_resize_trigger_t_ 
+    : public pb_ds::hash_load_check_resize_trigger<External_Access,
+						   typename Allocator::size_type>
     {
-      typedef
-      pb_ds::hash_load_check_resize_trigger<
-	External_Access,
-	typename Allocator::size_type>
-      base_type;
+      typedef typename Allocator::size_type size_type;
+      typedef pb_ds::hash_load_check_resize_trigger<External_Access, size_type>  base_type;
 
       inline
-      hash_load_check_resize_trigger_t_() : base_type(
-						      static_cast<float>(Min_Load_Nom) /
-						      static_cast<float>(Min_Load_Denom),
-						      static_cast<float>(Max_Load_Nom) /
-						      static_cast<float>(Max_Load_Denom))
+      hash_load_check_resize_trigger_t_() 
+      : base_type(static_cast<float>(Min_Load_Nom) / static_cast<float>(Min_Load_Denom), static_cast<float>(Max_Load_Nom) / static_cast<float>(Max_Load_Denom))
       { }
 
       enum
@@ -113,20 +101,16 @@ namespace pb_ds
 	     typename Allocator::size_type Load_Nom,
 	     typename Allocator::size_type Load_Denom,
 	     bool External_Access>
-    struct cc_hash_max_collision_check_resize_trigger_t_ : public pb_ds::cc_hash_max_collision_check_resize_trigger<
-      External_Access,
+    struct cc_hash_max_collision_check_resize_trigger_t_ 
+    : public pb_ds::cc_hash_max_collision_check_resize_trigger<External_Access,
       typename Allocator::size_type>
     {
-      typedef
-      pb_ds::cc_hash_max_collision_check_resize_trigger<
-	External_Access,
-	typename Allocator::size_type>
-      base_type;
+      typedef typename Allocator::size_type size_type;
+      typedef pb_ds::cc_hash_max_collision_check_resize_trigger<External_Access, size_type> base_type;
 
       inline
-      cc_hash_max_collision_check_resize_trigger_t_() : base_type(
-								  static_cast<float>(Load_Nom) /
-								  static_cast<float>(Load_Denom))
+      cc_hash_max_collision_check_resize_trigger_t_() 
+      : base_type(static_cast<float>(Load_Nom) / static_cast<float>(Load_Denom))
       { }
 
       enum
@@ -140,36 +124,32 @@ namespace pb_ds
     { };
 
     template<typename Allocator>
-    struct hash_exponential_size_policy_t_ : public pb_ds::hash_exponential_size_policy<
-      typename Allocator::size_type>
-    {
-      // Nothing
-    };
-
-    template<typename Key, class Allocator>
-    struct linear_probe_fn_t_ : public pb_ds::linear_probe_fn<
-      typename Allocator::size_type>
+    struct hash_exponential_size_policy_t_ 
+    : public pb_ds::hash_exponential_size_policy<typename Allocator::size_type>
     { };
 
     template<typename Key, class Allocator>
-    struct quadratic_probe_fn_t_ : public pb_ds::quadratic_probe_fn<
-      typename Allocator::size_type>
+    struct linear_probe_fn_t_ 
+    : public pb_ds::linear_probe_fn<typename Allocator::size_type>
+    { };
+
+    template<typename Key, class Allocator>
+    struct quadratic_probe_fn_t_ 
+    : public pb_ds::quadratic_probe_fn<typename Allocator::size_type>
     { };
 
     template<typename Allocator, typename Allocator::size_type Max_Count>
-    struct counter_lu_policy_t_ : public pb_ds::counter_lu_policy<
-      Max_Count,
-      Allocator>
+    struct counter_lu_policy_t_ 
+    : public pb_ds::counter_lu_policy<Max_Count, Allocator>
     {
-      typedef pb_ds::counter_lu_policy< Max_Count, Allocator> base_type;
+      typedef pb_ds::counter_lu_policy<Max_Count, Allocator> base_type;
     };
 
-    struct move_to_front_lu_policy_t_ : public pb_ds::move_to_front_lu_policy<>
+    struct move_to_front_lu_policy_t_ 
+    : public pb_ds::move_to_front_lu_policy<>
     { };
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_TEMPLATE_POLICY_HPP
+#endif 
 

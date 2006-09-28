@@ -385,7 +385,7 @@ template<bool Thread>
 
     template<class Container>
       void
-      operator()(__gnu_cxx::typelist::detail::type_to_type<Container>)
+      operator()(Container)
       {
 	const int i = 20000;
 	test_container<Container, i, Thread>(_M_filename); 

@@ -58,7 +58,7 @@ insert_imp(const_reference r_val, store_hash_false_type)
 
   const size_type pos = ranged_hash_fn_base::operator()(r_key);
 
-  entry_pointer p_e = m_a_p_entries[pos];
+  entry_pointer p_e = m_entries[pos];
 
   resize_base::notify_insert_search_start();
 

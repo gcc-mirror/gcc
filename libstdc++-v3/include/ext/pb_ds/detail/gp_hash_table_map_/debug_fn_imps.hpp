@@ -52,7 +52,7 @@ PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
   map_debug_base::check_size(m_num_used_e);
-  assert_entry_array_valid(m_a_entries, traits_base::m_store_extra_indicator);
+  assert_entry_array_valid(m_entries, traits_base::m_store_extra_indicator);
 }
 
 #include <ext/pb_ds/detail/gp_hash_table_map_/debug_no_store_hash_fn_imps.hpp>

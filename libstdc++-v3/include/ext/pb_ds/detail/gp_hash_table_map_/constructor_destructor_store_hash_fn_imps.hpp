@@ -50,9 +50,9 @@ inline void
 PB_DS_CLASS_C_DEC::
 constructor_insert_new_imp(const_mapped_reference r_val, size_type pos, true_type)
 {
-  _GLIBCXX_DEBUG_ASSERT(m_a_entries[pos].m_stat != valid_entry_status);
+  _GLIBCXX_DEBUG_ASSERT(m_entries[pos].m_stat != valid_entry_status);
 
-  entry* const p_e = m_a_entries + pos;
+  entry* const p_e = m_entries + pos;
 
   new (&p_e->m_value) mapped_value_type(r_val);
 

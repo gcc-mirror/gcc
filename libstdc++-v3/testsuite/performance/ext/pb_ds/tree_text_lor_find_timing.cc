@@ -80,7 +80,7 @@ main(int argc, char* a_p_argv[])
       test_t tst(b, b, vn, vs, vm, vn, vs, vm);
       {
 	typedef native_map<std::string, char> native_set_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_set_t>());
+	tst(native_set_t());
       }
 
       {

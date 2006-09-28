@@ -55,34 +55,30 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       template<typename It, class Cntnr, class Tag>
       class push_functor
       {
       public:
-        push_functor(It ins_it_b,  It ins_it_e) : m_ins_it_b(ins_it_b),
-						  m_ins_it_e(ins_it_e)
+        push_functor(It ins_it_b,  It ins_it_e) 
+	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
 	void
         operator()(std::size_t resolution)
 	{
+	  typedef typename Cntnr::point_iterator point_iterator;
+	  typedef typename Cntnr::const_reference const_reference;
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      Cntnr c;
-
-	      typedef std::vector< typename Cntnr::point_iterator> it_vec_t;
-
+	      typedef std::vector<point_iterator> it_vec_t;
 	      it_vec_t m_a_its;
-
 	      for (It ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
-                m_a_its.push_back(c.push((typename Cntnr::const_reference)(ins_it->first)));
+                m_a_its.push_back(c.push(const_reference(ins_it->first)));
 	    }
 	}
 
@@ -94,10 +90,14 @@ namespace pb_ds
       template<typename It, class Cntnr, class Tag>
       class push_modify_functor
       {
+      private:
+	typedef typename Cntnr::point_iterator point_iterator;
+	typedef typename Cntnr::const_reference const_reference;
+	typedef typename Cntnr::value_type value_type;
+
       public:
-        push_modify_functor(It ins_it_b,  It ins_it_e,  typename Cntnr::value_type mod_val) : m_ins_it_b(ins_it_b),
-											      m_ins_it_e(ins_it_e),
-											      m_mod_val(mod_val)
+        push_modify_functor(It ins_it_b, It ins_it_e, value_type mod_val) 
+	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e), m_mod_val(mod_val)
 	{ }
 
 	void
@@ -106,16 +106,12 @@ namespace pb_ds
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      Cntnr c;
-
-	      typedef std::vector< typename Cntnr::point_iterator> it_vec_t;
-
+	      typedef std::vector<typename Cntnr::point_iterator> it_vec_t;
 	      it_vec_t m_a_its;
-
 	      for (It ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
-                m_a_its.push_back(c.push((typename Cntnr::const_reference)(ins_it->first)));
+                m_a_its.push_back(c.push(const_reference(ins_it->first)));
 
 	      typename it_vec_t::iterator mod_it = m_a_its.begin();
-
 	      while (mod_it != m_a_its.end())
                 c.modify(*mod_it++, m_mod_val);
 	    }
@@ -124,30 +120,26 @@ namespace pb_ds
       private:
 	const It m_ins_it_b;
 	const It m_ins_it_e;
-
-	const typename Cntnr::value_type m_mod_val;
+	const value_type m_mod_val;
       };
 
       template<typename It, class Cntnr>
-      class push_functor<
-	It,
-	Cntnr,
-	pb_ds::binary_heap_tag>
+      class push_functor<It, Cntnr, pb_ds::binary_heap_tag>
       {
       public:
-        push_functor(It ins_it_b,  It ins_it_e) : m_ins_it_b(ins_it_b),
-						  m_ins_it_e(ins_it_e)
+        push_functor(It ins_it_b,  It ins_it_e) 
+	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
 	void
         operator()(std::size_t resolution)
 	{
+	  typedef typename Cntnr::const_reference const_reference;
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      Cntnr c;
-
 	      for (It ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
-                c.push((typename Cntnr::const_reference)(ins_it->first));
+                c.push(const_reference(ins_it->first));
 	    }
 	}
 
@@ -157,15 +149,16 @@ namespace pb_ds
       };
 
       template<typename It, class Cntnr>
-      class push_modify_functor<
-	It,
-	Cntnr,
-	pb_ds::binary_heap_tag>
+      class push_modify_functor<It, Cntnr, pb_ds::binary_heap_tag>
       {
+      private:
+	typedef typename Cntnr::iterator iterator;
+	typedef typename Cntnr::const_reference const_reference;
+	typedef typename Cntnr::value_type value_type;
+
       public:
-        push_modify_functor(It ins_it_b,  It ins_it_e,  typename Cntnr::value_type mod_val) : m_ins_it_b(ins_it_b),
-											      m_ins_it_e(ins_it_e),
-											      m_mod_val(mod_val)
+        push_modify_functor(It ins_it_b, It ins_it_e, value_type mod_val) 
+	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e), m_mod_val(mod_val)
 	{ }
 
 	void
@@ -174,21 +167,17 @@ namespace pb_ds
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      Cntnr c;
-
 	      It ins_it;
-
 	      for (ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
-                c.push((typename Cntnr::const_reference)(ins_it->first));
+                c.push(const_reference(ins_it->first));
 
 	      for (ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
 		{
 		  bool modified = false;
-
-		  for (typename Cntnr::iterator it = c.begin(); !modified&&  it != c.end(); ++it)
+		  for (iterator it = c.begin(); !modified && it != c.end(); ++it)
                     if (*it == ins_it->first)
 		      {
                         c.modify(it, m_mod_val);
-
                         modified = true;
 		      }
 		}
@@ -198,30 +187,27 @@ namespace pb_ds
       private:
 	const It m_ins_it_b;
 	const It m_ins_it_e;
-
-	const typename Cntnr::value_type m_mod_val;
+	const value_type m_mod_val;
       };
 
       template<typename It, class Cntnr>
-      class push_functor<
-	It,
-	Cntnr,
-	pb_ds::test::native_pq_tag>
+      class push_functor<It, Cntnr, pb_ds::test::native_pq_tag>
       {
       public:
-        push_functor(It ins_it_b,  It ins_it_e) : m_ins_it_b(ins_it_b),
-						  m_ins_it_e(ins_it_e)
+        push_functor(It ins_it_b,  It ins_it_e) 
+	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
 	void
         operator()(std::size_t resolution)
 	{
+	  typedef typename Cntnr::const_reference const_reference;
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      Cntnr c;
 
 	      for (It ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
-                c.push((typename Cntnr::const_reference)(ins_it->first));
+                c.push(const_reference(ins_it->first));
 	    }
 	}
 
@@ -231,15 +217,15 @@ namespace pb_ds
       };
 
       template<typename It, class Cntnr>
-      class push_modify_functor<
-	It,
-	Cntnr,
-	pb_ds::test::native_pq_tag>
+      class push_modify_functor<It, Cntnr, pb_ds::test::native_pq_tag>
       {
+      private:
+	typedef typename Cntnr::value_type value_type;
+	typedef typename Cntnr::const_reference const_reference;
+
       public:
-        push_modify_functor(It ins_it_b,  It ins_it_e,  typename Cntnr::value_type mod_val) : m_ins_it_b(ins_it_b),
-											      m_ins_it_e(ins_it_e),
-											      m_mod_val(mod_val)
+        push_modify_functor(It ins_it_b,  It ins_it_e, value_type mod_val) 
+	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e), m_mod_val(mod_val)
 	{ }
 
 	void
@@ -248,12 +234,9 @@ namespace pb_ds
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      Cntnr c;
-
 	      It ins_it;
-
 	      for (ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
-                c.push((typename Cntnr::const_reference)(ins_it->first));
-
+                c.push(const_reference(ins_it->first));
 	      for (ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
                 c.modify(ins_it->first, m_mod_val);
 	    }
@@ -262,126 +245,94 @@ namespace pb_ds
       private:
 	const It m_ins_it_b;
 	const It m_ins_it_e;
-
-	const typename Cntnr::value_type m_mod_val;
+	const value_type m_mod_val;
       };
-
     } // namespace detail
-
-#define PB_DS_CLASS_T_DEC			\
-    template<typename It>
-
-#define PB_DS_CLASS_C_DEC				\
-    modify_test<					\
-						It>
 
     template<typename It>
     class modify_test : private pb_ds::test::detail::timing_test_base
     {
     public:
-      modify_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm, bool m_modify_up);
+      modify_test(It b, size_t vn, size_t vs, size_t vm, bool modify_up)
+      : m_ins_b(b), m_ins_vn(vn), m_ins_vs(vs), m_ins_vm(vm),
+      m_modify_up(modify_up)
+      { }
 
       template<typename Cntnr>
       void
-      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
+      operator()(Cntnr);
 
     private:
-      modify_test(const modify_test& );
+      modify_test(const modify_test&);
 
       template<typename Cntnr>
       void
-      modify(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e);
+      modify(Cntnr, It ins_it_b, It ins_it_e)
+      {
+	typedef typename Cntnr::const_reference const_reference;
+	Cntnr cntnr;	
+	for (It ins_it = ins_it_b; ins_it != ins_it_e; ++ins_it)
+	  cntnr.modify(const_reference(*ins_it));
+      }
 
-    private:
       const It m_ins_b;
-
       const size_t m_ins_vn;
       const size_t m_ins_vs;
       const size_t m_ins_vm;
-
       const bool m_modify_up;
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    modify_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm, bool modify_up) :
-      m_ins_b(ins_b),
-      m_ins_vn(ins_vn),
-      m_ins_vs(ins_vs),
-      m_ins_vm(ins_vm),
-      m_modify_up(modify_up)
-    { }
-
-    PB_DS_CLASS_T_DEC
+    template<typename It>
     template<typename Cntnr>
     void
-    PB_DS_CLASS_C_DEC::
-    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+    modify_test<It>::
+    operator()(Cntnr)
     {
-      xml_result_set_performance_formatter res_set_fmt(
-						       string_form<Cntnr>::name(),
-						       string_form<Cntnr>::desc());
+      typedef typename Cntnr::value_type value_type;
+      typedef typename Cntnr::container_category container_category;
+      typedef typename Cntnr::const_reference const_reference;
+      typedef pb_ds::test::detail::timing_test_base timing_test_base;
 
-      for (size_t size_i = 0; m_ins_vn + size_i*  m_ins_vs < m_ins_vm; ++size_i)
+      typedef xml_result_set_performance_formatter formatter_type;
+      formatter_type res_set_fmt(string_form<Cntnr>::name(),
+				 string_form<Cntnr>::desc());
+
+      for (size_t i = 0; m_ins_vn + i * m_ins_vs < m_ins_vm; ++i)
 	{
-	  const size_t v = m_ins_vn + size_i*  m_ins_vs;
+	  const size_t v = m_ins_vn + i * m_ins_vs;
+	  It  b = m_ins_b;
+	  It e = m_ins_b;
+	  std::advance(e, v);
 
-	  It ins_it_b = m_ins_b;
-	  It ins_it_e = m_ins_b;
-	  std::advance(ins_it_e, v);
+	  pb_ds::test::detail::push_functor<It, Cntnr, container_category>
+            push_fn( b, e);
 
-	  pb_ds::test::detail::push_functor<It, Cntnr, typename Cntnr::container_category>
-            push_fn(ins_it_b, ins_it_e);
+	  const double push_res = timing_test_base::operator()(push_fn);
 
-	  const double push_res =
-            pb_ds::test::detail::timing_test_base::operator()(push_fn);
-
-	  typename Cntnr::value_type mod_val = ins_it_b->first;
-
+	  value_type val = b->first;
 	  {
             Cntnr mod_val_container;
-            for (It mod_val_it = ins_it_b; mod_val_it != ins_it_e; ++mod_val_it)
+            for (It mod_val_it = b; mod_val_it != e; ++mod_val_it)
 	      {
-                typename Cntnr::value_type pot = mod_val_it->first;
-
-                if (m_modify_up == mod_val_container.get_cmp_fn()(mod_val, pot))
-		  mod_val = pot;
+                value_type pot = mod_val_it->first;
+                if (m_modify_up == mod_val_container.get_cmp_fn()(val, pot))
+		  val = pot;
 	      }
 	  }
 
-	  pb_ds::test::detail::push_modify_functor<It, Cntnr, typename Cntnr::container_category>
-            push_modify_fn(ins_it_b, ins_it_e, mod_val);
+	  pb_ds::test::detail::push_modify_functor<It, Cntnr, container_category>
+            push_modify_fn(b, e, val);
 
-	  const double push_modify_res =
-            pb_ds::test::detail::timing_test_base::operator()(push_modify_fn);
+	  const double push_modify_res = timing_test_base::operator()(push_modify_fn);
 
-	  const double effective_delta = std::max(
-						  push_modify_res - push_res,
-						  pb_ds::test::detail::timing_test_base::min_time_res());
+	  const double effective_delta = std::max(push_modify_res - push_res,
+					     timing_test_base::min_time_res());
 
 	  res_set_fmt.add_res(v, effective_delta / v);
 	}
     }
-
-    PB_DS_CLASS_T_DEC
-    template<typename Cntnr>
-    void
-    PB_DS_CLASS_C_DEC::
-    modify(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e)
-    {
-      Cntnr cntnr;
-
-      for (It ins_it = ins_it_b; ins_it != ins_it_e; ++ins_it)
-        cntnr.modify((typename Cntnr::const_reference)(*ins_it));
-    }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_JOIN_TEST_HPP
+#endif
 

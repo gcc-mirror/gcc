@@ -80,7 +80,7 @@ main(int argc, char* a_p_argv[])
 	typedef tree_order_statistics_test<false> test_t;
 	test_t tst(vn, vs, vm);
 	typedef native_set<int> native_set_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_set_t>());
+	tst(native_set_t());
       }
     }
   catch(...)

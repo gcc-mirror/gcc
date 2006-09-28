@@ -68,7 +68,7 @@ find_ins_pos(const_key_reference r_key, store_hash_false_type)
 
       _GLIBCXX_DEBUG_ASSERT(pos < m_num_e);
 
-      entry* const p_e = m_a_entries + pos;
+      entry* const p_e = m_entries + pos;
 
       switch(p_e->m_stat)
         {
@@ -122,12 +122,12 @@ insert_imp(const_reference r_val, store_hash_false_type)
   const size_type pos =
     find_ins_pos(r_key, traits_base::m_store_extra_indicator);
 
-  if (m_a_entries[pos].m_stat == valid_entry_status)
+  if (m_entries[pos].m_stat == valid_entry_status)
     {
       _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
 
         return (std::make_pair(
-			       & (m_a_entries + pos)->m_value,
+			       & (m_entries + pos)->m_value,
 			       false));
     }
 

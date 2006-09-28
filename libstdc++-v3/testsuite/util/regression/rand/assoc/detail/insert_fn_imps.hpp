@@ -64,22 +64,22 @@ insert()
 
         if (ins_ret.second)
 	  {
-            PB_DS_THROW_IF_FAILED(!existed, "", m_p_c, & m_native_c);
+            PB_DS_THROW_IF_FAILED(!existed, "", m_p_c, &m_native_c);
 	  }
         else
 	  {
-            PB_DS_THROW_IF_FAILED(existed, "", m_p_c, & m_native_c);
-            PB_DS_THROW_IF_FAILED(found_it == ins_ret.first, "", m_p_c, & m_native_c);
+            PB_DS_THROW_IF_FAILED(existed, "", m_p_c, &m_native_c);
+            PB_DS_THROW_IF_FAILED(found_it == ins_ret.first, "", m_p_c, &m_native_c);
 	  }
         m_native_c.insert(test_traits::native_value(v));
       }
-    catch(__gnu_cxx::forced_exception_error& )
+    catch(__gnu_cxx::forced_exception_error&)
       {
         done = false;
       }
-    catch(pb_ds::insert_error& )
+    catch(pb_ds::insert_error&)
       {
-        PB_DS_THROW_IF_FAILED(false, "", m_p_c, & m_native_c);
+        PB_DS_THROW_IF_FAILED(false, "", m_p_c, &m_native_c);
       }
 
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);

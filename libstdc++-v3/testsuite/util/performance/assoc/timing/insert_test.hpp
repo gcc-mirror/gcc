@@ -55,19 +55,16 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       template<typename It, class Cntnr>
       class insert_insert_functor
       {
       public:
-        insert_insert_functor(It ins_it_b,  It ins_it_e) : m_ins_it_b(ins_it_b),
-							   m_ins_it_e(ins_it_e)
+        insert_insert_functor(It ins_it_b,  It ins_it_e) 
+	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
 	{ }
 
 	void
@@ -76,7 +73,6 @@ namespace pb_ds
 	  for (std::size_t i = 0; i < resolution; ++i)
 	    {
 	      Cntnr cntnr;
-
 	      for (It ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
                 cntnr.insert((typename Cntnr::const_reference)(*ins_it));
 	    }
@@ -86,64 +82,46 @@ namespace pb_ds
 	const It m_ins_it_b;
 	const It m_ins_it_e;
       };
-
     } // namespace detail
-
-#define PB_DS_CLASS_T_DEC			\
-    template<typename It>
-
-#define PB_DS_CLASS_C_DEC				\
-    insert_test<					\
-						It>
 
     template<typename It>
     class insert_test : private pb_ds::test::detail::timing_test_base
     {
     public:
-      insert_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm);
+      insert_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm)
+      :  m_ins_b(ins_b), m_ins_vn(ins_vn), m_ins_vs(ins_vs), m_ins_vm(ins_vm)
+      { }
 
       template<typename Cntnr>
       void
-      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
+      operator()(Cntnr);
 
     private:
       insert_test(const insert_test& );
 
       template<typename Cntnr>
       void
-      insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e);
+      insert(Cntnr, It ins_it_b, It ins_it_e);
 
-    private:
       const It m_ins_b;
-
       const size_t m_ins_vn;
       const size_t m_ins_vs;
       const size_t m_ins_vm;
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
-    insert_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm) :
-      m_ins_b(ins_b),
-      m_ins_vn(ins_vn),
-      m_ins_vs(ins_vs),
-      m_ins_vm(ins_vm)
-    { }
-
-    PB_DS_CLASS_T_DEC
+    template<typename It>
     template<typename Cntnr>
     void
-    PB_DS_CLASS_C_DEC::
-    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+    insert_test<It>::
+    operator()(Cntnr)
     {
-      xml_result_set_performance_formatter res_set_fmt(
-						       string_form<Cntnr>::name(),
-						       string_form<Cntnr>::desc());
+      typedef xml_result_set_performance_formatter formatter_type;
+      formatter_type res_set_fmt(string_form<Cntnr>::name(),
+				 string_form<Cntnr>::desc());
 
-      for (size_t size_i = 0; m_ins_vn + size_i*  m_ins_vs < m_ins_vm; ++size_i)
+      for (size_t i = 0; m_ins_vn + i*  m_ins_vs < m_ins_vm; ++i)
 	{
-	  const size_t v = m_ins_vn + size_i*  m_ins_vs;
-
+	  const size_t v = m_ins_vn + i*  m_ins_vs;
 	  It ins_it_b = m_ins_b;
 	  It ins_it_e = m_ins_b;
 	  std::advance(ins_it_e, v);
@@ -158,25 +136,18 @@ namespace pb_ds
 	}
     }
 
-    PB_DS_CLASS_T_DEC
+    template<typename It>
     template<typename Cntnr>
     void
-    PB_DS_CLASS_C_DEC::
-    insert(__gnu_cxx::typelist::detail::type_to_type<Cntnr>, It ins_it_b, It ins_it_e)
+    insert_test<It>::
+    insert(Cntnr, It ins_it_b, It ins_it_e)
     {
       Cntnr cntnr;
-
       for (It ins_it = ins_it_b; ins_it != ins_it_e; ++ins_it)
         cntnr.insert((typename Cntnr::const_reference)(*ins_it));
     }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_INSERT_TEST_HPP
+#endif
 

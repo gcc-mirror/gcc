@@ -52,110 +52,70 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       template<typename Cntnr>
       struct regression_test_type_traits
       {
-
-      public:
-
 	typedef Cntnr cntnr;
-
 	typedef typename cntnr::key_type key_type;
-
 	typedef typename cntnr::const_key_reference const_key_reference;
-
 	typedef typename cntnr::value_type value_type;
-
 	typedef typename cntnr::const_reference const_reference;
-
 	typedef typename cntnr::mapped_type mapped_type;
-
 	typedef typename cntnr::const_mapped_reference const_mapped_reference;
-
-      public:
 
 	template<typename Gen>
 	static key_type
         generate_key(Gen& r_gen, size_t max)
-	{
-	  return (basic_type(r_gen, max));
-	}
+	{ return basic_type(r_gen, max); }
 
 	template<typename Gen>
 	static value_type
         generate_value(Gen& r_gen, size_t max)
-	{
-	  return (generate_value(r_gen, max,
-				 __gnu_cxx::typelist::detail::type_to_type<value_type>()));
-	}
+	{ return generate_value(r_gen, max, value_type()); }
 
 	static const_key_reference
         extract_key(const_reference r_val)
-	{
-	  return extract_key_imp(r_val);
-	}
+	{ return extract_key_imp(r_val); }
 
       private:
-	typedef
-        typename Cntnr::allocator::template rebind<
-	basic_type>::other::const_reference
-        basic_type_const_reference;
+	typedef typename cntnr::allocator::template rebind<basic_type>::other
+	basic_type_rebind;
+	
+	typedef typename basic_type_rebind::const_reference basic_type_const_reference;
 
-	typedef
-        typename Cntnr::allocator::template rebind<
-	  std::pair<
-	  basic_type,
-	  basic_type> >::other::const_reference
-        basic_type_pair_const_reference;
-
-      private:
-	template<typename Gen>
-	static value_type
-        generate_value(Gen& r_gen, size_t max,  __gnu_cxx::typelist::detail::type_to_type<pb_ds::null_mapped_type>)
-	{
-	  return (basic_type(r_gen, max));
-	}
+	typedef typename cntnr::allocator::template rebind<std::pair<basic_type, basic_type> >::other pair_type_rebind;
+	typedef typename pair_type_rebind::const_reference pair_type_const_reference;
 
 	template<typename Gen>
 	static value_type
-        generate_value(Gen& r_gen, size_t max, __gnu_cxx::typelist::detail::type_to_type<basic_type>)
-	{
-	  return (basic_type(r_gen, max));
-	}
+        generate_value(Gen& r_gen, size_t max, pb_ds::null_mapped_type)
+	{ return basic_type(r_gen, max); }
 
 	template<typename Gen>
 	static value_type
-        generate_value(Gen& r_gen, size_t max, __gnu_cxx::typelist::detail::type_to_type<std::pair<const basic_type, basic_type> >)
-	{
-	  return (std::make_pair(basic_type(r_gen, max), basic_type(r_gen, max)));
-	}
+        generate_value(Gen& r_gen, size_t max, basic_type)
+	{ return basic_type(r_gen, max); }
+
+	template<typename Gen>
+	static value_type
+        generate_value(Gen& gen, size_t max, 
+		       std::pair<const basic_type, basic_type>)
+	{ return std::make_pair(basic_type(gen, max), basic_type(gen, max)); }
 
 	static const_key_reference
         extract_key_imp(basic_type_const_reference r_val)
-	{
-	  return r_val;
-	}
+	{ return r_val; }
 
 	static const_key_reference
-        extract_key_imp(basic_type_pair_const_reference r_val)
-	{
-	  return r_val.first;
-	}
+        extract_key_imp(pair_type_const_reference r_val)
+	{ return r_val.first; }
       };
-
-#undef PB_DS_BASE_C_DEC
-
     } // namespace detail
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_REGRESSION_TEST_TYPE_TRAIT_HPP
+#endif 

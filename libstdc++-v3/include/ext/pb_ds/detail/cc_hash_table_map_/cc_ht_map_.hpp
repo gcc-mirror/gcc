@@ -66,9 +66,9 @@ namespace pb_ds
   {
 
 #define PB_DS_CLASS_T_DEC \
-    template<typename Key, typename Mapped, class Hash_Fn, \
-	     class Eq_Fn, class Allocator, bool Store_Hash, \
-	     class Comb_Hash_Fn, class Resize_Policy>
+    template<typename Key, typename Mapped, typename Hash_Fn, \
+	     typename Eq_Fn, typename Allocator, bool Store_Hash, \
+	     typename Comb_Hash_Fn, typename Resize_Policy>
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
 #define PB_DS_CLASS_NAME cc_ht_map_data_
@@ -113,12 +113,12 @@ namespace pb_ds
     // <011i$i0|\|-<|-|4i|\|i|\|g |-|4$|-| 74813.
     template<typename Key,
 	     typename Mapped,
-	     class Hash_Fn,
-	     class Eq_Fn,
-	     class Allocator,
+	     typename Hash_Fn,
+	     typename Eq_Fn,
+	     typename Allocator,
 	     bool Store_Hash,
-	     class Comb_Hash_Fn,
-	     class Resize_Policy >
+	     typename Comb_Hash_Fn,
+	     typename Resize_Policy >
     class PB_DS_CLASS_NAME:
 #ifdef _GLIBCXX_DEBUG
       protected PB_DS_MAP_DEBUG_BASE_C_DEC,
@@ -128,48 +128,42 @@ namespace pb_ds
       public PB_DS_RANGED_HASH_FN_C_DEC,
       public PB_DS_TYPES_TRAITS_C_DEC
     {
-
     private:
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::comp_hash comp_hash;
+      typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
+      typedef typename traits_base::comp_hash comp_hash;
+      typedef typename traits_base::value_type value_type_;
+      typedef typename traits_base::pointer pointer_;
+      typedef typename traits_base::const_pointer const_pointer_;
+      typedef typename traits_base::reference reference_;
+      typedef typename traits_base::const_reference const_reference_;
+      typedef typename traits_base::store_extra_false_type store_hash_false_type;
+      typedef typename traits_base::store_extra_true_type store_hash_true_type;
+      typedef typename traits_base::no_throw_copies_false_type no_throw_copies_false_type;
+      typedef typename traits_base::no_throw_copies_true_type no_throw_copies_true_type;
 
-      struct entry : public PB_DS_TYPES_TRAITS_C_DEC::stored_value_type
+      struct entry : public traits_base::stored_value_type
       {
 	typename Allocator::template rebind<entry>::other::pointer m_p_next;
       };
 
-      typedef
-      typename Allocator::template rebind<entry>::other
-      entry_allocator;
+      typedef cond_dealtor<entry, Allocator> cond_dealtor_t;
 
+      typedef typename Allocator::template rebind<entry>::other entry_allocator;
       typedef typename entry_allocator::pointer entry_pointer;
-
       typedef typename entry_allocator::const_pointer const_entry_pointer;
-
       typedef typename entry_allocator::reference entry_reference;
+      typedef typename entry_allocator::const_reference const_entry_reference;
 
-      typedef
-      typename entry_allocator::const_reference
-      const_entry_reference;
-
-      typedef
-      typename Allocator::template rebind<entry_pointer>::other
-      entry_pointer_allocator;
-
+      typedef typename Allocator::template rebind<entry_pointer>::other entry_pointer_allocator;
       typedef typename entry_pointer_allocator::pointer entry_pointer_array;
 
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::value_type value_type_;
+      typedef PB_DS_RANGED_HASH_FN_C_DEC ranged_hash_fn_base;
+      typedef PB_DS_HASH_EQ_FN_C_DEC hash_eq_fn_base;
+      typedef Resize_Policy resize_base;
 
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::pointer pointer_;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_pointer
-      const_pointer_;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::reference reference_;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_reference
-      const_reference_;
+#ifdef _GLIBCXX_DEBUG
+      typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
+#endif 
 
 #define PB_DS_GEN_POS std::pair<entry_pointer, typename Allocator::size_type>
 
@@ -181,19 +175,12 @@ namespace pb_ds
 #undef PB_DS_GEN_POS
 
     public:
-
-      typedef typename Allocator::size_type size_type;
-
-      typedef typename Allocator::difference_type difference_type;
-
-      typedef Hash_Fn hash_fn;
-
-      typedef Eq_Fn eq_fn;
-
       typedef Allocator allocator;
-
+      typedef typename Allocator::size_type size_type;
+      typedef typename Allocator::difference_type difference_type;
+      typedef Hash_Fn hash_fn;
+      typedef Eq_Fn eq_fn;
       typedef Comb_Hash_Fn comb_hash_fn;
-
       typedef Resize_Policy resize_policy;
 
       enum
@@ -201,49 +188,21 @@ namespace pb_ds
 	  store_hash = Store_Hash
 	};
 
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_type key_type;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_pointer key_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_key_pointer
-      const_key_pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::key_reference key_reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_key_reference
-      const_key_reference;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::mapped_type mapped_type;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::mapped_pointer
-      mapped_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_mapped_pointer
-      const_mapped_pointer;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::mapped_reference
-      mapped_reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_mapped_reference
-      const_mapped_reference;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::value_type value_type;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::pointer pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::const_pointer const_pointer;
-
-      typedef typename PB_DS_TYPES_TRAITS_C_DEC::reference reference;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::const_reference
-      const_reference;
+      typedef typename traits_base::key_type key_type;
+      typedef typename traits_base::key_pointer key_pointer;
+      typedef typename traits_base::const_key_pointer const_key_pointer;
+      typedef typename traits_base::key_reference key_reference;
+      typedef typename traits_base::const_key_reference const_key_reference;
+      typedef typename traits_base::mapped_type mapped_type;
+      typedef typename traits_base::mapped_pointer mapped_pointer;
+      typedef typename traits_base::const_mapped_pointer const_mapped_pointer;
+      typedef typename traits_base::mapped_reference mapped_reference;
+      typedef typename traits_base::const_mapped_reference const_mapped_reference;
+      typedef typename traits_base::value_type value_type;
+      typedef typename traits_base::pointer pointer;
+      typedef typename traits_base::const_pointer const_pointer;
+      typedef typename traits_base::reference reference;
+      typedef typename traits_base::const_reference const_reference;
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       typedef point_iterator_ point_iterator;
@@ -265,29 +224,28 @@ namespace pb_ds
 
       typedef const_iterator_ const_iterator;
 
-    public:
-
       PB_DS_CLASS_NAME();
 
-      PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn);
+      PB_DS_CLASS_NAME(const Hash_Fn&);
 
-      PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn);
+      PB_DS_CLASS_NAME(const Hash_Fn&, const Eq_Fn&);
 
-      PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, const Comb_Hash_Fn& r_comb_hash_fn);
+      PB_DS_CLASS_NAME(const Hash_Fn&, const Eq_Fn&, const Comb_Hash_Fn&);
 
-      PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, const Comb_Hash_Fn& r_comb_hash_fn, const Resize_Policy& r_resize_policy);
+      PB_DS_CLASS_NAME(const Hash_Fn&, const Eq_Fn&, const Comb_Hash_Fn&, 
+		       const Resize_Policy&);
 
-      PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other);
+      PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC&);
 
       virtual
       ~PB_DS_CLASS_NAME();
 
       void
-      swap(PB_DS_CLASS_C_DEC& other);
+      swap(PB_DS_CLASS_C_DEC&);
 
       template<typename It>
       void
-      copy_from_range(It first_it, It last_it);
+      copy_from_range(It, It);
 
       void
       initialize();
@@ -327,9 +285,7 @@ namespace pb_ds
 
       inline std::pair<point_iterator, bool>
       insert(const_reference r_val)
-      {
-	return insert_imp(r_val, traits_base::m_store_extra_indicator);
-      }
+      { return insert_imp(r_val, traits_base::m_store_extra_indicator); }
 
       inline mapped_reference
       operator[](const_key_reference r_key)
@@ -343,10 +299,10 @@ namespace pb_ds
       }
 
       inline point_iterator
-      find(const_key_reference r_key);
+      find(const_key_reference);
 
       inline const_point_iterator
-      find(const_key_reference r_key) const;
+      find(const_key_reference) const;
 
       inline point_iterator
       find_end();
@@ -355,11 +311,11 @@ namespace pb_ds
       find_end() const;
 
       inline bool
-      erase(const_key_reference r_key);
+      erase(const_key_reference);
 
       template<typename Pred>
       inline size_type
-      erase_if(Pred pred);
+      erase_if(Pred);
 
       void
       clear();
@@ -387,38 +343,6 @@ namespace pb_ds
 #endif 
 
     private:
-      typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
-
-      typedef PB_DS_RANGED_HASH_FN_C_DEC ranged_hash_fn_base;
-
-      typedef PB_DS_HASH_EQ_FN_C_DEC hash_eq_fn_base;
-
-      typedef Resize_Policy resize_base;
-
-#ifdef _GLIBCXX_DEBUG
-      typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
-#endif 
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::store_extra_false_type
-      store_hash_false_type;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::store_extra_true_type
-      store_hash_true_type;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::
-      no_throw_copies_false_type
-      no_throw_copies_false_type;
-
-      typedef
-      typename PB_DS_TYPES_TRAITS_C_DEC::
-      no_throw_copies_true_type
-      no_throw_copies_true_type;
-
-    private:
-
       void
       deallocate_all();
 
@@ -441,19 +365,19 @@ namespace pb_ds
       resize_imp_no_exceptions_reassign_pointer(entry_pointer, entry_pointer_array, store_hash_false_type);
 
       inline entry_pointer
-      resize_imp_no_exceptions_reassign_pointer(entry_pointer p_e, entry_pointer_array a_p_entries_resized, store_hash_true_type);
+      resize_imp_no_exceptions_reassign_pointer(entry_pointer, entry_pointer_array, store_hash_true_type);
 
       void
-      deallocate_links_in_list(entry_pointer p_e);
+      deallocate_links_in_list(entry_pointer);
 
       inline entry_pointer
-      get_entry(const_reference r_val, no_throw_copies_false_type);
+      get_entry(const_reference, no_throw_copies_false_type);
 
       inline entry_pointer
-      get_entry(const_reference r_val, no_throw_copies_true_type);
+      get_entry(const_reference, no_throw_copies_true_type);
 
       inline void
-      rels_entry(entry_pointer p_e);
+      rels_entry(entry_pointer);
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       inline mapped_reference
@@ -461,7 +385,7 @@ namespace pb_ds
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
         const size_type pos = ranged_hash_fn_base::operator()(r_key);
-	entry_pointer p_e = m_a_p_entries[pos];
+	entry_pointer p_e = m_entries[pos];
 	resize_base::notify_insert_search_start();
 
 	while (p_e != NULL 
@@ -487,7 +411,7 @@ namespace pb_ds
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 	comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
-	entry_pointer p_e = m_a_p_entries[pos_hash_pair.first];
+	entry_pointer p_e = m_entries[pos_hash_pair.first];
 	resize_base::notify_insert_search_start();
 	while (p_e != NULL && 
 	       !hash_eq_fn_base::operator()(p_e->m_value.first, p_e->m_hash, r_key, pos_hash_pair.second))
@@ -504,15 +428,16 @@ namespace pb_ds
 	  }
 
 	_GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
-	return insert_new_imp(value_type(r_key, mapped_type()), pos_hash_pair)->second;
+	return insert_new_imp(value_type(r_key, mapped_type()), 
+			      pos_hash_pair)->second;
       }
 #endif 
 
       inline std::pair<point_iterator, bool>
-      insert_imp(const_reference r_val, store_hash_false_type);
+      insert_imp(const_reference, store_hash_false_type);
 
       inline std::pair<point_iterator, bool>
-      insert_imp(const_reference r_val, store_hash_true_type);
+      insert_imp(const_reference, store_hash_true_type);
 
       inline pointer
       insert_new_imp(const_reference r_val, size_type pos)
@@ -521,11 +446,11 @@ namespace pb_ds
 	  pos = ranged_hash_fn_base::operator()(PB_DS_V2F(r_val));
 
 	// Following lines might throw an exception.
-	entry_pointer p_e = get_entry(r_val, PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
+	entry_pointer p_e = get_entry(r_val, traits_base::m_no_throw_copies_indicator);
 
 	// At this point no exceptions can be thrown.
-	p_e->m_p_next = m_a_p_entries[pos];
-	m_a_p_entries[pos] = p_e;
+	p_e->m_p_next = m_entries[pos];
+	m_entries[pos] = p_e;
 	resize_base::notify_inserted(++m_num_used_e);
 
 	_GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
@@ -540,12 +465,12 @@ namespace pb_ds
 	if (do_resize_if_needed())
 	  r_pos_hash_pair = ranged_hash_fn_base::operator()(PB_DS_V2F(r_val));
 
-	entry_pointer p_e = get_entry(r_val, PB_DS_TYPES_TRAITS_C_DEC::m_no_throw_copies_indicator);
+	entry_pointer p_e = get_entry(r_val, traits_base::m_no_throw_copies_indicator);
 
 	// At this point no exceptions can be thrown.
 	p_e->m_hash = r_pos_hash_pair.second;
-	p_e->m_p_next = m_a_p_entries[r_pos_hash_pair.first];
-	m_a_p_entries[r_pos_hash_pair.first] = p_e;
+	p_e->m_p_next = m_entries[r_pos_hash_pair.first];
+	m_entries[r_pos_hash_pair.first] = p_e;
 	resize_base::notify_inserted(++m_num_used_e);
 	_GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -555,7 +480,7 @@ namespace pb_ds
       inline pointer
       find_key_pointer(const_key_reference r_key, store_hash_false_type)
       {
-	entry_pointer p_e = m_a_p_entries[ranged_hash_fn_base::operator()(r_key)];
+	entry_pointer p_e = m_entries[ranged_hash_fn_base::operator()(r_key)];
 	resize_base::notify_find_search_start();
 	while (p_e != NULL && 
 	       !hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), r_key))
@@ -579,7 +504,7 @@ namespace pb_ds
       find_key_pointer(const_key_reference r_key, store_hash_true_type)
       {
 	comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
-	entry_pointer p_e = m_a_p_entries[pos_hash_pair.first];
+	entry_pointer p_e = m_entries[pos_hash_pair.first];
 	resize_base::notify_find_search_start();
 	while (p_e != NULL && 
 	       !hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value),
@@ -602,17 +527,18 @@ namespace pb_ds
       }
 
       inline bool
-      erase_in_pos_imp(const_key_reference r_key, size_type pos);
+      erase_in_pos_imp(const_key_reference, size_type);
 
       inline bool
-      erase_in_pos_imp(const_key_reference r_key, const comp_hash& r_pos_hash_pair);
+      erase_in_pos_imp(const_key_reference, const comp_hash&);
 
       inline void
-      erase_entry_pointer(entry_pointer& r_p_e);
+      erase_entry_pointer(entry_pointer&);
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       void
-      inc_it_state(pointer& r_p_value, std::pair<entry_pointer, size_type>& r_pos) const
+      inc_it_state(pointer& r_p_value, 
+		   std::pair<entry_pointer, size_type>& r_pos) const
       {
 	inc_it_state((const_mapped_pointer& )r_p_value, r_pos);
       }
@@ -626,15 +552,15 @@ namespace pb_ds
 	r_pos.first = r_pos.first->m_p_next;
 	if (r_pos.first != NULL)
 	  {
-	    r_p_value =& r_pos.first->m_value;
+	    r_p_value = &r_pos.first->m_value;
 	    return;
 	  }
 
-	for (++r_pos.second; r_pos.second < m_num_e_p; ++r_pos.second)
-	  if (m_a_p_entries[r_pos.second] != NULL)
+	for (++r_pos.second; r_pos.second < m_num_e; ++r_pos.second)
+	  if (m_entries[r_pos.second] != NULL)
 	    {
-	      r_pos.first = m_a_p_entries[r_pos.second];
-	      r_p_value =& r_pos.first->m_value;
+	      r_pos.first = m_entries[r_pos.second];
+	      r_p_value = &r_pos.first->m_value;
 	      return;
 	    }
 	r_p_value = NULL;
@@ -644,11 +570,11 @@ namespace pb_ds
       get_start_it_state(pointer& r_p_value, 
 			 std::pair<entry_pointer, size_type>& r_pos) const
       {
-	for (r_pos.second = 0; r_pos.second < m_num_e_p; ++r_pos.second)
-	  if (m_a_p_entries[r_pos.second] != NULL)
+	for (r_pos.second = 0; r_pos.second < m_num_e; ++r_pos.second)
+	  if (m_entries[r_pos.second] != NULL)
 	    {
-	      r_pos.first = m_a_p_entries[r_pos.second];
-	      r_p_value =& r_pos.first->m_value;
+	      r_pos.first = m_entries[r_pos.second];
+	      r_p_value = &r_pos.first->m_value;
 	      return;
 	    }
 	r_p_value = NULL;
@@ -673,31 +599,22 @@ namespace pb_ds
 #endif 
 
     private:
-      static entry_allocator s_entry_allocator;
-
-      static entry_pointer_allocator s_entry_pointer_allocator;
-
-      typedef cond_dealtor< entry, Allocator> cond_dealtor_t;
-
-      entry_pointer_array m_a_p_entries;
-
-      size_type m_num_e_p;
-
-      size_type m_num_used_e;
-
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       friend class iterator_;
 #endif 
 
       friend class const_iterator_;
 
-      static iterator s_end_it;
+      static entry_allocator 		s_entry_allocator;
+      static entry_pointer_allocator 	s_entry_pointer_allocator;
+      static iterator 			s_end_it;
+      static const_iterator 		s_const_end_it;
+      static point_iterator 		s_find_end_it;
+      static const_point_iterator 	s_const_find_end_it;
 
-      static const_iterator s_const_end_it;
-
-      static point_iterator s_find_end_it;
-
-      static const_point_iterator s_const_find_end_it;
+      size_type 			m_num_e;
+      size_type 			m_num_used_e;
+      entry_pointer_array 		m_entries;
 
       enum
 	{
@@ -727,10 +644,8 @@ namespace pb_ds
 #undef PB_DS_TYPES_TRAITS_C_DEC
 #undef PB_DS_MAP_DEBUG_BASE_C_DEC
 #undef PB_DS_CLASS_NAME
-
 #undef PB_DS_V2F
 #undef PB_DS_V2S
-
 #undef PB_DS_STATIC_ASSERT
 
   } // namespace detail

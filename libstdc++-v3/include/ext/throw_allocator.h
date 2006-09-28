@@ -135,11 +135,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     static void
     throw_conditionally();
 
-    static void
-    assert_allocatod(const void*, size_t);
-
+    // See if a particular address and size has been allocated by this
+    // allocator.
     static void
     check_allocated(void*, size_t);
+
+    // See if a given label has been allocated by this allocator.
+    static void
+    check_allocated(size_t);
 
   private:
     typedef std::pair<size_t, size_t> 		alloc_data_type;
@@ -171,13 +174,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     class throw_allocator : public throw_allocator_base
     {
     public:
-      typedef size_t 		size_type;
-      typedef ptrdiff_t 	difference_type;
-      typedef T* 		pointer;
-      typedef const T* 		const_pointer;
-      typedef T& 		reference;
-      typedef const T& 		const_reference;
-      typedef T 		value_type;
+      typedef size_t 				size_type;
+      typedef ptrdiff_t 			difference_type;
+      typedef T 				value_type;
+      typedef value_type* 			pointer;
+      typedef const value_type* 		const_pointer;
+      typedef value_type& 			reference;
+      typedef const value_type& 		const_reference;
+
 
       template<typename U>
       struct rebind
@@ -187,44 +191,48 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       throw_allocator() throw() { }
 
-      throw_allocator(const throw_allocator<T>&) throw() { }
+      throw_allocator(const throw_allocator&) throw() { }
 
-      template <class U>
+      template<typename U>
       throw_allocator(const throw_allocator<U>&) throw() { }
 
       ~throw_allocator() throw() { }
 
       size_type
       max_size() const throw()
-      { return std::allocator<T>().max_size(); }
+      { return std::allocator<value_type>().max_size(); }
 
       pointer
       allocate(size_type num, std::allocator<void>::const_pointer hint = 0)
       {
 	throw_conditionally();
-	T* const a = std::allocator<T>().allocate(num, hint);
-	insert(a, sizeof(T) * num);
+	value_type* const a = std::allocator<value_type>().allocate(num, hint);
+	insert(a, sizeof(value_type) * num);
 	return a;
       }
 
       void
       construct(pointer p, const T& val)
-      { return std::allocator<T>().construct(p, val); }
+      { return std::allocator<value_type>().construct(p, val); }
 
       void
       destroy(pointer p)
-      {	std::allocator<T>().destroy(p); }
+      { std::allocator<value_type>().destroy(p); }
 
       void
       deallocate(pointer p, size_type num)
       {
-	erase(p, sizeof(T) * num);
-	std::allocator<T>().deallocate(p, num);
+	erase(p, sizeof(value_type) * num);
+	std::allocator<value_type>().deallocate(p, num);
       }
 
       void
       check_allocated(pointer p, size_type num)
-      { throw_allocator_base::check_allocated(p, sizeof(T) * num); }
+      { throw_allocator_base::check_allocated(p, sizeof(value_type) * num); }
+
+      void
+      check_allocated(size_type label)
+      { throw_allocator_base::check_allocated(label); }
     };
 
   template<typename T>
@@ -333,7 +341,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     const_iterator found_it = _S_map.find(p);
     if (found_it == _S_map.end())
       {
-	std::string error("throw_allocator_base::check_allocated");
+	std::string error("throw_allocator_base::check_allocated by value ");
 	error += "null erase!";
 	error += '\n';
 	print_to_string(error, make_entry(p, size));
@@ -342,13 +350,34 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
     if (found_it->second.second != size)
       {
-	std::string error("throw_allocator_base::check_allocated");
+	std::string error("throw_allocator_base::check_allocated by value ");
 	error += "wrong-size erase!";
 	error += '\n';
 	print_to_string(error, make_entry(p, size));
 	print_to_string(error, *found_it);
 	throw std::logic_error(error);
       }
+  }
+
+  void
+  throw_allocator_base::check_allocated(size_t label)
+  {
+    std::string found;
+    const_iterator it = _S_map.begin();
+    while (it != _S_map.end())
+      {
+	if (it->second.first == label)
+	  print_to_string(found, *it);
+	++it;
+      }
+
+    if (!found.empty())
+      {
+	std::string error("throw_allocator_base::check_allocated by label ");
+	error += '\n';
+	error += found;
+	throw std::logic_error(error);
+      }	
   }
 
   void
@@ -361,21 +390,28 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   void
   throw_allocator_base::print_to_string(std::string& s)
   {
-    const_iterator it = throw_allocator_base::_S_map.begin();
-    const_iterator end_it = throw_allocator_base::_S_map.end();
-    for (; it != end_it; ++it)
-      print_to_string(s, *it);
-    s += '\n';
+    const_iterator begin = throw_allocator_base::_S_map.begin();
+    const_iterator end = throw_allocator_base::_S_map.end();
+    for (; begin != end; ++begin)
+      print_to_string(s, *begin);
   }
 
   void
   throw_allocator_base::print_to_string(std::string& s, const_reference ref)
   {
-    s += reinterpret_cast<const unsigned long>(ref.first);
-    s += ": ";
-    s += ref.second.first ;
-    s += ", ";
-    s += ref.second.second;
+    char buf[40];
+    const char tab('\t');
+    s += "address: ";
+    sprintf(buf, "%p", ref.first);
+    s += buf;
+    s += tab;
+    s += "label: ";
+    sprintf(buf, "%u", ref.second.first);
+    s += buf;
+    s += tab;
+    s += "size: ";
+    sprintf(buf, "%u", ref.second.second);
+    s += buf;
     s += '\n';
   }
 

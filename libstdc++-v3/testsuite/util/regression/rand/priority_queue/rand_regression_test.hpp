@@ -76,7 +76,7 @@ namespace detail
 
     template<typename Cntnr>
     void
-    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+    operator()(Cntnr)
     {
       unsigned long ul = static_cast<unsigned long>(m_sd);
       container_rand_regression_test<Cntnr> t(ul, m_n, m_n, m_tp, m_ip, m_dp, 

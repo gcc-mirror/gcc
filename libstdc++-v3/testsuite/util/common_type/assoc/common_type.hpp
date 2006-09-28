@@ -53,19 +53,13 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     template<typename Key,
 	     typename Data,
-	     class Hash_Fn =
-	     typename pb_ds::detail::default_hash_fn<
-      Key>::type,
-	     class Eq_Fn =
-	     std::equal_to<Key>,
-	     class Allocator =
-	     std::allocator<std::pair<const Key, Data> > >
+	     class Hash_Fn = typename pb_ds::detail::default_hash_fn<Key>::type,
+	     class Eq_Fn = std::equal_to<Key>,
+	     class Allocator = std::allocator<std::pair<const Key, Data> > >
     struct hash_common_types
     {
     private:

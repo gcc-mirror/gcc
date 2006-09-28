@@ -89,7 +89,7 @@ main(int argc, char* a_p_argv[])
 
       {
 	typedef native_map<std::string, char> native_map_t;
-	tst(__gnu_cxx::typelist::detail::type_to_type<native_map_t>());
+	tst(native_map_t());
       }
     }
   catch (...)

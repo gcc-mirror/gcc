@@ -54,13 +54,10 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       template<typename Cntnr, bool Support_Split_Join>
       class split_join_functor
       {
@@ -75,11 +72,8 @@ namespace pb_ds
 	    {
 	      typename Cntnr::const_iterator mid_it = m_r_container.begin();
 	      std::advance(mid_it, m_r_container.size() / 2);
-
 	      Cntnr other;
-
 	      m_r_container.split(*mid_it, other);
-
 	      m_r_container.join(other);
 	    }
 	}
@@ -89,9 +83,7 @@ namespace pb_ds
       };
 
       template<typename Cntnr>
-      class split_join_functor<
-	Cntnr,
-	false>
+      class split_join_functor<Cntnr, false>
       {
       public:
         split_join_functor(Cntnr& r_container) : m_r_container(r_container)
@@ -116,15 +108,7 @@ namespace pb_ds
       private:
 	Cntnr& m_r_container;
       };
-
     } // namespace detail
-
-#define PB_DS_CLASS_T_DEC			\
-    template<bool Support_Split_Join>
-
-#define PB_DS_CLASS_C_DEC						\
-    tree_split_join_test<						\
-						Support_Split_Join>
 
     template<bool Support_Split_Join>
     class tree_split_join_test : private pb_ds::test::detail::timing_test_base
@@ -134,7 +118,7 @@ namespace pb_ds
 
       template<typename Cntnr>
       void
-      operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>);
+      operator()(Cntnr);
 
     private:
       tree_split_join_test(const tree_split_join_test& );
@@ -145,28 +129,27 @@ namespace pb_ds
       const size_t m_vm;
     };
 
-    PB_DS_CLASS_T_DEC
-    PB_DS_CLASS_C_DEC::
+    template<bool Support_Split_Join>
+    tree_split_join_test<Support_Split_Join>::
     tree_split_join_test(size_t vn, size_t vs, size_t vm) :
       m_vn(vn),
       m_vs(vs),
       m_vm(vm)
     { }
 
-    PB_DS_CLASS_T_DEC
+    template<bool Support_Split_Join>
     template<typename Cntnr>
     void
-    PB_DS_CLASS_C_DEC::
-    operator()(__gnu_cxx::typelist::detail::type_to_type<Cntnr>)
+    tree_split_join_test<Support_Split_Join>::
+    operator()(Cntnr)
     {
-      xml_result_set_performance_formatter res_set_fmt(
-						       string_form<Cntnr>::name(),
-						       string_form<Cntnr>::desc());
+      typedef xml_result_set_performance_formatter formatter_type;
+      formatter_type res_set_fmt(string_form<Cntnr>::name(),
+				 string_form<Cntnr>::desc());
 
       for (size_t v = m_vn; v < m_vm; v += m_vs)
 	{
 	  Cntnr cntnr;
-
 	  for (size_t ins = 0; ins < v; ++ ins)
             cntnr.insert((typename Cntnr::value_type)ins);
 
@@ -175,18 +158,11 @@ namespace pb_ds
 
 	  const double res =
             pb_ds::test::detail::timing_test_base::operator()(fn);
-
 	  res_set_fmt.add_res(v, res);
 	}
     }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_TREE_SPLIT_JOIN_TEST_HPP
+#endif 
 

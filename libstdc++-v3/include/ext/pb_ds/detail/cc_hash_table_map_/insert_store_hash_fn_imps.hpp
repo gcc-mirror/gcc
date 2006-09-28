@@ -58,7 +58,7 @@ insert_imp(const_reference r_val, store_hash_true_type)
 
   comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
 
-  entry_pointer p_e = m_a_p_entries[pos_hash_pair.first];
+  entry_pointer p_e = m_entries[pos_hash_pair.first];
 
   resize_base::notify_insert_search_start();
 
