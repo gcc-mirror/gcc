@@ -1,3 +1,9 @@
+2006-09-28  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* doc/loop.texi: New file.
+	* doc/gccint.texi: Reference loop.texi.
+	* Makefile.in (loop.texi): Add.
+
 2006-09-27  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (ENABLE_EXECUTE_STACK): New, use getpagesize not
