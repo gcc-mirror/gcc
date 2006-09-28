@@ -1,3 +1,8 @@
+2006-09-28  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/t-hpux (LIB2FUNCS_EXTRA): Remove unwind-hpux.c.
+	* config/ia64/unwind-hpux.c: Delete.
+
 2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_init_ctor_preeval): Call maybe_with_size_expr
