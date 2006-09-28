@@ -1,3 +1,15 @@
+2006-09-28  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	* arith.c: Change conditional test for inclusion of arctangent().
+	(gfc_check_real_range): Change conditional test for use of
+	mpfr_subnormalize.
+	* simplify.c (gfc_simplify_atan2): Fix conditional for use of
+	mpfr_atan2() instead of arctangent().
+	(gfc_simplify_exponent): Fix conditional for use of mpfr_get_exp().
+ 	(gfc_simplify_log): Fix conditional for use of mpfr_atan2() instead
+	 of arctangent().
+	(gfc_simplify_nearest): Fix conditional for use of mpfr_nextafter(). 
+
 2006-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* arith.c: Conditionally include arctangent2().
