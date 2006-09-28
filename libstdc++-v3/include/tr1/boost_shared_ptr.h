@@ -109,7 +109,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     : public _Mutex_base<_Lp>
     {
     public:  
-      _Sp_counted_base() : _M_use_count(1), _M_weak_count(1) { }
+      _Sp_counted_base()
+      : _M_use_count(1), _M_weak_count(1) { }
       
       virtual
       ~_Sp_counted_base() // nothrow 
@@ -130,7 +131,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       void
       _M_add_ref_copy()
-      { __gnu_cxx::__atomic_add(&_M_use_count, 1); }
+      { __gnu_cxx::__atomic_add_dispatch(&_M_use_count, 1); }
   
       void
       _M_add_ref_lock();
@@ -138,26 +139,28 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       void
       _M_release() // nothrow
       {
-	if (__gnu_cxx::__exchange_and_add(&_M_use_count, -1) == 1)
+	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count,
+						   -1) == 1)
 	  {
 	    _M_dispose();
-#ifdef __GTHREADS	
+#ifdef __GTHREADS
 	    _GLIBCXX_READ_MEM_BARRIER;
 	    _GLIBCXX_WRITE_MEM_BARRIER;
 #endif
-	    if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) == 1)
+	    if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count,
+						       -1) == 1)
 	      _M_destroy();
 	  }
       }
   
       void
       _M_weak_add_ref() // nothrow
-      { __gnu_cxx::__atomic_add(&_M_weak_count, 1); }
+      { __gnu_cxx::__atomic_add_dispatch(&_M_weak_count, 1); }
 
       void
       _M_weak_release() // nothrow
       {
-	if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) == 1)
+	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count, -1) == 1)
 	  {
 #ifdef __GTHREADS
 	    _GLIBCXX_READ_MEM_BARRIER;
@@ -184,13 +187,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     _Sp_counted_base<_S_single>::
     _M_add_ref_lock()
     {
-      if (__gnu_cxx::__exchange_and_add(&_M_use_count, 1) == 0)
+      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1) == 0)
 	{
 	  _M_use_count = 0;
 	  __throw_bad_weak_ptr();
 	}
     }
-  
+
 #ifdef __GTHREADS
   template<>
     inline void
@@ -198,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     _M_add_ref_lock()
     {
       __gnu_cxx::__scoped_lock sentry(*this);
-      if (__gnu_cxx::__exchange_and_add(&_M_use_count, 1) == 0)
+      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1) == 0)
 	{
 	  _M_use_count = 0;
 	  __throw_bad_weak_ptr();
@@ -227,7 +230,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     }
 
   template<typename _Ptr, typename _Deleter, _Lock_policy _Lp>
-    class _Sp_counted_base_impl : public _Sp_counted_base<_Lp>
+    class _Sp_counted_base_impl
+    : public _Sp_counted_base<_Lp>
     {
     public:
       /**
