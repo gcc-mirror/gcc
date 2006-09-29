@@ -178,7 +178,7 @@
 
 #ifdef IN_LIBGCC2
 /* For libgcc2 we make sure this is a compile time constant */
-#if defined (__64BIT__) || defined (__powerpc64__)
+#if defined (__64BIT__) || defined (__powerpc64__) || defined (__ppc64__)
 #undef TARGET_POWERPC64
 #define TARGET_POWERPC64	1
 #else

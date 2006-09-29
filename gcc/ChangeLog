@@ -1,3 +1,12 @@
+2006-09-28  Geoffrey Keating  <geoffk@apple.com>
+
+	PR target/28617
+	* config/rs6000/rs6000.h [IN_LIBGCC2] (TARGET_POWERPC64): Define
+	to 1 when __ppc64__ is defined.
+	* config/rs6000/t-darwin (LIB2FUNCS_EXTRA): Add ppc64-fp.c and
+	darwin-64.c.
+	* config/rs6000/ppc64-fp.c: Also compile when __ppc64__ is defined.
+
 2006-09-28  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/t-hpux (LIB2FUNCS_EXTRA): Remove unwind-hpux.c.
