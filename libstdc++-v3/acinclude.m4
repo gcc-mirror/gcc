@@ -1730,7 +1730,7 @@ AC_REQUIRE([GLIBCXX_CHECK_LINKER_FEATURES])
 # Turn a 'yes' into a suitable default.
 if test x$enable_symvers = xyes ; then
   if test $enable_shared = no ||
-     test "x$LD" = x ; then
+     test "x$LD" = x || test x$gcc_no_link = xyes; then
     enable_symvers=no
   elif test $with_gnu_ld = yes ; then
     enable_symvers=gnu
