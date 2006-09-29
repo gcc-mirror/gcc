@@ -1,3 +1,50 @@
+2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* builtins.c (expand_builtin_setjmp): Delete.
+	(expand_builtin) <BUILT_IN_SETJMP>: Mark as unreachable.
+	<BUILT_IN_SETJMP_SETUP>: New case.
+	<BUILT_IN_SETJMP_DISPATCHER>: Likewise.
+	<BUILT_IN_SETJMP_RECEIVER>: Likewise.
+	* builtins.def (BUILT_IN_SETJMP_SETUP): New built-in stub.
+	(BUILT_IN_SETJMP_DISPATCHER): Likewise.
+	(BUILT_IN_SETJMP_RECEIVER): Likewise.
+	* gimple-low.c (struct lower_data): New field calls_builtin_setjmp.
+	(lower_function_body): Initialize it to false.  If it is set to true
+	at the end of the processing, emit the setjmp dispatcher.
+	(lower_stmt) <CALL_EXPR>: Invoke lower_builtin_setjmp if the callee
+	is __builtin_setjmp and set calls_builtin_setjmp to true as well.
+	<MODIFY_EXPR>: Fall through to above case if there is a CALL_EXPR
+	on the rhs of the assignment.
+	(lower_builtin_setjmp): New function.
+	* tree.c (build_common_builtin_nodes): Build BUILT_IN_SETJMP_SETUP,
+	BUILT_IN_SETJMP_DISPATCHER and BUILT_IN_SETJMP_RECEIVER nodes.
+	* tree-cfg.c (make_exit_edges) <CALL_EXPR>: Use specific predicate
+	to detect calls that can go to non-local labels.  Use specific
+	helper to create the abnormal edges associated with them.
+	<MODIFY_EXPR>: Likewise.
+	(make_abnormal_goto_edges): New function extracted from...
+	(make_goto_expr_edges): ...here.  Call it for computed gotos.
+	(simple_goto_p): Minor tweak.
+	(tree_can_make_abnormal_goto): New predicate.
+	(tree_redirect_edge_and_branch): Return zero on all abnormal edges.
+	(tree_purge_dead_abnormal_call_edges): New function.
+	* tree-flow.h (tree_can_make_abnormal_goto): Declare.
+	(tree_purge_dead_abnormal_call_edges): Likewise.
+	(make_abnormal_goto_edges): Likewise.
+	* tree-inline.c (expand_call_inline): Simplify statement frobbing.
+	Purge all dead abnormal edges if the call was in the last statement.
+	* tree-optimize.c (has_abnormal_outgoing_edge_p): New predicate.
+	(execute_fixup_cfg): If there are non-local labels in the function,
+	scan the basic blocks and split them at calls that can go to non-local
+	labels or add missing abnormal call edges.  Write down the CFG in the
+	dump file.
+	(pass_fixup_cfg): Remove TODO_dump_func flag.
+	* unwind-sjlj.c: Poison setjmp.
+	* doc/install.texi (enable-sjlj-exceptions): Use more general wording.
+	* doc/tm.texi (DWARF2_UNWIND_INFO): Likewise.
+	(TARGET_UNWIND_TABLES_DEFAULT): Fix typo.
+	(DONT_USE_BUILTIN_SETJMP): Document it.
+
 2006-09-28  Geoffrey Keating  <geoffk@apple.com>
 
 	PR target/28617

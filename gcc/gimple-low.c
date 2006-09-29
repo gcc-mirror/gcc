@@ -49,14 +49,18 @@ struct lower_data
   /* A TREE_LIST of label and return statements to be moved to the end
      of the function.  */
   tree return_statements;
+
+  /* True if the function calls __builtin_setjmp.  */
+  bool calls_builtin_setjmp;
 };
 
 static void lower_stmt (tree_stmt_iterator *, struct lower_data *);
 static void lower_bind_expr (tree_stmt_iterator *, struct lower_data *);
 static void lower_cond_expr (tree_stmt_iterator *, struct lower_data *);
 static void lower_return_expr (tree_stmt_iterator *, struct lower_data *);
+static void lower_builtin_setjmp (tree_stmt_iterator *);
 
-/* Lowers the body of current_function_decl.  */
+/* Lower the body of current_function_decl.  */
 
 static unsigned int
 lower_function_body (void)
@@ -113,6 +117,35 @@ lower_function_body (void)
       tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
     }
 
+  /* If the function calls __builtin_setjmp, we need to emit the computed
+     goto that will serve as the unique dispatcher for all the receivers.  */
+  if (data.calls_builtin_setjmp)
+    {
+      tree disp_label, disp_var, arg;
+
+      /* Build 'DISP_LABEL:' and insert.  */
+      disp_label = create_artificial_label ();
+      /* This mark will create forward edges from every call site.  */
+      DECL_NONLOCAL (disp_label) = 1;
+      current_function_has_nonlocal_label = 1;
+      x = build1 (LABEL_EXPR, void_type_node, disp_label);
+      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+
+      /* Build 'DISP_VAR = __builtin_setjmp_dispatcher (DISP_LABEL);'
+	 and insert.  */
+      disp_var = create_tmp_var (ptr_type_node, "setjmpvar");
+      t = build_addr (disp_label, current_function_decl);
+      arg = tree_cons (NULL, t, NULL);
+      t = implicit_built_in_decls[BUILT_IN_SETJMP_DISPATCHER];
+      t = build_function_call_expr (t,arg);
+      x = build2 (MODIFY_EXPR, void_type_node, disp_var, t);
+
+      /* Build 'goto DISP_VAR;' and insert.  */
+      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+      x = build1 (GOTO_EXPR, void_type_node, disp_var);
+      tsi_link_after (&i, x, TSI_CONTINUE_LINKING);
+    }
+
   gcc_assert (data.block == DECL_INITIAL (current_function_decl));
   BLOCK_SUBBLOCKS (data.block)
     = blocks_nreverse (BLOCK_SUBBLOCKS (data.block));
@@ -139,7 +172,7 @@ struct tree_opt_pass pass_lower_cf =
 };
 
 
-/* Lowers the EXPR.  Unlike gimplification the statements are not relowered
+/* Lower the EXPR.  Unlike gimplification the statements are not relowered
    when they are changed -- if this has to be done, the lowering routine must
    do it explicitly.  DATA is passed through the recursion.  */
 
@@ -171,7 +204,7 @@ lower_omp_directive (tree_stmt_iterator *tsi, struct lower_data *data)
 }
 
 
-/* Lowers statement TSI.  DATA is passed through the recursion.  */
+/* Lower statement TSI.  DATA is passed through the recursion.  */
 
 static void
 lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
@@ -207,8 +240,6 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
       
     case NOP_EXPR:
     case ASM_EXPR:
-    case MODIFY_EXPR:
-    case CALL_EXPR:
     case GOTO_EXPR:
     case LABEL_EXPR:
     case SWITCH_EXPR:
@@ -223,6 +254,27 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
     case OMP_CONTINUE:
       break;
 
+    case MODIFY_EXPR:
+      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
+	stmt = TREE_OPERAND (stmt, 1);
+      else
+	break;
+      /* FALLTHRU */
+
+    case CALL_EXPR:
+      {
+	tree decl = get_callee_fndecl (stmt);
+	if (decl
+	    && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+	    && DECL_FUNCTION_CODE (decl) == BUILT_IN_SETJMP)
+	  {
+	    data->calls_builtin_setjmp = true;
+	    lower_builtin_setjmp (tsi);
+	    return;
+	  }
+      }
+      break;
+
     case OMP_PARALLEL:
       lower_omp_directive (tsi, data);
       return;
@@ -234,7 +286,7 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
   tsi_next (tsi);
 }
 
-/* Lowers a bind_expr TSI.  DATA is passed through the recursion.  */
+/* Lower a bind_expr TSI.  DATA is passed through the recursion.  */
 
 static void
 lower_bind_expr (tree_stmt_iterator *tsi, struct lower_data *data)
@@ -403,7 +455,7 @@ block_may_fallthru (tree block)
     }
 }
 
-/* Lowers a cond_expr TSI.  DATA is passed through the recursion.  */
+/* Lower a cond_expr TSI.  DATA is passed through the recursion.  */
 
 static void
 lower_cond_expr (tree_stmt_iterator *tsi, struct lower_data *data)
@@ -498,6 +550,8 @@ lower_cond_expr (tree_stmt_iterator *tsi, struct lower_data *data)
   tsi_next (tsi);
 }
 
+/* Lower a return_expr TSI.  DATA is passed through the recursion.  */
+
 static void
 lower_return_expr (tree_stmt_iterator *tsi, struct lower_data *data)
 {
@@ -532,6 +586,129 @@ lower_return_expr (tree_stmt_iterator *tsi, struct lower_data *data)
   t = build1 (GOTO_EXPR, void_type_node, label);
   SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
   tsi_link_before (tsi, t, TSI_SAME_STMT);
+  tsi_delink (tsi);
+}
+
+/* Lower a __builtin_setjmp TSI.
+
+   __builtin_setjmp is passed a pointer to an array of five words (not
+   all will be used on all machines).  It operates similarly to the C
+   library function of the same name, but is more efficient.
+
+   It is lowered into 3 other builtins, namely __builtin_setjmp_setup,
+   __builtin_setjmp_dispatcher and __builtin_setjmp_receiver, but with
+   __builtin_setjmp_dispatcher shared among all the instances; that's
+   why it is only emitted at the end by lower_function_body.
+
+   After full lowering, the body of the function should look like:
+
+    {
+      void * setjmpvar.0;
+      int D.1844;
+      int D.2844;
+
+      [...]
+
+      __builtin_setjmp_setup (&buf, &<D1847>);
+      D.1844 = 0;
+      goto <D1846>;
+      <D1847>:;
+      __builtin_setjmp_receiver (&<D1847>);
+      D.1844 = 1;
+      <D1846>:;
+      if (D.1844 == 0) goto <D1848>; else goto <D1849>;
+
+      [...]
+
+      __builtin_setjmp_setup (&buf, &<D2847>);
+      D.2844 = 0;
+      goto <D2846>;
+      <D2847>:;
+      __builtin_setjmp_receiver (&<D2847>);
+      D.2844 = 1;
+      <D2846>:;
+      if (D.2844 == 0) goto <D2848>; else goto <D2849>;
+
+      [...]
+
+      <D3850>:;
+      return;
+      <D3853>: [non-local];
+      setjmpvar.0 = __builtin_setjmp_dispatcher (&<D3853>);
+      goto setjmpvar.0;
+    }
+
+   The dispatcher block will be both the unique destination of all the
+   abnormal call edges and the unique source of all the abnormal edges
+   to the receivers, thus keeping the complexity explosion localized.  */
+
+static void
+lower_builtin_setjmp (tree_stmt_iterator *tsi)
+{
+  tree stmt = tsi_stmt (*tsi);
+  tree cont_label = create_artificial_label ();
+  tree next_label = create_artificial_label ();
+  tree dest, t, arg;
+
+  /* NEXT_LABEL is the label __builtin_longjmp will jump to.  Its address is
+     passed to both __builtin_setjmp_setup and __builtin_setjmp_receiver.  */
+  FORCED_LABEL (next_label) = 1;
+
+  if (TREE_CODE (stmt) == MODIFY_EXPR)
+    {
+      dest = TREE_OPERAND (stmt, 0);
+      stmt = TREE_OPERAND (stmt, 1);
+    }
+  else
+    dest = NULL_TREE;
+
+  /* Build '__builtin_setjmp_setup (BUF, NEXT_LABEL)' and insert.  */
+  t = build_addr (next_label, current_function_decl);
+  arg = tree_cons (NULL, t, NULL);
+  t = TREE_VALUE (TREE_OPERAND (stmt, 1));
+  arg = tree_cons (NULL, t, arg);
+  t = implicit_built_in_decls[BUILT_IN_SETJMP_SETUP];
+  t = build_function_call_expr (t, arg);
+  SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
+  tsi_link_before (tsi, t, TSI_SAME_STMT);
+
+  /* Build 'DEST = 0' and insert.  */
+  if (dest)
+    {
+      t = build2 (MODIFY_EXPR, void_type_node, dest, integer_zero_node);
+      SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
+      tsi_link_before (tsi, t, TSI_SAME_STMT);
+    }
+
+  /* Build 'goto CONT_LABEL' and insert.  */
+  t = build1 (GOTO_EXPR, void_type_node, cont_label);
+  tsi_link_before (tsi, t, TSI_SAME_STMT);
+
+  /* Build 'NEXT_LABEL:' and insert.  */
+  t = build1 (LABEL_EXPR, void_type_node, next_label);
+  tsi_link_before (tsi, t, TSI_SAME_STMT);
+
+  /* Build '__builtin_setjmp_receiver (NEXT_LABEL)' and insert.  */
+  t = build_addr (next_label, current_function_decl);
+  arg = tree_cons (NULL, t, NULL);
+  t = implicit_built_in_decls[BUILT_IN_SETJMP_RECEIVER];
+  t = build_function_call_expr (t, arg);
+  SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
+  tsi_link_before (tsi, t, TSI_SAME_STMT);
+
+  /* Build 'DEST = 1' and insert.  */
+  if (dest)
+    {
+      t = build2 (MODIFY_EXPR, void_type_node, dest, integer_one_node);
+      SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
+      tsi_link_before (tsi, t, TSI_SAME_STMT);
+    }
+
+  /* Build 'CONT_LABEL:' and insert.  */
+  t = build1 (LABEL_EXPR, void_type_node, cont_label);
+  tsi_link_before (tsi, t, TSI_SAME_STMT);
+
+  /* Remove the call to __builtin_setjmp.  */
   tsi_delink (tsi);
 }
 

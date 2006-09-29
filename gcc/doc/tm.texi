@@ -7924,8 +7924,7 @@ Define this macro to 0 if your target supports DWARF 2 frame unwind
 information, but it does not yet work with exception handling.
 Otherwise, if your target supports this information (if it defines
 @samp{INCOMING_RETURN_ADDR_RTX} and either @samp{UNALIGNED_INT_ASM_OP}
-or @samp{OBJECT_FORMAT_ELF}), GCC will provide a default definition of
-1.
+or @samp{OBJECT_FORMAT_ELF}), GCC will provide a default definition of 1.
 
 If @code{TARGET_UNWIND_INFO} is defined, the target specific unwinder
 will be used in all cases.  Defining this macro will enable the generation
@@ -7933,7 +7932,8 @@ of DWARF 2 frame debugging information.
 
 If @code{TARGET_UNWIND_INFO} is not defined, and this macro is defined to 1,
 the DWARF 2 unwinder will be the default exception handling mechanism;
-otherwise, @code{setjmp}/@code{longjmp} will be used by default.
+otherwise, the @code{setjmp}/@code{longjmp}-based scheme will be used by
+default.
 @end defmac
 
 @defmac TARGET_UNWIND_INFO
@@ -7941,7 +7941,7 @@ Define this macro if your target has ABI specified unwind tables.  Usually
 these will be output by @code{TARGET_UNWIND_EMIT}.
 @end defmac
 
-@deftypevar {Target Hook} bool TARGET_UNWID_TABLES_DEFAULT
+@deftypevar {Target Hook} bool TARGET_UNWIND_TABLES_DEFAULT
 This variable should be set to @code{true} if the target ABI requires unwinding
 tables even when exceptions are not used.
 @end deftypevar
@@ -7949,8 +7949,14 @@ tables even when exceptions are not used.
 @defmac MUST_USE_SJLJ_EXCEPTIONS
 This macro need only be defined if @code{DWARF2_UNWIND_INFO} is
 runtime-variable.  In that case, @file{except.h} cannot correctly
-determine the corresponding definition of
-@code{MUST_USE_SJLJ_EXCEPTIONS}, so the target must provide it directly.
+determine the corresponding definition of @code{MUST_USE_SJLJ_EXCEPTIONS},
+so the target must provide it directly.
+@end defmac
+
+@defmac DONT_USE_BUILTIN_SETJMP
+Define this macro to 1 if the @code{setjmp}/@code{longjmp}-based scheme
+should use the @code{setjmp}/@code{longjmp} functions from the C library
+instead of the @code{__builtin_setjmp}/@code{__builtin_longjmp} machinery.
 @end defmac
 
 @defmac DWARF_CIE_DATA_ALIGNMENT

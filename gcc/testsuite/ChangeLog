@@ -1,5 +1,12 @@
 2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/non-local-goto-1.c: New test.
+	* gcc.dg/non-local-goto-2.c: Likewise.
+	* gcc.dg/setjmp-3.c: Likewise.
+	* gcc.dg/setjmp-4.c: Likewise.
+
+2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/self_aggregate_with_pointer.adb: New test.
 
 2006-09-27  Steven G. Kargl  <kargls@gcc.gnu.org>

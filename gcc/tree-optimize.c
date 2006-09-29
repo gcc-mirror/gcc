@@ -237,9 +237,26 @@ struct tree_opt_pass pass_free_cfg_annotations =
   0,					/* todo_flags_finish */
   0					/* letter */
 };
-/* Pass: fixup_cfg - IPA passes or compilation of earlier functions might've
-   changed some properties - such as marked functions nothrow.  Remove now
-   redundant edges and basic blocks.  */
+
+/* Return true if BB has at least one abnormal outgoing edge.  */
+
+static inline bool
+has_abnormal_outgoing_edge_p (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (e->flags & EDGE_ABNORMAL)
+      return true;
+
+  return false;
+}
+
+/* Pass: fixup_cfg.  IPA passes, compilation of earlier functions or inlining
+   might have changed some properties, such as marked functions nothrow or
+   added calls that can potentially go to non-local labels.  Remove redundant
+   edges and basic blocks, and create new ones if necessary.  */
 
 static unsigned int
 execute_fixup_cfg (void)
@@ -262,8 +279,37 @@ execute_fixup_cfg (void)
 	  }
 	tree_purge_dead_eh_edges (bb);
       }
-    
+
+  if (current_function_has_nonlocal_label)
+    FOR_EACH_BB (bb)
+      {
+	for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	  {
+	    tree stmt = bsi_stmt (bsi);
+	    if (tree_can_make_abnormal_goto (stmt))
+	      {
+		if (stmt == bsi_stmt (bsi_last (bb)))
+		  {
+		    if (!has_abnormal_outgoing_edge_p (bb))
+		      make_abnormal_goto_edges (bb, true);
+		  }
+		else
+		  {
+		    edge e = split_block (bb, stmt);
+		    bb = e->src;
+		    make_abnormal_goto_edges (bb, true);
+		  }
+		break;
+	      }
+	  }
+      }
+
   cleanup_tree_cfg ();
+
+  /* Dump a textual representation of the flowgraph.  */
+  if (dump_file)
+    dump_tree_cfg (dump_file, dump_flags);
+
   return 0;
 }
 
@@ -280,7 +326,7 @@ struct tree_opt_pass pass_fixup_cfg =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
+  0,					/* todo_flags_finish */
   0					/* letter */
 };
 
