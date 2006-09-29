@@ -1,3 +1,12 @@
+2006-09-29  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR other/25035
+	* configure.ac (AC_EXEEXT): Remove.
+	(GCC_NO_EXECUTABLES): Call.
+	(ssp_use_symver): Default to no if unable to link.
+	(AC_CHECK_FUNCS): Hardwire results if unable to link.
+	* aclocal.m4, configure, Makefile.in: Regenerate.
+
 2006-05-24  Release Manager
 
 	* GCC 4.1.1 released.
