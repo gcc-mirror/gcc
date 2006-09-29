@@ -42,7 +42,7 @@
 
 elemental function specific__abs_c16 (parm)
    complex (kind=16), intent (in) :: parm
-   complex (kind=16) :: specific__abs_c16
+   real (kind=16) :: specific__abs_c16
 
    specific__abs_c16 = abs (parm)
 end function
