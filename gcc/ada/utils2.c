@@ -1431,7 +1431,8 @@ build_call_0_expr (tree fundecl)
 		      build_unary_op (ADDR_EXPR, NULL_TREE, fundecl),
 		      NULL_TREE, NULL_TREE);
 
-  TREE_SIDE_EFFECTS (call) = 1;
+  /* We rely on build3 to compute TREE_SIDE_EFFECTS.  This makes it possible
+     to propagate the DECL_IS_PURE flag on parameterless functions.  */
 
   return call;
 }
