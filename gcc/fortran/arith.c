@@ -351,6 +351,10 @@ gfc_check_integer_range (mpz_t p, int kind)
         result = ARITH_ASYMMETRIC;
     }
 
+
+  if (gfc_option.flag_range_check == 0)
+    return result;
+
   if (mpz_cmp (p, gfc_integer_kinds[i].min_int) < 0
       || mpz_cmp (p, gfc_integer_kinds[i].huge) > 0)
     result = ARITH_OVERFLOW;

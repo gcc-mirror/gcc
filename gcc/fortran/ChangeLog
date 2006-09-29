@@ -1,3 +1,9 @@
+2006-09-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	fortran/29147
+	* arith.c (gfc_check_integer_range): Disable range checking via
+	-fno-range-check.
+
 2006-09-28  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	* arith.c: Change conditional test for inclusion of arctangent().
