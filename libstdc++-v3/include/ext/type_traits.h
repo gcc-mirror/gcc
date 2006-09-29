@@ -50,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     struct __enable_if<true, _Tp>
     { typedef _Tp __type; };
 
-  // XXX What about std::tr1::true_type?
+
   // Conditional expression for types. If true, first, if false, second.
   template<bool _Cond, typename _Iftrue, typename _Iffalse>
     struct __conditional_type
@@ -61,13 +61,23 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     { typedef _Iffalse __type; };
 
 
-  // Given a builtin type, return the corresponding unsigned type.
-  template<typename _Value>
+  // Given an integral builtin type, return the corresponding unsigned type.
+  template<typename _T>
     struct __add_unsigned
-    { typedef _Value __type; };
+    { 
+    private:
+      typedef __enable_if<std::__is_integer<_T>::__value, _T> __if_type;
+      
+    public:
+      typedef typename __if_type::__type __type; 
+    };
 
   template<>
     struct __add_unsigned<char>
+    { typedef unsigned char __type; };
+
+  template<>
+    struct __add_unsigned<signed char>
     { typedef unsigned char __type; };
 
   template<>
@@ -82,20 +92,36 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     struct __add_unsigned<long>
     { typedef unsigned long __type; };
 
-#ifdef _GLIBCXX_USE_LONG_LONG
   template<>
     struct __add_unsigned<long long>
     { typedef unsigned long long __type; };
-#endif
 
-  // Given an builtin type, return the corresponding signed type.
-  template<typename _Value>
+  // Declare but don't define.
+  template<>
+    struct __add_unsigned<bool>;
+
+  template<>
+    struct __add_unsigned<wchar_t>;
+
+
+  // Given an integral builtin type, return the corresponding signed type.
+  template<typename _T>
     struct __remove_unsigned
-    { typedef _Value __type; };
+    { 
+    private:
+      typedef __enable_if<std::__is_integer<_T>::__value, _T> __if_type;
+      
+    public:
+      typedef typename __if_type::__type __type; 
+    };
+
+  template<>
+    struct __remove_unsigned<char>
+    { typedef signed char __type; };
 
   template<>
     struct __remove_unsigned<unsigned char>
-    { typedef char __type; };
+    { typedef signed char __type; };
 
   template<>
     struct __remove_unsigned<unsigned short>
@@ -109,11 +135,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     struct __remove_unsigned<unsigned long>
     { typedef long __type; };
 
-#ifdef _GLIBCXX_USE_LONG_LONG
   template<>
     struct __remove_unsigned<unsigned long long>
     { typedef long long __type; };
-#endif
+
+  // Declare but don't define.
+  template<>
+    struct __remove_unsigned<bool>;
+
+  template<>
+    struct __remove_unsigned<wchar_t>;
+
 
   // Compile time constants for builtin types.
   // Sadly std::numeric_limits member functions cannot be used for this.

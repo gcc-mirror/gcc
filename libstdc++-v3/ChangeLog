@@ -1,3 +1,20 @@
+2006-09-29  Benjamin Kosnik  <bkoz@redhat.com>
+            Howard Hinnant  <hhinnant@apple.com>
+            Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/type_traits.h (__remove_unsigned): Fix up for signed
+	char, bool, wchar_t, and floating point types.
+	(__add_unsigned): Same.	
+	* testsuite/ext/type_traits: New.
+	* testsuite/ext/type_traits.cc: Move...
+	* testsuite/ext/type_traits/numeric_traits.cc: ...here.	
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: New.
+	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc: New.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: New.
+	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc: New.
+	* testsuite/ext/type_traits/add_unsigned.cc: New.
+	* testsuite/ext/type_traits/remove_unsigned.cc: New.
+	
 2006-09-29  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* acinclude.m4 (enable_symvers): Default to no if unable to link.
