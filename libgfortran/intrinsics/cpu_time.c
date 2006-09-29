@@ -171,6 +171,30 @@ void cpu_time_8 (GFC_REAL_8 *time)
   *time = sec + usec * (GFC_REAL_8)1.e-6;
 }
 
+#ifdef HAVE_GFC_REAL_10
+extern void cpu_time_10 (GFC_REAL_10 *);
+export_proto(cpu_time_10);
+
+void cpu_time_10 (GFC_REAL_10 *time)
+{
+  long sec, usec;
+  __cpu_time_1 (&sec, &usec);
+  *time = sec + usec * (GFC_REAL_10)1.e-6;
+}
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+extern void cpu_time_16 (GFC_REAL_16 *);
+export_proto(cpu_time_16);
+
+void cpu_time_16 (GFC_REAL_16 *time)
+{
+  long sec, usec;
+  __cpu_time_1 (&sec, &usec);
+  *time = sec + usec * (GFC_REAL_16)1.e-6;
+}
+#endif
+
 extern void second_sub (GFC_REAL_4 *);
 export_proto(second_sub);
 
