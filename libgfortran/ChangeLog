@@ -1,3 +1,7 @@
+2006-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+ 
+	* intrinsics/cpu_time.c:  Add cpu_time_10 and cpu_time_16 routines.
+
 2006-09-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* Makefile.am: Install libgfortranbegin inside compiler libraries
