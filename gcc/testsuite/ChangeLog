@@ -1,3 +1,8 @@
+2006-09-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/pthread-init-1.c, pthread-init-2.c,
+	pthread-init-common.h: New.
+
 2006-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/nearest_1.f90: Add -ffloat-store to defeat extra
