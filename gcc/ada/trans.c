@@ -2167,6 +2167,11 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 					  build_call_0_expr (get_jmpbuf_decl),
 					  false, false, false, false, NULL,
 					  gnat_node);
+      /* The __builtin_setjmp receivers will immediately reinstall it.  Now
+	 because of the unstructured form of EH used by setjmp_longjmp, there
+	 might be forward edges going to __builtin_setjmp receivers on which
+	 it is uninitialized, although they will never be actually taken.  */
+      TREE_NO_WARNING (gnu_jmpsave_decl) = 1;
       gnu_jmpbuf_decl = create_var_decl (get_identifier ("JMP_BUF"),
 					 NULL_TREE, jmpbuf_type,
 					 NULL_TREE, false, false, false, false,

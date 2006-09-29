@@ -1,3 +1,13 @@
+2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <E_Procedure>: Do not set "const" flag
+	on "pure" Ada subprograms if SJLJ exceptions are used.
+	* trans.c (Handled_Sequence_Of_Statements_to_gnu): Set TREE_NO_WARNING
+	on the declaration node of JMPBUF_SAVE.
+	* utils.c (init_gigi_decls): Set DECL_IS_PURE on the declaration nodes
+	of Get_Jmpbuf_Address_Soft and Get_GNAT_Exception.
+	* utils2.c (build_call_0_expr): Do not set TREE_SIDE_EFFECTS.
+
 2006-08-20  Laurent GUERBY  <laurent@guerby.net>
 
         PR ada/28716
