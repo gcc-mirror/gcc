@@ -564,6 +564,7 @@ extern bool is_ctrl_stmt (tree);
 extern bool is_ctrl_altering_stmt (tree);
 extern bool computed_goto_p (tree);
 extern bool simple_goto_p (tree);
+extern bool tree_can_make_abnormal_goto (tree);
 extern basic_block single_noncomplex_succ (basic_block bb);
 extern void tree_dump_bb (basic_block, FILE *, int);
 extern void debug_tree_bb (basic_block);
@@ -596,6 +597,7 @@ extern bool tree_duplicate_sese_region (edge, edge, basic_block *, unsigned,
 					basic_block *);
 extern void add_phi_args_after_copy_bb (basic_block);
 extern void add_phi_args_after_copy (basic_block *, unsigned);
+extern bool tree_purge_dead_abnormal_call_edges (basic_block);
 extern bool tree_purge_dead_eh_edges (basic_block);
 extern bool tree_purge_all_dead_eh_edges (bitmap);
 extern tree gimplify_val (block_stmt_iterator *, tree, tree);
@@ -607,6 +609,7 @@ extern tree gimplify_build3 (block_stmt_iterator *, enum tree_code,
 			     tree, tree, tree, tree);
 extern void init_empty_tree_cfg (void);
 extern void fold_cond_expr_cond (void);
+extern void make_abnormal_goto_edges (basic_block, bool);
 extern void replace_uses_by (tree, tree);
 extern void start_recording_case_labels (void);
 extern void end_recording_case_labels (void);

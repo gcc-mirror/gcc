@@ -489,9 +489,8 @@ make_edges (void)
 	      /* If this function receives a nonlocal goto, then we need to
 		 make edges from this call site to all the nonlocal goto
 		 handlers.  */
-	      if (TREE_SIDE_EFFECTS (last)
-		  && current_function_has_nonlocal_label)
-		make_goto_expr_edges (bb);
+	      if (tree_can_make_abnormal_goto (last))
+		make_abnormal_goto_edges (bb, true);
 
 	      /* If this statement has reachable exception handlers, then
 		 create abnormal edges to them.  */
@@ -507,10 +506,8 @@ make_edges (void)
 		  /* A MODIFY_EXPR may have a CALL_EXPR on its RHS and the
 		     CALL_EXPR may have an abnormal edge.  Search the RHS for
 		     this case and create any required edges.  */
-		  tree op = get_call_expr_in (last);
-		  if (op && TREE_SIDE_EFFECTS (op)
-		      && current_function_has_nonlocal_label)
-		    make_goto_expr_edges (bb);
+		  if (tree_can_make_abnormal_goto (last))
+		    make_abnormal_goto_edges (bb, true);  
 
 		  make_eh_edges (last);
 		}
@@ -836,76 +833,60 @@ label_to_block_fn (struct function *ifun, tree dest)
   return VEC_index (basic_block, ifun->cfg->x_label_to_block_map, uid);
 }
 
+/* Create edges for an abnormal goto statement at block BB.  If FOR_CALL
+   is true, the source statement is a CALL_EXPR instead of a GOTO_EXPR.  */
+
+void
+make_abnormal_goto_edges (basic_block bb, bool for_call)
+{
+  basic_block target_bb;
+  block_stmt_iterator bsi;
+
+  FOR_EACH_BB (target_bb)
+    for (bsi = bsi_start (target_bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      {
+	tree target = bsi_stmt (bsi);
+
+	if (TREE_CODE (target) != LABEL_EXPR)
+	  break;
+
+	target = LABEL_EXPR_LABEL (target);
+
+	/* Make an edge to every label block that has been marked as a
+	   potential target for a computed goto or a non-local goto.  */
+	if ((FORCED_LABEL (target) && !for_call)
+	    || (DECL_NONLOCAL (target) && for_call))
+	  {
+	    make_edge (bb, target_bb, EDGE_ABNORMAL);
+	    break;
+	  }
+      }
+}
+
 /* Create edges for a goto statement at block BB.  */
 
 static void
 make_goto_expr_edges (basic_block bb)
 {
-  tree goto_t;
-  basic_block target_bb;
-  bool for_call;
   block_stmt_iterator last = bsi_last (bb);
+  tree goto_t = bsi_stmt (last);
 
-  goto_t = bsi_stmt (last);
-
-  /* If the last statement is not a GOTO (i.e., it is a RETURN_EXPR,
-     CALL_EXPR or MODIFY_EXPR), then the edge is an abnormal edge resulting
-     from a nonlocal goto.  */
-  if (TREE_CODE (goto_t) != GOTO_EXPR)
-    for_call = true;
-  else
+  /* A simple GOTO creates normal edges.  */
+  if (simple_goto_p (goto_t))
     {
       tree dest = GOTO_DESTINATION (goto_t);
-      for_call = false;
-
-      /* A GOTO to a local label creates normal edges.  */
-      if (simple_goto_p (goto_t))
-	{
-	  edge e = make_edge (bb, label_to_block (dest), EDGE_FALLTHRU);
+      edge e = make_edge (bb, label_to_block (dest), EDGE_FALLTHRU);
 #ifdef USE_MAPPED_LOCATION
-	  e->goto_locus = EXPR_LOCATION (goto_t);
+      e->goto_locus = EXPR_LOCATION (goto_t);
 #else
-	  e->goto_locus = EXPR_LOCUS (goto_t);
+      e->goto_locus = EXPR_LOCUS (goto_t);
 #endif
-	  bsi_remove (&last, true);
-	  return;
-	}
-
-      /* Nothing more to do for nonlocal gotos.  */
-      if (TREE_CODE (dest) == LABEL_DECL)
-	return;
-
-      /* Computed gotos remain.  */
+      bsi_remove (&last, true);
+      return;
     }
 
-  /* Look for the block starting with the destination label.  In the
-     case of a computed goto, make an edge to any label block we find
-     in the CFG.  */
-  FOR_EACH_BB (target_bb)
-    {
-      block_stmt_iterator bsi;
-
-      for (bsi = bsi_start (target_bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	{
-	  tree target = bsi_stmt (bsi);
-
-	  if (TREE_CODE (target) != LABEL_EXPR)
-	    break;
-
-	  if (
-	      /* Computed GOTOs.  Make an edge to every label block that has
-		 been marked as a potential target for a computed goto.  */
-	      (FORCED_LABEL (LABEL_EXPR_LABEL (target)) && !for_call)
-	      /* Nonlocal GOTO target.  Make an edge to every label block
-		 that has been marked as a potential target for a nonlocal
-		 goto.  */
-	      || (DECL_NONLOCAL (LABEL_EXPR_LABEL (target)) && for_call))
-	    {
-	      make_edge (bb, target_bb, EDGE_ABNORMAL);
-	      break;
-	    }
-	}
-    }
+  /* A computed GOTO creates abnormal edges.  */
+  make_abnormal_goto_edges (bb, false);
 }
 
 
@@ -2517,13 +2498,31 @@ computed_goto_p (tree t)
 }
 
 
-/* Checks whether EXPR is a simple local goto.  */
+/* Return true if T is a simple local goto.  */
 
 bool
-simple_goto_p (tree expr)
+simple_goto_p (tree t)
 {
-  return (TREE_CODE (expr) == GOTO_EXPR
-	  && TREE_CODE (GOTO_DESTINATION (expr)) == LABEL_DECL);
+  return (TREE_CODE (t) == GOTO_EXPR
+	  && TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL);
+}
+
+
+/* Return true if T can make an abnormal transfer of control flow.
+   Transfers of control flow associated with EH are excluded.  */
+
+bool
+tree_can_make_abnormal_goto (tree t)
+{
+  if (computed_goto_p (t))
+    return true;
+  if (TREE_CODE (t) == MODIFY_EXPR)
+    t = TREE_OPERAND (t, 1);
+  if (TREE_CODE (t) == WITH_SIZE_EXPR)
+    t = TREE_OPERAND (t, 0);
+  if (TREE_CODE (t) == CALL_EXPR)
+    return TREE_SIDE_EFFECTS (t) && current_function_has_nonlocal_label;
+  return false;
 }
 
 
@@ -4072,7 +4071,7 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
   edge ret;
   tree label, stmt;
 
-  if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
+  if (e->flags & EDGE_ABNORMAL)
     return NULL;
 
   if (e->src != ENTRY_BLOCK_PTR
@@ -5373,6 +5372,41 @@ tree_flow_call_edges_add (sbitmap blocks)
 
   return blocks_split;
 }
+
+/* Purge dead abnormal call edges from basic block BB.  */
+
+bool
+tree_purge_dead_abnormal_call_edges (basic_block bb)
+{
+  bool changed = tree_purge_dead_eh_edges (bb);
+
+  if (current_function_has_nonlocal_label)
+    {
+      tree stmt = last_stmt (bb);
+      edge_iterator ei;
+      edge e;
+
+      if (!(stmt && tree_can_make_abnormal_goto (stmt)))
+	for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+	  {
+	    if (e->flags & EDGE_ABNORMAL)
+	      {
+		remove_edge (e);
+		changed = true;
+	      }
+	    else
+	      ei_next (&ei);
+	  }
+
+      /* See tree_purge_dead_eh_edges below.  */
+      if (changed)
+	free_dominance_info (CDI_DOMINATORS);
+    }
+
+  return changed;
+}
+
+/* Purge dead EH edges from basic block BB.  */
 
 bool
 tree_purge_dead_eh_edges (basic_block bb)

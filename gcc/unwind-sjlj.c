@@ -1,5 +1,5 @@
 /* SJLJ exception handling and frame unwind runtime interface routines.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2006
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -45,9 +45,13 @@ typedef void *jmp_buf[JMP_BUF_SIZE];
 extern void longjmp(jmp_buf, int) __attribute__((noreturn));
 #endif
 #else
-#define setjmp __builtin_setjmp
 #define longjmp __builtin_longjmp
 #endif
+
+/* The setjmp side is dealt with in the except.c file.  */
+#undef setjmp
+#define setjmp setjmp_should_not_be_used_in_this_file
+
 
 /* This structure is allocated on the stack of the target function.
    This must match the definition created in except.c:init_eh.  */

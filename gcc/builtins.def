@@ -690,6 +690,11 @@ DEF_BUILTIN_STUB (BUILT_IN_INIT_TRAMPOLINE, "__builtin_init_trampoline")
 DEF_BUILTIN_STUB (BUILT_IN_ADJUST_TRAMPOLINE, "__builtin_adjust_trampoline")
 DEF_BUILTIN_STUB (BUILT_IN_NONLOCAL_GOTO, "__builtin_nonlocal_goto")
 
+/* Implementing __builtin_setjmp.  */
+DEF_BUILTIN_STUB (BUILT_IN_SETJMP_SETUP, "__builtin_setjmp_setup")
+DEF_BUILTIN_STUB (BUILT_IN_SETJMP_DISPATCHER, "__builtin_setjmp_dispatcher")
+DEF_BUILTIN_STUB (BUILT_IN_SETJMP_RECEIVER, "__builtin_setjmp_receiver")
+
 /* Implementing variable sized local variables.  */
 DEF_BUILTIN_STUB (BUILT_IN_STACK_SAVE, "__builtin_stack_save")
 DEF_BUILTIN_STUB (BUILT_IN_STACK_RESTORE, "__builtin_stack_restore")

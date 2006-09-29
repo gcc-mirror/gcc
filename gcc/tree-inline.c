@@ -1930,6 +1930,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   edge e;
   block_stmt_iterator bsi, stmt_bsi;
   bool successfully_inlined = FALSE;
+  bool purge_dead_abnormal_edges;
   tree t_step;
   tree var;
 
@@ -2024,30 +2025,36 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 #endif
 
   /* We will be inlining this callee.  */
-
   id->eh_region = lookup_stmt_eh_region (stmt);
 
   /* Split the block holding the CALL_EXPR.  */
-
   e = split_block (bb, stmt);
   bb = e->src;
   return_block = e->dest;
   remove_edge (e);
 
-  /* split_block splits before the statement, work around this by moving
-     the call into the first half_bb.  Not pretty, but seems easier than
-     doing the CFG manipulation by hand when the CALL_EXPR is in the last
-     statement in BB.  */
+  /* split_block splits after the statement; work around this by
+     moving the call into the second block manually.  Not pretty,
+     but seems easier than doing the CFG manipulation by hand
+     when the CALL_EXPR is in the last statement of BB.  */
   stmt_bsi = bsi_last (bb);
+  bsi_remove (&stmt_bsi, false);
+
+  /* If the CALL_EXPR was in the last statement of BB, it may have
+     been the source of abnormal edges.  In this case, schedule
+     the removal of dead abnormal edges.  */
   bsi = bsi_start (return_block);
-  if (!bsi_end_p (bsi))
-    bsi_move_before (&stmt_bsi, &bsi);
+  if (bsi_end_p (bsi))
+    {
+      bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
+      purge_dead_abnormal_edges = true;
+    }
   else
     {
-      tree stmt = bsi_stmt (stmt_bsi);
-      bsi_remove (&stmt_bsi, false);
-      bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
+      bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
+      purge_dead_abnormal_edges = false;
     }
+
   stmt_bsi = bsi_start (return_block);
 
   /* Build a block containing code to initialize the arguments, the
@@ -2147,9 +2154,8 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
        tsi_delink() will leave the iterator in a sane state.  */
     bsi_remove (&stmt_bsi, true);
 
-  bsi_next (&bsi);
-  if (bsi_end_p (bsi))
-    tree_purge_dead_eh_edges (return_block);
+  if (purge_dead_abnormal_edges)
+    tree_purge_dead_abnormal_call_edges (return_block);
 
   /* If the value of the new expression is ignored, that's OK.  We
      don't warn about this for CALL_EXPRs, so we shouldn't warn about
