@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-ffloat-store" }
 ! PR fortran/27021
 ! Original code submitted by Dominique d'Humieres
 ! Converted to Dejagnu for the testsuite by Steven G. Kargl

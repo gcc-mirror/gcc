@@ -1,3 +1,8 @@
+2006-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/nearest_1.f90: Add -ffloat-store to defeat extra
+	precision on some archs.
+
 2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/non-local-goto-1.c: New test.
@@ -9,7 +14,7 @@
 
 	* gnat.dg/self_aggregate_with_pointer.adb: New test.
 
-2006-09-27  Steven G. Kargl  <kargls@gcc.gnu.org>
+2006-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/28276
 	* gfortran.dg/exponent_1.f90: New test.
