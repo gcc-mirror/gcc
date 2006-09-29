@@ -2972,18 +2972,31 @@ fix = {
     hackname = solaris_mutex_init_2;
     select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
     files = pthread.h;
+    /*
+     * On Solaris 10, this fix is unnecessary because upad64_t is
+     * always defined correctly regardless of the definition of the
+     * __STDC__ macro.  The first "mach" pattern matches up to
+     * solaris9.  The second "mach" pattern will not match any two (or
+     * more) digit solaris version, but it will match e.g. 2.5.1.
+     */
+    mach = '*-*-solaris2.[0-9]', '*-*-solaris2.[0-9][!0-9]*';
     c_fix = format;
     c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
                 "%0\n"
                 "#else\n"
-                "%1, {0}}%3\n"
+                "%1, {0}}%4\n"
                 "#endif";
-    c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+\\{.*)"
+    c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+"
+                "(|/\*.*\*/[ \t]*\\\\\n[ \t]*)\\{.*)"
                 ",[ \t]*0\\}" "(|[ \t].*)$";
     test_text =
     '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
     "#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
-    "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */";
+    "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
+    "#define	PTHREAD_MUTEX_INITIALIZER		/* = DEFAULTMUTEX */	\\\\\n"
+    "	{{0, 0, 0, DEFAULT_TYPE, _MUTEX_MAGIC}, {{{0}}}, 0}\n"
+    "#define	PTHREAD_COND_INITIALIZER		/* = DEFAULTCV */	\\\\\n"
+    "	{{{0, 0, 0, 0}, DEFAULT_TYPE, _COND_MAGIC}, 0}";
 };
 
 
@@ -3047,7 +3060,7 @@ fix = {
     /*
      * On Solaris 10, this fix is unnecessary because upad64_t is
      * always defined correctly regardless of the definition of the
-     * __STDC__ macro.  The first "match" pattern matches up to
+     * __STDC__ macro.  The first "mach" pattern matches up to
      * solaris9.  The second "mach" pattern will not match any two (or
      * more) digit solaris version, but it will match e.g. 2.5.1.
      */
