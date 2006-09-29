@@ -1,3 +1,12 @@
+2006-09-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* inclhack.def (solaris_mutex_init_2): Update for Solaris9.
+	Prevent it from running on solaris10 or later.
+	(solaris_once_init_2): Fix comment.
+	* tests/base/pthread.h: Update.
+
+	* fixincl.x: Regenerate.
+
 2006-09-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* inclhack.def (solaris_once_init_2): New fix.

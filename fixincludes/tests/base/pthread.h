@@ -94,6 +94,20 @@ extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
 #else
 #define PTHREAD_COND_INITIALIZER	{{{0}, 0}, {0}}	/* DEFAULTCV */
 #endif
+#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
+#define	PTHREAD_MUTEX_INITIALIZER		/* = DEFAULTMUTEX */	\
+	{{0, 0, 0, DEFAULT_TYPE, _MUTEX_MAGIC}, {{{0}}}, 0}
+#else
+#define	PTHREAD_MUTEX_INITIALIZER		/* = DEFAULTMUTEX */	\
+	{{0, 0, 0, DEFAULT_TYPE, _MUTEX_MAGIC}, {{{0}}}, {0}}
+#endif
+#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
+#define	PTHREAD_COND_INITIALIZER		/* = DEFAULTCV */	\
+	{{{0, 0, 0, 0}, DEFAULT_TYPE, _COND_MAGIC}, 0}
+#else
+#define	PTHREAD_COND_INITIALIZER		/* = DEFAULTCV */	\
+	{{{0, 0, 0, 0}, DEFAULT_TYPE, _COND_MAGIC}, {0}}
+#endif
 #endif  /* SOLARIS_MUTEX_INIT_2_CHECK */
 
 
