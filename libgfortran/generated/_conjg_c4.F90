@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_4)
 
 
-elemental function specific__conjg_c4 (parm)
+elemental function specific__conjg_4 (parm)
    complex (kind=4), intent (in) :: parm
-   complex (kind=4) :: specific__conjg_c4
+   complex (kind=4) :: specific__conjg_4
 
-   specific__conjg_c4 = conjg (parm)
+   specific__conjg_4 = conjg (parm)
 end function
 
 

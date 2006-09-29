@@ -1,3 +1,10 @@
+2006-09-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/18791
+	* gfortran.dg/specifics_1.f90: New test.
+	* gfortran.fortran-torture/execute/specifics.f90: Add tests for
+	complex specifics.
+
 2006-09-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/pthread-init-1.c, pthread-init-2.c,
