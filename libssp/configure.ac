@@ -22,7 +22,8 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 AC_MSG_RESULT($version_specific_libs)
 
 AM_MAINTAINER_MODE
-AC_EXEEXT
+
+GCC_NO_EXECUTABLES
 
 AM_ENABLE_MULTILIB(, ..)
 
@@ -78,14 +79,27 @@ FOO_1.0 {
 EOF
 save_LDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
-AC_TRY_LINK([int foo;],[],[ssp_use_symver=yes],[ssp_use_symver=no])
+if test x$gcc_no_link = xyes; then
+  # If we cannot link, we cannot build shared libraries, so do not use
+  # symbol versioning.
+  ssp_use_symver=no
+else
+  AC_TRY_LINK([int foo;],[],[ssp_use_symver=yes],[ssp_use_symver=no])
+fi
 LDFLAGS="$save_LDFLAGS"
 AC_MSG_RESULT($ssp_use_symver)
 AM_CONDITIONAL(LIBSSP_USE_SYMVER, [test "x$ssp_use_symver" = xyes])
 
 AC_CHECK_HEADERS(alloca.h paths.h syslog.h string.h unistd.h fcntl.h stdio.h limits.h)
 
-AC_CHECK_FUNCS(mempcpy strncpy strncat)
+if test x$gcc_no_link = xyes; then
+  # Presume the ISO C functions are available; add target-specific
+  # configuration here if required.
+  AC_DEFINE(HAVE_STRNCPY)
+  AC_DEFINE(HAVE_STRNCAT)
+else
+  AC_CHECK_FUNCS(mempcpy strncpy strncat)
+fi
 
 AC_MSG_CHECKING([whether vsnprintf is usable])
 AC_RUN_IFELSE(AC_LANG_PROGRAM([
