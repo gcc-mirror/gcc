@@ -10,9 +10,9 @@
 
 2006-08-20  Laurent GUERBY  <laurent@guerby.net>
 
-        PR ada/28716
-        g-socket.adb (Bind_Socket): Call Set_Address.
-	
+	PR ada/28716
+	g-socket.adb (Bind_Socket): Call Set_Address.
+
 2006-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/15802
