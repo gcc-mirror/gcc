@@ -48,7 +48,7 @@
 PB_DS_CLASS_T_DEC
 inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
-insert_imp(const_reference r_val, store_hash_true_type)
+insert_imp(const_reference r_val, true_type)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   const_key_reference key = PB_DS_V2F(r_val);

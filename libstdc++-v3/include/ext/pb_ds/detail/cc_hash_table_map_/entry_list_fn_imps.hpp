@@ -60,7 +60,7 @@ deallocate_links_in_list(entry_pointer p_e)
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::entry_pointer
 PB_DS_CLASS_C_DEC::
-get_entry(const_reference r_val, no_throw_copies_true_type)
+get_entry(const_reference r_val, true_type)
 {
   // Following line might throw an exception.
   entry_pointer p_e = s_entry_allocator.allocate(1);
@@ -73,7 +73,7 @@ get_entry(const_reference r_val, no_throw_copies_true_type)
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::entry_pointer
 PB_DS_CLASS_C_DEC::
-get_entry(const_reference r_val, no_throw_copies_false_type)
+get_entry(const_reference r_val, false_type)
 {
   // Following line might throw an exception.
   entry_pointer p_e = s_entry_allocator.allocate(1);

@@ -73,10 +73,6 @@ namespace pb_ds
       typedef typename key_allocator::reference key_reference;
       typedef typename key_allocator::const_reference const_key_reference;
       typedef typename Alloc::size_type size_type;
-      typedef false_type store_extra_false_type;
-      typedef true_type store_extra_true_type;
-      typedef false_type no_throw_copies_false_type;
-      typedef true_type no_throw_copies_true_type;
 
       integral_constant<int, Store_Extra> m_store_extra_indicator;
       typename no_throw_copies<Key, Mapped>::indicator m_no_throw_copies_indicator;
@@ -84,8 +80,7 @@ namespace pb_ds
       // Extra value (used when the extra value is stored with each value).
       typedef typename comp_hash_<size_type>::comp_hash comp_hash;
     };
-
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_TYPES_TRAITS_HPP
+#endif 

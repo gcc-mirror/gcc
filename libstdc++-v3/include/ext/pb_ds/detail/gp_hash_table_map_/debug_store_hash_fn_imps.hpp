@@ -49,7 +49,7 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_entry_array_valid(const entry_array a_entries, store_hash_true_type) const
+assert_entry_array_valid(const entry_array a_entries, true_type) const
 {
   size_type iterated_num_used_e = 0;
 

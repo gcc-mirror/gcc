@@ -48,5 +48,5 @@
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::pointer
 PB_DS_CLASS_C_DEC::
-find_key_pointer(const_key_reference r_key, store_hash_false_type)
+find_key_pointer(const_key_reference r_key, false_type)
 

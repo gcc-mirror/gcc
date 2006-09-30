@@ -48,7 +48,7 @@
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
-find_ins_pos(const_key_reference r_key, store_hash_false_type)
+find_ins_pos(const_key_reference r_key, false_type)
 {
   size_type hash = ranged_probe_fn_base::operator()(r_key);
   size_type i;
@@ -99,7 +99,7 @@ find_ins_pos(const_key_reference r_key, store_hash_false_type)
 PB_DS_CLASS_T_DEC
 inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
-insert_imp(const_reference r_val, store_hash_false_type)
+insert_imp(const_reference r_val, false_type)
 {
   const_key_reference r_key = PB_DS_V2F(r_val);
   const size_type pos = find_ins_pos(r_key, 

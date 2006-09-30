@@ -136,10 +136,6 @@ namespace pb_ds
       typedef typename traits_base::const_pointer const_pointer_;
       typedef typename traits_base::reference reference_;
       typedef typename traits_base::const_reference const_reference_;
-      typedef typename traits_base::store_extra_false_type store_hash_false_type;
-      typedef typename traits_base::store_extra_true_type store_hash_true_type;
-      typedef typename traits_base::no_throw_copies_false_type no_throw_copies_false_type;
-      typedef typename traits_base::no_throw_copies_true_type no_throw_copies_true_type;
 
       struct entry : public traits_base::stored_value_type
       {
@@ -362,26 +358,26 @@ namespace pb_ds
       resize_imp_no_exceptions(size_type, entry_pointer_array, size_type);
 
       inline entry_pointer
-      resize_imp_no_exceptions_reassign_pointer(entry_pointer, entry_pointer_array, store_hash_false_type);
+      resize_imp_no_exceptions_reassign_pointer(entry_pointer, entry_pointer_array, false_type);
 
       inline entry_pointer
-      resize_imp_no_exceptions_reassign_pointer(entry_pointer, entry_pointer_array, store_hash_true_type);
+      resize_imp_no_exceptions_reassign_pointer(entry_pointer, entry_pointer_array, true_type);
 
       void
       deallocate_links_in_list(entry_pointer);
 
       inline entry_pointer
-      get_entry(const_reference, no_throw_copies_false_type);
+      get_entry(const_reference, false_type);
 
       inline entry_pointer
-      get_entry(const_reference, no_throw_copies_true_type);
+      get_entry(const_reference, true_type);
 
       inline void
       rels_entry(entry_pointer);
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       inline mapped_reference
-      subscript_imp(const_key_reference r_key, store_hash_false_type)
+      subscript_imp(const_key_reference r_key, false_type)
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
         const size_type pos = ranged_hash_fn_base::operator()(r_key);
@@ -407,7 +403,7 @@ namespace pb_ds
       }
 
       inline mapped_reference
-      subscript_imp(const_key_reference r_key, store_hash_true_type)
+      subscript_imp(const_key_reference r_key, true_type)
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 	comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
@@ -434,10 +430,10 @@ namespace pb_ds
 #endif 
 
       inline std::pair<point_iterator, bool>
-      insert_imp(const_reference, store_hash_false_type);
+      insert_imp(const_reference, false_type);
 
       inline std::pair<point_iterator, bool>
-      insert_imp(const_reference, store_hash_true_type);
+      insert_imp(const_reference, true_type);
 
       inline pointer
       insert_new_imp(const_reference r_val, size_type pos)
@@ -478,7 +474,7 @@ namespace pb_ds
       }
 
       inline pointer
-      find_key_pointer(const_key_reference r_key, store_hash_false_type)
+      find_key_pointer(const_key_reference r_key, false_type)
       {
 	entry_pointer p_e = m_entries[ranged_hash_fn_base::operator()(r_key)];
 	resize_base::notify_find_search_start();
@@ -501,7 +497,7 @@ namespace pb_ds
       }
 
       inline pointer
-      find_key_pointer(const_key_reference r_key, store_hash_true_type)
+      find_key_pointer(const_key_reference r_key, true_type)
       {
 	comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(r_key);
 	entry_pointer p_e = m_entries[pos_hash_pair.first];
@@ -585,17 +581,15 @@ namespace pb_ds
       assert_entry_pointer_array_valid(const entry_pointer_array) const;
 
       void
-      assert_entry_pointer_valid(const entry_pointer, 
-				 store_hash_true_type) const;
+      assert_entry_pointer_valid(const entry_pointer, true_type) const;
 
       void
-      assert_entry_pointer_valid(const entry_pointer, 
-				 store_hash_false_type) const;
+      assert_entry_pointer_valid(const entry_pointer, false_type) const;
 #endif 
 
 #ifdef PB_DS_HT_MAP_TRACE_
       void
-      trace_list(const_entry_pointer p_l) const;
+      trace_list(const_entry_pointer) const;
 #endif 
 
     private:

@@ -63,7 +63,6 @@ namespace pb_ds
 {
   namespace detail
   {
-
 #define PB_DS_CLASS_T_DEC \
     template<typename Key, typename Mapped, class Eq_Fn, \
 	     class Allocator, class Update_Policy>
@@ -151,10 +150,6 @@ namespace pb_ds
 #ifdef _GLIBCXX_DEBUG
       typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
 #endif 
-
-      typedef typename traits_base:: no_throw_copies_false_type no_throw_copies_false_type;
-
-      typedef typename traits_base:: no_throw_copies_true_type no_throw_copies_true_type;
 
       typedef cond_dealtor<entry, Allocator> cond_dealtor_t;
 
