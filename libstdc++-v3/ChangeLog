@@ -1,3 +1,42 @@
+2006-09-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/types_traits.hpp (store_extra_false_type):
+	To false_type.
+	(store_extra_true_type): To true_type.
+	(no_throw_copies_true_type): To true_type.
+	(no_throw_copies_false_type): To false_type.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	resize_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	entry_list_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	debug_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cc_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	debug_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	resize_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	insert_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	resize_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	insert_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	find_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	debug_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	debug_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	resize_no_store_hash_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_map_/lu_map_.hpp: Same.
+
 2006-09-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pb_ds/detail/cc_hash_table_map_/
@@ -5,7 +44,7 @@
 	* include/ext/pb_ds/detail/basic_tree_policy/
 	null_node_metadata.hpp: Same.
 	* include/ext/pb_ds/detail/binary_heap_/const_point_iterator.hpp: Same.
---	* include/ext/pb_ds/detail/basic_types.hpp: Same.
+	* include/ext/pb_ds/detail/basic_types.hpp: Same.
 	* include/ext/pb_ds/detail/list_update_policy/
 	mtf_lu_policy_imp.hpp: Same.
 	* include/ext/pb_ds/detail/list_update_policy/

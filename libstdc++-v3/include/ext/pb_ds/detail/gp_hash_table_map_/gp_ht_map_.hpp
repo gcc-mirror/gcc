@@ -127,8 +127,6 @@ namespace pb_ds
     {
     private:
       typedef PB_DS_TYPES_TRAITS_C_DEC traits_base;
-      typedef typename traits_base::store_extra_false_type store_hash_false_type;
-      typedef typename traits_base::store_extra_true_type store_hash_true_type;
       typedef typename traits_base::value_type value_type_;
       typedef typename traits_base::pointer pointer_;
       typedef typename traits_base::const_pointer const_pointer_;
@@ -383,22 +381,22 @@ namespace pb_ds
       resize_imp(entry_array, size_type);
 
       inline void
-      resize_imp_reassign(entry_pointer, entry_array, store_hash_false_type);
+      resize_imp_reassign(entry_pointer, entry_array, false_type);
 
       inline void
-      resize_imp_reassign(entry_pointer, entry_array, store_hash_true_type);
+      resize_imp_reassign(entry_pointer, entry_array, true_type);
 
       inline size_type
-      find_ins_pos(const_key_reference, store_hash_false_type);
+      find_ins_pos(const_key_reference, false_type);
 
       inline comp_hash
-      find_ins_pos(const_key_reference, store_hash_true_type);
+      find_ins_pos(const_key_reference, true_type);
 
       inline std::pair<point_iterator, bool>
-      insert_imp(const_reference, store_hash_false_type);
+      insert_imp(const_reference, false_type);
 
       inline std::pair<point_iterator, bool>
-      insert_imp(const_reference, store_hash_true_type);
+      insert_imp(const_reference, true_type);
 
       inline pointer
       insert_new_imp(const_reference r_val, size_type pos)
@@ -450,7 +448,7 @@ namespace pb_ds
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
       inline mapped_reference
-      subscript_imp(const_key_reference key, store_hash_false_type)
+      subscript_imp(const_key_reference key, false_type)
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 
@@ -466,7 +464,7 @@ namespace pb_ds
       }
 
       inline mapped_reference
-      subscript_imp(const_key_reference key, store_hash_true_type)
+      subscript_imp(const_key_reference key, true_type)
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 
@@ -483,7 +481,7 @@ namespace pb_ds
 #endif
 
       inline pointer
-      find_key_pointer(const_key_reference key, store_hash_false_type)
+      find_key_pointer(const_key_reference key, false_type)
       {
 	const size_type hash = ranged_probe_fn_base::operator()(key);
 	size_type i;
@@ -529,7 +527,7 @@ namespace pb_ds
       }
 
       inline pointer
-      find_key_pointer(const_key_reference key, store_hash_true_type)
+      find_key_pointer(const_key_reference key, true_type)
       {
 	comp_hash pos_hash_pair = ranged_probe_fn_base::operator()(key);
 	size_type i;
@@ -640,10 +638,10 @@ namespace pb_ds
 
 #ifdef _GLIBCXX_DEBUG
       void
-      assert_entry_array_valid(const entry_array, store_hash_false_type) const;
+      assert_entry_array_valid(const entry_array, false_type) const;
 
       void
-      assert_entry_array_valid(const entry_array, store_hash_true_type) const;
+      assert_entry_array_valid(const entry_array, true_type) const;
 #endif 
 
       static entry_allocator 	s_entry_allocator;

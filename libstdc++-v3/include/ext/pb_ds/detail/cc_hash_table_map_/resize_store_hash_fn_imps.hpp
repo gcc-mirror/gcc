@@ -48,7 +48,7 @@
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::entry_pointer
 PB_DS_CLASS_C_DEC::
-resize_imp_no_exceptions_reassign_pointer(entry_pointer p_e, entry_pointer_array a_p_entries_resized, store_hash_true_type)
+resize_imp_no_exceptions_reassign_pointer(entry_pointer p_e, entry_pointer_array a_p_entries_resized, true_type)
 {
   const comp_hash pos_hash_pair =
     ranged_hash_fn_base::operator()(PB_DS_V2F(p_e->m_value), p_e->m_hash);

@@ -48,7 +48,7 @@
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::comp_hash
 PB_DS_CLASS_C_DEC::
-find_ins_pos(const_key_reference r_key, store_hash_true_type)
+find_ins_pos(const_key_reference r_key, true_type)
 {
   _GLIBCXX_DEBUG_ONLY(PB_DS_CLASS_C_DEC::assert_valid();)
   comp_hash pos_hash_pair = ranged_probe_fn_base::operator()(r_key);
@@ -104,7 +104,7 @@ find_ins_pos(const_key_reference r_key, store_hash_true_type)
 PB_DS_CLASS_T_DEC
 inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
-insert_imp(const_reference r_val, store_hash_true_type)
+insert_imp(const_reference r_val, true_type)
 {
   const_key_reference r_key = PB_DS_V2F(r_val);
   comp_hash pos_hash_pair = find_ins_pos(r_key, 

@@ -49,7 +49,7 @@
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-assert_entry_pointer_valid(const entry_pointer p_e, store_hash_true_type) const
+assert_entry_pointer_valid(const entry_pointer p_e, true_type) const
 {
   map_debug_base::check_key_exists(PB_DS_V2F(p_e->m_value));
   comp_hash pos_hash_pair = ranged_hash_fn_base::operator()(PB_DS_V2F(p_e->m_value));

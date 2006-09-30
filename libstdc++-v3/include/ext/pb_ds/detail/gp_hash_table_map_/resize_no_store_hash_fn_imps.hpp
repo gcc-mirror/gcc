@@ -49,7 +49,7 @@ PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
 resize_imp_reassign(entry_pointer p_e, entry_array a_entries_resized, 
-		    store_hash_false_type)
+		    false_type)
 {
   const_key_reference r_key = PB_DS_V2F(p_e->m_value);
   size_type hash = ranged_probe_fn_base::operator()(r_key);
