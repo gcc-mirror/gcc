@@ -1,5 +1,22 @@
+2006-09-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/18791
+	* m4/specific.m4: Special-case cabs so that its return type is
+	real. Special-case conjg so that their suffices are _4, _8, _10 and
+	_16 instead of _c4, _c8, _c10 and _c16.
+	* intrinsics/f2c_specifics.F90: Special-case conjg functions so
+	that their suffices are _4 and _8 instead of _c4 and _c8.
+	* generated/_conjg_c4.F90: Regenerate.
+	* generated/_conjg_c8.F90: Regenerate.
+	* generated/_conjg_c10.F90: Regenerate.
+	* generated/_conjg_c16.F90: Regenerate.
+	* generated/_abs_c4.F90: Regenerate.
+	* generated/_abs_c8.F90: Regenerate.
+	* generated/_abs_c10.F90: Regenerate.
+	* generated/_abs_c16.F90: Regenerate.
+
 2006-09-29  Steven G. Kargl  <kargl@gcc.gnu.org>
- 
+
 	* intrinsics/cpu_time.c:  Add cpu_time_10 and cpu_time_16 routines.
 
 2006-09-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
