@@ -1016,12 +1016,14 @@ c_common_post_options (const char **pfilename)
   if (flag_objc_exceptions && !flag_objc_sjlj_exceptions)
     flag_exceptions = 1;
 
-  /* -Wextra implies -Wsign-compare and -Wmissing-field-initializers,
-     but not if explicitly overridden.  */
+  /* -Wextra implies -Wsign-compare, -Wmissing-field-initializers and
+     -Woverride-init, but not if explicitly overridden.  */
   if (warn_sign_compare == -1)
     warn_sign_compare = extra_warnings;
   if (warn_missing_field_initializers == -1)
     warn_missing_field_initializers = extra_warnings;
+  if (warn_override_init == -1)
+    warn_override_init = extra_warnings;
 
   /* -Wpointer_sign is disabled by default, but it is enabled if any
      of -Wall or -pedantic are given.  */

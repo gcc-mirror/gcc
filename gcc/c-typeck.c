@@ -5737,6 +5737,8 @@ add_pending_init (tree purpose, tree value)
 	    {
 	      if (TREE_SIDE_EFFECTS (p->value))
 		warning_init ("initialized field with side-effects overwritten");
+	      else if (warn_override_init)
+		warning_init ("initialized field overwritten");
 	      p->value = value;
 	      return;
 	    }
@@ -5758,6 +5760,8 @@ add_pending_init (tree purpose, tree value)
 	    {
 	      if (TREE_SIDE_EFFECTS (p->value))
 		warning_init ("initialized field with side-effects overwritten");
+	      else if (warn_override_init)
+		warning_init ("initialized field overwritten");
 	      p->value = value;
 	      return;
 	    }
@@ -6230,6 +6234,8 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
       if (TREE_SIDE_EFFECTS (VEC_last (constructor_elt,
 				       constructor_elements)->value))
 	warning_init ("initialized field with side-effects overwritten");
+      else if (warn_override_init)
+	warning_init ("initialized field overwritten");
 
       /* We can have just one union field set.  */
       constructor_elements = 0;
