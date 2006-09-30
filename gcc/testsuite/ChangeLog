@@ -1,3 +1,7 @@
+2006-09-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20060930-1.c: New test.
+
 2006-09-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/18791
@@ -15,7 +19,7 @@
 	* gfortran.dg/nearest_1.f90: Add -ffloat-store to defeat extra
 	precision on some archs.
 
-2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+2006-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/non-local-goto-1.c: New test.
 	* gcc.dg/non-local-goto-2.c: Likewise.
