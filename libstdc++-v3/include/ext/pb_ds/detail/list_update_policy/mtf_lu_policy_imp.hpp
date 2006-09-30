@@ -51,15 +51,11 @@ PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::metadata_type
 PB_DS_CLASS_C_DEC::
 operator()() const
-{
-  return s_metadata;
-}
+{ return s_metadata; }
 
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
 operator()(metadata_reference /*r_data*/) const
-{
-  return true;
-}
+{ return true; }
 

@@ -56,64 +56,34 @@ namespace pb_ds
 {
   namespace detail
   {
-
-    template<typename Key, class Mapped, class Allocator, bool Store_Hash>
+    template<typename Key, typename Mapped, typename Allocator, bool Store_Hash>
     struct value_type_base;
 
-#define PB_DS_CLASS_T_DEC					\
-    template<typename Key, class Mapped, class Allocator>
+#define PB_DS_CLASS_T_DEC \
+    template<typename Key, typename Mapped, typename Allocator>
 
-#define PB_DS_CLASS_C_DEC					\
-    value_type_base<						\
-						Key,		\
-						Mapped,		\
-						Allocator,	\
-						false>
+#define PB_DS_CLASS_C_DEC \
+    value_type_base<Key, Mapped, Allocator, false>
 
     /**
      * Specialization of value_type_base for the case where the hash value
-     *    is not stored alongside each value.
+     * is not stored alongside each value.
      **/
-    template<typename Key, class Mapped, class Allocator>
-    struct value_type_base<
-      Key,
-      Mapped,
-      Allocator,
-      false>
+    template<typename Key, typename Mapped, typename Allocator>
+    struct value_type_base<Key, Mapped, Allocator, false>
     {
-
-      typedef
-      typename Allocator::template rebind<
-	Mapped>::other
-      mapped_type_allocator;
-
+      typedef typename Allocator::template rebind<Mapped>::other mapped_type_allocator;
       typedef typename mapped_type_allocator::value_type mapped_type;
-
       typedef typename mapped_type_allocator::pointer mapped_pointer;
-
-      typedef
-      typename mapped_type_allocator::const_pointer
-      const_mapped_pointer;
-
+      typedef typename mapped_type_allocator::const_pointer const_mapped_pointer;
       typedef typename mapped_type_allocator::reference mapped_reference;
+      typedef typename mapped_type_allocator::const_reference const_mapped_reference;
 
-      typedef
-      typename mapped_type_allocator::const_reference
-      const_mapped_reference;
-
-      typedef
-      typename Allocator::template rebind<
-	std::pair<const Key, Mapped> >::other
-      value_type_allocator;
-
+      typedef typename Allocator::template rebind<std::pair<const Key, Mapped> >::other value_type_allocator;
       typedef typename value_type_allocator::value_type value_type;
-
       typedef typename value_type_allocator::pointer pointer;
-
       typedef typename value_type_allocator::const_pointer const_pointer;
-
       typedef typename value_type_allocator::reference reference;
-
       typedef typename value_type_allocator::const_reference const_reference;
 
       struct stored_value_type
@@ -123,139 +93,78 @@ namespace pb_ds
     };
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
 
-#define PB_DS_CLASS_T_DEC					\
-    template<typename Key, class Mapped, class Allocator>
+#define PB_DS_CLASS_T_DEC \
+    template<typename Key, typename Mapped, typename Allocator>
 
-#define PB_DS_CLASS_C_DEC					\
-    value_type_base<						\
-						Key,		\
-						Mapped,		\
-						Allocator,	\
-						true>
+#define PB_DS_CLASS_C_DEC \
+    value_type_base<Key, Mapped, Allocator, true>
 
     /**
      * Specialization of value_type_base for the case where the hash value
-     *    is stored alongside each value.
+     * is stored alongside each value.
      **/
-    template<typename Key, class Mapped, class Allocator>
-    struct value_type_base<
-      Key,
-      Mapped,
-      Allocator,
-      true>
+    template<typename Key, typename Mapped, typename Allocator>
+    struct value_type_base<Key, Mapped, Allocator, true>
     {
-
-      typedef
-      typename Allocator::template rebind<
-	Mapped>::other
-      mapped_type_allocator;
-
+      typedef typename Allocator::template rebind<Mapped>::other mapped_type_allocator;
       typedef typename mapped_type_allocator::value_type mapped_type;
-
       typedef typename mapped_type_allocator::pointer mapped_pointer;
-
-      typedef
-      typename mapped_type_allocator::const_pointer
-      const_mapped_pointer;
-
+      typedef typename mapped_type_allocator::const_pointer const_mapped_pointer;
       typedef typename mapped_type_allocator::reference mapped_reference;
+      typedef typename mapped_type_allocator::const_reference const_mapped_reference;
 
-      typedef
-      typename mapped_type_allocator::const_reference
-      const_mapped_reference;
-
-      typedef
-      typename Allocator::template rebind<
-	std::pair<const Key, Mapped> >::other
-      value_type_allocator;
-
+      typedef typename Allocator::template rebind<std::pair<const Key, Mapped> >::other value_type_allocator;
       typedef typename value_type_allocator::value_type value_type;
-
       typedef typename value_type_allocator::pointer pointer;
-
       typedef typename value_type_allocator::const_pointer const_pointer;
-
       typedef typename value_type_allocator::reference reference;
-
       typedef typename value_type_allocator::const_reference const_reference;
 
       struct stored_value_type
       {
 	value_type m_value;
-
 	typename Allocator::size_type m_hash;
       };
     };
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
 
-#define PB_DS_CLASS_T_DEC			\
-    template<typename Key, class Allocator>
+#define PB_DS_CLASS_T_DEC \
+    template<typename Key, typename Allocator>
 
-#define PB_DS_CLASS_C_DEC						\
-    value_type_base<							\
-						Key,			\
-						null_mapped_type,	\
-						Allocator,		\
-						false>
+#define PB_DS_CLASS_C_DEC \
+    value_type_base<Key, null_mapped_type, Allocator, false>
 
     /**
      * Specialization of value_type_base for the case where the hash value
-     *    is not stored alongside each value.
+     * is not stored alongside each value.
      **/
-    template<typename Key, class Allocator>
-    struct value_type_base<
-      Key,
-      null_mapped_type,
-      Allocator,
-      false>
+    template<typename Key, typename Allocator>
+    struct value_type_base<Key, null_mapped_type, Allocator, false>
     {
-
-      typedef
-      typename Allocator::template rebind<
-	null_mapped_type>::other
-      mapped_type_allocator;
-
+      typedef typename Allocator::template rebind<null_mapped_type>::other mapped_type_allocator;
       typedef typename mapped_type_allocator::value_type mapped_type;
-
       typedef typename mapped_type_allocator::pointer mapped_pointer;
-
-      typedef
-      typename mapped_type_allocator::const_pointer
-      const_mapped_pointer;
-
+      typedef typename mapped_type_allocator::const_pointer const_mapped_pointer;
       typedef typename mapped_type_allocator::reference mapped_reference;
-
-      typedef
-      typename mapped_type_allocator::const_reference
-      const_mapped_reference;
+      typedef typename mapped_type_allocator::const_reference const_mapped_reference;
 
       typedef Key value_type;
 
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other
-      value_type_allocator;
-
+      typedef typename Allocator::template rebind<value_type>::other value_type_allocator;
       typedef typename value_type_allocator::pointer pointer;
-
       typedef typename value_type_allocator::const_pointer const_pointer;
-
       typedef typename value_type_allocator::reference reference;
-
       typedef typename value_type_allocator::const_reference const_reference;
 
       struct stored_value_type
       {
-	Key m_value;
+	value_type m_value;
       };
 
-    public:
       static null_mapped_type s_null_mapped;
     };
 
@@ -263,73 +172,42 @@ namespace pb_ds
     null_mapped_type PB_DS_CLASS_C_DEC::s_null_mapped;
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
 
-#define PB_DS_CLASS_T_DEC			\
-    template<typename Key, class Allocator>
+#define PB_DS_CLASS_T_DEC \
+    template<typename Key, typename Allocator>
 
-#define PB_DS_CLASS_C_DEC						\
-    value_type_base<							\
-						Key,			\
-						null_mapped_type,	\
-						Allocator,		\
-						true>
+#define PB_DS_CLASS_C_DEC \
+    value_type_base<Key, null_mapped_type, Allocator, true>
 
     /**
      * Specialization of value_type_base for the case where the hash value
-     *    is stored alongside each value.
+     * is stored alongside each value.
      **/
-    template<typename Key, class Allocator>
-    struct value_type_base<
-      Key,
-      null_mapped_type,
-      Allocator,
-      true>
+    template<typename Key, typename Allocator>
+    struct value_type_base<Key, null_mapped_type, Allocator, true>
     {
-
-      typedef
-      typename Allocator::template rebind<
-	null_mapped_type>::other
-      mapped_type_allocator;
-
+      typedef typename Allocator::template rebind<null_mapped_type>::other mapped_type_allocator;
       typedef typename mapped_type_allocator::value_type mapped_type;
-
       typedef typename mapped_type_allocator::pointer mapped_pointer;
-
-      typedef
-      typename mapped_type_allocator::const_pointer
-      const_mapped_pointer;
-
+      typedef typename mapped_type_allocator::const_pointer const_mapped_pointer;
       typedef typename mapped_type_allocator::reference mapped_reference;
-
-      typedef
-      typename mapped_type_allocator::const_reference
-      const_mapped_reference;
+      typedef typename mapped_type_allocator::const_reference const_mapped_reference;
 
       typedef Key value_type;
 
-      typedef
-      typename Allocator::template rebind<
-	Key>::other
-      value_type_allocator;
-
+      typedef typename Allocator::template rebind<value_type>::other value_type_allocator;
       typedef typename value_type_allocator::pointer pointer;
-
       typedef typename value_type_allocator::const_pointer const_pointer;
-
       typedef typename value_type_allocator::reference reference;
-
       typedef typename value_type_allocator::const_reference const_reference;
 
       struct stored_value_type
       {
-	Key m_value;
-
+	value_type m_value;
 	typename Allocator::size_type m_hash;
       };
 
-    public:
       static null_mapped_type s_null_mapped;
     };
 
@@ -337,41 +215,32 @@ namespace pb_ds
     null_mapped_type PB_DS_CLASS_C_DEC::s_null_mapped;
 
 #undef PB_DS_CLASS_T_DEC
-
 #undef PB_DS_CLASS_C_DEC
 
-    template<typename Key, class Mapped>
+    template<typename Key, typename Mapped>
     struct no_throw_copies;
 
-    template<typename Key, class Mapped>
+    template<typename Key, typename Mapped>
     struct no_throw_copies
     {
       typedef
-      integral_constant<int,
-				       is_simple<Key>::value&& 
-      is_simple<Mapped>::value>
+      integral_constant<int, is_simple<Key>::value && is_simple<Mapped>::value>
       indicator;
     };
 
     template<typename Key>
-    struct no_throw_copies<
-      Key,
-      null_mapped_type>
+    struct no_throw_copies<Key, null_mapped_type>
     {
-      typedef
-      integral_constant<int,
-				       is_simple<Key>::value>
-      indicator;
+      typedef integral_constant<int, is_simple<Key>::value> indicator;
     };
 
     template<typename Size_Type>
     struct comp_hash_
     {
-      typedef std::pair< Size_Type, Size_Type> comp_hash;
+      typedef std::pair<Size_Type, Size_Type> comp_hash;
     };
-
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_BASIC_TYPES_HPP
+#endif 
 

@@ -1,4 +1,22 @@
 2006-09-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_no_store_hash_fn_imps.hpp: Formating fixes.
+	* include/ext/pb_ds/detail/basic_tree_policy/
+	null_node_metadata.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/const_point_iterator.hpp: Same.
+--	* include/ext/pb_ds/detail/basic_types.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_policy/
+	mtf_lu_policy_imp.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_policy/
+	counter_lu_metadata.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_policy/
+	sample_update_policy.hpp: Same.
+	* include/ext/pb_ds/detail/list_update_policy/
+	counter_lu_policy_imp.hpp: Same.
+	* include/ext/pb_ds/list_update_policy.hpp: Same.	
+
+2006-09-29  Benjamin Kosnik  <bkoz@redhat.com>
             Howard Hinnant  <hhinnant@apple.com>
             Paolo Carlini  <pcarlini@suse.de>
 

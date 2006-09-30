@@ -48,38 +48,25 @@ namespace pb_ds
 {
   namespace detail
   {
-
     template<typename Size_Type>
     class counter_lu_policy_base;
 
-    // A list-update metadata type that moves elements to the front of the list based on the counter algorithm.
+    // A list-update metadata type that moves elements to the front of
+    // the list based on the counter algorithm.
     template<typename Size_Type = size_t>
     class counter_lu_metadata
     {
-
     public:
-
       typedef Size_Type size_type;
 
     private:
       counter_lu_metadata(size_type init_count) : m_count(init_count)
       { }
 
-    private:
+      friend class counter_lu_policy_base<size_type>;
+
       mutable size_type m_count;
-
-      friend class counter_lu_policy_base<Size_Type>;
     };
-
-    template<typename Size_Type>
-    class counter_lu_policy_base;
-
-#define PB_DS_CLASS_T_DEC			\
-    template<typename Size_Type>
-
-#define PB_DS_CLASS_C_DEC					\
-    counter_lu_policy_base<					\
-						Size_Type>
 
     template<typename Size_Type>
     class counter_lu_policy_base
@@ -87,42 +74,19 @@ namespace pb_ds
     protected:
       typedef Size_Type size_type;
 
-    protected:
-      counter_lu_metadata<
-      Size_Type>
-      operator()(size_type max_size) const;
+      counter_lu_metadata<size_type>
+      operator()(size_type max_size) const
+      { return counter_lu_metadata<Size_Type>(rand() % max_size); }
 
       template<typename Metadata_Reference>
       bool
-      operator()(Metadata_Reference r_data, size_type m_max_count) const;
+      operator()(Metadata_Reference r_data, size_type m_max_count) const
+      {
+	if (++r_data.m_count != m_max_count)
+	  return false;
+	r_data.m_count = 0;
+	return true;
+      }
     };
-
-    PB_DS_CLASS_T_DEC
-    counter_lu_metadata<
-      Size_Type>
-    PB_DS_CLASS_C_DEC::
-    operator()(size_type m_max_count) const
-    {
-      return (counter_lu_metadata<Size_Type>(rand() % m_max_count));
-    }
-
-    PB_DS_CLASS_T_DEC
-    template<typename Metadata_Reference>
-    inline bool
-    PB_DS_CLASS_C_DEC::
-    operator()(Metadata_Reference r_data, size_type m_max_count) const
-    {
-      if (++r_data.m_count != m_max_count)
-	return (false);
-
-      r_data.m_count = 0;
-
-      return (true);
-    }
-
   } // namespace detail
 } // namespace pb_ds
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC

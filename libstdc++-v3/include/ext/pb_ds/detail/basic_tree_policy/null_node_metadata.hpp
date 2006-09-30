@@ -53,31 +53,21 @@ namespace pb_ds
 {
   namespace detail
   {
-
     template<typename Key, class Data, class Allocator>
     struct dumconst_node_iterator
     {
     private:
-      typedef
-      typename types_traits<
-      Key,
-      Data,
-      Allocator,
-      false>::pointer
-      const_iterator;
+      typedef typename types_traits<Key, Data, Allocator, false>::pointer const_iterator;
 
     public:
       typedef const_iterator value_type;
-
       typedef const_iterator const_reference;
-
       typedef const_reference reference;
     };
 
     struct null_node_metadata
     { };
-
   } // namespace detail
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_NULL_NODE_METADATA_HPP
+#endif 
