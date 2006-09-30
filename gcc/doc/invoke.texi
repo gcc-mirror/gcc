@@ -2876,6 +2876,12 @@ This warning can be independently controlled by
 @option{-Wmissing-field-initializers}.
 
 @item
+An initialized field without side effects is overridden when using
+designated initializers (@pxref{Designated Inits, , Designated
+Initializers}).  This warning can be independently controlled by
+@option{-Woverride-init}.
+
+@item
 A function parameter is declared without a type specifier in K&R-style
 functions:
 
@@ -3301,6 +3307,18 @@ attribute.
 @item -Wno-overflow
 @opindex Wno-overflow
 Do not warn about compile-time overflow in constant expressions.
+
+@item -Woverride-init
+@opindex Woverride-init
+@opindex W
+@opindex Wextra
+Warn if an initialized field without side effects is overridden when
+using designated initializers (@pxref{Designated Inits, , Designated
+Initializers}).
+
+This warning is included in @option{-Wextra}.  To get other
+@option{-Wextra} warnings without this one, use @samp{-Wextra
+-Wno-override-init}.
 
 @item -Wpacked
 @opindex Wpacked

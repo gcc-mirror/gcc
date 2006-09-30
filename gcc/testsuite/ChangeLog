@@ -1,3 +1,9 @@
+2006-09-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/24010
+	* gcc.dg/Woverride-init-1.c, gcc.dg/Woverride-init-2.c,
+	gcc.dg/Woverride-init-3.c: New tests.
+
 2006-09-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20060930-1.c: New test.

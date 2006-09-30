@@ -1,3 +1,14 @@
+2006-09-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/24010
+	* c.opt (Woverride-init): New.
+	* c-opts.c (c_common_post_options): Default warn_override_init to
+	extra_warnings.
+	* c-typeck.c (add_pending_init, output_init_element): Warn for
+	overriding initializers without side effects.
+	* doc/invoke.texi (-Woverride-init): Document.
+	(-Wextra): Update.
+
 2006-09-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/28096

@@ -319,6 +319,10 @@ Woverloaded-virtual
 C++ ObjC++ Var(warn_overloaded_virtual)
 Warn about overloaded virtual function names
 
+Woverride-init
+C ObjC Var(warn_override_init) Init(-1)
+Warn about overriding initializers without side effects
+
 Wparentheses
 C ObjC C++ ObjC++ Var(warn_parentheses)
 Warn about possibly missing parentheses
