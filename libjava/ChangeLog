@@ -1,3 +1,16 @@
+2006-09-30  Keith Seitz  <keiths@redhat.com>
+
+	* include/java-interp.h (prepared): Change type to pc_t.
+	(insn_index): Define for both DIRECT_THREADED and bytecode interpreters.
+	* interpret.cc [!DIRECT_THREADED] (POKEI): Fix typo.
+	(insn_index): Implement for bytecode interpreter.
+	* interpret-run.cc [!DIRECT_THREADED] (AVAL1U): Add _Jv_Linker class
+	qualifier to resolve_pool_entry.
+	[!DIRECT_THREADED] (AVAL2U): Likewise.
+	[!DIRECT_THREADED] bytecode() cannot be called without an object.
+	Changed all typos.
+	[!DIRECT_THREADED] Likewise for defining_class.
+
 2006-09-26  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/26792:

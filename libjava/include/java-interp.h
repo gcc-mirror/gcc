@@ -144,7 +144,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   int line_table_len;  
   _Jv_LineTableEntry *line_table;
 
-  void *prepared;
+  pc_t prepared;
   int number_insn_slots;
 
   unsigned char* bytecode () 
@@ -191,13 +191,9 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   // number info is unavailable.
   int get_source_line(pc_t mpc);
 
-
-
-#ifdef DIRECT_THREADED
   // Convenience function for indexing bytecode PC/insn slots in
   // line tables for JDWP
   jlong insn_index (pc_t pc);
-#endif
   
    public:
    
