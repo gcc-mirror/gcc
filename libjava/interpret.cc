@@ -200,7 +200,7 @@ do { DEBUG_LOCALS_INSN(I, 'd');	\
 #define PEEKA(I)  (locals+(I))->o
 
 #define POKEI(I,V)  	\
-DEBUG_LOCALS_INSN(I,i)	\
+DEBUG_LOCALS_INSN(I,'i'); \
 ((locals+(I))->i = (V))
 
 
@@ -1307,23 +1307,27 @@ _Jv_InterpMethod::ncode ()
   return self->ncode;
 }
 
-#ifdef DIRECT_THREADED
 /* Find the index of the given insn in the array of insn slots
    for this method. Returns -1 if not found. */
 jlong
 _Jv_InterpMethod::insn_index (pc_t pc)
 {
   jlong left = 0;
+#ifdef DIRECT_THREADED
   jlong right = number_insn_slots;
-  insn_slot* slots = reinterpret_cast<insn_slot*> (prepared);
+  pc_t insns = prepared;
+#else
+  jlong right = code_length;
+  pc_t insns = bytecode ();
+#endif
 
   while (right >= 0)
     {
       jlong mid = (left + right) / 2;
-      if (&slots[mid] == pc)
+      if (&insns[mid] == pc)
 	return mid;
 
-      if (pc < &slots[mid])
+      if (pc < &insns[mid])
 	right = mid - 1;
       else
         left = mid + 1;
@@ -1331,7 +1335,6 @@ _Jv_InterpMethod::insn_index (pc_t pc)
 
   return -1;
 }
-#endif // DIRECT_THREADED
 
 void
 _Jv_InterpMethod::get_line_table (jlong& start, jlong& end,

@@ -291,10 +291,10 @@ details.  */
   // class'.
 #define AVAL1U()						\
   ({ int index = get1u (pc++);					\
-      resolve_pool_entry (meth->defining_class, index).o; })
+    _Jv_Linker::resolve_pool_entry (meth->defining_class, index).o; })
 #define AVAL2U()						\
   ({ int index = get2u (pc); pc += 2;				\
-      resolve_pool_entry (meth->defining_class, index).o; })
+    _Jv_Linker::resolve_pool_entry (meth->defining_class, index).o; })
   // Note that we don't need to resolve the pool entry here as class
   // constants are never wide.
 #define AVAL2UP() ({ int index = get2u (pc); pc += 2; &pool_data[index]; })
@@ -303,7 +303,7 @@ details.  */
 #define PCVAL(unionval) unionval.i
 #define AMPAMP(label) NULL
 
-  pc = bytecode ();
+  pc = meth->bytecode ();
 
 #endif /* DIRECT_THREADED */
 
@@ -1545,7 +1545,7 @@ details.  */
 	pc_t base_pc = pc - 1;
 	int index = POPI ();
 
-	pc_t base = (pc_t) bytecode ();
+	pc_t base = (pc_t) meth->bytecode ();
 	while ((pc - base) % 4 != 0)
 	  ++pc;
 
@@ -1601,7 +1601,7 @@ details.  */
 	unsigned char *base_pc = pc-1;
 	int index = POPI();
 
-	unsigned char* base = bytecode ();
+	unsigned char* base = meth->bytecode ();
 	while ((pc-base) % 4 != 0)
 	  ++pc;
 
@@ -2469,7 +2469,7 @@ details.  */
 #ifdef DIRECT_THREADED
       void *logical_pc = (void *) ((insn_slot *) pc - 1);
 #else
-      int logical_pc = pc - 1 - bytecode ();
+      int logical_pc = pc - 1 - meth->bytecode ();
 #endif
       _Jv_InterpException *exc = meth->exceptions ();
       jclass exc_class = ex->getClass ();
@@ -2484,8 +2484,8 @@ details.  */
 #else
 	      jclass handler = NULL;
 	      if (exc[i].handler_type.i != 0)
-		handler = (_Jv_Linker::resolve_pool_entry (defining_class,
-							     exc[i].handler_type.i)).clazz;
+		handler = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
+							   exc[i].handler_type.i)).clazz;
 #endif /* DIRECT_THREADED */
 
 	      if (handler == NULL || handler->isAssignableFrom (exc_class))
@@ -2494,7 +2494,7 @@ details.  */
 #ifdef DIRECT_THREADED
 		  pc = (insn_slot *) exc[i].handler_pc.p;
 #else
-		  pc = bytecode () + exc[i].handler_pc.i;
+		  pc = meth->bytecode () + exc[i].handler_pc.i;
 #endif /* DIRECT_THREADED */
 		  sp = stack;
 		  sp++->o = ex; // Push exception.
