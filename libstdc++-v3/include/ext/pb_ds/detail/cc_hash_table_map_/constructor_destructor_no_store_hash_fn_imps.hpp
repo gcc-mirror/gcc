@@ -48,7 +48,8 @@
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-constructor_insert_new_imp(const_mapped_reference r_val, size_type pos, integral_constant<int,false>)
+constructor_insert_new_imp(const_mapped_reference r_val, size_type pos, 
+			   false_type)
 {
   // Following lines might throw an exception.
   entry_pointer p = get_entry(r_val, traits_base::s_no_throw_copies_indicator);

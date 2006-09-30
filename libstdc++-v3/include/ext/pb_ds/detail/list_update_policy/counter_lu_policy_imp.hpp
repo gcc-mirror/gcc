@@ -45,18 +45,13 @@
  */
 
 PB_DS_CLASS_T_DEC
-detail::counter_lu_metadata<
-  typename Allocator::size_type>
+detail::counter_lu_metadata<typename Allocator::size_type>
 PB_DS_CLASS_C_DEC::
 operator()() const
-{
-  return (base_type::operator()(max_count));
-}
+{ return (base_type::operator()(max_count)); }
 
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
 operator()(metadata_reference r_data) const
-{
-  return (base_type::operator()(r_data, max_count));
-}
+{ return (base_type::operator()(r_data, max_count)); }
