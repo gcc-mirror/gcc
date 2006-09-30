@@ -1,4 +1,10 @@
-2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+2006-09-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/28096
+	* ifcvt.c (check_cond_move_block): Return FALSE if the source of an
+	assignment has already been used as a destination earlier in the block.
+
+2006-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* builtins.c (expand_builtin_setjmp): Delete.
 	(expand_builtin) <BUILT_IN_SETJMP>: Mark as unreachable.
