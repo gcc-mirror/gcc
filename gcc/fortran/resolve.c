@@ -275,7 +275,7 @@ static void
 resolve_contained_fntype (gfc_symbol * sym, gfc_namespace * ns)
 {
   try t;
-  
+
   /* If this namespace is not a function, ignore it.  */
   if (! sym
       || !(sym->attr.function
@@ -325,7 +325,7 @@ merge_argument_lists (gfc_symbol *proc, gfc_formal_arglist *new_args)
   for (; new_args != NULL; new_args = new_args->next)
     {
       new_sym = new_args->sym;
-      /* See if ths arg is already in the formal argument list.  */
+      /* See if this arg is already in the formal argument list.  */
       for (f = proc->formal; f; f = f->next)
 	{
 	  if (new_sym == f->sym)
@@ -372,7 +372,7 @@ resolve_entries (gfc_namespace * ns)
 
   /* If this isn't a procedure something has gone horribly wrong.  */
   gcc_assert (ns->proc_name->attr.flavor == FL_PROCEDURE);
-  
+
   /* Remember the current namespace.  */
   old_ns = gfc_current_ns;
 
@@ -564,7 +564,7 @@ resolve_contained_functions (gfc_namespace * ns)
   for (child = ns->contained; child; child = child->sibling)
     {
       /* Resolve alternate entry points first.  */
-      resolve_entries (child); 
+      resolve_entries (child);
 
       /* Then check function return types.  */
       resolve_contained_fntype (child->proc_name, child);
@@ -1021,7 +1021,7 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	    && formal_optional
 	    && arg->expr->rank
 	    && (set_by_optional || arg->expr->rank != rank)
-	    && !(isym && isym->generic_id == GFC_ISYM_CONVERSION)) 
+	    && !(isym && isym->generic_id == GFC_ISYM_CONVERSION))
 	{
 	  gfc_warning ("'%s' at %L is an array and OPTIONAL; IF IT IS "
 		       "MISSING, it cannot be the actual argument of an "
@@ -1082,7 +1082,7 @@ find_noncopying_intrinsics (gfc_symbol * fnsym, gfc_actual_arglist * actual)
    77 and 95 standards.  It checks for a gsymbol for the name, making
    one if it does not already exist.  If it already exists, then the
    reference being resolved must correspond to the type of gsymbol.
-   Otherwise, the new symbol is equipped with the attributes of the 
+   Otherwise, the new symbol is equipped with the attributes of the
    reference.  The corresponding code that is called in creating
    global entities is parse.c.  */
 
@@ -1489,13 +1489,13 @@ resolve_function (gfc_expr * expr)
       int inquiry;
       inquiry = expr->value.function.isym->generic_id == GFC_ISYM_UBOUND
 		  || expr->value.function.isym->generic_id == GFC_ISYM_SIZE;
-	    
+
       for (arg = expr->value.function.actual; arg; arg = arg->next)
 	{
 	  if (inquiry && arg->next != NULL && arg->next->expr
 		&& arg->next->expr->expr_type != EXPR_CONSTANT)
 	    break;
-	  
+
 	  if (arg->expr != NULL
 		&& arg->expr->rank > 0
 		&& resolve_assumed_size_actual (arg->expr))
@@ -1551,7 +1551,7 @@ resolve_function (gfc_expr * expr)
      symbols not referenced from the current program unit otherwise.  Make sure
      those symbols are marked as referenced.  */
 
-  if (expr->ts.type == BT_CHARACTER && expr->value.function.esym 
+  if (expr->ts.type == BT_CHARACTER && expr->value.function.esym
       && expr->value.function.esym->attr.use_assoc)
     {
       gfc_expr_set_symbols_referenced (expr->ts.cl->length);
@@ -1874,7 +1874,7 @@ compare_shapes (gfc_expr * op1, gfc_expr * op2)
   int i;
 
   t = SUCCESS;
-		  
+
   if (op1->shape != NULL && op2->shape != NULL)
     {
       for (i = 0; i < op1->rank; i++)
@@ -2270,7 +2270,7 @@ compute_last_value_for_triplet (gfc_expr * start, gfc_expr * end,
       mpz_set (last, end->value.integer);
       return 1;
     }
-  
+
   if (compare_bound_int (stride, 0) == CMP_GT)
     {
       /* Stride is positive */
@@ -2473,7 +2473,7 @@ gfc_resolve_dim_arg (gfc_expr *dim)
     {
       gfc_error ("Argument dim at %L must be scalar", &dim->where);
       return FAILURE;
-  
+
     }
   if (dim->ts.type != BT_INTEGER)
     {
@@ -3332,7 +3332,7 @@ expr_to_initialize (gfc_expr * e)
         for (i = 0; i < ref->u.ar.dimen; i++)
           ref->u.ar.start[i] = ref->u.ar.end[i] = ref->u.ar.stride[i] = NULL;
 
-        result->rank = ref->u.ar.dimen; 
+        result->rank = ref->u.ar.dimen;
         break;
       }
 
@@ -3790,7 +3790,7 @@ resolve_select (gfc_code * code)
 	      if (cp->low == NULL && cp->high == NULL)
 		continue;
 
-	      /* Unreachable case ranges are discarded, so ignore.  */	
+	      /* Unreachable case ranges are discarded, so ignore.  */
 	      if (cp->low != NULL && cp->high != NULL
 		  && cp->low != cp->high
 		  && gfc_compare_expr (cp->low, cp->high) > 0)
@@ -3803,7 +3803,7 @@ resolve_select (gfc_code * code)
 
 	      if (cp->high != NULL
 		  && case_expr->ts.kind != gfc_kind_max(case_expr, cp->high))
- 		gfc_convert_type_warn (case_expr, &cp->high->ts, 2, 0);
+		gfc_convert_type_warn (case_expr, &cp->high->ts, 2, 0);
 	    }
 	 }
     }
@@ -4788,7 +4788,7 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
           if (t == SUCCESS
 	      && (code->expr->expr_type != EXPR_VARIABLE
 		  || code->expr->symtree->n.sym->ts.type != BT_INTEGER
-		  || code->expr->symtree->n.sym->ts.kind 
+		  || code->expr->symtree->n.sym->ts.kind
 		        != gfc_default_integer_kind
 		  || code->expr->symtree->n.sym->as != NULL))
 	    gfc_error ("ASSIGN statement at %L requires a scalar "
@@ -5431,7 +5431,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	    }
 	}
     }
-    
+
   /* Add derived type to the derived type list.  */
   for (dt_list = sym->ns->derived_types; dt_list; dt_list = dt_list->next)
     if (sym == dt_list->derived)
@@ -5630,7 +5630,7 @@ resolve_symbol (gfc_symbol * sym)
     }
 
   /* Assumed size arrays and assumed shape arrays must be dummy
-     arguments.  */ 
+     arguments.  */
 
   if (sym->as != NULL
       && (sym->as->type == AS_ASSUMED_SIZE
@@ -6242,7 +6242,7 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
       d = c->ts.derived;
       if (d && (resolve_equivalence_derived (c->ts.derived, sym, e) == FAILURE))
         return FAILURE;
-        
+
       /* Shall not be an object of sequence derived type containing a pointer
          in the structure.  */
       if (c->pointer)
@@ -6382,7 +6382,7 @@ resolve_equivalence (gfc_equiv *eq)
 	}
 
       /* Shall not equivalence common block variables in a PURE procedure.  */
-      if (sym->ns->proc_name 
+      if (sym->ns->proc_name
 	    && sym->ns->proc_name->attr.pure
 	    && sym->attr.in_common)
         {
@@ -6391,8 +6391,8 @@ resolve_equivalence (gfc_equiv *eq)
 		     sym->name, &e->where, sym->ns->proc_name->name);
           break;
         }
- 
-      /* Shall not be a named constant.  */      
+
+      /* Shall not be a named constant.  */
       if (e->expr_type == EXPR_CONSTANT)
         {
           gfc_error ("Named constant '%s' at %L cannot be an EQUIVALENCE "
@@ -6503,8 +6503,8 @@ resolve_equivalence (gfc_equiv *eq)
 	    }
 	  r = r->next;
 	}
-    }    
-}      
+    }
+}
 
 
 /* Resolve function and ENTRY types, issue diagnostics if needed. */
@@ -6582,9 +6582,9 @@ gfc_resolve_uops(gfc_symtree *symtree)
   gfc_symbol *sym;
   gfc_formal_arglist *formal;
 
-  if (symtree == NULL) 
-    return; 
- 
+  if (symtree == NULL)
+    return;
+
   gfc_resolve_uops (symtree->left);
   gfc_resolve_uops (symtree->right);
 
