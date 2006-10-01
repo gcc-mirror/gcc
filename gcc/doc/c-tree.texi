@@ -967,12 +967,20 @@ ordinary type might be @code{short} while the @code{DECL_ARG_TYPE} is
 
 @item FIELD_DECL
 These nodes represent non-static data members.  The @code{DECL_SIZE} and
-@code{DECL_ALIGN} behave as for @code{VAR_DECL} nodes.  The
-@code{DECL_FIELD_BITPOS} gives the first bit used for this field, as an
-@code{INTEGER_CST}.  These values are indexed from zero, where zero
-indicates the first bit in the object.
+@code{DECL_ALIGN} behave as for @code{VAR_DECL} nodes.  
+The position of the field within the parent record is specified by a 
+combination of three attributes.  @code{DECL_FIELD_OFFSET} is the position,
+counting in bytes, of the @code{DECL_OFFSET_ALIGN}-bit sized word containing
+the bit of the field closest to the beginning of the structure.  
+@code{DECL_FIELD_BIT_OFFSET} is the bit offset of the first bit of the field
+within this word; this may be nonzero even for fields that are not bit-fields,
+since @code{DECL_OFFSET_ALIGN} may be greater than the natural alignment
+of the field's type.
 
-If @code{DECL_C_BIT_FIELD} holds, this field is a bit-field.
+If @code{DECL_C_BIT_FIELD} holds, this field is a bit-field.  In a bit-field,
+@code{DECL_BIT_FIELD_TYPE} also contains the type that was originally
+specified for it, while DECL_TYPE may be a modified type with lesser precision,
+according to the size of the bit field.
 
 @item NAMESPACE_DECL
 @xref{Namespaces}.
