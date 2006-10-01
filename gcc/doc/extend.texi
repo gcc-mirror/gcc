@@ -3175,6 +3175,10 @@ This attribute, attached to a variable, means that the variable is meant
 to be possibly unused.  GCC will not produce a warning for this
 variable.
 
+@item used
+This attribute, attached to a variable, means that the variable must be
+emitted even if it appears that the variable is not referenced.
+
 @item vector_size (@var{bytes})
 This attribute specifies the vector size for the variable, measured in
 bytes.  For example, the declaration:
