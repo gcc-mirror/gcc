@@ -172,8 +172,8 @@ by type.  Explanations are in the following sections.
 @cindex language, dialect options
 @cindex options, dialect
 
-The following options control the dialect of Fortran
-that the compiler accepts:
+The following options control the details of the Fortran dialect
+accepted by the compiler:
 
 @table @gcctabopt
 @cindex -ffree-form option
@@ -189,7 +189,8 @@ that the compiler accepts:
 @item -ffixed-form
 Specify the layout used by the source file.  The free form layout
 was introduced in Fortran 90.  Fixed form was traditionally used in
-older Fortran programs.
+older Fortran programs.  When neither option is specified, the source
+form is determined by the file extension.
 
 @cindex -fall-intrinsics
 @item -fall-intrinsics
@@ -204,16 +205,16 @@ gfortran will ignore @option{-Wnonstd-intrinsics}.
 @cindex -fd-lines-as-comments, option
 @item -fd-lines-as-code
 @item -fd-lines-as-comment
-Enables special treating for lines with @samp{d} or @samp{D} in fixed
-form sources.  If the @option{-fd-lines-as-code} option is given
-they are treated as if the first column contained a blank.  If the
+Enable special treatment for lines beginning with @samp{d} or @samp{D}
+in fixed form sources.  If the @option{-fd-lines-as-code} option is
+given they are treated as if the first column contained a blank.  If the
 @option{-fd-lines-as-comments} option is given, they are treated as
 comment lines.
 
 @cindex option, -fdefault-double-8
 @cindex -fdefault-double-8, option
 @item -fdefault-double-8
-Set the "DOUBLE PRECISION" type to an 8 byte wide.
+Set the @code{DOUBLE PRECISION} type to an 8 byte wide type.
 
 @cindex option, -fdefault-integer-8
 @cindex -fdefault-integer-8, option
@@ -240,8 +241,8 @@ Allow @samp{$} as a valid character in a symbol name.
 @item -fno-backslash
 @cindex backslash
 @cindex escape characters
-Compile switch to change the interpretation of a backslash from
-``C''-style escape characters to a single backslash character.
+Change the interpretation of backslashes in string literals from
+``C-style'' escape characters to a single backslash character.
 
 @cindex -ffixed-line-length-@var{n} option
 @cindex options, -ffixed-line-length-@var{n}
@@ -258,9 +259,9 @@ if padded to that length) after the ends of short fixed-form lines.
 @cindex card image
 @cindex extended-source option
 Popular values for @var{n} include 72 (the
-standard and the default), 80 (card image), and 132 (corresponds
+standard and the default), 80 (card image), and 132 (corresponding
 to ``extended-source'' options in some popular compilers).
-@var{n} may be @samp{none}, meaning that the entire line is meaningful
+@var{n} may also be @samp{none}, meaning that the entire line is meaningful
 and that continued character constants never have implicit spaces appended
 to them to fill out the line.
 @option{-ffixed-line-length-0} means the same thing as
@@ -275,7 +276,7 @@ to them to fill out the line.
 @cindex free form
 @cindex limits, lengths of source lines
 Set column after which characters are ignored in typical free-form
-lines in the source file. For free-form, the default value is 132.
+lines in the source file. The default value is 132.
 @var{n} may be @samp{none}, meaning that the entire line is meaningful.
 @option{-ffree-line-length-0} means the same thing as
 @option{-ffree-line-length-none}.
@@ -284,7 +285,7 @@ lines in the source file. For free-form, the default value is 132.
 @cindex option -fmax-identifier-length=@var{n}
 @item -fmax-identifier-length=@var{n}
 Specify the maximum allowed identifier length. Typical values are
-31 (Fortran 95) and 63 (Fortran 200x).
+31 (Fortran 95) and 63 (Fortran 2003).
 
 @cindex -fimplicit-none option
 @cindex options, -fimplicit-none
@@ -296,15 +297,17 @@ Specify that no implicit typing is allowed, unless overridden by explicit
 @cindex -fcray-pointer option
 @cindex options, -fcray-pointer
 @item -fcray-pointer
-Enables the Cray pointer extension, which provides a C-like pointer.
+Enable the Cray pointer extension, which provides C-like pointer
+functionality.
 
 @cindex -fopenmp
 @cindex options, -fopenmp
 @item -fopenmp
-Enables handling of OpenMP @code{!$omp} directives in free form
+Enable the OpenMP extensions.  This includes OpenMP @code{!$omp} directives
+in free form
 and @code{c$omp}, @code{*$omp} and @code{!$omp} directives in fixed form,
-enables @code{!$} conditional compilation sentinels in free form
-and @code{c$}, @code{*$} and @code{!$} sentinels in fixed form
+@code{!$} conditional compilation sentinels in free form
+and @code{c$}, @code{*$} and @code{!$} sentinels in fixed form, 
 and when linking arranges for the OpenMP runtime library to be linked
 in.
 
@@ -323,8 +326,12 @@ will be initialized to @math{-1} instead.
 @cindex -std=@var{std} option
 @cindex option, -std=@var{std}
 @item -std=@var{std}
-Conform to the specified standard.  Allowed values for @var{std} are
-@samp{gnu}, @samp{f95}, @samp{f2003} and @samp{legacy}.
+Conform to the specified standard.  The default value for @var{std} is
+@samp{gnu}; a superset of the Fortran 95 standard which includes all
+of the GNU extensions recommended for use in new code.  The @samp{legacy}
+value also includes obsolete extensions that may be required for old 
+non-standard programs.  Strict conformance to the Fortran 95 and Fortran 2003
+standards is specified by @samp{f95} and @samp{f2003}, respectively.
 
 @end table
 
