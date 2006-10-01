@@ -1,3 +1,9 @@
+2006-10-01  Brooks Moses  <bmoses@stanford.edu>
+
+	* gfortran.texi: Corrected references to MALLOC intrinsic.
+	* invoke.texi: Minor cleanup and clarification to the Dialect
+	Options section.
+
 2006-09-30  Brooks Moses  <bmoses@stanford.edu>
 
 	* invoke.texi:  Add mention of BOZ constants and integer

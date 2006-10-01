@@ -1081,30 +1081,9 @@ address is cast to an integer type:
         ipt = loc(ar)  ! Makes arpte is an alias for ar
         arpte(1) = 1.0 ! Sets ar(1) to 1.0
 @end smallexample
-The pointer can also be set by a call to a malloc-type
-function.  There is no malloc intrinsic implemented as part of the
-Cray pointer extension, but it might be a useful future addition to
-@command{gfortran}.  Even without an intrinsic malloc function,
-dynamic memory allocation can be combined with Cray pointers by
-calling a short C function:
-@smallexample
-mymalloc.c:
+The pointer can also be set by a call to the @code{MALLOC} intrinsic
+(see @ref{MALLOC}).
 
-        void mymalloc_(void **ptr, int *nbytes)
-        @{
-            *ptr = malloc(*nbytes);
-            return;
-        @}
-
-caller.f:
-
-        program caller
-        integer ipinfo;
-        real*4 data
-        pointer (ipdata, data(1024))
-        call mymalloc(ipdata,4*1024)
-        end
-@end smallexample
 Cray pointees often are used to alias an existing variable.  For
 example:
 @smallexample
