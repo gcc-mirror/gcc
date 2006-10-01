@@ -1,3 +1,8 @@
+2006-10-01  Ryan Mansfield  <rmansfield@qnx.com>
+
+	PR c/20533
+	* doc/extend.texi: Add used variable attribute description. 
+
 2006-09-30  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/24010
