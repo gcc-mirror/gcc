@@ -1,5 +1,10 @@
 2006-10-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/type_traits.h: Avoid _T, badname for some targets;
+	also avoid plain T.
+
+2006-10-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* config/io/basic_file_stdio.cc: As an extension, and
 	consistently with C facilities, allow for in|out|app and
 	in|out|app|binary openmodes.
