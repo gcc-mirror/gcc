@@ -1,3 +1,12 @@
+2006-10-01  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* tree.h (DECL_FIELD_OFFSET, DECL_FIELD_BIT_OFFSET):  Fix
+	comments to reflect actual behavior and relationship between
+	DECL_FIELD_OFFSET, DECL_FIELD_BIT_OFFSET, and DECL_OFFSET_ALIGN.
+
+	* doc/c-tree.texi (Working with declarations): Fix documentation
+	of FIELD_DECL likewise.
+
 2006-10-01  Ryan Mansfield  <rmansfield@qnx.com>
 
 	PR c/20533

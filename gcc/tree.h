@@ -2648,11 +2648,14 @@ struct tree_decl_with_rtl GTY(())
 };
 
 /* In a FIELD_DECL, this is the field position, counting in bytes, of the
-   byte containing the bit closest to the beginning of the structure.  */
+   DECL_OFFSET_ALIGN-bit-sized word containing the bit closest to the beginning
+   of the structure.  */
 #define DECL_FIELD_OFFSET(NODE) (FIELD_DECL_CHECK (NODE)->field_decl.offset)
 
 /* In a FIELD_DECL, this is the offset, in bits, of the first bit of the
-   field from DECL_FIELD_OFFSET.  */
+   field from DECL_FIELD_OFFSET.  This field may be nonzero even for fields
+   that are not bit fields (since DECL_OFFSET_ALIGN may be larger than the
+   natural alignment of the field's type).  */
 #define DECL_FIELD_BIT_OFFSET(NODE) (FIELD_DECL_CHECK (NODE)->field_decl.bit_offset)
 
 /* In a FIELD_DECL, this indicates whether the field was a bit-field and
