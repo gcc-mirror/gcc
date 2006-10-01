@@ -646,6 +646,11 @@ extern void internal_unpack_c10 (gfc_array_c10 *, const GFC_COMPLEX_10 *);
 internal_proto(internal_unpack_c10);
 #endif
 
+#if defined HAVE_GFC_COMPLEX_16
+extern void internal_unpack_c16 (gfc_array_c16 *, const GFC_COMPLEX_16 *);
+internal_proto(internal_unpack_c16);
+#endif
+
 /* string_intrinsics.c */
 
 extern GFC_INTEGER_4 compare_string (GFC_INTEGER_4, const char *,
