@@ -1,3 +1,10 @@
+2006-10-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/io/basic_file_stdio.cc: As an extension, and
+	consistently with C facilities, allow for in|out|app and
+	in|out|app|binary openmodes.
+	* testsuite/27_io/basic_filebuf/open/char/4.cc: New.
+
 2006-09-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pb_ds/detail/types_traits.hpp (store_extra_false_type):

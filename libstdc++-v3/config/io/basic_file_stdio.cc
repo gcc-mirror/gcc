@@ -95,6 +95,8 @@ namespace
       case (in                     ): return "r";  
       case (in|out                 ): return "r+"; 
       case (in|out|trunc           ): return "w+"; 
+      // Extension to Table 92.
+      case (in|out      |app       ): return "a+"; 
 	
       case (   out          |binary): return "wb"; 
       case (   out      |app|binary): return "ab"; 
@@ -102,6 +104,8 @@ namespace
       case (in              |binary): return "rb"; 
       case (in|out          |binary): return "r+b";
       case (in|out|trunc    |binary): return "w+b";
+      // Extension to Table 92.
+      case (in|out      |app|binary): return "a+b";
 	
       default: return 0; // invalid
       }
