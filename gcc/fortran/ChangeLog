@@ -1,3 +1,10 @@
+2006-09-30  Brooks Moses  <bmoses@stanford.edu>
+
+	* invoke.texi:  Add mention of BOZ constants and integer
+	overflow to -fno-range-check.
+	* gfortran.texi:  Add mention of -fno-range-check to
+	section on BOZ contants.
+
 2006-09-30  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* resolve.c: Fix commentary typo.  Fix whitespace.
