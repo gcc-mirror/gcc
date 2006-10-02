@@ -1,3 +1,12 @@
+2006-10-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/basic_types.hpp (comp_hash_): Remove,
+	format.	
+	* include/ext/pb_ds/detail/types_traits.hpp
+	(types_traits::comp_hash): Use pair typedef.	
+	* include/ext/pb_ds/detail/hash_fn/ranged_probe_fn.hpp: Same.
+	* include/ext/pb_ds/detail/hash_fn/ranged_hash_fn.hpp: Same.
+
 2006-10-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/random (xor_combine<>::_M_initialize_max_aux): New.

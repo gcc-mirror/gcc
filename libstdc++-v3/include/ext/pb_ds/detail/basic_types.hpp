@@ -59,12 +59,6 @@ namespace pb_ds
     template<typename Key, typename Mapped, typename Allocator, bool Store_Hash>
     struct value_type_base;
 
-#define PB_DS_CLASS_T_DEC \
-    template<typename Key, typename Mapped, typename Allocator>
-
-#define PB_DS_CLASS_C_DEC \
-    value_type_base<Key, Mapped, Allocator, false>
-
     /**
      * Specialization of value_type_base for the case where the hash value
      * is not stored alongside each value.
@@ -91,15 +85,6 @@ namespace pb_ds
 	value_type m_value;
       };
     };
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
-
-#define PB_DS_CLASS_T_DEC \
-    template<typename Key, typename Mapped, typename Allocator>
-
-#define PB_DS_CLASS_C_DEC \
-    value_type_base<Key, Mapped, Allocator, true>
 
     /**
      * Specialization of value_type_base for the case where the hash value
@@ -128,9 +113,6 @@ namespace pb_ds
 	typename Allocator::size_type m_hash;
       };
     };
-
-#undef PB_DS_CLASS_T_DEC
-#undef PB_DS_CLASS_C_DEC
 
 #define PB_DS_CLASS_T_DEC \
     template<typename Key, typename Allocator>
@@ -218,26 +200,15 @@ namespace pb_ds
 #undef PB_DS_CLASS_C_DEC
 
     template<typename Key, typename Mapped>
-    struct no_throw_copies;
-
-    template<typename Key, typename Mapped>
     struct no_throw_copies
     {
-      typedef
-      integral_constant<int, is_simple<Key>::value && is_simple<Mapped>::value>
-      indicator;
+      typedef integral_constant<int, is_simple<Key>::value && is_simple<Mapped>::value> indicator;
     };
 
     template<typename Key>
     struct no_throw_copies<Key, null_mapped_type>
     {
       typedef integral_constant<int, is_simple<Key>::value> indicator;
-    };
-
-    template<typename Size_Type>
-    struct comp_hash_
-    {
-      typedef std::pair<Size_Type, Size_Type> comp_hash;
     };
   } // namespace detail
 } // namespace pb_ds
