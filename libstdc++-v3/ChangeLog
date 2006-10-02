@@ -1,3 +1,11 @@
+2006-10-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/rc_string_base.h (_M_compare<wchar_t>):
+	Protect with _GLIBCXX_USE_WCHAR_T.
+	* include/ext/sso_string_base.h (_M_compare<wchar_t>):
+	Likewise.
+	(__sso_string_base<>::_M_destroy): Inline.
+
 2006-10-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pb_ds/detail/basic_types.hpp (comp_hash_): Remove,

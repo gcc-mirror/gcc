@@ -92,7 +92,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       }
 
       void
-      _M_destroy(size_type) throw();
+      _M_destroy(size_type __size) throw()
+      { _M_get_allocator().deallocate(_M_data(), __size + 1); }
 
       // _M_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIterator is an integral type
@@ -220,12 +221,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_compare(const __sso_string_base&) const
       { return false; }
     };
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    void
-    __sso_string_base<_CharT, _Traits, _Alloc>::
-    _M_destroy(size_type __size) throw()
-    { _M_get_allocator().deallocate(_M_data(), __size + 1); }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
@@ -554,6 +549,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       return false;
     }
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     inline bool
     __sso_string_base<wchar_t, std::char_traits<wchar_t>,
@@ -564,6 +560,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	return true;
       return false;
     }
+#endif
 
 _GLIBCXX_END_NAMESPACE
 
