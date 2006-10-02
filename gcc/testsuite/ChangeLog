@@ -1,3 +1,12 @@
+2006-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29105
+	* g++.dg/template/member6.C: New test.
+	* g++.dg/parse/typename7.C: Adjust error markers.
+
+	PR c++/29080
+	* g++.dg/template/member7.C: New test.
+
 2006-09-30  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/24010

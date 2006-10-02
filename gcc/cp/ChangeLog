@@ -1,3 +1,15 @@
+2006-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29105
+	* pt.c (tsubst_baselink): Substituteinto the qualifying scope.
+	* semantics.c (baselink_for_fns): Build a baselink, even when
+	processing a template.
+
+	PR c++/29080
+	* parser.c (cp_parser_postfix_dot_deref_expression): Use
+	BASELINK_ACCESS_BINFO as the qualifying scope when calling
+	adjust_result_of_qualified_name_lookup. 
+
 2006-09-25  Lee Millward  <lee.millward@codesourcery.com>
 
         PR c++/27329
