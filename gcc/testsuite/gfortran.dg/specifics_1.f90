@@ -1,4 +1,9 @@
 ! Program to test intrinsic functions as actual arguments
+! Copied from gfortran.fortran-torture/execute/specifics.f90
+! It is run here with -ff2c option
+!
+! { dg-do run }
+! { dg-options "-ff2c" }
 subroutine test_c(fn, val, res)
   complex fn
   complex val, res

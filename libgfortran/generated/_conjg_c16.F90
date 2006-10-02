@@ -40,11 +40,11 @@
 #if defined (HAVE_GFC_COMPLEX_16)
 
 
-elemental function specific__conjg_c16 (parm)
+elemental function specific__conjg_16 (parm)
    complex (kind=16), intent (in) :: parm
-   complex (kind=16) :: specific__conjg_c16
+   complex (kind=16) :: specific__conjg_16
 
-   specific__conjg_c16 = conjg (parm)
+   specific__conjg_16 = conjg (parm)
 end function
 
 
