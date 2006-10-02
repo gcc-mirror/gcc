@@ -56,12 +56,8 @@ namespace pb_ds
 {
   namespace detail
   {
-    template<typename Key,
-	     typename Hash_Fn,
-	     typename Allocator,
-	     typename Comb_Probe_Fn,
-	     typename Probe_Fn,
-	     bool Store_Hash>
+    template<typename Key, typename Hash_Fn, typename Allocator,
+	     typename Comb_Probe_Fn, typename Probe_Fn, bool Store_Hash>
     class ranged_probe_fn;
 
 #define PB_DS_CLASS_T_DEC \
@@ -72,8 +68,9 @@ namespace pb_ds
     ranged_probe_fn<Key, Hash_Fn, Allocator, Comb_Probe_Fn, Probe_Fn, false>
 
     /**
-     * Specialization 1- The client supplies a probe function and a ranged
-     *    probe function, and requests that hash values not be stored.
+     * Specialization 1     
+     * The client supplies a probe function and a ranged probe
+     * function, and requests that hash values not be stored.
      **/
     template<typename Key, typename Hash_Fn, typename Allocator,
 	     typename Comb_Probe_Fn, typename Probe_Fn>
@@ -83,37 +80,32 @@ namespace pb_ds
     {
     protected:
       typedef typename Allocator::size_type size_type;
-
       typedef Comb_Probe_Fn comb_probe_fn_base;
-
       typedef Hash_Fn hash_fn_base;
-
       typedef Probe_Fn probe_fn_base;
-
       typedef typename Allocator::template rebind<Key>::other key_allocator;
-
       typedef typename key_allocator::const_reference const_key_reference;
 
-    protected:
-      ranged_probe_fn(size_type size);
+      ranged_probe_fn(size_type);
 
-      ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn);
+      ranged_probe_fn(size_type, const Hash_Fn&);
 
-      ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, const Comb_Probe_Fn& r_comb_probe_fn);
+      ranged_probe_fn(size_type, const Hash_Fn&, const Comb_Probe_Fn&);
 
-      ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, const Comb_Probe_Fn& r_comb_probe_fn, const Probe_Fn& r_probe_fn);
-
-      void
-      swap(PB_DS_CLASS_C_DEC& other);
+      ranged_probe_fn(size_type, const Hash_Fn&, const Comb_Probe_Fn&, 
+		      const Probe_Fn&);
 
       void
-      notify_resized(size_type size);
+      swap(PB_DS_CLASS_C_DEC&);
+
+      void
+      notify_resized(size_type);
 
       inline size_type
-      operator()(const_key_reference r_key) const;
+      operator()(const_key_reference) const;
 
       inline size_type
-      operator()(const_key_reference r_key, size_type hash, size_type i) const;
+      operator()(const_key_reference, size_type, size_type) const;
     };
 
     PB_DS_CLASS_T_DEC
@@ -123,23 +115,23 @@ namespace pb_ds
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn) :
-      Hash_Fn(r_hash_fn)
+    ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn) 
+    : Hash_Fn(r_hash_fn)
     { Comb_Probe_Fn::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, const Comb_Probe_Fn& r_comb_probe_fn) :
-      Hash_Fn(r_hash_fn),
-      Comb_Probe_Fn(r_comb_probe_fn)
+    ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, 
+		    const Comb_Probe_Fn& r_comb_probe_fn) 
+    : Hash_Fn(r_hash_fn), Comb_Probe_Fn(r_comb_probe_fn)
     { comb_probe_fn_base::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, const Comb_Probe_Fn& r_comb_probe_fn, const Probe_Fn& r_probe_fn) :
-      Hash_Fn(r_hash_fn),
-      Comb_Probe_Fn(r_comb_probe_fn),
-      Probe_Fn(r_probe_fn)
+    ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, 
+		    const Comb_Probe_Fn& r_comb_probe_fn, 
+		    const Probe_Fn& r_probe_fn) 
+    : Hash_Fn(r_hash_fn), Comb_Probe_Fn(r_comb_probe_fn), Probe_Fn(r_probe_fn)
     { comb_probe_fn_base::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
@@ -175,8 +167,8 @@ namespace pb_ds
 #undef PB_DS_CLASS_C_DEC
 
 #define PB_DS_CLASS_T_DEC \
-    template<typename Key, class Hash_Fn, class Allocator,	\
-	     class Comb_Probe_Fn, class Probe_Fn>
+    template<typename Key, typename Hash_Fn, typename Allocator, \
+	     typename Comb_Probe_Fn, typename Probe_Fn>
 
 #define PB_DS_CLASS_C_DEC \
     ranged_probe_fn<Key, Hash_Fn, Allocator, Comb_Probe_Fn, Probe_Fn, true>
@@ -193,44 +185,37 @@ namespace pb_ds
     {
     protected:
       typedef typename Allocator::size_type size_type;
-
-      typedef typename comp_hash_<size_type>::comp_hash comp_hash;
-
+      typedef std::pair<size_type, size_type> comp_hash;
       typedef Comb_Probe_Fn comb_probe_fn_base;
-
       typedef Hash_Fn hash_fn_base;
-
       typedef Probe_Fn probe_fn_base;
-
       typedef typename Allocator::template rebind<Key>::other key_allocator;
-
       typedef typename key_allocator::const_reference const_key_reference;
 
-      ranged_probe_fn(size_type size);
+      ranged_probe_fn(size_type);
 
-      ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn);
+      ranged_probe_fn(size_type, const Hash_Fn&);
 
-      ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, 
-		      const Comb_Probe_Fn& r_comb_probe_fn);
+      ranged_probe_fn(size_type, const Hash_Fn&, 
+		      const Comb_Probe_Fn&);
 
-      ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, 
-		      const Comb_Probe_Fn& r_comb_probe_fn, 
-		      const Probe_Fn& r_probe_fn);
-
-      void
-      swap(PB_DS_CLASS_C_DEC& other);
+      ranged_probe_fn(size_type, const Hash_Fn&, const Comb_Probe_Fn&, 
+		      const Probe_Fn&);
 
       void
-      notify_resized(size_type size);
+      swap(PB_DS_CLASS_C_DEC&);
+
+      void
+      notify_resized(size_type);
 
       inline comp_hash
-      operator()(const_key_reference r_key) const;
+      operator()(const_key_reference) const;
 
       inline size_type
-      operator()(const_key_reference r_key, size_type hash, size_type i) const;
+      operator()(const_key_reference, size_type, size_type) const;
 
       inline size_type
-      operator()(const_key_reference r_key, size_type hash) const;
+      operator()(const_key_reference, size_type) const;
     };
 
     PB_DS_CLASS_T_DEC
@@ -240,26 +225,23 @@ namespace pb_ds
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn) :
-      Hash_Fn(r_hash_fn)
+    ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn) 
+    : Hash_Fn(r_hash_fn)
     { Comb_Probe_Fn::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, 
-		    const Comb_Probe_Fn& r_comb_probe_fn) :
-      Hash_Fn(r_hash_fn),
-      Comb_Probe_Fn(r_comb_probe_fn)
+		    const Comb_Probe_Fn& r_comb_probe_fn) 
+    : Hash_Fn(r_hash_fn), Comb_Probe_Fn(r_comb_probe_fn)
     { comb_probe_fn_base::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
     ranged_probe_fn(size_type size, const Hash_Fn& r_hash_fn, 
 		    const Comb_Probe_Fn& r_comb_probe_fn, 
-		    const Probe_Fn& r_probe_fn) :
-      Hash_Fn(r_hash_fn),
-      Comb_Probe_Fn(r_comb_probe_fn),
-      Probe_Fn(r_probe_fn)
+		    const Probe_Fn& r_probe_fn) 
+    : Hash_Fn(r_hash_fn), Comb_Probe_Fn(r_comb_probe_fn), Probe_Fn(r_probe_fn)
     { comb_probe_fn_base::notify_resized(size); }
 
     PB_DS_CLASS_T_DEC
@@ -312,8 +294,9 @@ namespace pb_ds
 #undef PB_DS_CLASS_C_DEC
 
     /**
-     * Specialization 3 and 4- The client does not supply a hash function or
-     *    probe function, and requests that hash values not be stored.
+     * Specialization 3 and 4
+     * The client does not supply a hash function or probe function,
+     * and requests that hash values not be stored.
      **/
     template<typename Key, typename Allocator, typename Comb_Probe_Fn>
     class ranged_probe_fn<Key, null_hash_fn, Allocator, Comb_Probe_Fn, 
@@ -322,23 +305,20 @@ namespace pb_ds
     {
     protected:
       typedef typename Allocator::size_type size_type;
-
       typedef Comb_Probe_Fn comb_probe_fn_base;
-
       typedef typename Allocator::template rebind<Key>::other key_allocator;
-
       typedef typename key_allocator::const_reference const_key_reference;
 
       ranged_probe_fn(size_type size)
       { Comb_Probe_Fn::notify_resized(size); }
 
-      ranged_probe_fn(size_type size, const Comb_Probe_Fn& r_comb_probe_fn)
+      ranged_probe_fn(size_type, const Comb_Probe_Fn& r_comb_probe_fn)
       : Comb_Probe_Fn(r_comb_probe_fn)
       { }
 
-      ranged_probe_fn(size_type size, const null_hash_fn& r_null_hash_fn, 
+      ranged_probe_fn(size_type, const null_hash_fn&, 
 		      const Comb_Probe_Fn& r_comb_probe_fn, 
-		      const null_probe_fn& r_null_probe_fn)
+		      const null_probe_fn&)
       : Comb_Probe_Fn(r_comb_probe_fn)
       { }
 
