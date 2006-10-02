@@ -1084,6 +1084,10 @@ match_sym_complex_part (gfc_expr ** result)
       return MATCH_ERROR;
     }
 
+  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PARAMETER symbol in "
+		      "complex constant at %C") == FAILURE)
+    return MATCH_ERROR;
+
   switch (sym->value->ts.type)
     {
     case BT_REAL:
