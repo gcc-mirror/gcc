@@ -1,3 +1,10 @@
+2006-10-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/29210
+	* primary.c (match_sym_complex_part): Named constants as real or
+	imaginary part of complex a named constant are only allowed in
+	Fortran 2003.
+
 2006-10-01  Brooks Moses  <bmoses@stanford.edu>
 
 	* gfortran.texi: Corrected references to MALLOC intrinsic.
