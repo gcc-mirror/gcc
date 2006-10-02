@@ -1,3 +1,8 @@
+2006-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/29154
+	* gcc.c-torture/execute/20060929-1.c: New test.
+
 2006-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29105
