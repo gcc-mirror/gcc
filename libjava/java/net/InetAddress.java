@@ -101,6 +101,8 @@ public class InetAddress implements Serializable
     try
       {
 	LOCALHOST = getByAddress("localhost", new byte[] {127, 0, 0, 1});
+	// Some soon-to-be-removed native code synchronizes on this.
+	loopbackAddress = LOCALHOST;
       }
     catch (UnknownHostException e)
       {
@@ -793,7 +795,7 @@ public class InetAddress implements Serializable
   static native String getLocalHostname();
 
   // Some soon-to-be-removed native code synchronizes on this.
-  static InetAddress loopbackAddress = LOCALHOST;
+  static InetAddress loopbackAddress;
   
   // Some soon-to-be-removed code uses this old and broken method.
   InetAddress(byte[] ipaddr, String hostname)
@@ -805,9 +807,13 @@ public class InetAddress implements Serializable
       family = getFamily(ipaddr);
   }
 
-  // Some soon-to-be-removed native code uses this old method.
+  // Some soon-to-be-removed native code uses these old methods.
   private static InetAddress[] allocArray (int count)
   {
     return new InetAddress [count];
   }  
+  private static SecurityException checkConnect (String hostname)
+  {
+    return null;
+  }
 }
