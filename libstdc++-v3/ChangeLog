@@ -1,5 +1,16 @@
 2006-10-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/random (xor_combine<>::_M_initialize_max_aux): New.
+	(xor_combine<>::operator()()): Tweak per N2079.
+	* include/tr1/random.tcc (xor_combine<>::_M_initialize_max_aux):
+	Define.
+	(xor_combine<>::_M_initialize_max): Use it.
+	* testsuite/tr1/5_numerical_facilities/random/xor_combine/
+	cons/default.cc: Adjust.
+	* docs/html/ext/tr1.html: Adjust.
+
+2006-10-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/type_traits.h: Avoid _T, badname for some targets;
 	also avoid plain T.
 
