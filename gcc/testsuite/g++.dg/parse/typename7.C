@@ -11,7 +11,7 @@ struct A
   template<typename T> void bar(T t) {
     this->foo<typename T>(t); } // { dg-error "expected|parse error|no matching" }
   template<typename T> void bad(T t) {
-    foo<typename T>(t); } // { dg-error "expected|parse error" }
+    foo<typename T>(t); } // { dg-error "expected|parse error|no matching" }
 };
 
 template <typename T>

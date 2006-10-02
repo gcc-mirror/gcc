@@ -2400,7 +2400,6 @@ baselink_for_fns (tree fns)
   tree cl;
 
   if (BASELINK_P (fns) 
-      || processing_template_decl
       || error_operand_p (fns))
     return fns;
   

@@ -7779,15 +7779,15 @@ tsubst_baselink (tree baselink, tree object_type,
     tree template_args = 0;
     bool template_id_p = false;
 
-    /* A baselink indicates a function from a base class.  The
-       BASELINK_ACCESS_BINFO and BASELINK_BINFO are going to have
-       non-dependent types; otherwise, the lookup could not have
-       succeeded.  However, they may indicate bases of the template
-       class, rather than the instantiated class.
-
-       In addition, lookups that were not ambiguous before may be
-       ambiguous now.  Therefore, we perform the lookup again.  */
+    /* A baselink indicates a function from a base class.  Both the
+       BASELINK_ACCESS_BINFO and the base class referenced may
+       indicate bases of the template class, rather than the
+       instantiated class.  In addition, lookups that were not
+       ambiguous before may be ambiguous now.  Therefore, we perform
+       the lookup again.  */
     qualifying_scope = BINFO_TYPE (BASELINK_ACCESS_BINFO (baselink));
+    qualifying_scope = tsubst (qualifying_scope, args,
+			       complain, in_decl);
     fns = BASELINK_FUNCTIONS (baselink);
     optype = BASELINK_OPTYPE (baselink);
     if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
