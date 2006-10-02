@@ -2823,6 +2823,8 @@ legitimize_pic_address (rtx orig, rtx reg)
   rtx new = orig;
   rtx base;
 
+  gcc_assert (!TLS_SYMBOLIC_CONST (addr));
+
   if (GET_CODE (addr) == LABEL_REF
       || (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (addr)))
     {
@@ -2975,6 +2977,10 @@ legitimize_pic_address (rtx orig, rtx reg)
       if (GET_CODE (addr) == PLUS)
 	{
 	  rtx op0 = XEXP (addr, 0), op1 = XEXP (addr, 1);
+
+	  gcc_assert (!TLS_SYMBOLIC_CONST (op0));
+	  gcc_assert (!TLS_SYMBOLIC_CONST (op1));
+
 	  /* Check first to see if this is a constant offset
              from a local symbol reference.  */
 	  if ((GET_CODE (op0) == LABEL_REF
@@ -3346,6 +3352,12 @@ legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
       if (legitimate_address_p (mode, x, FALSE))
 	return x;
+    }
+  else if (GET_CODE (x) == PLUS
+	   && (TLS_SYMBOLIC_CONST (XEXP (x, 0)) 
+	       || TLS_SYMBOLIC_CONST (XEXP (x, 1))))
+    {
+      return x;
     }
   else if (flag_pic)
     {

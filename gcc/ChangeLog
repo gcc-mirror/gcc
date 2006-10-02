@@ -1,5 +1,15 @@
 2006-10-02  Jakub Jelinek  <jakub@redhat.com>
 
+	Backport from mainline
+	2006-02-20  Angel Nunez Mencias  <anunez@de.ibm.com>
+
+	* config/s390/s390.c (legitimize_pic_address): Assertions checking
+	for non tls symbols added.
+	(legitimize_address): Do nothing for PLUS expressions if one of the
+	addends is a tls symbol reference.
+
+2006-10-02  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/29154
 	* gimplify.c (gimplify_self_mod_expr): Run inner expression's post
 	side effects after the outer expression's post side effects.
