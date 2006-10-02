@@ -1,3 +1,8 @@
+2006-10-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29226
+	* g++.dg/template/vla1.C: New test.
+
 2006-10-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/29210
