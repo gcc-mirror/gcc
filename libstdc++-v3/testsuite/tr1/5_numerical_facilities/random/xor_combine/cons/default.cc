@@ -36,7 +36,7 @@ test01()
     minstd_rand0, 2
     > x;
 
-  VERIFY( x() == 32642 );
+  VERIFY( x() == 32644 );
 }
 
 int main()

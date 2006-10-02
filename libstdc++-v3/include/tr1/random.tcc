@@ -619,30 +619,59 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		_UniformRandomNumberGenerator2, __s2>::
     _M_initialize_max()
     {
-      const int __lshift = std::abs(__s1 - __s2);
+      const int __w = std::numeric_limits<result_type>::digits;
 
-      result_type __m1 = _M_b1.max() - _M_b1.min();
-      result_type __m2 = _M_b2.max() - _M_b2.min();
+      const result_type __m1 =
+	std::min(result_type(_M_b1.max() - _M_b1.min()),
+		 _Shift<result_type, __w - __s1>::__value - 1);
 
-      // NB: in TR1 s1 is not required to be >= s2.
-      if (__s1 >= __s2)
-	__m1 <<= __lshift;
+      const result_type __m2 =
+	std::min(result_type(_M_b2.max() - _M_b2.min()),
+		 _Shift<result_type, __w - __s2>::__value - 1);
+
+      // NB: In TR1 s1 is not required to be >= s2.
+      if (__s1 < __s2)
+	_M_max = _M_initialize_max_aux(__m2, __m1, __s2 - __s1) << __s1;
       else
-	__m2 <<= __lshift;
+	_M_max = _M_initialize_max_aux(__m1, __m2, __s1 - __s2) << __s2;
+    }
 
-      result_type __a = __m1 & __m2;
-      const result_type __b = __m1 | __m2;      
+  template<class _UniformRandomNumberGenerator1, int __s1,
+	   class _UniformRandomNumberGenerator2, int __s2>
+    typename xor_combine<_UniformRandomNumberGenerator1, __s1,
+			 _UniformRandomNumberGenerator2, __s2>::result_type
+    xor_combine<_UniformRandomNumberGenerator1, __s1,
+		_UniformRandomNumberGenerator2, __s2>::
+    _M_initialize_max_aux(result_type __a, result_type __b, int __d)
+    {
+      const result_type __two2d = result_type(1) << __d;
+      const result_type __c = __a * __two2d;
 
-      result_type __c = 0;
-      if (__a)
-	{
-	  result_type __k;
-	  for (__k = 0; __a != 1; __a >>= 1)
-	    ++__k;
-	  __c = (result_type(1) << __k) - 1;
-	}
+      if (__a == 0 || __b < __two2d)
+	return __c + __b;
 
-      _M_max = (__c | __b) << __lshift; 
+      const result_type __t = std::max(__c, __b);
+      const result_type __u = std::min(__c, __b);
+
+      result_type __ub = __u;
+      result_type __p;
+      for (__p = 0; __ub != 1; __ub >>= 1)
+	++__p;
+
+      const result_type __two2p = result_type(1) << __p;
+      const result_type __k = __t / __two2p;
+
+      if (__k & 1)
+	return (__k + 1) * __two2p - 1;
+
+      if (__c >= __b)
+	return (__k + 1) * __two2p + _M_initialize_max_aux((__t % __two2p)
+							   / __two2d,
+							   __u % __two2p, __d);
+      else
+	return (__k + 1) * __two2p + _M_initialize_max_aux((__u % __two2p)
+							   / __two2d,
+							   __t % __two2p, __d);
     }
 
   template<class _UniformRandomNumberGenerator1, int __s1,
@@ -852,7 +881,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		      continue;
 		  }
 		else if (__u <= __c3)
-		  // XXX This case not in the book, nor in the Errata...
+		  // NB: This case not in the book, nor in the Errata,
+		  // but should be ok...
 		  __x = -1;
 		else if (__u <= __c4)
 		  __x = 0;

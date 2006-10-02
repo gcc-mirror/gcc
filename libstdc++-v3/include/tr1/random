@@ -1262,7 +1262,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
     public:
       /** The type of the generated random value. */
-      typedef typename __gnu_cxx::__conditional_type<(sizeof(_Result_type1) > sizeof(_Result_type2)),
+      typedef typename __gnu_cxx::__conditional_type<(sizeof(_Result_type1)
+						      > sizeof(_Result_type2)),
 	_Result_type1, _Result_type2>::__type result_type;
 
       // parameter values
@@ -1310,7 +1311,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       base2() const
       { return _M_b2; }
 
-      // XXX Per N2032, but aren't always right...
       result_type
       min() const
       { return 0; }
@@ -1322,9 +1322,13 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       /**
        * Gets the next random number in the sequence.
        */
+      // NB: Not exactly the TR1 formula, per N2079 instead.
       result_type
       operator()()
-      { return ((_M_b1() << shift1) ^ (_M_b2() << shift2)); }
+      {
+	return ((result_type(_M_b1() - _M_b1.min()) << shift1)
+		^ (result_type(_M_b2() - _M_b2.min()) << shift2));
+      }
 
       /**
        * Compares two %xor_combine random number generator objects of
@@ -1396,6 +1400,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     private:
       void
       _M_initialize_max();
+
+      result_type
+      _M_initialize_max_aux(result_type, result_type, int);
 
       base1_type  _M_b1;
       base2_type  _M_b2;
