@@ -1,3 +1,9 @@
+2006-10-02  Gary Benson  <gbenson@redhat.com>
+
+	* java/net/InetAddress.java
+	(checkConnect): Reinstated.
+	(loopbackAddress): Ensure initialized from non-null object.
+
 2006-09-30  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-interp.h (prepared): Change type to pc_t.
