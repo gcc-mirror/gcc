@@ -84,7 +84,7 @@ static tree handle_const_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 
 /* Table of machine-independent internal attributes for Ada.  We support
-   this minimal set ot attributes to accommodate the Alpha back-end which
+   this minimal set of attributes to accommodate the Alpha back-end which
    unconditionally puts them on its builtins.  */
 const struct attribute_spec gnat_internal_attribute_table[] =
 {
