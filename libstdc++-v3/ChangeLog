@@ -1,3 +1,27 @@
+2006-10-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/native_type/priority_queue/native_pq_tag.hpp: Remove.
+	* testsuite/util/statistic/sample_var.hpp: Rename to...
+	* testsuite/util/statistic/sample_variance.hpp: ... this.
+	* testsuite/util/statistic/res_recorder.hpp: Rename to...
+	* testsuite/util/statistic/result_recorder.hpp: ... this.
+	* testsuite/util/statistic/sample_mean.hpp: Format.
+	* testsuite/util/statistic/sample_mean_confidence_checker.hpp: Same.
+	* testsuite/util/regression/trait/priority_queue/trait.hpp: Same.
+	* testsuite/util/regression/trait/erase_if_fn.hpp: Same.
+	* testsuite/util/regression/trait/assoc/trait.hpp: Same.
+	* testsuite/util/native_type/priority_queue/
+	native_priority_queue.hpp: Same.
+	* testsuite/util/native_type/assoc/native_tree_tag.hpp: Same.
+	* testsuite/util/native_type/assoc/native_hash_tag.hpp: Same.
+	* testsuite/util/native_type/assoc/native_hash_map.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/join_test.hpp: Same.
+	* testsuite/util/performance/priority_queue/timing/
+	modify_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/
+	subscript_insert_test.hpp: Same.
+	* testsuite/util/performance/time/timing_test_base.hpp: Same.
+
 2006-10-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/rc_string_base.h (_M_compare<wchar_t>):

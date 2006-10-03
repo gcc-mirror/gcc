@@ -50,7 +50,6 @@
 #include <performance/time/timing_test_base.hpp>
 #include <performance/io/xml_formatter.hpp>
 #include <common_type/assoc/string_form.hpp>
-#include <statistic/res_recorder.hpp>
 #include <iterator>
 
 namespace pb_ds

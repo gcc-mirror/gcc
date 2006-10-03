@@ -54,16 +54,11 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
-#define PB_DS_VTYPE							\
-      typename std::iterator_traits<					\
-							It>::value_type
+#define PB_DS_VTYPE typename std::iterator_traits<It>::value_type
 
       template<typename It>
       PB_DS_VTYPE
@@ -71,17 +66,14 @@ namespace pb_ds
       {
 	const PB_DS_VTYPE total = std::accumulate(b, e, PB_DS_VTYPE(0));
 	const size_t num = std::distance(b, e);
-
-	return (total / num);
+	return total / num;
       }
 
 #undef PB_DS_VTYPE
 
     } // namespace detail
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_SAMPLE_MEAN_HPP
+#endif 
 

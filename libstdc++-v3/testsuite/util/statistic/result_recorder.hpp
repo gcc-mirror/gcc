@@ -40,24 +40,69 @@
 // warranty.
 
 /**
- * @file native_tree_tag.hpp
- * Contains a tag for native tree-based containers
+ * @file result_recorder.hpp
+ * Contains a class for recording results
  */
 
-#ifndef PB_DS_NATIVE_PQ_DS_TAG_HPP
-#define PB_DS_NATIVE_PQ_DS_TAG_HPP
+#ifndef PB_DS_RES_RECORDER_HPP
+#define PB_DS_RES_RECORDER_HPP
+
+#include <statistic/sample_mean.hpp>
+#include <statistic/sample_variance.hpp>
+#include <statistic/sample_mean_confidence_checker.hpp>
 
 namespace pb_ds
 {
-
   namespace test
   {
+    namespace detail
+    {
+      /*
+       * Records results until the probability that the sample mean is 10% away
+       * from the true mean is ~ 0.05.
+       */
+      template<typename Value_Type>
+      class result_recorder
+      {
+      public:
+	typedef Value_Type value_type;
 
-    struct native_pq_tag
-    { };
+	result_recorder()
+        : m_sample_mean(value_type()), m_sample_var(value_type())
+	{ }
 
+	bool
+        add_result(value_type res);
+
+	inline value_type
+        get_sample_mean() const
+	{ return m_sample_mean; }
+
+      private:
+	typedef std::list<value_type> list_type;
+
+	list_type m_l;
+	value_type m_sample_mean;
+	value_type m_sample_var;
+      };
+
+
+      template<typename Value_Type>
+      bool
+      result_recorder<Value_Type>::
+      add_result(value_type res)
+      {
+	m_l.push_back(res);
+	m_sample_mean = sample_mean(m_l.begin(), m_l.end());
+	m_sample_var = sample_variance(m_l.begin(), m_l.end(), m_sample_mean);
+
+	size_t dist = std::distance(m_l.begin(), m_l.end());
+	return sample_mean_confidence_checker(m_sample_mean, m_sample_var,
+					      dist, 0.1);
+      }
+    } // namespace detail
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_NATIVE_PQ_DS_TAG_HPP
+#endif 
+

@@ -47,87 +47,66 @@
 #ifndef PB_DS_NATIVE_PRIORITY_QUEUE_HPP
 #define PB_DS_NATIVE_PRIORITY_QUEUE_HPP
 
-#include <ext/pb_ds/detail/standard_policies.hpp>
-#include <ext/pb_ds/detail/type_utils.hpp>
-#include <native_type/priority_queue/native_pq_tag.hpp>
-#include <io/xml.hpp>
 #include <string>
 #include <vector>
 #include <queue>
 #include <deque>
+#include <ext/pb_ds/detail/standard_policies.hpp>
+#include <ext/pb_ds/detail/type_utils.hpp>
+#include <io/xml.hpp>
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
-      template<typename Value_Type, bool Vector, class Allocator>
+      template<typename Value_Type, bool Vector, typename Allocator>
       struct base_seq
       {
-	typedef
-        std::vector<
-	  Value_Type,
-	  typename Allocator::template rebind<
-	  Value_Type>::other>
-        type;
+      private:
+	typedef typename Allocator::template rebind<Value_Type> value_rebind;
+
+      public:
+	typedef std::vector<Value_Type, typename value_rebind::other> type;
       };
 
-      template<typename Value_Type, class Allocator>
-      struct base_seq<
-	Value_Type,
-	false,
-	Allocator>
+      template<typename Value_Type, typename Allocator>
+      struct base_seq<Value_Type, false, Allocator>
       {
-	typedef
-        std::deque<
-	  Value_Type,
-	  typename Allocator::template rebind<
-	  Value_Type>::other>
-        type;
-      };
+      private:
+	typedef typename Allocator::template rebind<Value_Type> value_rebind;
 
+      public:
+	typedef std::deque<Value_Type, typename value_rebind::other> type;
+      };
     } // namespace detail
 
-#define PB_DS_CLASS_C_DEC					\
-    native_priority_queue<					\
-						Value_Type,	\
-						Vector,		\
-						Cmp_Fn,		\
-						Allocator>
+    struct native_pq_tag
+    { };
 
-#define PB_DS_BASE_C_DEC						\
-    std::priority_queue<						\
-									Value_Type, \
-									typename detail::base_seq<Value_Type, Vector, Allocator>::type, \
-									Cmp_Fn>
+#define PB_DS_CLASS_C_DEC \
+    native_priority_queue<Value_Type, Vector, Cmp_Fn, Allocator>
+
+#define PB_DS_BASE_C_DEC \
+    std::priority_queue<Value_Type, typename detail::base_seq<Value_Type, Vector, Allocator>::type, Cmp_Fn>
 
     template<typename Value_Type,
 	     bool Vector,
-	     class Cmp_Fn =
-	     std::less<Value_Type>,
-	     class Allocator = std::allocator<char> >
+	     typename Cmp_Fn = std::less<Value_Type>,
+	     typename Allocator = std::allocator<char> >
     class native_priority_queue : public PB_DS_BASE_C_DEC
     {
     private:
       typedef PB_DS_BASE_C_DEC base_type;
+      typedef typename Allocator::template rebind<Value_Type> value_rebind;
 
     public:
       typedef Value_Type value_type;
-
-      typedef
-      typename Allocator::template rebind<
-	value_type>::other::const_reference
-      const_reference;
-
+      typedef typename value_rebind::other::const_reference const_reference;
       typedef native_pq_tag container_category;
-
       typedef Cmp_Fn cmp_fn;
 
-    public:
       native_priority_queue() : base_type()
       { }
 
@@ -140,7 +119,6 @@ namespace pb_ds
       {
         if (Vector)
 	  return ("n_pq_vector");
-
         return ("n_pq_deque");
       }
 
@@ -148,44 +126,36 @@ namespace pb_ds
       desc()
       {
         if (Vector)
-	  return (make_xml_tag(                "type",  "value",  "std::priority_queue_vector"));
-
-        return (make_xml_tag(            "type", "value", "std::priority_queue_deque"));
+	  return make_xml_tag("type", "value", "std::priority_queue_vector");
+        return make_xml_tag("type", "value", "std::priority_queue_deque");
       }
 
       void
       clear()
-      {
-	* static_cast<base_type* >(this) = base_type();
-      }
+      { *static_cast<base_type*>(this) = base_type(); }
 
       void
       erase(const_reference r_val)
       {
         base_type tmp;
-
         Cmp_Fn cmp;
 
         while (cmp(base_type::top(), r_val) || cmp(r_val, base_type::top()))
 	  {
             tmp.push(base_type::top());
-
             base_type::pop();
 	  }
 
         if (!base_type::empty())
 	  {
             base_type::pop();
-
             while (!base_type::empty())
 	      {
                 tmp.push(base_type::top());
-
                 base_type::pop();
 	      }
 	  }
-
-	* static_cast<base_type* >(this) = tmp;
+	*static_cast<base_type* >(this) = tmp;
       }
 
       template<typename Pred>
@@ -193,21 +163,17 @@ namespace pb_ds
       erase_if(Pred pred)
       {
         base_type tmp;
-
         std::size_t ersd = 0;
-
         while (!base_type::empty())
 	  {
             if (!pred(base_type::top()))
 	      tmp.push(base_type::top());
             else
 	      ++ersd;
-
             base_type::pop();
 	  }
 
-	* static_cast<base_type* >(this) = tmp;
-
+	*static_cast<base_type*>(this) = tmp;
         return ersd;
       }
 
@@ -216,27 +182,22 @@ namespace pb_ds
       split(Pred pred, PB_DS_CLASS_C_DEC& other)
       {
         base_type tmp;
-
         other.clear();
-
         while (!base_type::empty())
 	  {
             if (!pred(base_type::top()))
 	      tmp.push(base_type::top());
             else
 	      other.push(base_type::top());
-
             base_type::pop();
 	  }
-
-	* static_cast<base_type* >(this) = tmp;
+	*static_cast<base_type*>(this) = tmp;
       }
 
       void
       modify(const_reference r_old, const_reference r_new)
       {
         erase(r_old);
-
         push(r_new);
       }
 
@@ -244,37 +205,30 @@ namespace pb_ds
       join(PB_DS_CLASS_C_DEC& other)
       {
         std::vector<value_type> a_tmp;
-
         while (!base_type::empty())
 	  {
             a_tmp.push_back(base_type::top());
-
             base_type::pop();
 	  }
 
         while (!other.empty())
 	  {
             a_tmp.push_back(other.top());
-
             other.pop();
 	  }
 
-	* static_cast<base_type* >(this) = base_type(a_tmp.begin(), a_tmp.end());
+	*static_cast<base_type*>(this) = base_type(a_tmp.begin(), a_tmp.end());
       }
 
       Cmp_Fn
       get_cmp_fn() const
-      {
-        return Cmp_Fn();
-      }
+      { return Cmp_Fn(); }
     };
 
 #undef PB_DS_BASE_C_DEC
-
 #undef PB_DS_CLASS_C_DEC
 
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_NATIVE_PRIORITY_QUEUE_HPP
+#endif 

@@ -59,6 +59,7 @@ namespace pb_ds
   {
     namespace detail
     {
+      // Primary templates.
       template<typename It, class Cntnr, class Tag>
       class push_functor
       {
@@ -123,6 +124,7 @@ namespace pb_ds
 	const value_type m_mod_val;
       };
 
+      // Specializations.
       template<typename It, class Cntnr>
       class push_functor<It, Cntnr, pb_ds::binary_heap_tag>
       {
@@ -147,6 +149,33 @@ namespace pb_ds
 	const It m_ins_it_b;
 	const It m_ins_it_e;
       };
+
+      template<typename It, class Cntnr>
+      class push_functor<It, Cntnr, pb_ds::test::native_pq_tag>
+      {
+      public:
+        push_functor(It ins_it_b,  It ins_it_e) 
+	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
+	{ }
+
+	void
+        operator()(std::size_t resolution)
+	{
+	  typedef typename Cntnr::const_reference const_reference;
+	  for (std::size_t i = 0; i < resolution; ++i)
+	    {
+	      Cntnr c;
+
+	      for (It ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
+                c.push(const_reference(ins_it->first));
+	    }
+	}
+
+      private:
+	const It m_ins_it_b;
+	const It m_ins_it_e;
+      };
+
 
       template<typename It, class Cntnr>
       class push_modify_functor<It, Cntnr, pb_ds::binary_heap_tag>
@@ -188,32 +217,6 @@ namespace pb_ds
 	const It m_ins_it_b;
 	const It m_ins_it_e;
 	const value_type m_mod_val;
-      };
-
-      template<typename It, class Cntnr>
-      class push_functor<It, Cntnr, pb_ds::test::native_pq_tag>
-      {
-      public:
-        push_functor(It ins_it_b,  It ins_it_e) 
-	: m_ins_it_b(ins_it_b), m_ins_it_e(ins_it_e)
-	{ }
-
-	void
-        operator()(std::size_t resolution)
-	{
-	  typedef typename Cntnr::const_reference const_reference;
-	  for (std::size_t i = 0; i < resolution; ++i)
-	    {
-	      Cntnr c;
-
-	      for (It ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
-                c.push(const_reference(ins_it->first));
-	    }
-	}
-
-      private:
-	const It m_ins_it_b;
-	const It m_ins_it_e;
       };
 
       template<typename It, class Cntnr>
@@ -291,8 +294,9 @@ namespace pb_ds
       typedef typename Cntnr::value_type value_type;
       typedef typename Cntnr::container_category container_category;
       typedef typename Cntnr::const_reference const_reference;
-      typedef pb_ds::test::detail::timing_test_base timing_test_base;
-
+      typedef detail::timing_test_base timing_test_base;
+      typedef detail::push_functor<It, Cntnr, container_category> psh_fnct;
+      typedef detail::push_modify_functor<It, Cntnr, container_category> psh_mod_fnct;
       typedef xml_result_set_performance_formatter formatter_type;
       formatter_type res_set_fmt(string_form<Cntnr>::name(),
 				 string_form<Cntnr>::desc());
@@ -300,14 +304,12 @@ namespace pb_ds
       for (size_t i = 0; m_ins_vn + i * m_ins_vs < m_ins_vm; ++i)
 	{
 	  const size_t v = m_ins_vn + i * m_ins_vs;
-	  It  b = m_ins_b;
+	  It b = m_ins_b;
 	  It e = m_ins_b;
 	  std::advance(e, v);
 
-	  pb_ds::test::detail::push_functor<It, Cntnr, container_category>
-            push_fn( b, e);
-
-	  const double push_res = timing_test_base::operator()(push_fn);
+	  psh_fnct psh_fn(b, e);
+	  const double psh_res = timing_test_base::operator()(psh_fn);
 
 	  value_type val = b->first;
 	  {
@@ -320,13 +322,12 @@ namespace pb_ds
 	      }
 	  }
 
-	  pb_ds::test::detail::push_modify_functor<It, Cntnr, container_category>
-            push_modify_fn(b, e, val);
+	  psh_mod_fnct psh_mod_fn(b, e, val);
+	  const double psh_mod_res = timing_test_base::operator()(psh_mod_fn);
 
-	  const double push_modify_res = timing_test_base::operator()(push_modify_fn);
-
-	  const double effective_delta = std::max(push_modify_res - push_res,
-					     timing_test_base::min_time_res());
+	  const double min_res = double(timing_test_base::min_time_res());
+	  const double effective_delta = std::max(psh_mod_res - psh_res,
+						  min_res);
 
 	  res_set_fmt.add_res(v, effective_delta / v);
 	}

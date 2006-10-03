@@ -128,6 +128,9 @@ namespace pb_ds
 	using pb_ds::test::detail::double_push_functor;
 	using pb_ds::test::detail::double_push_join_functor;
 	typedef pb_ds::test::detail::timing_test_base base_type;
+	typedef double_push_functor<It, Cntnr> psh_fnct;
+	typedef double_push_join_functor<It, Cntnr> psh_jn_fnct;
+
 	typedef xml_result_set_performance_formatter formatter_type;
 	formatter_type res(string_form<Cntnr>::name(), 
 			   string_form<Cntnr>::desc());
@@ -139,12 +142,12 @@ namespace pb_ds
 	    It e = m_ins_b;
 	    std::advance(e, v);
 
-	    double_push_functor<It, Cntnr> double_push_fn(b, e);
-	    const double double_push_res = base_type::operator()(double_push_fn);
-	    double_push_join_functor<It, Cntnr> double_push_join_fn(b, e);
-	    const double double_push_join_res = base_type::operator()(double_push_join_fn);
-	      
-	    const double effective_delta = std::max(double_push_join_res - double_push_res, base_type::min_time_res());
+	    psh_fnct double_push_fn(b, e);
+	    const double dbl_psh_res = base_type::operator()(double_push_fn);
+	    psh_jn_fnct dbl_psh_jn_fn(b, e);
+	    const double dbl_psh_jn_res = base_type::operator()(dbl_psh_jn_fn);
+	    const double min_res = double(timing_test_base::min_time_res());
+	    const double effective_delta = std::max(dbl_psh_jn_res - dbl_psh_res, min_res);
 	    res.add_res(v, effective_delta / v);
 	  }
       }
