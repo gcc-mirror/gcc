@@ -2,6 +2,8 @@
 
 	* decl.c, utils.c: Fix comment typos.
 
+	* utils.c: Fix a typo.
+
 2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <E_Procedure>: Do not set "const" flag
