@@ -769,16 +769,6 @@ grokfield (const cp_declarator *declarator,
   const char *asmspec = 0;
   int flags = LOOKUP_ONLYCONVERTING;
 
-  if (!declspecs->any_specifiers_p
-      && declarator->kind == cdk_id
-      && declarator->u.id.qualifying_scope
-      && TYPE_P (declarator->u.id.qualifying_scope)
-      && IS_AGGR_TYPE (declarator->u.id.qualifying_scope)
-      && TREE_CODE (declarator->u.id.unqualified_name) == IDENTIFIER_NODE)
-    /* Access declaration */
-    return do_class_using_decl (declarator->u.id.qualifying_scope,
-				declarator->u.id.unqualified_name);
-
   if (init
       && TREE_CODE (init) == TREE_LIST
       && TREE_VALUE (init) == error_mark_node
