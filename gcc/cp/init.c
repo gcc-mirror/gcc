@@ -2075,7 +2075,8 @@ build_new (tree placement, tree type, tree nelts, tree init,
   tree orig_nelts;
   tree orig_init;
 
-  if (placement == error_mark_node || type == error_mark_node)
+  if (placement == error_mark_node || type == error_mark_node
+      || init == error_mark_node)
     return error_mark_node;
 
   orig_placement = placement;
