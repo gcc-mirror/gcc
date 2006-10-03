@@ -3319,6 +3319,81 @@ resolve_deallocate_expr (gfc_expr * e)
   return SUCCESS;
 }
 
+/* Returns true if the expression e contains a reference the symbol sym.  */
+static bool
+find_sym_in_expr (gfc_symbol *sym, gfc_expr *e)
+{
+  gfc_actual_arglist *arg;
+  gfc_ref *ref;
+  int i;
+  bool rv = false;
+
+  if (e == NULL)
+    return rv;
+
+  switch (e->expr_type)
+    {
+    case EXPR_FUNCTION:
+      for (arg = e->value.function.actual; arg; arg = arg->next)
+	rv = rv || find_sym_in_expr (sym, arg->expr);
+      break;
+
+    /* If the variable is not the same as the dependent, 'sym', and
+       it is not marked as being declared and it is in the same
+       namespace as 'sym', add it to the local declarations.  */
+    case EXPR_VARIABLE:
+      if (sym == e->symtree->n.sym)
+	return true;
+      break;
+
+    case EXPR_OP:
+      rv = rv || find_sym_in_expr (sym, e->value.op.op1);
+      rv = rv || find_sym_in_expr (sym, e->value.op.op2);
+      break;
+
+    default:
+      break;
+    }
+
+  if (e->ref)
+    {
+      for (ref = e->ref; ref; ref = ref->next)
+	{
+	  switch (ref->type)
+	    {
+	    case REF_ARRAY:
+	      for (i = 0; i < ref->u.ar.dimen; i++)
+		{
+		  rv = rv || find_sym_in_expr (sym, ref->u.ar.start[i]);
+		  rv = rv || find_sym_in_expr (sym, ref->u.ar.end[i]);
+		  rv = rv || find_sym_in_expr (sym, ref->u.ar.stride[i]);
+		}
+	      break;
+
+	    case REF_SUBSTRING:
+	      rv = rv || find_sym_in_expr (sym, ref->u.ss.start);
+	      rv = rv || find_sym_in_expr (sym, ref->u.ss.end);
+	      break;
+
+	    case REF_COMPONENT:
+	      if (ref->u.c.component->ts.type == BT_CHARACTER
+		    && ref->u.c.component->ts.cl->length->expr_type
+						!= EXPR_CONSTANT)
+		rv = rv || find_sym_in_expr (sym, ref->u.c.component->ts.cl->length);
+
+	      if (ref->u.c.component->as)
+	        for (i = 0; i < ref->u.c.component->as->rank; i++)
+		  {
+		    rv = rv || find_sym_in_expr (sym, ref->u.c.component->as->lower[i]);
+		    rv = rv || find_sym_in_expr (sym, ref->u.c.component->as->upper[i]);
+		  }
+	      break;
+	    }
+	}
+    }
+  return rv;
+}
+
 
 /* Given the expression node e for an allocatable/pointer of derived type to be
    allocated, get the expression node to be initialized afterwards (needed for
@@ -3363,9 +3438,16 @@ resolve_allocate_expr (gfc_expr * e, gfc_code * code)
   gfc_array_ref *ar;
   gfc_code *init_st;
   gfc_expr *init_e;
+  gfc_symbol *sym;
+  gfc_alloc *a;
 
   if (gfc_resolve_expr (e) == FAILURE)
     return FAILURE;
+
+  if (code->expr && code->expr->expr_type == EXPR_VARIABLE)
+    sym = code->expr->symtree->n.sym;
+  else
+    sym = NULL;
 
   /* Make sure the expression is allocatable or a pointer.  If it is
      pointer, the next-to-last reference must be a pointer.  */
@@ -3386,6 +3468,14 @@ resolve_allocate_expr (gfc_expr * e, gfc_code * code)
       allocatable = e->symtree->n.sym->attr.allocatable;
       pointer = e->symtree->n.sym->attr.pointer;
       dimension = e->symtree->n.sym->attr.dimension;
+
+      if (sym == e->symtree->n.sym)
+	{
+	  gfc_error ("The STAT variable '%s' in an ALLOCATE statement must "
+		     "not be allocated in the same statement at %L",
+		      sym->name, &e->where);
+	  return FAILURE;
+	}
 
       for (ref = e->ref; ref; ref2 = ref, ref = ref->next)
 	switch (ref->type)
@@ -3449,34 +3539,51 @@ resolve_allocate_expr (gfc_expr * e, gfc_code * code)
       return FAILURE;
     }
 
-  if (ref2->u.ar.type == AR_ELEMENT)
-    return SUCCESS;
-
   /* Make sure that the array section reference makes sense in the
     context of an ALLOCATE specification.  */
 
   ar = &ref2->u.ar;
 
   for (i = 0; i < ar->dimen; i++)
-    switch (ar->dimen_type[i])
-      {
-      case DIMEN_ELEMENT:
-	break;
+    {
+      if (ref2->u.ar.type == AR_ELEMENT)
+	goto check_symbols;
 
-      case DIMEN_RANGE:
-	if (ar->start[i] != NULL
-	    && ar->end[i] != NULL
-	    && ar->stride[i] == NULL)
+      switch (ar->dimen_type[i])
+	{
+	case DIMEN_ELEMENT:
 	  break;
 
-	/* Fall Through...  */
+	case DIMEN_RANGE:
+	  if (ar->start[i] != NULL
+	      && ar->end[i] != NULL
+	      && ar->stride[i] == NULL)
+	    break;
 
-      case DIMEN_UNKNOWN:
-      case DIMEN_VECTOR:
-	gfc_error ("Bad array specification in ALLOCATE statement at %L",
-		   &e->where);
-	return FAILURE;
-      }
+	  /* Fall Through...  */
+
+	case DIMEN_UNKNOWN:
+	case DIMEN_VECTOR:
+	  gfc_error ("Bad array specification in ALLOCATE statement at %L",
+		     &e->where);
+	  return FAILURE;
+	}
+
+check_symbols:
+
+      for (a = code->ext.alloc_list; a; a = a->next)
+	{
+	  sym = a->expr->symtree->n.sym;
+	  if ((ar->start[i] != NULL && find_sym_in_expr (sym, ar->start[i]))
+		 || (ar->end[i] != NULL && find_sym_in_expr (sym, ar->end[i])))
+	    {
+	      gfc_error ("'%s' must not appear an the array specification at "
+			 "%L in the same ALLOCATE statement where it is "
+			 "itself allocated", sym->name, &ar->where);
+	      return FAILURE;
+	    }
+	}
+    }
 
   return SUCCESS;
 }
