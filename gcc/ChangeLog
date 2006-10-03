@@ -1,3 +1,9 @@
+2006-10-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* builtins.c (expand_builtin_return_addr): Deal with FRAME_ADDR_RTX.
+	* doc/tm.texi (Basic Stack Layout): Document FRAME_ADDR_RTX.
+	* config/sparc/sparc.h (FRAME_ADDR_RTX): Define.
+
 2006-10-02  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* unwind-dw2-fde-darwin.c (getsectdatafromheader_64): Fix first
