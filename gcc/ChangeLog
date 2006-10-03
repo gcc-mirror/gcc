@@ -217,6 +217,8 @@
 
 2006-09-06  Matthias Klose  <doko@debian.org>
 
+	PR bootstrap/26764
+	PR bootstrap/27334
 	* Makefile.in (s-macro_list): Conform to POSIX rules in single quoted
 	strings.
 
