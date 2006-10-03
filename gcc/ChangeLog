@@ -1,3 +1,7 @@
+2006-10-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* doc/install.texi: Fix typos.
+
 2006-10-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* builtins.c (expand_builtin_return_addr): Deal with FRAME_ADDR_RTX.
