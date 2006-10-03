@@ -45,12 +45,12 @@
  */
 
 #include <ext/typelist.h>
+#include <testsuite_allocator.h>
 #include <performance/io/xml_formatter.hpp>
 #include <io/verified_cmd_line_input.hpp>
 #include <rng/twister_rand_gen.hpp>
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/mem_usage/erase_test.hpp>
-#include <performance/mem/mem_track_allocator.hpp>
 #include <iostream>
 #include <vector>
 #include <functional>
@@ -85,7 +85,7 @@ main(int argc, char* a_p_argv[])
 
       vec_t::const_iterator b = a_v.begin();
       erase_test<vec_t::const_iterator> tst(b,  vn, vs, vm);
-      typedef mem_track_allocator<char> alloc_t;
+      typedef __gnu_test::tracker_allocator<char> alloc_t;
       {
 	typedef hash_common_types<int, pb_ds::null_mapped_type, int_hash, std::equal_to<int>, alloc_t>::performance_tl tl_t;
 

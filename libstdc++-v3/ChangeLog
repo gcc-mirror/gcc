@@ -1,5 +1,40 @@
 2006-10-03  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/util/testsuite_allocator.h (allocation_tracker): To
+	tracker_allocator_counter.
+	(allocation_tracker::allocationTotal): To get_allocation_count.
+	(allocation_tracker::deallocationTotal): To get_deallocation_count.
+	(allocation_tracker::constructCount): To get_construct_count.
+	(allocation_tracker::destructCount): To get_destruct_count.	
+	(allocation_tracker::resetCounts): To reset.
+	(tracker_alloc): To tracker_allocator.
+	* testsuite/util/performance/mem: Remove.
+	* testsuite/util/performance/mem/mem_track_allocator_base.hpp: Remove.
+	* testsuite/util/performance/mem/mem_track_allocator.hpp: Remove.
+	* testsuite/27_io/basic_stringbuf/4.cc: Adjust for new names
+	or includes.
+	* testsuite/ext/hash_set/check_construct_destroy.cc: Same.
+	* testsuite/ext/slist/check_construct_destroy.cc: Same.
+	* testsuite/performance/ext/pb_ds/
+	hash_random_int_erase_mem_usage.cc: Same.
+	* testsuite/performance/ext/pb_ds/multimap_text_insert_mem_usage.hpp
+	* testsuite/performance/ext/pb_ds/
+	priority_queue_text_pop_mem_usage.cc: Same.
+	* testsuite/23_containers/vector/capacity/2.cc: Same.
+	* testsuite/23_containers/vector/cons/4.cc: Same.
+	* testsuite/23_containers/vector/check_construct_destroy.cc: Same.
+	* testsuite/23_containers/deque/cons/2.cc: Same.
+	* testsuite/23_containers/deque/check_construct_destroy.cc: Same.
+	* testsuite/23_containers/list/check_construct_destroy.cc: Same.
+	* testsuite/23_containers/set/check_construct_destroy.cc: Same.
+	* testsuite/util/testsuite_allocator.h
+	* testsuite/util/performance/priority_queue/mem_usage/pop_test.hpp
+	* testsuite/util/performance/assoc/mem_usage/multimap_insert_test.hpp
+	* testsuite/util/performance/assoc/mem_usage/erase_test.hpp
+	* testsuite/util/testsuite_allocator.cc: Same.
+	
+2006-10-03  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/util/native_type/priority_queue/native_pq_tag.hpp: Remove.
 	* testsuite/util/statistic/sample_var.hpp: Rename to...
 	* testsuite/util/statistic/sample_variance.hpp: ... this.

@@ -44,16 +44,16 @@
  * Contains test for finding text.
  */
 
+#include <iostream>
+#include <vector>
 #include <ext/typelist.h>
+#include <testsuite_allocator.h>
 #include <performance/io/xml_formatter.hpp>
 #include <io/verified_cmd_line_input.hpp>
 #include <common_type/priority_queue/common_type.hpp>
 #include <performance/priority_queue/mem_usage/pop_test.hpp>
 #include <io/text_populate.hpp>
 #include <native_type/priority_queue/native_priority_queue.hpp>
-#include <performance/mem/mem_track_allocator.hpp>
-#include <iostream>
-#include <vector>
 
 void
 usage();
@@ -70,10 +70,11 @@ main(int argc, char* a_p_argv[])
   try
     {
       xml_test_performance_formatter fmt("Size", "Memory (bytes)");
+      typedef __gnu_test::tracker_allocator<char> callocator_type;
+      typedef __gnu_test::tracker_allocator<char> sallocator_type;
+      typedef std::basic_string<char, std::char_traits<char>, callocator_type> string_t;
 
-      typedef std::basic_string<char, std::char_traits<char>, mem_track_allocator<char> > string_t;
-
-      typedef std::vector<std::pair< string_t, char> > vec_t;
+      typedef std::vector<std::pair<string_t, char> > vec_t;
       vec_t a_v(vm);
       text_populate(f_name, a_v);
 
@@ -81,18 +82,18 @@ main(int argc, char* a_p_argv[])
       vec_t::const_iterator b = a_v.begin();
       test_t tst(b, vn, vs, vm);
       {
-	typedef pq_common_types<string_t, std::less<string_t>, mem_track_allocator<char> >::performance_tl pq_tl_t;
+	typedef pq_common_types<string_t, std::less<string_t>, callocator_type>::performance_tl pq_tl_t;
 	pq_tl_t tl;
 	__gnu_cxx::typelist::apply(tst, tl);
       }
 
       {
-	typedef native_priority_queue<string_t, true, std::less<string_t>, mem_track_allocator<string_t> > native_pq_t;
+	typedef native_priority_queue<string_t, true, std::less<string_t>, sallocator_type> native_pq_t;
 	tst(native_pq_t());
       }
 
       {
-	typedef native_priority_queue<string_t, false, std::less<string_t>, mem_track_allocator<string_t> > native_pq_t;
+	typedef native_priority_queue<string_t, false, std::less<string_t>, sallocator_type> native_pq_t;
 	tst(native_pq_t());
       }
     }

@@ -27,8 +27,8 @@
 #include <testsuite_hooks.h>
 
 using __gnu_test::copy_tracker;
-using __gnu_test::allocation_tracker;
-using __gnu_test::tracker_alloc;
+using __gnu_test::tracker_allocator_counter;
+using __gnu_test::tracker_allocator;
 using __gnu_test::copy_constructor;
 using __gnu_test::assignment_operator;
 using __gnu_test::destructor;
@@ -39,9 +39,9 @@ test_reserve()
 {
   bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
-  typedef std::vector<T, tracker_alloc<T> > X;
+  typedef std::vector<T, tracker_allocator<T> > X;
 
-  allocation_tracker::resetCounts();
+  tracker_allocator_counter::reset();
   {
     X a(3);
     const X::size_type old_size     = a.size();
@@ -59,7 +59,7 @@ test_reserve()
     VERIFY(destructor::count() <= old_size);
   }
   // check for memory leaks
-  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
+  VERIFY(tracker_allocator_counter::get_allocation_count() == tracker_allocator_counter::get_deallocation_count());
 }
 
 // Verifies that reserve() with reallocation offers the strong
@@ -69,9 +69,9 @@ test_reserve_exception_guarantee()
 {
   bool test __attribute__((unused)) = true;
   typedef copy_tracker T;
-  typedef std::vector<T, tracker_alloc<T> > X;
+  typedef std::vector<T, tracker_allocator<T> > X;
 
-  allocation_tracker::resetCounts();
+  tracker_allocator_counter::reset();
   {
     X a(7);
     const X::size_type old_size __attribute__((unused)) = a.size();
@@ -92,7 +92,7 @@ test_reserve_exception_guarantee()
     VERIFY(old_capacity == a.capacity());
     VERIFY(copy_constructor::count() == destructor::count()+1);
   }
-  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
+  VERIFY(tracker_allocator_counter::get_allocation_count() == tracker_allocator_counter::get_deallocation_count());
 }
 
 int main()

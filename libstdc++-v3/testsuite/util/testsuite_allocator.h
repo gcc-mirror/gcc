@@ -36,7 +36,6 @@
 #define _GLIBCXX_TESTSUITE_ALLOCATOR_H
 
 #include <cstddef>
-#include <limits>
 #include <tr1/unordered_map>
 #include <cassert>
 
@@ -48,7 +47,7 @@ namespace
 
 namespace __gnu_test
 {
-  class allocation_tracker
+  class tracker_allocator_counter
   {
   public:
     typedef std::size_t    size_type; 
@@ -56,7 +55,7 @@ namespace __gnu_test
     static void*
     allocate(size_type blocksize)
     {
-      allocationTotal_ += blocksize;
+      allocationCount_ += blocksize;
       return ::operator new(blocksize);
     }
     
@@ -70,43 +69,46 @@ namespace __gnu_test
     deallocate(void* p, size_type blocksize)
     {
       ::operator delete(p);
-      deallocationTotal_ += blocksize;
+      deallocationCount_ += blocksize;
     }
     
     static size_type
-    allocationTotal() { return allocationTotal_; }
+    get_allocation_count() { return allocationCount_; }
     
     static size_type
-    deallocationTotal() { return deallocationTotal_; }
+    get_deallocation_count() { return deallocationCount_; }
     
     static int
-    constructCount() { return constructCount_; }
+    get_construct_count() { return constructCount_; }
 
     static int
-    destructCount() { return destructCount_; }
+    get_destruct_count() { return destructCount_; }
     
     static void
-    resetCounts()
+    reset()
     {
-      allocationTotal_ = 0;
-      deallocationTotal_ = 0;
+      allocationCount_ = 0;
+      deallocationCount_ = 0;
       constructCount_ = 0;
-    destructCount_ = 0;
+      destructCount_ = 0;
     }
 
  private:
-    static size_type  allocationTotal_;
-    static size_type  deallocationTotal_;
+    static size_type  allocationCount_;
+    static size_type  deallocationCount_;
     static int        constructCount_;
     static int        destructCount_;
   };
 
   // A simple basic allocator that just forwards to the
-  // allocation_tracker to fulfill memory requests.  This class is
-  // templated on the target object type, but tracker isn't.
+  // tracker_allocator_counter to fulfill memory requests.  This class
+  // is templated on the target object type, but tracker isn't.
   template<class T>
-  class tracker_alloc
+  class tracker_allocator
   {
+  private:
+    typedef tracker_allocator_counter counter_type;
+
   public:
     typedef T              value_type;
     typedef T*             pointer;
@@ -116,7 +118,7 @@ namespace __gnu_test
     typedef std::size_t    size_type; 
     typedef std::ptrdiff_t difference_type; 
     
-    template<class U> struct rebind { typedef tracker_alloc<U> other; };
+    template<class U> struct rebind { typedef tracker_allocator<U> other; };
     
     pointer
     address(reference value) const
@@ -126,56 +128,56 @@ namespace __gnu_test
     address(const_reference value) const
     { return &value; }
     
-    tracker_alloc() throw()
+    tracker_allocator() throw()
     { }
 
-    tracker_alloc(const tracker_alloc&) throw()
+    tracker_allocator(const tracker_allocator&) throw()
     { }
 
     template<class U>
-      tracker_alloc(const tracker_alloc<U>&) throw()
+      tracker_allocator(const tracker_allocator<U>&) throw()
       { }
 
-    ~tracker_alloc() throw()
+    ~tracker_allocator() throw()
     { }
 
     size_type
     max_size() const throw()
-    { return std::numeric_limits<std::size_t>::max() / sizeof(T); }
+    { return size_type(-1) / sizeof(T); }
 
     pointer
     allocate(size_type n, const void* = 0)
-    { 
-      return static_cast<pointer>(allocation_tracker::allocate(n * sizeof(T)));
-    }
+    { return static_cast<pointer>(counter_type::allocate(n * sizeof(T))); }
 
     void
     construct(pointer p, const T& value)
     {
       new (p) T(value);
-      allocation_tracker::construct();
+      counter_type::construct();
     }
 
     void
     destroy(pointer p)
     {
       p->~T();
-      allocation_tracker::destroy();
+      counter_type::destroy();
     }
 
     void
     deallocate(pointer p, size_type num)
-    { allocation_tracker::deallocate(p, num * sizeof(T)); }
+    { counter_type::deallocate(p, num * sizeof(T)); }
   };
 
   template<class T1, class T2>
     bool
-    operator==(const tracker_alloc<T1>&, const tracker_alloc<T2>&) throw()
+    operator==(const tracker_allocator<T1>&, 
+	       const tracker_allocator<T2>&) throw()
     { return true; }
 
   template<class T1, class T2>
     bool
-    operator!=(const tracker_alloc<T1>&, const tracker_alloc<T2>&) throw()
+    operator!=(const tracker_allocator<T1>&, 
+	       const tracker_allocator<T2>&) throw()
     { return false; }
 
   bool
@@ -331,7 +333,7 @@ namespace __gnu_test
       
       size_type
       max_size() const throw() 
-      { return size_t(-1) / sizeof(Tp); }
+      { return size_type(-1) / sizeof(Tp); }
       
       void 
       construct(pointer p, const Tp& val) 
