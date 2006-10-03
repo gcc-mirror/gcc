@@ -1,9 +1,15 @@
+2006-10-03  Uros Bizjak <uros@kss-loka.si>
+
+	* inclhack.def (glibc_mutex_init): Also fix
+	PTHREAD_MUTEX_(RECURSIVE|ERRORCHECK|ADAPTIVE)_NP and
+	PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP initializers.
+
 2006-10-01  Uros Bizjak <uros@kss-loka.si>
 
-        * inclhack.def (glibc_mutex_init): New fix.
-        * tests/base/pthread.h: Update.
+	* inclhack.def (glibc_mutex_init): New fix.
+	* tests/base/pthread.h: Update.
 
-        * fixincl.x: Regenerate.
+	* fixincl.x: Regenerate.
 
 2006-09-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
