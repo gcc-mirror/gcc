@@ -52,17 +52,13 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       template<typename T>
-      struct regression_test_erase_if_fn : public std::unary_function<
-        T,
-        bool>
+      struct regression_test_erase_if_fn 
+      : public std::unary_function<T, bool>
       {
       private:
 	typedef const T&  const_reference;
@@ -77,35 +73,23 @@ namespace pb_ds
       };
 
       template<typename Hd, class Tl>
-      struct regression_test_erase_if_fn<
-        std::pair<
-	Hd,
-	Tl> > : public std::unary_function<
-        std::pair<
-	Hd,
-	Tl>,
-        bool>
+      struct regression_test_erase_if_fn<std::pair<Hd, Tl> > 
+      : public std::unary_function<std::pair<Hd, Tl>, bool>
       {
       private:
 	typedef const std::pair<Hd, Tl>&  const_reference;
-
-	typedef regression_test_erase_if_fn< Hd> hd_erase_if_fn;
-
-	typedef regression_test_erase_if_fn< Tl> tl_erase_if_fn;
+	typedef regression_test_erase_if_fn<Hd> hd_erase_if_fn;
+	typedef regression_test_erase_if_fn<Tl> tl_erase_if_fn;
 
       public:
 	bool
         operator()(const_reference r_t) const
 	{
-	  return (hd_erase_if_fn()(r_t.first)&& 
-		  tl_erase_if_fn()(r_t.second));
+	  return (hd_erase_if_fn()(r_t.first) && tl_erase_if_fn()(r_t.second));
 	}
       };
-
     } // namespace detail
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_REGRESSION_TEST_ERASE_IF_FN_HPP
+#endif 

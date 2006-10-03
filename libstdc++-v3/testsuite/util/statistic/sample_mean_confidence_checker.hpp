@@ -53,25 +53,24 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
       /*
        * Checks that a sample mean sm is in the relative interval
-       *     relative_interval of a true mean (assuming i.i.d. samples),
-       *     given a sample variance sv taken over num_samples samples,
-       *     with confidence ~ 0.95.
+       * relative_interval of a true mean (assuming i.i.d. samples),
+       * given a sample variance sv taken over num_samples samples,
+       * with confidence ~ 0.95.
        *
-       * See "Probability, Random Variables, and Stochastic Processes" (Third edition)
-       *     Athanasios Papoulis, Chapter 9.
+       * See "Probability, Random Variables, and Stochastic Processes"
+       * (Third edition) Athanasios Papoulis, Chapter 9.
        */
       template<typename Value_Type>
       bool
-      sample_mean_confidence_checker(Value_Type sm, Value_Type sv, std::size_t num_samples, double relative_interval)
+      sample_mean_confidence_checker(Value_Type sm, Value_Type sv, 
+				     std::size_t num_samples, 
+				     double relative_interval)
       {
 	enum
 	  {
@@ -85,14 +84,11 @@ namespace pb_ds
 	// This is z_u (normal-dist percentile) for u = 0.975.
 	const Value_Type z = 1.976;
 
-	return (sv / ::sqrt(double(num_samples)) <= relative_interval*  sm / z);
+	return (sv / ::sqrt(double(num_samples)) <= relative_interval * sm / z);
       }
-
     } // namespace detail
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_SAMPLE_MEAN_CONFIDENCE_CHECKER_HPP
+#endif 
 

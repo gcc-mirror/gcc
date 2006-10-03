@@ -52,82 +52,41 @@
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
-
-#define PB_DS_CLASS_T_DEC			\
-      template<typename Cntnr>
-
-#define PB_DS_CLASS_C_DEC				\
-      regression_test_traits<				\
-						Cntnr>
-
       template<typename Cntnr>
       struct regression_test_traits
       {
-
-      public:
-
 	typedef typename Cntnr::value_type value_type;
-
 	typedef typename Cntnr::const_reference const_reference;
-
-	typedef
-        pb_ds::test::native_priority_queue<
-	  std::string,
-	  true>
-        native_type;
-
+	typedef pb_ds::test::native_priority_queue<std::string, true> native_type;
 	typedef typename native_type::value_type native_value_type;
 
 	template<typename T>
-	struct erase_if_fn : public regression_test_erase_if_fn<
-	  T>
-	{
-
-	};
-
-      public:
+	struct erase_if_fn : public regression_test_erase_if_fn<T>
+	{ };
 
 	template<typename Gen>
 	static value_type
         generate_value(Gen& r_gen, size_t max)
-	{
-	  return basic_type(r_gen, max);
-	}
+	{ return basic_type(r_gen, max); }
 
 	static native_value_type
         native_value(const_reference r_val)
-	{
-	  return (native_value_type(r_val));
-	}
+	{ return native_value_type(r_val); }
 
 	static bool
         cmp(const_reference r_val, const native_value_type& r_native_val)
-	{
-	  return (val_to_string(r_val) == r_native_val);
-	}
+	{ return val_to_string(r_val) == r_native_val; }
 
 	static std::string
         val_to_string(const_reference r_val)
-	{
-	  return (std::string(r_val));
-	}
-
+	{ return std::string(r_val); }
       };
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
-
     } // namespace detail
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_REGRESSION_TEST_TRAIT_HPP
+#endif 

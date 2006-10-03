@@ -48,7 +48,7 @@
 #define PB_DS_TIMING_TEST_BASE_HPP
 
 #include <performance/time/elapsed_timer.hpp>
-#include <statistic/res_recorder.hpp>
+#include <statistic/result_recorder.hpp>
 
 namespace pb_ds
 {
@@ -81,12 +81,12 @@ namespace pb_ds
       timing_test_base::operator()(Functor& fn)
       {
 	const std::size_t resolution = get_min_resolution(fn);
-	pb_ds::test::detail::res_recorder<double> rec;
+	pb_ds::test::detail::result_recorder<double> rec;
 	double res;
 	do
 	  res = run_at_resolution(fn, resolution);
-	while (rec.add_res(res) == false);
-	res = rec.sample_mean() / resolution;
+	while (rec.add_result(res) == false);
+	res = rec.get_sample_mean() / resolution;
 	return res;
       }
 

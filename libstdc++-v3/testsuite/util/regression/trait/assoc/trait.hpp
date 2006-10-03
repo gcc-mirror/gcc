@@ -101,22 +101,15 @@ namespace detail
   {
   private:
     typedef PB_DS_NATIVE_TYPE_TRAITS_C_DEC native_type_traits_base;
-
     typedef PB_DS_TYPE_TRAITS_C_DEC type_traits_base;
 
   public:
     typedef typename Cntnr::key_type key_type;
-
     typedef typename Cntnr::const_key_reference const_key_reference;
-
     typedef typename Cntnr::value_type value_type;
-
     typedef typename Cntnr::const_reference const_reference;
-
     typedef typename PB_DS_NATIVE_TYPE_TRAITS_C_DEC::type native_type;
-
     typedef typename native_type::key_type native_key_type;
-
     typedef typename native_type::value_type native_value_type;
 
     enum
@@ -153,73 +146,49 @@ namespace detail
 
     static void
     print_container(const Cntnr& r_c, std::ostream& r_os)
-    {
-      PB_DS_TYPE_TRAITS_C_DEC::print_container(r_c, r_os);
-    }
-
-  public:
+    { PB_DS_TYPE_TRAITS_C_DEC::print_container(r_c, r_os); }
 
     template<typename Gen>
     static key_type
     generate_key(Gen& r_gen, size_t max)
-    {
-      return PB_DS_TYPE_TRAITS_C_DEC::generate_key(r_gen, max);
-    }
+    { return PB_DS_TYPE_TRAITS_C_DEC::generate_key(r_gen, max); }
 
     template<typename Gen>
     static value_type
     generate_value(Gen& r_gen, size_t max)
-    {
-      return PB_DS_TYPE_TRAITS_C_DEC::generate_value(r_gen, max);
-    }
+    { return PB_DS_TYPE_TRAITS_C_DEC::generate_value(r_gen, max); }
 
     static const_key_reference
     extract_key(const_reference r_val)
-    {
-      return type_traits_base::extract_key(r_val);
-    }
+    { return type_traits_base::extract_key(r_val); }
 
     static native_key_type
     native_key(const_key_reference r_key)
-    {
-      return native_type_traits_base::native_key(r_key);
-    }
+    { return native_type_traits_base::native_key(r_key); }
 
     static native_value_type
     native_value(const_reference r_val)
-    {
-      return native_type_traits_base::native_value(r_val);
-    }
+    { return native_type_traits_base::native_value(r_val); }
 
     static const native_key_type& 
     extract_native_key(const native_value_type& r_val)
-    {
-      return native_type_traits_base::extract_key(r_val);
-    }
+    { return native_type_traits_base::extract_key(r_val); }
 
     static bool
     cmp(const_reference r_val, const native_value_type& r_native_val)
-    {
-      return val_to_string(r_val) == native_val_to_string(r_native_val);
-    }
+    { return val_to_string(r_val) == native_val_to_string(r_native_val); }
 
     static std::string
     val_to_string(const_reference r_val)
-    {
-      return to_string(r_val);
-    }
+    { return to_string(r_val); }
 
     static std::string
     key_to_string(const_key_reference r_key)
-    {
-      return to_string(r_key);
-    }
+    { return to_string(r_key); }
 
     static std::string
     native_val_to_string(const native_value_type& r_native_val)
-    {
-      return to_string(r_native_val);
-    }
+    { return to_string(r_native_val); }
 
     static bool
     prefix_match(const_key_reference r_key, const std::string& r_native_key)
@@ -232,7 +201,6 @@ namespace detail
 
       return native_substr == (const std::string&) r_key;
     }
-
   };
 
 #undef PB_DS_TYPE_TRAITS_C_DEC

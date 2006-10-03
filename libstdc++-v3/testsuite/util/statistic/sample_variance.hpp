@@ -40,104 +40,52 @@
 // warranty.
 
 /**
- * @file res_recorder.hpp
- * Contains a class for recording results
+ * @file sample_variance.hpp
+ * Contains a function for calculating a sample variance
  */
 
-#ifndef PB_DS_RES_RECORDER_HPP
-#define PB_DS_RES_RECORDER_HPP
+#ifndef PB_DS_SAMPLE_VAR_HPP
+#define PB_DS_SAMPLE_VAR_HPP
 
-#include <statistic/sample_mean.hpp>
-#include <statistic/sample_var.hpp>
-#include <statistic/sample_mean_confidence_checker.hpp>
+#include <list>
+#include <numeric>
+#include <math.h>
+#include <iterator>
 
 namespace pb_ds
 {
-
   namespace test
   {
-
     namespace detail
     {
+#define PB_DS_VTYPE typename std::iterator_traits<It>::value_type
 
-#define PB_DS_CLASS_T_DEC			\
-      template<typename Value_Type>
-
-#define PB_DS_CLASS_C_DEC					\
-      res_recorder<						\
-						Value_Type>
-
-      /*
-       * Records results until the probability that the sample mean is 10% away
-       *     from the true mean is ~ 0.05.
-       */
-      template<typename Value_Type = double>
-      class res_recorder
+      template<typename It>
+      PB_DS_VTYPE
+      sample_variance(It b, It e, PB_DS_VTYPE sm)
       {
-      public:
-	typedef Value_Type value_type;
+	PB_DS_VTYPE ss = 0;
+	size_t num_res = 0;
 
-      public:
-	res_recorder();
+	while (b != e)
+	  {
+	    const PB_DS_VTYPE d =* b - sm;
+	    ss += d*  d;
+	    ++num_res;
+	    ++b;
+	  }
 
-	bool
-        add_res(value_type res);
+	if (num_res == 1)
+	  return 0;
 
-	inline value_type
-        sample_mean() const;
-
-      private:
-	typedef std::list< value_type> list_t;
-
-      private:
-	list_t m_l;
-
-	value_type m_sample_mean;
-
-	value_type m_sample_var;
-      };
-
-      PB_DS_CLASS_T_DEC
-      PB_DS_CLASS_C_DEC::
-      res_recorder() :
-        m_sample_mean(0)
-      { }
-
-      PB_DS_CLASS_T_DEC
-      inline typename PB_DS_CLASS_C_DEC::value_type
-      PB_DS_CLASS_C_DEC::
-      sample_mean() const
-      {
-	return (m_sample_mean);
+	return ::sqrt(ss / (num_res - 1));
       }
 
-      PB_DS_CLASS_T_DEC
-      bool
-      PB_DS_CLASS_C_DEC::
-      add_res(value_type res)
-      {
-	m_l.push_back(res);
-
-	m_sample_mean = pb_ds::test::detail::sample_mean(m_l.begin(), m_l.end());
-
-	const value_type sample_var =
-	  pb_ds::test::detail::sample_var(m_l.begin(), m_l.end(), m_sample_mean);
-
-	return (pb_ds::test::detail::sample_mean_confidence_checker(m_sample_mean,
-								    sample_var,
-								    std::distance(m_l.begin(), m_l.end()),
-								    0.1));
-      }
-
-#undef PB_DS_CLASS_T_DEC
-
-#undef PB_DS_CLASS_C_DEC
+#undef PB_DS_VTYPE
 
     } // namespace detail
-
   } // namespace test
-
 } // namespace pb_ds
 
-#endif // #ifndef PB_DS_RES_RECORDER_HPP
+#endif 
 
