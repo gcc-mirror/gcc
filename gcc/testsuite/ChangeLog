@@ -1,3 +1,9 @@
+2006-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/nearest_1.f90: Add -O0 because -ffloat-store is
+	insufficient to inhibit some test failures at -O3.  Do testing
+	on integers.
+
 2006-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29138
