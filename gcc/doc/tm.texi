@@ -2995,6 +2995,14 @@ machines.  One reason you may need to define this target hook is if
 @code{hard_frame_pointer_rtx} is the appropriate value on your machine.
 @end deftypefn
 
+@defmac FRAME_ADDR_RTX (@var{frameaddr})
+A C expression whose value is RTL representing the value of the frame
+address for the current frame.  @var{frameaddr} is the frame pointer
+of the current frame.  This is used for __builtin_frame_address.
+You need only define this macro if the frame address is not the same
+as the frame pointer.  Most machines do not need to define it.
+@end defmac
+
 @defmac RETURN_ADDR_RTX (@var{count}, @var{frameaddr})
 A C expression whose value is RTL representing the value of the return
 address for the frame @var{count} steps up from the current frame, after

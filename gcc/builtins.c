@@ -558,14 +558,14 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
 #endif
 
   /* Some machines need special handling before we can access
-     arbitrary frames.  For example, on the sparc, we must first flush
+     arbitrary frames.  For example, on the SPARC, we must first flush
      all register windows to the stack.  */
 #ifdef SETUP_FRAME_ADDRESSES
   if (count > 0)
     SETUP_FRAME_ADDRESSES ();
 #endif
 
-  /* On the sparc, the return address is not in the frame, it is in a
+  /* On the SPARC, the return address is not in the frame, it is in a
      register.  There is no way to access it off of the current frame
      pointer, but it can be accessed off the previous frame pointer by
      reading the value from the register window save area.  */
@@ -587,12 +587,16 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
       tem = copy_to_reg (tem);
     }
 
-  /* For __builtin_frame_address, return what we've got.  */
+  /* For __builtin_frame_address, return what we've got.  But, on
+     the SPARC for example, we may have to add a bias.  */
   if (fndecl_code == BUILT_IN_FRAME_ADDRESS)
+#ifdef FRAME_ADDR_RTX
+    return FRAME_ADDR_RTX (tem);
+#else
     return tem;
+#endif
 
-  /* For __builtin_return_address, Get the return address from that
-     frame.  */
+  /* For __builtin_return_address, get the return address from that frame.  */
 #ifdef RETURN_ADDR_RTX
   tem = RETURN_ADDR_RTX (count, tem);
 #else
