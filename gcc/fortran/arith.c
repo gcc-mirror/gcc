@@ -438,14 +438,16 @@ gfc_check_real_range (mpfr_t p, int kind)
       gfc_free (bin);
 #else
       mp_exp_t emin, emax;
+      int en;
 
       /* Save current values of emin and emax.  */
       emin = mpfr_get_emin ();
       emax = mpfr_get_emax ();
 
       /* Set emin and emax for the current model number.  */
-      mpfr_set_emin ((mp_exp_t) gfc_real_kinds[i].min_exponent - 1);
-      mpfr_set_emax ((mp_exp_t) gfc_real_kinds[i].max_exponent - 1);
+      en = gfc_real_kinds[i].min_exponent - gfc_real_kinds[i].digits + 1;
+      mpfr_set_emin ((mp_exp_t) en);
+      mpfr_set_emax ((mp_exp_t) gfc_real_kinds[i].max_exponent);
       mpfr_subnormalize (q, 0, GFC_RND_MODE);
 
       /* Reset emin and emax.  */

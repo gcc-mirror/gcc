@@ -1,3 +1,8 @@
+2006-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* arith.c (gfc_check_real_range):  Use correct exponent range for
+	subnormal numbers.
+
 2006-10-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29284
