@@ -1,3 +1,20 @@
+2006-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+    PR fortran/19262
+    * gfortran.h (gfc_option_t): Add max_continue_fixed and max_continue_free.
+    * options.c (gfc_init_options): Initialize fixed form and free form
+    consecutive continuation line limits.
+    * scanner.c (gfc_scanner_init_1): Initialize continue_line
+    and continue_count. (gfc_next_char_literal): Count the number of
+    continuation lines in the current statement and warn if
+    limit is exceeded.
+
+2006-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+    PR fortran/19260
+    * scanner.c (gfc_next_char_literal): Add check for missing '&'
+    and warn if in_string, otherwise return ' '.
+
 2006-10-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/29210
