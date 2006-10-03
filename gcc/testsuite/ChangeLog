@@ -1,3 +1,9 @@
+2006-10-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29138
+	* g++.dg/inherit/access8.C: New test.
+	* g++.dg/template/dtor4.C: Tweak error messages.
+
 2006-10-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/27478
