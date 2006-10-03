@@ -1866,6 +1866,7 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
       TREE_PUBLIC (decl) = 0;
       TREE_USED (decl) = 1;
       GFC_DECL_RESULT (decl) = 1;
+      TREE_ADDRESSABLE (decl) = 1;
 
       layout_decl (decl, 0);
 

@@ -1,3 +1,8 @@
+2006-10-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/27478
+	* gfortran.dg/entry_8.f90: New test.
+
 2006-10-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/29291
