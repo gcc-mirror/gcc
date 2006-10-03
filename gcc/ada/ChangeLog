@@ -1,3 +1,7 @@
+2006-10-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* decl.c, utils.c: Fix comment typos.
+
 2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <E_Procedure>: Do not set "const" flag
