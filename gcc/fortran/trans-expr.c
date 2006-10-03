@@ -2006,38 +2006,49 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	    } 
 	}
 
-      /* If an optional argument is itself an optional dummy argument,
-	 check its presence and substitute a null if absent.  */
-      if (e && e->expr_type == EXPR_VARIABLE
-	    && e->symtree->n.sym->attr.optional
-	    && fsym && fsym->attr.optional)
-	gfc_conv_missing_dummy (&parmse, e, fsym->ts);
+      if (fsym)
+	{
+	  if (e)
+	    {
+	      /* If an optional argument is itself an optional dummy
+		 argument, check its presence and substitute a null
+		 if absent.  */
+	      if (e->expr_type == EXPR_VARIABLE
+		    && e->symtree->n.sym->attr.optional
+		    && fsym->attr.optional)
+		gfc_conv_missing_dummy (&parmse, e, fsym->ts);
 
-      if (fsym && need_interface_mapping)
-	gfc_add_interface_mapping (&mapping, fsym, &parmse);
+	      /* If an INTENT(OUT) dummy of derived type has a default
+		 initializer, it must be (re)initialized here.  */
+	      if (fsym->attr.intent == INTENT_OUT
+		    && fsym->ts.type == BT_DERIVED
+		    && fsym->value)
+		{
+		  gcc_assert (!fsym->attr.allocatable);
+		  tmp = gfc_trans_assignment (e, fsym->value);
+		  gfc_add_expr_to_block (&se->pre, tmp);
+		}
+
+	      /* Obtain the character length of an assumed character
+		 length procedure from the typespec.  */
+	      if (fsym->ts.type == BT_CHARACTER
+		    && parmse.string_length == NULL_TREE
+		    && e->ts.type == BT_PROCEDURE
+		    && e->symtree->n.sym->ts.type == BT_CHARACTER
+		    && e->symtree->n.sym->ts.cl->length != NULL)
+		{
+		  gfc_conv_const_charlen (e->symtree->n.sym->ts.cl);
+		  parmse.string_length
+			= e->symtree->n.sym->ts.cl->backend_decl;
+		}
+	    }
+
+	  if (need_interface_mapping)
+	    gfc_add_interface_mapping (&mapping, fsym, &parmse);
+	}
 
       gfc_add_block_to_block (&se->pre, &parmse.pre);
       gfc_add_block_to_block (&post, &parmse.post);
-
-      /* If an INTENT(OUT) dummy of derived type has a default
-	 initializer, it must be (re)initialized here.  */
-      if (fsym && fsym->attr.intent == INTENT_OUT && fsym->ts.type == BT_DERIVED
-          && fsym->value)
-	{
-	  gcc_assert (!fsym->attr.allocatable);
-	  tmp = gfc_trans_assignment (e, fsym->value);
-	  gfc_add_expr_to_block (&se->pre, tmp);
-	}
-
-      if (fsym && fsym->ts.type == BT_CHARACTER
-	     && parmse.string_length == NULL_TREE
-	     && e->ts.type == BT_PROCEDURE
-	     && e->symtree->n.sym->ts.type == BT_CHARACTER
-	     && e->symtree->n.sym->ts.cl->length != NULL)
-	{
-	  gfc_conv_const_charlen (e->symtree->n.sym->ts.cl);
-	  parmse.string_length = e->symtree->n.sym->ts.cl->backend_decl;
-	}
 
       /* Character strings are passed as two parameters, a length and a
          pointer.  */
