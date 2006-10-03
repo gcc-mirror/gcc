@@ -8215,11 +8215,22 @@ static GTY(()) tree objc_parmlist = NULL_TREE;
 static void
 objc_push_parm (tree parm)
 {
+  bool relayout_needed = false;
   /* Decay arrays and functions into pointers.  */
   if (TREE_CODE (TREE_TYPE (parm)) == ARRAY_TYPE)
-    TREE_TYPE (parm) = build_pointer_type (TREE_TYPE (TREE_TYPE (parm)));
+    {
+      TREE_TYPE (parm) = build_pointer_type (TREE_TYPE (TREE_TYPE (parm)));
+      relayout_needed = true;
+    }
   else if (TREE_CODE (TREE_TYPE (parm)) == FUNCTION_TYPE)
-    TREE_TYPE (parm) = build_pointer_type (TREE_TYPE (parm));
+    {
+      TREE_TYPE (parm) = build_pointer_type (TREE_TYPE (parm));
+      relayout_needed = true;
+    }
+
+  if (relayout_needed)
+    relayout_decl (parm);
+  
 
   DECL_ARG_TYPE (parm)
     = lang_hooks.types.type_promotes_to (TREE_TYPE (parm));
