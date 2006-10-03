@@ -1,5 +1,11 @@
 2006-10-03  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/20779
+	PR fortran/20891
+	* gfortran.dg/alloc_alloc_expr_1.f90: New test.
+
+2006-10-03  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/29284
 	* gfortran.dg/optional_assumed_charlen_1.f90: New test.
 

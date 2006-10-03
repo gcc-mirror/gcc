@@ -1,3 +1,14 @@
+2006-10-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20779
+	PR fortran/20891
+	* resolve.c (find_sym_in_expr): New function that returns true
+	if a symbol is found in an expression.
+	(resolve_allocate_expr): Check whether the STAT variable is
+	itself allocated in the same statement.  Use the call above to
+	check whether any of the allocated arrays are used in array
+	specifications in the same statement.
+
 2006-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* arith.c (gfc_check_real_range):  Use correct exponent range for
