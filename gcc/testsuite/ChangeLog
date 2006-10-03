@@ -1,3 +1,16 @@
+2006-10-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29284
+	* gfortran.dg/optional_assumed_charlen_1.f90: New test.
+
+	PR fortran/29321
+	PR fortran/29322
+	* gfortran.dg/missing_optional_dummy_2.f90: New test.
+
+	PR fortran/25091
+	PR fortran/25092
+	* gfortran.dg/entry_array_specs_1.f90: New test.
+
 2006-10-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/nearest_1.f90: Add -O0 because -ffloat-store is
