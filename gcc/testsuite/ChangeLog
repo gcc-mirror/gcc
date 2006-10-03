@@ -1,4 +1,4 @@
-2006-09-26  Andrew Pinski  <pinskia@physics.uc.edu>
+2006-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/29195
 	* objc/compile/method-1.m: New test.
