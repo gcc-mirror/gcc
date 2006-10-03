@@ -44,7 +44,10 @@
  * Contains test for inserting text words.
  */
 
+#include <iostream>
+#include <vector>
 #include <ext/typelist.h>
+#include <testsuite_allocator.h>
 #include <io/text_populate.hpp>
 #include <performance/io/xml_formatter.hpp>
 #include <native_type/assoc/native_hash_multimap.hpp>
@@ -54,10 +57,7 @@
 #include <common_type/assoc/common_type.hpp>
 #include <performance/assoc/mem_usage/multimap_insert_test.hpp>
 #include <performance/assoc/multimap_common_type.hpp>
-#include <performance/mem/mem_track_allocator.hpp>
 #include <hash_fn/string_hash_fn.hpp>
-#include <iostream>
-#include <vector>
 
 void
 usage();
@@ -86,7 +86,7 @@ main(int argc, char* a_p_argv[])
       init_vec_t a_v_init(prm);
       distinct_text_populate(f_name, a_v_init);
 
-      typedef mem_track_allocator<char> alloc_t;
+      typedef __gnu_test::tracker_allocator<char> alloc_t;
       typedef std::basic_string<char, std::char_traits<char>, alloc_t> string_t;
       typedef std::vector<std::pair<string_t, int> > vec_t;
       vec_t a_v;

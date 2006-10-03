@@ -33,28 +33,33 @@
 
 namespace __gnu_test
 {
-  allocation_tracker::size_type allocation_tracker::allocationTotal_   = 0;
-  allocation_tracker::size_type allocation_tracker::deallocationTotal_ = 0;
-  int allocation_tracker::constructCount_    = 0;
-  int allocation_tracker::destructCount_     = 0;
+  typedef tracker_allocator_counter counter_type;
+  
+  counter_type::size_type 
+  counter_type::allocationCount_ = 0;
+  
+  counter_type::size_type 
+  counter_type::deallocationCount_ = 0;
+
+  int counter_type::constructCount_ = 0;
+  int counter_type::destructCount_ = 0;
 
   bool
   check_construct_destroy(const char* tag, int expected_c, int expected_d)
   {
-    if (allocation_tracker::constructCount() == expected_c &&
-	allocation_tracker::destructCount() == expected_d)
-      return true;
-
-    else {
-      std::cerr << tag << ": "
-		<< " construct = " << allocation_tracker::constructCount()
-		<< " (should be " << expected_c << "),"
-		<< " destroy = " << allocation_tracker::destructCount()
-		<< " (should be " << expected_d << ")"
-		<< std::endl;
-      return false;
-    }
+    bool ret = true;
+    if (counter_type::get_construct_count() != expected_c 
+	|| counter_type::get_destruct_count() != expected_d)
+      {
+	std::cerr << tag << ": "
+		  << " construct = " << counter_type::get_construct_count()
+		  << " (should be " << expected_c << "),"
+		  << " destroy = " << counter_type::get_destruct_count()
+		  << " (should be " << expected_d << ")"
+		  << std::endl;
+	ret = false;
+      }
+    return ret;
   }
-
 }; // namespace __cxx_test
 

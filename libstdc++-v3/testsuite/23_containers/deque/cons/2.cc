@@ -27,8 +27,8 @@
 #include <testsuite_hooks.h>
 
 using __gnu_test::copy_tracker;
-using __gnu_test::allocation_tracker;
-using __gnu_test::tracker_alloc;
+using __gnu_test::tracker_allocator_counter;
+using __gnu_test::tracker_allocator;
 using __gnu_test::copy_constructor;
 using __gnu_test::assignment_operator;
 using __gnu_test::counter;
@@ -445,11 +445,11 @@ test_default_ctor_exception_safety()
 {
   // setup
   typedef copy_tracker T;
-  typedef std::deque<T, tracker_alloc<T> > X;
+  typedef std::deque<T, tracker_allocator<T> > X;
 
   T::reset();
   copy_constructor::throw_on(3);
-  allocation_tracker::resetCounts();
+  tracker_allocator_counter::reset();
 
   // test
   try
@@ -462,7 +462,7 @@ test_default_ctor_exception_safety()
   }
 
   // assert postconditions
-  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
+  VERIFY(tracker_allocator_counter::get_allocation_count() == tracker_allocator_counter::get_deallocation_count());
 
   // teardown
 }
@@ -473,9 +473,9 @@ test_copy_ctor_exception_safety()
 {
   // setup
   typedef copy_tracker T;
-  typedef std::deque<T, tracker_alloc<T> > X;
+  typedef std::deque<T, tracker_allocator<T> > X;
 
-  allocation_tracker::resetCounts();
+  tracker_allocator_counter::reset();
   {
     X a(7);
     T::reset();
@@ -494,7 +494,7 @@ test_copy_ctor_exception_safety()
   }
 
   // assert postconditions
-  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
+  VERIFY(tracker_allocator_counter::get_allocation_count() == tracker_allocator_counter::get_deallocation_count());
 
   // teardown
 }

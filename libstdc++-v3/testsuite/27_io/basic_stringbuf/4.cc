@@ -31,7 +31,7 @@
 namespace std
 {
   using __gnu_test::pod_char;
-  typedef __gnu_test::tracker_alloc<char> alloc_type;
+  typedef __gnu_test::tracker_allocator<char> alloc_type;
   template class basic_stringbuf<char, char_traits<char>, alloc_type>;
 } // test
 

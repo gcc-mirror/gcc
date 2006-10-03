@@ -47,11 +47,11 @@
 #ifndef PB_DS_POP_TEST_HPP
 #define PB_DS_POP_TEST_HPP
 
+#include <iterator>
+#include <testsuite_allocator.h>
 #include <ext/pb_ds/detail/type_utils.hpp>
-#include <performance/mem/mem_track_allocator.hpp>
 #include <performance/io/xml_formatter.hpp>
 #include <common_type/priority_queue/string_form.hpp>
-#include <iterator>
 
 namespace pb_ds
 {
@@ -95,9 +95,9 @@ namespace pb_ds
 	  It ins_it_e = m_ins_b;
 	  std::advance(ins_it_e, ins_size);
 
-	  mem_track_allocator<char> alloc;
+	  __gnu_test::tracker_allocator<char> alloc;
 
-	  const size_t init_mem = alloc.get_total();
+	  const size_t init_mem = alloc.get_allocation_count() - alloc.get_deallocation_count();
 	  Cntnr cntnr;
 	  for (It ins_it =    ins_it_b; ins_it != ins_it_e; ++ins_it)
             cntnr.push(ins_it->first);
@@ -105,7 +105,7 @@ namespace pb_ds
 	  while (cntnr.size() > 1)
             cntnr.pop();
 
-	  const size_t final_mem = alloc.get_total();
+	  const size_t final_mem = alloc.get_allocation_count() - alloc.get_deallocation_count();
 	  assert(final_mem > init_mem);
 	  const size_t delta_mem = final_mem - init_mem;
 	  res_set_fmt.add_res(ins_size, static_cast<double>(delta_mem));

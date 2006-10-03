@@ -47,11 +47,11 @@
 #ifndef PB_DS_MULTIMAP_INSERT_TEST_HPP
 #define PB_DS_MULTIMAP_INSERT_TEST_HPP
 
+#include <iterator>
 #include <ext/pb_ds/detail/type_utils.hpp>
-#include <performance/mem/mem_track_allocator.hpp>
+#include <testsuite_allocator.h>
 #include <performance/io/xml_formatter.hpp>
 #include <common_type/assoc/string_form.hpp>
-#include <iterator>
 
 namespace pb_ds
 {
@@ -116,12 +116,12 @@ namespace pb_ds
     multimap_insert_test<It, Native>::
     insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::true_type)
     {
-      mem_track_allocator<char> alloc;
-      const size_t init_mem = alloc.get_total();
+      __gnu_test::tracker_allocator<char> alloc;
+      const size_t init_mem = alloc.get_allocation_count() - alloc.get_deallocation_count();
       Cntnr cntnr;
       for (It ins_it = ins_it_b; ins_it != ins_it_e; ++ins_it)
         cntnr.insert((typename Cntnr::const_reference)(*ins_it));
-      const size_t final_mem = alloc.get_total();
+      const size_t final_mem = alloc.get_allocation_count() - alloc.get_deallocation_count();
       assert(final_mem > init_mem);
       return (final_mem - init_mem);
     }
@@ -132,12 +132,12 @@ namespace pb_ds
     multimap_insert_test<It, Native>::
     insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::false_type)
     {
-      mem_track_allocator<char> alloc;
-      const size_t init_mem = alloc.get_total();
+      __gnu_test::tracker_allocator<char> alloc;
+      const size_t init_mem = alloc.get_allocation_count() - alloc.get_deallocation_count();
       Cntnr cntnr;
       for (It ins_it = ins_it_b; ins_it != ins_it_e; ++ins_it)
         cntnr[ins_it->first].insert(ins_it->second);
-      const size_t final_mem = alloc.get_total();
+      const size_t final_mem = alloc.get_allocation_count() - alloc.get_deallocation_count();
       assert(final_mem > init_mem);
       return (final_mem - init_mem);
     }
