@@ -2440,7 +2440,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       To break the circle we first build a dummy COMPONENT_REF which
 	       represents the "get to the parent" operation and initialize
 	       each of those discriminants to a COMPONENT_REF of the above
-	       dummy parent referencing the corresponding discrimant of the
+	       dummy parent referencing the corresponding discriminant of the
 	       base type of the parent subtype.  */
 	    gnu_get_parent = build3 (COMPONENT_REF, void_type_node,
 				     build0 (PLACEHOLDER_EXPR, gnu_type),
