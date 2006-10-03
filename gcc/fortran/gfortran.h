@@ -1613,6 +1613,8 @@ typedef struct
      emits a fatal error.  */
   int fixed_line_length; /* maximum line length in fixed-form.  */
   int free_line_length; /* maximum line length in free-form.  */
+  int max_continue_fixed;
+  int max_continue_free;
   int max_identifier_length;
   int verbose;
 

@@ -61,6 +61,7 @@ static gfc_directorylist *include_dirs;
 static gfc_file *file_head, *current_file;
 
 static int continue_flag, end_flag, openmp_flag;
+static int continue_count, continue_line;
 static locus openmp_locus;
 
 gfc_source_form gfc_current_form;
@@ -71,6 +72,7 @@ const char *gfc_source_file;
 static FILE *gfc_src_file;
 static char *gfc_src_preprocessor_lines[2];
 
+extern int pedantic;
 
 /* Main scanner initialization.  */
 
@@ -80,6 +82,9 @@ gfc_scanner_init_1 (void)
   file_head = NULL;
   line_head = NULL;
   line_tail = NULL;
+
+  continue_count = 0;
+  continue_line = 0;
 
   end_flag = 0;
 }
@@ -585,7 +590,10 @@ gfc_next_char_literal (int in_string)
 restart:
   c = next_char ();
   if (gfc_at_end ())
-    return c;
+    {
+      continue_count = 0;
+      return c;
+    }
 
   if (gfc_current_form == FORM_FREE)
     {
@@ -644,8 +652,22 @@ restart:
       else
 	gfc_advance_line ();
 
-      /* We've got a continuation line and need to find where it continues.
-	 First eat any comment lines.  */
+      /* We've got a continuation line.  If we are on the very next line after
+	 the last continuation, increment the continuation line count and
+	 check whether the limit has been exceeded.  */
+      if (gfc_current_locus.lb->linenum == continue_line + 1)
+	{
+	  if (++continue_count == gfc_option.max_continue_free)
+	    {
+	      if (gfc_notification_std (GFC_STD_GNU)
+		  || pedantic)
+		gfc_warning ("Limit of %d continuations exceeded in statement at %C",
+			      gfc_option.max_continue_free);
+	    }
+	}
+      continue_line = gfc_current_locus.lb->linenum;
+
+      /* Now find where it continues. First eat any comment lines.  */
       gfc_skip_comments ();
 
       if (prev_openmp_flag != openmp_flag)
@@ -681,10 +703,18 @@ restart:
 
       if (c != '&')
 	{
-	  if (in_string && gfc_option.warn_ampersand)
-	    gfc_warning ("Missing '&' in continued character constant at %C");
-
-	  gfc_current_locus.nextc--;
+	  if (in_string)
+	    {
+	      if (gfc_option.warn_ampersand)
+		gfc_warning_now ("Missing '&' in continued character constant at %C");
+	      gfc_current_locus.nextc--;
+	    }
+	  else
+	    {
+	      c = ' ';
+	      gfc_current_locus = old_loc;
+	      goto done;
+	    }
 	}
     }
   else
@@ -738,6 +768,23 @@ restart:
       c = next_char ();
       if (c == '0' || c == ' ' || c == '\n')
 	goto not_continuation;
+
+      /* We've got a continuation line.  If we are on the very next line after
+	 the last continuation, increment the continuation line count and
+	 check whether the limit has been exceeded.  */
+      if (gfc_current_locus.lb->linenum == continue_line + 1)
+	{
+	  if (++continue_count == gfc_option.max_continue_fixed)
+	    {
+	      if (gfc_notification_std (GFC_STD_GNU)
+		  || pedantic)
+		gfc_warning ("Limit of %d continuations exceeded in statement at %C",
+			      gfc_option.max_continue_fixed);
+	    }
+	}
+
+      if (continue_line < gfc_current_locus.lb->linenum)
+	continue_line = gfc_current_locus.lb->linenum;
     }
 
   /* Ready to read first character of continuation line, which might
@@ -749,6 +796,8 @@ not_continuation:
   gfc_current_locus = old_loc;
 
 done:
+  if (c == '\n')
+    continue_count = 0;
   continue_flag = 0;
   return c;
 }
