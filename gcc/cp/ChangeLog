@@ -1,3 +1,8 @@
+2006-10-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/29291
+	* init.c (build_new): Check for invalid init.
+
 2006-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29226
