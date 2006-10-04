@@ -1,4 +1,10 @@
 2006-10-04  Benjamin Kosnik  <bkoz@redhat.com>
+	    Mike Stump  <mrs@apple.com>
+	
+	* testsuite/27_io/ios_base/storage/2.cc: Fail on Darwin 8.[0-4].* only.
+	* testsuite/23_containers/vector/resize/1.cc: Same.
+
+2006-10-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/performance/priority_queue/mem_usage/
 	pop_test.hpp: Correct typo.
