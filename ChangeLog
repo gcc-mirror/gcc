@@ -1,3 +1,7 @@
+2006-10-04  Brooks Moses  <bmoses@stanford.edu>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2006-09-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* configure.in: Check for GMP 4.1 or newer.  Check for MPFR 2.2.0 
