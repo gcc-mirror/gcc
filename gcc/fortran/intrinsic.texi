@@ -1,7 +1,7 @@
 @ignore
 Copyright (C) 2005, 2006
 Free Software Foundation, Inc.
-This is part of the GFORTRAN manual.   
+This is part of the GNU Fortran manual.   
 For copying conditions, see the file gfortran.texi.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -247,7 +247,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 @node Introduction
 @section Introduction to intrinsic procedures
 
-Gfortran provides a rich set of intrinsic procedures that includes all
+GNU Fortran provides a rich set of intrinsic procedures that includes all
 the intrinsic procedures required by the Fortran 95 standard, a set of
 intrinsic procedures for backwards compatibility with Gnu Fortran 77
 (i.e., @command{g77}), and a small selection of intrinsic procedures
@@ -256,7 +256,7 @@ description in either the Fortran 95 standard or the Fortran 2003 standard,
 is unintentional and the standard(s) should be considered authoritative.
 
 The enumeration of the @code{KIND} type parameter is processor defined in
-the Fortran 95 standard.  Gfortran defines the default integer type and
+the Fortran 95 standard.  GNU Fortran defines the default integer type and
 default real type by @code{INTEGER(KIND=4)} and @code{REAL(KIND=4)},
 respectively.  The standard mandates that both data types shall have
 another kind, which have more precision.  On typical target architectures
@@ -272,7 +272,7 @@ Many of the intrinsics procedures take one or more optional arguments.
 This document follows the convention used in the Fortran 95 standard,
 and denotes such arguments by square brackets.
 
-@command{Gfortran} offers the @option{-std=f95} and @option{-std=gnu} options,
+GNU Fortran offers the @option{-std=f95} and @option{-std=gnu} options,
 which can be used to restrict the set of intrinsic procedures to a 
 given standard.  By default, @command{gfortran} sets the @option{-std=gnu}
 option, and so all intrinsic procedures described here are accepted.  There
@@ -386,7 +386,7 @@ end program test_abs
 @findex @code{ACCESS} 
 @cindex file system functions
 
-Not yet implemented in gfortran.
+Not yet implemented in GNU Fortran.
 
 @table @asis
 @item @emph{Description}:
@@ -1867,7 +1867,7 @@ END PROGRAM
 @findex @code{CHMOD} 
 @cindex file system functions
 
-Not yet implemented in gfortran.
+Not yet implemented in GNU Fortran.
 
 @table @asis
 @item @emph{Description}:
@@ -3343,7 +3343,7 @@ formatted output. Stream I/O should not be mixed with normal record-oriented
 (formatted or unformatted) I/O on the same unit; the results are unpredictable.
 
 This intrinsic routine is provided for backwards compatibility with 
-GNU Fortran 77.  @command{Gfortran} provides the Fortran 2003 Stream facility.
+@command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
@@ -3398,7 +3398,7 @@ Stream I/O should not be mixed with normal record-oriented (formatted or
 unformatted) I/O on the same unit; the results are unpredictable.
 
 This intrinsic routine is provided for backwards compatibility with 
-GNU Fortran 77.  @command{Gfortran} provides the Fortran 2003 Stream facility.
+@command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
@@ -3571,7 +3571,7 @@ formatted output. Stream I/O should not be mixed with normal record-oriented
 (formatted or unformatted) I/O on the same unit; the results are unpredictable.
 
 This intrinsic routine is provided for backwards compatibility with 
-GNU Fortran 77.  @command{Gfortran} provides the Fortran 2003 Stream facility.
+@command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
@@ -3621,7 +3621,7 @@ output. Stream I/O should not be mixed with normal record-oriented
 (formatted or unformatted) I/O on the same unit; the results are unpredictable.
 
 This intrinsic routine is provided for backwards compatibility with 
-GNU Fortran 77.  @command{Gfortran} provides the Fortran 2003 Stream facility.
+@command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
@@ -3713,7 +3713,7 @@ end program test_fraction
 @item @emph{Description}:
 Frees memory previously allocated by @code{MALLOC()}. The @code{FREE}
 intrinsic is an extension intended to be used with Cray pointers, and is
-provided in @command{gfortran} to allow user to compile legacy code. For
+provided in GNU Fortran to allow user to compile legacy code. For
 new code using Fortran 95 pointers, the memory de-allocation intrinsic is
 @code{DEALLOCATE}.
 
@@ -3773,7 +3773,7 @@ GNU extension
 @findex @code{FSEEK} 
 @cindex file system functions
 
-Not yet implemented in gfortran.
+Not yet implemented in GNU Fortran.
 
 @table @asis
 @item @emph{Description}:
@@ -4111,7 +4111,7 @@ See @code{GETPID} for an example.
 @findex @code{GMTIME} 
 @cindex time function
 
-Not yet implemented in gfortran.
+Not yet implemented in GNU Fortran.
 
 @table @asis
 @item @emph{Description}:
@@ -5280,7 +5280,7 @@ Elemental function
 @findex @code{LSHIFT} 
 @cindex bit manipulation
 
-Not yet implemented in gfortran.
+Not yet implemented in GNU Fortran.
 
 @table @asis
 @item @emph{Description}:
@@ -5308,7 +5308,7 @@ Function
 @findex @code{LTIME} 
 @cindex time function
 
-Not yet implemented in gfortran.
+Not yet implemented in GNU Fortran.
 
 @table @asis
 @item @emph{Description}:
@@ -5341,7 +5341,7 @@ Subroutine
 @code{MALLOC(SIZE)} allocates @var{SIZE} bytes of dynamic memory and
 returns the address of the allocated memory. The @code{MALLOC} intrinsic
 is an extension intended to be used with Cray pointers, and is provided
-in @command{gfortran} to allow user to compile legacy code. For new code
+in GNU Fortran to allow the user to compile legacy code. For new code
 using Fortran 95 pointers, the memory allocation intrinsic is
 @code{ALLOCATE}.
 
@@ -6549,7 +6549,7 @@ The value returned is equal to
 @findex @code{RSHIFT} 
 @cindex bit manipulation
 
-Not yet implemented in gfortran.
+Not yet implemented in GNU Fortran.
 
 @table @asis
 @item @emph{Description}:
@@ -7273,7 +7273,7 @@ See @code{RAND} and @code{IRAND} for examples.
 The Fortran 2003 standard specifies the intrinsic @code{RANDOM_SEED} to
 initialize the pseudo-random numbers generator and @code{RANDOM_NUMBER}
 to generate pseudo-random numbers. Please note that in
-@command{gfortran}, these two sets of intrinsics (@code{RAND},
+GNU Fortran, these two sets of intrinsics (@code{RAND},
 @code{IRAND} and @code{SRAND} on the one hand, @code{RANDOM_NUMBER} and
 @code{RANDOM_SEED} on the other hand) access two independent
 pseudo-random number generators.

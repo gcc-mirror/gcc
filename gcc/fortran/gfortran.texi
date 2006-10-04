@@ -5,7 +5,7 @@
 
 @include gcc-common.texi
 
-@settitle The GNU Fortran 95 Compiler
+@settitle The GNU Fortran Compiler
 
 @c Create a separate index for command line options
 @defcodeindex op
@@ -63,10 +63,10 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @ifinfo
 @dircategory Software development
 @direntry
-* gfortran: (gfortran).                  The GNU Fortran 95 Compiler.
+* gfortran: (gfortran).                  The GNU Fortran Compiler.
 @end direntry
 This file documents the use and the internals of
-the GNU Fortran 95 compiler, (@command{gfortran}).
+the GNU Fortran compiler, (@command{gfortran}).
 
 Published by the Free Software Foundation
 51 Franklin Street, Fifth Floor
@@ -78,7 +78,7 @@ Boston, MA 02110-1301 USA
 
 @setchapternewpage odd
 @titlepage
-@title Using GNU Fortran 95
+@title Using GNU Fortran
 @sp 2
 @center The gfortran team
 @page
@@ -103,13 +103,13 @@ Boston, MA 02110-1301, USA@*
 @cindex Introduction
 
 This manual documents the use of @command{gfortran}, 
-the GNU Fortran 95 compiler. You can find in this manual how to invoke
+the GNU Fortran compiler. You can find in this manual how to invoke
 @command{gfortran}, as well as its features and incompatibilities.
 
 @ifset DEVELOPMENT
 @emph{Warning:} This document, and the compiler it describes, are still
 under development.  While efforts are made to keep it up-to-date, it might
-not accurately reflect the status of the most recent @command{gfortran}.
+not accurately reflect the status of the most recent GNU Fortran compiler.
 @end ifset
 
 @comment
@@ -118,16 +118,16 @@ not accurately reflect the status of the most recent @command{gfortran}.
 @comment  better formatting.
 @comment
 @menu
-* Getting Started::      What you should know about @command{gfortran}.
-* GFORTRAN and GCC::     You can compile Fortran, C, or other programs.
-* GFORTRAN and G77::     Why we chose to start from scratch.
-* Invoking GFORTRAN::    Command options supported by @command{gfortran}.
-* Project Status::       Status of @command{gfortran}, roadmap, proposed extensions.
+* Getting Started::      What you should know about GNU Fortran.
+* GNU Fortran and GCC::  You can compile Fortran, C, or other programs.
+* GNU Fortran and G77::  Why we chose to start from scratch.
+* Invoking GNU Fortran:: Command options supported by @command{gfortran}.
+* Project Status::       Status of GNU Fortran, roadmap, proposed extensions.
 * Contributing::         How you can help.
-* Standards::	         Standards supported by @command{gfortran}
+* Standards::	         Standards supported by GNU Fortran.
 * Runtime::              Influencing runtime behavior with environment variables.
-* Extensions::           Language extensions implemented by @command{gfortran}
-* Intrinsic Procedures:: Intrinsic procedures supported by @command{gfortran}
+* Extensions::           Language extensions implemented by GNU Fortran.
+* Intrinsic Procedures:: Intrinsic procedures supported by GNU Fortran.
 * Copying::              GNU General Public License says
                          how you can copy and share GNU Fortran.
 * GNU Free Documentation License::
@@ -145,16 +145,16 @@ not accurately reflect the status of the most recent @command{gfortran}.
 @node Getting Started
 @chapter Getting Started
 
-Gfortran is the GNU Fortran 95 compiler front end,
+The GNU Fortran compiler front end was
 designed initially as a free replacement for,
 or alternative to, the unix @command{f95} command;
 @command{gfortran} is the command you'll use to invoke the compiler.
 
-Gfortran is still in an early state of development.
-@command{gfortran} can generate code for most constructs and expressions,
+The GNU Fortran compiler is still in an early state of development.
+It can generate code for most constructs and expressions,
 but much work remains to be done.
 
-When @command{gfortran} is finished,
+When the GNU Fortran compiler is finished,
 it will do everything you expect from any decent compiler: 
 
 @itemize @bullet
@@ -210,7 +210,7 @@ This machine code is organized into @dfn{modules} and is located
 and @dfn{linked} to the user program. 
 @end itemize
 
-Gfortran consists of several components:
+The GNU Fortran compiler consists of several components:
 
 @itemize @bullet
 @item
@@ -228,7 +228,7 @@ The @command{gfortran} command itself,
 which also might be installed as the
 system's @command{f95} command.
 @command{gfortran} is just another driver program,
-but specifically for the Fortran 95 compiler only.
+but specifically for the Fortran compiler only.
 The difference with @command{gcc} is that @command{gfortran}
 will automatically link the correct libraries to your program.
 
@@ -245,7 +245,7 @@ and routines for interaction with files and the operating system.
 
 @item
 The Fortran compiler itself, (@command{f951}).
-This is the gfortran parser and code generator,
+This is the GNU Fortran parser and code generator,
 linked to and interfaced with the GCC backend library.
 @command{f951} ``translates'' the source code to
 assembler code.  You would typically not use this
@@ -257,11 +257,11 @@ programs will call it for you.
 
 
 @c ---------------------------------------------------------------------
-@c GFORTRAN and GCC
+@c GNU Fortran and GCC
 @c ---------------------------------------------------------------------
 
-@node GFORTRAN and GCC
-@chapter GFORTRAN and GCC
+@node GNU Fortran and GCC
+@chapter GNU Fortran and GCC
 @cindex GNU Compiler Collection
 
 GCC used to be the GNU ``C'' Compiler,
@@ -294,27 +294,27 @@ handed off too the back end which assembles the program unit.
 
 Different phases in this translation process can be,
 and in fact @emph{are} merged in many compiler front ends.
-GNU Fortran 95 has a strict separation between the
+GNU Fortran has a strict separation between the
 parser and code generator.
 
-The goal of the gfortran project is to build a new front end for GCC.
+The goal of the GNU Fortran project is to build a new front end for GCC.
 Specifically, a Fortran 95 front end.
-In a non-gfortran installation,
-@command{gcc} will not be able to compile Fortran 95 source code
+In a non-@command{gfortran} installation,
+@command{gcc} will not be able to compile Fortran source code
 (only the ``C'' front end has to be compiled if you want to build GCC,
 all other languages are optional).
-If you build GCC with gfortran, @command{gcc} will recognize
-@file{.f/.f90/.f95} source files and accepts Fortran 95 specific
+If you build GCC with @command{gfortran}, @command{gcc} will recognize
+@file{.f/.f90/.f95} source files and accepts Fortran specific
 command line options.
 
 
 
 @c ---------------------------------------------------------------------
-@c GFORTRAN and G77
+@c GNU Fortran and G77
 @c ---------------------------------------------------------------------
 
-@node GFORTRAN and G77
-@chapter GFORTRAN and G77
+@node GNU Fortran and G77
+@chapter GNU Fortran and G77
 @cindex Fortran 77
 @cindex G77
 
@@ -359,10 +359,10 @@ and then build a Fortran 95 compiler out of it.
 @chapter Project Status
 
 @quotation
-As soon as gfortran can parse all of the statements correctly,
+As soon as @command{gfortran} can parse all of the statements correctly,
 it will be in the ``larva'' state.
 When we generate code, the ``puppa'' state.
-When gfortran is done,
+When @command{gfortran} is done,
 we'll see if it will be a beautiful butterfly,
 or just a big bug....
 
@@ -374,7 +374,8 @@ the GCC homepage in March 18, 2000
 (even though Andy had already been working on it for a while,
 of course).
 
-Gfortran is currently reaching the stage where is is able to compile real
+The GNU Fortran compiler is currently reaching the stage where is is able to
+compile real
 world programs.  However it is still under development and has many rough
 edges.
 
@@ -389,19 +390,19 @@ edges.
 
 @table @emph
 @item Front end
-This is the part of gfortran which parses a source file, verifies that it
-is valid Fortran 95, performs compile time replacement of constants
+This is the part of the GNU Fortran compiler which parses a source file, verifies that it
+is valid Fortran, performs compile time replacement of constants
 (PARAMETER variables) and reads and generate module files. This is
 almost complete. Every Fortran 95 source should be accepted, and most
 none-Fortran 95 source should be rejected. If you find a source file where
 this is not true, please tell us. You can use the -fsyntax-only switch to
-make gfortran quit after running the front end, effectively reducing it to
+make @command{gfortran} quit after running the front end, effectively reducing it to
 a syntax checker.
 
 @item Middle end interface
-These are the parts of gfortran that take the parse tree generated by the
+These are the parts of GNU Fortran that take the parse tree generated by the
 front end and translate it to the GENERIC form required by the GCC back
-end. Work is ongoing in these parts of gfortran, but a large part has
+end. Work is ongoing in these parts of GNU Fortran, but a large part has
 already been completed.
 @end table
 
@@ -429,7 +430,7 @@ Array intrinsics mostly work.
 @node Proposed Extensions
 @section Proposed Extensions
 
-Here's a list of proposed extensions for @command{gfortran}, in no particular
+Here's a list of proposed extensions for the GNU Fortran compiler, in no particular
 order.  Most of these are necessary to be fully compatible with
 existing Fortran compilers, but they are not part of the official
 J3 Fortran 95 standard.
@@ -601,7 +602,7 @@ error is used. If the first letter is @samp{n}, @samp{N} or
 
 This environment variable controls where scratch files are
 created.  If this environment variable is missing,
-gfortran searches for the environment variable @env{TMP}.  If
+GNU Fortran searches for the environment variable @env{TMP}.  If
 this is also missing, the default is @file{/tmp}.
 
 @node GFORTRAN_UNBUFFERED_ALL
@@ -648,7 +649,7 @@ be sure to quote spaces, as in
 @smallexample
 $ GFORTRAN_LIST_SEPARATOR='  ,  ' ./a.out
 @end smallexample
-when @code{a.out} is the gfortran program that you want to run.
+when @code{a.out} is the compiled Fortran program that you want to run.
 Default is a single space.
 
 @node GFORTRAN_CONVERT_UNIT
@@ -726,11 +727,11 @@ setting a default data representation for the whole program.  The
 @chapter Extensions
 @cindex Extension
 
-@command{gfortran} implements a number of extensions over standard
+GNU Fortran implements a number of extensions over standard
 Fortran. This chapter contains information on their syntax and
-meaning.  There are currently two categories of @command{gfortran}
+meaning.  There are currently two categories of GNU Fortran
 extensions, those that provide functionality beyond that provided
-by any standard, and those that are supported by @command{gfortran}
+by any standard, and those that are supported by GNU Fortran
 purely for backward compatibility with legacy compilers.  By default,
 @option{-std=gnu} allows the compiler to accept both types of
 extensions, but to warn about the use of the latter.  Specifying
@@ -759,7 +760,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 @section Old-style kind specifications
 @cindex Kind specifications
 
-@command{gfortran} allows old-style kind specifications in
+GNU Fortran allows old-style kind specifications in
 declarations. These look like:
 @smallexample
       TYPESPEC*k x,y,z
@@ -776,7 +777,7 @@ other words, it is equivalent to the standard conforming declaration
 @section Old-style variable initialization
 @cindex Initialization
 
-@command{gfortran} allows old-style initialization of variables of the
+GNU Fortran allows old-style initialization of variables of the
 form:
 @smallexample
       INTEGER*4 i/1/,j/2/
@@ -808,7 +809,7 @@ automatically acquire the @code{SAVE} attribute.
 @section Extensions to namelist
 @cindex Namelist
 
-@command{gfortran} fully supports the Fortran 95 standard for namelist I/O
+GNU Fortran fully supports the Fortran 95 standard for namelist I/O
 including array qualifiers, substrings and fully qualified derived types.
 The output from a namelist write is compatible with namelist read.  The
 output has all names in upper case and indentation to column 1 after the
@@ -874,7 +875,7 @@ given the value 0.00 and succeeding elements will be 1.00 and 2.00.
 @section X format descriptor
 @cindex X format descriptor
 
-To support legacy codes, @command{gfortran} permits the count field
+To support legacy codes, GNU Fortran permits the count field
 of the X edit descriptor in FORMAT statements to be omitted.  When
 omitted, the count is implicitly assumed to be one.
 
@@ -887,7 +888,7 @@ omitted, the count is implicitly assumed to be one.
 @section Commas in FORMAT specifications
 @cindex Commas in FORMAT specifications
 
-To support legacy codes, @command{gfortran} allows the comma separator
+To support legacy codes, GNU Fortran allows the comma separator
 to be omitted immediately before and after character string edit
 descriptors in FORMAT statements.
 
@@ -901,7 +902,7 @@ descriptors in FORMAT statements.
 @section Missing period in FORMAT specifications
 @cindex Missing period in FORMAT specifications
 
-To support legacy codes, @command{gfortran} allows missing periods in format
+To support legacy codes, GNU Fortran allows missing periods in format
 specifications if and only if -std=legacy is given on the command line.  This
 is considered non-conforming code and is discouraged.
 
@@ -915,7 +916,7 @@ is considered non-conforming code and is discouraged.
 @section I/O item lists
 @cindex I/O item lists
 
-To support legacy codes, @command{gfortran} allows the input item list
+To support legacy codes, GNU Fortran allows the input item list
 of the READ statement, and the output item lists of the WRITE and PRINT
 statements to start with a comma.
 
@@ -923,14 +924,14 @@ statements to start with a comma.
 @section Hexadecimal constants
 @cindex Hexadecimal constants
 
-As a GNU extension, @command{gfortran} allows hexadecimal constants to
+As an extension, GNU Fortran allows hexadecimal constants to
 be specified using the X prefix, in addition to the standard Z prefix.
 BOZ literal constants can also be specified by adding a suffix to the string.
 For example, @code{Z'ABC'} and @code{'ABC'Z} are the same constant.
 
 The Fortran standard restricts the appearance of a BOZ literal constant to
 the @code{DATA} statement, and it is expected to be assigned to an 
-@code{INTEGER} variable.  @command{gfortran} permits a BOZ to appear
+@code{INTEGER} variable.  GNU Fortran permits a BOZ literal to appear
 in any initialization expression as well as assignment statements.
 
 Attempts to use a BOZ literal constant to do a bitwise initialization of a
@@ -951,14 +952,14 @@ a workaround for legacy code that initializes integers in this manner.
 @section Real array indices
 @cindex Real array indices
 
-As a GNU extension, @command{gfortran} allows arrays to be indexed using
+As an extension, GNU Fortran allows arrays to be indexed using
 real types, whose values are implicitly converted to integers.
 
 @node Unary operators
 @section Unary operators
 @cindex Unary operators
 
-As a GNU extension, @command{gfortran} allows unary plus and unary
+As an extension, GNU Fortran allows unary plus and unary
 minus operators to appear as the second operand of binary arithmetic
 operators without the need for parenthesis.
 
@@ -970,8 +971,8 @@ operators without the need for parenthesis.
 @section Implicitly interconvert LOGICAL and INTEGER
 @cindex Implicitly interconvert LOGICAL and INTEGER
 
-As a GNU extension for backwards compatibility with other compilers,
-@command{gfortran} allows the implicit conversion of LOGICALs to INTEGERs
+As an extension for backwards compatibility with other compilers,
+GNU Fortran allows the implicit conversion of LOGICALs to INTEGERs
 and vice versa.  When converting from a LOGICAL to an INTEGER, the numeric
 value of @code{.FALSE.} is zero, and that of @code{.TRUE.} is one.  When
 converting from INTEGER to LOGICAL, the value zero is interpreted as
@@ -991,7 +992,7 @@ or @samp{h}, and there must be an literal, unsigned, nonzero default integer
 constant indicating the number of characters in the string. Hollerith constants
 are stored as byte strings, one character per byte.
 
-@command{gfortran} supports Hollerith constants. They can be used as the right
+GNU Fortran supports Hollerith constants. They can be used as the right
 hands in the @code{DATA} statement and @code{ASSIGN} statement, also as the
 arguments. The left hands can be of Integer, Real, Complex and Logical type.
 The constant will be padded or truncated to fit the size of left hand.
@@ -1105,7 +1106,7 @@ and also in any routine where a pointee is used, but any variable with
 which it shares storage is not used.  Code that violates these rules
 may not run as the user intends.  This is not a bug in the optimizer;
 any code that violates the aliasing rules is illegal.  (Note that this
-is not unique to gfortran; any Fortran compiler that supports Cray
+is not unique to GNU Fortran; any Fortran compiler that supports Cray
 pointers will ``incorrectly'' optimize code with illegal aliasing.)
 
 There are a number of restrictions on the attributes that can be
@@ -1142,7 +1143,7 @@ will not change the base address of the array that was passed.
 @section CONVERT specifier
 @cindex CONVERT specifier
 
-gfortran allows the conversion of unformatted data between little-
+GNU Fortran allows the conversion of unformatted data between little-
 and big-endian representation to facilitate moving of data
 between different systems.  The conversion can be indicated with
 the @code{CONVERT} specifier on the @code{OPEN} statement.
@@ -1173,8 +1174,8 @@ The value of the conversion can be queried by using
 @code{INTEGER} values of all supported kinds and for @code{REAL}
 on IEEE systems of kinds 4 and 8.  Conversion between different
 ``extended double'' types on different architectures such as
-m68k and x86_64, which gfortran
-supports as @code{REAL(KIND=10)} will probably not work.
+m68k and x86_64, which GNU Fortran
+supports as @code{REAL(KIND=10)}, will probably not work.
 
 @emph{Note that the values specified via the GFORTRAN_CONVERT_UNIT
 environment variable will override the CONVERT specifier in the
@@ -1190,8 +1191,8 @@ portable.
 @section OpenMP
 @cindex OpenMP
 
-gfortran attempts to be OpenMP Application Program Interface v2.5
-compatible when invoked with the @code{-fopenmp} option.  gfortran
+GNU Fortran attempts to be OpenMP Application Program Interface v2.5
+compatible when invoked with the @code{-fopenmp} option.  GNU Fortran
 then generates parallelized code according to the OpenMP directives
 used in the source.  The OpenMP Fortran runtime library
 routines are provided both in a form of Fortran 90 module named
@@ -1219,12 +1220,12 @@ to create it.
 We're always in need of more people helping out with ideas
 and comments, writing documentation and contributing code.
 
-If you want to contribute to GNU Fortran 95,
+If you want to contribute to GNU Fortran,
 have a look at the long lists of projects you can take on.
 Some of these projects are small,
 some of them are large;
 some are completely orthogonal to the rest of what is
-happening on @command{gfortran},
+happening on GNU Fortran,
 but others are ``mainstream'' projects in need of enthusiastic hackers.
 All of these projects are important!
 We'll eventually get around to the things here,
@@ -1237,7 +1238,7 @@ but they are also things doable by someone who is willing and able.
 
 
 @node Contributors
-@section Contributors to GNU Fortran 95
+@section Contributors to GNU Fortran
 @cindex Contributors
 @cindex Credits
 @cindex Authors
@@ -1247,7 +1248,7 @@ also the initiator of the whole project.  Thanks Andy!
 Most of the interface with GCC was written by @emph{Paul Brook}.
 
 The following individuals have contributed code and/or
-ideas and significant help to the gfortran project
+ideas and significant help to the GNU Fortran project
 (in no particular order):
 
 @itemize @minus
@@ -1282,7 +1283,7 @@ ideas and significant help to the gfortran project
 The following people have contributed bug reports,
 smaller or larger patches,
 and much needed feedback and encouragement for the
-@command{gfortran} project: 
+GNU Fortran project: 
 
 @itemize @minus
 @item Erik Schnetter
@@ -1291,7 +1292,7 @@ and much needed feedback and encouragement for the
 @end itemize
 
 Many other individuals have helped debug,
-test and improve @command{gfortran} over the past few years,
+test and improve the GNU Fortran compiler over the past few years,
 and we welcome you to do the same!
 If you already have done so,
 and you would like to see your name listed in the
@@ -1335,7 +1336,7 @@ please contact a project maintainer.
 @chapter Standards
 @cindex Standards
 
-The GNU Fortran 95 Compiler aims to be a conforming implementation of
+The GNU Fortran compiler aims to be a conforming implementation of
 ISO/IEC 1539:1997 (Fortran 95).
 
 In the future it may also support other variants of and extensions to
@@ -1349,7 +1350,7 @@ ISO Fortran 2003 and OpenMP.
 @node Fortran 2003 status
 @section Fortran 2003 status
 
-Although @command{gfortran} focuses on implementing the Fortran 95
+Although GNU Fortran focuses on implementing the Fortran 95
 standard for the time being, a few Fortran 2003 features are currently
 available.
 
