@@ -1,5 +1,11 @@
 2006-10-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/29020
+	* friend.c (do_friend): Improve comments; add assertion.
+	* parser.c (cp_parser_nested_name_specifier_opt): Resolve
+	typenames for qualified names used in declarations, even when
+	caching qualified name lookup.
+
 	PR c++/29138
 	* decl2.c (grokfield): Don't handle access declarations here.
 	* parser.c (cp_parser_using_declaration): Handle access

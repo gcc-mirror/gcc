@@ -3632,10 +3632,17 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	{
 	  /* Grab the nested-name-specifier and continue the loop.  */
 	  cp_parser_pre_parsed_nested_name_specifier (parser);
+	  /* If we originally encountered this nested-name-specifier
+	     with IS_DECLARATION set to false, we will not have
+	     resolved TYPENAME_TYPEs, so we must do so here.  */
 	  if (is_declaration
 	      && TREE_CODE (parser->scope) == TYPENAME_TYPE)
-	    parser->scope = resolve_typename_type (parser->scope,
-						   /*only_current_p=*/false);
+	    {
+	      new_scope = resolve_typename_type (parser->scope,
+						 /*only_current_p=*/false);
+	      if (new_scope != error_mark_node)
+		parser->scope = new_scope;
+	    }
 	  success = true;
 	  continue;
 	}
