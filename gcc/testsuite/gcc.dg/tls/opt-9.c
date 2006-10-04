@@ -1,7 +1,6 @@
 /* PR 21412 */
 /* { dg-do compile */
 /* { dg-options "-O2 -fPIC" } */
-/* { dg-require-effective-target tls } */
 
 struct S { int x[10]; };
 extern __thread struct S s;

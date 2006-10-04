@@ -1,3 +1,10 @@
+2006-10-04  Richard Henderson  <rth@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (grokvardecl): Don't error if !have_tls.
+	(grokdeclarator): Likewise.
+	* parser.c (cp_parser_omp_threadprivate): Likewise.
+
 2006-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29020

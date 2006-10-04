@@ -1,3 +1,14 @@
+2006-10-04  Richard Henderson  <rth@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* f95-lang.c (gfc_init_builtin_functions): Add __emutls_get_address
+	and __emutls_register_common.
+	* openmp.c (gfc_match_omp_threadprivate): Don't error if !have_tls.
+	* trans-common.c (build_common_decl): Don't check have_tls.
+	* trans-decl.c (gfc_finish_var_decl): Likewise.
+	* types.def (BT_WORD, BT_FN_PTR_PTR): New.
+	(BT_FN_VOID_PTR_WORD_WORD_PTR): New.
+
 2006-10-04  Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29343
@@ -117,7 +128,7 @@
 	l for long double functions.
 	* simplify.c: Wrap Copyright to new line.
 	(gfc_simplify_atan2): Use mpfr_atan2 in preference to arctangent2().
-        (gfc_simplify_log): Ditto.
+	(gfc_simplify_log): Ditto.
 
 
 	PR fortran/28276
@@ -1530,7 +1541,7 @@
 	* expr.c (gfc_check_assign): Allow cray pointee to be assumes-size.
 	
 2006-03-30  Paul Thomas <paulthomas2@wanadoo.fr>
-            Bud Davis  <bdavis9659@sbcglobal.net>
+	    Bud Davis  <bdavis9659@sbcglobal.net>
 
 	PR 21130
 	* module.c (load_needed): Traverse entire tree before returning.
@@ -1749,7 +1760,7 @@
 	* trans-intrinsic.c (gfc_conv_intrinsic_size): Set it for SIZE.
 
 2006-03-06  Paul Thomas  <pault@gcc.gnu.org>
-            Erik Edelmann  <eedelman@gcc.gnu.org>
+	    Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	* trans-array.c (gfc_trans_dealloc_allocated): New function.
 	(gfc_trans_deferred_array): Use it, instead of inline code.

@@ -1422,9 +1422,9 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) specs \
 	LIBGCOV='$(LIBGCOV)' \
 	LIB2ADD='$(LIB2ADD)' \
 	LIB2ADD_ST='$(LIB2ADD_ST)' \
-	LIB2ADDEH='$(LIB2ADDEH)' \
-	LIB2ADDEHSTATIC='$(LIB2ADDEHSTATIC)' \
-	LIB2ADDEHSHARED='$(LIB2ADDEHSHARED)' \
+	LIB2ADDEH='$(LIB2ADDEH) $(srcdir)/emutls.c' \
+	LIB2ADDEHSTATIC='$(LIB2ADDEHSTATIC) $(srcdir)/emutls.c' \
+	LIB2ADDEHSHARED='$(LIB2ADDEHSHARED) $(srcdir)/emutls.c' \
 	LIB2ADDEHDEP='$(LIB2ADDEHDEP)' \
 	LIB2_SIDITI_CONV_FUNCS='$(LIB2_SIDITI_CONV_FUNCS)' \
 	LIBUNWIND='$(LIBUNWIND)' \
@@ -1469,8 +1469,8 @@ LIBGCC_DEPS = $(GCC_PASSES) stmp-int-hdrs $(STMP_FIXPROTO) \
 	$(MACHMODE_H) longlong.h gbl-ctors.h config.status $(srcdir)/libgcc2.h \
 	tsystem.h $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
 	config/dfp-bit.h config/dfp-bit.c \
-	$(LIB2ADD_ST) $(LIB2ADDEH) $(LIB2ADDEHDEP) $(EXTRA_PARTS) \
-	$(srcdir)/config/$(LIB1ASMSRC) \
+	$(LIB2ADD_ST) $(LIB2ADDEH) $(srcdir)/emutls.c $(LIB2ADDEHDEP) \
+	$(EXTRA_PARTS) $(srcdir)/config/$(LIB1ASMSRC) \
 	$(srcdir)/gcov-io.h $(srcdir)/gcov-io.c gcov-iov.h $(SFP_MACHINE)
 
 libgcov.a: libgcc.a; @true

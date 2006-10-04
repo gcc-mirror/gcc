@@ -939,7 +939,7 @@ bool
 decide_is_variable_needed (struct cgraph_varpool_node *node, tree decl)
 {
   /* If the user told us it is used, then it must be so.  */
-  if (node->externally_visible)
+  if (node->externally_visible || node->force_output)
     return true;
   if (!flag_unit_at_a_time
       && lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
@@ -962,6 +962,17 @@ decide_is_variable_needed (struct cgraph_varpool_node *node, tree decl)
   if (TREE_PUBLIC (decl) && !flag_whole_program && !DECL_COMDAT (decl)
       && !DECL_EXTERNAL (decl))
     return true;
+
+  /* When emulating tls, we actually see references to the control
+     variable, rather than the user-level variable.  */
+  if (!targetm.have_tls
+      && TREE_CODE (decl) == VAR_DECL
+      && DECL_THREAD_LOCAL_P (decl))
+    {
+      tree control = emutls_decl (decl);
+      if (decide_is_variable_needed (cgraph_varpool_node (control), control))
+	return true;
+    }
 
   /* When not reordering top level variables, we have to assume that
      we are going to keep everything.  */
