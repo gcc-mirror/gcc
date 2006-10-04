@@ -110,7 +110,7 @@ compatible with any other profiling or test coverage mechanism.
 @c man end
 
 @node Invoking Gcov
-@section Invoking gcov
+@section Invoking @command{gcov}
 
 @smallexample
 gcov @r{[}@var{options}@r{]} @var{sourcefile}
