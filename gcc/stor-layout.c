@@ -484,7 +484,8 @@ relayout_decl (tree decl)
 {
   DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = 0;
   DECL_MODE (decl) = VOIDmode;
-  DECL_ALIGN (decl) = 0;
+  if (!DECL_USER_ALIGN (decl))
+    DECL_ALIGN (decl) = 0;
   SET_DECL_RTL (decl, 0);
 
   layout_decl (decl, 0);

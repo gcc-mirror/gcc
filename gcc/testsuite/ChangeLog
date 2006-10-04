@@ -6,6 +6,11 @@
 
 2006-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR middle-end/28862
+	* gcc.c-torture/compile/vector-align-1.c: New test.
+
+2006-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR objc/29195
 	* objc/compile/method-1.m: New test.
 
