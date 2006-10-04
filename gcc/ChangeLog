@@ -1,3 +1,9 @@
+2006-10-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/i386/darwin-libgcc.10.5.ver: Update to symbol list for
+	current Leopard versions.
+	* config/rs6000/darwin-libgcc.10.5.ver: Likewise.
+
 2006-10-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/install.texi: Fix typos.

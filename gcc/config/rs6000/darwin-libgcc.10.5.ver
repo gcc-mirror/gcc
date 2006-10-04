@@ -7,6 +7,7 @@ __Unwind_GetCFA
 __Unwind_GetDataRelBase
 __Unwind_GetGR
 __Unwind_GetIP
+__Unwind_GetIPInfo
 __Unwind_GetLanguageSpecificData
 __Unwind_GetRegionStart
 __Unwind_GetTextRelBase
@@ -47,6 +48,9 @@ ___fixunstfdi
 ___floatdidf
 ___floatdisf
 ___floatditf
+___floatundidf
+___floatundisf
+___floatunditf
 ___gcc_personality_v0
 ___gcc_qadd
 ___gcc_qdiv
