@@ -1,3 +1,10 @@
+2006-10-04  Brooks Moses  <bmoses@stanford.edu>
+
+	* gfortran.texi: Consistently refer to the compiler as "GNU
+	Fortran".
+	* intrinsic.texi: Ditto.
+	* invoke.texi: Ditto.
+
 2006-10-04  Richard Henderson  <rth@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
