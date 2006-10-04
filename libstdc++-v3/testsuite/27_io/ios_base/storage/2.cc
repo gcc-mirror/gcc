@@ -25,9 +25,10 @@
 // XXX -lmalloc seems to work.
 // See http://gcc.gnu.org/ml/gcc/2002-05/msg01012.html
 // { dg-options "-lmalloc" { target mips*-*-irix6* } }
-// This fails on Darwin 8 because malloc doesn't return NULL even
-// if an allocation fails (filed as Radar 3884894).
-// { dg-do run { xfail *-*-darwin8* } }
+
+// This fails on some versions of Darwin 8 because malloc doesn't return
+// NULL even if an allocation fails (filed as Radar 3884894).
+// { dg-do run { xfail *-*-darwin8.[0-4].* } }
 
 #include <sstream>
 #include <iostream>
