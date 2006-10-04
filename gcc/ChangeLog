@@ -1,3 +1,15 @@
+2006-10-04  Zack Weinberg  <zackw@panix.com>
+
+	Fix bug in constraint-check generator, reported by Rask Ingemann
+	Lambertsen:
+	* genpreds.c (add_constraint): Don't remove anything from the
+	expression here.
+	(write_tm_constrs_h): Detect whether "op" argument is used, and
+	mark it ARG_UNUSED if it isn't.
+	(write_insn_const_int_ok_for_constraint): Skip the part of the
+	expression that would test whether "op" (which is not available
+	here) is a CONST_INT.
+
 2006-10-04  Ryan Mansfield  <rmansfield@qnx.com>
 
 	PR c++/28448
@@ -42,7 +54,7 @@
 2006-10-01  Ryan Mansfield  <rmansfield@qnx.com>
 
 	PR c/20533
-	* doc/extend.texi: Add used variable attribute description. 
+	* doc/extend.texi: Add used variable attribute description.
 
 2006-09-30  Joseph S. Myers  <joseph@codesourcery.com>
 
@@ -4040,7 +4052,7 @@
 	range of a REG_DEAD register.
 
 2006-18-05  Joerg Wunsch <j.gnu@uriah.heep.sax.de>
-            Anatoly Sokolov <aesok@post.ru>
+	    Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_types): Add support for attiny261,
 	attiny461, attiny861, attiny25, attiny45, attiny85, attiny24,
@@ -4157,7 +4169,7 @@
 	* config/pa/pa-linux.h (STRING_ASM_OP): Prepend and append a tab.
 
 2006-05-19  Daniel Berlin  <dberlin@dberlin.org>
-            Kenneth Zadeck <zadeck@naturalbridge.com>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR rtl-optimization/26855
 
@@ -6555,7 +6567,7 @@
 2006-04-04  Matthias Klose  <doko@debian.org>
 
 	* Makefile.in (unprotoize.o): Same dependencies as for protoize.o.
-	
+
 	PR bootstrap/26764
 	PR bootstrap/27334
 	* Makefile.in (s-macro_list): Conform to POSIX rules in single quoted
