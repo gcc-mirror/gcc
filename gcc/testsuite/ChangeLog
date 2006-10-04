@@ -1,3 +1,8 @@
+2006-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29098
+	* gfortran.dg/default_initialization_2.f90: New test.
+
 2006-10-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20779
