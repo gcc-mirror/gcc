@@ -1,3 +1,7 @@
+2006-10-04  Brooks Moses  <bmoses@stanford.edu>
+
+	* doc/gcov.texi: Add formatting to "Invoking gcov" section head.
+
 2006-10-04  Richard Henderson  <rth@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
