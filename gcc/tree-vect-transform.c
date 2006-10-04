@@ -1968,12 +1968,12 @@ vectorizable_condition (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   then_clause = TREE_OPERAND (op, 1);
   else_clause = TREE_OPERAND (op, 2);
 
+  if (!vect_is_simple_cond (cond_expr, loop_vinfo))
+    return false;
+
   /* We do not handle two different vector types for the condition
      and the values.  */
   if (TREE_TYPE (TREE_OPERAND (cond_expr, 0)) != TREE_TYPE (vectype))
-    return false;
-
-  if (!vect_is_simple_cond (cond_expr, loop_vinfo))
     return false;
 
   if (TREE_CODE (then_clause) == SSA_NAME)

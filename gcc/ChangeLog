@@ -1,3 +1,9 @@
+2006-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/28952
+	* tree-vect-transform.c (vectorizable_condition): Move the check
+	for the type after the check for simple condition.
+
 2006-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/28862
