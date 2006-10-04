@@ -1,3 +1,11 @@
+2006-10-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/performance/priority_queue/mem_usage/
+	pop_test.hpp: Correct typo.
+	* testsuite/util/performance/assoc/mem_usage/
+	multimap_insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/mem_usage/erase_test.hpp: Same.
+
 2006-10-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/testsuite_allocator.h (allocation_tracker): To
