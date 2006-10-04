@@ -1,3 +1,11 @@
+2006-10-04  Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29343
+	* resolve.c (resolve_allocate_expr): Exclude derived types from
+	search for dependences between allocated variables and the
+	specification expressions for other allocations in the same
+	statement.
+
 2006-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29098

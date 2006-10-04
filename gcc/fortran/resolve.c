@@ -3466,7 +3466,7 @@ resolve_allocate_expr (gfc_expr * e, gfc_code * code)
       pointer = e->symtree->n.sym->attr.pointer;
       dimension = e->symtree->n.sym->attr.dimension;
 
-      if (sym == e->symtree->n.sym)
+      if (sym == e->symtree->n.sym && sym->ts.type != BT_DERIVED)
 	{
 	  gfc_error ("The STAT variable '%s' in an ALLOCATE statement must "
 		     "not be allocated in the same statement at %L",
@@ -3571,6 +3571,11 @@ check_symbols:
       for (a = code->ext.alloc_list; a; a = a->next)
 	{
 	  sym = a->expr->symtree->n.sym;
+
+	  /* TODO - check derived type components.  */
+	  if (sym->ts.type == BT_DERIVED)
+	    continue;
+
 	  if ((ar->start[i] != NULL && find_sym_in_expr (sym, ar->start[i]))
 		 || (ar->end[i] != NULL && find_sym_in_expr (sym, ar->end[i])))
 	    {
