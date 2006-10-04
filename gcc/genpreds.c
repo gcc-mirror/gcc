@@ -891,10 +891,6 @@ add_constraint (const char *name, const char *regclass,
 	  have_error = 1;
 	  return;
 	}
-
-      /* Remove the redundant (and (match_code "const_(int|double)")
-	 from the expression.  */
-      exp = XEXP (exp, 1);
     }
 
   
@@ -1078,10 +1074,13 @@ write_tm_constrs_h (void)
 	bool needs_rval = needs_variable (c->exp, "rval");
 	bool needs_mode = (needs_variable (c->exp, "mode")
 			   || needs_hval || needs_lval || needs_rval);
+	bool needs_op = (needs_variable (c->exp, "op")
+			 || needs_ival || needs_mode);
 
 	printf ("static inline bool\n"
-		"satisfies_constraint_%s (rtx op)\n"
-		"{\n", c->c_name);
+		"satisfies_constraint_%s (rtx %s)\n"
+		"{\n", c->c_name,
+		needs_op ? "op" : "ARG_UNUSED (op)");
 	if (needs_mode)
 	  puts ("enum machine_mode mode = GET_MODE (op);");
 	if (needs_ival)
@@ -1157,7 +1156,10 @@ write_insn_const_int_ok_for_constraint (void)
     if (c->is_const_int)
       {
 	printf ("    case CONSTRAINT_%s:\n      return ", c->c_name);
-	write_predicate_expr (c->exp);
+	/* c->exp is guaranteed to be (and (match_code "const_int") (...));
+	   we know at this point that we have a const_int, so we need not
+	   bother with that part of the test.  */
+	write_predicate_expr (XEXP (c->exp, 1));
 	fputs (";\n\n", stdout);
       }
 
