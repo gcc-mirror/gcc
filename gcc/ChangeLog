@@ -1,3 +1,9 @@
+2006-10-05  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.c (mips_pass_by_reference): Do not return false
+	for EABI if type is NULL.  Use a size check based on GET_MODE_SIZE
+	instead.
+
 2006-10-05  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (subsi3): Lose expander, change previously
