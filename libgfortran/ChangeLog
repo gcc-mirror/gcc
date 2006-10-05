@@ -1,3 +1,8 @@
+2006-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* Makefile.am: Use $(M4) instead of m4.
+	* Makefile.in: Regenerated.
+
 2006-10-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* libgfortran.h: Add prototype for internal_unpack_c16.

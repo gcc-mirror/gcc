@@ -603,88 +603,88 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 
 if MAINTAINER_MODE
 $(i_all_c): m4/all.m4 $(I_M4_DEPS1)
-	m4 -Dfile=$@ -I$(srcdir)/m4 all.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $(srcdir)/$@
 
 $(i_any_c): m4/any.m4 $(I_M4_DEPS1)
-	m4 -Dfile=$@ -I$(srcdir)/m4 any.m4> $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 any.m4> $(srcdir)/$@
 
 $(i_count_c): m4/count.m4 $(I_M4_DEPS1)
-	m4 -Dfile=$@ -I$(srcdir)/m4 count.m4> $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 count.m4> $(srcdir)/$@
 
 $(i_maxloc0_c): m4/maxloc0.m4 $(I_M4_DEPS0)
-	m4 -Dfile=$@ -I$(srcdir)/m4 maxloc0.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc0.m4 > $(srcdir)/$@
 
 $(i_maxloc1_c): m4/maxloc1.m4 $(I_M4_DEPS1)
-	m4 -Dfile=$@ -I$(srcdir)/m4 maxloc1.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxloc1.m4 > $(srcdir)/$@
 
 $(i_maxval_c): m4/maxval.m4 $(I_M4_DEPS1)
-	m4 -Dfile=$@ -I$(srcdir)/m4 maxval.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 maxval.m4 > $(srcdir)/$@
 
 $(i_minloc0_c): m4/minloc0.m4 $(I_M4_DEPS0)
-	m4 -Dfile=$@ -I$(srcdir)/m4 minloc0.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc0.m4 > $(srcdir)/$@
 
 $(i_minloc1_c): m4/minloc1.m4 $(I_M4_DEPS1)
-	m4 -Dfile=$@ -I$(srcdir)/m4 minloc1.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 minloc1.m4 > $(srcdir)/$@
 
 $(i_minval_c): m4/minval.m4 $(I_M4_DEPS1)
-	m4 -Dfile=$@ -I$(srcdir)/m4 minval.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 minval.m4 > $(srcdir)/$@
 
 $(i_product_c): m4/product.m4 $(I_M4_DEPS1)
-	m4 -Dfile=$@ -I$(srcdir)/m4 product.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 product.m4 > $(srcdir)/$@
 
 $(i_sum_c): m4/sum.m4 $(I_M4_DEPS1)
-	m4 -Dfile=$@ -I$(srcdir)/m4 sum.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 sum.m4 > $(srcdir)/$@
 
 $(i_matmul_c): m4/matmul.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 matmul.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmul.m4 > $(srcdir)/$@
 
 $(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $(srcdir)/$@
 
 $(i_transpose_c): m4/transpose.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 transpose.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 transpose.m4 > $(srcdir)/$@
 
 $(i_shape_c): m4/shape.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 shape.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 shape.m4 > $(srcdir)/$@
 
 $(i_reshape_c): m4/reshape.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 reshape.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 reshape.m4 > $(srcdir)/$@
 
 $(i_eoshift1_c): m4/eoshift1.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 eoshift1.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 eoshift1.m4 > $(srcdir)/$@
 
 $(i_eoshift3_c): m4/eoshift3.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 eoshift3.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 eoshift3.m4 > $(srcdir)/$@
 
 $(i_cshift1_c): m4/cshift1.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 cshift1.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 cshift1.m4 > $(srcdir)/$@
 
 $(in_pack_c): m4/in_pack.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 in_pack.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 in_pack.m4 > $(srcdir)/$@
 
 $(in_unpack_c): m4/in_unpack.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 in_unpack.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 in_unpack.m4 > $(srcdir)/$@
 
 $(i_exponent_c): m4/exponent.m4 m4/mtype.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 exponent.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 exponent.m4 > $(srcdir)/$@
 
 $(i_fraction_c): m4/fraction.m4 m4/mtype.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 fraction.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 fraction.m4 > $(srcdir)/$@
 
 $(i_nearest_c): m4/nearest.m4 m4/mtype.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 nearest.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 nearest.m4 > $(srcdir)/$@
 
 $(i_set_exponent_c): m4/set_exponent.m4 m4/mtype.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 set_exponent.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 set_exponent.m4 > $(srcdir)/$@
 
 $(i_pow_c): m4/pow.m4 $(I_M4_DEPS)
-	m4 -Dfile=$@ -I$(srcdir)/m4 pow.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 pow.m4 > $(srcdir)/$@
 
 $(gfor_built_specific_src): m4/specific.m4 m4/head.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 specific.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 specific.m4 > $(srcdir)/$@
 
 $(gfor_built_specific2_src): m4/specific2.m4 m4/head.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 specific2.m4 > $(srcdir)/$@
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 specific2.m4 > $(srcdir)/$@
 ## end of maintainer mode only rules
 endif
 
