@@ -1,3 +1,7 @@
+2006-10-05  Ira Rosen  <irar@il.ibm.com>
+
+	* doc/loop.texi: Add data references analysis description.
+
 2006-10-04  Brooks Moses  <bmoses@stanford.edu>
 
 	* doc/gcov.texi: Add formatting to "Invoking gcov" section head.
