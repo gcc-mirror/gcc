@@ -114,6 +114,13 @@
   (ior (match_operand 0 "nondp_register_operand")
        (match_operand 0 "memory_operand")))
 
+;; Return nonzero if OP is a register or, when negated, a 7 bit signed
+;; constant.
+(define_predicate "reg_or_neg7bit_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_int")
+	    (match_test "CONST_7BIT_IMM_P (-INTVAL (op))"))))
+
 ;; Used for secondary reloads, this function returns 1 if OP is of the
 ;; form (plus (fp) (const_int)).
 (define_predicate "fp_plus_const_operand"

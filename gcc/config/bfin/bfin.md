@@ -1083,18 +1083,11 @@
   "%0 = %1 + %2 (S);"
   [(set_attr "type" "dsp32")])
 
-(define_expand "subsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(minus:SI (match_operand:SI 1 "register_operand" "")
-		  (match_operand:SI 2 "reg_or_7bit_operand" "")))]
-  ""
-  "")
-
-(define_insn ""
+(define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=da,d,a")
 	(minus:SI (match_operand:SI 1 "register_operand" "0,d,0")
-		  (match_operand:SI 2 "reg_or_7bit_operand" "Ks7,d,a")))]
-  "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != -64"
+		  (match_operand:SI 2 "reg_or_neg7bit_operand" "KN7,d,a")))]
+  ""
 {
   static const char *const strings_subsi3[] = {
     "%0 += -%2;",
