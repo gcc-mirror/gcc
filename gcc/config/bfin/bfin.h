@@ -1063,6 +1063,9 @@ do {                                              \
      : (STR)[1] == 'n'					\
      ? ((STR)[2] == '7' ? CONST_7NBIT_IMM_P (VALUE)	\
 	: 0)						\
+     : (STR)[1] == 'N'					\
+     ? ((STR)[2] == '7' ? CONST_7BIT_IMM_P (-(VALUE))	\
+	: 0)						\
      : 0)
 
 #define CONST_OK_FOR_M(VALUE, STR)			\
