@@ -193,16 +193,19 @@ public final class SocketPermission extends Permission implements Serializable
     if (hostport.charAt(0) == '[')
       return hostport;
 
-    int colons = 0, last_colon = 0;
+    int colons = 0;
+    boolean colon_allowed = true;
     for (int i = 0; i < hostport.length(); i++)
       {
 	if (hostport.charAt(i) == ':')
 	  {
-	    if (i - last_colon == 1)
+	    if (!colon_allowed)
 	      throw new IllegalArgumentException("Ambiguous hostport part");
 	    colons++;
-	    last_colon = i;
+	    colon_allowed = false;
 	  }
+	else
+	  colon_allowed = true;
       }
 
     switch (colons)
@@ -218,6 +221,7 @@ public final class SocketPermission extends Permission implements Serializable
 
       case 8:
 	// an IPv6 address with ports
+	int last_colon = hostport.lastIndexOf(':');
 	return "[" + hostport.substring(0, last_colon) + "]"
 	  + hostport.substring(last_colon);
 
