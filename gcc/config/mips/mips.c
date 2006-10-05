@@ -7556,10 +7556,10 @@ mips_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
       int size;
 
       /* ??? How should SCmode be handled?  */
-      if (type == NULL_TREE || mode == DImode || mode == DFmode)
+      if (mode == DImode || mode == DFmode)
 	return 0;
 
-      size = int_size_in_bytes (type);
+      size = type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
       return size == -1 || size > UNITS_PER_WORD;
     }
   else
