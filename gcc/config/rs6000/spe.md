@@ -2200,24 +2200,41 @@
         (subreg:DF (match_operand:DI 1 "input_operand" "r,m") 0))]
   "TARGET_E500_DOUBLE"
   "@
-   evmergelo %0,%H1,%L1
+   evmergelo %0,%1,%L1
    evldd%X1 %0,%y1")
 
 (define_insn "*frob_di_df"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=&r")
         (subreg:DI (match_operand:DF 1 "input_operand" "r") 0))]
-  "TARGET_E500_DOUBLE" /*one of these can be an mr */
-  "evmergehi %H0,%1,%1\;evmergelo %L0,%1,%1"
+  "TARGET_E500_DOUBLE"
+  "evmergehi %0,%1,%1\;mr %L0,%1"
   [(set_attr "length" "8")])
 
 (define_insn "*frob_di_df_2"
   [(set (subreg:DF (match_operand:DI 0 "register_operand" "=&r,r") 0)
 	(match_operand:DF 1 "input_operand" "r,m"))]
   "TARGET_E500_DOUBLE"
-  "@
-   evmergehi %H0,%1,%1\;evmergelo %L0,%1,%1
-   evldd%X1 %0,%y1"
-  [(set_attr "length" "8,4")])
+  "*
+{
+  switch (which_alternative)
+    {
+    default: 
+      gcc_unreachable ();
+    case 0:
+      return \"evmergehi %0,%1,%1\;mr %L0,%1\";
+    case 1:
+      /* If the low-address word is used in the address, we must load
+	it last.  Otherwise, load it first.  Note that we cannot have
+	auto-increment in that case since the address register is
+	known to be dead.  */
+      if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
+			     operands[1], 0))
+	return \"{l|lwz} %L0,%L1\;{l|lwz} %0,%1\";
+      else
+        return \"{l%U1%X1|lwz%U1%X1} %0,%1\;{l|lwz} %L0,%L1\";
+    }
+}"
+  [(set_attr "length" "8,8")])
 
 (define_insn "*mov_sidf_e500_subreg0"
   [(set (subreg:SI (match_operand:DF 0 "register_operand" "+r") 0)
