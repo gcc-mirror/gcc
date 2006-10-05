@@ -1,5 +1,10 @@
 2006-10-04  Brooks Moses  <bmoses@stanford.edu>
 
+	* gfortran.texi: (Current Status): update and rewrite to reflect
+	actual status more accurately.
+
+2006-10-04  Brooks Moses  <bmoses@stanford.edu>
+
 	* gfortran.texi: Consistently refer to the compiler as "GNU
 	Fortran".
 	* intrinsic.texi: Ditto.
