@@ -1,3 +1,9 @@
+2006-10-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR debug/28980
+	* dwarf2out.c (loc_descriptor_from_tree_1): Handle
+	FUNCTION_DECL.
+
 2006-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/27490

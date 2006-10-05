@@ -1,3 +1,8 @@
+2006-10-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR debug/28980
+	* gcc.c-torture/compile/debugvlafunction-1.c: New test.
+
 2006-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/27490
