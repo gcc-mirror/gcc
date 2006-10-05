@@ -83,7 +83,6 @@ do {									\
       }									\
     else if (flag_pic == 1)						\
       {									\
-        /* Darwin doesn't support -fpic.  */				\
         flag_pic = 2;							\
       }									\
   }									\
