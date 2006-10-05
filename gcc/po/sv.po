@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.1.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-05-24 16:19-0700\n"
-"PO-Revision-Date: 2006-08-18 23:04+0200\n"
+"PO-Revision-Date: 2006-09-19 12:03+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -330,7 +330,7 @@ msgstr "vektor av typ som inte passar initierad från stränkonstant"
 #: c-typeck.c:4551 c-typeck.c:4049 cp/typeck.c:1398
 #, gcc-internal-format
 msgid "invalid use of non-lvalue array"
-msgstr "ogiltig användning av icke-lvärde-vektor"
+msgstr "ogiltig användning av icke-l-värde-vektor"
 
 #: c-typeck.c:4575
 msgid "array initialized from non-constant array expression"
@@ -14509,27 +14509,27 @@ msgstr "försök att ta adressen till en medlemmen %qD i en bitfältspost"
 #: c-common.c:6020
 #, gcc-internal-format
 msgid "invalid lvalue in assignment"
-msgstr "ogiltigt lvalue i tilldelning"
+msgstr "ogiltigt l-värde i tilldelning"
 
 #: c-common.c:6023
 #, gcc-internal-format
 msgid "invalid lvalue in increment"
-msgstr "ogiltigt lvalue i ökning"
+msgstr "ogiltigt l-värde i ökning"
 
 #: c-common.c:6026
 #, gcc-internal-format
 msgid "invalid lvalue in decrement"
-msgstr "ogiltigt lvalue i minskning"
+msgstr "ogiltigt l-värde i minskning"
 
 #: c-common.c:6029
 #, gcc-internal-format
 msgid "invalid lvalue in unary %<&%>"
-msgstr "ogiltigt lvalue i unär %<&%>"
+msgstr "ogiltigt l-värde i unär %<&%>"
 
 #: c-common.c:6032
 #, gcc-internal-format
 msgid "invalid lvalue in asm statement"
-msgstr "ogiltigt lvärde i asm-sats"
+msgstr "ogiltigt l-värde i asm-sats"
 
 #: c-common.c:6160 c-common.c:6209 c-typeck.c:2443
 #, gcc-internal-format
@@ -16982,7 +16982,7 @@ msgstr "ISO C förbjuder indexering av %<register%>-vektor"
 #: c-typeck.c:1912
 #, gcc-internal-format
 msgid "ISO C90 forbids subscripting non-lvalue array"
-msgstr "ISO C90 förbjuder indexering av icke-lvalue-vektor"
+msgstr "ISO C90 förbjuder indexering av icke-l-värde-vektor"
 
 #: c-typeck.c:2154
 #, gcc-internal-format
@@ -17260,7 +17260,7 @@ msgstr "adress på registervariabeln %qD efterfrågad"
 #: c-typeck.c:3137
 #, gcc-internal-format
 msgid "non-lvalue array in conditional expression"
-msgstr "icke-lvalue-vektor i villkorsuttryck"
+msgstr "icke-l-värde-vektor i villkorsuttryck"
 
 #: c-typeck.c:3181
 #, gcc-internal-format
@@ -18663,7 +18663,7 @@ msgstr "oväntad nod"
 #: gimplify.c:3683
 #, gcc-internal-format
 msgid "invalid lvalue in asm output %d"
-msgstr "ogiltigt lvalue i asm-utdata %d"
+msgstr "ogiltigt l-värde i asm-utdata %d"
 
 #: gimplify.c:3795
 #, gcc-internal-format
@@ -25196,14 +25196,14 @@ msgid "junk at end of #pragma GCC java_exceptions"
 msgstr "skräp vid slutet av #pragma GCC java_exceptions"
 
 #: cp/lex.c:601
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD not defined"
-msgstr "etikett %q+D använd men är inte definierad"
+msgstr "%qD inte definierad"
 
 #: cp/lex.c:605
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD was not declared in this scope"
-msgstr "%qD är inte definierad utanför funktions-scope"
+msgstr "%qD deklarerades inte i detta definitionsområde"
 
 #. In a template, it is invalid to write "f()" or "f(3)" if no
 #. declaration of "f" is available.  Historically, G++ and most
@@ -25271,9 +25271,9 @@ msgid "vtable layout for class %qT may not be ABI-compliantand may change in a f
 msgstr ""
 
 #: cp/name-lookup.c:697
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclaration of %<wchar_t%> as %qT"
-msgstr "omdeklaration av %<enum %E%>"
+msgstr "omdeklaration av %<wchar_t%> som %qT"
 
 #. A redeclaration of main, but not a duplicate of the
 #. previous one.
@@ -25282,56 +25282,56 @@ msgstr "omdeklaration av %<enum %E%>"
 #.
 #. This function shall not be overloaded.
 #: cp/name-lookup.c:727
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid redeclaration of %q+D"
-msgstr "redundant omdeklaration av %q+D"
+msgstr "ogiltig omdeklaration av %q+D"
 
 #: cp/name-lookup.c:728
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "as %qD"
-msgstr "%s %+#D"
+msgstr "som %qD"
 
 #: cp/name-lookup.c:816
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch with previous external decl of %q#D"
-msgstr "står i konflikt med tidigare deklaration %q+#D"
+msgstr "typ stämmer inte med tidigare externdeklaration av %q#D"
 
 #: cp/name-lookup.c:817
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous external decl of %q+#D"
-msgstr "tidigare deklaration av %q+#D"
+msgstr "tidigare externdeklaration av %q+#D"
 
 #: cp/name-lookup.c:908
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "extern declaration of %q#D doesn't match"
-msgstr "nästlad extern-deklaration av %qD"
+msgstr "externdeklaration av %q#D stämmer inte"
 
 #: cp/name-lookup.c:909
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "global declaration %q+#D"
-msgstr "ny deklaration av %q#D"
+msgstr "global deklaration av %q+#D"
 
 #: cp/name-lookup.c:946 cp/name-lookup.c:953
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %q#D shadows a parameter"
-msgstr "deklaration av %q+D skuggar en parameter"
+msgstr "deklaration av %q#D skuggar en parameter"
 
 #. Location of previous decl is not useful in this case.
 #: cp/name-lookup.c:978
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qD shadows a member of 'this'"
-msgstr "deklaration av %q+D skuggar en parameter"
+msgstr "deklaration av %qD skuggar en medlem av \"this\""
 
 # local, det kan troligen vara både lokal variabel och lokal funktionsdeklartion
 #: cp/name-lookup.c:984
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qD shadows a previous local"
-msgstr "deklaration av %q+D skuggar en tidigare lokal deklaration"
+msgstr "deklaration av %qD skuggar en tidigare lokal deklaration"
 
 #: cp/name-lookup.c:991
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qD shadows a global declaration"
-msgstr "deklaration av %q+D skuggar en global deklaration"
+msgstr "deklaration av %qD skuggar en global deklaration"
 
 #: cp/name-lookup.c:1114
 #, gcc-internal-format
@@ -25364,14 +25364,14 @@ msgid "  using obsolete binding at %q+D"
 msgstr ""
 
 #: cp/name-lookup.c:1198
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s %s(%E) %p %d\n"
-msgstr "(%s %s %s %s"
+msgstr "%s %s(%E) %p %d\n"
 
 #: cp/name-lookup.c:1201
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s %s %p %d\n"
-msgstr "(%s %s %s %s"
+msgstr "%s %s %p %d\n"
 
 #: cp/name-lookup.c:1327
 #, gcc-internal-format
@@ -25379,31 +25379,31 @@ msgid "XXX is_class_level != (current_scope == class_scope)\n"
 msgstr ""
 
 #: cp/name-lookup.c:1885
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#D hides constructor for %q#T"
-msgstr "%d konstruerare hittad(e)\n"
+msgstr "%q#D döljer konstruerare för %q#T"
 
 #: cp/name-lookup.c:1901
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#D conflicts with previous using declaration %q#D"
-msgstr "står i konflikt med tidigare deklaration %q+#D"
+msgstr "%q#D står i konflikt med tidigare using-deklaration %q#D"
 
 #: cp/name-lookup.c:1921
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous non-function declaration %q+#D"
-msgstr "tidigare deklaration av %q+#D"
+msgstr "tidigare icke-funktions-deklaration av %q+#D"
 
 #: cp/name-lookup.c:1922
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicts with function declaration %q#D"
-msgstr "står i konflikt med inbyggd deklaration %q#D"
+msgstr "står i konflikt med funktionsdeklaration %q#D"
 
 #. It's a nested name with template parameter dependent scope.
 #. This can only be using-declaration for class member.
 #: cp/name-lookup.c:2000 cp/name-lookup.c:2025
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is not a namespace"
-msgstr "Formell namnrymd"
+msgstr "%qT är inte en namnrymd"
 
 #. 7.3.3/5
 #. A using-declaration shall not name a template-id.
@@ -25413,19 +25413,19 @@ msgid "a using-declaration cannot specify a template-id.  Try %<using %D%>"
 msgstr ""
 
 #: cp/name-lookup.c:2017
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "namespace %qD not allowed in using-declaration"
-msgstr "-force_flat_namespace är inte tillåten med -dynamiclib"
+msgstr "namnrymd %qD är inte tillåten i using-deklaration"
 
 #: cp/name-lookup.c:2053
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD not declared"
-msgstr "%q+#D kan inte överlastas"
+msgstr "%qD inte deklarerad"
 
 #: cp/name-lookup.c:2074 cp/name-lookup.c:2111 cp/name-lookup.c:2145
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is already declared in this scope"
-msgstr "fält %q+D ogiltigt deklarerad funktionstyp"
+msgstr "%qD är redan deklarerad i detta definitionsområde"
 
 #: cp/name-lookup.c:2151
 #, gcc-internal-format
@@ -25438,34 +25438,34 @@ msgid "using-declaration for non-member at class scope"
 msgstr ""
 
 #: cp/name-lookup.c:2750
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%T::%D%> names destructor"
-msgstr "struct"
+msgstr "%<%T::%D%> namnger en destruerare"
 
 #: cp/name-lookup.c:2755
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%T::%D%> names constructor"
-msgstr "struct"
+msgstr "%<%T::%D%> namnger en kontruerare"
 
 #: cp/name-lookup.c:2760
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%T::%D%> names constructor in %qT"
-msgstr "struct"
+msgstr "%<%T::%D%> namnger konstruerare i %qT"
 
 #: cp/name-lookup.c:2809
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no members matching %<%T::%D%> in %q#T"
-msgstr "nästlad funktion \"%s\" är deklarerad \"extern\""
+msgstr "inga medlemmar matchar %<%T::%D%> i %q#T"
 
 #: cp/name-lookup.c:2877
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qD not in a namespace surrounding %qD"
-msgstr "deklaration av %q+D skuggar en parameter"
+msgstr "deklaration av %qD inte i namnrymd som omger %qD"
 
 #: cp/name-lookup.c:2885
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit qualification in declaration of %qD"
-msgstr "står i konflikt med inbyggd deklaration %q#D"
+msgstr "explicit-kvalifikation i deklaration av %qD"
 
 #: cp/name-lookup.c:2925
 #, gcc-internal-format
@@ -25473,9 +25473,9 @@ msgid "%qD should have been declared inside %qD"
 msgstr ""
 
 #: cp/name-lookup.c:2987
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "namespace alias %qD not allowed here, assuming %qD"
-msgstr "\"%s\" är inte i början av deklarationen"
+msgstr "namnrymdsalias %qD inte tillåtet här, antar %qD"
 
 #: cp/name-lookup.c:3294
 #, gcc-internal-format
@@ -25483,9 +25483,9 @@ msgid "strong using only meaningful at namespace scope"
 msgstr ""
 
 #: cp/name-lookup.c:3301
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD attribute directive ignored"
-msgstr "attributdirektivet %qs ignorerat"
+msgstr "attributdirektivet %qD ignorerat"
 
 #: cp/name-lookup.c:3451
 #, gcc-internal-format
@@ -25493,41 +25493,41 @@ msgid "%qD denotes an ambiguous type"
 msgstr ""
 
 #: cp/name-lookup.c:3452
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J  first type here"
-msgstr "  från här"
+msgstr "%J  första typ här"
 
 #: cp/name-lookup.c:3453
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J  other type here"
-msgstr "  från här"
+msgstr "%J  annan typ här"
 
 #. This happens for A::B where B is a template, and there are no
 #. template arguments.
 #: cp/name-lookup.c:3563 cp/parser.c:4497 cp/typeck.c:1807
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of %qD"
-msgstr "ogiltigt användning av %<restrict%>"
+msgstr "ogiltigt användning av %qD"
 
 #: cp/name-lookup.c:3603
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%D::%D%> is not a template"
-msgstr "användning ab `%s' i mall"
+msgstr "%<%D::%D%> är inte en mall"
 
 #: cp/name-lookup.c:3618
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD undeclared in namespace %qD"
-msgstr "tidigare deklaration av namnrymden %q+D här"
+msgstr "%qD odeklarerad i namnrymden %qD"
 
 #: cp/name-lookup.c:4255
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D is not a function,"
-msgstr "%q+D är vanligtvis en funktion"
+msgstr "%q+D är inte en funktion,"
 
 #: cp/name-lookup.c:4256
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  conflict with %q+D"
-msgstr "motstridiga typer på %q+D"
+msgstr "  står i konflikt med %q+D"
 
 #: cp/name-lookup.c:5090
 #, gcc-internal-format
@@ -25545,34 +25545,34 @@ msgid "minimum/maximum operators are deprecated"
 msgstr ""
 
 #: cp/parser.c:1895
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<#pragma%> is not allowed here"
-msgstr "Klass \"%s\" finns redan"
+msgstr "%<#pramga%> är inte tillåtet här"
 
 #: cp/parser.c:1924
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%D::%D%> has not been declared"
-msgstr "const \"%s\" kan inte deklareras \"mutable\""
+msgstr "%<%D::%D%> har inte deklarerats"
 
 #: cp/parser.c:1927 cp/semantics.c:2405
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<::%D%> has not been declared"
-msgstr "const \"%s\" kan inte deklareras \"mutable\""
+msgstr "%<::%D%> har inte deklarerats"
 
 #: cp/parser.c:1930
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "request for member %qD in non-class type %qT"
-msgstr "begäran av medlem %qE i något som inte är en post eller union"
+msgstr "begäran av medlem %qD i typ %qT som inte är en klass"
 
 #: cp/parser.c:1933
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%T::%D%> has not been declared"
-msgstr "const \"%s\" kan inte deklareras \"mutable\""
+msgstr "%<%T::%D%> har inte deklarerats"
 
 #: cp/parser.c:1936
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD has not been declared"
-msgstr "%q+#D kan inte överlastas"
+msgstr "%qD har inte deklarerats"
 
 #: cp/parser.c:1939
 #, gcc-internal-format
@@ -25585,50 +25585,50 @@ msgid "%<::%D%> %s"
 msgstr ""
 
 #: cp/parser.c:1943
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD %s"
-msgstr "%s: %s"
+msgstr "%qD %s"
 
 #: cp/parser.c:1995
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "new types may not be defined in a return type"
-msgstr "%<tree%> är inte definierad som en pekartyp"
+msgstr "nya typer får inte definieras i en returtyp"
 
 #: cp/parser.c:1996
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "(perhaps a semicolon is missing after the definition of %qT)"
-msgstr "extra semikolon angivet i metoddefintion"
+msgstr "(kanske ett semikolon saknas efter definitionen av %qT)"
 
 #: cp/parser.c:2015 cp/parser.c:3698 cp/pt.c:4402
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is not a template"
-msgstr "%qs är inte en giltigt utfil"
+msgstr "%qT är inte en mall"
 
 #: cp/parser.c:2017
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not a template"
-msgstr "%qs är inte en giltigt utfil"
+msgstr "%qE är inte en mall"
 
 #: cp/parser.c:2019
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid template-id"
-msgstr "ogiltigt rotate-instruktion"
+msgstr "ogiltigt mall-id"
 
 #: cp/parser.c:2048
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s cannot appear in a constant-expression"
-msgstr "Felaktig typ i konstantuttryck"
+msgstr "%s får inte förekomma i ett konstantuttryck"
 
 #: cp/parser.c:2073
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of template-name %qE without an argument list"
-msgstr "ogiltigt typargument"
+msgstr "ogiltig användning av mallmnamnet %qE utan en argumentlista"
 
 #. Issue an error message.
 #: cp/parser.c:2078
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE does not name a type"
-msgstr "attributet %qs är inte applicerbart på typer"
+msgstr "%qE är inte namnet på en typ"
 
 #: cp/parser.c:2110
 #, gcc-internal-format
@@ -25641,14 +25641,14 @@ msgid "%qE in namespace %qE does not name a type"
 msgstr ""
 
 #: cp/parser.c:2128
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE in class %qT does not name a type"
-msgstr "ISO C förbjuder typkonvertering till unionstyper"
+msgstr "%qE i klassen %qT är inte namnet på en typ"
 
 #: cp/parser.c:2848
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids braced-groups within expressions"
-msgstr "ISO C förbjuder medlemsdeklarationer utan medlemmar"
+msgstr "ISO C++ förbjuder klammergrupper inuti uttryck"
 
 #: cp/parser.c:2857
 #, gcc-internal-format
@@ -25656,44 +25656,44 @@ msgid "statement-expressions are allowed only inside functions"
 msgstr ""
 
 #: cp/parser.c:2908
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<this%> may not be used in this context"
-msgstr "%s kan inte användas i en asm här"
+msgstr "%<this%> kan inte användas i detta sammanhang"
 
 #: cp/parser.c:3059
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "local variable %qD may not appear in this context"
-msgstr "Variabeln \"%s\" kan inte förekomma i uttrycket vid %L"
+msgstr "lokal Variabel %qD kan inte förekomma i detta sammanhang"
 
 #: cp/parser.c:3435
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %<~%T%> as member of %qT"
-msgstr "deklaration av %qs som ett fält med void"
+msgstr "deklaration av %<~%T%> som medlem av %qT"
 
 #: cp/parser.c:3448
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "typedef-name %qD used as destructor declarator"
-msgstr "deklaration av \"%s\" döljer global deklaration"
+msgstr "typedef-namnet %qD använt som destruerardeklarerare"
 
 #: cp/parser.c:3657 cp/parser.c:12711 cp/parser.c:14842
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "reference to %qD is ambiguous"
-msgstr "konvertering från %qT till %qT är tvetydig"
+msgstr "referens till %qD är tvetydig"
 
 #: cp/parser.c:3699 cp/typeck.c:1878 cp/typeck.c:1898
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a template"
-msgstr "%qs är inte en giltigt utfil"
+msgstr "%qD är inte en mall"
 
 #: cp/parser.c:4090
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids compound-literals"
-msgstr "ISO C90 förbjuder samansatta literaler"
+msgstr "ISO C++ förbjuder samansatta literaler"
 
 #: cp/parser.c:4422
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE does not have class type"
-msgstr "\"%s\" är inte ett giltigt klassnamn"
+msgstr "%qE har inte klasstyp"
 
 #: cp/parser.c:5021
 #, gcc-internal-format
@@ -25716,9 +25716,9 @@ msgid "use of old-style cast"
 msgstr "användning av gammaldags typkonvertering"
 
 #: cp/parser.c:6197
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case label %qE not within a switch statement"
-msgstr "case-etikett är inte i en switch-sats"
+msgstr "case-etikett %qE är inte i en switch-sats"
 
 #: cp/parser.c:6746
 #, gcc-internal-format
@@ -25736,24 +25736,24 @@ msgid "mixing declarations and function-definitions is forbidden"
 msgstr ""
 
 #: cp/parser.c:7514
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ does not support %<long long%>"
-msgstr "ISO C90 stödjer inte %<long long%>"
+msgstr "ISO C++ stödjer inte %<long long%>"
 
 #: cp/parser.c:7534
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate %qs"
-msgstr "dubblerad %qE"
+msgstr "dubblerad %qs"
 
 #: cp/parser.c:7541
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "class definition may not be declared a friend"
-msgstr "funktion \"%s\" kan inte deklareras som \"mutable\""
+msgstr "klassdefinition kan inte deklareras som en vän"
 
 #: cp/parser.c:7855
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "only constructors take base initializers"
-msgstr "ickekonstant vektorindex i initierare"
+msgstr "bara konstruerare tar basinitierare"
 
 #: cp/parser.c:7907
 #, gcc-internal-format
@@ -25767,16 +25767,16 @@ msgstr ""
 
 #. Warn that we do not support `export'.
 #: cp/parser.c:8317
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "keyword %<export%> not implemented, and will be ignored"
-msgstr "nyckelordet \"export\" är inte implementerat och kommer ignorerads"
+msgstr "nyckelordet %<export%> är inte implementerat och kommer ignoreras"
 
 #. Otherwise, emit an error about the invalid digraph, but continue
 #. parsing because we got our argument list.
 #: cp/parser.c:8694
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<<::%> cannot begin a template-argument list"
-msgstr "const \"%s\" kan inte deklareras \"mutable\""
+msgstr "%<<::%> kan inte inleda en argumentlista till en mall"
 
 #: cp/parser.c:8695
 #, gcc-internal-format
@@ -25789,15 +25789,15 @@ msgid "(if you use -fpermissive G++ will accept your code)"
 msgstr ""
 
 #: cp/parser.c:8766
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parse error in template argument list"
-msgstr "Syntaxfel i argumentlista vid %C"
+msgstr "syntaxfel i argumentlista till mall"
 
 #. Explain what went wrong.
 #: cp/parser.c:8879
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-template %qD used as template"
-msgstr "deklaration av \"%s\" döljer global deklaration"
+msgstr "icke-mall %qD använd som mall"
 
 #: cp/parser.c:8880
 #, gcc-internal-format
@@ -25805,14 +25805,14 @@ msgid "use %<%T::template %D%> to indicate that it is a template"
 msgstr ""
 
 #: cp/parser.c:9393
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template specialization with C linkage"
-msgstr "omdeklaration av %q+D utan länkklass"
+msgstr "mallspecialisering med C-länkning"
 
 #: cp/parser.c:9500 cp/parser.c:15498
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template declaration of %qs"
-msgstr "nästlad extern-deklaration av %qD"
+msgstr "malldeklaration av %qs"
 
 #: cp/parser.c:9973
 #, gcc-internal-format
@@ -25820,22 +25820,22 @@ msgid "using %<typename%> outside of template"
 msgstr ""
 
 #: cp/parser.c:10170
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type attributes are honored only at type definition"
-msgstr "Attribut vid %L är inte tillåtet i en TYPE-definition"
+msgstr "typattribut tas endast i beaktande vid typdefinition"
 
 #: cp/parser.c:10372
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a namespace-name"
-msgstr "användning ab `%s' i mall"
+msgstr "%qD är inte ett namnrymdsnamn"
 
 #. [namespace.udecl]
 #.
 #. A using declaration shall not name a template-id.
 #: cp/parser.c:10562
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "a template-id may not appear in a using-declaration"
-msgstr "\"%s\" är inte i början av deklarationen"
+msgstr "ett mall-id får inte förekomma i en using-deklaration"
 
 #: cp/parser.c:10901
 #, gcc-internal-format
@@ -25843,29 +25843,29 @@ msgid "an asm-specification is not allowed on a function-definition"
 msgstr ""
 
 #: cp/parser.c:10903
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "attributes are not allowed on a function-definition"
-msgstr "Attribut vid %L är inte tillåtet i en TYPE-definition"
+msgstr "attribut är inte tillåtna vid en funktionsdefinition"
 
 #: cp/parser.c:11050
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "attributes after parenthesized initializer ignored"
-msgstr "attribut i parametervektordeklarerare ignoreras"
+msgstr "attribut efter initierare inom parentes ignoreras"
 
 #: cp/parser.c:11430
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array bound is not an integer constant"
-msgstr "den begärda positionen är inte en heltalskonstant"
+msgstr "vektorgräns är inte en heltalskonstant"
 
 #: cp/parser.c:11501
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%T::%D%> is not a type"
-msgstr "%<tree%> är inte definierad som en typ"
+msgstr "%<%T::%D%> är inte en typ"
 
 #: cp/parser.c:11526
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of constructor as a template"
-msgstr "ogiltig användning av post med flexibel vektormedlem"
+msgstr "ogiltig användning av konstruerare som en mall"
 
 #: cp/parser.c:11527
 #, gcc-internal-format
@@ -25873,34 +25873,34 @@ msgid "use %<%T::%D%> instead of %<%T::%D%> to name the constructor in a qualifi
 msgstr ""
 
 #: cp/parser.c:11761
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate cv-qualifier"
-msgstr "upprepat case-värde"
+msgstr "upprepade cv-kvalificerare"
 
 #: cp/parser.c:12297
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "file ends in default argument"
-msgstr "ogiltigt typargument till \"%s\""
+msgstr "filen tar slut i standardargument"
 
 #: cp/parser.c:12370
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "deprecated use of default argument for parameter of non-function"
-msgstr "standardargumentet för parameter %d till %qD har inte parsats än"
+msgstr "undanbedd användning av standardargument för parametrar till annat än funktioner"
 
 #: cp/parser.c:12373
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default arguments are only permitted for function parameters"
-msgstr "metoder kan inte konverteras till funktionspekare"
+msgstr "standardargument är endast tillåtna för funktionsparametrar"
 
 #: cp/parser.c:13136
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid class name in declaration of %qD"
-msgstr "nästlad extern-deklaration av %qD"
+msgstr "ogiltigt klassnamn i deklaration av %qD"
 
 #: cp/parser.c:13147
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qD in %qD which does not enclose %qD"
-msgstr "omdeklaration av %q+D utan länkklass"
+msgstr "deklaration av %qD i %qD som inte innesluter %qD"
 
 #: cp/parser.c:13160
 #, gcc-internal-format
@@ -25908,14 +25908,14 @@ msgid "extra qualification ignored"
 msgstr ""
 
 #: cp/parser.c:13171
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "an explicit specialization must be preceded by %<template <>%>"
-msgstr "implicit deklaration av funktion \"%s\""
+msgstr "en explicit specialisering måste föregås av %<template <>%>"
 
 #: cp/parser.c:13264
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous definition of %q+#T"
-msgstr "omdefinition av %q#T"
+msgstr "föregående definition av %q+#T"
 
 #: cp/parser.c:13495
 #, gcc-internal-format
@@ -25928,14 +25928,14 @@ msgid "a class-key must be used when declaring a friend"
 msgstr ""
 
 #: cp/parser.c:13527
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "friend declaration does not name a class or function"
-msgstr "deklaration som inte deklarerar något"
+msgstr "vändeklaration som inte namnger en klass eller funktion"
 
 #: cp/parser.c:13705
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pure-specifier on function-definition"
-msgstr "%Jgammaldags funktionsdefinition"
+msgstr "pure-specificerare på funktionsdefinition"
 
 #: cp/parser.c:13978
 #, gcc-internal-format
@@ -25948,40 +25948,40 @@ msgid "keyword %<typename%> not allowed in this context (the base class is impli
 msgstr ""
 
 #: cp/parser.c:14255
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid catch parameter"
-msgstr "ogiltig parameter %qs"
+msgstr "ogiltig catch-parameter"
 
 #: cp/parser.c:15011
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few template-parameter-lists"
-msgstr "två eller fler datatyper i deklaration av \"%s\""
+msgstr "för få mallparameterlistor"
 
 #. Otherwise, there are too many template parameter lists.  We have
 #. something like:
 #.
 #. template <class T> template <class U> void S::f();
 #: cp/parser.c:15026
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many template-parameter-lists"
-msgstr "flera lagringsklasser i deklaration av \"%s\""
+msgstr "för många mallparameterlistor"
 
 #. Skip the entire function.
 #: cp/parser.c:15250
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid function declaration"
-msgstr "Varna om implicita funktionsdeklarationer"
+msgstr "ogiltig funktionsdeklaration"
 
 #. Issue an error message.
 #: cp/parser.c:15287
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "named return values are no longer supported"
-msgstr "flaggan %qs stödjs inte längre"
+msgstr "namngivna returväden stödjs inte längre"
 
 #: cp/parser.c:15352
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template with C linkage"
-msgstr "omdeklaration av %q+D utan länkklass"
+msgstr "mall med C-länkning"
 
 #: cp/parser.c:15715
 #, gcc-internal-format
@@ -25999,9 +25999,9 @@ msgid "%qs tag used in naming %q#T"
 msgstr ""
 
 #: cp/parser.c:16311
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD redeclared with different access"
-msgstr "%q#D omdeklarerad som en annan sorts symbol"
+msgstr "%qD omdeklarerad med annan åtkomst"
 
 #: cp/parser.c:16328
 #, gcc-internal-format
@@ -26039,14 +26039,14 @@ msgid "data member %qD cannot be a member template"
 msgstr ""
 
 #: cp/pt.c:251
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid member template declaration %qD"
-msgstr "nästlad extern-deklaration av %qD"
+msgstr "ogiltig medlemsmalldeklaration %qD"
 
 #: cp/pt.c:573
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit specialization in non-namespace scope %qD"
-msgstr "implicit deklaration av funktion \"%s\""
+msgstr "explicit specialisering som inte är i namnrymdsområde %qD"
 
 #: cp/pt.c:584
 #, gcc-internal-format
@@ -26054,24 +26054,24 @@ msgid "enclosing class templates are not explicitly specialized"
 msgstr ""
 
 #: cp/pt.c:668
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "specialization of %qD in different namespace"
-msgstr "deklaration av %qF kastar andra undantag"
+msgstr "specialisering av %qD i en annan namnrymd"
 
 #: cp/pt.c:669 cp/pt.c:759
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  from definition of %q+#D"
-msgstr "omdefiniering av %q+D"
+msgstr "  än definitionen av %q+#D"
 
 #: cp/pt.c:686
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit instantiation of %qD in namespace %qD (which does not enclose namespace %qD)"
-msgstr "implicit deklaration av funktion \"%s\""
+msgstr "explicit instantiering av %qD i namnrymden %qD (som inte omsluter namnrymden %qD)"
 
 #: cp/pt.c:726
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "specialization of %qT after instantiation"
-msgstr "deklaration av \"%s\" är \"extern\" och initierad"
+msgstr "specialisering av %qT efter instantiering"
 
 #: cp/pt.c:758
 #, gcc-internal-format
@@ -26079,24 +26079,24 @@ msgid "specializing %q#T in different namespace"
 msgstr ""
 
 #: cp/pt.c:773
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "specialization %qT after instantiation %qT"
-msgstr "deklaration av \"%s\" är \"extern\" och initierad"
+msgstr "specialisering %qT efterin instantiering %qT"
 
 #: cp/pt.c:785
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit specialization of non-template %qT"
-msgstr "omdeklaration av mallen %q#D"
+msgstr "explicit specialisering av icke-mall %qT"
 
 #: cp/pt.c:1179
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "specialization of %qD after instantiation"
-msgstr "statisk deklaration av %q+D följer på icke-statisk deklaration"
+msgstr "specialisering av %qD efter instantiering"
 
 #: cp/pt.c:1383
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a function template"
-msgstr "%q+D är vanligtvis en funktion"
+msgstr "%qD är inte en funktionsmall"
 
 #: cp/pt.c:1577
 #, gcc-internal-format
@@ -26104,16 +26104,16 @@ msgid "template-id %qD for %q+D does not match any template declaration"
 msgstr ""
 
 #: cp/pt.c:1585
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguous template specialization %qD for %q+D"
-msgstr "Slå på automatisk mallinstansiering"
+msgstr "tvetydig mallspecialisering %qD för %q+D"
 
 #. This case handles bogus declarations like template <>
 #. template <class T> void f<int>();
 #: cp/pt.c:1816 cp/pt.c:1870
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template-id %qD in declaration of primary template"
-msgstr "deklaration eller sats förväntades"
+msgstr "mall-id %qD i deklaration av primär mall"
 
 #: cp/pt.c:1829
 #, gcc-internal-format
@@ -26126,21 +26126,19 @@ msgid "definition provided for explicit instantiation"
 msgstr ""
 
 #: cp/pt.c:1843
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many template parameter lists in declaration of %qD"
-msgstr "%s: varning: för många parameterlistor i deklarationen av \"%s\"\n"
+msgstr "för många mallparameterlistor i deklarationen av %qD"
 
 #: cp/pt.c:1846
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few template parameter lists in declaration of %qD"
-msgstr ""
-"\n"
-"%s: varning: för få parameterlistor i deklarationen av \"%s\"\n"
+msgstr "för få mallparameterlistor i deklarationen av %qD"
 
 #: cp/pt.c:1848
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit specialization of %qD must be introduced by %<template <>%>"
-msgstr "implicit deklaration av funktion \"%s\""
+msgstr "explicit specialisering av %qD måste inledas av %<template <>%>"
 
 #: cp/pt.c:1867
 #, gcc-internal-format
@@ -26153,9 +26151,9 @@ msgid "default argument specified in explicit specialization"
 msgstr ""
 
 #: cp/pt.c:1928
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a template function"
-msgstr "%q+D är normalt en icke-statisk function"
+msgstr "%qD är inte en mallfunktion"
 
 #. From [temp.expl.spec]:
 #.
@@ -26171,19 +26169,19 @@ msgid "specialization of implicitly-declared special member function"
 msgstr ""
 
 #: cp/pt.c:2034
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no member function %qD declared in %qT"
-msgstr "nästad funktion %qs är deklarerad %<extern%>"
+msgstr "ingen medlemsfunktion %qD är deklarerad i %qT"
 
 #: cp/pt.c:2258
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %q+#D"
-msgstr "deklaration av %q#D"
+msgstr "deklaration av %q+#D"
 
 #: cp/pt.c:2259
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid " shadows template parm %q+#D"
-msgstr "oanvänd parameter \"%s\""
+msgstr " skuggar mallparameter %q+#D"
 
 #: cp/pt.c:2662
 #, gcc-internal-format
@@ -26191,14 +26189,14 @@ msgid "template parameters not used in partial specialization:"
 msgstr ""
 
 #: cp/pt.c:2666
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "        %qD"
-msgstr "      "
+msgstr "        %qD"
 
 #: cp/pt.c:2677
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "partial specialization %qT does not specialize any template arguments"
-msgstr "variabel \"%s\" deklarerad \"inline\""
+msgstr "partiell specialisering %qT specialicerar inte något mallargument"
 
 #: cp/pt.c:2702
 #, gcc-internal-format
@@ -26211,22 +26209,22 @@ msgid "type %qT of template argument %qE depends on template parameter(s)"
 msgstr ""
 
 #: cp/pt.c:2833
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no default argument for %qD"
-msgstr "ogiltigt typargument till %qs"
+msgstr "inget standardargument för %qD"
 
 #: cp/pt.c:2992
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template class without a name"
-msgstr "klassnamn förväntades"
+msgstr "mallklass utan ett namn"
 
 #. [temp.mem]
 #.
 #. A destructor shall not be a member template.
 #: cp/pt.c:3000
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "destructor %qD declared as member template"
-msgstr "nästad funktion %q+D är deklarerad men aldrig definierad"
+msgstr "destrueraren %qD deklarerad som medlemsmall"
 
 #. [basic.stc.dynamic.allocation]
 #.
@@ -26234,83 +26232,83 @@ msgstr "nästad funktion %q+D är deklarerad men aldrig definierad"
 #. template. ... Template allocation functions shall
 #. have two or more parameters.
 #: cp/pt.c:3015
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid template declaration of %qD"
-msgstr "nästlad extern-deklaration av %qD"
+msgstr "ogiltig malldeklaration av %qD"
 
 #: cp/pt.c:3095
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD does not declare a template type"
-msgstr "%qD har en ofullständig typ"
+msgstr "%qD deklarerar inte en malltyp"
 
 #: cp/pt.c:3101
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template definition of non-template %q#D"
-msgstr "omdeklaration av mallen %q#D"
+msgstr "malldefintion av icke-mall %q#D"
 
 #: cp/pt.c:3144
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "expected %d levels of template parms for %q#D, got %d"
-msgstr "flera parametrar med namn \"%s\""
+msgstr "%d nivåer av mallparametrar förväntades till %q#D, %d fanns"
 
 #: cp/pt.c:3156
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "got %d template parameters for %q#D"
-msgstr "flera parametrar med namnet %q+D"
+msgstr "fick %d mallparametrar till %q#D"
 
 #: cp/pt.c:3159
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "got %d template parameters for %q#T"
-msgstr "flera parametrar med namn \"%s\""
+msgstr "fick %d mallparametrar till %q#T"
 
 #: cp/pt.c:3161
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  but %d required"
-msgstr "anrop %2d returnerade %s\n"
+msgstr "  men %d behövs"
 
 #: cp/pt.c:3258
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is not a template type"
-msgstr "%qD har en ofullständig typ"
+msgstr "%qT är inte en malltyp"
 
 #: cp/pt.c:3271
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template specifiers not specified in declaration of %qD"
-msgstr "typen sätts skönsmässigt till %<int%> i deklarationen av %qs"
+msgstr "mallspecificerare inte angivna i deklarationen av %qD"
 
 #: cp/pt.c:3281
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration %q+D"
-msgstr "tidigare deklaration av %q+D"
+msgstr "tidigare deklaration %q+D"
 
 #: cp/pt.c:3282
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "used %d template parameter(s) instead of %d"
-msgstr "flera parametrar med namnet %q+D"
+msgstr "använde %d mallparametrar istället för %d"
 
 #: cp/pt.c:3301
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template parameter %q+#D"
-msgstr "oanvänd parameter %q+D"
+msgstr "mallparameter %q+#D"
 
 #: cp/pt.c:3302
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclared here as %q#D"
-msgstr "ny deklaration av %q#D"
+msgstr "omdeklarerad här som %q#D"
 
 #. We have in [temp.param]:
 #.
 #. A template-parameter may not be given default arguments
 #. by two different declarations in the same scope.
 #: cp/pt.c:3312
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redefinition of default argument for %q#D"
-msgstr "omdefiniering avparametern %q+D"
+msgstr "omdefinition av standardargument till %q#D"
 
 #: cp/pt.c:3313
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J  original definition appeared here"
-msgstr "funktionsdefinition deklarerad som \"typedef\""
+msgstr "%J  ursprunglig definition fanns här"
 
 #: cp/pt.c:3409
 #, gcc-internal-format
@@ -26323,14 +26321,14 @@ msgid "%qE is not a valid template argument for type %qT because string literals
 msgstr ""
 
 #: cp/pt.c:3527
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT because it is a non-constant expression"
-msgstr "%q+D får inte ha referenstyp %qT eftersom den är en medlen av en union"
+msgstr "%qE är inte ett giltigt mallargument till typ %qT eftersom det är ett icke konstant uttryck"
 
 #: cp/pt.c:3577
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT because it is not a constant pointer"
-msgstr "%q+D får inte ha referenstyp %qT eftersom den är en medlen av en union"
+msgstr "%qE är inte ett giltigt mallargument till typ %qT eftersom det inte är en konstant pekare"
 
 #: cp/pt.c:3597
 #, gcc-internal-format
@@ -26338,9 +26336,9 @@ msgid "%qE is not a valid template argument for type %qT because of conflicts in
 msgstr ""
 
 #: cp/pt.c:3604
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT because it is not a lvalue"
-msgstr "%q+D får inte ha referenstyp %qT eftersom den är en medlen av en union"
+msgstr "%qE är inte ett giltigt mallargument för typen %qT eftersom inte är ett l-värde"
 
 #: cp/pt.c:3617
 #, gcc-internal-format
@@ -26348,9 +26346,9 @@ msgid "%qE is not a valid template argument for type %qT because object %qD has 
 msgstr ""
 
 #: cp/pt.c:3657
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT because it is a pointer"
-msgstr "%q+D får inte ha referenstyp %qT eftersom den är en medlen av en union"
+msgstr "%qE är inte ett giltigt mallargument för typen %qT eftersom det är en pekare"
 
 #: cp/pt.c:3659
 #, gcc-internal-format
@@ -26358,9 +26356,9 @@ msgid "try using %qE instead"
 msgstr ""
 
 #: cp/pt.c:3694
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not a valid template argument for type %qT because it is of type %qT"
-msgstr "%q+D får inte ha referenstyp %qT eftersom den är en medlen av en union"
+msgstr "%qE är inte ett giltigt mallargument för typen %qT eftersom det är av typen %qT"
 
 #: cp/pt.c:3697
 #, gcc-internal-format
@@ -26373,69 +26371,69 @@ msgid "to refer to a type member of a template parameter, use %<typename %E%>"
 msgstr ""
 
 #: cp/pt.c:3881 cp/pt.c:3900 cp/pt.c:3940
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type/value mismatch at argument %d in template parameter list for %qD"
-msgstr "flera parametrar med namn \"%s\""
+msgstr "typ/värde stämmer inte vid argument %d i mallparameterlistan till %qD"
 
 #: cp/pt.c:3885
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  expected a constant of type %qT, got %qT"
-msgstr "Oväntad typ på \"id\" (%s)"
+msgstr "  förväntade en konstant av typen %qT, fick %qT"
 
 #: cp/pt.c:3889
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  expected a class template, got %qE"
-msgstr "Förväntade ett namnlöst gränssnitt vid %C"
+msgstr "  förväntade en klassmall, fick %qE"
 
 #: cp/pt.c:3891
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  expected a type, got %qE"
-msgstr "Oväntad typ på \"id\" (%s)"
+msgstr "  förväntade en typ, fick %qE"
 
 #: cp/pt.c:3904
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  expected a type, got %qT"
-msgstr "Oväntad typ på \"id\" (%s)"
+msgstr "  föräntade en typ, fick %qT"
 
 #: cp/pt.c:3906
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  expected a class template, got %qT"
-msgstr "Förväntade ett namnlöst gränssnitt vid %C"
+msgstr "  förväntade en klassmall, fick %qT"
 
 #: cp/pt.c:3943
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  expected a template of type %qD, got %qD"
-msgstr "Oväntad typ på \"id\" (%s)"
+msgstr "  förväntade en mall av typen %qD, fick %qD"
 
 #: cp/pt.c:3986
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "could not convert template argument %qE to %qT"
-msgstr "kunde inte konvertera %qE till %qT"
+msgstr "kunde inte konvertera mallargument %qE till %qT"
 
 #: cp/pt.c:4025
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong number of template arguments (%d, should be %d)"
-msgstr "fel antal argument angivet för attributet %qs"
+msgstr "fel antal mallargument (%d, skulle vara %d)"
 
 #: cp/pt.c:4029
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "provided for %q+D"
-msgstr "prototyp för %q+#D"
+msgstr "angivna till %q+D"
 
 #: cp/pt.c:4059
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template argument %d is invalid"
-msgstr "multilib-val \"%s\" är ogiltigt"
+msgstr "mallargument %d är ogiltigt"
 
 #: cp/pt.c:4414
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-template type %qT used as a template"
-msgstr "deklaration av \"%s\" döljer global deklaration"
+msgstr "icke-malltyp %qT använd som en mall"
 
 #: cp/pt.c:4416
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "for template declaration %q+D"
-msgstr "upprepad using-deklaration %q+D"
+msgstr "för malldeklaration %q+D"
 
 #: cp/pt.c:5066
 #, gcc-internal-format
@@ -26443,69 +26441,69 @@ msgid "template instantiation depth exceeds maximum of %d (use -ftemplate-depth-
 msgstr ""
 
 #: cp/pt.c:6621
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "instantiation of %q+D as type %qT"
-msgstr "tidigare defintion av %q+D var här"
+msgstr "instatiering av %q+D som typ %qT"
 
 #: cp/pt.c:6800
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid parameter type %qT"
-msgstr "ogiltig parameter %qs"
+msgstr "ogiltig parametertyp %qT"
 
 #: cp/pt.c:6802
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "in declaration %q+D"
-msgstr "ny deklaration av %q#D"
+msgstr "i deklaration %q+D"
 
 #: cp/pt.c:6875
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function returning an array"
-msgstr "%qs är deklarerad som en funktion som returnerar en vektor"
+msgstr "funktion som returnerar en vektor"
 
 #: cp/pt.c:6877
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function returning a function"
-msgstr "%qs är deklarerad som en funktion som returnerar en funktion"
+msgstr "funktion som returnerar en funktion"
 
 #: cp/pt.c:6904
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "creating pointer to member function of non-class type %qT"
-msgstr "pekare till medlemsfunktion använd med aritmetik"
+msgstr "skapar pekare till medlemsfunktion i typ %qT som inte är en klass"
 
 #: cp/pt.c:7085
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "creating array with negative size (%qE)"
-msgstr "skapar ett fält med storlek noll"
+msgstr "skapar vektor fält med negativ storlek (%qE)"
 
 #: cp/pt.c:7302
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "forming reference to void"
-msgstr "returnerar referens till en temporär"
+msgstr "formar referens till void"
 
 #: cp/pt.c:7304
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "forming %s to reference type %qT"
-msgstr "returnerar referens till en temporär"
+msgstr "formar %s till en referens till typ %qT"
 
 #: cp/pt.c:7341
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "creating pointer to member of non-class type %qT"
-msgstr "antar pekare till medlem %qD"
+msgstr "skapar pekare till medlem av typ %qT som inte är en klass"
 
 #: cp/pt.c:7347
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "creating pointer to member reference type %qT"
-msgstr "antar pekare till medlem %qD"
+msgstr "skapar pekare till medlemsreferenstyp %qT"
 
 #: cp/pt.c:7353
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "creating pointer to member of type void"
-msgstr "antar pekare till medlem %qD"
+msgstr "skapar pekare till medlem av typ void"
 
 #: cp/pt.c:7420
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "creating array of %qT"
-msgstr "deklaration av %q#D"
+msgstr "skapar vektor av %qT"
 
 #: cp/pt.c:7426
 #, gcc-internal-format
@@ -26513,14 +26511,14 @@ msgid "creating array of %qT, which is an abstract class type"
 msgstr ""
 
 #: cp/pt.c:7470
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is not a class, struct, or union type"
-msgstr "ISO C förbjuder typkonvertering till unionstyper"
+msgstr "%qT är inte en klass-, post- eller unionstyp"
 
 #: cp/pt.c:7505
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT resolves to %qT, which is not an enumeration type"
-msgstr "%Jcase-värde %qs är inte i en uppräkningstyp"
+msgstr "%T slås upp till %qT som inte är en uppräkningstyp"
 
 #: cp/pt.c:7508
 #, gcc-internal-format
@@ -26528,9 +26526,9 @@ msgid "%qT resolves to %qT, which is is not a class type"
 msgstr ""
 
 #: cp/pt.c:7570
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of %qs in template"
-msgstr "storlek på vektorn %qs är negativ"
+msgstr "användning av %qs i mall"
 
 #: cp/pt.c:7702
 #, gcc-internal-format
@@ -26543,19 +26541,19 @@ msgid "say %<typename %E%> if a type is meant"
 msgstr ""
 
 #: cp/pt.c:7827
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "using invalid field %qD"
-msgstr "%s: ogiltigt filnamn: %s\n"
+msgstr "användning av ogiltigt fält %qD"
 
 #: cp/pt.c:8933
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is not a class or namespace"
-msgstr "\"%s\" är inte ett giltigt klassnamn"
+msgstr "%qT är inte en klass eller namnrymd"
 
 #: cp/pt.c:8936
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a class or namespace"
-msgstr "\"%s\" är inte ett giltigt klassnamn"
+msgstr "%qD är inte en klass eller namnrymd"
 
 #: cp/pt.c:9085
 #, gcc-internal-format
@@ -26568,14 +26566,14 @@ msgid "%qT uses local type %qT"
 msgstr ""
 
 #: cp/pt.c:9096
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is a variably modified type"
-msgstr "%Jhopp in i räckvidd för identifierare med variabelt modifierad typ"
+msgstr "%qT är en variabelt modifierad typ"
 
 #: cp/pt.c:9107
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "integral expression %qE is not constant"
-msgstr "initierarelement är inte konstant"
+msgstr "heltalsuttryck %qE är inte konstant"
 
 #: cp/pt.c:9112
 #, gcc-internal-format
@@ -26583,19 +26581,19 @@ msgid "  trying to instantiate %qD"
 msgstr ""
 
 #: cp/pt.c:11103
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguous class template instantiation for %q#T"
-msgstr "Slå på automatisk mallinstansiering"
+msgstr "tvetydig klassmallinstansiering av %q#T"
 
 #: cp/pt.c:11106
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s %+#T"
-msgstr "%s %+#D"
+msgstr "%s %+#T"
 
 #: cp/pt.c:11129 cp/pt.c:11200
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit instantiation of non-template %q#D"
-msgstr "Skapa implicita instantieringar av mallar"
+msgstr "explicit instantieringar av icke-mall %q#D"
 
 #: cp/pt.c:11145 cp/pt.c:11195
 #, gcc-internal-format
@@ -26603,14 +26601,14 @@ msgid "no matching template for %qD found"
 msgstr ""
 
 #: cp/pt.c:11151
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit instantiation of %q#D"
-msgstr "Skapa implicita instantieringar av mallar"
+msgstr "explicit instantiering av %q#D"
 
 #: cp/pt.c:11187
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate explicit instantiation of %q#D"
-msgstr "Skapa implicita instantieringar av mallar"
+msgstr "dubblerad explicit instantiering av %q#D"
 
 #: cp/pt.c:11209
 #, gcc-internal-format
@@ -26618,19 +26616,19 @@ msgid "ISO C++ forbids the use of %<extern%> on explicit instantiations"
 msgstr ""
 
 #: cp/pt.c:11214 cp/pt.c:11307
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "storage class %qD applied to template instantiation"
-msgstr "Slå på automatisk mallinstansiering"
+msgstr "lagringsklass %qD tillämpad på mallinstansiering"
 
 #: cp/pt.c:11279
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit instantiation of non-template type %qT"
-msgstr "Skapa implicita instantieringar av mallar"
+msgstr "explicit instantieringar av icke-malltyp %qT"
 
 #: cp/pt.c:11288
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit instantiation of %q#T before definition of template"
-msgstr "Skapa implicita instantieringar av inline:ade mallar"
+msgstr "explicit instantiering av %q#T före definitionen av mallen"
 
 #: cp/pt.c:11296
 #, gcc-internal-format
@@ -26638,14 +26636,14 @@ msgid "ISO C++ forbids the use of %qE on explicit instantiations"
 msgstr ""
 
 #: cp/pt.c:11341
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate explicit instantiation of %q#T"
-msgstr "Skapa implicita instantieringar av mallar"
+msgstr "duppblerad explicit instantiering av %q#T"
 
 #: cp/pt.c:11754
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit instantiation of %qD but no definition available"
-msgstr "Skapa implicita instantieringar av inline:ade mallar"
+msgstr "explicit instantiering av %qD men ingen definition tillgänglig"
 
 #: cp/pt.c:11901
 #, gcc-internal-format
@@ -26653,9 +26651,9 @@ msgid "template instantiation depth exceeds maximum of %d instantiating %q+D, po
 msgstr ""
 
 #: cp/pt.c:12174
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#T is not a valid type for a template constant parameter"
-msgstr "ogiltigt typargument"
+msgstr "%q#T är inte en giltig typ för en mallkonstantparameter"
 
 #: cp/repo.c:113
 #, gcc-internal-format
@@ -26668,9 +26666,9 @@ msgid "mysterious repository information in %s"
 msgstr ""
 
 #: cp/repo.c:215
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't create repository information file %qs"
-msgstr "kan inte skapa temporärfil"
+msgstr "kan inte skapa förrådsinformationsfil %qs"
 
 #: cp/rtti.c:270
 #, gcc-internal-format
@@ -26693,9 +26691,9 @@ msgid "dynamic_cast of %q#D to %q#T can never succeed"
 msgstr ""
 
 #: cp/rtti.c:691
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot dynamic_cast %qE (of type %q#T) to type %q#T (%s)"
-msgstr "kan inte konvertera %qE från typ %qT till typ %qT"
+msgstr "kan inte dynamic_cast %qE (av typ %q#T) till typ %q#T (%s)"
 
 #: cp/search.c:257
 #, gcc-internal-format
@@ -26708,9 +26706,9 @@ msgid "%qT is an inaccessible base of %qT"
 msgstr ""
 
 #: cp/search.c:1847
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "deprecated covariant return type for %q+#D"
-msgstr "ogiltig mottagartyp \"%s\""
+msgstr "undanbedd kovariant returtyp för %q+#D"
 
 #: cp/search.c:1849 cp/search.c:1864 cp/search.c:1869
 #, gcc-internal-format
@@ -26718,19 +26716,19 @@ msgid "  overriding %q+#D"
 msgstr ""
 
 #: cp/search.c:1863
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid covariant return type for %q+#D"
-msgstr "ogiltig registernamn för %q+D"
+msgstr "ogiltig kovariant returtyp för %q+#D"
 
 #: cp/search.c:1868
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicting return type specified for %q+#D"
-msgstr "motstridiga typkvalificerare för %q+D"
+msgstr "motstridiga returtyp angiven för %q+#D"
 
 #: cp/search.c:1878
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "looser throw specifier for %q+#F"
-msgstr "inget registernamn angivet för %q+D"
+msgstr "friare throw-specificerare för %q+#F"
 
 #: cp/search.c:1879
 #, gcc-internal-format
@@ -26740,29 +26738,29 @@ msgstr ""
 #. A static member function cannot match an inherited
 #. virtual member function.
 #: cp/search.c:1972
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+#D cannot be declared"
-msgstr "%q+#D kan inte överlastas"
+msgstr "%q+#D kan inte deklareras"
 
 #: cp/search.c:1973
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  since %q+#D declared in base class"
-msgstr "funktionen %q+D omdeklarerad som \"inline\""
+msgstr "  eftersom %q+#D är deklarerad i basklassen"
 
 #: cp/semantics.c:1248
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type of asm operand %qE could not be determined"
-msgstr "typen på parameter \"%s\" är inte deklarerad"
+msgstr "typen på asm-operand %qE kunde inte avgöras"
 
 #: cp/semantics.c:1367
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of member %q+D in static member function"
-msgstr "destruerare kan inte vara en statisk medlemsfunktion"
+msgstr "ogiltig användning av %q+D i en statisk medlemsfunktion"
 
 #: cp/semantics.c:1369
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of non-static data member %q+D"
-msgstr "ogiltig användning av flexibla vektormedlemmar"
+msgstr "ogiltig användning av icke-statisk datamedlem %q+D"
 
 #: cp/semantics.c:1370 cp/semantics.c:1409
 #, gcc-internal-format
@@ -26770,39 +26768,39 @@ msgid "from this location"
 msgstr ""
 
 #: cp/semantics.c:1408
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "object missing in reference to %q+D"
-msgstr "kan inte inline:a anrop till \"%s\""
+msgstr "objekt saknas i referens till %q+D"
 
 #: cp/semantics.c:1874
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "arguments to destructor are not allowed"
-msgstr "argument till attributet %qs större än %d"
+msgstr "argument till destruerare är inte tillåtet"
 
 #: cp/semantics.c:1925
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<this%> is unavailable for static member functions"
-msgstr "\"%s\" är normalt en icke-statisk function"
+msgstr "%<this%> är inte tillgängligt i en statisk medlemsfunktion"
 
 #: cp/semantics.c:1931
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of %<this%> in non-member function"
-msgstr "namn saknas på medlemsfunktion"
+msgstr "ogiltig användning av %<this%> i icke-medlemsfunktion"
 
 #: cp/semantics.c:1933
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of %<this%> at top level"
-msgstr "ogiltigt användning av %<restrict%>"
+msgstr "ogiltigt användning av %<this%> på toppnivå"
 
 #: cp/semantics.c:1957
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid qualifying scope in pseudo-destructor name"
-msgstr "ogiltigt format på versionsnummer"
+msgstr "ogiltigt kvalificerande räckvidd i pseudodestruerarnamn"
 
 #: cp/semantics.c:1977
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not of type %qT"
-msgstr "attributet %qE ignorerat för fält av typen %qT"
+msgstr "%qE har inte typen %qT"
 
 #: cp/semantics.c:2080
 #, gcc-internal-format
@@ -26810,39 +26808,39 @@ msgid "template type parameters must use the keyword %<class%> or %<typename%>"
 msgstr ""
 
 #: cp/semantics.c:2124
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of type %qT as a default value for a template template-parameter"
-msgstr "ogiltigt typargument"
+msgstr "ogiltigt användning av typ %qT som standardväde för en mallmallparameter"
 
 #: cp/semantics.c:2127
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of %qD as a default value for a template template-parameter"
-msgstr "ogiltigt typargument"
+msgstr "ogiltig användning av %qD som standardvärde för en mallmallparameter"
 
 #: cp/semantics.c:2131
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid default argument for a template template parameter"
-msgstr "ogiltigt typargument"
+msgstr "ogiltigt standardargument för en mallmallparameter"
 
 #: cp/semantics.c:2148
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "definition of %q#T inside template parameter list"
-msgstr "deklaration av %q+D skuggar en parameter"
+msgstr "definition av %q#T inuti mallparameterlista"
 
 #: cp/semantics.c:2159
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid definition of qualified type %qT"
-msgstr "ogiltig operation på oinstansierad typ"
+msgstr "ogiltig definition av kvalificerad typ %qT"
 
 #: cp/semantics.c:2362
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid base-class specification"
-msgstr "ogiltig lagringsklass för funktionen %qs"
+msgstr "ogiltig basklasspecifikation"
 
 #: cp/semantics.c:2371
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "base class %qT has cv qualifiers"
-msgstr "basklass %q#T har en icke-virtuell destruerare"
+msgstr "basklass %qT har cv-kvalificerare"
 
 #: cp/semantics.c:2393
 #, gcc-internal-format
@@ -26850,19 +26848,19 @@ msgid "incomplete type %qT used in nested name specifier"
 msgstr ""
 
 #: cp/semantics.c:2396
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "reference to %<%T::%D%> is ambiguous"
-msgstr "anrop av %<(%T) (%A)%> är tvetydigt"
+msgstr "referens till %<%T::%D%> är tvetydig"
 
 #: cp/semantics.c:2400 cp/typeck.c:1642
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a member of %qT"
-msgstr "%qT har ingen medlem med namnet %qE"
+msgstr "%qD har inte en medlem av %qT"
 
 #: cp/semantics.c:2403
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a member of %qD"
-msgstr "%qT har ingen medlem med namnet %qE"
+msgstr "%qD är inte en medlem av %qD"
 
 #: cp/semantics.c:2517
 #, gcc-internal-format
@@ -26875,9 +26873,9 @@ msgid "use of parameter from containing function"
 msgstr ""
 
 #: cp/semantics.c:2519
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  %q+#D declared here"
-msgstr "%q+#D deklarerades tidigare här"
+msgstr "  %q+#D deklarerades här"
 
 #: cp/semantics.c:2557
 #, gcc-internal-format
@@ -26885,19 +26883,19 @@ msgid "template parameter %qD of type %qT is not allowed in an integral constant
 msgstr ""
 
 #: cp/semantics.c:2723
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD cannot appear in a constant-expression"
-msgstr "Felaktig typ i konstantuttryck"
+msgstr "%qD får inte finnas i ett konstantuttryck"
 
 #: cp/semantics.c:2731
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of namespace %qD as expression"
-msgstr "tidigare deklaration av namnrymden %q+D här"
+msgstr "användning av namnrymden %q+D som uttryck"
 
 #: cp/semantics.c:2736
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of class template %qT as expression"
-msgstr "ogiltig användning av void-uttryck"
+msgstr "användning av klassmall %qT som uttryck"
 
 #. Ambiguous reference to base members.
 #: cp/semantics.c:2742
@@ -26906,24 +26904,24 @@ msgid "request for member %qD is ambiguous in multiple inheritance lattice"
 msgstr ""
 
 #: cp/semantics.c:2854
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type of %qE is unknown"
-msgstr "lagringsstorlek på %q+D är okänd"
+msgstr "typen på %qE är okänd"
 
 #: cp/tree.c:560
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qV qualifiers cannot be applied to %qT"
-msgstr "COMPLEX-kvantiteter kan inte jämföras vid %L"
+msgstr "%qV-kvalificerare kan inte tillämpas på %qT"
 
 #: cp/tree.c:1783
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute can only be applied to Java class definitions"
-msgstr "attributet %qE fungerar bara på funktioner med variabelt antal argument"
+msgstr "attributet %qE kan bara användas på klassdefinitioner i Java"
 
 #: cp/tree.c:1812
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute can only be applied to class definitions"
-msgstr "attributet %qs fungerar bara på funktioner"
+msgstr "attributet %qE kan bara användas på klassdefinitioner"
 
 #: cp/tree.c:1818
 #, gcc-internal-format
@@ -26931,9 +26929,9 @@ msgid "%qE is obsolete; g++ vtables are now COM-compatible by default"
 msgstr ""
 
 #: cp/tree.c:1842
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "requested init_priority is not an integer constant"
-msgstr "den begärda positionen är inte en heltalskonstant"
+msgstr "begärd init_priority är inte en heltalskonstant"
 
 #: cp/tree.c:1863
 #, gcc-internal-format
@@ -26941,9 +26939,9 @@ msgid "can only use %qE attribute on file-scope definitions of objects of class 
 msgstr ""
 
 #: cp/tree.c:1871
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "requested init_priority is out of range"
-msgstr "efterfrågad minnesjustering är för stor"
+msgstr "begärd init_priority är utanför sitt intervall"
 
 #: cp/tree.c:1881
 #, gcc-internal-format
@@ -26951,15 +26949,17 @@ msgid "requested init_priority is reserved for internal use"
 msgstr ""
 
 #: cp/tree.c:1892
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute is not supported on this platform"
-msgstr "-pg stöds inte på denna plattform"
+msgstr "attributet %qE stöds inte på denna plattform"
 
 #: cp/typeck.c:435 cp/typeck.c:449 cp/typeck.c:549
 #, gcc-internal-format
 msgid "%s between distinct pointer types %qT and %qT lacks a cast"
 msgstr ""
 
+# %s blir olika engelska strängar
+# Felrapporterat: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29017
 #: cp/typeck.c:511
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids %s between pointer of type %<void *%> and pointer-to-function"
@@ -26971,29 +26971,29 @@ msgid "%s between distinct pointer-to-member types %qT and %qT lacks a cast"
 msgstr ""
 
 #: cp/typeck.c:1258
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid application of %qs to a member function"
-msgstr "ogiltig användning av %<sizeof%> på en funktionstyp"
+msgstr "ogiltig användning av %qs på en medlemsfunktion"
 
 #: cp/typeck.c:1293
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid application of %qs to a bit-field"
-msgstr "ogiltig användning av %qs på en void-typ"
+msgstr "ogiltig användning av %qs på ett bitfält"
 
 #: cp/typeck.c:1298
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids applying %qs to an expression of function type"
-msgstr "ISO C förbjuder typkonvertering till unionstyper"
+msgstr "ISO C++ förbjuder användning av %qs på ett uttryck med funktionstyp"
 
 #: cp/typeck.c:1335
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of non-static member function"
-msgstr "destruerare kan inte vara en statisk medlemsfunktion"
+msgstr "ogiltig användning av icke-statisk medlemsfunktion"
 
 #: cp/typeck.c:1502
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "deprecated conversion from string constant to %qT'"
-msgstr "Oväntat slut på modul i strängkonstant"
+msgstr "undanbedd konvertering från strängkonstant till %qT'"
 
 #: cp/typeck.c:1613 cp/typeck.c:1961
 #, gcc-internal-format
@@ -27001,9 +27001,9 @@ msgid "request for member %qD in %qE, which is of non-class type %qT"
 msgstr ""
 
 #: cp/typeck.c:1640
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of nonstatic data member %qE"
-msgstr "ogiltig användning av flexibla vektormedlemmar"
+msgstr "ogiltig användning av icke-statisk datamedlem %qE"
 
 #: cp/typeck.c:1692 cp/typeck.c:1720
 #, gcc-internal-format
@@ -27016,9 +27016,9 @@ msgid "(perhaps the %<offsetof%> macro was used incorrectly)"
 msgstr ""
 
 #: cp/typeck.c:1833
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "qualified type %qT does not match destructor name ~%qT"
-msgstr "argument av typen %qT matchar inte %qT"
+msgstr "kvalificerad typ %qT matchar inte destruerarnamnet ~%qT"
 
 #: cp/typeck.c:1839
 #, gcc-internal-format
@@ -27026,36 +27026,36 @@ msgid "the type being destroyed is %qT, but the destructor refers to %qT"
 msgstr ""
 
 #: cp/typeck.c:1999
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%D::%D%> is not a member of %qT"
-msgstr "%s har ingen medlem med namn \"%s\""
+msgstr "%<%D::%D%> är inte en medlem av %qT"
 
 #: cp/typeck.c:2014
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is not a base of %qT"
-msgstr "%s har ingen medlem med namn \"%s\""
+msgstr "%qT är inte en basklass till %qT"
 
 #: cp/typeck.c:2033
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD has no member named %qE"
-msgstr "%qT har ingen medlem med namnet %qE"
+msgstr "%qD har ingen medlem med namnet %qE"
 
 #: cp/typeck.c:2048
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a member template function"
-msgstr "%q+D är normalt en icke-statisk function"
+msgstr "%qD är inte en medlemsmallfunktion"
 
 #. A pointer to incomplete type (other than cv void) can be
 #. dereferenced [expr.unary.op]/1
 #: cp/typeck.c:2168
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT is not a pointer-to-object type"
-msgstr "%<tree%> är inte definierad som en pekartyp"
+msgstr "%qT är inte en pekare-på-objekt-typ"
 
 #: cp/typeck.c:2193
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of %qs on pointer to member"
-msgstr "ogiltig användning av flexibla vektormedlemmar"
+msgstr "ogiltig användning av %qs på pekare till medlem"
 
 #: cp/typeck.c:2199
 #, gcc-internal-format
@@ -27068,24 +27068,24 @@ msgid "subscript missing in array reference"
 msgstr ""
 
 #: cp/typeck.c:2304
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids subscripting non-lvalue array"
-msgstr "ISO C90 förbjuder indexering av icke-lvalue-vektor"
+msgstr "ISO C++ förbjuder indexering av icke-lvalue-vektor"
 
 #: cp/typeck.c:2315
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "subscripting array declared %<register%>"
-msgstr "funktionsdefinition deklarerad som %<register%>"
+msgstr "indexering av vektor deklarerad %<register%>"
 
 #: cp/typeck.c:2398
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "object missing in use of %qE"
-msgstr "fältstorlek saknas i \"%s\""
+msgstr "objekt saknas i användning av %qE"
 
 #: cp/typeck.c:2512
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids calling %<::main%> from within program"
-msgstr "ISO C förbjuder jämförelse mellan %<void *%> och funktionspekare"
+msgstr "ISO C++ förbjuder anrop av %<::main%> inifrån program"
 
 #: cp/typeck.c:2537
 #, gcc-internal-format
@@ -27093,14 +27093,14 @@ msgid "must use %<.*%> or %<->*%> to call pointer-to-member function in %<%E (..
 msgstr ""
 
 #: cp/typeck.c:2551
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE cannot be used as a function"
-msgstr "fältet %qs deklarerat som en funktion"
+msgstr "%qE kan inte användas som en funktion"
 
 #: cp/typeck.c:2631
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to %s %q+#D"
-msgstr "För många argument till %s vid %L"
+msgstr "för många argument till %s %+#D"
 
 #: cp/typeck.c:2632 cp/typeck.c:2734
 #, gcc-internal-format
@@ -27113,19 +27113,19 @@ msgid "too many arguments to function"
 msgstr "för många argument till funktion"
 
 #: cp/typeck.c:2669
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter %P of %qD has incomplete type %qT"
-msgstr "parametern %q+D har ofullständig typ"
+msgstr "parameter %P till %qD har ofullständig typ %qT"
 
 #: cp/typeck.c:2672
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter %P has incomplete type %qT"
-msgstr "parametern %q+D har ofullständig typ"
+msgstr "parametern %P har ofullständig typ %qT"
 
 #: cp/typeck.c:2733
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to %s %q+#D"
-msgstr "för få argument till funktionen %qE"
+msgstr "för få argument till %s %q+#D"
 
 #: cp/typeck.c:2737
 #, gcc-internal-format
@@ -27133,9 +27133,9 @@ msgid "too few arguments to function"
 msgstr "för få argument till funktion"
 
 #: cp/typeck.c:2885 cp/typeck.c:2895
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assuming cast to type %qT from overloaded function"
-msgstr "%s kan inte lösa upp adress till överlastad funktion"
+msgstr "antar typkonvertering till %qT från överlastad funktion"
 
 #: cp/typeck.c:2963
 #, gcc-internal-format
@@ -27157,11 +27157,15 @@ msgstr ""
 msgid "division by zero in %<%E %% 0.%>"
 msgstr ""
 
+# %s blir "left" eller "right".
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29033
 #: cp/typeck.c:3082
 #, fuzzy, gcc-internal-format
 msgid "%s rotate count is negative"
 msgstr "högershiftoperanden är negativ"
 
+# %s blir "left" eller "right".
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29033
 #: cp/typeck.c:3085
 #, fuzzy, gcc-internal-format
 msgid "%s rotate count >= width of type"
@@ -27178,53 +27182,53 @@ msgid "unordered comparison on non-floating point argument"
 msgstr ""
 
 #: cp/typeck.c:3277
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operands of types %qT and %qT to binary %qO"
-msgstr "ogiltiga operander till binär %s"
+msgstr "ogiltiga operander av typ %qT och %qT till binär %qO"
 
 #: cp/typeck.c:3441
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison between types %q#T and %q#T"
-msgstr "jämföreslse mellan %q#T och %q#T"
+msgstr "jämföreslse mellan typer %q#T och %q#T"
 
 #: cp/typeck.c:3477
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison between signed and unsigned integer expressions"
-msgstr "jämföreslse mellan signed och unsigned"
+msgstr "jämföreslse mellan heltalsuttryck med och utan tecken"
 
 #. Some sort of arithmetic operation involving NULL was
 #. performed.  Note that pointer-difference and pointer-addition
 #. have already been handled above, and so we don't end up here in
 #. that case.
 #: cp/typeck.c:3556
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "NULL used in arithmetic"
-msgstr "pekare till funktion använd med aritmetik"
+msgstr "NULL använd i aritmetik"
 
 #: cp/typeck.c:3614
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids using pointer of type %<void *%> in subtraction"
-msgstr "pekare av typ %<void *%> använd i subtraktion"
+msgstr "ISO C++ förbjuder användning av pekare av typ %<void *%> i subtraktion"
 
 #: cp/typeck.c:3616
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids using pointer to a function in subtraction"
-msgstr "pekare till funktion använd i subtraktion"
+msgstr "ISO C++ förbjuder användning av pekare till en funktion i subtraktion"
 
 #: cp/typeck.c:3618
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids using pointer to a method in subtraction"
-msgstr "pekare till funktion använd i subtraktion"
+msgstr "ISO C++ förbjuder användning av pekare till en metod i subtraktion"
 
 #: cp/typeck.c:3630
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of a pointer to an incomplete type in pointer arithmetic"
-msgstr "aritmetik på pekare till inkomplett typ"
+msgstr "ogiltig användning av en pekare till en ofullständig typ i pekararitmetik"
 
 #: cp/typeck.c:3690
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of %qE to form a pointer-to-member-function"
-msgstr "ISO C89 stöder inte flexibla fältmedlemmar"
+msgstr "ogiltig använding av %qE för att skapa en pekare-till-medlem-funktion"
 
 #: cp/typeck.c:3693
 #, gcc-internal-format
@@ -27232,25 +27236,31 @@ msgid "  a qualified-id is required"
 msgstr ""
 
 #: cp/typeck.c:3698
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parenthesis around %qE cannot be used to form a pointer-to-member-function"
-msgstr "Varna vid typkonvertering av pekare till medlemsfunktioner"
+msgstr "parenteser runt %qE kan inte användas för att skapa en pekare-till-medlem-funktion"
 
 #: cp/typeck.c:3721
 #, gcc-internal-format
 msgid "taking address of temporary"
 msgstr "tar adress till något temporärt"
 
+# %s blir "increment" eller "decrement".  Trasigt!
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29089
 #: cp/typeck.c:3965
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids %sing an enum"
 msgstr "ISO C++ förbjuder tilldelning av fält"
 
+# %s blir "increment" eller "decrement".  Trasigt!
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29089
 #: cp/typeck.c:3976
 #, fuzzy, gcc-internal-format
 msgid "cannot %s a pointer to incomplete type %qT"
 msgstr "kan inte konvertera från ofullständig typ %qT till %qT"
 
+# %s blir "increment" eller "decrement".  Trasigt!
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29089
 #: cp/typeck.c:3982
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids %sing a pointer of type %qT"
@@ -27262,76 +27272,76 @@ msgid "cast to non-reference type used as lvalue"
 msgstr ""
 
 #: cp/typeck.c:4042
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of %<--%> on bool variable %qD"
-msgstr "ogiltig användning av %%d, %%x eller %%x"
+msgstr "ogiltig användning av %<--%> på bool-variabel %qD"
 
 #. ARM $3.4
 #: cp/typeck.c:4071
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids taking address of function %<::main%>"
-msgstr "ISO C förbjuder nästlade funktioner"
+msgstr "ISO C++ förbjuder att ta adressen till funktionen %<::main%>"
 
 #. An expression like &memfn.
 #: cp/typeck.c:4125
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids taking the address of an unqualified or parenthesized non-static member function to form a pointer to member function.  Say %<&%T::%D%>"
-msgstr "ISO C++ förbjuder användning av pekare till medlemsfunktion i pekararitmetik"
+msgstr "ISO C++ förbjuder att ta adressen till en okvalificerad eller parentetiserad icke-statisk medlemsfunktion för att skapa en pekare till en medlemsfunktion.  Säg %<&%T::%D%>"
 
 #: cp/typeck.c:4130
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids taking the address of a bound member function to form a pointer to member function.  Say %<&%T::%D%>"
-msgstr "ISO C++ förbjuder användning av pekare till medlemsfunktion i pekararitmetik"
+msgstr "ISO C++ förbjuder att ta adressen till en bunden medlemsfunktion för att skapa en pekare till medlemsfunktion.  Säg %<&%T::%D%>"
 
 #: cp/typeck.c:4158
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids taking the address of a cast to a non-lvalue expression"
-msgstr "ISO C++ förbjuder uteslutande av mittersta termen i ett ?: uttryck"
+msgstr "ISO C++ förbjuder att ta adressen till en typkonvertering till ett icke-lvärde-uttryck"
 
 #: cp/typeck.c:4178
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot create pointer to reference member %qD"
-msgstr "kan inte skicka rvalue till referensparameter"
+msgstr "kan inte skapa pekare till referensmedlem %qD"
 
 #: cp/typeck.c:4410
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot take the address of %<this%>, which is an rvalue expression"
-msgstr "Kan inte ta adressen till \"this\", som är ett rvalue-uttryck"
+msgstr "kan inte ta adressen till %<this%>, som är ett rvalue-uttryck"
 
 #: cp/typeck.c:4433
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address of explicit register variable %qD requested"
-msgstr "adress på registervariabeln %qD efterfrågad"
+msgstr "adress till explicit registervariabel %qD begärd"
 
 #: cp/typeck.c:4438
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address requested for %qD, which is declared %<register%>"
-msgstr "nästad funktion %qs är deklarerad %<extern%>"
+msgstr "adress begärd till %qD, som är deklarerad %<register%>"
 
 #: cp/typeck.c:4504
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s expression list treated as compound expression"
-msgstr "uttryckssats har inkomplett typ"
+msgstr "uttryckslistan %s behandlas som sammansatt uttryck"
 
 #: cp/typeck.c:4898
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid static_cast from type %qT to type %qT"
-msgstr "kan inte konvertera %qE från typ %qT till typ %qT"
+msgstr "ogiltig static_cast från typ %qT till typ %qT"
 
 #: cp/typeck.c:4920
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "converting from %qT to %qT"
-msgstr "konvertering från %q#T till %q#T"
+msgstr "konvertering från %qT till %qT"
 
 #: cp/typeck.c:4965
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid cast of an rvalue expression of type %qT to type %qT"
-msgstr "ogiltig konvertering från %qT till %qT"
+msgstr "ogiltig typkonvertering av ett rvärdeuttryck av typ %qT till typ %qT"
 
 #: cp/typeck.c:5024
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cast from %qT to %qT loses precision"
-msgstr "konvertering från %qT till %qT är tvetydig"
+msgstr "konvertering från %qT till %qT förlorar precision"
 
 #: cp/typeck.c:5051
 #, gcc-internal-format
@@ -27343,14 +27353,14 @@ msgstr ""
 #. addresses this issue, but as of 2004/10/26 is still in
 #. drafting.
 #: cp/typeck.c:5070
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids casting between pointer-to-function and pointer-to-object"
-msgstr "ISO C++ förbjuder jämförelse mellan pekare och heltal"
+msgstr "ISO C++ förbjuder konvertering mellan pekare-till-funktion och pekare-till-objekt"
 
 #: cp/typeck.c:5081
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid cast from type %qT to type %qT"
-msgstr "kan inte konvertera %qE från typ %qT till typ %qT"
+msgstr "ogiltig konvertering från typ %qT till typ %qT"
 
 #: cp/typeck.c:5137
 #, gcc-internal-format
@@ -27363,24 +27373,24 @@ msgid "invalid use of const_cast with type %qT, which is a pointer or reference 
 msgstr ""
 
 #: cp/typeck.c:5168
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid const_cast of an rvalue of type %qT to type %qT"
-msgstr "kan inte konvertera typ %qT till typ %qT"
+msgstr "ogiltig const_cast av ett rvärde av typ %qT till typ %qT"
 
 #: cp/typeck.c:5219
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid const_cast from type %qT to type %qT"
-msgstr "kan inte konvertera %qE från typ %qT till typ %qT"
+msgstr "ogiltig const_cast från typ %qT till typ %qT"
 
 #: cp/typeck.c:5287 cp/typeck.c:5292
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C++ forbids casting to an array type %qT"
-msgstr "ISO C förbjuder typkonvertering till unionstyper"
+msgstr "ISO C++ förbjuder typkonvertering till en vektortyp %qT"
 
 #: cp/typeck.c:5300
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid cast to function type %qT"
-msgstr "ogiltig lagringsklass för funktionen %qs"
+msgstr "ogiltig konvertering till funktionstyp %qT"
 
 #: cp/typeck.c:5516
 #, gcc-internal-format
@@ -27388,9 +27398,9 @@ msgid "  in evaluation of %<%Q(%#T, %#T)%>"
 msgstr ""
 
 #: cp/typeck.c:5585
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incompatible types in assignment of %qT to %qT"
-msgstr "Inkompatibla typer i tilldelning vid %L, %s till %s"
+msgstr "inkompatibla typer i tilldelning vid av %qT till %qT"
 
 #: cp/typeck.c:5592
 #, gcc-internal-format
@@ -27398,49 +27408,49 @@ msgid "ISO C++ forbids assignment of arrays"
 msgstr "ISO C++ förbjuder tilldelning av fält"
 
 #: cp/typeck.c:5716
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "   in pointer to member function conversion"
-msgstr "pekare till medlemsfunktion använd med aritmetik"
+msgstr "   i konvertering av pekare till medlemsfunktion"
 
 #: cp/typeck.c:5727 cp/typeck.c:5753
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer to member cast via virtual base %qT"
-msgstr "pekare till en medlemsfunktion använd med aritmetik"
+msgstr "typkonvertering av pekare till medlem via virtuell bas %qT"
 
 #: cp/typeck.c:5730
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer to member conversion via virtual base %qT"
-msgstr "pekare till medlemsfunktion använd med aritmetik"
+msgstr "konvertering av pekare till medlem via virtuell bas %qT"
 
 #: cp/typeck.c:5739
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "   in pointer to member conversion"
-msgstr "antar pekare till medlem %qD"
+msgstr "   i konvertering av pekare till medlem"
 
 #: cp/typeck.c:5829
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid conversion to type %qT from type %qT"
-msgstr "ogiltig konvertering från %qT till %qT"
+msgstr "ogiltig konvertering till typ %qT från typ %qT"
 
 #: cp/typeck.c:6073
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot convert %qT to %qT for argument %qP to %qD"
-msgstr "skickar %qT för argument %P till %qD"
+msgstr "kan inte konvertera %qT till %qT för argument %qP till %qD"
 
 #: cp/typeck.c:6076
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot convert %qT to %qT in %s"
-msgstr "kan inte konvertera typ %qT till typ %qT"
+msgstr "kan inte konvertera %qT till %qT i %s"
 
 #: cp/typeck.c:6087
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s might be a candidate for a format attribute"
-msgstr "returtypen kan vara en kandidat för ett formatattribut"
+msgstr "%s kan vara en kandidat för ett formatattribut"
 
 #: cp/typeck.c:6160 cp/typeck.c:6162
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "in passing argument %P of %q+D"
-msgstr "  initierar argument %P till %qD"
+msgstr "när argument %P till %q+D skickades"
 
 #: cp/typeck.c:6212
 #, gcc-internal-format
@@ -27453,14 +27463,14 @@ msgid "reference to non-lvalue returned"
 msgstr ""
 
 #: cp/typeck.c:6231
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "reference to local variable %q+D returned"
-msgstr "adress till global registervariabel %qD efterfrågad"
+msgstr "referens till lokal variabel %q+D returnerad"
 
 #: cp/typeck.c:6234
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address of local variable %q+D returned"
-msgstr "adress till global registervariabel %qD efterfrågad"
+msgstr "adress till lokal variabel %q+D returnerad"
 
 #: cp/typeck.c:6268
 #, gcc-internal-format
@@ -27476,19 +27486,19 @@ msgstr ""
 
 #. You can't return a value from a constructor.
 #: cp/typeck.c:6279
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "returning a value from a constructor"
-msgstr "returnerar ett värde från en destruktor"
+msgstr "returnerar ett värde från en konstruerare"
 
 #: cp/typeck.c:6302
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "return-statement with no value, in function returning %qT"
-msgstr "%<return%> utan värde i funktion som returnerar icke-void"
+msgstr "return-sats utan värde i funktion som returnerar %qT"
 
 #: cp/typeck.c:6323
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "return-statement with a value, in function returning 'void'"
-msgstr "%<return%> med värde i funktion som returnerar void"
+msgstr "return-sats med värde i funktion som returnerar \"void\""
 
 #: cp/typeck.c:6354
 #, gcc-internal-format
@@ -27496,50 +27506,50 @@ msgid "%<operator new%> must not return NULL unless it is declared %<throw()%> (
 msgstr ""
 
 #: cp/typeck2.c:54
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type %qT is not a base type for type %qT"
-msgstr "%s har ingen medlem med namn \"%s\""
+msgstr "typen %qT är inte en bastyp för typen %qT"
 
 #: cp/typeck2.c:294
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot declare variable %q+D to be of abstract type %qT"
-msgstr "kan inte deklarera \"::main\" som en mall"
+msgstr "det går inte att deklarera variabeln %q+D att vara av abstrakt typ %qT"
 
 #: cp/typeck2.c:297
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot declare parameter %q+D to be of abstract type %qT"
-msgstr "kan inte konvertera %qE från typ %qT till typ %qT"
+msgstr "det går inte att deklarera parametern %q+D att vara av abstrakt typ %qT"
 
 #: cp/typeck2.c:300
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot declare field %q+D to be of abstract type %qT"
-msgstr "kan inte deklarera \"::main\" som en mall"
+msgstr "det går inte att deklarera fältet %q+D att vara av abstrakt typ %qT"
 
 #: cp/typeck2.c:304
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid abstract return type for member function %q+#D"
-msgstr "ogiltig lagringsklass för funktionen %qs"
+msgstr "ogiltig abstrakt returtyp för medlemsfunktion %q+#D"
 
 #: cp/typeck2.c:306
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid abstract return type for function %q+#D"
-msgstr "ogiltig lagringsklass för funktionen %qs"
+msgstr "ogiltig abstrakt returtyp för funktionen %q+#D"
 
 #. Here we do not have location information.
 #: cp/typeck2.c:309
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid abstract type %qT for %qE"
-msgstr "ogiltigt vektortype för attributet %qE"
+msgstr "ogiltigt abstrakt typ %qT för %qE"
 
 #: cp/typeck2.c:311
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid abstract type for %q+D"
-msgstr "ogiltig registernamn för %q+D"
+msgstr "ogiltig abstrakt typ för %q+D"
 
 #: cp/typeck2.c:314
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot allocate an object of abstract type %qT"
-msgstr "statisk access till objekt av typ \"id\""
+msgstr "det går inte att allokera ett objekt av abstrakt typ %qT"
 
 #: cp/typeck2.c:322
 #, gcc-internal-format
@@ -27547,14 +27557,14 @@ msgid "%J  because the following virtual functions are pure within %qT:"
 msgstr ""
 
 #: cp/typeck2.c:326
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "\t%+#D"
-msgstr "%s %+#D"
+msgstr "\t%+#D"
 
 #: cp/typeck2.c:333
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J  since type %qT has pure virtual functions"
-msgstr "Kasta bort oanvända virtuella funktioner"
+msgstr "%J  eftersom typen %qT har rent virtuella funktioner"
 
 #: cp/typeck2.c:588
 #, gcc-internal-format
@@ -27567,9 +27577,9 @@ msgid "cannot initialize arrays using this syntax"
 msgstr ""
 
 #: cp/typeck2.c:678
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "int-array initialized from non-wide string"
-msgstr "wchar_t-vektor initierad från icke-vid sträng"
+msgstr "int-vektor initierad från icke-vid sträng"
 
 #: cp/typeck2.c:717
 #, gcc-internal-format
@@ -27577,44 +27587,44 @@ msgid "cannot initialize aggregate of type %qT with a compound literal"
 msgstr ""
 
 #: cp/typeck2.c:791 cp/typeck2.c:911
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-trivial designated initializers not supported"
-msgstr "ISO C89 förbjuder konstruktor-uttryck"
+msgstr "icketriviala designerade initierare stöds inte"
 
 #: cp/typeck2.c:934 cp/typeck2.c:948
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing initializer for member %qD"
-msgstr "antar pekare till medlem %qD"
+msgstr "initierare saknas för medlem %qD"
 
 #: cp/typeck2.c:939
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "uninitialized const member %qD"
-msgstr "ogiltigt startvärde för medlem %qs"
+msgstr "oinitierad const-medlem %qD"
 
 #: cp/typeck2.c:941
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "member %qD with uninitialized const fields"
-msgstr "parametern %qD är initierad"
+msgstr "medlem %qD med oinitierade const-fält"
 
 #: cp/typeck2.c:943
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "member %qD is uninitialized reference"
-msgstr "parametern %qD är initierad"
+msgstr "medlem %qD är oinitierad referens"
 
 #: cp/typeck2.c:998
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no field %qD found in union being initialized"
-msgstr "flera fält i unionen %qT initierade"
+msgstr "inget fält %qD finns i unionen som initieras"
 
 #: cp/typeck2.c:1007
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "index value instead of field name in union initializer"
-msgstr "överflödiga element i unioninitierare"
+msgstr "indexvärde istället för fältnamn i unioninitierare"
 
 #: cp/typeck2.c:1020
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "union %qT with no named members cannot be initialized"
-msgstr "ogenomskinlika vektortyper kan inte initieras"
+msgstr "unionen %qT utan namngivna medlemmar kan inte initieras"
 
 #: cp/typeck2.c:1167
 #, gcc-internal-format
@@ -27622,9 +27632,9 @@ msgid "circular pointer delegation detected"
 msgstr ""
 
 #: cp/typeck2.c:1180
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "base operand of %<->%> has non-pointer type %qT"
-msgstr "storlek på vektorn %qs är inte av heltalstyp"
+msgstr "basoperanden till %<->%> har icke-pekartyp %qT"
 
 #: cp/typeck2.c:1204
 #, gcc-internal-format
@@ -27632,14 +27642,14 @@ msgid "result of %<operator->()%> yields non-pointer result"
 msgstr ""
 
 #: cp/typeck2.c:1206
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "base operand of %<->%> is not a pointer"
-msgstr "basoperanden till \"->\" är inte en pekare"
+msgstr "basoperanden till %<->%> är inte en pekare"
 
 #: cp/typeck2.c:1230
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE cannot be used as a member pointer, since it is of type %qT"
-msgstr "parameter \"%s\" pekar på inkomplett typ"
+msgstr "%qE kan inte användas som en medlemspekare eftersom den är av typen %qT"
 
 #: cp/typeck2.c:1239
 #, gcc-internal-format
@@ -27652,14 +27662,14 @@ msgid "pointer to member type %qT incompatible with object type %qT"
 msgstr ""
 
 #: cp/typeck2.c:1484
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "call to function %qD which throws incomplete type %q#T"
-msgstr "ogiltig tillämpning av %qs på ofullständig typ %qT "
+msgstr "anrop till funktion %qD som kastar ofullständig typ %q#T"
 
 #: cp/typeck2.c:1487
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "call to function which throws incomplete type %q#T"
-msgstr "ogiltig tillämpning av %qs på ofullständig typ %qT "
+msgstr "anrop till funktion som kastar ofullständig typ %q#T"
 
 #: fortran/f95-lang.c:266
 #, gcc-internal-format
@@ -27667,29 +27677,29 @@ msgid "Unexpected type in truthvalue_conversion"
 msgstr ""
 
 #: fortran/f95-lang.c:319
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't open input file: %s"
-msgstr "Kan inte öppna inkluderad fil \"%s\""
+msgstr "Kan inte öppna indatafil: %s"
 
 #: fortran/f95-lang.c:646
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "global register variable %qs used in nested function"
-msgstr "global registervariabel %qD använd i nästlad funktion"
+msgstr "global registervariabel %qs använd i nästlad funktion"
 
 #: fortran/f95-lang.c:650
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "register variable %qs used in nested function"
-msgstr "registervariabel %qD använd i nästlad funktion"
+msgstr "registervariabel %qs använd i nästlad funktion"
 
 #: fortran/f95-lang.c:657
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address of global register variable %qs requested"
-msgstr "adress till global registervariabel %qD efterfrågad"
+msgstr "adress till global registervariabel %qs efterfrågad"
 
 #: fortran/f95-lang.c:675
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address of register variable %qs requested"
-msgstr "adress på registervariabeln %qD efterfrågad"
+msgstr "adress till registervariabeln %qs efterfrågad"
 
 #: fortran/trans-array.c:3136
 #, gcc-internal-format
@@ -27717,9 +27727,9 @@ msgid "intrinsic variable which isn't a procedure"
 msgstr ""
 
 #: fortran/trans-decl.c:2291
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Function does not return a value"
-msgstr "funktionen returnerar inte typen sträng"
+msgstr "Funktionen returnerar inte ett värde"
 
 #. I don't think this should ever happen.
 #: fortran/trans-decl.c:2401
@@ -27733,29 +27743,29 @@ msgid "backend decl for module variable %s already exists"
 msgstr ""
 
 #: fortran/trans-decl.c:2502
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unused parameter %qs"
-msgstr "oanvänd parameter %q+D"
+msgstr "oanvänd parameter %qs"
 
 #: fortran/trans-decl.c:2507
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unused variable %qs"
-msgstr "oanvänd variabel %q+D"
+msgstr "oanvänd variabel %qs"
 
 #: fortran/trans-decl.c:2727
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Function return value not set"
-msgstr "Felaktigt returvärde för funktion"
+msgstr "Funktionen returnerar ett värde som inte är satt"
 
 #: fortran/trans-expr.c:1052
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Unknown intrinsic op"
-msgstr "okänt instruktionsläge"
+msgstr "Okänd inbyggd op"
 
 #: fortran/trans-intrinsic.c:651
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Intrinsic function %s(%d) not recognized"
-msgstr "språk %s känns inte igen"
+msgstr "Inbyggd funktion %s(%d) känns inte igen"
 
 #: fortran/trans-io.c:1738
 #, gcc-internal-format
@@ -27790,9 +27800,9 @@ msgstr ""
 #. I changed this from sorry(...) because it should not return.
 #. TODO: Remove gfc_todo_error before releasing version 1.0.
 #: fortran/trans.h:590
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "gfc_todo: Not Implemented: "
-msgstr "ledsen, inte implementerat: "
+msgstr "gfc_todo: Inte implementerat: "
 
 #: java/check-init.c:248
 #, gcc-internal-format
@@ -27800,9 +27810,9 @@ msgid "Can't reassign a value to the final variable %qs"
 msgstr ""
 
 #: java/check-init.c:518 java/check-init.c:531
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %qD may not have been initialized"
-msgstr "objekt med variabel storlek kan inte initieras"
+msgstr "variabeln %qD är kanske inte initierad"
 
 #: java/check-init.c:948
 #, gcc-internal-format
@@ -27810,9 +27820,9 @@ msgid "internal error in check-init: tree code not implemented: %s"
 msgstr ""
 
 #: java/check-init.c:1021
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jfinal field %qD may not have been initialized"
-msgstr "objekt med variabel storlek kan inte initieras"
+msgstr "%Jslutligt fält %qD får inte ha initierats"
 
 #: java/class.c:766
 #, gcc-internal-format
@@ -27825,9 +27835,9 @@ msgid "misplaced ConstantValue attribute (not in any field)"
 msgstr ""
 
 #: java/class.c:814
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate ConstantValue attribute for field '%s'"
-msgstr "Dubblerade %s-attribut angivna vid %L"
+msgstr "dubblerade ConstantValue-attribut för fält \"%s\""
 
 #: java/class.c:825
 #, gcc-internal-format
@@ -27840,24 +27850,24 @@ msgid "%Jabstract method in non-abstract class"
 msgstr ""
 
 #: java/class.c:2389
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-static method %q+D overrides static method"
-msgstr "icke-statisk deklaration av %q+D följer på statisk deklaration"
+msgstr "icke-statisk metod %q+D åsidosätter statisk metod"
 
 #: java/decl.c:1328
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D used prior to declaration"
-msgstr "%Hprototypdeklaration"
+msgstr "%q+D använd före deklarationen"
 
 #: java/decl.c:1369
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qs shadows a parameter"
-msgstr "deklaration av %q+D skuggar en parameter"
+msgstr "deklaration av %qs skuggar en parameter"
 
 #: java/decl.c:1372
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qs shadows a symbol from the parameter list"
-msgstr "deklaration av %q+D skuggar en parameter"
+msgstr "deklaration av %qs skuggar en symbol från parameterlistan"
 
 #: java/decl.c:1833
 #, gcc-internal-format
@@ -27895,9 +27905,9 @@ msgid "reference %qs is ambiguous: appears in interface %qs and interface %qs"
 msgstr ""
 
 #: java/expr.c:1683
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "field %qs not found"
-msgstr "biblioteket lib%s finns inte"
+msgstr "fält %qs finns inte"
 
 #: java/expr.c:2092
 #, gcc-internal-format
@@ -27935,9 +27945,9 @@ msgid "missing field '%s' in '%s'"
 msgstr ""
 
 #: java/expr.c:2712
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "mismatching signature for field '%s' in '%s'"
-msgstr "%s: kan inte ta status på filen \"%s\": %s\n"
+msgstr "signaturen stämmer inte för fält \"%s\" i \"%s\""
 
 #: java/expr.c:2735
 #, gcc-internal-format
@@ -27955,9 +27965,9 @@ msgid "assignment to final field %q+D not in constructor"
 msgstr ""
 
 #: java/expr.c:2939
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid PC in line number table"
-msgstr "ogiltigt versionsnummer \"%s\""
+msgstr "ogiltigt PC i radnummertabell"
 
 #: java/expr.c:2987
 #, gcc-internal-format
@@ -27971,9 +27981,9 @@ msgstr ""
 
 #. duplicate code from LOAD macro
 #: java/expr.c:3329
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecogized wide sub-instruction"
-msgstr "förutsade Thumb-instruktion"
+msgstr "okänd vid underinstruktion"
 
 #: java/gjavah.c:718
 #, gcc-internal-format
@@ -27981,14 +27991,14 @@ msgid "static field has same name as method"
 msgstr ""
 
 #: java/gjavah.c:1266
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "couldn't find class %s"
-msgstr "kunde inte hitta klassen \"%s\""
+msgstr "kunde inte hitta klassen %s"
 
 #: java/gjavah.c:1273
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parse error while reading %s"
-msgstr "fel under tolkning av fält\n"
+msgstr "tolkningsfel när %s lästes"
 
 #: java/gjavah.c:1499 java/gjavah.c:1601 java/gjavah.c:1676
 #, gcc-internal-format
@@ -27996,19 +28006,19 @@ msgid "unparseable signature: '%s'"
 msgstr ""
 
 #: java/gjavah.c:2066
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Not a valid Java .class file."
-msgstr "Inte en giltig Java-.class-fil.\n"
+msgstr "Inte en giltig Java-.class-fil."
 
 #: java/gjavah.c:2074 java/jcf-parse.c:756
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error while parsing constant pool"
-msgstr "fel under tolkning av konstantpool\n"
+msgstr "fel under tolkning av konstantpool"
 
 #: java/gjavah.c:2080
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error in constant pool entry #%d"
-msgstr "fel i konstantpoolpost nummer %d\n"
+msgstr "fel i konstantpoolpost nummer %d"
 
 #: java/gjavah.c:2223
 #, gcc-internal-format
@@ -28016,24 +28026,24 @@ msgid "class is of array type\n"
 msgstr ""
 
 #: java/gjavah.c:2231
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "base class is of array type"
-msgstr "fält \"%s\" har en inkomplett typ"
+msgstr "basklassen har vetktortyp"
 
 #: java/gjavah.c:2429 java/gjavah.c:2556
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no classes specified"
-msgstr "jcf-dump: inga klasser angivna\n"
+msgstr "inga klasser angivna"
 
 #: java/gjavah.c:2522
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "'-MG' option is unimplemented"
-msgstr "\"-%c\"-flaggan måste ha argument"
+msgstr "flaggan \"-MG\" är inte implementerad"
 
 #: java/gjavah.c:2564
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't specify both -o and -MD"
-msgstr "kan inte ange både -C och -o"
+msgstr "det går inte att ange både -o och -MD"
 
 #: java/gjavah.c:2587
 #, gcc-internal-format
@@ -28046,9 +28056,9 @@ msgid "source file for class %qs is newer than its matching class file.  Source 
 msgstr ""
 
 #: java/jcf-parse.c:372
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad string constant"
-msgstr "lagringsstorlek är inte konstant"
+msgstr "felaktig strängkonstant"
 
 #: java/jcf-parse.c:390
 #, gcc-internal-format
@@ -28056,24 +28066,24 @@ msgid "bad value constant type %d, index %d"
 msgstr ""
 
 #: java/jcf-parse.c:582
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't reopen %s: %m"
-msgstr "kan inte öppna %s: %m"
+msgstr "kan inte återöppna %s: %m"
 
 #: java/jcf-parse.c:589
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't close %s: %m"
-msgstr "kan inte öppna %s: %m"
+msgstr "kan inte stänga %s: %m"
 
 #: java/jcf-parse.c:724 java/jcf-parse.c:730
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot find file for class %s"
-msgstr "[kan inte hitta %s]"
+msgstr "kan inte hitta filen för klass %s"
 
 #: java/jcf-parse.c:753
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "not a valid Java .class file"
-msgstr "Inte en giltig Java-.class-fil.\n"
+msgstr "inte en giltig Java-.class-fil."
 
 #. FIXME - where was first time
 #: java/jcf-parse.c:771
@@ -28082,19 +28092,19 @@ msgid "reading class %s for the second time from %s"
 msgstr ""
 
 #: java/jcf-parse.c:789
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error while parsing fields"
-msgstr "fel under tolkning av fält\n"
+msgstr "fel under tolkning av fält"
 
 #: java/jcf-parse.c:792
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error while parsing methods"
-msgstr "fel vid tolkning av metoder\n"
+msgstr "fel vid tolkning av metoder"
 
 #: java/jcf-parse.c:795
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error while parsing final attributes"
-msgstr "fel vid tolkning av avslutande attribut\n"
+msgstr "fel vid tolkning av slutliga attribut"
 
 #: java/jcf-parse.c:812
 #, gcc-internal-format
@@ -28107,19 +28117,19 @@ msgid "%Hduplicate class will only be compiled once"
 msgstr ""
 
 #: java/jcf-parse.c:900
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing Code attribute"
-msgstr "startparentes saknas"
+msgstr "Code-attribut saknas"
 
 #: java/jcf-parse.c:1182
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no input file specified"
-msgstr "inga indatafiler"
+msgstr "ingen indatafil angiven"
 
 #: java/jcf-parse.c:1217
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't close input file %s: %m"
-msgstr "kan inte söka i %s: %m"
+msgstr "kan inte stänga indatafilen %s: %m"
 
 #: java/jcf-parse.c:1264
 #, gcc-internal-format
@@ -28127,9 +28137,9 @@ msgid "bad zip/jar file %s"
 msgstr ""
 
 #: java/jcf-parse.c:1485
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "error while reading %s from zip file"
-msgstr "fel under tolkning av fält\n"
+msgstr "fel när %s lästes från zip-fil"
 
 #: java/jcf-write.c:2668
 #, gcc-internal-format
@@ -28137,24 +28147,24 @@ msgid "internal error in generate_bytecode_insn - tree code not implemented: %s"
 msgstr ""
 
 #: java/jcf-write.c:3042
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "field initializer type mismatch"
-msgstr "fältinitierare är ej konstant"
+msgstr "typ på fältinitierare stämmer inte"
 
 #: java/jcf-write.c:3499
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't create directory %s: %m"
-msgstr "kan inte skriva till %s: %m"
+msgstr "kan inte skapa katalogen %s: %m"
 
 #: java/jcf-write.c:3532
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't open %s for writing: %m"
 msgstr "kan inte öppna %s för skrivning: %m"
 
 #: java/jcf-write.c:3552
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't create %s: %m"
-msgstr "kan inte läsa %s: %m"
+msgstr "kan inte skapa %s: %m"
 
 #: java/jv-scan.c:194
 #, gcc-internal-format
@@ -28162,14 +28172,14 @@ msgid "only one of '--print-main', '--list-class', and '--complexity' allowed"
 msgstr ""
 
 #: java/jv-scan.c:197
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't open output file '%s'"
-msgstr "Kan inte öppna filen \"%s\""
+msgstr "kan inte öppna utdatafilen \"%s\""
 
 #: java/jv-scan.c:233
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "file not found '%s'"
-msgstr "kan inte hitta \"%s\""
+msgstr "filen finns inte \"%s\""
 
 #: java/jvspec.c:436
 #, gcc-internal-format
@@ -28197,9 +28207,9 @@ msgid ""
 msgstr ""
 
 #: java/lex.c:631
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "internal error - bad unget"
-msgstr "internt fel - ogiltigt Utf8-namn"
+msgstr "internt fel - felaktig unget"
 
 #: java/mangle_name.c:140 java/mangle_name.c:210
 #, gcc-internal-format
@@ -28207,9 +28217,9 @@ msgid "internal error - invalid Utf8 name"
 msgstr "internt fel - ogiltigt Utf8-namn"
 
 #: java/typeck.c:531
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of signature string"
-msgstr "skräp vid slutet av \"#pragma options\""
+msgstr "skräp vid slutet av signatursträng"
 
 #: java/verify-glue.c:387
 #, gcc-internal-format
@@ -28232,15 +28242,15 @@ msgid "%s method can't be abstract"
 msgstr ""
 
 #: java/parse.h:133
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Constructor can't be %s"
-msgstr "destruerare behövs för \"%#D\""
+msgstr "Konstruerare kan inte vara %s"
 
 #. Standard error messages
 #: java/parse.h:356
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Incompatible type for %qs. Can't convert %qs to boolean"
-msgstr "inkompatibel typ för argument %d av %qE"
+msgstr "Inkompatibel typ %qs.  Det går inte att konvertera %qs till boolesk"
 
 #: java/parse.h:361
 #, gcc-internal-format
@@ -28253,29 +28263,29 @@ msgid "Incompatible type for %qs. Explicit cast needed to convert %qs to integra
 msgstr ""
 
 #: java/parse.h:374
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Incompatible type for %qs. Can't convert %qs to integral"
-msgstr "inkompatibel typ för argument %d av %qE"
+msgstr "Inkompatibel typ för %qs.  Det går inte att konvertera %qs till heltalstyp"
 
 #: java/parse.h:381
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Variable %qs may not have been initialized"
-msgstr "objekt med variabel storlek kan inte initieras"
+msgstr "Variabeln %qs har kanske inte initierats"
 
 #: objc/objc-act.c:710
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<@end%> must appear in an @implementation context"
-msgstr "[super ...] måste stå i metodkontext"
+msgstr "%<@end%> måste stå i @implementation-kontext"
 
 #: objc/objc-act.c:739
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "method declaration not in @interface context"
-msgstr "Generera deklarationsinfo till <fil>"
+msgstr "metoddeklaration som inte är i @interface-kontext"
 
 #: objc/objc-act.c:750
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "method definition not in @implementation context"
-msgstr "metoddefinition för \"%c%s\" kan inte hittas"
+msgstr "metoddefinition som inte är i @implementation-kontext"
 
 #: objc/objc-act.c:1174
 #, gcc-internal-format
@@ -28283,9 +28293,9 @@ msgid "comparison of distinct Objective-C types lacks a cast"
 msgstr ""
 
 #: objc/objc-act.c:1178
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialization from distinct Objective-C type"
-msgstr "initiering från inkompatibel pekartyp"
+msgstr "initiering från distinkt Objective-C-typ"
 
 #: objc/objc-act.c:1182
 #, fuzzy, gcc-internal-format
