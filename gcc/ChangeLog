@@ -1,5 +1,13 @@
 2006-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c/27490
+	PR c/27489
+	* c-typeck.c (build_compound_expr): If the second expression
+	is an error mark, then just return an error mark instead of
+	creating a COMPOUND_EXPR.
+
+2006-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/28952
 	* tree-vect-transform.c (vectorizable_condition): Move the check
 	for the type after the check for simple condition.

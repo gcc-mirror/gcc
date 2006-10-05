@@ -1,5 +1,13 @@
 2006-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c/27490
+	* gcc.dg/sizeof-2.c: New testcase.
+
+	PR c/27489
+	* gcc.dg/switch-A.c: New testcase.
+
+2006-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/28952
 	* gcc.dg/vect/pr28952.c: New test.
 
