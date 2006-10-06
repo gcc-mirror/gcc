@@ -1,3 +1,8 @@
+2006-10-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29368
+	* include/bits/basic_string.h: Adjust rfind documentation.
+
 2006-04-10  Matthias Klose  <doko@debian.org>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Recognize multilib
