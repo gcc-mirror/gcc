@@ -1,5 +1,8 @@
 2006-10-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-loop-linear.c (linear_transform_loops): Don't forget to
+	free DEPENDENCE_RELATIONS and DATAREFS.
+
 	PR target/28924
 	* builtins.c (expand_builtin_sync_operation,
 	expand_builtin_compare_and_swap, expand_builtin_lock_test_and_set):
