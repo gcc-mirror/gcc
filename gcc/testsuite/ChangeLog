@@ -1,3 +1,8 @@
+2006-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/28415
+	* gfortran.dg/save_2.f90: New test.
+
 2006-10-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/28349
