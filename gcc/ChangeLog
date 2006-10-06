@@ -1,3 +1,9 @@
+2006-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/29091
+	* varasm.c (output_constant): If TREE_VECTOR_CST_ELTS chain is shorter than
+	the number of vector elements fill the rest with zeros.
+
 2006-10-05  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (mips_pass_by_reference): Do not return false

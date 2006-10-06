@@ -1,3 +1,8 @@
+2006-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/29091
+	* gcc.dg/pr29091.c: New test.
+
 2006-10-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/target-supports.exp
