@@ -1,3 +1,8 @@
+2006-10-06  Olivier Hainque  <hainque@adacore.com>
+	
+	* gcc.dg/typename-vla-1.c: New case.
+	* gnat.dg/forward_vla.adb: New case.
+
 2006-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/29290
