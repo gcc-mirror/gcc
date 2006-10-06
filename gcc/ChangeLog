@@ -1,5 +1,17 @@
 2006-10-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/29330
+	* tree-data-ref.c (free_data_ref): Use DR_FREE_ACCESS_FNS macro.
+	(initialize_data_dependence_relation): Clear DDR_LOOP_NEST pointer
+	on newly allocated ddrs.
+	(find_loop_nest_1, find_loop_nest): Change LOOP_NEST to a pointer
+	to VEC (loop_p, heap) pointer.
+	(compute_data_dependences_for_loop): Adjust caller.
+	(free_dependence_relations): Free DDR_LOOP_NEST.
+
+	* tree-loop-linear.c (linear_transform_loops): Don't forget to
+	free DEPENDENCE_RELATIONS and DATAREFS.
+
 	PR target/28924
 	* builtins.c (expand_builtin_sync_operation,
 	expand_builtin_compare_and_swap, expand_builtin_lock_test_and_set):
