@@ -1,3 +1,10 @@
+2006-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* scanner.c (skip_free_comments): Return bool instead of void.
+	(gfc_next_char_literal): Don't return ' ' if & is missing after
+	!$omp or !$.  Use skip_{free,fixed}_comments directly instead
+	of gfc_skip_comments.
+
 2006-10-04  Brooks Moses  <bmoses@stanford.edu>
 
 	* gfortran.texi: (Current Status): update and rewrite to reflect
