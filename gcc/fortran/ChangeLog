@@ -1,5 +1,10 @@
 2006-10-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/28415
+	* trans-decl.c (gfc_finish_var_decl): With -fno-automatic, don't
+	make artificial variables or pointer to variable automatic array
+	TREE_STATIC.
+
 	* scanner.c (skip_free_comments): Return bool instead of void.
 	(gfc_next_char_literal): Don't return ' ' if & is missing after
 	!$omp or !$.  Use skip_{free,fixed}_comments directly instead

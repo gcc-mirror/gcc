@@ -1,5 +1,8 @@
 2006-10-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/28415
+	* gfortran.dg/save_2.f90: New test.
+
 	PR c/29091
 	* gcc.dg/pr29091.c: New test.
 
