@@ -442,6 +442,9 @@
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
 
+  if (SYMBOL_REF_TLS_MODEL (op) != 0)
+    return 0;
+
   if (SYMBOL_REF_LOCAL_P (op))
     return 1;
 
