@@ -835,6 +835,13 @@ determine_base_object (tree expr)
   enum tree_code code = TREE_CODE (expr);
   tree base, obj, op0, op1;
 
+  /* If this is a pointer casted to any type, we need to determine
+     the base object for the pointer; so handle conversions before
+     throwing away non-pointer expressions.  */
+  if (TREE_CODE (expr) == NOP_EXPR
+      || TREE_CODE (expr) == CONVERT_EXPR)
+    return determine_base_object (TREE_OPERAND (expr, 0));
+
   if (!POINTER_TYPE_P (TREE_TYPE (expr)))
     return NULL_TREE;
 
@@ -870,10 +877,6 @@ determine_base_object (tree expr)
 		: fold_build1 (NEGATE_EXPR, ptr_type_node, op1));
 
       return fold_build2 (code, ptr_type_node, op0, op1);
-
-    case NOP_EXPR:
-    case CONVERT_EXPR:
-      return determine_base_object (TREE_OPERAND (expr, 0));
 
     default:
       return fold_convert (ptr_type_node, expr);
@@ -3371,9 +3374,7 @@ get_address_cost (bool symbol_present, bool var_present,
   static HOST_WIDE_INT min_offset, max_offset;
   static unsigned costs[2][2][2][2];
   unsigned cost, acost;
-  rtx seq, addr, base;
   bool offset_p, ratio_p;
-  rtx reg1;
   HOST_WIDE_INT s_offset;
   unsigned HOST_WIDE_INT mask;
   unsigned bits;
@@ -3381,6 +3382,11 @@ get_address_cost (bool symbol_present, bool var_present,
   if (!initialized)
     {
       HOST_WIDE_INT i;
+      int old_cse_not_expected;
+      unsigned sym_p, var_p, off_p, rat_p, add_c;
+      rtx seq, addr, base;
+      rtx reg0, reg1;
+
       initialized = true;
 
       reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
@@ -3417,6 +3423,114 @@ get_address_cost (bool symbol_present, bool var_present,
 	    rat = i;
 	    break;
 	  }
+
+      /* Compute the cost of various addressing modes.  */
+      acost = 0;
+      reg0 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
+      reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 2);
+
+      for (i = 0; i < 16; i++)
+	{
+	  sym_p = i & 1;
+	  var_p = (i >> 1) & 1;
+	  off_p = (i >> 2) & 1;
+	  rat_p = (i >> 3) & 1;
+
+	  addr = reg0;
+	  if (rat_p)
+	    addr = gen_rtx_fmt_ee (MULT, Pmode, addr, gen_int_mode (rat, Pmode));
+
+	  if (var_p)
+	    addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, reg1);
+
+	  if (sym_p)
+	    {
+	      base = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (""));
+	      if (off_p)
+		base = gen_rtx_fmt_e (CONST, Pmode,
+				      gen_rtx_fmt_ee (PLUS, Pmode,
+						      base,
+						      gen_int_mode (off, Pmode)));
+	    }
+	  else if (off_p)
+	    base = gen_int_mode (off, Pmode);
+	  else
+	    base = NULL_RTX;
+    
+	  if (base)
+	    addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, base);
+  
+	  start_sequence ();
+	  /* To avoid splitting addressing modes, pretend that no cse will
+	     follow.  */
+	  old_cse_not_expected = cse_not_expected;
+	  cse_not_expected = true;
+	  addr = memory_address (Pmode, addr);
+	  cse_not_expected = old_cse_not_expected;
+	  seq = get_insns ();
+	  end_sequence ();
+
+	  acost = seq_cost (seq);
+	  acost += address_cost (addr, Pmode);
+
+	  if (!acost)
+	    acost = 1;
+	  costs[sym_p][var_p][off_p][rat_p] = acost;
+	}
+
+      /* On some targets, it is quite expensive to load symbol to a register,
+	 which makes addresses that contain symbols look much more expensive.
+	 However, the symbol will have to be loaded in any case before the
+	 loop (and quite likely we have it in register already), so it does not
+	 make much sense to penalize them too heavily.  So make some final
+         tweaks for the SYMBOL_PRESENT modes:
+
+         If VAR_PRESENT is false, and the mode obtained by changing symbol to
+	 var is cheaper, use this mode with small penalty.
+	 If VAR_PRESENT is true, try whether the mode with
+	 SYMBOL_PRESENT = false is cheaper even with cost of addition, and
+	 if this is the case, use it.  */
+      add_c = add_cost (Pmode);
+      for (i = 0; i < 8; i++)
+	{
+	  var_p = i & 1;
+	  off_p = (i >> 1) & 1;
+	  rat_p = (i >> 2) & 1;
+
+	  acost = costs[0][1][off_p][rat_p] + 1;
+	  if (var_p)
+	    acost += add_c;
+
+	  if (acost < costs[1][var_p][off_p][rat_p])
+	    costs[1][var_p][off_p][rat_p] = acost;
+	}
+  
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Address costs:\n");
+      
+	  for (i = 0; i < 16; i++)
+	    {
+	      sym_p = i & 1;
+	      var_p = (i >> 1) & 1;
+	      off_p = (i >> 2) & 1;
+	      rat_p = (i >> 3) & 1;
+
+	      fprintf (dump_file, "  ");
+	      if (sym_p)
+		fprintf (dump_file, "sym + ");
+	      if (var_p)
+		fprintf (dump_file, "var + ");
+	      if (off_p)
+		fprintf (dump_file, "cst + ");
+	      if (rat_p)
+		fprintf (dump_file, "rat * ");
+
+	      acost = costs[sym_p][var_p][off_p][rat_p];
+	      fprintf (dump_file, "index costs %d\n", acost);
+	    }
+	  fprintf (dump_file, "\n");
+	}
     }
 
   bits = GET_MODE_BITSIZE (Pmode);
@@ -3442,54 +3556,6 @@ get_address_cost (bool symbol_present, bool var_present,
     }
 
   acost = costs[symbol_present][var_present][offset_p][ratio_p];
-  if (!acost)
-    {
-      int old_cse_not_expected;
-      acost = 0;
-      
-      addr = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
-      reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 2);
-      if (ratio_p)
-	addr = gen_rtx_fmt_ee (MULT, Pmode, addr, gen_int_mode (rat, Pmode));
-
-      if (var_present)
-	addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, reg1);
-
-      if (symbol_present)
-	{
-	  base = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (""));
-	  if (offset_p)
-	    base = gen_rtx_fmt_e (CONST, Pmode,
-				  gen_rtx_fmt_ee (PLUS, Pmode,
-						  base,
-						  gen_int_mode (off, Pmode)));
-	}
-      else if (offset_p)
-	base = gen_int_mode (off, Pmode);
-      else
-	base = NULL_RTX;
-    
-      if (base)
-	addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, base);
-  
-      start_sequence ();
-      /* To avoid splitting addressing modes, pretend that no cse will
- 	 follow.  */
-      old_cse_not_expected = cse_not_expected;
-      cse_not_expected = true;
-      addr = memory_address (Pmode, addr);
-      cse_not_expected = old_cse_not_expected;
-      seq = get_insns ();
-      end_sequence ();
-  
-      acost = seq_cost (seq);
-      acost += address_cost (addr, Pmode);
-
-      if (!acost)
-	acost = 1;
-      costs[symbol_present][var_present][offset_p][ratio_p] = acost;
-    }
-
   return cost + acost;
 }
 
