@@ -1,3 +1,10 @@
+2006-10-06  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	PR rtl-optimization/29128
+	* sched-int.h (IS_SPECULATION_BRANCHY_CHECK_P): New macro.
+	* sched-ebb.c (advance_target_bb): Use it to fix condition to
+	allow interblock movement of speculation checks.
+
 2006-10-06  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR middle-end/29256
