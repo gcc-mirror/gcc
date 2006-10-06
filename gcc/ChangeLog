@@ -1,5 +1,9 @@
 2006-10-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/29198
+	* config/i386/i386.c (legitimize_pic_address): Reject TLS symbols.
+	* config/i386/predicates.md (local_symbolic_operand): Likewise.
+
 	PR c/29091
 	* varasm.c (output_constant): If TREE_VECTOR_CST_ELTS chain is shorter than
 	the number of vector elements fill the rest with zeros.
