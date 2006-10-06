@@ -1092,18 +1092,33 @@ proc check_effective_target_lp64 { } {
 
 # Return 1 if the target needs a command line argument to enable a SIMD
 # instruction set.
-#
-# This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_cmdline_needed { } {
     global et_vect_cmdline_needed_saved
+    global et_vect_cmdline_needed_target_name
+
+    if { ![info exists et_vect_cmdline_needed_target_name] } {
+	set et_vect_cmdline_needed_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_vect_cmdline_needed_target_name } {
+	verbose "check_effective_target_vect_cmdline_needed: `$et_vect_cmdline_needed_target_name' `$current_target'" 2
+	set et_vect_cmdline_needed_target_name $current_target
+	if { [info exists et_vect_cmdline_needed_saved] } {
+	    verbose "check_effective_target_vect_cmdline_needed: removing cached result" 2
+	    unset et_vect_cmdline_needed_saved
+	}
+    }
 
     if [info exists et_vect_cmdline_needed_saved] {
 	verbose "check_effective_target_vect_cmdline_needed: using cached result" 2
     } else {
 	set et_vect_cmdline_needed_saved 1
 	if { [istarget ia64-*-*]
-	      || [istarget x86_64-*-*] } {
+	     || (([istarget x86_64-*-*] || [istarget i?86-*-*])
+		 && [check_effective_target_lp64])} {
 	   set et_vect_cmdline_needed_saved 0
 	}
     }
