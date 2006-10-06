@@ -1,5 +1,9 @@
 2006-10-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/29290
+	* tree-loop-linear.c (linear_transform_loops): Bail if loop_nest has
+	multiple exits.
+
 	PR target/29198
 	* config/i386/i386.c (legitimize_pic_address): Reject TLS symbols.
 	* config/i386/predicates.md (local_symbolic_operand): Likewise.
