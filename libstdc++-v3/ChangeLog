@@ -1,5 +1,11 @@
 2006-10-06  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/29368
+	* include/bits/basic_string.h: Adjust rfind documentation.
+	* include/ext/vstring.h: Likewise.
+
+2006-10-06  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/29354
 	* include/bits/sstream.tcc (basic_stringbuf<>::seekpos(pos_type,
 	ios_base::openmode)): Allow for seek to pos_type(off_type(0))

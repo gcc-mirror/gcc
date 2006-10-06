@@ -1,6 +1,6 @@
 // Versatile string -*- C++ -*-
 
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1365,7 +1365,7 @@ namespace __gnu_cxx
       /**
        *  @brief  Find last position of a C string.
        *  @param s  C string to locate.
-       *  @param pos  Index of character to start search at (default 0).
+       *  @param pos  Index of character to start search at (default end).
        *  @return  Index of start of  last occurrence.
        *
        *  Starting from @a pos, searches backward for the value of @a s within
@@ -1382,7 +1382,7 @@ namespace __gnu_cxx
       /**
        *  @brief  Find last position of a character.
        *  @param c  Character to locate.
-       *  @param pos  Index of character to search back from (default 0).
+       *  @param pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
        *  Starting from @a pos, searches backward for @a c within this string.

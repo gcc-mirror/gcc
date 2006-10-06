@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1623,7 +1623,7 @@ namespace std
       /**
        *  @brief  Find last position of a C string.
        *  @param s  C string to locate.
-       *  @param pos  Index of character to start search at (default 0).
+       *  @param pos  Index of character to start search at (default end).
        *  @return  Index of start of  last occurrence.
        *
        *  Starting from @a pos, searches backward for the value of @a s within
@@ -1640,7 +1640,7 @@ namespace std
       /**
        *  @brief  Find last position of a character.
        *  @param c  Character to locate.
-       *  @param pos  Index of character to search back from (default 0).
+       *  @param pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
        *  Starting from @a pos, searches backward for @a c within this string.
