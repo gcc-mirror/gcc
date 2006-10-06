@@ -109,6 +109,6 @@ do {						         \
 #undef WINT_TYPE
 #define WINT_TYPE "short unsigned int"
 
-/* mingw32 doesn't understand the -pthread option.  */
+/* mingw32 uses the  -mthreads option to enable thread support.  */
 #undef GOMP_SELF_SPECS
-#define GOMP_SELF_SPECS ""
+#define GOMP_SELF_SPECS "%{fopenmp: -mthreads}"
