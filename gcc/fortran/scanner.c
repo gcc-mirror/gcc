@@ -327,9 +327,11 @@ skip_comment_line (void)
 
 
 /* Comment lines are null lines, lines containing only blanks or lines
-   on which the first nonblank line is a '!'.  */
+   on which the first nonblank line is a '!'.
+   Return true if !$ openmp conditional compilation sentinel was
+   seen.  */
 
-static void
+static bool
 skip_free_comments (void)
 {
   locus start;
@@ -379,7 +381,7 @@ skip_free_comments (void)
 			      openmp_flag = 1;
 			      openmp_locus = old_loc;
 			      gfc_current_locus = start;
-			      return;
+			      return false;
 			    }
 			}
 		      gfc_current_locus = old_loc;
@@ -390,7 +392,7 @@ skip_free_comments (void)
 		    {
 		      gfc_current_locus = old_loc;
 		      next_char ();
-		      return;
+		      return true;
 		    }
 		}
 	      gfc_current_locus = old_loc;
@@ -405,6 +407,7 @@ skip_free_comments (void)
   if (openmp_flag && at_bol)
     openmp_flag = 0;
   gfc_current_locus = start;
+  return false;
 }
 
 
@@ -597,6 +600,8 @@ restart:
 
   if (gfc_current_form == FORM_FREE)
     {
+      bool openmp_cond_flag;
+
       if (!in_string && c == '!')
 	{
 	  if (openmp_flag
@@ -668,7 +673,7 @@ restart:
       continue_line = gfc_current_locus.lb->linenum;
 
       /* Now find where it continues. First eat any comment lines.  */
-      gfc_skip_comments ();
+      openmp_cond_flag = skip_free_comments ();
 
       if (prev_openmp_flag != openmp_flag)
 	{
@@ -709,6 +714,10 @@ restart:
 		gfc_warning_now ("Missing '&' in continued character constant at %C");
 	      gfc_current_locus.nextc--;
 	    }
+	  /* Both !$omp and !$ -fopenmp continuation lines have & on the
+	     continuation line only optionally.  */
+	  else if (openmp_flag || openmp_cond_flag)
+	    gfc_current_locus.nextc--;
 	  else
 	    {
 	      c = ' ';
@@ -741,7 +750,7 @@ restart:
       old_loc = gfc_current_locus;
 
       gfc_advance_line ();
-      gfc_skip_comments ();
+      skip_fixed_comments ();
 
       /* See if this line is a continuation line.  */
       if (openmp_flag != prev_openmp_flag)
