@@ -1,3 +1,9 @@
+2006-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_cmdline_needed): Handle i?86-*-* the
+	same as x86_64-*-*; check for LP64.
+
 2006-10-04  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_tls): Redefine
