@@ -233,7 +233,7 @@
   [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(plus:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
+	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
@@ -243,7 +243,7 @@
   [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(minus:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
+	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
@@ -253,7 +253,7 @@
   [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(ior:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
+	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
@@ -263,7 +263,7 @@
   [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(and:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
+	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""
@@ -273,7 +273,7 @@
   [(set (match_operand:IMODE 0 "memory_operand" "+m")
 	(unspec_volatile:IMODE
 	  [(xor:IMODE (match_dup 0)
-	     (match_operand:IMODE 1 "nonmemory_operand" "r<immconstraint>"))]
+	     (match_operand:IMODE 1 "nonmemory_operand" "<modeconstraint><immconstraint>"))]
 	  UNSPECV_LOCK))
    (clobber (reg:CC FLAGS_REG))]
   ""

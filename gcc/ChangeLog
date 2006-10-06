@@ -1,3 +1,9 @@
+2006-10-05  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/sync.md ("sync_add<mode>", "sync_sub<mode>",
+	"sync_ior<mode>", "sync_and<mode>", "sync_xor<mode>"):
+	Use <modeconstraint> instead of "r" as operand 1 constraint.
+
 2006-10-06  Olivier Hainque  <hainque@adacore.com>
 	
 	* gimplify.c (gimplify_type_sizes) [POINTER_TYPE, REFERENCE_TYPE]:
