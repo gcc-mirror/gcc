@@ -1,3 +1,8 @@
+2006-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/28924
+	* gcc.c-torture/compile/20061005-1.c: New test.
+
 2006-10-06  Olivier Hainque  <hainque@adacore.com>
 	
 	* gcc.dg/typename-vla-1.c: New case.

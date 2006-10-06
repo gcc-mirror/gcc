@@ -1,3 +1,10 @@
+2006-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/28924
+	* builtins.c (expand_builtin_sync_operation,
+	expand_builtin_compare_and_swap, expand_builtin_lock_test_and_set):
+	Use convert_to_mode to handle promoted arguments.
+
 2006-10-06  J"orn Rennecke  <joern.rennecke@st.com>
 
 	* print-tree.c (print_node_brief, print_node): Print sign of Inf.
