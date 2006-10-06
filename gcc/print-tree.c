@@ -138,7 +138,7 @@ print_node_brief (FILE *file, const char *prefix, tree node, int indent)
 
       d = TREE_REAL_CST (node);
       if (REAL_VALUE_ISINF (d))
-	fprintf (file, " Inf");
+	fprintf (file,  REAL_VALUE_NEGATIVE (d) ? " -Inf" : " Inf");
       else if (REAL_VALUE_ISNAN (d))
 	fprintf (file, " Nan");
       else
@@ -709,7 +709,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
 	    d = TREE_REAL_CST (node);
 	    if (REAL_VALUE_ISINF (d))
-	      fprintf (file, " Inf");
+	      fprintf (file,  REAL_VALUE_NEGATIVE (d) ? " -Inf" : " Inf");
 	    else if (REAL_VALUE_ISNAN (d))
 	      fprintf (file, " Nan");
 	    else

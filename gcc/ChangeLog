@@ -1,5 +1,9 @@
 2006-10-06  J"orn Rennecke  <joern.rennecke@st.com>
 
+	* print-tree.c (print_node_brief, print_node): Print sign of Inf.
+
+2006-10-06  J"orn Rennecke  <joern.rennecke@st.com>
+
 	* config/sh/sh.h (LIBGCC2_DOUBLE_TYPE_SIZE): Define.
 
 2006-10-05  Uros Bizjak  <uros@kss-loka.si>
