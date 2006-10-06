@@ -33,8 +33,11 @@
 
 #ifdef HAVE_ATTRIBUTE_ALIAS
 /* Use internal aliases if possible.  */
+#define ULP	STR1(__USER_LABEL_PREFIX__)
+#define STR1(x)	STR2(x)
+#define STR2(x)	#x
 # define ialias_redirect(fn) \
-  extern __typeof (fn) fn __asm__ ("gomp_ialias_" #fn) attribute_hidden;
+  extern __typeof (fn) fn __asm__ (ULP "gomp_ialias_" #fn) attribute_hidden;
 ialias_redirect (omp_init_lock)
 ialias_redirect (omp_init_nest_lock)
 ialias_redirect (omp_destroy_lock)
