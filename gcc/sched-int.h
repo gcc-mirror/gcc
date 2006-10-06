@@ -359,6 +359,13 @@ extern regset *glat_start, *glat_end;
 #define RECOVERY_BLOCK(INSN)    (h_i_d[INSN_UID (INSN)].recovery_block)
 #define ORIG_PAT(INSN)          (h_i_d[INSN_UID (INSN)].orig_pat)
 
+/* INSN is a speculation check that will branch to RECOVERY_BLOCK if the
+   speculation fail.  Insns in that block will reexecute the speculatively
+   scheduled code and then will return immediatelly after INSN thus preserving
+   semantics of the program.  */
+#define IS_SPECULATION_BRANCHY_CHECK_P(INSN) \
+  (RECOVERY_BLOCK (INSN) != NULL && RECOVERY_BLOCK (INSN) != EXIT_BLOCK_PTR)
+
 /* DEP_STATUS of the link encapsulates information, that is needed for
    speculative scheduling.  Namely, it is 4 integers in the range
    [0, MAX_DEP_WEAK] and 3 bits.

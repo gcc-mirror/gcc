@@ -719,9 +719,13 @@ advance_target_bb (basic_block bb, rtx insn)
     {
       if (BLOCK_FOR_INSN (insn) != bb
 	  && control_flow_insn_p (insn)
-	  && !RECOVERY_BLOCK (insn)
-	  && !RECOVERY_BLOCK (BB_END (bb)))
+	  /* We handle interblock movement of the speculation check
+	     or over a speculation check in
+	     haifa-sched.c: move_block_after_check ().  */
+	  && !IS_SPECULATION_BRANCHY_CHECK_P (insn)
+	  && !IS_SPECULATION_BRANCHY_CHECK_P (BB_END (bb)))
 	{
+	  /* Assert that we don't move jumps across blocks.  */
 	  gcc_assert (!control_flow_insn_p (BB_END (bb))
 		      && NOTE_INSN_BASIC_BLOCK_P (BB_HEAD (bb->next_bb)));
 	  return bb;
