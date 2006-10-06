@@ -1,3 +1,10 @@
+2006-10-05  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* acinclude.m4 (HAVE_ATTRIBUTE_ALIAS): Remove __USER_LABEL_PREFIX__ from
+	test.
+	* configure: Regenerate.
+	* fortran.c  (ialias_redirect): Add __USER_LABEL_PREFIX__ to alias.
+
 2006-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/25261
