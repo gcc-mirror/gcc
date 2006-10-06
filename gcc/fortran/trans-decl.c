@@ -511,7 +511,14 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   /* Keep variables larger than max-stack-var-size off stack.  */
   if (!sym->ns->proc_name->attr.recursive
       && INTEGER_CST_P (DECL_SIZE_UNIT (decl))
-      && !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl)))
+      && !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
+	 /* Put variable length auto array pointers always into stack.  */
+      && (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
+	  || sym->attr.dimension == 0
+	  || sym->as->type != AS_EXPLICIT
+	  || sym->attr.pointer
+	  || sym->attr.allocatable)
+      && !DECL_ARTIFICIAL (decl))
     TREE_STATIC (decl) = 1;
 
   /* Handle threadprivate variables.  */
