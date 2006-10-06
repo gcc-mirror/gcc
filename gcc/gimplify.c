@@ -6043,7 +6043,18 @@ gimplify_type_sizes (tree type, tree *list_p)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      gimplify_type_sizes (TREE_TYPE (type), list_p);
+	/* We used to recurse on the pointed-to type here, which turned out to
+	   be incorrect because its definition might refer to variables not
+	   yet initialized at this point if a forward declaration is involved.
+
+	   It was actually useful for anonymous pointed-to types to ensure
+	   that the sizes evaluation dominates every possible later use of the
+	   values.  Restricting to such types here would be safe since there
+	   is no possible forward declaration around, but would introduce a
+	   undesireable middle-end semantic to anonymity.  We then defer to
+	   front-ends the responsibilty of ensuring that the sizes are
+	   evaluated both early and late enough, e.g. by attaching artifical
+	   type declarations to the tree.  */
       break;
 
     default:
