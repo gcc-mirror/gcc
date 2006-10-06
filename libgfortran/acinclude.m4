@@ -141,11 +141,8 @@ AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_ALIAS], [
   AC_CACHE_CHECK([whether the target supports symbol aliases],
 		 have_attribute_alias, [
   AC_TRY_LINK([
-#define ULP	STR1(__USER_LABEL_PREFIX__)
-#define STR1(x)	STR2(x)
-#define STR2(x)	#x
 void foo(void) { }
-extern void bar(void) __attribute__((alias(ULP "foo")));],
+extern void bar(void) __attribute__((alias("foo")));],
     [bar();], have_attribute_alias=yes, have_attribute_alias=no)])
   if test $have_attribute_alias = yes; then
     AC_DEFINE(HAVE_ATTRIBUTE_ALIAS, 1,
