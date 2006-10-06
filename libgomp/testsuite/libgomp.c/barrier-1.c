@@ -38,13 +38,13 @@ int main()
   function (NULL);
   GOMP_parallel_end ();
 
-  assert (timercmp (&stamps[0][0], &stamps[0][1], <));
-  assert (timercmp (&stamps[1][0], &stamps[0][1], <));
-  assert (timercmp (&stamps[2][0], &stamps[0][1], <));
+  assert (!timercmp (&stamps[0][0], &stamps[0][1], >));
+  assert (!timercmp (&stamps[1][0], &stamps[0][1], >));
+  assert (!timercmp (&stamps[2][0], &stamps[0][1], >));
 
-  assert (timercmp (&stamps[0][1], &stamps[0][2], <));
-  assert (timercmp (&stamps[0][1], &stamps[1][2], <));
-  assert (timercmp (&stamps[0][1], &stamps[2][2], <));
+  assert (!timercmp (&stamps[0][1], &stamps[0][2], >));
+  assert (!timercmp (&stamps[0][1], &stamps[1][2], >));
+  assert (!timercmp (&stamps[0][1], &stamps[2][2], >));
 
   return 0;
 }
