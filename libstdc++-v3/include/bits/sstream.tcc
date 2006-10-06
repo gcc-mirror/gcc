@@ -198,7 +198,7 @@ namespace std
       const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
 
       const char_type* __beg = __testin ? this->eback() : this->pbase();
-      if (__beg && (__testin || __testout))
+      if ((__beg || !off_type(__sp)) && (__testin || __testout))
 	{
 	  _M_update_egptr();
 
