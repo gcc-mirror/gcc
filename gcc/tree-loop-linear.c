@@ -265,12 +265,12 @@ linear_transform_loops (struct loops *loops)
                {
 	        ...
                }
-           for (j = 0; j < 50; j++)
+             for (j = 0; j < 50; j++)
                {
                 ...
                }
            } */
-      if (!loop_nest || !loop_nest->inner)
+      if (!loop_nest || !loop_nest->inner || !loop_nest->single_exit)
 	continue;
       VEC_truncate (tree, oldivs, 0);
       VEC_truncate (tree, invariants, 0);
