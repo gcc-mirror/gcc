@@ -145,7 +145,7 @@ begin_schedule_ready (rtx insn, rtx last)
       gcc_assert (!e || !(e->flags & EDGE_COMPLEX));	    
 
       gcc_assert (BLOCK_FOR_INSN (insn) == last_bb
-		  && !RECOVERY_BLOCK (insn)
+		  && !IS_SPECULATION_CHECK_P (insn)
 		  && BB_HEAD (last_bb) != insn
 		  && BB_END (last_bb) == insn);
 
