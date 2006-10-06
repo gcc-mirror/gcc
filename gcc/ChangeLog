@@ -1,5 +1,15 @@
 2006-10-06  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
+	* sched-int.h (IS_SPECULATION_CHECK_P, IS_SPECULATION_SIMPLE_CHECK_P):
+	New macros.
+	* sched-ebb.c (begin_schedule_ready): Use them.
+	* haifa-sched.c (schedule_insn, move_insn, try_ready,
+	add_to_speculative_block, create_check_block_twin, speculate_insn,
+	fix_jump_move, move_block_after_check): Ditto.
+	* sched-rgn.c (new_ready): Ditto.
+
+2006-10-06  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
 	PR rtl-optimization/29128
 	* sched-int.h (IS_SPECULATION_BRANCHY_CHECK_P): New macro.
 	* sched-ebb.c (advance_target_bb): Use it to fix condition to

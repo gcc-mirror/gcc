@@ -2089,7 +2089,7 @@ new_ready (rtx next, ds_t ts)
 	      && ((recog_memoized (next) >= 0
 		   && min_insn_conflict_delay (curr_state, next, next) 
                    > PARAM_VALUE (PARAM_MAX_SCHED_INSN_CONFLICT_DELAY))
-                  || RECOVERY_BLOCK (next)
+                  || IS_SPECULATION_CHECK_P (next)
 		  || !check_live (next, INSN_BB (next))
 		  || (not_ex_free = !is_exception_free (next, INSN_BB (next),
 							target_bb)))))
