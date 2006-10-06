@@ -1,3 +1,7 @@
+2006-10-06  J"orn Rennecke  <joern.rennecke@st.com>
+
+	* config/sh/sh.h (LIBGCC2_DOUBLE_TYPE_SIZE): Define.
+
 2006-10-05  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/sync.md ("sync_add<mode>", "sync_sub<mode>",
