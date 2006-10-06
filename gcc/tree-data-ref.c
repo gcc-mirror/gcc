@@ -1913,11 +1913,7 @@ analyze_offset (tree offset, tree *invariant, tree *constant)
 static void
 free_data_ref (data_reference_p dr)
 {
-  if (DR_TYPE(dr) == ARRAY_REF_TYPE)
-    VEC_free (tree, heap, dr->object_info.access_fns);
-  else
-    VEC_free (tree, heap, dr->first_location.access_fns);
-
+  DR_FREE_ACCESS_FNS (dr);
   free (dr);
 }
 
@@ -2171,6 +2167,7 @@ initialize_data_dependence_relation (struct data_reference *a,
   res = XNEW (struct data_dependence_relation);
   DDR_A (res) = a;
   DDR_B (res) = b;
+  DDR_LOOP_NEST (res) = NULL;
 
   if (a == NULL || b == NULL)
     {
@@ -4205,7 +4202,7 @@ find_data_references_in_loop (struct loop *loop,
 /* Recursive helper function.  */
 
 static bool
-find_loop_nest_1 (struct loop *loop, VEC (loop_p, heap) *loop_nest)
+find_loop_nest_1 (struct loop *loop, VEC (loop_p, heap) **loop_nest)
 {
   /* Inner loops of the nest should not contain siblings.  Example:
      when there are two consecutive loops,
@@ -4224,7 +4221,7 @@ find_loop_nest_1 (struct loop *loop, VEC (loop_p, heap) *loop_nest)
   if (loop->next)
     return false;
 
-  VEC_safe_push (loop_p, heap, loop_nest, loop);
+  VEC_safe_push (loop_p, heap, *loop_nest, loop);
   if (loop->inner)
     return find_loop_nest_1 (loop->inner, loop_nest);
   return true;
@@ -4236,9 +4233,9 @@ find_loop_nest_1 (struct loop *loop, VEC (loop_p, heap) *loop_nest)
    appear in the classic distance vector.  */
 
 static bool
-find_loop_nest (struct loop *loop, VEC (loop_p, heap) *loop_nest)
+find_loop_nest (struct loop *loop, VEC (loop_p, heap) **loop_nest)
 {
-  VEC_safe_push (loop_p, heap, loop_nest, loop);
+  VEC_safe_push (loop_p, heap, *loop_nest, loop);
   if (loop->inner)
     return find_loop_nest_1 (loop->inner, loop_nest);
   return true;
@@ -4265,7 +4262,7 @@ compute_data_dependences_for_loop (struct loop *loop,
      is not computable, give up without spending time to compute other
      dependences.  */
   if (!loop_nest
-      || !find_loop_nest (loop_nest, vloops)
+      || !find_loop_nest (loop_nest, &vloops)
       || find_data_references_in_loop (loop, datarefs) == chrec_dont_know)
     {
       struct data_dependence_relation *ddr;
@@ -4435,10 +4432,22 @@ free_dependence_relations (VEC (ddr_p, heap) *dependence_relations)
 {
   unsigned int i;
   struct data_dependence_relation *ddr;
+  VEC (loop_p, heap) *loop_nest = NULL;
 
   for (i = 0; VEC_iterate (ddr_p, dependence_relations, i, ddr); i++)
-    free_dependence_relation (ddr);
+    {
+      if (ddr == NULL)
+	continue;
+      if (loop_nest == NULL)
+	loop_nest = DDR_LOOP_NEST (ddr);
+      else
+	gcc_assert (DDR_LOOP_NEST (ddr) == NULL
+		    || DDR_LOOP_NEST (ddr) == loop_nest);
+      free_dependence_relation (ddr);
+    }
 
+  if (loop_nest)
+    VEC_free (loop_p, heap, loop_nest);
   VEC_free (ddr_p, heap, dependence_relations);
 }
 
