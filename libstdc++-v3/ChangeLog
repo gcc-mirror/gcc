@@ -1,3 +1,12 @@
+2006-10-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/29354
+	* include/bits/sstream.tcc (basic_stringbuf<>::seekpos(pos_type,
+	ios_base::openmode)): Allow for seek to pos_type(off_type(0))
+	when the stream is empty.
+	* testsuite/27_io/basic_stringbuf/seekpos/char/29354.cc: New.
+	* testsuite/27_io/basic_stringbuf/seekpos/wchar_t/29354.cc: New.
+
 2006-10-04  Benjamin Kosnik  <bkoz@redhat.com>
 	    Mike Stump  <mrs@apple.com>
 	
