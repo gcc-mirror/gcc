@@ -6,6 +6,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Wextra -Wall -ansi" } */
+/* { dg-options "-Wextra -Wall -ansi -D_POSIX_C_SOURCE=199506L" { target { hppa*-*-hpux* } } } */
 
 #include "pthread-init-common.h"
 

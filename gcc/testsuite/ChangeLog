@@ -1,3 +1,9 @@
+2006-10-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/29300
+	* gcc.dg/pthread-init-2.c (dg-options): Define _POSIX_C_SOURCE=199506L
+	on hppa*-*-hpux*.
+
 2006-10-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/16580
