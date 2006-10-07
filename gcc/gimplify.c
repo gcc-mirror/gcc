@@ -6050,10 +6050,10 @@ gimplify_type_sizes (tree type, tree *list_p)
 	   It was actually useful for anonymous pointed-to types to ensure
 	   that the sizes evaluation dominates every possible later use of the
 	   values.  Restricting to such types here would be safe since there
-	   is no possible forward declaration around, but would introduce a
-	   undesireable middle-end semantic to anonymity.  We then defer to
-	   front-ends the responsibilty of ensuring that the sizes are
-	   evaluated both early and late enough, e.g. by attaching artifical
+	   is no possible forward declaration around, but would introduce an
+	   undesirable middle-end semantic to anonymity.  We then defer to
+	   front-ends the responsibility of ensuring that the sizes are
+	   evaluated both early and late enough, e.g. by attaching artificial
 	   type declarations to the tree.  */
       break;
 

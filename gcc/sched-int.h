@@ -369,7 +369,7 @@ extern regset *glat_start, *glat_end;
 
 /* INSN is a speculation check that will branch to RECOVERY_BLOCK if the
    speculation fail.  Insns in that block will reexecute the speculatively
-   scheduled code and then will return immediatelly after INSN thus preserving
+   scheduled code and then will return immediately after INSN thus preserving
    semantics of the program.  */
 #define IS_SPECULATION_BRANCHY_CHECK_P(INSN) \
   (RECOVERY_BLOCK (INSN) != NULL && RECOVERY_BLOCK (INSN) != EXIT_BLOCK_PTR)
