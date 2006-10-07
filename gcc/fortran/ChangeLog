@@ -1,3 +1,26 @@
+2006-10-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/16580
+	PR fortran/29288
+	* gcc/fortran/intrinsic.c (add_sym): Define the actual_ok when a
+	gfc_intrinsic_sym structure is filled.
+	(gfc_intrinsic_actual_ok): New function.
+	(add_sym_0s, add_sym_1s, add_sym_2s, add_sym_3s, add_sym_4s,
+	add_sym_5s): Intrinsic subroutines are not allowed as actual
+	arguments, so we remove argument actual_ok.
+	(add_functions): Correct the values for actual_ok of all intrinsics.
+	(add_subroutines): Remove the actual_ok argument, which was never used.
+	* gcc/fortran/intrinsic.h (gfc_intrinsic_actual_ok): New prototype.
+	* gcc/fortran/gfortran.h (gfc_resolve_index_func): New prototype.
+	* gcc/fortran/resolve.c (resolve_actual_arglist): Check whether
+	an intrinsic used as an argument list is allowed there.
+	* gcc/fortran/iresolve.c (gfc_resolve_index_func): New function.
+	(gfc_resolve_len): Change intrinsic function name to agree with
+	libgfortran.
+	* gcc/fortran/trans-decl.c (gfc_get_extern_function_decl): Add
+	new case, because some specific intrinsics take 3 arguments.
+	* gcc/fortran/intrinsic.texi: DIMAG is a GNU extension.
+
 2006-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/28415

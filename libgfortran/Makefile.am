@@ -419,7 +419,8 @@ m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/ctrig.m4 m4/cexp.m4 m4/chyp.m4 m4/mtype.m4 \
     m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
-    m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4
+    m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4 \
+    m4/misc_specifics.m4
 
 gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
@@ -444,6 +445,10 @@ generated/_abs_r4.F90 \
 generated/_abs_r8.F90 \
 generated/_abs_r10.F90 \
 generated/_abs_r16.F90 \
+generated/_aimag_c4.F90 \
+generated/_aimag_c8.F90 \
+generated/_aimag_c10.F90 \
+generated/_aimag_c16.F90 \
 generated/_exp_r4.F90 \
 generated/_exp_r8.F90 \
 generated/_exp_r10.F90 \
@@ -476,14 +481,26 @@ generated/_asin_r4.F90 \
 generated/_asin_r8.F90 \
 generated/_asin_r10.F90 \
 generated/_asin_r16.F90 \
+generated/_asinh_r4.F90 \
+generated/_asinh_r8.F90 \
+generated/_asinh_r10.F90 \
+generated/_asinh_r16.F90 \
 generated/_acos_r4.F90 \
 generated/_acos_r8.F90 \
 generated/_acos_r10.F90 \
 generated/_acos_r16.F90 \
+generated/_acosh_r4.F90 \
+generated/_acosh_r8.F90 \
+generated/_acosh_r10.F90 \
+generated/_acosh_r16.F90 \
 generated/_atan_r4.F90 \
 generated/_atan_r8.F90 \
 generated/_atan_r10.F90 \
 generated/_atan_r16.F90 \
+generated/_atanh_r4.F90 \
+generated/_atanh_r8.F90 \
+generated/_atanh_r10.F90 \
+generated/_atanh_r16.F90 \
 generated/_sin_r4.F90 \
 generated/_sin_r8.F90 \
 generated/_sin_r10.F90 \
@@ -556,9 +573,12 @@ generated/_mod_r8.F90 \
 generated/_mod_r10.F90 \
 generated/_mod_r16.F90
 
+gfor_misc_specifics = generated/misc_specifics.F90
+
 gfor_specific_src= \
 $(gfor_built_specific_src) \
 $(gfor_built_specific2_src) \
+$(gfor_misc_specifics) \
 intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90
 
@@ -572,7 +592,7 @@ $(patsubst %.c,%.lo,$(notdir $(i_matmul_c))): AM_CFLAGS += -ftree-vectorize -fun
 $(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 
 BUILT_SOURCES=$(gfor_built_src) $(gfor_built_specific_src) \
-    $(gfor_built_specific2_src)
+    $(gfor_built_specific2_src) $(gfor_misc_specifics)
 libgfortran_la_SOURCES = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
     $(gfor_helper_src) $(gfor_io_headers) $(gfor_specific_src)
 
@@ -685,6 +705,9 @@ $(gfor_built_specific_src): m4/specific.m4 m4/head.m4
 
 $(gfor_built_specific2_src): m4/specific2.m4 m4/head.m4
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 specific2.m4 > $(srcdir)/$@
+
+$(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
+	m4 -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $(srcdir)/$@
 ## end of maintainer mode only rules
 endif
 

@@ -1,6 +1,37 @@
+2006-10-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/16580
+	PR fortran/29288
+	* libgfortran/Makefile.am: Add the new files to the build
+	process, and rules to build them.
+	* libgfortran/Makefile.in: Regenerate.
+	* libgfortran/m4/misc_specifics.m4: New file.
+	* libgfortran/m4/specific.m4: Add new special cases for function
+	with complex argument and real result, like abs_c* and aimag_c*.
+	* libgfortran/intrinsics/f2c_specifics.F90: Add specifics for
+	AIMAG, ASINH, ACOSH and ATANH.
+	* libgfortran/generated/_aimag_c4.F90: New file.
+	* libgfortran/generated/_aimag_c8.F90: New file.
+	* libgfortran/generated/_asinh_r10.F90: New file.
+	* libgfortran/generated/_acosh_r16.F90: New file.
+	* libgfortran/generated/_aimag_c10.F90: New file.
+	* libgfortran/generated/_atanh_r16.F90: New file.
+	* libgfortran/generated/_acosh_r4.F90: New file.
+	* libgfortran/generated/_acosh_r8.F90: New file.
+	* libgfortran/generated/_asinh_r4.F90: New file.
+	* libgfortran/generated/_asinh_r8.F90: New file.
+	* libgfortran/generated/_asinh_r16.F90: New file.
+	* libgfortran/generated/_atanh_r4.F90: New file.
+	* libgfortran/generated/_atanh_r8.F90: New file.
+	* libgfortran/generated/_acosh_r10.F90: New file.
+	* libgfortran/generated/misc_specifics.F90: New file.
+	* libgfortran/generated/_aimag_c16.F90: New file.
+	* libgfortran/generated/_atanh_r10.F90: New file.
+
 2006-10-05  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	* acinclude.m4 (HAVE_ATTRIBUTE_ALIAS): Remove __USER_LABEL_PREFIX__ from test.
+	* acinclude.m4 (HAVE_ATTRIBUTE_ALIAS): Remove __USER_LABEL_PREFIX__
+	from test.
 	* configure: Regenerate.
 
 2006-10-05  Steven G. Kargl  <kargl@gcc.gnu.org>

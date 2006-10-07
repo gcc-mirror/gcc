@@ -1075,9 +1075,14 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 	isym->resolve.f1 (&e, &argexpr);
       else
 	{
-	  /* All specific intrinsics take one or two arguments.  */
-	  gcc_assert (isym->formal->next->next == NULL);
-	  isym->resolve.f2 (&e, &argexpr, NULL);
+	  if (isym->formal->next->next == NULL)
+	    isym->resolve.f2 (&e, &argexpr, NULL);
+	  else
+	    {
+	      /* All specific intrinsics take less than 4 arguments.  */
+	      gcc_assert (isym->formal->next->next->next == NULL);
+	      isym->resolve.f3 (&e, &argexpr, NULL, NULL);
+	    }
 	}
 
       if (gfc_option.flag_f2c

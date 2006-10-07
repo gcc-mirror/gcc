@@ -179,15 +179,19 @@ am__objects_30 = associated.lo abort.lo access.lo args.lo bessel.lo \
 am__objects_31 =
 am__objects_32 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
-	_abs_r10.lo _abs_r16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
+	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
+	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
 	_exp_r16.lo _exp_c4.lo _exp_c8.lo _exp_c10.lo _exp_c16.lo \
 	_log_r4.lo _log_r8.lo _log_r10.lo _log_r16.lo _log_c4.lo \
 	_log_c8.lo _log_c10.lo _log_c16.lo _log10_r4.lo _log10_r8.lo \
 	_log10_r10.lo _log10_r16.lo _sqrt_r4.lo _sqrt_r8.lo \
 	_sqrt_r10.lo _sqrt_r16.lo _sqrt_c4.lo _sqrt_c8.lo _sqrt_c10.lo \
 	_sqrt_c16.lo _asin_r4.lo _asin_r8.lo _asin_r10.lo _asin_r16.lo \
-	_acos_r4.lo _acos_r8.lo _acos_r10.lo _acos_r16.lo _atan_r4.lo \
-	_atan_r8.lo _atan_r10.lo _atan_r16.lo _sin_r4.lo _sin_r8.lo \
+	_asinh_r4.lo _asinh_r8.lo _asinh_r10.lo _asinh_r16.lo \
+	_acos_r4.lo _acos_r8.lo _acos_r10.lo _acos_r16.lo _acosh_r4.lo \
+	_acosh_r8.lo _acosh_r10.lo _acosh_r16.lo _atan_r4.lo \
+	_atan_r8.lo _atan_r10.lo _atan_r16.lo _atanh_r4.lo \
+	_atanh_r8.lo _atanh_r10.lo _atanh_r16.lo _sin_r4.lo _sin_r8.lo \
 	_sin_r10.lo _sin_r16.lo _sin_c4.lo _sin_c8.lo _sin_c10.lo \
 	_sin_c16.lo _cos_r4.lo _cos_r8.lo _cos_r10.lo _cos_r16.lo \
 	_cos_c4.lo _cos_c8.lo _cos_c10.lo _cos_c16.lo _tan_r4.lo \
@@ -203,11 +207,12 @@ am__objects_33 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_34 = $(am__objects_32) $(am__objects_33) dprod_r8.lo \
-	f2c_specifics.lo
+am__objects_34 = misc_specifics.lo
+am__objects_35 = $(am__objects_32) $(am__objects_33) $(am__objects_34) \
+	dprod_r8.lo f2c_specifics.lo
 am_libgfortran_la_OBJECTS = $(am__objects_1) $(am__objects_28) \
 	$(am__objects_29) $(am__objects_30) $(am__objects_31) \
-	$(am__objects_34)
+	$(am__objects_35)
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 libgfortranbegin_la_LIBADD =
 am_libgfortranbegin_la_OBJECTS = fmain.lo
@@ -767,7 +772,8 @@ m4_files = m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/ctrig.m4 m4/cexp.m4 m4/chyp.m4 m4/mtype.m4 \
     m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
-    m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4
+    m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4 \
+    m4/misc_specifics.m4
 
 gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
@@ -793,6 +799,10 @@ generated/_abs_r4.F90 \
 generated/_abs_r8.F90 \
 generated/_abs_r10.F90 \
 generated/_abs_r16.F90 \
+generated/_aimag_c4.F90 \
+generated/_aimag_c8.F90 \
+generated/_aimag_c10.F90 \
+generated/_aimag_c16.F90 \
 generated/_exp_r4.F90 \
 generated/_exp_r8.F90 \
 generated/_exp_r10.F90 \
@@ -825,14 +835,26 @@ generated/_asin_r4.F90 \
 generated/_asin_r8.F90 \
 generated/_asin_r10.F90 \
 generated/_asin_r16.F90 \
+generated/_asinh_r4.F90 \
+generated/_asinh_r8.F90 \
+generated/_asinh_r10.F90 \
+generated/_asinh_r16.F90 \
 generated/_acos_r4.F90 \
 generated/_acos_r8.F90 \
 generated/_acos_r10.F90 \
 generated/_acos_r16.F90 \
+generated/_acosh_r4.F90 \
+generated/_acosh_r8.F90 \
+generated/_acosh_r10.F90 \
+generated/_acosh_r16.F90 \
 generated/_atan_r4.F90 \
 generated/_atan_r8.F90 \
 generated/_atan_r10.F90 \
 generated/_atan_r16.F90 \
+generated/_atanh_r4.F90 \
+generated/_atanh_r8.F90 \
+generated/_atanh_r10.F90 \
+generated/_atanh_r16.F90 \
 generated/_sin_r4.F90 \
 generated/_sin_r8.F90 \
 generated/_sin_r10.F90 \
@@ -905,14 +927,16 @@ generated/_mod_r8.F90 \
 generated/_mod_r10.F90 \
 generated/_mod_r16.F90
 
+gfor_misc_specifics = generated/misc_specifics.F90
 gfor_specific_src = \
 $(gfor_built_specific_src) \
 $(gfor_built_specific2_src) \
+$(gfor_misc_specifics) \
 intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90
 
 BUILT_SOURCES = $(gfor_built_src) $(gfor_built_specific_src) \
-    $(gfor_built_specific2_src)
+    $(gfor_built_specific2_src) $(gfor_misc_specifics)
 
 libgfortran_la_SOURCES = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
     $(gfor_helper_src) $(gfor_io_headers) $(gfor_specific_src)
@@ -1083,6 +1107,18 @@ _abs_r10.lo: generated/_abs_r10.F90
 _abs_r16.lo: generated/_abs_r16.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_r16.lo `test -f 'generated/_abs_r16.F90' || echo '$(srcdir)/'`generated/_abs_r16.F90
 
+_aimag_c4.lo: generated/_aimag_c4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aimag_c4.lo `test -f 'generated/_aimag_c4.F90' || echo '$(srcdir)/'`generated/_aimag_c4.F90
+
+_aimag_c8.lo: generated/_aimag_c8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aimag_c8.lo `test -f 'generated/_aimag_c8.F90' || echo '$(srcdir)/'`generated/_aimag_c8.F90
+
+_aimag_c10.lo: generated/_aimag_c10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aimag_c10.lo `test -f 'generated/_aimag_c10.F90' || echo '$(srcdir)/'`generated/_aimag_c10.F90
+
+_aimag_c16.lo: generated/_aimag_c16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aimag_c16.lo `test -f 'generated/_aimag_c16.F90' || echo '$(srcdir)/'`generated/_aimag_c16.F90
+
 _exp_r4.lo: generated/_exp_r4.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_r4.lo `test -f 'generated/_exp_r4.F90' || echo '$(srcdir)/'`generated/_exp_r4.F90
 
@@ -1179,6 +1215,18 @@ _asin_r10.lo: generated/_asin_r10.F90
 _asin_r16.lo: generated/_asin_r16.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asin_r16.lo `test -f 'generated/_asin_r16.F90' || echo '$(srcdir)/'`generated/_asin_r16.F90
 
+_asinh_r4.lo: generated/_asinh_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asinh_r4.lo `test -f 'generated/_asinh_r4.F90' || echo '$(srcdir)/'`generated/_asinh_r4.F90
+
+_asinh_r8.lo: generated/_asinh_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asinh_r8.lo `test -f 'generated/_asinh_r8.F90' || echo '$(srcdir)/'`generated/_asinh_r8.F90
+
+_asinh_r10.lo: generated/_asinh_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asinh_r10.lo `test -f 'generated/_asinh_r10.F90' || echo '$(srcdir)/'`generated/_asinh_r10.F90
+
+_asinh_r16.lo: generated/_asinh_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asinh_r16.lo `test -f 'generated/_asinh_r16.F90' || echo '$(srcdir)/'`generated/_asinh_r16.F90
+
 _acos_r4.lo: generated/_acos_r4.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acos_r4.lo `test -f 'generated/_acos_r4.F90' || echo '$(srcdir)/'`generated/_acos_r4.F90
 
@@ -1191,6 +1239,18 @@ _acos_r10.lo: generated/_acos_r10.F90
 _acos_r16.lo: generated/_acos_r16.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acos_r16.lo `test -f 'generated/_acos_r16.F90' || echo '$(srcdir)/'`generated/_acos_r16.F90
 
+_acosh_r4.lo: generated/_acosh_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acosh_r4.lo `test -f 'generated/_acosh_r4.F90' || echo '$(srcdir)/'`generated/_acosh_r4.F90
+
+_acosh_r8.lo: generated/_acosh_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acosh_r8.lo `test -f 'generated/_acosh_r8.F90' || echo '$(srcdir)/'`generated/_acosh_r8.F90
+
+_acosh_r10.lo: generated/_acosh_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acosh_r10.lo `test -f 'generated/_acosh_r10.F90' || echo '$(srcdir)/'`generated/_acosh_r10.F90
+
+_acosh_r16.lo: generated/_acosh_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acosh_r16.lo `test -f 'generated/_acosh_r16.F90' || echo '$(srcdir)/'`generated/_acosh_r16.F90
+
 _atan_r4.lo: generated/_atan_r4.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan_r4.lo `test -f 'generated/_atan_r4.F90' || echo '$(srcdir)/'`generated/_atan_r4.F90
 
@@ -1202,6 +1262,18 @@ _atan_r10.lo: generated/_atan_r10.F90
 
 _atan_r16.lo: generated/_atan_r16.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan_r16.lo `test -f 'generated/_atan_r16.F90' || echo '$(srcdir)/'`generated/_atan_r16.F90
+
+_atanh_r4.lo: generated/_atanh_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atanh_r4.lo `test -f 'generated/_atanh_r4.F90' || echo '$(srcdir)/'`generated/_atanh_r4.F90
+
+_atanh_r8.lo: generated/_atanh_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atanh_r8.lo `test -f 'generated/_atanh_r8.F90' || echo '$(srcdir)/'`generated/_atanh_r8.F90
+
+_atanh_r10.lo: generated/_atanh_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atanh_r10.lo `test -f 'generated/_atanh_r10.F90' || echo '$(srcdir)/'`generated/_atanh_r10.F90
+
+_atanh_r16.lo: generated/_atanh_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atanh_r16.lo `test -f 'generated/_atanh_r16.F90' || echo '$(srcdir)/'`generated/_atanh_r16.F90
 
 _sin_r4.lo: generated/_sin_r4.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_r4.lo `test -f 'generated/_sin_r4.F90' || echo '$(srcdir)/'`generated/_sin_r4.F90
@@ -1409,6 +1481,9 @@ _mod_r10.lo: generated/_mod_r10.F90
 
 _mod_r16.lo: generated/_mod_r16.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_r16.lo `test -f 'generated/_mod_r16.F90' || echo '$(srcdir)/'`generated/_mod_r16.F90
+
+misc_specifics.lo: generated/misc_specifics.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o misc_specifics.lo `test -f 'generated/misc_specifics.F90' || echo '$(srcdir)/'`generated/misc_specifics.F90
 
 f2c_specifics.lo: intrinsics/f2c_specifics.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o f2c_specifics.lo `test -f 'intrinsics/f2c_specifics.F90' || echo '$(srcdir)/'`intrinsics/f2c_specifics.F90
@@ -2844,6 +2919,9 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 
 @MAINTAINER_MODE_TRUE@$(gfor_built_specific2_src): m4/specific2.m4 m4/head.m4
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 specific2.m4 > $(srcdir)/$@
+
+@MAINTAINER_MODE_TRUE@$(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
+@MAINTAINER_MODE_TRUE@	m4 -Dfile=$@ -I$(srcdir)/m4 misc_specifics.m4 > $(srcdir)/$@
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

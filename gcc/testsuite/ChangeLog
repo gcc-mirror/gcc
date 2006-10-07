@@ -1,3 +1,14 @@
+2006-10-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/16580
+	PR fortran/29288
+	* gcc/testsuite/gfortran.fortran-torture/execute/specifics.f90:
+	Add tests for using all possible intrinsics as actual arguments.
+	* gcc/testsuite/gfortran.dg/specifics_1.f90: Add tests for using
+	all possible intrinsics as actual arguments.
+	* gcc/testsuite/gfortran.dg/specifics_2.f90: New file.
+	* gcc/testsuite/gfortran.dg/specifics_3.f90: New file.
+
 2006-10-07  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.dg/debug/debug-1.c: Use -fno-if-conversion MIPS targets.

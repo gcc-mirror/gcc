@@ -877,6 +877,29 @@ gfc_resolve_ior (gfc_expr * f, gfc_expr * i, gfc_expr * j)
 
 
 void
+gfc_resolve_index_func (gfc_expr * f, gfc_expr * str,
+			ATTRIBUTE_UNUSED gfc_expr * sub_str, gfc_expr * back)
+{
+  gfc_typespec ts;
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+
+  if (back && back->ts.kind != gfc_default_integer_kind)
+    {
+      ts.type = BT_LOGICAL;
+      ts.kind = gfc_default_integer_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (back, &ts, 2);
+    }
+
+  f->value.function.name =
+    gfc_get_string ("__index_%d_i%d", str->ts.kind, f->ts.kind);
+}
+
+
+void
 gfc_resolve_int (gfc_expr * f, gfc_expr * a, gfc_expr * kind)
 {
   f->ts.type = BT_INTEGER;
@@ -1022,7 +1045,8 @@ gfc_resolve_len (gfc_expr * f, gfc_expr * string)
 {
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind;
-  f->value.function.name = gfc_get_string ("__len_%d", string->ts.kind);
+  f->value.function.name = gfc_get_string ("__len_%d_i%d", string->ts.kind,
+					   gfc_default_integer_kind);
 }
 
 

@@ -1940,6 +1940,7 @@ try gfc_convert_type_warn (gfc_expr *, gfc_typespec *, int, int);
 int gfc_generic_intrinsic (const char *);
 int gfc_specific_intrinsic (const char *);
 int gfc_intrinsic_name (const char *, int);
+int gfc_intrinsic_actual_ok (const char *, const bool);
 gfc_intrinsic_sym *gfc_find_function (const char *);
 
 match gfc_intrinsic_func_interface (gfc_expr *, int);
