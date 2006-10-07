@@ -10,8 +10,8 @@ _Bool f1(_Bool x)
    bool_var != 0 is the same as bool_var. */
 /* { dg-final { scan-tree-dump-times "!= 0" 0 "optimized"} } */
 
-/* There should be no subfe for powerpc. Checking if we actually optimizated
-   away the comparision.  */
+/* There should be no subfe for powerpc.  Check if we actually optimized
+   away the comparison.  */
 /* { dg-final { scan-assembler-times "subfe" 0 { target powerpc*-*-* } } } */
 
 /* { dg-final { cleanup-tree-dump "optimized" } } */

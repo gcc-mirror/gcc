@@ -1,3 +1,10 @@
+2006-10-07  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.dg/tree-ssa/bool-1.c, gcc.dg/tree-ssa/bool-2.c,
+	gcc.dg/tree-ssa/bool-4.c, gcc.dg/tree-ssa/bool-5.c,
+	gcc.dg/tree-ssa/bool-6.c, gcc.dg/tree-ssa/bool-8.c,
+	gcc.dg/tree-ssa/bool-9.c: Fix comment typos.
+
 2006-10-07  Andrew Pinski  <pinskia@gmail.com>
 
 	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c:
