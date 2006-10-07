@@ -9,6 +9,7 @@
 	add_sym_5s): Intrinsic subroutines are not allowed as actual
 	arguments, so we remove argument actual_ok.
 	(add_functions): Correct the values for actual_ok of all intrinsics.
+	Add comments for gfc_check_access_func and gfc_resolve_index_func.
 	(add_subroutines): Remove the actual_ok argument, which was never used.
 	* gcc/fortran/intrinsic.h (gfc_intrinsic_actual_ok): New prototype.
 	* gcc/fortran/gfortran.h (gfc_resolve_index_func): New prototype.

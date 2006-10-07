@@ -942,6 +942,8 @@ add_functions (void)
 
   make_generic ("abs", GFC_ISYM_ABS, GFC_STD_F77);
 
+  /* The checking function for ACCESS is called gfc_check_access_func
+     because the name gfc_check_access is already used in module.c.  */
   add_sym_2 ("access", 0, 0, BT_INTEGER, di, GFC_STD_GNU,
 	     gfc_check_access_func, NULL, gfc_resolve_access,
 	     nm, BT_CHARACTER, dc, REQUIRED, md, BT_CHARACTER, dc, REQUIRED);
@@ -1551,6 +1553,8 @@ add_functions (void)
 
   make_generic ("ierrno", GFC_ISYM_IERRNO, GFC_STD_GNU);
 
+  /* The resolution function for INDEX is called gfc_resolve_index_func
+     because the name gfc_resolve_index is already used in resolve.c.  */
   add_sym_3 ("index", 1, 1, BT_INTEGER, di, GFC_STD_F77,
 	     gfc_check_index, gfc_simplify_index, gfc_resolve_index_func,
 	     stg, BT_CHARACTER, dc, REQUIRED, ssg, BT_CHARACTER, dc, REQUIRED,
