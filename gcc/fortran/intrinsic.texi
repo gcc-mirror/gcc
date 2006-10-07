@@ -667,7 +667,7 @@ end program test_aimag
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .40
 @item Name            @tab Argument            @tab Return type       @tab Standard
-@item @code{DIMAG(Z)} @tab @code{COMPLEX(8) Z} @tab @code{REAL(8)}    @tab F95 and later
+@item @code{DIMAG(Z)} @tab @code{COMPLEX(8) Z} @tab @code{REAL(8)}    @tab GNU extension
 @item @code{IMAG(Z)}  @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)}    @tab GNU extension
 @item @code{IMAGPART(Z)} @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)} @tab GNU extension
 @end multitable

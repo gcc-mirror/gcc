@@ -357,6 +357,7 @@ void gfc_resolve_iand (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ibclr (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ibits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ibset (gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_index_func (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ierrno (gfc_expr *);
 void gfc_resolve_ieor (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ichar (gfc_expr *, gfc_expr *);

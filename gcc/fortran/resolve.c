@@ -836,6 +836,7 @@ resolve_actual_arglist (gfc_actual_arglist * arg)
 	  || sym->attr.intrinsic
 	  || sym->attr.external)
 	{
+	  int actual_ok;
 
 	  /* If a procedure is not already determined to be something else
 	     check if it is intrinsic.  */
@@ -850,6 +851,19 @@ resolve_actual_arglist (gfc_actual_arglist * arg)
 	      gfc_error ("Statement function '%s' at %L is not allowed as an "
 			 "actual argument", sym->name, &e->where);
 	    }
+
+	  actual_ok = gfc_intrinsic_actual_ok (sym->name, sym->attr.subroutine);
+	  if (sym->attr.intrinsic && actual_ok == 0)
+	    {
+	      gfc_error ("Intrinsic '%s' at %L is not allowed as an "
+			 "actual argument", sym->name, &e->where);
+	    }
+	  else if (sym->attr.intrinsic && actual_ok == 2)
+	  /* We need a special case for CHAR, which is the only intrinsic
+	     function allowed as actual argument in F2003 and not allowed
+	     in F95.  */
+	    gfc_notify_std (GFC_STD_F2003, "Fortran 2003: CHAR intrinsic "
+			    "allowed as actual argument at %L", &e->where);
 
 	  if (sym->attr.contained && !sym->attr.use_assoc
 	      && sym->ns->proc_name->attr.flavor != FL_MODULE)
