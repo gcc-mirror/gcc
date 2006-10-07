@@ -1790,6 +1790,47 @@ fix = {
     test_text = "   extern int errno;\n";
 };
 
+/*
+ *  Add missing braces to pthread initializer defines.
+ */
+fix = {
+    hackname  = hpux_pthread_initializers;
+    mach      = "*-hp-hpux11.[0-3]*";
+    files     = sys/pthread.h;
+    sed       = "s@^[ \t]*1, 1, 1, 1,[ \t]*\\\\"
+		 "@\t{ 1, 1, 1, 1 },\t\t\t\t\t\t\t\\\\@";
+    sed       = "s@^[ \t]*1,[ \t]*\\\\"
+		 "@\t{ 1, 0 }@";
+    sed       = "/^[ \t]*0$/d";
+    sed       = "s@__PTHREAD_MUTEX_VALID, 0"
+		 "@{ __PTHREAD_MUTEX_VALID, 0 }@";
+    sed       = "s@^[ \t]*0, 0, -1, 0,[ \t]*\\\\"
+		 "@\t{ 0, 0, -1, 0 },\t\t\t\t\t\t\\\\@";
+    sed       = "s@0, __LWP_MTX_VALID, 0, 1, 1, 1, 1,[ \t]*\\\\"
+		 "@{ 0, __LWP_MTX_VALID }, { 0, 1, 1, 1, 1 },\t\t\t\\\\@";
+    sed       = "s@^[ \t]*__LWP_MTX_VALID, 0, 1, 1, 1, 1,[ \t]*\\\\"
+		 "@\t{ 0, __LWP_MTX_VALID }, { 0, 1, 1, 1, 1 },\t\t\t\\\\@";
+    sed       = "s@^[ \t]*0, 0[ \t]*\\\\"
+		 "@\t{ 0, 0 }\t\t\t\t\t\t\t\\\\@";
+    sed       = "s@__PTHREAD_COND_VALID, 0"
+		 "@{ __PTHREAD_COND_VALID, 0 }@";
+    sed       = "s@__LWP_COND_VALID, 0,[ \t]*\\\\"
+		 "@{ __LWP_COND_VALID, 0 },\t\t\t\t\t\\\\@";
+    sed       = "s@__PTHREAD_RWLOCK_VALID, 0"
+		 "@{ __PTHREAD_RWLOCK_VALID, 0 }@";
+    sed       = "s@__LWP_RWLOCK_VALID, 0,[ \t]*\\\\"
+		 "@{ __LWP_RWLOCK_VALID, 0 },\t\t\t\t\t\\\\@";
+    sed       = "s@^[ \t]*0, 0, 0, 0, 0, 0, 0[ \t]*\\\\"
+		 "@\t{ 0, 0, 0, 0, 0 }, { 0, 0}\t\t\t\t\t\\\\@";
+    test_text = "#define PTHREAD_MUTEX_INITIALIZER  {\t\t\t\t\t\\\\\n"
+		"\t__PTHREAD_MUTEX_VALID, 0,\t\t\t\t\t\\\\\n"
+		"\t(PTHREAD_MUTEX_DEFAULT | PTHREAD_PROCESS_PRIVATE),\t\t\\\\\n"
+		"\t__SPNLCK_INITIALIZER,\t\t\t\t\t\t\\\\\n"
+		"\t0, 0, -1, 0,\t\t\t\t\t\t\t\\\\\n"
+		"\t0, __LWP_MTX_VALID, 0, 1, 1, 1, 1,\t\t\t\t\\\\\n"
+		"\t0, 0\t\t\t\t\t\t\t\t\\\\\n"
+		"}\n";
+};
 
 /*
  *  Fix glibc definition of HUGE_VAL in terms of hex floating point constant
