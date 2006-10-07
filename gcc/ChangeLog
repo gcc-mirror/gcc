@@ -2,6 +2,8 @@
 
 	* gimplify.c, sched-int.h: Fix comment typos.
 
+	* sched-int.h: Fix comment typos.
+
 2006-10-06  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* sched-int.h (IS_SPECULATION_CHECK_P, IS_SPECULATION_SIMPLE_CHECK_P):
