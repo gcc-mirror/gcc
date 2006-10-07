@@ -1,6 +1,6 @@
 /* PR tree-optimization/29330 */
 /* { dg-do compile } */
-/* { dg-options "-O -ftree-loop-linear" } */
+/* { dg-options "-O -ftree-loop-linear -std=gnu99" } */
 
 int buf[2][2][2][2];
 
