@@ -1,5 +1,11 @@
 2006-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR c++/28302
+	* typeck.c (build_unary_op <case BIT_NOT_EXPR:>): Don't call
+	perform_integral_promotions for non integral type
+
+2006-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR C++/28450
 	* cp/init.c (build_zero_init): Handle VECTOR_TYPE and
 	COMPLEX_TYPEs.

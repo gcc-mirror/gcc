@@ -1,3 +1,8 @@
+2006-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/28302
+	* g++.dg/ext/vector3.C: New test.
+
 2006-10-06  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.c-torture/compile/sync-2.c: New test.
