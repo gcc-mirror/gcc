@@ -1,3 +1,8 @@
+2006-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/29380
+	* gcc.dg/pr29330.c: Add -std=gnu99 to dg-options.
+
 2006-10-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/29300
