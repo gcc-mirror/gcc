@@ -1269,10 +1269,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     erase(const _Key& __x)
     {
-      pair<iterator,iterator> __p = equal_range(__x);
-      size_type __n = std::distance(__p.first, __p.second);
+      pair<iterator, iterator> __p = equal_range(__x);
+      const size_type __old_size = size();
       erase(__p.first, __p.second);
-      return __n;
+      return __old_size - size();
     }
 
   template<typename _Key, typename _Val, typename _KoV,
