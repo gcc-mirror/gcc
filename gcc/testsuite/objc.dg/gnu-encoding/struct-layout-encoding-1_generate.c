@@ -222,11 +222,29 @@ switchfiles (int fields)
       fputs ("failed to create test files\n", stderr);
       exit (1);
     }
+  /* FIXME: these tests should not be xfailed on PowerPC darwin or aix
+     but they are because libobjc uses GCC's headers for trying to find
+     the struct layout but it gets it wrong.  */
+  if (filecnt == 2
+      || filecnt == 3
+      || filecnt == 4
+      || filecnt == 6
+      || filecnt == 7
+      || filecnt == 8
+      || filecnt == 11
+      || filecnt == 12
+      || filecnt == 15
+      || filecnt == 22)
+     {
+      fprintf (outfile, "\
+/* { dg-do run { xfail powerpc*-*-darwin* powerpc*-*-aix* } } */\n\
+/* { dg-options \"-w -I%s -fgnu-runtime\" } */\n", srcdir);
+     }
   /* FIXME: these should not be xfailed but they are because
      of bugs in libobjc and the objc front-end.  25 is because
      vectors are not encoded.  The rest are because or zero sized
      arrays are encoded as pointers.  */
-  if (filecnt >= 25)
+  else if (filecnt >= 25)
     {
       fprintf (outfile, "\
 /* { dg-do run { xfail *-*-* } } */\n\

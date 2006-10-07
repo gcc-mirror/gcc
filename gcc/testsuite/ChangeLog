@@ -1,3 +1,8 @@
+2006-10-07  Andrew Pinski  <pinskia@gmail.com>
+
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c:
+	Xfail some tests for powerpc-darwin and powerpc-aix.
+
 2006-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/29380
