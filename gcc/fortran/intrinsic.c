@@ -2424,6 +2424,11 @@ add_subroutines (void)
 	      length, BT_INTEGER, di, OPTIONAL, st, BT_INTEGER, di, OPTIONAL,
 	      trim_name, BT_LOGICAL, dl, OPTIONAL);
 
+  add_sym_2s ("move_alloc", 0, BT_UNKNOWN, 0, GFC_STD_F2003,
+	      gfc_check_move_alloc, NULL, NULL,
+	      f, BT_UNKNOWN, 0, REQUIRED,
+	      t, BT_UNKNOWN, 0, REQUIRED);
+
   add_sym_5s ("mvbits", 1, BT_UNKNOWN, 0, GFC_STD_F95,
 	      gfc_check_mvbits, gfc_simplify_mvbits, gfc_resolve_mvbits,
 	      f, BT_INTEGER, di, REQUIRED, fp, BT_INTEGER, di, REQUIRED,

@@ -593,6 +593,7 @@ resolve_structure_cons (gfc_expr * expr)
   gfc_constructor *cons;
   gfc_component *comp;
   try t;
+  symbol_attribute a;
 
   t = SUCCESS;
   cons = expr->value.constructor;
@@ -615,6 +616,17 @@ resolve_structure_cons (gfc_expr * expr)
 	  continue;
 	}
 
+      if (cons->expr->expr_type != EXPR_NULL
+	    && comp->as && comp->as->rank != cons->expr->rank
+	    && (comp->allocatable || cons->expr->rank))
+	{
+	  gfc_error ("The rank of the element in the derived type "
+		     "constructor at %L does not match that of the "
+		     "component (%d/%d)", &cons->expr->where,
+		     cons->expr->rank, comp->as ? comp->as->rank : 0);
+	  t = FAILURE;
+	}
+
       /* If we don't have the right type, try to convert it.  */
 
       if (!gfc_compare_types (&cons->expr->ts, &comp->ts))
@@ -628,6 +640,19 @@ resolve_structure_cons (gfc_expr * expr)
 		       gfc_basic_typename (comp->ts.type));
 	  else
 	    t = gfc_convert_type (cons->expr, &comp->ts, 1);
+	}
+
+      if (!comp->pointer || cons->expr->expr_type == EXPR_NULL)
+	continue;
+
+      a = gfc_expr_attr (cons->expr);
+
+      if (!a.pointer && !a.target)
+	{
+	  t = FAILURE;
+	  gfc_error ("The element in the derived type constructor at %L, "
+		     "for pointer component '%s' should be a POINTER or "
+		     "a TARGET", &cons->expr->where, comp->name);
 	}
     }
 
@@ -3408,7 +3433,8 @@ find_sym_in_expr (gfc_symbol *sym, gfc_expr *e)
 
 /* Given the expression node e for an allocatable/pointer of derived type to be
    allocated, get the expression node to be initialized afterwards (needed for
-   derived types with default initializers).  */
+   derived types with default initializers, and derived types with allocatable
+   components that need nullification.)  */
 
 static gfc_expr *
 expr_to_initialize (gfc_expr * e)
@@ -3532,8 +3558,7 @@ resolve_allocate_expr (gfc_expr * e, gfc_code * code)
         init_st->loc = code->loc;
         init_st->op = EXEC_ASSIGN;
         init_st->expr = expr_to_initialize (e);
-        init_st->expr2 = init_e;
-
+	init_st->expr2 = init_e;
         init_st->next = code->next;
         code->next = init_st;
     }
@@ -4161,6 +4186,13 @@ resolve_transfer (gfc_code * code)
 	{
 	  gfc_error ("Data transfer element at %L cannot have "
 		     "POINTER components", &code->loc);
+	  return;
+	}
+
+      if (ts->derived->attr.alloc_comp)
+	{
+	  gfc_error ("Data transfer element at %L cannot have "
+		     "ALLOCATABLE components", &code->loc);
 	  return;
 	}
 
@@ -5545,7 +5577,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	    }
 	}
 
-      if (c->pointer || c->as == NULL)
+      if (c->pointer || c->allocatable ||  c->as == NULL)
 	continue;
 
       for (i = 0; i < c->as->rank; i++)
@@ -5606,16 +5638,28 @@ resolve_fl_namelist (gfc_symbol *sym)
 	}
     }
 
-    /* Reject namelist arrays that are not constant shape.  */
-    for (nl = sym->namelist; nl; nl = nl->next)
-      {
-	if (is_non_constant_shape_array (nl->sym))
-	  {
-	    gfc_error ("The array '%s' must have constant shape to be "
-		       "a NAMELIST object at %L", nl->sym->name,
-		       &sym->declared_at);
-	    return FAILURE;
-	  }
+  /* Reject namelist arrays that are not constant shape.  */
+  for (nl = sym->namelist; nl; nl = nl->next)
+    {
+      if (is_non_constant_shape_array (nl->sym))
+	{
+	  gfc_error ("The array '%s' must have constant shape to be "
+		     "a NAMELIST object at %L", nl->sym->name,
+		     &sym->declared_at);
+	  return FAILURE;
+	}
+    }
+
+  /* Namelist objects cannot have allocatable components.  */
+  for (nl = sym->namelist; nl; nl = nl->next)
+    {
+      if (nl->sym->ts.type == BT_DERIVED
+	    && nl->sym->ts.derived->attr.alloc_comp)
+	{
+	  gfc_error ("NAMELIST object '%s' at %L cannot have ALLOCATABLE "
+		     "components", nl->sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
     }
 
   /* 14.1.2 A module or internal procedure represent local entities
@@ -6367,6 +6411,14 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
     {
       gfc_error ("Derived type variable '%s' at %L must have SEQUENCE "
                  "attribute to be an EQUIVALENCE object", sym->name, &e->where);
+      return FAILURE;
+    }
+
+  /* Shall not have allocatable components. */
+  if (derived->attr.alloc_comp)
+    {
+      gfc_error ("Derived type variable '%s' at %L cannot have ALLOCATABLE "
+		 "components to be an EQUIVALENCE object",sym->name, &e->where);
       return FAILURE;
     }
 

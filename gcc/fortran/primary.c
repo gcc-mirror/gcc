@@ -1715,7 +1715,7 @@ check_substring:
 symbol_attribute
 gfc_variable_attr (gfc_expr * expr, gfc_typespec * ts)
 {
-  int dimension, pointer, target;
+  int dimension, pointer, allocatable, target;
   symbol_attribute attr;
   gfc_ref *ref;
 
@@ -1727,6 +1727,7 @@ gfc_variable_attr (gfc_expr * expr, gfc_typespec * ts)
 
   dimension = attr.dimension;
   pointer = attr.pointer;
+  allocatable = attr.allocatable;
 
   target = attr.target;
   if (pointer)
@@ -1747,12 +1748,12 @@ gfc_variable_attr (gfc_expr * expr, gfc_typespec * ts)
 	    break;
 
 	  case AR_SECTION:
-	    pointer = 0;
+	    allocatable = pointer = 0;
 	    dimension = 1;
 	    break;
 
 	  case AR_ELEMENT:
-	    pointer = 0;
+	    allocatable = pointer = 0;
 	    break;
 
 	  case AR_UNKNOWN:
@@ -1767,18 +1768,20 @@ gfc_variable_attr (gfc_expr * expr, gfc_typespec * ts)
 	  *ts = ref->u.c.component->ts;
 
 	pointer = ref->u.c.component->pointer;
+	allocatable = ref->u.c.component->allocatable;
 	if (pointer)
 	  target = 1;
 
 	break;
 
       case REF_SUBSTRING:
-	pointer = 0;
+	allocatable = pointer = 0;
 	break;
       }
 
   attr.dimension = dimension;
   attr.pointer = pointer;
+  attr.allocatable = allocatable;
   attr.target = target;
 
   return attr;

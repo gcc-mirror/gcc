@@ -1523,6 +1523,7 @@ gfc_set_component_attr (gfc_component * c, symbol_attribute * attr)
 
   c->dimension = attr->dimension;
   c->pointer = attr->pointer;
+  c->allocatable = attr->allocatable;
 }
 
 
@@ -1536,6 +1537,7 @@ gfc_get_component_attr (symbol_attribute * attr, gfc_component * c)
   gfc_clear_attr (attr);
   attr->dimension = c->dimension;
   attr->pointer = c->pointer;
+  attr->allocatable = c->allocatable;
 }
 
 

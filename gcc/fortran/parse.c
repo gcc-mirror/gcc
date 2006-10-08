@@ -1499,6 +1499,8 @@ parse_derived (void)
   int compiling_type, seen_private, seen_sequence, seen_component, error_flag;
   gfc_statement st;
   gfc_state_data s;
+  gfc_symbol *sym;
+  gfc_component *c;
 
   error_flag = 0;
 
@@ -1594,6 +1596,18 @@ parse_derived (void)
 	  break;
 	}
     }
+
+  /* Look for allocatable components.  */
+  sym = gfc_current_block ();
+  for (c = sym->components; c; c = c->next)
+    {
+      if (c->allocatable || (c->ts.type == BT_DERIVED
+		    	     && c->ts.derived->attr.alloc_comp))
+	{
+	  sym->attr.alloc_comp = 1;
+	  break;
+	}
+     }
 
   pop_state ();
 }

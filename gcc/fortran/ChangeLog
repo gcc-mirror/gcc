@@ -1,3 +1,111 @@
+2006-10-08  Erik Edelmann <edelmann@gcc.gnu.org>
+	    Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/20541
+	* interface.c (gfc_compare_derived_types): Add comparison of
+	the allocatable field.
+	* intrinsic.c (add_subroutines): Add MOVE_ALLOC.
+	* trans-expr.c (gfc_conv_aliased_arg, gfc_trans_subarray_assign,
+	gfc_trans_subcomponent_assign, gfc_conv_string_parameter,
+	gfc_trans_scalar_assign): Add extra arguments l_is_temp
+	and r_is_var to references to latter function.
+	(gfc_conv_function_call): Add enum for types of argument and
+	an associated variable parm_kind. Deallocate components of
+	INTENT(OUT) and non-variable arrays.
+	(gfc_trans_subcomponent_assign): Add block to assign arrays
+	to allocatable components.
+	(gfc_trans_scalar_assign): Add block to handle assignments of
+	derived types with allocatable components, using the above new
+	arguments to control allocation/deallocation of memory and the
+	copying of allocated arrays.
+	* trans-array.c (gfc_array_allocate): Remove old identification 
+	of pointer and replace with that of an allocatable array. Add
+	nullify of structures with allocatable components. 
+	(gfc_conv_array_initializer): Treat EXPR_NULL.
+	(gfc_conv_array_parameter): Deallocate allocatable components
+	of non-variable structures.
+	(gfc_trans_dealloc_allocated): Use second argument of library
+	deallocate to inhibit, without error, freeing NULL pointers.
+	(get_full_array_size): New function to return the size of a
+	full array.
+	(gfc_duplicate_allocatable): New function to allocate and copy
+	allocated data.
+	(structure_alloc_comps): New recursive function to deallocate,
+	nullify or copy allocatable components.
+	(gfc_nullify_alloc_comp, gfc_deallocate_alloc_comp,
+	gfc_copy_alloc_comp): New interface functions to call previous.
+	(gfc_trans_deferred_array): Add the code to nullify allocatable
+	components, when entering scope, and to deallocate them on
+	leaving. Do not call gfc_trans_static_array_pointer and return
+	for structures with allocatable components and default
+	initializers.
+	* symbol.c (gfc_set_component_attr): Set allocatable field.
+	(gfc_get_component_attr): Set the allocatable attribute.
+	* intrinsic.h : Prototype for gfc_check_move_alloc.
+	* decl.c (build_struct): Apply TR15581 constraints for
+	allocatable components.
+	(variable_decl): Default initializer is always NULL for
+	allocatable components.
+	(match_attr_spec): Allow, or not, allocatable components,
+	according to the standard in force.
+	* trans-array.h : Prototypes for gfc_nullify_alloc_comp,
+	gfc_deallocate_alloc_comp, gfc_copy_alloc_comp and
+	gfc_duplicate_allocatable.
+	* gfortran.texi : Add mention of TR15581 extensions.
+	* gfortran.h : Add attribute alloc_comp, add
+	gfc_components field allocatable and add the prototype
+	for gfc_expr_to_initialize.
+	* trans-stmt.c (generate_loop_for_temp_to_lhs,
+	generate_loop_for_rhs_to_temp, gfc_trans_where_assign,
+	gfc_trans_where_3): Add extra arguments to calls to
+	gfc_trans_scalar_assign and set appropriately.
+	(gfc_trans_allocate): Nullify allocatable components.
+	(gfc_trans_deallocate): Deallocate to ultimate allocatable
+	components but stop at ultimate pointer components.
+	* module.c (mio_symbol_attribute, mio_symbol_attribute,
+	mio_component): Add module support for allocatable
+	components.
+	* trans-types.c (gfc_get_derived_type): Treat allocatable
+	components.
+	* trans.h : Add two boolean arguments to
+	gfc_trans_scalar_assign.
+	* resolve.c (resolve_structure_cons): Check conformance of
+	constructor element and the component.
+	(resolve_allocate_expr): Add expression to nullify the
+	constructor expression for allocatable components.
+	(resolve_transfer): Inhibit I/O of derived types with
+	allocatable components.
+	(resolve_fl_derived): Skip check of bounds of allocatable
+	components.
+	* trans-decl.c (gfc_get_symbol_decl): Add derived types
+	with allocatable components to deferred variable.
+	(gfc_trans_deferred_vars): Make calls for derived types
+	with allocatable components to gfc_trans_deferred_array.
+	(gfc_generate_function_code): Nullify allocatable
+	component function result on entry.
+	* parse.c (parse_derived): Set symbol attr.allocatable if
+	allocatable components are present.
+	* check.c (gfc_check_allocated): Enforce attr.allocatable
+	for intrinsic arguments.
+	(gfc_check_move_alloc): Check arguments of move_alloc.
+	* primary.c (gfc_variable_attr): Set allocatable attribute.
+	* intrinsic.texi : Add index entry and section for
+	for move_alloc.
+
+2006-10-08  Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29115
+	* resolve.c (resolve_structure_cons): It is an error if the
+	pointer component elements of a derived type constructor are
+	not pointer or target.
+
+
+	PR fortran/29211
+	* trans-stmt.c (generate_loop_for_temp_to_lhs,
+	generate_loop_for_rhs_to_temp): Provide a string length for
+	the temporary by copying that of the other side of the scalar
+	assignment.
+
 2006-10-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/28585

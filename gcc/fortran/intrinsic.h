@@ -154,6 +154,7 @@ try gfc_check_free (gfc_expr *);
 try gfc_check_fstat_sub (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_gerror (gfc_expr *);
 try gfc_check_getlog (gfc_expr *);
+try gfc_check_move_alloc (gfc_expr *, gfc_expr *);
 try gfc_check_mvbits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 		      gfc_expr *);
 try gfc_check_random_number (gfc_expr *);

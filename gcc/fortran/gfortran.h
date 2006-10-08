@@ -532,6 +532,9 @@ typedef struct
   /* Special attributes for Cray pointers, pointees.  */
   unsigned cray_pointer:1, cray_pointee:1;
 
+  /* The symbol is a derived type with allocatable components, possibly nested.
+   */
+  unsigned alloc_comp:1;
 }
 symbol_attribute;
 
@@ -649,7 +652,7 @@ typedef struct gfc_component
   const char *name;
   gfc_typespec ts;
 
-  int pointer, dimension;
+  int pointer, allocatable, dimension;
   gfc_array_spec *as;
 
   tree backend_decl;
@@ -1972,6 +1975,7 @@ void gfc_resolve_omp_do_blocks (gfc_code *, gfc_namespace *);
 void gfc_free_actual_arglist (gfc_actual_arglist *);
 gfc_actual_arglist *gfc_copy_actual_arglist (gfc_actual_arglist *);
 const char *gfc_extract_int (gfc_expr *, int *);
+gfc_expr *gfc_expr_to_initialize (gfc_expr *);
 
 gfc_expr *gfc_build_conversion (gfc_expr *);
 void gfc_free_ref_list (gfc_ref *);

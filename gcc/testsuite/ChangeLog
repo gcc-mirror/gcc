@@ -1,3 +1,30 @@
+2006-10-08  Erik Edelmann  <edelmann@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20541
+	* gfortran.dg/alloc_comp_basics_1.f90: New test.
+	* gfortran.dg/alloc_comp_basics_2.f90: New test.
+	* gfortran.dg/alloc_comp_assign_1.f90: New test.
+	* gfortran.dg/alloc_comp_assign_2.f90: New test.
+	* gfortran.dg/alloc_comp_assign_3.f90: New test.
+	* gfortran.dg/alloc_comp_assign_4.f90: New test.
+	* gfortran.dg/alloc_comp_constraint_1.f90: New test.
+	* gfortran.dg/alloc_comp_constraint_2.f90: New test.
+	* gfortran.dg/alloc_comp_constraint_3.f90: New test.
+	* gfortran.dg/alloc_comp_constructor_1.f90: New test.
+	* gfortran.dg/alloc_comp_constructor_2.f90: New test.
+	* gfortran.dg/alloc_comp_initializer_1.f90: New test.
+	* gfortran.dg/alloc_comp_std.f90: New test.
+	* gfortran.dg/move_alloc.f90: New test.
+
+2006-10-08  Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29115
+	* gfortran.dg/derived_constructor_comps_2.f90: New test.
+
+	PR fortran/29211
+	* gfortran.dg/forall_char_dependencies_1.f90: New test.
+
 2006-10-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/28585
