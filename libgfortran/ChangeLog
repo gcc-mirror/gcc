@@ -1,3 +1,8 @@
+2006-10-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* c99_protos.h: Correctly protect definitions of prototypes for
+	asinhf, acoshf and atanhf to be the same as in intrinsics/hyper.c.
+
 2006-10-08  Paul Thomas  <pault@gcc.gnu.org>
 	    Erik Edelmann  <edelmann@gcc.gnu.org>
 
