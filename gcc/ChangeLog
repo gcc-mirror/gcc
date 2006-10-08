@@ -1,5 +1,11 @@
 2006-10-08  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.c (mips_legitimize_tls_address): Implement
+	all TLS models in the same way as local exec if !TARGET_ABICALLS.
+	Remove stray newline.
+
+2006-10-08  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.c (mips_classify_symbol): Do not return
 	SYMBOL_SMALL_DATA if SYMBOL_REF_WEAK.
 	(mips_in_small_data_p): Tweak comments.
