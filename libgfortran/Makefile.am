@@ -73,6 +73,7 @@ intrinsics/ishftc.c \
 intrinsics/link.c \
 intrinsics/malloc.c \
 intrinsics/mvbits.c \
+intrinsics/move_alloc.c \
 intrinsics/pack_generic.c \
 intrinsics/perror.c \
 intrinsics/signal.c \
