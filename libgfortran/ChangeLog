@@ -1,5 +1,13 @@
 2006-10-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	* intrinsics/hyper.c: Remove file.
+	* intrinsics/c99_functions.c: Add fallback functions asinhf,
+	acoshf and atanhf.
+	* Makefile.am: Remove file intrinsics/hyper.c.
+	* Makefile.in: Regenerate.
+
+2006-10-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	* c99_protos.h: Correctly protect definitions of prototypes for
 	asinhf, acoshf and atanhf to be the same as in intrinsics/hyper.c.
 
