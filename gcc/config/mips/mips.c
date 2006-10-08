@@ -1221,7 +1221,10 @@ mips_classify_symbol (rtx x)
 	return SYMBOL_SMALL_DATA;
     }
 
-  if (SYMBOL_REF_SMALL_P (x))
+  /* Do not use small-data accesses for weak symbols; they may end up
+     being zero.  */
+  if (SYMBOL_REF_SMALL_P (x)
+      && !SYMBOL_REF_WEAK (x))
     return SYMBOL_SMALL_DATA;
 
   if (TARGET_ABICALLS)
@@ -7313,8 +7316,10 @@ mips_function_rodata_section (tree decl)
   return data_section;
 }
 
-/* Implement TARGET_IN_SMALL_DATA_P.  Return true if it would be safe to
-   access DECL using %gp_rel(...)($gp).  */
+/* Implement TARGET_IN_SMALL_DATA_P.  This function controls whether
+   locally-defined objects go in a small data section.  It also controls
+   the setting of the SYMBOL_REF_SMALL_P flag, which in turn helps
+   mips_classify_symbol decide when to use %gp_rel(...)($gp) accesses.  */
 
 static bool
 mips_in_small_data_p (tree decl)
