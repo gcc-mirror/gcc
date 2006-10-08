@@ -1,3 +1,12 @@
+2006-10-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/26540
+	* intrinsics/signal.c (signal_sub, signal_sub_int): Use intptr_t
+	if available to cast function pointers to int and back.
+	* configure.ac: Check for intptr_t.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2006-10-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/16580
