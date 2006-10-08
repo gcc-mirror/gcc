@@ -962,14 +962,31 @@ build_struct (const char *name, gfc_charlen * cl, gfc_expr ** init,
 
   /* Check array components.  */
   if (!c->dimension)
-    return SUCCESS;
+    {
+      if (c->allocatable)
+	{
+	  gfc_error ("Allocatable component at %C must be an array");
+	  return FAILURE;
+	}
+      else
+	return SUCCESS;
+    }
 
   if (c->pointer)
     {
       if (c->as->type != AS_DEFERRED)
 	{
-	  gfc_error ("Pointer array component of structure at %C "
-		     "must have a deferred shape");
+	  gfc_error ("Pointer array component of structure at %C must have a "
+		     "deferred shape");
+	  return FAILURE;
+	}
+    }
+  else if (c->allocatable)
+    {
+      if (c->as->type != AS_DEFERRED)
+	{
+	  gfc_error ("Allocatable component of structure at %C must have a "
+		     "deferred shape");
 	  return FAILURE;
 	}
     }
@@ -1284,6 +1301,14 @@ variable_decl (int elem)
 	}
     }
 
+  if (initializer != NULL && current_attr.allocatable
+	&& gfc_current_state () == COMP_DERIVED)
+    {
+      gfc_error ("Initialization of allocatable component at %C is not allowed");
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
   /* Check if we are parsing an enumeration and if the current enumerator
      variable has an initializer or not. If it does not have an
      initializer, the initialization value of the previous enumerator 
@@ -1315,8 +1340,9 @@ variable_decl (int elem)
     t = add_init_expr_to_sym (name, &initializer, &var_locus);
   else
     {
-      if (current_ts.type == BT_DERIVED && !current_attr.pointer
-	  && !initializer)
+      if (current_ts.type == BT_DERIVED
+	    && !current_attr.pointer
+	    && !initializer)
 	initializer = gfc_default_initializer (&current_ts);
       t = build_struct (name, cl, &initializer, &as);
     }
@@ -2141,11 +2167,24 @@ match_attr_spec (void)
 	  && d != DECL_DIMENSION && d != DECL_POINTER
 	  && d != DECL_COLON && d != DECL_NONE)
 	{
-
-	  gfc_error ("Attribute at %L is not allowed in a TYPE definition",
-		     &seen_at[d]);
-	  m = MATCH_ERROR;
-	  goto cleanup;
+	  if (d == DECL_ALLOCATABLE)
+	    {
+	      if (gfc_notify_std (GFC_STD_F2003, 
+				   "In the selected standard, the ALLOCATABLE "
+				   "attribute at %C is not allowed in a TYPE "
+				   "definition") == FAILURE)         
+		{
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+            }
+          else
+	    {
+	      gfc_error ("Attribute at %L is not allowed in a TYPE definition",
+			  &seen_at[d]);
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 	}
 
       if ((d == DECL_PRIVATE || d == DECL_PUBLIC)

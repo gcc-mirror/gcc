@@ -181,6 +181,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{MINVAL}:        MINVAL,    Minimum value of an array
 * @code{MOD}:           MOD,       Remainder function
 * @code{MODULO}:        MODULO,    Modulo function
+* @code{MOVE_ALLOC}:    MOVE_ALLOC, Move allocation from one object to another
 * @code{MVBITS}:        MVBITS,    Move bits from one integer to another
 * @code{NEAREST}:       NEAREST,   Nearest representable number
 * @code{NEW_LINE}:      NEW_LINE,  New line character
@@ -5831,6 +5832,50 @@ Elemental subroutine
 @item @emph{See also}:
 @end table
 
+
+
+
+@node MOVE_ALLOC
+@section @code{MOVE_ALLOC} --- Move allocation from one object to another
+@findex @code{MOVE_ALLOC} intrinsic
+@cindex MOVE_ALLOC
+
+@table @asis
+@item @emph{Description}:
+@code{MOVE_ALLOC(SRC, DEST)} moves the allocation from @var{SRC} to
+@var{DEST}.  @var{SRC} will become deallocated in the process.
+
+@item @emph{Option}:
+f2003, gnu
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@code{CALL MOVE_ALLOC(SRC, DEST)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{SRC} @tab @code{ALLOCATABLE}, @code{INTENT(INOUT)}, may be of any type and kind.
+@item @var{DEST} @tab @code{ALLOCATABLE}, @code{INTENT(OUT)}, shall be of the same type, kind and rank as @var{SRC}
+@end multitable
+
+@item @emph{Return value}:
+None
+
+@item @emph{Example}:
+@smallexample
+program test_move_alloc
+    integer, allocatable :: a(:), b(:)
+
+    allocate(a(3))
+    a = [ 1, 2, 3 ]
+    call move_alloc(a, b)
+    print *, allocated(a), allocated(b)
+    print *, b
+end program test_move_alloc
+@end smallexample
+@end table
 
 
 

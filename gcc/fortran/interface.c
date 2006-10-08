@@ -374,6 +374,9 @@ gfc_compare_derived_types (gfc_symbol * derived1, gfc_symbol * derived2)
       if (dt1->dimension != dt2->dimension)
 	return 0;
 
+     if (dt1->allocatable != dt2->allocatable)
+	return 0;
+
       if (dt1->dimension && gfc_compare_array_spec (dt1->as, dt2->as) == 0)
 	return 0;
 

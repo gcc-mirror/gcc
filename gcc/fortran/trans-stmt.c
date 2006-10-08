@@ -1802,7 +1802,8 @@ generate_loop_for_temp_to_lhs (gfc_expr *expr, tree tmp1, tree count3,
       gfc_conv_expr (&lse, expr);
 
       /* Use the scalar assignment.  */
-      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts.type);
+      rse.string_length = lse.string_length;
+      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, false, false);
 
       /* Form the mask expression according to the mask tree list.  */
       if (wheremask)
@@ -1897,7 +1898,9 @@ generate_loop_for_rhs_to_temp (gfc_expr *expr2, tree tmp1, tree count3,
     }
 
   /* Use the scalar assignment.  */
-  tmp = gfc_trans_scalar_assign (&lse, &rse, expr2->ts.type);
+  lse.string_length = rse.string_length;
+  tmp = gfc_trans_scalar_assign (&lse, &rse, expr2->ts, true,
+				 expr2->expr_type == EXPR_VARIABLE);
 
   /* Form the mask expression according to the mask tree list.  */
   if (wheremask)
@@ -2978,7 +2981,8 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
     maskexpr = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (maskexpr), maskexpr);
 
   /* Use the scalar assignment as is.  */
-  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts.type);
+  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
+				 loop.temp_ss != NULL, false);
   tmp = build3_v (COND_EXPR, maskexpr, tmp, build_empty_stmt ());
 
   gfc_add_expr_to_block (&body, tmp);
@@ -3031,7 +3035,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
 				    maskexpr);
 
           /* Use the scalar assignment as is.  */
-          tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts.type);
+          tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts, false, false);
           tmp = build3_v (COND_EXPR, maskexpr, tmp, build_empty_stmt ());
           gfc_add_expr_to_block (&body, tmp);
 
@@ -3406,8 +3410,8 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
         gfc_conv_expr (&edse, edst);
     }
 
-  tstmt = gfc_trans_scalar_assign (&tdse, &tsse, tdst->ts.type);
-  estmt = eblock ? gfc_trans_scalar_assign (&edse, &esse, edst->ts.type)
+  tstmt = gfc_trans_scalar_assign (&tdse, &tsse, tdst->ts, false, false);
+  estmt = eblock ? gfc_trans_scalar_assign (&edse, &esse, edst->ts, false, false)
 		 : build_empty_stmt ();
   tmp = build3_v (COND_EXPR, cexpr, tstmt, estmt);
   gfc_add_expr_to_block (&body, tmp);
@@ -3591,6 +3595,14 @@ gfc_trans_allocate (gfc_code * code)
 				 parm, tmp, build_empty_stmt ());
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
+
+	  if (expr->ts.type == BT_DERIVED && expr->ts.derived->attr.alloc_comp)
+	    {
+	      tmp = build_fold_indirect_ref (se.expr);
+	      tmp = gfc_nullify_alloc_comp (expr->ts.derived, tmp, 0);
+	      gfc_add_expr_to_block (&se.pre, tmp);
+	    }
+
 	}
 
       tmp = gfc_finish_block (&se.pre);
@@ -3674,6 +3686,26 @@ gfc_trans_deallocate (gfc_code * code)
       se.want_pointer = 1;
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
+
+      if (expr->ts.type == BT_DERIVED
+	    && expr->ts.derived->attr.alloc_comp)
+        {
+	  gfc_ref *ref;
+	  gfc_ref *last = NULL;
+	  for (ref = expr->ref; ref; ref = ref->next)
+	    if (ref->type == REF_COMPONENT)
+	      last = ref;
+
+	  /* Do not deallocate the components of a derived type
+	     ultimate pointer component.  */
+	  if (!(last && last->u.c.component->pointer)
+		   && !(!last && expr->symtree->n.sym->attr.pointer))
+	    {
+	      tmp = gfc_deallocate_alloc_comp (expr->ts.derived, se.expr,
+						expr->rank);
+	      gfc_add_expr_to_block (&se.pre, tmp);
+	    }
+	}
 
       if (expr->rank)
 	tmp = gfc_array_deallocate (se.expr, pstat);

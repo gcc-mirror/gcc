@@ -1435,7 +1435,7 @@ typedef enum
   AB_DATA, AB_IN_NAMELIST, AB_IN_COMMON, 
   AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE, AB_ELEMENTAL, AB_PURE,
   AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT, AB_CRAY_POINTER,
-  AB_CRAY_POINTEE, AB_THREADPRIVATE
+  AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP
 }
 ab_attribute;
 
@@ -1465,6 +1465,7 @@ static const mstring attr_bits[] =
     minit ("ALWAYS_EXPLICIT", AB_ALWAYS_EXPLICIT),
     minit ("CRAY_POINTER", AB_CRAY_POINTER),
     minit ("CRAY_POINTEE", AB_CRAY_POINTEE),
+    minit ("ALLOC_COMP", AB_ALLOC_COMP),
     minit (NULL, -1)
 };
 
@@ -1555,6 +1556,8 @@ mio_symbol_attribute (symbol_attribute * attr)
 	MIO_NAME(ab_attribute) (AB_CRAY_POINTER, attr_bits);
       if (attr->cray_pointee)
 	MIO_NAME(ab_attribute) (AB_CRAY_POINTEE, attr_bits);
+      if (attr->alloc_comp)
+	MIO_NAME(ab_attribute) (AB_ALLOC_COMP, attr_bits);
 
       mio_rparen ();
 
@@ -1643,6 +1646,9 @@ mio_symbol_attribute (symbol_attribute * attr)
 	      break;
 	    case AB_CRAY_POINTEE:
 	      attr->cray_pointee = 1;
+	      break;
+	    case AB_ALLOC_COMP:
+	      attr->alloc_comp = 1;
 	      break;
 	    }
 	}
@@ -1951,6 +1957,7 @@ mio_component (gfc_component * c)
 
   mio_integer (&c->dimension);
   mio_integer (&c->pointer);
+  mio_integer (&c->allocatable);
 
   mio_expr (&c->initializer);
   mio_rparen ();

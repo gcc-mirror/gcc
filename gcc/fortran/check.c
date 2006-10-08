@@ -477,13 +477,16 @@ gfc_check_all_any (gfc_expr * mask, gfc_expr * dim)
 try
 gfc_check_allocated (gfc_expr * array)
 {
+  symbol_attribute attr;
+
   if (variable_check (array, 0) == FAILURE)
     return FAILURE;
 
   if (array_check (array, 0) == FAILURE)
     return FAILURE;
 
-  if (!array->symtree->n.sym->attr.allocatable)
+  attr = gfc_variable_attr (array, NULL);
+  if (!attr.allocatable)
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be ALLOCATABLE",
 		 gfc_current_intrinsic_arg[0], gfc_current_intrinsic,
@@ -1814,6 +1817,64 @@ gfc_check_merge (gfc_expr * tsource, gfc_expr * fsource, gfc_expr * mask)
   return SUCCESS;
 }
 
+try
+gfc_check_move_alloc (gfc_expr * from, gfc_expr * to)
+{
+  symbol_attribute attr;
+
+  if (variable_check (from, 0) == FAILURE)
+    return FAILURE;
+
+  if (array_check (from, 0) == FAILURE)
+    return FAILURE;
+
+  attr = gfc_variable_attr (from, NULL);
+  if (!attr.allocatable)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be ALLOCATABLE",
+		 gfc_current_intrinsic_arg[0], gfc_current_intrinsic,
+		 &from->where);
+      return FAILURE;
+    }
+
+  if (variable_check (to, 0) == FAILURE)
+    return FAILURE;
+
+  if (array_check (to, 0) == FAILURE)
+    return FAILURE;
+
+  attr = gfc_variable_attr (to, NULL);
+  if (!attr.allocatable)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be ALLOCATABLE",
+		 gfc_current_intrinsic_arg[0], gfc_current_intrinsic,
+		 &to->where);
+      return FAILURE;
+    }
+
+  if (same_type_check (from, 0, to, 1) == FAILURE)
+    return FAILURE;
+
+  if (to->rank != from->rank)
+    {
+      gfc_error ("the '%s' and '%s' arguments of '%s' intrinsic at %L must "
+		 "have the same rank %d/%d", gfc_current_intrinsic_arg[0],
+		 gfc_current_intrinsic_arg[1], gfc_current_intrinsic,
+		 &to->where,  from->rank, to->rank);
+      return FAILURE;
+    }
+
+  if (to->ts.kind != from->ts.kind)
+    {
+      gfc_error ("the '%s' and '%s' arguments of '%s' intrinsic at %L must "
+		 "be of the same kind %d/%d", gfc_current_intrinsic_arg[0],
+		 gfc_current_intrinsic_arg[1], gfc_current_intrinsic,
+		 &to->where, from->ts.kind, to->ts.kind);
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
 
 try
 gfc_check_nearest (gfc_expr * x, gfc_expr * s)

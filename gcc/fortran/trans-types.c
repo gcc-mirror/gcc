@@ -1486,12 +1486,15 @@ gfc_get_derived_type (gfc_symbol * derived)
       /* Derived types in an interface body obtain their parent reference
 	 through the proc_name symbol.  */
       ns = derived->ns->parent ? derived->ns->parent
-			       : derived->ns->proc_name->ns->parent;
+			       : derived->ns->proc_name->ns;
 
       for (; ns; ns = ns->parent)
 	{
 	  for (dt = ns->derived_types; dt; dt = dt->next)
 	    {
+	      if (dt->derived == derived)
+		continue;
+
 	      if (dt->derived->backend_decl == NULL
 		    && gfc_compare_derived_types (dt->derived, derived))
 		gfc_get_derived_type (dt->derived);
@@ -1550,7 +1553,7 @@ gfc_get_derived_type (gfc_symbol * derived)
          required.  */
       if (c->dimension)
 	{
-	  if (c->pointer)
+	  if (c->pointer || c->allocatable)
 	    {
 	      /* Pointers to arrays aren't actually pointer types.  The
 	         descriptors are separate, but the data is common.  */
