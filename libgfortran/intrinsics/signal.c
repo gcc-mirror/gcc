@@ -38,7 +38,17 @@ Boston, MA 02110-1301, USA.  */
 #include <signal.h>
 #endif
 
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#endif
+
 #include <errno.h>
+
+#ifdef HAVE_INTPTR_T
+# define INTPTR_T intptr_t
+#else
+# define INTPTR_T int
+#endif
 
 /* SIGNAL subroutine with PROCEDURE as handler  */
 extern void signal_sub (int *, void (*)(int), int *);
@@ -48,8 +58,13 @@ void
 signal_sub (int *number, void (*handler)(int), int *status)
 {
 #ifdef HAVE_SIGNAL
+  INTPTR_T ret;
+
   if (status != NULL)
-    *status = (int) signal (*number, handler);
+    {
+      ret = (INTPTR_T) signal (*number, handler);
+      *status = (int) ret;
+    }
   else
     signal (*number, handler);
 #else
@@ -69,10 +84,15 @@ void
 signal_sub_int (int *number, int *handler, int *status)
 {
 #ifdef HAVE_SIGNAL
+  INTPTR_T ptr = *handler, ret;
+
   if (status != NULL)
-    *status = (int) signal (*number, (void (*)(int)) *handler);
+    {
+      ret = (INTPTR_T) signal (*number, (void (*)(int)) ptr);
+      *status = (int) ret;
+    }
   else
-    signal (*number, (void (*)(int)) *handler);
+    signal (*number, (void (*)(int)) ptr);
 #else
   errno = ENOSYS;
   if (status != NULL)
