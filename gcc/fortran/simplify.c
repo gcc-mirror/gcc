@@ -2615,6 +2615,25 @@ simplify_nint (const char *name, gfc_expr * e, gfc_expr * k)
 
 
 gfc_expr *
+gfc_simplify_new_line (gfc_expr * e)
+{
+  gfc_expr *result;
+
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (BT_CHARACTER, e->ts.kind, &e->where);
+
+  result->value.character.string = gfc_getmem (2);
+
+  result->value.character.length = 1;
+  result->value.character.string[0] = '\n';
+  result->value.character.string[1] = '\0';     /* For debugger */
+  return result;
+}
+
+
+gfc_expr *
 gfc_simplify_nint (gfc_expr * e, gfc_expr * k)
 {
   return simplify_nint ("NINT", e, k);

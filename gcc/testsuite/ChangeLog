@@ -1,3 +1,8 @@
+2006-10-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/28585
+	* gfortran.dg/new_line.f90: New test.
+
 2006-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/builtins-config.h: Ensure we use -std=c99 on solaris2.

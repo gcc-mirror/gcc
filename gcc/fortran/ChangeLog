@@ -1,3 +1,13 @@
+2006-10-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/28585
+	* intrinsic.c (add_functions): Add new_line Fortran 2003 intrinsic.
+	* intrinsic.h: Add gfc_simplify_new_line and gfc_check_new_line
+	prototypes.
+	* check.c (gfc_check_new_line): New function.
+	* simplify.c (gfc_simplify_new_line): New function.
+	* intrinsic.texi: Document new_line intrinsic.
+
 2006-10-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/16580

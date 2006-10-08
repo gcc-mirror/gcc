@@ -1910,6 +1910,10 @@ add_functions (void)
 
   make_generic ("nearest", GFC_ISYM_NEAREST, GFC_STD_F95);
 
+  add_sym_1 ("new_line", 0, 0, BT_CHARACTER, dc, GFC_STD_F2003,
+             gfc_check_new_line, gfc_simplify_new_line, NULL,
+             i, BT_CHARACTER, dc, REQUIRED);
+
   add_sym_2 ("nint", 1, 1, BT_INTEGER, di, GFC_STD_F77,
 	     gfc_check_a_ikind, gfc_simplify_nint, gfc_resolve_nint,
 	     a, BT_REAL, dr, REQUIRED, kind, BT_INTEGER, di, OPTIONAL);
