@@ -1,3 +1,21 @@
+2006-10-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-config.h: Ensure we use -std=c99 on solaris2.
+	* gcc.dg/torture/builtin-convert-1.c,
+	gcc.dg/torture/builtin-convert-2.c,
+	gcc.dg/torture/builtin-convert-3.c,
+	gcc.dg/torture/builtin-power-1.c: Use -std=c99 on solaris2.
+	* gcc.dg/builtins-18.c: Always use link_error(), which is
+	prototyped.
+
+	Backport:
+	2006-03-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/builtins-config.h (Solaris case): Define HAVE_C99_RUNTIME
+	if _STDC_C99 is defined.
+	* gcc.dg/builtins-18.c: Pass -std=c99 on Solaris.
+	* gcc.dg/builtins-20.c: Likewise.
+
 2006-09-21  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/26983

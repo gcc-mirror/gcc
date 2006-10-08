@@ -7,6 +7,7 @@
 
 /* { dg-do link } */
 /* { dg-options "-O2 -ffast-math" } */
+/* { dg-options "-O2 -ffast-math -std=c99" { target *-*-solaris2* } } */
 
 #include "builtins-config.h"
 
@@ -32,9 +33,9 @@ main (void)
   if (__builtin_cabsf (fc) != 5.0F)
     link_error ();
   if (cabsf (3.0F + 4.0iF) != 5.0F)
-    link_failure ();
+    link_error ();
   if (__builtin_cabsf (3.0F + 4.0iF) != 5.0F)
-    link_failure ();
+    link_error ();
 #endif
 
   /* Test doubles.  */
@@ -43,9 +44,9 @@ main (void)
   if (__builtin_cabs (dc) != 5.0)
     link_error ();
   if (cabs (3.0 + 4.0i) != 5.0)
-    link_failure ();
+    link_error ();
   if (__builtin_cabs (3.0 + 4.0i) != 5.0)
-    link_failure ();
+    link_error ();
 
 #ifdef HAVE_C99_RUNTIME
   /* Test long doubles.  */
@@ -54,9 +55,9 @@ main (void)
   if (__builtin_cabsl (ldc) != 5.0L)
     link_error ();
   if (cabsl (3.0L + 4.0iL) != 5.0L)
-    link_failure ();
+    link_error ();
   if (__builtin_cabsl (3.0L + 4.0iL) != 5.0L)
-    link_failure ();
+    link_error ();
 #endif
 
   return 0;
