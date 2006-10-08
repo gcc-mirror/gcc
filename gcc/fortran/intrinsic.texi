@@ -183,6 +183,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{MODULO}:        MODULO,    Modulo function
 * @code{MVBITS}:        MVBITS,    Move bits from one integer to another
 * @code{NEAREST}:       NEAREST,   Nearest representable number
+* @code{NEW_LINE}:      NEW_LINE,  New line character
 * @code{NINT}:          NINT,      Nearest whole number
 * @code{NOT}:           NOT,       Logical negation
 * @code{NULL}:          NULL,      Function that returns an disassociated pointer
@@ -5874,6 +5875,45 @@ program test_nearest
   y = nearest(42.0, -1.0)
   write (*,"(3(G20.15))") x, y, x - y
 end program test_nearest
+@end smallexample
+@end table
+
+
+
+@node NEW_LINE
+@section @code{NEW_LINE} --- New line character
+@findex @code{NEW_LINE} intrinsic
+@findex @code{NEW_LINE} intrinsic
+
+@table @asis
+@item @emph{Description}:
+@code{NEW_LINE(C)} returns the new-line character
+
+@item @emph{Standard}:
+F2003 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{C = NEW_LINE(C)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{C}    @tab The argument shall be a scalar or array of the
+                      type @code{CHARACTER}.
+@end multitable
+
+@item @emph{Return value}:
+Returns a @var{CHARACTER} scalar of length one with the new-line character of
+the same kind as parameter @var{C}.
+
+@item @emph{Example}:
+@smallexample
+program newline
+  implicit none
+  write(*,'(A)') 'This is record 1.'//NEW_LINE('A')//'This is record 2.'
+end program newline
 @end smallexample
 @end table
 

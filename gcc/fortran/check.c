@@ -1827,6 +1827,14 @@ gfc_check_nearest (gfc_expr * x, gfc_expr * s)
   return SUCCESS;
 }
 
+try
+gfc_check_new_line (gfc_expr * a)
+{
+  if (type_check (a, 0, BT_CHARACTER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
 
 try
 gfc_check_null (gfc_expr * mold)

@@ -98,6 +98,7 @@ try gfc_check_merge (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_minloc_maxloc (gfc_actual_arglist *);
 try gfc_check_minval_maxval (gfc_actual_arglist *);
 try gfc_check_nearest (gfc_expr *, gfc_expr *);
+try gfc_check_new_line (gfc_expr *);
 try gfc_check_null (gfc_expr *);
 try gfc_check_pack (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_precision (gfc_expr *);
@@ -255,6 +256,7 @@ gfc_expr *gfc_simplify_modulo (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_mvbits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 			       gfc_expr *);
 gfc_expr *gfc_simplify_nearest (gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_new_line (gfc_expr *);
 gfc_expr *gfc_simplify_nint (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_null (gfc_expr *);
 gfc_expr *gfc_simplify_idnint (gfc_expr *);
