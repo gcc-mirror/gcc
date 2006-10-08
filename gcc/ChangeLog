@@ -1,3 +1,7 @@
+2006-10-08  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/elf.h (HANDLE_PRAGMA_PUSH_POP): Define.
+
 2006-10-07  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gimplify.c, sched-int.h: Fix comment typos.
