@@ -1,5 +1,11 @@
 2006-10-08  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.c (mips_classify_symbol): Do not return
+	SYMBOL_SMALL_DATA if SYMBOL_REF_WEAK.
+	(mips_in_small_data_p): Tweak comments.
+
+2006-10-08  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/elf.h (HANDLE_PRAGMA_PUSH_POP): Define.
 
 2006-10-07  Kazu Hirata  <kazu@codesourcery.com>
