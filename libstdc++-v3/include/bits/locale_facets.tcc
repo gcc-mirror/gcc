@@ -1565,7 +1565,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     _InIter
     money_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
-	   ios_base::iostate& __err, string_type& __units) const
+	   ios_base::iostate& __err, string_type& __digits) const
     {
       typedef typename string::size_type                  size_type;
 
@@ -1580,10 +1580,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       const size_type __len = __str.size();
       if (__len)
 	{
-	  _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							       * __len));
-	  __ctype.widen(__str.data(), __str.data() + __len, __ws);
-	  __units.assign(__ws, __len);
+	  __digits.resize(__len);
+	  __ctype.widen(__str.data(), __str.data() + __len, &__digits[0]);
 	}
 
       return __ret;
