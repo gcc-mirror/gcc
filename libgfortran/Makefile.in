@@ -167,14 +167,14 @@ am__objects_30 = associated.lo abort.lo access.lo args.lo bessel.lo \
 	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
 	cshift0.lo ctime.lo date_and_time.lo env.lo erf.lo eoshift0.lo \
 	eoshift2.lo etime.lo exit.lo fget.lo flush.lo fnum.lo ftell.lo \
-	gerror.lo getcwd.lo getlog.lo getXid.lo hyper.lo hostnm.lo \
-	kill.lo ierrno.lo ishftc.lo link.lo malloc.lo mvbits.lo \
-	move_alloc.lo pack_generic.lo perror.lo signal.lo size.lo \
-	sleep.lo spread_generic.lo string_intrinsics.lo system.lo \
-	rand.lo random.lo rename.lo reshape_generic.lo \
-	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
-	stat.lo symlnk.lo system_clock.lo time.lo transpose_generic.lo \
-	tty.lo umask.lo unlink.lo unpack_generic.lo in_pack_generic.lo \
+	gerror.lo getcwd.lo getlog.lo getXid.lo hostnm.lo kill.lo \
+	ierrno.lo ishftc.lo link.lo malloc.lo mvbits.lo \
+	pack_generic.lo perror.lo signal.lo size.lo sleep.lo \
+	spread_generic.lo string_intrinsics.lo system.lo rand.lo \
+	random.lo rename.lo reshape_generic.lo reshape_packed.lo \
+	selected_int_kind.lo selected_real_kind.lo stat.lo symlnk.lo \
+	system_clock.lo time.lo transpose_generic.lo tty.lo umask.lo \
+	unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo
 am__objects_31 =
 am__objects_32 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
@@ -419,7 +419,6 @@ intrinsics/gerror.c \
 intrinsics/getcwd.c \
 intrinsics/getlog.c \
 intrinsics/getXid.c \
-intrinsics/hyper.c \
 intrinsics/hostnm.c \
 intrinsics/kill.c \
 intrinsics/ierrno.c \
@@ -427,7 +426,6 @@ intrinsics/ishftc.c \
 intrinsics/link.c \
 intrinsics/malloc.c \
 intrinsics/mvbits.c \
-intrinsics/move_alloc.c \
 intrinsics/pack_generic.c \
 intrinsics/perror.c \
 intrinsics/signal.c \
@@ -2386,9 +2384,6 @@ getlog.lo: intrinsics/getlog.c
 getXid.lo: intrinsics/getXid.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o getXid.lo `test -f 'intrinsics/getXid.c' || echo '$(srcdir)/'`intrinsics/getXid.c
 
-hyper.lo: intrinsics/hyper.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hyper.lo `test -f 'intrinsics/hyper.c' || echo '$(srcdir)/'`intrinsics/hyper.c
-
 hostnm.lo: intrinsics/hostnm.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hostnm.lo `test -f 'intrinsics/hostnm.c' || echo '$(srcdir)/'`intrinsics/hostnm.c
 
@@ -2409,9 +2404,6 @@ malloc.lo: intrinsics/malloc.c
 
 mvbits.lo: intrinsics/mvbits.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mvbits.lo `test -f 'intrinsics/mvbits.c' || echo '$(srcdir)/'`intrinsics/mvbits.c
-
-move_alloc.lo: intrinsics/move_alloc.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o move_alloc.lo `test -f 'intrinsics/move_alloc.c' || echo '$(srcdir)/'`intrinsics/move_alloc.c
 
 pack_generic.lo: intrinsics/pack_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pack_generic.lo `test -f 'intrinsics/pack_generic.c' || echo '$(srcdir)/'`intrinsics/pack_generic.c
