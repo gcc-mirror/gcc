@@ -2036,6 +2036,11 @@ mips_legitimize_tls_address (rtx loc)
   v1 = gen_rtx_REG (Pmode, GP_RETURN + 1);
 
   model = SYMBOL_REF_TLS_MODEL (loc);
+  /* Only TARGET_ABICALLS code can have more than one module; other
+     code must be be static and should not use a GOT.  All TLS models
+     reduce to local exec in this situation.  */
+  if (!TARGET_ABICALLS)
+    model = TLS_MODEL_LOCAL_EXEC;
 
   switch (model)
     {
@@ -2078,7 +2083,6 @@ mips_legitimize_tls_address (rtx loc)
       break;
 
     case TLS_MODEL_LOCAL_EXEC:
-
       if (Pmode == DImode)
 	emit_insn (gen_tls_get_tp_di (v1));
       else
