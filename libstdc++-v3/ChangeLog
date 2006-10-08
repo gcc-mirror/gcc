@@ -1,3 +1,10 @@
+2006-10-07  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28277 (partial: money_get bits)
+	* include/bits/locale_facets.tcc (money_get<>::do_get(iter_type,
+	iter_type, bool, ios_base&, ios_base::iostate&, string_type&)):
+	Avoid __builtin_alloca with no limit, do the work in place.
+
 2006-10-07  Ion Gaztanaga  <igaztanaga@gmail.com>
 	    Paolo Carlini  <pcarlini@suse.de>
 
