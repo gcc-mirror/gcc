@@ -694,6 +694,9 @@ verify_cgraph_node (struct cgraph_node *node)
   block_stmt_iterator bsi;
   bool error_found = false;
 
+  if (errorcount || sorrycount)
+    return;
+
   timevar_push (TV_CGRAPH_VERIFY);
   for (e = node->callees; e; e = e->next_callee)
     if (e->aux)
