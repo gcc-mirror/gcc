@@ -1,3 +1,7 @@
+2006-10-09  Aldy Hernandez  <aldyh@redhat.com>
+
+        * tree-mudflap.c (mf_xform_derefs_1): Add parentheses around TREE_TYPE.
+
 2006-10-08  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (mips_legitimize_tls_address): Implement

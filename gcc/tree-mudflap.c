@@ -819,7 +819,7 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
               size = DECL_SIZE_UNIT (field);
             
 	    if (elt)
-	      elt = build1 (ADDR_EXPR, build_pointer_type TREE_TYPE (elt), elt);
+	      elt = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (elt)), elt);
             addr = fold_convert (ptr_type_node, elt ? elt : base);
             addr = fold_build2 (PLUS_EXPR, ptr_type_node,
 				addr, fold_convert (ptr_type_node,
