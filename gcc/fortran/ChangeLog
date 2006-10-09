@@ -1,3 +1,10 @@
+2006-10-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsic.c (add_sym_0s, add_sym_1s, add_sym_2s, add_sym_3s,
+	add_sym_4s, add_sym_5s, add_functions): Use macro ACTUAL_NO,
+	ACTUAL_YES, NOT_ELEMENTAL and ELEMENTAL instead of constants
+	0 and 1 as second and third arguments to add_sym* functions.
+
 2006-10-08  Erik Edelmann <edelmann@gcc.gnu.org>
 	    Paul Thomas <pault@gcc.gnu.org>
 
