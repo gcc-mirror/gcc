@@ -1,5 +1,10 @@
 2006-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR debug/28980
+	* gcc.c-torture/compile/debugvlafunction-1.c: New test.
+
+2006-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/28862
 	* gcc.c-torture/compile/vector-align-1.c: New test.
 
