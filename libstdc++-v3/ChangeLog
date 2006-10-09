@@ -1,3 +1,11 @@
+2006-10-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/globals_io.cc (_GLIBCXX_once): Remove, unused.
+	(_GLIBCXX_mutex): Same.
+	(_GLIBCXX_mutex_addres): Same.
+	(_GLIBCXX_mutex_init): Same.
+	(_GLIBCXX_mutex_address_init): Same.
+
 2006-10-07  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28277 (partial: money_get bits)
