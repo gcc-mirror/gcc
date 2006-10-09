@@ -1,3 +1,7 @@
+2006-10-09  Richard Henderson  <rth@redhat.com>
+
+	Revert emutls patch.
+
 2006-10-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsic.c (add_sym_0s, add_sym_1s, add_sym_2s, add_sym_3s,

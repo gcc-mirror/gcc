@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fpic -ftls-model=global-dynamic" } */
+/* { dg-require-effective-target tls } */
 
 extern __thread long e1;
 extern __thread int e2;

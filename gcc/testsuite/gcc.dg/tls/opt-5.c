@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target tls } */
 /* Sched1 moved {load_tp} pattern between strlen call and the copy
    of the hard return value to its pseudo.  This resulted in a
    reload abort, since the hard register was not spillable.  */

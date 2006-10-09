@@ -328,7 +328,10 @@ cgraph_varpool_remove_unreferenced_decls (void)
       node->needed = 0;
 
       if (node->finalized
-	  && (decide_is_variable_needed (node, decl)
+	  && ((DECL_ASSEMBLER_NAME_SET_P (decl)
+	       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	      || node->force_output
+	      || decide_is_variable_needed (node, decl)
 	      /* ??? Cgraph does not yet rule the world with an iron hand,
 		 and does not control the emission of debug information.
 		 After a variable has its DECL_RTL set, we must assume that
@@ -1709,7 +1712,6 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
     {
       tree_lowering_passes (decl);
       tree_rest_of_compilation (decl);
-      cgraph_varpool_assemble_pending_decls ();
     }
   else
     cgraph_finalize_function (decl, 0);

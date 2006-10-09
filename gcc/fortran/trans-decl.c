@@ -522,7 +522,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
     TREE_STATIC (decl) = 1;
 
   /* Handle threadprivate variables.  */
-  if (sym->attr.threadprivate
+  if (sym->attr.threadprivate && targetm.have_tls
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
 }
