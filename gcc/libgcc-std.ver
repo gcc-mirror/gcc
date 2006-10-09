@@ -273,6 +273,4 @@ GCC_4.2.0 {
   __floatuntixf
   __floatuntitf
   _Unwind_GetIPInfo
-  __emutls_get_address
-  __emutls_register_common
 }
