@@ -2590,19 +2590,33 @@ _GLIBCXX_END_LDBL_NAMESPACE
 		   const char* __gbeg, size_t __gsize,
 		   const _CharT* __first, const _CharT* __last)
     {
-      if (__last - __first > *__gbeg
-	  && static_cast<signed char>(*__gbeg) > 0)
+      size_t __idx = 0;
+      size_t __ctr = 0;
+
+      while (__last - __first > __gbeg[__idx]
+	     && static_cast<signed char>(__gbeg[__idx]) > 0)
 	{
-	  const bool __bump = __gsize != 1;
-	  __s = std::__add_grouping(__s,  __sep, __gbeg + __bump,
-				    __gsize - __bump, __first,
-				    __last - *__gbeg);
-	  __first = __last - *__gbeg;
-	  *__s++ = __sep;
+	  __last -= __gbeg[__idx];
+	  __idx < __gsize - 1 ? ++__idx : ++__ctr;
 	}
-      do
+
+      while (__first != __last)
 	*__s++ = *__first++;
-      while (__first != __last);
+
+      while (__ctr--)
+	{
+	  *__s++ = __sep;	  
+	  for (char __i = __gbeg[__idx]; __i > 0; --__i)
+	    *__s++ = *__first++;
+	}
+
+      while (__idx--)
+	{
+	  *__s++ = __sep;	  
+	  for (char __i = __gbeg[__idx]; __i > 0; --__i)
+	    *__s++ = *__first++;
+	}
+
       return __s;
     }
 
