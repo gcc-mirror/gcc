@@ -1,5 +1,12 @@
 2006-10-09  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/28277 (partial: __add_grouping)
+	* include/bits/locale_facets.tcc (__add_grouping<>(_CharT*, _CharT,
+	const char*, size_t, const _CharT*, const _CharT*)): Rewrite in
+	non-recursive form.
+
+2006-10-09  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/28277 (partial: money_put bits)
 	* include/bits/locale_facets.tcc (money_put<>::_M_insert(iter_type,
 	ios_base&, char_type, const string_type&)): Avoid __builtin_alloca
