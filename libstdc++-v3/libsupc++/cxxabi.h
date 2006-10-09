@@ -1,6 +1,6 @@
 // new abi support -*- C++ -*-
   
-// Copyright (C) 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -54,11 +54,11 @@
 #ifdef __cplusplus
 namespace __cxxabiv1
 {  
-  typedef __cxa_cdtor_return_type (*__cxa_cdtor_type)(void *);
-
   extern "C" 
   {
 #endif
+
+  typedef __cxa_cdtor_return_type (*__cxa_cdtor_type)(void *);
 
   // Allocate array.
   void* 
