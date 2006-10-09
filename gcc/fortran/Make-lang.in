@@ -145,6 +145,7 @@ lang_checks += check-gfortran
 # GFORTRAN documentation.
 GFORTRAN_TEXI = \
   $(srcdir)/fortran/gfortran.texi \
+  $(srcdir)/fortran/intrinsic.texi \
   $(srcdir)/fortran/invoke.texi \
   $(srcdir)/doc/include/fdl.texi \
   $(srcdir)/doc/include/gpl.texi \
