@@ -1,3 +1,11 @@
+2006-10-09  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/27880
+	* unwind-c.c (PERSONALITY_FUNCTION): Ifdef use of _Unwind_GetIPInfo.
+	* configure.ac (HAVE_GETIPINFO): Check for _Unwind_GetIPInfo.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2006-10-09  Aldy Hernandez  <aldyh@redhat.com>
 
         * tree-mudflap.c (mf_xform_derefs_1): Add parentheses around TREE_TYPE.

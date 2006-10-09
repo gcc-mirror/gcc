@@ -157,7 +157,11 @@ PERSONALITY_FUNCTION (int version,
 
   /* Parse the LSDA header.  */
   p = parse_lsda_header (context, language_specific_data, &info);
+#ifdef HAVE_GETIPINFO
   ip = _Unwind_GetIPInfo (context, &ip_before_insn);
+#else
+  ip = _Unwind_GetIP (context);
+#endif
   if (! ip_before_insn)
     --ip;
   landing_pad = 0;
