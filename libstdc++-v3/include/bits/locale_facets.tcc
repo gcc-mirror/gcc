@@ -1640,22 +1640,20 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 
 	    // Add thousands separators to non-decimal digits, per
 	    // grouping rules.
-	    int __paddec = __len - __lc->_M_frac_digits;
+	    long __paddec = __len - __lc->_M_frac_digits;
 	    if (__paddec > 0)
   	      {
 		if (__lc->_M_frac_digits < 0)
 		  __paddec = __len;
   		if (__lc->_M_grouping_size)
   		  {
-		    _CharT* __ws =
-  		      static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-  							    * 2 * __len));
-  		    _CharT* __ws_end =
-		      std::__add_grouping(__ws, __lc->_M_thousands_sep,
+		    __value.assign(2 * __paddec, char_type());
+ 		    _CharT* __vend = 
+		      std::__add_grouping(&__value[0], __lc->_M_thousands_sep,
 					  __lc->_M_grouping,
 					  __lc->_M_grouping_size,
 					  __beg, __beg + __paddec);
-		    __value.assign(__ws, __ws_end - __ws);
+		    __value.erase(__vend - &__value[0]);
   		  }
   		else
 		  __value.assign(__beg, __paddec);
@@ -1755,9 +1753,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     money_put<_CharT, _OutIter>::
     __do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	     double __units) const
-    {
-      return this->do_put(__s, __intl, __io, __fill, (long double) __units);
-    }
+    { return this->do_put(__s, __intl, __io, __fill, (long double) __units); }
 #endif
 
   template<typename _CharT, typename _OutIter>
@@ -1791,10 +1787,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       int __len = std::__convert_from_v(_S_get_c_locale(), __cs, 0, "%.*Lf", 
 					0, __units);
 #endif
-      _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							   * __cs_size));
-      __ctype.widen(__cs, __cs + __len, __ws);
-      const string_type __digits(__ws, __len);
+      string_type __digits(__len, char_type());
+      __ctype.widen(__cs, __cs + __len, &__digits[0]);
       return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
 	            : _M_insert<false>(__s, __io, __fill, __digits);
     }
