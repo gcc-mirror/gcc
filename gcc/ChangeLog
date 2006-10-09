@@ -1,3 +1,13 @@
+2006-10-06  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/28490
+	Backport from mainline
+	2006-09-15  Jim Wilson  <wilson@specifix.com>
+	2006-09-19  Steve Ellcey  <sje@cup.hp.com>
+	* config/ia64/ia64.c (ia64_legitimate_constant_p): Allow function
+        pointers as legitimate constants.  Handle symbol offsets same as
+	they are handled in ia64_expand_move and move_operand.
+
 2006-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-loop-linear.c (linear_transform_loops): Don't forget to

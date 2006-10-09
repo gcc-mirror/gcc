@@ -779,7 +779,30 @@ ia64_legitimate_constant_p (rtx x)
 
     case CONST:
     case SYMBOL_REF:
-      return tls_symbolic_operand_type (x) == 0;
+      /* ??? Short term workaround for PR 28490.  We must make the code here
+	 match the code in ia64_expand_move and move_operand, even though they
+	 are both technically wrong.  */
+      if (tls_symbolic_operand_type (x) == 0)
+	{
+	  HOST_WIDE_INT addend = 0;
+	  rtx op = x;
+
+	  if (GET_CODE (op) == CONST
+	      && GET_CODE (XEXP (op, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+	    {
+	      addend = INTVAL (XEXP (XEXP (op, 0), 1));
+	      op = XEXP (XEXP (op, 0), 0);
+	    }
+
+          if (any_offset_symbol_operand (op, GET_MODE (op))
+              || function_operand (op, GET_MODE (op)))
+            return true;
+	  if (aligned_offset_symbol_operand (op, GET_MODE (op)))
+	    return (addend & 0x3fff) == 0;
+	  return false;
+	}
+      return false;
 
     case CONST_VECTOR:
       {
