@@ -1,6 +1,10 @@
 2006-10-09  Brooks Moses  <bmoses@stanford.edu>
 
-        * Changelog: Added spaces after * on last two entries.
+	* Changelog: Undid erroneous tab-to-space conversion on last entry.
+
+2006-10-09  Brooks Moses  <bmoses@stanford.edu>
+
+	* Changelog: Added spaces after * on last two entries.
 
 2006-10-09  Brooks Moses  <bmoses@stanford.edu>
 
