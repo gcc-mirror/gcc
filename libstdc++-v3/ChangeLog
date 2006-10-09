@@ -1,3 +1,14 @@
+2006-10-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28277 (partial: money_put bits)
+	* include/bits/locale_facets.tcc (money_put<>::_M_insert(iter_type,
+	ios_base&, char_type, const string_type&)): Avoid __builtin_alloca
+	with no limit, do the work in place.
+
+	* include/bits/locale_facets.tcc (money_put<>::do_put(iter_type,
+	bool, ios_base&, char_type, long double)): Avoid unnecessary
+	__builtin_alloca, do the work in place.
+
 2006-10-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/globals_io.cc (_GLIBCXX_once): Remove, unused.
