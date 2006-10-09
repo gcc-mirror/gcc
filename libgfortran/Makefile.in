@@ -151,7 +151,11 @@ am__objects_27 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_r4_i4.lo \
 	pow_i16_i16.lo pow_r4_i16.lo pow_r8_i16.lo pow_r10_i16.lo \
 	pow_r16_i16.lo pow_c4_i16.lo pow_c8_i16.lo pow_c10_i16.lo \
 	pow_c16_i16.lo
-am__objects_28 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
+am__objects_28 = rrspacing_r4.lo rrspacing_r8.lo rrspacing_r10.lo \
+	rrspacing_r16.lo
+am__objects_29 = spacing_r4.lo spacing_r8.lo spacing_r10.lo \
+	spacing_r16.lo
+am__objects_30 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
 	$(am__objects_11) $(am__objects_12) $(am__objects_13) \
@@ -159,11 +163,12 @@ am__objects_28 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_17) $(am__objects_18) $(am__objects_19) \
 	$(am__objects_20) $(am__objects_21) $(am__objects_22) \
 	$(am__objects_23) $(am__objects_24) $(am__objects_25) \
-	$(am__objects_26) $(am__objects_27)
-am__objects_29 = close.lo file_pos.lo format.lo inquire.lo \
+	$(am__objects_26) $(am__objects_27) $(am__objects_28) \
+	$(am__objects_29)
+am__objects_31 = close.lo file_pos.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo size_from_kind.lo \
 	transfer.lo unit.lo unix.lo write.lo
-am__objects_30 = associated.lo abort.lo access.lo args.lo bessel.lo \
+am__objects_32 = associated.lo abort.lo access.lo args.lo bessel.lo \
 	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
 	cshift0.lo ctime.lo date_and_time.lo env.lo erf.lo eoshift0.lo \
 	eoshift2.lo etime.lo exit.lo fget.lo flush.lo fnum.lo ftell.lo \
@@ -176,8 +181,8 @@ am__objects_30 = associated.lo abort.lo access.lo args.lo bessel.lo \
 	system_clock.lo time.lo transpose_generic.lo tty.lo umask.lo \
 	unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo
-am__objects_31 =
-am__objects_32 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+am__objects_33 =
+am__objects_34 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
 	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
@@ -201,18 +206,18 @@ am__objects_32 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_33 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_35 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_34 = misc_specifics.lo
-am__objects_35 = $(am__objects_32) $(am__objects_33) $(am__objects_34) \
+am__objects_36 = misc_specifics.lo
+am__objects_37 = $(am__objects_34) $(am__objects_35) $(am__objects_36) \
 	dprod_r8.lo f2c_specifics.lo
-am_libgfortran_la_OBJECTS = $(am__objects_1) $(am__objects_28) \
-	$(am__objects_29) $(am__objects_30) $(am__objects_31) \
-	$(am__objects_35)
+am_libgfortran_la_OBJECTS = $(am__objects_1) $(am__objects_30) \
+	$(am__objects_31) $(am__objects_32) $(am__objects_33) \
+	$(am__objects_37)
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 libgfortranbegin_la_LIBADD =
 am_libgfortranbegin_la_OBJECTS = fmain.lo
@@ -712,6 +717,18 @@ generated/exponent_r8.c \
 generated/exponent_r10.c \
 generated/exponent_r16.c
 
+i_spacing_c = \
+generated/spacing_r4.c \
+generated/spacing_r8.c \
+generated/spacing_r10.c \
+generated/spacing_r16.c
+
+i_rrspacing_c = \
+generated/rrspacing_r4.c \
+generated/rrspacing_r8.c \
+generated/rrspacing_r10.c \
+generated/rrspacing_r16.c
+
 i_fraction_c = \
 generated/fraction_r4.c \
 generated/fraction_r8.c \
@@ -773,7 +790,7 @@ m4_files = m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
     m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4 \
-    m4/misc_specifics.m4
+    m4/misc_specifics.m4 m4/rrspacing.m4 m4/spacing.m4
 
 gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
@@ -781,7 +798,7 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
-    $(i_pow_c) \
+    $(i_pow_c) $(i_rrspacing_c) $(i_spacing_c) \
     selected_int_kind.inc selected_real_kind.inc kinds.h \
     kinds.inc c99_protos.inc fpu-target.h
 
@@ -2265,6 +2282,30 @@ pow_c10_i16.lo: generated/pow_c10_i16.c
 pow_c16_i16.lo: generated/pow_c16_i16.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c16_i16.lo `test -f 'generated/pow_c16_i16.c' || echo '$(srcdir)/'`generated/pow_c16_i16.c
 
+rrspacing_r4.lo: generated/rrspacing_r4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rrspacing_r4.lo `test -f 'generated/rrspacing_r4.c' || echo '$(srcdir)/'`generated/rrspacing_r4.c
+
+rrspacing_r8.lo: generated/rrspacing_r8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rrspacing_r8.lo `test -f 'generated/rrspacing_r8.c' || echo '$(srcdir)/'`generated/rrspacing_r8.c
+
+rrspacing_r10.lo: generated/rrspacing_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rrspacing_r10.lo `test -f 'generated/rrspacing_r10.c' || echo '$(srcdir)/'`generated/rrspacing_r10.c
+
+rrspacing_r16.lo: generated/rrspacing_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rrspacing_r16.lo `test -f 'generated/rrspacing_r16.c' || echo '$(srcdir)/'`generated/rrspacing_r16.c
+
+spacing_r4.lo: generated/spacing_r4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o spacing_r4.lo `test -f 'generated/spacing_r4.c' || echo '$(srcdir)/'`generated/spacing_r4.c
+
+spacing_r8.lo: generated/spacing_r8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o spacing_r8.lo `test -f 'generated/spacing_r8.c' || echo '$(srcdir)/'`generated/spacing_r8.c
+
+spacing_r10.lo: generated/spacing_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o spacing_r10.lo `test -f 'generated/spacing_r10.c' || echo '$(srcdir)/'`generated/spacing_r10.c
+
+spacing_r16.lo: generated/spacing_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o spacing_r16.lo `test -f 'generated/spacing_r16.c' || echo '$(srcdir)/'`generated/spacing_r16.c
+
 close.lo: io/close.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o close.lo `test -f 'io/close.c' || echo '$(srcdir)/'`io/close.c
 
@@ -2901,6 +2942,12 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 
 @MAINTAINER_MODE_TRUE@$(i_exponent_c): m4/exponent.m4 m4/mtype.m4
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 exponent.m4 > $(srcdir)/$@
+
+@MAINTAINER_MODE_TRUE@$(i_rrspacing_c): m4/rrspacing.m4 m4/mtype.m4
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 rrspacing.m4 > $(srcdir)/$@
+
+@MAINTAINER_MODE_TRUE@$(i_spacing_c): m4/spacing.m4 m4/mtype.m4
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 spacing.m4 > $(srcdir)/$@
 
 @MAINTAINER_MODE_TRUE@$(i_fraction_c): m4/fraction.m4 m4/mtype.m4
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 fraction.m4 > $(srcdir)/$@

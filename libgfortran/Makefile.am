@@ -359,6 +359,18 @@ generated/exponent_r8.c \
 generated/exponent_r10.c \
 generated/exponent_r16.c
 
+i_spacing_c = \
+generated/spacing_r4.c \
+generated/spacing_r8.c \
+generated/spacing_r10.c \
+generated/spacing_r16.c
+
+i_rrspacing_c = \
+generated/rrspacing_r4.c \
+generated/rrspacing_r8.c \
+generated/rrspacing_r10.c \
+generated/rrspacing_r16.c
+
 i_fraction_c = \
 generated/fraction_r4.c \
 generated/fraction_r8.c \
@@ -420,7 +432,7 @@ m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
     m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4 \
-    m4/misc_specifics.m4
+    m4/misc_specifics.m4 m4/rrspacing.m4 m4/spacing.m4
 
 gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
@@ -428,7 +440,7 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
-    $(i_pow_c) \
+    $(i_pow_c) $(i_rrspacing_c) $(i_spacing_c) \
     selected_int_kind.inc selected_real_kind.inc kinds.h \
     kinds.inc c99_protos.inc fpu-target.h
 
@@ -687,6 +699,12 @@ $(in_unpack_c): m4/in_unpack.m4 $(I_M4_DEPS)
 
 $(i_exponent_c): m4/exponent.m4 m4/mtype.m4
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 exponent.m4 > $(srcdir)/$@
+
+$(i_rrspacing_c): m4/rrspacing.m4 m4/mtype.m4
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 rrspacing.m4 > $(srcdir)/$@
+
+$(i_spacing_c): m4/spacing.m4 m4/mtype.m4
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 spacing.m4 > $(srcdir)/$@
 
 $(i_fraction_c): m4/fraction.m4 m4/mtype.m4
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 fraction.m4 > $(srcdir)/$@

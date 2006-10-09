@@ -937,21 +937,6 @@ gfc_init_builtin_functions (void)
 
   /* Other builtin functions we use.  */
 
-  tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
-  ftype = build_function_type (integer_type_node, tmp);
-  gfc_define_builtin ("__builtin_clz", ftype, BUILT_IN_CLZ,
-		      "__builtin_clz", true);
-
-  tmp = tree_cons (NULL_TREE, long_integer_type_node, void_list_node);
-  ftype = build_function_type (integer_type_node, tmp);
-  gfc_define_builtin ("__builtin_clzl", ftype, BUILT_IN_CLZL,
-		      "__builtin_clzl", true);
-
-  tmp = tree_cons (NULL_TREE, long_long_integer_type_node, void_list_node);
-  ftype = build_function_type (integer_type_node, tmp);
-  gfc_define_builtin ("__builtin_clzll", ftype, BUILT_IN_CLZLL,
-		      "__builtin_clzll", true);
-
   tmp = tree_cons (NULL_TREE, long_integer_type_node, void_list_node);
   tmp = tree_cons (NULL_TREE, long_integer_type_node, tmp);
   ftype = build_function_type (long_integer_type_node, tmp);

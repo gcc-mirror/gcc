@@ -1,3 +1,23 @@
+2006-10-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/15441
+	PR fortran/29312
+	* configure.ac: Add HAVE_LDEXPF, HAVE_LDEXP, and HAVE_LDEXPL
+	* m4/spacing.m4: New file.  Use new HAVE_* defines.
+	* m4/rrspacing.m4: Ditto.
+	* Makefile.am: Handle new files.
+	* configure: Regenerated.
+	* Makefile.in: Ditto.
+	* config.h.in: Ditto.
+	* generated/spacing_r4.c: Generated.
+	* generated/spacing_r8.c: Ditto.
+	* generated/spacing_r10.c: Ditto.
+	* generated/spacing_r16.c: Ditto.
+	* generated/rrspacing_r4.c: Ditto.
+	* generated/rrspacing_r8.c: Ditto.
+	* generated/rrspacing_r10.c: Ditto.
+	* generated/rrspacing_r16.c: Ditto.
+
 2006-10-08  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/hyper.c: Remove file.

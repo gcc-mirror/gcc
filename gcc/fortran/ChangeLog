@@ -1,3 +1,28 @@
+2006-10-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.h: Define GFC_MPFR_TOO_OLD via mpfr version info.
+	* arith.c (arctangent, gfc_check_real_range): Use it.	
+	* simplify.c (gfc_simplify_atan2, gfc_simplify_exponent,
+	gfc_simplify_log, gfc_simplify_nearest): Use it.
+
+	PR fortran/15441
+	PR fortran/29312
+	* iresolve.c (gfc_resolve_rrspacing): Give rrspacing library
+	routine hidden precision argument.
+	(gfc_resolve_spacing): Give spacing library routine hidden
+	precision, emin - 1, and tiny(x) arguments.
+	* simplify.c (gfc_simplify_nearest): Remove explicit subnormalization.
+	(gfc_simplify_rrspacing): Implement formula from Fortran 95 standard.
+	(gfc_simplify_spacing): Implement formula from Fortran 2003 standard.
+	* trans-intrinsic.c (gfc_intrinsic_map_t) Declare rrspacing and
+	spacing via LIBF_FUNCTION
+	(prepare_arg_info, call_builtin_clz, gfc_conv_intrinsic_spacing,
+	gfc_conv_intrinsic_rrspacing): Remove functions.
+	(gfc_conv_intrinsic_function): Remove calls to
+	gfc_conv_intrinsic_spacing and gfc_conv_intrinsic_rrspacing.
+	* f95-lang.c (gfc_init_builtin_functions): Remove __builtin_clz,
+	__builtin_clzl and __builtin_clzll
+
 2006-10-09  Richard Henderson  <rth@redhat.com>
 
 	Revert emutls patch.
