@@ -1,3 +1,9 @@
+2006-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/29254
+	* cgraphunit.c (verify_cgraph_node): Bail out on earlier
+	errors.
+
 2006-10-09  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/27880
