@@ -1,3 +1,7 @@
+2006-10-09  Brooks Moses  <bmoses@stanford.edu>
+
+	*intrinsic.texi: (MOVE_ALLOC) changed "Options" to "Standards".
+
 2006-10-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.h: Define GFC_MPFR_TOO_OLD via mpfr version info.

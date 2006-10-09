@@ -5845,8 +5845,8 @@ Elemental subroutine
 @code{MOVE_ALLOC(SRC, DEST)} moves the allocation from @var{SRC} to
 @var{DEST}.  @var{SRC} will become deallocated in the process.
 
-@item @emph{Option}:
-f2003, gnu
+@item @emph{Standard}:
+F2003 and later
 
 @item @emph{Class}:
 Subroutine
