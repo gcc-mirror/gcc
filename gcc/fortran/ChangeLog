@@ -1,5 +1,10 @@
 2006-10-09  Brooks Moses  <bmoses@stanford.edu>
 
+	*Make-lang.in: Added intrinsic.texi to GFORTRAN_TEXI
+	dependences.
+
+2006-10-09  Brooks Moses  <bmoses@stanford.edu>
+
 	*intrinsic.texi: (MOVE_ALLOC) changed "Options" to "Standards".
 
 2006-10-09  Steven G. Kargl  <kargl@gcc.gnu.org>
