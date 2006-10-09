@@ -426,6 +426,15 @@
 /* Define to 1 if you have the `kill' function. */
 #undef HAVE_KILL
 
+/* libm includes ldexp */
+#undef HAVE_LDEXP
+
+/* libm includes ldexpf */
+#undef HAVE_LDEXPF
+
+/* libm includes ldexpl */
+#undef HAVE_LDEXPL
+
 /* Define to 1 if you have the `link' function. */
 #undef HAVE_LINK
 

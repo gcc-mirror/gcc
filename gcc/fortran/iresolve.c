@@ -1754,8 +1754,19 @@ gfc_resolve_reshape (gfc_expr * f, gfc_expr * source, gfc_expr * shape,
 void
 gfc_resolve_rrspacing (gfc_expr * f, gfc_expr * x)
 {
+  int k;
+  gfc_actual_arglist *prec;
+
   f->ts = x->ts;
   f->value.function.name = gfc_get_string ("__rrspacing_%d", x->ts.kind);
+
+  /* Create a hidden argument to the library routines for rrspacing.  This
+     hidden argument is the precision of x.  */
+  k = gfc_validate_kind (BT_REAL, x->ts.kind, false);
+  prec = gfc_get_actual_arglist ();
+  prec->name = "p";
+  prec->expr = gfc_int_expr (gfc_real_kinds[k].digits);
+  f->value.function.actual->next = prec;
 }
 
 
@@ -1885,8 +1896,40 @@ gfc_resolve_sinh (gfc_expr * f, gfc_expr * x)
 void
 gfc_resolve_spacing (gfc_expr * f, gfc_expr * x)
 {
+  int k; 
+  gfc_actual_arglist *prec, *tiny, *emin_1;
+ 
   f->ts = x->ts;
   f->value.function.name = gfc_get_string ("__spacing_%d", x->ts.kind);
+
+  /* Create hidden arguments to the library routine for spacing.  These
+     hidden arguments are tiny(x), min_exponent - 1,  and the precision
+     of x.  */
+
+  k = gfc_validate_kind (BT_REAL, x->ts.kind, false);
+
+  tiny = gfc_get_actual_arglist ();
+  tiny->name = "tiny";
+  tiny->expr = gfc_get_expr ();
+  tiny->expr->expr_type = EXPR_CONSTANT;
+  tiny->expr->where = gfc_current_locus;
+  tiny->expr->ts.type = x->ts.type;
+  tiny->expr->ts.kind = x->ts.kind;
+  mpfr_init (tiny->expr->value.real);
+  mpfr_set (tiny->expr->value.real, gfc_real_kinds[k].tiny, GFC_RND_MODE);
+
+  emin_1 = gfc_get_actual_arglist ();
+  emin_1->name = "emin";
+  emin_1->expr = gfc_int_expr (gfc_real_kinds[k].min_exponent - 1);
+  emin_1->next = tiny;
+
+  prec = gfc_get_actual_arglist ();
+  prec->name = "prec";
+  prec->expr = gfc_int_expr (gfc_real_kinds[k].digits);
+  prec->next = emin_1;
+
+  f->value.function.actual->next = prec;
+
 }
 
 
