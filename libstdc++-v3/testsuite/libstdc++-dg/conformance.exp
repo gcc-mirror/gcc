@@ -53,12 +53,12 @@ if {[info exists tests_file] && [file exists $tests_file]} {
 } else {
     # Find directories that might have tests.
     set subdirs [glob "$srcdir/\[0-9\]\[0-9\]*"]
+    lappend subdirs "$srcdir/abi"
     lappend subdirs "$srcdir/backward"
-    lappend subdirs "$srcdir/demangle"
     lappend subdirs "$srcdir/ext"
     lappend subdirs "$srcdir/performance"
-    lappend subdirs "$srcdir/tr1"
     lappend subdirs "$srcdir/thread"
+    lappend subdirs "$srcdir/tr1"
     verbose "subdirs are $subdirs"
 
     # Find all the tests.

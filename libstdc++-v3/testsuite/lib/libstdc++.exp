@@ -272,6 +272,7 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
         }
     }
 
+    set select_compile "v3_target_compile"
     set options ""
     if { $extra_tool_flags != "" } {
 	verbose -log "extra_tool_flags are:"
@@ -279,16 +280,17 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
 	if { [string first "-x c" $extra_tool_flags ] != -1 } {
 	    # Short-circut a bunch of complicated goo here for the
 	    # special case of compiling a test file as a "C" file, not
-	    # as C++: just use target_compile, instead of the usual
-	    # gimmicks.
+	    # as C++. Why? So -nostdc++ doesn't trip us up. So all the
+	    # extra object files don't trip us up. So automatically
+	    # linking in libstdc++ doesn't happen. So CXXFLAGS don't
+	    # error.
 	    verbose -log "compiling and executing as C, not C++"
-            set compile_type "executable"
-            set output_file "./[file rootname [file tail $prog]].exe"
-            remote_file build delete $output_file;
-	    lappend options "additional_flags=$extra_tool_flags"
-	    set comp_output [target_compile "$prog" "$output_file" "$compile_type" $options];
-	    set comp_output [ prune_g++_output $comp_output ];
-	    return [list $comp_output $output_file]
+
+	    set edit_tool_flags $extra_tool_flags
+	    regsub -all ".x c" $edit_tool_flags "" edit_tool_flags
+	    lappend options "additional_flags=$edit_tool_flags"
+
+	    set select_compile "v3_target_compile_as_c"
         } else {
 	    lappend options "additional_flags=$extra_tool_flags"
 	}
@@ -296,7 +298,7 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
 
     # There is a libstdc++_compile made for us by default (via the tool-
     # and-target file), but the defaults are lacking in goodness.
-    set comp_output [v3_target_compile "$prog" "$output_file" "$compile_type" $options];
+    set comp_output [$select_compile "$prog" "$output_file" "$compile_type" $options];
     set comp_output [ prune_g++_output $comp_output ];
 
     return [list $comp_output $output_file]
@@ -323,7 +325,6 @@ proc v3_target_compile { source dest type options } {
     global cxxflags
     global cxxldflags
     global includes
-    global blddir
     global v3-test_objs
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
@@ -340,8 +341,9 @@ proc v3_target_compile { source dest type options } {
     # Flag setting based on type argument.
     if { $type == "executable" } {
 	# Link the support objects into executables.
-	set cxx_final [concat $cxx_final ${v3-test_objs}]
         set cxx_final [concat $cxx_final $cxxldflags]
+	# lappend options "additional_flags=./libtestc++.a"
+	set cxx_final [concat $cxx_final ${v3-test_objs}]
     } else {
 	if { $type == "sharedlib" } {
 	    # Don't link in anything.
@@ -355,6 +357,31 @@ proc v3_target_compile { source dest type options } {
     return [target_compile $source $dest $type $options]
 }
 
+
+# Called from libstdc++-dg-test above, but only for "C" compilation.
+# Calls back into system's target_compile to actually do the work.
+proc v3_target_compile_as_c { source dest type options } {
+    global gluefile 
+    global wrap_flags
+    global includes
+
+    if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
+        lappend options "libs=${gluefile}"
+        lappend options "ldflags=${wrap_flags}"
+    }
+
+    set tname [target_info name]
+    set cc_final [board_info $tname compiler]
+    set cxxlibglossflags  [libgloss_link_flags]
+    set cc_final [concat $cc_final $cxxlibglossflags]
+    set cc_final [concat $cc_final $includes]
+    regsub -all ".nostdinc.." $cc_final "" cc_final
+
+    lappend options "compiler=$cc_final"
+    lappend options "timeout=600"
+
+    return [target_compile $source $dest $type $options]
+}
 
 # Build the support objects linked in with the libstdc++ tests.  In
 # addition, set v3-wchar_t, v3-threads, v3-test_objs, and v3-symver

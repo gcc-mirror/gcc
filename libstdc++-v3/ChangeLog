@@ -1,3 +1,19 @@
+2006-10-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/29095
+	* libsupc++/cxxabi.h (__cxa_cdtor_type): Explicit "C" linkage.
+	* config/cpu/arm/cxxabi_tweaks.h: Same.
+	* config/cpu/generic/cxxabi_tweaks.h: Same.
+	* testsuite/abi: Add.
+	* testsuite/abi/header_cxxabi.cc: New.
+	* testsuite/demangle: Move...
+	* testsuite/abi/demangle: ...here.
+	* testsuite/libstdc++-dg/conformance.exp: Adjust testsuite file
+	calculation.
+	* scripts/create_testsuite_files: Same.
+	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): New.
+	(libstdc++-dg-test): Use it.
+	
 2006-10-09  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/28277 (partial: __add_grouping)
