@@ -12177,6 +12177,15 @@ if test "${with_system_libunwind+set}" = set; then
 
 fi;
 
+# config.gcc also contains tests of with_system_libunwind.
+if test x$with_system_libunwind = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_GETIPINFO 1
+_ACEOF
+
+fi
+
 # --------------------------------------------------------
 # Build, host, and target specific configuration fragments
 # --------------------------------------------------------
@@ -12527,6 +12536,150 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+fi
+
+use_getipinfo=yes
+if test x$with_system_libunwind = xyes; then
+   if test x$host = x$target; then
+     echo "$as_me:$LINENO: checking for library containing _Unwind_GetIPInfo" >&5
+echo $ECHO_N "checking for library containing _Unwind_GetIPInfo... $ECHO_C" >&6
+if test "${ac_cv_search__Unwind_GetIPInfo+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+ac_cv_search__Unwind_GetIPInfo=no
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char _Unwind_GetIPInfo ();
+int
+main ()
+{
+_Unwind_GetIPInfo ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_search__Unwind_GetIPInfo="none required"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+if test "$ac_cv_search__Unwind_GetIPInfo" = no; then
+  for ac_lib in unwind; do
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char _Unwind_GetIPInfo ();
+int
+main ()
+{
+_Unwind_GetIPInfo ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_search__Unwind_GetIPInfo="-l$ac_lib"
+break
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+  done
+fi
+LIBS=$ac_func_search_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_search__Unwind_GetIPInfo" >&5
+echo "${ECHO_T}$ac_cv_search__Unwind_GetIPInfo" >&6
+if test "$ac_cv_search__Unwind_GetIPInfo" != no; then
+  test "$ac_cv_search__Unwind_GetIPInfo" = "none required" || LIBS="$ac_cv_search__Unwind_GetIPInfo $LIBS"
+
+else
+  use_getipinfo=no
+fi
+
+   fi
+fi
+
+if test x$use_getipinfo = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_GETIPINFO 1
+_ACEOF
+
+else
+   echo "The system unwind library does not support _Unwind_GetIPInfo."
 fi
 
 # Look for a file containing extra machine modes.
