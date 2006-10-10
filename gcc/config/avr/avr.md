@@ -43,11 +43,13 @@
    (REG_Y	28)
    (REG_Z	30)
    (REG_W	24)
+   (REG_SP	32)
    (TMP_REGNO	0)	; temporary register r0
    (ZERO_REGNO	1)	; zero register r1
    (UNSPEC_STRLEN	0)
    (UNSPEC_INDEX_JMP	1)])
 
+(include "predicates.md")
 (include "constraints.md")
   
 ;; Condition code settings.
@@ -223,10 +225,11 @@
 
 (define_peephole2
   [(match_scratch:QI 2 "d")
-   (set (match_operand:QI 0 "register_operand" "")
+   (set (match_operand:QI 0 "l_register_operand" "")
 	(match_operand:QI 1 "immediate_operand" ""))]
   "(operands[1] != const0_rtx
-    && test_hard_reg_class (NO_LD_REGS, operands[0]))"
+    && operands[1] != const1_rtx
+    && operands[1] != constm1_rtx)"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (match_dup 2))])]
   "if (!avr_peep2_scratch_safe (operands[2]))
@@ -252,10 +255,10 @@
 
 (define_peephole2
   [(match_scratch:QI 2 "d")
-   (set (match_operand:HI 0 "register_operand" "")
-       (match_operand:HI 1 "immediate_operand" ""))]
-  "(operands[1] != const0_rtx
-    && test_hard_reg_class (NO_LD_REGS, operands[0]))"
+   (set (match_operand:HI 0 "l_register_operand" "")
+        (match_operand:HI 1 "immediate_operand" ""))]
+  "(operands[1] != const0_rtx 
+    && operands[1] != constm1_rtx)"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (match_dup 2))])]
   "if (!avr_peep2_scratch_safe (operands[2]))
@@ -301,10 +304,10 @@
 
 (define_peephole2
   [(match_scratch:QI 2 "d")
-   (set (match_operand:SI 0 "register_operand" "")
-       (match_operand:SI 1 "immediate_operand" ""))]
+   (set (match_operand:SI 0 "l_register_operand" "")
+        (match_operand:SI 1 "immediate_operand" ""))]
   "(operands[1] != const0_rtx
-    && test_hard_reg_class (NO_LD_REGS, operands[0]))"
+    && operands[1] != constm1_rtx)"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (match_dup 2))])]
   "if (!avr_peep2_scratch_safe (operands[2]))
@@ -1854,7 +1857,7 @@
 (define_insn "*sbrx_branch"
   [(set (pc)
         (if_then_else
-	 (match_operator 0 "comparison_operator"
+	 (match_operator 0 "eqne_operator"
 			 [(zero_extract
 			   (match_operand:QI 1 "register_operand" "r")
 			   (const_int 1)
@@ -1862,7 +1865,7 @@
 			  (const_int 0)])
 	 (label_ref (match_operand 3 "" ""))
 	 (pc)))]
-  "GET_CODE (operands[0]) == EQ || GET_CODE (operands[0]) == NE"
+  ""
   "* return avr_out_sbxx_branch (insn, operands);"
   [(set (attr "length")
 	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
@@ -1876,15 +1879,14 @@
 (define_insn "*sbrx_and_branchhi"
   [(set (pc)
         (if_then_else
-	 (match_operator 0 "comparison_operator"
+	 (match_operator 0 "eqne_operator"
 			 [(and:HI
 			   (match_operand:HI 1 "register_operand" "r")
-			   (match_operand:HI 2 "const_int_operand" "n"))
+			   (match_operand:HI 2 "single_one_operand" "n"))
 			  (const_int 0)])
 	 (label_ref (match_operand 3 "" ""))
 	 (pc)))]
-  "(GET_CODE (operands[0]) == EQ || GET_CODE (operands[0]) == NE)
-   && exact_log2 (INTVAL (operands[2]) & 0xffff) >= 0"
+  ""
   "* return avr_out_sbxx_branch (insn, operands);"
   [(set (attr "length")
 	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
@@ -1898,15 +1900,14 @@
 (define_insn "*sbrx_and_branchsi"
   [(set (pc)
         (if_then_else
-	 (match_operator 0 "comparison_operator"
+	 (match_operator 0 "eqne_operator"
 			 [(and:SI
 			   (match_operand:SI 1 "register_operand" "r")
-			   (match_operand:SI 2 "const_int_operand" "n"))
+			   (match_operand:SI 2 "single_one_operand" "n"))
 			  (const_int 0)])
 	 (label_ref (match_operand 3 "" ""))
 	 (pc)))]
-  "(GET_CODE (operands[0]) == EQ || GET_CODE (operands[0]) == NE)
-   && exact_log2 (INTVAL (operands[2]) & 0xffffffff) >= 0"
+  ""
   "* return avr_out_sbxx_branch (insn, operands);"
   [(set (attr "length")
 	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
@@ -2001,13 +2002,12 @@
 
 (define_insn "branch"
   [(set (pc)
-        (if_then_else (match_operator 1 "comparison_operator"
+        (if_then_else (match_operator 1 "simple_comparison_operator"
                         [(cc0)
                          (const_int 0)])
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
-  "! (GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == GTU
-      || GET_CODE (operands[1]) == LE || GET_CODE (operands[1]) == LEU)"
+  ""
   "*
    return ret_cond_branch (operands[1], avr_jump_mode (operands[0],insn), 0);"
   [(set_attr "type" "branch")
@@ -2015,13 +2015,12 @@
 
 (define_insn "difficult_branch"
   [(set (pc)
-        (if_then_else (match_operator 1 "comparison_operator"
+        (if_then_else (match_operator 1 "difficult_comparison_operator"
                         [(cc0)
                          (const_int 0)])
                       (label_ref (match_operand 0 "" ""))
                       (pc)))]
-  "(GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == GTU
-    || GET_CODE (operands[1]) == LE || GET_CODE (operands[1]) == LEU)"
+  ""
   "*
    return ret_cond_branch (operands[1], avr_jump_mode (operands[0],insn), 0);"
   [(set_attr "type" "branch1")
@@ -2031,12 +2030,12 @@
 
 (define_insn "rvbranch"
   [(set (pc)
-        (if_then_else (match_operator 1 "comparison_operator" [(cc0)
-                                                               (const_int 0)])
+        (if_then_else (match_operator 1 "simple_comparison_operator" 
+	                [(cc0)
+                         (const_int 0)])
                       (pc)
                       (label_ref (match_operand 0 "" ""))))]
-  "! (GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == GTU
-      || GET_CODE (operands[1]) == LE || GET_CODE (operands[1]) == LEU)"
+  ""
   "*
    return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 1);"
   [(set_attr "type" "branch1")
@@ -2044,12 +2043,12 @@
 
 (define_insn "difficult_rvbranch"
   [(set (pc)
-        (if_then_else (match_operator 1 "comparison_operator" [(cc0)
-                                                               (const_int 0)])
+        (if_then_else (match_operator 1 "difficult_comparison_operator" 
+	                [(cc0)
+                         (const_int 0)])
                       (pc)
                       (label_ref (match_operand 0 "" ""))))]
-  "(GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == GTU
-    || GET_CODE (operands[1]) == LE || GET_CODE (operands[1]) == LEU)"
+  ""
   "*
    return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 1);"
   [(set_attr "type" "branch")
@@ -2289,11 +2288,10 @@
 ;; Clear/set/test a single bit in I/O address space.
 
 (define_insn "*cbi"
-  [(set (mem:QI (match_operand 0 "const_int_operand" "n"))
+  [(set (mem:QI (match_operand 0 "low_io_address_operand" "n"))
 	(and:QI (mem:QI (match_dup 0))
-		(match_operand 1 "const_int_operand" "n")))]
-  "avr_io_address_p (operands[0], 1 + 0x20)
-   && exact_log2 (~INTVAL (operands[1]) & 0xff) >= 0"
+		(match_operand:QI 1 "single_zero_operand" "n")))]
+  "(optimize > 0)"
 {
   operands[2] = GEN_INT (exact_log2 (~INTVAL (operands[1]) & 0xff));
   return AS2 (cbi,%0-0x20,%2);
@@ -2302,11 +2300,10 @@
    (set_attr "cc" "none")])
 
 (define_insn "*sbi"
-  [(set (mem:QI (match_operand 0 "const_int_operand" "n"))
+  [(set (mem:QI (match_operand 0 "low_io_address_operand" "n"))
 	(ior:QI (mem:QI (match_dup 0))
-		(match_operand 1 "const_int_operand" "n")))]
-  "avr_io_address_p (operands[0], 1 + 0x20)
-   && exact_log2 (INTVAL (operands[1]) & 0xff) >= 0"
+		(match_operand:QI 1 "single_one_operand" "n")))]
+  "(optimize > 0)"
 {
   operands[2] = GEN_INT (exact_log2 (INTVAL (operands[1]) & 0xff));
   return AS2 (sbi,%0-0x20,%2);
@@ -2318,16 +2315,15 @@
 (define_insn "*sbix_branch"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "comparison_operator"
+	 (match_operator 0 "eqne_operator"
 			 [(zero_extract
-			   (mem:QI (match_operand 1 "const_int_operand" "n"))
+			   (mem:QI (match_operand 1 "low_io_address_operand" "n"))
 			   (const_int 1)
 			   (match_operand 2 "const_int_operand" "n"))
 			  (const_int 0)])
 	 (label_ref (match_operand 3 "" ""))
 	 (pc)))]
-  "(GET_CODE (operands[0]) == EQ || GET_CODE (operands[0]) == NE)
-   && avr_io_address_p (operands[1], 1 + 0x20)"
+  "(optimize > 0)"
   "* return avr_out_sbxx_branch (insn, operands);"
   [(set (attr "length")
 	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
@@ -2342,13 +2338,12 @@
 (define_insn "*sbix_branch_bit7"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "comparison_operator"
-			 [(mem:QI (match_operand 1 "const_int_operand" "n"))
+	 (match_operator 0 "gelt_operator"
+			 [(mem:QI (match_operand 1 "low_io_address_operand" "n"))
 			  (const_int 0)])
 	 (label_ref (match_operand 2 "" ""))
 	 (pc)))]
-  "(GET_CODE (operands[0]) == GE || GET_CODE (operands[0]) == LT)
-   && avr_io_address_p (operands[1], 1 + 0x20)"
+  "(optimize > 0)"
 {
   operands[3] = operands[2];
   operands[2] = GEN_INT (7);
@@ -2367,16 +2362,15 @@
 (define_insn "*sbix_branch_tmp"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "comparison_operator"
+	 (match_operator 0 "eqne_operator"
 			 [(zero_extract
-			   (mem:QI (match_operand 1 "const_int_operand" "n"))
+			   (mem:QI (match_operand 1 "higth_io_address_operand" "n"))
 			   (const_int 1)
 			   (match_operand 2 "const_int_operand" "n"))
 			  (const_int 0)])
 	 (label_ref (match_operand 3 "" ""))
 	 (pc)))]
-  "(GET_CODE (operands[0]) == EQ || GET_CODE (operands[0]) == NE)
-   && avr_io_address_p (operands[1], 1) && INTVAL (operands[1]) >= 0x40"
+  "(optimize > 0)"
   "* return avr_out_sbxx_branch (insn, operands);"
   [(set (attr "length")
 	(if_then_else (and (ge (minus (pc) (match_dup 3)) (const_int -2046))
@@ -2390,13 +2384,12 @@
 (define_insn "*sbix_branch_tmp_bit7"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "comparison_operator"
-			 [(mem:QI (match_operand 1 "const_int_operand" "n"))
+	 (match_operator 0 "gelt_operator"
+			 [(mem:QI (match_operand 1 "higth_io_address_operand" "n"))
 			  (const_int 0)])
 	 (label_ref (match_operand 2 "" ""))
 	 (pc)))]
-  "(GET_CODE (operands[0]) == GE || GET_CODE (operands[0]) == LT)
-   && avr_io_address_p (operands[1], 1) && INTVAL (operands[1]) >= 0x40"
+  "(optimize > 0)"
 {
   operands[3] = operands[2];
   operands[2] = GEN_INT (7);
@@ -2414,20 +2407,19 @@
 ;; ************************* Peepholes ********************************
 
 (define_peephole
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "d_register_operand" "")
         (plus:SI (match_dup 0)
                  (const_int -1)))
    (parallel
     [(set (cc0)
           (compare (match_dup 0)
 		   (const_int -1)))
-     (clobber (match_operand:QI 1 "register_operand" ""))])
+     (clobber (match_operand:QI 1 "d_register_operand" ""))])
    (set (pc)
 	(if_then_else (ne (cc0) (const_int 0))
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
-  "(test_hard_reg_class (LD_REGS, operands[0])
-    && test_hard_reg_class (LD_REGS, operands[1]))"
+  ""
   "*
 {
   CC_STATUS_INIT;
@@ -2453,20 +2445,19 @@
 }")
 
 (define_peephole
-  [(set (match_operand:HI 0 "register_operand" "")
+  [(set (match_operand:HI 0 "d_register_operand" "")
         (plus:HI (match_dup 0)
                  (const_int -1)))
    (parallel
     [(set (cc0)
           (compare (match_dup 0)
 		   (const_int 65535)))
-     (clobber (match_operand:QI 1 "register_operand" ""))])
+     (clobber (match_operand:QI 1 "d_register_operand" ""))])
    (set (pc)
 	(if_then_else (ne (cc0) (const_int 0))
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
-  "(test_hard_reg_class (LD_REGS, operands[0])
-    && test_hard_reg_class (LD_REGS, operands[1]))"
+  ""
   "*
 {
   CC_STATUS_INIT;
@@ -2488,7 +2479,7 @@
 }")
 
 (define_peephole
-  [(set (match_operand:QI 0 "register_operand" "")
+  [(set (match_operand:QI 0 "d_register_operand" "")
         (plus:QI (match_dup 0)
                  (const_int -1)))
    (set (cc0)
@@ -2498,7 +2489,7 @@
 	(if_then_else (ne (cc0) (const_int 0))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
-  "test_hard_reg_class (LD_REGS, operands[0])"
+  ""
   "*
 {
   CC_STATUS_INIT;
