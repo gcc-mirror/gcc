@@ -1,3 +1,13 @@
+2006-10-10  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/predicates.md: New file.
+	* config/avr/avr.md: Include it.
+	(REG_SP): New constant.
+	(peepholes): Use predicates.
+	(sbrx_branch, sbrx_and_branchhi, sbrx_and_branchsi, branch, rvbranch,
+	difficult_branch,  difficult_rvbranch, cbi, sbi, sbix_branch,
+	sbix_branch_bit7, sbix_branch_tmp, sbix_branch_tmp_bit7): Ditto.
+
 2006-10-10  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.c (mips_save_restore_reg): Use gen_frame_mem to
