@@ -7893,6 +7893,17 @@ fold_builtin_exponent (tree fndecl, tree arglist,
   return 0;
 }
 
+/* Return true if VAR is a VAR_DECL or a component thereof.  */
+
+static bool
+var_decl_component_p (tree var)
+{
+  tree inner = var;
+  while (handled_component_p (inner))
+    inner = TREE_OPERAND (inner, 0);
+  return SSA_VAR_P (inner);
+}
+
 /* Fold function call to builtin memset.  Return
    NULL_TREE if no simplification can be made.  */
 
@@ -7931,6 +7942,9 @@ fold_builtin_memset (tree arglist, tree type, bool ignore)
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (var))
       && !POINTER_TYPE_P (TREE_TYPE (var)))
+    return 0;
+
+  if (! var_decl_component_p (var))
     return 0;
 
   length = tree_low_cst (len, 1);
@@ -8044,6 +8058,9 @@ fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
 	  && !SCALAR_FLOAT_TYPE_P (TREE_TYPE (destvar)))
 	return 0;
 
+      if (! var_decl_component_p (destvar))
+	return 0;
+
       srcvar = src;
       STRIP_NOPS (srcvar);
       if (TREE_CODE (srcvar) != ADDR_EXPR)
@@ -8056,6 +8073,9 @@ fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
       if (!INTEGRAL_TYPE_P (TREE_TYPE (srcvar))
 	  && !POINTER_TYPE_P (TREE_TYPE (srcvar))
 	  && !SCALAR_FLOAT_TYPE_P (TREE_TYPE (srcvar)))
+	return 0;
+
+      if (! var_decl_component_p (srcvar))
 	return 0;
 
       length = tree_low_cst (len, 1);
