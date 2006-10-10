@@ -309,6 +309,9 @@ powerpc*-*-*)
 rs6000*-*-*)
 	need_64bit_hwint=yes
 	;;
+score*-*-*)
+	cpu_type=score
+	;;
 sparc64*-*-*)
 	cpu_type=sparc
 	need_64bit_hwint=yes
@@ -1932,6 +1935,11 @@ s390x-ibm-tpf*)
         thread_file='tpf'
 	extra_options="${extra_options} s390/tpf.opt"
 	;;
+score-*-elf)
+        tm_file="dbxelf.h elfos.h score/elf.h score/score.h"
+        tmake_file=score/t-score-elf
+        extra_objs="score-mdaux.o"
+        ;;
 sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
 sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
   sh-*-linux* | sh[346lbe]*-*-linux* | \
