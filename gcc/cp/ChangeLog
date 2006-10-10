@@ -1,3 +1,9 @@
+2006-10-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/28349
+	* call.c (build_x_va_arg): Remove the reference type
+	from the type before creating the pointer type.
+
 2006-09-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28996
@@ -16,7 +22,7 @@
 
 2006-09-06  Zak Kipling  <zak@transversal.com>
 
-        PR c++/26195
+	PR c++/26195
 	* decl.c (make_rtl_for_nonlocal_decl),
 	(start_preparsed_function): Don't use lbasename on
 	input_filename when calling get_fileinfo.

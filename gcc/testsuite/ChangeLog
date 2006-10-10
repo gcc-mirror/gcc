@@ -1,3 +1,8 @@
+2006-10-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/28349
+	* testsuite/g++.dg/warn/var-args1.C: New test.
+
 2006-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR debug/28980
