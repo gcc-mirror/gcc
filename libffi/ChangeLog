@@ -1,3 +1,20 @@
+2006-10-10  Paolo Bonzini  <bonzini@gnu.org>
+	    Sandro Tolaini  <tolaini@libero.it>
+
+	* configure.ac [i*86-*-darwin*]: Set X86_DARWIN symbol and 
+	conditional.
+	* configure: Regenerated.
+	* Makefile.am (nodist_libffi_la_SOURCES) [X86_DARWIN]: New case.
+	(EXTRA_DIST): Add src/x86/darwin.S.
+	* Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
+	* src/x86/ffi.c (ffi_prep_cif_machdep) [X86_DARWIN]: Treat like
+	X86_WIN32, and additionally align stack to 16 bytes.
+	* src/x86/darwin.S: New, based on sysv.S.
+	* src/prep_cif.c (ffi_prep_cif) [X86_DARWIN]: Align > 8-byte structs.
+
 2006-09-12  David Daney  <ddaney@avtrex.com>
 
 	PR libffi/23935
