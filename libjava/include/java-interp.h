@@ -206,6 +206,13 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   void get_line_table (jlong& start, jlong& end, jintArray& line_numbers,
 		       jlongArray& code_indices);
 
+  // Gets the instruction at the given index
+  pc_t get_insn (jlong index);
+
+  /* Writes the given instruction at the given code index. Returns
+     the insn or NULL if index is invalid. */
+  pc_t set_insn (jlong index, pc_t insn);
+
 #ifdef DIRECT_THREADED
   friend void _Jv_CompileMethod (_Jv_InterpMethod*);
 #endif
