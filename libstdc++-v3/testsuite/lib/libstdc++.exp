@@ -1,6 +1,7 @@
 # libstdc++ "tool init file" for DejaGNU
 
-# Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+# Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -272,24 +273,21 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
         }
     }
 
+    # Short-circut a bunch of complicated goo here for the special
+    # case of compiling a test file as a "C" file, not as C++. Why? So
+    # -nostdc++ doesn't trip us up. So all the extra object files
+    # don't trip us up. So automatically linking in libstdc++ doesn't
+    # happen. So CXXFLAGS don't error.
     set select_compile "v3_target_compile"
     set options ""
     if { $extra_tool_flags != "" } {
 	verbose -log "extra_tool_flags are:"
 	verbose -log $extra_tool_flags
 	if { [string first "-x c" $extra_tool_flags ] != -1 } {
-	    # Short-circut a bunch of complicated goo here for the
-	    # special case of compiling a test file as a "C" file, not
-	    # as C++. Why? So -nostdc++ doesn't trip us up. So all the
-	    # extra object files don't trip us up. So automatically
-	    # linking in libstdc++ doesn't happen. So CXXFLAGS don't
-	    # error.
 	    verbose -log "compiling and executing as C, not C++"
-
 	    set edit_tool_flags $extra_tool_flags
 	    regsub -all ".x c" $edit_tool_flags "" edit_tool_flags
 	    lappend options "additional_flags=$edit_tool_flags"
-
 	    set select_compile "v3_target_compile_as_c"
         } else {
 	    lappend options "additional_flags=$extra_tool_flags"
@@ -313,9 +311,6 @@ set v3-threads 0
 # True if the library supports symbol versioning.
 set v3-symver 0
 
-# A string naming object files to be linked into all tests.
-set v3-test_objs ""
-
 # Called from libstdc++-dg-test above.  Calls back into system's
 # target_compile to actually do the work.
 proc v3_target_compile { source dest type options } {
@@ -325,7 +320,6 @@ proc v3_target_compile { source dest type options } {
     global cxxflags
     global cxxldflags
     global includes
-    global v3-test_objs
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -342,8 +336,7 @@ proc v3_target_compile { source dest type options } {
     if { $type == "executable" } {
 	# Link the support objects into executables.
         set cxx_final [concat $cxx_final $cxxldflags]
-	# lappend options "additional_flags=./libtestc++.a"
-	set cxx_final [concat $cxx_final ${v3-test_objs}]
+	lappend options "additional_flags=./libtestc++.a"
     } else {
 	if { $type == "sharedlib" } {
 	    # Don't link in anything.
@@ -384,13 +377,11 @@ proc v3_target_compile_as_c { source dest type options } {
 }
 
 # Build the support objects linked in with the libstdc++ tests.  In
-# addition, set v3-wchar_t, v3-threads, v3-test_objs, and v3-symver
-# appropriately.
+# addition, set v3-wchar_t, v3-threads, and v3-symver appropriately.
 proc v3-build_support { } {
     global srcdir
     global v3-wchar_t
     global v3-threads
-    global v3-test_objs
     global v3-symver
     global v3-sharedlib
 
@@ -398,7 +389,7 @@ proc v3-build_support { } {
     set v3-wchar_t 0
     set v3-threads 0
     set v3-symver 0
-    set v3-test_objs ""
+    set libtest_objs ""
 
     set config_src "config.cc"
     set f [open $config_src "w"]
@@ -449,11 +440,11 @@ proc v3-build_support { } {
 	     != "" } {
 	    error "could not compile $f"
 	}
-	append v3-test_objs "$object_file "
+	append libtest_objs "$object_file "
     }
 
     # Collect into libtestc++.a
-    set arcommand "ar -rc ./libtestc++.a ${v3-test_objs}"
+    set arcommand "ar -rc ./libtestc++.a ${libtest_objs}"
     set result [lindex [local_exec "$arcommand" "" "" 300] 0]
     verbose "link result is $result"
     if { $result == 0 } {
@@ -461,12 +452,6 @@ proc v3-build_support { } {
 	set result [lindex [local_exec "$ranlibcommand" "" "" 300] 0]
 	if { $result != 0 } {
 	    error "could not link libtestc++.a"
-	    
-	    # We cannot actually use libtestc++.a because it's hard to
-	    # position this library after the test file being compiled
-	    # on the constructed compile line. However, we use this as
-	    # a convenience for performance testing.  
-	    #set v3-test_objs "./libtestc++.a"
 	}
     }
 
