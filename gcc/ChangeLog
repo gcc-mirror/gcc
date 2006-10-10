@@ -1,3 +1,8 @@
+2006-10-10  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.c (mips_save_restore_reg): Use gen_frame_mem to
+	avoid alias set 0.
+
 2006-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29272

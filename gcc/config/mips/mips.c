@@ -6528,7 +6528,7 @@ mips_save_restore_reg (enum machine_mode mode, int regno,
 {
   rtx mem;
 
-  mem = gen_rtx_MEM (mode, plus_constant (stack_pointer_rtx, offset));
+  mem = gen_frame_mem (mode, plus_constant (stack_pointer_rtx, offset));
 
   fn (gen_rtx_REG (mode, regno), mem);
 }
