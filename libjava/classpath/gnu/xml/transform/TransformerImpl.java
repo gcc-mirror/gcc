@@ -327,7 +327,8 @@ class TransformerImpl
             domDoc.setCheckWellformedness(false);
           }
         parent.normalize();
-        strip(stylesheet, parent);
+        if (stylesheet != null)
+          strip(stylesheet, parent);
         Document resultDoc = (parent instanceof Document) ?
           (Document) parent :
           parent.getOwnerDocument();
