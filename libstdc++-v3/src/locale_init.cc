@@ -36,6 +36,13 @@
 
 namespace 
 {
+  __gnu_cxx::__mutex&
+  __get_locale_mutex()
+  {
+    static __gnu_cxx::__mutex locale_mutex;
+    return locale_mutex;
+  }
+
   using namespace std;
 
   typedef char fake_locale_Impl[sizeof(locale::_Impl)]
@@ -198,8 +205,6 @@ namespace
   __attribute__ ((aligned(__alignof__(std::__timepunct_cache<wchar_t>))));
   fake_time_cache_w timepunct_cache_w;
 #endif
-
-  __gnu_cxx::__mutex locale_mutex;
 } // anonymous namespace
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
@@ -207,7 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   locale::locale() throw() : _M_impl(0)
   { 
     _S_initialize();
-    __gnu_cxx::__scoped_lock sentry(locale_mutex);
+    __gnu_cxx::__scoped_lock sentry(__get_locale_mutex());
     _S_global->_M_add_reference();
     _M_impl = _S_global;
   }
@@ -218,7 +223,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _S_initialize();
     _Impl* __old;
     {
-      __gnu_cxx::__scoped_lock sentry(locale_mutex);
+      __gnu_cxx::__scoped_lock sentry(__get_locale_mutex());
       __old = _S_global;
       __other._M_impl->_M_add_reference();
       _S_global = __other._M_impl;

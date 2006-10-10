@@ -1,5 +1,12 @@
 2006-10-09  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/29118
+	* src/locale_init.cc (__get_locale_mutex): New. 
+	(locale::locale): Use it.
+	(locale::global): Use it.	
+
+2006-10-09  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/29095
 	* libsupc++/cxxabi.h (__cxa_cdtor_type): Explicit "C" linkage.
 	* config/cpu/arm/cxxabi_tweaks.h: Same.
