@@ -1788,11 +1788,14 @@ _Jv_PrependVersionedLibdir (char* libpath)
         {
           // LD_LIBRARY_PATH is not prefixed with
           // GCJ_VERSIONED_LIBDIR.
-          jsize total = (sizeof (GCJ_VERSIONED_LIBDIR) - 1)
-            + (sizeof (PATH_SEPARATOR) - 1) + strlen (libpath) + 1;
+	  char path_sep[2];
+	  path_sep[0] = (char) _Jv_platform_path_separator;
+	  path_sep[1] = '\0';
+          jsize total = ((sizeof (GCJ_VERSIONED_LIBDIR) - 1)
+			 + 1 /* path separator */ + strlen (libpath) + 1);
           retval = (char*) _Jv_Malloc (total);
           strcpy (retval, GCJ_VERSIONED_LIBDIR);
-          strcat (retval, PATH_SEPARATOR);
+          strcat (retval, path_sep);
           strcat (retval, libpath);
         }
     }
