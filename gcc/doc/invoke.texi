@@ -11348,7 +11348,7 @@ following options: @option{-maltivec}, @option{-mfprnd},
 @option{-mhard-float}, @option{-mmfcrf}, @option{-mmultiple},
 @option{-mnew-mnemonics}, @option{-mpopcntb}, @option{-mpower},
 @option{-mpower2}, @option{-mpowerpc64}, @option{-mpowerpc-gpopt},
-@option{-mpowerpc-gfxopt}, @option{-mstring}, @option{-mmulhw}, @option{dlmzb}.
+@option{-mpowerpc-gfxopt}, @option{-mstring}, @option{-mmulhw}, @option{-mdlmzb}.
 The particular options
 set for any particular CPU will vary between compiler versions,
 depending on what setting seems to produce optimal code for that CPU;
