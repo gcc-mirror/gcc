@@ -1,3 +1,9 @@
+2006-10-10  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/29323
+	* decl.c (finish_function): Set TREE_NOTHROW only for
+	functions that bind local.
+
 2006-10-09  Richard Henderson  <rth@redhat.com>
 
 	Revert emutls patch.

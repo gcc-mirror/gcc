@@ -1,3 +1,9 @@
+2006-10-10  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/29323
+	* except.c (set_nothrow_function_flags): For functions
+	that do not bind local bail out early.
+
 2006-10-10  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Add -m to the

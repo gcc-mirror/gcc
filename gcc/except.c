@@ -2787,6 +2787,9 @@ set_nothrow_function_flags (void)
 {
   rtx insn;
 
+  if (!targetm.binds_local_p (current_function_decl))
+    return 0;
+
   TREE_NOTHROW (current_function_decl) = 1;
 
   /* Assume cfun->all_throwers_are_sibcalls until we encounter
