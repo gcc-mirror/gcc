@@ -47,7 +47,6 @@ endif
 dbexec_LTLIBRARIES = libjvm.la
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libgcj.pc
 
 jardir = $(datadir)/java
 jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar
@@ -547,6 +546,11 @@ endif
 ## hand.
 install-data-local:
 	$(PRE_INSTALL)
+## Install the .pc file.
+	@pc_version=`echo $(GCJVERSION) | sed -e 's/[.][^.]*$$//'`; \
+	file="libgcj-$${pc_version}.pc"; \
+	echo "  $(INSTALL_DATA) libgcj.pc $(DESTDIR)$(pkgconfigdir)/$$file"; \
+	$(INSTALL_DATA) libgcj.pc $(DESTDIR)$(pkgconfigdir)/$$file
 ## We use a GNU make trick here so that we don't go over the command
 ## length limit of some shells.
 	@echo Creating list of headers to install...

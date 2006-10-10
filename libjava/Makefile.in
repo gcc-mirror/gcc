@@ -111,8 +111,7 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(dbexecdir)" \
 	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(bindir)" "$(DESTDIR)$(dbexecdir)" \
-	"$(DESTDIR)$(jardir)" "$(DESTDIR)$(pkgconfigdir)" \
-	"$(DESTDIR)$(toolexecmainlibdir)"
+	"$(DESTDIR)$(jardir)" "$(DESTDIR)$(toolexecmainlibdir)"
 dbexecLTLIBRARIES_INSTALL = $(INSTALL)
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(dbexec_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
@@ -450,10 +449,8 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	uninstall-recursive
 dbexecDATA_INSTALL = $(INSTALL_DATA)
 jarDATA_INSTALL = $(INSTALL_DATA)
-pkgconfigDATA_INSTALL = $(INSTALL_DATA)
 toolexecmainlibDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(dbexec_DATA) $(jar_DATA) $(pkgconfig_DATA) \
-	$(toolexecmainlib_DATA)
+DATA = $(dbexec_DATA) $(jar_DATA) $(toolexecmainlib_DATA)
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = @DIRLTDL@ gcj include classpath testsuite
@@ -716,7 +713,6 @@ toolexeclib_LTLIBRARIES = libgcj.la libgij.la libgcj-tools.la \
 toolexecmainlib_DATA = libgcj.spec
 dbexec_LTLIBRARIES = libjvm.la
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libgcj.pc
 jardir = $(datadir)/java
 jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar
 @JAVA_HOME_SET_FALSE@JAVA_HOME_DIR = $(prefix)
@@ -8700,23 +8696,6 @@ uninstall-jarDATA:
 	  echo " rm -f '$(DESTDIR)$(jardir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(jardir)/$$f"; \
 	done
-install-pkgconfigDATA: $(pkgconfig_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(pkgconfigdir)" || $(mkdir_p) "$(DESTDIR)$(pkgconfigdir)"
-	@list='$(pkgconfig_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(pkgconfigDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(pkgconfigdir)/$$f'"; \
-	  $(pkgconfigDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(pkgconfigdir)/$$f"; \
-	done
-
-uninstall-pkgconfigDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(pkgconfig_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(pkgconfigdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(pkgconfigdir)/$$f"; \
-	done
 install-toolexecmainlibDATA: $(toolexecmainlib_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexecmainlibdir)" || $(mkdir_p) "$(DESTDIR)$(toolexecmainlibdir)"
@@ -9014,7 +8993,7 @@ check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(toolexecmainlibdir)"; do \
+	for dir in "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(toolexecmainlibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-recursive
@@ -9121,8 +9100,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-data-local install-jarDATA \
-	install-pkgconfigDATA
+install-data-am: install-data-local install-jarDATA
 
 install-exec-am: install-binPROGRAMS install-binSCRIPTS \
 	install-dbexecDATA install-dbexecLTLIBRARIES \
@@ -9158,7 +9136,7 @@ ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	uninstall-dbexecDATA uninstall-dbexecLTLIBRARIES \
-	uninstall-info-am uninstall-jarDATA uninstall-pkgconfigDATA \
+	uninstall-info-am uninstall-jarDATA \
 	uninstall-toolexeclibLTLIBRARIES uninstall-toolexecmainlibDATA
 
 uninstall-info: uninstall-info-recursive
@@ -9176,18 +9154,18 @@ uninstall-info: uninstall-info-recursive
 	install-data install-data-am install-data-local \
 	install-dbexecDATA install-dbexecLTLIBRARIES install-exec \
 	install-exec-am install-exec-hook install-info install-info-am \
-	install-jarDATA install-man install-pkgconfigDATA \
-	install-strip install-toolexeclibLTLIBRARIES \
-	install-toolexecmainlibDATA installcheck installcheck-am \
-	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool mostlyclean-local mostlyclean-recursive \
-	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-binSCRIPTS \
-	uninstall-dbexecDATA uninstall-dbexecLTLIBRARIES \
-	uninstall-info-am uninstall-jarDATA uninstall-pkgconfigDATA \
-	uninstall-toolexeclibLTLIBRARIES uninstall-toolexecmainlibDATA
+	install-jarDATA install-man install-strip \
+	install-toolexeclibLTLIBRARIES install-toolexecmainlibDATA \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool mostlyclean-local \
+	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-binSCRIPTS uninstall-dbexecDATA \
+	uninstall-dbexecLTLIBRARIES uninstall-info-am \
+	uninstall-jarDATA uninstall-toolexeclibLTLIBRARIES \
+	uninstall-toolexecmainlibDATA
 
 
 $(db_name): gcj-dbtool$(EXEEXT)
@@ -11782,6 +11760,10 @@ $(extra_headers) $(srcdir)/java/lang/Object.h $(srcdir)/java/lang/Class.h:
 
 install-data-local:
 	$(PRE_INSTALL)
+	@pc_version=`echo $(GCJVERSION) | sed -e 's/[.][^.]*$$//'`; \
+	file="libgcj-$${pc_version}.pc"; \
+	echo "  $(INSTALL_DATA) libgcj.pc $(DESTDIR)$(pkgconfigdir)/$$file"; \
+	$(INSTALL_DATA) libgcj.pc $(DESTDIR)$(pkgconfigdir)/$$file
 	@echo Creating list of headers to install...
 	@: $(call write_entries_to_file,$(nat_headers_install) $(extra_headers),tmp-ilist)
 	@cat tmp-ilist | while read f; do \
