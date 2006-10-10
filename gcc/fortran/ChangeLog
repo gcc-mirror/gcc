@@ -1,3 +1,10 @@
+2006-10-10  Daniel Franke  <franke.daniel@gmail.com>
+
+	* intrinsic.texi: added documentation for FSTAT, GETARG,GET_COMMAND,
+	GET_COMMAND_ARGUMENT, GETENV, GET_ENVIRONMENT_VARIABLE, IAND, IARGC,
+	LSTAT and STAT, removed the reference to PR19292 from ACCESS, CHMOD,
+	GMTIME, LSHIFT, LTIME, RSHIFT.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* gfortran.texi (Standards): Update to current status.
