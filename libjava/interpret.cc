@@ -1384,6 +1384,46 @@ _Jv_InterpMethod::get_line_table (jlong& start, jlong& end,
 #endif // !DIRECT_THREADED
 }
 
+pc_t
+_Jv_InterpMethod::get_insn (jlong index)
+{
+  pc_t code;
+
+#ifdef DIRECT_THREADED
+  if (index >= number_insn_slots || index < 0)
+    return NULL;
+
+  code = prepared;
+#else // !DIRECT_THREADED
+  if (index >= code_length || index < 0)
+    return NULL;
+
+  code = reinterpret_cast<pc_t> (bytecode ());
+#endif // !DIRECT_THREADED
+
+  return &code[index];
+}
+
+pc_t
+_Jv_InterpMethod::set_insn (jlong index, pc_t insn)
+{
+#ifdef DIRECT_THREADED
+  if (index >= number_insn_slots || index < 0)
+    return NULL;
+
+  pc_t code = prepared;
+  code[index].insn = insn->insn;
+#else // !DIRECT_THREADED
+  if (index >= code_length || index < 0)
+    return NULL;
+
+  pc_t code = reinterpret_cast<pc_t> (bytecode ());
+  code[index] = *insn;
+#endif // !DIRECT_THREADED
+
+  return &code[index];
+}
+
 void *
 _Jv_JNIMethod::ncode ()
 {
