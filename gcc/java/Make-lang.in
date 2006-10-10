@@ -27,8 +27,8 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-common, foo.install-man, foo.install-info, foo.dvi, foo.html,
-# foo.uninstall,
+# foo.install-common, foo.install-man, foo.install-info, foo.dvi, foo.pdf,
+# foo.html, foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -177,6 +177,7 @@ java.srcinfo: doc/gcj.info
 	-cp -p $^ $(srcdir)/doc
 
 java.dvi: doc/gcj.dvi
+java.pdf: doc/gcj.pdf
 java.html: $(build_htmldir)/java/index.html
 JAVA_MANFILES = doc/gcj.1 doc/gcjh.1 doc/jv-scan.1 doc/jcf-dump.1 doc/gij.1 \
                 doc/jv-convert.1 doc/grmic.1 doc/grmiregistry.1 \
@@ -393,6 +394,9 @@ doc/gcj.info: $(TEXI_JAVA_FILES)
 
 doc/gcj.dvi: $(TEXI_JAVA_FILES)
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
+
+doc/gcj.pdf: $(TEXI_JAVA_FILES)
+	$(TEXI2PDF) -I $(abs_docdir)/include -o $@ $<
 
 $(build_htmldir)/java/index.html: $(TEXI_JAVA_FILES)
 	$(mkinstalldirs) $(@D)

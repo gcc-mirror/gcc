@@ -187,6 +187,7 @@ install : all
 .PHONY: dvi info html install-html
 
 dvi :
+pdf :
 info :
 html :
 install-html :

@@ -267,7 +267,7 @@ exception_gc.lo: exception.c
 	$(LIBTOOL_COMPILE) $(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
 		-fexceptions $(INCLUDES) $<
 
-doc: info dvi html
+doc: info dvi pdf html
 
 # No install-html support
 .PHONY: install-html
@@ -314,6 +314,7 @@ libobjc.dll: libobjc_s.a libobjc_entry.o
 
 info:
 dvi:
+pdf:
 html:
 
 Makefile: Makefile.in config.status
@@ -353,7 +354,7 @@ check uninstall install-strip dist installcheck installdirs:
 mostlyclean:
 	-$(LIBTOOL_CLEAN) rm -f libobjc$(libext).la libobjc_gc$(libext).la *.lo
 	-rm -f runtime-info.h tmp-runtime.s *.o *.lo libobjc* xforward \
-		fflags *.aux *.cp *.dvi *.fn *.info *.ky *.log *.pg \
+		fflags *.aux *.cp *.dvi *.pdf *.fn *.info *.ky *.log *.pg \
 		*.toc *.tp *.vr *.html libobj.exp
 	@$(MULTICLEAN) multi-clean DO=mostlyclean
 

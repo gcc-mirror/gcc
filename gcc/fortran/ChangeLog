@@ -1,3 +1,8 @@
+2006-10-10  Brooks Moses  <bmoses@stanford.edu>
+
+	* Make-lang.in: Added "fortran.pdf", "gfortran.pdf" target
+	support.
+
 2006-10-10  Daniel Franke  <franke.daniel@gmail.com>
 
 	* intrinsic.texi: added documentation for FSTAT, GETARG,GET_COMMAND,

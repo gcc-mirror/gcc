@@ -1,3 +1,7 @@
+2006-10-10  Brooks Moses  <bmoses@stanford.edu>
+
+	* Makefile.in: Added empty "pdf" target.
+
 2006-09-22  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.ac: Make need_64_bit_hwint case for x86-darwin

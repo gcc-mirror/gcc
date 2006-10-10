@@ -1,3 +1,7 @@
+2006-10-10  Brooks Moses  <bmoses@stanford.edu>
+
+	* Makefile.in: Added empty "pdf" target.
+
 2006-10-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/29300

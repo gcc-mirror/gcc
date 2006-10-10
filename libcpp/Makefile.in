@@ -180,6 +180,7 @@ maintainer-clean: distclean
 check:
 installcheck:
 dvi:
+pdf:
 html:
 info:
 install-info:
@@ -189,7 +190,7 @@ install-html:
 update-po: $(CATALOGS:.gmo=.pox)
 
 .PHONY: installdirs install install-strip mostlyclean clean distclean \
-  maintainer-clean check installcheck dvi html info install-info \
+  maintainer-clean check installcheck dvi pdf html info install-info \
   install-man update-po install-html
 
 # Dependency rule.

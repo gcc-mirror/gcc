@@ -1,3 +1,7 @@
+2006-10-10  Brooks Moses  <bmoses@stanford.edu>
+
+	* Make-lang.in: Added "c++.pdf" target support.
+
 2006-10-10  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/29323

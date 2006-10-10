@@ -537,12 +537,13 @@ do-[+make_target+]:
 
 # Here are the targets which correspond to the do-X targets.
 
-.PHONY: info installcheck dvi html install-info install-html
+.PHONY: info installcheck dvi pdf html install-info install-html
 .PHONY: clean distclean mostlyclean maintainer-clean realclean
 .PHONY: local-clean local-distclean local-maintainer-clean
 info: do-info
 installcheck: do-installcheck
 dvi: do-dvi
+pdf: do-pdf
 html: do-html
 
 # Make sure makeinfo is built before we do a `make info', if we're
@@ -936,7 +937,7 @@ install-[+module+]: installdirs
 [+ ENDIF no_install +]
 @endif [+module+]
 
-# Other targets (info, dvi, etc.)
+# Other targets (info, dvi, pdf, etc.)
 [+ FOR recursive_targets +]
 .PHONY: maybe-[+make_target+]-[+module+] [+make_target+]-[+module+]
 maybe-[+make_target+]-[+module+]:
@@ -1044,7 +1045,7 @@ ENDIF raw_cxx +]
 [+ ENDIF no_install +]
 @endif target-[+module+]
 
-# Other targets (info, dvi, etc.)
+# Other targets (info, dvi, pdf, etc.)
 [+ FOR recursive_targets +]
 .PHONY: maybe-[+make_target+]-target-[+module+] [+make_target+]-target-[+module+]
 maybe-[+make_target+]-target-[+module+]:
