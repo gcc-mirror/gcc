@@ -1,3 +1,10 @@
+2006-10-10  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/29205:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (install-data-local): Install the .pc file.
+	(pkgconfig_DATA): Removed.
+
 2006-10-03  Gary Benson  <gbenson@redhat.com>
 
 	* java/net/InetAddress.java
