@@ -1,3 +1,10 @@
+2006-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/29272
+	* builtins.c (var_decl_component_p): New function.
+	(fold_builtin_memset, fold_builtin_memory_op): Restrict
+	single entry optimization to variables and components thereof.
+
 2006-10-10  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/29323
