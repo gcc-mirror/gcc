@@ -44,6 +44,10 @@ and editing.  All contributions and corrections are strongly encouraged.
 Implemented intrinsics are fully functional and available to the user to apply. 
 Some intrinsics have documentation yet to be completed as indicated by 'documentation pending'.
 
+@comment Missing intrinsics (double check with #19292)
+@comment  - MClock
+@comment  - Short
+
 @menu
 * Introduction:         Introduction
 * @code{ABORT}:         ABORT,     Abort the program     
@@ -81,7 +85,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{CHDIR}:         CHDIR,     Change working directory
 * @code{CHMOD}:         CHMOD,     Change access permissions of files
 * @code{CMPLX}:         CMPLX,     Complex conversion function
-* @code{COMMAND_ARGUMENT_COUNT}: COMMAND_ARGUMENT_COUNT,  Command line argument count
+* @code{COMMAND_ARGUMENT_COUNT}: COMMAND_ARGUMENT_COUNT, Get number of command line arguments
 * @code{CONJG}:         CONJG,     Complex conjugate function
 * @code{COS}:           COS,       Cosine function
 * @code{COSH}:          COSH,      Hyperbolic cosine function
@@ -122,8 +126,8 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{FSTAT}:         FSTAT,     Get file status
 * @code{FTELL}:         FTELL,     Current stream position
 * @code{GETARG}:        GETARG,    Get command line arguments
-* @code{GET_COMMAND}:   GET_COMMAND, Subroutine to retrieve the entire command line
-* @code{GET_COMMAND_ARGUMENT}: GET_COMMAND_ARGUMENT, Subroutine to retrieve a command argument
+* @code{GET_COMMAND}:   GET_COMMAND, Get the entire command line
+* @code{GET_COMMAND_ARGUMENT}: GET_COMMAND_ARGUMENT, Get command line arguments
 * @code{GETCWD}:        GETCWD,    Get current working directory
 * @code{GETENV}:        GETENV,    Get an environmental variable
 * @code{GET_ENVIRONMENT_VARIABLE}: GET_ENVIRONMENT_VARIABLE, Get an environmental variable
@@ -136,7 +140,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{HUGE}:          HUGE,      Largest number of a kind
 * @code{IACHAR}:        IACHAR,    Code in @acronym{ASCII} collating sequence
 * @code{IAND}:          IAND,      Bitwise logical and
-* @code{IARGC}:         IARGC,     Get number of command line arguments
+* @code{IARGC}:         IARGC,     Get the number of command line arguments
 * @code{IBCLR}:         IBCLR,     Clear bit
 * @code{IBITS}:         IBITS,     Bit extraction
 * @code{IBSET}:         IBSET,     Set bit
@@ -167,6 +171,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
 * @code{LOGICAL}:       LOGICAL,   Convert to logical type
 * @code{LSHIFT}:        LSHIFT,    Left shift bits
+* @code{LSTAT}:         LSTAT,     Get file status
 * @code{LTIME}:         LTIME,     Convert time to local time info
 * @code{MALLOC}:        MALLOC,    Dynamic memory allocation function
 * @code{MATMUL}:        MATMUL,    matrix multiplication
@@ -403,7 +408,6 @@ GNU extension
 @item @emph{Example}:
 @item @emph{Specific names}:
 @item @emph{See also}:
-@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
 
 @end table
 
@@ -1693,7 +1697,7 @@ end program test_bit_size
 @node BTEST
 @section @code{BTEST} --- Bit test function
 @findex @code{BTEST} intrinsic
-@cindex BTEST
+@cindex bit operations
 
 @table @asis
 @item @emph{Description}:
@@ -1886,7 +1890,6 @@ Subroutine
 @item @emph{Example}:
 @item @emph{Specific names}:
 @item @emph{See also}:
-@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
 
 @end table
 
@@ -1937,9 +1940,10 @@ end program test_cmplx
 
 
 @node COMMAND_ARGUMENT_COUNT
-@section @code{COMMAND_ARGUMENT_COUNT} --- Argument count function 
+@section @code{COMMAND_ARGUMENT_COUNT} --- Get number of command line arguments
 @findex @code{COMMAND_ARGUMENT_COUNT} intrinsic
-@cindex command argument count
+@cindex command line arguments
+@cindex getopt
 
 @table @asis
 @item @emph{Description}:
@@ -1971,9 +1975,10 @@ program test_command_argument_count
     print *, count
 end program test_command_argument_count
 @end smallexample
+
+@item @emph{See also}:
+@ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}
 @end table
-
-
 
 @node CONJG
 @section @code{CONJG} --- Complex conjugate function 
@@ -3750,22 +3755,37 @@ See @code{MALLOC} for an example.
 @node FSTAT
 @section @code{FSTAT} --- Get file status
 @findex @code{FSTAT} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex file system operations 
 
 @table @asis
 @item @emph{Description}:
-GNU extension
+@code{FSTAT} is identical to @ref{STAT}, except that information about an 
+already opened file is obtained.
+
+The elements in @code{BUFF} are the same as described by @ref{STAT}.
 
 @item @emph{Standard}:
+GNU extension
+
 @item @emph{Class}:
+Non-elemental subroutine
+
 @item @emph{Syntax}:
+@code{CALL fstat(UNIT,BUFF[,STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@multitable @columnfractions .15 .80
+@item @var{UNIT}   @tab An open I/O unit number of type @code{INTEGER}.
+@item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
+                        on success and a system specific error code otherwise.
+@end multitable
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+See @ref{STAT} for an example.
+
 @item @emph{See also}:
+To stat a link: @ref{LSTAT}, to stat a file: @ref{STAT}
 @end table
 
 
@@ -3815,8 +3835,9 @@ GNU extension
 @item @emph{Arguments}:
 @item @emph{Return value}:
 @item @emph{Example}:
-@item @emph{Specific names}:
+
 @item @emph{See also}:
+@ref{FSEEK}
 @end table
 
 
@@ -3824,71 +3845,159 @@ GNU extension
 @node GETARG
 @section @code{GETARG} --- Get command line arguments
 @findex @code{GETARG} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex command line arguments
+@cindex getopt
 
 @table @asis
 @item @emph{Description}:
+Retrieve the @var{N}th argument that was passed on the
+command line when the containing program was invoked.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  In new code, programmers should consider the use of 
+the @ref{GET_COMMAND_ARGUMENT} intrinsic defined by the Fortran 2003 
+standard.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Subroutine
+
 @item @emph{Syntax}:
+@code{CALL GETARG(N,ARG)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{N}   @tab Shall of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
+@item @var{ARG} @tab Shall be of type @code{CHARACTER(*)}. 
+@end multitable
+
 @item @emph{Return value}:
+After @code{GETARG} returns, the @var{ARG} argument holds the @var{N}th 
+command line argument. If @var{ARG} can not hold the argument, it is 
+truncated to fit the length of @var{ARG}. If there are less than @var{N}
+arguments specified at the command line, @var{ARG} will be filled with blanks.
+If @math{@var{N} = 0}, @var{ARG} is set to the name of the program (on systems
+that support this feature).
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_getarg
+  INTEGER :: i
+  CHARACTER(len=32) :: arg
+
+  DO i = 1, iargc()
+    CALL getarg(i, arg)
+    WRITE (*,*) arg
+  END DO
+END PROGRAM
+@end smallexample
 
 @item @emph{See also}:
-@ref{IARGC}, @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}
+GNU Fortran 77 compability function: @ref{IARGC}
+
+F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
 
 @node GET_COMMAND
-@section @code{GET_COMMAND} --- Subroutine to retrieve the entire command line
+@section @code{GET_COMMAND} --- Get the entire command line
 @findex @code{GET_COMMAND} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex command line arguments
+@cindex getopt
 
 @table @asis
 @item @emph{Description}:
+Retrieve the entire command line that was used to invoke the program.
+
 @item @emph{Standard}:
 F2003
 
 @item @emph{Class}:
+Subroutine
+
 @item @emph{Syntax}:
+@code{CALL GET_COMMAND(CMD)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{CMD} @tab Shall be of type @code{CHARACTER(*)}. 
+@end multitable
+
 @item @emph{Return value}:
+Stores the entire command line that was used to invoke the program in @var{ARG}. 
+If @var{ARG} is not large enough, the command will be truncated. 
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_get_command
+  CHARACTER(len=255) :: cmd
+  CALL get_command(cmd)
+  WRITE (*,*) TRIM(cmd)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
+@ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
 
 @node GET_COMMAND_ARGUMENT
-@section @code{GET_COMMAND_ARGUMENT} --- Subroutine to retrieve a command argument
+@section @code{GET_COMMAND_ARGUMENT} --- Get command line arguments
 @findex @code{GET_COMMAND_ARGUMENT} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex command line arguments
+@cindex getopt
 
 @table @asis
 @item @emph{Description}:
+Retrieve the @var{N}th argument that was passed on the
+command line when the containing program was invoked.
+
 @item @emph{Standard}:
 F2003
 
 @item @emph{Class}:
+Subroutine
+
 @item @emph{Syntax}:
+@code{CALL GET_COMMAND_ARGUMENT(N,ARG)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{N}   @tab Shall of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
+@item @var{ARG} @tab Shall be of type @code{CHARACTER(*)}. 
+@end multitable
+
 @item @emph{Return value}:
+After @code{GET_COMMAND_ARGUMENT} returns, the @var{ARG} argument holds the 
+@var{N}th command line argument. If @var{ARG} can not hold the argument, it is 
+truncated to fit the length of @var{ARG}. If there are less than @var{N}
+arguments specified at the command line, @var{ARG} will be filled with blanks. 
+If @math{@var{N} = 0}, @var{ARG} is set to the name of the program (on systems
+that support this feature).
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_get_command_argument
+  INTEGER :: i
+  CHARACTER(len=32) :: arg
+
+  i = 0
+  DO
+    CALL get_command_argument(i, arg)
+    IF (LEN_TRIM(arg) == 0) EXIT
+
+    WRITE (*,*) TRIM(arg)
+    i = i+1
+  END DO
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
-@ref{COMMAND_ARGUMENT_COUNT}
+@ref{GET_COMMAND}, @ref{COMMAND_ARGUMENT_COUNT}
 @end table
 
 
@@ -3936,21 +4045,46 @@ END PROGRAM
 @node GETENV
 @section @code{GETENV} --- Get an environmental variable
 @findex @code{GETENV} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex environment variable
 
 @table @asis
 @item @emph{Description}:
+Get the @var{VALUE} of the environmental variable @var{ENVVAR}.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  In new code, programmers should consider the use of 
+the @ref{GET_ENVIRONMENT_VARIABLE} intrinsic defined by the Fortran
+2003 standard.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Subroutine
+
 @item @emph{Syntax}:
+@code{CALL GETENV(ENVVAR,VALUE)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{ENVVAR} @tab Shall be of type @code{CHARACTER(*)}. 
+@item @var{VALUE}  @tab Shall be of type @code{CHARACTER(*)}. 
+@end multitable
+
 @item @emph{Return value}:
+Stores the value of @var{ENVVAR} in @var{VALUE}. If @var{VALUE} is 
+not large enough to hold the data, it is truncated. If @var{ENVVAR}
+is not set, @var{VALUE} will be filled with blanks.
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_getenv
+  CHARACTER(len=255) :: homedir
+  CALL getenv("HOME", homedir)
+  WRITE (*,*) TRIM(homedir)
+END PROGRAM
+@end smallexample
+
 @item @emph{See also}:
 @ref{GET_ENVIRONMENT_VARIABLE}
 @end table
@@ -3960,12 +4094,12 @@ GNU extension
 @node GET_ENVIRONMENT_VARIABLE
 @section @code{GET_ENVIRONMENT_VARIABLE} --- Get an environmental variable
 @findex @code{GET_ENVIRONMENT_VARIABLE} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex environment variable
 
 @table @asis
 @item @emph{Description}:
+Get the @var{VALUE} of the environmental variable @var{ENVVAR}.
+
 @item @emph{Standard}:
 F2003
 
@@ -3973,11 +4107,27 @@ F2003
 Subroutine
 
 @item @emph{Syntax}:
+@code{CALL GET_ENVIRONMENT_VARIABLE(ENVVAR,VALUE)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{ENVVAR} @tab Shall be of type @code{CHARACTER(*)}. 
+@item @var{VALUE}  @tab Shall be of type @code{CHARACTER(*)}. 
+@end multitable
+
 @item @emph{Return value}:
+Stores the value of @var{ENVVAR} in @var{VALUE}. If @var{VALUE} is 
+not large enough to hold the data, it is truncated. If @var{ENVVAR}
+is not set, @var{VALUE} will be filled with blanks.
+
 @item @emph{Example}:
-@item @emph{Specific names}:
-@item @emph{See also}:
+@smallexample
+PROGRAM test_getenv
+  CHARACTER(len=255) :: homedir
+  CALL get_environment_variable("HOME", homedir)
+  WRITE (*,*) TRIM(homedir)
+END PROGRAM
+@end smallexample
 @end table
 
 
@@ -4130,7 +4280,6 @@ Subroutine
 @item @emph{Example}:
 @item @emph{Specific names}:
 @item @emph{See also}:
-@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
 
 @end table
 
@@ -4245,10 +4394,10 @@ end program test_iachar
 @findex @code{IAND} intrinsic
 @cindex bit operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+Bitwise logical @code{AND}.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -4256,10 +4405,25 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
+@code{RESULT = IAND(X, Y)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{INTEGER(*)}.
+@item @var{Y} @tab The type shall be @code{INTEGER(*)}.
+@end multitable
+
 @item @emph{Return value}:
+The return type is @code{INTEGER(*)} after cross-promotion of the arguments. 
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+@smallexample
+PROGRAM test_iand
+  INTEGER :: a, b
+  DATA a / Z'F' /, b / Z'3' /
+  WRITE (*,*) IAND(a, b)
+END PROGRAM
+@end smallexample
 
 @item @emph{See also}:
 @ref{IOR}, @ref{IEOR}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR},
@@ -4267,30 +4431,45 @@ Elemental function
 
 
 
-
 @node IARGC
-@section @code{IARGC} --- Get number of command line arguments
+@section @code{IARGC} --- Get the number of command line arguments
 @findex @code{IARGC} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
+@cindex command line arguments
+@cindex getopt
 
 @table @asis
 @item @emph{Description}:
+@code{IARGC()} returns the number of arguments passed on the
+command line when the containing program was invoked.
+
+This intrinsic routine is provided for backwards compatibility with 
+GNU Fortran 77.  In new code, programmers should consider the use of 
+the @ref{COMMAND_ARGUMENT_COUNT} intrinsic defined by the Fortran 2003 
+standard.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Non-elemental Function
+
 @item @emph{Syntax}:
+@code{I = IARGC()}
+
 @item @emph{Arguments}:
+None.
+
 @item @emph{Return value}:
+The number of command line arguments, type @code{INTEGER(4)}.
+
 @item @emph{Example}:
-@item @emph{Specific names}:
+See @ref{GETARG}
+
 @item @emph{See also}:
-@ref{GETARG}, @ref{GET_COMMAND}, @ref{COMMAND_ARGUMENT_COUNT}, @ref{GET_COMMAND_ARGUMENT}
+GNU Fortran 77 compability subroutine: @ref{GETARG}
 
+F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
 @end table
-
 
 
 
@@ -5299,8 +5478,44 @@ Function
 @item @emph{Example}:
 @item @emph{Specific names}:
 @item @emph{See also}:
-@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
 
+@end table
+
+
+@node LSTAT
+@section @code{LSTAT} --- Get file status
+@findex @code{LSTAT} intrinsic
+@cindex file system operations 
+
+@table @asis
+@item @emph{Description}:
+@code{LSTAT} is identical to @ref{STAT}, except that if path is a symbolic link, 
+then the link itself is statted, not the file that it refers to.
+
+The elements in @code{BUFF} are the same as described by @ref{STAT}.
+
+@item @emph{Standard}:
+GNU extension
+
+@item @emph{Class}:
+Non-elemental subroutine
+
+@item @emph{Syntax}:
+@code{CALL LSTAT(FILE,BUFF[,STATUS])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{FILE}   @tab The type shall be @code{CHARACTER(*)}, a valid path within the file system.
+@item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
+                        on success and a system specific error code otherwise.
+@end multitable
+
+@item @emph{Example}:
+See @ref{STAT} for an example.
+
+@item @emph{See also}:
+To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
 @end table
 
 
@@ -5327,7 +5542,6 @@ Subroutine
 @item @emph{Example}:
 @item @emph{Specific names}:
 @item @emph{See also}:
-@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
 
 @end table
 
@@ -6650,7 +6864,6 @@ Function
 @item @emph{Return value}:
 @item @emph{Example}:
 @item @emph{See also}:
-@uref{http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19292, g77 features lacking in gfortran}
 
 @end table
 
@@ -7374,22 +7587,79 @@ pseudo-random number generators.
 @findex @code{STAT} intrinsic
 @cindex file system operations
 
-Intrinsic implemented, documentation pending.
-
 @table @asis
 @item @emph{Description}:
+This function returns information about a file. No permissions are required on 
+the file itself, but execute (search) permission is required on all of the 
+directories in path that lead to the file.
+
+The elements that are obtained and stored in the array @code{BUFF}:
+@multitable @columnfractions .15 .80
+@item @code{buff(1)}   @tab  Device ID 
+@item @code{buff(2)}   @tab  Inode number 
+@item @code{buff(3)}   @tab  File mode 
+@item @code{buff(4)}   @tab  Number of links 
+@item @code{buff(5)}   @tab  Owner's uid 
+@item @code{buff(6)}   @tab  Owner's gid 
+@item @code{buff(7)}   @tab  ID of device containing directory entry for file (0 if not available) 
+@item @code{buff(8)}   @tab  File size (bytes) 
+@item @code{buff(9)}   @tab  Last access time 
+@item @code{buff(10)}  @tab  Last modification time 
+@item @code{buff(11)}  @tab  Last file status change time 
+@item @code{buff(12)}  @tab  Preferred I/O block size (-1 if not available) 
+@item @code{buff(13)}  @tab  Number of blocks allocated (-1 if not available)
+@end multitable
+
+Not all these elements are relevant on all systems. 
+If an element is not relevant, it is returned as 0.
+
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-@item @emph{Syntax}:
-@item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{See also}:
-@ref{FSTAT}
-@end table
+Non-elemental subroutine
 
+@item @emph{Syntax}:
+@code{CALL STAT(FILE,BUFF[,STATUS])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{FILE}   @tab The type shall be @code{CHARACTER(*)}, a valid path within the file system.
+@item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
+@item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
+                        on success and a system specific error code otherwise.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_fstat
+  INTEGER, DIMENSION(13) :: buff
+  INTEGER :: status
+
+  CALL STAT("/etc/passwd", statarr, status)
+
+  IF (status == 0) THEN
+    WRITE (*, FMT="('Device ID:',                         T40, I19)") buff(1)
+    WRITE (*, FMT="('Inode number:',                      T40, I19)") buff(2)
+    WRITE (*, FMT="('File mode:',                         T40, o19)") buff(3)
+    WRITE (*, FMT="('Number of links:',                   T40, I19)") buff(4)
+    WRITE (*, FMT="('Owner''s uid:',                      T40, I19)") buff(5)
+    WRITE (*, FMT="('Owner''s gid:',                      T40, I19)") buff(6)
+    WRITE (*, FMT="('Device where directory is located:', T40, I19)") buff(7)
+    WRITE (*, FMT="('File size:',                         T40, I19)") buff(8)
+    WRITE (*, FMT="('Last access time:',                  T40, A19)") CTIME(buff(9))
+    WRITE (*, FMT="('Last modification time',             T40, A19)") CTIME(buff(10))
+    WRITE (*, FMT="('Last file status change time:',      T40, A19)") CTIME(buff(11))
+    WRITE (*, FMT="('Preferred I/O block size:',          T40, I19)") buff(12)
+    WRITE (*, FMT="('Number of blocks allocated:',        T40, I19)") buff(13)
+  END IF
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+To stat an open file: @ref{FSTAT}, to stat a link: @ref{LSTAT}
+@end table
 
 
 
