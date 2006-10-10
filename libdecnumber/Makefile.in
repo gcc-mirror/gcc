@@ -132,6 +132,7 @@ maintainer-clean: distclean
 check:
 installcheck:
 dvi:
+pdf:
 html:
 info:
 install-info:
@@ -140,7 +141,7 @@ install-html:
 install:
 
 .PHONY: installdirs install install-strip mostlyclean clean distclean \
-  maintainer-clean check installcheck dvi html info install-info \
+  maintainer-clean check installcheck dvi pdf html info install-info \
   install-man update-po install-html
 
 COMPILE = source='$<' object='$@' libtool=no $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c

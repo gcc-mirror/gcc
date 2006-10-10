@@ -1,3 +1,10 @@
+2006-10-10  Brooks Moses  <bmoses@stanford.edu>
+
+	* configure.ac: Added pdf to "Make-hooks"
+	* Makefile.in: Added TEXI2PDF definition, and various pdf-file
+	targets and *.pdf file patterns in cleanup targets.
+	* configure: Regenerated.
+
 2006-10-10  Anatoly Sokolov <aesok@post.ru>
 
 	* config/avr/predicates.md: New file.

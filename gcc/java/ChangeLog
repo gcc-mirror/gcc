@@ -1,3 +1,7 @@
+2006-10-10  Brooks Moses  <bmoses@stanford.edu>
+
+	* Make-lang.in: Added "java.pdf", "gcj.pdf" target support.
+
 2006-09-12  Tom Tromey  <tromey@redhat.com>
 
 	* expr.c (push_value): Always flush quick stack.

@@ -1,3 +1,7 @@
+2006-10-10  Brooks Moses  <bmoses@stanford.edu>
+
+	* Make-lang.in: Added empty "obj-c++.pdf" target.
+
 2006-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* objcp-lang.c (objcp_tsubst_copy_and_build): Adjust call to

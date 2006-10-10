@@ -302,6 +302,9 @@ info:
 # Build DVI (none here).
 dvi:
 
+# Build PDF (none here).
+pdf:
+
 # Build HTML (none here).
 html:
 

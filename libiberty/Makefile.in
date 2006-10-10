@@ -245,6 +245,7 @@ info: libiberty.info info-subdir
 install-info: install-info-subdir
 clean-info: clean-info-subdir
 dvi: libiberty.dvi dvi-subdir
+pdf: libiberty.pdf pdf-subdir
 
 # html, install-html targets
 HTMLS = libiberty.html
@@ -318,6 +319,9 @@ libiberty.info : $(srcdir)/libiberty.texi $(TEXISRC)
 
 libiberty.dvi : $(srcdir)/libiberty.texi $(TEXISRC)
 	texi2dvi $(srcdir)/libiberty.texi
+
+libiberty.pdf : $(srcdir)/libiberty.texi $(TEXISRC)
+	texi2pdf $(srcdir)/libiberty.texi
 
 libiberty.html : $(srcdir)/libiberty.texi $(TEXISRC)
 	$(MAKEINFO) --no-split --html -I$(srcdir) -o $@ $<
@@ -434,7 +438,7 @@ mostlyclean: mostlyclean-subdir
 clean: clean-subdir
 	$(MAKE) SUBDIRS="" mostlyclean
 	-rm -f *.a required-list tmpmulti.out
-	-rm -f libiberty.dvi libiberty.info* libiberty.html
+	-rm -f libiberty.dvi libiberty.pdf libiberty.info* libiberty.html
 	@$(MULTICLEAN) multi-clean DO=clean
 distclean: distclean-subdir
 	$(MAKE) SUBDIRS="" clean
@@ -463,7 +467,7 @@ config.status: $(srcdir)/configure
 # if needed.  This prevents problems with parallel builds, in case
 # subdirectories need to run config.status also.
 all-subdir check-subdir installcheck-subdir info-subdir	\
-install-info-subdir clean-info-subdir dvi-subdir install-subdir	\
+install-info-subdir clean-info-subdir dvi-subdir pdf-subdir install-subdir	\
 etags-subdir mostlyclean-subdir clean-subdir distclean-subdir \
 maintainer-clean-subdir: config.h
 	@subdirs='$(SUBDIRS)'; \
