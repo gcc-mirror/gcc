@@ -1307,12 +1307,16 @@ please contact a project maintainer.
 @chapter Standards
 @cindex Standards
 
-The GNU Fortran compiler aims to be a conforming implementation of
-ISO/IEC 1539:1997 (Fortran 95).
+The GNU Fortran compiler implements
+ISO/IEC 1539:1997 (Fortran 95).  As such, it can also compile essentially all
+standard-compliant Fortran 90 and Fortran 77 programs.   It also supports
+the ISO/IEC TR-15581 enhancements to allocatable arrays, and
+the @uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
+OpenMP Application Program Interface v2.5} specification.
 
-In the future it may also support other variants of and extensions to
-the Fortran language.  These include ANSI Fortran 77, ISO Fortran 90,
-ISO Fortran 2003 and OpenMP.
+In the future, the GNU Fortran compiler may also support other standard 
+variants of and extensions to the Fortran language.  These include
+ISO/IEC 1539-1:2004 (Fortran 2003).
 
 @menu
 * Fortran 2003 status::
