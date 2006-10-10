@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS CCAS CCASFLAGS LN_S RANLIB ac_ct_RANLIB LIBTOOL MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CPP CPPFLAGS EGREP TESTSUBDIR_TRUE TESTSUBDIR_FALSE AM_RUNTESTFLAGS MIPS_IRIX_TRUE MIPS_IRIX_FALSE MIPS_LINUX_TRUE MIPS_LINUX_FALSE SPARC_TRUE SPARC_FALSE X86_TRUE X86_FALSE X86_WIN32_TRUE X86_WIN32_FALSE ALPHA_TRUE ALPHA_FALSE IA64_TRUE IA64_FALSE M32R_TRUE M32R_FALSE M68K_TRUE M68K_FALSE POWERPC_TRUE POWERPC_FALSE POWERPC_AIX_TRUE POWERPC_AIX_FALSE POWERPC_DARWIN_TRUE POWERPC_DARWIN_FALSE POWERPC_FREEBSD_TRUE POWERPC_FREEBSD_FALSE ARM_TRUE ARM_FALSE LIBFFI_CRIS_TRUE LIBFFI_CRIS_FALSE FRV_TRUE FRV_FALSE S390_TRUE S390_FALSE X86_64_TRUE X86_64_FALSE SH_TRUE SH_FALSE SH64_TRUE SH64_FALSE PA_LINUX_TRUE PA_LINUX_FALSE PA_HPUX_TRUE PA_HPUX_FALSE PA64_HPUX_TRUE PA64_HPUX_FALSE ALLOCA HAVE_LONG_DOUBLE TARGET TARGETDIR toolexecdir toolexeclibdir LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CFLAGS CCAS CCASFLAGS LN_S RANLIB ac_ct_RANLIB LIBTOOL MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CPP CPPFLAGS EGREP TESTSUBDIR_TRUE TESTSUBDIR_FALSE AM_RUNTESTFLAGS MIPS_IRIX_TRUE MIPS_IRIX_FALSE MIPS_LINUX_TRUE MIPS_LINUX_FALSE SPARC_TRUE SPARC_FALSE X86_TRUE X86_FALSE X86_WIN32_TRUE X86_WIN32_FALSE X86_DARWIN_TRUE X86_DARWIN_FALSE ALPHA_TRUE ALPHA_FALSE IA64_TRUE IA64_FALSE M32R_TRUE M32R_FALSE M68K_TRUE M68K_FALSE POWERPC_TRUE POWERPC_FALSE POWERPC_AIX_TRUE POWERPC_AIX_FALSE POWERPC_DARWIN_TRUE POWERPC_DARWIN_FALSE POWERPC_FREEBSD_TRUE POWERPC_FREEBSD_FALSE ARM_TRUE ARM_FALSE LIBFFI_CRIS_TRUE LIBFFI_CRIS_FALSE FRV_TRUE FRV_FALSE S390_TRUE S390_FALSE X86_64_TRUE X86_64_FALSE SH_TRUE SH_FALSE SH64_TRUE SH64_FALSE PA_LINUX_TRUE PA_LINUX_FALSE PA_HPUX_TRUE PA_HPUX_FALSE PA64_HPUX_TRUE PA64_HPUX_FALSE ALLOCA HAVE_LONG_DOUBLE TARGET TARGETDIR toolexecdir toolexeclibdir LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -5381,6 +5381,7 @@ i*86-*-gnu*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-solaris2.1[0-9]*) TARGET=X86_64; TARGETDIR=x86;;
 i*86-*-solaris*) TARGET=X86; TARGETDIR=x86;;
 i*86-*-beos*) TARGET=X86; TARGETDIR=x86;;
+i*86-*-darwin*) TARGET=X86_DARWIN; TARGETDIR=x86;;
 i*86-*-freebsd* | i*86-*-kfreebsd*-gnu) TARGET=X86; TARGETDIR=x86;;
 i*86-*-netbsdelf* | i*86-*-knetbsd*-gnu) TARGET=X86; TARGETDIR=x86;;
 i*86-*-rtems*) TARGET=X86; TARGETDIR=x86;;
@@ -5478,6 +5479,16 @@ if test x$TARGET = xX86_WIN32; then
 else
   X86_WIN32_TRUE='#'
   X86_WIN32_FALSE=
+fi
+
+
+
+if test x$TARGET = xX86_DARWIN; then
+  X86_DARWIN_TRUE=
+  X86_DARWIN_FALSE='#'
+else
+  X86_DARWIN_TRUE='#'
+  X86_DARWIN_FALSE=
 fi
 
 
@@ -7818,6 +7829,13 @@ echo "$as_me: error: conditional \"X86_WIN32\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${X86_DARWIN_TRUE}" && test -z "${X86_DARWIN_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"X86_DARWIN\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"X86_DARWIN\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${ALPHA_TRUE}" && test -z "${ALPHA_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"ALPHA\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -8573,6 +8591,8 @@ s,@X86_TRUE@,$X86_TRUE,;t t
 s,@X86_FALSE@,$X86_FALSE,;t t
 s,@X86_WIN32_TRUE@,$X86_WIN32_TRUE,;t t
 s,@X86_WIN32_FALSE@,$X86_WIN32_FALSE,;t t
+s,@X86_DARWIN_TRUE@,$X86_DARWIN_TRUE,;t t
+s,@X86_DARWIN_FALSE@,$X86_DARWIN_FALSE,;t t
 s,@ALPHA_TRUE@,$ALPHA_TRUE,;t t
 s,@ALPHA_FALSE@,$ALPHA_FALSE,;t t
 s,@IA64_TRUE@,$IA64_TRUE,;t t

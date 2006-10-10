@@ -41,24 +41,25 @@ target_triplet = @target@
 @MIPS_LINUX_TRUE@am__append_2 = src/mips/ffi.c src/mips/o32.S
 @X86_TRUE@am__append_3 = src/x86/ffi.c src/x86/sysv.S
 @X86_WIN32_TRUE@am__append_4 = src/x86/ffi.c src/x86/win32.S
-@SPARC_TRUE@am__append_5 = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
-@ALPHA_TRUE@am__append_6 = src/alpha/ffi.c src/alpha/osf.S
-@IA64_TRUE@am__append_7 = src/ia64/ffi.c src/ia64/unix.S
-@M32R_TRUE@am__append_8 = src/m32r/sysv.S src/m32r/ffi.c
-@M68K_TRUE@am__append_9 = src/m68k/ffi.c src/m68k/sysv.S
-@POWERPC_TRUE@am__append_10 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
-@POWERPC_AIX_TRUE@am__append_11 = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
-@POWERPC_DARWIN_TRUE@am__append_12 = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
-@POWERPC_FREEBSD_TRUE@am__append_13 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
-@ARM_TRUE@am__append_14 = src/arm/sysv.S src/arm/ffi.c
-@LIBFFI_CRIS_TRUE@am__append_15 = src/cris/sysv.S src/cris/ffi.c
-@FRV_TRUE@am__append_16 = src/frv/eabi.S src/frv/ffi.c
-@S390_TRUE@am__append_17 = src/s390/sysv.S src/s390/ffi.c
-@X86_64_TRUE@am__append_18 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
-@SH_TRUE@am__append_19 = src/sh/sysv.S src/sh/ffi.c
-@SH64_TRUE@am__append_20 = src/sh64/sysv.S src/sh64/ffi.c
-@PA_LINUX_TRUE@am__append_21 = src/pa/linux.S src/pa/ffi.c
-@PA_HPUX_TRUE@am__append_22 = src/pa/hpux32.S src/pa/ffi.c
+@X86_DARWIN_TRUE@am__append_5 = src/x86/ffi.c src/x86/darwin.S
+@SPARC_TRUE@am__append_6 = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
+@ALPHA_TRUE@am__append_7 = src/alpha/ffi.c src/alpha/osf.S
+@IA64_TRUE@am__append_8 = src/ia64/ffi.c src/ia64/unix.S
+@M32R_TRUE@am__append_9 = src/m32r/sysv.S src/m32r/ffi.c
+@M68K_TRUE@am__append_10 = src/m68k/ffi.c src/m68k/sysv.S
+@POWERPC_TRUE@am__append_11 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
+@POWERPC_AIX_TRUE@am__append_12 = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
+@POWERPC_DARWIN_TRUE@am__append_13 = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
+@POWERPC_FREEBSD_TRUE@am__append_14 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
+@ARM_TRUE@am__append_15 = src/arm/sysv.S src/arm/ffi.c
+@LIBFFI_CRIS_TRUE@am__append_16 = src/cris/sysv.S src/cris/ffi.c
+@FRV_TRUE@am__append_17 = src/frv/eabi.S src/frv/ffi.c
+@S390_TRUE@am__append_18 = src/s390/sysv.S src/s390/ffi.c
+@X86_64_TRUE@am__append_19 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
+@SH_TRUE@am__append_20 = src/sh/sysv.S src/sh/ffi.c
+@SH64_TRUE@am__append_21 = src/sh64/sysv.S src/sh64/ffi.c
+@PA_LINUX_TRUE@am__append_22 = src/pa/linux.S src/pa/ffi.c
+@PA_HPUX_TRUE@am__append_23 = src/pa/hpux32.S src/pa/ffi.c
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -95,35 +96,36 @@ am_libffi_la_OBJECTS = src/debug.lo src/prep_cif.lo src/types.lo \
 @MIPS_LINUX_TRUE@am__objects_2 = src/mips/ffi.lo src/mips/o32.lo
 @X86_TRUE@am__objects_3 = src/x86/ffi.lo src/x86/sysv.lo
 @X86_WIN32_TRUE@am__objects_4 = src/x86/ffi.lo src/x86/win32.lo
-@SPARC_TRUE@am__objects_5 = src/sparc/ffi.lo src/sparc/v8.lo \
+@X86_DARWIN_TRUE@am__objects_5 = src/x86/ffi.lo src/x86/darwin.lo
+@SPARC_TRUE@am__objects_6 = src/sparc/ffi.lo src/sparc/v8.lo \
 @SPARC_TRUE@	src/sparc/v9.lo
-@ALPHA_TRUE@am__objects_6 = src/alpha/ffi.lo src/alpha/osf.lo
-@IA64_TRUE@am__objects_7 = src/ia64/ffi.lo src/ia64/unix.lo
-@M32R_TRUE@am__objects_8 = src/m32r/sysv.lo src/m32r/ffi.lo
-@M68K_TRUE@am__objects_9 = src/m68k/ffi.lo src/m68k/sysv.lo
-@POWERPC_TRUE@am__objects_10 = src/powerpc/ffi.lo src/powerpc/sysv.lo \
+@ALPHA_TRUE@am__objects_7 = src/alpha/ffi.lo src/alpha/osf.lo
+@IA64_TRUE@am__objects_8 = src/ia64/ffi.lo src/ia64/unix.lo
+@M32R_TRUE@am__objects_9 = src/m32r/sysv.lo src/m32r/ffi.lo
+@M68K_TRUE@am__objects_10 = src/m68k/ffi.lo src/m68k/sysv.lo
+@POWERPC_TRUE@am__objects_11 = src/powerpc/ffi.lo src/powerpc/sysv.lo \
 @POWERPC_TRUE@	src/powerpc/ppc_closure.lo \
 @POWERPC_TRUE@	src/powerpc/linux64.lo \
 @POWERPC_TRUE@	src/powerpc/linux64_closure.lo
-@POWERPC_AIX_TRUE@am__objects_11 = src/powerpc/ffi_darwin.lo \
+@POWERPC_AIX_TRUE@am__objects_12 = src/powerpc/ffi_darwin.lo \
 @POWERPC_AIX_TRUE@	src/powerpc/aix.lo \
 @POWERPC_AIX_TRUE@	src/powerpc/aix_closure.lo
-@POWERPC_DARWIN_TRUE@am__objects_12 = src/powerpc/ffi_darwin.lo \
+@POWERPC_DARWIN_TRUE@am__objects_13 = src/powerpc/ffi_darwin.lo \
 @POWERPC_DARWIN_TRUE@	src/powerpc/darwin.lo \
 @POWERPC_DARWIN_TRUE@	src/powerpc/darwin_closure.lo
-@POWERPC_FREEBSD_TRUE@am__objects_13 = src/powerpc/ffi.lo \
+@POWERPC_FREEBSD_TRUE@am__objects_14 = src/powerpc/ffi.lo \
 @POWERPC_FREEBSD_TRUE@	src/powerpc/sysv.lo \
 @POWERPC_FREEBSD_TRUE@	src/powerpc/ppc_closure.lo
-@ARM_TRUE@am__objects_14 = src/arm/sysv.lo src/arm/ffi.lo
-@LIBFFI_CRIS_TRUE@am__objects_15 = src/cris/sysv.lo src/cris/ffi.lo
-@FRV_TRUE@am__objects_16 = src/frv/eabi.lo src/frv/ffi.lo
-@S390_TRUE@am__objects_17 = src/s390/sysv.lo src/s390/ffi.lo
-@X86_64_TRUE@am__objects_18 = src/x86/ffi64.lo src/x86/unix64.lo \
+@ARM_TRUE@am__objects_15 = src/arm/sysv.lo src/arm/ffi.lo
+@LIBFFI_CRIS_TRUE@am__objects_16 = src/cris/sysv.lo src/cris/ffi.lo
+@FRV_TRUE@am__objects_17 = src/frv/eabi.lo src/frv/ffi.lo
+@S390_TRUE@am__objects_18 = src/s390/sysv.lo src/s390/ffi.lo
+@X86_64_TRUE@am__objects_19 = src/x86/ffi64.lo src/x86/unix64.lo \
 @X86_64_TRUE@	src/x86/ffi.lo src/x86/sysv.lo
-@SH_TRUE@am__objects_19 = src/sh/sysv.lo src/sh/ffi.lo
-@SH64_TRUE@am__objects_20 = src/sh64/sysv.lo src/sh64/ffi.lo
-@PA_LINUX_TRUE@am__objects_21 = src/pa/linux.lo src/pa/ffi.lo
-@PA_HPUX_TRUE@am__objects_22 = src/pa/hpux32.lo src/pa/ffi.lo
+@SH_TRUE@am__objects_20 = src/sh/sysv.lo src/sh/ffi.lo
+@SH64_TRUE@am__objects_21 = src/sh64/sysv.lo src/sh64/ffi.lo
+@PA_LINUX_TRUE@am__objects_22 = src/pa/linux.lo src/pa/ffi.lo
+@PA_HPUX_TRUE@am__objects_23 = src/pa/hpux32.lo src/pa/ffi.lo
 nodist_libffi_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
 	$(am__objects_6) $(am__objects_7) $(am__objects_8) \
@@ -131,22 +133,22 @@ nodist_libffi_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_12) $(am__objects_13) $(am__objects_14) \
 	$(am__objects_15) $(am__objects_16) $(am__objects_17) \
 	$(am__objects_18) $(am__objects_19) $(am__objects_20) \
-	$(am__objects_21) $(am__objects_22)
+	$(am__objects_21) $(am__objects_22) $(am__objects_23)
 libffi_la_OBJECTS = $(am_libffi_la_OBJECTS) \
 	$(nodist_libffi_la_OBJECTS)
 libffi_convenience_la_LIBADD =
-am__objects_23 = src/debug.lo src/prep_cif.lo src/types.lo \
+am__objects_24 = src/debug.lo src/prep_cif.lo src/types.lo \
 	src/raw_api.lo src/java_raw_api.lo
-am_libffi_convenience_la_OBJECTS = $(am__objects_23)
-am__objects_24 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
+am_libffi_convenience_la_OBJECTS = $(am__objects_24)
+am__objects_25 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
 	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
 	$(am__objects_16) $(am__objects_17) $(am__objects_18) \
 	$(am__objects_19) $(am__objects_20) $(am__objects_21) \
-	$(am__objects_22)
-nodist_libffi_convenience_la_OBJECTS = $(am__objects_24)
+	$(am__objects_22) $(am__objects_23)
+nodist_libffi_convenience_la_OBJECTS = $(am__objects_25)
 libffi_convenience_la_OBJECTS = $(am_libffi_convenience_la_OBJECTS) \
 	$(nodist_libffi_convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
@@ -232,6 +234,7 @@ F77 = @F77@
 FFLAGS = @FFLAGS@
 FRV_FALSE = @FRV_FALSE@
 FRV_TRUE = @FRV_TRUE@
+GREP = @GREP@
 HAVE_LONG_DOUBLE = @HAVE_LONG_DOUBLE@
 IA64_FALSE = @IA64_FALSE@
 IA64_TRUE = @IA64_TRUE@
@@ -300,16 +303,15 @@ TESTSUBDIR_TRUE = @TESTSUBDIR_TRUE@
 VERSION = @VERSION@
 X86_64_FALSE = @X86_64_FALSE@
 X86_64_TRUE = @X86_64_TRUE@
+X86_DARWIN_FALSE = @X86_DARWIN_FALSE@
+X86_DARWIN_TRUE = @X86_DARWIN_TRUE@
 X86_FALSE = @X86_FALSE@
 X86_TRUE = @X86_TRUE@
 X86_WIN32_FALSE = @X86_WIN32_FALSE@
 X86_WIN32_TRUE = @X86_WIN32_TRUE@
-ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_F77 = @ac_ct_F77@
-ac_ct_RANLIB = @ac_ct_RANLIB@
-ac_ct_STRIP = @ac_ct_STRIP@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -326,24 +328,31 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
+datarootdir = @datarootdir@
+docdir = @docdir@
+dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
 host_os = @host_os@
 host_vendor = @host_vendor@
+htmldir = @htmldir@
 includedir = @includedir@
 infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
+localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
+pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
+psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
@@ -376,7 +385,7 @@ EXTRA_DIST = LICENSE ChangeLog.v1 \
 	src/sh64/ffi.c src/sh64/sysv.S src/sh64/ffitarget.h \
 	src/sparc/v8.S src/sparc/v9.S src/sparc/ffitarget.h \
 	src/sparc/ffi.c \
-	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S \
+	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S src/x86/darwin.S \
 	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h \
 	src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
 	src/frv/eabi.S src/frv/ffitarget.h
@@ -432,7 +441,7 @@ nodist_libffi_la_SOURCES = $(am__append_1) $(am__append_2) \
 	$(am__append_12) $(am__append_13) $(am__append_14) \
 	$(am__append_15) $(am__append_16) $(am__append_17) \
 	$(am__append_18) $(am__append_19) $(am__append_20) \
-	$(am__append_21) $(am__append_22)
+	$(am__append_21) $(am__append_22) $(am__append_23)
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 AM_CFLAGS = -Wall -g -fexceptions
@@ -564,6 +573,8 @@ src/x86/ffi.lo: src/x86/$(am__dirstamp) \
 src/x86/sysv.lo: src/x86/$(am__dirstamp) \
 	src/x86/$(DEPDIR)/$(am__dirstamp)
 src/x86/win32.lo: src/x86/$(am__dirstamp) \
+	src/x86/$(DEPDIR)/$(am__dirstamp)
+src/x86/darwin.lo: src/x86/$(am__dirstamp) \
 	src/x86/$(DEPDIR)/$(am__dirstamp)
 src/sparc/$(am__dirstamp):
 	@$(mkdir_p) src/sparc
@@ -812,6 +823,8 @@ mostlyclean-compile:
 	-rm -f src/sparc/v9.lo
 	-rm -f src/types.$(OBJEXT)
 	-rm -f src/types.lo
+	-rm -f src/x86/darwin.$(OBJEXT)
+	-rm -f src/x86/darwin.lo
 	-rm -f src/x86/ffi.$(OBJEXT)
 	-rm -f src/x86/ffi.lo
 	-rm -f src/x86/ffi64.$(OBJEXT)

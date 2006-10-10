@@ -115,7 +115,10 @@ ffi_status ffi_prep_cif(ffi_cif *cif, ffi_abi abi, unsigned int nargs,
 #ifdef SPARC
       && (cif->abi != FFI_V9 || cif->rtype->size > 32)
 #endif
-      )
+#ifdef X86_DARWIN
+      && (cif->rtype->size > 8)
+#endif
+     )
     bytes = STACK_ARG_SIZE(sizeof(void*));
 #endif
 

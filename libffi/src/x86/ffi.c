@@ -119,7 +119,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   switch (cif->rtype->type)
     {
     case FFI_TYPE_VOID:
-#ifndef X86_WIN32
+#ifdef X86
     case FFI_TYPE_STRUCT:
 #endif
     case FFI_TYPE_SINT64:
@@ -133,7 +133,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       cif->flags = FFI_TYPE_SINT64;
       break;
 
-#ifdef X86_WIN32
+#ifndef X86
     case FFI_TYPE_STRUCT:
       if (cif->rtype->size == 1)
         {
@@ -162,6 +162,10 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       cif->flags = FFI_TYPE_INT;
       break;
     }
+
+#ifdef X86_DARWIN
+  cif->bytes = (cif->bytes + 15) & ~0xF;
+#endif
 
   return FFI_OK;
 }
