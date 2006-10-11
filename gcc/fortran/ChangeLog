@@ -1,5 +1,9 @@
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
+	* invoke.texi, gfortran.texi: Corrected erronous dashes.
+
+2006-10-10  Brooks Moses  <bmoses@stanford.edu>
+
 	* Make-lang.in: Added "fortran.pdf", "gfortran.pdf" target
 	support.
 
