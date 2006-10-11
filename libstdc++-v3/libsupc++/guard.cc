@@ -32,6 +32,7 @@
 #include <bits/c++config.h>
 #include <cxxabi.h>
 #include <exception>
+#include <new>
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
 
@@ -43,7 +44,22 @@
 namespace
 {
   // A single mutex controlling all static initializations.
-  __gnu_cxx::__recursive_mutex static_mutex;
+  static __gnu_cxx::__recursive_mutex* static_mutex;  
+
+  typedef char fake_recursive_mutex[sizeof(__gnu_cxx::__recursive_mutex)]
+  __attribute__ ((aligned(__alignof__(__gnu_cxx::__recursive_mutex))));
+  fake_recursive_mutex fake_mutex;
+
+  static void init()
+  { static_mutex =  new (&fake_mutex) __gnu_cxx::__recursive_mutex(); }
+
+  __gnu_cxx::__recursive_mutex&
+  get_static_mutex()
+  {
+    static __gthread_once_t once = __GTHREAD_ONCE_INIT;
+    __gthread_once(&once, init);
+    return *static_mutex;
+  }
 }
 
 #ifndef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
@@ -98,18 +114,14 @@ namespace __cxxabiv1
 {
   static inline int
   recursion_push (__guard* g)
-  {
-    return ((char *)g)[1]++;
-  }
+  { return ((char *)g)[1]++; }
 
   static inline void
   recursion_pop (__guard* g)
-  {
-    --((char *)g)[1];
-  }
+  { --((char *)g)[1]; }
 
   static int
-  acquire_1 (__guard *g)
+  acquire (__guard *g)
   {
     if (_GLIBCXX_GUARD_TEST (g))
       return 0;
@@ -142,18 +154,18 @@ namespace __cxxabiv1
 	struct mutex_wrapper
 	{
 	  bool unlock;
-	  mutex_wrapper (): unlock(true)
-	  {
-	    static_mutex.lock();
-	  }
-	  ~mutex_wrapper ()
+	  mutex_wrapper() : unlock(true)
+	  { get_static_mutex().lock(); }
+
+	  ~mutex_wrapper()
 	  {
 	    if (unlock)
-	      static_mutex.unlock();
+	      static_mutex->unlock();
 	  }
-	} mw;
+	};
 
-	if (acquire_1 (g))
+	mutex_wrapper mw;
+	if (acquire (g))
 	  {
 	    mw.unlock = false;
 	    return 1;
@@ -163,7 +175,7 @@ namespace __cxxabiv1
       }
 #endif
 
-    return acquire_1 (g);
+    return acquire (g);
   }
 
   extern "C"
@@ -172,7 +184,7 @@ namespace __cxxabiv1
     recursion_pop (g);
 #ifdef __GTHREADS
     if (__gthread_active_p ())
-      static_mutex.unlock();
+      static_mutex->unlock();
 #endif
   }
 
@@ -183,7 +195,7 @@ namespace __cxxabiv1
     _GLIBCXX_GUARD_SET_AND_RELEASE (g);
 #ifdef __GTHREADS
     if (__gthread_active_p ())
-      static_mutex.unlock();
+      static_mutex->unlock();
 #endif
   }
 }

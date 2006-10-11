@@ -1,3 +1,13 @@
+2006-10-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/29426
+	* libsupc++/guard.cc (get_static_mutex): New. 
+	(mutex_wrapper::mutex_wrapper): Use it to get properly initialized
+	recursive mutex without ordering issues.
+
+	* src/locale_init.cc (__get_locale_mutex): No need to
+	uglify. Change to get_locale_mutex.
+	
 2006-10-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/22_locale/num_put/put/char/11.cc: New.
