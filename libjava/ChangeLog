@@ -1,3 +1,8 @@
+2006-10-11  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (install-data-local): Use mkinstalldirs.
+
 2006-10-10  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/classpath/natSystemProperties.cc (insertSystemProperties):
