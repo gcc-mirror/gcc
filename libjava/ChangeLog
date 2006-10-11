@@ -1,3 +1,8 @@
+2006-10-10  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/classpath/natSystemProperties.cc (insertSystemProperties):
+	Removed obsolete comment.
+
 2006-10-10  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-interp.h (_Jv_InterpMethod::get_insn): Declare.
