@@ -37,7 +37,7 @@
 namespace 
 {
   __gnu_cxx::__mutex&
-  __get_locale_mutex()
+  get_locale_mutex()
   {
     static __gnu_cxx::__mutex locale_mutex;
     return locale_mutex;
@@ -212,7 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   locale::locale() throw() : _M_impl(0)
   { 
     _S_initialize();
-    __gnu_cxx::__scoped_lock sentry(__get_locale_mutex());
+    __gnu_cxx::__scoped_lock sentry(get_locale_mutex());
     _S_global->_M_add_reference();
     _M_impl = _S_global;
   }
@@ -223,7 +223,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _S_initialize();
     _Impl* __old;
     {
-      __gnu_cxx::__scoped_lock sentry(__get_locale_mutex());
+      __gnu_cxx::__scoped_lock sentry(get_locale_mutex());
       __old = _S_global;
       __other._M_impl->_M_add_reference();
       _S_global = __other._M_impl;
