@@ -1,3 +1,16 @@
+2006-10-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (gfc_show_actual_arglist, gfc_show_array_ref,
+	gfc_show_array_spec, gfc_show_attr, gfc_show_code,
+	gfc_show_components, gfc_show_constructor, gfc_show_equiv,
+	gfc_show_expr, gfc_show_namelist, gfc_show_ref, gfc_show_symbol,
+	gfc_show_typespec): Add prototypes.
+	* dump-parse-tree.c (gfc_show_actual_arglist, gfc_show_array_ref,
+	gfc_show_array_spec, gfc_show_attr, gfc_show_code,
+	gfc_show_components, gfc_show_constructor, gfc_show_equiv,
+	gfc_show_expr, gfc_show_namelist, gfc_show_ref, gfc_show_symbol,
+	gfc_show_typespec): Remove 'static' from declaration.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* invoke.texi, gfortran.texi: Corrected erronous dashes.

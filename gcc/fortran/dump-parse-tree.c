@@ -37,11 +37,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* Keep track of indentation for symbol tree dumps.  */
 static int show_level = 0;
 
-
-/* Forward declaration because this one needs all, and all need
-   this one.  */
-static void gfc_show_expr (gfc_expr *);
-
 /* Do indentation for a specific level.  */
 
 static inline void
@@ -72,7 +67,7 @@ show_indent (void)
 
 /* Show type-specific information.  */
 
-static void
+void
 gfc_show_typespec (gfc_typespec * ts)
 {
 
@@ -99,7 +94,7 @@ gfc_show_typespec (gfc_typespec * ts)
 
 /* Show an actual argument list.  */
 
-static void
+void
 gfc_show_actual_arglist (gfc_actual_arglist * a)
 {
 
@@ -126,7 +121,7 @@ gfc_show_actual_arglist (gfc_actual_arglist * a)
 
 /* Show a gfc_array_spec array specification structure.  */
 
-static void
+void
 gfc_show_array_spec (gfc_array_spec * as)
 {
   const char *c;
@@ -169,7 +164,7 @@ gfc_show_array_spec (gfc_array_spec * as)
 
 /* Show a gfc_array_ref array reference structure.  */
 
-static void
+void
 gfc_show_array_ref (gfc_array_ref * ar)
 {
   int i;
@@ -237,7 +232,7 @@ gfc_show_array_ref (gfc_array_ref * ar)
 
 /* Show a list of gfc_ref structures.  */
 
-static void
+void
 gfc_show_ref (gfc_ref * p)
 {
 
@@ -268,7 +263,7 @@ gfc_show_ref (gfc_ref * p)
 
 /* Display a constructor.  Works recursively for array constructors.  */
 
-static void
+void
 gfc_show_constructor (gfc_constructor * c)
 {
 
@@ -301,7 +296,7 @@ gfc_show_constructor (gfc_constructor * c)
 
 /* Show an expression.  */
 
-static void
+void
 gfc_show_expr (gfc_expr * p)
 {
   const char *c;
@@ -534,7 +529,7 @@ gfc_show_expr (gfc_expr * p)
 /* Show symbol attributes.  The flavor and intent are followed by
    whatever single bit attributes are present.  */
 
-static void
+void
 gfc_show_attr (symbol_attribute * attr)
 {
 
@@ -599,7 +594,7 @@ gfc_show_attr (symbol_attribute * attr)
 
 /* Show components of a derived type.  */
 
-static void
+void
 gfc_show_components (gfc_symbol * sym)
 {
   gfc_component *c;
@@ -626,7 +621,7 @@ gfc_show_components (gfc_symbol * sym)
    specific interfaces associated with a generic symbol is done within
    that symbol.  */
 
-static void
+void
 gfc_show_symbol (gfc_symbol * sym)
 {
   gfc_formal_arglist *formal;
@@ -790,7 +785,7 @@ static void gfc_show_code_node (int level, gfc_code * c);
 /* Show a list of code structures.  Mutually recursive with
    gfc_show_code_node().  */
 
-static void
+void
 gfc_show_code (int level, gfc_code * c)
 {
 
@@ -798,7 +793,7 @@ gfc_show_code (int level, gfc_code * c)
     gfc_show_code_node (level, c);
 }
 
-static void
+void
 gfc_show_namelist (gfc_namelist *n)
 {
   for (; n->next; n = n->next)
@@ -1689,7 +1684,7 @@ gfc_show_code_node (int level, gfc_code * c)
 
 /* Show an equivalence chain.  */
 
-static void
+void
 gfc_show_equiv (gfc_equiv *eq)
 {
   show_indent ();
