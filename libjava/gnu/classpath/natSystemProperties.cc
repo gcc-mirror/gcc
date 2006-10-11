@@ -363,7 +363,7 @@ gnu::classpath::SystemProperties::insertSystemProperties (java::util::Properties
   _Jv_platform_initProperties (newprops);
 
   // If java.library.path is set, tell libltdl so we search the new
-  // directories as well.  FIXME: does this work properly on Windows?
+  // directories as well.
   ::java::lang::String *path = newprops->getProperty(JvNewStringLatin1("java.library.path"));
   if (path)
     {
