@@ -549,6 +549,7 @@ install-data-local:
 ## Install the .pc file.
 	@pc_version=`echo $(GCJVERSION) | sed -e 's/[.][^.]*$$//'`; \
 	file="libgcj-$${pc_version}.pc"; \
+	$(mkinstalldirs) $(DESTDIR)$(pkgconfigdir); \
 	echo "  $(INSTALL_DATA) libgcj.pc $(DESTDIR)$(pkgconfigdir)/$$file"; \
 	$(INSTALL_DATA) libgcj.pc $(DESTDIR)$(pkgconfigdir)/$$file
 ## We use a GNU make trick here so that we don't go over the command
