@@ -1,5 +1,11 @@
 2006-10-11  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/28230
+	* tree-vrp.c (vrp_int_const_binop): Move flag_wrapv handling
+	to the correct place.
+
+2006-10-11  Richard Guenther  <rguenther@suse.de>
+
 	PR inline-asm/29119
 	* gimplify.c (gimplify_asm_expr): Mark the gimplified lvalue
 	addressable.
