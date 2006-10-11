@@ -695,7 +695,7 @@ functions that return type @code{COMPLEX} to return the values via an
 extra argument in the calling sequence that points to where to
 store the return value.  Under the default GNU calling conventions, such
 functions simply return their results as they would in GNU
-C -- default @code{REAL} functions return the C type @code{float}, and
+C---default @code{REAL} functions return the C type @code{float}, and
 @code{COMPLEX} functions return the GNU C type @code{complex}.
 Additionally, this option implies the @option{-fsecond-underscore}
 option, unless @option{-fno-second-underscore} is explicitly requested.

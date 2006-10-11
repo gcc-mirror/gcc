@@ -415,7 +415,7 @@ The primary work remaining to be done on GNU Fortran falls into three
 categories: bug fixing (primarily regarding the treatment of invalid code
 and providing useful error messages), improving the compiler optimizations
 and the performance of compiled code, and extending the compiler to support
-future standards -- in particular, Fortran 2003.
+future standards---in particular, Fortran 2003.
 
 
 @node Proposed Extensions
@@ -474,7 +474,7 @@ LA should use BLAS calling conventions.
 
 @item
 Environment variables controlling actions on arithmetic exceptions like
-overflow, underflow, precision loss -- Generate NaN, abort, default.
+overflow, underflow, precision loss---Generate NaN, abort, default.
 action.
 
 @item
@@ -1002,8 +1002,8 @@ or,
 @end smallexample
 The pointer is an integer that is intended to hold a memory address.
 The pointee may be an array or scalar.  A pointee can be an assumed
-size array -- that is, the last dimension may be left unspecified by
-using a '*' in place of a value -- but a pointee cannot be an assumed
+size array---that is, the last dimension may be left unspecified by
+using a '*' in place of a value---but a pointee cannot be an assumed
 shape array.  No space is allocated for the pointee.
 
 The pointee may have its type declared before or after the pointer
