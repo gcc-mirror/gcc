@@ -1,3 +1,18 @@
+2006-10-11  Lee Millward  <lee.millward@codesourcery.com>
+
+	PR c++/29024
+        * cp-tree (struct cp_decl_specifier_seq): Rename to 
+        conflicting_specifiers_p
+        * parser.c (cp_parser_set_storage_class): Set
+        conflicting_specifiers_p for the input decl specifier 
+        if a typedef specifier is present. Rename uses of
+        multiple_specifiers_p to conflicting_specifiers_p.
+        (cp_parser_decl_specifier_seq) <RID_TYPEDEF>: If a storage 
+        class specifier has already been set for this declaration, 
+        set conflicting_specifiers_p to true on the decl_specs.
+        * decl.c (grokdeclarator): Rename uses of
+        multiple_specifiers_p to conflicting_specifiers_p.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Make-lang.in: Added "c++.pdf" target support.

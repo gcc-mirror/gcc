@@ -7493,6 +7493,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  /* The "typedef" keyword can only occur in a declaration; we
 	     may as well commit at this point.  */
 	  cp_parser_commit_to_tentative_parse (parser);
+
+          if (decl_specs->storage_class != sc_none)
+            decl_specs->conflicting_specifiers_p = true;
 	  break;
 
 	  /* storage-class-specifier:
@@ -16193,7 +16196,7 @@ cp_parser_set_storage_class (cp_parser *parser,
     }
   else if (decl_specs->storage_class != sc_none)
     {
-      decl_specs->multiple_storage_classes_p = true;
+      decl_specs->conflicting_specifiers_p = true;
       return;
     }
 
@@ -16225,6 +16228,13 @@ cp_parser_set_storage_class (cp_parser *parser,
       gcc_unreachable ();
     }
   decl_specs->storage_class = storage_class;
+
+  /* A storage class specifier cannot be applied alongside a typedef 
+     specifier. If there is a typedef specifier present then set 
+     conflicting_specifiers_p which will trigger an error later
+     on in grokdeclarator. */
+  if (decl_specs->specs[(int)ds_typedef])
+    decl_specs->conflicting_specifiers_p = true;
 }
 
 /* Update the DECL_SPECS to reflect the TYPE_SPEC.  If USER_DEFINED_P

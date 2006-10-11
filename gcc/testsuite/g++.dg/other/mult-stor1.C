@@ -4,5 +4,5 @@
 
 struct A
 {
-  extern static int i;  // { dg-error "multiple storage classes" }
+  extern static int i;  // { dg-error "conflicting specifiers" }
 };
