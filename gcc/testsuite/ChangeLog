@@ -1,5 +1,10 @@
 2006-10-11  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/28230
+	* gcc.dg/torture/pr28230.c: New testcase.
+
+2006-10-11  Richard Guenther  <rguenther@suse.de>
+
 	PR inline-asm/29119
 	* gcc.dg/torture/pr29119.c: New testcase.
 

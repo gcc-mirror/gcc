@@ -1235,14 +1235,12 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
 {
   tree res;
 
-  if (flag_wrapv)
-    return int_const_binop (code, val1, val2, 0);
+  res = int_const_binop (code, val1, val2, 0);
 
   /* If we are not using wrapping arithmetic, operate symbolically
      on -INF and +INF.  */
-  res = int_const_binop (code, val1, val2, 0);
-
-  if (TYPE_UNSIGNED (TREE_TYPE (val1)))
+  if (TYPE_UNSIGNED (TREE_TYPE (val1))
+      || flag_wrapv)
     {
       int checkz = compare_values (res, val1);
       bool overflow = false;
