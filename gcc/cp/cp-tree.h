@@ -3655,8 +3655,9 @@ typedef struct cp_decl_specifier_seq {
      decl-specifier-seq.  */
   BOOL_BITFIELD multiple_types_p : 1;
   /* True iff multiple storage classes were (erroneously) specified
-     for this decl-specifier-seq.  */
-  BOOL_BITFIELD multiple_storage_classes_p : 1;
+     for this decl-specifier-seq or a combination of a storage class
+     with a typedef specifier.  */
+  BOOL_BITFIELD conflicting_specifiers_p : 1;
   /* True iff at least one decl-specifier was found.  */
   BOOL_BITFIELD any_specifiers_p : 1;
   /* True iff "int" was explicitly provided.  */
