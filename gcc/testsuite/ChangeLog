@@ -1,5 +1,10 @@
 2006-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR C++/28302
+	* g++.dg/ext/vector3.C: New test.
+
+2006-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR C++/29002
 	* g++.dg/init/array22.C: New test.
 	* g++.dg/init/array23.C: New test.
