@@ -1915,13 +1915,14 @@
   ""
 {
   emit_move_insn (EH_RETURN_HANDLER_RTX, operands[0]);
-  emit_insn (gen_eh_return_internal ());
+  emit_jump_insn (gen_eh_return_internal ());
   emit_barrier ();
   DONE;
 })
 
 (define_insn_and_split "eh_return_internal"
-  [(unspec_volatile [(reg:SI REG_P2)] UNSPEC_VOLATILE_EH_RETURN)]
+  [(set (pc)
+	(unspec_volatile [(reg:SI REG_P2)] UNSPEC_VOLATILE_EH_RETURN))]
   ""
   "#"
   "reload_completed"
