@@ -1,3 +1,8 @@
+2006-10-12  Keith Seitz  <keiths@redhat.com>
+
+	* include/jvmti-int.h (JVMTI): Declare all members "extern".
+	* jvmti.cc (JVMTI): Define.
+
 2006-10-11  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
