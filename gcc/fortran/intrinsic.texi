@@ -7633,26 +7633,26 @@ Non-elemental subroutine
 
 @item @emph{Example}:
 @smallexample
-PROGRAM test_fstat
+PROGRAM test_stat
   INTEGER, DIMENSION(13) :: buff
   INTEGER :: status
 
-  CALL STAT("/etc/passwd", statarr, status)
+  CALL STAT("/etc/passwd", buff, status)
 
   IF (status == 0) THEN
-    WRITE (*, FMT="('Device ID:',                         T40, I19)") buff(1)
-    WRITE (*, FMT="('Inode number:',                      T40, I19)") buff(2)
-    WRITE (*, FMT="('File mode:',                         T40, o19)") buff(3)
-    WRITE (*, FMT="('Number of links:',                   T40, I19)") buff(4)
-    WRITE (*, FMT="('Owner''s uid:',                      T40, I19)") buff(5)
-    WRITE (*, FMT="('Owner''s gid:',                      T40, I19)") buff(6)
-    WRITE (*, FMT="('Device where directory is located:', T40, I19)") buff(7)
-    WRITE (*, FMT="('File size:',                         T40, I19)") buff(8)
-    WRITE (*, FMT="('Last access time:',                  T40, A19)") CTIME(buff(9))
-    WRITE (*, FMT="('Last modification time',             T40, A19)") CTIME(buff(10))
-    WRITE (*, FMT="('Last file status change time:',      T40, A19)") CTIME(buff(11))
-    WRITE (*, FMT="('Preferred I/O block size:',          T40, I19)") buff(12)
-    WRITE (*, FMT="('Number of blocks allocated:',        T40, I19)") buff(13)
+    WRITE (*, FMT="('Device ID:',               T30, I19)") buff(1)
+    WRITE (*, FMT="('Inode number:',            T30, I19)") buff(2)
+    WRITE (*, FMT="('File mode:',               T30, o19)") buff(3)
+    WRITE (*, FMT="('Number of links:',         T30, I19)") buff(4)
+    WRITE (*, FMT="('Owner''s uid:',            T30, I19)") buff(5)
+    WRITE (*, FMT="('Owner''s gid:',            T30, I19)") buff(6)
+    WRITE (*, FMT="('Device where located:',    T30, I19)") buff(7)
+    WRITE (*, FMT="('File size:',               T30, I19)") buff(8)
+    WRITE (*, FMT="('Last access time:',        T30, A19)") CTIME(buff(9))
+    WRITE (*, FMT="('Last modification time',   T30, A19)") CTIME(buff(10))
+    WRITE (*, FMT="('Last status change time:', T30, A19)") CTIME(buff(11))
+    WRITE (*, FMT="('Preferred block size:',    T30, I19)") buff(12)
+    WRITE (*, FMT="('No. of blocks allocated:', T30, I19)") buff(13)
   END IF
 END PROGRAM
 @end smallexample
