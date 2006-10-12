@@ -1,3 +1,9 @@
+2006-10-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29175
+	* decl.c (check_initializer): Issue errors about trying to
+	initialize arrays whose elements have variable size.
+
 2006-10-11  Lee Millward  <lee.millward@codesourcery.com>
 
 	PR c++/29024

@@ -4703,32 +4703,46 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 
   if (type == error_mark_node)
     /* We will have already complained.  */
-    init = NULL_TREE;
-  else if (init && COMPLETE_TYPE_P (type)
-	   && !TREE_CONSTANT (TYPE_SIZE (type)))
+    return NULL_TREE;
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      error ("variable-sized object %qD may not be initialized", decl);
-      init = NULL_TREE;
+      tree element_type = TREE_TYPE (type);
+
+      /* The array type itself need not be complete, because the
+	 initializer may tell us how many elements are in the array.
+	 But, the elements of the array must be complete.  */
+      if (!COMPLETE_TYPE_P (complete_type (element_type)))
+	{
+	  error ("elements of array %q#D have incomplete type", decl);
+	  return NULL_TREE;
+	}
+      /* It is not valid to initialize an a VLA.  */
+      if (init
+	  && ((COMPLETE_TYPE_P (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
+	      || !TREE_CONSTANT (TYPE_SIZE (element_type))))
+	{
+	  error ("variable-sized object %qD may not be initialized", decl);
+	  return NULL_TREE;
+	}
     }
-  else if (TREE_CODE (type) == ARRAY_TYPE
-	   && !COMPLETE_TYPE_P (complete_type (TREE_TYPE (type))))
-    {
-      error ("elements of array %q#D have incomplete type", decl);
-      init = NULL_TREE;
-    }
-  else if (TREE_CODE (type) != ARRAY_TYPE && !COMPLETE_TYPE_P (type))
+  else if (!COMPLETE_TYPE_P (type))
     {
       error ("%qD has incomplete type", decl);
       TREE_TYPE (decl) = error_mark_node;
-      init = NULL_TREE;
+      return NULL_TREE;
     }
-  else if (!CP_AGGREGATE_TYPE_P (type)
-	   && init && BRACE_ENCLOSED_INITIALIZER_P (init)
-	   && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)) != 1)
+  else
+    /* There is no way to make a variable-sized class type in GNU C++.  */
+    gcc_assert (TREE_CONSTANT (TYPE_SIZE (type)));
+  
+  if (!CP_AGGREGATE_TYPE_P (type)
+      && init && BRACE_ENCLOSED_INITIALIZER_P (init)
+      && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)) != 1)
     {
       error ("scalar object %qD requires one element in initializer", decl);
       TREE_TYPE (decl) = error_mark_node;
-      init = NULL_TREE;
+      return NULL_TREE;
     }
 
   if (TREE_CODE (decl) == CONST_DECL)
