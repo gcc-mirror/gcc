@@ -430,15 +430,14 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
 static bool
 paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
 {
-  unsigned char *buf, *end;
+  unsigned char *buf, *end, *lhsend;
   const cpp_token *lhs;
   unsigned int len;
-  bool valid;
 
   lhs = *plhs;
   len = cpp_token_len (lhs) + cpp_token_len (rhs) + 1;
   buf = (unsigned char *) alloca (len);
-  end = cpp_spell_token (pfile, lhs, buf, false);
+  end = lhsend = cpp_spell_token (pfile, lhs, buf, false);
 
   /* Avoid comment headers, since they are still processed in stage 3.
      It is simpler to insert a space here, rather than modifying the
@@ -455,10 +454,22 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
   pfile->cur_token = _cpp_temp_token (pfile);
   *plhs = _cpp_lex_direct (pfile);
-  valid = pfile->buffer->cur == pfile->buffer->rlimit;
-  _cpp_pop_buffer (pfile);
+  if (pfile->buffer->cur != pfile->buffer->rlimit)
+    {
+      _cpp_pop_buffer (pfile);
+      _cpp_backup_tokens (pfile, 1);
+      *lhsend = '\0';
 
-  return valid;
+      /* Mandatory error for all apart from assembler.  */
+      if (CPP_OPTION (pfile, lang) != CLK_ASM)
+	cpp_error (pfile, CPP_DL_ERROR,
+	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
+		   buf, cpp_token_as_text (pfile, rhs));
+      return false;
+    }
+
+  _cpp_pop_buffer (pfile);
+  return true;
 }
 
 /* Handles an arbitrarily long sequence of ## operators, with initial
@@ -490,17 +501,7 @@ paste_all_tokens (cpp_reader *pfile, const cpp_token *lhs)
 	abort ();
 
       if (!paste_tokens (pfile, &lhs, rhs))
-	{
-	  _cpp_backup_tokens (pfile, 1);
-
-	  /* Mandatory error for all apart from assembler.  */
-	  if (CPP_OPTION (pfile, lang) != CLK_ASM)
-	    cpp_error (pfile, CPP_DL_ERROR,
-	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
-		       cpp_token_as_text (pfile, lhs),
-		       cpp_token_as_text (pfile, rhs));
-	  break;
-	}
+	break;
     }
   while (rhs->flags & PASTE_LEFT);
 
