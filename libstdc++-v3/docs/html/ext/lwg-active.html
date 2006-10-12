@@ -8,11 +8,11 @@ del {background-color:#FFFFA0}</style></head>
 <table>
 <tbody><tr>
 <td align="left">Doc. no.</td>
-<td align="left">N2000=06-0070</td>
+<td align="left">N2091=06-0161</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">2006-04-21</td>
+<td align="left">2006-09-08</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -23,7 +23,7 @@ del {background-color:#FFFFA0}</style></head>
 <td align="left">Howard Hinnant &lt;howard.hinnant@gmail.com&gt;</td>
 </tr>
 </tbody></table>
-<h1>C++ Standard Library Active Issues List (Revision R42)</h1>
+<h1>C++ Standard Library Active Issues List (Revision R44)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
   <ul>
@@ -91,6 +91,16 @@ del {background-color:#FFFFA0}</style></head>
   directory as the issues list files.  </p>
 <h2>Revision History</h2>
 <ul>
+<li>R44: 
+2006-09-08 pre-Portland mailing.
+Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#583">583</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#592">592</a>.
+</li>
+<li>R43: 
+2006-06-23 mid-term mailing.
+Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#575">575</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#582">582</a>.
+Reopened <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#255">255</a>.
+Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#520">520</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#541">541</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#544">544</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#569">569</a> to Tentatively Ready.
+</li>
 <li>R42: 
 2006-04-21 post-Berlin mailing.
 Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#567">567</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#572">572</a>.
@@ -537,7 +547,7 @@ upon overflow.  We considered three options based on this:</p>
   Bill will provide wording.</p>
 
 <hr>
-<a name="96"><h3>96.&nbsp;Vector&lt;bool&gt; is not a container</h3></a><p><b>Section:</b>&nbsp;23.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.bool"> [lib.vector.bool]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
+<a name="96"><h3>96.&nbsp;Vector&lt;bool&gt; is not a container</h3></a><p><b>Section:</b>&nbsp;23.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector"> [lib.vector]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 <p><tt>vector&lt;bool&gt;</tt> is not a container as its reference and
 pointer types are not references and pointers. </p>
 
@@ -613,6 +623,50 @@ specializations of numeric_limits.
   imprecise language. However, none of the proposals for changed
   wording are clearer.  A redesign of numeric_limits is needed, but this
   is more a task than an open issue.]</i></p>
+<hr>
+<a name="206"><h3>206.&nbsp;operator new(size_t, nothrow) may become unlinked to ordinary operator new if ordinary version replaced</h3></a><p><b>Section:</b>&nbsp;18.5.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;29 Aug 1999</p>
+<p>As specified, the implementation of the nothrow version of operator
+new does not necessarily call the ordinary operator new, but may
+instead simply call the same underlying allocator and return a null
+pointer instead of throwing an exception in case of failure.</p>
+
+<p>Such an implementation breaks code that replaces the ordinary
+version of new, but not the nothrow version. If the ordinary version
+of new/delete is replaced, and if the replaced delete is not
+compatible with pointers returned from the library versions of new,
+then when the replaced delete receives a pointer allocated by the
+library new(nothrow), crash follows.</p>
+
+<p>The fix appears to be that the lib version of new(nothrow) must
+call the ordinary new. Thus when the ordinary new gets replaced, the
+lib version will call the replaced ordinary new and things will
+continue to work.</p>
+
+<p>An alternative would be to have the ordinary new call
+new(nothrow). This seems sub-optimal to me as the ordinary version of
+new is the version most commonly replaced in practice. So one would
+still need to replace both ordinary and nothrow versions if one wanted
+to replace the ordinary version.</p>
+
+<p>Another alternative is to put in clear text that if one version is
+replaced, then the other must also be replaced to maintain
+compatibility. Then the proposed resolution below would just be a
+quality of implementation issue. There is already such text in
+paragraph 7 (under the new(nothrow) version). But this nuance is
+easily missed if one reads only the paragraphs relating to the
+ordinary new.</p>
+
+<p><b>Proposed resolution:</b></p>
+<p><b>Rationale:</b></p>
+<p>Yes, they may become unlinked, and that is by design. If a user
+replaces one, the user should also replace the other.</p>
+
+<p><i>[
+Reopened due to a gcc conversation between Howard, Martin and Gaby.  Forwarding
+or not is visible behavior to the client and it would be useful for the client
+to know which behavior it could depend on.
+]</i></p>
+
 <hr>
 <a name="233"><h3>233.&nbsp;Insertion hints in associative containers</h3></a><p><b>Section:</b>&nbsp;23.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.associative.reqmts"> [lib.associative.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;30 Apr 2000</p>
 <p>
@@ -864,7 +918,72 @@ intended here is that the copy constructors can't fail.</p>
   compiler-generated constructors might in principle throw anything.]</i></p>
 
 <hr>
-<a name="258"><h3>258.&nbsp;Missing allocator requirement</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;22 Aug 2000</p>
+<a name="255"><h3>255.&nbsp;Why do <tt>basic_streambuf&lt;&gt;::pbump()</tt> and <tt>gbump()</tt> take an int?</h3></a><p><b>Section:</b>&nbsp;27.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.streambuf"> [lib.streambuf]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;12 Aug 2000</p>
+<p>
+The basic_streambuf members gbump() and pbump() are specified to take an
+int argument. This requirement prevents the functions from effectively
+manipulating buffers larger than std::numeric_limits&lt;int&gt;::max()
+characters. It also makes the common use case for these functions
+somewhat difficult as many compilers will issue a warning when an
+argument of type larger than int (such as ptrdiff_t on LLP64
+architectures) is passed to either of the function. Since it's often the
+result of the subtraction of two pointers that is passed to the
+functions, a cast is necessary to silence such warnings. Finally, the
+usage of a native type in the functions signatures is inconsistent with
+other member functions (such as sgetn() and sputn()) that manipulate the
+underlying character buffer. Those functions take a streamsize argument.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change the signatures of these functions in the synopsis of template
+class basic_streambuf (27.5.2) and in their descriptions (27.5.2.3.1, p4
+and 27.5.2.3.2, p4) to take a streamsize argument.
+</p>
+
+<p>
+Although this change has the potential of changing the ABI of the
+library, the change will affect only platforms where int is different
+than the definition of streamsize. However, since both functions are
+typically inline (they are on all known implementations), even on such
+platforms the change will not affect any user code unless it explicitly
+relies on the existing type of the functions (e.g., by taking their
+address). Such a possibility is IMO quite remote.
+</p>
+
+<p>
+Alternate Suggestion from Howard Hinnant, c++std-lib-7780:
+</p>
+
+<p>
+This is something of a nit, but I'm wondering if streamoff wouldn't be a 
+better choice than streamsize.  The argument to pbump and gbump MUST be 
+signed.  But the standard has this to say about streamsize 
+(27.4.1/2/Footnote):
+</p>
+
+<blockquote>
+     [Footnote: streamsize is used in most places where ISO C would use
+     size_t.  Most of the uses of streamsize could use size_t, except for
+     the strstreambuf constructors, which require negative values. It
+     should probably be the signed type corresponding to size_t (which is
+     what Posix.2 calls ssize_t). --- end footnote]
+</blockquote>
+
+<p>
+This seems a little weak for the argument to pbump and gbump.  Should we 
+ever really get rid of strstream, this footnote might go with it, along 
+with the reason to make streamsize signed.
+</p>
+<p><b>Rationale:</b></p>
+<p>The LWG believes this change is too big for now.  We may wish to
+reconsider this for a future revision of the standard.  One
+possibility is overloading pbump, rather than changing the
+signature.</p>
+<p><i>[
+[2006-05-04: Reopened at the request of Chris (Krzysztof ?elechowski)]
+]</i></p>
+<hr>
+<a name="258"><h3>258.&nbsp;Missing allocator requirement</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;22 Aug 2000</p>
 <p>
 From lib-7752:
 </p>
@@ -933,7 +1052,7 @@ the second line from the bottom in table 32 already implies the
 desired property.  This issue should be considered in light of
 other issues related to allocator instances.]</i></p>
 <hr>
-<a name="290"></a><h3><a name="290">290.&nbsp;Requirements to for_each and its function object</a></h3><p><b>Section:</b>&nbsp;25.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.foreach"> [lib.alg.foreach]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;03 Jan 2001</p>
+<a name="290"><h3>290.&nbsp;Requirements to for_each and its function object</h3></a><p><b>Section:</b>&nbsp;25.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.foreach"> [lib.alg.foreach]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;03 Jan 2001</p>
 <p>The specification of the for_each algorithm does not have a
 "Requires" section, which means that there are no
 restrictions imposed on the function object whatsoever. In essence it
@@ -1411,7 +1530,7 @@ In case of failure, the function calls <tt>setstate(failbit)</tt>
   or <tt>badbit</tt> is set, so using <tt>!fail()</tt>, rather
   than <tt>good()</tt>, satisfies this goal.</p>
 <hr>
-<a name="382"><h3>382.&nbsp;codecvt do_in/out result</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;30 Aug  2002</p>
+<a name="382"><h3>382.&nbsp;codecvt do_in/out result</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;30 Aug  2002</p>
 <p>
 It seems that the descriptions of codecvt do_in() and do_out() leave
 sufficient room for interpretation so that two implementations of
@@ -1436,7 +1555,7 @@ the following seems less than adequately specified:
 
 <ol>
 <li>
-   22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>, p2 says this about the effects of the
+   <font color="red">22.2.1.5.2</font>, p2 says this about the effects of the
    function: ...Stops if it encounters a character it cannot
    convert...  This assumes that there *is* a character to
    convert. What happens when there is a sequence that doesn't form a
@@ -1469,7 +1588,7 @@ the following seems less than adequately specified:
 </li>
 </ol>
 <p>
-Finally, the conditions described at the end of 22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>, p4 don't seem to be possible:
+Finally, the conditions described at the end of <font color="red">22.2.1.5.2</font>, p4 don't seem to be possible:
 </p>
 <blockquote>
     "A return value of partial, if (from_next == from_end),
@@ -1483,7 +1602,7 @@ If the value is partial, it's not clear to me that (from_next
 ==from_end) could ever hold if there isn't enough room
 in the destination buffer. In order for (from_next==from_end) to
 hold, all characters in that range must have been successfully
-converted (according to 22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>, p2) and since there are no
+converted (according to <font color="red">22.2.1.5.2</font>, p2) and since there are no
 further source characters to convert, no more room in the
 destination buffer can be needed.
 </p>
@@ -1559,7 +1678,7 @@ into references? References aren't copy constructible, so this should
 not be allowed.
 ]</i></p>
 <hr>
-<a name="387"><h3>387.&nbsp;std::complex over-encapsulated</h3></a><p><b>Section:</b>&nbsp;26.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.numbers"> [lib.complex.numbers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;8 Nov 2002</p>
+<a name="387"><h3>387.&nbsp;std::complex over-encapsulated</h3></a><p><b>Section:</b>&nbsp;26.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.numbers"> [lib.complex.numbers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;8 Nov 2002</p>
 <p>
 The absence of explicit description of std::complex&lt;T&gt; layout
 makes it imposible to reuse existing software developed in traditional
@@ -1591,7 +1710,7 @@ of std::complex&lt;&gt; is not justified.
 </p>
 
 <p><b>Proposed resolution:</b></p>
-<p>Add the following requirements to 26.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.numbers"> [lib.complex.numbers]</a> as 26.2/4:</p>
+<p>Add the following requirements to 26.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.numbers"> [lib.complex.numbers]</a> as 26.3/4:</p>
 <blockquote>
 <p>If z is an lvalue expression of type cv std::complex&lt;T&gt; then</p>
 
@@ -1618,7 +1737,7 @@ imaginary part of a[i].</li>
 </ul>
 </blockquote>
 
-<p>In the header synopsis in 26.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>, replace</p>
+<p>In the header synopsis in 26.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>, replace</p>
 <pre>  template&lt;class T&gt; T real(const complex&lt;T&gt;&amp;);
   template&lt;class T&gt; T imag(const complex&lt;T&gt;&amp;);
 </pre>
@@ -1631,7 +1750,7 @@ imaginary part of a[i].</li>
   template&lt;class T&gt;       T&amp; imag(      complex&lt;T&gt;&amp;);
 </pre>
 
-<p>In 26.2.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a> paragraph 1, change</p>
+<p>In 26.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a> paragraph 1, change</p>
 <pre>  template&lt;class T&gt; T real(const complex&lt;T&gt;&amp;);
 </pre>
 <p>to</p>
@@ -1641,7 +1760,7 @@ imaginary part of a[i].</li>
 <p>and change the <b>Returns</b> clause to "<b>Returns:</b> The real
 part of <i>x</i></p>.
 
-<p>In 26.2.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a> paragraph 2, change</p>
+<p>In 26.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a> paragraph 2, change</p>
 <pre>  template&lt;class T&gt; T imag(const complex&lt;T&gt;&amp;);
 </pre>
 <p>to</p>
@@ -1994,9 +2113,9 @@ end-of-file):
   and changing it on an individual basis wouldn't make things better.
   Dietmar will do this work.</p>
 <hr>
-<a name="401"><h3>401.&nbsp; incorrect type casts in table 32 in lib.allocator.requirements</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
+<a name="401"><h3>401.&nbsp; incorrect type casts in table 32 in lib.allocator.requirements</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
 <p>
-I think that in par2 of 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> the last two
+I think that in par2 of 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a> the last two
 lines of table 32 contain two incorrect type casts. The lines are ...
 </p>
 
@@ -2561,7 +2680,7 @@ library class templates. We need to consult with CWG to make sure we
 use the right wording.]</i></p>
 
 <hr>
-<a name="423"></a><h3><a name="423">423.&nbsp;effects of negative streamsize in iostreams</a></h3><p><b>Section:</b>&nbsp;27 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<a name="423"><h3>423.&nbsp;effects of negative streamsize in iostreams</h3></a><p><b>Section:</b>&nbsp;27 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.input.output"> [lib.input.output]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
 
 <p>
 A third party test suite tries to exercise istream::ignore(N) with
@@ -2689,7 +2808,7 @@ traits classes, then the facet could reasonably be required to
 use <tt>char_traits&lt;charT&gt;</tt></p>.
 
 <hr>
-<a name="430"><h3>430.&nbsp;valarray subset operations</h3></a><p><b>Section:</b>&nbsp;26.3.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.sub"> [lib.valarray.sub]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<a name="430"><h3>430.&nbsp;valarray subset operations</h3></a><p><b>Section:</b>&nbsp;26.5.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.sub"> [lib.valarray.sub]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
 <p>
 The standard fails to specify the behavior of valarray::operator[](slice)
 and other valarray subset operations when they are passed an "invalid"
@@ -2703,8 +2822,8 @@ object (e.g., slice (2, 1, 1) for a valarray of size 1).
   performance, so we don't want to require specific checking.  We
   need wording to express this decision.]</i></p>
 <hr>
-<a name="431"><h3>431.&nbsp;Swapping containers with unequal allocators</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 25 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Sep 2003</p>
-<p>Clause 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> paragraph 4 says that implementations
+<a name="431"><h3>431.&nbsp;Swapping containers with unequal allocators</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a>, 25 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;20 Sep 2003</p>
+<p>Clause 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a> paragraph 4 says that implementations
   are permitted to supply containers that are unable to cope with
   allocator instances and that container implementations may assume
   that all instances of an allocator type compare equal.  We gave
@@ -3043,7 +3162,7 @@ technique to perform the comparison:</p>
       if it the source and destination types are the same</li>
 </ol>
 <hr>
-<a name="462"><h3>462.&nbsp;Destroying objects with static storage duration</h3></a><p><b>Section:</b>&nbsp;3.6.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/basic.html#basic.start.term"> [basic.start.term]</a>, 18.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.support.start.term"> [lib.support.start.term]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Bill Plauger&nbsp; <b>Date:</b>&nbsp;23 Mar 2004</p>
+<a name="462"><h3>462.&nbsp;Destroying objects with static storage duration</h3></a><p><b>Section:</b>&nbsp;3.6.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/basic.html#basic.start.term"> [basic.start.term]</a>, 18.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.cstdint"> [lib.cstdint]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Bill Plauger&nbsp; <b>Date:</b>&nbsp;23 Mar 2004</p>
 <p>
 3.6.3 Termination spells out in detail the interleaving of static
 destructor calls and calls to functions registered with atexit. To
@@ -3077,7 +3196,7 @@ even if we don't require it.
 <p>
 </p>
 <hr>
-<a name="463"><h3>463.&nbsp;auto_ptr usability issues</h3></a><p><b>Section:</b>&nbsp;20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.auto.ptr"> [lib.auto.ptr]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Rani Sharoni&nbsp; <b>Date:</b>&nbsp;7 Dec 2003</p>
+<a name="463"><h3>463.&nbsp;auto_ptr usability issues</h3></a><p><b>Section:</b>&nbsp;20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.unary"> [lib.meta.unary]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Rani Sharoni&nbsp; <b>Date:</b>&nbsp;7 Dec 2003</p>
 
 <p>
 TC1 CWG DR #84 effectively made the template&lt;class Y&gt; operator auto_ptr&lt;Y&gt;()
@@ -3392,7 +3511,7 @@ in some surprising (i.e., undefined) behavior.
   
 
 <hr>
-<a name="471"><h3>471.&nbsp;result of what() implementation-defined</h3></a><p><b>Section:</b>&nbsp;18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.exception"> [lib.exception]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
+<a name="471"><h3>471.&nbsp;result of what() implementation-defined</h3></a><p><b>Section:</b>&nbsp;18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.type.info"> [lib.type.info]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
 
 <p>[lib.exception] specifies the following:</p>
 <pre>    exception (const exception&amp;) throw();
@@ -4266,7 +4385,7 @@ The same issue applies to unordered_multiset and unordered_multimap.
 <p>
 </p>
 <hr>
-<a name="520"><h3>520.&nbsp;Result_of and pointers to data members</h3></a><p><b>Section:</b>&nbsp;TR1 3.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.func.bind"> [tr.func.bind]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Pete Becker&nbsp; <b>Date:</b>&nbsp;3 Jul 2005</p>
+<a name="520"><h3>520.&nbsp;Result_of and pointers to data members</h3></a><p><b>Section:</b>&nbsp;TR1 3.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.func.bind"> [tr.func.bind]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Tentatively%20Ready">Tentatively Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Pete Becker&nbsp; <b>Date:</b>&nbsp;3 Jul 2005</p>
 <p>
 In the original proposal for binders, the return type of bind() when
 called with a pointer to member data as it's callable object was
@@ -4280,6 +4399,19 @@ to  member data.
 <p><b>Proposed resolution:</b></p>
 <p><i>[
 Pete and Peter will provide wording.
+]</i></p>
+
+<p>
+In 20.5.4 [lib.func.ret] ([tr.func.ret]) p3 add the following bullet after bullet 2:
+</p>
+<ol start="3">
+<li>If <tt>F</tt> is a member data pointer type <tt>R T::*</tt>, <tt>type</tt>
+shall be <tt><i>cv</i> R&amp;</tt> when <tt>T1</tt> is <tt><i>cv</i> U1&amp;</tt>,
+<tt>R</tt> otherwise.</li>
+</ol>
+
+<p><i>[
+Peter provided wording.
 ]</i></p>
 <hr>
 <a name="521"><h3>521.&nbsp;Garbled requirements for argument_type in reference_wrapper</h3></a><p><b>Section:</b>&nbsp;TR1 2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.refwrp.refwrp"> [tr.util.refwrp.refwrp]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Pete Becker&nbsp; <b>Date:</b>&nbsp;3 Jul 2005</p>
@@ -4674,7 +4806,20 @@ Berlin: not quite editorial, needs proposed wording.
 
 <p><b>Proposed resolution:</b></p>
 <p>
+In 20.5.10.1.3 [lib.func.bind.bind] ([tr.func.bind.bind]), add a new paragraph after p2:
 </p>
+<blockquote>
+<i>Throws:</i> Nothing unless one of the copy constructors of <tt>f, t1, t2, ..., tN</tt>
+throws an exception.
+</blockquote>
+
+<p>
+Add a new paragraph after p4:
+</p>
+<blockquote>
+<i>Throws:</i> nothing unless one of the copy constructors of <tt>f, t1, t2, ..., tN</tt>
+throws an exception.
+</blockquote>
 <hr>
 <a name="528"><h3>528.&nbsp;TR1: issue 6.19 vs 6.3.4.3/2 (and 6.3.4.5/2)</h3></a><p><b>Section:</b>&nbsp;TR1 6.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.unord.unord"> [tr.unord.unord]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Paolo Carlini&nbsp; <b>Date:</b>&nbsp;12 Oct 2005</p>
 <p>
@@ -5236,7 +5381,7 @@ must be CopyConstructible (20.1.3) <ins>and Assignable</ins>.
 Otherwise CopyConstructible is not required.
 </blockquote>
 <hr>
-<a name="539"><h3>539.&nbsp;partial_sum and adjacent_difference should mention requirements</h3></a><p><b>Section:</b>&nbsp;26.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numeric.ops"> [lib.numeric.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Marc Schoolderman&nbsp; <b>Date:</b>&nbsp;6 Feb 2006</p>
+<a name="539"><h3>539.&nbsp;partial_sum and adjacent_difference should mention requirements</h3></a><p><b>Section:</b>&nbsp;26.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.rand"> [lib.rand]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Marc Schoolderman&nbsp; <b>Date:</b>&nbsp;6 Feb 2006</p>
 <p>
 There are some problems in the definition of partial_sum and
 adjacent_difference in 26.4 [lib.numeric.ops]
@@ -5429,7 +5574,7 @@ definition) of the function shall be well-formed.</ins>
 </blockquote>
 
 <hr>
-<a name="541"><h3>541.&nbsp;shared_ptr template assignment and void</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.shared"> [tr.util.smartptr.shared]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;16 Oct 2005</p>
+<a name="541"><h3>541.&nbsp;shared_ptr template assignment and void</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.shared"> [tr.util.smartptr.shared]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Tentatively%20Ready">Tentatively Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;16 Oct 2005</p>
 <p>
 Is the void specialization of the template assignment operator taking
 a shared_ptr&lt;void&gt; as an argument supposed be well-formed?
@@ -5479,7 +5624,23 @@ int main ()
 </pre></blockquote>
 <p><b>Proposed resolution:</b></p>
 <p>
+In [lib.memory] change:
 </p>
+<blockquote><pre>template&lt;class X&gt; class auto_ptr;
+<ins>template&lt;&gt; class auto_ptr&lt;void&gt;;</ins>
+</pre></blockquote>
+
+<p>
+In [lib.auto.ptr]/2 add the following before the last closing brace:
+</p>
+
+<blockquote><pre>template&lt;&gt; class auto_ptr&lt;void&gt;
+{
+public:
+&nbsp; &nbsp; typedef void element_type;
+};
+</pre></blockquote>
+
 <hr>
 <a name="542"><h3>542.&nbsp;shared_ptr observers</h3></a><p><b>Section:</b>&nbsp;TR1 2.2.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.util.smartptr.shared.obs"> [tr.util.smartptr.shared.obs]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Oct 2005</p>
 <p>
@@ -5517,7 +5678,7 @@ capture the intent.
 <p>
 </p>
 <hr>
-<a name="543"><h3>543.&nbsp;valarray slice default constructor</h3></a><p><b>Section:</b>&nbsp;26.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.class.slice"> [lib.class.slice]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;3 Nov 2005</p>
+<a name="543"><h3>543.&nbsp;valarray slice default constructor</h3></a><p><b>Section:</b>&nbsp;26.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.members"> [lib.complex.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;3 Nov 2005</p>
 <p>
 If one explicitly constructs a slice or glice with the default
 constructor, does the standard require this slice to have any usable
@@ -5557,7 +5718,7 @@ There is a similar question and wording for gslice at 26.3.6.1p1.
 <p>
 </p>
 <hr>
-<a name="544"><h3>544.&nbsp;minor NULL problems in C.2</h3></a><p><b>Section:</b>&nbsp;C.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/diff.html#diff.library"> [diff.library]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;25 Nov 2005</p>
+<a name="544"><h3>544.&nbsp;minor NULL problems in C.2</h3></a><p><b>Section:</b>&nbsp;C.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/diff.html#diff.library"> [diff.library]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Tentatively%20Ready">Tentatively Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;25 Nov 2005</p>
 <p>
 According to C.2.2.3, p1, "the macro NULL, defined in any of &lt;clocale&gt;,
 &lt;cstddef&gt;, &lt;cstdio&gt;, &lt;cstdlib&gt;, &lt;cstring&gt;, &lt;ctime&gt;,
@@ -5596,7 +5757,19 @@ instances). We should say which it is.
 </p>
 <p><b>Proposed resolution:</b></p>
 <p>
+Add after the first sentence of [lib.util.smartptr.getdeleter]/1:
 </p>
+<blockquote>
+<p>
+The returned pointer remains valid as long as there exists a <tt>shared_ptr</tt> instance
+that owns <tt><i>d</i></tt>.
+</p>
+<p>
+[<i>Note:</i> it is unspecified whether the pointer remains valid longer than that.
+This can happen if the implementation doesn't destroy the deleter until all
+<tt>weak_ptr</tt> instances in the ownership group are destroyed. <i>-- end note</i>]
+</p>
+</blockquote>
 <hr>
 <a name="546"><h3>546.&nbsp;_Longlong and _ULonglong are integer types</h3></a><p><b>Section:</b>&nbsp;TR1 5.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/tr1.html#tr.rand.req"> [tr.rand.req]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;10 Jan 2006</p>
 <p>
@@ -5665,7 +5838,7 @@ are. What's n?
 Berlin: Typo: "n" replaced by "t" in N1932: see 26.3.7.2.2/1.
 </p>
 <hr>
-<a name="550"><h3>550.&nbsp;What should the return type of pow(float,int) be?</h3></a><p><b>Section:</b>&nbsp;26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;12 Jan 2006</p>
+<a name="550"><h3>550.&nbsp;What should the return type of pow(float,int) be?</h3></a><p><b>Section:</b>&nbsp;26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numarray"> [lib.numarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;12 Jan 2006</p>
 <p>
 Assuming we adopt the
 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">C
@@ -6005,7 +6178,7 @@ member of <code>numeric_limits&lt;T&gt;</code>.
 
         </p>
 <hr>
-<a name="560"><h3>560.&nbsp;User-defined allocators without default constructor</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Sergey P. Derevyago&nbsp; <b>Date:</b>&nbsp;17 Feb 2006</p>
+<a name="560"><h3>560.&nbsp;User-defined allocators without default constructor</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Sergey P. Derevyago&nbsp; <b>Date:</b>&nbsp;17 Feb 2006</p>
 <h4>1. The essence of the problem.</h4>
 <p>
 User-defined allocators without default constructor are not explicitly
@@ -6594,7 +6767,7 @@ And change 27.6.2.5.3, p7 as follows:
 Add <tt>log2</tt> to the list of functions in 8.16.4p1.
 </p>
 <hr>
-<a name="569"><h3>569.&nbsp;Postcondition for basic_ios::clear(iostate) incorrectly stated</h3></a><p><b>Section:</b>&nbsp;27.4.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Seungbeom Kim&nbsp; <b>Date:</b>&nbsp;10 Mar 2006</p>
+<a name="569"><h3>569.&nbsp;Postcondition for basic_ios::clear(iostate) incorrectly stated</h3></a><p><b>Section:</b>&nbsp;27.4.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#Tentatively%20Ready">Tentatively Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Seungbeom Kim&nbsp; <b>Date:</b>&nbsp;10 Mar 2006</p>
 <p>
 Section: 27.4.4.3 [lib.iostate.flags]
 </p>
@@ -6616,13 +6789,10 @@ The postcondition "rdstate()==state|ios_base::badbit" is parsed as
 committee meant.
 </p>
 <p><b>Proposed resolution:</b></p>
+<p><b>Rationale:</b></p>
 <p>
-Change 27.4.4.3p4:
+This is a duplicate of issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#272">272</a>.
 </p>
-<blockquote>
-<i>Postcondition:</i> If <tt>rdbuf()!=0</tt> then <tt><i>state</i> == rdstate();</tt>
-otherwise <tt>rdstate()==<ins>(</ins><i>state</i>|ios_base::badbit</tt><ins>)</ins>.
-</blockquote>
 <hr>
 <a name="570"><h3>570.&nbsp;Request adding additional explicit specializations of char_traits</h3></a><p><b>Section:</b>&nbsp;21.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-strings.html#lib.char.traits"> [lib.char.traits]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Jack Reeves&nbsp; <b>Date:</b>&nbsp;6 Apr 2006</p>
 <p>
@@ -6672,7 +6842,7 @@ this issue WP status (mistakenly).
 Strike the proposed resolution of issue 507.
 </p>
 <hr>
-<a name="573"><h3>573.&nbsp;C++0x file positioning should handle modern file sizes</h3></a><p><b>Section:</b>&nbsp;27.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.fpos"> [lib.fpos]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Your name&nbsp; <b>Date:</b>&nbsp;29 Feb 1900</p>
+<a name="573"><h3>573.&nbsp;C++0x file positioning should handle modern file sizes</h3></a><p><b>Section:</b>&nbsp;27.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.fpos"> [lib.fpos]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;12 Apr 2006</p>
 <p>
 There are two deficiencies related to file sizes:
 </p>
@@ -6723,5 +6893,954 @@ not destroyed during program execution."
 <p><b>Proposed resolution:</b></p>
 <p>
 </p>
+<hr>
+<a name="575"><h3>575.&nbsp;the specification of ~shared_ptr is MT-unfriendly, makes implementation assumptions</h3></a><p><b>Section:</b>&nbsp;20.6.6.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.util.smartptr.shared.dest"> [lib.util.smartptr.shared.dest]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Peter Dimov&nbsp; <b>Date:</b>&nbsp;23 Apr 2006</p>
+<p>
+[tr.util.smartptr.shared.dest] says in its second bullet:
+</p>
+
+<p>
+"If *this shares ownership with another shared_ptr instance (use_count() &gt; 1),
+decrements that instance's use count."
+</p>
+
+<p>
+The problem with this formulation is that it presupposes the existence of an
+"use count" variable that can be decremented and that is part of the state of a
+shared_ptr instance (because of the "that instance's use count".)
+</p>
+
+<p>
+This is contrary to the spirit of the rest of the specification that carefully
+avoids to require an use count variable. Instead, use_count() is specified to
+return a value, a number of instances.
+</p>
+
+<p>
+In multithreaded code, the usual implicit assumption is that a shared variable
+should not be accessed by more than one thread without explicit synchronization,
+and by introducing the concept of an "use count" variable, the current wording
+implies that two shared_ptr instances that share ownership cannot be destroyed
+simultaneously.
+</p>
+
+<p>
+In addition, if we allow the interpretation that an use count variable is part
+of shared_ptr's state, this would lead to other undesirable consequences WRT
+multiple threads. For example,
+</p>
+
+<blockquote><pre>p1 = p2;
+</pre></blockquote>
+
+<p>
+would now visibly modify the state of p2, a "write" operation, requiring a lock.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change the first two bullets of [lib.util.smartptr.shared.dest]/1 to:
+</p>
+
+<blockquote><p>
+</p><ul>
+<li>If <tt>*this</tt> is <i>empty</i> <ins>or shares ownership with another
+<tt>shared_ptr</tt> instance (<tt>use_count() &gt; 1</tt>)</ins>, there are no side effects.</li>
+<li><del>If <tt>*this</tt> <i>shares ownership</i> with another <tt>shared_ptr</tt> instance
+(<tt>use_count() &gt; 1</tt>), decrements that instance's use count.</del></li>
+</ul>
+<p></p></blockquote>
+
+<p>
+Add the following paragraph after [lib.util.smartptr.shared.dest]/1:
+</p>
+
+<blockquote><p>
+[<i>Note:</i> since the destruction of <tt>*this</tt> decreases the number of instances in
+<tt>*this</tt>'s ownership group by one, all <tt>shared_ptr</tt> instances that share ownership
+with <tt>*this</tt> will report an <tt>use_count()</tt> that is one lower than its previous value
+after <tt>*this</tt> is destroyed. <i>--end note</i>]
+</p></blockquote>
+<hr>
+<a name="576"><h3>576.&nbsp;find_first_of is overconstrained</h3></a><p><b>Section:</b>&nbsp;25.1.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.find.first.of"> [lib.alg.find.first.of]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Doug Gregor&nbsp; <b>Date:</b>&nbsp;25 Apr 2006</p>
+<p>
+In 25.1.4 Find First [lib.alg.find.first], the two iterator type parameters to
+find_first_of are specified to require Forward Iterators, as follows:
+</p>
+
+<blockquote><pre>template&lt;class ForwardIterator1, class ForwardIterator2&gt;
+  ForwardIterator1
+  find_first_of(ForwardIterator1 first1, ForwardIterator1 last1,
+                        ForwardIterator2 first2, ForwardIterator2 last2);
+template&lt;class ForwardIterator1, class ForwardIterator2,
+                  class BinaryPredicate&gt;
+ForwardIterator1
+  find_first_of(ForwardIterator1 first1, ForwardIterator1 last1,
+                         ForwardIterator2 first2, ForwardIterator2 last2,
+                        BinaryPredicate pred);
+</pre></blockquote>
+
+<p>
+However, ForwardIterator1 need not actually be a Forward Iterator; an Input
+Iterator suffices, because we do not need the multi-pass property of the Forward
+Iterator or a true reference.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change the declarations of <tt>find_first_of</tt> to:
+</p>
+
+<blockquote><pre>template&lt;class <del>ForwardIterator1</del><ins>InputIterator1</ins>, class ForwardIterator2&gt;
+  <del>ForwardIterator1</del><ins>InputIterator1</ins>
+  find_first_of(<del>ForwardIterator1</del><ins>InputIterator1</ins> first1, <del>ForwardIterator1</del><ins>InputIterator1</ins> last1,
+                        ForwardIterator2 first2, ForwardIterator2 last2);
+template&lt;class <del>ForwardIterator1</del><ins>InputIterator1</ins>, class ForwardIterator2,
+                  class BinaryPredicate&gt;
+<del>ForwardIterator1</del><ins>InputIterator1</ins>
+  find_first_of(<del>ForwardIterator1</del><ins>InputIterator1</ins> first1, <del>ForwardIterator1</del><ins>InputIterator1</ins> last1,
+                         ForwardIterator2 first2, ForwardIterator2 last2,
+                        BinaryPredicate pred);
+</pre></blockquote>
+
+<hr>
+<a name="577"><h3>577.&nbsp;upper_bound(first, last, ...) cannot return last</h3></a><p><b>Section:</b>&nbsp;25.3.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.upper.bound"> [lib.upper.bound]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Seungbeom Kim&nbsp; <b>Date:</b>&nbsp;3 May 2006</p>
+<p>
+ISO/IEC 14882:2003 says:
+</p>
+
+<blockquote>
+<p>
+25.3.3.2 upper_bound
+</p>
+<p>
+<i>Returns:</i> The furthermost iterator <tt>i</tt> in the range
+<tt>[<i>first</i>, <i>last</i>)</tt> such that
+for any iterator <tt>j</tt> in the range <tt>[<i>first</i>, i)</tt> the following corresponding
+conditions hold: <tt>!(value &lt; *j)</tt> or <tt><i>comp</i>(<i>value</i>, *j) == false</tt>.
+</p>
+</blockquote>
+
+<p>
+From the description above, upper_bound cannot return last, since it's
+not in the interval [first, last). This seems to be a typo, because if
+value is greater than or equal to any other values in the range, or if
+the range is empty, returning last seems to be the intended behaviour.
+The corresponding interval for lower_bound is also [first, last].
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change [lib.upper.bound]:
+</p>
+
+<blockquote>
+<p>
+<i>Returns:</i> The furthermost iterator <tt>i</tt> in the range
+<tt>[<i>first</i>, <i>last</i><del>)</del><ins>]</ins></tt> such that
+for any iterator <tt>j</tt> in the range <tt>[<i>first</i>, i)</tt> the following corresponding
+conditions hold: <tt>!(value &lt; *j)</tt> or <tt><i>comp</i>(<i>value</i>, *j) == false</tt>.
+</p>
+</blockquote>
+
+<hr>
+<a name="578"><h3>578.&nbsp;purpose of hint to allocator::allocate()</h3></a><p><b>Section:</b>&nbsp;20.6.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;17 May 2006</p>
+        <p>
+
+The     description    of     the     allocator    member     function
+<code>allocate()</code>  requires  that  the <i>hint</i>  argument  be
+either 0 or a  value previously returned from <code>allocate()</code>.
+Footnote 227 further suggests that  containers may pass the address of
+an adjacent element as this argument.
+
+        </p>
+        <p>
+
+I  believe  that  either  the  footnote  is  wrong  or  the  normative
+requirement that  the argument be  a value previously returned  from a
+call to  <code>allocate()</code> is wrong. The latter  is supported by
+the resolution  to issue 20-004 proposed in  c++std-lib-3736 by Nathan
+Myers. In addition,  the <i>hint</i> is an ordinary  void* and not the
+<code>pointer</code>  type returned  by  <code>allocate()</code>, with
+the  two  types potentially  being  incompatible  and the  requirement
+impossible to satisfy.
+
+        </p>
+        <p>
+
+See also c++std-lib-14323 for some  more context on where this came up
+(again).
+
+        </p>
+    <p><b>Proposed resolution:</b></p>
+        <p>
+
+Remove  the requirement  in  20.6.1.1, p4  that  the hint  be a  value
+previously returned from <code>allocate()</code>. Specifically, change
+the paragraph as follows:
+
+        </p>
+        <p>
+
+<i>Requires</i>: <i>hint</i> <ins>is </ins>either 0 or <del>previously
+obtained  from  member <code>allocate</code>  and  not  yet passed  to
+member  <code>deallocate</code></del><ins> the  address of  a  byte in
+memory (1.7)</ins>.
+
+        </p>
+    <hr>
+<a name="579"><h3>579.&nbsp;erase(iterator) for unordered containers should not return an iterator</h3></a><p><b>Section:</b>&nbsp;23.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.unord.req"> [lib.unord.req]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Joaquín M López Muñoz&nbsp; <b>Date:</b>&nbsp;13 Jun 2006</p>
+<p>
+See
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2023.pdf">N2023</a>
+for full discussion.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Option 1:
+</p>
+
+<p>
+The problem can be eliminated by omitting the requirement that <tt>a.erase(q)</tt> return an 
+iterator. This is, however, in contrast with the equivalent requirements for other 
+standard containers.
+</p>
+
+<p>
+Option 2:
+</p>
+
+<p>
+<tt>a.erase(q)</tt> can be made to compute the next iterator only when explicitly requested: 
+the technique consists in returning a proxy object implicitly convertible to <tt>iterator</tt>, so 
+that
+</p>
+
+<blockquote><pre>iterator q1=a.erase(q);
+</pre></blockquote>
+
+<p>
+works as expected, while
+</p>
+
+<blockquote><pre>a.erase(q);
+</pre></blockquote>
+
+<p>
+does not ever invoke the conversion-to-iterator operator, thus avoiding the associated 
+computation. To allow this technique, some sections of TR1 along the line "return value 
+is an iterator..." should be changed to "return value is an unspecified object implicitly 
+convertible to an iterator..." Although this trick is expected to work transparently, it can 
+have some collateral effects when the expression <tt>a.erase(q)</tt> is used inside generic 
+code.
+</p>
+
+<hr>
+<a name="580"><h3>580.&nbsp;unused allocator members</h3></a><p><b>Section:</b>&nbsp;20.1.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;14 June 2006</p>
+        <p>
+
+C++ Standard Library  templates that take an allocator  as an argument
+are    required    to    call    the    <code>allocate()</code>    and
+<code>deallocate()</code>  members of the  allocator object  to obtain
+storage.  However, they do not appear to be required to call any other
+allocator      members      such     as      <code>construct()</code>,
+<code>destroy()</code>,           <code>address()</code>,          and
+<code>max_size()</code>.  This makes these allocator members less than
+useful in portable programs.
+
+        </p>
+    <p><b>Proposed resolution:</b></p>
+        <p>
+
+It's unclear to me whether the absence of the requirement to use these
+allocator  members  is  an  unintentional  omission  or  a  deliberate
+choice. However,  since the functions exist in  the standard allocator
+and  since  they are  required  to  be  provided by  any  user-defined
+allocator I  believe the standard  ought to be clarified  to explictly
+specify  whether programs  should or  should not  be able  to  rely on
+standard containers calling the functions.
+
+        </p>
+        <p>
+
+I  propose  that all  containers  be required  to  make  use of  these
+functions.
+
+        </p>
+    <hr>
+<a name="581"></a><h3><a name="581">581.&nbsp;<code>flush()</code> not unformatted function</a></h3><p><b>Section:</b>&nbsp;27.6.2.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.unformatted"> [lib.ostream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;14 June 2006</p>
+        <p>
+
+The resolution of issue 60 changed <code>basic_ostream::flush()</code>
+so as not  to require it to behave as  an unformatted output function.
+That has at least two in my opinion problematic consequences:
+
+        </p>
+        <p>
+
+First, <code>flush()</code>  now calls <code>rdbuf()-&gt;pubsync()</code>
+unconditionally, without  regard to the  state of the stream.  I can't
+think of any reason why <code>flush()</code> should behave differently
+from the vast majority of stream functions in this respect.
+
+        </p>
+        <p>
+
+Second, <code>flush()</code> is not  required to catch exceptions from
+<code>pubsync()</code> or set  <code>badbit</code> in response to such
+events. That doesn't seem right either, as most other stream functions
+do so.
+
+        </p>
+    <p><b>Proposed resolution:</b></p>
+        <p>
+
+I  propose  to revert  the  resolution of  issue  60  with respect  to
+<code>flush()</code>. Specifically,  I propose to  change 27.6.2.6, p7
+as follows:
+
+        </p>
+
+Effects: <ins>Behaves as an  unformatted output function (as described
+in 27.6.2.6, paragraph 1). </ins>If <code>rdbuf()</code> is not a null
+pointer,  <ins>constructs a  sentry  object.  If  this object  returns
+<code>true</code> when converted to a  value of type bool the function
+</ins>calls <code>rdbuf()-&gt;pubsync()</code>.  If that function returns
+-1    calls    <code>setstate(badbit)</code>    (which    may    throw
+<code>ios_base::failure</code>  (27.4.4.3)).   <ins>Otherwise, if  the
+sentry object returns <code>false</code>, does nothing.</ins><del>Does
+not  behave  as  an  unformatted  output  function  (as  described  in
+27.6.2.6, paragraph 1).</del>
+
+    <hr>
+<a name="582"><h3>582.&nbsp;specialized algorithms and volatile storage</h3></a><p><b>Section:</b>&nbsp;20.6.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.uninitialized.copy"> [lib.uninitialized.copy]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;14 June 2006</p>
+        <p>
+
+The specialized  algorithms [lib.specialized.algorithms] are specified
+as having the general effect of invoking the following expression:
+
+        </p>
+        <p>
+            </p><pre>
+new (static_cast&lt;void*&gt;(&amp;*i))
+    typename iterator_traits&lt;ForwardIterator&gt;::value_type (x)
+
+            </pre>
+        <p></p>
+        <p>
+
+This  expression is  ill-formed  when the  type  of the  subexpression
+<code>&amp;*i</code> is some volatile-qualified <code>T</code>.
+
+        </p>
+    <p><b>Proposed resolution:</b></p>
+        <p>
+
+In order  to allow these algorithms  to operate on  volatile storage I
+propose to change the expression so as to make it well-formed even for
+pointers  to volatile  types.  Specifically,  I propose  the following
+changes to clauses 20 and 24. Change 20.6.4.1, p1 to read:
+
+        </p>
+        <p>
+            </p><pre>
+<i>Effects</i>:
+
+typedef typename iterator_traits&lt;ForwardIterator&gt;::pointer    pointer;
+typedef typename iterator_traits&lt;ForwardIterator&gt;::value_type value_type;
+
+for (; first != last; ++result, ++first)
+    new (static_cast&lt;void*&gt;(const_cast&lt;pointer&gt;(&amp;*result))
+        value_type (*first);
+
+            </pre>
+        <p></p>
+        <p>
+
+change 20.6.4.2, p1 to read
+
+        </p>
+        <p>
+            </p><pre>
+<i>Effects</i>:
+
+typedef typename iterator_traits&lt;ForwardIterator&gt;::pointer    pointer;
+typedef typename iterator_traits&lt;ForwardIterator&gt;::value_type value_type;
+
+for (; first != last; ++result, ++first)
+    new (static_cast&lt;void*&gt;(const_cast&lt;pointer&gt;(&amp;*first))
+        value_type (*x);
+
+            </pre>
+        <p></p>
+        <p>
+
+and change 20.6.4.3, p1 to read
+
+        </p>
+        <p>
+            </p><pre>
+<i>Effects</i>:
+
+typedef typename iterator_traits&lt;ForwardIterator&gt;::pointer    pointer;
+typedef typename iterator_traits&lt;ForwardIterator&gt;::value_type value_type;
+
+for (; n--; ++first)
+    new (static_cast&lt;void*&gt;(const_cast&lt;pointer&gt;(&amp;*first))
+        value_type (*x);
+
+            </pre>
+        <p></p>
+        <p>
+
+In   addition,  since   there   is  no   partial  specialization   for
+<code>iterator_traits&lt;volatile T*&gt;</code>  I propose to  add one
+to parallel such specialization  for &lt;const T*&gt;. Specifically, I
+propose to add the following text to the end of 24.3.1, p3:
+
+        </p>
+        <p>
+
+and for pointers to volatile as 
+
+        </p>
+        <p>
+            </p><pre>
+namespace std {
+template&lt;class T&gt; struct iterator_traits&lt;volatile T*&gt; {
+typedef ptrdiff_t difference_type;
+typedef T value_type;
+typedef volatile T* pointer;
+typedef volatile T&amp; reference;
+typedef random_access_iterator_tag iterator_category;
+};
+}
+
+            </pre>
+        <p></p>
+        <p>
+
+Note that  the change to  <code>iterator_traits</code> isn't necessary
+in order to implement the  specialized algorithms in a way that allows
+them to operate on volatile  strorage. It is only necesassary in order
+to specify  their effects in terms  of <code>iterator_traits</code> as
+is  done here.   Implementations can  (and some  do) achieve  the same
+effect by means of function template overloading.
+
+        </p>
+    <hr>
+<a name="583"><h3>583.&nbsp;div() for unsigned integral types</h3></a><p><b>Section:</b>&nbsp;26.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;15 Jun 2006</p>
+<p>
+There is no div() function for unsigned integer types.
+</p>
+<p>
+There are several possible resolutions.  The simplest one is noted below.  Other
+possibilities include a templated solution.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Add to 26.7 [lib.c.math] paragraph 8:
+</p>
+
+<blockquote><pre>struct udiv_t div(unsigned, unsigned);
+struct uldiv_t div(unsigned long, unsigned long);
+struct ulldiv_t div(unsigned long long, unsigned long long);
+</pre></blockquote>
+
+<hr>
+<a name="584"><h3>584.&nbsp;missing int pow(int,int) functionality</h3></a><p><b>Section:</b>&nbsp;26.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;15 Jun 2006</p>
+<p>
+There is no pow() function for any integral type.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Add something like:
+</p>
+
+<blockquote><pre>template&lt; typename T&gt;
+T power( T x, int n );
+// requires: n &gt;=0
+</pre></blockquote>
+<hr>
+<a name="585"></a><h3><a name="585">585.&nbsp;facet error reporting</a></h3><p><b>Section:</b>&nbsp;22.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.categories"> [lib.locale.categories]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor, Paolo Carlini&nbsp; <b>Date:</b>&nbsp;22 June 2006</p>
+        <p>
+
+Section  22.2, paragraph 2  requires facet  <code>get()</code> members
+that    take    an    <code>ios_base::iostate&amp;</code>    argument,
+<code><i>err</i></code>,  to   ignore  the  (initial)   value  of  the
+argument, but to set it to <code>ios_base::failbit</code> in case of a
+parse error.
+
+        </p>
+        <p>
+
+We  believe  there  are  a   few  minor  problems  with  this  blanket
+requirement  in   conjunction  with   the  wording  specific   to  each
+<code>get()</code> member function.
+
+        </p>
+        <p>
+
+First,  besides <code>get()</code>  there are  other  member functions
+with     a      slightly     different     name      (for     example,
+<code>get_date()</code>). It's not completely clear that the intent of
+the  paragraph  is  to  include  those  as  well,  and  at  least  one
+implementation has interpreted the requirement literally.
+
+        </p>
+        <p>
+
+Second,    the     requirement    to    "set     the    argument    to
+<code>ios_base::failbit</code>  suggests that  the  functions are  not
+permitted    to   set    it   to    any   other    value    (such   as
+<code>ios_base::eofbit</code>,   or   even  <code>ios_base::eofbit   |
+ios_base::failbit</code>).
+
+        </p>
+        <p>
+
+However, 22.2.2.1.2, p5 (Stage  3 of <code>num_get</code> parsing) and
+p6 (<code>bool</code> parsing)  specifies that the <code>do_get</code>
+functions  perform <code><i>err</i> |=  ios_base::eofbit</code>, which
+contradicts  the earlier  requirement to  ignore  <i>err</i>'s initial
+value.
+
+        </p>
+        <p>
+
+22.2.6.1.2,  p1  (the  Effects  clause of  the  <code>money_get</code>
+facet's  <code>do_get</code>  member  functions) also  specifies  that
+<code><i>err</i></code>'s initial  value be used to  compute the final
+value  by  ORing  it  with  either  <code>ios_base::failbit</code>  or
+with<code>ios_base::eofbit | ios_base::failbit</code>.
+
+        </p>
+    <p><b>Proposed resolution:</b></p>
+        <p>
+
+We believe the  intent is for all facet member  functions that take an
+<code>ios_base::iostate&amp;</code> argument to:
+
+        </p>
+        <p>
+            </p><ul>
+                <li>
+
+ignore the initial value of the <code><i>err</i></code> argument,
+
+                </li>
+                <li>
+
+reset <code><i>err</i></code>  to <code>ios_base::goodbit</code> prior
+to any further processing,
+
+                </li>
+                <li>
+
+and       set      either       <code>ios_base::eofbit</code>,      or
+<code>ios_base::failbit</code>, or both in <code><i>err</i></code>, as
+appropriate,  in response  to  reaching the  end-of-file  or on  parse
+error, or both.
+
+                </li>
+            </ul>
+        <p></p>
+        <p>
+
+To that effect we propose to change 22.2, p2 as follows:
+
+        </p>
+        <p>
+
+The  <i>put</i><del>()</del>  members  make  no  provision  for  error
+reporting.   (Any  failures of  the  OutputIterator  argument must  be
+extracted   from  the   returned  iterator.)    <ins>Unless  otherwise
+specified, </ins>the <i>get</i><del>()</del>  members  <ins>that</ins>
+take an  <code>ios_base::iostate&amp;</code> argument <del>whose value
+they  ignore,  but  set  to  ios_base::failbit  in  case  of  a  parse
+error.</del><ins>,   <code><i>err</i></code>,   start  by   evaluating
+<code>err  =   ios_base::goodbit</code>,  and  may   subsequently  set
+<i>err</i>     to     either     <code>ios_base::eofbit</code>,     or
+<code>ios_base::failbit</code>,     or     <code>ios_base::eofbit    |
+ios_base::failbit</code> in response to reaching the end-of-file or in
+case of a parse error, or both, respectively.</ins>
+
+        </p>
+    <hr>
+<a name="586"><h3>586.&nbsp;string inserter not a formatted function</h3></a><p><b>Section:</b>&nbsp;21.3.7.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;22 June 2006</p>
+        <p>
+
+Section  and paragraph  numbers  in  this paper  are  relative to  the
+working draft document number N2009 from 4/21/2006.
+
+        </p>
+
+        <p>
+
+The  <code>basic_string</code> extractor  in 21.3.7.9,  p1  is clearly
+required  to  behave  as  a   formatted  input  function,  as  is  the
+<code>std::getline()</code> overload for string described in p7.
+
+        </p>
+        <p>
+
+However, the <code>basic_string</code> inserter described in p5 of the
+same section has no such requirement. This has implications on how the
+operator  responds  to  exceptions thrown  from  <code>xsputn()</code>
+(formatted  output functions are  required to  set <code>badbit</code>
+and swallow  the exception unless  <code>badbit</code> is also  set in
+<code>exceptions()</code>; the  string inserter doesn't  have any such
+requirement).
+
+        </p>
+        <p>
+
+I don't  see anything in the  spec for the string  inserter that would
+justify requiring  it to treat  exceptions differently from  all other
+similar operators. (If it did, I think it should be made this explicit
+by saying  that the  operator "does not  behave as a  formatted output
+function" as has been made customary by the adoption of the resolution
+of issue 60).
+
+        </p>
+    <p><b>Proposed resolution:</b></p>
+        <p>
+
+I propose to change the Effects clause in 21.3.7.9, p5, as follows:
+
+        </p>
+        <p>
+            </p><blockquote>
+
+<i>Effects</i>: <del>Begins by constructing a  sentry object k as if k
+were    constructed    by    typename    <code>basic_ostream&lt;charT,
+traits&gt;::sentry   k   (os)</code>.    If  <code>bool(k)</code>   is
+<code>true</code>, </del><ins>Behaves  as a formatted  output function
+(27.6.2.5.1).   After constructing  a  <code>sentry</code> object,  if
+this  object returns <code>true</code>  when converted  to a  value of
+type   <code>bool</code>,   determines   padding   as   described   in
+22.2.2.2.2</ins>,  then inserts the  resulting sequence  of characters
+<code><i>seq</i></code> as if by calling <code>os.rdbuf()-&gt;sputn(seq ,
+n)</code>,    where   <code><i>n</i></code>    is   the    larger   of
+<code>os.width()</code>   and   <code>str.size()</code>;  then   calls
+<code>os.width(0)</code>.  <del>If  the  call  to sputn  fails,  calls
+<code>os.setstate(ios_base::failbit)</code>.</del>
+
+            </blockquote>
+        <p></p>
+        <p>
+
+This proposed  resilution assumes the  resolution of issue  394 (i.e.,
+that   all   formatted   output   functions  are   required   to   set
+<code>ios_base::badbit</code>  in response  to any  kind  of streambuf
+failure),   and   implicitly   assumes   that  a   return   value   of
+<code>sputn(seq,  <i>n</i>)</code>  other  than  <code><i>n</i></code>
+indicates a failure.
+
+        </p>
+    <hr>
+<a name="587"><h3>587.&nbsp;iststream ctor missing description</h3></a><p><b>Section:</b>&nbsp;D.7.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/future.html#depr.istrstream.cons"> [depr.istrstream.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;22 June 2006</p>
+        <p>
+
+The  <code>iststream(char*, streamsize)</code>  ctor is  in  the class
+synopsis  in D.7.2  but its  signature is  missing in  the description
+below (in D.7.2.1).
+
+        </p>
+    <p><b>Proposed resolution:</b></p>
+        <p>
+
+This seems like a simple editorial issue and the missing signature can
+be added to the one for <code>const char*</code> in paragraph 2.
+
+        </p>
+    <hr>
+<a name="588"><h3>588.&nbsp;requirements on zero sized tr1::arrays and other details</h3></a><p><b>Section:</b>&nbsp;23.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.array"> [lib.array]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Gennaro Prota&nbsp; <b>Date:</b>&nbsp;18 Jul 2006</p>
+<p>
+The wording used for section 23.2.1 [lib.array] seems to be subtly
+ambiguous about zero sized arrays (N==0). Specifically:
+</p>
+<p>
+* "An instance of array&lt;T, N&gt; stores N elements of type T, so that
+[...]"
+</p>
+<p>
+Does this imply that a zero sized array object stores 0 elements, i.e.
+that it cannot store any element of type T? The next point clarifies
+the rationale behind this question, basically how to implement begin()
+and end():
+</p>
+<p>
+* 23.2.1.5 [lib.array.zero], p2: "In the case that N == 0, begin() ==
+end() == unique value."
+</p>
+<p>
+What does "unique" mean in this context? Let's consider the following
+possible implementations, all relying on a partial specialization:
+</p>
+<blockquote><pre>a)
+    template&lt; typename T &gt;
+    class array&lt; T, 0 &gt; {
+    
+        ....
+
+        iterator begin()
+        { return iterator( reinterpret_cast&lt; T * &gt;( this ) ); }
+        ....
+
+    };
+</pre></blockquote>
+<p>
+This has been used in boost, probably intending that the return value
+had to be unique to the specific array object and that array couldn't
+store any T. Note that, besides relying on a reinterpret_cast, has
+(more than potential) alignment problems.
+</p>
+<blockquote><pre>b)
+    template&lt; typename T &gt;
+    class array&lt; T, 0 &gt; {
+    
+        T t;
+
+        iterator begin()
+        { return iterator( &amp;t ); }
+        ....
+
+    };
+</pre></blockquote>
+<p>
+This provides a value which is unique to the object and to the type of
+the array, but requires storing a T. Also, it would allow the user to
+mistakenly provide an initializer list with one element.
+</p>
+<p>
+A slight variant could be returning *the* null pointer of type T
+</p>
+<blockquote><pre>    return static_cast&lt;T*&gt;(0);
+</pre></blockquote>
+<p>
+In this case the value would be unique to the type array&lt;T, 0&gt; but not
+to the objects (all objects of type array&lt;T, 0&gt; with the same value
+for T would yield the same pointer value).
+</p>
+<p>
+Furthermore this is inconsistent with what the standard requires from
+allocation functions (see library issue 9).
+</p>
+<p>
+c) same as above but with t being a static data member; again, the
+value would be unique to the type, not to the object.
+</p>
+<p>
+d) to avoid storing a T *directly* while disallowing the possibility
+to use a one-element initializer list a non-aggregate nested class
+could be defined
+</p>
+<blockquote><pre>    struct holder { holder() {} T t; } h;
+</pre></blockquote>
+<p>
+and then begin be defined as
+</p>
+<blockquote><pre> iterator begin() { return &amp;h.t; }
+</pre></blockquote>
+<p>
+But then, it's arguable whether the array stores a T or not.
+Indirectly it does.
+</p>
+<p>
+-----------------------------------------------------
+</p>
+<p>
+Now, on different issues:
+</p>
+<p>
+* what's the effect of calling assign(T&amp;) on a zero-sized array? There
+seems to be only mention of front() and back(), in 23.2.1 [lib.array]
+p4 (I would also suggest to move that bullet to section 23.2.1.5
+[lib.array.zero], for locality of reference)
+</p>
+<p>
+* (minor) the opening paragraph of 23.2.1 [lib.array] wording is a bit
+inconsistent with that of other sequences: that's not a problem in
+itself, but compare it for instance with "A vector is a kind of
+sequence that supports random access iterators"; though the intent is
+obvious one might argue that the wording used for arrays doesn't tell
+what an array is, and relies on the reader to infer that it is what
+the &lt;array&gt; header defines.
+</p>
+<p>
+* it would be desiderable to have a static const data member of type
+std::size_t, with value N, for usage as integral constant expression
+</p>
+<p>
+* section 23.1 [lib.container.requirements] seem not to consider
+fixed-size containers at all, as it says: "[containers] control
+allocation and deallocation of these objects [the contained objects]
+through constructors, destructors, *insert and erase* operations"
+</p>
+<p>
+* max_size() isn't specified: the result is obvious but, technically,
+it relies on table 80: "size() of the largest possible container"
+which, again, doesn't seem to consider fixed size containers
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="589"><h3>589.&nbsp;Requirements on iterators of member template functions of containers</h3></a><p><b>Section:</b>&nbsp;23.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Peter Dimov&nbsp; <b>Date:</b>&nbsp;2 Aug 2006</p>
+<p>
+There appears to be no requirements on the InputIterators used in sequences in 23.1.1 in
+terms of their value_type, and the requirements in 23.1.2 appear to be overly strict
+(requires InputIterator::value_type be the same type as the container's value_type).
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 23.1.1 p3:
+</p>
+
+<blockquote>
+In Tables 82 and 83, <tt>X</tt> denotes a sequence class, <tt>a</tt> denotes a
+value of <tt>X</tt>, <tt>i</tt> and <tt>j</tt> denote iterators satisfying input
+iterator requirements <ins>and refer to elements <ins>implicitly
+convertible to</ins> <tt>value_type</tt></ins>, <tt>[i, j)</tt> denotes a valid
+range, <tt>n</tt> denotes a value of <tt>X::size_type</tt>, <tt>p</tt> denotes a
+valid iterator to <tt>a</tt>, <tt>q</tt> denotes a valid dereferenceable
+iterator to <tt>a</tt>, <tt>[q1, q2)</tt> denotes a valid range in <tt>a</tt>,
+and <tt>t</tt> denotes a value of <tt>X::value_type</tt>.
+</blockquote>
+
+<p>
+Change 23.1.2 p7:
+</p>
+
+<blockquote>
+In Table 84, <tt>X</tt> is an associative container class, <tt>a</tt> is a value
+of <tt>X</tt>, <tt>a_uniq</tt> is a value of <tt>X</tt> when <tt>X</tt> supports
+unique keys, and <tt>a_eq</tt> is a value of <tt>X</tt> when <tt>X</tt> supports
+multiple keys, <tt>i</tt> and <tt>j</tt> satisfy input iterator requirements and
+refer to elements <del>of</del> <ins>implicitly convertible to</ins>
+<tt>value_type</tt>, <tt>[i, j)</tt> is a valid range, <tt>p</tt> is a valid
+iterator to <tt>a</tt>, <tt>q</tt> is a valid dereferenceable iterator to
+<tt>a</tt>, <tt>[q1, q2)</tt> is a valid range in <tt>a</tt>, <tt>t</tt> is a
+value of <tt>X::value_type</tt>, <tt>k</tt> is a value of <tt>X::key_type</tt>
+and <tt>c</tt> is a value of type <tt>X::key_compare</tt>.
+</blockquote>
+
+<hr>
+<a name="590"><h3>590.&nbsp;Type traits implementation latitude should be removed for C++0x</h3></a><p><b>Section:</b>&nbsp;<font color="red">20.4.9</font>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;10 Aug 2006</p>
+<p>
+20.4.9 [lib.meta.req], Implementation requirements, provides latitude for type
+traits implementers that is not needed in C++0x. It includes the wording:
+</p>
+
+<blockquote>
+[<i>Note:</i> the latitude granted to implementers in this clause is temporary,
+and is expected to be removed in future revisions of this document. -- <i>end note</i>]
+</blockquote>
+
+<p>
+Note:
+<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2028.html">N2028:
+Minor Modifications to the type traits Wording</a>
+also has the intent of removing this wording from the WP.
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Remove 20.4.9 [lib.meta.req] in its entirety from the WP.
+</p>
+<hr>
+<a name="591"><h3>591.&nbsp;Misleading "built-in</h3></a><p><b>Section:</b>&nbsp;18.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.numeric.limits.members"> [lib.numeric.limits.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;whyglinux&nbsp; <b>Date:</b>&nbsp;8 Aug 2006</p>
+<p>
+18.2.1.2 numeric_limits members [lib.numeric.limits.members]
+Paragraph 7:
+</p>
+<blockquote>
+"For built-in integer types, the number of non-sign bits in the
+representation."
+</blockquote>
+
+<p>
+26.1 Numeric type requirements [lib.numeric.requirements]
+Footnote:
+</p>
+
+<blockquote>
+"In other words, value types. These include built-in arithmetic types,
+pointers, the library class complex, and instantiations of valarray for
+value types."
+</blockquote>
+
+<p>
+Integer types (which are bool, char, wchar_t, and the signed and
+unsigned integer types) and arithmetic types (which are integer and
+floating types) are all built-in types and thus there are no
+non-built-in (that is, user-defined) integer or arithmetic types. Since
+the redundant "built-in" in the above 2 sentences can mislead that
+there may be built-in or user-defined integer and arithmetic types
+(which is not correct), the "built-in" should be removed.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+</p><p>
+18.2.1.2 numeric_limits members [lib.numeric.limits.members]
+Paragraph 7:
+</p>
+<blockquote>
+"For <del>built-in</del> integer types, the number of non-sign bits in the
+representation."
+</blockquote>
+
+<p>
+26.1 Numeric type requirements [lib.numeric.requirements]
+Footnote:
+</p>
+
+<blockquote>
+"In other words, value types. These include <del>built-in</del> arithmetic types,
+pointers, the library class complex, and instantiations of valarray for
+value types."
+</blockquote>
+<p></p>
+<hr>
+<a name="592"><h3>592.&nbsp;Incorrect treatment of rdbuf()-&gt;close() return type</h3></a><p><b>Section:</b>&nbsp;27.8.1.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ifstream.members"> [lib.ifstream.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Christopher Kohlhoff&nbsp; <b>Date:</b>&nbsp;17 Aug 2006</p>
+<p>
+I just spotted a minor problem in 27.8.1.7
+[lib.ifstream.members] para 4 and also 27.8.1.13
+[lib.fstream.members] para 4. In both places it says:
+</p>
+<blockquote>
+<pre>void close();
+</pre>
+<p>
+Effects: Calls rdbuf()-&gt;close() and, if that function returns false, ...
+</p>
+</blockquote>
+<p>
+However, basic_filebuf::close() (27.8.1.2) returns a pointer to the
+filebuf on success, null on failure, so I think it is meant to
+say "if that function returns a null pointer". Oddly, it is
+correct for basic_ofstream.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Change 27.8.1.7 [lib.ifstream.members], p5:
+</p>
+
+<blockquote>
+<i>Effects:</i> Calls <tt>rdbuf()-&gt;close()</tt> and, if that function
+<ins>fails (</ins>returns <del><tt>false</tt></del> <ins>a null pointer)</ins>,
+calls <tt>setstate(failbit)</tt> (which may throw <tt>ios_base::failure</tt>
+(27.4.4.3)).
+</blockquote>
+
+<p>
+Change 27.8.1.13 [lib.fstream.members], p5:
+</p>
+
+<blockquote>
+<i>Effects:</i> Calls <tt>rdbuf()-&gt;close()</tt> and, if that function
+<ins>fails (</ins>returns <del><tt>false</tt></del> <ins>a null pointer)</ins>,
+calls <tt>setstate(failbit)</tt> (which may throw <tt>ios_base::failure</tt>
+(27.4.4.3)).
+</blockquote>
+
 <p>----- End of document -----</p>
 </body></html>

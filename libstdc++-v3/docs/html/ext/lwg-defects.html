@@ -8,11 +8,11 @@ del {background-color:#FFFFA0}</style></head>
 <table>
 <tbody><tr>
 <td align="left">Doc. no.</td>
-<td align="left">N2001=06-0071</td>
+<td align="left">N2092=06-0162</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">2006-04-21</td>
+<td align="left">2006-09-08</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -23,7 +23,7 @@ del {background-color:#FFFFA0}</style></head>
 <td align="left">Howard Hinnant &lt;howard.hinnant@gmail.com&gt;</td>
 </tr>
 </tbody></table>
-<h1>C++ Standard Library Defect Report List (Revision R42)</h1>
+<h1>C++ Standard Library Defect Report List (Revision R44)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
     <ul>
@@ -45,6 +45,16 @@ del {background-color:#FFFFA0}</style></head>
   document.</p>
 <h2>Revision History</h2>
 <ul>
+<li>R44: 
+2006-09-08 pre-Portland mailing.
+Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#583">583</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#592">592</a>.
+</li>
+<li>R43: 
+2006-06-23 mid-term mailing.
+Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#575">575</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#582">582</a>.
+Reopened <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#255">255</a>.
+Moved issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#520">520</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#541">541</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#544">544</a>, <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#569">569</a> to Tentatively Ready.
+</li>
 <li>R42: 
 2006-04-21 post-Berlin mailing.
 Added new issues <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#567">567</a>-<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#572">572</a>.
@@ -326,7 +336,7 @@ from:</p>
   use extern "C++" linkage for this purpose.</p>
 </blockquote>
 <hr>
-<a name="3"><h3>3.&nbsp;Atexit registration during atexit() call is not described</h3></a><p><b>Section:</b>&nbsp;18.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.support.start.term"> [lib.support.start.term]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;12 Dec 1997</p>
+<a name="3"><h3>3.&nbsp;Atexit registration during atexit() call is not described</h3></a><p><b>Section:</b>&nbsp;18.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.cstdint"> [lib.cstdint]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;12 Dec 1997</p>
 <p>We appear not to have covered all the possibilities of
  exit processing with respect to
 atexit registration. <br>
@@ -610,7 +620,7 @@ paragraph 2:&nbsp; </p>
 
 </blockquote>
 <hr>
-<a name="9"><h3>9.&nbsp;Operator new(0) calls should not yield the same pointer</h3></a><p><b>Section:</b>&nbsp;18.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete"> [lib.new.delete]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;4 Jan 1998</p>
+<a name="9"><h3>9.&nbsp;Operator new(0) calls should not yield the same pointer</h3></a><p><b>Section:</b>&nbsp;18.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete"> [lib.new.delete]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;4 Jan 1998</p>
 <p>Scott Meyers, in a comp.std.c++ posting: I just noticed that
 section 3.7.3.1 of CD2 seems to allow for the possibility that all
 calls to operator new(0) yield the same pointer, an implementation
@@ -650,12 +660,12 @@ list maintainer's note: the IS is the same.]</p>
   pointer to any other object.]</p>
 </blockquote>
 <p>Retain the first sentence, and delete the remainder.</p>
-<p>18.4.1 currently has no text. Add the following:</p>
+<p>18.5.1 currently has no text. Add the following:</p>
 <blockquote>
   <p>Except where otherwise specified, the provisions of 3.7.3 apply to the
   library versions of operator new and operator delete.</p>
 </blockquote>
-<p>To 18.4.1.3, add the following text:</p>
+<p>To 18.5.1.3, add the following text:</p>
 <blockquote>
   <p>The provisions of 3.7.3 do not apply to these reserved placement forms of
   operator new and operator delete.</p>
@@ -744,7 +754,7 @@ constructor, but there is no matching constructor. </p>
 "<tt>locale(name().c_str())</tt>".
 </p>
 <hr>
-<a name="16"><h3>16.&nbsp;Bad ctype_byname&lt;char&gt; decl</h3></a><p><b>Section:</b>&nbsp;22.2.1.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.byname.special"> [lib.locale.ctype.byname.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="16"><h3>16.&nbsp;Bad ctype_byname&lt;char&gt; decl</h3></a><p><b>Section:</b>&nbsp;22.2.1.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The new virtual members ctype_byname&lt;char&gt;::do_widen and do_narrow did not get
 edited in properly. Instead, the member do_widen appears four times, with wrong argument
 lists. </p>
@@ -842,7 +852,7 @@ virtual is listed everywhere appropriate. </p>
 another get member for bool&amp;, copied from the entry in 
 22.2.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.num.get"> [lib.locale.num.get]</a>.</p>
 <hr>
-<a name="19"><h3>19.&nbsp;"Noconv" definition too vague</h3></a><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="19"><h3>19.&nbsp;"Noconv" definition too vague</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>
 In the definitions of codecvt&lt;&gt;::do_out and do_in, they are
 specified to return noconv if "no conversion is
@@ -852,7 +862,7 @@ normatively what is done with the buffers.
 <p><b>Proposed resolution:</b></p>
 <p>
 Change the entry for noconv in the table under paragraph 4 in section 
-22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a> to read:
+<font color="red">22.2.1.5.2</font> to read:
 </p>
 <blockquote>
   <p><tt>noconv</tt>: <tt>internT</tt> and <tt>externT</tt> are the same type,
@@ -916,14 +926,14 @@ one case.  The resolution of this issue clarifies what the LWG
 believes to have been the original intent.</p>
 
 <hr>
-<a name="24"><h3>24.&nbsp;"do_convert" doesn't exist</h3></a><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="24"><h3>24.&nbsp;"do_convert" doesn't exist</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The description of codecvt&lt;&gt;::do_out and do_in mentions a
 symbol "do_convert" which is not defined in the
 standard. This is a leftover from an edit, and should be "do_in
 and do_out". </p>
 <p><b>Proposed resolution:</b></p>
-<p>In 22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>, paragraph 3, change
-"do_convert" to "do_in or do_out". Also, in 22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>, change "do_convert()" to "do_in
+<p>In 22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>, paragraph 3, change
+"do_convert" to "do_in or do_out". Also, in <font color="red">22.2.1.5.2</font>, change "do_convert()" to "do_in
 or do_out". </p>
 <hr>
 <a name="25"><h3>25.&nbsp;String operator&lt;&lt; uses width() value wrong</h3></a><p><b>Section:</b>&nbsp;21.3.7.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
@@ -1101,7 +1111,7 @@ Specifically, the latter says it calls pbackfail if: </p>
 <p>Note deliberate reordering of arguments for clarity in addition to the correction of
 the argument value.</p>
 <hr>
-<a name="33"><h3>33.&nbsp;Codecvt&lt;&gt; mentions from_type</h3></a><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
+<a name="33"><h3>33.&nbsp;Codecvt&lt;&gt; mentions from_type</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>In the table defining the results from do_out and do_in, the specification for the
 result <i>error</i> says </p>
 
@@ -1112,7 +1122,7 @@ result <i>error</i> says </p>
 <p>but from_type is not defined. This clearly is intended to be an externT for do_in, or
 an internT for do_out. </p>
 <p><b>Proposed resolution:</b></p>
-<p>In 22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a> paragraph 4, replace the definition
+<p>In <font color="red">22.2.1.5.2</font> paragraph 4, replace the definition
 in the table for the case of _error_ with </p>
 
 <blockquote>
@@ -1655,7 +1665,7 @@ base class, exception, with exception(msg). Class exception (see
   <p>EFFECTS: Constructs an object of class <tt>failure</tt>.</p>
 </blockquote>
 <hr>
-<a name="49"><h3>49.&nbsp;Underspecification of ios_base::sync_with_stdio</h3></a><p><b>Section:</b>&nbsp;27.4.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ios.members.static"> [lib.ios.members.static]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;21 Jun 1998</p>
+<a name="49"></a><h3><a name="49">49.&nbsp;Underspecification of ios_base::sync_with_stdio</a></h3><p><b>Section:</b>&nbsp;27.4.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ios.members.static"> [lib.ios.members.static]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;21 Jun 1998</p>
 <p>Two problems</p>
 
 <p>(1) 27.4.2.4 doesn't say what ios_base::sync_with_stdio(f)
@@ -2405,7 +2415,7 @@ item from:</p>
   extracted.
 </blockquote>
 <hr>
-<a name="69"><h3>69.&nbsp;Must elements of a vector be contiguous?</h3></a><p><b>Section:</b>&nbsp;23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector"> [lib.vector]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;29 Jul 1998</p>
+<a name="69"><h3>69.&nbsp;Must elements of a vector be contiguous?</h3></a><p><b>Section:</b>&nbsp;23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.adaptors"> [lib.container.adaptors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Koenig&nbsp; <b>Date:</b>&nbsp;29 Jul 1998</p>
 <p>The issue is this: Must the elements of a vector be in contiguous memory?</p>
 
 <p>(Please note that this is entirely separate from the question of
@@ -2413,7 +2423,7 @@ whether a vector iterator is required to be a pointer; the answer to
 that question is clearly "no," as it would rule out
 debugging implementations)</p>
 <p><b>Proposed resolution:</b></p>
-<p>Add the following text to the end of 23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector"> [lib.vector]</a>,
+<p>Add the following text to the end of 23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.adaptors"> [lib.container.adaptors]</a>,
 paragraph 1. </p>
 
 <blockquote>
@@ -2430,7 +2440,7 @@ directly defined in the standard.  Discussion included:</p>
 
 <ul>
   <li>An operational definition similar to the above proposed resolution is 
-    already used for valarray (26.3.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.access"> [lib.valarray.access]</a>).</li>
+    already used for valarray (<font color="red">26.3.2.3</font>).</li>
   <li>There is no need to explicitly consider a user-defined operator&amp; 
     because elements must be copyconstructible (23.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a> para 3) 
     and copyconstructible (20.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.copyconstructible"> [lib.copyconstructible]</a>) specifies
@@ -2438,7 +2448,7 @@ directly defined in the standard.  Discussion included:</p>
   <li>There is no issue of one-past-the-end because of language rules.</li>
 </ul>
 <hr>
-<a name="70"><h3>70.&nbsp;Uncaught_exception() missing throw() specification</h3></a><p><b>Section:</b>&nbsp;18.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.support.exception"> [lib.support.exception]</a>, 18.6.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.uncaught"> [lib.uncaught]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;Unknown</p>
+<a name="70"><h3>70.&nbsp;Uncaught_exception() missing throw() specification</h3></a><p><b>Section:</b>&nbsp;18.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.support.exception"> [lib.support.exception]</a>, 18.7.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.uncaught"> [lib.uncaught]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;Unknown</p>
 <p>In article 3E04@pratique.fr, Valentin Bonnard writes: </p>
 
 <p>uncaught_exception() doesn't have a throw specification.</p>
@@ -2449,7 +2459,7 @@ handle exceptions thrown from uncaught_exception() ?</p>
 <p>uncaught_exception() is called in exception handling contexts where
 exception safety is very important.</p>
 <p><b>Proposed resolution:</b></p>
-<p>In 15.5.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/except.html#except.uncaught"> [except.uncaught]</a>, paragraph 1, 18.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.support.exception"> [lib.support.exception]</a>, and 18.6.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.uncaught"> [lib.uncaught]</a>, add "throw()" to uncaught_exception().</p>
+<p>In 15.5.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/except.html#except.uncaught"> [except.uncaught]</a>, paragraph 1, 18.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.support.exception"> [lib.support.exception]</a>, and 18.7.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.uncaught"> [lib.uncaught]</a>, add "throw()" to uncaught_exception().</p>
 <hr>
 <a name="71"><h3>71.&nbsp;Do_get_monthname synopsis missing argument</h3></a><p><b>Section:</b>&nbsp;22.2.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.time.get"> [lib.locale.time.get]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;13 Aug 1998</p>
 <p>The locale facet member <tt>time_get&lt;&gt;::do_get_monthname</tt>
@@ -2466,12 +2476,12 @@ the declaration of member do_monthname as follows:</p>
                                      ios_base::iostate&amp; err, tm* t) const;</pre>
 <hr>
 <a name="74"><h3>74.&nbsp;Garbled text for <tt>codecvt::do_max_length</tt>
-</h3></a><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;8 Sep 1998</p>
+</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;8 Sep 1998</p>
 <p>The text of <tt>codecvt::do_max_length</tt>'s "Returns"
 clause (22.2.1.5.2, paragraph 11) is garbled. It has unbalanced
 parentheses and a spurious <b>n</b>.</p>
 <p><b>Proposed resolution:</b></p>
-<p>Replace 22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a> paragraph 11 with the
+<p>Replace <font color="red">22.2.1.5.2</font> paragraph 11 with the
 following:</p>
 
 <blockquote>
@@ -2482,7 +2492,7 @@ following:</p>
   mbstate_t&gt;::do_max_length()</tt> returns 1.
 </blockquote>
 <hr>
-<a name="75"><h3>75.&nbsp;Contradiction in <tt>codecvt::length</tt>'s argument types</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp; Matt
+<a name="75"><h3>75.&nbsp;Contradiction in <tt>codecvt::length</tt>'s argument types</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp; Matt
 Austern&nbsp; <b>Date:</b>&nbsp; 18 Sep 1998</p>
 <p>The class synopses for classes <tt>codecvt&lt;&gt;</tt> (22.2.1.5)
 and <tt>codecvt_byname&lt;&gt;</tt> (22.2.1.6) say that the first
@@ -2496,7 +2506,7 @@ synopsis or the summary must be changed. </p>
 then we must also add text saying how <tt>do_length</tt> changes its
 <tt>stateT</tt> argument. </p>
 <p><b>Proposed resolution:</b></p>
-<p>In 22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>, and also in 22.2.1.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>,
+<p>In 22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>, and also in <font color="red">22.2.1.6</font>,
 change the <tt>stateT</tt> argument type on both member
 <tt>length()</tt> and member <tt>do_length()</tt> from </p>
 
@@ -2510,7 +2520,7 @@ change the <tt>stateT</tt> argument type on both member
   <p><tt>stateT&amp;</tt></p>
 </blockquote>
 
-<p>In 22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>, add to the definition for member
+<p>In <font color="red">22.2.1.5.2</font>, add to the definition for member
 <tt>do_length</tt> a paragraph:</p>
 
 <blockquote>
@@ -2520,7 +2530,7 @@ change the <tt>stateT</tt> argument type on both member
   <tt>max</tt> elements.</p>
 </blockquote>
 <hr>
-<a name="76"><h3>76.&nbsp;Can a <tt>codecvt</tt> facet always convert one internal character at a time?</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;25 Sep 1998</p>
+<a name="76"><h3>76.&nbsp;Can a <tt>codecvt</tt> facet always convert one internal character at a time?</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;25 Sep 1998</p>
 <p>This issue concerns the requirements on classes derived from
 <tt>codecvt</tt>, including user-defined classes. What are the
 restrictions on the conversion from external characters
@@ -2555,7 +2565,7 @@ sequence of <i>M</i> external characters that maps to a sequence of
 subsequence that maps to <i>N-1</i> internal characters.) </p>
 
 <p>Some of the wording in the standard, such as the description of
-<tt>codecvt::do_max_length</tt> (22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>,
+<tt>codecvt::do_max_length</tt> (<font color="red">22.2.1.5.2</font>,
 paragraph 11) and <tt>basic_filebuf::underflow</tt> (27.8.1.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.filebuf.virtuals"> [lib.filebuf.virtuals]</a>, paragraph 3) suggests that it must always be
 possible to pick off internal characters one at a time from a sequence
 of external characters. However, this is never explicitly stated one
@@ -2569,7 +2579,7 @@ be aware of the assumptions that the library makes. This issue affects
 positioning operations on <tt>basic_filebuf</tt>, unbuffered input,
 and several of <tt>codecvt</tt>'s member functions. </p>
 <p><b>Proposed resolution:</b></p>
-<p>Add the following text as a new paragraph, following 22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a> paragraph 2:</p>
+<p>Add the following text as a new paragraph, following <font color="red">22.2.1.5.2</font> paragraph 2:</p>
 
 <blockquote>
 <p>A <tt>codecvt</tt> facet that is used by <tt>basic_filebuf</tt>
@@ -2634,22 +2644,22 @@ return value.]</i></p>
 <p>In the 27.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a> synopsis change
 "event_call_back" to "event_callback". </p>
 <hr>
-<a name="79"><h3>79.&nbsp;Inconsistent declaration of polar()</h3></a><p><b>Section:</b>&nbsp;26.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>, 26.2.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
-<p>In 26.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a> polar is declared as follows:</p>
+<a name="79"><h3>79.&nbsp;Inconsistent declaration of polar()</h3></a><p><b>Section:</b>&nbsp;26.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>, 26.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<p>In 26.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a> polar is declared as follows:</p>
 <pre>   template&lt;class T&gt; complex&lt;T&gt; polar(const T&amp;, const T&amp;); </pre>
 
-<p>In 26.2.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a> it is declared as follows:</p>
+<p>In 26.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a> it is declared as follows:</p>
 <pre>   template&lt;class T&gt; complex&lt;T&gt; polar(const T&amp; rho, const T&amp; theta = 0); </pre>
 
 <p>Thus whether the second parameter is optional is not clear. </p>
 <p><b>Proposed resolution:</b></p>
-<p>In 26.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a> change:</p>
+<p>In 26.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a> change:</p>
 <pre>   template&lt;class T&gt; complex&lt;T&gt; polar(const T&amp;, const T&amp;);</pre>
 
 <p>to:</p>
 <pre>   template&lt;class T&gt; complex&lt;T&gt; polar(const T&amp; rho, const T&amp; theta = 0); </pre>
 <hr>
-<a name="80"><h3>80.&nbsp;Global Operators of complex declared twice</h3></a><p><b>Section:</b>&nbsp;26.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.synopsis"> [lib.complex.synopsis]</a>, 26.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex"> [lib.complex]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
+<a name="80"><h3>80.&nbsp;Global Operators of complex declared twice</h3></a><p><b>Section:</b>&nbsp;26.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.cfenv.syn"> [lib.cfenv.syn]</a>, 26.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.fenv"> [lib.fenv]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nico Josuttis&nbsp; <b>Date:</b>&nbsp;29 Sep 1998</p>
 <p>Both 26.2.1 and 26.2.2 contain declarations of global operators for
 class complex. This redundancy should be removed.</p>
 <p><b>Proposed resolution:</b></p>
@@ -3015,7 +3025,7 @@ conversion from <tt>iterator</tt> to <tt>const_iterator</tt>.
 
 <p><i>[Tokyo: The LWG crafted the proposed resolution and rationale.]</i></p>
 <hr>
-<a name="106"><h3>106.&nbsp;Numeric library private members are implementation defined</h3></a><p><b>Section:</b>&nbsp;26.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
+<a name="106"><h3>106.&nbsp;Numeric library private members are implementation defined</h3></a><p><b>Section:</b>&nbsp;26.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.member.ops"> [lib.complex.member.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 <p>This is the only place in the whole standard where the implementation has to document
 something private.</p>
 <p><b>Proposed resolution:</b></p>
@@ -3024,23 +3034,23 @@ Remove the comment which says "// remainder implementation defined" from:
 </p>
 
 <ul>
-  <li>26.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a>
+  <li>26.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.member.ops"> [lib.complex.member.ops]</a>
 </li>
-  <li>26.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.gslice.array"> [lib.template.gslice.array]</a>
+  <li>26.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.value.ops"> [lib.complex.value.ops]</a>
 </li>
-  <li>26.3.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.mask.array"> [lib.template.mask.array]</a>
+  <li>26.3.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.transcendentals"> [lib.complex.transcendentals]</a>
 </li>
-  <li>26.3.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.indirect.array"> [lib.template.indirect.array]</a>
+  <li>26.3.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.cmplx.over"> [lib.cmplx.over]</a>
 </li>
 </ul>
 <hr>
-<a name="108"><h3>108.&nbsp;Lifetime of exception::what() return unspecified</h3></a><p><b>Section:</b>&nbsp;18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.exception"> [lib.exception]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
+<a name="108"><h3>108.&nbsp;Lifetime of exception::what() return unspecified</h3></a><p><b>Section:</b>&nbsp;18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.type.info"> [lib.type.info]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 <p>In 18.6.1, paragraphs 8-9, the lifetime of the return value of
 exception::what() is left unspecified. This issue has implications
 with exception safety of exception handling: some exceptions should
 not throw bad_alloc.</p>
 <p><b>Proposed resolution:</b></p>
-<p>Add to 18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.exception"> [lib.exception]</a> paragraph 9 (exception::what notes
+<p>Add to 18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.type.info"> [lib.type.info]</a> paragraph 9 (exception::what notes
 clause) the sentence:</p>
 
 <blockquote>
@@ -3053,7 +3063,7 @@ to set internal state that should affect the contents of the string
 returned by <tt>what()</tt>.
 </p>
 <hr>
-<a name="109"><h3>109.&nbsp;Missing binders for non-const sequence elements</h3></a><p><b>Section:</b>&nbsp;20.3.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.binders"> [lib.binders]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Bjarne Stroustrup&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
+<a name="109"><h3>109.&nbsp;Missing binders for non-const sequence elements</h3></a><p><b>Section:</b>&nbsp;20.5.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.arithmetic.operations"> [lib.arithmetic.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Bjarne Stroustrup&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 
 <p>There are no versions of binders that apply to non-const elements
 of a sequence. This makes examples like for_each() using bind2nd() on
@@ -3128,7 +3138,7 @@ public:
 <p><b>Howard believes there is a flaw</b> in this resolution.
 See c++std-lib-9127.  We may need to reopen this issue.</p>
 
-<p>In 20.3.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.binder.1st"> [lib.binder.1st]</a> in the declaration of binder1st after:</p>
+<p>In <font color="red">20.5.6.1</font> in the declaration of binder1st after:</p>
 <blockquote>
   <p><tt>typename Operation::result_type<br>
   &nbsp;operator()(const typename Operation::second_argument_type&amp; x) const;</tt></p>
@@ -3138,7 +3148,7 @@ See c++std-lib-9127.  We may need to reopen this issue.</p>
   <p><tt>typename Operation::result_type<br>
   &nbsp;operator()(typename Operation::second_argument_type&amp; x) const;</tt></p>
 </blockquote>
-<p>In 20.3.6.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.binder.2nd"> [lib.binder.2nd]</a> in the declaration of binder2nd after:</p>
+<p>In <font color="red">20.5.6.3</font> in the declaration of binder2nd after:</p>
 <blockquote>
   <p><tt>typename Operation::result_type<br>
   &nbsp;operator()(const typename Operation::first_argument_type&amp; x) const;</tt></p>
@@ -3195,8 +3205,8 @@ reading:</p>
   <p><b>Requires</b>: <tt>s.rdbuf()</tt> is not null.</p>
 </blockquote>
 <hr>
-<a name="114"><h3>114.&nbsp;Placement forms example in error twice</h3></a><p><b>Section:</b>&nbsp;18.4.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.placement"> [lib.new.delete.placement]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;28 Oct 1998</p>
-<p>Section 18.4.1.3 contains the following example: </p>
+<a name="114"><h3>114.&nbsp;Placement forms example in error twice</h3></a><p><b>Section:</b>&nbsp;18.5.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.placement"> [lib.new.delete.placement]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;28 Oct 1998</p>
+<p>Section 18.5.1.3 contains the following example: </p>
 
 <pre>[Example: This can be useful for constructing an object at a known address:
         char place[sizeof(Something)];
@@ -3213,7 +3223,7 @@ believes the () are correct.]</p>
 likely to fail.</p>
 <p><b>Proposed resolution:</b></p>
 <p>Replace the <u> first line of code</u> in the example in 
-18.4.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.placement"> [lib.new.delete.placement]</a> with:
+18.5.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.placement"> [lib.new.delete.placement]</a> with:
 </p>
 
 <blockquote>
@@ -3560,21 +3570,21 @@ sentences). </p>
 <p>The <tt>streambuf</tt>  synopsis already has a declaration for the
 typedefs and that is sufficient. </p>
 <hr>
-<a name="123"><h3>123.&nbsp;Should valarray helper arrays fill functions be const?</h3></a><p><b>Section:</b>&nbsp;26.3.5.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.fill"> [lib.slice.arr.fill]</a>, 26.3.7.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.fill"> [lib.gslice.array.fill]</a>, 26.3.8.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.fill"> [lib.mask.array.fill]</a>, 26.3.9.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.fill"> [lib.indirect.array.fill]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998 </p>
+<a name="123"><h3>123.&nbsp;Should valarray helper arrays fill functions be const?</h3></a><p><b>Section:</b>&nbsp;26.5.5.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.fill"> [lib.slice.arr.fill]</a>, 26.5.7.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.fill"> [lib.gslice.array.fill]</a>, 26.5.8.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.fill"> [lib.mask.array.fill]</a>, 26.5.9.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.fill"> [lib.indirect.array.fill]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998 </p>
 <p>One of the operator= in the valarray helper arrays is const and one
 is not. For example, look at slice_array. This operator= in Section
-26.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.assign"> [lib.slice.arr.assign]</a> is const: </p>
+26.5.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.assign"> [lib.slice.arr.assign]</a> is const: </p>
 
 <p>&nbsp;&nbsp;&nbsp; <tt>void operator=(const valarray&lt;T&gt;&amp;) const;</tt> </p>
 
-<p>but this one in Section 26.3.5.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.fill"> [lib.slice.arr.fill]</a> is not: </p>
+<p>but this one in Section 26.5.5.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.fill"> [lib.slice.arr.fill]</a> is not: </p>
 
 <p>&nbsp;&nbsp;&nbsp; <tt>void operator=(const T&amp;); </tt></p>
 
 <p>The description of the semantics for these two functions is similar. </p>
 <p><b>Proposed resolution:</b></p>
 
-<p>26.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a> Template class slice_array</p>
+<p>26.5.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a> Template class slice_array</p>
 <blockquote>
 
    <p>In the class template definition for slice_array, replace the member
@@ -3586,7 +3596,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.3.5.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.fill"> [lib.slice.arr.fill]</a> slice_array fill function</p>
+<p>26.5.5.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.fill"> [lib.slice.arr.fill]</a> slice_array fill function</p>
 <blockquote>
 
    <p>Change the function declaration</p>
@@ -3597,7 +3607,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.gslice.array"> [lib.template.gslice.array]</a> Template class gslice_array</p>
+<p>26.5.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.gslice.array"> [lib.template.gslice.array]</a> Template class gslice_array</p>
 <blockquote>
 
    <p>In the class template definition for gslice_array, replace the member
@@ -3609,7 +3619,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.3.7.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.fill"> [lib.gslice.array.fill]</a> gslice_array fill function</p>
+<p>26.5.7.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.fill"> [lib.gslice.array.fill]</a> gslice_array fill function</p>
 <blockquote>
 
    <p>Change the function declaration</p>
@@ -3620,7 +3630,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.3.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.mask.array"> [lib.template.mask.array]</a> Template class mask_array</p>
+<p>26.5.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.mask.array"> [lib.template.mask.array]</a> Template class mask_array</p>
 <blockquote>
 
    <p>In the class template definition for mask_array, replace the member
@@ -3632,7 +3642,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.3.8.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.fill"> [lib.mask.array.fill]</a> mask_array fill function</p>
+<p>26.5.8.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.fill"> [lib.mask.array.fill]</a> mask_array fill function</p>
 <blockquote>
 
    <p>Change the function declaration</p>
@@ -3643,7 +3653,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.3.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.indirect.array"> [lib.template.indirect.array]</a> Template class indirect_array</p>
+<p>26.5.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.indirect.array"> [lib.template.indirect.array]</a> Template class indirect_array</p>
 <blockquote>
 
    <p>In the class template definition for indirect_array, replace the member
@@ -3655,7 +3665,7 @@ is not. For example, look at slice_array. This operator= in Section
     </pre>
 </blockquote>
 
-<p>26.3.9.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.fill"> [lib.indirect.array.fill]</a> indirect_array fill function</p>
+<p>26.5.9.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.fill"> [lib.indirect.array.fill]</a> indirect_array fill function</p>
 <blockquote>
 
    <p>Change the function declaration</p>
@@ -3684,12 +3694,12 @@ to return a const char* not a const charT*. </p>
 <tt>do_scan_not()</tt> to return a <tt> const
 charT*</tt>. </p>
 <hr>
-<a name="125"><h3>125.&nbsp;valarray&lt;T&gt;::operator!() return type is inconsistent</h3></a><p><b>Section:</b>&nbsp;26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
-<p>In Section 26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a> valarray&lt;T&gt;::operator!() is
-declared to return a valarray&lt;T&gt;, but in Section 26.3.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.unary"> [lib.valarray.unary]</a> it is declared to return a valarray&lt;bool&gt;. The
+<a name="125"><h3>125.&nbsp;valarray&lt;T&gt;::operator!() return type is inconsistent</h3></a><p><b>Section:</b>&nbsp;26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex"> [lib.complex]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
+<p>In Section 26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex"> [lib.complex]</a> valarray&lt;T&gt;::operator!() is
+declared to return a valarray&lt;T&gt;, but in Section <font color="red">26.3.2.5</font> it is declared to return a valarray&lt;bool&gt;. The
 latter appears to be correct. </p>
 <p><b>Proposed resolution:</b></p>
-<p>Change in Section 26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a> the declaration of
+<p>Change in Section 26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex"> [lib.complex]</a> the declaration of
 <tt>operator!()</tt> so that the return type is
 <tt>valarray&lt;bool&gt;</tt>. </p>
 <hr>
@@ -3712,7 +3722,7 @@ latter appears to be correct. </p>
 
 <pre>   (is(M,c) || !ctc.is(M, do_narrow(c,dfault)) )</pre>
 <hr>
-<a name="127"><h3>127.&nbsp;auto_ptr&lt;&gt; conversion issues</h3></a><p><b>Section:</b>&nbsp;20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.auto.ptr"> [lib.auto.ptr]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Colvin&nbsp; <b>Date:</b>&nbsp;17 Feb 1999</p>
+<a name="127"><h3>127.&nbsp;auto_ptr&lt;&gt; conversion issues</h3></a><p><b>Section:</b>&nbsp;20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.unary"> [lib.meta.unary]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Colvin&nbsp; <b>Date:</b>&nbsp;17 Feb 1999</p>
 <p>There are two problems with the current <tt>auto_ptr</tt> wording
 in the standard: </p>
 
@@ -3749,23 +3759,23 @@ object parameter may be bound to an rvalue [13.3.3.1.4/3]
 
   <p>Tokyo: The LWG removed the following from the proposed resolution:</p>
 
-  <p>In 20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.auto.ptr"> [lib.auto.ptr]</a>, paragraph 2, and 20.4.5.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.auto.ptr.conv"> [lib.auto.ptr.conv]</a>, 
+  <p>In 20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.unary"> [lib.meta.unary]</a>, paragraph 2, and 20.4.5.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.unary.prop"> [lib.meta.unary.prop]</a>, 
   paragraph 2, make the conversion to auto_ptr_ref const:</p>
   <blockquote>
     <pre>template&lt;class Y&gt; operator auto_ptr_ref&lt;Y&gt;() const throw();</pre>
   </blockquote>
 <p><b>Proposed resolution:</b></p>
-<p>In 20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.auto.ptr"> [lib.auto.ptr]</a>, paragraph 2, move
+<p>In 20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.unary"> [lib.meta.unary]</a>, paragraph 2, move
 the <tt>auto_ptr_ref</tt> definition to namespace scope.</p>
 
-<p>In 20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.auto.ptr"> [lib.auto.ptr]</a>, paragraph 2, add
+<p>In 20.4.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.unary"> [lib.meta.unary]</a>, paragraph 2, add
 a public assignment operator to the <tt>auto_ptr</tt> definition: </p>
 
 <blockquote>
   <pre>auto_ptr&amp; operator=(auto_ptr_ref&lt;X&gt; r) throw();</pre>
 </blockquote>
 
-<p>Also add the assignment operator to 20.4.5.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.auto.ptr.conv"> [lib.auto.ptr.conv]</a>: </p>
+<p>Also add the assignment operator to 20.4.5.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.unary.prop"> [lib.meta.unary.prop]</a>: </p>
 
 <blockquote>
   <pre>auto_ptr&amp; operator=(auto_ptr_ref&lt;X&gt; r) throw()</pre>
@@ -3858,7 +3868,7 @@ Matt provided wording.]</i></p>
 ]</i></p>
 
 <hr>
-<a name="132"><h3>132.&nbsp;list::resize description uses random access iterators</h3></a><p><b>Section:</b>&nbsp;23.2.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.capacity"> [lib.list.capacity]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
+<a name="132"><h3>132.&nbsp;list::resize description uses random access iterators</h3></a><p><b>Section:</b>&nbsp;23.2.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.capacity"> [lib.deque.capacity]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
 <p>The description reads:</p>
 
 <p>-1- Effects:</p>
@@ -3897,14 +3907,14 @@ after operator= in the map declaration:</p>
 
 <pre>    allocator_type get_allocator() const;</pre>
 <hr>
-<a name="134"><h3>134.&nbsp;vector constructors over specified</h3></a><p><b>Section:</b>&nbsp;23.2.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.cons"> [lib.vector.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
+<a name="134"><h3>134.&nbsp;vector constructors over specified</h3></a><p><b>Section:</b>&nbsp;23.2.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
 <p>The complexity description says: "It does at most 2N calls to the copy constructor
 of T and logN reallocations if they are just input iterators ...".</p>
 
 <p>This appears to be overly restrictive, dictating the precise memory/performance
 tradeoff for the implementor.</p>
 <p><b>Proposed resolution:</b></p>
-<p>Change 23.2.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.cons"> [lib.vector.cons]</a>, paragraph 1 to:</p>
+<p>Change 23.2.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a>, paragraph 1 to:</p>
 
 <p>-1- Complexity: The constructor template &lt;class
 InputIterator&gt; vector(InputIterator first, InputIterator last)
@@ -3980,7 +3990,7 @@ This requirement is a bit weird. There's no similar requirement
 for basic_streambuf&lt;&gt;::seekpos, or for basic_filebuf&lt;&gt;::seekoff or
 basic_filebuf&lt;&gt;::seekpos.]</i></p>
 <hr>
-<a name="137"><h3>137.&nbsp;Do use_facet and has_facet look in the global locale?</h3></a><p><b>Section:</b>&nbsp;22.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;17 Mar 1999</p>
+<a name="137"></a><h3><a name="137">137.&nbsp;Do use_facet and has_facet look in the global locale?</a></h3><p><b>Section:</b>&nbsp;22.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;17 Mar 1999</p>
 <p>Section 22.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale"> [lib.locale]</a> says:</p>
 
 <p>-4- In the call to use_facet&lt;Facet&gt;(loc), the type argument
@@ -4050,7 +4060,7 @@ proposed resolution.]</i></p>
 <tt><br>
 </tt>&#8212; <tt>xpos &lt;= pos</tt> and <tt>xpos &lt; size();</tt></p>
 <hr>
-<a name="142"><h3>142.&nbsp;lexicographical_compare complexity wrong</h3></a><p><b>Section:</b>&nbsp;25.3.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.lex.comparison"> [lib.alg.lex.comparison]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;20 Jun 1999</p>
+<a name="142"></a><h3><a name="142">142.&nbsp;lexicographical_compare complexity wrong</a></h3><p><b>Section:</b>&nbsp;25.3.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.lex.comparison"> [lib.alg.lex.comparison]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;20 Jun 1999</p>
 <p>The lexicographical_compare complexity is specified as:<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp; "At most min((last1 - first1), (last2 - first2))
@@ -4083,7 +4093,7 @@ right! (and Matt states this complexity in his book)</p>
     --end example]
     </blockquote>
 <hr>
-<a name="144"><h3>144.&nbsp;Deque constructor complexity wrong </h3></a><p><b>Section:</b>&nbsp;23.2.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.cons"> [lib.deque.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Herb Sutter&nbsp; <b>Date:</b>&nbsp;9 May 1999</p>
+<a name="144"><h3>144.&nbsp;Deque constructor complexity wrong </h3></a><p><b>Section:</b>&nbsp;23.2.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.array.cons"> [lib.array.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Herb Sutter&nbsp; <b>Date:</b>&nbsp;9 May 1999</p>
 <p>In 23.2.1.1 paragraph 6, the deque ctor that takes an iterator range appears
 to have complexity requirements which are incorrect, and which contradict the
 complexity requirements for insert(). I suspect that the text in question,
@@ -4114,7 +4124,7 @@ typo):</p>
   <p>Complexity: Makes last - first calls to the copy constructor of T.</p>
 </blockquote>
 <hr>
-<a name="146"><h3>146.&nbsp;complex&lt;T&gt; Inserter and Extractor need sentries</h3></a><p><b>Section:</b>&nbsp;26.2.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.ops"> [lib.complex.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;12 May 1999</p>
+<a name="146"><h3>146.&nbsp;complex&lt;T&gt; Inserter and Extractor need sentries</h3></a><p><b>Section:</b>&nbsp;26.3.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.ops"> [lib.complex.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;12 May 1999</p>
 <p>The <u> extractor</u> for complex numbers is specified as:&nbsp;</p>
 
 <blockquote>
@@ -4171,7 +4181,7 @@ consistency with the other inserters and extractors in the
 library. Regarding the issue of padding in the inserter, I don't know
 what the intent was.&nbsp;</p>
 <p><b>Proposed resolution:</b></p>
-<p>After 26.2.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.ops"> [lib.complex.ops]</a> paragraph 14 (operator&gt;&gt;), add a
+<p>After 26.3.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex.ops"> [lib.complex.ops]</a> paragraph 14 (operator&gt;&gt;), add a
 Notes clause:</p>
 
 <blockquote>
@@ -4188,7 +4198,7 @@ follows an "all-or-none" rule.</p>
 <p>For inserters, the LWG believes there is no defect; the standard is correct
 as written.</p>
 <hr>
-<a name="147"><h3>147.&nbsp;Library Intro refers to global functions that aren't global</h3></a><p><b>Section:</b>&nbsp;17.4.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.global.functions"> [lib.global.functions]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Lois Goldthwaite&nbsp; <b>Date:</b>&nbsp;4 Jun 1999</p>
+<a name="147"></a><h3><a name="147">147.&nbsp;Library Intro refers to global functions that aren't global</a></h3><p><b>Section:</b>&nbsp;17.4.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.global.functions"> [lib.global.functions]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Lois Goldthwaite&nbsp; <b>Date:</b>&nbsp;4 Jun 1999</p>
 <p>The library had many global functions until 17.4.1.1 [lib.contents]
 paragraph 2 was added: </p>
 
@@ -4706,8 +4716,8 @@ paragraph 14 from:</p>
 <p><i>[Kona: Dietmar is working on a proposed resolution.]</i></p>
 <p><i>[Post-Tokyo: Dietmar supplied the above wording.]</i></p>
 <hr>
-<a name="172"><h3>172.&nbsp;Inconsistent types for <tt>basic_istream::ignore()</tt>
-</h3></a><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Comeau, Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
+<a name="172"></a><h3><a name="172">172.&nbsp;Inconsistent types for <tt>basic_istream::ignore()</tt>
+</a></h3><p><b>Section:</b>&nbsp;27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Greg Comeau, Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
 <p>In 27.6.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream"> [lib.istream]</a> the function
 <tt>ignore()</tt> gets an object of type <tt>streamsize</tt> as first
 argument. However, in 27.6.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>
@@ -5239,7 +5249,7 @@ error.  The full text was supplied by Bill Plauger; it was cross
 checked against changes supplied by Andy Sawyer. It should be further
 checked by the LWG.]</i></p>
 <hr>
-<a name="184"><h3>184.&nbsp;numeric_limits&lt;bool&gt; wording problems</h3></a><p><b>Section:</b>&nbsp;18.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.numeric.special"> [lib.numeric.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;21 Jul 1999</p>
+<a name="184"></a><h3><a name="184">184.&nbsp;numeric_limits&lt;bool&gt; wording problems</a></h3><p><b>Section:</b>&nbsp;18.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.numeric.special"> [lib.numeric.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;21 Jul 1999</p>
 <p>bools are defined by the standard to be of integer types, as per
 3.9.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/basic.html#basic.fundamental"> [basic.fundamental]</a> paragraph 7.  However "integer types"
 seems to have a special meaning for the author of 18.2. The net effect
@@ -5331,8 +5341,8 @@ resolution.]</i></p>
 <p><i>[Post-Tokyo:&nbsp; At the request of the LWG in Tokyo, Nico
 Josuttis provided the above wording.]</i></p>
 <hr>
-<a name="185"><h3>185.&nbsp;Questionable use of term "inline"</h3></a><p><b>Section:</b>&nbsp;20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.function.objects"> [lib.function.objects]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;UK Panel&nbsp; <b>Date:</b>&nbsp;26 Jul 1999</p>
-<p>Paragraph 4 of 20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.function.objects"> [lib.function.objects]</a> says:</p>
+<a name="185"><h3>185.&nbsp;Questionable use of term "inline"</h3></a><p><b>Section:</b>&nbsp;20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.tuple"> [lib.tuple]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;UK Panel&nbsp; <b>Date:</b>&nbsp;26 Jul 1999</p>
+<p>Paragraph 4 of 20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.tuple"> [lib.tuple]</a> says:</p>
 <blockquote>
   <p>&nbsp;[Example: To negate every element of a: transform(a.begin(), a.end(),
   a.begin(), negate&lt;double&gt;()); The corresponding functions will inline
@@ -5357,17 +5367,17 @@ any "inlining" will take place in this case.</p>
 <p>Thus the example "mandates" behavior that is explicitly
 not required elsewhere.</p>
 <p><b>Proposed resolution:</b></p>
-<p>In 20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.function.objects"> [lib.function.objects]</a> paragraph 1, remove the sentence:</p>
+<p>In 20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.tuple"> [lib.tuple]</a> paragraph 1, remove the sentence:</p>
 <blockquote>
 <p>They are important for the effective use of the library.</p>
 </blockquote>
-<p>Remove 20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.function.objects"> [lib.function.objects]</a> paragraph 2, which reads:</p>
+<p>Remove 20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.tuple"> [lib.tuple]</a> paragraph 2, which reads:</p>
 <blockquote>
   <p> Using function objects together with function templates
   increases the expressive power of the library as well as making the
   resulting code much more efficient.</p>
 </blockquote>
-<p>In 20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.function.objects"> [lib.function.objects]</a> paragraph 4, remove the sentence:</p>
+<p>In 20.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.tuple"> [lib.tuple]</a> paragraph 4, remove the sentence:</p>
 <blockquote>
   <p>The corresponding functions will inline the addition and the
   negation.</p>
@@ -5376,7 +5386,7 @@ not required elsewhere.</p>
 <p><i>[Kona: The LWG agreed there was a defect.]</i></p>
 <p><i>[Tokyo: The LWG crafted the proposed resolution.]</i></p>
 <hr>
-<a name="186"></a><h3><a name="186">186.&nbsp;bitset::set() second parameter should be bool</a></h3><p><b>Section:</b>&nbsp;23.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Darin Adler&nbsp; <b>Date:</b>&nbsp;13 Aug 1999</p>
+<a name="186"><h3>186.&nbsp;bitset::set() second parameter should be bool</h3></a><p><b>Section:</b>&nbsp;23.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Darin Adler&nbsp; <b>Date:</b>&nbsp;13 Aug 1999</p>
 <p>In section 23.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>, paragraph 13 defines the
 bitset::set operation to take a second parameter of type int. The
 function tests whether this value is non-zero to determine whether to
@@ -5609,14 +5619,14 @@ elements of containers.</p>
 
 <p>The standard itself assumes that pointers and references obtained
 from an iterator are still valid after iterator destruction or
-change. The definition of reverse_iterator::operator*(), 24.4.1.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.op.star"> [lib.reverse.iter.op.star]</a>, which returns a reference, defines
+change. The definition of reverse_iterator::operator*(), 24.4.1.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.conv"> [lib.reverse.iter.conv]</a>, which returns a reference, defines
 effects:</p>
 
 <blockquote>
   <pre>Iterator tmp = current;
 return *--tmp;</pre>
 </blockquote>
-<p>The definition of reverse_iterator::operator-&gt;(), 24.4.1.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.opref"> [lib.reverse.iter.opref]</a>, which returns a pointer, defines effects:</p>
+<p>The definition of reverse_iterator::operator-&gt;(), 24.4.1.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.op.star"> [lib.reverse.iter.op.star]</a>, which returns a pointer, defines effects:</p>
 <blockquote>
   <pre>return &amp;(operator*());</pre>
 </blockquote>
@@ -5633,7 +5643,7 @@ Destruction of an iterator may invalidate pointers and references
 previously obtained from that iterator.
 </blockquote>
 
-<p>Replace paragraph 1 of 24.4.1.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.op.star"> [lib.reverse.iter.op.star]</a> with:</p>
+<p>Replace paragraph 1 of 24.4.1.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.conv"> [lib.reverse.iter.conv]</a> with:</p>
 
 <blockquote>
 <p><b>Effects:</b></p>
@@ -5685,7 +5695,7 @@ Clause 23 should be reviewed to make sure that guarantees for
 predefined iterators are as strong as users expect.</p>
 
 <hr>
-<a name="199"><h3>199.&nbsp;What does <tt>allocate(0)</tt> return?</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;19 Nov 1999</p>
+<a name="199"><h3>199.&nbsp;What does <tt>allocate(0)</tt> return?</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;19 Nov 1999</p>
 <p>
 Suppose that <tt>A</tt> is a class that conforms to the
 Allocator requirements of Table 32, and <tt>a</tt> is an
@@ -6469,7 +6479,7 @@ resolution is the one proposed by Howard.]</i></p>
   (such as iter_swap, swap_ranges, reverse, rotate, and sort) conform
   to that concept.  The Swappable concept will make it clear that
   these algorithms use unqualified lookup for the calls
-  to <tt>swap</tt>.  Also, in 26.3.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.transcend"> [lib.valarray.transcend]</a> paragraph 1,
+  to <tt>swap</tt>.  Also, in <font color="red">26.3.3.3</font> paragraph 1,
   state that the valarray transcendentals use unqualified lookup.</p>
 <hr>
 <a name="227"><h3>227.&nbsp;std::swap() should require CopyConstructible or DefaultConstructible arguments</h3></a><p><b>Section:</b>&nbsp;25.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.swap"> [lib.alg.swap]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;09 Apr 2000</p>
@@ -6514,8 +6524,8 @@ resolution is the one proposed by Howard.]</i></p>
 </blockquote>
 <hr>
 <a name="228"><h3>228.&nbsp;Incorrect specification of "..._byname" facets</h3></a><p><b>Section:</b>&nbsp;22.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.categories"> [lib.locale.categories]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;20 Apr 2000</p>
-<p>The sections 22.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.byname"> [lib.locale.ctype.byname]</a>, 22.2.1.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.byname.special"> [lib.locale.ctype.byname.special]</a>,
-22.2.1.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>, 22.2.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.numpunct.byname"> [lib.locale.numpunct.byname]</a>, 22.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.collate.byname"> [lib.locale.collate.byname]</a>, 22.2.5.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.time.put.byname"> [lib.locale.time.put.byname]</a>, 22.2.6.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.moneypunct.byname"> [lib.locale.moneypunct.byname]</a>, and 22.2.7.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.messages.byname"> [lib.locale.messages.byname]</a> overspecify the
+<p>The sections 22.2.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.byname"> [lib.locale.ctype.byname]</a>, 22.2.1.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>,
+<font color="red">22.2.1.6</font>, 22.2.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.numpunct.byname"> [lib.locale.numpunct.byname]</a>, 22.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.collate.byname"> [lib.locale.collate.byname]</a>, 22.2.5.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.time.put.byname"> [lib.locale.time.put.byname]</a>, 22.2.6.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.moneypunct.byname"> [lib.locale.moneypunct.byname]</a>, and 22.2.7.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.messages.byname"> [lib.locale.messages.byname]</a> overspecify the
 definitions of the "..._byname" classes by listing a bunch
 of virtual functions. At the same time, no semantics of these
 functions are defined. Real implementations do not define these
@@ -6634,7 +6644,7 @@ specialization it is not virtual.</p>
         ~messages_byname();          //  virtual
        };
      }</pre>
-<p>Remove section 22.2.1.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.byname.special"> [lib.locale.ctype.byname.special]</a> completely (because in
+<p>Remove section 22.2.1.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a> completely (because in
 this case only those members are defined to be virtual which are
 defined to be virtual in 'ctype&lt;cT&gt;'.)</p>
 
@@ -6705,7 +6715,7 @@ determine if the same defect existed elsewhere.</p>
 <p>There are a number of places (see proposed resolution below) where
 Assignable is specified without also specifying
 CopyConstructible. There are also several cases where both are
-specified. For example, 26.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.accumulate"> [lib.accumulate]</a>.</p>
+specified. For example, 26.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.rand.req"> [lib.rand.req]</a>.</p>
 <p><b>Proposed resolution:</b></p>
 <p>In  23.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a> table 65 for value_type:
 change "T is Assignable" to "T is CopyConstructible and
@@ -6856,7 +6866,7 @@ implementor?</p>
 <p><i>[post-Toronto: Judy provided the above proposed resolution and
 rationale.]</i></p>
 <hr>
-<a name="234"><h3>234.&nbsp;Typos in allocator definition</h3></a><p><b>Section:</b>&nbsp;20.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;24 Apr 2000</p>
+<a name="234"><h3>234.&nbsp;Typos in allocator definition</h3></a><p><b>Section:</b>&nbsp;20.6.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;24 Apr 2000</p>
 <p>In paragraphs 12 and 13 the effects of <tt>construct()</tt> and
 <tt>destruct()</tt> are described as returns but the functions actually
 return <tt>void</tt>.</p>
@@ -6881,7 +6891,7 @@ should do.</p>
   <p><i>[pre-Copenhagen: Dietmar provide wording for proposed
   resolution.]</i></p>
 <hr>
-<a name="237"><h3>237.&nbsp;Undefined expression in complexity specification</h3></a><p><b>Section:</b>&nbsp;23.2.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.cons"> [lib.list.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;24 Apr 2000</p>
+<a name="237"><h3>237.&nbsp;Undefined expression in complexity specification</h3></a><p><b>Section:</b>&nbsp;23.2.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.cons"> [lib.deque.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;24 Apr 2000</p>
 <p>The complexity specification in paragraph 6 says that the complexity
 is linear in <tt>first - last</tt>. Even if <tt>operator-()</tt> is
 defined on iterators this term is in general undefined because it
@@ -7008,7 +7018,7 @@ the value type is CopyConstructible and Assignable.</p>
 specify any additional requirements that they impose on any of the
 types used by the algorithm. An example of an algorithm that creates
 temporary copies and correctly specifies the additional requirements
-is accumulate(), 26.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.accumulate"> [lib.accumulate]</a>.</p>
+is accumulate(), 26.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.rand.req"> [lib.rand.req]</a>.</p>
 
 <p>Since the specifications of unique() and unique_copy() do not
 require CopyConstructible and Assignable of the InputIterator's value
@@ -7051,7 +7061,7 @@ minor as not to require re-review.
 ]</i></p>
 
 <hr>
-<a name="242"><h3>242.&nbsp;Side effects of function objects</h3></a><p><b>Section:</b>&nbsp;25.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.transform"> [lib.alg.transform]</a>, 26.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numeric.ops"> [lib.numeric.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;May 15 2000</p>
+<a name="242"><h3>242.&nbsp;Side effects of function objects</h3></a><p><b>Section:</b>&nbsp;25.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.transform"> [lib.alg.transform]</a>, 26.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.rand"> [lib.rand]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Angelika Langer&nbsp; <b>Date:</b>&nbsp;May 15 2000</p>
 <p>The algorithms transform(), accumulate(), inner_product(),
 partial_sum(), and adjacent_difference() require that the function
 object supplied to them shall not have any side effects.</p>
@@ -7276,7 +7286,7 @@ had language that made this an unambiguous requirement; those words
 were moved to a place where their context made them less clear.  See
 Jerry Schwarz's message c++std-lib-7618.</p>
 <hr>
-<a name="247"><h3>247.&nbsp;<tt>vector</tt>, <tt>deque::insert</tt> complexity</h3></a><p><b>Section:</b>&nbsp;23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Lisa Lippincott&nbsp; <b>Date:</b>&nbsp;06 June 2000</p>
+<a name="247"><h3>247.&nbsp;<tt>vector</tt>, <tt>deque::insert</tt> complexity</h3></a><p><b>Section:</b>&nbsp;23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Lisa Lippincott&nbsp; <b>Date:</b>&nbsp;06 June 2000</p>
 <p>Paragraph 2 of 23.2.4.3 [lib.vector.modifiers] describes the complexity
 of <tt>vector::insert</tt>:</p>
 
@@ -7298,7 +7308,7 @@ the end of a <tt>vector</tt> in constant time.</p>
 
 <p>I looked to see if <tt>deque</tt> had a similar problem, and was
 surprised to find that <tt>deque</tt> places no requirement on the
-complexity of inserting multiple elements (23.2.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.modifiers"> [lib.deque.modifiers]</a>,
+complexity of inserting multiple elements (23.2.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.array.size"> [lib.array.size]</a>,
 paragraph 3):</p>
 
    <blockquote>
@@ -7322,7 +7332,7 @@ paragraph 3):</p>
    inserting at the end of the <tt>vector</tt>, and then using
    <tt>rotate</tt>.]</i></p>
 
-<p>Change 23.2.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.modifiers"> [lib.deque.modifiers]</a>, paragraph 3, to:</p>
+<p>Change 23.2.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.array.size"> [lib.array.size]</a>, paragraph 3, to:</p>
 
    <blockquote>
    Complexity: The complexity is linear in the number of elements 
@@ -7357,7 +7367,7 @@ member functions, the member sets ios_base::eofbit in err.
 because it was more consistent with the way eof is described for other
 input facets.</p>
 <hr>
-<a name="250"><h3>250.&nbsp;splicing invalidates iterators</h3></a><p><b>Section:</b>&nbsp;23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Brian Parker &nbsp; <b>Date:</b>&nbsp;14 Jul 2000</p>
+<a name="250"><h3>250.&nbsp;splicing invalidates iterators</h3></a><p><b>Section:</b>&nbsp;23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Brian Parker &nbsp; <b>Date:</b>&nbsp;14 Jul 2000</p>
 <p>
 Section 23.2.2.4 [lib.list.ops] states that
 </p>
@@ -7374,14 +7384,14 @@ after <tt>splice</tt>.
 </p>
 <p><b>Proposed resolution:</b></p>
 
-<p>Add a footnote to 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, paragraph 1:</p>
+<p>Add a footnote to 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>, paragraph 1:</p>
 <blockquote>
-[<i>Footnote:</i> As specified in 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, paragraphs
+[<i>Footnote:</i> As specified in 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a>, paragraphs
 4-5, the semantics described in this clause applies only to the case
 where allocators compare equal.  --end footnote]
 </blockquote>
 
-<p>In 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, replace paragraph 4 with:</p>
+<p>In 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>, replace paragraph 4 with:</p>
 <blockquote>
 Effects: Inserts the contents of x before position and x becomes 
 empty.  Pointers and references to the moved elements of x now refer to 
@@ -7390,7 +7400,7 @@ moved elements will continue to refer to their elements, but they now
 behave as iterators into *this, not into x.
 </blockquote>
 
-<p>In 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, replace paragraph 7 with:</p>
+<p>In 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>, replace paragraph 7 with:</p>
 <blockquote>
 Effects: Inserts an element pointed to by i from list x before 
 position and removes the element from x. The result is unchanged if 
@@ -7400,7 +7410,7 @@ to refer to this same element but as a member of *this.  Iterators to *i
 behave as iterators into *this, not into x.
 </blockquote>
 
-<p>In 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, replace paragraph 12 with:</p>
+<p>In 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>, replace paragraph 12 with:</p>
 <blockquote>
 Requires: [first, last) is a valid range in x. The result is 
 undefined if position is an iterator in the range [first, last).  
@@ -7415,7 +7425,7 @@ iterators into *this, not into x.
 <p>The original proposed resolution said that iterators and references
 would remain "valid".  The new proposed resolution clarifies what that
 means.  Note that this only applies to the case of equal allocators.
-From 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> paragraph 4, the behavior of list when
+From 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a> paragraph 4, the behavior of list when
 allocators compare nonequal is outside the scope of the standard.</p>
 <hr>
 <a name="251"><h3>251.&nbsp;basic_stringbuf missing allocator_type</h3></a><p><b>Section:</b>&nbsp;27.7.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.stringbuf"> [lib.stringbuf]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jul 2000</p>
@@ -7467,7 +7477,7 @@ issue is stylistic rather than a matter of correctness.</p>
 <p>with</p>
 <pre>  -2- Returns: const_cast&lt;strstreambuf*&gt;(&amp;sb).</pre>
 <hr>
-<a name="253"><h3>253.&nbsp;valarray helper functions are almost entirely useless</h3></a><p><b>Section:</b>&nbsp;26.3.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.cons"> [lib.valarray.cons]</a>, 26.3.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.assign"> [lib.valarray.assign]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Robert Klarer&nbsp; <b>Date:</b>&nbsp;31 Jul 2000</p>
+<a name="253"><h3>253.&nbsp;valarray helper functions are almost entirely useless</h3></a><p><b>Section:</b>&nbsp;26.5.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.cons"> [lib.valarray.cons]</a>, 26.5.2.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.assign"> [lib.valarray.assign]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Robert Klarer&nbsp; <b>Date:</b>&nbsp;31 Jul 2000</p>
 <p>This discussion is adapted from message c++std-lib-7056 posted
 November 11, 1999.  I don't think that anyone can reasonably claim
 that the problem described below is NAD.</p>
@@ -7542,66 +7552,66 @@ classes are almost entirely useless.</p>
 <p>slice_array:</p>
 <ul>
 <li> Make the copy constructor and copy-assignment operator declarations
-     public in the slice_array class template definition in 26.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a> </li>
-<li> remove paragraph 3 of 26.3.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a>
+     public in the slice_array class template definition in 26.5.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a> </li>
+<li> remove paragraph 3 of 26.5.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.slice.array"> [lib.template.slice.array]</a>
 </li>
-<li> remove the copy constructor declaration from 26.3.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.cons.slice.arr"> [lib.cons.slice.arr]</a>
+<li> remove the copy constructor declaration from 26.5.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.cons.slice.arr"> [lib.cons.slice.arr]</a>
 </li>
-<li> change paragraph 1 of 26.3.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.cons.slice.arr"> [lib.cons.slice.arr]</a> to read "This constructor is declared
+<li> change paragraph 1 of 26.5.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.cons.slice.arr"> [lib.cons.slice.arr]</a> to read "This constructor is declared
     to be private.  This constructor need not be defined."</li>
-<li> remove the first sentence of paragraph 1 of 26.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.assign"> [lib.slice.arr.assign]</a>
+<li> remove the first sentence of paragraph 1 of 26.5.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.assign"> [lib.slice.arr.assign]</a>
 </li>
 <li> Change the first three words of the second sentence of paragraph 1 of
-    26.3.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.assign"> [lib.slice.arr.assign]</a> to "These assignment operators have"</li>
+    26.5.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.slice.arr.assign"> [lib.slice.arr.assign]</a> to "These assignment operators have"</li>
 </ul>
 
 <p>gslice_array:</p>
 <ul>
 <li> Make the copy constructor and copy-assignment operator declarations
-    public in the gslice_array class template definition in 26.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.gslice.array"> [lib.template.gslice.array]</a> </li>
-<li> remove the note in paragraph 3 of 26.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.gslice.array"> [lib.template.gslice.array]</a>
+    public in the gslice_array class template definition in 26.5.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.gslice.array"> [lib.template.gslice.array]</a> </li>
+<li> remove the note in paragraph 3 of 26.5.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.gslice.array"> [lib.template.gslice.array]</a>
 </li>
-<li> remove the copy constructor declaration from 26.3.7.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.cons"> [lib.gslice.array.cons]</a>
+<li> remove the copy constructor declaration from 26.5.7.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.cons"> [lib.gslice.array.cons]</a>
 </li>
-<li> change paragraph 1 of 26.3.7.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.cons"> [lib.gslice.array.cons]</a> to read "This constructor is declared
+<li> change paragraph 1 of 26.5.7.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.cons"> [lib.gslice.array.cons]</a> to read "This constructor is declared
     to be private.  This constructor need not be defined."</li>
-<li> remove the first sentence of paragraph 1 of 26.3.7.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.assign"> [lib.gslice.array.assign]</a>
+<li> remove the first sentence of paragraph 1 of 26.5.7.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.assign"> [lib.gslice.array.assign]</a>
 </li>
 <li> Change the first three words of the second sentence of paragraph 1 of
-    26.3.7.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.assign"> [lib.gslice.array.assign]</a> to "These assignment operators have"</li>
+    26.5.7.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.gslice.array.assign"> [lib.gslice.array.assign]</a> to "These assignment operators have"</li>
 </ul>
 
 <p>mask_array:</p>
 <ul>
 <li> Make the copy constructor and copy-assignment operator declarations
-    public in the mask_array class template definition in 26.3.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.mask.array"> [lib.template.mask.array]</a> </li>
-<li> remove the note in paragraph 2 of 26.3.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.mask.array"> [lib.template.mask.array]</a>
+    public in the mask_array class template definition in 26.5.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.mask.array"> [lib.template.mask.array]</a> </li>
+<li> remove the note in paragraph 2 of 26.5.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.mask.array"> [lib.template.mask.array]</a>
 </li>
-<li> remove the copy constructor declaration from 26.3.8.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.cons"> [lib.mask.array.cons]</a>
+<li> remove the copy constructor declaration from 26.5.8.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.cons"> [lib.mask.array.cons]</a>
 </li>
-<li> change paragraph 1 of 26.3.8.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.cons"> [lib.mask.array.cons]</a> to read "This constructor is declared
+<li> change paragraph 1 of 26.5.8.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.cons"> [lib.mask.array.cons]</a> to read "This constructor is declared
     to be private.  This constructor need not be defined."</li>
-<li> remove the first sentence of paragraph 1 of 26.3.8.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.assign"> [lib.mask.array.assign]</a>
+<li> remove the first sentence of paragraph 1 of 26.5.8.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.assign"> [lib.mask.array.assign]</a>
 </li>
 <li> Change the first three words of the second sentence of paragraph 1 of
-    26.3.8.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.assign"> [lib.mask.array.assign]</a> to "These assignment operators have"</li>
+    26.5.8.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.mask.array.assign"> [lib.mask.array.assign]</a> to "These assignment operators have"</li>
 </ul>
 
 <p>indirect_array:</p>
 <ul>
 <li>Make the copy constructor and copy-assignment operator declarations
-    public in the indirect_array class definition in 26.3.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.indirect.array"> [lib.template.indirect.array]</a>
+    public in the indirect_array class definition in 26.5.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.indirect.array"> [lib.template.indirect.array]</a>
 </li>
-<li> remove the note in paragraph 2 of 26.3.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.indirect.array"> [lib.template.indirect.array]</a>
+<li> remove the note in paragraph 2 of 26.5.9 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.indirect.array"> [lib.template.indirect.array]</a>
 </li>
-<li> remove the copy constructor declaration from 26.3.9.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.cons"> [lib.indirect.array.cons]</a>
+<li> remove the copy constructor declaration from 26.5.9.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.cons"> [lib.indirect.array.cons]</a>
 </li>
-<li> change the descriptive text in 26.3.9.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.cons"> [lib.indirect.array.cons]</a> to read "This constructor is
+<li> change the descriptive text in 26.5.9.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.cons"> [lib.indirect.array.cons]</a> to read "This constructor is
     declared to be private.  This constructor need not be defined."</li>
-<li> remove the first sentence of paragraph 1 of 26.3.9.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.assign"> [lib.indirect.array.assign]</a>
+<li> remove the first sentence of paragraph 1 of 26.5.9.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.assign"> [lib.indirect.array.assign]</a>
 </li>
 <li> Change the first three words of the second sentence of paragraph 1 of
-    26.3.9.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.assign"> [lib.indirect.array.assign]</a> to "These assignment operators have"</li>
+    26.5.9.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.indirect.array.assign"> [lib.indirect.array.assign]</a> to "These assignment operators have"</li>
 </ul>
 <p><i>[Proposed resolution was modified in Santa Cruz: explicitly make
 copy constructor and copy assignment operators public, instead of
@@ -7870,7 +7880,7 @@ default constructor was written the obvious way.  This has been
 clarified by core issue 178, and there is no longer any doubt that
 the straightforward implementation is correct.</p>
 <hr>
-<a name="266"><h3>266.&nbsp;bad_exception::~bad_exception() missing Effects clause</h3></a><p><b>Section:</b>&nbsp;18.6.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.bad.exception"> [lib.bad.exception]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;24 Sep 2000</p>
+<a name="266"><h3>266.&nbsp;bad_exception::~bad_exception() missing Effects clause</h3></a><p><b>Section:</b>&nbsp;18.7.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.bad.exception"> [lib.bad.exception]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;24 Sep 2000</p>
 <p>
 The synopsis for std::bad_exception lists the function ~bad_exception()
 but there is no description of what the function does (the Effects
@@ -7879,10 +7889,10 @@ clause is missing).
 <p><b>Proposed resolution:</b></p>
 <p>
 Remove the destructor from the class synopses of 
-<tt>bad_alloc</tt> (18.4.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.bad.alloc"> [lib.bad.alloc]</a>),
-<tt>bad_cast</tt> (18.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.bad.cast"> [lib.bad.cast]</a>),
-<tt>bad_typeid</tt> (18.5.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.bad.typeid"> [lib.bad.typeid]</a>),
-and <tt>bad_exception</tt> (18.6.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.bad.exception"> [lib.bad.exception]</a>).
+<tt>bad_alloc</tt> (<font color="red">18.4.2.1</font>),
+<tt>bad_cast</tt> (18.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.alloc.errors"> [lib.alloc.errors]</a>),
+<tt>bad_typeid</tt> (<font color="red">18.5.3</font>),
+and <tt>bad_exception</tt> (18.7.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.bad.exception"> [lib.bad.exception]</a>).
 </p>
 <p><b>Rationale:</b></p>
 <p>
@@ -8208,7 +8218,7 @@ class (14.6.2 [temp.dep]) and thus not visible.</p>
 <p>Qualify the names with the name of the class of which they are
 members, i.e., ios_base.</p>
 <hr>
-<a name="274"><h3>274.&nbsp;a missing/impossible allocator requirement</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;02 Nov 2000</p>
+<a name="274"><h3>274.&nbsp;a missing/impossible allocator requirement</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;02 Nov 2000</p>
 <p>
 I see that table 31 in 20.1.5, p3 allows T in std::allocator&lt;T&gt; to be of
 any type. But the synopsis in 20.4.1 calls for allocator&lt;&gt;::address() to
@@ -8453,7 +8463,7 @@ implement <tt>vector::push_back</tt> in terms of
 <tt>vector::insert</tt>.</p>
 
 <hr>
-<a name="278"><h3>278.&nbsp;What does iterator validity mean?</h3></a><p><b>Section:</b>&nbsp;23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;P.J. Plauger&nbsp; <b>Date:</b>&nbsp;27 Nov 2000</p>
+<a name="278"><h3>278.&nbsp;What does iterator validity mean?</h3></a><p><b>Section:</b>&nbsp;23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;P.J. Plauger&nbsp; <b>Date:</b>&nbsp;27 Nov 2000</p>
 <p>
 Section 23.2.2.4 [lib.list.ops] states that
 </p>
@@ -8784,8 +8794,8 @@ imposing a greater restriction that what the standard currently says
 (which is convertible to bool).
 </p>
 <hr>
-<a name="284"><h3>284.&nbsp;unportable example in 20.3.7, p6</h3></a><p><b>Section:</b>&nbsp;20.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.function.pointer.adaptors"> [lib.function.pointer.adaptors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;26 Dec 2000</p>
-<p>The example in 20.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.function.pointer.adaptors"> [lib.function.pointer.adaptors]</a>, p6 shows how to use the C
+<a name="284"><h3>284.&nbsp;unportable example in 20.3.7, p6</h3></a><p><b>Section:</b>&nbsp;20.5.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.comparisons"> [lib.comparisons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;26 Dec 2000</p>
+<p>The example in 20.5.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.comparisons"> [lib.comparisons]</a>, p6 shows how to use the C
 library function <tt>strcmp()</tt> with the function pointer adapter
 <tt>ptr_fun()</tt>. But since it's unspecified whether the C library
 functions have <tt>extern "C"</tt> or <tt>extern
@@ -8795,7 +8805,7 @@ function pointers with different the language linkage specifications
 well-formed is unspecified.
 </p>
 <p><b>Proposed resolution:</b></p>
-<p>Change 20.3.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.function.pointer.adaptors"> [lib.function.pointer.adaptors]</a> paragraph 6 from:</p>
+<p>Change 20.5.7 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.comparisons"> [lib.comparisons]</a> paragraph 6 from:</p>
 <blockquote>
   <p>[<i>Example:</i></p>
   <pre>    replace_if(v.begin(), v.end(), not1(bind2nd(ptr_fun(strcmp), "C")), "C++");
@@ -9057,7 +9067,7 @@ it isn't stringent enough.</p>
 <p><i>[Lillehammer: Beman provided new wording]</i></p>
 
 <hr>
-<a name="295"><h3>295.&nbsp;Is abs defined in &lt;cmath&gt;?</h3></a><p><b>Section:</b>&nbsp;26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Jens Maurer&nbsp; <b>Date:</b>&nbsp;12 Jan 2001</p>
+<a name="295"><h3>295.&nbsp;Is abs defined in &lt;cmath&gt;?</h3></a><p><b>Section:</b>&nbsp;26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numarray"> [lib.numarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Jens Maurer&nbsp; <b>Date:</b>&nbsp;12 Jan 2001</p>
 <p>
 Table 80 lists the contents of the &lt;cmath&gt; header.  It does not
 list <tt>abs()</tt>.  However, 26.5, paragraph 6, which lists added 
@@ -9067,7 +9077,7 @@ of <tt>abs()</tt> should be defined in &lt;cmath&gt;.
 <p><b>Proposed resolution:</b></p>
 <p>
 Add <tt>abs</tt> to Table 80.  Also, remove the parenthetical list
-of functions "(abs(), div(), rand(), srand())" from 26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>,
+of functions "(abs(), div(), rand(), srand())" from 26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numarray"> [lib.numarray]</a>,
 paragraph 1.
 </p>
 
@@ -9080,10 +9090,10 @@ separate question is whether we're doing the right thing in
 putting some overloads in &lt;cmath&gt; that we aren't also 
 putting in &lt;cstdlib&gt;.  That's issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-closed.html#323">323</a>.</p>
 <hr>
-<a name="297"><h3>297.&nbsp;const_mem_fun_t&lt;&gt;::argument_type should be const T*</h3></a><p><b>Section:</b>&nbsp;20.3.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.member.pointer.adaptors"> [lib.member.pointer.adaptors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Jan 2001</p>
-<p>The class templates <tt>const_mem_fun_t</tt> in 20.3.8, p8 and
+<a name="297"><h3>297.&nbsp;const_mem_fun_t&lt;&gt;::argument_type should be const T*</h3></a><p><b>Section:</b>&nbsp;20.5.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.logical.operations"> [lib.logical.operations]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Jan 2001</p>
+<p>The class templates <tt>const_mem_fun_t</tt> in 20.5.8, p8 and
 <tt>const_mem_fun1_t</tt>
-in 20.3.8, p9 derive from <tt>unary_function&lt;T*, S&gt;</tt>, and
+in 20.5.8, p9 derive from <tt>unary_function&lt;T*, S&gt;</tt>, and
 <tt>binary_function&lt;T*,
 A, S&gt;</tt>, respectively. Consequently, their <tt>argument_type</tt>, and
 <tt>first_argument_type</tt>
@@ -9124,7 +9134,7 @@ function
 </p>
 <p><b>Proposed resolution:</b></p>
 <p>Replace the top portion of the definition of the class template
-const_mem_fun_t in 20.3.8, p8
+const_mem_fun_t in 20.5.8, p8
 </p>
 <p><tt>template &lt;class S, class T&gt; class const_mem_fun_t</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : public
@@ -9136,7 +9146,7 @@ unary_function&lt;T*, S&gt; {</tt>
 unary_function&lt;<b>const</b> T*, S&gt; {</tt>
 </p>
 <p>Also replace the top portion of the definition of the class template
-const_mem_fun1_t in 20.3.8, p9</p>
+const_mem_fun1_t in 20.5.8, p9</p>
 <p><tt>template &lt;class S, class T, class A&gt; class const_mem_fun1_t</tt>
 <br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : public
 binary_function&lt;T*, A, S&gt; {</tt>
@@ -9150,19 +9160,19 @@ binary_function&lt;<b>const</b> T*, A, S&gt; {</tt>
 <p>This is simply a contradiction: the <tt>argument_type</tt> typedef,
 and the argument type itself, are not the same.</p>
 <hr>
-<a name="298"><h3>298.&nbsp;::operator delete[] requirement incorrect/insufficient</h3></a><p><b>Section:</b>&nbsp;18.4.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.array"> [lib.new.delete.array]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;John A. Pedretti&nbsp; <b>Date:</b>&nbsp;10 Jan 2001</p>
+<a name="298"><h3>298.&nbsp;::operator delete[] requirement incorrect/insufficient</h3></a><p><b>Section:</b>&nbsp;18.5.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.array"> [lib.new.delete.array]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;John A. Pedretti&nbsp; <b>Date:</b>&nbsp;10 Jan 2001</p>
 <p>
-The default behavior of <tt>operator delete[]</tt> described in 18.4.1.2, p12 -
+The default behavior of <tt>operator delete[]</tt> described in 18.5.1.2, p12 -
 namely that for non-null value of <i>ptr</i>, the operator reclaims storage
 allocated by the earlier call to the default <tt>operator new[]</tt> - is not
 correct in all cases. Since the specified <tt>operator new[]</tt> default
-behavior is to call <tt>operator new</tt> (18.4.1.2, p4, p8), which can be
+behavior is to call <tt>operator new</tt> (18.5.1.2, p4, p8), which can be
 replaced, along with <tt>operator delete</tt>, by the user, to implement their
 own memory management, the specified default behavior of<tt> operator
 delete[]</tt> must be to call <tt>operator delete</tt>.
 </p>
 <p><b>Proposed resolution:</b></p>
-<p>Change 18.4.1.2, p12 from</p>
+<p>Change 18.5.1.2, p12 from</p>
 <blockquote>
 <b>-12-</b> <b>Default behavior:</b>
 <ul>
@@ -9190,7 +9200,7 @@ or <tt>operator delete(<i>ptr</i>, std::nothrow)</tt> respectively.
 </blockquote>
 <p>and expunge paragraph 13.</p>
 <hr>
-<a name="300"><h3>300.&nbsp;list::merge() specification incomplete</h3></a><p><b>Section:</b>&nbsp;23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;John Pedretti&nbsp; <b>Date:</b>&nbsp;23 Jan 2001</p>
+<a name="300"><h3>300.&nbsp;list::merge() specification incomplete</h3></a><p><b>Section:</b>&nbsp;23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;John Pedretti&nbsp; <b>Date:</b>&nbsp;23 Jan 2001</p>
 <p>
 The "Effects" clause for list::merge() (23.2.2.4, p23)
 appears to be incomplete: it doesn't cover the case where the argument
@@ -9199,7 +9209,7 @@ note in p24 (below) is that x be empty after the merge which is surely
 unintended in this case.
 </p>
 <p><b>Proposed resolution:</b></p>
-<p>In 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, replace paragraps 23-25 with:</p>
+<p>In 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>, replace paragraps 23-25 with:</p>
 <blockquote>
 <p>
 23 Effects: if (&amp;x == this) does nothing; otherwise, merges the two
@@ -9228,7 +9238,7 @@ effects.
 </blockquote>
 
 <p><i>[Copenhagen: The original proposed resolution did not fix all of
-the problems in 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, p22-25.  Three different
+the problems in 23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>, p22-25.  Three different
 paragraphs (23, 24, 25) describe the effects of <tt>merge</tt>.
 Changing p23, without changing the other two, appears to introduce
 contradictions.  Additionally, "merges the argument list into the
@@ -9369,7 +9379,7 @@ input.  Using <tt>widen</tt> does mean that alternative digit
 representations will not be recognized, but this was a known 
 consequence of the design choice.</p>
 <hr>
-<a name="305"><h3>305.&nbsp;Default behavior of codecvt&lt;wchar_t, char, mbstate_t&gt;::length()</h3></a><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;24 Jan 2001</p>
+<a name="305"><h3>305.&nbsp;Default behavior of codecvt&lt;wchar_t, char, mbstate_t&gt;::length()</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;24 Jan 2001</p>
 <p>22.2.1.5/3 introduces codecvt in part with:</p>
 
 <blockquote>
@@ -9507,13 +9517,13 @@ members thought that diagnostics should be required whenever
 possible.]</i></p>
 
 <hr>
-<a name="307"><h3>307.&nbsp;Lack of reference typedefs in container adaptors</h3></a><p><b>Section:</b>&nbsp;23.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.adaptors"> [lib.container.adaptors]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;13 Mar 2001</p>
+<a name="307"><h3>307.&nbsp;Lack of reference typedefs in container adaptors</h3></a><p><b>Section:</b>&nbsp;23.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list"> [lib.list]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;13 Mar 2001</p>
 
 <p>From reflector message c++std-lib-8330.  See also lib-8317.</p>
 
 <p>
-The standard is currently inconsistent in 23.2.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.priority.queue"> [lib.priority.queue]</a>
-paragraph 1 and 23.2.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a> paragraph 1.
+The standard is currently inconsistent in 23.2.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.capacity"> [lib.list.capacity]</a>
+paragraph 1 and 23.2.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.modifiers"> [lib.list.modifiers]</a> paragraph 1.
 23.2.3.3/1, for example, says:
 </p>
 
@@ -9907,14 +9917,14 @@ comment in c++std-lib-8939.
 <a name="312"><h3>312.&nbsp;Table 27 is missing headers</h3></a><p><b>Section:</b>&nbsp;20 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.utilities"> [lib.utilities]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;29 Mar 2001</p>
 <p>Table 27 in section 20 lists the header &lt;memory&gt; (only) for
 Memory (lib.memory) but neglects to mention the headers
-&lt;cstdlib&gt; and &lt;cstring&gt; that are discussed in 20.4.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.c.malloc"> [lib.c.malloc]</a>.</p>
+&lt;cstdlib&gt; and &lt;cstring&gt; that are discussed in 20.4.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.rel"> [lib.meta.rel]</a>.</p>
 <p><b>Proposed resolution:</b></p>
 <p>Add &lt;cstdlib&gt; and &lt;cstring&gt; to Table 27, in the same row
 as &lt;memory&gt;.</p>
 <hr>
-<a name="315"><h3>315.&nbsp;Bad "range" in list::unique complexity</h3></a><p><b>Section:</b>&nbsp;23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Andy Sawyer&nbsp; <b>Date:</b>&nbsp;1 May 2001</p>
+<a name="315"><h3>315.&nbsp;Bad "range" in list::unique complexity</h3></a><p><b>Section:</b>&nbsp;23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Andy Sawyer&nbsp; <b>Date:</b>&nbsp;1 May 2001</p>
 <p>
-23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.ops"> [lib.list.ops]</a>, Para 21 describes the complexity of
+23.2.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.special"> [lib.deque.special]</a>, Para 21 describes the complexity of
 list::unique as: "If the range (last - first) is not empty, exactly
 (last - first) -1 applications of the corresponding predicate,
 otherwise no applications of the predicate)".
@@ -10015,7 +10025,7 @@ template at all, but simply provide the primary template.</p>
 <p>Remove the comment from the text in 22.2.3.2 and from the proposed
 resolution of library issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#228">228</a>.</p>
 <hr>
-<a name="319"><h3>319.&nbsp;Storage allocation wording confuses "Required behavior", "Requires"</h3></a><p><b>Section:</b>&nbsp;18.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a>, 18.4.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.array"> [lib.new.delete.array]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;15 May 2001</p>
+<a name="319"><h3>319.&nbsp;Storage allocation wording confuses "Required behavior", "Requires"</h3></a><p><b>Section:</b>&nbsp;18.5.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a>, 18.5.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.array"> [lib.new.delete.array]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;15 May 2001</p>
 <p>The standard specifies 17.3.1.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.structure.specifications"> [lib.structure.specifications]</a> that "Required
 behavior" elements describe "the semantics of a function definition
 provided by either the implementation or a C++ program."</p>
@@ -10029,7 +10039,7 @@ should be specified as "Requires".</p>
 
 <p><b>Proposed resolution:</b></p>
 
-<p>In 18.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a> Para 12 Change:</p>
+<p>In 18.5.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a> Para 12 Change:</p>
 <blockquote>
   <p>Required behavior: accept a value of ptr that is null or that was
   returned by an earlier call ...</p>
@@ -10040,7 +10050,7 @@ should be specified as "Requires".</p>
   earlier call ...</p>
 </blockquote>
 
-<p>In 18.4.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.array"> [lib.new.delete.array]</a> Para 11 Change:</p>
+<p>In 18.5.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.array"> [lib.new.delete.array]</a> Para 11 Change:</p>
 <blockquote>
   <p>Required behavior: accept a value of ptr that is null or that was
   returned by an earlier call ...</p>
@@ -10052,7 +10062,7 @@ should be specified as "Requires".</p>
 </blockquote>
 
 <hr>
-<a name="320"><h3>320.&nbsp;list::assign overspecified</h3></a><p><b>Section:</b>&nbsp;23.2.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.cons"> [lib.list.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;17 May 2001</p>
+<a name="320"><h3>320.&nbsp;list::assign overspecified</h3></a><p><b>Section:</b>&nbsp;23.2.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.deque.cons"> [lib.deque.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;17 May 2001</p>
 <p>
 Section 23.2.2.1, paragraphs 6-8 specify that list assign (both forms) have
 the "effects" of a call to erase followed by a call to insert.
@@ -10387,11 +10397,11 @@ modifier.</p>
 <p><b>Rationale:</b></p>
 <p>Fixes an obvious typo</p>
 <hr>
-<a name="329"><h3>329.&nbsp;vector capacity, reserve and reallocation</h3></a><p><b>Section:</b>&nbsp;23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.capacity"> [lib.vector.capacity]</a>, 23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Anthony Williams&nbsp; <b>Date:</b>&nbsp;13 Jul 2001</p>
+<a name="329"><h3>329.&nbsp;vector capacity, reserve and reallocation</h3></a><p><b>Section:</b>&nbsp;23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.priority.queue"> [lib.priority.queue]</a>, 23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Anthony Williams&nbsp; <b>Date:</b>&nbsp;13 Jul 2001</p>
 <p>
 There is an apparent contradiction about which circumstances can cause
-a reallocation of a vector in Section 23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.capacity"> [lib.vector.capacity]</a> and
-section 23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a>.
+a reallocation of a vector in Section 23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.priority.queue"> [lib.priority.queue]</a> and
+section 23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>.
 </p>
 
 <p>23.2.4.2p5 says:</p>
@@ -10443,7 +10453,7 @@ than the old capacity, I think the intent is clear.
 </p>
 
 <p><b>Proposed resolution:</b></p>
-<p>Change the wording of 23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.capacity"> [lib.vector.capacity]</a> paragraph 5 to:</p>
+<p>Change the wording of 23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.priority.queue"> [lib.priority.queue]</a> paragraph 5 to:</p>
 
 <blockquote>
 Notes: Reallocation invalidates all the references, pointers, and
@@ -10484,7 +10494,7 @@ and the following declaration of ~failure() in ios_base::failure
        };
      }
 </pre>
-<p>the class failure cannot be implemented since in 18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.exception"> [lib.exception]</a> the destructor of class exception has an empty
+<p>the class failure cannot be implemented since in 18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.type.info"> [lib.type.info]</a> the destructor of class exception has an empty
 exception specification:</p>
 <pre>    namespace std {
        class exception {
@@ -10904,7 +10914,7 @@ required to contain an infinite number of facets.</p>
 OutputIterator must be supported.  Table 51 already contains a
 complete list of the ones we need.</p>
 <hr>
-<a name="341"><h3>341.&nbsp;Vector reallocation and swap</h3></a><p><b>Section:</b>&nbsp;23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.capacity"> [lib.vector.capacity]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Anthony Williams&nbsp; <b>Date:</b>&nbsp;27 Sep 2001</p>
+<a name="341"><h3>341.&nbsp;Vector reallocation and swap</h3></a><p><b>Section:</b>&nbsp;23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.priority.queue"> [lib.priority.queue]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Anthony Williams&nbsp; <b>Date:</b>&nbsp;27 Sep 2001</p>
 <p>It is a common idiom to reduce the capacity of a vector by swapping it with
 an empty one:</p>
 <pre>  std::vector&lt;SomeType&gt; vec;
@@ -10913,7 +10923,7 @@ an empty one:</p>
   // vec is now empty, with minimal capacity
 </pre>
 
-<p>However, the wording of 23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.capacity"> [lib.vector.capacity]</a>paragraph 5 prevents
+<p>However, the wording of 23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.priority.queue"> [lib.priority.queue]</a>paragraph 5 prevents
 the capacity of a vector being reduced, following a call to
 reserve(). This invalidates the idiom, as swap() is thus prevented
 from reducing the capacity. The proposed wording for issue <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#329">329</a> does not affect this.  Consequently, the example above
@@ -10944,7 +10954,7 @@ pointing to the same element. Consequently iterators and references that
 referred to one vector now refer to the other, and vice-versa.</li>
 </ol>
 <p><b>Proposed resolution:</b></p>
-<p>Add a new paragraph after 23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.capacity"> [lib.vector.capacity]</a> paragraph 5:</p>
+<p>Add a new paragraph after 23.2.4.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.priority.queue"> [lib.priority.queue]</a> paragraph 5:</p>
 <blockquote>
 <pre>  void swap(vector&lt;T,Allocator&gt;&amp; x);
 </pre>
@@ -11450,9 +11460,9 @@ prevents locale from being implemented efficiently.
 <p>This change is reasonable becuase it clarifies the intent of this
   part of the standard.</p>
 <hr>
-<a name="362"><h3>362.&nbsp;bind1st/bind2nd type safety</h3></a><p><b>Section:</b>&nbsp;20.3.6.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.bind.1st"> [lib.bind.1st]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Demkin&nbsp; <b>Date:</b>&nbsp;26 Apr 2002</p>
+<a name="362"><h3>362.&nbsp;bind1st/bind2nd type safety</h3></a><p><b>Section:</b>&nbsp;D.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/future.html#depr.lib.binders"> [depr.lib.binders]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Andrew Demkin&nbsp; <b>Date:</b>&nbsp;26 Apr 2002</p>
 <p>
-The definition of bind1st() (20.3.6.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.bind.1st"> [lib.bind.1st]</a>) can result in
+The definition of bind1st() (<font color="red">20.5.6.2</font>) can result in
 the construction of an unsafe binding between incompatible pointer
 types. For example, given a function whose first parameter type is
 'pointer to T', it's possible without error to bind an argument of
@@ -11485,15 +11495,15 @@ semantically equivalent to an explicit cast expression (5.4 <a href="http://www.
 as a reinterpret_cast, thus masking the error.
 </p>
 
-<p>The problem and proposed change also apply to 20.3.6.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.bind.2nd"> [lib.bind.2nd]</a>.</p>
+<p>The problem and proposed change also apply to <font color="red">20.5.6.4</font>.</p>
 <p><b>Proposed resolution:</b></p>
-<p>Add this sentence to the end of 20.3.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.binders"> [lib.binders]</a>/1:
+<p>Add this sentence to the end of 20.5.6 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.arithmetic.operations"> [lib.arithmetic.operations]</a>/1:
   "Binders <tt>bind1st</tt> and <tt>bind2nd</tt> are deprecated in
   favor of <tt>std::tr1::bind</tt>."</p>
 
 <p>(Notes to editor: (1) when and if tr1::bind is incorporated into
   the standard, "std::tr1::bind" should be changed to "std::bind". (2)
-  20.3.6 should probably be moved to Annex D.</p>
+  20.5.6 should probably be moved to Annex D.</p>
 <p><b>Rationale:</b></p>
 <p>There is no point in fixing bind1st and bind2nd.  tr1::bind is a
   superior solution.  It solves this problem and others.</p>
@@ -11709,7 +11719,7 @@ with the following signature:</p>
 <p><b>Rationale:</b></p>
 <p>Fixes an obvious typo.</p>
 <hr>
-<a name="371"><h3>371.&nbsp;Stability of multiset and multimap member functions</h3></a><p><b>Section:</b>&nbsp;23.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Frank Compagner&nbsp; <b>Date:</b>&nbsp;20 Jul 2002</p>
+<a name="371"></a><h3><a name="371">371.&nbsp;Stability of multiset and multimap member functions</a></h3><p><b>Section:</b>&nbsp;23.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Frank Compagner&nbsp; <b>Date:</b>&nbsp;20 Jul 2002</p>
 <p>
 The requirements for multiset and multimap containers (23.1
 [lib.containers.requirements], 23.1.2 [lib.associative.reqmnts],
@@ -11790,7 +11800,7 @@ wording.]</i></p>
 <p>
 In 27.6.1.2.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.formatted.reqmts"> [lib.istream.formatted.reqmts]</a> and 27.6.2.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ostream.formatted.reqmts"> [lib.ostream.formatted.reqmts]</a>
 (exception()&amp;badbit) != 0 is used in testing for rethrow, yet
-exception() is the constructor to class std::exception in 18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.exception"> [lib.exception]</a> that has no return type. Should member function
+exception() is the constructor to class std::exception in 18.6.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.type.info"> [lib.type.info]</a> that has no return type. Should member function
 exceptions() found in 27.4.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ios"> [lib.ios]</a> be used instead?
 </p>
 
@@ -11893,9 +11903,9 @@ following text:
 <p><b>Rationale:</b></p>
 <p>The LWG believes this is just a typo, and that this is the correct fix.</p>
 <hr>
-<a name="380"><h3>380.&nbsp;typos in codecvt tables 53 and 54</h3></a><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
+<a name="380"><h3>380.&nbsp;typos in codecvt tables 53 and 54</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
 <p>
-Tables 53 and 54 in 22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a> are both titled "convert
+Tables 53 and 54 in 22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a> are both titled "convert
 result values," when surely "do_in/do_out result values" must have
 been intended for Table 53 and "do_unshift result values" for Table
 54.
@@ -11920,7 +11930,7 @@ heading Meaning, to "space for more than (to_limit - to) destination
 elements was needed to terminate a sequence given the value of state."
 </p>
 <hr>
-<a name="381"><h3>381.&nbsp;detection of invalid mbstate_t in codecvt</h3></a><p><b>Section:</b>&nbsp;22.2.1.5.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.virtuals"> [lib.locale.codecvt.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
+<a name="381"><h3>381.&nbsp;detection of invalid mbstate_t in codecvt</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.codecvt.byname"> [lib.locale.codecvt.byname]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
 <p>
 All but one codecvt member functions that take a state_type argument
 list as one of their preconditions that the state_type argument have
@@ -12085,8 +12095,8 @@ to <tt>2*log<sub>2</sub>(last - first) + <i>O</i>(1)</tt>.</p>
 Ê involve <tt>floor</tt> or <tt>ceil</tt>.Ê It would be too easy to
 Ê get this wrong, and don't provide any substantial value for users.</p>
 <hr>
-<a name="386"><h3>386.&nbsp;Reverse iterator's operator[] has impossible return type</h3></a><p><b>Section:</b>&nbsp;24.4.1.3.11 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.opindex"> [lib.reverse.iter.opindex]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;23 Oct 2002</p>
-<p>In 24.4.1.3.11 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.opindex"> [lib.reverse.iter.opindex]</a>, <tt>reverse_iterator&lt;&gt;::operator[]</tt> 
+<a name="386"><h3>386.&nbsp;Reverse iterator's operator[] has impossible return type</h3></a><p><b>Section:</b>&nbsp;24.4.1.3.11 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.op-="> [lib.reverse.iter.op-=]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;23 Oct 2002</p>
+<p>In 24.4.1.3.11 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-iterators.html#lib.reverse.iter.op-="> [lib.reverse.iter.op-=]</a>, <tt>reverse_iterator&lt;&gt;::operator[]</tt> 
 is specified as having a return type of <tt>reverse_iterator::reference</tt>,
 which is the same as <tt>iterator_traits&lt;Iterator&gt;::reference</tt>.
 (Where <tt>Iterator</tt> is the underlying iterator type.)</p>
@@ -12136,7 +12146,7 @@ Comments from Dave Abrahams: IMO we should resolve 386 by just saying
     readable and writable, which is about as good as we can do.
 ]</i></p>
 <hr>
-<a name="389"><h3>389.&nbsp;Const overload of valarray::operator[] returns by value</h3></a><p><b>Section:</b>&nbsp;26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;8 Nov 2002</p>
+<a name="389"><h3>389.&nbsp;Const overload of valarray::operator[] returns by value</h3></a><p><b>Section:</b>&nbsp;26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex"> [lib.complex]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Gabriel Dos Reis&nbsp; <b>Date:</b>&nbsp;8 Nov 2002</p>
 <p>Consider the following program:</p>
 <pre>    #include &lt;iostream&gt;
     #include &lt;ostream&gt;
@@ -12176,8 +12186,8 @@ integration within programs written in C++.  There is no reason why
 subscripting an expression of type valarray&lt;T&gt; that is const-qualified
 should not return a const T&amp;.</p>
 <p><b>Proposed resolution:</b></p>
-<p>In the class synopsis in 26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.template.valarray"> [lib.template.valarray]</a>, and in
-26.3.2.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.valarray.access"> [lib.valarray.access]</a> just above paragraph 1, change</p>
+<p>In the class synopsis in 26.3.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.complex"> [lib.complex]</a>, and in
+<font color="red">26.3.2.3</font> just above paragraph 1, change</p>
 <pre>  T operator[](size_t const);
 </pre>
 <p>to</p>
@@ -12206,9 +12216,9 @@ const in the header file synopsis in section 22.1 <a href="http://www.open-std.o
 <p><b>Rationale:</b></p>
 <p>Fixes an obvious typo</p>
 <hr>
-<a name="395"><h3>395.&nbsp;inconsistencies in the definitions of rand() and random_shuffle()</h3></a><p><b>Section:</b>&nbsp;26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;James Kanze&nbsp; <b>Date:</b>&nbsp;3 Jan 2003</p>
+<a name="395"><h3>395.&nbsp;inconsistencies in the definitions of rand() and random_shuffle()</h3></a><p><b>Section:</b>&nbsp;26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numarray"> [lib.numarray]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;James Kanze&nbsp; <b>Date:</b>&nbsp;3 Jan 2003</p>
 <p>
-In 26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.c.math"> [lib.c.math]</a>, the C++ standard refers to the C standard for the
+In 26.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-numerics.html#lib.numarray"> [lib.numarray]</a>, the C++ standard refers to the C standard for the
 definition of rand(); in the C standard, it is written that "The
 implementation shall behave as if no library function calls the rand
 function."
@@ -12246,9 +12256,9 @@ implementation is permitted to use <tt>rand</tt>.]
   problem if the number of elements in the sequence is greater than
   RAND_MAX.</p> 
 <hr>
-<a name="400"><h3>400.&nbsp;redundant type cast in lib.allocator.members</h3></a><p><b>Section:</b>&nbsp;20.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
+<a name="400"><h3>400.&nbsp;redundant type cast in lib.allocator.members</h3></a><p><b>Section:</b>&nbsp;20.6.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
 <p>
-20.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a> allocator members, contains
+20.6.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a> allocator members, contains
 the following 3 lines:
 </p>
 
@@ -12268,16 +12278,16 @@ Replace "((T*) p)" with "p".
 <p><b>Rationale:</b></p>
 <p>Just a typo, this is really editorial.</p>
 <hr>
-<a name="402"><h3>402.&nbsp;wrong new expression in [some_]allocator::construct</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>, 20.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>, &nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
+<a name="402"><h3>402.&nbsp;wrong new expression in [some_]allocator::construct</h3></a><p><b>Section:</b>&nbsp;20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a>, 20.6.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>, &nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
 <p>
 This applies to the new expression that is contained in both par12 of
-20.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a> and in par2 (table 32) of 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a>.
+20.6.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a> and in par2 (table 32) of 20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a>.
 I think this new expression is wrong, involving unintended side
 effects.
 </p>
 
 
-<p>20.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>  contains the following 3 lines:</p>
+<p>20.6.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>  contains the following 3 lines:</p>
 
 <pre>  11 Returns: the largest value N for which the call allocate(N,0) might succeed.
      void construct(pointer p, const_reference val);
@@ -12285,7 +12295,7 @@ effects.
 </pre>
 
 
-<p>20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.requirements"> [lib.allocator.requirements]</a> in table 32 has the following line:</p>
+<p>20.1.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.default.con.req"> [lib.default.con.req]</a> in table 32 has the following line:</p>
 <pre>  a.construct(p,t)   Effect: new((void*)p) T(t)
 </pre>
 
@@ -12376,7 +12386,7 @@ In 21.3.5.8 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-strings.htm
 Throws: Shall not throw exceptions.
 </p>
 <hr>
-<a name="404"><h3>404.&nbsp;May a replacement allocation function be declared inline?</h3></a><p><b>Section:</b>&nbsp;17.4.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.replacement.functions"> [lib.replacement.functions]</a>, 18.4.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete"> [lib.new.delete]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;24 Apr 2003</p>
+<a name="404"></a><h3><a name="404">404.&nbsp;May a replacement allocation function be declared inline?</a></h3><p><b>Section:</b>&nbsp;17.4.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.replacement.functions"> [lib.replacement.functions]</a>, 18.5.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete"> [lib.new.delete]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;24 Apr 2003</p>
 <p>
 The eight basic dynamic memory allocation functions (single-object
 and array versions of ::operator new and ::operator delete, in the
@@ -12387,12 +12397,12 @@ in preference to the implementation's definition.
 
 <p>
 Three different parts of the standard mention requirements on
-replacement functions: 17.4.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.replacement.functions"> [lib.replacement.functions]</a>, 18.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a>
-and 18.4.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.array"> [lib.new.delete.array]</a>, and 3.7.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/basic.html#basic.stc.dynamic"> [basic.stc.dynamic]</a>.
+replacement functions: 17.4.3.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-intro.html#lib.replacement.functions"> [lib.replacement.functions]</a>, 18.5.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a>
+and 18.5.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.array"> [lib.new.delete.array]</a>, and 3.7.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/basic.html#basic.stc.dynamic"> [basic.stc.dynamic]</a>.
 </p>
 
 <p>None of these three places say whether a replacement function may
-  be declared inline.  18.4.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a> paragraph 2 specifies a
+  be declared inline.  18.5.1.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a> paragraph 2 specifies a
   signature for the replacement function, but that's not enough:
   the <tt>inline</tt> specifier is not part of a function's signature.
   One might also reason from 7.1.2 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/dcl.html#dcl.fct.spec"> [dcl.fct.spec]</a> paragraph 2, which
@@ -12438,7 +12448,7 @@ type."
 <p><i>[Something along these lines is clearly necessary.  Matt
   provided wording.]</i></p>
 <hr>
-<a name="406"><h3>406.&nbsp;vector::insert(s) exception safety</h3></a><p><b>Section:</b>&nbsp;23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;27 Apr 2003</p>
+<a name="406"><h3>406.&nbsp;vector::insert(s) exception safety</h3></a><p><b>Section:</b>&nbsp;23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;27 Apr 2003</p>
 <p>
 There is a possible defect in the standard: the standard text was
 never intended to prevent arbitrary ForwardIterators, whose operations
@@ -12449,7 +12459,7 @@ standard appears to impose requirements that aren't met by any
 existing implementation.
 </p>
 <p><b>Proposed resolution:</b></p>
-<p>Replace 23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a> paragraph 1 with:</p>
+<p>Replace 23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a> paragraph 1 with:</p>
 <blockquote>
   1- Notes: Causes reallocation if the new size is greater than the
   old capacity. If no reallocation happens, all the iterators and
@@ -12552,16 +12562,16 @@ flags.]</i></p>
   of the three fstream class template instead.]</i></p>
 
 <hr>
-<a name="410"><h3>410.&nbsp;Missing semantics for stack and queue comparison operators</h3></a><p><b>Section:</b>&nbsp;23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a>, 23.2.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Hans Bos&nbsp; <b>Date:</b>&nbsp;7 Jun 2003</p>
+<a name="410"><h3>410.&nbsp;Missing semantics for stack and queue comparison operators</h3></a><p><b>Section:</b>&nbsp;23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.cons"> [lib.list.cons]</a>, 23.2.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.modifiers"> [lib.list.modifiers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Hans Bos&nbsp; <b>Date:</b>&nbsp;7 Jun 2003</p>
 <p>
-Sections 23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a> and 23.2.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a> list
+Sections 23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.cons"> [lib.list.cons]</a> and 23.2.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.modifiers"> [lib.list.modifiers]</a> list
 comparison operators (==, !=, &lt;, &lt;=, &gt;, =&gt;) for queue and
-stack.  Only the semantics for queue::operator== (23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a> par2) and queue::operator&lt; (23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a>
+stack.  Only the semantics for queue::operator== (23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.cons"> [lib.list.cons]</a> par2) and queue::operator&lt; (23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.cons"> [lib.list.cons]</a>
 par3) are defined.
 </p>
 <p><b>Proposed resolution:</b></p>
 
-<p>Add the following new paragraphs after 23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.queue"> [lib.queue]</a>
+<p>Add the following new paragraphs after 23.2.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.cons"> [lib.list.cons]</a>
   paragraph 3:</p>
 
 <blockquote>
@@ -12584,7 +12594,7 @@ par3) are defined.
 
 </blockquote>
 
-<p>Add the following paragraphs at the end of 23.2.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>:</p>
+<p>Add the following paragraphs at the end of 23.2.3.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.modifiers"> [lib.list.modifiers]</a>:</p>
 
 <blockquote>
 
@@ -12704,7 +12714,7 @@ while extracting characters from *this and failbit is on in exceptions(),
 then the caught exception is rethrown.
 </blockquote>
 <hr>
-<a name="414"><h3>414.&nbsp;Which iterators are invalidated by v.erase()?</h3></a><p><b>Section:</b>&nbsp;23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;19 Aug 2003</p>
+<a name="414"><h3>414.&nbsp;Which iterators are invalidated by v.erase()?</h3></a><p><b>Section:</b>&nbsp;23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;19 Aug 2003</p>
 <p>
 Consider the following code fragment:
 </p>
@@ -12753,7 +12763,7 @@ techniques.)
 </p>
 <p><b>Proposed resolution:</b></p>
 <p>
-In 23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.modifiers"> [lib.vector.modifiers]</a> paragraph 3, change "Invalidates all the
+In 23.2.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.stack"> [lib.stack]</a> paragraph 3, change "Invalidates all the
 iterators and references after the point of the erase" to
 "Invalidates iterators and references at or after the point of the
 erase". 
@@ -12813,7 +12823,7 @@ allowed to just declare it without providing a full definition?
   already says. We don't want to make anything implementation defined,
   because that imposes new requirements in implementations.</p>
 <hr>
-<a name="425"><h3>425.&nbsp;return value of std::get_temporary_buffer</h3></a><p><b>Section:</b>&nbsp;20.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.temporary.buffer"> [lib.temporary.buffer]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
+<a name="425"><h3>425.&nbsp;return value of std::get_temporary_buffer</h3></a><p><b>Section:</b>&nbsp;20.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.help"> [lib.meta.help]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;18 Sep 2003</p>
 <p>
 The standard is not clear about the requirements on the value returned from
 a call to get_temporary_buffer(0). In particular, it fails to specify whether
@@ -12823,7 +12833,7 @@ malloc). The standard also fails to mention what the required behavior
 is when the argument is less than 0.
 </p>
 <p><b>Proposed resolution:</b></p>
-<p>Change 20.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.temporary.buffer"> [lib.temporary.buffer]</a> paragraph 2 from "...or a pair of 0
+<p>Change 20.4.3 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-utilities.html#lib.meta.help"> [lib.meta.help]</a> paragraph 2 from "...or a pair of 0
 values if no storage can be obtained" to "...or a pair of 0 values if
 no storage can be obtained or if <i>n</i> &lt;= 0."</p>
 <p><i>[Kona: Matt provided wording]</i></p>
@@ -14094,7 +14104,7 @@ An implementation may also accept additional implementation-defined formats.
 ]</i></p>
 
 <hr>
-<a name="464"><h3>464.&nbsp;Suggestion for new member functions in standard containers</h3></a><p><b>Section:</b>&nbsp;23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector"> [lib.vector]</a>, 23.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.map"> [lib.map]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Thorsten Ottosen&nbsp; <b>Date:</b>&nbsp;12 May 2004</p>
+<a name="464"><h3>464.&nbsp;Suggestion for new member functions in standard containers</h3></a><p><b>Section:</b>&nbsp;23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.adaptors"> [lib.container.adaptors]</a>, 23.3.1 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.map"> [lib.map]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Thorsten Ottosen&nbsp; <b>Date:</b>&nbsp;12 May 2004</p>
 
 <p>To add slightly more convenience to vector&lt;T&gt; and map&lt;Key,T&gt; we should consider to add</p>
 <ol>
@@ -14118,14 +14128,14 @@ at() (which will then throw if the vector is empty). </li>
 </ul>
 
 <p><b>Proposed resolution:</b></p>
-<p>In 23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector"> [lib.vector]</a>, add the following to the <tt>vector</tt>
+<p>In 23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.adaptors"> [lib.container.adaptors]</a>, add the following to the <tt>vector</tt>
   synopsis after "element access" and before "modifiers":</p>
 <pre>  // <i>[lib.vector.data] data access</i>
   pointer       data();
   const_pointer data() const;
 </pre>
 
-<p>Add a new subsection of 23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector"> [lib.vector]</a>:</p>
+<p>Add a new subsection of 23.2.4 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.container.adaptors"> [lib.container.adaptors]</a>:</p>
 <blockquote>
 <p>23.2.4.x <tt>vector</tt> data access</p>
 <pre>   pointer       data();
@@ -14293,7 +14303,7 @@ the value need not be valid.
   "unspecified-bool-type".]</i></p> 
 
 <hr>
-<a name="469"><h3>469.&nbsp;vector&lt;bool&gt; ill-formed relational operators</h3></a><p><b>Section:</b>&nbsp;23.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.bool"> [lib.vector.bool]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
+<a name="469"><h3>469.&nbsp;vector&lt;bool&gt; ill-formed relational operators</h3></a><p><b>Section:</b>&nbsp;23.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector"> [lib.vector]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#DR">DR</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
 
 <p>
 The overloads of relational operators for vector&lt;bool&gt; specified
@@ -14510,9 +14520,9 @@ requirements of charT (described in 21 <a href="http://www.open-std.org/jtc1/sc2
  for. The only issue is what to do about stateT. This wording is
  thin, but probably adequate.</p>
 <hr>
-<a name="496"><h3>496.&nbsp;Illegal use of "T" in vector&lt;bool&gt;</h3></a><p><b>Section:</b>&nbsp;23.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.bool"> [lib.vector.bool]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;richard@ex-parrot.com&nbsp; <b>Date:</b>&nbsp;10 Feb 2005</p>
+<a name="496"><h3>496.&nbsp;Illegal use of "T" in vector&lt;bool&gt;</h3></a><p><b>Section:</b>&nbsp;23.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector"> [lib.vector]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;richard@ex-parrot.com&nbsp; <b>Date:</b>&nbsp;10 Feb 2005</p>
 <p>
-In the synopsis of the std::vector&lt;bool&gt; specialisation in 23.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector.bool"> [lib.vector.bool]</a>,
+In the synopsis of the std::vector&lt;bool&gt; specialisation in 23.2.5 <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/lib-containers.html#lib.vector"> [lib.vector]</a>,
 the non-template assign() function has the signature</p>
 
 <pre>  void assign( size_type n, const T&amp; t );
