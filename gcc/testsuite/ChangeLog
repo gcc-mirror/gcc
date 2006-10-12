@@ -1,3 +1,8 @@
+2006-10-12  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/29093
+	* gcc.dg/debug/dwarf2/dwarf-file1.c: Check for ".file".
+
 2006-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/28709
