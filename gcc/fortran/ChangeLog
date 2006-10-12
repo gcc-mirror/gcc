@@ -1,5 +1,9 @@
 2006-10-12  Brooks Moses  <bmoses@stanford.edu>
 
+	* intrinsic.texi (STAT): Fixed a format typo in sample code.
+
+2006-10-12  Brooks Moses  <bmoses@stanford.edu>
+
 	* intrinsic.texi (STAT): Shortened lines in sample code.
 
 2006-10-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
