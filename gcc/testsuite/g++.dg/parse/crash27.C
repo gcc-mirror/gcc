@@ -6,4 +6,3 @@ void Dispatcher()
 	/* { dg-error "expected type" "expected 1" { target *-*-* } 4 } */
 	/* { dg-error "expected `,' before" "expected 2" { target *-*-* } 4 } */
 	/* { dg-error "expected `\\\)" "expected 3" { target *-*-* } 4 } */
-	/* { dg-error "expected ',' or" "expected 4" { target *-*-* } 4 } */

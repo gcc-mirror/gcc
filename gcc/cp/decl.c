@@ -3854,8 +3854,7 @@ start_decl (const cp_declarator *declarator,
 
       case FUNCTION_DECL:
 	error ("function %q#D is initialized like a variable", decl);
-	initialized = 0;
-	break;
+	return error_mark_node;
 
       default:
 	break;
@@ -6810,7 +6809,7 @@ check_var_type (tree identifier, tree type)
 	}
       else
 	error ("variable or field declared void");
-      type = integer_type_node;
+      type = error_mark_node;
     }
 
   return type;
@@ -8178,7 +8177,11 @@ grokdeclarator (const cp_declarator *declarator,
   /* We don't check parameter types here because we can emit a better
      error message later.  */
   if (decl_context != PARM)
-    type = check_var_type (unqualified_id, type);
+    {
+      type = check_var_type (unqualified_id, type);
+      if (type == error_mark_node)
+        return error_mark_node;
+    }
 
   /* Now create the decl, which may be a VAR_DECL, a PARM_DECL
      or a FUNCTION_DECL, depending on DECL_CONTEXT and TYPE.  */

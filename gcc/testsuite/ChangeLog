@@ -1,3 +1,11 @@
+2006-10-12 Lee Millward <lee.millward@codesourcery.com>
+
+       PR c++/27961
+       * g++.dg/template/crash60.C: New test.
+       * g++.dg/other/large-size-array.C: Adjust error markers.
+       * g++.dg/parse/crash27.C: Likewise.
+       * g++.dg/template/crash1.C: Likewise.
+	
 2006-10-12  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/29093

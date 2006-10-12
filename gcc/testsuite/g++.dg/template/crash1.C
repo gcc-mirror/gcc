@@ -13,5 +13,5 @@ class S
 
 template <class I>
 void S::Foo(int (*f)(TYPO&o) ) // { dg-error "Foo|f|TYPO|o" }
-{ // { dg-error "expected `;'" }
+{ 
 }
