@@ -36,6 +36,45 @@ details.  */
 static void check_enabled_events (void);
 static void check_enabled_event (jvmtiEvent);
 
+namespace JVMTI
+{
+  bool VMInit = false;
+  bool VMDeath = false;
+  bool ThreadStart = false;
+  bool ThreadEnd = false;
+  bool ClassFileLoadHook = false;
+  bool ClassLoad = false;
+  bool ClassPrepare = false;
+  bool VMStart = false;
+  bool Exception = false;
+  bool ExceptionCatch = false;
+  bool SingleStep = false;
+  bool FramePop = false;
+  bool Breakpoint = false;
+  bool FieldAccess = false;
+  bool FieldModification = false;
+  bool MethodEntry = false;
+  bool MethodExit = false;
+  bool NativeMethodBind = false;
+  bool CompiledMethodLoad = false;
+  bool CompiledMethodUnload = false;
+  bool DynamicCodeGenerated = false;
+  bool DataDumpRequest = false;
+  bool reserved72 = false;
+  bool MonitorWait = false;
+  bool MonitorWaited = false;
+  bool MonitorContendedEnter = false;
+  bool MonitorContendedEntered = false;
+  bool reserved77 = false;
+  bool reserved78 = false;
+  bool reserved79 = false;
+  bool reserved80 = false;
+  bool GarbageCollectionStart = false;
+  bool GarbageCollectionFinish = false;
+  bool ObjectFree = false;
+  bool VMObjectAlloc = false;
+};
+
 extern struct JNINativeInterface _Jv_JNIFunctions;
 
 struct _Jv_rawMonitorID
