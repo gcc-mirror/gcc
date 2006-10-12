@@ -1,3 +1,8 @@
+2006-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/28709
+	* gcc.dg/cpp/paste14.c: New test.
+
 2006-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29175
