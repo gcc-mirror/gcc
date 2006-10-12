@@ -1,3 +1,13 @@
+2006-10-12 Lee Millward <lee.millward@codesourcery.com>
+
+       PR c++/27961
+       * decl.c (start_decl): Return error_mark_node if a
+       function is initialized like a variable.
+       (check_var_type): If a variable of field is declared void,
+       set the type to error_mark_node.
+       (grokdeclarator): Check the return type of check_var_type.
+       * class.c (finish_struct_1): Robustify.
+	
 2006-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29175
