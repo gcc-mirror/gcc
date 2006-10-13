@@ -342,11 +342,10 @@ get_tinfo_decl (tree type)
   tree name;
   tree d;
 
-  if (COMPLETE_TYPE_P (type)
-      && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+  if (variably_modified_type_p (type, /*fn=*/NULL_TREE))
     {
       error ("cannot create type information for type %qT because "
-	     "its size is variable",
+	     "it involves types of variable size",
 	     type);
       return error_mark_node;
     }

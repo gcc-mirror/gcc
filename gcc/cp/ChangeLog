@@ -1,3 +1,9 @@
+2006-10-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29318
+	* rtti.c (get_tinfo_decl): Refuse to create type info objects for
+	variably modified types.
+
 2006-10-12 Lee Millward <lee.millward@codesourcery.com>
 
        PR c++/27961
