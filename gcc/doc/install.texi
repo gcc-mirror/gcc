@@ -3228,6 +3228,11 @@ and then proceed as described in @uref{build.html,,the build
 instructions}, where we strongly recommend specifying an absolute path
 to invoke @var{srcdir}/configure.
 
+Because GCC on AIX is built as a 32-bit executable by default,
+(although it can generate 64-bit programs) the GMP and MPFR libraries
+required by gfortran must be 32-bit libraries.  Building GMP and MPFR
+as static archive libraries works better than shared libraries.
+
 Errors involving @code{alloca} when building GCC generally are due
 to an incorrect definition of @code{CC} in the Makefile or mixing files
 compiled with the native C compiler and GCC@.  During the stage1 phase of
