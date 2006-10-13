@@ -1,5 +1,9 @@
 2006-10-13  Eric Christopher  <echristo@apple.com>
 
+	* gcc.dg/pr25993.c: Skip for darwin.
+
+2006-10-13  Eric Christopher  <echristo@apple.com>
+
 	* gcc.dg/visibility-11.c: Skip for darwin.
 
 2006-10-13  Eric Christopher  <echristo@apple.com>

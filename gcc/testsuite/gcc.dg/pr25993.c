@@ -1,4 +1,5 @@
 /* { dg-do assemble { target i?86-*-* x86_64-*-* } } */
+/* { dg-skip-if "" { "*-*-darwin*" } { "*" } { "" } } */
 /* { dg-options "-std=c99 -x assembler-with-cpp" } */
 
 #ifndef __ASSEMBLER__
@@ -11,4 +12,3 @@ func:
         ret
 .size func,.-func
 #endif
-
