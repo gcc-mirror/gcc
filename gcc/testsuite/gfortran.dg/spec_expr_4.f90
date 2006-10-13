@@ -31,3 +31,4 @@ end module global_numbering
   e%numbering => ent
   print *, element_local_coords (e)
 end
+! { dg-final { cleanup-modules "elements global_numbering" } }

@@ -47,3 +47,4 @@ contains
   end function
 
 end module foo
+! { dg-final { cleanup-modules "foo" } }

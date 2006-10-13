@@ -67,3 +67,4 @@ subroutine f6
   i = iand (i, 18)
 !$omp end parallel
 end subroutine f6
+! { dg-final { cleanup-modules "mreduction3" } }

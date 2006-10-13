@@ -54,3 +54,4 @@ contains
     foo_3 = a + 3 * b - c
   end function foo_3
 end module mymod
+! { dg-final { cleanup-modules "mymod" } }
