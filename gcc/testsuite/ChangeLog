@@ -1,3 +1,18 @@
+2006-10-13  Bill Wendling  <wendling@apple.com>
+ 
+	* g++.old-deja/g++.brendan/scope5.C: Changed "Class" to "Klasse".
+	* g++.old-deja/g++.jason/hmc1.C: Likewise.
+	* g++.old-deja/g++.jason/cleanup2.C: Likewise.
+	* g++.old-deja/g++.law/shadow1.C: Likewise.
+	* g++.old-deja/g++.law/ctors10.C: Likewise.
+	* g++.dg/debug/namespace1.C: Likewise.
+	* g++.dg/inherit/namespace-as-base.C: Likewise.
+	* g++.dg/opt/delay-slot-1.C: Likewise.
+	* g++.dg/parse/defarg10.C: Likewise.
+	* g++.dg/template/ptrmem11.C: Likewise.
+	* g++.dg/template/mem_func_ptr.C: Likewise.
+	* g++.dg/template/spec19.C: Likewise.
+
 2006-10-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/simd-5.c, gcc.dg/simd-6: New testcases.

@@ -6,7 +6,7 @@ public:
 };
 
 class Type {
-    enum Class { ENUM, INTEGER };
+    enum Klasse { ENUM, INTEGER };
 
     class Description {
     public:

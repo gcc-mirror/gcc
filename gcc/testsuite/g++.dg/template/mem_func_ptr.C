@@ -1,33 +1,33 @@
 // { dg-do compile }
 template<typename T> struct takes_member_ptr;
-template<typename T, typename Class> struct takes_member_ptr<T Class::*> {};
+template<typename T, typename Klasse> struct takes_member_ptr<T Klasse::*> {};
 
-template<typename T, typename Class>
-void fun_takes_member_ptr(T Class::*) {}
+template<typename T, typename Klasse>
+void fun_takes_member_ptr(T Klasse::*) {}
 
 
 template<typename T> struct order_member_ptrs;
-template<typename T, typename Class> struct order_member_ptrs<T Class::*> {};
-template<typename R, typename T1, typename Class> 
-  struct order_member_ptrs<R (Class::*)(T1)>
+template<typename T, typename Klasse> struct order_member_ptrs<T Klasse::*> {};
+template<typename R, typename T1, typename Klasse> 
+  struct order_member_ptrs<R (Klasse::*)(T1)>
   {
     typedef int type;
   };
 
-template<typename R, typename T1, typename Class>
-  struct order_member_ptrs<R (Class::*)(T1) const>
+template<typename R, typename T1, typename Klasse>
+  struct order_member_ptrs<R (Klasse::*)(T1) const>
   {
     typedef int c_type;
   };
 
-template<typename R, typename T1, typename Class>
-  struct order_member_ptrs<R (Class::*)(T1) volatile>
+template<typename R, typename T1, typename Klasse>
+  struct order_member_ptrs<R (Klasse::*)(T1) volatile>
   {
     typedef int v_type;
   };
 
-template<typename R, typename T1, typename Class>
-  struct order_member_ptrs<R (Class::*)(T1) const volatile>
+template<typename R, typename T1, typename Klasse>
+  struct order_member_ptrs<R (Klasse::*)(T1) const volatile>
   {
     typedef int cv_type;
   };

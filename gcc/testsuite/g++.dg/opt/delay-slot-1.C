@@ -85,7 +85,7 @@ inline const_mem_fun1_ref_t<_Ret, _Tp, _Arg>
 mem_fun_ref(_Ret (_Tp::*__f)(_Arg) const)
 { return const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
 
-class Class {
+class Klasse {
 public:
   void vf0c() const;
   void vf1c(const int&) const;
@@ -93,19 +93,19 @@ public:
 
 int main()
 {
-  Class obj;
-  const Class& objc = obj;
+  Klasse obj;
+  const Klasse& objc = obj;
 
-  mem_fun(&Class::vf0c)(&objc);
-  mem_fun(&Class::vf1c)(&objc, 1);
+  mem_fun(&Klasse::vf0c)(&objc);
+  mem_fun(&Klasse::vf1c)(&objc, 1);
 
-  mem_fun_ref(&Class::vf0c)(objc);
-  mem_fun_ref(&Class::vf1c)(objc, 1);
+  mem_fun_ref(&Klasse::vf0c)(objc);
+  mem_fun_ref(&Klasse::vf1c)(objc, 1);
   return 0;
 }
 
-void Class::vf0c() const
+void Klasse::vf0c() const
 {}
 
-void Class::vf1c(const int&) const
+void Klasse::vf1c(const int&) const
 {}
