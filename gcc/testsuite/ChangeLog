@@ -1,3 +1,8 @@
+2006-10-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29318
+	* g++.dg/ext/vla4.C: New test.
+
 2006-10-12 Lee Millward <lee.millward@codesourcery.com>
 
        PR c++/27961
