@@ -1,3 +1,8 @@
+2006-10-13  Daniel Berlin <dberlin@dberlin.org>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@celunite.com>
+
+	* tree-flow-inline.h (zero_ssa_operands): Fix comment.
+
 2006-10-12  Jan Hubicka  <jh@suse.cz>
 
 	PR c/28419
