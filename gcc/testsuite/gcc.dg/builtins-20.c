@@ -7,7 +7,6 @@
 
 /* { dg-do link } */
 /* { dg-options "-O2 -ffast-math" } */
-/* { dg-options "-O2 -ffast-math -std=c99" { target *-*-solaris2* } } */
 
 #include "builtins-config.h"
 
