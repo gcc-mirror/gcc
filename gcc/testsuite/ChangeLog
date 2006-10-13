@@ -1,3 +1,8 @@
+2006-10-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/29446
+	* gcc.dg/torture/pr29446.c: New testcase.
+
 2006-10-13  Bill Wendling  <wendling@apple.com>
  
 	* g++.old-deja/g++.brendan/scope5.C: Changed "Class" to "Klasse".
