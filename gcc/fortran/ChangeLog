@@ -1,3 +1,8 @@
+2006-10-13  Brooks Moses  <bmoses@stanford.edu>
+
+	* intrinsic.texi (STAT): Reverted a format in example code to
+	octal; noted this in accompanying string.
+
 2006-10-13 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29373

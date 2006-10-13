@@ -7642,7 +7642,7 @@ PROGRAM test_stat
   IF (status == 0) THEN
     WRITE (*, FMT="('Device ID:',               T30, I19)") buff(1)
     WRITE (*, FMT="('Inode number:',            T30, I19)") buff(2)
-    WRITE (*, FMT="('File mode:',               T30, I19)") buff(3)
+    WRITE (*, FMT="('File mode (octal):',       T30, O19)") buff(3)
     WRITE (*, FMT="('Number of links:',         T30, I19)") buff(4)
     WRITE (*, FMT="('Owner''s uid:',            T30, I19)") buff(5)
     WRITE (*, FMT="('Owner''s gid:',            T30, I19)") buff(6)
