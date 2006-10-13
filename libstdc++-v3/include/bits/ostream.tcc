@@ -62,41 +62,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
-    basic_ostream<_CharT, _Traits>::
-    operator<<(__ostream_type& (*__pf)(__ostream_type&))
-    {
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR 60. What is a formatted input function?
-      // The inserters for manipulators are *not* formatted output functions.
-      return __pf(*this);
-    }
-
-  template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
-    basic_ostream<_CharT, _Traits>::
-    operator<<(__ios_type& (*__pf)(__ios_type&))
-    {
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR 60. What is a formatted input function?
-      // The inserters for manipulators are *not* formatted output functions.
-      __pf(*this);
-      return *this;
-    }
-
-  template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
-    basic_ostream<_CharT, _Traits>::
-    operator<<(ios_base& (*__pf)(ios_base&))
-    {
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR 60. What is a formatted input function?
-      // The inserters for manipulators are *not* formatted output functions.
-      __pf(*this);
-      return *this;
-    }
-
-  template<typename _CharT, typename _Traits>
     template<typename _ValueT>
       basic_ostream<_CharT, _Traits>&
       basic_ostream<_CharT, _Traits>::

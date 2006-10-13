@@ -131,14 +131,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  functions in constructs like "std::cout << std::endl".  For more
        *  information, see the iomanip header.
       */
-      inline __ostream_type&
-      operator<<(__ostream_type& (*__pf)(__ostream_type&));
-      
-      inline __ostream_type&
-      operator<<(__ios_type& (*__pf)(__ios_type&));
-      
-      inline __ostream_type&
-      operator<<(ios_base& (*__pf) (ios_base&));
+      __ostream_type&
+      operator<<(__ostream_type& (*__pf)(__ostream_type&))
+      {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// DR 60. What is a formatted input function?
+	// The inserters for manipulators are *not* formatted output functions.
+	return __pf(*this);
+      }
+
+      __ostream_type&
+      operator<<(__ios_type& (*__pf)(__ios_type&))
+      {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// DR 60. What is a formatted input function?
+	// The inserters for manipulators are *not* formatted output functions.
+	__pf(*this);
+	return *this;
+      }
+
+      __ostream_type&
+      operator<<(ios_base& (*__pf) (ios_base&))
+      {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// DR 60. What is a formatted input function?
+	// The inserters for manipulators are *not* formatted output functions.
+	__pf(*this);
+	return *this;
+      }
       //@}
 
       // [27.6.2.5.2] arithmetic inserters
@@ -405,7 +425,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       // Data Members:
       bool 				_M_ok;
-      basic_ostream<_CharT,_Traits>& 	_M_os;
+      basic_ostream<_CharT, _Traits>& 	_M_os;
       
     public:
       /**
@@ -420,7 +440,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  true ("okay").
       */
       explicit
-      sentry(basic_ostream<_CharT,_Traits>& __os);
+      sentry(basic_ostream<_CharT, _Traits>& __os);
 
       /**
        *  @brief  Possibly flushes the stream.
@@ -469,29 +489,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @c char, the character is widened before insertion.
   */
   template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
+    inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
     { return __out._M_insert(&__c, 1); }
 
   template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
+    inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, char __c)
     { return (__out << __out.widen(__c)); }
 
   // Specialization
   template <class _Traits> 
-    basic_ostream<char, _Traits>&
+    inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, char __c)
     { return __out._M_insert(&__c, 1); }
 
   // Signed and unsigned
   template<class _Traits>
-    basic_ostream<char, _Traits>&
+    inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, signed char __c)
     { return (__out << static_cast<char>(__c)); }
   
   template<class _Traits>
-    basic_ostream<char, _Traits>&
+    inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, unsigned char __c)
     { return (__out << static_cast<char>(__c)); }
   //@}
@@ -511,7 +531,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  determined by [22.2.2.2.2]).  @c out.width(0) is then called.
   */
   template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
+    inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, const _CharT* __s)
     {
       if (!__s)
@@ -527,7 +547,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // Partial specializationss
   template<class _Traits>
-    basic_ostream<char, _Traits>&
+    inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, const char* __s)
     {
       if (!__s)
@@ -539,12 +559,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // Signed and unsigned
   template<class _Traits>
-    basic_ostream<char, _Traits>&
+    inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, const signed char* __s)
     { return (__out << reinterpret_cast<const char*>(__s)); }
 
   template<class _Traits>
-    basic_ostream<char, _Traits> &
+    inline basic_ostream<char, _Traits> &
     operator<<(basic_ostream<char, _Traits>& __out, const unsigned char* __s)
     { return (__out << reinterpret_cast<const char*>(__s)); }
   //@}
@@ -559,7 +579,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  on this subject.
   */
   template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>& 
+    inline basic_ostream<_CharT, _Traits>& 
     endl(basic_ostream<_CharT, _Traits>& __os)
     { return flush(__os.put(__os.widen('\n'))); }
 
@@ -570,7 +590,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  this correctly writes the ASCII @c NUL character string terminator.
   */
   template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>& 
+    inline basic_ostream<_CharT, _Traits>& 
     ends(basic_ostream<_CharT, _Traits>& __os)
     { return __os.put(_CharT()); }
   
@@ -580,7 +600,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  This manipulator simply calls the stream's @c flush() member function.
   */
   template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>& 
+    inline basic_ostream<_CharT, _Traits>& 
     flush(basic_ostream<_CharT, _Traits>& __os)
     { return __os.flush(); }
 

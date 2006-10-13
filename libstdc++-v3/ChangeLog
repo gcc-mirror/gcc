@@ -1,5 +1,31 @@
 2006-10-13  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/istream.tcc (operator>>(__istream_type&
+	(*)(__istream_type&)), operator>>(__ios_type& (*)(__ios_type&)),
+	operator>>(ios_base& (*)(ios_base&))): Move...
+	* include/std/std_istream.h: ... here.
+	(operator>>(basic_istream<char,>&, unsigned char&),
+	operator>>(basic_istream<char,>&, signed char&),
+	operator>>(basic_istream<char,>&, unsigned char*),
+	operator>>(basic_istream<char,>&, signed char*)): Mark inline.
+	* include/bits/ostream.tcc (operator<<(__ostream_type&
+	(*)(__ostream_type&)), operator<<(__ios_type& (*)(__ios_type&)),
+	operator<<(ios_base& (*)(ios_base&))): Move...
+	* include/std/std_ostream.h: ... here.
+	(operator<<(basic_ostream<>&, _CharT),
+	operator<<(basic_ostream<>&, char),
+	operator<<(basic_ostream<char,>&, char),
+	operator<<(basic_ostream<char,>&, signed char),
+	operator<<(basic_ostream<char,>&, unsigned char),
+	operator<<(basic_ostream<>&, const _CharT*),
+	operator<<(basic_ostream<char,>&, const char*),
+	operator<<(basic_ostream<char,>&, const signed char*),
+	operator<<(basic_ostream<char,>&, const unsigned char*),
+	endl(basic_ostream<>&), ends(basic_ostream<>&),
+	flush(basic_ostream<>&)): Mark inline.
+
+2006-10-13  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/28277 (partial: ostream bits 2)
 	* include/std/std_ostream.h (basic_ostream<>::_M_insert(const
 	char_type*, streamsize)): New.
