@@ -1,3 +1,10 @@
+2006-10-13  Carlos O'Donell  <carlos@codesourcery.com>
+
+	Revert this change:
+	2006-10-13  Carlos O'Donell  <carlos@codesourcery.com>
+	* config/elfos.h (MAX_OFILE_ALIGNMENT): Default to largest
+	alignment supported by 32-bit ELF.
+
 2006-10-13  Eric Christopher  <echristo@apple.com>
 
 	* config/darwin.c (darwin_emit_unwind_label): Strip
