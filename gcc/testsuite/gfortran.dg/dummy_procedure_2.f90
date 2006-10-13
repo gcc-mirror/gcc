@@ -31,3 +31,4 @@ contains
     print *,integrate (g,0d0,3d0)
   end subroutine foo2
 end
+! { dg-final { cleanup-modules "integrator" } }

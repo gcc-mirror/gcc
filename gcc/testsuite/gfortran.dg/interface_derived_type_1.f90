@@ -52,3 +52,5 @@ subroutine sim_3(func3,params)
   end interface
   type(fcnparms)       :: params  !         -ditto-
 end subroutine sim_3
+
+! { dg-final { cleanup-modules "test type_decl" } }

@@ -49,3 +49,4 @@ end
   call sub ()
 end
 
+! { dg-final { cleanup-modules "foo bar" } }

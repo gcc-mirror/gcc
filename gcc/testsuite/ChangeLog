@@ -1,3 +1,21 @@
+2006-10-13  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/defined_operators_1.f90: Add cleanup-modules dg
+	directive.
+	* gfortran.dg/module_private_array_refs_1.f90: Likewise.
+	* gfortran.dg/module_proc_external_dummy.f90: Likewise.
+	* gfortran.dg/gomp/omp_threadprivate1.f90: Likewise.
+	* gfortran.dg/gomp/reduction3.f90: Likewise.
+	* gfortran.dg/derived_constructor_comps_1.f90: Likewise.
+	* gfortran.dg/dummy_procedure_2.f90: Likewise.
+	* gfortran.dg/interface_derived_type_1.f90: Likewise.
+	* gfortran.dg/forall_4.f90: Likewise.
+	* gfortran.dg/spec_expr_4.f90: Likewise.
+	* gfortran.dg/unused_artificial_dummies_1.f90: Likewise.
+	* gfortran.dg/forall_5.f90: Likewise.
+	* gfortran.dg/open_access_append_2.f90: Add check for
+	compile-time warning.
+
 2006-10-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28506
