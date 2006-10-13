@@ -33,7 +33,7 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"
 
 
-#if defined (HAVE_GFC_REAL_10) && defined (HAVE_FABSL) && defined (HAVE_FREXPL) && defined (HAVE_LDEXPL)
+#if defined (HAVE_GFC_REAL_10) && defined (HAVE_FABSL) && defined (HAVE_FREXPL)
 
 extern GFC_REAL_10 rrspacing_r10 (GFC_REAL_10 s, int p);
 export_proto(rrspacing_r10);
@@ -47,7 +47,12 @@ rrspacing_r10 (GFC_REAL_10 s, int p)
   if (x == 0.)
     return 0.;
   frexpl (s, &e);
+#if defined (HAVE_LDEXPL)
   return ldexpl (x, p - e);
+#else
+  return scalbnl (x, p - e);
+#endif
+
 }
 
 #endif
