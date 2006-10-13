@@ -1,5 +1,10 @@
 2006-10-12  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/29318
+	* g++.dg/ext/vla4.C: New test.
+
+2006-10-12  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/29175
 	* g++.dg/init/array24.C: New test.
 
