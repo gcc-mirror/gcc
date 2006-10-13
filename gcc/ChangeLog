@@ -1,3 +1,9 @@
+2006-10-12  Jan Hubicka  <jh@suse.cz>
+
+	PR c/28419
+	* c-decl.c (c_make_fname_decl): Do not segfault in case where
+	current_function_decl is set but current_function_scope is not.
+
 2006-10-12  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.md (eh_return): Call emit_jump_insn instead of

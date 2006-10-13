@@ -2791,7 +2791,16 @@ c_make_fname_decl (tree id, int type_dep)
 
   TREE_USED (decl) = 1;
 
-  if (current_function_decl)
+  if (current_function_decl
+      /* For invalid programs like this:
+        
+         void foo()
+         const char* p = __FUNCTION__;
+        
+	 the __FUNCTION__ is believed to appear in K&R style function
+	 parameter declarator.  In that case we still don't have
+	 function_scope.  */
+      && (!errorcount || current_function_scope))
     {
       DECL_CONTEXT (decl) = current_function_decl;
       bind (id, decl, current_function_scope,
