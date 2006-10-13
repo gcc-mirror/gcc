@@ -165,7 +165,6 @@ static int int_cst_hash_eq (const void *, const void *);
 static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
-static tree make_vector_type (tree, int, enum machine_mode);
 static int type_hash_marked_p (const void *);
 static unsigned int type_hash_list (tree, hashval_t);
 static unsigned int attribute_hash_list (tree, hashval_t);
@@ -3356,12 +3355,12 @@ iterative_hash_host_wide_int (HOST_WIDE_INT val, hashval_t val2)
 }
 
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTE
-   is ATTRIBUTE.
+   is ATTRIBUTE and its qualifiers are QUALS.
 
    Record such modified types already made so we don't make duplicates.  */
 
-tree
-build_type_attribute_variant (tree ttype, tree attribute)
+static tree
+build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 {
   if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
@@ -3412,12 +3411,24 @@ build_type_attribute_variant (tree ttype, tree attribute)
 	}
 
       ntype = type_hash_canon (hashcode, ntype);
-      ttype = build_qualified_type (ntype, TYPE_QUALS (ttype));
+      ttype = build_qualified_type (ntype, quals);
     }
 
   return ttype;
 }
 
+
+/* Return a type like TTYPE except that its TYPE_ATTRIBUTE
+   is ATTRIBUTE.
+
+   Record such modified types already made so we don't make duplicates.  */
+
+tree
+build_type_attribute_variant (tree ttype, tree attribute)
+{
+  return build_type_attribute_qual_variant (ttype, attribute,
+					    TYPE_QUALS (ttype));
+}
 
 /* Return nonzero if IDENT is a valid name for attribute ATTR,
    or zero if not.
@@ -6384,8 +6395,18 @@ omp_clause_operand_check_failed (int idx, tree t, const char *file,
 static tree
 make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 {
-  tree t = make_node (VECTOR_TYPE);
+  tree t;
+  hashval_t hashcode = 0;
 
+  /* Build a main variant, based on the main variant of the inner type, then
+     use it to build the variant we return.  */
+  if (TYPE_ATTRIBUTES (innertype) || TYPE_QUALS (innertype))
+    return build_type_attribute_qual_variant (
+	    make_vector_type (TYPE_MAIN_VARIANT (innertype), nunits, mode),
+	    TYPE_ATTRIBUTES (innertype),
+	    TYPE_QUALS (innertype));
+
+  t = make_node (VECTOR_TYPE);
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (innertype);
   SET_TYPE_VECTOR_SUBPARTS (t, nunits);
   TYPE_MODE (t) = mode;
@@ -6410,17 +6431,10 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
     TYPE_UID (rt) = TYPE_UID (t);
   }
 
-  /* Build our main variant, based on the main variant of the inner type.  */
-  if (TYPE_MAIN_VARIANT (innertype) != innertype)
-    {
-      tree innertype_main_variant = TYPE_MAIN_VARIANT (innertype);
-      unsigned int hash = TYPE_HASH (innertype_main_variant);
-      TYPE_MAIN_VARIANT (t)
-        = type_hash_canon (hash, make_vector_type (innertype_main_variant,
-						   nunits, mode));
-    }
-
-  return t;
+  hashcode = iterative_hash_host_wide_int (VECTOR_TYPE, hashcode);
+  hashcode = iterative_hash_host_wide_int (mode, hashcode);
+  hashcode = iterative_hash_object (TYPE_HASH (innertype), hashcode);
+  return type_hash_canon (hashcode, t);
 }
 
 static tree
@@ -6882,6 +6896,7 @@ build_vector_type (tree innertype, int nunits)
 {
   return make_vector_type (innertype, nunits, VOIDmode);
 }
+
 
 /* Build RESX_EXPR with given REGION_NUMBER.  */
 tree

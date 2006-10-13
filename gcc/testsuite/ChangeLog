@@ -1,3 +1,7 @@
+2006-10-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/simd-5.c, gcc.dg/simd-6: New testcases.
+
 2006-10-13 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29373
