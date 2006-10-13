@@ -1,3 +1,10 @@
+2006-10-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28506
+	* parser.c (function_declarator_p): New function.
+	(cp_parser_init_declarator): Use it.
+	(cp_parser_member_declaration): Likewise.
+
 2006-10-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29318
