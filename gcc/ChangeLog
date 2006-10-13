@@ -1,3 +1,15 @@
+2006-10-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/29092
+
+        * c-typeck.c (digest_init): Always allow initializing vectors
+	that have static storage duration with compound literals.
+	* tree.c (build_type_attribute_qual_variant): New, based on
+	build_type_attribute_variant.
+	(build_type_attribute_variant): Rewrite using the former.
+	(make_vector_type): Use build_type_attribute_qual_variant to build
+	type variants.  Use type_hash_canon on the others.
+
 2006-10-13  Daniel Berlin <dberlin@dberlin.org>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@celunite.com>
 
