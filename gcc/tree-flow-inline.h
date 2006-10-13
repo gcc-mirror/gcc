@@ -1144,8 +1144,8 @@ single_ssa_def_operand (tree stmt, int flags)
 }
 
 
-/* If there is a single operand in STMT matching FLAGS, return it.  Otherwise
-   return NULL.  */
+/* Return true if there are zero operands in STMT matching the type 
+   given in FLAGS.  */
 static inline bool
 zero_ssa_operands (tree stmt, int flags)
 {
