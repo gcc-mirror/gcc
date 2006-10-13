@@ -29,7 +29,7 @@ namespace BBB {
     char xyzq (char);
   };
 
-  class Class {
+  class Klasse {
   public:
     char xyzq (char);
     int dummy;
@@ -62,7 +62,7 @@ char BBB::CCC::xyzq (char c)
   return 'z';
 }
 
-char BBB::Class::xyzq (char c)
+char BBB::Klasse::xyzq (char c)
 {
   return 'o';
 }
@@ -248,7 +248,7 @@ int main ()
   y = AAA::A_xyzq (33);
   y += B_xyzq (44);
 
-  BBB::Class cl;
+  BBB::Klasse cl;
 
   c1 = cl.xyzq('e');
 

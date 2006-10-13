@@ -7,16 +7,16 @@
 // Subject: GCC Bug..
 // Date: Fri, 6 Nov 1992 10:27:10 -0700
 
-class Class
+class Klasse
 {
 public:
-        Class(void);            // constructor
+        Klasse(void);           // constructor
         int Shadow(void);       // member function
 private:
         long value;
 };
 
-Class::Class(void)
+Klasse::Klasse(void)
 {
         value = 0;
 }

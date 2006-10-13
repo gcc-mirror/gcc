@@ -1,8 +1,8 @@
 // PR c++/18407
 
-template <typename Class>
+template <typename Klasse>
 struct the_base{
-  template <void (Class::*Fn)()> void foo() { }
+  template <void (Klasse::*Fn)()> void foo() { }
 };
 
 template <typename T>

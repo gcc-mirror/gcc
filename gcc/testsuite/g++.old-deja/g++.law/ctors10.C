@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-class Class
+class Klasse
 {
         class Err : public std::ostream
         {

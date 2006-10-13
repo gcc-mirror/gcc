@@ -5,7 +5,7 @@
 
 void  Foo (int = 0);
 
-class Class
+class Klasse
 {
   friend void Foo (int);
 };
