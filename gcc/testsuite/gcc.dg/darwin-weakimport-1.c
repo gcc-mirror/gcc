@@ -1,6 +1,6 @@
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-require-weak "" } */
-/* { dg-options "-fno-common" } */
+/* { dg-options "-fno-common -fno-asynchronous-unwind-tables" } */
 
 /* { dg-final { scan-assembler "weak_reference _a" } } */
 /* { dg-final { scan-assembler-not "weak_\[a-z \t\]*_b" } } */
