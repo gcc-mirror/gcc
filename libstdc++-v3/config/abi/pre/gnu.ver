@@ -285,7 +285,7 @@ GLIBCXX_3.4 {
     _ZNSoC*;
     _ZNSoD*;
     _ZNKSo6sentrycvbEv;
-    _ZNSo8_M_write*;
+    _ZNSo8_M_writeEPKc[il];
     _ZNSo[0-9][a-z]*;
     _ZNSolsE*[^g];
 
@@ -299,7 +299,7 @@ GLIBCXX_3.4 {
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE5tellpEv;
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE5writeEPKw*;
     _ZNSt13basic_ostreamIwSt11char_traitsIwEE6sentry*;
-    _ZNSt13basic_ostreamIwSt11char_traitsIwEE8_M_write*;
+    _ZNSt13basic_ostreamIwSt11char_traitsIwEE8_M_writeEPKw[il];
     _ZNSt13basic_ostreamIwSt11char_traitsIwEElsE*[^g];
 
     # std::ostream operators and inserters
@@ -659,6 +659,9 @@ GLIBCXX_3.4.9 {
     _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractI[^g]*;
 
     _ZSt21__copy_streambufs_eofI[cw]St11char_traitsI[cw]EE[il]PSt15basic_streambuf*;
+
+    _ZNSo9_M_insertEPKc[il];
+    _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertEPKw[il];
 } GLIBCXX_3.4.8;
 
 

@@ -1,3 +1,38 @@
+2006-10-13  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/28277 (partial: ostream bits 2)
+	* include/std/std_ostream.h (basic_ostream<>::_M_insert(const
+	char_type*, streamsize)): New.
+	(basic_ostream<>::_M_write(char_type, streamsize)): Likewise.
+	(operator<<(basic_ostream<>&, _CharT), operator<<(basic_ostream<>&,
+	char), operator<<(basic_ostream<>&, const _CharT*),
+	operator<<(basic_ostream<>&, const char*)): Use the latter.
+	* include/bits/ostream.tcc (basic_ostream<>::_M_insert(const
+	char_type*, streamsize)): Define.
+	(operator<<(basic_ostream<>&, const char*)): Use the latter.
+	(operator<<(basic_ostream<>&, _CharT), operator<<(basic_ostream<>&,
+	char), operator<<(basic_ostream<>&, const _CharT*),
+	operator<<(basic_ostream<>&, const char*),
+	operator<<(basic_ostream<>&, const basic_string<>&)): Remove.
+	* include/bits/basic_string.h (operator<<(basic_ostream<>&,
+	const basic_string<>&)): Use the latter, implement DR 586.
+	* config/abi/pre/gnu.ver: Adjust, export the new _M_insert.
+	* docs/html/ext/howto.html: Add an entry for DR 586.
+	* testsuite/21_strings/basic_string/inserters_extractors/char/
+	28277.cc: New.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/
+	28277.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/
+	28277-3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/
+	28277-4.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-3.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/
+	28277-4.cc: Likewise.
+
 2006-10-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 44.
