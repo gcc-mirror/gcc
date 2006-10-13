@@ -1,5 +1,11 @@
 2006-10-13  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR fortran/29391
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Generate correct
+	code for LBOUND and UBOUND intrinsics.
+
+2006-10-13  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR fortran/21435
 	* io.c (compare_to_allowed_values): New function.
 	(gfc_match_open): Add checks for constant values of specifiers.
