@@ -315,208 +315,59 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return *this;
     }
 
-  // 27.6.2.5.4 Character inserters.
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
+    basic_ostream<_CharT, _Traits>::
+    _M_insert(const char_type* __s, streamsize __n)
     {
-      typedef basic_ostream<_CharT, _Traits> __ostream_type;
-      typename __ostream_type::sentry __cerb(__out);
+      sentry __cerb(*this);
       if (__cerb)
 	{
 	  try
 	    {
-	      const streamsize __w = __out.width();
-	      streamsize __len = 1;
-	      _CharT* __cs = &__c;
-	      if (__w > __len)
+	      const streamsize __w = this->width();
+	      if (__w > __n)
 		{
-		  __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
-							       * __w));
-		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs,
-						 &__c, __w, __len, false);
-		  __len = __w;
+		  const bool __left = ((this->flags() & ios_base::adjustfield)
+				       == ios_base::left);
+		  if (!__left)
+		    _M_write(this->fill(), __w - __n);
+		  if (this->good())
+		    _M_write(__s, __n);
+		  if (__left && this->good())
+		    _M_write(this->fill(), __w - __n);
 		}
-	      __out._M_write(__cs, __len);
-	      __out.width(0);
+	      else
+		_M_write(__s, __n);
+	      this->width(0);
 	    }
 	  catch(...)
-	    { __out._M_setstate(ios_base::badbit); }
+	    { this->_M_setstate(ios_base::badbit); }
 	}
-      return __out;
-    }
-
-  // Specializations.
-  template <class _Traits>
-    basic_ostream<char, _Traits>&
-    operator<<(basic_ostream<char, _Traits>& __out, char __c)
-    {
-      typedef basic_ostream<char, _Traits> __ostream_type;
-      typename __ostream_type::sentry __cerb(__out);
-      if (__cerb)
-	{
-	  try
-	    {
-	      const streamsize __w = __out.width();
-	      streamsize __len = 1;
-	      char* __cs = &__c;
-	      if (__w > __len)
-		{
-		  __cs = static_cast<char*>(__builtin_alloca(__w));
-		  __pad<char, _Traits>::_S_pad(__out, __out.fill(), __cs,
-					       &__c, __w, __len, false);
-		  __len = __w;
-		}
-	      __out._M_write(__cs, __len);
-	      __out.width(0);
-	    }
-	  catch(...)
-	    { __out._M_setstate(ios_base::badbit); }
-	}
-      return __out;
-     }
-
-  template<typename _CharT, typename _Traits>
-    basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __out, const _CharT* __s)
-    {
-      typedef basic_ostream<_CharT, _Traits> __ostream_type;
-      typename __ostream_type::sentry __cerb(__out);
-      if (__cerb && __s)
-	{
-	  try
-	    {
-	      const streamsize __w = __out.width();
-	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
-	      if (__w > __len)
-		{
-		  _CharT* __cs = (static_cast<
-				  _CharT*>(__builtin_alloca(sizeof(_CharT)
-							    * __w)));
-		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs,
-						 __s, __w, __len, false);
-		  __s = __cs;
-		  __len = __w;
-		}
-	      __out._M_write(__s, __len);
-	      __out.width(0);
-	    }
-	  catch(...)
-	    { __out._M_setstate(ios_base::badbit); }
-	}
-      else if (!__s)
-	__out.setstate(ios_base::badbit);
-      return __out;
+      return *this;
     }
 
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, const char* __s)
     {
-      typedef basic_ostream<_CharT, _Traits> __ostream_type;
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 167.  Improper use of traits_type::length()
-      // Note that this is only in 'Review' status.
-      typedef char_traits<char>		     __traits_type;
-      typename __ostream_type::sentry __cerb(__out);
-      if (__cerb && __s)
+      if (!__s)
+	__out.setstate(ios_base::badbit);
+      else
 	{
-	  _CharT* __ws = 0;
 	  try
 	    {
-	      const size_t __clen = __traits_type::length(__s);
-	      __ws = new _CharT[__clen];
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 167.  Improper use of traits_type::length()
+	      const size_t __clen = char_traits<char>::length(__s);      
+	      _CharT* __ws = new _CharT[__clen];
 	      for (size_t  __i = 0; __i < __clen; ++__i)
 		__ws[__i] = __out.widen(__s[__i]);
-	      _CharT* __str = __ws;
-	      
-	      const streamsize __w = __out.width();
-	      streamsize __len = static_cast<streamsize>(__clen);
-	      if (__w > __len)
-		{
-		  _CharT* __cs = (static_cast<
-				  _CharT*>(__builtin_alloca(sizeof(_CharT)
-							    * __w)));
-		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs,
-						 __ws, __w, __len, false);
-		  __str = __cs;
-		  __len = __w;
-		}
-	      __out._M_write(__str, __len);
-	      __out.width(0);
-
+	      __out._M_insert(__ws, __clen);
 	      delete [] __ws;
-	    }
-	  catch(...)
-	    {
-	      delete [] __ws;
-	      __out._M_setstate(ios_base::badbit);
-	    }
-	}
-      else if (!__s)
-	__out.setstate(ios_base::badbit);
-      return __out;
-    }
-
-  // Partial specializations.
-  template<class _Traits>
-    basic_ostream<char, _Traits>&
-    operator<<(basic_ostream<char, _Traits>& __out, const char* __s)
-    {
-      typedef basic_ostream<char, _Traits> __ostream_type;
-      typename __ostream_type::sentry __cerb(__out);
-      if (__cerb && __s)
-	{
-	  try
-	    {
-	      const streamsize __w = __out.width();
-	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
-	      if (__w > __len)
-		{
-		  char* __cs = static_cast<char*>(__builtin_alloca(__w));
-		  __pad<char, _Traits>::_S_pad(__out, __out.fill(), __cs,
-						 __s, __w, __len, false);
-		  __s = __cs;
-		  __len = __w;
-		}
-	      __out._M_write(__s, __len);
-	      __out.width(0);
 	    }
 	  catch(...)
 	    { __out._M_setstate(ios_base::badbit); }
-	}
-      else if (!__s)
-	__out.setstate(ios_base::badbit);
-      return __out;
-    }
-
-  // 21.3.7.9 basic_string::operator<<
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __out,
-	       const basic_string<_CharT, _Traits, _Alloc>& __str)
-    {
-      typedef basic_ostream<_CharT, _Traits> __ostream_type;
-      typename __ostream_type::sentry __cerb(__out);
-      if (__cerb)
-	{
-	  const streamsize __w = __out.width();
-	  streamsize __len = static_cast<streamsize>(__str.size());
-	  const _CharT* __s = __str.data();
-
-	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	  // 25. String operator<< uses width() value wrong
-	  if (__w > __len)
-	    {
-	      _CharT* __cs = (static_cast<
-			      _CharT*>(__builtin_alloca(sizeof(_CharT) * __w)));
-	      __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs, __s,
-					     __w, __len, false);
-	      __s = __cs;
-	      __len = __w;
-	    }
-	  __out._M_write(__s, __len);
-	  __out.width(0);
 	}
       return __out;
     }

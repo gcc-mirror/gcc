@@ -92,6 +92,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         friend basic_ostream<_CharT2, _Traits2>&
         operator<<(basic_ostream<_CharT2, _Traits2>&, const char*);
 
+      template<typename _CharT2, typename _Traits2, typename _Alloc>
+        friend basic_ostream<_CharT2, _Traits2>&
+        operator<<(basic_ostream<_CharT2, _Traits2>&,
+		   const basic_string<_CharT2, _Traits2, _Alloc>&);
+
       // [27.6.2.2] constructor/destructor
       /**
        *  @brief  Base constructor.
@@ -288,9 +293,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void
       _M_write(const char_type* __s, streamsize __n)
       {
-	streamsize __put = this->rdbuf()->sputn(__s, __n);
+	const streamsize __put = this->rdbuf()->sputn(__s, __n);
 	if (__put != __n)
 	  this->setstate(ios_base::badbit);
+      }
+
+      void
+      _M_write(char_type __c, streamsize __n)
+      {
+	for (; __n > 0; --__n)
+	  {
+	    const int_type __put = this->rdbuf()->sputc(__c);
+	    if (traits_type::eq_int_type(__put, traits_type::eof()))
+	      {
+		this->setstate(ios_base::badbit);
+		break;
+	      }
+	  }
       }
 
       /**
@@ -366,6 +385,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<typename _ValueT>
         __ostream_type&
         _M_insert(_ValueT __v);
+
+      __ostream_type&
+      _M_insert(const char_type* __s, streamsize __n);
     };
 
   /**
@@ -448,7 +470,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   */
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c);
+    operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
+    { return __out._M_insert(&__c, 1); }
 
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
@@ -458,7 +481,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // Specialization
   template <class _Traits> 
     basic_ostream<char, _Traits>&
-    operator<<(basic_ostream<char, _Traits>& __out, char __c);
+    operator<<(basic_ostream<char, _Traits>& __out, char __c)
+    { return __out._M_insert(&__c, 1); }
 
   // Signed and unsigned
   template<class _Traits>
@@ -488,7 +512,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   */
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __out, const _CharT* __s);
+    operator<<(basic_ostream<_CharT, _Traits>& __out, const _CharT* __s)
+    {
+      if (!__s)
+	__out.setstate(ios_base::badbit);
+      else
+	__out._M_insert(__s, static_cast<streamsize>(_Traits::length(__s)));
+      return __out;
+    }
 
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits> &
@@ -497,8 +528,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // Partial specializationss
   template<class _Traits>
     basic_ostream<char, _Traits>&
-    operator<<(basic_ostream<char, _Traits>& __out, const char* __s);
- 
+    operator<<(basic_ostream<char, _Traits>& __out, const char* __s)
+    {
+      if (!__s)
+	__out.setstate(ios_base::badbit);
+      else
+	__out._M_insert(__s, static_cast<streamsize>(_Traits::length(__s)));
+      return __out;
+    }
+
   // Signed and unsigned
   template<class _Traits>
     basic_ostream<char, _Traits>&
