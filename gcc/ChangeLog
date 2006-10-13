@@ -1,3 +1,8 @@
+2006-10-13  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* config/elfos.h (MAX_OFILE_ALIGNMENT): Default to largest
+	alignment supported by 32-bit ELF.
+
 2006-10-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/29092
