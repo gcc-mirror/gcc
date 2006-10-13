@@ -3261,17 +3261,11 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 			   fold_convert (TREE_TYPE (lse->expr), rse->expr));
 
       /* Do a deep copy if the rhs is a variable, if it is not the
-	 same as the lhs.  Otherwise, nullify the data fields so that the
-	 lhs retains the allocated resources.  */
+	 same as the lhs.  */
       if (r_is_var)
 	{
 	  tmp = gfc_copy_alloc_comp (ts.derived, rse->expr, lse->expr, 0);
 	  tmp = build3_v (COND_EXPR, cond, build_empty_stmt (), tmp);
-	  gfc_add_expr_to_block (&block, tmp);
-	}
-      else
-	{
-	  tmp = gfc_nullify_alloc_comp (ts.derived, rse->expr, 0);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
     }
