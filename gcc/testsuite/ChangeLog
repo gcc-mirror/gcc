@@ -1,5 +1,9 @@
-2006-10-12  Mark Mitchell  <mark@codesourcery.com>
+2006-10-12  Jan Hubicka  <jh@suse.cz>
 
+	PR c/28419
+	* gcc.dg/pr28319.c: New test.
+
+2006-10-12  Mark Mitchell  <mark@codesourcery.com>
 	PR c++/29318
 	* g++.dg/ext/vla4.C: New test.
 
