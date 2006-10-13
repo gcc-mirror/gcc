@@ -837,6 +837,8 @@ enum machopic_addr_class {
 /* Handle pragma weak and pragma pack.  */
 #define HANDLE_SYSV_PRAGMA 1
 
+#define HANDLE_PRAGMA_PACK_PUSH_POP 1
+
 #define DARWIN_REGISTER_TARGET_PRAGMAS()			\
   do {								\
     c_register_pragma (0, "mark", darwin_pragma_ignore);	\
