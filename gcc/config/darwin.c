@@ -1338,14 +1338,17 @@ no_dead_strip (FILE *file, const char *lab)
 void
 darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
 {
-  tree id = DECL_ASSEMBLER_NAME (decl)
-    ? DECL_ASSEMBLER_NAME (decl)
-    : DECL_NAME (decl);
-
-  const char *base = IDENTIFIER_POINTER (id);
-
-  bool need_quotes = name_needs_quotes (base);
+  const char *base;
   char *lab;
+  bool need_quotes;
+
+  if (DECL_ASSEMBLER_NAME_SET_P (decl))
+    base = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  else
+    base = IDENTIFIER_POINTER (DECL_NAME (decl));
+
+  base = targetm.strip_name_encoding (base);
+  need_quotes = name_needs_quotes (base);
 
   if (! for_eh)
     return;

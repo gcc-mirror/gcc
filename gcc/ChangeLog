@@ -1,3 +1,8 @@
+2006-10-13  Eric Christopher  <echristo@apple.com>
+
+	* config/darwin.c (darwin_emit_unwind_label): Strip
+	name encoding. Use DECL_ASSEMBLER_NAME_SET_P.
+
 2006-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/29446
@@ -202,7 +207,7 @@
 	Use <modeconstraint> instead of "r" as operand 1 constraint.
 
 2006-10-06  Olivier Hainque  <hainque@adacore.com>
-	
+
 	* gimplify.c (gimplify_type_sizes) [POINTER_TYPE, REFERENCE_TYPE]:
 	Don't recurse on the pointed-to type.
 	* c-decl.c (grokdeclarator) [cdk_pointer]: If we are in a NORMAL or
@@ -278,7 +283,7 @@
 	(get_emutls_object_name, get_emutls_object_type): New.
 	(get_emutls_init_templ_addr, emutls_decl): New.
 	(emutls_common_1, emutls_finish): New.
-        (assemble_variable): When emulating tls, swap decls; generate 
+        (assemble_variable): When emulating tls, swap decls; generate
 	constructor for the emutls objects.
 	(do_assemble_alias): When emulating tls, swap decl and target name.
         (default_encode_section_info): Don't add SYMBOL_FLAG_TLS_SHIFT
