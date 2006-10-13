@@ -3,10 +3,10 @@
   open (10,file="foo")
   close (10,status="delete")
 
-  open (10,file="foo",access="append") ! { dg-output ".*Extension.*" }
+  open (10,file="foo",access="append") ! { dg-warning "Extension: ACCESS specifier in OPEN statement" }
   write (10,*) 42
   close (10,status="keep")
-  open (10,file="foo",access="append") ! { dg-output ".*Extension.*" }
+  open (10,file="foo",access="append") ! { dg-warning "Extension: ACCESS specifier in OPEN statement" }
   write (10,*) -42
   close (10,status="keep")
 
@@ -18,3 +18,4 @@
   close (10,status="delete")
 
   end
+! { dg-output ".*Extension.*Extension" } 

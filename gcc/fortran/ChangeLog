@@ -1,3 +1,11 @@
+2006-10-13  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/21435
+	* io.c (compare_to_allowed_values): New function.
+	(gfc_match_open): Add checks for constant values of specifiers.
+	(gfc_match_close): Add checks for constant values of the STATUS
+	specifier.
+
 2006-10-12  Brooks Moses  <bmoses@stanford.edu>
 
 	* intrinsic.texi (STAT): Fixed a format typo in sample code.
