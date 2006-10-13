@@ -1,10 +1,16 @@
+2006-10-13  Eric Christopher  <echristo@apple.com>
+
+	* gcc.dg/darwin-weakimport-1.c: Use
+	-fno-asynchronous-unwind-tables.
+	* gcc.dg/darwin-weakimport-3.c: Ditto.
+
 2006-10-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/29446
 	* gcc.dg/torture/pr29446.c: New testcase.
 
 2006-10-13  Bill Wendling  <wendling@apple.com>
- 
+
 	* g++.old-deja/g++.brendan/scope5.C: Changed "Class" to "Klasse".
 	* g++.old-deja/g++.jason/hmc1.C: Likewise.
 	* g++.old-deja/g++.jason/cleanup2.C: Likewise.
@@ -105,7 +111,7 @@
 	* g++.dg/other/large-size-array.C: Adjust error markers.
 	* g++.dg/parse/crash27.C: Likewise.
 	* g++.dg/template/crash1.C: Likewise.
-	
+
 2006-10-12  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/29093
@@ -124,14 +130,14 @@
 2006-10-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/builtins-config.h: Move Solaris section after inclusion
-	of <sys/types.h>.	
+	of <sys/types.h>.
 
 2006-10-11  Lee Millward  <lee.millward@codesourcery.com>
 
 	PR c++/29024
 	* g++.dg/parse/typedef8.C: New test.
 	* g++.dg/other/mult-stor1.C: Adjust error markers.
-	
+
 2006-10-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28230
@@ -268,7 +274,7 @@
 	* gcc.c-torture/compile/20061005-1.c: New test.
 
 2006-10-06  Olivier Hainque  <hainque@adacore.com>
-	
+
 	* gcc.dg/typename-vla-1.c: New case.
 	* gnat.dg/forward_vla.adb: New case.
 
@@ -480,13 +486,13 @@
 	PR c++/27667
 	* g++.dg/template/spec33.C: New test.
 	* g++.old-deja/g++.pt/spec20.C: Adjust error markers.
-	
+
 2006-09-24  Zdenek Dvorak <dvorakz@suse.cz>
 	    Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.dg/tree-ssa/ivopts-1.c: New test.
 	* gcc.dg/tree-ssa/ivopts-2.c: New test.
-	
+
 2006-09-24  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR target/28911
@@ -531,7 +537,7 @@
 	* g++.dg/init/error1.C: Adjust error markers.
 	* g++.dg/parse/crash9.C: Likewise.
 	* g++.dg/template/crash55.C: Likewise.
-	
+
 2006-09-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/decfloat-constants.c: Remove 'dg-do compile', fix typo.
