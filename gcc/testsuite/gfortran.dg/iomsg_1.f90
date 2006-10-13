@@ -22,7 +22,7 @@ program iomsg_test
   if (ch .ne. 'Bad unit number in OPEN statement') call abort
 
   ! Test iomsg with close
-  close(23,status="no_idea", err=500, iomsg=ch)
+  close(23,status="no_idea", err=500, iomsg=ch) ! { dg-warning "STATUS specifier in CLOSE statement.*has invalid value" }
 500 continue
   if (ch .ne. "Bad STATUS parameter in CLOSE statement") call abort
 end program iomsg_test
