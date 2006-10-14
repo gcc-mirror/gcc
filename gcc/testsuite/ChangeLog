@@ -1,3 +1,8 @@
+2006-10-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/pthread-init-2.c (dg-options): Define _POSIX_C_SOURCE=199506L
+	on Solaris 2.5.1 too.
+
 2006-10-13  Eric Christopher  <echristo@apple.com>
 
 	* gcc.dg/pr25993.c: Skip for darwin.
