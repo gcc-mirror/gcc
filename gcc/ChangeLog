@@ -1,3 +1,9 @@
+2006-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR bootstrap/29402
+	* Makefile.in (ALL_GTFILES_H): Use $(sort ...) instead of
+	shell pipeline.
+
 2006-10-13  Eric Christopher  <echristo@apple.com>
 
 	* config/darwin.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
