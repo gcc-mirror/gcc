@@ -1,6 +1,11 @@
 2006-10-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/ostream.tcc (operator<<(basic_ostream<>&,
+	const char*)): Further fix for throwing widen.
+
+2006-10-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/ostream.tcc (operator<<(basic_ostream<>&,
 	const char*)): Fix thinko in change for libstdc++/28277,
 	avoid memory leaks.
 
