@@ -320,19 +320,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	__out.setstate(ios_base::badbit);
       else
 	{
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 167.  Improper use of traits_type::length()
+	  const size_t __clen = char_traits<char>::length(__s);      
+	  _CharT* __ws = 0;
+	  try
+	    { __ws = new _CharT[__clen]; }
+	  catch(...)
+	    {
+	      __out._M_setstate(ios_base::badbit);
+	      return __out;
+	    }
+
 	  try
 	    {
-	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 167.  Improper use of traits_type::length()
-	      const size_t __clen = char_traits<char>::length(__s);      
-	      _CharT* __ws = new _CharT[__clen];
 	      for (size_t  __i = 0; __i < __clen; ++__i)
 		__ws[__i] = __out.widen(__s[__i]);
 	      __out._M_insert(__ws, __clen);
 	      delete [] __ws;
 	    }
 	  catch(...)
-	    { __out._M_setstate(ios_base::badbit); }
+	    {
+	      delete [] __ws;
+	      __throw_exception_again;
+	    }
 	}
       return __out;
     }
