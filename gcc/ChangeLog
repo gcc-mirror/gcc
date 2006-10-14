@@ -1,3 +1,11 @@
+2006-10-13  David Edelsohn  <edelsohn@gnu.org>
+	    Ian Lance Taylor  <ian@airs.com>
+
+	PR middle-end/29250
+	* expr.c (expand_expr_real_1) <NON_LVALUE_EXPR, NOP_EXPR,
+	CONVERT_EXPR>: Change EXPAND_SUM modifier to EXPAND_NORMAL when
+	recursing.
+
 2006-10-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/score/score.c, config/score/score.h: Fix comment
