@@ -1,3 +1,8 @@
+2006-10-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* intrinsic.texi: Fix typos.
+	* trans-array.c: Fix a comment typo.
+
 2006-10-13  Brooks Moses  <bmoses@stanford.edu>
 
 	* intrinsic.texi (STAT): Reverted a format in example code to
