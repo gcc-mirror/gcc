@@ -3895,7 +3895,7 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-GNU Fortran 77 compability function: @ref{IARGC}
+GNU Fortran 77 compatibility function: @ref{IARGC}
 
 F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
 @end table
@@ -4466,7 +4466,7 @@ The number of command line arguments, type @code{INTEGER(4)}.
 See @ref{GETARG}
 
 @item @emph{See also}:
-GNU Fortran 77 compability subroutine: @ref{GETARG}
+GNU Fortran 77 compatibility subroutine: @ref{GETARG}
 
 F2003 functions and subroutines: @ref{GET_COMMAND}, @ref{GET_COMMAND_ARGUMENT}, @ref{COMMAND_ARGUMENT_COUNT}
 @end table

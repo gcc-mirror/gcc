@@ -4968,7 +4968,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
   gfc_set_backend_locus (&sym->declared_at);
   descriptor = sym->backend_decl;
 
-  /* Although static, derived types with deafult initializers and
+  /* Although static, derived types with default initializers and
      allocatable components must not be nulled wholesale; instead they
      are treated component by component.  */
   if (TREE_STATIC (descriptor) && !sym_has_alloc_comp)
