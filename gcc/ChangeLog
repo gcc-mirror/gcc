@@ -1,3 +1,9 @@
+2006-10-14  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/29323
+	* except.c (set_nothrow_function_flags): For functions
+	that do not bind local bail out early.
+
 2006-10-14  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/athlon.md (athlon_fist): Add fisttp.
