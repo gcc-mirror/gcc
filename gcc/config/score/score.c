@@ -928,8 +928,8 @@ score_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 
    'U'        print hi part of a CONST_INT rtx
    'D'        print first part of const double
-   'S'        selectively print '!' if operand is 15bit instrucion accessable
-   'V'        print "v!" if operand is 15bit instruction accessable, or
+   'S'        selectively print '!' if operand is 15bit instruction accessible
+   'V'        print "v!" if operand is 15bit instruction accessible, or
    "lfh!"
 
    'L'        low  part of DImode reg operand
