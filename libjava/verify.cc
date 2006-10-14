@@ -1,6 +1,6 @@
 // verify.cc - verify bytecode
 
-/* Copyright (C) 2001, 2002, 2003, 2004, 2005  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -1976,6 +1976,7 @@ private:
 	  case op_getstatic_4:
 	  case op_getstatic_8:
 	  case op_getstatic_a:
+	  case op_breakpoint:
 	  default:
 	    verify_fail ("unrecognized instruction in branch_prepass",
 			 start_PC);
@@ -3153,6 +3154,7 @@ private:
 	  case op_getstatic_4:
 	  case op_getstatic_8:
 	  case op_getstatic_a:
+	  case op_breakpoint:
 	  default:
 	    // Unrecognized opcode.
 	    verify_fail ("unrecognized instruction in verify_instructions_0",

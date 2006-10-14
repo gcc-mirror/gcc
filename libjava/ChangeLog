@@ -1,3 +1,20 @@
+2006-10-14  Keith Seitz  <keiths@redhat.com>
+
+	* include/java-insns.h (enum java_code): Add op_breakpoint.
+	* include/java-interp.h (_Jv_InterpMethod): Declare breakpoint_insn.
+	[INTERPRETER]: Declare _Jv_InterpMethod::bp_insn_slot.
+	[!INTERPRETER]: Declare _Jv_InterpMethod::bp_insn_opcode.
+	(install_break): Declare.
+	* interpret.cc (breakpoint_insn): Define breakpoint insn.
+	(compile): Add op_breakpoint to "can't happen" cases.
+	[INTERPRETER] Initialize breakpoint insn if necessary.
+	(install_break): New method.
+	* interpret-run.cc: Add op_breakpoint to insn_targets.
+	Add insn_breakpoint label.
+	* verify.cc (branch_prepass): Add op_breakpoint to unrecognized
+	opcodes section of switch statement.
+	(verify_instructions_0): Likewise.
+
 2006-10-12  Keith Seitz  <keiths@redhat.com>
 
 	* include/jvmti-int.h (JVMTI): Declare all members "extern".

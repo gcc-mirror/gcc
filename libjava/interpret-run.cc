@@ -217,7 +217,7 @@ details.  */
     INSN_LABEL(invokespecial),
     INSN_LABEL(invokestatic),
     INSN_LABEL(invokeinterface),
-    0, /* Unused.  */
+    INSN_LABEL (breakpoint),
     INSN_LABEL(new),
     INSN_LABEL(newarray),
     INSN_LABEL(anewarray),
@@ -2463,6 +2463,11 @@ details.  */
 
       }
 #endif /* DIRECT_THREADED */
+
+    insn_breakpoint:
+      {
+	// nothing just yet
+      }
     }
   catch (java::lang::Throwable *ex)
     {

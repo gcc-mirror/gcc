@@ -133,6 +133,14 @@ struct  _Jv_LineTableEntry
 
 class _Jv_InterpMethod : public _Jv_MethodBase
 {
+  // Breakpoint instruction
+  static pc_t breakpoint_insn;
+#ifdef DIRECT_THREADED
+  static insn_slot bp_insn_slot;
+#else
+  static unsigned char bp_insn_opcode;
+#endif
+
   _Jv_ushort       max_stack;
   _Jv_ushort       max_locals;
   int              code_length;
@@ -205,6 +213,10 @@ class _Jv_InterpMethod : public _Jv_MethodBase
    */
   void get_line_table (jlong& start, jlong& end, jintArray& line_numbers,
 		       jlongArray& code_indices);
+
+  /* Installs a break instruction at the given code index. Returns
+     the pc_t of the breakpoint or NULL if index is invalid. */
+  pc_t install_break (jlong index);
 
   // Gets the instruction at the given index
   pc_t get_insn (jlong index);
