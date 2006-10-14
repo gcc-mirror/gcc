@@ -1,3 +1,9 @@
+2006-10-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/19261
+	* scanner.c (load_line): Add checks for illegal use of '&' and issue
+	warnings.  Issue errors with -pedantic.
+
 2006-10-14 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29371
