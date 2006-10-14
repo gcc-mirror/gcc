@@ -940,7 +940,11 @@ gfc_gobble_whitespace (void)
    In fixed mode, we expand a tab that occurs within the statement
    label region to expand to spaces that leave the next character in
    the source region.
-   load_line returns whether the line was truncated.  */
+   load_line returns whether the line was truncated.
+
+   NOTE: The error machinery isn't available at this point, so we can't
+	 easily report line and column numbers consistent with other 
+	 parts of gfortran.  */
 
 static int
 load_line (FILE * input, char **pbuf, int *pbuflen)
@@ -948,6 +952,7 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
   static int linenum = 0, current_line = 1;
   int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;
   int trunc_flag = 0, seen_comment = 0;
+  int seen_printable = 0, seen_ampersand = 0;
   char *buffer;
 
   /* Determine the maximum allowed line length.
@@ -999,7 +1004,20 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
       if (c == EOF)
 	break;
       if (c == '\n')
-	break;
+	{
+	  /* Check for illegal use of ampersand. See F95 Standard 3.3.1.3.  */
+	  if (gfc_current_form == FORM_FREE 
+		&& !seen_printable && seen_ampersand)
+	    {
+	      if (pedantic)
+		gfc_error_now
+		  ("'&' not allowed by itself in line %d", current_line);
+	      else
+		gfc_warning_now
+		  ("'&' not allowed by itself in line %d", current_line);
+	    }
+	  break;
+	}
 
       if (c == '\r')
 	continue;		/* Gobble characters.  */
@@ -1013,6 +1031,25 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
 	  break;
 	}
 
+      /* Check for illegal use of ampersand. See F95 Standard 3.3.1.3.  */
+      if (c == '&')
+	seen_ampersand = 1;
+
+      if ((c != ' ' && c != '&' && c != '!') || (c == '!' && !seen_ampersand))
+	seen_printable = 1;
+      
+      if (gfc_current_form == FORM_FREE 
+	    && c == '!' && !seen_printable && seen_ampersand)
+	{
+	  if (pedantic)
+	    gfc_error_now (
+	      "'&' not allowed by itself with comment in line %d", current_line);
+	  else
+	    gfc_warning_now (
+	      "'&' not allowed by itself with comment in line %d", current_line);
+	  seen_printable = 1;
+	}
+
       /* Is this a fixed-form comment?  */
       if (gfc_current_form == FORM_FIXED && i == 0
 	  && (c == '*' || c == 'c' || c == 'd'))
@@ -1020,9 +1057,6 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
 
       if (gfc_current_form == FORM_FIXED && c == '\t' && i <= 6)
 	{
-	  /* The error machinery isn't available at this point, so we can't
-	     easily report line and column numbers consistent with other 
-	     parts of gfortran.  */
 	  if (!gfc_option.warn_tabs && seen_comment == 0
 	      && current_line != linenum)
 	    {
