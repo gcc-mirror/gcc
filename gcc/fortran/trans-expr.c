@@ -3149,7 +3149,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	{
 	case EXPR_NULL:
 	  /* Just set the data pointer to null.  */
-	  gfc_conv_descriptor_data_set (&block, lse.expr, null_pointer_node);
+	  gfc_conv_descriptor_data_set (&lse.pre, lse.expr, null_pointer_node);
 	  break;
 
 	case EXPR_VARIABLE:

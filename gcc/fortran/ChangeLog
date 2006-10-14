@@ -1,3 +1,10 @@
+2006-10-14 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29371
+	* trans-expr.c (gfc_trans_pointer_assignment): Add the expression
+	for the assignment of null to the data field to se->pre, rather
+	than block.	
+
 2006-10-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	* intrinsic.texi: Fix typos.
