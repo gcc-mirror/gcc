@@ -1,3 +1,7 @@
+2006-10-14  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/athlon.md (athlon_fist): Add fisttp.
+
 2006-10-12  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.md (eh_return): Call emit_jump_insn instead of

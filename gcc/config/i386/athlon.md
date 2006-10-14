@@ -343,7 +343,7 @@
 			 "athlon-direct,(athlon-fpsched+athlon-agu),(athlon-fstore+athlon-store)")
 (define_insn_reservation "athlon_fist" 4
 			 (and (eq_attr "cpu" "athlon,k8")
-			      (eq_attr "type" "fistp"))
+			      (eq_attr "type" "fistp,fisttp"))
 			 "athlon-direct,(athlon-fpsched+athlon-agu),(athlon-fstore+athlon-store)")
 (define_insn_reservation "athlon_fmov" 2
 			 (and (eq_attr "cpu" "athlon,k8")
