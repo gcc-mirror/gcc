@@ -1,5 +1,10 @@
 2006-10-14  Paolo Carlini  <pcarlini@suse.de>
 
+	* docs/html/faq/index.html: Update.
+	* docs/html/faq/index.txt: Regenerate.
+
+2006-10-14  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/ostream.tcc (operator<<(basic_ostream<>&,
 	const char*)): Further fix for throwing widen.
 
