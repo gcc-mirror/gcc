@@ -1,3 +1,8 @@
+2006-10-14 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29371
+	* gfortran.dg/nullify_3.f90: New test.
+
 2006-10-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/pthread-init-2.c (dg-options): Define _POSIX_C_SOURCE=199506L
