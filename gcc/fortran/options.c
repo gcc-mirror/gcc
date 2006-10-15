@@ -61,7 +61,6 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.warn_surprising = 0;
   gfc_option.warn_tabs = 1;
   gfc_option.warn_underflow = 1;
-  gfc_option.warn_unused_labels = 0;
 
   gfc_option.flag_all_intrinsics = 0;
   gfc_option.flag_default_double = 0;
@@ -303,8 +302,7 @@ set_Wall (void)
   gfc_option.warn_surprising = 1;
   gfc_option.warn_tabs = 0;
   gfc_option.warn_underflow = 1;
-  gfc_option.warn_unused_labels = 1;
- 
+
   set_Wunused (1);
   warn_return_type = 1;
   warn_switch = 1;
@@ -426,10 +424,6 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Wunderflow:
       gfc_option.warn_underflow = value;
-      break;
-
-    case OPT_Wunused_labels:
-      gfc_option.warn_unused_labels = value;
       break;
 
     case OPT_fall_intrinsics:
