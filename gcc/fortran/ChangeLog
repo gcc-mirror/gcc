@@ -1,3 +1,8 @@
+2006-10-14  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi: Add link to GFortran apps
+	* intrinsic.texi: Updated documentation of ACCESS and CHMOD
+
 2006-10-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/19261
