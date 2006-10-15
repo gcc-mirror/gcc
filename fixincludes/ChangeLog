@@ -1,3 +1,11 @@
+2006-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/29300
+	* inclhack.def (hpux_pthread_initializers): New hack.
+	* tests/base/sys/pthread.h: New file.
+
+	* fixincl.x: Regenerate.
+
 2006-10-03  Uros Bizjak <uros@kss-loka.si>
 
 	* inclhack.def (glibc_mutex_init): Also fix
