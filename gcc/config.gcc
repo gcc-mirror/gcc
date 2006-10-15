@@ -909,7 +909,7 @@ hppa*64*-*-hpux11*)
 	tmake_file="pa/t-pa64 pa/t-pa-hpux"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 	case x${enable_threads} in
-	xyes | xposix )
+	x | xyes | xposix )
 		thread_file=posix 
 		;;
 	esac
@@ -929,7 +929,7 @@ hppa[12]*-*-hpux11*)
 	esac
 	tmake_file="pa/t-pa pa/t-pa-hpux pa/t-hpux-shlib"
 	case x${enable_threads} in
-	xyes | xposix )
+	x | xyes | xposix )
 		thread_file=posix 
 		;;
 	esac
