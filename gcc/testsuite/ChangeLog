@@ -1,3 +1,8 @@
+2006-10-15  David Edelsohn  <edelsohn@gnu.org>
+
+	PR middle-end/29250
+	* gcc.c-torture/compile/pr29250.c: New test.
+
 2006-10-15  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/pr29299.c: New testcase.
