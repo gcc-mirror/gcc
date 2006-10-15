@@ -1,3 +1,10 @@
+2006-10-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/istream.tcc (getline(basic_istream<>&,
+	basic_string<>&)): Move...
+	* include/bits/basic_string.h: ... here.
+	(operator<<(basic_ostream<>&, const basic_string<>&)): Mark inline.
+
 2006-10-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* scripts/make_exports.pl: Use -_ rather than --strip-underscores

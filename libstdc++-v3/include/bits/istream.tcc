@@ -988,12 +988,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __in;
     }
 
-  template<class _CharT, class _Traits, class _Alloc>
-    inline basic_istream<_CharT,_Traits>&
-    getline(basic_istream<_CharT, _Traits>& __in,
-	    basic_string<_CharT,_Traits,_Alloc>& __str)
-    { return getline(__in, __str, __in.widen('\n')); }
-
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
   // NB:  This syntax is a GNU extension.
