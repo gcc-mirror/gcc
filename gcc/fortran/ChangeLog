@@ -1,3 +1,13 @@
+2006-10-15  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/24767
+	* lang.opt (Wunused-labels): Remove.
+	* options.c: Remove references to gfc_option.warn_unused_labels.
+	* gfortran.h: Remove variable warn_unused_labels.               
+	* resolve.c (warn_unused_fortran_label) : Use warn_unused_label
+	instead of gfc_option.warn_unused_labels.
+	* invoke.texi: Remove documentation of -Wunused-labels.
+
 2006-10-14  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi: Add link to GFortran apps

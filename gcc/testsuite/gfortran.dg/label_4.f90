@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Wunused-labels" }
+! { dg-options "-Wunused-label" }
 ! PR 26277
 ! We used to give an incorect warning about label 99 not being referenced
   open(unit=12,err=99)

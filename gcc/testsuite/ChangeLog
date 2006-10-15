@@ -1,3 +1,8 @@
+2006-10-15  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/24767
+	* gfortran.dg/label_4.f90: Adjust warning flag.
+
 2006-10-14 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29371

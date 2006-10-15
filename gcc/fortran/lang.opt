@@ -73,10 +73,6 @@ Wunderflow
 Fortran
 Warn about underflow of numerical constant expressions
 
-Wunused-labels
-Fortran
-Warn when a label is unused
-
 fall-intrinsics
 Fortran RejectNegative
 All intrinsics procedures are available regardless of selected standard

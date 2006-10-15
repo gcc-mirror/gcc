@@ -6907,7 +6907,7 @@ resolve_types (gfc_namespace * ns)
     resolve_equivalence (eq);
 
   /* Warn about unused labels.  */
-  if (gfc_option.warn_unused_labels)
+  if (warn_unused_label)
     warn_unused_fortran_label (ns->st_labels);
 
   gfc_resolve_uops (ns->uop_root);

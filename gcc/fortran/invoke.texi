@@ -130,7 +130,7 @@ by type.  Explanations are in the following sections.
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -Wall  -Waliasing -Wampersand -Wconversion -Wimplicit-interface @gol
 -Wtabs -Wnonstd-intrinsics -Wsurprising -Wunderflow @gol
--Wunused-labels -Wline-truncation -W}
+-Wline-truncation -W}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
@@ -403,7 +403,7 @@ Inhibit all warning messages.
 @cindex warnings, all
 Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
-This currently includes @option{-Wunused-labels}, @option{-Waliasing},
+This currently includes @option{-Waliasing},
 @option{-Wampersand}, @option{-Wsurprising}, @option{-Wnonstd-intrinsic},
 @option{-Wno-tabs}, and @option{-Wline-truncation}.
 
@@ -499,14 +499,6 @@ for @option{-pedantic}, @option{-std=f95}, and @option{-Wall}.
 @cindex UNDERFLOW
 Produce a warning when numerical constant expressions are
 encountered, which yield an UNDERFLOW during compilation.
-
-
-@cindex -Wunused-labels option
-@cindex options, -Wunused-labels
-@item -Wunused-labels
-@cindex unused labels
-@cindex labels, unused
-Warn whenever a label is defined but never referenced.
 
 
 @cindex -Werror
