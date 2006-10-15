@@ -1055,6 +1055,7 @@ cgraph_finalize_compilation_unit (void)
   /* Keep track of already processed nodes when called multiple times for
      intermodule optimization.  */
   static struct cgraph_node *first_analyzed;
+  struct cgraph_node *first_processed = first_analyzed;
   static struct cgraph_varpool_node *first_analyzed_var;
 
   if (errorcount || sorrycount)
@@ -1077,7 +1078,10 @@ cgraph_finalize_compilation_unit (void)
     }
 
   timevar_push (TV_CGRAPH);
-  process_function_and_variable_attributes (first_analyzed, first_analyzed_var);
+  process_function_and_variable_attributes (first_processed,
+					    first_analyzed_var);
+  first_processed = cgraph_nodes;
+  first_analyzed_var = cgraph_varpool_nodes;
   cgraph_varpool_analyze_pending_decls ();
   if (cgraph_dump_file)
     {
@@ -1119,11 +1123,16 @@ cgraph_finalize_compilation_unit (void)
 	if (!edge->callee->reachable)
 	  cgraph_mark_reachable_node (edge->callee);
 
+      /* We finalize local static variables during constructing callgraph
+         edges.  Process their attributes too.  */
+      process_function_and_variable_attributes (first_processed,
+						first_analyzed_var);
+      first_processed = cgraph_nodes;
+      first_analyzed_var = cgraph_varpool_nodes;
       cgraph_varpool_analyze_pending_decls ();
     }
 
-  /* Collect entry points to the unit.  */
-
+/bin/bash: line 1: :Q: command not found
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Unit entry points:");
@@ -1163,7 +1172,6 @@ cgraph_finalize_compilation_unit (void)
       dump_cgraph (cgraph_dump_file);
     }
   first_analyzed = cgraph_nodes;
-  first_analyzed_var = cgraph_varpool_nodes;
   ggc_collect ();
   timevar_pop (TV_CGRAPH);
 }
