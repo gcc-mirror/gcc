@@ -2394,7 +2394,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  writing a C string.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_ostream<_CharT, _Traits>&
+    inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os,
 	       const basic_string<_CharT, _Traits, _Alloc>& __str)
     {
@@ -2436,8 +2436,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT, typename _Traits, typename _Alloc>
     inline basic_istream<_CharT, _Traits>&
     getline(basic_istream<_CharT, _Traits>& __is,
-	    basic_string<_CharT, _Traits, _Alloc>& __str);
-    
+	    basic_string<_CharT, _Traits, _Alloc>& __str)
+    { return getline(__is, __str, __is.widen('\n')); }
+
   template<>
     basic_istream<char>&
     getline(basic_istream<char>& __in, basic_string<char>& __str,
