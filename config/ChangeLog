@@ -1,3 +1,7 @@
+2006-10-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* multi.m4: New file, from automake version 2 branch.
+
 2006-09-18  Tom Tromey  <tromey@redhat.com>
 
 	* tls.m4 (GCC_CHECK_TLS): Pass empty argument as "help arg" to

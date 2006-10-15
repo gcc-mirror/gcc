@@ -1,3 +1,8 @@
+2006-10-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2006-09-29  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR other/25035

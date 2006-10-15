@@ -36,7 +36,7 @@ target_noncanonical = @target_noncanonical@
 gcc_version := $(shell cat $(srcdir)/../gcc/BASE-VER)
 host_subdir = @host_subdir@
 top_srcdir = @top_srcdir@
-toplevel_srcdir = @toplevel_srcdir@
+multi_basedir = @multi_basedir@
 toolexecdir = @toolexecdir@
 # Toolexecdir is used only by toolexeclibdir
 toolexeclibdir = @toolexeclibdir@
@@ -332,7 +332,7 @@ ${srcdir}/configure: @MAINT@ configure.ac
 install: install-libs install-headers
 
 install-libs: installdirs
-	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(toolexeclibdir)
+	$(SHELL) $(multi_basedir)/mkinstalldirs $(DESTDIR)$(toolexeclibdir)
 	$(LIBTOOL_INSTALL) $(INSTALL) libobjc$(libext).la $(DESTDIR)$(toolexeclibdir);
 	if [ "$(OBJC_BOEHM_GC)" ]; then \
 	  $(LIBTOOL_INSTALL) $(INSTALL) libobjc_gc$(libext).la \
@@ -343,7 +343,7 @@ install-libs: installdirs
 
 # Copy Objective C headers to installation include directory.
 install-headers:
-	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(libsubdir)/$(includedirname)/objc
+	$(SHELL) $(multi_basedir)/mkinstalldirs $(DESTDIR)$(libsubdir)/$(includedirname)/objc
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/objc/$${file}; \
 	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/$(includedirname)/objc; \
