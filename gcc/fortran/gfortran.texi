@@ -161,7 +161,7 @@ it will do everything you expect from any decent compiler:
 @item
 Read a user's program,
 stored in a file and containing instructions written
-in Fortran 77, Fortran 90 or Fortran 95.
+in Fortran 77, Fortran 90, Fortran 95 or Fortran 2003.
 This file contains @dfn{source code}.
 
 @item
@@ -404,7 +404,8 @@ large real-world programs, including
 @uref{http://mysite.verizon.net/serveall/moene.pdf, the HIRLAM
 weather-forecasting code} and
 @uref{http://www.theochem.uwa.edu.au/tonto/, the Tonto quantum 
-chemistry package}.
+chemistry package}; see @url{http://gcc.gnu.org/wiki/GfortranApps} for an
+extended list.
 
 Among other things, the GNU Fortran compiler is intended as a replacement
 for G77.  At this point, nearly all programs that could be compiled with

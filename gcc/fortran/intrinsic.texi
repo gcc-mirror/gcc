@@ -52,7 +52,7 @@ Some intrinsics have documentation yet to be completed as indicated by 'document
 * Introduction:         Introduction
 * @code{ABORT}:         ABORT,     Abort the program     
 * @code{ABS}:           ABS,       Absolute value     
-* @code{ACCESS}:        ACCESS,    Checks file access method
+* @code{ACCESS}:        ACCESS,    Checks file access modes
 * @code{ACHAR}:         ACHAR,     Character in @acronym{ASCII} collating sequence
 * @code{ACOS}:          ACOS,      Arccosine function
 * @code{ACOSH}:         ACOSH,     Hyperbolic arccosine function
@@ -389,23 +389,56 @@ end program test_abs
 
 
 @node ACCESS
-@section @code{ACCESS} --- Checks file access method
+@section @code{ACCESS} --- Checks file access modes
 @findex @code{ACCESS} 
 @cindex file system functions
 
-Not yet implemented in GNU Fortran.
-
 @table @asis
 @item @emph{Description}:
+@code{ACCESS(NAME, MODE)} checks whether the file @var{NAME} 
+exists, is readable, writable or executable. Except for the
+executable check, @code{ACCESS} can be replaced by
+Fortran 95's @code{INQUIRE}.
 
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Inquiry function
+
 @item @emph{Syntax}:
+@code{I = ACCESS(NAME, MODE)}
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{NAME} @tab Scalar @code{CHARACTER} with the file name.
+Tailing blank are ignored unless the character @code{achar(0)} is
+present, then all characters up to and excluding @code{achar(0)} are
+used as file name.
+@item @var{MODE} @tab Scalar @code{CHARACTER} with the file access mode,
+may be any concatenation of @code{"r"} (readable), @code{"w"} (writable)
+and @code{"x"} (executable), or @code{" "} to check for existance.
+@end multitable
+
 @item @emph{Return value}:
+Returns a scalar @code{INTEGER}, which is @code{0} if the file is
+accessable in the given mode; otherwise or if an invalid argument
+has been given for @code{MODE} the value @code{1} is returned.
+
 @item @emph{Example}:
+@smallexample
+program access_test
+  implicit none
+  character(len=*), parameter :: file  = 'test.dat'
+  character(len=*), parameter :: file2 = 'test.dat  '//achar(0)
+  if(access(file,' ') == 0) print *, trim(file),' is exists'
+  if(access(file,'r') == 0) print *, trim(file),' is readable'
+  if(access(file,'w') == 0) print *, trim(file),' is writable'
+  if(access(file,'x') == 0) print *, trim(file),' is executable'
+  if(access(file2,'rwx') == 0) &
+    print *, trim(file2),' is readable, writable and executable'
+end program access_test
+@end smallexample
 @item @emph{Specific names}:
 @item @emph{See also}:
 
@@ -1873,10 +1906,11 @@ END PROGRAM
 @findex @code{CHMOD} 
 @cindex file system functions
 
-Not yet implemented in GNU Fortran.
-
 @table @asis
 @item @emph{Description}:
+@code{CHMOD} changes the permissions of a file. This function invokes
+@code{/bin/chmod} and might therefore not work on all platforms.
+@code{CHMOD} as an intrinsic function is not implemented in GNU Fortran.
 
 @item @emph{Standard}:
 GNU extension
@@ -1885,9 +1919,32 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
+@code{CHMOD(NAME, MODE[, STATUS])}
+
 @item @emph{Arguments}:
-@item @emph{Return value}:
+@multitable @columnfractions .15 .80
+@item @var{NAME} @tab Scalar @code{CHARACTER} with the file name.
+Trailing blanks are ignored unless the character @code{achar(0)} is
+present, then all characters up to and excluding @code{achar(0)} are
+used as the file name.
+
+@item @var{MODE} @tab Scalar @code{CHARACTER} giving the file permission.
+@var{MODE} uses the same syntax as the @var{MODE} argument of
+@code{/bin/chmod}.
+
+@item @var{STATUS} @tab (optional) scalar @code{INTEGER}, which is
+@code{0} on success and non-zero otherwise.
+@end multitable
+
 @item @emph{Example}:
+@smallexample
+program chmod_test
+  implicit none
+  integer :: status
+  call chmod('test.dat','u+x',status)
+  print *, 'Status: ', status
+end program chmod_test
+@end smallexample
 @item @emph{Specific names}:
 @item @emph{See also}:
 
