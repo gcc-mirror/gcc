@@ -1,3 +1,9 @@
+2006-10-15  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/29241
+	* cgraphunit.c (cgraph_preserve_function_body_p): Preserve functions
+	declared always_inline even when not inlining.
+
 2006-10-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
             John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
             Andrew Pinski  <pinskia@gmail.com>
