@@ -92,7 +92,7 @@ my $nm = $ENV{'NM_FOR_TARGET'} || "nm";
 print STDERR $nm.' -P '.(join ' ',@ARGV).'|';
 open NM,$nm.' -P '.(join ' ',@ARGV).'|' or die $!;
 # Talk to c++filt through a pair of file descriptors.
-open2(*FILTIN, *FILTOUT, "c++filt --strip-underscores") or die $!;
+open2(*FILTIN, *FILTOUT, "c++filt -_") or die $!;
 NAME: while (<NM>) {
     my $i;
     chomp;
