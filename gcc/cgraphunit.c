@@ -1132,7 +1132,7 @@ cgraph_finalize_compilation_unit (void)
       cgraph_varpool_analyze_pending_decls ();
     }
 
-/bin/bash: line 1: :Q: command not found
+  /* Collect entry points to the unit.  */
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Unit entry points:");
