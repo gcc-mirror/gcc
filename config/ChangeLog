@@ -10,7 +10,7 @@
 2006-07-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR build/26188
-        * stdint.m4: Test for uintptr_t even on systems with uint64_t or uint32_t.
+	* stdint.m4: Test for uintptr_t even on systems with uint64_t or uint32_t.
 
 2006-07-21  Steve Ellcey  <sje@cup.hp.com>
 
@@ -24,8 +24,8 @@
 
 2006-07-18  Paolo Bonzini  <bonzini@gnu.org>
 
-        * acx.m4: Support --with-build-libsubdir and AC_SUBST
-        build_libsubdir.
+	* acx.m4: Support --with-build-libsubdir and AC_SUBST
+	build_libsubdir.
 
 2006-06-13  Richard Earnshaw  <rearnsha@arm.com>
 	    Alexandre Oliva <aoliva@redhat.com>
