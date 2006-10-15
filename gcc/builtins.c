@@ -235,6 +235,10 @@ get_pointer_alignment (tree exp, unsigned int max_align)
   if (! POINTER_TYPE_P (TREE_TYPE (exp)))
     return 0;
 
+  /* We rely on TER to compute accurate alignment information.  */
+  if (!(optimize && flag_tree_ter))
+    return 0;
+
   align = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp)));
   align = MIN (align, max_align);
 
