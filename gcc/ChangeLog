@@ -1,3 +1,8 @@
+2006-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.gcc (hppa*64*-*-hpux11*, hppa[12]*-*-hpux11*): Default to
+	posix thread support.
+
 2006-10-15  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/29241
