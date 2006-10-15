@@ -1,3 +1,8 @@
+2006-10-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate with released autoconf-2.59.
+
 2006-10-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/faq/index.html: Update.

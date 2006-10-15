@@ -1,3 +1,11 @@
+2006-10-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in: Use multi_basedir instead of toplevel_srcdir.
+	* configure.ac: Use multi.m4 from aclocal rather than custom
+	code.  Use multi_basedir instead of toplevel_srcdir.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Makefile.in: Added empty "pdf" target.
