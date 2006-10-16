@@ -1,3 +1,8 @@
+2006-10-16  Steven G. Kargl  <kargl@gcc.gnu.org>
+ 
+	PR fortran/29403
+	* gfortran.dg/print_1.f90: New test.
+
 2006-10-16  Richard Guenther  <rguenther@suse.de>
 
 	PR target/28960

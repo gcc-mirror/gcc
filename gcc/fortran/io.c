@@ -2386,7 +2386,8 @@ match_io (io_kind k)
   where = gfc_current_locus;
   comma_flag = 0;
   current_dt = dt = gfc_getmem (sizeof (gfc_dt));
-  if (gfc_match_char ('(') == MATCH_NO)
+  m = gfc_match_char ('(');
+  if (m == MATCH_NO)
     {
       where = gfc_current_locus;
       if (k == M_WRITE)
@@ -2438,9 +2439,25 @@ match_io (io_kind k)
     }
   else
     {
-      /* Error for constructs like print (1,*).   */
-      if (k == M_PRINT)
-	goto  syntax;
+      /* Before issuing an error for a malformed 'print (1,*)' type of
+	 error, check for a default-char-expr of the form ('(I0)').  */
+
+      if (k == M_PRINT && m == MATCH_YES)
+	{
+	  /* Reset current locus to get the initial '(' in an expression.  */
+	  gfc_current_locus = where;
+	  dt->format_expr = NULL;
+	  m = match_dt_format (dt);
+
+	  if (m == MATCH_ERROR)
+	    goto cleanup;
+	  if (m == MATCH_NO || dt->format_expr == NULL)
+	    goto syntax;
+
+	  comma_flag = 1;
+	  dt->io_unit = default_unit (k);
+	  goto get_io_list;
+	}
     }
 
   /* Match a control list */
