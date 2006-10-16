@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
 #   Inc.
 
-timestamp='2006-05-13'
+timestamp='2006-09-20'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -241,7 +241,7 @@ case $basic_machine in
 	| alpha | alphaev[4-8] | alphaev56 | alphaev6[78] | alphapca5[67] \
 	| alpha64 | alpha64ev[4-8] | alpha64ev56 | alpha64ev6[78] | alpha64pca5[67] \
 	| am33_2.0 \
-	| arc | arm | arm[bl]e | arme[lb] | armv[2345] | armv[345][lb] | avr \
+	| arc | arm | arm[bl]e | arme[lb] | armv[2345] | armv[345][lb] | avr | avr32 \
 	| bfin \
 	| c4x | clipper \
 	| d10v | d30v | dlx | dsp16xx \
@@ -276,6 +276,7 @@ case $basic_machine in
 	| pdp10 | pdp11 | pj | pjl \
 	| powerpc | powerpc64 | powerpc64le | powerpcle | ppcbe \
 	| pyramid \
+	| score \
 	| sh | sh[1234] | sh[24]a | sh[23]e | sh[34]eb | sheb | shbe | shle | sh[1234]le | sh3ele \
 	| sh64 | sh64le \
 	| sparc | sparc64 | sparc64b | sparc64v | sparc86x | sparclet | sparclite \
@@ -284,7 +285,7 @@ case $basic_machine in
 	| tahoe | thumb | tic4x | tic80 | tron \
 	| v850 | v850e \
 	| we32k \
-	| x86 | xscale | xscalee[bl] | xstormy16 | xtensa \
+	| x86 | xc16x | xscale | xscalee[bl] | xstormy16 | xtensa \
 	| z8k)
 		basic_machine=$basic_machine-unknown
 		;;
@@ -317,7 +318,7 @@ case $basic_machine in
 	| alpha64-* | alpha64ev[4-8]-* | alpha64ev56-* | alpha64ev6[78]-* \
 	| alphapca5[67]-* | alpha64pca5[67]-* | arc-* \
 	| arm-*  | armbe-* | armle-* | armeb-* | armv*-* \
-	| avr-* \
+	| avr-* | avr32-* \
 	| bfin-* | bs2000-* \
 	| c[123]* | c30-* | [cjt]90-* | c4x-* | c54x-* | c55x-* | c6x-* \
 	| clipper-* | craynv-* | cydra-* \
@@ -367,7 +368,7 @@ case $basic_machine in
 	| tron-* \
 	| v850-* | v850e-* | vax-* \
 	| we32k-* \
-	| x86-* | x86_64-* | xps100-* | xscale-* | xscalee[bl]-* \
+	| x86-* | x86_64-* | xc16x-* | xps100-* | xscale-* | xscalee[bl]-* \
 	| xstormy16-* | xtensa-* \
 	| ymp-* \
 	| z8k-*)
@@ -909,10 +910,10 @@ case $basic_machine in
 	sb1el)
 		basic_machine=mipsisa64sb1el-unknown
 		;;
-        score | score-*)
-                basic_machine=score-sunplus
-                os=-elf
-                ;;
+	sde)
+		basic_machine=mipsisa32-sde
+		os=-elf
+		;;
 	sei)
 		basic_machine=mips-sei
 		os=-seiux
@@ -1218,7 +1219,7 @@ case $os in
 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
-	      | -skyos* | -haiku* | -rdos*)
+	      | -skyos* | -haiku* | -rdos* | -toppers*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-qnx*)
@@ -1370,6 +1371,9 @@ else
 # system, and we'll never get to this point.
 
 case $basic_machine in
+        score-*)
+		os=-elf
+		;;
         spu-*)
 		os=-elf
 		;;
