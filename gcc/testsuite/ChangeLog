@@ -1,3 +1,8 @@
+2006-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/20491
+	gcc.dg/torture/asm-subreg-1.c: Skip on hppa*64*-*-*.
+
 2006-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/29403
