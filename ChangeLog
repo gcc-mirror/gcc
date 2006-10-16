@@ -1,3 +1,7 @@
+2006-10-16  Tan Shengguo  <shengguo@sunnorth.com.cn>
+
+	* MAINTAINERS: Add Tan Shengguo as score port maintainer.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Makefile.def: Added pdf target handling.

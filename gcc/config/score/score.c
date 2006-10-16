@@ -60,63 +60,71 @@
 #define CE_REG_CLASS_P(C) \
   ((C) == HI_REG || (C) == LO_REG || (C) == CE_REGS)
 
-static int score_arg_partial_bytes (const CUMULATIVE_ARGS *cum,
-                                    enum machine_mode mode,
-                                    tree type, int named);
+static int score_arg_partial_bytes (const CUMULATIVE_ARGS *,
+                                    enum machine_mode, tree, int);
+
+static int score_symbol_insns (enum score_symbol_type);
+
+static int score_address_insns (rtx, enum machine_mode);
+
+static bool score_rtx_costs (rtx, int, int, int *);
 
 #undef  TARGET_ASM_FILE_START
-#define TARGET_ASM_FILE_START                   th_asm_file_start
+#define TARGET_ASM_FILE_START           th_asm_file_start
 
 #undef  TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END                     th_asm_file_end
+#define TARGET_ASM_FILE_END             th_asm_file_end
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE            th_function_prologue
+#define TARGET_ASM_FUNCTION_PROLOGUE    th_function_prologue
 
 #undef  TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE            th_function_epilogue
+#define TARGET_ASM_FUNCTION_EPILOGUE    th_function_epilogue
 
 #undef  TARGET_SCHED_ISSUE_RATE
-#define TARGET_SCHED_ISSUE_RATE                 th_issue_rate
+#define TARGET_SCHED_ISSUE_RATE         th_issue_rate
 
 #undef TARGET_ASM_SELECT_RTX_SECTION
-#define TARGET_ASM_SELECT_RTX_SECTION           th_select_rtx_section
+#define TARGET_ASM_SELECT_RTX_SECTION   th_select_rtx_section
 
 #undef  TARGET_IN_SMALL_DATA_P
-#define TARGET_IN_SMALL_DATA_P                  th_in_small_data_p
+#define TARGET_IN_SMALL_DATA_P          th_in_small_data_p
 
 #undef  TARGET_FUNCTION_OK_FOR_SIBCALL
-#define TARGET_FUNCTION_OK_FOR_SIBCALL          th_function_ok_for_sibcall
+#define TARGET_FUNCTION_OK_FOR_SIBCALL  th_function_ok_for_sibcall
 
 #undef TARGET_STRICT_ARGUMENT_NAMING
-#define TARGET_STRICT_ARGUMENT_NAMING           th_strict_argument_naming
+#define TARGET_STRICT_ARGUMENT_NAMING   th_strict_argument_naming
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
-#define TARGET_ASM_OUTPUT_MI_THUNK              th_output_mi_thunk
+#define TARGET_ASM_OUTPUT_MI_THUNK      th_output_mi_thunk
 
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK       hook_bool_tree_hwi_hwi_tree_true
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK  hook_bool_tree_hwi_hwi_tree_true
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS            hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS    hook_bool_tree_true
 
 #undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN          hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN  hook_bool_tree_true
 
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES               hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES       hook_bool_tree_true
 
 #undef TARGET_MUST_PASS_IN_STACK
-#define TARGET_MUST_PASS_IN_STACK               must_pass_in_stack_var_size
+#define TARGET_MUST_PASS_IN_STACK       must_pass_in_stack_var_size
 
 #undef TARGET_ARG_PARTIAL_BYTES
-#define TARGET_ARG_PARTIAL_BYTES                score_arg_partial_bytes
+#define TARGET_ARG_PARTIAL_BYTES        score_arg_partial_bytes
 
 #undef TARGET_PASS_BY_REFERENCE
-#define TARGET_PASS_BY_REFERENCE                score_pass_by_reference
+#define TARGET_PASS_BY_REFERENCE        score_pass_by_reference
 
 #undef TARGET_RETURN_IN_MEMORY
-#define TARGET_RETURN_IN_MEMORY                 score_return_in_memory
+#define TARGET_RETURN_IN_MEMORY         score_return_in_memory
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS                score_rtx_costs
 
 /* Implement TARGET_RETURN_IN_MEMORY.  In S+core,
    small structures are returned in a register.
@@ -878,6 +886,160 @@ score_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
         return 6;
     }
   return 12;
+}
+
+/* Return the number of instructions needed to load a symbol of the
+   given type into a register.  */
+static int
+score_symbol_insns (enum score_symbol_type type)
+{
+  switch (type)
+    {
+    case SYMBOL_GENERAL:
+      return 2;
+
+    case SYMBOL_SMALL_DATA:
+      return 1;
+    }
+
+  gcc_unreachable ();
+}
+
+/* Return the number of instructions needed to load or store a value
+   of mode MODE at X.  Return 0 if X isn't valid for MODE.  */
+static int
+score_address_insns (rtx x, enum machine_mode mode)
+{
+  struct score_address_info addr;
+  int factor;
+
+  if (mode == BLKmode)
+    /* BLKmode is used for single unaligned loads and stores.  */
+    factor = 1;
+  else
+    /* Each word of a multi-word value will be accessed individually.  */
+    factor = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+  if (mda_classify_address (&addr, mode, x, false))
+    switch (addr.type)
+      {
+      case ADD_REG:
+      case ADD_CONST_INT:
+        return factor;
+
+      case ADD_SYMBOLIC:
+        return factor * score_symbol_insns (addr.symbol_type);
+      }
+  return 0;
+}
+
+/* Implement TARGET_RTX_COSTS macro.  */
+static bool
+score_rtx_costs (rtx x, int code, int outer_code, int *total)
+{
+  enum machine_mode mode = GET_MODE (x);
+
+  switch (code)
+    {
+    case CONST_INT:
+      /* These can be used anywhere. */
+      *total = 0;
+      return true;
+
+      /* Otherwise fall through to the handling below because
+         we'll need to construct the constant.  */
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+    case CONST_DOUBLE:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case MEM:
+      {
+        /* If the address is legitimate, return the number of
+           instructions it needs, otherwise use the default handling.  */
+        int n = score_address_insns (XEXP (x, 0), GET_MODE (x));
+        if (n > 0)
+          {
+            *total = COSTS_N_INSNS (n + 1);
+            return true;
+          }
+        return false;
+      }
+
+    case FFS:
+      *total = COSTS_N_INSNS (6);
+      return true;
+
+    case NOT:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case AND:
+    case IOR:
+    case XOR:
+      if (mode == DImode)
+        {
+          *total = COSTS_N_INSNS (2);
+          return true;
+        }
+      return false;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      if (mode == DImode)
+        {
+          *total = COSTS_N_INSNS ((GET_CODE (XEXP (x, 1)) == CONST_INT)
+                                  ? 4 : 12);
+          return true;
+        }
+      return false;
+
+    case ABS:
+      *total = COSTS_N_INSNS (4);
+      return true;
+
+    case PLUS:
+    case MINUS:
+      if (mode == DImode)
+        {
+          *total = COSTS_N_INSNS (4);
+          return true;
+        }
+      return false;
+
+    case NEG:
+      if (mode == DImode)
+        {
+          *total = COSTS_N_INSNS (4);
+          return true;
+        }
+      return false;
+
+    case MULT:
+      *total = COSTS_N_INSNS (12);
+      return true;
+
+    case DIV:
+    case MOD:
+    case UDIV:
+    case UMOD:
+      *total = COSTS_N_INSNS (33);
+      return true;
+
+    case SIGN_EXTEND:
+      *total = COSTS_N_INSNS (2);
+      return true;
+
+    case ZERO_EXTEND:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    default:
+      return false;
+    }
 }
 
 /* Implement ASM_OUTPUT_EXTERNAL macro.  */

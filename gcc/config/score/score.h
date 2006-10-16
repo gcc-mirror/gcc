@@ -54,8 +54,9 @@ extern GTY(()) rtx cmp_op1;
       builtin_define ("__scorebe__");           \
     if (TARGET_SCORE5U)                         \
       builtin_define ("__score5u__");           \
+    else                                        \
+      builtin_define ("__score7__");            \
   } while (0)
-
 
 #define TARGET_DEFAULT         MASK_SCORE7
 

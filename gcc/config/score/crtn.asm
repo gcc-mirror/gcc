@@ -35,6 +35,7 @@
 # This file makes sure that the .init and .fini sections do in
 # fact return.
 
+#ifndef __pic__
 .section .init, "ax", @progbits
         lw      r3, [r0, 20]
         addi    r0, 32
@@ -44,4 +45,18 @@
         lw      r3, [r0, 20]
         addi    r0, 32
         br      r3
+#else
+        .set    pic
+.section .init, "ax", @progbits
+        lw      r3, [r0, 20]
+        addi    r0, 32
+        br      r3
+
+        .set    pic
+.section .fini, "ax", @progbits
+        lw      r3, [r0, 20]
+        addi    r0, 32
+        br      r3
+#endif
+
 

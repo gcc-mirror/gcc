@@ -909,6 +909,10 @@ case $basic_machine in
 	sb1el)
 		basic_machine=mipsisa64sb1el-unknown
 		;;
+        score | score-*)
+                basic_machine=score-sunplus
+                os=-elf
+                ;;
 	sei)
 		basic_machine=mips-sei
 		os=-seiux
