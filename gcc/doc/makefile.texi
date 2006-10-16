@@ -21,6 +21,9 @@ calls @samp{make man} and @samp{make info}.
 @item dvi
 Produce DVI-formatted documentation.
 
+@item pdf
+Produce PDF-formatted documentation.
+
 @item html
 Produce HTML-formatted documentation.
 
