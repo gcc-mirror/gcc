@@ -167,13 +167,26 @@ create_character_intializer (gfc_expr * init, gfc_typespec * ts,
 
   if (ref)
     {
+      gfc_expr *start_expr, *end_expr;
+
       gcc_assert (ref->type == REF_SUBSTRING);
 
       /* Only set a substring of the destination.  Fortran substring bounds
          are one-based [start, end], we want zero based [start, end).  */
-      gfc_extract_int (ref->u.ss.start, &start);
+      start_expr = gfc_copy_expr (ref->u.ss.start);
+      end_expr = gfc_copy_expr (ref->u.ss.end);
+
+      if ((gfc_simplify_expr (start_expr, 1) == FAILURE)
+	     || (gfc_simplify_expr (end_expr, 1)) == FAILURE)
+	{
+	  gfc_error ("failure to simplify substring reference in DATA"
+		     "statement at %L", &ref->u.ss.start->where);
+	  return NULL;
+	}
+
+      gfc_extract_int (start_expr, &start);
       start--;
-      gfc_extract_int (ref->u.ss.end, &end);
+      gfc_extract_int (end_expr, &end);
     }
   else
     {

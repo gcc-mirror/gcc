@@ -3540,6 +3540,14 @@ gfc_trans_array_bounds (tree type, gfc_symbol * sym, tree * poffset,
             gfc_add_modify_expr (pblock, stride, tmp);
           else
             stride = gfc_evaluate_now (tmp, pblock);
+
+	  /* Make sure that negative size arrays are translated
+	     to being zero size.  */
+	  tmp = build2 (GE_EXPR, boolean_type_node,
+			stride, gfc_index_zero_node);
+	  tmp = build3 (COND_EXPR, gfc_array_index_type, tmp,
+			stride, gfc_index_zero_node);
+	  gfc_add_modify_expr (pblock, stride, tmp);
         }
 
       size = stride;
