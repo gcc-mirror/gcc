@@ -1739,7 +1739,6 @@ s390_decompose_address (rtx addr, struct s390_address *out)
       if (GET_CODE (disp) == UNSPEC
           && (XINT (disp, 1) == UNSPEC_GOT
 	      || XINT (disp, 1) == UNSPEC_GOTNTPOFF)
-	  && offset == 0
 	  && flag_pic == 1)
         {
 	  ;
