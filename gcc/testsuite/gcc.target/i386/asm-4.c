@@ -25,7 +25,13 @@ int (*fn) (int, int, int, int);
 void
 baz (void)
 {
+  /* Darwin loads 64-bit regions above the 4GB boundary so
+     we need to use this instead.  */
+#if defined (__LP64__) && defined (__MACH__)
+  __asm ("leaq foo(%%rip), %0" : "=r" (fn));
+#else
   __asm ("movl $foo, %k0" : "=r" (fn));
+#endif
   if (fn (2, 3, 4, 5) != 14)
     abort ();
 }
