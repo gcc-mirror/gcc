@@ -1,3 +1,8 @@
+2006-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/29403
+	* io.c (match_io):  Check for a default-char-expr for PRINT format.
+
 2006-10-15  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/24767
