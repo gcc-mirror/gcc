@@ -1,3 +1,9 @@
+2006-10-16  Brooks Moses  <bmoses@stanford.edu>
+
+	* doc/sourcebuild.texi, doc/makefile.texi, doc/install.texi:
+	Added mention of "make pdf" target, and Texinfo requirements for
+	same.
+
 2006-10-16  DJ Delorie  <dj@redhat.com>
 
 	* config/s390/s390.c (s390_decompose_address): Allow symbol+offset

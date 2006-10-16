@@ -390,14 +390,19 @@ releases.
 Necessary for running @command{makeinfo} when modifying @file{*.texi}
 files to test your changes.
 
+Necessary for running @command{make dvi} or @command{make pdf} to
+create printable documentation in DVI or PDF format.  Texinfo version
+4.8 or later is required for @command{make pdf}.
+
 Necessary to build GCC documentation during development because the
 generated output files are not included in the SVN repository.  They are
 included in releases.
 
 @item @TeX{} (any working version)
 
-Necessary for running @command{texi2dvi}, used when running
-@command{make dvi} to create DVI files.
+Necessary for running @command{texi2dvi} and @command{texi2pdf}, which 
+are used when running @command{make dvi} or @command{make pdf} to create
+DVI or PDF files, respectively.
 
 @item SVN (any version)
 @itemx SSH (any version)
@@ -2166,7 +2171,10 @@ If you want to print the GCC manuals, do @samp{cd @var{objdir}; make
 dvi}.  You will need to have @command{texi2dvi} (version at least 4.4)
 and @TeX{} installed.  This creates a number of @file{.dvi} files in
 subdirectories of @file{@var{objdir}}; these may be converted for
-printing with programs such as @command{dvips}.  You can also
+printing with programs such as @command{dvips}.  Alternately, by using
+@samp{make pdf} in place of @samp{make dvi}, you can create documentation
+in the form of @file{.pdf} files; this requires @command{texi2pdf}, which
+is included with Texinfo version 4.8 and later.  You can also
 @uref{http://www.gnu.org/order/order.html,,buy printed manuals from the
 Free Software Foundation}, though such manuals may not be for the most
 recent version of GCC@.
