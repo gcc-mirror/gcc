@@ -588,6 +588,14 @@ namespace std
       void* __place = _Raw_bytes_alloc(__alloc).allocate(__size);
       _Rep *__p = new (__place) _Rep;
       __p->_M_capacity = __capacity;
+      // ABI compatibility - 3.4.x set in _S_create both
+      // _M_refcount and _M_length.  All callers of _S_create
+      // in basic_string.tcc then set just _M_length.
+      // In 4.0.x and later both _M_refcount and _M_length
+      // are initialized in the callers, unfortunately we can
+      // have 3.4.x compiled code with _S_create callers inlined
+      // calling 4.0.x+ _S_create.
+      __p->_M_set_sharable();
       return __p;
     }
 
