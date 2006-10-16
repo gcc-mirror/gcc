@@ -1,5 +1,9 @@
 2006-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa64-hpux.h (LINK_SPEC): Force __cxa_finalize to be an undefined
+	symbol in the output file for non-shared links when -nostdlib or
+	-nodefaultlibs isn't specified.
+
 	* config.gcc (hppa*64*-*-hpux11*, hppa[12]*-*-hpux11*): Default to
 	posix thread support.
 
