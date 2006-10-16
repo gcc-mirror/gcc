@@ -1,3 +1,8 @@
+2006-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29435
+	* g++.dg/template/sizeof11.C: New test.
+
 2006-10-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29392

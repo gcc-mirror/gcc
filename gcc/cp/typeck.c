@@ -1242,6 +1242,7 @@ tree
 cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
 {
   tree value;
+  bool dependent_p;
 
   gcc_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR);
   if (type == error_mark_node)
@@ -1256,15 +1257,19 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
       value = size_one_node;
     }
 
-  if (dependent_type_p (type)
+  dependent_p = dependent_type_p (type);
+  if (!dependent_p)
+    complete_type (type);
+  if (dependent_p
       /* VLA types will have a non-constant size.  In the body of an
 	 uninstantiated template, we don't need to try to compute the
 	 value, because the sizeof expression is not an integral
 	 constant expression in that case.  And, if we do try to
 	 compute the value, we'll likely end up with SAVE_EXPRs, which
 	 the template substitution machinery does not expect to see.  */
-      || (processing_template_decl && 
-	  TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST))
+      || (processing_template_decl 
+	  && COMPLETE_TYPE_P (type)
+	  && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST))
     {
       value = build_min (op, size_type_node, type);
       TREE_READONLY (value) = 1;
