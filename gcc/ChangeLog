@@ -1,3 +1,9 @@
+2006-10-16  Brooks Moses  <bmoses@stanford.edu>
+
+	* doc/contrib.texi, doc/install.texi, doc/standards.texi:
+	Standardize on "GNU Fortran" as the official name of the Fortran
+	compiler.
+
 2006-10-16  Mike Stump  <mrs@apple.com>
 
 	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Add
