@@ -1,6 +1,7 @@
 /* PR middle-end/20491 */
 
 /* { dg-do compile } */
+/* { dg-skip-if "" { hppa*64*-*-* } "*" "" } */
 
 /* Combine used to introduce invalid subregs for the asm input, and
    we'd crash later on, when removing all subregs.  */
