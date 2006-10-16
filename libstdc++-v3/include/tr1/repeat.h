@@ -37,6 +37,12 @@
 #  error Internal error: _GLIBCXX_REPEAT_HEADER must be set
 #endif /* _GLIBCXX_REPEAT_HEADER */
 
+#ifndef _GLIBCXX_TUPLE_ALL_TEMPLATE_PARAMS
+#  define _GLIBCXX_TUPLE_ALL_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9, typename _T10
+#  define _GLIBCXX_TUPLE_ALL_TEMPLATE_PARAMS_UNNAMED typename, typename, typename, typename, typename, typename, typename, typename, typename, typename
+#  define _GLIBCXX_TUPLE_ALL_TEMPLATE_ARGS _T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10
+#endif
+
 #define _GLIBCXX_NUM_ARGS 0
 #define _GLIBCXX_COMMA
 #define _GLIBCXX_TEMPLATE_PARAMS
@@ -57,6 +63,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF
 #define _GLIBCXX_TUPLE_COPY_INIT
 #define _GLIBCXX_TUPLE_ASSIGN
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED
 #define _GLIBCXX_TEMPLATE_PARAMS_U
 #define _GLIBCXX_TEMPLATE_ARGS_U
 #define _GLIBCXX_REF_WRAP_PARAMS
@@ -70,6 +78,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -111,6 +121,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1)
@@ -124,6 +136,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -165,6 +179,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1, typename __add_c_ref<_T2>::type __a2
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1), _M_arg2(__in._M_arg2)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1; _M_arg2 = __in._M_arg2;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass, typename _T2 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type, typename __strip_reference_wrapper<_T2>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1, typename _U2
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1, _U2
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2)
@@ -178,6 +194,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -198,7 +216,6 @@
 #undef _GLIBCXX_TEMPLATE_PARAMS
 #undef _GLIBCXX_COMMA
 #undef _GLIBCXX_NUM_ARGS
-
 #define _GLIBCXX_NUM_ARGS 3
 #define _GLIBCXX_COMMA ,
 #define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3
@@ -219,6 +236,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1, typename __add_c_ref<_T2>::type __a2, typename __add_c_ref<_T3>::type __a3
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1), _M_arg2(__in._M_arg2), _M_arg3(__in._M_arg3)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1; _M_arg2 = __in._M_arg2; _M_arg3 = __in._M_arg3;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass, typename _T2 = _NullClass, typename _T3 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type, typename __strip_reference_wrapper<_T2>::__type, typename __strip_reference_wrapper<_T3>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1, typename _U2, typename _U3
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1, _U2, _U3
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3)
@@ -232,6 +251,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -252,7 +273,6 @@
 #undef _GLIBCXX_TEMPLATE_PARAMS
 #undef _GLIBCXX_COMMA
 #undef _GLIBCXX_NUM_ARGS
-
 #define _GLIBCXX_NUM_ARGS 4
 #define _GLIBCXX_COMMA ,
 #define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4
@@ -273,6 +293,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1, typename __add_c_ref<_T2>::type __a2, typename __add_c_ref<_T3>::type __a3, typename __add_c_ref<_T4>::type __a4
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1), _M_arg2(__in._M_arg2), _M_arg3(__in._M_arg3), _M_arg4(__in._M_arg4)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1; _M_arg2 = __in._M_arg2; _M_arg3 = __in._M_arg3; _M_arg4 = __in._M_arg4;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass, typename _T2 = _NullClass, typename _T3 = _NullClass, typename _T4 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type, typename __strip_reference_wrapper<_T2>::__type, typename __strip_reference_wrapper<_T3>::__type, typename __strip_reference_wrapper<_T4>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1, typename _U2, typename _U3, typename _U4
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1, _U2, _U3, _U4
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4)
@@ -286,6 +308,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -306,7 +330,6 @@
 #undef _GLIBCXX_TEMPLATE_PARAMS
 #undef _GLIBCXX_COMMA
 #undef _GLIBCXX_NUM_ARGS
-
 #define _GLIBCXX_NUM_ARGS 5
 #define _GLIBCXX_COMMA ,
 #define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5
@@ -327,6 +350,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1, typename __add_c_ref<_T2>::type __a2, typename __add_c_ref<_T3>::type __a3, typename __add_c_ref<_T4>::type __a4, typename __add_c_ref<_T5>::type __a5
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1), _M_arg2(__in._M_arg2), _M_arg3(__in._M_arg3), _M_arg4(__in._M_arg4), _M_arg5(__in._M_arg5)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1; _M_arg2 = __in._M_arg2; _M_arg3 = __in._M_arg3; _M_arg4 = __in._M_arg4; _M_arg5 = __in._M_arg5;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass, typename _T2 = _NullClass, typename _T3 = _NullClass, typename _T4 = _NullClass, typename _T5 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type, typename __strip_reference_wrapper<_T2>::__type, typename __strip_reference_wrapper<_T3>::__type, typename __strip_reference_wrapper<_T4>::__type, typename __strip_reference_wrapper<_T5>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1, typename _U2, typename _U3, typename _U4, typename _U5
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1, _U2, _U3, _U4, _U5
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5)
@@ -340,6 +365,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -360,7 +387,6 @@
 #undef _GLIBCXX_TEMPLATE_PARAMS
 #undef _GLIBCXX_COMMA
 #undef _GLIBCXX_NUM_ARGS
-
 #define _GLIBCXX_NUM_ARGS 6
 #define _GLIBCXX_COMMA ,
 #define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6
@@ -381,6 +407,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1, typename __add_c_ref<_T2>::type __a2, typename __add_c_ref<_T3>::type __a3, typename __add_c_ref<_T4>::type __a4, typename __add_c_ref<_T5>::type __a5, typename __add_c_ref<_T6>::type __a6
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1), _M_arg2(__in._M_arg2), _M_arg3(__in._M_arg3), _M_arg4(__in._M_arg4), _M_arg5(__in._M_arg5), _M_arg6(__in._M_arg6)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1; _M_arg2 = __in._M_arg2; _M_arg3 = __in._M_arg3; _M_arg4 = __in._M_arg4; _M_arg5 = __in._M_arg5; _M_arg6 = __in._M_arg6;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass, typename _T2 = _NullClass, typename _T3 = _NullClass, typename _T4 = _NullClass, typename _T5 = _NullClass, typename _T6 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type, typename __strip_reference_wrapper<_T2>::__type, typename __strip_reference_wrapper<_T3>::__type, typename __strip_reference_wrapper<_T4>::__type, typename __strip_reference_wrapper<_T5>::__type, typename __strip_reference_wrapper<_T6>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1, typename _U2, typename _U3, typename _U4, typename _U5, typename _U6
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1, _U2, _U3, _U4, _U5, _U6
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6)
@@ -394,6 +422,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -414,7 +444,6 @@
 #undef _GLIBCXX_TEMPLATE_PARAMS
 #undef _GLIBCXX_COMMA
 #undef _GLIBCXX_NUM_ARGS
-
 #define _GLIBCXX_NUM_ARGS 7
 #define _GLIBCXX_COMMA ,
 #define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7
@@ -435,6 +464,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1, typename __add_c_ref<_T2>::type __a2, typename __add_c_ref<_T3>::type __a3, typename __add_c_ref<_T4>::type __a4, typename __add_c_ref<_T5>::type __a5, typename __add_c_ref<_T6>::type __a6, typename __add_c_ref<_T7>::type __a7
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1), _M_arg2(__in._M_arg2), _M_arg3(__in._M_arg3), _M_arg4(__in._M_arg4), _M_arg5(__in._M_arg5), _M_arg6(__in._M_arg6), _M_arg7(__in._M_arg7)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1; _M_arg2 = __in._M_arg2; _M_arg3 = __in._M_arg3; _M_arg4 = __in._M_arg4; _M_arg5 = __in._M_arg5; _M_arg6 = __in._M_arg6; _M_arg7 = __in._M_arg7;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass, typename _T2 = _NullClass, typename _T3 = _NullClass, typename _T4 = _NullClass, typename _T5 = _NullClass, typename _T6 = _NullClass, typename _T7 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type, typename __strip_reference_wrapper<_T2>::__type, typename __strip_reference_wrapper<_T3>::__type, typename __strip_reference_wrapper<_T4>::__type, typename __strip_reference_wrapper<_T5>::__type, typename __strip_reference_wrapper<_T6>::__type, typename __strip_reference_wrapper<_T7>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1, typename _U2, typename _U3, typename _U4, typename _U5, typename _U6, typename _U7
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1, _U2, _U3, _U4, _U5, _U6, _U7
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6), ref(__a7)
@@ -448,6 +479,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -468,7 +501,6 @@
 #undef _GLIBCXX_TEMPLATE_PARAMS
 #undef _GLIBCXX_COMMA
 #undef _GLIBCXX_NUM_ARGS
-
 #define _GLIBCXX_NUM_ARGS 8
 #define _GLIBCXX_COMMA ,
 #define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8
@@ -489,6 +521,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1, typename __add_c_ref<_T2>::type __a2, typename __add_c_ref<_T3>::type __a3, typename __add_c_ref<_T4>::type __a4, typename __add_c_ref<_T5>::type __a5, typename __add_c_ref<_T6>::type __a6, typename __add_c_ref<_T7>::type __a7, typename __add_c_ref<_T8>::type __a8
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1), _M_arg2(__in._M_arg2), _M_arg3(__in._M_arg3), _M_arg4(__in._M_arg4), _M_arg5(__in._M_arg5), _M_arg6(__in._M_arg6), _M_arg7(__in._M_arg7), _M_arg8(__in._M_arg8)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1; _M_arg2 = __in._M_arg2; _M_arg3 = __in._M_arg3; _M_arg4 = __in._M_arg4; _M_arg5 = __in._M_arg5; _M_arg6 = __in._M_arg6; _M_arg7 = __in._M_arg7; _M_arg8 = __in._M_arg8;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass, typename _T2 = _NullClass, typename _T3 = _NullClass, typename _T4 = _NullClass, typename _T5 = _NullClass, typename _T6 = _NullClass, typename _T7 = _NullClass, typename _T8 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type, typename __strip_reference_wrapper<_T2>::__type, typename __strip_reference_wrapper<_T3>::__type, typename __strip_reference_wrapper<_T4>::__type, typename __strip_reference_wrapper<_T5>::__type, typename __strip_reference_wrapper<_T6>::__type, typename __strip_reference_wrapper<_T7>::__type, typename __strip_reference_wrapper<_T8>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1, typename _U2, typename _U3, typename _U4, typename _U5, typename _U6, typename _U7, typename _U8
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6), ref(__a7), ref(__a8)
@@ -502,6 +536,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -522,7 +558,6 @@
 #undef _GLIBCXX_TEMPLATE_PARAMS
 #undef _GLIBCXX_COMMA
 #undef _GLIBCXX_NUM_ARGS
-
 #define _GLIBCXX_NUM_ARGS 9
 #define _GLIBCXX_COMMA ,
 #define _GLIBCXX_TEMPLATE_PARAMS typename _T1, typename _T2, typename _T3, typename _T4, typename _T5, typename _T6, typename _T7, typename _T8, typename _T9
@@ -543,6 +578,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1, typename __add_c_ref<_T2>::type __a2, typename __add_c_ref<_T3>::type __a3, typename __add_c_ref<_T4>::type __a4, typename __add_c_ref<_T5>::type __a5, typename __add_c_ref<_T6>::type __a6, typename __add_c_ref<_T7>::type __a7, typename __add_c_ref<_T8>::type __a8, typename __add_c_ref<_T9>::type __a9
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1), _M_arg2(__in._M_arg2), _M_arg3(__in._M_arg3), _M_arg4(__in._M_arg4), _M_arg5(__in._M_arg5), _M_arg6(__in._M_arg6), _M_arg7(__in._M_arg7), _M_arg8(__in._M_arg8), _M_arg9(__in._M_arg9)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1; _M_arg2 = __in._M_arg2; _M_arg3 = __in._M_arg3; _M_arg4 = __in._M_arg4; _M_arg5 = __in._M_arg5; _M_arg6 = __in._M_arg6; _M_arg7 = __in._M_arg7; _M_arg8 = __in._M_arg8; _M_arg9 = __in._M_arg9;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass, typename _T2 = _NullClass, typename _T3 = _NullClass, typename _T4 = _NullClass, typename _T5 = _NullClass, typename _T6 = _NullClass, typename _T7 = _NullClass, typename _T8 = _NullClass, typename _T9 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type, typename __strip_reference_wrapper<_T2>::__type, typename __strip_reference_wrapper<_T3>::__type, typename __strip_reference_wrapper<_T4>::__type, typename __strip_reference_wrapper<_T5>::__type, typename __strip_reference_wrapper<_T6>::__type, typename __strip_reference_wrapper<_T7>::__type, typename __strip_reference_wrapper<_T8>::__type, typename __strip_reference_wrapper<_T9>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1, typename _U2, typename _U3, typename _U4, typename _U5, typename _U6, typename _U7, typename _U8, typename _U9
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6), ref(__a7), ref(__a8), ref(__a9)
@@ -556,6 +593,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -576,7 +615,6 @@
 #undef _GLIBCXX_TEMPLATE_PARAMS
 #undef _GLIBCXX_COMMA
 #undef _GLIBCXX_NUM_ARGS
-
 #define _GLIBCXX_LAST_INCLUDE
 #define _GLIBCXX_NUM_ARGS 10
 #define _GLIBCXX_COMMA ,
@@ -598,6 +636,8 @@
 #define _GLIBCXX_TUPLE_ADD_CREF typename __add_c_ref<_T1>::type __a1, typename __add_c_ref<_T2>::type __a2, typename __add_c_ref<_T3>::type __a3, typename __add_c_ref<_T4>::type __a4, typename __add_c_ref<_T5>::type __a5, typename __add_c_ref<_T6>::type __a6, typename __add_c_ref<_T7>::type __a7, typename __add_c_ref<_T8>::type __a8, typename __add_c_ref<_T9>::type __a9, typename __add_c_ref<_T10>::type __a10
 #define _GLIBCXX_TUPLE_COPY_INIT _M_arg1(__in._M_arg1), _M_arg2(__in._M_arg2), _M_arg3(__in._M_arg3), _M_arg4(__in._M_arg4), _M_arg5(__in._M_arg5), _M_arg6(__in._M_arg6), _M_arg7(__in._M_arg7), _M_arg8(__in._M_arg8), _M_arg9(__in._M_arg9), _M_arg10(__in._M_arg10)
 #define _GLIBCXX_TUPLE_ASSIGN _M_arg1 = __in._M_arg1; _M_arg2 = __in._M_arg2; _M_arg3 = __in._M_arg3; _M_arg4 = __in._M_arg4; _M_arg5 = __in._M_arg5; _M_arg6 = __in._M_arg6; _M_arg7 = __in._M_arg7; _M_arg8 = __in._M_arg8; _M_arg9 = __in._M_arg9; _M_arg10 = __in._M_arg10;
+#define _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS typename _T1 = _NullClass, typename _T2 = _NullClass, typename _T3 = _NullClass, typename _T4 = _NullClass, typename _T5 = _NullClass, typename _T6 = _NullClass, typename _T7 = _NullClass, typename _T8 = _NullClass, typename _T9 = _NullClass, typename _T10 = _NullClass
+#define _GLIBCXX_TEMPLATE_ARGS_STRIPPED typename __strip_reference_wrapper<_T1>::__type, typename __strip_reference_wrapper<_T2>::__type, typename __strip_reference_wrapper<_T3>::__type, typename __strip_reference_wrapper<_T4>::__type, typename __strip_reference_wrapper<_T5>::__type, typename __strip_reference_wrapper<_T6>::__type, typename __strip_reference_wrapper<_T7>::__type, typename __strip_reference_wrapper<_T8>::__type, typename __strip_reference_wrapper<_T9>::__type, typename __strip_reference_wrapper<_T10>::__type
 #define _GLIBCXX_TEMPLATE_PARAMS_U typename _U1, typename _U2, typename _U3, typename _U4, typename _U5, typename _U6, typename _U7, typename _U8, typename _U9, typename _U10
 #define _GLIBCXX_TEMPLATE_ARGS_U _U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9, _U10
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6), ref(__a7), ref(__a8), ref(__a9), ref(__a10)
@@ -611,6 +651,8 @@
 #undef _GLIBCXX_REF_WRAP_PARAMS
 #undef _GLIBCXX_TEMPLATE_ARGS_U
 #undef _GLIBCXX_TEMPLATE_PARAMS_U
+#undef _GLIBCXX_TEMPLATE_ARGS_STRIPPED
+#undef _GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS
 #undef _GLIBCXX_TUPLE_ASSIGN
 #undef _GLIBCXX_TUPLE_COPY_INIT
 #undef _GLIBCXX_TUPLE_ADD_CREF
@@ -631,6 +673,5 @@
 #undef _GLIBCXX_TEMPLATE_PARAMS
 #undef _GLIBCXX_COMMA
 #undef _GLIBCXX_NUM_ARGS
-
 #undef _GLIBCXX_LAST_INCLUDE
 

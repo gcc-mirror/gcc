@@ -1,3 +1,33 @@
+2006-10-16  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* include/Makefile.am (tr1_headers): Add new tuple_defs.h.
+	* include/Makefile.in (tr1_headers): Regenerate.
+	* include/tr1/tuple (tuple): Move declaration to tuple_defs.h.
+	(get): Ditto.
+	(operator==): Ditto.
+	(operator<): Ditto.
+	(operator!=): Ditto.
+	(operator>): Ditto.
+	(operator<=): Ditto.
+	(operator>=): Ditto.
+	(__stripped_tuple_type): Ditto.
+	Include tuple.defs.h
+	* include/tr1/tuple_iterate.h (tuple): Use
+	_GLIBCXX_TUPLE_ALL_TEMPLATE_PARAMS_UNNAMED macro instead of 10
+	"typename"s.
+	(tuple_element): Use _GLIBCXX_TUPLE_ALL_TEMPLATE_PARAMS and
+	_GLIBCXX_TYPLE_ALL_TEMPLATE_ARGS instead of 10
+	parameters/arguments.
+	* include/tr1/tuple_defs.h: New header, contains declarations and
+	definitions for the tuple template with all arguments.
+	* include/tr1/repeat.h (_GLIBCXX_TUPLE_ALL_TEMPLATE_PARAMS): New.
+	(_GLIBCXX_TUPLE_ALL_TEMPLATE_PARAMS_UNNAMED): New.
+	(_GLIBCXX_TUPLE_ALL_TEMPLATE_ARGS): New.
+	(_GLIBCXX_TEMPLATE_PARAMS_NULL_CLASS): New.
+	(_GLIBCXX_TEMPLATE_ARGS_STRIPPED): New.
+	* scripts/gen_includers.pl: Update.
+	* scripts/gen_includers2.pl: New.	
+
 2006-10-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/29095 continued

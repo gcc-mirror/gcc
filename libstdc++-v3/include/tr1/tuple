@@ -47,13 +47,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
  // when the tuple is not maximum possible size.
  struct _NullClass { };
 
- template<typename _Tp0 = _NullClass, typename _Tp1 = _NullClass,
-          typename _Tp2 = _NullClass, typename _Tp3 = _NullClass,
-          typename _Tp4 = _NullClass, typename _Tp5 = _NullClass,
-          typename _Tp6 = _NullClass, typename _Tp7 = _NullClass,
-          typename _Tp8 = _NullClass, typename _Tp9 = _NullClass>
-   class tuple;
-
  /// Gives the type of the ith element of a given tuple type.
  template<int __i, typename _Tp>
    struct tuple_element;
@@ -86,37 +79,31 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
  // Returns a const reference to the ith element of a tuple.
  // Any const or non-const ref elements are returned with their original type.
-   template<int __i, typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
-                   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
-                   typename _Tp8, typename _Tp9>
-   typename __add_ref<typename tuple_element<__i, tuple<_Tp0, _Tp1, _Tp2,
-                                                        _Tp3, _Tp4, _Tp5,
-                                                        _Tp6, _Tp7, _Tp8,
-                                                        _Tp9> >::type>::type
-   get(tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8,
-             _Tp9>& __t)
-   {
-     return __get_helper<__i, tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6,
-                                    _Tp7, _Tp8, _Tp9> >::get_value(__t);
-   }
-
- template<int __i, typename _Tp0, typename _Tp1, typename _Tp2, typename _Tp3,
-                   typename _Tp4, typename _Tp5, typename _Tp6, typename _Tp7,
-                   typename _Tp8, typename _Tp9>
-   typename __add_c_ref<typename tuple_element<__i, tuple<_Tp0, _Tp1, _Tp2,
-                                                          _Tp3, _Tp4, _Tp5,
-                                                          _Tp6, _Tp7, _Tp8,
-                                                          _Tp9> >::type>::type
-   get(const tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6, _Tp7, _Tp8,
-                   _Tp9>& __t)
-   {
-     return __get_helper<__i, tuple<_Tp0, _Tp1, _Tp2, _Tp3, _Tp4, _Tp5, _Tp6,
-                                    _Tp7, _Tp8, _Tp9> >::get_value(__t);
-   }
 
  // This class helps construct the various comparison operations on tuples
  template<int __check_equal_size, int __i, int __j, typename _Tp, typename _Up>
    struct __tuple_compare;
+
+ // Helper which adds a reference to a type when given a reference_wrapper
+ template<typename _Tp>
+   struct __strip_reference_wrapper
+   {
+       typedef _Tp __type;
+   };
+
+ template<typename _Tp>
+   struct __strip_reference_wrapper<reference_wrapper<_Tp> >
+   {
+     typedef _Tp& __type;
+   };
+
+ template<typename _Tp>
+   struct __strip_reference_wrapper<const reference_wrapper<_Tp> >
+   {
+       typedef _Tp& __type;
+   };
+
+  #include "tuple_defs.h"
 
  template<int __i, int __j, typename _Tp, typename _Up>
    struct __tuple_compare<0, __i, __j, _Tp, _Up>
@@ -140,108 +127,6 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
      { return true; }
      static bool __less(const _Tp&, const _Up&)
      { return false; }
-   };
-
- template<typename _T1, typename _T2, typename _T3, typename _T4, typename _T5,
-          typename _T6, typename _T7, typename _T8, typename _T9, typename _T10,
-          typename _U1, typename _U2, typename _U3, typename _U4, typename _U5,
-          typename _U6, typename _U7, typename _U8, typename _U9, typename _U10>
- bool
- operator==(const tuple<_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10>& __t,
-            const tuple<_U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9, _U10>& __u)
- {
-   typedef tuple<_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10> _Tp;
-   typedef tuple<_U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8,_U9, _U10> _Up;
-   return __tuple_compare<tuple_size<_Tp>::value - tuple_size<_Tp>::value, 0,
-                          tuple_size<_Tp>::value, _Tp, _Up>::__eq(__t, __u);
- }
-
- template<typename _T1, typename _T2, typename _T3, typename _T4, typename _T5,
-          typename _T6, typename _T7, typename _T8, typename _T9, typename _T10,
-          typename _U1, typename _U2, typename _U3, typename _U4, typename _U5,
-          typename _U6, typename _U7, typename _U8, typename _U9, typename _U10>
- bool
- operator<(const tuple<_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10>& __t,
-           const tuple<_U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9, _U10>& __u)
- {
-   typedef tuple<_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10> _Tp;
-   typedef tuple<_U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8,_U9, _U10> _Up;
-   return __tuple_compare<tuple_size<_Tp>::value - tuple_size<_Tp>::value, 0,
-                          tuple_size<_Tp>::value, _Tp, _Up>::__less(__t, __u);
- }
-
- template<typename _T1, typename _T2, typename _T3, typename _T4, typename _T5,
-          typename _T6, typename _T7, typename _T8, typename _T9, typename _T10,
-          typename _U1, typename _U2, typename _U3, typename _U4, typename _U5,
-          typename _U6, typename _U7, typename _U8, typename _U9, typename _U10>
- bool
- operator!=(const tuple<_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10>& __t,
-            const tuple<_U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9, _U10>& __u)
- { return !(__t == __u); }
-
- template<typename _T1, typename _T2, typename _T3, typename _T4, typename _T5,
-          typename _T6, typename _T7, typename _T8, typename _T9, typename _T10,
-          typename _U1, typename _U2, typename _U3, typename _U4, typename _U5,
-          typename _U6, typename _U7, typename _U8, typename _U9, typename _U10>
- bool
- operator>(const tuple<_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10>& __t,
-           const tuple<_U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9, _U10>& __u)
- { return __u < __t; }
-
- template<typename _T1, typename _T2, typename _T3, typename _T4, typename _T5,
-          typename _T6, typename _T7, typename _T8, typename _T9, typename _T10,
-          typename _U1, typename _U2, typename _U3, typename _U4, typename _U5,
-          typename _U6, typename _U7, typename _U8, typename _U9, typename _U10>
- bool
- operator<=(const tuple<_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10>& __t,
-            const tuple<_U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9, _U10>& __u)
- { return !(__u < __t); }
-
- template<typename _T1, typename _T2, typename _T3, typename _T4, typename _T5,
-          typename _T6, typename _T7, typename _T8, typename _T9, typename _T10,
-          typename _U1, typename _U2, typename _U3, typename _U4, typename _U5,
-          typename _U6, typename _U7, typename _U8, typename _U9, typename _U10>
- bool
- operator>=(const tuple<_T1, _T2, _T3, _T4, _T5, _T6, _T7, _T8, _T9, _T10>& __t,
-            const tuple<_U1, _U2, _U3, _U4, _U5, _U6, _U7, _U8, _U9, _U10>& __u)
- { return !(__t < __u); }
-
- // Helper which adds a reference to a type when given a reference_wrapper
- template<typename _Tp>
-   struct __strip_reference_wrapper
-   {
-       typedef _Tp __type;
-   };
-
- template<typename _Tp>
-   struct __strip_reference_wrapper<reference_wrapper<_Tp> >
-   {
-     typedef _Tp& __type;
-   };
-
- template<typename _Tp>
-   struct __strip_reference_wrapper<const reference_wrapper<_Tp> >
-   {
-       typedef _Tp& __type;
-   };
-
- template<typename _Tp0 = _NullClass, typename _Tp1 = _NullClass,
-          typename _Tp2 = _NullClass, typename _Tp3 = _NullClass,
-          typename _Tp4 = _NullClass, typename _Tp5 = _NullClass,
-          typename _Tp6 = _NullClass, typename _Tp7 = _NullClass,
-          typename _Tp8 = _NullClass, typename _Tp9 = _NullClass>
-   struct __stripped_tuple_type
-   {
-     typedef tuple<typename __strip_reference_wrapper<_Tp0>::__type,
-                   typename __strip_reference_wrapper<_Tp1>::__type,
-                   typename __strip_reference_wrapper<_Tp2>::__type,
-                   typename __strip_reference_wrapper<_Tp3>::__type,
-                   typename __strip_reference_wrapper<_Tp4>::__type,
-                   typename __strip_reference_wrapper<_Tp5>::__type,
-                   typename __strip_reference_wrapper<_Tp6>::__type,
-                   typename __strip_reference_wrapper<_Tp7>::__type,
-                   typename __strip_reference_wrapper<_Tp8>::__type,
-                   typename __strip_reference_wrapper<_Tp9>::__type>      __type;
    };
 
  // A class (and instance) which can be used in 'tie' when an element

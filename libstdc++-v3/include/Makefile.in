@@ -42,6 +42,7 @@ subdir = include
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
+	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/crossconfig.m4 \
@@ -819,6 +820,7 @@ tr1_headers = \
 	${tr1_srcdir}/stdlib.h \
 	${tr1_srcdir}/tgmath.h \
 	${tr1_srcdir}/tuple \
+	${tr1_srcdir}/tuple_defs.h \
 	${tr1_srcdir}/tuple_iterate.h \
 	${tr1_srcdir}/type_traits \
 	${tr1_srcdir}/type_traits_fwd.h \
