@@ -701,7 +701,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
   type = TREE_TYPE (type);
   if (GFC_DESCRIPTOR_TYPE_P (type))
     {
-      /* Create a decriptorless array pointer.  */
+      /* Create a descriptorless array pointer.  */
       as = sym->as;
       packed = 0;
       if (!gfc_option.flag_repack_arrays)

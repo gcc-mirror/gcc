@@ -845,13 +845,13 @@ with code compiled without this option, and may execute slower.
 @item -frepack-arrays
 @cindex Repacking arrays
 In some circumstances GNU Fortran may pass assumed shape array
-sections via a descriptor describing a discontiguous area of memory.
+sections via a descriptor describing a discontinuous area of memory.
 This option adds code to the function prologue to repack the data into
 a contiguous block at runtime.
 
 This should result in faster accesses to the array.  However it can introduce
 significant overhead to the function call, especially  when the passed data
-is discontiguous.
+is discontinuous.
 
 @cindex -fshort-enums
 @item -fshort-enums
