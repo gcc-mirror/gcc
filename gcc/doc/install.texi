@@ -300,9 +300,9 @@ the @option{--with-gmp} or @option{--with-gmp-dir} configure option.
 
 Necessary to build the Fortran frontend.  It can be downloaded from
 @uref{http://www.mpfr.org/}.  The version of MPFR that is bundled with
-GMP 4.1.x contains numerous bugs.  Although gfortran will appear
-to function with the buggy versions of MPFR, there are a few gfortran bugs
-that will not be fixed to use this version.  It is strongly
+GMP 4.1.x contains numerous bugs.  Although GNU Fortran will appear
+to function with the buggy versions of MPFR, there are a few GNU Fortran
+bugs that will not be fixed when using this version.  It is strongly
 recommended to upgrade to at least MPFR version 2.2.
 
 The @option{--with-mpfr} or @option{--with-mpfr-dir} configure option should
@@ -2280,7 +2280,7 @@ number of platforms.
 
 @item
 The @uref{http://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
-links to gfortran binaries for several platforms.
+links to GNU Fortran binaries for several platforms.
 @end itemize
 
 In addition to those specific offerings, you can get a binary

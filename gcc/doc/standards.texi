@@ -188,8 +188,8 @@ HTML format.
 GNAT Reference Manual}, for information on standard
 conformance and compatibility of the Ada compiler.
 
-@xref{Standards,,Standards, gfortran, The GNU Fortran 95 Compiler}, for details
-of standards supported by @command{gfortran}.
+@xref{Standards,,Standards, gfortran, The GNU Fortran Compiler}, for details
+of standards supported by GNU Fortran.
 
 @xref{Compatibility,,Compatibility with the Java Platform, gcj, GNU gcj},
 for details of compatibility between @command{gcj} and the Java Platform.

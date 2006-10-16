@@ -73,7 +73,7 @@ Eric Blake for helping to make GCJ and libgcj conform to the
 specifications.
 
 @item
-Janne Blomqvist for contributions to gfortran.
+Janne Blomqvist for contributions to GNU Fortran.
 
 @item
 Segher Boessenkool for various fixes.
@@ -87,7 +87,7 @@ Neil Booth for work on cpplib, lang hooks, debug hooks and other
 miscellaneous clean-ups.
 
 @item
-Steven Bosscher for integrating the gfortran front end into GCC and for
+Steven Bosscher for integrating the GNU Fortran front end into GCC and for
 contributing to the tree-ssa branch.
 
 @item
@@ -110,7 +110,7 @@ Don Bowman for mips-vxworks contributions.
 Dave Brolley for work on cpplib and Chill.
 
 @item
-Paul Brook for work on the ARM architecture and maintaining gfortran.
+Paul Brook for work on the ARM architecture and maintaining GNU Fortran.
 
 @item
 Robert Brown implemented the support for Encore 32000 systems.
@@ -204,7 +204,7 @@ that print a copy of their source.
 Russell Davidson for fstream and stringstream fixes in libstdc++.
 
 @item
-Bud Davis for work on the G77 and gfortran compilers.
+Bud Davis for work on the G77 and GNU Fortran compilers.
 
 @item
 Mo DeJong for GCJ and libgcj bug fixes.
@@ -214,7 +214,7 @@ DJ Delorie for the DJGPP port, build and libiberty maintenance,
 various bug fixes, and the M32C port.
 
 @item
-Arnaud Desitter for helping to debug gfortran.
+Arnaud Desitter for helping to debug GNU Fortran.
 
 @item
 Gabriel Dos Reis for contributions to G++, contributions and
@@ -365,7 +365,7 @@ the support for the Sony NEWS machine.
 Kazu Hirata for caring and feeding the Renesas H8/300 port and various fixes.
 
 @item
-Katherine Holcomb for work on gfortran.
+Katherine Holcomb for work on GNU Fortran.
 
 @item
 Manfred Hollstein for his ongoing work to keep the m88k alive, lots
@@ -419,7 +419,7 @@ Nicolai Josuttis for additional libstdc++ documentation.
 Klaus Kaempf for his ongoing work to make alpha-vms a viable target.
 
 @item
-Steven G. Kargl for work on gfortran.
+Steven G. Kargl for work on GNU Fortran.
 
 @item
 David Kashtan of SRI adapted GCC to VMS@.
@@ -477,7 +477,7 @@ Charles LaBrec contributed the support for the Integrated Solutions
 
 @item
 Asher Langton and Mike Kumbera for contributing Cray pointer support
-to gfortran, and for other gfortran improvements.
+to GNU Fortran, and for other GNU Fortran improvements.
 
 @item
 Jeff Law for his direction via the steering committee, coordinating the
@@ -490,7 +490,7 @@ Marc Lehmann for his direction via the steering committee and helping
 with analysis and improvements of x86 performance.
 
 @item
-Victor Leikehman for work on gfortran.
+Victor Leikehman for work on GNU Fortran.
 
 @item
 Ted Lemon wrote parts of the RTL reader and printer.
@@ -777,7 +777,7 @@ Peter Schauer wrote the code to allow debugging to work on the Alpha.
 William Schelter did most of the work on the Intel 80386 support.
 
 @item
-Tobias Schl@"uter for work on gfortran.
+Tobias Schl@"uter for work on GNU Fortran.
 
 @item
 Bernd Schmidt for various code generation improvements and major
@@ -796,7 +796,7 @@ Jason Schroeder for jcf-dump patches.
 Andreas Schwab for his work on the m68k port.
 
 @item
-Lars Segerlund for work on gfortran.
+Lars Segerlund for work on GNU Fortran.
 
 @item
 Joel Sherrill for his direction via the steering committee, RTEMS
@@ -915,7 +915,7 @@ types.
 Petter Urkedal for libstdc++ CXXFLAGS, math, and algorithms fixes.
 
 @item
-Andy Vaught for the design and initial implementation of the gfortran
+Andy Vaught for the design and initial implementation of the GNU Fortran
 front end.
 
 @item
@@ -937,7 +937,7 @@ in time for GCC 3.0.
 Krister Walfridsson for random bug fixes.
 
 @item
-Feng Wang for contributions to gfortran.
+Feng Wang for contributions to GNU Fortran.
 
 @item
 Stephen M. Webb for time and effort on making libstdc++ shadow files
@@ -986,7 +986,7 @@ Carlo Wood for various fixes.
 Tom Wood for work on the m88k port.
 
 @item
-Canqun Yang for work on gfortran.
+Canqun Yang for work on GNU Fortran.
 
 @item
 Masanobu Yuhara of Fujitsu Laboratories implemented the machine
@@ -999,7 +999,7 @@ Kevin Zachmann helped port GCC to the Tahoe.
 Ayal Zaks for Swing Modulo Scheduling (SMS).
 
 @item
-Xiaoqiang Zhang for work on gfortran.
+Xiaoqiang Zhang for work on GNU Fortran.
 
 @item
 Gilles Zunino for help porting Java to Irix.
