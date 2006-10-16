@@ -114,7 +114,7 @@
         (match_operand:HI 1 "general_operand" "i,d,m,d,*x,d,*a,d"))]
   ""
 {
-  switch(which_alternative)
+  switch (which_alternative)
     {
     case 0: return mdp_limm (operands);
     case 1: return mdp_move (operands);
@@ -1076,10 +1076,23 @@
   [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "t,Z"))
          (match_operand 1 "" ""))
    (clobber (reg:SI RT_REGNUM))]
-  "SIBLING_CALL_P (insn) && !flag_pic"
-  "@
-   br%S0   %0
-   j       %0"
+  "SIBLING_CALL_P (insn)"
+{
+  if (!flag_pic) 
+    switch (which_alternative) 
+      {
+      case 0: return \"br%S0   %0\";
+      case 1: return \"j       %0\";
+      default: gcc_unreachable ();
+      }
+  else
+    switch (which_alternative) 
+      {
+      case 0: return \"mv      r29, %0\;.cpadd  r29\;br      r29\";
+      case 1: return \"la      r29, %0\;br      r29\";
+      default: gcc_unreachable ();
+      }
+}
   [(set_attr "type" "call")])
 
 (define_expand "sibcall_value"
@@ -1097,10 +1110,23 @@
         (call (mem:SI (match_operand:SI 1 "call_insn_operand" "t,Z"))
               (match_operand 2 "" "")))
    (clobber (reg:SI RT_REGNUM))]
-  "SIBLING_CALL_P(insn) && !flag_pic"
-  "@
-   br%S1   %1
-   j       %1"
+  "SIBLING_CALL_P (insn)"
+{
+  if (!flag_pic) 
+    switch (which_alternative) 
+      {
+      case 0: return \"br%S1   %1\";
+      case 1: return \"j       %1\";
+      default: gcc_unreachable ();
+      }
+  else
+    switch (which_alternative) 
+      {
+      case 0: return \"mv      r29, %1\;.cpadd  r29\;br      r29\";
+      case 1: return \"la      r29, %1\;br      r29\";
+      default: gcc_unreachable ();
+      }
+}
   [(set_attr "type" "call")])
 
 (define_expand "call"
@@ -1126,7 +1152,12 @@
       default: gcc_unreachable ();
       }
   else
-    return \"la      r29, %0\;brl     r29\";
+     switch (which_alternative)
+      {
+      case 0: return \"mv      r29, %0\;.cpadd  r29\;brl     r29\";
+      case 1: return \"la      r29, %0\;brl     r29\";
+      default: gcc_unreachable ();
+      }
 }
   [(set_attr "type" "call")])
 
@@ -1155,7 +1186,12 @@
       default: gcc_unreachable ();
       }
   else
-    return \"la      r29, %1\;brl     r29\";
+    switch (which_alternative)
+      {
+      case 0: return \"mv      r29, %1\;.cpadd  r29\;brl     r29\";
+      case 1: return \"la      r29, %1\;brl     r29\";
+      default: gcc_unreachable ();
+      }
 }
   [(set_attr "type" "call")])
 
@@ -1198,7 +1234,7 @@
   ""
   "*
    if (flag_pic)
-     return \"mv!     r29, %0\;.cpadd  r29\;br%S0   r29\";
+     return \"mv      r29, %0\;.cpadd  r29\;br      r29\";
    else
      return \"br%S0   %0\";
   "
