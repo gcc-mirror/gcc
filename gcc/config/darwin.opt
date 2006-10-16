@@ -30,3 +30,11 @@ The earliest MacOS X version on which this program will run
 mone-byte-bool
 Target RejectNegative Report Var(darwin_one_byte_bool)
 Set sizeof(bool) to 1
+
+fapple-kext
+Target Report Var(flag_apple_kext)
+Generate code for darwin loadable kernel extentions
+
+mkernel
+Target Report Var(flag_mkernel)
+Generate code for the kernel or loadable kernel extentions

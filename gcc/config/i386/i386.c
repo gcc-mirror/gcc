@@ -1537,6 +1537,10 @@ override_options (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
+#ifdef SUBSUBTARGET_OVERRIDE_OPTIONS
+  SUBSUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
   /* -fPIC is the default for x86_64.  */
   if (TARGET_MACHO && TARGET_64BIT)
     flag_pic = 2;
