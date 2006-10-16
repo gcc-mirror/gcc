@@ -1,3 +1,9 @@
+2006-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/29091
+	* varasm.c (output_constant): If TREE_VECTOR_CST_ELTS chain is shorter than
+	the number of vector elements fill the rest with zeros.
+
 2006-10-16  Richard Guenther  <rguenther@suse.de>
 
 	PR target/25519
