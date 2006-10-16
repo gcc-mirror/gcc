@@ -1,3 +1,8 @@
+2006-10-16  Ben Elliston  <bje@au.ibm.com>
+
+	* config.guess: Import latest version.
+	* config.sub: Likewise.
+
 2006-10-16  Tan Shengguo  <shengguo@sunnorth.com.cn>
 
 	* MAINTAINERS: Add Tan Shengguo as score port maintainer.
