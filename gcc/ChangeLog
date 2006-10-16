@@ -6,6 +6,7 @@
 
 2006-10-16  Mike Stump  <mrs@apple.com>
 
+	* doc/invoke.texi (Darwin Options): Document -mkernel.
 	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Add
 	-mkernel support.
 	(C_COMMON_OVERRIDE_OPTIONS): Add -mkernel support.  Add
