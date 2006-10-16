@@ -1745,7 +1745,7 @@ gfc_match_close (void)
   /* Checks on the STATUS specifier.  */
   if (close->status && close->status->expr_type == EXPR_CONSTANT)
     {
-      static const char * status[] = { "KEEP", "DELETE" };
+      static const char * status[] = { "KEEP", "DELETE", NULL };
 
       if (!compare_to_allowed_values ("STATUS", status, NULL, NULL,
 				      close->status->value.character.string,
