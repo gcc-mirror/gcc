@@ -1,5 +1,15 @@
 2006-10-16  Richard Guenther  <rguenther@suse.de>
 
+	PR target/28960
+	Backport from mainline:
+	2006-08-23  Stuart Hastings  <stuart@apple.com>
+
+	PR target/28825
+	* gcc/config/i386/i386.c (ix86_expand_vector_init_duplicate,
+	ix86_expand_vector_init_one_nonzero): Remove TARGET_SSE test.
+
+2006-10-16  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline:
 	2006-10-10  Richard Guenther  <rguenther@suse.de>
 

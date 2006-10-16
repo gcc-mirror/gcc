@@ -1,5 +1,14 @@
 2006-10-16  Richard Guenther  <rguenther@suse.de>
 
+	PR target/28960
+	Backport from mainline:
+	2006-08-23  Stuart Hastings  <stuart@apple.com>
+
+	PR target/28825
+	* gcc.target/i386/20060821-1.c: New.
+
+2006-10-16  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline:
 	2006-10-11  Richard Guenther  <rguenther@suse.de>
 
