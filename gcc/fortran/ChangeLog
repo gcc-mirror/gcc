@@ -1,3 +1,14 @@
+2006-10-17  Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/20541
+	* trans-array.c (gfc_trans_array_bounds): Test for and set
+	negative stride of a non-constant bound array to zero.
+
+	PR fortran/29392
+	* data.c (create_character_intializer): Copy and simplify
+	the expressions for the start and end of a sub-string
+	reference.
+
 2006-10-16  Kaz Kojima  <kkojima@rr.iij4u.or.jp>
 
 	* io.c (gfc_match_close): Ensure that status is terminated by

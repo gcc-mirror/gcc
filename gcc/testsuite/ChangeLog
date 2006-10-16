@@ -1,3 +1,11 @@
+2006-10-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29392
+	* gfortran.dg/data_char_3.f90: New test.
+
+	PR fortran/20541
+	* gfortran.dg/negative_automatic_size.f90: New test.
+
 2006-10-16  David Daney  <ddaney@avtrex.com>
 
 	* g++.dg/other/unused1.C : Match on '.ascii\t"name\000"' also.
