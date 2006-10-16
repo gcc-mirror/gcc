@@ -1,3 +1,11 @@
+2006-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28211
+	* parser.c (cp_parser_template_argument): Don't consider "&var" a
+	possible constant-expression.
+	* pt.c (convert_nontype_argument): Refine handling of arguments of
+	pointer type.
+
 2006-10-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28506

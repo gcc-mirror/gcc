@@ -1,3 +1,9 @@
+2006-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/28211
+	* g++.dg/tc1/dr49.C: Tweak error messages.
+	* g++.dg/parse/template21.C: New test.
+
 2006-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/20491

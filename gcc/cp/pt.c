@@ -3655,10 +3655,46 @@ convert_nontype_argument (tree type, tree expr)
 
 	Here, we do not care about functions, as they are invalid anyway
 	for a parameter of type pointer-to-object.  */
-      bool constant_address_p =
-	(TREE_CODE (expr) == ADDR_EXPR
-	 || TREE_CODE (expr_type) == ARRAY_TYPE
-	 || (DECL_P (expr) && DECL_TEMPLATE_PARM_P (expr)));
+
+      if (DECL_P (expr) && DECL_TEMPLATE_PARM_P (expr))
+	/* Non-type template parameters are OK.  */
+	;
+      else if (TREE_CODE (expr) != ADDR_EXPR
+	       && TREE_CODE (expr_type) != ARRAY_TYPE)
+	{
+	  if (TREE_CODE (expr) == VAR_DECL)
+	    {
+	      error ("%qD is not a valid template argument "
+		     "because %qD is a variable, not the address of "
+		     "a variable",
+		     expr, expr);
+	      return NULL_TREE;
+	    }
+	  /* Other values, like integer constants, might be valid
+	     non-type arguments of some other type.  */
+	  return error_mark_node;
+	}
+      else
+	{
+	  tree decl;
+
+	  decl = ((TREE_CODE (expr) == ADDR_EXPR)
+		  ? TREE_OPERAND (expr, 0) : expr);
+	  if (TREE_CODE (decl) != VAR_DECL)
+	    {
+	      error ("%qE is not a valid template argument of type %qT "
+		     "because %qE is not a variable",
+		     expr, type, decl);
+	      return NULL_TREE;
+	    }
+	  else if (!DECL_EXTERNAL_LINKAGE_P (decl))
+	    {
+	      error ("%qE is not a valid template argument of type %qT "
+		     "because %qD does not have external linkage",
+		     expr, type, decl);
+	      return NULL_TREE;
+	    }
+	}
 
       expr = decay_conversion (expr);
       if (expr == error_mark_node)
@@ -3667,13 +3703,6 @@ convert_nontype_argument (tree type, tree expr)
       expr = perform_qualification_conversions (type, expr);
       if (expr == error_mark_node)
 	return error_mark_node;
-
-      if (!constant_address_p)
-	{
-	  error ("%qE is not a valid template argument for type %qT "
-		 "because it is not a constant pointer", expr, type);
-	  return NULL_TREE;
-	}
     }
   /* [temp.arg.nontype]/5, bullet 3
 
