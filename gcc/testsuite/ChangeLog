@@ -1,6 +1,14 @@
 2006-10-16  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	2006-10-11  Richard Guenther  <rguenther@suse.de>
+
+	PR inline-asm/29119
+	* gcc.dg/torture/pr29119.c: New testcase.
+
+2006-10-16  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	2006-08-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c/27184
