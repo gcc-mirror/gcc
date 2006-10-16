@@ -1,3 +1,8 @@
+2006-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/29403
+	* gfortran.dg/print_1.f90: New test.
+
 2006-10-15  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/29241
