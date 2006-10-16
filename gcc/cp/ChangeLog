@@ -1,5 +1,9 @@
 2006-10-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/29408
+	* parser.c (cp_parser_using_declaration): Stop parsing when
+	something goes wrong with an access declaration.
+
 	PR c++/29435
 	* typeck.c (cxx_sizeof_or_alignof_type): Complete non-dependent
 	types when their sizes are required.  Refine test for VLAs.
