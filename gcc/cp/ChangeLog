@@ -1,5 +1,9 @@
 2006-10-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/29435
+	* typeck.c (cxx_sizeof_or_alignof_type): Complete non-dependent
+	types when their sizes are required.  Refine test for VLAs.
+
 	PR c++/28211
 	* parser.c (cp_parser_template_argument): Don't consider "&var" a
 	possible constant-expression.
