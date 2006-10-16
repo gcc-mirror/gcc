@@ -1,3 +1,10 @@
+2006-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/29095 continued
+	* testsuite/lib/libstdc++.exp (v3_target_compile_as_c): Additions
+	so that testing not in the build directory works for the "C"
+	target language.
+
 2006-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/bits/basic_string.tcc (_Rep::_S_create): Call
