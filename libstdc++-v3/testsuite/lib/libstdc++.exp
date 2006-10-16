@@ -88,6 +88,7 @@ proc libstdc++_init { testfile } {
     global gluefile wrap_flags
     global ld_library_path
     global target_triplet
+    global flags_file
 
     # We set LC_ALL and LANG to C so that we get the same error
     # messages as expected.
@@ -191,9 +192,9 @@ proc libstdc++_init { testfile } {
             set includes [exec sh $flags_file --build-includes]
         } else {
             set cxx [transform "g++"]
-            set includes "-I${srcdir}/util"
             set cxxldflags ""
             set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0" 
+            set includes "-I${srcdir}/util"
         }
     }
 
@@ -357,6 +358,7 @@ proc v3_target_compile_as_c { source dest type options } {
     global gluefile 
     global wrap_flags
     global includes
+    global flags_file
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -364,11 +366,24 @@ proc v3_target_compile_as_c { source dest type options } {
     }
 
     set tname [target_info name]
-    set cc_final [board_info $tname compiler]
-    set cxxlibglossflags  [libgloss_link_flags]
+    set cc [board_info $tname compiler]
+    set cc_final $cc
+    set cxxlibglossflags [libgloss_link_flags]
     set cc_final [concat $cc_final $cxxlibglossflags]
     set cc_final [concat $cc_final $includes]
     regsub -all ".nostdinc.." $cc_final "" cc_final
+
+    # This is needed for "C" tests, as this type of test may need the
+    # C++ includes. And if we're not testing in the build directory,
+    # the includes variable is not likely to include the necessary info.
+    if { ![file exists $flags_file] } {
+	set version [exec ${cc} -dumpversion]
+	set machine [exec ${cc} -dumpmachine]
+	set comp_base_dir [file dirname [file dirname [file dirname [file dirname [file dirname [exec ${cc} --print-prog-name=cc1]]]]]]
+	set includesbase "${comp_base_dir}/include/c++/${version}"
+	set includestarget "${includesbase}/${machine}"
+	set cc_final [concat $cc_final "-I$includesbase -I$includestarget"]
+    }
 
     lappend options "compiler=$cc_final"
     lappend options "timeout=600"
