@@ -1,3 +1,8 @@
+2006-10-16  Kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	* io.c (gfc_match_close): Ensure that status is terminated by
+	a NULL element.
+
 2006-10-16  Tobias Burnus <burnus@net-b.de>
 
 	* trans-stmt.c: Fix a typo
