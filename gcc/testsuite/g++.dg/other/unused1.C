@@ -44,5 +44,5 @@ int bar5 (void)
 /* { dg-final { scan-assembler "foo" } } */
 /* { dg-final { scan-assembler "boo" } } */
 /* { dg-final { scan-assembler "cue" } } */
-/* { dg-final { scan-assembler "(string|asci)z?\t\"class2\"" } } */
-/* { dg-final { scan-assembler "(string|asci)z?\t\"printer\"" } } */
+/* { dg-final { scan-assembler "(string|ascii?)z?\t\"class2(\"|\\\\000)" } } */
+/* { dg-final { scan-assembler "(string|ascii?)z?\t\"printer(\"|\\\\000)" } } */
