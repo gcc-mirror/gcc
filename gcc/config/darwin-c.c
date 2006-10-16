@@ -619,4 +619,9 @@ darwin_cpp_builtins (cpp_reader *pfile)
   if (darwin_macosx_version_min)
     builtin_define_with_value ("__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__",
 			       version_as_macro(), false);
+
+  if (flag_pic || MACHO_DYNAMIC_NO_PIC_P)
+    builtin_define ("__DYNAMIC__");
+  else
+    builtin_define ("__STATIC__");
 }

@@ -1303,6 +1303,42 @@ darwin_unique_section (tree decl ATTRIBUTE_UNUSED, int reloc ATTRIBUTE_UNUSED)
   /* Darwin does not use unique sections.  */
 }
 
+/* Handle __attribute__ ((apple_kext_compatibility)).
+   This only applies to darwin kexts for 2.95 compatibility -- it shrinks the
+   vtable for classes with this attribute (and their descendants) by not
+   outputting the new 3.0 nondeleting destructor.  This means that such
+   objects CANNOT be allocated on the stack or as globals UNLESS they have
+   a completely empty `operator delete'.
+   Luckily, this fits in with the Darwin kext model.
+
+   This attribute also disables gcc3's potential overlaying of derived
+   class data members on the padding at the end of the base class.  */
+
+tree
+darwin_handle_kext_attribute (tree *node, tree name,
+			      tree args ATTRIBUTE_UNUSED,
+			      int flags ATTRIBUTE_UNUSED,
+			      bool *no_add_attrs)
+{
+  /* APPLE KEXT stuff -- only applies with pure static C++ code.  */
+  if (! TARGET_KEXTABI)
+    {
+      warning (0, "%<%s%> 2.95 vtable-compatability attribute applies "
+	       "only when compiling a kext", IDENTIFIER_POINTER (name));
+
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (*node) != RECORD_TYPE)
+    {
+      warning (0, "%<%s%> 2.95 vtable-compatability attribute applies "
+	       "only to C++ classes", IDENTIFIER_POINTER (name));
+
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "weak_import" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -1529,13 +1565,17 @@ darwin_file_end (void)
   fprintf (asm_out_file, "\t.subsections_via_symbols\n");
 }
 
+/* TODO: Add a language hook for identifying if a decl is a vtable.  */
+#define DARWIN_VTABLE_P(DECL) 0
+
 /* Cross-module name binding.  Darwin does not support overriding
-   functions at dynamic-link time.  */
+   functions at dynamic-link time, except for vtables in kexts.  */
 
 bool
 darwin_binds_local_p (tree decl)
 {
-  return default_binds_local_p_1 (decl, 0);
+  return default_binds_local_p_1 (decl,
+				  TARGET_KEXTABI && DARWIN_VTABLE_P (decl));
 }
 
 #if 0
@@ -1563,6 +1603,36 @@ darwin_set_default_type_attributes (tree type)
     TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("ms_struct"),
                                         NULL_TREE,
                                         TYPE_ATTRIBUTES (type));
+}
+
+/* True, iff we're generating code for loadable kernel extentions.  */
+
+bool
+darwin_kextabi_p (void) {
+  return flag_apple_kext;
+}
+
+void
+darwin_override_options (void)
+{
+  if (flag_apple_kext && strcmp (lang_hooks.name, "GNU C++") != 0)
+    {
+      warning (0, "command line option %<-fapple-kext%> is only valid for C++");
+      flag_apple_kext = 0;
+    }
+  if (flag_mkernel || flag_apple_kext)
+    {
+      /* -mkernel implies -fapple-kext for C++ */
+      if (strcmp (lang_hooks.name, "GNU C++") == 0)
+	flag_apple_kext = 1;
+
+      flag_no_common = 1;
+
+      /* No EH in kexts.  */
+      flag_exceptions = 0;
+      /* No -fnon-call-exceptions data in kexts.  */
+      flag_non_call_exceptions = 0;
+    }
 }
 
 #include "gt-darwin.h"

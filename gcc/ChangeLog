@@ -1,3 +1,41 @@
+2006-10-16  Mike Stump  <mrs@apple.com>
+
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Add
+	-mkernel support.
+	(C_COMMON_OVERRIDE_OPTIONS): Add -mkernel support.  Add
+	SUBTARGET_C_COMMON_OVERRIDE_OPTIONS callout.
+	(CC1_SPEC): Don't turn on -fPIC when -mkernel is given.
+	(OS_MISSING_ALTIVEC): Add.
+	* config/i386/i386.c (override_options): Add
+	SUBSUBTARGET_OVERRIDE_OPTIONS callout.
+	* config/i386/darwin.h (CC1_SPEC): Don't turn on -fPIC when
+	-mkernel, -static or -mdynamic-no-pic is given.
+	(C_COMMON_OVERRIDE_OPTIONS): Add.
+	* config/darwin.opt (fapple-kext): Add.
+	(mkernel): Add.
+	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Add
+	-fapple-kext, -findirect-virtual-calls, -fterminated-vtables and
+	-mkernel support.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Add.
+	(SUBTARGET_C_COMMON_OVERRIDE_OPTIONS): Add.
+	(CPP_SPEC): Move defines for __DYNAMIC__ and __STATIC__ from here...
+	(SUBTARGET_ATTRIBUTE_TABLE): Add apple_kext_compatibility.
+	(TARGET_CXX_CDTOR_RETURNS_THIS): Add.
+	(flag_mkernel): Add.
+	(flag_apple_kext): Add.
+	(TARGET_KEXTABI): Add.
+	* config/darwin.c (darwin_handle_kext_attribute): Add.
+	(DARWIN_VTABLE_P): Add.
+	(darwin_binds_local_p): Add partial support for rebinding vtables
+	in kexts.
+	(darwin_kextabi_p): Add.
+	(darwin_override_options): Add.
+	* config/darwin-protos.h (darwin_handle_kext_attribute): Add.
+	(darwin_kextabi_p): Add.
+	(darwin_override_options): Add.
+	* config/darwin-c.c (darwin_cpp_builtins): ... move defines for
+	__DYNAMIC__ and __STATIC__ here.
+
 2006-10-16  Brooks Moses  <bmoses@stanford.edu>
 
 	* doc/sourcebuild.texi, doc/makefile.texi, doc/install.texi:

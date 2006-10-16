@@ -73,6 +73,7 @@ extern void darwin_file_end (void);
 
 extern void darwin_mark_decl_preserved (const char *);
 
+extern tree darwin_handle_kext_attribute (tree *, tree, tree, int, bool *);
 extern tree darwin_handle_weak_import_attribute (tree *node, tree name,
 						 tree args, int flags,
 						 bool * no_add_attrs);
@@ -86,3 +87,5 @@ extern void darwin_asm_output_dwarf_offset (FILE *, int, const char *,
 extern bool darwin_binds_local_p (tree);
 extern void darwin_cpp_builtins (struct cpp_reader *);
 extern void darwin_asm_output_anchor (rtx symbol);
+extern bool darwin_kextabi_p (void);
+extern void darwin_override_options (void);

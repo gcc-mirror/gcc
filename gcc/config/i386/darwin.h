@@ -70,7 +70,7 @@ Boston, MA 02110-1301, USA.  */
    the kernel or some such.  */
 
 #undef CC1_SPEC
-#define CC1_SPEC "%{!static:-fPIC}\
+#define CC1_SPEC "%{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }}"
 
 #undef ASM_SPEC
@@ -181,6 +181,11 @@ extern void darwin_x86_file_end (void);
 	}								\
       else fprintf (FILE, "\tcall mcount\n");				\
     } while (0)
+
+#define C_COMMON_OVERRIDE_OPTIONS					\
+  do {									\
+    SUBTARGET_C_COMMON_OVERRIDE_OPTIONS;				\
+  } while (0)
 
 /* Darwin on x86_64 uses dwarf-2 by default.  */
 #undef PREFERRED_DEBUGGING_TYPE
