@@ -1,3 +1,8 @@
+2006-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/basic_string.tcc (_Rep::_S_create): Call
+	_M_set_sharable() for backwards compatibility.
+
 2006-10-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/istream.tcc (getline(basic_istream<>&,
