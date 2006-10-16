@@ -9285,7 +9285,7 @@ cp_parser_template_argument (cp_parser* parser)
 	      /* A variable without external linkage might still be a
 		 valid constant-expression, so no error is issued here
 		 if the external-linkage check fails.  */
-	      if (!DECL_EXTERNAL_LINKAGE_P (argument))
+	      if (!address_p && !DECL_EXTERNAL_LINKAGE_P (argument))
 		cp_parser_simulate_error (parser);
 	    }
 	  else if (is_overloaded_fn (argument))
