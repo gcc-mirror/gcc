@@ -1,5 +1,13 @@
 2006-10-17  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (money_get<>::__do_get(iter_type,
+	iter_type, bool, ios_base&, ios_base::iostate&, double&),
+	money_get<>::do_get(iter_type, iter_type, bool, ios_base&,
+	ios_base::iostate&, long double&), money_get<>::do_get(iter_type,
+	iter_type, bool, ios_base&, ios_base::iostate&, string_type&)): Tidy.
+
+2006-10-17  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/26020
 	* include/bits/stl_iterator_base_funcs.h (advance): Convert
 	distance parameter to iterator_traits<>::difference_type.
