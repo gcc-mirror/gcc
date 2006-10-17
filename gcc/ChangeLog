@@ -1,3 +1,7 @@
+2006-10-17  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_rtx_costs_1): Handle multiply-accumulate.
+
 2006-10-16  Brooks Moses  <bmoses@stanford.edu>
 
 	* doc/contrib.texi, doc/install.texi, doc/standards.texi:
