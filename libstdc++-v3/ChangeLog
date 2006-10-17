@@ -1,3 +1,17 @@
+2006-10-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/28514 
+	* include/bits/cpp_type_traits.h (__detail): Uglify namespace.
+	* include/ext/rope: Remove global-scope anonymous namespace, use
+	nested __detail. Fixup resulting formatting issues.
+	* include/ext/ropeimpl.h: Same.
+	* include/tr1/hashtable_policy.h: Remove anonymous namespace
+	nesting for __detail.
+	* include/tr1/random: Revert anonymous namespace to nested
+	__detail namespace.
+	* include/tr1/random.tcc: Same.
+	* src/ext-inst.cc: Fixups for above.
+
 2006-10-16  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* include/Makefile.am (tr1_headers): Add new tuple_defs.h.
