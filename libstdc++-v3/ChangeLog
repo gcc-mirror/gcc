@@ -1,5 +1,9 @@
 2006-10-17  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/tr1/random.tcc: Fixup long line.
+
+2006-10-17  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/28514 
 	* include/bits/cpp_type_traits.h (__detail): Uglify namespace.
 	* include/ext/rope: Remove global-scope anonymous namespace, use

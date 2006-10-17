@@ -332,7 +332,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    _UIntType __factor = 1;
 	    for (int __j = 0; __j < __n; ++__j)
 	      {
-		__tmp += __detail::__mod<__detail::_UInt32Type, 1, 0, 0>(__gen()) * __factor;
+		__tmp += __detail::__mod<__detail::_UInt32Type, 1, 0, 0>
+		         (__gen()) * __factor;
 		__factor *= __detail::_Shift<_UIntType, 32>::__value;
 	      }
 	    _M_x[__i] = __detail::__mod<_UIntType, 1, 0, modulus>(__tmp);
