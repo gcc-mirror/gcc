@@ -505,6 +505,8 @@ cp_lexer_next_token_is_keyword (cp_lexer* lexer, enum rid keyword)
   return cp_lexer_peek_token (lexer)->keyword == keyword;
 }
 
+/* Return true if the next token is a keyword for a decl-specifier.  */
+
 static bool
 cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
 {

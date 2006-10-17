@@ -1,6 +1,10 @@
 2006-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28261
+	* parser.c (cp_lexer_next_token_is_decl_specifier_keyword): Add
+	comment.
+
+	PR c++/28261
 	* parser.c (cp_lexer_next_token_is_decl_specifier_keyword): New
 	function.
 	(cp_parser_constructor_declarator_p): Use it.
