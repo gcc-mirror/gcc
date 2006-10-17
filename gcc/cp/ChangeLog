@@ -1,3 +1,12 @@
+2006-10-17  Lee Millward  <lee.millward@codesourcery.com> 
+
+        PR c++/27952
+        * cp-tree.h (xref_basetypes): Return bool instead of void.
+        * decl.c (xref_basetypes): Adjust definition. Return false
+        if the class bases are invalid.
+        * parser.c (cp_parser_class_head): Check the return value
+        from xref_basetypes.
+	
 2006-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28261

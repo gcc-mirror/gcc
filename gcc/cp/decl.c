@@ -9776,9 +9776,12 @@ xref_tag_from_type (tree old, tree id, tag_scope scope)
 /* Create the binfo hierarchy for REF with (possibly NULL) base list
    BASE_LIST.  For each element on BASE_LIST the TREE_PURPOSE is an
    access_* node, and the TREE_VALUE is the type of the base-class.
-   Non-NULL TREE_TYPE indicates virtual inheritance.  */
+   Non-NULL TREE_TYPE indicates virtual inheritance.  
+ 
+   Returns true if the binfo heirarchy was successfully created,
+   false if an error was detected. */
 
-void
+bool
 xref_basetypes (tree ref, tree base_list)
 {
   tree *basep;
@@ -9790,7 +9793,7 @@ xref_basetypes (tree ref, tree base_list)
   tree igo_prev; /* Track Inheritance Graph Order.  */
 
   if (ref == error_mark_node)
-    return;
+    return false;
 
   /* The base of a derived class is private by default, all others are
      public.  */
@@ -9842,13 +9845,19 @@ xref_basetypes (tree ref, tree base_list)
       CLASSTYPE_NON_AGGREGATE (ref) = 1;
 
       if (TREE_CODE (ref) == UNION_TYPE)
-	error ("derived union %qT invalid", ref);
+        {
+	  error ("derived union %qT invalid", ref);
+          return false;
+        }
     }
 
   if (max_bases > 1)
     {
       if (TYPE_FOR_JAVA (ref))
-	error ("Java class %qT cannot have multiple bases", ref);
+        {
+	  error ("Java class %qT cannot have multiple bases", ref);
+          return false;
+        }
     }
 
   if (max_vbases)
@@ -9856,7 +9865,10 @@ xref_basetypes (tree ref, tree base_list)
       CLASSTYPE_VBASECLASSES (ref) = VEC_alloc (tree, gc, max_vbases);
 
       if (TYPE_FOR_JAVA (ref))
-	error ("Java class %qT cannot have virtual bases", ref);
+        {
+	  error ("Java class %qT cannot have virtual bases", ref);
+          return false;
+        }
     }
 
   for (igo_prev = binfo; base_list; base_list = TREE_CHAIN (base_list))
@@ -9877,7 +9889,7 @@ xref_basetypes (tree ref, tree base_list)
 	{
 	  error ("base type %qT fails to be a struct or class type",
 		 basetype);
-	  continue;
+	  return false;
 	}
 
       if (TYPE_FOR_JAVA (basetype) && (current_lang_depth () == 0))
@@ -9911,7 +9923,7 @@ xref_basetypes (tree ref, tree base_list)
 	    error ("recursive type %qT undefined", basetype);
 	  else
 	    error ("duplicate base type %qT invalid", basetype);
-	  continue;
+	  return false;
 	}
       TYPE_MARKED_P (basetype) = 1;
 
@@ -9954,6 +9966,8 @@ xref_basetypes (tree ref, tree base_list)
 	else
 	  break;
     }
+
+  return true;
 }
 
 
