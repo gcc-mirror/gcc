@@ -1,6 +1,7 @@
 2006-10-17  Andrew Pinsiki  <pinskia@gmail.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
+	PR target/29413
 	* config/mips/linux.h (SUBTARGET_CC1_SPEC): Override.
 	* config/mips/mips.h (CC1_SPEC): Override any earlier definition.
 
