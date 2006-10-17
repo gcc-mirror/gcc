@@ -1,3 +1,10 @@
+2006-10-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/sysv4.h (DBX_REGISTER_NUMBER): Move to rs6000.h.
+	(DWARF2_FRAME_REG_OUT): Likewise.
+	* config/rs6000/rs6000.h (DBX_REGISTER_NUMBER): Move from sysv4.h.
+	(DWARF2_FRAME_REG_OUT): Likewise.
+
 2006-10-17  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_rtx_costs_1): Handle multiply-accumulate.
