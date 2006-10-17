@@ -1,5 +1,13 @@
 2006-10-17  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/29039
+	* typeck2.c (build_functional_cast): Don't zero-initialize
+	non-PODs; instead, call their constructors.
+	* method.c (synthesize_method): Always build mem-initializers, if
+	we're synthesizing the default constructor.
+
+2006-10-17  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/27270
 	* decl.c (reshape_init_class): Move check for designated
 	to ...
