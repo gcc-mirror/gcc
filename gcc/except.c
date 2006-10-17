@@ -2702,7 +2702,7 @@ set_nothrow_function_flags (void)
   rtx insn;
 
   if (!targetm.binds_local_p (current_function_decl))
-    return 0;
+    return;
 
   TREE_NOTHROW (current_function_decl) = 1;
 

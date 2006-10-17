@@ -1,3 +1,7 @@
+2006-10-18  Richard Guenther  <rguenther@suse.de>
+
+	* except.c (set_nothrow_function_flags): Fix return value.
+
 2006-10-17  Paul Brook  <paul@codesourcery.com>
 
 	Backport from mainline:
