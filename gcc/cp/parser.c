@@ -13499,7 +13499,8 @@ cp_parser_class_head (cp_parser* parser,
     bases = cp_parser_base_clause (parser);
 
   /* Process the base classes.  */
-  xref_basetypes (type, bases);
+  if (!xref_basetypes (type, bases))
+    type = NULL_TREE;
 
  done:
   /* Leave the scope given by the nested-name-specifier.  We will
