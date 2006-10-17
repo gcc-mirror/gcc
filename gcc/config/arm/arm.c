@@ -4416,6 +4416,14 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
       /* Fall through */
 
     case PLUS:
+      if (GET_CODE (XEXP (x, 0)) == MULT)
+	{
+	  extra_cost = rtx_cost (XEXP (x, 0), code);
+	  if (!REG_OR_SUBREG_REG (XEXP (x, 1)))
+	    extra_cost += 4 * ARM_NUM_REGS (mode);
+	  return extra_cost;
+	}
+
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	return (2 + (REG_OR_SUBREG_REG (XEXP (x, 0)) ? 0 : 8)
 		+ ((REG_OR_SUBREG_REG (XEXP (x, 1))
