@@ -1,5 +1,10 @@
 2006-10-17  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/28261
+	* g++.dg/parse/enum3.C: New test.
+
+2006-10-17  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/29039
 	* g++.dg/init/ctor8.C: New test.
 	
