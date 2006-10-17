@@ -1,3 +1,21 @@
+2006-10-17  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* config/s390/contraints.md: New file.
+        * config/s390/s390-protos.h (s390_mem_constraint, 
+	s390_O_constraint_str, s390_N_constraint_str, 
+	s390_float_const_zero_p): Function prototypes added.
+	* config/s390/s390.c (s390_extra_constraint_str, 
+	s390_const_double_ok_for_constraint_p, 
+	s390_const_ok_for_constraint_p): Functions removed.
+        (s390_mem_constraint, s390_O_constraint_str, s390_N_constraint_str,
+	s390_float_const_zero_p): New functions.
+	* config/s390/s390.h (REG_CLASS_FROM_LETTER, CONST_OK_FOR_CONSTRAINT_P,
+	CONST_DOUBLE_OK_FOR_CONSTRAINT_P, EXTRA_CONSTRAINT_STR, 
+	EXTRA_MEMORY_CONSTRAINT, EXTRA_ADDRESS_CONSTRAINT, CONSTRAINT_LEN): 
+	Macro definitions removed.
+	(s390_const_ok_for_constraint_p, s390_const_double_ok_for_constraint_p,
+	s390_extra_constraint_str): Functions removed.
+
 2006-10-17  Andrew Pinsiki  <pinskia@gmail.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 

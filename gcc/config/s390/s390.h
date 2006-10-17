@@ -481,34 +481,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
   : MODE)
 
 
-/* Define various machine-dependent constraint letters.  */
-
-#define REG_CLASS_FROM_LETTER(C)                                        \
-  ((C) == 'a' ? ADDR_REGS :                                             \
-   (C) == 'd' ? GENERAL_REGS :                                          \
-   (C) == 'f' ? FP_REGS :                                               \
-   (C) == 'c' ? CC_REGS : 						\
-   (C) == 't' ? ACCESS_REGS : NO_REGS)
-
-#define CONST_OK_FOR_CONSTRAINT_P(VALUE, C, STR)                          \
-  s390_const_ok_for_constraint_p ((VALUE), (C), (STR))
-
-#define CONST_DOUBLE_OK_FOR_CONSTRAINT_P(VALUE, C, STR)			\
-  s390_const_double_ok_for_constraint_p ((VALUE), (C), (STR))
-
-#define EXTRA_CONSTRAINT_STR(OP, C, STR)                               	\
-  s390_extra_constraint_str ((OP), (C), (STR))
-#define EXTRA_MEMORY_CONSTRAINT(C, STR)					\
-  ((C) == 'Q' || (C) == 'R' || (C) == 'S' || (C) == 'T' || (C) == 'A')
-#define EXTRA_ADDRESS_CONSTRAINT(C, STR)				\
-  ((C) == 'U' || (C) == 'W' || (C) == 'Y')
-
-#define CONSTRAINT_LEN(C, STR)                                  	\
-  ((C) == 'N' ? 5 : 	                                                \
-   (C) == 'O' ? 2 :							\
-   (C) == 'A' ? 2 :							\
-   (C) == 'B' ? 2 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
-
 /* Stack layout and calling conventions.  */
 
 /* Our stack grows from higher to lower addresses.  However, local variables
