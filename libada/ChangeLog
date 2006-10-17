@@ -1,3 +1,7 @@
+2006-10-16  Brooks Moses  <bmoses@stanford.edu>
+
+	* Makefile.in: Add dummy "pdf" target.
+
 2006-05-23  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* Makefile.in: Add install-html target.

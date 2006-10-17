@@ -23,7 +23,7 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-common, foo.install-man, foo.install-info, foo.dvi,
+# foo.install-common, foo.install-man, foo.install-info, foo.dvi, foo.pdf
 # foo.uninstall, foo.mostlyclean, foo.clean, foo.distclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
 #
@@ -431,6 +431,9 @@ ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn_unw.info \
 ada.dvi: doc/gnat_ugn_unw.dvi \
       doc/gnat_rm.dvi doc/gnat-style.dvi
 
+ada.pdf: doc/gnat_ugn_unw.pdf \
+      doc/gnat_rm.pdf doc/gnat-style.pdf
+
 ada.html:
 
 doc/gnat_ugn_unw.dvi: doc/gnat_ugn_unw.texi $(gcc_docdir)/include/fdl.texi	\
@@ -443,6 +446,17 @@ doc/gnat_rm.dvi: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
 
 doc/gnat-style.dvi: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
+
+doc/gnat_ugn_unw.pdf: doc/gnat_ugn_unw.texi $(gcc_docdir)/include/fdl.texi	\
+	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
+	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
+
+doc/gnat_rm.pdf: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
+	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
+	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
+
+doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
+	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
 
 
 # Install hooks:

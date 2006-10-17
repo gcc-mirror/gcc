@@ -116,6 +116,9 @@ info:
 # Build DVI (none here).
 dvi:
 
+# Build PDF (none here).
+pdf:
+
 # Build html (none here).
 html:
 
