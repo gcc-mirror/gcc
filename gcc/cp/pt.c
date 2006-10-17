@@ -9351,7 +9351,10 @@ tsubst_copy_and_build (tree t,
 	TREE_HAS_CONSTRUCTOR (r) = TREE_HAS_CONSTRUCTOR (t);
 
 	if (type)
-	  return digest_init (type, r);
+	  {
+	    r = reshape_init (type, r);
+	    return digest_init (type, r);
+	  }
 	return r;
       }
 
