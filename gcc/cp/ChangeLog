@@ -1,3 +1,9 @@
+2006-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29408
+	* parser.c (cp_parser_using_declaration): Stop parsing when
+	something goes wrong with an access declaration.
+
 2006-10-14  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/29323
