@@ -5,7 +5,7 @@ template<typename Entry>
 struct Array {
   Entry *array[32];
   Array () :
-    array ( (Entry*[1]) { 0, 0 } ) // { dg-error "initializers|conversion" }
+    array ( (Entry*[1]) { 0, 0 } ) // { dg-error "initializers|incompatible" }
   {}
 };
 
