@@ -1,3 +1,30 @@
+2006-10-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	Backport:
+	2006-10-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/pthread-init-2.c (dg-options): Define _POSIX_C_SOURCE=199506L
+	on Solaris 2.5.1 too.
+
+	2006-10-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/29300
+	* gcc.dg/pthread-init-2.c (dg-options): Define _POSIX_C_SOURCE=199506L
+	on hppa*-*-hpux*.
+
+	2006-10-03  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc-dg/pthread-init-common.h: Define _GNU_SOURCE. Add tests for
+	PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,
+	PTHREAD_ERRORCHECK_MUTEX_INITIALIZER_NP,
+	PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP and
+	PTHREAD_RWLOCK_WRITER_NONRECURSIVE_INITIALIZER_NP mutex initializers.
+
+	2006-09-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/pthread-init-1.c, pthread-init-2.c,
+	pthread-init-common.h: New.
+
 2006-10-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/20491
