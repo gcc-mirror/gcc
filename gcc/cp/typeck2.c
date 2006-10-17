@@ -791,8 +791,8 @@ process_init_constructor_array (tree type, tree init)
     /* Vectors are like simple fixed-size arrays.  */
     len = TYPE_VECTOR_SUBPARTS (type);
 
-  /* There cannot be more initializers than needed (or reshape_init would
-     detect this before we do.  */
+  /* There cannot be more initializers than needed as otherwise
+     reshape_init would have already rejected the initializer.  */
   if (!unbounded)
     gcc_assert (VEC_length (constructor_elt, v) <= len);
 
