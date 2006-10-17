@@ -1,3 +1,9 @@
+2006-10-17  Andrew Pinsiki  <pinskia@gmail.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/linux.h (SUBTARGET_CC1_SPEC): Override.
+	* config/mips/mips.h (CC1_SPEC): Override any earlier definition.
+
 2006-10-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/sysv4.h (DBX_REGISTER_NUMBER): Move to rs6000.h.
