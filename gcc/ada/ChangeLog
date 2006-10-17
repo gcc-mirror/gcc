@@ -1,7 +1,11 @@
+2006-10-16  Brooks Moses  <bmoses@stanford.edu>
+
+	* Makefile.in: Add TEXI2PDF definition.
+	* Make-lang.in: Add "ada.pdf" target.
+
 2006-10-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl.c, utils.c: Fix comment typos.
-
 	* utils.c: Fix a typo.
 
 2006-09-28  Eric Botcazou  <ebotcazou@adacore.com>
