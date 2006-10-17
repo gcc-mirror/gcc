@@ -1,3 +1,13 @@
+2006-10-17  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/28906
+	* g++.dg/other/array3.C: New test.
+	* g++.dg/other/array4.C: New test.
+	* g++.dg/other/array5.C: New test.
+
 2006-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29435
