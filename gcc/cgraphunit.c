@@ -173,6 +173,10 @@ static void cgraph_expand_function (struct cgraph_node *);
 static tree record_reference (tree *, int *, void *);
 static void cgraph_analyze_function (struct cgraph_node *node);
 
+/* Local static variables needs to be passed to debug info after the function
+   bodies are compiled.  */
+static GTY(()) VEC(tree,gc) *local_static_output;
+
 /* Records tree nodes seen in record_reference.  Simply using
    walk_tree_without_duplicates doesn't guarantee each node is visited
    once because it gets a new htab upon each recursive call from
@@ -807,6 +811,15 @@ verify_cgraph (void)
 }
 
 
+static void
+cgraph_varpool_debug_local_statics (void)
+{
+  timevar_push (TV_SYMOUT);
+  while (VEC_length (tree, local_static_output) > 0)
+    (*debug_hooks->global_decl) (VEC_pop (tree, local_static_output));
+  timevar_pop (TV_SYMOUT);
+}
+
 /* Output all variables enqueued to be assembled.  */
 bool
 cgraph_varpool_assemble_pending_decls (void)
@@ -837,9 +850,9 @@ cgraph_varpool_assemble_pending_decls (void)
 	          || TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
 	      && errorcount == 0 && sorrycount == 0)
 	    {
-	      timevar_push (TV_SYMOUT);
-	      (*debug_hooks->global_decl) (decl);
-	      timevar_pop (TV_SYMOUT);
+	      if (!local_static_output)
+		local_static_output = VEC_alloc (tree, gc, 20);
+	      VEC_safe_push (tree, gc, local_static_output, decl);
 	    }
 	  changed = true;
 	}
@@ -1241,6 +1254,7 @@ cgraph_optimize (void)
   if (!flag_unit_at_a_time)
     {
       cgraph_varpool_assemble_pending_decls ();
+      cgraph_varpool_debug_local_statics ();
       return;
     }
 
@@ -1314,6 +1328,7 @@ cgraph_optimize (void)
 	internal_error ("nodes with no released memory found");
     }
 #endif
+ cgraph_varpool_debug_local_statics ();
 }
 
 /* Generate and emit a static constructor or destructor.  WHICH must be
@@ -1527,3 +1542,5 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
   new_version_node->lowered = true;
   return new_version_node;
 }
+
+#include "gt-cgraphunit.h"

@@ -1,6 +1,14 @@
 2006-10-17  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	2006-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/26881
+	* gcc.dg/debug/pr26881.c: New test.
+
+2006-10-17  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	2006-09-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR C++/28906
