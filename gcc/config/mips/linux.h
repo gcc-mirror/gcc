@@ -89,8 +89,14 @@ Boston, MA 02110-1301, USA.  */
     builtin_define ("_MIPS_SZINT=32");				\
   } while (0)
 
-#undef  SUBTARGET_CPP_SPEC
+#undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "%{pthread:-D_REENTRANT}"
+
+/* A standard GNU/Linux mapping.  On most targets, it is included in
+   CC1_SPEC itself by config/linux.h, but mips.h overrides CC1_SPEC
+   and provides this hook instead.  */
+#undef SUBTARGET_CC1_SPEC
+#define SUBTARGET_CC1_SPEC "%{profile:-p}"
 
 /* From iris5.h */
 /* -G is incompatible with -KPIC which is the default, so only allow objects

@@ -865,13 +865,12 @@ extern const struct mips_rtx_cost_data *mips_cost;
 
 /* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
 
-#ifndef CC1_SPEC
+#undef CC1_SPEC
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
 %{save-temps: } \
 %(subtarget_cc1_spec)"
-#endif
 
 /* Preprocessor specs.  */
 
