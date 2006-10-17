@@ -34,7 +34,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   /*
    * (Further) implementation-space details.
    */
-  namespace
+  namespace __detail
   {
     // General case for x = (ax + c) mod m -- use Schrage's algorithm to avoid
     // integer overflow.
@@ -86,8 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	__calc(_Tp __x)
 	{ return __a * __x + __c; }
       };
-  } // anonymous namespace
-
+  } // namespace __detail
 
   /**
    * Seeds the LCR with integral value @p __x0, adjusted so that the 
@@ -98,11 +97,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     linear_congruential<_UIntType, __a, __c, __m>::
     seed(unsigned long __x0)
     {
-      if ((__mod<_UIntType, 1, 0, __m>(__c) == 0)
-	  && (__mod<_UIntType, 1, 0, __m>(__x0) == 0))
-	_M_x = __mod<_UIntType, 1, 0, __m>(1);
+      if ((__detail::__mod<_UIntType, 1, 0, __m>(__c) == 0)
+	  && (__detail::__mod<_UIntType, 1, 0, __m>(__x0) == 0))
+	_M_x = __detail::__mod<_UIntType, 1, 0, __m>(1);
       else
-	_M_x = __mod<_UIntType, 1, 0, __m>(__x0);
+	_M_x = __detail::__mod<_UIntType, 1, 0, __m>(__x0);
     }
 
   /**
@@ -115,11 +114,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       seed(_Gen& __g, false_type)
       {
 	_UIntType __x0 = __g();
-	if ((__mod<_UIntType, 1, 0, __m>(__c) == 0)
-	    && (__mod<_UIntType, 1, 0, __m>(__x0) == 0))
-	  _M_x = __mod<_UIntType, 1, 0, __m>(1);
+	if ((__detail::__mod<_UIntType, 1, 0, __m>(__c) == 0)
+	    && (__detail::__mod<_UIntType, 1, 0, __m>(__x0) == 0))
+	  _M_x = __detail::__mod<_UIntType, 1, 0, __m>(1);
 	else
-	  _M_x = __mod<_UIntType, 1, 0, __m>(__x0);
+	  _M_x = __detail::__mod<_UIntType, 1, 0, __m>(__x0);
       }
 
   /**
@@ -130,7 +129,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     linear_congruential<_UIntType, __a, __c, __m>::
     operator()()
     {
-      _M_x = __mod<_UIntType, __a, __c, __m>(_M_x);
+      _M_x = __detail::__mod<_UIntType, __a, __c, __m>(_M_x);
       return _M_x;
     }
 
@@ -177,8 +176,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		     __b, __t, __c, __l>::
     seed(unsigned long __value)
     {
-      _M_x[0] = __mod<_UIntType, 1, 0,
-	_Shift<_UIntType, __w>::__value>(__value);
+      _M_x[0] = __detail::__mod<_UIntType, 1, 0,
+	__detail::_Shift<_UIntType, __w>::__value>(__value);
 
       for (int __i = 1; __i < state_size; ++__i)
 	{
@@ -186,8 +185,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  __x ^= __x >> (__w - 2);
 	  __x *= 1812433253ul;
 	  __x += __i;
-	  _M_x[__i] = __mod<_UIntType, 1, 0,
-	    _Shift<_UIntType, __w>::__value>(__x);	  
+	  _M_x[__i] = __detail::__mod<_UIntType, 1, 0,
+	    __detail::_Shift<_UIntType, __w>::__value>(__x);	  
 	}
       _M_p = state_size;
     }
@@ -202,8 +201,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       seed(_Gen& __gen, false_type)
       {
 	for (int __i = 0; __i < state_size; ++__i)
-	  _M_x[__i] = __mod<_UIntType, 1, 0,
-	    _Shift<_UIntType, __w>::__value>(__gen());
+	  _M_x[__i] = __detail::__mod<_UIntType, 1, 0,
+	    __detail::_Shift<_UIntType, __w>::__value>(__gen());
 	_M_p = state_size;
       }
 
@@ -313,7 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	__lcg(__value);
 
       for (int __i = 0; __i < long_lag; ++__i)
-	_M_x[__i] = __mod<_UIntType, 1, 0, modulus>(__lcg());
+	_M_x[__i] = __detail::__mod<_UIntType, 1, 0, modulus>(__lcg());
 
       _M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
       _M_p = 0;
@@ -333,10 +332,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    _UIntType __factor = 1;
 	    for (int __j = 0; __j < __n; ++__j)
 	      {
-		__tmp += __mod<_UInt32Type, 1, 0, 0>(__gen()) * __factor;
-		__factor *= _Shift<_UIntType, 32>::__value;
+		__tmp += __detail::__mod<__detail::_UInt32Type, 1, 0, 0>(__gen()) * __factor;
+		__factor *= __detail::_Shift<_UIntType, 32>::__value;
 	      }
-	    _M_x[__i] = __mod<_UIntType, 1, 0, modulus>(__tmp);
+	    _M_x[__i] = __detail::__mod<_UIntType, 1, 0, modulus>(__tmp);
 	  }
 	_M_carry = (_M_x[long_lag - 1] == 0) ? 1 : 0;
 	_M_p = 0;
@@ -453,9 +452,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	for (int __i = 0; __i < long_lag; ++__i)
 	  {
 	    for (int __j = 0; __j < __n - 1; ++__j)
-	      _M_x[__i][__j] = __mod<_UInt32Type, 1, 0, 0>(__gen());
-	    _M_x[__i][__n - 1] = __mod<_UInt32Type, 1, 0,
-	      _Shift<_UInt32Type, __w % 32>::__value>(__gen());
+	      _M_x[__i][__j] = __detail::__mod<_UInt32Type, 1, 0, 0>(__gen());
+	    _M_x[__i][__n - 1] = __detail::__mod<_UInt32Type, 1, 0,
+	      __detail::_Shift<_UInt32Type, __w % 32>::__value>(__gen());
 	  }
 
 	_M_carry = 1;
@@ -498,8 +497,8 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
       else
 	__new_carry = 1;
       
-      _M_x[_M_p][__n - 1] = __mod<_UInt32Type, 1, 0,
-	_Shift<_UInt32Type, __w % 32>::__value>
+      _M_x[_M_p][__n - 1] = __detail::__mod<_UInt32Type, 1, 0,
+	__detail::_Shift<_UInt32Type, __w % 32>::__value>
 	(_M_x[__ps][__n - 1] - _M_x[_M_p][__n - 1] - _M_carry);
       _M_carry = __new_carry;
 
@@ -623,11 +622,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       const result_type __m1 =
 	std::min(result_type(_M_b1.max() - _M_b1.min()),
-		 _Shift<result_type, __w - __s1>::__value - 1);
+		 __detail::_Shift<result_type, __w - __s1>::__value - 1);
 
       const result_type __m2 =
 	std::min(result_type(_M_b2.max() - _M_b2.min()),
-		 _Shift<result_type, __w - __s2>::__value - 1);
+		 __detail::_Shift<result_type, __w - __s2>::__value - 1);
 
       // NB: In TR1 s1 is not required to be >= s2.
       if (__s1 < __s2)

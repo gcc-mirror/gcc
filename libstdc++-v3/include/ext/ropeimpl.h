@@ -78,13 +78,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       switch(__leaf->_M_tag)
 	{
-	case ::_S_leaf:
+	case __detail::_S_leaf:
 	  __x._M_buf_start = ((_Rope_RopeLeaf<_CharT, _Alloc>*)__leaf)->_M_data;
 	  __x._M_buf_ptr = __x._M_buf_start + (__pos - __leaf_pos);
 	  __x._M_buf_end = __x._M_buf_start + __leaf->_M_size;
 	  break;
-	case ::_S_function:
-	case ::_S_substringfn:
+	case __detail::_S_function:
+	case __detail::_S_substringfn:
 	  {
 	    size_t __len = _S_iterator_buf_len;
 	    size_t __buf_start_pos = __leaf_pos;
@@ -117,7 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     _Rope_iterator_base<_CharT, _Alloc>::
     _S_setcache(_Rope_iterator_base<_CharT, _Alloc>& __x)
     {
-      const _RopeRep* __path[int(::_S_max_rope_depth) + 1];
+      const _RopeRep* __path[int(__detail::_S_max_rope_depth) + 1];
       const _RopeRep* __curr_rope;
       int __curr_depth = -1;  /* index into path    */
       size_t __curr_start_pos = 0;
@@ -147,12 +147,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  __path[__curr_depth] = __curr_rope;
 	  switch(__curr_rope->_M_tag)
 	    {
-	    case ::_S_leaf:
-	    case ::_S_function:
-	    case ::_S_substringfn:
+	    case __detail::_S_leaf:
+	    case __detail::_S_function:
+	    case __detail::_S_substringfn:
 	      __x._M_leaf_pos = __curr_start_pos;
 	      goto done;
-	    case ::_S_concat:
+	    case __detail::_S_concat:
 	      {
 		_Rope_RopeConcatenation<_CharT, _Alloc>* __c =
 		  (_Rope_RopeConcatenation<_CharT, _Alloc>*)__curr_rope;
@@ -234,7 +234,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __current_node = __c->_M_right;
       __x._M_path_end[++__current_index] = __current_node;
       __dirns |= 1;
-      while (::_S_concat == __current_node->_M_tag)
+      while (__detail::_S_concat == __current_node->_M_tag)
 	{
 	  ++__current_index;
 	  if (int(_S_path_cache_len) == __current_index)
@@ -378,7 +378,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     {
       switch(_M_tag)
 	{
-	case ::_S_leaf:
+	case __detail::_S_leaf:
 	  {
 	    _Rope_RopeLeaf<_CharT, _Alloc>* __l
 	      = (_Rope_RopeLeaf<_CharT, _Alloc>*)this;
@@ -386,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    _L_deallocate(__l, 1);
 	    break;
 	  }
-	case ::_S_concat:
+	case __detail::_S_concat:
 	  {
 	    _Rope_RopeConcatenation<_CharT,_Alloc>* __c
 	      = (_Rope_RopeConcatenation<_CharT, _Alloc>*)this;
@@ -395,7 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    _C_deallocate(__c, 1);
 	    break;
 	  }
-	case ::_S_function:
+	case __detail::_S_function:
 	  {
 	    _Rope_RopeFunction<_CharT, _Alloc>* __f
 	      = (_Rope_RopeFunction<_CharT, _Alloc>*)this;
@@ -403,7 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    _F_deallocate(__f, 1);
 	    break;
 	  }
-	case ::_S_substringfn:
+	case __detail::_S_substringfn:
 	  {
 	    _Rope_RopeSubstring<_CharT, _Alloc>* __ss =
 	      (_Rope_RopeSubstring<_CharT, _Alloc>*)this;
@@ -503,7 +503,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       
       if (__depth > 20
 	  && (__result->_M_size < 1000
-	      || __depth > size_t(::_S_max_rope_depth)))
+	      || __depth > size_t(__detail::_S_max_rope_depth)))
 	{
 	  _RopeRep* __balanced;
 
@@ -541,14 +541,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       if (0 == __r)
 	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen,
 						__r->get_allocator());
-      if (__r->_M_tag == ::_S_leaf
+      if (__r->_M_tag == __detail::_S_leaf
 	  && __r->_M_size + __slen <= size_t(_S_copy_max))
 	{
 	  __result = _S_leaf_concat_char_iter((_RopeLeaf*)__r, __s, __slen);
 	  return __result;
 	}
-      if (::_S_concat == __r->_M_tag
-	  && ::_S_leaf == ((_RopeConcatenation*) __r)->_M_right->_M_tag)
+      if (__detail::_S_concat == __r->_M_tag
+	  && __detail::_S_leaf == ((_RopeConcatenation*) __r)->_M_right->_M_tag)
 	{
 	  _RopeLeaf* __right =
 	    (_RopeLeaf* )(((_RopeConcatenation* )__r)->_M_right);
@@ -605,17 +605,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  return __r;
 	}
       if (__orig_size + __slen <= size_t(_S_copy_max)
-	  && ::_S_leaf == __r->_M_tag)
+	  && __detail::_S_leaf == __r->_M_tag)
 	{
 	  __result = _S_destr_leaf_concat_char_iter((_RopeLeaf*)__r, __s, 
 						    __slen);
 	  return __result;
 	}
-      if (::_S_concat == __r->_M_tag)
+      if (__detail::_S_concat == __r->_M_tag)
 	{
 	  _RopeLeaf* __right = (_RopeLeaf*)(((_RopeConcatenation*)
 					     __r)->_M_right);
-	  if (::_S_leaf == __right->_M_tag
+	  if (__detail::_S_leaf == __right->_M_tag
 	      && __right->_M_size + __slen <= size_t(_S_copy_max))
 	    {
 	      _RopeRep* __new_right =
@@ -665,17 +665,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  __left->_M_ref_nonnil();
 	  return __left;
 	}
-      if (::_S_leaf == __right->_M_tag)
+      if (__detail::_S_leaf == __right->_M_tag)
 	{
-	  if (::_S_leaf == __left->_M_tag)
+	  if (__detail::_S_leaf == __left->_M_tag)
 	    {
 	      if (__right->_M_size + __left->_M_size <= size_t(_S_copy_max))
 		return _S_leaf_concat_char_iter((_RopeLeaf*)__left,
 						((_RopeLeaf*)__right)->_M_data,
 						__right->_M_size);
 	    }
-	  else if (::_S_concat == __left->_M_tag
-		   && ::_S_leaf == ((_RopeConcatenation*)
+	  else if (__detail::_S_concat == __left->_M_tag
+		   && __detail::_S_leaf == ((_RopeConcatenation*)
 						   __left)->_M_right->_M_tag)
 	    {
 	      _RopeLeaf* __leftright =
@@ -740,7 +740,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
       switch(__base->_M_tag)
 	{
-	case ::_S_concat:
+	case __detail::_S_concat:
 	    {
 	      _RopeConcatenation* __c = (_RopeConcatenation*)__base;
 	      _RopeRep* __left = __c->_M_left;
@@ -762,7 +762,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	      __result = _S_concat(__left_result, __right_result);
 	      return __result;
 	    }
-	case ::_S_leaf:
+	case __detail::_S_leaf:
 	  {
 	    _RopeLeaf* __l = (_RopeLeaf*)__base;
 	    _RopeLeaf* __result;
@@ -786,7 +786,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #endif
 	    return __result;
 	  }
-	case ::_S_substringfn:
+	case __detail::_S_substringfn:
 	  // Avoid introducing multiple layers of substring nodes.
 	  {
 	    _RopeSubstring* __old = (_RopeSubstring*)__base;
@@ -805,7 +805,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		
 	      } // *** else fall through: ***
 	  }
-	case ::_S_function:
+	case __detail::_S_function:
 	  {
 	    _RopeFunction* __f = (_RopeFunction*)__base;
 	    _CharT* __section;
@@ -930,7 +930,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	return true;
       switch(__r->_M_tag)
 	{
-	case ::_S_concat:
+	case __detail::_S_concat:
 	  {
 	    _RopeConcatenation* __conc = (_RopeConcatenation*)__r;
 	    _RopeRep* __left =  __conc->_M_left;
@@ -952,13 +952,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	      }
 	  }
 	  return true;
-	case ::_S_leaf:
+	case __detail::_S_leaf:
 	  {
 	    _RopeLeaf* __l = (_RopeLeaf*)__r;
 	    return __c(__l->_M_data + __begin, __end - __begin);
 	  }
-	case ::_S_function:
-	case ::_S_substringfn:
+	case __detail::_S_function:
+	case __detail::_S_substringfn:
 	    {
 	      _RopeFunction* __f = (_RopeFunction*)__r;
 	      size_t __len = __end - __begin;
@@ -1081,7 +1081,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	return __buffer;
       switch(__r->_M_tag)
 	{
-	case ::_S_concat:
+	case __detail::_S_concat:
 	  {
 	    _RopeConcatenation* __c = (_RopeConcatenation*)__r;
 	    _RopeRep* __left = __c->_M_left;
@@ -1089,13 +1089,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    _CharT* __rest = _S_flatten(__left, __buffer);
 	    return _S_flatten(__right, __rest);
 	  }
-	case ::_S_leaf:
+	case __detail::_S_leaf:
 	  {
 	    _RopeLeaf* __l = (_RopeLeaf*)__r;
 	    return copy_n(__l->_M_data, __l->_M_size, __buffer).second;
 	  }
-	case ::_S_function:
-	case ::_S_substringfn:
+	case __detail::_S_function:
+	case __detail::_S_substringfn:
 	  // We don't yet do anything with substring nodes.
 	  // This needs to be fixed before ropefiles will work well.
 	  {
@@ -1147,13 +1147,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  
 	  switch (__r->_M_tag)
 	    {
-	    case ::_S_leaf:
+	    case __detail::_S_leaf:
 	      __kind = "Leaf";
 	      break;
-	    case ::_S_function:
+	    case __detail::_S_function:
 	      __kind = "Function";
 	      break;
-	    case ::_S_substringfn:
+	    case __detail::_S_substringfn:
 	      __kind = "Function representing substring";
 	      break;
 	    default:
@@ -1186,7 +1186,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   template <class _CharT, class _Alloc>
     const unsigned long
     rope<_CharT, _Alloc>::
-    _S_min_len[int(::_S_max_rope_depth) + 1] = {
+    _S_min_len[int(__detail::_S_max_rope_depth) + 1] = {
       /* 0 */1, /* 1 */2, /* 2 */3, /* 3 */5, /* 4 */8, /* 5 */13, /* 6 */21,
       /* 7 */34, /* 8 */55, /* 9 */89, /* 10 */144, /* 11 */233, /* 12 */377,
       /* 13 */610, /* 14 */987, /* 15 */1597, /* 16 */2584, /* 17 */4181,
@@ -1205,7 +1205,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     rope<_CharT, _Alloc>::
     _S_balance(_RopeRep* __r)
     {
-      _RopeRep* __forest[int(::_S_max_rope_depth) + 1];
+      _RopeRep* __forest[int(__detail::_S_max_rope_depth) + 1];
       _RopeRep* __result = 0;
       int __i;
       // Invariant:
@@ -1214,12 +1214,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       // __forest[__i]._M_depth = __i
       // References from forest are included in refcount.
       
-      for (__i = 0; __i <= int(::_S_max_rope_depth); ++__i)
+      for (__i = 0; __i <= int(__detail::_S_max_rope_depth); ++__i)
 	__forest[__i] = 0;
       try
 	{
 	  _S_add_to_forest(__r, __forest);
-	  for (__i = 0; __i <= int(::_S_max_rope_depth); ++__i)
+	  for (__i = 0; __i <= int(__detail::_S_max_rope_depth); ++__i)
 	    if (0 != __forest[__i])
 	      {
 #ifndef __GC
@@ -1234,12 +1234,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	}
       catch(...)
 	{
-	  for(__i = 0; __i <= int(::_S_max_rope_depth); __i++)
+	  for(__i = 0; __i <= int(__detail::_S_max_rope_depth); __i++)
 	    _S_unref(__forest[__i]);
 	  __throw_exception_again;
 	}
       
-      if (__result->_M_depth > int(::_S_max_rope_depth))
+      if (__result->_M_depth > int(__detail::_S_max_rope_depth))
 	__throw_length_error(__N("rope::_S_balance"));
       return(__result);
     }
@@ -1307,7 +1307,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	      __forest[__i]->_M_unref_nonnil();
 	      __forest[__i] = 0;
 	    }
-	  if (__i == int(::_S_max_rope_depth)
+	  if (__i == int(__detail::_S_max_rope_depth)
 	      || __insertee->_M_size < _S_min_len[__i+1])
 	    {
 	      __forest[__i] = __insertee;
@@ -1330,7 +1330,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	{
 	  switch(__r->_M_tag)
 	    {
-	    case ::_S_concat:
+	    case __detail::_S_concat:
 	      {
 		_RopeConcatenation* __c = (_RopeConcatenation*)__r;
 		_RopeRep* __left = __c->_M_left;
@@ -1345,13 +1345,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		  __r = __left;
 	      }
 	      break;
-	    case ::_S_leaf:
+	    case __detail::_S_leaf:
 	      {
 		_RopeLeaf* __l = (_RopeLeaf*)__r;
 		return __l->_M_data[__i];
 	      }
-	    case ::_S_function:
-	    case ::_S_substringfn:
+	    case __detail::_S_function:
+	    case __detail::_S_substringfn:
 	      {
 		_RopeFunction* __f = (_RopeFunction*)__r;
 		_CharT __result;
@@ -1371,7 +1371,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     rope<_CharT, _Alloc>::
     _S_fetch_ptr(_RopeRep* __r, size_type __i)
     {
-      _RopeRep* __clrstack[::_S_max_rope_depth];
+      _RopeRep* __clrstack[__detail::_S_max_rope_depth];
       size_t __csptr = 0;
       
       for(;;)
@@ -1380,7 +1380,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    return 0;
 	  switch(__r->_M_tag)
 	    {
-	    case ::_S_concat:
+	    case __detail::_S_concat:
 	      {
 		_RopeConcatenation* __c = (_RopeConcatenation*)__r;
 		_RopeRep* __left = __c->_M_left;
@@ -1397,7 +1397,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		  __r = __left;
 	      }
 	      break;
-	    case ::_S_leaf:
+	    case __detail::_S_leaf:
 	      {
 		_RopeLeaf* __l = (_RopeLeaf*)__r;
 		if (__l->_M_c_string != __l->_M_data && __l->_M_c_string != 0)
@@ -1411,8 +1411,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		  }
 		return __l->_M_data + __i;
 	      }
-	    case ::_S_function:
-	    case ::_S_substringfn:
+	    case __detail::_S_function:
+	    case __detail::_S_substringfn:
 	      return 0;
 	    }
 	}
@@ -1437,10 +1437,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	return -1;
       __left_len = __left->_M_size;
       __right_len = __right->_M_size;
-      if (::_S_leaf == __left->_M_tag)
+      if (__detail::_S_leaf == __left->_M_tag)
 	{
 	  _RopeLeaf* __l = (_RopeLeaf*) __left;
-	  if (::_S_leaf == __right->_M_tag)
+	  if (__detail::_S_leaf == __right->_M_tag)
 	    {
 	      _RopeLeaf* __r = (_RopeLeaf*) __right;
 	      return lexicographical_compare_3way(__l->_M_data,
@@ -1461,7 +1461,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	{
 	  const_iterator __lstart(__left, 0);
 	  const_iterator __lend(__left, __left_len);
-	  if (::_S_leaf == __right->_M_tag)
+	  if (__detail::_S_leaf == __right->_M_tag)
 	    {
 	      _RopeLeaf* __r = (_RopeLeaf*) __right;
 	      return lexicographical_compare_3way(__lstart, __lend,
@@ -1637,7 +1637,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  return _S_empty_c_str;
 	}
       __GC_CONST _CharT* __old_c_string = this->_M_tree_ptr->_M_c_string;
-      if (::_S_leaf == this->_M_tree_ptr->_M_tag
+      if (__detail::_S_leaf == this->_M_tree_ptr->_M_tag
 	  && 0 != __old_c_string)
 	return(__old_c_string);
       size_t __s = size();

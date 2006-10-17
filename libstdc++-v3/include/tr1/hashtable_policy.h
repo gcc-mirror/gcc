@@ -43,8 +43,6 @@ namespace std
 _GLIBCXX_BEGIN_NAMESPACE(tr1)
 namespace __detail
 {
-namespace 
-{
   // Helper function: return distance(first, last) for forward
   // iterators, or 0 for input iterators.
   template<class _Iterator>
@@ -168,7 +166,6 @@ namespace
       (unsigned long)18446744073709551557ull,
       (unsigned long)18446744073709551557ull
     };
-} // anonymous namespace
 
   // Auxiliary types used for all instantiations of _Hashtable: nodes
   // and iterators.

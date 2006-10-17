@@ -83,7 +83,7 @@ struct __false_type { };
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-namespace detail
+namespace __detail
 {
   // NB: g++ can not compile these if declared within the class
   // __is_pod itself.
@@ -94,7 +94,7 @@ namespace detail
   __one __test_type(int _Tp::*);
   template<typename _Tp>
   __two& __test_type(...);
-} // namespace detail
+} // namespace __detail
 
   template<bool>
     struct __truth_type
@@ -346,8 +346,8 @@ namespace detail
     {
       enum
 	{
-	  __value = (sizeof(detail::__test_type<_Tp>(0))
-		     != sizeof(detail::__one))
+	  __value = (sizeof(__detail::__test_type<_Tp>(0))
+		     != sizeof(__detail::__one))
 	};
     };
 

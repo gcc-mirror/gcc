@@ -34,12 +34,12 @@
 #include <ext/rope>
 #include <ext/stdio_filebuf.h>
 
-namespace
-{
-  const int min_len = _S_max_rope_depth + 1;
-}
-
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+
+  namespace
+  {
+    const int min_len = __detail::_S_max_rope_depth + 1;
+  }
 
   template
     const unsigned long 
