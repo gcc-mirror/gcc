@@ -9323,7 +9323,6 @@ tsubst_copy_and_build (tree t,
 	VEC(constructor_elt,gc) *n;
 	constructor_elt *ce;
 	unsigned HOST_WIDE_INT idx;
-	tree r;
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	bool process_index_p;
 
@@ -9347,15 +9346,10 @@ tsubst_copy_and_build (tree t,
 	    ce->value = RECUR (ce->value);
 	  }
 
-	r = build_constructor (NULL_TREE, n);
-	TREE_HAS_CONSTRUCTOR (r) = TREE_HAS_CONSTRUCTOR (t);
+	if (TREE_HAS_CONSTRUCTOR (t))
+	  return finish_compound_literal (type, n);
 
-	if (type)
-	  {
-	    r = reshape_init (type, r);
-	    return digest_init (type, r);
-	  }
-	return r;
+	return build_constructor (NULL_TREE, n);
       }
 
     case TYPEID_EXPR:

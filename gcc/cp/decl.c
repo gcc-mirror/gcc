@@ -4485,9 +4485,6 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
       /* Handle designated initializers, as an extension.  */
       if (d->cur->index)
 	{
-	  if (pedantic)
-	    pedwarn ("ISO C++ does not allow designated initializers");
-
 	  field = lookup_field_1 (type, d->cur->index, /*want_type=*/false);
 
 	  if (!field || TREE_CODE (field) != FIELD_DECL)

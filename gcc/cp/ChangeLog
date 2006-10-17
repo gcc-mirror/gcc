@@ -1,3 +1,11 @@
+2006-10-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/27270
+	* decl.c (reshape_init_class): Move check for designated
+	to ...
+	* parser.c (cp_parser_initializer_list): ... here.
+	* pt.c (tsubst_copy_and_build): Use finish_compound_literal.
+
 2006-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27270
