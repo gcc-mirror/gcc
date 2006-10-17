@@ -1842,14 +1842,16 @@ s390_legitimate_address_without_index_p (rtx op)
   return true;
 }
 
-/* Return 1 if OP is a valid operand for a C constraint, 0 else.  */
+
+/* Evaluates constraint strings described by the regular expression
+   ([A|B](Q|R|S|T))|U|W and returns 1 if OP is a valid operand for the
+   constraint given in STR, or 0 else.  */
 
 int
-s390_extra_constraint_str (rtx op, int c, const char * str)
+s390_mem_constraint (const char *str, rtx op)
 {
   struct s390_address addr;
-
-  gcc_assert (c == str[0]);
+  char c = str[0];
 
   /* Check for offsettable variants of memory constraints.  */
   if (c == 'A')
@@ -1859,8 +1861,7 @@ s390_extra_constraint_str (rtx op, int c, const char * str)
 	return 0;
 
       if ((reload_completed || reload_in_progress)
-	  ? !offsettable_memref_p (op)
-	  : !offsettable_nonstrict_memref_p (op))
+	  ? !offsettable_memref_p (op) : !offsettable_nonstrict_memref_p (op))
 	return 0;
 
       c = str[1];
@@ -1968,131 +1969,119 @@ s390_extra_constraint_str (rtx op, int c, const char * str)
   return 1;
 }
 
-/* Return true if VALUE matches the constraint STR.  */
+
+
+/* Evaluates constraint strings starting with letter O.  Input
+   parameter C is the second letter following the "O" in the constraint
+   string. Returns 1 if VALUE meets the respective constraint and 0
+   otherwise.  */
 
 int
-s390_const_double_ok_for_constraint_p (rtx value,
-				       int c,
-				       const char * str)
+s390_O_constraint_str (const char c, HOST_WIDE_INT value)
 {
-  gcc_assert (c == str[0]);
+  if (!TARGET_EXTIMM)
+    return 0;
 
-  switch (str[0])
+  switch (c)
     {
-    case 'G':
-      /* The floating point zero constant.  */
-      return (GET_MODE_CLASS (GET_MODE (value)) == MODE_FLOAT
-              && value == CONST0_RTX (GET_MODE (value)));
-      
+    case 's':
+      return trunc_int_for_mode (value, SImode) == value;
+
+    case 'p':
+      return value == 0
+	|| s390_single_part (GEN_INT (value), DImode, SImode, 0) == 1;
+
+    case 'n':
+      return value == -1
+	|| s390_single_part (GEN_INT (value), DImode, SImode, -1) == 1;
+
     default:
-      return 0;
+      gcc_unreachable ();
     }
 }
 
-/* Return true if VALUE matches the constraint STR.  */
+
+/* Evaluates constraint strings starting with letter N.  Parameter STR
+   contains the letters following letter "N" in the constraint string.
+   Returns true if VALUE matches the constraint.  */
 
 int
-s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
-				int c,
-				const char * str)
+s390_N_constraint_str (const char *str, HOST_WIDE_INT value)
 {
   enum machine_mode mode, part_mode;
   int def;
   int part, part_goal;
 
-  gcc_assert (c == str[0]);
 
-  switch (str[0])
+  if (str[0] == 'x')
+    part_goal = -1;
+  else
+    part_goal = str[0] - '0';
+
+  switch (str[1])
     {
-    case 'I':
-      return (unsigned int)value < 256;
-
-    case 'J':
-      return (unsigned int)value < 4096;
-
-    case 'K':
-      return value >= -32768 && value < 32768;
-
-    case 'L':
-      return (TARGET_LONG_DISPLACEMENT ?
-	      (value >= -524288 && value <= 524287)
-	      : (value >= 0 && value <= 4095));
-    case 'M':
-      return value == 2147483647;
-
-    case 'N':
-      if (str[1] == 'x')
-	part_goal = -1;
-      else
-	part_goal = str[1] - '0';
-
-      switch (str[2])
-	{
-  	case 'Q': part_mode = QImode; break;
- 	case 'H': part_mode = HImode; break;
- 	case 'S': part_mode = SImode; break;
-	default:  return 0;
-	}
-
-      switch (str[3])
-	{
-	case 'H': mode = HImode; break;
-	case 'S': mode = SImode; break;
-	case 'D': mode = DImode; break;
-	default: return 0;
-	}
-
-      switch (str[4])
-	{
-	case '0': def = 0;  break;
-	case 'F': def = -1; break;
-	default: return 0;
-	}
-
-      if (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (part_mode))
-	return 0;
-
-      part = s390_single_part (GEN_INT (value), mode, part_mode, def);
-      if (part < 0)
-	return 0;
-      if (part_goal != -1 && part_goal != part)
-	return 0;
-
+    case 'Q':
+      part_mode = QImode;
       break;
-
-    case 'O':
-      if (!TARGET_EXTIMM)
-	return 0;
-      
-      switch (str[1])
-	{
-	case 's':
-	  return trunc_int_for_mode (value, SImode) == value;
-	  
-	case 'p':
-	  return value == 0
-	    || s390_single_part (GEN_INT (value), DImode, SImode, 0) == 1;
-	  
-	case 'n':
-	  return 
-	    (value == -1
-	     || s390_single_part (GEN_INT (value), DImode, SImode, -1) == 1)
-	    && value != -((HOST_WIDE_INT)1 << 32);
-	  
-	default:
-	  gcc_unreachable ();
-	}
+    case 'H':
+      part_mode = HImode;
       break;
-
-    case 'P':
-      return legitimate_reload_constant_p (GEN_INT (value));
-
+    case 'S':
+      part_mode = SImode;
+      break;
     default:
       return 0;
     }
 
+  switch (str[2])
+    {
+    case 'H':
+      mode = HImode;
+      break;
+    case 'S':
+      mode = SImode;
+      break;
+    case 'D':
+      mode = DImode;
+      break;
+    default:
+      return 0;
+    }
+
+  switch (str[3])
+    {
+    case '0':
+      def = 0;
+      break;
+    case 'F':
+      def = -1;
+      break;
+    default:
+      return 0;
+    }
+
+  if (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (part_mode))
+    return 0;
+
+  part = s390_single_part (GEN_INT (value), mode, part_mode, def);
+  if (part < 0)
+    return 0;
+  if (part_goal != -1 && part_goal != part)
+    return 0;
+
   return 1;
 }
+
+
+/* Returns true if the input parameter VALUE is a float zero.  */
+
+int
+s390_float_const_zero_p (rtx value)
+{
+  return (GET_MODE_CLASS (GET_MODE (value)) == MODE_FLOAT
+	  && value == CONST0_RTX (GET_MODE (value)));
+}
+
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
