@@ -724,6 +724,15 @@ digest_init (tree type, tree init)
 
 	  return error_mark_node;
 	}
+
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && TREE_CODE (init) != CONSTRUCTOR)
+	{
+	  error ("array must be initialized with a brace-enclosed"
+		 " initializer");
+	  return error_mark_node;
+	}
+
       return convert_for_initialization (NULL_TREE, type, init,
 					 LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING,
 					 "initialization", NULL_TREE, 0);
