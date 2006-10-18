@@ -1,3 +1,15 @@
+2006-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29277
+	* io/list_read.c (next_char): Update strm_pos.
+	(eat_separator): Delete extra call to unget_char.
+	* io/transfer.c (read_block): Use read_sf for formatted stream I/O.
+	(next_record_r): Update strm_pos for formatted stream I/O and handle
+	end-of-record correctly.
+	(next_record_w): Ditto.
+	(next_record): Enable next record (r/w) functions and update strm_pos.
+	(finalize_transfer): Call next_record to finish the record.
+
 2006-10-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* m4/spacing.m4: Use scalbn[f,l] if ldexp[f,l] is unavailable.

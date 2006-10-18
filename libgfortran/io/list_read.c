@@ -187,6 +187,9 @@ next_char (st_parameter_dt *dtp)
   length = 1;
 
   p = salloc_r (dtp->u.p.current_unit->s, &length);
+  
+  if (is_stream_io (dtp))
+    dtp->u.p.current_unit->strm_pos++;
 
   if (is_internal_unit(dtp))
     {
@@ -294,10 +297,7 @@ eat_separator (st_parameter_dt *dtp)
       if (n == '\n')
 	dtp->u.p.at_eol = 1;
       else
-        {
-	  unget_char (dtp, n);
-	  unget_char (dtp, c);
-        } 
+	unget_char (dtp, n);
       break;
 
     case '\n':
