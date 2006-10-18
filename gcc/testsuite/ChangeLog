@@ -1,6 +1,14 @@
 2006-10-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	2006-08-25  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/28829
+	* gcc.dg/pr26570.c: Fix testcase.
+
+2006-10-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	2006-08-16  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR gcov/profile/26570
