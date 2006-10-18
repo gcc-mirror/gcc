@@ -1,3 +1,9 @@
+2006-10-18  Mark Shinwell  <shinwell@codesourcery.com>
+
+	PR c++/26884
+	* typeck2.c (digest_init): Raise error upon attempts to
+	initialize arrays with variables.
+
 2006-10-17  Lee Millward  <lee.millward@codesourcery.com> 
 
         PR c++/27952
