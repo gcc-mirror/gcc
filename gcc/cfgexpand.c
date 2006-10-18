@@ -764,7 +764,12 @@ expand_used_vars_for_block (tree block, bool toplevel)
 
   /* Expand all variables at this level.  */
   for (t = BLOCK_VARS (block); t ; t = TREE_CHAIN (t))
-    if (TREE_USED (t))
+    if (TREE_USED (t)
+	/* Force local static variables to be output when marked by
+	   used attribute.  For unit-at-a-time, cgraph code already takes
+	   care of this.  */
+	|| (!flag_unit_at_a_time && TREE_STATIC (t)
+	    && DECL_PRESERVE_P (t)))
       expand_one_var (t, toplevel);
 
   this_sv_num = stack_vars_num;
