@@ -503,7 +503,7 @@ static variable variable_table[] = {
    stringize (DEFAULT_RECL), 0},
 
   {"GFORTRAN_LIST_SEPARATOR", 0, NULL, init_sep, show_sep,
-   "Separatator to use when writing list output.  May contain any number of "
+   "Separator to use when writing list output.  May contain any number of "
    "spaces\nand at most one comma.  Default is a single space.", 0},
 
   /* Memory related controls */
@@ -855,7 +855,7 @@ mark_range (int unit1, int unit2)
 
 /* Parse the GFORTRAN_CONVERT_UNITS variable.  This is called
    twice, once to count the units and once to actually mark them in
-   the table.  When counting, we don't check for double occurences
+   the table.  When counting, we don't check for double occurrences
    of units.  */
 
 static int

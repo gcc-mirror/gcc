@@ -1,3 +1,30 @@
+2006-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	* m4/in_pack.m4: Fixed a typo.
+	* m4/iforeach.m4: Fixed a typo.
+	* m4/eoshift1.m4: Fixed a typo.
+	* m4/eoshift3.m4: Fixed a typo.
+	* m4/cshift1.m4: Fixed a typo.
+	* m4/in_unpack.m4: Fixed a typo.
+	* m4/reshape.m4: Fixed a typo.
+	* m4/ifunction.m4: Fixed a typo.
+	* runtime/environ.c: Fixed a typo.
+	* runtime/in_pack_generic.c: Fixed a typo.
+	* runtime/in_unpack_generic.c: Fixed a typo.
+	* runtime/memory.c: Fixed a typo.
+	* intrinsics/cshift0.c: Fixed a typo.
+	* intrinsics/cpu_time.c: Fixed a typo.
+	* intrinsics/pack_generic.c: Fixed a typo.
+	* intrinsics/unpack_generic.c: Fixed a typo.
+	* intrinsics/eoshift0.c: Fixed a typo.
+	* intrinsics/eoshift2.c: Fixed a typo.
+	* intrinsics/reshape_generic.c: Fixed a typo.
+	* io/open.c: Fixed a typo.
+	* io/list_read.c: Fixed a typo.
+	* io/io.h: Fixed a typo.
+	* io/transfer.c: Fixed a typo.
+	* io/write.c: Fixed a typo.
+
 2006-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/29277

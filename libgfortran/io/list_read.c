@@ -2219,7 +2219,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	}
 
       /* If the expanded read warning flag is set, increment it,
-	 indicating that a single read has occured.  */
+	 indicating that a single read has occurred.  */
       if (dtp->u.p.expanded_read >= 1)
 	dtp->u.p.expanded_read++;
 
@@ -2298,7 +2298,7 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
       c = next_char (dtp);
       if (c != '?')
 	{
-	  st_sprintf (nml_err_msg, "namelist read: missplaced = sign");
+	  st_sprintf (nml_err_msg, "namelist read: misplaced = sign");
 	  goto nml_err_ret;
 	}
       nml_query (dtp, '=');

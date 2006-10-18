@@ -1,6 +1,6 @@
 /* Copyright (C) 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Andy Vaught
-   Namelist output contibuted by Paul Thomas
+   Namelist output contributed by Paul Thomas
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 

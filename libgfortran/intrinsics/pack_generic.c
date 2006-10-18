@@ -41,7 +41,7 @@ Boston, MA 02110-1301, USA.  */
    Description: Pack an array into an array of rank one under the
    control of a mask.
 
-   Class: Transformational fucntion.
+   Class: Transformational function.
 
    Arguments:
       ARRAY   may be of any type. It shall not be scalar.
@@ -171,7 +171,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 		     and increment the next dimension.  */
 		  count[n] = 0;
 		  /* We could precalculate this product, but this is a
-		     less frequently used path so proabably not worth
+		     less frequently used path so probably not worth
 		     it.  */
 		  m -= mstride[n] * extent[n];
 		  n++;
@@ -230,7 +230,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
              the next dimension.  */
           count[n] = 0;
           /* We could precalculate these products, but this is a less
-             frequently used path so proabably not worth it.  */
+             frequently used path so probably not worth it.  */
           sptr -= sstride[n] * extent[n];
           mptr -= mstride[n] * extent[n];
           n++;
@@ -402,7 +402,7 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
 		 increment the next dimension.  */
 	      count[n] = 0;
 	      /* We could precalculate these products, but this is a
-		 less frequently used path so proabably not worth it.  */
+		 less frequently used path so probably not worth it.  */
 	      sptr -= sstride[n] * extent[n];
 	      n++;
 	      if (n >= dim)

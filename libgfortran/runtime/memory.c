@@ -1,4 +1,4 @@
-/* Memory mamagement routines.
+/* Memory management routines.
    Copyright 2002, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
