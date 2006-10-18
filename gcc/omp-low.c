@@ -2535,7 +2535,7 @@ expand_omp_parallel (struct omp_region *region)
 	  gcc_assert (!bsi_end_p (si)
 		      && TREE_CODE (bsi_stmt (si)) == OMP_RETURN);
 	  t = build1 (RETURN_EXPR, void_type_node, NULL);
-	  bsi_insert_after (&si, t, TSI_SAME_STMT);
+	  bsi_insert_after (&si, t, BSI_SAME_STMT);
 	  bsi_remove (&si, true);
 	}
     }
