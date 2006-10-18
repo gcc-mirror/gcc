@@ -54,17 +54,78 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 
   wlen = f->u.string.length < 0 ? len : f->u.string.length;
 
-  p = write_block (dtp, wlen);
-  if (p == NULL)
-    return;
+#ifdef HAVE_CRLF
+  /* If this is formatted STREAM IO convert any embedded line feed characters
+     to CR_LF on systems that use that sequence for newlines.  See F2003
+     Standard sections 10.6.3 and 9.9 for further information.  */
+  if (is_stream_io (dtp))
+    {
+      const char crlf[] = "\r\n";
+      int i, q, bytes;
+      q = bytes = 0;
 
-  if (wlen < len)
-    memcpy (p, source, wlen);
+      /* Write out any padding if needed.  */
+      if (len < wlen)
+	{
+	  p = write_block (dtp, wlen - len);
+	  if (p == NULL)
+	    return;
+	  memset (p, ' ', wlen - len);
+	}
+
+      /* Scan the source string looking for '\n' and convert it if found.  */
+      for (i = 0; i < wlen; i++)
+	{
+	  if (source[i] == '\n')
+	    {
+	      /* Write out the previously scanned characters in the string.  */
+	      if (bytes > 0)
+		{
+		  p = write_block (dtp, bytes);
+		  if (p == NULL)
+		    return;
+		  memcpy (p, &source[q], bytes);
+		  q += bytes;
+		  bytes = 0;
+		}
+
+	      /* Write out the CR_LF sequence.  */ 
+	      q++;
+	      p = write_block (dtp, 2);
+              if (p == NULL)
+                return;
+	      memcpy (p, crlf, 2);
+	    }
+	  else
+	    bytes++;
+	}
+
+      /*  Write out any remaining bytes if no LF was found.  */
+      if (bytes > 0)
+	{
+	  p = write_block (dtp, bytes);
+	  if (p == NULL)
+	    return;
+	  memcpy (p, &source[q], bytes);
+	}
+    }
   else
     {
-      memset (p, ' ', wlen - len);
-      memcpy (p + wlen - len, source, len);
+#endif
+      p = write_block (dtp, wlen);
+      if (p == NULL)
+	return;
+
+      if (wlen < len)
+	memcpy (p, source, wlen);
+      else
+	{
+	  memset (p, ' ', wlen - len);
+	  memcpy (p + wlen - len, source, len);
+	}
+#ifdef HAVE_CRLF
     }
+#endif
 }
 
 static GFC_INTEGER_LARGEST
