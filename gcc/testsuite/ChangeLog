@@ -1,3 +1,12 @@
+2006-10-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/27787
+	* g++.dg/template/typename10.C: New.
+	* g++.dg/template/lookup4.C: Remove bogus error marker.
+
 2006-10-17  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
