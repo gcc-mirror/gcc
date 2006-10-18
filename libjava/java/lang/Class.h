@@ -231,6 +231,7 @@ jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);
 jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);
 jint JvNumMethods (jclass);
 jmethodID JvGetFirstMethod (jclass);
+_Jv_Utf8Const *_Jv_GetClassNameUtf8 (jclass);
 
 #ifdef INTERPRETER
 // Finds a desired interpreter method in the given class or NULL if not found
@@ -474,6 +475,7 @@ private:
   friend jmethodID (::_Jv_FromReflectedConstructor) (java::lang::reflect::Constructor *);
   friend jint (::JvNumMethods) (jclass);
   friend jmethodID (::JvGetFirstMethod) (jclass);
+  friend _Jv_Utf8Const *::_Jv_GetClassNameUtf8 (jclass);
 #ifdef INTERPRETER
   friend _Jv_MethodBase *(::_Jv_FindInterpreterMethod) (jclass klass,
 							jmethodID desired_method);

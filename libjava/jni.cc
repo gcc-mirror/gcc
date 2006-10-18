@@ -1789,8 +1789,13 @@ _Jv_JNI_GetDirectBufferCapacity (JNIEnv *, jobject buffer)
 
 
 
+struct NativeMethodCacheEntry : public JNINativeMethod
+{
+  char *className;
+};
+
 // Hash table of native methods.
-static JNINativeMethod *nathash;
+static NativeMethodCacheEntry *nathash;
 // Number of slots used.
 static int nathash_count = 0;
 // Number of slots available.  Must be power of 2.
@@ -1800,10 +1805,14 @@ static int nathash_size = 0;
 
 // Compute a hash value for a native method descriptor.
 static int
-hash (const JNINativeMethod *method)
+hash (const NativeMethodCacheEntry *method)
 {
   char *ptr;
   int hash = 0;
+
+  ptr = method->className;
+  while (*ptr)
+    hash = (31 * hash) + *ptr++;
 
   ptr = method->name;
   while (*ptr)
@@ -1817,8 +1826,8 @@ hash (const JNINativeMethod *method)
 }
 
 // Find the slot where a native method goes.
-static JNINativeMethod *
-nathash_find_slot (const JNINativeMethod *method)
+static NativeMethodCacheEntry *
+nathash_find_slot (const NativeMethodCacheEntry *method)
 {
   jint h = hash (method);
   int step = (h ^ (h >> 16)) | 1;
@@ -1827,7 +1836,7 @@ nathash_find_slot (const JNINativeMethod *method)
 
   for (;;)
     {
-      JNINativeMethod *slotp = &nathash[w];
+      NativeMethodCacheEntry *slotp = &nathash[w];
       if (slotp->name == NULL)
 	{
 	  if (del >= 0)
@@ -1838,7 +1847,8 @@ nathash_find_slot (const JNINativeMethod *method)
       else if (slotp->name == DELETED_ENTRY)
 	del = w;
       else if (! strcmp (slotp->name, method->name)
-	       && ! strcmp (slotp->signature, method->signature))
+	       && ! strcmp (slotp->signature, method->signature)
+	       && ! strcmp (slotp->className, method->className))
 	return slotp;
       w = (w + step) & (nathash_size - 1);
     }
@@ -1846,11 +1856,11 @@ nathash_find_slot (const JNINativeMethod *method)
 
 // Find a method.  Return NULL if it isn't in the hash table.
 static void *
-nathash_find (JNINativeMethod *method)
+nathash_find (NativeMethodCacheEntry *method)
 {
   if (nathash == NULL)
     return NULL;
-  JNINativeMethod *slot = nathash_find_slot (method);
+  NativeMethodCacheEntry *slot = nathash_find_slot (method);
   if (slot->name == NULL || slot->name == DELETED_ENTRY)
     return NULL;
   return slot->fnPtr;
@@ -1863,23 +1873,23 @@ natrehash ()
     {
       nathash_size = 1024;
       nathash =
-	(JNINativeMethod *) _Jv_AllocBytes (nathash_size
-					    * sizeof (JNINativeMethod));
+	(NativeMethodCacheEntry *) _Jv_AllocBytes (nathash_size
+						   * sizeof (NativeMethodCacheEntry));
     }
   else
     {
       int savesize = nathash_size;
-      JNINativeMethod *savehash = nathash;
+      NativeMethodCacheEntry *savehash = nathash;
       nathash_size *= 2;
       nathash =
-	(JNINativeMethod *) _Jv_AllocBytes (nathash_size
-					    * sizeof (JNINativeMethod));
+	(NativeMethodCacheEntry *) _Jv_AllocBytes (nathash_size
+						   * sizeof (NativeMethodCacheEntry));
 
       for (int i = 0; i < savesize; ++i)
 	{
 	  if (savehash[i].name != NULL && savehash[i].name != DELETED_ENTRY)
 	    {
-	      JNINativeMethod *slot = nathash_find_slot (&savehash[i]);
+	      NativeMethodCacheEntry *slot = nathash_find_slot (&savehash[i]);
 	      *slot = savehash[i];
 	    }
 	}
@@ -1887,16 +1897,17 @@ natrehash ()
 }
 
 static void
-nathash_add (const JNINativeMethod *method)
+nathash_add (const NativeMethodCacheEntry *method)
 {
   if (3 * nathash_count >= 2 * nathash_size)
     natrehash ();
-  JNINativeMethod *slot = nathash_find_slot (method);
+  NativeMethodCacheEntry *slot = nathash_find_slot (method);
   // If the slot has a real entry in it, then there is no work to do.
   if (slot->name != NULL && slot->name != DELETED_ENTRY)
     return;
-  // FIXME
+  // FIXME: memory leak?
   slot->name = strdup (method->name);
+  slot->className = strdup (method->className);
   // This was already strduped in _Jv_JNI_RegisterNatives.
   slot->signature = method->signature;
   slot->fnPtr = method->fnPtr;
@@ -1912,7 +1923,7 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass klass,
   // the nathash table.
   JvSynchronize sync (global_ref_table);
 
-  JNINativeMethod dottedMethod;
+  NativeMethodCacheEntry dottedMethod;
 
   // Look at each descriptor given us, and find the corresponding
   // method in the class.
@@ -1928,8 +1939,11 @@ _Jv_JNI_RegisterNatives (JNIEnv *env, jclass klass,
 	  // Copy this JNINativeMethod and do a slash to dot
 	  // conversion on the signature.
 	  dottedMethod.name = methods[j].name;
+	  // FIXME: we leak a little memory here if the method
+	  // is not found.
 	  dottedMethod.signature = strdup (methods[j].signature);
 	  dottedMethod.fnPtr = methods[j].fnPtr;
+	  dottedMethod.className = _Jv_GetClassNameUtf8 (klass)->chars();
 	  char *c = dottedMethod.signature;
 	  while (*c)
 	    {
@@ -2172,9 +2186,10 @@ _Jv_LookupJNIMethod (jclass klass, _Jv_Utf8Const *name,
   buf[name_length] = '\0';
   strncpy (buf + name_length + 1, signature->chars (), sig_length);
   buf[name_length + sig_length + 1] = '\0';
-  JNINativeMethod meth;
+  NativeMethodCacheEntry meth;
   meth.name = buf;
   meth.signature = buf + name_length + 1;
+  meth.className = _Jv_GetClassNameUtf8(klass)->chars();
   function = nathash_find (&meth);
   if (function != NULL)
     return function;

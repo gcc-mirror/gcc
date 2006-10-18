@@ -1,3 +1,22 @@
+2006-10-18  Tom Tromey  <tromey@redhat.com>
+	    Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/libjava.jni/register2.java: New file.
+	* testsuite/libjava.jni/register2.out: New file.
+	* testsuite/libjava.jni/register2.c: New file.
+	* java/lang/natClass.cc (_Jv_GetClassNameUtf8): New function.
+	* java/lang/Class.h (_Jv_GetClassNameUtf8): Declare.
+	* jni.cc (struct NativeMethodCacheEntry): New struct.
+	(nathash): Changed type.
+	(hash): Updated.
+	(nathash_find_slot): Likewise.
+	(nathash_find): Likewise.
+	(natrehash): Likewise.
+	(nathash_add): Likewise.
+	(_Jv_JNI_RegisterNatives): Likewise.
+	(_Jv_LookupJNIMethod): Likewise.
+	Idea from Juerg Lehni <juerg@scratchdisk.com>
+
 2006-10-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* testsuite/libjava.jvmti/natevents.cc (env): Delete.
