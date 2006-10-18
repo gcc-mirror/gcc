@@ -15,7 +15,6 @@ program streamtest
     do j=0,9
       write(10,"(i5)") j
     end do
-    write(10,"(a)") lf
   end do
   
   close(10)
@@ -26,7 +25,6 @@ program streamtest
     do j=0,9
       write(10,"(i5)") j
     end do
-    write(10,"(a)") lf
   end do
   rewind(10)
   do i=1,lines
@@ -34,8 +32,6 @@ program streamtest
       read(10,"(i5)") k
       if (k.ne.j) call abort()
     end do
-    read(10,"(a)") tchar
-    if (tchar.ne.lf) call abort()
   end do
 
   close(10,status="delete")
