@@ -86,7 +86,7 @@ Boston, MA 02110-1301, USA.  */
 static inline void __cpu_time_1 (long *, long *) ATTRIBUTE_ALWAYS_INLINE;
 
 /* Helper function for the actual implementation of the CPU_TIME
-   intrnsic.  Returns a CPU time in microseconds or -1 if no CPU time
+   intrinsic.  Returns a CPU time in microseconds or -1 if no CPU time
    could be computed.  */
 
 #ifdef __MINGW32__

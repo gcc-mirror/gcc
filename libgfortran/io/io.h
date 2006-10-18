@@ -108,7 +108,7 @@ array_loop_spec;
      or
       &GROUPNAME  OBJECT=value[s] [,OBJECT=value[s]]...&END
 
-   The object can be a fully qualified, compound name for an instrinsic
+   The object can be a fully qualified, compound name for an intrinsic
    type, derived types or derived type components.  So, a substring
    a(:)%b(4)%ch(2:4)(1:7) has to be treated correctly in namelist
    read. Hence full information about the structure of the object has

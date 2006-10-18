@@ -190,7 +190,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
              the next dimension.  */
           rcount[n] = 0;
           /* We could precalculate these products, but this is a less
-             frequently used path so proabably not worth it.  */
+             frequently used path so probably not worth it.  */
           rptr -= rstride[n] * rextent[n] * size;
           n++;
           if (n == rdim)
@@ -213,7 +213,7 @@ reshape_internal (parray *ret, parray *source, shape_type *shape,
              the next dimension.  */
           scount[n] = 0;
           /* We could precalculate these products, but this is a less
-             frequently used path so proabably not worth it.  */
+             frequently used path so probably not worth it.  */
           src -= sstride[n] * sextent[n] * size;
           n++;
           if (n == sdim)

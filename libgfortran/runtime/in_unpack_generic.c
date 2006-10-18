@@ -136,7 +136,7 @@ internal_unpack (gfc_array_char * d, const void * s)
              the next dimension.  */
           count[n] = 0;
           /* We could precalculate these products, but this is a less
-             frequently used path so proabably not worth it.  */
+             frequently used path so probably not worth it.  */
           dest -= stride[n] * extent[n] * size;
           n++;
           if (n == dim)
