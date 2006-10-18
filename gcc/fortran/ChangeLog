@@ -1,3 +1,9 @@
+2006-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	* primary.c: Revert 'significand'-to-'significant' comment change.
+	* invoke.texi (Warning Options): Minor cleanup for
+	  -Wimplicit-interface.
+
 2006-10-17  Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/20541

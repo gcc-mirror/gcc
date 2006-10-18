@@ -463,7 +463,7 @@ match_real_constant (gfc_expr ** result, int signflag)
       c = gfc_next_char ();
     }
 
-  /* Scan significant.  */
+  /* Scan significand.  */
   for (;; c = gfc_next_char (), count++)
     {
       if (c == '.')
