@@ -1,6 +1,18 @@
 2006-10-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
+	2006-08-16  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR gcov/profile/26570
+	* value-prof.c (static_values): Removed.
+	(tree_find_values_to_profile): Do not set static_values.
+	(find_values_to_profile): Do not free static_values.
+	* profile.c (instrument_values): Do not free the values.
+	(branch_prob): Free the values.
+
+2006-10-18  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
 	2006-05-11  Jan Hubicka  <jh@suse.cz>
 
 	PR debug/26881

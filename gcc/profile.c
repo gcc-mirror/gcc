@@ -226,7 +226,6 @@ instrument_values (histogram_values values)
 	  gcc_unreachable ();
 	}
     }
-  VEC_free (histogram_value, heap, values);
 }
 
 
@@ -1158,6 +1157,7 @@ branch_prob (void)
 	dump_flow_info (profile_dump_file());
     }
 
+  VEC_free (histogram_value, heap, values);
   free_edge_list (el);
   if (flag_branch_probabilities)
     profile_status = PROFILE_READ;

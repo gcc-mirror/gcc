@@ -46,12 +46,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 static struct value_prof_hooks *value_prof_hooks;
 
-/* This is the vector of histograms.  Created in find_values_to_profile.
-   During profile generation, freed by instrument_values.
-   During profile use, freed by value_profile_transformations.  */
-
-static histogram_values static_values = NULL;
-
 /* In this file value profile based optimizations are placed.  Currently the
    following optimizations are implemented (for more detailed descriptions
    see comments at value_profile_transformations):
@@ -795,7 +789,6 @@ tree_find_values_to_profile (histogram_values *values)
   FOR_EACH_BB (bb)
     for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
       tree_values_to_profile (bsi_stmt (bsi), values);
-  static_values = *values;
   
   for (i = 0; VEC_iterate (histogram_value, *values, i, hist); i++)
     {
@@ -873,9 +866,7 @@ find_values_to_profile (histogram_values *values)
 bool
 value_profile_transformations (void)
 {
-  bool retval = (value_prof_hooks->value_profile_transformations) ();
-  VEC_free (histogram_value, heap, static_values);
-  return retval;
+  return (value_prof_hooks->value_profile_transformations) ();
 }
 
 
