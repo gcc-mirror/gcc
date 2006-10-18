@@ -1,3 +1,10 @@
+2006-10-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.old-deja/g++.robertl/eb133b.C: Add XFAILed error for
+	'using namespace std' without previous declaration.
+	* g++.old-deja/g++.robertl/eb133.C: Remove, exact dup of eb133b.C.
+	* g++.old-deja/g++.robertl/eb133c.C: New.
+
 2006-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/29277
