@@ -3821,14 +3821,20 @@ extern tree fold_indirect_ref_1 (tree, tree);
 
 extern tree force_fit_type (tree, int, bool, bool);
 
-extern int add_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-		       unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-		       unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
+extern int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				 bool);
+#define add_double(l1,h1,l2,h2,lv,hv) \
+  add_double_with_sign (l1, h1, l2, h2, lv, hv, false)
 extern int neg_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 		       unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
-extern int mul_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-		       unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-		       unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
+extern int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				 bool);
+#define mul_double(l1,h1,l2,h2,lv,hv) \
+  mul_double_with_sign (l1, h1, l2, h2, lv, hv, false)
 extern void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 			   HOST_WIDE_INT, unsigned int,
 			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, int);
