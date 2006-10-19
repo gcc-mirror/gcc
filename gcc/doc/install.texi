@@ -325,7 +325,7 @@ to regenerate @file{configure} and @file{config.in} files.  Most
 directories require autoconf 2.59 (exactly), but the toplevel
 still requires autoconf 2.13 (exactly).
 
-@item automake versions 1.9.3
+@item automake version 1.9.6
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
@@ -336,7 +336,7 @@ file.  Specifically this applies to the @file{gcc}, @file{intl},
 as any of their subdirectories.
 
 For directories that use automake, GCC requires the latest release in
-the 1.9.x series, which is currently 1.9.3.  When regenerating a directory
+the 1.9.x series, which is currently 1.9.6.  When regenerating a directory
 to a newer version, please update all the directories using an older 1.9.x
 to the latest released version.
 
