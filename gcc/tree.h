@@ -2858,6 +2858,10 @@ extern void decl_restrict_base_insert (tree, tree);
    multiple translation units should be merged.  */
 #define DECL_ONE_ONLY(NODE) (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.one_only)
 
+/* Internal to points-to analysis and operand scanning.  Indicates
+   that this DECL is an artificial points-to variable.  */
+#define DECL_PTA_ARTIFICIAL(NODE) (VAR_DECL_CHECK (NODE)->decl_with_vis.artificial_pta_var)
+
 struct tree_decl_with_vis GTY(())
 {
  struct tree_decl_with_rtl common;
@@ -2875,6 +2879,7 @@ struct tree_decl_with_vis GTY(())
  unsigned based_on_restrict_p : 1;
  /* Used by C++.  Might become a generic decl flag.  */
  unsigned shadowed_for_var_p : 1;
+ unsigned artificial_pta_var : 1;
 
  /* Don't belong to VAR_DECL exclusively.  */
  unsigned in_system_header_flag : 1;
@@ -2889,7 +2894,7 @@ struct tree_decl_with_vis GTY(())
 
  /* Belongs to VAR_DECL exclusively.  */
  ENUM_BITFIELD(tls_model) tls_model : 3;
- /* 11 unused bits. */
+ /* 10 unused bits. */
 };
 
 /* In a VAR_DECL that's static,

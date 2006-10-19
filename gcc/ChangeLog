@@ -1,3 +1,63 @@
+2006-10-19  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/28778
+	Fix PR tree-optimization/29156
+	Fix PR tree-optimization/29415
+	* tree.h (DECL_PTA_ARTIFICIAL): New macro.
+	(tree_decl_with_vis): Add artificial_pta_var flag.
+	* tree-ssa-alias.c (is_escape_site): Remove alias info argument,
+	pushed into callers.
+	* tree-ssa-structalias.c (nonlocal_for_type): New variable.
+	(nonlocal_all): Ditto.
+	(struct variable_info): Add directly_dereferenced member.
+	(var_escaped_vars): New variable.
+	(escaped_vars_tree): Ditto.
+	(escaped_vars_id): Ditto.
+	(nonlocal_vars_id): Ditto.
+	(new_var_info): Set directly_dereferenced.
+	(graph_size): New variable
+	(build_constraint_graph): Use graph_size.
+	(solve_graph): Don't process constraints that cannot change the
+	solution, don't try to propagate an empty solution to our
+	successors.
+	(process_constraint): Set directly_dereferenced.
+	(could_have_pointers): New function.
+	(get_constraint_for_component_ref): Don't process STRING_CST.
+	(nonlocal_lookup): New function.
+	(nonlocal_insert): Ditto.
+	(create_nonlocal_var): Ditto.
+	(get_nonlocal_id_for_type): Ditto.
+	(get_constraint_for): Allow results vector to be empty in the case
+	of string constants.
+	Handle results of calls properly.
+	(update_alias_info): Update alias info stats on number and type of
+	calls.
+	(find_func_aliases): Use could_have_pointers.
+	(make_constraint_from_escaped): Renamed from
+	make_constraint_to_anything, and changed to make constraints from
+	escape variable.
+	(make_constraint_to_escaped): New function.
+	(find_global_initializers): Ditto.
+	(create_variable_info_for): Make constraint from escaped to any
+	global variable, and from any global variable to the set of
+	escaped vars.
+	(intra_create_variable_infos): Deal with escaped instead of
+	pointing to anything.
+	(set_uids_in_ptset): Do type pruning on directly dereferenced
+	variables.
+	(find_what_p_points_to): Adjust call to set_uids_with_ptset.
+	(init_base_vars): Fix comment, and initialize escaped_vars.
+	(need_to_solve): Removed.
+	(find_escape_constraints): New function.
+	(expand_nonlocal_solutions): Ditto.
+	(compute_points_to_sets): Call find_escape_constraints and
+	expand_nonlocal_solutions.
+	(delete_points_to_sets): Don't fall off the end of the graph.
+	(init_alias_heapvars): Initialize nonlocal_for_type and
+	nonlocal_all.
+	(delete_alias_heapvars): Free nonlocal_for_type and null out
+	nonlocal_all. 
+
 2006-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (add_double): Rename to add_double_with_sign.

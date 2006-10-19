@@ -22,5 +22,5 @@ double f(double a)
 }
 /* The points-to set of the final function pointer should be "sin cos" */
 
-/* { dg-final { scan-tree-dump-times "sin cos" 1 "alias1"} } */
+/* { dg-final { scan-tree-dump-times "{ sin cos }" 1 "alias1"} } */
 /* { dg-final { cleanup-tree-dump "alias1" } } */
