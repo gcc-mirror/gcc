@@ -1,3 +1,17 @@
+2006-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (add_double): Rename to add_double_with_sign.
+	Add 'unsigned_p' parameter and take it into account for the overflow.
+	(mul_double): Rename to mul_double_with_sign. 
+	Add 'unsigned_p' parameter and take it into account for the overflow.
+	(fold_div_compare): Call add_double_with_sign instead of add_double
+	and mul_double_with_sign instead of mul_double, passing them the
+	unsignedness of the type.
+	* tree.h (add_double): Macroize.
+	(add_double_with_sign): New prototype.
+	(mul_double): Macroize.
+	(mul_double_with_sign): New prototype.
+
 2006-10-19  Chen Liqin  <liqin@sunnorth.com.cn>
 
         * config/score/crti.asm: New file.

@@ -1,3 +1,7 @@
+2006-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/div-compare-1.c: New test.
+
 2006-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29216
