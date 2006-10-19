@@ -139,5 +139,5 @@ contains
     end subroutine check_alloc2
 
 end program alloc
-! { dg-final { scan-tree-dump-times "deallocate" 38 "original" } }
+! { dg-final { scan-tree-dump-times "deallocate" 33 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
