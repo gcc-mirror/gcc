@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.1.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2006-05-24 16:19-0700\n"
-"PO-Revision-Date: 2006-09-19 12:03+0200\n"
+"PO-Revision-Date: 2006-10-19 00:03+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -2165,7 +2165,7 @@ msgstr "felsökning: "
 
 #: params.def:48
 msgid "The maximum number of fields in a structure variable without direct structure accesses that GCC will attempt to track separately"
-msgstr ""
+msgstr "Det maximala antalet fält i en postvariabel utan direkt poståtkomst som GCC kommer försöka följa separat"
 
 #: params.def:57
 msgid "The maximum structure size (in bytes) for which GCC will use by-element copies"
@@ -2205,7 +2205,7 @@ msgstr "Det maximala djupet för rekursiv inline:ing för icke-inline-funktioner"
 
 #: params.def:132
 msgid "Inline recursively only when the probability of call being executed exceeds the parameter"
-msgstr ""
+msgstr "Inline:a rekursivt endast när sannolikheten för att ett anrop skall göras överskrider parametern"
 
 #: params.def:139
 msgid "If -fvariable-expansion-in-unroller is used, the maximum number of times that an individual variable will be expanded during loop unrolling"
@@ -2368,7 +2368,7 @@ msgstr "Det minsta antal av matchande instruktioner att överväga för korshopp"
 
 #: params.def:372
 msgid "The maximum expansion factor when copying basic blocks"
-msgstr ""
+msgstr "Den maximala expansionsfaktorn vid kopiering av grundblock"
 
 #: params.def:378
 msgid "The maximum number of insns to duplicate when unfactoring computed gotos"
@@ -2380,7 +2380,7 @@ msgstr "Den maximala längden på sökvägar som övervägs i cse"
 
 #: params.def:388
 msgid "The maximum instructions CSE process before flushing"
-msgstr ""
+msgstr "Det maximala antalet instruktioner CSE bearbetar före tömning"
 
 #: params.def:395
 msgid "The minimum cost of an expensive expression in the loop invariant motion"
@@ -2404,7 +2404,7 @@ msgstr "Gräns på storleken av uttryck som används i analyseraren av skalära uttr
 
 #: params.def:430
 msgid "Bound on number of runtime checks inserted by the vectorizer's loop versioning"
-msgstr ""
+msgstr "Gräns på antalet körtidskontroller som läggs in av vektoriserarens slingversionering"
 
 #: params.def:437
 msgid "Given N calls and V call-clobbered vars in a function.  Use .GLOBAL_VAR if NxV is larger than this limit"
@@ -2464,15 +2464,15 @@ msgstr "Förhållande mellan virtuella översättningar och virtuella symboler för a
 
 #: params.def:534
 msgid "The lower bound for a buffer to be considered for stack smashing protection"
-msgstr ""
+msgstr "Den undre gränsen för att en buffer skall övervägas för skydd mot stacksprängning"
 
 #: params.def:552
 msgid "Maximum number of statements allowed in a block that needs to be duplicated when threading jumps"
-msgstr ""
+msgstr "Maximalt antal satser som tillåts i ett block som behöver dubbleras när hopp trådas"
 
 #: params.def:561
 msgid "Maximum number of fields in a structure before pointer analysis treats the structure as a single variable"
-msgstr ""
+msgstr "Maximalt antal fält i en post före pekaranalys behandlar posten som en enda variabel"
 
 #: config/alpha/alpha.c:5087
 #, c-format
@@ -2840,7 +2840,7 @@ msgstr "oväntad sidoeffekt i adress"
 #. right?
 #: config/cris/cris.c:3254
 msgid "Unidentifiable call op"
-msgstr ""
+msgstr "Oidentifierbar call-operation"
 
 #: config/cris/cris.c:3305
 #, c-format
@@ -3222,7 +3222,7 @@ msgstr "MMIX-internt: Detta är inte en konstant:"
 
 #: config/mt/mt.c:298
 msgid "mt_final_prescan_insn, invalid insn #1"
-msgstr ""
+msgstr "mt_final_prescan_insn, ogiltig instruktion nr 1"
 
 #: config/mt/mt.c:369
 msgid "PRINT_OPERAND_ADDRESS, 2 regs"
@@ -3509,15 +3509,15 @@ msgstr "Aritmetisk NaN vid %L"
 
 #: fortran/arith.c:153
 msgid "Division by zero at %L"
-msgstr ""
+msgstr "Division med noll vid %L"
 
 #: fortran/arith.c:156
 msgid "Array operands are incommensurate at %L"
-msgstr ""
+msgstr "Vektoroperander passar inte ihop vid %L"
 
 #: fortran/arith.c:160
 msgid "Integer outside symmetric range implied by Standard Fortran at %L"
-msgstr ""
+msgstr "Heltal utanför symmetriskt intervall implicerat av Standard Fortran vid %L"
 
 #: fortran/arith.c:1384
 msgid "Elemental binary operation"
@@ -3551,23 +3551,23 @@ msgstr "Division med noll vid konvertering av %s till %s vid %L"
 #: fortran/arith.c:1940
 #, no-c-format
 msgid "Array operands are incommensurate converting %s to %s at %L"
-msgstr ""
+msgstr "Vektoroperander passar inte ihop vid konvertering av %s till %s vid %L"
 
 #: fortran/arith.c:1944
 #, no-c-format
 msgid "Integer outside symmetric range implied by Standard Fortran converting %s to %s at %L"
-msgstr ""
+msgstr "Heltal utanför symmetriskt intervall implicerat av Standard Fortran vid konvertering av %s till %s vid %L"
 
 #: fortran/arith.c:2277 fortran/arith.c:2312 fortran/arith.c:2349
 #: fortran/arith.c:2399
 #, no-c-format
 msgid "The Hollerith constant at %L is too long to convert to %s"
-msgstr ""
+msgstr "Hollerithkonstanten vid %L är för lång för att konverteras till %s"
 
 #: fortran/arith.c:2445
 #, no-c-format
 msgid "Enumerator exceeds the C integer type at %C"
-msgstr ""
+msgstr "Uppräkningstypen överskrider C:s heltalstyp vid %C"
 
 #: fortran/array.c:97
 #, no-c-format
@@ -3602,22 +3602,22 @@ msgstr "Förväntade uttryck i vektorspecifikation vid %C"
 #: fortran/array.c:379
 #, no-c-format
 msgid "Bad array specification for an explicitly shaped array at %C"
-msgstr ""
+msgstr "Felaktig vektorspecifikation för en explicit format vektor vid %C"
 
 #: fortran/array.c:390
 #, no-c-format
 msgid "Bad array specification for assumed shape array at %C"
-msgstr ""
+msgstr "Felaktig vektorspecifikation för en förmodat formad vektor vid %C"
 
 #: fortran/array.c:403
 #, no-c-format
 msgid "Bad specification for deferred shape array at %C"
-msgstr ""
+msgstr "Felaktig specifikation för en fördröjt format vektor vid %C"
 
 #: fortran/array.c:407
 #, no-c-format
 msgid "Bad specification for assumed size array at %C"
-msgstr ""
+msgstr "Felaktig specifikation för vektor med förmodad storlek vid %C"
 
 #: fortran/array.c:416
 #, no-c-format
@@ -3627,7 +3627,7 @@ msgstr "Förväntade en annan dimension i vektordeklaration vid %C"
 #: fortran/array.c:422
 #, no-c-format
 msgid "Array specification at %C has more than %d dimensions"
-msgstr ""
+msgstr "Vektorspecifikation vid %C har mer än %d dimensioner"
 
 #: fortran/array.c:627
 #, no-c-format
@@ -3637,7 +3637,7 @@ msgstr "dubblerad initierare"
 #: fortran/array.c:720
 #, no-c-format
 msgid "DO-iterator '%s' at %L is inside iterator of the same name"
-msgstr ""
+msgstr "DO-iterator \"%s\" vid %L är inuti en iterator med samma namn"
 
 #: fortran/array.c:822 fortran/array.c:931
 #, no-c-format
@@ -3647,7 +3647,7 @@ msgstr "Syntaxfel i vektorkonstruerare vid %C"
 #: fortran/array.c:877
 #, no-c-format
 msgid "New in Fortran 2003: [...] style array constructors at %C"
-msgstr ""
+msgstr "Nytt i Fortran 2003: [...]-stils vektorkonsturerare vid %C"
 
 #: fortran/array.c:891
 #, no-c-format
@@ -3778,7 +3778,7 @@ msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara POINTER"
 #: fortran/check.c:523
 #, no-c-format
 msgid "NULL pointer at %L is not permitted as actual argument of '%s' intrinsic function"
-msgstr ""
+msgstr "NULL-pekare vid %L är inte tillåtet som aktuellt argument till inbyggd funktion \"%s\""
 
 #: fortran/check.c:538
 #, no-c-format
@@ -3788,7 +3788,7 @@ msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara en POINTER eller
 #: fortran/check.c:554
 #, no-c-format
 msgid "Array section with a vector subscript at %L shall not be the target of a pointer"
-msgstr ""
+msgstr "Vektorsektion med ett vektorindex vid %L skall inte vara målet för en pekare"
 
 #: fortran/check.c:664 fortran/check.c:766
 #, no-c-format
@@ -3803,7 +3803,7 @@ msgstr "\"%s\"-argumentet till inbyggd \"%s\" vid %L måste vara numeriskt eller 
 #: fortran/check.c:829
 #, no-c-format
 msgid "different shape for arguments '%s' and '%s' at %L for intrinsic 'dot_product'"
-msgstr ""
+msgstr "olika former för argument \"%s\" och \"%s\" vid %L för inbyggd \"dot_product\""
 
 #: fortran/check.c:1079
 #, no-c-format
@@ -3838,12 +3838,12 @@ msgstr "\"a1\"-argumentet till inbyggd \"%s\" vid %L måste vara INTEGER eller RE
 #: fortran/check.c:1499
 #, no-c-format
 msgid "different shape on dimension 1 for arguments '%s' and '%s' at %L for intrinsic matmul"
-msgstr ""
+msgstr "olika form på dimension 1 för argument \"%s\" och \"%s\" vid %L för inbyggd matmul"
 
 #: fortran/check.c:1519
 #, no-c-format
 msgid "different shape on dimension 2 for argument '%s' and dimension 1 for argument '%s' at %L for intrinsic matmul"
-msgstr ""
+msgstr "olika form på dimension 2 för argument \"%s\" och dimension 1 för argument \"%s\" vid %L för inbyggd matmul"
 
 #: fortran/check.c:1528
 #, no-c-format
@@ -3918,7 +3918,7 @@ msgstr "Utökning: ominitiering av \"%s\" vid %L"
 #: fortran/decl.c:208
 #, no-c-format
 msgid "Host associated variable '%s' may not be in the DATA statement at %C."
-msgstr ""
+msgstr "Värdassocierad variabel \"%s\" får inte finnas i DATA-sats vid %C."
 
 #: fortran/decl.c:215
 #, no-c-format
@@ -3928,7 +3928,7 @@ msgstr "Utökning: initiering av common-blockvariabel \"%s\" i DATA-sats vid %C"
 #: fortran/decl.c:301
 #, no-c-format
 msgid "Symbol '%s' must be a PARAMETER in DATA statement at %C"
-msgstr ""
+msgstr "Symbolen \"%s\" måste vara en PARAMETER i DATA-sats vid %C"
 
 #: fortran/decl.c:408
 #, no-c-format
@@ -3958,17 +3958,17 @@ msgstr "Proceduren \"%s\" vid %C är redan definierad vid %L"
 #: fortran/decl.c:633
 #, no-c-format
 msgid "Procedure '%s' at %C has an explicit interface and must not have attributes declared at %L"
-msgstr ""
+msgstr "Proceduren \"%s\" vid %C har ett explicit gränssnitt och får inte ha attribut deklarerade vid %L"
 
 #: fortran/decl.c:805
 #, no-c-format
 msgid "Initializer not allowed for PARAMETER '%s' at %C"
-msgstr ""
+msgstr "Initierare är inte tillåten för PARAMETER \"%s\" vid %C"
 
 #: fortran/decl.c:814
 #, no-c-format
 msgid "Initializer not allowed for COMMON variable '%s' at %C"
-msgstr ""
+msgstr "Initierare är inte tillåten för COMMON-variabel \"%s\" vid %C"
 
 #: fortran/decl.c:824
 #, no-c-format
@@ -3978,7 +3978,7 @@ msgstr "PARAMETER vid %L saknar en initierare"
 #: fortran/decl.c:835
 #, no-c-format
 msgid "Variable '%s' at %C with an initializer already appears in a DATA statement"
-msgstr ""
+msgstr "Variabeln \"%s\" vid %C med en initierare finns redan i en DATA-sats"
 
 #: fortran/decl.c:913
 #, no-c-format
@@ -3988,17 +3988,17 @@ msgstr "Komponent vid %C måste ha attributet POINTER"
 #: fortran/decl.c:922
 #, no-c-format
 msgid "Array component of structure at %C must have explicit or deferred shape"
-msgstr ""
+msgstr "Vektorkomponent i post vid %C måsta ha fördröjt format"
 
 #: fortran/decl.c:951
 #, no-c-format
 msgid "Pointer array component of structure at %C must have a deferred shape"
-msgstr ""
+msgstr "Pekarvektorkomponent i post vid %C måste ha fördröjt format"
 
 #: fortran/decl.c:961
 #, no-c-format
 msgid "Array component of structure at %C must have an explicit shape"
-msgstr ""
+msgstr "Vektorkomponent i post vid %C måsta ha uttryckligt format"
 
 #: fortran/decl.c:987
 #, no-c-format
@@ -4008,7 +4008,7 @@ msgstr "NULL()-initiering vid %C är tvetydig"
 #: fortran/decl.c:1054
 #, no-c-format
 msgid "Enumerator cannot be array at %C"
-msgstr ""
+msgstr "Uppräkningstyp kan inte vara en vektor vid %C"
 
 #: fortran/decl.c:1115 fortran/decl.c:3374
 #, no-c-format
@@ -4058,7 +4058,7 @@ msgstr "Initiering av variabel vid %C är inte tillåtet i en PURE-procedur"
 #: fortran/decl.c:1265
 #, no-c-format
 msgid "ENUMERATOR %L not initialized with integer expression"
-msgstr ""
+msgstr "ENUMERATOR %L är inte initierad med ett heltalsuttryck"
 
 #: fortran/decl.c:1324 fortran/decl.c:1333
 #, no-c-format
@@ -4093,7 +4093,7 @@ msgstr "Saknad högerparentes vid %C"
 #: fortran/decl.c:1494 fortran/decl.c:1537
 #, no-c-format
 msgid "Kind %d is not a CHARACTER kind at %C"
-msgstr ""
+msgstr "Sort %d är inte en CHARACTER-sort vid %C"
 
 #: fortran/decl.c:1531
 #, no-c-format
@@ -4103,12 +4103,12 @@ msgstr "Syntaxfel i CHARACTER-deklaration vid %C"
 #: fortran/decl.c:1592
 #, no-c-format
 msgid "Extension: BYTE type at %C"
-msgstr ""
+msgstr "Utökning: BYTE-typ vid %C"
 
 #: fortran/decl.c:1598
 #, no-c-format
 msgid "BYTE type used at %C is not available on the target machine"
-msgstr ""
+msgstr "BYTE-typ använd vid %C är inte tillgänglig på målmaskinen"
 
 #: fortran/decl.c:1647
 #, no-c-format
@@ -4128,17 +4128,17 @@ msgstr "Teckenintervall saknas i IMPLICIT vid %C"
 #: fortran/decl.c:1782
 #, no-c-format
 msgid "Letters must be in alphabetic order in IMPLICIT statement at %C"
-msgstr ""
+msgstr "Bokstäver måste vara i alfabetisk ordning i IMPLICIT-sats vid %C"
 
 #: fortran/decl.c:1836
 #, no-c-format
 msgid "Empty IMPLICIT statement at %C"
-msgstr ""
+msgstr "Tom IMPLICIT-sats vid %C"
 
 #: fortran/decl.c:2000
 #, no-c-format
 msgid "Enumerator cannot have attributes %C"
-msgstr ""
+msgstr "Uppräkningstyp kan inte ha attribut %C"
 
 #: fortran/decl.c:2013
 #, no-c-format
@@ -4165,7 +4165,7 @@ msgstr "%s-attribut vid %L är inte tillåtet utanför en MODULE"
 #: fortran/decl.c:2264
 #, no-c-format
 msgid "Derived type at %C has not been previously defined and so cannot appear in a derived type definition."
-msgstr ""
+msgstr "Härledd typ vid %C har inte definierats tidigare och kan därför inte förekomma i en härledd typdefinition."
 
 #: fortran/decl.c:2294
 #, no-c-format
@@ -4195,7 +4195,7 @@ msgstr "Oväntat skräp efter RESULT-variabel vid %C"
 #: fortran/decl.c:2520
 #, no-c-format
 msgid "RESULT variable at %C must be different than function name"
-msgstr ""
+msgstr "RESULT-variabel vid %C måste vara skilt från funktionsnamnet"
 
 #: fortran/decl.c:2575
 #, no-c-format
@@ -4275,7 +4275,7 @@ msgstr "ENTRY-sats vid %C kan inte förekomma i en innesluten procedur"
 #: fortran/decl.c:2812
 #, no-c-format
 msgid "RESULT attribute required in ENTRY statement at %C"
-msgstr ""
+msgstr "RESULT-attribut krävs i ENTRY-sats vid %C"
 
 #: fortran/decl.c:3053
 #, no-c-format
@@ -4286,7 +4286,7 @@ msgstr "Oväntad END-sats vid %C"
 #: fortran/decl.c:3062
 #, no-c-format
 msgid "%s statement expected at %L"
-msgstr ""
+msgstr "%s-sats förväntades vid %L"
 
 #: fortran/decl.c:3073
 #, no-c-format
@@ -4311,12 +4311,12 @@ msgstr "Etikett \"%s\" för %s-sats förväntades vid %C"
 #: fortran/decl.c:3167
 #, no-c-format
 msgid "Missing array specification at %L in DIMENSION statement"
-msgstr ""
+msgstr "Vektorspecifikation saknas vid %L i DIMENSION-sats"
 
 #: fortran/decl.c:3176
 #, no-c-format
 msgid "Array specification must be deferred at %L"
-msgstr ""
+msgstr "Vektorspecifikation måste vara fördröjd vid %L"
 
 #: fortran/decl.c:3253
 #, no-c-format
@@ -4336,12 +4336,12 @@ msgstr "Variabelnamn förväntades vid %C"
 #: fortran/decl.c:3320
 #, no-c-format
 msgid "Cray pointer at %C must be an integer."
-msgstr ""
+msgstr "Cray-pekare vid %C måste vara ett heltal."
 
 #: fortran/decl.c:3324
 #, no-c-format
 msgid "Cray pointer at %C has %d bytes of precision; memory addresses require %d bytes."
-msgstr ""
+msgstr "Cray-pekare vid %C har %d bytes precision, minnesadresser kräver %d byte."
 
 #: fortran/decl.c:3331
 #, no-c-format
@@ -4361,22 +4361,22 @@ msgstr "\",\" ellerslut på sats förväntades vid %C"
 #: fortran/decl.c:3471
 #, no-c-format
 msgid "Cray pointer declaration at %C requires -fcray-pointer flag."
-msgstr ""
+msgstr "Cray-pekardeklaration vid %C kräver flaggan -fcray-pointer."
 
 #: fortran/decl.c:3569
 #, no-c-format
 msgid "Access specification of the %s operator at %C has already been specified"
-msgstr ""
+msgstr "Åtkomstspecifikation av operatorn %s vid %C har redan angivits"
 
 #: fortran/decl.c:3587
 #, no-c-format
 msgid "Access specification of the .%s. operator at %C has already been specified"
-msgstr ""
+msgstr "Åtkomstspecifikation för operatorn .%s. vid %C har redan angivits"
 
 #: fortran/decl.c:3674
 #, no-c-format
 msgid "Expected variable name at %C in PARAMETER statement"
-msgstr ""
+msgstr "Variabelnamn förväntades vid %C i PARAMETER-sats"
 
 #: fortran/decl.c:3681
 #, no-c-format
@@ -4396,12 +4396,12 @@ msgstr "Oväntade tecken i PARAMETER-sats vid %C"
 #: fortran/decl.c:3770
 #, no-c-format
 msgid "Blanket SAVE statement at %C follows previous SAVE statement"
-msgstr ""
+msgstr "Allmän SAVE-sats vid %C följer tidigare SAVE-sats"
 
 #: fortran/decl.c:3783
 #, no-c-format
 msgid "SAVE statement at %C follows blanket SAVE statement"
-msgstr ""
+msgstr "SAVE-sats vid %C följer allmän SAVE-sats"
 
 #: fortran/decl.c:3829
 #, no-c-format
@@ -4411,17 +4411,17 @@ msgstr "Syntaxfel i SAVE-sats vid %C"
 #: fortran/decl.c:3850
 #, no-c-format
 msgid "MODULE PROCEDURE at %C must be in a generic module interface"
-msgstr ""
+msgstr "MODULE PROCEDURE vid %C måste vara i ett generiskt modulgränssnitt"
 
 #: fortran/decl.c:3910
 #, no-c-format
 msgid "Derived type at %C can only be PRIVATE within a MODULE"
-msgstr ""
+msgstr "Härledd typ vid %C kan endast vara PRAVATE inom en MODULE"
 
 #: fortran/decl.c:3923
 #, no-c-format
 msgid "Derived type at %C can only be PUBLIC within a MODULE"
-msgstr ""
+msgstr "Härledd typ vid %C kan endast vara PUBLIC inom en MODULE"
 
 #: fortran/decl.c:3934
 #, no-c-format
@@ -4446,17 +4446,17 @@ msgstr "Härledd typdefinition \"%s\" vid %C har redan definierats"
 #: fortran/decl.c:4012
 #, no-c-format
 msgid "Cray Pointee at %C cannot be assumed shape array"
-msgstr ""
+msgstr "Cray-pekare vid %C kan inte vara förmodat format vektor"
 
 #: fortran/decl.c:4033
 #, no-c-format
 msgid "New in Fortran 2003: ENUM AND ENUMERATOR at %C"
-msgstr ""
+msgstr "Nytt i Fortran 2003: ENUM AND ENUMERATOR vid %C"
 
 #: fortran/decl.c:4057
 #, no-c-format
 msgid "ENUM definition statement expected before %C"
-msgstr ""
+msgstr "ENUM-definitionssats förväntades före %C"
 
 #: fortran/decl.c:4090
 #, no-c-format
@@ -4466,7 +4466,7 @@ msgstr "Syntaxfel i ENUMERATOR-definition vid %C"
 #: fortran/dump-parse-tree.c:53
 #, c-format
 msgid "%-5d "
-msgstr ""
+msgstr "%-5d "
 
 #: fortran/dump-parse-tree.c:55
 #, c-format
@@ -4505,13 +4505,13 @@ msgstr "%s = "
 #: fortran/dump-parse-tree.c:116
 #, c-format
 msgid "(arg not-present)"
-msgstr ""
+msgstr "(argument saknas)"
 
 #: fortran/dump-parse-tree.c:120 fortran/dump-parse-tree.c:397
 #: fortran/dump-parse-tree.c:494
 #, c-format
 msgid " "
-msgstr ""
+msgstr " "
 
 #: fortran/dump-parse-tree.c:137 fortran/dump-parse-tree.c:312
 #, c-format
@@ -4531,18 +4531,18 @@ msgstr " %s "
 #: fortran/dump-parse-tree.c:182
 #, c-format
 msgid "FULL"
-msgstr ""
+msgstr "FULL"
 
 #: fortran/dump-parse-tree.c:213 fortran/dump-parse-tree.c:222
 #: fortran/dump-parse-tree.c:297
 #, c-format
 msgid " , "
-msgstr ""
+msgstr " , "
 
 #: fortran/dump-parse-tree.c:227
 #, c-format
 msgid "UNKNOWN"
-msgstr ""
+msgstr "UNKNOWN"
 
 #: fortran/dump-parse-tree.c:252
 #, c-format
@@ -4557,7 +4557,7 @@ msgstr "''"
 #: fortran/dump-parse-tree.c:326
 #, c-format
 msgid "%c"
-msgstr ""
+msgstr "%c"
 
 #: fortran/dump-parse-tree.c:333
 #, c-format
@@ -4567,17 +4567,17 @@ msgstr "%s("
 #: fortran/dump-parse-tree.c:339
 #, c-format
 msgid "(/ "
-msgstr ""
+msgstr "(/ "
 
 #: fortran/dump-parse-tree.c:341
 #, c-format
 msgid " /)"
-msgstr ""
+msgstr " /)"
 
 #: fortran/dump-parse-tree.c:347
 #, c-format
 msgid "NULL()"
-msgstr ""
+msgstr "NULL()"
 
 #: fortran/dump-parse-tree.c:357 fortran/dump-parse-tree.c:370
 #: fortran/dump-parse-tree.c:395 fortran/dump-parse-tree.c:401
@@ -4588,7 +4588,7 @@ msgstr "_%d"
 #: fortran/dump-parse-tree.c:362
 #, c-format
 msgid ".true."
-msgstr ""
+msgstr ".true."
 
 #: fortran/dump-parse-tree.c:364
 #, c-format
@@ -4598,12 +4598,12 @@ msgstr ".false."
 #: fortran/dump-parse-tree.c:391
 #, c-format
 msgid "(complex "
-msgstr ""
+msgstr "(complex "
 
 #: fortran/dump-parse-tree.c:407
 #, c-format
 msgid "???"
-msgstr ""
+msgstr "???"
 
 #: fortran/dump-parse-tree.c:415 fortran/dump-parse-tree.c:701
 #, c-format
@@ -4613,102 +4613,102 @@ msgstr "%s:"
 #: fortran/dump-parse-tree.c:425
 #, c-format
 msgid "U+ "
-msgstr ""
+msgstr "U+ "
 
 #: fortran/dump-parse-tree.c:428
 #, c-format
 msgid "U- "
-msgstr ""
+msgstr "U- "
 
 #: fortran/dump-parse-tree.c:431
 #, c-format
 msgid "+ "
-msgstr ""
+msgstr "+ "
 
 #: fortran/dump-parse-tree.c:434
 #, c-format
 msgid "- "
-msgstr ""
+msgstr "- "
 
 #: fortran/dump-parse-tree.c:437
 #, c-format
 msgid "* "
-msgstr ""
+msgstr "* "
 
 #: fortran/dump-parse-tree.c:440
 #, c-format
 msgid "/ "
-msgstr ""
+msgstr "/ "
 
 #: fortran/dump-parse-tree.c:443
 #, c-format
 msgid "** "
-msgstr ""
+msgstr "** "
 
 #: fortran/dump-parse-tree.c:446
 #, c-format
 msgid "// "
-msgstr ""
+msgstr "// "
 
 #: fortran/dump-parse-tree.c:449
 #, c-format
 msgid "AND "
-msgstr ""
+msgstr "AND "
 
 #: fortran/dump-parse-tree.c:452
 #, c-format
 msgid "OR "
-msgstr ""
+msgstr "OR "
 
 #: fortran/dump-parse-tree.c:455
 #, c-format
 msgid "EQV "
-msgstr ""
+msgstr "EQV "
 
 #: fortran/dump-parse-tree.c:458
 #, c-format
 msgid "NEQV "
-msgstr ""
+msgstr "NEQV "
 
 #: fortran/dump-parse-tree.c:461
 #, c-format
 msgid "= "
-msgstr ""
+msgstr "= "
 
 #: fortran/dump-parse-tree.c:464
 #, c-format
 msgid "<> "
-msgstr ""
+msgstr "<> "
 
 #: fortran/dump-parse-tree.c:467
 #, c-format
 msgid "> "
-msgstr ""
+msgstr "> "
 
 #: fortran/dump-parse-tree.c:470
 #, c-format
 msgid ">= "
-msgstr ""
+msgstr ">= "
 
 #: fortran/dump-parse-tree.c:473
 #, c-format
 msgid "< "
-msgstr ""
+msgstr "< "
 
 #: fortran/dump-parse-tree.c:476
 #, c-format
 msgid "<= "
-msgstr ""
+msgstr "<= "
 
 #: fortran/dump-parse-tree.c:479
 #, c-format
 msgid "NOT "
-msgstr ""
+msgstr "NOT "
 
 #: fortran/dump-parse-tree.c:482
 #, c-format
 msgid "parens"
-msgstr ""
+msgstr "parens"
 
 #: fortran/dump-parse-tree.c:504
 #, c-format
@@ -4728,127 +4728,127 @@ msgstr "(%s %s %s %s"
 #: fortran/dump-parse-tree.c:537
 #, c-format
 msgid " ALLOCATABLE"
-msgstr ""
+msgstr " ALLOCATABLE"
 
 #: fortran/dump-parse-tree.c:539 fortran/dump-parse-tree.c:602
 #, c-format
 msgid " DIMENSION"
-msgstr ""
+msgstr " DIMENSION"
 
 #: fortran/dump-parse-tree.c:541
 #, c-format
 msgid " EXTERNAL"
-msgstr ""
+msgstr " EXTERNAL"
 
 #: fortran/dump-parse-tree.c:543
 #, c-format
 msgid " INTRINSIC"
-msgstr ""
+msgstr " INTRINSIC"
 
 #: fortran/dump-parse-tree.c:545
 #, c-format
 msgid " OPTIONAL"
-msgstr ""
+msgstr " OPTIONAL"
 
 #: fortran/dump-parse-tree.c:547 fortran/dump-parse-tree.c:600
 #, c-format
 msgid " POINTER"
-msgstr ""
+msgstr " POINTER"
 
 #: fortran/dump-parse-tree.c:549
 #, c-format
 msgid " SAVE"
-msgstr ""
+msgstr " SAVE"
 
 #: fortran/dump-parse-tree.c:551
 #, c-format
 msgid " TARGET"
-msgstr ""
+msgstr " TARGET"
 
 #: fortran/dump-parse-tree.c:553
 #, c-format
 msgid " DUMMY"
-msgstr ""
+msgstr " DUMMY"
 
 #: fortran/dump-parse-tree.c:555
 #, c-format
 msgid " RESULT"
-msgstr ""
+msgstr " RESULT"
 
 #: fortran/dump-parse-tree.c:557
 #, c-format
 msgid " ENTRY"
-msgstr ""
+msgstr " ENTRY"
 
 #: fortran/dump-parse-tree.c:560
 #, c-format
 msgid " DATA"
-msgstr ""
+msgstr " DATA"
 
 #: fortran/dump-parse-tree.c:562
 #, c-format
 msgid " USE-ASSOC"
-msgstr ""
+msgstr " USE-ASSOC"
 
 #: fortran/dump-parse-tree.c:564
 #, c-format
 msgid " IN-NAMELIST"
-msgstr ""
+msgstr " IN-NAMELIST"
 
 #: fortran/dump-parse-tree.c:566
 #, c-format
 msgid " IN-COMMON"
-msgstr ""
+msgstr " IN-COMMON"
 
 #: fortran/dump-parse-tree.c:569
 #, c-format
 msgid " FUNCTION"
-msgstr ""
+msgstr " FUNCTION"
 
 #: fortran/dump-parse-tree.c:571
 #, c-format
 msgid " SUBROUTINE"
-msgstr ""
+msgstr " SUBROUTINE"
 
 #: fortran/dump-parse-tree.c:573
 #, c-format
 msgid " IMPLICIT-TYPE"
-msgstr ""
+msgstr " IMPLICIT-TYPE"
 
 #: fortran/dump-parse-tree.c:576
 #, c-format
 msgid " SEQUENCE"
-msgstr ""
+msgstr " SEQUENCE"
 
 #: fortran/dump-parse-tree.c:578
 #, c-format
 msgid " ELEMENTAL"
-msgstr ""
+msgstr " ELEMENTAL"
 
 #: fortran/dump-parse-tree.c:580
 #, c-format
 msgid " PURE"
-msgstr ""
+msgstr " PURE"
 
 #: fortran/dump-parse-tree.c:582
 #, c-format
 msgid " RECURSIVE"
-msgstr ""
+msgstr " RECURSIVE"
 
 #: fortran/dump-parse-tree.c:628
 #, c-format
 msgid "symbol %s "
-msgstr ""
+msgstr "symbol %s "
 
 #: fortran/dump-parse-tree.c:635
 #, c-format
 msgid "value: "
-msgstr ""
+msgstr "värde: "
 
 #: fortran/dump-parse-tree.c:642
 #, c-format
 msgid "Array spec:"
-msgstr ""
+msgstr "Vektorspec:"
 
 #: fortran/dump-parse-tree.c:649
 #, c-format
@@ -4870,17 +4870,17 @@ msgstr "resultat: %s"
 #: fortran/dump-parse-tree.c:663
 #, c-format
 msgid "components: "
-msgstr ""
+msgstr "komponenter: "
 
 #: fortran/dump-parse-tree.c:670
 #, c-format
 msgid "Formal arglist:"
-msgstr ""
+msgstr "Formell argumentlista:"
 
 #: fortran/dump-parse-tree.c:677
 #, c-format
 msgid " [Alt Return]"
-msgstr ""
+msgstr " [Alt Retur]"
 
 #: fortran/dump-parse-tree.c:684
 #, c-format
@@ -4890,17 +4890,17 @@ msgstr "Formell namnrymd"
 #: fortran/dump-parse-tree.c:742
 #, c-format
 msgid "common: /%s/ "
-msgstr ""
+msgstr "common: /%s/ "
 
 #: fortran/dump-parse-tree.c:750 fortran/dump-parse-tree.c:1471
 #, c-format
 msgid ", "
-msgstr ""
+msgstr ", "
 
 #: fortran/dump-parse-tree.c:763
 #, c-format
 msgid "symtree: %s  Ambig %d"
-msgstr ""
+msgstr "symträd: %s  Tvet %d"
 
 #: fortran/dump-parse-tree.c:766
 #, c-format
@@ -4910,27 +4910,27 @@ msgstr " från namnrymden %s"
 #: fortran/dump-parse-tree.c:810
 #, c-format
 msgid "NOP"
-msgstr ""
+msgstr "NOP"
 
 #: fortran/dump-parse-tree.c:814
 #, c-format
 msgid "CONTINUE"
-msgstr ""
+msgstr "CONTINUE"
 
 #: fortran/dump-parse-tree.c:818
 #, c-format
 msgid "ENTRY %s"
-msgstr ""
+msgstr "ENTRY %s"
 
 #: fortran/dump-parse-tree.c:822
 #, c-format
 msgid "ASSIGN "
-msgstr ""
+msgstr "ASSIGN "
 
 #: fortran/dump-parse-tree.c:829
 #, c-format
 msgid "LABEL ASSIGN "
-msgstr ""
+msgstr "LABEL ASSIGN "
 
 #: fortran/dump-parse-tree.c:831
 #, c-format
@@ -4940,17 +4940,17 @@ msgstr " %d"
 #: fortran/dump-parse-tree.c:835
 #, c-format
 msgid "POINTER ASSIGN "
-msgstr ""
+msgstr "POINTER ASSIGN "
 
 #: fortran/dump-parse-tree.c:842
 #, c-format
 msgid "GOTO "
-msgstr ""
+msgstr "GOTO "
 
 #: fortran/dump-parse-tree.c:851
 #, c-format
 msgid ", ("
-msgstr ""
+msgstr ", ("
 
 #: fortran/dump-parse-tree.c:865
 #, c-format
@@ -4960,22 +4960,22 @@ msgstr "CALL %s "
 #: fortran/dump-parse-tree.c:870
 #, c-format
 msgid "RETURN "
-msgstr ""
+msgstr "RETURN "
 
 #: fortran/dump-parse-tree.c:876
 #, c-format
 msgid "PAUSE "
-msgstr ""
+msgstr "PAUSE "
 
 #: fortran/dump-parse-tree.c:886
 #, c-format
 msgid "STOP "
-msgstr ""
+msgstr "STOP "
 
 #: fortran/dump-parse-tree.c:896 fortran/dump-parse-tree.c:904
 #, c-format
 msgid "IF "
-msgstr ""
+msgstr "IF "
 
 #: fortran/dump-parse-tree.c:898
 #, c-format
@@ -4985,178 +4985,178 @@ msgstr " %d, %d, %d"
 #: fortran/dump-parse-tree.c:915
 #, c-format
 msgid "ELSE\n"
-msgstr ""
+msgstr "ELSE\n"
 
 #: fortran/dump-parse-tree.c:918
 #, c-format
 msgid "ELSE IF "
-msgstr ""
+msgstr "ELSE IF "
 
 #: fortran/dump-parse-tree.c:928
 #, c-format
 msgid "ENDIF"
-msgstr ""
+msgstr "ENDIF"
 
 #: fortran/dump-parse-tree.c:933
 #, c-format
 msgid "SELECT CASE "
-msgstr ""
+msgstr "SELECT CASE "
 
 #: fortran/dump-parse-tree.c:941
 #, c-format
 msgid "CASE "
-msgstr ""
+msgstr "CASE "
 
 #: fortran/dump-parse-tree.c:957
 #, c-format
 msgid "END SELECT"
-msgstr ""
+msgstr "END SELECT"
 
 #: fortran/dump-parse-tree.c:961
 #, c-format
 msgid "WHERE "
-msgstr ""
+msgstr "WHERE "
 
 #: fortran/dump-parse-tree.c:972
 #, c-format
 msgid "ELSE WHERE "
-msgstr ""
+msgstr "ELSE WHERE "
 
 #: fortran/dump-parse-tree.c:979
 #, c-format
 msgid "END WHERE"
-msgstr ""
+msgstr "END WHERE"
 
 #: fortran/dump-parse-tree.c:984
 #, c-format
 msgid "FORALL "
-msgstr ""
+msgstr "FORALL "
 
 #: fortran/dump-parse-tree.c:1009
 #, c-format
 msgid "END FORALL"
-msgstr ""
+msgstr "END FORALL"
 
 #: fortran/dump-parse-tree.c:1013
 #, c-format
 msgid "DO "
-msgstr ""
+msgstr "DO "
 
 #: fortran/dump-parse-tree.c:1027 fortran/dump-parse-tree.c:1038
 #, c-format
 msgid "END DO"
-msgstr ""
+msgstr "END DO"
 
 #: fortran/dump-parse-tree.c:1031
 #, c-format
 msgid "DO WHILE "
-msgstr ""
+msgstr "DO WHILE "
 
 #: fortran/dump-parse-tree.c:1042
 #, c-format
 msgid "CYCLE"
-msgstr ""
+msgstr "CYCLE"
 
 #: fortran/dump-parse-tree.c:1048
 #, c-format
 msgid "EXIT"
-msgstr ""
+msgstr "EXIT"
 
 #: fortran/dump-parse-tree.c:1054
 #, c-format
 msgid "ALLOCATE "
-msgstr ""
+msgstr "ALLOCATE "
 
 #: fortran/dump-parse-tree.c:1057 fortran/dump-parse-tree.c:1073
 #, c-format
 msgid " STAT="
-msgstr ""
+msgstr " STAT="
 
 #: fortran/dump-parse-tree.c:1070
 #, c-format
 msgid "DEALLOCATE "
-msgstr ""
+msgstr "DEALLOCATE "
 
 #: fortran/dump-parse-tree.c:1086
 #, c-format
 msgid "OPEN"
-msgstr ""
+msgstr "OPEN"
 
 #: fortran/dump-parse-tree.c:1091 fortran/dump-parse-tree.c:1170
 #: fortran/dump-parse-tree.c:1212 fortran/dump-parse-tree.c:1235
 #: fortran/dump-parse-tree.c:1387
 #, c-format
 msgid " UNIT="
-msgstr ""
+msgstr " UNIT="
 
 #: fortran/dump-parse-tree.c:1096 fortran/dump-parse-tree.c:1175
 #: fortran/dump-parse-tree.c:1217 fortran/dump-parse-tree.c:1246
 #: fortran/dump-parse-tree.c:1404
 #, c-format
 msgid " IOMSG="
-msgstr ""
+msgstr " IOMSG="
 
 #: fortran/dump-parse-tree.c:1101 fortran/dump-parse-tree.c:1180
 #: fortran/dump-parse-tree.c:1222 fortran/dump-parse-tree.c:1251
 #: fortran/dump-parse-tree.c:1409
 #, c-format
 msgid " IOSTAT="
-msgstr ""
+msgstr " IOSTAT="
 
 #: fortran/dump-parse-tree.c:1106 fortran/dump-parse-tree.c:1240
 #, c-format
 msgid " FILE="
-msgstr ""
+msgstr " FILE="
 
 #: fortran/dump-parse-tree.c:1111 fortran/dump-parse-tree.c:1185
 #, c-format
 msgid " STATUS="
-msgstr ""
+msgstr " STATUS="
 
 #: fortran/dump-parse-tree.c:1116 fortran/dump-parse-tree.c:1281
 #, c-format
 msgid " ACCESS="
-msgstr ""
+msgstr " ACCESS="
 
 #: fortran/dump-parse-tree.c:1121 fortran/dump-parse-tree.c:1297
 #, c-format
 msgid " FORM="
-msgstr ""
+msgstr " FORM="
 
 #: fortran/dump-parse-tree.c:1126 fortran/dump-parse-tree.c:1312
 #, c-format
 msgid " RECL="
-msgstr ""
+msgstr " RECL="
 
 #: fortran/dump-parse-tree.c:1131 fortran/dump-parse-tree.c:1322
 #, c-format
 msgid " BLANK="
-msgstr ""
+msgstr " BLANK="
 
 #: fortran/dump-parse-tree.c:1136 fortran/dump-parse-tree.c:1327
 #, c-format
 msgid " POSITION="
-msgstr ""
+msgstr " POSITION="
 
 #: fortran/dump-parse-tree.c:1141 fortran/dump-parse-tree.c:1332
 #, c-format
 msgid " ACTION="
-msgstr ""
+msgstr " ACTION="
 
 #: fortran/dump-parse-tree.c:1146 fortran/dump-parse-tree.c:1352
 #, c-format
 msgid " DELIM="
-msgstr ""
+msgstr " DELIM="
 
 #: fortran/dump-parse-tree.c:1151 fortran/dump-parse-tree.c:1357
 #, c-format
 msgid " PAD="
-msgstr ""
+msgstr " PAD="
 
 #: fortran/dump-parse-tree.c:1156 fortran/dump-parse-tree.c:1362
 #, c-format
 msgid " CONVERT="
-msgstr ""
+msgstr " CONVERT="
 
 #: fortran/dump-parse-tree.c:1160 fortran/dump-parse-tree.c:1189
 #: fortran/dump-parse-tree.c:1226 fortran/dump-parse-tree.c:1367
@@ -5168,52 +5168,52 @@ msgstr " ERR=%d"
 #: fortran/dump-parse-tree.c:1165
 #, c-format
 msgid "CLOSE"
-msgstr ""
+msgstr "CLOSE"
 
 #: fortran/dump-parse-tree.c:1193
 #, c-format
 msgid "BACKSPACE"
-msgstr ""
+msgstr "BACKSPACE"
 
 #: fortran/dump-parse-tree.c:1197
 #, c-format
 msgid "ENDFILE"
-msgstr ""
+msgstr "ENDFILE"
 
 #: fortran/dump-parse-tree.c:1201
 #, c-format
 msgid "REWIND"
-msgstr ""
+msgstr "REWIND"
 
 #: fortran/dump-parse-tree.c:1205
 #, c-format
 msgid "FLUSH"
-msgstr ""
+msgstr "FLUSH"
 
 #: fortran/dump-parse-tree.c:1230
 #, c-format
 msgid "INQUIRE"
-msgstr ""
+msgstr "INQUIRE"
 
 #: fortran/dump-parse-tree.c:1256
 #, c-format
 msgid " EXIST="
-msgstr ""
+msgstr " EXIST="
 
 #: fortran/dump-parse-tree.c:1261
 #, c-format
 msgid " OPENED="
-msgstr ""
+msgstr " OPENED="
 
 #: fortran/dump-parse-tree.c:1266
 #, c-format
 msgid " NUMBER="
-msgstr ""
+msgstr " NUMBER="
 
 #: fortran/dump-parse-tree.c:1271
 #, c-format
 msgid " NAMED="
-msgstr ""
+msgstr " NAMED="
 
 #: fortran/dump-parse-tree.c:1276
 #, c-format
@@ -5223,62 +5223,62 @@ msgstr " NAME="
 #: fortran/dump-parse-tree.c:1286
 #, c-format
 msgid " SEQUENTIAL="
-msgstr ""
+msgstr " SEQUENTIAL="
 
 #: fortran/dump-parse-tree.c:1292
 #, c-format
 msgid " DIRECT="
-msgstr ""
+msgstr " DIRECT="
 
 #: fortran/dump-parse-tree.c:1302
 #, c-format
 msgid " FORMATTED"
-msgstr ""
+msgstr " FORMATTED"
 
 #: fortran/dump-parse-tree.c:1307
 #, c-format
 msgid " UNFORMATTED="
-msgstr ""
+msgstr " UNFORMATTED="
 
 #: fortran/dump-parse-tree.c:1317
 #, c-format
 msgid " NEXTREC="
-msgstr ""
+msgstr " NEXTREC="
 
 #: fortran/dump-parse-tree.c:1337
 #, c-format
 msgid " READ="
-msgstr ""
+msgstr " READ="
 
 #: fortran/dump-parse-tree.c:1342
 #, c-format
 msgid " WRITE="
-msgstr ""
+msgstr " WRITE="
 
 #: fortran/dump-parse-tree.c:1347
 #, c-format
 msgid " READWRITE="
-msgstr ""
+msgstr " READWRITE="
 
 #: fortran/dump-parse-tree.c:1371
 #, c-format
 msgid "IOLENGTH "
-msgstr ""
+msgstr "IOLENGTH "
 
 #: fortran/dump-parse-tree.c:1377
 #, c-format
 msgid "READ"
-msgstr ""
+msgstr "READ"
 
 #: fortran/dump-parse-tree.c:1381
 #, c-format
 msgid "WRITE"
-msgstr ""
+msgstr "WRITE"
 
 #: fortran/dump-parse-tree.c:1393
 #, c-format
 msgid " FMT="
-msgstr ""
+msgstr " FMT="
 
 #: fortran/dump-parse-tree.c:1398
 #, c-format
@@ -5293,27 +5293,27 @@ msgstr " NML=%s"
 #: fortran/dump-parse-tree.c:1414
 #, c-format
 msgid " SIZE="
-msgstr ""
+msgstr " SIZE="
 
 #: fortran/dump-parse-tree.c:1419
 #, c-format
 msgid " REC="
-msgstr ""
+msgstr " REC="
 
 #: fortran/dump-parse-tree.c:1424
 #, c-format
 msgid " ADVANCE="
-msgstr ""
+msgstr " ADVANCE="
 
 #: fortran/dump-parse-tree.c:1435
 #, c-format
 msgid "TRANSFER "
-msgstr ""
+msgstr "TRANSFER "
 
 #: fortran/dump-parse-tree.c:1440
 #, c-format
 msgid "DT_END"
-msgstr ""
+msgstr "DT_END"
 
 #: fortran/dump-parse-tree.c:1446
 #, c-format
@@ -5328,7 +5328,7 @@ msgstr " EOR=%d"
 #: fortran/dump-parse-tree.c:1465
 #, c-format
 msgid "Equivalence: "
-msgstr ""
+msgstr "Ekvivalens: "
 
 #: fortran/dump-parse-tree.c:1491
 #, c-format
@@ -5338,7 +5338,7 @@ msgstr "Namnrymd:"
 #: fortran/dump-parse-tree.c:1505
 #, c-format
 msgid " %c-%c: "
-msgstr ""
+msgstr " %c-%c: "
 
 #: fortran/dump-parse-tree.c:1507
 #, c-format
@@ -5348,7 +5348,7 @@ msgstr " %c: "
 #: fortran/dump-parse-tree.c:1516
 #, c-format
 msgid "procedure name = %s"
-msgstr ""
+msgstr "procedurnamn = %s"
 
 #: fortran/dump-parse-tree.c:1532
 #, c-format
@@ -5363,7 +5363,7 @@ msgstr "Användaroperatorer:\n"
 #: fortran/dump-parse-tree.c:1557
 #, c-format
 msgid "CONTAINS\n"
-msgstr ""
+msgstr "CONTAINS\n"
 
 #: fortran/error.c:137
 #, no-c-format
@@ -5415,7 +5415,7 @@ msgstr "För stort heltalsvärde i uttryck vid %C"
 #: fortran/expr.c:1274
 #, no-c-format
 msgid "Numeric or CHARACTER operands are required in expression at %L"
-msgstr ""
+msgstr "Numeriska eller CHARACTER-operander krävs i uttrycket vid %L"
 
 #: fortran/expr.c:1294
 #, no-c-format
@@ -5425,17 +5425,17 @@ msgstr "Exponenten vid %L måste vara INTEGER som ett initieringsuttryck"
 #: fortran/expr.c:1307
 #, no-c-format
 msgid "Concatenation operator in expression at %L must have two CHARACTER operands"
-msgstr ""
+msgstr "Konkateneringsoperatorn i uttrycket vid %L måste ha två CHARACTER-operander"
 
 #: fortran/expr.c:1314
 #, no-c-format
 msgid "Concat operator at %L must concatenate strings of the same kind"
-msgstr ""
+msgstr "Koncateneringsoperatorn vid %L måste konkatenera strängar av samma sort"
 
 #: fortran/expr.c:1324
 #, no-c-format
 msgid ".NOT. operator in expression at %L must have a LOGICAL operand"
-msgstr ""
+msgstr ".NOT.-poeraton i uttrycket vid %L måstte ha en LOGICAL-operand"
 
 #: fortran/expr.c:1340
 #, no-c-format
@@ -5455,17 +5455,17 @@ msgstr "Numeriska operander krävs i uttryck vid %L"
 #: fortran/expr.c:1423
 #, no-c-format
 msgid "The F95 does not permit the assumed character length variable '%s' in constant expression at %L."
-msgstr ""
+msgstr "F95 tillåter inte variabeln \"%s\" med förmodad teckenlängd i konstant uttryck vid %L."
 
 #: fortran/expr.c:1476
 #, no-c-format
 msgid "Function '%s' in initialization expression at %L must be an intrinsic function"
-msgstr ""
+msgstr "Funktionen \"%s\" i initieringsuttrycket vid %L måste vara en inbyggd funktion"
 
 #: fortran/expr.c:1498
 #, no-c-format
 msgid "Parameter '%s' at %L has not been declared or is a variable, which does not reduce to a constant expression"
-msgstr ""
+msgstr "Parameter \"%s\" vid %L har inte deklarerats eller är en variabel, som inte reduceras till ett konstant uttryck"
 
 #: fortran/expr.c:1583
 #, no-c-format
@@ -5495,12 +5495,12 @@ msgstr "Specifikationsfunktionen \"%s\" vid %L får inte vara RECURSIVE"
 #: fortran/expr.c:1705
 #, no-c-format
 msgid "Dummy argument '%s' at %L cannot be OPTIONAL"
-msgstr ""
+msgstr "Atrappargumentet \"%s\" vid %L får inte vara OPTIONAL"
 
 #: fortran/expr.c:1712
 #, no-c-format
 msgid "Dummy argument '%s' at %L cannot be INTENT(OUT)"
-msgstr ""
+msgstr "Atrappargumentet \"%s\" vid %L får inte vara INTENT(OUT)"
 
 #: fortran/expr.c:1732
 #, no-c-format
@@ -5525,17 +5525,17 @@ msgstr "Inkompatibla ordningar i %s vid %L"
 #: fortran/expr.c:1828
 #, no-c-format
 msgid "different shape for %s at %L on dimension %d (%d/%d)"
-msgstr ""
+msgstr "olika form för %s vid %L på dimension %d (%d/%d)"
 
 #: fortran/expr.c:1861
 #, no-c-format
 msgid "Can't assign to INTENT(IN) variable '%s' at %L"
-msgstr ""
+msgstr "Det går inte att tilldela till INTENT(IN)-variabel \"%s\" vid %L"
 
 #: fortran/expr.c:1905
 #, no-c-format
 msgid "'%s' at %L is not a VALUE"
-msgstr ""
+msgstr "\"%s\" vid %L är inte ett VALUE"
 
 #: fortran/expr.c:1912
 #, no-c-format
@@ -5555,12 +5555,12 @@ msgstr "NULL finns på högersidan i tilldelning vid %L"
 #: fortran/expr.c:1936
 #, no-c-format
 msgid "Vector assignment to assumed-size Cray Pointee at %L is illegal."
-msgstr ""
+msgstr "Vektortilldelning till Cray-pekare med formodat storlek vid %L är otillåten."
 
 #: fortran/expr.c:1945
 #, no-c-format
 msgid "POINTER valued function appears on right-hand side of assignment at %L"
-msgstr ""
+msgstr "PONTER-värd funktion förekommer på högersidan av tilldelning vid %L"
 
 #: fortran/expr.c:1950
 msgid "Array assignment"
@@ -5574,22 +5574,22 @@ msgstr "Inkompatibla typer i tilldelning vid %L, %s till %s"
 #: fortran/expr.c:1990
 #, no-c-format
 msgid "Pointer assignment target is not a POINTER at %L"
-msgstr ""
+msgstr "Pekartilldelningsmålet är inte en POINTER vid %L"
 
 #: fortran/expr.c:1998
 #, no-c-format
 msgid "'%s' in the pointer assignment at %L cannot be an l-value since it is a procedure"
-msgstr ""
+msgstr "\"%s\" i pekartilldelningen vid %L kan inte vara ett l-värde eftersom det är en procedur"
 
 #: fortran/expr.c:2007
 #, no-c-format
 msgid "Pointer assignment to non-POINTER at %L"
-msgstr ""
+msgstr "Pekartilldelning till icke-POINTER vid %L"
 
 #: fortran/expr.c:2015
 #, no-c-format
 msgid "Bad pointer object in PURE procedure at %L"
-msgstr ""
+msgstr "Felaktigt pekarobjekt i PURE-procedur vid %L"
 
 #: fortran/expr.c:2028
 #, no-c-format
@@ -5614,7 +5614,7 @@ msgstr "Olika teckenlängder i pekartilldelning vid %L"
 #: fortran/expr.c:2064
 #, no-c-format
 msgid "Pointer assignment target is neither TARGET nor POINTER at %L"
-msgstr ""
+msgstr "Pekartilldeningsmål är vare sig TARGET eller POINTER vid %L"
 
 #: fortran/expr.c:2071
 #, no-c-format
@@ -5624,12 +5624,12 @@ msgstr "Felaktigt mål i pekartilldelning i PURE-procedur vid %L"
 #: fortran/expr.c:2077
 #, no-c-format
 msgid "Pointer assignment with vector subscript on rhs at %L"
-msgstr ""
+msgstr "Pekartilldelning med vektorindexering på högersidan vid %L"
 
 #: fortran/expr.c:2095
 #, no-c-format
 msgid "The upper bound in the last dimension of the assumed_size array on the rhs of the pointer assignment at %L must be set"
-msgstr ""
+msgstr "Den övre gränsen på den sista dimensionen av vektorn med förmodad storlek på högersidan av pekartilldelningen vid %L måste anges"
 
 #: fortran/gfortranspec.c:232
 #, c-format
@@ -5645,6 +5645,11 @@ msgid ""
 "For more information about these matters, see the file named COPYING\n"
 "\n"
 msgstr ""
+"GNU Fortran kommer UTAN GARANTI så långt lagen tillåter.  Du kan\n"
+"vidaredistribuera kopior av GNU Fortran enligt villkoren i GNU General\n"
+"Public License.  För mer information om detta ämne, se filen som heter\n"
+"COPYING\n"
+"\n"
 
 #: fortran/gfortranspec.c:374
 #, c-format
@@ -5684,42 +5689,42 @@ msgstr "Förväntade ett namnlöst gränssnitt vid %C"
 #: fortran/interface.c:284
 #, no-c-format
 msgid "Expected 'END INTERFACE ASSIGNMENT (=)' at %C"
-msgstr ""
+msgstr "\"END INTERFACE ASSIGNMENT (=)\" förväntades vid %C"
 
 #: fortran/interface.c:286
 #, no-c-format
 msgid "Expecting 'END INTERFACE OPERATOR (%s)' at %C"
-msgstr ""
+msgstr "\"END INTERFACE OPERATOR (%s)\" förväntades vid %C"
 
 #: fortran/interface.c:300
 #, no-c-format
 msgid "Expecting 'END INTERFACE OPERATOR (.%s.)' at %C"
-msgstr ""
+msgstr "\"END INTERFACE OPERATOR (.%s.)\" förväntades vid %C"
 
 #: fortran/interface.c:311
 #, no-c-format
 msgid "Expecting 'END INTERFACE %s' at %C"
-msgstr ""
+msgstr "\"END INTERFACE %s\" förväntades vid %C"
 
 #: fortran/interface.c:523
 #, no-c-format
 msgid "Assignment operator interface at %L must be a SUBROUTINE"
-msgstr ""
+msgstr "Gränssnitt för tilldelningsoperator vid %L måste vara en SUBROUTINE"
 
 #: fortran/interface.c:532
 #, no-c-format
 msgid "Intrinsic operator interface at %L must be a FUNCTION"
-msgstr ""
+msgstr "Gränssnitt för inbyggd operator vid %L måste vara en FUNCTION"
 
 #: fortran/interface.c:619
 #, no-c-format
 msgid "First argument of defined assignment at %L must be INTENT(IN) or INTENT(INOUT)"
-msgstr ""
+msgstr "Första argumentet till definierad tilldelning vid %L måste vara INTENT(IN) eller INTENT(INOUT)"
 
 #: fortran/interface.c:623
 #, no-c-format
 msgid "Second argument of defined assignment at %L must be INTENT(IN)"
-msgstr ""
+msgstr "Andra argumentet av definierad tilldelning vid %L måste vara INTENT(IN)"
 
 #: fortran/interface.c:629 fortran/resolve.c:6021
 #, no-c-format
@@ -5734,37 +5739,37 @@ msgstr "Andra argumentet till operatogränssnitt vid %L måste vara INTENT(IN)"
 #: fortran/interface.c:640
 #, no-c-format
 msgid "Operator interface at %L conflicts with intrinsic interface"
-msgstr ""
+msgstr "Operatorgränssnitt vid %L står i konflikt med inbyggt gränssnitt"
 
 #: fortran/interface.c:645
 #, no-c-format
 msgid "Operator interface at %L has the wrong number of arguments"
-msgstr ""
+msgstr "Operatorgränssnitt vid %L har fel antal argument"
 
 #: fortran/interface.c:894
 #, no-c-format
 msgid "Procedure '%s' in %s at %L is neither function nor subroutine"
-msgstr ""
+msgstr "Proceduren \"%s\" i %s vid %L är varken en funktion eller subrutin"
 
 #: fortran/interface.c:948
 #, no-c-format
 msgid "Ambiguous interfaces '%s' and '%s' in %s at %L"
-msgstr ""
+msgstr "Tvetydiga gränssnitt \"%s\" och \"%s\" i %s vid %L"
 
 #: fortran/interface.c:1198
 #, no-c-format
 msgid "Keyword argument '%s' at %L is not in the procedure"
-msgstr ""
+msgstr "Nyckelordsargument \"%s\" vid %L finns inte i proceduren"
 
 #: fortran/interface.c:1207
 #, no-c-format
 msgid "Keyword argument '%s' at %L is already associated with another actual argument"
-msgstr ""
+msgstr "Nyckelordsargumentet \"%s\" vid %L är redan associerat med ett annat aktuellt argument"
 
 #: fortran/interface.c:1217
 #, no-c-format
 msgid "More actual than formal arguments in procedure call at %L"
-msgstr ""
+msgstr "Fler aktuella än formella argument i proceduranrop vid %L"
 
 #: fortran/interface.c:1230
 #, no-c-format
@@ -5774,7 +5779,7 @@ msgstr "Alternativ returspecifikation saknas i subrutinanrop vid %L"
 #: fortran/interface.c:1239
 #, no-c-format
 msgid "Unexpected alternate return spec in subroutine call at %L"
-msgstr ""
+msgstr "Oväntad alternativ returspecifikation i subrutinanrop vid %L"
 
 #: fortran/interface.c:1254
 #, no-c-format
@@ -5794,7 +5799,7 @@ msgstr "Aktuellt argument till \"%s\" skall vara en pekare vid %L"
 #: fortran/interface.c:1288
 #, no-c-format
 msgid "Actual argument at %L must be definable to match dummy INTENT = OUT/INOUT"
-msgstr ""
+msgstr "Aktuellt argument vid %L måste gå att definiera för att stämma atrapp INTENT = OUT/INOUT"
 
 #: fortran/interface.c:1309
 #, no-c-format
@@ -5804,22 +5809,22 @@ msgstr "Aktuellt argument saknas för argument \"%s\" vid %L"
 #: fortran/interface.c:1494
 #, no-c-format
 msgid "Same actual argument associated with INTENT(%s) argument '%s' and INTENT(%s) argument '%s' at %L"
-msgstr ""
+msgstr "Samma aktuella argument associerat med INTENT(%s)-argument \"%s\" och INTENT(%s)-argument \"%s\" vid %L"
 
 #: fortran/interface.c:1535
 #, no-c-format
 msgid "Procedure argument at %L is INTENT(IN) while interface specifies INTENT(%s)"
-msgstr ""
+msgstr "Procedurargument vid %L är INTENT(IN) medan gränssnitt anger INTENT(%s)"
 
 #: fortran/interface.c:1546
 #, no-c-format
 msgid "Procedure argument at %L is local to a PURE procedure and is passed to an INTENT(%s) argument"
-msgstr ""
+msgstr "Procedurargument vid %L är lokalt i en PURE-procedur och skickas till ett INTENT(%s)-argument"
 
 #: fortran/interface.c:1555
 #, no-c-format
 msgid "Procedure argument at %L is local to a PURE procedure and has the POINTER attribute"
-msgstr ""
+msgstr "Procedurargument vid %L är lokalt i en PURE-procedur och har attributet POINTER"
 
 #: fortran/interface.c:1577
 #, no-c-format
@@ -5829,7 +5834,7 @@ msgstr "Procedur \"%s\" anropad med ett implicit gränssnitt vid %L"
 #: fortran/interface.c:1744
 #, no-c-format
 msgid "Function '%s' called in lieu of an operator at %L must be PURE"
-msgstr ""
+msgstr "Funktionen \"%s\" anropad istället för en operator vid %L måste vara PURE"
 
 #: fortran/interface.c:1824
 #, no-c-format
@@ -5879,7 +5884,7 @@ msgstr "Utökning: Beräkning av ett initieringuttryck utanför standarden vid %L"
 #: fortran/intrinsic.c:3327
 #, no-c-format
 msgid "Subroutine call to intrinsic '%s' at %L is not PURE"
-msgstr ""
+msgstr "Subrutinanrop till inbyggd \"%s\" vid %L är inte PURE"
 
 #: fortran/intrinsic.c:3402
 #, no-c-format
@@ -5902,7 +5907,7 @@ msgstr "Positiv bredd krävs"
 
 #: fortran/io.c:416
 msgid "Period required"
-msgstr ""
+msgstr "Punkt krävs"
 
 #: fortran/io.c:417
 msgid "Nonnegative width required"
@@ -5927,13 +5932,13 @@ msgstr "Redigeringsbeskrivning P förväntades"
 #. P requires a prior number.
 #: fortran/io.c:482
 msgid "P descriptor requires leading scale factor"
-msgstr ""
+msgstr "P-deskriptor kräver inledande skalfaktor"
 
 #. X requires a prior number if we're being pedantic.
 #: fortran/io.c:487
 #, no-c-format
 msgid "Extension: X descriptor requires leading space count at %C"
-msgstr ""
+msgstr "Utökning: X-deskriptor kräver inledande utrymmesantal vid %C"
 
 #: fortran/io.c:507
 #, no-c-format
@@ -5946,12 +5951,12 @@ msgstr "$ måste vara den sista specifceraren"
 
 #: fortran/io.c:557
 msgid "Repeat count cannot follow P descriptor"
-msgstr ""
+msgstr "Upprepningsantal får inte följa efter P-deskriptor"
 
 #: fortran/io.c:576
 #, no-c-format
 msgid "Extension: Missing positive width after L descriptor at %C"
-msgstr ""
+msgstr "Utökning: Positiv bredd saknas efter L-deskriptor vid %C"
 
 #: fortran/io.c:638
 msgid "Positive exponent width required"
@@ -5970,7 +5975,7 @@ msgstr "%s i formatsträng vid %C"
 #: fortran/io.c:850
 #, no-c-format
 msgid "Format statement in module main block at %C."
-msgstr ""
+msgstr "Formatsats i moulhuvudblock vid %C."
 
 #: fortran/io.c:856
 #, no-c-format
@@ -5985,7 +5990,7 @@ msgstr "Dubblerad %s-specifikation vid %C"
 #: fortran/io.c:945
 #, no-c-format
 msgid "Variable tag cannot be INTENT(IN) at %C"
-msgstr ""
+msgstr "Variabeltagg får inte vara INTENT(IN) vid %C"
 
 #: fortran/io.c:952
 #, no-c-format
@@ -6015,17 +6020,17 @@ msgstr "%s-tagg vid %L måste ha typen %s eller %s"
 #: fortran/io.c:1047
 #, no-c-format
 msgid "Obsolete: ASSIGNED variable in FORMAT tag at %L"
-msgstr ""
+msgstr "Föråldrat: ASSIGNED-variabel i FORMAT-tagg vid %E"
 
 #: fortran/io.c:1052
 #, no-c-format
 msgid "Variable '%s' at %L has not been assigned a format label"
-msgstr ""
+msgstr "Variabeln \"%s\" vid %L har inte tilldelats en formatetikett"
 
 #: fortran/io.c:1067
 #, no-c-format
 msgid "Extension: Character array in FORMAT tag at %L"
-msgstr ""
+msgstr "Utökning: Teckenvektor i FORMAT-tagg vid %L"
 
 #: fortran/io.c:1074
 #, no-c-format
@@ -6040,22 +6045,22 @@ msgstr "%s-tagg vid %L måste vara skalär"
 #: fortran/io.c:1091
 #, no-c-format
 msgid "Fortran 2003: IOMSG tag at %L"
-msgstr ""
+msgstr "Fortran 2003: IOMSG-tagg vid %L"
 
 #: fortran/io.c:1098
 #, no-c-format
 msgid "Fortran 95 requires default INTEGER in IOSTAT tag at %L"
-msgstr ""
+msgstr "Fortran 95 kräver standard-INTEGER i IOSTAT-tagg vid %L"
 
 #: fortran/io.c:1106
 #, no-c-format
 msgid "Fortran 95 requires default INTEGER in SIZE tag at %L"
-msgstr ""
+msgstr "Fortran 95 kräver standard-INTEGER i SIZE-tagg vid %L"
 
 #: fortran/io.c:1114
 #, no-c-format
 msgid "Extension: CONVERT tag at %L"
-msgstr ""
+msgstr "Utökning: CONVERT-tagg vid %L"
 
 #: fortran/io.c:1283
 #, no-c-format
@@ -6065,7 +6070,7 @@ msgstr "OPEN-sats är inte tillåten i en PURE-procedur vid %C"
 #: fortran/io.c:1391
 #, no-c-format
 msgid "CLOSE statement not allowed in PURE procedure at %C"
-msgstr ""
+msgstr "CLOSE-sats inte tillåten i PURE-procedur vid %C"
 
 #: fortran/io.c:1517 fortran/match.c:1457
 #, no-c-format
@@ -6075,7 +6080,7 @@ msgstr "%s-sats är inte tillåtet i PURE-procedur vid %C"
 #: fortran/io.c:1577
 #, no-c-format
 msgid "Fortran 2003: FLUSH statement at %C"
-msgstr ""
+msgstr "Fortran 2003: FLUSH-sats vid %C"
 
 #: fortran/io.c:1637
 #, no-c-format
@@ -6090,7 +6095,7 @@ msgstr "Dubblerad formatspecifikation vid %C"
 #: fortran/io.c:1710
 #, no-c-format
 msgid "Symbol '%s' in namelist '%s' is INTENT(IN) at %C"
-msgstr ""
+msgstr "Symbolen \"%s\" i namnlistan \"Ts\" är INTENT(IN) vid %C"
 
 #: fortran/io.c:1746
 #, no-c-format
@@ -6105,22 +6110,22 @@ msgstr "Symbolen \"%s\" vid %C måste vara ett NAMELIST-gruppnamn"
 #: fortran/io.c:1793
 #, no-c-format
 msgid "END tag at %C not allowed in output statement"
-msgstr ""
+msgstr "END-tagg vid %C är inte tillåten i utmatningssats"
 
 #: fortran/io.c:1853
 #, no-c-format
 msgid "UNIT specification at %L must be an INTEGER expression or a CHARACTER variable"
-msgstr ""
+msgstr "UNIT-specifikation vid %L måste vara ett INTEGER-uttryck eller en CHARACTER-variabel"
 
 #: fortran/io.c:1862
 #, no-c-format
 msgid "Internal unit with vector subscript at %L"
-msgstr ""
+msgstr "Intern enhet med vektorindex vid %L"
 
 #: fortran/io.c:1870
 #, no-c-format
 msgid "External IO UNIT cannot be an array at %L"
-msgstr ""
+msgstr "Extern IO UNIT får inte vara en vektor vid %L"
 
 #: fortran/io.c:1880
 #, no-c-format
@@ -6160,17 +6165,17 @@ msgstr "Förväntade uttryck i %s-sats vid %C"
 #: fortran/io.c:2083
 #, no-c-format
 msgid "Variable '%s' in input list at %C cannot be INTENT(IN)"
-msgstr ""
+msgstr "Variabeln \"%s\" i inmatningslista vid %C får inte vara INTENT(IN)"
 
 #: fortran/io.c:2092
 #, no-c-format
 msgid "Cannot read to variable '%s' in PURE procedure at %C"
-msgstr ""
+msgstr "Det går inte att läsa till variabel \"%s\" i PURE-procedur vid %C"
 
 #: fortran/io.c:2109
 #, no-c-format
 msgid "Cannot write to internal file unit '%s' at %C inside a PURE procedure"
-msgstr ""
+msgstr "Det går inte att skriva till intern filenhet \"%s\" vid %C inuti en PURE-procedur"
 
 #. A general purpose syntax error.
 #: fortran/io.c:2169 fortran/io.c:2541 fortran/gfortran.h:1695
@@ -6181,12 +6186,12 @@ msgstr "Syntaxfel i %s-sats vid %C"
 #: fortran/io.c:2390
 #, no-c-format
 msgid "PRINT namelist at %C is an extension"
-msgstr ""
+msgstr "PRINT-namnlista vid %C är en utökning"
 
 #: fortran/io.c:2502
 #, no-c-format
 msgid "Extension: Comma before output item list at %C is an extension"
-msgstr ""
+msgstr "Utökning: Komma före utmatningselementlista vid %C är en utökning"
 
 #: fortran/io.c:2511
 #, no-c-format
@@ -6201,12 +6206,12 @@ msgstr "PRINT-sats vid %C är inte tillåten inuti PURE-procedur"
 #: fortran/io.c:2712 fortran/io.c:2763
 #, no-c-format
 msgid "INQUIRE statement not allowed in PURE procedure at %C"
-msgstr ""
+msgstr "INQURE-sats är inte tillåten i PURE-procedur vid %C"
 
 #: fortran/io.c:2739
 #, no-c-format
 msgid "IOLENGTH tag invalid in INQUIRE statement at %C"
-msgstr ""
+msgstr "IOLENGTH-tagg ogiltig i INQUIRE-sats vid %C"
 
 #: fortran/io.c:2749
 #, no-c-format
@@ -6216,7 +6221,7 @@ msgstr "INQUIRE-sats vid %L får inte innehålla både FILE- och UNIT-specificerare
 #: fortran/io.c:2756
 #, no-c-format
 msgid "INQUIRE statement at %L requires either FILE or UNIT specifier"
-msgstr ""
+msgstr "INQUIRE-sats vid %L kräver antingen FILE- eller UNIT-specificerare"
 
 #: fortran/match.c:179
 #, no-c-format
@@ -6231,7 +6236,7 @@ msgstr "För många siffror i satsetikett vid %C"
 #: fortran/match.c:245 fortran/parse.c:332
 #, no-c-format
 msgid "Statement label at %C is zero"
-msgstr ""
+msgstr "Satsetikett vid %C är noll"
 
 #: fortran/match.c:278
 #, no-c-format
@@ -6246,22 +6251,22 @@ msgstr "Dubblerad konstruktionsetikett \"%s\" vid %C"
 #: fortran/match.c:408
 #, no-c-format
 msgid "Name at %C is too long"
-msgstr ""
+msgstr "Namn vid %C är för långt"
 
 #: fortran/match.c:525
 #, no-c-format
 msgid "Loop variable at %C cannot be a sub-component"
-msgstr ""
+msgstr "Slingvariabel vid %C får inte vara en subkomponent"
 
 #: fortran/match.c:531
 #, no-c-format
 msgid "Loop variable '%s' at %C cannot be INTENT(IN)"
-msgstr ""
+msgstr "Slingvariabeln \"%s\" vid %C får inte vara INTENT(IN)"
 
 #: fortran/match.c:538
 #, no-c-format
 msgid "Loop variable at %C cannot have the POINTER attribute"
-msgstr ""
+msgstr "Slingvariabel vid %C får inte ha attributet POINTER"
 
 #: fortran/match.c:568
 #, no-c-format
@@ -6281,7 +6286,7 @@ msgstr "Ogiltig form på PROGRAM-sats vid %C"
 #: fortran/match.c:850
 #, no-c-format
 msgid "Cannot assign to a PARAMETER variable at %C"
-msgstr ""
+msgstr "Det går inte att tilldela till en PARAMETER-variabel vid %C"
 
 #: fortran/match.c:939 fortran/match.c:1015
 #, no-c-format
@@ -6296,7 +6301,7 @@ msgstr "Syntaxfel i IF-uttryck vid %C"
 #: fortran/match.c:998
 #, no-c-format
 msgid "Block label not appropriate for arithmetic IF statement at %C"
-msgstr ""
+msgstr "Blocketikett är inte tillämplig för aritmetisk IF-sats vid %C"
 
 #: fortran/match.c:1040
 #, no-c-format
@@ -6306,7 +6311,7 @@ msgstr "Blocketikett är inte tillämplig IF-sats vid %C"
 #: fortran/match.c:1111
 #, no-c-format
 msgid "Unclassifiable statement in IF-clause at %C"
-msgstr ""
+msgstr "Oklassificerbar sats i IF-klausul vid %C"
 
 #: fortran/match.c:1118
 #, no-c-format
@@ -6321,7 +6326,7 @@ msgstr "Oväntat skräp efter ELSE-sats vid %C"
 #: fortran/match.c:1168 fortran/match.c:1203
 #, no-c-format
 msgid "Label '%s' at %C doesn't match IF label '%s'"
-msgstr ""
+msgstr "Etiketten \"%s\" vid %C stämmer inte med IF-etikett \"%s\""
 
 #: fortran/match.c:1197
 #, no-c-format
@@ -6351,12 +6356,12 @@ msgstr "För många siffror i STOP-kod vid %C"
 #: fortran/match.c:1488
 #, no-c-format
 msgid "Obsolete: PAUSE statement at %C"
-msgstr ""
+msgstr "Föråldrat: PAUSE-sats vid %C"
 
 #: fortran/match.c:1537
 #, no-c-format
 msgid "Obsolete: ASSIGN statement at %C"
-msgstr ""
+msgstr "Föråldrat: ASSIGN-sats vid %C"
 
 #: fortran/match.c:1583
 #, no-c-format
@@ -6366,57 +6371,57 @@ msgstr "Föråldrat: Tilldelad GOTO-sats vid %C"
 #: fortran/match.c:1630 fortran/match.c:1682
 #, no-c-format
 msgid "Statement label list in GOTO at %C cannot be empty"
-msgstr ""
+msgstr "Satsetikettlistan i GOTO vid %C får inte vara tom"
 
 #: fortran/match.c:1766
 #, no-c-format
 msgid "Bad allocate-object in ALLOCATE statement at %C for a PURE procedure"
-msgstr ""
+msgstr "Felaktigt allokeringsobjekt i ALLOCATE-sats vid %C för en PURE-procedur"
 
 #: fortran/match.c:1786
 #, no-c-format
 msgid "STAT variable '%s' of ALLOCATE statement at %C cannot be INTENT(IN)"
-msgstr ""
+msgstr "ALLOCATE-satsens STAT-variabel \"%s\" vid %C får inte vara INTENT(IN)"
 
 #: fortran/match.c:1794
 #, no-c-format
 msgid "Illegal STAT variable in ALLOCATE statement at %C for a PURE procedure"
-msgstr ""
+msgstr "Otillåten STAT-variabel i ALLOCATE-sats vid %C för en PURE-procedur"
 
 #: fortran/match.c:1801 fortran/match.c:1967
 #, no-c-format
 msgid "STAT expression at %C must be a variable"
-msgstr ""
+msgstr "STAT-uttryck vid %C måste vara en variabel"
 
 #: fortran/match.c:1856
 #, no-c-format
 msgid "Illegal variable in NULLIFY at %C for a PURE procedure"
-msgstr ""
+msgstr "Otillåten variabel i NULLIFY vid %C för en PURE-procedur"
 
 #: fortran/match.c:1934
 #, no-c-format
 msgid "Illegal deallocate-expression in DEALLOCATE at %C for a PURE procedure"
-msgstr ""
+msgstr "Otillåtet avallokeringsuttryck i DEALLOCATE vid %C för en PURE-procedur"
 
 #: fortran/match.c:1953
 #, no-c-format
 msgid "STAT variable '%s' of DEALLOCATE statement at %C cannot be INTENT(IN)"
-msgstr ""
+msgstr "STAT-variabeln \"%s\" till DEALLOCATE-satsen vid %C får inte vara INTENT(IN)"
 
 #: fortran/match.c:1960
 #, no-c-format
 msgid "Illegal STAT variable in DEALLOCATE statement at %C for a PURE procedure"
-msgstr ""
+msgstr "Otillåten STAT-variabel i DEALLOCATE-sats vid %C för en PURE-procedur"
 
 #: fortran/match.c:2009
 #, no-c-format
 msgid "Alternate RETURN statement at %C is only allowed within a SUBROUTINE"
-msgstr ""
+msgstr "Alternativ RETURN-sats vid %C är bara tillåten inuti en SUBROUTINE"
 
 #: fortran/match.c:2040
 #, no-c-format
 msgid "Extension: RETURN statement in main program at %C"
-msgstr ""
+msgstr "Utökning: RETURN-sats i huvudprogram vid %C"
 
 #: fortran/match.c:2235
 #, no-c-format
@@ -6426,7 +6431,7 @@ msgstr "Syntaxfel i common-blocknamn vid %C"
 #: fortran/match.c:2271
 #, no-c-format
 msgid "Symbol '%s' at %C is already an external symbol that is not COMMON"
-msgstr ""
+msgstr "Symbolen \"%s\" vid %C är redan en extern symbol som inte är COMMON"
 
 #: fortran/match.c:2318
 #, no-c-format
@@ -6436,32 +6441,32 @@ msgstr "Symbolen \"%s\" vid %C är redan i ett COMMON-block"
 #: fortran/match.c:2330
 #, no-c-format
 msgid "Previously initialized symbol '%s' in blank COMMON block at %C"
-msgstr ""
+msgstr "Tidigare initierad symbol \"%s\" i blankt COMMON-block vid %C"
 
 #: fortran/match.c:2333
 #, no-c-format
 msgid "Previously initialized symbol '%s' in COMMON block '%s' at %C"
-msgstr ""
+msgstr "Tidigare initierad symbol \"%s\" i COMMON-block \"%s\" vid %C"
 
 #: fortran/match.c:2345
 #, no-c-format
 msgid "Derived type variable in COMMON at %C does not have the SEQUENCE attribute"
-msgstr ""
+msgstr "Härledd typvariabel i COMMON vid %C har inte attributet SEQUENCE"
 
 #: fortran/match.c:2368
 #, no-c-format
 msgid "Array specification for symbol '%s' in COMMON at %C must be explicit"
-msgstr ""
+msgstr "Vektorspecifikation för symbolen \"%s\" i COMMON vid %C måste vara explicit"
 
 #: fortran/match.c:2379
 #, no-c-format
 msgid "Symbol '%s' in COMMON at %C cannot be a POINTER array"
-msgstr ""
+msgstr "Symbolen \"%s\" i COMMON vid %C får inte vara en POINTER-vektor"
 
 #: fortran/match.c:2411
 #, no-c-format
 msgid "Symbol '%s', in COMMON block '%s' at %C is being indirectly equivalenced to another COMMON block '%s'"
-msgstr ""
+msgstr "Symbolen \"%s\", i COMMON-block \"%s\" vid %C är indirekt gjort ekvivalent med ett annat COMMON-block \"%s\""
 
 #: fortran/match.c:2521
 #, no-c-format
@@ -6471,7 +6476,7 @@ msgstr "Namnlistegruppnamnet \"%s\" vid %C har redan grundtypen %s"
 #: fortran/match.c:2528
 #, no-c-format
 msgid "Namelist group name '%s' at %C already is USE associated and cannot be respecified."
-msgstr ""
+msgstr "Namnlistegruppnamn \"%s\" vid %C är redan USE-associerat och får inte specificeras om."
 
 #: fortran/match.c:2555
 #, no-c-format
@@ -6486,27 +6491,27 @@ msgstr "Vektor \"%s\" med underförstådd form i namnlistan \"%s\" vid %C är en ut
 #: fortran/match.c:2690
 #, no-c-format
 msgid "Derived type component %C is not a permitted EQUIVALENCE member"
-msgstr ""
+msgstr "Härledd typkomponent %C är inte en tillåten EQUIVALENCE-medlem"
 
 #: fortran/match.c:2699
 #, no-c-format
 msgid "Array reference in EQUIVALENCE at %C cannot be an array section"
-msgstr ""
+msgstr "Vektorreferens i EQUIVALENCE vid %C får inte vara en vektorsektion"
 
 #: fortran/match.c:2728
 #, no-c-format
 msgid "EQUIVALENCE at %C requires two or more objects"
-msgstr ""
+msgstr "EQUIVALENCE vid %C kräver två eller flera objekt"
 
 #: fortran/match.c:2742
 #, no-c-format
 msgid "Attempt to indirectly overlap COMMON blocks %s and %s by EQUIVALENCE at %C"
-msgstr ""
+msgstr "Försök att indirekt överlappa COMMON-block %s och %s med EQUIVALENCE vid %C"
 
 #: fortran/match.c:2894
 #, no-c-format
 msgid "Statement function at %L is recursive"
-msgstr ""
+msgstr "Satsfunktion vid %L är rekursiv"
 
 #: fortran/match.c:2984
 #, no-c-format
@@ -6531,12 +6536,12 @@ msgstr "Syntaxfel i CASE-specifikation vid %C"
 #: fortran/match.c:3227
 #, no-c-format
 msgid "ELSEWHERE statement at %C not enclosed in WHERE block"
-msgstr ""
+msgstr "ELSEWHERE-sats vid %C inte innesluten i WHERE-block"
 
 #: fortran/match.c:3258
 #, no-c-format
 msgid "Label '%s' at %C doesn't match WHERE label '%s'"
-msgstr ""
+msgstr "Etiketten \"%s\" vid %C stämmer inte med WHERE-etikett \"%s\""
 
 #: fortran/match.c:3353
 #, no-c-format
@@ -6556,7 +6561,7 @@ msgstr "Felatkigt tecken \"%c\" i OPERATOR-namn vid %C"
 #: fortran/matchexp.c:81
 #, no-c-format
 msgid "The name '%s' cannot be used as a defined operator at %C"
-msgstr ""
+msgstr "Namnet \"%s\" får inte användas som en definierad operator vid %C"
 
 #: fortran/matchexp.c:160
 #, no-c-format
@@ -6571,12 +6576,12 @@ msgstr "Förväntade exponent i uttryck vid %C"
 #: fortran/matchexp.c:338 fortran/matchexp.c:442
 #, no-c-format
 msgid "Extension: Unary operator following arithmetic operator (use parentheses) at %C"
-msgstr ""
+msgstr "Utökning: Unär operator följer aritmetisk operator (använd parenteser) vid %C"
 
 #: fortran/misc.c:42
 #, no-c-format
 msgid "Out of memory-- malloc() failed"
-msgstr ""
+msgstr "Slut på minne -- malloc() misslyckades"
 
 #: fortran/module.c:532
 #, no-c-format
@@ -6586,17 +6591,17 @@ msgstr "Generisk specifikation saknas i USE-sats vid %C"
 #: fortran/module.c:840
 #, no-c-format
 msgid "Reading module %s at line %d column %d: %s"
-msgstr ""
+msgstr "När modul %s på rad %d kolumn %d lästes: %s"
 
 #: fortran/module.c:844
 #, no-c-format
 msgid "Writing module %s at line %d column %d: %s"
-msgstr ""
+msgstr "När modul %s på rad %d kolumn %d lästes: %s"
 
 #: fortran/module.c:848
 #, no-c-format
 msgid "Module %s at line %d column %d: %s"
-msgstr ""
+msgstr "Modul %s på rad %d kolumn %d: %s"
 
 #: fortran/module.c:890
 msgid "Unexpected EOF"
@@ -6612,11 +6617,11 @@ msgstr "Heltalsspill"
 
 #: fortran/module.c:1007
 msgid "Name too long"
-msgstr ""
+msgstr "För långt namn"
 
 #: fortran/module.c:1114
 msgid "Bad name"
-msgstr ""
+msgstr "Felaktigt namn"
 
 #: fortran/module.c:1158
 msgid "Expected name"
@@ -6628,7 +6633,7 @@ msgstr "Vänsterparentes förväntades"
 
 #: fortran/module.c:1164
 msgid "Expected right parenthesis"
-msgstr ""
+msgstr "Högerparentes förväntades"
 
 #: fortran/module.c:1167
 msgid "Expected integer"
@@ -6636,7 +6641,7 @@ msgstr "Heltal förväntades"
 
 #: fortran/module.c:1170
 msgid "Expected string"
-msgstr "Förväntade en sträng"
+msgstr "Sträng förväntades"
 
 #: fortran/module.c:1194
 msgid "find_enum(): Enum not found"
@@ -6657,7 +6662,7 @@ msgstr "Heltalssträng förväntades"
 
 #: fortran/module.c:2334
 msgid "Error converting integer"
-msgstr ""
+msgstr "Fel vid konvertering av heltal"
 
 #: fortran/module.c:2357
 msgid "Expected real string"
@@ -6678,22 +6683,22 @@ msgstr "Felaktig typ i konstantuttryck"
 #: fortran/module.c:2673
 #, no-c-format
 msgid "Namelist %s cannot be renamed by USE association to %s."
-msgstr ""
+msgstr "Namnlistan %s får inte namnändras av USE-association till %s."
 
 #: fortran/module.c:3369
 #, no-c-format
 msgid "Symbol '%s' referenced at %L not found in module '%s'"
-msgstr ""
+msgstr "Symbolen \"%s\" refererad från %L finns inte i modulen \"%s\""
 
 #: fortran/module.c:3377
 #, no-c-format
 msgid "User operator '%s' referenced at %L not found in module '%s'"
-msgstr ""
+msgstr "Användaroperatorn \"%s\" refererad från %L finns inte i modulen \"%s\""
 
 #: fortran/module.c:3383
 #, no-c-format
 msgid "Intrinsic operator '%s' referenced at %L not found in module '%s'"
-msgstr ""
+msgstr "Inbyggd operator \"%s\" refererad från %L finns inte i moudlen \"%s\""
 
 #: fortran/module.c:3738
 #, no-c-format
@@ -6717,57 +6722,57 @@ msgstr "Oväntat modulslut"
 #: fortran/module.c:3806
 #, no-c-format
 msgid "Can't USE the same module we're building!"
-msgstr ""
+msgstr "Det går inta att USE samma modul vi bygger!"
 
 #: fortran/options.c:232
 #, no-c-format
 msgid "Reading file '%s' as free form."
-msgstr ""
+msgstr "Läser filen \"%s\" som friform."
 
 #: fortran/options.c:242
 #, no-c-format
 msgid "'-fd-lines-as-comments' has no effect in free form."
-msgstr ""
+msgstr "\"-fd-lines-as-comments\" har ingen effekt i friform."
 
 #: fortran/options.c:245
 #, no-c-format
 msgid "'-fd-lines-as-code' has no effect in free form."
-msgstr ""
+msgstr "\"-fd-lines-as-code\" har ingen effekt i friform."
 
 #: fortran/options.c:314
 #, c-format
 msgid "gfortran: Only one -M option allowed\n"
-msgstr ""
+msgstr "gfortran: Endast en -M-flagga tillåts\n"
 
 #: fortran/options.c:320
 #, c-format
 msgid "gfortran: Directory required after -M\n"
-msgstr ""
+msgstr "gfortran: Katalog krävs efter -M\n"
 
 #: fortran/options.c:360
 #, no-c-format
 msgid "Argument to -ffpe-trap is not valid: %s"
-msgstr ""
+msgstr "Argumentet till -ffpe-trap är inte giltigt: %s"
 
 #: fortran/options.c:460
 #, no-c-format
 msgid "Fixed line length must be at least seven."
-msgstr ""
+msgstr "Fast radlängd måste vara minst sju."
 
 #: fortran/options.c:514
 #, no-c-format
 msgid "Maximum supported idenitifier length is %d"
-msgstr ""
+msgstr "Maximal stödd identifierarlängd är %d"
 
 #: fortran/options.c:521
 #, no-c-format
 msgid "Argument to -fqkind isn't a valid real kind"
-msgstr ""
+msgstr "Argumentet till -fqkind är inte en giltig real-sort"
 
 #: fortran/parse.c:294
 #, no-c-format
 msgid "Unclassifiable statement at %C"
-msgstr ""
+msgstr "Oklassificerbar sats vid %C"
 
 #: fortran/parse.c:339 fortran/parse.c:414
 #, no-c-format
@@ -6787,26 +6792,26 @@ msgstr "Noll är inte en giltig satsetikett vid %C"
 #: fortran/parse.c:441
 #, no-c-format
 msgid "Bad continuation line at %C"
-msgstr ""
+msgstr "Felaktig fortsättningsrad vid %C"
 
 #: fortran/parse.c:468
 #, no-c-format
 msgid "Statement label in blank line will be ignored at %C"
-msgstr ""
+msgstr "Satsetikett på tom rad kommer ingoreras vid %C"
 
 #: fortran/parse.c:494
 #, no-c-format
 msgid "Line truncated at %C"
-msgstr ""
+msgstr "Rad avhuggen vid %C"
 
 #: fortran/parse.c:667
 #, no-c-format
 msgid "FORMAT statement at %L does not have a statement label"
-msgstr ""
+msgstr "FORMAT-sats vid %L har inte en satsetikett"
 
 #: fortran/parse.c:739
 msgid "arithmetic IF"
-msgstr ""
+msgstr "aritmetiskt IF"
 
 #: fortran/parse.c:745
 msgid "attribute declaration"
@@ -6822,11 +6827,11 @@ msgstr "härledd typdeklaration"
 
 #: fortran/parse.c:863
 msgid "block IF"
-msgstr ""
+msgstr "block-IF"
 
 #: fortran/parse.c:872
 msgid "implied END DO"
-msgstr ""
+msgstr "underföstådd END DO"
 
 #: fortran/parse.c:939
 msgid "assignment"
@@ -6838,7 +6843,7 @@ msgstr "pekartilldelning"
 
 #: fortran/parse.c:951
 msgid "simple IF"
-msgstr ""
+msgstr "enkelt IF"
 
 #: fortran/parse.c:1088
 #, no-c-format
@@ -6858,17 +6863,17 @@ msgstr "Oväntat filslut i \"%s\""
 #: fortran/parse.c:1290
 #, no-c-format
 msgid "Derived type definition at %C has no components"
-msgstr ""
+msgstr "Härledd typdefinition vid TC har inga komponenter"
 
 #: fortran/parse.c:1301
 #, no-c-format
 msgid "PRIVATE statement in TYPE at %C must be inside a MODULE"
-msgstr ""
+msgstr "PRIVATE-sats i TYPE vid TC måste vara inuti en MODULE"
 
 #: fortran/parse.c:1308
 #, no-c-format
 msgid "PRIVATE statement at %C must precede structure components"
-msgstr ""
+msgstr "PRIVATE-sats vid %C måste föregå strukturkomponenter"
 
 #: fortran/parse.c:1316
 #, no-c-format
@@ -6878,7 +6883,7 @@ msgstr "Dubblerad PRIVATE-sats vid %C"
 #: fortran/parse.c:1328
 #, no-c-format
 msgid "SEQUENCE statement at %C must precede structure components"
-msgstr ""
+msgstr "SEQUENCE-sats vid %C måste föregå strukturkomponenter"
 
 #: fortran/parse.c:1335
 #, no-c-format
@@ -6893,47 +6898,47 @@ msgstr "Dubblerad SEQUENCE-sats vid %C"
 #: fortran/parse.c:1364
 #, no-c-format
 msgid "Component %s of SEQUENCE type declared at %C does not have the SEQUENCE attribute"
-msgstr ""
+msgstr "Komponent %s av SEQUENCE-typ deklarerad vid %C har inte attributet SEQUENCE"
 
 #: fortran/parse.c:1409
 #, no-c-format
 msgid "ENUM declaration at %C has no ENUMERATORS"
-msgstr ""
+msgstr "ENUM-deklaration vid %C har inga ENUMERATORS"
 
 #: fortran/parse.c:1483
 #, no-c-format
 msgid "Unexpected %s statement in INTERFACE block at %C"
-msgstr ""
+msgstr "Oväntad %s-sats i INTERFACE-block vid %C"
 
 #: fortran/parse.c:1510
 #, no-c-format
 msgid "SUBROUTINE at %C does not belong in a generic function interface"
-msgstr ""
+msgstr "SUBROUTINE vid %C tillhör inte ett generiskt funktionsgränssnitt"
 
 #: fortran/parse.c:1515
 #, no-c-format
 msgid "FUNCTION at %C does not belong in a generic subroutine interface"
-msgstr ""
+msgstr "FUNCTION vid %C tillhör inte ett generiskt subrutingränssnitt"
 
 #: fortran/parse.c:1532
 #, no-c-format
 msgid "Unexpected %s statement at %C in INTERFACE body"
-msgstr ""
+msgstr "Oväntad %s-sats vid %C i INTERFACE-kropp"
 
 #: fortran/parse.c:1604
 #, no-c-format
 msgid "%s statement must appear in a MODULE"
-msgstr ""
+msgstr "%s-sats måste vara i en MODULE"
 
 #: fortran/parse.c:1611
 #, no-c-format
 msgid "%s statement at %C follows another accessibility specification"
-msgstr ""
+msgstr "%s-sats vid %C följer på en annan åtkomstspecifikation"
 
 #: fortran/parse.c:1688
 #, no-c-format
 msgid "ELSEWHERE statement at %C follows previous unmasked ELSEWHERE"
-msgstr ""
+msgstr "ELSEWHERE-sats vid %C följer tidigare omaskerat ELSEWHERE"
 
 #: fortran/parse.c:1709
 #, no-c-format
@@ -6948,7 +6953,7 @@ msgstr "Oväntad %s-sats i FORALL-block vid %C"
 #: fortran/parse.c:1821
 #, no-c-format
 msgid "ELSE IF statement at %C cannot follow ELSE statement at %L"
-msgstr ""
+msgstr "ELSE IF-sats vid %C kan inte följa ELSE-sats vid %L"
 
 #: fortran/parse.c:1839
 #, no-c-format
@@ -6958,7 +6963,7 @@ msgstr "Dubblerad ELSE-sats vid %L och %C"
 #: fortran/parse.c:1901
 #, no-c-format
 msgid "Expected a CASE or END SELECT statement following SELECT CASE at %C"
-msgstr ""
+msgstr "En CASE- eller END SELECT-sats förväntades följa efter SELECT CASE vid %C"
 
 #: fortran/parse.c:1959
 #, no-c-format
@@ -6978,7 +6983,7 @@ msgstr "Slut på DO-sats utan block vid %C är är sammanvävt med en annan DO-sling
 #: fortran/parse.c:2053
 #, no-c-format
 msgid "Statement label in ENDDO at %C doesn't match DO label"
-msgstr ""
+msgstr "Satsetikett i ENDDO vid %C stämmer inte med DO-etikett"
 
 #: fortran/parse.c:2110
 #, no-c-format
@@ -7008,7 +7013,7 @@ msgstr "Globalt namn \"%s\" vid %L avnänds redan som en %s vid %L"
 #: fortran/parse.c:2455
 #, no-c-format
 msgid "Blank BLOCK DATA at %C conflicts with prior BLOCK DATA at %L"
-msgstr ""
+msgstr "Blank BLOCK DATA vid %C står i konflikt med tidigare BLOCK DATA vid %L"
 
 #: fortran/parse.c:2480
 #, no-c-format
@@ -7026,7 +7031,7 @@ msgstr "Oväntad %s-sats i MODULE vid %C"
 #: fortran/parse.c:2702
 #, no-c-format
 msgid "Two main PROGRAMs at %L and %C"
-msgstr ""
+msgstr "Två huvud-PROGRAM vid %L och %C"
 
 #: fortran/primary.c:91
 #, no-c-format
@@ -7051,17 +7056,17 @@ msgstr "Utökning: Hollerithkonstant vid %C"
 #: fortran/primary.c:264
 #, no-c-format
 msgid "Invalid Hollerith constant: %L must contain at least one character"
-msgstr ""
+msgstr "Ogiltig Hollerithkonstant: %L måste innehålla åtminstone ett tecken"
 
 #: fortran/primary.c:270
 #, no-c-format
 msgid "Invalid Hollerith constant: Interger kind at %L should be default"
-msgstr ""
+msgstr "Ogiltig Hollerithkonstant: Heltalssort vid %L borde vara standard"
 
 #: fortran/primary.c:357
 #, no-c-format
 msgid "Extension: Hexadecimal constant at %C uses non-standard syntax."
-msgstr ""
+msgstr "Utökning: Hexadecimal konstant vid %C använder icke-standardsyntax."
 
 #: fortran/primary.c:367
 #, no-c-format
@@ -7076,7 +7081,7 @@ msgstr "Otillåtet tecken i BOZ-konstant vid %C"
 #: fortran/primary.c:395
 #, no-c-format
 msgid "Extension: BOZ constant at %C uses non-standard postfix syntax."
-msgstr ""
+msgstr "Utökning: BOZ-konstant vid %C använder icke-standard postfixsyntax."
 
 #: fortran/primary.c:421
 #, no-c-format
@@ -7091,12 +7096,12 @@ msgstr "Exponent saknas i reellt tal vid %C"
 #: fortran/primary.c:578
 #, no-c-format
 msgid "Real number at %C has a 'd' exponent and an explicit kind"
-msgstr ""
+msgstr "Reelt tal vid %C har en \"d\"-exponent och en explicit sort"
 
 #: fortran/primary.c:588
 #, no-c-format
 msgid "Real number at %C has a 'q' exponent and an explicit kind"
-msgstr ""
+msgstr "Reelt tal vid %C har en \"q\"-exponent och en explicit sort"
 
 #: fortran/primary.c:600
 #, no-c-format
@@ -7106,12 +7111,12 @@ msgstr "Ogiltig reell sort %d vid %C"
 #: fortran/primary.c:614
 #, no-c-format
 msgid "Real constant overflows its kind at %C"
-msgstr ""
+msgstr "Reell konstant spiller över sin sort vid %C"
 
 #: fortran/primary.c:619
 #, no-c-format
 msgid "Real constant underflows its kind at %C"
-msgstr ""
+msgstr "Reell konstant spiller under sin sort vid %C"
 
 #: fortran/primary.c:711
 #, no-c-format
@@ -7136,22 +7141,22 @@ msgstr "Felaktig sort för logisk konstant vid %C"
 #: fortran/primary.c:1073
 #, no-c-format
 msgid "Expected PARAMETER symbol in complex constant at %C"
-msgstr ""
+msgstr "PARAMETER-symbol förväntades i komplex konstant vid %C"
 
 #: fortran/primary.c:1079
 #, no-c-format
 msgid "Numeric PARAMETER required in complex constant at %C"
-msgstr ""
+msgstr "Numerisk PARAMETER krävs i komplex konstant vid %C"
 
 #: fortran/primary.c:1085
 #, no-c-format
 msgid "Scalar PARAMETER required in complex constant at %C"
-msgstr ""
+msgstr "Skalär PARAMETER krävs i komplex konstant vid %C"
 
 #: fortran/primary.c:1115
 #, no-c-format
 msgid "Error converting PARAMETER constant in complex constant at %C"
-msgstr ""
+msgstr "Fel vid konvertering av PARAMETER-konstant i komplex konstant vid %C"
 
 #: fortran/primary.c:1242
 #, no-c-format
@@ -7161,7 +7166,7 @@ msgstr "Syntaxfel i COMPLEX-konstant vid %C"
 #: fortran/primary.c:1424
 #, no-c-format
 msgid "Keyword '%s' at %C has already appeared in the current argument list"
-msgstr ""
+msgstr "Nyckelordet \"%s\" vid %C har redan förekommit i den aktuella argumentlistan"
 
 #: fortran/primary.c:1481
 #, no-c-format
@@ -7191,7 +7196,7 @@ msgstr "För många komponenter i postkonstruerare vid %C"
 #: fortran/primary.c:1876
 #, no-c-format
 msgid "Too few components in structure constructor at %C"
-msgstr ""
+msgstr "För få komponenter i postkonstruerare vid %C"
 
 #: fortran/primary.c:1894
 #, no-c-format
@@ -7201,7 +7206,7 @@ msgstr "Syntaxfel i postkonstruerare vid %C"
 #: fortran/primary.c:2007
 #, no-c-format
 msgid "Unexpected use of subroutine name '%s' at %C"
-msgstr ""
+msgstr "Oväntad användning av subrutinnamnet \"%s\" vid %C"
 
 #: fortran/primary.c:2038
 #, no-c-format
@@ -7226,12 +7231,12 @@ msgstr "Symbol vid %C passar inte som uttryck"
 #: fortran/primary.c:2293
 #, no-c-format
 msgid "Expected VARIABLE at %C"
-msgstr ""
+msgstr "VARIABLE förväntades vid %C"
 
 #: fortran/resolve.c:102
 #, no-c-format
 msgid "Alternate return specifier in elemental subroutine '%s' at %L is not allowed"
-msgstr ""
+msgstr "Alternativ returspecificerare i elementär subrutin \"%s\" vid %L är inte tillåten"
 
 #: fortran/resolve.c:106
 #, no-c-format
@@ -7241,12 +7246,12 @@ msgstr "Alternativ returspecifierare i funktionen \"%s\" vid %L är inte tillåten
 #: fortran/resolve.c:120
 #, no-c-format
 msgid "Dummy procedure '%s' of PURE procedure at %L must also be PURE"
-msgstr ""
+msgstr "Atrapprocedur \"%s\" av PURE-procedur vid %L måste också vara PURE"
 
 #: fortran/resolve.c:128
 #, no-c-format
 msgid "Dummy procedure at %L not allowed in ELEMENTAL procedure"
-msgstr ""
+msgstr "Atrapprocedur vid %L är inte tillåten i ELEMENTAL-procedur"
 
 #: fortran/resolve.c:172
 #, no-c-format
@@ -7256,7 +7261,7 @@ msgstr "\"%s\"-argumentet till pure-funktion \"%s\" vid %L måste vara INTENT(IN)
 #: fortran/resolve.c:180
 #, no-c-format
 msgid "Argument '%s' of pure subroutine '%s' at %L must have its INTENT specified"
-msgstr ""
+msgstr "Argumentet \"%s\" till pure-subrutin \"%s\" vid %L måsta ha sitt INTENT angivet"
 
 #: fortran/resolve.c:191
 #, no-c-format
@@ -7266,7 +7271,7 @@ msgstr "\"%s\"-argumentet till elementär procedur vid %L måste vara skalärt"
 #: fortran/resolve.c:199
 #, no-c-format
 msgid "Argument '%s' of elemental procedure at %L cannot have the POINTER attribute"
-msgstr ""
+msgstr "Argumentet \"%s\" av elementär procedur vid %L får inte ha attributet POINTER"
 
 #: fortran/resolve.c:211
 #, no-c-format
@@ -7276,57 +7281,57 @@ msgstr "\"%s\"-argumentet till satsfunktionen vid %L måste vara skalärt"
 #: fortran/resolve.c:222
 #, no-c-format
 msgid "Character-valued argument '%s' of statement function at %L must has constant length"
-msgstr ""
+msgstr "Teckenvärt argument \"%s\" av satsfunktion vid %L måsta ha konstant längd"
 
 #: fortran/resolve.c:283
 #, no-c-format
 msgid "Contained function '%s' at %L has no IMPLICIT type"
-msgstr ""
+msgstr "Innesluten funktion \"%s\" vid %L har ingen IMPLICIT-typ"
 
 #: fortran/resolve.c:293
 #, no-c-format
 msgid "Character-valued internal function '%s' at %L must not be assumed length"
-msgstr ""
+msgstr "Teckenvärd intern funktion \"%s\" vid %L får inte ha antagen längd"
 
 #: fortran/resolve.c:436
 #, no-c-format
 msgid "FUNCTION result %s can't be an array in FUNCTION %s at %L"
-msgstr ""
+msgstr "FUNCTION-resultat %s får inte vara en vektor i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:440
 #, no-c-format
 msgid "ENTRY result %s can't be an array in FUNCTION %s at %L"
-msgstr ""
+msgstr "ENTRY-resultat %s får inte vara en vektor i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:447
 #, no-c-format
 msgid "FUNCTION result %s can't be a POINTER in FUNCTION %s at %L"
-msgstr ""
+msgstr "FUNCTION-resultat %s får inte vara en POINTER i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:451
 #, no-c-format
 msgid "ENTRY result %s can't be a POINTER in FUNCTION %s at %L"
-msgstr ""
+msgstr "ENTRY-resultat %s får inte vara en POINTER i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:489
 #, no-c-format
 msgid "FUNCTION result %s can't be of type %s in FUNCTION %s at %L"
-msgstr ""
+msgstr "FUNCTION-resultat %s får ite vara av typen %s i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:494
 #, no-c-format
 msgid "ENTRY result %s can't be of type %s in FUNCTION %s at %L"
-msgstr ""
+msgstr "ENTRY-resultat %s får inte vara av typen %s i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:590
 #, no-c-format
 msgid "The element in the derived type constructor at %L, for pointer component '%s', is %s but should be %s"
-msgstr ""
+msgstr "Elementet i den härledda typkonstrueraren vid %L, för pekarkomponent \"%s\", är %s men borde vara %s"
 
 #: fortran/resolve.c:716
 #, no-c-format
 msgid "The upper bound in the last dimension must appear in the reference to the assumed size array '%s' at %L."
-msgstr ""
+msgstr "Den övre gränsen i sista dimensionen måste vara med i refrensen till vektorn \"%s\" med antagen storlek vid %L."
 
 #: fortran/resolve.c:781 fortran/resolve.c:3633 fortran/resolve.c:4299
 #, no-c-format
@@ -7341,12 +7346,12 @@ msgstr "Satsfunktionen \"%s\" vid %L får inte vara ett aktuellt argument"
 #: fortran/resolve.c:815
 #, no-c-format
 msgid "Internal procedure '%s' is not allowed as an actual argument at %L"
-msgstr ""
+msgstr "Den interna proceduren \"%s\" är inte tillåten som aktuellt argument vid %L"
 
 #: fortran/resolve.c:821
 #, no-c-format
 msgid "ELEMENTAL non-INTRINSIC procedure '%s' is not allowed as an actual argument at %L"
-msgstr ""
+msgstr "ELEMENTAL icke INTRINSIC procedur \"%s\" är inte tillåten som aktuellt argument vid %L"
 
 #: fortran/resolve.c:845
 #, no-c-format
@@ -7361,12 +7366,12 @@ msgstr "Generisk funktion \"%s\" vid %L är inte en inbyggd funktion"
 #: fortran/resolve.c:992
 #, no-c-format
 msgid "Generic function '%s' at %L is not consistent with a specific intrinsic interface"
-msgstr ""
+msgstr "Generisk funktion \"%s\" vid %L är inte konsisten med ett specifikt inbyggt gränssnitt"
 
 #: fortran/resolve.c:1030
 #, no-c-format
 msgid "Function '%s' at %L is INTRINSIC but is not compatible with an intrinsic"
-msgstr ""
+msgstr "Funktionen \"%s\" vid %L är INTRINSIC men är inte kompatibel med en inbyggd"
 
 #: fortran/resolve.c:1076
 #, no-c-format
@@ -7382,42 +7387,42 @@ msgstr "Funktionen \"%s\" vid %L har ingen IMPLICIT-typ"
 #: fortran/resolve.c:1218
 #, no-c-format
 msgid "Function '%s' is declared CHARACTER(*) and cannot be used at %L since it is not a dummy argument"
-msgstr ""
+msgstr "Funktionen \"%s\" är deklarerad CHARACTER(*) och får inte användas vid %L eftersom det inte är ett atrappargument"
 
 #: fortran/resolve.c:1332
 #, no-c-format
 msgid "Function reference to '%s' at %L is inside a FORALL block"
-msgstr ""
+msgstr "Funktionsreferens till \"%s\" vid %L är inuti ett FORALL-block"
 
 #: fortran/resolve.c:1338
 #, no-c-format
 msgid "Function reference to '%s' at %L is to a non-PURE procedure within a PURE procedure"
-msgstr ""
+msgstr "Funktionsreferens till \"%s\" vid %L är till en icke-PURE-procedur inuti en PURE-procedur"
 
 #: fortran/resolve.c:1368
 #, no-c-format
 msgid "Subroutine call to '%s' in FORALL block at %L is not PURE"
-msgstr ""
+msgstr "Subrutinanrop till \"%s\" i FORALL-block vid %L är inte PURE"
 
 #: fortran/resolve.c:1371
 #, no-c-format
 msgid "Subroutine call to '%s' at %L is not PURE"
-msgstr ""
+msgstr "Subrutinanrop till \"%s\" vid %L är inte PURE"
 
 #: fortran/resolve.c:1433
 #, no-c-format
 msgid "Generic subroutine '%s' at %L is not an intrinsic subroutine"
-msgstr ""
+msgstr "Generisk subrutin \"%s\" vid %L är inte en inbyggd subrutin"
 
 #: fortran/resolve.c:1442
 #, no-c-format
 msgid "Generic subroutine '%s' at %L is not consistent with an intrinsic subroutine interface"
-msgstr ""
+msgstr "Generisk subrutin \"%s\" vid %L är inte konsistent med ett inbyggt subrutingränssnitt"
 
 #: fortran/resolve.c:1477
 #, no-c-format
 msgid "Subroutine '%s' at %L is INTRINSIC but is not compatible with an intrinsic"
-msgstr ""
+msgstr "Subrutin \"%s\" vid %L är INTRINSIC men är inte kompatibel med en inbyggd"
 
 #: fortran/resolve.c:1520
 #, no-c-format
@@ -7427,7 +7432,7 @@ msgstr "Kan inte slå upp den specifika subrutinen \"%s\" vid %L"
 #: fortran/resolve.c:1576
 #, no-c-format
 msgid "'%s' at %L has a type, which is not consistent with the CALL at %L"
-msgstr ""
+msgstr "\"%s\" vid %L har en typ som inte är konsistent med CALL vid %L"
 
 #: fortran/resolve.c:1642
 msgid "elemental subroutine"
@@ -7441,27 +7446,27 @@ msgstr "Formerna för operanderna vid %L och %L är inte konforma"
 #: fortran/resolve.c:1731
 #, c-format
 msgid "Operand of unary numeric operator '%s' at %%L is %s"
-msgstr ""
+msgstr "Operand till unär numeriks operator \"%s\" vid %%L är %s"
 
 #: fortran/resolve.c:1747
 #, c-format
 msgid "Operands of binary numeric operator '%s' at %%L are %s/%s"
-msgstr ""
+msgstr "Operander till binär numerisk operator \"%s\" vid %%L är %s/%s"
 
 #: fortran/resolve.c:1761
 #, c-format
 msgid "Operands of string concatenation operator at %%L are %s/%s"
-msgstr ""
+msgstr "Operanderna till stränkonkateneringsoperatorn vid %%L är %s/%s"
 
 #: fortran/resolve.c:1780
 #, c-format
 msgid "Operands of logical operator '%s' at %%L are %s/%s"
-msgstr ""
+msgstr "Operanderna till logiska operatorn \"%s\" vid %%L är %s/%s"
 
 #: fortran/resolve.c:1794
 #, c-format
 msgid "Operand of .NOT. operator at %%L is %s"
-msgstr ""
+msgstr "Operanderna till operatorn .NOT. vid %%L är %s"
 
 #: fortran/resolve.c:1804
 msgid "COMPLEX quantities cannot be compared at %L"
@@ -7470,32 +7475,32 @@ msgstr "COMPLEX-kvantiteter kan inte jämföras vid %L"
 #: fortran/resolve.c:1830
 #, c-format
 msgid "Logicals at %%L must be compared with %s instead of %s"
-msgstr ""
+msgstr "Logiska vid %%L måste jämföras med %s istället för %s"
 
 #: fortran/resolve.c:1835
 #, c-format
 msgid "Operands of comparison operator '%s' at %%L are %s/%s"
-msgstr ""
+msgstr "Operanderna till jämförelseoperatorn \"%s\" vid %%L är %s/%s"
 
 #: fortran/resolve.c:1843
 #, c-format
 msgid "Operand of user operator '%s' at %%L is %s"
-msgstr ""
+msgstr "Operanderna till användaroperatorn \"%s\" vid %%L är %s"
 
 #: fortran/resolve.c:1846
 #, c-format
 msgid "Operands of user operator '%s' at %%L are %s/%s"
-msgstr ""
+msgstr "Operanderna till användaroperatorn \"%s\" vid %%L är %s/%s"
 
 #: fortran/resolve.c:1917
 #, no-c-format
 msgid "Inconsistent ranks for operator at %L and %L"
-msgstr ""
+msgstr "Inkonsistenta ordningar för operator vid %L och %L"
 
 #: fortran/resolve.c:2040
 #, no-c-format
 msgid "Illegal stride of zero at %L"
-msgstr ""
+msgstr "Otillåtet steg på noll vid %C"
 
 #: fortran/resolve.c:2061
 #, no-c-format
@@ -7505,7 +7510,7 @@ msgstr "Vektorreferens vid %L är utanför gränsen"
 #: fortran/resolve.c:2082
 #, no-c-format
 msgid "Rightmost upper bound of assumed size array section not specified at %L"
-msgstr ""
+msgstr "Högraste övre gränsen av en sektion av vektor med antagen storlek inte angiven vid %L"
 
 #: fortran/resolve.c:2092
 #, no-c-format
@@ -7515,7 +7520,7 @@ msgstr "Ordning stämmer inte i vektorreferens vid %L (%d/%d)"
 #: fortran/resolve.c:2120
 #, no-c-format
 msgid "Array index at %L must be scalar"
-msgstr ""
+msgstr "Vektorindex vid %L måste vara skalärt"
 
 #: fortran/resolve.c:2126
 #, no-c-format
@@ -7525,7 +7530,7 @@ msgstr "Vektorindex vid %L måste ha INTEGER-typ"
 #: fortran/resolve.c:2132
 #, no-c-format
 msgid "Extension: REAL array index at %L"
-msgstr ""
+msgstr "Utökning: REAL-vektorindex vid %L"
 
 #: fortran/resolve.c:2162
 #, no-c-format
@@ -7555,7 +7560,7 @@ msgstr "Startindex för delsträng vid %L måste vara skalärt"
 #: fortran/resolve.c:2322
 #, no-c-format
 msgid "Substring start index at %L is less than one"
-msgstr ""
+msgstr "Substrängs startindex vid %L är mindre än ett"
 
 #: fortran/resolve.c:2335
 #, no-c-format
@@ -7575,12 +7580,12 @@ msgstr "Slutindex för delsträng vid %L är utanför gränsen"
 #: fortran/resolve.c:2424
 #, no-c-format
 msgid "Component to the right of a part reference with nonzero rank must not have the POINTER attribute at %L"
-msgstr ""
+msgstr "Component till den högra av en delreferens med ordning skild från noll får inte ha attributet POINTER vid %L"
 
 #: fortran/resolve.c:2443
 #, no-c-format
 msgid "Two or more part references with nonzero rank must not be specified at %L"
-msgstr ""
+msgstr "Två eller flera delreferenser med ordning skild från noll får inte anges vid %L"
 
 #: fortran/resolve.c:2672
 #, no-c-format
@@ -7600,42 +7605,42 @@ msgstr "%s vid %L måste vara INTEGER"
 #: fortran/resolve.c:2699
 #, no-c-format
 msgid "Obsolete: REAL DO loop iterator at %L"
-msgstr ""
+msgstr "Föråldrat: REAL DO-slingiterator vid %L"
 
 #: fortran/resolve.c:2708
 #, no-c-format
 msgid "Cannot assign to loop variable in PURE procedure at %L"
-msgstr ""
+msgstr "Det går inte att tilldela slingvariabel i PURE-procedur vid %L"
 
 #: fortran/resolve.c:2732
 #, no-c-format
 msgid "Step expression in DO loop at %L cannot be zero"
-msgstr ""
+msgstr "Steguttryck i DO-slinga vid %L får inte vara noll"
 
 #: fortran/resolve.c:2767
 #, no-c-format
 msgid "FORALL index-name at %L must be a scalar INTEGER"
-msgstr ""
+msgstr "FORALL-indexnamn vid %L måste vara en skalär INTEGER"
 
 #: fortran/resolve.c:2772
 #, no-c-format
 msgid "FORALL start expression at %L must be a scalar INTEGER"
-msgstr ""
+msgstr "FORALL-slututtryck vid %L måste vara en skalär INTEGER"
 
 #: fortran/resolve.c:2779
 #, no-c-format
 msgid "FORALL end expression at %L must be a scalar INTEGER"
-msgstr ""
+msgstr "FORALL-slututtryck vid %L måste vara en skalär INTEGER"
 
 #: fortran/resolve.c:2787
 #, no-c-format
 msgid "FORALL stride expression at %L must be a scalar %s"
-msgstr ""
+msgstr "FORALL-steguttryck vid %L måste vara en skalär %s"
 
 #: fortran/resolve.c:2792
 #, no-c-format
 msgid "FORALL stride expression at %L cannot be zero"
-msgstr ""
+msgstr "FORALL-steguttryck vid %L får inte vara noll"
 
 #: fortran/resolve.c:2890
 #, no-c-format
@@ -7650,12 +7655,12 @@ msgstr "Uttryck i ALLOCATE-sats vid %L måste vara ALLOCATABLE eller en POINTER"
 #: fortran/resolve.c:3015
 #, no-c-format
 msgid "Array specification required in ALLOCATE statement at %L"
-msgstr ""
+msgstr "Vektorspecifikation krävs i ALLOCATE-sats vid %L"
 
 #: fortran/resolve.c:3044
 #, no-c-format
 msgid "Bad array specification in ALLOCATE statement at %L"
-msgstr ""
+msgstr "Felaktig vektorspecifikation i ALLOCATE-sats vid %L"
 
 #. The cases overlap, or they are the same
 #. element in the list.  Either way, we must
@@ -7664,7 +7669,7 @@ msgstr ""
 #: fortran/resolve.c:3200
 #, no-c-format
 msgid "CASE label at %L overlaps with CASE label at %L"
-msgstr ""
+msgstr "CASE-etikett vid %L överlappar med CASE-etikett vid %L"
 
 #: fortran/resolve.c:3251
 #, no-c-format
@@ -7699,7 +7704,7 @@ msgstr "Argument till SELECT-sats vid %L måste vara ett skalärt uttryck"
 #: fortran/resolve.c:3411
 #, no-c-format
 msgid "The DEFAULT CASE at %L cannot be followed by a second DEFAULT CASE at %L"
-msgstr ""
+msgstr "DEFAULT CASE vid %L får inte följas av ett andra DEFAULT CASE vid %L"
 
 #: fortran/resolve.c:3438
 #, no-c-format
@@ -7709,62 +7714,62 @@ msgstr "Logiskt intevall CASE-sats vid %L är inte tillåtet"
 #: fortran/resolve.c:3449
 #, no-c-format
 msgid "Range specification at %L can never be matched"
-msgstr ""
+msgstr "Intervallspecifikationen vid %L kan aldrig matchas"
 
 #: fortran/resolve.c:3552
 #, no-c-format
 msgid "Logical SELECT CASE block at %L has more that two cases"
-msgstr ""
+msgstr "Logiskt SELECT CASE-block vid %L har mer än två fall"
 
 #: fortran/resolve.c:3590
 #, no-c-format
 msgid "Data transfer element at %L cannot have POINTER components"
-msgstr ""
+msgstr "Dataöverföringselement vid %L får inte ha POINTER-komponenter"
 
 #: fortran/resolve.c:3597
 #, no-c-format
 msgid "Data transfer element at %L cannot have PRIVATE components"
-msgstr ""
+msgstr "Dataöverföringselement vid %L får inte ha PRIVATE-komponenter"
 
 #: fortran/resolve.c:3606
 #, no-c-format
 msgid "Data transfer element at %L cannot be a full reference to an assumed-size array"
-msgstr ""
+msgstr "Dataöverföringselement vid %L får inte vara en full referens till en vektor med förmodad storlek"
 
 #: fortran/resolve.c:3640
 #, no-c-format
 msgid "Statement at %L is not a valid branch target statement for the branch statement at %L"
-msgstr ""
+msgstr "Sats vid %L är inte en giltig grenmålssats för grensatsen vid %L"
 
 #: fortran/resolve.c:3649
 #, no-c-format
 msgid "Branch at %L causes an infinite loop"
-msgstr ""
+msgstr "Gren vid %L orsakar en oändlig slinga"
 
 #: fortran/resolve.c:3682
 #, no-c-format
 msgid "Label at %L is not in the same block as the GOTO statement at %L"
-msgstr ""
+msgstr "Etiketten vid %L är inte i samma block som GOTO-satsen vid %L"
 
 #: fortran/resolve.c:3698
 #, no-c-format
 msgid "Obsolete: GOTO at %L jumps to END of construct at %L"
-msgstr ""
+msgstr "Föråldrat: GOTO vid %L hoppar till END av konstruktion vid %L"
 
 #: fortran/resolve.c:3772
 #, no-c-format
 msgid "WHERE mask at %L has inconsistent shape"
-msgstr ""
+msgstr "WHERE-mask vid %L har inkonsistent form"
 
 #: fortran/resolve.c:3788
 #, no-c-format
 msgid "WHERE assignment target at %L has inconsistent shape"
-msgstr ""
+msgstr "WHERE-tilldelningsmål vid %L har inkonsistent form"
 
 #: fortran/resolve.c:3798 fortran/resolve.c:3997
 #, no-c-format
 msgid "Unsupported statement inside WHERE at %L"
-msgstr ""
+msgstr "Ej stödd sats inuti WHERE vid %L"
 
 #: fortran/resolve.c:3874
 #, no-c-format
@@ -7774,7 +7779,7 @@ msgstr "Typfel i utrycksreferens vid %L"
 #: fortran/resolve.c:3906
 #, no-c-format
 msgid "Unsupported statement while finding forall index in expression"
-msgstr ""
+msgstr "Ej stödd sats när för alla-index söktes i uttryck"
 
 #: fortran/resolve.c:3953
 #, no-c-format
@@ -7784,32 +7789,32 @@ msgstr "Tilldelning till en FORALL-indexvariabel vid %L"
 #: fortran/resolve.c:3961
 #, no-c-format
 msgid "The FORALL with index '%s' cause more than one assignment to this object at %L"
-msgstr ""
+msgstr "FORALL med index \"%s\" medför mer än en tilldelning till detta objekt vid %L"
 
 #: fortran/resolve.c:4088
 #, no-c-format
 msgid "An outer FORALL construct already has an index with this name %L"
-msgstr ""
+msgstr "En yttre FORALL-konstruktion har redan ett index med detta namn %L"
 
 #: fortran/resolve.c:4100 fortran/resolve.c:4103 fortran/resolve.c:4106
 #, no-c-format
 msgid "A FORALL index must not appear in a limit or stride expression in the same FORALL at %L"
-msgstr ""
+msgstr "Ett FORALL-index får inte förekomma i ett gräns- eller steguttryck i samma FORALL vid %L"
 
 #: fortran/resolve.c:4149
 #, no-c-format
 msgid "ELSE IF clause at %L requires a scalar LOGICAL expression"
-msgstr ""
+msgstr "ELSE IF-klausul vid %L kräver ett skalär LOGICAL-uttryck"
 
 #: fortran/resolve.c:4159
 #, no-c-format
 msgid "WHERE/ELSEWHERE clause at %L requires a LOGICAL array"
-msgstr ""
+msgstr "WHERE/ELSEWHER-klausul vid %L kräver en LOGICAL-vektor"
 
 #: fortran/resolve.c:4240
 #, no-c-format
 msgid "ASSIGNED GOTO statement at %L requires an INTEGER variable"
-msgstr ""
+msgstr "ASSIGNED GOTO-sats vid %L kräver en INTEGER-variabel"
 
 #: fortran/resolve.c:4243
 #, no-c-format
@@ -7819,42 +7824,42 @@ msgstr "Variabeln \"%s\" har inte tilldelats någon måletikett vid %L"
 #: fortran/resolve.c:4253
 #, no-c-format
 msgid "Alternate RETURN statement at %L requires an INTEGER return specifier"
-msgstr ""
+msgstr "Alternativ RETURN-sats vid %L kräver en INTEGER-retuspecificerare"
 
 #: fortran/resolve.c:4265
 #, no-c-format
 msgid "Subroutine '%s' called instead of assignment at %L must be PURE"
-msgstr ""
+msgstr "Subrutin \"%s\" anropad stället för tilldelning vid %L måste vara PURE"
 
 #: fortran/resolve.c:4278
 #, no-c-format
 msgid "Cannot assign to variable '%s' in PURE procedure at %L"
-msgstr ""
+msgstr "Det går inte att tilldela variabeln \"%s\" i PURE-procedur vid %L"
 
 #: fortran/resolve.c:4287
 #, no-c-format
 msgid "Right side of assignment at %L is a derived type containing a POINTER in a PURE procedure"
-msgstr ""
+msgstr "Högersidan av tilldelning vid %L är en härledd typ som innehåller en POINTER i en PURE-procedur"
 
 #: fortran/resolve.c:4307
 #, no-c-format
 msgid "ASSIGN statement at %L requires a scalar default INTEGER variable"
-msgstr ""
+msgstr "ASSIGN-sats vid %L kräver en skalär standard-INTEGER-variabel"
 
 #: fortran/resolve.c:4322
 #, no-c-format
 msgid "Arithmetic IF statement at %L requires a numeric expression"
-msgstr ""
+msgstr "Aritmetisk IF-sats vid %L kräver ett numeriskt uttryck"
 
 #: fortran/resolve.c:4334
 #, no-c-format
 msgid "IF clause at %L requires a scalar LOGICAL expression"
-msgstr ""
+msgstr "IF-klausul vid %L kräver ett skalärt LOGICAL-uttryck"
 
 #: fortran/resolve.c:4360
 #, no-c-format
 msgid "Exit condition of DO WHILE loop at %L must be a scalar LOGICAL expression"
-msgstr ""
+msgstr "Avslutsvilkkor i DO WHILE-slinga vid %L måste vara ett skalärt LOGICAL-uttryck"
 
 #: fortran/resolve.c:4367
 #, no-c-format
@@ -7869,7 +7874,7 @@ msgstr "STAT-tagg DEALLOCATE-sats vid %L måste vara av typ INTEGER"
 #: fortran/resolve.c:4445
 #, no-c-format
 msgid "FORALL mask clause at %L requires a LOGICAL expression"
-msgstr ""
+msgstr "FORALL-maskklausul vid %L kräver ett LOGICAL-uttryck"
 
 #: fortran/resolve.c:4550
 #, no-c-format
@@ -7884,7 +7889,7 @@ msgstr "Skalärt objekt \"%s\" vid %L får inte vara ALLOCATABLE"
 #: fortran/resolve.c:4560
 #, no-c-format
 msgid "Array pointer '%s' at %L must have a deferred shape"
-msgstr ""
+msgstr "Vektorpekare \"%s\" vid %L måste ha en fördröjd form"
 
 #: fortran/resolve.c:4571
 #, no-c-format
@@ -7894,17 +7899,17 @@ msgstr "Vektor \"%s\" vid %L kan inte ha en fördröjd form"
 #: fortran/resolve.c:4601
 #, no-c-format
 msgid "The module or main program array '%s' at %L must have constant shape"
-msgstr ""
+msgstr "Modul- eller huvudprogramvektorn \"%s\" vid %L måste ha konstant form"
 
 #: fortran/resolve.c:4613
 #, no-c-format
 msgid "Entity with assumed character length at %L must be a dummy argument or a PARAMETER"
-msgstr ""
+msgstr "Enhet med antagen teckenlängd vid %L måste vara ett atrappargument eller en PARAMETER"
 
 #: fortran/resolve.c:4626
 #, no-c-format
 msgid "'%s' at %L must have constant character length in this context"
-msgstr ""
+msgstr "\"%s\" vid %L måste ha konstant teckenlängd i detta sammanhang"
 
 #: fortran/resolve.c:4657
 #, no-c-format
@@ -7944,12 +7949,12 @@ msgstr "Objekt \"%s\" vid %L måste ha SAVE-attributet %s"
 #: fortran/resolve.c:4725
 #, no-c-format
 msgid "Character-valued statement function '%s' at %L must have constant length"
-msgstr ""
+msgstr "Teckenvärd satsfunktion \"%s\" vid %L måste ha konstant längd"
 
 #: fortran/resolve.c:4748
 #, no-c-format
 msgid "'%s' is of a PRIVATE type and cannot be a dummy argument of '%s', which is PUBLIC at %L"
-msgstr ""
+msgstr "\"%s\" är av en PRIVATE-typ och kan inte vara ett atrappargument till \"%s\", som är PUBLIC vid %L"
 
 #: fortran/resolve.c:4763
 #, no-c-format
@@ -7984,27 +7989,27 @@ msgstr "CHARACTER(*)-funktion \"%s\" vid %L är föråldrad i fortran 95"
 #: fortran/resolve.c:4828
 #, no-c-format
 msgid "Character length of component '%s' needs to be a constant specification expression at %L."
-msgstr ""
+msgstr "Teckenlängd på komponent \"%s\" behöver vara ett konstant specifikationsuttryck vid %L."
 
 #: fortran/resolve.c:4843
 #, no-c-format
 msgid "The component '%s' is a PRIVATE type and cannot be a component of '%s', which is PUBLIC at %L"
-msgstr ""
+msgstr "Komponenten \"%s\" är en PRIVATE-typ och kan inte vara en komponent i \"%s\", som är PUBLIC vid %L"
 
 #: fortran/resolve.c:4861
 #, no-c-format
 msgid "Component '%s' of '%s' at %L must have constant array bounds."
-msgstr ""
+msgstr "Komponenten \"%s\" i \"%s\" vid %L måste ha konstanta vektorgränser."
 
 #: fortran/resolve.c:4895
 #, no-c-format
 msgid "PRIVATE symbol '%s' cannot be member of PUBLIC namelist at %L"
-msgstr ""
+msgstr "PRIVATE-symbol \"%s\" kan inte vara medlem av PUBLIC-namnlista vid %L"
 
 #: fortran/resolve.c:4908
 #, no-c-format
 msgid "The array '%s' must have constant shape to be a NAMELIST object at %L"
-msgstr ""
+msgstr "Vektorn \"%s\" måste ha konstant form för att vara ett NAMELIST-objekt vid %L"
 
 #: fortran/resolve.c:4926
 #, no-c-format
@@ -8014,12 +8019,12 @@ msgstr "PROCEDURE-attribut i konflikt med NAMELIST-attribut i \"%s\" vid %L"
 #: fortran/resolve.c:4943
 #, no-c-format
 msgid "Parameter array '%s' at %L cannot be automatic or assumed shape"
-msgstr ""
+msgstr "Parametervektor \"%S\" vid %L kan inte ha automatisk eller antagen form"
 
 #: fortran/resolve.c:4955
 #, no-c-format
 msgid "Implicitly typed PARAMETER '%s' at %L doesn't match a later IMPLICIT type"
-msgstr ""
+msgstr "Implicit typad PARAMETER \"%s\" vid %L matchar inte en senare IMPLICT-typ"
 
 #: fortran/resolve.c:4966
 #, no-c-format
@@ -8029,27 +8034,27 @@ msgstr "Inkompatibla härledda typer i PARAMETER vid %L"
 #: fortran/resolve.c:5067
 #, no-c-format
 msgid "Assumed size array at %L must be a dummy argument"
-msgstr ""
+msgstr "Vektor med förmodad storlek vid %L måste vara ett atrappargument"
 
 #: fortran/resolve.c:5070
 #, no-c-format
 msgid "Assumed shape array at %L must be a dummy argument"
-msgstr ""
+msgstr "Vektor med förmodad form vid %L måste vara ett atrappargument"
 
 #: fortran/resolve.c:5083
 #, no-c-format
 msgid "Symbol at %L is not a DUMMY variable"
-msgstr ""
+msgstr "Symbol vid %L är inte en DUMMY-variabel"
 
 #: fortran/resolve.c:5098
 #, no-c-format
 msgid "The derived type '%s' at %L is of type '%s', which has not been defined."
-msgstr ""
+msgstr "Den härledda typen \"%s\" vid %L har typen \"%s\" som inte har definierats."
 
 #: fortran/resolve.c:5117
 #, no-c-format
 msgid "The INTENT(OUT) dummy argument '%s' at %L is ASSUMED SIZE and so cannot have a default initializer"
-msgstr ""
+msgstr "INTENT(OUT)-atrappargumentet \"%s\" vid %L har ASSUMED SIZE och kan därför inte ha en standardinitierare"
 
 #: fortran/resolve.c:5157
 #, no-c-format
@@ -8059,7 +8064,7 @@ msgstr "Inbyggd konstruktion vid %L existerar inte"
 #: fortran/resolve.c:5232
 #, no-c-format
 msgid "BLOCK DATA element '%s' at %L must be in COMMON"
-msgstr ""
+msgstr "BLOCK DATA-element \"%s\" vid %L måste vara i COMMON"
 
 #: fortran/resolve.c:5276
 #, no-c-format
@@ -8074,7 +8079,7 @@ msgstr "DATA-sats vid %L har fler variabler än värden"
 #: fortran/resolve.c:5487
 #, no-c-format
 msgid "DATA statement at %L has more values than variables"
-msgstr ""
+msgstr "DATA-sats vid %L har fler värden än variabler"
 
 #: fortran/resolve.c:5569
 #, no-c-format
@@ -8089,17 +8094,17 @@ msgstr "Etiketten %d vid %L är definierad men kan inte användas"
 #: fortran/resolve.c:5658
 #, no-c-format
 msgid "Derived type variable '%s' at %L must have SEQUENCE attribute to be an EQUIVALENCE object"
-msgstr ""
+msgstr "Härledd typvariabel \"%s\" vid %L måsta ha attributet SEQUENCE för att vara ett EQUIVALENCE-objekt"
 
 #: fortran/resolve.c:5673
 #, no-c-format
 msgid "Derived type variable '%s' at %L with pointer component(s) cannot be an EQUIVALENCE object"
-msgstr ""
+msgstr "Härledd typvariabel \"%s\" vid %L med pekarkomponent(er) kan inte vara ett EQUIVALENCE-objekt"
 
 #: fortran/resolve.c:5680
 #, no-c-format
 msgid "Derived type variable '%s' at %L with default initializer cannot be an EQUIVALENCE object"
-msgstr ""
+msgstr "Härledd typvariabel \"%s\" vid %L med standardinitierare kan inte vara ett EQUIVALENCE-objekt"
 
 #: fortran/resolve.c:5781
 #, no-c-format
@@ -8109,12 +8114,12 @@ msgstr "Syntaxfel i EQUIVALENCE-sats vid %L"
 #: fortran/resolve.c:5798
 #, no-c-format
 msgid "Initialized objects '%s' and '%s'  cannot both be in the EQUIVALENCE statement at %L"
-msgstr ""
+msgstr "Initierade objekt \"%s\" och \"%s\" kan inte båda vara i EQUIVALENCE-satsen vid %L"
 
 #: fortran/resolve.c:5812
 #, no-c-format
 msgid "Common block member '%s' at %L cannot be an EQUIVALENCE object in the pure procedure '%s'"
-msgstr ""
+msgstr "Common-blockmedlem \"%s\" vid %L kan inte vara ett EQUIVALENCE-objekt i den rena proceduren \"%s\""
 
 #: fortran/resolve.c:5821
 #, no-c-format
@@ -28298,24 +28303,24 @@ msgid "initialization from distinct Objective-C type"
 msgstr "initiering från distinkt Objective-C-typ"
 
 #: objc/objc-act.c:1182
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assignment from distinct Objective-C type"
-msgstr "tilldelning från inkompatibel pekartyp"
+msgstr "tilldelning från distinkt Objective-C-typ"
 
 #: objc/objc-act.c:1186
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "distinct Objective-C type in return"
-msgstr "inkompatibla typer i retur"
+msgstr "distinkt Objective-C-typ i retur"
 
 #: objc/objc-act.c:1190
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE from distinct Objective-C type"
-msgstr "skickar argument %d till %qE med tecken på grund av prototyp"
+msgstr "skickar argument %d till %qE från distinkt Objective-C-typ"
 
 #: objc/objc-act.c:1345
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "statically allocated instance of Objective-C class %qs"
-msgstr "statiskt allokerade objekt stöds inte"
+msgstr "statiskt allokerade instans av Objective-C-klass %qs"
 
 #: objc/objc-act.c:1416
 #, gcc-internal-format
@@ -28323,15 +28328,15 @@ msgid "protocol %qs has circular dependency"
 msgstr ""
 
 #: objc/objc-act.c:1438 objc/objc-act.c:6571
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot find protocol declaration for %qs"
-msgstr "ingen tidigare deklaration av %q+D"
+msgstr "kan inte hitta protokolldeklaration för %qs"
 
 #: objc/objc-act.c:1905 objc/objc-act.c:3339 objc/objc-act.c:7183
 #: objc/objc-act.c:7519 objc/objc-act.c:7573 objc/objc-act.c:7598
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot find interface declaration for %qs"
-msgstr "ingen tidigare deklaration av %q+D"
+msgstr "kan inte hitta gränssnittsdeklaration för %qs"
 
 #: objc/objc-act.c:1909
 #, gcc-internal-format
@@ -28339,9 +28344,9 @@ msgid "interface %qs does not have valid constant string layout"
 msgstr ""
 
 #: objc/objc-act.c:1914
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot find reference tag for class %qs"
-msgstr "Kan inte hitta filen med klass %s."
+msgstr "kan inte hitta referenstagg klass %qs"
 
 #: objc/objc-act.c:2539
 #, gcc-internal-format
@@ -28349,9 +28354,9 @@ msgid "%Hcreating selector for nonexistent method %qE"
 msgstr ""
 
 #: objc/objc-act.c:2741
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not an Objective-C class name or alias"
-msgstr "\"%s\" är inte ett giltigt klassnamn"
+msgstr "%qs är inte ett Objective-C-klassnamn eller alias"
 
 #: objc/objc-act.c:2867 objc/objc-act.c:2898 objc/objc-act.c:7447
 #: objc/objc-act.c:7748 objc/objc-act.c:7778
@@ -28360,19 +28365,19 @@ msgid "Objective-C declarations may only appear in global scope"
 msgstr ""
 
 #: objc/objc-act.c:2872
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot find class %qs"
-msgstr "[kan inte hitta %s]"
+msgstr "kan inte hitta klass %qs"
 
 #: objc/objc-act.c:2874
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "class %qs already exists"
-msgstr "Klass \"%s\" finns redan"
+msgstr "klass %qs finns redan"
 
 #: objc/objc-act.c:2918 objc/objc-act.c:7488
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs redeclared as different kind of symbol"
-msgstr "%q+D omdeklarerad som en annan sorts symbol"
+msgstr "%qs omdeklarerad som en annan sorts symbol"
 
 #: objc/objc-act.c:3192
 #, gcc-internal-format
@@ -28385,9 +28390,9 @@ msgid "strong-cast may possibly be needed"
 msgstr ""
 
 #: objc/objc-act.c:3244
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "instance variable assignment has been intercepted"
-msgstr "instansvariabel \"%s\" är deklarerad som %s"
+msgstr "tilldelning av instansvariabel har uppfångats"
 
 #: objc/objc-act.c:3263
 #, gcc-internal-format
@@ -28430,14 +28435,14 @@ msgid "%<@throw%> (rethrow) used outside of a @catch block"
 msgstr ""
 
 #: objc/objc-act.c:4311
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type %q+D does not have a known size"
-msgstr "%s har ingen medlem med namn \"%s\""
+msgstr "typ %q+D har inte någon känd storlek"
 
 #: objc/objc-act.c:4944
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J%s %qs"
-msgstr " %% %s"
+msgstr "%J%s %qs"
 
 #: objc/objc-act.c:4967 objc/objc-act.c:4986
 #, gcc-internal-format
@@ -28449,15 +28454,17 @@ msgstr ""
 msgid "can not use an object as parameter to a method"
 msgstr ""
 
+# Första %s blir "methods" eller "selectors".
+# http://gcc.gnu.org/bugzilla/show_bug.cgi?id=29200
 #: objc/objc-act.c:6066
 #, fuzzy, gcc-internal-format
 msgid "multiple %s named %<%c%s%> found"
 msgstr "flera parametrar med namn \"%s\""
 
 #: objc/objc-act.c:6295
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no super class declared in @interface for %qs"
-msgstr "Operatorgränssnitt för %s:"
+msgstr "ingen superklass deklarerad i @interface för %qs"
 
 #: objc/objc-act.c:6333
 #, gcc-internal-format
@@ -28465,19 +28472,19 @@ msgid "found %<-%s%> instead of %<+%s%> in protocol(s)"
 msgstr ""
 
 #: objc/objc-act.c:6392
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid receiver type %qs"
-msgstr "ogiltig parameter %qs"
+msgstr "ogiltig mottagartyp %qs"
 
 #: objc/objc-act.c:6407
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%c%s%> not found in protocol(s)"
-msgstr "metod \"%s\" kan inte hittas i klassen"
+msgstr "%<%c%s%> finns inte bland protokoll"
 
 #: objc/objc-act.c:6421
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs may not respond to %<%c%s%>"
-msgstr "\"%s\" svarar inte på \"%s\""
+msgstr "%qs svarar kanske inte på %<%c%s%>"
 
 #: objc/objc-act.c:6429
 #, gcc-internal-format
@@ -28514,29 +28521,29 @@ msgstr ""
 #. where this is done unknowingly than to support the above
 #. paradigm.
 #: objc/objc-act.c:6712
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "instance variable %qs accessed in class method"
-msgstr "registervariabel %qD använd i nästlad funktion"
+msgstr "instansvariabel %qs använd i klassmetod"
 
 #: objc/objc-act.c:6944
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate declaration of method %<%c%s%>"
-msgstr "implicit deklaration av funktionen %qE"
+msgstr "duplicerad deklaration av metoden %<%c%s%>"
 
 #: objc/objc-act.c:7005
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate interface declaration for category %<%s(%s)%>"
-msgstr "dubbel deklaration av etikett %qE"
+msgstr "dubbel gränssnittsdeklaration för kategorin %<%s(%s)%>"
 
 #: objc/objc-act.c:7032
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "illegal reference type specified for instance variable %qs"
-msgstr "ignorerar asm-specificerare för ickestatisk lokal variabel %q+D"
+msgstr "otillåten referenstyp angiven för instansvariabel %qs"
 
 #: objc/objc-act.c:7043
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "instance variable %qs has unknown size"
-msgstr "instansvariabel \"%s\" är deklarerad som %s"
+msgstr "instansvariabeln %qs har okänd storlek"
 
 #: objc/objc-act.c:7068
 #, gcc-internal-format
@@ -28544,21 +28551,21 @@ msgid "type %qs has no default constructor to call"
 msgstr ""
 
 #: objc/objc-act.c:7074
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "destructor for %qs shall not be run either"
-msgstr "destruerare kan inte vara en statisk medlemsfunktion"
+msgstr "destruerare för %qs skall inte heller köras"
 
 #. Vtable pointers are Real Bad(tm), since Obj-C cannot
 #. initialize them.
 #: objc/objc-act.c:7086
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type %qs has virtual member functions"
-msgstr "namn saknas på medlemsfunktion"
+msgstr "typen %qs har virtuella medlemsfunktioner"
 
 #: objc/objc-act.c:7087
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "illegal aggregate type %qs specified for instance variable %qs"
-msgstr "ignorerar asm-specificerare för ickestatisk lokal variabel %q+D"
+msgstr "ogiltig aggregattyp %qs angiven för instansvariabel %qs"
 
 #: objc/objc-act.c:7097
 #, gcc-internal-format
@@ -28576,39 +28583,39 @@ msgid "C++ constructors and destructors will not be invoked for Objective-C fiel
 msgstr ""
 
 #: objc/objc-act.c:7212
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "instance variable %qs is declared private"
-msgstr "statisk variabel %q+D är markerad som dllimport"
+msgstr "instansvariabel %qs är deklararad privat"
 
 #: objc/objc-act.c:7223
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "instance variable %qs is %s; this will be a hard error in the future"
-msgstr "instansvariabel \"%s\" är deklarerad som privat"
+msgstr "instansvariabel %qs är %s, detta kommer bli ett fel i framtiden"
 
 #: objc/objc-act.c:7230
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "instance variable %qs is declared %s"
-msgstr "statisk variabel %q+D är markerad som dllimport"
+msgstr "instansvariabel %qs är deklarerad %s"
 
 #: objc/objc-act.c:7256 objc/objc-act.c:7344
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incomplete implementation of class %qs"
-msgstr "inkompatibel implicit deklaration av funktionen %qD"
+msgstr "ofullständig implementation av klassen %qs"
 
 #: objc/objc-act.c:7260 objc/objc-act.c:7349
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incomplete implementation of category %qs"
-msgstr "inkompatibel implicit deklaration av funktionen %qD"
+msgstr "ofullständig implementation av kategorin %qs"
 
 #: objc/objc-act.c:7265 objc/objc-act.c:7354
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "method definition for %<%c%s%> not found"
-msgstr "nästad omdefinition av %<struct %E%>"
+msgstr "metoddefinition för %<%c%s%> finns inte"
 
 #: objc/objc-act.c:7395
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s %qs does not fully implement the %qs protocol"
-msgstr "klass \"%s\" implementerar inte protokollet \"%s\""
+msgstr "%s %qs implementerar inte helt protokollet %qs"
 
 #: objc/objc-act.c:7453 objc/objc-act.c:9121
 #, gcc-internal-format
@@ -28616,34 +28623,34 @@ msgid "%<@end%> missing in implementation context"
 msgstr ""
 
 #: objc/objc-act.c:7472
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot find interface declaration for %qs, superclass of %qs"
-msgstr "Cirkulärt arv i interfacedeklaration för \"%s\""
+msgstr "hittar inte gränssnittsdeklaration av %qs, superklass till %qs"
 
 #: objc/objc-act.c:7502
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "reimplementation of class %qs"
-msgstr "omimplementation av klass \"%s\""
+msgstr "omimplementation av klassen %qs"
 
 #: objc/objc-act.c:7534
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicting super class name %qs"
-msgstr "motstridande deklaration av %q#D"
+msgstr "motstridande superklassnamn %qs"
 
 #: objc/objc-act.c:7536
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %qs"
-msgstr "tidigare deklaration av %q+D"
+msgstr "tidigare deklaration av %qs"
 
 #: objc/objc-act.c:7550 objc/objc-act.c:7552
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate interface declaration for class %qs"
-msgstr "dubbel deklaration av etikett %qE"
+msgstr "dubblerad gränssnittsdeklaration av klass %qs"
 
 #: objc/objc-act.c:7806
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "duplicate declaration for protocol %qs"
-msgstr "dubbel deklaration av etikett %qE"
+msgstr "dubblerad deklaration av protokoll %qs"
 
 #. Add a readable method name to the warning.
 #: objc/objc-act.c:8364
@@ -28652,9 +28659,9 @@ msgid "%J%s %<%c%s%>"
 msgstr ""
 
 #: objc/objc-act.c:8694
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no super class declared in interface for %qs"
-msgstr "Operatorgränssnitt för %s:"
+msgstr "ingen superklass deklarerad i gränssnittet för %qs"
 
 #: objc/objc-act.c:8743
 #, gcc-internal-format
@@ -28667,36 +28674,36 @@ msgid "method possibly missing a [super dealloc] call"
 msgstr ""
 
 #: objc/objc-act.c:9411
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "local declaration of %qs hides instance variable"
-msgstr "deklaration av %q+D skuggar tidigare icke-variabel"
+msgstr "lokal deklaration av %qs döljer instansvariabel"
 
 #: treelang/tree1.c:278
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%HDuplicate name %q.*s."
-msgstr "%Hdubblerad etikett %qD"
+msgstr "%HDubblerat namn %q.*s."
 
 #: treelang/treetree.c:814
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Global register variable %qD used in nested function."
-msgstr "global registervariabel %qD använd i nästlad funktion"
+msgstr "Global registervariabel %qD använd i nästlad funktion."
 
 #: treelang/treetree.c:818
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Register variable %qD used in nested function."
-msgstr "registervariabel %qD använd i nästlad funktion"
+msgstr "Registervariabel %qD använd i nästlad funktion."
 
 #: treelang/treetree.c:824
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Address of global register variable %qD requested."
-msgstr "adress till global registervariabel %qD efterfrågad"
+msgstr "Adress till global registervariabel %qD efterfrågad."
 
 #: treelang/treetree.c:829
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Address of register variable %qD requested."
-msgstr "adress på registervariabeln %qD efterfrågad"
+msgstr "Adress till registervariabeln %qD efterfrågad."
 
 #: treelang/treetree.c:1214
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD attribute ignored"
-msgstr "attributet %qs ignorerat"
+msgstr "attributet %qD ignorerat"
