@@ -626,7 +626,7 @@ static struct arm_cpu_select arm_select[] =
 #define ARM_OPT_SET_ARCH 1
 #define ARM_OPT_SET_TUNE 2
 
-/* The name of the proprocessor macro to define for this architecture.  */
+/* The name of the preprocessor macro to define for this architecture.  */
 
 char arm_arch_name[] = "__ARM_ARCH_0UNK__";
 
