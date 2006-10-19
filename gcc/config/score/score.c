@@ -126,6 +126,9 @@ static bool score_rtx_costs (rtx, int, int, int *);
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS                score_rtx_costs
 
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS     TARGET_DEFAULT
+
 /* Implement TARGET_RETURN_IN_MEMORY.  In S+core,
    small structures are returned in a register.
    Objects with varying size must still be returned in memory.  */

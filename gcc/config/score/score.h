@@ -37,7 +37,7 @@ extern GTY(()) rtx cmp_op1;
 
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{!mel:-EB} %{mel:-EL} %{mSCORE5U:-SCORE5U} %{mSCORE7:-SCORE7} %{G*}"
+  "%{!mel:-EB} %{mel:-EL} %{mscore5u:-SCORE5U} %{mscore7:-SCORE7} %{G*}"
 
 #undef LINK_SPEC
 #define LINK_SPEC                 "%{!mel:-EB} %{mel:-EL} %{G*}"
@@ -207,10 +207,10 @@ extern GTY(()) rtx cmp_op1;
     but Control register have 32 registers, cr16-cr31.  */
 #define FIXED_REGISTERS                                  \
 {                                                        \
-  /* General Purpose Registers */                        \
+  /* General Purpose Registers  */                       \
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,        \
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1,        \
-  /* Control Registers */                                \
+  /* Control Registers  */                               \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
   /* CEH/ CEL/ CNT/ LCR/ SCR / ARG_POINTER_REGNUM/ FRAME_POINTER_REGNUM */\
   0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
@@ -220,17 +220,17 @@ extern GTY(()) rtx cmp_op1;
   /* CP 2 Registers  */                                  \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
-  /* CP 3 Registers*/                                    \
+  /* CP 3 Registers  */                                  \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
 }
 
 #define CALL_USED_REGISTERS                              \
 {                                                        \
-  /* General purpose register */                         \
+  /* General purpose register  */                        \
   1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,        \
   0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
-  /* Control Registers */                                \
+  /* Control Registers  */                               \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,        \
   /* CP 1 Registers  */                                  \
@@ -356,7 +356,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0xffffffff, 0x00000000},  \
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xffffffff},  \
   { 0x00000000, 0x00000000, 0xffffffff, 0xffffffff, 0xffffffff},  \
-  /* ALL_REGS        */                                           \
+  /* ALL_REGS  */                                                 \
   { 0xffffffff, 0x001fffff, 0xffffffff, 0xffffffff, 0xffffffff},  \
 }
 

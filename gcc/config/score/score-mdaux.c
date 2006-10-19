@@ -397,7 +397,7 @@ mda_classify_address (struct score_address_info *info,
     case POST_DEC:
     case PRE_INC:
     case POST_INC:
-      if (TARGET_NOPINDEX || GET_MODE_SIZE (mode) > GET_MODE_SIZE (SImode))
+      if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (SImode))
         return false;
       info->type = ADD_REG;
       info->reg = XEXP (x, 0);

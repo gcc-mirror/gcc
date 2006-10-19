@@ -27,27 +27,15 @@ mel
 Target RejectNegative Report Mask(LITTLE_ENDIAN)
 Generate little-endian code
 
-mnpi
-Target RejectNegative Report Mask(NOPINDEX)
-Do not use pre/post index
-
-mnuls
-Target RejectNegative Report Mask(NOUNALIGNED)
-Do not use unaligned load/store
-
 mmac
 Target RejectNegative Report Mask(MAC)
 Enable mac instruction
 
-mSCORE5
-Target RejectNegative Report Mask(SCORE5)
-Support SCORE 5 ISA
-
-mSCORE5U
+mscore5u
 Target RejectNegative Report Mask(SCORE5U)
 Support SCORE 5U ISA
 
-mSCORE7
+mscore7
 Target RejectNegative Report Mask(SCORE7)
 Support SCORE 7 ISA
 
