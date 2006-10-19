@@ -1,3 +1,28 @@
+2006-10-19  Chen Liqin  <liqin@sunnorth.com.cn>
+
+        * config/score/crti.asm: New file.
+        * config/score/crtn.asm: New file.
+        * config/score/elf.h: New file.
+        * config/score/mac.md: New file.
+        * config/score/misc.md: New file.
+        * config/score/mul-div.S: New file.
+        * config/score/predicates.md: New file.
+        * config/score/score7.md: New file.
+        * config/score/score.c: New file.
+        * config/score/score-conv.h: New file.
+        * config/score/score.h: New file.
+        * config/score/score.md: New file.
+        * config/score/score-mdaux.c: New file.
+        * config/score/score-mdaux.h: New file.
+        * config/score/score-modes.def: New file.
+        * config/score/score.opt: New file.
+        * config/score/score-protos.h: New file.
+        * config/score/score-version.h: New file.
+        * config/score/t-score-elf: New file.
+        * config.gcc: Add score*-*-* configurations(Update before).
+        * doc/invoke.texi (Score Options): New section.
+        * doc/md.texi (Score family): New section to document constraints.
+
 2006-10-19  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c: Fix spelling typo.

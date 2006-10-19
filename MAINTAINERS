@@ -75,6 +75,7 @@ rs6000 port		David Edelsohn		dje@watson.ibm.com
 rs6000 vector extns	Aldy Hernandez		aldyh@redhat.com
 s390 port		Hartmut Penner		hpenner@de.ibm.com
 s390 port		Ulrich Weigand		uweigand@de.ibm.com
+score port		Chen Liqin		liqin@sunnorth.com.cn
 sh port			Joern Rennecke		joern.rennecke@st.com
 sh port			Alexandre Oliva		aoliva@redhat.com
 sh libraries/configury	Kaz Kojima		kkojima@gcc.gnu.org
