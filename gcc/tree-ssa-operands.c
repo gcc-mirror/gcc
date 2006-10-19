@@ -1053,6 +1053,9 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
   if (alias == global_var)
     return true;
 
+  if (TREE_CODE (alias) == VAR_DECL && DECL_PTA_ARTIFICIAL (alias))
+    return true;
+
   /* If ALIAS is an SFT, it can't be touched if the offset     
      and size of the access is not overlapping with the SFT offset and
      size.  This is only true if we are accessing through a pointer

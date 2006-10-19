@@ -2103,24 +2103,17 @@ set_pt_anything (tree ptr)
 	3- STMT is an assignment to a non-local variable, or
 	4- STMT is a return statement.
 
-   AI points to the alias information collected so far.  
-
    Return the type of escape site found, if we found one, or NO_ESCAPE
    if none.  */
 
 enum escape_type
-is_escape_site (tree stmt, struct alias_info *ai)
+is_escape_site (tree stmt)
 {
   tree call = get_call_expr_in (stmt);
   if (call != NULL_TREE)
     {
-      ai->num_calls_found++;
-
       if (!TREE_SIDE_EFFECTS (call))
-	{
-	  ai->num_pure_const_calls_found++;
-	  return ESCAPE_TO_PURE_CONST;
-	}
+	return ESCAPE_TO_PURE_CONST;
 
       return ESCAPE_TO_CALL;
     }
