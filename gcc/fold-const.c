@@ -291,14 +291,16 @@ force_fit_type (tree t, int overflowable,
 }
 
 /* Add two doubleword integers with doubleword result.
+   Return nonzero if the operation overflows according to UNSIGNED_P.
    Each argument is given as two `HOST_WIDE_INT' pieces.
    One argument is L1 and H1; the other, L2 and H2.
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
-add_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
-	    unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
-	    unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
+add_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		      unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
+		      unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
+		      bool unsigned_p)
 {
   unsigned HOST_WIDE_INT l;
   HOST_WIDE_INT h;
@@ -308,7 +310,11 @@ add_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 
   *lv = l;
   *hv = h;
-  return OVERFLOW_SUM_SIGN (h1, h2, h);
+
+  if (unsigned_p)
+    return (unsigned HOST_WIDE_INT) h < (unsigned HOST_WIDE_INT) h1;
+  else
+    return OVERFLOW_SUM_SIGN (h1, h2, h);
 }
 
 /* Negate a doubleword integer with doubleword result.
@@ -335,15 +341,16 @@ neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 }
 
 /* Multiply two doubleword integers with doubleword result.
-   Return nonzero if the operation overflows, assuming it's signed.
+   Return nonzero if the operation overflows according to UNSIGNED_P.
    Each argument is given as two `HOST_WIDE_INT' pieces.
    One argument is L1 and H1; the other, L2 and H2.
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 int
-mul_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
-	    unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
-	    unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
+mul_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
+		      unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
+		      unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
+		      bool unsigned_p)
 {
   HOST_WIDE_INT arg1[4];
   HOST_WIDE_INT arg2[4];
@@ -374,11 +381,15 @@ mul_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
       prod[i + 4] = carry;
     }
 
-  decode (prod, lv, hv);	/* This ignores prod[4] through prod[4*2-1] */
-
-  /* Check for overflow by calculating the top half of the answer in full;
-     it should agree with the low half's sign bit.  */
+  decode (prod, lv, hv);
   decode (prod + 4, &toplow, &tophigh);
+
+  /* Unsigned overflow is immediate.  */
+  if (unsigned_p)
+    return (toplow | tophigh) != 0;
+
+  /* Check for signed overflow by calculating the signed representation of the
+     top half of the result; it should agree with the low half's sign bit.  */
   if (h1 < 0)
     {
       neg_double (l2, h2, &neglow, &neghigh);
@@ -6083,30 +6094,32 @@ fold_div_compare (enum tree_code code, tree type, tree arg0, tree arg1)
   tree arg01 = TREE_OPERAND (arg0, 1);
   unsigned HOST_WIDE_INT lpart;
   HOST_WIDE_INT hpart;
+  bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (arg0));
   bool neg_overflow;
   int overflow;
 
   /* We have to do this the hard way to detect unsigned overflow.
      prod = int_const_binop (MULT_EXPR, arg01, arg1, 0);  */
-  overflow = mul_double (TREE_INT_CST_LOW (arg01),
-			 TREE_INT_CST_HIGH (arg01),
-			 TREE_INT_CST_LOW (arg1),
-			 TREE_INT_CST_HIGH (arg1), &lpart, &hpart);
+  overflow = mul_double_with_sign (TREE_INT_CST_LOW (arg01),
+				   TREE_INT_CST_HIGH (arg01),
+				   TREE_INT_CST_LOW (arg1),
+				   TREE_INT_CST_HIGH (arg1),
+				   &lpart, &hpart, unsigned_p);
   prod = build_int_cst_wide (TREE_TYPE (arg00), lpart, hpart);
   prod = force_fit_type (prod, -1, overflow, false);
   neg_overflow = false;
 
-  if (TYPE_UNSIGNED (TREE_TYPE (arg0)))
+  if (unsigned_p)
     {
       tmp = int_const_binop (MINUS_EXPR, arg01, integer_one_node, 0);
       lo = prod;
 
       /* Likewise hi = int_const_binop (PLUS_EXPR, prod, tmp, 0).  */
-      overflow = add_double (TREE_INT_CST_LOW (prod),
-			     TREE_INT_CST_HIGH (prod),
-			     TREE_INT_CST_LOW (tmp),
-			     TREE_INT_CST_HIGH (tmp),
-			     &lpart, &hpart);
+      overflow = add_double_with_sign (TREE_INT_CST_LOW (prod),
+				       TREE_INT_CST_HIGH (prod),
+				       TREE_INT_CST_LOW (tmp),
+				       TREE_INT_CST_HIGH (tmp),
+				       &lpart, &hpart, unsigned_p);
       hi = build_int_cst_wide (TREE_TYPE (arg00), lpart, hpart);
       hi = force_fit_type (hi, -1, overflow | TREE_OVERFLOW (prod),
 			   TREE_CONSTANT_OVERFLOW (prod));
