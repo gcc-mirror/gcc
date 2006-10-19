@@ -1,3 +1,8 @@
+2006-10-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/27895
+	* gfortran.dg/zero_sized_1.f90: New test.
+
 2006-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/div-compare-1.c: New test.
@@ -26,10 +31,10 @@
 	* gfortran.dg/streamio_4.f90: Update test.
 	* gfortran.dg/streamio_11.f90: New test.
 
-2006-10-17  Lee Millward  <lee.millward@codesuorcery.com>
+2006-10-17  Lee Millward  <lee.millward@codesourcery.com>
 
-        PR c++/27952
-        * g++.dg/inherit/virtual1.C: New test.
+	PR c++/27952
+	* g++.dg/inherit/virtual1.C: New test.
 	
 2006-10-17  Mark Mitchell  <mark@codesourcery.com>
 
