@@ -1,3 +1,7 @@
+2006-10-18  Tom Tromey  <tromey@redhat.com>
+
+	* doc/install.texi (Prerequisites): Mention automake 1.9.6.
+
 2006-10-18  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/29299
