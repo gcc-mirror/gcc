@@ -102,6 +102,12 @@ lappend DEFAULT_VECTCFLAGS "-ftrapv"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/trapv-vect*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
+# -funswitch-loops tests
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-funswitch-loops"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/unswitch-loops-*.\[cS\]]]  \
+	"" $DEFAULT_VECTCFLAGS
+
 # With -Os
 lappend DEFAULT_VECTCFLAGS "-Os"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Os-vect-*.\[cS\]]]  \

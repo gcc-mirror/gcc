@@ -1,3 +1,13 @@
+2006-10-19 Ira Rosen  <irar@il.ibm.com>
+
+	Backport from mainline:
+        2006-08-07  Victor Kaplansky <victork@il.ibm.com>
+        
+        PR tree-optimizations/26969
+        * gcc.dg/vect/vect.exp: Compile tests prefixed with
+        "unswitch-loops" with -funswitch-loops.
+        * gcc.dg/vect/unswitch-loops-pr26969.c: New test.
+
 2006-10-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
