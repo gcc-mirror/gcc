@@ -2638,7 +2638,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
           else
             {
               /* Use the normal assignment copying routines.  */
-              assign = gfc_trans_assignment (c->expr, c->expr2);
+              assign = gfc_trans_assignment (c->expr, c->expr2, false);
 
               /* Generate body and loops.  */
               tmp = gfc_trans_nested_forall_loop (nested_forall_info, assign, 1, 1);

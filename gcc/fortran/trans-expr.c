@@ -2031,7 +2031,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		    && fsym->value)
 		{
 		  gcc_assert (!fsym->attr.allocatable);
-		  tmp = gfc_trans_assignment (e, fsym->value);
+		  tmp = gfc_trans_assignment (e, fsym->value, false);
 		  gfc_add_expr_to_block (&se->pre, tmp);
 		}
 
@@ -3363,7 +3363,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
    setting up the scalarizer.  */
 
 tree
-gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2)
+gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
 {
   gfc_se lse;
   gfc_se rse;
@@ -3466,7 +3466,8 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2)
   else
     gfc_conv_expr (&lse, expr1);
 
-  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts, l_is_temp,
+  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
+				 l_is_temp || init_flag,
 				 expr2->expr_type == EXPR_VARIABLE);
   gfc_add_expr_to_block (&body, tmp);
 
@@ -3500,7 +3501,8 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  gcc_assert (lse.ss == gfc_ss_terminator
 		      && rse.ss == gfc_ss_terminator);
 
-	  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts, false, false);
+	  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
+					 false, false);
 	  gfc_add_expr_to_block (&body, tmp);
 	}
 
@@ -3518,7 +3520,13 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2)
 }
 
 tree
+gfc_trans_init_assign (gfc_code * code)
+{
+  return gfc_trans_assignment (code->expr, code->expr2, true);
+}
+
+tree
 gfc_trans_assign (gfc_code * code)
 {
-  return gfc_trans_assignment (code->expr, code->expr2);
+  return gfc_trans_assignment (code->expr, code->expr2, false);
 }

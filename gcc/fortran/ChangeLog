@@ -1,3 +1,30 @@
+2006-10-19  Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29216
+	PR fortran/29314
+	* gfortran.h : Add EXEC_INIT_ASSIGN.
+	* dump-parse-tree.c (gfc_show_code_node): The same.
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Set new
+	argument for gfc_trans_assignment to false.
+	* trans-stmt.c (gfc_trans_forall_1): The same.
+	* trans-expr.c (gfc_conv_function_call, gfc_trans_assign,
+	gfc_trans_arrayfunc_assign, gfc_trans_assignment): The
+	same. In the latter function, use the new flag to stop
+	the checking of the lhs for deallocation.
+	(gfc_trans_init_assign): New function.
+	* trans-stmt.h : Add prototype for gfc_trans_init_assign.
+	* trans.c (gfc_trans_code): Implement EXEC_INIT_ASSIGN.
+	* trans.h : Add new boolean argument to the prototype of
+	gfc_trans_assignment.
+	* resolve.c (resolve_allocate_exp): Replace EXEC_ASSIGN by
+	EXEC_INIT_ASSIGN.
+	(resolve_code): EXEC_INIT_ASSIGN does not need resolution.
+	(apply_default_init): New function.
+	(resolve_symbol): Call it for derived types that become
+	defined but which do not already have an initialization
+	expression..
+	* st.c (gfc_free_statement): Include EXEC_INIT_ASSIGN.
+
 2006-10-16  Tobias Burnus  <burnus@net-b.de>
 
 	* primary.c: Revert 'significand'-to-'significant' comment change.

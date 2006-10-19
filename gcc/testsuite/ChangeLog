@@ -1,3 +1,14 @@
+2006-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29216
+	* gfortran.dg/result_default_init_1.f90: New test.
+
+	PR fortran/29314
+	* gfortran.dg/automatic_default_init_1.f90: New test.
+
+	* gfortran.dg/alloc_comp_basics_1.f90: Reduce deallocate count
+	from 38 to 33.
+
 2006-10-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.old-deja/g++.robertl/eb133b.C: Add XFAILed error for

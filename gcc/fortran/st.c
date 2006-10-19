@@ -93,6 +93,7 @@ gfc_free_statement (gfc_code * p)
     {
     case EXEC_NOP:
     case EXEC_ASSIGN:
+    case EXEC_INIT_ASSIGN:
     case EXEC_GOTO:
     case EXEC_CYCLE:
     case EXEC_RETURN:

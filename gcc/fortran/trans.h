@@ -426,7 +426,7 @@ bool get_array_ctor_strlen (gfc_constructor *, tree *);
 void gfc_trans_runtime_check (tree, const char *, stmtblock_t *, locus *);
 
 /* Generate code for an assignment, includes scalarization.  */
-tree gfc_trans_assignment (gfc_expr *, gfc_expr *);
+tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool);
 
 /* Generate code for a pointer assignment.  */
 tree gfc_trans_pointer_assignment (gfc_expr *, gfc_expr *);
