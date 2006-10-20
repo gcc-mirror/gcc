@@ -553,7 +553,7 @@ point operation, such as @code{sqrt(-1.0)}), @samp{zero} (division by
 zero), @samp{overflow} (overflow in a floating point operation),
 @samp{underflow} (underflow in a floating point operation),
 @samp{precision} (loss of precision during operation) and @samp{denormal}
-(operation produced a denormal denormal value).
+(operation produced a denormal value).
 @end table
 
 @xref{Debugging Options,,Options for Debugging Your Program or GCC,

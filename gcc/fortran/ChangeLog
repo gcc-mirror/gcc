@@ -1,3 +1,7 @@
+2006-10-19  Brooks Moses  <bmoses@stanford.edu>
+
+	* invoke.texi: Fixed "denormal" typo.
+
 2006-10-19  Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29216
