@@ -7,5 +7,5 @@ struct A
 
 void foo(A& a)
 {
-  (char)a.i;
+  (char)a.i;    // { dg-error "no member" }
 }

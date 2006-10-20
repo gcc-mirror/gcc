@@ -1,3 +1,10 @@
+2006-10-20  Lee Millward  <lee.millward@codesourcery.com>
+            Mark Mitchell <mark@codesourcery.com>
+
+        PR c++/28053
+        * decl2.c (grokbitfield): Detect invalid non-integral 
+        types earlier when possible.
+	
 2006-10-18  Mark Shinwell  <shinwell@codesourcery.com>
 
 	PR c++/26884
