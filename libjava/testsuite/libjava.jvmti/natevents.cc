@@ -498,14 +498,18 @@ do_callback_arg_tests ()
   _Jv_JVMTI_PostEvent (JVMTI_EVENT_FIELD_ACCESS, (jthread) 0x2,
 		       (JNIEnv *) 0x1, (jmethodID) 0x3, (jlocation) 0x4,
 		       (jclass) 0x5, (jobject) 0x6, (jfieldID) 0x7);
+  jvalue value;
+  value.l = (jobject) 0x9;
   _Jv_JVMTI_PostEvent (JVMTI_EVENT_FIELD_MODIFICATION, (jthread) 0x2,
 		       (JNIEnv *) 0x1, (jmethodID) 0x3, (jlocation) 0x4,
 		       (jclass) 0x5, (jobject) 0x6, (jfieldID) 0x7,
-		       (int) '8', (/*jvalue*/ jobject) 0x9);
+		       (int) '8', value);
   _Jv_JVMTI_PostEvent (JVMTI_EVENT_METHOD_ENTRY, (jthread) 0x2,
 		       (JNIEnv *) 0x1, (jmethodID) 0x3);
+  jvalue value2;
+  value2.i = 5;
   _Jv_JVMTI_PostEvent (JVMTI_EVENT_METHOD_EXIT, (jthread) 0x2,
-		       (JNIEnv *) 0x1, (jmethodID) 0x3, 4, /*jvalue*/ 5);
+		       (JNIEnv *) 0x1, (jmethodID) 0x3, 4, value2);
   _Jv_JVMTI_PostEvent (JVMTI_EVENT_NATIVE_METHOD_BIND, (jthread) 0x2,
 		       (JNIEnv *) 0x1, (jmethodID) 0x3, (void *) 0x4,
 		       (void **) 0x5);
