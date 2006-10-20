@@ -128,7 +128,7 @@ maxloc0_4_i16 (gfc_array_i4 * const restrict retarray,
              the next dimension.  */
           count[n] = 0;
           /* We could precalculate these products, but this is a less
-             frequently used path so proabably not worth it.  */
+             frequently used path so probably not worth it.  */
           base -= sstride[n] * extent[n];
           n++;
           if (n == rank)
@@ -253,7 +253,7 @@ mmaxloc0_4_i16 (gfc_array_i4 * const restrict retarray,
              the next dimension.  */
           count[n] = 0;
           /* We could precalculate these products, but this is a less
-             frequently used path so proabably not worth it.  */
+             frequently used path so probably not worth it.  */
           base -= sstride[n] * extent[n];
           mbase -= mstride[n] * extent[n];
           n++;

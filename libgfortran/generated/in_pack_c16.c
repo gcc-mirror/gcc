@@ -102,7 +102,7 @@ internal_pack_c16 (gfc_array_c16 * source)
              the next dimension.  */
           count[n] = 0;
           /* We could precalculate these products, but this is a less
-             frequently used path so proabably not worth it.  */
+             frequently used path so probably not worth it.  */
           src -= stride[n] * extent[n];
           n++;
           if (n == dim)
