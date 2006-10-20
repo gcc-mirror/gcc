@@ -145,7 +145,7 @@ count_8_l4 (gfc_array_i8 * const restrict retarray,
              the next dimension.  */
           count[n] = 0;
           /* We could precalculate these products, but this is a less
-             frequently used path so proabably not worth it.  */
+             frequently used path so probably not worth it.  */
           base -= sstride[n] * extent[n];
           dest -= dstride[n] * extent[n];
           n++;
