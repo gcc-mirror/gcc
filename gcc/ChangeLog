@@ -1,3 +1,13 @@
+2006-10-21  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.md (extendsfdf2, extendsfxf2, extenddfxf2): Do not
+	force operand1 to register if both operands are memory operands.
+	(*extendsfdf2_mixed, *extendsfdf2_sse, *extendsfdf2_i387)
+	(*extendsfxf2_i387, *extenddfxf2_i387): Do not disable pattern
+	if both operands are memory operands.
+	(truncdfsf2): Do not force operand1 to register if both operands
+	are memory operands.
+
 2006-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (LIBS): Add $(GMPLIBS).
