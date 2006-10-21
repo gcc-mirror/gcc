@@ -1,3 +1,7 @@
+2006-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* crontab: Add 4.2 branch.  Set trunk to 4.3.
+
 2006-09-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (LC_ALL): Default to C.
