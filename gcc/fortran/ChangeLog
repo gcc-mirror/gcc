@@ -1,3 +1,9 @@
+2006-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (F95_LIBS): Delete.
+	* f951$(exeext): Use $(LIBS) instead of $(F95_LIBS).
+	* config-lang.in (need_gmp): Delete.
+
 2006-10-19  Brooks Moses  <bmoses@stanford.edu>
 
 	* invoke.texi: Fixed "denormal" typo.

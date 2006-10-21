@@ -1103,23 +1103,23 @@ choke me
 ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_gmp=no])
 
 if test x"$have_gmp" = xyes; then
+  saved_LIBS="$LIBS"
+  LIBS="$LIBS $gmplibs"
   AC_MSG_CHECKING([for correct version of mpfr.h])
-  AC_TRY_COMPILE([#include "gmp.h"
+  AC_TRY_LINK([#include <gmp.h>
 #include <mpfr.h>],[
 #if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
   choke me
 #endif
-], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy version of MPFR detected])])
-
-  saved_LIBS="$LIBS"
-  LIBS="$LIBS $gmplibs"
-  AC_MSG_CHECKING([for any version of mpfr.h])
-  AC_TRY_LINK([#include <gmp.h>
-#include <mpfr.h>], [mpfr_t n; mpfr_init(n);],
-    [AC_MSG_RESULT([yes])],  [AC_MSG_RESULT([no]); have_gmp=no])
+  mpfr_t n; mpfr_init(n);
+], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_gmp=no])
   LIBS="$saved_LIBS"
 fi
 CFLAGS="$saved_CFLAGS"
+
+if test x$have_gmp != xyes; then
+  AC_MSG_ERROR([Building GCC requires GMP 4.1+ and MPFR 2.2+.  Try the --with-gmp and/or --with-mpfr options.])
+fi
 
 # Flags needed for both GMP and/or MPFR
 AC_SUBST(gmplibs)
@@ -1208,7 +1208,6 @@ if test -d ${srcdir}/gcc; then
         subdir_requires=
         boot_language=
         build_by_default=
-        need_gmp=
         . ${lang_frag}
         potential_languages="${potential_languages},${language}"
         # This is quite sensitive to the ordering of the case statement arms.
@@ -1253,18 +1252,6 @@ if test -d ${srcdir}/gcc; then
               ;;
           esac
 	done
-
-        # Disable languages that need GMP if it isn't available.
-        case ,${enable_languages},:${have_gmp}:${need_gmp} in
-          *,${language},*:no:yes)
-            # Specifically requested language; tell them.
-            AC_MSG_ERROR([GMP 4.1 and MPFR 2.2 or newer versions required by $language])
-            ;;
-          *:no:yes)
-            # Silently disable.
-            add_this_lang=no
-            ;;
-        esac
 
 	# Disable a language that is unsupported by the target.
 	case " $unsupported_languages " in
