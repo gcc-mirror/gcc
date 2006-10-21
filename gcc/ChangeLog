@@ -1,5 +1,14 @@
 2006-10-21  Richard Guenther  <rguenther@suse.de>
 
+	PR target/19116
+	* config/i386/i386.c (override_options): Do not set MASK_IEEE_FP
+	if flag_unsafe_math_optimizations is specified.  We have
+	flag_finite_math_only for that.
+	* config/i386/i386.md (sqrtxf2): Do not require TARGET_IEEE_FP
+	or flag_unsafe_math_optimizations.
+
+2006-10-21  Richard Guenther  <rguenther@suse.de>
+
 	* builtins.c (fold_builtin_classify): Fix typo.
 
 2006-10-21  Richard Guenther  <rguenther@suse.de>
