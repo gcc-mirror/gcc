@@ -6,6 +6,12 @@
 
 2006-10-21  Uros Bizjak  <uros@kss-loka.si>
 
+	PR middle-end/28252
+	* builtins.c (fold_builtin): Fold pow(x,1.0/3.0) as cbrt(x) if
+	flag_unsafe_math_optimizations is set.
+
+2006-10-21  Uros Bizjak  <uros@kss-loka.si>
+
 	PR target/19398
 	* config/i386/i386.md (fix_trunc?f?i_sse): Add peephole2
 	patterns to use memory input operand in x87->mem->XMM

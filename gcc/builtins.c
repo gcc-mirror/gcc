@@ -7775,6 +7775,23 @@ fold_builtin_pow (tree fndecl, tree arglist, tree type)
 	    }
 	}
 
+      /* Optimize pow(x,1.0/3.0) = cbrt(x).  */
+      if (flag_unsafe_math_optimizations)
+	{
+	  const REAL_VALUE_TYPE dconstroot
+	    = real_value_truncate (TYPE_MODE (type), dconstthird);
+
+	  if (REAL_VALUES_EQUAL (c, dconstroot))
+	    {
+	      tree cbrtfn = mathfn_built_in (type, BUILT_IN_CBRT);
+	      if (cbrtfn != NULL_TREE)
+		{
+		  tree arglist = build_tree_list (NULL_TREE, arg0);
+		  return build_function_call_expr (cbrtfn, arglist);
+		}
+	    }
+	}
+
       /* Check for an integer exponent.  */
       n = real_to_integer (&c);
       real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
