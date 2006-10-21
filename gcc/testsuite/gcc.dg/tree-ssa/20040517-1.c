@@ -17,5 +17,5 @@ void bar (void)
    malloc functions may clobber global memory.  Only the function result
    does not alias any other pointer.
    Hence, we must have a VDEF for a before and after the call to foo().  */
-/* { dg-final { scan-tree-dump-times "V_MAY_DEF" 1 "alias1"} } */
+/* { dg-final { scan-tree-dump-times "V_MAY_DEF" 2 "alias1"} } */
 /* { dg-final { cleanup-tree-dump "alias1" } } */

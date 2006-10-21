@@ -425,6 +425,7 @@ extern GTY((param_is (struct int_tree_map))) htab_t referenced_vars;
 extern GTY((param_is (struct int_tree_map))) htab_t default_defs;
 
 extern tree referenced_var_lookup (unsigned int);
+extern bool referenced_var_check_and_insert (tree);
 #define num_referenced_vars htab_elements (referenced_vars)
 #define referenced_var(i) referenced_var_lookup (i)
 
@@ -436,6 +437,10 @@ extern GTY(()) VEC(tree,gc) *ssa_names;
 
 /* Artificial variable used to model the effects of function calls.  */
 extern GTY(()) tree global_var;
+
+/* Artificial variable used to model the effects of nonlocal
+   variables.  */
+extern GTY(()) tree nonlocal_all;
 
 /* Call clobbered variables in the function.  If bit I is set, then
    REFERENCED_VARS (I) is call-clobbered.  */

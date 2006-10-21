@@ -164,14 +164,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
 htab_t heapvar_for_stmt;
 
-
-/* Represents nonlocals. */
-static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
-htab_t nonlocal_for_type;
-
-/* If strict aliasing is off, we only use one variable to represent
-   the nonlocal types.  */
-static GTY (()) tree nonlocal_all;
+/* One variable to represent all non-local accesses.  */
+tree nonlocal_all;
 
 static bool use_field_sensitive = true;
 static int in_ipa_mode = 0;
@@ -2516,40 +2510,6 @@ do_deref (VEC (ce_s, heap) **constraints)
     }
 }
 
-/* Lookup a nonlocal variable for type FROM, and return it if we find
-   one.  */
-
-static tree 
-nonlocal_lookup (tree from)
-{
-  struct tree_map *h, in;
-  in.from = from;
-
-  h = htab_find_with_hash (nonlocal_for_type, &in,
-			   htab_hash_pointer (from));
-  if (h)
-    return h->to;
-  return NULL_TREE;
-}
-
-/* Insert a mapping FROM->TO in the nonlocal variable for type
-   hashtable.  */
-
-static void
-nonlocal_insert (tree from, tree to)
-{
-  struct tree_map *h;
-  void **loc;
-
-  h = ggc_alloc (sizeof (struct tree_map));
-  h->hash = htab_hash_pointer (from);
-  h->from = from;
-  h->to = to;
-  loc = htab_find_slot_with_hash (nonlocal_for_type, h, h->hash,
-				  INSERT);
-  *(struct tree_map **) loc = h;
-}
-
 /* Create a nonlocal variable of TYPE to represent nonlocals we can
    alias.  */
 
@@ -2561,59 +2521,8 @@ create_nonlocal_var (tree type)
   if (referenced_vars)
     add_referenced_var (nonlocal);
 
-  DECL_PTA_ARTIFICIAL (nonlocal) = 1;
   DECL_EXTERNAL (nonlocal) = 1;
-  nonlocal_insert (type, nonlocal);
   return nonlocal;
-}
-
-/* Get or create a nonlocal variable for TYPE, and return its
-   variable info id.  */
-
-static unsigned int
-get_nonlocal_id_for_type (tree type)
-{
-  tree nonlocal;
-  unsigned int nonlocal_id;
-  varinfo_t nonlocal_vi;
-  
-  /* For strict aliasing, we have one variable per type. For
-     non-strict aliasing, we only need one variable.  */
-  if (flag_strict_aliasing != 0)
-    {
-      nonlocal  = nonlocal_lookup (type);
-    }
-  else
-    {
-      if (!nonlocal_all)
-	{
-	  nonlocal = create_nonlocal_var (void_type_node);
-	  nonlocal_all = nonlocal;
-	}
-      else
-	nonlocal = nonlocal_all;
-    }
-  
-  if (nonlocal && lookup_id_for_tree (nonlocal, &nonlocal_id))
-    return nonlocal_id;
-
-  if (!nonlocal)
-    {
-      gcc_assert (flag_strict_aliasing != 0);
-      nonlocal = create_nonlocal_var (type);
-    }
-  
-  /* Create variable info for the nonlocal var if it does not
-     exist.  */
-  nonlocal_id = create_variable_info_for (nonlocal,
-					  get_name (nonlocal));
-  nonlocal_vi = get_varinfo (nonlocal_id);
-  nonlocal_vi->is_artificial_var = 1;
-  nonlocal_vi->is_heap_var = 1; 
-  nonlocal_vi->is_unknown_size_var = 1;
-  nonlocal_vi->directly_dereferenced = true;
-	    
-  return nonlocal_id;
 }
 
 /* Given a tree T, return the constraint expression for it.  */
@@ -2756,7 +2665,6 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 		return;
 	      }
 	    break;
-	    
 	  default:
 	    {
 	      temp.type = ADDRESSOF;
@@ -4116,7 +4024,12 @@ find_global_initializers (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
     case VAR_DECL:
       /* We might not have walked this because we skip
 	 DECL_EXTERNALs during the initial scan.  */
-      add_referenced_var (t);   
+      if (referenced_vars)
+	{
+	  get_var_ann (t);
+	  if (referenced_var_check_and_insert (t))
+	    mark_sym_for_renaming (t);
+	}
       break;
     default:
       break;
@@ -4336,8 +4249,8 @@ intra_create_variable_infos (void)
 {
   tree t;
   struct constraint_expr lhs, rhs;
-  tree nonlocal;
   varinfo_t nonlocal_vi;
+
   /* For each incoming pointer argument arg, ARG = ESCAPED_VARS or a
      dummy variable if flag_argument_noalias > 2. */
   for (t = DECL_ARGUMENTS (current_function_decl); t; t = TREE_CHAIN (t))
@@ -4393,14 +4306,12 @@ intra_create_variable_infos (void)
 	    make_constraint_from_escaped (p);
 	}
     }
-  nonlocal = create_tmp_var_raw (void_type_node, "NONLOCAL_ALL");
-  
-  DECL_EXTERNAL (nonlocal) = 1;
+  nonlocal_all = create_nonlocal_var (void_type_node);
 
   /* Create variable info for the nonlocal var if it does not
      exist.  */
-  nonlocal_vars_id = create_variable_info_for (nonlocal,
-					       get_name (nonlocal));
+  nonlocal_vars_id = create_variable_info_for (nonlocal_all,
+					       get_name (nonlocal_all));
   nonlocal_vi = get_varinfo (nonlocal_vars_id);
   nonlocal_vi->is_artificial_var = 1;
   nonlocal_vi->is_heap_var = 1; 
@@ -4860,61 +4771,6 @@ find_escape_constraints (tree stmt)
   VEC_free (ce_s, heap, rhsc);
 }
 
-/* Expand the solutions that have nonlocal_id in them to include one
-   variable for each type that is pointed to by nonlocal and
-   dereferenced.  */
-
-static void
-expand_nonlocal_solutions (void)
-{
-  int i;
-  varinfo_t v;
-  bitmap new_nonlocal_solution = BITMAP_ALLOC (&ptabitmap_obstack);
-
-  /*  We could do this faster by only checking non-collapsed nodes,
-      unless the node was collapsed to one we would normally ignore in the
-      rest of the loop.  Logic already seems complicated enough, and
-      it wasn't a measurable speedup on any testcases i had.  */
-  for (i = 0; VEC_iterate (varinfo_t, varmap, i, v); i++)
-    {
-      /* Where the solution for our variable is, since it may have
-	 been collapsed to another varinfo.  */
-      varinfo_t solv = v;
-      
-      if (v->is_special_var
-	  || v->id == nonlocal_vars_id
-	  || v->id == escaped_vars_id
-	  || !POINTER_TYPE_P (TREE_TYPE (v->decl)))
-	continue;
-      
-      if (v->node != v->id)
-	solv = get_varinfo (v->node);
-      if (bitmap_bit_p (solv->solution, nonlocal_vars_id))
-	{
-	  unsigned int new_nonlocal_id;
-	  tree pttype = TREE_TYPE (TREE_TYPE (v->decl));
-	  
-	  new_nonlocal_id = get_nonlocal_id_for_type (pttype);
-	  bitmap_set_bit (new_nonlocal_solution, new_nonlocal_id);
-	}
-    }
-
-  if (!bitmap_empty_p (new_nonlocal_solution))
-    {
-
-      for (i = 0; VEC_iterate (varinfo_t, varmap, i, v); i++)
-	{
-	  if (v->node != v->id)
-	    continue;
-	  if (bitmap_bit_p (v->solution, nonlocal_vars_id))
-	    {
-	      bitmap_clear_bit (v->solution, nonlocal_vars_id);
-	      bitmap_ior_into (v->solution, new_nonlocal_solution);
-	    }
-	}
-    }
-}
-			  
 /* Create points-to sets for the current function.  See the comments
    at the start of the file for an algorithmic overview.  */
 
@@ -4982,8 +4838,6 @@ compute_points_to_sets (struct alias_info *ai)
     fprintf (dump_file, "\nSolving graph:\n");
       
   solve_graph (graph);
-  
-  expand_nonlocal_solutions ();
   
   if (dump_file)
     dump_sa_points_to_info (dump_file);
@@ -5129,8 +4983,6 @@ ipa_pta_execute (void)
       
   solve_graph (graph);
   
-  expand_nonlocal_solutions ();
-  
   if (dump_file)
     dump_sa_points_to_info (dump_file);
   in_ipa_mode = 0;
@@ -5162,8 +5014,6 @@ init_alias_heapvars (void)
 {
   heapvar_for_stmt = htab_create_ggc (11, tree_map_hash, tree_map_eq,
 				      NULL);
-  nonlocal_for_type = htab_create_ggc (11, tree_map_hash, tree_map_eq,
-				       NULL);
   nonlocal_all = NULL_TREE;
 }
 
@@ -5172,7 +5022,6 @@ delete_alias_heapvars (void)
 {
   nonlocal_all = NULL_TREE;
   htab_delete (heapvar_for_stmt);
-  htab_delete (nonlocal_for_type);
 }
 
   

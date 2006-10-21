@@ -1053,7 +1053,9 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
   if (alias == global_var)
     return true;
 
-  if (TREE_CODE (alias) == VAR_DECL && DECL_PTA_ARTIFICIAL (alias))
+  /* We cannot prune nonlocal aliases because they are not type
+     specific.  */
+  if (alias == nonlocal_all)
     return true;
 
   /* If ALIAS is an SFT, it can't be touched if the offset     
