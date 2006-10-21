@@ -261,7 +261,7 @@
 (define_insn "sse3_lddqu"
   [(set (match_operand:V16QI 0 "register_operand" "=x")
 	(unspec:V16QI [(match_operand:V16QI 1 "memory_operand" "m")]
-		      UNSPEC_LDQQU))]
+		      UNSPEC_LDDQU))]
   "TARGET_SSE3"
   "lddqu\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
