@@ -1,5 +1,9 @@
 2006-10-21  Richard Guenther  <rguenther@suse.de>
 
+	* builtins.c (fold_builtin_classify): Fix typo.
+
+2006-10-21  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/28796
 	* simplify-rtx.c (simplify_const_relational_operation):
 	Do not constant-fold ORDERED and UNORDERED for
