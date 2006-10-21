@@ -1,3 +1,9 @@
+2006-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (UNSPEC_LDQQU): Renamed to ...
+	(UNSPEC_LDDQU): This.
+	* config/i386/sse.md (sse3_lddqu): Updated.
+
 2006-10-21  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (expand_builtin_int_roundingfn_2): New function.
