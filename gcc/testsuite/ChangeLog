@@ -1,3 +1,9 @@
+2006-10-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26898
+	* gcc.dg/torture/pr26898-1.c: New testcase.
+	* gcc.dg/torture/pr26898-2.c: Likewise.
+
 2006-10-20  Lee Millward  <lee.millward@codesourcery.com>
         
         PR c++/28053
