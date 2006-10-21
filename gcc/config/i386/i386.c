@@ -2951,32 +2951,6 @@ classify_argument (enum machine_mode mode, tree type,
       switch (TREE_CODE (type))
 	{
 	case RECORD_TYPE:
-	  /* For classes first merge in the field of the subclasses.  */
-	  if (TYPE_BINFO (type))
-	    {
-	      tree binfo, base_binfo;
-	      int basenum;
-
-	      for (binfo = TYPE_BINFO (type), basenum = 0;
-		   BINFO_BASE_ITERATE (binfo, basenum, base_binfo); basenum++)
-		{
-		   int num;
-		   int offset = tree_low_cst (BINFO_OFFSET (base_binfo), 0) * 8;
-		   tree type = BINFO_TYPE (base_binfo);
-
-		   num = classify_argument (TYPE_MODE (type),
-					    type, subclasses,
-					    (offset + bit_offset) % 256);
-		   if (!num)
-		     return 0;
-		   for (i = 0; i < num; i++)
-		     {
-		       int pos = (offset + (bit_offset % 64)) / 8 / 8;
-		       classes[i + pos] =
-			 merge_classes (subclasses[i], classes[i + pos]);
-		     }
-		}
-	    }
 	  /* And now merge the fields of structure.  */
 	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	    {
@@ -3044,10 +3018,6 @@ classify_argument (enum machine_mode mode, tree type,
 	case QUAL_UNION_TYPE:
 	  /* Unions are similar to RECORD_TYPE but offset is always 0.
 	     */
-
-	  /* Unions are not derived.  */
-	  gcc_assert (!TYPE_BINFO (type)
-		      || !BINFO_N_BASE_BINFOS (TYPE_BINFO (type)));
 	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	    {
 	      if (TREE_CODE (field) == FIELD_DECL)
@@ -3735,18 +3705,7 @@ contains_128bit_aligned_vector_p (tree type)
 	  {
 	    tree field;
 
-	    if (TYPE_BINFO (type))
-	      {
-		tree binfo, base_binfo;
-		int i;
-
-		for (binfo = TYPE_BINFO (type), i = 0;
-		     BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-		  if (contains_128bit_aligned_vector_p
-		      (BINFO_TYPE (base_binfo)))
-		    return true;
-	      }
-	    /* And now merge the fields of structure.  */
+	    /* Walk all the structure fields.  */
 	    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	      {
 		if (TREE_CODE (field) == FIELD_DECL
