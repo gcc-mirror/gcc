@@ -1,3 +1,9 @@
+2006-10-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* runtime/error.c: Add errno.h
+	(generate_error): Set iostat to errno on OS error.
+	* libgfortran.h: Set ERROR_OS to 5000
+
 2006-10-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* generated/minval_r8.c: Regenerate.
