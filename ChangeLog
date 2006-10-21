@@ -1,3 +1,9 @@
+2006-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Require GMP-4.1+ and MPFR-2.2+.  Don't check
+	need_gmp anymore.
+	* configure: Regenerate.
+
 2006-10-16  Tobias Burnus  <burnus@net-b.de>
 
 	* MAINTAINERS (Write After Approval): Add myself.
