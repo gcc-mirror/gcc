@@ -8719,7 +8719,7 @@ fold_builtin_classify (tree fndecl, tree arglist, int builtin_index)
     case BUILT_IN_FINITE:
       if (!MODE_HAS_NANS (TYPE_MODE (TREE_TYPE (arg)))
 	  && !MODE_HAS_INFINITIES (TYPE_MODE (TREE_TYPE (arg))))
-	return omit_one_operand (type, integer_zero_node, arg);
+	return omit_one_operand (type, integer_one_node, arg);
 
       if (TREE_CODE (arg) == REAL_CST)
 	{
