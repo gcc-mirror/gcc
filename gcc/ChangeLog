@@ -1,5 +1,11 @@
 2006-10-21  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/26898
+	* fold-const.c (fold_comparison): Fold signed comparisons
+	of the form X +- C1 CMP Y +- C2.
+
+2006-10-21  Richard Guenther  <rguenther@suse.de>
+
 	PR target/19116
 	* config/i386/i386.c (override_options): Do not set MASK_IEEE_FP
 	if flag_unsafe_math_optimizations is specified.  We have

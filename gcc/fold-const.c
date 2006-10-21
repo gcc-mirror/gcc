@@ -7835,6 +7835,48 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	}
     }
 
+  /* Transform comparisons of the form X +- C1 CMP Y +- C2 to
+     X CMP Y +- C2 +- C1 for signed X, Y.  This is valid if
+     the resulting offset is smaller in absolute value than the
+     original one.  */
+  if (!(flag_wrapv || flag_trapv)
+      && !TYPE_UNSIGNED (TREE_TYPE (arg0))
+      && (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+      && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	  && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1)))
+      && (TREE_CODE (arg1) == PLUS_EXPR || TREE_CODE (arg1) == MINUS_EXPR)
+      && (TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST
+	  && !TREE_OVERFLOW (TREE_OPERAND (arg1, 1))))
+    {
+      tree const1 = TREE_OPERAND (arg0, 1);
+      tree const2 = TREE_OPERAND (arg1, 1);
+      tree variable1 = TREE_OPERAND (arg0, 0);
+      tree variable2 = TREE_OPERAND (arg1, 0);
+      tree cst;
+
+      /* Put the constant on the side where it doesn't overflow and is
+	 of lower absolute value than before.  */
+      cst = int_const_binop (TREE_CODE (arg0) == TREE_CODE (arg1)
+			     ? MINUS_EXPR : PLUS_EXPR,
+			     const2, const1, 0);
+      if (!TREE_OVERFLOW (cst)
+	  && tree_int_cst_compare (const2, cst) == tree_int_cst_sgn (const2))
+	return fold_build2 (code, type,
+			    variable1,
+			    fold_build2 (TREE_CODE (arg1), TREE_TYPE (arg1),
+					 variable2, cst));
+
+      cst = int_const_binop (TREE_CODE (arg0) == TREE_CODE (arg1)
+			     ? MINUS_EXPR : PLUS_EXPR,
+			     const1, const2, 0);
+      if (!TREE_OVERFLOW (cst)
+	  && tree_int_cst_compare (const1, cst) == tree_int_cst_sgn (const1))
+	return fold_build2 (code, type,
+			    fold_build2 (TREE_CODE (arg0), TREE_TYPE (arg0),
+					 variable1, cst),
+			    variable2);
+    }
+
   if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
     {
       tree targ0 = strip_float_extensions (arg0);
