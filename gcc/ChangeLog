@@ -1,5 +1,11 @@
 2006-10-21  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/3511
+	* tree-ssa-pre.c (phi_translate): Fold CALL_EXPRs that
+	got new invariant arguments during PHI translation.
+
+2006-10-21  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/26898
 	* fold-const.c (fold_comparison): Fold signed comparisons
 	of the form X +- C1 CMP Y +- C2.
