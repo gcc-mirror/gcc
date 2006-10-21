@@ -1,3 +1,9 @@
+2006-10-21  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (expand_builtin_int_roundingfn_2): New function.
+	(expand_builtin): Use it to expand lrint instead of
+	expand_builtin_mathfn.
+
 2006-10-21  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/19398

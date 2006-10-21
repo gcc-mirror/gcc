@@ -95,6 +95,7 @@ static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
 static rtx expand_builtin_sincos (tree);
 static rtx expand_builtin_int_roundingfn (tree, rtx, rtx);
+static rtx expand_builtin_int_roundingfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_args_info (tree);
 static rtx expand_builtin_next_arg (void);
 static rtx expand_builtin_va_start (tree);
@@ -1835,9 +1836,6 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
       builtin_optab = nearbyint_optab; break;
     CASE_FLT_FN (BUILT_IN_RINT):
       builtin_optab = rint_optab; break;
-    CASE_FLT_FN (BUILT_IN_LRINT):
-    CASE_FLT_FN (BUILT_IN_LLRINT):
-      builtin_optab = lrint_optab; break;
     default:
       gcc_unreachable ();
     }
@@ -2210,7 +2208,9 @@ expand_builtin_sincos (tree exp)
   return const0_rtx;
 }
 
-/* Expand a call to one of the builtin rounding functions (lfloor).
+/* Expand a call to one of the builtin rounding functions gcc defines
+   as an extension (lfloor and lceil).  As these are gcc extensions we
+   do not need to worry about setting errno to EDOM.
    If expanding via optab fails, lower expression to (int)(floor(x)).
    EXP is the expression that is a call to the builtin function;
    if convenient, the result should be placed in TARGET.  SUBTARGET may
@@ -2305,6 +2305,88 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
      via expand_fix ().  */
   target = gen_reg_rtx (mode);
   expand_fix (target, tmp, 0);
+
+  return target;
+}
+
+/* Expand a call to one of the builtin math functions doing integer
+   conversion (lrint).
+   Return 0 if a normal call should be emitted rather than expanding the
+   function in-line.  EXP is the expression that is a call to the builtin
+   function; if convenient, the result should be placed in TARGET.
+   SUBTARGET may be used as the target for computing one of EXP's operands.  */
+
+static rtx
+expand_builtin_int_roundingfn_2 (tree exp, rtx target, rtx subtarget)
+{
+  optab builtin_optab;
+  rtx op0, insns;
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+  enum machine_mode mode;
+  tree arg, narg;
+
+  /* There's no easy way to detect the case we need to set EDOM.  */
+  if (flag_errno_math)
+    return NULL_RTX;
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  arg = TREE_VALUE (arglist);
+
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+    CASE_FLT_FN (BUILT_IN_LRINT):
+    CASE_FLT_FN (BUILT_IN_LLRINT):
+      builtin_optab = lrint_optab; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Make a suitable register to place result in.  */
+  mode = TYPE_MODE (TREE_TYPE (exp));
+
+  /* Before working hard, check whether the instruction is available.  */
+  if (builtin_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    {
+      target = gen_reg_rtx (mode);
+
+      /* Wrap the computation of the argument in a SAVE_EXPR, as we may
+	 need to expand the argument again.  This way, we will not perform
+	 side-effects more the once.  */
+      narg = builtin_save_expr (arg);
+      if (narg != arg)
+	{
+	  arg = narg;
+	  arglist = build_tree_list (NULL_TREE, arg);
+	  exp = build_function_call_expr (fndecl, arglist);
+	}
+
+      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+
+      start_sequence ();
+
+      /* Compute into TARGET.
+	 Set TARGET to wherever the result comes back.  */
+      target = expand_unop (mode, builtin_optab, op0, target, 0);
+
+      if (target != 0)
+	{
+	  /* Output the entire sequence.  */
+	  insns = get_insns ();
+	  end_sequence ();
+	  emit_insn (insns);
+	  return target;
+	}
+
+      /* If we were unable to expand via the builtin, stop the sequence
+	 (without outputting the insns) and call to the library function
+	 with the stabilized argument list.  */
+      end_sequence ();
+    }
+
+  target = expand_call (exp, target, target == const0_rtx);
 
   return target;
 }
@@ -5718,8 +5800,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_ROUND):
     CASE_FLT_FN (BUILT_IN_NEARBYINT):
     CASE_FLT_FN (BUILT_IN_RINT):
-    CASE_FLT_FN (BUILT_IN_LRINT):
-    CASE_FLT_FN (BUILT_IN_LLRINT):
       target = expand_builtin_mathfn (exp, target, subtarget);
       if (target)
 	return target;
@@ -5730,6 +5810,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_LFLOOR):
     CASE_FLT_FN (BUILT_IN_LLFLOOR):
       target = expand_builtin_int_roundingfn (exp, target, subtarget);
+      if (target)
+	return target;
+      break;
+
+    CASE_FLT_FN (BUILT_IN_LRINT):
+    CASE_FLT_FN (BUILT_IN_LLRINT):
+      target = expand_builtin_int_roundingfn_2 (exp, target, subtarget);
       if (target)
 	return target;
       break;
