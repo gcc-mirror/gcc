@@ -1076,6 +1076,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 	    tree newexpr;
 	    tree vh = get_value_handle (expr);
 	    bool listchanged = false;
+	    bool invariantarg = false;
 	    VEC (tree, gc) *vuses = VALUE_HANDLE_VUSES (vh);
 	    VEC (tree, gc) *tvuses;
 
@@ -1134,10 +1135,26 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
 		    if (newval != oldval)
 		      {
 			listchanged = true;
+			invariantarg |= is_gimple_min_invariant (newval);
 			TREE_VALUE (newwalker) = get_value_handle (newval);
 		      }
 		  }
 	      }
+
+	    /* In case of new invariant args we might try to fold the call
+	       again.  */
+	    if (invariantarg)
+	      {
+		tree tmp = fold_ternary (CALL_EXPR, TREE_TYPE (expr),
+					 newop0, newarglist, newop2);
+		if (tmp)
+		  {
+		    STRIP_TYPE_NOPS (tmp);
+		    if (is_gimple_min_invariant (tmp))
+		      return tmp;
+		  }
+	      }
+
 	    if (listchanged)
 	      vn_lookup_or_add (newarglist, NULL);
 

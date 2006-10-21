@@ -1,5 +1,10 @@
 2006-10-21  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/3511
+	* gcc.dg/tree-ssa/ssa-pre-15.c: New testcase.
+
+2006-10-21  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/26898
 	* gcc.dg/torture/pr26898-1.c: New testcase.
 	* gcc.dg/torture/pr26898-2.c: Likewise.
