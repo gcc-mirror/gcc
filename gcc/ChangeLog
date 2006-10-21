@@ -1,3 +1,7 @@
+2006-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* DEV-PHASE: Mark as prerelease.
+
 2006-10-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree.h (DECL_PTA_ARTIFICIAL): Remove.
