@@ -1,3 +1,25 @@
+2006-10-20  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree.h (DECL_PTA_ARTIFICIAL): Remove.
+	(tree_decl_with_vis): Remove artificial_pta_var flag.
+	* tree-flow.h (referenced_var_check_and_insert): Expose.
+	(nonlocal_all): New prototype.
+	* tree-ssa-structalias.c (nonlocal_for_type): Remove.
+	(nonlocal_all): Make global.
+	(nonlocal_lookup): Remove.
+	(nonlocal_insert): Ditto.
+	(create_nonlocal_var): Do not call nonlocal_insert.
+	(get_nonlocal_id_for_type): Remove.
+	(find_global_initializers): Mark new vars we find for renaming.
+	(intra_create_variable_infos): Only create one nonlocal.
+	(expand_nonlocal_solutions): Remove.
+	(compute_points_to_sets): Don't call it.
+	(ipa_pta_execute): Ditto.
+	(init_alias_heapvars): Don't create nonlocal_for_type.
+	(delete_alias_heapvars): Don't remove it.
+	* tree-ssa-operands.c (access_can_touch_variable): Don't prune
+	nonlocal_all.
+
 2006-10-19  Brooks Moses  <bmoses@stanford.edu>
 
 	* doc/install.texi (Downloading GCC): Clarify mention of

@@ -621,7 +621,7 @@ referenced_var_lookup (unsigned int uid)
 /* Check if TO is in the referenced_vars hash table and insert it if not.  
    Return true if it required insertion.  */
 
-static bool
+bool
 referenced_var_check_and_insert (tree to)
 { 
   struct int_tree_map *h, in;
