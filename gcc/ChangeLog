@@ -1,5 +1,13 @@
 2006-10-21  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/28796
+	* simplify-rtx.c (simplify_const_relational_operation):
+	Do not constant-fold ORDERED and UNORDERED for
+	flag_unsafe_math_optimizations but only we do not need to
+	honor NaNs for the given mode.
+
+2006-10-21  Richard Guenther  <rguenther@suse.de>
+
 	PR target/29512
 	* config/i386/i386.c (classify_argument): Remove redundant
 	walking of the BINFOs.
