@@ -1,3 +1,10 @@
+2006-10-21  Richard Guenther  <rguenther@suse.de>
+
+	PR target/29512
+	* config/i386/i386.c (classify_argument): Remove redundant
+	walking of the BINFOs.
+	(contains_128bit_aligned_vector_p): Likewise.
+
 2006-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* BASE-VER: Set to 4.3.0.
