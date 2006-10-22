@@ -1,3 +1,9 @@
+2006-10-22  Jeff Law  <law@redhat.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/15911
+	* gcc.dg/tree-ssa/vrp30.c: New testcase.
+
 2006-10-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20647
