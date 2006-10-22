@@ -1,3 +1,9 @@
+2006-10-22  Ira Rosen  <irar@il.ibm.com>
+
+        * tree-vect-transform.c (vectorizable_load): Use the type of the
+        return value of the mask_for_load builtin to create realign_load
+        stmt.
+
 2006-10-22  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (mips_split_const): Don't accept bare PLUS

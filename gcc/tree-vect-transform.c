@@ -1916,11 +1916,13 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	  /* Create permutation mask, if required, in loop preheader.  */
 	  tree builtin_decl;
 	  params = build_tree_list (NULL_TREE, init_addr);
-	  vec_dest = vect_create_destination_var (scalar_dest, vectype);
 	  builtin_decl = targetm.vectorize.builtin_mask_for_load ();
 	  new_stmt = build_function_call_expr (builtin_decl, params);
-	  new_stmt = build2 (MODIFY_EXPR, vectype, vec_dest, new_stmt);
-	  new_temp = make_ssa_name (vec_dest, new_stmt);
+	  vec_dest = vect_create_destination_var (scalar_dest,
+                                                  TREE_TYPE (new_stmt));
+          new_stmt = build2 (MODIFY_EXPR, TREE_TYPE (vec_dest), vec_dest,
+                             new_stmt);
+          new_temp = make_ssa_name (vec_dest, new_stmt);
 	  TREE_OPERAND (new_stmt, 0) = new_temp;
 	  new_bb = bsi_insert_on_edge_immediate (pe, new_stmt);
 	  gcc_assert (!new_bb);
