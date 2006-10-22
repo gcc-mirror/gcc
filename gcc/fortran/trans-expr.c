@@ -1853,7 +1853,7 @@ is_aliased_array (gfc_expr * e)
 
 int
 gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
-			gfc_actual_arglist * arg)
+			gfc_actual_arglist * arg, tree append_args)
 {
   gfc_interface_mapping mapping;
   tree arglist;
@@ -2226,6 +2226,11 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   /* Add the hidden string length parameters to the arguments.  */
   arglist = chainon (arglist, stringargs);
 
+  /* We may want to append extra arguments here.  This is used e.g. for
+     calls to libgfortran_matmul_??, which need extra information.  */
+  if (append_args != NULL_TREE)
+    arglist = chainon (arglist, append_args);
+
   /* Generate the actual call.  */
   gfc_conv_function_val (se, sym);
   /* If there are alternate return labels, function type should be
@@ -2545,7 +2550,7 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
   sym = expr->value.function.esym;
   if (!sym)
     sym = expr->symtree->n.sym;
-  gfc_conv_function_call (se, sym, expr->value.function.actual);
+  gfc_conv_function_call (se, sym, expr->value.function.actual, NULL_TREE);
 }
 
 

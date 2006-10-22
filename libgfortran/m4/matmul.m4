@@ -37,6 +37,16 @@ include(iparm.m4)dnl
 
 `#if defined (HAVE_'rtype_name`)'
 
+/* Prototype for the BLAS ?gemm subroutine, a pointer to which can be
+   passed to us by the front-end, in which case we'll call it for large
+   matrices.  */
+
+typedef void (*blas_call)(const char *, const char *, const int *, const int *,
+                          const int *, const rtype_name *, const rtype_name *,
+                          const int *, const rtype_name *, const int *,
+                          const rtype_name *, rtype_name *, const int *,
+                          int, int);
+
 /* The order of loops is different in the case of plain matrix
    multiplication C=MATMUL(A,B), and in the frequent special case where
    the argument A is the temporary result of a TRANSPOSE intrinsic:
@@ -57,18 +67,24 @@ include(iparm.m4)dnl
        DO I=1,M
          S = 0
          DO K=1,COUNT
-           S = S+A(I,K)+B(K,J)
+           S = S+A(I,K)*B(K,J)
          C(I,J) = S
    ENDIF
 */
 
+/* If try_blas is set to a nonzero value, then the matmul function will
+   see if there is a way to perform the matrix multiplication by a call
+   to the BLAS gemm function.  */
+
 extern void matmul_`'rtype_code (rtype * const restrict retarray, 
-	rtype * const restrict a, rtype * const restrict b);
+	rtype * const restrict a, rtype * const restrict b, int try_blas,
+	int blas_limit, blas_call gemm);
 export_proto(matmul_`'rtype_code);
 
 void
 matmul_`'rtype_code (rtype * const restrict retarray, 
-	rtype * const restrict a, rtype * const restrict b)
+	rtype * const restrict a, rtype * const restrict b, int try_blas,
+	int blas_limit, blas_call gemm)
 {
   const rtype_name * restrict abase;
   const rtype_name * restrict bbase;
@@ -178,6 +194,31 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
   abase = a->data;
   bbase = b->data;
   dest = retarray->data;
+
+
+  /* Now that everything is set up, we're performing the multiplication
+     itself.  */
+
+#define POW3(x) (((float) (x)) * ((float) (x)) * ((float) (x)))
+
+  if (try_blas && rxstride == 1 && (axstride == 1 || aystride == 1)
+      && (bxstride == 1 || bystride == 1)
+      && (((float) xcount) * ((float) ycount) * ((float) count)
+          > POW3(blas_limit)))
+  {
+    const int m = xcount, n = ycount, k = count, ldc = rystride;
+    const rtype_name one = 1, zero = 0;
+    const int lda = (axstride == 1) ? aystride : axstride,
+              ldb = (bxstride == 1) ? bystride : bxstride;
+
+    if (lda > 0 && ldb > 0 && ldc > 0 && m > 1 && n > 1 && k > 1)
+      {
+        assert (gemm != NULL);
+        gemm (axstride == 1 ? "N" : "T", bxstride == 1 ? "N" : "T", &m, &n, &k,
+              &one, abase, &lda, bbase, &ldb, &zero, dest, &ldc, 1, 1);
+        return;
+      }
+  }
 
   if (rxstride == 1 && axstride == 1 && bxstride == 1)
     {

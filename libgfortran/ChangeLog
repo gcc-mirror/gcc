@@ -1,3 +1,19 @@
+2006-10-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/26025
+	* m4/matmul.m4: Add possible call to gemm routine.
+	* generated/matmul_r8.c: Regenerate.
+	* generated/matmul_r16.c: Regenerate.
+	* generated/matmul_c8.c: Regenerate.
+	* generated/matmul_i8.c: Regenerate.
+	* generated/matmul_c16.c: Regenerate.
+	* generated/matmul_r10.c: Regenerate.
+	* generated/matmul_r4.c: Regenerate.
+	* generated/matmul_c10.c: Regenerate.
+	* generated/matmul_c4.c: Regenerate.
+	* generated/matmul_i4.c: Regenerate.
+	* generated/matmul_i16.c: Regenerate.
+
 2006-10-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* runtime/error.c: Add errno.h

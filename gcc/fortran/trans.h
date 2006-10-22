@@ -303,7 +303,8 @@ void gfc_conv_intrinsic_function (gfc_se *, gfc_expr *);
 int gfc_is_intrinsic_libcall (gfc_expr *);
 
 /* Also used to CALL subroutines.  */
-int gfc_conv_function_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *);
+int gfc_conv_function_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,
+			    tree);
 /* gfc_trans_* shouldn't call push/poplevel, use gfc_push/pop_scope */
 
 /* Generate code for a scalar assignment.  */
@@ -506,6 +507,12 @@ extern GTY(()) tree gfor_fndecl_math_exponent4;
 extern GTY(()) tree gfor_fndecl_math_exponent8;
 extern GTY(()) tree gfor_fndecl_math_exponent10;
 extern GTY(()) tree gfor_fndecl_math_exponent16;
+
+/* BLAS functions.  */
+extern GTY(()) tree gfor_fndecl_sgemm;
+extern GTY(()) tree gfor_fndecl_dgemm;
+extern GTY(()) tree gfor_fndecl_cgemm;
+extern GTY(()) tree gfor_fndecl_zgemm;
 
 /* String functions.  */
 extern GTY(()) tree gfor_fndecl_compare_string;
