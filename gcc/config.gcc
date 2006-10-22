@@ -268,11 +268,13 @@ xscale-*-*)
 	;;
 i[34567]86-*-*)
 	cpu_type=i386
-	extra_headers="mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h pmmintrin.h"
+	extra_headers="mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
+		       pmmintrin.h tmmintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
-	extra_headers="mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h pmmintrin.h"
+	extra_headers="mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
+		       pmmintrin.h tmmintrin.h"
 	need_64bit_hwint=yes
 	;;
 ia64-*-*)

@@ -7169,6 +7169,52 @@ The following built-in functions are available when @option{-msse3} is used.
 Generates the @code{movddup} machine instruction as a load from memory.
 @end table
 
+The following built-in functions are available when @option{-mssse3} is used.
+All of them generate the machine instruction that is part of the name
+with MMX registers.
+
+@smallexample
+v2si __builtin_ia32_phaddd (v2si, v2si)
+v4hi __builtin_ia32_phaddw (v4hi, v4hi)
+v4hi __builtin_ia32_phaddsw (v4hi, v4hi)
+v2si __builtin_ia32_phsubd (v2si, v2si)
+v4hi __builtin_ia32_phsubw (v4hi, v4hi)
+v4hi __builtin_ia32_phsubsw (v4hi, v4hi)
+v8qi __builtin_ia32_pmaddubsw (v8qi, v8qi)
+v4hi __builtin_ia32_pmulhrsw (v4hi, v4hi)
+v8qi __builtin_ia32_pshufb (v8qi, v8qi)
+v8qi __builtin_ia32_psignb (v8qi, v8qi)
+v2si __builtin_ia32_psignd (v2si, v2si)
+v4hi __builtin_ia32_psignw (v4hi, v4hi)
+long long __builtin_ia32_palignr (long long, long long, int)
+v8qi __builtin_ia32_pabsb (v8qi)
+v2si __builtin_ia32_pabsd (v2si)
+v4hi __builtin_ia32_pabsw (v4hi)
+@end smallexample
+
+The following built-in functions are available when @option{-mssse3} is used.
+All of them generate the machine instruction that is part of the name
+with SSE registers.
+
+@smallexample
+v4si __builtin_ia32_phaddd128 (v4si, v4si)
+v8hi __builtin_ia32_phaddw128 (v8hi, v8hi)
+v8hi __builtin_ia32_phaddsw128 (v8hi, v8hi)
+v4si __builtin_ia32_phsubd128 (v4si, v4si)
+v8hi __builtin_ia32_phsubw128 (v8hi, v8hi)
+v8hi __builtin_ia32_phsubsw128 (v8hi, v8hi)
+v16qi __builtin_ia32_pmaddubsw128 (v16qi, v16qi)
+v8hi __builtin_ia32_pmulhrsw128 (v8hi, v8hi)
+v16qi __builtin_ia32_pshufb128 (v16qi, v16qi)
+v16qi __builtin_ia32_psignb128 (v16qi, v16qi)
+v4si __builtin_ia32_psignd128 (v4si, v4si)
+v8hi __builtin_ia32_psignw128 (v8hi, v8hi)
+v2di __builtin_ia32_palignr (v2di, v2di, int)
+v16qi __builtin_ia32_pabsb128 (v16qi)
+v4si __builtin_ia32_pabsd128 (v4si)
+v8hi __builtin_ia32_pabsw128 (v8hi)
+@end smallexample
+
 The following built-in functions are available when @option{-m3dnow} is used.
 All of them generate the machine instruction that is part of the name.
 

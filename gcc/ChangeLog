@@ -1,3 +1,69 @@
+2006-10-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc (i[34567]86-*-*): Add tmmintrin.h to extra_headers.
+	(x86_64-*-*): Likewise.
+
+	* config/i386/i386.c (pta_flags): Add PTA_SSSE3.
+	(override_options): Check SSSE3.
+	(ix86_builtins): Add IX86_BUILTIN_PHADDW, IX86_BUILTIN_PHADDD,
+	IX86_BUILTIN_PHADDSW, IX86_BUILTIN_PHSUBW, IX86_BUILTIN_PHSUBD,
+	IX86_BUILTIN_PHSUBSW, IX86_BUILTIN_PMADDUBSW,
+	IX86_BUILTIN_PMULHRSW, IX86_BUILTIN_PSHUFB,
+	IX86_BUILTIN_PSIGNB, IX86_BUILTIN_PSIGNW, IX86_BUILTIN_PSIGND,
+	IX86_BUILTIN_PALIGNR, IX86_BUILTIN_PABSB, IX86_BUILTIN_PABSW,
+	IX86_BUILTIN_PABSD, IX86_BUILTIN_PHADDW128,
+	IX86_BUILTIN_PHADDD128, IX86_BUILTIN_PHADDSW128,
+	IX86_BUILTIN_PHSUBW128, IX86_BUILTIN_PHSUBD128,
+	IX86_BUILTIN_PHSUBSW128, IX86_BUILTIN_PMADDUBSW128,
+	IX86_BUILTIN_PMULHRSW128, IX86_BUILTIN_PSHUFB128,
+	IX86_BUILTIN_PSIGNB128, IX86_BUILTIN_PSIGNW128,
+	IX86_BUILTIN_PSIGND128, IX86_BUILTIN_PALIGNR128,
+	IX86_BUILTIN_PABSB128, IX86_BUILTIN_PABSW128 and
+	IX86_BUILTIN_PABSD128.
+	(bdesc_2arg): Add SSSE3.
+	(bdesc_1arg): Likewise.
+	(ix86_init_mmx_sse_builtins): Support SSSE3.
+	(ix86_expand_builtin): Likewise.
+	* config/i386/i386.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+
+	* config/i386/i386.md (UNSPEC_PSHUFB): New.
+	(UNSPEC_PSIGN): Likewise.
+	(UNSPEC_PALIGNR): Likewise.
+	Include mmx.md before sse.md.
+
+	* config/i386/i386.opt: Add -mssse3.
+
+	* config/i386/sse.md (ssse3_phaddwv8hi3): New pattern for SSSE3.
+	(ssse3_phaddwv4hi3): Likewise.
+	(ssse3_phadddv4si3): Likewise.
+	(ssse3_phadddv2si3): Likewise.
+	(ssse3_phaddswv8hi3): Likewise.
+	(ssse3_phaddswv4hi3): Likewise.
+	(ssse3_phsubwv8hi3): Likewise.
+	(ssse3_phsubwv4hi3): Likewise.
+	(ssse3_phsubdv4si3): Likewise.
+	(ssse3_phsubdv2si3): Likewise.
+	(ssse3_phsubswv8hi3): Likewise.
+	(ssse3_phsubswv4hi3): Likewise.
+	(ssse3_pmaddubswv8hi3): Likewise.
+	(ssse3_pmaddubswv4hi3): Likewise.
+	(ssse3_pmulhrswv8hi3): Likewise.
+	(ssse3_pmulhrswv4hi3): Likewise.
+	(ssse3_pshufbv16qi3): Likewise.
+	(ssse3_pshufbv8qi3): Likewise.
+	(ssse3_psign<mode>3): Likewise.
+	(ssse3_psign<mode>3): Likewise.
+	(ssse3_palignrti): Likewise.
+	(ssse3_palignrdi): Likewise.
+	(abs<mode>2): Likewise.
+	(abs<mode>2): Likewise.
+
+	* config/i386/tmmintrin.h: New file.
+
+	* doc/extend.texi: Document SSSE3 built-in functions.
+
+	* doc/invoke.texi: Document -mssse3/-mno-ssse3 switches.
+
 2006-10-22  Ira Rosen  <irar@il.ibm.com>
 
         * tree-vect-transform.c (vectorizable_load): Use the type of the
