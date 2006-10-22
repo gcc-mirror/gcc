@@ -1,3 +1,13 @@
+2006-10-22  Jeff Law  <law@redhat.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/15911
+	* tree-vrp.c (extract_code_and_val_from_cond): New function.
+	(register_edge_assert_for_1): Likewise.
+	(register_edge_assert_for): Handle &&/&/||/| in conditionals.
+	(find_conditional_asserts): Adjust for new function signature.
+	(find_assert_locations): Likewise.
+
 2006-10-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/tmmintrin.h: Remove the duplicated content.
