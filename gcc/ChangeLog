@@ -1,5 +1,9 @@
 2006-10-22  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/tmmintrin.h: Remove the duplicated content.
+
+2006-10-22  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config.gcc (i[34567]86-*-*): Add tmmintrin.h to extra_headers.
 	(x86_64-*-*): Likewise.
 
