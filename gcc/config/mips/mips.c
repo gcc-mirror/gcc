@@ -1282,12 +1282,13 @@ mips_split_const (rtx x, rtx *base, HOST_WIDE_INT *offset)
   *offset = 0;
 
   if (GET_CODE (x) == CONST)
-    x = XEXP (x, 0);
-
-  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
     {
-      *offset += INTVAL (XEXP (x, 1));
       x = XEXP (x, 0);
+      if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
+	{
+	  *offset += INTVAL (XEXP (x, 1));
+	  x = XEXP (x, 0);
+	}
     }
   *base = x;
 }
