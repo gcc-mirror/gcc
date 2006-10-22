@@ -824,13 +824,7 @@ tinfo_base_init (tinfo_s *ti, tree target)
     TREE_STATIC (name_decl) = 1;
     DECL_EXTERNAL (name_decl) = 0;
     DECL_TINFO_P (name_decl) = 1;
-    if (involves_incomplete_p (target))
-      {
-	TREE_PUBLIC (name_decl) = 0;
-	DECL_INTERFACE_KNOWN (name_decl) = 1;
-      }
-    else
-      set_linkage_according_to_type (target, name_decl);
+    set_linkage_according_to_type (target, name_decl);
     import_export_decl (name_decl);
     DECL_INITIAL (name_decl) = name_string;
     mark_used (name_decl);
