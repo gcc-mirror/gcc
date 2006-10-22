@@ -1,3 +1,8 @@
+2006-10-22  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.c (mips_split_const): Don't accept bare PLUS
+	expressions.
+
 2006-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (UNSPEC_LDQQU): Renamed to ...
