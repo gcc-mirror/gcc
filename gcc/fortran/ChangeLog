@@ -1,3 +1,25 @@
+2006-10-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/26025
+	* lang.opt: Add -fexternal-blas and -fblas-matmul-limit options.
+	* options.c (gfc_init_options): Initialize new flags.
+	(gfc_handle_option): Handle new flags.
+	* gfortran.h (gfc_option): Add flag_external_blas and
+	blas_matmul_limit flags.
+	* trans-expr.c (gfc_conv_function_call): Use new argument
+	append_args, appending it at the end of the argument list
+	built for a function call.
+	* trans-stmt.c (gfc_trans_call): Use NULL_TREE for the new
+	append_args argument to gfc_trans_call.
+	* trans.h (gfc_conv_function_call): Update prototype.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Add
+	prototypes for BLAS ?gemm routines.
+	* trans-intrinsic.c (gfc_conv_intrinsic_funcall): Generate the
+	extra arguments given to the library matmul function, and give
+	them to gfc_conv_function_call.
+	* invoke.texi: Add documentation for -fexternal-blas and
+	-fblas-matmul-limit.
+
 2006-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (F95_LIBS): Delete.

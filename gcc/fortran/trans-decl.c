@@ -143,6 +143,12 @@ tree gfor_fndecl_iargc;
 tree gfor_fndecl_si_kind;
 tree gfor_fndecl_sr_kind;
 
+/* BLAS gemm functions.  */
+tree gfor_fndecl_sgemm;
+tree gfor_fndecl_dgemm;
+tree gfor_fndecl_cgemm;
+tree gfor_fndecl_zgemm;
+
 
 static void
 gfc_add_decl_to_parent_function (tree decl)
@@ -2185,6 +2191,49 @@ gfc_build_intrinsic_function_decls (void)
       gfc_build_library_function_decl (get_identifier (PREFIX("exponent_r16")),
 				       gfc_int4_type_node, 1,
 				       gfc_real16_type_node);
+
+  /* BLAS functions.  */
+  {
+    tree pint = build_pointer_type (gfc_c_int_type_node);
+    tree ps = build_pointer_type (gfc_get_real_type (gfc_default_real_kind));
+    tree pd = build_pointer_type (gfc_get_real_type (gfc_default_double_kind));
+    tree pc = build_pointer_type (gfc_get_complex_type (gfc_default_real_kind));
+    tree pz = build_pointer_type
+		(gfc_get_complex_type (gfc_default_double_kind));
+
+    gfor_fndecl_sgemm = gfc_build_library_function_decl
+			  (get_identifier
+			     (gfc_option.flag_underscoring ? "sgemm_"
+							   : "sgemm"),
+			   void_type_node, 15, pchar_type_node,
+			   pchar_type_node, pint, pint, pint, ps, ps, pint,
+			   ps, pint, ps, ps, pint, gfc_c_int_type_node,
+			   gfc_c_int_type_node);
+    gfor_fndecl_dgemm = gfc_build_library_function_decl
+			  (get_identifier
+			     (gfc_option.flag_underscoring ? "dgemm_"
+							   : "dgemm"),
+			   void_type_node, 15, pchar_type_node,
+			   pchar_type_node, pint, pint, pint, pd, pd, pint,
+			   pd, pint, pd, pd, pint, gfc_c_int_type_node,
+			   gfc_c_int_type_node);
+    gfor_fndecl_cgemm = gfc_build_library_function_decl
+			  (get_identifier
+			     (gfc_option.flag_underscoring ? "cgemm_"
+							   : "cgemm"),
+			   void_type_node, 15, pchar_type_node,
+			   pchar_type_node, pint, pint, pint, pc, pc, pint,
+			   pc, pint, pc, pc, pint, gfc_c_int_type_node,
+			   gfc_c_int_type_node);
+    gfor_fndecl_zgemm = gfc_build_library_function_decl
+			  (get_identifier
+			     (gfc_option.flag_underscoring ? "zgemm_"
+							   : "zgemm"),
+			   void_type_node, 15, pchar_type_node,
+			   pchar_type_node, pint, pint, pint, pz, pz, pint,
+			   pz, pint, pz, pz, pint, gfc_c_int_type_node,
+			   gfc_c_int_type_node);
+  }
 
   /* Other functions.  */
   gfor_fndecl_size0 =

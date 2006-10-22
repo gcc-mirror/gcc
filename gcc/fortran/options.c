@@ -80,6 +80,8 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_preprocessed = 0;
   gfc_option.flag_automatic = 1;
   gfc_option.flag_backslash = 1;
+  gfc_option.flag_external_blas = 0;
+  gfc_option.blas_matmul_limit = 30;
   gfc_option.flag_cray_pointer = 0;
   gfc_option.flag_d_lines = -1;
   gfc_option.flag_openmp = 0;
@@ -448,6 +450,14 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fdollar_ok:
       gfc_option.flag_dollar_ok = value;
+      break;
+
+    case OPT_fexternal_blas:
+      gfc_option.flag_external_blas = value;
+      break;
+
+    case OPT_fblas_matmul_limit_:
+      gfc_option.blas_matmul_limit = value;
       break;
 
     case OPT_fd_lines_as_code:

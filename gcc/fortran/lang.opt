@@ -85,6 +85,14 @@ fbackslash
 Fortran
 Specify that backslash in string introduces an escape character
 
+fexternal-blas
+Fortran
+Specify that an external BLAS library should be used for matmul calls on large-size arrays
+
+fblas-matmul-limit=
+Fortran RejectNegative Joined UInteger
+-fblas-matmul-limit=<n>        Size of the smallest matrix for which matmul will use BLAS
+
 fdefault-double-8
 Fortran
 Set the default double precision kind to an 8 byte wide type

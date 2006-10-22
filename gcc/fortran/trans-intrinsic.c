@@ -1378,6 +1378,7 @@ static void
 gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 {
   gfc_symbol *sym;
+  tree append_args;
 
   gcc_assert (!se->ss || se->ss->expr == expr);
 
@@ -1387,7 +1388,54 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
     gcc_assert (expr->rank == 0);
 
   sym = gfc_get_symbol_for_expr (expr);
-  gfc_conv_function_call (se, sym, expr->value.function.actual);
+
+  /* Calls to libgfortran_matmul need to be appended special arguments,
+     to be able to call the BLAS ?gemm functions if required and possible.  */
+  append_args = NULL_TREE;
+  if (expr->value.function.isym->generic_id == GFC_ISYM_MATMUL
+      && sym->ts.type != BT_LOGICAL)
+    {
+      tree cint = gfc_get_int_type (gfc_c_int_kind);
+
+      if (gfc_option.flag_external_blas
+	  && (sym->ts.type == BT_REAL || sym->ts.type == BT_COMPLEX)
+	  && (sym->ts.kind == gfc_default_real_kind
+	      || sym->ts.kind == gfc_default_double_kind))
+	{
+	  tree gemm_fndecl;
+
+	  if (sym->ts.type == BT_REAL)
+	    {
+	      if (sym->ts.kind == gfc_default_real_kind)
+		gemm_fndecl = gfor_fndecl_sgemm;
+	      else
+		gemm_fndecl = gfor_fndecl_dgemm;
+	    }
+	  else
+	    {
+	      if (sym->ts.kind == gfc_default_real_kind)
+		gemm_fndecl = gfor_fndecl_cgemm;
+	      else
+		gemm_fndecl = gfor_fndecl_zgemm;
+	    }
+
+	  append_args = gfc_chainon_list (NULL_TREE, build_int_cst (cint, 1));
+	  append_args = gfc_chainon_list
+			  (append_args, build_int_cst
+					  (cint, gfc_option.blas_matmul_limit));
+	  append_args = gfc_chainon_list (append_args,
+					  gfc_build_addr_expr (NULL_TREE,
+							       gemm_fndecl));
+	}
+      else
+	{
+	  append_args = gfc_chainon_list (NULL_TREE, build_int_cst (cint, 0));
+	  append_args = gfc_chainon_list (append_args, build_int_cst (cint, 0));
+	  append_args = gfc_chainon_list (append_args, null_pointer_node);
+	}
+    }
+
+  gfc_conv_function_call (se, sym, expr->value.function.actual, append_args);
   gfc_free (sym);
 }
 

@@ -152,7 +152,8 @@ by type.  Explanations are in the following sections.
 @gccoptlist{
 -fno-automatic -ff2c -fno-underscoring  -fsecond-underscore @gol
 -fbounds-check  -fmax-stack-var-size=@var{n} @gol
--fpack-derived  -frepack-arrays  -fshort-enums}
+-fpack-derived  -frepack-arrays  -fshort-enums -fexternal-blas
+-fblas-matmul-limit=@var{n}}
 @end table
 
 @menu
@@ -859,6 +860,27 @@ This option is provided for interoperability with C code that was
 compiled with the @command{-fshort-enums} option.  It will make
 GNU Fortran choose the smallest @code{INTEGER} kind a given
 enumerator set will fit in, and give all its enumerators this kind.
+
+@cindex -fexternal-blas
+@item -fexternal-blas
+This option will make gfortran generate calls to BLAS functions for some
+matrix operations like @code{MATMUL}, instead of using our own
+algorithms, if the size of the matrices involved is larger than a given
+limit (see @command{-fblas-matmul-limit}).  This may be profitable if an
+optimized vendor BLAS library is available.  The BLAS library will have
+to be specified at link time.
+
+@cindex -fblas-matmul-limit
+@item -fblas-matmul-limit=@var{n}
+Only significant when @command{-fexternal-blas} is in effect.
+Matrix multiplication of matrices with size larger than (or equal to) @var{n}
+will be performed by calls to BLAS functions, while others will be
+handled by @command{gfortran} internal algorithms. If the matrices
+involved are not square, the size comparison is performed using the
+geometric mean of the dimensions of the argument and result matrices.
+
+The default value for @var{n} is 30.
+
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,
