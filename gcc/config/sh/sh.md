@@ -153,6 +153,7 @@
   (UNSPEC_THUNK		36)
   (UNSPEC_SP_SET	40)
   (UNSPEC_SP_TEST	41)
+  (UNSPEC_MOVUA		42)
 
   ;; These are used with unspec_volatile.
   (UNSPECV_BLOCKAGE	0)
@@ -11147,8 +11148,8 @@ mov.l\\t1f,r0\\n\\
 
 (define_insn "movua"
   [(set (match_operand:SI 0 "register_operand" "=z")
-	(sign_extract:SI (match_operand:SI 1 "unaligned_load_operand" "Sua>")
-			 (const_int 32) (const_int 0)))]
+	(unspec:SI [(match_operand:BLK 1 "unaligned_load_operand" "Sua>")]
+		   UNSPEC_MOVUA))]
   "TARGET_SH4A_ARCH"
   "movua.l	%1,%0"
   [(set_attr "type" "movua")])
@@ -11181,8 +11182,9 @@ mov.l\\t1f,r0\\n\\
       && INTVAL (operands[3]) == -24 * (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
       && GET_CODE (operands[1]) == MEM && MEM_ALIGN (operands[1]) < 32)
     {
-      emit_insn (gen_movua (operands[0],
-			    adjust_address (operands[1], SImode, 0)));
+      rtx src = adjust_address (operands[1], BLKmode, 0);
+      set_mem_size (src, GEN_INT (4));
+      emit_insn (gen_movua (operands[0], src));
       DONE;
     }
 
@@ -11201,8 +11203,9 @@ mov.l\\t1f,r0\\n\\
       && INTVAL (operands[3]) == -24 * (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
       && GET_CODE (operands[1]) == MEM && MEM_ALIGN (operands[1]) < 32)
     {
-      emit_insn (gen_movua (operands[0],
-			    adjust_address (operands[1], SImode, 0)));
+      rtx src = adjust_address (operands[1], BLKmode, 0);
+      set_mem_size (src, GEN_INT (4));
+      emit_insn (gen_movua (operands[0], src));
       DONE;
     }
 
