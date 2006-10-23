@@ -3942,11 +3942,7 @@ extern int nonstatic_local_decl_p		(tree);
 extern tree register_dtor_fn			(tree);
 extern tmpl_spec_kind current_tmpl_spec_kind	(int);
 extern tree cp_fname_init			(const char *, tree *);
-extern tree builtin_function			(const char *name, tree type,
-						 int code,
-						 enum built_in_class cl,
-						 const char *libname,
-						 tree attrs);
+extern tree cxx_builtin_function		(tree decl);
 extern tree check_elaborated_type_specifier	(enum tag_types, tree, bool);
 extern void warn_extern_redeclared_static	(tree, tree);
 extern const char *cxx_comdat_group		(tree);

@@ -3915,8 +3915,8 @@ enum bfin_builtins
 
 #define def_builtin(NAME, TYPE, CODE)					\
 do {									\
-  lang_hooks.builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,	\
-			       NULL, NULL_TREE);			\
+  add_builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,		\
+		       NULL, NULL_TREE);				\
 } while (0)
 
 /* Set up all builtin functions for this target.  */

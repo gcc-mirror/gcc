@@ -4339,52 +4339,52 @@ c4x_init_builtins (void)
 {
   tree endlink = void_list_node;
 
-  lang_hooks.builtin_function ("fast_ftoi",
-			       build_function_type 
-			       (integer_type_node,
-				tree_cons (NULL_TREE, double_type_node,
-					   endlink)),
-			       C4X_BUILTIN_FIX, BUILT_IN_MD, NULL, NULL_TREE);
-  lang_hooks.builtin_function ("ansi_ftoi",
-			       build_function_type 
-			       (integer_type_node, 
-				tree_cons (NULL_TREE, double_type_node,
-					   endlink)),
-			       C4X_BUILTIN_FIX_ANSI, BUILT_IN_MD, NULL,
-			       NULL_TREE);
+  add_builtin_function ("fast_ftoi",
+			build_function_type 
+			(integer_type_node,
+			 tree_cons (NULL_TREE, double_type_node,
+				    endlink)),
+			C4X_BUILTIN_FIX, BUILT_IN_MD, NULL, NULL_TREE);
+  add_builtin_function ("ansi_ftoi",
+			build_function_type 
+			(integer_type_node, 
+			 tree_cons (NULL_TREE, double_type_node,
+				    endlink)),
+			C4X_BUILTIN_FIX_ANSI, BUILT_IN_MD, NULL,
+			NULL_TREE);
   if (TARGET_C3X)
-    lang_hooks.builtin_function ("fast_imult",
-				 build_function_type
-				 (integer_type_node, 
-				  tree_cons (NULL_TREE, integer_type_node,
-					     tree_cons (NULL_TREE,
-							integer_type_node,
-							endlink))),
-				 C4X_BUILTIN_MPYI, BUILT_IN_MD, NULL,
-				 NULL_TREE);
+    add_builtin_function ("fast_imult",
+			  build_function_type
+			  (integer_type_node, 
+			   tree_cons (NULL_TREE, integer_type_node,
+				      tree_cons (NULL_TREE,
+						 integer_type_node,
+						 endlink))),
+			  C4X_BUILTIN_MPYI, BUILT_IN_MD, NULL,
+			  NULL_TREE);
   else
     {
-      lang_hooks.builtin_function ("toieee",
-				   build_function_type 
-				   (double_type_node,
-				    tree_cons (NULL_TREE, double_type_node,
-					       endlink)),
-				   C4X_BUILTIN_TOIEEE, BUILT_IN_MD, NULL,
-				   NULL_TREE);
-      lang_hooks.builtin_function ("frieee",
-				   build_function_type
-				   (double_type_node, 
-				    tree_cons (NULL_TREE, double_type_node,
-					       endlink)),
-				   C4X_BUILTIN_FRIEEE, BUILT_IN_MD, NULL,
-				   NULL_TREE);
-      lang_hooks.builtin_function ("fast_invf",
-				   build_function_type 
-				   (double_type_node, 
-				    tree_cons (NULL_TREE, double_type_node,
-					       endlink)),
-				   C4X_BUILTIN_RCPF, BUILT_IN_MD, NULL,
-				   NULL_TREE);
+      add_builtin_function ("toieee",
+			    build_function_type 
+			    (double_type_node,
+			     tree_cons (NULL_TREE, double_type_node,
+					endlink)),
+			    C4X_BUILTIN_TOIEEE, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+      add_builtin_function ("frieee",
+			    build_function_type
+			    (double_type_node, 
+			     tree_cons (NULL_TREE, double_type_node,
+					endlink)),
+			    C4X_BUILTIN_FRIEEE, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+      add_builtin_function ("fast_invf",
+			    build_function_type 
+			    (double_type_node, 
+			     tree_cons (NULL_TREE, double_type_node,
+					endlink)),
+			    C4X_BUILTIN_RCPF, BUILT_IN_MD, NULL,
+			    NULL_TREE);
     }
 }
 

@@ -39,6 +39,7 @@ Boston, MA 02110-1301, USA.  */
 #include "intl.h"
 #include "target.h"
 #include "convert.h"
+#include "langhooks.h"
 
 /* The various kinds of conversion.  */
 
@@ -5065,9 +5066,9 @@ build_java_interface_fn_ref (tree fn, tree instance)
 				     tree_cons (NULL_TREE, java_int_type_node,
 						endlink)));
       java_iface_lookup_fn
-	= builtin_function ("_Jv_LookupInterfaceMethodIdx",
-			    build_function_type (ptr_type_node, t),
-			    0, NOT_BUILT_IN, NULL, NULL_TREE);
+	= add_builtin_function ("_Jv_LookupInterfaceMethodIdx",
+				build_function_type (ptr_type_node, t),
+				0, NOT_BUILT_IN, NULL, NULL_TREE);
     }
 
   /* Look up the pointer to the runtime java.lang.Class object for `instance'.

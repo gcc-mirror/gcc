@@ -131,10 +131,10 @@ jvspec.o-warn = -Wno-error
 java/parse-scan.o-warn = -Wno-error
 java/parse.o-warn = -Wno-error
 
-jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS)
+jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS) attribs.o
 	rm -f $@
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-		$(JAVA_OBJS) $(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS)
+		$(JAVA_OBJS) $(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS) attribs.o
 
 gcjh$(exeext): $(GCJH_OBJS) $(LIBDEPS)
 	rm -f $@
@@ -310,7 +310,7 @@ java/constants.o: java/constants.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
 java/decl.o: java/decl.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) java/jcf.h \
   toplev.h $(FLAGS_H) $(SYSTEM_H) coretypes.h $(TM_H) $(FUNCTION_H) $(EXPR_H) \
   libfuncs.h except.h java/java-except.h $(GGC_H) $(REAL_H) gt-java-decl.h \
-  $(TARGET_H) $(CGRAPH_H)
+  $(TARGET_H) $(CGRAPH_H) langhooks.h
 java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
   $(RTL_H) java/javaop.h java/java-opcodes.h except.h java/java-except.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(FUNCTION_H) 

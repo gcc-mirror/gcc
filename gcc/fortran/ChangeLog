@@ -1,3 +1,15 @@
+2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+
+	* Make-lang.in (f951$(exeext)): Depend on and link with attribs.o.
+	* trans.h (builtin_function): Rename to	gfc_builtin_function.
+	Change the signature.
+	* 95-lang.c (LANG_HOOKS_BUILTIN_FUNCTION): Define as
+	gfc_builtin_function.
+	(builtin_function): Rename to gfc_builtin_function. Move common
+	code to builtin_function.
+	(gfc_define_builtin): Replace calls to builtin_function with
+	gfc_define_builtin.
+
 2006-10-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/26025

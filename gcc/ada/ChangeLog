@@ -1,3 +1,11 @@
+2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+	* utils.c (builtin_function): Rename to gnat_builtin_function.
+	Move common code to add_builtin_function.
+	* misc.c (LANG_HOOKS_BUILTIN_FUNCTION): Define as
+	gnat_builtin_function.
+	* gigi.h (builtin_function): Rename to gnat_builtin_function.
+	Change the signature.
+
 2006-10-16  Brooks Moses  <bmoses@stanford.edu>
 
 	* Makefile.in: Add TEXI2PDF definition.

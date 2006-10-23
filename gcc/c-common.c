@@ -3495,14 +3495,14 @@ def_builtin_1 (enum built_in_function fncode,
 			   strlen ("__builtin_")));
 
   libname = name + strlen ("__builtin_");
-  decl = lang_hooks.builtin_function (name, fntype, fncode, fnclass,
-				      (fallback_p ? libname : NULL),
-				      fnattrs);
+  decl = add_builtin_function (name, fntype, fncode, fnclass,
+			       (fallback_p ? libname : NULL),
+			       fnattrs);
   if (both_p
       && !flag_no_builtin && !builtin_function_disabled_p (libname)
       && !(nonansi_p && flag_no_nonansi_builtin))
-    lang_hooks.builtin_function (libname, libtype, fncode, fnclass,
-				 NULL, fnattrs);
+    add_builtin_function (libname, libtype, fncode, fnclass,
+			  NULL, fnattrs);
 
   built_in_decls[(int) fncode] = decl;
   if (implicit_p)

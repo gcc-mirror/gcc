@@ -1,3 +1,13 @@
+2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+
+	* decl.c: Include langhooks.h.
+	(builtin_function): Remove.
+	(java_init_decl_processing): Replace calls to builtin_function
+	with add_builtin_function.
+	* Make-lang.in (jc1$(exeext)): Depend on and link with attribs.o.
+	(java/decl.o): Depend on langhooks.h.
+	* java-tree.h (builtin_function): Remove.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Make-lang.in: Added "java.pdf", "gcj.pdf" target support.

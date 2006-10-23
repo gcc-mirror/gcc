@@ -1821,37 +1821,11 @@ gnat_gimplify_function (tree fndecl)
     gnat_gimplify_function (cgn->decl);
 }
 
-/* Return a definition for a builtin function named NAME and whose data type
-   is TYPE.  TYPE should be a function type with argument types.
-   FUNCTION_CODE tells later passes how to compile calls to this function.
-   See tree.h for its possible values.
-
-   If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
-   the name to be called if we can't opencode the function.  If
-   ATTRS is nonzero, use that for the function attribute list.  */
 
 tree
-builtin_function (const char *name, tree type, int function_code,
-                  enum built_in_class class, const char *library_name,
-                  tree attrs)
+gnat_builtin_function (tree decl)
 {
-  tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
-
-  DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
-  if (library_name)
-    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-
   gnat_pushdecl (decl, Empty);
-  DECL_BUILT_IN_CLASS (decl) = class;
-  DECL_FUNCTION_CODE (decl) = function_code;
-
-  /* Possibly apply some default attributes to this built-in function.  */
-  if (attrs)
-    decl_attributes (&decl, attrs, ATTR_FLAG_BUILT_IN);
-  else
-    decl_attributes (&decl, NULL_TREE, 0);
-
   return decl;
 }
 

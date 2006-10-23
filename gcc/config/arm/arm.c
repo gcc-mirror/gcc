@@ -12060,8 +12060,8 @@ arm_debugger_arg_offset (int value, rtx addr)
   do									\
     {									\
       if ((MASK) & insn_flags)						\
-        lang_hooks.builtin_function ((NAME), (TYPE), (CODE),		\
-				     BUILT_IN_MD, NULL, NULL_TREE);	\
+        add_builtin_function ((NAME), (TYPE), (CODE),			\
+			     BUILT_IN_MD, NULL, NULL_TREE);		\
     }									\
   while (0)
 
@@ -12533,9 +12533,9 @@ arm_init_tls_builtins (void)
   tree const_nothrow = tree_cons (get_identifier ("const"), NULL, nothrow);
 
   ftype = build_function_type (ptr_type_node, void_list_node);
-  lang_hooks.builtin_function ("__builtin_thread_pointer", ftype,
-			       ARM_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
-			       NULL, const_nothrow);
+  add_builtin_function ("__builtin_thread_pointer", ftype,
+			ARM_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
+			NULL, const_nothrow);
 }
 
 static void

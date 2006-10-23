@@ -1034,9 +1034,9 @@ tree_ssa_prefetch_arrays (struct loops *loops)
 				       tree_cons (NULL_TREE,
 						  const_ptr_type_node,
 						  NULL_TREE));
-      tree decl = lang_hooks.builtin_function ("__builtin_prefetch", type,
-			BUILT_IN_PREFETCH, BUILT_IN_NORMAL,
-			NULL, NULL_TREE);
+      tree decl = add_builtin_function ("__builtin_prefetch", type,
+					BUILT_IN_PREFETCH, BUILT_IN_NORMAL,
+					NULL, NULL_TREE);
       DECL_IS_NOVOPS (decl) = true;
       built_in_decls[BUILT_IN_PREFETCH] = decl;
     }

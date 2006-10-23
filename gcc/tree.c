@@ -6635,8 +6635,8 @@ local_define_builtin (const char *name, tree type, enum built_in_function code,
 {
   tree decl;
 
-  decl = lang_hooks.builtin_function (name, type, code, BUILT_IN_NORMAL,
-				      library_name, NULL_TREE);
+  decl = add_builtin_function (name, type, code, BUILT_IN_NORMAL,
+			       library_name, NULL_TREE);
   if (ecf_flags & ECF_CONST)
     TREE_READONLY (decl) = 1;
   if (ecf_flags & ECF_PURE)

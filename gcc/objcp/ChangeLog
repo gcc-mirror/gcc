@@ -1,3 +1,7 @@
+2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+
+	* objcp-decl.h (objcp_builtin_function): Remove.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Make-lang.in: Added empty "obj-c++.pdf" target.

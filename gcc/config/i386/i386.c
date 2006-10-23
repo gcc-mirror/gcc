@@ -14536,8 +14536,8 @@ enum ix86_builtins
 do {									\
   if ((MASK) & target_flags						\
       && (!((MASK) & MASK_64BIT) || TARGET_64BIT))			\
-    lang_hooks.builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,	\
-				 NULL, NULL_TREE);			\
+    add_builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,	\
+			 NULL, NULL_TREE);			\
 } while (0)
 
 /* Bits for builtin_description.flag.  */

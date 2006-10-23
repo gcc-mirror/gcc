@@ -1,3 +1,12 @@
+2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+
+	* objc-act.c (synth_module_prologue): Replace calls to
+	builtin_function with add_builtin_function.
+	(build_next_objc_exception_stuff): Replace calls to
+	builtin_function with add_builtin_function.
+	(build_objc_exception_stuff): Replace calls to
+	builtin_function with add_builtin_function.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Make-lang.in: Added empty "objc.pdf" target.

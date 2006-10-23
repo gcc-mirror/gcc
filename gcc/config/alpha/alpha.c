@@ -6523,8 +6523,8 @@ alpha_init_builtins (void)
   p = zero_arg_builtins;
   for (i = 0; i < ARRAY_SIZE (zero_arg_builtins); ++i, ++p)
     if ((target_flags & p->target_mask) == p->target_mask)
-      lang_hooks.builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
-				   NULL, attrs[p->is_const]);
+      add_builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
+			    NULL, attrs[p->is_const]);
 
   ftype = build_function_type_list (dimode_integer_type_node,
 				    dimode_integer_type_node, NULL_TREE);
@@ -6532,8 +6532,8 @@ alpha_init_builtins (void)
   p = one_arg_builtins;
   for (i = 0; i < ARRAY_SIZE (one_arg_builtins); ++i, ++p)
     if ((target_flags & p->target_mask) == p->target_mask)
-      lang_hooks.builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
-				   NULL, attrs[p->is_const]);
+      add_builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
+			    NULL, attrs[p->is_const]);
 
   ftype = build_function_type_list (dimode_integer_type_node,
 				    dimode_integer_type_node,
@@ -6542,18 +6542,18 @@ alpha_init_builtins (void)
   p = two_arg_builtins;
   for (i = 0; i < ARRAY_SIZE (two_arg_builtins); ++i, ++p)
     if ((target_flags & p->target_mask) == p->target_mask)
-      lang_hooks.builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
-				   NULL, attrs[p->is_const]);
+      add_builtin_function (p->name, ftype, p->code, BUILT_IN_MD,
+			    NULL, attrs[p->is_const]);
 
   ftype = build_function_type (ptr_type_node, void_list_node);
-  lang_hooks.builtin_function ("__builtin_thread_pointer", ftype,
-			       ALPHA_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
-			       NULL, attrs[0]);
+  add_builtin_function ("__builtin_thread_pointer", ftype,
+			ALPHA_BUILTIN_THREAD_POINTER, BUILT_IN_MD,
+			NULL, attrs[0]);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
-  lang_hooks.builtin_function ("__builtin_set_thread_pointer", ftype,
-			       ALPHA_BUILTIN_SET_THREAD_POINTER, BUILT_IN_MD,
-			       NULL, attrs[0]);
+  add_builtin_function ("__builtin_set_thread_pointer", ftype,
+			ALPHA_BUILTIN_SET_THREAD_POINTER, BUILT_IN_MD,
+			NULL, attrs[0]);
 
   alpha_v8qi_u = build_vector_type (unsigned_intQI_type_node, 8);
   alpha_v8qi_s = build_vector_type (intQI_type_node, 8);

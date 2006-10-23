@@ -7868,8 +7868,8 @@ sparc_init_libfuncs (void)
 }
 
 #define def_builtin(NAME, CODE, TYPE) \
-  lang_hooks.builtin_function((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, \
-                              NULL_TREE)
+  add_builtin_function((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, \
+                       NULL_TREE)
 
 /* Implement the TARGET_INIT_BUILTINS target hook.
    Create builtin functions for special SPARC instructions.  */

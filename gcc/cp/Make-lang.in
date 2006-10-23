@@ -250,7 +250,7 @@ cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(RTL_H) $(EXPR_H) \
 cp/class.o: cp/class.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h $(RTL_H) \
   $(TARGET_H) convert.h $(CGRAPH_H) $(TREE_DUMP_H)
 cp/call.o: cp/call.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h $(RTL_H) \
-  $(EXPR_H) $(DIAGNOSTIC_H) intl.h gt-cp-call.h convert.h $(TARGET_H)
+  $(EXPR_H) $(DIAGNOSTIC_H) intl.h gt-cp-call.h convert.h $(TARGET_H) langhooks.h
 cp/friend.o: cp/friend.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(RTL_H) toplev.h \
   $(EXPR_H)
 cp/init.o: cp/init.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(RTL_H) $(EXPR_H) \
