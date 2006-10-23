@@ -6053,8 +6053,8 @@ def_builtin (int mask, const char *name, tree type, int code)
 	abort ();
 
       rs6000_builtin_decls[code] =
-        lang_hooks.builtin_function (name, type, code, BUILT_IN_MD,
-				     NULL, NULL_TREE);
+        add_builtin_function (name, type, code, BUILT_IN_MD,
+			      NULL, NULL_TREE);
     }
 }
 
@@ -8578,12 +8578,12 @@ altivec_init_builtins (void)
       /* Initialize target builtin that implements
          targetm.vectorize.builtin_mask_for_load.  */
 
-      decl = lang_hooks.builtin_function ("__builtin_altivec_mask_for_load",
-                               v16qi_ftype_long_pcvoid,
-                               ALTIVEC_BUILTIN_MASK_FOR_LOAD,
-                               BUILT_IN_MD, NULL,
-                               tree_cons (get_identifier ("const"),
-                                          NULL_TREE, NULL_TREE));
+      decl = add_builtin_function ("__builtin_altivec_mask_for_load",
+				   v16qi_ftype_long_pcvoid,
+				   ALTIVEC_BUILTIN_MASK_FOR_LOAD,
+				   BUILT_IN_MD, NULL,
+				   tree_cons (get_identifier ("const"),
+					      NULL_TREE, NULL_TREE));
       /* Record the decl. Will be used by rs6000_builtin_mask_for_load.  */
       altivec_builtin_mask_for_load = decl;
     }

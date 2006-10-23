@@ -124,6 +124,7 @@ static HOST_WIDE_INT gfc_get_alias_set (tree);
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
 #undef LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE
 #undef LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES
+#undef LANG_HOOKS_BUILTIN_FUNCTION
 
 /* Define lang hooks.  */
 #define LANG_HOOKS_NAME                 "GNU F95"
@@ -150,6 +151,7 @@ static HOST_WIDE_INT gfc_get_alias_set (tree);
 #define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE	gfc_omp_private_debug_clause
 #define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \
   gfc_omp_firstprivatize_type_sizes
+#define LANG_HOOKS_BUILTIN_FUNCTION          gfc_builtin_function
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -723,43 +725,11 @@ int ggc_p = 1;
 
 /* Builtin function initialization.  */
 
-/* Return a definition for a builtin function named NAME and whose data type
-   is TYPE.  TYPE should be a function type with argument types.
-   FUNCTION_CODE tells later passes how to compile calls to this function.
-   See tree.h for its possible values.
-
-   If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
-   the name to be called if we can't opencode the function.  If
-   ATTRS is nonzero, use that for the function's attribute list.  */
-
 tree
-builtin_function (const char *name,
-		  tree type,
-		  int function_code,
-		  enum built_in_class class,
-		  const char *library_name,
-		  tree attrs)
+gfc_builtin_function (tree decl)
 {
-  tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
-  DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
-  if (library_name)
-    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
   make_decl_rtl (decl);
   pushdecl (decl);
-  DECL_BUILT_IN_CLASS (decl) = class;
-  DECL_FUNCTION_CODE (decl) = function_code;
-
-  /* Possibly apply some default attributes to this built-in function.  */
-  if (attrs)
-    {
-      /* FORNOW the only supported attribute is "const".  If others need
-         to be supported then see the more general solution in procedure
-         builtin_function in c-decl.c  */
-      if (lookup_attribute ( "const", attrs ))
-        TREE_READONLY (decl) = 1;
-    }
-
   return decl;
 }
 
@@ -773,8 +743,8 @@ gfc_define_builtin (const char * name,
 {
   tree decl;
 
-  decl = builtin_function (name, type, code, BUILT_IN_NORMAL,
-			   library_name, NULL_TREE);
+  decl = add_builtin_function (name, type, code, BUILT_IN_NORMAL,
+			       library_name, NULL_TREE);
   if (const_p)
     TREE_READONLY (decl) = 1;
 

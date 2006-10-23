@@ -1,3 +1,18 @@
+2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+
+	* decl.c (builtin_function_1): Move common code to
+	add_builtin_function.
+	(builtin_function): Rename to cxx_builtin_function.
+	Change the signature.
+	* call.c: Include langhooks.h.
+	(build_java_interface_fn_ref):  Replace calls to
+	builtin_function with add_builtin_function.
+	* Make-lang.in (cp/call.o): Depend on langhooks.h.
+	* cp-objcp-common.h (LANG_HOOKS_BUILTIN_FUNCTION): Define as
+	cxx_builtin_function.
+	* cp-tree.h (builtin_function): Rename to cxx_builtin_function.
+	Change the signature.
+
 2006-10-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20647

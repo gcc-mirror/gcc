@@ -764,9 +764,7 @@ extern tree fill_vms_descriptor (tree expr, Entity_Id gnat_formal);
 extern bool gnat_mark_addressable (tree expr_node);
 
 /* Implementation of the builtin_function langhook.  */
-extern tree builtin_function (const char *name, tree type, int function_code,
-                              enum built_in_class class,
-			      const char *library_name, tree attrs);
+extern tree gnat_builtin_function (tree decl);
 
 /* Search the chain of currently reachable declarations for a builtin
    FUNCTION_DECL node corresponding to function NAME (an IDENTIFIER_NODE).

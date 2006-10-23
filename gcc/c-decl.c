@@ -2812,30 +2812,15 @@ c_make_fname_decl (tree id, int type_dep)
   return decl;
 }
 
-/* Return a definition for a builtin function named NAME and whose data type
-   is TYPE.  TYPE should be a function type with argument types.
-   FUNCTION_CODE tells later passes how to compile calls to this function.
-   See tree.h for its possible values.
-
-   If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
-   the name to be called if we can't opencode the function.  If
-   ATTRS is nonzero, use that for the function's attribute list.  */
-
 tree
-builtin_function (const char *name, tree type, int function_code,
-		  enum built_in_class cl, const char *library_name,
-		  tree attrs)
+c_builtin_function (tree decl)
 {
-  tree id = get_identifier (name);
-  tree decl = build_decl (FUNCTION_DECL, id, type);
-  TREE_PUBLIC (decl) = 1;
-  DECL_EXTERNAL (decl) = 1;
+  tree type = TREE_TYPE (decl);
+  tree   id = DECL_NAME (decl);
+
+  const char *name = IDENTIFIER_POINTER (id);
   DECL_LANG_SPECIFIC (decl) = GGC_CNEW (struct lang_decl);
-  DECL_BUILT_IN_CLASS (decl) = cl;
-  DECL_FUNCTION_CODE (decl) = function_code;
   C_DECL_BUILTIN_PROTOTYPE (decl) = (TYPE_ARG_TYPES (type) != 0);
-  if (library_name)
-    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
 
   /* Should never be called on a symbol with a preexisting meaning.  */
   gcc_assert (!I_SYMBOL_BINDING (id));
@@ -2849,12 +2834,6 @@ builtin_function (const char *name, tree type, int function_code,
       TREE_CHAIN (decl) = visible_builtins;
       visible_builtins = decl;
     }
-
-  /* Possibly apply some default attributes to this built-in function.  */
-  if (attrs)
-    decl_attributes (&decl, attrs, ATTR_FLAG_BUILT_IN);
-  else
-    decl_attributes (&decl, NULL_TREE, 0);
 
   return decl;
 }

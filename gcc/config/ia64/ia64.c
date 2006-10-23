@@ -9114,8 +9114,8 @@ ia64_init_builtins (void)
 					       "__float128");
 
 #define def_builtin(name, type, code)					\
-  lang_hooks.builtin_function ((name), (type), (code), BUILT_IN_MD,	\
-			       NULL, NULL_TREE)
+  add_builtin_function ((name), (type), (code), BUILT_IN_MD,	\
+		       NULL, NULL_TREE)
 
   def_builtin ("__builtin_ia64_bsp",
 	       build_function_type (ptr_type_node, void_list_node),

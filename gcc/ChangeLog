@@ -1,3 +1,59 @@
+2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+
+	* tree.c (local_define_builtin): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* c-objc-common.h (LANG_HOOKS_BUILTIN_FUNCTION): Define as
+	c_builtin_function.
+	* c-tree.h (builtin_function): Rename to c_builtin_function. Change
+	the signature.
+	* c-decl.c (builtin_function): Rename to c_builtin_function. Move
+	common code to add_builtin_function.
+	* langhooks.c (add_builtin_function): New function.
+	(lhd_builtin_function): New function.
+	* langhooks.h (struct lang_hooks): Change the signature of
+	builtin_function.
+	(add_builtin_function): New function.
+	* tree-ssa-loop-prefetch.c (tree_ssa_prefetch_arrays): Replace
+	calls to lang_hooks.builtin_function with add_builtin_function.
+	* c-common.c (decl_builtin_1): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/alpha/alpha.c (alpha_init_builtins): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/frv/frv.c (def_builtin): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/s390/s390.c (s390_init_builtins): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/sparc/sparc.c (def_builtin): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/i386/i386.c (def_builtin): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/sh/sh.c (sh_media_init_builtins): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/c4x/c4x.c (c4x_init_builtins): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/stormy16/stormy16.c (xstormy16_init_builtins):
+	Replace calls to lang_hooks.builtin_function with
+	add_builtin_function.
+	* config/iq2000/iq2000.c (def_builtin):
+	Replace calls to lang_hooks.builtin_function with
+	add_builtin_function.
+	* config/ia64/ia64.c (def_builtin): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/rs6000/rs6000.c (def_builtin): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	(altivec_init_builtins): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/arm/arm.c (def_mbuiltin): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	(arm_init_tls_builtins): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/mips/mips.c (mips_init_builtins): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* config/bfin/bfin.c (def_builtin): Replace calls to
+	lang_hooks.builtin_function with add_builtin_function.
+	* langhooks-def.h (lhd_builtin_function): New function.
+	(LANG_HOOKS_BUILTIN_FUNCTION): Define as lhd_builtin_function.
+
 2006-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (expand_builtin, maybe_emit_chk_warning): Handle

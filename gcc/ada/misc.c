@@ -163,6 +163,8 @@ static tree gnat_type_max_size		(tree);
 #define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE gnat_signed_or_unsigned_type
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
+#undef  LANG_HOOKS_BUILTIN_FUNCTION
+#define LANG_HOOKS_BUILTIN_FUNCTION        gnat_builtin_function
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

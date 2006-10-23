@@ -446,8 +446,7 @@ void pushlevel (int);
 tree poplevel (int, int, int);
 tree getdecls (void);
 tree gfc_truthvalue_conversion (tree);
-tree builtin_function (const char *, tree, int, enum built_in_class,
-		       const char *, tree);
+tree gfc_builtin_function (tree);
 
 /* In trans-openmp.c */
 bool gfc_omp_privatize_by_reference (tree);

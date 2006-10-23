@@ -74,6 +74,8 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P c_missing_noreturn_ok_p
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL c_dup_lang_specific_decl
+#undef  LANG_HOOKS_BUILTIN_FUNCTION
+#define LANG_HOOKS_BUILTIN_FUNCTION c_builtin_function
 
 /* Attribute hooks.  */
 #undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE

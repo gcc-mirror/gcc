@@ -10603,9 +10603,9 @@ mips_init_builtins (void)
       if (m->proc == PROCESSOR_MAX || (m->proc == mips_arch))
 	for (d = m->bdesc; d < &m->bdesc[m->size]; d++)
 	  if ((d->target_flags & target_flags) == d->target_flags)
-	    lang_hooks.builtin_function (d->name, types[d->function_type],
-					 d - m->bdesc + offset,
-					 BUILT_IN_MD, NULL, NULL);
+	    add_builtin_function (d->name, types[d->function_type],
+				  d - m->bdesc + offset,
+				  BUILT_IN_MD, NULL, NULL);
       offset += m->size;
     }
 }

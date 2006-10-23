@@ -443,17 +443,8 @@ struct lang_hooks
      KNOWN_TYPE carries the true type of the OBJ_TYPE_REF_OBJECT.  */
   tree (*fold_obj_type_ref) (tree, tree);
 
-  /* Return a definition for a builtin function named NAME and whose data type
-     is TYPE.  TYPE should be a function type with argument types.
-     FUNCTION_CODE tells later passes how to compile calls to this function.
-     See tree.h for its possible values.
-
-     If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
-     the name to be called if we can't opencode the function.  If
-     ATTRS is nonzero, use that for the function's attribute list.  */
-  tree (*builtin_function) (const char *name, tree type, int function_code,
-			    enum built_in_class bt_class,
-			    const char *library_name, tree attrs);
+  /* Do language specific processing in the builtin function DECL  */
+  tree (*builtin_function) (tree decl);
 
   /* Used to set up the tree_contains_structure array for a frontend. */
   void (*init_ts) (void);
@@ -470,5 +461,9 @@ struct lang_hooks
 
 /* Each front end provides its own.  */
 extern const struct lang_hooks lang_hooks;
+extern tree add_builtin_function (const char *name, tree type,
+				  int function_code, enum built_in_class cl,
+				  const char *library_name,
+				  tree attrs);
 
 #endif /* GCC_LANG_HOOKS_H */

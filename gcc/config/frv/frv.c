@@ -8148,7 +8148,7 @@ frv_reorg (void)
 }
 
 #define def_builtin(name, type, code) \
-  lang_hooks.builtin_function ((name), (type), (code), BUILT_IN_MD, NULL, NULL)
+  add_builtin_function ((name), (type), (code), BUILT_IN_MD, NULL, NULL)
 
 struct builtin_description
 {
