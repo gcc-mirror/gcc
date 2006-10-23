@@ -30,8 +30,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "xtensa-config.h"
 
-# Define macros for the ABS and ADDX* instructions to handle cases
-# where they are not included in the Xtensa processor configuration.
+/* Define macros for the ABS and ADDX* instructions to handle cases
+   where they are not included in the Xtensa processor configuration.  */
 
 	.macro	do_abs dst, src, tmp
 #if XCHAL_HAVE_ABS
@@ -70,10 +70,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #endif
 	.endm
 
-# Define macros for leaf function entry and return, supporting either the
-# standard register windowed ABI or the non-windowed call0 ABI.  These
-# macros do not allocate any extra stack space, so they only work for
-# leaf functions that do not need to spill anything to the stack.
+/* Define macros for leaf function entry and return, supporting either the
+   standard register windowed ABI or the non-windowed call0 ABI.  These
+   macros do not allocate any extra stack space, so they only work for
+   leaf functions that do not need to spill anything to the stack.  */
 
 	.macro leaf_entry reg, size
 #if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
@@ -126,20 +126,20 @@ __mulsi3:
 
 #else /* !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MAC16 */
 
-	# Multiply one bit at a time, but unroll the loop 4x to better
-	# exploit the addx instructions and avoid overhead.
-	# Peel the first iteration to save a cycle on init.
+	/* Multiply one bit at a time, but unroll the loop 4x to better
+	   exploit the addx instructions and avoid overhead.
+	   Peel the first iteration to save a cycle on init.  */
 
-	# Avoid negative numbers.
-	xor	a5, a2, a3  # top bit is 1 iff one of the inputs is negative
+	/* Avoid negative numbers.  */
+	xor	a5, a2, a3	/* Top bit is 1 if one input is negative.  */
 	do_abs	a3, a3, a6
 	do_abs	a2, a2, a6
 
-	# Swap so the second argument is smaller.
+	/* Swap so the second argument is smaller.  */
 	sub	a7, a2, a3
 	mov	a4, a3
-	movgez	a4, a2, a7  # a4 = max(a2, a3) 
-	movltz	a3, a2, a7  # a3 = min(a2, a3)
+	movgez	a4, a2, a7	/* a4 = max (a2, a3) */
+	movltz	a3, a2, a7	/* a3 = min (a2, a3) */
 
 	movi	a2, 0
 	extui	a6, a3, 0, 1
@@ -196,10 +196,10 @@ __mulsi3:
 #endif /* L_mulsi3 */
 
 
-# Define a macro for the NSAU (unsigned normalize shift amount)
-# instruction, which computes the number of leading zero bits,
-# to handle cases where it is not included in the Xtensa processor
-# configuration.
+/* Define a macro for the NSAU (unsigned normalize shift amount)
+   instruction, which computes the number of leading zero bits,
+   to handle cases where it is not included in the Xtensa processor
+   configuration.  */
 
 	.macro	do_nsau cnt, val, tmp, a
 #if XCHAL_HAVE_NSA
@@ -260,19 +260,19 @@ __nsau_data:
 	.type	__udivsi3,@function
 __udivsi3:
 	leaf_entry sp, 16
-	bltui	a3, 2, .Lle_one	# check if the divisor <= 1
+	bltui	a3, 2, .Lle_one	/* check if the divisor <= 1 */
 
-	mov	a6, a2		# keep dividend in a6
-	do_nsau	a5, a6, a2, a7	# dividend_shift = nsau(dividend)
-	do_nsau	a4, a3, a2, a7	# divisor_shift = nsau(divisor)
+	mov	a6, a2		/* keep dividend in a6 */
+	do_nsau	a5, a6, a2, a7	/* dividend_shift = nsau (dividend) */
+	do_nsau	a4, a3, a2, a7	/* divisor_shift = nsau (divisor) */
 	bgeu	a5, a4, .Lspecial
 
-	sub	a4, a4, a5	# count = divisor_shift - dividend_shift
+	sub	a4, a4, a5	/* count = divisor_shift - dividend_shift */
 	ssl	a4
-	sll	a3, a3		# divisor <<= count
-	movi	a2, 0		# quotient = 0
+	sll	a3, a3		/* divisor <<= count */
+	movi	a2, 0		/* quotient = 0 */
 
-	# test-subtract-and-shift loop; one quotient bit on each iteration
+	/* test-subtract-and-shift loop; one quotient bit on each iteration */
 #if XCHAL_HAVE_LOOPS
 	loopnez	a4, .Lloopend
 #endif /* XCHAL_HAVE_LOOPS */
@@ -290,22 +290,22 @@ __udivsi3:
 .Lloopend:
 
 	bltu	a6, a3, .Lreturn
-	addi	a2, a2, 1	# increment quotient if dividend >= divisor
+	addi	a2, a2, 1	/* increment quotient if dividend >= divisor */
 .Lreturn:
 	leaf_return
 
 .Lle_one:
-	beqz	a3, .Lerror	# if divisor == 1, return the dividend
+	beqz	a3, .Lerror	/* if divisor == 1, return the dividend */
 	leaf_return
 
 .Lspecial:
-	# return dividend >= divisor
+	/* return dividend >= divisor */
 	bltu	a6, a3, .Lreturn0
 	movi	a2, 1
 	leaf_return
 
 .Lerror:
-	# just return 0; could throw an exception
+	/* just return 0; could throw an exception */
 
 .Lreturn0:
 	movi	a2, 0
@@ -321,20 +321,20 @@ __udivsi3:
 	.type	__divsi3,@function
 __divsi3:
 	leaf_entry sp, 16
-	xor	a7, a2, a3	# sign = dividend ^ divisor
-	do_abs	a6, a2, a4	# udividend = abs(dividend)
-	do_abs	a3, a3, a4	# udivisor = abs(divisor)
-	bltui	a3, 2, .Lle_one	# check if udivisor <= 1
-	do_nsau	a5, a6, a2, a8	# udividend_shift = nsau(udividend)
-	do_nsau	a4, a3, a2, a8	# udivisor_shift = nsau(udivisor)
+	xor	a7, a2, a3	/* sign = dividend ^ divisor */
+	do_abs	a6, a2, a4	/* udividend = abs (dividend) */
+	do_abs	a3, a3, a4	/* udivisor = abs (divisor) */
+	bltui	a3, 2, .Lle_one	/* check if udivisor <= 1 */
+	do_nsau	a5, a6, a2, a8	/* udividend_shift = nsau (udividend) */
+	do_nsau	a4, a3, a2, a8	/* udivisor_shift = nsau (udivisor) */
 	bgeu	a5, a4, .Lspecial
 
-	sub	a4, a4, a5	# count = udivisor_shift - udividend_shift
+	sub	a4, a4, a5	/* count = udivisor_shift - udividend_shift */
 	ssl	a4
-	sll	a3, a3		# udivisor <<= count
-	movi	a2, 0		# quotient = 0
+	sll	a3, a3		/* udivisor <<= count */
+	movi	a2, 0		/* quotient = 0 */
 
-	# test-subtract-and-shift loop; one quotient bit on each iteration
+	/* test-subtract-and-shift loop; one quotient bit on each iteration */
 #if XCHAL_HAVE_LOOPS
 	loopnez	a4, .Lloopend
 #endif /* XCHAL_HAVE_LOOPS */
@@ -352,27 +352,27 @@ __divsi3:
 .Lloopend:
 
 	bltu	a6, a3, .Lreturn
-	addi	a2, a2, 1	# increment quotient if udividend >= udivisor
+	addi	a2, a2, 1	/* increment if udividend >= udivisor */
 .Lreturn:
 	neg	a5, a2
-	movltz	a2, a5, a7	# return (sign < 0) ? -quotient : quotient
+	movltz	a2, a5, a7	/* return (sign < 0) ? -quotient : quotient */
 	leaf_return
 
 .Lle_one:
 	beqz	a3, .Lerror
-	neg	a2, a6		# if udivisor == 1, then return...
-	movgez	a2, a6, a7	# (sign < 0) ? -udividend : udividend
+	neg	a2, a6		/* if udivisor == 1, then return... */
+	movgez	a2, a6, a7	/* (sign < 0) ? -udividend : udividend */
 	leaf_return
 
 .Lspecial:
-	bltu	a6, a3, .Lreturn0 #  if dividend < divisor, return 0
+	bltu	a6, a3, .Lreturn0 /* if dividend < divisor, return 0 */
 	movi	a2, 1
 	movi	a4, -1
-	movltz	a2, a4, a7	# else return (sign < 0) ? -1 :	 1 
+	movltz	a2, a4, a7	/* else return (sign < 0) ? -1 : 1 */
 	leaf_return
 
 .Lerror:
-	# just return 0; could throw an exception
+	/* just return 0; could throw an exception */
 
 .Lreturn0:
 	movi	a2, 0
@@ -388,17 +388,17 @@ __divsi3:
 	.type	__umodsi3,@function
 __umodsi3:
 	leaf_entry sp, 16
-	bltui	a3, 2, .Lle_one	# check if the divisor is <= 1
+	bltui	a3, 2, .Lle_one	/* check if the divisor is <= 1 */
 
-	do_nsau	a5, a2, a6, a7	# dividend_shift = nsau(dividend)
-	do_nsau	a4, a3, a6, a7	# divisor_shift = nsau(divisor)
+	do_nsau	a5, a2, a6, a7	/* dividend_shift = nsau (dividend) */
+	do_nsau	a4, a3, a6, a7	/* divisor_shift = nsau (divisor) */
 	bgeu	a5, a4, .Lspecial
 
-	sub	a4, a4, a5	# count = divisor_shift - dividend_shift
+	sub	a4, a4, a5	/* count = divisor_shift - dividend_shift */
 	ssl	a4
-	sll	a3, a3		# divisor <<= count
+	sll	a3, a3		/* divisor <<= count */
 
-	# test-subtract-and-shift loop
+	/* test-subtract-and-shift loop */
 #if XCHAL_HAVE_LOOPS
 	loopnez	a4, .Lloopend
 #endif /* XCHAL_HAVE_LOOPS */
@@ -415,13 +415,13 @@ __umodsi3:
 
 .Lspecial:
 	bltu	a2, a3, .Lreturn
-	sub	a2, a2, a3	# subtract once more if dividend >= divisor
+	sub	a2, a2, a3	/* subtract once more if dividend >= divisor */
 .Lreturn:
 	leaf_return
 
 .Lle_one:
-	# the divisor is either 0 or 1, so just return 0.
-	# someday we may want to throw an exception if the divisor is 0.
+	/* The divisor is either 0 or 1, so just return 0.
+	   Someday we may want to throw an exception if the divisor is 0.  */
 	movi	a2, 0
 	leaf_return
 	.size	__umodsi3,.-__umodsi3
@@ -435,19 +435,19 @@ __umodsi3:
 	.type	__modsi3,@function
 __modsi3:
 	leaf_entry sp, 16
-	mov	a7, a2		# save original (signed) dividend
-	do_abs	a2, a2, a4	# udividend = abs(dividend)
-	do_abs	a3, a3, a4	# udivisor = abs(divisor)
-	bltui	a3, 2, .Lle_one	# check if udivisor <= 1
-	do_nsau	a5, a2, a6, a8	# udividend_shift = nsau(udividend)
-	do_nsau	a4, a3, a6, a8	# udivisor_shift = nsau(udivisor)
+	mov	a7, a2		/* save original (signed) dividend */
+	do_abs	a2, a2, a4	/* udividend = abs (dividend) */
+	do_abs	a3, a3, a4	/* udivisor = abs (divisor) */
+	bltui	a3, 2, .Lle_one	/* check if udivisor <= 1 */
+	do_nsau	a5, a2, a6, a8	/* udividend_shift = nsau (udividend) */
+	do_nsau	a4, a3, a6, a8	/* udivisor_shift = nsau (udivisor) */
 	bgeu	a5, a4, .Lspecial
 
-	sub	a4, a4, a5	# count = udivisor_shift - udividend_shift
+	sub	a4, a4, a5	/* count = udivisor_shift - udividend_shift */
 	ssl	a4
-	sll	a3, a3		# udivisor <<= count
+	sll	a3, a3		/* udivisor <<= count */
 
-	# test-subtract-and-shift loop
+	/* test-subtract-and-shift loop */
 #if XCHAL_HAVE_LOOPS
 	loopnez	a4, .Lloopend
 #endif /* XCHAL_HAVE_LOOPS */
@@ -464,16 +464,16 @@ __modsi3:
 
 .Lspecial:
 	bltu	a2, a3, .Lreturn
-	sub	a2, a2, a3	# subtract once more if udividend >= udivisor
+	sub	a2, a2, a3	/* subtract again if udividend >= udivisor */
 .Lreturn:
 	bgez	a7, .Lpositive
-	neg	a2, a2		# if (dividend < 0), return -udividend
+	neg	a2, a2		/* if (dividend < 0), return -udividend */
 .Lpositive:	
 	leaf_return
 
 .Lle_one:
-	# udivisor is either 0 or 1, so just return 0.
-	# someday we may want to throw an exception if udivisor is 0.
+	/* udivisor is either 0 or 1, so just return 0.
+	   Someday we may want to throw an exception if udivisor is 0.  */
 	movi	a2, 0
 	leaf_return
 	.size	__modsi3,.-__modsi3

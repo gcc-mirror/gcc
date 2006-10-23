@@ -1,3 +1,7 @@
+2006-10-23  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm: Use C-style comments.
+
 2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
 
 	* tree.c (local_define_builtin): Replace calls to
