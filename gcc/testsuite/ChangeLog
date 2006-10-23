@@ -1,3 +1,7 @@
+2006-10-23  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/memmove-1.c: New test.
+
 2006-10-23  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/pragma-pack-5.c: New test.
