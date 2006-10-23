@@ -6787,7 +6787,7 @@ fold_plusminus_mult_expr (enum tree_code code, tree type, tree arg0, tree arg1)
       else
 	maybe_same = arg11;
 
-      if (exact_log2 (int11) > 0 && int01 % int11 == 0)
+      if (exact_log2 (abs (int11)) > 0 && int01 % int11 == 0)
         {
 	  alt0 = fold_build2 (MULT_EXPR, TREE_TYPE (arg00), arg00,
 			      build_int_cst (TREE_TYPE (arg00),
@@ -8752,7 +8752,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && (FLOAT_TYPE_P (type)
-	      || (INTEGRAL_TYPE_P (type) && flag_wrapv && !flag_trapv))
+	      || INTEGRAL_TYPE_P (type))
 	  && negate_expr_p (arg1)
 	  && reorder_operands_p (arg0, arg1))
 	return fold_build2 (MINUS_EXPR, type, negate_expr (arg1),
@@ -8838,7 +8838,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
                /* Avoid this transformation if B is a positive REAL_CST.  */
 	       && (TREE_CODE (arg1) != REAL_CST
 		   ||  REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1))))
-	      || (INTEGRAL_TYPE_P (type) && flag_wrapv && !flag_trapv)))
+	      || INTEGRAL_TYPE_P (type)))
 	return fold_build2 (PLUS_EXPR, type,
 			    fold_convert (type, arg0),
 			    fold_convert (type, negate_expr (arg1)));
@@ -8923,6 +8923,14 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  /* Transform x * -1 into -x.  */
 	  if (integer_all_onesp (arg1))
 	    return fold_convert (type, negate_expr (arg0));
+	  /* Transform x * -C into -x * C if x is easily negatable.  */
+	  if (TREE_CODE (arg1) == INTEGER_CST
+	      && tree_int_cst_sgn (arg1) == -1
+	      && negate_expr_p (arg0)
+	      && (tem = negate_expr (arg1)) != arg1
+	      && !TREE_OVERFLOW (tem))
+	    return fold_build2 (MULT_EXPR, type,
+	    			negate_expr (arg0), tem);
 
 	  /* (a * (1 << b)) is (a << b)  */
 	  if (TREE_CODE (arg1) == LSHIFT_EXPR
