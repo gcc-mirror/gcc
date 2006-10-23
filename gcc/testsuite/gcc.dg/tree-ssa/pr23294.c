@@ -32,7 +32,6 @@ int f6(int a, int b)
 }
 
 /* { dg-final { scan-tree-dump-times "a \\\* 5" 3 "optimized" } } */
-/* { dg-final { scan-tree-dump "\\\(b \\\* 3 \\\+ a\\\) \\\* 2" "optimized" } } */
-/* { dg-final { scan-tree-dump "\\\(a - b \\\* 3\\\) \\\* 2" "optimized" } } */
-/* { dg-final { scan-tree-dump "\\\(a \\\* 3 - b\\\) \\\* 2" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\\) \\\* 2" 3 "optimized" } } */
+/* { dg-final { scan-tree-dump-not "\\\* 6" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

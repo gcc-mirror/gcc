@@ -19,6 +19,6 @@ void bar(int i)
 }
 
 /* { dg-final { scan-tree-dump-times "&a\\\[2\\\]" 3 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "&a\\\[.* - 1\\\]" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "&a\\\[.* \\+ -1\\\]" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "&a\\\[.* \\+ 1\\\]" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -1,5 +1,20 @@
 2006-10-23  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/27132
+	PR middle-end/23295
+	* builtins.c (fold_binary): Remove checks for flag_wrapv
+	and flag_trapv where negate_expr_p covers these cases.
+
+2006-10-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/29548
+	* fold-const.c (fold_plusminus_mult_expr): Check exact power
+	of two on the absolute value.
+	(fold_binary): Fold x * -C to -x * C if x is easily negatable
+	and negating -C does not overflow.
+
+2006-10-23  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/21032
 	* convert.c (convert_to_real): Fold (float)-x to -(float)x
 	only if not flag_rounding_math.
