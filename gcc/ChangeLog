@@ -1,3 +1,15 @@
+2006-10-22  Richard Sandiford  <richard@codesourcery.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/28232
+	* config/sh/sh.c (expand_block_move): Use a BLKmode rather than
+	SImode memory reference for the source of a movua.
+	* config/sh/sh.md (UNSPEC_MOVUA): New macro.
+	(movua): Use an unspec instead of sign_extract.  Expect the source
+	to have mode BLKmode.
+	(extv, insv): Use a BLKmode rather than SImode memory reference
+	for the source of a movua.
+
 2006-10-22  Jeff Law  <law@redhat.com>
 	Richard Guenther  <rguenther@suse.de>
 
