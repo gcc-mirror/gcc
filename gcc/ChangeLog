@@ -1,3 +1,8 @@
+2006-10-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/predicates.md ("bras_sym_operand"): Do not accept
+	nonlocal function symbols if flag_pic.
+
 2006-10-22  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (mips_split_const): Don't accept bare PLUS
