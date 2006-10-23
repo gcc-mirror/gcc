@@ -248,10 +248,12 @@ convert_to_real (tree type, tree expr)
   if (itype != type && FLOAT_TYPE_P (type))
     switch (TREE_CODE (expr))
       {
-	/* Convert (float)-x into -(float)x.  This is always safe.  */
+	/* Convert (float)-x into -(float)x.  This is safe for
+	   round-to-nearest rounding mode.  */
 	case ABS_EXPR:
 	case NEGATE_EXPR:
-	  if (TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (expr)))
+	  if (!flag_rounding_math
+	      && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (expr)))
 	    return build1 (TREE_CODE (expr), type,
 			   fold (convert_to_real (type,
 						  TREE_OPERAND (expr, 0))));

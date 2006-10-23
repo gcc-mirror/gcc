@@ -1,3 +1,9 @@
+2006-10-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/21032
+	* convert.c (convert_to_real): Fold (float)-x to -(float)x
+	only if not flag_rounding_math.
+
 2006-10-22  Richard Sandiford  <richard@codesourcery.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
