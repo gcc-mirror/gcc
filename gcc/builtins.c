@@ -111,7 +111,7 @@ static rtx expand_builtin_strspn (tree, rtx, enum machine_mode);
 static rtx expand_builtin_strcspn (tree, rtx, enum machine_mode);
 static rtx expand_builtin_memcpy (tree, rtx, enum machine_mode);
 static rtx expand_builtin_mempcpy (tree, tree, rtx, enum machine_mode, int);
-static rtx expand_builtin_memmove (tree, tree, rtx, enum machine_mode, tree);
+static rtx expand_builtin_memmove (tree, tree, rtx, enum machine_mode);
 static rtx expand_builtin_bcopy (tree);
 static rtx expand_builtin_strcpy (tree, tree, rtx, enum machine_mode);
 static rtx expand_builtin_stpcpy (tree, rtx, enum machine_mode);
@@ -3089,20 +3089,13 @@ expand_builtin_mempcpy (tree arglist, tree type, rtx target, enum machine_mode m
 
 static rtx
 expand_builtin_memmove (tree arglist, tree type, rtx target,
-			enum machine_mode mode, tree orig_exp)
+			enum machine_mode mode)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
   else
     {
-      tree dest = TREE_VALUE (arglist);
-      tree src = TREE_VALUE (TREE_CHAIN (arglist));
-      tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-
-      unsigned int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
-      unsigned int dest_align
-	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
       tree result = fold_builtin_memory_op (arglist, type, false, /*endp=*/3);
 
       if (result)
@@ -3114,38 +3107,6 @@ expand_builtin_memmove (tree arglist, tree type, rtx target,
 	      result = TREE_OPERAND (result, 1);
 	    }
 	  return expand_expr (result, target, mode, EXPAND_NORMAL);
-	}
-
-      /* If DEST is not a pointer type, call the normal function.  */
-      if (dest_align == 0)
-	return 0;
-
-      /* If either SRC is not a pointer type, don't do this
-	 operation in-line.  */
-      if (src_align == 0)
-	return 0;
-
-      /* If src is categorized for a readonly section we can use
-	 normal memcpy.  */
-      if (readonly_data_expr (src))
-	{
-	  tree fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
-	  if (!fn)
-	    return 0;
-	  fn = build_function_call_expr (fn, arglist);
-	  if (TREE_CODE (fn) == CALL_EXPR)
-	    CALL_EXPR_TAILCALL (fn) = CALL_EXPR_TAILCALL (orig_exp);
-	  return expand_expr (fn, target, mode, EXPAND_NORMAL);
-	}
-
-      /* If length is 1 and we can expand memcpy call inline,
-	 it is ok to use memcpy as well.  */
-      if (integer_onep (len))
-	{
-	  rtx ret = expand_builtin_mempcpy (arglist, type, target, mode,
-					    /*endp=*/0);
-	  if (ret)
-	    return ret;
 	}
 
       /* Otherwise, call the normal function.  */
@@ -3180,7 +3141,7 @@ expand_builtin_bcopy (tree exp)
   newarglist = tree_cons (NULL_TREE, src, newarglist);
   newarglist = tree_cons (NULL_TREE, dest, newarglist);
 
-  return expand_builtin_memmove (newarglist, type, const0_rtx, VOIDmode, exp);
+  return expand_builtin_memmove (newarglist, type, const0_rtx, VOIDmode);
 }
 
 #ifndef HAVE_movstr
@@ -6073,7 +6034,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
     case BUILT_IN_MEMMOVE:
       target = expand_builtin_memmove (arglist, TREE_TYPE (exp), target,
-				       mode, exp);
+				       mode);
       if (target)
 	return target;
       break;
@@ -8146,6 +8107,27 @@ fold_builtin_memory_op (tree arglist, tree type, bool ignore, int endp)
     expr = len;
   else
     {
+      if (endp == 3)
+	{
+          unsigned int src_align
+	     = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+          unsigned int dest_align
+	     = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+	  /* Both DEST and SRC must be pointer types. 
+	     ??? This is what old code did.  Is the testing for pointer types
+	     really mandatory?
+
+	     If either SRC is readonly or length is 1, we can use memcpy.  */
+	  if (dest_align && src_align
+	      && (readonly_data_expr (src)
+		  || integer_onep (len)))
+	    {
+	      tree fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+	      if (!fn)
+		return 0;
+	      return build_function_call_expr (fn, arglist);
+	    }
+	}
       if (! host_integerp (len, 1))
 	return 0;
 
