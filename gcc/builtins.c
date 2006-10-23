@@ -150,9 +150,9 @@ static tree fold_builtin_sqrt (tree, tree);
 static tree fold_builtin_cbrt (tree, tree);
 static tree fold_builtin_pow (tree, tree, tree);
 static tree fold_builtin_powi (tree, tree, tree);
-static tree fold_builtin_sin (tree);
+static tree fold_builtin_sin (tree, tree);
 static tree fold_builtin_cos (tree, tree, tree);
-static tree fold_builtin_tan (tree);
+static tree fold_builtin_tan (tree, tree);
 static tree fold_builtin_atan (tree, tree);
 static tree fold_builtin_trunc (tree, tree);
 static tree fold_builtin_floor (tree, tree);
@@ -205,6 +205,7 @@ static unsigned HOST_WIDE_INT target_s;
 static char target_percent_c[3];
 static char target_percent_s[3];
 static char target_percent_s_newline[4];
+static tree do_mpfr_arg1 (tree, tree, int (*)(mpfr_ptr, mpfr_srcptr, mp_rnd_t));
 
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
@@ -7206,17 +7207,17 @@ fold_builtin_cbrt (tree arglist, tree type)
 /* Fold function call to builtin sin, sinf, or sinl.  Return
    NULL_TREE if no simplification can be made.  */
 static tree
-fold_builtin_sin (tree arglist)
+fold_builtin_sin (tree arglist, tree type)
 {
-  tree arg = TREE_VALUE (arglist);
+  tree arg = TREE_VALUE (arglist), res;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
 
-  /* Optimize sin (0.0) = 0.0.  */
-  if (real_zerop (arg))
-    return arg;
-
+  /* Calculate the result when the argument is a constant.  */
+  if ((res = do_mpfr_arg1 (arg, type, mpfr_sin)))
+    return res;
+  
   return NULL_TREE;
 }
 
@@ -7225,15 +7226,15 @@ fold_builtin_sin (tree arglist)
 static tree
 fold_builtin_cos (tree arglist, tree type, tree fndecl)
 {
-  tree arg = TREE_VALUE (arglist);
+  tree arg = TREE_VALUE (arglist), res;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
 
-  /* Optimize cos (0.0) = 1.0.  */
-  if (real_zerop (arg))
-    return build_real (type, dconst1);
-
+  /* Calculate the result when the argument is a constant.  */
+  if ((res = do_mpfr_arg1 (arg, type, mpfr_cos)))
+    return res;
+  
   /* Optimize cos(-x) into cos (x).  */
   if (TREE_CODE (arg) == NEGATE_EXPR)
     {
@@ -7248,18 +7249,18 @@ fold_builtin_cos (tree arglist, tree type, tree fndecl)
 /* Fold function call to builtin tan, tanf, or tanl.  Return
    NULL_TREE if no simplification can be made.  */
 static tree
-fold_builtin_tan (tree arglist)
+fold_builtin_tan (tree arglist, tree type)
 {
   enum built_in_function fcode;
-  tree arg = TREE_VALUE (arglist);
+  tree arg = TREE_VALUE (arglist), res;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
 
-  /* Optimize tan(0.0) = 0.0.  */
-  if (real_zerop (arg))
-    return arg;
-
+  /* Calculate the result when the argument is a constant.  */
+  if ((res = do_mpfr_arg1 (arg, type, mpfr_tan)))
+    return res;
+  
   /* Optimize tan(atan(x)) = x.  */
   fcode = builtin_mathfn_code (arg);
   if (flag_unsafe_math_optimizations
@@ -9039,7 +9040,7 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
       return fold_builtin_cbrt (arglist, type);
 
     CASE_FLT_FN (BUILT_IN_SIN):
-      return fold_builtin_sin (arglist);
+      return fold_builtin_sin (arglist, type);
 
     CASE_FLT_FN (BUILT_IN_COS):
       return fold_builtin_cos (arglist, type, fndecl);
@@ -9064,7 +9065,7 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
       return fold_builtin_logarithm (fndecl, arglist, &dconst10);
 
     CASE_FLT_FN (BUILT_IN_TAN):
-      return fold_builtin_tan (arglist);
+      return fold_builtin_tan (arglist, type);
 
     CASE_FLT_FN (BUILT_IN_ATAN):
       return fold_builtin_atan (arglist, type);
@@ -11277,4 +11278,49 @@ init_target_chars (void)
       init = true;
     }
   return true;
+}
+
+/* If argument ARG is a REAL_CST, call the one-argument mpfr function
+   FUNC on it and return the resulting value as a tree with type TYPE.
+   The mpfr precision is set to the precision of TYPE.  We assume that
+   function FUNC returns zero if the result could be calculated
+   exactly within the requested precision.  */
+
+static tree
+do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t))
+{
+  tree result = NULL_TREE;
+  
+  STRIP_NOPS (arg);
+
+  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      REAL_VALUE_TYPE r = TREE_REAL_CST (arg);
+
+      if (!real_isnan (&r) && !real_isinf (&r))
+        {
+	  const enum machine_mode mode = TYPE_MODE (type);
+	  const int prec = REAL_MODE_FORMAT (mode)->p;
+	  int exact;
+	  mpfr_t m;
+
+	  mpfr_init2 (m, prec);
+	  mpfr_from_real (m, &r);
+	  exact = func (m, m, GMP_RNDN);
+
+	  /* Proceed iff we get a normal number, i.e. not NaN or Inf.
+	     If -frounding-math is set, proceed iff the result of
+	     calling FUNC was exact, i.e. FUNC returned zero.  */
+	  if (mpfr_number_p (m)
+	      && (! flag_rounding_math || exact == 0))
+	    {
+	      real_from_mpfr (&r, m);
+	      real_convert (&r, mode, &r);
+	      result = build_real (type, r);
+	    }
+	  mpfr_clear (m);
+	}
+    }
+  
+  return result;
 }

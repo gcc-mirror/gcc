@@ -4922,3 +4922,47 @@ real_copysign (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *x)
   r->sign = x->sign;
 }
 
+/* Convert from REAL_VALUE_TYPE to MPFR.  The caller is responsible
+   for initializing and clearing the MPFR parmeter.  */
+
+void
+mpfr_from_real (mpfr_ptr m, const REAL_VALUE_TYPE *r)
+{
+  /* We use a string as an intermediate type.  */
+  char buf[128];
+
+  real_to_hexadecimal (buf, r, sizeof (buf), 0, 1);
+  /* mpfr_set_str() parses hexadecimal floats from strings in the same
+     format that GCC will output them.  Nothing extra is needed.  */
+  gcc_assert (mpfr_set_str (m, buf, 16, GMP_RNDN) == 0);
+}
+
+/* Convert from MPFR to REAL_VALUE_TYPE.  */
+
+void
+real_from_mpfr (REAL_VALUE_TYPE *r, mpfr_srcptr m)
+{
+  /* We use a string as an intermediate type.  */
+  char buf[128], *rstr;
+  mp_exp_t exp;
+
+  rstr = mpfr_get_str (NULL, &exp, 16, 0, m, GMP_RNDN);
+
+  /* The additional 12 chars add space for the sprintf below.  This
+     leaves 6 digits for the exponent which is supposedly enough.  */
+  gcc_assert (rstr != NULL && strlen (rstr) < sizeof (buf) - 12);
+
+  /* REAL_VALUE_ATOF expects the exponent for mantissa * 2**exp,
+     mpfr_get_str returns the exponent for mantissa * 16**exp, adjust
+     for that.  */
+  exp *= 4;
+
+  if (rstr[0] == '-')
+    sprintf (buf, "-0x.%sp%d", &rstr[1], (int) exp);
+  else
+    sprintf (buf, "0x.%sp%d", rstr, (int) exp);
+
+  mpfr_free_str (rstr);
+  
+  real_from_string (r, buf);
+}
