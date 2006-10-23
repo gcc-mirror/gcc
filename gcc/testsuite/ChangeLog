@@ -1,3 +1,8 @@
+2006-10-23  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/21032
+	* gcc.dg/pr21032.c: New testcase.
+
 2006-10-22  Jeff Law  <law@redhat.com>
 	Richard Guenther  <rguenther@suse.de>
 
