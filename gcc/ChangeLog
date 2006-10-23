@@ -1,3 +1,8 @@
+2006-10-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/predicates.md ("bras_sym_operand"): Do not accept
+	nonlocal function symbols if flag_pic.
+
 2006-10-23  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/27132
