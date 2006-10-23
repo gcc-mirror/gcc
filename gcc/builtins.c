@@ -6494,6 +6494,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_STPCPY_CHK:
     case BUILT_IN_STRNCPY_CHK:
     case BUILT_IN_STRCAT_CHK:
+    case BUILT_IN_STRNCAT_CHK:
     case BUILT_IN_SNPRINTF_CHK:
     case BUILT_IN_VSNPRINTF_CHK:
       maybe_emit_chk_warning (exp, fcode);
@@ -10243,6 +10244,11 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
       arg_mask = 6;
       is_strlen = 1;
       break;
+    case BUILT_IN_STRNCAT_CHK:
+    /* For __strncat_chk the warning will be emitted only if overflowing
+       by at least strlen (dest) + 1 bytes.  */
+      arg_mask = 12;
+      break;
     case BUILT_IN_STRNCPY_CHK:
       arg_mask = 12;
       break;
@@ -10278,6 +10284,22 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
     {
       len = c_strlen (len, 1);
       if (! len || ! host_integerp (len, 1) || tree_int_cst_lt (len, size))
+	return;
+    }
+  else if (fcode == BUILT_IN_STRNCAT_CHK)
+    {
+      tree src = TREE_VALUE (TREE_CHAIN (arglist));
+      if (! src || ! host_integerp (len, 1) || tree_int_cst_lt (len, size))
+	return;
+      src = c_strlen (src, 1);
+      if (! src || ! host_integerp (src, 1))
+	{
+	  locus = EXPR_LOCATION (exp);
+	  warning (0, "%Hcall to %D might overflow destination buffer",
+		   &locus, get_callee_fndecl (exp));
+	  return;
+	}
+      else if (tree_int_cst_lt (src, size))
 	return;
     }
   else if (! host_integerp (len, 1) || ! tree_int_cst_lt (size, len))
