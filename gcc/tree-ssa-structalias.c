@@ -2640,6 +2640,7 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 		  {		    
 		    heapvar = create_tmp_var_raw (ptr_type_node, "HEAP");
 		    DECL_EXTERNAL (heapvar) = 1;
+		    get_var_ann (heapvar)->is_heapvar = 1;
 		    if (referenced_vars)
 		      add_referenced_var (heapvar);
 		    heapvar_insert (t, heapvar);
@@ -4281,6 +4282,7 @@ intra_create_variable_infos (void)
 	    {
 	      heapvar = create_tmp_var_raw (TREE_TYPE (TREE_TYPE (t)), 
 					    "PARM_NOALIAS");
+	      get_var_ann (heapvar)->is_heapvar = 1;
 	      DECL_EXTERNAL (heapvar) = 1;
 	      if (referenced_vars)
 		add_referenced_var (heapvar);
