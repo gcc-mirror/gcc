@@ -1,3 +1,7 @@
+2006-10-24  Ben Elliston  <bje@au.ibm.com>
+
+	* reload1.c: Formatting fixes.
+
 2006-10-23  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/14784

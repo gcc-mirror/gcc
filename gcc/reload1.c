@@ -995,7 +995,7 @@ reload (rtx first, int global)
 	HARD_REG_SET to_spill;
 	CLEAR_HARD_REG_SET (to_spill);
 	update_eliminables (&to_spill);
-	AND_COMPL_HARD_REG_SET(used_spill_regs, to_spill);
+	AND_COMPL_HARD_REG_SET (used_spill_regs, to_spill);
 
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	  if (TEST_HARD_REG_BIT (to_spill, i))
@@ -1860,7 +1860,7 @@ find_reload_regs (struct insn_chain *chain)
 	if (! find_reg (chain, i))
 	  {
 	    if (dump_file)
-	      fprintf(dump_file, "reload failure for reload %d\n", r);
+	      fprintf (dump_file, "reload failure for reload %d\n", r);
 	    spill_failure (chain->insn, rld[r].class);
 	    failure = 1;
 	    return;
@@ -8289,7 +8289,7 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
       emit_insn (gen_add2_insn (reloadreg, inc));
       store = emit_insn (gen_move_insn (incloc, reloadreg));
       if (GET_CODE (inc) == CONST_INT)
-	emit_insn (gen_add2_insn (reloadreg, GEN_INT (-INTVAL(inc))));
+	emit_insn (gen_add2_insn (reloadreg, GEN_INT (-INTVAL (inc))));
       else
 	emit_insn (gen_sub2_insn (reloadreg, inc));
     }
