@@ -7893,67 +7893,36 @@ fold_builtin_powi (tree fndecl ATTRIBUTE_UNUSED, tree arglist, tree type)
 }
 
 /* A subroutine of fold_builtin to fold the various exponent
-   functions.  EXP is the CALL_EXPR of a call to a builtin function.
-   VALUE is the value which will be raised to a power.  */
+   functions.  Return NULL_TREE if no simplification can me made.
+   FUNC is the corresponding MPFR exponent function.  */
 
 static tree
 fold_builtin_exponent (tree fndecl, tree arglist,
-		       const REAL_VALUE_TYPE *value)
+		       int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t))
 {
   if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     {
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
-      tree arg = TREE_VALUE (arglist);
-
-      /* Optimize exp*(0.0) = 1.0.  */
-      if (real_zerop (arg))
-	return build_real (type, dconst1);
-
-      /* Optimize expN(1.0) = N.  */
-      if (real_onep (arg))
-	{
-	  REAL_VALUE_TYPE cst;
-
-	  real_convert (&cst, TYPE_MODE (type), value);
-	  return build_real (type, cst);
-	}
-
-      /* Attempt to evaluate expN(integer) at compile-time.  */
-      if (flag_unsafe_math_optimizations
-	  && TREE_CODE (arg) == REAL_CST
-	  && ! TREE_CONSTANT_OVERFLOW (arg))
-	{
-	  REAL_VALUE_TYPE cint;
-	  REAL_VALUE_TYPE c;
-	  HOST_WIDE_INT n;
-
-	  c = TREE_REAL_CST (arg);
-	  n = real_to_integer (&c);
-	  real_from_integer (&cint, VOIDmode, n,
-			     n < 0 ? -1 : 0, 0);
-	  if (real_identical (&c, &cint))
-	    {
-	      REAL_VALUE_TYPE x;
-
-	      real_powi (&x, TYPE_MODE (type), value, n);
-	      return build_real (type, x);
-	    }
-	}
+      tree arg = TREE_VALUE (arglist), res;
+      
+      /* Calculate the result when the argument is a constant.  */
+      if ((res = do_mpfr_arg1 (arg, type, func)))
+	return res;
 
       /* Optimize expN(logN(x)) = x.  */
       if (flag_unsafe_math_optimizations)
 	{
 	  const enum built_in_function fcode = builtin_mathfn_code (arg);
 
-	  if ((value == &dconste
+	  if ((func == mpfr_exp
 	       && (fcode == BUILT_IN_LOG
 		   || fcode == BUILT_IN_LOGF
 		   || fcode == BUILT_IN_LOGL))
-	      || (value == &dconst2
+	      || (func == mpfr_exp2
 		  && (fcode == BUILT_IN_LOG2
 		      || fcode == BUILT_IN_LOG2F
 		      || fcode == BUILT_IN_LOG2L))
-	      || (value == &dconst10
+	      || (func == mpfr_exp10
 		  && (fcode == BUILT_IN_LOG10
 		      || fcode == BUILT_IN_LOG10F
 		      || fcode == BUILT_IN_LOG10L)))
@@ -9046,14 +9015,14 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
       return fold_builtin_cos (arglist, type, fndecl);
 
     CASE_FLT_FN (BUILT_IN_EXP):
-      return fold_builtin_exponent (fndecl, arglist, &dconste);
+      return fold_builtin_exponent (fndecl, arglist, mpfr_exp);
 
     CASE_FLT_FN (BUILT_IN_EXP2):
-      return fold_builtin_exponent (fndecl, arglist, &dconst2);
+      return fold_builtin_exponent (fndecl, arglist, mpfr_exp2);
 
     CASE_FLT_FN (BUILT_IN_EXP10):
     CASE_FLT_FN (BUILT_IN_POW10):
-      return fold_builtin_exponent (fndecl, arglist, &dconst10);
+      return fold_builtin_exponent (fndecl, arglist, mpfr_exp10);
 
     CASE_FLT_FN (BUILT_IN_LOG):
       return fold_builtin_logarithm (fndecl, arglist, &dconste);
@@ -11301,22 +11270,34 @@ do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t))
         {
 	  const enum machine_mode mode = TYPE_MODE (type);
 	  const int prec = REAL_MODE_FORMAT (mode)->p;
-	  int exact;
+	  int inexact;
 	  mpfr_t m;
 
 	  mpfr_init2 (m, prec);
 	  mpfr_from_real (m, &r);
-	  exact = func (m, m, GMP_RNDN);
+	  mpfr_clear_flags();
+	  inexact = func (m, m, GMP_RNDN);
 
-	  /* Proceed iff we get a normal number, i.e. not NaN or Inf.
-	     If -frounding-math is set, proceed iff the result of
-	     calling FUNC was exact, i.e. FUNC returned zero.  */
-	  if (mpfr_number_p (m)
-	      && (! flag_rounding_math || exact == 0))
+	  /* Proceed iff we get a normal number, i.e. not NaN or Inf
+	     and no overflow/underflow occurred.  If -frounding-math,
+	     proceed iff the result of calling FUNC was exact.  */
+	  if (mpfr_number_p (m) && !mpfr_overflow_p() && !mpfr_underflow_p()
+	      && (!flag_rounding_math || !inexact))
 	    {
 	      real_from_mpfr (&r, m);
-	      real_convert (&r, mode, &r);
-	      result = build_real (type, r);
+	      /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR
+		 value, check for overflow/underflow.  If the
+		 REAL_VALUE_TYPE is zero but the mpft_t is not, then
+		 we underflowed in the conversion.  */
+	      if (!real_isnan (&r) && !real_isinf (&r)
+		  && (r.cl == rvc_zero) == (mpfr_zero_p (m) != 0))
+	        {
+		  REAL_VALUE_TYPE rmode;
+		  real_convert (&rmode, mode, &r);
+		  /* Proceed iff the specified mode can hold the value.  */
+		  if (real_identical (&rmode, &r))
+		    result = build_real (type, rmode);
+		}
 	    }
 	  mpfr_clear (m);
 	}

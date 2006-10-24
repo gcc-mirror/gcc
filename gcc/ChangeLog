@@ -1,3 +1,12 @@
+2006-10-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_exponent): Evaluate constant arguments
+	at compile-time using MPFR.  Change parameter VALUE to FUNC,
+	update all callers.
+	(do_mpfr_arg1): Rename `exact' to `inexact'.  Carefully check
+	for overflow and underflow at all times and avoid folding in
+	those cases.
+
 2006-10-24  Ben Elliston  <bje@au.ibm.com>
 
 	* reload1.c: Formatting fixes.
