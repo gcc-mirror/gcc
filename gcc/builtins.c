@@ -150,10 +150,8 @@ static tree fold_builtin_sqrt (tree, tree);
 static tree fold_builtin_cbrt (tree, tree);
 static tree fold_builtin_pow (tree, tree, tree);
 static tree fold_builtin_powi (tree, tree, tree);
-static tree fold_builtin_sin (tree, tree);
 static tree fold_builtin_cos (tree, tree, tree);
 static tree fold_builtin_tan (tree, tree);
-static tree fold_builtin_atan (tree, tree);
 static tree fold_builtin_trunc (tree, tree);
 static tree fold_builtin_floor (tree, tree);
 static tree fold_builtin_ceil (tree, tree);
@@ -205,7 +203,8 @@ static unsigned HOST_WIDE_INT target_s;
 static char target_percent_c[3];
 static char target_percent_s[3];
 static char target_percent_s_newline[4];
-static tree do_mpfr_arg1 (tree, tree, int (*)(mpfr_ptr, mpfr_srcptr, mp_rnd_t));
+static tree do_mpfr_arg1 (tree, tree, int (*)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
+			  const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, bool);
 
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
@@ -7204,23 +7203,6 @@ fold_builtin_cbrt (tree arglist, tree type)
   return NULL_TREE;
 }
 
-/* Fold function call to builtin sin, sinf, or sinl.  Return
-   NULL_TREE if no simplification can be made.  */
-static tree
-fold_builtin_sin (tree arglist, tree type)
-{
-  tree arg = TREE_VALUE (arglist), res;
-
-  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-    return NULL_TREE;
-
-  /* Calculate the result when the argument is a constant.  */
-  if ((res = do_mpfr_arg1 (arg, type, mpfr_sin)))
-    return res;
-  
-  return NULL_TREE;
-}
-
 /* Fold function call to builtin cos, cosf, or cosl.  Return
    NULL_TREE if no simplification can be made.  */
 static tree
@@ -7232,7 +7214,7 @@ fold_builtin_cos (tree arglist, tree type, tree fndecl)
     return NULL_TREE;
 
   /* Calculate the result when the argument is a constant.  */
-  if ((res = do_mpfr_arg1 (arg, type, mpfr_cos)))
+  if ((res = do_mpfr_arg1 (arg, type, mpfr_cos, NULL, NULL, 0)))
     return res;
   
   /* Optimize cos(-x) into cos (x).  */
@@ -7258,7 +7240,7 @@ fold_builtin_tan (tree arglist, tree type)
     return NULL_TREE;
 
   /* Calculate the result when the argument is a constant.  */
-  if ((res = do_mpfr_arg1 (arg, type, mpfr_tan)))
+  if ((res = do_mpfr_arg1 (arg, type, mpfr_tan, NULL, NULL, 0)))
     return res;
   
   /* Optimize tan(atan(x)) = x.  */
@@ -7268,35 +7250,6 @@ fold_builtin_tan (tree arglist, tree type)
 	  || fcode == BUILT_IN_ATANF
 	  || fcode == BUILT_IN_ATANL))
     return TREE_VALUE (TREE_OPERAND (arg, 1));
-
-  return NULL_TREE;
-}
-
-/* Fold function call to builtin atan, atanf, or atanl.  Return
-   NULL_TREE if no simplification can be made.  */
-
-static tree
-fold_builtin_atan (tree arglist, tree type)
-{
-
-  tree arg = TREE_VALUE (arglist);
-
-  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-    return NULL_TREE;
-
-  /* Optimize atan(0.0) = 0.0.  */
-  if (real_zerop (arg))
-    return arg;
-
-  /* Optimize atan(1.0) = pi/4.  */
-  if (real_onep (arg))
-    {
-      REAL_VALUE_TYPE cst;
-
-      real_convert (&cst, TYPE_MODE (type), &dconstpi);
-      SET_REAL_EXP (&cst, REAL_EXP (&cst) - 2);
-      return build_real (type, cst);
-    }
 
   return NULL_TREE;
 }
@@ -7924,7 +7877,7 @@ fold_builtin_exponent (tree fndecl, tree arglist,
       tree arg = TREE_VALUE (arglist), res;
       
       /* Calculate the result when the argument is a constant.  */
-      if ((res = do_mpfr_arg1 (arg, type, func)))
+      if ((res = do_mpfr_arg1 (arg, type, func, NULL, NULL, 0)))
 	return res;
 
       /* Optimize expN(logN(x)) = x.  */
@@ -9026,11 +8979,71 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     CASE_FLT_FN (BUILT_IN_CBRT):
       return fold_builtin_cbrt (arglist, type);
 
+    CASE_FLT_FN (BUILT_IN_ASIN):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_asin,
+			     &dconstm1, &dconst1, true);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_ACOS):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_acos,
+			     &dconstm1, &dconst1, true);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_ATAN):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_atan,
+			     NULL, NULL, 0);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_ASINH):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_asinh,
+			     NULL, NULL, 0);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_ACOSH):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_acosh,
+			     &dconst1, NULL, true);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_ATANH):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_atanh,
+			     &dconstm1, &dconst1, false);
+    break;
+
     CASE_FLT_FN (BUILT_IN_SIN):
-      return fold_builtin_sin (arglist, type);
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_sin,
+			     NULL, NULL, 0);
+    break;
 
     CASE_FLT_FN (BUILT_IN_COS):
       return fold_builtin_cos (arglist, type, fndecl);
+
+    CASE_FLT_FN (BUILT_IN_TAN):
+      return fold_builtin_tan (arglist, type);
+
+    CASE_FLT_FN (BUILT_IN_SINH):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_sinh,
+			     NULL, NULL, 0);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_COSH):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_cosh,
+			     NULL, NULL, 0);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_TANH):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_tanh,
+			     NULL, NULL, 0);
+    break;
 
     CASE_FLT_FN (BUILT_IN_EXP):
       return fold_builtin_exponent (fndecl, arglist, mpfr_exp);
@@ -9050,12 +9063,6 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 
     CASE_FLT_FN (BUILT_IN_LOG10):
       return fold_builtin_logarithm (fndecl, arglist, &dconst10);
-
-    CASE_FLT_FN (BUILT_IN_TAN):
-      return fold_builtin_tan (arglist, type);
-
-    CASE_FLT_FN (BUILT_IN_ATAN):
-      return fold_builtin_atan (arglist, type);
 
     CASE_FLT_FN (BUILT_IN_POW):
       return fold_builtin_pow (fndecl, arglist, type);
@@ -11269,12 +11276,17 @@ init_target_chars (void)
 
 /* If argument ARG is a REAL_CST, call the one-argument mpfr function
    FUNC on it and return the resulting value as a tree with type TYPE.
-   The mpfr precision is set to the precision of TYPE.  We assume that
-   function FUNC returns zero if the result could be calculated
-   exactly within the requested precision.  */
+   If MIN and/or MAX are not NULL, then the supplied ARG must be
+   within those bounds.  If INCLUSIVE is true, then MIN/MAX are
+   acceptable values, otherwise they are not.  The mpfr precision is
+   set to the precision of TYPE.  We assume that function FUNC returns
+   zero if the result could be calculated exactly within the requested
+   precision.  */
 
 static tree
-do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t))
+do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
+	      const REAL_VALUE_TYPE *min, const REAL_VALUE_TYPE *max,
+	      bool inclusive)
 {
   tree result = NULL_TREE;
   
@@ -11284,7 +11296,9 @@ do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t))
     {
       REAL_VALUE_TYPE r = TREE_REAL_CST (arg);
 
-      if (!real_isnan (&r) && !real_isinf (&r))
+      if (!real_isnan (&r) && !real_isinf (&r)
+	  && (!min || real_compare (inclusive ? GE_EXPR: GT_EXPR , &r, min))
+	  && (!max || real_compare (inclusive ? LE_EXPR: LT_EXPR , &r, max)))
         {
 	  const enum machine_mode mode = TYPE_MODE (type);
 	  const int prec = REAL_MODE_FORMAT (mode)->p;
