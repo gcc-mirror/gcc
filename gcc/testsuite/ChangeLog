@@ -1,3 +1,8 @@
+2006-10-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20647
+	* g++.dg/abi/rtti3.C: New.
+
 2006-10-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* g++.dg/other/s390-1.C: New testcase.
