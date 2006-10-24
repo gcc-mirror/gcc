@@ -1,5 +1,11 @@
 2006-10-24  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/28796
+	* gcc.dg/pr28796-1.c: New testcase.
+	* gcc.dg/pr28796-2.c: Likewise.
+
+2006-10-24  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/builtins-57.c: New testcase.
 
 2006-10-24  Richard Guenther  <rguenther@suse.de>
