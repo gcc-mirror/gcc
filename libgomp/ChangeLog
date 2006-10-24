@@ -1,3 +1,11 @@
+2006-10-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR libgomp/29494
+	* configure.tgt: Use posix95 configuration for Solaris 2.5.1 and 2.6.
+	* config/posix95: New directory.
+	* config/posix95/omp-lock.h: New file.
+	* config/posix95/lock.c: Likewise.
+
 2006-10-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* aclocal.m4: Regenerate.
