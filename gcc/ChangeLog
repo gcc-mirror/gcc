@@ -1,3 +1,27 @@
+2006-10-24  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.h (FIRST_PSEUDO_REGISTER): Define to 54.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Add fpcr register.
+	(REG_ALLOC_ORDER): Add one element to allocate fpcr register.
+	(FRAME_POINTER_REGNUM): Update register number to 21.
+	(REG_CLASS_CONTENTS): Update contents for added fpcr register.
+	(HI_REGISTER_NAMES): Add "fpcr" for fpcr register.
+
+	* config/i386/i386.c (regclass_map): Add fpcr entry.
+	(dbx_register_map, dbx64_register_map, svr4_dbx_register_map):
+	Add fpcr entry.
+	(print_reg): Assert REGNO (x) != FPCR_REG.
+
+	* config/i386/i386.md (FPCR_REG, R11_REG): New constants.
+	(DIRFLAG_REG): Renumber.
+	(x86_fnstcw_1, x86_fldcw_1): Use FPCR_REG instead of FPSR_REG.
+	(*sibcall_1_rex64_v, *sibcall_value_1_rex64_v): Use R11_REG.
+	(sse_prologue_save, *sse_prologue_save_insn): Renumber
+	hardcoded SSE register numbers.
+
+	* config/i386/mmx.md (mmx_emms, mmx_femms): Renumber
+	hardcoded MMX register numbers.
+
 2006-10-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/29335
