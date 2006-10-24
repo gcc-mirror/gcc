@@ -2777,7 +2777,7 @@ static bool
 register_edge_assert_for_1 (tree op, enum tree_code code,
 			    edge e, block_stmt_iterator bsi)
 {
-  bool invert, retval = false;
+  bool retval = false;
   tree op_def, rhs, val;
 
   /* We only care about SSA_NAMEs.  */
@@ -2804,11 +2804,11 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
   if (TREE_CODE (op_def) != MODIFY_EXPR)
     return retval;
 
-  invert = (code == EQ_EXPR ? true : false);
   rhs = TREE_OPERAND (op_def, 1);
 
   if (COMPARISON_CLASS_P (rhs))
     {
+      bool invert = (code == EQ_EXPR ? true : false);
       tree op0 = TREE_OPERAND (rhs, 0);
       tree op1 = TREE_OPERAND (rhs, 1);
 
@@ -2848,15 +2848,14 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
     }
   else if (TREE_CODE (rhs) == TRUTH_NOT_EXPR)
     {
-      invert = !invert;
-      /* Recurse, flipping the tense of INVERT.  */
+      /* Recurse, flipping CODE.  */
+      code = invert_tree_comparison (code, false);
       retval |= register_edge_assert_for_1 (TREE_OPERAND (rhs, 0),
-					    invert, e, bsi);
+					    code, e, bsi);
     }
   else if (TREE_CODE (rhs) == SSA_NAME)
     {
-      /* Recurse through the copy, the tense of INVERT remains
-	 unchanged.  */
+      /* Recurse through the copy.  */
       retval |= register_edge_assert_for_1 (rhs, code, e, bsi);
     }
   else if (TREE_CODE (rhs) == NOP_EXPR
@@ -2864,8 +2863,7 @@ register_edge_assert_for_1 (tree op, enum tree_code code,
 	   || TREE_CODE (rhs) == VIEW_CONVERT_EXPR
 	   || TREE_CODE (rhs) == NON_LVALUE_EXPR)
     { 
-      /* Recurse through the type conversion, the tense of INVERT 
-	 remains unchanged.  */
+      /* Recurse through the type conversion.  */
       retval |= register_edge_assert_for_1 (TREE_OPERAND (rhs, 0),
 					    code, e, bsi);
     }
