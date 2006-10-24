@@ -1,3 +1,8 @@
+2006-10-24  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/29393
+	* gfortran.dg/initialize_2.f90: New.
+
 2006-10-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20647
