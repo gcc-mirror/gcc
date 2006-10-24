@@ -3234,7 +3234,7 @@ The @code{weak} attribute is described in @xref{Function Attributes}.
 @item dllimport
 The @code{dllimport} attribute is described in @xref{Function Attributes}.
 
-@item dlexport
+@item dllexport
 The @code{dllexport} attribute is described in @xref{Function Attributes}.
 
 @end table
