@@ -184,6 +184,9 @@ struct var_ann_d GTY(())
      in the v_may_def list.  */
   unsigned in_v_may_def_list : 1;
 
+  /* True for HEAP and PARM_NOALIAS artificial variables.  */
+  unsigned is_heapvar : 1;
+
   /* An artificial variable representing the memory location pointed-to by
      all the pointer symbols that flow-insensitive alias analysis
      (mostly type-based) considers to be aliased.  If the variable is
