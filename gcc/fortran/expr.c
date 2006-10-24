@@ -1363,6 +1363,8 @@ simplify_parameter_variable (gfc_expr * p, int type)
   if (e == NULL)
     return FAILURE;
 
+  e->rank = p->rank;
+
   /* Do not copy subobject refs for constant.  */
   if (e->expr_type != EXPR_CONSTANT && p->ref != NULL)
     e->ref = copy_ref (p->ref);

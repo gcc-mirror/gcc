@@ -1,3 +1,9 @@
+2006-10-24  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/29393
+	* expr.c (simplify_parameter_variable): Keep rank of original
+	expression.
+
 2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
 
 	* Make-lang.in (f951$(exeext)): Depend on and link with attribs.o.
