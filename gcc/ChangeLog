@@ -1,3 +1,14 @@
+2006-10-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/29335
+	* builtins.c (fold_builtin_sin, fold_builtin_atan): Remove.
+	(do_mpfr_arg1): Add `min', `max' and `inclusive' arguments.
+	Update all callers.
+	(BUILT_IN_SIN, BUILT_IN_ATAN): Handle in main switch.
+	(BUILT_IN_ASIN, BUILT_IN_ACOS, BUILT_IN_ATAN, BUILT_IN_ASINH,
+	BUILT_IN_ACOSH, BUILT_IN_ATANH, BUILT_IN_SINH, BUILT_IN_COSH,
+	BUILT_IN_TANH): Calculate compile-time arguments using MPFR.
+
 2006-10-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/28796
@@ -21,6 +32,7 @@
 
 2006-10-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	PR middle-end/29335
 	* builtins.c (fold_builtin_exponent): Evaluate constant arguments
 	at compile-time using MPFR.  Change parameter VALUE to FUNC,
 	update all callers.
