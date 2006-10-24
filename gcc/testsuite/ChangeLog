@@ -1,5 +1,14 @@
 2006-10-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.dg/torture/builtin-math-2.c: Add checks for asin, acos,
+	acosh and atanh.
+	
+	* gcc.dg/torture/builtin-math-3.c (TESTIT): Append 'F' and 'L'
+	floating point modifiers to arguments passed to float and long
+	double functions respectively.  Update all callers to use floating
+	point numbers, not integers.  Add tests for exp, exp2 and
+	exp10/pow10.
+
 	* gcc.dg/torture/builtin-math-3.c: New test.
 
 2006-10-24  Erik Edelmann  <eedelman@gcc.gnu.org>
