@@ -1,5 +1,12 @@
 2006-10-24  Richard Guenther  <rguenther@suse.de>
 
+	* builtins.c (fold_builtin_floor): Fold floor (x) where
+	x is nonnegative to trunc (x).
+	(fold_builtin_int_roundingfn): Fold lfloor (x) where x is
+	nonnegative to FIX_TRUNC_EXPR.
+
+2006-10-24  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/29567
 	* tree-vrp.c (register_edge_assert_for_1): Fix wrong logic
 	for TRUTH_NOT_EXPR.  Clarify comments.

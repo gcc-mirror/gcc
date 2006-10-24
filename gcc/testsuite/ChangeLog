@@ -1,5 +1,9 @@
 2006-10-24  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/builtins-57.c: New testcase.
+
+2006-10-24  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/29567
 	* gfortran.fortran-torture/compile/vrp_1.f90: New testcase.
 
