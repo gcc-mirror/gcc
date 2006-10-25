@@ -4861,6 +4861,46 @@ expand_fix (rtx to, rtx from, int unsignedp)
         convert_move (to, target, 0);
     }
 }
+
+/* Generate code to convert FROM to fixed point and store in TO.  FROM
+   must be floating point, TO must be signed.  Use the conversion optab
+   TAB to do the conversion.  */
+
+bool
+expand_sfix_optab (rtx to, rtx from, convert_optab tab)
+{
+  enum insn_code icode;
+  rtx target = to;
+  enum machine_mode fmode, imode;
+
+  /* We first try to find a pair of modes, one real and one integer, at
+     least as wide as FROM and TO, respectively, in which we can open-code
+     this conversion.  If the integer mode is wider than the mode of TO,
+     we can do the conversion either signed or unsigned.  */
+
+  for (fmode = GET_MODE (from); fmode != VOIDmode;
+       fmode = GET_MODE_WIDER_MODE (fmode))
+    for (imode = GET_MODE (to); imode != VOIDmode;
+	 imode = GET_MODE_WIDER_MODE (imode))
+      {
+	icode = tab->handlers[imode][fmode].insn_code;
+	if (icode != CODE_FOR_nothing)
+	  {
+	    if (fmode != GET_MODE (from))
+	      from = convert_to_mode (fmode, from, 0);
+
+	    if (imode != GET_MODE (to))
+	      target = gen_reg_rtx (imode);
+
+	    emit_unop_insn (icode, target, from, UNKNOWN);
+	    if (target != to)
+	      convert_move (to, target, 0);
+	    return true;
+	  }
+      }
+
+  return false;
+}
 
 /* Report whether we have an instruction to perform the operation
    specified by CODE on operands of mode MODE.  */
@@ -5266,7 +5306,6 @@ init_optabs (void)
   btrunc_optab = init_optab (UNKNOWN);
   nearbyint_optab = init_optab (UNKNOWN);
   rint_optab = init_optab (UNKNOWN);
-  lrint_optab = init_optab (UNKNOWN);
   sincos_optab = init_optab (UNKNOWN);
   sin_optab = init_optab (UNKNOWN);
   asin_optab = init_optab (UNKNOWN);
@@ -5325,6 +5364,7 @@ init_optabs (void)
   ufixtrunc_optab = init_convert_optab (UNKNOWN);
   sfloat_optab = init_convert_optab (FLOAT);
   ufloat_optab = init_convert_optab (UNSIGNED_FLOAT);
+  lrint_optab = init_convert_optab (UNKNOWN);
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
@@ -5444,6 +5484,8 @@ init_optabs (void)
 				 MODE_DECIMAL_FLOAT, MODE_INT);
   init_interclass_conv_libfuncs (ufloat_optab, "floatuns",
 				 MODE_INT, MODE_DECIMAL_FLOAT);
+  init_interclass_conv_libfuncs (lrint_optab, "lrint",
+				 MODE_INT, MODE_FLOAT);
 
   /* sext_optab is also used for FLOAT_EXTEND.  */
   init_intraclass_conv_libfuncs (sext_optab, "extend", MODE_FLOAT, true);

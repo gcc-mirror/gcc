@@ -1,3 +1,27 @@
+2006-10-25  Richard Guenther  <rguenther@suse.de>
+
+	PR target/28803
+	* optabs.h (enum optab_index): Remove OTI_lrint.
+	(enum convert_optab_index): Add COI_lrint.
+	(lrint_optab): Adjust.
+	(expand_sfix_optab): Declare.
+	* optabs.c (expand_sfix_optab): New function.
+	(init_optabs): Init lrint_optab as conversion optab.
+	* genopinit.c (lrint_optab): Change to a conversion optab.
+	* builtins.c (expand_builtin_int_roundingfn_2): Adjust to
+	expansion via conversion optab.
+	* config/i386/i386.md (*fistdi2_1): Remove
+	flag_unsafe_math_optimizations guard.
+	(fistdi2, fistdi2_with_temp, *fist<mode>2_1, fist<mode>2,
+	fist<mode>2_with_temp): Likewise.
+	(lrint<mode>2): Split into...
+	(lrintxf<mode>2): ... x87 part
+	(lrint<mode>di2, lrint<mode>si2): ... and SSE parts.
+	* config/i386/sse.md (sse_cvtss2si_2, sse_cvtss2_siq_2,
+	sse2_cvtsd2si_2, sse2_cvtsd2siq_2): New insns for
+	UNSPEC_FIX_NOTRUNC matching non-vector float modes.
+	* doc/md.texi (lrintMN2): Document.
+
 2006-10-25  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/28909
