@@ -974,6 +974,16 @@
    (set_attr "athlon_decode" "double,vector")
    (set_attr "mode" "SI")])
 
+(define_insn "sse_cvtss2si_2"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(unspec:SI [(match_operand:SF 1 "nonimmediate_operand" "x,m")]
+	 UNSPEC_FIX_NOTRUNC))]
+  "TARGET_SSE"
+  "cvtss2si\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sseicvt")
+   (set_attr "athlon_decode" "double,vector")
+   (set_attr "mode" "SI")])
+
 (define_insn "sse_cvtss2siq"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(unspec:DI
@@ -981,6 +991,16 @@
 	     (match_operand:V4SF 1 "nonimmediate_operand" "x,m")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
+  "TARGET_SSE && TARGET_64BIT"
+  "cvtss2siq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sseicvt")
+   (set_attr "athlon_decode" "double,vector")
+   (set_attr "mode" "DI")])
+
+(define_insn "sse_cvtss2siq_2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(unspec:DI [(match_operand:SF 1 "nonimmediate_operand" "x,m")]
+	 UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE && TARGET_64BIT"
   "cvtss2siq\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
@@ -1932,6 +1952,16 @@
    (set_attr "athlon_decode" "double,vector")
    (set_attr "mode" "SI")])
 
+(define_insn "sse2_cvtsd2si_2"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(unspec:SI [(match_operand:DF 1 "nonimmediate_operand" "x,m")]
+	 UNSPEC_FIX_NOTRUNC))]
+  "TARGET_SSE2"
+  "cvtsd2si\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sseicvt")
+   (set_attr "athlon_decode" "double,vector")
+   (set_attr "mode" "SI")])
+
 (define_insn "sse2_cvtsd2siq"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(unspec:DI
@@ -1939,6 +1969,16 @@
 	     (match_operand:V2DF 1 "nonimmediate_operand" "x,m")
 	     (parallel [(const_int 0)]))]
 	  UNSPEC_FIX_NOTRUNC))]
+  "TARGET_SSE2 && TARGET_64BIT"
+  "cvtsd2siq\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sseicvt")
+   (set_attr "athlon_decode" "double,vector")
+   (set_attr "mode" "DI")])
+
+(define_insn "sse2_cvtsd2siq_2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(unspec:DI [(match_operand:DF 1 "nonimmediate_operand" "x,m")]
+	 UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2 && TARGET_64BIT"
   "cvtsd2siq\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseicvt")
