@@ -3569,6 +3569,26 @@ corresponds to the C data type @code{double} and the @code{sqrtf}
 built-in function uses the mode which corresponds to the C data
 type @code{float}.
 
+@cindex @code{fmod@var{m}3} instruction pattern
+@item @samp{fmod@var{m}3}
+Store the remainder of dividing operand 1 by operand 2 into
+operand 0, rounded towards zero to an integer.
+
+The @code{fmod} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{fmodf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{remainder@var{m}3} instruction pattern
+@item @samp{remainder@var{m}3}
+Store the remainder of dividing operand 1 by operand 2 into
+operand 0, rounded to the nearest integer.
+
+The @code{remainder} built-in function of C always uses the mode
+which corresponds to the C data type @code{double} and the
+@code{remainderf} built-in function uses the mode which corresponds
+to the C data type @code{float}.
+
 @cindex @code{cos@var{m}2} instruction pattern
 @item @samp{cos@var{m}2}
 Store the cosine of operand 1 into operand 0.
