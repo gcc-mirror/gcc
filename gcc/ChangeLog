@@ -1,3 +1,33 @@
+2006-10-25  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Rename OTI_drem to OTI_remainder.
+	(remainder_optab): Define corresponding macro.
+	(drem_optab): Remove.
+	* optabs.c (init_optabs): Initialize remainder_optab.  Remove
+	drem_optab initialization.
+	* genopinit.c (optabs): Implement remainder_optab using
+	remainder?f3 patterns.  Remove drem_optab.
+	* builtins.c (expand_builtin_mathfn_2): Handle
+	BUILT_IN_REMAINDER{,F,L} using remainder_optab.
+	(expand_builtin): Expand BUILT_IN_REMAINDER{,F,L} using
+	expand_builtin_mathfn_2.
+
+	(expand_builtin) [BUILT_IN_FMOD, BUILT_IN_DREM]: Do not
+	depend on flag_unsafe_math_optimizations.
+
+	* config/i386/i386.md ("remaindersf3", "remainderdf3")
+	("remainderxf3"): Renamed from "drem{s,d,x}f3" expanders.
+	Do not depend on flag_unsafe_math_optimizations.  Use
+	truncxf?f expander instead of truncxf?f_i387_noop.
+
+	("fpremxf4", "fprem1xf4"): Do not depend on
+	flag_unsafe_math_optimizations.
+	("fmodsf3", "fmoddf3", "fmodxf3"): Do not depend on
+	flag_unsafe_math_optimizations.  Use truncxf?f expander
+	instead of truncxf?f_i387_noop.
+
+	* doc/md.texi (fmod, remainder): Document standard named pattern.
+
 2006-10-24  Richard Sandiford  <richard@codesourcery.com>
 	    David Daney  <ddaney@avtrex.com>
 

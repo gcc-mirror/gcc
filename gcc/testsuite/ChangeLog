@@ -1,3 +1,9 @@
+2006-10-25  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.dg/builtins-40.c: Also check remainder(), remainderf()
+	and remainderl() built-in functions.  Remove -ffast-math from
+	dg-options.
+
 2006-10-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-2.c: Add checks for asin, acos,

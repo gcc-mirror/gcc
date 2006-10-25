@@ -5212,7 +5212,7 @@ init_optabs (void)
   smod_optab = init_optab (MOD);
   umod_optab = init_optab (UMOD);
   fmod_optab = init_optab (UNKNOWN);
-  drem_optab = init_optab (UNKNOWN);
+  remainder_optab = init_optab (UNKNOWN);
   ftrunc_optab = init_optab (UNKNOWN);
   and_optab = init_optab (AND);
   ior_optab = init_optab (IOR);

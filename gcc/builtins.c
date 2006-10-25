@@ -1975,8 +1975,9 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
       builtin_optab = ldexp_optab; break;
     CASE_FLT_FN (BUILT_IN_FMOD):
       builtin_optab = fmod_optab; break;
+    CASE_FLT_FN (BUILT_IN_REMAINDER):
     CASE_FLT_FN (BUILT_IN_DREM):
-      builtin_optab = drem_optab; break;
+      builtin_optab = remainder_optab; break;
     default:
       gcc_unreachable ();
     }
@@ -5796,10 +5797,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
     CASE_FLT_FN (BUILT_IN_ATAN2):
     CASE_FLT_FN (BUILT_IN_LDEXP):
-    CASE_FLT_FN (BUILT_IN_FMOD):
-    CASE_FLT_FN (BUILT_IN_DREM):
       if (! flag_unsafe_math_optimizations)
 	break;
+
+    CASE_FLT_FN (BUILT_IN_FMOD):
+    CASE_FLT_FN (BUILT_IN_REMAINDER):
+    CASE_FLT_FN (BUILT_IN_DREM):
       target = expand_builtin_mathfn_2 (exp, target, subtarget);
       if (target)
 	return target;

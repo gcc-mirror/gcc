@@ -98,7 +98,7 @@ enum optab_index
   OTI_umod,
   /* Floating point remainder functions */
   OTI_fmod,
-  OTI_drem,
+  OTI_remainder,
   /* Convert float to integer in float fmt */
   OTI_ftrunc,
 
@@ -289,7 +289,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define smod_optab (optab_table[OTI_smod])
 #define umod_optab (optab_table[OTI_umod])
 #define fmod_optab (optab_table[OTI_fmod])
-#define drem_optab (optab_table[OTI_drem])
+#define remainder_optab (optab_table[OTI_remainder])
 #define ftrunc_optab (optab_table[OTI_ftrunc])
 #define and_optab (optab_table[OTI_and])
 #define ior_optab (optab_table[OTI_ior])
