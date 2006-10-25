@@ -4308,7 +4308,8 @@ intra_create_variable_infos (void)
 	    make_constraint_from_escaped (p);
 	}
     }
-  nonlocal_all = create_nonlocal_var (void_type_node);
+  if (!nonlocal_all)
+    nonlocal_all = create_nonlocal_var (void_type_node);
 
   /* Create variable info for the nonlocal var if it does not
      exist.  */

@@ -1,3 +1,8 @@
+2006-10-25  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (intra_create_variable_infos):
+	  Don't recreate nonlocal_all if it already exists.
+
 2006-10-25  Richard Guenther  <rguenther@suse.de>
 
 	PR target/28803
