@@ -56,25 +56,28 @@ print_events ()
 static void
 VMInitCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread)
 {
-  printf ("VMInitCB jni_env=%p thread=%p\n", jni_env, thread);
+  printf ("VMInitCB jni_env=%#llx thread=%#llx\n",
+	  (unsigned long long) jni_env, (unsigned long long) thread);
 }
 
 static void
 VMDeathCB (jvmtiEnv *env, JNIEnv *jni_env)
 {
-  printf ("VMDeathCB jni_env=%p\n", jni_env);
+  printf ("VMDeathCB jni_env=%#llx\n", (unsigned long long) jni_env);
 }
 
 static void
 ThreadStartCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread)
 {
-  printf ("ThreadStartCB jni_env=%p thread=%p\n", jni_env, thread);
+  printf ("ThreadStartCB jni_env=%#llx thread=%#llx\n",
+	  (unsigned long long) jni_env, (unsigned long long) thread);
 }
 
 static void
 ThreadEndCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread)
 {
-  printf ("ThreadEndCB jni_env=%p thread=%p\n", jni_env, thread);
+  printf ("ThreadEndCB jni_env=%#llx thread=%#llx\n",
+	  (unsigned long long) jni_env, (unsigned long long) thread);
 }
 
 static void
@@ -84,32 +87,37 @@ ClassFileLoadHookCB (jvmtiEnv *env, JNIEnv *jni_env,
 		     jint class_data_len, const unsigned char *class_data,
 		     jint *new_class_data_len, unsigned char **new_class_data)
 {
-  printf ("ClassFileLoadHookCB jni_env=%p class_being_redefined=%p loader=%p",
-	  jni_env, class_being_redefined, loader);
-  printf (" name=%s protection_domain=%p class_data_len=%d class_data=%p",
-	  name, protection_domain, (int) class_data_len, class_data);
-  printf (" new_class_data_len=%p new_class_data=%p\n", new_class_data_len,
+  printf ("ClassFileLoadHookCB jni_env=%#llx class_being_redefined=%#llx"
+	  " loader=%#llx", (unsigned long long) jni_env, (unsigned long long)
+	  class_being_redefined, (unsigned long long) loader);
+  printf (" name=%s protection_domain=%#llx class_data_len=%d class_data=%#llx",
+	  name, (unsigned long long) protection_domain, (int) class_data_len,
+	  (unsigned long long) class_data);
+  printf (" new_class_data_len=%#llx new_class_data=%#llx\n",
+	  (unsigned long long) new_class_data_len, (unsigned long long)
 	  new_class_data);
 }
 
 static void
 ClassLoadCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread, jclass klass)
 {
-  printf ("ClassLoadCB jni_env=%p thread=%p klass=%p\n", jni_env, thread,
-	  klass);
+  printf ("ClassLoadCB jni_env=%#llx thread=%#llx klass=%#llx\n",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) klass);
 }
 
 static void
 ClassPrepareCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread, jclass klass)
 {
-  printf ("ClassPrepareCB jni_env=%p thread=%p klass=%p\n", jni_env,
-	  thread, klass);
+  printf ("ClassPrepareCB jni_env=%#llx thread=%#llx klass=%#llx\n",
+	  (unsigned long long)jni_env, (unsigned long long) thread,
+	  (unsigned long long) klass);
 }
 
 static void
 VMStartCB (jvmtiEnv *env, JNIEnv *jni_env)
 {
-  printf ("VMStartCB jni_env=%p\n", jni_env);
+  printf ("VMStartCB jni_env=%#llx\n", (unsigned long long) jni_env);
 }
 
 static void
@@ -117,35 +125,42 @@ ExceptionCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread, jmethodID method,
 	     jlocation location, jobject exception, jmethodID catch_method,
 	     jlocation catch_location)
 {
-  printf ("ExceptionCB jni_env=%p thread=%p method=%p location=%#llx", jni_env,
-	  thread, method, (unsigned long long) location);
-  printf (" exception=%p catch_method=%p catch_location=%#llx\n", exception,
-	  catch_method, (unsigned long long) catch_location);
+  printf ("ExceptionCB jni_env=%#llx thread=%#llx method=%#llx location=%#llx",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) method, (unsigned long long) location);
+  printf (" exception=%#llx catch_method=%#llx catch_location=%#llx\n",
+	  (unsigned long long) exception, (unsigned long long) catch_method,
+	  (unsigned long long) catch_location);
 }
 
 static void
 ExceptionCatchCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 		  jmethodID method, jlocation location, jobject exception)
 {
-  printf ("ExceptionCatchCB jni_env=%p thread=%p method=%p location=%#llx",
-	  jni_env, thread, method, (unsigned long long) location);
-  printf (" exception=%p\n", exception);
+  printf ("ExceptionCatchCB jni_env=%#llx thread=%#llx method=%#llx"
+	  " location=%#llx",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) method, (unsigned long long) location);
+  printf (" exception=%#llx\n", (unsigned long long) exception);
 }
 
 static void
 SingleStepCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread, jmethodID method,
 	      jlocation location)
 {
-  printf ("SingleStepCB jni_env=%p thread=%p method=%p location=%#llx\n", 
-	  jni_env, thread, method, (unsigned long long) location);
+  printf ("SingleStepCB jni_env=%#llx thread=%#llx method=%#llx"
+	  " location=%#llx\n",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) method, (unsigned long long) location);
 }
 
 static void
 FramePopCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread, jmethodID method,
 	    jboolean was_popped_by_exception)
 {
-  printf ("FramePopCB jni_env=%p thread=%p method=%p", jni_env, thread,
-	  method);
+  printf ("FramePopCB jni_env=%#llx thread=%#llx method=%#llx",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) method);
   printf (" was_pooped_by_exception=%d\n", (was_popped_by_exception ?
 					    1 : 0));
 }
@@ -154,8 +169,10 @@ static void
 BreakpointCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread, jmethodID method,
 	      jlocation location)
 {
-  printf ("BreakpointCB  jni_env=%p thread=%p method=%p location=%#llx\n",
-	  jni_env, thread, method, (unsigned long long) location);
+  printf ("BreakpointCB  jni_env=%#llx thread=%#llx method=%#llx"
+	  " location=%#llx\n", (unsigned long long) jni_env,
+	  (unsigned long long) thread, (unsigned long long) method,
+	  (unsigned long long) location);
 }
 
 static void
@@ -163,9 +180,11 @@ FieldAccessCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 	       jmethodID method, jlocation location, jclass field_klass,
 	       jobject object, jfieldID field)
 {
-  printf ("FieldAccessCB jni_env=%p thread=%p method=%p location=%#llx",
-	  jni_env, thread, method, (unsigned long long) location);
-  printf (" field_klass=%p object=%p field=%p\n", field_klass, object, field);
+  printf ("FieldAccessCB jni_env=%#llx thread=%#llx method=%#llx"
+	  " location=%#llx", (unsigned long long) jni_env, (unsigned long long)
+	  thread, (unsigned long long) method, (unsigned long long) location);
+  printf (" field_klass=%#llx object=%#llx field=%#llx\n", (unsigned long long)
+	  field_klass, (unsigned long long) object, (unsigned long long) field);
 }
 
 static void
@@ -175,10 +194,12 @@ FieldModificationCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 		     jvalue new_value)
 
 {
-  printf ("FieldModificationCB  jni_env=%p thread=%p method=%p location=%#llx",
-	  jni_env, thread, method, (unsigned long long) location);
-  printf (" field_klass=%p object=%p field=%p signature_type=%c", field_klass,
-	  object, field, signature_type);
+  printf ("FieldModificationCB  jni_env=%#llx thread=%#llx method=%#llx"
+	  " location=%#llx", (unsigned long long) jni_env, (unsigned long long)
+	  thread, (unsigned long long) method, (unsigned long long) location);
+  printf (" field_klass=%#llx object=%#llx field=%#llx signature_type=%c",
+	  (unsigned long long) field_klass, (unsigned long long) object,
+	  (unsigned long long) field, signature_type);
   printf (" new_value=%d\n", (int) new_value.i);
 }
 
@@ -186,8 +207,9 @@ static void
 MethodEntryCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 	       jmethodID method)
 {
-  printf ("MethodEntryCB jni_env=%p thread=%p method=%p\n", jni_env, thread,
-	  method);
+  printf ("MethodEntryCB jni_env=%#llx thread=%#llx method=%#llx\n",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) method);
 }
 
 static void
@@ -195,8 +217,9 @@ MethodExitCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 	      jmethodID method, jboolean was_popped_by_exception,
 	      jvalue return_value)
 {
-  printf ("MethodExitCB jni_env=%p thread=%p method=%p", jni_env, thread,
-	  method);
+  printf ("MethodExitCB jni_env=%#llx thread=%#llx method=%#llx",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) method);
   printf (" was_popped_by_exception=%d return_value=%d\n",
 	  (was_popped_by_exception) ? 1 : 0, (int) return_value.i);
 }
@@ -205,9 +228,11 @@ static void
 NativeMethodBindCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 		    jmethodID method, void *address, void **new_address_ptr)
 {
-  printf ("NativeMethodBindCB jni_env=%p thread=%p method=%p", jni_env,
-	  thread, method);
-  printf (" address=%p new_address_ptr=%p\n", address, new_address_ptr);
+  printf ("NativeMethodBindCB jni_env=%#llx thread=%#llx method=%#llx",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) method);
+  printf (" address=%#llx new_address_ptr=%#llx\n", (unsigned long long)
+	  address, (unsigned long long) new_address_ptr);
 }
 
 static void
@@ -216,25 +241,26 @@ CompiledMethodLoadCB (jvmtiEnv *env, jmethodID method, jint code_size,
 		      const jvmtiAddrLocationMap *map,
 		      const void *compile_info)
 {
-  printf ("CompiledMethodLoadCB method=%p code_size=%#x code_addr=%p",
-	  method, (unsigned) code_size, code_addr);
-  printf (" map_length=%d map=%p compile_info=%p\n", (int) map_length, map,
-	  compile_info);
+  printf ("CompiledMethodLoadCB method=%#llx code_size=%#llx code_addr=%#llx",
+	  (unsigned long long) method, (unsigned long long) code_size,
+	  (unsigned long long) code_addr);
+  printf (" map_length=%d map=%#llx compile_info=%#llx\n", (int) map_length,
+	  (unsigned long long) map, (unsigned long long) compile_info);
 }
 
 static void
 CompiledMethodUnloadCB (jvmtiEnv *env, jmethodID method, const void *code_addr)
 {
-  printf ("CompiledMethodUnloadCB method=%p code_addr=%p\n", method, 
-	  code_addr);
+  printf ("CompiledMethodUnloadCB method=%#llx code_addr=%#llx\n",
+	  (unsigned long long) method, (unsigned long long) code_addr);
 }
 
 static void
 DynamicCodeGeneratedCB (jvmtiEnv *env, const char *name, const void *address,
 			jint length)
 {
-  printf ("DynamicCodeGeneratedCB name=%s address=%p length=%d\n", name,
-	  address, (int) length);
+  printf ("DynamicCodeGeneratedCB name=%s address=%#llx length=%d\n", name,
+	  (unsigned long long) address, (int) length);
 }
 
 static void
@@ -247,32 +273,36 @@ static void
 MonitorWaitCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread, jobject object,
 	       jlong timeout)
 {
-  printf ("MonitorWaitCB jni_env=%p thread=%p object=%p timeout=%ld\n",
-	  jni_env, thread, object, (long) timeout);
+  printf ("MonitorWaitCB jni_env=%#llx thread=%#llx object=%#llx timeout=%ld\n",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) object, (long) timeout);
 }
 
 static void
 MonitorWaitedCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 		 jobject object, jboolean timed_out)
 {
-  printf ("MonitorWaitedCB jni_env=%p thread=%p object=%p timed_out=%d\n",
-	  jni_env, thread, object, (timed_out) ? 1 : 0);
+  printf ("MonitorWaitedCB jni_env=%#llx thread=%#llx object=%#llx"
+	  " timed_out=%d\n", (unsigned long long) jni_env, (unsigned long long)
+	  thread, (unsigned long long) object, (timed_out) ? 1 : 0);
 }
 
 static void
 MonitorContendedEnterCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 			 jobject object)
 {
-  printf ("MonitorContendedEnterCB jni_env=%p thread=%p object=%p\n",
-	  jni_env, thread, object);
+  printf ("MonitorContendedEnterCB jni_env=%#llx thread=%#llx object=%#llx\n",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) object);
 }
 
 static void
 MonitorContendedEnteredCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 			   jobject object)
 {
-  printf ("MonitorContendedEnteredCB jni_env=%p thread=%p object=%p\n",
-	  jni_env, thread, object);
+  printf ("MonitorContendedEnteredCB jni_env=%#llx thread=%#llx object=%#llx\n",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) object);
 }
 
 static void
@@ -297,9 +327,11 @@ static void
 VMObjectAllocCB (jvmtiEnv *env, JNIEnv *jni_env, jthread thread,
 		 jobject object, jclass object_klass, jlong size)
 {
-  printf ("VMObjectAllocCB jni_env=%p thread=%p object=%p", jni_env,
-	  thread, object);
-  printf (" object_klass=%p size=%ld\n", object_klass, (long) size);
+  printf ("VMObjectAllocCB jni_env=%#llx thread=%#llx object=%#llx",
+	  (unsigned long long) jni_env, (unsigned long long) thread,
+	  (unsigned long long) object);
+  printf (" object_klass=%#llx size=%ld\n", (unsigned long long) object_klass,
+	  (long) size);
 }
 
 static void
