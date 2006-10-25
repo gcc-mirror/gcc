@@ -7110,13 +7110,14 @@ fold_builtin_cbrt (tree arglist, tree type)
 {
   tree arg = TREE_VALUE (arglist);
   const enum built_in_function fcode = builtin_mathfn_code (arg);
+  tree res;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
 
-  /* Optimize cbrt of constant value.  */
-  if (real_zerop (arg) || real_onep (arg) || real_minus_onep (arg))
-    return arg;
+  /* Calculate the result when the argument is a constant.  */
+  if ((res = do_mpfr_arg1 (arg, type, mpfr_cbrt, NULL, NULL, 0)))
+    return res;
 
   if (flag_unsafe_math_optimizations)
     {
@@ -7203,7 +7204,8 @@ fold_builtin_cbrt (tree arglist, tree type)
 static tree
 fold_builtin_cos (tree arglist, tree type, tree fndecl)
 {
-  tree arg = TREE_VALUE (arglist), res;
+  tree arg = TREE_VALUE (arglist);
+  tree res;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
@@ -7229,7 +7231,8 @@ static tree
 fold_builtin_tan (tree arglist, tree type)
 {
   enum built_in_function fcode;
-  tree arg = TREE_VALUE (arglist), res;
+  tree arg = TREE_VALUE (arglist);
+  tree res;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
@@ -7552,45 +7555,46 @@ real_dconstp (tree expr, const REAL_VALUE_TYPE *value)
 }
 
 /* A subroutine of fold_builtin to fold the various logarithmic
-   functions.  EXP is the CALL_EXPR of a call to a builtin logN
-   function.  VALUE is the base of the logN function.  */
+   functions.  Return NULL_TREE if no simplification can me made.
+   FUNC is the corresponding MPFR logarithm function.  */
 
 static tree
 fold_builtin_logarithm (tree fndecl, tree arglist,
-			const REAL_VALUE_TYPE *value)
+			int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t))
 {
   if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     {
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
       tree arg = TREE_VALUE (arglist);
+      tree res;
       const enum built_in_function fcode = builtin_mathfn_code (arg);
 
-      /* Optimize logN(1.0) = 0.0.  */
-      if (real_onep (arg))
-	return build_real (type, dconst0);
-
-      /* Optimize logN(N) = 1.0.  If N can't be truncated to MODE
-	 exactly, then only do this if flag_unsafe_math_optimizations.  */
-      if (exact_real_truncate (TYPE_MODE (type), value)
-	  || flag_unsafe_math_optimizations)
-	{
-	  const REAL_VALUE_TYPE value_truncate =
-	    real_value_truncate (TYPE_MODE (type), *value);
-	  if (real_dconstp (arg, &value_truncate))
+      /* Optimize log(e) = 1.0.  We're never passed an exact 'e',
+	 instead we'll look for 'e' truncated to MODE.  So only do
+	 this if flag_unsafe_math_optimizations is set.  */
+      if (flag_unsafe_math_optimizations && func == mpfr_log)
+        {
+	  const REAL_VALUE_TYPE e_truncated =
+	    real_value_truncate (TYPE_MODE (type), dconste);
+	  if (real_dconstp (arg, &e_truncated))
 	    return build_real (type, dconst1);
 	}
 
+      /* Calculate the result when the argument is a constant.  */
+      if ((res = do_mpfr_arg1 (arg, type, func, &dconst0, NULL, false)))
+	return res;
+
       /* Special case, optimize logN(expN(x)) = x.  */
       if (flag_unsafe_math_optimizations
-	  && ((value == &dconste
+	  && ((func == mpfr_log
 	       && (fcode == BUILT_IN_EXP
 		   || fcode == BUILT_IN_EXPF
 		   || fcode == BUILT_IN_EXPL))
-	      || (value == &dconst2
+	      || (func == mpfr_log2
 		  && (fcode == BUILT_IN_EXP2
 		      || fcode == BUILT_IN_EXP2F
 		      || fcode == BUILT_IN_EXP2L))
-	      || (value == &dconst10 && (BUILTIN_EXP10_P (fcode)))))
+	      || (func == mpfr_log10 && (BUILTIN_EXP10_P (fcode)))))
 	return fold_convert (type, TREE_VALUE (TREE_OPERAND (arg, 1)));
 
       /* Optimize logN(func()) for various exponential functions.  We
@@ -7869,7 +7873,8 @@ fold_builtin_exponent (tree fndecl, tree arglist,
   if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     {
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
-      tree arg = TREE_VALUE (arglist), res;
+      tree arg = TREE_VALUE (arglist);
+      tree res;
       
       /* Calculate the result when the argument is a constant.  */
       if ((res = do_mpfr_arg1 (arg, type, func, NULL, NULL, 0)))
@@ -9040,6 +9045,18 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 			     NULL, NULL, 0);
     break;
 
+    CASE_FLT_FN (BUILT_IN_ERF):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_erf,
+			     NULL, NULL, 0);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_ERFC):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_erfc,
+			     NULL, NULL, 0);
+    break;
+
     CASE_FLT_FN (BUILT_IN_EXP):
       return fold_builtin_exponent (fndecl, arglist, mpfr_exp);
 
@@ -9050,14 +9067,26 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     CASE_FLT_FN (BUILT_IN_POW10):
       return fold_builtin_exponent (fndecl, arglist, mpfr_exp10);
 
+    CASE_FLT_FN (BUILT_IN_EXPM1):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_expm1,
+			     NULL, NULL, 0);
+    break;
+ 
     CASE_FLT_FN (BUILT_IN_LOG):
-      return fold_builtin_logarithm (fndecl, arglist, &dconste);
+      return fold_builtin_logarithm (fndecl, arglist, mpfr_log);
 
     CASE_FLT_FN (BUILT_IN_LOG2):
-      return fold_builtin_logarithm (fndecl, arglist, &dconst2);
+      return fold_builtin_logarithm (fndecl, arglist, mpfr_log2);
 
     CASE_FLT_FN (BUILT_IN_LOG10):
-      return fold_builtin_logarithm (fndecl, arglist, &dconst10);
+      return fold_builtin_logarithm (fndecl, arglist, mpfr_log10);
+
+    CASE_FLT_FN (BUILT_IN_LOG1P):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_log1p,
+			     &dconstm1, NULL, false);
+    break;
 
     CASE_FLT_FN (BUILT_IN_POW):
       return fold_builtin_pow (fndecl, arglist, type);
