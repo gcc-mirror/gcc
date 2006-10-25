@@ -1,3 +1,7 @@
+2006-10-25  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib2funcs.S: Use C-style comments.
+
 2006-10-24  Nathan Froyd  <froydnj@codesourcery.com>
 
         * dwarf2out.c (gen_compile_unit_die): Use IS_ABSOLUTE_PATH.

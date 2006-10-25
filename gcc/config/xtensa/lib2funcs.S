@@ -1,5 +1,5 @@
 /* Assembly functions for libgcc2.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2006 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -42,7 +42,7 @@ __xtensa_libgcc_window_spill:
 	movi	a2, 0
 	syscall
 	retw
-	.size	__xtensa_libgcc_window_spill,.-__xtensa_libgcc_window_spill
+	.size	__xtensa_libgcc_window_spill, .-__xtensa_libgcc_window_spill
 
 
 /* __xtensa_nonlocal_goto: This code does all the hard work of a
@@ -62,7 +62,7 @@ __xtensa_libgcc_window_spill:
 __xtensa_nonlocal_goto:
 	entry	sp, 32
 
-	/* flush registers */
+	/* Flush registers.  */
 	mov	a5, a2
 	movi	a2, 0
 	syscall
@@ -93,18 +93,18 @@ __xtensa_nonlocal_goto:
 	   proceeds, the window size is taken from the value of a0
 	   saved _two_ frames below the current frame.  */
 
-	addi	a5, sp, -16		# a5 = prev - save area
+	addi	a5, sp, -16	/* a5 = prev - save area */
 	l32i	a6, a5, 4
-	addi	a6, a6, -16		# a6 = cur - save area
-	mov	a8, a0			# a8 = return address (for window size)
+	addi	a6, a6, -16	/* a6 = cur - save area */
+	mov	a8, a0		/* a8 = return address (for window size) */
 	j	.Lfirstframe
 
-.Lnextframe:	
-	l32i	a8, a5, 0		# next return address (for window size)
-	mov	a5, a6			# advance prev
-	addi	a6, a7, -16		# advance cur
-.Lfirstframe:	
-	l32i	a7, a6, 4		# a7 = next
+.Lnextframe:
+	l32i	a8, a5, 0	/* next return address (for window size) */
+	mov	a5, a6		/* advance prev */
+	addi	a6, a7, -16	/* advance cur */
+.Lfirstframe:
+	l32i	a7, a6, 4	/* a7 = next */
 	bge	a2, a7, .Lnextframe
 
 	/* At this point, prev (a5) points to the save area with the saved
@@ -114,25 +114,25 @@ __xtensa_nonlocal_goto:
 	   while updating the current save area, because the windows have
 	   already been flushed.  */
 
-	addi	a4, sp, -16		# a4 = save area of this function
+	addi	a4, sp, -16	/* a4 = save area of this function */
 	l32i	a6, a5, 0
 	l32i	a7, a5, 4
 	s32i	a6, a4, 0
 	s32i	a7, a4, 4
 	l32i	a6, a5, 8
-	l32i	a7, a5, 12 
+	l32i	a7, a5, 12
 	s32i	a6, a4, 8
 	s32i	a7, a4, 12
-	
+
 	/* Set return address to goto handler.  Use the window size bits
 	   from the return address two frames below the target.  */
-	extui	a8, a8, 30, 2		# get window size from return addr.
-	slli	a3, a3, 2		# get goto handler addr. << 2
+	extui	a8, a8, 30, 2	/* get window size from return addr. */
+	slli	a3, a3, 2	/* get goto handler addr. << 2 */
 	ssai	2
-	src	a0, a8, a3		# combine them with a funnel shift
+	src	a0, a8, a3	/* combine them with a funnel shift */
 
 	retw
-	.size	__xtensa_nonlocal_goto,.-__xtensa_nonlocal_goto
+	.size	__xtensa_nonlocal_goto, .-__xtensa_nonlocal_goto
 
 
 /* __xtensa_sync_caches: This function is called after writing a trampoline
@@ -160,7 +160,7 @@ __xtensa_nonlocal_goto:
 __xtensa_sync_caches:
 	entry 	sp, 32
 #if XCHAL_DCACHE_SIZE > 0
-	# Flush the trampoline from the data cache
+	/* Flush the trampoline from the data cache.  */
 	extui	a4, a2, 0, XCHAL_DCACHE_LINEWIDTH
 	addi	a4, a4, TRAMPOLINE_SIZE
 	addi	a4, a4, (1 << XCHAL_DCACHE_LINEWIDTH) - 1
@@ -172,9 +172,9 @@ __xtensa_sync_caches:
 	addi	a4, a4, -1
 	bnez	a4, .Ldcache_loop
 	isync
-#endif 
+#endif
 #if XCHAL_ICACHE_SIZE > 0
-	# Invalidate the corresponding lines in the instruction cache
+	/* Invalidate the corresponding lines in the instruction cache.  */
 	extui	a4, a2, 0, XCHAL_ICACHE_LINEWIDTH
 	addi	a4, a4, TRAMPOLINE_SIZE
 	addi	a4, a4, (1 << XCHAL_ICACHE_LINEWIDTH) - 1
@@ -187,4 +187,4 @@ __xtensa_sync_caches:
 	isync
 #endif
 	retw
-	.size	__xtensa_sync_caches,.-__xtensa_sync_caches
+	.size	__xtensa_sync_caches, .-__xtensa_sync_caches
