@@ -1,5 +1,25 @@
 2006-10-25  Uros Bizjak  <uros@kss-loka.si>
 
+	PR target/28909
+	* config/i386/sync.md ("sync_add<mode>", "sync_sub<mode>"):
+	Use inc and dec instructions for TARGET_USE_INCDEC.
+	("*sync_compare_and_swap<mode>"): Fix -masm=intel template.
+	("sync_double_compare_and_swap<mode>"): Likewise.
+	("*sync_double_compare_and_swapdi_pic"): Likewise.
+	("*sync_compare_and_swap_cc<mode>"): Likewise.
+	("sync_double_compare_and_swap_cc<mode>"): Likewise.
+	("*sync_double_compare_and_swap_ccdi_pic"): Likewise.
+	("sync_old_add<mode>"): Likewise.
+	("sync_lock_test_and_set<mode>"): Likewise.
+	("sync_lock_test_and_set<mode>"): Likewise.
+	("sync_add<mode>"): Likewise.
+	("sync_sub<mode>"): Likewise.
+	("sync_ior<mode>"): Likewise.
+	("sync_and<mode>"): Likewise.
+	("sync_xor<mode>"): Likewise.
+
+2006-10-25  Uros Bizjak  <uros@kss-loka.si>
+
 	* optabs.h (enum optab_index): Rename OTI_drem to OTI_remainder.
 	(remainder_optab): Define corresponding macro.
 	(drem_optab): Remove.
