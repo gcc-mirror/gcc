@@ -1,3 +1,8 @@
+2006-10-25  Chen Liqin  <liqin@sunnorth.com.cn>
+
+	* MAINTAINERS (Write After Approval): Move myself to 
+        Write After Approval section.
+
 2006-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Require GMP-4.1+ and MPFR-2.2+.  Don't check
