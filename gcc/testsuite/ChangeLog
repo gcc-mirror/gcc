@@ -1,3 +1,8 @@
+2006-10-26  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.c-torture/execute/builtins/strlen.c: Do not use strcpy.
+	Copy the strings manually, as strcpy may call strlen.
+
 2006-10-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-2.c (TESTIT): Use new helper macro.

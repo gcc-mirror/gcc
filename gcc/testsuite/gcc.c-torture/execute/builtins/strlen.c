@@ -8,7 +8,14 @@
    Additional tests written by Roger Sayle, 11/02/2001:
    Ensure all builtin strlen comparisons against zero are optimized
    and perform correctly. The multiple calls to strcpy are to prevent
-   the potentially "pure" strlen calls from being removed by CSE. */
+   the potentially "pure" strlen calls from being removed by CSE.
+
+   Modifed by Ben Elliston, 2006-10-25:
+   The multiple calls to strcpy that Roger mentions above are
+   problematic on systems where strcpy is implemented using strlen
+   (which this test overrides to call abort).  So, rather than use
+   strcpy, we perform the identical operations using array indexing
+   and char assignments.  */
 
 extern void abort (void);
 extern __SIZE_TYPE__ strlen (const char *);
@@ -33,27 +40,27 @@ main_test(void)
     abort ();
 
   ptr = str;
-  strcpy (ptr, "nts");
+  ptr[0] = 'n'; ptr[1] = 't'; ptr[2] = 's'; ptr[3] = '\0';
   if (strlen (ptr) == 0)
     abort ();
 
-  strcpy (ptr, "nts");
+  ptr[0] = 'n'; ptr[1] = 't'; ptr[2] = 's'; ptr[3] = '\0';
   if (strlen (ptr) < 1)
     abort ();
 
-  strcpy (ptr, "nts");
+  ptr[0] = 'n'; ptr[1] = 't'; ptr[2] = 's'; ptr[3] = '\0';
   if (strlen (ptr) <= 0)
     abort ();
 
-  strcpy (ptr, "nts");
+  ptr[0] = 'n'; ptr[1] = 't'; ptr[2] = 's'; ptr[3] = '\0';
   if (strlen (ptr+3) != 0)
     abort ();
 
-  strcpy (ptr, "nts");
+  ptr[0] = 'n'; ptr[1] = 't'; ptr[2] = 's'; ptr[3] = '\0';
   if (strlen (ptr+3) > 0)
     abort ();
 
-  strcpy (ptr, "nts");
+  ptr[0] = 'n'; ptr[1] = 't'; ptr[2] = 's'; ptr[3] = '\0';
   if (strlen (str+3) >= 1)
     abort ();
 
