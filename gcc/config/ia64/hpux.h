@@ -53,6 +53,7 @@ do {							\
 	    builtin_define("_HPUX_SOURCE");		\
 	    builtin_define("__STDC_EXT__");		\
 	    builtin_define("__STDCPP__");		\
+	    builtin_define("_INCLUDE__STDC_A1_SOURCE");	\
 	  }						\
 	if (TARGET_ILP32)				\
 	  builtin_define("_ILP32");			\
@@ -71,7 +72,9 @@ do {							\
 #undef ENDFILE_SPEC
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared:%{static:crt0%O%s}}"
+#define STARTFILE_SPEC "%{!shared:%{static:crt0%O%s} \
+			  %{mlp64:/usr/lib/hpux64/unix98%O%s} \
+			  %{!mlp64:/usr/lib/hpux32/unix98%O%s}}"
 
 #undef LINK_SPEC
 #define LINK_SPEC \
