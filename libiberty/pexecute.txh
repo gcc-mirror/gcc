@@ -259,7 +259,7 @@ be set to the exit status of the program.
 
 @end deftypefn
 
-@deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int flags)
+@deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int @var{flags})
 
 This is the old interface to execute one or more programs.  It is
 still supported for compatibility purposes, but is no longer
