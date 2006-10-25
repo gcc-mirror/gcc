@@ -1,3 +1,7 @@
+2006-10-25  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/pthread-init-2.c: Define _POSIX_C_SOURCE on ia64 HP-UX.
+
 2006-10-25  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/builtins-40.c: Also check remainder(), remainderf()
