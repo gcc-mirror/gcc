@@ -60,9 +60,9 @@ alpha_fallback_frame_state (struct _Unwind_Context *context,
   else
     return _URC_END_OF_STACK;
   new_cfa = sc->sc_regs[30];
-  fs->cfa_how = CFA_REG_OFFSET;
-  fs->cfa_reg = 30;
-  fs->cfa_offset = new_cfa - (long) context->cfa;
+  fs->regs.cfa_how = CFA_REG_OFFSET;
+  fs->regs.cfa_reg = 30;
+  fs->regs.cfa_offset = new_cfa - (long) context->cfa;
   for (i = 0; i < 30; ++i)
     {
       fs->regs.reg[i].how = REG_SAVED_OFFSET;

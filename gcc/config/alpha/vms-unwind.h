@@ -35,10 +35,10 @@ alpha_fallback_frame_state (struct _Unwind_Context *context,
     {
       int i, j;
 
-      fs->cfa_offset = pv->pdsc$l_size;
-      fs->cfa_reg = pv->pdsc$w_flags & PDSC$M_BASE_REG_IS_FP ? 29 : 30;
+      fs->regs.cfa_offset = pv->pdsc$l_size;
+      fs->regs.cfa_reg = pv->pdsc$w_flags & PDSC$M_BASE_REG_IS_FP ? 29 : 30;
       fs->retaddr_column = 26;
-      fs->cfa_how = CFA_REG_OFFSET;
+      fs->regs.cfa_how = CFA_REG_OFFSET;
       fs->regs.reg[27].loc.offset = -pv->pdsc$l_size;
       fs->regs.reg[27].how = REG_SAVED_OFFSET;
       fs->regs.reg[26].loc.offset
@@ -57,10 +57,10 @@ alpha_fallback_frame_state (struct _Unwind_Context *context,
     }
   else if (pv && ((pv->pdsc$w_flags & 0xf) == PDSC$K_KIND_FP_REGISTER))
     {
-      fs->cfa_offset = pv->pdsc$l_size;
-      fs->cfa_reg = pv->pdsc$w_flags & PDSC$M_BASE_REG_IS_FP ? 29 : 30;
+      fs->regs.cfa_offset = pv->pdsc$l_size;
+      fs->regs.cfa_reg = pv->pdsc$w_flags & PDSC$M_BASE_REG_IS_FP ? 29 : 30;
       fs->retaddr_column = 26;
-      fs->cfa_how = CFA_REG_OFFSET;
+      fs->regs.cfa_how = CFA_REG_OFFSET;
       fs->regs.reg[26].loc.reg = pv->pdsc$b_save_ra;
       fs->regs.reg[26].how = REG_SAVED_REG;
       fs->regs.reg[29].loc.reg = pv->pdsc$b_save_fp;

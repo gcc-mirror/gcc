@@ -421,9 +421,9 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
 	return_addr = m->srr0;
     }
 
-  fs->cfa_how = CFA_REG_OFFSET;
-  fs->cfa_reg = STACK_POINTER_REGNUM;
-  fs->cfa_offset = new_cfa - old_cfa;;
+  fs->regs.cfa_how = CFA_REG_OFFSET;
+  fs->regs.cfa_reg = STACK_POINTER_REGNUM;
+  fs->regs.cfa_offset = new_cfa - old_cfa;;
   
   /* The choice of column for the return address is somewhat tricky.
      Fortunately, the actual choice is private to this file, and

@@ -111,9 +111,9 @@ pa32_fallback_frame_state (struct _Unwind_Context *context,
   sc = &frame->uc.uc_mcontext;
 
   new_cfa = sc->sc_gr[30];
-  fs->cfa_how = CFA_REG_OFFSET;
-  fs->cfa_reg = 30;
-  fs->cfa_offset = new_cfa - (long) context->cfa;
+  fs->regs.cfa_how = CFA_REG_OFFSET;
+  fs->regs.cfa_reg = 30;
+  fs->regs.cfa_offset = new_cfa - (long) context->cfa;
   for (i = 1; i <= 31; i++)
     {
       fs->regs.reg[i].how = REG_SAVED_OFFSET;

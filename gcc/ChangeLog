@@ -1,3 +1,17 @@
+2006-10-26  Nathan Froyd <froydnj@codesourcery.com>
+
+	* gcc/unwind-dw2.h: Move cfa-related variables into
+	struct frame_state_reg_info to ensure that the CFA is properly
+	handled when executing DW_CFA_{remember,restore}_state.
+	* gcc/unwind-dw2.c, gcc/config/alpha/linux-unwind.h,
+	gcc/config/alpha/vms-unwind.h, gcc/config/s390/tpf-unwind.h
+	gcc/config/s390/linux-unwind.h, gcc/config/sparc/linux-unwind.h
+	gcc/config/i386/linux-unwind.h, gcc/config/sh/linux-unwind.h
+	gcc/config/rs6000/linux-unwind.h,
+	gcc/config/rs6000/darwin-fallback.c, gcc/config/pa/linux-unwind.h,
+	gcc/config/pa/hpux-unwind.h, gcc/config/mips/linux-unwind.h:
+	Modify to use new cfa_* fields.
+
 2006-10-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_init_frame_layout): Check positive

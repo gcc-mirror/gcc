@@ -232,9 +232,9 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
     return _URC_END_OF_STACK;
 
   new_cfa = regs->gpr[STACK_POINTER_REGNUM];
-  fs->cfa_how = CFA_REG_OFFSET;
-  fs->cfa_reg = STACK_POINTER_REGNUM;
-  fs->cfa_offset = new_cfa - (long) context->cfa;
+  fs->regs.cfa_how = CFA_REG_OFFSET;
+  fs->regs.cfa_reg = STACK_POINTER_REGNUM;
+  fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
   for (i = 0; i < 32; i++)
     if (i != STACK_POINTER_REGNUM)

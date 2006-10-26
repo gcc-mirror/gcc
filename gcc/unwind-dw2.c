@@ -932,26 +932,26 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  break;
 
 	case DW_CFA_def_cfa:
-	  insn_ptr = read_uleb128 (insn_ptr, &fs->cfa_reg);
+	  insn_ptr = read_uleb128 (insn_ptr, &fs->regs.cfa_reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
-	  fs->cfa_offset = utmp;
-	  fs->cfa_how = CFA_REG_OFFSET;
+	  fs->regs.cfa_offset = utmp;
+	  fs->regs.cfa_how = CFA_REG_OFFSET;
 	  break;
 
 	case DW_CFA_def_cfa_register:
-	  insn_ptr = read_uleb128 (insn_ptr, &fs->cfa_reg);
-	  fs->cfa_how = CFA_REG_OFFSET;
+	  insn_ptr = read_uleb128 (insn_ptr, &fs->regs.cfa_reg);
+	  fs->regs.cfa_how = CFA_REG_OFFSET;
 	  break;
 
 	case DW_CFA_def_cfa_offset:
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
-	  fs->cfa_offset = utmp;
+	  fs->regs.cfa_offset = utmp;
 	  /* cfa_how deliberately not set.  */
 	  break;
 
 	case DW_CFA_def_cfa_expression:
-	  fs->cfa_exp = insn_ptr;
-	  fs->cfa_how = CFA_EXP;
+	  fs->regs.cfa_exp = insn_ptr;
+	  fs->regs.cfa_how = CFA_EXP;
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  insn_ptr += utmp;
 	  break;
@@ -975,15 +975,15 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  break;
 
 	case DW_CFA_def_cfa_sf:
-	  insn_ptr = read_uleb128 (insn_ptr, &fs->cfa_reg);
-	  insn_ptr = read_sleb128 (insn_ptr, &fs->cfa_offset);
-	  fs->cfa_how = CFA_REG_OFFSET;
-	  fs->cfa_offset *= fs->data_align;
+	  insn_ptr = read_uleb128 (insn_ptr, &fs->regs.cfa_reg);
+	  insn_ptr = read_sleb128 (insn_ptr, &fs->regs.cfa_offset);
+	  fs->regs.cfa_how = CFA_REG_OFFSET;
+	  fs->regs.cfa_offset *= fs->data_align;
 	  break;
 
 	case DW_CFA_def_cfa_offset_sf:
-	  insn_ptr = read_sleb128 (insn_ptr, &fs->cfa_offset);
-	  fs->cfa_offset *= fs->data_align;
+	  insn_ptr = read_sleb128 (insn_ptr, &fs->regs.cfa_offset);
+	  fs->regs.cfa_offset *= fs->data_align;
 	  /* cfa_how deliberately not set.  */
 	  break;
 
@@ -1149,7 +1149,7 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
 
   /* We have no way to pass a location expression for the CFA to our
      caller.  It wouldn't understand it anyway.  */
-  if (fs.cfa_how == CFA_EXP)
+  if (fs.regs.cfa_how == CFA_EXP)
     return 0;
 
   for (reg = 0; reg < PRE_GCC3_DWARF_FRAME_REGISTERS + 1; reg++)
@@ -1169,8 +1169,8 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
 	}
     }
 
-  state_in->cfa_offset = fs.cfa_offset;
-  state_in->cfa_reg = fs.cfa_reg;
+  state_in->cfa_offset = fs.regs.cfa_offset;
+  state_in->cfa_reg = fs.regs.cfa_reg;
   state_in->retaddr_column = fs.retaddr_column;
   state_in->args_size = context.args_size;
   state_in->eh_ptr = fs.eh_ptr;
@@ -1227,16 +1227,16 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 #endif
 
   /* Compute this frame's CFA.  */
-  switch (fs->cfa_how)
+  switch (fs->regs.cfa_how)
     {
     case CFA_REG_OFFSET:
-      cfa = _Unwind_GetPtr (&orig_context, fs->cfa_reg);
-      cfa += fs->cfa_offset;
+      cfa = _Unwind_GetPtr (&orig_context, fs->regs.cfa_reg);
+      cfa += fs->regs.cfa_offset;
       break;
 
     case CFA_EXP:
       {
-	const unsigned char *exp = fs->cfa_exp;
+	const unsigned char *exp = fs->regs.cfa_exp;
 	_Unwind_Word len;
 
 	exp = read_uleb128 (exp, &len);
@@ -1384,9 +1384,9 @@ uw_init_context_1 (struct _Unwind_Context *context,
 
   /* Force the frame state to use the known cfa value.  */
   _Unwind_SetSpColumn (context, outer_cfa, &sp_slot);
-  fs.cfa_how = CFA_REG_OFFSET;
-  fs.cfa_reg = __builtin_dwarf_sp_column ();
-  fs.cfa_offset = 0;
+  fs.regs.cfa_how = CFA_REG_OFFSET;
+  fs.regs.cfa_reg = __builtin_dwarf_sp_column ();
+  fs.regs.cfa_offset = 0;
 
   uw_update_context_1 (context, &fs);
 
