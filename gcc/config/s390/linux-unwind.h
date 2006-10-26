@@ -101,9 +101,9 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
     }
 
   new_cfa = regs->gprs[15] + 16*sizeof(long) + 32;
-  fs->cfa_how = CFA_REG_OFFSET;
-  fs->cfa_reg = 15;
-  fs->cfa_offset =
+  fs->regs.cfa_how = CFA_REG_OFFSET;
+  fs->regs.cfa_reg = 15;
+  fs->regs.cfa_offset =
     new_cfa - (long) context->cfa + 16*sizeof(long) + 32;
 
   for (i = 0; i < 16; i++)

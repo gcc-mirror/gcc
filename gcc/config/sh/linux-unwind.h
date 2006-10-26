@@ -94,9 +94,9 @@ shmedia_fallback_frame_state (struct _Unwind_Context *context,
     return _URC_END_OF_STACK;
 
   new_cfa = sc->sc_regs[15];
-  fs->cfa_how = CFA_REG_OFFSET;
-  fs->cfa_reg = 15;
-  fs->cfa_offset = new_cfa - (long) context->cfa;
+  fs->regs.cfa_how = CFA_REG_OFFSET;
+  fs->regs.cfa_reg = 15;
+  fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
   for (i = 0; i < 63; i++)
     {
@@ -191,9 +191,9 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
     return _URC_END_OF_STACK;
 
   new_cfa = sc->sc_regs[15];
-  fs->cfa_how = CFA_REG_OFFSET;
-  fs->cfa_reg = 15;
-  fs->cfa_offset = new_cfa - (long) context->cfa;
+  fs->regs.cfa_how = CFA_REG_OFFSET;
+  fs->regs.cfa_reg = 15;
+  fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
   for (i = 0; i < 15; i++)
     {

@@ -76,9 +76,9 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
          return _URC_END_OF_STACK;
 
       /* No stack frame.  */
-      fs->cfa_how = CFA_REG_OFFSET;
-      fs->cfa_reg = 15;
-      fs->cfa_offset = STACK_POINTER_OFFSET;
+      fs->regs.cfa_how = CFA_REG_OFFSET;
+      fs->regs.cfa_reg = 15;
+      fs->regs.cfa_offset = STACK_POINTER_OFFSET;
 
       /* All registers remain unchanged ...  */
       for (i = 0; i < 32; i++)
@@ -100,9 +100,9 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
         (((unsigned long int) context->cfa) - STACK_POINTER_OFFSET));
   new_cfa = regs + STACK_POINTER_OFFSET;
 
-  fs->cfa_how = CFA_REG_OFFSET;
-  fs->cfa_reg = 15;
-  fs->cfa_offset = new_cfa -
+  fs->regs.cfa_how = CFA_REG_OFFSET;
+  fs->regs.cfa_reg = 15;
+  fs->regs.cfa_offset = new_cfa -
         (unsigned long int) context->cfa + STACK_POINTER_OFFSET;
 
   for (i = 0; i < 16; i++)

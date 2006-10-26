@@ -61,18 +61,18 @@ typedef struct
 
     /* Used to implement DW_CFA_remember_state.  */
     struct frame_state_reg_info *prev;
-  } regs;
 
-  /* The CFA can be described in terms of a reg+offset or a
-     location expression.  */
-  _Unwind_Sword cfa_offset;
-  _Unwind_Word cfa_reg;
-  const unsigned char *cfa_exp;
-  enum {
-    CFA_UNSET,
-    CFA_REG_OFFSET,
-    CFA_EXP
-  } cfa_how;
+    /* The CFA can be described in terms of a reg+offset or a
+       location expression.  */
+    _Unwind_Sword cfa_offset;
+    _Unwind_Word cfa_reg;
+    const unsigned char *cfa_exp;
+    enum {
+      CFA_UNSET,
+      CFA_REG_OFFSET,
+      CFA_EXP
+    } cfa_how;
+  } regs;
 
   /* The PC described by the current frame state.  */
   void *pc;
