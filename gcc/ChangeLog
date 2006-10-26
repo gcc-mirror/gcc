@@ -1,3 +1,9 @@
+2006-10-26  Nathan Froyd  <froydnj@codesourcery.com>
+            Nathan Sidwell  <nathan@codesourcery.com>
+
+	* ggc-common.c (ggc_min_heapsize_heuristic): Be more conservative
+	when choosing the minimum heapsize.
+
 2006-10-26  Nathan Froyd <froydnj@codesourcery.com>
 
 	* gcc/unwind-dw2.h: Move cfa-related variables into
