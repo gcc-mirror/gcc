@@ -1,3 +1,11 @@
+2006-10-26  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	pex-win32.c (argv_to_cmdline): Replace xmalloc with XNEWVEC.
+	(find_executable): Likewise.
+	(win32_spawn): Cast alloca return to (char**).
+	Replace malloc with XNEWVEC.
+	bcopy.c (bcopy): Add explict casts in assignments.
+
 2006-10-25  Ben Elliston  <bje@au.ibm.com>
 
 	* pexecute.txh: Wrap pexecute's "flag" argument with @var {..}.
