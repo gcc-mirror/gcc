@@ -415,7 +415,10 @@ typedef struct st_parameter_dt
 	  /* An internal unit specific flag used to identify that the associated
 	     unit is internal.  */
 	  unsigned unit_is_internal : 1;
-	  /* 17 unused bits.  */
+	  /* An internal unit specific flag to signify an EOF condition for list
+	     directed read.  */
+	  unsigned at_eof : 1;
+	  /* 16 unused bits.  */
 
 	  char last_char;
 	  char nml_delim;

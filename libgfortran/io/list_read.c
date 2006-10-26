@@ -163,26 +163,35 @@ next_char (st_parameter_dt *dtp)
 	dtp->u.p.line_buffer_enabled = 0;
     }    
 
-  /* Handle the end-of-record condition for internal array unit */
-  if (is_array_io(dtp) && dtp->u.p.current_unit->bytes_left == 0)
+  /* Handle the end-of-record and end-of-file conditions for
+     internal array unit.  */
+  if (is_array_io(dtp))
     {
-      c = '\n';
-      record = next_array_record (dtp, dtp->u.p.current_unit->ls);
-
-      /* Check for "end-of-file" condition */      
-      if (record == 0)
+      if (dtp->u.p.at_eof)
 	longjmp (*dtp->u.p.eof_jump, 1);
 
-      record *= dtp->u.p.current_unit->recl;
-      
-      if (sseek (dtp->u.p.current_unit->s, record) == FAILURE)
-	longjmp (*dtp->u.p.eof_jump, 1);
+      /* Check for "end-of-record" condition.  */
+      if (dtp->u.p.current_unit->bytes_left == 0)
+	{
+	  record = next_array_record (dtp, dtp->u.p.current_unit->ls);
 
-      dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
-      goto done;
+	  /* Check for "end-of-file" condition.  */      
+	  if (record == 0)
+	    {
+	      dtp->u.p.at_eof = 1;
+	      c = '\n';
+	      goto done;
+	    }
+
+	  record *= dtp->u.p.current_unit->recl;
+	  if (sseek (dtp->u.p.current_unit->s, record) == FAILURE)
+	    longjmp (*dtp->u.p.eof_jump, 1);
+
+	  dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
+	}
     }
 
-  /* Get the next character and handle end-of-record conditions */
+  /* Get the next character and handle end-of-record conditions.  */
 
   length = 1;
 
@@ -196,7 +205,7 @@ next_char (st_parameter_dt *dtp)
       if (is_array_io(dtp))
 	{
 	  /* End of record is handled in the next pass through, above.  The
-	     check for NULL here is cautionary. */
+	     check for NULL here is cautionary.  */
 	  if (p == NULL)
 	    {
 	      generate_error (&dtp->common, ERROR_INTERNAL_UNIT, NULL);
