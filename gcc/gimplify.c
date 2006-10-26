@@ -510,7 +510,6 @@ get_name (tree t)
 	{
 	case ADDR_EXPR:
 	  return get_name (TREE_OPERAND (stripped_decl, 0));
-	  break;
 	default:
 	  return NULL;
 	}
@@ -4872,7 +4871,7 @@ static enum gimplify_status
 gimplify_omp_for (tree *expr_p, tree *pre_p)
 {
   tree for_stmt, decl, t;
-  enum gimplify_status ret = 0;
+  enum gimplify_status ret = GS_OK;
 
   for_stmt = *expr_p;
 
