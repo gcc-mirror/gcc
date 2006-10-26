@@ -1,3 +1,8 @@
+2006-10-26  Ben Elliston  <bje@au.ibm.com>
+
+	* gimplify.c (get_name): Remove extraneous break.
+	(gimplify_omp_for): Initialise ret with GS_OK.
+
 2006-10-25  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h: Define _INCLUDE__STDC_A1_SOURCE in C++.
