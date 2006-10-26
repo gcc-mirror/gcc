@@ -1,3 +1,11 @@
+2006-10-26  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.target/i386/i386.exp: Use glob, not find to collect
+	tests.  Avoids recursing into subdirectories.
+	* gcc.target/i386/math-torture/math-torture.exp: Torture
+	for interesting ia32 math options.
+	* gcc.target.i386/math-torture/lrint.c: New testcase.
+
 2006-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/29563

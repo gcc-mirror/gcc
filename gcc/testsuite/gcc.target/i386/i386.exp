@@ -44,7 +44,7 @@ foreach type { "" -mmmx -m3dnow -msse -msse2 } {
 }
 
 # Everything else.
-set tests [lsort [find $srcdir/$subdir *.\[cS\]]]
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]]
 set tests [prune $tests $srcdir/$subdir/vect-args.c]
 
 # Main loop.
