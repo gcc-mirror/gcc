@@ -1,3 +1,11 @@
+2006-10-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/29563
+	* io/io.h (st_parameter_dt): Add new flag at_eof.
+	* io/list_read.c (next_char): Set flag when EOF and return '\n' to
+	signal EOR.  Check flag on next call and jump out.
+	* io/unit.c (get_internal_unit): Initialize new flag.
+
 2006-10-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/26025
