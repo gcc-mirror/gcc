@@ -6718,8 +6718,8 @@ s390_init_frame_layout (void)
       /* Try to predict whether we'll need the base register.  */
       base_used = cfun->machine->split_branches_pending_p
 		  || current_function_uses_const_pool
-		  || (!DISP_IN_RANGE (-frame_size)
-		      && !CONST_OK_FOR_K (-frame_size));
+		  || (!DISP_IN_RANGE (frame_size)
+		      && !CONST_OK_FOR_K (frame_size));
 
       /* Decide which register to use as literal pool base.  In small
 	 leaf functions, try to use an unused call-clobbered register
