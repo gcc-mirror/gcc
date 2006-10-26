@@ -751,10 +751,10 @@ ggc_min_heapsize_heuristic (void)
 # endif
 
   /* Don't blindly run over our data limit; do GC at least when the
-     *next* GC would be within 16Mb of the limit.  If GCC does hit the
-     data limit, compilation will fail, so this tries to be
-     conservative.  */
-  limit_kbytes = MAX (0, limit_kbytes - 16 * 1024);
+     *next* GC would be within 20Mb of the limit or within a quarter of
+     the limit, whichever is larger.  If GCC does hit the data limit,
+     compilation will fail, so this tries to be conservative.  */
+  limit_kbytes = MAX (0, limit_kbytes - MAX (limit_kbytes / 4, 20 * 1024));
   limit_kbytes = (limit_kbytes * 100) / (110 + ggc_min_expand_heuristic());
   phys_kbytes = MIN (phys_kbytes, limit_kbytes);
 
