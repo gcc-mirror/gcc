@@ -173,13 +173,13 @@ next_char (st_parameter_dt *dtp)
       /* Check for "end-of-record" condition.  */
       if (dtp->u.p.current_unit->bytes_left == 0)
 	{
+	  c = '\n';
 	  record = next_array_record (dtp, dtp->u.p.current_unit->ls);
 
 	  /* Check for "end-of-file" condition.  */      
 	  if (record == 0)
 	    {
 	      dtp->u.p.at_eof = 1;
-	      c = '\n';
 	      goto done;
 	    }
 
@@ -188,6 +188,7 @@ next_char (st_parameter_dt *dtp)
 	    longjmp (*dtp->u.p.eof_jump, 1);
 
 	  dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
+	  goto done;
 	}
     }
 
