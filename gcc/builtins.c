@@ -9273,7 +9273,7 @@ tree
 fold_builtin (tree fndecl, tree arglist, bool ignore)
 {
   tree exp = fold_builtin_1 (fndecl, arglist, ignore);
-  if (exp)
+  if (exp && !ignore)
     {
       exp = build1 (NOP_EXPR, TREE_TYPE (exp), exp);
       TREE_NO_WARNING (exp) = 1;

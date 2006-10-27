@@ -1,3 +1,11 @@
+2006-10-27  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (fold_builtin): Don't generate NOP_EXPR that is going
+	to be thrown away soon when IGNORE is set.
+	* tree-ssa-ccp.c (convert_to_gimple_builtin): Add IGNORE argument
+	indicating when return value shall not be computed.
+	* gimplify.c (internal_get_tmp_var): Avoid random tree sharing.
+
 2006-10-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/i386/i386.h (TARGET_GEODE):
