@@ -1,6 +1,6 @@
 2006-10-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	PR libgfortran/29563
+	PR libgfortran/27954
 	* gfortran.dg/error_recovery_2.f90: New test.
 
 2006-10-26  Richard Guenther  <rguenther@suse.de>
