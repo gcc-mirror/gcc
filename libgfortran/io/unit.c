@@ -430,6 +430,7 @@ get_internal_unit (st_parameter_dt *dtp)
   dtp->u.p.skips = 0;
   dtp->u.p.pending_spaces = 0;
   dtp->u.p.max_pos = 0;
+  dtp->u.p.at_eof = 0;
 
   /* This flag tells us the unit is assigned to internal I/O.  */
   
