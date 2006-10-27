@@ -1,3 +1,36 @@
+2006-10-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/i386/i386.h (TARGET_GEODE):
+	(TARGET_CPU_CPP_BUILTINS): Add code for geode.
+	(TARGET_CPU_DEFAULT_geode): New macro.
+	(TARGET_CPU_DEFAULT_k6, TARGET_CPU_DEFAULT_k6_2,
+	TARGET_CPU_DEFAULT_k6_3, TARGET_CPU_DEFAULT_athlon,
+	TARGET_CPU_DEFAULT_athlon_sse, TARGET_CPU_DEFAULT_k8,
+	TARGET_CPU_DEFAULT_pentium_m, TARGET_CPU_DEFAULT_prescott,
+	TARGET_CPU_DEFAULT_nocona, TARGET_CPU_DEFAULT_generic): Increase
+	the macro values.
+	(TARGET_CPU_DEFAULT_NAMES): Add geode.
+	(processor_type): Add PROCESSOR_GEODE.
+
+	* config/i386/i386.md: Include geode.md.
+	(cpu): Add geode.
+
+	* config/i386/i386.c (geode_cost): New initialized global
+	variable.
+	(m_GEODE, m_K6_GEODE): New macros.
+	(x86_use_leave, x86_push_memory, x86_deep_branch, x86_use_sahf,
+	x86_use_himode_fiop, x86_promote_QImode, x86_add_esp_4,
+	x86_add_esp_8, x86_rep_movl_optimal, x86_ext_80387_constants,
+	x86_schedule): Use m_K6_GEODE instead of m_K6.
+	(x86_movx, x86_cmove): Set up m_GEODE.
+	(x86_integer_DFmode_moves): Clear m_GEODE.
+	(processor_target_table): Add entry for geode.
+	(processor_alias_table): Ditto.
+
+	* config/i386/geode.md: New file.
+
+	* doc/invoke.texi: Add entry about geode processor.
+    
 2006-10-27  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-c.c (darwin_cpp_builtins): Move __STATIC__ and
