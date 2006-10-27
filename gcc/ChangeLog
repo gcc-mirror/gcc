@@ -1,3 +1,9 @@
+2006-10-27  Mike Stump  <mrs@apple.com>
+
+	* config/darwin-c.c (darwin_cpp_builtins): Move __STATIC__ and
+	__DYNAMIC__ from here back to ...
+	* config/darwin.h (CPP_SPEC): ... here.
+
 2006-10-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_init_frame_layout): Check positive
