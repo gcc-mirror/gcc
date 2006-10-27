@@ -2465,17 +2465,24 @@ fold_stmt_inplace (tree stmt)
 
 /* Convert EXPR into a GIMPLE value suitable for substitution on the
    RHS of an assignment.  Insert the necessary statements before
-   iterator *SI_P.  */
+   iterator *SI_P. 
+   When IGNORE is set, don't worry about the return value.  */
 
 static tree
-convert_to_gimple_builtin (block_stmt_iterator *si_p, tree expr)
+convert_to_gimple_builtin (block_stmt_iterator *si_p, tree expr, bool ignore)
 {
   tree_stmt_iterator ti;
   tree stmt = bsi_stmt (*si_p);
   tree tmp, stmts = NULL;
 
   push_gimplify_context ();
-  tmp = get_initialized_tmp_var (expr, &stmts, NULL);
+  if (ignore)
+    {
+      tmp = build_empty_stmt ();
+      gimplify_and_add (expr, &stmts);
+    }
+  else
+    tmp = get_initialized_tmp_var (expr, &stmts, NULL);
   pop_gimplify_context (NULL);
 
   if (EXPR_HAS_LOCATION (stmt))
@@ -2551,7 +2558,9 @@ execute_fold_all_builtins (void)
 
 	  if (!set_rhs (stmtp, result))
 	    {
-	      result = convert_to_gimple_builtin (&i, result);
+	      result = convert_to_gimple_builtin (&i, result,
+			      			  TREE_CODE (old_stmt)
+						  != MODIFY_EXPR);
 	      if (result)
 		{
 		  bool ok = set_rhs (stmtp, result);
