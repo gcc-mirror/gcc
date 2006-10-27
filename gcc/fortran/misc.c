@@ -193,7 +193,7 @@ gfc_typename (gfc_typespec * ts)
       strcpy (buffer, "UNKNOWN");
       break;
     default:
-      gfc_internal_error ("gfc_typespec(): Undefined type");
+      gfc_internal_error ("gfc_typename(): Undefined type");
     }
 
   return buffer;

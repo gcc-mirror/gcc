@@ -1,3 +1,12 @@
+2006-10-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/27954
+	* decl.c (gfc_free_data_all): New function to free all data structures
+	after errors in DATA statements and declarations.
+	(top_var_list): Use new function.(top_val_list): Use new function.
+	(gfc_match_data_decl): Use new function.
+	* misc.c (gfc_typename): Fixed incorrect function name in error text. 
+
 2006-10-24  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/29393

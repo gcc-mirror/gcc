@@ -128,6 +128,21 @@ gfc_free_data (gfc_data * p)
 }
 
 
+/* Free all data in a namespace.  */
+static void
+gfc_free_data_all (gfc_namespace * ns)
+{
+  gfc_data *d;
+
+  for (;ns->data;)
+    {
+      d = ns->data->next;
+      gfc_free (ns->data);
+      ns->data = d;
+    }
+}
+
+
 static match var_element (gfc_data_variable *);
 
 /* Match a list of variables terminated by an iterator and a right
@@ -262,6 +277,7 @@ top_var_list (gfc_data * d)
 
 syntax:
   gfc_syntax_error (ST_DATA);
+  gfc_free_data_all (gfc_current_ns);
   return MATCH_ERROR;
 }
 
@@ -374,6 +390,7 @@ top_val_list (gfc_data * data)
 
 syntax:
   gfc_syntax_error (ST_DATA);
+  gfc_free_data_all (gfc_current_ns);
   return MATCH_ERROR;
 }
 
@@ -2367,6 +2384,8 @@ ok:
 
   gfc_error ("Syntax error in data declaration at %C");
   m = MATCH_ERROR;
+
+  gfc_free_data_all (gfc_current_ns);
 
 cleanup:
   gfc_free_array_spec (current_as);
