@@ -130,6 +130,7 @@ extern const struct processor_costs *ix86_cost;
 #define TARGET_486 (ix86_tune == PROCESSOR_I486)
 #define TARGET_PENTIUM (ix86_tune == PROCESSOR_PENTIUM)
 #define TARGET_PENTIUMPRO (ix86_tune == PROCESSOR_PENTIUMPRO)
+#define TARGET_GEODE (ix86_tune == PROCESSOR_GEODE)
 #define TARGET_K6 (ix86_tune == PROCESSOR_K6)
 #define TARGET_ATHLON (ix86_tune == PROCESSOR_ATHLON)
 #define TARGET_PENTIUM4 (ix86_tune == PROCESSOR_PENTIUM4)
@@ -375,6 +376,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 	      break;						\
 	    }							\
 	}							\
+      else if (TARGET_GEODE)					\
+	{							\
+	  builtin_define ("__tune_geode__");			\
+	}							\
       else if (TARGET_K6)					\
 	{							\
 	  builtin_define ("__tune_k6__");			\
@@ -438,6 +443,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 	  builtin_define ("__pentiumpro");			\
 	  builtin_define ("__pentiumpro__");			\
 	}							\
+      else if (ix86_arch == PROCESSOR_GEODE)			\
+	{							\
+	  builtin_define ("__geode");				\
+	  builtin_define ("__geode__");				\
+	}							\
       else if (ix86_arch == PROCESSOR_K6)			\
 	{							\
 								\
@@ -482,20 +492,21 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_CPU_DEFAULT_pentium2 5
 #define TARGET_CPU_DEFAULT_pentium3 6
 #define TARGET_CPU_DEFAULT_pentium4 7
-#define TARGET_CPU_DEFAULT_k6 8
-#define TARGET_CPU_DEFAULT_k6_2 9
-#define TARGET_CPU_DEFAULT_k6_3 10
-#define TARGET_CPU_DEFAULT_athlon 11
-#define TARGET_CPU_DEFAULT_athlon_sse 12
-#define TARGET_CPU_DEFAULT_k8 13
-#define TARGET_CPU_DEFAULT_pentium_m 14
-#define TARGET_CPU_DEFAULT_prescott 15
-#define TARGET_CPU_DEFAULT_nocona 16
-#define TARGET_CPU_DEFAULT_generic 17
+#define TARGET_CPU_DEFAULT_geode 8
+#define TARGET_CPU_DEFAULT_k6 9
+#define TARGET_CPU_DEFAULT_k6_2 10
+#define TARGET_CPU_DEFAULT_k6_3 11
+#define TARGET_CPU_DEFAULT_athlon 12
+#define TARGET_CPU_DEFAULT_athlon_sse 13
+#define TARGET_CPU_DEFAULT_k8 14
+#define TARGET_CPU_DEFAULT_pentium_m 15
+#define TARGET_CPU_DEFAULT_prescott 16
+#define TARGET_CPU_DEFAULT_nocona 17
+#define TARGET_CPU_DEFAULT_generic 18
 
 #define TARGET_CPU_DEFAULT_NAMES {"i386", "i486", "pentium", "pentium-mmx",\
 				  "pentiumpro", "pentium2", "pentium3", \
-				  "pentium4", "k6", "k6-2", "k6-3",\
+                                  "pentium4", "geode", "k6", "k6-2", "k6-3", \
 				  "athlon", "athlon-4", "k8", \
 				  "pentium-m", "prescott", "nocona", \
 				  "generic"}
@@ -2067,6 +2078,7 @@ enum processor_type
   PROCESSOR_I486,			/* 80486DX, 80486SX, 80486DX[24] */
   PROCESSOR_PENTIUM,
   PROCESSOR_PENTIUMPRO,
+  PROCESSOR_GEODE,
   PROCESSOR_K6,
   PROCESSOR_ATHLON,
   PROCESSOR_PENTIUM4,

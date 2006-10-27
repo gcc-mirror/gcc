@@ -334,6 +334,60 @@ struct processor_costs pentiumpro_cost = {
 };
 
 static const
+struct processor_costs geode_cost = {
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  COSTS_N_INSNS (1),			/* cost of a lea instruction */
+  COSTS_N_INSNS (2),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),			/*                               HI */
+   COSTS_N_INSNS (7),			/*                               SI */
+   COSTS_N_INSNS (7),			/*                               DI */
+   COSTS_N_INSNS (7)},			/*                               other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (15),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (23),			/*                          HI */
+   COSTS_N_INSNS (39),			/*                          SI */
+   COSTS_N_INSNS (39),			/*                          DI */
+   COSTS_N_INSNS (39)},			/*                          other */
+  COSTS_N_INSNS (1),			/* cost of movsx */
+  COSTS_N_INSNS (1),			/* cost of movzx */
+  8,					/* "large" insn */
+  4,					/* MOVE_RATIO */
+  1,					/* cost for loading QImode using movzbl */
+  {1, 1, 1},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {1, 1, 1},				/* cost of storing integer registers */
+  1,					/* cost of reg,reg fld/fst */
+  {1, 1, 1},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {4, 6, 6},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
+
+  1,					/* cost of moving MMX register */
+  {1, 1},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {1, 1},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  1,					/* cost of moving SSE register */
+  {1, 1, 1},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {1, 1, 1},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  1,					/* MMX or SSE register to integer */
+  32,					/* size of prefetch block */
+  1,					/* number of parallel prefetches */
+  1,					/* Branch cost */
+  COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (11),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (47),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (54),			/* cost of FSQRT instruction.  */
+};
+
+static const
 struct processor_costs k6_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   COSTS_N_INSNS (2),			/* cost of a lea instruction */
@@ -719,6 +773,8 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_486 (1<<PROCESSOR_I486)
 #define m_PENT (1<<PROCESSOR_PENTIUM)
 #define m_PPRO (1<<PROCESSOR_PENTIUMPRO)
+#define m_GEODE  (1<<PROCESSOR_GEODE)
+#define m_K6_GEODE  (m_K6 | m_GEODE)
 #define m_K6  (1<<PROCESSOR_K6)
 #define m_ATHLON  (1<<PROCESSOR_ATHLON)
 #define m_PENT4  (1<<PROCESSOR_PENTIUM4)
@@ -735,22 +791,22 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 /* Leave is not affecting Nocona SPEC2000 results negatively, so enabling for
    Generic64 seems like good code size tradeoff.  We can't enable it for 32bit
    generic because it is not working well with PPro base chips.  */
-const int x86_use_leave = m_386 | m_K6 | m_ATHLON_K8 | m_GENERIC64;
-const int x86_push_memory = m_386 | m_K6 | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_GENERIC;
+const int x86_use_leave = m_386 | m_K6_GEODE | m_ATHLON_K8 | m_GENERIC64;
+const int x86_push_memory = m_386 | m_K6_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_GENERIC;
 const int x86_zero_extend_with_and = m_486 | m_PENT;
-const int x86_movx = m_ATHLON_K8 | m_PPRO | m_PENT4 | m_NOCONA | m_GENERIC /* m_386 | m_K6 */;
+const int x86_movx = m_ATHLON_K8 | m_PPRO | m_PENT4 | m_NOCONA | m_GENERIC | m_GEODE /* m_386 | m_K6 */;
 const int x86_double_with_add = ~m_386;
 const int x86_use_bit_test = m_386;
 const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON_K8 | m_K6 | m_GENERIC;
-const int x86_cmove = m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
+const int x86_cmove = m_PPRO | m_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
 const int x86_3dnow_a = m_ATHLON_K8;
-const int x86_deep_branch = m_PPRO | m_K6 | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_GENERIC;
+const int x86_deep_branch = m_PPRO | m_K6_GEODE | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_GENERIC;
 /* Branch hints were put in P4 based on simulation result. But
    after P4 was made, no performance benefit was observed with
    branch hints. It also increases the code size. As the result,
    icc never generates branch hints.  */
 const int x86_branch_hints = 0;
-const int x86_use_sahf = m_PPRO | m_K6 | m_PENT4 | m_NOCONA | m_GENERIC32; /*m_GENERIC | m_ATHLON_K8 ? */
+const int x86_use_sahf = m_PPRO | m_K6_GEODE | m_PENT4 | m_NOCONA | m_GENERIC32; /*m_GENERIC | m_ATHLON_K8 ? */
 /* We probably ought to watch for partial register stalls on Generic32
    compilation setting as well.  However in current implementation the
    partial register stalls are not eliminated very well - they can
@@ -761,14 +817,14 @@ const int x86_use_sahf = m_PPRO | m_K6 | m_PENT4 | m_NOCONA | m_GENERIC32; /*m_G
    to leave it off for generic32 for now.  */
 const int x86_partial_reg_stall = m_PPRO;
 const int x86_partial_flag_reg_stall = m_GENERIC;
-const int x86_use_himode_fiop = m_386 | m_486 | m_K6;
+const int x86_use_himode_fiop = m_386 | m_486 | m_K6_GEODE;
 const int x86_use_simode_fiop = ~(m_PPRO | m_ATHLON_K8 | m_PENT | m_GENERIC);
 const int x86_use_mov0 = m_K6;
 const int x86_use_cltd = ~(m_PENT | m_K6 | m_GENERIC);
 const int x86_read_modify_write = ~m_PENT;
 const int x86_read_modify = ~(m_PENT | m_PPRO);
 const int x86_split_long_moves = m_PPRO;
-const int x86_promote_QImode = m_K6 | m_PENT | m_386 | m_486 | m_ATHLON_K8 | m_GENERIC; /* m_PENT4 ? */
+const int x86_promote_QImode = m_K6_GEODE | m_PENT | m_386 | m_486 | m_ATHLON_K8 | m_GENERIC; /* m_PENT4 ? */
 const int x86_fast_prefix = ~(m_PENT | m_486 | m_386);
 const int x86_single_stringop = m_386 | m_PENT4 | m_NOCONA;
 const int x86_qimode_math = ~(0);
@@ -780,9 +836,9 @@ const int x86_himode_math = ~(m_PPRO);
 const int x86_promote_hi_regs = m_PPRO;
 const int x86_sub_esp_4 = m_ATHLON_K8 | m_PPRO | m_PENT4 | m_NOCONA | m_GENERIC;
 const int x86_sub_esp_8 = m_ATHLON_K8 | m_PPRO | m_386 | m_486 | m_PENT4 | m_NOCONA | m_GENERIC;
-const int x86_add_esp_4 = m_ATHLON_K8 | m_K6 | m_PENT4 | m_NOCONA | m_GENERIC;
-const int x86_add_esp_8 = m_ATHLON_K8 | m_PPRO | m_K6 | m_386 | m_486 | m_PENT4 | m_NOCONA | m_GENERIC;
-const int x86_integer_DFmode_moves = ~(m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO | m_GENERIC);
+const int x86_add_esp_4 = m_ATHLON_K8 | m_K6_GEODE | m_PENT4 | m_NOCONA | m_GENERIC;
+const int x86_add_esp_8 = m_ATHLON_K8 | m_PPRO | m_K6_GEODE | m_386 | m_486 | m_PENT4 | m_NOCONA | m_GENERIC;
+const int x86_integer_DFmode_moves = ~(m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO | m_GENERIC | m_GEODE);
 const int x86_partial_reg_dependency = m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_GENERIC;
 const int x86_memory_mismatch_stall = m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_GENERIC;
 const int x86_accumulate_outgoing_args = m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_PPRO | m_GENERIC;
@@ -808,18 +864,18 @@ const int x86_sse_split_regs = m_ATHLON_K8;
 const int x86_sse_typeless_stores = m_ATHLON_K8;
 const int x86_sse_load0_by_pxor = m_PPRO | m_PENT4 | m_NOCONA;
 const int x86_use_ffreep = m_ATHLON_K8;
-const int x86_rep_movl_optimal = m_386 | m_PENT | m_PPRO | m_K6;
+const int x86_rep_movl_optimal = m_386 | m_PENT | m_PPRO | m_K6_GEODE;
 const int x86_use_incdec = ~(m_PENT4 | m_NOCONA | m_GENERIC);
 
 /* ??? Allowing interunit moves makes it all too easy for the compiler to put
    integer data in xmm registers.  Which results in pretty abysmal code.  */
 const int x86_inter_unit_moves = 0 /* ~(m_ATHLON_K8) */;
 
-const int x86_ext_80387_constants = m_K6 | m_ATHLON | m_PENT4 | m_NOCONA | m_PPRO | m_GENERIC32;
+const int x86_ext_80387_constants = m_K6_GEODE | m_ATHLON | m_PENT4 | m_NOCONA | m_PPRO | m_GENERIC32;
 /* Some CPU cores are not able to predict more than 4 branch instructions in
    the 16 byte window.  */
 const int x86_four_jump_limit = m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA | m_GENERIC;
-const int x86_schedule = m_PPRO | m_ATHLON_K8 | m_K6 | m_PENT | m_GENERIC;
+const int x86_schedule = m_PPRO | m_ATHLON_K8 | m_K6_GEODE | m_PENT | m_GENERIC;
 const int x86_use_bt = m_ATHLON_K8;
 /* Compare and exchange was added for 80486.  */
 const int x86_cmpxchg = ~m_386;
@@ -1453,6 +1509,7 @@ override_options (void)
       {&i486_cost, 0, 0, 16, 15, 16, 15, 16},
       {&pentium_cost, 0, 0, 16, 7, 16, 7, 16},
       {&pentiumpro_cost, 0, 0, 16, 15, 16, 7, 16},
+      {&geode_cost, 0, 0, 0, 0, 0, 0, 0},
       {&k6_cost, 0, 0, 32, 7, 32, 7, 32},
       {&athlon_cost, 0, 0, 16, 7, 16, 7, 16},
       {&pentium4_cost, 0, 0, 0, 0, 0, 0, 0},
@@ -1505,6 +1562,8 @@ override_options (void)
 				        | PTA_MMX | PTA_PREFETCH_SSE},
       {"nocona", PROCESSOR_NOCONA, PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_64BIT
 				        | PTA_MMX | PTA_PREFETCH_SSE},
+      {"geode", PROCESSOR_GEODE, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
+				   | PTA_3DNOW_A},
       {"k6", PROCESSOR_K6, PTA_MMX},
       {"k6-2", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},
       {"k6-3", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},

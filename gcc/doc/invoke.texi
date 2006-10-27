@@ -9290,6 +9290,8 @@ implemented for this chip.)
 @item c3-2
 Via C3-2 CPU with MMX and SSE instruction set support.  (No scheduling is
 implemented for this chip.)
+@item geode
+Embedded AMD CPU with MMX and 3dNOW! instruction set support.
 @end table
 
 While picking a specific @var{cpu-type} will schedule things appropriately
