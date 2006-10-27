@@ -1,4 +1,5 @@
 /* { dg-do link } */
+/* { dg-options "-fno-finite-math-only" }  */
 
 void link_error ();
 

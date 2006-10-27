@@ -1,3 +1,11 @@
+2006-10-27  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.dg/builtins-43.c: Add -fno-finite-math-only.
+	* gcc.dg/builtins-44.c: Likewise.
+	* gcc.dg/builtins-45.c: Likewise.
+	* gcc.dg/pr28796-2.c: Likewise.
+	* gcc.dg/unordered-3.c: Likewise.	
+
 2006-10-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/27954
