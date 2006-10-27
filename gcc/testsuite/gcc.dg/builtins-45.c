@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fno-trapping-math -fdump-tree-optimized" } */
+/* { dg-options "-O1 -fno-trapping-math -fno-finite-math-only -fdump-tree-optimized" } */
   
 extern void f(int);
 extern void link_error ();

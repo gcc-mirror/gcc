@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -funsafe-math-optimizations" } */
+/* { dg-options "-O2 -funsafe-math-optimizations -fno-finite-math-only" } */
 
 extern void abort (void);
 
