@@ -1,3 +1,9 @@
+2006-10-27  Mike Stump  <mrs@apple.com>
+
+	* config/darwin-c.c (darwin_cpp_builtins): Move __STATIC__ and
+	__DYNAMIC__ from here back to ...
+	* config/darwin.h (CPP_SPEC): ... here.
+
 2006-10-26  Nathan Froyd  <froydnj@codesourcery.com>
             Nathan Sidwell  <nathan@codesourcery.com>
 
