@@ -83,8 +83,8 @@ static int h8300_interrupt_function_p (tree);
 static int h8300_saveall_function_p (tree);
 static int h8300_monitor_function_p (tree);
 static int h8300_os_task_function_p (tree);
-static void h8300_emit_stack_adjustment (int, unsigned int);
-static int round_frame_size (int);
+static void h8300_emit_stack_adjustment (int, HOST_WIDE_INT);
+static HOST_WIDE_INT round_frame_size (HOST_WIDE_INT);
 static unsigned int compute_saved_regs (void);
 static void push (int);
 static void pop (int);
@@ -510,7 +510,7 @@ byte_reg (rtx x, int b)
    SIZE to adjust the stack pointer.  */
 
 static void
-h8300_emit_stack_adjustment (int sign, unsigned int size)
+h8300_emit_stack_adjustment (int sign, HOST_WIDE_INT size)
 {
   /* If the frame size is 0, we don't have anything to do.  */
   if (size == 0)
@@ -546,8 +546,8 @@ h8300_emit_stack_adjustment (int sign, unsigned int size)
 
 /* Round up frame size SIZE.  */
 
-static int
-round_frame_size (int size)
+static HOST_WIDE_INT
+round_frame_size (HOST_WIDE_INT size)
 {
   return ((size + STACK_BOUNDARY / BITS_PER_UNIT - 1)
 	  & -STACK_BOUNDARY / BITS_PER_UNIT);
