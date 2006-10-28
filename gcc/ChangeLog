@@ -1,3 +1,7 @@
+2006-10-27  Eric Christopher  <echristo@apple.com>
+
+	* config/darwin.c: Fix formatting and grammar.
+
 2006-10-27  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (fold_builtin): Don't generate NOP_EXPR that is going
@@ -38,7 +42,7 @@
 	* config/i386/geode.md: New file.
 
 	* doc/invoke.texi: Add entry about geode processor.
-    
+
 2006-10-27  Mike Stump  <mrs@apple.com>
 
 	* config/darwin-c.c (darwin_cpp_builtins): Move __STATIC__ and
@@ -653,13 +657,13 @@
 	(init_alias_heapvars): Initialize nonlocal_for_type and
 	nonlocal_all.
 	(delete_alias_heapvars): Free nonlocal_for_type and null out
-	nonlocal_all. 
+	nonlocal_all.
 
 2006-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (add_double): Rename to add_double_with_sign.
 	Add 'unsigned_p' parameter and take it into account for the overflow.
-	(mul_double): Rename to mul_double_with_sign. 
+	(mul_double): Rename to mul_double_with_sign.
 	Add 'unsigned_p' parameter and take it into account for the overflow.
 	(fold_div_compare): Call add_double_with_sign instead of add_double
 	and mul_double_with_sign instead of mul_double, passing them the
@@ -716,17 +720,17 @@
 2006-10-17  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/contraints.md: New file.
-        * config/s390/s390-protos.h (s390_mem_constraint, 
-	s390_O_constraint_str, s390_N_constraint_str, 
+        * config/s390/s390-protos.h (s390_mem_constraint,
+	s390_O_constraint_str, s390_N_constraint_str,
 	s390_float_const_zero_p): Function prototypes added.
-	* config/s390/s390.c (s390_extra_constraint_str, 
-	s390_const_double_ok_for_constraint_p, 
+	* config/s390/s390.c (s390_extra_constraint_str,
+	s390_const_double_ok_for_constraint_p,
 	s390_const_ok_for_constraint_p): Functions removed.
         (s390_mem_constraint, s390_O_constraint_str, s390_N_constraint_str,
 	s390_float_const_zero_p): New functions.
 	* config/s390/s390.h (REG_CLASS_FROM_LETTER, CONST_OK_FOR_CONSTRAINT_P,
-	CONST_DOUBLE_OK_FOR_CONSTRAINT_P, EXTRA_CONSTRAINT_STR, 
-	EXTRA_MEMORY_CONSTRAINT, EXTRA_ADDRESS_CONSTRAINT, CONSTRAINT_LEN): 
+	CONST_DOUBLE_OK_FOR_CONSTRAINT_P, EXTRA_CONSTRAINT_STR,
+	EXTRA_MEMORY_CONSTRAINT, EXTRA_ADDRESS_CONSTRAINT, CONSTRAINT_LEN):
 	Macro definitions removed.
 	(s390_const_ok_for_constraint_p, s390_const_double_ok_for_constraint_p,
 	s390_extra_constraint_str): Functions removed.
