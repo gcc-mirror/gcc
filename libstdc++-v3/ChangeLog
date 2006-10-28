@@ -1,3 +1,17 @@
+2006-10-28  Paolo Carlini  <pcarlini@suse.de>
+	
+	* include/tr1/array (array<>::_M_at): New.
+	(array<>::at): Fix off-by-one bug, use the above.
+	* testsuite/tr1/6_containers/array/element_access/
+	at_out_of_range.cc: Adjust.
+
+	* include/tr1/array (class array<>): Remove non-conforming default
+	for the second parameter.
+	* include/ext/array_allocator.h: Adjust.
+
+	* include/tr1/array (array<>::front, array<>::back): Do not return
+	a reference to memory not belonging to the array when _Nm == 0.
+
 2006-10-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (money_get<>::__do_get(iter_type,

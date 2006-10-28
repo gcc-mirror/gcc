@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *  @brief  An allocator that uses previously allocated memory.
    *  This memory can be externally, globally, or otherwise allocated.
    */
-  template<typename _Tp, typename _Array = std::tr1::array<_Tp> >
+  template<typename _Tp, typename _Array = std::tr1::array<_Tp, 1> >
     class array_allocator : public array_allocator_base<_Tp>
     {
     public:
