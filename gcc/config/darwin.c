@@ -220,7 +220,8 @@ indirect_data (rtx sym_ref)
   int lprefix;
   const char *name;
 
-  /* If we aren't generating fix-and-continue code, don't do anything special.  */
+  /* If we aren't generating fix-and-continue code, don't do anything
+     special.  */
   if (TARGET_FIX_AND_CONTINUE == 0)
     return 0;
 
@@ -712,7 +713,8 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 				   gen_rtx_LO_SUM (Pmode, temp_reg, asym));
 	      emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
 #else
-	      /* Some other CPU -- WriteMe! but right now there are no other platform that can use dynamic-no-pic  */
+	      /* Some other CPU -- WriteMe! but right now there are no other
+		 platforms that can use dynamic-no-pic  */
 	      gcc_unreachable ();
 #endif
 	      pic_ref = reg;
@@ -1110,12 +1112,15 @@ machopic_select_section (tree exp, int reloc,
 			? darwin_sections[text_unlikely_coal_section]
 			: unlikely_text_section ());
       else
-	base_section = weak_p ? darwin_sections[text_coal_section] : text_section;
+	base_section = weak_p ? darwin_sections[text_coal_section]
+	  : text_section;
     }
   else if (decl_readonly_section_1 (exp, reloc, MACHOPIC_INDIRECT))
-    base_section = weak_p ? darwin_sections[const_coal_section] : darwin_sections[const_section];
+    base_section = weak_p ? darwin_sections[const_coal_section]
+      : darwin_sections[const_section];
   else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
-    base_section = weak_p ? darwin_sections[const_data_coal_section] : darwin_sections[const_data_section];
+    base_section = weak_p ? darwin_sections[const_data_coal_section]
+      : darwin_sections[const_data_section];
   else
     base_section = weak_p ? darwin_sections[data_coal_section] : data_section;
 
