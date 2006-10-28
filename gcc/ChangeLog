@@ -1,5 +1,13 @@
 2006-10-28 Uros Bizjak <uros@kss-loka.si>
 
+	PR target/29377
+	* config/h8300/h8300.c (h8300_emit_stack_adjustment): Change "size"
+	argument to HOST_WIDE_INT.  Update function prototype.
+	(round_frame_size): Change return type to HOST_WIDE_INT.  Change
+	"size" argument to HOST_WIDE_INT.  Update function prototype.
+
+2006-10-28 Uros Bizjak <uros@kss-loka.si>
+
 	* config/i386/i386.c (output_387_ffreep): Create output from a
 	template string for !HAVE_AS_IX86_FFREEP.
 	
