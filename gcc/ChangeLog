@@ -1,3 +1,8 @@
+2006-10-28 Uros Bizjak <uros@kss-loka.si>
+
+	* config/i386/i386.c (output_387_ffreep): Create output from a
+	template string for !HAVE_AS_IX86_FFREEP.
+	
 2006-10-27  Eric Christopher  <echristo@apple.com>
 
 	* config/darwin.c: Fix formatting and grammar.
