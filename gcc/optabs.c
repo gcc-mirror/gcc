@@ -5365,6 +5365,7 @@ init_optabs (void)
   sfloat_optab = init_convert_optab (FLOAT);
   ufloat_optab = init_convert_optab (UNSIGNED_FLOAT);
   lrint_optab = init_convert_optab (UNKNOWN);
+  lround_optab = init_convert_optab (UNKNOWN);
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
@@ -5485,6 +5486,8 @@ init_optabs (void)
   init_interclass_conv_libfuncs (ufloat_optab, "floatuns",
 				 MODE_INT, MODE_DECIMAL_FLOAT);
   init_interclass_conv_libfuncs (lrint_optab, "lrint",
+				 MODE_INT, MODE_FLOAT);
+  init_interclass_conv_libfuncs (lround_optab, "lround",
 				 MODE_INT, MODE_FLOAT);
 
   /* sext_optab is also used for FLOAT_EXTEND.  */

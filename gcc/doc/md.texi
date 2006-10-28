@@ -3708,6 +3708,12 @@ Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as a signed number according to the current
 rounding mode and store in operand 0 (which has mode @var{n}).
 
+@cindex @code{lround@var{m}@var{n}2}
+@item @samp{lround@var{m}2}
+Convert operand 1 (valid for floating point mode @var{m}) to fixed
+point mode @var{n} as a signed number rounding to nearest and away
+from zero and store in operand 0 (which has mode @var{n}).
+
 @cindex @code{copysign@var{m}3} instruction pattern
 @item @samp{copysign@var{m}3}
 Store a value with the magnitude of operand 1 and the sign of operand

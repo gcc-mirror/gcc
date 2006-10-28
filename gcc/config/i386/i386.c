@@ -19223,5 +19223,57 @@ asm_preferred_eh_data_format (int code, int global)
     return DW_EH_PE_udata4;
   return DW_EH_PE_absptr;
 }
+
+/* Expand copysign from SIGN to the positive value ABS_VALUE
+   storing in RESULT.  */
+static void
+ix86_sse_copysign_to_positive (rtx result, rtx abs_value, rtx sign)
+{
+  enum machine_mode mode = GET_MODE (sign);
+  rtx sgn = gen_reg_rtx (mode);
+  rtx mask = ix86_build_signbit_mask (mode, VECTOR_MODE_P (mode), false);
+  if (!VECTOR_MODE_P (mode))
+    {
+      /* We need to generate a scalar mode mask in this case.  */
+      rtx tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const0_rtx));
+      tmp = gen_rtx_VEC_SELECT (mode, mask, tmp);
+      mask = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, mask, tmp));
+    }
+  emit_insn (gen_rtx_SET (VOIDmode, sgn,
+			  gen_rtx_AND (mode, mask, sign)));
+  emit_insn (gen_rtx_SET (VOIDmode, result,
+			  gen_rtx_IOR (mode, abs_value, sgn)));
+}
+
+/* Expand SSE sequence for computing lround from OP1 storing
+   into OP0.  */
+void
+ix86_expand_lround (rtx op0, rtx op1)
+{
+  /* C code for the stuff we're doing below:
+       tmp = op1 + copysign (nextafter (0.5, 0.0), op1)
+       return (long)tmp;
+   */
+  enum machine_mode mode = GET_MODE (op1);
+  const struct real_format *fmt;
+  REAL_VALUE_TYPE pred_half, half_minus_pred_half;
+  rtx adj;
+
+  /* load nextafter (0.5, 0.0) */
+  fmt = REAL_MODE_FORMAT (mode);
+  real_2expN (&half_minus_pred_half, -(fmt->p) - 1);
+  REAL_ARITHMETIC (pred_half, MINUS_EXPR, dconsthalf, half_minus_pred_half);
+
+  /* adj = copysign (0.5, op1) */
+  adj = force_reg (mode, const_double_from_real_value (pred_half, mode));
+  ix86_sse_copysign_to_positive (adj, adj, force_reg (mode, op1));
+
+  /* adj = op1 + adj */
+  expand_simple_binop (mode, PLUS, adj, op1, adj, 0, OPTAB_DIRECT);
+
+  /* op0 = (imode)adj */
+  expand_fix (op0, adj, 0);
+}
 
 #include "gt-i386.h"

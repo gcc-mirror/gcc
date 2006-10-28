@@ -1,3 +1,21 @@
+2006-10-28  Richard Guenther  <rguenther@suse.de>
+
+	PR target/28806
+	* builtins.c (expand_builtin_int_roundingfn_2): Expand
+	BUILT_IN_LROUND and BUILT_IN_LLROUND from here.
+	(expand_builtin): Adjust likewise.
+	* genopinit.c (optabs[]): Add lround optab.
+	* optabs.c (init_optabs): Initialize lround_optab.
+	* optabs.h (enum convert_optab_index): Add COI_lround.
+	(lround_optab): Define.
+	* config/i386/i386-protos.h (ix86_expand_lround): Declare.
+	* config/i386/i386.c (ix86_sse_copysign_to_positive): New
+	static function.
+	(ix86_expand_lround): New function.
+	* config/i386/i386.md (lround<mode>di2, lround<mode>si2):
+	New expanders.
+	* doc/md.texi (lroundMN2): Document.
+
 2006-10-28 Uros Bizjak <uros@kss-loka.si>
 
 	PR target/29377
