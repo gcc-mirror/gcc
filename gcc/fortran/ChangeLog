@@ -1,3 +1,12 @@
+2006-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+	* gfortran.h: Remove GFC_MPFR_TOO_OLD.
+	* arith.c (arctangent2): Remove function
+	(gfc_check_real_range): Remove subnormal kludge.
+	* arith.h: Remove arctangent2 prototype.
+	* simplify.c: (gfc_simplify_atan2): Remove use of arctangent2.
+	(gfc_simplify_exponent, gfc_simplify_log, gfc_simplify_nearest,
+	gfc_simplify_rrspacing, gfc_simplify_spacing): Remove mpfr kludges.
+
 2006-10-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/28224
