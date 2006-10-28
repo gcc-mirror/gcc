@@ -1,3 +1,9 @@
+2006-10-28 Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/29625
+	* gfortran.dg/io_real_boz.f90: Add.
+	* gfortran.dg/io_real_boz2.f90: Add.
+
 2006-10-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/26899
