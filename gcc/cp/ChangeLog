@@ -1,4 +1,10 @@
-2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
+2006-10-29  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/29033
+	* typeck.c (build_binary_op): Duplicate warning message
+	for better translation.
+
+2006-10-23  Rafael Avila de Espindola  <rafael.espindola@gmail.com>
 
 	* decl.c (builtin_function_1): Move common code to
 	add_builtin_function.
