@@ -1,3 +1,8 @@
+2006-10-28  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (maybe_canonicalize_comparison): Fix code
+	to match comment.
+
 2006-10-28  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.h (GENERAL_REGNO_P): Use STACK_POINTER_REGNUM.
