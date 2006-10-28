@@ -4192,7 +4192,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  return error_mark_node;
 
 	/* Forbid using -- on `bool'.  */
-	if (TREE_TYPE (arg) == boolean_type_node)
+	if (same_type_p (TREE_TYPE (arg), boolean_type_node))
 	  {
 	    if (code == POSTDECREMENT_EXPR || code == PREDECREMENT_EXPR)
 	      {
