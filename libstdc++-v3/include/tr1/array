@@ -47,7 +47,7 @@ namespace tr1
 {
   /// @brief  struct array [6.2.2].
   /// NB: Requires complete type _Tp.
-  template<typename _Tp, std::size_t _Nm = 1>
+  template<typename _Tp, std::size_t _Nm>
     struct array
     {
       typedef _Tp 	    			      value_type;
@@ -59,9 +59,6 @@ namespace tr1
       typedef std::ptrdiff_t                   	      difference_type;
       typedef std::reverse_iterator<iterator>	      reverse_iterator;
       typedef std::reverse_iterator<const_iterator>   const_reverse_iterator;
-
-      // Compile time constant without other dependencies.
-      enum { _S_index = _Nm };
 
       // Support for zero-sized arrays mandatory.
       value_type _M_instance[_Nm ? _Nm : 1] __attribute__((__aligned__));
@@ -120,29 +117,21 @@ namespace tr1
       empty() const { return size() == 0; }
 
       // Element access.
-      reference 
+      reference
       operator[](size_type __n)
       { return _M_instance[__n]; }
 
-      const_reference 
+      const_reference
       operator[](size_type __n) const
       { return _M_instance[__n]; }
 
-      const_reference 
-      at(size_type __n) const
-      { 
-	if (__builtin_expect(__n > _Nm, false))
-	  std::__throw_out_of_range("array::at");
-	return _M_instance[__n]; 
-      }
-
-      reference 
+      reference
       at(size_type __n)
-      { 
-	if (__builtin_expect(__n > _Nm, false))
-	  std::__throw_out_of_range("array::at");
-	return _M_instance[__n]; 
-      }
+      { return _M_at<_Nm>(__n); }
+
+      const_reference
+      at(size_type __n) const
+      { return _M_at<_Nm>(__n); }
 
       reference 
       front()
@@ -154,11 +143,11 @@ namespace tr1
 
       reference 
       back()
-      { return *(end() - 1); }
+      { return _Nm ? *(end() - 1) : *end(); }
 
       const_reference 
       back() const
-      { return *(end() - 1); }
+      { return _Nm ? *(end() - 1) : *end(); }
 
       _Tp* 
       data()
@@ -167,6 +156,42 @@ namespace tr1
       const _Tp* 
       data() const
       { return &_M_instance[0]; }
+
+    private:
+      template<std::size_t _Mm>
+        typename std::__enable_if<reference, _Mm>::__type
+        _M_at(size_type __n)
+        {
+	  if (__builtin_expect(__n >= _Mm, false))
+	    std::__throw_out_of_range("array::_M_at");
+	  return _M_instance[__n];
+	}
+
+      // Avoid "unsigned comparison with zero" warnings.
+      template<std::size_t _Mm>
+        typename std::__enable_if<reference, !_Mm>::__type
+        _M_at(size_type)
+        {
+	  std::__throw_out_of_range("array::_M_at");
+	  return _M_instance[0];
+	}
+
+      template<std::size_t _Mm>
+        typename std::__enable_if<const_reference, _Mm>::__type
+        _M_at(size_type __n) const
+        {
+	  if (__builtin_expect(__n >= _Mm, false))
+	    std::__throw_out_of_range("array::_M_at");
+	  return _M_instance[__n];
+	}
+
+      template<std::size_t _Mm>
+        typename std::__enable_if<const_reference, !_Mm>::__type
+        _M_at(size_type) const
+        {
+	  std::__throw_out_of_range("array::_M_at");
+	  return _M_instance[0];
+	}     
     };
 
   // Array comparisons.
@@ -212,11 +237,11 @@ namespace tr1
   // Tuple interface to class template array [6.2.2.5].
   template<typename _Tp> class tuple_size;
   template<int _Int, typename _Tp> class tuple_element;
-  
+
   template<typename _Tp, std::size_t _Nm>
     struct tuple_size<array<_Tp, _Nm> >
     { static const int value = _Nm; };
- 
+
   template<int _Int, typename _Tp, std::size_t _Nm>
     struct tuple_element<_Int, array<_Tp, _Nm> >
     { typedef _Tp type; };

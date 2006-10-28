@@ -1,6 +1,6 @@
 // array allocator -*- C++ -*-
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -84,7 +84,7 @@ namespace __gnu_cxx
    *  @brief  An allocator that uses previously allocated memory.
    *  This memory can be externally, globally, or otherwise allocated.
    */
-  template<typename _Tp, typename _Array = std::tr1::array<_Tp> >
+  template<typename _Tp, typename _Array = std::tr1::array<_Tp, 1> >
     class array_allocator : public array_allocator_base<_Tp>
     {
     public:
