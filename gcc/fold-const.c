@@ -7855,7 +7855,7 @@ maybe_canonicalize_comparison (enum tree_code code, tree type,
      but that causes problems elsewhere.  */
   if ((flag_wrapv || flag_trapv)
       || (TYPE_UNSIGNED (TREE_TYPE (arg0))
-	  && !POINTER_TYPE_P (TREE_TYPE (arg0))))
+	  || POINTER_TYPE_P (TREE_TYPE (arg0))))
     return NULL_TREE;
 
   /* Try canonicalization by simplifying arg0.  */
