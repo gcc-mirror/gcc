@@ -844,7 +844,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	case FMT_B:
 	  if (n == 0)
 	    goto need_data;
-	  if (require_type (dtp, BT_INTEGER, type, f))
+
+	  if (compile_options.allow_std < GFC_STD_GNU
+              && require_type (dtp, BT_INTEGER, type, f))
 	    return;
 
 	  if (dtp->u.p.mode == READING)
@@ -856,7 +858,11 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 
 	case FMT_O:
 	  if (n == 0)
-	    goto need_data;
+	    goto need_data; 
+
+	  if (compile_options.allow_std < GFC_STD_GNU
+              && require_type (dtp, BT_INTEGER, type, f))
+	    return;
 
 	  if (dtp->u.p.mode == READING)
 	    read_radix (dtp, f, p, len, 8);
@@ -868,6 +874,10 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	case FMT_Z:
 	  if (n == 0)
 	    goto need_data;
+
+	  if (compile_options.allow_std < GFC_STD_GNU
+              && require_type (dtp, BT_INTEGER, type, f))
+	    return;
 
 	  if (dtp->u.p.mode == READING)
 	    read_radix (dtp, f, p, len, 16);
