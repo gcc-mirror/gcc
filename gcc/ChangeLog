@@ -1,3 +1,17 @@
+2006-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* except.h (output_function_exception_table): Add 'const char*' param.
+	* except.c (switch_to_exception_section): Add 'const char*' param.
+	If named sections are supported and HAVE_LD_EH_GC_SECTIONS is defined
+	and flag_function_sections is set, use a function-specific section.
+	(output_function_exception_table): Add 'const char*' param.
+	Adjust call to switch_to_exception_section.
+	* final.c (rest_of_handle_final): Adjust calls to
+	output_function_exception_table.
+	* configure.ac (HAVE_LD_EH_GC_SECTIONS): New check.
+	* config.in: Regenerate.
+	* configure: Likewise.
+
 2006-10-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/26899
