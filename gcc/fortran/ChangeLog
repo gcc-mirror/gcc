@@ -1,3 +1,9 @@
+2006-10-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/28224
+	* io.c (check_io_constraints): Allow namelists
+	  for internal files for Fortran 2003.
+
 2006-10-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/27954

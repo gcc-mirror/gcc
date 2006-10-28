@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-std=f95" }
 ! Part II of the test  of the IO constraints patch, which fixes PRs:
 ! PRs 25053, 25063, 25064, 25066, 25067, 25068, 25069, 25307 and 20862.
 ! Modified2006-07-08 to check the patch for PR20844.
@@ -35,7 +36,7 @@ end module global
 
  write(*, NML=NL) z                             !  { dg-error "followed by IO-list" }
 !Was correctly picked up before patch.
- print NL, z                                    !  { dg-error "followed by IO-list" }
+ print NL, z                                    !  { dg-error "PRINT namelist at \\(1\\) is an extension" }
 !
 ! Not allowed with internal unit
 !Was correctly picked up before patch.
