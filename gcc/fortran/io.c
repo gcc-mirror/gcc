@@ -2596,9 +2596,13 @@ if (condition) \
 		     "REC tag at %L is incompatible with internal file",
 		     &dt->rec->where);
 
-      io_constraint (dt->namelist != NULL,
-		     "Internal file at %L is incompatible with namelist",
-		     &expr->where);
+      if (dt->namelist != NULL)
+        {
+          if (gfc_notify_std(GFC_STD_F2003,
+                         "Internal file at %L is incompatible with namelist",
+                         &expr->where) == FAILURE)
+            m = MATCH_ERROR;
+        }
 
       io_constraint (dt->advance != NULL,
 		     "ADVANCE tag at %L is incompatible with internal file",

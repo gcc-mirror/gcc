@@ -1,4 +1,10 @@
-2006-10-28 Tobias Burnus <burnus@net-b.de>
+2006-10-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/28224 
+	* gfortran.dg/io_constraints_2.f90: Use -std=f95.
+	* gfortran.dg/namelist_internal.f90: New test. 
+
+2006-10-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29625
 	* gfortran.dg/io_real_boz.f90: Add.
