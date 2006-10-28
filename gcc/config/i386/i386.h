@@ -1175,11 +1175,10 @@ enum reg_class
 
 #define SMALL_REGISTER_CLASSES 1
 
-#define QI_REG_P(X) \
-  (REG_P (X) && REGNO (X) < 4)
+#define QI_REG_P(X) (REG_P (X) && REGNO (X) < 4)
 
 #define GENERAL_REGNO_P(N) \
-  ((N) < 8 || REX_INT_REGNO_P (N))
+  ((N) <= STACK_POINTER_REGNUM || REX_INT_REGNO_P (N))
 
 #define GENERAL_REG_P(X) \
   (REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
@@ -1187,39 +1186,38 @@ enum reg_class
 #define ANY_QI_REG_P(X) (TARGET_64BIT ? GENERAL_REG_P(X) : QI_REG_P (X))
 
 #define NON_QI_REG_P(X) \
-  (REG_P (X) && REGNO (X) >= 4 && REGNO (X) < FIRST_PSEUDO_REGISTER)
+  (REG_P (X) && IN_RANGE (REGNO (X), 4, FIRST_PSEUDO_REGISTER - 1))
 
-#define REX_INT_REGNO_P(N) ((N) >= FIRST_REX_INT_REG && (N) <= LAST_REX_INT_REG)
+#define REX_INT_REGNO_P(N) \
+  IN_RANGE ((N), FIRST_REX_INT_REG, LAST_REX_INT_REG)
 #define REX_INT_REG_P(X) (REG_P (X) && REX_INT_REGNO_P (REGNO (X)))
 
 #define FP_REG_P(X) (REG_P (X) && FP_REGNO_P (REGNO (X)))
-#define FP_REGNO_P(N) ((N) >= FIRST_STACK_REG && (N) <= LAST_STACK_REG)
+#define FP_REGNO_P(N) IN_RANGE ((N), FIRST_STACK_REG, LAST_STACK_REG)
 #define ANY_FP_REG_P(X) (REG_P (X) && ANY_FP_REGNO_P (REGNO (X)))
 #define ANY_FP_REGNO_P(N) (FP_REGNO_P (N) || SSE_REGNO_P (N))
 
-#define SSE_REGNO_P(N) \
-  (((N) >= FIRST_SSE_REG && (N) <= LAST_SSE_REG) \
-   || ((N) >= FIRST_REX_SSE_REG && (N) <= LAST_REX_SSE_REG))
+#define SSE_REG_P(N) (REG_P (N) && SSE_REGNO_P (REGNO (N)))
+#define SSE_REGNO_P(N)						\
+  (IN_RANGE ((N), FIRST_SSE_REG, LAST_SSE_REG)			\
+   || REX_SSE_REGNO_P (N))
 
 #define REX_SSE_REGNO_P(N) \
-   ((N) >= FIRST_REX_SSE_REG && (N) <= LAST_REX_SSE_REG)
+  IN_RANGE ((N), FIRST_REX_SSE_REG, LAST_REX_SSE_REG)
 
 #define SSE_REGNO(N) \
   ((N) < 8 ? FIRST_SSE_REG + (N) : FIRST_REX_SSE_REG + (N) - 8)
-#define SSE_REG_P(N) (REG_P (N) && SSE_REGNO_P (REGNO (N)))
 
 #define SSE_FLOAT_MODE_P(MODE) \
   ((TARGET_SSE && (MODE) == SFmode) || (TARGET_SSE2 && (MODE) == DFmode))
 
-#define MMX_REGNO_P(N) ((N) >= FIRST_MMX_REG && (N) <= LAST_MMX_REG)
 #define MMX_REG_P(XOP) (REG_P (XOP) && MMX_REGNO_P (REGNO (XOP)))
+#define MMX_REGNO_P(N) IN_RANGE ((N), FIRST_MMX_REG, LAST_MMX_REG)
 
-#define STACK_REG_P(XOP)		\
-  (REG_P (XOP) &&		       	\
-   REGNO (XOP) >= FIRST_STACK_REG &&	\
-   REGNO (XOP) <= LAST_STACK_REG)
-
-#define NON_STACK_REG_P(XOP) (REG_P (XOP) && ! STACK_REG_P (XOP))
+#define STACK_REG_P(XOP) (REG_P (XOP) && STACK_REGNO_P (REGNO (XOP)))
+#define NON_STACK_REG_P(XOP) \
+  (REG_P (XOP) && ! STACK_REGNO_P (REGNO (XOP)))
+#define STACK_REGNO_P(N) IN_RANGE ((N), FIRST_STACK_REG, LAST_STACK_REG)
 
 #define STACK_TOP_P(XOP) (REG_P (XOP) && REGNO (XOP) == FIRST_STACK_REG)
 
@@ -1567,21 +1565,15 @@ typedef struct ix86_args {
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) 					\
   ((REGNO) < STACK_POINTER_REGNUM 					\
-   || (REGNO >= FIRST_REX_INT_REG					\
-       && (REGNO) <= LAST_REX_INT_REG)					\
-   || ((unsigned) reg_renumber[(REGNO)] >= FIRST_REX_INT_REG		\
-       && (unsigned) reg_renumber[(REGNO)] <= LAST_REX_INT_REG)		\
-   || (unsigned) reg_renumber[(REGNO)] < STACK_POINTER_REGNUM)
+   || REX_INT_REGNO_P (REGNO)						\
+   || (unsigned) reg_renumber[(REGNO)] < STACK_POINTER_REGNUM		\
+   || REX_INT_REGNO_P ((unsigned) reg_renumber[(REGNO)]))
 
 #define REGNO_OK_FOR_BASE_P(REGNO) 					\
-  ((REGNO) <= STACK_POINTER_REGNUM 					\
+  (GENERAL_REGNO_P (REGNO)						\
    || (REGNO) == ARG_POINTER_REGNUM 					\
    || (REGNO) == FRAME_POINTER_REGNUM 					\
-   || (REGNO >= FIRST_REX_INT_REG					\
-       && (REGNO) <= LAST_REX_INT_REG)					\
-   || ((unsigned) reg_renumber[(REGNO)] >= FIRST_REX_INT_REG		\
-       && (unsigned) reg_renumber[(REGNO)] <= LAST_REX_INT_REG)		\
-   || (unsigned) reg_renumber[(REGNO)] <= STACK_POINTER_REGNUM)
+   || GENERAL_REGNO_P ((unsigned) reg_renumber[(REGNO)]))
 
 #define REGNO_OK_FOR_SIREG_P(REGNO) \
   ((REGNO) == 4 || reg_renumber[(REGNO)] == 4)
@@ -1605,16 +1597,13 @@ typedef struct ix86_args {
 /* Non strict versions, pseudos are ok.  */
 #define REG_OK_FOR_INDEX_NONSTRICT_P(X)					\
   (REGNO (X) < STACK_POINTER_REGNUM					\
-   || (REGNO (X) >= FIRST_REX_INT_REG					\
-       && REGNO (X) <= LAST_REX_INT_REG)				\
+   || REX_INT_REGNO_P (REGNO (X))					\
    || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 #define REG_OK_FOR_BASE_NONSTRICT_P(X)					\
-  (REGNO (X) <= STACK_POINTER_REGNUM					\
+  (GENERAL_REGNO_P (REGNO (X))						\
    || REGNO (X) == ARG_POINTER_REGNUM					\
    || REGNO (X) == FRAME_POINTER_REGNUM 				\
-   || (REGNO (X) >= FIRST_REX_INT_REG					\
-       && REGNO (X) <= LAST_REX_INT_REG)				\
    || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 /* Strict versions, hard registers only */
@@ -2224,7 +2213,7 @@ enum ix86_stack_slot
    ??? Maybe Pentium chips benefits from renaming, someone can try....  */
 
 #define HARD_REGNO_RENAME_OK(SRC, TARGET)  \
-   ((SRC) < FIRST_STACK_REG || (SRC) > LAST_STACK_REG)
+  (! IN_RANGE ((SRC), FIRST_STACK_REG, LAST_STACK_REG))
 
 
 #define DLL_IMPORT_EXPORT_PREFIX '#'
