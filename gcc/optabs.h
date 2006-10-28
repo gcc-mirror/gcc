@@ -406,6 +406,7 @@ enum convert_optab_index
   COI_ufloat,
 
   COI_lrint,
+  COI_lround,
 
   COI_MAX
 };
@@ -422,6 +423,7 @@ extern GTY(()) convert_optab convert_optab_table[COI_MAX];
 #define sfloat_optab (convert_optab_table[COI_sfloat])
 #define ufloat_optab (convert_optab_table[COI_ufloat])
 #define lrint_optab (convert_optab_table[COI_lrint])
+#define lround_optab (convert_optab_table[COI_lround])
 
 /* These arrays record the insn_code of insns that may be needed to
    perform input and output reloads of special objects.  They provide a

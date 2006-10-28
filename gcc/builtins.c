@@ -2341,6 +2341,9 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target, rtx subtarget)
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
       builtin_optab = lrint_optab; break;
+    CASE_FLT_FN (BUILT_IN_LROUND):
+    CASE_FLT_FN (BUILT_IN_LLROUND):
+      builtin_optab = lround_optab; break;
     default:
       gcc_unreachable ();
     }
@@ -5770,6 +5773,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
+    CASE_FLT_FN (BUILT_IN_LROUND):
+    CASE_FLT_FN (BUILT_IN_LLROUND):
       target = expand_builtin_int_roundingfn_2 (exp, target, subtarget);
       if (target)
 	return target;

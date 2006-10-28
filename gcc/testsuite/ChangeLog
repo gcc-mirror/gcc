@@ -1,3 +1,8 @@
+2006-10-28  Richard Guenther  <rguenther@suse.de>
+
+	PR target/28806
+	* gcc.target/i386/math-torture/lround.c: New testcase.
+
 2006-10-27  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.dg/builtins-43.c: Add -fno-finite-math-only.
