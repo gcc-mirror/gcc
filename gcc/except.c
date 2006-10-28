@@ -3520,7 +3520,7 @@ sjlj_output_call_site_table (void)
 /* Switch to the section that should be used for exception tables.  */
 
 static void
-switch_to_exception_section (void)
+switch_to_exception_section (const char * ARG_UNUSED (fnname))
 {
   if (exception_section == 0)
     {
@@ -3539,6 +3539,16 @@ switch_to_exception_section (void)
 	    }
 	  else
 	    flags = SECTION_WRITE;
+#ifdef HAVE_LD_EH_GC_SECTIONS
+	  if (flag_function_sections)
+	    {
+	      char *section_name = xmalloc (strlen (fnname) + 32);
+	      sprintf (section_name, ".gcc_except_table.%s", fnname);
+	      exception_section = get_section (section_name, flags, NULL);
+	      free (section_name);
+	    }
+	  else
+#endif
 	  exception_section = get_section (".gcc_except_table", flags, NULL);
 	}
       else
@@ -3599,7 +3609,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
 }
 
 void
-output_function_exception_table (void)
+output_function_exception_table (const char * ARG_UNUSED (fnname))
 {
   int tt_format, cs_format, lp_format, i, n;
 #ifdef HAVE_AS_LEB128
@@ -3627,7 +3637,7 @@ output_function_exception_table (void)
   /* Note that varasm still thinks we're in the function's code section.
      The ".endp" directive that will immediately follow will take us back.  */
 #else
-  switch_to_exception_section ();
+  switch_to_exception_section (fnname);
 #endif
 
   /* If the target wants a label to begin the table, emit it here.  */

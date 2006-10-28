@@ -15889,6 +15889,53 @@ fi
 echo "$as_me:$LINENO: result: $gcc_cv_ld_pie" >&5
 echo "${ECHO_T}$gcc_cv_ld_pie" >&6
 
+echo "$as_me:$LINENO: checking linker EH-compatible garbage collection of sections" >&5
+echo $ECHO_N "checking linker EH-compatible garbage collection of sections... $ECHO_C" >&6
+gcc_cv_ld_eh_gc_sections=no
+if test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 17 -o "$gcc_cv_gld_major_version" -gt 2 \
+     && test $in_tree_ld_is_elf = yes; then
+    gcc_cv_ld_eh_gc_sections=yes
+  fi
+elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
+  cat > conftest.s <<EOF
+	.section	.text
+.globl _start
+        .type _start, @function
+_start:
+	.long foo
+	.size _start, .-_start
+	.section	.text.foo,"ax",@progbits
+	.type foo, @function
+foo:
+	.long 0
+	.size foo, .-foo
+	.section	.gcc_except_table.foo,"a",@progbits
+.L0:
+	.long 0
+	.section	.eh_frame,"a",@progbits
+	.long .L0
+EOF
+  if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+    if $gcc_cv_ld -o conftest conftest.o --entry=_start --gc-sections 2>&1 \
+	 | grep "gc-sections option ignored" > /dev/null; then
+      gcc_cv_ld_eh_gc_sections=no
+    elif $gcc_cv_objdump -h conftest | grep gcc_except_table > /dev/null; then
+      gcc_cv_ld_eh_gc_sections=yes
+    fi
+  fi
+  rm -f conftest.s conftest.o conftest
+fi
+if test x$gcc_cv_ld_eh_gc_sections = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_LD_EH_GC_SECTIONS 1
+_ACEOF
+
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_ld_eh_gc_sections" >&5
+echo "${ECHO_T}$gcc_cv_ld_eh_gc_sections" >&6
+
 # --------
 # UNSORTED
 # --------

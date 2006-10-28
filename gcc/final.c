@@ -3920,14 +3920,14 @@ rest_of_handle_final (void)
 #ifdef TARGET_UNWIND_INFO
   /* ??? The IA-64 ".handlerdata" directive must be issued before
      the ".endp" directive that closes the procedure descriptor.  */
-  output_function_exception_table ();
+  output_function_exception_table (fnname);
 #endif
 
   assemble_end_function (current_function_decl, fnname);
 
 #ifndef TARGET_UNWIND_INFO
   /* Otherwise, it feels unclean to switch sections in the middle.  */
-  output_function_exception_table ();
+  output_function_exception_table (fnname);
 #endif
 
   user_defined_section_attribute = false;

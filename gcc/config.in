@@ -883,6 +883,13 @@
 /* Define if your linker supports --eh-frame-hdr option. */
 #undef HAVE_LD_EH_FRAME_HDR
 
+/* Define if your linker supports garbage collection of sections in presence
+   of EH frames. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_EH_GC_SECTIONS
+#endif
+
+
 /* Define if your PowerPC64 linker only needs function descriptor syms. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_NO_DOT_SYMS
