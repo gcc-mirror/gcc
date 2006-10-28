@@ -1,3 +1,21 @@
+2006-10-28  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.h (GENERAL_REGNO_P): Use STACK_POINTER_REGNUM.
+	(NON_QI_REG_P): Use IN_RANGE.
+	(REX_INT_REGNO_P): Use IN_RANGE.
+	(FP_REGNO_P): Use IN_RANGE.
+	(SSE_REGNO_P): Use IN_RANGE.
+	(REX_SSE_REGNO_P): Use IN_RANGE.
+	(MMX_REGNO_P): Use IN_RANGE.
+	(STACK_REGNO_P): New macro.
+	(STACK_REG_P): Use STACK_REGNO_P.
+	(NON_STACK_REG_P): Use STACK_REGNO_P.
+	(REGNO_OK_FOR_INDEX_P): Use REX_INT_REGNO_P.
+	(REGNO_OK_FOR_BASE_P): Use GENERAL_REGNO_P.
+	(REG_OK_FOR_INDEX_NONSTRICT_P): Use REX_INT_REGNO_P.
+	(REG_OK_FOR_BASE_NONSTRICT_P): Use GENERAL_REGNO_P.
+	(HARD_REGNO_RENAME_OK): Use !IN_RANGE.
+
 2006-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* except.h (output_function_exception_table): Add 'const char*' param.
