@@ -1,5 +1,10 @@
 2006-10-28  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/26899
+	* gcc.dg/tree-ssa/pr26899.c: New testcase.
+
+2006-10-28  Richard Guenther  <rguenther@suse.de>
+
 	PR target/28806
 	* gcc.target/i386/math-torture/lround.c: New testcase.
 

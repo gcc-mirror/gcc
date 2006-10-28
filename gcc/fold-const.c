@@ -7749,6 +7749,126 @@ fold_minmax (enum tree_code code, tree type, tree op0, tree op1)
   return NULL_TREE;
 }
 
+/* Helper that tries to canonicalize the comparison ARG0 CODE ARG1
+   by changing CODE to reduce the magnitude of constants involved in
+   ARG0 of the comparison.
+   Returns a canonicalized comparison tree if a simplification was
+   possible, otherwise returns NULL_TREE.  */
+
+static tree
+maybe_canonicalize_comparison_1 (enum tree_code code, tree type,
+				 tree arg0, tree arg1)
+{
+  enum tree_code code0 = TREE_CODE (arg0);
+  tree t, cst0 = NULL_TREE;
+  int sgn0;
+  bool swap = false;
+
+  /* Match A +- CST code arg1 and CST code arg1.  */
+  if (!(((code0 == MINUS_EXPR
+          || code0 == PLUS_EXPR)
+         && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	|| code0 == INTEGER_CST))
+    return NULL_TREE;
+
+  /* Identify the constant in arg0 and its sign.  */
+  if (code0 == INTEGER_CST)
+    cst0 = arg0;
+  else
+    cst0 = TREE_OPERAND (arg0, 1);
+  sgn0 = tree_int_cst_sgn (cst0);
+
+  /* Overflowed constants and zero will cause problems.  */
+  if (integer_zerop (cst0)
+      || TREE_OVERFLOW (cst0))
+    return NULL_TREE;
+
+  /* See if we can reduce the mangitude of the constant in
+     arg0 by changing the comparison code.  */
+  if (code0 == INTEGER_CST)
+    {
+      /* CST <= arg1  ->  CST-1 < arg1.  */
+      if (code == LE_EXPR && sgn0 == 1)
+	code = LT_EXPR;
+      /* -CST < arg1  ->  -CST-1 <= arg1.  */
+      else if (code == LT_EXPR && sgn0 == -1)
+	code = LE_EXPR;
+      /* CST > arg1  ->  CST-1 >= arg1.  */
+      else if (code == GT_EXPR && sgn0 == 1)
+	code = GE_EXPR;
+      /* -CST >= arg1  ->  -CST-1 > arg1.  */
+      else if (code == GE_EXPR && sgn0 == -1)
+	code = GT_EXPR;
+      else
+        return NULL_TREE;
+      /* arg1 code' CST' might be more canonical.  */
+      swap = true;
+    }
+  else
+    {
+      /* A - CST < arg1  ->  A - CST-1 <= arg1.  */
+      if (code == LT_EXPR
+	  && code0 == ((sgn0 == -1) ? PLUS_EXPR : MINUS_EXPR))
+	code = LE_EXPR;
+      /* A + CST > arg1  ->  A + CST-1 >= arg1.  */
+      else if (code == GT_EXPR
+	       && code0 == ((sgn0 == -1) ? MINUS_EXPR : PLUS_EXPR))
+	code = GE_EXPR;
+      /* A + CST <= arg1  ->  A + CST-1 < arg1.  */
+      else if (code == LE_EXPR
+	       && code0 == ((sgn0 == -1) ? MINUS_EXPR : PLUS_EXPR))
+	code = LT_EXPR;
+      /* A - CST >= arg1  ->  A - CST-1 > arg1.  */
+      else if (code == GE_EXPR
+	       && code0 == ((sgn0 == -1) ? PLUS_EXPR : MINUS_EXPR))
+	code = GT_EXPR;
+      else
+	return NULL_TREE;
+    }
+
+  /* Now build the constant reduced in magnitude.  */
+  t = int_const_binop (sgn0 == -1 ? PLUS_EXPR : MINUS_EXPR,
+  		       cst0, build_int_cst (TREE_TYPE (cst0), 1), 0);
+  if (code0 != INTEGER_CST)
+    t = fold_build2 (code0, TREE_TYPE (arg0), TREE_OPERAND (arg0, 0), t);
+
+  /* If swapping might yield to a more canonical form, do so.  */
+  if (swap)
+    return fold_build2 (swap_tree_comparison (code), type, arg1, t);
+  else
+    return fold_build2 (code, type, t, arg1);
+}
+
+/* Canonicalize the comparison ARG0 CODE ARG1 with type TYPE with undefined
+   overflow further.  Try to decrease the magnitude of constants involved
+   by changing LE_EXPR and GE_EXPR to LT_EXPR and GT_EXPR or vice versa
+   and put sole constants at the second argument position.
+   Returns the canonicalized tree if changed, otherwise NULL_TREE.  */
+
+static tree
+maybe_canonicalize_comparison (enum tree_code code, tree type,
+			       tree arg0, tree arg1)
+{
+  tree t;
+
+  /* In principle pointers also have undefined overflow behavior,
+     but that causes problems elsewhere.  */
+  if ((flag_wrapv || flag_trapv)
+      || (TYPE_UNSIGNED (TREE_TYPE (arg0))
+	  && !POINTER_TYPE_P (TREE_TYPE (arg0))))
+    return NULL_TREE;
+
+  /* Try canonicalization by simplifying arg0.  */
+  t = maybe_canonicalize_comparison_1 (code, type, arg0, arg1);
+  if (t)
+    return t;
+
+  /* Try canonicalization by simplifying arg1 using the swapped
+     comparsion.  */
+  code = swap_tree_comparison (code);
+  return maybe_canonicalize_comparison_1 (code, type, arg1, arg0);
+}
+
 /* Subroutine of fold_binary.  This routine performs all of the
    transformations that are common to the equality/inequality
    operators (EQ_EXPR and NE_EXPR) and the ordering operators
@@ -7876,6 +7996,10 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 					 variable1, cst),
 			    variable2);
     }
+
+  tem = maybe_canonicalize_comparison (code, type, arg0, arg1);
+  if (tem)
+    return tem;
 
   if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
     {
