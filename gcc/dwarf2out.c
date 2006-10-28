@@ -12017,7 +12017,6 @@ gen_variable_die (tree decl, dw_die_ref context_die)
 	    add_AT_file (var_die, DW_AT_decl_file, file_index);
 
 	  if (get_AT_unsigned (old_die, DW_AT_decl_line) != (unsigned) s.line)
-
 	    add_AT_unsigned (var_die, DW_AT_decl_line, s.line);
 	}
     }
