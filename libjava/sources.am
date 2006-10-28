@@ -565,6 +565,22 @@ gnu/gcj/io.list: $(gnu_gcj_io_source_files)
 -include gnu/gcj/io.deps
 
 
+gnu_gcj_jvmti_source_files = \
+gnu/gcj/jvmti/Breakpoint.java
+
+gnu_gcj_jvmti_header_files = $(patsubst %.java,%.h,$(gnu_gcj_jvmti_source_files))
+
+gnu/gcj/jvmti.list: $(gnu_gcj_jvmti_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_gcj_jvmti_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/gcj/jvmti.list
+
+-include gnu/gcj/jvmti.deps
+
+
 gnu_gcj_runtime_source_files = \
 gnu/gcj/runtime/BootClassLoader.java \
 gnu/gcj/runtime/ExtensionClassLoader.java \
@@ -8785,6 +8801,7 @@ all_packages_source_files = \
   gnu/gcj.list \
   gnu/gcj/convert.list \
   gnu/gcj/io.list \
+  gnu/gcj/jvmti.list \
   gnu/gcj/runtime.list \
   gnu/gcj/util.list \
   gnu/java/awt.list \
@@ -9016,6 +9033,7 @@ ordinary_header_files = \
   $(gnu_gcj_header_files) \
   $(gnu_gcj_convert_header_files) \
   $(gnu_gcj_io_header_files) \
+  $(gnu_gcj_jvmti_header_files) \
   $(gnu_gcj_runtime_header_files) \
   $(gnu_gcj_util_header_files) \
   $(gnu_java_awt_header_files) \
