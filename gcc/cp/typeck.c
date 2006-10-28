@@ -3226,11 +3226,11 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (op1, integer_zero_node))
-		warning (0, "%s rotate count is negative",
-			 (code == LROTATE_EXPR) ? "left" : "right");
+		warning (0, (code == LROTATE_EXPR) ? "left rotate count is negative" :
+			    "right rotate count is negative");
 	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
-		warning (0, "%s rotate count >= width of type",
-			 (code == LROTATE_EXPR) ? "left" : "right");
+		warning (0, (code == LROTATE_EXPR) ? "left rotate count >= width of type" :
+			 "right rotate count >= width of type");
 	    }
 	  /* Convert the shift-count to an integer, regardless of
 	     size of value being shifted.  */
