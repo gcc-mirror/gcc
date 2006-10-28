@@ -1,3 +1,11 @@
+2006-10-28  Keith Seitz  <keiths@redhat.com>
+
+	* Makefile.am (nat_source_files): Add natBreakpoint.cc.
+	* sources.am: Regenerated.
+	* Makefile.in: Regenerated.
+	* gnu/gcj/jvmti/Breakpoint.java: New file.
+	* gnu/gcj/jvmti/natBreakpoint.java: New file.
+
 2006-10-27  Keith Seitz  <keiths@redhat.com>
 
 	* include/java-stack.h (ncodeMap): Declare.

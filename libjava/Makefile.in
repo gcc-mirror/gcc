@@ -149,9 +149,9 @@ am__DEPENDENCIES_1 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	gnu/classpath/jdwp/exception.lo gnu/classpath/jdwp/id.lo \
 	gnu/classpath/jdwp/processor.lo \
 	gnu/classpath/jdwp/transport.lo gnu/classpath/jdwp/util.lo \
-	gnu/gcj.lo gnu/gcj/convert.lo gnu/gcj/io.lo gnu/gcj/runtime.lo \
-	gnu/gcj/util.lo gnu/java/awt.lo gnu/java/awt/color.lo \
-	gnu/java/awt/dnd.lo gnu/java/awt/font.lo \
+	gnu/gcj.lo gnu/gcj/convert.lo gnu/gcj/io.lo gnu/gcj/jvmti.lo \
+	gnu/gcj/runtime.lo gnu/gcj/util.lo gnu/java/awt.lo \
+	gnu/java/awt/color.lo gnu/java/awt/dnd.lo gnu/java/awt/font.lo \
 	gnu/java/awt/font/opentype.lo \
 	gnu/java/awt/font/opentype/truetype.lo gnu/java/awt/image.lo \
 	gnu/java/awt/java2d.lo gnu/java/awt/peer.lo \
@@ -275,6 +275,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	gnu/gcj/convert/natOutput_EUCJIS.cc \
 	gnu/gcj/convert/natOutput_SJIS.cc \
 	gnu/gcj/io/natSimpleSHSStream.cc gnu/gcj/io/shs.cc \
+	gnu/gcj/jvmti/natBreakpoint.cc \
 	gnu/gcj/runtime/natFinalizerThread.cc \
 	gnu/gcj/runtime/natSharedLibLoader.cc \
 	gnu/gcj/runtime/natSystemClassLoader.cc \
@@ -322,6 +323,7 @@ am__objects_2 = gnu/classpath/natSystemProperties.lo \
 	gnu/gcj/convert/natOutput_EUCJIS.lo \
 	gnu/gcj/convert/natOutput_SJIS.lo \
 	gnu/gcj/io/natSimpleSHSStream.lo gnu/gcj/io/shs.lo \
+	gnu/gcj/jvmti/natBreakpoint.lo \
 	gnu/gcj/runtime/natFinalizerThread.lo \
 	gnu/gcj/runtime/natSharedLibLoader.lo \
 	gnu/gcj/runtime/natSystemClassLoader.lo \
@@ -1213,6 +1215,10 @@ gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java
 
 gnu_gcj_io_header_files = $(patsubst %.java,%.h,$(gnu_gcj_io_source_files))
+gnu_gcj_jvmti_source_files = \
+gnu/gcj/jvmti/Breakpoint.java
+
+gnu_gcj_jvmti_header_files = $(patsubst %.java,%.h,$(gnu_gcj_jvmti_source_files))
 gnu_gcj_runtime_source_files = \
 gnu/gcj/runtime/BootClassLoader.java \
 gnu/gcj/runtime/ExtensionClassLoader.java \
@@ -6772,6 +6778,7 @@ all_packages_source_files = \
   gnu/gcj.list \
   gnu/gcj/convert.list \
   gnu/gcj/io.list \
+  gnu/gcj/jvmti.list \
   gnu/gcj/runtime.list \
   gnu/gcj/util.list \
   gnu/java/awt.list \
@@ -7003,6 +7010,7 @@ ordinary_header_files = \
   $(gnu_gcj_header_files) \
   $(gnu_gcj_convert_header_files) \
   $(gnu_gcj_io_header_files) \
+  $(gnu_gcj_jvmti_header_files) \
   $(gnu_gcj_runtime_header_files) \
   $(gnu_gcj_util_header_files) \
   $(gnu_java_awt_header_files) \
@@ -7381,6 +7389,7 @@ gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
+gnu/gcj/jvmti/natBreakpoint.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natSystemClassLoader.cc \
@@ -7759,6 +7768,14 @@ gnu/gcj/io/natSimpleSHSStream.lo: gnu/gcj/io/$(am__dirstamp) \
 	gnu/gcj/io/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/io/shs.lo: gnu/gcj/io/$(am__dirstamp) \
 	gnu/gcj/io/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/jvmti/$(am__dirstamp):
+	@$(mkdir_p) gnu/gcj/jvmti
+	@: > gnu/gcj/jvmti/$(am__dirstamp)
+gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/gcj/jvmti/$(DEPDIR)
+	@: > gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp)
+gnu/gcj/jvmti/natBreakpoint.lo: gnu/gcj/jvmti/$(am__dirstamp) \
+	gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/$(am__dirstamp):
 	@$(mkdir_p) gnu/gcj/runtime
 	@: > gnu/gcj/runtime/$(am__dirstamp)
@@ -8116,6 +8133,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/io/natSimpleSHSStream.lo
 	-rm -f gnu/gcj/io/shs.$(OBJEXT)
 	-rm -f gnu/gcj/io/shs.lo
+	-rm -f gnu/gcj/jvmti/natBreakpoint.$(OBJEXT)
+	-rm -f gnu/gcj/jvmti/natBreakpoint.lo
 	-rm -f gnu/gcj/natCore.$(OBJEXT)
 	-rm -f gnu/gcj/natCore.lo
 	-rm -f gnu/gcj/runtime/natFinalizerThread.$(OBJEXT)
@@ -8308,6 +8327,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/natOutput_SJIS.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/io/$(DEPDIR)/natSimpleSHSStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/io/$(DEPDIR)/shs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/jvmti/$(DEPDIR)/natBreakpoint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natFinalizerThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natSharedLibLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natStringBuffer.Plo@am__quote@
@@ -8638,6 +8658,7 @@ clean-libtool:
 	-rm -rf gnu/gcj/.libs gnu/gcj/_libs
 	-rm -rf gnu/gcj/convert/.libs gnu/gcj/convert/_libs
 	-rm -rf gnu/gcj/io/.libs gnu/gcj/io/_libs
+	-rm -rf gnu/gcj/jvmti/.libs gnu/gcj/jvmti/_libs
 	-rm -rf gnu/gcj/runtime/.libs gnu/gcj/runtime/_libs
 	-rm -rf gnu/gcj/util/.libs gnu/gcj/util/_libs
 	-rm -rf gnu/gcj/xlib/.libs gnu/gcj/xlib/_libs
@@ -9029,6 +9050,8 @@ distclean-generic:
 	-rm -f gnu/gcj/convert/$(am__dirstamp)
 	-rm -f gnu/gcj/io/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/gcj/io/$(am__dirstamp)
+	-rm -f gnu/gcj/jvmti/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/gcj/jvmti/$(am__dirstamp)
 	-rm -f gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/gcj/runtime/$(am__dirstamp)
 	-rm -f gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/$(am__dirstamp)
@@ -9085,7 +9108,7 @@ clean-am: clean-binPROGRAMS clean-dbexecLTLIBRARIES clean-generic \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/jvmti/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -9117,7 +9140,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/tools/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/classpath/jdwp/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/jvmti/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/security/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -9376,6 +9399,16 @@ gnu/gcj/io.list: $(gnu_gcj_io_source_files)
 	done > gnu/gcj/io.list
 
 -include gnu/gcj/io.deps
+
+gnu/gcj/jvmti.list: $(gnu_gcj_jvmti_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_gcj_jvmti_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/gcj/jvmti.list
+
+-include gnu/gcj/jvmti.deps
 
 gnu/gcj/runtime.list: $(gnu_gcj_runtime_source_files)
 	@$(mkinstalldirs) $(dir $@)
