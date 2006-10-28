@@ -1224,10 +1224,6 @@ gfc_intrinsic_sym;
 #include <gmp.h>
 #include <mpfr.h>
 #define GFC_RND_MODE GMP_RNDN
-#undef GFC_MPFR_TOO_OLD
-#if MPFR_VERSION_MAJOR < 2 || (MPFR_VERSION_MAJOR == 2 && MPFR_VERSION_MINOR < 2)
-#define GFC_MPFR_TOO_OLD 1
-#endif
 
 typedef struct gfc_expr
 {

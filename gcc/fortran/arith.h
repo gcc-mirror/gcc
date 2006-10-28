@@ -25,11 +25,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "gfortran.h"
 
-/* MPFR does not have mpfr_atan2(), which needs to return the principle
-   value of atan2().  MPFR also does not have the conversion of a mpfr_t
-   to a mpz_t, so declare a function for this as well.  */
+/* MPFR also does not have the conversion of a mpfr_t to a mpz_t, so declare
+   a function for this as well.  */
 
-void arctangent2 (mpfr_t, mpfr_t, mpfr_t);
 void gfc_mpfr_to_mpz (mpz_t, mpfr_t);
 void gfc_set_model_kind (int);
 void gfc_set_model (mpfr_t);
