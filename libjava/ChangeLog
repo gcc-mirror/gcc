@@ -1,3 +1,18 @@
+2006-10-27  Keith Seitz  <keiths@redhat.com>
+
+	* include/java-stack.h (ncodeMap): Declare.
+	(_Jv_StackTrace): Make _Jv_GetMethodDeclaringClass friend.
+	* java/lang/Class.h (_Jv_GetMethodDeclaringClass): Declare.
+	* java/lang/natClass.cc (_Jv_GetMethodDeclaringClass): New
+	function.
+	* stacktrace.cc (ncodeMap): Redefine from file global to global
+	for class _Jv_StackTrace.
+	(_Jv_StackTrace::UpdateNCodeMap): Add interpreted classes, too,
+	so that _Jv_GetMethodDeclaringClass can find them all.
+	(_Jv_StackTrace::ClassForFrame): Exclude interpreted classes.
+	* jvmti.cc (_Jv_JVMTI_GetMethodDeclaringClass): New function.
+	(_Jv_JVMTI_Interface): Define GetMethodDeclaringClass function.
+
 2006-10-25  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* testsuite/libjava.jvmti/natevents.cc (do_callback_arg_tests): Replace

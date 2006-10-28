@@ -1267,3 +1267,12 @@ _Jv_GetClassNameUtf8 (jclass klass)
 {
   return klass->name;
 }
+
+jclass
+_Jv_GetMethodDeclaringClass (jmethodID method)
+{
+  _Jv_StackTrace::UpdateNCodeMap ();
+  jobject obj = reinterpret_cast<jobject> (method->ncode);
+  return reinterpret_cast<jclass> (_Jv_StackTrace::ncodeMap->get (obj));
+}
+

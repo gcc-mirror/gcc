@@ -290,6 +290,10 @@ class java::io::VMObjectStreamClass;
 
 void _Jv_sharedlib_register_hook (jclass klass);
 
+/* Find the class that defines the given method. Returns NULL
+   if it cannot be found. Searches both interpreted and native
+   classes. */
+jclass _Jv_GetMethodDeclaringClass (jmethodID method);
 
 class java::lang::Class : public java::lang::Object
 {

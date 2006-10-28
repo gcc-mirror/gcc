@@ -466,6 +466,24 @@ _Jv_JVMTI_IsMethodSynthetic (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
 }
 
 static jvmtiError JNICALL
+_Jv_JVMTI_GetMethodDeclaringClass (MAYBE_UNUSED jvmtiEnv *env,
+				   jmethodID method,
+				   jclass *declaring_class_ptr)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
+  NULL_CHECK (declaring_class_ptr);
+
+  jclass klass = _Jv_GetMethodDeclaringClass (method);
+  if (klass != NULL)
+    {
+      *declaring_class_ptr = klass;
+      return JVMTI_ERROR_NONE;
+    }
+
+  return JVMTI_ERROR_INVALID_METHODID;
+}
+
+static jvmtiError JNICALL
 _Jv_JVMTI_GetClassLoaderClasses (MAYBE_UNUSED jvmtiEnv *env,
 				 jobject init_loader,
 				 jint *count_ptr,
@@ -1287,7 +1305,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   _Jv_JVMTI_GetFieldModifiers,	// GetFieldModifiers
   _Jv_JVMTI_IsFieldSynthetic,	// IsFieldSynthetic
   UNIMPLEMENTED,		// GetMethodName
-  UNIMPLEMENTED,		// GetMethodDeclaringClass
+  _Jv_JVMTI_GetMethodDeclaringClass,  // GetMethodDeclaringClass
   _Jv_JVMTI_GetMethodModifiers,	// GetMethodModifers
   RESERVED,			// reserved67
   UNIMPLEMENTED,		// GetMaxLocals

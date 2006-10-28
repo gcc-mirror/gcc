@@ -23,6 +23,7 @@ details.  */
 #include <java/lang/StackTraceElement.h>
 #include <java/lang/Throwable.h>
 #include <java/lang/Thread.h>
+#include <java/util/IdentityHashMap.h>
 
 #include <gnu/gcj/runtime/NameFinder.h>
 
@@ -102,6 +103,7 @@ private:
   int length;
   _Jv_StackFrame frames[];
 
+  static java::util::IdentityHashMap *ncodeMap;
   static void UpdateNCodeMap ();
   static jclass ClassForFrame (_Jv_StackFrame *frame);
   static void FillInFrameInfo (_Jv_StackFrame *frame);
@@ -126,7 +128,8 @@ public:
   static JArray<jclass> *GetClassContext (jclass checkClass);
   static ClassLoader *GetFirstNonSystemClassLoader (void);
   static jobjectArray GetAccessControlStack ();
-  
+
+  friend jclass _Jv_GetMethodDeclaringClass (jmethodID);
 };
 
 // Information about a given address.
