@@ -1,5 +1,15 @@
 2006-10-28  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/26899
+	* fold-const.c (maybe_canonicalize_comparison_1): Helper
+	for maybe_canonicalize_comparison.
+	(maybe_canonicalize_comparison): New function for canonicalizing
+	comparison trees.
+	(fold_comparison): Call it to canonicalize comparisons with
+	constants involved.
+
+2006-10-28  Richard Guenther  <rguenther@suse.de>
+
 	PR target/28806
 	* builtins.c (expand_builtin_int_roundingfn_2): Expand
 	BUILT_IN_LROUND and BUILT_IN_LLROUND from here.
