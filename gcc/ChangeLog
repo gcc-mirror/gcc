@@ -1,3 +1,10 @@
+2006-10-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/29271
+	* doc/invoke.texi (-fdump-rtl-sched2) Fix file extension number.
+	(-fdump-rtl-sched): Rename to ..
+	(-fdump-rtl-sched1): here.  Also fix file extension number.
+
 2006-10-28  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (maybe_canonicalize_comparison): Fix code
