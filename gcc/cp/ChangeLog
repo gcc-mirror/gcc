@@ -1,3 +1,9 @@
+2006-10-29  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/16307
+	* typeck.c (build_array_ref): Warn for char subscriptions
+	on pointers.
+
 2006-10-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl.c: Fix a comment typo.
