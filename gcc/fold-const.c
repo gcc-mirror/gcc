@@ -9506,6 +9506,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			    fold_convert (type, TREE_OPERAND (arg0, 0)),
 			    fold_convert (type, TREE_OPERAND (arg1, 0)));
 
+      /* Convert ~X ^ C to X ^ ~C.  */
+      if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && TREE_CODE (arg1) == INTEGER_CST)
+	return fold_build2 (code, type,
+			    fold_convert (type, TREE_OPERAND (arg0, 0)),
+			    fold_build1 (BIT_NOT_EXPR, type, arg1));
+
       /* Fold (X & 1) ^ 1 as (X & 1) == 0.  */
       if (TREE_CODE (arg0) == BIT_AND_EXPR
 	  && integer_onep (TREE_OPERAND (arg0, 1))
