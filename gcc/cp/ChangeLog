@@ -1,5 +1,11 @@
 2006-10-29  Dirk Mueller  <dmueller@suse.de>
 
+	PR c++/29089
+	* typeck.c (build_unary_op): Duplicate warning message
+	for easier translation.
+
+2006-10-29  Dirk Mueller  <dmueller@suse.de>
+
 	PR c++/16307
 	* typeck.c (build_array_ref): Warn for char subscriptions
 	on pointers.
