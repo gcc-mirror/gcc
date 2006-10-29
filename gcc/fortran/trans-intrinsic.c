@@ -3301,7 +3301,7 @@ gfc_conv_intrinsic_iargc (gfc_se * se, gfc_expr * expr)
    gfc_index_integer_kind integer.  */
 
 static void
-gfc_conv_intrinsic_loc(gfc_se * se, gfc_expr * expr)
+gfc_conv_intrinsic_loc (gfc_se * se, gfc_expr * expr)
 {
   tree temp_var;
   gfc_expr *arg_expr;
@@ -3315,13 +3315,11 @@ gfc_conv_intrinsic_loc(gfc_se * se, gfc_expr * expr)
     gfc_conv_expr_reference (se, arg_expr);
   else
     gfc_conv_array_parameter (se, arg_expr, ss, 1); 
-  se->expr= convert (gfc_unsigned_type (long_integer_type_node), 
-		     se->expr);
+  se->expr= convert (gfc_get_int_type (gfc_index_integer_kind), se->expr);
    
   /* Create a temporary variable for loc return value.  Without this, 
      we get an error an ICE in gcc/expr.c(expand_expr_addr_expr_1).  */
-  temp_var = gfc_create_var (gfc_unsigned_type (long_integer_type_node), 
-			     NULL);
+  temp_var = gfc_create_var (gfc_get_int_type (gfc_index_integer_kind), NULL);
   gfc_add_modify_expr (&se->pre, temp_var, se->expr);
   se->expr = temp_var;
 }
