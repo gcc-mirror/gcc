@@ -19310,6 +19310,33 @@ ix86_expand_sse_compare_and_jump (enum rtx_code code, rtx op0, rtx op1,
   return label;
 }
 
+/* Expand a mask generating SSE comparison instruction comparing OP0 with OP1
+   using comparison code CODE.  Operands are swapped for the comparison if
+   SWAP_OPERANDS is true.  Returns a rtx for the generated mask.  */
+static rtx
+ix86_expand_sse_compare_mask (enum rtx_code code, rtx op0, rtx op1,
+			      bool swap_operands)
+{
+  enum machine_mode mode = GET_MODE (op0);
+  rtx mask = gen_reg_rtx (mode);
+
+  if (swap_operands)
+    {
+      rtx tmp = op0;
+      op0 = op1;
+      op1 = tmp;
+    }
+
+  if (mode == DFmode)
+    emit_insn (gen_sse2_maskcmpdf3 (mask, op0, op1,
+				    gen_rtx_fmt_ee (code, mode, op0, op1)));
+  else
+    emit_insn (gen_sse_maskcmpsf3 (mask, op0, op1,
+				   gen_rtx_fmt_ee (code, mode, op0, op1)));
+
+  return mask;
+}
+
 /* Generate and return a rtx of mode MODE for 2**n where n is the number
    of bits of the mantissa of MODE, which must be one of DFmode or SFmode.  */
 static rtx
@@ -19416,6 +19443,119 @@ ix86_expand_rint (rtx operand0, rtx operand1)
 
   expand_simple_binop (mode, PLUS, res, TWO52, res, 0, OPTAB_DIRECT);
   expand_simple_binop (mode, MINUS, res, TWO52, res, 0, OPTAB_DIRECT);
+
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+
+  emit_move_insn (operand0, res);
+}
+
+/* Expand SSE2 sequence for computing floor or ceil from OPERAND1 storing
+   into OPERAND0.  */
+void
+ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
+{
+  /* C code for the stuff we expand below.
+        double xa = fabs (x), x2;
+        if (!isless (xa, TWO52))
+          return x;
+        xa = xa + TWO52 - TWO52;
+        x2 = copysign (xa, x);
+     Compensate.  Floor:
+        if (x2 > x)
+          x2 -= 1;
+     Compensate.  Ceil:
+        if (x2 < x)
+          x2 += 1;
+        return x2;
+   */
+  enum machine_mode mode = GET_MODE (operand0);
+  rtx xa, TWO52, tmp, label, one, res, mask;
+
+  TWO52 = ix86_gen_TWO52 (mode);
+
+  /* Temporary for holding the result, initialized to the input
+     operand to ease control flow.  */
+  res = gen_reg_rtx (mode);
+  emit_move_insn (res, operand1);
+
+  /* xa = abs (operand1) */
+  xa = ix86_expand_sse_fabs (res, &mask);
+
+  /* if (!isless (xa, TWO52)) goto label; */
+  label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
+
+  /* xa = xa + TWO52 - TWO52; */
+  expand_simple_binop (mode, PLUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
+  expand_simple_binop (mode, MINUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
+
+  /* xa = copysign (xa, operand1) */
+  ix86_sse_copysign_to_positive (xa, xa, res, mask);
+
+  /* generate 1.0 */
+  one = force_reg (mode, const_double_from_real_value (dconst1, mode));
+
+  /* Compensate: xa = xa - (xa > operand1 ? 1 : 0) */
+  tmp = ix86_expand_sse_compare_mask (UNGT, xa, res, !do_floor);
+  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+                          gen_rtx_AND (mode, one, tmp)));
+  expand_simple_binop (mode, do_floor ? MINUS : PLUS,
+                       xa, tmp, res, 0, OPTAB_DIRECT);
+
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+
+  emit_move_insn (operand0, res);
+}
+
+/* Expand SSE2 sequence for computing floor or ceil from OPERAND1 storing
+   into OPERAND0.  */
+void
+ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
+{
+  /* C code for the stuff we expand below.
+	double xa = fabs (x), x2;
+        if (!isless (xa, TWO52))
+          return x;
+	x2 = (double)(long)x;
+     Compensate.  Floor:
+	if (x2 > x)
+	  x2 -= 1;
+     Compensate.  Ceil:
+	if (x2 < x)
+	  x2 += 1;
+	return x2;
+   */
+  enum machine_mode mode = GET_MODE (operand0);
+  rtx xa, xi, TWO52, tmp, label, one, res;
+
+  TWO52 = ix86_gen_TWO52 (mode);
+
+  /* Temporary for holding the result, initialized to the input
+     operand to ease control flow.  */
+  res = gen_reg_rtx (mode);
+  emit_move_insn (res, operand1);
+
+  /* xa = abs (operand1) */
+  xa = ix86_expand_sse_fabs (res, NULL);
+
+  /* if (!isless (xa, TWO52)) goto label; */
+  label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
+
+  /* xa = (double)(long)x */
+  xi = gen_reg_rtx (mode == DFmode ? DImode : SImode);
+  expand_fix (xi, res, 0);
+  expand_float (xa, xi, 0);
+
+  /* generate 1.0 */
+  one = force_reg (mode, const_double_from_real_value (dconst1, mode));
+
+  /* Compensate: xa = xa - (xa > operand1 ? 1 : 0) */
+  tmp = ix86_expand_sse_compare_mask (UNGT, xa, res, !do_floor);
+  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+                          gen_rtx_AND (mode, one, tmp)));
+  expand_simple_binop (mode, do_floor ? MINUS : PLUS,
+                       xa, tmp, res, 0, OPTAB_DIRECT);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;

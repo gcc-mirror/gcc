@@ -1,5 +1,21 @@
 2006-10-29  Richard Guenther  <rguenther@suse.de>
 
+	* config/i386/i386-protos.h (ix86_expand_floorceil): Declare.
+	(ix86_expand_floorceildf_32): Likewise.
+	* config/i386/i386.c (ix86_expand_sse_compare_mask): New
+	static helper function.
+	(ix86_expand_floorceil): Expander for floor and ceil to SSE
+	math.
+	(ix86_expand_floorceildf_32): Same for DFmode on 32bit archs.
+	* config/i386/i386.md (floordf2): Adjust to enable floor
+	expansion via ix86_expand_floorceil if TARGET_SSE_MATH and
+	-fno-trapping-math is enabled and if not optimizing for size.
+	(floorsf2, ceildf2, ceilsf2): Likewise.
+	* config/i386/sse.md (sse_maskcmpsf3): New insn.
+	(sse2_maskcmpdf3): Likewise.
+
+2006-10-29  Richard Guenther  <rguenther@suse.de>
+
 	* builtins.c (expand_builtin_mathfn): Expand nearbyint as
 	rint in case -fno-trapping-math is enabled.
 	* config/i386/i386-protos.h (ix86_expand_rint): Declare.
