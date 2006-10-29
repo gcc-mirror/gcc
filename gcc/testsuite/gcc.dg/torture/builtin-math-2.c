@@ -18,6 +18,12 @@ extern void fool (long double);
   fool (__builtin_##FUNC##l (ARG##L)); \
 } while (0)
 
+#define TESTIT2(FUNC, ARG1, ARG2) do { \
+  foof (__builtin_##FUNC##f (ARG1##F, ARG2##F)); \
+  foo (__builtin_##FUNC (ARG1, ARG2)); \
+  fool (__builtin_##FUNC##l (ARG1##L, ARG2##L)); \
+} while (0)
+
 void bar()
 {
   /* An argument of NaN is not evaluated at compile-time.  */
@@ -83,6 +89,43 @@ void bar()
   /* The log1p arg must be [-1 ... Inf] EXclusive.  */
   TESTIT (log1p, -2.0);
   TESTIT (log1p, -1.0);
+
+  /* An argument of NaN is not evaluated at compile-time.  */
+  foof (__builtin_powf (__builtin_nanf(""), 2.5F));
+  foo (__builtin_pow (__builtin_nan(""), 2.5));
+  fool (__builtin_powl (__builtin_nanl(""), 2.5L));
+  foof (__builtin_powf (2.5F, __builtin_nanf("")));
+  foo (__builtin_pow (2.5, __builtin_nan("")));
+  fool (__builtin_powl (2.5L, __builtin_nanl("")));
+
+  /* An argument of Inf/-Inf is not evaluated at compile-time.  */
+  foof (__builtin_powf (__builtin_inff(), 2.5F));
+  foo (__builtin_pow (__builtin_inf(), 2.5));
+  fool (__builtin_powl (__builtin_infl(), 2.5L));
+  foof (__builtin_powf (-__builtin_inff(), 2.5F));
+  foo (__builtin_pow (-__builtin_inf(), 2.5));
+  fool (__builtin_powl (-__builtin_infl(), 2.5L));
+  foof (__builtin_powf (2.5F, __builtin_inff()));
+  foo (__builtin_pow (2.5, __builtin_inf()));
+  fool (__builtin_powl (2.5L, __builtin_infl()));
+  foof (__builtin_powf (2.5F, -__builtin_inff()));
+  foo (__builtin_pow (2.5, -__builtin_inf()));
+  fool (__builtin_powl (2.5L, -__builtin_infl()));
+
+  /* Check for Inv/NaN return values.  */
+  TESTIT2 (pow, -0.0, -4.5); /* Returns Inf */
+  TESTIT2 (pow, 0.0, -4.5); /* Returns Inf */
+  TESTIT2 (pow, -3.0, -4.5); /* Returns NaN */
+
+  /* Check for overflow/underflow.  */
+  foof (__builtin_powf (__FLT_MAX__, 3.5F));
+  foo (__builtin_pow (__DBL_MAX__, 3.5));
+  fool (__builtin_powl (__LDBL_MAX__, 3.5L));
+  TESTIT2 (pow, 2.0, 0x1p50);
+  foof (__builtin_powf (__FLT_MAX__, -3.5F));
+  foo (__builtin_pow (__DBL_MAX__, -3.5));
+  fool (__builtin_powl (__LDBL_MAX__, -3.5L));
+  TESTIT2 (pow, 2.0, -0x1p50);
 }
 
 /* { dg-final { scan-tree-dump-times "exp2 " 9 "original" } } */
@@ -112,4 +155,7 @@ void bar()
 /* { dg-final { scan-tree-dump-times "log1p " 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "log1pf" 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "log1pl" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "pow " 13 "original" } } */
+/* { dg-final { scan-tree-dump-times "powf" 13 "original" } } */
+/* { dg-final { scan-tree-dump-times "powl" 13 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */

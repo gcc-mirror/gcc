@@ -205,6 +205,8 @@ static char target_percent_s[3];
 static char target_percent_s_newline[4];
 static tree do_mpfr_arg1 (tree, tree, int (*)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
 			  const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, bool);
+static tree do_mpfr_arg2 (tree, tree, tree,
+			  int (*)(mpfr_ptr, mpfr_srcptr, mpfr_srcptr, mp_rnd_t));
 
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
@@ -7662,6 +7664,56 @@ fold_builtin_logarithm (tree fndecl, tree arglist,
   return 0;
 }
 
+/* Fold a builtin function call to hypot, hypotf, or hypotl.  Return
+   NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_hypot (tree fndecl, tree arglist, tree type)
+{
+  tree arg0 = TREE_VALUE (arglist);
+  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree res;
+
+  if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  /* Calculate the result when the argument is a constant.  */
+  if ((res = do_mpfr_arg2 (arg0, arg1, type, mpfr_hypot)))
+    return res;
+  
+  /* If either argument is zero, hypot is fabs of the other.  */
+  if (real_zerop (arg0))
+    return fold_build1 (ABS_EXPR, type, arg1);
+  else if (real_zerop (arg1))
+    return fold_build1 (ABS_EXPR, type, arg0);
+      
+  /* hypot(x,x) -> x*sqrt(2).  */
+  if (operand_equal_p (arg0, arg1, OEP_PURE_SAME))
+    {
+      REAL_VALUE_TYPE sqrt2;
+
+      real_sqrt (&sqrt2, TYPE_MODE (type), &dconst2);
+      return fold_build2 (MULT_EXPR, type, arg0,
+			  build_real (type, sqrt2));
+    }
+
+  /* Transform hypot(-x,y) or hypot(x,-y) or hypot(-x,-y) into
+     hypot(x,y).  */
+  if (TREE_CODE (arg0) == NEGATE_EXPR || TREE_CODE (arg1) == NEGATE_EXPR)
+    {
+      tree narg0 = (TREE_CODE (arg0) == NEGATE_EXPR)
+	? TREE_OPERAND (arg0, 0) : arg0;
+      tree narg1 = (TREE_CODE (arg1) == NEGATE_EXPR)
+	? TREE_OPERAND (arg1, 0) : arg1;
+      tree narglist = tree_cons (NULL_TREE, narg0,
+				 build_tree_list (NULL_TREE, narg1));
+      return build_function_call_expr (fndecl, narglist);
+    }
+  
+  return NULL_TREE;
+}
+
+
 /* Fold a builtin function call to pow, powf, or powl.  Return
    NULL_TREE if no simplification can be made.  */
 static tree
@@ -7669,9 +7721,14 @@ fold_builtin_pow (tree fndecl, tree arglist, tree type)
 {
   tree arg0 = TREE_VALUE (arglist);
   tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree res;
 
   if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
+
+  /* Calculate the result when the argument is a constant.  */
+  if ((res = do_mpfr_arg2 (arg0, arg1, type, mpfr_pow)))
+    return res;
 
   /* Optimize pow(1.0,y) = 1.0.  */
   if (real_onep (arg0))
@@ -9093,6 +9150,16 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 			     &dconstm1, NULL, false);
     break;
 
+    CASE_FLT_FN (BUILT_IN_ATAN2):
+      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg2 (TREE_VALUE (arglist),
+			     TREE_VALUE (TREE_CHAIN (arglist)),
+			     type, mpfr_atan2);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_HYPOT):
+      return fold_builtin_hypot (fndecl, arglist, type);
+    
     CASE_FLT_FN (BUILT_IN_POW):
       return fold_builtin_pow (fndecl, arglist, type);
 
@@ -11303,6 +11370,43 @@ init_target_chars (void)
   return true;
 }
 
+/* Helper function for do_mpfr_arg*().  Ensure M is a normal number
+   and no overflow/underflow occurred.  INEXACT is true if M was not
+   exacly calculated.  TYPE is the tree type for the result.  This
+   function assumes that you cleared the MPFR flags and then
+   calculated M to see if anything subsequently set a flag prior to
+   entering this function.  Return NULL_TREE if any checks fail.  */
+
+static tree
+do_mpfr_ckconv(mpfr_srcptr m, tree type, int inexact)
+{
+  /* Proceed iff we get a normal number, i.e. not NaN or Inf and no
+     overflow/underflow occurred.  If -frounding-math, proceed iff the
+     result of calling FUNC was exact.  */
+  if (mpfr_number_p (m) && !mpfr_overflow_p() && !mpfr_underflow_p()
+      && (!flag_rounding_math || !inexact))
+    {
+      REAL_VALUE_TYPE rr;
+
+      real_from_mpfr (&rr, m);
+      /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR value,
+	 check for overflow/underflow.  If the REAL_VALUE_TYPE is zero
+	 but the mpft_t is not, then we underflowed in the
+	 conversion.  */
+      if (!real_isnan (&rr) && !real_isinf (&rr)
+	  && (rr.cl == rvc_zero) == (mpfr_zero_p (m) != 0))
+        {
+	  REAL_VALUE_TYPE rmode;
+
+	  real_convert (&rmode, TYPE_MODE (type), &rr);
+	  /* Proceed iff the specified mode can hold the value.  */
+	  if (real_identical (&rmode, &rr))
+	    return build_real (type, rmode);
+	}
+    }
+  return NULL_TREE;
+}
+
 /* If argument ARG is a REAL_CST, call the one-argument mpfr function
    FUNC on it and return the resulting value as a tree with type TYPE.
    If MIN and/or MAX are not NULL, then the supplied ARG must be
@@ -11323,44 +11427,63 @@ do_mpfr_arg1 (tree arg, tree type, int (*func)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
 
   if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
     {
-      REAL_VALUE_TYPE r = TREE_REAL_CST (arg);
+      const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg);
 
-      if (!real_isnan (&r) && !real_isinf (&r)
-	  && (!min || real_compare (inclusive ? GE_EXPR: GT_EXPR , &r, min))
-	  && (!max || real_compare (inclusive ? LE_EXPR: LT_EXPR , &r, max)))
+      if (!real_isnan (ra) && !real_isinf (ra)
+	  && (!min || real_compare (inclusive ? GE_EXPR: GT_EXPR , ra, min))
+	  && (!max || real_compare (inclusive ? LE_EXPR: LT_EXPR , ra, max)))
         {
-	  const enum machine_mode mode = TYPE_MODE (type);
-	  const int prec = REAL_MODE_FORMAT (mode)->p;
+	  const int prec = REAL_MODE_FORMAT (TYPE_MODE (type))->p;
 	  int inexact;
 	  mpfr_t m;
 
 	  mpfr_init2 (m, prec);
-	  mpfr_from_real (m, &r);
+	  mpfr_from_real (m, ra);
 	  mpfr_clear_flags();
 	  inexact = func (m, m, GMP_RNDN);
-
-	  /* Proceed iff we get a normal number, i.e. not NaN or Inf
-	     and no overflow/underflow occurred.  If -frounding-math,
-	     proceed iff the result of calling FUNC was exact.  */
-	  if (mpfr_number_p (m) && !mpfr_overflow_p() && !mpfr_underflow_p()
-	      && (!flag_rounding_math || !inexact))
-	    {
-	      real_from_mpfr (&r, m);
-	      /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR
-		 value, check for overflow/underflow.  If the
-		 REAL_VALUE_TYPE is zero but the mpft_t is not, then
-		 we underflowed in the conversion.  */
-	      if (!real_isnan (&r) && !real_isinf (&r)
-		  && (r.cl == rvc_zero) == (mpfr_zero_p (m) != 0))
-	        {
-		  REAL_VALUE_TYPE rmode;
-		  real_convert (&rmode, mode, &r);
-		  /* Proceed iff the specified mode can hold the value.  */
-		  if (real_identical (&rmode, &r))
-		    result = build_real (type, rmode);
-		}
-	    }
+	  result = do_mpfr_ckconv (m, type, inexact);
 	  mpfr_clear (m);
+	}
+    }
+  
+  return result;
+}
+
+/* If argument ARG is a REAL_CST, call the two-argument mpfr function
+   FUNC on it and return the resulting value as a tree with type TYPE.
+   The mpfr precision is set to the precision of TYPE.  We assume that
+   function FUNC returns zero if the result could be calculated
+   exactly within the requested precision.  */
+
+static tree
+do_mpfr_arg2 (tree arg1, tree arg2, tree type,
+	      int (*func)(mpfr_ptr, mpfr_srcptr, mpfr_srcptr, mp_rnd_t))
+{
+  tree result = NULL_TREE;
+  
+  STRIP_NOPS (arg1);
+  STRIP_NOPS (arg2);
+
+  if (TREE_CODE (arg1) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg1)
+      && TREE_CODE (arg2) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg2))
+    {
+      const REAL_VALUE_TYPE *const ra1 = &TREE_REAL_CST (arg1);
+      const REAL_VALUE_TYPE *const ra2 = &TREE_REAL_CST (arg2);
+
+      if (!real_isnan (ra1) && !real_isinf (ra1)
+	  && !real_isnan (ra2) && !real_isinf (ra2))
+        {
+	  const int prec = REAL_MODE_FORMAT (TYPE_MODE (type))->p;
+	  int inexact;
+	  mpfr_t m1, m2;
+
+	  mpfr_inits2 (prec, m1, m2, NULL);
+	  mpfr_from_real (m1, ra1);
+	  mpfr_from_real (m2, ra2);
+	  mpfr_clear_flags();
+	  inexact = func (m1, m1, m2, GMP_RNDN);
+	  result = do_mpfr_ckconv (m1, type, inexact);
+	  mpfr_clears (m1, m2, NULL);
 	}
     }
   
