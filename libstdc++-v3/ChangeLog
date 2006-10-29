@@ -1,4 +1,9 @@
 2006-10-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/debug.cc (_Safe_sequence_base::_M_revalidate_singular): Fix
+	pasto, advance __iter only once per iteration.
+
+2006-10-29  Paolo Carlini  <pcarlini@suse.de>
 	
 	PR libstdc++/29520
 	* include/tr1/random (geometric_distribution<>::
