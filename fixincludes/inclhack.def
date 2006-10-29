@@ -140,6 +140,7 @@ fix = {
     files    = asm/posix_types.h;
     mach     = 'i[34567]86-*-linux*';
     bypass   = '} while';
+    bypass   = 'x86_64';
 
     /*
      * Define _POSIX_TYPES_H_WRAPPER at the end of the wrapper, not
