@@ -1,3 +1,10 @@
+2006-10-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_hypot): Rearrange recursive
+	transformation before others, and also do ABS_EXPR.  When
+	necessary, check flag_unsafe_math_optimizations.  When necessary,
+	add fabs.
+
 2006-10-29  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_comparison): Fold ~X op ~Y as Y op X.

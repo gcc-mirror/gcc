@@ -16,14 +16,17 @@ extern double cos (double);
 extern double sin (double);
 extern double tan (double);
 extern double hypot (double, double);
+extern double pure (double) __attribute__ ((__pure__));
 extern float cosf (float);
 extern float sinf (float);
 extern float tanf (float);
 extern float hypotf (float, float);
+extern float puref (float) __attribute__ ((__pure__));
 extern long double cosl (long double);
 extern long double sinl (long double);
 extern long double tanl (long double);
 extern long double hypotl (long double, long double);
+extern long double purel (long double) __attribute__ ((__pure__));
 
 extern void link_error(void);
 
@@ -65,7 +68,7 @@ void test2(double x, double y)
   if (hypot (0, x) != __builtin_fabs(x))
     link_error ();
 
-  if (hypot (x, x) != x * __builtin_sqrt(2))
+  if (hypot (x, x) != __builtin_fabs(x) * __builtin_sqrt(2))
     link_error ();
 
   if (hypot (-x, y) != hypot (x, y))
@@ -75,6 +78,29 @@ void test2(double x, double y)
     link_error ();
 
   if (hypot (-x, -y) != hypot (x, y))
+    link_error ();
+
+  if (hypot (__builtin_fabs(x), y) != hypot (x, y))
+    link_error ();
+
+  if (hypot (x, __builtin_fabs(y)) != hypot (x, y))
+    link_error ();
+
+  if (hypot (__builtin_fabs(x), __builtin_fabs(y)) != hypot (x, y))
+    link_error ();
+
+  if (hypot (-__builtin_fabs(-x),
+	     -__builtin_fabs(__builtin_fabs(__builtin_fabs(-y))))
+      != hypot (x, y))
+    link_error ();
+
+  if (hypot (-x, 0) != __builtin_fabs(x))
+    link_error ();
+
+  if (hypot (-x, x) != __builtin_fabs(x) * __builtin_sqrt(2))
+    link_error ();
+
+  if (hypot (pure(x), -pure(x)) != __builtin_fabs(pure(x)) * __builtin_sqrt(2))
     link_error ();
 }
 
@@ -118,7 +144,7 @@ void test2f(float x, float y)
   if (hypotf (0, x) != __builtin_fabsf(x))
     link_error ();
 
-  if (hypotf (x, x) != x * __builtin_sqrtf(2))
+  if (hypotf (x, x) != __builtin_fabsf(x) * __builtin_sqrtf(2))
     link_error ();
 
   if (hypotf (-x, y) != hypotf (x, y))
@@ -128,6 +154,29 @@ void test2f(float x, float y)
     link_error ();
 
   if (hypotf (-x, -y) != hypotf (x, y))
+    link_error ();
+
+  if (hypotf (__builtin_fabsf(x), y) != hypotf (x, y))
+    link_error ();
+
+  if (hypotf (x, __builtin_fabsf(y)) != hypotf (x, y))
+    link_error ();
+
+  if (hypotf (__builtin_fabsf(x), __builtin_fabsf(y)) != hypotf (x, y))
+    link_error ();
+
+  if (hypotf (-__builtin_fabsf(-x),
+	      -__builtin_fabsf(__builtin_fabsf(__builtin_fabsf(-y))))
+      != hypotf (x, y))
+    link_error ();
+
+  if (hypotf (-x, 0) != __builtin_fabsf(x))
+    link_error ();
+
+  if (hypotf (-x, x) != __builtin_fabsf(x) * __builtin_sqrtf(2))
+    link_error ();
+
+  if (hypotf (puref(x), -puref(x)) != __builtin_fabsf(puref(x)) * __builtin_sqrtf(2))
     link_error ();
 }
 
@@ -172,7 +221,7 @@ void test2l(long double x, long double y)
   if (hypotl (0, x) != __builtin_fabsl(x))
     link_error ();
 
-  if (hypotl (x, x) != x * __builtin_sqrtl(2))
+  if (hypotl (x, x) != __builtin_fabsl(x) * __builtin_sqrtl(2))
     link_error ();
 
   if (hypotl (-x, y) != hypotl (x, y))
@@ -182,6 +231,29 @@ void test2l(long double x, long double y)
     link_error ();
 
   if (hypotl (-x, -y) != hypotl (x, y))
+    link_error ();
+
+  if (hypotl (__builtin_fabsl(x), y) != hypotl (x, y))
+    link_error ();
+
+  if (hypotl (x, __builtin_fabsl(y)) != hypotl (x, y))
+    link_error ();
+
+  if (hypotl (__builtin_fabsl(x), __builtin_fabsl(y)) != hypotl (x, y))
+    link_error ();
+
+  if (hypotl (-__builtin_fabsl(-x),
+	      -__builtin_fabsl(__builtin_fabsl(__builtin_fabsl(-y))))
+      != hypotl (x, y))
+    link_error ();
+
+  if (hypotl (-x, 0) != __builtin_fabsl(x))
+    link_error ();
+
+  if (hypotl (-x, x) != __builtin_fabsl(x) * __builtin_sqrtl(2))
+    link_error ();
+
+  if (hypotl (purel(x), -purel(x)) != __builtin_fabsl(purel(x)) * __builtin_sqrtl(2))
     link_error ();
 }
 

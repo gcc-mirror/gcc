@@ -7677,35 +7677,40 @@ fold_builtin_hypot (tree fndecl, tree arglist, tree type)
   if ((res = do_mpfr_arg2 (arg0, arg1, type, mpfr_hypot)))
     return res;
   
-  /* If either argument is zero, hypot is fabs of the other.  */
-  if (real_zerop (arg0))
-    return fold_build1 (ABS_EXPR, type, arg1);
-  else if (real_zerop (arg1))
-    return fold_build1 (ABS_EXPR, type, arg0);
-      
-  /* hypot(x,x) -> x*sqrt(2).  */
-  if (operand_equal_p (arg0, arg1, OEP_PURE_SAME))
+  /* If either argument to hypot has a negate or abs, strip that off.
+     E.g. hypot(-x,fabs(y)) -> hypot(x,y).  */
+  if (TREE_CODE (arg0) == NEGATE_EXPR || TREE_CODE (arg1) == NEGATE_EXPR
+      || TREE_CODE (arg0) == ABS_EXPR || TREE_CODE (arg1) == ABS_EXPR)
     {
-      REAL_VALUE_TYPE sqrt2;
-
-      real_sqrt (&sqrt2, TYPE_MODE (type), &dconst2);
-      return fold_build2 (MULT_EXPR, type, arg0,
-			  build_real (type, sqrt2));
-    }
-
-  /* Transform hypot(-x,y) or hypot(x,-y) or hypot(-x,-y) into
-     hypot(x,y).  */
-  if (TREE_CODE (arg0) == NEGATE_EXPR || TREE_CODE (arg1) == NEGATE_EXPR)
-    {
-      tree narg0 = (TREE_CODE (arg0) == NEGATE_EXPR)
+      tree narg0 = (TREE_CODE (arg0) == NEGATE_EXPR
+		    || TREE_CODE (arg0) == ABS_EXPR)
 	? TREE_OPERAND (arg0, 0) : arg0;
-      tree narg1 = (TREE_CODE (arg1) == NEGATE_EXPR)
+      tree narg1 = (TREE_CODE (arg1) == NEGATE_EXPR
+		    || TREE_CODE (arg1) == ABS_EXPR)
 	? TREE_OPERAND (arg1, 0) : arg1;
       tree narglist = tree_cons (NULL_TREE, narg0,
 				 build_tree_list (NULL_TREE, narg1));
       return build_function_call_expr (fndecl, narglist);
     }
   
+  /* If either argument is zero, hypot is fabs of the other.  */
+  if (real_zerop (arg0))
+    return fold_build1 (ABS_EXPR, type, arg1);
+  else if (real_zerop (arg1))
+    return fold_build1 (ABS_EXPR, type, arg0);
+      
+  /* hypot(x,x) -> fabs(x)*sqrt(2).  */
+  if (flag_unsafe_math_optimizations
+      && operand_equal_p (arg0, arg1, OEP_PURE_SAME))
+    {
+      REAL_VALUE_TYPE sqrt2;
+
+      real_sqrt (&sqrt2, TYPE_MODE (type), &dconst2);
+      return fold_build2 (MULT_EXPR, type,
+			  fold_build1 (ABS_EXPR, type, arg0),
+			  build_real (type, sqrt2));
+    }
+
   return NULL_TREE;
 }
 
