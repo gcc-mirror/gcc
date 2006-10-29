@@ -1,5 +1,9 @@
 2006-10-29  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.target/i386/math-torture/round.c: New testcase.
+
+2006-10-29  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.target/i386/math-torture/ceil.c: New testcase.
 	* gcc.target/i386/math-torture/floor.c: Likewise.
 
