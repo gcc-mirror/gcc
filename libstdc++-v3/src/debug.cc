@@ -146,23 +146,18 @@ namespace __gnu_debug
 	  __old->_M_attach(0, true);
       }
   }
-  
-  void 
+
+  void
   _Safe_sequence_base::
   _M_revalidate_singular()
   {
-    _Safe_iterator_base* __iter;
-    for (__iter = _M_iterators; __iter; __iter = __iter->_M_next)
-      {
-	__iter->_M_version = _M_version;
-	__iter = __iter->_M_next;
-      }
-    
-    for (__iter = _M_const_iterators; __iter; __iter = __iter->_M_next)
-      {
-	__iter->_M_version = _M_version;
-	__iter = __iter->_M_next;
-      }
+    for (_Safe_iterator_base* __iter = _M_iterators; __iter;
+	 __iter = __iter->_M_next)
+      __iter->_M_version = _M_version;
+
+    for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2;
+	 __iter2 = __iter2->_M_next)
+      __iter2->_M_version = _M_version;
   }
 
   void 
