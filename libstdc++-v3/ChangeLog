@@ -1,3 +1,15 @@
+2006-10-29  Paolo Carlini  <pcarlini@suse.de>
+	
+	PR libstdc++/29520
+	* include/tr1/random (geometric_distribution<>::
+	operator()(_UniformRandomNumberGenerator&)): Only declare.
+	* include/tr1/random.tcc (geometric_distribution<>::
+	operator()(_UniformRandomNumberGenerator&),
+	poisson_distribution<>::operator()(_UniformRandomNumberGenerator&),
+	binomial_distribution<>::operator()(_UniformRandomNumberGenerator&)):
+	Reject candidate floating point values not convertible to the
+	result_type.
+
 2006-10-28  Paolo Carlini  <pcarlini@suse.de>
 	
 	* include/tr1/array (array<>::_M_at): New.
