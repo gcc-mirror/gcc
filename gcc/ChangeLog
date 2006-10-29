@@ -1,3 +1,27 @@
+2006-10-29  Richard Guenther  <rguenther@suse.de>
+
+	* genopinit.c (optabs): Change lfloor_optab and lceil_optab
+	to conversion optabs.
+	* optabs.c (init_optabs): Initialize lfloor_optab and lceil_optab
+	as conversion optab.
+	* optabs.h (enum optab_index): Remove OTI_lfloor and OTI_lceil.
+	(enum convert_optab_index): Add COI_lfloor and COI_lceil.
+	(lfloor_optab, lceil_optab): Adjust defines.
+	* builtins.c (expand_builtin_int_roundingfn): Adjust for
+	lfloor and lceil optabs now being conversion optabs.
+	* config/i386/i386-protos.h (ix86_expand_lfloorceil): Declare.
+	* config/i386/i386.c (ix86_expand_sse_compare_and_jump):
+	New static helper function.
+	(ix86_expand_lfloorceil): New function to expand lfloor and
+	lceil inline.
+	* config/i386/i386.md (lfloor<mode>2): Split into ...
+	(lfloorxf<mode>2): ... x87 variant
+	(lfloor<mode>di2, lfloor<mode>si2): ... and SSE variants
+	using ix86_expand_lfloorceil.
+	(lceil<mode>2, lceilxf<mode>2, lceil<mode>di2, lceil<mode>si2):
+	Likewise.
+	* doc/md.texi (lfloorMN, lceilMN): Document.
+
 2006-10-29  Richard Sandiford  <richard@codesourcery.com>
 
 	* configure.ac (HAVE_AS_NO_SHARED): New AC_DEFINE.  Test for the

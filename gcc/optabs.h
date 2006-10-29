@@ -189,9 +189,7 @@ enum optab_index
   OTI_log1p,
   /* Rounding functions */
   OTI_floor,
-  OTI_lfloor,
   OTI_ceil,
-  OTI_lceil,
   OTI_btrunc,
   OTI_round,
   OTI_nearbyint,
@@ -337,9 +335,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define log2_optab (optab_table[OTI_log2])
 #define log1p_optab (optab_table[OTI_log1p])
 #define floor_optab (optab_table[OTI_floor])
-#define lfloor_optab (optab_table[OTI_lfloor])
 #define ceil_optab (optab_table[OTI_ceil])
-#define lceil_optab (optab_table[OTI_lceil])
 #define btrunc_optab (optab_table[OTI_btrunc])
 #define round_optab (optab_table[OTI_round])
 #define nearbyint_optab (optab_table[OTI_nearbyint])
@@ -407,6 +403,8 @@ enum convert_optab_index
 
   COI_lrint,
   COI_lround,
+  COI_lfloor,
+  COI_lceil,
 
   COI_MAX
 };
@@ -424,6 +422,8 @@ extern GTY(()) convert_optab convert_optab_table[COI_MAX];
 #define ufloat_optab (convert_optab_table[COI_ufloat])
 #define lrint_optab (convert_optab_table[COI_lrint])
 #define lround_optab (convert_optab_table[COI_lround])
+#define lfloor_optab (convert_optab_table[COI_lfloor])
+#define lceil_optab (convert_optab_table[COI_lceil])
 
 /* These arrays record the insn_code of insns that may be needed to
    perform input and output reloads of special objects.  They provide a

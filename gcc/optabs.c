@@ -5299,9 +5299,7 @@ init_optabs (void)
   parity_optab = init_optab (PARITY);
   sqrt_optab = init_optab (SQRT);
   floor_optab = init_optab (UNKNOWN);
-  lfloor_optab = init_optab (UNKNOWN);
   ceil_optab = init_optab (UNKNOWN);
-  lceil_optab = init_optab (UNKNOWN);
   round_optab = init_optab (UNKNOWN);
   btrunc_optab = init_optab (UNKNOWN);
   nearbyint_optab = init_optab (UNKNOWN);
@@ -5366,6 +5364,8 @@ init_optabs (void)
   ufloat_optab = init_convert_optab (UNSIGNED_FLOAT);
   lrint_optab = init_convert_optab (UNKNOWN);
   lround_optab = init_convert_optab (UNKNOWN);
+  lfloor_optab = init_convert_optab (UNKNOWN);
+  lceil_optab = init_convert_optab (UNKNOWN);
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
@@ -5488,6 +5488,10 @@ init_optabs (void)
   init_interclass_conv_libfuncs (lrint_optab, "lrint",
 				 MODE_INT, MODE_FLOAT);
   init_interclass_conv_libfuncs (lround_optab, "lround",
+				 MODE_INT, MODE_FLOAT);
+  init_interclass_conv_libfuncs (lfloor_optab, "lfloor",
+				 MODE_INT, MODE_FLOAT);
+  init_interclass_conv_libfuncs (lceil_optab, "lceil",
 				 MODE_INT, MODE_FLOAT);
 
   /* sext_optab is also used for FLOAT_EXTEND.  */
