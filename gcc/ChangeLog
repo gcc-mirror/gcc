@@ -1,3 +1,14 @@
+2006-10-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/29335
+	* builtins.c (do_mpfr_arg2, fold_builtin_hypot): New.
+	(fold_builtin_pow): Evaluate constant arguments at compile-time
+	using MPFR.
+	(fold_builtin_1): Handle BUILT_IN_ATAN2 and BUILT_IN_HYPOT.
+	(do_mpfr_ckconv): New helper function.
+	(do_mpfr_arg1): Use do_mpfr_ckconv.
+	(do_mpfr_arg2): New.
+
 2006-10-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/29271

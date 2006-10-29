@@ -1,3 +1,13 @@
+2006-10-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-20.c: Add tests for hypot.
+	* gcc.dg/torture/builtin-math-2.c (TESTIT2): New.  Add tests for
+	two-argument builtins.
+	* gcc.dg/torture/builtin-math-3.c (TESTIT_R): Renamed from
+	TESTIT2.  Update all callers.
+	(TESTIT2, TESTIT2_R): New helper macros.
+	Add testcases for pow, hypot and atan2.
+
 2006-10-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C++/29295

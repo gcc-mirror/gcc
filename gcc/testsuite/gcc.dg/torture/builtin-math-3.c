@@ -23,8 +23,8 @@ extern void link_error(int);
     link_error(__LINE__); \
   } while (0);
 
-/* Test that (LOW) < FUNC(ARG) < (HI).  */
-#define TESTIT2(FUNC,ARG,LOW,HI) do { \
+/* Range test, check that (LOW) < FUNC(ARG) < (HI).  */
+#define TESTIT_R(FUNC,ARG,LOW,HI) do { \
   if (__builtin_##FUNC##f(ARG) <= (LOW) || __builtin_##FUNC##f(ARG) >= (HI)) \
     link_error(__LINE__); \
   if (__builtin_##FUNC(ARG) <= (LOW) || __builtin_##FUNC(ARG) >= (HI)) \
@@ -33,70 +33,93 @@ extern void link_error(int);
     link_error(__LINE__); \
   } while (0);
 
+/* Test that FUNC(ARG1, ARG2) == (RES).  */
+#define TESTIT2(FUNC,ARG1,ARG2,RES) do { \
+  if (__builtin_##FUNC##f(ARG1##F, ARG2##F) != RES##F) \
+    link_error(__LINE__); \
+  if (__builtin_##FUNC(ARG1, ARG2) != RES) \
+    link_error(__LINE__); \
+  if (__builtin_##FUNC##l(ARG1##L, ARG2##L) != RES##L) \
+    link_error(__LINE__); \
+  } while (0);
+
+/* Range test, check that (LOW) < FUNC(ARG1,ARG2) < (HI).  */
+#define TESTIT2_R(FUNC,ARG1,ARG2,LOW,HI) do { \
+  if (__builtin_##FUNC##f(ARG1, ARG2) <= (LOW) \
+      || __builtin_##FUNC##f(ARG1, ARG2) >= (HI)) \
+    link_error(__LINE__); \
+  if (__builtin_##FUNC(ARG1, ARG2) <= (LOW) \
+      || __builtin_##FUNC(ARG1, ARG2) >= (HI)) \
+    link_error(__LINE__); \
+  if (__builtin_##FUNC##l(ARG1, ARG2) <= (LOW) \
+      || __builtin_##FUNC##l(ARG1, ARG2) >= (HI)) \
+    link_error(__LINE__); \
+  } while (0);
+
 int main (void)
 {
-  TESTIT2 (asin, -1.0, -3.15/2.0, -3.14/2.0); /* asin(-1) == -pi/2 */
+  TESTIT_R (asin, -1.0, -3.15/2.0, -3.14/2.0); /* asin(-1) == -pi/2 */
   TESTIT (asin, 0.0, 0.0); /* asin(0) == 0 */
   TESTIT (asin, -0.0, -0.0); /* asin(-0) == -0 */
-  TESTIT2 (asin, 1.0, 3.14/2.0, 3.15/2.0); /* asin(1) == pi/2 */
+  TESTIT_R (asin, 1.0, 3.14/2.0, 3.15/2.0); /* asin(1) == pi/2 */
 
-  TESTIT2 (acos, -1.0, 3.14, 3.15); /* acos(-1) == pi */
-  TESTIT2 (acos, 0.0, 3.14/2.0, 3.15/2.0); /* acos(0) == pi/2 */
-  TESTIT2 (acos, -0.0, 3.14/2.0, 3.15/2.0); /* acos(-0) == pi/2 */
+  TESTIT_R (acos, -1.0, 3.14, 3.15); /* acos(-1) == pi */
+  TESTIT_R (acos, 0.0, 3.14/2.0, 3.15/2.0); /* acos(0) == pi/2 */
+  TESTIT_R (acos, -0.0, 3.14/2.0, 3.15/2.0); /* acos(-0) == pi/2 */
   TESTIT (acos, 1.0, 0.0); /* acos(1) == 0 */
 
-  TESTIT2 (atan, -1.0, -3.15/4.0, -3.14/4.0); /* atan(-1) == -pi/4 */
+  TESTIT_R (atan, -1.0, -3.15/4.0, -3.14/4.0); /* atan(-1) == -pi/4 */
   TESTIT (atan, 0.0, 0.0); /* atan(0) == 0 */
   TESTIT (atan, -0.0, -0.0); /* atan(-0) == -0 */
-  TESTIT2 (atan, 1.0, 3.14/4.0, 3.15/4.0); /* atan(1) == pi/4 */
+  TESTIT_R (atan, 1.0, 3.14/4.0, 3.15/4.0); /* atan(1) == pi/4 */
 
-  TESTIT2 (asinh, -1.0, -0.89, -0.88); /* asinh(-1) == -0.881... */
+  TESTIT_R (asinh, -1.0, -0.89, -0.88); /* asinh(-1) == -0.881... */
   TESTIT (asinh, 0.0, 0.0); /* asinh(0) == 0 */
   TESTIT (asinh, -0.0, -0.0); /* asinh(-0) == -0 */
-  TESTIT2 (asinh, 1.0, 0.88, 0.89); /* asinh(1) == 0.881... */
+  TESTIT_R (asinh, 1.0, 0.88, 0.89); /* asinh(1) == 0.881... */
 
   TESTIT (acosh, 1.0, 0.0); /* acosh(1) == 0. */
-  TESTIT2 (acosh, 2.0, 1.31, 1.32); /* acosh(2) == 1.316... */
+  TESTIT_R (acosh, 2.0, 1.31, 1.32); /* acosh(2) == 1.316... */
 
-  TESTIT2 (atanh, -0.5, -0.55, -0.54); /* atanh(-0.5) == -0.549... */
+  TESTIT_R (atanh, -0.5, -0.55, -0.54); /* atanh(-0.5) == -0.549... */
   TESTIT (atanh, 0.0, 0.0); /* atanh(0) == 0 */
   TESTIT (atanh, -0.0, -0.0); /* atanh(-0) == -0 */
-  TESTIT2 (atanh, 0.5, 0.54, 0.55); /* atanh(0.5) == 0.549... */
+  TESTIT_R (atanh, 0.5, 0.54, 0.55); /* atanh(0.5) == 0.549... */
 
-  TESTIT2 (sin, -1.0, -0.85, -0.84); /* sin(-1) == -0.841... */
+  TESTIT_R (sin, -1.0, -0.85, -0.84); /* sin(-1) == -0.841... */
   TESTIT (sin, 0.0, 0.0); /* sin(0) == 0 */
   TESTIT (sin, -0.0, -0.0); /* sin(-0) == -0 */
-  TESTIT2 (sin, 1.0, 0.84, 0.85); /* sin(1) == 0.841... */
+  TESTIT_R (sin, 1.0, 0.84, 0.85); /* sin(1) == 0.841... */
 
-  TESTIT2 (cos, -1.0, 0.54, 0.55); /* cos(-1) == 0.5403... */
+  TESTIT_R (cos, -1.0, 0.54, 0.55); /* cos(-1) == 0.5403... */
   TESTIT (cos, 0.0, 1.0); /* cos(0) == 1 */
   TESTIT (cos, -0.0, 1.0); /* cos(-0) == 1 */
-  TESTIT2 (cos, 1.0, 0.54, 0.55); /* cos(1) == 0.5403... */
+  TESTIT_R (cos, 1.0, 0.54, 0.55); /* cos(1) == 0.5403... */
 
-  TESTIT2 (tan, -1.0, -1.56, 1.55); /* tan(-1) == -1.557... */
+  TESTIT_R (tan, -1.0, -1.56, 1.55); /* tan(-1) == -1.557... */
   TESTIT (tan, 0.0, 0.0); /* tan(0) == 0 */
   TESTIT (tan, -0.0, -0.0); /* tan(-0) == -0 */
-  TESTIT2 (tan, 1.0, 1.55, 1.56); /* tan(1) == 1.557... */
+  TESTIT_R (tan, 1.0, 1.55, 1.56); /* tan(1) == 1.557... */
 
-  TESTIT2 (sinh, -1.0, -1.18, -1.17); /* sinh(-1) == -1.175... */
+  TESTIT_R (sinh, -1.0, -1.18, -1.17); /* sinh(-1) == -1.175... */
   TESTIT (sinh, 0.0, 0.0); /* sinh(0) == 0 */
   TESTIT (sinh, -0.0, -0.0); /* sinh(-0) == -0 */
-  TESTIT2 (sinh, 1.0, 1.17, 1.18); /* sinh(1) == 1.175... */
+  TESTIT_R (sinh, 1.0, 1.17, 1.18); /* sinh(1) == 1.175... */
 
-  TESTIT2 (cosh, -1.0, 1.54, 1.55); /* cosh(-1) == 1.543... */
+  TESTIT_R (cosh, -1.0, 1.54, 1.55); /* cosh(-1) == 1.543... */
   TESTIT (cosh, 0.0, 1.0); /* cosh(0) == 1 */
   TESTIT (cosh, -0.0, 1.0); /* cosh(-0) == 1 */
-  TESTIT2 (cosh, 1.0, 1.54, 1.55); /* cosh(1) == 1.543... */
+  TESTIT_R (cosh, 1.0, 1.54, 1.55); /* cosh(1) == 1.543... */
 
-  TESTIT2 (tanh, -1.0, -0.77, -0.76); /* tanh(-1) == -0.761... */
+  TESTIT_R (tanh, -1.0, -0.77, -0.76); /* tanh(-1) == -0.761... */
   TESTIT (tanh, -0.0, -0.0); /* tanh(-0) == -0 */
   TESTIT (tanh, 0.0, 0.0); /* tanh(0) == 0 */
-  TESTIT2 (tanh, 1.0, 0.76, 0.77); /* tanh(1) == 0.761... */
+  TESTIT_R (tanh, 1.0, 0.76, 0.77); /* tanh(1) == 0.761... */
 
-  TESTIT2 (exp, -1.0, 0.36, 0.37); /* exp(-1) == 1/e */
+  TESTIT_R (exp, -1.0, 0.36, 0.37); /* exp(-1) == 1/e */
   TESTIT (exp, -0.0, 1.0); /* exp(-0) == 1 */
   TESTIT (exp, 0.0, 1.0); /* exp(0) == 1 */
-  TESTIT2 (exp, 1.0, 2.71, 2.72); /* exp(1) == e */
+  TESTIT_R (exp, 1.0, 2.71, 2.72); /* exp(1) == e */
 
   TESTIT (exp2, -1.0, 0.5); /* exp2(-1) == 1/2 */
   TESTIT (exp2, -0.0, 1.0); /* exp2(-0) == 1 */
@@ -113,14 +136,14 @@ int main (void)
   TESTIT (pow10, 0.0, 1.0); /* pow10(0) == 1 */
   TESTIT (pow10, 1.0, 10.0); /* pow10(1) == 10 */
 
-  TESTIT2 (expm1, -1.0, -0.64, -0.63); /* expm1(-1) == 1/e - 1 */
+  TESTIT_R (expm1, -1.0, -0.64, -0.63); /* expm1(-1) == 1/e - 1 */
   TESTIT (expm1, -0.0, -0.0); /* expm1(-0) == 0 */
   TESTIT (expm1, 0.0, 0.0); /* expm1(0) == 0 */
-  TESTIT2 (expm1, 1.0, 1.71, 1.72); /* expm1(1) == e - 1 */
+  TESTIT_R (expm1, 1.0, 1.71, 1.72); /* expm1(1) == e - 1 */
 
   TESTIT (log, 1.0, 0.0); /* log(1) == 0 */
-  TESTIT2 (log, M_E, 0.99, 1.01); /* log(e) == 1.000... */
-  TESTIT2 (log, M_E*M_E, 1.99, 2.01); /* log(e*e) == 2.000... */
+  TESTIT_R (log, M_E, 0.99, 1.01); /* log(e) == 1.000... */
+  TESTIT_R (log, M_E*M_E, 1.99, 2.01); /* log(e*e) == 2.000... */
 
   TESTIT (log2, 1.0, 0.0); /* log2(1) == 0 */
   TESTIT (log2, 2.0, 1.0); /* log2(2) == 1 */
@@ -132,8 +155,8 @@ int main (void)
 
   TESTIT (log1p, 0.0, 0.0); /* log1p(0) == 0 */
   TESTIT (log1p, -0.0, -0.0); /* log1p(-0) == -0 */
-  TESTIT2 (log1p, M_E-1, 0.99, 1.01); /* log1p(e-1) == 1.000... */
-  TESTIT2 (log1p, M_E*M_E-1, 1.99, 2.01); /* log1p(e*e-1) == 2.000... */
+  TESTIT_R (log1p, M_E-1, 0.99, 1.01); /* log1p(e-1) == 1.000... */
+  TESTIT_R (log1p, M_E*M_E-1, 1.99, 2.01); /* log1p(e*e-1) == 2.000... */
 
   TESTIT (cbrt, -0.0, -0.0); /* cbrt(-0) == -0 */
   TESTIT (cbrt, 0.0, 0.0); /* cbrt(0) == 0 */
@@ -144,13 +167,41 @@ int main (void)
 
   TESTIT (erf, -0.0, -0.0); /* erf(-0) == -0 */
   TESTIT (erf, 0.0, 0.0); /* erf(0) == 0 */
-  TESTIT2 (erf, 1.0, 0.84, 0.85); /* erf(1) == 0.842... */
-  TESTIT2 (erf, -1.0, -0.85, -0.84); /* erf(-1) == -0.842... */
+  TESTIT_R (erf, 1.0, 0.84, 0.85); /* erf(1) == 0.842... */
+  TESTIT_R (erf, -1.0, -0.85, -0.84); /* erf(-1) == -0.842... */
 
   TESTIT (erfc, -0.0, 1.0); /* erfc(-0) == 1 */
   TESTIT (erfc, 0.0, 1.0); /* erfc(0) == 1 */
-  TESTIT2 (erfc, 1.0, 0.15, 0.16); /* erfc(1) == 0.157... */
-  TESTIT2 (erfc, -1.0, 1.84, 1.85); /* erfc(-1) == 1.842... */
+  TESTIT_R (erfc, 1.0, 0.15, 0.16); /* erfc(1) == 0.157... */
+  TESTIT_R (erfc, -1.0, 1.84, 1.85); /* erfc(-1) == 1.842... */
+
+  TESTIT2 (pow, 3.0, 4.0, 81.0); /* pow(3,4) == 81 */
+  TESTIT2 (pow, -3.0, 5.0, -243.0); /* pow(-3,5) == -243 */
+  TESTIT2 (pow, 16.0, 0.25, 2.0); /* pow(16,1/4) == 2 */
+  TESTIT2 (pow, 4.0, -2.0, 0.0625); /* pow(4,-2) == 1/16 */
+  TESTIT2 (pow, -2.0, -3.0, -0.125); /* pow(-2,-3) == -1/8 */
+  TESTIT2_R (pow, -1.5, -3.0, -0.297, -0.296); /* pow(-1.5,-3) == -1/3.375 */
+
+  TESTIT2 (hypot, 0.0, 0.0, 0.0); /* hypot(0,0) == 0 */
+  TESTIT2 (hypot, -0.0, 0.0, 0.0); /* hypot(-0,0) == 0 */
+  TESTIT2 (hypot, 0.0, -0.0, 0.0); /* hypot(0,-0) == 0 */
+  TESTIT2 (hypot, -0.0, -0.0, 0.0); /* hypot(-0,-0) == 0 */
+  TESTIT2 (hypot, 3.0, 4.0, 5.0); /* hypot(3,4) == 5 */
+  TESTIT2 (hypot, -3.0, 4.0, 5.0); /* hypot(-3,4) == 5 */
+  TESTIT2 (hypot, 3.0, -4.0, 5.0); /* hypot(3,-4) == 5 */
+  TESTIT2 (hypot, -3.0, -4.0, 5.0); /* hypot(-3,-4) == 5 */
+  TESTIT2_R (hypot, 4.0, 5.0, 6.40, 6.41); /* hypot(4,5) == 6.403... */
+
+  TESTIT2 (atan2, 0.0, 0.0, 0.0) /* atan2(0,0) == 0 */
+  TESTIT2 (atan2, -0.0, 0.0, -0.0) /* atan2(-0,0) == -0 */
+  TESTIT2_R (atan2, 0.0, -0.0, 3.14, 3.15) /* atan2(0,-0) == pi */
+  TESTIT2_R (atan2, -0.0, -0.0, -3.15, -3.14) /* atan2(-0,-0) == -pi */
+  TESTIT2_R (atan2, 0.0, -1.0, 3.14, 3.15) /* atan2(0,-1) == pi */
+  TESTIT2_R (atan2, -0.0, -1.0, -3.15, -3.14) /* atan2(-0,-1) == -pi */
+  TESTIT2 (atan2, 0.0, 1.0, 0.0) /* atan2(0,1) == 0 */
+  TESTIT2 (atan2, -0.0, 1.0, -0.0) /* atan2(-0,1) == -0 */
+  TESTIT2_R (atan2, -1.0, 0.0, -1.58, -1.57) /* atan2(-1,0) == -pi/2 */
+  TESTIT2_R (atan2, 1.0, 0.0, 1.57, 1.58) /* atan2(1,0) == pi/2 */
 
   return 0;
 }

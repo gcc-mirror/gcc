@@ -15,12 +15,15 @@
 extern double cos (double);
 extern double sin (double);
 extern double tan (double);
+extern double hypot (double, double);
 extern float cosf (float);
 extern float sinf (float);
 extern float tanf (float);
+extern float hypotf (float, float);
 extern long double cosl (long double);
 extern long double sinl (long double);
 extern long double tanl (long double);
+extern long double hypotl (long double, long double);
 
 extern void link_error(void);
 
@@ -54,6 +57,24 @@ void test2(double x, double y)
     link_error ();
 
   if (-sin(x-y) != sin(y-x))
+    link_error ();
+
+  if (hypot (x, 0) != __builtin_fabs(x))
+    link_error ();
+
+  if (hypot (0, x) != __builtin_fabs(x))
+    link_error ();
+
+  if (hypot (x, x) != x * __builtin_sqrt(2))
+    link_error ();
+
+  if (hypot (-x, y) != hypot (x, y))
+    link_error ();
+
+  if (hypot (x, -y) != hypot (x, y))
+    link_error ();
+
+  if (hypot (-x, -y) != hypot (x, y))
     link_error ();
 }
 
@@ -90,6 +111,24 @@ void test2f(float x, float y)
 
   if (-sinf(x-y) != sinf(y-x))
     link_error ();
+
+  if (hypotf (x, 0) != __builtin_fabsf(x))
+    link_error ();
+
+  if (hypotf (0, x) != __builtin_fabsf(x))
+    link_error ();
+
+  if (hypotf (x, x) != x * __builtin_sqrtf(2))
+    link_error ();
+
+  if (hypotf (-x, y) != hypotf (x, y))
+    link_error ();
+
+  if (hypotf (x, -y) != hypotf (x, y))
+    link_error ();
+
+  if (hypotf (-x, -y) != hypotf (x, y))
+    link_error ();
 }
 
 
@@ -125,6 +164,24 @@ void test2l(long double x, long double y)
     link_error ();
 
   if (-sinl(x-y) != sinl(y-x))
+    link_error ();
+
+  if (hypotl (x, 0) != __builtin_fabsl(x))
+    link_error ();
+
+  if (hypotl (0, x) != __builtin_fabsl(x))
+    link_error ();
+
+  if (hypotl (x, x) != x * __builtin_sqrtl(2))
+    link_error ();
+
+  if (hypotl (-x, y) != hypotl (x, y))
+    link_error ();
+
+  if (hypotl (x, -y) != hypotl (x, y))
+    link_error ();
+
+  if (hypotl (-x, -y) != hypotl (x, y))
     link_error ();
 }
 
