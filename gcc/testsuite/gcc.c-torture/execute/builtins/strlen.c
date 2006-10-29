@@ -10,7 +10,7 @@
    and perform correctly. The multiple calls to strcpy are to prevent
    the potentially "pure" strlen calls from being removed by CSE.
 
-   Modifed by Ben Elliston, 2006-10-25:
+   Modified by Ben Elliston, 2006-10-25:
    The multiple calls to strcpy that Roger mentions above are
    problematic on systems where strcpy is implemented using strlen
    (which this test overrides to call abort).  So, rather than use

@@ -240,7 +240,7 @@ proc fortran-torture-execute { src } {
 		untested "$testcase execution, $option"
 		continue
 	    } else {
-		# FIXME: since we can't test for the existance of a remote
+		# FIXME: since we can't test for the existence of a remote
 		# file without short of doing an remote file list, we assume
 		# that since we got no output, it must have compiled.
 		pass "$testcase compilation, $option"		

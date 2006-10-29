@@ -1,3 +1,10 @@
+2006-10-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.c-torture/execute/20020118-1.c,
+	gcc.c-torture/execute/builtins/strlen.c,
+	gcc.c-torture/execute/pr23135.c, lib/fortran-torture.exp: Fix
+	comment typos.
+
 2006-10-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/builtins-20.c: Add tests for hypot.
