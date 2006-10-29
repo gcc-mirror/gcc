@@ -1,3 +1,30 @@
+2006-10-29  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.md (mul<mode>3): Check ISA_HAS_MUL3 rather than
+	GENERATE_MULT3_<MODE>.  Restrict the test to SImode.  Use ISA_HAS_MUL3
+	rather than GENERATE_MULT3_SI in the various define_peephole2s.
+	(mulsi3_mult3): Depend on ISA_HAS_MUL3 rather than GENERATE_MULT3_SI.
+	Use an inclusive test for "mult" rather than "mul".
+	(rotr<mode>3): Depend on ISA_HAS_ROR.
+	* config/mips/mips.h (GENERATE_MULT3_SI): Delete in favor of
+	ISA_HAS_MUL3.
+	(GENERATE_MULT3_DI): Delete.
+	(ISA_HAS_64BIT_REGS): Use consistent formatting.
+	(ISA_HAS_MUL3): New macro.
+	(ISA_HAS_CONDMOVE, ISA_HAS_8CC): Use consistent formatting.
+	(ISA_HAS_FP4, ISA_HAS_MADD_MSUB, ISA_HAS_NMADD_NMSUB): Likewise.
+	(ISA_HAS_CLZ_CLO): Likewise.
+	(ISA_HAS_DCLZ_DCLO): Delete.
+	(ISA_HAS_MULHI, ISA_HAS_MULS, ISA_HAS_MSAC): Require !TARGET_MIPS16.
+	(ISA_HAS_MACC): Require !TARGET_MIPS16 for all ISAs, not just
+	the VR4120 and VR4130.
+	(ISA_HAS_MACCHI): Use consistent formatting.
+	(ISA_HAS_ROTR_SI, ISA_HAS_ROTR_DI): Delete in favor of...
+	(ISA_HAS_ROR): ...this new macro.
+	(ISA_HAS_PREFETCH, ISA_HAS_PREFETCHX): Use consistent formatting.
+	(ISA_HAS_SEB_SEH, ISA_HAS_EXT_INS): Likewise.
+	(ISA_HAS_LOAD_DELAY): Use ISA_MIPS1.
+
 2006-10-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/15458

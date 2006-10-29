@@ -1014,7 +1014,7 @@
 		  (match_operand:GPR 2 "register_operand")))]
   ""
 {
-  if (GENERATE_MULT3_<MODE>)
+  if (<MODE>mode == SImode && ISA_HAS_MUL3)
     emit_insn (gen_mul<mode>3_mult3 (operands[0], operands[1], operands[2]));
   else if (!TARGET_FIX_R4000)
     emit_insn (gen_mul<mode>3_internal (operands[0], operands[1],
@@ -1030,34 +1030,16 @@
 		 (match_operand:SI 2 "register_operand" "d,d")))
    (clobber (match_scratch:SI 3 "=h,h"))
    (clobber (match_scratch:SI 4 "=l,X"))]
-  "GENERATE_MULT3_SI"
+  "ISA_HAS_MUL3"
 {
   if (which_alternative == 1)
     return "mult\t%1,%2";
-  if (TARGET_MAD
-      || TARGET_MIPS5400
-      || TARGET_MIPS5500
-      || TARGET_MIPS7000
-      || TARGET_MIPS9000
-      || ISA_MIPS32
-      || ISA_MIPS32R2
-      || ISA_MIPS64)
-    return "mul\t%0,%1,%2";
-  return "mult\t%0,%1,%2";
+  if (TARGET_MIPS3900)
+    return "mult\t%0,%1,%2";
+  return "mul\t%0,%1,%2";
 }
   [(set_attr "type" "imul3,imul")
    (set_attr "mode" "SI")])
-
-(define_insn "muldi3_mult3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(mult:DI (match_operand:DI 1 "register_operand" "d")
-		 (match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:DI 3 "=h"))
-   (clobber (match_scratch:DI 4 "=l"))]
-  "TARGET_64BIT && GENERATE_MULT3_DI"
-  "dmult\t%0,%1,%2"
-  [(set_attr "type" "imul3")
-   (set_attr "mode" "DI")])
 
 ;; If a register gets allocated to LO, and we spill to memory, the reload
 ;; will include a move from LO to a GPR.  Merge it into the multiplication
@@ -1077,7 +1059,7 @@
         (clobber (scratch:SI))])
    (set (match_operand:SI 4 "register_operand")
 	(unspec [(match_dup 0) (match_dup 3)] UNSPEC_MFHILO))]
-  "GENERATE_MULT3_SI && peep2_reg_dead_p (2, operands[0])"
+  "ISA_HAS_MUL3 && peep2_reg_dead_p (2, operands[0])"
   [(parallel
        [(set (match_dup 4)
 	     (mult:SI (match_dup 1)
@@ -1124,7 +1106,7 @@
         (clobber (match_operand:SI 3 "register_operand"))])
    (set (match_operand:SI 4 "register_operand")
 	(unspec:SI [(match_dup 0) (match_dup 3)] UNSPEC_MFHILO))]
-  "ISA_HAS_MACC && !GENERATE_MULT3_SI"
+  "ISA_HAS_MACC && !ISA_HAS_MUL3"
   [(set (match_dup 0)
 	(const_int 0))
    (parallel
@@ -1359,7 +1341,7 @@
 	     (match_operand:SI 4 "macc_msac_operand"))
 	(clobber (match_operand:SI 5 "register_operand"))
 	(clobber (match_dup 1))])]
-  "GENERATE_MULT3_SI
+  "ISA_HAS_MUL3
    && true_regnum (operands[1]) == LO_REGNUM
    && peep2_reg_dead_p (2, operands[1])
    && GP_REG_P (true_regnum (operands[3]))"
@@ -1398,7 +1380,7 @@
    (match_dup 0)
    (set (match_operand:SI 5 "register_operand")
 	(unspec:SI [(match_dup 1) (match_dup 4)] UNSPEC_MFHILO))]
-  "GENERATE_MULT3_SI && peep2_reg_dead_p (3, operands[1])"
+  "ISA_HAS_MUL3 && peep2_reg_dead_p (3, operands[1])"
   [(parallel [(set (match_dup 0)
 		   (match_dup 6))
 	      (clobber (match_dup 4))
@@ -4259,7 +4241,7 @@
   [(set (match_operand:GPR 0 "register_operand" "=d")
 	(rotatert:GPR (match_operand:GPR 1 "register_operand" "d")
 		      (match_operand:SI 2 "arith_operand" "dI")))]
-  "ISA_HAS_ROTR_<MODE>"
+  "ISA_HAS_ROR"
 {
   if (GET_CODE (operands[2]) == CONST_INT)
     gcc_assert (INTVAL (operands[2]) >= 0
