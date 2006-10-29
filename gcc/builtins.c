@@ -1835,7 +1835,10 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     CASE_FLT_FN (BUILT_IN_ROUND):
       builtin_optab = round_optab; break;
     CASE_FLT_FN (BUILT_IN_NEARBYINT):
-      builtin_optab = nearbyint_optab; break;
+      builtin_optab = nearbyint_optab;
+      if (flag_trapping_math)
+	break;
+      /* Else fallthrough and expand as rint.  */
     CASE_FLT_FN (BUILT_IN_RINT):
       builtin_optab = rint_optab; break;
     default:
