@@ -46,6 +46,7 @@ DIST_COMMON = $(am__configure_deps) $(srcdir)/../config.guess \
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/lead-dot.m4 \
+	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/stdint.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
