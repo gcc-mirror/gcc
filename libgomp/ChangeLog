@@ -1,3 +1,8 @@
+2006-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/29629
+	* testsuite/libgomp.fortran/pr29629.f90: New test.
+
 2006-10-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR libgomp/29494
