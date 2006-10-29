@@ -4121,9 +4121,9 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 
 	/* ARM $5.2.5 last annotation says this should be forbidden.  */
 	if (TREE_CODE (argtype) == ENUMERAL_TYPE)
-	  pedwarn ("ISO C++ forbids %sing an enum",
-		   (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
-		   ? "increment" : "decrement");
+	  pedwarn ((code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR) ?
+                   "ISO C++ forbids incrementing an enum" :
+                   "ISO C++ forbids decrementing an enum");
 
 	/* Compute the increment.  */
 
@@ -4132,16 +4132,20 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	    tree type = complete_type (TREE_TYPE (argtype));
 
 	    if (!COMPLETE_OR_VOID_TYPE_P (type))
-	      error ("cannot %s a pointer to incomplete type %qT",
-		     ((code == PREINCREMENT_EXPR
-		       || code == POSTINCREMENT_EXPR)
-		      ? "increment" : "decrement"), TREE_TYPE (argtype));
+	      error (((code == PREINCREMENT_EXPR
+		       || code == POSTINCREMENT_EXPR))
+		      ?
+                      "cannot increment a pointer to incomplete type %qT" :
+                      "cannot decrement a pointer to incomplete type %qT",
+                      TREE_TYPE (argtype));
 	    else if ((pedantic || warn_pointer_arith)
 		     && !TYPE_PTROB_P (argtype))
-	      pedwarn ("ISO C++ forbids %sing a pointer of type %qT",
-		       ((code == PREINCREMENT_EXPR
+	      pedwarn (((code == PREINCREMENT_EXPR
 			 || code == POSTINCREMENT_EXPR)
-			? "increment" : "decrement"), argtype);
+			? 
+                        "ISO C++ forbids incrementing a pointer of type %qT" :
+                        "ISO C++ forbids decrementing a pointer of type %qT"),
+                        argtype);
 	    inc = cxx_sizeof_nowarn (TREE_TYPE (argtype));
 	  }
 	else
