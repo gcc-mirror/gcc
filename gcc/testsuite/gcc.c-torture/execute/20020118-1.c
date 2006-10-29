@@ -1,4 +1,4 @@
-/* This tests an insn length of sign extention on h8300 port.  */
+/* This tests an insn length of sign extension on h8300 port.  */
 
 extern void exit (int);
 
