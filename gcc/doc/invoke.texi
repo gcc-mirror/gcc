@@ -3935,7 +3935,7 @@ Dump after RTL generation, to @file{@var{file}.104r.expand}.
 @itemx -fdump-rtl-sched2
 @opindex dR
 @opindex fdump-rtl-sched2
-Dump after the second scheduling pass, to @file{@var{file}.150r.sched2}.
+Dump after the second scheduling pass, to @file{@var{file}.149r.sched2}.
 
 @item -ds
 @itemx -fdump-rtl-cse
@@ -3945,10 +3945,10 @@ Dump after CSE (including the jump optimization that sometimes follows
 CSE), to @file{@var{file}.113r.cse}.
 
 @item -dS
-@itemx -fdump-rtl-sched
+@itemx -fdump-rtl-sched1
 @opindex dS
-@opindex fdump-rtl-sched
-Dump after the first scheduling pass, to @file{@var{file}.21.sched}.
+@opindex fdump-rtl-sched1
+Dump after the first scheduling pass, to @file{@var{file}.136r.sched1}.
 
 @item -dt
 @itemx -fdump-rtl-cse2
