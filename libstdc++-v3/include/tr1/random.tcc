@@ -768,6 +768,28 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     }
 
 
+  template<typename _IntType, typename _RealType>
+    template<class _UniformRandomNumberGenerator>
+      typename geometric_distribution<_IntType, _RealType>::result_type
+      geometric_distribution<_IntType, _RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng)
+      {
+	// About the epsilon thing see this thread:
+        // http://gcc.gnu.org/ml/gcc-patches/2006-10/msg00971.html
+	const _RealType __naf =
+	  (1 - std::numeric_limits<_RealType>::epsilon()) / 2;
+	// The largest _RealType convertible to _IntType.
+	const _RealType __thr =
+	  std::numeric_limits<_IntType>::max() + __naf;
+
+	_RealType __cand;
+	do
+	  __cand = std::ceil(std::log(__urng()) / _M_log_p);
+	while (__cand >= __thr);
+
+	return result_type(__cand + __naf);
+      }
+
   template<typename _IntType, typename _RealType,
 	   typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
@@ -841,6 +863,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  {
 	    _RealType __x;
 
+	    // See comments above...
+	    const _RealType __naf =
+	      (1 - std::numeric_limits<_RealType>::epsilon()) / 2;
+	    const _RealType __thr =
+	      std::numeric_limits<_IntType>::max() + __naf;
+
 	    const _RealType __m = std::floor(_M_mean);
 	    // sqrt(pi / 2)
 	    const _RealType __spi_2 = 1.2533141373155002512078826424055226L;
@@ -899,9 +927,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		__reject = (__w - __e - __x * _M_lm_thr
 			    > _M_lfm - std::tr1::lgamma(__x + __m + 1));
 
+		__reject |= __x + __m >= __thr;
+
 	      } while (__reject);
 
-	    return _IntType(__x + __m + 0.5);
+	    return result_type(__x + __m + __naf);
 	  }
 	else
 #endif
@@ -1055,6 +1085,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	  {
 	    _RealType __x;
 
+	    // See comments above...
+	    const _RealType __naf =
+	      (1 - std::numeric_limits<_RealType>::epsilon()) / 2;
+	    const _RealType __thr =
+	      std::numeric_limits<_IntType>::max() + __naf;
+
 	    const _RealType __np = std::floor(_M_t * __p12);
 	    const _RealType __pa = __np / _M_t;
 
@@ -1127,10 +1163,12 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 		      + std::tr1::lgamma(_M_t - (__np + __x) + 1);
 		    __reject = __v > _M_lf - __lfx + __x * _M_lp1p;
 		  }
+
+		__reject |= __x + __np >= __thr;
 	      }
 	    while (__reject);
 
-	    __x += __np + 0.5;
+	    __x += __np + __naf;
 
 	    const _IntType __z = _M_waiting(__urng, _M_t - _IntType(__x)); 
 	    __ret = _IntType(__x) + __z;
