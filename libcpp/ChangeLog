@@ -1,3 +1,9 @@
+2006-10-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (need_64bit_hwint): Set for i[34567]86-*-linux*
+	depending on --enable-targets=all.
+	* configure: Regenerate.
+
 2006-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/28709

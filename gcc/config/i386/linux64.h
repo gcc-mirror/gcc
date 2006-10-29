@@ -19,7 +19,11 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
+#if TARGET_64BIT_DEFAULT
 #define TARGET_VERSION fprintf (stderr, " (x86-64 Linux/ELF)");
+#else
+#define TARGET_VERSION fprintf (stderr, " (i386 Linux/ELF)");
+#endif
 
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
@@ -52,14 +56,22 @@ Boston, MA 02110-1301, USA.  */
 #define GLIBC_DYNAMIC_LINKER32 "/lib/ld-linux.so.2"
 #define GLIBC_DYNAMIC_LINKER64 "/lib64/ld-linux-x86-64.so.2"
 
+#if TARGET_64BIT_DEFAULT
+#define SPEC_32 "m32"
+#define SPEC_64 "!m32"
+#else
+#define SPEC_32 "!m64"
+#define SPEC_64 "m64"
+#endif
+
 #undef	LINK_SPEC
-#define LINK_SPEC "%{!m32:-m elf_x86_64} %{m32:-m elf_i386} \
+#define LINK_SPEC "%{" SPEC_64 ":-m elf_x86_64} %{" SPEC_32 ":-m elf_i386} \
   %{shared:-shared} \
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
-      %{m32:%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "}} \
-      %{!m32:%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}} \
+      %{" SPEC_32 ":%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER32 "}} \
+      %{" SPEC_64 ":%{!dynamic-linker:-dynamic-linker " LINUX_DYNAMIC_LINKER64 "}}} \
     %{static:-static}}"
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
@@ -68,7 +80,11 @@ Boston, MA 02110-1301, USA.  */
   "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
    %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
+#if TARGET_64BIT_DEFAULT
 #define MULTILIB_DEFAULTS { "m64" }
+#else
+#define MULTILIB_DEFAULTS { "m32" }
+#endif
 
 #undef NEED_INDICATE_EXEC_STACK
 #define NEED_INDICATE_EXEC_STACK 1

@@ -1,3 +1,14 @@
+2006-10-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (i[34567]86-*-linux*): Handle --enable-targets=all.
+	Handle tuning for bi-arch i[34567]86-*-linux* like that for
+	i[34567]86-*-solaris2.1[0-9]*.
+	* config/i386/linux64.h (TARGET_VERSION, MULTILIB_DEFAULTS):
+	Define conditionally depending on TARGET_64BIT_DEFAULT.
+	(SPEC_32, SPEC_64): Define.
+	(LINK_SPEC): Use them.
+	* doc/install.texi (--enable-targets=all): Document for x86-linux.
+
 2006-10-29  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386-protos.h (ix86_expand_round): Declare.
