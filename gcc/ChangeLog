@@ -1,3 +1,9 @@
+2006-10-29  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/15458
+	* fold-const.c (fold_binary): Optimize ~X ^ C as X ^ ~C, where C
+	is a constant.
+
 2006-10-29  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386-protos.h (ix86_expand_trunc): Declare.
