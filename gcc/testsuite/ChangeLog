@@ -1,3 +1,8 @@
+2006-10-29  Dirk Mueller  <dmueller@suse.de>
+
+	PR c++/16307
+	* g++.dg/warn/Wchar-subscripts-2.C: New testcase.
+
 2006-10-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/15458

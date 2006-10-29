@@ -2489,6 +2489,8 @@ build_array_ref (tree array, tree idx)
 	return error_mark_node;
       }
 
+    warn_array_subscript_with_type_char (idx);
+
     return build_indirect_ref (cp_build_binary_op (PLUS_EXPR, ar, ind),
 			       "array indexing");
   }
