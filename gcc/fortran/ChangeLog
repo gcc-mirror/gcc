@@ -1,3 +1,9 @@
+2006-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/29629
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Set attr.flavor
+	of init_val_sym and outer_sym to FL_VARIABLE.
+
 2006-10-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	* intrinsic.texi: Fix a typo.
