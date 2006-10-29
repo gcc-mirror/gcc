@@ -1,3 +1,9 @@
+2006-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/29629
+	* trans-openmp.c (gfc_trans_omp_array_reduction): Set attr.flavor
+	of init_val_sym and outer_sym to FL_VARIABLE.
+
 2006-10-24  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/29393
