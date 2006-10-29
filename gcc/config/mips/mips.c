@@ -1198,6 +1198,8 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 static enum mips_symbol_type
 mips_classify_symbol (rtx x)
 {
+  tree decl;
+
   if (GET_CODE (x) == LABEL_REF)
     {
       if (TARGET_MIPS16)
@@ -1229,7 +1231,8 @@ mips_classify_symbol (rtx x)
 
   if (TARGET_ABICALLS)
     {
-      if (SYMBOL_REF_DECL (x) == 0)
+      decl = SYMBOL_REF_DECL (x);
+      if (decl == 0)
 	{
 	  if (!SYMBOL_REF_LOCAL_P (x))
 	    return SYMBOL_GOT_GLOBAL;
@@ -1257,11 +1260,15 @@ mips_classify_symbol (rtx x)
 
 	     In the third case we have more freedom since both forms of
 	     access will work for any kind of symbol.  However, there seems
-	     little point in doing things differently.  */
-	  if (DECL_P (SYMBOL_REF_DECL (x))
-	      && TREE_PUBLIC (SYMBOL_REF_DECL (x))
-	      && !(TARGET_ABSOLUTE_ABICALLS
-		   && targetm.binds_local_p (SYMBOL_REF_DECL (x))))
+	     little point in doing things differently.
+
+	     Note that weakref symbols are not TREE_PUBLIC, but their
+	     targets are global or weak symbols.  Relocations in the
+	     object file will be against the target symbol, so it's
+	     that symbol's binding that matters here.  */
+	  if (DECL_P (decl)
+	      && (TREE_PUBLIC (decl) || DECL_WEAK (decl))
+	      && !(TARGET_ABSOLUTE_ABICALLS && targetm.binds_local_p (decl)))
 	    return SYMBOL_GOT_GLOBAL;
 	}
 
