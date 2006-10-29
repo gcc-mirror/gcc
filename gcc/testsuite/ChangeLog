@@ -1,3 +1,7 @@
+2006-10-29  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/fold-compare-1.c: New test case.
+
 2006-10-29  Dirk Mueller  <dmueller@suse.de>
 
 	PR c++/16307
