@@ -1,5 +1,14 @@
 2006-10-29  Richard Sandiford  <richard@codesourcery.com>
 
+	* configure.ac (HAVE_AS_NO_SHARED): New AC_DEFINE.  Test for the
+	-mno-shared assembler option on mips targets.
+	* configure, config.in: Regenerate.
+	* config/mips/linux.h (NO_SHARED_SPECS): New macro.
+	(DRIVER_SELF_SPECS): Define to NO_SHARED_SPECS if non-empty.
+	* config/mips/linux64.h (DRIVER_SELF_SPECS): Include NO_SHARED_SPECS.
+
+2006-10-29  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.c (mips_classify_symbol): Test DECL_WEAK as well
 	as TREE_PUBLIC when deciding whether to return SYMBOL_GOT_GLOBAL.
 

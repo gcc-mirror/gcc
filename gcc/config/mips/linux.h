@@ -179,3 +179,12 @@ Boston, MA 02110-1301, USA.  */
   %{profile:-lc_p} %{!profile: -lc}}"
 
 #define MD_UNWIND_SUPPORT "config/mips/linux-unwind.h"
+
+#ifdef HAVE_AS_NO_SHARED
+/* Default to -mno-shared for non-PIC.  */
+#define NO_SHARED_SPECS \
+  "%{mshared|mno-shared|fpic|fPIC|fpie|fPIE:;:-mno-shared}",
+#define DRIVER_SELF_SPECS NO_SHARED_SPECS
+#else
+#define NO_SHARED_SPECS
+#endif
