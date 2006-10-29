@@ -417,7 +417,7 @@ present, then all characters up to and excluding @code{achar(0)} are
 used as file name.
 @item @var{MODE} @tab Scalar @code{CHARACTER} with the file access mode,
 may be any concatenation of @code{"r"} (readable), @code{"w"} (writable)
-and @code{"x"} (executable), or @code{" "} to check for existance.
+and @code{"x"} (executable), or @code{" "} to check for existence.
 @end multitable
 
 @item @emph{Return value}:
