@@ -1,3 +1,10 @@
+2006-10-29  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_comparison): Fold ~X op ~Y as Y op X.
+	Fold ~X op C as X op' ~C, where op' is the swapped comparison.
+	(fold_binary): ~X eq/ne C is now handled in fold_comparison.
+	Fold -X eq/ne -Y as X eq/ne Y.
+
 2006-10-29  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.md (mul<mode>3): Check ISA_HAS_MUL3 rather than

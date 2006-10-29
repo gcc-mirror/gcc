@@ -8360,6 +8360,20 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 	return tem;
     }
 
+  /* Fold ~X op ~Y as Y op X.  */
+  if (TREE_CODE (arg0) == BIT_NOT_EXPR
+      && TREE_CODE (arg1) == BIT_NOT_EXPR)
+    return fold_build2 (code, type,
+			TREE_OPERAND (arg1, 0),
+			TREE_OPERAND (arg0, 0));
+
+  /* Fold ~X op C as X op' ~C, where op' is the swapped comparison.  */
+  if (TREE_CODE (arg0) == BIT_NOT_EXPR
+      && TREE_CODE (arg1) == INTEGER_CST)
+    return fold_build2 (swap_tree_comparison (code), type,
+			TREE_OPERAND (arg0, 0),
+			fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg1), arg1));
+
   return NULL_TREE;
 }
 
@@ -10426,13 +10440,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
           && code == EQ_EXPR)
         return fold_build1 (TRUTH_NOT_EXPR, type, arg0);
 
-      /*  ~a != C becomes a != ~C where C is a constant.  Likewise for ==.  */
-      if (TREE_CODE (arg0) == BIT_NOT_EXPR
-	  && TREE_CODE (arg1) == INTEGER_CST)
-	return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
-			    fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg1), 
-					 arg1));
-
       /* If this is an equality comparison of the address of a non-weak
 	 object against zero, then we know the result.  */
       if (TREE_CODE (arg0) == ADDR_EXPR
@@ -10798,6 +10805,14 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  tree res = constant_boolean_node (code==NE_EXPR, type);
 	  return omit_one_operand (type, res, arg0);
 	}
+
+      /* Fold -X op -Y as X op Y, where op is eq/ne.  */
+      if (TREE_CODE (arg0) == NEGATE_EXPR
+          && TREE_CODE (arg1) == NEGATE_EXPR)
+	return fold_build2 (code, type,
+			    TREE_OPERAND (arg0, 0),
+			    TREE_OPERAND (arg1, 0));
+
       return NULL_TREE;
 
     case LT_EXPR:
