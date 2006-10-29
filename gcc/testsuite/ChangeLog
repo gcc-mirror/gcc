@@ -1,3 +1,7 @@
+2006-10-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-20.c: Add more hypot tests.
+
 2006-10-29  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/fold-compare-1.c: New test case.
