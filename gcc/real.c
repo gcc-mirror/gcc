@@ -4923,7 +4923,7 @@ real_copysign (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *x)
 }
 
 /* Convert from REAL_VALUE_TYPE to MPFR.  The caller is responsible
-   for initializing and clearing the MPFR parmeter.  */
+   for initializing and clearing the MPFR parameter.  */
 
 void
 mpfr_from_real (mpfr_ptr m, const REAL_VALUE_TYPE *r)

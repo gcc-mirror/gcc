@@ -2421,7 +2421,7 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
  
   t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize);
 
-  /* String constants's are readonly, so there is nothing to really do
+  /* String constants are readonly, so there is nothing to really do
      here.  */
   if (TREE_CODE (t) == STRING_CST)
     return;
