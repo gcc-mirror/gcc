@@ -733,6 +733,16 @@
   [(set_attr "type" "ssecmp")
    (set_attr "mode" "V4SF")])
 
+(define_insn "sse_maskcmpsf3"
+  [(set (match_operand:SF 0 "register_operand" "=x")
+	(match_operator:SF 3 "sse_comparison_operator"
+		[(match_operand:SF 1 "register_operand" "0")
+		 (match_operand:SF 2 "nonimmediate_operand" "xm")]))]
+  "TARGET_SSE"
+  "cmp%D3ss\t{%2, %0|%0, %2}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "mode" "SF")])
+
 (define_insn "sse_vmmaskcmpv4sf3"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_merge:V4SF
@@ -1717,6 +1727,16 @@
   "cmp%D3pd\t{%2, %0|%0, %2}"
   [(set_attr "type" "ssecmp")
    (set_attr "mode" "V2DF")])
+
+(define_insn "sse2_maskcmpdf3"
+  [(set (match_operand:DF 0 "register_operand" "=x")
+	(match_operator:DF 3 "sse_comparison_operator"
+		[(match_operand:DF 1 "register_operand" "0")
+		 (match_operand:DF 2 "nonimmediate_operand" "xm")]))]
+  "TARGET_SSE2"
+  "cmp%D3sd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "mode" "DF")])
 
 (define_insn "sse2_vmmaskcmpv2df3"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
