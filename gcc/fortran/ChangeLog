@@ -1,4 +1,9 @@
+2006-10-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	* intrinsic.texi: Fix a typo.
+
 2006-10-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* gfortran.h: Remove GFC_MPFR_TOO_OLD.
 	* arith.c (arctangent2): Remove function
 	(gfc_check_real_range): Remove subnormal kludge.
