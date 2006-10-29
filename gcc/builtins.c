@@ -2222,7 +2222,7 @@ expand_builtin_sincos (tree exp)
 static rtx
 expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
 {
-  optab builtin_optab;
+  convert_optab builtin_optab;
   rtx op0, insns, tmp;
   tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
@@ -2257,43 +2257,36 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
   /* Make a suitable register to place result in.  */
   mode = TYPE_MODE (TREE_TYPE (exp));
 
-  /* Before working hard, check whether the instruction is available.  */
-  if (builtin_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+  target = gen_reg_rtx (mode);
+
+  /* Wrap the computation of the argument in a SAVE_EXPR, as we may
+     need to expand the argument again.  This way, we will not perform
+     side-effects more the once.  */
+  narg = builtin_save_expr (arg);
+  if (narg != arg)
     {
-      target = gen_reg_rtx (mode);
-
-      /* Wrap the computation of the argument in a SAVE_EXPR, as we may
-	 need to expand the argument again.  This way, we will not perform
-	 side-effects more the once.  */
-      narg = builtin_save_expr (arg);
-      if (narg != arg)
-	{
-	  arg = narg;
-	  arglist = build_tree_list (NULL_TREE, arg);
-	  exp = build_function_call_expr (fndecl, arglist);
-	}
-
-      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
-
-      start_sequence ();
-
-      /* Compute into TARGET.
-	 Set TARGET to wherever the result comes back.  */
-      target = expand_unop (mode, builtin_optab, op0, target, 0);
-
-      if (target != 0)
-	{
-	  /* Output the entire sequence.  */
-	  insns = get_insns ();
-	  end_sequence ();
-	  emit_insn (insns);
-	  return target;
-	}
-
-      /* If we were unable to expand via the builtin, stop the sequence
-	 (without outputting the insns).  */
-      end_sequence ();
+      arg = narg;
+      arglist = build_tree_list (NULL_TREE, arg);
+      exp = build_function_call_expr (fndecl, arglist);
     }
+
+  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+
+  start_sequence ();
+
+  /* Compute into TARGET.  */
+  if (expand_sfix_optab (target, op0, builtin_optab))
+    {
+      /* Output the entire sequence.  */
+      insns = get_insns ();
+      end_sequence ();
+      emit_insn (insns);
+      return target;
+    }
+
+  /* If we were unable to expand via the builtin, stop the sequence
+     (without outputting the insns).  */
+  end_sequence ();
 
   /* Fall back to floating point rounding optab.  */
   fallback_fndecl = mathfn_built_in (TREE_TYPE (arg), fallback_fn);

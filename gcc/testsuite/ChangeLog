@@ -1,3 +1,8 @@
+2006-10-29  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.target/i386/math-torture/lfloor.c: New testcase.
+	* gcc.target/i386/math-torture/lceil.c: Likewise.
+
 2006-10-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR libgfortran/24313

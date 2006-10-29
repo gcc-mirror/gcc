@@ -19246,6 +19246,36 @@ ix86_sse_copysign_to_positive (rtx result, rtx abs_value, rtx sign)
 			  gen_rtx_IOR (mode, abs_value, sgn)));
 }
 
+/* Expands a comparison of OP0 with OP1 using comparison code CODE,
+   swapping the operands if SWAP_OPERANDS is true.  The expanded
+   code is a forward jump to a newly created label in case the
+   comparison is true.  The generated label rtx is returned.  */
+static rtx
+ix86_expand_sse_compare_and_jump (enum rtx_code code, rtx op0, rtx op1,
+                                  bool swap_operands)
+{
+  rtx label, tmp;
+
+  if (swap_operands)
+    {
+      tmp = op0;
+      op0 = op1;
+      op1 = tmp;
+    }
+
+  label = gen_label_rtx ();
+  tmp = gen_rtx_REG (CCFPUmode, FLAGS_REG);
+  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+			  gen_rtx_COMPARE (CCFPUmode, op0, op1)));
+  tmp = gen_rtx_fmt_ee (code, VOIDmode, tmp, const0_rtx);
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+			      gen_rtx_LABEL_REF (VOIDmode, label), pc_rtx);
+  tmp = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+  JUMP_LABEL (tmp) = label;
+
+  return label;
+}
+
 /* Expand SSE sequence for computing lround from OP1 storing
    into OP0.  */
 void
@@ -19274,6 +19304,39 @@ ix86_expand_lround (rtx op0, rtx op1)
 
   /* op0 = (imode)adj */
   expand_fix (op0, adj, 0);
+}
+
+/* Expand SSE2 sequence for computing lround from OPERAND1 storing
+   into OPERAND0.  */
+void
+ix86_expand_lfloorceil (rtx op0, rtx op1, bool do_floor)
+{
+  /* C code for the stuff we're doing below (for do_floor):
+	xi = (long)op1;
+        xi -= (double)xi > op1 ? 1 : 0;
+        return xi;
+   */
+  enum machine_mode fmode = GET_MODE (op1);
+  enum machine_mode imode = GET_MODE (op0);
+  rtx ireg, freg, label;
+
+  /* reg = (long)op1 */
+  ireg = gen_reg_rtx (imode);
+  expand_fix (ireg, op1, 0);
+
+  /* freg = (double)reg */
+  freg = gen_reg_rtx (fmode);
+  expand_float (freg, ireg, 0);
+
+  /* ireg = (freg > op1) ? ireg - 1 : ireg */
+  label = ix86_expand_sse_compare_and_jump (UNLE,
+					    freg, op1, !do_floor);
+  expand_simple_binop (imode, do_floor ? MINUS : PLUS,
+                       ireg, const1_rtx, ireg, 0, OPTAB_DIRECT);
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+
+  emit_move_insn (op0, ireg);
 }
 
 #include "gt-i386.h"
