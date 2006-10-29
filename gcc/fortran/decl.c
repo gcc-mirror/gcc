@@ -642,6 +642,7 @@ get_proc_name (const char *name, gfc_symbol ** result,
     rc = gfc_get_symbol (name, gfc_current_ns->parent, result);
 
   sym = *result;
+  gfc_current_ns->refs++;
 
   if (sym && !sym->new && gfc_current_state () != COMP_INTERFACE)
     {

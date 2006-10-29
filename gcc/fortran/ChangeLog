@@ -1,3 +1,8 @@
+2006-10-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/17741
+	* decl.c (get_proc_name): Bump current namespace refs count.
+
 2006-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/29629
