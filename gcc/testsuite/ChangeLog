@@ -1,5 +1,10 @@
 2006-10-29  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.target/i386/math-torture/rint.c: New testcase.
+	* gcc.target/i386/math-torture/nearbyint.c: Likewise.
+
+2006-10-29  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.target/i386/math-torture/lfloor.c: New testcase.
 	* gcc.target/i386/math-torture/lceil.c: Likewise.
 

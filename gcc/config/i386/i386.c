@@ -19225,13 +19225,44 @@ asm_preferred_eh_data_format (int code, int global)
 }
 
 /* Expand copysign from SIGN to the positive value ABS_VALUE
-   storing in RESULT.  */
+   storing in RESULT.  If MASK is non-null, it shall be a mask to mask out
+   the sign-bit.  */
 static void
-ix86_sse_copysign_to_positive (rtx result, rtx abs_value, rtx sign)
+ix86_sse_copysign_to_positive (rtx result, rtx abs_value, rtx sign, rtx mask)
 {
   enum machine_mode mode = GET_MODE (sign);
   rtx sgn = gen_reg_rtx (mode);
-  rtx mask = ix86_build_signbit_mask (mode, VECTOR_MODE_P (mode), false);
+  if (mask == NULL_RTX)
+    {
+      mask = ix86_build_signbit_mask (mode, VECTOR_MODE_P (mode), false);
+      if (!VECTOR_MODE_P (mode))
+	{
+	  /* We need to generate a scalar mode mask in this case.  */
+	  rtx tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, const0_rtx));
+	  tmp = gen_rtx_VEC_SELECT (mode, mask, tmp);
+	  mask = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, mask, tmp));
+	}
+    }
+  else
+    mask = gen_rtx_NOT (mode, mask);
+  emit_insn (gen_rtx_SET (VOIDmode, sgn,
+			  gen_rtx_AND (mode, mask, sign)));
+  emit_insn (gen_rtx_SET (VOIDmode, result,
+			  gen_rtx_IOR (mode, abs_value, sgn)));
+}
+
+/* Expand fabs (OP0) and return a new rtx that holds the result.  The
+   mask for masking out the sign-bit is stored in *SMASK, if that is
+   non-null.  */
+static rtx
+ix86_expand_sse_fabs (rtx op0, rtx *smask)
+{
+  enum machine_mode mode = GET_MODE (op0);
+  rtx xa, mask;
+
+  xa = gen_reg_rtx (mode);
+  mask = ix86_build_signbit_mask (mode, VECTOR_MODE_P (mode), true);
   if (!VECTOR_MODE_P (mode))
     {
       /* We need to generate a scalar mode mask in this case.  */
@@ -19240,10 +19271,13 @@ ix86_sse_copysign_to_positive (rtx result, rtx abs_value, rtx sign)
       mask = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (VOIDmode, mask, tmp));
     }
-  emit_insn (gen_rtx_SET (VOIDmode, sgn,
-			  gen_rtx_AND (mode, mask, sign)));
-  emit_insn (gen_rtx_SET (VOIDmode, result,
-			  gen_rtx_IOR (mode, abs_value, sgn)));
+  emit_insn (gen_rtx_SET (VOIDmode, xa,
+			  gen_rtx_AND (mode, op0, mask)));
+
+  if (smask)
+    *smask = mask;
+
+  return xa;
 }
 
 /* Expands a comparison of OP0 with OP1 using comparison code CODE,
@@ -19276,6 +19310,21 @@ ix86_expand_sse_compare_and_jump (enum rtx_code code, rtx op0, rtx op1,
   return label;
 }
 
+/* Generate and return a rtx of mode MODE for 2**n where n is the number
+   of bits of the mantissa of MODE, which must be one of DFmode or SFmode.  */
+static rtx
+ix86_gen_TWO52 (enum machine_mode mode)
+{
+  REAL_VALUE_TYPE TWO52r;
+  rtx TWO52;
+
+  real_ldexp (&TWO52r, &dconst1, mode == DFmode ? 52 : 23);
+  TWO52 = const_double_from_real_value (TWO52r, mode);
+  TWO52 = force_reg (mode, TWO52);
+
+  return TWO52;
+}
+
 /* Expand SSE sequence for computing lround from OP1 storing
    into OP0.  */
 void
@@ -19297,7 +19346,7 @@ ix86_expand_lround (rtx op0, rtx op1)
 
   /* adj = copysign (0.5, op1) */
   adj = force_reg (mode, const_double_from_real_value (pred_half, mode));
-  ix86_sse_copysign_to_positive (adj, adj, force_reg (mode, op1));
+  ix86_sse_copysign_to_positive (adj, adj, force_reg (mode, op1), NULL_RTX);
 
   /* adj = op1 + adj */
   expand_simple_binop (mode, PLUS, adj, op1, adj, 0, OPTAB_DIRECT);
@@ -19337,6 +19386,41 @@ ix86_expand_lfloorceil (rtx op0, rtx op1, bool do_floor)
   LABEL_NUSES (label) = 1;
 
   emit_move_insn (op0, ireg);
+}
+
+/* Expand rint (IEEE round to nearest) rounding OPERAND1 and storing the
+   result in OPERAND0.  */
+void
+ix86_expand_rint (rtx operand0, rtx operand1)
+{
+  /* C code for the stuff we're doing below:
+        if (!isless (fabs (operand1), 2**52))
+	  return operand1;
+        tmp = copysign (2**52, operand1);
+        return operand1 + tmp - tmp;
+   */
+  enum machine_mode mode = GET_MODE (operand0);
+  rtx res, xa, label, TWO52, mask;
+
+  res = gen_reg_rtx (mode);
+  emit_move_insn (res, operand1);
+
+  /* xa = abs (operand1) */
+  xa = ix86_expand_sse_fabs (res, &mask);
+
+  /* if (!isless (xa, TWO52)) goto label; */
+  TWO52 = ix86_gen_TWO52 (mode);
+  label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
+
+  ix86_sse_copysign_to_positive (TWO52, TWO52, res, mask);
+
+  expand_simple_binop (mode, PLUS, res, TWO52, res, 0, OPTAB_DIRECT);
+  expand_simple_binop (mode, MINUS, res, TWO52, res, 0, OPTAB_DIRECT);
+
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+
+  emit_move_insn (operand0, res);
 }
 
 #include "gt-i386.h"
