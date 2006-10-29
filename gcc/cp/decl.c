@@ -9740,7 +9740,7 @@ xref_tag_from_type (tree old, tree id, tag_scope scope)
    access_* node, and the TREE_VALUE is the type of the base-class.
    Non-NULL TREE_TYPE indicates virtual inheritance.  
  
-   Returns true if the binfo heirarchy was successfully created,
+   Returns true if the binfo hierarchy was successfully created,
    false if an error was detected. */
 
 bool
