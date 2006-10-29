@@ -129,7 +129,7 @@
        This is only worth to do when we are debugging the description
        and need to look more accurately at reservations of states.
 
-     o "ndfa" which makes automata with nondetermenistic reservation
+     o "ndfa" which makes automata with nondeterministic reservation
         by insns.
 
    o (define_reservation string string) names reservation (the first

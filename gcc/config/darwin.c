@@ -1610,7 +1610,7 @@ darwin_set_default_type_attributes (tree type)
                                         TYPE_ATTRIBUTES (type));
 }
 
-/* True, iff we're generating code for loadable kernel extentions.  */
+/* True, iff we're generating code for loadable kernel extensions.  */
 
 bool
 darwin_kextabi_p (void) {

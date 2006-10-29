@@ -1,3 +1,9 @@
+2006-10-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/darwin.c, config/darwin.opt, config/ia64/itanium1.md,
+	config/ia64/itanium2.md, real.c, tree-ssa-structalias.c: Fix
+	comment typos.
+
 2006-10-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/29335
