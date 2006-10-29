@@ -19639,6 +19639,100 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
   emit_move_insn (operand0, res);
 }
 
+/* Expand SSE sequence for computing trunc from OPERAND1 storing
+   into OPERAND0.  */
+void
+ix86_expand_trunc (rtx operand0, rtx operand1)
+{
+  /* C code for SSE variant we expand below.
+        double xa = fabs (x), x2;
+        if (!isless (xa, TWO52))
+          return x;
+        return (double)(long)x;
+   */
+  enum machine_mode mode = GET_MODE (operand0);
+  rtx xa, xi, TWO52, label, res;
+
+  TWO52 = ix86_gen_TWO52 (mode);
+
+  /* Temporary for holding the result, initialized to the input
+     operand to ease control flow.  */
+  res = gen_reg_rtx (mode);
+  emit_move_insn (res, operand1);
+
+  /* xa = abs (operand1) */
+  xa = ix86_expand_sse_fabs (res, NULL);
+
+  /* if (!isless (xa, TWO52)) goto label; */
+  label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
+
+  /* x = (double)(long)x */
+  xi = gen_reg_rtx (mode == DFmode ? DImode : SImode);
+  expand_fix (xi, res, 0);
+  expand_float (res, xi, 0);
+
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+
+  emit_move_insn (operand0, res);
+}
+
+/* Expand SSE sequence for computing trunc from OPERAND1 storing
+   into OPERAND0.  */
+void
+ix86_expand_truncdf_32 (rtx operand0, rtx operand1)
+{
+  enum machine_mode mode = GET_MODE (operand0);
+  rtx xa, mask, TWO52, label, one, res, smask;
+
+  /* C code for SSE variant we expand below.
+        double xa = fabs (x), x2;
+        if (!isless (xa, TWO52))
+          return x;
+        xa2 = xa + TWO52 - TWO52;
+     Compensate:
+        if (xa2 > xa)
+          xa2 -= 1.0;
+        x2 = copysign (xa2, x);
+        return x2;
+   */
+
+  TWO52 = ix86_gen_TWO52 (mode);
+
+  /* Temporary for holding the result, initialized to the input
+     operand to ease control flow.  */
+  res = gen_reg_rtx (mode);
+  emit_move_insn (res, operand1);
+
+  /* xa = abs (operand1) */
+  xa = ix86_expand_sse_fabs (res, &smask);
+
+  /* if (!isless (xa, TWO52)) goto label; */
+  label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
+
+  /* res = xa + TWO52 - TWO52; */
+  expand_simple_binop (mode, PLUS, xa, TWO52, res, 0, OPTAB_DIRECT);
+  expand_simple_binop (mode, MINUS, res, TWO52, res, 0, OPTAB_DIRECT);
+
+  /* generate 1.0 */
+  one = force_reg (mode, const_double_from_real_value (dconst1, mode));
+
+  /* Compensate: res = xa2 - (res > xa ? 1 : 0)  */
+  mask = ix86_expand_sse_compare_mask (UNGT, res, xa, false);
+  emit_insn (gen_rtx_SET (VOIDmode, mask,
+                          gen_rtx_AND (mode, mask, one)));
+  expand_simple_binop (mode, MINUS,
+                       res, mask, res, 0, OPTAB_DIRECT);
+
+  /* res = copysign (res, operand1) */
+  ix86_sse_copysign_to_positive (res, res, force_reg (mode, operand1), smask);
+
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+
+  emit_move_insn (operand0, res);
+}
+
 /* Expand SSE sequence for computing round from OPERAND1 storing
    into OPERAND0.  */
 void
