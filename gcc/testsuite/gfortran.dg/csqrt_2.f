@@ -1,4 +1,4 @@
-c { dg-do run { xfail *-*-linux-gnu } }
+c { dg-do run }
 c Fix PR libgfortran/24313
       complex x, y
       complex z

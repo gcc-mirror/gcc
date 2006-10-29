@@ -1,3 +1,8 @@
+2006-10-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR libgfortran/24313
+	* gfortran.dg/csqrt_2.f: Remove xfail *-*-linux-gnu. 
+
 2006-10-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.c-torture/execute/20020118-1.c,
