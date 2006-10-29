@@ -1,3 +1,14 @@
+2006-10-29  Richard Guenther  <rguenther@suse.de>
+
+	* config/i386/i386-protos.h (ix86_expand_trunc): Declare.
+	(ix86_expand_truncdf_32): Likewise.
+	* config/i386/i386.c (ix86_expand_trunc): New function expanding
+	trunc inline for SSE math and -fno-trapping-math and if not
+	optimizing for size.
+	(ix86_expand_truncdf_32): Same for DFmode on 32bit archs.
+	* config/i386/i386.md (btruncsf2, btruncdf2): Adjust expanders
+	for expanding btrunc inline for SSE math.
+
 2006-10-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (i[34567]86-*-linux*): Handle --enable-targets=all.
