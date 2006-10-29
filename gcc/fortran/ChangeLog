@@ -1,3 +1,8 @@
+2006-10-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_loc): Make LOC return a
+	signed integer node.
+
 2006-10-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/17741
