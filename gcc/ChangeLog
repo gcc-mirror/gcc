@@ -1,5 +1,16 @@
 2006-10-29  Richard Guenther  <rguenther@suse.de>
 
+	* config/i386/i386-protos.h (ix86_expand_round): Declare.
+	(ix86_expand_rounddf_32): Likewise.
+	* config/i386/i386.c (ix86_expand_round): New function expanding
+	round inline for SSE math and -fno-trapping-math and if not
+	optimizing for size.
+	(ix86_expand_rounddf_32): Same for DFmode on 32bit archs.
+	* config/i386/i386.md (rounddf2, roundsf2): New pattern expanding
+	round via ix86_expand_round.
+
+2006-10-29  Richard Guenther  <rguenther@suse.de>
+
 	* config/i386/i386-protos.h (ix86_expand_floorceil): Declare.
 	(ix86_expand_floorceildf_32): Likewise.
 	* config/i386/i386.c (ix86_expand_sse_compare_mask): New

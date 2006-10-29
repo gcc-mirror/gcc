@@ -19563,4 +19563,129 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
   emit_move_insn (operand0, res);
 }
 
+/* Expand SSE sequence for computing round from OPERAND1 storing
+   into OPERAND0.  Sequence that works without relying on DImode truncation
+   via cvttsd2siq that is only available on 64bit targets.  */
+void
+ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
+{
+  /* C code for the stuff we expand below.
+        double xa = fabs (x), xa2, x2;
+        if (!isless (xa, TWO52))
+          return x;
+     Using the absolute value and copying back sign makes
+     -0.0 -> -0.0 correct.
+        xa2 = xa + TWO52 - TWO52;
+     Compensate.
+	dxa = xa2 - xa;
+        if (dxa <= -0.5)
+          xa2 += 1;
+        else if (dxa > 0.5)
+          xa2 -= 1;
+        x2 = copysign (xa2, x);
+        return x2;
+   */
+  enum machine_mode mode = GET_MODE (operand0);
+  rtx xa, xa2, dxa, TWO52, tmp, label, half, mhalf, one, res, mask;
+
+  TWO52 = ix86_gen_TWO52 (mode);
+
+  /* Temporary for holding the result, initialized to the input
+     operand to ease control flow.  */
+  res = gen_reg_rtx (mode);
+  emit_move_insn (res, operand1);
+
+  /* xa = abs (operand1) */
+  xa = ix86_expand_sse_fabs (res, &mask);
+
+  /* if (!isless (xa, TWO52)) goto label; */
+  label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
+
+  /* xa2 = xa + TWO52 - TWO52; */
+  xa2 = gen_reg_rtx (mode);
+  expand_simple_binop (mode, PLUS, xa, TWO52, xa2, 0, OPTAB_DIRECT);
+  expand_simple_binop (mode, MINUS, xa2, TWO52, xa2, 0, OPTAB_DIRECT);
+
+  /* dxa = xa2 - xa; */
+  dxa = gen_reg_rtx (mode);
+  expand_simple_binop (mode, MINUS, xa2, xa, dxa, 0, OPTAB_DIRECT);
+
+  /* generate 0.5, 1.0 and -0.5 */
+  half = force_reg (mode, const_double_from_real_value (dconsthalf, mode));
+  one = gen_reg_rtx (mode);
+  expand_simple_binop (mode, PLUS, half, half, one, 0, OPTAB_DIRECT);
+  mhalf = gen_reg_rtx (mode);
+  expand_simple_binop (mode, MINUS, half, one, mhalf, 0, OPTAB_DIRECT);
+
+  /* Compensate.  */
+  tmp = gen_reg_rtx (mode);
+  /* xa2 = xa2 - (dxa > 0.5 ? 1 : 0) */
+  tmp = ix86_expand_sse_compare_mask (UNGT, dxa, half, false);
+  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+                          gen_rtx_AND (mode, one, tmp)));
+  expand_simple_binop (mode, MINUS, xa2, tmp, xa2, 0, OPTAB_DIRECT);
+  /* xa2 = xa2 + (dxa <= -0.5 ? 1 : 0) */
+  tmp = ix86_expand_sse_compare_mask (UNGE, mhalf, dxa, false);
+  emit_insn (gen_rtx_SET (VOIDmode, tmp,
+                          gen_rtx_AND (mode, one, tmp)));
+  expand_simple_binop (mode, PLUS, xa2, tmp, xa2, 0, OPTAB_DIRECT);
+
+  /* res = copysign (xa2, operand1) */
+  ix86_sse_copysign_to_positive (res, xa2, force_reg (mode, operand1), mask);
+
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+
+  emit_move_insn (operand0, res);
+}
+
+/* Expand SSE sequence for computing round from OPERAND1 storing
+   into OPERAND0.  */
+void
+ix86_expand_round (rtx operand0, rtx operand1)
+{
+  /* C code for the stuff we're doing below:
+        double xa = fabs (x);
+        if (!isless (xa, TWO52))
+          return x;
+        xa = (double)(long)(xa + nextafter (0.5, 0.0));
+        return copysign (xa, x);
+   */
+  enum machine_mode mode = GET_MODE (operand0);
+  rtx res, TWO52, xa, label, xi, half, mask;
+  const struct real_format *fmt;
+  REAL_VALUE_TYPE pred_half, half_minus_pred_half;
+
+  /* Temporary for holding the result, initialized to the input
+     operand to ease control flow.  */
+  res = gen_reg_rtx (mode);
+  emit_move_insn (res, operand1);
+
+  TWO52 = ix86_gen_TWO52 (mode);
+  xa = ix86_expand_sse_fabs (res, &mask);
+  label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
+
+  /* load nextafter (0.5, 0.0) */
+  fmt = REAL_MODE_FORMAT (mode);
+  real_2expN (&half_minus_pred_half, -(fmt->p) - 1);
+  REAL_ARITHMETIC (pred_half, MINUS_EXPR, dconsthalf, half_minus_pred_half);
+
+  /* xa = xa + 0.5 */
+  half = force_reg (mode, const_double_from_real_value (pred_half, mode));
+  expand_simple_binop (mode, PLUS, xa, half, xa, 0, OPTAB_DIRECT);
+
+  /* xa = (double)(int64_t)xa */
+  xi = gen_reg_rtx (mode == DFmode ? DImode : SImode);
+  expand_fix (xi, xa, 0);
+  expand_float (xa, xi, 0);
+
+  /* res = copysign (xa, operand1) */
+  ix86_sse_copysign_to_positive (res, xa, force_reg (mode, operand1), mask);
+
+  emit_label (label);
+  LABEL_NUSES (label) = 1;
+
+  emit_move_insn (operand0, res);
+}
+
 #include "gt-i386.h"
