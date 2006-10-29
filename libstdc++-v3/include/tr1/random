@@ -1759,8 +1759,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 
       template<class _UniformRandomNumberGenerator>
         result_type
-        operator()(_UniformRandomNumberGenerator& __urng)
-        { return result_type(std::ceil(std::log(__urng()) / _M_log_p)); }
+        operator()(_UniformRandomNumberGenerator& __urng);
 
       /**
        * Inserts a %geometric_distribution random number distribution
