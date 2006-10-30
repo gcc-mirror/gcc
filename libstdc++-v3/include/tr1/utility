@@ -1,6 +1,6 @@
 // TR1 utility -*- C++ -*-
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,7 +47,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   template<class _Tp1, class _Tp2>
     struct tuple_size<std::pair<_Tp1, _Tp2> >
     { static const int value = 2; };
- 
+
+  template<class _Tp1, class _Tp2>
+    const int tuple_size<std::pair<_Tp1, _Tp2> >::value;
+
   template<class _Tp1, class _Tp2>
     struct tuple_element<0, std::pair<_Tp1, _Tp2> >
     { typedef _Tp1 type; };

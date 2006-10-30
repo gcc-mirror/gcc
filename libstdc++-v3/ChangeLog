@@ -1,5 +1,10 @@
 2006-10-30  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/utility (tuple_size<std::pair<> >::value): Provide
+	definition.
+
+2006-10-30  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/tuple_iterate.h (tuple_size<tuple<> >::value): Provide
 	definition.
 	* include/tr1/functional (is_bind_expression<>::value,
