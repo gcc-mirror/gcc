@@ -28,6 +28,6 @@ ns::Test::Test( int n ) throw( Exception ) : i( n )
 {
 }
 
-int main(int argc, char* argv) {
+int main(int argc, char* argv[]) {
   ns::Test test;
 }
