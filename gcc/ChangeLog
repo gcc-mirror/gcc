@@ -1,5 +1,10 @@
 2006-10-30  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.md (mul<mode>3): Split into...
+	(mulsi3, muldi3): ...these separate patterns.
+
+2006-10-30  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/linux64.h (DRIVER_SELF_SPECS): Use a single spec,
 	but with each set of options separated by spaces.
 

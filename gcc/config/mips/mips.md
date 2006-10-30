@@ -1008,19 +1008,31 @@
 ;; These processors have PRId values of 0x00004220 and 0x00004300,
 ;; respectively.
 
-(define_expand "mul<mode>3"
-  [(set (match_operand:GPR 0 "register_operand")
-	(mult:GPR (match_operand:GPR 1 "register_operand")
-		  (match_operand:GPR 2 "register_operand")))]
+(define_expand "mulsi3"
+  [(set (match_operand:SI 0 "register_operand")
+	(mult:SI (match_operand:SI 1 "register_operand")
+		 (match_operand:SI 2 "register_operand")))]
   ""
 {
-  if (<MODE>mode == SImode && ISA_HAS_MUL3)
-    emit_insn (gen_mul<mode>3_mult3 (operands[0], operands[1], operands[2]));
-  else if (!TARGET_FIX_R4000)
-    emit_insn (gen_mul<mode>3_internal (operands[0], operands[1],
-					operands[2]));
+  if (ISA_HAS_MUL3)
+    emit_insn (gen_mulsi3_mult3 (operands[0], operands[1], operands[2]));
+  else if (TARGET_FIX_R4000)
+    emit_insn (gen_mulsi3_r4000 (operands[0], operands[1], operands[2]));
   else
-    emit_insn (gen_mul<mode>3_r4000 (operands[0], operands[1], operands[2]));
+    emit_insn (gen_mulsi3_internal (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "muldi3"
+  [(set (match_operand:DI 0 "register_operand")
+	(mult:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "register_operand")))]
+  "TARGET_64BIT"
+{
+  if (TARGET_FIX_R4000)
+    emit_insn (gen_muldi3_r4000 (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_muldi3_internal (operands[0], operands[1], operands[2]));
   DONE;
 })
 
