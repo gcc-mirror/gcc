@@ -3140,14 +3140,13 @@ struct tree_statement_list
   (VALUE_HANDLE_CHECK (NODE)->value_handle.vuses)
 
 /* Defined and used in tree-ssa-pre.c.  */
-struct value_set;
 
 struct tree_value_handle GTY(())
 {
   struct tree_common common;
 
   /* The set of expressions represented by this handle.  */
-  struct value_set * GTY ((skip)) expr_set;
+  struct bitmap_set * GTY ((skip)) expr_set;
 
   /* Unique ID for this value handle.  IDs are handed out in a
      conveniently dense form starting at 0, so that we can make

@@ -344,6 +344,7 @@ static inline var_ann_t get_var_ann (tree);
 static inline function_ann_t function_ann (tree);
 static inline function_ann_t get_function_ann (tree);
 static inline stmt_ann_t stmt_ann (tree);
+static inline bool has_stmt_ann (tree);
 static inline stmt_ann_t get_stmt_ann (tree);
 static inline enum tree_ann_type ann_type (tree_ann_t);
 static inline basic_block bb_for_stmt (tree);
@@ -920,7 +921,7 @@ void print_value_expressions (FILE *, tree);
 
 /* In tree-vn.c  */
 bool expressions_equal_p (tree, tree);
-tree get_value_handle (tree);
+static inline tree get_value_handle (tree);
 hashval_t vn_compute (tree, hashval_t);
 void sort_vuses (VEC (tree, gc) *);
 tree vn_lookup_or_add (tree, tree);

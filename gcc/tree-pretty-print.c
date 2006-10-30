@@ -421,10 +421,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
   is_expr = EXPR_P (node);
 
+  /* We use has_stmt_ann because CALL_EXPR can be both an expression
+     and a statement, and we have no guarantee that it will have a
+     stmt_ann when it is used as an RHS expression.  stmt_ann will assert
+     if you call it on something with a non-stmt annotation attached.  */
   if (TREE_CODE (node) != ERROR_MARK
       && is_gimple_stmt (node)
       && (flags & TDF_VOPS)
-      && stmt_ann (node)
+      && has_stmt_ann (node)
       && TREE_CODE (node) != PHI_NODE)
     dump_vops (buffer, node, spc, flags);
 
