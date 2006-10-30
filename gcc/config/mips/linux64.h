@@ -24,8 +24,8 @@ Boston, MA 02110-1301, USA.  */
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS \
 NO_SHARED_SPECS \
-"%{!EB:%{!EL:%(endian_spec)}}", \
-"%{!mabi=*: -mabi=n32}"
+" %{!EB:%{!EL:%(endian_spec)}}" \
+" %{!mabi=*: -mabi=n32}"
 
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC "\
