@@ -6089,7 +6089,7 @@ grokfndecl (tree ctype,
     {
       error (ctype
              ? G_("static member function %qD cannot have cv-qualifier")
-             : G_("non-static member function %qD cannot have cv-qualifier"),
+             : G_("non-member function %qD cannot have cv-qualifier"),
 	     decl);
       quals = TYPE_UNQUALIFIED;
     }
