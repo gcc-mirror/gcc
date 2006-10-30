@@ -243,6 +243,9 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
     struct tuple_size<array<_Tp, _Nm> >
     { static const int value = _Nm; };
 
+  template<typename _Tp, std::size_t _Nm>
+    const int tuple_size<array<_Tp, _Nm> >::value;
+
   template<int _Int, typename _Tp, std::size_t _Nm>
     struct tuple_element<_Int, array<_Tp, _Nm> >
     { typedef _Tp type; };
