@@ -1010,7 +1010,6 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
     }
 }
 
-
 /* Print a warning about if (); or if () .. else; constructs
    via the special empty statement node that we create.  INNER_THEN
    and INNER_ELSE are the statement lists of the if and the else
@@ -1039,7 +1038,59 @@ empty_body_warning (tree inner_then, tree inner_else)
    }
 }
 
-  
+/* Warn for unlikely, improbable, or stupid DECL declarations
+   of `main'.  */
+
+void
+check_main_parameter_types (tree decl)
+{
+  tree args;
+  int argct = 0;
+
+  for (args = TYPE_ARG_TYPES (TREE_TYPE (decl)); args;
+      args = TREE_CHAIN (args))
+   {
+     tree type = args ? TREE_VALUE (args) : 0;
+
+     if (type == void_type_node)
+       break;
+
+     ++argct;
+     switch (argct)
+       {
+       case 1:
+         if (TYPE_MAIN_VARIANT (type) != integer_type_node)
+           pedwarn ("first argument of %q+D should be %<int%>", decl);
+         break;
+
+       case 2:
+         if (TREE_CODE (type) != POINTER_TYPE
+             || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
+             || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
+                 != char_type_node))
+           pedwarn ("second argument of %q+D should be %<char **%>",
+                    decl);
+         break;
+
+       case 3:
+         if (TREE_CODE (type) != POINTER_TYPE
+             || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
+             || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
+                 != char_type_node))
+           pedwarn ("third argument of %q+D should probably be "
+                    "%<char **%>", decl);
+         break;
+       }
+   }
+
+  /* It is intentional that this message does not mention the third
+    argument because it's only mentioned in an appendix of the
+    standard.  */
+  if (argct > 0 && (argct < 2 || argct > 3))
+   pedwarn ("%q+D takes only zero or two arguments", decl);
+}
+
+ 
 /* Nonzero if constant C has a value that is permissible
    for type TYPE (an INTEGER_TYPE).  */
 

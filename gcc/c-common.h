@@ -654,10 +654,11 @@ extern void binary_op_error (enum tree_code);
 extern tree fix_string_type (tree);
 struct varray_head_tag;
 extern void constant_expression_warning (tree);
-extern void strict_aliasing_warning(tree, tree, tree);
+extern void strict_aliasing_warning (tree, tree, tree);
 extern void empty_body_warning (tree, tree);
 extern tree convert_and_check (tree, tree);
 extern void overflow_warning (tree);
+extern void check_main_parameter_types (tree decl);
 extern bool c_determine_visibility (tree);
 extern bool same_scalar_type_ignoring_signedness (tree, tree);
 

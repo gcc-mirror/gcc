@@ -1,5 +1,10 @@
 2006-10-30  Dirk Mueller  <dmueller@suse.de>
 
+	PR c++/6321
+	* decl.c (grokfndecl): Use check_main_parameter_types.
+
+2006-10-30  Dirk Mueller  <dmueller@suse.de>
+
 	PR c++/28669
 	* decl.c (grokfndecl): Duplicate warning message for
 	easier translation.
