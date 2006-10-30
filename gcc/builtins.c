@@ -7311,9 +7311,11 @@ fold_builtin_floor (tree fndecl, tree arglist)
 
   /* Fold floor (x) where x is nonnegative to trunc (x).  */
   if (tree_expr_nonnegative_p (arg))
-    return build_function_call_expr (mathfn_built_in (TREE_TYPE (arg),
-						      BUILT_IN_TRUNC),
-				     arglist);
+    {
+      tree truncfn = mathfn_built_in (TREE_TYPE (arg), BUILT_IN_TRUNC);
+      if (truncfn)
+	return build_function_call_expr (truncfn, arglist);
+    }
 
   return fold_trunc_transparent_mathfn (fndecl, arglist);
 }
