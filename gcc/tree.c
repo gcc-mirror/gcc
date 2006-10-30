@@ -3220,7 +3220,12 @@ expanded_location
 expand_location (source_location loc)
 {
   expanded_location xloc;
-  if (loc == 0) { xloc.file = NULL; xloc.line = 0;  xloc.column = 0; }
+  if (loc == 0)
+    {
+      xloc.file = NULL;
+      xloc.line = 0;
+      xloc.column = 0;
+    }
   else
     {
       const struct line_map *map = linemap_lookup (&line_table, loc);

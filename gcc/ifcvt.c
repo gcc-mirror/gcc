@@ -1329,15 +1329,14 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 	return FALSE;
     }
   else
-    {
-      insn_cost = 0;
-    }
+    insn_cost = 0;
 
-  if (insn_b) {
-    insn_cost += insn_rtx_cost (PATTERN (insn_b));
-    if (insn_cost == 0 || insn_cost > COSTS_N_INSNS (BRANCH_COST))
-      return FALSE;
-  }
+  if (insn_b)
+    {
+      insn_cost += insn_rtx_cost (PATTERN (insn_b));
+      if (insn_cost == 0 || insn_cost > COSTS_N_INSNS (BRANCH_COST))
+        return FALSE;
+    }
 
   /* Possibly rearrange operands to make things come out more natural.  */
   if (reversed_comparison_code (if_info->cond, if_info->jump) != UNKNOWN)

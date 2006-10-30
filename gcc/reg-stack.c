@@ -1702,11 +1702,12 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 		/* Push the result back onto stack. Empty stack slot
 		   will be filled in second part of insn.  */
-		if (STACK_REG_P (*dest)) {
-		  regstack->reg[regstack->top] = REGNO (*dest);
-		  SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
-		  replace_reg (dest, FIRST_STACK_REG);
-		}
+		if (STACK_REG_P (*dest))
+		  {
+		    regstack->reg[regstack->top] = REGNO (*dest);
+		    SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
+		    replace_reg (dest, FIRST_STACK_REG);
+		  }
 
 		replace_reg (src1, FIRST_STACK_REG);
 		replace_reg (src2, FIRST_STACK_REG + 1);
@@ -1733,11 +1734,12 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 		/* Push the result back onto stack. Fill empty slot from
 		   first part of insn and fix top of stack pointer.  */
-		if (STACK_REG_P (*dest)) {
-		  regstack->reg[regstack->top - 1] = REGNO (*dest);
-		  SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
-		  replace_reg (dest, FIRST_STACK_REG + 1);
-		}
+		if (STACK_REG_P (*dest))
+		  {
+		    regstack->reg[regstack->top - 1] = REGNO (*dest);
+		    SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
+		    replace_reg (dest, FIRST_STACK_REG + 1);
+		  }
 
 		replace_reg (src1, FIRST_STACK_REG);
 		replace_reg (src2, FIRST_STACK_REG + 1);
@@ -1760,11 +1762,12 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 		/* Push the result back onto stack. Empty stack slot
 		   will be filled in second part of insn.  */
-		if (STACK_REG_P (*dest)) {
-		  regstack->reg[regstack->top + 1] = REGNO (*dest);
-		  SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
-		  replace_reg (dest, FIRST_STACK_REG);
-		}
+		if (STACK_REG_P (*dest))
+		  {
+		    regstack->reg[regstack->top + 1] = REGNO (*dest);
+		    SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
+		    replace_reg (dest, FIRST_STACK_REG);
+		  }
 
 		replace_reg (src1, FIRST_STACK_REG);
 		break;
@@ -1786,13 +1789,14 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 		/* Push the result back onto stack. Fill empty slot from
 		   first part of insn and fix top of stack pointer.  */
-		if (STACK_REG_P (*dest)) {
-		  regstack->reg[regstack->top] = REGNO (*dest);
-		  SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
-		  replace_reg (dest, FIRST_STACK_REG + 1);
+		if (STACK_REG_P (*dest))
+		  {
+		    regstack->reg[regstack->top] = REGNO (*dest);
+		    SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
+		    replace_reg (dest, FIRST_STACK_REG + 1);
 
-		  regstack->top++;
-		}
+		    regstack->top++;
+		  }
 
 		replace_reg (src1, FIRST_STACK_REG);
 		break;
