@@ -936,6 +936,8 @@ proc check_function_available { function } {
 	set exe "function[pid].exe"
 
 	set f [open $src "w"]
+	puts $f "#ifdef __cplusplus\nextern \"C\"\n#endif\n"
+	puts $f "char $function ();\n"
 	puts $f "int main () { $function (); }"
 	close $f
 
