@@ -9121,6 +9121,12 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 			     NULL, NULL, 0);
     break;
 
+    CASE_FLT_FN (BUILT_IN_TGAMMA):
+      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_gamma,
+			     NULL, NULL, 0);
+    break;
+ 
     CASE_FLT_FN (BUILT_IN_EXP):
       return fold_builtin_exponent (fndecl, arglist, mpfr_exp);
 

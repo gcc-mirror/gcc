@@ -90,6 +90,13 @@ void bar()
   TESTIT (log1p, -2.0);
   TESTIT (log1p, -1.0);
 
+  /* The tgamma arg errors with zero or negative integers.  */
+  TESTIT (tgamma, 0.0);
+  TESTIT (tgamma, -0.0);
+  TESTIT (tgamma, -1.0);
+  TESTIT (tgamma, -2.0);
+  TESTIT (tgamma, -3.0);
+
   /* An argument of NaN is not evaluated at compile-time.  */
   foof (__builtin_powf (__builtin_nanf(""), 2.5F));
   foo (__builtin_pow (__builtin_nan(""), 2.5));
@@ -155,6 +162,9 @@ void bar()
 /* { dg-final { scan-tree-dump-times "log1p " 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "log1pf" 2 "original" } } */
 /* { dg-final { scan-tree-dump-times "log1pl" 2 "original" } } */
+/* { dg-final { scan-tree-dump-times "tgamma " 5 "original" } } */
+/* { dg-final { scan-tree-dump-times "tgammaf" 5 "original" } } */
+/* { dg-final { scan-tree-dump-times "tgammal" 5 "original" } } */
 /* { dg-final { scan-tree-dump-times "pow " 13 "original" } } */
 /* { dg-final { scan-tree-dump-times "powf" 13 "original" } } */
 /* { dg-final { scan-tree-dump-times "powl" 13 "original" } } */
