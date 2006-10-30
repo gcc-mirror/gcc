@@ -1,5 +1,11 @@
 2006-10-30  Dirk Mueller  <dmueller@suse.de>
 
+	PR c++/28669
+	* decl.c (grokfndecl): Duplicate warning message for
+	easier translation.
+
+2006-10-30  Dirk Mueller  <dmueller@suse.de>
+
 	* typeck.c (build_unary_op): Fix indenting. Use G_().
 
 2006-10-29  Dirk Mueller  <dmueller@suse.de>
