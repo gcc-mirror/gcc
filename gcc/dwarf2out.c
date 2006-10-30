@@ -7669,7 +7669,7 @@ file_name_acquire (void ** slot, void *data)
   f = strrchr (f, DIR_SEPARATOR);
 #if defined (DIR_SEPARATOR_2)
   {
-    char *g = strrchr (files[i].path, DIR_SEPARATOR_2);
+    char *g = strrchr (fi->path, DIR_SEPARATOR_2);
 
     if (g != NULL)
       {
