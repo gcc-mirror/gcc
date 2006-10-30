@@ -514,9 +514,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    */
   template<typename _Tp>
     struct is_bind_expression
-    {
-      static const bool value = false;
-    };
+    { static const bool value = false; };
+
+  template<typename _Tp>
+    const bool is_bind_expression<_Tp>::value;
 
   /**
    *  @brief Determines if the given type _Tp is a placeholder in a
@@ -524,9 +525,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    */
   template<typename _Tp>
     struct is_placeholder
-    {
-      static const int value = 0;
-    };
+    { static const int value = 0; };
+
+  template<typename _Tp>
+    const int is_placeholder<_Tp>::value;
 
   /**
    *  @if maint
@@ -543,9 +545,10 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    */
   template<int _Num>
     struct is_placeholder<_Placeholder<_Num> >
-    {
-      static const int value = _Num;
-    };
+    { static const int value = _Num; };
+
+  template<int _Num>
+    const int is_placeholder<_Placeholder<_Num> >::value;
 
   /**
    *  @if maint
@@ -714,10 +717,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    *  @endif
    */
    template<typename _Signature>
-    struct is_bind_expression<_Bind<_Signature> >
-    {
-      static const bool value = true;
-    };
+     struct is_bind_expression<_Bind<_Signature> >
+     { static const bool value = true; };
+
+   template<typename _Signature>
+     const bool is_bind_expression<_Bind<_Signature> >::value;
 
   /**
    *  @if maint
@@ -725,10 +729,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
    *  @endif
    */
    template<typename _Result, typename _Signature>
-   struct is_bind_expression<_Bind_result<_Result, _Signature> >
-    {
-      static const bool value = true;
-    };
+     struct is_bind_expression<_Bind_result<_Result, _Signature> >
+     { static const bool value = true; };
+
+   template<typename _Result, typename _Signature>
+     const bool is_bind_expression<_Bind_result<_Result, _Signature> >::value;
 
   /**
    *  @brief Exception class thrown when class template function's
