@@ -8039,8 +8039,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  if (cp_type_quals (type) != TYPE_UNQUALIFIED
 	      && (current_class_type == NULL_TREE || staticp) )
 	    {
-	      error ("qualified function types cannot be used to declare %s functions",
-		     (staticp? "static member" : "free"));
+	      error (staticp
+                     ? G_("qualified function types cannot be used to declare static member functions")
+                     : G_("qualified function types cannot be used to declare free functions"));
 	      type = TYPE_MAIN_VARIANT (type);
 	    }
 
