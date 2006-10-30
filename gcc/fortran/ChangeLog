@@ -1,3 +1,10 @@
+2006-10-30  Andrew Pinski  <pinskia@gmail.com>
+
+	PR fortran/29410
+	* trans-intrinsic.c (gfc_conv_intrinsic_array_transfer):
+	Change over to create VIEW_CONVERT_EXPR instead of using an
+	ADDR_EXPR, a cast and then an indirect reference
+
 2006-10-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_loc): Make LOC return a

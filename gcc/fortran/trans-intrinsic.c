@@ -2914,7 +2914,7 @@ gfc_conv_intrinsic_array_transfer (gfc_se * se, gfc_expr * expr)
 
 
 /* Scalar transfer statement.
-   TRANSFER (source, mold) = *(typeof<mold> *)&source.  */
+   TRANSFER (source, mold) = VIEW_CONVERT_EXPR<typeof<mold> >source.  */
 
 static void
 gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
@@ -2939,9 +2939,9 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 
   arg = arg->next;
   type = gfc_typenode_for_spec (&expr->ts);
-  ptr = convert (build_pointer_type (type), ptr);
   if (expr->ts.type == BT_CHARACTER)
     {
+      ptr = convert (build_pointer_type (type), ptr);
       gfc_init_se (&argse, NULL);
       gfc_conv_expr (&argse, arg->expr);
       gfc_add_block_to_block (&se->pre, &argse.pre);
@@ -2951,7 +2951,8 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
     }
   else
     {
-      se->expr = build_fold_indirect_ref (ptr);
+      tree tmp = build_fold_indirect_ref (ptr);
+      se->expr = fold_build1 (VIEW_CONVERT_EXPR, type, tmp);
     }
 }
 
