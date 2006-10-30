@@ -1,3 +1,75 @@
+2006-10-29  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree.h (tree_value_handle): Remove struct value_set declaration.	
+	Change value_set to bitmap_set.
+	* tree-pretty-print.c (dump_generic_node): Use has_stmt_ann.
+	* tree-vn.c (get_value_handle): Made inline and moved to
+	tree-flow-inline.h.
+	* tree-flow-inline.h: (has_stmt_ann): New function.
+	* tree-ssa-pre.c (expressions): New variable.
+	(next_expression_id): Ditto.
+	(alloc_expression_id): New function.
+	(struct value_set): Remove.
+	(get_expression_id): New function.
+	(get_or_alloc_expression_id): Ditto.
+	(expression_for_id): Ditto.
+	(clear_expression_ids): Ditto.
+	(FOR_EACH_EXPR_ID_IN_SET): New macro.
+	(bb_value_sets): Renamed to bb_bitmap_sets.
+	All value sets replaced with bitmap_sets.
+	Add visited member.
+	(BB_VISITED): New macro.
+	(postorder): New variable.
+	(add_to_value): Removed.
+	(value_exists_in_set_bitmap): Ditto.
+	(value_insert_into_set_bitmap): Ditto.
+	(set_new): Ditto.
+	(set_copy): Ditto.
+	(set_remove): Ditto.
+	(set_contains_value): Ditto.
+	(insert_into_set): Ditto.
+	(set_equal): Ditto.
+	(find_leader): Ditto.
+	(bitmap_set_subtract_from_value_set): Ditto.
+	(value_insert_into_set): Ditto.
+	(print_value_set): Ditto.
+	(debug_value_set): Ditto.
+	(constant_expr_p): New function.
+	(bitmap_remove_from_set): Ditto.
+	(bitmap_insert_into_set): Ditto.
+	(bitmap_set_free): Ditto.
+	(vh_compare): Ditto.
+	(sorted_array_from_bitmap_set): Ditto.
+	(bitmap_set_subtract): Ditto.
+	(bitmap_set_equal): Ditto.
+	(debug_bitmap_set): Ditto.
+	(find_leader_in_sets): Ditto.
+	(bitmap_set_replace_value): Modify for bitmapped sets.
+	(phi_translate): Ditto.
+	(phi_translate_set): Ditto.
+	(bitmap_find_leader): Ditto.
+	(valid_in_sets): Ditto.
+	(union_contains_value): Ditto.
+	(clean): Ditto.
+	(compute_antic_aux): Ditto.  Mark changed blocks.
+	(compute_antic): Ditto. Iterate in postorder and only over
+	changing blocks.
+	(compute_rvuse_and_antic_safe): Reuse postorder.
+	(create_component_ref_by_pieces): Modify for bitmapped sets.
+	(find_or_generate_expression): Ditto.
+	(create_expression_by_pieces): Ditto.
+	(insert_into_preds_of_block): Ditto.
+	(changed_blocks): New variable.
+	(do_regular_insertion): Broken out from insert_aux.
+	(insert_aux): Modified for bitmapped sets.
+	(find_existing_value_expr): New function.
+	(create_value_expr_from): Use it.
+	(insert_extra_phis): Removed.
+	(print_bitmap_set): Renamed from bitmap_print_value_set.
+	(compute_avail): Handle RETURN_EXPR.
+	(init_pre): Modify for bitmapped sets.
+	* tree-flow.h (has_stmt_ann): New function.
+	
 2006-10-29  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_floor): Check for the availability of
