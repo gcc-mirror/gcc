@@ -6133,54 +6133,11 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   /* Warn for unlikely, improbable, or stupid declarations of `main'.  */
   if (warn_main > 0 && MAIN_NAME_P (DECL_NAME (decl1)))
     {
-      tree args;
-      int argct = 0;
-
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
 	  != integer_type_node)
 	pedwarn ("return type of %q+D is not %<int%>", decl1);
 
-      for (args = TYPE_ARG_TYPES (TREE_TYPE (decl1)); args;
-	   args = TREE_CHAIN (args))
-	{
-	  tree type = args ? TREE_VALUE (args) : 0;
-
-	  if (type == void_type_node)
-	    break;
-
-	  ++argct;
-	  switch (argct)
-	    {
-	    case 1:
-	      if (TYPE_MAIN_VARIANT (type) != integer_type_node)
-		pedwarn ("first argument of %q+D should be %<int%>", decl1);
-	      break;
-
-	    case 2:
-	      if (TREE_CODE (type) != POINTER_TYPE
-		  || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
-		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
-		      != char_type_node))
-		pedwarn ("second argument of %q+D should be %<char **%>",
-			 decl1);
-	      break;
-
-	    case 3:
-	      if (TREE_CODE (type) != POINTER_TYPE
-		  || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
-		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
-		      != char_type_node))
-		pedwarn ("third argument of %q+D should probably be "
-			 "%<char **%>", decl1);
-	      break;
-	    }
-	}
-
-      /* It is intentional that this message does not mention the third
-	 argument because it's only mentioned in an appendix of the
-	 standard.  */
-      if (argct > 0 && (argct < 2 || argct > 3))
-	pedwarn ("%q+D takes only zero or two arguments", decl1);
+      check_main_parameter_types(decl1);
 
       if (!TREE_PUBLIC (decl1))
 	pedwarn ("%q+D is normally a non-static function", decl1);

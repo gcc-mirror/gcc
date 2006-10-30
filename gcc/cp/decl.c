@@ -6027,6 +6027,7 @@ grokfndecl (tree ctype,
 					  oldtypeargs);
 	  TREE_TYPE (decl) = newtype;
 	}
+      check_main_parameter_types (decl);
       inlinep = 0;
       publicp = 1;
     }
