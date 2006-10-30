@@ -1374,7 +1374,7 @@ uw_init_context_1 (struct _Unwind_Context *context,
   {
     static __gthread_once_t once_regsizes = __GTHREAD_ONCE_INIT;
     if (__gthread_once (&once_regsizes, init_dwarf_reg_size_table) != 0
-	|| dwarf_reg_size_table[0] == 0)
+	&& dwarf_reg_size_table[0] == 0)
       init_dwarf_reg_size_table ();
   }
 #else
