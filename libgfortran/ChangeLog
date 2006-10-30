@@ -1,3 +1,8 @@
+2006-10-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29452
+	* runtime/string.c (compare0): Check whether string lengths match.
+
 2006-10-29  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* configure: Regenerate.
