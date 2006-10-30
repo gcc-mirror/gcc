@@ -1,3 +1,14 @@
+2006-10-30  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_mathfn_3): Correct coding style.
+	* ddg.c (print_ddg_edge): Likewise.
+	* dwarf2out.c (prune_unused_types_walk): Likewise.
+	* ifcvt.c (noce_try_cmove_arith): Likewise.
+	* langhooks.c (add_builtin_function): Likewise.
+	* reg-stack.c (subst_stack_regs_pat): Likewise.
+	* tree.c (expanded_location): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+
 2006-10-30  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/linux.h (NO_SHARED_SPECS): Correct syntax error.

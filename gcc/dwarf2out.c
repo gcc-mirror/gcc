@@ -14045,35 +14045,36 @@ prune_unused_types_walk (dw_die_ref die)
   if (die->die_mark)
     return;
 
-  switch (die->die_tag) {
-  case DW_TAG_const_type:
-  case DW_TAG_packed_type:
-  case DW_TAG_pointer_type:
-  case DW_TAG_reference_type:
-  case DW_TAG_volatile_type:
-  case DW_TAG_typedef:
-  case DW_TAG_array_type:
-  case DW_TAG_structure_type:
-  case DW_TAG_union_type:
-  case DW_TAG_class_type:
-  case DW_TAG_friend:
-  case DW_TAG_variant_part:
-  case DW_TAG_enumeration_type:
-  case DW_TAG_subroutine_type:
-  case DW_TAG_string_type:
-  case DW_TAG_set_type:
-  case DW_TAG_subrange_type:
-  case DW_TAG_ptr_to_member_type:
-  case DW_TAG_file_type:
-    if (die->die_perennial_p)
+  switch (die->die_tag)
+    {
+    case DW_TAG_const_type:
+    case DW_TAG_packed_type:
+    case DW_TAG_pointer_type:
+    case DW_TAG_reference_type:
+    case DW_TAG_volatile_type:
+    case DW_TAG_typedef:
+    case DW_TAG_array_type:
+    case DW_TAG_structure_type:
+    case DW_TAG_union_type:
+    case DW_TAG_class_type:
+    case DW_TAG_friend:
+    case DW_TAG_variant_part:
+    case DW_TAG_enumeration_type:
+    case DW_TAG_subroutine_type:
+    case DW_TAG_string_type:
+    case DW_TAG_set_type:
+    case DW_TAG_subrange_type:
+    case DW_TAG_ptr_to_member_type:
+    case DW_TAG_file_type:
+      if (die->die_perennial_p)
+	break;
+
+      /* It's a type node --- don't mark it.  */
+      return;
+
+    default:
+      /* Mark everything else.  */
       break;
-
-    /* It's a type node --- don't mark it.  */
-    return;
-
-  default:
-    /* Mark everything else.  */
-    break;
   }
 
   die->die_mark = 1;

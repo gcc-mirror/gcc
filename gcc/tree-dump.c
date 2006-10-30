@@ -650,12 +650,12 @@ dequeue_and_dump (dump_info_p di)
 
     case CASE_LABEL_EXPR:
       dump_child ("name", CASE_LABEL (t));
-      if (CASE_LOW (t)) {
-        dump_child ("low ", CASE_LOW (t));
-	if (CASE_HIGH (t)) {
-	  dump_child ("high", CASE_HIGH (t));
+      if (CASE_LOW (t))
+	{
+	  dump_child ("low ", CASE_LOW (t));
+	  if (CASE_HIGH (t))
+	    dump_child ("high", CASE_HIGH (t));
 	}
-      }
       break;
     case LABEL_EXPR:
       dump_child ("name", TREE_OPERAND (t,0));

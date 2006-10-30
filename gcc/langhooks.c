@@ -605,10 +605,11 @@ add_builtin_function (const char *name,
   DECL_BUILT_IN_CLASS (decl) = cl;
   DECL_FUNCTION_CODE (decl)  = function_code;
 
-  if (library_name) {
-    tree libname = get_identifier (library_name);
-    SET_DECL_ASSEMBLER_NAME (decl, libname);
-  }
+  if (library_name)
+    {
+      tree libname = get_identifier (library_name);
+      SET_DECL_ASSEMBLER_NAME (decl, libname);
+    }
 
   /* Possibly apply some default attributes to this built-in function.  */
   if (attrs)

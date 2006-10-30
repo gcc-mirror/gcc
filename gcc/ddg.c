@@ -549,7 +549,8 @@ print_ddg_edge (FILE *file, ddg_edge_ptr e)
 {
   char dep_c;
 
-  switch (e->type) {
+  switch (e->type)
+    {
     case OUTPUT_DEP :
       dep_c = 'O';
       break;
@@ -558,7 +559,7 @@ print_ddg_edge (FILE *file, ddg_edge_ptr e)
       break;
     default:
       dep_c = 'T';
-  }
+    }
 
   fprintf (file, " [%d -(%c,%d,%d)-> %d] ", INSN_UID (e->src->insn),
 	   dep_c, e->latency, e->distance, INSN_UID (e->dest->insn));

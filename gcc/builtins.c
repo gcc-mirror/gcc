@@ -2089,7 +2089,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 
   /* Check if sincos insn is available, otherwise fallback
      to sin or cos insn.  */
-  if (builtin_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing) {
+  if (builtin_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
       CASE_FLT_FN (BUILT_IN_SIN):
@@ -2099,7 +2099,6 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
       default:
 	gcc_unreachable ();
       }
-  }
 
   /* Before working hard, check whether the instruction is available.  */
   if (builtin_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
