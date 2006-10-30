@@ -1,7 +1,12 @@
+2006-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/29637
+	* tree.c (make_vector_type): Don't recurse if TYPE_MAIN_VARIANT
+	of the innertype is the innertype itself.
+
 2006-10-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/29092
-
         * c-typeck.c (digest_init): Always allow initializing vectors
 	that have static storage duration with compound literals.
 	* tree.c (build_type_attribute_qual_variant): New, based on
