@@ -1332,8 +1332,8 @@ vect_print_dump_info (enum verbosity_levels vl)
 
   if (vect_loop_location == UNKNOWN_LOC)
     fprintf (vect_dump, "\n%s:%d: note: ",
-		 DECL_SOURCE_FILE (current_function_decl),
-		 DECL_SOURCE_LINE (current_function_decl));
+	     DECL_SOURCE_FILE (current_function_decl),
+	     DECL_SOURCE_LINE (current_function_decl));
   else
     fprintf (vect_dump, "\n%s:%d: note: ", 
 	     LOC_FILE (vect_loop_location), LOC_LINE (vect_loop_location));
