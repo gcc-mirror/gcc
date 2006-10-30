@@ -1,6 +1,6 @@
 // 2004-10-20  Benjamin Kosnik  <bkoz@redhat.com>
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@ test01()
     bool test __attribute__((unused)) = true;
     array_type a = { 0, 1, 2, 3, 4 };
     
-    VERIFY( a.size() == len );
+    VERIFY( a.max_size() == len );
   }
 
   {
@@ -41,7 +41,7 @@ test01()
     bool test __attribute__((unused)) = true;
     array_type a;
     
-    VERIFY( a.size() == len );
+    VERIFY( a.max_size() == len );
   }
 }
 
@@ -50,4 +50,3 @@ int main()
   test01();
   return 0;
 }
-
