@@ -3,6 +3,7 @@
 	PR c++/28704
 	* decl.c (grokdeclarator): Duplicate diagnostic message
 	for easier translation.
+	* decl.c (grokdeclarator): Fix line-wrapping.
 
 2006-10-30  Dirk Mueller  <dmueller@suse.de>
 
