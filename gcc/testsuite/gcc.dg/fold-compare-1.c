@@ -47,7 +47,7 @@ int test8(int l)
 /* { dg-final { scan-tree-dump-times "f == -6" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "h < g" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "j >= i" 1 "original" } } */
-/* { dg-final { scan-tree-dump-times "k > -4" 1 "original" } } */
-/* { dg-final { scan-tree-dump-times "l <= -3" 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "k >= -3" 1 "original" } } */
+/* { dg-final { scan-tree-dump-times "l < -2" 1 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */
 
