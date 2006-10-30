@@ -48,6 +48,7 @@ Boston, MA 02110-1301, USA.  */
 #include "c-common.h"
 #include "c-pragma.h"
 #include "diagnostic.h"
+#include "intl.h"
 #include "debug.h"
 #include "timevar.h"
 #include "tree-flow.h"
@@ -6085,8 +6086,10 @@ grokfndecl (tree ctype,
   DECL_EXTERNAL (decl) = 1;
   if (quals && TREE_CODE (type) == FUNCTION_TYPE)
     {
-      error ("%smember function %qD cannot have cv-qualifier",
-	     (ctype ? "static " : "non-"), decl);
+      error (ctype
+             ? G_("static member function %qD cannot have cv-qualifier")
+             : G_("non-static member function %qD cannot have cv-qualifier"),
+	     decl);
       quals = TYPE_UNQUALIFIED;
     }
 
