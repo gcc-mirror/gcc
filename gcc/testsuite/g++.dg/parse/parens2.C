@@ -1,6 +1,6 @@
 /* PR c++/8842. */
 /* { dg-do compile } */
-int main( int argc, char* argv )
+int main( int argc, char* argv[] )
 {
     int i = 5;
     // This always worked:
