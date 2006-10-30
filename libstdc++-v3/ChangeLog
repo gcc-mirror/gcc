@@ -1,3 +1,8 @@
+2006-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/config/default.exp (${tool}_target_compile): Use
+	v3_target_compile.
+
 2006-10-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/debug.cc (_Safe_sequence_base::_M_revalidate_singular): Fix

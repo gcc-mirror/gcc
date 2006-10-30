@@ -28,6 +28,6 @@ load_lib "standard.exp"
 
 # target-supports.exp uses this
 proc ${tool}_target_compile { srcfile destfile compile_type options } {
-    target_compile $srcfile $destfile $compile_type $options
+    v3_target_compile $srcfile $destfile $compile_type $options
 }
 
