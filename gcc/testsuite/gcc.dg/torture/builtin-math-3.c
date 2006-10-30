@@ -175,6 +175,21 @@ int main (void)
   TESTIT_R (erfc, 1.0, 0.15, 0.16); /* erfc(1) == 0.157... */
   TESTIT_R (erfc, -1.0, 1.84, 1.85); /* erfc(-1) == 1.842... */
 
+  TESTIT_R (tgamma, -4.5, -0.061, -0.060); /* tgamma(-4.5) == -0.06001... */
+  TESTIT_R (tgamma, -3.5, 0.27, 0.28); /* tgamma(-3.5) == 0.27008... */
+  TESTIT_R (tgamma, -2.5, -0.95, -0.94); /* tgamma(-2.5) == -0.945... */
+  TESTIT_R (tgamma, -1.5, 2.36, 2.37); /* tgamma(-1.5) == 2.363... */
+  TESTIT_R (tgamma, -0.5, -3.55, -3.54); /* tgamma(-0.5) == -3.544... */
+  TESTIT_R (tgamma, 0.5, 1.77, 1.78); /* tgamma(0.5) == 1.772... */
+  TESTIT (tgamma, 1.0, 1.0); /* tgamma(1) == 1 */
+  TESTIT_R (tgamma, 1.5, 0.88, 0.89); /* tgamma(1.5) == 0.886... */
+  TESTIT (tgamma, 2.0, 1.0); /* tgamma(2) == 1 */
+  TESTIT_R (tgamma, 2.5, 1.32, 1.33); /* tgamma(2.5) == 1.329... */
+  TESTIT (tgamma, 3.0, 2.0); /* tgamma(3) == 2 */
+  TESTIT_R (tgamma, 3.5, 3.32, 3.33); /* tgamma(3.5) == 3.323... */
+  TESTIT (tgamma, 4.0, 6.0); /* tgamma(4) == 6 */
+  TESTIT_R (tgamma, 4.5, 11.63, 11.64); /* tgamma(4.5) == 11.631... */
+
   TESTIT2 (pow, 3.0, 4.0, 81.0); /* pow(3,4) == 81 */
   TESTIT2 (pow, -3.0, 5.0, -243.0); /* pow(-3,5) == -243 */
   TESTIT2 (pow, 16.0, 0.25, 2.0); /* pow(16,1/4) == 2 */
