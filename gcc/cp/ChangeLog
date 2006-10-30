@@ -1,5 +1,11 @@
 2006-10-30  Dirk Mueller  <dmueller@suse.de>
 
+	PR c++/28704
+	* decl.c (grokdeclarator): Duplicate diagnostic message
+	for easier translation.
+
+2006-10-30  Dirk Mueller  <dmueller@suse.de>
+
 	PR c++/6321
 	* decl.c (grokfndecl): Use check_main_parameter_types.
 
