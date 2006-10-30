@@ -1,3 +1,8 @@
+2006-10-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/tr1/6_containers/array/capacity/max_size.cc: Actually
+	do test max_size().
+
 2006-10-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* testsuite/config/default.exp (${tool}_target_compile): Use
