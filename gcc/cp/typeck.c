@@ -39,6 +39,7 @@ Boston, MA 02110-1301, USA.  */
 #include "output.h"
 #include "toplev.h"
 #include "diagnostic.h"
+#include "intl.h"
 #include "target.h"
 #include "convert.h"
 #include "c-common.h"
@@ -3228,11 +3229,13 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (op1, integer_zero_node))
-		warning (0, (code == LROTATE_EXPR) ? "left rotate count is negative" :
-			    "right rotate count is negative");
+		warning (0, (code == LROTATE_EXPR)
+                            ? G_("left rotate count is negative")
+                            : G_("right rotate count is negative"));
 	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
-		warning (0, (code == LROTATE_EXPR) ? "left rotate count >= width of type" :
-			 "right rotate count >= width of type");
+		warning (0, (code == LROTATE_EXPR) 
+                            ? G_("left rotate count >= width of type")
+                            : G_("right rotate count >= width of type"));
 	    }
 	  /* Convert the shift-count to an integer, regardless of
 	     size of value being shifted.  */
@@ -4121,9 +4124,9 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 
 	/* ARM $5.2.5 last annotation says this should be forbidden.  */
 	if (TREE_CODE (argtype) == ENUMERAL_TYPE)
-	  pedwarn ((code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR) ?
-                   "ISO C++ forbids incrementing an enum" :
-                   "ISO C++ forbids decrementing an enum");
+	  pedwarn ((code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
+		   ? G_("ISO C++ forbids incrementing an enum")
+		   : G_("ISO C++ forbids decrementing an enum"));
 
 	/* Compute the increment.  */
 
@@ -4134,17 +4137,15 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	    if (!COMPLETE_OR_VOID_TYPE_P (type))
 	      error (((code == PREINCREMENT_EXPR
 		       || code == POSTINCREMENT_EXPR))
-		      ?
-                      "cannot increment a pointer to incomplete type %qT" :
-                      "cannot decrement a pointer to incomplete type %qT",
+		     ? G_("cannot increment a pointer to incomplete type %qT")
+		     : G_("cannot decrement a pointer to incomplete type %qT"),
                       TREE_TYPE (argtype));
 	    else if ((pedantic || warn_pointer_arith)
 		     && !TYPE_PTROB_P (argtype))
-	      pedwarn (((code == PREINCREMENT_EXPR
+	      pedwarn ((code == PREINCREMENT_EXPR
 			 || code == POSTINCREMENT_EXPR)
-			? 
-                        "ISO C++ forbids incrementing a pointer of type %qT" :
-                        "ISO C++ forbids decrementing a pointer of type %qT"),
+		       ? G_("ISO C++ forbids incrementing a pointer of type %qT")
+		       : G_("ISO C++ forbids decrementing a pointer of type %qT"),
                         argtype);
 	    inc = cxx_sizeof_nowarn (TREE_TYPE (argtype));
 	  }
