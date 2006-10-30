@@ -6400,7 +6400,8 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 
   /* Build a main variant, based on the main variant of the inner type, then
      use it to build the variant we return.  */
-  if (TYPE_ATTRIBUTES (innertype) || TYPE_QUALS (innertype))
+  if ((TYPE_ATTRIBUTES (innertype) || TYPE_QUALS (innertype))
+      && TYPE_MAIN_VARIANT (innertype) != innertype)
     return build_type_attribute_qual_variant (
 	    make_vector_type (TYPE_MAIN_VARIANT (innertype), nunits, mode),
 	    TYPE_ATTRIBUTES (innertype),
