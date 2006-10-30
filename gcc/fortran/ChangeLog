@@ -1,3 +1,8 @@
+2006-10-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29452
+	* io.c (check_io_constraints): Fix keyword string comparison.
+
 2006-10-30  Andrew Pinski  <pinskia@gmail.com>
 
 	PR fortran/29410
@@ -149,7 +154,7 @@
 	* io.c (gfc_match_close): Ensure that status is terminated by
 	a NULL element.
 
-2006-10-16  Tobias Burnus <burnus@net-b.de>
+2006-10-16  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-stmt.c: Fix a typo
 	* invoke.texi: Fix typos

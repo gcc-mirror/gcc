@@ -2701,8 +2701,8 @@ if (condition) \
       if (expr->expr_type == EXPR_CONSTANT && expr->ts.type == BT_CHARACTER)
 	{
 	  const char * advance = expr->value.character.string;
-	  not_no = strncasecmp (advance, "no", 2) != 0;
-	  not_yes = strncasecmp (advance, "yes", 2) != 0;
+	  not_no = strcasecmp (advance, "no") != 0;
+	  not_yes = strcasecmp (advance, "yes") != 0;
 	}
       else
 	{

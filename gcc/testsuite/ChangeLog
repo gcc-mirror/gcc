@@ -1,3 +1,9 @@
+2006-10-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29452
+	* gfortran.dg/write_check.f90: Check run-time keyword checking.
+	* gfortran.dg/write_check2.f90: Check compile-time keyword checking.
+
 2006-10-30  Andrew Pinski  <pinskia@gmail.com>
 
 	PR Fortran/29410
