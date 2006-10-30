@@ -1,3 +1,8 @@
+2006-10-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29452
+	* runtime/string.c (compare0): Check whether string lengths match.
+
 2006-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/29563
