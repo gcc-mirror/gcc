@@ -1,3 +1,8 @@
+2006-10-29  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_floor): Check for the availability of
+	the C99 trunc function before transforming floor into trunc.
+
 2006-10-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_hypot): Rearrange recursive
