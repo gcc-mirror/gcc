@@ -1,3 +1,9 @@
+2006-10-30  Pete Steinmetz  <steinmtz@us.ibm.com>
+
+	* recog.c (store_data_bypass_p): Add support to allow IN_INSN to
+	be a PARALLEL containing sets.	Return false when out_pat is not
+	a PARALLEL insn.
+
 2006-10-30  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.md (mul<mode>3): Split into...
