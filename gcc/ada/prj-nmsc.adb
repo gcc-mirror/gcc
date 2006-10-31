@@ -505,6 +505,20 @@ package body Prj.Nmsc is
 
       Name_Len := The_Name'Length;
       Name_Buffer (1 .. Name_Len) := The_Name;
+
+      --  Special cases of children of packages A, G, I and S on VMS
+
+      if OpenVMS_On_Target and then
+        Name_Len > 3 and then
+        Name_Buffer (2 .. 3) = "__" and then
+        ((Name_Buffer (1) = 'a') or else (Name_Buffer (1) = 'g') or else
+         (Name_Buffer (1) = 'i') or else (Name_Buffer (1) = 's'))
+      then
+         Name_Buffer (2) := '.';
+         Name_Buffer (3 .. Name_Len - 1) := Name_Buffer (4 .. Name_Len);
+         Name_Len := Name_Len - 1;
+      end if;
+
       Real_Name := Name_Find;
 
       --  Check first that the given name is not an Ada reserved word
@@ -3878,7 +3892,8 @@ package body Prj.Nmsc is
          --  Check if the casing is right
 
          declare
-            Src : String := File (First .. Last);
+            Src      : String := File (First .. Last);
+            Src_Last : Positive := Last;
 
          begin
             case Naming.Casing is
@@ -3921,18 +3936,29 @@ package body Prj.Nmsc is
                   S3 : constant Character := Src (Src'First + 2);
 
                begin
-                  if S1 = 'a' or else S1 = 'g'
-                    or else S1 = 'i' or else S1 = 's'
+                  if S1 = 'a' or else
+                     S1 = 'g' or else
+                     S1 = 'i' or else
+                     S1 = 's'
                   then
-                     --  Children or separates of packages A, G, I or S
+                     --  Children or separates of packages A, G, I or S. On
+                     --  VMS these names are x__ ... and on other systems the
+                     --  names are x~... (where x is a, g, i, or s).
 
                      if (OpenVMS_On_Target
-                         and then S2 = '_'
-                         and then S3 = '_')
-                        or else
-                         S2 = '~'
+                          and then S2 = '_'
+                          and then S3 = '_')
+                       or else
+                         (not OpenVMS_On_Target
+                           and then S2 = '~')
                      then
                         Src (Src'First + 1) := '.';
+
+                        if OpenVMS_On_Target then
+                           Src_Last := Src_Last - 1;
+                           Src (Src'First + 2 .. Src_Last) :=
+                             Src (Src'First + 3 .. Src_Last + 1);
+                        end if;
 
                      --  If it is potentially a run time source, disable
                      --  filling of the mapping file to avoid warnings.
@@ -3940,19 +3966,19 @@ package body Prj.Nmsc is
                      elsif S2 = '.' then
                         Set_Mapping_File_Initial_State_To_Empty;
                      end if;
-
                   end if;
                end;
             end if;
 
             if Current_Verbosity = High then
                Write_Str  ("      ");
-               Write_Line (Src);
+               Write_Line (Src (Src'First .. Src_Last));
             end if;
 
             --  Now, we check if this name is a valid unit name
 
-            Check_Ada_Name (Name => Src, Unit => Unit_Name);
+            Check_Ada_Name
+              (Name => Src (Src'First .. Src_Last), Unit => Unit_Name);
          end;
 
       end;
@@ -4958,19 +4984,17 @@ package body Prj.Nmsc is
 
             --  Put the file name in the list of sources of the project
 
-            if not File_Name_Recorded then
-               String_Element_Table.Increment_Last
-                 (In_Tree.String_Elements);
-               In_Tree.String_Elements.Table
-                 (String_Element_Table.Last
-                   (In_Tree.String_Elements)) :=
-                 (Value         => Canonical_File_Name,
-                  Display_Value => File_Name,
-                  Location      => No_Location,
-                  Flag          => False,
-                  Next          => Nil_String,
-                  Index         => Unit_Index);
-            end if;
+            String_Element_Table.Increment_Last
+              (In_Tree.String_Elements);
+            In_Tree.String_Elements.Table
+              (String_Element_Table.Last
+                 (In_Tree.String_Elements)) :=
+              (Value         => Canonical_File_Name,
+               Display_Value => File_Name,
+               Location      => No_Location,
+               Flag          => False,
+               Next          => Nil_String,
+               Index         => Unit_Index);
 
             if Current_Source = Nil_String then
                Data.Sources := String_Element_Table.Last
