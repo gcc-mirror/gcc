@@ -35,14 +35,43 @@ package body MLib.Fil is
 
    package Target renames MLib.Tgt;
 
+   ---------------
+   -- Append_To --
+   ---------------
+
+   function Append_To
+     (Filename : String;
+      Ext      : String) return String
+   is
+   begin
+      if Ext'Length = 0 then
+         return Filename;
+
+      elsif Filename (Filename'Last) = '.' then
+         if Ext (Ext'First) = '.' then
+            return Filename & Ext (Ext'First + 1 .. Ext'Last);
+
+         else
+            return Filename & Ext;
+         end if;
+
+      else
+         if Ext (Ext'First) = '.' then
+            return Filename & Ext;
+
+         else
+            return Filename & '.' & Ext;
+         end if;
+      end if;
+   end Append_To;
+
    ------------
    -- Ext_To --
    ------------
 
    function Ext_To
      (Filename : String;
-      New_Ext  : String := "")
-      return     String
+      New_Ext  : String := "") return String
    is
       use Strings.Fixed;
 

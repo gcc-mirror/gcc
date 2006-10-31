@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -115,7 +115,7 @@ package body MLib.Tgt is
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
-                   Fil.Ext_To (Lib_Filename, DLL_Ext);
+                   Fil.Append_To (Lib_Filename, DLL_Ext);
 
       Version_Arg          : String_Access;
       Symbolic_Link_Needed : Boolean := False;
@@ -135,53 +135,104 @@ package body MLib.Tgt is
             Options_2   => Options_2);
 
       else
-         Version_Arg := new String'("-Wl,-soname," & Lib_Version);
+         declare
+            Maj_Version : constant String := Lib_Version;
+            Last_Maj    : Positive := Maj_Version'Last;
+            Last        : Positive;
+            Ok_Maj      : Boolean := False;
+         begin
+            while Last_Maj > Maj_Version'First loop
+               if Maj_Version (Last_Maj) in '0' .. '9' then
+                  Last_Maj := Last_Maj - 1;
 
-         if Is_Absolute_Path (Lib_Version) then
-            Utl.Gcc
-              (Output_File => Lib_Version,
-               Objects     => Ofiles,
-               Options     => Options & Version_Arg,
-               Driver_Name => Driver_Name,
-               Options_2   => Options_2);
-            Symbolic_Link_Needed := Lib_Version /= Lib_File;
+               else
+                  Ok_Maj := Last_Maj /= Maj_Version'Last and then
+                            Maj_Version (Last_Maj) = '.';
 
-         else
-            Utl.Gcc
-              (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
-               Objects     => Ofiles,
-               Options     => Options & Version_Arg,
-               Driver_Name => Driver_Name,
-               Options_2   => Options_2);
-            Symbolic_Link_Needed :=
-              Lib_Dir & Directory_Separator & Lib_Version /= Lib_File;
-         end if;
+                  if Ok_Maj then
+                     Last_Maj := Last_Maj - 1;
+                  end if;
 
-         if Symbolic_Link_Needed then
-            declare
-               Success : Boolean;
-               Oldpath : String (1 .. Lib_Version'Length + 1);
-               Newpath : String (1 .. Lib_File'Length + 1);
+                  exit;
+               end if;
+            end loop;
 
-               Result : Integer;
-               pragma Unreferenced (Result);
+            if Ok_Maj then
+               Last := Last_Maj;
 
-               function Symlink
-                 (Oldpath : System.Address;
-                  Newpath : System.Address) return Integer;
-               pragma Import (C, Symlink, "__gnat_symlink");
+               while Last > Maj_Version'First loop
+                  if Maj_Version (Last) in '0' .. '9' then
+                     Last := Last - 1;
 
-            begin
-               Oldpath (1 .. Lib_Version'Length) := Lib_Version;
-               Oldpath (Oldpath'Last)            := ASCII.NUL;
-               Newpath (1 .. Lib_File'Length)    := Lib_File;
-               Newpath (Newpath'Last)            := ASCII.NUL;
+                  else
+                     Ok_Maj := Last /= Last_Maj and then
+                               Maj_Version (Last) = '.';
 
-               Delete_File (Lib_File, Success);
+                     if Ok_Maj then
+                        Last := Last - 1;
 
-               Result := Symlink (Oldpath'Address, Newpath'Address);
-            end;
-         end if;
+                        Ok_Maj := Maj_Version (1 .. Last) = Lib_File;
+                     end if;
+
+                     exit;
+                  end if;
+               end loop;
+            end if;
+
+            if Ok_Maj then
+               Version_Arg := new String'("-Wl,-soname," &
+                                          Maj_Version (1 .. Last_Maj));
+
+            else
+               Version_Arg := new String'("-Wl,-soname," & Lib_Version);
+            end if;
+
+            if Is_Absolute_Path (Lib_Version) then
+               Utl.Gcc
+                 (Output_File => Lib_Version,
+                  Objects     => Ofiles,
+                  Options     => Options & Version_Arg,
+                  Driver_Name => Driver_Name,
+                  Options_2   => Options_2);
+               Symbolic_Link_Needed := Lib_Version /= Lib_File;
+
+            else
+               Utl.Gcc
+                 (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
+                  Objects     => Ofiles,
+                  Options     => Options & Version_Arg,
+                  Driver_Name => Driver_Name,
+                  Options_2   => Options_2);
+               Symbolic_Link_Needed :=
+                 Lib_Dir & Directory_Separator & Lib_Version /= Lib_File;
+            end if;
+
+            if Symbolic_Link_Needed then
+               declare
+                  Success : Boolean;
+                  Oldpath : String (1 .. Lib_Version'Length + 1);
+                  Newpath : String (1 .. Lib_File'Length + 1);
+
+                  Result : Integer;
+                  pragma Unreferenced (Result);
+
+                  function Symlink
+                    (Oldpath : System.Address;
+                     Newpath : System.Address) return Integer;
+                  pragma Import (C, Symlink, "__gnat_symlink");
+
+               begin
+                  Oldpath (1 .. Lib_Version'Length) := Lib_Version;
+                  Oldpath (Oldpath'Last)            := ASCII.NUL;
+                  Newpath (1 .. Lib_File'Length)    := Lib_File;
+                  Newpath (Newpath'Last)            := ASCII.NUL;
+
+                  Delete_File (Lib_File, Success);
+
+                  Result := Symlink (Oldpath'Address, Newpath'Address);
+               end;
+            end if;
+         end;
       end if;
    end Build_Dynamic_Library;
 
@@ -253,7 +304,8 @@ package body MLib.Tgt is
    ------------------------
 
    function Library_Exists_For
-     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return Boolean
    is
    begin
       if not In_Tree.Projects.Table (Project).Library then
@@ -263,25 +315,23 @@ package body MLib.Tgt is
 
       else
          declare
-            Lib_Dir : constant String :=
-              Get_Name_String
-                (In_Tree.Projects.Table (Project).Library_Dir);
+            Lib_Dir  : constant String :=
+                         Get_Name_String
+                           (In_Tree.Projects.Table (Project).Library_Dir);
             Lib_Name : constant String :=
-              Get_Name_String
-                (In_Tree.Projects.Table (Project).Library_Name);
+                         Get_Name_String
+                           (In_Tree.Projects.Table (Project).Library_Name);
 
          begin
-            if In_Tree.Projects.Table (Project).Library_Kind =
-                 Static
-            then
+            if In_Tree.Projects.Table (Project).Library_Kind = Static then
                return Is_Regular_File
                  (Lib_Dir & Directory_Separator & "lib" &
-                  Fil.Ext_To (Lib_Name, Archive_Ext));
+                  Fil.Append_To (Lib_Name, Archive_Ext));
 
             else
                return Is_Regular_File
                  (Lib_Dir & Directory_Separator & "lib" &
-                  Fil.Ext_To (Lib_Name, DLL_Ext));
+                  Fil.Append_To (Lib_Name, DLL_Ext));
             end if;
          end;
       end if;
@@ -304,8 +354,8 @@ package body MLib.Tgt is
       else
          declare
             Lib_Name : constant String :=
-              Get_Name_String
-                (In_Tree.Projects.Table (Project).Library_Name);
+                         Get_Name_String
+                           (In_Tree.Projects.Table (Project).Library_Name);
 
          begin
             Name_Len := 3;
@@ -314,10 +364,9 @@ package body MLib.Tgt is
             if In_Tree.Projects.Table (Project).Library_Kind =
                  Static
             then
-               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, Archive_Ext));
-
+               Add_Str_To_Name_Buffer (Fil.Append_To (Lib_Name, Archive_Ext));
             else
-               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, DLL_Ext));
+               Add_Str_To_Name_Buffer (Fil.Append_To (Lib_Name, DLL_Ext));
             end if;
 
             return Name_Find;
