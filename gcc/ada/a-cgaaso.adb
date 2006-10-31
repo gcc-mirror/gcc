@@ -9,10 +9,6 @@
 --                                                                          --
 --          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
---                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 2,  or (at your option) any later ver- --
@@ -34,7 +30,7 @@
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
---  This algorithm was adapted from GNAT.Heap_Sort (see g-heasor.ad[sb]).
+--  This algorithm was adapted from GNAT.Heap_Sort (see g-heasor.ad[sb])
 
 with System;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,7 +209,7 @@ package Exp_Disp is
    --  the required tag checks when appropriate. For CPP types the call is
    --  done through the Vtable (tag checks are not relevant)
 
-   procedure Expand_Interface_Actuals    (Call_Node : Node_Id);
+   procedure Expand_Interface_Actuals (Call_Node : Node_Id);
    --  Ada 2005 (AI-251): Displace all the actuals corresponding to class-wide
    --  interfaces to reference the interface tag of the actual object
 

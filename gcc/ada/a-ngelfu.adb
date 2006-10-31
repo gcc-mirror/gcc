@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -332,7 +332,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          return Pi / 2.0;
 
       elsif X = -1.0 then
-         return -Pi / 2.0;
+         return -(Pi / 2.0);
       end if;
 
       return Float_Type'Base (Aux.Asin (Double (X)));
@@ -355,7 +355,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          return Cycle / 4.0;
 
       elsif X = -1.0 then
-         return -Cycle / 4.0;
+         return -(Cycle / 4.0);
       end if;
 
       return Arctan (X / Sqrt ((1.0 - X) * (1.0 + X)), 1.0, Cycle);
@@ -373,7 +373,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       elsif X > 1.0 / Sqrt_Epsilon then
          return Log (X) + Log_Two;
 
-      elsif X < -1.0 / Sqrt_Epsilon then
+      elsif X < -(1.0 / Sqrt_Epsilon) then
          return -(Log (-X) + Log_Two);
 
       elsif X < 0.0 then
@@ -448,7 +448,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          if Y > 0.0 then
             return Cycle / 4.0;
          else -- Y < 0.0
-            return -Cycle / 4.0;
+            return -(Cycle / 4.0);
          end if;
 
       else

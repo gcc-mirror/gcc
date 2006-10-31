@@ -6,11 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2003 Free Software Foundation, Inc.            --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
+--          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,8 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Last chance handler. Unhandled exceptions are passed to this
---  routine.
+--  Last chance handler. Unhandled exceptions are passed to this routine
 
 procedure Ada.Exceptions.Last_Chance_Handler
   (Except :  Exception_Occurrence);
