@@ -1296,10 +1296,17 @@ gfc_set_interface_mapping_bounds (stmtblock_t * block, tree type, tree desc)
   offset = gfc_index_zero_node;
   for (n = 0; n < GFC_TYPE_ARRAY_RANK (type); n++)
     {
+      dim = gfc_rank_cst[n];
       GFC_TYPE_ARRAY_STRIDE (type, n) = gfc_conv_array_stride (desc, n);
-      if (GFC_TYPE_ARRAY_UBOUND (type, n) == NULL_TREE)
+      if (GFC_TYPE_ARRAY_LBOUND (type, n) == NULL_TREE)
 	{
-	  dim = gfc_rank_cst[n];
+	  GFC_TYPE_ARRAY_LBOUND (type, n)
+		= gfc_conv_descriptor_lbound (desc, dim);
+	  GFC_TYPE_ARRAY_UBOUND (type, n)
+		= gfc_conv_descriptor_ubound (desc, dim);
+	}
+      else if (GFC_TYPE_ARRAY_UBOUND (type, n) == NULL_TREE)
+	{
 	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 			     gfc_conv_descriptor_ubound (desc, dim),
 			     gfc_conv_descriptor_lbound (desc, dim));
