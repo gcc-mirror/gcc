@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,6 +93,16 @@ package System.Tasking.Protected_Objects.Entries is
       Ceiling : System.Any_Priority;
       --  Ceiling priority associated with the protected object
 
+      New_Ceiling : System.Any_Priority;
+      --  New ceiling priority associated to the protected object. In case
+      --  of assignment of a new ceiling priority to the protected object the
+      --  frontend generates a call to set_ceiling to save the new value in
+      --  this field. After such assignment this value can be read by means
+      --  of the 'Priority attribute, which generates a call to get_ceiling.
+      --  However, the ceiling of the protected object will not be changed
+      --  until completion of the protected action in which the assignment
+      --  has been executed (AARM D.5.2 (10/2)).
+
       Owner : Task_Id;
       --  This field contains the protected object's owner. Null_Task
       --  indicates that the protected object is not currently being used.
@@ -142,6 +152,10 @@ package System.Tasking.Protected_Objects.Entries is
    function To_Protection is
      new Unchecked_Conversion (System.Address, Protection_Entries_Access);
 
+   function Get_Ceiling
+     (Object : Protection_Entries_Access) return System.Any_Priority;
+   --  Returns the new ceiling priority of the protected object
+
    function Has_Interrupt_Or_Attach_Handler
      (Object : Protection_Entries_Access) return Boolean;
    --  Returns True if an Interrupt_Handler or Attach_Handler pragma applies
@@ -182,6 +196,11 @@ package System.Tasking.Protected_Objects.Entries is
    --  Note: we are not currently using this interface, it is provided for
    --  possible future use. At the current time, everyone uses Lock for both
    --  read and write locks.
+
+   procedure Set_Ceiling
+     (Object : Protection_Entries_Access;
+      Prio   : System.Any_Priority);
+   --  Sets the new ceiling priority of the protected object
 
    procedure Unlock_Entries (Object : Protection_Entries_Access);
    --  Relinquish ownership of the lock for the object represented by the

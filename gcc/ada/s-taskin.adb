@@ -66,6 +66,17 @@ package body System.Tasking is
 
    function Self return Task_Id renames STPO.Self;
 
+   ------------------
+   -- Storage_Size --
+   ------------------
+
+   function Storage_Size (T : Task_Id) return System.Parameters.Size_Type is
+   begin
+      return
+         System.Parameters.Size_Type
+           (T.Common.Compiler_Data.Pri_Stack_Info.Size);
+   end Storage_Size;
+
    ---------------------
    -- Initialize_ATCB --
    ---------------------
