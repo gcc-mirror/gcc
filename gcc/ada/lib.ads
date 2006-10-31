@@ -491,8 +491,15 @@ package Lib is
    --  and the parent unit spec if it is separate.
 
    function In_Extended_Main_Source_Unit (Loc : Source_Ptr) return Boolean;
-   --  Same function as above, but argument is a source pointer rather
-   --  than a node.
+   --  Same function as above, but argument is a source pointer
+
+   function In_Predefined_Unit (N : Node_Or_Entity_Id) return Boolean;
+   --  Returns True if the given node or entity appears within the source text
+   --  of a predefined unit (i.e. within Ada, Interfaces, System or within one
+   --  of the descendent packages of one of these three packages).
+
+   function In_Predefined_Unit (S : Source_Ptr) return Boolean;
+   --  Same function as above but argument is a source pointer
 
    function Earlier_In_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
    --  Given two Sloc values  for which In_Same_Extended_Unit is true,

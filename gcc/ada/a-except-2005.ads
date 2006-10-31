@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -65,9 +65,13 @@ package Ada.Exceptions is
    --  pragma, which is fine for the bootstrap.
 
    type Exception_Id is private;
+   pragma Preelaborable_Initialization (Exception_Id);
+
    Null_Id : constant Exception_Id;
 
    type Exception_Occurrence is limited private;
+   pragma Preelaborable_Initialization (Exception_Occurrence);
+
    type Exception_Occurrence_Access is access all Exception_Occurrence;
 
    Null_Occurrence : constant Exception_Occurrence;

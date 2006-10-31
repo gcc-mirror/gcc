@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,6 +42,7 @@ package Ada.Strings.Unbounded is
    pragma Preelaborate;
 
    type Unbounded_String is private;
+   pragma Preelaborable_Initialization (Unbounded_String);
 
    Null_Unbounded_String : constant Unbounded_String;
 
@@ -426,10 +427,4 @@ private
                              (AF.Controlled with
                                 Reference => Null_String'Access,
                                 Last => 0);
-   --  Note: this declaration is illegal since library level controlled
-   --  objects are not allowed in preelaborated units. See AI-161 for a
-   --  discussion of this issue and an attempt to address it. Meanwhile,
-   --  what happens in GNAT is that this check is omitted for internal
-   --  implementation units (see check in sem_cat.adb).
-
 end Ada.Strings.Unbounded;
