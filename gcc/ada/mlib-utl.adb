@@ -36,8 +36,6 @@ with GNAT;     use GNAT;
 
 package body MLib.Utl is
 
-   Initialized : Boolean := False;
-
    Gcc_Name : constant String := Osint.Program_Name ("gcc").all;
    Gcc_Exec : OS_Lib.String_Access;
 
@@ -48,9 +46,6 @@ package body MLib.Utl is
    Ranlib_Name    : OS_Lib.String_Access;
    Ranlib_Exec    : OS_Lib.String_Access := null;
    Ranlib_Options : OS_Lib.String_List_Access := null;
-
-   procedure Initialize;
-   --  Look for the tools in the path and record the full path for each one
 
    --------
    -- Ar --
@@ -65,7 +60,47 @@ package body MLib.Utl is
       Line_Length : Natural := 0;
 
    begin
-      Utl.Initialize;
+      if Ar_Exec = null then
+         Ar_Name := Osint.Program_Name (Archive_Builder);
+         Ar_Exec := OS_Lib.Locate_Exec_On_Path (Ar_Name.all);
+
+         if Ar_Exec = null then
+            Free (Ar_Name);
+            Ar_Name := new String'(Archive_Builder);
+            Ar_Exec := OS_Lib.Locate_Exec_On_Path (Ar_Name.all);
+         end if;
+
+         if Ar_Exec = null then
+            Fail (Ar_Name.all, " not found in path");
+
+         elsif Opt.Verbose_Mode then
+            Write_Str  ("found ");
+            Write_Line (Ar_Exec.all);
+         end if;
+
+         Ar_Options := Archive_Builder_Options;
+
+         --  ranlib
+
+         Ranlib_Name := Osint.Program_Name (Archive_Indexer);
+
+         if Ranlib_Name'Length > 0 then
+            Ranlib_Exec := OS_Lib.Locate_Exec_On_Path (Ranlib_Name.all);
+
+            if Ranlib_Exec = null then
+               Free (Ranlib_Name);
+               Ranlib_Name := new String'(Archive_Indexer);
+               Ranlib_Exec := OS_Lib.Locate_Exec_On_Path (Ranlib_Name.all);
+            end if;
+
+            if Ranlib_Exec /= null and then Opt.Verbose_Mode then
+               Write_Str ("found ");
+               Write_Line (Ranlib_Exec.all);
+            end if;
+         end if;
+
+         Ranlib_Options := Archive_Indexer_Options;
+      end if;
 
       Arguments :=
         new String_List (1 .. 1 + Ar_Options'Length + Objects'Length);
@@ -175,9 +210,15 @@ package body MLib.Utl is
       Driver    : String_Access;
 
    begin
-      Utl.Initialize;
-
       if Driver_Name = No_Name then
+         if Gcc_Exec = null then
+            Gcc_Exec := OS_Lib.Locate_Exec_On_Path (Gcc_Name);
+
+            if Gcc_Exec = null then
+               Fail (Gcc_Name, " not found in path");
+            end if;
+         end if;
+
          Driver := Gcc_Exec;
 
       else
@@ -233,59 +274,6 @@ package body MLib.Utl is
          end if;
       end if;
    end Gcc;
-
-   ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize is
-   begin
-      if not Initialized then
-         Initialized := True;
-
-         --  gcc
-
-         Gcc_Exec := OS_Lib.Locate_Exec_On_Path (Gcc_Name);
-
-         if Gcc_Exec = null then
-            Fail (Gcc_Name, " not found in path");
-
-         elsif Opt.Verbose_Mode then
-            Write_Str  ("found ");
-            Write_Line (Gcc_Exec.all);
-         end if;
-
-         --  ar
-
-         Ar_Name := Osint.Program_Name (Archive_Builder);
-         Ar_Exec := OS_Lib.Locate_Exec_On_Path (Ar_Name.all);
-
-         if Ar_Exec = null then
-            Fail (Ar_Name.all, " not found in path");
-
-         elsif Opt.Verbose_Mode then
-            Write_Str  ("found ");
-            Write_Line (Ar_Exec.all);
-         end if;
-
-         Ar_Options := Archive_Builder_Options;
-
-         --  ranlib
-
-         Ranlib_Name := Osint.Program_Name (Archive_Indexer);
-
-         if Ranlib_Name'Length > 0 then
-            Ranlib_Exec := OS_Lib.Locate_Exec_On_Path (Ranlib_Name.all);
-
-            if Ranlib_Exec /= null and then Opt.Verbose_Mode then
-               Write_Str ("found ");
-               Write_Line (Ranlib_Exec.all);
-            end if;
-         end if;
-
-         Ranlib_Options := Archive_Indexer_Options;
-      end if;
-   end Initialize;
 
    -------------------
    -- Lib_Directory --
