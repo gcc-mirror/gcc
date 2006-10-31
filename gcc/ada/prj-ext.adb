@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,9 +24,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Namet;   use Namet;
-with Output;  use Output;
-with Osint;   use Osint;
+with Hostparm;
+with Namet;    use Namet;
+with Output;   use Output;
+with Osint;    use Osint;
 with Sdefault;
 
 with GNAT.HTable;
@@ -73,7 +74,6 @@ package body Prj.Ext is
    is
       The_Key   : Name_Id;
       The_Value : Name_Id;
-
    begin
       Name_Len := Value'Length;
       Name_Buffer (1 .. Name_Len) := Value;
@@ -251,10 +251,16 @@ begin
 
                Name_Len := Name_Len - No_Project_Default_Dir'Length - 1;
 
-            else
+            elsif not Hostparm.OpenVMS
+              or else not Is_Absolute_Path (Name_Buffer (First .. Last))
+            then
+               --  On VMS, only expand relative path names, as absolute paths
+               --  may correspond to multi-valued VMS logical names.
+
                declare
                   New_Dir : constant String :=
-                             Normalize_Pathname (Name_Buffer (First .. Last));
+                              Normalize_Pathname (Name_Buffer (First .. Last));
+
                begin
                   --  If the absolute path was resolved and is different from
                   --  the original, replace original with the resolved path.

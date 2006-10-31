@@ -48,9 +48,11 @@ with GNAT.Case_Util; use GNAT.Case_Util;
 procedure Gnatls is
    pragma Ident (Gnat_Static_Version_String);
 
+   Gpr_Project_Path : constant String := "GPR_PROJECT_PATH";
    Ada_Project_Path : constant String := "ADA_PROJECT_PATH";
-   --  Name of the env. variable that contains path name(s) of directories
-   --  where project files may reside.
+   --  Names of the env. variables that contains path name(s) of directories
+   --  where project files may reside. If GPR_PROJECT_PATH is defined, its
+   --  value is used, otherwise ADA_PROJECT_PATH is used, if defined.
 
    --  NOTE : The following string may be used by other tools, such as GPS. So
    --  it can only be modified if these other uses are checked and coordinated.
@@ -1547,10 +1549,10 @@ begin
       Write_Eol;
 
       declare
-         Project_Path : constant String_Access := Getenv (Ada_Project_Path);
+         Project_Path : String_Access := Getenv (Gpr_Project_Path);
 
-         Lib    : constant String :=
-                    Directory_Separator & "lib" & Directory_Separator;
+         Lib : constant String :=
+                 Directory_Separator & "lib" & Directory_Separator;
 
          First : Natural;
          Last  : Natural;
@@ -1560,9 +1562,12 @@ begin
       begin
          --  If there is a project path, display each directory in the path
 
+         if Project_Path.all = "" then
+            Project_Path := Getenv (Ada_Project_Path);
+         end if;
+
          if Project_Path.all /= "" then
             First := Project_Path'First;
-
             loop
                while First <= Project_Path'Last
                  and then (Project_Path (First) = Path_Separator)
@@ -1573,7 +1578,6 @@ begin
                exit when First > Project_Path'Last;
 
                Last := First;
-
                while Last < Project_Path'Last
                  and then Project_Path (Last + 1) /= Path_Separator
                loop
@@ -1593,7 +1597,9 @@ begin
                   --  project path.
 
                   Write_Str ("   ");
-                  Write_Str (Project_Path (First .. Last));
+                  Write_Str
+                    (To_Host_Dir_Spec
+                       (Project_Path (First .. Last), True).all);
                   Write_Eol;
                end if;
 
@@ -1630,11 +1636,11 @@ begin
             --  directory <prefix>/lib/gnat/.
 
             if Name_Len >= 5 then
-               Write_Str ("   ");
-               Write_Str (Name_Buffer (1 .. Name_Len));
-               Write_Str ("gnat");
-               Write_Char (Directory_Separator);
-               Write_Eol;
+               Name_Buffer (Name_Len + 1 .. Name_Len + 4) := "gnat";
+               Name_Buffer (Name_Len + 5) := Directory_Separator;
+               Name_Len := Name_Len + 5;
+               Write_Line
+                 (To_Host_Dir_Spec (Name_Buffer (1 .. Name_Len), True).all);
             end if;
          end if;
       end;
