@@ -755,6 +755,12 @@ package body System.Tasking.Protected_Objects.Operations is
          else
             --  Requeue is to same protected object
 
+            --  ??? Try to compensate apparent failure of the
+            --  scheduler on some OS (e.g VxWorks) to give higher
+            --  priority tasks a chance to run (see CXD6002).
+
+            STPO.Yield (False);
+
             if Entry_Call.Requeue_With_Abort
               and then Entry_Call.Cancellation_Attempted
             then
