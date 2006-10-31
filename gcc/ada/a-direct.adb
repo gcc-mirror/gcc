@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -834,6 +834,30 @@ package body Ada.Directories is
          end if;
       end if;
    end Rename;
+
+   ------------
+   -- Search --
+   ------------
+
+   procedure Search
+     (Directory : String;
+      Pattern   : String;
+      Filter    : Filter_Type := (others => True);
+      Process   : not null access procedure
+                                    (Directory_Entry : Directory_Entry_Type))
+   is
+      Srch : Search_Type;
+      Directory_Entry : Directory_Entry_Type;
+   begin
+      Start_Search (Srch, Directory, Pattern, Filter);
+
+      while More_Entries (Srch) loop
+         Get_Next_Entry (Srch, Directory_Entry);
+         Process (Directory_Entry);
+      end loop;
+
+      End_Search (Srch);
+   end Search;
 
    -------------------
    -- Set_Directory --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived for use with GNAT from AI-00248,  which is --
 -- expected to be a part of a future expected revised Ada Reference Manual. --
@@ -339,6 +339,24 @@ package Ada.Directories is
    --  another program). The exception Use_Error is propagated if the external
    --  environment does not support continued searching of the directory
    --  represented by Search.
+
+   procedure Search
+     (Directory : String;
+      Pattern   : String;
+      Filter    : Filter_Type := (others => True);
+      Process   : not null access procedure
+                                    (Directory_Entry : Directory_Entry_Type));
+   --  Searches in the directory named by Directory for entries matching
+   --  Pattern. The subprogram designated by Process is called with each
+   --  matching entry in turn. Pattern represents a pattern for matching file
+   --  names. If Pattern is null, all items in the directory are matched;
+   --  otherwise, the interpretation of Pattern is implementation-defined.
+   --  Only items that match Filter will be returned. The exception Name_Error
+   --  is propagated if the string given by Directory does not identify
+   --  an existing directory, or if Pattern does not allow the identification
+   --  of any possible external file or directory. The exception Use_Error is
+   --  propagated if the external environment does not support the searching
+   --  of the directory with the given name (in the absence of Name_Error).
 
    -------------------------------------
    -- Operations on Directory Entries --
