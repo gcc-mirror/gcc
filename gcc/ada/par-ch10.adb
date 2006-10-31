@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -222,9 +222,9 @@ package body Ch10 is
             else
                Item := First (Config_Pragmas);
                Error_Msg_N
-                 ("cannot compile configuration pragmas with gcc", Item);
+                 ("cannot compile configuration pragmas with gcc!", Item);
                Error_Msg_N
-                 ("use gnatchop -c to process configuration pragmas!", Item);
+                 ("\use gnatchop -c to process configuration pragmas!", Item);
                raise Unrecoverable_Error;
             end if;
 
@@ -854,7 +854,7 @@ package body Ch10 is
                return Item_List;
 
             elsif Ada_Version < Ada_05 then
-               Error_Msg_SP ("PRIVATE WITH is an Ada 2005 extension");
+               Error_Msg_SP ("`PRIVATE WITH` is an Ada 2005 extension");
                Error_Msg_SP
                  ("\unit must be compiled with -gnat05 switch");
             end if;
