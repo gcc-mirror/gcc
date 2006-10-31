@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,7 @@
 -- covered  by the  GNU  General  Public  License.  This exception does not --
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
---                                                                          --
+--
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
@@ -331,8 +331,13 @@ package body Repinfo is
    --  Start of processing for List_Entities
 
    begin
-      if Present (Ent) then
+      --  List entity if we have one, and it is not a renaming declaration.
+      --  For renamings, we don't get proper information, and really it makes
+      --  sense to restrict the output to the renamed entity.
 
+      if Present (Ent)
+        and then Nkind (Declaration_Node (Ent)) not in N_Renaming_Declaration
+      then
          --  If entity is a subprogram and we are listing mechanisms,
          --  then we need to list mechanisms for this entity.
 
@@ -984,7 +989,8 @@ package body Repinfo is
                --  List representation information to file
 
                else
-                  Creat_Repinfo_File_Access.all (File_Name (Source_Index (U)));
+                  Create_Repinfo_File_Access.all
+                    (File_Name (Source_Index (U)));
                   Set_Special_Output (Write_Info_Line'Access);
                   List_Entities (Cunit_Entity (U));
                   Set_Special_Output (null);
@@ -1122,23 +1128,6 @@ package body Repinfo is
       end T;
 
       -------
-      -- W --
-      -------
-
-      --  We use an unchecked conversion to map Int values to their Word
-      --  bitwise equivalent, which we could not achieve with a normal type
-      --  conversion for negative Ints. We want bitwise equivalents because W
-      --  is used as a helper for bit operators like Bit_And_Expr, and can be
-      --  called for negative Ints in the context of aligning expressions like
-      --  X+Align & -Align.
-
-      function W (Val : Uint) return Word is
-         function To_Word is new Ada.Unchecked_Conversion (Int, Word);
-      begin
-         return To_Word (UI_To_Int (Val));
-      end W;
-
-      -------
       -- V --
       -------
 
@@ -1265,6 +1254,23 @@ package body Repinfo is
             end;
          end if;
       end V;
+
+      -------
+      -- W --
+      -------
+
+      --  We use an unchecked conversion to map Int values to their Word
+      --  bitwise equivalent, which we could not achieve with a normal type
+      --  conversion for negative Ints. We want bitwise equivalents because W
+      --  is used as a helper for bit operators like Bit_And_Expr, and can be
+      --  called for negative Ints in the context of aligning expressions like
+      --  X+Align & -Align.
+
+      function W (Val : Uint) return Word is
+         function To_Word is new Ada.Unchecked_Conversion (Int, Word);
+      begin
+         return To_Word (UI_To_Int (Val));
+      end W;
 
    --  Start of processing for Rep_Value
 
