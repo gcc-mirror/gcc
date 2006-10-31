@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -485,6 +485,7 @@ package body Exp_Ch11 is
 
       if Nkind (Parent (N)) /= N_Package_Body
         and then Nkind (Parent (N)) /= N_Accept_Statement
+        and then Nkind (Parent (N)) /= N_Extended_Return_Statement
         and then not Delay_Cleanups (Current_Scope)
       then
          Expand_Cleanup_Actions (Parent (N));

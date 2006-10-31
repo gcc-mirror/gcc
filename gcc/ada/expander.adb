@@ -204,6 +204,9 @@ package body Expander is
                when N_Explicit_Dereference =>
                   Expand_N_Explicit_Dereference (N);
 
+               when N_Extended_Return_Statement =>
+                  Expand_N_Extended_Return_Statement (N);
+
                when N_Extension_Aggregate =>
                   Expand_N_Extension_Aggregate (N);
 
