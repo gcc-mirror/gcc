@@ -132,4 +132,9 @@ package Err_Vars is
    --  Used if current message contains a < insertion character to indicate
    --  if the current message is a warning message.
 
+   Error_Msg_String : String (1 .. 4096);
+   Error_Msg_Strlen : Natural;
+   --  Used if current message contains a ~ insertion character to indicate
+   --  insertion of the string Error_Msg_String (1 .. Error_Msg_Strlen).
+
 end Err_Vars;
