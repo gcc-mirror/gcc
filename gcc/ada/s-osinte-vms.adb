@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,8 +57,9 @@ package body System.OS_Interface is
    begin
       Asm ("call_pal 0x9e" & LF & HT &
            "bis $31, $0, %0",
-           Outputs => pthread_t'Asm_Output ("=r", Self),
-           Clobber => "$0");
+           Outputs  => pthread_t'Asm_Output ("=r", Self),
+           Clobber  => "$0",
+           Volatile => True);
       return Self;
    end pthread_self;
 

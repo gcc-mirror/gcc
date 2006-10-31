@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for IRIX/MIPS)                          --
 --                                                                          --
---          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -278,11 +278,14 @@ package body System.Machine_State_Operations is
 
    procedure Set_Machine_State (M : Machine_State) is
 
-      STOREI : constant String (1 .. 2) := 's' & LSC;
+      SI : constant String (1 .. 2) := 's' & LSC;
       --  This is "sw" in o32 mode, and "sd" in n32 mode
 
-      STOREF : constant String (1 .. 4) := 's' & LSC & "c1";
+      SF : constant String (1 .. 4) := 's' & LSC & "c1";
       --  This is "swc1" in o32 mode and "sdc1" in n32 mode
+
+      PI : String renames SC_Regs_Pos;
+      PF : String renames SC_Fpregs_Pos;
 
       Scp : Sigcontext_Ptr;
 
@@ -294,41 +297,41 @@ package body System.Machine_State_Operations is
 
       <<Past_Prolog>>
 
-      Asm (STOREI & " $16,  16*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $17,  17*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $18,  18*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $19,  19*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $20,  20*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $21,  21*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $22,  22*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $23,  23*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $24,  24*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $25,  25*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $26,  26*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $27,  27*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $28,  28*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $29,  29*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $30,  30*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (STOREI & " $31,  31*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
+      Asm (SI & " $16,  16*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $17,  17*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $18,  18*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $19,  19*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $20,  20*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $21,  21*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $22,  22*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $23,  23*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $24,  24*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $25,  25*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $26,  26*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $27,  27*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $28,  28*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $29,  29*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $30,  30*8+" & Roff & "+" & PI & "($4)", Volatile => True);
+      Asm (SI & " $31,  31*8+" & Roff & "+" & PI & "($4)", Volatile => True);
 
       --  Restore floating-point registers from machine state
 
-      Asm (STOREF & " $f16, 16*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f17, 17*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f18, 18*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f19, 19*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f20, 20*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f21, 21*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f22, 22*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f23, 23*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f24, 24*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f25, 25*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f26, 26*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f27, 27*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f28, 28*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f29, 29*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f30, 30*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (STOREF & " $f31, 31*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
+      Asm (SF & " $f16, 16*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f17, 17*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f18, 18*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f19, 19*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f20, 20*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f21, 21*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f22, 22*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f23, 23*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f24, 24*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f25, 25*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f26, 26*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f27, 27*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f28, 28*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f29, 29*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f30, 30*8+" & Roff & "+" & PF & "($4)", Volatile => True);
+      Asm (SF & " $f31, 31*8+" & Roff & "+" & PF & "($4)", Volatile => True);
 
       --  Set the PC value for the context to a location after the
       --  prolog has been executed.
