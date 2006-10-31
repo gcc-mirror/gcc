@@ -77,6 +77,7 @@ package body Exp_Ch2 is
 
    procedure Expand_Entity_Reference (N : Node_Id);
    --  Common processing for expansion of identifiers and expanded names
+   --  Dispatches to specific expansion procedures.
 
    procedure Expand_Entry_Index_Parameter (N : Node_Id);
    --  A reference to the identifier in the entry index specification of
@@ -93,19 +94,20 @@ package body Exp_Ch2 is
 
    procedure Expand_Formal (N : Node_Id);
    --  A reference to a formal parameter of a protected subprogram is expanded
-   --  to the corresponding formal of the unprotected procedure used to
-   --  represent the protected subprogram within the protected object.
+   --  into the corresponding formal of the unprotected procedure used to
+   --  represent the operation within the protected object. In other cases
+   --  Expand_Formal is a noop.
 
    procedure Expand_Protected_Private (N : Node_Id);
-   --  A reference to a private object of a protected type is expanded to a
+   --  A reference to a private component of a protected type is expanded to a
    --  component selected from the record used to implement the protected
    --  object. Such a record is passed to all operations on a protected object
-   --  in a parameter named _object. Such an object is a constant within a
-   --  function, and a variable otherwise.
+   --  in a parameter named _object. This object is a constant in the body of a
+   --  function, and a variable within a procedure or entry body.
 
    procedure Expand_Renaming (N : Node_Id);
    --  For renamings, just replace the identifier by the corresponding
-   --  name expression. Note that this has been evaluated (see routine
+   --  named expression. Note that this has been evaluated (see routine
    --  Exp_Ch8.Expand_N_Object_Renaming.Evaluate_Name) so this gives
    --  the correct renaming semantics.
 
@@ -141,7 +143,7 @@ package body Exp_Ch2 is
 
          --  Do not replace lvalues
 
-         and then not Is_Lvalue (N)
+         and then not May_Be_Lvalue (N)
 
          --  Check that entity is suitable for replacement
 
@@ -348,12 +350,15 @@ package body Exp_Ch2 is
         and then Is_Shared_Passive (E)
       then
          Expand_Shared_Passive_Variable (N);
+      end if;
 
-      elsif (Ekind (E) = E_Variable
-               or else
-             Ekind (E) = E_In_Out_Parameter
-               or else
-             Ekind (E) = E_Out_Parameter)
+      --  Interpret possible Current_Value for variable case
+
+      if (Ekind (E) = E_Variable
+            or else
+          Ekind (E) = E_In_Out_Parameter
+            or else
+          Ekind (E) = E_Out_Parameter)
         and then Present (Current_Value (E))
       then
          Expand_Current_Value (N);
@@ -364,6 +369,24 @@ package body Exp_Ch2 is
          if Is_Boolean_Type (Etype (N)) then
             Warn_On_Known_Condition (N);
          end if;
+
+      --  Don't mess with Current_Value for compile time known values. Not
+      --  only is it unnecessary, but we could disturb an indication of a
+      --  static value, which could cause semantic trouble.
+
+      elsif Compile_Time_Known_Value (N) then
+         null;
+
+      --  Interpret possible Current_Value for constant case
+
+      elsif (Ekind (E) = E_Constant
+               or else
+             Ekind (E) = E_In_Parameter
+               or else
+             Ekind (E) = E_Loop_Parameter)
+        and then Present (Current_Value (E))
+      then
+         Expand_Current_Value (N);
       end if;
    end Expand_Entity_Reference;
 
@@ -477,11 +500,15 @@ package body Exp_Ch2 is
 
    procedure Expand_Formal (N : Node_Id) is
       E    : constant Entity_Id  := Entity (N);
-      Subp : constant Entity_Id  := Scope (E);
+      Scop : constant Entity_Id  := Scope (E);
 
    begin
-      if Is_Protected_Type (Scope (Subp))
-        and then not Is_Init_Proc (Subp)
+      --  Check whether the subprogram of which this is a formal is
+      --  a protected operation. The initialization procedure for
+      --  the corresponding record type is not itself a protected operation.
+
+      if Is_Protected_Type (Scope (Scop))
+        and then not Is_Init_Proc (Scop)
         and then Present (Protected_Formal (E))
       then
          Set_Entity (N, Protected_Formal (E));
