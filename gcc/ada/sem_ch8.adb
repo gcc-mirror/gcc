@@ -646,6 +646,9 @@ package body Sem_Ch8 is
             Set_Renamed_Object (New_P, Old_P);
          end if;
 
+         Set_Is_Pure          (New_P, Is_Pure          (Old_P));
+         Set_Is_Preelaborated (New_P, Is_Preelaborated (Old_P));
+
          Set_Etype (New_P, Etype (Old_P));
          Set_Has_Completion (New_P);
 
@@ -655,7 +658,6 @@ package body Sem_Ch8 is
 
          Check_Library_Unit_Renaming (N, Old_P);
       end if;
-
    end Analyze_Generic_Renaming;
 
    -----------------------------
@@ -668,6 +670,31 @@ package body Sem_Ch8 is
       Nam : constant Node_Id   := Name (N);
       T   : Entity_Id;
       T2  : Entity_Id;
+
+      function In_Generic_Scope (E : Entity_Id) return Boolean;
+      --  Determine whether entity E is inside a generic cope
+
+      ----------------------
+      -- In_Generic_Scope --
+      ----------------------
+
+      function In_Generic_Scope (E : Entity_Id) return Boolean is
+         S : Entity_Id;
+
+      begin
+         S := Scope (E);
+         while Present (S) and then S /= Standard_Standard loop
+            if Is_Generic_Unit (S) then
+               return True;
+            end if;
+
+            S := Scope (S);
+         end loop;
+
+         return False;
+      end In_Generic_Scope;
+
+   --  Start of processing for Analyze_Object_Renaming
 
    begin
       if Nam = Error then
@@ -719,10 +746,6 @@ package body Sem_Ch8 is
          then
             Error_Msg_N ("(Ada 2005): the renamed object is not "
                          & "access-to-constant ('R'M 8.5.1(6))", N);
-
-         elsif Null_Exclusion_Present (Access_Definition (N)) then
-            Error_Msg_N ("(Ada 2005): null-excluding attribute ignored "
-                         & "('R'M 8.5.1(6))?", N);
          end if;
       end if;
 
@@ -746,14 +769,80 @@ package body Sem_Ch8 is
          return;
       end if;
 
+      --  Ada 2005 (AI-327)
+
+      if Ada_Version >= Ada_05
+        and then Nkind (Nam) = N_Attribute_Reference
+        and then Attribute_Name (Nam) = Name_Priority
+      then
+         null;
+
+      elsif Ada_Version >= Ada_05
+        and then Nkind (Nam) in N_Has_Entity
+      then
+         declare
+            Error_Node  : Node_Id;
+            Nam_Decl    : Node_Id;
+            Nam_Ent     : Entity_Id;
+            Subtyp_Decl : Node_Id;
+
+         begin
+            if Nkind (Nam) = N_Attribute_Reference then
+               Nam_Ent := Entity (Prefix (Nam));
+            else
+               Nam_Ent := Entity (Nam);
+            end if;
+
+            Nam_Decl    := Parent (Nam_Ent);
+            Subtyp_Decl := Parent (Etype (Nam_Ent));
+
+            if Has_Null_Exclusion (N)
+              and then not Has_Null_Exclusion (Nam_Decl)
+            then
+               --  Ada 2005 (AI-423): If the object name denotes a generic
+               --  formal object of a generic unit G, and the object renaming
+               --  declaration occurs within the body of G or within the body
+               --  of a generic unit declared within the declarative region
+               --  of G, then the declaration of the formal object of G shall
+               --  have a null exclusion.
+
+               if Is_Formal_Object (Nam_Ent)
+                 and then In_Generic_Scope (Id)
+               then
+                  if Present (Subtype_Mark (Nam_Decl)) then
+                     Error_Node := Subtype_Mark (Nam_Decl);
+                  else
+                     pragma Assert
+                       (Ada_Version >= Ada_05
+                          and then Present (Access_Definition (Nam_Decl)));
+
+                     Error_Node := Access_Definition (Nam_Decl);
+                  end if;
+
+                  Error_Msg_N ("null-exclusion required in formal " &
+                               "object declaration", Error_Node);
+
+               --  Ada 2005 (AI-423): Otherwise, the subtype of the object
+               --  name shall exclude null.
+
+               elsif Nkind (Subtyp_Decl) = N_Subtype_Declaration
+                 and then not Has_Null_Exclusion (Subtyp_Decl)
+               then
+                  Error_Msg_N ("subtype must have null-exclusion",
+                               Subtyp_Decl);
+               end if;
+            end if;
+         end;
+      end if;
+
       Set_Ekind (Id, E_Variable);
       Init_Size_Align (Id);
 
       if T = Any_Type or else Etype (Nam) = Any_Type then
          return;
 
-      --  Verify that the renamed entity is an object or a function call.
-      --  It may have been rewritten in several ways.
+      --  Verify that the renamed entity is an object or a function call. It
+      --  may have been rewritten in several ways.
 
       elsif Is_Object_Reference (Nam) then
          if Comes_From_Source (N)
@@ -777,9 +866,9 @@ package body Sem_Ch8 is
                   and then Is_Function_Attribute_Name
                     (Attribute_Name (Original_Node (Nam))))
 
-            --  Weird but legal, equivalent to renaming a function call
-            --  Illegal if the literal is the result of constant-folding
-            --  an attribute reference that is not a function.
+            --  Weird but legal, equivalent to renaming a function call.
+            --  Illegal if the literal is the result of constant-folding an
+            --  attribute reference that is not a function.
 
         or else (Is_Entity_Name (Nam)
                   and then Ekind (Entity (Nam)) = E_Enumeration_Literal
@@ -791,14 +880,20 @@ package body Sem_Ch8 is
       then
          null;
 
-      else
-         if Nkind (Nam) = N_Type_Conversion then
-            Error_Msg_N
-              ("renaming of conversion only allowed for tagged types", Nam);
+      elsif Nkind (Nam) = N_Type_Conversion then
+         Error_Msg_N
+           ("renaming of conversion only allowed for tagged types", Nam);
 
-         else
-            Error_Msg_N ("expect object name in renaming", Nam);
-         end if;
+      --  Ada 2005 (AI-327)
+
+      elsif Ada_Version >= Ada_05
+        and then Nkind (Nam) = N_Attribute_Reference
+        and then Attribute_Name (Nam) = Name_Priority
+      then
+         null;
+
+      else
+         Error_Msg_N ("expect object name in renaming", Nam);
       end if;
 
       Set_Etype (Id, T2);
@@ -826,8 +921,8 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Apply Text_IO kludge here, since we may be renaming one of
-      --  the children of Text_IO
+      --  Apply Text_IO kludge here, since we may be renaming one of the
+      --  children of Text_IO
 
       Text_IO_Kludge (Name (N));
 
@@ -846,14 +941,6 @@ package body Sem_Ch8 is
       if Etype (Old_P) = Any_Type then
          Error_Msg_N
            ("expect package name in renaming", Name (N));
-
-      --  Ada 2005 (AI-50217): Limited withed packages cannot be renamed
-
-      elsif Ekind (Old_P) = E_Package
-        and then From_With_Type (Old_P)
-      then
-         Error_Msg_N
-           ("limited withed package cannot be renamed", Name (N));
 
       elsif Ekind (Old_P) /= E_Package
         and then not (Ekind (Old_P) = E_Generic_Package
@@ -875,9 +962,9 @@ package body Sem_Ch8 is
          Set_Etype (New_P, Standard_Void_Type);
 
       else
-         --  Entities in the old package are accessible through the
-         --  renaming entity. The simplest implementation is to have
-         --  both packages share the entity list.
+         --  Entities in the old package are accessible through the renaming
+         --  entity. The simplest implementation is to have both packages share
+         --  the entity list.
 
          Set_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
@@ -1128,16 +1215,30 @@ package body Sem_Ch8 is
    ---------------------------------
 
    procedure Analyze_Subprogram_Renaming (N : Node_Id) is
-      Spec        : constant Node_Id          := Specification (N);
-      Save_AV     : constant Ada_Version_Type := Ada_Version;
-      Save_AV_Exp : constant Ada_Version_Type := Ada_Version_Explicit;
+      Formal_Spec : constant Node_Id          := Corresponding_Formal_Spec (N);
+      Is_Actual   : constant Boolean          := Present (Formal_Spec);
+      Inst_Node   : Node_Id                   := Empty;
       Nam         : constant Node_Id          := Name (N);
       New_S       : Entity_Id;
       Old_S       : Entity_Id                 := Empty;
       Rename_Spec : Entity_Id;
-      Formal_Spec : constant Node_Id          := Corresponding_Formal_Spec (N);
-      Is_Actual   : constant Boolean          := Present (Formal_Spec);
-      Inst_Node   : Node_Id                   := Empty;
+      Save_AV     : constant Ada_Version_Type := Ada_Version;
+      Save_AV_Exp : constant Ada_Version_Type := Ada_Version_Explicit;
+      Spec        : constant Node_Id          := Specification (N);
+
+      procedure Check_Null_Exclusion
+        (Ren : Entity_Id;
+         Sub : Entity_Id);
+      --  Ada 2005 (AI-423): Given renaming Ren of subprogram Sub, check the
+      --  following AI rules:
+      --     o If Ren is a renaming of a formal subprogram and one of its
+      --       parameters has a null exclusion, then the corresponding formal
+      --       in Sub must also have one. Otherwise the subtype of the Sub's
+      --       formal parameter must exclude null.
+      --     o If Ren is a renaming of a formal function and its retrun
+      --       profile has a null exclusion, then Sub's return profile must
+      --       have one. Otherwise the subtype of Sub's return profile must
+      --       exclude null.
 
       function Original_Subprogram (Subp : Entity_Id) return Entity_Id;
       --  Find renamed entity when the declaration is a renaming_as_body
@@ -1145,6 +1246,50 @@ package body Sem_Ch8 is
       --  enforce rule that a renaming_as_body is illegal if the declaration
       --  occurs before the subprogram it completes is frozen, and renaming
       --  indirectly renames the subprogram itself.(Defect Report 8652/0027).
+
+      --------------------------
+      -- Check_Null_Exclusion --
+      --------------------------
+
+      procedure Check_Null_Exclusion
+        (Ren : Entity_Id;
+         Sub : Entity_Id)
+      is
+         Ren_Formal : Entity_Id := First_Formal (Ren);
+         Sub_Formal : Entity_Id := First_Formal (Sub);
+
+      begin
+         --  Parameter check
+
+         while Present (Ren_Formal)
+           and then Present (Sub_Formal)
+         loop
+            if Has_Null_Exclusion (Parent (Ren_Formal))
+              and then
+                not (Has_Null_Exclusion (Parent (Sub_Formal))
+                       or else Can_Never_Be_Null (Etype (Sub_Formal)))
+            then
+               Error_Msg_N ("null-exclusion required in parameter profile",
+                            Parent (Sub_Formal));
+            end if;
+
+            Next_Formal (Ren_Formal);
+            Next_Formal (Sub_Formal);
+         end loop;
+
+         --  Return profile check
+
+         if Nkind (Parent (Ren)) = N_Function_Specification
+           and then Nkind (Parent (Sub)) = N_Function_Specification
+           and then Has_Null_Exclusion (Parent (Ren))
+           and then
+             not (Has_Null_Exclusion (Parent (Sub))
+                    or else Can_Never_Be_Null (Etype (Sub)))
+         then
+            Error_Msg_N ("null-exclusion required in return profile",
+                         Result_Definition (Parent (Sub)));
+         end if;
+      end Check_Null_Exclusion;
 
       -------------------------
       -- Original_Subprogram --
@@ -1332,7 +1477,7 @@ package body Sem_Ch8 is
                        and then In_Open_Scopes (Scope (Hidden))
                        and then Is_Immediately_Visible (Hidden)
                        and then Comes_From_Source (Hidden)
-                       and then  Hidden /= Old_S
+                       and then Hidden /= Old_S
                      then
                         Error_Msg_Sloc := Sloc (Hidden);
                         Error_Msg_N ("?default subprogram is resolved " &
@@ -1411,7 +1556,7 @@ package body Sem_Ch8 is
             Error_Msg_N ("(Ada 83) renaming cannot serve as a body", N);
          end if;
 
-         Set_Convention (New_S,  Convention (Rename_Spec));
+         Set_Convention (New_S, Convention (Rename_Spec));
          Check_Fully_Conformant (New_S, Rename_Spec);
          Set_Public_Status (New_S);
 
@@ -1500,7 +1645,18 @@ package body Sem_Ch8 is
       --  in this case, so we must indicate the declaration is complete as is.
 
       if No (Rename_Spec) then
-         Set_Has_Completion (New_S);
+         Set_Has_Completion   (New_S);
+         Set_Is_Pure          (New_S, Is_Pure          (Entity (Nam)));
+         Set_Is_Preelaborated (New_S, Is_Preelaborated (Entity (Nam)));
+
+         --  Ada 2005 (AI-423): Check the consistency of null exclusions
+         --  between a subprogram and its renaming.
+
+         if Ada_Version >= Ada_05 then
+            Check_Null_Exclusion
+              (Ren => New_S,
+               Sub => Entity (Nam));
+         end if;
       end if;
 
       --  Find the renamed entity that matches the given specification. Disable
@@ -1940,7 +2096,7 @@ package body Sem_Ch8 is
             Use_One_Type (Id);
 
             if Nkind (Parent (N)) = N_Compilation_Unit then
-               if  Nkind (Id) = N_Identifier then
+               if Nkind (Id) = N_Identifier then
                   Error_Msg_N ("type is not directly visible", Id);
 
                elsif Is_Child_Unit (Scope (Entity (Id)))
@@ -2664,7 +2820,9 @@ package body Sem_Ch8 is
 
          T := Entity (Id);
 
-         if T = Any_Type then
+         if T = Any_Type
+           or else From_With_Type (T)
+         then
             null;
 
          --  Note that the use_Type clause may mention a subtype of the
@@ -2977,7 +3135,7 @@ package body Sem_Ch8 is
                          Nkind (Parent (Parent (N))) = N_Use_Package_Clause
                      then
                         Error_Msg_NE
-                         ("\possibly missing with_clause for&", N, Ent);
+                         ("\possible missing with_clause for&", N, Ent);
                      end if;
                   end if;
 
@@ -3147,7 +3305,7 @@ package body Sem_Ch8 is
                      Get_Name_String (N);
 
                      if Is_Bad_Spelling_Of
-                          (Name_Buffer (1 .. Name_Len), S)
+                          (S, Name_Buffer (1 .. Name_Len))
                      then
                         Ematch := E;
                         exit;
@@ -3668,23 +3826,51 @@ package body Sem_Ch8 is
 
       Id := Current_Entity (Selector);
 
-      while Present (Id) loop
+      declare
+         Is_New_Candidate : Boolean;
 
-         if Scope (Id) = P_Name then
-            Candidate := Id;
+      begin
+         while Present (Id) loop
+            if Scope (Id) = P_Name then
+               Candidate        := Id;
+               Is_New_Candidate := True;
 
-            if Is_Child_Unit (Id) then
-               exit when Is_Visible_Child_Unit (Id)
-                 or else Is_Immediately_Visible (Id);
+            --  Ada 2005 (AI-217): Handle shadow entities associated with types
+            --  declared in limited-withed nested packages. We don't need to
+            --  handle E_Incomplete_Subtype entities because the entities in
+            --  the limited view are always E_Incomplete_Type entities (see
+            --  Build_Limited_Views). Regarding the expression used to evaluate
+            --  the scope, it is important to note that the limited view also
+            --  has shadow entities associated nested packages. For this reason
+            --  the correct scope of the entity is the scope of the real entity
+
+            elsif From_With_Type (Id)
+              and then Is_Type (Id)
+              and then Ekind (Id) = E_Incomplete_Type
+              and then Present (Non_Limited_View (Id))
+              and then Scope (Non_Limited_View (Id)) = P_Name
+            then
+               Candidate        := Non_Limited_View (Id);
+               Is_New_Candidate := True;
 
             else
-               exit when not Is_Hidden (Id)
-                 or else Is_Immediately_Visible (Id);
+               Is_New_Candidate := False;
             end if;
-         end if;
 
-         Id := Homonym (Id);
-      end loop;
+            if Is_New_Candidate then
+               if Is_Child_Unit (Id) then
+                  exit when Is_Visible_Child_Unit (Id)
+                    or else Is_Immediately_Visible (Id);
+
+               else
+                  exit when not Is_Hidden (Id)
+                    or else Is_Immediately_Visible (Id);
+               end if;
+            end if;
+
+            Id := Homonym (Id);
+         end loop;
+      end;
 
       if No (Id)
         and then (Ekind (P_Name) = E_Procedure
@@ -4041,17 +4227,21 @@ package body Sem_Ch8 is
       --  but is a reasonable heuristic on the use of nested generics.
       --  The proper solution requires a full renaming model.
 
-      function Within (Inner, Outer : Entity_Id) return Boolean;
-      --  Determine whether a candidate subprogram is defined within
-      --  the enclosing instance. If yes, it has precedence over outer
-      --  candidates.
-
       function Is_Visible_Operation (Op : Entity_Id) return Boolean;
       --  If the renamed entity is an implicit operator, check whether it is
       --  visible because its operand type is properly visible. This
       --  check applies to explicit renamed entities that appear in the
       --  source in a renaming declaration or a formal subprogram instance,
       --  but not to default generic actuals with a name.
+
+      function Report_Overload return Entity_Id;
+      --  List possible interpretations, and specialize message in the
+      --  case of a generic actual.
+
+      function Within (Inner, Outer : Entity_Id) return Boolean;
+      --  Determine whether a candidate subprogram is defined within
+      --  the enclosing instance. If yes, it has precedence over outer
+      --  candidates.
 
       ------------------------
       -- Enclosing_Instance --
@@ -4149,7 +4339,6 @@ package body Sem_Ch8 is
 
       begin
          while Sc /= Standard_Standard loop
-
             if Sc = Outer then
                return True;
             else
@@ -4160,20 +4349,20 @@ package body Sem_Ch8 is
          return False;
       end Within;
 
-      function Report_Overload return Entity_Id;
-      --  List possible interpretations, and specialize message in the
-      --  case of a generic actual.
+      ---------------------
+      -- Report_Overload --
+      ---------------------
 
       function Report_Overload return Entity_Id is
       begin
          if Is_Actual then
             Error_Msg_NE
               ("ambiguous actual subprogram&, " &
-                 "possible interpretations: ", N, Nam);
+                 "possible interpretations:", N, Nam);
          else
             Error_Msg_N
               ("ambiguous subprogram, " &
-                 "possible interpretations: ", N);
+                 "possible interpretations:", N);
          end if;
 
          List_Interps (Nam, N);
@@ -4758,6 +4947,12 @@ package body Sem_Ch8 is
                Set_Etype (N, T);
             end if;
 
+         elsif Attribute_Name (N) = Name_Stub_Type then
+
+            --  This is handled in Analyze_Attribute
+
+            Analyze (N);
+
          --  All other attributes are invalid in a subtype mark
 
          else
@@ -4786,7 +4981,7 @@ package body Sem_Ch8 is
          then
             Error_Msg_Sloc := Sloc (T_Name);
             Error_Msg_N ("subtype mark required in this context", N);
-            Error_Msg_NE ("\found & declared#", N, T_Name);
+            Error_Msg_NE ("\\found & declared#", N, T_Name);
             Set_Entity (N, Any_Type);
 
          else
@@ -4794,8 +4989,22 @@ package body Sem_Ch8 is
 
             if In_Open_Scopes (T_Name) then
                if Ekind (Base_Type (T_Name)) = E_Task_Type then
-                  Error_Msg_N ("task type cannot be used as type mark " &
-                     "within its own body", N);
+
+                  --  In Ada 2005, a task name can be used in an access
+                  --  definition within its own body.
+
+                  if Ada_Version >= Ada_05
+                    and then Nkind (Parent (N)) = N_Access_Definition
+                  then
+                     Set_Entity (N, T_Name);
+                     Set_Etype  (N, T_Name);
+                     return;
+
+                  else
+                     Error_Msg_N
+                       ("task type cannot be used as type mark " &
+                        "within its own body", N);
+                  end if;
                else
                   Error_Msg_N ("type declaration cannot refer to itself", N);
                end if;
@@ -5108,21 +5317,24 @@ package body Sem_Ch8 is
 
    function In_Open_Scopes (S : Entity_Id) return Boolean is
    begin
-      --  Since there are several scope stacks maintained by Scope_Stack each
-      --  delineated by Standard (see comments by definition of Scope_Stack)
-      --  it is necessary to end the search when Standard is reached.
+      --  Several scope stacks are maintained by Scope_Stack. The base of the
+      --  currently active scope stack is denoted by the Is_Active_Stack_Base
+      --  flag in the scope stack entry. Note that the scope stacks used to
+      --  simply be delimited implicitly by the presence of Standard_Standard
+      --  at their base, but there now are cases where this is not sufficient
+      --  because Standard_Standard actually may appear in the middle of the
+      --  active set of scopes.
 
       for J in reverse 0 .. Scope_Stack.Last loop
          if Scope_Stack.Table (J).Entity = S then
             return True;
          end if;
 
-         --  We need Is_Active_Stack_Base to tell us when to stop rather
-         --  than checking for Standard_Standard because there are cases
-         --  where Standard_Standard appears in the middle of the active
-         --  set of scopes. This affects the declaration and overriding
-         --  of private inherited operations in instantiations of generic
-         --  child units.
+         --  Check Is_Active_Stack_Base to tell us when to stop, as there are
+         --  cases where Standard_Standard appears in the middle of the active
+         --  set of scopes. This affects the declaration and overriding of
+         --  private inherited operations in instantiations of generic child
+         --  units.
 
          exit when Scope_Stack.Table (J).Is_Active_Stack_Base;
       end loop;
@@ -5359,6 +5571,7 @@ package body Sem_Ch8 is
          SST.Actions_To_Be_Wrapped_After    := No_List;
          SST.First_Use_Clause               := Empty;
          SST.Is_Active_Stack_Base           := False;
+         SST.Previous_Visibility            := False;
       end;
 
       if Debug_Flag_W then
@@ -6234,6 +6447,11 @@ package body Sem_Ch8 is
 
       if In_Open_Scopes (Scope (T)) then
          null;
+
+      elsif From_With_Type (T) then
+         Error_Msg_N
+           ("incomplete type from limited view "
+             & "cannot appear in use clause", Id);
 
       --  If the subtype mark designates a subtype in a different package,
       --  we have to check that the parent type is visible, otherwise the
