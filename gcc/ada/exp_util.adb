@@ -268,7 +268,7 @@ package body Exp_Util is
    --------------------------
 
    procedure Append_Freeze_Action (T : Entity_Id; N : Node_Id) is
-      Fnode : Node_Id := Freeze_Node (T);
+      Fnode : Node_Id;
 
    begin
       Ensure_Freeze_Node (T);
@@ -580,9 +580,10 @@ package body Exp_Util is
    ----------------------------
 
    function Build_Task_Image_Decls
-     (Loc    : Source_Ptr;
-      Id_Ref : Node_Id;
-      A_Type : Entity_Id) return List_Id
+     (Loc          : Source_Ptr;
+      Id_Ref       : Node_Id;
+      A_Type       : Entity_Id;
+      In_Init_Proc : Boolean := False) return List_Id
    is
       Decls  : constant List_Id   := New_List;
       T_Id   : Entity_Id := Empty;
@@ -651,6 +652,10 @@ package body Exp_Util is
          Append (Fun, Decls);
          Expr := Make_Function_Call (Loc,
            Name => New_Occurrence_Of (Defining_Entity (Fun), Loc));
+
+         if not In_Init_Proc then
+            Set_Uses_Sec_Stack (Defining_Entity (Fun));
+         end if;
       end if;
 
       Decl := Make_Object_Declaration (Loc,
@@ -687,8 +692,6 @@ package body Exp_Util is
 
       --  Calls to 'Image use the secondary stack, which must be cleaned
       --  up after the task name is built.
-
-      Set_Uses_Sec_Stack (Defining_Unit_Name (Spec));
 
       return Make_Subprogram_Body (Loc,
          Specification => Spec,
@@ -1124,8 +1127,8 @@ package body Exp_Util is
    --  objects which are constrained by an initial expression. Basically it
    --  transforms an unconstrained subtype indication into a constrained one.
    --  The expression may also be transformed in certain cases in order to
-   --  avoid multiple evaulation. In the static allocation case, the general
-   --  scheme is :
+   --  avoid multiple evaluation. In the static allocation case, the general
+   --  scheme is:
 
    --     Val : T := Expr;
 
@@ -1833,6 +1836,11 @@ package body Exp_Util is
    -- Get_Current_Value_Condition --
    ---------------------------------
 
+   --  Note: the implementation of this procedure is very closely tied to the
+   --  implementation of Set_Current_Value_Condition. In the Get procedure, we
+   --  interpret Current_Value fields set by the Set procedure, so the two
+   --  procedures need to be closely coordinated.
+
    procedure Get_Current_Value_Condition
      (Var : Node_Id;
       Op  : out Node_Kind;
@@ -1840,6 +1848,134 @@ package body Exp_Util is
    is
       Loc : constant Source_Ptr := Sloc (Var);
       Ent : constant Entity_Id  := Entity (Var);
+
+      procedure Process_Current_Value_Condition
+        (N : Node_Id;
+         S : Boolean);
+      --  N is an expression which holds either True (S = True) or False (S =
+      --  False) in the condition. This procedure digs out the expression and
+      --  if it refers to Ent, sets Op and Val appropriately.
+
+      -------------------------------------
+      -- Process_Current_Value_Condition --
+      -------------------------------------
+
+      procedure Process_Current_Value_Condition
+        (N : Node_Id;
+         S : Boolean)
+      is
+         Cond : Node_Id;
+         Sens : Boolean;
+
+      begin
+         Cond := N;
+         Sens := S;
+
+         --  Deal with NOT operators, inverting sense
+
+         while Nkind (Cond) = N_Op_Not loop
+            Cond := Right_Opnd (Cond);
+            Sens := not Sens;
+         end loop;
+
+         --  Deal with AND THEN and AND cases
+
+         if Nkind (Cond) = N_And_Then
+           or else Nkind (Cond) = N_Op_And
+         then
+            --  Don't ever try to invert a condition that is of the form
+            --  of an AND or AND THEN (since we are not doing sufficiently
+            --  general processing to allow this).
+
+            if Sens = False then
+               Op  := N_Empty;
+               Val := Empty;
+               return;
+            end if;
+
+            --  Recursively process AND and AND THEN branches
+
+            Process_Current_Value_Condition (Left_Opnd (Cond), True);
+
+            if Op /= N_Empty then
+               return;
+            end if;
+
+            Process_Current_Value_Condition (Right_Opnd (Cond), True);
+            return;
+
+         --  Case of relational operator
+
+         elsif Nkind (Cond) in N_Op_Compare then
+            Op := Nkind (Cond);
+
+            --  Invert sense of test if inverted test
+
+            if Sens = False then
+               case Op is
+                  when N_Op_Eq => Op := N_Op_Ne;
+                  when N_Op_Ne => Op := N_Op_Eq;
+                  when N_Op_Lt => Op := N_Op_Ge;
+                  when N_Op_Gt => Op := N_Op_Le;
+                  when N_Op_Le => Op := N_Op_Gt;
+                  when N_Op_Ge => Op := N_Op_Lt;
+                  when others  => raise Program_Error;
+               end case;
+            end if;
+
+            --  Case of entity op value
+
+            if Is_Entity_Name (Left_Opnd (Cond))
+              and then Ent = Entity (Left_Opnd (Cond))
+              and then Compile_Time_Known_Value (Right_Opnd (Cond))
+            then
+               Val := Right_Opnd (Cond);
+
+            --  Case of value op entity
+
+            elsif Is_Entity_Name (Right_Opnd (Cond))
+              and then Ent = Entity (Right_Opnd (Cond))
+              and then Compile_Time_Known_Value (Left_Opnd (Cond))
+            then
+               Val := Left_Opnd (Cond);
+
+               --  We are effectively swapping operands
+
+               case Op is
+                  when N_Op_Eq => null;
+                  when N_Op_Ne => null;
+                  when N_Op_Lt => Op := N_Op_Gt;
+                  when N_Op_Gt => Op := N_Op_Lt;
+                  when N_Op_Le => Op := N_Op_Ge;
+                  when N_Op_Ge => Op := N_Op_Le;
+                  when others  => raise Program_Error;
+               end case;
+
+            else
+               Op := N_Empty;
+            end if;
+
+            return;
+
+            --  Case of Boolean variable reference, return as though the
+            --  reference had said var = True.
+
+         else
+            if Is_Entity_Name (Cond)
+              and then Ent = Entity (Cond)
+            then
+               Val := New_Occurrence_Of (Standard_True, Sloc (Cond));
+
+               if Sens = False then
+                  Op := N_Op_Ne;
+               else
+                  Op := N_Op_Eq;
+               end if;
+            end if;
+         end if;
+      end Process_Current_Value_Condition;
+
+   --  Start of processing for Get_Current_Value_Condition
 
    begin
       Op  := N_Empty;
@@ -1857,7 +1993,6 @@ package body Exp_Util is
          CV   : constant Node_Id := Current_Value (Ent);
          Sens : Boolean;
          Stm  : Node_Id;
-         Cond : Node_Id;
 
       begin
          --  If statement. Condition is known true in THEN section, known False
@@ -1909,7 +2044,17 @@ package body Exp_Util is
                then
                   Sens := True;
 
-                  --  Otherwise we must be in ELSIF or ELSE part
+               --  If the variable reference does not come from source, we
+               --  cannot reliably tell whether it appears in the else part.
+               --  In particular, if if appears in generated code for a node
+               --  that requires finalization, it may be attached to a list
+               --  that has not been yet inserted into the code. For now,
+               --  treat it as unknown.
+
+               elsif not Comes_From_Source (N) then
+                  return;
+
+               --  Otherwise we must be in ELSIF or ELSE part
 
                else
                   Sens := False;
@@ -1972,7 +2117,32 @@ package body Exp_Util is
                end if;
             end;
 
-            --  All other cases of Current_Value settings
+         --  Iteration scheme of while loop. The condition is known to be
+         --  true within the body of the loop.
+
+         elsif Nkind (CV) = N_Iteration_Scheme then
+            declare
+               Loop_Stmt : constant Node_Id := Parent (CV);
+
+            begin
+               --  Before start of body of loop
+
+               if Loc < Sloc (Loop_Stmt) then
+                  return;
+
+               --  After end of LOOP statement
+
+               elsif Loc >= Sloc (End_Label (Loop_Stmt)) then
+                  return;
+
+               --  We are within the body of the loop
+
+               else
+                  Sens := True;
+               end if;
+            end;
+
+         --  All other cases of Current_Value settings
 
          else
             return;
@@ -1981,35 +2151,7 @@ package body Exp_Util is
          --  If we fall through here, then we have a reportable condition, Sens
          --  is True if the condition is true and False if it needs inverting.
 
-         --  Deal with NOT operators, inverting sense
-
-         Cond := Condition (CV);
-         while Nkind (Cond) = N_Op_Not loop
-            Cond := Right_Opnd (Cond);
-            Sens := not Sens;
-         end loop;
-
-         --  Now we must have a relational operator
-
-         pragma Assert (Entity (Var) = Entity (Left_Opnd (Cond)));
-         Val := Right_Opnd (Cond);
-         Op  := Nkind (Cond);
-
-         if Sens = False then
-            case Op is
-            when N_Op_Eq => Op := N_Op_Ne;
-            when N_Op_Ne => Op := N_Op_Eq;
-            when N_Op_Lt => Op := N_Op_Ge;
-            when N_Op_Gt => Op := N_Op_Le;
-            when N_Op_Le => Op := N_Op_Gt;
-            when N_Op_Ge => Op := N_Op_Lt;
-
-               --  No other entry should be possible
-
-            when others =>
-               raise Program_Error;
-            end case;
-         end if;
+         Process_Current_Value_Condition (Condition (CV), Sens);
       end;
    end Get_Current_Value_Condition;
 
@@ -2183,7 +2325,7 @@ package body Exp_Util is
       --  Capture root of the transient scope
 
       if Scope_Is_Transient then
-         Wrapped_Node  := Node_To_Be_Wrapped;
+         Wrapped_Node := Node_To_Be_Wrapped;
       end if;
 
       loop
@@ -2362,8 +2504,9 @@ package body Exp_Util is
                   null;
 
                --  Do not insert if parent of P is an N_Component_Association
-               --  node (i.e. we are in the context of an N_Aggregate node.
-               --  In this case we want to insert before the entire aggregate.
+               --  node (i.e. we are in the context of an N_Aggregate or
+               --  N_Extension_Aggregate node. In this case we want to insert
+               --  before the entire aggregate.
 
                elsif Nkind (Parent (P)) = N_Component_Association then
                   null;
@@ -2397,7 +2540,7 @@ package body Exp_Util is
 
                --  Otherwise we can go ahead and do the insertion
 
-               elsif  P = Wrapped_Node then
+               elsif P = Wrapped_Node then
                   Store_Before_Actions_In_Scope (Ins_Actions);
                   return;
 
@@ -3230,17 +3373,21 @@ package body Exp_Util is
                and then not Is_Tagged_Type (Full_View (T))
                and then Is_Derived_Type (Full_View (T))
                and then Etype (Full_View (T)) /= T);
-
    end Is_Untagged_Derivation;
 
    --------------------
    -- Kill_Dead_Code --
    --------------------
 
-   procedure Kill_Dead_Code (N : Node_Id) is
+   procedure Kill_Dead_Code (N : Node_Id; Warn : Boolean := False) is
    begin
       if Present (N) then
          Remove_Warning_Messages (N);
+
+         if Warn then
+            Error_Msg_F
+              ("?this code can never be executed and has been deleted", N);
+         end if;
 
          --  Recurse into block statements and bodies to process declarations
          --  and statements
@@ -3249,8 +3396,10 @@ package body Exp_Util is
            or else Nkind (N) = N_Subprogram_Body
            or else Nkind (N) = N_Package_Body
          then
-            Kill_Dead_Code (Declarations (N));
-            Kill_Dead_Code (Statements (Handled_Statement_Sequence (N)));
+            Kill_Dead_Code
+              (Declarations (N), False);
+            Kill_Dead_Code
+              (Statements (Handled_Statement_Sequence (N)));
 
             if Nkind (N) = N_Subprogram_Body then
                Set_Is_Eliminated (Defining_Entity (N));
@@ -3309,15 +3458,17 @@ package body Exp_Util is
 
    --  Case where argument is a list of nodes to be killed
 
-   procedure Kill_Dead_Code (L : List_Id) is
+   procedure Kill_Dead_Code (L : List_Id; Warn : Boolean := False) is
       N : Node_Id;
-
+      W : Boolean;
    begin
+      W := Warn;
       if Is_Non_Empty_List (L) then
          loop
             N := Remove_Head (L);
             exit when No (N);
-            Kill_Dead_Code (N);
+            Kill_Dead_Code (N, W);
+            W := False;
          end loop;
       end if;
    end Kill_Dead_Code;
@@ -3829,6 +3980,7 @@ package body Exp_Util is
 
    begin
       Copy_Node (CW_Typ, Res);
+      Set_Comes_From_Source (Res, False);
       Set_Sloc (Res, Sloc (N));
       Set_Is_Itype (Res);
       Set_Associated_Node_For_Itype (Res, N);
@@ -3884,7 +4036,6 @@ package body Exp_Util is
       --  Otherwise check scopes
 
       else
-
          CS := Current_Scope;
 
          loop
@@ -3896,12 +4047,19 @@ package body Exp_Util is
             --  Packages do not affect the determination of safety
 
             elsif Ekind (CS) = E_Package then
-               CS := Scope (CS);
                exit when CS = Standard_Standard;
+               CS := Scope (CS);
 
             --  Blocks do not affect the determination of safety
 
             elsif Ekind (CS) = E_Block then
+               CS := Scope (CS);
+
+            --  Loops do not affect the determination of safety. Note that we
+            --  kill all current values on entry to a loop, so we are just
+            --  talking about processing within a loop here.
+
+            elsif Ekind (CS) = E_Loop then
                CS := Scope (CS);
 
             --  Otherwise, the reference is dubious, and we cannot be sure that
@@ -4091,11 +4249,10 @@ package body Exp_Util is
             --  are side effect free. For this purpose binary operators
             --  include membership tests and short circuit forms
 
-            when N_Binary_Op |
-                 N_In        |
-                 N_Not_In    |
-                 N_And_Then  |
-                 N_Or_Else   =>
+            when N_Binary_Op       |
+                 N_Membership_Test |
+                 N_And_Then        |
+                 N_Or_Else         =>
                return Side_Effect_Free (Left_Opnd  (N))
                  and then Side_Effect_Free (Right_Opnd (N));
 
@@ -4687,8 +4844,112 @@ package body Exp_Util is
       else
          return False;
       end if;
-
    end Safe_Unchecked_Type_Conversion;
+
+   ---------------------------------
+   -- Set_Current_Value_Condition --
+   ---------------------------------
+
+   --  Note: the implementation of this procedure is very closely tied to the
+   --  implementation of Get_Current_Value_Condition. Here we set required
+   --  Current_Value fields, and in Get_Current_Value_Condition, we interpret
+   --  them, so they must have a consistent view.
+
+   procedure Set_Current_Value_Condition (Cnode : Node_Id) is
+
+      procedure Set_Entity_Current_Value (N : Node_Id);
+      --  If N is an entity reference, where the entity is of an appropriate
+      --  kind, then set the current value of this entity to Cnode, unless
+      --  there is already a definite value set there.
+
+      procedure Set_Expression_Current_Value (N : Node_Id);
+      --  If N is of an appropriate form, sets an appropriate entry in current
+      --  value fields of relevant entities. Multiple entities can be affected
+      --  in the case of an AND or AND THEN.
+
+      ------------------------------
+      -- Set_Entity_Current_Value --
+      ------------------------------
+
+      procedure Set_Entity_Current_Value (N : Node_Id) is
+      begin
+         if Is_Entity_Name (N) then
+            declare
+               Ent : constant Entity_Id := Entity (N);
+
+            begin
+               --  Don't capture if not safe to do so
+
+               if not Safe_To_Capture_Value (N, Ent, Cond => True) then
+                  return;
+               end if;
+
+               --  Here we have a case where the Current_Value field may
+               --  need to be set. We set it if it is not already set to a
+               --  compile time expression value.
+
+               --  Note that this represents a decision that one condition
+               --  blots out another previous one. That's certainly right
+               --  if they occur at the same level. If the second one is
+               --  nested, then the decision is neither right nor wrong (it
+               --  would be equally OK to leave the outer one in place, or
+               --  take the new inner one. Really we should record both, but
+               --  our data structures are not that elaborate.
+
+               if Nkind (Current_Value (Ent)) not in N_Subexpr then
+                  Set_Current_Value (Ent, Cnode);
+               end if;
+            end;
+         end if;
+      end Set_Entity_Current_Value;
+
+      ----------------------------------
+      -- Set_Expression_Current_Value --
+      ----------------------------------
+
+      procedure Set_Expression_Current_Value (N : Node_Id) is
+         Cond : Node_Id;
+
+      begin
+         Cond := N;
+
+         --  Loop to deal with (ignore for now) any NOT operators present. The
+         --  presence of NOT operators will be handled properly when we call
+         --  Get_Current_Value_Condition.
+
+         while Nkind (Cond) = N_Op_Not loop
+            Cond := Right_Opnd (Cond);
+         end loop;
+
+         --  For an AND or AND THEN, recursively process operands
+
+         if Nkind (Cond) = N_Op_And or else Nkind (Cond) = N_And_Then then
+            Set_Expression_Current_Value (Left_Opnd (Cond));
+            Set_Expression_Current_Value (Right_Opnd (Cond));
+            return;
+         end if;
+
+         --  Check possible relational operator
+
+         if Nkind (Cond) in N_Op_Compare then
+            if Compile_Time_Known_Value (Right_Opnd (Cond)) then
+               Set_Entity_Current_Value (Left_Opnd (Cond));
+            elsif Compile_Time_Known_Value (Left_Opnd (Cond)) then
+               Set_Entity_Current_Value (Right_Opnd (Cond));
+            end if;
+
+            --  Check possible boolean variable reference
+
+         else
+            Set_Entity_Current_Value (Cond);
+         end if;
+      end Set_Expression_Current_Value;
+
+   --  Start of processing for Set_Current_Value_Condition
+
+   begin
+      Set_Expression_Current_Value (Condition (Cnode));
+   end Set_Current_Value_Condition;
 
    --------------------------
    -- Set_Elaboration_Flag --

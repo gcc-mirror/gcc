@@ -191,7 +191,7 @@ package Exp_Util is
    --  Add a new freeze action for the given type. The freeze action is
    --  attached to the freeze node for the type. Actions will be elaborated in
    --  the order in which they are added. Note that the added node is not
-   --  analyzed. The analyze call is found in Sem_Ch13.Expand_N_Freeze_Entity.
+   --  analyzed. The analyze call is found in Exp_Ch13.Expand_N_Freeze_Entity.
 
    procedure Append_Freeze_Actions (T : Entity_Id; L : List_Id);
    --  Adds the given list of freeze actions (declarations or statements) for
@@ -199,7 +199,7 @@ package Exp_Util is
    --  the type. Actions will be elaborated in the order in which they are
    --  added, and the actions within the list will be elaborated in list order.
    --  Note that the added nodes are not analyzed. The analyze call is found in
-   --  Sem_Ch13.Expand_N_Freeze_Entity.
+   --  Exp_Ch13.Expand_N_Freeze_Entity.
 
    function Build_Runtime_Call (Loc : Source_Ptr; RE : RE_Id) return Node_Id;
    --  Build an N_Procedure_Call_Statement calling the given runtime entity.
@@ -208,10 +208,10 @@ package Exp_Util is
    --  analyzed on return, the caller is responsible for analyzing it.
 
    function Build_Task_Image_Decls
-     (Loc    : Source_Ptr;
-      Id_Ref : Node_Id;
-      A_Type : Entity_Id)
-      return   List_Id;
+     (Loc          : Source_Ptr;
+      Id_Ref       : Node_Id;
+      A_Type       : Entity_Id;
+      In_Init_Proc : Boolean := False) return List_Id;
    --  Build declaration for a variable that holds an identifying string to be
    --  used as a task name. Id_Ref is an identifier if the task is a variable,
    --  and a selected or indexed component if the task is component of an
@@ -220,6 +220,11 @@ package Exp_Util is
    --  index values. For composite types, the result includes two declarations:
    --  one for a generated function that computes the image without using
    --  concatenation, and one for the variable that holds the result.
+   --  If In_Init_Proc is true, the call is part of the initialization of
+   --  a component of a composite type, and the enclosing initialization
+   --  procedure must be flagged as using the secondary stack. If In_Init_Proc
+   --  is false, the call is for a stand-alone object, and the generated
+   --  function itself must do its own cleanups.
 
    function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean;
    --  This function is in charge of detecting record components that may cause
@@ -407,17 +412,14 @@ package Exp_Util is
    --  on return Cond is set to N_Empty, and Val is set to Empty.
    --
    --  The other case is when Current_Value points to an N_If_Statement or an
-   --  N_Elsif_Part (while statement). Such a setting only occurs if the
-   --  condition of an IF or ELSIF is of the form X op Y, where is the variable
-   --  in question, Y is a compile-time known value, and op is one of the six
-   --  possible relational operators.
-   --
-   --  In this case, Get_Current_Condition digs out the condition, and then
-   --  checks if the condition is known false, known true, or not known at all.
-   --  In the first two cases, Get_Current_Condition will return with Op set to
-   --  the appropriate conditional operator (inverted if the condition is known
-   --  false), and Val set to the constant value. If the condition is not
-   --  known, then Cond and Val are set for the empty case (N_Empty and Empty).
+   --  N_Elsif_Part or a N_Iteration_Scheme node (see description in Einfo for
+   --  exact details). In this case, Get_Current_Condition digs out the
+   --  condition, and then checks if the condition is known false, known true,
+   --  or not known at all. In the first two cases, Get_Current_Condition will
+   --  return with Op set to the appropriate conditional operator (inverted if
+   --  the condition is known false), and Val set to the constant value. If the
+   --  condition is not known, then Cond and Val are set for the empty case
+   --  (N_Empty and Empty).
    --
    --  The check for whether the condition is true/false unknown depends
    --  on the case:
@@ -465,7 +467,7 @@ package Exp_Util is
    --  routine with No_List as the argument.
 
    function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
-   --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation.
+   --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation
 
    function Is_Ref_To_Bit_Packed_Array (N : Node_Id) return Boolean;
    --  Determine whether the node P is a reference to a bit packed array, i.e.
@@ -505,14 +507,17 @@ package Exp_Util is
    --  Returns true if type T is not tagged and is a derived type,
    --  or is a private type whose completion is such a type.
 
-   procedure Kill_Dead_Code (N : Node_Id);
+   procedure Kill_Dead_Code (N : Node_Id; Warn : Boolean := False);
    --  N represents a node for a section of code that is known to be dead. The
    --  node is deleted, and any exception handler references and warning
-   --  messages relating to this code are removed.
+   --  messages relating to this code are removed. If Warn is True, a warning
+   --  will be output at the start of N indicating the deletion of the code.
 
-   procedure Kill_Dead_Code (L : List_Id);
+   procedure Kill_Dead_Code (L : List_Id; Warn : Boolean := False);
    --  Like the above procedure, but applies to every element in the given
    --  list. Each of the entries is removed from the list before killing it.
+   --  If Warn is True, a warning will be output at the start of N indicating
+   --  the deletion of the code.
 
    function Known_Non_Negative (Opnd : Node_Id) return Boolean;
    --  Given a node for a subexpression, determines if it represents a value
@@ -588,6 +593,13 @@ package Exp_Util is
    --  temporary. Note that the node need not be analyzed, and thus the Etype
    --  field may not be set, but in that case it must be the case that the
    --  Subtype_Mark field of the node is set/analyzed.
+
+   procedure Set_Current_Value_Condition (Cnode : Node_Id);
+   --  Cnode is N_If_Statement, N_Elsif_Part, or N_Iteration_Scheme (the latter
+   --  when a WHILE condition is present). This call checks whether Condition
+   --  (Cnode) has embedded expressions of a form that should result in setting
+   --  the Current_Value field of one or more entities, and if so sets these
+   --  fields to point to Cnode.
 
    procedure Set_Elaboration_Flag (N : Node_Id; Spec_Id : Entity_Id);
    --  N is the node for a subprogram or generic body, and Spec_Id is the
