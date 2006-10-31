@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,15 +33,23 @@
 
 --  Processing for Wide_[Wide_]Value attribute
 
+with System.WCh_Con;
+
 package System.Val_WChar is
    pragma Pure;
 
    function Value_Wide_Character
-      (Str : String) return Wide_Character;
-   --  Computes Wide_Character'Value (Str)
+     (Str : String;
+      EM  : System.WCh_Con.WC_Encoding_Method) return Wide_Character;
+   --  Computes Wide_Character'Value (Str). The parameter EM is the encoding
+   --  method used for any Wide_Character sequences in Str. Note that brackets
+   --  notation is always permitted.
 
    function Value_Wide_Wide_Character
-      (Str : String) return Wide_Wide_Character;
-   --  Computes Wide_Character'Value (Str)
+     (Str : String;
+      EM  : System.WCh_Con.WC_Encoding_Method) return Wide_Wide_Character;
+   --  Computes Wide_Character'Value (Str). The parameter EM is the encoding
+   --  method used for any wide_character sequences in Str. Note that brackets
+   --  notation is always permitted.
 
 end System.Val_WChar;

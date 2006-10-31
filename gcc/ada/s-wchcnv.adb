@@ -46,8 +46,8 @@ package body System.WCh_Cnv is
    -----------------------------
 
    function Char_Sequence_To_UTF_32
-     (C       : Character;
-      EM      : WC_Encoding_Method) return UTF_32_Code
+     (C  : Character;
+      EM : WC_Encoding_Method) return UTF_32_Code
    is
       B1 : Unsigned_32;
       C1 : Character;

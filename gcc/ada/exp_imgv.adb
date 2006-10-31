@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -424,7 +424,7 @@ package body Exp_Imgv is
 
    --    btyp (Value_xx (X))
 
-   --  where btyp is he base type of the prefix, and
+   --  where btyp is he base type of the prefix
 
    --    For types whose root type is Character
    --      xx = Character
@@ -452,6 +452,12 @@ package body Exp_Imgv is
 
    --    For floating-point types and ordinary fixed-point types
    --      xx = Real
+
+   --  For Wide_[Wide_]Character types, typ'Value (X) expands into:
+
+   --    btyp (Value_xx (X, EM))
+
+   --  where btyp is the base type of the prefix, and EM is the encoding method
 
    --  For decimal types with size <= Integer'Size, typ'Value (X)
    --  expands into
@@ -498,8 +504,16 @@ package body Exp_Imgv is
       elsif Rtyp = Standard_Wide_Character then
          Vid := RE_Value_Wide_Character;
 
+         Append_To (Args,
+           Make_Integer_Literal (Loc,
+             Intval => Int (Wide_Character_Encoding_Method)));
+
       elsif Rtyp = Standard_Wide_Wide_Character then
          Vid := RE_Value_Wide_Wide_Character;
+
+         Append_To (Args,
+           Make_Integer_Literal (Loc,
+             Intval => Int (Wide_Character_Encoding_Method)));
 
       elsif     Rtyp = Base_Type (Standard_Short_Short_Integer)
         or else Rtyp = Base_Type (Standard_Short_Integer)
