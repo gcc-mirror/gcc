@@ -95,6 +95,9 @@ package Exp_Dist is
    --  access to Stub_Type. If New_Name is given, then it will be used as
    --  the name for the newly created spec.
 
+   function Corresponding_Stub_Type (RACW_Type : Entity_Id) return Entity_Id;
+   --  Return the stub type associated with the given RACW type
+
    function Underlying_RACW_Type
      (RAS_Typ : Entity_Id) return Entity_Id;
    --  Given a remote access-to-subprogram type or its equivalent
