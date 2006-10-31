@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,8 +104,8 @@ package body Debug is
    --  d.i
    --  d.j
    --  d.k
-   --  d.l
-   --  d.m
+   --  d.l  Use Ada 95 semantics for limited function returns
+   --  d.m  For -gnatl, print full source only for main unit
    --  d.n
    --  d.o
    --  d.p
@@ -115,10 +115,37 @@ package body Debug is
    --  d.t
    --  d.u
    --  d.v
-   --  d.w
+   --  d.w  Do not check for infinite while loops
    --  d.x  No exception handlers
    --  d.y
    --  d.z
+
+   --  d.A
+   --  d.B
+   --  d.C
+   --  d.D
+   --  d.E
+   --  d.F
+   --  d.G
+   --  d.H
+   --  d.I
+   --  d.J
+   --  d.K
+   --  d.L
+   --  d.M
+   --  d.N
+   --  d.O
+   --  d.P
+   --  d.Q
+   --  d.R
+   --  d.S
+   --  d.T
+   --  d.U
+   --  d.V
+   --  d.W
+   --  d.X
+   --  d.Y
+   --  d.Z
 
    --  d1   Error msgs have node numbers where possible
    --  d2   Eliminate error flags in verbose form error messages
@@ -133,7 +160,7 @@ package body Debug is
    --  Debug flags for binder (GNATBIND)
 
    --  da  All links (including internal units) listed if there is a cycle
-   --  db
+   --  db  Output information from Better_Choice
    --  dc  List units as they are chosen
    --  dd
    --  de  Elaboration dependencies including system units
@@ -146,7 +173,7 @@ package body Debug is
    --  dl
    --  dm
    --  dn  List details of manipulation of Num_Pred values
-   --  do
+   --  do  Use old preference for elaboration order
    --  dp
    --  dq
    --  dr
@@ -403,6 +430,8 @@ package body Debug is
    --       in preelaborable packages, but this restriction is a huge pain,
    --       especially in the predefined library units.
 
+   --  dQ   needs full documentation ???
+
    --  dR   Bypass the check for a proper version of s-rpc being present
    --       to use the -gnatz? switch. This allows debugging of the use
    --       of stubs generation without needing to have GLADE (or some
@@ -444,6 +473,19 @@ package body Debug is
    --  d.f  Suppress folding of static expressions. This of course results
    --       in seriously non-conforming behavior, but is useful sometimes
    --       when tracking down handling of complex expressions.
+
+   --  d.l  Use Ada 95 semantics for limited function returns. This may be
+   --       used to work around the incompatibility introduced by AI-318-2.
+   --       It is useful only in -gnat05 mode.
+
+   --  d.m  When -gnatl is used, the normal output includes full listings of
+   --       all files in the extended main source (body/spec/subunits). If this
+   --       debug switch is used, then the full listing is given only for the
+   --       main source (this corresponds to a previous behavior of -gnatl and
+   --       is used for running the ACATS tests).
+
+   --  d.w  This flag turns off the scanning of while loops to detect possible
+   --       infinite loops.
 
    --  d.x  No exception handlers in generated code. This causes exception
    --       handlers to be eliminated from the generated code. They are still
@@ -518,6 +560,12 @@ package body Debug is
    --  dn  List details of manipulation of Num_Pred values during execution of
    --      the algorithm used to determine a correct order of elaboration. This
    --      is useful in diagnosing any problems in its behavior.
+
+   --  do  Use old elaboration order preference. The new preference rules
+   --      prefer specs with no bodies to specs with bodies, and between two
+   --      specs with bodies, prefers the one whose body is closer to being
+   --      able to be elaborated. This is a clear improvement, but we provide
+   --      this debug flag in case of regressions.
 
    --  du  List unit name and file name for each unit as it is read in
 

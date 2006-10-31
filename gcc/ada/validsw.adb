@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@ package body Validsw is
 
    procedure Reset_Validity_Check_Options is
    begin
+      Validity_Check_Components     := False;
       Validity_Check_Copies         := False;
       Validity_Check_Default        := True;
       Validity_Check_Floating_Point := False;
@@ -75,6 +76,7 @@ package body Validsw is
       Add ('n', not Validity_Check_Default);
 
       Add ('c', Validity_Check_Copies);
+      Add ('e', Validity_Check_Components);
       Add ('f', Validity_Check_Floating_Point);
       Add ('i', Validity_Check_In_Params);
       Add ('m', Validity_Check_In_Out_Params);
@@ -136,6 +138,9 @@ package body Validsw is
             when 'd' =>
                Validity_Check_Default        := True;
 
+            when 'e' =>
+               Validity_Check_Components     := True;
+
             when 'f' =>
                Validity_Check_Floating_Point := True;
 
@@ -166,6 +171,9 @@ package body Validsw is
             when 'D' =>
                Validity_Check_Default        := False;
 
+            when 'E' =>
+               Validity_Check_Components     := False;
+
             when 'I' =>
                Validity_Check_In_Params      := False;
 
@@ -191,6 +199,7 @@ package body Validsw is
                Validity_Check_Tests          := False;
 
             when 'a' =>
+               Validity_Check_Components     := True;
                Validity_Check_Copies         := True;
                Validity_Check_Default        := True;
                Validity_Check_Floating_Point := True;
@@ -203,6 +212,7 @@ package body Validsw is
                Validity_Check_Tests          := True;
 
             when 'n' =>
+               Validity_Check_Components     := False;
                Validity_Check_Copies         := False;
                Validity_Check_Default        := False;
                Validity_Check_Floating_Point := False;

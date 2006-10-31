@@ -56,6 +56,7 @@ gcc -c          ^ GNAT COMPILE
 -gnatdc         ^ /TRACE_UNITS
 -gnatdO         ^ /REPORT_ERRORS=IMMEDIATE
 -gnatC          ^ /COMPRESS_NAMES
+-gnatDG         ^ /XDEBUG /EXPAND_SOURCEA
 -gnatD          ^ /XDEBUG
 -gnatec         ^ /CONFIGURATION_PRAGMAS_FILE
 -gnateD         ^ /SYMBOL_PREPROCESSING
@@ -70,6 +71,10 @@ gcc -c          ^ GNAT COMPILE
 -gnatk          ^ /FILE_NAME_MAX_LENGTH
 -gnatl          ^ /LIST
 -gnatL          ^ /LONGJMP_SETJMP
+-gnatj          ^ /JUSTIFY_MESSAGES
+-gnatj0         ^ /NO_JUSTIFY_MESSAGES
+-gnatjnn        ^ /JUSTIFY_MESSAGES=nn
+-gnatL          ^ /INTERSPERSE_SOURCE
 -gnatm          ^ /ERROR_LIMIT
 -gnatm2         ^ /ERROR_LIMIT=2
 -gnatn          ^ /INLINE=PRAGMA
@@ -135,13 +140,19 @@ gcc -c          ^ GNAT COMPILE
 -gnatwO         ^ /WARNINGS=NOOVERLAYS
 -gnatwp         ^ /WARNINGS=INEFFECTIVE_INLINE
 -gnatwP         ^ /WARNINGS=NOINEFFECTIVE_INLINE
+-gnatwq         ^ /WARNINGS=MISSING_PARENS
+-gnatwQ         ^ /WARNINGS=NOMISSING_PARENS
 -gnatwr         ^ /WARNINGS=REDUNDANT
 -gnatwR         ^ /WARNINGS=NOREDUNDANT
 -gnatws         ^ /WARNINGS=SUPPRESS
+-gnatwt         ^ /WARNINGS=DELETED_CODE
+-gnatwT         ^ /WARNINGS=NODELETED_CODE
 -gnatwu         ^ /WARNINGS=UNUSED
 -gnatwU         ^ /WARNINGS=NOUNUSED
 -gnatwv         ^ /WARNINGS=VARIABLES_UNINITIALIZED
 -gnatwV         ^ /WARNINGS=NOVARIABLES_UNINITIALIZED
+-gnatww         ^ /WARNINGS=LOWBOUND_ASSUMED
+-gnatwW         ^ /WARNINGS=NOLOWBOUND_ASSUMED
 -gnatwx         ^ /WARNINGS=IMPORT_EXPORT_PRAGMAS
 -gnatwX         ^ /WARNINGS=NOIMPORT_EXPORT_PRAGMAS
 -gnatwy         ^ /WARNINGS=ADA_2005_COMPATIBILITY

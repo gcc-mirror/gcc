@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,7 +90,7 @@
 --       this is because we have menu problems if we let makeinfo handle
 --       these ifset/ifclear pairs.
 --       Note: @ifset/@ifclear commands for the edition flags (FSFEDITION,
---       PROEDITION, ACADEMICEDITION) are passed through unchanged
+--       PROEDITION, GPLEDITION) are passed through unchanged
 
 with Ada.Command_Line;           use Ada.Command_Line;
 with Ada.Strings;                use Ada.Strings;
@@ -161,21 +161,21 @@ procedure Xgnatugn is
    --  It contains the Texinfo source code. Process_Source_File
    --  performs the necessary replacements.
 
-   type Flag_Type is (UNW, VMS, FSFEDITION, PROEDITION, ACADEMICEDITION);
+   type Flag_Type is (UNW, VMS, FSFEDITION, PROEDITION, GPLEDITION);
    --  The flags permitted in @ifset or @ifclear commands:
    --
    --  Targets for preprocessing
    --    UNW (Unix and Windows) or VMS
    --
    --  Editions of the manual
-   --    FSFEDITION, PROEDITION, or ACADEMICEDITION
+   --    FSFEDITION, PROEDITION, or GPLEDITION
    --
    --  Conditional commands for target are processed by xgnatugn
    --
    --  Conditional commands for edition are passed through unchanged
 
    subtype Target_Type is Flag_Type range UNW .. VMS;
-   subtype Edition_Type is Flag_Type range FSFEDITION .. ACADEMICEDITION;
+   subtype Edition_Type is Flag_Type range FSFEDITION .. GPLEDITION;
 
    Target : Target_Type;
    --  The Target variable is initialized using the command line

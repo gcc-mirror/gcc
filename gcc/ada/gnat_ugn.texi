@@ -324,8 +324,8 @@ The GNAT Make Program gnatmake
 
 Improving Performance
 * Performance Considerations::
-* Reducing the Size of Ada Executables with gnatelim::
-* Reducing the Size of Executables with unused subprogram/data elimination::
+* Reducing Size of Ada Executables with gnatelim::
+* Reducing Size of Executables with unused subprogram/data elimination::
 
 Performance Considerations
 * Controlling Run-Time Checks::
@@ -339,14 +339,14 @@ Performance Considerations
 * Coverage Analysis::
 @end ifset
 
-Reducing the Size of Ada Executables with gnatelim
+Reducing Size of Ada Executables with gnatelim
 * About gnatelim::
 * Running gnatelim::
 * Correcting the List of Eliminate Pragmas::
 * Making Your Executables Smaller::
 * Summary of the gnatelim Usage Cycle::
 
-Reducing the Size of Executables with unused subprogram/data elimination
+Reducing Size of Executables with unused subprogram/data elimination
 * About unused subprogram/data elimination::
 * Compilation options::
 
@@ -630,7 +630,7 @@ Compatibility and Porting Guide
 * Compatibility with Other Ada 95 Systems::
 * Representation Clauses::
 @ifset vms
-* Transitioning from Alpha to I64 OpenVMS::
+* Transitioning to 64-Bit GNAT for OpenVMS::
 @end ifset
 
 @ifset unw
@@ -3902,6 +3902,10 @@ For details of the possible selections for @var{c},
 see @ref{Character Set Control}.
 @end ifset
 
+@item -gnatjnn
+@cindex @option{-gnatjnn} (@command{gcc})
+Reformat error messages to fit on nn character lines
+
 @item -gnatk=@var{n}
 @cindex @option{-gnatk} (@command{gcc})
 Limit file names to @var{n} (1-999) characters ^(@code{k} = krunch)^^.
@@ -3909,6 +3913,12 @@ Limit file names to @var{n} (1-999) characters ^(@code{k} = krunch)^^.
 @item -gnatl
 @cindex @option{-gnatl} (@command{gcc})
 Output full source listing with embedded error messages.
+
+@item -gnatL
+@cindex @option{-gnatL} (@command{gcc})
+Used in conjunction with -gnatG or -gnatD to intersperse original
+source lines (as comment lines with line numbers) in the expanded
+source output.
 
 @item -gnatm=@var{n}
 @cindex @option{-gnatm} (@command{gcc})
@@ -4298,24 +4308,47 @@ used the only source lines output are those with errors.
 The @code{l} stands for list.
 @end ifclear
 This switch causes a full listing of
-the file to be generated. The output might look as follows:
+the file to be generated. In the case where a body is
+compiled, the corresponding spec is also listed, along
+with any subunits. Typical output from compiling a package
+body @file{p.adb} might look like:
 
-@smallexample
+@smallexample @c ada
 @cartouche
- 1. procedure E is
- 2.    V : Integer;
- 3.    funcion X (Q : Integer)
-       |
-    >>> Incorrect spelling of keyword "function"
- 4.     return Integer;
-                      |
-    >>> ";" should be "is"
- 5.    begin
- 6.       return Q + Q;
- 7.    end;
- 8. begin
- 9.    V := X + X;
-10.end E;
+ Compiling: p.adb
+
+     1. package body p is
+     2.    procedure a;
+     3.    procedure a is separate;
+     4. begin
+     5.    null
+               |
+        >>> missing ";"
+
+     6. end;
+
+Compiling: p.ads
+
+     1. package p is
+     2.    pragma Elaborate_Body
+                                |
+        >>> missing ";"
+
+     3. end p;
+
+Compiling: p-a.adb
+
+     1. separate p
+                |
+        >>> missing "("
+
+     2. procedure a is
+     3. begin
+     4.    null
+               |
+        >>> missing ";"
+
+     5. end;
 @end cartouche
 @end smallexample
 
@@ -4325,6 +4358,16 @@ When you specify the @option{-gnatv} or @option{-gnatl} switches and
 standard output is redirected, a brief summary is written to
 @file{stderr} (standard error) giving the number of error messages and
 warning messages generated.
+
+@item -^gnatl^OUTPUT_FILE^=file
+@cindex @option{^-gnatl^OUTPUT_FILE^=fname} (@command{gcc})
+This has the same effect as @code{-gnatl} except that the output is
+written to a file instead of to standard output. If the given name
+@file{fname} does not start with a period, then it is the full name
+of the file to be written. If @file{fname} is an extension, it is
+appended to the name of the file being compiled. For example, if
+file @file{xyz.adb} is compiled with @option{^-gnatl^OUTPUT_FILE^=.lst},
+then the output is written to file ^xyz.adb.lst^xyz.adb_lst^.
 
 @item -gnatU
 @cindex @option{-gnatU} (@command{gcc})
@@ -4407,6 +4450,19 @@ List possible interpretations for ambiguous calls
 @item
 Additional details on incorrect parameters
 @end itemize
+
+@item -gnatjnn
+@cindex @option{-gnatjnn} (@command{gcc})
+In normal operation mode (or if @option{-gnatj0} is used, then error messages
+with continuation lines are treated as though the continuation lines were
+separate messages (and so a warning with two continuation lines counts as
+three warnings, and is listed as three separate messages).
+
+If the @option{-gnatjnn} switch is used with a positive value for nn, then
+messages are output in a different manner. A message and all its continuation
+lines are treated as a unit, and count as only one warning or message in the
+statistics totals. Furthermore, the message is reformatted so that no line
+is longer than nn characters.
 
 @item -gnatq
 @cindex @option{-gnatq} (@command{gcc})
@@ -4494,6 +4550,10 @@ Possible order of elaboration problems
 
 @item
 Unreachable code
+
+@item
+Address clauses with possibly unaligned values, or where an attempt is
+made to overlay a smaller variable with a larger one.
 
 @item
 Fixed-point type declarations with a null range
@@ -4612,8 +4672,11 @@ A range in a @code{for} loop that is known to be null or might be null
 @end itemize
 
 @noindent
-The following switches are available to control the handling of
-warning messages:
+The following section lists compiler switches that are available
+to control the handling of warning messages. It is also possible
+to excercise much finer control over what warnings are issued and
+suppressed using the GNAT pragma Warnings, which is documented
+in the GNAT Reference manual.
 
 @table @option
 @c !sort!
@@ -4626,7 +4689,8 @@ individually controlled.  The warnings that are not turned on by this
 switch are
 @option{-gnatwd} (implicit dereferencing),
 @option{-gnatwh} (hiding),
-and @option{-gnatwl} (elaboration warnings).
+@option{-gnatwl} (elaboration warnings),
+and @option{-gnatwt} (tracking of deleted conditional code).
 All other optional warnings are turned on.
 
 @item -gnatwA
@@ -4667,7 +4731,7 @@ Note that this warning does
 not get issued for the use of boolean variables or constants whose
 values are known at compile time, since this is a standard technique
 for conditional compilation in Ada, and this would generate too many
-``false positive'' warnings.
+false positive warnings.
 
 This warning option also activates a special test for comparisons using
 the operators ``>='' and`` <=''.
@@ -4719,7 +4783,8 @@ as errors, and prevent the generation of an object file.
 @cindex Formals, unreferenced
 This switch causes a warning to be generated if a formal parameter
 is not referenced in the body of the subprogram. This warning can
-also be turned on using @option{-gnatwa} or @option{-gnatwu}.
+also be turned on using @option{-gnatwa} or @option{-gnatwu}. The
+default is that these warnings are not generated.
 
 @item -gnatwF
 @emph{Suppress warnings on unreferenced formals.}
@@ -4794,7 +4859,8 @@ case of Annex J, not all features are flagged. In particular use
 of the renamed packages (like @code{Text_IO}) and use of package
 @code{ASCII} are not flagged, since these are very common and
 would generate many annoying positive warnings. The default is that
-such warnings are not generated.
+such warnings are not generated. This warning is also turned on by
+the use of @option{-gnatwa}.
 
 In addition to the above cases, warnings are also generated for
 GNAT features that have been provided in past versions but which
@@ -4816,7 +4882,9 @@ This switch disables warnings on use of obsolescent features.
 @emph{Activate warnings on variables that could be constants.}
 @cindex @option{-gnatwk} (@command{gcc})
 This switch activates warnings for variables that are initialized but
-never modified, and then could be declared constants.
+never modified, and then could be declared constants. The default is that
+such warnings are not given.
+This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwK
 @emph{Suppress warnings on variables that could be constants.}
@@ -4852,6 +4920,7 @@ whose value is never read. The warning is suppressed for volatile
 variables and also for variables that are renamings of other variables
 or for which an address clause is given.
 This warning can also be turned on using @option{-gnatwa}.
+The default is that these warnings are not given.
 
 @item -gnatwM
 @emph{Disable warnings on modified but unreferenced variables.}
@@ -4893,7 +4962,8 @@ another.
 This switch activates warnings for failure of front end inlining
 (activated by @option{-gnatN}) to inline a particular call. There are
 many reasons for not being able to inline a call, including most
-commonly that the call is too complex to inline.
+commonly that the call is too complex to inline. The default is
+that such warnings are not given.
 This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwP
@@ -4903,12 +4973,31 @@ This switch suppresses warnings on ineffective pragma Inlines. If the
 inlining mechanism cannot inline a call, it will simply ignore the
 request silently.
 
+@item -gnatwq
+@emph{Activate warnings on questionable missing parentheses.}
+@cindex @option{-gnatwq} (@command{gcc})
+@cindex Parentheses, warnings
+This switch activates warnings for cases where parentheses are not used and
+the result is potential ambiguity from a readers point of view. For example
+(not a > b) when a and b are modular means (not (a) > b) and very likely the
+programmer intended (not (a > b)). Similarly (-x mod 5) means (-(x mod 5)) and
+quite likely ((-x) mod 5) was intended. In such situations it seems best to
+follow the rule of always parenthesizing to make the association clear, and
+this warning switch warns if such parentheses are not present. The default
+is that these warnings are not given.
+This warning can also be turned on using @option{-gnatwa}.
+
+@item -gnatwQ
+@emph{Suppress warnings on questionable missing parentheses.}
+@cindex @option{-gnatwQ} (@command{gcc})
+This switch suppresses warnings for cases where the association is not
+clear and the use of parentheses is preferred.
+
 @item -gnatwr
 @emph{Activate warnings on redundant constructs.}
 @cindex @option{-gnatwr} (@command{gcc})
 This switch activates warnings for redundant constructs. The following
 is the current list of constructs regarded as redundant:
-This warning can also be turned on using @option{-gnatwa}.
 
 @itemize @bullet
 @item
@@ -4931,6 +5020,9 @@ to be non-negative
 Comparison of boolean expressions to an explicit True value.
 @end itemize
 
+This warning can also be turned on using @option{-gnatwa}.
+The default is that warnings for redundant constructs are not given.
+
 @item -gnatwR
 @emph{Suppress warnings on redundant constructs.}
 @cindex @option{-gnatwR} (@command{gcc})
@@ -4944,6 +5036,22 @@ output of all warning messages from the GNAT front end.
 Note that it does not suppress warnings from the @command{gcc} back end.
 To suppress these back end warnings as well, use the switch @option{-w}
 in addition to @option{-gnatws}.
+
+@item -gnatwt
+@emph{Activate warnings for tracking of deleted conditional code.}
+@cindex @option{-gnatwt} (@command{gcc})
+@cindex Deactivated code, warnings
+@cindex Deleted code, warnings
+This switch activates warnings for tracking of code in conditionals (IF and
+CASE statements) that is detected to be dead code which cannot be executed, and
+which is removed by the front end. This warning is off by default, and is not
+turned on by @option{-gnatwa}, it has to be turned on explicitly. This may be
+useful for detecting deactivated code in certified applications.
+
+@item -gnatwT
+@emph{Suppress warnings for tracking of deleted conditional code.}
+@cindex @option{-gnatwT} (@command{gcc})
+This switch suppresses warnings for tracking of deleted conditional code.
 
 @item -gnatwu
 @emph{Activate warnings on unused entities.}
@@ -4981,6 +5089,7 @@ the effect of @option{-gnatwF}).
 This switch activates warnings for access to variables which
 may not be properly initialized. The default is that
 such warnings are generated.
+This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwV
 @emph{Suppress warnings on unassigned variables.}
@@ -4988,24 +5097,29 @@ such warnings are generated.
 This switch suppresses warnings for access to variables which
 may not be properly initialized.
 
-@item -gnatwy
-@emph{Activate warnings for Ada 2005 compatibility issues.}
-@cindex @option{-gnatwy} (@command{gcc})
-@cindex Ada 2005 compatibility issues warnings
-For the most part Ada 2005 is upwards compatible with Ada 95,
-but there are some exceptions (for example the fact that
-@code{interface} is now a reserved word in Ada 2005). This
-switch activates several warnings to help in identifying
-and correcting such incompatibilities. The default is that
-these warnings are generated. Note that at one point Ada 2005
-was called Ada 0Y, hence the choice of character.
+@item -gnatww
+@emph{Activate warnings on wrong low bound assumption.}
+@cindex @option{-gnatww} (@command{gcc})
+@cindex String indexing warnings
+This switch activates warnings for indexing an unconstrained string parameter
+with a literal or S'Length. This is a case where the code is assuming that the
+low bound is one, which is in general not true (for example when a slice is
+passed). The default is that such warnings are generated.
+This warning can also be turned on using @option{-gnatwa}.
+F
 
-@item -gnatwY
-@emph{Disable warnings for Ada 2005 compatibility issues.}
-@cindex @option{-gnatwY} (@command{gcc})
-@cindex Ada 2005 compatibility issues warnings
-This switch suppresses several warnings intended to help in identifying
-incompatibilities between Ada 95 and Ada 2005.
+@item -gnatwW
+@emph{Suppress warnings on wrong low bound assumption.}
+@cindex @option{-gnatwW} (@command{gcc})
+This switch activates warnings for indexing an unconstrained string parameter
+with a literal or S'Length. This warning can also be suppressed by providing
+an Assert pragma that checks the low bound, for example:
+
+@smallexample @c ada
+   procedure K (S : String) is
+      pragma Assert (S'First = 1);
+      ...
+@end smallexample
 
 @item -gnatwx
 @emph{Activate warnings on Export/Import pragmas.}
@@ -5018,6 +5132,7 @@ default parameters in a convention C procedure is dubious
 because the C compiler cannot supply the proper default, so
 a warning is issued. The default is that such warnings are
 generated.
+This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwX
 @emph{Suppress warnings on Export/Import pragmas.}
@@ -5027,6 +5142,26 @@ The sense of this is that you are telling the compiler that
 you know what you are doing in writing the pragma, and it
 should not complain at you.
 
+@item -gnatwy
+@emph{Activate warnings for Ada 2005 compatibility issues.}
+@cindex @option{-gnatwy} (@command{gcc})
+@cindex Ada 2005 compatibility issues warnings
+For the most part Ada 2005 is upwards compatible with Ada 95,
+but there are some exceptions (for example the fact that
+@code{interface} is now a reserved word in Ada 2005). This
+switch activates several warnings to help in identifying
+and correcting such incompatibilities. The default is that
+these warnings are generated. Note that at one point Ada 2005
+was called Ada 0Y, hence the choice of character.
+This warning can also be turned on using @option{-gnatwa}.
+
+@item -gnatwY
+@emph{Disable warnings for Ada 2005 compatibility issues.}
+@cindex @option{-gnatwY} (@command{gcc})
+@cindex Ada 2005 compatibility issues warnings
+This switch suppresses several warnings intended to help in identifying
+incompatibilities between Ada 95 and Ada 2005.
+
 @item -gnatwz
 @emph{Activate warnings on unchecked conversions.}
 @cindex @option{-gnatwz} (@command{gcc})
@@ -5035,6 +5170,7 @@ This switch activates warnings for unchecked conversions
 where the types are known at compile time to have different
 sizes. The default
 is that such warnings are generated.
+This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwZ
 @emph{Suppress warnings on unchecked conversions.}
@@ -5227,6 +5363,18 @@ expressions have valid values. If you use this switch and invalid values
 are present, then the program is erroneous, and wild jumps or memory
 overwriting may occur.
 
+@item -gnatVe
+@emph{Validity checks for elementary components.}
+@cindex @option{-gnatVe} (@command{gcc})
+In the absence of this switch, assignments to record or array components are
+not validity checked, even if validity checks for assignments generally
+(@option{-gnatVc}) are turned on. In Ada, assignment of composite values do not
+require valid data, but assignment of individual components does. So for
+example, there is a difference between copying the elements of an array with a
+slice assignment, compared to assigning element by element in a loop. This
+switch allows you to turn off validity checking for components, even when they
+are assigned component by component.
+
 @item -gnatVf
 @emph{Validity checks for floating-point values.}
 @cindex @option{-gnatVf} (@command{gcc})
@@ -5276,7 +5424,8 @@ This includes all operators in package @code{Standard},
 the shift operators defined as intrinsic in package @code{Interfaces}
 and operands for attributes such as @code{Pos}. Checks are also made
 on individual component values for composite comparisons, and on the
-expressions in type conversions and qualified expressions.
+expressions in type conversions and qualified expressions. Checks are
+also made on explicit ranges using .. (e.g. slices, loops etc).
 
 @item -gnatVp
 @emph{Validity checks for parameters.}
@@ -6040,13 +6189,12 @@ this default Ada95 mode without problems (see section above describing the
 use of @option{-gnat83} to run in Ada 83 mode).
 
 In Ada 95 mode, the use of Ada 2005 features will in general cause error
-messages or warnings. Some specialized releases of GNAT (notably the GAP
-academic version) operate in Ada 2005 mode by default (see section below
+messages or warnings. Some specialized releases of GNAT (notably the GPL
+edition) operate in Ada 2005 mode by default (see section below
 describing the use of @option{-gnat05} to run in Ada 2005 mode). For such
 versions the @option{-gnat95} switch may be used to enforce Ada 95 mode.
 This option also can be used to cancel the effect of a previous
 @option{-gnat83} or @option{-gnat05} switch earlier in the command line.
-
 
 @item -gnat05 (Ada 2005 mode)
 @cindex @option{-gnat05} (@command{gcc})
@@ -6066,8 +6214,8 @@ generated, reflecting the fact that these new features are otherwise
 unauthorized extensions to Ada 95. The use of the @option{-gnat05}
 switch (or an equivalent pragma) causes these messages to be suppressed.
 
-Note that some specialized releases of GNAT (notably the GAP academic
-version) have Ada 2005 mode on by default, and in such environments,
+Note that some specialized releases of GNAT (notably the GPL edition)
+have Ada 2005 mode on by default, and in such environments,
 the Ada 2005 features can be used freely without the use of switches.
 
 @end table
@@ -6303,6 +6451,11 @@ do not have any exact analogies in pure Ada source form. The following
 is a partial list of these special constructions. See the specification
 of package @code{Sprint} in file @file{sprint.ads} for a full list.
 
+If the switch @option{-gnatL} is used in conjunction with
+@cindex @option{-gnatL} (@command{gcc})
+@option{-gnatG}, then the original source lines are interspersed
+in the expanded source (as comment lines with the original line number).
+
 @table @code
 @item new @var{xxx} [storage_pool = @var{yyy}]
 Shows the storage pool being used for an allocator.
@@ -6397,6 +6550,11 @@ Note that @option{-gnatD} actually implies @option{-gnatG}
 automatically, so it is not necessary to give both options.
 In other words @option{-gnatD} is equivalent to @option{-gnatDG}).
 
+If the switch @option{-gnatL} is used in conjunction with
+@cindex @option{-gnatL} (@command{gcc})
+@option{-gnatDG}, then the original source lines are interspersed
+in the expanded source (as comment lines with the original line number).
+
 @ifclear vms
 @item -gnatR[0|1|2|3[s]]
 @cindex @option{-gnatR} (@command{gcc})
@@ -6407,7 +6565,7 @@ the @option{-gnatR} switch). For @option{-gnatR1} (which is the default,
 so @option{-gnatR} with no parameter has the same effect), size and alignment
 information is listed for declared array and record types. For
 @option{-gnatR2}, size and alignment information is listed for all
-expression information for values that are computed at run time for
+expressions for values that are computed at run time for
 variant records. These symbolic expressions have a mostly obvious
 format with #n being used to represent the value of the n'th
 discriminant. See source files @file{repinfo.ads/adb} in the
@@ -6524,6 +6682,11 @@ is available for the target in use (see below).
 @end table
 
 @noindent
+The same option @option{--RTS} must be used both for @command{gcc}
+and @command{gnatbind}. Passing this option to @command{gnatmake}
+(@pxref{Switches for gnatmake}) will ensure the required consistency
+through the compilation and binding steps.
+
 The @code{setjmp/longjmp} approach is available on all targets, while
 the @code{zero cost} approach is available on selected targets.
 To determine whether zero cost exceptions can be used for a
@@ -7325,7 +7488,6 @@ slicing, and in addition, indicates to the tasking run time that the
 semantics should match as closely as possible the Annex D
 requirements of the Ada RM, and in particular sets the default
 scheduling policy to @code{FIFO_Within_Priorities}.
-
 
 @item ^-u@var{n}^/DYNAMIC_STACK_USAGE=@var{n}^
 @cindex @option{^-u^/DYNAMIC_STACK_USAGE^} (@code{gnatbind})
@@ -8133,7 +8295,6 @@ Prefer linking with object libraries over sharable images, even without
 
 @end table
 
-
 @node The GNAT Make Program gnatmake
 @chapter The GNAT Make Program @command{gnatmake}
 @findex gnatmake
@@ -8877,8 +9038,8 @@ elimination feature, which can reduce the size of program executables.
 @ifnottex
 @menu
 * Performance Considerations::
-* Reducing the Size of Ada Executables with gnatelim::
-* Reducing the Size of Executables with unused subprogram/data elimination::
+* Reducing Size of Ada Executables with gnatelim::
+* Reducing Size of Executables with unused subprogram/data elimination::
 @end menu
 @end ifnottex
 
@@ -9253,8 +9414,8 @@ specified.
 
 @noindent
 Calls to subprograms in @code{with}'ed units are normally not inlined.
-To achieve this level of inlining, the following conditions must all be
-true:
+To achieve actual inlining (that is, replacement of the call by the code
+in the body of the subprogram), the following conditions must all be true.
 
 @itemize @bullet
 @item
@@ -9276,6 +9437,11 @@ There is a @code{pragma Inline} for the subprogram.
 The @option{^-gnatn^/INLINE^} switch
 is used in the @command{gcc} command line
 @end itemize
+
+Even if all these conditions are met, it may not be possible for
+the compiler to inline the call, due to the length of the body,
+or features in the body that make it impossible for the compiler
+to do the inlining.
 
 Note that specifying the @option{-gnatn} switch causes additional
 compilation dependencies. Consider the following:
@@ -9578,8 +9744,8 @@ the user to determine the distribution of execution time across a program,
 @pxref{Profiling} for details of usage.
 @end ifset
 
-@node Reducing the Size of Ada Executables with gnatelim
-@section Reducing the Size of Ada Executables with @code{gnatelim}
+@node Reducing Size of Ada Executables with gnatelim
+@section Reducing Size of Ada Executables with @code{gnatelim}
 @findex gnatelim
 
 @noindent
@@ -9798,8 +9964,8 @@ $ gnatmake ^-f main_prog^/FORCE_COMPILE MAIN_PROG^
 
 @end enumerate
 
-@node Reducing the Size of Executables with unused subprogram/data elimination
-@section Reducing the Size of Executables with Unused Subprogram/Data Elimination
+@node Reducing Size of Executables with unused subprogram/data elimination
+@section Reducing Size of Executables with Unused Subprogram/Data Elimination
 @findex unused subprogram/data elimination
 
 @noindent
@@ -9809,6 +9975,7 @@ your executable just by setting options at compilation time.
 @menu
 * About unused subprogram/data elimination::
 * Compilation options::
+* Example of unused subprogram/data elimination::
 @end menu
 
 @node About unused subprogram/data elimination
@@ -9822,8 +9989,8 @@ never used by this executable.
 This feature will allow you to eliminate such unused code from your
 executable, making it smaller (in disk and in memory).
 
-This functionality is only available on native x86 GNU/Linux platform for the
-moment.
+This functionality is available on all platforms using elf binary format and
+having GNU binutils version 2.16.1.
 
 @node Compilation options
 @subsection Compilation options
@@ -9844,8 +10011,12 @@ function or data in a separate section in the resulting object file.
 Once the objects and static libraries are created with these options, the
 linker can perform the dead code elimination. You can do this by setting
 the @option{-Wl,--gc-sections} option to gcc command or in the
-@option{-largs} section of gnatmake. This will create the final executable,
-without including the code and data determined as never accessed.
+@option{-largs} section of gnatmake. This will perform a garbage collection of
+code and data never referenced.
+
+If the linker performs a partial link (@option{-r} ld linker option), then you
+will need to provide one or several entry point using the
+@option{-e} / @option{--entry} ld option.
 
 Note that objects compiled without the @option{-ffunction-sections} and
 @option{-fdata-sections} options can still be linked with the executable.
@@ -9853,8 +10024,69 @@ However, no dead code elimination will be performed on those objects (they will
 be linked as is).
 
 The GNAT static library is now compiled with -ffunction-sections and
--fdata-sections. This allows you to eliminate the unused code of the GNAT
-library from your executable.
+-fdata-sections on some platforms. This allows you to eliminate the unused code
+and data of the GNAT library from your executable.
+
+@node Example of unused subprogram/data elimination
+@subsection Example of unused subprogram/data elimination
+
+@noindent
+Here is a simple example:
+
+@smallexample @c ada
+with Aux;
+
+procedure Test is
+begin
+   Aux.Used (10);
+end Test;
+
+package Aux is
+   Used_Data   : Integer;
+   Unused_Data : Integer;
+
+   procedure Used   (Data : Integer);
+   procedure Unused (Data : Integer);
+end Aux;
+
+package body Aux is
+   procedure Used (Data : Integer) is
+   begin
+      Used_Data := Data;
+   end Used;
+
+   procedure Unused (Data : Integer) is
+   begin
+      Unused_Data := Data;
+   end Unused;
+end Aux;
+@end smallexample
+
+@noindent
+@code{Unused} and @code{Unused_Data} are never referenced in this code
+excerpt, and hence they may be safely removed from the final executable.
+
+@smallexample
+$ gnatmake test
+
+$ nm test | grep used
+020015f0 T aux__unused
+02005d88 B aux__unused_data
+020015cc T aux__used
+02005d84 B aux__used_data
+
+$ gnatmake test -cargs -fdata-sections -ffunction-sections \
+     -largs -Wl,--gc-sections
+
+$ nm test | grep used
+02005350 T aux__used
+0201ffe0 B aux__used_data
+@end smallexample
+
+@noindent
+It can be observed that the procedure @code{Unused} and the object
+@code{Unused_Data} are removed by the linker when using the
+appropriate options.
 
 @c ********************************
 @node Renaming Files Using gnatchop
@@ -15778,7 +16010,6 @@ the description of the @command{gnatmetric} switches below.)
 Alternatively, you may use a project file and invoke @command{gnatmetric}
 through the @command{gnat} driver.
 
-
 The @command{gnatmetric} command has the form
 
 @smallexample
@@ -16003,7 +16234,6 @@ end-of-line comments
 The number of blank lines
 
 @end table
-
 
 @node Syntax Metrics Control
 @subsection Syntax Metrics Control
@@ -18219,7 +18449,6 @@ user and it is implicitly used for each such declaration:
    for T1'Storage_Size use 10_000;
 @end smallexample
 
-
 @node The GNAT Debug Pool Facility
 @section The GNAT Debug Pool Facility
 @findex Debug Pool
@@ -18422,6 +18651,12 @@ the user program should be compiled with debugging options
 @smallexample
 $ gnatmake -g my_program -largs -lgmem
 @end smallexample
+
+@noindent
+As library @file{libgmem.a} contains an alternate body for package
+@code{System.Memory}, @file{s-memory.adb} should not be compiled and linked
+when an executable is linked with library @file{libgmem.a}. It is then not
+recommended to use @command{gnatmake} with switch @option{^-a^/ALL_FILES^}.
 
 @noindent
 When @file{my_program} is executed, the file @file{gmem.out} is produced.
@@ -18904,10 +19139,10 @@ amount of straightforward ASIS-based programming is usually needed.
 @command{gnatcheck} has the command-line interface of the form
 
 @smallexample
-$ gnatcheck [@i{switches}]  @{@i{filename}@}  [@i{^-files^/FILES^=@{arg_list_filename@}}]
+$ gnatcheck [@i{switches}]  @{@i{filename}@}
+      [@i{^-files^/FILES^=@{arg_list_filename@}}]
       [@i{-cargs gcc_switches}] [@i{-rules rule_options}]
 @end smallexample
-
 
 @noindent
 where
@@ -18966,7 +19201,6 @@ corresponds to the output going to @file{stdout}. Section 2 contains
 messages ordered by rules.
 Section 3 contains messages ordered by source files.
 @end itemize
-
 
 @node General gnatcheck Switches
 @section General @command{gnatcheck} Switches
@@ -20679,7 +20913,6 @@ begin
 end STB;
 @end smallexample
 
-
 @c ******************************
 @ifset vms
 @node Compatibility with HP Ada
@@ -20708,7 +20941,7 @@ Except where otherwise indicated, the description of GNAT for OpenVMS
 applies to both the Alpha and I64 platforms.
 
 For information on porting Ada code from GNAT on Alpha OpenVMS to GNAT on
-I64 OpenVMS, see @ref{Transitioning from Alpha to I64 OpenVMS}.
+I64 OpenVMS, see @ref{Transitioning to 64-Bit GNAT for OpenVMS}.
 
 The discussion in this chapter addresses specifically the implementation
 of Ada 83 for HP OpenVMS Alpha Systems. In cases where the implementation
@@ -20720,7 +20953,6 @@ attributes are recognized, although only a subset of them can sensibly
 be implemented.  The description of pragmas in the
 @cite{GNAT Reference Manual} indicates whether or not they are applicable
 to non-VMS systems.
-
 
 @menu
 * Ada 95 Compatibility::
@@ -21038,7 +21270,7 @@ adds directly to package @code{System}.
 
 The type @code{System.Address} is a 64-bit integer type in GNAT for
 I64 OpenVMS.  For more information,
-see @ref{Transitioning from Alpha to I64 OpenVMS}.
+see @ref{Transitioning to 64-Bit GNAT for OpenVMS}.
 
 GNAT is compatible with HP Ada in its handling of address
 clauses, except for some limitations in
@@ -21277,7 +21509,6 @@ HP Ada can call C code that is already threaded.
 
 GNAT uses the facilities of DECthreads,
 and Ada tasks are mapped to threads.
-
 
 @node Assigning Task IDs
 @subsection Assigning Task IDs
@@ -21637,13 +21868,11 @@ incompatibilities and to make them interoperable with GNAT
 (@pxref{Changes to DECLIB}, for details).
 The units are located in the @file{DECLIB} directory.
 
-
 The GNAT RTL is contained in
 the @file{ADALIB} directory, and
 the default search path is set up to find @code{DECLIB} units in preference
 to @code{ADALIB} units with the same name (@code{TEXT_IO},
 @code{SEQUENTIAL_IO}, and @code{DIRECT_IO}, for example).
-
 
 @menu
 * Changes to DECLIB::
@@ -22272,7 +22501,6 @@ use with @value{EDITION} on Alpha and I64 platforms.
 Aside from the debugger, all the OpenVMS tools identified are part
 of the DECset package.
 
-
 @iftex
 @c Specify table in TeX since Texinfo does a poor job
 @tex
@@ -22340,10 +22568,10 @@ of the DECset package.
 @c the TeX version above for the printed version
 @flushleft
 @c @multitable @columnfractions .3 .4 .4
-@multitable {Source Code Analyzer /}{Product with HP Ada}{Product with GNAT Pro}
+@multitable {Source Code Analyzer /}{Tool with HP Ada}{Tool with GNAT Pro}
 @item @i{Tool}
- @tab @i{Product with HP Ada}
- @tab @i{Product with @value{EDITION}}
+ @tab @i{Tool with HP Ada}
+ @tab @i{Tool with @value{EDITION}}
 @item Code Management@*System
  @tab HP CMS
  @tab HP CMS
@@ -22376,7 +22604,6 @@ of the DECset package.
 @end ifnottex
 
 @end ifset
-
 
 @c **************************************
 @node Platform-Specific Information for the Run-Time Libraries
@@ -25355,6 +25582,13 @@ which were not properly specified by adding @code{Elaborate} or
 @code{Elaborate_All} pragmas, then indeed it is possible that two different
 compilers can choose different orders.
 
+However, GNAT does attempt to diagnose the common situation where there
+are uninitialized variables in the visible part of a package spec, and the
+corresponding package body has an elaboration block that directly or
+indirectly initialized one or more of these variables. This is the situation
+in which a pragma Elaborate_Body is usually desirable, and GNAT will generate
+a warning that suggests this addition if it detects this situation.
+
 The @code{gnatbind}
 @option{^-p^/PESSIMISTIC_ELABORATION^} switch may be useful in smoking
 out problems. This switch causes bodies to be elaborated as late as possible
@@ -26118,7 +26352,7 @@ applications developed in other Ada environments.
 * Compatibility with HP Ada 83::
 @end ifclear
 @ifset vms
-* Transitioning from Alpha to I64 OpenVMS::
+* Transitioning to 64-Bit GNAT for OpenVMS::
 @end ifset
 @end menu
 
@@ -26630,8 +26864,14 @@ indicates whether or not they are applicable to non-VMS systems.
 @end ifclear
 
 @ifset vms
-@node Transitioning from Alpha to I64 OpenVMS
-@section Transitioning from Alpha to I64 OpenVMS
+@node Transitioning to 64-Bit GNAT for OpenVMS
+@section Transitioning to 64-Bit @value{EDITION} for OpenVMS
+
+@noindent
+This section is meant to assist users of pre-2006 @value{EDITION}
+for Alpha OpenVMS who are transitioning to 64-bit @value{EDITION},
+the version of the GNAT technology supplied in 2006 and later for
+OpenVMS on both Alpha and I64.
 
 @menu
 * Introduction to transitioning::
@@ -26641,12 +26881,10 @@ indicates whether or not they are applicable to non-VMS systems.
 @end menu
 
 @node Introduction to transitioning
-@subsection Introduction to transitioning
+@subsection Introduction
 
 @noindent
-This section is meant to assist users of @value{EDITION}
-for Alpha OpenVMS who are planning to transition to the I64 architecture.
-@value{EDITION} for Open VMS I64 has been designed to meet
+64-bit @value{EDITION} for Open VMS has been designed to meet
 three main goals:
 
 @enumerate
@@ -26658,7 +26896,7 @@ Allowing maximum backward compatibility, thus easing migration of existing
 Ada source code
 
 @item
-Supplying a path for exploiting the full I64 address range
+Supplying a path for exploiting the full 64-bit address range
 @end enumerate
 
 @noindent
@@ -26681,18 +26919,16 @@ this approach provides a simple, gradual upgrade path to future
 use of larger memories than available for 32-bit systems.
 Also, newly written applications or libraries will by default
 be fully compatible with future systems exploiting 64-bit
-addressing capabilities present in I64.
+addressing capabilities.
 
 @ref{Migration of 32 bit code}, will focus on porting applications
 that do not require more than 2 GB of
 addressable memory. This code will be referred to as
 @emph{32-bit code}.
-For applications intending to exploit the full I64 address space,
+For applications intending to exploit the full 64-bit address space,
 @ref{Taking advantage of 64 bit addressing},
 will consider further changes that may be required.
-Such code is called @emph{64-bit code} in the
-remainder of this guide.
-
+Such code will be referred to below as @emph{64-bit code}.
 
 @node Migration of 32 bit code
 @subsection Migration of 32-bit code
@@ -26702,7 +26938,7 @@ remainder of this guide.
 * Access types::
 * Unchecked conversions::
 * Predefined constants::
-* Single source compatibility::
+* Interfacing with C::
 * Experience with source compatibility::
 @end menu
 
@@ -26722,13 +26958,12 @@ approach has been taken:
 @code{System.Short_Address} is a 32-bit subtype of @code{System.Address}
 @end itemize
 
-
 @noindent
 Since @code{System.Short_Address} is a subtype of @code{System.Address},
 a @code{Short_Address}
 may be used where an @code{Address} is required, and vice versa, without
 needing explicit type conversions.
-By virtue of the Open VMS I64 parameter passing conventions,
+By virtue of the Open VMS parameter passing conventions,
 even imported
 and exported subprograms that have 32-bit address parameters are
 compatible with those that have 64-bit address parameters.
@@ -26748,8 +26983,8 @@ generally uses representation clauses to specify the expected
 layout where required.
 
 If such a representation clause uses 32 bits for a component having
-the type @code{System.Address}, GNAT Pro for OpenVMS I64 will detect
-that error and produce a specific diagnostic message.
+the type @code{System.Address}, 64-bit @value{EDITION} for OpenVMS
+will detect that error and produce a specific diagnostic message.
 The developer should then determine whether the representation
 should be 64 bits or not and make either of two changes:
 change the size to 64 bits and leave the type as @code{System.Address}, or
@@ -26801,13 +27036,16 @@ as the source type.
 @subsubsection Predefined constants
 
 @noindent
-The following predefined constants have changed:
+The following table shows the correspondence between pre-2006 versions of
+@value{EDITION} on Alpha OpenVMS (``Old'') and 64-bit @value{EDITION}
+(``New''):
 
-@multitable {@code{System.Address_Size}} {2**32} {2**64}
-@item   @b{Constant}               @tab @b{Old} @tab @b{New}
-@item   @code{System.Word_Size}    @tab 32      @tab 64
-@item   @code{System.Memory_Size}  @tab 2**32   @tab 2**64
-@item   @code{System.Address_Size} @tab 32      @tab 64
+@multitable {@code{System.Short_Memory_Size}} {2**32} {2**64}
+@item   @b{Constant}                     @tab @b{Old} @tab @b{New}
+@item   @code{System.Word_Size}          @tab 32      @tab 64
+@item   @code{System.Memory_Size}        @tab 2**32   @tab 2**64
+@item   @code{System.Short_Memory_Size}  @tab 2**32   @tab 2**32
+@item   @code{System.Address_Size}       @tab 32      @tab 64
 @end multitable
 
 @noindent
@@ -26821,23 +27059,43 @@ The program @command{gnatfind} may be useful for locating
 references to the above constants, so that you can verify that they
 are still correct.
 
-@node Single source compatibility
-@subsubsection Single source compatibility
+@node Interfacing with C
+@subsubsection Interfacing with C
 
 @noindent
-In order to allow the same source code to be compiled on
-both Alpha and I64 platforms, GNAT Pro for Alpha OpenVMS
-defines @code{System.Short_Address} and System.Short_Memory_Size
-as aliases of respectively @code{System.Address} and
-@code{System.Memory_Size}.
-(These aliases also leave the door open for a possible
-future ``upgrade'' of OpenVMS Alpha to a 64-bit address space.)
+In order to minimize the impact of the transition to 64-bit addresses on
+legacy programs, some fundamental types in the @code{Interfaces.C}
+package hierarchy continue to be represented in 32 bits.
+These types are: @code{ptrdiff_t}, @code{size_t}, and @code{chars_ptr}.
+This eases integration with the default HP C layout choices, for example
+as found in the system routines in @code{DECC$SHR.EXE}.
+Because of this implementation choice, the type fully compatible with
+@code{chars_ptr} is now @code{Short_Address} and not @code{Address}.
+Depending on the context the compiler will issue a
+warning or an error when type @code{Address} is used, alerting the user to a
+potential problem. Otherwise 32-bit programs that use
+@code{Interfaces.C} should normally not require code modifications
+
+The other issue arising with C interfacing concerns pragma @code{Convention}.
+For VMS 64-bit systems, there is an issue of the appropriate default size
+of C convention pointers in the absence of an explicit size clause. The HP
+C compiler can choose either 32 or 64 bits depending on compiler options.
+GNAT chooses 32-bits rather than 64-bits in the default case where no size
+clause is given. This proves a better choice for porting 32-bit legacy
+applications. In order to have a 64-bit representation, it is necessary to
+specify a size representation clause. For example:
+
+@smallexample @c ada
+type int_star is access Interfaces.C.int;
+pragma Convention(C, int_star);
+for int_star'Size use 64;  -- Necessary to get 64 and not 32 bits
+@end smallexample
 
 @node Experience with source compatibility
 @subsubsection Experience with source compatibility
 
 @noindent
-The Security Server and STARLET provide an interesting ``test case''
+The Security Server and STARLET on I64 provide an interesting ``test case''
 for source compatibility issues, since it is in such system code
 where assumptions about @code{Address} size might be expected to occur.
 Indeed, there were a small number of occasions in the Security Server
@@ -26854,10 +27112,8 @@ there was an implicit assumption that an @code{Address} value occupied
 32 bits.
 These compiled without error, but their usage resulted in run-time error
 returns from STARLET system calls.
-To assist in the compile-time detection of such situations, we
-plan to include a switch to generate a warning message when a
-record component is of type @code{Address}.
-
+Future GNAT technology enhancements may include a tool that detects and flags
+these sorts of potential source code porting problems.
 
 @c ****************************************
 @node Taking advantage of 64 bit addressing
@@ -26920,7 +27176,6 @@ use the following representation clause:
    for T'Storage_Pool use System.Pool_64;
 @end smallexample
 
-
 @node Restrictions on use of 64 bit objects
 @subsubsection Restrictions on use of 64-bit objects
 
@@ -26974,7 +27229,6 @@ but never allocate objects outside the 32-bit address space.
 Using general access types ensures maximum compatibility with both
 32-bit and 64-bit code.
 
-
 @node STARLET and other predefined libraries
 @subsubsection STARLET and other predefined libraries
 
@@ -26989,14 +27243,14 @@ in 64-bit address space are acceptable.
 @subsection Technical details
 
 @noindent
-GNAT Pro for Open VMS I64 takes advantage of the freedom given in the Ada
-standard with respect to the type of @code{System.Address}. Previous versions
-of GNAT Pro have defined this type as private and implemented it as
-a modular type.
+64-bit @value{EDITION} for Open VMS takes advantage of the freedom given in the
+Ada standard with respect to the type of @code{System.Address}. Previous
+versions of GNAT Pro have defined this type as private and implemented it as a
+modular type.
 
 In order to allow defining @code{System.Short_Address} as a proper subtype,
 and to match the implicit sign extension in parameter passing,
-in GNAT Pro for Open VMS I64, @code{System.Address} is defined as a
+in 64-bit @value{EDITION} for Open VMS, @code{System.Address} is defined as a
 visible (i.e., non-private) integer type.
 Standard operations on the type, such as the binary operators ``+'', ``-'',
 etc., that take @code{Address} operands and return an @code{Address} result,
@@ -27010,9 +27264,8 @@ code portability.)
 
 Defining @code{Address} as a visible integer type helps achieve
 maximum compatibility for existing Ada code,
-without sacrificing the capabilities of the I64 architecture.
+without sacrificing the capabilities of the 64-bit architecture.
 @end ifset
-
 
 @c ************************************************
 @ifset unw
@@ -28868,9 +29121,13 @@ approach to debug a program as described in
 It is possible to specify the program stack size at link time. On modern
 versions of Windows, starting with XP, this is mostly useful to set the size of
 the main stack (environment task). The other task stacks are set with pragma
-Linker_Options or with gnatbind -d. On older versions of Windows (2000, NT4,
-etc.), it is not possible to set the reserve size of individual tasks and thus
-the link-time stack size applies to all tasks.
+Storage_Size or with gnatbind -d.
+
+Older versions of Windows (2000, NT4, etc.) do
+not provide any means of setting the reserve size of individual tasks, thus the
+link-time stack size applies to all tasks and pragma Storage_Size has no effect.
+It means, in particular, that Stack Overflow checks are made against this
+link-time specified size.
 
 This setting can be done with
 @command{gnatlink} using either:
@@ -28927,7 +29184,6 @@ This sets the heap reserve size to 0x1000000 bytes. Note that with
 because the coma is a separator for this option.
 
 @end itemize
-
 
 @end ifset
 

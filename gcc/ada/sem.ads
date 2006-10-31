@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -269,12 +269,54 @@ package Sem is
    -- Scope Stack --
    -----------------
 
-   --  The scope stack holds all entries of the scope table. As in the parser,
-   --  we use Last as the stack pointer, so that we can always find the scope
-   --  that is currently open in Scope_Stack.Table (Scope_Stack.Last). The
-   --  oldest entry, at Scope_Stack (0) is Standard. The entries in the table
-   --  include the entity for the referenced scope, together with information
-   --  used to restore the proper setting of check suppressions on scope exit.
+   --  The scope stack indicates the declarative regions that are currently
+   --  being processed (analyzed and/or expanded). The scope stack is one of
+   --  basic visibility structures in the compiler: entities that are declared
+   --  in a scope that is currently on the scope stack are immediately visible.
+   --  (leaving aside issues of hiding and overloading).
+
+   --  Initially, the scope stack only contains an entry for package Standard.
+   --  When a compilation unit, subprogram unit, block or declarative region
+   --  is being processed, the corresponding entity is pushed on the scope
+   --  stack. It is removed after the processing step is completed. A given
+   --  entity can be placed several times on the scope stack, for example
+   --  when processing derived type declarations, freeze nodes, etc. The top
+   --  of the scope stack is the innermost scope currently being processed.
+   --  It is obtained through function Current_Scope. After a compilation unit
+   --  has been processed, the scope stack must contain only Standard.
+   --  The predicate In_Open_Scopes specifies whether a scope is currently
+   --  on the scope stack.
+
+   --  This model is complicated by the need to compile units on the fly, in
+   --  the middle of the compilation of other units. This arises when compiling
+   --  instantiations, and when compiling run-time packages obtained through
+   --  rtsfind. Given that the scope stack is a single static and global
+   --  structure (not originally designed for the recursive processing required
+   --  by rtsfind for example) additional machinery is needed to indicate what
+   --  is currently being compiled. As a result, the scope stack holds several
+   --  contiguous sections that correspond to the compilation of a given
+   --  compilation unit. These sections are separated by distinct occurrences
+   --  of package Standard. The currently active section of the scope stack
+   --  goes from the current scope to the first occurrence of Standard, which
+   --  is additionally marked with the flag Is_Active_Stack_Base. The basic
+   --  visibility routine (Find_Direct_Name, sem_ch8) uses this contiguous
+   --  section of the scope stack to determine whether a given entity is or
+   --  is not visible at a point. In_Open_Scopes only examines the currently
+   --  active section of the scope stack.
+
+   --  Similar complications arise when processing child instances. These
+   --  must be compiled in the context of parent instances, and therefore the
+   --  parents must be pushed on the stack before compiling the child, and
+   --  removed afterwards. Routines Save_Scope_Stack and Restore_Scope_Stack
+   --  are used to set/reset the visibility of entities declared in scopes
+   --  that are currently on the scope stack, and are used when compiling
+   --  instance bodies on the fly.
+
+   --  It is clear in retrospect that all semantic processing and visibility
+   --  structures should have been fully recursive. The rtsfind mechanism,
+   --  and the complexities brought about by subunits and by generic child
+   --  units and their instantitions, have led to a hybrid model that carries
+   --  more state than one would wish.
 
    type Scope_Stack_Entry is record
       Entity : Entity_Id;
@@ -294,9 +336,12 @@ package Sem is
       --  Marks Transient Scopes (See Exp_Ch7 body for details)
 
       Previous_Visibility : Boolean;
-      --  Used when installing the parent (s) of the current compilation
-      --  unit. The parent may already be visible because of an ongoing
-      --  compilation, and the proper visibility must be restored on exit.
+      --  Used when installing the parent(s) of the current compilation unit.
+      --  The parent may already be visible because of an ongoing compilation,
+      --  and the proper visibility must be restored on exit. The flag is
+      --  typically needed when the context of a child unit requires
+      --  compilation of a sibling. In other cases the flag is set to False.
+      --  See Sem_Ch10 (Install_Parents, Remove_Parents).
 
       Node_To_Be_Wrapped : Node_Id;
       --  Only used in transient scopes. Records the node which will
@@ -306,33 +351,33 @@ package Sem is
       Actions_To_Be_Wrapped_After  : List_Id;
       --  Actions that have to be inserted at the start or at the end of a
       --  transient block. Used to temporarily hold these actions until the
-      --  block is created, at which time the actions are moved to the
-      --  block.
+      --  block is created, at which time the actions are moved to the block.
 
       Pending_Freeze_Actions : List_Id;
-      --  Used to collect freeze entity nodes and associated actions that
-      --  are generated in a inner context but need to be analyzed outside,
-      --  such as records and initialization procedures. On exit from the
-      --  scope, this list of actions is inserted before the scope construct
-      --  and analyzed to generate the corresponding freeze processing and
-      --  elaboration of other associated actions.
+      --  Used to collect freeze entity nodes and associated actions that are
+      --  generated in a inner context but need to be analyzed outside, such as
+      --  records and initialization procedures. On exit from the scope, this
+      --  list of actions is inserted before the scope construct and analyzed
+      --  to generate the corresponding freeze processing and elaboration of
+      --  other associated actions.
 
       First_Use_Clause : Node_Id;
-      --  Head of list of Use_Clauses in current scope. The list is built
-      --  when the declarations in the scope are processed. The list is
-      --  traversed on scope exit to undo the effect of the use clauses.
+      --  Head of list of Use_Clauses in current scope. The list is built when
+      --  the declarations in the scope are processed. The list is traversed
+      --  on scope exit to undo the effect of the use clauses.
 
       Component_Alignment_Default : Component_Alignment_Kind;
-      --  Component alignment to be applied to any record or array types
-      --  that are declared for which a specific component alignment pragma
-      --  does not set the alignment.
+      --  Component alignment to be applied to any record or array types that
+      --  are declared for which a specific component alignment pragma does not
+      --  set the alignment.
 
       Is_Active_Stack_Base : Boolean;
       --  Set to true only when entering the scope for Standard_Standard from
       --  from within procedure Semantics. Indicates the base of the current
-      --  active set of scopes. Needed by In_Open_Scopes to handle cases
-      --  where Standard_Standard can be pushed in the middle of the active
-      --  set of scopes (occurs for instantiations of generic child units).
+      --  active set of scopes. Needed by In_Open_Scopes to handle cases where
+      --  Standard_Standard can be pushed anew on the scope stack to start a
+      --  new active section (see comment above).
+
    end record;
 
    package Scope_Stack is new Table.Table (
