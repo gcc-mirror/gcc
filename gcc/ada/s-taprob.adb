@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,8 +81,19 @@ package body System.Tasking.Protected_Objects is
 
       Initialize_Lock (Init_Priority, Object.L'Access);
       Object.Ceiling := System.Any_Priority (Init_Priority);
+      Object.New_Ceiling := System.Any_Priority (Init_Priority);
       Object.Owner := Null_Task;
    end Initialize_Protection;
+
+   -----------------
+   -- Get_Ceiling --
+   -----------------
+
+   function Get_Ceiling
+     (Object : Protection_Access) return System.Any_Priority is
+   begin
+      return Object.New_Ceiling;
+   end Get_Ceiling;
 
    ----------
    -- Lock --
@@ -198,6 +209,17 @@ package body System.Tasking.Protected_Objects is
          end;
       end if;
    end Lock_Read_Only;
+
+   -----------------
+   -- Set_Ceiling --
+   -----------------
+
+   procedure Set_Ceiling
+     (Object : Protection_Access;
+      Prio   : System.Any_Priority) is
+   begin
+      Object.New_Ceiling := Prio;
+   end Set_Ceiling;
 
    ------------
    -- Unlock --

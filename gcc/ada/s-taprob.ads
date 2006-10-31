@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@
 
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 --  Any changes to this interface may require corresponding compiler changes
---  in exp_ch9.adb and possibly exp_ch7.adb
+--  in exp_ch9.adb and possibly exp_ch7.adb and exp_attr.adb
 
 package System.Tasking.Protected_Objects is
    pragma Elaborate_Body;
@@ -172,6 +172,10 @@ package System.Tasking.Protected_Objects is
 
    Null_PO : constant Protection_Access := null;
 
+   function Get_Ceiling
+     (Object : Protection_Access) return System.Any_Priority;
+   --  Returns the new ceiling priority of the protected object
+
    procedure Initialize_Protection
      (Object           : Protection_Access;
       Ceiling_Priority : Integer);
@@ -196,6 +200,11 @@ package System.Tasking.Protected_Objects is
    --  for possible future use. At the current time, everyone uses Lock
    --  for both read and write locks.
 
+   procedure Set_Ceiling
+     (Object : Protection_Access;
+      Prio   : System.Any_Priority);
+   --  Sets the new ceiling priority of the protected object
+
    procedure Unlock (Object : Protection_Access);
    --  Relinquish ownership of the lock for the object represented by
    --  the Object parameter. If this ownership was for write access, or
@@ -211,6 +220,16 @@ private
 
       Ceiling : System.Any_Priority;
       --  Ceiling priority associated to the protected object
+
+      New_Ceiling : System.Any_Priority;
+      --  New ceiling priority associated to the protected object. In case
+      --  of assignment of a new ceiling priority to the protected object the
+      --  frontend generates a call to set_ceiling to save the new value in
+      --  this field. After such assignment this value can be read by means
+      --  of the 'Priority attribute, which generates a call to get_ceiling.
+      --  However, the ceiling of the protected object will not be changed
+      --  until completion of the protected action in which the assignment
+      --  has been executed (AARM D.5.2 (10/2)).
 
       Owner : Task_Id;
       --  This field contains the protected object's owner. Null_Task

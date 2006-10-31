@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,6 +161,16 @@ package body System.Tasking.Protected_Objects.Entries is
 
       STPO.Finalize_Lock (Object.L'Unrestricted_Access);
    end Finalize;
+
+   -----------------
+   -- Get_Ceiling --
+   -----------------
+
+   function Get_Ceiling
+     (Object : Protection_Entries_Access) return System.Any_Priority is
+   begin
+      return Object.New_Ceiling;
+   end Get_Ceiling;
 
    -------------------------------------
    -- Has_Interrupt_Or_Attach_Handler --
@@ -348,6 +358,17 @@ package body System.Tasking.Protected_Objects.Entries is
          end;
       end if;
    end Lock_Read_Only_Entries;
+
+   -----------------
+   -- Set_Ceiling --
+   -----------------
+
+   procedure Set_Ceiling
+     (Object : Protection_Entries_Access;
+      Prio   : System.Any_Priority) is
+   begin
+      Object.New_Ceiling := Prio;
+   end Set_Ceiling;
 
    --------------------
    -- Unlock_Entries --

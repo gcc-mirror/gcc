@@ -473,6 +473,7 @@ package body System.Tasking.Restricted.Stages is
       Self_ID       : constant Task_Id := STPO.Self;
       Base_Priority : System.Any_Priority;
       Success       : Boolean;
+      Len           : Integer;
 
    begin
       --  Stack is not preallocated on this target, so that Stack_Address must
@@ -515,10 +516,11 @@ package body System.Tasking.Restricted.Stages is
 
       Created_Task.Entry_Calls (1).Self := Created_Task;
 
-      Created_Task.Common.Task_Image_Len :=
+      Len :=
         Integer'Min (Created_Task.Common.Task_Image'Length, Task_Image'Length);
-      Created_Task.Common.Task_Image
-        (1 .. Created_Task.Common.Task_Image_Len) := Task_Image;
+      Created_Task.Common.Task_Image_Len := Len;
+      Created_Task.Common.Task_Image (1 .. Len) :=
+        Task_Image (Task_Image'First .. Task_Image'First + Len - 1);
 
       Unlock (Self_ID);
 

@@ -377,6 +377,12 @@ package System.Tasking is
    pragma Inline (Detect_Blocking);
    --  Return whether the Detect_Blocking pragma is enabled
 
+   function Storage_Size (T : Task_Id) return System.Parameters.Size_Type;
+   --  Retrieve from the TCB of the task the allocated size of its stack,
+   --  either the system default or the size specified by a pragma. This
+   --  is in general a non-static value that can depend on discriminants
+   --  of the task.
+
    ----------------------------------------------
    -- Ada_Task_Control_Block (ATCB) definition --
    ----------------------------------------------
