@@ -78,7 +78,7 @@ package body Prj.Part is
       Table_Index_Type     => With_Id,
       Table_Low_Bound      => 1,
       Table_Initial        => 10,
-      Table_Increment      => 50,
+      Table_Increment      => 100,
       Table_Name           => "Prj.Part.Withs");
    --  Table used to store temporarily paths and locations of imported
    --  projects. These imported projects will be effectively parsed after the
@@ -95,7 +95,7 @@ package body Prj.Part is
       Table_Index_Type     => Nat,
       Table_Low_Bound      => 1,
       Table_Initial        => 10,
-      Table_Increment      => 50,
+      Table_Increment      => 100,
       Table_Name           => "Prj.Part.Project_Stack");
    --  This table is used to detect circular dependencies
    --  for imported and extended projects and to get the project ids of
@@ -459,7 +459,15 @@ package body Prj.Part is
       Current_Directory : constant String := Get_Current_Dir;
       Dummy : Boolean;
 
+      Real_Project_File_Name : String_Access :=
+                                 Osint.To_Canonical_File_Spec
+                                   (Project_File_Name);
+
    begin
+      if Real_Project_File_Name = null then
+         Real_Project_File_Name := new String'(Project_File_Name);
+      end if;
+
       Project := Empty_Node;
 
       if Current_Verbosity >= Medium then
@@ -470,10 +478,12 @@ package body Prj.Part is
 
       declare
          Path_Name : constant String :=
-                       Project_Path_Name_Of (Project_File_Name,
+                       Project_Path_Name_Of (Real_Project_File_Name.all,
                                              Directory   => Current_Directory);
 
       begin
+         Free (Real_Project_File_Name);
+
          Prj.Err.Initialize;
          Prj.Err.Scanner.Set_Comment_As_Token (Store_Comments);
          Prj.Err.Scanner.Set_End_Of_Line_As_Token (Store_Comments);

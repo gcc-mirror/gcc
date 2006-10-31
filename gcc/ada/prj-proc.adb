@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2340,6 +2340,16 @@ package body Prj.Proc is
             Project := Processed_Projects.Get (Name);
 
             if Project /= No_Project then
+
+               --  Make sure that, when a project is extended, the project id
+               --  of the project extending it is recorded in its data, even
+               --  when it has already been processed as an imported project.
+               --  This is for virtually extended projects.
+
+               if Extended_By /= No_Project then
+                  In_Tree.Projects.Table (Project).Extended_By := Extended_By;
+               end if;
+
                return;
             end if;
 
