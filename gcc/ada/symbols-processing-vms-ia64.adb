@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,26 +85,36 @@ package body Processing is
 
       End_Symtab : Integer;
 
-      Stname : Integer;
-      Stinfo : Character;
-      Sttype : Integer;
-      Stbind : Integer;
+      Stname  : Integer;
+      Stinfo  : Character;
+      Sttype  : Integer;
+      Stbind  : Integer;
       Stshndx : Integer;
 
       Section_Headers : Section_Header_Ptr;
 
-      Offset   : Natural := 0;
+      Offset : Natural := 0;
+      OK     : Boolean := True;
 
       procedure Get_Byte (B : out Byte);
       procedure Get_Half (H : out Integer);
       procedure Get_Word (W : out Integer);
       procedure Reset;
+      --  All the above require comments ???
+
+      --------------
+      -- Get_Byte --
+      --------------
 
       procedure Get_Byte (B : out Byte) is
       begin
          Byte_IO.Read (File, B);
          Offset := Offset + 1;
       end Get_Byte;
+
+      --------------
+      -- Get_Half --
+      --------------
 
       procedure Get_Half (H : out Integer) is
          C1, C2 : Character;
@@ -114,6 +124,10 @@ package body Processing is
            Integer'(Character'Pos (C2)) * 256 + Integer'(Character'Pos (C1));
       end Get_Half;
 
+      --------------
+      -- Get_Word --
+      --------------
+
       procedure Get_Word (W : out Integer) is
          H1, H2 : Integer;
       begin
@@ -121,11 +135,17 @@ package body Processing is
          W := H2 * 256 * 256 + H1;
       end Get_Word;
 
+      -----------
+      -- Reset --
+      -----------
+
       procedure Reset is
       begin
          Offset := 0;
          Byte_IO.Reset (File);
       end Reset;
+
+   --  Start of processing for Process
 
    begin
       --  Open the object file with Byte_IO. Return with Success = False if
@@ -216,6 +236,7 @@ package body Processing is
       Symtab_Index := 0;
 
       for J in Section_Headers'Range loop
+
          --  Get the data for each Section Header
 
          Get_Word (Shname);
@@ -312,24 +333,40 @@ package body Processing is
               and then Stbind /= 0
               and then Stshndx /= 0
          then
-            declare
-               S_Data : Symbol_Data;
-            begin
-               S_Data.Name := new String'(Strings (Stname).all);
+            --  Check if this is a symbol from a generic body
 
-               if Sttype = 1 then
-                  S_Data.Kind := Data;
+            OK := True;
 
-               else
-                  S_Data.Kind := Proc;
+            for J in Strings (Stname)'First .. Strings (Stname)'Last - 2 loop
+               if Strings (Stname) (J) = 'G'
+                 and then Strings (Stname) (J + 1) = 'P'
+                 and then Strings (Stname) (J + 2) in '0' .. '9'
+               then
+                  OK := False;
+                  exit;
                end if;
+            end loop;
 
-               --  Put the new symbol in the table
+            if OK then
+               declare
+                  S_Data : Symbol_Data;
+               begin
+                  S_Data.Name := new String'(Strings (Stname).all);
 
-               Symbol_Table.Increment_Last (Complete_Symbols);
-               Complete_Symbols.Table
-                 (Symbol_Table.Last (Complete_Symbols)) := S_Data;
-            end;
+                  if Sttype = 1 then
+                     S_Data.Kind := Data;
+
+                  else
+                     S_Data.Kind := Proc;
+                  end if;
+
+                  --  Put the new symbol in the table
+
+                  Symbol_Table.Increment_Last (Complete_Symbols);
+                  Complete_Symbols.Table
+                    (Symbol_Table.Last (Complete_Symbols)) := S_Data;
+               end;
+            end if;
          end if;
       end loop;
 
