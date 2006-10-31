@@ -871,8 +871,8 @@ procedure GNATCmd is
                   Last_Switches.Table (Last_Switches.Last) :=
                     new String'(Name_Buffer (1 .. Name_Len) &
                                 Directory_Separator &
-                                Base_Name (Arg (Arg'First .. Last)) &
-                                Get_Executable_Suffix.all);
+                                Executable_Name
+                                  (Base_Name (Arg (Arg'First .. Last))));
                   exit;
                end if;
             end if;

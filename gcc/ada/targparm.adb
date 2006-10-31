@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,25 +146,6 @@ package body Targparm is
 
    procedure Set_Profile_Restrictions (P : Profile_Name);
    --  Set Restrictions_On_Target for the given profile
-
-   ------------------------------
-   -- Set_Profile_Restrictions --
-   ------------------------------
-
-   procedure Set_Profile_Restrictions (P : Profile_Name) is
-      R : Restriction_Flags  renames Profile_Info (P).Set;
-      V : Restriction_Values renames Profile_Info (P).Value;
-   begin
-      for J in R'Range loop
-         if R (J) then
-            Restrictions_On_Target.Set (J) := True;
-
-            if J in All_Parameter_Restrictions then
-               Restrictions_On_Target.Value (J) := V (J);
-            end if;
-         end if;
-      end loop;
-   end Set_Profile_Restrictions;
 
    ---------------------------
    -- Get_Target_Parameters --
@@ -497,6 +478,34 @@ package body Targparm is
 
             goto Line_Loop_Continue;
 
+         --  See if we have an Executable_Extension
+
+         elsif System_Text (P .. P + 45) =
+                  "   Executable_Extension : constant String := """
+         then
+            P := P + 46;
+
+            Name_Len := 0;
+            while System_Text (P) /= '"'
+              and then System_Text (P) /= ASCII.LF
+            loop
+               Add_Char_To_Name_Buffer (System_Text (P));
+               P := P + 1;
+            end loop;
+
+            if System_Text (P) /= '"' or else System_Text (P + 1) /= ';' then
+               Set_Standard_Error;
+               Write_Line
+                 ("incorrectly formatted Executable_Extension in system.ads");
+               Set_Standard_Output;
+               Fatal := True;
+
+            else
+               Executable_Extension_On_Target := Name_Enter;
+            end if;
+
+            goto Line_Loop_Continue;
+
          --  Next See if we have a configuration parameter
 
          else
@@ -634,5 +643,24 @@ package body Targparm is
          raise Unrecoverable_Error;
       end if;
    end Get_Target_Parameters;
+
+   ------------------------------
+   -- Set_Profile_Restrictions --
+   ------------------------------
+
+   procedure Set_Profile_Restrictions (P : Profile_Name) is
+      R : Restriction_Flags  renames Profile_Info (P).Set;
+      V : Restriction_Values renames Profile_Info (P).Value;
+   begin
+      for J in R'Range loop
+         if R (J) then
+            Restrictions_On_Target.Set (J) := True;
+
+            if J in All_Parameter_Restrictions then
+               Restrictions_On_Target.Value (J) := V (J);
+            end if;
+         end if;
+      end loop;
+   end Set_Profile_Restrictions;
 
 end Targparm;

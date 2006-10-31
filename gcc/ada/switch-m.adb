@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -471,7 +471,6 @@ package body Switch.M is
 
       if Last = 0 then
          return (1 .. 0 => null);
-
       else
          return Global_Switches (Global_Switches'First .. Last);
       end if;
@@ -594,13 +593,13 @@ package body Switch.M is
 
             case Switch_Chars (Ptr) is
 
-               --  processing for eI switch
+               --  Processing for eI switch
 
                when 'I' =>
                   Ptr := Ptr + 1;
                   Scan_Pos (Switch_Chars, Max, Ptr, Main_Index, C);
 
-               --  processing for eL switch
+               --  Processing for eL switch
 
                when 'L' =>
                   Ptr := Ptr + 1;
@@ -701,6 +700,12 @@ package body Switch.M is
          when 's' =>
             Ptr := Ptr + 1;
             Check_Switches := True;
+
+         --  Processing for S switch
+
+         when 'S' =>
+            Ptr := Ptr + 1;
+            Commands_To_Stdout := True;
 
          --  Processing for v switch
 
