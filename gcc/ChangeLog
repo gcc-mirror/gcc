@@ -1,3 +1,7 @@
+2006-10-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* opts.c (decode_options): Disable CSE skip blocks.
+
 2006-10-30  Dirk Mueller  <dmueller@suse.de>
 
 	* c-common.h (strict_aliasing_warning): Fix whitespace.
