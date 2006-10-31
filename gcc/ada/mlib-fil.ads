@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,9 +30,13 @@ package MLib.Fil is
 
    function Ext_To
      (Filename : String;
-      New_Ext  : String := "")
-      return     String;
-   --  Return Filename with the extension change to New_Ext
+      New_Ext  : String := "") return String;
+   --  Return Filename with the extension changed to New_Ext
+
+   function Append_To
+     (Filename : String;
+      Ext      : String) return String;
+   --  Return Filename with the extension Ext
 
    function Get_Ext (Filename : String) return String;
    --  Return extension of filename

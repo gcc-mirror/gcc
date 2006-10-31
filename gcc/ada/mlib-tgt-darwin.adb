@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,18 +30,29 @@
 
 --  This is the Darwin version of the body
 
+with MLib;     use MLib;
 with MLib.Fil;
 with MLib.Utl;
-with Namet;  use Namet;
-with Opt;
-with Output; use Output;
+with Namet;    use Namet;
+with Opt;      use Opt;
+with Output;   use Output;
 with Prj.Com;
+
 with System;
 
 package body MLib.Tgt is
 
-   use GNAT;
-   use MLib;
+   Flat_Namespace : aliased String := "-Wl,-flat_namespace";
+   --  Instruct the linker to build the shared library as a flat
+   --  namespace image. The default is a two-level namespace image.
+
+   Shared_Libgcc : aliased String := "-shared-libgcc";
+
+   No_Shared_Libgcc_Options   : aliased Argument_List :=
+                                  (1 => Flat_Namespace'Access);
+   With_Shared_Libgcc_Options : aliased Argument_List :=
+                                  (1 => Flat_Namespace'Access,
+                                   2 => Shared_Libgcc'Access);
 
    ---------------------
    -- Archive_Builder --
@@ -114,9 +125,10 @@ package body MLib.Tgt is
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
-                   Fil.Ext_To (Lib_Filename, DLL_Ext);
+                   Fil.Append_To (Lib_Filename, DLL_Ext);
 
-      Version_Arg          : String_Access;
+      Shared_Options : Argument_List_Access;
+
       Symbolic_Link_Needed : Boolean := False;
 
    begin
@@ -125,28 +137,31 @@ package body MLib.Tgt is
          Write_Line (Lib_File);
       end if;
 
+      --  Invoke gcc with -shared-libgcc, but only for GCC 4 or higher
+
+      if GCC_Version >= 4 then
+         Shared_Options := With_Shared_Libgcc_Options'Access;
+      else
+         Shared_Options := No_Shared_Libgcc_Options'Access;
+      end if;
+
       --  If specified, add automatic elaboration/finalization
 
       if Lib_Version = "" then
          Utl.Gcc
            (Output_File => Lib_File,
             Objects     => Ofiles,
-            Options     => Options,
+            Options     => Options & Shared_Options.all,
             Driver_Name => Driver_Name,
             Options_2   => Options_2);
 
       else
-         --  Instruct the linker to build the shared library as a flat
-         --  namespace image, which is not the default. The default is a two
-         --  level namespace image.
-
-         Version_Arg := new String'("-Wl,-flat_namespace");
 
          if Is_Absolute_Path (Lib_Version) then
             Utl.Gcc
               (Output_File => Lib_Version,
                Objects     => Ofiles,
-               Options     => Options & Version_Arg,
+               Options     => Options & Shared_Options.all,
                Driver_Name => Driver_Name,
                Options_2   => Options_2);
             Symbolic_Link_Needed := Lib_Version /= Lib_File;
@@ -155,7 +170,7 @@ package body MLib.Tgt is
             Utl.Gcc
               (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
                Objects     => Ofiles,
-               Options     => Options & Version_Arg,
+               Options     => Options & Shared_Options.all,
                Driver_Name => Driver_Name,
                Options_2   => Options_2);
             Symbolic_Link_Needed :=
@@ -258,7 +273,8 @@ package body MLib.Tgt is
    ------------------------
 
    function Library_Exists_For
-     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return Boolean
    is
    begin
       if not In_Tree.Projects.Table (Project).Library then
@@ -268,25 +284,23 @@ package body MLib.Tgt is
 
       else
          declare
-            Lib_Dir : constant String :=
-              Get_Name_String
-                (In_Tree.Projects.Table (Project).Library_Dir);
+            Lib_Dir  : constant String :=
+                         Get_Name_String
+                           (In_Tree.Projects.Table (Project).Library_Dir);
             Lib_Name : constant String :=
-              Get_Name_String
-                (In_Tree.Projects.Table (Project).Library_Name);
+                         Get_Name_String
+                           (In_Tree.Projects.Table (Project).Library_Name);
 
          begin
-            if In_Tree.Projects.Table (Project).Library_Kind =
-              Static
-            then
+            if In_Tree.Projects.Table (Project).Library_Kind = Static then
                return Is_Regular_File
                  (Lib_Dir & Directory_Separator & "lib" &
-                  Fil.Ext_To (Lib_Name, Archive_Ext));
+                  Fil.Append_To (Lib_Name, Archive_Ext));
 
             else
                return Is_Regular_File
                  (Lib_Dir & Directory_Separator & "lib" &
-                  Fil.Ext_To (Lib_Name, DLL_Ext));
+                  Fil.Append_To (Lib_Name, DLL_Ext));
             end if;
          end;
       end if;
@@ -309,8 +323,8 @@ package body MLib.Tgt is
       else
          declare
             Lib_Name : constant String :=
-              Get_Name_String
-                (In_Tree.Projects.Table (Project).Library_Name);
+                         Get_Name_String
+                           (In_Tree.Projects.Table (Project).Library_Name);
 
          begin
             Name_Len := 3;
@@ -318,10 +332,9 @@ package body MLib.Tgt is
 
             if In_Tree.Projects.Table (Project).Library_Kind =
               Static then
-               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, Archive_Ext));
-
+               Add_Str_To_Name_Buffer (Fil.Append_To (Lib_Name, Archive_Ext));
             else
-               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, DLL_Ext));
+               Add_Str_To_Name_Buffer (Fil.Append_To (Lib_Name, DLL_Ext));
             end if;
 
             return Name_Find;
