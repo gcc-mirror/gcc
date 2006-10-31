@@ -36,7 +36,6 @@ with Output;   use Output;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
-with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Table;
@@ -546,7 +545,6 @@ package body Exp_Dbug is
       --  Vax floating-point case
 
       elsif Vax_Float (E) then
-
          if Digits_Value (Base_Type (E)) = 6 then
             Get_External_Name_With_Suffix (E, "XFF");
 
@@ -679,13 +677,13 @@ package body Exp_Dbug is
          else
             Get_Name_String_And_Append (Chars (Entity));
          end if;
-
       end Get_Qualified_Name_And_Append;
 
    --  Start of processing for Get_External_Name
 
    begin
-      Name_Len := 0;
+      Name_Len    := 0;
+      Homonym_Len := 0;
 
       --  If this is a child unit, we want the child
 
@@ -887,9 +885,10 @@ package body Exp_Dbug is
    ------------------------------------
 
    procedure Get_Secondary_DT_External_Name
-     (Typ             : Entity_Id;
-      Ancestor_Typ    : Entity_Id;
-      Suffix_Index    : Int) is
+     (Typ          : Entity_Id;
+      Ancestor_Typ : Entity_Id;
+      Suffix_Index : Int)
+   is
    begin
       Get_External_Name (Typ, Has_Suffix => False);
 
@@ -1116,26 +1115,13 @@ package body Exp_Dbug is
                Get_Name_String (Chars (E));
             end if;
 
-            --  A special check here, we never add internal block or loop
-            --  names, since they intefere with debugging. We identify these
-            --  by the fact that they start with an upper case B or L.
-            --  But do add these if what we are qualifying is a __clean
-            --  procedure since those need to be made unique.
+            --  Here we do one step of the qualification
 
-            if (Name_Buffer (1) = 'B' or else Name_Buffer (1) = 'L')
-                and then (not Debug_Flag_VV)
-                and then Full_Qualify_Len > 2
-                and then Chars (Ent) /= Name_uClean
-            then
-               Full_Qualify_Len := Full_Qualify_Len - 2;
-
-            else
-               Full_Qualify_Name
-                 (Full_Qualify_Len + 1 .. Full_Qualify_Len + Name_Len) :=
-                   Name_Buffer (1 .. Name_Len);
-               Full_Qualify_Len := Full_Qualify_Len + Name_Len;
-               Append_Homonym_Number (E);
-            end if;
+            Full_Qualify_Name
+              (Full_Qualify_Len + 1 .. Full_Qualify_Len + Name_Len) :=
+                 Name_Buffer (1 .. Name_Len);
+            Full_Qualify_Len := Full_Qualify_Len + Name_Len;
+            Append_Homonym_Number (E);
          end if;
 
          if Is_BNPE (E) then
