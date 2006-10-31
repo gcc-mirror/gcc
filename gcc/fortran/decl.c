@@ -754,10 +754,11 @@ gfc_set_constant_character_len (int len, gfc_expr * expr)
   slen = expr->value.character.length;
   if (len != slen)
     {
-      s = gfc_getmem (len);
+      s = gfc_getmem (len + 1);
       memcpy (s, expr->value.character.string, MIN (len, slen));
       if (len > slen)
 	memset (&s[slen], ' ', len - slen);
+      s[len] = '\0';
       gfc_free (expr->value.character.string);
       expr->value.character.string = s;
       expr->value.character.length = len;
