@@ -7,7 +7,7 @@
 --                                   B o d y                                --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2006, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,6 +78,17 @@ package body System.OS_Interface is
    begin
       return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
    end To_Duration;
+
+   ------------------------
+   -- To_Target_Priority --
+   ------------------------
+
+   function To_Target_Priority
+     (Prio : System.Any_Priority) return Interfaces.C.int
+   is
+   begin
+      return Interfaces.C.int (Prio);
+   end To_Target_Priority;
 
    -----------------
    -- To_Timespec --

@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -250,6 +250,10 @@ package System.OS_Interface is
    SCHED_OTHER : constant := 0;
    SCHED_FIFO  : constant := 1;
    SCHED_RR    : constant := 2;
+
+   function To_Target_Priority
+     (Prio : System.Any_Priority) return Interfaces.C.int;
+   --  Maps System.Any_Priority to a POSIX priority.
 
    -------------
    -- Process --

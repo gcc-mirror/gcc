@@ -161,6 +161,10 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Handler (Sig : Signal);
    --  Signal handler used to implement asynchronous abort
 
+   function Get_Policy (Prio : System.Any_Priority) return Character;
+   pragma Import (C, Get_Policy, "__gnat_get_specific_dispatching");
+   --  Get priority specific dispatching policy
+
    -------------------
    -- Abort_Handler --
    -------------------
@@ -635,15 +639,25 @@ package body System.Task_Primitives.Operations is
       Result : Interfaces.C.int;
       Param  : aliased struct_sched_param;
 
+      Priority_Specific_Policy : constant Character := Get_Policy (Prio);
+      --  Upper case first character of the policy name corresponding to the
+      --  task as set by a Priority_Specific_Dispatching pragma.
+
    begin
       T.Common.Current_Priority := Prio;
       Param.sched_priority  := Interfaces.C.int (Underlying_Priorities (Prio));
 
-      if Time_Slice_Val > 0 then
+      if Dispatching_Policy = 'R'
+        or else Priority_Specific_Policy = 'R'
+        or else Time_Slice_Val > 0
+      then
          Result := pthread_setschedparam
                      (T.Common.LL.Thread, SCHED_RR, Param'Access);
 
-      elsif Dispatching_Policy = 'F' or else Time_Slice_Val = 0 then
+      elsif Dispatching_Policy = 'F'
+        or else Priority_Specific_Policy = 'F'
+        or else Time_Slice_Val = 0
+      then
          Result := pthread_setschedparam
                      (T.Common.LL.Thread, SCHED_FIFO, Param'Access);
 
@@ -784,6 +798,10 @@ package body System.Task_Primitives.Operations is
       Result              : Interfaces.C.int;
       Param               : aliased System.OS_Interface.struct_sched_param;
 
+      Priority_Specific_Policy : constant Character := Get_Policy (Priority);
+      --  Upper case first character of the policy name corresponding to the
+      --  task as set by a Priority_Specific_Dispatching pragma.
+
       use System.Task_Info;
 
    begin
@@ -815,11 +833,17 @@ package body System.Task_Primitives.Operations is
                   (Attributes'Access, Param'Access);
       pragma Assert (Result = 0);
 
-      if Time_Slice_Val > 0 then
+      if Dispatching_Policy = 'R'
+        or else Priority_Specific_Policy = 'R'
+        or else Time_Slice_Val > 0
+      then
          Result := pthread_attr_setschedpolicy
                      (Attributes'Access, System.OS_Interface.SCHED_RR);
 
-      elsif Dispatching_Policy = 'F' or else Time_Slice_Val = 0 then
+      elsif Dispatching_Policy = 'F'
+        or else Priority_Specific_Policy = 'F'
+        or else Time_Slice_Val = 0
+      then
          Result := pthread_attr_setschedpolicy
                      (Attributes'Access, System.OS_Interface.SCHED_FIFO);
 

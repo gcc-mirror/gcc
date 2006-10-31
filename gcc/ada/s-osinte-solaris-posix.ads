@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,10 @@ package System.OS_Interface is
 
    pragma Linker_Options ("-lposix4");
    pragma Linker_Options ("-lpthread");
+
+   --  The following is needed to allow --enable-threads=solaris
+
+   pragma Linker_Options ("-lthread");
 
    subtype int            is Interfaces.C.int;
    subtype short          is Interfaces.C.short;
@@ -214,6 +218,10 @@ package System.OS_Interface is
    SCHED_RR    : constant := 2;
    SCHED_OTHER : constant := 0;
 
+   function To_Target_Priority
+     (Prio : System.Any_Priority) return Interfaces.C.int;
+   --  Maps System.Any_Priority to a POSIX priority.
+
    -------------
    -- Process --
    -------------
@@ -260,7 +268,7 @@ package System.OS_Interface is
    -----------
 
    Stack_Base_Available : constant Boolean := False;
-   --  Indicates wether the stack base is available on this target.
+   --  Indicates whether the stack base is available on this target.
 
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);

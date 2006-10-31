@@ -106,6 +106,10 @@ package body System.Task_Primitives.Operations is
    Dispatching_Policy : Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
+   function Get_Policy (Prio : System.Any_Priority) return Character;
+   pragma Import (C, Get_Policy, "__gnat_get_specific_dispatching");
+   --  Get priority specific dispatching policy
+
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads)
 
@@ -130,7 +134,7 @@ package body System.Task_Primitives.Operations is
 
       procedure Set (Self_Id : Task_Id);
       pragma Inline (Set);
-      --  Set the self id for the current task.
+      --  Set the self id for the current task
 
    end Specific;
 
@@ -155,7 +159,7 @@ package body System.Task_Primitives.Operations is
    ---------------------------------
 
    function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id;
-   --  Allocate and Initialize a new ATCB for the current Thread.
+   --  Allocate and Initialize a new ATCB for the current Thread
 
    function Register_Foreign_Thread
      (Thread : Thread_Id) return Task_Id is separate;
@@ -168,7 +172,7 @@ package body System.Task_Primitives.Operations is
    --  Initialize given condition variable Cond
 
    procedure Finalize_Cond (Cond : access Condition_Variable);
-   --  Finalize given condition variable Cond.
+   --  Finalize given condition variable Cond
 
    procedure Cond_Signal (Cond : access Condition_Variable);
    --  Signal condition variable Cond
@@ -246,7 +250,7 @@ package body System.Task_Primitives.Operations is
       Result_Bool : BOOL;
 
    begin
-      --  Must reset Cond BEFORE L is unlocked.
+      --  Must reset Cond BEFORE L is unlocked
 
       Result_Bool := ResetEvent (HANDLE (Cond.all));
       pragma Assert (Result_Bool = True);
@@ -287,7 +291,7 @@ package body System.Task_Primitives.Operations is
       Wait_Result  : DWORD;
 
    begin
-      --  Must reset Cond BEFORE L is unlocked.
+      --  Must reset Cond BEFORE L is unlocked
 
       Result := ResetEvent (HANDLE (Cond.all));
       pragma Assert (Result = True);
@@ -575,15 +579,17 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Timed_Delay
-     (Self_ID  : Task_Id;
-      Time     : Duration;
-      Mode     : ST.Delay_Modes)
+     (Self_ID : Task_Id;
+      Time    : Duration;
+      Mode    : ST.Delay_Modes)
    is
       Check_Time : Duration := Monotonic_Clock;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
-      Result     : Integer;
       Timedout   : Boolean;
+
+      Result : Integer;
+      pragma Warnings (Off, Integer);
 
    begin
       if Single_Lock then
@@ -614,10 +620,12 @@ package body System.Task_Primitives.Operations is
 
             if Single_Lock then
                Cond_Timed_Wait (Self_ID.Common.LL.CV'Access,
-                 Single_RTS_Lock'Access, Rel_Time, Timedout, Result);
+                                Single_RTS_Lock'Access,
+                                Rel_Time, Timedout, Result);
             else
                Cond_Timed_Wait (Self_ID.Common.LL.CV'Access,
-                 Self_ID.Common.LL.L'Access, Rel_Time, Timedout, Result);
+                                Self_ID.Common.LL.L'Access,
+                                Rel_Time, Timedout, Result);
             end if;
 
             Check_Time := Monotonic_Clock;
@@ -686,7 +694,7 @@ package body System.Task_Primitives.Operations is
         (T.Common.LL.Thread, Interfaces.C.int (Underlying_Priorities (Prio)));
       pragma Assert (Res = True);
 
-      if Dispatching_Policy = 'F' then
+      if Dispatching_Policy = 'F' or else Get_Policy (Prio) = 'F' then
 
          --  Annex D requirement [RM D.2.2 par. 9]:
          --    If the task drops its priority due to the loss of inherited
@@ -734,20 +742,19 @@ package body System.Task_Primitives.Operations is
    --  There were two paths were we needed to call Enter_Task :
    --  1) from System.Task_Primitives.Operations.Initialize
    --  2) from System.Tasking.Stages.Task_Wrapper
-   --
+
    --  The thread initialisation has to be done only for the first case.
-   --
-   --  This is because the GetCurrentThread NT call does not return the
-   --  real thread handler but only a "pseudo" one. It is not possible to
-   --  release the thread handle and free the system ressources from this
-   --  "pseudo" handle. So we really want to keep the real thread handle
-   --  set in System.Task_Primitives.Operations.Create_Task during the
-   --  thread creation.
+
+   --  This is because the GetCurrentThread NT call does not return the real
+   --  thread handler but only a "pseudo" one. It is not possible to release
+   --  the thread handle and free the system ressources from this "pseudo"
+   --  handle. So we really want to keep the real thread handle set in
+   --  System.Task_Primitives.Operations.Create_Task during thread creation.
 
    procedure Enter_Task (Self_ID : Task_Id) is
       procedure Init_Float;
       pragma Import (C, Init_Float, "__gnat_init_float");
-      --  Properly initializes the FPU for x86 systems.
+      --  Properly initializes the FPU for x86 systems
 
    begin
       Specific.Set (Self_ID);
@@ -881,8 +888,11 @@ package body System.Task_Primitives.Operations is
 
       Set_Priority (T, Priority);
 
-      if Time_Slice_Val = 0 or else Dispatching_Policy = 'F' then
-         --  Here we need Annex E semantics so we disable the NT priority
+      if Time_Slice_Val = 0
+        or else Dispatching_Policy = 'F'
+        or else Get_Policy (Priority) = 'F'
+      then
+         --  Here we need Annex D semantics so we disable the NT priority
          --  boost. A priority boost is temporarily given by the system to a
          --  thread when it is taken out of a wait state.
 
@@ -1008,7 +1018,7 @@ package body System.Task_Primitives.Operations is
              (GetCurrentProcess, High_Priority_Class);
 
          --  ??? In theory it should be possible to use the priority class
-         --  Realtime_Prioriry_Class but we suspect a bug in the NT scheduler
+         --  Realtime_Priority_Class but we suspect a bug in the NT scheduler
          --  which prevents (in some obscure cases) a thread to get on top of
          --  the running queue by another thread of lower priority. For
          --  example cxd8002 ACATS test freeze.
@@ -1016,7 +1026,7 @@ package body System.Task_Primitives.Operations is
 
       TlsIndex := TlsAlloc;
 
-      --  Initialize the lock used to synchronize chain of all ATCBs.
+      --  Initialize the lock used to synchronize chain of all ATCBs
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
 
@@ -1175,7 +1185,7 @@ package body System.Task_Primitives.Operations is
          else
             S.Waiting := True;
 
-            --  Must reset CV BEFORE L is unlocked.
+            --  Must reset CV BEFORE L is unlocked
 
             Result_Bool := ResetEvent (S.CV);
             pragma Assert (Result_Bool = True);

@@ -105,6 +105,10 @@ package body System.Task_Primitives.Operations is
    Dispatching_Policy : Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
+   function Get_Policy (Prio : System.Any_Priority) return Character;
+   pragma Import (C, Get_Policy, "__gnat_get_specific_dispatching");
+   --  Get priority specific dispatching policy
+
    Mutex_Protocol : Priority_Type;
 
    Foreign_Task_Elaborated : aliased Boolean := True;
@@ -553,8 +557,10 @@ package body System.Task_Primitives.Operations is
       Absolute : Duration;
       Ticks    : int;
       Timedout : Boolean;
-      Result   : int;
       Aborted  : Boolean := False;
+
+      Result : int;
+      pragma Warnings (Off, Result);
 
    begin
       if Mode = Relative then
@@ -727,34 +733,32 @@ package body System.Task_Primitives.Operations is
           (T.Common.LL.Thread, To_VxWorks_Priority (int (Prio)));
       pragma Assert (Result = 0);
 
-      if Dispatching_Policy = 'F' then
-
+      if (Dispatching_Policy = 'F' or else Get_Policy (Prio) = 'F')
+        and then Loss_Of_Inheritance
+        and then Prio < T.Common.Current_Priority
+      then
          --  Annex D requirement [RM D.2.2 par. 9]:
 
          --    If the task drops its priority due to the loss of inherited
          --    priority, it is added at the head of the ready queue for its
          --    new active priority.
 
-         if Loss_Of_Inheritance
-           and then Prio < T.Common.Current_Priority
-         then
-            Array_Item := Prio_Array (T.Common.Base_Priority) + 1;
-            Prio_Array (T.Common.Base_Priority) := Array_Item;
+         Array_Item := Prio_Array (T.Common.Base_Priority) + 1;
+         Prio_Array (T.Common.Base_Priority) := Array_Item;
 
-            loop
-               --  Give some processes a chance to arrive
+         loop
+            --  Give some processes a chance to arrive
 
-               taskDelay (0);
+            taskDelay (0);
 
-               --  Then wait for our turn to proceed
+            --  Then wait for our turn to proceed
 
-               exit when Array_Item = Prio_Array (T.Common.Base_Priority)
-                 or else Prio_Array (T.Common.Base_Priority) = 1;
-            end loop;
+            exit when Array_Item = Prio_Array (T.Common.Base_Priority)
+              or else Prio_Array (T.Common.Base_Priority) = 1;
+         end loop;
 
-            Prio_Array (T.Common.Base_Priority) :=
-              Prio_Array (T.Common.Base_Priority) - 1;
-         end if;
+         Prio_Array (T.Common.Base_Priority) :=
+           Prio_Array (T.Common.Base_Priority) - 1;
       end if;
 
       T.Common.Current_Priority := Prio;
@@ -779,7 +783,13 @@ package body System.Task_Primitives.Operations is
       --  Properly initializes the FPU for PPC/MIPS systems
 
    begin
+      --  Store the user-level task id in the Thread field (to be used
+      --  internally by the run-time system) and the kernel-level task id in
+      --  the LWP field (to be used by the debugger).
+
       Self_ID.Common.LL.Thread := taskIdSelf;
+      Self_ID.Common.LL.LWP := getpid;
+
       Specific.Set (Self_ID);
 
       Init_Float;
@@ -886,32 +896,55 @@ package body System.Task_Primitives.Operations is
       --  not need to manipulate caller's signal mask at this point. All tasks
       --  in RTS will have All_Tasks_Mask initially.
 
-      if T.Common.Task_Image_Len = 0 then
-         T.Common.LL.Thread := taskSpawn
-           (System.Null_Address,
-            To_VxWorks_Priority (int (Priority)),
-            VX_FP_TASK,
-            Adjusted_Stack_Size,
-            Wrapper,
-            To_Address (T));
-      else
-         declare
-            Name : aliased String (1 .. T.Common.Task_Image_Len + 1);
+      --  We now compute the VxWorks task name and options, then spawn ...
 
-         begin
+      declare
+         Name         : aliased String (1 .. T.Common.Task_Image_Len + 1);
+         Name_Address : System.Address;
+         --  Task name we are going to hand down to VxWorks
+
+         Task_Options : aliased int;
+         --  VxWorks options we are going to set for the created task,
+         --  a combination of VX_optname_TASK attributes.
+
+         function To_int  is new Unchecked_Conversion (unsigned_int, int);
+         function To_uint is new Unchecked_Conversion (int, unsigned_int);
+
+      begin
+         --  If there is no Ada task name handy, let VxWorks choose one.
+         --  Otherwise, tell VxWorks what the Ada task name is.
+
+         if T.Common.Task_Image_Len = 0 then
+            Name_Address := System.Null_Address;
+         else
             Name (1 .. Name'Last - 1) :=
               T.Common.Task_Image (1 .. T.Common.Task_Image_Len);
             Name (Name'Last) := ASCII.NUL;
+            Name_Address := Name'Address;
+         end if;
 
-            T.Common.LL.Thread := taskSpawn
-              (Name'Address,
-               To_VxWorks_Priority (int (Priority)),
-               VX_FP_TASK,
-               Adjusted_Stack_Size,
-               Wrapper,
-               To_Address (T));
-         end;
-      end if;
+         --  For task options, we fetch the options assigned to the current
+         --  task, so offering some user level control over the options for a
+         --  task hierarchy, and force VX_FP_TASK because it is almost always
+         --  required.
+
+         if taskOptionsGet (taskIdSelf, Task_Options'Access) /= OK then
+            Task_Options := 0;
+         end if;
+
+         Task_Options :=
+           To_int (To_uint (Task_Options) or To_uint (VX_FP_TASK));
+
+         --  Now spawn the VxWorks task for real
+
+         T.Common.LL.Thread := taskSpawn
+           (Name_Address,
+            To_VxWorks_Priority (int (Priority)),
+            Task_Options,
+            Adjusted_Stack_Size,
+            Wrapper,
+            To_Address (T));
+      end;
 
       if T.Common.LL.Thread = -1 then
          Succeeded := False;
@@ -1244,7 +1277,11 @@ package body System.Task_Primitives.Operations is
       if Time_Slice_Val > 0 then
          Result := Set_Time_Slice
            (To_Clock_Ticks
-             (Duration (Time_Slice_Val) / Duration (1_000_000.0)));
+              (Duration (Time_Slice_Val) / Duration (1_000_000.0)));
+
+      elsif Dispatching_Policy = 'R' then
+         Result := Set_Time_Slice (To_Clock_Ticks (0.01));
+
       end if;
 
       Result := sigemptyset (Unblocked_Signal_Mask'Access);

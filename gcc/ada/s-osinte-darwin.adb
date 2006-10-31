@@ -55,6 +55,17 @@ package body System.OS_Interface is
       return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
    end To_Duration;
 
+   ------------------------
+   -- To_Target_Priority --
+   ------------------------
+
+   function To_Target_Priority
+     (Prio : System.Any_Priority) return Interfaces.C.int
+   is
+   begin
+      return Interfaces.C.int (Prio);
+   end To_Target_Priority;
+
    -----------------
    -- To_Timespec --
    -----------------
