@@ -49,14 +49,6 @@ package body GNAT.OS_Lib is
    procedure Dup2 (Old_Fd, New_Fd : File_Descriptor);
    pragma Import (C, Dup2, "__gnat_dup2");
 
-   OpenVMS : Boolean;
-   --  Note: OpenVMS should be a constant, but it cannot be, because it
-   --        prevents bootstrapping on some platforms.
-
-   pragma Import (Ada, OpenVMS, "system__openvms");
-   --  Needed to avoid doing useless checks when non on a VMS platform (see
-   --  Normalize_Pathname).
-
    On_Windows : constant Boolean := Directory_Separator = '\';
    --  An indication that we are on Windows. Used in Normalize_Pathname, to
    --  deal with drive letters in the beginning of absolute paths.
@@ -713,9 +705,9 @@ package body GNAT.OS_Lib is
    -- Create_Output_Text_File --
    -----------------------------
 
-   function Create_Output_Text_File (Name  : String) return File_Descriptor is
+   function Create_Output_Text_File (Name : String) return File_Descriptor is
       function C_Create_File
-        (Name  : C_File_Name) return File_Descriptor;
+        (Name : C_File_Name) return File_Descriptor;
       pragma Import (C, C_Create_File, "__gnat_create_output_file");
 
       C_Name : String (1 .. Name'Length + 1);
@@ -914,6 +906,60 @@ package body GNAT.OS_Lib is
       return Result;
    end Get_Debuggable_Suffix;
 
+   ---------------------------
+   -- Get_Executable_Suffix --
+   ---------------------------
+
+   function Get_Executable_Suffix return String_Access is
+      procedure Get_Suffix_Ptr (Length, Ptr : Address);
+      pragma Import (C, Get_Suffix_Ptr, "__gnat_get_executable_suffix_ptr");
+
+      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
+      pragma Import (C, Strncpy, "strncpy");
+
+      Suffix_Ptr    : Address;
+      Suffix_Length : Integer;
+      Result        : String_Access;
+
+   begin
+      Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
+
+      Result := new String (1 .. Suffix_Length);
+
+      if Suffix_Length > 0 then
+         Strncpy (Result.all'Address, Suffix_Ptr, Suffix_Length);
+      end if;
+
+      return Result;
+   end Get_Executable_Suffix;
+
+   -----------------------
+   -- Get_Object_Suffix --
+   -----------------------
+
+   function Get_Object_Suffix return String_Access is
+      procedure Get_Suffix_Ptr (Length, Ptr : Address);
+      pragma Import (C, Get_Suffix_Ptr, "__gnat_get_object_suffix_ptr");
+
+      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
+      pragma Import (C, Strncpy, "strncpy");
+
+      Suffix_Ptr    : Address;
+      Suffix_Length : Integer;
+      Result        : String_Access;
+
+   begin
+      Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
+
+      Result := new String (1 .. Suffix_Length);
+
+      if Suffix_Length > 0 then
+         Strncpy (Result.all'Address, Suffix_Ptr, Suffix_Length);
+      end if;
+
+      return Result;
+   end Get_Object_Suffix;
+
    ----------------------------------
    -- Get_Target_Debuggable_Suffix --
    ----------------------------------
@@ -944,33 +990,6 @@ package body GNAT.OS_Lib is
       return Result;
    end Get_Target_Debuggable_Suffix;
 
-   ---------------------------
-   -- Get_Executable_Suffix --
-   ---------------------------
-
-   function Get_Executable_Suffix return String_Access is
-      procedure Get_Suffix_Ptr (Length, Ptr : Address);
-      pragma Import (C, Get_Suffix_Ptr, "__gnat_get_executable_suffix_ptr");
-
-      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
-      pragma Import (C, Strncpy, "strncpy");
-
-      Suffix_Ptr    : Address;
-      Suffix_Length : Integer;
-      Result        : String_Access;
-
-   begin
-      Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
-
-      Result := new String (1 .. Suffix_Length);
-
-      if Suffix_Length > 0 then
-         Strncpy (Result.all'Address, Suffix_Ptr, Suffix_Length);
-      end if;
-
-      return Result;
-   end Get_Executable_Suffix;
-
    ----------------------------------
    -- Get_Target_Executable_Suffix --
    ----------------------------------
@@ -1000,33 +1019,6 @@ package body GNAT.OS_Lib is
 
       return Result;
    end Get_Target_Executable_Suffix;
-
-   -----------------------
-   -- Get_Object_Suffix --
-   -----------------------
-
-   function Get_Object_Suffix return String_Access is
-      procedure Get_Suffix_Ptr (Length, Ptr : Address);
-      pragma Import (C, Get_Suffix_Ptr, "__gnat_get_object_suffix_ptr");
-
-      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
-      pragma Import (C, Strncpy, "strncpy");
-
-      Suffix_Ptr    : Address;
-      Suffix_Length : Integer;
-      Result        : String_Access;
-
-   begin
-      Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
-
-      Result := new String (1 .. Suffix_Length);
-
-      if Suffix_Length > 0 then
-         Strncpy (Result.all'Address, Suffix_Ptr, Suffix_Length);
-      end if;
-
-      return Result;
-   end Get_Object_Suffix;
 
    ------------------------------
    -- Get_Target_Object_Suffix --
@@ -1273,6 +1265,25 @@ package body GNAT.OS_Lib is
       return Is_Directory (F_Name'Address);
    end Is_Directory;
 
+   ----------------------
+   -- Is_Readable_File --
+   ----------------------
+
+   function Is_Readable_File (Name : C_File_Name) return Boolean is
+      function Is_Readable_File (Name : Address) return Integer;
+      pragma Import (C, Is_Readable_File, "__gnat_is_readable_file");
+   begin
+      return Is_Readable_File (Name) /= 0;
+   end Is_Readable_File;
+
+   function Is_Readable_File (Name : String) return Boolean is
+      F_Name : String (1 .. Name'Length + 1);
+   begin
+      F_Name (1 .. Name'Length) := Name;
+      F_Name (F_Name'Last)      := ASCII.NUL;
+      return Is_Readable_File (F_Name'Address);
+   end Is_Readable_File;
+
    ---------------------
    -- Is_Regular_File --
    ---------------------
@@ -1293,23 +1304,23 @@ package body GNAT.OS_Lib is
    end Is_Regular_File;
 
    ----------------------
-   -- Is_Readable_File --
+   -- Is_Symbolic_Link --
    ----------------------
 
-   function Is_Readable_File (Name : C_File_Name) return Boolean is
-      function Is_Readable_File (Name : Address) return Integer;
-      pragma Import (C, Is_Readable_File, "__gnat_is_readable_file");
+   function Is_Symbolic_Link (Name : C_File_Name) return Boolean is
+      function Is_Symbolic_Link (Name : Address) return Integer;
+      pragma Import (C, Is_Symbolic_Link, "__gnat_is_symbolic_link");
    begin
-      return Is_Readable_File (Name) /= 0;
-   end Is_Readable_File;
+      return Is_Symbolic_Link (Name) /= 0;
+   end Is_Symbolic_Link;
 
-   function Is_Readable_File (Name : String) return Boolean is
+   function Is_Symbolic_Link (Name : String) return Boolean is
       F_Name : String (1 .. Name'Length + 1);
    begin
       F_Name (1 .. Name'Length) := Name;
       F_Name (F_Name'Last)      := ASCII.NUL;
-      return Is_Readable_File (F_Name'Address);
-   end Is_Readable_File;
+      return Is_Symbolic_Link (F_Name'Address);
+   end Is_Symbolic_Link;
 
    ----------------------
    -- Is_Writable_File --
@@ -1329,25 +1340,6 @@ package body GNAT.OS_Lib is
       F_Name (F_Name'Last)      := ASCII.NUL;
       return Is_Writable_File (F_Name'Address);
    end Is_Writable_File;
-
-   ----------------------
-   -- Is_Symbolic_Link --
-   ----------------------
-
-   function Is_Symbolic_Link (Name : C_File_Name) return Boolean is
-      function Is_Symbolic_Link (Name : Address) return Integer;
-      pragma Import (C, Is_Symbolic_Link, "__gnat_is_symbolic_link");
-   begin
-      return Is_Symbolic_Link (Name) /= 0;
-   end Is_Symbolic_Link;
-
-   function Is_Symbolic_Link (Name : String) return Boolean is
-      F_Name : String (1 .. Name'Length + 1);
-   begin
-      F_Name (1 .. Name'Length) := Name;
-      F_Name (F_Name'Last)      := ASCII.NUL;
-      return Is_Symbolic_Link (F_Name'Address);
-   end Is_Symbolic_Link;
 
    -------------------------
    -- Locate_Exec_On_Path --
@@ -1380,6 +1372,19 @@ package body GNAT.OS_Lib is
       else
          Result := To_Path_String_Access (Path_Addr, Path_Len);
          Free (Path_Addr);
+
+         --  Always return an absolute path name
+
+         if not Is_Absolute_Path (Result.all) then
+            declare
+               Absolute_Path : constant String :=
+                                 Normalize_Pathname (Result.all);
+            begin
+               Free (Result);
+               Result := new String'(Absolute_Path);
+            end;
+         end if;
+
          return Result;
       end if;
    end Locate_Exec_On_Path;
@@ -1422,6 +1427,7 @@ package body GNAT.OS_Lib is
    is
       C_File_Name : String (1 .. File_Name'Length + 1);
       C_Path      : String (1 .. Path'Length + 1);
+      Result      : String_Access;
 
    begin
       C_File_Name (1 .. File_Name'Length)   := File_Name;
@@ -1430,7 +1436,20 @@ package body GNAT.OS_Lib is
       C_Path    (1 .. Path'Length)          := Path;
       C_Path    (C_Path'Last)               := ASCII.NUL;
 
-      return Locate_Regular_File (C_File_Name'Address, C_Path'Address);
+      Result := Locate_Regular_File (C_File_Name'Address, C_Path'Address);
+
+      --  Always return an absolute path name
+
+      if Result /= null and then not Is_Absolute_Path (Result.all) then
+         declare
+            Absolute_Path : constant String := Normalize_Pathname (Result.all);
+         begin
+            Free (Result);
+            Result := new String'(Absolute_Path);
+         end;
+      end if;
+
+      return Result;
    end Locate_Regular_File;
 
    ------------------------
@@ -1453,12 +1472,12 @@ package body GNAT.OS_Lib is
      (Program_Name           : String;
       Args                   : Argument_List;
       Output_File_Descriptor : File_Descriptor;
-      Err_To_Out             : Boolean := True)
-      return                   Process_Id
+      Err_To_Out             : Boolean := True) return Process_Id
    is
       Saved_Output : File_Descriptor;
       Saved_Error  : File_Descriptor := Invalid_FD; -- prevent warning
       Pid          : Process_Id;
+
    begin
       if Output_File_Descriptor = Invalid_FD then
          return Invalid_Pid;
@@ -1645,9 +1664,6 @@ package body GNAT.OS_Lib is
          Length : System.Address);
       pragma Import (C, Get_Current_Dir, "__gnat_get_current_dir");
 
-      function Change_Dir (Dir_Name : String) return Integer;
-      pragma Import (C, Change_Dir, "chdir");
-
       Path_Buffer : String (1 .. Max_Path + Max_Path + 2);
       End_Path    : Natural := 0;
       Link_Buffer : String (1 .. Max_Path + 2);
@@ -1688,11 +1704,6 @@ package body GNAT.OS_Lib is
       function Strlen (S : System.Address) return Integer;
       pragma Import (C, Strlen, "strlen");
 
-      function Get_Directory  (Dir : String) return String;
-      --  If Dir is not empty, return it, adding a directory separator
-      --  if not already present, otherwise return current working directory
-      --  with terminating directory separator.
-
       function Final_Value (S : String) return String;
       --  Make final adjustment to the returned string.
       --  To compensate for non standard path name in Interix,
@@ -1700,57 +1711,10 @@ package body GNAT.OS_Lib is
       --  letter 'A' to 'Z', add an additional '/' at the beginning
       --  so that the returned value starts with "//x".
 
-      -------------------
-      -- Get_Directory --
-      -------------------
-
-      function Get_Directory (Dir : String) return String is
-      begin
-         --  Directory given, add directory separator if needed
-
-         if Dir'Length > 0 then
-            if Dir (Dir'Last) = Directory_Separator then
-               return Directory;
-            else
-               declare
-                  Result : String (1 .. Dir'Length + 1);
-               begin
-                  Result (1 .. Dir'Length) := Dir;
-                  Result (Result'Length) := Directory_Separator;
-                  return Result;
-               end;
-            end if;
-
-         --  Directory name not given, get current directory
-
-         else
-            declare
-               Buffer   : String (1 .. Max_Path + 2);
-               Path_Len : Natural := Max_Path;
-
-            begin
-               Get_Current_Dir (Buffer'Address, Path_Len'Address);
-
-               if Buffer (Path_Len) /= Directory_Separator then
-                  Path_Len := Path_Len + 1;
-                  Buffer (Path_Len) := Directory_Separator;
-               end if;
-
-               --  By default, the drive letter on Windows is in upper case
-
-               if On_Windows and then Path_Len >= 2 and then
-                 Buffer (2) = ':'
-               then
-                  System.Case_Util.To_Upper (Buffer (1 .. 1));
-               end if;
-
-               return Buffer (1 .. Path_Len);
-            end;
-         end if;
-      end Get_Directory;
-
-      Reference_Dir : constant String := Get_Directory (Directory);
-      --  Current directory name specified
+      function Get_Directory  (Dir : String) return String;
+      --  If Dir is not empty, return it, adding a directory separator
+      --  if not already present, otherwise return current working directory
+      --  with terminating directory separator.
 
       -----------------
       -- Final_Value --
@@ -1830,6 +1794,58 @@ package body GNAT.OS_Lib is
          end if;
       end Final_Value;
 
+      -------------------
+      -- Get_Directory --
+      -------------------
+
+      function Get_Directory (Dir : String) return String is
+      begin
+         --  Directory given, add directory separator if needed
+
+         if Dir'Length > 0 then
+            if Dir (Dir'Last) = Directory_Separator then
+               return Directory;
+            else
+               declare
+                  Result : String (1 .. Dir'Length + 1);
+               begin
+                  Result (1 .. Dir'Length) := Dir;
+                  Result (Result'Length) := Directory_Separator;
+                  return Result;
+               end;
+            end if;
+
+         --  Directory name not given, get current directory
+
+         else
+            declare
+               Buffer   : String (1 .. Max_Path + 2);
+               Path_Len : Natural := Max_Path;
+
+            begin
+               Get_Current_Dir (Buffer'Address, Path_Len'Address);
+
+               if Buffer (Path_Len) /= Directory_Separator then
+                  Path_Len := Path_Len + 1;
+                  Buffer (Path_Len) := Directory_Separator;
+               end if;
+
+               --  By default, the drive letter on Windows is in upper case
+
+               if On_Windows and then Path_Len >= 2 and then
+                 Buffer (2) = ':'
+               then
+                  System.Case_Util.To_Upper (Buffer (1 .. 1));
+               end if;
+
+               return Buffer (1 .. Path_Len);
+            end;
+         end if;
+      end Get_Directory;
+
+      Reference_Dir : constant String := Get_Directory (Directory);
+      --  Current directory name specified
+
    --  Start of processing for Normalize_Pathname
 
    begin
@@ -1885,90 +1901,36 @@ package body GNAT.OS_Lib is
          end loop;
       end if;
 
-      --  Resolve directory names for VMS and Windows
+      --  Resolve directory names for Windows (formerly also VMS)
 
       --  On VMS, if we have a Unix path such as /temp/..., and TEMP is a
-      --  logical name, we need to resolve this logical name.
+      --  logical name, we must not try to resolve this logical name, because
+      --  it may have multiple equivalences and if resolved we will only
+      --  get the first one.
 
       --  On Windows, if we have an absolute path starting with a directory
       --  separator, we need to have the drive letter appended in front.
 
-      --  For both platforms, Get_Current_Dir will return a suitable
-      --  directory name (logical names resolved on VMS, path starting with
-      --  a drive letter on Windows). So we find the directory, change to it,
-      --  call Get_Current_Dir and change the directory to the returned value.
-      --  Then, of course, we return to the previous directory.
+      --  On Windows, Get_Current_Dir will return a suitable directory
+      --  name (path starting with a drive letter on Windows). So we take this
+      --  drive letter and prepend it to the current path.
 
-      if (OpenVMS or On_Windows)
+      if On_Windows
         and then Path_Buffer (1) = Directory_Separator
+        and then Path_Buffer (2) /= Directory_Separator
       then
          declare
             Cur_Dir : String := Get_Directory ("");
-            --  Save the current directory, so that we can change dir back to
-            --  it. It is not a constant, because the last character (a
-            --  directory separator) is changed to ASCII.NUL to call the C
-            --  function chdir.
-
-            Path : String := Path_Buffer (1 .. End_Path + 1);
-            --  Copy of the current path. One character is added that may be
-            --  set to ASCII.NUL to call chdir.
-
-            Pos : Positive := End_Path;
-            --  Position of the last directory separator
-
-            Status : Integer;
-            --  Value returned by chdir
+            --  Get the current directory to get the drive letter
 
          begin
-            --  Look for the last directory separator
-
-            while Path (Pos) /= Directory_Separator loop
-               Pos := Pos - 1;
-            end loop;
-
-            --  Get the previous character that is not a directory separator
-
-            while Pos > 1 and then Path (Pos) = Directory_Separator loop
-               Pos := Pos - 1;
-            end loop;
-
-            --  If we are at the start of the path, take the full path.
-            --  It may be a file in the root directory, but it may also be
-            --  a subdirectory of the root directory.
-
-            if Pos = 1 then
-               Pos := End_Path;
-            end if;
-
-            --  Add the ASCII.NUL to be able to call the C function chdir
-
-            Path (Pos + 1) := ASCII.NUL;
-
-            Status := Change_Dir (Path (1 .. Pos + 1));
-
-            --  If Status is not zero, then we do nothing: this is a file
-            --  path or it is not a valid directory path.
-
-            if Status = 0 then
-               declare
-                  New_Dir : constant String := Get_Directory ("");
-                  --  The directory path
-
-                  New_Path : String (1 .. New_Dir'Length + End_Path - Pos);
-                  --  The new complete path, that is built below
-
-               begin
-                  New_Path (1 .. New_Dir'Length) := New_Dir;
-                  New_Path (New_Dir'Length + 1 .. New_Path'Last) :=
-                    Path_Buffer (Pos + 1 .. End_Path);
-                  End_Path := New_Path'Length;
-                  Path_Buffer (1 .. End_Path) := New_Path;
-               end;
-
-               --  Back to where we were before
-
-               Cur_Dir (Cur_Dir'Last) := ASCII.NUL;
-               Status := Change_Dir (Cur_Dir);
+            if Cur_Dir'Length > 2
+              and then Cur_Dir (Cur_Dir'First + 1) = ':'
+            then
+               Path_Buffer (3 .. End_Path + 2) := Path_Buffer (1 .. End_Path);
+               Path_Buffer (1 .. 2) :=
+                 Cur_Dir (Cur_Dir'First .. Cur_Dir'First + 1);
+               End_Path := End_Path + 2;
             end if;
          end;
       end if;
@@ -2204,6 +2166,15 @@ package body GNAT.OS_Lib is
       C_Name (C_Name'Last)      := ASCII.NUL;
       return Open_Read_Write (C_Name (C_Name'First)'Address, Fmode);
    end Open_Read_Write;
+
+   --------------------
+   -- Pid_To_Integer --
+   --------------------
+
+   function Pid_To_Integer (Pid : Process_Id) return Integer is
+   begin
+      return Integer (Pid);
+   end Pid_To_Integer;
 
    ----------
    -- Read --
