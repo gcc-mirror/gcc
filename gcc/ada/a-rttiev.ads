@@ -65,42 +65,7 @@ package Ada.Real_Time.Timing_Events is
 
 private
 
-   protected type Event_State is
-
-      --  D.15 (22/2) requires atomicity with respect to the operations
-      --  provided by the package and the timing events they manipulate. On
-      --  real-time operating systems suitable for implementing this package, a
-      --  different implementation strategy would be employed to meet that
-      --  requirement.
-
-      entry Set (Timeout : Time;  Handler : Timing_Event_Handler);
-      --  Changes the timeout and handler values for procedure Set_Handler. Can
-      --  only execute when the event is 'available', to prevent a race
-      --  condition between the caller of Set_Handler and the internal Timer
-      --  task that processes the events. In particular, D.15 (22/2) requires
-      --  that there be no possibility of a new handler executing in response
-      --  to an old timeout.
-
-      procedure Reset;
-      --  First resets the timeout to Time_First and the handler to
-      --  null. Indicates that Set (for Set_Handler) can now change the timeout
-      --  and/or handler.  Called only by the interal Timer task.
-
-      procedure Cancel;
-      --  Resets the timeout to Time_First and the handler to
-      --  null. Called by procedure Cancel_Handler and by procedure Reset.
-
-      function Current_Timeout return Time;
-      --  Returns the currently set timeout. The value Time_First is returned
-      --  if the Timing_Event is in the "cleared" state. Called by function
-      --  Time_of_Event.
-
-      function Current_Handler return Timing_Event_Handler;
-      --  Returns the currently set handler. The value null is returned if the
-      --  Timing_Event is in the "cleared" state. Called by function
-      --  Curent_Handler.
-
-   private
+   type Timing_Event is new Ada.Finalization.Limited_Controlled with record
       Timeout : Time := Time_First;
       --  The time at which the user's handler should be invoked when the
       --  event is "set" (i.e., when Handler is not null).
@@ -109,16 +74,6 @@ private
       --  An access value designating the protected procedure to be invoked
       --  at the Timeout time in the future.  When this value is null the event
       --  is said to be "cleared" and no timeout is processed.
-
-      Available : Boolean := True;
-      --  A flag controlling when users can change the Timeout and Handler
-      --  tuple. In particular the entry Set, called by procedure Set_Handler,
-      --  is controlled by this flag.
-
-   end Event_State;
-
-   type Timing_Event is new Ada.Finalization.Limited_Controlled with record
-      Control : Event_State;
    end record;
 
    overriding procedure Finalize (This : in out Timing_Event);
