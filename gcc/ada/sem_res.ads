@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,8 +114,7 @@ package Sem_Res is
    --  read the spec of Sem.
 
    procedure Pre_Analyze_And_Resolve (N : Node_Id);
-   --  Same, but use type of node because context does not impose a single
-   --  type.
+   --  Same, but use type of node because context does not impose a single type
 
 private
    procedure Resolve_Implicit_Type (N : Node_Id) renames Resolve;

@@ -41,6 +41,9 @@
 --  The base version of this unit Ada.Exceptions omits the Wide version of
 --  Exception_Name and is used to build the compiler and other basic tools.
 
+pragma Style_Checks (All_Checks);
+--  No subprogram ordering check, due to logical grouping
+
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
 --  elaboration circularities with System.Exception_Tables.
@@ -555,23 +558,24 @@ package body Ada.Exceptions is
    Rmsg_14 : constant String := "access before elaboration"        & NUL;
    Rmsg_15 : constant String := "accessibility check failed"       & NUL;
    Rmsg_16 : constant String := "all guards closed"                & NUL;
-   Rmsg_17 : constant String := "duplicated entry address"         & NUL;
-   Rmsg_18 : constant String := "explicit raise"                   & NUL;
-   Rmsg_19 : constant String := "finalize/adjust raised exception" & NUL;
-   Rmsg_20 : constant String := "implicit return with No_Return"   & NUL;
-   Rmsg_21 : constant String := "misaligned address value"         & NUL;
-   Rmsg_22 : constant String := "missing return"                   & NUL;
-   Rmsg_23 : constant String := "overlaid controlled object"       & NUL;
-   Rmsg_24 : constant String := "potentially blocking operation"   & NUL;
-   Rmsg_25 : constant String := "stubbed subprogram called"        & NUL;
-   Rmsg_26 : constant String := "unchecked union restriction"      & NUL;
-   Rmsg_27 : constant String := "illegal use of remote access-to-" &
+   Rmsg_17 : constant String := "Current_Task referenced in entry" &
+                                " body"                            & NUL;
+   Rmsg_18 : constant String := "duplicated entry address"         & NUL;
+   Rmsg_19 : constant String := "explicit raise"                   & NUL;
+   Rmsg_20 : constant String := "finalize/adjust raised exception" & NUL;
+   Rmsg_21 : constant String := "implicit return with No_Return"   & NUL;
+   Rmsg_22 : constant String := "misaligned address value"         & NUL;
+   Rmsg_23 : constant String := "missing return"                   & NUL;
+   Rmsg_24 : constant String := "overlaid controlled object"       & NUL;
+   Rmsg_25 : constant String := "potentially blocking operation"   & NUL;
+   Rmsg_26 : constant String := "stubbed subprogram called"        & NUL;
+   Rmsg_27 : constant String := "unchecked union restriction"      & NUL;
+   Rmsg_28 : constant String := "illegal use of remote access-to-" &
                                 "class-wide type, see RM E.4(18)"  & NUL;
-   Rmsg_28 : constant String := "empty storage pool"               & NUL;
-   Rmsg_29 : constant String := "explicit raise"                   & NUL;
-   Rmsg_30 : constant String := "infinite recursion"               & NUL;
-   Rmsg_31 : constant String := "object too large"                 & NUL;
-   Rmsg_32 : constant String := "restriction violation"            & NUL;
+   Rmsg_29 : constant String := "empty storage pool"               & NUL;
+   Rmsg_30 : constant String := "explicit raise"                   & NUL;
+   Rmsg_31 : constant String := "infinite recursion"               & NUL;
+   Rmsg_32 : constant String := "object too large"                 & NUL;
 
    -----------------------
    -- Polling Interface --
@@ -1106,7 +1110,7 @@ package body Ada.Exceptions is
 
    procedure Rcheck_28 (File : System.Address; Line : Integer) is
    begin
-      Raise_Storage_Error_Msg (File, Line, Rmsg_28'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_28'Address);
    end Rcheck_28;
 
    procedure Rcheck_29 (File : System.Address; Line : Integer) is

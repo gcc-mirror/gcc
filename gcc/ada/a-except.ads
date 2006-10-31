@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,8 +35,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of Ada.Exceptions is a full Ada 95 version, but lacks the
---  additional definitions of Exception_Name returning Wide_[Wide_]String.
+--  This version of Ada.Exceptions is a full Ada 95 version.
 --  It is used for building the compiler and the basic tools, since these
 --  builds may be done with bootstrap compilers that cannot handle these
 --  additions. The full version of Ada.Exceptions can be found in the files
@@ -57,14 +56,17 @@ package Ada.Exceptions is
    pragma Warnings (Off);
    pragma Preelaborate_05;
    pragma Warnings (On);
-   --  In accordance with Ada 2005 AI-362. The warnings pragmas are so that we
-   --  can compile this using older compiler versions, which will ignore the
-   --  pragma, which is fine for the bootstrap.
+   --  We make this preelaborable in Ada 2005 mode. If we did not do this, then
+   --  run time units used by the compiler (e.g. s-soflin.ads) would run
+   --  into trouble. Conformance is not an issue, since this version is used
+   --  only by the compiler.
 
    type Exception_Id is private;
+
    Null_Id : constant Exception_Id;
 
    type Exception_Occurrence is limited private;
+
    type Exception_Occurrence_Access is access all Exception_Occurrence;
 
    Null_Occurrence : constant Exception_Occurrence;
@@ -76,11 +78,11 @@ package Ada.Exceptions is
 
    procedure Raise_Exception (E : Exception_Id; Message : String := "");
    --  Note: it would be really nice to give a pragma No_Return for this
-   --  procedure, but it would be wrong, since Raise_Exception does return
-   --  if given the null exception. However we do special case the name in
-   --  the test in the compiler for issuing a warning for a missing return
-   --  after this call. Program_Error seems reasonable enough in such a case.
-   --  See also the routine Raise_Exception_Always in the private part.
+   --  procedure, but it would be wrong, since Raise_Exception does return if
+   --  given the null exception in Ada 95 mode. However we do special case the
+   --  name in the test in the compiler for issuing a warning for a missing
+   --  return after this call. Program_Error seems reasonable enough in such a
+   --  case. See also the routine Raise_Exception_Always in the private part.
 
    function Exception_Message (X : Exception_Occurrence) return String;
 
