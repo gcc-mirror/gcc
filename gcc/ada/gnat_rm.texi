@@ -8,7 +8,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c              Copyright (C) 1995-2005 Free Software Foundation              o
+@c              Copyright (C) 1995-2006 Free Software Foundation              o
 @c                                                                            o
 @c                                                                            o
 @c  GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).    o
@@ -17,8 +17,7 @@
 
 @setfilename gnat_rm.info
 
-@set FSFEDITION
-
+@set EDITION GNAT
 @settitle GNAT Reference Manual
 
 @setchapternewpage odd
@@ -176,6 +175,7 @@ Implementation Defined Pragmas
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
 * Pragma Subtitle::
+* Pragma Suppress::
 * Pragma Suppress_All::
 * Pragma Suppress_Exception_Locations::
 * Pragma Suppress_Initialization::
@@ -196,6 +196,7 @@ Implementation Defined Pragmas
 * Pragma Volatile::
 * Pragma Warnings::
 * Pragma Weak_External::
+* Pragma Wide_Character_Encoding::
 
 Implementation Defined Attributes
 
@@ -234,6 +235,7 @@ Implementation Defined Attributes
 * Safe_Large::
 * Small::
 * Storage_Unit::
+* Stub_Type::
 * Target_Name::
 * Tick::
 * To_Address::
@@ -716,6 +718,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
 * Pragma Subtitle::
+* Pragma Suppress::
 * Pragma Suppress_All::
 * Pragma Suppress_Exception_Locations::
 * Pragma Suppress_Initialization::
@@ -736,6 +739,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Volatile::
 * Pragma Warnings::
 * Pragma Weak_External::
+* Pragma Wide_Character_Encoding::
 @end menu
 
 @node Pragma Abort_Defer
@@ -3052,38 +3056,88 @@ will always generate an invalid value if one exists.
 Syntax:
 
 @smallexample @c ada
-pragma Obsolescent [(static_string_EXPRESSION [,Ada_05])];
+pragma Obsolescent
+  (Entity => NAME [, static_string_EXPRESSION [,Ada_05]]);
 @end smallexample
 
 @noindent
-This pragma can occur immediately following a subprogram
-declaration and indicates that the associated function or procedure
+This pragma can occur immediately following a declaration of an entity,
+including the case of a record component, and usually the Entity name
+must match the name of the entity declared by this declaration.
+Alternatively, the pragma can immediately follow an
+enumeration type declaration, where the entity argument names one of the
+enumeration literals.
+
+This pragma is used to indicate that the named entity
 is considered obsolescent and should not be used. Typically this is
 used when an API must be modified by eventually removing or modifying
-existing subprograms. The pragma can be used at an intermediate stage
-when the subprogram is still present, but will be removed later.
+existing subprograms or other entities. The pragma can be used at an
+intermediate stage when the entity is still present, but will be
+removed later.
 
 The effect of this pragma is to output a warning message on
 a call to a program thus marked that the
 subprogram is obsolescent if the appropriate warning option in the
-compiler is activated. If a parameter is present, then a second
+compiler is activated. If the string parameter is present, then a second
 warning message is given containing this text.
 In addition, a call to such a program is considered a violation of
 pragma Restrictions (No_Obsolescent_Features).
 
 This pragma can also be used as a program unit pragma for a package,
-in which case it indicates that the entire package is considered
+in which case the entity name is the name of the package, and the
+pragma indicates that the entire package is considered
 obsolescent. In this case a client @code{with}'ing such a package
 violates the restriction, and the @code{with} statement is
 flagged with warnings if the warning option is set.
 
-If the optional second parameter is present (which must be exactly
+If the optional third parameter is present (which must be exactly
 the identifier Ada_05, no other argument is allowed), then the
 indication of obsolescence applies only when compiling in Ada 2005
 mode. This is primarily intended for dealing with the situations
 in the predefined library where subprograms or packages
 have become defined as obsolescent in Ada 2005
 (e.g. in Ada.Characters.Handling), but may be used anywhere.
+
+The following examples show typical uses of this pragma:
+
+@smallexample @c ada
+package p is
+   pragma Obsolescent
+     (Entity => p, "use pp instead of p");
+end p;
+
+package q is
+   procedure q2;
+   pragma Obsolescent
+     (Entity => q2, "use q2new instead");
+
+   type R is new integer;
+   pragma Obsolescent
+     (Entity => R, "use RR in Ada 2005", Ada_05);
+
+   type M is record
+      F1 : Integer;
+      F2 : Integer;
+      pragma Obsolescent (Entity => F2);
+      F3 : Integer;
+   end record;
+
+   type E is (a, bc, 'd', quack);
+   pragma Obsolescent (Entity => bc)
+   pragma Obsolescent (Entity => 'd')
+
+   function "+"
+     (a, b : character) return character;
+   pragma Obsolescent (Entity => "+");
+end;
+@end smallexample
+
+@noindent
+In an earlier version of GNAT, the Entity parameter was not required,
+and this form is still accepted for compatibility purposes. If the
+Entity parameter is omitted, then the pragma applies to the declaration
+immediately preceding the pragma (this form cannot be used for the
+enumeration literal case).
 
 @node Pragma Passive
 @unnumberedsec Pragma Passive
@@ -3718,6 +3772,24 @@ pragma Subtitle ([Subtitle =>] STRING_LITERAL);
 This pragma is recognized for compatibility with other Ada compilers
 but is ignored by GNAT@.
 
+@node Pragma Suppress
+@unnumberedsec Pragma Suppress
+@findex Suppress
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Suppress (Identifier [, [On =>] Name]);
+@end smallexample
+
+@noindent
+This is a standard pragma, and supports all the check names required in
+the RM. It is included here because GNAT recognizes one additional check
+name: @code{Alignment_Check} which can be used to suppress alignment checks
+on addresses used in address clauses. Such checks can also be suppressed
+by suppressing range checks, but the specific use of @code{Alignment_Check}
+allows suppression of alignment checks without suppressing other range checks.
+
 @node Pragma Suppress_All
 @unnumberedsec Pragma Suppress_All
 @findex Suppress_All
@@ -3966,64 +4038,12 @@ pragma Unchecked_Union (first_subtype_local_NAME);
 @end smallexample
 
 @noindent
-This pragma is used to declare that the specified type should be represented
-in a manner
-equivalent to a C union type, and is intended only for use in
-interfacing with C code that uses union types.  In Ada terms, the named
-type must obey the following rules:
-
-@itemize @bullet
-@item
-It is a non-tagged non-limited record type.
-@item
-It has a single discrete discriminant with a default value.
-@item
-The component list consists of a single variant part.
-@item
-Each variant has a component list with a single component.
-@item
-No nested variants are allowed.
-@item
-No component has an explicit default value.
-@item
-No component has a non-static constraint.
-@end itemize
-
-@noindent
-In addition, given a type that meets the above requirements, the
-following restrictions apply to its use throughout the program:
-
-@itemize @bullet
-@item
-The discriminant name can be mentioned only in an aggregate.
-@item
-No subtypes may be created of this type.
-@item
-The type may not be constrained by giving a discriminant value.
-@item
-The type cannot be passed as the actual for a generic formal with a
-discriminant.
-@end itemize
-
-@noindent
-Equality and inequality operations on @code{unchecked_unions} are not
-available, since there is no discriminant to compare and the compiler
-does not even know how many bits to compare.  It is implementation
-dependent whether this is detected at compile time as an illegality or
-whether it is undetected and considered to be an erroneous construct.  In
-GNAT, a direct comparison is illegal, but GNAT does not attempt to catch
-the composite case (where two composites are compared that contain an
-unchecked union component), so such comparisons are simply considered
-erroneous.
-
-The layout of the resulting type corresponds exactly to a C union, where
-each branch of the union corresponds to a single variant in the Ada
-record.  The semantics of the Ada program is not changed in any way by
-the pragma, i.e.@: provided the above restrictions are followed, and no
-erroneous incorrect references to fields or erroneous comparisons occur,
-the semantics is exactly as described by the Ada reference manual.
-Pragma @code{Suppress (Discriminant_Check)} applies implicitly to the
-type and the default convention is C.
+This pragma is used to specify a representation of a record type that is
+equivalent to a C union. It was introduced as a GNAT implementation defined
+pragma in the GNAT Ada 95 mode. Ada 2005 includes an extended version of this
+pragma, making it language defined, and GNAT fully implements this extended
+version in all language modes (Ada 83, Ada 95, and Ada 2005). For full
+details, consult the Ada 2005 RM, section 8.3.3.
 
 @node Pragma Unimplemented_Unit
 @unnumberedsec Pragma Unimplemented_Unit
@@ -4078,6 +4098,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Unreferenced (local_NAME @{, local_NAME@});
+pragma Unreferenced (library_unit_NAME @{, library_unit_NAME@});
 @end smallexample
 
 @noindent
@@ -4111,6 +4132,12 @@ regardless of whether they occur in the same unit as the subprogram
 declaration, then this pragma should not be used (calls from another
 unit would not be flagged); pragma Obsolescent can be used instead
 for this purpose, see @xref{Pragma Obsolescent}.
+
+The second form of pragma @code{Unreferenced} is used within a context
+clause. In this case the arguments must be unit names of units previously
+mentioned in @code{with} clauses (similar to the usage of pragma
+@code{Elaborate_All}. The effect is to suppress warnings about unreferenced
+units.
 
 @node Pragma Unreserve_All_Interrupts
 @unnumberedsec Pragma Unreserve_All_Interrupts
@@ -4274,8 +4301,10 @@ Dec Ada 83.
 Syntax:
 
 @smallexample @c ada
-pragma Warnings (On | Off [, local_NAME]);
+pragma Warnings (On | Off);
+pragma Warnings (On | Off, local_NAME);
 pragma Warnings (static_string_EXPRESSION);
+pragma Warnings (On | Off, static_string_EXPRESSION);
 @end smallexample
 
 @noindent
@@ -4286,14 +4315,14 @@ current unit.  If generation of warnings is turned off using this
 pragma, then no warning messages are output, regardless of the
 setting of the command line switches.
 
-The form with a single argument is a configuration pragma.
+The form with a single argument may be used as a configuration pragma.
 
 If the @var{local_NAME} parameter is present, warnings are suppressed for
 the specified entity.  This suppression is effective from the point where
 it occurs till the end of the extended scope of the variable (similar to
 the scope of @code{Suppress}).
 
-The form with a static_string_EXPRESSION argument provides more precise
+The form with a single static_string_EXPRESSION argument provides more precise
 control over which warnings are active. The string is a list of letters
 specifying which warnings are to be activated and which deactivated. The
 code for these letters is the same as the string used in the command
@@ -4326,7 +4355,7 @@ l   turn on warnings for missing elaboration pragma
 L   turn off warnings for missing elaboration pragma
 m   turn on warnings for variable assigned but not read
 M   turn off warnings for variable assigned but not read
-n   normal warning mode (cancels s/e)
+n   normal warning mode (cancels -gnatws/-gnatwe)
 o   turn on warnings for address clause overlay
 O   turn off warnings for address clause overlay
 p   turn on warnings for ineffective pragma Inline
@@ -4338,6 +4367,8 @@ u   turn on warnings for unused entity
 U   turn off warnings for unused entity
 v   turn on warnings for unassigned variable
 V   turn off warnings for unassigned variable
+w   turn on warnings for wrong low bound assumption
+W   turn off warnings for wrong low bound assumption
 x   turn on warnings for export/import
 X   turn off warnings for export/import
 y   turn on warnings for Ada 2005 incompatibility
@@ -4351,7 +4382,39 @@ The specified warnings will be in effect until the end of the program
 or another pragma Warnings is encountered. The effect of the pragma is
 cumulative. Initially the set of warnings is the standard default set
 as possibly modified by compiler switches. Then each pragma Warning
-modifies this set of warnings as specified.
+modifies this set of warnings as specified. This form of the pragma may
+also be used as a configuration pragma.
+
+The fourth form, with an On|Off parameter and a string, is used to
+control individual messages, based on their text. The string argument
+is a pattern that is used to match against the text of individual
+warning messages (not including the initial "warnings: " tag).
+
+The pattern may start with an asterisk, which matches otherwise unmatched
+characters at the start of the message, and it may also end with an asterisk
+which matches otherwise unmatched characters at the end of the message. For
+example, the string "*alignment*" could be used to match any warnings about
+alignment problems. Within the string, the sequence "*" can be used to match
+any sequence of characters enclosed in quotation marks. No other regular
+expression notations are permitted. All characters other than asterisk in
+these three specific cases are treated as literal characters in the match.
+
+There are two ways to use this pragma. The OFF form can be used as a
+configuration pragma. The effect is to suppress all warnings (if any)
+that match the pattern string throughout the compilation.
+
+The second usage is to suppress a warning locally, and in this case, two
+pragmas must appear in sequence:
+
+@smallexample @c ada
+pragma Warnings (Off, Pattern);
+.. code where given warning is to be suppressed
+pragma Warnings (On, Pattern);
+@end smallexample
+
+@noindent
+In this usage, the pattern string must match in the Off and On pragmas,
+and at least one matching warning must be suppressed.
 
 @node Pragma Weak_External
 @unnumberedsec Pragma Weak_External
@@ -4403,6 +4466,32 @@ package body External_Module is
   end Present;
 end External_Module;
 @end smallexample
+
+@node Pragma Wide_Character_Encoding
+@unnumberedsec Pragma Wide_Character_Encoding
+@findex Wide_Character_Encoding
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Wide_Character_Encoding (IDENTIFIER | CHRARACTER_LITERAL);
+@end smallexample
+
+@noindent
+This pragma specifies the wide character encoding to be used in program
+source text appearing subsequently. It is a configuration pragma, but may
+also be used at any point that a pragma is allowed, and it is permissible
+to have more than one such pragma in a file, allowing multiple encodings
+to appear within the same file.
+
+The argument can be an identifier or a character literal. In the identifier
+case, it is one of @code{HEX}, @code{UPPER}, @code{SHIFT_JIS},
+@code{EUC}, @code{UTF8}, or @code{BRACKETS}. In the character literal
+case it is correspondingly one of the characters h,u,s,e,8,b.
+
+Note that when the pragma is used within a file, it affects only the
+encoding within that file, and does not affect withed units, specs,
+or subunits.
 
 @node Implementation Defined Attributes
 @chapter Implementation Defined Attributes
@@ -4459,6 +4548,7 @@ consideration, you should minimize the use of these attributes.
 * Safe_Large::
 * Small::
 * Storage_Unit::
+* Stub_Type::
 * Target_Name::
 * Tick::
 * To_Address::
@@ -5040,6 +5130,27 @@ this attribute when applied to floating-point types.
 @noindent
 @code{Standard'Storage_Unit} (@code{Standard} is the only permissible
 prefix) provides the same value as @code{System.Storage_Unit}.
+
+@node Stub_Type
+@unnumberedsec Stub_Type
+@findex Stub_Type
+@noindent
+The GNAT implementation of remote access-to-classwide types is
+organised as described in AARM section E.4 (20.t): a value of an RACW type
+(designating a remote object) is represented as a normal access
+value, pointing to a "stub" object which in turn contains the
+necessary information to contact the designated remote object. A
+call on any dispatching operation of such a stub object does the
+remote call, if necessary, using the information in the stub object
+to locate the target partition, etc.
+
+For a prefix @code{T} that denotes a remote access-to-classwide type,
+@code{T'Stub_Type} denotes the type of the corresponding stub objects.
+
+By construction, the layout of @code{T'Stub_Type} is identical to that of
+type @code{RACW_Stub_Type} declared in the internal implementation-defined
+unit @code{System.Partition_Interface}. Use of this attribute will create
+an implicit dependency on this unit.
 
 @node Target_Name
 @unnumberedsec Target_Name
@@ -7376,13 +7487,17 @@ where the certification protocol requires the use of short-circuit
 @findex No_Dispatching_Calls
 This restriction ensures at compile time that the code generated by the
 compiler involves no dispatching calls. The use of this restriction allows the
-safe use of record extensions and membership tests and ensures that the code 
-contains no indirect calls through a dispatching mechanism. (Note that this
-includes internally-generated calls created by the compiler, for example in
-the implementation of the predefined attributes on class-wide objects.) The
+safe use of record extensions, classwide membership tests and other classwide
+features not involving implicit dispatching. This restriction ensures that
+the code contains no indirect calls through a dispatching mechanism. Note that
+this includes internally-generated calls created by the compiler, for example
+in the implementation of class-wide objects assignments. The
 membership test is allowed in the presence of this restriction, because its
-implementation requires no dispatching. The following example indicates
-constructs that violate this restriction.
+implementation requires no dispatching.
+This restriction is comparable to the official Ada restriction
+@code{No_Dispatch} except that it is a bit less restrictive in that it allows
+all classwide constructs that do not imply dispatching.
+The following example indicates constructs that violate this restriction.
 
 @smallexample
 package Pkg is
@@ -7400,10 +7515,11 @@ end Pkg;
 with Pkg; use Pkg;
 procedure Example is
   procedure Test (O : T'Class) is
-    N : Natural := O'Size; --  Error: Dispatching call
+    N : Natural  := O'Size;--  Error: Dispatching call
+    C : T'Class := O;      --  Error: implicit Dispatching Call
   begin
     if O in DT'Class then  --  OK   : Membership test
-       Q (DT (O));         --  OK   : Type conversion plus direct call         
+       Q (DT (O));         --  OK   : Type conversion plus direct call
     else
        P (O);              --  Error: Dispatching call
     end if;
@@ -7599,6 +7715,14 @@ registry procedure).  This restriction is enforced on
 a unit by unit basis, it need not be obeyed consistently
 throughout a partition.
 
+In the case of aggregates with others, if the aggregate has a dynamic
+size, there is no way to eliminate the elaboration code (such dynamic
+bounds would be incompatible with @code{Preelaborate} in any case. If
+the bounds are static, then use of this restriction actually modifies
+the code choice of the compiler to avoid generating a loop, and instead
+generate the aggregate statically if possible, no matter how many times
+the data for the others clause must be repeatedly generated.
+
 It is not possible to precisely document
 the constructs which are compatible with this restriction, since,
 unlike most other restrictions, this is not a restriction on the
@@ -7616,6 +7740,10 @@ out the value of X at compile time, in which case this initialization
 can be done by the loader, and requires no initialization code. It
 is not possible to document the precise conditions under which the
 optimizer can figure this out.
+
+Note that this the implementation of this restriction requires full
+code generation. If it is used in conjunction with "semantics only"
+checking, then some cases of violations may be missed.
 
 @item No_Entry_Queue
 @findex No_Entry_Queue
@@ -10223,7 +10351,8 @@ Since this source of erroneous behavior can have unfortunate effects, GNAT
 checks (at compile time if possible, generating a warning, or at execution
 time with a run-time check) that the alignment is appropriate.  If the
 run-time check fails, then @code{Program_Error} is raised.  This run-time
-check is suppressed if range checks are suppressed, or if
+check is suppressed if range checks are suppressed, or if the special GNAT
+check Alignment_Check is suppressed, or if
 @code{pragma Restrictions (No_Elaboration_Code)} is in effect.
 
 @findex Export
@@ -10340,7 +10469,7 @@ conventions, and for example records are laid out in a manner that is
 consistent with C@.  This means that specifying convention C (for example)
 has no effect.
 
-There are three exceptions to this general rule:
+There are four exceptions to this general rule:
 
 @itemize @bullet
 
@@ -10388,6 +10517,14 @@ C or Fortran convention for a derived Boolean, as in the following example:
 then the GNAT generated code will treat any nonzero value as true.  For truth
 values generated by GNAT, the conventional value 1 will be used for True, but
 when one of these values is read, any nonzero value is treated as True.
+
+@item Access types on OpenVMS
+For 64-bit OpenVMS systems, access types (other than those for unconstrained
+arrays) are 64-bits long. An exception to this rule is for the case of
+C-convention access types where there is no explicit size clause present (or
+inheritied for derived types). In this case, GNAT chooses to make these
+pointers 32-bits, which provides an easier path for migration of 32-bit legacy
+code. size clause specifying 64-bits must be used to obtain a 64-bit pointer.
 
 @end itemize
 
@@ -11615,10 +11752,49 @@ On input, brackets coding can also be used for upper half characters,
 e.g.@: @code{["C1"]} for lower case a.  However, on output, brackets notation
 is only used for wide characters with a code greater than @code{16#FF#}.
 
+Note that brackets coding is not normally used in the context of
+Wide_Text_IO or Wide_Wide_Text_IO, since it is really just designed as
+a portable way of encoding source files. In the contect of Wide_Text_IO
+or Wide_Wide_Text_IO, it can only be used if the file does not contain
+any instance of the left bracket character other than to encode wide
+character values using the brackets encoding method. In practice it is
+expected that some standard wide character encoding method such
+as UTF-8 will be used for text input output.
+
+If brackets notation is used, then any occurrence of a left bracket
+in the input file which is not the start of a valid wide character
+sequence will cause Constraint_Error to be raised. It is possible to
+encode a left bracket as ["5B"] and Wide_Text_IO and Wide_Wide_Text_IO
+input will interpret this as a left bracket.
+
+However, when a left bracket is output, it will be output as a left bracket
+and not as ["5B"]. We make this decision because for normal use of
+Wide_Text_IO for outputting messages, it is unpleasant to clobber left
+brackets. For example, if we write:
+
+@smallexample
+   Put_Line ("Start of output [first run]");
+@end smallexample
+
+@noindent
+we really do not want to have the left bracket in this message clobbered so
+that the output reads:
+
+@smallexample
+   Start of output ["5B"]first run]
+@end smallexample
+
+@noindent
+In practice brackets encoding is reasonably useful for normal Put_Line use
+since we won't get confused between left brackets and wide character
+sequences in the output. But for input, or when files are written out
+and read back in, it really makes better sense to use one of the standard
+encoding methods such as UTF-8.
+
 @end table
 
 @noindent
-For the coding schemes other than Hex and Brackets encoding,
+For the coding schemes other than UTF-8, Hex, or Brackets encoding,
 not all wide character
 values can be represented.  An attempt to output a character that cannot
 be represented using the encoding scheme for the file causes
@@ -13796,6 +13972,10 @@ optimizations with respect to the instruction specified should be
 suppressed, and that in particular, for an instruction that has outputs,
 the instruction will still be generated, even if none of the outputs are
 used.  See the full description in the GCC manual for further details.
+Generally it is strongly advisable to use Volatile for any ASM statement
+that is missing either input or output operands, or when two or more ASM
+statements appear in sequence, to avoid unwanted optimizations. A warning
+is generated if this advice is not followed.
 
 The @code{Asm} subprograms may be used in two ways.  First the procedure
 forms can be used anywhere a procedure call would be valid, and

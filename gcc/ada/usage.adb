@@ -210,15 +210,27 @@ begin
    Write_Switch_Char ("i?");
    Write_Line ("Identifier char set (?=1/2/3/4/5/8/9/p/f/n/w)");
 
+   --  Line for -gnatj switch
+
+   Write_Switch_Char ("jnn");
+   Write_Line ("Format error and warning messages to fit nn character lines");
+
    --  Line for -gnatk switch
 
    Write_Switch_Char ("k");
    Write_Line ("Limit file names to nn characters (k = krunch)");
 
-   --  Line for -gnatl switch
+   --  Lines for -gnatl switch
 
    Write_Switch_Char ("l");
    Write_Line ("Output full source listing with embedded error messages");
+   Write_Switch_Char ("l=f");
+   Write_Line ("Output full source listing to specified file");
+
+   --  Line for -gnatL switch
+
+   Write_Switch_Char ("L");
+   Write_Line ("List corresponding source text in -gnatG or -gnatD output");
 
    --  Line for -gnatm switch
 
@@ -317,6 +329,8 @@ begin
    Write_Line ("        C    turn off checking for copies");
    Write_Line ("        d    turn on default (RM) checking");
    Write_Line ("        D    turn off default (RM) checking");
+   Write_Line ("        e    turn on checking for elementary components");
+   Write_Line ("        E    turn off checking for elementary components");
    Write_Line ("        f    turn on checking for floating-point");
    Write_Line ("        F    turn off checking for floating-point");
    Write_Line ("        i    turn on checking for in params");
@@ -339,7 +353,7 @@ begin
 
    Write_Switch_Char ("wxx");
    Write_Line ("Enable selected warning modes, xx = list of parameters:");
-   Write_Line ("        a    turn on all optional warnings (except d,h,l)");
+   Write_Line ("        a    turn on all optional warnings (except d,h,l,t)");
    Write_Line ("        A    turn off all optional warnings");
    Write_Line ("        b    turn on warnings for bad fixed value " &
                                                   "(not multiple of small)");
@@ -377,13 +391,22 @@ begin
    Write_Line ("        O    turn off warnings for address clause overlay");
    Write_Line ("        p    turn on warnings for ineffective pragma Inline");
    Write_Line ("        P*   turn off warnings for ineffective pragma Inline");
+   Write_Line ("        q    turn on warnings for questionable " &
+                                                  "missing paretheses");
+   Write_Line ("        Q*   turn off warnings for questionable " &
+                                                  "missing paretheses");
    Write_Line ("        r    turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        s    suppress all warnings");
+   Write_Line ("        t    turn on warnings for tracking deleted code");
+   Write_Line ("        T*   turn off warnings for tracking deleted code");
    Write_Line ("        u    turn on warnings for unused entity");
    Write_Line ("        U*   turn off warnings for unused entity");
    Write_Line ("        v*   turn on warnings for unassigned variable");
    Write_Line ("        V    turn off warnings for unassigned variable");
+   Write_Line ("        w*   turn on warnings for wrong low bound assumption");
+   Write_Line ("        W    turn off warnings for wrong low bound " &
+                                                  "assumption");
    Write_Line ("        x*   turn on warnings for export/import");
    Write_Line ("        X    turn off warnings for export/import");
    Write_Line ("        y*   turn on warnings for Ada 2005 incompatibility");

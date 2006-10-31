@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,6 +90,10 @@ package GNAT.Array_Split is
    --  is a sequence of Element along which to split the array. The source
    --  array is sliced at separator boundaries. The separators are not
    --  included as part of the resulting slices.
+   --
+   --  Note that if From is terminated by a separator an extra empty element
+   --  is added to the slice set. If From only contains a separator the slice
+   --  set contains two empty elements.
 
    procedure Create
      (S          : out Slice_Set;

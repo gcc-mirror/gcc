@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,12 @@ package Validsw is
    --  true using -gnatVc, or a 'c' in the argument of a Validity_Checks
    --  pragma, then the right side of assignments and also initializing
    --  expressions in object declarations are checked for validity.
+
+   Validity_Check_Components : Boolean := False;
+   --  Controls validity checking for assignment to elementary components of
+   --  records. If this switch is set true using -gnatVe, or an 'e' in the
+   --  argument of Validity_Checks pragma, then the right hand of an assignment
+   --  to such a component is checked for validity.
 
    Validity_Check_Default : Boolean := True;
    --  Controls default (reference manual) validity checking. If this switch is

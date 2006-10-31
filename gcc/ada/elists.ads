@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,7 +86,7 @@ package Elists is
    function Elmts_Address return System.Address;
    --  Return address of Elmts table (used in Back_End for Gigi call)
 
-   function Node (Elmt : Elmt_Id) return Node_Id;
+   function Node (Elmt : Elmt_Id) return Node_Or_Entity_Id;
    pragma Inline (Node);
    --  Returns the value of a given list element. Returns Empty if Elmt
    --  is set to No_Elmt.
@@ -98,13 +98,13 @@ package Elists is
 
    function First_Elmt (List : Elist_Id) return Elmt_Id;
    pragma Inline (First_Elmt);
-   --  Obtains the first element of the given element list or, if the
-   --  list has no items, then No_Elmt is returned.
+   --  Obtains the first element of the given element list or, if the list has
+   --  no items, then No_Elmt is returned.
 
    function Last_Elmt (List : Elist_Id) return Elmt_Id;
    pragma Inline (Last_Elmt);
-   --  Obtains the last element of the given element list or, if the
-   --  list has no items, then No_Elmt is returned.
+   --  Obtains the last element of the given element list or, if the list has
+   --  no items, then No_Elmt is returned.
 
    function Next_Elmt (Elmt : Elmt_Id) return Elmt_Id;
    pragma Inline (Next_Elmt);
