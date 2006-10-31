@@ -664,7 +664,8 @@ static bool extension_within_bounds_p (const struct loop *, struct iv_class *,
 				       HOST_WIDE_INT, rtx);
 static void check_ext_dependent_givs (const struct loop *, struct iv_class *);
 static int basic_induction_var (const struct loop *, rtx, enum machine_mode,
-				rtx, rtx, rtx *, rtx *, rtx **);
+				rtx, rtx, rtx *, rtx *, rtx **,
+				enum machine_mode);
 static rtx simplify_giv_expr (const struct loop *, rtx, rtx *, int *);
 static int general_induction_var (const struct loop *loop, rtx, rtx *, rtx *,
 				  rtx *, rtx *, int, int *, enum machine_mode);
@@ -6644,7 +6645,7 @@ check_insn_for_bivs (struct loop *loop, rtx p, int not_every_iteration,
 	  if (basic_induction_var (loop, SET_SRC (set),
 				   GET_MODE (SET_SRC (set)),
 				   dest_reg, p, &inc_val, &mult_val,
-				   &location))
+				   &location, VOIDmode))
 	    {
 	      /* It is a possible basic induction variable.
 	         Create and initialize an induction structure for it.  */
@@ -7552,11 +7553,12 @@ update_giv_derive (const struct loop *loop, rtx p)
    If X is an assignment of an invariant into DEST_REG, we set
    *MULT_VAL to CONST0_RTX, and store the invariant into *INC_VAL.
 
-   We also want to detect a BIV when it corresponds to a variable
-   whose mode was promoted.  In that case, an increment
-   of the variable may be a PLUS that adds a SUBREG of that variable to
-   an invariant and then sign- or zero-extends the result of the PLUS
-   into the variable.
+   We also want to detect a BIV when it corresponds to a variable whose
+   mode was promoted.  In that case, an increment of the variable may be
+   a PLUS that adds a SUBREG of that variable to an invariant and then
+   sign- or zero-extends the result of the PLUS into the variable.  Or
+   it may be a PLUS that adds the variable to an invariant, takes SUBREG
+   of the result and then sign- or zero-extends it into the variable.
 
    Most GIVs in such cases will be in the promoted mode, since that is the
    probably the natural computation mode (and almost certainly the mode
@@ -7571,16 +7573,19 @@ update_giv_derive (const struct loop *loop, rtx p)
    those overflows are defined.  So we only check for SIGN_EXTEND and
    not ZERO_EXTEND.
 
+   If we happen to detect such a promoted BIV, we set inner_mode to the
+   mode in which the BIV is incremented.
+
    If we cannot find a biv, we return 0.  */
 
 static int
 basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 		     rtx dest_reg, rtx p, rtx *inc_val, rtx *mult_val,
-		     rtx **location)
+		     rtx **location, enum machine_mode inner_mode)
 {
   enum rtx_code code;
   rtx *argp, arg;
-  rtx insn, set = 0, last, inc;
+  rtx insn, last, inc;
 
   code = GET_CODE (x);
   *location = NULL;
@@ -7620,7 +7625,13 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 	 *inc_val initialization sequence generated here and when *inc_val
 	 is going to be actually used, emit it at some suitable place.  */
       last = get_last_insn ();
-      inc = convert_modes (GET_MODE (dest_reg), GET_MODE (x), arg, 0);
+      if (inner_mode != VOIDmode)
+	{
+	  arg = convert_modes (inner_mode, GET_MODE (x), arg, 0);
+	  inc = convert_modes (GET_MODE (dest_reg), inner_mode, arg, 0);
+	}
+      else
+	inc = convert_modes (GET_MODE (dest_reg), GET_MODE (x), arg, 0);
       if (get_last_insn () != last)
 	{
 	  delete_insns_since (last);
@@ -7634,12 +7645,11 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 
     case SUBREG:
       /* If what's inside the SUBREG is a BIV, then the SUBREG.  This will
-	 handle addition of promoted variables.
-	 ??? The comment at the start of this function is wrong: promoted
-	 variable increments don't look like it says they do.  */
+	 handle addition of promoted variables.  */
       return basic_induction_var (loop, SUBREG_REG (x),
 				  GET_MODE (SUBREG_REG (x)),
-				  dest_reg, p, inc_val, mult_val, location);
+				  dest_reg, p, inc_val, mult_val,
+				  location, GET_MODE (x));
 
     case REG:
       /* If this register is assigned in a previous insn, look at its
@@ -7653,7 +7663,7 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
       insn = p;
       while (1)
 	{
-	  rtx dest;
+	  rtx set, dest;
 	  do
 	    {
 	      insn = PREV_INSN (insn);
@@ -7677,7 +7687,8 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 					 ? GET_MODE (x)
 					 : GET_MODE (SET_SRC (set))),
 					dest_reg, insn,
-					inc_val, mult_val, location);
+					inc_val, mult_val,
+					location, inner_mode);
 
 	  while (GET_CODE (dest) == SUBREG
 		 || GET_CODE (dest) == ZERO_EXTRACT
@@ -7708,7 +7719,13 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 	{
 	  /* Possible bug here?  Perhaps we don't know the mode of X.  */
 	  last = get_last_insn ();
-	  inc = convert_modes (GET_MODE (dest_reg), mode, x, 0);
+	  if (inner_mode != VOIDmode)
+	    {
+	      x = convert_modes (inner_mode, mode, x, 0);
+	      inc = convert_modes (GET_MODE (dest_reg), inner_mode, x, 0);
+	    }
+	  else
+	    inc = convert_modes (GET_MODE (dest_reg), mode, x, 0);
 	  if (get_last_insn () != last)
 	    {
 	      delete_insns_since (last);
@@ -7727,10 +7744,16 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
       if (flag_wrapv)
 	return 0;
       return basic_induction_var (loop, XEXP (x, 0), GET_MODE (XEXP (x, 0)),
-				  dest_reg, p, inc_val, mult_val, location);
+				  dest_reg, p, inc_val, mult_val,
+				  location, inner_mode);
 
     case ASHIFTRT:
       /* Similar, since this can be a sign extension.  */
+      if (flag_wrapv)
+	return 0;
+      if (rtx_equal_p (dest_reg, XEXP (x, 0)))
+	return 0;
+
       for (insn = PREV_INSN (p);
 	   (insn && NOTE_P (insn)
 	    && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG);
@@ -7738,18 +7761,29 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
 	;
 
       if (insn)
-	set = single_set (insn);
+	{
+	  rtx op0 = XEXP (x, 0), op1 = XEXP (x, 1);
+	  rtx set = single_set (insn);
+	  enum machine_mode inner_mode;
 
-      if (! rtx_equal_p (dest_reg, XEXP (x, 0))
-	  && set && SET_DEST (set) == XEXP (x, 0)
-	  && GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && INTVAL (XEXP (x, 1)) >= 0
-	  && GET_CODE (SET_SRC (set)) == ASHIFT
-	  && XEXP (x, 1) == XEXP (SET_SRC (set), 1))
-	return basic_induction_var (loop, XEXP (SET_SRC (set), 0),
-				    GET_MODE (XEXP (x, 0)),
-				    dest_reg, insn, inc_val, mult_val,
-				    location);
+	  /* We're looking for sign-extension by double shift.  */
+	  if (!(set
+		&& SET_DEST (set) == op0
+		&& GET_CODE (SET_SRC (set)) == ASHIFT
+		&& GET_CODE (op1) == CONST_INT
+		&& INTVAL (op1) >= 0
+		&& XEXP (SET_SRC (set), 1) == op1))
+	    return 0;
+
+	  mode = GET_MODE (op0);
+	  inner_mode = mode_for_size (GET_MODE_BITSIZE (mode) - INTVAL (op1),
+				      MODE_INT, 1);
+	  if (inner_mode != BLKmode)
+	    return basic_induction_var (loop, XEXP (SET_SRC (set), 0),
+					mode, dest_reg, insn,
+					inc_val, mult_val,
+					location, inner_mode);
+	}
       return 0;
 
     default:
