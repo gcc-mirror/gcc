@@ -63,7 +63,7 @@ package body Exp_Prag is
    procedure Expand_Pragma_Abort_Defer             (N : Node_Id);
    procedure Expand_Pragma_Assert                  (N : Node_Id);
    procedure Expand_Pragma_Common_Object           (N : Node_Id);
-   procedure Expand_Pragma_Import                  (N : Node_Id);
+   procedure Expand_Pragma_Import_Or_Interface     (N : Node_Id);
    procedure Expand_Pragma_Import_Export_Exception (N : Node_Id);
    procedure Expand_Pragma_Inspection_Point        (N : Node_Id);
    procedure Expand_Pragma_Interrupt_Priority      (N : Node_Id);
@@ -136,13 +136,16 @@ package body Exp_Prag is
                Expand_Pragma_Import_Export_Exception (N);
 
             when Pragma_Import =>
-               Expand_Pragma_Import (N);
+               Expand_Pragma_Import_Or_Interface (N);
 
             when Pragma_Import_Exception =>
                Expand_Pragma_Import_Export_Exception (N);
 
             when Pragma_Inspection_Point =>
                Expand_Pragma_Inspection_Point (N);
+
+            when Pragma_Interface =>
+               Expand_Pragma_Import_Or_Interface (N);
 
             when Pragma_Interrupt_Priority =>
                Expand_Pragma_Interrupt_Priority (N);
@@ -299,18 +302,11 @@ package body Exp_Prag is
    -- Expand_Pragma_Common_Object --
    ---------------------------------
 
-   --  Add series of pragmas to replicate semantic effect in DEC Ada
+   --  Use a machine attribute to replicate semantic effect in DEC Ada
 
-   --    pragma Linker_Section (internal_name, external_name);
-   --    pragma Machine_Attribute (internal_name, "overlaid");
-   --    pragma Machine_Attribute (internal_name, "global");
-   --    pragma Machine_Attribute (internal_name, "initialize");
+   --    pragma Machine_Attribute (intern_name, "common_object", extern_name);
 
    --  For now we do nothing with the size attribute ???
-
-   --  Really this expansion would be much better in the back end. The
-   --  front end should not need to know about target dependent, back end
-   --  dependent semantics ???
 
    procedure Expand_Pragma_Common_Object (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -351,61 +347,27 @@ package body Exp_Prag is
 
       Ploc := Sloc (Psect);
 
-      --  Insert pragmas
+      --  Insert the pragma
 
-      Insert_List_After_And_Analyze (N, New_List (
-
-         --  The Linker_Section pragma ensures the correct section
+      Insert_After_And_Analyze (N,
 
          Make_Pragma (Loc,
-           Chars => Name_Linker_Section,
+           Chars => Name_Machine_Attribute,
            Pragma_Argument_Associations => New_List (
              Make_Pragma_Argument_Association (Iloc,
                Expression => New_Copy_Tree (Internal)),
+             Make_Pragma_Argument_Association (Eloc,
+               Expression =>
+                 Make_String_Literal (Sloc => Ploc,
+                   Strval => "common_object")),
              Make_Pragma_Argument_Association (Ploc,
-               Expression => New_Copy_Tree (Psect)))),
+               Expression => New_Copy_Tree (Psect)))));
 
-         --  Machine_Attribute "overlaid" ensures that this section
-         --  overlays any other sections of the same name.
-
-         Make_Pragma (Loc,
-           Chars => Name_Machine_Attribute,
-           Pragma_Argument_Associations => New_List (
-             Make_Pragma_Argument_Association (Iloc,
-               Expression => New_Copy_Tree (Internal)),
-             Make_Pragma_Argument_Association (Eloc,
-               Expression =>
-                 Make_String_Literal (Sloc => Ploc,
-                   Strval => "overlaid")))),
-
-         --  Machine_Attribute "global" ensures that section is visible
-
-         Make_Pragma (Loc,
-           Chars => Name_Machine_Attribute,
-           Pragma_Argument_Associations => New_List (
-             Make_Pragma_Argument_Association (Iloc,
-               Expression => New_Copy_Tree (Internal)),
-             Make_Pragma_Argument_Association (Eloc,
-               Expression =>
-                 Make_String_Literal (Sloc => Ploc,
-                   Strval => "global")))),
-
-         --  Machine_Attribute "initialize" ensures section is demand zeroed
-
-         Make_Pragma (Loc,
-           Chars => Name_Machine_Attribute,
-           Pragma_Argument_Associations => New_List (
-             Make_Pragma_Argument_Association (Iloc,
-               Expression => New_Copy_Tree (Internal)),
-             Make_Pragma_Argument_Association (Eloc,
-               Expression =>
-                 Make_String_Literal (Sloc => Ploc,
-                   Strval => "initialize"))))));
    end Expand_Pragma_Common_Object;
 
-   --------------------------
-   -- Expand_Pragma_Import --
-   --------------------------
+   ---------------------------------------
+   -- Expand_Pragma_Import_Or_Interface --
+   ---------------------------------------
 
    --  When applied to a variable, the default initialization must not be
    --  done. As it is already done when the pragma is found, we just get rid
@@ -418,7 +380,7 @@ package body Exp_Prag is
    --  have to elaborate the initialization expression when it is first
    --  seen (i.e. this elaboration cannot be deferred to the freeze point).
 
-   procedure Expand_Pragma_Import (N : Node_Id) is
+   procedure Expand_Pragma_Import_Or_Interface (N : Node_Id) is
       Def_Id    : constant Entity_Id := Entity (Arg2 (N));
       Typ       : Entity_Id;
       Init_Call : Node_Id;
@@ -455,7 +417,7 @@ package body Exp_Prag is
             Set_Expression (Parent (Def_Id), Empty);
          end if;
       end if;
-   end Expand_Pragma_Import;
+   end Expand_Pragma_Import_Or_Interface;
 
    -------------------------------------------
    -- Expand_Pragma_Import_Export_Exception --
