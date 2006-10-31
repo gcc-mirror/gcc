@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---             Copyright (C) 1997-2005 Free Software Foundation             --
+--             Copyright (C) 1997-2006 Free Software Foundation             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,18 @@ package body System.OS_Interface is
 
    Low_Priority : constant := 255;
    --  VxWorks native (default) lowest scheduling priority.
+
+   ------------
+   -- getpid --
+   ------------
+
+   function getpid return t_id is
+   begin
+      --  VxWorks 5 (and VxWorks 6 in kernel mode) does not have a getpid
+      --  function. taskIdSelf is the equivalent routine.
+
+      return taskIdSelf;
+   end getpid;
 
    ----------
    -- kill --

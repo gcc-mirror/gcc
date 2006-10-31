@@ -48,6 +48,7 @@ package System.OS_Interface is
 
    subtype int        is Interfaces.C.int;
    subtype short      is Short_Integer;
+   type unsigned_int  is mod 2 ** int'Size;
    type long          is new Long_Integer;
    type unsigned_long is mod 2 ** long'Size;
    type size_t        is mod 2 ** Standard'Address_Size;
@@ -154,8 +155,7 @@ package System.OS_Interface is
    pragma Inline (kill);
 
    function getpid return t_id;
-   pragma Import (C, getpid, "taskIdSelf");
-   --  VxWorks doesn't have getpid; taskIdSelf is the equivalent routine.
+   pragma Inline (getpid);
 
    ----------
    -- Time --
@@ -217,6 +217,9 @@ package System.OS_Interface is
 
    function taskIdSelf return t_id;
    pragma Import (C, taskIdSelf, "taskIdSelf");
+
+   function taskOptionsGet (tid : t_id; pOptions : access int) return int;
+   pragma Import (C, taskOptionsGet, "taskOptionsGet");
 
    function taskSuspend (tid : t_id) return int;
    pragma Import (C, taskSuspend, "taskSuspend");
