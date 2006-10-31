@@ -1,3 +1,9 @@
+2006-10-31  Steve Ellcey  <sje@cup.hp.com>
+
+	* inclhack.def (hpux11_extern_sendfile): New.
+	(hpux11_extern_sendpath): New.
+	* fixincl.x: Regenerate.
+
 2006-10-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (AAB_fd_zero_asm_posix_types_h): Bypass on x86_64.
