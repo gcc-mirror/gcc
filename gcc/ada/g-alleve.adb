@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Soft Binding Version)                           --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2818,17 +2818,28 @@ package body GNAT.Altivec.Low_Level_Vectors is
    ---------
 
    function lvx (A : c_long; B : c_ptr) return LL_VSI is
-      EA : Integer_Address;
+
+      --  Simulate the altivec unit behavior regarding what Effective Address
+      --  is accessed, stripping off the input address least significant bits
+      --  wrt to vector alignment.
+
+      --  On targets where VECTOR_ALIGNMENT is less than the vector size (16),
+      --  an address within a vector is not necessarily rounded back at the
+      --  vector start address. Besides, rounding on 16 makes no sense on such
+      --  targets because the address of a properly aligned vector (that is,
+      --  a proper multiple of VECTOR_ALIGNMENT) could be affected, which we
+      --  want never to happen.
+
+      EA : constant System.Address :=
+             To_Address
+               (Bound_Align
+                  (Integer_Address (A) + To_Integer (B), VECTOR_ALIGNMENT));
+
+      D : LL_VSI;
+      for D'Address use EA;
 
    begin
-      EA := Bound_Align (Integer_Address (A) + To_Integer (B), 16);
-
-      declare
-         D : LL_VSI;
-         for D'Address use To_Address (EA);
-      begin
-         return D;
-      end;
+      return D;
    end lvx;
 
    -----------
@@ -4407,17 +4418,21 @@ package body GNAT.Altivec.Low_Level_Vectors is
    ----------
 
    procedure stvx   (A : LL_VSI; B : c_int; C : c_ptr) is
-      EA : Integer_Address;
+
+      --  Simulate the altivec unit behavior regarding what Effective Address
+      --  is accessed, stripping off the input address least significant bits
+      --  wrt to vector alignment (see comment in lvx for further details).
+
+      EA : constant System.Address :=
+             To_Address
+               (Bound_Align
+                  (Integer_Address (B) + To_Integer (C), VECTOR_ALIGNMENT));
+
+      D  : LL_VSI;
+      for D'Address use EA;
 
    begin
-      EA := Bound_Align (Integer_Address (B) + To_Integer (C), 16);
-
-      declare
-         D : LL_VSI;
-         for D'Address use To_Address (EA);
-      begin
-         D := A;
-      end;
+      D := A;
    end stvx;
 
    ------------
