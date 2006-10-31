@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,7 +178,7 @@ package body Prep is
       Table_Index_Type     => Pp_Depth,
       Table_Low_Bound      => 1,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Prep.Pp_States");
    --  A stack of the states of the preprocessor, for nested #if
 
@@ -675,13 +675,365 @@ package body Prep is
    end Index_Of;
 
    ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize
+     (Error_Msg         : Error_Msg_Proc;
+      Scan              : Scan_Proc;
+      Set_Ignore_Errors : Set_Ignore_Errors_Proc;
+      Put_Char          : Put_Char_Proc;
+      New_EOL           : New_EOL_Proc)
+   is
+   begin
+      if not Already_Initialized then
+         Start_String;
+         Store_String_Chars ("True");
+         True_Value.Value := End_String;
+
+         Start_String;
+         Empty_String := End_String;
+
+         Name_Len := 7;
+         Name_Buffer (1 .. Name_Len) := "defined";
+         Name_Defined := Name_Find;
+
+         Start_String;
+         Store_String_Chars ("False");
+         String_False := End_String;
+
+         Already_Initialized := True;
+      end if;
+
+      Prep.Error_Msg         := Error_Msg;
+      Prep.Scan              := Scan;
+      Prep.Set_Ignore_Errors := Set_Ignore_Errors;
+      Prep.Put_Char          := Put_Char;
+      Prep.New_EOL           := New_EOL;
+   end Initialize;
+
+   ------------------
+   -- List_Symbols --
+   ------------------
+
+   procedure List_Symbols (Foreword : String) is
+      Order : array (0 ..  Integer (Symbol_Table.Last (Mapping)))
+                 of Symbol_Id;
+      --  After alphabetical sorting, this array stores thehe indices of
+      --  the symbols in the order they are displayed.
+
+      function Lt (Op1, Op2 : Natural) return Boolean;
+      --  Comparison routine for sort call
+
+      procedure Move (From : Natural; To : Natural);
+      --  Move routine for sort call
+
+      --------
+      -- Lt --
+      --------
+
+      function Lt (Op1, Op2 : Natural) return Boolean is
+         S1 : constant String :=
+                Get_Name_String (Mapping.Table (Order (Op1)).Symbol);
+         S2 : constant String :=
+                Get_Name_String (Mapping.Table (Order (Op2)).Symbol);
+
+      begin
+         return S1 < S2;
+      end Lt;
+
+      ----------
+      -- Move --
+      ----------
+
+      procedure Move (From : Natural; To : Natural) is
+      begin
+         Order (To) := Order (From);
+      end Move;
+
+      package Sort_Syms is new GNAT.Heap_Sort_G (Move, Lt);
+
+      Max_L : Natural;
+      --  Maximum length of any symbol
+
+   --  Start of processing for List_Symbols_Case
+
+   begin
+      if Symbol_Table.Last (Mapping) = 0 then
+         return;
+      end if;
+
+      if Foreword'Length > 0 then
+         Write_Eol;
+         Write_Line (Foreword);
+
+         for J in Foreword'Range loop
+            Write_Char ('=');
+         end loop;
+      end if;
+
+      --  Initialize the order
+
+      for J in Order'Range loop
+         Order (J) := Symbol_Id (J);
+      end loop;
+
+      --  Sort alphabetically
+
+      Sort_Syms.Sort (Order'Last);
+
+      Max_L := 7;
+
+      for J in 1 .. Symbol_Table.Last (Mapping) loop
+         Get_Name_String (Mapping.Table (J).Original);
+         Max_L := Integer'Max (Max_L, Name_Len);
+      end loop;
+
+      Write_Eol;
+      Write_Str ("Symbol");
+
+      for J in 1 .. Max_L - 5 loop
+         Write_Char (' ');
+      end loop;
+
+      Write_Line ("Value");
+
+      Write_Str ("------");
+
+      for J in 1 .. Max_L - 5 loop
+         Write_Char (' ');
+      end loop;
+
+      Write_Line ("------");
+
+      for J in 1 .. Order'Last loop
+         declare
+            Data : constant Symbol_Data := Mapping.Table (Order (J));
+
+         begin
+            Get_Name_String (Data.Original);
+            Write_Str (Name_Buffer (1 .. Name_Len));
+
+            for K in Name_Len .. Max_L loop
+               Write_Char (' ');
+            end loop;
+
+            String_To_Name_Buffer (Data.Value);
+
+            if Data.Is_A_String then
+               Write_Char ('"');
+
+               for J in 1 .. Name_Len loop
+                  Write_Char (Name_Buffer (J));
+
+                  if Name_Buffer (J) = '"' then
+                     Write_Char ('"');
+                  end if;
+               end loop;
+
+               Write_Char ('"');
+
+            else
+               Write_Str (Name_Buffer (1 .. Name_Len));
+            end if;
+         end;
+
+         Write_Eol;
+      end loop;
+
+      Write_Eol;
+   end List_Symbols;
+
+   ----------------------
+   -- Matching_Strings --
+   ----------------------
+
+   function Matching_Strings (S1, S2 : String_Id) return Boolean is
+   begin
+      String_To_Name_Buffer (S1);
+
+      for Index in 1 .. Name_Len loop
+         Name_Buffer (Index) := Fold_Lower (Name_Buffer (Index));
+      end loop;
+
+      declare
+         String1 : constant String := Name_Buffer (1 .. Name_Len);
+
+      begin
+         String_To_Name_Buffer (S2);
+
+         for Index in 1 .. Name_Len loop
+            Name_Buffer (Index) := Fold_Lower (Name_Buffer (Index));
+         end loop;
+
+         return String1 = Name_Buffer (1 .. Name_Len);
+      end;
+   end Matching_Strings;
+
+   --------------------
+   -- Parse_Def_File --
+   --------------------
+
+   procedure Parse_Def_File is
+      Symbol        : Symbol_Id;
+      Symbol_Name   : Name_Id;
+      Original_Name : Name_Id;
+      Data          : Symbol_Data;
+      Value_Start   : Source_Ptr;
+      Value_End     : Source_Ptr;
+      Ch            : Character;
+
+      use ASCII;
+
+   begin
+      Def_Line_Loop :
+      loop
+         Scan.all;
+
+         exit Def_Line_Loop when Token = Tok_EOF;
+
+         if Token /= Tok_End_Of_Line then
+            Change_Reserved_Keyword_To_Symbol;
+
+            if Token /= Tok_Identifier then
+               Error_Msg ("identifier expected", Token_Ptr);
+               goto Cleanup;
+            end if;
+
+            Symbol_Name := Token_Name;
+            Name_Len := 0;
+
+            for Ptr in Token_Ptr .. Scan_Ptr - 1 loop
+               Name_Len := Name_Len + 1;
+               Name_Buffer (Name_Len) := Sinput.Source (Ptr);
+            end loop;
+
+            Original_Name := Name_Find;
+            Scan.all;
+
+            if Token /= Tok_Colon_Equal then
+               Error_Msg ("`:=` expected", Token_Ptr);
+               goto Cleanup;
+            end if;
+
+            Scan.all;
+
+            if Token = Tok_String_Literal then
+               Data := (Symbol              => Symbol_Name,
+                        Original            => Original_Name,
+                        On_The_Command_Line => False,
+                        Is_A_String         => True,
+                        Value               => String_Literal_Id);
+
+               Scan.all;
+
+               if Token /= Tok_End_Of_Line and then Token /= Tok_EOF then
+                  Error_Msg ("extraneous text in definition", Token_Ptr);
+                  goto Cleanup;
+               end if;
+
+            elsif Token = Tok_End_Of_Line or Token = Tok_EOF then
+               Data := (Symbol              => Symbol_Name,
+                        Original            => Original_Name,
+                        On_The_Command_Line => False,
+                        Is_A_String         => False,
+                        Value               => Empty_String);
+
+            else
+               Value_Start := Token_Ptr;
+               Value_End   := Token_Ptr - 1;
+               Scan_Ptr    := Token_Ptr;
+
+               Value_Chars_Loop :
+               loop
+                  Ch := Sinput.Source (Scan_Ptr);
+
+                  case Ch is
+                     when '_' | '.' | '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' =>
+                        Value_End := Scan_Ptr;
+                        Scan_Ptr := Scan_Ptr + 1;
+
+                     when ' ' | HT | VT | CR | LF | FF =>
+                        exit Value_Chars_Loop;
+
+                     when others =>
+                        Error_Msg ("illegal character", Scan_Ptr);
+                        goto Cleanup;
+                  end case;
+               end loop Value_Chars_Loop;
+
+               Scan.all;
+
+               if Token /= Tok_End_Of_Line and then Token /= Tok_EOF then
+                  Error_Msg ("extraneous text in definition", Token_Ptr);
+                  goto Cleanup;
+               end if;
+
+               Start_String;
+
+               while Value_Start <= Value_End loop
+                  Store_String_Char (Sinput.Source (Value_Start));
+                  Value_Start := Value_Start + 1;
+               end loop;
+
+               Data := (Symbol              => Symbol_Name,
+                        Original            => Original_Name,
+                        On_The_Command_Line => False,
+                        Is_A_String         => False,
+                        Value               => End_String);
+            end if;
+
+            --  Now that we have the value, get the symbol index
+
+            Symbol := Index_Of (Symbol_Name);
+
+            if Symbol /= No_Symbol then
+               --  If we already have an entry for this symbol, replace it
+               --  with the new value, except if the symbol was declared
+               --  on the command line.
+
+               if Mapping.Table (Symbol).On_The_Command_Line then
+                  goto Continue;
+               end if;
+
+            else
+               --  As it is the first time we see this symbol, create a new
+               --  entry in the table.
+
+               if Mapping.Table = null then
+                  Symbol_Table.Init (Mapping);
+               end if;
+
+               Symbol_Table.Increment_Last (Mapping);
+               Symbol := Symbol_Table.Last (Mapping);
+            end if;
+
+            Mapping.Table (Symbol) := Data;
+            goto Continue;
+
+            <<Cleanup>>
+               Set_Ignore_Errors (To => True);
+
+               while Token /= Tok_End_Of_Line and Token /= Tok_EOF loop
+                  Scan.all;
+               end loop;
+
+               Set_Ignore_Errors (To => False);
+
+            <<Continue>>
+               null;
+         end if;
+      end loop Def_Line_Loop;
+   end Parse_Def_File;
+
+   ----------------
    -- Preprocess --
    ----------------
 
    procedure Preprocess is
       Start_Of_Processing : Source_Ptr;
-      Cond : Boolean;
-      Preprocessor_Line : Boolean := False;
+      Cond                : Boolean;
+      Preprocessor_Line   : Boolean := False;
 
       procedure Output (From, To : Source_Ptr);
       --  Output the characters with indices From .. To in the buffer
@@ -1086,357 +1438,5 @@ package body Prep is
          Error_Msg ("no `END IF` for this IF", Pp_States.Table (Level).If_Ptr);
       end loop;
    end Preprocess;
-
-   ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize
-     (Error_Msg         : Error_Msg_Proc;
-      Scan              : Scan_Proc;
-      Set_Ignore_Errors : Set_Ignore_Errors_Proc;
-      Put_Char          : Put_Char_Proc;
-      New_EOL           : New_EOL_Proc)
-   is
-   begin
-      if not Already_Initialized then
-         Start_String;
-         Store_String_Chars ("True");
-         True_Value.Value := End_String;
-
-         Start_String;
-         Empty_String := End_String;
-
-         Name_Len := 7;
-         Name_Buffer (1 .. Name_Len) := "defined";
-         Name_Defined := Name_Find;
-
-         Start_String;
-         Store_String_Chars ("False");
-         String_False := End_String;
-
-         Already_Initialized := True;
-      end if;
-
-      Prep.Error_Msg         := Error_Msg;
-      Prep.Scan              := Scan;
-      Prep.Set_Ignore_Errors := Set_Ignore_Errors;
-      Prep.Put_Char          := Put_Char;
-      Prep.New_EOL           := New_EOL;
-   end Initialize;
-
-   ------------------
-   -- List_Symbols --
-   ------------------
-
-   procedure List_Symbols (Foreword : String) is
-      Order : array (0 ..  Integer (Symbol_Table.Last (Mapping)))
-                 of Symbol_Id;
-      --  After alphabetical sorting, this array stores thehe indices of
-      --  the symbols in the order they are displayed.
-
-      function Lt (Op1, Op2 : Natural) return Boolean;
-      --  Comparison routine for sort call
-
-      procedure Move (From : Natural; To : Natural);
-      --  Move routine for sort call
-
-      --------
-      -- Lt --
-      --------
-
-      function Lt (Op1, Op2 : Natural) return Boolean is
-         S1 : constant String :=
-                Get_Name_String (Mapping.Table (Order (Op1)).Symbol);
-         S2 : constant String :=
-                Get_Name_String (Mapping.Table (Order (Op2)).Symbol);
-
-      begin
-         return S1 < S2;
-      end Lt;
-
-      ----------
-      -- Move --
-      ----------
-
-      procedure Move (From : Natural; To : Natural) is
-      begin
-         Order (To) := Order (From);
-      end Move;
-
-      package Sort_Syms is new GNAT.Heap_Sort_G (Move, Lt);
-
-      Max_L : Natural;
-      --  Maximum length of any symbol
-
-   --  Start of processing for List_Symbols_Case
-
-   begin
-      if Symbol_Table.Last (Mapping) = 0 then
-         return;
-      end if;
-
-      if Foreword'Length > 0 then
-         Write_Eol;
-         Write_Line (Foreword);
-
-         for J in Foreword'Range loop
-            Write_Char ('=');
-         end loop;
-      end if;
-
-      --  Initialize the order
-
-      for J in Order'Range loop
-         Order (J) := Symbol_Id (J);
-      end loop;
-
-      --  Sort alphabetically
-
-      Sort_Syms.Sort (Order'Last);
-
-      Max_L := 7;
-
-      for J in 1 .. Symbol_Table.Last (Mapping) loop
-         Get_Name_String (Mapping.Table (J).Original);
-         Max_L := Integer'Max (Max_L, Name_Len);
-      end loop;
-
-      Write_Eol;
-      Write_Str ("Symbol");
-
-      for J in 1 .. Max_L - 5 loop
-         Write_Char (' ');
-      end loop;
-
-      Write_Line ("Value");
-
-      Write_Str ("------");
-
-      for J in 1 .. Max_L - 5 loop
-         Write_Char (' ');
-      end loop;
-
-      Write_Line ("------");
-
-      for J in 1 .. Order'Last loop
-         declare
-            Data : constant Symbol_Data := Mapping.Table (Order (J));
-
-         begin
-            Get_Name_String (Data.Original);
-            Write_Str (Name_Buffer (1 .. Name_Len));
-
-            for K in Name_Len .. Max_L loop
-               Write_Char (' ');
-            end loop;
-
-            String_To_Name_Buffer (Data.Value);
-
-            if Data.Is_A_String then
-               Write_Char ('"');
-
-               for J in 1 .. Name_Len loop
-                  Write_Char (Name_Buffer (J));
-
-                  if Name_Buffer (J) = '"' then
-                     Write_Char ('"');
-                  end if;
-               end loop;
-
-               Write_Char ('"');
-
-            else
-               Write_Str (Name_Buffer (1 .. Name_Len));
-            end if;
-         end;
-
-         Write_Eol;
-      end loop;
-
-      Write_Eol;
-   end List_Symbols;
-
-   ----------------------
-   -- Matching_Strings --
-   ----------------------
-
-   function Matching_Strings (S1, S2 : String_Id) return Boolean is
-   begin
-      String_To_Name_Buffer (S1);
-
-      for Index in 1 .. Name_Len loop
-         Name_Buffer (Index) := Fold_Lower (Name_Buffer (Index));
-      end loop;
-
-      declare
-         String1 : constant String := Name_Buffer (1 .. Name_Len);
-
-      begin
-         String_To_Name_Buffer (S2);
-
-         for Index in 1 .. Name_Len loop
-            Name_Buffer (Index) := Fold_Lower (Name_Buffer (Index));
-         end loop;
-
-         return String1 = Name_Buffer (1 .. Name_Len);
-      end;
-   end Matching_Strings;
-
-   --------------------
-   -- Parse_Def_File --
-   --------------------
-
-   procedure Parse_Def_File is
-      Symbol        : Symbol_Id;
-      Symbol_Name   : Name_Id;
-      Original_Name : Name_Id;
-      Data          : Symbol_Data;
-      Value_Start   : Source_Ptr;
-      Value_End     : Source_Ptr;
-      Ch            : Character;
-
-      use ASCII;
-
-   begin
-      Def_Line_Loop :
-      loop
-         Scan.all;
-
-         exit Def_Line_Loop when Token = Tok_EOF;
-
-         if Token /= Tok_End_Of_Line then
-            Change_Reserved_Keyword_To_Symbol;
-
-            if Token /= Tok_Identifier then
-               Error_Msg ("identifier expected", Token_Ptr);
-               goto Cleanup;
-            end if;
-
-            Symbol_Name := Token_Name;
-            Name_Len := 0;
-
-            for Ptr in Token_Ptr .. Scan_Ptr - 1 loop
-               Name_Len := Name_Len + 1;
-               Name_Buffer (Name_Len) := Sinput.Source (Ptr);
-            end loop;
-
-            Original_Name := Name_Find;
-            Scan.all;
-
-            if Token /= Tok_Colon_Equal then
-               Error_Msg ("`:=` expected", Token_Ptr);
-               goto Cleanup;
-            end if;
-
-            Scan.all;
-
-            if Token = Tok_String_Literal then
-               Data := (Symbol              => Symbol_Name,
-                        Original            => Original_Name,
-                        On_The_Command_Line => False,
-                        Is_A_String         => True,
-                        Value               => String_Literal_Id);
-
-               Scan.all;
-
-               if Token /= Tok_End_Of_Line and then Token /= Tok_EOF then
-                  Error_Msg ("extraneous text in definition", Token_Ptr);
-                  goto Cleanup;
-               end if;
-
-            elsif Token = Tok_End_Of_Line or Token = Tok_EOF then
-               Data := (Symbol              => Symbol_Name,
-                        Original            => Original_Name,
-                        On_The_Command_Line => False,
-                        Is_A_String         => False,
-                        Value               => Empty_String);
-
-            else
-               Value_Start := Token_Ptr;
-               Value_End   := Token_Ptr - 1;
-               Scan_Ptr    := Token_Ptr;
-
-               Value_Chars_Loop :
-               loop
-                  Ch := Sinput.Source (Scan_Ptr);
-
-                  case Ch is
-                     when '_' | '.' | '0' .. '9' | 'a' .. 'z' | 'A' .. 'Z' =>
-                        Value_End := Scan_Ptr;
-                        Scan_Ptr := Scan_Ptr + 1;
-
-                     when ' ' | HT | VT | CR | LF | FF =>
-                        exit Value_Chars_Loop;
-
-                     when others =>
-                        Error_Msg ("illegal character", Scan_Ptr);
-                        goto Cleanup;
-                  end case;
-               end loop Value_Chars_Loop;
-
-               Scan.all;
-
-               if Token /= Tok_End_Of_Line and then Token /= Tok_EOF then
-                  Error_Msg ("extraneous text in definition", Token_Ptr);
-                  goto Cleanup;
-               end if;
-
-               Start_String;
-
-               while Value_Start <= Value_End loop
-                  Store_String_Char (Sinput.Source (Value_Start));
-                  Value_Start := Value_Start + 1;
-               end loop;
-
-               Data := (Symbol              => Symbol_Name,
-                        Original            => Original_Name,
-                        On_The_Command_Line => False,
-                        Is_A_String         => False,
-                        Value               => End_String);
-            end if;
-
-            --  Now that we have the value, get the symbol index
-
-            Symbol := Index_Of (Symbol_Name);
-
-            if Symbol /= No_Symbol then
-               --  If we already have an entry for this symbol, replace it
-               --  with the new value, except if the symbol was declared
-               --  on the command line.
-
-               if Mapping.Table (Symbol).On_The_Command_Line then
-                  goto Continue;
-               end if;
-
-            else
-               --  As it is the first time we see this symbol, create a new
-               --  entry in the table.
-
-               if Mapping.Table = null then
-                  Symbol_Table.Init (Mapping);
-               end if;
-
-               Symbol_Table.Increment_Last (Mapping);
-               Symbol := Symbol_Table.Last (Mapping);
-            end if;
-
-            Mapping.Table (Symbol) := Data;
-            goto Continue;
-
-            <<Cleanup>>
-               Set_Ignore_Errors (To => True);
-
-               while Token /= Tok_End_Of_Line and Token /= Tok_EOF loop
-                  Scan.all;
-               end loop;
-
-               Set_Ignore_Errors (To => False);
-
-            <<Continue>>
-               null;
-         end if;
-      end loop Def_Line_Loop;
-   end Parse_Def_File;
 
 end Prep;

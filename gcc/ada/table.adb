@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -163,7 +163,7 @@ package body Table is
       ----------------
 
       procedure Reallocate is
-         New_Size : Memory.size_t;
+         New_Size   : Memory.size_t;
 
       begin
          if Max < Last_Val then
@@ -174,10 +174,15 @@ package body Table is
 
             Length := Int'Max (Length, Table_Initial);
 
-            --  Now increment table length until it is sufficiently large
+            --  Now increment table length until it is sufficiently large. Use
+            --  the increment value or 10, which ever is larger (the reason
+            --  for the use of 10 here is to ensure that the table does really
+            --  increase in size (which would not be the case for a table of
+            --  length 10 increased by 3% for instance).
 
             while Max < Last_Val loop
-               Length := Length * (100 + Table_Increment) / 100;
+               Length := Int'Max (Length * (100 + Table_Increment) / 100,
+                                  Length + 10);
                Max := Min + Length - 1;
             end loop;
 

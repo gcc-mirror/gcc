@@ -78,7 +78,7 @@ package body VMS_Conv is
       Table_Index_Type     => Integer,
       Table_Low_Bound      => 1,
       Table_Initial        => 4096,
-      Table_Increment      => 2,
+      Table_Increment      => 100,
       Table_Name           => "Buffer");
 
    function Init_Object_Dirs return Argument_List;

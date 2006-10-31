@@ -66,7 +66,7 @@ procedure Gnatname is
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Gnatname.Excluded_Patterns");
    --  Table to accumulate the negative patterns
 
@@ -75,7 +75,7 @@ procedure Gnatname is
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Gnatname.Foreign_Patterns");
    --  Table to accumulate the foreign patterns
 
@@ -84,7 +84,7 @@ procedure Gnatname is
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Gnatname.Patterns");
    --  Table to accumulate the name patterns
 
@@ -93,7 +93,7 @@ procedure Gnatname is
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Gnatname.Source_Directories");
    --  Table to accumulate the source directories specified directly with -d
    --  or indirectly with -D.
@@ -102,8 +102,8 @@ procedure Gnatname is
      (Table_Component_Type => String_Access,
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
-      Table_Initial        => 2,
-      Table_Increment      => 50,
+      Table_Initial        => 10,
+      Table_Increment      => 100,
       Table_Name           => "Gnatname.Preprocessor_Switches");
    --  Table to store the preprocessor switches to be used in the call
    --  to the compiler.

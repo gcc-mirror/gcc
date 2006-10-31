@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -316,7 +316,7 @@ package Prj is
    type String_Element is record
       Value         : Name_Id        := No_Name;
       Index         : Int            := 0;
-      Display_Value : Name_Id   := No_Name;
+      Display_Value : Name_Id        := No_Name;
       Location      : Source_Ptr     := No_Location;
       Flag          : Boolean        := False;
       Next          : String_List_Id := Nil_String;
@@ -840,13 +840,13 @@ package Prj is
      (Specification, Body_Part);
 
    type File_Name_Data is record
-      Name         : Name_Id := No_Name;
-      Index        : Int     := 0;
-      Display_Name : Name_Id := No_Name;
-      Path         : Name_Id := No_Name;
-      Display_Path : Name_Id := No_Name;
+      Name         : Name_Id    := No_Name;
+      Index        : Int        := 0;
+      Display_Name : Name_Id    := No_Name;
+      Path         : Name_Id    := No_Name;
+      Display_Path : Name_Id    := No_Name;
       Project      : Project_Id := No_Project;
-      Needs_Pragma : Boolean := False;
+      Needs_Pragma : Boolean    := False;
    end record;
    --  File and Path name of a spec or body
 
@@ -1057,7 +1057,7 @@ private
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 50,
-      Table_Increment      => 50);
+      Table_Increment      => 100);
    --  Table storing all the temp path file names.
    --  Used by Delete_All_Path_Files.
 
@@ -1066,7 +1066,7 @@ private
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 50,
-      Table_Increment      => 50);
+      Table_Increment      => 100);
    --  A table to store the source dirs before creating the source path file
 
    package Object_Path_Table is new GNAT.Dynamic_Tables
@@ -1074,7 +1074,7 @@ private
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 1,
       Table_Initial        => 50,
-      Table_Increment      => 50);
+      Table_Increment      => 100);
    --  A table to store the object dirs, before creating the object path file
 
    type Private_Project_Tree_Data is record
