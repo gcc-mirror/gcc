@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -271,6 +271,15 @@ package body Binde is
    procedure Gather_Dependencies;
    --  Compute dependencies, building the Succ and UNR tables
 
+   function Is_Body_Unit (U : Unit_Id) return Boolean;
+   pragma Inline (Is_Body_Unit);
+   --  Determines if given unit is a body
+
+   function Is_Waiting_Body (U : Unit_Id) return Boolean;
+   pragma Inline (Is_Waiting_Body);
+   --  Determines if U is a waiting body, defined as a body which has
+   --  not been elaborated, but whose spec has been elaborated.
+
    function Make_Elab_Entry
      (Unam : Unit_Name_Type;
       Link : Elab_All_Id) return Elab_All_Id;
@@ -298,70 +307,82 @@ package body Binde is
    -------------------
 
    function Better_Choice (U1, U2 : Unit_Id) return Boolean is
-
-      function Body_Unit (U : Unit_Id) return Boolean;
-      --  Determines if given unit is a body
-
-      function Waiting_Body (U : Unit_Id) return Boolean;
-      --  Determines if U is a waiting body, defined as a body which has
-      --  not been elaborated, but whose spec has been elaborated.
-
-      function Body_Unit (U : Unit_Id) return Boolean is
-      begin
-         return Units.Table (U).Utype = Is_Body
-           or else Units.Table (U).Utype = Is_Body_Only;
-      end Body_Unit;
-
-      function Waiting_Body (U : Unit_Id) return Boolean is
-      begin
-         return Units.Table (U).Utype = Is_Body
-           and then UNR.Table (Corresponding_Spec (U)).Elab_Position /= 0;
-      end Waiting_Body;
-
-   --  Start of processing for Better_Choice
-
-   --  Note: the checks here are applied in sequence, and the ordering is
-   --  significant (i.e. the more important criteria are applied first).
+      UT1 : Unit_Record renames Units.Table (U1);
+      UT2 : Unit_Record renames Units.Table (U2);
 
    begin
+      if Debug_Flag_B then
+         Write_Str ("Better_Choice (");
+         Write_Unit_Name (UT1.Uname);
+         Write_Str (", ");
+         Write_Unit_Name (UT2.Uname);
+         Write_Line (")");
+      end if;
+
+      --  Note: the checks here are applied in sequence, and the ordering is
+      --  significant (i.e. the more important criteria are applied first).
+
       --  Prefer a waiting body to any other case
 
-      if Waiting_Body (U1) and not Waiting_Body (U2) then
+      if Is_Waiting_Body (U1) and not Is_Waiting_Body (U2) then
+         if Debug_Flag_B then
+            Write_Line ("  True: u1 is waiting body, u2 is not");
+         end if;
+
          return True;
 
-      elsif Waiting_Body (U2) and not Waiting_Body (U1) then
+      elsif Is_Waiting_Body (U2) and not Is_Waiting_Body (U1) then
+         if Debug_Flag_B then
+            Write_Line ("  False: u2 is waiting body, u1 is not");
+         end if;
+
          return False;
 
       --  Prefer a predefined unit to a non-predefined unit
 
-      elsif Units.Table (U1).Predefined
-        and not Units.Table (U2).Predefined
-      then
+      elsif UT1.Predefined and not UT2.Predefined then
+         if Debug_Flag_B then
+            Write_Line ("  True: u1 is predefined, u2 is not");
+         end if;
+
          return True;
 
-      elsif Units.Table (U2).Predefined
-        and not Units.Table (U1).Predefined
-      then
+      elsif UT2.Predefined and not UT1.Predefined then
+         if Debug_Flag_B then
+            Write_Line ("  False: u2 is predefined, u1 is not");
+         end if;
+
          return False;
 
       --  Prefer an internal unit to a non-internal unit
 
-      elsif Units.Table (U1).Internal
-        and not Units.Table (U2).Internal
-      then
+      elsif UT1.Internal and not UT2.Internal then
+         if Debug_Flag_B then
+            Write_Line ("  True: u1 is internal, u2 is not");
+         end if;
          return True;
 
-      elsif Units.Table (U2).Internal
-        and not Units.Table (U1).Internal
-      then
+      elsif UT2.Internal and not UT1.Internal then
+         if Debug_Flag_B then
+            Write_Line ("  False: u2 is internal, u1 is not");
+         end if;
+
          return False;
 
       --  Prefer a body to a spec
 
-      elsif Body_Unit (U1) and not Body_Unit (U2) then
+      elsif Is_Body_Unit (U1) and not Is_Body_Unit (U2) then
+         if Debug_Flag_B then
+            Write_Line ("  True: u1 is body, u2 is not");
+         end if;
+
          return True;
 
-      elsif Body_Unit (U2) and not Body_Unit (U1) then
+      elsif Is_Body_Unit (U2) and not Is_Body_Unit (U1) then
+         if Debug_Flag_B then
+            Write_Line ("  False: u2 is body, u1 is not");
+         end if;
+
          return False;
 
       --  If both are waiting bodies, then prefer the one whose spec is
@@ -376,16 +397,89 @@ package body Binde is
       --  must be the case that A depends on B. It is therefore a good idea
       --  to put the body of B first.
 
-      elsif Waiting_Body (U1) and then Waiting_Body (U2) then
-         return
-           UNR.Table (Corresponding_Spec (U1)).Elab_Position >
-           UNR.Table (Corresponding_Spec (U2)).Elab_Position;
+      elsif Is_Waiting_Body (U1) and then Is_Waiting_Body (U2) then
+         declare
+            Result : constant Boolean :=
+                       UNR.Table (Corresponding_Spec (U1)).Elab_Position >
+                       UNR.Table (Corresponding_Spec (U2)).Elab_Position;
+         begin
+            if Debug_Flag_B then
+               if Result then
+                  Write_Line ("  True: based on waiting body elab positions");
+               else
+                  Write_Line ("  False: based on waiting body elab positions");
+               end if;
+            end if;
 
-      --  Otherwise decide on the basis of alphabetical order
-
-      else
-         return Uname_Less (Units.Table (U1).Uname, Units.Table (U2).Uname);
+            return Result;
+         end;
       end if;
+
+      --  Remaining choice rules are disabled by Debug flag -do
+
+      if not Debug_Flag_O then
+
+         --  The following deal with the case of specs which have been marked
+         --  as Elaborate_Body_Desirable. We generally want to delay these
+         --  specs as long as possible, so that the bodies have a better chance
+         --  of being elaborated closer to the specs.
+
+         --  If we have two units, one of which is a spec for which this flag
+         --  is set, and the other is not, we prefer to delay the spec for
+         --  which the flag is set.
+
+         if not UT1.Elaborate_Body_Desirable
+           and then UT2.Elaborate_Body_Desirable
+         then
+            if Debug_Flag_B then
+               Write_Line ("  True: u1 is elab body desirable, u2 is not");
+            end if;
+
+            return True;
+
+         elsif not UT2.Elaborate_Body_Desirable
+           and then UT1.Elaborate_Body_Desirable
+         then
+            if Debug_Flag_B then
+               Write_Line ("  False: u1 is elab body desirable, u2 is not");
+            end if;
+
+            return False;
+
+            --  If we have two specs that are both marked as Elaborate_Body
+            --  desirable, we prefer the one whose body is nearer to being able
+            --  to be elaborated, based on the Num_Pred count. This helps to
+            --  ensure bodies are as close to specs as possible.
+
+         elsif UT1.Elaborate_Body_Desirable
+           and then UT2.Elaborate_Body_Desirable
+         then
+            declare
+               Result : constant Boolean :=
+                          UNR.Table (Corresponding_Body (U1)).Num_Pred <
+                          UNR.Table (Corresponding_Body (U2)).Num_Pred;
+            begin
+               if Debug_Flag_B then
+                  if Result then
+                     Write_Line ("  True based on Num_Pred compare");
+                  else
+                     Write_Line ("  False based on Num_Pred compare");
+                  end if;
+               end if;
+
+               return Result;
+            end;
+         end if;
+      end if;
+
+      --  If we fall through, it means that no preference rule applies, so we
+      --  use alphabetical order to at least give a deterministic result.
+
+      if Debug_Flag_B then
+         Write_Line ("  choose on alpha order");
+      end if;
+
+      return Uname_Less (UT1.Uname, UT2.Uname);
    end Better_Choice;
 
    ----------------
@@ -1018,7 +1112,6 @@ package body Binde is
             Choose (Best_So_Far);
          end if;
       end loop Outer;
-
    end Find_Elab_Order;
 
    -------------------------
@@ -1156,6 +1249,26 @@ package body Binde is
       end loop;
    end Gather_Dependencies;
 
+   ------------------
+   -- Is_Body_Unit --
+   ------------------
+
+   function Is_Body_Unit (U : Unit_Id) return Boolean is
+   begin
+      return Units.Table (U).Utype = Is_Body
+        or else Units.Table (U).Utype = Is_Body_Only;
+   end Is_Body_Unit;
+
+   ---------------------
+   -- Is_Waiting_Body --
+   ---------------------
+
+   function Is_Waiting_Body (U : Unit_Id) return Boolean is
+   begin
+      return Units.Table (U).Utype = Is_Body
+        and then UNR.Table (Corresponding_Spec (U)).Elab_Position /= 0;
+   end Is_Waiting_Body;
+
    ---------------------
    -- Make_Elab_Entry --
    ---------------------
@@ -1187,35 +1300,8 @@ package body Binde is
    ------------------
 
    function Worse_Choice (U1, U2 : Unit_Id) return Boolean is
-
-      function Body_Unit (U : Unit_Id) return Boolean;
-      --  Determines if given unit is a body
-
-      function Waiting_Body (U : Unit_Id) return Boolean;
-      --  Determines if U is a waiting body, defined as a body which has
-      --  not been elaborated, but whose spec has been elaborated.
-
-      ---------------
-      -- Body_Unit --
-      ---------------
-
-      function Body_Unit (U : Unit_Id) return Boolean is
-      begin
-         return Units.Table (U).Utype = Is_Body
-           or else Units.Table (U).Utype = Is_Body_Only;
-      end Body_Unit;
-
-      ------------------
-      -- Waiting_Body --
-      ------------------
-
-      function Waiting_Body (U : Unit_Id) return Boolean is
-      begin
-         return Units.Table (U).Utype = Is_Body and then
-            UNR.Table (Corresponding_Spec (U)).Elab_Position /= 0;
-      end Waiting_Body;
-
-   --  Start of processing for Worse_Choice
+      UT1 : Unit_Record renames Units.Table (U1);
+      UT2 : Unit_Record renames Units.Table (U2);
 
    begin
       --  Note: the checks here are applied in sequence, and the ordering is
@@ -1226,23 +1312,23 @@ package body Binde is
       --  of elaboration order, and for internal units, any problems are
       --  ours and not the programmers.
 
-      if Units.Table (U1).Internal or else Units.Table (U2).Internal then
+      if UT1.Internal or else UT2.Internal then
          return Better_Choice (U1, U2);
 
       --  Prefer anything else to a waiting body (!)
 
-      elsif Waiting_Body (U1) and not Waiting_Body (U2) then
+      elsif Is_Waiting_Body (U1) and not Is_Waiting_Body (U2) then
          return False;
 
-      elsif Waiting_Body (U2) and not Waiting_Body (U1) then
+      elsif Is_Waiting_Body (U2) and not Is_Waiting_Body (U1) then
          return True;
 
       --  Prefer a spec to a body (!)
 
-      elsif Body_Unit (U1) and not Body_Unit (U2) then
+      elsif Is_Body_Unit (U1) and not Is_Body_Unit (U2) then
          return False;
 
-      elsif Body_Unit (U2) and not Body_Unit (U1) then
+      elsif Is_Body_Unit (U2) and not Is_Body_Unit (U1) then
          return True;
 
       --  If both are waiting bodies, then prefer the one whose spec is
@@ -1258,18 +1344,57 @@ package body Binde is
       --  to put the body of B last so that if there is an elaboration order
       --  problem, we will find it (that's what horrible order is about)
 
-      elsif Waiting_Body (U1) and then Waiting_Body (U2) then
+      elsif Is_Waiting_Body (U1) and then Is_Waiting_Body (U2) then
          return
            UNR.Table (Corresponding_Spec (U1)).Elab_Position <
            UNR.Table (Corresponding_Spec (U2)).Elab_Position;
-
-      --  Otherwise decide on the basis of alphabetical order. We do not try
-      --  to reverse the usual choice here, since it can cause cancelling
-      --  errors with the other inversions.
-
-      else
-         return Uname_Less (Units.Table (U1).Uname, Units.Table (U2).Uname);
       end if;
+
+      --  Remaining choice rules are disabled by Debug flag -do
+
+      if not Debug_Flag_O then
+
+         --  The following deal with the case of specs which have been marked
+         --  as Elaborate_Body_Desirable. In the normal case, we generally want
+         --  to delay the elaboration of these specs as long as possible, so
+         --  that bodies have better chance of being elaborated closer to the
+         --  specs. Worse_Choice as usual wants to do the opposite and
+         --  elaborate such specs as early as possible.
+
+         --  If we have two units, one of which is a spec for which this flag
+         --  is set, and the other is not, we normally prefer to delay the spec
+         --  for which the flag is set, and so Worse_Choice does the opposite.
+
+         if not UT1.Elaborate_Body_Desirable
+           and then UT2.Elaborate_Body_Desirable
+         then
+            return False;
+
+         elsif not UT2.Elaborate_Body_Desirable
+           and then UT1.Elaborate_Body_Desirable
+         then
+            return True;
+
+            --  If we have two specs that are both marked as Elaborate_Body
+            --  desirable, we normally prefer the one whose body is nearer to
+            --  being able to be elaborated, based on the Num_Pred count. This
+            --  helps to ensure bodies are as close to specs as possible. As
+            --  usual, Worse_Choice does the opposite.
+
+         elsif UT1.Elaborate_Body_Desirable
+           and then UT2.Elaborate_Body_Desirable
+         then
+            return UNR.Table (Corresponding_Body (U1)).Num_Pred >=
+              UNR.Table (Corresponding_Body (U2)).Num_Pred;
+         end if;
+      end if;
+
+      --  If we fall through, it means that no preference rule applies, so we
+      --  use alphabetical order to at least give a deterministic result. Since
+      --  Worse_Choice is in the business of stirring up the order, we will
+      --  use reverse alphabetical ordering.
+
+      return Uname_Less (UT2.Uname, UT1.Uname);
    end Worse_Choice;
 
    ------------------------
