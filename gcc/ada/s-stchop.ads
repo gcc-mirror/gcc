@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---            Copyright (C) 1999-2005 Free Software Foundation, Inc.        --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,8 @@ pragma Polling (Off);
 --  checking operations. It causes infinite loops and other problems.
 
 package System.Stack_Checking.Operations is
+   pragma Preelaborate;
+
    procedure Update_Stack_Cache (Stack : Stack_Access);
    --  Set the stack cache for the current task. Note that this is only
    --  for optimization purposes, nothing can be assumed about the
