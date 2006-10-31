@@ -37,7 +37,7 @@ proc get_compiler_messages {basename want_output type contents args} {
     global tool
 
     if { [llength $args] > 0 } {
-	set options "additional_flags=[lindex $args 0]"
+	set options [list "additional_flags=[lindex $args 0]"]
     } else {
 	set options ""
     }
@@ -1296,6 +1296,20 @@ proc check_effective_target_arm32 { } {
     }
     verbose "check_effective_target_arm32: returning $et_arm32_saved" 2
     return $et_arm32_saved
+}
+
+# Return 1 if this is an ARM target supporting -mfpu=vfp
+# -mfloat-abi=softfp.  Some multilibs may be incompatible with these
+# options.
+
+proc check_effective_target_arm_vfp_ok { } {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_vfp_ok object {
+	    int dummy;
+	} "-mfpu=vfp -mfloat-abi=softfp"]
+    } else {
+	return 0
+    }
 }
 
 # Return 1 if this is a PowerPC target with floating-point registers.

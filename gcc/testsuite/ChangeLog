@@ -1,3 +1,11 @@
+2006-10-31  Joseph Myers  <joseph@codesourcery.com>
+            Richard Sandiford  <richard@codesourcery.com>
+
+	* lib/target-supports.exp (get_compiler_messages): Append options
+	as a single list element.
+	(check_effective_target_arm_vfp_ok): New.
+	* gcc.dg/arm-vfp1.c: Use arm_vfp_ok.
+
 2006-10-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29387
