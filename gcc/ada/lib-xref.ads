@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -441,30 +441,32 @@ package Lib.Xref is
       E_Limited_Private_Subtype                    => '+',
 
       E_Incomplete_Type                            => '+',
+      E_Incomplete_Subtype                         => '+',
       E_Task_Type                                  => 'T',
       E_Task_Subtype                               => 'T',
       E_Protected_Type                             => 'W',
-      E_Protected_Subtype                          => 'W',
 
+      E_Protected_Subtype                          => 'W',
       E_Exception_Type                             => ' ',
       E_Subprogram_Type                            => ' ',
       E_Enumeration_Literal                        => 'n',
       E_Function                                   => 'V',
-      E_Operator                                   => 'V',
 
+      E_Operator                                   => 'V',
       E_Procedure                                  => 'U',
       E_Entry                                      => 'Y',
       E_Entry_Family                               => 'Y',
       E_Block                                      => 'q',
-      E_Entry_Index_Parameter                      => '*',
 
+      E_Entry_Index_Parameter                      => '*',
       E_Exception                                  => 'X',
       E_Generic_Function                           => 'v',
       E_Generic_Package                            => 'k',
       E_Generic_Procedure                          => 'u',
-      E_Label                                      => 'L',
 
+      E_Label                                      => 'L',
       E_Loop                                       => 'l',
+      E_Return_Statement                           => ' ',
       E_Package                                    => 'K',
 
       --  The following entities are not ones to which we gather

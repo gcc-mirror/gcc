@@ -37,6 +37,12 @@ package body Ch6 is
 
    function P_Defining_Designator        return Node_Id;
    function P_Defining_Operator_Symbol   return Node_Id;
+   function P_Return_Object_Declaration  return Node_Id;
+
+   procedure P_Return_Subtype_Indication (Decl_Node : Node_Id);
+   --  Decl_Node is a N_Object_Declaration.
+   --  Set the Null_Exclusion_Present and Object_Definition fields of
+   --  Decl_Node.
 
    procedure Check_Junk_Semicolon_Before_Return;
 
@@ -1285,36 +1291,209 @@ package body Ch6 is
    -- 6.5  Return Statement --
    ---------------------------
 
+   --  SIMPLE_RETURN_STATEMENT ::= return [EXPRESSION];
+   --
+   --  EXTENDED_RETURN_STATEMENT ::=
+   --    return DEFINING_IDENTIFIER : [aliased] RETURN_SUBTYPE_INDICATION
+   --                                           [:= EXPRESSION] [do
+   --      HANDLED_SEQUENCE_OF_STATEMENTS
+   --    end return];
+   --
+   --  RETURN_SUBTYPE_INDICATION ::= SUBTYPE_INDICATION | ACCESS_DEFINITION
+
    --  RETURN_STATEMENT ::= return [EXPRESSION];
 
-   --  The caller has checked that the initial token is RETURN
+   --  Error recovery: can raise Error_Resync
+
+   procedure P_Return_Subtype_Indication (Decl_Node : Node_Id) is
+
+      --  Note: We don't need to check Ada_Version here, because this is
+      --  only called in >= Ada 2005 cases anyway.
+
+      Not_Null_Present : constant Boolean := P_Null_Exclusion;
+
+   begin
+      Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
+
+      if Token = Tok_Access then
+         Set_Object_Definition
+           (Decl_Node, P_Access_Definition (Not_Null_Present));
+      else
+         Set_Object_Definition
+           (Decl_Node, P_Subtype_Indication (Not_Null_Present));
+      end if;
+   end P_Return_Subtype_Indication;
+
+   --  Error recovery: can raise Error_Resync
+
+   function P_Return_Object_Declaration return Node_Id is
+      Return_Obj : Node_Id;
+      Decl_Node  : Node_Id;
+
+   begin
+      Return_Obj := Token_Node;
+      Change_Identifier_To_Defining_Identifier (Return_Obj);
+      Decl_Node := New_Node (N_Object_Declaration, Token_Ptr);
+      Set_Defining_Identifier (Decl_Node, Return_Obj);
+
+      Scan; -- past identifier
+      Scan; -- past :
+
+      --  First an error check, if we have two identifiers in a row, a likely
+      --  possibility is that the first of the identifiers is an incorrectly
+      --  spelled keyword. See similar check in P_Identifier_Declarations.
+
+      if Token = Tok_Identifier then
+         declare
+            SS : Saved_Scan_State;
+            I2 : Boolean;
+
+         begin
+            Save_Scan_State (SS);
+            Scan; -- past initial identifier
+            I2 := (Token = Tok_Identifier);
+            Restore_Scan_State (SS);
+
+            if I2
+              and then
+                (Bad_Spelling_Of (Tok_Access)   or else
+                 Bad_Spelling_Of (Tok_Aliased)  or else
+                 Bad_Spelling_Of (Tok_Constant))
+            then
+               null;
+            end if;
+         end;
+      end if;
+
+      --  We allow "constant" here (as in "return Result : constant
+      --  T..."). This is not in the latest RM, but the ARG is considering an
+      --  AI on the subject (see AI05-0015-1), which we expect to be approved.
+
+      if Token = Tok_Constant then
+         Scan; -- past CONSTANT
+         Set_Constant_Present (Decl_Node);
+
+         if Token = Tok_Aliased then
+            Error_Msg_SC ("ALIASED should be before CONSTANT");
+            Scan; -- past ALIASED
+            Set_Aliased_Present (Decl_Node);
+         end if;
+
+      elsif Token = Tok_Aliased then
+         Scan; -- past ALIASED
+         Set_Aliased_Present (Decl_Node);
+
+         if Token = Tok_Constant then
+            Scan; -- past CONSTANT
+            Set_Constant_Present (Decl_Node);
+         end if;
+      end if;
+
+      P_Return_Subtype_Indication (Decl_Node);
+
+      if Token = Tok_Colon_Equal then
+         Scan; -- past :=
+         Set_Expression (Decl_Node, P_Expression_No_Right_Paren);
+      end if;
+
+      return Decl_Node;
+   end P_Return_Object_Declaration;
 
    --  Error recovery: can raise Error_Resync
 
    function P_Return_Statement return Node_Id is
+      --  The caller has checked that the initial token is RETURN
+
+      function Is_Simple return Boolean;
+      --  Scan state is just after RETURN (and is left that way).
+      --  Determine whether this is a simple or extended return statement
+      --  by looking ahead for "identifier :", which implies extended.
+
+      ---------------
+      -- Is_Simple --
+      ---------------
+
+      function Is_Simple return Boolean is
+         Scan_State : Saved_Scan_State;
+         Result     : Boolean := True;
+
+      begin
+         if Token = Tok_Identifier then
+            Save_Scan_State (Scan_State); -- at identifier
+            Scan; -- past identifier
+
+            if Token = Tok_Colon then
+               Result := False; -- It's an extended_return_statement.
+            end if;
+
+            Restore_Scan_State (Scan_State); -- to identifier
+         end if;
+
+         return Result;
+      end Is_Simple;
+
+      Return_Sloc : constant Source_Ptr := Token_Ptr;
       Return_Node : Node_Id;
 
+   --  Start of processing for P_Return_Statement
+
    begin
-      Return_Node := New_Node (N_Return_Statement, Token_Ptr);
-
-      --  Sloc points to RETURN
-      --  Expression (Op3)
-
       Scan; -- past RETURN
 
-      if Token /= Tok_Semicolon then
+      --  Simple_return_statement, no expression, return an N_Return_Statement
+      --  node with the expression field left Empty.
 
-         --  If no semicolon, then scan an expression, except that
-         --  we avoid trying to scan an expression if we are at an
+      if Token = Tok_Semicolon then
+         Scan; -- past ;
+         Return_Node := New_Node (N_Return_Statement, Return_Sloc);
+
+      --  Non-simple case
+
+      else
+         --  Simple_return_statement with expression
+
+         --  We avoid trying to scan an expression if we are at an
          --  expression terminator since in that case the best error
          --  message is probably that we have a missing semicolon.
 
-         if Token not in Token_Class_Eterm then
-            Set_Expression (Return_Node, P_Expression_No_Right_Paren);
+         if Is_Simple then
+            Return_Node := New_Node (N_Return_Statement, Return_Sloc);
+
+            if Token not in Token_Class_Eterm then
+               Set_Expression (Return_Node, P_Expression_No_Right_Paren);
+            end if;
+
+         --  Extended_return_statement (Ada 2005 only -- AI-318):
+
+         else
+            if Ada_Version < Ada_05 then
+               Error_Msg_SP
+                 (" extended_return_statement is an Ada 2005 extension");
+               Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+            end if;
+
+            Return_Node := New_Node (N_Extended_Return_Statement, Return_Sloc);
+            Set_Return_Object_Declarations
+              (Return_Node, New_List (P_Return_Object_Declaration));
+
+            if Token = Tok_Do then
+               Push_Scope_Stack;
+               Scope.Table (Scope.Last).Etyp := E_Return;
+               Scope.Table (Scope.Last).Ecol := Start_Column;
+               Scope.Table (Scope.Last).Sloc := Return_Sloc;
+
+               Scan; -- past DO
+               Set_Handled_Statement_Sequence
+                 (Return_Node, P_Handled_Sequence_Of_Statements);
+               End_Statements;
+
+               --  Do we need to handle Error_Resync here???
+            end if;
          end if;
+
+         TF_Semicolon;
       end if;
 
-      TF_Semicolon;
       return Return_Node;
    end P_Return_Statement;
 

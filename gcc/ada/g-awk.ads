@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2005, AdaCore                     --
+--                     Copyright (C) 2000-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@
 --  that a record cannot span multiple lines. The operating procedure is to
 --  read files line by line, with each line being presented to the user of
 --  the package. The interface provides services to access specific fields
---  in the line. Thus it is possible to control actions takn on a line based
+--  in the line. Thus it is possible to control actions taken on a line based
 --  on values of some fields. This can be achieved directly or by registering
 --  callbacks triggered on programmed conditions.
 --
@@ -83,8 +83,8 @@
 --
 --        Examples of these three approaches appear below
 --
---  There is many ways to use this package. The following discussion shows
---  three approaches, using the three iterator forms, to using this package.
+--  There are many ways to use this package. The following discussion shows
+--  three approaches to using this package, using the three iterator forms.
 --  All examples will use the following file (computer.db):
 --
 --     Pluton;Windows-NT;Pentium III
@@ -242,7 +242,9 @@ package GNAT.AWK is
 
    procedure Set_Field_Separators
      (Separators : String       := Default_Separators;
-      Session    : Session_Type := Current_Session);
+      Session    : Session_Type);
+   procedure Set_Field_Separators
+     (Separators : String       := Default_Separators);
    --  Set the field separators. Each character in the string is a field
    --  separator. When a line is read it will be split by field using the
    --  separators set here. Separators can be changed at any point and in this
@@ -253,13 +255,18 @@ package GNAT.AWK is
 
    procedure Set_FS
      (Separators : String       := Default_Separators;
-      Session    : Session_Type := Current_Session)
+      Session    : Session_Type)
+     renames Set_Field_Separators;
+   procedure Set_FS
+     (Separators : String       := Default_Separators)
      renames Set_Field_Separators;
    --  FS is the AWK abbreviation for above service
 
    procedure Set_Field_Widths
      (Field_Widths : Widths_Set;
-      Session      : Session_Type := Current_Session);
+      Session      : Session_Type);
+   procedure Set_Field_Widths
+     (Field_Widths : Widths_Set);
    --  This is another way to split a line by giving the length (in number of
    --  characters) of each field in a line. Field widths can be changed at any
    --  point and in this case the current line is split according to the new
@@ -270,7 +277,9 @@ package GNAT.AWK is
 
    procedure Add_File
      (Filename : String;
-      Session  : Session_Type := Current_Session);
+      Session  : Session_Type);
+   procedure Add_File
+     (Filename : String);
    --  Add Filename to the list of file to be processed. There is no limit on
    --  the number of files that can be added. Files are processed in the order
    --  they have been added (i.e. the filename list is FIFO). If Filename does
@@ -280,7 +289,11 @@ package GNAT.AWK is
      (Directory             : String;
       Filenames             : String;
       Number_Of_Files_Added : out Natural;
-      Session               : Session_Type := Current_Session);
+      Session               : Session_Type);
+   procedure Add_Files
+     (Directory             : String;
+      Filenames             : String;
+      Number_Of_Files_Added : out Natural);
    --  Add all files matching the regular expression Filenames in the specified
    --  directory to the list of file to be processed. There is no limit on
    --  the number of files that can be added. Each file is processed in
@@ -293,44 +306,60 @@ package GNAT.AWK is
    -------------------------------------
 
    function Number_Of_Fields
-     (Session : Session_Type := Current_Session) return Count;
+     (Session : Session_Type) return Count;
+   function Number_Of_Fields
+     return Count;
    pragma Inline (Number_Of_Fields);
    --  Returns the number of fields in the current record. It returns 0 when
    --  no file is being processed.
 
    function NF
-     (Session : Session_Type := Current_Session) return Count
+     (Session : Session_Type) return Count
+     renames Number_Of_Fields;
+   function NF
+     return Count
      renames Number_Of_Fields;
    --  AWK abbreviation for above service
 
    function Number_Of_File_Lines
-     (Session : Session_Type := Current_Session) return Count;
+     (Session : Session_Type) return Count;
+   function Number_Of_File_Lines
+     return Count;
    pragma Inline (Number_Of_File_Lines);
    --  Returns the current line number in the processed file. It returns 0 when
    --  no file is being processed.
 
-   function FNR (Session : Session_Type := Current_Session) return Count
+   function FNR (Session : Session_Type) return Count
+     renames Number_Of_File_Lines;
+   function FNR return Count
      renames Number_Of_File_Lines;
    --  AWK abbreviation for above service
 
    function Number_Of_Lines
-     (Session : Session_Type := Current_Session) return Count;
+     (Session : Session_Type) return Count;
+   function Number_Of_Lines
+     return Count;
    pragma Inline (Number_Of_Lines);
    --  Returns the number of line processed until now. This is equal to number
    --  of line in each already processed file plus FNR. It returns 0 when
    --  no file is being processed.
 
-   function NR (Session : Session_Type := Current_Session) return Count
+   function NR (Session : Session_Type) return Count
+     renames Number_Of_Lines;
+   function NR return Count
      renames Number_Of_Lines;
    --  AWK abbreviation for above service
 
    function Number_Of_Files
-     (Session : Session_Type := Current_Session) return Natural;
+     (Session : Session_Type) return Natural;
+   function Number_Of_Files
+     return Natural;
    pragma Inline (Number_Of_Files);
    --  Returns the number of files associated with Session. This is the total
    --  number of files added with Add_File and Add_Files services.
 
-   function File (Session : Session_Type := Current_Session) return String;
+   function File (Session : Session_Type) return String;
+   function File return String;
    --  Returns the name of the file being processed. It returns the empty
    --  string when no file is being processed.
 
@@ -340,21 +369,27 @@ package GNAT.AWK is
 
    function Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session) return String;
+      Session : Session_Type) return String;
+   function Field
+     (Rank    : Count) return String;
    --  Returns field number Rank value of the current record. If Rank = 0 it
    --  returns the current record (i.e. the line as read in the file). It
    --  raises Field_Error if Rank > NF or if Session is not open.
 
    function Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session) return Integer;
+      Session : Session_Type) return Integer;
+   function Field
+     (Rank    : Count) return Integer;
    --  Returns field number Rank value of the current record as an integer. It
    --  raises Field_Error if Rank > NF or if Session is not open. It
    --  raises Data_Error if the field value cannot be converted to an integer.
 
    function Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session) return Float;
+      Session : Session_Type) return Float;
+   function Field
+     (Rank    : Count) return Float;
    --  Returns field number Rank value of the current record as a float. It
    --  raises Field_Error if Rank > NF or if Session is not open. It
    --  raises Data_Error if the field value cannot be converted to a float.
@@ -363,7 +398,11 @@ package GNAT.AWK is
       type Discrete is (<>);
    function Discrete_Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session) return Discrete;
+      Session : Session_Type) return Discrete;
+   generic
+      type Discrete is (<>);
+   function Discrete_Field_Current_Session
+     (Rank    : Count) return Discrete;
    --  Returns field number Rank value of the current record as a type
    --  Discrete. It raises Field_Error if Rank > NF. It raises Data_Error if
    --  the field value cannot be converted to type Discrete.
@@ -398,7 +437,11 @@ package GNAT.AWK is
      (Field   : Count;
       Pattern : String;
       Action  : Action_Callback;
-      Session : Session_Type := Current_Session);
+      Session : Session_Type);
+   procedure Register
+     (Field   : Count;
+      Pattern : String;
+      Action  : Action_Callback);
    --  Register an Action associated with a Pattern. The pattern here is a
    --  simple string that must match exactly the field number specified.
 
@@ -406,7 +449,11 @@ package GNAT.AWK is
      (Field   : Count;
       Pattern : GNAT.Regpat.Pattern_Matcher;
       Action  : Action_Callback;
-      Session : Session_Type := Current_Session);
+      Session : Session_Type);
+   procedure Register
+     (Field   : Count;
+      Pattern : GNAT.Regpat.Pattern_Matcher;
+      Action  : Action_Callback);
    --  Register an Action associated with a Pattern. The pattern here is a
    --  simple regular expression which must match the field number specified.
 
@@ -414,7 +461,11 @@ package GNAT.AWK is
      (Field   : Count;
       Pattern : GNAT.Regpat.Pattern_Matcher;
       Action  : Match_Action_Callback;
-      Session : Session_Type := Current_Session);
+      Session : Session_Type);
+   procedure Register
+     (Field   : Count;
+      Pattern : GNAT.Regpat.Pattern_Matcher;
+      Action  : Match_Action_Callback);
    --  Same as above but it pass the set of matches to the action
    --  procedure. This is useful to analyse further why and where a regular
    --  expression did match.
@@ -422,7 +473,10 @@ package GNAT.AWK is
    procedure Register
      (Pattern : Pattern_Callback;
       Action  : Action_Callback;
-      Session : Session_Type := Current_Session);
+      Session : Session_Type);
+   procedure Register
+     (Pattern : Pattern_Callback;
+      Action  : Action_Callback);
    --  Register an Action associated with a Pattern. The pattern here is a
    --  function that must return a boolean. Action callback will be called if
    --  the pattern callback returns True and nothing will happen if it is
@@ -431,7 +485,9 @@ package GNAT.AWK is
 
    procedure Register
      (Action  : Action_Callback;
-      Session : Session_Type := Current_Session);
+      Session : Session_Type);
+   procedure Register
+     (Action  : Action_Callback);
    --  Register an Action that will be called for every line. This is
    --  equivalent to a Pattern_Callback function always returning True.
 
@@ -442,7 +498,10 @@ package GNAT.AWK is
    procedure Parse
      (Separators : String := Use_Current;
       Filename   : String := Use_Current;
-      Session    : Session_Type := Current_Session);
+      Session    : Session_Type);
+   procedure Parse
+     (Separators : String := Use_Current;
+      Filename   : String := Use_Current);
    --  Launch the iterator, it will read every line in all specified
    --  session's files. Registered callbacks are then called if the associated
    --  pattern match. It is possible to specify a filename and a set of
@@ -482,7 +541,10 @@ package GNAT.AWK is
    procedure Open
      (Separators : String := Use_Current;
       Filename   : String := Use_Current;
-      Session    : Session_Type := Current_Session);
+      Session    : Session_Type);
+   procedure Open
+     (Separators : String := Use_Current;
+      Filename   : String := Use_Current);
    --  Open the first file and initialize the unit. This must be called once
    --  before using Get_Line. It is possible to specify a filename and a set of
    --  separators directly. This offer a quick way to parse a single file.
@@ -493,7 +555,9 @@ package GNAT.AWK is
 
    procedure Get_Line
      (Callbacks : Callback_Mode := None;
-      Session   : Session_Type  := Current_Session);
+      Session   : Session_Type);
+   procedure Get_Line
+     (Callbacks : Callback_Mode := None);
    --  Read a line from the current input file. If the file index is at the
    --  end of the current input file (i.e. End_Of_File is True) then the
    --  following file is opened. If there is no more file to be processed,
@@ -512,14 +576,18 @@ package GNAT.AWK is
    --  or by an instantiation of For_Every_Line (see below).
 
    function End_Of_Data
-     (Session : Session_Type := Current_Session) return Boolean;
+     (Session : Session_Type) return Boolean;
+   function End_Of_Data
+     return Boolean;
    pragma Inline (End_Of_Data);
    --  Returns True if there is no more data to be processed in Session. It
    --  means that the latest session's file is being processed and that
    --  there is no more data to be read in this file (End_Of_File is True).
 
    function End_Of_File
-     (Session : Session_Type := Current_Session) return Boolean;
+     (Session : Session_Type) return Boolean;
+   function End_Of_File
+     return Boolean;
    pragma Inline (End_Of_File);
    --  Returns True when there is no more data to be processed on the current
    --  session's file.
@@ -542,7 +610,13 @@ package GNAT.AWK is
      (Separators : String := Use_Current;
       Filename   : String := Use_Current;
       Callbacks  : Callback_Mode := None;
-      Session    : Session_Type := Current_Session);
+      Session    : Session_Type);
+   generic
+      with procedure Action (Quit : in out Boolean);
+   procedure For_Every_Line_Current_Session
+     (Separators : String := Use_Current;
+      Filename   : String := Use_Current;
+      Callbacks  : Callback_Mode := None);
    --  This is another iterator. Action will be called for each new
    --  record. The iterator's termination can be controlled by setting Quit
    --  to True. It is by default set to False. It is possible to specify a

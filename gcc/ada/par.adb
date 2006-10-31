@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -433,6 +433,7 @@ is
        E_If,              -- END IF;
        E_Loop,            -- END LOOP;
        E_Record,          -- END RECORD;
+       E_Return,          -- END RETURN;
        E_Select,          -- END SELECT;
        E_Name,            -- END [name];
        E_Suspicious_Is,   -- END [name]; (case of suspicious IS)
@@ -604,13 +605,16 @@ is
       --  declaration of this type for details.
 
       function P_Interface_Type_Definition
-        (Is_Synchronized : Boolean) return Node_Id;
-      --  Ada 2005 (AI-251): Parse the interface type definition part. The
-      --  parameter Is_Synchronized is True in case of task interfaces,
-      --  protected interfaces, and synchronized interfaces; it is used to
-      --  generate a record_definition node. In the rest of cases (limited
-      --  interfaces and interfaces) we generate a record_definition node if
-      --  the list of interfaces is empty; otherwise we generate a
+        (Abstract_Present : Boolean;
+         Is_Synchronized  : Boolean) return Node_Id;
+      --  Ada 2005 (AI-251): Parse the interface type definition part. Abstract
+      --  Present indicates if the reserved word "abstract" has been previously
+      --  found. It is used to report an error message because interface types
+      --  are by definition abstract tagged. Is_Synchronized is True in case of
+      --  task interfaces, protected interfaces, and synchronized interfaces;
+      --  it is used to generate a record_definition node. In the rest of cases
+      --  (limited interfaces and interfaces) we generate a record_definition
+      --  node if the list of interfaces is empty; otherwise we generate a
       --  derived_type_definition node (the first interface in this list is the
       --  ancestor interface).
 
@@ -1349,7 +1353,7 @@ begin
                      Uname : constant String :=
                                Get_Name_String
                                  (Unit_Name (Current_Source_Unit));
-                     Name : String (1 .. Uname'Length - 2);
+                     Name  : String (1 .. Uname'Length - 2);
 
                   begin
                      --  Because Unit_Name includes "%s" or "%b", we need to
