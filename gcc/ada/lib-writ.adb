@@ -354,6 +354,16 @@ package body Lib.Writ is
          Write_Info_Tab (49);
          Write_Info_Str (Version_Get (Unit_Num));
 
+         --  Add BD parameter if Elaborate_Body pragma desirable
+
+         if Ekind (Uent) = E_Package
+           and then Elaborate_Body_Desirable (Uent)
+         then
+            Write_Info_Str (" BD");
+         end if;
+
+         --  Add BN parameter if body needed for SAL
+
          if (Is_Subprogram (Uent)
               or else Ekind (Uent) = E_Package
               or else Is_Generic_Unit (Uent))
@@ -1047,6 +1057,23 @@ package body Lib.Writ is
          Write_Info_Nat
            (Nat (Get_Logical_Line_Number
                    (Interrupt_States.Table (J).Pragma_Loc)));
+         Write_Info_EOL;
+      end loop;
+
+      --  Output priority specific dispatching lines
+
+      for J in Specific_Dispatching.First .. Specific_Dispatching.Last loop
+         Write_Info_Initiate ('S');
+         Write_Info_Char (' ');
+         Write_Info_Char (Specific_Dispatching.Table (J).Dispatching_Policy);
+         Write_Info_Char (' ');
+         Write_Info_Nat (Specific_Dispatching.Table (J).First_Priority);
+         Write_Info_Char (' ');
+         Write_Info_Nat (Specific_Dispatching.Table (J).Last_Priority);
+         Write_Info_Char (' ');
+         Write_Info_Nat
+           (Nat (Get_Logical_Line_Number
+                   (Specific_Dispatching.Table (J).Pragma_Loc)));
          Write_Info_EOL;
       end loop;
 

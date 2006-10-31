@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -368,6 +368,26 @@ package Lib.Writ is
    --      line number of the corresponding Interrupt_State pragma.
    --      This is used in consistency messages.
 
+   --  -------------------------------------
+   --  -- S Priority Specific Dispatching --
+   --  -------------------------------------
+
+   --    S policy_identifier first_priority last_priority line-number
+
+   --      This line records information from a Priority_Specific_Dispatching
+   --      pragma. There is one line for each separate pragma, and if no such
+   --      pragmas are used, then no S lines are present.
+
+   --      The policy_identifier is the first character (upper case) of the
+   --      corresponding policy name (e.g. 'F' for FIFO_Within_Priorities).
+
+   --      The first_priority and last_priority fields define the range of
+   --      priorities to which the specified dispatching policy apply.
+
+   --      The line number is an unsigned decimal integer giving the
+   --      line number of the corresponding Priority_Specific_Dispatching
+   --      pragma. This is used in consistency messages.
+
    ----------------------------
    -- Compilation Unit Lines --
    ----------------------------
@@ -402,6 +422,14 @@ package Lib.Writ is
    --
    --      The <<attributes>> are a series of two letter codes indicating
    --      information about the unit:
+   --
+   --         BD  Unit does not have pragma Elaborate_Body, but the elaboration
+   --             circuit has determined that it would be a good idea if this
+   --             pragma were present, since the body of the package contains
+   --             elaboration code that modifies one or more variables in the
+   --             visible part of the package. The binder will try, but does
+   --             not promise, to keep the elaboration of the body close to
+   --             the elaboration of the spec.
    --
    --         DE  Dynamic Elaboration. This unit was compiled with the
    --             dynamic elaboration model, as set by either the -gnatE
@@ -642,6 +670,36 @@ package Lib.Writ is
      Table_Initial        => 30,
      Table_Increment      => 200,
      Table_Name           => "Name_Interrupt_States");
+
+   --  The table structure defined here stores one entry for each
+   --  Priority_Specific_Dispatching pragma encountered either in the main
+   --  source or in an ancillary with'ed source. Since
+   --  have to be consistent across all units in a partition, we may
+   --  as well detect inconsistencies at compile time when we can.
+
+   type Specific_Dispatching_Entry is record
+      Dispatching_Policy : Character;
+      --  First character (upper case) of the corresponding policy name
+
+      First_Priority     : Nat;
+      --  Lower bound of the priority range to which the specified dispatching
+      --  policy applies.
+
+      Last_Priority      : Nat;
+      --  Upper bound of the priority range to which the specified dispatching
+      --  policy applies.
+
+      Pragma_Loc         : Source_Ptr;
+      --  Location of pragma setting this value in place
+   end record;
+
+   package Specific_Dispatching is new Table.Table (
+     Table_Component_Type => Specific_Dispatching_Entry,
+     Table_Index_Type     => Nat,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 10,
+     Table_Increment      => 100,
+     Table_Name           => "Name_Priority_Specific_Dispatching");
 
    -----------------
    -- Subprograms --
