@@ -73,6 +73,7 @@
 #else
 #include "config.h"
 #include "system.h"
+#include "version.h"
 #endif
 
 #ifdef __MINGW32__
@@ -610,6 +611,37 @@ __gnat_get_debuggable_suffix_ptr (int *len, const char **value)
   return;
 }
 
+FILE *
+__gnat_fopen (char *path, char *mode)
+{
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+  TCHAR wpath[GNAT_MAX_PATH_LEN];
+  TCHAR wmode[10];
+
+  S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+  S2WS (wmode, mode, 10);
+  return _tfopen (wpath, wmode);
+#else
+  return fopen (path, mode);
+#endif
+}
+
+
+FILE *
+__gnat_freopen (char *path, char *mode, FILE *stream)
+{
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+  TCHAR wpath[GNAT_MAX_PATH_LEN];
+  TCHAR wmode[10];
+
+  S2WS (wpath, path, GNAT_MAX_PATH_LEN);
+  S2WS (wmode, mode, 10);
+  return _tfreopen (wpath, wmode, stream);
+#else
+  return freopen (path, mode, stream);
+#endif
+}
+
 int
 __gnat_open_read (char *path, int fmode)
 {
@@ -1023,7 +1055,7 @@ __gnat_file_time_name (char *name)
   return (OS_Time)ret;
 
 #elif defined (_WIN32)
-  time_t ret = 0;
+  time_t ret = -1;
   TCHAR wname[GNAT_MAX_PATH_LEN];
 
   S2WS (wname, name, GNAT_MAX_PATH_LEN);
@@ -1398,8 +1430,8 @@ __gnat_get_libraries_from_registry (void)
   for (index = 0; res == ERROR_SUCCESS; index++)
     {
       value_size = name_size = 256;
-      res = RegEnumValue (reg_key, index, (TCHAR*)name, &name_size, 0,
-                          &type, (LPBYTE)value, &value_size);
+      res = RegEnumValueA (reg_key, index, (TCHAR*)name, &name_size, 0,
+                           &type, (LPBYTE)value, &value_size);
 
       if (res == ERROR_SUCCESS && type == REG_SZ)
         {
@@ -2123,6 +2155,7 @@ __gnat_locate_exec_on_path (char *exec_name)
 #else
   char *path_val = getenv ("PATH");
 #endif
+  if (path_val == NULL) return NULL;
   apath_val = alloca (strlen (path_val) + 1);
   strcpy (apath_val, path_val);
   return __gnat_locate_exec (exec_name, apath_val);
@@ -2675,11 +2708,15 @@ __gnat_lseek (int fd, long offset, int whence)
   return (int) lseek (fd, offset, whence);
 }
 
-/* This function returns the version of GCC being used.  Here it's GCC 3.  */
+/* This function returns the major version number of GCC being used.  */
 int
 get_gcc_version (void)
 {
-  return 3;
+#ifdef IN_RTS
+  return __GNUC__;
+#else
+  return (int) (version_string[0] - '0');
+#endif
 }
 
 int

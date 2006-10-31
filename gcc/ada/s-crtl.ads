@@ -85,7 +85,7 @@ package System.CRTL is
    pragma Import (C, fgets, "fgets");
 
    function fopen (filename : chars; Mode : chars) return FILEs;
-   pragma Import (C, fopen, "fopen");
+   pragma Import (C, fopen, "__gnat_fopen");
 
    function fputc (C : int; stream : FILEs) return int;
    pragma Import (C, fputc, "fputc");
@@ -101,7 +101,7 @@ package System.CRTL is
       mode     : chars;
       stream   : FILEs)
       return     FILEs;
-   pragma Import (C, freopen, "freopen");
+   pragma Import (C, freopen, "__gnat_freopen");
 
    function fseek
      (stream : FILEs;

@@ -66,6 +66,8 @@ extern int    __gnat_open_new_temp		   (char *, int);
 extern int    __gnat_mkdir			   (char *);
 extern int    __gnat_stat			   (char *,
 						    struct stat *);
+extern FILE  *__gnat_fopen			   (char *, char *);
+extern FILE  *__gnat_freopen			   (char *, char *, FILE *);
 extern int    __gnat_open_read                     (char *, int);
 extern int    __gnat_open_rw                       (char *, int);
 extern int    __gnat_open_create                   (char *, int);

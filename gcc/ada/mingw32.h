@@ -31,15 +31,30 @@
  ****************************************************************************/
 
 /*  This file provides some macros used for the MINGW32 platform. The main
-    goal is to be able to build GNAT with a standard MINGW32 C header set */
+    goal is to be able to build GNAT with a standard MINGW32 C header
+    set. This files contains also the circuitry for the unicode support.   */
 
 #ifndef _MINGW32_H
 #define _MINGW32_H
 
+/* The unicode support is activated by default starting with the 3.9 MingW
+   version. It is not possible to use it with previous version due to a bug
+   in the MingW runtime.  */
 
+#if ((__MINGW32_MAJOR_VERSION == 3 \
+		   && __MINGW32_MINOR_VERSION >= 9) \
+     || (__MINGW32_MAJOR_VERSION >= 4))
+#define GNAT_UNICODE_SUPPORT
 
-/* Uncomment to activate the GNAT Unicode support. */
-/*#define GNAT_UNICODE_SUPPORT */
+#else
+
+/*  Older MingW versions have no defintion for _tfreopen, add it here to have a
+    proper build without unicode support.  */
+#ifndef _tfreopen
+#define _tfreopen   freopen
+#endif
+
+#endif
 
 #ifdef GNAT_UNICODE_SUPPORT
 #define _UNICODE /* For C runtime */
@@ -50,7 +65,7 @@
 
 /* After including this file it is possible to use the character t as prefix
    to routines. If GNAT_UNICODE_SUPPORT is defined then the unicode enabled
-   versions will be used. */
+   versions will be used.  */
 
 /* Copy to/from wide-string, if GNAT_UNICODE_SUPPORT activated this will do
    the proper translations using the UTF-8 encoding.  */
@@ -71,7 +86,7 @@
    version instead of the previous enhanced version to ease building GNAT on
    Windows platforms. By using STD_MINGW or OLD_MINGW it is possible to build
    GNAT using both MingW include files (Old MingW + ACT changes and standard
-   MingW starting with version 1.3. */
+   MingW starting with version 1.3.  */
 #define STD_MINGW ((__MINGW32_MAJOR_VERSION == 1 \
 		   && __MINGW32_MINOR_VERSION >= 3) \
      || (__MINGW32_MAJOR_VERSION >= 2))
