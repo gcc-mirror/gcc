@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +66,9 @@ package ALI is
 
    type Interrupt_State_Id is range 6_000_000 .. 6_999_999;
    --  Id values used for Interrupt_State table entries
+
+   type Priority_Specific_Dispatching_Id is range 7_000_000 .. 7_999_999;
+   --  Id values used for Priority_Specific_Dispatching table entries
 
    --------------------
    -- ALI File Table --
@@ -195,6 +198,14 @@ package ALI is
       --  why the 'Base reference is there, it can be one less than
       --  the lower bound of the subtype).
       --  Not set if 'I' appears in Ignore_Lines
+
+      First_Specific_Dispatching : Priority_Specific_Dispatching_Id;
+      Last_Specific_Dispatching  : Priority_Specific_Dispatching_Id'Base;
+      --  These point to the first and last entries in the priority specific
+      --  dispatching table for this unit. If there are no entries, then
+      --  Last_Specific_Dispatching = First_Specific_Dispatching - 1. That
+      --  is why the 'Base reference is there, it can be one less than the
+      --  lower bound of the subtype. Not set if 'S' appears in Ignore_Lines.
 
    end record;
 
@@ -338,6 +349,14 @@ package ALI is
       Body_Needed_For_SAL : Boolean;
       --  Indicates that the source for the body of the unit (subprogram,
       --  package, or generic unit) must be included in a standalone library.
+
+      Elaborate_Body_Desirable : Boolean;
+      --  Indicates that the front end elaboration circuitry decided that it
+      --  would be a good idea if this package had Elaborate_Body. The binder
+      --  will attempt, but does not promise, to place the elaboration call
+      --  for the body right after the call for the spec, or at least as close
+      --  together as possible.
+
    end record;
 
    package Units is new Table.Table (
@@ -375,6 +394,40 @@ package ALI is
      Table_Initial        => 100,
      Table_Increment      => 200,
      Table_Name           => "Interrupt_States");
+
+   -----------------------------------------
+   -- Priority Specific Dispatching Table --
+   -----------------------------------------
+
+   --  An entry is made in this table for each S (priority specific
+   --  dispatching) line encountered in the input ALI file. The
+   --  First/Last_Specific_Dispatching_Id fields of the ALI file
+   --  entry show the range of entries defined within a particular
+   --  ALI file.
+
+   type Specific_Dispatching_Record is record
+      Dispatching_Policy : Character;
+      --  First character (upper case) of the corresponding policy name
+
+      First_Priority     : Nat;
+      --  Lower bound of the priority range to which the specified dispatching
+      --  policy applies.
+
+      Last_Priority      : Nat;
+      --  Upper bound of the priority range to which the specified dispatching
+      --  policy applies.
+
+      PSD_Pragma_Line : Nat;
+      --  Line number of Priority_Specific_Dispatching pragma
+   end record;
+
+   package Specific_Dispatching is new Table.Table (
+     Table_Component_Type => Specific_Dispatching_Record,
+     Table_Index_Type     => Priority_Specific_Dispatching_Id'Base,
+     Table_Low_Bound      => Priority_Specific_Dispatching_Id'First,
+     Table_Initial        => 100,
+     Table_Increment      => 200,
+     Table_Name           => "Priority_Specific_Dispatching");
 
    --------------
    -- Switches --
@@ -418,7 +471,7 @@ package ALI is
    --  Set to blank by Initialize_ALI. Set to the appropriate queuing policy
    --  character if an ali file contains a P line setting the queuing policy.
 
-   Cumulative_Restrictions : Restrictions_Info;
+   Cumulative_Restrictions : Restrictions_Info := No_Restrictions;
    --  This variable records the cumulative contributions of R lines in all
    --  ali files, showing whether a restriction pragma exists anywhere, and
    --  accumulating the aggregate knowledge of violations.

@@ -66,43 +66,41 @@
 
 extern void __gnat_raise_program_error (const char *, int);
 
-/* Addresses of exception data blocks for predefined exceptions. */
+/* Addresses of exception data blocks for predefined exceptions. Tasking_Error
+   is not used in this unit, and the abort signal is only used on IRIX. */
 extern struct Exception_Data constraint_error;
 extern struct Exception_Data numeric_error;
 extern struct Exception_Data program_error;
 extern struct Exception_Data storage_error;
-extern struct Exception_Data tasking_error;
-extern struct Exception_Data _abort_signal;
 
-#define Lock_Task system__soft_links__lock_task
-extern void (*Lock_Task) (void);
-
-#define Unlock_Task system__soft_links__unlock_task
-extern void (*Unlock_Task) (void);
-
-#define Check_Abort_Status     \
-                      system__soft_links__check_abort_status
-extern int (*Check_Abort_Status) (void);
-
+/* For the Cert run time we use the regular raise exception routine because
+   Raise_From_Signal_Handler is not available. */
+#ifdef CERT
+#define Raise_From_Signal_Handler \
+                      __gnat_raise_exception
+extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
+#else
 #define Raise_From_Signal_Handler \
                       ada__exceptions__raise_from_signal_handler
 extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
+#endif
 
-/* Copies of global values computed by the binder */
-int   __gl_main_priority            = -1;
-int   __gl_time_slice_val           = -1;
-char  __gl_wc_encoding              = 'n';
-char  __gl_locking_policy           = ' ';
-char  __gl_queuing_policy           = ' ';
-char  __gl_task_dispatching_policy  = ' ';
-char *__gl_restrictions             = 0;
-char *__gl_interrupt_states         = 0;
-int   __gl_num_interrupt_states     = 0;
-int   __gl_unreserve_all_interrupts = 0;
-int   __gl_exception_tracebacks     = 0;
-int   __gl_zero_cost_exceptions     = 0;
-int   __gl_detect_blocking          = 0;
-int   __gl_default_stack_size       = -1;
+/* Global values computed by the binder */
+int   __gl_main_priority                 = -1;
+int   __gl_time_slice_val                = -1;
+char  __gl_wc_encoding                   = 'n';
+char  __gl_locking_policy                = ' ';
+char  __gl_queuing_policy                = ' ';
+char  __gl_task_dispatching_policy       = ' ';
+char *__gl_priority_specific_dispatching = 0;
+int   __gl_num_specific_dispatching      = 0;
+char *__gl_interrupt_states              = 0;
+int   __gl_num_interrupt_states          = 0;
+int   __gl_unreserve_all_interrupts      = 0;
+int   __gl_exception_tracebacks          = 0;
+int   __gl_zero_cost_exceptions          = 0;
+int   __gl_detect_blocking               = 0;
+int   __gl_default_stack_size            = -1;
 
 /* Indication of whether synchronous signal handler has already been
    installed by a previous call to adainit */
@@ -144,119 +142,46 @@ __gnat_get_interrupt_state (int intrup)
     return __gl_interrupt_states [intrup];
 }
 
+/***********************************/
+/* __gnat_get_specific_dispatching */
+/***********************************/
+
+char __gnat_get_specific_dispatching (int);
+
+/* This routine is called from the run time as needed to determine the
+   priority specific dispatching policy, as set by a
+   Priority_Specific_Dispatching pragma appearing anywhere in the current
+   partition. The input argument is the priority number, and the result is
+   the upper case first character of the policy name, e.g. 'F' for
+   FIFO_Within_Priorities. A space ' ' is returned if no
+   Priority_Specific_Dispatching pragma is used in the partition. */
+
+char
+__gnat_get_specific_dispatching (int priority)
+{
+  if (__gl_num_specific_dispatching == 0)
+    return ' ';
+  else if (priority >= __gl_num_specific_dispatching)
+    return 'F';
+  else
+    return __gl_priority_specific_dispatching [priority];
+}
+
+#ifndef IN_RTS
+
 /**********************/
 /* __gnat_set_globals */
 /**********************/
 
-/* This routine is called from the binder generated main program.  It copies
-   the values for global quantities computed by the binder into the following
-   global locations. The reason that we go through this copy, rather than just
-   define the global locations in the binder generated file, is that they are
-   referenced from the runtime, which may be in a shared library, and the
-   binder file is not in the shared library. Global references across library
-   boundaries like this are not handled correctly in all systems.  */
-
-/* For detailed description of the parameters to this routine, see the
-   section titled Run-Time Globals in package Bindgen (bindgen.adb) */
+/* This routine is kept for boostrapping purposes, since the binder generated
+   file now sets the __gl_* variables directly. */
 
 void
-__gnat_set_globals (int main_priority,
-                    int time_slice_val,
-                    char wc_encoding,
-                    char locking_policy,
-                    char queuing_policy,
-                    char task_dispatching_policy,
-                    char *restrictions,
-                    char *interrupt_states,
-                    int num_interrupt_states,
-                    int unreserve_all_interrupts,
-                    int exception_tracebacks,
-                    int zero_cost_exceptions,
-                    int detect_blocking,
-                    int default_stack_size)
+__gnat_set_globals ()
 {
-  static int already_called = 0;
-
-  /* If this procedure has been already called once, check that the
-     arguments in this call are consistent with the ones in the previous
-     calls. Otherwise, raise a Program_Error exception.
-
-     We do not check for consistency of the wide character encoding
-     method. This default affects only Wide_Text_IO where no explicit
-     coding method is given, and there is no particular reason to let
-     this default be affected by the source representation of a library
-     in any case.
-
-     We do not check either for the consistency of exception tracebacks,
-     because exception tracebacks are not normally set in Stand-Alone
-     libraries. If a library or the main program set the exception
-     tracebacks, then they are never reset afterwards (see below).
-
-     The value of main_priority is meaningful only when we are invoked
-     from the main program elaboration routine of an Ada application.
-     Checking the consistency of this parameter should therefore not be
-     done. Since it is assured that the main program elaboration will
-     always invoke this procedure before any library elaboration
-     routine, only the value of main_priority during the first call
-     should be taken into account and all the subsequent ones should be
-     ignored. Note that the case where the main program is not written
-     in Ada is also properly handled, since the default value will then
-     be used for this parameter.
-
-     For identical reasons, the consistency of time_slice_val should not
-     be checked. */
-
-  if (already_called)
-    {
-      if (__gl_locking_policy		   != locking_policy
-	  || __gl_queuing_policy           != queuing_policy
-	  || __gl_task_dispatching_policy  != task_dispatching_policy
-	  || __gl_unreserve_all_interrupts != unreserve_all_interrupts
-	  || __gl_zero_cost_exceptions     != zero_cost_exceptions
-	  || __gl_default_stack_size       != default_stack_size)
-	__gnat_raise_program_error (__FILE__, __LINE__);
-
-      /* If either a library or the main program set the exception traceback
-         flag, it is never reset later */
-
-      if (exception_tracebacks != 0)
-         __gl_exception_tracebacks = exception_tracebacks;
-
-      return;
-    }
-  already_called = 1;
-
-  __gl_main_priority            = main_priority;
-  __gl_time_slice_val           = time_slice_val;
-  __gl_wc_encoding              = wc_encoding;
-  __gl_locking_policy           = locking_policy;
-  __gl_queuing_policy           = queuing_policy;
-  __gl_restrictions             = restrictions;
-  __gl_interrupt_states         = interrupt_states;
-  __gl_num_interrupt_states     = num_interrupt_states;
-  __gl_task_dispatching_policy  = task_dispatching_policy;
-  __gl_unreserve_all_interrupts = unreserve_all_interrupts;
-  __gl_exception_tracebacks     = exception_tracebacks;
-  __gl_detect_blocking          = detect_blocking;
-
-  /* ??? __gl_zero_cost_exceptions is new in 3.15 and is referenced from
-     a-except.adb, which is also part of the compiler sources. Since the
-     compiler is built with an older release of GNAT, the call generated by
-     the old binder to this function does not provide any value for the
-     corresponding argument, so the global has to be initialized in some
-     reasonable other way. This could be removed as soon as the next major
-     release is out.  */
-
-   /* ??? ditto for __gl_default_stack_size, new in 5.04 */
-
-#ifdef IN_RTS
-  __gl_zero_cost_exceptions = zero_cost_exceptions;
-  __gl_default_stack_size = default_stack_size;
-#else
-  __gl_zero_cost_exceptions = 0;
-  /* We never build the compiler to run in ZCX mode currently anyway.  */
-#endif
 }
+
+#endif
 
 /* Notes on the Zero Cost Exceptions scheme and its impact on the signal
    handlers implemented below :
@@ -647,6 +572,38 @@ __gnat_install_handler (void)
 #define NULL ((void *) 0)
 #endif
 
+#if defined (MaRTE)
+
+/* MaRTE OS provides its own version of sigaction, sigfillset, and
+   sigemptyset (overriding these symbol names). We want to make sure that
+   the versions provided by the underlying C library are used here (these
+   versions are renamed by MaRTE to linux_sigaction, fake_linux_sigfillset,
+   and fake_linux_sigemptyset, respectively). The MaRTE library will not
+   always be present (it will not be linked if no tasking constructs are
+   used), so we use the weak symbol mechanism to point always to the symbols
+   defined within the C library. */
+
+#pragma weak linux_sigaction
+int linux_sigaction (int signum, const struct sigaction *act,
+		     struct sigaction *oldact) {
+  return sigaction (signum, act, oldact);
+}
+#define sigaction(signum, act, oldact) linux_sigaction (signum, act, oldact)
+
+#pragma weak fake_linux_sigfillset
+void fake_linux_sigfillset (sigset_t *set) {
+  sigfillset (set);
+}
+#define sigfillset(set) fake_linux_sigfillset (set)
+
+#pragma weak fake_linux_sigemptyset
+void fake_linux_sigemptyset (sigset_t *set) {
+  sigemptyset (set);
+}
+#define sigemptyset(set) fake_linux_sigemptyset (set)
+
+#endif
+
 static void __gnat_error_handler (int, siginfo_t *siginfo, void *ucontext);
 
 /* __gnat_adjust_context_for_raise - see comments along with the default
@@ -855,6 +812,12 @@ __gnat_install_handler (void)
 #define SIGADAABORT 48
 #define SIGNAL_STACK_SIZE 4096
 #define SIGNAL_STACK_ALIGNMENT 64
+
+#define Check_Abort_Status     \
+                      system__soft_links__check_abort_status
+extern int (*Check_Abort_Status) (void);
+
+extern struct Exception_Data _abort_signal;
 
 static void __gnat_error_handler (int, int, sigcontext_t *);
 
@@ -1186,35 +1149,35 @@ extern Exception_Code Base_Code_In (Exception_Code);
 /* DEC Ada exceptions are not defined in a header file, so they
    must be declared as external addresses */
 
-extern int ADA$_PROGRAM_ERROR __attribute__ ((weak));
-extern int ADA$_LOCK_ERROR __attribute__ ((weak));
-extern int ADA$_EXISTENCE_ERROR __attribute__ ((weak));
-extern int ADA$_KEY_ERROR __attribute__ ((weak));
-extern int ADA$_KEYSIZERR __attribute__ ((weak));
-extern int ADA$_STAOVF __attribute__ ((weak));
-extern int ADA$_CONSTRAINT_ERRO __attribute__ ((weak));
-extern int ADA$_IOSYSFAILED __attribute__ ((weak));
-extern int ADA$_LAYOUT_ERROR __attribute__ ((weak));
-extern int ADA$_STORAGE_ERROR __attribute__ ((weak));
-extern int ADA$_DATA_ERROR __attribute__ ((weak));
-extern int ADA$_DEVICE_ERROR __attribute__ ((weak));
-extern int ADA$_END_ERROR __attribute__ ((weak));
-extern int ADA$_MODE_ERROR __attribute__ ((weak));
-extern int ADA$_NAME_ERROR __attribute__ ((weak));
-extern int ADA$_STATUS_ERROR __attribute__ ((weak));
-extern int ADA$_NOT_OPEN __attribute__ ((weak));
-extern int ADA$_ALREADY_OPEN __attribute__ ((weak));
-extern int ADA$_USE_ERROR __attribute__ ((weak));
-extern int ADA$_UNSUPPORTED __attribute__ ((weak));
-extern int ADA$_FAC_MODE_MISMAT __attribute__ ((weak));
-extern int ADA$_ORG_MISMATCH __attribute__ ((weak));
-extern int ADA$_RFM_MISMATCH __attribute__ ((weak));
-extern int ADA$_RAT_MISMATCH __attribute__ ((weak));
-extern int ADA$_MRS_MISMATCH __attribute__ ((weak));
-extern int ADA$_MRN_MISMATCH __attribute__ ((weak));
-extern int ADA$_KEY_MISMATCH __attribute__ ((weak));
-extern int ADA$_MAXLINEXC __attribute__ ((weak));
-extern int ADA$_LINEXCMRS __attribute__ ((weak));
+extern int ADA$_PROGRAM_ERROR;
+extern int ADA$_LOCK_ERROR;
+extern int ADA$_EXISTENCE_ERROR;
+extern int ADA$_KEY_ERROR;
+extern int ADA$_KEYSIZERR;
+extern int ADA$_STAOVF;
+extern int ADA$_CONSTRAINT_ERRO;
+extern int ADA$_IOSYSFAILED;
+extern int ADA$_LAYOUT_ERROR;
+extern int ADA$_STORAGE_ERROR;
+extern int ADA$_DATA_ERROR;
+extern int ADA$_DEVICE_ERROR;
+extern int ADA$_END_ERROR;
+extern int ADA$_MODE_ERROR;
+extern int ADA$_NAME_ERROR;
+extern int ADA$_STATUS_ERROR;
+extern int ADA$_NOT_OPEN;
+extern int ADA$_ALREADY_OPEN;
+extern int ADA$_USE_ERROR;
+extern int ADA$_UNSUPPORTED;
+extern int ADA$_FAC_MODE_MISMAT;
+extern int ADA$_ORG_MISMATCH;
+extern int ADA$_RFM_MISMATCH;
+extern int ADA$_RAT_MISMATCH;
+extern int ADA$_MRS_MISMATCH;
+extern int ADA$_MRN_MISMATCH;
+extern int ADA$_KEY_MISMATCH;
+extern int ADA$_MAXLINEXC;
+extern int ADA$_LINEXCMRS;
 
 /* DEC Ada specific conditions */
 static const struct cond_except dec_ada_cond_except_table [] = {
@@ -1495,7 +1458,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 	break;
       }
 
- __gnat_adjust_context_for_raise (0, (void *)sigargs);
+ __gnat_adjust_context_for_raise (0, (void *)mechargs);
  Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -1512,13 +1475,6 @@ __gnat_install_handler (void)
 
 #if !defined (IN_RTS)
   SYS$SETEXV (1, __gnat_error_handler, 3, &prvhnd);
-#endif
-
-#if defined (IN_RTS) && defined (__IA64)
-  if (getenv ("DBG$TDBG"))
-    printf ("DBG$TDBG defined, __gnat_error_handler not installed!\n");
-  else
-    SYS$SETEXV (1, __gnat_error_handler, 3, &prvhnd);
 #endif
 
   /* On alpha-vms, we avoid the global vector annoyance thanks to frame based
@@ -1555,12 +1511,46 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
   /* Add one to the address of the instruction signaling the condition,
      located in the sigargs array.  */
 
-  CHF$SIGNAL_ARRAY * sigargs = (CHF$SIGNAL_ARRAY *) ucontext;
+  CHF$MECH_ARRAY * mechargs = (CHF$MECH_ARRAY *) ucontext;
+  CHF$SIGNAL_ARRAY * sigargs
+    = (CHF$SIGNAL_ARRAY *) mechargs->chf$q_mch_sig_addr;
 
   int vcount = sigargs->chf$is_sig_args;
   int * pc_slot = & (&sigargs->chf$l_sig_name)[vcount-2];
 
   (*pc_slot) ++;
+}
+
+#endif
+
+/* __gnat_adjust_context_for_raise for ia64.  */
+
+#if defined (IN_RTS) && defined (__IA64)
+
+#include <vms/chfctxdef.h>
+#include <vms/chfdef.h>
+
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+typedef unsigned long long u64;
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
+{
+  /* Add one to the address of the instruction signaling the condition,
+     located in the 64bits sigargs array.  */
+
+  CHF$MECH_ARRAY * mechargs = (CHF$MECH_ARRAY *) ucontext;
+
+  CHF64$SIGNAL_ARRAY *chfsig64
+    = (CHF64$SIGNAL_ARRAY *) mechargs->chf$ph_mch_sig64_addr;
+
+  u64 * post_sigarray
+    = (u64 *)chfsig64 + 1 + chfsig64->chf64$l_sig_args;
+
+  u64 * ih_pc_loc = post_sigarray - 2;
+
+  (*ih_pc_loc) ++;
 }
 
 #endif
@@ -1572,13 +1562,27 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 #elif defined (__FreeBSD__)
 
 #include <signal.h>
+#include <sys/ucontext.h>
 #include <unistd.h>
 
-static void __gnat_error_handler (int, int, struct sigcontext *);
+static void __gnat_error_handler (int, siginfo_t *, ucontext_t *);
+void __gnat_adjust_context_for_raise (int, void*);
+
+/* __gnat_adjust_context_for_raise - see comments along with the default
+   version later in this file.  */
+
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
+{
+  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
+  mcontext->mc_eip++;
+}
 
 static void
-__gnat_error_handler (int sig, int code __attribute__ ((unused)),
-		      struct sigcontext *sc __attribute__ ((unused)))
+__gnat_error_handler (int sig, siginfo_t *info __attribute__ ((unused)),
+		      ucontext_t *ucontext)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -1610,6 +1614,7 @@ __gnat_error_handler (int sig, int code __attribute__ ((unused)),
       msg = "unhandled signal";
     }
 
+  __gnat_adjust_context_for_raise (sig, ucontext);
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -1623,7 +1628,7 @@ __gnat_install_handler ()
      signal that might cause a scheduling event! */
 
   act.sa_handler = __gnat_error_handler;
-  act.sa_flags = SA_NODEFER | SA_RESTART;
+  act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
   (void) sigemptyset (&act.sa_mask);
 
   (void) sigaction (SIGILL,  &act, NULL);

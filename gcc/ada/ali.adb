@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,6 +54,7 @@ package body ALI is
       'E'    => True,   -- external
       'D'    => True,   -- dependency
       'X'    => True,   -- xref
+      'S'    => True,   -- specific dispatching
       others => False);
 
    --------------------
@@ -140,13 +141,6 @@ package body ALI is
       --  be ignored by Scan_ALI and skipped, and False if the lines
       --  are to be read and processed.
 
-      Restrictions_Initial : Rident.Restrictions_Info;
-      pragma Warnings (Off, Restrictions_Initial);
-      --  This variable, which should really be a constant (but that's not
-      --  allowed by the language) is used only for initialization, and the
-      --  reason we are declaring it is to get the default initialization
-      --  set for the object.
-
       Bad_ALI_Format : exception;
       --  Exception raised by Fatal_Error if Err is True
 
@@ -197,7 +191,7 @@ package body ALI is
       --  white space (when Ignore_Spaces is False) or a typeref bracket or
       --  an equal sign except for the special case of an operator name
       --  starting with a double quite which is terminated by another double
-      --  quote.
+      --  quote. This function handles wide characters properly.
 
       function Get_Nat return Nat;
       --  Skip blanks, then scan out an unsigned integer value in Nat range
@@ -267,21 +261,6 @@ package body ALI is
          end if;
       end Check_At_End_Of_Field;
 
-      ------------
-      -- Checkc --
-      ------------
-
-      procedure Checkc (C : Character) is
-      begin
-         if Nextc = C then
-            P := P + 1;
-         elsif Ignore_Errors then
-            P := P + 1;
-         else
-            Fatal_Error;
-         end if;
-      end Checkc;
-
       ------------------------
       -- Check_Unknown_Line --
       ------------------------
@@ -307,6 +286,21 @@ package body ALI is
             end if;
          end loop;
       end Check_Unknown_Line;
+
+      ------------
+      -- Checkc --
+      ------------
+
+      procedure Checkc (C : Character) is
+      begin
+         if Nextc = C then
+            P := P + 1;
+         elsif Ignore_Errors then
+            P := P + 1;
+         else
+            Fatal_Error;
+         end if;
+      end Checkc;
 
       -----------------
       -- Fatal_Error --
@@ -445,12 +439,21 @@ package body ALI is
                exit when Name_Len > 1 and then Name_Buffer (Name_Len) = '"';
 
             else
-               exit when (At_End_Of_Field and not Ignore_Spaces)
-                 or else Nextc = '(' or else Nextc = ')'
+               --  Terminate on parens or angle brackets or equal sign
+
+               exit when Nextc = '(' or else Nextc = ')'
                  or else Nextc = '{' or else Nextc = '}'
                  or else Nextc = '<' or else Nextc = '>'
-                 or else Nextc = '[' or else Nextc = ']'
                  or else Nextc = '=';
+
+               --  Terminate if left bracket not part of wide char sequence
+               --  Note that we only recognize brackets notation so far ???
+
+               exit when Nextc = '[' and then T (P + 1) /= '"';
+
+               --  Terminate if right bracket not part of wide char sequence
+
+               exit when Nextc = ']' and then T (P - 1) /= '"';
             end if;
          end loop;
 
@@ -523,29 +526,6 @@ package body ALI is
 
          return T;
       end Get_Stamp;
-
-      ----------
-      -- Getc --
-      ----------
-
-      function Getc return Character is
-      begin
-         if P = T'Last then
-            return EOF;
-         else
-            P := P + 1;
-            return T (P - 1);
-         end if;
-      end Getc;
-
-      -----------
-      -- Nextc --
-      -----------
-
-      function Nextc return Character is
-      begin
-         return T (P);
-      end Nextc;
 
       -----------------
       -- Get_Typeref --
@@ -634,6 +614,29 @@ package body ALI is
             Standard_Entity := No_Name;
          end if;
       end Get_Typeref;
+
+      ----------
+      -- Getc --
+      ----------
+
+      function Getc return Character is
+      begin
+         if P = T'Last then
+            return EOF;
+         else
+            P := P + 1;
+            return T (P - 1);
+         end if;
+      end Getc;
+
+      -----------
+      -- Nextc --
+      -----------
+
+      function Nextc return Character is
+      begin
+         return T (P);
+      end Nextc;
 
       --------------
       -- Skip_Eol --
@@ -740,10 +743,12 @@ package body ALI is
         Compile_Errors             => False,
         First_Interrupt_State      => Interrupt_States.Last + 1,
         First_Sdep                 => No_Sdep_Id,
+        First_Specific_Dispatching => Specific_Dispatching.Last + 1,
         First_Unit                 => No_Unit_Id,
         Float_Format               => 'I',
         Last_Interrupt_State       => Interrupt_States.Last,
         Last_Sdep                  => No_Sdep_Id,
+        Last_Specific_Dispatching  => Specific_Dispatching.Last,
         Last_Unit                  => No_Unit_Id,
         Locking_Policy             => ' ',
         Main_Priority              => -1,
@@ -752,7 +757,7 @@ package body ALI is
         Normalize_Scalars          => False,
         Ofile_Full_Name            => Full_Object_File_Name,
         Queuing_Policy             => ' ',
-        Restrictions               => Restrictions_Initial,
+        Restrictions               => No_Restrictions,
         SAL_Interface              => False,
         Sfile                      => No_Name,
         Task_Dispatching_Policy    => ' ',
@@ -1194,7 +1199,7 @@ package body ALI is
 
                if Ignore_Errors then
                   Cumulative_Restrictions := Save_R;
-                  ALIs.Table (Id).Restrictions := Restrictions_Initial;
+                  ALIs.Table (Id).Restrictions := No_Restrictions;
                   Skip_Eol;
 
                --  In normal mode, this is a fatal error
@@ -1254,6 +1259,47 @@ package body ALI is
          C := Getc;
       end loop;
 
+      --  Acquire 'S' lines if present
+
+      Check_Unknown_Line;
+
+      while C = 'S' loop
+         if Ignore ('S') then
+            Skip_Line;
+
+         else
+            declare
+               Policy     : Character;
+               First_Prio : Nat;
+               Last_Prio  : Nat;
+               Line_No    : Nat;
+
+            begin
+               Checkc (' ');
+               Skip_Space;
+
+               Policy := Getc;
+               Skip_Space;
+               First_Prio := Get_Nat;
+               Last_Prio := Get_Nat;
+               Line_No := Get_Nat;
+
+               Specific_Dispatching.Append (
+                 (Dispatching_Policy => Policy,
+                  First_Priority     => First_Prio,
+                  Last_Priority      => Last_Prio,
+                  PSD_Pragma_Line    => Line_No));
+
+               ALIs.Table (Id).Last_Specific_Dispatching :=
+                 Specific_Dispatching.Last;
+
+               Skip_Eol;
+            end;
+         end if;
+
+         C := Getc;
+      end loop;
+
       --  Loop to acquire unit entries
 
       U_Loop : loop
@@ -1270,42 +1316,47 @@ package body ALI is
             ALIs.Table (Id).First_Unit := Units.Last;
          end if;
 
-         Units.Table (Units.Last).Uname           := Get_Name;
-         Units.Table (Units.Last).Predefined      := Is_Predefined_Unit;
-         Units.Table (Units.Last).Internal        := Is_Internal_Unit;
-         Units.Table (Units.Last).My_ALI          := Id;
-         Units.Table (Units.Last).Sfile           := Get_Name (Lower => True);
-         Units.Table (Units.Last).Pure            := False;
-         Units.Table (Units.Last).Preelab         := False;
-         Units.Table (Units.Last).No_Elab         := False;
-         Units.Table (Units.Last).Shared_Passive  := False;
-         Units.Table (Units.Last).RCI             := False;
-         Units.Table (Units.Last).Remote_Types    := False;
-         Units.Table (Units.Last).Has_RACW        := False;
-         Units.Table (Units.Last).Init_Scalars    := False;
-         Units.Table (Units.Last).Is_Generic      := False;
-         Units.Table (Units.Last).Icasing         := Mixed_Case;
-         Units.Table (Units.Last).Kcasing         := All_Lower_Case;
-         Units.Table (Units.Last).Dynamic_Elab    := False;
-         Units.Table (Units.Last).Elaborate_Body  := False;
-         Units.Table (Units.Last).Set_Elab_Entity := False;
-         Units.Table (Units.Last).Version         := "00000000";
-         Units.Table (Units.Last).First_With      := Withs.Last + 1;
-         Units.Table (Units.Last).First_Arg       := First_Arg;
-         Units.Table (Units.Last).Elab_Position   := 0;
-         Units.Table (Units.Last).SAL_Interface   := ALIs.Table (Id).
-                                                       SAL_Interface;
-         Units.Table (Units.Last).Body_Needed_For_SAL := False;
+         declare
+            UL : Unit_Record renames Units.Table (Units.Last);
 
-         if Debug_Flag_U then
-            Write_Str (" ----> reading unit ");
-            Write_Int (Int (Units.Last));
-            Write_Str ("  ");
-            Write_Unit_Name (Units.Table (Units.Last).Uname);
-            Write_Str (" from file ");
-            Write_Name (Units.Table (Units.Last).Sfile);
-            Write_Eol;
-         end if;
+         begin
+            UL.Uname                    := Get_Name;
+            UL.Predefined               := Is_Predefined_Unit;
+            UL.Internal                 := Is_Internal_Unit;
+            UL.My_ALI                   := Id;
+            UL.Sfile                    := Get_Name (Lower => True);
+            UL.Pure                     := False;
+            UL.Preelab                  := False;
+            UL.No_Elab                  := False;
+            UL.Shared_Passive           := False;
+            UL.RCI                      := False;
+            UL.Remote_Types             := False;
+            UL.Has_RACW                 := False;
+            UL.Init_Scalars             := False;
+            UL.Is_Generic               := False;
+            UL.Icasing                  := Mixed_Case;
+            UL.Kcasing                  := All_Lower_Case;
+            UL.Dynamic_Elab             := False;
+            UL.Elaborate_Body           := False;
+            UL.Set_Elab_Entity          := False;
+            UL.Version                  := "00000000";
+            UL.First_With               := Withs.Last + 1;
+            UL.First_Arg                := First_Arg;
+            UL.Elab_Position            := 0;
+            UL.SAL_Interface            := ALIs.Table (Id).SAL_Interface;
+            UL.Body_Needed_For_SAL      := False;
+            UL.Elaborate_Body_Desirable := False;
+
+            if Debug_Flag_U then
+               Write_Str (" ----> reading unit ");
+               Write_Int (Int (Units.Last));
+               Write_Str ("  ");
+               Write_Unit_Name (UL.Uname);
+               Write_Str (" from file ");
+               Write_Name (UL.Sfile);
+               Write_Eol;
+            end if;
+         end;
 
          --  Check for duplicated unit in different files
 
@@ -1378,14 +1429,19 @@ package body ALI is
                   Units.Table (Units.Last).Version (J) := C;
                end loop;
 
-            --  BN parameter (Body needed)
+            --  BD/BN parameters
 
             elsif C = 'B' then
                C := Getc;
 
-               if C = 'N' then
+               if C = 'D' then
+                  Check_At_End_Of_Field;
+                  Units.Table (Units.Last).Elaborate_Body_Desirable := True;
+
+               elsif C = 'N' then
                   Check_At_End_Of_Field;
                   Units.Table (Units.Last).Body_Needed_For_SAL := True;
+
                else
                   Fatal_Error_Ignore;
                end if;

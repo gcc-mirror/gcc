@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,7 @@ package body Bcheck is
    --  The following checking subprograms make up the parts of the
    --  configuration consistency check.
 
+   procedure Check_Consistent_Dispatching_Policy;
    procedure Check_Consistent_Dynamic_Elaboration_Checking;
    procedure Check_Consistent_Floating_Point_Format;
    procedure Check_Consistent_Interrupt_States;
@@ -63,9 +64,9 @@ package body Bcheck is
    --  Used to compare two unit names for No_Dependence checks. U1 is in
    --  standard unit name format, and U2 is in literal form with periods.
 
-   ------------------------------------
-   -- Check_Consistent_Configuration --
-   ------------------------------------
+   -------------------------------------
+   -- Check_Configuration_Consistency --
+   -------------------------------------
 
    procedure Check_Configuration_Consistency is
    begin
@@ -90,7 +91,351 @@ package body Bcheck is
 
       Check_Consistent_Restrictions;
       Check_Consistent_Interrupt_States;
+      Check_Consistent_Dispatching_Policy;
    end Check_Configuration_Consistency;
+
+   -----------------------
+   -- Check_Consistency --
+   -----------------------
+
+   procedure Check_Consistency is
+      Src : Source_Id;
+      --  Source file Id for this Sdep entry
+
+      ALI_Path_Id : Name_Id;
+
+   begin
+      --  First, we go through the source table to see if there are any cases
+      --  in which we should go after source files and compute checksums of
+      --  the source files. We need to do this for any file for which we have
+      --  mismatching time stamps and (so far) matching checksums.
+
+      for S in Source.First .. Source.Last loop
+
+         --  If all time stamps for a file match, then there is nothing to
+         --  do, since we will not be checking checksums in that case anyway
+
+         if Source.Table (S).All_Timestamps_Match then
+            null;
+
+         --  If we did not find the source file, then we can't compute its
+         --  checksum anyway. Note that when we have a time stamp mismatch,
+         --  we try to find the source file unconditionally (i.e. if
+         --  Check_Source_Files is False).
+
+         elsif not Source.Table (S).Source_Found then
+            null;
+
+         --  If we already have non-matching or missing checksums, then no
+         --  need to try going after source file, since we won't trust the
+         --  checksums in any case.
+
+         elsif not Source.Table (S).All_Checksums_Match then
+            null;
+
+         --  Now we have the case where we have time stamp mismatches, and
+         --  the source file is around, but so far all checksums match. This
+         --  is the case where we need to compute the checksum from the source
+         --  file, since otherwise we would ignore the time stamp mismatches,
+         --  and that is wrong if the checksum of the source does not agree
+         --  with the checksums in the ALI files.
+
+         elsif Check_Source_Files then
+            if not Checksums_Match
+              (Source.Table (S).Checksum,
+               Get_File_Checksum (Source.Table (S).Sfile))
+            then
+               Source.Table (S).All_Checksums_Match := False;
+            end if;
+         end if;
+      end loop;
+
+      --  Loop through ALI files
+
+      ALIs_Loop : for A in ALIs.First .. ALIs.Last loop
+
+         --  Loop through Sdep entries in one ALI file
+
+         Sdep_Loop : for D in
+           ALIs.Table (A).First_Sdep .. ALIs.Table (A).Last_Sdep
+         loop
+            if Sdep.Table (D).Dummy_Entry then
+               goto Continue;
+            end if;
+
+            Src := Source_Id (Get_Name_Table_Info (Sdep.Table (D).Sfile));
+
+            --  If the time stamps match, or all checksums match, then we
+            --  are OK, otherwise we have a definite error.
+
+            if Sdep.Table (D).Stamp /= Source.Table (Src).Stamp
+              and then not Source.Table (Src).All_Checksums_Match
+            then
+               Error_Msg_Name_1 := ALIs.Table (A).Sfile;
+               Error_Msg_Name_2 := Sdep.Table (D).Sfile;
+
+               --  Two styles of message, depending on whether or not
+               --  the updated file is the one that must be recompiled
+
+               if Error_Msg_Name_1 = Error_Msg_Name_2 then
+                  if Tolerate_Consistency_Errors then
+                     Error_Msg
+                        ("?% has been modified and should be recompiled");
+                  else
+                     Error_Msg
+                       ("% has been modified and must be recompiled");
+                  end if;
+
+               else
+                  ALI_Path_Id :=
+                    Osint.Find_File ((ALIs.Table (A).Afile), Osint.Library);
+                  if Osint.Is_Readonly_Library (ALI_Path_Id) then
+                     if Tolerate_Consistency_Errors then
+                        Error_Msg ("?% should be recompiled");
+                        Error_Msg_Name_1 := ALI_Path_Id;
+                        Error_Msg ("?(% is obsolete and read-only)");
+
+                     else
+                        Error_Msg ("% must be compiled");
+                        Error_Msg_Name_1 := ALI_Path_Id;
+                        Error_Msg ("(% is obsolete and read-only)");
+                     end if;
+
+                  elsif Tolerate_Consistency_Errors then
+                     Error_Msg
+                       ("?% should be recompiled (% has been modified)");
+
+                  else
+                     Error_Msg ("% must be recompiled (% has been modified)");
+                  end if;
+               end if;
+
+               if (not Tolerate_Consistency_Errors) and Verbose_Mode then
+                  declare
+                     Msg : constant String := "% time stamp ";
+                     Buf : String (1 .. Msg'Length + Time_Stamp_Length);
+
+                  begin
+                     Buf (1 .. Msg'Length) := Msg;
+                     Buf (Msg'Length + 1 .. Buf'Length) :=
+                       String (Source.Table (Src).Stamp);
+                     Error_Msg_Name_1 := Sdep.Table (D).Sfile;
+                     Error_Msg (Buf);
+                  end;
+
+                  declare
+                     Msg : constant String := " conflicts with % timestamp ";
+                     Buf : String (1 .. Msg'Length + Time_Stamp_Length);
+
+                  begin
+                     Buf (1 .. Msg'Length) := Msg;
+                     Buf (Msg'Length + 1 .. Buf'Length) :=
+                       String (Sdep.Table (D).Stamp);
+                     Error_Msg_Name_1 := Sdep.Table (D).Sfile;
+                     Error_Msg (Buf);
+                  end;
+               end if;
+
+               --  Exit from the loop through Sdep entries once we find one
+               --  that does not match.
+
+               exit Sdep_Loop;
+            end if;
+
+         <<Continue>>
+            null;
+         end loop Sdep_Loop;
+      end loop ALIs_Loop;
+   end Check_Consistency;
+
+   -----------------------------------------
+   -- Check_Consistent_Dispatching_Policy --
+   -----------------------------------------
+
+   --  The rule is that all files for which the dispatching policy is
+   --  significant must meet the following rules:
+
+   --    1. All files for which a task dispatching policy is significant must
+   --    be compiled with the same setting.
+
+   --    2. If a partition contains one or more Priority_Specific_Dispatching
+   --    pragmas it cannot contain a Task_Dispatching_Policy pragma.
+
+   --    3. No overlap is allowed in the priority ranges specified in
+   --    Priority_Specific_Dispatching pragmas within the same partition.
+
+   --    4. If a partition contains one or more Priority_Specific_Dispatching
+   --    pragmas then the Ceiling_Locking policy is the only one allowed for
+   --    the partition.
+
+   procedure Check_Consistent_Dispatching_Policy is
+      Max_Prio : Nat := 0;
+      --  Maximum priority value for which a Priority_Specific_Dispatching
+      --  pragma has been specified.
+
+      TDP_Pragma_Afile : ALI_Id := No_ALI_Id;
+      --  ALI file where a Task_Dispatching_Policy pragma appears
+
+   begin
+      --  Consistency checks in units specifying a Task_Dispatching_Policy
+
+      if Task_Dispatching_Policy_Specified /= ' ' then
+         Find_Policy : for A1 in ALIs.First .. ALIs.Last loop
+            if ALIs.Table (A1).Task_Dispatching_Policy /= ' ' then
+
+               --  Store the place where the first task dispatching pragma
+               --  appears. We may need this value for issuing consistency
+               --  errors if Priority_Specific_Dispatching pragmas are used.
+
+               TDP_Pragma_Afile := A1;
+
+               Check_Policy : declare
+                  Policy : constant Character :=
+                             ALIs.Table (A1).Task_Dispatching_Policy;
+
+               begin
+                  for A2 in A1 + 1 .. ALIs.Last loop
+                     if ALIs.Table (A2).Task_Dispatching_Policy /= ' '
+                          and then
+                        ALIs.Table (A2).Task_Dispatching_Policy /= Policy
+                     then
+                        Error_Msg_Name_1 := ALIs.Table (A1).Sfile;
+                        Error_Msg_Name_2 := ALIs.Table (A2).Sfile;
+
+                        Consistency_Error_Msg
+                          ("% and % compiled with different task" &
+                           " dispatching policies");
+                        exit Find_Policy;
+                     end if;
+                  end loop;
+               end Check_Policy;
+
+               exit Find_Policy;
+            end if;
+         end loop Find_Policy;
+      end if;
+
+      --  If no Priority_Specific_Dispatching entries, nothing else to do
+
+      if Specific_Dispatching.Last >= Specific_Dispatching.First then
+
+         --  Find out the maximum priority value for which one of the
+         --  Priority_Specific_Dispatching pragmas applies.
+
+         Max_Prio := 0;
+         for J in Specific_Dispatching.First .. Specific_Dispatching.Last loop
+            if Specific_Dispatching.Table (J).Last_Priority > Max_Prio then
+               Max_Prio := Specific_Dispatching.Table (J).Last_Priority;
+            end if;
+         end loop;
+
+         --  Now establish tables to be used for consistency checking
+
+         declare
+            --  The following record type is used to record locations of the
+            --  Priority_Specific_Dispatching pragmas applying to the Priority.
+
+            type Specific_Dispatching_Entry is record
+               Dispatching_Policy : Character := ' ';
+               --  First character (upper case) of corresponding policy name
+
+               Afile : ALI_Id := No_ALI_Id;
+               --  ALI file that generated Priority Specific Dispatching
+               --  entry for consistency message.
+
+               Loc : Nat := 0;
+               --  Line numbers from Priority_Specific_Dispatching pragma
+            end record;
+
+            PSD_Table  : array (0 .. Max_Prio) of Specific_Dispatching_Entry :=
+                           (others => Specific_Dispatching_Entry'
+                              (Dispatching_Policy => ' ',
+                               Afile              => No_ALI_Id,
+                               Loc                => 0));
+            --  Array containing an entry per priority containing the location
+            --  where there is a Priority_Specific_Dispatching pragma that
+            --  applies to the priority.
+
+         begin
+            for F in ALIs.First .. ALIs.Last loop
+               for K in ALIs.Table (F).First_Specific_Dispatching ..
+                        ALIs.Table (F).Last_Specific_Dispatching
+               loop
+                  declare
+                     DTK : Specific_Dispatching_Record
+                             renames Specific_Dispatching.Table (K);
+                  begin
+                     --  Check whether pragma Task_Dispatching_Policy and
+                     --  pragma Priority_Specific_Dispatching are used in the
+                     --  same partition.
+
+                     if Task_Dispatching_Policy_Specified /= ' ' then
+                        Error_Msg_Name_1 := ALIs.Table (F).Sfile;
+                        Error_Msg_Name_2 :=
+                          ALIs.Table (TDP_Pragma_Afile).Sfile;
+
+                        Error_Msg_Nat_1  := DTK.PSD_Pragma_Line;
+
+                        Consistency_Error_Msg
+                          ("Priority_Specific_Dispatching at %:#" &
+                           " incompatible with Task_Dispatching_Policy at %");
+                     end if;
+
+                     --  Ceiling_Locking must also be specified for a partition
+                     --  with at least one Priority_Specific_Dispatching
+                     --  pragma.
+
+                     if Locking_Policy_Specified /= ' '
+                       and then Locking_Policy_Specified /= 'C'
+                     then
+                        for A in ALIs.First .. ALIs.Last loop
+                           if ALIs.Table (A).Locking_Policy /= ' '
+                             and then ALIs.Table (A).Locking_Policy /= 'C'
+                           then
+                              Error_Msg_Name_1 := ALIs.Table (F).Sfile;
+                              Error_Msg_Name_2 := ALIs.Table (A).Sfile;
+
+                              Error_Msg_Nat_1  := DTK.PSD_Pragma_Line;
+
+                              Consistency_Error_Msg
+                                ("Priority_Specific_Dispatching at %:#" &
+                                 " incompatible with Locking_Policy at %");
+                           end if;
+                        end loop;
+                     end if;
+
+                     --  Check overlapping priority ranges
+
+                     Find_Overlapping : for Prio in
+                       DTK.First_Priority .. DTK.Last_Priority
+                     loop
+                        if PSD_Table (Prio).Afile = No_ALI_Id then
+                           PSD_Table (Prio) :=
+                             (Dispatching_Policy => DTK.Dispatching_Policy,
+                              Afile => F, Loc => DTK.PSD_Pragma_Line);
+
+                        elsif PSD_Table (Prio).Dispatching_Policy /=
+                              DTK.Dispatching_Policy
+
+                        then
+                           Error_Msg_Name_1 :=
+                             ALIs.Table (PSD_Table (Prio).Afile).Sfile;
+                           Error_Msg_Name_2 := ALIs.Table (F).Sfile;
+                           Error_Msg_Nat_1  := PSD_Table (Prio).Loc;
+                           Error_Msg_Nat_2  := DTK.PSD_Pragma_Line;
+
+                           Consistency_Error_Msg
+                             ("overlapping priority ranges at %:# and %:#");
+
+                           exit Find_Overlapping;
+                        end if;
+                     end loop Find_Overlapping;
+                  end;
+               end loop;
+            end loop;
+         end;
+      end if;
+   end Check_Consistent_Dispatching_Policy;
 
    ---------------------------------------------------
    -- Check_Consistent_Dynamic_Elaboration_Checking --
@@ -579,29 +924,6 @@ package body Bcheck is
       end loop;
    end Check_Consistent_Restrictions;
 
-   ---------------
-   -- Same_Unit --
-   ---------------
-
-   function Same_Unit (U1 : Name_Id; U2 : Name_Id) return Boolean is
-   begin
-      --  Note, the string U1 has a terminating %s or %b, U2 does not
-
-      if Length_Of_Name (U1) - 2 = Length_Of_Name (U2) then
-         Get_Name_String (U1);
-
-         declare
-            U1_Str : constant String := Name_Buffer (1 .. Name_Len - 2);
-         begin
-            Get_Name_String (U2);
-            return U1_Str = Name_Buffer (1 .. Name_Len);
-         end;
-
-      else
-         return False;
-      end if;
-   end Same_Unit;
-
    ---------------------------------------------------
    -- Check_Consistent_Zero_Cost_Exception_Handling --
    ---------------------------------------------------
@@ -614,7 +936,6 @@ package body Bcheck is
       Check_Mechanism : for A1 in ALIs.First + 1 .. ALIs.Last loop
          if ALIs.Table (A1).Zero_Cost_Exceptions /=
             ALIs.Table (ALIs.First).Zero_Cost_Exceptions
-
          then
             Error_Msg_Name_1 := ALIs.Table (A1).Sfile;
             Error_Msg_Name_2 := ALIs.Table (ALIs.First).Sfile;
@@ -624,160 +945,6 @@ package body Bcheck is
          end if;
       end loop Check_Mechanism;
    end Check_Consistent_Zero_Cost_Exception_Handling;
-
-   -----------------------
-   -- Check_Consistency --
-   -----------------------
-
-   procedure Check_Consistency is
-      Src : Source_Id;
-      --  Source file Id for this Sdep entry
-
-      ALI_Path_Id : Name_Id;
-
-   begin
-      --  First, we go through the source table to see if there are any cases
-      --  in which we should go after source files and compute checksums of
-      --  the source files. We need to do this for any file for which we have
-      --  mismatching time stamps and (so far) matching checksums.
-
-      for S in Source.First .. Source.Last loop
-
-         --  If all time stamps for a file match, then there is nothing to
-         --  do, since we will not be checking checksums in that case anyway
-
-         if Source.Table (S).All_Timestamps_Match then
-            null;
-
-         --  If we did not find the source file, then we can't compute its
-         --  checksum anyway. Note that when we have a time stamp mismatch,
-         --  we try to find the source file unconditionally (i.e. if
-         --  Check_Source_Files is False).
-
-         elsif not Source.Table (S).Source_Found then
-            null;
-
-         --  If we already have non-matching or missing checksums, then no
-         --  need to try going after source file, since we won't trust the
-         --  checksums in any case.
-
-         elsif not Source.Table (S).All_Checksums_Match then
-            null;
-
-         --  Now we have the case where we have time stamp mismatches, and
-         --  the source file is around, but so far all checksums match. This
-         --  is the case where we need to compute the checksum from the source
-         --  file, since otherwise we would ignore the time stamp mismatches,
-         --  and that is wrong if the checksum of the source does not agree
-         --  with the checksums in the ALI files.
-
-         elsif Check_Source_Files then
-            if not Checksums_Match
-              (Source.Table (S).Checksum,
-               Get_File_Checksum (Source.Table (S).Sfile))
-            then
-               Source.Table (S).All_Checksums_Match := False;
-            end if;
-         end if;
-      end loop;
-
-      --  Loop through ALI files
-
-      ALIs_Loop : for A in ALIs.First .. ALIs.Last loop
-
-         --  Loop through Sdep entries in one ALI file
-
-         Sdep_Loop : for D in
-           ALIs.Table (A).First_Sdep .. ALIs.Table (A).Last_Sdep
-         loop
-            if Sdep.Table (D).Dummy_Entry then
-               goto Continue;
-            end if;
-
-            Src := Source_Id (Get_Name_Table_Info (Sdep.Table (D).Sfile));
-
-            --  If the time stamps match, or all checksums match, then we
-            --  are OK, otherwise we have a definite error.
-
-            if Sdep.Table (D).Stamp /= Source.Table (Src).Stamp
-              and then not Source.Table (Src).All_Checksums_Match
-            then
-               Error_Msg_Name_1 := ALIs.Table (A).Sfile;
-               Error_Msg_Name_2 := Sdep.Table (D).Sfile;
-
-               --  Two styles of message, depending on whether or not
-               --  the updated file is the one that must be recompiled
-
-               if Error_Msg_Name_1 = Error_Msg_Name_2 then
-                  if Tolerate_Consistency_Errors then
-                     Error_Msg
-                        ("?% has been modified and should be recompiled");
-                  else
-                     Error_Msg
-                       ("% has been modified and must be recompiled");
-                  end if;
-
-               else
-                  ALI_Path_Id :=
-                    Osint.Find_File ((ALIs.Table (A).Afile), Osint.Library);
-                  if Osint.Is_Readonly_Library (ALI_Path_Id) then
-                     if Tolerate_Consistency_Errors then
-                        Error_Msg ("?% should be recompiled");
-                        Error_Msg_Name_1 := ALI_Path_Id;
-                        Error_Msg ("?(% is obsolete and read-only)");
-
-                     else
-                        Error_Msg ("% must be compiled");
-                        Error_Msg_Name_1 := ALI_Path_Id;
-                        Error_Msg ("(% is obsolete and read-only)");
-                     end if;
-
-                  elsif Tolerate_Consistency_Errors then
-                     Error_Msg
-                       ("?% should be recompiled (% has been modified)");
-
-                  else
-                     Error_Msg ("% must be recompiled (% has been modified)");
-                  end if;
-               end if;
-
-               if (not Tolerate_Consistency_Errors) and Verbose_Mode then
-                  declare
-                     Msg : constant String := "% time stamp ";
-                     Buf : String (1 .. Msg'Length + Time_Stamp_Length);
-
-                  begin
-                     Buf (1 .. Msg'Length) := Msg;
-                     Buf (Msg'Length + 1 .. Buf'Length) :=
-                       String (Source.Table (Src).Stamp);
-                     Error_Msg_Name_1 := Sdep.Table (D).Sfile;
-                     Error_Msg (Buf);
-                  end;
-
-                  declare
-                     Msg : constant String := " conflicts with % timestamp ";
-                     Buf : String (1 .. Msg'Length + Time_Stamp_Length);
-
-                  begin
-                     Buf (1 .. Msg'Length) := Msg;
-                     Buf (Msg'Length + 1 .. Buf'Length) :=
-                       String (Sdep.Table (D).Stamp);
-                     Error_Msg_Name_1 := Sdep.Table (D).Sfile;
-                     Error_Msg (Buf);
-                  end;
-               end if;
-
-               --  Exit from the loop through Sdep entries once we find one
-               --  that does not match.
-
-               exit Sdep_Loop;
-            end if;
-
-         <<Continue>>
-            null;
-         end loop Sdep_Loop;
-      end loop ALIs_Loop;
-   end Check_Consistency;
 
    -------------------------------
    -- Check_Duplicated_Subunits --
@@ -879,5 +1046,28 @@ package body Bcheck is
          Error_Msg (Msg);
       end if;
    end Consistency_Error_Msg;
+
+   ---------------
+   -- Same_Unit --
+   ---------------
+
+   function Same_Unit (U1 : Name_Id; U2 : Name_Id) return Boolean is
+   begin
+      --  Note, the string U1 has a terminating %s or %b, U2 does not
+
+      if Length_Of_Name (U1) - 2 = Length_Of_Name (U2) then
+         Get_Name_String (U1);
+
+         declare
+            U1_Str : constant String := Name_Buffer (1 .. Name_Len - 2);
+         begin
+            Get_Name_String (U2);
+            return U1_Str = Name_Buffer (1 .. Name_Len);
+         end;
+
+      else
+         return False;
+      end if;
+   end Same_Unit;
 
 end Bcheck;
