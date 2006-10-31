@@ -47,11 +47,23 @@ with System.CRTL;
 
 package body Prj.Makr is
 
+   --  Packages of project files where unknown attributes are errors
+
+   --  All the following need comments ??? All global variables and
+   --  subprograms must be fully commented.
+
+   Naming_String : aliased String := "naming";
+
+   Gnatname_Packages : aliased String_List := (1 => Naming_String'Access);
+
+   Packages_To_Check_By_Gnatname : constant String_List_Access :=
+                                     Gnatname_Packages'Access;
+
    function Dup (Fd : File_Descriptor) return File_Descriptor;
 
    procedure Dup2 (Old_Fd, New_Fd : File_Descriptor);
 
-   Gcc : constant String := "gcc";
+   Gcc      : constant String := "gcc";
    Gcc_Path : String_Access := null;
 
    Non_Empty_Node : constant Project_Node_Id := 1;
@@ -79,7 +91,7 @@ package body Prj.Makr is
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Prj.Makr.Processed_Directories");
 
    ---------
@@ -172,7 +184,7 @@ package body Prj.Makr is
          Table_Index_Type     => Natural,
          Table_Low_Bound      => 0,
          Table_Initial        => 50,
-         Table_Increment      => 50,
+         Table_Increment      => 100,
          Table_Name           => "Prj.Makr.SFN_Pragmas");
 
       procedure Process_Directory (Dir_Name : String; Recursively : Boolean);
@@ -730,7 +742,8 @@ package body Prj.Makr is
                Project                => Project_Node,
                Project_File_Name      => Output_Name (1 .. Output_Name_Last),
                Always_Errout_Finalize => False,
-               Store_Comments         => True);
+               Store_Comments         => True,
+               Packages_To_Check      => Packages_To_Check_By_Gnatname);
 
             --  Fail if parsing was not successful
 
