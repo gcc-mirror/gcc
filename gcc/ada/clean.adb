@@ -120,7 +120,7 @@ package body Clean is
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Clean.Processed_Projects");
    --  Table to keep track of what project files have been processed, when
    --  switch -r is specified.
@@ -130,7 +130,7 @@ package body Clean is
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Clean.Processed_Projects");
    --  Table to store all the source files of a library unit: spec, body and
    --  subunits, to detect .dg files and delete them.

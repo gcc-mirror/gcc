@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package body Prj.Strt is
    --  been used (to avoid duplicate case labels).
 
    Choices_Initial   : constant := 10;
-   Choices_Increment : constant := 50;
+   Choices_Increment : constant := 100;
 
    Choice_Node_Low_Bound  : constant := 0;
    Choice_Node_High_Bound : constant := 099_999_999;

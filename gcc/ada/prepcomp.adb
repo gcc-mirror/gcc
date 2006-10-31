@@ -105,7 +105,7 @@ package body Prepcomp is
       Table_Index_Type     => Int,
       Table_Low_Bound      => 1,
       Table_Initial        => 5,
-      Table_Increment      => 5,
+      Table_Increment      => 100,
       Table_Name           => "Prepcomp.Preproc_Data_Table");
    --  Table to store the specific preprocessing data
 
@@ -117,8 +117,8 @@ package body Prepcomp is
      (Table_Component_Type => Source_File_Index,
       Table_Index_Type     => Int,
       Table_Low_Bound      => 1,
-      Table_Initial        => 5,
-      Table_Increment      => 5,
+      Table_Initial        => 10,
+      Table_Increment      => 100,
       Table_Name           => "Prepcomp.Dependencies");
    --  Table to store the dependencies on preprocessing files
 

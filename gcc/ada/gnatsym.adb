@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,7 +85,7 @@ procedure Gnatsym is
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Gnatsymb.Object_Files");
    --  A table to store the object file names
 

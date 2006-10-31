@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,7 +140,7 @@ private
       Table_Index_Type     => Map,
       Table_Low_Bound      => 0,
       Table_Initial        => 100,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Maps_Table");
 
    --  All headers for hash tables are allocated in one global table. Each
@@ -151,7 +151,7 @@ private
       Table_Index_Type     => Header_Index,
       Table_Low_Bound      => 0,
       Table_Initial        => 1000,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Headers_Table");
 
    --  All associations are allocated in one global table. Each map stores
@@ -162,7 +162,7 @@ private
       Table_Index_Type     => Assoc_Index,
       Table_Low_Bound      => 1,
       Table_Initial        => 1000,
-      Table_Increment      => 10,
+      Table_Increment      => 100,
       Table_Name           => "Associations_Table");
 
 end Sem_Maps;
