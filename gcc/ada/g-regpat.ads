@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                     Copyright (C) 1996-2005, AdaCore                     --
+--                     Copyright (C) 1996-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -583,7 +583,8 @@ package GNAT.Regpat is
       Data_First : Integer  := -1;
       Data_Last  : Positive := Positive'Last);
    --  Match Data using the given pattern matcher and store result in Matches.
-   --  The expression matches if Matches (0) /= No_Match.
+   --  The expression matches if Matches (0) /= No_Match. The lower bound of
+   --  Matches is required to be zero.
    --
    --  At most Matches'Length parenthesis are returned
 

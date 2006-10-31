@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -134,6 +134,9 @@ package body Makeutl is
       Start     : Positive := 3;
       Finish    : Natural := Argv'Last;
       Equal_Pos : Natural;
+
+      pragma Assert (Argv'First = 1);
+      pragma Assert (Argv (1 .. 2) = "-X");
 
    begin
       if Argv'Last < 5 then

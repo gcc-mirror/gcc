@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2005, Free Software Foundation, Inc.            --
+--         Copyright (C) 2005-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,7 +69,7 @@ package body GNAT.Traceback.Symbolic is
 
    procedure Symbolize
      (Status         : out Cond_Value_Type;
-      Current_PC     : in Address;
+      Current_PC     : Address;
       Filename_Name  : out Address;
       Library_Name   : out Address;
       Record_Number  : out Integer;

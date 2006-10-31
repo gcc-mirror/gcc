@@ -46,7 +46,7 @@ package Ada.Direct_IO is
 
    pragma Compile_Time_Warning
      (Element_Type'Has_Access_Values,
-      "?Element_Type for Direct_'I'O instance has access values");
+      "Element_Type for Direct_IO instance has access values");
 
    type File_Type is limited private;
 

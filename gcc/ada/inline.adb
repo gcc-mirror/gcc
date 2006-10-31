@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -579,7 +579,6 @@ package body Inline is
             end loop;
 
             Comp_Unit := Parent (Pack);
-
             while Present (Comp_Unit)
               and then Nkind (Comp_Unit) /= N_Compilation_Unit
             loop

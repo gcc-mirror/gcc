@@ -295,7 +295,7 @@ begin
 
       end loop;
 
-      --  Setup the masks to be exported.
+      --  Setup the masks to be exported
 
       Result := sigemptyset (mask'Access);
       pragma Assert (Result = 0);

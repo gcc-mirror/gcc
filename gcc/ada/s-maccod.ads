@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,8 +89,7 @@ package System.Machine_Code is
      Outputs  : Asm_Output_Operand_List;
      Inputs   : Asm_Input_Operand_List;
      Clobber  : String  := "";
-     Volatile : Boolean := False)
-     return     Asm_Insn;
+     Volatile : Boolean := False) return Asm_Insn;
 
    function Asm (
      Template : String;
@@ -121,7 +120,7 @@ private
    type Asm_Output_Operand is new Integer;
    type Asm_Insn           is new Integer;
    --  All three of these types are dummy types, to meet the requirements of
-   --  type consistenty. No values of these types are ever referenced.
+   --  type consistency. No values of these types are ever referenced.
 
    No_Input_Operands  : constant Asm_Input_Operand  := 0;
    No_Output_Operands : constant Asm_Output_Operand := 0;

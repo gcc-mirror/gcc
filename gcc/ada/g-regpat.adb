@@ -684,9 +684,12 @@ package body GNAT.Regpat is
          Operand : Pointer;
          Greedy  : Boolean := True)
       is
-         Dest   : constant Pointer := Emit_Ptr;
-         Old    : Pointer;
-         Size   : Pointer := 3;
+         Dest : constant Pointer := Emit_Ptr;
+         Old  : Pointer;
+         Size : Pointer := 3;
+
+         Discard : Pointer;
+         pragma Warnings (Off, Discard);
 
       begin
          --  If not greedy, we have to emit another opcode first
@@ -713,7 +716,7 @@ package body GNAT.Regpat is
             Link_Tail (Old, Old + 3);
          end if;
 
-         Old := Emit_Node (Op);
+         Discard := Emit_Node (Op);
          Emit_Ptr := Dest + Size;
       end Insert_Operator;
 
@@ -2364,21 +2367,23 @@ package body GNAT.Regpat is
    -----------
 
    procedure Match
-     (Self    : Pattern_Matcher;
-      Data    : String;
-      Matches : out Match_Array;
+     (Self       : Pattern_Matcher;
+      Data       : String;
+      Matches    : out Match_Array;
       Data_First : Integer := -1;
       Data_Last  : Positive := Positive'Last)
    is
-      Program   : Program_Data renames Self.Program; -- Shorter notation
+      pragma Assert (Matches'First = 0);
+
+      Program : Program_Data renames Self.Program; -- Shorter notation
 
       First_In_Data : constant Integer := Integer'Max (Data_First, Data'First);
       Last_In_Data  : constant Integer := Integer'Min (Data_Last, Data'Last);
 
       --  Global work variables
 
-      Input_Pos : Natural;          -- String-input pointer
-      BOL_Pos   : Natural;          -- Beginning of input, for ^ check
+      Input_Pos : Natural;           -- String-input pointer
+      BOL_Pos   : Natural;           -- Beginning of input, for ^ check
       Matched   : Boolean := False;  -- Until proven True
 
       Matches_Full : Match_Array (0 .. Natural'Max (Self.Paren_Count,

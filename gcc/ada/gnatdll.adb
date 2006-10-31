@@ -253,6 +253,12 @@ procedure Gnatdll is
          end loop;
 
          Close (File);
+
+      exception
+         when Name_Error =>
+            Raise_Exception
+              (Syntax_Error'Identity,
+               "list-of-files file " & List_Filename & " not found.");
       end Add_Files_From_List;
 
    --  Start of processing for Parse_Command_Line

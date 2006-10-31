@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,11 +44,9 @@ package body Ada.Wide_Wide_Text_IO.Enumeration_IO is
    procedure Get (File : File_Type; Item : out Enum) is
       Buf    : Wide_Wide_String (1 .. Enum'Width);
       Buflen : Natural;
-
    begin
       Aux.Get_Enum_Lit (File, Buf, Buflen);
       Item := Enum'Wide_Wide_Value (Buf (1 .. Buflen));
-
    exception
       when Constraint_Error => raise Data_Error;
    end Get;
@@ -64,11 +62,9 @@ package body Ada.Wide_Wide_Text_IO.Enumeration_IO is
       Last : out Positive)
    is
       Start : Natural;
-
    begin
       Aux.Scan_Enum_Lit (From, Start, Last);
       Item := Enum'Wide_Wide_Value (From (Start .. Last));
-
    exception
       when Constraint_Error => raise Data_Error;
    end Get;
@@ -84,7 +80,6 @@ package body Ada.Wide_Wide_Text_IO.Enumeration_IO is
       Set   : Type_Set := Default_Setting)
    is
       Image : constant Wide_Wide_String := Enum'Wide_Wide_Image (Item);
-
    begin
       Aux.Put (File, Image, Width, Set);
    end Put;
@@ -104,7 +99,6 @@ package body Ada.Wide_Wide_Text_IO.Enumeration_IO is
       Set  : Type_Set := Default_Setting)
    is
       Image : constant Wide_Wide_String := Enum'Wide_Wide_Image (Item);
-
    begin
       Aux.Puts (To, Image, Set);
    end Put;

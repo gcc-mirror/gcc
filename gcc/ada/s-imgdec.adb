@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,8 +41,7 @@ package body System.Img_Dec is
 
    function Image_Decimal
      (V     : Integer;
-      Scale : Integer)
-      return  String
+      Scale : Integer) return String
    is
       P : Natural := 0;
       S : String (1 .. 64);
@@ -76,10 +75,10 @@ package body System.Img_Dec is
       Aft   : Natural;
       Exp   : Natural)
    is
-      Minus : constant Boolean := (Digs (1) = '-');
+      Minus : constant Boolean := (Digs (Digs'First) = '-');
       --  Set True if input is negative
 
-      Zero : Boolean := (Digs (2) = '0');
+      Zero : Boolean := (Digs (Digs'First + 1) = '0');
       --  Set True if input is exactly zero (only case when a leading zero
       --  is permitted in the input string given to this procedure). This
       --  flag can get set later if rounding causes the value to become zero.
@@ -147,10 +146,10 @@ package body System.Img_Dec is
             --  The result is zero, unless we are rounding just before
             --  the first digit, and the first digit is five or more.
 
-            if N = 1 and then Digs (2) >= '5' then
-               Digs (1) := '1';
+            if N = 1 and then Digs (Digs'First + 1) >= '5' then
+               Digs (Digs'First) := '1';
             else
-               Digs (1) := '0';
+               Digs (Digs'First) := '0';
                Zero := True;
             end if;
 
@@ -181,7 +180,7 @@ package body System.Img_Dec is
                --  OK, because we already captured the value of the sign and
                --  we are in any case destroying the value in the Digs buffer
 
-               Digs (1) := '1';
+               Digs (Digs'First) := '1';
                FD := 1;
                ND := ND + 1;
                Digits_Before_Point := Digits_Before_Point + 1;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@ package Atree is
 --  this tree. There is no separate symbol table structure.
 
 --  WARNING: There is a C version of this package. Any changes to this
---  source file must be properly reflected in the C header file tree.h
+--  source file must be properly reflected in the C header file atree.h
 
 --  Package Atree defines the basic structure of the tree and its nodes and
 --  provides the basic abstract interface for manipulating the tree. Two
@@ -198,8 +198,8 @@ package Atree is
    --   Elist6        Synonym for Field6 typed as Elist_Id (Empty = No_Elist)
    --   Uint6         Synonym for Field6 typed as Uint (Empty = Uint_0)
 
-   --   Similar definitions for Field7 to Field27 (and Node7-Node27,
-   --   Elist7-Elist27, Uint7-Uint27, Ureal7-Ureal27). Note that not all
+   --   Similar definitions for Field7 to Field28 (and Node7-Node28,
+   --   Elist7-Elist28, Uint7-Uint28, Ureal7-Ureal28). Note that not all
    --   these functions are defined, only the ones that are actually used.
 
    type Paren_Count_Type is mod 4;
@@ -434,9 +434,9 @@ package Atree is
 
    function New_Copy_Tree
      (Source    : Node_Id;
-      Map       : Elist_Id := No_Elist;
+      Map       : Elist_Id   := No_Elist;
       New_Sloc  : Source_Ptr := No_Location;
-      New_Scope : Entity_Id := Empty) return Node_Id;
+      New_Scope : Entity_Id  := Empty) return Node_Id;
    --  Given a node that is the root of a subtree, Copy_Tree copies the entire
    --  syntactic subtree, including recursively any descendents whose parent
    --  field references a copied node (descendents not linked to a copied node
@@ -860,6 +860,9 @@ package Atree is
       function Field27 (N : Node_Id) return Union_Id;
       pragma Inline (Field27);
 
+      function Field28 (N : Node_Id) return Union_Id;
+      pragma Inline (Field28);
+
       function Node1 (N : Node_Id) return Node_Id;
       pragma Inline (Node1);
 
@@ -941,6 +944,9 @@ package Atree is
       function Node27 (N : Node_Id) return Node_Id;
       pragma Inline (Node27);
 
+      function Node28 (N : Node_Id) return Node_Id;
+      pragma Inline (Node28);
+
       function List1 (N : Node_Id) return List_Id;
       pragma Inline (List1);
 
@@ -992,8 +998,8 @@ package Atree is
       function Elist23 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist23);
 
-      function Elist24 (N : Node_Id) return Elist_Id;
-      pragma Inline (Elist24);
+      function Elist25 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist25);
 
       function Name1 (N : Node_Id) return Name_Id;
       pragma Inline (Name1);
@@ -1785,6 +1791,9 @@ package Atree is
       procedure Set_Field27 (N : Node_Id; Val : Union_Id);
       pragma Inline (Set_Field27);
 
+      procedure Set_Field28 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field28);
+
       procedure Set_Node1 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node1);
 
@@ -1866,6 +1875,9 @@ package Atree is
       procedure Set_Node27 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node27);
 
+      procedure Set_Node28 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node28);
+
       procedure Set_List1 (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List1);
 
@@ -1917,8 +1929,8 @@ package Atree is
       procedure Set_Elist23 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist23);
 
-      procedure Set_Elist24 (N : Node_Id; Val : Elist_Id);
-      pragma Inline (Set_Elist24);
+      procedure Set_Elist25 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist25);
 
       procedure Set_Name1 (N : Node_Id; Val : Name_Id);
       pragma Inline (Set_Name1);
@@ -2832,8 +2844,7 @@ package Atree is
             --  above is used to hold additional general fields and flags
             --  as follows:
 
-            --    Field6-9       Holds Field24-Field27
-            --    Field10        currently unused, reserved for expansion
+            --    Field6-10      Holds Field24-Field28
             --    Field11        Holds Flag184-Flag215
             --    Field12        currently unused, reserved for expansion
 

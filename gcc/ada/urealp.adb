@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1431,14 +1431,14 @@ package body Urealp is
       return UR_10_36;
    end Ureal_10_36;
 
-   -------------------
-   -- Ureal_M_10_36 --
-   -------------------
+   ----------------
+   -- Ureal_2_80 --
+   ----------------
 
-   function Ureal_M_10_36 return Ureal is
+   function Ureal_2_80 return Ureal is
    begin
-      return UR_M_10_36;
-   end Ureal_M_10_36;
+      return UR_2_80;
+   end Ureal_2_80;
 
    -----------------
    -- Ureal_2_128 --
@@ -1449,14 +1449,14 @@ package body Urealp is
       return UR_2_128;
    end Ureal_2_128;
 
-   ----------------
-   -- Ureal_2_80 --
-   ----------------
+   -------------------
+   -- Ureal_2_M_80 --
+   -------------------
 
-   function Ureal_2_80 return Ureal is
+   function Ureal_2_M_80 return Ureal is
    begin
-      return UR_2_80;
-   end Ureal_2_80;
+      return UR_2_M_80;
+   end Ureal_2_M_80;
 
    -------------------
    -- Ureal_2_M_128 --
@@ -1466,15 +1466,6 @@ package body Urealp is
    begin
       return UR_2_M_128;
    end Ureal_2_M_128;
-
-   -------------------
-   -- Ureal_2_M_80 --
-   -------------------
-
-   function Ureal_2_M_80 return Ureal is
-   begin
-      return UR_2_M_80;
-   end Ureal_2_M_80;
 
    ----------------
    -- Ureal_Half --
@@ -1493,6 +1484,15 @@ package body Urealp is
    begin
       return UR_M_0;
    end Ureal_M_0;
+
+   -------------------
+   -- Ureal_M_10_36 --
+   -------------------
+
+   function Ureal_M_10_36 return Ureal is
+   begin
+      return UR_M_10_36;
+   end Ureal_M_10_36;
 
    -----------------
    -- Ureal_Tenth --

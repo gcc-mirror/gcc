@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,11 +101,15 @@ package Output is
    --  Write an integer value with no leading blanks or zeroes. Negative
    --  values are preceded by a minus sign).
 
+   procedure Write_Spaces (N : Nat);
+   --  Write N spaces
+
    procedure Write_Str (S : String);
    --  Write a string of characters to the standard output file. Note that
-   --  end of line is handled separately using WRITE_EOL, so the string
-   --  should not contain either of the characters LF or CR, but it may
-   --  contain horizontal tab characters.
+   --  end of line is normally handled separately using WRITE_EOL, but it
+   --  is allowed for the string to contain LF (but not CR) characters,
+   --  which are properly interpreted as end of line characters. The string
+   --  may also contain horizontal tab characters.
 
    procedure Write_Line (S : String);
    --  Equivalent to Write_Str (S) followed by Write_Eol;
@@ -144,7 +148,7 @@ package Output is
    --  names, precisely to make sure that they are only used for debugging!
 
    procedure w (C : Character);
-   --  Dump quote, character quote, followed by line return
+   --  Dump quote, character, quote, followed by line return
 
    procedure w (S : String);
    --  Dump string followed by line return

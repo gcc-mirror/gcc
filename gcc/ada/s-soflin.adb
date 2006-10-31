@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,7 @@ package body System.Soft_Links is
    --  This is currently only used under VMS.
 
    NT_TSD : TSD;
-   --  Note: we rely on the default initialization of NT_TSD.
+   --  Note: we rely on the default initialization of NT_TSD
 
    --------------------
    -- Abort_Defer_NT --
@@ -295,14 +295,14 @@ package body System.Soft_Links is
       null;
    end Task_Lock_NT;
 
-   --------------------
-   -- Task_Unlock_NT --
-   --------------------
+   ------------------
+   -- Task_Name_NT --
+   -------------------
 
-   procedure Task_Unlock_NT is
+   function Task_Name_NT return String is
    begin
-      null;
-   end Task_Unlock_NT;
+      return "main_task";
+   end Task_Name_NT;
 
    -------------------------
    -- Task_Termination_NT --
@@ -314,6 +314,15 @@ package body System.Soft_Links is
       null;
    end Task_Termination_NT;
 
+   --------------------
+   -- Task_Unlock_NT --
+   --------------------
+
+   procedure Task_Unlock_NT is
+   begin
+      null;
+   end Task_Unlock_NT;
+
    -------------------------
    -- Update_Exception_NT --
    -------------------------
@@ -322,14 +331,5 @@ package body System.Soft_Links is
    begin
       Ada.Exceptions.Save_Occurrence (NT_TSD.Current_Excep, X);
    end Update_Exception_NT;
-
-   ------------------
-   -- Task_Name_NT --
-   -------------------
-
-   function Task_Name_NT return String is
-   begin
-      return "main_task";
-   end Task_Name_NT;
 
 end System.Soft_Links;

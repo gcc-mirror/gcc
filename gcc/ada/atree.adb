@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2360,17 +2360,24 @@ package body Atree is
 
    function Traverse_Func (Node : Node_Id) return Traverse_Result is
 
-      function Traverse_Field (Fld : Union_Id) return Traverse_Result;
-      --  Fld is one of the fields of Node. If the field points to a
-      --  syntactic node or list, then this node or list is traversed,
-      --  and the result is the result of this traversal. Otherwise
-      --  a value of True is returned with no processing.
+      function Traverse_Field
+        (Nod : Node_Id;
+         Fld : Union_Id;
+         FN  : Field_Num) return Traverse_Result;
+      --  Fld is one of the fields of Nod. If the field points to syntactic
+      --  node or list, then this node or list is traversed, and the result is
+      --  the result of this traversal. Otherwise a value of True is returned
+      --  with no processing. FN is the number of the field (1 .. 5).
 
       --------------------
       -- Traverse_Field --
       --------------------
 
-      function Traverse_Field (Fld : Union_Id) return Traverse_Result is
+      function Traverse_Field
+        (Nod : Node_Id;
+         Fld : Union_Id;
+         FN  : Field_Num) return Traverse_Result
+      is
       begin
          if Fld = Union_Id (Empty) then
             return OK;
@@ -2381,9 +2388,7 @@ package body Atree is
 
             --  Traverse descendent that is syntactic subtree node
 
-            if Parent (Node_Id (Fld)) = Node
-              or else Original_Node (Parent (Node_Id (Fld))) = Node
-            then
+            if Is_Syntactic_Field (Nkind (Nod), FN) then
                return Traverse_Func (Node_Id (Fld));
 
             --  Node that is not a syntactic subtree
@@ -2398,9 +2403,7 @@ package body Atree is
 
             --  Traverse descendent that is a syntactic subtree list
 
-            if Parent (List_Id (Fld)) = Node
-              or else Original_Node (Parent (List_Id (Fld))) = Node
-            then
+            if Is_Syntactic_Field (Nkind (Nod), FN) then
                declare
                   Elmt : Node_Id := First (List_Id (Fld));
                begin
@@ -2439,39 +2442,36 @@ package body Atree is
             return OK;
 
          when OK =>
-            if Traverse_Field (Union_Id (Field1 (Node))) = Abandon
+            if Traverse_Field (Node, Union_Id (Field1 (Node)), 1) = Abandon
                  or else
-               Traverse_Field (Union_Id (Field2 (Node))) = Abandon
+               Traverse_Field (Node, Union_Id (Field2 (Node)), 2) = Abandon
                  or else
-               Traverse_Field (Union_Id (Field3 (Node))) = Abandon
+               Traverse_Field (Node, Union_Id (Field3 (Node)), 3) = Abandon
                  or else
-               Traverse_Field (Union_Id (Field4 (Node))) = Abandon
+               Traverse_Field (Node, Union_Id (Field4 (Node)), 4) = Abandon
                  or else
-               Traverse_Field (Union_Id (Field5 (Node))) = Abandon
+               Traverse_Field (Node, Union_Id (Field5 (Node)), 5) = Abandon
             then
                return Abandon;
-
             else
                return OK;
             end if;
 
          when OK_Orig =>
             declare
-               Onode : constant Node_Id := Original_Node (Node);
-
+               Onod : constant Node_Id := Original_Node (Node);
             begin
-               if Traverse_Field (Union_Id (Field1 (Onode))) = Abandon
+               if Traverse_Field (Onod, Union_Id (Field1 (Onod)), 1) = Abandon
                     or else
-                  Traverse_Field (Union_Id (Field2 (Onode))) = Abandon
+                  Traverse_Field (Onod, Union_Id (Field2 (Onod)), 2) = Abandon
                     or else
-                  Traverse_Field (Union_Id (Field3 (Onode))) = Abandon
+                  Traverse_Field (Onod, Union_Id (Field3 (Onod)), 3) = Abandon
                     or else
-                  Traverse_Field (Union_Id (Field4 (Onode))) = Abandon
+                  Traverse_Field (Onod, Union_Id (Field4 (Onod)), 4) = Abandon
                     or else
-                  Traverse_Field (Union_Id (Field5 (Onode))) = Abandon
+                  Traverse_Field (Onod, Union_Id (Field5 (Onod)), 5) = Abandon
                then
                   return Abandon;
-
                else
                   return OK_Orig;
                end if;
@@ -2681,6 +2681,12 @@ package body Atree is
          return Nodes.Table (N + 4).Field9;
       end Field27;
 
+      function Field28 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 4).Field10;
+      end Field28;
+
       function Node1 (N : Node_Id) return Node_Id is
       begin
          pragma Assert (N in Nodes.First .. Nodes.Last);
@@ -2843,6 +2849,12 @@ package body Atree is
          return Node_Id (Nodes.Table (N + 4).Field9);
       end Node27;
 
+      function Node28 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 4).Field10);
+      end Node28;
+
       function List1 (N : Node_Id) return List_Id is
       begin
          pragma Assert (N in Nodes.First .. Nodes.Last);
@@ -2995,16 +3007,16 @@ package body Atree is
          end if;
       end Elist23;
 
-      function Elist24 (N : Node_Id) return Elist_Id is
+      function Elist25 (N : Node_Id) return Elist_Id is
          pragma Assert (Nkind (N) in N_Entity);
-         Value : constant Union_Id := Nodes.Table (N + 4).Field6;
+         Value : constant Union_Id := Nodes.Table (N + 4).Field7;
       begin
          if Value = 0 then
             return No_Elist;
          else
             return Elist_Id (Value);
          end if;
-      end Elist24;
+      end Elist25;
 
       function Name1 (N : Node_Id) return Name_Id is
       begin
@@ -4647,6 +4659,12 @@ package body Atree is
          Nodes.Table (N + 4).Field9 := Val;
       end Set_Field27;
 
+      procedure Set_Field28 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 4).Field10 := Val;
+      end Set_Field28;
+
       procedure Set_Node1 (N : Node_Id; Val : Node_Id) is
       begin
          pragma Assert (N in Nodes.First .. Nodes.Last);
@@ -4809,6 +4827,12 @@ package body Atree is
          Nodes.Table (N + 4).Field9 := Union_Id (Val);
       end Set_Node27;
 
+      procedure Set_Node28 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 4).Field10 := Union_Id (Val);
+      end Set_Node28;
+
       procedure Set_List1 (N : Node_Id; Val : List_Id) is
       begin
          pragma Assert (N in Nodes.First .. Nodes.Last);
@@ -4908,11 +4932,11 @@ package body Atree is
          Nodes.Table (N + 3).Field10 := Union_Id (Val);
       end Set_Elist23;
 
-      procedure Set_Elist24 (N : Node_Id; Val : Elist_Id) is
+      procedure Set_Elist25 (N : Node_Id; Val : Elist_Id) is
       begin
          pragma Assert (Nkind (N) in N_Entity);
-         Nodes.Table (N + 4).Field6 := Union_Id (Val);
-      end Set_Elist24;
+         Nodes.Table (N + 4).Field7 := Union_Id (Val);
+      end Set_Elist25;
 
       procedure Set_Name1 (N : Node_Id; Val : Name_Id) is
       begin

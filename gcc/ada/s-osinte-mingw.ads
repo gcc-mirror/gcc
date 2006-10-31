@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2005, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,6 +68,7 @@ package System.OS_Interface is
 
    subtype PSZ   is Interfaces.C.Strings.chars_ptr;
    subtype PCHAR is Interfaces.C.Strings.chars_ptr;
+
    subtype PVOID is System.Address;
 
    Null_Void : constant PVOID := System.Null_Address;

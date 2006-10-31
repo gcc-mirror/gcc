@@ -46,7 +46,7 @@ package Ada.Sequential_IO is
 
    pragma Compile_Time_Warning
      (Element_Type'Has_Access_Values,
-      "?Element_Type for Sequential_'I'O instance has access values");
+      "Element_Type for Sequential_IO instance has access values");
 
    type File_Type is limited private;
 

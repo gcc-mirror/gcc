@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -487,7 +487,7 @@ package body System.Secondary_Stack is
    --  Allocate a secondary stack for the main program to use
 
    --  We make sure that the stack has maximum alignment. Some systems require
-   --  this (e.g. Sun), and in any case it is a good idea for efficiency.
+   --  this (e.g. Sparc), and in any case it is a good idea for efficiency.
 
    Stack : aliased Stack_Id;
    for Stack'Alignment use Standard'Maximum_Alignment;

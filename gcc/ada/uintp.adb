@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -134,6 +134,7 @@ package body Uintp is
    --  digit of Vec contains the sign, all other digits are always non-
    --  negative. Note that the input may be directly represented, and in
    --  this case Vec will contain the corresponding one or two digit value.
+   --  The low bound of Vec is always 1.
 
    function Least_Sig_Digit (Arg : Uint) return Int;
    pragma Inline (Least_Sig_Digit);
@@ -422,6 +423,8 @@ package body Uintp is
    procedure Init_Operand (UI : Uint; Vec : out UI_Vector) is
       Loc : Int;
 
+      pragma Assert (Vec'First = Int'(1));
+
    begin
       if Direct (UI) then
          Vec (1) := Direct_Val (UI);
@@ -590,17 +593,27 @@ package body Uintp is
       Num  : Nat;
 
    begin
+      --  Largest negative number has to be handled specially, since it is in
+      --  Int_Range, but we cannot take the absolute value.
+
       if Input = Uint_Int_First then
          return Int'Size;
+
+      --  For any other number in Int_Range, get absolute value of number
 
       elsif UI_Is_In_Int_Range (Input) then
          Num := abs (UI_To_Int (Input));
          Bits := 0;
 
+      --  If not in Int_Range then initialize bit count for all low order
+      --  words, and set number to high order digit.
+
       else
          Bits := Base_Bits * (Uints.Table (Input).Length - 1);
          Num  := abs (Udigits.Table (Uints.Table (Input).Loc));
       end if;
+
+      --  Increase bit count for remaining value in Num
 
       while Types.">" (Num, 0) loop
          Num := Num / 2;

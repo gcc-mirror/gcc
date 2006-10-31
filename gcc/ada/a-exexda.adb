@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -407,10 +407,13 @@ package body Exception_Data is
    -----------------------------------------
 
    function Basic_Exception_Tback_Maxlength
-     (X : Exception_Occurrence) return Natural is
+     (X : Exception_Occurrence) return Natural
+   is
+      Space_Per_Traceback : constant := 2 + 16 + 1;
+      --  Space for "0x" + HHHHHHHHHHHHHHHH + " "
    begin
-      return BETB_Header'Length + 1 + X.Num_Tracebacks * 19 + 1;
-      --  19 =  2 + 16 + 1 for each address ("0x" + HHHH + " ")
+      return BETB_Header'Length + 1 +
+               X.Num_Tracebacks * Space_Per_Traceback + 1;
    end Basic_Exception_Tback_Maxlength;
 
    ---------------------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,8 +93,8 @@ package Sem_Case is
       --  Subtyp is the subtype of the discrete choices. The type against
       --  which the discrete choices must be resolved is its base type.
       --
-      --  On entry Choice_Table must be big enough to contain all the
-      --  discrete choices encountered.
+      --  On entry Choice_Table must be big enough to contain all the discrete
+      --  choices encountered. The lower bound of Choice_Table must be one.
       --
       --  On exit Choice_Table contains all the static and non empty discrete
       --  choices in sorted order. Last_Choice gives the position of the last

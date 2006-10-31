@@ -652,8 +652,8 @@ package body Sinput.L is
       --  We scan past junk to the first interesting compilation unit
       --  token, to see if it is SEPARATE. We ignore WITH keywords during
       --  this and also PRIVATE. The reason for ignoring PRIVATE is that
-      --  it handles some error situations, and also it is possible that
-      --  a PRIVATE WITH feature might be approved some time in the future.
+      --  it handles some error situations, and also to handle PRIVATE WITH
+      --  in Ada 2005 mode.
 
       while Token = Tok_With
         or else Token = Tok_Private
