@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 1996 Free Software Foundation, Inc.            --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,7 @@ with System; use System;
 package Exp_Code is
 
    procedure Expand_Asm_Call (N : Node_Id);
-   --  Expands a call to Asm or Asm_Volatile into an equivalent
-   --  N_Code_Statement node.
+   --  Expands a call to Asm into an equivalent N_Code_Statement node
 
    --  The following routines provide an abstract interface to analyze
    --  code statements, for use by Gigi processing for code statements.
@@ -41,8 +40,8 @@ package Exp_Code is
    --  to expand tables that are frozen on entry to Gigi.
 
    function Is_Asm_Volatile (N : Node_Id) return Boolean;
-   --  Given an N_Code_Statement node N, return True in the Asm_Volatile
-   --  case and False in the Asm case.
+   --  Given an N_Code_Statement node N, return True if Volatile=True is
+   --  specified, and False if Volatile=False is specified (or set by default).
 
    function Asm_Template (N : Node_Id) return Node_Id;
    --  Given an N_Code_Statement node N, returns string literal node for
@@ -82,7 +81,10 @@ package Exp_Code is
    --  Called within a loop initialized by Setup_Asm_Inputs and controlled
    --  by Next_Asm_Input as described above. Returns the expression node for
    --  the value component of the current Asm_Input parameter, or Empty if
-   --  there are no more Asm_Input parameters.
+   --  there are no more Asm_Input parameters, or Error if an error was
+   --  previously detected in the input parameters (note that the backend
+   --  need not worry about this case, since it won't be called if there
+   --  were any such serious errors detected).
 
    procedure Next_Asm_Input;
    --  Step to next Asm_Input parameter. It is an error to call this procedure
@@ -94,7 +96,7 @@ package Exp_Code is
    --  arguments. The protocol is to construct a loop as follows:
    --
    --    Setup_Asm_Outputs (N);
-   --    while Present (Asm_Output_Value)
+   --    while Present (Asm_Output_Variable)
    --      body
    --      Next_Asm_Output;
    --    end loop;
@@ -110,10 +112,13 @@ package Exp_Code is
    --  Empty if there are no more Asm_Output parameters.
 
    function Asm_Output_Variable return Node_Id;
-   --  Called within a loop initialized by Setup_Asm_Outputs and controlled
-   --  by Next_Asm_Output as described above. Returns the expression node for
-   --  the output variable component of the current Asm_Output parameter, or
-   --  Empty if there are no more Asm_Output parameters.
+   --  Called within a loop initialized by Setup_Asm_Outputs and controlled by
+   --  Next_Asm_Output as described above. Returns the expression node for the
+   --  output variable component of the current Asm_Output parameter, or Empty
+   --  if there are no more Asm_Output parameters, or Error if an error was
+   --  previously detected in the input parameters (note that the backend need
+   --  not worry about this case, since it won't be called if there were any
+   --  such serious errors detected).
 
    procedure Next_Asm_Output;
    --  Step to next Asm_Output parameter. It is an error to call this procedure

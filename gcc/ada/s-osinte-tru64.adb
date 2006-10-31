@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2005, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2006, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,8 +73,9 @@ package body System.OS_Interface is
    begin
       Asm ("call_pal 0x9e" & ASCII.LF & ASCII.HT &
            "bis $31, $0, %0",
-           Outputs => pthread_t'Asm_Output ("=r", Self),
-           Clobber => "$0");
+           Outputs  => pthread_t'Asm_Output ("=r", Self),
+           Clobber  => "$0",
+           Volatile => True);
       return Self;
    end pthread_self;
 
@@ -93,8 +94,9 @@ package body System.OS_Interface is
 
       Asm ("call_pal 0x9e" & ASCII.LF & ASCII.HT &
            "bis $31, $0, %0",
-           Outputs => Teb_Ptr'Asm_Output ("=r", Teb),
-           Clobber => "$0");
+           Outputs  => Teb_Ptr'Asm_Output ("=r", Teb),
+           Clobber  => "$0",
+           Volatile => True);
 
       --  Stick a guard page right above the Yellow Zone if it exists
 

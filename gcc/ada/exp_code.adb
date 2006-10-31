@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@ with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
+with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
@@ -124,6 +125,8 @@ package body Exp_Code is
    begin
       if No (Operand_Var) then
          return Empty;
+      elsif Error_Posted (Operand_Var) then
+         return Error;
       else
          return Next (First (Expressions (Operand_Var)));
       end if;
@@ -227,7 +230,6 @@ package body Exp_Code is
 
       Name_Buffer (Name_Len + 1) := ASCII.NUL;
       return Name_Buffer'Address;
-
    end Clobber_Get_Next;
 
    -------------------
@@ -240,12 +242,10 @@ package body Exp_Code is
                                    Next_Actual (
                                      Next_Actual (
                                        First_Actual (Call))));
-
    begin
       if not Is_OK_Static_Expression (Clob) then
          Flag_Non_Static_Expr ("asm clobber argument is not static!", Clob);
          Clobber_Node := Empty;
-
       else
          Clobber_Node := Get_String_Node (Clob);
          Clobber_Ptr := 1;
@@ -262,11 +262,15 @@ package body Exp_Code is
       procedure Check_IO_Operand (N : Node_Id);
       --  Check for incorrect input or output operand
 
+      ----------------------
+      -- Check_IO_Operand --
+      ----------------------
+
       procedure Check_IO_Operand (N : Node_Id) is
          Err : Node_Id := N;
 
       begin
-         --  The only identifier allows is No_xxput_Operands. Since we
+         --  The only identifier allowed is No_xxput_Operands. Since we
          --  know the type is right, it is sufficient to see if the
          --  referenced entity is in a runtime routine.
 
@@ -333,7 +337,6 @@ package body Exp_Code is
       declare
          Arg_Output : constant Node_Id := Next_Actual (First_Actual (N));
          Arg_Input  : constant Node_Id := Next_Actual (Arg_Output);
-
       begin
          Check_IO_Operand (Arg_Output);
          Check_IO_Operand (Arg_Input);
@@ -364,9 +367,13 @@ package body Exp_Code is
 
          --  There is no need to reanalyze this node, it is completely analyzed
          --  already, at least sufficiently for the purposes of the abstract
-         --  procedural interface defined in this package.
+         --  procedural interface defined in this package. Furthermore if we
+         --  let it go through the normal analysis, that would include some
+         --  inappropriate checks that apply only to explicit code statements
+         --  in the source, and not to calls to intrinsics.
 
          Set_Analyzed (N);
+         Check_Code_Statement (N);
       end if;
    end Expand_Asm_Call;
 
@@ -378,7 +385,6 @@ package body Exp_Code is
    begin
       if Nkind (S) = N_String_Literal then
          return S;
-
       else
          pragma Assert (Ekind (Entity (S)) = E_Constant);
          return Get_String_Node (Constant_Value (Entity (S)));
@@ -397,12 +403,10 @@ package body Exp_Code is
                    Next_Actual (
                      Next_Actual (
                        First_Actual (Call)))));
-
    begin
       if not Is_OK_Static_Expression (Vol) then
          Flag_Non_Static_Expr ("asm volatile argument is not static!", Vol);
          return False;
-
       else
          return Is_True (Expr_Value (Vol));
       end if;
@@ -427,7 +431,6 @@ package body Exp_Code is
 
       if Nkind (Parent (Operand_Var)) = N_Aggregate then
          Operand_Var := Next (Operand_Var);
-
       else
          Operand_Var := Empty;
       end if;
@@ -448,7 +451,6 @@ package body Exp_Code is
 
    procedure Setup_Asm_Inputs (N : Node_Id) is
       Call : constant Node_Id := Expression (Expression (N));
-
    begin
       Setup_Asm_IO_Args
         (Next_Actual (Next_Actual (First_Actual (Call))),
@@ -488,7 +490,6 @@ package body Exp_Code is
 
    procedure Setup_Asm_Outputs (N : Node_Id) is
       Call : constant Node_Id := Expression (Expression (N));
-
    begin
       Setup_Asm_IO_Args
         (Next_Actual (First_Actual (Call)),
