@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,9 @@ with System.Memory;
 --  Referenced directly from generated code using external symbols, so it
 --  must always be present in a build, even if no unit has a direct with
 --  of this unit.
+
+with System.Restrictions;
+--  Referenced directly from the binder generated file.
 
 pragma Warnings (On);
 
