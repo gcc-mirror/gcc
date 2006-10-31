@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,9 +36,20 @@
 --  Note that we treat Preelaborate as a categorization pragma, even though
 --  strictly, according to RM E.2(2,3), the term does not apply in this case.
 
-with Types; use Types;
+with Exp_Tss; use Exp_Tss;
+with Types;   use Types;
 
 package Sem_Cat is
+
+   function Has_Stream_Attribute_Definition
+     (Typ : Entity_Id; Nam : TSS_Name_Type) return Boolean;
+   --  True when there is a attribute definition clause specifying attribute
+   --  Nam for Typ. In Ada 2005 mode, returns True only when the attribute
+   --  definition clause is visible. Note that attribute definition clauses
+   --  inherited from parent types are taken into account by this predicate
+   --  (to test for presence of an attribute definition clause for one
+   --  specific type, excluding inherited definitions, the flags
+   --  Has_Specicied_Stream_* can be used instead).
 
    function In_Preelaborated_Unit return Boolean;
    --  Determines if the current scope is within a preelaborated compilation
@@ -136,5 +147,11 @@ package Sem_Cat is
    --  Non-static constant and variable are the targets, generic parameters
    --  are not included because the generic declaration and body are
    --  preelaborable.
+
+   procedure Validate_RACW_Primitives (T : Entity_Id);
+   --  Enforce constraints on primitive operations of the designated type of
+   --  an RACW. Note that since the complete set of primitive operations of the
+   --  designated type needs to be known, we must defer these checks until the
+   --  desgianted type is frozen.
 
 end Sem_Cat;

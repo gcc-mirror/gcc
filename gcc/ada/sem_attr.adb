@@ -31,6 +31,7 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Eval_Fat;
+with Exp_Dist; use Exp_Dist;
 with Exp_Util; use Exp_Util;
 with Expander; use Expander;
 with Freeze;   use Freeze;
@@ -342,6 +343,11 @@ package body Sem_Attr is
          --  the type of the prefix. If prefix is overloaded, so it the
          --  node itself. The result is stored in Acc_Type.
 
+         function OK_Self_Reference return Boolean;
+         --  An access reference whose prefix is a type can legally appear
+         --  within an aggregate, where it is obtained by expansion of
+         --  a defaulted aggregate;
+
          ------------------------------
          -- Build_Access_Object_Type --
          ------------------------------
@@ -432,6 +438,36 @@ package body Sem_Attr is
             end if;
          end Build_Access_Subprogram_Type;
 
+         ----------------------
+         -- OK_Self_Reference --
+         ----------------------
+
+         function OK_Self_Reference return Boolean is
+            Par : Node_Id;
+
+         begin
+            Par := Parent (N);
+            while Present (Par)
+              and then Nkind (Par) in N_Subexpr
+            loop
+               exit when Nkind (Par) = N_Aggregate
+                 or else Nkind (Par) = N_Extension_Aggregate;
+               Par := Parent (Par);
+            end loop;
+
+            if Present (Par)
+              and then
+                (Nkind (Par) = N_Aggregate
+                   or else Nkind (Par) = N_Extension_Aggregate)
+              and then Etype (Par) = Typ
+            then
+               Set_Has_Self_Reference (Par);
+               return True;
+            else
+               return False;
+            end if;
+         end OK_Self_Reference;
+
       --  Start of processing for Analyze_Access_Attribute
 
       begin
@@ -458,6 +494,10 @@ package body Sem_Attr is
                Error_Attr
                  ("prefix of % attribute cannot be Inline_Always subprogram",
                   P);
+            end if;
+
+            if Aname = Name_Unchecked_Access then
+               Error_Attr ("attribute% cannot be applied to a subprogram", P);
             end if;
 
             --  Build the appropriate subprogram type
@@ -488,7 +528,9 @@ package body Sem_Attr is
          end if;
 
          --  Deal with incorrect reference to a type, but note that some
-         --  accesses are allowed (references to the current type instance).
+         --  accesses are allowed: references to the current type instance,
+         --  or in Ada 2005 self-referential pointer in a default-initialized
+         --  aggregate.
 
          if Is_Entity_Name (P) then
             Typ := Entity (P);
@@ -568,6 +610,15 @@ package body Sem_Attr is
                --  OK if a task type, this test needs sharpening up ???
 
                elsif Is_Task_Type (Typ) then
+                  null;
+
+               --  OK if self-reference in an aggregate in Ada 2005, and
+               --  the reference comes from a copied default expression.
+
+               elsif Ada_Version >= Ada_05
+                 and then not Comes_From_Source (N)
+                 and then OK_Self_Reference
+               then
                   null;
 
                --  Otherwise we have an error case
@@ -985,7 +1036,6 @@ package body Sem_Attr is
 
       procedure Check_Enum_Image is
          Lit : Entity_Id;
-
       begin
          if Is_Enumeration_Type (P_Base_Type) then
             Lit := First_Literal (P_Base_Type);
@@ -1277,6 +1327,7 @@ package body Sem_Attr is
       procedure Check_Stream_Attribute (Nam : TSS_Name_Type) is
          Etyp : Entity_Id;
          Btyp : Entity_Id;
+
       begin
          Validate_Non_Static_Attribute_Function_Call;
 
@@ -1561,6 +1612,8 @@ package body Sem_Attr is
                return False;
             end On_X86;
 
+         --  Start of processing for Alignment_Kludge
+
          begin
             if Aname = Name_Maximum_Alignment and then On_X86 then
                P := Parent (N);
@@ -1673,7 +1726,6 @@ package body Sem_Attr is
             elsif Entity (P) = Current_Scope
               and then Is_Record_Type (Entity (P))
             then
-
                --  Use of current instance within the type. Verify that if the
                --  attribute appears within a constraint, it  yields an access
                --  type, other uses are illegal.
@@ -1779,7 +1831,6 @@ package body Sem_Attr is
 
             begin
                Get_First_Interp (P, I, It);
-
                while Present (It.Nam) loop
                   if Comes_From_Source (It.Nam) then
                      Count := Count + 1;
@@ -2329,15 +2380,16 @@ package body Sem_Attr is
 
             Save_Interps (E1, Expression (N));
 
-            if not Is_Interface (Etype (P)) then
-               Analyze (N);
-
             --  Ada 2005 (AI-251): In case of abstract interfaces we have to
             --  analyze and resolve the type conversion to generate the code
             --  that displaces the reference to the base of the object.
 
-            else
+            if Is_Interface (Etype (P))
+              or else Is_Interface (Etype (E1))
+            then
                Analyze_And_Resolve (N, Etype (P));
+            else
+               Analyze (N);
             end if;
 
          --  Otherwise we just need to find the proper type
@@ -3410,6 +3462,56 @@ package body Sem_Attr is
             end if;
          end if;
 
+      --------------
+      -- Priority --
+      --------------
+
+      --  Ada 2005 (AI-327): Dynamic ceiling priorities
+
+      when Attribute_Priority =>
+         if Ada_Version < Ada_05 then
+            Error_Attr ("% attribute is allowed only in Ada 2005 mode", P);
+         end if;
+
+         Check_E0;
+
+         --  The prefix must be a protected object (AARM D.5.2 (2/2))
+
+         Analyze (P);
+
+         if Is_Protected_Type (Etype (P))
+           or else (Is_Access_Type (Etype (P))
+                      and then Is_Protected_Type (Designated_Type (Etype (P))))
+         then
+            Resolve (P, Etype (P));
+         else
+            Error_Attr ("prefix of % attribute must be a protected object", P);
+         end if;
+
+         Set_Etype (N, Standard_Integer);
+
+         --  Must be called from within a protected procedure or entry of the
+         --  protected object.
+
+         declare
+            S : Entity_Id;
+
+         begin
+            S := Current_Scope;
+            while S /= Etype (P)
+               and then S /= Standard_Standard
+            loop
+               S := Scope (S);
+            end loop;
+
+            if S = Standard_Standard then
+               Error_Attr ("the attribute % is only allowed inside protected "
+                           & "operations", P);
+            end if;
+         end;
+
+         Validate_Non_Static_Attribute_Function_Call;
+
       -----------
       -- Range --
       -----------
@@ -3619,6 +3721,11 @@ package body Sem_Attr is
          if Is_Access_Type (P_Type) then
             Check_E0;
 
+            if Ekind (P_Type) = E_Access_Subprogram_Type then
+               Error_Attr
+                 ("cannot use % attribute for access-to-subprogram type", P);
+            end if;
+
             --  Set appropriate entity
 
             if Present (Associated_Storage_Pool (Root_Type (P_Type))) then
@@ -3644,12 +3751,16 @@ package body Sem_Attr is
       ------------------
 
       when Attribute_Storage_Size =>
-
          if Is_Task_Type (P_Type) then
             Check_E0;
             Set_Etype (N, Universal_Integer);
 
          elsif Is_Access_Type (P_Type) then
+            if Ekind (P_Type) = E_Access_Subprogram_Type then
+               Error_Attr
+                 ("cannot use % attribute for access-to-subprogram type", P);
+            end if;
+
             if Is_Entity_Name (P)
               and then Is_Type (Entity (P))
             then
@@ -3698,6 +3809,22 @@ package body Sem_Attr is
             Set_Etype (N, Universal_Integer);
          else
             Error_Attr ("invalid prefix for % attribute", P);
+         end if;
+
+      ---------------
+      -- Stub_Type --
+      ---------------
+
+      when Attribute_Stub_Type =>
+         Check_Type;
+         Check_E0;
+
+         if Is_Remote_Access_To_Class_Wide_Type (P_Type) then
+            Rewrite (N,
+              New_Occurrence_Of (Corresponding_Stub_Type (P_Type), Loc));
+         else
+            Error_Attr
+              ("prefix of% attribute must be remote access to classwide", P);
          end if;
 
       ----------
@@ -6725,10 +6852,12 @@ package body Sem_Attr is
            Attribute_Partition_ID             |
            Attribute_Pool_Address             |
            Attribute_Position                 |
+           Attribute_Priority                 |
            Attribute_Read                     |
            Attribute_Storage_Pool             |
            Attribute_Storage_Size             |
            Attribute_Storage_Unit             |
+           Attribute_Stub_Type                |
            Attribute_Tag                      |
            Attribute_Target_Name              |
            Attribute_Terminated               |
@@ -6807,6 +6936,7 @@ package body Sem_Attr is
       Aname    : constant Name_Id      := Attribute_Name (N);
       Attr_Id  : constant Attribute_Id := Get_Attribute_Id (Aname);
       Btyp     : constant Entity_Id    := Base_Type (Typ);
+      Des_Btyp : Entity_Id;
       Index    : Interp_Index;
       It       : Interp;
       Nom_Subt : Entity_Id;
@@ -7170,6 +7300,8 @@ package body Sem_Attr is
             --  X'Access is illegal if X denotes a constant and the access
             --  type is access-to-variable. Same for 'Unchecked_Access.
             --  The rule does not apply to 'Unrestricted_Access.
+            --  If the reference is a default-initialized aggregate component
+            --  for a self-referential type the reference is legal.
 
             if not (Ekind (Btyp) = E_Access_Subprogram_Type
                      or else Ekind (Btyp) = E_Anonymous_Access_Subprogram_Type
@@ -7182,7 +7314,15 @@ package body Sem_Attr is
                      or else Is_Variable (P)
                      or else Attr_Id = Attribute_Unrestricted_Access)
             then
-               if Comes_From_Source (N) then
+               if Is_Entity_Name (P)
+                 and then Is_Type (Entity (P))
+               then
+                  --  Legality of a self-reference through an access
+                  --  attribute has been verified in Analyze_Access_Attribute.
+
+                  null;
+
+               elsif Comes_From_Source (N) then
                   Error_Msg_N ("access-to-variable designates constant", P);
                end if;
             end if;
@@ -7199,8 +7339,11 @@ package body Sem_Attr is
                --  enclosing composite type.
 
                if Ada_Version >= Ada_05
-                 and then Is_Local_Anonymous_Access (Btyp)
+                 and then
+                   (Is_Local_Anonymous_Access (Btyp)
+                      or else Ekind (Scope (Btyp)) = E_Return_Statement)
                  and then Object_Access_Level (P) > Type_Access_Level (Btyp)
+                 and then Attr_Id = Attribute_Access
                then
                   --  In an instance, this is a runtime check, but one we
                   --  know will fail, so generate an appropriate warning.
@@ -7234,6 +7377,23 @@ package body Sem_Attr is
 
                if Is_Constr_Subt_For_U_Nominal (Nom_Subt) then
                   Nom_Subt := Etype (Nom_Subt);
+               end if;
+
+               Des_Btyp := Designated_Type (Btyp);
+
+               if Ekind (Des_Btyp) = E_Incomplete_Subtype then
+
+                  --  Ada 2005 (AI-412): Subtypes of incomplete types visible
+                  --  through a limited with clause or regular incomplete
+                  --  subtypes.
+
+                  if From_With_Type (Des_Btyp)
+                    and then Present (Non_Limited_View (Des_Btyp))
+                  then
+                     Des_Btyp := Non_Limited_View (Des_Btyp);
+                  else
+                     Des_Btyp := Etype (Des_Btyp);
+                  end if;
                end if;
 
                if Is_Tagged_Type (Designated_Type (Typ)) then
@@ -7291,13 +7451,22 @@ package body Sem_Attr is
                        (N, Etype (Designated_Type (Typ)));
                   end if;
 
-               elsif not Subtypes_Statically_Match
-                           (Designated_Type (Base_Type (Typ)), Nom_Subt)
+               --  Ada 2005 (AI-363): Require static matching when designated
+               --  type has discriminants and a constrained partial view, since
+               --  in general objects of such types are mutable, so we can't
+               --  allow the access value to designate a constrained object
+               --  (because access values must be assumed to designate mutable
+               --  objects when designated type does not impose a constraint).
+
+               elsif not Subtypes_Statically_Match (Des_Btyp, Nom_Subt)
                  and then
                    not (Has_Discriminants (Designated_Type (Typ))
+                          and then not Is_Constrained (Des_Btyp)
                           and then
-                            not Is_Constrained
-                                  (Designated_Type (Base_Type (Typ))))
+                            (Ada_Version < Ada_05
+                              or else
+                                not Has_Constrained_Partial_View
+                                      (Designated_Type (Base_Type (Typ)))))
                then
                   Error_Msg_N
                     ("object subtype must statically match "
@@ -7306,7 +7475,6 @@ package body Sem_Attr is
                   if Is_Entity_Name (P)
                     and then Is_Array_Type (Designated_Type (Typ))
                   then
-
                      declare
                         D : constant Node_Id := Declaration_Node (Entity (P));
 
@@ -7795,42 +7963,12 @@ package body Sem_Attr is
    is
       Etyp : Entity_Id := Typ;
 
-      function Has_Specified_Stream_Attribute
-        (Typ : Entity_Id;
-         Nam : TSS_Name_Type) return Boolean;
-      --  True iff there is a visible attribute definition clause specifying
-      --  attribute Nam for Typ.
-
-      ------------------------------------
-      -- Has_Specified_Stream_Attribute --
-      ------------------------------------
-
-      function Has_Specified_Stream_Attribute
-        (Typ : Entity_Id;
-         Nam : TSS_Name_Type) return Boolean
-      is
-      begin
-         return False
-           or else
-             (Nam = TSS_Stream_Input
-               and then Has_Specified_Stream_Input (Typ))
-           or else
-             (Nam = TSS_Stream_Output
-               and then Has_Specified_Stream_Output (Typ))
-           or else
-             (Nam = TSS_Stream_Read
-               and then Has_Specified_Stream_Read (Typ))
-           or else
-             (Nam = TSS_Stream_Write
-               and then Has_Specified_Stream_Write (Typ));
-      end Has_Specified_Stream_Attribute;
-
    --  Start of processing for Stream_Attribute_Available
 
    begin
       --  We need some comments in this body ???
 
-      if Has_Specified_Stream_Attribute (Typ, Nam) then
+      if Has_Stream_Attribute_Definition (Typ, Nam) then
          return True;
       end if;
 
@@ -7874,7 +8012,7 @@ package body Sem_Attr is
       while Etype (Etyp) /= Etyp loop
          Etyp := Etype (Etyp);
 
-         if Has_Specified_Stream_Attribute (Etyp, Nam) then
+         if Has_Stream_Attribute_Definition (Etyp, Nam) then
             return True;
          end if;
       end loop;
