@@ -910,13 +910,15 @@ package body Exp_Ch9 is
       Ent_Formals : constant Node_Id    := Entry_Body_Formal_Part (N);
       Index_Spec  : constant Node_Id    := Entry_Index_Specification
                                                            (Ent_Formals);
-      Op_Decls    : constant List_Id    := New_List;
-      Bdef        : Entity_Id;
-      Bspec       : Node_Id;
+      Op_Decls : constant List_Id := New_List;
+      Bdef     : Entity_Id;
+      Bspec    : Node_Id;
+      EBF      : Node_Id;
 
    begin
       Bdef :=
-        Make_Defining_Identifier (Loc, Chars (Barrier_Function (Ent)));
+        Make_Defining_Identifier (Loc,
+          Chars => Chars (Barrier_Function (Ent)));
       Bspec := Build_Barrier_Function_Specification (Bdef, Loc);
 
       --  <object pointer declaration>
@@ -944,7 +946,6 @@ package body Exp_Ch9 is
             Index_Con : constant Entity_Id :=
                           Make_Defining_Identifier (Loc,
                             Chars => New_Internal_Name ('J'));
-
          begin
             Set_Entry_Index_Constant (Index_Id, Index_Con);
             Append_List_To (Op_Decls,
@@ -956,7 +957,7 @@ package body Exp_Ch9 is
       --  processed for the C/Fortran boolean possibility, but this happens
       --  automatically since the return statement does this normalization.
 
-      return
+      EBF :=
         Make_Subprogram_Body (Loc,
           Specification => Bspec,
           Declarations => Op_Decls,
@@ -965,6 +966,8 @@ package body Exp_Ch9 is
               Statements => New_List (
                 Make_Return_Statement (Loc,
                   Expression => Condition (Ent_Formals)))));
+      Set_Is_Entry_Barrier_Function (EBF);
+      return EBF;
    end Build_Barrier_Function;
 
    ------------------------------------------
@@ -2697,6 +2700,12 @@ package body Exp_Ch9 is
    begin
       Expand_Call (N);
 
+      --  If call has been inlined, nothing left to do
+
+      if Nkind (N) = N_Block_Statement then
+         return;
+      end if;
+
       --  Convert entry call to Call_Simple call
 
       declare
@@ -4161,7 +4170,6 @@ package body Exp_Ch9 is
       --  scope.
 
       if Is_Entity_Name (Cond) then
-
          if Entity (Cond) = Standard_False
               or else
             Entity (Cond) = Standard_True
@@ -10494,27 +10502,71 @@ package body Exp_Ch9 is
       if Present (Pdef)
         and then Has_Priority_Pragma (Pdef)
       then
-         Append_To (Args,
-           Duplicate_Subexpr_No_Checks
-             (Expression
-               (First
-                 (Pragma_Argument_Associations
-                   (Find_Task_Or_Protected_Pragma (Pdef, Name_Priority))))));
+         declare
+            Prio : constant Node_Id :=
+                     Expression
+                       (First
+                          (Pragma_Argument_Associations
+                             (Find_Task_Or_Protected_Pragma
+                                (Pdef, Name_Priority))));
+            Temp : Entity_Id;
+
+         begin
+            --  If priority is a static expression, then we can duplicate it
+            --  with no problem and simply append it to the argument list.
+
+            if Is_Static_Expression (Prio) then
+               Append_To (Args,
+                          Duplicate_Subexpr_No_Checks (Prio));
+
+            --  Otherwise, the priority may be a per-object expression, if it
+            --  depends on a discriminant of the type. In this case, create
+            --  local variable to capture the expression. Note that it is
+            --  really necessary to create this variable explicitly. It might
+            --  be thought that removing side effects would the appropriate
+            --  approach, but that could generate declarations improperly
+            --  placed in the enclosing scope.
+
+            --  Note: Use System.Any_Priority as the expected type for the
+            --  non-static priority expression, in case the expression has not
+            --  been analyzed yet (as occurs for example with pragma
+            --  Interrupt_Priority).
+
+            else
+               Temp :=
+                 Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+
+               Append_To (L,
+                  Make_Object_Declaration (Loc,
+                     Defining_Identifier => Temp,
+                     Object_Definition   =>
+                       New_Occurrence_Of (RTE (RE_Any_Priority), Loc),
+                     Expression          => Relocate_Node (Prio)));
+
+                  Append_To (Args, New_Occurrence_Of (Temp, Loc));
+            end if;
+         end;
+
+      --  When no priority is specified but an xx_Handler pragma is, we default
+      --  to System.Interrupts.Default_Interrupt_Priority, see D.3(10).
 
       elsif Has_Interrupt_Handler (Ptyp)
         or else Has_Attach_Handler (Ptyp)
       then
-         --  When no priority is specified but an xx_Handler pragma is,
-         --  we default to System.Interrupts.Default_Interrupt_Priority,
-         --  see D.3(10).
-
          Append_To (Args,
            New_Reference_To (RTE (RE_Default_Interrupt_Priority), Loc));
+
+      --  Normal case, no priority or xx_Handler specified, default priority
 
       else
          Append_To (Args,
            New_Reference_To (RTE (RE_Unspecified_Priority), Loc));
       end if;
+
+      --  Test for Compiler_Info parameter. This parameter allows entry body
+      --  procedures and barrier functions to be called from the runtime. It
+      --  is a pointer to the record generated by the compiler to represent
+      --  the protected object.
 
       if Has_Entry
         or else Has_Interrupt_Handler (Ptyp)
@@ -10522,11 +10574,6 @@ package body Exp_Ch9 is
         or else (Ada_Version >= Ada_05
                    and then Present (Interface_List (Parent (Ptyp))))
       then
-         --  Compiler_Info parameter. This parameter allows entry body
-         --  procedures and barrier functions to be called from the runtime.
-         --  It is a pointer to the record generated by the compiler to
-         --  represent the protected object.
-
          if Has_Entry or else not Restricted then
             Append_To (Args,
                Make_Attribute_Reference (Loc,
@@ -10534,13 +10581,12 @@ package body Exp_Ch9 is
                  Attribute_Name => Name_Address));
          end if;
 
+         --  Entry_Bodies parameter. This is a pointer to an array of pointers
+         --  to the entry body procedures and barrier functions of the object.
+         --  If the protected type has no entries this object will not exist;
+         --  in this case, pass a null.
+
          if Has_Entry then
-
-            --  Entry_Bodies parameter. This is a pointer to an array of
-            --  pointers to the entry body procedures and barrier functions of
-            --  the object. If the protected type has no entries this object
-            --  will not exist; in this case, pass a null.
-
             P_Arr := Entry_Bodies_Array (Ptyp);
 
             Append_To (Args,
@@ -11260,7 +11306,11 @@ package body Exp_Ch9 is
                  and then not Is_Scalar_Type (Etype (E))
                  and then Etype (N) /= Etype (E)
                then
-                  Set_Etype (N, Etype (Entity (Original_Node (N))));
+
+                  --  Ensure that reference and entity have the same Etype,
+                  --  to prevent back-end inconsistencies.
+
+                  Set_Etype (N, Etype (E));
                   Update_Index_Types (N);
 
                elsif Present (E)
@@ -11376,7 +11426,7 @@ package body Exp_Ch9 is
          end if;
       end Update_Index_Types;
 
-      procedure Traverse is new Traverse_Proc;
+      procedure Traverse is new Traverse_Proc (Process);
 
    --  Start of processing for Update_Prival_Subtypes
 
