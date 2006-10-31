@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                        (Machine Version for x86)                         --
 --                                                                          --
---          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -566,7 +566,7 @@ package body Ada.Numerics.Aux is
          return Double'Copy_Sign (1.0, X);
       end if;
 
-      return 1.0 / (1.0 + Exp (-2.0 * X)) - 1.0 / (1.0 + Exp (2.0 * X));
+      return 1.0 / (1.0 + Exp (-(2.0 * X))) - 1.0 / (1.0 + Exp (2.0 * X));
    end Tanh;
 
 end Ada.Numerics.Aux;

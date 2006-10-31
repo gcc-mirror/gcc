@@ -69,7 +69,7 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    function "*" (Left, Right : Imaginary) return Real'Base is
    begin
-      return -R (Left) * R (Right);
+      return -(R (Left) * R (Right));
    end "*";
 
    function "*" (Left : Complex; Right : Real'Base) return Complex is
@@ -317,8 +317,8 @@ package body Ada.Numerics.Generic_Complex_Types is
       c : constant R := Right.Re;
       d : constant R := Right.Im;
    begin
-      return Complex'(Re =>  (a * c) / (c ** 2 + d ** 2),
-                      Im => -(a * d) / (c ** 2 + d ** 2));
+      return Complex'(Re =>   (a * c) / (c ** 2 + d ** 2),
+                      Im => -((a * d) / (c ** 2 + d ** 2)));
    end "/";
 
    function "/" (Left : Complex; Right : Imaginary) return Complex is
@@ -327,7 +327,7 @@ package body Ada.Numerics.Generic_Complex_Types is
       d : constant R := R (Right);
 
    begin
-      return (b / d,  -a / d);
+      return (b / d,  -(a / d));
    end "/";
 
    function "/" (Left : Imaginary; Right : Complex) return Complex is
@@ -347,7 +347,7 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    function "/" (Left : Real'Base; Right : Imaginary) return Imaginary is
    begin
-      return Imaginary (-Left / R (Right));
+      return Imaginary (-(Left / R (Right)));
    end "/";
 
    ---------

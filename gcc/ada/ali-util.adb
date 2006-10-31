@@ -137,6 +137,7 @@ package body ALI.Util is
    function Get_File_Checksum (Fname : Name_Id) return Word is
       Full_Name    : Name_Id;
       Source_Index : Source_File_Index;
+
    begin
       Full_Name := Find_File (Fname, Osint.Source);
 

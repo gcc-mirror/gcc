@@ -279,7 +279,7 @@ package body Ada.Text_IO.Fixed_IO is
    --  decimal point.
 
    subtype Int is Integer;
-   E0 : constant Int := -20 * Boolean'Pos (Num'Small >= 1.0E1);
+   E0 : constant Int := -(20 * Boolean'Pos (Num'Small >= 1.0E1));
    E1 : constant Int := E0 + 10 * Boolean'Pos (Num'Small * 10.0**E0 < 1.0E-10);
    E2 : constant Int := E1 +  5 * Boolean'Pos (Num'Small * 10.0**E1 < 1.0E-5);
    E3 : constant Int := E2 +  3 * Boolean'Pos (Num'Small * 10.0**E2 < 1.0E-3);
@@ -637,10 +637,10 @@ package body Ada.Text_IO.Fixed_IO is
 
       if Exact then
          Y := Int64'Min (Int64 (-Num'Small), -1) * 10**Integer'Max (0, D);
-         Z := Int64'Min (Int64 (-1.0 / Num'Small), -1)
+         Z := Int64'Min (Int64 (-(1.0 / Num'Small)), -1)
                                                  * 10**Integer'Max (0, -D);
       else
-         Y := Int64 (-Num'Small * 10.0**E);
+         Y := Int64 (-(Num'Small * 10.0**E));
          Z := -10**Max_Digits;
       end if;
 
