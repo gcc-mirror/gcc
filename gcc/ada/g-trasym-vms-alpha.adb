@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2005, Free Software Foundation, Inc.        --
+--           Copyright (C) 1999-2006, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,12 +67,23 @@ package body GNAT.Traceback.Symbolic is
 
    function Fetch_ASCIC is new Fetch_From_Address (ASCIC);
 
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   function Dummy_User_Act_Proc
+     (Msgvec : Address       := Null_Address;
+      Actrtn : Address       := Null_Address;
+      Facnam : Address       := Null_Address;
+      Actprm : User_Arg_Type := 0) return Cond_Value_Type;
+   --  Dummy routine with SYS$PUTMSG signature
+
    procedure Symbolize
      (Status         : out Cond_Value_Type;
-      Current_PC     : in Address;
-      Adjusted_PC    : in Address;
-      Current_FP     : in Address;
-      Current_R26    : in Address;
+      Current_PC     : Address;
+      Adjusted_PC    : Address;
+      Current_FP     : Address;
+      Current_R26    : Address;
       Image_Name     : out Address;
       Module_Name    : out Address;
       Routine_Name   : out Address;
@@ -80,8 +91,9 @@ package body GNAT.Traceback.Symbolic is
       Relative_PC    : out Address;
       Absolute_PC    : out Address;
       PC_Is_Valid    : out Long_Integer;
-      User_Act_Proc  : Address           := Address'Null_Parameter;
-      User_Arg_Value : User_Arg_Type     := User_Arg_Type'Null_Parameter);
+      User_Act_Proc  : Address           := Dummy_User_Act_Proc'Address;
+      User_Arg_Value : User_Arg_Type     := 0);
+   --  Comment on above procedure required ???
 
    pragma Interface (External, Symbolize);
 
@@ -94,8 +106,7 @@ package body GNAT.Traceback.Symbolic is
       (Value, Value, Value, Value, Value,
        Reference, Reference, Reference, Reference,
        Reference, Reference, Reference,
-       Value, Value),
-       User_Act_Proc);
+       Value, Value));
 
    function Decode_Ada_Name (Encoded_Name : String) return String;
    --  Decodes an Ada identifier name. Removes leading "_ada_" and trailing
@@ -164,6 +175,20 @@ package body GNAT.Traceback.Symbolic is
 
       return Decoded_Name (1 .. DPos - 1);
    end Decode_Ada_Name;
+
+   -------------------------
+   -- Dummy_User_Act_Proc --
+   -------------------------
+
+   function Dummy_User_Act_Proc
+     (Msgvec : Address       := Null_Address;
+      Actrtn : Address       := Null_Address;
+      Facnam : Address       := Null_Address;
+      Actprm : User_Arg_Type := 0) return Cond_Value_Type
+   is
+   begin
+      return 0;
+   end Dummy_User_Act_Proc;
 
    ------------------------
    -- Symbolic_Traceback --
