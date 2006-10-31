@@ -498,6 +498,7 @@ package body Switch.C is
                Constant_Condition_Warnings  := True;
                Implementation_Unit_Warnings := True;
                Ineffective_Inline_Warnings  := True;
+               Warn_On_Assumed_Low_Bound    := True;
                Warn_On_Bad_Fixed_Value      := True;
                Warn_On_Constant             := True;
                Warn_On_Export_Import        := True;
@@ -553,6 +554,19 @@ package body Switch.C is
                   Bad_Switch (C);
                end if;
 
+            --  Processing for j switch
+
+            when 'j' =>
+               Ptr := Ptr + 1;
+
+               --  There may be an equal sign between -gnatj and the value
+
+               if Ptr <= Max and then Switch_Chars (Ptr) = '=' then
+                  Ptr := Ptr + 1;
+               end if;
+
+               Scan_Nat (Switch_Chars, Max, Ptr, Error_Msg_Line_Length, C);
+
             --  Processing for k switch
 
             when 'k' =>
@@ -566,12 +580,23 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Full_List := True;
 
+               --  There may be an equal sign between -gnatl and a file name
+
+               if Ptr <= Max and then Switch_Chars (Ptr) = '=' then
+                  if Ptr = Max then
+                     Osint.Fail ("file name for -gnatl= is null");
+                  else
+                     Opt.Full_List_File_Name :=
+                       new String'(Switch_Chars (Ptr + 1 .. Max));
+                     Ptr := Max + 1;
+                  end if;
+               end if;
+
             --  Processing for L switch
 
             when 'L' =>
                Ptr := Ptr + 1;
-               Osint.Fail
-                 ("-gnatL is no longer supported: consider using --RTS=sjlj");
+               Dump_Source_Text := True;
 
             --  Processing for m switch
 
@@ -584,7 +609,7 @@ package body Switch.C is
                   Ptr := Ptr + 1;
                end if;
 
-               Scan_Pos (Switch_Chars, Max, Ptr, Maximum_Errors, C);
+               Scan_Nat (Switch_Chars, Max, Ptr, Maximum_Errors, C);
 
             --  Processing for n switch
 
@@ -805,15 +830,13 @@ package body Switch.C is
                   Bad_Switch (C);
                end if;
 
-               for J in WC_Encoding_Method loop
-                  if Switch_Chars (Ptr) = WC_Encoding_Letters (J) then
-                     Wide_Character_Encoding_Method := J;
-                     exit;
-
-                  elsif J = WC_Encoding_Method'Last then
+               begin
+                  Wide_Character_Encoding_Method :=
+                    Get_WC_Encoding_Method (Switch_Chars (Ptr));
+               exception
+                  when Constraint_Error =>
                      Bad_Switch (C);
-                  end if;
-               end loop;
+               end;
 
                Upper_Half_Encoding :=
                  Wide_Character_Encoding_Method in
@@ -856,15 +879,9 @@ package body Switch.C is
                        (Switch_Chars (Ptr .. Max), OK, Ptr);
 
                      if not OK then
-                        declare
-                           R : String (1 .. Style_Msg_Len + 20);
-                        begin
-                           R (1 .. 19) := "bad -gnaty switch (";
-                           R (20 .. R'Last - 1) :=
-                             Style_Msg_Buf (1 .. Style_Msg_Len);
-                           R (R'Last) := ')';
-                           Osint.Fail (R);
-                        end;
+                        Osint.Fail
+                          ("bad -gnaty switch (" &
+                           Style_Msg_Buf (1 .. Style_Msg_Len) & ')');
                      end if;
 
                      Ptr := First_Char + 1;

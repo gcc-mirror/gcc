@@ -127,7 +127,7 @@ package Opt is
    --  GNAT
    --  Flag set to force display of multiple errors on a single line and
    --  also repeated error messages for references to undefined identifiers
-   --  and certain other repeated error messages.
+   --  and certain other repeated error messages. Set by use of -gnatf.
 
    All_Sources : Boolean := False;
    --  GNATBIND
@@ -239,6 +239,10 @@ package Opt is
    --  Set to True to enable checking for unused withs, and also the case
    --  of withing a package and using none of the entities in the package.
 
+   Commands_To_Stdout : Boolean := False;
+   --  GNATMAKE
+   --  True if echoed commands to be written to stdout instead of stderr
+
    Comment_Deleted_Lines : Boolean := False;
    --  GNATPREP
    --  True if source lines removed by the preprocessor should be commented
@@ -344,6 +348,11 @@ package Opt is
    --  GNATMAKE
    --  Set to True if no actual compilations should be undertaken.
 
+   Dump_Source_Text : Boolean := False;
+   --  GNAT
+   --  Set to True (by -gnatL) to dump source text intermingled with generated
+   --  code. Effective only if either of Debug/Print_Generated_Code is true.
+
    Dynamic_Elaboration_Checks : Boolean := False;
    --  GNAT
    --  Set True for dynamic elaboration checking mode, as set by the -gnatE
@@ -376,6 +385,15 @@ package Opt is
    --  GNAT
    --  Set to True if -gnato (enable overflow checks) switch is set,
    --  but not -gnatp.
+
+   Error_Msg_Line_Length : Nat := 0;
+   --  GNAT
+   --  Records the error message line length limit. If this is set to zero,
+   --  then we get the old style behavior, in which each call to the error
+   --  message routines generates one line of output as a separate message.
+   --  If it is set to a non-zero value, then continuation lines are folded
+   --  to make a single long message, and then this message is split up into
+   --  multiple lines not exceeding the specified length. Set by -gnatLnnn.
 
    Exception_Locations_Suppressed : Boolean := False;
    --  GNAT
@@ -484,6 +502,12 @@ package Opt is
    Full_List : Boolean := False;
    --  GNAT
    --  Set True to generate full source listing with embedded errors
+
+   Full_List_File_Name : String_Ptr := null;
+   --  GNAT
+   --  Set to file name to generate full source listing to named file (or if
+   --  the name is of the form .xxx, then to name.xxx where name is the source
+   --  file name with extension stripped.
 
    function get_gcc_version return Int;
    pragma Import (C, get_gcc_version, "get_gcc_version");
@@ -643,21 +667,37 @@ package Opt is
    --  before preprocessing occurs. Set to True by switch -s of gnatprep
    --  or -s in preprocessing data file for the compiler.
 
-   type Creat_Repinfo_File_Proc is access procedure (Src : File_Name_Type);
-   type Write_Repinfo_Line_Proc is access procedure (Info : String);
-   type Close_Repinfo_File_Proc is access procedure;
+   type Create_Repinfo_File_Proc is access procedure (Src : File_Name_Type);
+   type Write_Repinfo_Line_Proc  is access procedure (Info : String);
+   type Close_Repinfo_File_Proc  is access procedure;
    --  Types used for procedure addresses below
 
-   Creat_Repinfo_File_Access : Creat_Repinfo_File_Proc := null;
-   Write_Repinfo_Line_Access : Write_Repinfo_Line_Proc := null;
-   Close_Repinfo_File_Access : Close_Repinfo_File_Proc := null;
+   Create_Repinfo_File_Access : Create_Repinfo_File_Proc := null;
+   Write_Repinfo_Line_Access  : Write_Repinfo_Line_Proc  := null;
+   Close_Repinfo_File_Access  : Close_Repinfo_File_Proc  := null;
    --  GNAT
    --  These three locations are left null when operating in non-compiler
    --  (e.g. ASIS mode), but when operating in compiler mode, they are
-   --  set to point to the three corresponding procedures in Osint. The
+   --  set to point to the three corresponding procedures in Osint-C. The
    --  reason for this slightly strange interface is to prevent Repinfo
    --  from dragging in Osint in ASIS mode, which would include a lot of
    --  unwanted units in the ASIS build.
+
+   type Create_List_File_Proc is access procedure (S : String);
+   type Write_List_Info_Proc  is access procedure (S : String);
+   type Close_List_File_Proc  is access procedure;
+   --  Types used for procedure addresses below
+
+   Create_List_File_Access : Create_List_File_Proc := null;
+   Write_List_Info_Access  : Write_List_Info_Proc  := null;
+   Close_List_File_Access  : Close_List_File_Proc  := null;
+   --  GNAT
+   --  These three locations are left null when operating in non-compiler
+   --  (e.g. from the binder), but when operating in compiler mode, they are
+   --  set to point to the three corresponding procedures in Osint-C. The
+   --  reason for this slightly strange interface is to prevent Repinfo
+   --  from dragging in Osint-C in the binder, which would include unwanted
+   --  units in the  binder.
 
    Locking_Policy : Character := ' ';
    --  GNAT, GNATBIND
@@ -1070,9 +1110,15 @@ package Opt is
 
    Warn_On_Ada_2005_Compatibility : Boolean := True;
    --  GNAT
-   --  Set to True to active all warnings on Ada 2005 compatibility issues,
+   --  Set to True to generate all warnings on Ada 2005 compatibility issues,
    --  including warnings on Ada 2005 obsolescent features used in Ada 2005
    --  mode. Set False by -gnatwY.
+
+   Warn_On_Assumed_Low_Bound : Boolean := True;
+   --  GNAT
+   --  Set to True to activate warnings for string parameters that are indexed
+   --  with literals or S'Length, presumably assuming a lower bound of one. Set
+   --  False by -gnatwW.
 
    Warn_On_Bad_Fixed_Value : Boolean := False;
    --  GNAT
@@ -1083,6 +1129,12 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings for variables that could be declared
    --  as constants. Modified by use of -gnatwk/K.
+
+   Warn_On_Deleted_Code : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings for code deleted by the front end
+   --  for conditional statements whose outcome is known at compile time.
+   --  Modified by use of -gnatwt/T.
 
    Warn_On_Dereference : Boolean := False;
    --  GNAT
@@ -1102,7 +1154,8 @@ package Opt is
    Warn_On_Modified_Unread : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings if a variable is assigned but is never
-   --  read. The default is that this warning is suppressed.
+   --  read. The default is that this warning is suppressed. Also controls
+   --  warnings about assignments whose value is never read.
 
    Warn_On_No_Value_Assigned : Boolean := True;
    --  GNAT
@@ -1114,6 +1167,11 @@ package Opt is
    --  GNAT
    --  Set to True to generate warnings on use of any feature in Annex or if a
    --  subprogram is called for which a pragma Obsolescent applies.
+
+   Warn_On_Questionable_Missing_Parens : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings for cases where parenthese are missing
+   --  and the usage is questionable, because the intent is unclear.
 
    Warn_On_Redundant_Constructs : Boolean := False;
    --  GNAT

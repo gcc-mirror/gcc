@@ -235,9 +235,18 @@ package Errout is
    --      of the cases in which messages are normally suppressed. Note that
    --      warnings are never suppressed, so the use of the ! character in a
    --      warning message is never useful.
+   --
+   --      Note: the presence of ! is ignored in continuation messages (i.e.
+   --      messages starting with the \ insertion character). The effect of the
+   --      use of ! in a parent message automatically applies to all of its
+   --      continuation messages (since we clearly don't want any case in which
+   --      continuations are separated from the parent message. It is allowable
+   --      to put ! in continuation messages, and the usual style is to include
+   --      it, since it makes it clear that the continuation is part of an
+   --      unconditional message.
 
    --    Insertion character ? (Question: warning message)
-   --      The character ? appearing anywhere in a message makes the message a
+   --      The character ? appearing anywhere in a message makes the message
    --      warning instead of a normal error message, and the text of the
    --      message will be preceded by "Warning:" instead of "Error:" in the
    --      normal case. The handling of warnings if further controlled by the
@@ -247,6 +256,13 @@ package Errout is
    --      the parser), but currently all relevant warnings are posted by the
    --      semantic phase anyway. Messages starting with (style) are also
    --      treated as warning messages.
+   --
+   --      Note: the presence of ? is ignored in continuation messages (i.e.
+   --      messages starting with the \ insertion character). The warning
+   --      status of continuations is determined only by the parent message
+   --      which is being continued. It is allowable to put ? in continuation
+   --      messages, and the usual style is to include it, since it makes it
+   --      clear that the continuation is part of a warning message.
 
    --    Insertion character < (Less Than: conditional warning message)
    --      The character < appearing anywhere in a message is used for a
@@ -262,7 +278,7 @@ package Errout is
 
    --    Insertion character ` (Backquote: set manual quotation mode)
    --      The backquote character always appears in pairs. Each backquote of
-   --      the pair is replaced by a double quote character. In addition, Any
+   --      the pair is replaced by a double quote character. In addition, any
    --      reserved keywords, or name insertions between these backquotes are
    --      not surrounded by the usual automatic double quotes. See the
    --      section below on manual quotation mode for further details.
@@ -280,13 +296,23 @@ package Errout is
    --      messages are treated as a unit. The \ character must be the first
    --      character of the message text.
 
-   --    Insertion character | (vertical bar, non-serious error)
+   --    Insertion character \\ (Two backslashes, continuation with new line)
+   --      This differs from \ only in -gnatjnn mode (Error_Message_Line_Length
+   --      set non-zero). This sequence forces a new line to start even when
+   --      continuations are being gathered into a single message.
+
+   --    Insertion character | (Vertical bar: non-serious error)
    --      By default, error messages (other than warning messages) are
    --      considered to be fatal error messages which prevent expansion or
    --      generation of code in the presence of the -gnatQ switch. If the
    --      insertion character | appears, the message is considered to be
    --      non-serious, and does not cause Serious_Errors_Detected to be
    --      incremented (so expansion is not prevented by such a msg).
+
+   --    Insertion character ~ (Tilde: insert string)
+   --      Indicates that Error_Msg_String (1 .. Error_Msg_Strlen) is to be
+   --      inserted to replace the ~ character. The string is inserted in the
+   --      literal form it appears, without any action on special characters.
 
    ----------------------------------------
    -- Specialization of Messages for VMS --
@@ -375,6 +401,11 @@ package Errout is
    Error_Msg_Warn : Boolean renames Err_Vars.Error_Msg_Warn;
    --  Used if current message contains a < insertion character to indicate
    --  if the current message is a warning message.
+
+   Error_Msg_String : String  renames Err_Vars.Error_Msg_String;
+   Error_Msg_Strlen : Natural renames Err_Vars.Error_Msg_Strlen;
+   --  Used if current message contains a ~ insertion character to indicate
+   --  insertion of the string Error_Msg_String (1 .. Error_Msg_Strlen).
 
    -----------------------------------------------------
    -- Format of Messages and Manual Quotation Control --
@@ -635,6 +666,26 @@ package Errout is
      renames Erroutc.Set_Warnings_Mode_On;
    --  Called in response to a pragma Warnings (On) to record the source
    --  location from which warnings are to be turned back on.
+
+   procedure Set_Specific_Warning_Off (Loc : Source_Ptr; Msg : String)
+     renames Erroutc.Set_Specific_Warning_Off;
+   --  This is called in response to the two argument form of pragma Warnings
+   --  where the first argument is OFF, and the second argument is the prefix
+   --  of a specific warning to be suppressed. The first argument is the start
+   --  of the suppression range, and the second argument is the string from
+   --  the pragma.
+
+   procedure Set_Specific_Warning_On
+     (Loc : Source_Ptr;
+      Msg : String;
+      Err : out Boolean)
+     renames Erroutc.Set_Specific_Warning_On;
+   --  This is called in response to the two argument form of pragma Warnings
+   --  where the first argument is ON, and the second argument is the prefix
+   --  of a specific warning to be suppressed. The first argument is the end
+   --  of the suppression range, and the second argument is the string from
+   --  the pragma. Err is set to True on return to report the error of no
+   --  matching Warnings Off pragma preceding this one.
 
    function Compilation_Errors return Boolean
      renames Erroutc.Compilation_Errors;

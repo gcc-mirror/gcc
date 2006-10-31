@@ -82,9 +82,6 @@ package body Osint is
    function OS_Time_To_GNAT_Time (T : OS_Time) return Time_Stamp_Type;
    --  Convert OS format time to GNAT format time stamp
 
-   function Concat (String_One : String; String_Two : String) return String;
-   --  Concatenates 2 strings and returns the result of the concatenation
-
    function Executable_Prefix return String_Ptr;
    --  Returns the name of the root directory where the executable is stored.
    --  The executable must be located in a directory called "bin", or
@@ -96,13 +93,6 @@ package body Osint is
    function Update_Path (Path : String_Ptr) return String_Ptr;
    --  Update the specified path to replace the prefix with the location
    --  where GNAT is installed. See the file prefix.c in GCC for details.
-
-   procedure Write_With_Check (A : Address; N  : Integer);
-   --  Writes N bytes from buffer starting at address A to file whose FD is
-   --  stored in Output_FD, and whose file name is stored as a File_Name_Type
-   --  in Output_File_Name. A check is made for disk full, and if this is
-   --  detected, the file being written is deleted, and a fatal error is
-   --  signalled.
 
    function Locate_File
      (N    : File_Name_Type;
@@ -264,6 +254,7 @@ package body Osint is
       function Get_Libraries_From_Registry return String_Ptr;
       --  On Windows systems, get the list of installed standard libraries
       --  from the registry key:
+      --
       --  HKEY_LOCAL_MACHINE\SOFTWARE\Ada Core Technologies\
       --                             GNAT\Standard Libraries
       --  Return an empty string on other systems
@@ -302,7 +293,7 @@ package body Osint is
 
       procedure Get_Dirs_From_File (Additional_Source_Dir : Boolean) is
          File_FD    : File_Descriptor;
-         Buffer     : String (1 .. Path_File_Name'Length + 1);
+         Buffer     : constant String := Path_File_Name.all & ASCII.NUL;
          Len        : Natural;
          Actual_Len : Natural;
          S          : String_Access;
@@ -314,11 +305,6 @@ package body Osint is
          --  For the call to Close
 
       begin
-         --  Construct a C compatible character string buffer
-
-         Buffer (1 .. Buffer'Last - 1) := Path_File_Name.all;
-         Buffer (Buffer'Last) := ASCII.NUL;
-
          File_FD := Open_Read (Buffer'Address, Binary);
 
          --  If we cannot open the file, we ignore it, we don't fail
@@ -384,13 +370,16 @@ package body Osint is
          function C_Get_Libraries_From_Registry return Address;
          pragma Import (C, C_Get_Libraries_From_Registry,
                         "__gnat_get_libraries_from_registry");
+
          function Strlen (Str : Address) return Integer;
          pragma Import (C, Strlen, "strlen");
+
          procedure Strncpy (X : Address; Y : Address; Length : Integer);
          pragma Import (C, Strncpy, "strncpy");
-         Result_Ptr : Address;
+
+         Result_Ptr    : Address;
          Result_Length : Integer;
-         Out_String : String_Ptr;
+         Out_String    : String_Ptr;
 
       begin
          Result_Ptr := C_Get_Libraries_From_Registry;
@@ -428,9 +417,9 @@ package body Osint is
       --  will handle the expansion as part of the file processing.
 
       for Additional_Source_Dir in False .. True loop
-
          if Additional_Source_Dir then
             Search_Path := Getenv (Ada_Include_Path);
+
             if Search_Path'Length > 0 then
                if Hostparm.OpenVMS then
                   Search_Path := To_Canonical_Path_Spec ("ADA_INCLUDE_PATH:");
@@ -438,8 +427,10 @@ package body Osint is
                   Search_Path := To_Canonical_Path_Spec (Search_Path.all);
                end if;
             end if;
+
          else
             Search_Path := Getenv (Ada_Objects_Path);
+
             if Search_Path'Length > 0 then
                if Hostparm.OpenVMS then
                   Search_Path := To_Canonical_Path_Spec ("ADA_OBJECTS_PATH:");
@@ -644,18 +635,6 @@ package body Osint is
       end if;
    end Canonical_Case_File_Name;
 
-   ------------
-   -- Concat --
-   ------------
-
-   function Concat (String_One : String; String_Two : String) return String is
-      Buffer : String (1 .. String_One'Length + String_Two'Length);
-   begin
-      Buffer (1 .. String_One'Length) := String_One;
-      Buffer (String_One'Length + 1 .. Buffer'Last) := String_Two;
-      return Buffer;
-   end Concat;
-
    ---------------------------
    -- Create_File_And_Check --
    ---------------------------
@@ -743,23 +722,87 @@ package body Osint is
 
    function Executable_Name (Name : File_Name_Type) return File_Name_Type is
       Exec_Suffix : String_Access;
-
    begin
       if Name = No_File then
          return No_File;
       end if;
 
-      Get_Name_String (Name);
-      Exec_Suffix := Get_Executable_Suffix;
+      if Executable_Extension_On_Target = No_Name then
+         Exec_Suffix := Get_Target_Executable_Suffix;
+      else
+         Get_Name_String (Executable_Extension_On_Target);
+         Exec_Suffix := new String'(Name_Buffer (1 .. Name_Len));
+      end if;
 
-      for J in Exec_Suffix'Range loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Exec_Suffix (J);
-      end loop;
+      Get_Name_String (Name);
+
+      if Exec_Suffix'Length /= 0 then
+         declare
+            Buffer : String := Name_Buffer (1 .. Name_Len);
+
+         begin
+            --  Get the file name in canonical case to accept as is
+            --  names ending with ".EXE" on VMS and Windows.
+
+            Canonical_Case_File_Name (Buffer);
+
+            --  If the Executable does not end with the executable
+            --  suffix, add it.
+
+            if Buffer'Length <= Exec_Suffix'Length
+              or else
+                Buffer (Buffer'Last - Exec_Suffix'Length + 1 .. Buffer'Last)
+                  /= Exec_Suffix.all
+            then
+               Name_Buffer (Name_Len + 1 .. Name_Len + Exec_Suffix'Length) :=
+                 Exec_Suffix.all;
+               Name_Len := Name_Len + Exec_Suffix'Length;
+               Free (Exec_Suffix);
+               return Name_Find;
+            end if;
+         end;
+      end if;
 
       Free (Exec_Suffix);
+      return Name;
+   end Executable_Name;
 
-      return Name_Enter;
+   function Executable_Name (Name : String) return String is
+      Exec_Suffix    : String_Access;
+      Canonical_Name : String := Name;
+
+   begin
+      if Executable_Extension_On_Target = No_Name then
+         Exec_Suffix := Get_Target_Executable_Suffix;
+      else
+         Get_Name_String (Executable_Extension_On_Target);
+         Exec_Suffix := new String'(Name_Buffer (1 .. Name_Len));
+      end if;
+
+      declare
+         Suffix : constant String := Exec_Suffix.all;
+
+      begin
+         Free (Exec_Suffix);
+         Canonical_Case_File_Name (Canonical_Name);
+
+         if Suffix'Length /= 0
+           and then
+             (Canonical_Name'Length <= Suffix'Length
+               or else Canonical_Name (Canonical_Name'Last - Suffix'Length + 1
+                                         .. Canonical_Name'Last) /= Suffix)
+         then
+            declare
+               Result : String (1 .. Name'Length + Suffix'Length);
+            begin
+               Result (1 .. Name'Length) := Name;
+               Result (Name'Length + 1 .. Result'Last) := Suffix;
+               return Result;
+            end;
+         else
+            return Name;
+         end if;
+      end;
    end Executable_Name;
 
    -----------------------
@@ -776,19 +819,24 @@ package body Osint is
       ---------------------
 
       function Get_Install_Dir (Exec : String) return String_Ptr is
+         Full_Path : constant String := Normalize_Pathname (Exec);
+         --  Use the full path, so that we find "lib" or "bin", even when
+         --  the tool has been invoked with a relative path, as in
+         --  "./gnatls -v" invoked in the GNAT bin directory.
+
       begin
-         for J in reverse Exec'Range loop
-            if Is_Directory_Separator (Exec (J)) then
-               if J < Exec'Last - 5 then
-                  if (To_Lower (Exec (J + 1)) = 'l'
-                      and then To_Lower (Exec (J + 2)) = 'i'
-                      and then To_Lower (Exec (J + 3)) = 'b')
+         for J in reverse Full_Path'Range loop
+            if Is_Directory_Separator (Full_Path (J)) then
+               if J < Full_Path'Last - 5 then
+                  if (To_Lower (Full_Path (J + 1)) = 'l'
+                      and then To_Lower (Full_Path (J + 2)) = 'i'
+                      and then To_Lower (Full_Path (J + 3)) = 'b')
                     or else
-                      (To_Lower (Exec (J + 1)) = 'b'
-                       and then To_Lower (Exec (J + 2)) = 'i'
-                       and then To_Lower (Exec (J + 3)) = 'n')
+                      (To_Lower (Full_Path (J + 1)) = 'b'
+                       and then To_Lower (Full_Path (J + 2)) = 'i'
+                       and then To_Lower (Full_Path (J + 3)) = 'n')
                   then
-                     return new String'(Exec (Exec'First .. J));
+                     return new String'(Full_Path (Full_Path'First .. J));
                   end if;
                end if;
             end if;
@@ -1207,8 +1255,8 @@ package body Osint is
       --  so that we can directly append a file to the directory
 
       if Search_Dir (Search_Dir'Last) /= Directory_Separator then
-         Local_Search_Dir := new String'
-           (Concat (Search_Dir, String'(1 => Directory_Separator)));
+         Local_Search_Dir :=
+           new String'(Search_Dir & String'(1 => Directory_Separator));
       else
          Local_Search_Dir := new String'(Search_Dir);
       end if;
@@ -1232,8 +1280,8 @@ package body Osint is
            := Read_Default_Search_Dirs (Norm_Search_Dir,
                                         Search_File,
                                         null);
-         Default_Search_Dir := new String'
-           (Concat (Norm_Search_Dir.all, Default_Suffix_Dir.all));
+         Default_Search_Dir :=
+           new String'(Norm_Search_Dir.all & Default_Suffix_Dir.all);
          Free (Norm_Search_Dir);
 
          if Result_Search_Dir /= null then
@@ -1265,14 +1313,13 @@ package body Osint is
          end;
 
          Norm_Search_Dir :=
-           new String'(Concat (Current_Dir.all, Local_Search_Dir.all));
+           new String'(Current_Dir.all & Local_Search_Dir.all);
 
          Result_Search_Dir :=
            Read_Default_Search_Dirs (Norm_Search_Dir, Search_File, null);
 
          Default_Search_Dir :=
-           new String'
-             (Concat (Norm_Search_Dir.all, Default_Suffix_Dir.all));
+           new String'(Norm_Search_Dir.all & Default_Suffix_Dir.all);
 
          Free (Norm_Search_Dir);
 
@@ -1287,15 +1334,13 @@ package body Osint is
 
             Norm_Search_Dir :=
               new String'
-              (Concat (Update_Path (Search_Dir_Prefix).all,
-                       Local_Search_Dir.all));
+               (Update_Path (Search_Dir_Prefix).all & Local_Search_Dir.all);
 
             Result_Search_Dir :=
               Read_Default_Search_Dirs (Norm_Search_Dir, Search_File, null);
 
             Default_Search_Dir :=
-              new String'
-                (Concat (Norm_Search_Dir.all, Default_Suffix_Dir.all));
+              new String'(Norm_Search_Dir.all & Default_Suffix_Dir.all);
 
             Free (Norm_Search_Dir);
 
@@ -1309,18 +1354,16 @@ package body Osint is
                --  We finally search in Search_Dir_Prefix/rts-Search_Dir
 
                Temp_String :=
-                 new String'
-                 (Concat (Update_Path (Search_Dir_Prefix).all, "rts-"));
+                 new String'(Update_Path (Search_Dir_Prefix).all & "rts-");
 
                Norm_Search_Dir :=
-                 new String'(Concat (Temp_String.all, Local_Search_Dir.all));
+                 new String'(Temp_String.all & Local_Search_Dir.all);
 
                Result_Search_Dir :=
                  Read_Default_Search_Dirs (Norm_Search_Dir, Search_File, null);
 
                Default_Search_Dir :=
-                 new String'
-                   (Concat (Norm_Search_Dir.all, Default_Suffix_Dir.all));
+                 new String'(Norm_Search_Dir.all & Default_Suffix_Dir.all);
                Free (Norm_Search_Dir);
 
                if Result_Search_Dir /= null then
@@ -1720,7 +1763,7 @@ package body Osint is
          --  spawn routines. This ensure that quotes will be added when needed.
 
          Result := new String (1 .. Directory'Length - 1);
-         Result (1 .. Directory'Length - 1) :=
+         Result (1 .. Directory'Length - 2) :=
            Directory (Directory'First + 1 .. Directory'Last - 1);
          Result (Result'Last) := Directory_Separator;
 

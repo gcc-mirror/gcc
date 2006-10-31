@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001 Free Software Foundation, Inc.               --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,7 @@ package Osint.C is
    --  procedures in appropriate variables in Repinfo, so that they can
    --  be called indirectly without creating a dependence.
 
-   procedure Creat_Repinfo_File (Src : File_Name_Type);
+   procedure Create_Repinfo_File (Src : File_Name_Type);
    --  Given the simple name of a source file, this routine creates the
    --  corresponding file to hold representation information
 
@@ -138,6 +138,22 @@ package Osint.C is
    --  ALI file exists, then its file name is returned in Name, and its
    --  text is returned in Text. If the file does not exist, then Text is
    --  set to null.
+
+   ----------------------
+   -- List File Output --
+   ----------------------
+
+   procedure Create_List_File (S : String);
+   --  Creates the file whose name is given by S. If the name starts with a
+   --  period, then the name is xxx & S, where xxx is the name of the main
+   --  source file without the extension stripped. Information is written to
+   --  this file using Write_List_File.
+
+   procedure Write_List_Info (S : String);
+   --  Writes given string to the list file created by Create_List_File
+
+   procedure Close_List_File;
+   --  Close file previously opened by Create_List_File
 
    --------------------------------
    -- Semantic Tree Input-Output --

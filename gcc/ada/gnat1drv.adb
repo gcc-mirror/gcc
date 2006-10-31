@@ -170,10 +170,11 @@ begin
          List_Representation_Info_Mechanisms := True;
       end if;
 
-      --  Output copyright notice if full list mode
+      --  Output copyright notice if full list mode unless we have a list
+      --  file, in which case we defer this so that it is output in the file
 
-      if (Verbose_Mode or Full_List)
-        and then (not Debug_Flag_7)
+      if (Verbose_Mode or else (Full_List and Full_List_File_Name = null))
+        and then not Debug_Flag_7
       then
          Write_Eol;
          Write_Str ("GNAT ");

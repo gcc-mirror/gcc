@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2001-2005 Free Software Foundation, Inc.           --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,9 +43,10 @@ package body Osint.C is
    function Create_Auxiliary_File
      (Src    : File_Name_Type;
       Suffix : String) return File_Name_Type;
-   --  Common processing for Creat_Repinfo_File and Create_Debug_File.
-   --  Src is the file name used to create the required output file and
-   --  Suffix is the desired suffic (dg/rep for debug/repinfo file).
+   --  Common processing for Create_List_File, Create_Repinfo_File and
+   --  Create_Debug_File. Src is the file name used to create the required
+   --  output file and Suffix is the desired suffic (dg/rep/xxx for debug/
+   --  repinfo/list file where xxx is specified extension.
 
    procedure Set_Library_Info_Name;
    --  Sets a default ali file name from the main compiler source name.
@@ -69,6 +70,23 @@ package body Osint.C is
             Get_Name_String (Output_File_Name));
       end if;
    end Close_Debug_File;
+
+   ---------------------
+   -- Close_List_File --
+   ---------------------
+
+   procedure Close_List_File is
+      Status : Boolean;
+
+   begin
+      Close (Output_FD, Status);
+
+      if not Status then
+         Fail
+           ("error while closing list file ",
+            Get_Name_String (Output_File_Name));
+      end if;
+   end Close_List_File;
 
    -------------------------------
    -- Close_Output_Library_Info --
@@ -110,7 +128,7 @@ package body Osint.C is
 
    function Create_Auxiliary_File
      (Src    : File_Name_Type;
-      Suffix : String) return   File_Name_Type
+      Suffix : String) return File_Name_Type
    is
       Result : File_Name_Type;
 
@@ -128,13 +146,10 @@ package body Osint.C is
       Name_Len := Name_Len + Suffix'Length;
 
       if Output_Object_File_Name /= null then
-
          for Index in reverse Output_Object_File_Name'Range loop
-
             if Output_Object_File_Name (Index) = Directory_Separator then
                declare
                   File_Name : constant String := Name_Buffer (1 .. Name_Len);
-
                begin
                   Name_Len := Index - Output_Object_File_Name'First + 1;
                   Name_Buffer (1 .. Name_Len) :=
@@ -165,6 +180,24 @@ package body Osint.C is
       return Create_Auxiliary_File (Src, "dg");
    end Create_Debug_File;
 
+   ----------------------
+   -- Create_List_File --
+   ----------------------
+
+   procedure Create_List_File (S : String) is
+      F : File_Name_Type;
+      pragma Warnings (Off, F);
+   begin
+      if S (S'First) = '.' then
+         F := Create_Auxiliary_File (Current_Main, S (S'First + 1 .. S'Last));
+      else
+         Name_Buffer (1 .. S'Length) := S;
+         Name_Len := S'Length + 1;
+         Name_Buffer (Name_Len) := ASCII.NUL;
+         Create_File_And_Check (Output_FD, Text);
+      end if;
+   end Create_List_File;
+
    --------------------------------
    -- Create_Output_Library_Info --
    --------------------------------
@@ -175,17 +208,16 @@ package body Osint.C is
       Create_File_And_Check (Output_FD, Text);
    end Create_Output_Library_Info;
 
-   --------------------------
-   -- Creat_Repinfo_File --
-   --------------------------
+   -------------------------
+   -- Create_Repinfo_File --
+   -------------------------
 
-   procedure Creat_Repinfo_File (Src : File_Name_Type) is
+   procedure Create_Repinfo_File (Src : File_Name_Type) is
       S : constant File_Name_Type := Create_Auxiliary_File (Src, "rep");
       pragma Warnings (Off, S);
-
    begin
       return;
-   end Creat_Repinfo_File;
+   end Create_Repinfo_File;
 
    ---------------------------
    -- Debug_File_Eol_Length --
@@ -412,6 +444,15 @@ package body Osint.C is
 
    procedure Write_Library_Info (Info : String) renames Write_Info;
 
+   ---------------------
+   -- Write_List_Info --
+   ---------------------
+
+   procedure Write_List_Info (S : String) is
+   begin
+      Write_With_Check (S'Address, S'Length);
+   end Write_List_Info;
+
    ------------------------
    -- Write_Repinfo_Line --
    ------------------------
@@ -419,11 +460,15 @@ package body Osint.C is
    procedure Write_Repinfo_Line (Info : String) renames Write_Info;
 
 begin
-
    Adjust_OS_Resource_Limits;
-   Opt.Creat_Repinfo_File_Access := Creat_Repinfo_File'Access;
-   Opt.Write_Repinfo_Line_Access := Write_Repinfo_Line'Access;
-   Opt.Close_Repinfo_File_Access := Close_Repinfo_File'Access;
+
+   Opt.Create_Repinfo_File_Access := Create_Repinfo_File'Access;
+   Opt.Write_Repinfo_Line_Access  := Write_Repinfo_Line'Access;
+   Opt.Close_Repinfo_File_Access  := Close_Repinfo_File'Access;
+
+   Opt.Create_List_File_Access := Create_List_File'Access;
+   Opt.Write_List_Info_Access  := Write_List_Info'Access;
+   Opt.Close_List_File_Access  := Close_List_File'Access;
 
    Set_Program (Compiler);
 
