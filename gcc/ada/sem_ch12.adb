@@ -78,13 +78,13 @@ package body Sem_Ch12 is
 
    ----------------------------------------------------------
    -- Implementation of Generic Analysis and Instantiation --
-   -----------------------------------------------------------
+   ----------------------------------------------------------
 
-   --  GNAT implements generics by macro expansion. No attempt is made to
-   --  share generic instantiations (for now). Analysis of a generic definition
-   --  does not perform any expansion action, but the expander must be called
-   --  on the tree for each instantiation, because the expansion may of course
-   --  depend on the generic actuals. All of this is best achieved as follows:
+   --  GNAT implements generics by macro expansion. No attempt is made to share
+   --  generic instantiations (for now). Analysis of a generic definition does
+   --  not perform any expansion action, but the expander must be called on the
+   --  tree for each instantiation, because the expansion may of course depend
+   --  on the generic actuals. All of this is best achieved as follows:
    --
    --  a) Semantic analysis of a generic unit is performed on a copy of the
    --  tree for the generic unit. All tree modifications that follow analysis
@@ -93,7 +93,7 @@ package body Sem_Ch12 is
    --  the generic, and propagate them to each instance (recall that name
    --  resolution is done on the generic declaration: generics are not really
    --  macros!). This is summarized in the following diagram:
-   --
+
    --              .-----------.               .----------.
    --              |  semantic |<--------------|  generic |
    --              |    copy   |               |    unit  |
@@ -108,13 +108,13 @@ package body Sem_Ch12 is
    --                                          |__|  |          |
    --                                             |__| instance |
    --                                                |__________|
-   --
+
    --  b) Each instantiation copies the original tree, and inserts into it a
    --  series of declarations that describe the mapping between generic formals
    --  and actuals. For example, a generic In OUT parameter is an object
    --  renaming of the corresponing actual, etc. Generic IN parameters are
    --  constant declarations.
-   --
+
    --  c) In order to give the right visibility for these renamings, we use
    --  a different scheme for package and subprogram instantiations. For
    --  packages, the list of renamings is inserted into the package
@@ -154,16 +154,16 @@ package body Sem_Ch12 is
 
    --  Visibility within nested generic units requires special handling.
    --  Consider the following scheme:
-   --
+
    --  type Global is ...         --  outside of generic unit.
    --  generic ...
    --  package Outer is
    --     ...
    --     type Semi_Global is ... --  global to inner.
-   --
+
    --     generic ...                                         -- 1
    --     procedure inner (X1 : Global;  X2 : Semi_Global);
-   --
+
    --     procedure in2 is new inner (...);                   -- 4
    --  end Outer;
 
@@ -221,22 +221,69 @@ package body Sem_Ch12 is
    -- Detection of Instantiation Circularities --
    ----------------------------------------------
 
-   --  If we have a chain of instantiations that is circular, this is a
-   --  static error which must be detected at compile time. The detection
-   --  of these circularities is carried out at the point that we insert
-   --  a generic instance spec or body. If there is a circularity, then
-   --  the analysis of the offending spec or body will eventually result
-   --  in trying to load the same unit again, and we detect this problem
-   --  as we analyze the package instantiation for the second time.
+   --  If we have a chain of instantiations that is circular, this is static
+   --  error which must be detected at compile time. The detection of these
+   --  circularities is carried out at the point that we insert a generic
+   --  instance spec or body. If there is a circularity, then the analysis of
+   --  the offending spec or body will eventually result in trying to load the
+   --  same unit again, and we detect this problem as we analyze the package
+   --  instantiation for the second time.
 
-   --  At least in some cases after we have detected the circularity, we
-   --  get into trouble if we try to keep going. The following flag is
-   --  set if a circularity is detected, and used to abandon compilation
-   --  after the messages have been posted.
+   --  At least in some cases after we have detected the circularity, we get
+   --  into trouble if we try to keep going. The following flag is set if a
+   --  circularity is detected, and used to abandon compilation after the
+   --  messages have been posted.
 
    Circularity_Detected : Boolean := False;
    --  This should really be reset on encountering a new main unit, but in
    --  practice we are not using multiple main units so it is not critical.
+
+   -------------------------------------------------
+   -- Formal packages and partial parametrization --
+   -------------------------------------------------
+
+   --  When compiling a generic, a formal package is a local instantiation. If
+   --  declared with a box, its generic formals are visible in the enclosing
+   --  generic. If declared with a partial list of actuals, those actuals that
+   --  are defaulted (covered by an Others clause, or given an explicit box
+   --  initialization) are also visible in the enclosing generic, while those
+   --  that have a corresponding actual are not.
+
+   --  In our source model of instantiation, the same visibility must be
+   --  present in the spec and body of an instance: the names of the formals
+   --  that are defaulted must be made visible within the instance, and made
+   --  invisible (hidden) after the instantiation is complete, so that they
+   --  are not accessible outside of the instance.
+
+   --  In a generic, a formal package is treated like a special instantiation.
+   --  Our Ada95 compiler handled formals with and without box in different
+   --  ways. With partial parametrization, we use a single model for both.
+   --  We create a package declaration that consists of the specification of
+   --  the generic package, and a set of declarations that map the actuals
+   --  into local renamings, just as we do for bona fide instantiations. For
+   --  defaulted parameters and formals with a box, we copy directly the
+   --  declarations of the formal into this local package. The result is a
+   --  a package whose visible declarations may include generic formals. This
+   --  package is only used for type checking and visibility analysis, and
+   --  never reaches the back-end, so it can freely violate the placement
+   --  rules for generic formal declarations.
+
+   --  The list of declarations (renamings and copies of formals) is built
+   --  by Analyze_Associations, just as for regular instantiations.
+
+   --  At the point of instantiation, conformance checking must be applied only
+   --  to those parameters that were specified in the formal. We perform this
+   --  checking by creating another internal instantiation, this one including
+   --  only the renamings and the formals (the rest of the package spec is not
+   --  relevant to conformance checking). We can then traverse two lists: the
+   --  list of actuals in the instance that corresponds to the formal package,
+   --  and the list of actuals produced for this bogus instantiation. We apply
+   --  the conformance rules to those actuals that are not defaulted (i.e.
+   --  which still appear as generic formals.
+
+   --  When we compile an instance body we must make the right parameters
+   --  visible again. The predicate Is_Generic_Formal indicates which of the
+   --  formals should have its Is_Hidden flag reset.
 
    -----------------------
    -- Local subprograms --
@@ -244,8 +291,8 @@ package body Sem_Ch12 is
 
    procedure Abandon_Instantiation (N : Node_Id);
    pragma No_Return (Abandon_Instantiation);
-   --  Posts an error message "instantiation abandoned" at the indicated
-   --  node and then raises the exception Instantiation_Error to do it.
+   --  Posts an error message "instantiation abandoned" at the indicated node
+   --  and then raises the exception Instantiation_Error to do it.
 
    procedure Analyze_Formal_Array_Type
      (T   : in out Entity_Id;
@@ -286,12 +333,12 @@ package body Sem_Ch12 is
      (N   : Node_Id;
       T   : Entity_Id;
       Def : Node_Id);
-   --  This needs comments???
+   --  Creates a new private type, which does not require completion
 
    procedure Analyze_Generic_Formal_Part (N : Node_Id);
 
    procedure Analyze_Generic_Access_Type (T : Entity_Id; Def : Node_Id);
-   --  This needs comments ???
+   --  Create a new access type with the given designated type
 
    function Analyze_Associations
      (I_Node  : Node_Id;
@@ -321,6 +368,10 @@ package body Sem_Ch12 is
    --  nodes or subprogram body and declaration nodes depending on the case).
    --  On return, the node N has been rewritten with the actual body.
 
+   procedure Check_Access_Definition (N : Node_Id);
+   --  Subsidiary routine to null exclusion processing. Perform an assertion
+   --  check on Ada version and the presence of an access definition in N.
+
    procedure Check_Formal_Packages (P_Id : Entity_Id);
    --  Apply the following to all formal packages in generic associations
 
@@ -344,16 +395,6 @@ package body Sem_Ch12 is
    --  If the generic unit is an implicit child instance within a parent
    --  instance, we need to make an explicit test that it is not hidden by
    --  a child instance of the same name and parent.
-
-   procedure Check_Private_View (N : Node_Id);
-   --  Check whether the type of a generic entity has a different view between
-   --  the point of generic analysis and the point of instantiation. If the
-   --  view has changed, then at the point of instantiation we restore the
-   --  correct view to perform semantic analysis of the instance, and reset
-   --  the current view after instantiation. The processing is driven by the
-   --  current private status of the type of the node, and Has_Private_View,
-   --  a flag that is set at the point of generic compilation. If view and
-   --  flag are inconsistent then the type is updated appropriately.
 
    procedure Check_Generic_Actuals
      (Instance      : Entity_Id;
@@ -393,8 +434,14 @@ package body Sem_Ch12 is
    --  When validating the actual types of a child instance, check whether
    --  the formal is a formal type of the parent unit, and retrieve the current
    --  actual for it. Typ is the entity in the analyzed formal type declaration
-   --  (component or index type of an array type) and Gen_Scope is the scope of
-   --  the analyzed formal array type.
+   --  (component or index type of an array type, or designated type of an
+   --  access formal) and Gen_Scope is the scope of the analyzed formal array
+   --  or access type. The desired actual may be a formal of a parent, or may
+   --  be declared in a formal package of a parent. In both cases it is a
+   --  generic actual type because it appears within a visible instance.
+   --  Ambiguities may still arise if two homonyms are declared in two formal
+   --  packages, and the prefix of the formal type may be needed to resolve
+   --  the ambiguity in the instance ???
 
    function In_Same_Declarative_Part
      (F_Node : Node_Id;
@@ -409,6 +456,12 @@ package body Sem_Ch12 is
    --  Check whether an instantiation is in the context of the main unit.
    --  Used to determine whether its body should be elaborated to allow
    --  front-end inlining.
+
+   function Is_Generic_Formal (E : Entity_Id) return Boolean;
+   --  Utility to determine whether a given entity is declared by means of
+   --  of a formal parameter declaration. Used to set properly the visiblity
+   --  of generic formals of a generic package declared with a box or with
+   --  partial parametrization.
 
    procedure Set_Instance_Env
      (Gen_Unit : Entity_Id;
@@ -531,6 +584,15 @@ package body Sem_Ch12 is
    --  apply these rules is to repeat the instantiation of the formal package
    --  in the context of the enclosing instance, and compare the generic
    --  associations of this instantiation with those of the actual package.
+   --  This internal instantiation only needs to contain the renamings of the
+   --  formals: the visible and private declarations themselves need not be
+   --  created.
+
+   --  In Ada2005, the formal package may be only partially parametrized. In
+   --  that case the visibility step must make visible those actuals whose
+   --  corresponding formals were given with a box. A final complication
+   --  involves inherited operations from formal derived types, which must be
+   --  visible if the type is.
 
    function Is_In_Main_Unit (N : Node_Id) return Boolean;
    --  Test if given node is in the main unit
@@ -768,7 +830,7 @@ package body Sem_Ch12 is
 
    procedure Abandon_Instantiation (N : Node_Id) is
    begin
-      Error_Msg_N ("instantiation abandoned!", N);
+      Error_Msg_N ("\instantiation abandoned!", N);
       raise Instantiation_Error;
    end Abandon_Instantiation;
 
@@ -783,7 +845,7 @@ package body Sem_Ch12 is
    is
       Actual_Types : constant Elist_Id  := New_Elmt_List;
       Assoc        : constant List_Id   := New_List;
-      Defaults     : constant Elist_Id  := New_Elmt_List;
+      Default_Actuals : constant Elist_Id  := New_Elmt_List;
       Gen_Unit     : constant Entity_Id := Defining_Entity (Parent (F_Copy));
       Actuals         : List_Id;
       Actual          : Node_Id;
@@ -794,10 +856,25 @@ package body Sem_Ch12 is
       Match           : Node_Id;
       Named           : Node_Id;
       First_Named     : Node_Id := Empty;
+
+      Default_Formals : constant List_Id := New_List;
+      --  If an Other_Choice is present, some of the formals may be defaulted.
+      --  To simplify the treatement of visibility in an instance, we introduce
+      --  individual defaults for each such formal. These defaults are
+      --  appended to the list of associations and replace the Others_Choice.
+
       Found_Assoc     : Node_Id;
+      --  Association for the current formal being match. Empty if there are
+      --  no remaining actuals, or if there is no named association with the
+      --  name of the formal.
+
       Is_Named_Assoc  : Boolean;
       Num_Matched     : Int := 0;
       Num_Actuals     : Int := 0;
+
+      Others_Present  : Boolean := False;
+      --  In Ada 2005, indicates partial parametrization of of a formal
+      --  package. As usual an others association must be last in the list.
 
       function Matching_Actual
         (F   : Entity_Id;
@@ -807,6 +884,21 @@ package body Sem_Ch12 is
       --  are named, scan the parameter associations to find the right one.
       --  A_F is the corresponding entity in the analyzed generic,which is
       --  placed on the selector name for ASIS use.
+
+      --  In Ada 2005, a named association may be given with a box, in which
+      --  case Matching_Actual sets Found_Assoc to the generic association,
+      --  but return Empty for the actual itself. In this case the code below
+      --  creates a corresponding declaration for the formal.
+
+      function Partial_Parametrization return Boolean;
+      --  Ada 2005: if no match is found for a given formal, check if the
+      --  association for it includes a box, or whether the associations
+      --  include an Others clause.
+
+      procedure Process_Default (F : Entity_Id);
+      --  Add a copy of the declaration of generic formal  F to the list of
+      --  associations, and add an explicit box association for F  if there
+      --  is none yet, and the default comes from an Others_Choice.
 
       procedure Set_Analyzed_Formal;
       --  Find the node in the generic copy that corresponds to a given formal.
@@ -825,8 +917,8 @@ package body Sem_Ch12 is
         (F   : Entity_Id;
          A_F : Entity_Id) return Node_Id
       is
-         Found : Node_Id;
          Prev  : Node_Id;
+         Act   : Node_Id;
 
       begin
          Is_Named_Assoc := False;
@@ -834,13 +926,14 @@ package body Sem_Ch12 is
          --  End of list of purely positional parameters
 
          if No (Actual) then
-            Found := Empty;
+            Found_Assoc := Empty;
+            Act         := Empty;
 
          --  Case of positional parameter corresponding to current formal
 
          elsif No (Selector_Name (Actual)) then
-            Found := Explicit_Generic_Actual_Parameter (Actual);
             Found_Assoc := Actual;
+            Act :=  Explicit_Generic_Actual_Parameter (Actual);
             Num_Matched := Num_Matched + 1;
             Next (Actual);
 
@@ -849,16 +942,17 @@ package body Sem_Ch12 is
 
          else
             Is_Named_Assoc := True;
-            Found := Empty;
-            Prev  := Empty;
+            Found_Assoc := Empty;
+            Act         := Empty;
+            Prev        := Empty;
 
             while Present (Actual) loop
                if Chars (Selector_Name (Actual)) = Chars (F) then
-                  Found := Explicit_Generic_Actual_Parameter (Actual);
                   Set_Entity (Selector_Name (Actual), A_F);
                   Set_Etype  (Selector_Name (Actual), Etype (A_F));
                   Generate_Reference (A_F, Selector_Name (Actual));
                   Found_Assoc := Actual;
+                  Act :=  Explicit_Generic_Actual_Parameter (Actual);
                   Num_Matched := Num_Matched + 1;
                   exit;
                end if;
@@ -885,8 +979,40 @@ package body Sem_Ch12 is
             Actual := First_Named;
          end if;
 
-         return Found;
+         return Act;
       end Matching_Actual;
+
+      -----------------------------
+      -- Partial_Parametrization --
+      -----------------------------
+
+      function Partial_Parametrization return Boolean is
+      begin
+         return Others_Present
+          or else (Present (Found_Assoc) and then Box_Present (Found_Assoc));
+      end Partial_Parametrization;
+
+      ---------------------
+      -- Process_Default --
+      ---------------------
+
+      procedure Process_Default (F : Entity_Id)  is
+         Loc     : constant Source_Ptr := Sloc (I_Node);
+         Default : Node_Id;
+
+      begin
+         Append (Copy_Generic_Node (F, Empty, True), Assoc);
+
+         if No (Found_Assoc) then
+            Default :=
+               Make_Generic_Association (Loc,
+               Selector_Name                     =>
+                 New_Occurrence_Of (Defining_Identifier (F), Loc),
+               Explicit_Generic_Actual_Parameter => Empty);
+            Set_Box_Present (Default);
+            Append (Default, Default_Formals);
+         end if;
+      end Process_Default;
 
       -------------------------
       -- Set_Analyzed_Formal --
@@ -912,7 +1038,9 @@ package body Sem_Ch12 is
                   exit when
                     Kind = N_Formal_Package_Declaration
                       or else
-                    Kind = N_Generic_Package_Declaration;
+                    Kind = N_Generic_Package_Declaration
+                      or else
+                    Kind = N_Package_Declaration;
 
                when N_Use_Package_Clause | N_Use_Type_Clause => exit;
 
@@ -933,20 +1061,37 @@ package body Sem_Ch12 is
 
             Next (Analyzed_Formal);
          end loop;
-
       end Set_Analyzed_Formal;
 
    --  Start of processing for Analyze_Associations
 
    begin
-      --  If named associations are present, save the first named association
-      --  (it may of course be Empty) to facilitate subsequent name search.
-
       Actuals := Generic_Associations (I_Node);
 
       if Present (Actuals) then
-         First_Named := First (Actuals);
 
+         --  check for an Others choice, indicating a partial parametrization
+         --  for a formal package.
+
+         Actual := First (Actuals);
+         while Present (Actual) loop
+            if Nkind (Actual) = N_Others_Choice then
+               Others_Present := True;
+               if Present (Next (Actual)) then
+                  Error_Msg_N ("others must be last association", Actual);
+               end if;
+
+               Remove (Actual);
+               exit;
+            end if;
+
+            Next (Actual);
+         end loop;
+
+         --  If named associations are present, save first named association
+         --  (it may of course be Empty) to facilitate subsequent name search.
+
+         First_Named := First (Actuals);
          while Present (First_Named)
            and then No (Selector_Name (First_Named))
          loop
@@ -997,9 +1142,13 @@ package body Sem_Ch12 is
                       Defining_Identifier (Formal),
                       Defining_Identifier (Analyzed_Formal));
 
-                  Append_List
-                    (Instantiate_Object (Formal, Match, Analyzed_Formal),
-                     Assoc);
+                  if No (Match) and then Partial_Parametrization then
+                     Process_Default (Formal);
+                  else
+                     Append_List
+                       (Instantiate_Object (Formal, Match, Analyzed_Formal),
+                        Assoc);
+                  end if;
 
                when N_Formal_Type_Declaration =>
                   Match :=
@@ -1008,13 +1157,19 @@ package body Sem_Ch12 is
                       Defining_Identifier (Analyzed_Formal));
 
                   if No (Match) then
-                     Error_Msg_Sloc := Sloc (Gen_Unit);
-                     Error_Msg_NE
-                       ("missing actual&",
-                         Instantiation_Node, Defining_Identifier (Formal));
-                     Error_Msg_NE ("\in instantiation of & declared#",
-                         Instantiation_Node, Gen_Unit);
-                     Abandon_Instantiation (Instantiation_Node);
+                     if Partial_Parametrization then
+                        Process_Default (Formal);
+
+                     else
+                        Error_Msg_Sloc := Sloc (Gen_Unit);
+                        Error_Msg_NE
+                          ("missing actual&",
+                            Instantiation_Node,
+                              Defining_Identifier (Formal));
+                        Error_Msg_NE ("\in instantiation of & declared#",
+                            Instantiation_Node, Gen_Unit);
+                        Abandon_Instantiation (Instantiation_Node);
+                     end if;
 
                   else
                      Analyze (Match);
@@ -1082,12 +1237,15 @@ package body Sem_Ch12 is
                     Instantiate_Formal_Subprogram
                       (Formal, Match, Analyzed_Formal));
 
-                  if No (Match)
-                    and then Box_Present (Formal)
-                  then
-                     Append_Elmt
-                       (Defining_Unit_Name (Specification (Last (Assoc))),
-                         Defaults);
+                  if No (Match) then
+                     if  Partial_Parametrization then
+                        Process_Default (Formal);
+
+                     elsif Box_Present (Formal) then
+                        Append_Elmt
+                          (Defining_Unit_Name (Specification (Last (Assoc))),
+                            Default_Actuals);
+                     end if;
                   end if;
 
                when N_Formal_Package_Declaration =>
@@ -1097,14 +1255,19 @@ package body Sem_Ch12 is
                       Defining_Identifier (Original_Node (Analyzed_Formal)));
 
                   if No (Match) then
-                     Error_Msg_Sloc := Sloc (Gen_Unit);
-                     Error_Msg_NE
-                       ("missing actual&",
-                         Instantiation_Node, Defining_Identifier (Formal));
-                     Error_Msg_NE ("\in instantiation of & declared#",
-                         Instantiation_Node, Gen_Unit);
+                     if Partial_Parametrization then
+                        Process_Default (Formal);
 
-                     Abandon_Instantiation (Instantiation_Node);
+                     else
+                        Error_Msg_Sloc := Sloc (Gen_Unit);
+                        Error_Msg_NE
+                          ("missing actual&",
+                            Instantiation_Node, Defining_Identifier (Formal));
+                        Error_Msg_NE ("\in instantiation of & declared#",
+                            Instantiation_Node, Gen_Unit);
+
+                        Abandon_Instantiation (Instantiation_Node);
+                     end if;
 
                   else
                      Analyze (Match);
@@ -1114,15 +1277,21 @@ package body Sem_Ch12 is
                         Assoc);
                   end if;
 
-               --  For use type and use package appearing in the context
-               --  clause, we have already copied them, so we can just
+               --  For use type and use package appearing in the generic
+               --  part, we have already copied them, so we can just
                --  move them where they belong (we mustn't recopy them
                --  since this would mess up the Sloc values).
 
                when N_Use_Package_Clause |
                     N_Use_Type_Clause    =>
-                  Remove (Formal);
-                  Append (Formal, Assoc);
+                  if Nkind (Original_Node (I_Node)) =
+                    N_Formal_Package_Declaration
+                  then
+                     Append (New_Copy_Tree (Formal), Assoc);
+                  else
+                     Remove (Formal);
+                     Append (Formal, Assoc);
+                  end if;
 
                when others =>
                   raise Program_Error;
@@ -1174,7 +1343,7 @@ package body Sem_Ch12 is
          New_D : Node_Id;
 
       begin
-         Elmt := First_Elmt (Defaults);
+         Elmt := First_Elmt (Default_Actuals);
          while Present (Elmt) loop
             if No (Actuals) then
                Actuals := New_List;
@@ -1192,6 +1361,14 @@ package body Sem_Ch12 is
             Next_Elmt (Elmt);
          end loop;
       end;
+
+      --  If this is a formal package. normalize the parameter list by
+      --  adding explicit box asssociations for the formals that are covered
+      --  by an Others_Choice.
+
+      if not Is_Empty_List (Default_Formals) then
+         Append_List (Default_Formals, Formals);
+      end if;
 
       return Assoc;
    end Analyze_Associations;
@@ -1311,9 +1488,11 @@ package body Sem_Ch12 is
    -------------------------------------------
 
    procedure Analyze_Formal_Derived_Interface_Type
-     (T : Entity_Id;
+     (T   : Entity_Id;
       Def : Node_Id)
    is
+      Ifaces_List : Elist_Id;
+
    begin
       Enter_Name (T);
       Set_Ekind  (T, E_Record_Type);
@@ -1321,9 +1500,17 @@ package body Sem_Ch12 is
       Analyze (Subtype_Indication (Def));
       Analyze_Interface_Declaration (T, Def);
       Make_Class_Wide_Type (T);
-      Set_Primitive_Operations (T, New_Elmt_List);
       Analyze_List (Interface_List (Def));
-      Collect_Interfaces (Def, T);
+
+      --  Ada 2005 (AI-251): Collect the list of progenitors that are not
+      --  already covered by the parents.
+
+      Collect_Abstract_Interfaces
+        (T                         => T,
+         Ifaces_List               => Ifaces_List,
+         Exclude_Parent_Interfaces => True);
+
+      Set_Abstract_Interfaces (T, Ifaces_List);
    end Analyze_Formal_Derived_Interface_Type;
 
    ---------------------------------
@@ -1348,10 +1535,12 @@ package body Sem_Ch12 is
              Defining_Identifier           => T,
              Discriminant_Specifications   => Discriminant_Specifications (N),
              Unknown_Discriminants_Present => Unk_Disc,
-             Subtype_Indication            => Subtype_Mark (Def));
+             Subtype_Indication            => Subtype_Mark (Def),
+             Interface_List                => Interface_List (Def));
 
-         Set_Abstract_Present (New_N, Abstract_Present (Def));
-         Set_Limited_Present  (New_N, Limited_Present  (Def));
+         Set_Abstract_Present     (New_N, Abstract_Present     (Def));
+         Set_Limited_Present      (New_N, Limited_Present      (Def));
+         Set_Synchronized_Present (New_N, Synchronized_Present (Def));
 
       else
          New_N :=
@@ -1366,7 +1555,7 @@ package body Sem_Ch12 is
          Set_Abstract_Present
            (Type_Definition (New_N), Abstract_Present (Def));
          Set_Limited_Present
-           (Type_Definition (New_N), Limited_Present (Def));
+           (Type_Definition (New_N), Limited_Present  (Def));
       end if;
 
       Rewrite (N, New_N);
@@ -1516,7 +1705,7 @@ package body Sem_Ch12 is
    ---------------------------------------
 
    procedure Analyze_Formal_Object_Declaration (N : Node_Id) is
-      E  : constant Node_Id := Expression (N);
+      E  : constant Node_Id := Default_Expression (N);
       Id : constant Node_Id := Defining_Identifier (N);
       K  : Entity_Kind;
       T  : Node_Id;
@@ -1537,11 +1726,33 @@ package body Sem_Ch12 is
          K := E_Generic_In_Parameter;
       end if;
 
-      Find_Type (Subtype_Mark (N));
-      T  := Entity (Subtype_Mark (N));
+      if Present (Subtype_Mark (N)) then
+         Find_Type (Subtype_Mark (N));
+         T := Entity (Subtype_Mark (N));
+
+      --  Ada 2005 (AI-423): Formal object with an access definition
+
+      else
+         Check_Access_Definition (N);
+         T := Access_Definition
+                (Related_Nod => N,
+                 N           => Access_Definition (N));
+      end if;
 
       if Ekind (T) = E_Incomplete_Type then
-         Error_Msg_N ("premature usage of incomplete type", Subtype_Mark (N));
+         declare
+            Error_Node : Node_Id;
+
+         begin
+            if Present (Subtype_Mark (N)) then
+               Error_Node := Subtype_Mark (N);
+            else
+               Check_Access_Definition (N);
+               Error_Node := Access_Definition (N);
+            end if;
+
+            Error_Msg_N ("premature usage of incomplete type", Error_Node);
+         end;
       end if;
 
       if K = E_Generic_In_Parameter then
@@ -1666,6 +1877,110 @@ package body Sem_Ch12 is
       Renaming         : Node_Id;
       Parent_Instance  : Entity_Id;
       Renaming_In_Par  : Entity_Id;
+      No_Associations  : Boolean := False;
+
+      function Build_Local_Package return Node_Id;
+      --  The formal package is rewritten so that its parameters are replaced
+      --  with corresponding declarations. For parameters with bona fide
+      --  associations these declarations are created by Analyze_Associations
+      --  as for aa regular instantiation. For boxed parameters, we preserve
+      --  the formal declarations and analyze them, in order to introduce
+      --  entities of the right kind in the environment of the formal.
+
+      -------------------------
+      -- Build_Local_Package --
+      -------------------------
+
+      function Build_Local_Package return Node_Id is
+         Decls     : List_Id;
+         Pack_Decl : Node_Id;
+
+      begin
+         --  Within the formal, the name of the generic package is a renaming
+         --  of the formal (as for a regular instantiation).
+
+         Pack_Decl :=
+           Make_Package_Declaration (Loc,
+             Specification =>
+               Copy_Generic_Node
+                 (Specification (Original_Node (Gen_Decl)),
+                    Empty, Instantiating => True));
+
+         Renaming := Make_Package_Renaming_Declaration (Loc,
+             Defining_Unit_Name =>
+               Make_Defining_Identifier (Loc, Chars (Gen_Unit)),
+             Name => New_Occurrence_Of (Formal, Loc));
+
+         if Nkind (Gen_Id) = N_Identifier
+           and then Chars (Gen_Id) = Chars (Pack_Id)
+         then
+            Error_Msg_NE
+              ("& is hidden within declaration of instance", Gen_Id, Gen_Unit);
+         end if;
+
+         --  If the formal is declared with a box, or with an others choice,
+         --  create corresponding declarations for all entities in the formal
+         --  part, so that names with the proper types are available in the
+         --  specification of the formal package.
+
+         if No_Associations then
+            declare
+               Formal_Decl : Node_Id;
+
+            begin
+               --  TBA : for a formal package, need to recurse
+
+               Decls := New_List;
+               Formal_Decl :=
+                 First
+                   (Generic_Formal_Declarations (Original_Node (Gen_Decl)));
+               while Present (Formal_Decl) loop
+                  Append_To
+                    (Decls, Copy_Generic_Node (Formal_Decl, Empty, True));
+                  Next (Formal_Decl);
+               end loop;
+            end;
+
+         --  If generic associations are present, use Analyze_Associations to
+         --  create the proper renaming declarations.
+
+         else
+            declare
+               Act_Tree : constant Node_Id :=
+                            Copy_Generic_Node
+                              (Original_Node (Gen_Decl), Empty,
+                               Instantiating => True);
+
+            begin
+               Generic_Renamings.Set_Last (0);
+               Generic_Renamings_HTable.Reset;
+               Instantiation_Node := N;
+
+               Decls :=
+                 Analyze_Associations
+                   (Original_Node (N),
+                      Generic_Formal_Declarations (Act_Tree),
+                      Generic_Formal_Declarations (Gen_Decl));
+            end;
+         end if;
+
+         Append (Renaming, To => Decls);
+
+         --  Add generated declarations ahead of local declarations in
+         --  the package.
+
+         if No (Visible_Declarations (Specification (Pack_Decl))) then
+            Set_Visible_Declarations (Specification (Pack_Decl), Decls);
+         else
+            Insert_List_Before
+              (First (Visible_Declarations (Specification (Pack_Decl))),
+                 Decls);
+         end if;
+
+         return Pack_Decl;
+      end Build_Local_Package;
+
+   --  Start of processing for Analyze_Formal_Package
 
    begin
       Text_IO_Kludge (Gen_Id);
@@ -1714,107 +2029,114 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      --  The formal package is treated like a regular instance, but only
-      --  the specification needs to be instantiated, to make entities visible.
-
-      if not Box_Present (N) then
-         Hidden_Entities := New_Elmt_List;
-         Analyze_Package_Instantiation (N);
-
-         if Parent_Installed then
-            Remove_Parent;
-         end if;
-
-      else
-         --  If there are no generic associations, the generic parameters
-         --  appear as local entities and are instantiated like them. We copy
-         --  the generic package declaration as if it were an instantiation,
-         --  and analyze it like a regular package, except that we treat the
-         --  formals as additional visible components.
-
-         Gen_Decl := Unit_Declaration_Node (Gen_Unit);
-
-         if In_Extended_Main_Source_Unit (N) then
-            Set_Is_Instantiated (Gen_Unit);
-            Generate_Reference  (Gen_Unit, N);
-         end if;
-
-         Formal := New_Copy (Pack_Id);
-         Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
-
-         New_N :=
-           Copy_Generic_Node
-             (Original_Node (Gen_Decl), Empty, Instantiating => True);
-         Rewrite (N, New_N);
-         Set_Defining_Unit_Name (Specification (New_N), Formal);
-         Set_Generic_Parent (Specification (N), Gen_Unit);
-         Set_Instance_Env (Gen_Unit, Formal);
-
-         Enter_Name (Formal);
-         Set_Ekind  (Formal, E_Generic_Package);
-         Set_Etype  (Formal, Standard_Void_Type);
-         Set_Inner_Instances (Formal, New_Elmt_List);
-         New_Scope  (Formal);
-
-         --  Within the formal, the name of the generic package is a renaming
-         --  of the formal (as for a regular instantiation).
-
-         Renaming := Make_Package_Renaming_Declaration (Loc,
-             Defining_Unit_Name =>
-               Make_Defining_Identifier (Loc, Chars (Gen_Unit)),
-             Name => New_Reference_To (Formal, Loc));
-
-         if Present (Visible_Declarations (Specification (N))) then
-            Prepend (Renaming, To => Visible_Declarations (Specification (N)));
-         elsif Present (Private_Declarations (Specification (N))) then
-            Prepend (Renaming, To => Private_Declarations (Specification (N)));
-         end if;
-
-         if Is_Child_Unit (Gen_Unit)
-           and then Parent_Installed
-         then
-            --  Similarly, we have to make the name of the formal visible in
-            --  the parent instance, to resolve properly fully qualified names
-            --  that may appear in the generic unit. The parent instance has
-            --  been placed on the scope stack ahead of the current scope.
-
-            Parent_Instance := Scope_Stack.Table (Scope_Stack.Last - 1).Entity;
-
-            Renaming_In_Par :=
-              Make_Defining_Identifier (Loc, Chars (Gen_Unit));
-            Set_Ekind (Renaming_In_Par, E_Package);
-            Set_Etype (Renaming_In_Par, Standard_Void_Type);
-            Set_Scope (Renaming_In_Par, Parent_Instance);
-            Set_Parent (Renaming_In_Par, Parent (Formal));
-            Set_Renamed_Object (Renaming_In_Par, Formal);
-            Append_Entity (Renaming_In_Par, Parent_Instance);
-         end if;
-
-         Analyze_Generic_Formal_Part (N);
-         Analyze (Specification (N));
-         End_Package_Scope (Formal);
-
-         if Parent_Installed then
-            Remove_Parent;
-         end if;
-
-         Restore_Env;
-
-         --  Inside the generic unit, the formal package is a regular
-         --  package, but no body is needed for it. Note that after
-         --  instantiation, the defining_unit_name we need is in the
-         --  new tree and not in the original. (see Package_Instantiation).
-         --  A generic formal package is an instance, and can be used as
-         --  an actual for an inner instance.
-
-         Set_Ekind (Formal, E_Package);
-         Set_Has_Completion (Formal, True);
-
-         Set_Ekind (Pack_Id, E_Package);
-         Set_Etype (Pack_Id, Standard_Void_Type);
-         Set_Scope (Pack_Id, Scope (Formal));
-         Set_Has_Completion (Pack_Id, True);
+      if Box_Present (N)
+        or else No (Generic_Associations (N))
+        or else Nkind (First (Generic_Associations (N))) = N_Others_Choice
+      then
+         No_Associations := True;
       end if;
+
+      --  If there are no generic associations, the generic parameters
+      --  appear as local entities and are instantiated like them. We copy
+      --  the generic package declaration as if it were an instantiation,
+      --  and analyze it like a regular package, except that we treat the
+      --  formals as additional visible components.
+
+      Gen_Decl := Unit_Declaration_Node (Gen_Unit);
+
+      if In_Extended_Main_Source_Unit (N) then
+         Set_Is_Instantiated (Gen_Unit);
+         Generate_Reference  (Gen_Unit, N);
+      end if;
+
+      Formal := New_Copy (Pack_Id);
+      Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
+
+      --  Make local generic without formals. The formals will be replaced
+      --  with internal declarations..
+
+      New_N := Build_Local_Package;
+      Rewrite (N, New_N);
+      Set_Defining_Unit_Name (Specification (New_N), Formal);
+      Set_Generic_Parent (Specification (N), Gen_Unit);
+      Set_Instance_Env (Gen_Unit, Formal);
+      Set_Is_Generic_Instance (Formal);
+
+      Enter_Name (Formal);
+      Set_Ekind  (Formal, E_Package);
+      Set_Etype  (Formal, Standard_Void_Type);
+      Set_Inner_Instances (Formal, New_Elmt_List);
+      New_Scope  (Formal);
+
+      if Is_Child_Unit (Gen_Unit)
+        and then Parent_Installed
+      then
+         --  Similarly, we have to make the name of the formal visible in
+         --  the parent instance, to resolve properly fully qualified names
+         --  that may appear in the generic unit. The parent instance has
+         --  been placed on the scope stack ahead of the current scope.
+
+         Parent_Instance := Scope_Stack.Table (Scope_Stack.Last - 1).Entity;
+
+         Renaming_In_Par :=
+           Make_Defining_Identifier (Loc, Chars (Gen_Unit));
+         Set_Ekind (Renaming_In_Par, E_Package);
+         Set_Etype (Renaming_In_Par, Standard_Void_Type);
+         Set_Scope (Renaming_In_Par, Parent_Instance);
+         Set_Parent (Renaming_In_Par, Parent (Formal));
+         Set_Renamed_Object (Renaming_In_Par, Formal);
+         Append_Entity (Renaming_In_Par, Parent_Instance);
+      end if;
+
+      Analyze (Specification (N));
+
+      --  The formals for which associations are provided are not visible
+      --  outside of the formal package. The others are still declared by
+      --  a formal parameter declaration.
+
+      if not No_Associations then
+         declare
+            E : Entity_Id;
+
+         begin
+            E := First_Entity (Formal);
+            while Present (E) loop
+               exit when Ekind (E) = E_Package
+                 and then Renamed_Entity (E) = Formal;
+
+               if not Is_Generic_Formal (E) then
+                  Set_Is_Hidden (E);
+               end if;
+
+               Next_Entity (E);
+            end loop;
+         end;
+      end if;
+
+      End_Package_Scope (Formal);
+
+      if Parent_Installed then
+         Remove_Parent;
+      end if;
+
+      Restore_Env;
+
+      --  Inside the generic unit, the formal package is a regular
+      --  package, but no body is needed for it. Note that after
+      --  instantiation, the defining_unit_name we need is in the
+      --  new tree and not in the original. (see Package_Instantiation).
+      --  A generic formal package is an instance, and can be used as
+      --  an actual for an inner instance.
+
+      Set_Has_Completion (Formal, True);
+
+      --  Add semantic information to the original defining identifier.
+      --  for ASIS use.
+
+      Set_Ekind (Pack_Id, E_Package);
+      Set_Etype (Pack_Id, Standard_Void_Type);
+      Set_Scope (Pack_Id, Scope (Formal));
+      Set_Has_Completion (Pack_Id, True);
    end Analyze_Formal_Package;
 
    ---------------------------------
@@ -2374,10 +2696,6 @@ package body Sem_Ch12 is
    -- Analyze_Package_Instantiation --
    -----------------------------------
 
-   --  Note: this procedure is also used for formal package declarations, in
-   --  which case the argument N is an N_Formal_Package_Declaration node.
-   --  This should really be noted in the spec! ???
-
    procedure Analyze_Package_Instantiation (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       Gen_Id : constant Node_Id    := Name (N);
@@ -2924,9 +3242,6 @@ package body Sem_Ch12 is
                   Main_Unit_Entity := Act_Decl_Id;
                end if;
             end if;
-
-            --  There is a problem with inlining here
-            --  More comments needed??? what problem
 
             Set_Unit (Parent (N), Act_Decl);
             Set_Parent_Spec (Act_Decl, Parent_Spec (N));
@@ -3852,6 +4167,18 @@ package body Sem_Ch12 is
       Build_Elaboration_Entity (Decl_Cunit, New_Main);
    end Build_Instance_Compilation_Unit_Nodes;
 
+   -----------------------------
+   -- Check_Access_Definition --
+   -----------------------------
+
+   procedure Check_Access_Definition (N : Node_Id) is
+   begin
+      pragma Assert
+        (Ada_Version >= Ada_05
+           and then Present (Access_Definition (N)));
+      null;
+   end Check_Access_Definition;
+
    -----------------------------------
    -- Check_Formal_Package_Instance --
    -----------------------------------
@@ -3892,8 +4219,19 @@ package body Sem_Ch12 is
       --------------------
 
       procedure Check_Mismatch (B : Boolean) is
+         Kind : constant Node_Kind := Nkind (Parent (E2));
+
       begin
-         if B then
+         if Kind = N_Formal_Type_Declaration then
+            return;
+
+         elsif Kind = N_Formal_Object_Declaration
+           or else Kind in N_Formal_Subprogram_Declaration
+           or else Kind = N_Formal_Package_Declaration
+         then
+            null;
+
+         elsif B then
             Error_Msg_NE
               ("actual for & in actual instance does not match formal",
                Parent (Actual_Pack), E1);
@@ -3989,6 +4327,9 @@ package body Sem_Ch12 is
             --  local entities that are subtypes of the actuals.
             --  Itypes generated for other parameters need not be checked,
             --  the check will be performed on the parameters themselves.
+
+            --  If E2 is a formal type declaration, it is a defaulted
+            --  parameter and needs no checking.
 
             if not Is_Itype (E1)
               and then not Is_Itype (E2)
@@ -4086,7 +4427,8 @@ package body Sem_Ch12 is
          elsif Is_Overloadable (E1) then
 
             --  Verify that the names of the  entities match.
-            --  What if actual is an attribute ???
+            --  Note that actuals that are attributes are rewritten
+            --  as subprograms.
 
             Check_Mismatch
               (Ekind (E2) /= Ekind (E1) or else (Alias (E1)) /= Alias (E2));
@@ -4128,6 +4470,12 @@ package body Sem_Ch12 is
             elsif not Box_Present (Parent (Associated_Formal_Package (E))) then
                Formal_P := Next_Entity (E);
                Check_Formal_Package_Instance (Formal_P, E);
+
+               --  After checking, remove the internal validating package. It
+               --  is only needed for semantic checks, and as it may contain
+               --  generic formal declarations it should not reach gigi.
+
+               Remove (Unit_Declaration_Node (Formal_P));
             end if;
          end if;
 
@@ -4287,9 +4635,14 @@ package body Sem_Ch12 is
             elsif Denotes_Formal_Package (E) then
                null;
 
-            elsif Present (Associated_Formal_Package (E)) then
+            elsif Present (Associated_Formal_Package (E))
+              and then not Is_Generic_Formal (E)
+            then
                if Box_Present (Parent (Associated_Formal_Package (E))) then
                   Check_Generic_Actuals (Renamed_Object (E), True);
+
+               else
+                  Check_Generic_Actuals (Renamed_Object (E), False);
                end if;
 
                Set_Is_Hidden (E, False);
@@ -4301,8 +4654,13 @@ package body Sem_Ch12 is
          elsif Is_Wrapper_Package (Instance) then
             Set_Is_Hidden (E, False);
 
-         else
-            Set_Is_Hidden (E, not Is_Formal_Box);
+         --  If the formal package is declared with a box, or if the formal
+         --  parameter is defaulted, it is visible in the body.
+
+         elsif Is_Formal_Box
+           or else Is_Visible_Formal (E)
+         then
+            Set_Is_Hidden (E, False);
          end if;
 
          Next_Entity (E);
@@ -4743,15 +5101,21 @@ package body Sem_Ch12 is
          then
             Switch_View (T);
 
-         --  Finally, a non-private subtype may have a private base type,
-         --  which must be exchanged for consistency. This can happen when
-         --  instantiating a package body, when the scope stack is empty
-         --  but in fact the subtype and the base type are declared in an
-         --  enclosing scope.
+         --  Finally, a non-private subtype may have a private base type, which
+         --  must be exchanged for consistency. This can happen when
+         --  instantiating a package body, when the scope stack is empty but in
+         --  fact the subtype and the base type are declared in an enclosing
+         --  scope.
+
+         --  Note that in this case we introduce an inconsistency in the view
+         --  set, because we switch the base type BT, but there could be some
+         --  private dependent subtypes of BT which remain unswitched. Such
+         --  subtypes might need to be switched at a later point (see specific
+         --  provision for that case in Switch_View).
 
          elsif not Is_Private_Type (T)
            and then not Has_Private_View (N)
-           and then Is_Private_Type (Base_Type (T))
+           and then Is_Private_Type (BT)
            and then Present (Full_View (BT))
            and then not Is_Generic_Type (BT)
            and then not In_Open_Scopes (BT)
@@ -5465,7 +5829,9 @@ package body Sem_Ch12 is
       then
          return True;
 
-      elsif Nkind (Parent (Pack)) = N_Formal_Package_Declaration then
+      elsif Nkind (Original_Node (Unit_Declaration_Node (Pack))) =
+        N_Formal_Package_Declaration
+      then
          return True;
 
       elsif No (Par) then
@@ -5482,6 +5848,7 @@ package body Sem_Ch12 is
               or else Nkind (Parent (E)) /= N_Package_Renaming_Declaration
             then
                null;
+
             elsif Renamed_Object (E) = Par then
                return False;
 
@@ -5534,6 +5901,9 @@ package body Sem_Ch12 is
          T := Current_Entity (Typ);
          while Present (T) loop
             if In_Open_Scopes (Scope (T)) then
+               return T;
+
+            elsif Is_Generic_Actual_Type (T) then
                return T;
             end if;
 
@@ -5898,7 +6268,7 @@ package body Sem_Ch12 is
             return Unit (Parent (Decl));
          end if;
 
-      elsif Nkind (Decl) = N_Generic_Package_Declaration
+      elsif Nkind (Decl) = N_Package_Declaration
         and then Nkind (Original_Node (Decl)) = N_Formal_Package_Declaration
       then
          return Original_Node (Decl);
@@ -6874,6 +7244,7 @@ package body Sem_Ch12 is
             Ent := First_Entity (Formal);
             while Present (Ent) loop
                Set_Is_Hidden (Ent, False);
+               Set_Is_Visible_Formal (Ent);
                Set_Is_Potentially_Use_Visible
                  (Ent, Is_Potentially_Use_Visible (Formal));
 
@@ -6969,64 +7340,114 @@ package body Sem_Ch12 is
          --  handle checking of actual parameter associations for later
          --  formals that depend on actuals declared in the formal package.
 
-         if Box_Present (Formal) then
-            declare
-               Gen_Decl    : constant Node_Id :=
-                               Unit_Declaration_Node (Gen_Parent);
-               Formals     : constant List_Id :=
-                               Generic_Formal_Declarations (Gen_Decl);
-               Actual_Ent  : Entity_Id;
-               Formal_Node : Node_Id;
-               Formal_Ent  : Entity_Id;
+         --  In Ada 2005, partial parametrization requires that we make
+         --  visible the actuals corresponding to formals that were defaulted
+         --  in the formal package. There formals are identified because they
+         --  remain formal generics within the formal package, rather than
+         --  being renamings of the actuals supplied.
 
-            begin
-               if Present (Formals) then
-                  Formal_Node := First_Non_Pragma (Formals);
+         declare
+            Gen_Decl    : constant Node_Id :=
+                            Unit_Declaration_Node (Gen_Parent);
+            Formals     : constant List_Id :=
+                            Generic_Formal_Declarations (Gen_Decl);
+            Actual_Ent  : Entity_Id;
+            Formal_Node : Node_Id;
+            Formal_Ent  : Entity_Id;
+
+         begin
+            if Present (Formals) then
+               Formal_Node := First_Non_Pragma (Formals);
+            else
+               Formal_Node := Empty;
+            end if;
+
+            Actual_Ent := First_Entity (Actual_Pack);
+            while Present (Actual_Ent)
+              and then Actual_Ent /= First_Private_Entity (Actual_Pack)
+            loop
+               if Present (Formal_Node) then
+                  Formal_Ent := Get_Formal_Entity (Formal_Node);
+
+                  if Present (Formal_Ent) then
+                     Find_Matching_Actual (Formal_Node, Actual_Ent);
+                     Match_Formal_Entity
+                       (Formal_Node, Formal_Ent, Actual_Ent);
+
+                     if Box_Present (Formal)
+                       or else
+                         (Present (Formal_Node)
+                           and then Is_Generic_Formal (Formal_Ent))
+                     then
+                        --  This may make too many formal entities visible,
+                        --  but it's hard to build an example that exposes
+                        --  this excess visibility. If a reference in the
+                        --  generic resolved to a global variable then the
+                        --  extra visibility in an instance does not affect
+                        --  the captured entity. If the reference resolved
+                        --  to a local entity it will resolve again in the
+                        --  instance. Nevertheless, we should build tests
+                        --  to make sure that hidden entities in the generic
+                        --  remain hidden in the instance.
+
+                        Set_Is_Hidden (Actual_Ent, False);
+                        Set_Is_Visible_Formal (Actual_Ent);
+                        Set_Is_Potentially_Use_Visible
+                          (Actual_Ent, In_Use (Actual_Pack));
+
+                        if Ekind (Actual_Ent) = E_Package then
+                           Process_Nested_Formal (Actual_Ent);
+                        end if;
+                     end if;
+                  end if;
+
+                  Next_Non_Pragma (Formal_Node);
+
                else
-                  Formal_Node := Empty;
+                  --  No further formals to match, but the generic
+                  --  part may contain inherited operation that are
+                  --  not hidden in the enclosing instance.
+
+                  Next_Entity (Actual_Ent);
                end if;
 
-               Actual_Ent := First_Entity (Actual_Pack);
+            end loop;
 
-               while Present (Actual_Ent)
-                 and then Actual_Ent /= First_Private_Entity (Actual_Pack)
-               loop
+            --  Inherited subprograms generated by formal derived types are
+            --  also visible if the types are.
+
+            Actual_Ent := First_Entity (Actual_Pack);
+            while Present (Actual_Ent)
+              and then Actual_Ent /= First_Private_Entity (Actual_Pack)
+            loop
+               if Is_Overloadable (Actual_Ent)
+                 and then
+                   Nkind (Parent (Actual_Ent)) = N_Subtype_Declaration
+                 and then
+                   not Is_Hidden (Defining_Identifier (Parent (Actual_Ent)))
+               then
                   Set_Is_Hidden (Actual_Ent, False);
                   Set_Is_Potentially_Use_Visible
                     (Actual_Ent, In_Use (Actual_Pack));
+               end if;
 
-                  if Ekind (Actual_Ent) = E_Package then
-                     Process_Nested_Formal (Actual_Ent);
-                  end if;
-
-                  if Present (Formal_Node) then
-                     Formal_Ent := Get_Formal_Entity (Formal_Node);
-
-                     if Present (Formal_Ent) then
-                        Find_Matching_Actual (Formal_Node, Actual_Ent);
-                        Match_Formal_Entity
-                          (Formal_Node, Formal_Ent, Actual_Ent);
-                     end if;
-
-                     Next_Non_Pragma (Formal_Node);
-
-                  else
-                     --  No further formals to match, but the generic
-                     --  part may contain inherited operation that are
-                     --  not hidden in the enclosing instance.
-
-                     Next_Entity (Actual_Ent);
-                  end if;
-
-               end loop;
-            end;
+               Next_Entity (Actual_Ent);
+            end loop;
+         end;
 
          --  If the formal is not declared with a box, reanalyze it as
-         --  an instantiation, to verify the matching rules of 12.7. The
-         --  actual checks are performed after the generic associations
-         --  been analyzed.
+         --  an abbreviated instantiation, to verify the matching rules
+         --  of 12.7. The actual checks are performed after the generic
+         --  associations have been analyzed, to guarantee the same
+         --  visibility for this instantiation and for the actuals.
 
-         else
+         --  In Ada 2005, the generic associations for the formal can include
+         --  defaulted parameters. These are ignored during check. This
+         --  internal instantiation is removed from the tree after conformance
+         --  checking, because it contains formal declarations for those
+         --  defaulted parameters, and those should not reach the back-end.
+
+         if not Box_Present (Formal) then
             declare
                I_Pack : constant Entity_Id :=
                           Make_Defining_Identifier (Sloc (Actual),
@@ -7038,7 +7459,9 @@ package body Sem_Ch12 is
                Append_To (Decls,
                  Make_Package_Instantiation (Sloc (Actual),
                    Defining_Unit_Name => I_Pack,
-                   Name => New_Occurrence_Of (Gen_Parent, Sloc (Actual)),
+                   Name =>
+                     New_Occurrence_Of
+                       (Get_Instance_Of (Gen_Parent), Sloc (Actual)),
                    Generic_Associations =>
                      Generic_Associations (Formal)));
             end;
@@ -7057,7 +7480,7 @@ package body Sem_Ch12 is
       Actual          : Node_Id;
       Analyzed_Formal : Node_Id) return Node_Id
    is
-      Loc        : Source_Ptr := Sloc (Instantiation_Node);
+      Loc        : Source_Ptr;
       Formal_Sub : constant Entity_Id :=
                      Defining_Unit_Name (Specification (Formal));
       Analyzed_S : constant Entity_Id :=
@@ -7136,10 +7559,33 @@ package body Sem_Ch12 is
    begin
       New_Spec := New_Copy_Tree (Specification (Formal));
 
+      --  The tree copy has created the proper instantiation sloc for the
+      --  new specification. Use this location for all other constructed
+      --  declarations.
+
+      Loc := Sloc (Defining_Unit_Name (New_Spec));
+
       --  Create new entity for the actual (New_Copy_Tree does not)
 
       Set_Defining_Unit_Name
         (New_Spec, Make_Defining_Identifier (Loc, Chars (Formal_Sub)));
+
+      --  Create new entities for the each of the formals in the
+      --  specification of the renaming declaration built for the actual.
+
+      if Present (Parameter_Specifications (New_Spec)) then
+         declare
+            F : Node_Id;
+         begin
+            F := First (Parameter_Specifications (New_Spec));
+            while Present (F) loop
+               Set_Defining_Identifier (F,
+                  Make_Defining_Identifier (Loc,
+                    Chars => Chars (Defining_Identifier (F))));
+               Next (F);
+            end loop;
+         end;
+      end if;
 
       --  Find entity of actual. If the actual is an attribute reference, it
       --  cannot be resolved here (its formal is missing) but is handled
@@ -7332,18 +7778,28 @@ package body Sem_Ch12 is
       Actual          : Node_Id;
       Analyzed_Formal : Node_Id) return List_Id
    is
-      Formal_Id : constant Entity_Id  := Defining_Identifier (Formal);
-      Type_Id   : constant Node_Id    := Subtype_Mark (Formal);
-      Loc       : constant Source_Ptr := Sloc (Actual);
-      Act_Assoc : constant Node_Id    := Parent (Actual);
-      Orig_Ftyp : constant Entity_Id  :=
-                    Etype (Defining_Identifier (Analyzed_Formal));
-      List      : constant List_Id    := New_List;
-      Ftyp      : Entity_Id;
-      Decl_Node : Node_Id;
-      Subt_Decl : Node_Id := Empty;
+      Acc_Def     : Node_Id             := Empty;
+      Act_Assoc   : constant Node_Id    := Parent (Actual);
+      Actual_Decl : Node_Id             := Empty;
+      Formal_Id   : constant Entity_Id  := Defining_Identifier (Formal);
+      Decl_Node   : Node_Id;
+      Def         : Node_Id;
+      Ftyp        : Entity_Id;
+      List        : constant List_Id    := New_List;
+      Loc         : constant Source_Ptr := Sloc (Actual);
+      Orig_Ftyp   : constant Entity_Id  :=
+                      Etype (Defining_Identifier (Analyzed_Formal));
+      Subt_Decl   : Node_Id             := Empty;
+      Subt_Mark   : Node_Id             := Empty;
 
    begin
+      if Present (Subtype_Mark (Formal)) then
+         Subt_Mark := Subtype_Mark (Formal);
+      else
+         Check_Access_Definition (Formal);
+         Acc_Def := Access_Definition (Formal);
+      end if;
+
       --  Sloc for error message on missing actual
 
       Error_Msg_Sloc := Sloc (Scope (Defining_Identifier (Analyzed_Formal)));
@@ -7377,11 +7833,20 @@ package body Sem_Ch12 is
             Abandon_Instantiation (Instantiation_Node);
          end if;
 
-         Decl_Node :=
-           Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => New_Copy (Formal_Id),
-             Subtype_Mark        => New_Copy_Tree (Type_Id),
-             Name                => Actual);
+         if Present (Subt_Mark) then
+            Decl_Node :=
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => New_Copy (Formal_Id),
+                Subtype_Mark        => New_Copy_Tree (Subt_Mark),
+                Name                => Actual);
+
+         else pragma Assert (Present (Acc_Def));
+            Decl_Node :=
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => New_Copy (Formal_Id),
+                Access_Definition   => New_Copy_Tree (Acc_Def),
+                Name                => Actual);
+         end if;
 
          Set_Corresponding_Generic_Association (Decl_Node, Act_Assoc);
 
@@ -7447,9 +7912,22 @@ package body Sem_Ch12 is
               ("actual for& must be a variable", Actual, Formal_Id);
 
          elsif Base_Type (Ftyp) /= Base_Type (Etype (Actual)) then
-            Error_Msg_NE (
-              "type of actual does not match type of&", Actual, Formal_Id);
 
+            --  Ada 2005 (AI-423): For a generic formal object of mode in
+            --  out, the type of the actual shall resolve to a specific
+            --  anonymous access type.
+
+            if Ada_Version < Ada_05
+              or else
+                Ekind (Base_Type (Ftyp)) /=
+                  E_Anonymous_Access_Type
+              or else
+                Ekind (Base_Type (Etype (Actual))) /=
+                  E_Anonymous_Access_Type
+            then
+               Error_Msg_NE ("type of actual does not match type of&",
+                             Actual, Formal_Id);
+            end if;
          end if;
 
          Note_Possible_Modification (Actual);
@@ -7475,17 +7953,23 @@ package body Sem_Ch12 is
       --  OUT not present
 
       else
-         --  The instantiation of a generic formal in-parameter
-         --  is a constant declaration. The actual is the expression for
+         --  The instantiation of a generic formal in-parameter is a
+         --  constant declaration. The actual is the expression for
          --  that declaration.
 
          if Present (Actual) then
+            if Present (Subt_Mark) then
+               Def := Subt_Mark;
+            else pragma Assert (Present (Acc_Def));
+               Def := Acc_Def;
+            end if;
 
-            Decl_Node := Make_Object_Declaration (Loc,
-              Defining_Identifier => New_Copy (Formal_Id),
-              Constant_Present => True,
-              Object_Definition => New_Copy_Tree (Type_Id),
-              Expression => Actual);
+            Decl_Node :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => New_Copy (Formal_Id),
+                Constant_Present    => True,
+                Object_Definition   => New_Copy_Tree (Def),
+                Expression          => Actual);
 
             Set_Corresponding_Generic_Association (Decl_Node, Act_Assoc);
 
@@ -7532,16 +8016,23 @@ package body Sem_Ch12 is
                end if;
             end;
 
-         elsif Present (Expression (Formal)) then
+         elsif Present (Default_Expression (Formal)) then
 
             --  Use default to construct declaration
+
+            if Present (Subt_Mark) then
+               Def := Subt_Mark;
+            else pragma Assert (Present (Acc_Def));
+               Def := Acc_Def;
+            end if;
 
             Decl_Node :=
               Make_Object_Declaration (Sloc (Formal),
                 Defining_Identifier => New_Copy (Formal_Id),
                 Constant_Present    => True,
-                Object_Definition   => New_Copy (Type_Id),
-                Expression          => New_Copy_Tree (Expression (Formal)));
+                Object_Definition   => New_Copy (Def),
+                Expression          => New_Copy_Tree (Default_Expression
+                                        (Formal)));
 
             Append (Decl_Node, List);
             Set_Analyzed (Expression (Decl_Node), False);
@@ -7560,15 +8051,21 @@ package body Sem_Ch12 is
                --  Create dummy constant declaration so that instance can
                --  be analyzed, to minimize cascaded visibility errors.
 
+               if Present (Subt_Mark) then
+                  Def := Subt_Mark;
+               else pragma Assert (Present (Acc_Def));
+                  Def := Acc_Def;
+               end if;
+
                Decl_Node :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => New_Copy (Formal_Id),
                    Constant_Present    => True,
-                   Object_Definition   => New_Copy (Type_Id),
+                   Object_Definition   => New_Copy (Def),
                    Expression          =>
                       Make_Attribute_Reference (Sloc (Formal_Id),
                         Attribute_Name => Name_First,
-                        Prefix         => New_Copy (Type_Id)));
+                        Prefix         => New_Copy (Def)));
 
                Append (Decl_Node, List);
 
@@ -7576,7 +8073,33 @@ package body Sem_Ch12 is
                Abandon_Instantiation (Instantiation_Node);
             end if;
          end if;
+      end if;
 
+      if Nkind (Actual) in N_Has_Entity then
+         Actual_Decl := Parent (Entity (Actual));
+      end if;
+
+      --  Ada 2005 (AI-423): For a formal object declaration with a null
+      --  exclusion or an access definition that has a null exclusion: If
+      --  the actual matching the formal object declaration denotes a generic
+      --  formal object of another generic unit G, and the instantiation
+      --  containing the actual occurs within the body of G or within the
+      --  body of a generic unit declared within the declarative region of G,
+      --  then the declaration of the formal object of G shall have a null
+      --  exclusion. Otherwise, the subtype of the actual matching the formal
+      --  object declaration shall exclude null.
+
+      if Ada_Version >= Ada_05
+        and then Present (Actual_Decl)
+        and then
+          (Nkind (Actual_Decl) = N_Formal_Object_Declaration
+             or else Nkind (Actual_Decl) = N_Object_Declaration)
+        and then Nkind (Analyzed_Formal) = N_Formal_Object_Declaration
+        and then Has_Null_Exclusion (Actual_Decl)
+        and then not Has_Null_Exclusion (Analyzed_Formal)
+      then
+         Error_Msg_N ("null-exclusion required in formal object declaration",
+                      Analyzed_Formal);
       end if;
 
       return List;
@@ -7897,6 +8420,14 @@ package body Sem_Ch12 is
          Set_Has_Completion (Anon_Id);
          Check_Generic_Actuals (Pack_Id, False);
 
+         --  Generate a reference to link the visible subprogram instance to
+         --  the the generic body, which for navigation purposes is the only
+         --  available source for the instance.
+
+         Generate_Reference
+           (Related_Instance (Pack_Id),
+             Gen_Body_Id, 'b', Set_Ref => False, Force => True);
+
          --  If it is a child unit, make the parent instance (which is an
          --  instance of the parent of the generic) visible. The parent
          --  instance is the prefix of the name of the generic unit.
@@ -8074,13 +8605,14 @@ package body Sem_Ch12 is
       Analyzed_Formal : Node_Id;
       Actual_Decls    : List_Id) return Node_Id
    is
-      Loc       : constant Source_Ptr := Sloc (Actual);
       Gen_T     : constant Entity_Id  := Defining_Identifier (Formal);
       A_Gen_T   : constant Entity_Id  := Defining_Identifier (Analyzed_Formal);
       Ancestor  : Entity_Id := Empty;
       Def       : constant Node_Id    := Formal_Type_Definition (Formal);
       Act_T     : Entity_Id;
       Decl_Node : Node_Id;
+      Loc       : Source_Ptr;
+      Subt      : Entity_Id;
 
       procedure Validate_Array_Type_Instance;
       procedure Validate_Access_Subprogram_Instance;
@@ -8470,6 +9002,33 @@ package body Sem_Ch12 is
             Abandon_Instantiation (Actual);
          end if;
 
+         --  Ada 2005 (AI-443): Synchronized formal derived type ckecks. Note
+         --  that the formal type declaration has been rewritten as a private
+         --  extension.
+
+         if Ada_Version >= Ada_05
+           and then Nkind (Parent (A_Gen_T)) = N_Private_Extension_Declaration
+           and then Synchronized_Present (Parent (A_Gen_T))
+         then
+            --  The actual must be a synchronized tagged type
+
+            if not Is_Tagged_Type (Act_T) then
+               Error_Msg_N
+                 ("actual of synchronized type must be tagged", Actual);
+               Abandon_Instantiation (Actual);
+
+            elsif Nkind (Parent (Act_T)) = N_Full_Type_Declaration
+              and then Nkind (Type_Definition (Parent (Act_T))) =
+                         N_Derived_Type_Definition
+              and then not Synchronized_Present (Type_Definition
+                             (Parent (Act_T)))
+            then
+               Error_Msg_N
+                 ("actual of synchronized type must be synchronized", Actual);
+               Abandon_Instantiation (Actual);
+            end if;
+         end if;
+
          --  Perform atomic/volatile checks (RM C.6(12))
 
          if Is_Atomic (Act_T) and then not Is_Atomic (Ancestor) then
@@ -8508,11 +9067,15 @@ package body Sem_Ch12 is
                   Abandon_Instantiation (Actual);
                end if;
 
-            --  Ancestor is unconstrained
+            --  Ancestor is unconstrained, Check if generic formal and
+            --  actual agree on constrainedness. The check only applies
+            --  to array types and discriminated types.
 
             elsif Is_Constrained (Act_T) then
                if Ekind (Ancestor) = E_Access_Type
-                 or else Is_Composite_Type (Ancestor)
+                 or else
+                   (not Is_Constrained (A_Gen_T)
+                     and then Is_Composite_Type (A_Gen_T))
                then
                   Error_Msg_N
                     ("actual subtype must be unconstrained", Actual);
@@ -8628,10 +9191,17 @@ package body Sem_Ch12 is
            and then not Is_Limited_Type (A_Gen_T)
          then
             Error_Msg_NE
-              ("actual for non-limited  & cannot be a limited type", Actual,
+              ("actual for non-limited & cannot be a limited type", Actual,
                Gen_T);
             Explain_Limited_Type (Act_T, Actual);
             Abandon_Instantiation (Actual);
+
+         elsif Known_To_Have_Preelab_Init (A_Gen_T)
+           and then not Has_Preelaborable_Initialization (Act_T)
+         then
+            Error_Msg_NE
+              ("actual for & must have preelaborable initialization", Actual,
+               Gen_T);
 
          elsif Is_Indefinite_Subtype (Act_T)
             and then not Is_Indefinite_Subtype (A_Gen_T)
@@ -8764,8 +9334,14 @@ package body Sem_Ch12 is
 
          --  Deal with error of using incomplete type as generic actual
 
-         if Ekind (Act_T) = E_Incomplete_Type then
-            if No (Underlying_Type (Act_T)) then
+         if Ekind (Act_T) = E_Incomplete_Type
+           or else (Is_Class_Wide_Type (Act_T)
+                      and then
+                         Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
+         then
+            if Is_Class_Wide_Type (Act_T)
+              or else No (Underlying_Type (Act_T))
+            then
                Error_Msg_N ("premature use of incomplete type", Actual);
                Abandon_Instantiation (Actual);
             else
@@ -8890,9 +9466,16 @@ package body Sem_Ch12 is
 
       end case;
 
+      Subt := New_Copy (Gen_T);
+
+      --  Use adjusted sloc of subtype name as the location for other
+      --  nodes in the subtype declaration.
+
+      Loc  := Sloc (Subt);
+
       Decl_Node :=
         Make_Subtype_Declaration (Loc,
-          Defining_Identifier => New_Copy (Gen_T),
+          Defining_Identifier => Subt,
           Subtype_Indication  => New_Reference_To (Act_T, Loc));
 
       if Is_Private_Type (Act_T) then
@@ -8917,6 +9500,20 @@ package body Sem_Ch12 is
 
       return Decl_Node;
    end Instantiate_Type;
+
+   -----------------------
+   -- Is_Generic_Formal --
+   -----------------------
+
+   function Is_Generic_Formal (E : Entity_Id) return Boolean is
+      Kind : constant Node_Kind := Nkind (Parent (E));
+   begin
+      return
+        Kind = N_Formal_Object_Declaration
+          or else Kind = N_Formal_Package_Declaration
+          or else Kind in N_Formal_Subprogram_Declaration
+          or else Kind = N_Formal_Type_Declaration;
+   end Is_Generic_Formal;
 
    ---------------------
    -- Is_In_Main_Unit --
@@ -9248,51 +9845,52 @@ package body Sem_Ch12 is
 
    begin
       Assoc := First (Generic_Associations (N));
-
       while Present (Assoc) loop
-         Act := Explicit_Generic_Actual_Parameter (Assoc);
+         if Nkind (Assoc) /= N_Others_Choice then
+            Act := Explicit_Generic_Actual_Parameter (Assoc);
 
-         --  Within a nested instantiation, a defaulted actual is an
-         --  empty association, so nothing to analyze. If the actual for
-         --  a subprogram is an attribute, analyze prefix only, because
-         --  actual is not a complete attribute reference.
+            --  Within a nested instantiation, a defaulted actual is an empty
+            --  association, so nothing to analyze. If the subprogram actual
+            --  isan attribute, analyze prefix only, because actual is not a
+            --  complete attribute reference.
 
-         --  If actual is an allocator, analyze expression only. The full
-         --  analysis can generate code, and if the instance is a compilation
-         --  unit we have to wait until the package instance is installed to
-         --  have a proper place to insert this code.
+            --  If actual is an allocator, analyze expression only. The full
+            --  analysis can generate code, and if instance is a compilation
+            --  unit we have to wait until the package instance is installed
+            --  to have a proper place to insert this code.
 
-         --  String literals may be operators, but at this point we do not
-         --  know whether the actual is a formal subprogram or a string.
+            --  String literals may be operators, but at this point we do not
+            --  know whether the actual is a formal subprogram or a string.
 
-         if No (Act) then
-            null;
+            if No (Act) then
+               null;
 
-         elsif Nkind (Act) = N_Attribute_Reference then
-            Analyze (Prefix (Act));
+            elsif Nkind (Act) = N_Attribute_Reference then
+               Analyze (Prefix (Act));
 
-         elsif Nkind (Act) = N_Explicit_Dereference then
-            Analyze (Prefix (Act));
+            elsif Nkind (Act) = N_Explicit_Dereference then
+               Analyze (Prefix (Act));
 
-         elsif Nkind (Act) = N_Allocator then
-            declare
-               Expr : constant Node_Id := Expression (Act);
+            elsif Nkind (Act) = N_Allocator then
+               declare
+                  Expr : constant Node_Id := Expression (Act);
 
-            begin
-               if Nkind (Expr) = N_Subtype_Indication then
-                  Analyze (Subtype_Mark (Expr));
-                  Analyze_List (Constraints (Constraint (Expr)));
-               else
-                  Analyze (Expr);
-               end if;
-            end;
+               begin
+                  if Nkind (Expr) = N_Subtype_Indication then
+                     Analyze (Subtype_Mark (Expr));
+                     Analyze_List (Constraints (Constraint (Expr)));
+                  else
+                     Analyze (Expr);
+                  end if;
+               end;
 
-         elsif Nkind (Act) /= N_Operator_Symbol then
-            Analyze (Act);
-         end if;
+            elsif Nkind (Act) /= N_Operator_Symbol then
+               Analyze (Act);
+            end if;
 
-         if Errs /= Serious_Errors_Detected then
-            Abandon_Instantiation (Act);
+            if Errs /= Serious_Errors_Detected then
+               Abandon_Instantiation (Act);
+            end if;
          end if;
 
          Next (Assoc);
@@ -9428,17 +10026,16 @@ package body Sem_Ch12 is
 
       procedure Restore_Nested_Formal (Formal : Entity_Id) is
          Ent : Entity_Id;
+
       begin
          if Present (Renamed_Object (Formal))
            and then Denotes_Formal_Package (Renamed_Object (Formal), True)
          then
             return;
 
-         elsif Present (Associated_Formal_Package (Formal))
-          and then Box_Present (Parent (Associated_Formal_Package (Formal)))
-         then
-            Ent := First_Entity (Formal);
+         elsif Present (Associated_Formal_Package (Formal)) then
 
+            Ent := First_Entity (Formal);
             while Present (Ent) loop
                exit when Ekind (Ent) = E_Package
                  and then Renamed_Entity (Ent) = Renamed_Entity (Formal);
@@ -9457,6 +10054,8 @@ package body Sem_Ch12 is
          end if;
       end Restore_Nested_Formal;
 
+   --  Start of processing for Restore_Private_Views
+
    begin
       M := First_Elmt (Exchanged_Views);
       while Present (M) loop
@@ -9473,7 +10072,6 @@ package body Sem_Ch12 is
            or else Ekind (Typ) = E_Record_Type_With_Private
          then
             Dep_Elmt := First_Elmt (Private_Dependents (Typ));
-
             while Present (Dep_Elmt) loop
                Dep_Typ := Node (Dep_Elmt);
 
@@ -9500,7 +10098,6 @@ package body Sem_Ch12 is
       --  types into subtypes of the actuals again.
 
       E := First_Entity (Pack_Id);
-
       while Present (E) loop
          Set_Is_Hidden (E, True);
 
@@ -10152,19 +10749,39 @@ package body Sem_Ch12 is
                  or else Nkind (N2) = N_Real_Literal
                  or else Nkind (N2) = N_String_Literal
                then
-                  --  Operation was constant-folded, perform the same
-                  --  replacement in generic.
+                  if Present (Original_Node (N2))
+                    and then Nkind (Original_Node (N2)) = Nkind (N)
+                  then
 
-                  Rewrite (N, New_Copy (N2));
-                  Set_Analyzed (N, False);
+                     --  Operation was constant-folded. Whenever possible,
+                     --  recover semantic information from unfolded node,
+                     --  for ASIS use.
+
+                     Set_Associated_Node (N, Original_Node (N2));
+
+                     if Nkind (N) = N_Op_Concat then
+                        Set_Is_Component_Left_Opnd (N,
+                          Is_Component_Left_Opnd  (Get_Associated_Node (N)));
+                        Set_Is_Component_Right_Opnd (N,
+                          Is_Component_Right_Opnd (Get_Associated_Node (N)));
+                     end if;
+
+                     Reset_Entity (N);
+
+                  else
+                     --  If original node is already modified, propagate
+                     --  constant-folding to template.
+
+                     Rewrite (N, New_Copy (N2));
+                     Set_Analyzed (N, False);
+                  end if;
 
                elsif Nkind (N2) = N_Identifier
                  and then Ekind (Entity (N2)) = E_Enumeration_Literal
                then
-                  --  Same if call was folded into a literal, but in this
-                  --  case retain the entity to avoid spurious ambiguities
-                  --  if id is overloaded at the point of instantiation or
-                  --  inlining.
+                  --  Same if call was folded into a literal, but in this case
+                  --  retain the entity to avoid spurious ambiguities if id is
+                  --  overloaded at the point of instantiation or inlining.
 
                   Rewrite (N, New_Copy (N2));
                   Set_Analyzed (N, False);
@@ -10181,9 +10798,9 @@ package body Sem_Ch12 is
          elsif Nkind (N) = N_Identifier then
             if Nkind (N) = Nkind (Get_Associated_Node (N)) then
 
-               --  If this is a discriminant reference, always save it.
-               --  It is used in the instance to find the corresponding
-               --  discriminant positionally rather than  by name.
+               --  If this is a discriminant reference, always save it. It is
+               --  used in the instance to find the corresponding discriminant
+               --  positionally rather than by name.
 
                Set_Original_Discriminant
                  (N, Original_Discriminant (Get_Associated_Node (N)));
@@ -10195,8 +10812,8 @@ package body Sem_Ch12 is
                if Nkind (N2) = N_Function_Call then
                   E := Entity (Name (N2));
 
-                  --  Name resolves to a call to parameterless function.
-                  --  If original entity is global, mark node as resolved.
+                  --  Name resolves to a call to parameterless function. If
+                  --  original entity is global, mark node as resolved.
 
                   if Present (E)
                     and then Is_Global (E)
@@ -10208,16 +10825,25 @@ package body Sem_Ch12 is
                   end if;
 
                elsif
-                 Nkind (N2) = N_Integer_Literal or else
-                 Nkind (N2) = N_Real_Literal    or else
-                 Nkind (N2) = N_String_Literal
+                 (Nkind (N2) = N_Integer_Literal
+                    or else
+                  Nkind (N2) = N_Real_Literal)
+                 and then Is_Entity_Name (Original_Node (N2))
                then
                   --  Name resolves to named number that is constant-folded,
-                  --  or to string literal from concatenation.
-                  --  Perform the same replacement in generic.
+                  --  We must preserve the original name for ASIS use, and
+                  --  undo the constant-folding, which will be repeated in
+                  --  each instance.
+
+                  Set_Associated_Node (N, Original_Node (N2));
+                  Reset_Entity (N);
+
+               elsif Nkind (N2) = N_String_Literal then
+
+                  --  Name resolves to string literal. Perform the same
+                  --  replacement in generic.
 
                   Rewrite (N, New_Copy (N2));
-                  Set_Analyzed (N, False);
 
                elsif Nkind (N2) = N_Explicit_Dereference then
 
@@ -10474,9 +11100,14 @@ package body Sem_Ch12 is
 
    begin
       --  T may be private but its base type may have been exchanged through
-      --  some other occurrence, in which case there is nothing to switch.
+      --  some other occurrence, in which case there is nothing to switch
+      --  besides T itself. Note that a private dependent subtype of a private
+      --  type might not have been switched even if the base type has been,
+      --  because of the last branch of Check_Private_View (see comment there).
 
       if not Is_Private_Type (BT) then
+         Prepend_Elmt (Full_View (T), Exchanged_Views);
+         Exchange_Declarations (T);
          return;
       end if;
 

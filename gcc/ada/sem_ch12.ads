@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -125,5 +125,19 @@ package Sem_Ch12 is
 
    procedure Initialize;
    --  Initializes internal data structures
+
+   procedure Check_Private_View (N : Node_Id);
+   --  Check whether the type of a generic entity has a different view between
+   --  the point of generic analysis and the point of instantiation. If the
+   --  view has changed, then at the point of instantiation we restore the
+   --  correct view to perform semantic analysis of the instance, and reset
+   --  the current view after instantiation. The processing is driven by the
+   --  current private status of the type of the node, and Has_Private_View,
+   --  a flag that is set at the point of generic compilation. If view and
+   --  flag are inconsistent then the type is updated appropriately.
+   --
+   --  This subprogram is used in Check_Generic_Actuals and Copy_Generic_Node,
+   --  and is exported here for the purpose of front-end inlining (see Exp_Ch6.
+   --  Expand_Inlined_Call.Process_Formals).
 
 end Sem_Ch12;
