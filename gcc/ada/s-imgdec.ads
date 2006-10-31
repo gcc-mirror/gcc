@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,8 +39,7 @@ package System.Img_Dec is
 
    function Image_Decimal
      (V     : Integer;
-      Scale : Integer)
-      return  String;
+      Scale : Integer) return String;
    --  Compute 'Image of V, the integer value (in units of delta) of a decimal
    --  type whose Scale is as given and return the result. THe image is given
    --  by the rules in RM 3.5(34) for fixed-point type image functions.
