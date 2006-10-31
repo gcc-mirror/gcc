@@ -1,3 +1,10 @@
+2006-11-01  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/29537
+	* gfortran.dg/blockdata_1.f90: Add warning about blank common in block
+	data.
+	* gfortran.dg/blockdata_2.f90: New testcase.
+
 2006-10-31  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/29627

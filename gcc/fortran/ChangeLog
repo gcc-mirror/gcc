@@ -1,3 +1,13 @@
+2006-11-01  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/29537
+	* trans-common.c (gfc_trans_common): If the blank common is
+	in a procedure or program without a name then proc_name is null, so
+	use the locus of the common.
+	(gfc_sym_mangled_common_id): Fix whitespace.
+	* match.c (gfc_match_common): Emit warning about blank common in
+	block data.
+
 2006-10-31  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/29067
