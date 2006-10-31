@@ -477,7 +477,6 @@ package body Scng is
          UI_Int_Value := Uint_0;
          Scale := 0;
          Scan_Integer;
-         Scale := 0;
          Point_Scanned := False;
          UI_Num_Value := UI_Int_Value;
 
@@ -1741,12 +1740,59 @@ package body Scng is
          --  Digits starting a numeric literal
 
          when '0' .. '9' =>
+
+            --  First a bit of a scan ahead to see if we have a case of an
+            --  identifier starting with a digit (remembering exponent case).
+
+            declare
+               C : constant Character := Source (Scan_Ptr + 1);
+
+            begin
+               --  OK literal if digit followed by digit or underscore
+
+               if C in '0' .. '9' or else C = '_' then
+                  null;
+
+               --  OK literal if digit not followed by identifier char
+
+               elsif not Identifier_Char (C) then
+                  null;
+
+               --  OK literal if digit followed by e/E followed by digit/sign.
+               --  We also allow underscore after the E, which is an error, but
+               --  better handled by Nlit than deciding this is an identifier.
+
+               elsif (C = 'e' or else C = 'E')
+                 and then (Source (Scan_Ptr + 2) in '0' .. '9'
+                             or else Source (Scan_Ptr + 2) = '+'
+                             or else Source (Scan_Ptr + 2) = '-'
+                             or else Source (Scan_Ptr + 2) = '_')
+               then
+                  null;
+
+               --  Here we have what really looks like an identifier that
+               --  starts with a digit, so give error msg.
+
+               else
+                  Error_Msg_S ("identifier may not start with digit");
+                  Name_Len := 1;
+                  Underline_Found := False;
+                  Name_Buffer (1) := Source (Scan_Ptr);
+                  Accumulate_Checksum (Name_Buffer (1));
+                  Scan_Ptr := Scan_Ptr + 1;
+                  goto Scan_Identifier;
+               end if;
+            end;
+
+            --  Here we have an OK integer literal
+
             Nlit;
 
             if Identifier_Char (Source (Scan_Ptr)) then
                Error_Msg_S
                  ("delimiter required between literal and identifier");
             end if;
+
             Post_Scan;
             return;
 
