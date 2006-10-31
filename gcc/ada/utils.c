@@ -42,6 +42,7 @@
 #include "tree-inline.h"
 #include "tree-gimple.h"
 #include "tree-dump.h"
+#include "pointer-set.h"
 
 #include "ada.h"
 #include "types.h"
@@ -74,11 +75,6 @@ tree gnat_std_decls[(int) ADT_LAST];
 /* Functions to call for each of the possible raise reasons.  */
 tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 
-/* List of functions called automatically at the beginning and
-   end of execution, on targets without .ctors/.dtors sections.  */
-tree static_ctors;
-tree static_dtors;
-
 /* Forward declarations for handlers of attributes.  */
 static tree handle_const_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
@@ -98,6 +94,27 @@ const struct attribute_spec gnat_internal_attribute_table[] =
    `save_gnu_tree', `get_gnu_tree' and `present_gnu_tree'. See documentation
    of `save_gnu_tree' for more info.  */
 static GTY((length ("max_gnat_nodes"))) tree *associate_gnat_to_gnu;
+
+#define GET_GNU_TREE(GNAT_ENTITY)	\
+  associate_gnat_to_gnu[(GNAT_ENTITY) - First_Node_Id]
+
+#define SET_GNU_TREE(GNAT_ENTITY,VAL)	\
+  associate_gnat_to_gnu[(GNAT_ENTITY) - First_Node_Id] = (VAL)
+
+#define PRESENT_GNU_TREE(GNAT_ENTITY)	\
+  (associate_gnat_to_gnu[(GNAT_ENTITY) - First_Node_Id] != NULL_TREE)
+
+/* Associates a GNAT entity to a GCC tree node used as a dummy, if any.  */
+static GTY((length ("max_gnat_nodes"))) tree *dummy_node_table;
+
+#define GET_DUMMY_NODE(GNAT_ENTITY)	\
+  dummy_node_table[(GNAT_ENTITY) - First_Node_Id]
+
+#define SET_DUMMY_NODE(GNAT_ENTITY,VAL)	\
+  dummy_node_table[(GNAT_ENTITY) - First_Node_Id] = (VAL)
+
+#define PRESENT_DUMMY_NODE(GNAT_ENTITY)	\
+  (dummy_node_table[(GNAT_ENTITY) - First_Node_Id] != NULL_TREE)
 
 /* This variable keeps a table for types for each precision so that we only
    allocate each of them once. Signed and unsigned types are kept separate.
@@ -129,6 +146,17 @@ static GTY(()) struct gnat_binding_level *current_binding_level;
 
 /* A chain of gnat_binding_level structures awaiting reuse.  */
 static GTY((deletable)) struct gnat_binding_level *free_binding_level;
+
+/* An array of global declarations.  */
+static GTY(()) VEC (tree,gc) *global_decls;
+
+/* An array of global renaming pointers.  */
+static GTY(()) VEC (tree,gc) *global_renaming_pointers;
+
+/* Arrays of functions called automatically at the beginning and
+   end of execution, on targets without .ctors/.dtors sections.  */
+static GTY(()) VEC (tree,gc) *static_ctors;
+static GTY(()) VEC (tree,gc) *static_dtors;
 
 /* A chain of unused BLOCK nodes. */
 static GTY((deletable)) tree free_block_chain;
@@ -172,10 +200,11 @@ save_gnu_tree (Entity_Id gnat_entity, tree gnu_decl, bool no_check)
      to something which is a decl.  Raise gigi 401 if not.  Usually, this
      means GNAT_ENTITY is defined twice, but occasionally is due to some
      Gigi problem.  */
-  gcc_assert (!gnu_decl
-	      || (!associate_gnat_to_gnu[gnat_entity - First_Node_Id]
-		  && (no_check || DECL_P (gnu_decl))));
-  associate_gnat_to_gnu[gnat_entity - First_Node_Id] = gnu_decl;
+  gcc_assert (!(gnu_decl
+		&& (PRESENT_GNU_TREE (gnat_entity)
+		    || (!no_check && !DECL_P (gnu_decl)))));
+
+  SET_GNU_TREE (gnat_entity, gnu_decl);
 }
 
 /* GNAT_ENTITY is a GNAT tree node for a defining identifier.
@@ -188,8 +217,8 @@ save_gnu_tree (Entity_Id gnat_entity, tree gnu_decl, bool no_check)
 tree
 get_gnu_tree (Entity_Id gnat_entity)
 {
-  gcc_assert (associate_gnat_to_gnu[gnat_entity - First_Node_Id]);
-  return associate_gnat_to_gnu[gnat_entity - First_Node_Id];
+  gcc_assert (PRESENT_GNU_TREE (gnat_entity));
+  return GET_GNU_TREE (gnat_entity);
 }
 
 /* Return nonzero if a GCC tree has been associated with GNAT_ENTITY.  */
@@ -197,9 +226,66 @@ get_gnu_tree (Entity_Id gnat_entity)
 bool
 present_gnu_tree (Entity_Id gnat_entity)
 {
-  return (associate_gnat_to_gnu[gnat_entity - First_Node_Id]) != 0;
+  return PRESENT_GNU_TREE (gnat_entity);
+}
+
+/* Initialize the association of GNAT nodes to GCC trees as dummies.  */
+
+void
+init_dummy_type (void)
+{
+  dummy_node_table
+    = (tree *) ggc_alloc_cleared (max_gnat_nodes * sizeof (tree));
 }
 
+/* Make a dummy type corresponding to GNAT_TYPE.  */
+
+tree
+make_dummy_type (Entity_Id gnat_type)
+{
+  Entity_Id gnat_underlying;
+  tree gnu_type;
+  enum tree_code code;
+
+  /* Find a full type for GNAT_TYPE, taking into account any class wide
+     types.  */
+  if (Is_Class_Wide_Type (gnat_type) && Present (Equivalent_Type (gnat_type)))
+    gnat_type = Equivalent_Type (gnat_type);
+  else if (Ekind (gnat_type) == E_Class_Wide_Type)
+    gnat_type = Root_Type (gnat_type);
+
+  /* Find a full view for GNAT_TYPE, looking through any incomplete or
+     private types.  */
+  if (IN (Ekind (gnat_type), Incomplete_Kind)
+      && From_With_Type (gnat_type))
+    gnat_underlying = Non_Limited_View (gnat_type);
+  else if (IN (Ekind (gnat_type), Incomplete_Or_Private_Kind)
+	   && Present (Full_View (gnat_type)))
+    gnat_underlying = Full_View (gnat_type);
+  else
+    gnat_underlying = gnat_type;
+
+  /* If it there already a dummy type, use that one.  Else make one.  */
+  if (PRESENT_DUMMY_NODE (gnat_underlying))
+    return GET_DUMMY_NODE (gnat_underlying);
+
+  /* If this is a record, make this a RECORD_TYPE or UNION_TYPE; else make
+     it an ENUMERAL_TYPE.  */
+  if (Is_Record_Type (gnat_underlying))
+    code = tree_code_for_record_type (gnat_underlying);
+  else
+    code = ENUMERAL_TYPE;
+
+  gnu_type = make_node (code);
+  TYPE_NAME (gnu_type) = get_entity_name (gnat_type);
+  TYPE_DUMMY_P (gnu_type) = 1;
+  if (AGGREGATE_TYPE_P (gnu_type))
+    TYPE_STUB_DECL (gnu_type) = build_decl (TYPE_DECL, NULL_TREE, gnu_type);
+
+  SET_DUMMY_NODE (gnat_underlying, gnu_type);
+
+  return gnu_type;
+}
 
 /* Return nonzero if we are currently in the global binding level.  */
 
@@ -354,16 +440,20 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   add_decl_expr (decl, gnat_node);
 
   /* Put the declaration on the list.  The list of declarations is in reverse
-     order. The list will be reversed later.  We don't do this for global
-     variables.  Also, don't put TYPE_DECLs for UNCONSTRAINED_ARRAY_TYPE into
-     the list.  They will cause trouble with the debugger and aren't needed
+     order. The list will be reversed later.  Put global variables in the
+     globals list. Don't put TYPE_DECLs for UNCONSTRAINED_ARRAY_TYPE into the
+     list, as they will cause trouble with the debugger and aren't needed
      anyway.  */
-  if (!global_bindings_p ()
-      && (TREE_CODE (decl) != TYPE_DECL
-	  || TREE_CODE (TREE_TYPE (decl)) != UNCONSTRAINED_ARRAY_TYPE))
+  if (TREE_CODE (decl) != TYPE_DECL
+      || TREE_CODE (TREE_TYPE (decl)) != UNCONSTRAINED_ARRAY_TYPE)
     {
-      TREE_CHAIN (decl) = BLOCK_VARS (current_binding_level->block);
-      BLOCK_VARS (current_binding_level->block) = decl;
+      if (global_bindings_p ())
+	VEC_safe_push (tree, gc, global_decls, decl);
+      else
+	{
+	  TREE_CHAIN (decl) = BLOCK_VARS (current_binding_level->block);
+	  BLOCK_VARS (current_binding_level->block) = decl;
+	}
     }
 
   /* For the declaration of a type, set its name if it either is not already
@@ -494,6 +584,7 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
 								     endlink)),
 				     NULL_TREE, false, true, true, NULL,
 				     Empty);
+  DECL_IS_MALLOC (malloc_decl) = 1;
 
   /* free is a function declaration tree for a function to free memory.  */
   free_decl
@@ -970,6 +1061,12 @@ write_record_type_debug_info (tree record_type)
 	      var = true;
 	    }
 
+	  /* The heuristics above might get the alignment wrong.
+	     Adjust the obvious case where align is smaller than the
+	     alignments necessary for objects of field_type. */
+	  if (align < TYPE_ALIGN(field_type))
+	    align = TYPE_ALIGN(field_type);
+
 	  /* Make a new field name, if necessary.  */
 	  if (var || align != 0)
 	    {
@@ -1229,6 +1326,9 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
 
   DECL_ARTIFICIAL (type_decl) = artificial_p;
 
+  if (!TYPE_IS_DUMMY_P (type))
+    gnat_pushdecl (type_decl, gnat_node);
+
   process_attributes (type_decl, attr_list);
 
   /* Pass type declaration information to the debugger unless this is an
@@ -1245,18 +1345,18 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
 		&& TYPE_IS_DUMMY_P (TREE_TYPE (type))))
     rest_of_decl_compilation (type_decl, global_bindings_p (), 0);
 
-  if (!TYPE_IS_DUMMY_P (type))
-    gnat_pushdecl (type_decl, gnat_node);
-
   return type_decl;
 }
 
-/* Returns a GCC VAR_DECL node. VAR_NAME gives the name of the variable.
-   ASM_NAME is its assembler name (if provided).  TYPE is its data type
-   (a GCC ..._TYPE node).  VAR_INIT is the GCC tree for an optional initial
-   expression; NULL_TREE if none.
+/* Helper for create_var_decl and create_true_var_decl. Returns a GCC VAR_DECL
+   or CONST_DECL node.
 
-   CONST_FLAG is true if this variable is constant.
+   VAR_NAME gives the name of the variable.  ASM_NAME is its assembler name
+   (if provided).  TYPE is its data type (a GCC ..._TYPE node).  VAR_INIT is
+   the GCC tree for an optional initial expression; NULL_TREE if none.
+
+   CONST_FLAG is true if this variable is constant, in which case we might
+   return a CONST_DECL node unless CONST_DECL_ALLOWED_FLAG is false.
 
    PUBLIC_FLAG is true if this definition is to be made visible outside of
    the current compilation unit. This flag should be set when processing the
@@ -1269,10 +1369,11 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
 
    GNAT_NODE is used for the position of the decl.  */
 
-tree
-create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
-                 bool const_flag, bool public_flag, bool extern_flag,
-                 bool static_flag, struct attrib *attr_list, Node_Id gnat_node)
+static tree
+create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
+		   bool const_flag, bool const_decl_allowed_flag,
+		   bool public_flag, bool extern_flag, bool static_flag,
+		   struct attrib *attr_list, Node_Id gnat_node)
 {
   bool init_const
     = (!var_init
@@ -1283,7 +1384,7 @@ create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
 						   TREE_TYPE (var_init))
 	      : TREE_CONSTANT (var_init))));
   tree var_decl
-    = build_decl ((const_flag && init_const
+    = build_decl ((const_flag && const_decl_allowed_flag && init_const
 		   /* Only make a CONST_DECL for sufficiently-small objects.
 		      We consider complex double "sufficiently-small"  */
 		   && TYPE_SIZE (type) != 0
@@ -1350,6 +1451,38 @@ create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
     expand_decl (var_decl);
 
   return var_decl;
+}
+
+/* Wrapper around create_var_decl_1 for cases where we don't care whether
+   a VAR or a CONST decl node is created.  */
+
+tree
+create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
+		 bool const_flag, bool public_flag, bool extern_flag,
+		 bool static_flag, struct attrib *attr_list,
+		 Node_Id gnat_node)
+{
+  return create_var_decl_1 (var_name, asm_name, type, var_init,
+			    const_flag, true,
+			    public_flag, extern_flag, static_flag,
+			    attr_list, gnat_node);
+}
+
+/* Wrapper around create_var_decl_1 for cases where a VAR_DECL node is
+   required.  The primary intent is for DECL_CONST_CORRESPONDING_VARs, which
+   must be VAR_DECLs and on which we want TREE_READONLY set to have them
+   possibly assigned to a readonly data section.  */
+
+tree
+create_true_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
+		      bool const_flag, bool public_flag, bool extern_flag,
+		      bool static_flag, struct attrib *attr_list,
+		      Node_Id gnat_node)
+{
+  return create_var_decl_1 (var_name, asm_name, type, var_init,
+			    const_flag, false,
+			    public_flag, extern_flag, static_flag,
+			    attr_list, gnat_node);
 }
 
 /* Returns a FIELD_DECL node. FIELD_NAME the field name, FIELD_TYPE is its
@@ -1464,11 +1597,6 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
   /* If the field type is passed by reference, we will have pointers to the
      field, so it is addressable. */
   if (must_pass_by_ref (field_type) || default_pass_by_ref (field_type))
-    addressable = 1;
-
-  /* ??? For now, we say that any field of aggregate type is addressable
-     because the front end may take 'Reference of it.  */
-  if (AGGREGATE_TYPE_P (field_type))
     addressable = 1;
 
   /* Mark the decl as nonaddressable if it is indicated so semantically,
@@ -1589,6 +1717,29 @@ process_attributes (tree decl, struct attrib *attr_list)
       }
 }
 
+/* Record a global renaming pointer.  */
+
+void
+record_global_renaming_pointer (tree decl)
+{
+  gcc_assert (DECL_RENAMED_OBJECT (decl));
+  VEC_safe_push (tree, gc, global_renaming_pointers, decl);
+}
+
+/* Invalidate the global renaming pointers.   */
+
+void
+invalidate_global_renaming_pointers (void)
+{
+  unsigned int i;
+  tree iter;
+
+  for (i = 0; VEC_iterate(tree, global_renaming_pointers, i, iter); i++)
+    SET_DECL_RENAMED_OBJECT (iter, NULL_TREE);
+
+  VEC_free (tree, gc, global_renaming_pointers);
+}
+
 /* Return true if VALUE is a known to be a multiple of FACTOR, which must be
    a power of 2. */
 
@@ -1700,6 +1851,19 @@ create_subprog_decl (tree subprog_name, tree asm_name,
   DECL_ARTIFICIAL (DECL_RESULT (subprog_decl)) = 1;
   DECL_IGNORED_P (DECL_RESULT (subprog_decl)) = 1;
 
+   /* TREE_ADDRESSABLE is set on the result type to request the use of the
+      target by-reference return mechanism.  This is not supported all the
+      way down to RTL expansion with GCC 4, which ICEs on temporary creation
+      attempts with such a type and expects DECL_BY_REFERENCE to be set on
+      the RESULT_DECL instead - see gnat_genericize for more details.  */
+   if (TREE_ADDRESSABLE (TREE_TYPE (DECL_RESULT (subprog_decl))))
+     {
+       tree result_decl = DECL_RESULT (subprog_decl);
+
+       TREE_ADDRESSABLE (TREE_TYPE (result_decl)) = 0;
+       DECL_BY_REFERENCE (result_decl) = 1;
+     }
+
   if (inline_flag)
     DECL_DECLARED_INLINE_P (subprog_decl) = 1;
 
@@ -1744,6 +1908,163 @@ begin_subprog_body (tree subprog_decl)
   get_pending_sizes ();
 }
 
+
+/* Helper for the genericization callback.  Return a dereference of VAL
+   if it is of a reference type.  */
+
+static tree
+convert_from_reference (tree val)
+{
+  tree value_type, ref;
+
+  if (TREE_CODE (TREE_TYPE (val)) != REFERENCE_TYPE)
+    return val;
+
+  value_type =  TREE_TYPE (TREE_TYPE (val));
+  ref = build1 (INDIRECT_REF, value_type, val);
+
+  /* See if what we reference is CONST or VOLATILE, which requires
+     looking into array types to get to the component type.  */
+
+  while (TREE_CODE (value_type) == ARRAY_TYPE)
+    value_type = TREE_TYPE (value_type);
+
+  TREE_READONLY (ref)
+    = (TYPE_QUALS (value_type) & TYPE_QUAL_CONST);
+  TREE_THIS_VOLATILE (ref)
+    = (TYPE_QUALS (value_type) & TYPE_QUAL_VOLATILE);
+
+  TREE_SIDE_EFFECTS (ref)
+    = (TREE_THIS_VOLATILE (ref) || TREE_SIDE_EFFECTS (val));
+
+  return ref;
+}
+
+/* Helper for the genericization callback.  Returns true if T denotes
+   a RESULT_DECL with DECL_BY_REFERENCE set.  */
+
+static inline bool
+is_byref_result (tree t)
+{
+  return (TREE_CODE (t) == RESULT_DECL && DECL_BY_REFERENCE (t));
+}
+
+
+/* Tree walking callback for gnat_genericize. Currently ...
+
+   o Adjust references to the function's DECL_RESULT if it is marked
+     DECL_BY_REFERENCE and so has had its type turned into a reference
+     type at the end of the function compilation.  */
+
+static tree
+gnat_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
+{
+  /* This implementation is modeled after what the C++ front-end is
+     doing, basis of the downstream passes behavior.  */
+
+  tree stmt = *stmt_p;
+  struct pointer_set_t *p_set = (struct pointer_set_t*) data;
+
+  /* If we have a direct mention of the result decl, dereference.  */
+  if (is_byref_result (stmt))
+    {
+      *stmt_p = convert_from_reference (stmt);
+      *walk_subtrees = 0;
+      return NULL;
+    }
+
+  /* Otherwise, no need to walk the the same tree twice.  */
+  if (pointer_set_contains (p_set, stmt))
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  /* If we are taking the address of what now is a reference, just get the
+     reference value.  */
+  if (TREE_CODE (stmt) == ADDR_EXPR
+      && is_byref_result (TREE_OPERAND (stmt, 0)))
+    {
+      *stmt_p = convert (TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
+      *walk_subtrees = 0;
+    }
+
+  /* Don't dereference an by-reference RESULT_DECL inside a RETURN_EXPR.  */
+  else if (TREE_CODE (stmt) == RETURN_EXPR
+           && TREE_OPERAND (stmt, 0)
+	   && is_byref_result (TREE_OPERAND (stmt, 0)))
+    *walk_subtrees = 0;
+
+  /* Don't look inside trees that cannot embed references of interest.  */
+  else if (IS_TYPE_OR_DECL_P (stmt))
+    *walk_subtrees = 0;
+
+  pointer_set_insert (p_set, *stmt_p);
+
+  return NULL;
+}
+
+/* Perform lowering of Ada trees to GENERIC. In particular:
+
+   o Turn a DECL_BY_REFERENCE RESULT_DECL into a real by-reference decl
+     and adjust all the references to this decl accordingly.  */
+
+static void
+gnat_genericize (tree fndecl)
+{
+  /* Prior to GCC 4, an explicit By_Reference result mechanism for a function
+     was handled by simply setting TREE_ADDRESSABLE on the result type.
+     Everything required to actually pass by invisible ref using the target
+     mechanism (e.g. extra parameter) was handled at RTL expansion time.
+
+     This doesn't work with GCC 4 any more for several reasons.  First, the
+     gimplification process might need the creation of temporaries of this
+     type, and the gimplifier ICEs on such attempts.  Second, the middle-end
+     now relies on a different attribute for such cases (DECL_BY_REFERENCE on
+     RESULT/PARM_DECLs), and expects the user invisible by-reference-ness to
+     be explicitely accounted for by the front-end in the function body.
+
+     We achieve the complete transformation in two steps:
+
+     1/ create_subprog_decl performs early attribute tweaks: it clears
+        TREE_ADDRESSABLE from the result type and sets DECL_BY_REFERENCE on
+        the result decl.  The former ensures that the bit isn't set in the GCC
+        tree saved for the function, so prevents ICEs on temporary creation.
+        The latter we use here to trigger the rest of the processing.
+
+     2/ This function performs the type transformation on the result decl
+        and adjusts all the references to this decl from the function body
+	accordingly.
+
+     Clearing TREE_ADDRESSABLE from the type differs from the C++ front-end
+     strategy, which escapes the gimplifier temporary creation issues by
+     creating it's own temporaries using TARGET_EXPR nodes.  Our way relies
+     on simple specific support code in aggregate_value_p to look at the
+     target function result decl explicitely.  */
+
+  struct pointer_set_t *p_set;
+  tree decl_result = DECL_RESULT (fndecl);
+
+  if (!DECL_BY_REFERENCE (decl_result))
+    return;
+
+  /* Make the DECL_RESULT explicitely by-reference and adjust all the
+     occurrences in the function body using the common tree-walking facility.
+     We want to see every occurrence of the result decl to adjust the
+     referencing tree, so need to use our own pointer set to control which
+     trees should be visited again or not.  */
+
+  p_set = pointer_set_create ();
+
+  TREE_TYPE (decl_result) = build_reference_type (TREE_TYPE (decl_result));
+  TREE_ADDRESSABLE (decl_result) = 0;
+  relayout_decl (decl_result);
+
+  walk_tree (&DECL_SAVED_TREE (fndecl), gnat_genericize_r, p_set, NULL);
+
+  pointer_set_destroy (p_set);
+}
+
 /* Finish the definition of the current subprogram and compile it all the way
    to assembler language output.  BODY is the tree corresponding to
    the subprogram.  */
@@ -1784,10 +2105,13 @@ end_subprog_body (tree body)
   /* If we don't have .ctors/.dtors sections, and this is a static
      constructor or destructor, it must be recorded now.  */
   if (DECL_STATIC_CONSTRUCTOR (fndecl) && !targetm.have_ctors_dtors)
-    static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
+    VEC_safe_push (tree, gc, static_ctors, fndecl);
 
   if (DECL_STATIC_DESTRUCTOR (fndecl) && !targetm.have_ctors_dtors)
-    static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
+    VEC_safe_push (tree, gc, static_dtors, fndecl);
+
+  /* Perform the required pre-gimplfication transformations on the tree.  */
+  gnat_genericize (fndecl);
 
   /* We do different things for nested and non-nested functions.
      ??? This should be in cgraph.  */
@@ -3371,13 +3695,85 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 /* Search the chain of currently reachable declarations for a builtin
    FUNCTION_DECL node corresponding to function NAME (an IDENTIFIER_NODE).
    Return the first node found, if any, or NULL_TREE otherwise.  */
-
 tree
 builtin_decl_for (tree name __attribute__ ((unused)))
 {
   /* ??? not clear yet how to implement this function in tree-ssa, so
      return NULL_TREE for now */
   return NULL_TREE;
+}
+
+/* Return the appropriate GCC tree code for the specified GNAT type,
+   the latter being a record type as predicated by Is_Record_Type.  */
+
+enum tree_code
+tree_code_for_record_type (Entity_Id gnat_type)
+{
+  Node_Id component_list
+    = Component_List (Type_Definition
+		      (Declaration_Node
+		       (Implementation_Base_Type (gnat_type))));
+  Node_Id component;
+
+ /* Make this a UNION_TYPE unless it's either not an Unchecked_Union or
+    we have a non-discriminant field outside a variant.  In either case,
+    it's a RECORD_TYPE.  */
+
+  if (!Is_Unchecked_Union (gnat_type))
+    return RECORD_TYPE;
+
+  for (component = First_Non_Pragma (Component_Items (component_list));
+       Present (component);
+       component = Next_Non_Pragma (component))
+    if (Ekind (Defining_Entity (component)) == E_Component)
+      return RECORD_TYPE;
+
+  return UNION_TYPE;
+}
+
+/* Build a global constructor or destructor function.  METHOD_TYPE gives
+   the type of the function and VEC points to the vector of constructor
+   or destructor functions to be invoked.  FIXME: Migrate into cgraph.  */
+
+static void
+build_global_cdtor (int method_type, tree *vec, int len)
+{
+  tree body = NULL_TREE;
+  int i;
+
+  for (i = 0; i < len; i++)
+    {
+      tree fntype = TREE_TYPE (vec[i]);
+      tree fnaddr = build1 (ADDR_EXPR, build_pointer_type (fntype), vec[i]);
+      tree fncall = build3 (CALL_EXPR, TREE_TYPE (fntype), fnaddr, NULL_TREE,
+			    NULL_TREE);
+      append_to_statement_list (fncall, &body);
+    }
+
+  if (body)
+    cgraph_build_static_cdtor (method_type, body, DEFAULT_INIT_PRIORITY);
+}
+
+/* Perform final processing on global variables.  */
+
+void
+gnat_write_global_declarations (void)
+{
+  /* Generate functions to call static constructors and destructors
+     for targets that do not support .ctors/.dtors sections.  These
+     functions have magic names which are detected by collect2.  */
+  build_global_cdtor ('I', VEC_address (tree, static_ctors),
+			   VEC_length (tree, static_ctors));
+  build_global_cdtor ('D', VEC_address (tree, static_dtors),
+			   VEC_length (tree, static_dtors));
+
+  /* Proceed to optimize and emit assembly.
+     FIXME: shouldn't be the front end's responsibility to call this.  */
+  cgraph_optimize ();
+
+  /* Emit debug info for all global declarations.  */
+  emit_debug_global_declarations (VEC_address (tree, global_decls),
+				  VEC_length (tree, global_decls));
 }
 
 #include "gt-ada-utils.h"

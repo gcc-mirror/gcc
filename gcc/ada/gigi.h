@@ -380,9 +380,6 @@ enum standard_datatypes
 extern GTY(()) tree gnat_std_decls[(int) ADT_LAST];
 extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 
-extern GTY(()) tree static_ctors;
-extern GTY(()) tree static_dtors;
-
 #define longest_float_type_node gnat_std_decls[(int) ADT_longest_float_type]
 #define void_type_decl_node gnat_std_decls[(int) ADT_void_type_decl]
 #define except_type_node gnat_std_decls[(int) ADT_except_type]
@@ -447,6 +444,9 @@ extern tree gnat_type_for_size (unsigned precision, int unsignedp);
 /* Return a data type that has machine mode MODE.  UNSIGNEDP selects
    an unsigned type; otherwise a signed type is returned.  */
 extern tree gnat_type_for_mode (enum machine_mode mode, int unsignedp);
+
+/* Emit debug info for all global variable declarations.  */
+extern void gnat_write_global_declarations (void);
 
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */
 extern tree gnat_unsigned_type (tree type_node);
@@ -533,10 +533,11 @@ extern tree create_type_decl (tree type_name, tree type,
                               bool artificial_p, bool debug_info_p,
 			      Node_Id gnat_node);
 
-/* Returns a GCC VAR_DECL node. VAR_NAME gives the name of the variable.
-   ASM_NAME is its assembler name (if provided).  TYPE is
-   its data type (a GCC ..._TYPE node).  VAR_INIT is the GCC tree for an
-   optional initial expression; NULL_TREE if none.
+/* Returns a GCC VAR_DECL or CONST_DECL node.
+
+   VAR_NAME gives the name of the variable.  ASM_NAME is its assembler name
+   (if provided).  TYPE is its data type (a GCC ..._TYPE node).  VAR_INIT is
+   the GCC tree for an optional initial expression; NULL_TREE if none.
 
    CONST_FLAG is true if this variable is constant.
 
@@ -556,8 +557,21 @@ extern tree create_var_decl (tree var_name, tree asm_name, tree type,
                              bool static_flag,
 			     struct attrib *attr_list, Node_Id gnat_node);
 
+/* Similar to create_var_decl, forcing the creation of a VAR_DECL node.  */
+extern tree create_true_var_decl (tree var_name, tree asm_name, tree type,
+				  tree var_init, bool const_flag,
+				  bool public_flag, bool extern_flag,
+				  bool static_flag,
+				  struct attrib *attr_list, Node_Id gnat_node);
+
 /* Given a DECL and ATTR_LIST, apply the listed attributes.  */
 extern void process_attributes (tree decl, struct attrib *attr_list);
+
+/* Record a global renaming pointer.  */
+void record_global_renaming_pointer (tree);
+
+/* Invalidate the global renaming pointers.   */
+void invalidate_global_renaming_pointers (void);
 
 /* Returns a FIELD_DECL node. FIELD_NAME the field name, FIELD_TYPE is its
    type, and RECORD_TYPE is the type of the parent.  PACKED is nonzero if
@@ -655,6 +669,10 @@ extern tree maybe_unconstrained_array (tree exp);
 /* Return an expression that does an unchecked conversion of EXPR to TYPE.
    If NOTRUNC_P is true, truncation operations should be suppressed.  */
 extern tree unchecked_convert (tree type, tree expr, bool notrunc_p);
+
+/* Return the appropriate GCC tree code for the specified GNAT type,
+   the latter being a record type as predicated by Is_Record_Type.  */
+extern enum tree_code tree_code_for_record_type (Entity_Id);
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR or other logical
    operation.
