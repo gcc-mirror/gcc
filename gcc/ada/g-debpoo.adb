@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -555,9 +555,18 @@ package body GNAT.Debug_Pools is
    --------------
 
    function Is_Valid (Storage : System.Address) return Boolean is
+
+      --  We use the following constant declaration, instead of
+      --     Offset : constant Storage_Offset :=
+      --                (Storage - Edata) / Default_Alignment;
+      --  See comments in Set_Valid for details.
+
       Offset : constant Storage_Offset :=
-                 (Storage - Edata) / Default_Alignment;
+                 Storage_Offset ((To_Integer (Storage) - To_Integer (Edata)) /
+                                   Default_Alignment);
+
       Bit : constant Byte := 2 ** Natural (Offset mod System.Storage_Unit);
+
    begin
       return (Storage mod Default_Alignment) = 0
         and then Offset >= 0
