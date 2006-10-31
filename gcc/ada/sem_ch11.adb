@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,7 @@ with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
+with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Uintp;    use Uintp;
@@ -271,13 +272,7 @@ package body Sem_Ch11 is
                         while Scop /= Standard_Standard
                           and then Ekind (Scop) = E_Package
                         loop
-                           --  If the exception is declared in an inner
-                           --  instance, nothing else to check.
-
-                           if Is_Generic_Instance (Scop) then
-                              exit;
-
-                           elsif Nkind (Declaration_Node (Scop)) =
+                           if Nkind (Declaration_Node (Scop)) =
                                            N_Package_Specification
                              and then
                                Nkind (Original_Node (Parent
@@ -290,6 +285,12 @@ package body Sem_Ch11 is
                               Error_Msg_N
                                 ("\and therefore cannot appear in " &
                                  "handler ('R'M 11.2(8))", Id);
+                              exit;
+
+                           --  If the exception is declared in an inner
+                           --  instance, nothing else to check.
+
+                           elsif Is_Generic_Instance (Scop) then
                               exit;
                            end if;
 
@@ -347,11 +348,23 @@ package body Sem_Ch11 is
          Kill_All_Checks;
       end if;
 
+      --  Analyze statements in sequence
+
       Analyze_Statements (Statements (N));
+
+      --  If the current scope is a subprogram, and there are no explicit
+      --  exception handlers, then this is the right place to check for
+      --  hanging useless assignments from the statement sequence of the
+      --  subprogram body.
+
+      if Is_Subprogram (Current_Scope) then
+         Warn_On_Useless_Assignments (Current_Scope);
+      end if;
+
+      --  Deal with handlers or AT END proc
 
       if Present (Handlers) then
          Analyze_Exception_Handlers (Handlers);
-
       elsif Present (At_End_Proc (N)) then
          Analyze (At_End_Proc (N));
       end if;
