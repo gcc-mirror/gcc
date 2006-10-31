@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,7 @@ package Checks is
 
    function Access_Checks_Suppressed        (E : Entity_Id) return Boolean;
    function Accessibility_Checks_Suppressed (E : Entity_Id) return Boolean;
+   function Alignment_Checks_Suppressed     (E : Entity_Id) return Boolean;
    function Discriminant_Checks_Suppressed  (E : Entity_Id) return Boolean;
    function Division_Checks_Suppressed      (E : Entity_Id) return Boolean;
    function Elaboration_Checks_Suppressed   (E : Entity_Id) return Boolean;
@@ -56,13 +57,13 @@ package Checks is
    function Range_Checks_Suppressed         (E : Entity_Id) return Boolean;
    function Storage_Checks_Suppressed       (E : Entity_Id) return Boolean;
    function Tag_Checks_Suppressed           (E : Entity_Id) return Boolean;
-   --  These functions check to see if the named check is suppressed,
-   --  either by an active scope suppress setting, or because the check
-   --  has been specifically suppressed for the given entity. If no entity
-   --  is relevant for the current check, then Empty is used as an argument.
-   --  Note: the reason we insist on specifying Empty is to force the
-   --  caller to think about whether there is any relevant entity that
-   --  should be checked.
+   function Validity_Checks_Suppressed      (E : Entity_Id) return Boolean;
+   --  These functions check to see if the named check is suppressed, either
+   --  by an active scope suppress setting, or because the check has been
+   --  specifically suppressed for the given entity. If no entity is relevant
+   --  for the current check, then Empty is used as an argument. Note: the
+   --  reason we insist on specifying Empty is to force the caller to think
+   --  about whether there is any relevant entity that should be checked.
 
    --  General note on following checks. These checks are always active if
    --  Expander_Active and not Inside_A_Generic. They are inactive and have
@@ -80,12 +81,14 @@ package Checks is
    --  the object denoted by the access parameter is not deeper than the
    --  level of the type Typ. Program_Error is raised if the check fails.
 
-   procedure Apply_Alignment_Check (E : Entity_Id; N : Node_Id);
-   --  E is the entity for an object. If there is an address clause for
-   --  this entity, and checks are enabled, then this procedure generates
-   --  a check that the specified address has an alignment consistent with
-   --  the alignment of the object, raising PE if this is not the case. The
-   --  resulting check (if one is generated) is inserted before node N.
+   procedure Apply_Address_Clause_Check (E : Entity_Id; N : Node_Id);
+   --  E is the entity for an object which has an address clause. If checks
+   --  are enabled, then this procedure generates a check that the specified
+   --  address has an alignment consistent with the alignment of the object,
+   --  raising PE if this is not the case. The resulting check (if one is
+   --  generated) is inserted before node N. check is also made for the case of
+   --  a clear overlay situation that the size of the overlaying object is not
+   --  larger than the overlaid object.
 
    procedure Apply_Array_Size_Check (N : Node_Id; Typ : Entity_Id);
    --  N is the node for an object declaration that declares an object of
@@ -624,6 +627,10 @@ package Checks is
    --  Remove all checks from Expr except those that are only executed
    --  conditionally (on the right side of And Then/Or Else. This call
    --  removes only embedded checks (Do_Range_Check, Do_Overflow_Check).
+
+   procedure Validity_Check_Range (N : Node_Id);
+   --  If N is an N_Range node, then Ensure_Valid is called on its bounds,
+   --  if validity checking of operands is enabled.
 
 private
 
