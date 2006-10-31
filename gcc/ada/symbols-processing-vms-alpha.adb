@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,6 +95,8 @@ package body Processing is
      (Object_File : String;
       Success     : out Boolean)
    is
+      OK : Boolean := True;
+
    begin
       --  Open the object file with Byte_IO. Return with Success = False if
       --  this fails.
@@ -175,29 +177,46 @@ package body Processing is
                      end if;
                   end loop;
 
-                  --  Create the new Symbol
+                  --  Check if it is a symbol from a generic body
 
-                  declare
-                     S_Data : Symbol_Data;
-                  begin
-                     S_Data.Name := new String'(Symbol (1 .. LSymb));
+                  OK := True;
 
-                     --  The symbol kind (Data or Procedure) depends on the
-                     --  V_NORM flag.
-
-                     if (Flags and V_NORM_Mask) = 0 then
-                        S_Data.Kind := Data;
-
-                     else
-                        S_Data.Kind := Proc;
+                  for J in 1 .. LSymb - 2 loop
+                     if Symbol (J) = 'G' and then Symbol (J + 1) = 'P'
+                       and then Symbol (J + 2) in '0' .. '9'
+                     then
+                        OK := False;
+                        exit;
                      end if;
+                  end loop;
 
-                     --  Put the new symbol in the table
+                  if OK then
 
-                     Symbol_Table.Increment_Last (Complete_Symbols);
-                     Complete_Symbols.Table
-                       (Symbol_Table.Last (Complete_Symbols)) := S_Data;
-                  end;
+                     --  Create the new Symbol
+
+                     declare
+                        S_Data : Symbol_Data;
+
+                     begin
+                        S_Data.Name := new String'(Symbol (1 .. LSymb));
+
+                        --  The symbol kind (Data or Procedure) depends on the
+                        --  V_NORM flag.
+
+                        if (Flags and V_NORM_Mask) = 0 then
+                           S_Data.Kind := Data;
+
+                        else
+                           S_Data.Kind := Proc;
+                        end if;
+
+                        --  Put the new symbol in the table
+
+                        Symbol_Table.Increment_Last (Complete_Symbols);
+                        Complete_Symbols.Table
+                          (Symbol_Table.Last (Complete_Symbols)) := S_Data;
+                     end;
+                  end if;
 
                else
                   --  As it is not a symbol subsection, skip to the next
