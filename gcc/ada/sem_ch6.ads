@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@ with Types; use Types;
 package Sem_Ch6 is
 
    procedure Analyze_Abstract_Subprogram_Declaration (N : Node_Id);
+   procedure Analyze_Extended_Return_Statement       (N : Node_Id);
    procedure Analyze_Function_Call                   (N : Node_Id);
    procedure Analyze_Operator_Symbol                 (N : Node_Id);
    procedure Analyze_Parameter_Association           (N : Node_Id);
@@ -47,6 +48,11 @@ package Sem_Ch6 is
    --  then an error message is issued (by removing the last character of Msg).
    --  If Subp is not Always_Inlined, then a warning is issued if the flag
    --  Ineffective_Inline_Warnings is set, and if not, the call has no effect.
+
+   procedure Check_Conventions (Typ : Entity_Id);
+   --  Ada 2005 (AI-430): Check that the conventions of all inherited and
+   --  overridden dispatching operations of type Typ are consistent with
+   --  their respective counterparts.
 
    procedure Check_Delayed_Subprogram (Designator : Entity_Id);
    --  Designator can be a E_Subrpgram_Type, E_Procedure or E_Function. If a
