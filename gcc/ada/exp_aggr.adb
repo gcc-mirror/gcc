@@ -41,6 +41,7 @@ with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -113,7 +114,7 @@ package body Exp_Aggr is
    --      aggregate
 
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id);
-   --  N is an N_Aggregate of a N_Extension_Aggregate. Typ is the type of
+   --  N is an N_Aggregate or an N_Extension_Aggregate. Typ is the type of
    --  the aggregate. Transform the given aggregate into a sequence of
    --  assignments component per component.
 
@@ -124,7 +125,7 @@ package body Exp_Aggr is
       Flist                         : Node_Id   := Empty;
       Obj                           : Entity_Id := Empty;
       Is_Limited_Ancestor_Expansion : Boolean   := False) return List_Id;
-   --  N is an N_Aggregate or a N_Extension_Aggregate. Typ is the type of the
+   --  N is an N_Aggregate or an N_Extension_Aggregate. Typ is the type of the
    --  aggregate. Target is an expression containing the location on which the
    --  component by component assignments will take place. Returns the list of
    --  assignments plus all other adjustments needed for tagged and controlled
@@ -256,11 +257,17 @@ package body Exp_Aggr is
    function Make_OK_Assignment_Statement
      (Sloc       : Source_Ptr;
       Name       : Node_Id;
-      Expression : Node_Id) return Node_Id;
+      Expression : Node_Id;
+      Self_Ref   : Boolean := False) return Node_Id;
    --  This is like Make_Assignment_Statement, except that Assignment_OK
    --  is set in the left operand. All assignments built by this unit
    --  use this routine. This is needed to deal with assignments to
    --  initialized constants that are done in place.
+   --  If Self_Ref is true, the aggregate contains an access reference to the
+   --  enclosing type, obtained from a default initialization. The reference
+   --  as to be expanded into a reference to  the enclosing object, which is
+   --  obtained from the Name in the assignment. The value of Self_Ref is
+   --  inherited from the aggregate itself.
 
    function Packed_Array_Aggregate_Handled (N : Node_Id) return Boolean;
    --  Given an array aggregate, this function handles the case of a packed
@@ -2239,16 +2246,21 @@ package body Exp_Aggr is
                   Check_Ancestor_Discriminants (Entity (A));
                end if;
 
-            --  Ada 2005 (AI-287): If the ancestor part is a limited type,
-            --  a recursive call expands the ancestor.
+            --  Ada 2005 (AI-287): If the ancestor part is an aggregate of
+            --  limited type, a recursive call expands the ancestor. Note that
+            --  in the limited case, the ancestor part must be either a
+            --  function call (possibly qualified) or aggregate (definitely
+            --  qualified).
 
-            elsif Is_Limited_Type (Etype (A)) then
+            elsif Is_Limited_Type (Etype (A))
+              and then Nkind (Unqualify (A)) /= N_Function_Call --  aggregate?
+            then
                Ancestor_Is_Expression := True;
 
                Append_List_To (L,
                   Build_Record_Aggr_Code (
-                    N                             => Expression (A),
-                    Typ                           => Etype (Expression (A)),
+                    N                             => Unqualify (A),
+                    Typ                           => Etype (Unqualify (A)),
                     Target                        => Target,
                     Flist                         => Flist,
                     Obj                           => Obj,
@@ -2256,6 +2268,10 @@ package body Exp_Aggr is
 
             --  If the ancestor part is an expression "E", we generate
             --     T(tmp) := E;
+            --  In Ada 2005, this includes the case of a (possibly qualified)
+            --  limited function call. The assignment will turn into a
+            --  build-in-place function call (see
+            --  Make_Build_In_Place_Call_In_Assignment).
 
             else
                Ancestor_Is_Expression := True;
@@ -2264,10 +2280,8 @@ package body Exp_Aggr is
                --  If the ancestor part is an aggregate, force its full
                --  expansion, which was delayed.
 
-               if Nkind (A) = N_Qualified_Expression
-                 and then (Nkind (Expression (A)) = N_Aggregate
-                             or else
-                           Nkind (Expression (A)) = N_Extension_Aggregate)
+               if Nkind (Unqualify (A)) = N_Aggregate
+                 or else Nkind (Unqualify (A)) = N_Extension_Aggregate
                then
                   Set_Analyzed (A, False);
                   Set_Analyzed (Expression (A), False);
@@ -2283,7 +2297,8 @@ package body Exp_Aggr is
                Assign := New_List (
                  Make_OK_Assignment_Statement (Loc,
                    Name       => Ref,
-                   Expression => A));
+                   Expression => A,
+                   Self_Ref   => Has_Self_Reference (N)));
                Set_No_Ctrl_Actions (First (Assign));
 
                --  Assign the tag now to make sure that the dispatching call in
@@ -2657,7 +2672,8 @@ package body Exp_Aggr is
                Instr :=
                  Make_OK_Assignment_Statement (Loc,
                    Name       => Comp_Expr,
-                   Expression => Expression (Comp));
+                   Expression => Expression (Comp),
+                   Self_Ref   => Has_Self_Reference (N));
 
                Set_No_Ctrl_Actions (Instr);
                Append_To (L, Instr);
@@ -2757,7 +2773,7 @@ package body Exp_Aggr is
            Make_OK_Assignment_Statement (Loc,
              Name =>
                Make_Selected_Component (Loc,
-                  Prefix => New_Copy_Tree (Target),
+                 Prefix => New_Copy_Tree (Target),
                  Selector_Name =>
                    New_Reference_To
                      (First_Tag_Component (Base_Type (Typ)), Loc)),
@@ -2769,6 +2785,20 @@ package body Exp_Aggr is
                     Loc)));
 
          Append_To (L, Instr);
+
+         --  Ada 2005 (AI-251): If the tagged type has been derived from
+         --  abstract interfaces we must also initialize the tags of the
+         --  secondary dispatch tables.
+
+         if Present (Abstract_Interfaces (Base_Type (Typ)))
+           and then not
+             Is_Empty_Elmt_List (Abstract_Interfaces (Base_Type (Typ)))
+         then
+            Init_Secondary_Tags
+              (Typ        => Base_Type (Typ),
+               Target     => Target,
+               Stmts_List => L);
+         end if;
       end if;
 
       --  If the controllers have not been initialized yet (by lack of non-
@@ -4765,10 +4795,19 @@ package body Exp_Aggr is
          return;
       end if;
 
+      --  Ada 2005 (AI-318-2): We need to convert to assignments if components
+      --  are build-in-place function calls. This test could be more specific,
+      --  but doing it for all inherently limited aggregates seems harmless.
+      --  The assignments will turn into build-in-place function calls (see
+      --  Make_Build_In_Place_Call_In_Assignment).
+
+      if Ada_Version >= Ada_05 and then Is_Inherently_Limited_Type (Typ) then
+         Convert_To_Assignments (N, Typ);
+
       --  Gigi doesn't handle properly temporaries of variable size
       --  so we generate it in the front-end
 
-      if not Size_Known_At_Compile_Time (Typ) then
+      elsif not Size_Known_At_Compile_Time (Typ) then
          Convert_To_Assignments (N, Typ);
 
       --  Temporaries for controlled aggregates need to be attached to a
@@ -5131,6 +5170,10 @@ package body Exp_Aggr is
          return False;
       end if;
 
+      if Has_Self_Reference (N) then
+         return True;
+      end if;
+
       --  Check if any direct component has default initialized components
 
       C := First (Comps);
@@ -5218,10 +5261,50 @@ package body Exp_Aggr is
    function Make_OK_Assignment_Statement
      (Sloc       : Source_Ptr;
       Name       : Node_Id;
-      Expression : Node_Id) return Node_Id
+      Expression : Node_Id;
+      Self_Ref   : Boolean := False) return Node_Id
    is
+      function Replace_Type (Expr : Node_Id) return Traverse_Result;
+      --  If the aggregate contains a self-reference, traverse each
+      --  expression to replace a possible self-reference with a reference
+      --  to the proper component of the target of the assignment.
+
+      ------------------
+      -- Replace_Type --
+      ------------------
+
+      function Replace_Type (Expr : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (Expr) = N_Attribute_Reference
+           and  then Is_Entity_Name (Prefix (Expr))
+           and then Is_Type (Entity (Prefix (Expr)))
+         then
+            if Is_Entity_Name (Prefix (Name)) then
+               Rewrite (Prefix (Expr),
+                 New_Occurrence_Of (Entity (Prefix (Name)), Sloc));
+            else
+               Rewrite (Expr,
+                 Make_Attribute_Reference (Sloc,
+                   Attribute_Name => Name_Unrestricted_Access,
+                   Prefix         => New_Copy_Tree (Prefix (Name))));
+               Set_Analyzed (Parent (Expr), False);
+            end if;
+         end if;
+         return OK;
+      end Replace_Type;
+
+      procedure Replace_Self_Reference is
+        new Traverse_Proc (Replace_Type);
+
+   --  Start of processing for Make_OK_Assignment_Statement
+
    begin
       Set_Assignment_OK (Name);
+
+      if Self_Ref then
+         Replace_Self_Reference (Expression);
+      end if;
+
       return Make_Assignment_Statement (Sloc, Name, Expression);
    end Make_OK_Assignment_Statement;
 
