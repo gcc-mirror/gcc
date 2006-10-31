@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,12 +91,33 @@ package Exp_Ch3 is
    --  initialization call corresponds to a default initialized component
    --  of an aggregate.
 
+   procedure Build_Master_Renaming (N : Node_Id; T : Entity_Id);
+   --  If the designated type of an access type is a task type or contains
+   --  tasks, we make sure that a _Master variable is declared in the current
+   --  scope, and then declare a renaming for it:
+   --
+   --    atypeM : Master_Id renames _Master;
+   --
+   --  where atyp is the name of the access type. This declaration is
+   --  used when an allocator for the access type is expanded. The node N
+   --  is the full declaration of the designated type that contains tasks.
+   --  The renaming declaration is inserted before N, and after the Master
+   --  declaration.
+
    function Freeze_Type (N : Node_Id) return Boolean;
    --  This function executes the freezing actions associated with the given
    --  freeze type node N and returns True if the node is to be deleted. We
    --  delete the node if it is present just for front end purpose and we don't
    --  want Gigi to see the node. This function can't delete the node itself
    --  since it would confuse any remaining processing of the freeze node.
+
+   procedure Init_Secondary_Tags
+     (Typ        : Entity_Id;
+      Target     : Node_Id;
+      Stmts_List : List_Id);
+   --  Ada 2005 (AI-251): Initialize the tags of all the secondary tables
+   --  associated with the abstract interfaces of Typ. The generated code
+   --  referencing tag fields of Target is appended to Stmts_List.
 
    function Needs_Simple_Initialization (T : Entity_Id) return Boolean;
    --  Certain types need initialization even though there is no specific
