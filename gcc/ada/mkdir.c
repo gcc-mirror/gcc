@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 2002-2003, Free Software Foundation, Inc.      *
+ *             Copyright (C) 2002-2006, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -32,6 +32,7 @@
 
 #ifdef __vxworks
 #include "vxWorks.h"
+#include <version.h>
 #endif /* __vxworks */
 
 #ifdef IN_RTS
@@ -50,7 +51,8 @@
 int
 __gnat_mkdir (char *dir_name)
 {
-#if defined (_WIN32) || defined (__vxworks)
+#if defined (_WIN32) || (defined (__vxworks) \
+                         && !(defined (__RTP__) && (_WRS_VXWORKS_MINOR != 0)))
   return mkdir (dir_name);
 #else
   return mkdir (dir_name, S_IRWXU | S_IRWXG | S_IRWXO);

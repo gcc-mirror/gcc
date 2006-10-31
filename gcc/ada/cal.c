@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2006, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -55,6 +55,10 @@ __gnat_duration_to_timeval (long sec, long usec, void *t)
 #if defined (__vxworks)
 #ifdef __RTP__
 #include <time.h>
+#include <version.h>
+#if (_WRS_VXWORKS_MINOR != 0)
+#include <sys/time.h>
+#endif
 #else
 #include <sys/times.h>
 #endif
