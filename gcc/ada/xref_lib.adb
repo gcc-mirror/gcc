@@ -136,12 +136,14 @@ package body Xref_Lib is
       Entity  : String;
       Glob    : Boolean := False)
    is
-      File_Start  : Natural;
-      Line_Start  : Natural;
-      Col_Start   : Natural;
-      Line_Num    : Natural := 0;
-      Col_Num     : Natural := 0;
-      File_Ref    : File_Reference := Empty_File;
+      File_Start : Natural;
+      Line_Start : Natural;
+      Col_Start  : Natural;
+      Line_Num   : Natural := 0;
+      Col_Num    : Natural := 0;
+
+      File_Ref : File_Reference := Empty_File;
+      pragma Warnings (Off, File_Ref);
 
    begin
       --  Find the end of the first item in Entity (pattern or file?)
@@ -275,7 +277,9 @@ package body Xref_Lib is
         Add_To_Xref_File
           (Entity (File_Start .. Line_Start - 1), Visited => True);
       Pattern.File_Ref := File_Ref;
+
       Add_Line (Pattern.File_Ref, Line_Num, Col_Num);
+
       File_Ref :=
         Add_To_Xref_File
           (ALI_File_Name (Entity (File_Start .. Line_Start - 1)),
