@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2005 AdaCore                      --
+--                     Copyright (C) 2000-2006 AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,11 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+pragma Ada_95;
+--  This is needed because the pragmas Warnings (Off) in Current_Session and
+--  Default_Session (see below) do not work when compiling clients of this
+--  package that instantiate generic units herein.
 
 pragma Style_Checks (All_Checks);
 --  Turn off alpha ordering check for subprograms, since we cannot
@@ -332,13 +337,13 @@ package body GNAT.AWK is
    --  A function that always returns True
 
    function Apply_Filters
-     (Session : Session_Type := Current_Session) return Boolean;
+     (Session : Session_Type) return Boolean;
    --  Apply any filters for which the Pattern is True for Session. It returns
    --  True if a least one filters has been applied (i.e. associated action
    --  callback has been called).
 
    procedure Open_Next_File
-     (Session : Session_Type := Current_Session);
+     (Session : Session_Type);
    pragma Inline (Open_Next_File);
    --  Open next file for Session closing current file if needed. It raises
    --  End_Error if there is no more file in the table.
@@ -580,7 +585,7 @@ package body GNAT.AWK is
 
    procedure Add_File
      (Filename : String;
-      Session  : Session_Type := Current_Session)
+      Session  : Session_Type)
    is
       Files : File_Table.Instance renames Session.Data.Files;
 
@@ -596,6 +601,14 @@ package body GNAT.AWK is
       end if;
    end Add_File;
 
+   procedure Add_File
+     (Filename : String)
+   is
+
+   begin
+      Add_File (Filename, Cur_Session);
+   end Add_File;
+
    ---------------
    -- Add_Files --
    ---------------
@@ -604,7 +617,7 @@ package body GNAT.AWK is
      (Directory             : String;
       Filenames             : String;
       Number_Of_Files_Added : out Natural;
-      Session               : Session_Type := Current_Session)
+      Session               : Session_Type)
    is
       use Directory_Operations;
 
@@ -636,6 +649,16 @@ package body GNAT.AWK is
             Session);
    end Add_Files;
 
+   procedure Add_Files
+     (Directory             : String;
+      Filenames             : String;
+      Number_Of_Files_Added : out Natural)
+   is
+
+   begin
+      Add_Files (Directory, Filenames, Number_Of_Files_Added, Cur_Session);
+   end Add_Files;
+
    -----------------
    -- Always_True --
    -----------------
@@ -650,7 +673,7 @@ package body GNAT.AWK is
    -------------------
 
    function Apply_Filters
-     (Session : Session_Type := Current_Session) return Boolean
+     (Session : Session_Type) return Boolean
    is
       Filters : Pattern_Action_Table.Instance renames Session.Data.Filters;
       Results : Boolean := False;
@@ -715,7 +738,13 @@ package body GNAT.AWK is
 
    function Current_Session return Session_Type is
    begin
+      pragma Warnings (Off);
       return Cur_Session;
+      --  ???The above return statement violates the Ada 2005 rule forbidding
+      --  copying of limited objects (see RM-7.5(2.8/2)). When compiled with
+      --  -gnatg, the compiler gives a warning instead of an error, so we can
+      --  turn it off.
+      pragma Warnings (On);
    end Current_Session;
 
    ---------------------
@@ -724,7 +753,13 @@ package body GNAT.AWK is
 
    function Default_Session return Session_Type is
    begin
+      pragma Warnings (Off);
       return Def_Session;
+      --  ???The above return statement violates the Ada 2005 rule forbidding
+      --  copying of limited objects (see RM-7.5(2.8/2)). When compiled with
+      --  -gnatg, the compiler gives a warning instead of an error, so we can
+      --  turn it off.
+      pragma Warnings (On);
    end Default_Session;
 
    --------------------
@@ -733,22 +768,36 @@ package body GNAT.AWK is
 
    function Discrete_Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session) return Discrete
+      Session : Session_Type) return Discrete
    is
    begin
       return Discrete'Value (Field (Rank, Session));
    end Discrete_Field;
+
+   function Discrete_Field_Current_Session
+     (Rank    : Count) return Discrete is
+      function Do_It is new Discrete_Field (Discrete);
+   begin
+      return Do_It (Rank, Cur_Session);
+   end Discrete_Field_Current_Session;
 
    -----------------
    -- End_Of_Data --
    -----------------
 
    function End_Of_Data
-     (Session : Session_Type := Current_Session) return Boolean
+     (Session : Session_Type) return Boolean
    is
    begin
       return Session.Data.File_Index = File_Table.Last (Session.Data.Files)
         and then End_Of_File (Session);
+   end End_Of_Data;
+
+   function End_Of_Data
+     return Boolean
+   is
+   begin
+      return End_Of_Data (Cur_Session);
    end End_Of_Data;
 
    -----------------
@@ -756,10 +805,17 @@ package body GNAT.AWK is
    -----------------
 
    function End_Of_File
-     (Session : Session_Type := Current_Session) return Boolean
+     (Session : Session_Type) return Boolean
    is
    begin
       return Text_IO.End_Of_File (Session.Data.Current_File);
+   end End_Of_File;
+
+   function End_Of_File
+     return Boolean
+   is
+   begin
+      return End_Of_File (Cur_Session);
    end End_Of_File;
 
    -----------
@@ -768,7 +824,7 @@ package body GNAT.AWK is
 
    function Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session) return String
+      Session : Session_Type) return String
    is
       Fields : Field_Table.Instance renames Session.Data.Fields;
 
@@ -793,8 +849,15 @@ package body GNAT.AWK is
    end Field;
 
    function Field
+     (Rank    : Count) return String
+   is
+   begin
+      return Field (Rank, Cur_Session);
+   end Field;
+
+   function Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session) return Integer
+      Session : Session_Type) return Integer
    is
    begin
       return Integer'Value (Field (Rank, Session));
@@ -809,8 +872,15 @@ package body GNAT.AWK is
    end Field;
 
    function Field
+     (Rank    : Count) return Integer
+   is
+   begin
+      return Field (Rank, Cur_Session);
+   end Field;
+
+   function Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session) return Float
+      Session : Session_Type) return Float
    is
    begin
       return Float'Value (Field (Rank, Session));
@@ -824,12 +894,19 @@ package body GNAT.AWK is
             Session);
    end Field;
 
+   function Field
+     (Rank    : Count) return Float
+   is
+   begin
+      return Field (Rank, Cur_Session);
+   end Field;
+
    ----------
    -- File --
    ----------
 
    function File
-     (Session : Session_Type := Current_Session) return String
+     (Session : Session_Type) return String
    is
       Files : File_Table.Instance renames Session.Data.Files;
 
@@ -841,6 +918,13 @@ package body GNAT.AWK is
       end if;
    end File;
 
+   function File
+     return String
+   is
+   begin
+      return File (Cur_Session);
+   end File;
+
    --------------------
    -- For_Every_Line --
    --------------------
@@ -849,7 +933,7 @@ package body GNAT.AWK is
      (Separators : String        := Use_Current;
       Filename   : String        := Use_Current;
       Callbacks  : Callback_Mode := None;
-      Session    : Session_Type  := Current_Session)
+      Session    : Session_Type)
    is
       Quit : Boolean;
 
@@ -879,13 +963,23 @@ package body GNAT.AWK is
       Close (Session);
    end For_Every_Line;
 
+   procedure For_Every_Line_Current_Session
+     (Separators : String        := Use_Current;
+      Filename   : String        := Use_Current;
+      Callbacks  : Callback_Mode := None)
+   is
+      procedure Do_It is new For_Every_Line (Action);
+   begin
+      Do_It (Separators, Filename, Callbacks, Cur_Session);
+   end For_Every_Line_Current_Session;
+
    --------------
    -- Get_Line --
    --------------
 
    procedure Get_Line
      (Callbacks : Callback_Mode := None;
-      Session   : Session_Type := Current_Session)
+      Session   : Session_Type)
    is
       Filter_Active : Boolean;
 
@@ -915,15 +1009,29 @@ package body GNAT.AWK is
       end loop;
    end Get_Line;
 
+   procedure Get_Line
+     (Callbacks : Callback_Mode := None)
+   is
+   begin
+      Get_Line (Callbacks, Cur_Session);
+   end Get_Line;
+
    ----------------------
    -- Number_Of_Fields --
    ----------------------
 
    function Number_Of_Fields
-     (Session : Session_Type := Current_Session) return Count
+     (Session : Session_Type) return Count
    is
    begin
       return Count (Field_Table.Last (Session.Data.Fields));
+   end Number_Of_Fields;
+
+   function Number_Of_Fields
+     return Count
+   is
+   begin
+      return Number_Of_Fields (Cur_Session);
    end Number_Of_Fields;
 
    --------------------------
@@ -931,10 +1039,17 @@ package body GNAT.AWK is
    --------------------------
 
    function Number_Of_File_Lines
-     (Session : Session_Type := Current_Session) return Count
+     (Session : Session_Type) return Count
    is
    begin
       return Count (Session.Data.FNR);
+   end Number_Of_File_Lines;
+
+   function Number_Of_File_Lines
+     return Count
+   is
+   begin
+      return Number_Of_File_Lines (Cur_Session);
    end Number_Of_File_Lines;
 
    ---------------------
@@ -942,11 +1057,18 @@ package body GNAT.AWK is
    ---------------------
 
    function Number_Of_Files
-     (Session : Session_Type := Current_Session) return Natural
+     (Session : Session_Type) return Natural
    is
       Files : File_Table.Instance renames Session.Data.Files;
    begin
       return File_Table.Last (Files);
+   end Number_Of_Files;
+
+   function Number_Of_Files
+     return Natural
+   is
+   begin
+      return Number_Of_Files (Cur_Session);
    end Number_Of_Files;
 
    ---------------------
@@ -954,10 +1076,17 @@ package body GNAT.AWK is
    ---------------------
 
    function Number_Of_Lines
-     (Session : Session_Type := Current_Session) return Count
+     (Session : Session_Type) return Count
    is
    begin
       return Count (Session.Data.NR);
+   end Number_Of_Lines;
+
+   function Number_Of_Lines
+     return Count
+   is
+   begin
+      return Number_Of_Lines (Cur_Session);
    end Number_Of_Lines;
 
    ----------
@@ -967,7 +1096,7 @@ package body GNAT.AWK is
    procedure Open
      (Separators : String       := Use_Current;
       Filename   : String       := Use_Current;
-      Session    : Session_Type := Current_Session)
+      Session    : Session_Type)
    is
    begin
       if Text_IO.Is_Open (Session.Data.Current_File) then
@@ -990,12 +1119,20 @@ package body GNAT.AWK is
          raise File_Error;
    end Open;
 
+   procedure Open
+     (Separators : String       := Use_Current;
+      Filename   : String       := Use_Current)
+   is
+   begin
+      Open (Separators, Filename, Cur_Session);
+   end Open;
+
    --------------------
    -- Open_Next_File --
    --------------------
 
    procedure Open_Next_File
-     (Session : Session_Type := Current_Session)
+     (Session : Session_Type)
    is
       Files : File_Table.Instance renames Session.Data.Files;
 
@@ -1025,7 +1162,7 @@ package body GNAT.AWK is
    procedure Parse
      (Separators : String       := Use_Current;
       Filename   : String       := Use_Current;
-      Session    : Session_Type := Current_Session)
+      Session    : Session_Type)
    is
       Filter_Active : Boolean;
       pragma Unreferenced (Filter_Active);
@@ -1039,6 +1176,14 @@ package body GNAT.AWK is
       end loop;
 
       Close (Session);
+   end Parse;
+
+   procedure Parse
+     (Separators : String       := Use_Current;
+      Filename   : String       := Use_Current)
+   is
+   begin
+      Parse (Separators, Filename, Cur_Session);
    end Parse;
 
    ---------------------
@@ -1143,7 +1288,7 @@ package body GNAT.AWK is
      (Field   : Count;
       Pattern : String;
       Action  : Action_Callback;
-      Session : Session_Type := Current_Session)
+      Session : Session_Type)
    is
       Filters   : Pattern_Action_Table.Instance renames Session.Data.Filters;
       U_Pattern : constant Unbounded_String := To_Unbounded_String (Pattern);
@@ -1158,9 +1303,18 @@ package body GNAT.AWK is
 
    procedure Register
      (Field   : Count;
+      Pattern : String;
+      Action  : Action_Callback)
+   is
+   begin
+      Register (Field, Pattern, Action, Cur_Session);
+   end Register;
+
+   procedure Register
+     (Field   : Count;
       Pattern : GNAT.Regpat.Pattern_Matcher;
       Action  : Action_Callback;
-      Session : Session_Type := Current_Session)
+      Session : Session_Type)
    is
       Filters : Pattern_Action_Table.Instance renames Session.Data.Filters;
 
@@ -1177,8 +1331,17 @@ package body GNAT.AWK is
    procedure Register
      (Field   : Count;
       Pattern : GNAT.Regpat.Pattern_Matcher;
+      Action  : Action_Callback)
+   is
+   begin
+      Register (Field, Pattern, Action, Cur_Session);
+   end Register;
+
+   procedure Register
+     (Field   : Count;
+      Pattern : GNAT.Regpat.Pattern_Matcher;
       Action  : Match_Action_Callback;
-      Session : Session_Type := Current_Session)
+      Session : Session_Type)
    is
       Filters : Pattern_Action_Table.Instance renames Session.Data.Filters;
 
@@ -1193,9 +1356,18 @@ package body GNAT.AWK is
    end Register;
 
    procedure Register
+     (Field   : Count;
+      Pattern : GNAT.Regpat.Pattern_Matcher;
+      Action  : Match_Action_Callback)
+   is
+   begin
+      Register (Field, Pattern, Action, Cur_Session);
+   end Register;
+
+   procedure Register
      (Pattern : Pattern_Callback;
       Action  : Action_Callback;
-      Session : Session_Type := Current_Session)
+      Session : Session_Type)
    is
       Filters : Pattern_Action_Table.Instance renames Session.Data.Filters;
 
@@ -1208,11 +1380,26 @@ package body GNAT.AWK is
    end Register;
 
    procedure Register
+     (Pattern : Pattern_Callback;
+      Action  : Action_Callback)
+   is
+   begin
+      Register (Pattern, Action, Cur_Session);
+   end Register;
+
+   procedure Register
      (Action  : Action_Callback;
-      Session : Session_Type := Current_Session)
+      Session : Session_Type)
    is
    begin
       Register (Always_True'Access, Action, Session);
+   end Register;
+
+   procedure Register
+     (Action  : Action_Callback)
+   is
+   begin
+      Register (Action, Cur_Session);
    end Register;
 
    -----------------
@@ -1230,7 +1417,7 @@ package body GNAT.AWK is
 
    procedure Set_Field_Separators
      (Separators : String       := Default_Separators;
-      Session    : Session_Type := Current_Session)
+      Session    : Session_Type)
    is
    begin
       Free (Session.Data.Separators);
@@ -1246,13 +1433,20 @@ package body GNAT.AWK is
       end if;
    end Set_Field_Separators;
 
+   procedure Set_Field_Separators
+     (Separators : String       := Default_Separators)
+   is
+   begin
+      Set_Field_Separators (Separators, Cur_Session);
+   end Set_Field_Separators;
+
    ----------------------
    -- Set_Field_Widths --
    ----------------------
 
    procedure Set_Field_Widths
      (Field_Widths : Widths_Set;
-      Session      : Session_Type := Current_Session)
+      Session      : Session_Type)
    is
    begin
       Free (Session.Data.Separators);
@@ -1266,6 +1460,13 @@ package body GNAT.AWK is
       if Session.Data.Current_Line /= Null_Unbounded_String then
          Split_Line (Session);
       end if;
+   end Set_Field_Widths;
+
+   procedure Set_Field_Widths
+     (Field_Widths : Widths_Set)
+   is
+   begin
+      Set_Field_Widths (Field_Widths, Cur_Session);
    end Set_Field_Widths;
 
    ----------------

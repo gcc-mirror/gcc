@@ -219,6 +219,10 @@ package body Endh is
             End_Type := E_Record;
             Scan; -- past RECORD
 
+         elsif Token = Tok_Return then
+            End_Type := E_Return;
+            Scan; -- past RETURN
+
          elsif Token = Tok_Select then
             End_Type := E_Select;
             Scan; -- past SELECT
@@ -800,6 +804,9 @@ package body Endh is
       elsif End_Type = E_Record then
          Error_Msg_SC ("no RECORD for this `END RECORD`!");
 
+      elsif End_Type = E_Return then
+         Error_Msg_SC ("no RETURN for this `END RETURN`!");
+
       elsif End_Type = E_Select then
          Error_Msg_SC ("no SELECT for this `END SELECT`!");
 
@@ -858,6 +865,10 @@ package body Endh is
       elsif End_Type = E_Record then
          Error_Msg_SC
            ("`END RECORD;` expected@ for RECORD#!");
+
+      elsif End_Type = E_Return then
+         Error_Msg_SC
+           ("`END RETURN;` expected@ for RETURN#!");
 
       elsif End_Type = E_Select then
          Error_Msg_SC
@@ -923,6 +934,10 @@ package body Endh is
       elsif End_Type = E_Record then
          Error_Msg_SC
            ("missing `END RECORD;` for RECORD#!");
+
+      elsif End_Type = E_Return then
+         Error_Msg_SC
+           ("missing `END RETURN;` for RETURN#!");
 
       elsif End_Type = E_Select then
          Error_Msg_BC

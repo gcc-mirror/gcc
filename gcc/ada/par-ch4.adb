@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1247,12 +1247,12 @@ package body Ch4 is
          --  Expression case
 
          elsif Token = Tok_Right_Paren or else Token in Token_Class_Eterm then
-
             if Nkind (Expr_Node) = N_Attribute_Reference
               and then Attribute_Name (Expr_Node) = Name_Range
             then
-               Bad_Range_Attribute (Sloc (Expr_Node));
-               return Error;
+               Error_Msg
+                 ("|parentheses not allowed for range attribute", Lparen_Sloc);
+               return Expr_Node;
             end if;
 
             --  Bump paren count of expression, note that if the paren count
@@ -1562,6 +1562,8 @@ package body Ch4 is
    --  checks that the expression scan did not stop on a right paren. It is
    --  called in all contexts where a right parenthesis cannot legitimately
    --  follow an expression.
+
+   --  Error recovery: can raise Error_Resync
 
    function P_Expression_No_Right_Paren return Node_Id is
    begin

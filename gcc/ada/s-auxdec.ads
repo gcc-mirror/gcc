@@ -66,7 +66,7 @@ package System.Aux_DEC is
 
    type Largest_Integer is range Min_Int .. Max_Int;
 
-   type AST_Handler is limited private;
+   type AST_Handler is private;
 
    No_AST_Handler : constant AST_Handler;
 

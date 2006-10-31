@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,23 +28,30 @@ with Nlists; use Nlists;
 with Types;  use Types;
 
 package Sem_Ch3  is
-   procedure Analyze_Component_Declaration              (N : Node_Id);
-   procedure Analyze_Incomplete_Type_Decl               (N : Node_Id);
-   procedure Analyze_Itype_Reference                    (N : Node_Id);
-   procedure Analyze_Number_Declaration                 (N : Node_Id);
-   procedure Analyze_Object_Declaration                 (N : Node_Id);
-   procedure Analyze_Others_Choice                      (N : Node_Id);
-   procedure Analyze_Private_Extension_Declaration      (N : Node_Id);
-   procedure Analyze_Subtype_Declaration                (N : Node_Id);
-   procedure Analyze_Subtype_Indication                 (N : Node_Id);
-   procedure Analyze_Type_Declaration                   (N : Node_Id);
-   procedure Analyze_Variant_Part                       (N : Node_Id);
+   procedure Analyze_Component_Declaration         (N : Node_Id);
+   procedure Analyze_Incomplete_Type_Decl          (N : Node_Id);
+   procedure Analyze_Itype_Reference               (N : Node_Id);
+   procedure Analyze_Number_Declaration            (N : Node_Id);
+   procedure Analyze_Object_Declaration            (N : Node_Id);
+   procedure Analyze_Others_Choice                 (N : Node_Id);
+   procedure Analyze_Private_Extension_Declaration (N : Node_Id);
+   procedure Analyze_Subtype_Indication            (N : Node_Id);
+   procedure Analyze_Type_Declaration              (N : Node_Id);
+   procedure Analyze_Variant_Part                  (N : Node_Id);
+
+   procedure Analyze_Subtype_Declaration
+     (N    : Node_Id;
+      Skip : Boolean := False);
+   --  Called to analyze a subtype declaration. The parameter Skip is used for
+   --  Ada 2005 (AI-412). We set to True in order to avoid reentering the
+   --  defining identifier of N when analyzing a rewritten incomplete subtype
+   --  declaration.
 
    function Access_Definition
      (Related_Nod : Node_Id;
       N           : Node_Id) return Entity_Id;
    --  An access definition defines a general access type for a formal
-   --  parameter.  The procedure is called when processing formals, when
+   --  parameter. The procedure is called when processing formals, when
    --  the current scope is the subprogram. The Implicit type is attached
    --  to the Related_Nod put into the enclosing scope, so that the only
    --  entities defined in the spec are the formals themselves.
@@ -100,15 +107,6 @@ package Sem_Ch3  is
    --  rather than on the declarations that require completion in the package
    --  declaration.
 
-   procedure Collect_Interfaces
-     (N            : Node_Id;
-      Derived_Type : Entity_Id);
-   --  Ada 2005 (AI-251): Subsidiary procedure to Build_Derived_Record_Type
-   --  and Analyze_Formal_Interface_Type.
-   --  Collect the list of interfaces that are not already implemented by the
-   --  ancestors. This is the list of interfaces for which we must provide
-   --  additional tag components.
-
    procedure Derive_Subprogram
      (New_Subp     : in out Entity_Id;
       Parent_Subp  : Entity_Id;
@@ -125,8 +123,7 @@ package Sem_Ch3  is
    procedure Derive_Subprograms
      (Parent_Type           : Entity_Id;
       Derived_Type          : Entity_Id;
-      Generic_Actual        : Entity_Id := Empty;
-      No_Predefined_Prims   : Boolean   := False);
+      Generic_Actual        : Entity_Id := Empty);
    --  To complete type derivation, collect/retrieve the primitive operations
    --  of the parent type, and replace the subsidiary subtypes with the derived
    --  type, to build the specs of the inherited ops. For generic actuals, the
@@ -183,10 +180,25 @@ package Sem_Ch3  is
 
    procedure Make_Class_Wide_Type (T : Entity_Id);
    --  A Class_Wide_Type is created for each tagged type definition. The
-   --  attributes of a class wide type are inherited from those of the type
-   --  T. If T is introduced by a private declaration, the corresponding
-   --  class wide type is created at the same time, and therefore there is
-   --  a private and a full declaration for the class wide type type as well.
+   --  attributes of a class wide type are inherited from those of the type T.
+   --  If T is introduced by a private declaration, the corresponding class
+   --  wide type is created at the same time, and therefore there is a private
+   --  and a full declaration for the class wide type type as well.
+
+   function OK_For_Limited_Init_In_05 (Exp : Node_Id) return Boolean;
+   --  Presuming Exp is an expression of an inherently limited type, returns
+   --  True if the expression is allowed in an initialization context by the
+   --  rules of Ada 2005. We use the rule in RM-7.5(2.1/2), "...it is an
+   --  aggregate, a function_call, or a parenthesized expression or
+   --  qualified_expression whose operand is permitted...". Note that in Ada
+   --  95 mode, we sometimes wish to give warnings based on whether the
+   --  program _would_ be legal in Ada 2005. Note that Exp must already have
+   --  been resolved, so we can know whether it's a function call (as opposed
+   --  to an indexed component, for example).
+
+   function OK_For_Limited_Init (Exp : Node_Id) return Boolean;
+   --  Always False in Ada 95 mode. Equivalent to OK_For_Limited_Init_In_05 in
+   --  Ada 2005 mode.
 
    procedure Process_Full_View (N : Node_Id; Full_T, Priv_T : Entity_Id);
    --  Process some semantic actions when the full view of a private type is
@@ -213,8 +225,8 @@ package Sem_Ch3  is
    --  pointer of R so that the types get properly frozen. The Check_List
    --  parameter is used when the subprogram is called from
    --  Build_Record_Init_Proc and is used to return a set of constraint
-   --  checking statements generated by the Checks package. R_Check_Off is
-   --  set to True when the call to Range_Check is to be skipped.
+   --  checking statements generated by the Checks package. R_Check_Off is set
+   --  to True when the call to Range_Check is to be skipped.
 
    function Process_Subtype
      (S           : Node_Id;

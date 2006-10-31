@@ -40,6 +40,7 @@ with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
+with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
@@ -450,8 +451,12 @@ package body Sem_Aggr is
             Apply_Scalar_Range_Check (Exp, Check_Typ);
          end if;
 
+      --  Verify that target type is also scalar, to prevent view anomalies
+      --  in instantiations.
+
       elsif (Is_Scalar_Type (Exp_Typ)
-             or else Nkind (Exp) = N_String_Literal)
+              or else Nkind (Exp) = N_String_Literal)
+        and then Is_Scalar_Type (Check_Typ)
         and then Exp_Typ /= Check_Typ
       then
          if Is_Entity_Name (Exp)
@@ -782,19 +787,6 @@ package body Sem_Aggr is
 
       elsif Nkind (V) /= N_Integer_Literal then
          return;
-
-      elsif Is_Access_Type (Etype (Disc)) then
-         null;
-
-      --  If the bounds of the discriminant type are not compile time known,
-      --  the back-end will treat this as a variable-size object.
-
-      elsif not
-        (Compile_Time_Known_Value (Type_Low_Bound  (Etype (Disc)))
-           and then
-         Compile_Time_Known_Value (Type_High_Bound (Etype (Disc))))
-      then
-         return;
       end if;
 
       Comp := First_Component (T);
@@ -899,15 +891,9 @@ package body Sem_Aggr is
          Error_Msg_CRT ("aggregate", N);
       end if;
 
-      if Is_Limited_Composite (Typ) then
-         Error_Msg_N ("aggregate type cannot have limited component", N);
-         Explain_Limited_Type (Typ, N);
-
       --  Ada 2005 (AI-287): Limited aggregates allowed
 
-      elsif Is_Limited_Type (Typ)
-        and Ada_Version < Ada_05
-      then
+      if Is_Limited_Type (Typ) and then Ada_Version < Ada_05 then
          Error_Msg_N ("aggregate type cannot be limited", N);
          Explain_Limited_Type (Typ, N);
 
@@ -2114,7 +2100,7 @@ package body Sem_Aggr is
          end if;
 
       else
-         Error_Msg_N (" No unique type for this aggregate",  A);
+         Error_Msg_N ("no unique type for this aggregate",  A);
       end if;
    end Resolve_Extension_Aggregate;
 
@@ -2329,40 +2315,6 @@ package body Sem_Aggr is
          Expr          : Node_Id := Empty;
          Selector_Name : Node_Id;
 
-         procedure Check_Non_Limited_Type;
-         --  Relax check to allow the default initialization of limited types.
-         --  For example:
-         --      record
-         --         C : Lim := (..., others => <>);
-         --      end record;
-
-         ----------------------------
-         -- Check_Non_Limited_Type --
-         ----------------------------
-
-         procedure Check_Non_Limited_Type is
-         begin
-            if Is_Limited_Type (Etype (Compon))
-               and then Comes_From_Source (Compon)
-               and then not In_Instance_Body
-            then
-               --  Ada 2005 (AI-287): Limited aggregates are allowed
-
-               if Ada_Version >= Ada_05
-                 and then Present (Expression (Assoc))
-                 and then Nkind (Expression (Assoc)) = N_Aggregate
-               then
-                  null;
-               else
-                  Error_Msg_N
-                    ("initialization not allowed for limited types", N);
-                  Explain_Limited_Type (Etype (Compon), Compon);
-               end if;
-            end if;
-         end Check_Non_Limited_Type;
-
-      --  Start of processing for Get_Value
-
       begin
          Is_Box_Present := False;
 
@@ -2387,21 +2339,25 @@ package body Sem_Aggr is
 
                      --  Ada 2005 (AI-287): In case of default initialization
                      --  of components, we duplicate the corresponding default
-                     --  expression (from the record type declaration).
+                     --  expression (from the record type declaration). The
+                     --  copy must carry the sloc of the association (not the
+                     --  original expression) to prevent spurious elaboration
+                     --  checks when the default includes function calls.
 
                      if Box_Present (Assoc) then
                         Others_Box     := True;
                         Is_Box_Present := True;
 
                         if Expander_Active then
-                           return New_Copy_Tree (Expression (Parent (Compon)));
+                           return
+                             New_Copy_Tree
+                               (Expression (Parent (Compon)),
+                                New_Sloc => Sloc (Assoc));
                         else
                            return Expression (Parent (Compon));
                         end if;
 
                      else
-                        Check_Non_Limited_Type;
-
                         if Present (Others_Etype) and then
                            Base_Type (Others_Etype) /= Base_Type (Etype
                                                                    (Compon))
@@ -2451,8 +2407,6 @@ package body Sem_Aggr is
                         end if;
 
                      else
-                        Check_Non_Limited_Type;
-
                         if Present (Next (Selector_Name)) then
                            Expr := New_Copy_Tree (Expression (Assoc));
                         else
@@ -2478,6 +2432,31 @@ package body Sem_Aggr is
 
          return Expr;
       end Get_Value;
+
+      procedure Check_Non_Limited_Type (Expr : Node_Id);
+      --  Relax check to allow the default initialization of limited types.
+      --  For example:
+      --      record
+      --         C : Lim := (..., others => <>);
+      --      end record;
+
+      ----------------------------
+      -- Check_Non_Limited_Type --
+      ----------------------------
+
+      procedure Check_Non_Limited_Type (Expr : Node_Id) is
+      begin
+         if Is_Limited_Type (Etype (Expr))
+            and then Comes_From_Source (Expr)
+            and then not In_Instance_Body
+         then
+            if not OK_For_Limited_Init (Expr) then
+               Error_Msg_N
+                 ("initialization not allowed for limited types", N);
+               Explain_Limited_Type (Etype (Expr), Expr);
+            end if;
+         end if;
+      end Check_Non_Limited_Type;
 
       -----------------------
       -- Resolve_Aggr_Expr --
@@ -2602,6 +2581,7 @@ package body Sem_Aggr is
          end if;
 
          Analyze_And_Resolve (Expr, Expr_Type);
+         Check_Non_Limited_Type (Expr);
          Check_Non_Static_Context (Expr);
          Check_Unset_Reference (Expr);
 
