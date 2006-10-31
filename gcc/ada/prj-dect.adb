@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc          --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -142,7 +142,7 @@ package body Prj.Dect is
       Attribute_Name         : Name_Id           := No_Name;
       Optional_Index         : Boolean           := False;
       Pkg_Id                 : Package_Node_Id   := Empty_Package;
-      Warning                : Boolean           := False;
+      Ignore                 : Boolean           := False;
 
    begin
       Attribute :=
@@ -183,17 +183,15 @@ package body Prj.Dect is
             then
                Pkg_Id := Package_Id_Of (Current_Package, In_Tree);
                Add_Attribute (Pkg_Id, Token_Name, Current_Attribute);
-               Error_Msg_Name_1 := Token_Name;
-               Error_Msg ("?unknown attribute {", Token_Ptr);
 
             else
-               --  If not a valid attribute name, issue an error, or a warning
-               --  if inside a package that does not need to be checked.
+               --  If not a valid attribute name, issue an error if inside
+               --  a package that need to be checked.
 
-               Warning := Current_Package /= Empty_Node and then
+               Ignore := Current_Package /= Empty_Node and then
                           Packages_To_Check /= All_Packages;
 
-               if Warning then
+               if Ignore then
 
                   --  Check that we are not in a package to check
 
@@ -203,15 +201,16 @@ package body Prj.Dect is
                      if Name_Buffer (1 .. Name_Len) =
                        Packages_To_Check (Index).all
                      then
-                        Warning := False;
+                        Ignore := False;
                         exit;
                      end if;
                   end loop;
                end if;
 
-               Error_Msg_Name_1 := Token_Name;
-               Error_Msg_Warn := Warning;
-               Error_Msg ("<undefined attribute {", Token_Ptr);
+               if not Ignore then
+                  Error_Msg_Name_1 := Token_Name;
+                  Error_Msg ("undefined attribute {", Token_Ptr);
+               end if;
             end if;
 
          --  Set, if appropriate the index case insensitivity flag
@@ -920,11 +919,13 @@ package body Prj.Dect is
       Current_Package        : Package_Node_Id   := Empty_Package;
       First_Declarative_Item : Project_Node_Id   := Empty_Node;
 
+      Package_Location       : constant Source_Ptr := Token_Ptr;
+
    begin
       Package_Declaration :=
         Default_Project_Node
           (Of_Kind => N_Package_Declaration, In_Tree => In_Tree);
-      Set_Location_Of (Package_Declaration, In_Tree, To => Token_Ptr);
+      Set_Location_Of (Package_Declaration, In_Tree, To => Package_Location);
 
       --  Scan past "package"
 
@@ -940,11 +941,13 @@ package body Prj.Dect is
             First_Attribute := First_Attribute_Of (Current_Package);
 
          else
-            Error_Msg ("?""" &
-                       Get_Name_String
-                         (Name_Of (Package_Declaration, In_Tree)) &
-                       """ is not a known package name",
-                       Token_Ptr);
+            if not Quiet_Output then
+               Error_Msg ("?""" &
+                          Get_Name_String
+                            (Name_Of (Package_Declaration, In_Tree)) &
+                          """ is not a known package name",
+                          Token_Ptr);
+            end if;
 
             --  Set the package declaration to "ignored" so that it is not
             --  processed by Prj.Proc.Process.
@@ -1004,6 +1007,7 @@ package body Prj.Dect is
          if Token = Tok_Identifier then
             declare
                Project_Name : constant Name_Id := Token_Name;
+
                Clause       : Project_Node_Id :=
                               First_With_Clause_Of (Current_Project, In_Tree);
                The_Project  : Project_Node_Id := Empty_Node;
