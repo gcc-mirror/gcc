@@ -1,3 +1,14 @@
+2006-10-31  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/29067
+	* decl.c (gfc_set_constant_character_len): NULL-terminate the
+	character constant string.
+	* data.c (create_character_intializer): Likewise.
+	* expr.c (gfc_simplify_expr): NULL-terminate the substring
+	character constant.
+	* primary.c (match_hollerith_constant): NULL-terminate the
+	character constant string.
+
 2006-10-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29387
