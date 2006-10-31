@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -198,7 +198,7 @@ package body Exp_Fixd is
 
    function Rounded_Result_Set (N : Node_Id) return Boolean;
    --  Returns True if N is a node that contains the Rounded_Result flag
-   --  and if the flag is true.
+   --  and if the flag is true or the target type is an integer type.
 
    procedure Set_Result (N : Node_Id; Expr : Node_Id; Rchk : Boolean := False);
    --  N is the node for the current conversion, division or multiplication
@@ -2329,7 +2329,8 @@ package body Exp_Fixd is
       if (K = N_Type_Conversion or else
           K = N_Op_Divide       or else
           K = N_Op_Multiply)
-        and then Rounded_Result (N)
+        and then
+          (Rounded_Result (N) or else Is_Integer_Type (Etype (N)))
       then
          return True;
       else
