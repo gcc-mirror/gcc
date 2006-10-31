@@ -228,7 +228,7 @@ package body Ch3 is
    --  | CONCURRENT_TYPE_DECLARATION
 
    --  INCOMPLETE_TYPE_DECLARATION ::=
-   --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART] [IS TAGGED];
+   --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART] [is tagged];
 
    --  PRIVATE_TYPE_DECLARATION ::=
    --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART]
@@ -236,8 +236,9 @@ package body Ch3 is
 
    --  PRIVATE_EXTENSION_DECLARATION ::=
    --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART] is
-   --      [abstract] new ancestor_SUBTYPE_INDICATION
-   --      [and INTERFACE_LIST] with private;
+   --      [abstract] [limited | synchronized]
+   --        new ancestor_SUBTYPE_INDICATION [and INTERFACE_LIST]
+   --          with private;
 
    --  TYPE_DEFINITION ::=
    --    ENUMERATION_TYPE_DEFINITION  | INTEGER_TYPE_DEFINITION
@@ -251,7 +252,7 @@ package body Ch3 is
 
    --  INTERFACE_TYPE_DEFINITION ::=
    --    [limited | task | protected | synchronized ] interface
-   --      [AND interface_list]
+   --      [and INTERFACE_LIST]
 
    --  Error recovery: can raise Error_Resync
 
@@ -262,16 +263,16 @@ package body Ch3 is
    --  function handles only declarations starting with TYPE).
 
    function P_Type_Declaration return Node_Id is
-      Abstract_Present : Boolean;
-      Abstract_Loc     : Source_Ptr;
+      Abstract_Present : Boolean := False;
+      Abstract_Loc     : Source_Ptr := No_Location;
       Decl_Node        : Node_Id;
       Discr_List       : List_Id;
       Discr_Sloc       : Source_Ptr;
       End_Labl         : Node_Id;
-      Type_Loc         : Source_Ptr;
-      Type_Start_Col   : Column_Number;
       Ident_Node       : Node_Id;
       Is_Derived_Iface : Boolean := False;
+      Type_Loc         : Source_Ptr;
+      Type_Start_Col   : Column_Number;
       Unknown_Dis      : Boolean;
 
       Typedef_Node     : Node_Id;
@@ -384,17 +385,15 @@ package body Ch3 is
          Abstract_Loc     := Token_Ptr;
          Scan; -- past ABSTRACT
 
-         if Token = Tok_Limited
+         --  Ada 2005 (AI-419): AARM 3.4 (2/2)
+
+         if (Ada_Version < Ada_05 and then Token = Tok_Limited)
            or else Token = Tok_Private
            or else Token = Tok_Record
            or else Token = Tok_Null
          then
             Error_Msg_AP ("TAGGED expected");
          end if;
-
-      else
-         Abstract_Present := False;
-         Abstract_Loc     := No_Location;
       end if;
 
       --  Check for misuse of Ada 95 keyword Tagged
@@ -636,7 +635,8 @@ package body Ch3 is
                            and then Chars (Token_Node) = Name_Interface)
                then
                   Typedef_Node := P_Interface_Type_Definition
-                                    (Is_Synchronized => False);
+                                    (Abstract_Present,
+                                     Is_Synchronized => False);
                   Abstract_Present := True;
                   Set_Limited_Present (Typedef_Node);
 
@@ -722,7 +722,7 @@ package body Ch3 is
 
             when Tok_Interface =>
                Typedef_Node := P_Interface_Type_Definition
-                                (Is_Synchronized => False);
+                                (Abstract_Present, Is_Synchronized => False);
                Abstract_Present := True;
                TF_Semicolon;
                exit;
@@ -733,7 +733,8 @@ package body Ch3 is
                TF_Semicolon;
                exit;
 
-            --  Ada 2005 (AI-345)
+            --  Ada 2005 (AI-345): Protected, synchronized or task interface
+            --  or Ada 2005 (AI-443): Synchronized private extension.
 
             when Tok_Protected    |
                  Tok_Synchronized |
@@ -745,24 +746,40 @@ package body Ch3 is
                begin
                   Scan; -- past TASK, PROTECTED or SYNCHRONIZED
 
-                  Typedef_Node := P_Interface_Type_Definition
-                                   (Is_Synchronized => True);
-                  Abstract_Present := True;
+                  --  Synchronized private extension
 
-                  case Saved_Token is
-                     when Tok_Task =>
-                        Set_Task_Present         (Typedef_Node);
+                  if Token = Tok_New then
+                     Typedef_Node := P_Derived_Type_Def_Or_Private_Ext_Decl;
 
-                     when Tok_Protected =>
-                        Set_Protected_Present    (Typedef_Node);
-
-                     when Tok_Synchronized =>
+                     if Saved_Token = Tok_Synchronized then
                         Set_Synchronized_Present (Typedef_Node);
+                     else
+                        Error_Msg_SC ("invalid kind of private extension");
+                     end if;
 
-                     when others =>
-                        pragma Assert (False);
-                        null;
-                  end case;
+                  --  Interface
+
+                  else
+                     Typedef_Node :=
+                       P_Interface_Type_Definition
+                         (Abstract_Present, Is_Synchronized => True);
+                     Abstract_Present := True;
+
+                     case Saved_Token is
+                        when Tok_Task =>
+                           Set_Task_Present         (Typedef_Node);
+
+                        when Tok_Protected =>
+                           Set_Protected_Present    (Typedef_Node);
+
+                        when Tok_Synchronized =>
+                           Set_Synchronized_Present (Typedef_Node);
+
+                        when others =>
+                           pragma Assert (False);
+                           null;
+                     end case;
+                  end if;
                end;
 
                TF_Semicolon;
@@ -904,7 +921,7 @@ package body Ch3 is
    -------------------------------
 
    --  SUBTYPE_INDICATION ::=
-   --    [NOT NULL] SUBTYPE_MARK [CONSTRAINT]
+   --    [not null] SUBTYPE_MARK [CONSTRAINT]
 
    --  Error recovery: can raise Error_Resync
 
@@ -1178,8 +1195,10 @@ package body Ch3 is
    --    DEFINING_IDENTIFIER_LIST : constant ::= static_EXPRESSION;
 
    --  OBJECT_RENAMING_DECLARATION ::=
-   --    DEFINING_IDENTIFIER : SUBTYPE_MARK renames object_NAME;
-   --  | DEFINING_IDENTIFIER : ACCESS_DEFINITION renames object_NAME;
+   --    DEFINING_IDENTIFIER :
+   --      [NULL_EXCLUSION] SUBTYPE_MARK renames object_NAME;
+   --  | DEFINING_IDENTIFIER :
+   --      ACCESS_DEFINITION renames object_NAME;
 
    --  EXCEPTION_RENAMING_DECLARATION ::=
    --    DEFINING_IDENTIFIER : exception renames exception_NAME;
@@ -1560,13 +1579,15 @@ package body Ch3 is
             --    DEFINING_IDENTIFIER_LIST : [aliased] [constant]
             --      [NULL_EXCLUSION] SUBTYPE_INDICATION [:= EXPRESSION];
             --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
-            --          ACCESS_DEFINITION [:= EXPRESSION];
+            --      ACCESS_DEFINITION [:= EXPRESSION];
 
             --  OBJECT_RENAMING_DECLARATION ::=
-            --    ...
-            --  | DEFINING_IDENTIFIER : ACCESS_DEFINITION renames object_NAME;
+            --    DEFINING_IDENTIFIER :
+            --      [NULL_EXCLUSION] SUBTYPE_MARK renames object_NAME;
+            --  | DEFINING_IDENTIFIER :
+            --      ACCESS_DEFINITION renames object_NAME;
 
-            Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
+            Not_Null_Present := P_Null_Exclusion;  --  Ada 2005 (AI-231/423)
 
             if Token = Tok_Access then
                if Ada_Version < Ada_05 then
@@ -1598,9 +1619,22 @@ package body Ch3 is
                --  Object renaming declaration
 
                if Token_Is_Renames then
-                  Error_Msg_SP
-                    ("null-exclusion not allowed in object renamings");
-                  raise Error_Resync;
+                  if Ada_Version < Ada_05 then
+                     Error_Msg_SP
+                       ("null-exclusion not allowed in object renaming");
+                     raise Error_Resync;
+
+                  --  Ada 2005 (AI-423): Object renaming declaration with
+                  --  a null exclusion.
+
+                  else
+                     No_List;
+                     Decl_Node :=
+                       New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
+                     Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
+                     Set_Subtype_Mark (Decl_Node, Type_Node);
+                     Set_Name (Decl_Node, P_Name);
+                  end if;
 
                --  Object declaration
 
@@ -1762,12 +1796,13 @@ package body Ch3 is
 
    --  DERIVED_TYPE_DEFINITION ::=
    --    [abstract] [limited] new [NULL_EXCLUSION] parent_SUBTYPE_INDICATION
-   --    [[AND interface_list] RECORD_EXTENSION_PART]
+   --    [[and INTERFACE_LIST] RECORD_EXTENSION_PART]
 
    --  PRIVATE_EXTENSION_DECLARATION ::=
    --     type DEFINING_IDENTIFIER [DISCRIMINANT_PART] is
-   --       [abstract] [limited] new ancestor_SUBTYPE_INDICATION
-   --       [AND interface_list] with PRIVATE;
+   --       [abstract] [limited | synchronized]
+   --          new ancestor_SUBTYPE_INDICATION [and INTERFACE_LIST]
+   --            with private;
 
    --  RECORD_EXTENSION_PART ::= with RECORD_DEFINITION
 
@@ -1953,7 +1988,8 @@ package body Ch3 is
    --  | SIMPLE_EXPRESSION .. SIMPLE_EXPRESSION
 
    --  This routine scans out the range or subtype mark that forms the right
-   --  operand of a membership test.
+   --  operand of a membership test (it is not used in any other contexts, and
+   --  error messages are specialized with this knowledge in mind).
 
    --  Note: as documented in the Sinfo interface, although the syntax only
    --  allows a subtype mark, we in fact allow any simple expression to be
@@ -1968,9 +2004,22 @@ package body Ch3 is
    function P_Range_Or_Subtype_Mark return Node_Id is
       Expr_Node  : Node_Id;
       Range_Node : Node_Id;
+      Save_Loc   : Source_Ptr;
+
+   --  Start of processing for P_Range_Or_Subtype_Mark
 
    begin
+      --  Save location of possible junk parentheses
+
+      Save_Loc := Token_Ptr;
+
+      --  Scan out either a simple expression or a range (this accepts more
+      --  than is legal here, but as explained above, we like to allow more
+      --  with a proper diagnostic.
+
       Expr_Node := P_Simple_Expression_Or_Range_Attribute;
+
+      --  Range attribute
 
       if Expr_Form = EF_Range_Attr then
          return Expr_Node;
@@ -1994,8 +2043,7 @@ package body Ch3 is
          --  Check for error of range constraint after a subtype mark
 
          if Token = Tok_Range then
-            Error_Msg_SC
-              ("range constraint not allowed in membership test");
+            Error_Msg_SC ("range constraint not allowed in membership test");
             Scan; -- past RANGE
             raise Error_Resync;
 
@@ -2003,22 +2051,33 @@ package body Ch3 is
 
          elsif Token = Tok_Digits or else Token = Tok_Delta then
             Error_Msg_SC
-               ("accuracy definition not allowed in membership test");
+              ("accuracy definition not allowed in membership test");
             Scan; -- past DIGITS or DELTA
             raise Error_Resync;
 
+         --  Attribute reference, may or may not be OK, but in any case we
+         --  will scan it out
+
          elsif Token = Tok_Apostrophe then
             return P_Subtype_Mark_Attribute (Expr_Node);
+
+         --  OK case of simple name, just return it
 
          else
             return Expr_Node;
          end if;
 
-      --  At this stage, we have some junk following the expression. We
-      --  really can't tell what is wrong, might be a missing semicolon,
-      --  or a missing THEN, or whatever. Our caller will figure it out!
+      --  Here we have some kind of error situation. Check for junk parens
+      --  then return what we have, caller will deal with other errors.
 
       else
+         if Nkind (Expr_Node) in N_Subexpr
+           and then Paren_Count (Expr_Node) /= 0
+         then
+            Error_Msg ("|parentheses not allowed for subtype mark", Save_Loc);
+            Set_Paren_Count (Expr_Node, 0);
+         end if;
+
          return Expr_Node;
       end if;
    end P_Range_Or_Subtype_Mark;
@@ -3502,12 +3561,13 @@ package body Ch3 is
 
    --  INTERFACE_TYPE_DEFINITION ::=
    --    [limited | task | protected | synchronized] interface
-   --      [AND interface_list]
+   --      [and INTERFACE_LIST]
 
    --  Error recovery: cannot raise Error_Resync
 
    function P_Interface_Type_Definition
-      (Is_Synchronized : Boolean) return Node_Id
+     (Abstract_Present : Boolean;
+      Is_Synchronized  : Boolean) return Node_Id
    is
       Typedef_Node : Node_Id;
 
@@ -3515,6 +3575,11 @@ package body Ch3 is
       if Ada_Version < Ada_05 then
          Error_Msg_SP ("abstract interface is an Ada 2005 extension");
          Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+      end if;
+
+      if Abstract_Present then
+         Error_Msg_SP ("ABSTRACT not allowed in interface type definition " &
+                       "('R'M' 3.9.4(2/2))");
       end if;
 
       Scan; -- past INTERFACE

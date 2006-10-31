@@ -237,9 +237,9 @@ begin
       else
          Error_Msg ("file { does not contain expected unit!", Loc);
          Error_Msg_Unit_1 := Expected_Unit (Cur_Unum);
-         Error_Msg ("expected unit $!", Loc);
+         Error_Msg ("\\expected unit $!", Loc);
          Error_Msg_Unit_1 := Unit_Name (Cur_Unum);
-         Error_Msg ("found unit $!", Loc);
+         Error_Msg ("\\found unit $!", Loc);
       end if;
 
       --  In both cases, remove the unit if it is the last unit (which it
