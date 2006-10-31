@@ -35,10 +35,11 @@ with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;
-with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch12; use Sem_Ch12;
+with Sem_Disp; use Sem_Disp;
 with Sem_Util; use Sem_Util;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
@@ -394,9 +395,9 @@ package body Sem_Type is
          --  because otherwise we have a dummy between the two subprograms that
          --  are in fact the same.
 
-         if Present (DTC_Entity (Abstract_Interface_Alias (E)))
-           and then Etype (DTC_Entity (Abstract_Interface_Alias (E)))
-                      /= RTE (RE_Tag)
+         if not Is_Ancestor
+                  (Find_Dispatching_Type (Abstract_Interface_Alias (E)),
+                   Find_Dispatching_Type (E))
          then
             Add_One_Interp (N, Abstract_Interface_Alias (E), T);
          end if;
@@ -446,6 +447,24 @@ package body Sem_Type is
                       or else Is_Entity_Name (Name (N)))
          then
             Add_Entry (Entity (Name (N)), Etype (N));
+
+         --  If this is an indirect call there will be no name associated
+         --  with the previous entry. To make diagnostics clearer, save
+         --  Subprogram_Type of first interpretation, so that the error will
+         --  point to the anonymous access to subprogram, not to the result
+         --  type of the call itself.
+
+         elsif (Nkind (N)) = N_Function_Call
+           and then Nkind (Name (N)) = N_Explicit_Dereference
+           and then Is_Overloaded (Name (N))
+         then
+            declare
+               I  : Interp_Index;
+               It : Interp;
+            begin
+               Get_First_Interp (Name (N), I, It);
+               Add_Entry (It.Nam, Etype (N));
+            end;
 
          else
             --  Overloaded prefix in indexed or selected component,
@@ -735,36 +754,45 @@ package body Sem_Type is
         and then Is_Interface (Etype (T1))
         and then Is_Tagged_Type (T2)
       then
-         if Interface_Present_In_Ancestor (Typ => T2,
+         if Interface_Present_In_Ancestor (Typ   => T2,
                                            Iface => Etype (T1))
          then
             return True;
+         end if;
 
-         elsif Present (Abstract_Interfaces (T2)) then
+         declare
+            E    : Entity_Id;
+            Elmt : Elmt_Id;
+
+         begin
+            if Is_Concurrent_Type (BT2) then
+               E := Corresponding_Record_Type (BT2);
+            else
+               E := BT2;
+            end if;
 
             --  Ada 2005 (AI-251): A class-wide abstract interface type T1
             --  covers an object T2 that implements a direct derivation of T1.
+            --  Note: test for presence of E is defense against previous error.
 
-            declare
-               E : Elmt_Id := First_Elmt (Abstract_Interfaces (T2));
-            begin
-               while Present (E) loop
-                  if Is_Ancestor (Etype (T1), Node (E)) then
+            if Present (E)
+              and then Present (Abstract_Interfaces (E))
+            then
+               Elmt := First_Elmt (Abstract_Interfaces (E));
+               while Present (Elmt) loop
+                  if Is_Ancestor (Etype (T1), Node (Elmt)) then
                      return True;
                   end if;
 
-                  Next_Elmt (E);
+                  Next_Elmt (Elmt);
                end loop;
-            end;
+            end if;
 
             --  We should also check the case in which T1 is an ancestor of
             --  some implemented interface???
 
             return False;
-
-         else
-            return False;
-         end if;
+         end;
 
       --  In a dispatching call the actual may be class-wide
 
@@ -959,7 +987,7 @@ package body Sem_Type is
          --  If the expected type is the non-limited view of a type, the
          --  expression may have the limited view.
 
-         if Ekind (T1) = E_Incomplete_Type then
+         if Is_Incomplete_Type (T1) then
             return Covers (Non_Limited_View (T1), T2);
 
          elsif Ekind (T1) = E_Class_Wide_Type then
@@ -975,7 +1003,7 @@ package body Sem_Type is
          --  either type might have a limited view. Checks performed elsewhere
          --  verify that the context type is the non-limited view.
 
-         if Ekind (T2) = E_Incomplete_Type then
+         if Is_Incomplete_Type (T2) then
             return Covers (T1, Non_Limited_View (T2));
 
          elsif Ekind (T2) = E_Class_Wide_Type then
@@ -984,6 +1012,38 @@ package body Sem_Type is
          else
             return False;
          end if;
+
+      --  Ada 2005 (AI-412): Coverage for regular incomplete subtypes
+
+      elsif Ekind (T1) = E_Incomplete_Subtype then
+         return Covers (Full_View (Etype (T1)), T2);
+
+      elsif Ekind (T2) = E_Incomplete_Subtype then
+         return Covers (T1, Full_View (Etype (T2)));
+
+      --  Ada 2005 (AI-423): Coverage of formal anonymous access types
+      --  and actual anonymous access types in the context of generic
+      --  instantiation. We have the following situation:
+
+      --     generic
+      --        type Formal is private;
+      --        Formal_Obj : access Formal;  --  T1
+      --     package G is ...
+
+      --     package P is
+      --        type Actual is ...
+      --        Actual_Obj : access Actual;  --  T2
+      --        package Instance is new G (Formal     => Actual,
+      --                                   Formal_Obj => Actual_Obj);
+
+      elsif Ada_Version >= Ada_05
+        and then Ekind (T1) = E_Anonymous_Access_Type
+        and then Ekind (T2) = E_Anonymous_Access_Type
+        and then Is_Generic_Type (Directly_Designated_Type (T1))
+        and then Get_Instance_Of (Directly_Designated_Type (T1)) =
+                   Directly_Designated_Type (T2)
+      then
+         return True;
 
       --  Otherwise it doesn't cover!
 
@@ -1354,9 +1414,9 @@ package body Sem_Type is
          --  operating in an earlier mode, in which case we discard the Ada
          --  2005 entity, so that we get proper Ada 95 overload resolution.
 
-         if Is_Ada_2005 (Nam1) then
+         if Is_Ada_2005_Only (Nam1) then
             return It2;
-         elsif Is_Ada_2005 (Nam2) then
+         elsif Is_Ada_2005_Only (Nam2) then
             return It1;
          end if;
       end if;
@@ -2050,12 +2110,12 @@ package body Sem_Type is
       --  list of interfaces (available in the parent of the concurrent type)
 
       if Is_Concurrent_Type (Target_Typ) then
-         if Present (Interface_List (Parent (Target_Typ))) then
+         if Present (Interface_List (Parent (Base_Type (Target_Typ)))) then
             declare
                AI : Node_Id;
 
             begin
-               AI := First (Interface_List (Parent (Target_Typ)));
+               AI := First (Interface_List (Parent (Base_Type (Target_Typ))));
                while Present (AI) loop
                   if Etype (AI) = Iface then
                      return True;
@@ -2304,11 +2364,11 @@ package body Sem_Type is
            and then Scope (It.Typ) /= Standard_Standard
          then
             Error_Msg_Sloc := Sloc (Parent (It.Typ));
-            Error_Msg_NE ("   & (inherited) declared#!", Err, It.Nam);
+            Error_Msg_NE ("\\& (inherited) declared#!", Err, It.Nam);
 
          else
             Error_Msg_Sloc := Sloc (It.Nam);
-            Error_Msg_NE ("   & declared#!", Err, It.Nam);
+            Error_Msg_NE ("\\& declared#!", Err, It.Nam);
          end if;
 
          Get_Next_Interp (Index, It);
@@ -2792,6 +2852,21 @@ package body Sem_Type is
       end if;
    end Valid_Comparison_Arg;
 
+   ----------------------
+   -- Write_Interp_Ref --
+   ----------------------
+
+   procedure Write_Interp_Ref (Map_Ptr : Int) is
+   begin
+      Write_Str (" Node:  ");
+      Write_Int (Int (Interp_Map.Table (Map_Ptr).Node));
+      Write_Str (" Index: ");
+      Write_Int (Int (Interp_Map.Table (Map_Ptr).Index));
+      Write_Str (" Next:  ");
+      Write_Int (Int (Interp_Map.Table (Map_Ptr).Next));
+      Write_Eol;
+   end Write_Interp_Ref;
+
    ---------------------
    -- Write_Overloads --
    ---------------------
@@ -2831,20 +2906,5 @@ package body Sem_Type is
          end loop;
       end if;
    end Write_Overloads;
-
-   ----------------------
-   -- Write_Interp_Ref --
-   ----------------------
-
-   procedure Write_Interp_Ref (Map_Ptr : Int) is
-   begin
-      Write_Str (" Node:  ");
-      Write_Int (Int (Interp_Map.Table (Map_Ptr).Node));
-      Write_Str (" Index: ");
-      Write_Int (Int (Interp_Map.Table (Map_Ptr).Index));
-      Write_Str (" Next:  ");
-      Write_Int (Int (Interp_Map.Table (Map_Ptr).Next));
-      Write_Eol;
-   end Write_Interp_Ref;
 
 end Sem_Type;
