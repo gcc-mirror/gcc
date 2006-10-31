@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,6 +98,11 @@ package Sem_Warn is
    -- Output Routines --
    ---------------------
 
+   procedure Output_Obsolescent_Entity_Warnings (N : Node_Id; E : Entity_Id);
+   --  N is a reference to obsolescent entity E, for which appropriate warning
+   --  messages are to be generated (caller has already checked that warnings
+   --  are active and appropriate for this entity).
+
    procedure Output_Unreferenced_Messages;
    --  Warnings about unreferenced entities are collected till the end of
    --  the compilation process (see Check_Unset_Reference for further
@@ -106,6 +111,9 @@ package Sem_Warn is
    ----------------------------
    -- Other Warning Routines --
    ----------------------------
+
+   procedure Check_Code_Statement (N : Node_Id);
+   --  Peform warning checks on a code statement node
 
    procedure Warn_On_Known_Condition (C : Node_Id);
    --  C is a node for a boolean expression resluting from a relational
@@ -131,5 +139,30 @@ package Sem_Warn is
    --
    --  If all these conditions are met, the warning is issued noting that
    --  the result of the test is always false or always true as appropriate.
+
+   procedure Warn_On_Suspicious_Index (Name : Entity_Id; X : Node_Id);
+   --  This is called after resolving an indexed component or a slice. Name
+   --  is the entity for the name of the indexed array, and X is the subscript
+   --  for the indexed component case, or one of the bounds in the slice case.
+   --  If Name is an unconstrained parameter of a standard string type, and
+   --  the index is of the form of a literal or Name'Length [- literal], then
+   --  a warning is generated that the subscripting operation is possibly
+   --  incorrectly assuming a lower bound of 1.
+
+   procedure Warn_On_Useless_Assignment
+     (Ent : Entity_Id;
+      Loc : Source_Ptr := No_Location);
+   --  Called to check if we have a case of a useless assignment to the given
+   --  entity Ent, as indicated by a non-empty Last_Assignment field. This call
+   --  should only be made if Warn_On_Modified_Unread is True, and if Ent is in
+   --  the extended main source unit. Loc is No_Location for the end of block
+   --  call (warning msg says value unreferenced), or the it is the location of
+   --  an overwriting assignment (warning msg points to this assignment).
+
+   procedure Warn_On_Useless_Assignments (E : Entity_Id);
+   pragma Inline (Warn_On_Useless_Assignments);
+   --  Called at the end of a block or subprogram. Scans the entities of the
+   --  block or subprogram to see if there are any variables for which useless
+   --  assignments were made (assignments whose values were never read).
 
 end Sem_Warn;

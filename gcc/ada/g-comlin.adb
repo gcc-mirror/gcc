@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -683,6 +683,9 @@ package body GNAT.Command_Line is
       Last            : Integer;
       Delimiter_Found : Boolean;
 
+      Discard : Boolean;
+      pragma Warnings (Off, Discard);
+
    begin
       Current_Argument := 0;
       Current_Index := 0;
@@ -732,7 +735,7 @@ package body GNAT.Command_Line is
          end loop;
       end loop;
 
-      Delimiter_Found := Goto_Next_Argument_In_Section;
+      Discard := Goto_Next_Argument_In_Section;
    end Initialize_Option_Scan;
 
    ---------------

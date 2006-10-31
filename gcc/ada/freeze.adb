@@ -887,31 +887,12 @@ package body Freeze is
         (T : Entity_Id) return Boolean
       is
          Constraint : Elmt_Id;
-         Discr      : Entity_Id;
 
       begin
          if Has_Discriminants (T)
            and then Present (Discriminant_Constraint (T))
            and then Present (First_Component (T))
          then
-            Discr := First_Discriminant (T);
-
-            if Is_Access_Type (Etype (Discr)) then
-               null;
-
-            --  If the bounds of the discriminant are not compile-time known,
-            --  treat this as non-static, even if the value of the discriminant
-            --  is compile-time known, because the back-end treats aggregates
-            --  of such a subtype as having unknown size.
-
-            elsif not
-              (Compile_Time_Known_Value (Type_Low_Bound  (Etype (Discr)))
-                 and then
-               Compile_Time_Known_Value (Type_High_Bound (Etype (Discr))))
-            then
-               return False;
-            end if;
-
             Constraint := First_Elmt (Discriminant_Constraint (T));
             while Present (Constraint) loop
                if not Compile_Time_Known_Value (Node (Constraint)) then
@@ -2453,6 +2434,16 @@ package body Freeze is
       --  Case of a type or subtype being frozen
 
       else
+         --  Check preelaborable initialization for full type completing a
+         --  private type for which pragma Preelaborable_Initialization given.
+
+         if Must_Have_Preelab_Init (E)
+           and then not Has_Preelaborable_Initialization (E)
+         then
+            Error_Msg_N
+              ("full view of & does not have preelaborable initialization", E);
+         end if;
+
          --  The type may be defined in a generic unit. This can occur when
          --  freezing a generic function that returns the type (which is
          --  defined in a parent unit). It is clearly meaningless to freeze
@@ -3014,7 +3005,7 @@ package body Freeze is
 
             Freeze_Subprogram (E);
 
-            --  AI-326: Check wrong use of tag incomplete type
+            --  Ada 2005 (AI-326): Check wrong use of tag incomplete type
             --
             --    type T is tagged;
             --    type Acc is access function (X : T) return T; -- ERROR
@@ -4503,10 +4494,14 @@ package body Freeze is
       --  Reset True_Constant flag, since something strange is going on with
       --  the scoping here, and our simple value tracing may not be sufficient
       --  for this indication to be reliable. We kill the Constant_Value
-      --  indication for the same reason.
+      --  and Last_Assignment indications for the same reason.
 
       Set_Is_True_Constant (E, False);
       Set_Current_Value    (E, Empty);
+
+      if Ekind (E) = E_Variable then
+         Set_Last_Assignment  (E, Empty);
+      end if;
 
    exception
       when Cannot_Be_Static =>
@@ -5091,8 +5086,9 @@ package body Freeze is
                      and then Present (Packed_Array_Type (Etype (Comp)))
                   then
                      Error_Msg_NE
-                       ("packed array component& will be initialized to zero?",
-                          Nam, Comp);
+                       ("\packed array component& " &
+                        "will be initialized to zero?",
+                        Nam, Comp);
                      exit;
                   else
                      Next_Component (Comp);
@@ -5102,9 +5098,9 @@ package body Freeze is
          end if;
 
          Error_Msg_N
-           ("use pragma Import for & to " &
-              "suppress initialization ('R'M B.1(24))?",
-             Nam);
+           ("\use pragma Import for & to " &
+            "suppress initialization ('R'M B.1(24))?",
+            Nam);
       end if;
    end Warn_Overlay;
 
