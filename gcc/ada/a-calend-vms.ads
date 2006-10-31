@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -87,6 +87,8 @@ package Ada.Calendar is
 
    Time_Error : exception;
 
+   Unimplemented : exception;
+
 private
 
    pragma Inline (Clock);
@@ -117,5 +119,67 @@ private
    --  Notwithstanding this definition, Time is not quite the same as OS_Time.
    --  Relative Time is positive, whereas relative OS_Time is negative,
    --  but this declaration makes for easier conversion.
+
+   --  The following package provides handling of leap seconds. It is
+   --  used by Ada.Calendar.Arithmetic and Ada.Calendar.Formatting, both
+   --  Ada 2005 children of Ada.Calendar.
+
+   package Leap_Sec_Ops is
+
+      After_Last_Leap : constant Time := Time'Last;
+      --  Bigger by far than any leap second value. Not within range of
+      --  Ada.Calendar specified dates.
+
+      procedure Cumulative_Leap_Secs
+        (Start_Date    : Time;
+         End_Date      : Time;
+         Leaps_Between : out Duration;
+         Next_Leap_Sec : out Time);
+      --  Leaps_Between is the sum of the leap seconds that have occured
+      --  on or after Start_Date and before (strictly before) End_Date.
+      --  Next_Leap_Sec represents the next leap second occurence on or
+      --  after End_Date. If there are no leaps seconds after End_Date,
+      --  After_Last_Leap is returned. This does not provide info about
+      --  the next leap second (pos/neg or ?). After_Last_Leap can be used
+      --  as End_Date to count all the leap seconds that have occured on
+      --  or after Start_Date.
+      --
+      --  Important Notes: any fractional parts of Start_Date and End_Date
+      --  are discarded before the calculations are done. For instance: if
+      --  113 seconds is a leap second (it isn't) and 113.5 is input as an
+      --  End_Date, the leap second at 113 will not be counted in
+      --  Leaps_Between, but it will be returned as Next_Leap_Sec. Thus, if
+      --  the caller wants to know if the End_Date is a leap second, the
+      --  comparison should be:
+      --
+      --     End_Date >= Next_Leap_Sec;
+      --
+      --  After_Last_Leap is designed so that this comparison works without
+      --  having to first check if Next_Leap_Sec is a valid leap second.
+
+      function All_Leap_Seconds return Duration;
+      --  Returns the sum off all of the leap seoncds.
+
+   end Leap_Sec_Ops;
+
+   procedure Split_With_Offset
+     (Date    : Time;
+      Year    : out Year_Number;
+      Month   : out Month_Number;
+      Day     : out Day_Number;
+      Seconds : out Day_Duration;
+      Offset  : out Long_Integer);
+   --  Split_W_Offset has the same spec as Split with the addition of an
+   --  offset value which give the offset of the local time zone from UTC
+   --  at the input Date. This value comes for free during the implementation
+   --  of Split and is needed by UTC_Time_Offset. The returned Offset time
+   --  is straight from the C tm struct and is in seconds. If the system
+   --  dependent code has no way to find the offset it will return the value
+   --  Invalid_TZ_Offset declared below. Otherwise no checking is done, so
+   --  it is up to the user to check both for Invalid_TZ_Offset and otherwise
+   --  for a value that is acceptable.
+
+   Invalid_TZ_Offset : Long_Integer;
+   pragma Import (C, Invalid_TZ_Offset, "__gnat_invalid_tzoff");
 
 end Ada.Calendar;

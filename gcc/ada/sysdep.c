@@ -44,13 +44,20 @@
 #include "tsystem.h"
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <time.h>
 #ifdef VMS
 #include <unixio.h>
 #endif
 #else
 #include "config.h"
 #include "system.h"
+#endif
+
+#include <time.h>
+
+#if defined (sun) && defined (__SVR4) && !defined (__vxworks)
+/* The declaration is present in <time.h> but conditionalized
+   on a couple of macros we don't define.  */
+extern struct tm *localtime_r(const time_t *, struct tm *);
 #endif
 
 #include "adaint.h"
@@ -664,8 +671,6 @@ rts_get_nShowCmd (void)
 
 /* This gets around a problem with using the old threads library on VMS 7.0. */
 
-#include <time.h>
-
 extern long get_gmtoff (void);
 
 long
@@ -680,27 +685,57 @@ get_gmtoff (void)
 }
 #endif
 
+/* This value is returned as the time zone offset when a valid value
+   cannot be determined. It is simply a bizarre value that will never
+   occur. It is 3 days plus 73 seconds (offset is in seconds. */
+
+long __gnat_invalid_tzoff = 259273;
+
 /* Definition of __gnat_locatime_r used by a-calend.adb */
 
-#if defined (__EMX__)
+#if defined (__EMX__) || defined (__MINGW32__)
+
+#ifdef CERT
+
+/* For the Cert run times on native Windows we use dummy functions
+   for locking and unlocking tasks since we do not support multiple
+   threads on this configuration (Cert run time on native Windows). */
+
+void dummy (void) {}
+
+void (*Lock_Task) ()   = &dummy;
+void (*Unlock_Task) () = &dummy;
+
+#else
+
 #define Lock_Task system__soft_links__lock_task
 extern void (*Lock_Task) (void);
 
 #define Unlock_Task system__soft_links__unlock_task
 extern void (*Unlock_Task) (void);
 
-/* Provide reentrant version of localtime on OS/2. */
+#endif
 
-extern struct tm *__gnat_localtime_r (const time_t *, struct tm *);
+/* Reentrant localtime for Windows and OS/2. */
+
+extern struct tm *
+__gnat_localtime_tzoff (const time_t *, struct tm *, long *);
 
 struct tm *
-__gnat_localtime_r (const time_t *timer, struct tm *tp)
+__gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
 {
+  DWORD dwRet;
   struct tm *tmp;
+  TIME_ZONE_INFORMATION tzi;
 
   (*Lock_Task) ();
   tmp = localtime (timer);
   memcpy (tp, tmp, sizeof (struct tm));
+  dwRet = GetTimeZoneInformation (&tzi);
+  *off = tzi.Bias;
+  if (tp->tm_isdst > 0)
+    *off = *off + tzi.DaylightBias;
+  *off = *off * -60;
   (*Unlock_Task) ();
   return tp;
 }
@@ -714,31 +749,51 @@ __gnat_localtime_r (const time_t *timer, struct tm *tp)
    spec is required. Only use when ___THREADS_POSIX4ad4__ is defined,
    the Lynx convention when building against the legacy API. */
 
-extern struct tm *__gnat_localtime_r (const time_t *, struct tm *);
+extern struct tm *
+__gnat_localtime_tzoff (const time_t *, struct tm *, long *);
 
 struct tm *
-__gnat_localtime_r (const time_t *timer, struct tm *tp)
+__gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
 {
   localtime_r (tp, timer);
+  *off = __gnat_invalid_tzoff;
   return NULL;
 }
 
 #else
-#if defined (VMS) || defined (__MINGW32__)
+#if defined (VMS)
 
-/* __gnat_localtime_r is not needed on NT and VMS */
+/* __gnat_localtime_tzoff is not needed on VMS */
 
 #else
 
 /* All other targets provide a standard localtime_r */
 
-extern struct tm *__gnat_localtime_r (const time_t *, struct tm *);
+extern struct tm *
+__gnat_localtime_tzoff (const time_t *, struct tm *, long *);
 
 struct tm *
-__gnat_localtime_r (const time_t *timer, struct tm *tp)
+__gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
 {
-  return (struct tm *) localtime_r (timer, tp);
+   localtime_r (timer, tp);
+
+/* AIX, HPUX, SGI Irix, Sun Solaris */
+#if defined (_AIX) || defined (__hpux__) || defined (sgi) || defined (sun)
+  *off = (long) -timezone;
+  if (tp->tm_isdst > 0)
+    *off = *off + 3600;
+
+/* Lynx, VXWorks */
+#elif defined (__Lynx__) || defined (__vxworks)
+  *off = __gnat_invalid_tzoff;
+
+/* Darwin, Free BSD, Linux, Tru64 */
+#else
+  *off = tp->tm_gmtoff;
+#endif
+   return NULL;
 }
+
 #endif
 #endif
 #endif

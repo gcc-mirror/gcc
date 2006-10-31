@@ -334,8 +334,10 @@ package body Impunit is
    -- Ada Hierarchy Units from Ada 2005 Reference Manual --
    --------------------------------------------------------
 
+     "a-calari",    -- Ada.Calendar.Arithmetic
+     "a-calfor",    -- Ada.Calendar.Formatting
+     "a-catizo",    -- Ada.Calendar.Time_Zones
      "a-cdlili",    -- Ada.Containers.Doubly_Linked_Lists
-     "a-cgaaso",    -- Ada.Containers.Generic_Anonymous_Array_Sort
      "a-cgarso",    -- Ada.Containers.Generic_Array_Sort
      "a-cgcaso",    -- Ada.Containers.Generic_Constrained_Array_Sort
      "a-chacon",    -- Ada.Characters.Conversions
@@ -353,11 +355,10 @@ package body Impunit is
      "a-coorse",    -- Ada.Containers.Ordered_Sets
      "a-coteio",    -- Ada.Complex_Text_IO
      "a-direct",    -- Ada.Directories
+     "a-diroro",    -- Ada.Dispatching.Round_Robin
+     "a-dispat",    -- Ada.Dispatching
      "a-envvar",    -- Ada.Environment_Variables
      "a-rttiev",    -- Ada.Real_Time.Timing_Events
-     "a-secain",    -- Ada.Strings.Equal_Case_Insensitive
-     "a-shcain",    -- Ada.Strings.Hash_Case_Insensitive
-     "a-slcain",    -- Ada.Strings.Less_Case_Insensitive
      "a-stboha",    -- Ada.Strings.Bounded.Hash
      "a-stfiha",    -- Ada.Strings.Fixed.Hash
      "a-strhas",    -- Ada.Strings.Hash
@@ -383,6 +384,8 @@ package body Impunit is
      "a-wwboio",    -- Ada.Wide_Text_IO.Wide_Bounded_IO
      "a-wwunio",    -- Ada.Wide_Text_IO.Wide_Unbounded_IO
      "a-zchara",    -- Ada.Wide_Wide_Characters
+     "a-ztcoio",    -- Ada.Wide_Wide_Text_IO.Complex_IO
+     "a-ztedit",    -- Ada.Wide_Wide_Text_IO.Editing
      "a-zttest",    -- Ada.Wide_Wide_Text_IO.Text_Streams
      "a-ztexio",    -- Ada.Wide_Wide_Text_IO
      "a-zzboio",    -- Ada.Wide_Wide_Text_IO.Wide_Wide_Bounded_IO
@@ -408,10 +411,15 @@ package body Impunit is
    -- GNAT Defined Additions to Ada 2005 --
    ----------------------------------------
 
+     "a-cgaaso",    -- Ada.Containers.Generic_Anonymous_Array_Sort
      "a-chzla1",    -- Ada.Characters.Wide_Wide_Latin_1
      "a-chzla9",    -- Ada.Characters.Wide_Wide_Latin_9
      "a-ciormu",    -- Ada.Containers.Indefinite_Ordered_Multisets
      "a-coormu",    -- Ada.Containers.Ordered_Multisets
+     "a-crdlli",    -- Ada.Containers.Restricted_Doubly_Linked_Lists
+     "a-secain",    -- Ada.Strings.Equal_Case_Insensitive
+     "a-shcain",    -- Ada.Strings.Hash_Case_Insensitive
+     "a-slcain",    -- Ada.Strings.Less_Case_Insensitive
      "a-szuzti",    -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO
      "a-zchuni",    -- Ada.Wide_Wide_Characters.Unicode
 
