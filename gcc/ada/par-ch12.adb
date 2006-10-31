@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -332,6 +332,34 @@ package body Ch12 is
    begin
       Generic_Assoc_Node := New_Node (N_Generic_Association, Token_Ptr);
 
+      --  Ada2005: an association can be given by: others => <>.
+
+      if Token = Tok_Others then
+         if Ada_Version < Ada_05 then
+            Error_Msg_SP
+              ("partial parametrization of formal packages" &
+                "  is an Ada 2005 extension");
+            Error_Msg_SP
+              ("\unit must be compiled with -gnat05 switch");
+         end if;
+
+         Scan;  --  past OTHERS
+
+         if Token /= Tok_Arrow then
+            Error_Msg_BC ("expect arrow after others");
+         else
+            Scan;  --  past arrow
+         end if;
+
+         if Token /= Tok_Box then
+            Error_Msg_BC ("expect Box after arrow");
+         else
+            Scan;  --  past box
+         end if;
+
+         return New_Node (N_Others_Choice, Token_Ptr);
+      end if;
+
       if Token in Token_Class_Desig then
          Param_Name_Node := Token_Node;
          Save_Scan_State (Scan_State); -- at designator
@@ -345,7 +373,18 @@ package body Ch12 is
          end if;
       end if;
 
-      Set_Explicit_Generic_Actual_Parameter (Generic_Assoc_Node, P_Expression);
+      --  In Ada 2005 the actual can be a box.
+
+      if Token = Tok_Box then
+         Scan;
+         Set_Box_Present (Generic_Assoc_Node);
+         Set_Explicit_Generic_Actual_Parameter (Generic_Assoc_Node, Empty);
+
+      else
+         Set_Explicit_Generic_Actual_Parameter
+           (Generic_Assoc_Node, P_Expression);
+      end if;
+
       return Generic_Assoc_Node;
    end P_Generic_Association;
 
@@ -361,17 +400,20 @@ package body Ch12 is
 
    --  FORMAL_OBJECT_DECLARATION ::=
    --    DEFINING_IDENTIFIER_LIST :
-   --      MODE SUBTYPE_MARK [:= DEFAULT_EXPRESSION];
+   --      MODE [NULL_EXCLUSION] SUBTYPE_MARK [:= DEFAULT_EXPRESSION];
+   --  | DEFINING_IDENTIFIER_LIST :
+   --      MODE ACCESS_DEFINITION [:= DEFAULT_EXPRESSION];
 
    --  The caller has checked that the initial token is an identifier
 
    --  Error recovery: cannot raise Error_Resync
 
    procedure P_Formal_Object_Declarations (Decls : List_Id) is
-      Decl_Node  : Node_Id;
-      Scan_State : Saved_Scan_State;
-      Num_Idents : Nat;
-      Ident      : Nat;
+      Decl_Node        : Node_Id;
+      Ident            : Nat;
+      Not_Null_Present : Boolean := False;
+      Num_Idents       : Nat;
+      Scan_State       : Saved_Scan_State;
 
       Idents : array (Int range 1 .. 4096) of Entity_Id;
       --  This array holds the list of defining identifiers. The upper bound
@@ -405,9 +447,36 @@ package body Ch12 is
          Decl_Node := New_Node (N_Formal_Object_Declaration, Token_Ptr);
          Set_Defining_Identifier (Decl_Node, Idents (Ident));
          P_Mode (Decl_Node);
-         Set_Subtype_Mark (Decl_Node, P_Subtype_Mark_Resync);
+
+         Not_Null_Present := P_Null_Exclusion;  --  Ada 2005 (AI-423)
+
+         --  Ada 2005 (AI-423): Formal object with an access definition
+
+         if Token = Tok_Access then
+
+            --  The access definition is still parsed and set even though
+            --  the compilation may not use the proper switch. This action
+            --  ensures the required local error recovery.
+
+            Set_Access_Definition (Decl_Node,
+              P_Access_Definition (Not_Null_Present));
+
+            if Ada_Version < Ada_05 then
+               Error_Msg_SP
+                 ("access definition not allowed in formal object " &
+                  "declaration");
+               Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+            end if;
+
+         --  Formal object with a subtype mark
+
+         else
+            Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
+            Set_Subtype_Mark (Decl_Node, P_Subtype_Mark_Resync);
+         end if;
+
          No_Constraint;
-         Set_Expression (Decl_Node, Init_Expr_Opt);
+         Set_Default_Expression (Decl_Node, Init_Expr_Opt);
 
          if Ident > 1 then
             Set_Prev_Ids (Decl_Node, True);
@@ -542,6 +611,12 @@ package body Ch12 is
                   return P_Formal_Private_Type_Definition;
                end if;
 
+            --  Ada 2005 (AI-443): Abstract synchronized formal derived type
+
+            elsif Token = Tok_Synchronized then
+               Restore_Scan_State (Scan_State); -- to ABSTRACT
+               return P_Formal_Derived_Type_Definition;
+
             else
                Restore_Scan_State (Scan_State); -- to ABSTRACT
                return P_Formal_Private_Type_Definition;
@@ -560,7 +635,8 @@ package body Ch12 is
             return P_Formal_Floating_Point_Definition;
 
          when Tok_Interface => --  Ada 2005 (AI-251)
-            return P_Interface_Type_Definition (Is_Synchronized => False);
+            return P_Interface_Type_Definition (Abstract_Present => False,
+                                                Is_Synchronized => False);
 
          when Tok_Left_Paren =>
             return P_Formal_Discrete_Type_Definition;
@@ -571,7 +647,8 @@ package body Ch12 is
 
             if Token = Tok_Interface then
                Typedef_Node := P_Interface_Type_Definition
-                                (Is_Synchronized => False);
+                                (Abstract_Present => False,
+                                 Is_Synchronized  => False);
                Set_Limited_Present (Typedef_Node);
                return Typedef_Node;
 
@@ -616,34 +693,51 @@ package body Ch12 is
             Discard_Junk_Node (P_Record_Definition);
             return Error;
 
-         --  Ada 2005 (AI-345)
+         --  Ada 2005 (AI-345): Task, Protected or Synchronized interface or
+         --  (AI-443): Synchronized formal derived type declaration.
 
          when Tok_Protected    |
               Tok_Synchronized |
               Tok_Task         =>
 
-            Scan; -- past TASK, PROTECTED or SYNCHRONIZED
-
             declare
-               Saved_Token  : constant Token_Type := Token;
+               Saved_Token : constant Token_Type := Token;
 
             begin
-               Typedef_Node := P_Interface_Type_Definition
-                                (Is_Synchronized => True);
+               Scan; -- past TASK, PROTECTED or SYNCHRONIZED
 
-               case Saved_Token is
-                  when Tok_Task =>
-                     Set_Task_Present         (Typedef_Node);
+               --  Synchronized derived type
 
-                  when Tok_Protected =>
-                     Set_Protected_Present    (Typedef_Node);
+               if Token = Tok_New then
+                  Typedef_Node := P_Formal_Derived_Type_Definition;
 
-                  when Tok_Synchronized =>
+                  if Saved_Token = Tok_Synchronized then
                      Set_Synchronized_Present (Typedef_Node);
+                  else
+                     Error_Msg_SC ("invalid kind of formal derived type");
+                  end if;
 
-                  when others =>
-                     null;
-               end case;
+               --  Interface
+
+               else
+                  Typedef_Node := P_Interface_Type_Definition
+                                    (Abstract_Present => False,
+                                     Is_Synchronized  => True);
+
+                  case Saved_Token is
+                     when Tok_Task =>
+                        Set_Task_Present         (Typedef_Node);
+
+                     when Tok_Protected =>
+                        Set_Protected_Present    (Typedef_Node);
+
+                     when Tok_Synchronized =>
+                        Set_Synchronized_Present (Typedef_Node);
+
+                     when others =>
+                        null;
+                  end case;
+               end if;
 
                return Typedef_Node;
             end;
@@ -723,11 +817,12 @@ package body Ch12 is
    --------------------------------------------
 
    --  FORMAL_DERIVED_TYPE_DEFINITION ::=
-   --    [abstract] [limited]
-   --         new SUBTYPE_MARK [[AND interface_list] with private]
+   --    [abstract] [limited | synchronized]
+   --         new SUBTYPE_MARK [[and INTERFACE_LIST] with private]
 
-   --  The caller has checked the initial token(s) is/are NEW, ASTRACT NEW
-   --  LIMITED NEW, or ABSTRACT LIMITED NEW
+   --  The caller has checked the initial token(s) is/are NEW, ASTRACT NEW,
+   --  or LIMITED NEW, ABSTRACT LIMITED NEW, SYNCHRONIZED NEW or ABSTRACT
+   --  SYNCHRONIZED NEW.
 
    --  Error recovery: cannot raise Error_Resync
 
@@ -744,7 +839,7 @@ package body Ch12 is
 
       if Token = Tok_Limited then
          Set_Limited_Present (Def_Node);
-         Scan;  --  past Limited
+         Scan;  --  past LIMITED
 
          if Ada_Version < Ada_05 then
             Error_Msg_SP
@@ -753,9 +848,20 @@ package body Ch12 is
               ("\unit must be compiled with -gnat05 switch");
          end if;
 
-         if Token = Tok_Abstract then
-            Scan;  --  past ABSTRACT. diagnosed already in caller.
+      elsif Token = Tok_Synchronized then
+         Set_Synchronized_Present (Def_Node);
+         Scan;  --  past SYNCHRONIZED
+
+         if Ada_Version < Ada_05 then
+            Error_Msg_SP
+              ("SYNCHRONIZED in derived type is an Ada 2005 extension");
+            Error_Msg_SP
+              ("\unit must be compiled with -gnat05 switch");
          end if;
+      end if;
+
+      if Token = Tok_Abstract then
+         Scan;  --  past ABSTRACT, diagnosed already in caller.
       end if;
 
       Scan; -- past NEW;
@@ -1059,7 +1165,14 @@ package body Ch12 is
    --      is new generic_package_NAME FORMAL_PACKAGE_ACTUAL_PART;
 
    --  FORMAL_PACKAGE_ACTUAL_PART ::=
-   --    (<>) | [GENERIC_ACTUAL_PART]
+   --    ([OTHERS =>] <>) |
+   --    [GENERIC_ACTUAL_PART]
+   --    (FORMAL_PACKAGE_ASSOCIATION {, FORMAL_PACKAGE_ASSOCIATION}
+   --      [, OTHERS => <>)
+
+   --  FORMAL_PACKAGE_ASSOCIATION ::=
+   --    GENERIC_ASSOCIATION
+   --    | GENERIC_FORMAL_PARAMETER_SELECTOR_NAME => <>
 
    --  The caller has checked that the initial tokens are WITH PACKAGE,
    --  and the initial WITH has been scanned out (so Token = Tok_Package).
