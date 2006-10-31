@@ -843,6 +843,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   mlib-tgt.adb<mlib-tgt-linux.adb
   GNATLIB_SHARED = gnatlib-shared-dual
 
+  EH_MECHANISM=-gcc
   THREADSLIB= -lc_r
   GMEM_LIB = gmemlib
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
@@ -1197,7 +1198,6 @@ endif
 
 ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-calend.adb<a-calend-mingw.adb \
   a-dirval.adb<a-dirval-mingw.adb \
   a-excpol.adb<a-excpol-abort.adb \
   a-intnam.ads<a-intnam-mingw.ads \
@@ -1847,7 +1847,7 @@ gnatlib-shared-vms:
 	objdump --syms $(LIBGNAT_OBJS) $(GNATRTL_NONTASKING_OBJS) | \
 	$(SHLIB_SYMVEC) >> SYMVEC_$$$$.opt && \
 	echo "case_sensitive=NO" >> SYMVEC_$$$$.opt && \
-	../../xgcc -g -B../../ -nostartfiles -shared -shared-libgcc \
+	../../xgcc -g -B../../ -shared -shared-libgcc \
 	   -o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) libgnat.a \
 	   sys\$$library:trace.exe \
 	   --for-linker=/noinform \
@@ -1857,7 +1857,7 @@ gnatlib-shared-vms:
 	objdump --syms $(GNATRTL_TASKING_OBJS) | \
 	$(SHLIB_SYMVEC) >> SYMVEC_$$$$.opt && \
 	echo "case_sensitive=NO" >> SYMVEC_$$$$.opt && \
-	../../xgcc -g -B../../ -nostartfiles -shared -shared-libgcc \
+	../../xgcc -g -B../../ -shared -shared-libgcc \
 	   -o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 	   libgnarl.a libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 	   sys\$$library:trace.exe \
@@ -1921,8 +1921,8 @@ ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 # force no sibling call optimization on s-traceb.o so the number of stack
 # frames to be skipped when computing a call chain is not modified by
 # optimization. However we can do that only when building the runtime
-# (not the compiler) because the -fno-optimize-sibling-calls exists
-# only in GCC 3.
+# (not the compiler) because the -fno-optimize-sibling-calls option exists
+# only in GCC 3 and above.
 
 ifneq (,$(findstring xgcc,$(CC)))
 NO_SIBLING_ADAFLAGS=-fno-optimize-sibling-calls
@@ -1942,13 +1942,24 @@ s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
 	      $< $(OUTPUT_OPTION)
 
+# force no function reordering on a-except.o because of the exclusion bounds
+# mechanism (see the source file for more detailed information). However we
+# can do that only when building the runtime (not the compiler) because the
+# -fno-toplevel-reorder option exists only in GCC 4.2 and above.
+
+ifneq (,$(findstring xgcc,$(CC)))
+NO_REORDER_ADAFLAGS=-fno-toplevel-reorder
+else
+NO_REORDER_ADAFLAGS=
+endif
+
 # force debugging information on a-except.o so that it is always
 # possible to set conditional breakpoints on exceptions.
 # use -O1 otherwise gdb isn't able to get a full backtrace on mips targets.
 
 a-except.o  : a-except.adb a-except.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
-	      $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	      $(NO_REORDER_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
 # force debugging information on s-assert.o so that it is always
 # possible to set breakpoint on assert failures.
