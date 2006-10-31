@@ -7,11 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -603,7 +599,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       procedure Process_Node (Node : Node_Access);
       pragma Inline (Process_Node);
 
-      procedure Iterate is
+      procedure Local_Iterate is
          new HT_Ops.Generic_Iteration (Process_Node);
 
       ------------------
@@ -615,10 +611,22 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          Process (Cursor'(Container'Unchecked_Access, Node));
       end Process_Node;
 
+      B : Natural renames Container'Unrestricted_Access.HT.Busy;
+
    --  Start of processing Iterate
 
    begin
-      Iterate (Container.HT);
+      B := B + 1;
+
+      begin
+         Local_Iterate (Container.HT);
+      exception
+         when others =>
+            B := B - 1;
+            raise;
+      end;
+
+      B := B - 1;
    end Iterate;
 
    ---------

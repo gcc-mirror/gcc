@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,6 @@
 --                                                                          --
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
-
---  This body needs commenting ???
 
 with Ada.Containers.Prime_Numbers;
 with Ada.Unchecked_Deallocation;
@@ -60,40 +58,15 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          return;
       end if;
 
+      --  Technically it isn't necessary to allocate the exact same length
+      --  buckets array, because our only requirement is that following
+      --  assignment the source and target containers compare equal (that is,
+      --  operator "=" returns True). We can satisfy this requirement with any
+      --  hash table length, but we decide here to match the length of the
+      --  source table. This has the benefit that when iterating, elements of
+      --  the target are delivered in the exact same order as for the source.
+
       HT.Buckets := new Buckets_Type (Src_Buckets'Range);
-      --  TODO: allocate minimum size req'd.  (See note below.)
-
-      --  NOTE: see note below about these comments.
-      --  Probably we have to duplicate the Size (Src), too, in order
-      --  to guarantee that
-
-      --    Dst := Src;
-      --    Dst = Src is true
-
-      --  The only quirk is that we depend on the hash value of a dst key
-      --  to be the same as the src key from which it was copied.
-      --  If we relax the requirement that the hash value must be the
-      --  same, then of course we can't guarantee that following
-      --  assignment that Dst = Src is true ???
-      --
-      --  NOTE: 17 Apr 2005
-      --  What I said above is no longer true.  The semantics of (map) equality
-      --  changed, such that we use key in the left map to look up the
-      --  equivalent key in the right map, and then compare the elements (using
-      --  normal equality) of the equivalent keys.  So it doesn't matter that
-      --  the maps have different capacities (i.e. the hash tables have
-      --  different lengths), since we just look up the key, irrespective of
-      --  its map's hash table length.  All the RM says we're required to do
-      --  it arrange for the target map to "=" the source map following an
-      --  assignment (that is, following an Adjust), so it doesn't matter
-      --  what the capacity of the target map is.  What I'll probably do is
-      --  allocate a new hash table that has the minimum size necessary,
-      --  instead of allocating a new hash table whose size exactly matches
-      --  that of the source.  (See the assignment that immediately precedes
-      --  these comments.)  What we really need is a special Assign operation
-      --  (not unlike what we have already for Vector) that allows the user to
-      --  choose the capacity of the target.
-      --  END NOTE.
 
       for Src_Index in Src_Buckets'Range loop
          Src_Node := Src_Buckets (Src_Index);
@@ -102,7 +75,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
             declare
                Dst_Node : constant Node_Access := Copy_Node (Src_Node);
 
-               --   See note above
+               --  See note above
 
                pragma Assert (Index (HT, Dst_Node) = Src_Index);
 
@@ -353,32 +326,20 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    -----------------------
 
    procedure Generic_Iteration (HT : Hash_Table_Type) is
-      Busy : Natural renames HT'Unrestricted_Access.all.Busy;
+      Node : Node_Access;
 
    begin
       if HT.Length = 0 then
          return;
       end if;
 
-      Busy := Busy + 1;
-
-      declare
-         Node : Node_Access;
-      begin
-         for Indx in HT.Buckets'Range loop
-            Node := HT.Buckets (Indx);
-            while Node /= null loop
-               Process (Node);
-               Node := Next (Node);
-            end loop;
+      for Indx in HT.Buckets'Range loop
+         Node := HT.Buckets (Indx);
+         while Node /= null loop
+            Process (Node);
+            Node := Next (Node);
          end loop;
-      exception
-         when others =>
-            Busy := Busy - 1;
-            raise;
-      end;
-
-      Busy := Busy - 1;
+      end loop;
    end Generic_Iteration;
 
    ------------------
@@ -389,71 +350,41 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
      (Stream : access Root_Stream_Type'Class;
       HT     : out Hash_Table_Type)
    is
-      X, Y : Node_Access;
-
-      Last, I : Hash_Type;
-      N, M    : Count_Type'Base;
+      N  : Count_Type'Base;
+      NN : Hash_Type;
 
    begin
       Clear (HT);
 
-      Hash_Type'Read (Stream, Last);
-
       Count_Type'Base'Read (Stream, N);
-      pragma Assert (N >= 0);
+
+      if N < 0 then
+         raise Program_Error;
+      end if;
 
       if N = 0 then
          return;
       end if;
 
       if HT.Buckets = null
-        or else HT.Buckets'Last /= Last
+        or else HT.Buckets'Length < N
       then
          Free (HT.Buckets);
-         HT.Buckets := new Buckets_Type (0 .. Last);
+         NN := Prime_Numbers.To_Prime (N);
+         HT.Buckets := new Buckets_Type (0 .. NN - 1);
       end if;
 
-      --  TODO: should we rewrite this algorithm so that it doesn't
-      --  depend on preserving the exactly length of the hash table
-      --  array?  We would prefer to not have to (re)allocate a
-      --  buckets array (the array that HT already has might be large
-      --  enough), and to not have to stream the count of the number
-      --  of nodes in each bucket.  The algorithm below is vestigial,
-      --  as it was written prior to the meeting in Palma, when the
-      --  semantics of equality were changed (and which obviated the
-      --  need to preserve the hash table length).
-
-      loop
-         Hash_Type'Read (Stream, I);
-         pragma Assert (I in HT.Buckets'Range);
-         pragma Assert (HT.Buckets (I) = null);
-
-         Count_Type'Base'Read (Stream, M);
-         pragma Assert (M >= 1);
-         pragma Assert (M <= N);
-
-         HT.Buckets (I) := New_Node (Stream);
-         pragma Assert (HT.Buckets (I) /= null);
-         pragma Assert (Next (HT.Buckets (I)) = null);
-
-         Y := HT.Buckets (I);
+      for J in 1 .. N loop
+         declare
+            Node : constant Node_Access := New_Node (Stream);
+            Indx : constant Hash_Type := Index (HT, Node);
+            B    : Node_Access renames HT.Buckets (Indx);
+         begin
+            Set_Next (Node => Node, Next => B);
+            B := Node;
+         end;
 
          HT.Length := HT.Length + 1;
-
-         for J in Count_Type range 2 .. M loop
-            X := New_Node (Stream);
-            pragma Assert (X /= null);
-            pragma Assert (Next (X) = null);
-
-            Set_Next (Node => Y, Next => X);
-            Y := X;
-
-            HT.Length := HT.Length + 1;
-         end loop;
-
-         N := N - M;
-
-         exit when N = 0;
       end loop;
    end Generic_Read;
 
@@ -465,47 +396,23 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
      (Stream : access Root_Stream_Type'Class;
       HT     : Hash_Table_Type)
    is
-      M : Count_Type'Base;
-      X : Node_Access;
+      procedure Write (Node : Node_Access);
+      pragma Inline (Write);
+
+      procedure Write is new Generic_Iteration (Write);
+
+      -----------
+      -- Write --
+      -----------
+
+      procedure Write (Node : Node_Access) is
+      begin
+         Write (Stream, Node);
+      end Write;
 
    begin
-      if HT.Buckets = null then
-         Hash_Type'Write (Stream, 0);
-      else
-         Hash_Type'Write (Stream, HT.Buckets'Last);
-      end if;
-
       Count_Type'Base'Write (Stream, HT.Length);
-
-      if HT.Length = 0 then
-         return;
-      end if;
-
-      --  TODO: see note in Generic_Read???
-
-      for Indx in HT.Buckets'Range loop
-         X := HT.Buckets (Indx);
-
-         if X /= null then
-            M := 1;
-            loop
-               X := Next (X);
-               exit when X = null;
-               M := M + 1;
-            end loop;
-
-            Hash_Type'Write (Stream, Indx);
-            Count_Type'Base'Write (Stream, M);
-
-            X := HT.Buckets (Indx);
-            for J in Count_Type range 1 .. M loop
-               Write (Stream, X);
-               X := Next (X);
-            end loop;
-
-            pragma Assert (X = null);
-         end if;
-      end loop;
+      Write (HT);
    end Generic_Write;
 
    -----------
