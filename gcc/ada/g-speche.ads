@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2005 AdaCore                      --
+--                     Copyright (C) 1998-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,8 +40,7 @@ package GNAT.Spelling_Checker is
 
    function Is_Bad_Spelling_Of
      (Found  : String;
-      Expect : String)
-      return   Boolean;
+      Expect : String) return Boolean;
    --  Determines if the string Found is a plausible misspelling of the
    --  string Expect. Returns True for an exact match or a probably
    --  misspelling, False if no near match is detected. This routine

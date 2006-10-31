@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2005 AdaCore                      --
+--                     Copyright (C) 1998-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,8 +39,7 @@ package body GNAT.Spelling_Checker is
 
    function Is_Bad_Spelling_Of
      (Found  : String;
-      Expect : String)
-      return   Boolean
+      Expect : String) return Boolean
    is
       FN : constant Natural := Found'Length;
       FF : constant Natural := Found'First;
@@ -60,9 +59,14 @@ package body GNAT.Spelling_Checker is
       elsif EN = 0 then
          return False;
 
-      --  If first character does not match, then definitely not misspelling
+         --  If first character does not match, then we consider that this is
+         --  definitely not a misspelling. An exception is when we expect a
+         --  letter O and found a zero.
 
-      elsif Found (FF) /= Expect (EF) then
+      elsif Found (FF) /= Expect (EF)
+        and then (Found (FF) /= '0'
+                    or else (Expect (EF) /= 'o' and then Expect (EF) /= 'O'))
+      then
          return False;
 
       --  Not a bad spelling if both strings are 1-2 characters long
@@ -149,7 +153,6 @@ package body GNAT.Spelling_Checker is
       else
          return False;
       end if;
-
    end Is_Bad_Spelling_Of;
 
 end GNAT.Spelling_Checker;
