@@ -5,7 +5,7 @@
 --       A D A . C O N T A I N E R S . R E D _ B L A C K _ T R E E S .      --
 --               G E N E R I C _ S E T _ O P E R A T I O N S                --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
 --          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
