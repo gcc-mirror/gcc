@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -462,7 +462,7 @@ package body Lib.Load is
       --  We skip this test in multiple unit per file mode since in this
       --  case we can have multiple units from the same source file.
 
-      if Unum > Units.Last and then Multiple_Unit_Index = 0 then
+      if Unum > Units.Last and then Get_Unit_Index (Uname_Actual) = 0 then
          for J in Units.First .. Units.Last loop
             if Fname = Units.Table (J).Unit_File_Name then
                if Debug_Flag_L then
@@ -610,7 +610,7 @@ package body Lib.Load is
                   Load_Msg_Sloc);
                Error_Msg_Name_1 := Unit_File_Name (Unum);
                Error_Msg
-                 ("incorrect spec in file { must be removed first!",
+                 ("\incorrect spec in file { must be removed first!",
                   Load_Msg_Sloc);
                return No_Unit;
             end if;
