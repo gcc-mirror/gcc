@@ -50,6 +50,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch12; use Sem_Ch12;
+with Sem_Disp; use Sem_Disp;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Snames;   use Snames;
@@ -86,6 +87,17 @@ package body Sem_Ch7 is
    -- Local Subprograms --
    -----------------------
 
+   procedure Check_Anonymous_Access_Types
+     (Spec_Id : Entity_Id;
+      P_Body  :  Node_Id);
+   --  If the spec of a package has a limited_with_clause, it may declare
+   --  anonymous access types whose designated type is a limited view, such
+   --  an anonymous access return type for a function. This access type
+   --  cannot be elaborated in the spec itself, but it may need an itype
+   --  reference if it is used within a nested scope. In that case the itype
+   --  reference is created at the beginning of the corresponding package body
+   --  and inserted before other body declarations.
+
    procedure Install_Package_Entity (Id : Entity_Id);
    --  Basic procedure for the previous two. Places one entity on its
    --  visibility chain, and recurses on the visible part if the entity
@@ -95,26 +107,25 @@ package body Sem_Ch7 is
    --  True for a private type that is not a subtype
 
    function Is_Visible_Dependent (Dep : Entity_Id) return Boolean;
-   --  If the private dependent is a private type whose full view is
-   --  derived from the parent type, its full properties are revealed
-   --  only if we are in the immediate scope of the private dependent.
-   --  Should this predicate be tightened further???
+   --  If the private dependent is a private type whose full view is derived
+   --  from the parent type, its full properties are revealed only if we are in
+   --  the immediate scope of the private dependent. Should this predicate be
+   --  tightened further???
 
    procedure Declare_Inherited_Private_Subprograms (Id : Entity_Id);
-   --  Called upon entering the private part of a public child package
-   --  and the body of a nested package, to potentially declare certain
-   --  inherited subprograms that were inherited by types in the visible
-   --  part, but whose declaration was deferred because the parent
-   --  operation was private and not visible at that point. These
-   --  subprograms are located by traversing the visible part declarations
-   --  looking for non-private type extensions and then examining each of
-   --  the primitive operations of such types to find those that were
-   --  inherited but declared with a special internal name. Each such
-   --  operation is now declared as an operation with a normal name (using
-   --  the name of the parent operation) and replaces the previous implicit
-   --  operation in the primitive operations list of the type. If the
-   --  inherited private operation has been overridden, then it's
-   --  replaced by the overriding operation.
+   --  Called upon entering the private part of a public child package and the
+   --  body of a nested package, to potentially declare certain inherited
+   --  subprograms that were inherited by types in the visible part, but whose
+   --  declaration was deferred because the parent operation was private and
+   --  not visible at that point. These subprograms are located by traversing
+   --  the visible part declarations looking for non-private type extensions
+   --  and then examining each of the primitive operations of such types to
+   --  find those that were inherited but declared with a special internal
+   --  name. Each such operation is now declared as an operation with a normal
+   --  name (using the name of the parent operation) and replaces the previous
+   --  implicit operation in the primitive operations list of the type. If the
+   --  inherited private operation has been overridden, then it's replaced by
+   --  the overriding operation.
 
    --------------------------
    -- Analyze_Package_Body --
@@ -144,9 +155,7 @@ package body Sem_Ch7 is
 
       begin
          Id := First_Entity (P);
-
          while Present (Id) loop
-
             if Is_Type (Id)
               and then (Is_Limited_Composite (Id)
                          or else Is_Private_Composite (Id))
@@ -251,6 +260,7 @@ package body Sem_Ch7 is
          Body_Id := Defining_Entity (N);
          Set_Ekind (Body_Id, E_Package_Body);
          Set_Scope (Body_Id, Scope (Spec_Id));
+         Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Spec_Id));
          Set_Body_Entity (Spec_Id, Body_Id);
          Set_Spec_Entity (Body_Id, Spec_Id);
 
@@ -303,6 +313,8 @@ package body Sem_Ch7 is
       Install_Private_With_Clauses (Spec_Id);
       Install_Composite_Operations (Spec_Id);
 
+      Check_Anonymous_Access_Types (Spec_Id, N);
+
       if Ekind (Spec_Id) = E_Generic_Package then
          Set_Use (Generic_Formal_Declarations (Pack_Decl));
       end if;
@@ -345,22 +357,22 @@ package body Sem_Ch7 is
 
       Generate_Reference (Spec_Id, Body_Id, 'b', Set_Ref => False);
 
-      --  For a generic package, collect global references and mark
-      --  them on the original body so that they are not resolved
-      --  again at the point of instantiation.
+      --  For a generic package, collect global references and mark them on
+      --  the original body so that they are not resolved again at the point
+      --  of instantiation.
 
       if Ekind (Spec_Id) /= E_Package then
          Save_Global_References (Original_Node (N));
          End_Generic;
       end if;
 
-      --  The entities of the package body have so far been chained onto
-      --  the declaration chain for the spec. That's been fine while we
-      --  were in the body, since we wanted them to be visible, but now
-      --  that we are leaving the package body, they are no longer visible,
-      --  so we remove them from the entity chain of the package spec entity,
-      --  and copy them to the entity chain of the package body entity, where
-      --  they will never again be visible.
+      --  The entities of the package body have so far been chained onto the
+      --  declaration chain for the spec. That's been fine while we were in the
+      --  body, since we wanted them to be visible, but now that we are leaving
+      --  the package body, they are no longer visible, so we remove them from
+      --  the entity chain of the package spec entity, and copy them to the
+      --  entity chain of the package body entity, where they will never again
+      --  be visible.
 
       if Present (Last_Spec_Entity) then
          Set_First_Entity (Body_Id, Next_Entity (Last_Spec_Entity));
@@ -384,7 +396,6 @@ package body Sem_Ch7 is
 
       begin
          E := First_Entity (Body_Id);
-
          while Present (E) loop
             Set_Is_Immediately_Visible (E, False);
             Set_Is_Potentially_Use_Visible (E, False);
@@ -470,7 +481,6 @@ package body Sem_Ch7 is
                end if;
 
                D := Last (L);
-
                while Present (D) loop
                   K := Nkind (D);
 
@@ -688,6 +698,13 @@ package body Sem_Ch7 is
       L            : Entity_Id;
       Public_Child : Boolean;
 
+      Private_With_Clauses_Installed : Boolean := False;
+      --  In Ada 2005, private with_clauses are visible in the private part
+      --  of a nested package, even if it appears in the public part of the
+      --  enclosing package. This requires a separate step to install these
+      --  private_with_clauses, and remove them at the end of the nested
+      --  package.
+
       procedure Clear_Constants (Id : Entity_Id; FE : Entity_Id);
       --  Clears constant indications (Never_Set_In_Source, Constant_Value,
       --  and Is_True_Constant) on all variables that are entities of Id,
@@ -737,8 +754,10 @@ package body Sem_Ch7 is
          end if;
 
          --  Note: in the loop below, the check for Next_Entity pointing
-         --  back to the package entity seems very odd, but it is needed,
-         --  because this kind of unexpected circularity does occur ???
+         --  back to the package entity may seem odd, but it is needed,
+         --  because a package can contain a renaming declaration to itself,
+         --  and such renamings are generated automatically within package
+         --  instances.
 
          E := FE;
          while Present (E) and then E /= Id loop
@@ -747,6 +766,7 @@ package body Sem_Ch7 is
                Set_Is_True_Constant    (E, False);
                Set_Current_Value       (E, Empty);
                Set_Is_Known_Null       (E, False);
+               Set_Last_Assignment     (E, Empty);
 
                if not Can_Never_Be_Null (E) then
                   Set_Is_Known_Non_Null (E, False);
@@ -867,9 +887,10 @@ package body Sem_Ch7 is
       ----------------------------------------
 
       procedure Inspect_Unchecked_Union_Completion (Decls : List_Id) is
-         Decl : Node_Id := First (Decls);
+         Decl : Node_Id;
 
       begin
+         Decl := First (Decls);
          while Present (Decl) loop
 
             --  We are looking at an incomplete or private type declaration
@@ -898,11 +919,12 @@ package body Sem_Ch7 is
       -----------------------------------------
 
       procedure Install_Parent_Private_Declarations (Inst_Id : Entity_Id) is
-         Inst_Par  : Entity_Id := Inst_Id;
+         Inst_Par  : Entity_Id;
          Gen_Par   : Entity_Id;
          Inst_Node : Node_Id;
 
       begin
+         Inst_Par := Inst_Id;
          Gen_Par :=
            Generic_Parent (Specification (Unit_Declaration_Node (Inst_Par)));
          while Present (Gen_Par) and then Is_Child_Unit (Gen_Par) loop
@@ -923,13 +945,25 @@ package body Sem_Ch7 is
                    (Specification (Unit_Declaration_Node (Inst_Par)));
 
                --  Install the private declarations and private use clauses
-               --  of a parent instance of the child instance.
+               --  of a parent instance of the child instance, unless the
+               --  parent instance private declarations have already been
+               --  installed earlier in Analyze_Package_Specification, which
+               --  happens when a generic child is instantiated, and the
+               --  instance is a child of the parent instance.
+
+               --  Installing the use clauses of the parent instance twice is
+               --  both unnecessary and wrong, because it would cause the
+               --  clauses to be chained to themselves in the use clauses list
+               --  of the scope stack entry. That in turn would cause
+               --  End_Use_Clauses to get into an endless look upon scope exit.
 
                if Present (Gen_Par) then
-                  Install_Private_Declarations (Inst_Par);
-                  Set_Use (Private_Declarations
-                             (Specification
-                                (Unit_Declaration_Node (Inst_Par))));
+                  if not In_Private_Part (Inst_Par) then
+                     Install_Private_Declarations (Inst_Par);
+                     Set_Use (Private_Declarations
+                                (Specification
+                                   (Unit_Declaration_Node (Inst_Par))));
+                  end if;
 
                --  If we've reached the end of the generic instance parents,
                --  then finish off by looping through the nongeneric parents
@@ -1003,8 +1037,8 @@ package body Sem_Ch7 is
          end;
       end if;
 
-      --  If package is a public child unit, then make the private
-      --  declarations of the parent visible.
+      --  If package is a public child unit, then make the private declarations
+      --  of the parent visible.
 
       Public_Child := False;
 
@@ -1017,7 +1051,7 @@ package body Sem_Ch7 is
          Par := Id;
          Par_Spec := Parent_Spec (Parent (N));
 
-         --  If the package is formal package of an enclosing generic, is is
+         --  If the package is formal package of an enclosing generic, it is
          --  transformed into a local generic declaration, and compiled to make
          --  its spec available. We need to retrieve the original generic to
          --  determine whether it is a child unit, and install its parents.
@@ -1035,6 +1069,7 @@ package body Sem_Ch7 is
 
             while Scope (Par) /= Standard_Standard
               and then Is_Public_Child (Id, Par)
+              and then In_Open_Scopes (Par)
             loop
                Public_Child := True;
                Par := Scope (Par);
@@ -1048,33 +1083,44 @@ package body Sem_Ch7 is
 
       if Is_Compilation_Unit (Id) then
          Install_Private_With_Clauses (Id);
+      else
+
+         --  The current compilation unit may include private with_clauses,
+         --  which are visible in the private part of the current nested
+         --  package, and have to be installed now.
+
+         declare
+            Comp_Unit : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
+         begin
+            if (Ekind (Comp_Unit) = E_Package
+                 or else Ekind (Comp_Unit) = E_Generic_Package)
+              and then not In_Private_Part (Comp_Unit)
+            then
+               Install_Private_With_Clauses (Comp_Unit);
+               Private_With_Clauses_Installed := True;
+            end if;
+         end;
       end if;
 
       --  If this is a package associated with a generic instance or formal
       --  package, then the private declarations of each of the generic's
       --  parents must be installed at this point.
 
-      if Is_Generic_Instance (Id)
-        or else
-          (Nkind (Unit_Declaration_Node (Id)) = N_Generic_Package_Declaration
-             and then
-           Nkind (Original_Node (Unit_Declaration_Node (Id)))
-             = N_Formal_Package_Declaration)
-      then
+      if Is_Generic_Instance (Id) then
          Install_Parent_Private_Declarations (Id);
       end if;
 
-      --  Analyze private part if present. The flag In_Private_Part is
-      --  reset in End_Package_Scope.
+      --  Analyze private part if present. The flag In_Private_Part is reset
+      --  in End_Package_Scope.
 
       L := Last_Entity (Id);
 
       if Present (Priv_Decls) then
          Set_In_Private_Part (Id);
 
-         --  Upon entering a public child's private part, it may be
-         --  necessary to declare subprograms that were derived in
-         --  the package visible part but not yet made visible.
+         --  Upon entering a public child's private part, it may be necessary
+         --  to declare subprograms that were derived in the package's visible
+         --  part but not yet made visible.
 
          if Public_Child then
             Declare_Inherited_Private_Subprograms (Id);
@@ -1095,11 +1141,10 @@ package body Sem_Ch7 is
             Set_First_Private_Entity (Id, First_Entity (Id));
          end if;
 
-      --  There may be inherited private subprograms that need to be
-      --  declared, even in the absence of an explicit private part.
-      --  If there are any public declarations in the package and
-      --  the package is a public child unit, then an implicit private
-      --  part is assumed.
+      --  There may be inherited private subprograms that need to be declared,
+      --  even in the absence of an explicit private part.  If there are any
+      --  public declarations in the package and the package is a public child
+      --  unit, then an implicit private part is assumed.
 
       elsif Present (L) and then Public_Child then
          Set_In_Private_Part (Id);
@@ -1107,8 +1152,8 @@ package body Sem_Ch7 is
          Set_First_Private_Entity (Id, Next_Entity (L));
       end if;
 
-      --  Check rule of 3.6(11), which in general requires
-      --  waiting till all full types have been seen.
+      --  Check rule of 3.6(11), which in general requires waiting till all
+      --  full types have been seen.
 
       E := First_Entity (Id);
       while Present (E) loop
@@ -1155,18 +1200,25 @@ package body Sem_Ch7 is
 
       Process_End_Label (N, 'e', Id);
 
-      --  For the case of a library level package, we must go through all
-      --  the entities clearing the indications that the value may be
-      --  constant and not modified. Why? Because any client of this
-      --  package may modify these values freely from anywhere. This
-      --  also applies to any nested packages or generic packages.
+      --  Remove private_with_clauses of enclosing compilation unit, if they
+      --  were installed.
 
-      --  For now we unconditionally clear constants for packages that
-      --  are instances of generic packages. The reason is that we do not
-      --  have the body yet, and we otherwise think things are unreferenced
-      --  when they are not. This should be fixed sometime (the effect is
-      --  not terrible, we just lose some warnings, and also some cases
-      --  of value propagation) ???
+      if Private_With_Clauses_Installed then
+         Remove_Private_With_Clauses (Cunit (Current_Sem_Unit));
+      end if;
+
+      --  For the case of a library level package, we must go through all the
+      --  entities clearing the indications that the value may be constant and
+      --  not modified. Why? Because any client of this package may modify
+      --  these values freely from anywhere. This also applies to any nested
+      --  packages or generic packages.
+
+      --  For now we unconditionally clear constants for packages that are
+      --  instances of generic packages. The reason is that we do not have the
+      --  body yet, and we otherwise think things are unreferenced when they
+      --  are not. This should be fixed sometime (the effect is not terrible,
+      --  we just lose some warnings, and also some cases of value propagation)
+      --  ???
 
       if Is_Library_Level_Entity (Id)
         or else Is_Generic_Instance (Id)
@@ -1200,6 +1252,44 @@ package body Sem_Ch7 is
       Set_Depends_On_Private (Id);
    end Analyze_Private_Type_Declaration;
 
+   ----------------------------------
+   -- Check_Anonymous_Access_Types --
+   ----------------------------------
+
+   procedure Check_Anonymous_Access_Types
+     (Spec_Id : Entity_Id;
+      P_Body  : Node_Id)
+   is
+      E  : Entity_Id;
+      IR : Node_Id;
+
+   begin
+      --  Itype references are only needed by gigi, to force elaboration of
+      --  itypes. In the absence of code generation, they are not needed.
+
+      if not Expander_Active then
+         return;
+      end if;
+
+      E := First_Entity (Spec_Id);
+      while Present (E) loop
+         if Ekind (E) = E_Anonymous_Access_Type
+           and then From_With_Type (E)
+         then
+            IR := Make_Itype_Reference (Sloc (P_Body));
+            Set_Itype (IR, E);
+
+            if No (Declarations (P_Body)) then
+               Set_Declarations (P_Body, New_List);
+            end if;
+
+            Insert_Before (First (Declarations (P_Body)), IR);
+         end if;
+
+         Next_Entity (E);
+      end loop;
+   end Check_Anonymous_Access_Types;
+
    -------------------------------------------
    -- Declare_Inherited_Private_Subprograms --
    -------------------------------------------
@@ -1232,7 +1322,6 @@ package body Sem_Ch7 is
 
          else
             Formal := First_Formal (S);
-
             while Present (Formal) loop
                if Etype (Formal) = T then
                   return True;
@@ -1279,6 +1368,7 @@ package body Sem_Ch7 is
                   --  by an overriding operation if one exists.
 
                   if Present (Alias (Prim_Op))
+                    and then Find_Dispatching_Type (Alias (Prim_Op)) /= E
                     and then not Comes_From_Source (Prim_Op)
                     and then Is_Internal_Name (Chars (Prim_Op))
                     and then not Is_Internal_Name (Chars (Alias (Prim_Op)))
@@ -1358,7 +1448,6 @@ package body Sem_Ch7 is
                --   inherited hidden operations.
 
                Prim_Op := Next_Entity (E);
-
                while Present (Prim_Op) loop
                   if Is_Subprogram (Prim_Op)
                     and then Present (Alias (Prim_Op))
@@ -1466,7 +1555,6 @@ package body Sem_Ch7 is
 
       Id := First_Entity (P);
       while Present (Id) and then Id /= First_Private_Entity (P) loop
-
          if Is_Private_Base_Type (Id)
            and then Comes_From_Source (Full_View (Id))
            and then Present (Full_View (Id))
@@ -1540,7 +1628,6 @@ package body Sem_Ch7 is
       --  Next make other declarations in the private part visible as well
 
       Id := First_Private_Entity (P);
-
       while Present (Id) loop
          Install_Package_Entity (Id);
          Set_Is_Hidden (Id, False);
@@ -1572,7 +1659,6 @@ package body Sem_Ch7 is
       end if;
 
       Id := First_Entity (P);
-
       while Present (Id) and then Id /= Last_Entity loop
          Install_Package_Entity (Id);
          Next_Entity (Id);
@@ -1747,7 +1833,7 @@ package body Sem_Ch7 is
                                                                       (Full));
          Set_Is_Volatile        (Priv, Is_Volatile        (Full));
          Set_Treat_As_Volatile  (Priv, Treat_As_Volatile  (Full));
-         Set_Is_Ada_2005        (Priv, Is_Ada_2005        (Full));
+         Set_Is_Ada_2005_Only   (Priv, Is_Ada_2005_Only   (Full));
 
          if Is_Unchecked_Union (Full) then
             Set_Is_Unchecked_Union (Base_Type (Priv));
@@ -1826,7 +1912,6 @@ package body Sem_Ch7 is
 
    begin
       Id := First_Entity (P);
-
       while Present (Id) and then Id /= First_Private_Entity (P) loop
          if Debug_Flag_E then
             Write_Str ("unlinking visible entity ");
@@ -1880,6 +1965,7 @@ package body Sem_Ch7 is
 
          if Is_Tagged_Type (Id) and then Ekind (Id) = E_Record_Type then
             Check_Abstract_Overriding (Id);
+            Check_Conventions (Id);
          end if;
 
          if (Ekind (Id) = E_Private_Type
@@ -1919,7 +2005,7 @@ package body Sem_Ch7 is
 
                if Is_Limited_Type (Etype (Id)) then
                   Error_Msg_N
-                    ("\else remove keyword CONSTANT from declaration",
+                    ("\if variable intended, remove CONSTANT from declaration",
                     Parent (Id));
                end if;
 
@@ -1930,7 +2016,7 @@ package body Sem_Ch7 is
 
                if Is_Limited_Type (Etype (Id)) then
                   Error_Msg_N
-                    ("\else remove keyword CONSTANT from declaration",
+                    ("\if variable intended, remove CONSTANT from declaration",
                     Parent (Id));
                end if;
             end if;
@@ -1961,6 +2047,7 @@ package body Sem_Ch7 is
 
          if Is_Tagged_Type (Id) and then Ekind (Id) = E_Record_Type then
             Check_Abstract_Overriding (Id);
+            Check_Conventions (Id);
          end if;
 
          Set_Is_Immediately_Visible (Id, False);
@@ -2092,7 +2179,6 @@ package body Sem_Ch7 is
       then
          declare
             G_P : constant Entity_Id := Generic_Parent (Parent (P));
-
          begin
             if Has_Pragma_Elaborate_Body (G_P) then
                return True;
