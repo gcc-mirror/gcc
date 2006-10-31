@@ -103,6 +103,12 @@ package body System.Task_Primitives.Operations is
    Locking_Policy : Character;
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
 
+   Time_Slice_Val : Integer;
+   pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
+
+   Dispatching_Policy : Character;
+   pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
+
    Real_Time_Clock_Id : constant clockid_t := CLOCK_REALTIME;
 
    Unblocked_Signal_Mask : aliased sigset_t;
@@ -301,6 +307,7 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Result := pthread_mutexattr_destroy (Attributes'Access);
+      pragma Assert (Result = 0);
    end Initialize_Lock;
 
    -------------------
@@ -620,12 +627,27 @@ package body System.Task_Primitives.Operations is
       function To_Int is new Unchecked_Conversion
         (System.Task_Info.Thread_Scheduling_Policy, Interfaces.C.int);
 
+      function Get_Policy (Prio : System.Any_Priority) return Character;
+      pragma Import (C, Get_Policy, "__gnat_get_specific_dispatching");
+      --  Get priority specific dispatching policy
+
+      Priority_Specific_Policy : constant Character := Get_Policy (Prio);
+      --  Upper case first character of the policy name corresponding to the
+      --  task as set by a Priority_Specific_Dispatching pragma.
+
    begin
       T.Common.Current_Priority := Prio;
       Param.sched_priority := Interfaces.C.int (Prio);
 
       if T.Common.Task_Info /= null then
          Sched_Policy := To_Int (T.Common.Task_Info.Policy);
+
+      elsif Dispatching_Policy = 'R'
+        or else Priority_Specific_Policy = 'R'
+        or else Time_Slice_Val > 0
+      then
+         Sched_Policy := SCHED_RR;
+
       else
          Sched_Policy := SCHED_FIFO;
       end if;
@@ -1222,7 +1244,7 @@ package body System.Task_Primitives.Operations is
 
       Interrupt_Management.Initialize;
 
-      --  Initialize the lock used to synchronize chain of all ATCBs.
+      --  Initialize the lock used to synchronize chain of all ATCBs
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
 

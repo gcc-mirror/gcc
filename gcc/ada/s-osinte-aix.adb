@@ -55,6 +55,20 @@ package body System.OS_Interface is
       return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
    end To_Duration;
 
+   ------------------------
+   -- To_Target_Priority --
+   ------------------------
+
+   function To_Target_Priority
+     (Prio : System.Any_Priority) return Interfaces.C.int
+   is
+   begin
+      --  Priorities on AIX are defined in the range 1 .. 127, so we
+      --  map 0 .. 126 to 1 .. 127.
+
+      return Interfaces.C.int (Prio) + 1;
+   end To_Target_Priority;
+
    -----------------
    -- To_Timespec --
    -----------------
@@ -138,20 +152,85 @@ package body System.OS_Interface is
    --  AIX Thread does not have sched_yield;
 
    function sched_yield return int is
-
       procedure pthread_yield;
       pragma Import (C, pthread_yield, "sched_yield");
-
    begin
       pthread_yield;
       return 0;
    end sched_yield;
 
+   --------------------
+   -- Get_Stack_Base --
+   --------------------
+
    function Get_Stack_Base (thread : pthread_t) return Address is
       pragma Warnings (Off, thread);
-
    begin
       return Null_Address;
    end Get_Stack_Base;
+
+   --------------------------
+   -- PTHREAD_PRIO_INHERIT --
+   --------------------------
+
+   AIX_Version : Integer := 0;
+   --  AIX version in the form xy for AIX version x.y (0 means not set)
+
+   SYS_NMLN : constant := 32;
+   --  AIX system constant used to define utsname, see sys/utsname.h
+
+   subtype String_NMLN is String (1 .. SYS_NMLN);
+
+   type utsname is record
+      sysname    : String_NMLN;
+      nodename   : String_NMLN;
+      release    : String_NMLN;
+      version    : String_NMLN;
+      machine    : String_NMLN;
+      procserial : String_NMLN;
+   end record;
+   pragma Convention (C, utsname);
+
+   procedure uname (name : out utsname);
+   pragma Import (C, uname);
+
+   function PTHREAD_PRIO_INHERIT return int is
+      name : utsname;
+
+      function Val (C : Character) return Integer;
+      --  Transform a numeric character ('0' .. '9') to an integer
+
+      ---------
+      -- Val --
+      ---------
+
+      function Val (C : Character) return Integer is
+      begin
+         return Character'Pos (C) - Character'Pos ('0');
+      end Val;
+
+   --  Start of processing for PTHREAD_PRIO_INHERIT
+
+   begin
+      if AIX_Version = 0 then
+
+         --  Set AIX_Version
+
+         uname (name);
+         AIX_Version := Val (name.version (1)) * 10 + Val (name.release (1));
+      end if;
+
+      if AIX_Version < 53 then
+
+         --  Under AIX < 5.3, PTHREAD_PRIO_INHERIT is defined as 0 in pthread.h
+
+         return 0;
+
+      else
+         --  Under AIX >= 5.3, PTHREAD_PRIO_INHERIT is defined as 3
+
+         return 3;
+      end if;
+   end PTHREAD_PRIO_INHERIT;
 
 end System.OS_Interface;

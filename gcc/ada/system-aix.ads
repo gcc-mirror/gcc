@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                            (AIX/PPC Version)                             --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -88,17 +88,18 @@ package System is
 
    type Bit_Order is (High_Order_First, Low_Order_First);
    Default_Bit_Order : constant Bit_Order := High_Order_First;
+   pragma Warnings (Off, Default_Bit_Order); -- kill constant condition warning
 
    --  Priority-related Declarations (RM D.1)
 
-   Max_Priority           : constant Positive := 30;
-   Max_Interrupt_Priority : constant Positive := 31;
+   Max_Priority           : constant Positive := 125;
+   Max_Interrupt_Priority : constant Positive := 126;
 
-   subtype Any_Priority       is Integer      range  0 .. 31;
-   subtype Priority           is Any_Priority range  0 .. 30;
-   subtype Interrupt_Priority is Any_Priority range 31 .. 31;
+   subtype Any_Priority       is Integer      range   0 .. 126;
+   subtype Priority           is Any_Priority range   0 .. 125;
+   subtype Interrupt_Priority is Any_Priority range 126 .. 126;
 
-   Default_Priority : constant Priority := 15;
+   Default_Priority : constant Priority := 62;
 
 private
 
@@ -133,7 +134,7 @@ private
    Preallocated_Stacks       : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
-   Stack_Check_Probes        : constant Boolean := False;
+   Stack_Check_Probes        : constant Boolean := True;
    Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;

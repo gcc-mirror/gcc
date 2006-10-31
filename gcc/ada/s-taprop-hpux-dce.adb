@@ -479,14 +479,16 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Timed_Delay
-     (Self_ID  : Task_Id;
-      Time     : Duration;
-      Mode     : ST.Delay_Modes)
+     (Self_ID : Task_Id;
+      Time    : Duration;
+      Mode    : ST.Delay_Modes)
    is
       Check_Time : constant Duration := Monotonic_Clock;
       Abs_Time   : Duration;
       Request    : aliased timespec;
-      Result     : Interfaces.C.int;
+
+      Result : Interfaces.C.int;
+      pragma Warnings (Off, Result);
 
    begin
       if Single_Lock then
@@ -515,11 +517,15 @@ package body System.Task_Primitives.Operations is
             exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
 
             if Single_Lock then
-               Result := pthread_cond_timedwait (Self_ID.Common.LL.CV'Access,
-                 Single_RTS_Lock'Access, Request'Access);
+               Result := pthread_cond_timedwait
+                           (Self_ID.Common.LL.CV'Access,
+                            Single_RTS_Lock'Access,
+                            Request'Access);
             else
-               Result := pthread_cond_timedwait (Self_ID.Common.LL.CV'Access,
-                 Self_ID.Common.LL.L'Access, Request'Access);
+               Result := pthread_cond_timedwait
+                          (Self_ID.Common.LL.CV'Access,
+                           Self_ID.Common.LL.L'Access,
+                           Request'Access);
             end if;
 
             exit when Abs_Time <= Monotonic_Clock;
@@ -613,14 +619,28 @@ package body System.Task_Primitives.Operations is
       Array_Item : Integer;
       Param      : aliased struct_sched_param;
 
+      function Get_Policy (Prio : System.Any_Priority) return Character;
+      pragma Import (C, Get_Policy, "__gnat_get_specific_dispatching");
+      --  Get priority specific dispatching policy
+
+      Priority_Specific_Policy : constant Character := Get_Policy (Prio);
+      --  Upper case first character of the policy name corresponding to the
+      --  task as set by a Priority_Specific_Dispatching pragma.
+
    begin
       Param.sched_priority  := Interfaces.C.int (Underlying_Priorities (Prio));
 
-      if Time_Slice_Val > 0 then
+      if Dispatching_Policy = 'R'
+        or else Priority_Specific_Policy = 'R'
+        or else Time_Slice_Val > 0
+      then
          Result := pthread_setschedparam
            (T.Common.LL.Thread, SCHED_RR, Param'Access);
 
-      elsif Dispatching_Policy = 'F' or else Time_Slice_Val = 0 then
+      elsif Dispatching_Policy = 'F'
+        or else Priority_Specific_Policy = 'F'
+        or else Time_Slice_Val = 0
+      then
          Result := pthread_setschedparam
            (T.Common.LL.Thread, SCHED_FIFO, Param'Access);
 
@@ -631,7 +651,7 @@ package body System.Task_Primitives.Operations is
 
       pragma Assert (Result = 0);
 
-      if Dispatching_Policy = 'F' then
+      if Dispatching_Policy = 'F' or else Priority_Specific_Policy = 'F' then
 
          --  Annex D requirement [RM D.2.2 par. 9]:
          --    If the task drops its priority due to the loss of inherited

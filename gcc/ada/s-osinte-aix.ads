@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,13 +116,15 @@ package System.OS_Interface is
    SIGXFSZ     : constant := 25; --  filesize limit exceeded
    SIGWAITING  : constant := 39; --  m:n scheduling
 
-   --  the following signals are AIX specific
+   --  The following signals are AIX specific
+
    SIGMSG      : constant := 27; -- input data is in the ring buffer
    SIGDANGER   : constant := 33; -- system crash imminent
    SIGMIGRATE  : constant := 35; -- migrate process
    SIGPRE      : constant := 36; -- programming exception
    SIGVIRT     : constant := 37; -- AIX virtual time alarm
    SIGALRM1    : constant := 38; -- m:n condition variables
+   SIGCPUFAIL  : constant := 59; -- Predictive De-configuration of Processors
    SIGKAP      : constant := 60; -- keep alive poll from native keyboard
    SIGGRANT    : constant := SIGKAP; -- monitor mode granted
    SIGRETRACT  : constant := 61; -- monitor mode should be relinguished
@@ -137,7 +139,8 @@ package System.OS_Interface is
 
    Unmasked    : constant Signal_Set :=
      (SIGTRAP, SIGTTIN, SIGTTOU, SIGTSTP, SIGPROF);
-   Reserved    : constant Signal_Set := (SIGABRT, SIGKILL, SIGSTOP);
+   Reserved    : constant Signal_Set :=
+     (SIGABRT, SIGKILL, SIGSTOP, SIGALRM1, SIGWAITING, SIGCPUFAIL);
 
    type sigset_t is private;
 
@@ -228,6 +231,10 @@ package System.OS_Interface is
    SCHED_FIFO  : constant := 1;
    SCHED_RR    : constant := 2;
    SCHED_OTHER : constant := 0;
+
+   function To_Target_Priority
+     (Prio : System.Any_Priority) return Interfaces.C.int;
+   --  Maps System.Any_Priority to a POSIX priority.
 
    -------------
    -- Process --
@@ -393,9 +400,11 @@ package System.OS_Interface is
    -- POSIX.1c  Section 13 --
    --------------------------
 
-   PTHREAD_PRIO_NONE    : constant := 0;
-   PTHREAD_PRIO_PROTECT : constant := 0;
-   PTHREAD_PRIO_INHERIT : constant := 0;
+   PTHREAD_PRIO_PROTECT : constant := 2;
+
+   function PTHREAD_PRIO_INHERIT return int;
+   --  Return value of C macro PTHREAD_PRIO_INHERIT. This function is needed
+   --  since the value is different between AIX versions.
 
    function pthread_mutexattr_setprotocol
      (attr     : access pthread_mutexattr_t;

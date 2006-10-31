@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2006, Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,7 +102,7 @@ package body System.Task_Primitives.Operations is
    --  Key used to find the Ada Task_Id associated with a thread
 
    Environment_Task_Id : Task_Id;
-   --  A variable to hold Task_Id for the environment task.
+   --  A variable to hold Task_Id for the environment task
 
    Locking_Policy : Character;
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
@@ -114,7 +114,7 @@ package body System.Task_Primitives.Operations is
    Unblocked_Signal_Mask : aliased sigset_t;
    --  The set of signals that should unblocked in all tasks
 
-   --  The followings are internal configuration constants needed.
+   --  The followings are internal configuration constants needed
 
    Next_Serial_Number : Task_Serial_Number := 100;
    --  We start at 100, to reserve some special values for
@@ -127,7 +127,7 @@ package body System.Task_Primitives.Operations is
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
    Foreign_Task_Elaborated : aliased Boolean := True;
-   --  Used to identified fake tasks (i.e., non-Ada Threads).
+   --  Used to identified fake tasks (i.e., non-Ada Threads)
 
    --------------------
    -- Local Packages --
@@ -137,7 +137,7 @@ package body System.Task_Primitives.Operations is
 
       procedure Initialize (Environment_Task : Task_Id);
       pragma Inline (Initialize);
-      --  Initialize various data needed by this package.
+      --  Initialize various data needed by this package
 
       function Is_Valid_Task return Boolean;
       pragma Inline (Is_Valid_Task);
@@ -145,23 +145,23 @@ package body System.Task_Primitives.Operations is
 
       procedure Set (Self_Id : Task_Id);
       pragma Inline (Set);
-      --  Set the self id for the current task.
+      --  Set the self id for the current task
 
       function Self return Task_Id;
       pragma Inline (Self);
-      --  Return a pointer to the Ada Task Control Block of the calling task.
+      --  Return a pointer to the Ada Task Control Block of the calling task
 
    end Specific;
 
    package body Specific is separate;
-   --  The body of this package is target specific.
+   --  The body of this package is target specific
 
    ---------------------------------
    -- Support for foreign threads --
    ---------------------------------
 
    function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id;
-   --  Allocate and Initialize a new ATCB for the current Thread.
+   --  Allocate and Initialize a new ATCB for the current Thread
 
    function Register_Foreign_Thread
      (Thread : Thread_Id) return Task_Id is separate;
@@ -489,7 +489,7 @@ package body System.Task_Primitives.Operations is
            (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access);
       end if;
 
-      --  EINTR is not considered a failure.
+      --  EINTR is not considered a failure
 
       pragma Assert (Result = 0 or else Result = EINTR);
    end Sleep;
@@ -578,20 +578,21 @@ package body System.Task_Primitives.Operations is
    -- Timed_Delay --
    -----------------
 
-   --  This is for use in implementing delay statements, so
-   --  we assume the caller is abort-deferred but is holding
-   --  no locks.
+   --  This is for use in implementing delay statements, so we assume the
+   --  caller is abort-deferred but is holding no locks.
 
    procedure Timed_Delay
-     (Self_ID  : Task_Id;
-      Time     : Duration;
-      Mode     : ST.Delay_Modes)
+     (Self_ID : Task_Id;
+      Time    : Duration;
+      Mode    : ST.Delay_Modes)
    is
       Check_Time : constant Duration := Monotonic_Clock;
       Abs_Time   : Duration;
       Rel_Time   : Duration;
       Request    : aliased timespec;
-      Result     : Interfaces.C.int;
+
+      Result : Interfaces.C.int;
+      pragma Warnings (Off, Result);
 
    begin
       if Single_Lock then
@@ -634,11 +635,15 @@ package body System.Task_Primitives.Operations is
             exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
 
             if Single_Lock then
-               Result := pthread_cond_timedwait (Self_ID.Common.LL.CV'Access,
-                 Single_RTS_Lock'Access, Request'Access);
+               Result := pthread_cond_timedwait
+                           (Self_ID.Common.LL.CV'Access,
+                            Single_RTS_Lock'Access,
+                            Request'Access);
             else
-               Result := pthread_cond_timedwait (Self_ID.Common.LL.CV'Access,
-                 Self_ID.Common.LL.L'Access, Request'Access);
+               Result := pthread_cond_timedwait
+                           (Self_ID.Common.LL.CV'Access,
+                            Self_ID.Common.LL.L'Access,
+                            Request'Access);
             end if;
 
             exit when Abs_Time <= Monotonic_Clock;
@@ -722,15 +727,30 @@ package body System.Task_Primitives.Operations is
       Result : Interfaces.C.int;
       Param  : aliased struct_sched_param;
 
+      function Get_Policy (Prio : System.Any_Priority) return Character;
+      pragma Import (C, Get_Policy, "__gnat_get_specific_dispatching");
+      --  Get priority specific dispatching policy
+
+      Priority_Specific_Policy : constant Character := Get_Policy (Prio);
+      --  Upper case first character of the policy name corresponding to the
+      --  task as set by a Priority_Specific_Dispatching pragma.
+
    begin
       T.Common.Current_Priority := Prio;
-      Param.sched_priority := Interfaces.C.int (Prio);
+      Param.sched_priority := To_Target_Priority (Prio);
 
-      if Time_Slice_Supported and then Time_Slice_Val > 0 then
+      if Time_Slice_Supported
+        and then (Dispatching_Policy = 'R'
+                  or else Priority_Specific_Policy = 'R'
+                  or else Time_Slice_Val > 0)
+      then
          Result := pthread_setschedparam
            (T.Common.LL.Thread, SCHED_RR, Param'Access);
 
-      elsif Dispatching_Policy = 'F' or else Time_Slice_Val = 0 then
+      elsif Dispatching_Policy = 'F'
+        or else Priority_Specific_Policy = 'F'
+        or else Time_Slice_Val = 0
+      then
          Result := pthread_setschedparam
            (T.Common.LL.Thread, SCHED_FIFO, Param'Access);
 
@@ -813,7 +833,7 @@ package body System.Task_Primitives.Operations is
       Cond_Attr  : aliased pthread_condattr_t;
 
    begin
-      --  Give the task a unique serial number.
+      --  Give the task a unique serial number
 
       Self_ID.Serial_Number := Next_Serial_Number;
       Next_Serial_Number := Next_Serial_Number + 1;
@@ -1327,7 +1347,7 @@ package body System.Task_Primitives.Operations is
          end if;
       end loop;
 
-      --  Initialize the lock used to synchronize chain of all ATCBs.
+      --  Initialize the lock used to synchronize chain of all ATCBs
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
 
