@@ -2327,16 +2327,19 @@ gfc_match_common (void)
 
       if (name[0] == '\0')
 	{
+	  if (gfc_current_ns->is_block_data)
+	    {
+	      gfc_warning ("BLOCK DATA unit cannot contain blank COMMON at %C");
+	    }
 	  t = &gfc_current_ns->blank_common;
 	  if (t->head == NULL)
 	    t->where = gfc_current_locus;
-	  head = &t->head;
 	}
       else
 	{
 	  t = gfc_get_common (name, 0);
-	  head = &t->head;
 	}
+      head = &t->head;
 
       if (*head == NULL)
 	tail = NULL;

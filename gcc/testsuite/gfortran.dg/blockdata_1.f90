@@ -14,7 +14,7 @@ end blockdata d1
 
 block data d2
  common /b/ u
- common j
+ common j ! { dg-warning "cannot contain blank COMMON" }
  data j /1/
 end block data d2
 !
