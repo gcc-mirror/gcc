@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -484,7 +484,7 @@ package body Restrict is
 
    function Restriction_Active (R : All_Restrictions) return Boolean is
    begin
-      return Restrictions.Set (R);
+      return Restrictions.Set (R) and then not Restriction_Warnings (R);
    end Restriction_Active;
 
    ---------------------
@@ -570,13 +570,27 @@ package body Restrict is
    begin
       for J in R'Range loop
          if R (J) then
-            if J in All_Boolean_Restrictions then
-               Set_Restriction (J, N);
-            else
-               Set_Restriction (J, N, V (J));
-            end if;
+            declare
+               Already_Restricted : constant Boolean := Restriction_Active (J);
 
-            Restriction_Warnings (J) := Warn;
+            begin
+               --  Set the restriction
+
+               if J in All_Boolean_Restrictions then
+                  Set_Restriction (J, N);
+               else
+                  Set_Restriction (J, N, V (J));
+               end if;
+
+               --  Set warning flag, except that we do not set the warning
+               --  flag if the restriction was already active and this is
+               --  the warning case. That avoids a warning overriding a real
+               --  restriction, which should never happen.
+
+               if not (Warn and Already_Restricted) then
+                  Restriction_Warnings (J) := Warn;
+               end if;
+            end;
          end if;
       end loop;
    end Set_Profile_Restrictions;
@@ -607,12 +621,11 @@ package body Restrict is
          Restrictions_Loc (R) := Sloc (N);
       end if;
 
-      --  Record the restriction if we are in the main unit,
-      --  or in the extended main unit. The reason that we
-      --  test separately for Main_Unit is that gnat.adc is
-      --  processed with Current_Sem_Unit = Main_Unit, but
-      --  nodes in gnat.adc do not appear to be the extended
-      --  main source unit (they probably should do ???)
+      --  Record the restriction if we are in the main unit, or in the extended
+      --  main unit. The reason that we test separately for Main_Unit is that
+      --  gnat.adc is processed with Current_Sem_Unit = Main_Unit, but nodes in
+      --  gnat.adc do not appear to be in the extended main source unit (they
+      --  probably should do ???)
 
       if Current_Sem_Unit = Main_Unit
         or else In_Extended_Main_Source_Unit (N)
@@ -698,7 +711,7 @@ package body Restrict is
          end if;
       end loop;
 
-      --  Entry is in table
+      --  Entry is not currently in table
 
       No_Dependence.Append ((Unit, Warn));
    end Set_Restriction_No_Dependence;
