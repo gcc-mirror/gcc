@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2005, AdaCore                     --
+--                     Copyright (C) 2002-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -302,7 +302,7 @@ package body GNAT.Sockets.Thin is
 
    begin
       Addr := VxWorks_hostGetByName (Name);
-      if Addr /= Constants.OK then
+      if Addr = Constants.ERROR then
          return null;
       end if;
 
