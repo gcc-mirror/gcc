@@ -1,3 +1,9 @@
+2006-10-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/24071
+	* gthr-posix.h (__gthread_active_p): New implementation on Solaris.
+	* gthr-posix95.h (__gthread_active_p): Likewise.
+
 2006-10-31  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386.md (asindf2, asinsf2, asinxf2, acosdf2,
