@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@ with Uintp;  use Uintp;
 
 package Restrict is
 
-   Restrictions : Restrictions_Info;
+   Restrictions : Restrictions_Info := No_Restrictions;
    --  This variable records restrictions found in any units in the main
    --  extended unit, and in the case of restrictions checked for partition
    --  consistency, restrictions found in any with'ed units, parent specs
@@ -50,7 +50,7 @@ package Restrict is
    --  pragma, and a value of System_Location is used for restrictions
    --  set from package Standard by the processing in Targparm.
 
-   Main_Restrictions : Restrictions_Info;
+   Main_Restrictions : Restrictions_Info := No_Restrictions;
    --  This variable records only restrictions found in any units of the
    --  main extended unit. These are the variables used for ali file output,
    --  since we want the binder to be able to accurately diagnose inter-unit
@@ -243,7 +243,9 @@ package Restrict is
    pragma Inline (Restriction_Active);
    --  Determines if a given restriction is active. This call should only be
    --  used where the compiled code depends on whether the restriction is
-   --  active. Always use Check_Restriction to record a violation.
+   --  active. Always use Check_Restriction to record a violation. Note that
+   --  this returns False if we only have a Restriction_Warnings set, since
+   --  restriction warnings should never affect generated code.
 
    function Restricted_Profile return Boolean;
    --  Tests if set of restrictions corresponding to Profile (Restricted) is
