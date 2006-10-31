@@ -201,6 +201,7 @@ package body Snames is
      "normalize_scalars#" &
      "polling#" &
      "persistent_bss#" &
+     "priority_specific_dispatching#" &
      "profile#" &
      "profile_warnings#" &
      "propagate_exceptions#" &
@@ -221,6 +222,7 @@ package body Snames is
      "use_vads_size#" &
      "validity_checks#" &
      "warnings#" &
+     "wide_character_encoding#" &
      "abort_defer#" &
      "all_calls_remote#" &
      "annotate#" &
@@ -287,9 +289,9 @@ package body Snames is
      "pack#" &
      "page#" &
      "passive#" &
+     "preelaborable_initialization#" &
      "preelaborate#" &
      "preelaborate_05#" &
-     "priority#" &
      "psect_object#" &
      "pure#" &
      "pure_05#" &
@@ -482,6 +484,7 @@ package body Snames is
      "pool_address#" &
      "pos#" &
      "position#" &
+     "priority#" &
      "range#" &
      "range_length#" &
      "round#" &
@@ -548,13 +551,18 @@ package body Snames is
      "storage_pool#" &
      "base#" &
      "class#" &
+     "stub_type#" &
      "ceiling_locking#" &
      "inheritance_locking#" &
      "fifo_queuing#" &
      "priority_queuing#" &
+     "edf_across_priorities#" &
      "fifo_within_priorities#" &
+     "non_preemptive_within_priorities#" &
+     "round_robin_within_priorities#" &
      "access_check#" &
      "accessibility_check#" &
+     "alignment_check#" &
      "discriminant_check#" &
      "division_check#" &
      "elaboration_check#" &
@@ -564,6 +572,7 @@ package body Snames is
      "range_check#" &
      "storage_check#" &
      "tag_check#" &
+     "validity_check#" &
      "all_checks#" &
      "abort#" &
      "abs#" &
@@ -852,6 +861,28 @@ package body Snames is
       end case;
    end Get_Convention_Id;
 
+   -------------------------
+   -- Get_Convention_Name --
+   -------------------------
+
+   function Get_Convention_Name (C : Convention_Id) return Name_Id is
+   begin
+      case C is
+         when Convention_Ada       => return Name_Ada;
+         when Convention_Assembler => return Name_Assembler;
+         when Convention_C         => return Name_C;
+         when Convention_COBOL     => return Name_COBOL;
+         when Convention_CPP       => return Name_CPP;
+         when Convention_Entry     => return Name_Entry;
+         when Convention_Fortran   => return Name_Fortran;
+         when Convention_Intrinsic => return Name_Intrinsic;
+         when Convention_Java      => return Name_Java;
+         when Convention_Protected => return Name_Protected;
+         when Convention_Stdcall   => return Name_Stdcall;
+         when Convention_Stubbed   => return Name_Stubbed;
+      end case;
+   end Get_Convention_Name;
+
    ---------------------------
    -- Get_Locking_Policy_Id --
    ---------------------------
@@ -871,6 +902,8 @@ package body Snames is
          return Pragma_AST_Entry;
       elsif N = Name_Interface then
          return Pragma_Interface;
+      elsif N = Name_Priority then
+         return Pragma_Priority;
       elsif N = Name_Storage_Size then
          return Pragma_Storage_Size;
       elsif N = Name_Storage_Unit then
@@ -1057,6 +1090,7 @@ package body Snames is
       return N in First_Pragma_Name .. Last_Pragma_Name
         or else N = Name_AST_Entry
         or else N = Name_Interface
+        or else N = Name_Priority
         or else N = Name_Storage_Size
         or else N = Name_Storage_Unit;
    end Is_Pragma_Name;
