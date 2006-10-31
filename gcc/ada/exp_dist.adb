@@ -24,32 +24,34 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;       use Atree;
-with Einfo;       use Einfo;
-with Elists;      use Elists;
-with Exp_Strm;    use Exp_Strm;
-with Exp_Tss;     use Exp_Tss;
-with Exp_Util;    use Exp_Util;
+with Atree;    use Atree;
+with Einfo;    use Einfo;
+with Elists;   use Elists;
+with Exp_Strm; use Exp_Strm;
+with Exp_Tss;  use Exp_Tss;
+with Exp_Util; use Exp_Util;
+with Lib;      use Lib;
+with Namet;    use Namet;
+with Nlists;   use Nlists;
+with Nmake;    use Nmake;
+with Opt;      use Opt;
+with Rtsfind;  use Rtsfind;
+with Sem;      use Sem;
+with Sem_Cat;  use Sem_Cat;
+with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch8;  use Sem_Ch8;
+with Sem_Dist; use Sem_Dist;
+with Sem_Eval; use Sem_Eval;
+with Sem_Util; use Sem_Util;
+with Sinfo;    use Sinfo;
+with Snames;   use Snames;
+with Stand;    use Stand;
+with Stringt;  use Stringt;
+with Tbuild;   use Tbuild;
+with Ttypes;   use Ttypes;
+with Uintp;    use Uintp;
+
 with GNAT.HTable; use GNAT.HTable;
-with Lib;         use Lib;
-with Namet;       use Namet;
-with Nlists;      use Nlists;
-with Nmake;       use Nmake;
-with Opt;         use Opt;
-with Rtsfind;     use Rtsfind;
-with Sem;         use Sem;
-with Sem_Ch3;     use Sem_Ch3;
-with Sem_Ch8;     use Sem_Ch8;
-with Sem_Dist;    use Sem_Dist;
-with Sem_Eval;    use Sem_Eval;
-with Sem_Util;    use Sem_Util;
-with Sinfo;       use Sinfo;
-with Snames;      use Snames;
-with Stand;       use Stand;
-with Stringt;     use Stringt;
-with Tbuild;      use Tbuild;
-with Ttypes;      use Ttypes;
-with Uintp;       use Uintp;
 
 package body Exp_Dist is
 
@@ -1012,45 +1014,53 @@ package body Exp_Dist is
    -- Add_RACW_Features --
    -----------------------
 
-   procedure Add_RACW_Features (RACW_Type : Entity_Id)
-   is
-      Desig : constant Entity_Id :=
-                Etype (Designated_Type (RACW_Type));
-      Decls : List_Id :=
-                List_Containing (Declaration_Node (RACW_Type));
-
-      Same_Scope : constant Boolean :=
-                     Scope (Desig) = Scope (RACW_Type);
+   procedure Add_RACW_Features (RACW_Type : Entity_Id) is
+      Desig      : constant Entity_Id := Etype (Designated_Type (RACW_Type));
+      Same_Scope : constant Boolean   := Scope (Desig) = Scope (RACW_Type);
+      Decls      : List_Id;
 
       Stub_Type         : Entity_Id;
       Stub_Type_Access  : Entity_Id;
       RPC_Receiver_Decl : Node_Id;
-      Existing          : Boolean;
+
+      Existing : Boolean;
+      --  True when appropriate stubs have already been generated (this is the
+      --  case when another RACW with the same designated type has already been
+      --  encountered, in which case we reuse the previous stubs rather than
+      --  generating new ones).
 
    begin
       if not Expander_Active then
          return;
       end if;
 
-      if Same_Scope then
+      --  Look for declarations
 
-         --  We are declaring a RACW in the same package than its designated
-         --  type, so the list to use for late declarations must be the
-         --  private part of the package. We do know that this private part
-         --  exists since the designated type has to be a private one.
+      --  Case of declaring a RACW in the same package than its designated
+      --  type, so the list to use for late declarations must be the private
+      --  part of the package. We do know that this private part exists since
+      --  the designated type has to be a private one.
+
+      if Same_Scope then
 
          Decls := Private_Declarations
            (Package_Specification_Of_Scope (Current_Scope));
 
-      elsif Nkind (Parent (Decls)) = N_Package_Specification
-        and then Present (Private_Declarations (Parent (Decls)))
-      then
-         Decls := Private_Declarations (Parent (Decls));
+      --  Comment here???
+
+      else
+         Decls := List_Containing (Declaration_Node (RACW_Type));
+
+         if Nkind (Parent (Decls)) = N_Package_Specification
+           and then Present (Private_Declarations (Parent (Decls)))
+         then
+            Decls := Private_Declarations (Parent (Decls));
+         end if;
       end if;
 
       --  If we were unable to find the declarations, that means that the
-      --  completion of the type was missing. We can safely return and let
-      --  the error be caught by the semantic analysis.
+      --  completion of the type was missing. We can safely return and let the
+      --  error be caught by the semantic analysis.
 
       if No (Decls) then
          return;
@@ -1083,12 +1093,17 @@ package body Exp_Dist is
          --  type and has not been handled by another RACW in the same package
          --  as the first one, so add primitive for the stub type here.
 
+         Validate_RACW_Primitives (RACW_Type);
          Add_RACW_Primitive_Declarations_And_Bodies
            (Designated_Type  => Desig,
             Insertion_Node   => RPC_Receiver_Decl,
             Decls            => Decls);
 
       else
+         --  Validate_RACW_Primitives will be called when the designated type
+         --  is frozen, see Exp_Ch3.Freeze_Type.
+         --  ??? Shouldn't we have a pragma Assert (not Is_Frozen (Desig))?
+
          Add_Access_Type_To_Process (E => Desig, A => RACW_Type);
       end if;
    end Add_RACW_Features;
@@ -1102,17 +1117,17 @@ package body Exp_Dist is
       Insertion_Node  : Node_Id;
       Decls           : List_Id)
    is
+      Loc : constant Source_Ptr := Sloc (Insertion_Node);
       --  Set Sloc of generated declaration copy of insertion node Sloc, so
       --  the declarations are recognized as belonging to the current package.
-
-      Loc : constant Source_Ptr := Sloc (Insertion_Node);
 
       Stub_Elements : constant Stub_Structure :=
                         Stubs_Table.Get (Designated_Type);
 
       pragma Assert (Stub_Elements /= Empty_Stub_Structure);
+
       Is_RAS : constant Boolean :=
-        not Comes_From_Source (Stub_Elements.RACW_Type);
+                 not Comes_From_Source (Stub_Elements.RACW_Type);
 
       Current_Insertion_Node : Node_Id := Insertion_Node;
 
@@ -1161,8 +1176,8 @@ package body Exp_Dist is
          if Get_PCS_Name = Name_PolyORB_DSA then
 
             --  For the case of PolyORB, we need to map a textual operation
-            --  name into a primitive index. Currently we do so using a
-            --  simple sequence of string comparisons.
+            --  name into a primitive index. Currently we do so using a simple
+            --  sequence of string comparisons.
 
             RPC_Receiver_Elsif_Parts := New_List;
          end if;
@@ -1179,15 +1194,15 @@ package body Exp_Dist is
          while Current_Primitive_Elmt /= No_Elmt loop
             Current_Primitive := Node (Current_Primitive_Elmt);
 
-            --  Copy the primitive of all the parents, except predefined
-            --  ones that are not remotely dispatching.
+            --  Copy the primitive of all the parents, except predefined ones
+            --  that are not remotely dispatching.
 
             if Chars (Current_Primitive) /= Name_uSize
               and then Chars (Current_Primitive) /= Name_uAlignment
               and then not Is_TSS (Current_Primitive, TSS_Deep_Finalize)
             then
-               --  The first thing to do is build an up-to-date copy of
-               --  the spec with all the formals referencing Designated_Type
+               --  The first thing to do is build an up-to-date copy of the
+               --  spec with all the formals referencing Designated_Type
                --  transformed into formals referencing Stub_Type. Since this
                --  primitive may have been inherited, go back the alias chain
                --  until the real primitive has been found.
@@ -1237,8 +1252,8 @@ package body Exp_Dist is
 
                --  Analyzing the body here would cause the Stub type to be
                --  frozen, thus preventing subsequent primitive declarations.
-               --  For this reason, it will be analyzed later in the
-               --  regular flow.
+               --  For this reason, it will be analyzed later in the regular
+               --  flow.
 
                --  Build the receiver stubs
 
@@ -1331,8 +1346,8 @@ package body Exp_Dist is
       end if;
 
       --  Do not analyze RPC receiver at this stage since it will otherwise
-      --  reference subprograms that have not been analyzed yet. It will
-      --  be analyzed in the regular flow.
+      --  reference subprograms that have not been analyzed yet. It will be
+      --  analyzed in the regular flow.
 
    end Add_RACW_Primitive_Declarations_And_Bodies;
 
@@ -1372,8 +1387,8 @@ package body Exp_Dist is
                       Nkind (Type_Def) = N_Access_Function_Definition;
 
       Is_Degenerate : Boolean;
-      --  Set to True if the subprogram_specification for this RAS has
-      --  an anonymous access parameter (see Process_Remote_AST_Declaration).
+      --  Set to True if the subprogram_specification for this RAS has an
+      --  anonymous access parameter (see Process_Remote_AST_Declaration).
 
       Spec : constant Node_Id := Type_Def;
 
@@ -1382,8 +1397,8 @@ package body Exp_Dist is
    --  Start of processing for Add_RAS_Dereference_TSS
 
    begin
-      --  The Dereference TSS for a remote access-to-subprogram type
-      --  has the form:
+      --  The Dereference TSS for a remote access-to-subprogram type has the
+      --  form:
 
       --    [function|procedure] ras_typeRD (RAS_Value, <RAS_Parameters>)
       --       [return <>]
@@ -1406,11 +1421,12 @@ package body Exp_Dist is
       Is_Degenerate := False;
       Current_Parameter := First (Parameter_Specifications (Type_Def));
       Parameters : while Present (Current_Parameter) loop
-         if Nkind (Parameter_Type (Current_Parameter))
-           = N_Access_Definition
+         if Nkind (Parameter_Type (Current_Parameter)) =
+                                            N_Access_Definition
          then
             Is_Degenerate := True;
          end if;
+
          Append_To (Param_Specs,
            Make_Parameter_Specification (Loc,
              Defining_Identifier =>
@@ -1445,8 +1461,8 @@ package body Exp_Dist is
 
       else
          --  For a normal RAS type, we cast the RAS formal to the corresponding
-         --  tagged type, and perform a dispatching call to its Call
-         --  primitive operation.
+         --  tagged type, and perform a dispatching call to its Call primitive
+         --  operation.
 
          Prepend_To (Param_Assoc,
            Unchecked_Convert_To (RACW_Type,
@@ -2198,9 +2214,50 @@ package body Exp_Dist is
       E   : Entity_Id) return Node_Id
    is
    begin
+      if Get_Subprogram_Ids (E).Str_Identifier = No_String then
+         declare
+            Current_Declaration : Node_Id;
+            Current_Subp        : Entity_Id;
+            Current_Subp_Str    : String_Id;
+            Current_Subp_Number : Int := First_RCI_Subprogram_Id;
+
+         begin
+            --  Build_Subprogram_Id is called outside of the context of
+            --  generating calling or receiving stubs. Hence we are processing
+            --  an 'Access attribute_reference for an RCI subprogram, for the
+            --  purpose of obtaining a RAS value.
+
+            pragma Assert
+              (Is_Remote_Call_Interface (Scope (E))
+                 and then
+                  (Nkind (Parent (E)) = N_Procedure_Specification
+                     or else
+                   Nkind (Parent (E)) = N_Function_Specification));
+
+            Current_Declaration :=
+              First (Visible_Declarations
+                (Package_Specification_Of_Scope (Scope (E))));
+            while Present (Current_Declaration) loop
+               if Nkind (Current_Declaration) = N_Subprogram_Declaration
+                 and then Comes_From_Source (Current_Declaration)
+               then
+                  Current_Subp := Defining_Unit_Name (Specification (
+                    Current_Declaration));
+
+                  Assign_Subprogram_Identifier
+                    (Current_Subp, Current_Subp_Number, Current_Subp_Str);
+
+                  Current_Subp_Number := Current_Subp_Number + 1;
+               end if;
+
+               Next (Current_Declaration);
+            end loop;
+         end;
+      end if;
+
       case Get_PCS_Name is
          when Name_PolyORB_DSA =>
-            return Make_String_Literal  (Loc, Get_Subprogram_Id (E));
+            return Make_String_Literal (Loc, Get_Subprogram_Id (E));
          when others =>
             return Make_Integer_Literal (Loc, Get_Subprogram_Id (E));
       end case;
@@ -2334,6 +2391,18 @@ package body Exp_Dist is
             raise Program_Error;
       end case;
    end Copy_Specification;
+
+   -----------------------------
+   -- Corresponding_Stub_Type --
+   -----------------------------
+
+   function Corresponding_Stub_Type (RACW_Type : Entity_Id) return Entity_Id is
+      Desig         : constant Entity_Id      :=
+                        Etype (Designated_Type (RACW_Type));
+      Stub_Elements : constant Stub_Structure := Stubs_Table.Get (Desig);
+   begin
+      return Stub_Elements.Stub_Type;
+   end Corresponding_Stub_Type;
 
    ---------------------------
    -- Could_Be_Asynchronous --
@@ -3466,9 +3535,6 @@ package body Exp_Dist is
                   Subp_Val : String_Id;
 
                begin
-                  pragma Assert (Current_Subprogram_Number =
-                    Get_Subprogram_Id (Subp_Def));
-
                   --  Build receiving stub
 
                   Current_Stubs :=
@@ -3498,6 +3564,9 @@ package body Exp_Dist is
                     Subp_Def,
                     Current_Subprogram_Number,
                     Subp_Val);
+
+                  pragma Assert (Current_Subprogram_Number =
+                    Get_Subprogram_Id (Subp_Def));
 
                   --  Add subprogram descriptor (RCI_Subp_Info) to the
                   --  subprograms table for this receiver. The aggregate
@@ -4440,13 +4509,16 @@ package body Exp_Dist is
                  or else not Constrained
                  or else Is_Controlling_Formal
                then
-                  --  If an input parameter is contrained, then its reading is
-                  --  deferred until the beginning of the subprogram body. If
-                  --  it is unconstrained, then an expression is built for
-                  --  the object declaration and the variable is set using
-                  --  'Input instead of 'Read.
+                  --  If an input parameter is constrained, then the read of
+                  --  the parameter is deferred until the beginning of the
+                  --  subprogram body. If it is unconstrained, then an
+                  --  expression is built for the object declaration and the
+                  --  variable is set using 'Input instead of 'Read. Note that
+                  --  this deferral does not change the order in which the
+                  --  actuals are read because Build_Ordered_Parameter_List
+                  --  puts them unconstrained first.
 
-                  if Constrained and then not Is_Controlling_Formal then
+                  if Constrained then
                      Append_To (Statements,
                        Make_Attribute_Reference (Loc,
                          Prefix         => New_Occurrence_Of (Etyp, Loc),
@@ -4780,8 +4852,10 @@ package body Exp_Dist is
    -----------------------
 
    function Get_Subprogram_Id (Def : Entity_Id) return String_Id is
+      Result : constant String_Id := Get_Subprogram_Ids (Def).Str_Identifier;
    begin
-      return Get_Subprogram_Ids (Def).Str_Identifier;
+      pragma Assert (Result /= No_String);
+      return Result;
    end Get_Subprogram_Id;
 
    -----------------------
@@ -4800,54 +4874,8 @@ package body Exp_Dist is
    function Get_Subprogram_Ids
      (Def : Entity_Id) return Subprogram_Identifiers
    is
-      Result : Subprogram_Identifiers :=
-                 Subprogram_Identifier_Table.Get (Def);
-
-      Current_Declaration : Node_Id;
-      Current_Subp        : Entity_Id;
-      Current_Subp_Str    : String_Id;
-      Current_Subp_Number : Int := First_RCI_Subprogram_Id;
-
    begin
-      if Result.Str_Identifier = No_String then
-
-         --  We are looking up this subprogram's identifier outside of the
-         --  context of generating calling or receiving stubs. Hence we are
-         --  processing an 'Access attribute_reference for an RCI subprogram,
-         --  for the purpose of obtaining a RAS value.
-
-         pragma Assert
-           (Is_Remote_Call_Interface (Scope (Def))
-              and then
-               (Nkind (Parent (Def)) = N_Procedure_Specification
-                  or else
-                Nkind (Parent (Def)) = N_Function_Specification));
-
-         Current_Declaration :=
-           First (Visible_Declarations
-             (Package_Specification_Of_Scope (Scope (Def))));
-         while Present (Current_Declaration) loop
-            if Nkind (Current_Declaration) = N_Subprogram_Declaration
-              and then Comes_From_Source (Current_Declaration)
-            then
-               Current_Subp := Defining_Unit_Name (Specification (
-                 Current_Declaration));
-               Assign_Subprogram_Identifier
-                 (Current_Subp, Current_Subp_Number, Current_Subp_Str);
-
-               if Current_Subp = Def then
-                  Result := (Current_Subp_Str, Current_Subp_Number);
-               end if;
-
-               Current_Subp_Number := Current_Subp_Number + 1;
-            end if;
-
-            Next (Current_Declaration);
-         end loop;
-      end if;
-
-      pragma Assert (Result.Str_Identifier /= No_String);
-      return Result;
+      return Subprogram_Identifier_Table.Get (Def);
    end Get_Subprogram_Ids;
 
    ----------
@@ -6712,9 +6740,6 @@ package body Exp_Dist is
                   Proxy_Object_Addr : Entity_Id;
 
                begin
-                  pragma Assert (Current_Subprogram_Number =
-                    Get_Subprogram_Id (Subp_Def));
-
                   --  Build receiving stub
 
                   Current_Stubs :=
@@ -6744,6 +6769,9 @@ package body Exp_Dist is
                     Subp_Def,
                     Current_Subprogram_Number,
                     Subp_Val);
+
+                  pragma Assert (Current_Subprogram_Number =
+                    Get_Subprogram_Id (Subp_Def));
 
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
@@ -6979,9 +7007,9 @@ package body Exp_Dist is
          Is_Controlling_Formal         : Boolean;
          Is_First_Controlling_Formal   : Boolean;
          First_Controlling_Formal_Seen : Boolean := False;
-         --  Controlling formal parameters of distributed object
-         --  primitives require special handling, and the first
-         --  such parameter needs even more.
+         --  Controlling formal parameters of distributed object primitives
+         --  require special handling, and the first such parameter needs even
+         --  more special handling.
 
       begin
          --  ??? document general form of stub subprograms for the PolyORB case
@@ -7069,8 +7097,8 @@ package body Exp_Dist is
 
             if Is_Controlling_Formal then
 
-               --  In the case of a controlling formal argument, we send
-               --  its reference.
+               --  In the case of a controlling formal argument, we send its
+               --  reference.
 
                Etyp := RACW_Type;
 
@@ -7078,9 +7106,8 @@ package body Exp_Dist is
                Etyp := Etype (Parameter_Type (Current_Parameter));
             end if;
 
-            --  The first controlling formal parameter is treated
-            --  specially: it is used to set the target object of
-            --  the call.
+            --  The first controlling formal parameter is treated specially: it
+            --  is used to set the target object of the call.
 
             if not Is_First_Controlling_Formal then
 
@@ -7103,11 +7130,10 @@ package body Exp_Dist is
                begin
                   if Is_Controlling_Formal then
 
-                     --  For a controlling formal parameter (other
-                     --  than the first one), use the corresponding
-                     --  RACW. If the parameter is not an anonymous
-                     --  access parameter, that involves taking
-                     --  its 'Unrestricted_Access.
+                     --  For a controlling formal parameter (other than the
+                     --  first one), use the corresponding RACW. If the
+                     --  parameter is not an anonymous access parameter, that
+                     --  involves taking its 'Unrestricted_Access.
 
                      if Nkind (Parameter_Type (Current_Parameter))
                        = N_Access_Definition
@@ -7130,10 +7156,10 @@ package body Exp_Dist is
                     or else not Constrained
                     or else Is_Controlling_Formal
                   then
-                     --  The parameter has an input value, is constrained
-                     --  at runtime by an input value, or is a controlling
-                     --  formal parameter (always passed as a reference)
-                     --  other than the first one.
+                     --  The parameter has an input value, is constrained at
+                     --  runtime by an input value, or is a controlling formal
+                     --  parameter (always passed as a reference) other than
+                     --  the first one.
 
                      Expr := PolyORB_Support.Helpers.Build_To_Any_Call (
                                Actual_Parameter, Decls);
@@ -7181,8 +7207,8 @@ package body Exp_Dist is
                end;
             end if;
 
-            --  If the current parameter has a dynamic constrained status,
-            --  then this status is transmitted as well.
+            --  If the current parameter has a dynamic constrained status, then
+            --  this status is transmitted as well.
             --  This should be done for accessibility as well ???
 
             if Nkind (Parameter_Type (Current_Parameter))
@@ -7254,9 +7280,9 @@ package body Exp_Dist is
          else
             pragma Assert (Present (Asynchronous));
             Asynchronous_P := New_Copy_Tree (Asynchronous);
-            --  The expression node Asynchronous will be used to build
-            --  an 'if' statement at the end of Build_General_Calling_Stubs:
-            --  we need to make a copy here.
+            --  The expression node Asynchronous will be used to build an 'if'
+            --  statement at the end of Build_General_Calling_Stubs: we need to
+            --  make a copy here.
          end if;
 
          Append_To (Parameter_Associations (Last (Statements)),
@@ -7290,8 +7316,7 @@ package body Exp_Dist is
 
             if Is_Function then
 
-               --  If this is a function call, then read the value and
-               --  return it.
+               --  If this is a function call, read the value and return it
 
                Append_To (Non_Asynchronous_Statements,
                  Make_Tag_Check (Loc,
@@ -7353,8 +7378,8 @@ package body Exp_Dist is
                       Make_Selected_Component (Loc,
                         Prefix        => Controlling_Parameter,
                         Selector_Name => Name_Target)))));
-            --  Controlling_Parameter has the same components
-            --  as System.Partition_Interface.RACW_Stub_Type.
+            --  Controlling_Parameter has the same components as
+            --  System.Partition_Interface.RACW_Stub_Type.
 
             Target_Info.Object := New_Occurrence_Of (Target_Reference, Loc);
 
@@ -7503,10 +7528,9 @@ package body Exp_Dist is
          --  ???
 
          Outer_Decls : constant List_Id := New_List;
-         --  At the outermost level, an NVList and Any's are
-         --  declared for all parameters. The Dynamic_Async
-         --  flag also needs to be declared there to be visible
-         --  from the exception handling code.
+         --  At the outermost level, an NVList and Any's are declared for all
+         --  parameters. The Dynamic_Async flag also needs to be declared there
+         --  to be visible from the exception handling code.
 
          Outer_Statements : constant List_Id := New_List;
          --  Statements that occur prior to the declaration of the actual
@@ -7685,7 +7709,7 @@ package body Exp_Dist is
                   or else not Out_Present (Current_Parameter)
                   or else not Constrained
                then
-                  --  If an input parameter is contrained, then its reading is
+                  --  If an input parameter is constrained, then its reading is
                   --  deferred until the beginning of the subprogram body. If
                   --  it is unconstrained, then an expression is built for
                   --  the object declaration and the variable is set using
@@ -7705,8 +7729,8 @@ package body Exp_Dist is
                      Expr := Empty;
                   else
                      null;
-                     --  Expr will be used to initialize (and constrain)
-                     --  the parameter when it is declared.
+                     --  Expr will be used to initialize (and constrain) the
+                     --  parameter when it is declared.
                   end if;
 
                end if;
@@ -8763,6 +8787,15 @@ package body Exp_Dist is
                         True,
                       Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Buffer_Stream_Type), Loc)));
+
+                  --  Allocate_Buffer (Strm);
+
+                  Append_To (Stms,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name =>
+                        New_Occurrence_Of (RTE (RE_Allocate_Buffer), Loc),
+                      Parameter_Associations => New_List (
+                        New_Occurrence_Of (Strm, Loc))));
 
                   --  Any_To_BS (Strm, A);
 
