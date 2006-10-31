@@ -198,7 +198,7 @@ package GNAT.OS_Lib is
    --  for subsequent use in Write calls. File descriptor returned is
    --  Invalid_FD if file cannot be successfully created.
 
-   function Create_Output_Text_File (Name  : String) return File_Descriptor;
+   function Create_Output_Text_File (Name : String) return File_Descriptor;
    --  Creates new text file with given name suitable to redirect standard
    --  output, returning file descriptor. File descriptor returned is
    --  Invalid_FD if file cannot be successfully created.
@@ -600,8 +600,7 @@ package GNAT.OS_Lib is
 
    function Locate_Regular_File
      (File_Name : C_File_Name;
-      Path      : C_File_Name)
-      return      String_Access;
+      Path      : C_File_Name) return String_Access;
 
    ------------------
    -- Subprocesses --
@@ -667,8 +666,7 @@ package GNAT.OS_Lib is
 
    function Spawn
      (Program_Name : String;
-      Args         : Argument_List)
-      return         Integer;
+      Args         : Argument_List) return Integer;
    --  Similar to the above procedure, but returns the actual status returned
    --  by the operating system, or -1 under VxWorks and any other similar
    --  operating systems which have no notion of separately spawnable programs.
@@ -707,16 +705,19 @@ package GNAT.OS_Lib is
 
    type Process_Id is private;
    --  A private type used to identify a process activated by the following
-   --  non-blocking call. The only meaningful operation on this type is a
+   --  non-blocking calls. The only meaningful operation on this type is a
    --  comparison for equality.
 
    Invalid_Pid : constant Process_Id;
    --  A special value used to indicate errors, as described below
 
+   function Pid_To_Integer (Pid : Process_Id) return Integer;
+   --  Convert a process id to an Integer. Useful for writing hash functions
+   --  for type Process_Id or to compare two Process_Id (e.g. for sorting).
+
    function Non_Blocking_Spawn
      (Program_Name : String;
-      Args         : Argument_List)
-      return         Process_Id;
+      Args         : Argument_List) return Process_Id;
    --  This is a non blocking call. The Process_Id of the spawned process is
    --  returned. Parameters are to be used as in Spawn. If Invalid_Pid is
    --  returned the program could not be spawned.
@@ -745,8 +746,7 @@ package GNAT.OS_Lib is
      (Program_Name : String;
       Args         : Argument_List;
       Output_File  : String;
-      Err_To_Out   : Boolean := True)
-      return         Process_Id;
+      Err_To_Out   : Boolean := True) return Process_Id;
    --  Similar to the procedure above, but saves the output of the command to
    --  a file with the name Output_File.
    --
