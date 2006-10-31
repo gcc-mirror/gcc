@@ -25,6 +25,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -115,8 +116,8 @@ package body Exp_Intr is
    --     GDC_Instance (The_Tag, Parameters'Access)
 
    --  to a class-wide conversion of a dispatching call to the actual
-   --  associated with the formal subprogram Construct, designating
-   --  The_Tag as the controlling tag of the call:
+   --  associated with the formal subprogram Construct, designating The_Tag
+   --  as the controlling tag of the call:
 
    --     T'Class (Construct'Actual (Params)) -- Controlling tag is The_Tag
 
@@ -124,8 +125,8 @@ package body Exp_Intr is
 
    --     T'Class (The_Tag.all (Construct'Actual'Index).all (Params))
 
-   --  A class-wide membership test is also generated, preceding the call,
-   --  to ensure that the controlling tag denotes a type in T'Class.
+   --  A class-wide membership test is also generated, preceding the call, to
+   --  ensure that the controlling tag denotes a type in T'Class.
 
    procedure Expand_Dispatching_Constructor_Call (N : Node_Id) is
       Loc        : constant Source_Ptr := Sloc (N);
@@ -169,23 +170,61 @@ package body Exp_Intr is
       Rewrite (N, Convert_To (Result_Typ, Cnstr_Call));
       Analyze_And_Resolve (N, Etype (Act_Constr));
 
-      --  Generate a class-wide membership test to ensure that the call's tag
-      --  argument denotes a type within the class.
+      --  Do not generate a run-time check on the built object if tag
+      --  checks is suppressed for the result type.
 
-      Insert_Action (N,
-        Make_Implicit_If_Statement (N,
-          Condition =>
-            Make_Op_Not (Loc,
-              Make_DT_Access_Action (Result_Typ,
-                 Action => CW_Membership,
-                 Args   => New_List (
-                   Duplicate_Subexpr (Tag_Arg),
-                   New_Reference_To (
-                     Node (First_Elmt (Access_Disp_Table (
-                                         Root_Type (Result_Typ)))), Loc)))),
-          Then_Statements =>
-            New_List (Make_Raise_Statement (Loc,
-                        New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+      if Tag_Checks_Suppressed (Etype (Result_Typ)) then
+         null;
+
+      --  Generate a class-wide membership test to ensure that the call's tag
+      --  argument denotes a type within the class. We must keep separate the
+      --  case in which the Result_Type of the constructor function is a tagged
+      --  type from the case in which it is an abstract interface because the
+      --  run-time subprogram required to check these cases differ (and have
+      --  one difference in their parameters profile).
+
+      --  Call CW_Membership if the Result_Type is a tagged type to look for
+      --  the tag in the table of ancestor tags.
+
+      elsif not Is_Interface (Result_Typ) then
+         Insert_Action (N,
+           Make_Implicit_If_Statement (N,
+             Condition =>
+               Make_Op_Not (Loc,
+                 Make_DT_Access_Action (Result_Typ,
+                    Action => CW_Membership,
+                    Args   => New_List (
+                      Duplicate_Subexpr (Tag_Arg),
+                      New_Reference_To (
+                        Node (First_Elmt (Access_Disp_Table (
+                                            Root_Type (Result_Typ)))), Loc)))),
+             Then_Statements =>
+               New_List (Make_Raise_Statement (Loc,
+                           New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+
+      --  Call IW_Membership test if the Result_Type is an abstract interface
+      --  to look for the tag in the table of interface tags.
+
+      else
+         Insert_Action (N,
+           Make_Implicit_If_Statement (N,
+             Condition =>
+               Make_Op_Not (Loc,
+                 Make_DT_Access_Action (Result_Typ,
+                    Action => IW_Membership,
+                    Args   => New_List (
+                      Make_Attribute_Reference (Loc,
+                        Prefix => Duplicate_Subexpr (Tag_Arg),
+                        Attribute_Name => Name_Address),
+
+                      New_Reference_To (
+                        Node (First_Elmt (Access_Disp_Table (
+                                            Root_Type (Result_Typ)))), Loc)))),
+             Then_Statements =>
+               New_List (
+                 Make_Raise_Statement (Loc,
+                   Name => New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+      end if;
    end Expand_Dispatching_Constructor_Call;
 
    ---------------------------
