@@ -826,8 +826,7 @@ package body Rtsfind is
          --  Otherwise we need the check if we are going after one of
          --  the critical entities in System.RPC in stubs mode.
 
-         --  ??? Should we do this for other s-parint/s-polint entities
-         --  too?
+         --  ??? Should we do this for other s-parint entities too?
 
          if (Distribution_Stub_Mode = Generate_Receiver_Stub_Body
                       or else
@@ -1062,7 +1061,7 @@ package body Rtsfind is
          --  Bump count of violations if we are in configurable run-time
          --  mode and this is not a continuation message.
 
-         if Configurable_Run_Time_Mode and then Msg (1) /= '\' then
+         if Configurable_Run_Time_Mode and then Msg (Msg'First) /= '\' then
             Configurable_Run_Time_Violations :=
               Configurable_Run_Time_Violations + 1;
          end if;

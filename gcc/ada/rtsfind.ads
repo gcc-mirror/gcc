@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,8 +92,8 @@ package Rtsfind is
    --  Generic units, library level instantiations and subprogram bodies
    --  acting as specs may not be referenced (all these cases could be added
    --  at the expense of additional complexity in the body of Rtsfind, but
-   --  it doesn't seem worth while, since the implementation controls the
-   --  set of units that are referenced, and this restrictions is easily met.
+   --  it doesn't seem worthwhile, since the implementation controls the
+   --  set of units that are referenced, and this restriction is easily met.
 
    --  IMPORTANT NOTE: the specs of packages and procedures with'ed using
    --  this mechanism may not contain use clauses. This is because these
@@ -199,6 +199,7 @@ package Rtsfind is
       System_Compare_Array_Unsigned_32,
       System_Compare_Array_Unsigned_64,
       System_Compare_Array_Unsigned_8,
+      System_DSA_Services,
       System_Exception_Table,
       System_Exn_Int,
       System_Exn_LLF,
@@ -296,7 +297,6 @@ package Rtsfind is
       System_Pack_63,
       System_Parameters,
       System_Partition_Interface,
-      System_PolyORB_Interface,
       System_Pool_Global,
       System_Pool_Empty,
       System_Pool_Local,
@@ -508,6 +508,7 @@ package Rtsfind is
      RE_Get_RC_Offset,                   -- Ada.Tags
      RE_Get_Remotely_Callable,           -- Ada.Tags
      RE_Get_Tagged_Kind,                 -- Ada.Tags
+     RE_Inherit_CPP_DT,                  -- Ada.Tags
      RE_Inherit_DT,                      -- Ada.Tags
      RE_Inherit_TSD,                     -- Ada.Tags
      RE_Interface_Data,                  -- Ada.Tags
@@ -681,6 +682,8 @@ package Rtsfind is
      RE_Compare_Array_U32,               -- System.Compare_Array_Unsigned_16
 
      RE_Compare_Array_U64,               -- System.Compare_Array_Unsigned_16
+
+     RE_Get_Active_Partition_Id,         -- System.DSA_Services
 
      RE_Register_Exception,              -- System.Exception_Table
 
@@ -1073,7 +1076,6 @@ package Rtsfind is
      RE_Unspecified_Size,                -- System.Parameters
 
      RE_DSA_Implementation,              -- System.Partition_Interface
-     RE_Get_Active_Partition_Id,         -- System.Partition_Interface
      RE_Get_Passive_Partition_Id,        -- System.Partition_Interface
      RE_Get_Local_Partition_Id,          -- System.Partition_Interface
      RE_Get_RCI_Package_Receiver,        -- System.Partition_Interface
@@ -1102,135 +1104,135 @@ package Rtsfind is
      RE_Params_Stream_Type,              -- System.RPC
      RE_Partition_ID,                    -- System.RPC
 
-     RE_To_PolyORB_String,               -- System.PolyORB_Interface
-     RE_To_Standard_String,              -- System.PolyORB_Interface
-     RE_Caseless_String_Eq,              -- System.PolyORB_Interface
-     RE_TypeCode,                        -- System.PolyORB_Interface
-     RE_Any,                             -- System.PolyORB_Interface
-     RE_Mode_In,                         -- System.PolyORB_Interface
-     RE_Mode_Out,                        -- System.PolyORB_Interface
-     RE_Mode_Inout,                      -- System.PolyORB_Interface
-     RE_NamedValue,                      -- System.PolyORB_Interface
-     RE_Result_Name,                     -- System.PolyORB_Interface
-     RE_Object_Ref,                      -- System.PolyORB_Interface
-     RE_Create_Any,                      -- System.PolyORB_Interface
-     RE_Any_Aggregate_Build,             -- System.PolyORB_Interface
-     RE_Add_Aggregate_Element,           -- System.PolyORB_Interface
-     RE_Get_Aggregate_Element,           -- System.PolyORB_Interface
-     RE_Content_Type,                    -- System.PolyORB_Interface
-     RE_Any_Member_Type,                 -- System.PolyORB_Interface
-     RE_Get_Nested_Sequence_Length,      -- System.PolyORB_Interface
-     RE_Extract_Union_Value,             -- System.PolyORB_Interface
-     RE_NVList_Ref,                      -- System.PolyORB_Interface
-     RE_NVList_Create,                   -- System.PolyORB_Interface
-     RE_NVList_Add_Item,                 -- System.PolyORB_Interface
-     RE_Request_Create,                  -- System.PolyORB_Interface
-     RE_Request_Invoke,                  -- System.PolyORB_Interface
-     RE_Request_Arguments,               -- System.PolyORB_Interface
-     RE_Request_Set_Out,                 -- System.PolyORB_Interface
-     RE_Request_Raise_Occurrence,        -- System.PolyORB_Interface
-     RE_Nil_Exc_List,                    -- System.PolyORB_Interface
-     RE_Servant,                         -- System.PolyORB_Interface
-     RE_Copy_Any_Value,                  -- System.PolyORB_Interface
-     RE_Set_Result,                      -- System.PolyORB_Interface
-     RE_Register_Obj_Receiving_Stub,     -- System.PolyORB_Interface
-     RE_Register_Pkg_Receiving_Stub,     -- System.PolyORB_Interface
-     RE_Is_Nil,                          -- System.PolyORB_Interface
-     RE_Entity_Ptr,                      -- System.PolyORB_Interface
-     RE_Entity_Of,                       -- System.PolyORB_Interface
-     RE_Inc_Usage,                       -- System.PolyORB_Interface
-     RE_Set_Ref,                         -- System.PolyORB_Interface
-     RE_Make_Ref,                        -- System.PolyORB_Interface
-     RE_Get_Local_Address,               -- System.PolyORB_Interface
-     RE_Get_Reference,                   -- System.PolyORB_Interface
-     RE_Local_Oid_To_Address,            -- System.PolyORB_Interface
-     RE_Asynchronous_P_To_Sync_Scope,    -- System.PolyORB_Interface
-     RE_Buffer_Stream_Type,              -- System.PolyORB_Interface
-     RE_Allocate_Buffer,                 -- System.PolyORB_Interface
-     RE_Release_Buffer,                  -- System.PolyORB_Interface
-     RE_BS_To_Any,                       -- System.PolyORB_Interface
-     RE_Any_To_BS,                       -- System.PolyORB_Interface
+     RE_To_PolyORB_String,               -- System.Partition_Interface
+     RE_To_Standard_String,              -- System.Partition_Interface
+     RE_Caseless_String_Eq,              -- System.Partition_Interface
+     RE_TypeCode,                        -- System.Partition_Interface
+     RE_Any,                             -- System.Partition_Interface
+     RE_Mode_In,                         -- System.Partition_Interface
+     RE_Mode_Out,                        -- System.Partition_Interface
+     RE_Mode_Inout,                      -- System.Partition_Interface
+     RE_NamedValue,                      -- System.Partition_Interface
+     RE_Result_Name,                     -- System.Partition_Interface
+     RE_Object_Ref,                      -- System.Partition_Interface
+     RE_Create_Any,                      -- System.Partition_Interface
+     RE_Any_Aggregate_Build,             -- System.Partition_Interface
+     RE_Add_Aggregate_Element,           -- System.Partition_Interface
+     RE_Get_Aggregate_Element,           -- System.Partition_Interface
+     RE_Content_Type,                    -- System.Partition_Interface
+     RE_Any_Member_Type,                 -- System.Partition_Interface
+     RE_Get_Nested_Sequence_Length,      -- System.Partition_Interface
+     RE_Extract_Union_Value,             -- System.Partition_Interface
+     RE_NVList_Ref,                      -- System.Partition_Interface
+     RE_NVList_Create,                   -- System.Partition_Interface
+     RE_NVList_Add_Item,                 -- System.Partition_Interface
+     RE_Request_Create,                  -- System.Partition_Interface
+     RE_Request_Invoke,                  -- System.Partition_Interface
+     RE_Request_Arguments,               -- System.Partition_Interface
+     RE_Request_Set_Out,                 -- System.Partition_Interface
+     RE_Request_Raise_Occurrence,        -- System.Partition_Interface
+     RE_Nil_Exc_List,                    -- System.Partition_Interface
+     RE_Servant,                         -- System.Partition_Interface
+     RE_Copy_Any_Value,                  -- System.Partition_Interface
+     RE_Set_Result,                      -- System.Partition_Interface
+     RE_Register_Obj_Receiving_Stub,     -- System.Partition_Interface
+     RE_Register_Pkg_Receiving_Stub,     -- System.Partition_Interface
+     RE_Is_Nil,                          -- System.Partition_Interface
+     RE_Entity_Ptr,                      -- System.Partition_Interface
+     RE_Entity_Of,                       -- System.Partition_Interface
+     RE_Inc_Usage,                       -- System.Partition_Interface
+     RE_Set_Ref,                         -- System.Partition_Interface
+     RE_Make_Ref,                        -- System.Partition_Interface
+     RE_Get_Local_Address,               -- System.Partition_Interface
+     RE_Get_Reference,                   -- System.Partition_Interface
+     RE_Local_Oid_To_Address,            -- System.Partition_Interface
+     RE_Asynchronous_P_To_Sync_Scope,    -- System.Partition_Interface
+     RE_Buffer_Stream_Type,              -- System.Partition_Interface
+     RE_Allocate_Buffer,                 -- System.Partition_Interface
+     RE_Release_Buffer,                  -- System.Partition_Interface
+     RE_BS_To_Any,                       -- System.Partition_Interface
+     RE_Any_To_BS,                       -- System.Partition_Interface
 
-     RE_FA_AD,                           -- System.PolyORB_Interface
-     RE_FA_AS,                           -- System.PolyORB_Interface
-     RE_FA_B,                            -- System.PolyORB_Interface
-     RE_FA_C,                            -- System.PolyORB_Interface
-     RE_FA_F,                            -- System.PolyORB_Interface
-     RE_FA_I,                            -- System.PolyORB_Interface
-     RE_FA_LF,                           -- System.PolyORB_Interface
-     RE_FA_LI,                           -- System.PolyORB_Interface
-     RE_FA_LLF,                          -- System.PolyORB_Interface
-     RE_FA_LLI,                          -- System.PolyORB_Interface
-     RE_FA_LLU,                          -- System.PolyORB_Interface
-     RE_FA_LU,                           -- System.PolyORB_Interface
-     RE_FA_SF,                           -- System.PolyORB_Interface
-     RE_FA_SI,                           -- System.PolyORB_Interface
-     RE_FA_SSI,                          -- System.PolyORB_Interface
-     RE_FA_SSU,                          -- System.PolyORB_Interface
-     RE_FA_SU,                           -- System.PolyORB_Interface
-     RE_FA_U,                            -- System.PolyORB_Interface
-     RE_FA_WC,                           -- System.PolyORB_Interface
-     RE_FA_WWC,                          -- System.PolyORB_Interface
-     RE_FA_String,                       -- System.PolyORB_Interface
-     RE_FA_ObjRef,                       -- System.PolyORB_Interface
+     RE_FA_AD,                           -- System.Partition_Interface
+     RE_FA_AS,                           -- System.Partition_Interface
+     RE_FA_B,                            -- System.Partition_Interface
+     RE_FA_C,                            -- System.Partition_Interface
+     RE_FA_F,                            -- System.Partition_Interface
+     RE_FA_I,                            -- System.Partition_Interface
+     RE_FA_LF,                           -- System.Partition_Interface
+     RE_FA_LI,                           -- System.Partition_Interface
+     RE_FA_LLF,                          -- System.Partition_Interface
+     RE_FA_LLI,                          -- System.Partition_Interface
+     RE_FA_LLU,                          -- System.Partition_Interface
+     RE_FA_LU,                           -- System.Partition_Interface
+     RE_FA_SF,                           -- System.Partition_Interface
+     RE_FA_SI,                           -- System.Partition_Interface
+     RE_FA_SSI,                          -- System.Partition_Interface
+     RE_FA_SSU,                          -- System.Partition_Interface
+     RE_FA_SU,                           -- System.Partition_Interface
+     RE_FA_U,                            -- System.Partition_Interface
+     RE_FA_WC,                           -- System.Partition_Interface
+     RE_FA_WWC,                          -- System.Partition_Interface
+     RE_FA_String,                       -- System.Partition_Interface
+     RE_FA_ObjRef,                       -- System.Partition_Interface
 
-     RE_TA_AD,                           -- System.PolyORB_Interface
-     RE_TA_AS,                           -- System.PolyORB_Interface
-     RE_TA_B,                            -- System.PolyORB_Interface
-     RE_TA_C,                            -- System.PolyORB_Interface
-     RE_TA_F,                            -- System.PolyORB_Interface
-     RE_TA_I,                            -- System.PolyORB_Interface
-     RE_TA_LF,                           -- System.PolyORB_Interface
-     RE_TA_LI,                           -- System.PolyORB_Interface
-     RE_TA_LLF,                          -- System.PolyORB_Interface
-     RE_TA_LLI,                          -- System.PolyORB_Interface
-     RE_TA_LLU,                          -- System.PolyORB_Interface
-     RE_TA_LU,                           -- System.PolyORB_Interface
-     RE_TA_SF,                           -- System.PolyORB_Interface
-     RE_TA_SI,                           -- System.PolyORB_Interface
-     RE_TA_SSI,                          -- System.PolyORB_Interface
-     RE_TA_SSU,                          -- System.PolyORB_Interface
-     RE_TA_SU,                           -- System.PolyORB_Interface
-     RE_TA_U,                            -- System.PolyORB_Interface
-     RE_TA_WC,                           -- System.PolyORB_Interface
-     RE_TA_WWC,                          -- System.PolyORB_Interface
-     RE_TA_String,                       -- System.PolyORB_Interface
-     RE_TA_ObjRef,                       -- System.PolyORB_Interface
-     RE_TA_TC,                           -- System.PolyORB_Interface
+     RE_TA_AD,                           -- System.Partition_Interface
+     RE_TA_AS,                           -- System.Partition_Interface
+     RE_TA_B,                            -- System.Partition_Interface
+     RE_TA_C,                            -- System.Partition_Interface
+     RE_TA_F,                            -- System.Partition_Interface
+     RE_TA_I,                            -- System.Partition_Interface
+     RE_TA_LF,                           -- System.Partition_Interface
+     RE_TA_LI,                           -- System.Partition_Interface
+     RE_TA_LLF,                          -- System.Partition_Interface
+     RE_TA_LLI,                          -- System.Partition_Interface
+     RE_TA_LLU,                          -- System.Partition_Interface
+     RE_TA_LU,                           -- System.Partition_Interface
+     RE_TA_SF,                           -- System.Partition_Interface
+     RE_TA_SI,                           -- System.Partition_Interface
+     RE_TA_SSI,                          -- System.Partition_Interface
+     RE_TA_SSU,                          -- System.Partition_Interface
+     RE_TA_SU,                           -- System.Partition_Interface
+     RE_TA_U,                            -- System.Partition_Interface
+     RE_TA_WC,                           -- System.Partition_Interface
+     RE_TA_WWC,                          -- System.Partition_Interface
+     RE_TA_String,                       -- System.Partition_Interface
+     RE_TA_ObjRef,                       -- System.Partition_Interface
+     RE_TA_TC,                           -- System.Partition_Interface
 
-     RE_TC_Alias,                        -- System.PolyORB_Interface
-     RE_TC_Build,                        -- System.PolyORB_Interface
-     RE_Get_TC,                          -- System.PolyORB_Interface
-     RE_Set_TC,                          -- System.PolyORB_Interface
-     RE_TC_Any,                          -- System.PolyORB_Interface
-     RE_TC_AD,                           -- System.PolyORB_Interface
-     RE_TC_AS,                           -- System.PolyORB_Interface
-     RE_TC_B,                            -- System.PolyORB_Interface
-     RE_TC_C,                            -- System.PolyORB_Interface
-     RE_TC_F,                            -- System.PolyORB_Interface
-     RE_TC_I,                            -- System.PolyORB_Interface
-     RE_TC_LF,                           -- System.PolyORB_Interface
-     RE_TC_LI,                           -- System.PolyORB_Interface
-     RE_TC_LLF,                          -- System.PolyORB_Interface
-     RE_TC_LLI,                          -- System.PolyORB_Interface
-     RE_TC_LLU,                          -- System.PolyORB_Interface
-     RE_TC_LU,                           -- System.PolyORB_Interface
-     RE_TC_SF,                           -- System.PolyORB_Interface
-     RE_TC_SI,                           -- System.PolyORB_Interface
-     RE_TC_SSI,                          -- System.PolyORB_Interface
-     RE_TC_SSU,                          -- System.PolyORB_Interface
-     RE_TC_SU,                           -- System.PolyORB_Interface
-     RE_TC_U,                            -- System.PolyORB_Interface
-     RE_TC_Void,                         -- System.PolyORB_Interface
-     RE_TC_Opaque,                       -- System.PolyORB_Interface,
-     RE_TC_WC,                           -- System.PolyORB_Interface
-     RE_TC_WWC,                          -- System.PolyORB_Interface
-     RE_TC_Array,                        -- System.PolyORB_Interface,
-     RE_TC_Sequence,                     -- System.PolyORB_Interface,
-     RE_TC_String,                       -- System.PolyORB_Interface,
-     RE_TC_Struct,                       -- System.PolyORB_Interface,
-     RE_TC_Union,                        -- System.PolyORB_Interface,
-     RE_TC_Object,                       -- System.PolyORB_Interface,
+     RE_TC_Alias,                        -- System.Partition_Interface
+     RE_TC_Build,                        -- System.Partition_Interface
+     RE_Get_TC,                          -- System.Partition_Interface
+     RE_Set_TC,                          -- System.Partition_Interface
+     RE_TC_Any,                          -- System.Partition_Interface
+     RE_TC_AD,                           -- System.Partition_Interface
+     RE_TC_AS,                           -- System.Partition_Interface
+     RE_TC_B,                            -- System.Partition_Interface
+     RE_TC_C,                            -- System.Partition_Interface
+     RE_TC_F,                            -- System.Partition_Interface
+     RE_TC_I,                            -- System.Partition_Interface
+     RE_TC_LF,                           -- System.Partition_Interface
+     RE_TC_LI,                           -- System.Partition_Interface
+     RE_TC_LLF,                          -- System.Partition_Interface
+     RE_TC_LLI,                          -- System.Partition_Interface
+     RE_TC_LLU,                          -- System.Partition_Interface
+     RE_TC_LU,                           -- System.Partition_Interface
+     RE_TC_SF,                           -- System.Partition_Interface
+     RE_TC_SI,                           -- System.Partition_Interface
+     RE_TC_SSI,                          -- System.Partition_Interface
+     RE_TC_SSU,                          -- System.Partition_Interface
+     RE_TC_SU,                           -- System.Partition_Interface
+     RE_TC_U,                            -- System.Partition_Interface
+     RE_TC_Void,                         -- System.Partition_Interface
+     RE_TC_Opaque,                       -- System.Partition_Interface
+     RE_TC_WC,                           -- System.Partition_Interface
+     RE_TC_WWC,                          -- System.Partition_Interface
+     RE_TC_Array,                        -- System.Partition_Interface
+     RE_TC_Sequence,                     -- System.Partition_Interface
+     RE_TC_String,                       -- System.Partition_Interface
+     RE_TC_Struct,                       -- System.Partition_Interface
+     RE_TC_Union,                        -- System.Partition_Interface
+     RE_TC_Object,                       -- System.Partition_Interface
 
      RE_IS_Is1,                          -- System.Scalar_Values
      RE_IS_Is2,                          -- System.Scalar_Values
@@ -1375,6 +1377,7 @@ package Rtsfind is
      RE_Unspecified_Priority,            -- System.Tasking
 
      RE_Activation_Chain,                -- System.Tasking
+     RE_Storage_Size,                    -- System.Tasking
 
      RE_Abort_Defer,                     -- System.Soft_Links
      RE_Abort_Undefer,                   -- System.Soft_Links
@@ -1523,6 +1526,8 @@ package Rtsfind is
      RE_Initialize_Protection_Entries,   -- Tasking.Protected_Objects.Entries
      RE_Lock_Entries,                    -- Tasking.Protected_Objects.Entries
      RE_Lock_Read_Only_Entries,          -- Tasking.Protected_Objects.Entries
+     RO_PE_Get_Ceiling,                  -- Tasking.Protected_Objects.Entries
+     RO_PE_Set_Ceiling,                  -- Tasking.Protected_Objects.Entries
      RE_Unlock_Entries,                  -- Tasking.Protected_Objects.Entries
      RE_Communication_Block,             -- Protected_Objects.Operations
      RE_Protected_Entry_Call,            -- Protected_Objects.Operations
@@ -1558,6 +1563,8 @@ package Rtsfind is
      RE_Finalize_Protection,             -- System.Tasking.Protected_Objects
      RE_Lock,                            -- System.Tasking.Protected_Objects
      RE_Lock_Read_Only,                  -- System.Tasking.Protected_Objects
+     RE_Get_Ceiling,                     -- System.Tasking.Protected_Objects
+     RE_Set_Ceiling,                     -- System.Tasking.Protected_Objects
      RE_Unlock,                          -- System.Tasking.Protected_Objects
 
      RE_Delay_Block,                     -- System.Tasking.Async_Delays
@@ -1665,6 +1672,7 @@ package Rtsfind is
      RE_Get_RC_Offset                    => Ada_Tags,
      RE_Get_Remotely_Callable            => Ada_Tags,
      RE_Get_Tagged_Kind                  => Ada_Tags,
+     RE_Inherit_CPP_DT                   => Ada_Tags,
      RE_Inherit_DT                       => Ada_Tags,
      RE_Inherit_TSD                      => Ada_Tags,
      RE_Interface_Data                   => Ada_Tags,
@@ -1836,6 +1844,8 @@ package Rtsfind is
      RE_Compare_Array_U32                => System_Compare_Array_Unsigned_32,
 
      RE_Compare_Array_U64                => System_Compare_Array_Unsigned_64,
+
+     RE_Get_Active_Partition_Id          => System_DSA_Services,
 
      RE_Register_Exception               => System_Exception_Table,
 
@@ -2228,7 +2238,6 @@ package Rtsfind is
      RE_Unspecified_Size                 => System_Parameters,
 
      RE_DSA_Implementation               => System_Partition_Interface,
-     RE_Get_Active_Partition_Id          => System_Partition_Interface,
      RE_Get_Passive_Partition_Id         => System_Partition_Interface,
      RE_Get_Local_Partition_Id           => System_Partition_Interface,
      RE_Get_RCI_Package_Receiver         => System_Partition_Interface,
@@ -2248,135 +2257,135 @@ package Rtsfind is
      RE_Subprogram_Id                    => System_Partition_Interface,
      RE_Get_RAS_Info                     => System_Partition_Interface,
 
-     RE_To_PolyORB_String                => System_PolyORB_Interface,
-     RE_To_Standard_String               => System_PolyORB_Interface,
-     RE_Caseless_String_Eq               => System_PolyORB_Interface,
-     RE_TypeCode                         => System_PolyORB_Interface,
-     RE_Any                              => System_PolyORB_Interface,
-     RE_Mode_In                          => System_PolyORB_Interface,
-     RE_Mode_Out                         => System_PolyORB_Interface,
-     RE_Mode_Inout                       => System_PolyORB_Interface,
-     RE_NamedValue                       => System_PolyORB_Interface,
-     RE_Result_Name                      => System_PolyORB_Interface,
-     RE_Object_Ref                       => System_PolyORB_Interface,
-     RE_Create_Any                       => System_PolyORB_Interface,
-     RE_Any_Aggregate_Build              => System_PolyORB_Interface,
-     RE_Add_Aggregate_Element            => System_PolyORB_Interface,
-     RE_Get_Aggregate_Element            => System_PolyORB_Interface,
-     RE_Content_Type                     => System_PolyORB_Interface,
-     RE_Any_Member_Type                  => System_PolyORB_Interface,
-     RE_Get_Nested_Sequence_Length       => System_PolyORB_Interface,
-     RE_Extract_Union_Value              => System_PolyORB_Interface,
-     RE_NVList_Ref                       => System_PolyORB_Interface,
-     RE_NVList_Create                    => System_PolyORB_Interface,
-     RE_NVList_Add_Item                  => System_PolyORB_Interface,
-     RE_Request_Create                   => System_PolyORB_Interface,
-     RE_Request_Invoke                   => System_PolyORB_Interface,
-     RE_Request_Arguments                => System_PolyORB_Interface,
-     RE_Request_Set_Out                  => System_PolyORB_Interface,
-     RE_Request_Raise_Occurrence         => System_PolyORB_Interface,
-     RE_Nil_Exc_List                     => System_PolyORB_Interface,
-     RE_Servant                          => System_PolyORB_Interface,
-     RE_Copy_Any_Value                   => System_PolyORB_Interface,
-     RE_Set_Result                       => System_PolyORB_Interface,
-     RE_Register_Obj_Receiving_Stub      => System_PolyORB_Interface,
-     RE_Register_Pkg_Receiving_Stub      => System_PolyORB_Interface,
-     RE_Is_Nil                           => System_PolyORB_Interface,
-     RE_Entity_Ptr                       => System_PolyORB_Interface,
-     RE_Entity_Of                        => System_PolyORB_Interface,
-     RE_Inc_Usage                        => System_PolyORB_Interface,
-     RE_Set_Ref                          => System_PolyORB_Interface,
-     RE_Make_Ref                         => System_PolyORB_Interface,
-     RE_Get_Local_Address                => System_PolyORB_Interface,
-     RE_Get_Reference                    => System_PolyORB_Interface,
-     RE_Local_Oid_To_Address             => System_PolyORB_Interface,
-     RE_Asynchronous_P_To_Sync_Scope     => System_PolyORB_Interface,
-     RE_Buffer_Stream_Type               => System_PolyORB_Interface,
-     RE_Allocate_Buffer                  => System_PolyORB_Interface,
-     RE_Release_Buffer                   => System_PolyORB_Interface,
-     RE_BS_To_Any                        => System_PolyORB_Interface,
-     RE_Any_To_BS                        => System_PolyORB_Interface,
+     RE_To_PolyORB_String                => System_Partition_Interface,
+     RE_To_Standard_String               => System_Partition_Interface,
+     RE_Caseless_String_Eq               => System_Partition_Interface,
+     RE_TypeCode                         => System_Partition_Interface,
+     RE_Any                              => System_Partition_Interface,
+     RE_Mode_In                          => System_Partition_Interface,
+     RE_Mode_Out                         => System_Partition_Interface,
+     RE_Mode_Inout                       => System_Partition_Interface,
+     RE_NamedValue                       => System_Partition_Interface,
+     RE_Result_Name                      => System_Partition_Interface,
+     RE_Object_Ref                       => System_Partition_Interface,
+     RE_Create_Any                       => System_Partition_Interface,
+     RE_Any_Aggregate_Build              => System_Partition_Interface,
+     RE_Add_Aggregate_Element            => System_Partition_Interface,
+     RE_Get_Aggregate_Element            => System_Partition_Interface,
+     RE_Content_Type                     => System_Partition_Interface,
+     RE_Any_Member_Type                  => System_Partition_Interface,
+     RE_Get_Nested_Sequence_Length       => System_Partition_Interface,
+     RE_Extract_Union_Value              => System_Partition_Interface,
+     RE_NVList_Ref                       => System_Partition_Interface,
+     RE_NVList_Create                    => System_Partition_Interface,
+     RE_NVList_Add_Item                  => System_Partition_Interface,
+     RE_Request_Create                   => System_Partition_Interface,
+     RE_Request_Invoke                   => System_Partition_Interface,
+     RE_Request_Arguments                => System_Partition_Interface,
+     RE_Request_Set_Out                  => System_Partition_Interface,
+     RE_Request_Raise_Occurrence         => System_Partition_Interface,
+     RE_Nil_Exc_List                     => System_Partition_Interface,
+     RE_Servant                          => System_Partition_Interface,
+     RE_Copy_Any_Value                   => System_Partition_Interface,
+     RE_Set_Result                       => System_Partition_Interface,
+     RE_Register_Obj_Receiving_Stub      => System_Partition_Interface,
+     RE_Register_Pkg_Receiving_Stub      => System_Partition_Interface,
+     RE_Is_Nil                           => System_Partition_Interface,
+     RE_Entity_Ptr                       => System_Partition_Interface,
+     RE_Entity_Of                        => System_Partition_Interface,
+     RE_Inc_Usage                        => System_Partition_Interface,
+     RE_Set_Ref                          => System_Partition_Interface,
+     RE_Make_Ref                         => System_Partition_Interface,
+     RE_Get_Local_Address                => System_Partition_Interface,
+     RE_Get_Reference                    => System_Partition_Interface,
+     RE_Local_Oid_To_Address             => System_Partition_Interface,
+     RE_Asynchronous_P_To_Sync_Scope     => System_Partition_Interface,
+     RE_Buffer_Stream_Type               => System_Partition_Interface,
+     RE_Allocate_Buffer                  => System_Partition_Interface,
+     RE_Release_Buffer                   => System_Partition_Interface,
+     RE_BS_To_Any                        => System_Partition_Interface,
+     RE_Any_To_BS                        => System_Partition_Interface,
 
-     RE_FA_AD                            => System_PolyORB_Interface,
-     RE_FA_AS                            => System_PolyORB_Interface,
-     RE_FA_B                             => System_PolyORB_Interface,
-     RE_FA_C                             => System_PolyORB_Interface,
-     RE_FA_F                             => System_PolyORB_Interface,
-     RE_FA_I                             => System_PolyORB_Interface,
-     RE_FA_LF                            => System_PolyORB_Interface,
-     RE_FA_LI                            => System_PolyORB_Interface,
-     RE_FA_LLF                           => System_PolyORB_Interface,
-     RE_FA_LLI                           => System_PolyORB_Interface,
-     RE_FA_LLU                           => System_PolyORB_Interface,
-     RE_FA_LU                            => System_PolyORB_Interface,
-     RE_FA_SF                            => System_PolyORB_Interface,
-     RE_FA_SI                            => System_PolyORB_Interface,
-     RE_FA_SSI                           => System_PolyORB_Interface,
-     RE_FA_SSU                           => System_PolyORB_Interface,
-     RE_FA_SU                            => System_PolyORB_Interface,
-     RE_FA_U                             => System_PolyORB_Interface,
-     RE_FA_WC                            => System_PolyORB_Interface,
-     RE_FA_WWC                           => System_PolyORB_Interface,
-     RE_FA_String                        => System_PolyORB_Interface,
-     RE_FA_ObjRef                        => System_PolyORB_Interface,
+     RE_FA_AD                            => System_Partition_Interface,
+     RE_FA_AS                            => System_Partition_Interface,
+     RE_FA_B                             => System_Partition_Interface,
+     RE_FA_C                             => System_Partition_Interface,
+     RE_FA_F                             => System_Partition_Interface,
+     RE_FA_I                             => System_Partition_Interface,
+     RE_FA_LF                            => System_Partition_Interface,
+     RE_FA_LI                            => System_Partition_Interface,
+     RE_FA_LLF                           => System_Partition_Interface,
+     RE_FA_LLI                           => System_Partition_Interface,
+     RE_FA_LLU                           => System_Partition_Interface,
+     RE_FA_LU                            => System_Partition_Interface,
+     RE_FA_SF                            => System_Partition_Interface,
+     RE_FA_SI                            => System_Partition_Interface,
+     RE_FA_SSI                           => System_Partition_Interface,
+     RE_FA_SSU                           => System_Partition_Interface,
+     RE_FA_SU                            => System_Partition_Interface,
+     RE_FA_U                             => System_Partition_Interface,
+     RE_FA_WC                            => System_Partition_Interface,
+     RE_FA_WWC                           => System_Partition_Interface,
+     RE_FA_String                        => System_Partition_Interface,
+     RE_FA_ObjRef                        => System_Partition_Interface,
 
-     RE_TA_AD                            => System_PolyORB_Interface,
-     RE_TA_AS                            => System_PolyORB_Interface,
-     RE_TA_B                             => System_PolyORB_Interface,
-     RE_TA_C                             => System_PolyORB_Interface,
-     RE_TA_F                             => System_PolyORB_Interface,
-     RE_TA_I                             => System_PolyORB_Interface,
-     RE_TA_LF                            => System_PolyORB_Interface,
-     RE_TA_LI                            => System_PolyORB_Interface,
-     RE_TA_LLF                           => System_PolyORB_Interface,
-     RE_TA_LLI                           => System_PolyORB_Interface,
-     RE_TA_LLU                           => System_PolyORB_Interface,
-     RE_TA_LU                            => System_PolyORB_Interface,
-     RE_TA_SF                            => System_PolyORB_Interface,
-     RE_TA_SI                            => System_PolyORB_Interface,
-     RE_TA_SSI                           => System_PolyORB_Interface,
-     RE_TA_SSU                           => System_PolyORB_Interface,
-     RE_TA_SU                            => System_PolyORB_Interface,
-     RE_TA_U                             => System_PolyORB_Interface,
-     RE_TA_WC                            => System_PolyORB_Interface,
-     RE_TA_WWC                           => System_PolyORB_Interface,
-     RE_TA_String                        => System_PolyORB_Interface,
-     RE_TA_ObjRef                        => System_PolyORB_Interface,
-     RE_TA_TC                            => System_PolyORB_Interface,
+     RE_TA_AD                            => System_Partition_Interface,
+     RE_TA_AS                            => System_Partition_Interface,
+     RE_TA_B                             => System_Partition_Interface,
+     RE_TA_C                             => System_Partition_Interface,
+     RE_TA_F                             => System_Partition_Interface,
+     RE_TA_I                             => System_Partition_Interface,
+     RE_TA_LF                            => System_Partition_Interface,
+     RE_TA_LI                            => System_Partition_Interface,
+     RE_TA_LLF                           => System_Partition_Interface,
+     RE_TA_LLI                           => System_Partition_Interface,
+     RE_TA_LLU                           => System_Partition_Interface,
+     RE_TA_LU                            => System_Partition_Interface,
+     RE_TA_SF                            => System_Partition_Interface,
+     RE_TA_SI                            => System_Partition_Interface,
+     RE_TA_SSI                           => System_Partition_Interface,
+     RE_TA_SSU                           => System_Partition_Interface,
+     RE_TA_SU                            => System_Partition_Interface,
+     RE_TA_U                             => System_Partition_Interface,
+     RE_TA_WC                            => System_Partition_Interface,
+     RE_TA_WWC                           => System_Partition_Interface,
+     RE_TA_String                        => System_Partition_Interface,
+     RE_TA_ObjRef                        => System_Partition_Interface,
+     RE_TA_TC                            => System_Partition_Interface,
 
-     RE_TC_Alias                         => System_PolyORB_Interface,
-     RE_TC_Build                         => System_PolyORB_Interface,
-     RE_Get_TC                           => System_PolyORB_Interface,
-     RE_Set_TC                           => System_PolyORB_Interface,
-     RE_TC_Any                           => System_PolyORB_Interface,
-     RE_TC_AD                            => System_PolyORB_Interface,
-     RE_TC_AS                            => System_PolyORB_Interface,
-     RE_TC_B                             => System_PolyORB_Interface,
-     RE_TC_C                             => System_PolyORB_Interface,
-     RE_TC_F                             => System_PolyORB_Interface,
-     RE_TC_I                             => System_PolyORB_Interface,
-     RE_TC_LF                            => System_PolyORB_Interface,
-     RE_TC_LI                            => System_PolyORB_Interface,
-     RE_TC_LLF                           => System_PolyORB_Interface,
-     RE_TC_LLI                           => System_PolyORB_Interface,
-     RE_TC_LLU                           => System_PolyORB_Interface,
-     RE_TC_LU                            => System_PolyORB_Interface,
-     RE_TC_SF                            => System_PolyORB_Interface,
-     RE_TC_SI                            => System_PolyORB_Interface,
-     RE_TC_SSI                           => System_PolyORB_Interface,
-     RE_TC_SSU                           => System_PolyORB_Interface,
-     RE_TC_SU                            => System_PolyORB_Interface,
-     RE_TC_U                             => System_PolyORB_Interface,
-     RE_TC_Void                          => System_PolyORB_Interface,
-     RE_TC_Opaque                        => System_PolyORB_Interface,
-     RE_TC_WC                            => System_PolyORB_Interface,
-     RE_TC_WWC                           => System_PolyORB_Interface,
-     RE_TC_Array                         => System_PolyORB_Interface,
-     RE_TC_Sequence                      => System_PolyORB_Interface,
-     RE_TC_String                        => System_PolyORB_Interface,
-     RE_TC_Struct                        => System_PolyORB_Interface,
-     RE_TC_Union                         => System_PolyORB_Interface,
-     RE_TC_Object                        => System_PolyORB_Interface,
+     RE_TC_Alias                         => System_Partition_Interface,
+     RE_TC_Build                         => System_Partition_Interface,
+     RE_Get_TC                           => System_Partition_Interface,
+     RE_Set_TC                           => System_Partition_Interface,
+     RE_TC_Any                           => System_Partition_Interface,
+     RE_TC_AD                            => System_Partition_Interface,
+     RE_TC_AS                            => System_Partition_Interface,
+     RE_TC_B                             => System_Partition_Interface,
+     RE_TC_C                             => System_Partition_Interface,
+     RE_TC_F                             => System_Partition_Interface,
+     RE_TC_I                             => System_Partition_Interface,
+     RE_TC_LF                            => System_Partition_Interface,
+     RE_TC_LI                            => System_Partition_Interface,
+     RE_TC_LLF                           => System_Partition_Interface,
+     RE_TC_LLI                           => System_Partition_Interface,
+     RE_TC_LLU                           => System_Partition_Interface,
+     RE_TC_LU                            => System_Partition_Interface,
+     RE_TC_SF                            => System_Partition_Interface,
+     RE_TC_SI                            => System_Partition_Interface,
+     RE_TC_SSI                           => System_Partition_Interface,
+     RE_TC_SSU                           => System_Partition_Interface,
+     RE_TC_SU                            => System_Partition_Interface,
+     RE_TC_U                             => System_Partition_Interface,
+     RE_TC_Void                          => System_Partition_Interface,
+     RE_TC_Opaque                        => System_Partition_Interface,
+     RE_TC_WC                            => System_Partition_Interface,
+     RE_TC_WWC                           => System_Partition_Interface,
+     RE_TC_Array                         => System_Partition_Interface,
+     RE_TC_Sequence                      => System_Partition_Interface,
+     RE_TC_String                        => System_Partition_Interface,
+     RE_TC_Struct                        => System_Partition_Interface,
+     RE_TC_Union                         => System_Partition_Interface,
+     RE_TC_Object                        => System_Partition_Interface,
 
      RE_Global_Pool_Object               => System_Pool_Global,
 
@@ -2529,6 +2538,7 @@ package Rtsfind is
      RE_Unspecified_Priority             => System_Tasking,
 
      RE_Activation_Chain                 => System_Tasking,
+     RE_Storage_Size                     => System_Tasking,
 
      RE_Abort_Defer                      => System_Soft_Links,
      RE_Abort_Undefer                    => System_Soft_Links,
@@ -2683,6 +2693,10 @@ package Rtsfind is
        System_Tasking_Protected_Objects_Entries,
      RE_Lock_Read_Only_Entries           =>
        System_Tasking_Protected_Objects_Entries,
+     RO_PE_Get_Ceiling                   =>
+       System_Tasking_Protected_Objects_Entries,
+     RO_PE_Set_Ceiling                   =>
+       System_Tasking_Protected_Objects_Entries,
      RE_Unlock_Entries                   =>
        System_Tasking_Protected_Objects_Entries,
      RE_Communication_Block              =>
@@ -2744,6 +2758,8 @@ package Rtsfind is
      RE_Finalize_Protection              => System_Tasking_Protected_Objects,
      RE_Lock                             => System_Tasking_Protected_Objects,
      RE_Lock_Read_Only                   => System_Tasking_Protected_Objects,
+     RE_Get_Ceiling                      => System_Tasking_Protected_Objects,
+     RE_Set_Ceiling                      => System_Tasking_Protected_Objects,
      RE_Unlock                           => System_Tasking_Protected_Objects,
 
      RE_Delay_Block                      => System_Tasking_Async_Delays,
@@ -2868,7 +2884,7 @@ package Rtsfind is
    --  Note: In the case of a package, RTE can return either an entity that
    --  is declared at the top level of the package, or the package entity
    --  itself. If an entity within the package has the same simple name as
-   --  the package, then the entity within the package is returned rather
+   --  the package, then the entity within the package is returned.
    --
    --  If RTE returns, the returned value is the required entity
    --
