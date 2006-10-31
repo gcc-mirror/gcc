@@ -1,3 +1,15 @@
+2006-10-31  Richard Guenther  <rguenther@suse.de>
+
+	* config/i386/i386.md (asindf2, asinsf2, asinxf2, acosdf2,
+	acossf2, acosxf2, log1psf2, log1pdf2, log1pxf2, ilogbsi2,
+	expsf2, expdf2, expxf2, exp10sf2, exp10df2, exp10xf2,
+	exp2sf2, exp2df2, exp2xf2, expm1df2, expm1sf2, expm1xf2,
+	ldexpdf3, ldexpsf3, ldexpxf3, rintxf2, rintdf2, rintsf2,
+	lround<mode>di2, lround<mode>si2, floorxf2, floordf2, floorsf2,
+	lfloor<mode>di2, lfloor<mode>si2, ceilxf2, ceildf2, ceilsf2,
+	btruncxf2, btruncdf2, btruncsf2): Conditionalize expansion on
+	!optimize_size.
+
 2006-10-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* opts.c (decode_options): Disable CSE skip blocks.
