@@ -3431,7 +3431,7 @@ package body GNAT.Spitbol.Patterns is
             return new PE'(PC_Null,     1, EOP);
 
          when 1 =>
-            return new PE'(PC_Char,     1, EOP, Str (1));
+            return new PE'(PC_Char,     1, EOP, Str (Str'First));
 
          when 2 =>
             return new PE'(PC_String_2, 1, EOP, Str);
