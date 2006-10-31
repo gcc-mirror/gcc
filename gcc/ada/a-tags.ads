@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -44,10 +44,17 @@ package Ada.Tags is
    --  In accordance with Ada 2005 AI-362
 
    type Tag is private;
+   pragma Preelaborable_Initialization (Tag);
 
    No_Tag : constant Tag;
 
    function Expanded_Name (T : Tag) return String;
+
+   function Wide_Expanded_Name (T : Tag) return Wide_String;
+   pragma Ada_05 (Wide_Expanded_Name);
+
+   function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String;
+   pragma Ada_05 (Wide_Wide_Expanded_Name);
 
    function External_Tag (T : Tag) return String;
 
@@ -66,13 +73,12 @@ package Ada.Tags is
    function Parent_Tag (T : Tag) return Tag;
    pragma Ada_05 (Parent_Tag);
 
+   type Tag_Array is array (Positive range <>) of Tag;
+
+   function Interface_Ancestor_Tags (T : Tag) return Tag_Array;
+   pragma Ada_05 (Interface_Ancestor_Tags);
+
    Tag_Error : exception;
-
-   function Wide_Expanded_Name (T : Tag) return Wide_String;
-   pragma Ada_05 (Wide_Expanded_Name);
-
-   function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String;
-   pragma Ada_05 (Wide_Wide_Expanded_Name);
 
 private
    --  The following subprogram specifications are placed here instead of
@@ -192,7 +198,7 @@ private
    --      type I is interface;
    --      type T is tagged ...
    --
-   --      function Test (O : in I'Class) is
+   --      function Test (O : I'Class) is
    --      begin
    --         return O in T'Class.
    --      end Test;
@@ -256,6 +262,11 @@ private
    --  Given a pointer to either a primary or a secondary dispatch table,
    --  return the tagged kind of a type in the context of concurrency and
    --  limitedness.
+
+   procedure Inherit_CPP_DT (Old_T : Tag; New_T : Tag; Entry_Count : Natural);
+   --  Entry point used to initialize the DT of a type knowing the tag
+   --  of the direct CPP ancestor and the number of primitive ops that
+   --  are inherited (Entry_Count).
 
    procedure Inherit_DT (Old_T : Tag; New_T : Tag; Entry_Count : Natural);
    --  Entry point used to initialize the DT of a type knowing the tag
