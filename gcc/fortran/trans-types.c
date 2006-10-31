@@ -1482,11 +1482,15 @@ gfc_get_derived_type (gfc_symbol * derived)
 	 building anew so that potential dummy and actual arguments use the
 	 same TREE_TYPE.  If an equal type is found without a backend_decl,
 	 build the parent version and use it in the current namespace.  */
-
-      /* Derived types in an interface body obtain their parent reference
-	 through the proc_name symbol.  */
-      ns = derived->ns->parent ? derived->ns->parent
-			       : derived->ns->proc_name->ns;
+      if (derived->ns->parent)
+	ns = derived->ns->parent;
+      else if (derived->ns->proc_name)
+	/* Derived types in an interface body obtain their parent reference
+	   through the proc_name symbol.  */
+	ns = derived->ns->proc_name->ns;
+      else
+	/* Sometimes there isn't a parent reference!  */
+	ns = NULL;
 
       for (; ns; ns = ns->parent)
 	{
