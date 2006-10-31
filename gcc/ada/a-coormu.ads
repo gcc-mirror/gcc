@@ -49,8 +49,10 @@ package Ada.Containers.Ordered_Multisets is
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
 
    type Set is tagged private;
+   pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;
+   pragma Preelaborable_Initialization (Cursor);
 
    Empty_Set : constant Set;
 

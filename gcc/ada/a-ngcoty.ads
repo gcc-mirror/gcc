@@ -48,6 +48,7 @@ package Ada.Numerics.Generic_Complex_Types is
    pragma Complex_Representation (Complex);
 
    type Imaginary is private;
+   pragma Preelaborable_Initialization (Imaginary);
 
    i : constant Imaginary;
    j : constant Imaginary;

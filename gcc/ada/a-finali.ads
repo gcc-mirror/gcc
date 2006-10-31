@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,12 +41,14 @@ package Ada.Finalization is
    pragma Preelaborate;
 
    type Controlled is abstract tagged private;
+   pragma Preelaborable_Initialization (Controlled);
 
    procedure Initialize (Object : in out Controlled);
    procedure Adjust     (Object : in out Controlled);
    procedure Finalize   (Object : in out Controlled);
 
    type Limited_Controlled is abstract tagged limited private;
+   pragma Preelaborable_Initialization (Controlled);
 
    procedure Initialize (Object : in out Limited_Controlled);
    procedure Finalize   (Object : in out Limited_Controlled);

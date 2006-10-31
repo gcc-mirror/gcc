@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -52,8 +52,10 @@ package Ada.Containers.Indefinite_Vectors is
    No_Index : constant Extended_Index := Extended_Index'First;
 
    type Vector is tagged private;
+   pragma Preelaborable_Initialization (Vector);
 
    type Cursor is private;
+   pragma Preelaborable_Initialization (Cursor);
 
    Empty_Vector : constant Vector;
 

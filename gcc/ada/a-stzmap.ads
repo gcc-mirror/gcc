@@ -45,6 +45,7 @@ package Ada.Strings.Wide_Wide_Maps is
    ------------------------------------------
 
    type Wide_Wide_Character_Set is private;
+   pragma Preelaborable_Initialization (Wide_Wide_Character_Set);
    --  Representation for a set of Wide_Wide_Character values:
 
    Null_Set : constant Wide_Wide_Character_Set;
@@ -122,6 +123,7 @@ package Ada.Strings.Wide_Wide_Maps is
    ----------------------------------------------
 
    type Wide_Wide_Character_Mapping is private;
+   pragma Preelaborable_Initialization (Wide_Wide_Character_Mapping);
    --  Representation for a wide character to wide character mapping:
 
    function Value

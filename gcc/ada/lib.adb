@@ -748,6 +748,22 @@ package body Lib is
       end if;
    end In_Extended_Main_Source_Unit;
 
+   ------------------------
+   -- In_Predefined_Unit --
+   ------------------------
+
+   function In_Predefined_Unit (N : Node_Or_Entity_Id) return Boolean is
+   begin
+      return In_Predefined_Unit (Sloc (N));
+   end In_Predefined_Unit;
+
+   function In_Predefined_Unit (S : Source_Ptr) return Boolean is
+      Unit : constant Unit_Number_Type := Get_Source_Unit (S);
+      File : constant File_Name_Type   := Unit_File_Name (Unit);
+   begin
+      return Is_Predefined_File_Name (File);
+   end In_Predefined_Unit;
+
    -----------------------
    -- In_Same_Code_Unit --
    -----------------------
