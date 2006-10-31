@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2005, Free Software Foundation, Inc.      --
+--             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -121,10 +121,10 @@ package System.OS_Interface is
 
    procedure Sys_Assign
      (Status : out Cond_Value_Type;
-      Devnam : in String;
+      Devnam : String;
       Chan   : out unsigned_short;
       Acmode : in unsigned_short := 0;
-      Mbxnam : in String := String'Null_Parameter;
+      Mbxnam : String := String'Null_Parameter;
       Flags  : in unsigned_long := 0);
    pragma Interface (External, Sys_Assign);
    pragma Import_Valued_Procedure
@@ -147,7 +147,7 @@ package System.OS_Interface is
    --
    procedure Sys_Cantim
      (Status : out Cond_Value_Type;
-      Reqidt : in Address;
+      Reqidt : Address;
       Acmode : in unsigned);
    pragma Interface (External, Sys_Cantim);
    pragma Import_Valued_Procedure
@@ -173,13 +173,13 @@ package System.OS_Interface is
    --
    procedure Sys_Crembx
      (Status : out Cond_Value_Type;
-      Prmflg : in Boolean;
+      Prmflg : Boolean;
       Chan   : out unsigned_short;
       Maxmsg : in unsigned_long := 0;
       Bufquo : in unsigned_long := 0;
       Promsk : in unsigned_short := 0;
       Acmode : in unsigned_short := 0;
-      Lognam : in String;
+      Lognam : String;
       Flags  : in unsigned_long := 0);
    pragma Interface (External, Sys_Crembx);
    pragma Import_Valued_Procedure
@@ -212,8 +212,8 @@ package System.OS_Interface is
       Chan   : in unsigned_short;
       Func   : in unsigned_long := 0;
       Iosb   : out IO_Status_Block_Type;
-      Astadr : in AST_Handler := No_AST_Handler;
-      Astprm : in Address := Null_Address;
+      Astadr : AST_Handler := No_AST_Handler;
+      Astprm : Address := Null_Address;
       P1     : in  unsigned_long := 0;
       P2     : in  unsigned_long := 0;
       P3     : in  unsigned_long := 0;
@@ -226,9 +226,9 @@ package System.OS_Interface is
       EFN    : in unsigned_long := 0;
       Chan   : in unsigned_short;
       Func   : in unsigned_long := 0;
-      Iosb   : in Address := Null_Address;
-      Astadr : in AST_Handler := No_AST_Handler;
-      Astprm : in Address := Null_Address;
+      Iosb   : Address := Null_Address;
+      Astadr : AST_Handler := No_AST_Handler;
+      Astprm : Address := Null_Address;
       P1     : in  unsigned_long := 0;
       P2     : in  unsigned_long := 0;
       P3     : in  unsigned_long := 0;
@@ -275,9 +275,9 @@ package System.OS_Interface is
    procedure Sys_Setimr
      (Status : out Cond_Value_Type;
       EFN    : in unsigned_long;
-      Tim    : in Long_Integer;
-      AST    : in AST_Handler;
-      Reqidt : in Address;
+      Tim    : Long_Integer;
+      AST    : AST_Handler;
+      Reqidt : Address;
       Flags  : in unsigned_long);
    pragma Interface (External, Sys_Setimr);
    pragma Import_Valued_Procedure
