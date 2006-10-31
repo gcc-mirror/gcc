@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,9 +54,10 @@ package body Ada.Calendar is
    -- Local Declarations --
    ------------------------
 
-   type Char_Pointer is access Character;
-   subtype int  is Integer;
+   type char_Pointer is access Character;
+   subtype int is Integer;
    subtype long is Long_Integer;
+   type long_Pointer is access all long;
    --  Synonyms for C types. We don't want to get them from Interfaces.C
    --  because there is no point in loading that unit just for calendar.
 
@@ -71,7 +72,7 @@ package body Ada.Calendar is
       tm_yday   : int;           -- days since January 1 (0 .. 365)
       tm_isdst  : int;           -- Daylight Savings Time flag (-1 .. +1)
       tm_gmtoff : long;          -- offset from CUT in seconds
-      tm_zone   : Char_Pointer;  -- timezone abbreviation
+      tm_zone   : char_Pointer;  -- timezone abbreviation
    end record;
 
    type tm_Pointer is access all tm;
@@ -80,8 +81,15 @@ package body Ada.Calendar is
 
    type time_t_Pointer is access all time_t;
 
-   procedure localtime_r (C : time_t_Pointer; res : tm_Pointer);
-   pragma Import (C, localtime_r, "__gnat_localtime_r");
+   procedure localtime_tzoff
+     (C   : time_t_Pointer;
+      res : tm_Pointer;
+      off : long_Pointer);
+   pragma Import (C, localtime_tzoff, "__gnat_localtime_tzoff");
+   --  This is a lightweight wrapper around the system library localtime_r
+   --  function. Parameter 'off' captures the UTC offset which is either
+   --  retrieved from the tm struct or calculated from the 'timezone' extern
+   --  and the tm_isdst flag in the tm struct.
 
    function mktime (TM : tm_Pointer) return time_t;
    pragma Import (C, mktime);
@@ -260,6 +268,24 @@ package body Ada.Calendar is
       Day     : out Day_Number;
       Seconds : out Day_Duration)
    is
+      Offset : Long_Integer;
+
+   begin
+      Split_With_Offset (Date, Year, Month, Day, Seconds, Offset);
+   end Split;
+
+   -----------------------
+   -- Split_With_Offset --
+   -----------------------
+
+   procedure Split_With_Offset
+     (Date    : Time;
+      Year    : out Year_Number;
+      Month   : out Month_Number;
+      Day     : out Day_Number;
+      Seconds : out Day_Duration;
+      Offset  : out Long_Integer)
+   is
       --  The following declare bounds for duration that are comfortably
       --  wider than the maximum allowed output result for the Ada range
       --  of representable split values. These are used for a quick check
@@ -273,11 +299,12 @@ package body Ada.Calendar is
 
       --  Finally the actual variables used in the computation
 
+      Adjusted_Seconds : aliased time_t;
       D                : Duration;
       Frac_Sec         : Duration;
-      Year_Val         : Integer;
-      Adjusted_Seconds : aliased time_t;
+      Local_Offset     : aliased long;
       Tm_Val           : aliased tm;
+      Year_Val         : Integer;
 
    begin
       --  For us a time is simply a signed duration value, so we work with
@@ -331,23 +358,26 @@ package body Ada.Calendar is
          type D_Int is range 0 .. 2 ** (Duration'Size - 1) - 1;
          for D_Int'Size use Duration'Size;
 
-         Small_Div : constant D_Int := D_Int (1.0 / Duration'Small);
-         D_As_Int  : D_Int;
-
-         function To_D_As_Int is new Unchecked_Conversion (Duration, D_Int);
+         function To_D_Int is new Unchecked_Conversion (Duration, D_Int);
          function To_Duration is new Unchecked_Conversion (D_Int, Duration);
 
+         D_As_Int  : constant D_Int := To_D_Int (D);
+         Small_Div : constant D_Int := D_Int (1.0 / Duration'Small);
+
       begin
-         D_As_Int := To_D_As_Int (D);
          Adjusted_Seconds := time_t (D_As_Int / Small_Div);
          Frac_Sec := To_Duration (D_As_Int rem Small_Div);
       end;
 
-      localtime_r (Adjusted_Seconds'Unchecked_Access, Tm_Val'Unchecked_Access);
+      localtime_tzoff
+        (Adjusted_Seconds'Unchecked_Access,
+         Tm_Val'Unchecked_Access,
+         Local_Offset'Unchecked_Access);
 
       Year_Val := Tm_Val.tm_year + 1900 + Year_Val;
       Month    := Tm_Val.tm_mon + 1;
       Day      := Tm_Val.tm_mday;
+      Offset   := Long_Integer (Local_Offset);
 
       --  The Seconds value is a little complex. The localtime function
       --  returns the integral number of seconds, which is what we want, but
@@ -375,7 +405,7 @@ package body Ada.Calendar is
       else
          Year := Year_Val;
       end if;
-   end Split;
+   end Split_With_Offset;
 
    -------------
    -- Time_Of --
@@ -444,6 +474,20 @@ package body Ada.Calendar is
 
       TM_Val.tm_year := Year_Val - 1900;
 
+      --  If time is very close to UNIX epoch mktime may behave uncorrectly
+      --  because of the way the different time zones are handled (a date
+      --  after epoch in a given time zone may correspond to a GMT date
+      --  before epoch). Adding one day to the date (this amount is latter
+      --  substracted) avoids this problem.
+
+      if Year_Val = Unix_Year_Min
+        and then Month = 1
+        and then Day = 1
+      then
+         TM_Val.tm_mday := TM_Val.tm_mday + 1;
+         Duration_Adjust := Duration_Adjust - Duration (86400.0);
+      end if;
+
       --  Since we do not have information on daylight savings, rely on the
       --  default information.
 
@@ -475,6 +519,186 @@ package body Ada.Calendar is
       Split (Date, DY, DM, DD, DS);
       return DY;
    end Year;
+
+   -------------------
+   --  Leap_Sec_Ops --
+   -------------------
+
+   --  The package that is used by the Ada 2005 children of Ada.Calendar:
+   --  Ada.Calendar.Arithmetic and Ada.Calendar.Formatting.
+
+   package body Leap_Sec_Ops is
+
+      --  This package must be updated when leap seconds are added. Adding a
+      --  leap second requires incrementing the value of N_Leap_Secs and adding
+      --  the day of the new leap second to the end of Leap_Second_Dates.
+
+      --  Elaboration of the Leap_Sec_Ops package takes care of converting the
+      --  Leap_Second_Dates table to a form that is better suited for the
+      --  procedures provided by this package (a table that would be more
+      --  difficult to maintain by hand).
+
+      N_Leap_Secs : constant := 23;
+
+      type Leap_Second_Date is record
+         Year  : Year_Number;
+         Month : Month_Number;
+         Day   : Day_Number;
+      end record;
+
+      Leap_Second_Dates :
+        constant array (1 .. N_Leap_Secs) of Leap_Second_Date :=
+          ((1972,  6, 30), (1972, 12, 31), (1973, 12, 31), (1974, 12, 31),
+           (1975, 12, 31), (1976, 12, 31), (1977, 12, 31), (1978, 12, 31),
+           (1979, 12, 31), (1981,  6, 30), (1982,  6, 30), (1983,  6, 30),
+           (1985,  6, 30), (1987, 12, 31), (1989, 12, 31), (1990, 12, 31),
+           (1992,  6, 30), (1993,  6, 30), (1994,  6, 30), (1995, 12, 31),
+           (1997,  6, 30), (1998, 12, 31), (2005, 12, 31));
+
+      Leap_Second_Times : array (1 .. N_Leap_Secs) of Time;
+      --  This is the needed internal representation that is calculated
+      --  from Leap_Second_Dates during elaboration;
+
+      --------------------------
+      -- Cumulative_Leap_Secs --
+      --------------------------
+
+      procedure Cumulative_Leap_Secs
+        (Start_Date    : Time;
+         End_Date      : Time;
+         Leaps_Between : out Duration;
+         Next_Leap_Sec : out Time)
+      is
+         End_T      : Time;
+         K          : Positive;
+         Leap_Index : Positive;
+         Start_Tmp  : Time;
+         Start_T    : Time;
+
+         type D_Int is range 0 .. 2 ** (Duration'Size - 1) - 1;
+         for  D_Int'Size use Duration'Size;
+
+         Small_Div : constant D_Int := D_Int (1.0 / Duration'Small);
+         D_As_Int  : D_Int;
+
+         function To_D_As_Int is new Unchecked_Conversion (Duration, D_Int);
+
+      begin
+         Next_Leap_Sec := After_Last_Leap;
+
+         --  We want to throw away the fractional part of seconds. Before
+         --  proceding with this operation, make sure our working values
+         --  are non-negative.
+
+         if End_Date < 0.0 then
+            Leaps_Between := 0.0;
+            return;
+         end if;
+
+         if Start_Date < 0.0 then
+            Start_Tmp := Time (0.0);
+         else
+            Start_Tmp := Start_Date;
+         end if;
+
+         if Start_Date <= Leap_Second_Times (N_Leap_Secs) then
+
+            --  Manipulate the fixed point value as an integer, similar to
+            --  Ada.Calendar.Split in order to remove the fractional part
+            --  from the time we will work with, Start_T and End_T.
+
+            D_As_Int := To_D_As_Int (Duration (Start_Tmp));
+            D_As_Int := D_As_Int / Small_Div;
+            Start_T  := Time (D_As_Int);
+            D_As_Int := To_D_As_Int (Duration (End_Date));
+            D_As_Int := D_As_Int / Small_Div;
+            End_T    := Time (D_As_Int);
+
+            Leap_Index := 1;
+            loop
+               exit when Leap_Second_Times (Leap_Index) >= Start_T;
+               Leap_Index := Leap_Index + 1;
+            end loop;
+
+            K := Leap_Index;
+            loop
+               exit when K > N_Leap_Secs or else
+                 Leap_Second_Times (K) >= End_T;
+               K := K + 1;
+            end loop;
+
+            if K <= N_Leap_Secs then
+               Next_Leap_Sec := Leap_Second_Times (K);
+            end if;
+
+            Leaps_Between := Duration (K - Leap_Index);
+         else
+            Leaps_Between := Duration (0.0);
+         end if;
+      end Cumulative_Leap_Secs;
+
+      ----------------------
+      -- All_Leap_Seconds --
+      ----------------------
+
+      function All_Leap_Seconds return Duration is
+      begin
+         return Duration (N_Leap_Secs);
+         --  Presumes each leap second is +1.0 second;
+      end All_Leap_Seconds;
+
+   --  Start of processing in package Leap_Sec_Ops
+
+   begin
+      declare
+         Days         : Natural;
+         Is_Leap_Year : Boolean;
+         Years        : Natural;
+
+         Cumulative_Days_Before_Month :
+           constant array (Month_Number) of Natural :=
+             (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
+      begin
+         for J in 1 .. N_Leap_Secs loop
+            Years := Leap_Second_Dates (J).Year - Unix_Year_Min;
+            Days  := (Years / 4) * Days_In_4_Years;
+            Years := Years mod 4;
+            Is_Leap_Year := False;
+
+            if Years = 1 then
+               Days := Days + 365;
+
+            elsif Years = 2 then
+               Is_Leap_Year := True;
+
+               --  1972 or multiple of 4 after
+
+               Days := Days + 365 * 2;
+
+            elsif Years = 3 then
+               Days := Days + 365 * 3 + 1;
+            end if;
+
+            Days := Days + Cumulative_Days_Before_Month
+                             (Leap_Second_Dates (J).Month);
+
+            if Is_Leap_Year
+              and then Leap_Second_Dates (J).Month > 2
+            then
+               Days := Days + 1;
+            end if;
+
+            Days := Days + Leap_Second_Dates (J).Day;
+
+            Leap_Second_Times (J) :=
+              Time (Days * Duration (86_400.0) + Duration (J - 1));
+
+            --  Add one to get to the leap second. Add J - 1 previous
+            --  leap seconds.
+
+         end loop;
+      end;
+   end Leap_Sec_Ops;
 
 begin
    System.OS_Primitives.Initialize;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -224,7 +224,7 @@ package body Ada.Calendar is
       procedure Numtim (
         Status : out Unsigned_Longword;
         Timbuf : out Unsigned_Word_Array;
-        Timadr : in  Time);
+        Timadr : Time);
 
       pragma Interface (External, Numtim);
 
@@ -256,6 +256,22 @@ package body Ada.Calendar is
       Year  := Integer (Timbuf (1));
    end Split;
 
+   -----------------------
+   -- Split_With_Offset --
+   -----------------------
+
+   procedure Split_With_Offset
+     (Date    : Time;
+      Year    : out Year_Number;
+      Month   : out Month_Number;
+      Day     : out Day_Number;
+      Seconds : out Day_Duration;
+      Offset  : out Long_Integer)
+   is
+   begin
+      raise Unimplemented;
+   end Split_With_Offset;
+
    -------------
    -- Time_Of --
    -------------
@@ -270,7 +286,7 @@ package body Ada.Calendar is
 
       procedure Cvt_Vectim (
         Status         : out Unsigned_Longword;
-        Input_Time     : in  Unsigned_Word_Array;
+        Input_Time     : Unsigned_Word_Array;
         Resultant_Time : out Time);
 
       pragma Interface (External, Cvt_Vectim);
@@ -357,5 +373,44 @@ package body Ada.Calendar is
       Split (Date, DY, DM, DD, DS);
       return DY;
    end Year;
+
+   -------------------
+   --  Leap_Sec_Ops --
+   -------------------
+
+   --  The package that is used by the Ada 2005 children of Ada.Calendar:
+   --  Ada.Calendar.Arithmetic and Ada.Calendar.Formatting.
+
+   package body Leap_Sec_Ops is
+
+      --------------------------
+      -- Cumulative_Leap_Secs --
+      --------------------------
+
+      procedure Cumulative_Leap_Secs
+        (Start_Date    : Time;
+         End_Date      : Time;
+         Leaps_Between : out Duration;
+         Next_Leap_Sec : out Time)
+      is
+      begin
+         raise Unimplemented;
+      end Cumulative_Leap_Secs;
+
+      ----------------------
+      -- All_Leap_Seconds --
+      ----------------------
+
+      function All_Leap_Seconds return Duration is
+      begin
+         raise Unimplemented;
+         return 0.0;
+      end All_Leap_Seconds;
+
+   --  Start of processing in package Leap_Sec_Ops
+
+   begin
+      null;
+   end Leap_Sec_Ops;
 
 end Ada.Calendar;
