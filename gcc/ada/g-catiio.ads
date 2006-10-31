@@ -6,11 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2005, AdaCore                     --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
+--                     Copyright (C) 1999-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,6 +115,21 @@ package GNAT.Calendar.Time_IO is
       Picture : Picture_String) return String;
    --  Return Date as a string with format Picture. Raise Picture_Error if
    --  picture string is wrong.
+
+   function Value (Date : String) return Ada.Calendar.Time;
+   --  Parse the string Date and return its equivalent as a Time value. The
+   --  following formats are supported:
+   --
+   --     yyyy*mm*dd hh:mm:ss  - Delimiter '*' is either '-' or '/'
+   --     yyyy*mm*dd           - The time of day is set to 00:00:00
+   --
+   --     yy*mm*dd hh:mm:ss    - Year is assumend to be 20YY
+   --     yy*mm*dd             - The time of day is set to 00:00:00
+   --
+   --     hh:mm:ss             - Date is the current date
+   --
+   --  Constraint_Error is raised if the input string is malformatted or
+   --  the resulting time is not valid.
 
    procedure Put_Time
      (Date    : Ada.Calendar.Time;
