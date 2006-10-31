@@ -45,6 +45,7 @@ with Output;   use Output;
 with Restrict; use Restrict;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
@@ -316,10 +317,35 @@ package body Sem_Ch10 is
                if Nkind (Cont_Item) = N_Use_Package_Clause
                  and then not Used
                then
+                  --  Search through use clauses
+
                   Use_Item := First (Names (Cont_Item));
                   while Present (Use_Item) and then not Used loop
+
+                     --  Case of a direct use of the one we are looking for
+
                      if Entity (Use_Item) = Nam_Ent then
                         Used := True;
+
+                     --  Handle nested case, as in "with P; use P.Q.R"
+
+                     else
+                        declare
+                           UE : Node_Id;
+
+                        begin
+                           --  Loop through prefixes looking for match
+
+                           UE := Use_Item;
+                           while Nkind (UE) = N_Expanded_Name loop
+                              if Entity (Prefix (UE)) = Nam_Ent then
+                                 Used := True;
+                                 exit;
+                              end if;
+
+                              UE := Prefix (UE);
+                           end loop;
+                        end;
                      end if;
 
                      Next (Use_Item);
@@ -812,7 +838,6 @@ package body Sem_Ch10 is
       if Present (Pragmas_After (Aux_Decls_Node (N))) then
          declare
             Prag_Node : Node_Id := First (Pragmas_After (Aux_Decls_Node (N)));
-
          begin
             while Present (Prag_Node) loop
                Analyze (Prag_Node);
@@ -930,11 +955,14 @@ package body Sem_Ch10 is
             Item := First (Context_Items (N));
             while Present (Item) loop
 
-               --  Ada 2005 (AI-50217): Do not consider limited-withed units
+               --  Check for explicit with clause
 
                if Nkind (Item) = N_With_Clause
-                  and then not Implicit_With (Item)
-                  and then not Limited_Present (Item)
+                 and then not Implicit_With (Item)
+
+                  --  Ada 2005 (AI-50217): Ignore limited-withed units
+
+                 and then not Limited_Present (Item)
                then
                   Nam := Entity (Name (Item));
 
@@ -1057,16 +1085,15 @@ package body Sem_Ch10 is
          end;
       end if;
 
-      --  Finally, freeze the compilation unit entity. This for sure is needed
-      --  because of some warnings that can be output (see Freeze_Subprogram),
-      --  but may in general be required. If freezing actions result, place
-      --  them in the compilation unit actions list, and analyze them.
+      --  Freeze the compilation unit entity. This for sure is needed because
+      --  of some warnings that can be output (see Freeze_Subprogram), but may
+      --  in general be required. If freezing actions result, place them in the
+      --  compilation unit actions list, and analyze them.
 
       declare
          Loc : constant Source_Ptr := Sloc (N);
          L   : constant List_Id :=
                  Freeze_Entity (Cunit_Entity (Current_Sem_Unit), Loc);
-
       begin
          while Is_Non_Empty_List (L) loop
             Insert_Library_Level_Action (Remove_Head (L));
@@ -1095,6 +1122,49 @@ package body Sem_Ch10 is
             Style_Check := Save_Style_Check;
             Warning_Mode := Save_Warning;
          end;
+      end if;
+
+      --  If we are generating obsolescent warnings, then here is where we
+      --  generate them for the with'ed items. The reason for this special
+      --  processing is that the normal mechanism of generating the warnings
+      --  for referenced entities does not work for context clause references.
+      --  That's because when we first analyze the context, it is too early to
+      --  know if the with'ing unit is itself obsolescent (which suppresses
+      --  the warnings).
+
+      if not GNAT_Mode and then Warn_On_Obsolescent_Feature then
+
+         --  Push current compilation unit as scope, so that the test for
+         --  being within an obsolescent unit will work correctly.
+
+         New_Scope (Defining_Entity (Unit (N)));
+
+         --  Loop through context items to deal with with clauses
+
+         declare
+            Item : Node_Id;
+            Nam  : Node_Id;
+            Ent  : Entity_Id;
+
+         begin
+            Item := First (Context_Items (N));
+            while Present (Item) loop
+               if Nkind (Item) = N_With_Clause then
+                  Nam := Name (Item);
+                  Ent := Entity (Nam);
+
+                  if Is_Obsolescent (Ent) then
+                     Output_Obsolescent_Entity_Warnings (Nam, Ent);
+                  end if;
+               end if;
+
+               Next (Item);
+            end loop;
+         end;
+
+         --  Remove temporary install of current unit as scope
+
+         Pop_Scope;
       end if;
    end Analyze_Compilation_Unit;
 
@@ -1272,7 +1342,7 @@ package body Sem_Ch10 is
                                     & " context clause found #",
                                     Item, It);
                                  Error_Msg_N
-                                   ("simultaneous visibility of the limited"
+                                   ("\simultaneous visibility of the limited"
                                     & " and unlimited views not allowed"
                                     , Item);
                                  exit;
@@ -1560,9 +1630,7 @@ package body Sem_Ch10 is
 
             Compiler_State := Analyzing;
 
-            if Unum /= No_Unit
-              and then (not Fatal_Error (Unum) or else Try_Semantics)
-            then
+            if Unum /= No_Unit then
                if Debug_Flag_L then
                   Write_Str ("*** Loaded subunit from stub. Analyze");
                   Write_Eol;
@@ -1579,12 +1647,21 @@ package body Sem_Ch10 is
                        ("expected SEPARATE subunit, found child unit",
                         Cunit_Entity (Unum));
 
-                  --  OK, we have a subunit, so go ahead and analyze it,
-                  --  and set Scope of entity in stub, for ASIS use.
+                  --  OK, we have a subunit
 
                   else
+                     --  Set corresponding stub (even if errors)
+
                      Set_Corresponding_Stub (Unit (Comp_Unit), N);
-                     Analyze_Subunit (Comp_Unit);
+
+                     --  Analyze the unit if semantics active
+
+                     if not Fatal_Error (Unum) or else Try_Semantics then
+                        Analyze_Subunit (Comp_Unit);
+                     end if;
+
+                     --  Set the library unit pointer in any case
+
                      Set_Library_Unit (N, Comp_Unit);
 
                      --  We update the version. Although we are not technically
@@ -1985,6 +2062,26 @@ package body Sem_Ch10 is
 
       Analyze (Proper_Body (Unit (N)));
       Remove_Context (N);
+
+      --  The subunit may contain a with_clause on a sibling of some
+      --  ancestor. Removing the context will remove from visibility those
+      --  ancestor child units, which must be restored to the visibility
+      --  they have in the enclosing body.
+
+      if Present (Enclosing_Child) then
+         declare
+            C : Entity_Id;
+         begin
+            C := Current_Scope;
+            while Present (C)
+              and then Is_Child_Unit (C)
+            loop
+               Set_Is_Immediately_Visible (C);
+               Set_Is_Visible_Child_Unit (C);
+               C := Scope (C);
+            end loop;
+         end;
+      end if;
    end Analyze_Subunit;
 
    ----------------------------
@@ -2281,13 +2378,6 @@ package body Sem_Ch10 is
 
       if Private_Present (N) then
          Set_Is_Immediately_Visible (E_Name, False);
-      end if;
-
-      --  Check for with'ing obsolescent package. Exclude subprograms here
-      --  since we will catch those on the call rather than the WITH.
-
-      if Is_Package_Or_Generic_Package (E_Name) then
-         Check_Obsolescent (E_Name, N);
       end if;
    end Analyze_With_Clause;
 
@@ -2760,7 +2850,7 @@ package body Sem_Ch10 is
                      Error_Msg_N
                        ("unit in with clause is private child unit!", Item);
                      Error_Msg_NE
-                       ("current unit must also have parent&!",
+                       ("\current unit must also have parent&!",
                         Item, Child_Parent);
                   end if;
 
@@ -3384,6 +3474,8 @@ package body Sem_Ch10 is
          Item := First (Visible_Declarations (Spec));
          while Present (Item) loop
 
+            --  Look only at use package clauses
+
             if Nkind (Item) = N_Use_Package_Clause then
 
                --  Traverse the list of packages
@@ -3397,8 +3489,11 @@ package body Sem_Ch10 is
                   if Nkind (Parent (E)) = N_Package_Renaming_Declaration
                     and then Renamed_Entity (E) = WEnt
                   then
-                     Error_Msg_N ("unlimited view visible through " &
-                                  "use clause and renamings", W);
+                     --  The unlimited view is visible through use clause and
+                     --  renamings. There is not need to generate the error
+                     --  message here because Is_Visible_Through_Renamings
+                     --  takes care of generating the precise error message.
+
                      return;
 
                   elsif Nkind (Parent (E)) = N_Package_Specification then
@@ -3421,7 +3516,6 @@ package body Sem_Ch10 is
                   end if;
                   Next (Nam);
                end loop;
-
             end if;
 
             Next (Item);
@@ -3480,7 +3574,7 @@ package body Sem_Ch10 is
             Error_Msg_N
               ("unit in with clause is private child unit!", Item);
             Error_Msg_NE
-              ("current unit must also have parent&!",
+              ("\current unit must also have parent&!",
                Item, Defining_Unit_Name (Specification (Unit (Child_Parent))));
 
          elsif not Private_Present (Parent (Item))
@@ -3546,9 +3640,12 @@ package body Sem_Ch10 is
          New_Nodes_OK := New_Nodes_OK + 1;
 
          if Nkind (Nam) = N_Identifier then
+
+            --  Create node for name of withed unit
+
             Withn :=
               Make_With_Clause (Loc,
-                Name => Nam);
+                Name => New_Copy (Nam));
 
          else pragma Assert (Nkind (Nam) = N_Selected_Component);
             Withn :=
@@ -3644,6 +3741,53 @@ package body Sem_Ch10 is
 
          Next (Item);
       end loop;
+
+      --  Ada 2005 (AI-412): Examine the visible declarations of a package
+      --  spec, looking for incomplete subtype declarations of incomplete
+      --  types visible through a limited with clause.
+
+      if Ada_Version >= Ada_05
+        and then Analyzed (N)
+        and then Nkind (Unit (N)) = N_Package_Declaration
+      then
+         declare
+            Decl         : Node_Id;
+            Def_Id       : Entity_Id;
+            Non_Lim_View : Entity_Id;
+
+         begin
+            Decl := First (Visible_Declarations (Specification (Unit (N))));
+            while Present (Decl) loop
+               if Nkind (Decl) = N_Subtype_Declaration
+                 and then
+                   Ekind (Defining_Identifier (Decl)) = E_Incomplete_Subtype
+                 and then
+                   From_With_Type (Defining_Identifier (Decl))
+               then
+                  Def_Id := Defining_Identifier (Decl);
+                  Non_Lim_View := Non_Limited_View (Def_Id);
+
+                  --  Convert an incomplete subtype declaration into a
+                  --  corresponding non-limited view subtype declaration.
+
+                  Set_Subtype_Indication (Decl,
+                    New_Reference_To (Non_Lim_View, Sloc (Def_Id)));
+                  Set_Etype (Def_Id, Non_Lim_View);
+                  Set_Ekind (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
+                  Set_Analyzed (Decl, False);
+
+                  --  Reanalyze the declaration, suppressing the call to
+                  --  Enter_Name to avoid duplicate names.
+
+                  Analyze_Subtype_Declaration
+                   (N    => Decl,
+                    Skip => True);
+               end if;
+
+               Next (Decl);
+            end loop;
+         end;
+      end if;
    end Install_Limited_Context_Clauses;
 
    ---------------------
@@ -3808,7 +3952,8 @@ package body Sem_Ch10 is
       Prev : Entity_Id;
    begin
       --  Iterate over explicit with clauses, and check whether the
-      --  scope of each entity is an ancestor of the current unit.
+      --  scope of each entity is an ancestor of the current unit, in
+      --  which case it is immediately visible.
 
       Item := First (Context_Items (N));
       while Present (Item) loop
@@ -3861,13 +4006,27 @@ package body Sem_Ch10 is
                   end;
                end if;
 
-            --  the With_Clause may be on a grand-child, which makes
-            --  the child immediately visible.
+            --  The With_Clause may be on a grand-child or one of its
+            --  further descendants, which makes a child immediately visible.
+            --  Examine ancestry to determine whether such a child exists.
+            --  For example, if current unit is A.C, and with_clause is on
+            --  A.X.Y.Z, then X is immediately visible.
 
-            elsif Is_Child_Unit (Scope (Id))
-              and then Is_Ancestor_Package (Scope (Scope (Id)), U_Name)
-            then
-               Set_Is_Immediately_Visible (Scope (Id));
+            elsif Is_Child_Unit (Id) then
+               declare
+                  Par : Entity_Id;
+
+               begin
+                  Par := Scope (Id);
+                  while Is_Child_Unit (Par) loop
+                     if Is_Ancestor_Package (Scope (Par), U_Name) then
+                        Set_Is_Immediately_Visible (Par);
+                        exit;
+                     end if;
+
+                     Par := Scope (Par);
+                  end loop;
+               end;
             end if;
          end if;
 
@@ -3881,6 +4040,7 @@ package body Sem_Ch10 is
 
    procedure Install_Limited_Withed_Unit (N : Node_Id) is
       P_Unit           : constant Entity_Id := Unit (Library_Unit (N));
+      E                : Entity_Id;
       P                : Entity_Id;
       Is_Child_Package : Boolean := False;
 
@@ -3944,19 +4104,15 @@ package body Sem_Ch10 is
                         --  installed.
 
                         if Kind = N_Package_Declaration then
+                           Error_Msg_N
+                             ("simultaneous visibility of the limited and" &
+                              " unlimited views not allowed", N);
                            Error_Msg_Sloc := Sloc (Item);
                            Error_Msg_NE
-                             ("unlimited view of & visible through the context"
-                              & " clause found #", N, P);
-
+                             ("\unlimited view of & visible through the" &
+                              " context clause found #", N, P);
                            Error_Msg_Sloc := Sloc (Decl);
-                           Error_Msg_NE
-                             ("unlimited view of & visible through the"
-                              & " renaming found #", N, P);
-
-                           Error_Msg_N
-                             ("simultaneous visibility of the limited and"
-                              & " unlimited views not allowed", N);
+                           Error_Msg_NE ("\and the renaming found #", N, P);
                         end if;
 
                         return True;
@@ -4145,20 +4301,15 @@ package body Sem_Ch10 is
          --  avoid its usage. This is needed to cover all the subtype decla-
          --  rations because we do not remove them from the homonym chain.
 
-         declare
-            E : Entity_Id;
+         E := First_Entity (P);
+         while Present (E) and then E /= First_Private_Entity (P) loop
+            if Is_Type (E) then
+               Set_Was_Hidden (E, Is_Hidden (E));
+               Set_Is_Hidden (E);
+            end if;
 
-         begin
-            E := First_Entity (P);
-            while Present (E) and then E /= First_Private_Entity (P) loop
-               if Is_Type (E) then
-                  Set_Was_Hidden (E, Is_Hidden (E));
-                  Set_Is_Hidden (E);
-               end if;
-
-               Next_Entity (E);
-            end loop;
-         end;
+            Next_Entity (E);
+         end loop;
 
          --  Replace the real entities by the shadow entities of the limited
          --  view. The first element of the limited view is a header that is
@@ -4173,25 +4324,48 @@ package body Sem_Ch10 is
          loop
             pragma Assert (not In_Chain (Lim_Typ));
 
-            --  Do not unchain child units
+            --  Do not unchain nested packages and child units
 
-            if not Is_Child_Unit (Lim_Typ) then
+            if Ekind (Lim_Typ) /= E_Package
+              and then not Is_Child_Unit (Lim_Typ)
+            then
                declare
                   Prev : Entity_Id;
 
                begin
-                  Set_Homonym (Lim_Typ, Homonym (Non_Limited_View (Lim_Typ)));
                   Prev := Current_Entity (Lim_Typ);
 
-                  if Prev = Non_Limited_View (Lim_Typ) then
-                     Set_Current_Entity (Lim_Typ);
+                  --  Handle incomplete types
+
+                  if Ekind (Prev) = E_Incomplete_Type then
+                     E := Full_View (Prev);
                   else
-                     while Present (Prev)
-                       and then Homonym (Prev) /= Non_Limited_View (Lim_Typ)
+                     E := Prev;
+                  end if;
+
+                  --  Replace E in the homonyms list
+
+                  if E = Non_Limited_View (Lim_Typ) then
+                     Set_Homonym (Lim_Typ, Homonym (Prev));
+                     Set_Current_Entity (Lim_Typ);
+
+                  else
                      loop
+                        E := Homonym (Prev);
+                        pragma Assert (Present (E));
+
+                        --  Handle incomplete types
+
+                        if Ekind (E) = E_Incomplete_Type then
+                           E := Full_View (E);
+                        end if;
+
+                        exit when E = Non_Limited_View (Lim_Typ);
+
                         Prev := Homonym (Prev);
                      end loop;
 
+                     Set_Homonym (Lim_Typ, Homonym (Homonym (Prev)));
                      Set_Homonym (Prev, Lim_Typ);
                   end if;
                end;
@@ -4224,6 +4398,7 @@ package body Sem_Ch10 is
          declare
             Nam : Node_Id;
             Ent : Entity_Id;
+
          begin
             Nam := Name (N);
             Ent := P;
@@ -4231,8 +4406,21 @@ package body Sem_Ch10 is
               and then Present (Ent)
             loop
                Change_Selected_Component_To_Expanded_Name (Nam);
+
+               --  Set entity of parent identifiers if the unit is a child
+               --  unit. This ensures that the tree is properly formed from
+               --  semantic point of view (e.g. for ASIS queries).
+
+               Set_Entity (Nam, Ent);
+
                Nam := Prefix (Nam);
                Ent := Scope (Ent);
+
+               --  Set entity of last ancestor
+
+               if Nkind (Nam) = N_Identifier then
+                  Set_Entity (Nam, Ent);
+               end if;
             end loop;
          end;
       end if;
@@ -4610,9 +4798,9 @@ package body Sem_Ch10 is
          Set_Etype (P, Standard_Void_Type);
       end Decorate_Package_Specification;
 
-      -------------------------
-      -- New_Internal_Entity --
-      -------------------------
+      --------------------------------
+      -- New_Internal_Shadow_Entity --
+      --------------------------------
 
       function New_Internal_Shadow_Entity
         (Kind       : Entity_Kind;
@@ -4665,11 +4853,19 @@ package body Sem_Ch10 is
             --     completion is the type_declaration. If the type_declaration
             --     is tagged, then the incomplete_type_declaration is tagged
             --     incomplete.
+            --     The partial view is tagged if the declaration has the
+            --     explicit keyword, or else if it is a type extension, both
+            --     of which can be ascertained syntactically.
 
             if Nkind (Decl) = N_Full_Type_Declaration then
                Is_Tagged :=
-                  Nkind (Type_Definition (Decl)) = N_Record_Definition
-                    and then Tagged_Present (Type_Definition (Decl));
+                  (Nkind (Type_Definition (Decl)) = N_Record_Definition
+                    and then Tagged_Present (Type_Definition (Decl)))
+                 or else
+                   (Nkind (Type_Definition (Decl)) = N_Derived_Type_Definition
+                     and then
+                       Present
+                         (Record_Extension_Part (Type_Definition (Decl))));
 
                Comp_Typ := Defining_Identifier (Decl);
 
@@ -5076,6 +5272,7 @@ package body Sem_Ch10 is
 
    procedure Remove_Limited_With_Clause (N : Node_Id) is
       P_Unit     : constant Entity_Id := Unit (Library_Unit (N));
+      E          : Entity_Id;
       P          : Entity_Id;
       Lim_Header : Entity_Id;
       Lim_Typ    : Entity_Id;
@@ -5137,48 +5334,66 @@ package body Sem_Ch10 is
          --  from visibility at the point of installation of the limited-view.
          --  Now we recover the previous value of the hidden attribute.
 
-         declare
-            E : Entity_Id;
+         E := First_Entity (P);
+         while Present (E) and then E /= First_Private_Entity (P) loop
+            if Is_Type (E) then
+               Set_Is_Hidden (E, Was_Hidden (E));
+            end if;
 
-         begin
-            E := First_Entity (P);
-            while Present (E) and then E /= First_Private_Entity (P) loop
-               if Is_Type (E) then
-                  Set_Is_Hidden (E, Was_Hidden (E));
-               end if;
-
-               Next_Entity (E);
-            end loop;
-         end;
+            Next_Entity (E);
+         end loop;
 
          while Present (Lim_Typ)
            and then Lim_Typ /= First_Private_Entity (Lim_Header)
          loop
-            pragma Assert (not In_Chain (Non_Limited_View (Lim_Typ)));
+            --  Nested packages and child units were not unchained
 
-            --  Child units have not been unchained
+            if Ekind (Lim_Typ) /= E_Package
+              and then not Is_Child_Unit (Non_Limited_View (Lim_Typ))
+            then
+               --  Handle incomplete types of the real view. For this purpose
+               --  we traverse the list of visible entities to look for an
+               --  incomplete type in the real-view associated with Lim_Typ.
 
-            if not Is_Child_Unit (Non_Limited_View (Lim_Typ)) then
+               E := First_Entity (P);
+               while Present (E) and then E /= First_Private_Entity (P) loop
+                  exit when Ekind (E) = E_Incomplete_Type
+                    and then Present (Full_View (E))
+                    and then Full_View (E) = Lim_Typ;
+
+                  Next_Entity (E);
+               end loop;
+
+               --  If the previous search was not sucessful then the entity
+               --  to be restored in the homonym list is the non-limited view
+
+               if E = First_Private_Entity (P) then
+                  E := Non_Limited_View (Lim_Typ);
+               end if;
+
+               pragma Assert (not In_Chain (E));
+
                Prev := Current_Entity (Lim_Typ);
 
                if Prev = Lim_Typ then
-                  Set_Current_Entity (Non_Limited_View (Lim_Typ));
+                  Set_Current_Entity (E);
+
                else
                   while Present (Prev)
                     and then Homonym (Prev) /= Lim_Typ
                   loop
                      Prev := Homonym (Prev);
                   end loop;
-
                   pragma Assert (Present (Prev));
-                  Set_Homonym (Prev, Non_Limited_View (Lim_Typ));
+
+                  Set_Homonym (Prev, E);
                end if;
 
                --  We must also set the next homonym entity of the real entity
                --  to handle the case in which the next homonym was a shadow
                --  entity.
 
-               Set_Homonym (Non_Limited_View (Lim_Typ), Homonym (Lim_Typ));
+               Set_Homonym (E, Homonym (Lim_Typ));
             end if;
 
             Next_Entity (Lim_Typ);
@@ -5242,6 +5457,33 @@ package body Sem_Ch10 is
          Remove_Parents (P);
       end if;
    end Remove_Parents;
+
+   ---------------------------------
+   -- Remove_Private_With_Clauses --
+   ---------------------------------
+
+   procedure Remove_Private_With_Clauses (Comp_Unit : Node_Id) is
+      Item : Node_Id;
+
+   begin
+      Item := First (Context_Items (Comp_Unit));
+      while Present (Item) loop
+         if Nkind (Item) = N_With_Clause
+           and then Private_Present (Item)
+         then
+            if Limited_Present (Item) then
+               if not Limited_View_Installed (Item) then
+                  Remove_Limited_With_Clause (Item);
+               end if;
+            else
+               Remove_Unit_From_Visibility (Entity (Name (Item)));
+               Set_Context_Installed (Item, False);
+            end if;
+         end if;
+
+         Next (Item);
+      end loop;
+   end Remove_Private_With_Clauses;
 
    -----------------------------
    -- Remove_With_Type_Clause --
