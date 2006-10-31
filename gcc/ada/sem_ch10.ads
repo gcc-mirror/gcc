@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,6 +52,13 @@ package Sem_Ch10 is
    --  case is that the call from the Main_Unit can be ignored, since at the
    --  end of the main unit the visibility table won't be needed in any case.
    --  For a child unit, remove parents and their context as well.
+
+   procedure Remove_Private_With_Clauses (Comp_Unit : Node_Id);
+   --  The private_with_clauses of a compilation unit are visible in the
+   --  private part of a nested package, even if this package appears in
+   --  the visible part of the enclosing compilation unit. This Ada 2005
+   --  rule imposes extra steps in order to install/remove the private_with
+   --  clauses of the an enclosing unit.
 
    procedure Load_Needed_Body (N : Node_Id; OK : out Boolean);
    --  Load and analyze the body of a context unit that is generic, or
