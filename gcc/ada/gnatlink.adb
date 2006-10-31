@@ -57,6 +57,11 @@ procedure Gnatlink is
                             new String'(Shared_Libgcc_String);
    --  Used to invoke gcc when the binder is invoked with -shared
 
+   Static_Libgcc_String : constant String := "-static-libgcc";
+   Static_Libgcc        : constant String_Access :=
+                            new String'(Static_Libgcc_String);
+   --  Used to invoke gcc when shared libs are not used
+
    package Gcc_Linker_Options is new Table.Table (
      Table_Component_Type => String_Access,
      Table_Index_Type     => Integer,
@@ -71,7 +76,7 @@ procedure Gnatlink is
      Table_Index_Type     => Integer,
      Table_Low_Bound      => 1,
      Table_Initial        => 4096,
-     Table_Increment      => 2,
+     Table_Increment      => 100,
      Table_Name           => "Gnatlink.Libpath");
    --  Comments needed ???
 
@@ -661,6 +666,7 @@ procedure Gnatlink is
       --  Last object file index in Linker_Objects table
 
       Status : int;
+      pragma Warnings (Off, Status);
       --  Used for various Interfaces.C_Streams calls
 
       Closing_Status : Boolean;
@@ -1803,6 +1809,17 @@ begin
 
                J := J + 1;
             end loop;
+
+            --  If gcc is not called with -shared-libgcc, call it with
+            --  -static-libgcc, as there are some platforms where one of these
+            --  two switches is compulsory to link.
+
+            if not Shared_Libgcc_Seen then
+               Linker_Options.Increment_Last;
+               Linker_Options.Table (Linker_Options.Last) := Static_Libgcc;
+               Num_Args := Num_Args + 1;
+            end if;
+
          end Clean_Link_Option_Set;
 
          --  Prepare arguments for call to linker
