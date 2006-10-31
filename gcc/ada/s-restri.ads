@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,10 +43,15 @@
 with System.Rident;
 
 package System.Restrictions is
+   pragma Preelaborate;
    pragma Discard_Names;
    package Rident is new System.Rident;
 
    Run_Time_Restrictions : Rident.Restrictions_Info;
+   --  Restrictions as set by the user, or detected by the binder.
+   --  Note that a restriction which is both Set and Violated at run-time means
+   --  that the violation was detected as part of the Ada run-time and not
+   --  as part of user code.
 
    ------------------
    -- Subprograms --
@@ -61,7 +66,7 @@ package System.Restrictions is
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);
    --  Tests to see if tasking operations are allowed by the current
-   --  restrictions settings. For taskikng to be allowed, No_Tasking
+   --  restrictions settings. For tasking to be allowed, No_Tasking
    --  must be False, and Max_Tasks must not be set to zero.
 
 end System.Restrictions;
