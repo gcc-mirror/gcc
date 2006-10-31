@@ -88,20 +88,20 @@ package body Make is
    -- Note on terminology --
    -------------------------
 
-   --  In this program, we use the phrase "termination" of a file name to
-   --  refer to the suffix that appears after the unit name portion. Very
-   --  often this is simply the extension, but in some cases, the sequence
-   --  may be more complex, for example in main.1.ada, the termination in
-   --  this name is ".1.ada" and in main_.ada the termination is "_.ada".
+   --  In this program, we use the phrase "termination" of a file name to refer
+   --  to the suffix that appears after the unit name portion. Very often this
+   --  is simply the extension, but in some cases, the sequence may be more
+   --  complex, for example in main.1.ada, the termination in this name is
+   --  ".1.ada" and in main_.ada the termination is "_.ada".
 
    -------------------------------------
    -- Queue (Q) Manipulation Routines --
    -------------------------------------
 
-   --  The Q is used in Compile_Sources below. Its implementation uses the
-   --  GNAT generic package Table (basically an extensible array). Q_Front
-   --  points to the first valid element in the Q, whereas Q.First is the first
-   --  element ever enqueued, while Q.Last - 1 is the last element in the Q.
+   --  The Q is used in Compile_Sources below. Its implementation uses the GNAT
+   --  generic package Table (basically an extensible array). Q_Front points to
+   --  the first valid element in the Q, whereas Q.First is the first element
+   --  ever enqueued, while Q.Last - 1 is the last element in the Q.
    --
    --        +---+--------------+---+---+---+-----------+---+--------
    --    Q   |   |  ........    |   |   |   | .......   |   |
@@ -109,14 +109,14 @@ package body Make is
    --          ^                  ^                       ^
    --       Q.First             Q_Front               Q.Last - 1
    --
-   --  The elements comprised between Q.First and Q_Front - 1 are the
-   --  elements that have been enqueued and then dequeued, while the
-   --  elements between Q_Front and Q.Last - 1 are the elements currently
-   --  in the Q. When the Q is initialized Q_Front = Q.First = Q.Last.
-   --  After Compile_Sources has terminated its execution, Q_Front = Q.Last
-   --  and the elements contained between Q.Front and Q.Last-1 are those that
-   --  were explored and thus marked by Compile_Sources. Whenever the Q is
-   --  reinitialized, the elements between Q.First and Q.Last - 1 are unmarked.
+   --  The elements comprised between Q.First and Q_Front - 1 are the elements
+   --  that have been enqueued and then dequeued, while the elements between
+   --  Q_Front and Q.Last - 1 are the elements currently in the Q. When the Q
+   --  is initialized Q_Front = Q.First = Q.Last. After Compile_Sources has
+   --  terminated its execution, Q_Front = Q.Last and the elements contained
+   --  between Q.Front and Q.Last-1 are those that were explored and thus
+   --  marked by Compile_Sources. Whenever the Q is reinitialized, the elements
+   --  between Q.First and Q.Last - 1 are unmarked.
 
    procedure Init_Q;
    --  Must be called to (re)initialize the Q
@@ -305,9 +305,9 @@ package body Make is
    procedure Add_Library_Search_Dir
      (Path            : String;
       On_Command_Line : Boolean);
-   --  Call Add_Lib_Search_Dir with an absolute directory path. If Path is a
+   --  Call Add_Lib_Search_Dir with an absolute directory path. If Path is
    --  relative path, when On_Command_Line is True, it is relative to the
-   --  current working directory; when On_Command_Line is False, it is relative
+   --  current working directory. When On_Command_Line is False, it is relative
    --  to the project directory of the main project.
 
    procedure Add_Source_Search_Dir
@@ -315,7 +315,7 @@ package body Make is
       On_Command_Line : Boolean);
    --  Call Add_Src_Search_Dir with an absolute directory path. If Path is a
    --  relative path, when On_Command_Line is True, it is relative to the
-   --  current working directory; when On_Command_Line is False, it is relative
+   --  current working directory. When On_Command_Line is False, it is relative
    --  to the project directory of the main project.
 
    procedure Add_Source_Dir (N : String);
@@ -356,9 +356,9 @@ package body Make is
    Do_Compile_Step : Boolean := True;
    Do_Bind_Step    : Boolean := True;
    Do_Link_Step    : Boolean := True;
-   --  Flags to indicate what step should be executed.
-   --  Can be set to False with the switches -c, -b and -l.
-   --  These flags are reset to True for each invokation of procedure Gnatmake.
+   --  Flags to indicate what step should be executed. Can be set to False
+   --  with the switches -c, -b and -l. These flags are reset to True for
+   --  each invokation of procedure Gnatmake.
 
    Shared_String           : aliased String := "-shared";
    Force_Elab_Flags_String : aliased String := "-F";
@@ -628,14 +628,14 @@ package body Make is
    GNAT_Flag         : constant String_Access := new String'("-gnatpg");
    Do_Not_Check_Flag : constant String_Access := new String'("-x");
 
-   Object_Suffix     : constant String := Get_Target_Object_Suffix.all;
-   Executable_Suffix : constant String := Get_Target_Executable_Suffix.all;
+   Object_Suffix : constant String := Get_Target_Object_Suffix.all;
 
    Syntax_Only : Boolean := False;
    --  Set to True when compiling with -gnats
 
    Display_Executed_Programs : Boolean := True;
-   --  Set to True if name of commands should be output on stderr
+   --  Set to True if name of commands should be output on stderr (or on stdout
+   --  if the Commands_To_Stdout flag was set by use of the -S switch).
 
    Output_File_Name_Seen : Boolean := False;
    --  Set to True after having scanned the file_name for
@@ -1457,11 +1457,10 @@ package body Make is
 
                --  Comparing switches is delicate because gcc reorders a number
                --  of switches, according to lang-specs.h, but gnatmake doesn't
-               --  have the sufficient knowledge to perform the same
-               --  reordering. Instead, we ignore orders between different
-               --  "first letter" switches, but keep orders between same
-               --  switches, e.g -O -O2 is different than -O2 -O, but -g -O is
-               --  equivalent to -O -g.
+               --  have sufficient knowledge to perform the same reordering.
+               --  Instead, we ignore orders between different "first letter"
+               --  switches, but keep orders between same switches, e.g -O -O2
+               --  is different than -O2 -O, but -g -O is equivalent to -O -g.
 
                if Switches_To_Check.Table (J) (2) /= Prev_Switch (2) or else
                    (Prev_Switch'Length >= 6 and then
@@ -3482,6 +3481,10 @@ package body Make is
       pragma Assert (Args'First = 1);
 
       if Display_Executed_Programs then
+         if Commands_To_Stdout then
+            Set_Standard_Output;
+         end if;
+
          Write_Str (Program);
 
          for J in Args'Range loop
@@ -3529,6 +3532,7 @@ package body Make is
          end loop;
 
          Write_Eol;
+         Set_Standard_Error;
       end if;
    end Display;
 
@@ -4326,6 +4330,17 @@ package body Make is
 
             Osint.Add_Default_Search_Dirs;
 
+            --  Get the target parameters, so that the correct binder generated
+            --  files are generated if OpenVMS is the target.
+
+            begin
+               Targparm.Get_Target_Parameters;
+
+            exception
+               when Unrecoverable_Error =>
+                  Make_Failed ("*** make failed.");
+            end;
+
             --  And bind and or link the library
 
             MLib.Prj.Build_Library
@@ -4875,7 +4890,8 @@ package body Make is
 
          Executable          := No_File;
          Executable_Obsolete := False;
-         Non_Std_Executable  := False;
+         Non_Std_Executable  :=
+           Targparm.Executable_Extension_On_Target /= No_Name;
 
          --  Look inside the linker switches to see if the name
          --  of the final executable program was specified.
@@ -6212,8 +6228,7 @@ package body Make is
             Project_Tree.Projects.Table (Proj).Depth := 0;
          end loop;
 
-         Recursive_Compute_Depth
-           (Main_Project, Depth => 1);
+         Recursive_Compute_Depth (Main_Project, Depth => 1);
 
          --  For each project compute the list of the projects it imports
          --  directly or indirectly.
@@ -6228,10 +6243,10 @@ package body Make is
 
          Osint.Add_Default_Search_Dirs;
 
-         --  Source file lookups should be cached for efficiency.
-         --  Source files are not supposed to change. However, we do that now
-         --  only if no project file is used; if a project file is used, we
-         --  do it just after changing the directory to the object directory.
+         --  Source file lookups should be cached for efficiency. Source files
+         --  are not supposed to change. However, we do that now only if no
+         --  project file is used; if a project file is used, we do it just
+         --  after changing the directory to the object directory.
 
          Osint.Source_File_Data (Cache => True);
 
@@ -6272,8 +6287,7 @@ package body Make is
                       (The_Project).Extends /= No_Project;
 
       function Check_Project (P : Project_Id) return Boolean;
-      --  Returns True if P is The_Project or a project extended by
-      --  The_Project.
+      --  Returns True if P is The_Project or a project extended by The_Project
 
       -------------------
       -- Check_Project --
@@ -6283,6 +6297,7 @@ package body Make is
       begin
          if All_Projects or P = The_Project then
             return True;
+
          elsif Extending then
             declare
                Data : Project_Data :=
@@ -6333,8 +6348,9 @@ package body Make is
 
                      --  Here we are cheating a little bit: we don't want to
                      --  use Sinput.L, because it depends on the GNAT tree
-                     --  (Atree, Sinfo, ...). So, we pretend that it is
-                     --  a project file, and we use Sinput.P.
+                     --  (Atree, Sinfo, ...). So, we pretend that it is a
+                     --  project file, and we use Sinput.P.
+
                      --  Source_File_Is_Subunit is just scanning through
                      --  the file until it finds one of the reserved words
                      --  separate, procedure, function, generic or package.
@@ -6350,7 +6366,6 @@ package body Make is
 
                      if Sinput.P.Source_File_Is_Subunit (Src_Ind) then
                         Sfile := No_Name;
-
                      else
                         Sfile := Unit.File_Names (Body_Part).Name;
                      end if;
@@ -6376,15 +6391,15 @@ package body Make is
 
          if Put_In_Q then
 
-            --  For the first source inserted into the Q, we need
-            --  to initialize the Q, but not for the subsequent sources.
+            --  For the first source inserted into the Q, we need to initialize
+            --  the Q, but not for the subsequent sources.
 
             if First_Q_Initialization then
                Init_Q;
             end if;
 
-            --  And of course, we only insert in the Q if the source
-            --  is not marked.
+            --  And of course, we only insert in the Q if the source is not
+            --  marked.
 
             if Sfile /= No_Name and then not Is_Marked (Sfile) then
                if Verbose_Mode then
@@ -6399,11 +6414,10 @@ package body Make is
 
          elsif Sfile /= No_Name then
 
-            --  If Put_In_Q is False, we add the source as it it were
-            --  specified on the command line, and we set Put_In_Q to True,
-            --  so that the following sources will be put directly in the
-            --  queue. This will allow parallel compilation processes if -jx
-            --  switch is used.
+            --  If Put_In_Q is False, we add the source as it it were specified
+            --  on the command line, and we set Put_In_Q to True, so that the
+            --  following sources will be put directly in the queue. This will
+            --  allow parallel compilation processes if -jx switch is used.
 
             if Verbose_Mode then
                Write_Str ("Adding """);
@@ -6786,8 +6800,7 @@ package body Make is
 
       Project_Tree.Projects.Table (Project).Depth := Depth;
 
-      --  Mark the project as Seen to avoid endless loop caused by limited
-      --  withs.
+      --  Mark project as Seen to avoid endless loop caused by limited withs
 
       Project_Tree.Projects.Table (Project).Seen := True;
 
@@ -6837,9 +6850,9 @@ package body Make is
          return;
       end if;
 
-      --  If the previous switch has set the Project_File_Name_Present
-      --  flag (that is we have seen a -P alone), then the next argument is
-      --  the name of the project file.
+      --  If the previous switch has set the Project_File_Name_Present flag
+      --  (that is we have seen a -P alone), then the next argument is the name
+      --  of the project file.
 
       if Project_File_Name_Present and then Project_File_Name = null then
          if Argv (1) = '-' then
@@ -6850,9 +6863,9 @@ package body Make is
             Project_File_Name := new String'(Argv);
          end if;
 
-      --  If the previous switch has set the Output_File_Name_Present
-      --  flag (that is we have seen a -o), then the next argument is
-      --  the name of the output executable.
+      --  If the previous switch has set the Output_File_Name_Present flag
+      --  (that is we have seen a -o), then the next argument is the name of
+      --  the output executable.
 
       elsif Output_File_Name_Present
         and then not Output_File_Name_Seen
@@ -6864,39 +6877,12 @@ package body Make is
 
          else
             Add_Switch ("-o", Linker, And_Save => And_Save);
-
-            --  Automatically add the executable suffix if it has not been
-            --  specified explicitly.
-
-            declare
-               Canonical_Argv : String := Argv;
-            begin
-               --  Get the file name in canonical case to accept as is
-               --  names ending with ".EXE" on VMS and Windows.
-
-               Canonical_Case_File_Name (Canonical_Argv);
-
-               if Executable_Suffix'Length /= 0
-                 and then (Canonical_Argv'Length <= Executable_Suffix'Length
-                        or else Canonical_Argv
-                                  (Canonical_Argv'Last -
-                                   Executable_Suffix'Length + 1
-                                   .. Canonical_Argv'Last)
-                                /= Executable_Suffix)
-               then
-                  Add_Switch
-                    (Argv & Executable_Suffix,
-                     Linker,
-                     And_Save => And_Save);
-               else
-                  Add_Switch (Argv, Linker, And_Save => And_Save);
-               end if;
-            end;
+            Add_Switch (Executable_Name (Argv), Linker, And_Save => And_Save);
          end if;
 
       --  If the previous switch has set the Object_Directory_Present flag
-      --  (that is we have seen a -D), then the next argument is
-      --  the path name of the object directory..
+      --  (that is we have seen a -D), then the next argument is the path name
+      --  of the object directory..
 
       elsif Object_Directory_Present
         and then not Object_Directory_Seen
@@ -6920,8 +6906,8 @@ package body Make is
             --  separator.
 
             if Argv (Argv'Last) = Directory_Separator then
-               Object_Directory_Path := new String'(Argv);
-
+               Object_Directory_Path :=
+                 new String'(Argv);
             else
                Object_Directory_Path :=
                  new String'(Argv & Directory_Separator);
@@ -7084,18 +7070,19 @@ package body Make is
                                       (Argv (7 .. Argv'Last), Objects);
 
                begin
-                  if Src_Path_Name /= null and then
-                    Lib_Path_Name /= null
+                  if Src_Path_Name /= null
+                    and then Lib_Path_Name /= null
                   then
-                     --  Set the RTS_*_Path_Name variables, so that the correct
-                     --  directories will be set when
-                     --  Osint.Add_Default_Search_Dirs will be called later.
+                     --  Set RTS_*_Path_Name variables, so that correct direct-
+                     --  ories will be set when Osint.Add_Default_Search_Dirs
+                     --  is called later.
 
                      RTS_Src_Path_Name := Src_Path_Name;
                      RTS_Lib_Path_Name := Lib_Path_Name;
 
                   elsif  Src_Path_Name = null
-                    and Lib_Path_Name = null then
+                    and Lib_Path_Name = null
+                  then
                      Make_Failed ("RTS path not valid: missing " &
                                   "adainclude and adalib directories");
 
@@ -7378,18 +7365,18 @@ package body Make is
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Binder, And_Save => And_Save);
 
-            --  By default all switches with more than one character
-            --  or one character switches which are not in 'a' .. 'z'
-            --  (except 'C', 'F', 'M' and 'B') are passed to the compiler,
-            --  unless we are dealing with a debug switch (starts with 'd')
-            --  or an extended gnatmake switch (starts with 'e').
+            --  By default all switches with more than one character or one
+            --  character switches are passed to the compiler with the
+            --  exception of those tested below, which belong to make.
 
          elsif Argv (2) /= 'd'
            and then Argv (2) /= 'e'
+           and then Argv (2 .. Argv'Last) /= "B"
            and then Argv (2 .. Argv'Last) /= "C"
            and then Argv (2 .. Argv'Last) /= "F"
            and then Argv (2 .. Argv'Last) /= "M"
-           and then Argv (2 .. Argv'Last) /= "B"
+           and then Argv (2 .. Argv'Last) /= "R"
+           and then Argv (2 .. Argv'Last) /= "S"
            and then Argv (2 .. Argv'Last) /= "vl"
            and then Argv (2 .. Argv'Last) /= "vm"
            and then Argv (2 .. Argv'Last) /= "vh"

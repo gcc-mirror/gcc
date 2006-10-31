@@ -33,6 +33,7 @@ with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Com;
 with Snames;   use Snames;
+with Targparm; use Targparm;
 
 package body Prj.Util is
 
@@ -99,14 +100,7 @@ package body Prj.Util is
                         In_Package              => Builder_Package,
                         In_Tree                 => In_Tree);
 
-      Executable_Suffix : constant Variable_Value :=
-                            Prj.Util.Value_Of
-                              (Name                    => Main,
-                               Index                   => 0,
-                               Attribute_Or_Array_Name =>
-                                 Name_Executable_Suffix,
-                               In_Package              => Builder_Package,
-                               In_Tree                 => In_Tree);
+      Executable_Suffix : Variable_Value := Nil_Variable_Value;
 
       Body_Append : constant String := Get_Name_String
                                           (In_Tree.Projects.Table
@@ -120,6 +114,12 @@ package body Prj.Util is
 
    begin
       if Builder_Package /= No_Package then
+         Executable_Suffix := Prj.Util.Value_Of
+           (Variable_Name => Name_Executable_Suffix,
+            In_Variables  => In_Tree.Packages.Table
+              (Builder_Package).Decl.Attributes,
+            In_Tree       => In_Tree);
+
          if Executable = Nil_Variable_Value and Ada_Main then
             Get_Name_String (Main);
 
@@ -179,39 +179,22 @@ package body Prj.Util is
          if Executable /= Nil_Variable_Value
            and then Executable.Value /= Empty_Name
          then
+            --  Get the executable name. If Executable_Suffix is defined,
+            --  make sure that it will be the extension of the executable.
+
             declare
-               Exec_Suffix : String_Access := Get_Executable_Suffix;
-               Result      : Name_Id := Executable.Value;
+               Saved_EEOT : constant Name_Id := Executable_Extension_On_Target;
+               Result     : Name_Id;
 
             begin
-               if Exec_Suffix'Length /= 0 then
-                  Get_Name_String (Executable.Value);
-                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-
-                  --  If the Executable does not end with the executable
-                  --  suffix, add it.
-
-                  if Name_Len <= Exec_Suffix'Length
-                    or else
-                      Name_Buffer
-                        (Name_Len - Exec_Suffix'Length + 1 .. Name_Len) /=
-                                                               Exec_Suffix.all
-                  then
-                     --  Get the original Executable to keep the correct
-                     --  case for systems where file names are case
-                     --  insensitive (Windows).
-
-                     Get_Name_String (Executable.Value);
-                     Name_Buffer
-                       (Name_Len + 1 .. Name_Len + Exec_Suffix'Length) :=
-                       Exec_Suffix.all;
-                     Name_Len := Name_Len + Exec_Suffix'Length;
-                     Result := Name_Find;
-                  end if;
-
-                  Free (Exec_Suffix);
+               if Executable_Suffix /= Nil_Variable_Value
+                 and then not Executable_Suffix.Default
+               then
+                  Executable_Extension_On_Target := Executable_Suffix.Value;
                end if;
 
+               Result := Executable_Name (Executable.Value);
+               Executable_Extension_On_Target := Saved_EEOT;
                return Result;
             end;
          end if;
