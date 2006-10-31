@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,7 +102,7 @@ private
       --  use lock on those operations and the only thing we have to
       --  make sure is that they are updated in atomic fashion.
 
-      LWP : aliased System.Address;
+      LWP : aliased System.OS_Interface.t_id := 0;
       --  The purpose of this field is to provide a better tasking support on
       --  gdb. The order of the two first fields (Thread and LWP) is important.
       --  On targets where lwp is not relevant, this is equivalent to Thread.
