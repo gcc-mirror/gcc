@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,16 +31,35 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Conversion;
+
+with System.Storage_Elements;
 with System.Finalization_Root;
 
 package System.Finalization_Implementation is
    pragma Elaborate_Body;
 
+   package SSE renames System.Storage_Elements;
    package SFR renames System.Finalization_Root;
 
    ------------------------------------------------
    -- Finalization Management Abstract Interface --
    ------------------------------------------------
+
+   function To_Finalizable_Ptr is new Ada.Unchecked_Conversion
+     (Source => System.Address, Target => SFR.Finalizable_Ptr);
+
+   Collection_Finalization_Started : constant SFR.Finalizable_Ptr :=
+                                       To_Finalizable_Ptr (SSE.To_Address (1));
+   --  This is used to implement the rule in RM-4.8(10.2/2) that requires an
+   --  allocator to raise Program_Error if the collection finalization has
+   --  already started. See also Ada.Finalization.List_Controller. Finalize on
+   --  List_Controller first sets the list to Collection_Finalization_Started,
+   --  to indicate that finalization has started. An allocator will call
+   --  Attach_To_Final_List, which checks for the special value and raises
+   --  Program_Error if appropriate. The value of
+   --  Collection_Finalization_Started must be different from 'Access of any
+   --  finalizable object, and different from null. See AI-280.
 
    Global_Final_List : SFR.Finalizable_Ptr;
    --  This list stores the controlled objects defined in library-level

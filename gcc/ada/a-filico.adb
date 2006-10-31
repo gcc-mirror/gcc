@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,17 @@ package body Ada.Finalization.List_Controller is
       Last_Ptr : constant SFR.Finalizable_Ptr := Object.Last'Unchecked_Access;
 
    begin
+      --  First take note of the fact that finalization of this collection has
+      --  started.
+
+      Object.F := SFI.Collection_Finalization_Started;
+
+      --  Then finalize all the objects. Note that finalization can call
+      --  Unchecked_Deallocation on other objects in the same collection,
+      --  which will cause them to be removed from the list if we have not
+      --  gotten to them yet. However, allocation in the collection will raise
+      --  Program_Error, due to the above Collection_Finalization_Started.
+
       while Object.First.Next /= Last_Ptr loop
          SFI.Finalize_One (Object.First.Next.all);
       end loop;
