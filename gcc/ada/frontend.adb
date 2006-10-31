@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,6 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Osint;
-with Output;   use Output;
 with Par;
 with Prepcomp;
 with Rtsfind;
@@ -214,28 +213,6 @@ begin
    --  floating-point bounds.
 
    Initialize_Scanner (Main_Unit, Source_Index (Main_Unit));
-
-   --  Output header if in verbose mode or full list mode
-
-   if Verbose_Mode or Full_List then
-      Write_Eol;
-
-      if Operating_Mode = Generate_Code then
-         Write_Str ("Compiling: ");
-      else
-         Write_Str ("Checking: ");
-      end if;
-
-      Write_Name (Full_File_Name (Current_Source_File));
-
-      if not Debug_Flag_7 then
-         Write_Str (" (source file time stamp: ");
-         Write_Time_Stamp (Current_Source_File);
-         Write_Char (')');
-      end if;
-
-      Write_Eol;
-   end if;
 
    --  Here we call the parser to parse the compilation unit (or units in
    --  the check syntax mode, but in that case we won't go on to the
