@@ -34,7 +34,6 @@
 with Ada.Exceptions;
 with Ada.Tags;
 
-with System.Storage_Elements;
 with System.Soft_Links;
 
 with Unchecked_Conversion;
@@ -47,7 +46,6 @@ package body System.Finalization_Implementation is
 
    package SSL renames System.Soft_Links;
 
-   package SSE renames System.Storage_Elements;
    use type SSE.Storage_Offset;
 
    -----------------------
@@ -182,6 +180,14 @@ package body System.Finalization_Implementation is
       --  multi-threaded access.
 
       elsif Nb_Link = 2 then
+
+         --  Raise Program_Error if we're trying to allocate an object in a
+         --  collection whose finalization has already started.
+
+         if L = Collection_Finalization_Started then
+            raise Program_Error with
+              "allocation after collection finalization started";
+         end if;
 
          Locked_Processing : begin
             SSL.Lock_Task.all;

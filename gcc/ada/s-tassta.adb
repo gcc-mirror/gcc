@@ -518,6 +518,15 @@ package body System.Tasking.Stages is
       Len           : Natural;
 
    begin
+      --  If Master is greater than the current master, it means that Master
+      --  has already awaited its dependent tasks. This raises Program_Error,
+      --  by 4.8(10.3/2). See AI-280.
+
+      if Master > Self_ID.Master_Within then
+         raise Program_Error with
+           "create task after awaiting termination";
+      end if;
+
       --  If pragma Detect_Blocking is active must be checked whether
       --  this potentially blocking operation is called from a
       --  protected action.
