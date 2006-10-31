@@ -6,6 +6,7 @@
 	<CONST_INT>: Likewise.
 	<SUBREG>: Set it.
 	<ASHIFTRT>: Likewise.  Return 0 if flag_wrapv.
+	(check_insn_for_bivs): Pass VOIDmode as inner_mode to above.
 
 2006-10-30  Jakub Jelinek  <jakub@redhat.com>
 
