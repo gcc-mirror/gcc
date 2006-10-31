@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -560,6 +560,12 @@ package body GNAT.Sockets is
          when Socket_Error =>
             null;
       end;
+
+      --  Reset R_Sig_Socket and W_Sig_Socket to No_Socket to ensure that any
+      --  (errneous) subsequent attempt to use this selector properly fails.
+
+      Selector.R_Sig_Socket := No_Socket;
+      Selector.W_Sig_Socket := No_Socket;
    end Close_Selector;
 
    ------------------

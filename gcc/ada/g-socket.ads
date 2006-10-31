@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -961,7 +961,10 @@ package GNAT.Sockets is
    --  Create a new selector
 
    procedure Close_Selector (Selector : in out Selector_Type);
-   --  Close Selector and all internal descriptors associated
+   --  Close Selector and all internal descriptors associated; deallocate any
+   --  associated resources. This subprogram may be called only when there is
+   --  no other task still using Selector (i.e. still executing Check_Selector
+   --  or Abort_Selector on this Selector).
 
    type Selector_Status is (Completed, Expired, Aborted);
 
@@ -1007,8 +1010,8 @@ private
    No_Socket : constant Socket_Type := -1;
 
    type Selector_Type is limited record
-      R_Sig_Socket : Socket_Type;
-      W_Sig_Socket : Socket_Type;
+      R_Sig_Socket : Socket_Type := No_Socket;
+      W_Sig_Socket : Socket_Type := No_Socket;
    end record;
 
    pragma Volatile (Selector_Type);
