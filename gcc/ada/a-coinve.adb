@@ -8,10 +8,6 @@
 --                                                                          --
 --          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
---                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 2,  or (at your option) any later ver- --
@@ -1052,7 +1048,7 @@ package body Ada.Containers.Indefinite_Vectors is
          Old_Last_As_Int : constant Int := Int (Container.Last);
 
       begin
-         if Old_Last_As_Int > Int'Last - N then  -- see a-convec.adb  ???
+         if Old_Last_As_Int > Int'Last - N then
             raise Constraint_Error with "new length is out of range";
          end if;
 
@@ -1514,7 +1510,7 @@ package body Ada.Containers.Indefinite_Vectors is
          Old_Last_As_Int : constant Int := Int (Container.Last);
 
       begin
-         if Old_Last_As_Int > Int'Last - N then  -- see a-convec.adb  ???
+         if Old_Last_As_Int > Int'Last - N then
             raise Constraint_Error with "new length is out of range";
          end if;
 
@@ -2586,12 +2582,6 @@ package body Ada.Containers.Indefinite_Vectors is
 
       begin
          for Indx in Index_Type'First .. Container.Last loop
-
-            --  There's another way to do this.  Instead a separate
-            --  Boolean for each element, you could write a Boolean
-            --  followed by a count of how many nulls or non-nulls
-            --  follow in the array.  ???
-
             if E (Indx) = null then
                Boolean'Write (Stream, False);
             else

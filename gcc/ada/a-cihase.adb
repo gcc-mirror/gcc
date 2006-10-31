@@ -9,10 +9,6 @@
 --                                                                          --
 --          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
---                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 2,  or (at your option) any later ver- --
@@ -52,6 +48,9 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    -- Local Subprograms --
    -----------------------
 
+   procedure Assign (Node : Node_Access; Item : Element_Type);
+   pragma Inline (Assign);
+
    function Copy_Node (Source : Node_Access) return Node_Access;
    pragma Inline (Copy_Node);
 
@@ -88,11 +87,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    function Read_Node (Stream : access Root_Stream_Type'Class)
      return Node_Access;
    pragma Inline (Read_Node);
-
-   procedure Replace_Element
-     (HT       : in out Hash_Table_Type;
-      Node     : Node_Access;
-      New_Item : Element_Type);
 
    procedure Set_Next (Node : Node_Access; Next : Node_Access);
    pragma Inline (Set_Next);
@@ -138,6 +132,9 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    procedure Read_Nodes is
       new HT_Ops.Generic_Read (Read_Node);
 
+   procedure Replace_Element is
+      new Element_Keys.Generic_Replace_Element (Hash_Node, Assign);
+
    procedure Write_Nodes is
      new HT_Ops.Generic_Write (Write_Node);
 
@@ -158,6 +155,17 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    begin
       HT_Ops.Adjust (Container.HT);
    end Adjust;
+
+   ------------
+   -- Assign --
+   ------------
+
+   procedure Assign (Node : Node_Access; Item : Element_Type) is
+      X : Element_Access := Node.Element;
+   begin
+      Node.Element := new Element_Type'(Item);
+      Free_Element (X);
+   end Assign;
 
    --------------
    -- Capacity --
@@ -266,7 +274,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          return;
       end if;
 
-      if Source.Length = 0 then
+      if Source.HT.Length = 0 then
          return;
       end if;
 
@@ -275,24 +283,41 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
            "attempt to tamper with elements (set is busy)";
       end if;
 
-      --  TODO: This can be written in terms of a loop instead as
-      --  active-iterator style, sort of like a passive iterator.
+      if Source.HT.Length < Target.HT.Length then
+         declare
+            Src_Node : Node_Access;
 
-      Tgt_Node := HT_Ops.First (Target.HT);
-      while Tgt_Node /= null loop
-         if Is_In (Source.HT, Tgt_Node) then
-            declare
-               X : Node_Access := Tgt_Node;
-            begin
+         begin
+            Src_Node := HT_Ops.First (Source.HT);
+            while Src_Node /= null loop
+               Tgt_Node := Element_Keys.Find (Target.HT, Src_Node.Element.all);
+
+               if Tgt_Node /= null then
+                  HT_Ops.Delete_Node_Sans_Free (Target.HT, Tgt_Node);
+                  Free (Tgt_Node);
+               end if;
+
+               Src_Node := HT_Ops.Next (Source.HT, Src_Node);
+            end loop;
+         end;
+
+      else
+         Tgt_Node := HT_Ops.First (Target.HT);
+         while Tgt_Node /= null loop
+            if Is_In (Source.HT, Tgt_Node) then
+               declare
+                  X : Node_Access := Tgt_Node;
+               begin
+                  Tgt_Node := HT_Ops.Next (Target.HT, Tgt_Node);
+                  HT_Ops.Delete_Node_Sans_Free (Target.HT, X);
+                  Free (X);
+               end;
+
+            else
                Tgt_Node := HT_Ops.Next (Target.HT, Tgt_Node);
-               HT_Ops.Delete_Node_Sans_Free (Target.HT, X);
-               Free (X);
-            end;
-
-         else
-            Tgt_Node := HT_Ops.Next (Target.HT, Tgt_Node);
-         end if;
-      end loop;
+            end if;
+         end loop;
+      end if;
    end Difference;
 
    function Difference (Left, Right : Set) return Set is
@@ -757,15 +782,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
            "attempt to tamper with elements (set is busy)";
       end if;
 
-      --  TODO: optimize this to use an explicit
-      --  loop instead of an active iterator
-      --  (similar to how a passive iterator is
-      --  implemented).
-      --
-      --  Another possibility is to test which
-      --  set is smaller, and iterate over the
-      --  smaller set.
-
       Tgt_Node := HT_Ops.First (Target.HT);
       while Tgt_Node /= null loop
          if Is_In (Source.HT, Tgt_Node) then
@@ -890,9 +906,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          return False;
       end if;
 
-      --  TODO: rewrite this to loop in the
-      --  style of a passive iterator.
-
       Subset_Node := HT_Ops.First (Subset.HT);
       while Subset_Node /= null loop
          if not Is_In (Of_Set.HT, Subset_Node) then
@@ -928,15 +941,22 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Process (Cursor'(Container'Unrestricted_Access, Node));
       end Process_Node;
 
-      HT : Hash_Table_Type renames Container'Unrestricted_Access.all.HT;
+      B : Natural renames Container'Unrestricted_Access.HT.Busy;
 
    --  Start of processing for Iterate
 
    begin
-      --  TODO: resolve whether HT_Ops.Generic_Iteration should
-      --  manipulate busy bit.
+      B := B + 1;
 
-      Iterate (HT);
+      begin
+         Iterate (Container.HT);
+      exception
+         when others =>
+            B := B - 1;
+            raise;
+      end;
+
+      B := B - 1;
    end Iterate;
 
    ------------
@@ -1140,117 +1160,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    ---------------------
    -- Replace_Element --
    ---------------------
-
-   procedure Replace_Element
-     (HT       : in out Hash_Table_Type;
-      Node     : Node_Access;
-      New_Item : Element_Type)
-   is
-   begin
-      if Equivalent_Elements (Node.Element.all, New_Item) then
-         pragma Assert (Hash (Node.Element.all) = Hash (New_Item));
-
-         if HT.Lock > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors (set is locked)";
-         end if;
-
-         declare
-            X : Element_Access := Node.Element;
-         begin
-            Node.Element := new Element_Type'(New_Item);  --  OK if fails
-            Free_Element (X);
-         end;
-
-         return;
-      end if;
-
-      if HT.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (set is busy)";
-      end if;
-
-      HT_Ops.Delete_Node_Sans_Free (HT, Node);
-
-      Insert_New_Element : declare
-         function New_Node (Next : Node_Access) return Node_Access;
-         pragma Inline (New_Node);
-
-         procedure Insert is
-            new Element_Keys.Generic_Conditional_Insert (New_Node);
-
-         ------------------------
-         -- Insert_New_Element --
-         ------------------------
-
-         function New_Node (Next : Node_Access) return Node_Access is
-         begin
-            Node.Element := new Element_Type'(New_Item);  -- OK if fails
-            Node.Next := Next;
-            return Node;
-         end New_Node;
-
-         Result   : Node_Access;
-         Inserted : Boolean;
-
-         X : Element_Access := Node.Element;
-
-      --  Start of processing for Insert_New_Element
-
-      begin
-         Attempt_Insert : begin
-            Insert
-              (HT       => HT,
-               Key      => New_Item,
-               Node     => Result,
-               Inserted => Inserted);
-         exception
-            when others =>
-               Inserted := False;  -- Assignment failed
-         end Attempt_Insert;
-
-         if Inserted then
-            Free_Element (X);  -- Just propagate if fails
-            return;
-         end if;
-      end Insert_New_Element;
-
-      Reinsert_Old_Element :
-      declare
-         function New_Node (Next : Node_Access) return Node_Access;
-         pragma Inline (New_Node);
-
-         procedure Insert is
-            new Element_Keys.Generic_Conditional_Insert (New_Node);
-
-         --------------
-         -- New_Node --
-         --------------
-
-         function New_Node (Next : Node_Access) return Node_Access is
-         begin
-            Node.Next := Next;
-            return Node;
-         end New_Node;
-
-         Result   : Node_Access;
-         Inserted : Boolean;
-
-      --  Start of processing for Reinsert_Old_Element
-
-      begin
-         Insert
-           (HT       => HT,
-            Key      => Node.Element.all,
-            Node     => Result,
-            Inserted => Inserted);
-      exception
-         when others =>
-            null;
-      end Reinsert_Old_Element;
-
-      raise Program_Error with "attempt to replace existing element";
-   end Replace_Element;
 
    procedure Replace_Element
      (Container : in out Set;

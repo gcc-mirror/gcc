@@ -7,11 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -131,23 +127,21 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
       Indx : constant Hash_Type := Index (HT, Key);
       B    : Node_Access renames HT.Buckets (Indx);
 
-      subtype Length_Subtype is Count_Type range 0 .. Count_Type'Last - 1;
-
    begin
       if B = null then
          if HT.Busy > 0 then
             raise Program_Error;
          end if;
 
-         declare
-            Length : constant Length_Subtype := HT.Length;
-         begin
-            Node := New_Node (Next => null);
-            Inserted := True;
+         if HT.Length = Count_Type'Last then
+            raise Constraint_Error;
+         end if;
 
-            B := Node;
-            HT.Length := Length + 1;
-         end;
+         Node := New_Node (Next => null);
+         Inserted := True;
+
+         B := Node;
+         HT.Length := HT.Length + 1;
 
          return;
       end if;
@@ -168,15 +162,15 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          raise Program_Error;
       end if;
 
-      declare
-         Length : constant Length_Subtype := HT.Length;
-      begin
-         Node := New_Node (Next => B);
-         Inserted := True;
+      if HT.Length = Count_Type'Last then
+         raise Constraint_Error;
+      end if;
 
-         B := Node;
-         HT.Length := Length + 1;
-      end;
+      Node := New_Node (Next => B);
+      Inserted := True;
+
+      B := Node;
+      HT.Length := HT.Length + 1;
    end Generic_Conditional_Insert;
 
    -----------
@@ -189,5 +183,92 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
    begin
       return Hash (Key) mod HT.Buckets'Length;
    end Index;
+
+   ---------------------
+   -- Replace_Element --
+   ---------------------
+
+   procedure Generic_Replace_Element
+     (HT   : in out Hash_Table_Type;
+      Node : Node_Access;
+      Key  : Key_Type)
+   is
+   begin
+      pragma Assert (HT.Length > 0);
+
+      if Equivalent_Keys (Key, Node) then
+         pragma Assert (Hash (Key) = Hash (Node));
+
+         if HT.Lock > 0 then
+            raise Program_Error with
+              "attempt to tamper with cursors (container is locked)";
+         end if;
+
+         Assign (Node, Key);
+         return;
+      end if;
+
+      declare
+         J : Hash_Type;
+         K : constant Hash_Type := Index (HT, Key);
+         B : Node_Access renames HT.Buckets (K);
+         N : Node_Access := B;
+         M : Node_Access;
+
+      begin
+         while N /= null loop
+            if Equivalent_Keys (Key, N) then
+               raise Program_Error with
+                 "attempt to replace existing element";
+            end if;
+
+            N := Next (N);
+         end loop;
+
+         J := Hash (Node);
+
+         if J = K then
+            if HT.Lock > 0 then
+               raise Program_Error with
+                 "attempt to tamper with cursors (container is locked)";
+            end if;
+
+            Assign (Node, Key);
+            return;
+         end if;
+
+         if HT.Busy > 0 then
+            raise Program_Error with
+              "attempt to tamper with elements (container is busy)";
+         end if;
+
+         Assign (Node, Key);
+
+         N := HT.Buckets (J);
+         pragma Assert (N /= null);
+
+         if N = Node then
+            HT.Buckets (J) := Next (Node);
+
+         else
+            pragma Assert (HT.Length > 1);
+
+            loop
+               M := Next (N);
+               pragma Assert (M /= null);
+
+               if M = Node then
+                  Set_Next (Node => N, Next => Next (Node));
+                  exit;
+               end if;
+
+               N := M;
+            end loop;
+         end if;
+
+         Set_Next (Node => Node, Next => B);
+         B := Node;
+      end;
+   end Generic_Replace_Element;
 
 end Ada.Containers.Hash_Tables.Generic_Keys;

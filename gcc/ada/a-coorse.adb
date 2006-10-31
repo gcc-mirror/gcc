@@ -6,11 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1375,11 +1371,49 @@ package body Ada.Containers.Ordered_Sets is
       Node : Node_Access;
       Item : Element_Type)
    is
+      pragma Assert (Node /= null);
+
+      function New_Node return Node_Access;
+      pragma Inline (New_Node);
+
+      procedure Local_Insert_Post is
+         new Element_Keys.Generic_Insert_Post (New_Node);
+
+      procedure Local_Insert_Sans_Hint is
+         new Element_Keys.Generic_Conditional_Insert (Local_Insert_Post);
+
+      procedure Local_Insert_With_Hint is
+         new Element_Keys.Generic_Conditional_Insert_With_Hint
+        (Local_Insert_Post,
+         Local_Insert_Sans_Hint);
+
+      --------------
+      -- New_Node --
+      --------------
+
+      function New_Node return Node_Access is
+      begin
+         Node.Element := Item;
+         Node.Color := Red;
+         Node.Parent := null;
+         Node.Right := null;
+         Node.Left := null;
+
+         return Node;
+      end New_Node;
+
+      Hint      : Node_Access;
+      Result    : Node_Access;
+      Inserted  : Boolean;
+
+      --  Start of processing for Insert
+
    begin
       if Item < Node.Element
         or else Node.Element < Item
       then
          null;
+
       else
          if Tree.Lock > 0 then
             raise Program_Error with
@@ -1390,95 +1424,38 @@ package body Ada.Containers.Ordered_Sets is
          return;
       end if;
 
-      Tree_Operations.Delete_Node_Sans_Free (Tree, Node);  -- Checks busy-bit
+      Hint := Element_Keys.Ceiling (Tree, Item);
 
-      Insert_New_Item : declare
-         function New_Node return Node_Access;
-         pragma Inline (New_Node);
+      if Hint = null then
+         null;
 
-         procedure Insert_Post is
-            new Element_Keys.Generic_Insert_Post (New_Node);
+      elsif Item < Hint.Element then
+         if Hint = Node then
+            if Tree.Lock > 0 then
+               raise Program_Error with
+                 "attempt to tamper with cursors (set is locked)";
+            end if;
 
-         procedure Insert is
-            new Element_Keys.Generic_Conditional_Insert (Insert_Post);
-
-         --------------
-         -- New_Node --
-         --------------
-
-         function New_Node return Node_Access is
-         begin
             Node.Element := Item;
-            Node.Color := Red;
-            Node.Parent := null;
-            Node.Right := null;
-            Node.Left := null;
-
-            return Node;
-         end New_Node;
-
-         Result   : Node_Access;
-         Inserted : Boolean;
-
-      --  Start of processing for Insert_New_Item
-
-      begin
-         Insert
-           (Tree    => Tree,
-            Key     => Item,
-            Node    => Result,
-            Success => Inserted);  --  TODO: change param name
-
-         if Inserted then
-            pragma Assert (Result = Node);
             return;
          end if;
-      exception
-         when others =>
-            null;  -- Assignment must have failed
-      end Insert_New_Item;
 
-      Reinsert_Old_Element : declare
-         function New_Node return Node_Access;
-         pragma Inline (New_Node);
+      else
+         pragma Assert (not (Hint.Element < Item));
+         raise Program_Error with "attempt to replace existing element";
+      end if;
 
-         procedure Insert_Post is
-            new Element_Keys.Generic_Insert_Post (New_Node);
+      Tree_Operations.Delete_Node_Sans_Free (Tree, Node);  -- Checks busy-bit
 
-         procedure Insert is
-            new Element_Keys.Generic_Conditional_Insert (Insert_Post);
+      Local_Insert_With_Hint
+        (Tree     => Tree,
+         Position => Hint,
+         Key      => Item,
+         Node     => Result,
+         Inserted => Inserted);
 
-         --------------
-         -- New_Node --
-         --------------
-
-         function New_Node return Node_Access is
-         begin
-            Node.Color := Red;
-            Node.Parent := null;
-            Node.Right := null;
-            Node.Left := null;
-
-            return Node;
-         end New_Node;
-
-         Result   : Node_Access;
-         Inserted : Boolean;
-
-      --  Start of processing for Reinsert_Old_Element
-
-      begin
-         Insert
-           (Tree    => Tree,
-            Key     => Node.Element,
-            Node    => Result,
-            Success => Inserted);  --  TODO: change param name
-      exception
-         when others =>
-            null;  -- Assignment must have failed
-      end Reinsert_Old_Element;
-
-      raise Program_Error with "attempt to replace existing element";
+      pragma Assert (Inserted);
+      pragma Assert (Result = Node);
    end Replace_Element;
 
    procedure Replace_Element

@@ -8,10 +8,6 @@
 --                                                                          --
 --          Copyright (C) 2004-2006 Free Software Foundation, Inc.          --
 --                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
---                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 2,  or (at your option) any later ver- --
@@ -799,34 +795,6 @@ package body Ada.Containers.Vectors is
 
       begin
          if Old_Last_As_Int > Int'Last - N then
-
-            --  ???
-
-            --  The purpose of this test is to ensure that the calculation of
-            --  New_Last_As_Int (see below) doesn't overflow.
-
-            --  This isn't quite right, since the only requirements are:
-            --    V.Last <= Index_Type'Last
-            --    V.Length <= Count_Type'Last
-
-            --  To be strictly correct there's no (explicit) requirement that
-            --    Old_Last + N <= Int'Last
-
-            --  However, there might indeed be an implied requirement, since
-            --  machine constraints dictate that
-            --    Index_Type'Last <= Int'Last
-            --  and so this check is perhaps proper after all.
-
-            --  This shouldn't be an issue in practice, since it can only
-            --  happen when N is very large, or V.Last is near Int'Last.
-
-            --  N isn't likely to be large, since there's probably not enough
-            --  storage.
-
-            --  V.Last would only be large if IT'First is very large (and
-            --  V.Length has some "normal" size).  But typically IT'First is
-            --  either 0 or 1.
-
             raise Constraint_Error with "new length is out of range";
          end if;
 
@@ -1282,7 +1250,7 @@ package body Ada.Containers.Vectors is
          Old_Last_As_Int : constant Int := Int (Container.Last);
 
       begin
-         if Old_Last_As_Int > Int'Last - N then  -- see Insert ???
+         if Old_Last_As_Int > Int'Last - N then
             raise Constraint_Error with "new length is out of range";
          end if;
 

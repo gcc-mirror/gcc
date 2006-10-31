@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -67,15 +67,22 @@ package Ada.Containers.Hash_Tables.Generic_Keys is
       Key  : Key_Type;
       X    : out Node_Access);
 
-   function Find (HT  : Hash_Table_Type; Key : Key_Type) return Node_Access;
+   function Find (HT : Hash_Table_Type; Key : Key_Type) return Node_Access;
 
    generic
-      with function New_Node
-        (Next : Node_Access) return Node_Access;
+      with function New_Node (Next : Node_Access) return Node_Access;
    procedure Generic_Conditional_Insert
      (HT       : in out Hash_Table_Type;
       Key      : Key_Type;
       Node     : out Node_Access;
       Inserted : out Boolean);
+
+   generic
+      with function Hash (Node : Node_Access) return Hash_Type;
+      with procedure Assign (Node : Node_Access; Key : Key_Type);
+   procedure Generic_Replace_Element
+     (HT   : in out Hash_Table_Type;
+      Node : Node_Access;
+      Key  : Key_Type);
 
 end Ada.Containers.Hash_Tables.Generic_Keys;
