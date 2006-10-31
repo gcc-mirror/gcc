@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,11 +120,11 @@ package Sem_Elab is
    --  corresponding bodies.
 
    procedure Check_Elab_Call (N : Node_Id; Outer_Scope : Entity_Id := Empty);
-   --  Check a call for possible elaboration problems. N is either an
-   --  N_Function_Call or N_Procedure_Call_Statement node, and Outer
-   --  indicates whether this is an outer level call from Sem_Res
-   --  (Outer_Scope set to Empty), or an internal recursive call
-   --  (Outer_Scope set to entity of outermost call, see body).
+   --  Check a call for possible elaboration problems. The node N is either
+   --  an N_Function_Call or N_Procedure_Call_Statement node. The Outer_Scope
+   --  argument indicates whether this is an outer level call from Sem_Res
+   --  (Outer_Scope set to Empty), or an internal recursive call (Outer_Scope
+   --  set to entity of outermost call, see body).
 
    procedure Check_Elab_Calls;
    --  Not all the processing for Check_Elab_Call can be done at the time
@@ -132,6 +132,12 @@ package Sem_Elab is
    --  need to wait to complete the check until all generic bodies have been
    --  instantiated. The Check_Elab_Calls procedure cleans up these waiting
    --  checks. It is called once after the completion of instantiation.
+
+   procedure Check_Elab_Assign (N : Node_Id);
+   --  N is either the left side of an assignment, or a procedure argument for
+   --  a mode OUT or IN OUT formal. This procedure checks for a possible case
+   --  of access to an entity from elaboration code before the entity has been
+   --  initialized, and issues appropriate warnings.
 
    procedure Check_Elab_Instantiation
      (N           : Node_Id;
