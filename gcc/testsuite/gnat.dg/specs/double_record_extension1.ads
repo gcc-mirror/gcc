@@ -1,3 +1,5 @@
+-- { dg-do compile } 
+
 package double_record_extension1 is
 
    type T1(n: natural) is tagged record
