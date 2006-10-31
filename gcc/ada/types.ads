@@ -106,10 +106,11 @@ package Types is
 
    subtype Line_Terminator is Character range ASCII.LF .. ASCII.CR;
    --  Line terminator characters (LF, VT, FF, CR)
+   --
    --  This definition is dubious now that we have two more wide character
    --  sequences that constitute a line terminator. Every reference to
    --  this subtype needs checking to make sure the wide character case
-   --  is handled appropriately.
+   --  is handled appropriately. ???
 
    subtype Upper_Half_Character is
      Character range Character'Val (16#80#) .. Character'Val (16#FF#);
@@ -206,7 +207,7 @@ package Types is
 
    No_Location : constant Source_Ptr := -1;
    --  Value used to indicate no source position set in a node. A test for
-   --  a Source_Ptr value being >= No_Location is the apporoved way to test
+   --  a Source_Ptr value being > No_Location is the approved way to test
    --  for a standard value that does not include No_Location or any of the
    --  following special definitions.
 
@@ -683,9 +684,10 @@ package Types is
    -- Types used for Pragma Suppress Management --
    -----------------------------------------------
 
-   type Check_Id is (
-      Access_Check,
+   type Check_Id is
+     (Access_Check,
       Accessibility_Check,
+      Alignment_Check,
       Discriminant_Check,
       Division_Check,
       Elaboration_Check,
@@ -695,6 +697,7 @@ package Types is
       Range_Check,
       Storage_Check,
       Tag_Check,
+      Validity_Check,
       All_Checks);
 
    --  The following array contains an entry for each recognized check name
@@ -804,23 +807,23 @@ package Types is
       PE_Access_Before_Elaboration,      -- 14
       PE_Accessibility_Check_Failed,     -- 15
       PE_All_Guards_Closed,              -- 16
-      PE_Duplicated_Entry_Address,       -- 17
-      PE_Explicit_Raise,                 -- 18
-      PE_Finalize_Raised_Exception,      -- 19
-      PE_Implicit_Return,                -- 20
-      PE_Misaligned_Address_Value,       -- 21
-      PE_Missing_Return,                 -- 22
-      PE_Overlaid_Controlled_Object,     -- 23
-      PE_Potentially_Blocking_Operation, -- 24
-      PE_Stubbed_Subprogram_Called,      -- 25
-      PE_Unchecked_Union_Restriction,    -- 26
-      PE_Illegal_RACW_E_4_18,            -- 27
+      PE_Current_Task_In_Entry_Body,     -- 17
+      PE_Duplicated_Entry_Address,       -- 18
+      PE_Explicit_Raise,                 -- 19
+      PE_Finalize_Raised_Exception,      -- 20
+      PE_Implicit_Return,                -- 21
+      PE_Misaligned_Address_Value,       -- 22
+      PE_Missing_Return,                 -- 23
+      PE_Overlaid_Controlled_Object,     -- 24
+      PE_Potentially_Blocking_Operation, -- 25
+      PE_Stubbed_Subprogram_Called,      -- 26
+      PE_Unchecked_Union_Restriction,    -- 27
+      PE_Illegal_RACW_E_4_18,            -- 28
 
-      SE_Empty_Storage_Pool,             -- 28
-      SE_Explicit_Raise,                 -- 29
-      SE_Infinite_Recursion,             -- 30
-      SE_Object_Too_Large,               -- 31
-      SE_Restriction_Violation);         -- 32
+      SE_Empty_Storage_Pool,             -- 29
+      SE_Explicit_Raise,                 -- 30
+      SE_Infinite_Recursion,             -- 31
+      SE_Object_Too_Large);              -- 32
 
    subtype RT_CE_Exceptions is RT_Exception_Code range
      CE_Access_Check_Failed ..
@@ -832,6 +835,6 @@ package Types is
 
    subtype RT_SE_Exceptions is RT_Exception_Code range
      SE_Empty_Storage_Pool ..
-     SE_Restriction_Violation;
+     SE_Object_Too_Large;
 
 end Types;
