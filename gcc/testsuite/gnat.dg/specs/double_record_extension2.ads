@@ -1,3 +1,5 @@
+-- { dg-do compile } 
+
 package double_record_extension2 is
 
   type Base_Message_Type (Num_Bytes : Positive) is tagged record
