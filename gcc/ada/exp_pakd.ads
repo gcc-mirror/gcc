@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -201,10 +201,8 @@ package Exp_Pakd is
 
    --       1-2-...-7-8  9-10-...15-16  17-18-19-20-x-x-x-x  x-x-x-x-x-x-x-x
 
-   --   and now, we do indeed have the same representation. The special flag
-   --   Is_Left_Justified_Modular is set in the modular type used as the
-   --   packed array type in the big-endian case to ensure that this required
-   --   left justification occurs.
+   --   and now, we do indeed have the same representation for the memory
+   --   version in the constrained and unconstrained cases.
 
    -----------------
    -- Subprograms --

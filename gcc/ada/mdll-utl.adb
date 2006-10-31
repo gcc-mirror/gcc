@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -250,7 +250,7 @@ package body MDLL.Utl is
       if not Success then
          declare
             Base_Name : constant String :=
-              Directory_Operations.Base_Name (Alis (1).all, ".ali");
+              Directory_Operations.Base_Name (Alis (Alis'First).all, ".ali");
          begin
             OS_Lib.Delete_File ("b~" & Base_Name & ".ads", Success);
             OS_Lib.Delete_File ("b~" & Base_Name & ".adb", Success);

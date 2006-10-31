@@ -61,7 +61,6 @@ package body Ada.Text_IO.Enumeration_IO is
 
    procedure Get (Item : out Enum) is
       pragma Unsuppress (Range_Check);
-
    begin
       Get (Current_In, Item);
    end Get;
@@ -98,7 +97,6 @@ package body Ada.Text_IO.Enumeration_IO is
       Set   : Type_Set := Default_Setting)
    is
       Image : constant String := Enum'Image (Item);
-
    begin
       Aux.Put (File, Image, Width, Set);
    end Put;
@@ -118,7 +116,6 @@ package body Ada.Text_IO.Enumeration_IO is
       Set  : Type_Set := Default_Setting)
    is
       Image : constant String := Enum'Image (Item);
-
    begin
       Aux.Puts (To, Image, Set);
    end Put;

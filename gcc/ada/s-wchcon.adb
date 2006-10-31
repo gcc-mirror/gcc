@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2005, Free Software Foundation, Inc.            --
+--          Copyright (C) 2005-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,19 @@ package body System.WCh_Con is
       end loop;
 
       raise Constraint_Error;
+   end Get_WC_Encoding_Method;
+
+   function Get_WC_Encoding_Method (S : String) return WC_Encoding_Method is
+   begin
+      if    S = "hex"       then return WCEM_Hex;
+      elsif S = "upper"     then return WCEM_Upper;
+      elsif S = "shift_jis" then return WCEM_Shift_JIS;
+      elsif S = "euc"       then return WCEM_EUC;
+      elsif S = "utf8"      then return WCEM_UTF8;
+      elsif S = "brackets"  then return WCEM_Brackets;
+      else
+         raise Constraint_Error;
+      end if;
    end Get_WC_Encoding_Method;
 
 end System.WCh_Con;

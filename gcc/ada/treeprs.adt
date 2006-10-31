@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,9 +47,9 @@ package Treeprs is
    --  by the synonym name. The starting location for a given node type is
    --  found from the corresponding entry in the Pchars_Pos_Array.
 
-   --  The following characters identify the field. These are characters
-   --  which  could never occur in a field name, so they also mark the
-   --  end of the previous name.
+   --  The following characters identify the field. These are characters which
+   --  could never occur in a field name, so they also mark the end of the
+   --  previous name.
 
    subtype Fchar is Character range '#' .. '9';
 
@@ -79,9 +79,9 @@ package Treeprs is
 
    --  Note this table does not include entity field and flags whose access
    --  functions are in Einfo (these are handled by the Print_Entity_Info
-   --  procedure in Treepr, which uses the routines in Einfo to get the
-   --  proper symbolic information). In addition, the following fields are
-   --  handled by Treepr, and do not appear in the Pchars array:
+   --  procedure in Treepr, which uses the routines in Einfo to get the proper
+   --  symbolic information). In addition, the following fields are handled by
+   --  Treepr, and do not appear in the Pchars array:
 
    --    Analyzed
    --    Cannot_Be_Constant

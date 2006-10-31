@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -238,6 +238,21 @@ package body Exp_Tss is
       return Make_TSS_Name (Typ, TSS_Init_Proc);
    end Make_Init_Proc_Name;
 
+   -------------------
+   -- Make_TSS_Name --
+   -------------------
+
+   function Make_TSS_Name
+     (Typ : Entity_Id;
+      Nam : TSS_Name_Type) return Name_Id
+   is
+   begin
+      Get_Name_String (Chars (Typ));
+      Add_Char_To_Name_Buffer (Nam (1));
+      Add_Char_To_Name_Buffer (Nam (2));
+      return Name_Find;
+   end Make_TSS_Name;
+
    -------------------------
    -- Make_TSS_Name_Local --
    -------------------------
@@ -254,21 +269,6 @@ package body Exp_Tss is
       Add_Char_To_Name_Buffer (Nam (2));
       return Name_Find;
    end Make_TSS_Name_Local;
-
-   -------------------
-   -- Make_TSS_Name --
-   -------------------
-
-   function Make_TSS_Name
-     (Typ : Entity_Id;
-      Nam : TSS_Name_Type) return Name_Id
-   is
-   begin
-      Get_Name_String (Chars (Typ));
-      Add_Char_To_Name_Buffer (Nam (1));
-      Add_Char_To_Name_Buffer (Nam (2));
-      return Name_Find;
-   end Make_TSS_Name;
 
    --------------
    -- Same_TSS --

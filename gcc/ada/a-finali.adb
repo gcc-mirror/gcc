@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,7 +50,6 @@ package body Ada.Finalization is
 
    procedure Adjust (Object : in out Controlled) is
       pragma Warnings (Off, Object);
-
    begin
       null;
    end Adjust;
@@ -61,14 +60,12 @@ package body Ada.Finalization is
 
    procedure Finalize (Object : in out Controlled) is
       pragma Warnings (Off, Object);
-
    begin
       null;
    end Finalize;
 
    procedure Finalize (Object : in out Limited_Controlled) is
       pragma Warnings (Off, Object);
-
    begin
       null;
    end Finalize;
@@ -79,14 +76,12 @@ package body Ada.Finalization is
 
    procedure Initialize (Object : in out Controlled) is
       pragma Warnings (Off, Object);
-
    begin
       null;
    end Initialize;
 
    procedure Initialize (Object : in out Limited_Controlled) is
       pragma Warnings (Off, Object);
-
    begin
       null;
    end Initialize;

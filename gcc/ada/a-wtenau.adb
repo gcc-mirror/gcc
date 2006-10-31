@@ -159,7 +159,7 @@ package body Ada.Wide_Text_IO.Enumeration_Aux is
    begin
       Check_On_One_Line (TFT (File), Actual_Width);
 
-      if Set = Lower_Case and then Item (1) /= ''' then
+      if Set = Lower_Case and then Item (Item'First) /= ''' then
          declare
             Iteml : Wide_String (Item'First .. Item'Last);
 
@@ -204,7 +204,7 @@ package body Ada.Wide_Text_IO.Enumeration_Aux is
          Ptr := To'First;
          for J in Item'Range loop
             if Set = Lower_Case
-              and then Item (1) /= '''
+              and then Item (Item'First) /= '''
               and then Is_Character (Item (J))
             then
                To (Ptr) :=

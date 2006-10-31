@@ -61,6 +61,10 @@ Wmissing-format-attribute
 Ada
 ; Documented for C
 
+Woverlength-strings
+Ada
+; Documented for C
+
 nostdinc
 Ada RejectNegative
 ; Don't look for source files

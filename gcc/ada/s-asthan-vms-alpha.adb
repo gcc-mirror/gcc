@@ -517,7 +517,7 @@ package body System.AST_Handling is
    ----------------------------
 
    procedure Expand_AST_Packet_Pool
-     (Requested_Packets : in Natural;
+     (Requested_Packets : Natural;
       Actual_Number     : out Natural;
       Total_Number      : out Natural)
    is

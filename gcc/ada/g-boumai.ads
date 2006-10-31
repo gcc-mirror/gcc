@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2003-2005, AdaCore                     --
+--                     Copyright (C) 2003-2006, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,7 +71,7 @@ package GNAT.Bounded_Mailboxes is
 
    --  Protected type Mailbox has the following inherited interface:
 
-   --  entry Insert (Item : in Message_Reference);
+   --  entry Insert (Item : Message_Reference);
    --     Insert Item into the Mailbox. Blocks caller
    --     until space is available.
 

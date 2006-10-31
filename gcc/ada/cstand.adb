@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -628,7 +628,7 @@ package body CStand is
       Set_Is_Character_Type          (Standard_Wide_Wide_Character);
       Set_Is_Known_Valid             (Standard_Wide_Wide_Character);
       Set_Size_Known_At_Compile_Time (Standard_Wide_Wide_Character);
-      Set_Is_Ada_2005                (Standard_Wide_Wide_Character);
+      Set_Is_Ada_2005_Only           (Standard_Wide_Wide_Character);
 
       --  Create the bounds for type Wide_Wide_Character
 
@@ -743,14 +743,14 @@ package body CStand is
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_Wide_Wide_String), Tdef_Node);
 
-      Set_Ekind          (Standard_Wide_Wide_String, E_String_Type);
-      Set_Etype          (Standard_Wide_Wide_String,
-                          Standard_Wide_Wide_String);
-      Set_Component_Type (Standard_Wide_Wide_String,
-                          Standard_Wide_Wide_Character);
-      Set_Component_Size (Standard_Wide_Wide_String, Uint_32);
-      Init_Size_Align    (Standard_Wide_Wide_String);
-      Set_Is_Ada_2005    (Standard_Wide_Wide_String);
+      Set_Ekind            (Standard_Wide_Wide_String, E_String_Type);
+      Set_Etype            (Standard_Wide_Wide_String,
+                            Standard_Wide_Wide_String);
+      Set_Component_Type   (Standard_Wide_Wide_String,
+                            Standard_Wide_Wide_Character);
+      Set_Component_Size   (Standard_Wide_Wide_String, Uint_32);
+      Init_Size_Align      (Standard_Wide_Wide_String);
+      Set_Is_Ada_2005_Only (Standard_Wide_Wide_String);
 
       --  Set index type of Wide_Wide_String
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,12 +30,6 @@ with Targparm; use Targparm;
 
 package body Osint.B is
 
-   Binder_Output_Time_Stamps_Set : Boolean := False;
-
-   Old_Binder_Output_Time_Stamp  : Time_Stamp_Type;
-   New_Binder_Output_Time_Stamp  : Time_Stamp_Type;
-   Recording_Time_From_Last_Bind : Boolean := False;
-
    -------------------------
    -- Close_Binder_Output --
    -------------------------
@@ -51,10 +45,6 @@ package body Osint.B is
             Get_Name_String (Output_File_Name));
       end if;
 
-      if Recording_Time_From_Last_Bind then
-         New_Binder_Output_Time_Stamp  := File_Stamp (Output_File_Name);
-         Binder_Output_Time_Stamps_Set := True;
-      end if;
    end Close_Binder_Output;
 
    --------------------------
@@ -164,10 +154,6 @@ package body Osint.B is
 
       Bfile := Name_Find;
 
-      if Recording_Time_From_Last_Bind then
-         Old_Binder_Output_Time_Stamp := File_Stamp (Bfile);
-      end if;
-
       Create_File_And_Check (Output_FD, Text);
    end Create_Binder_Output;
 
@@ -182,80 +168,6 @@ package body Osint.B is
    ------------------------
 
    function Next_Main_Lib_File return File_Name_Type renames Next_Main_File;
-
-   --------------------------------
-   -- Record_Time_From_Last_Bind --
-   --------------------------------
-
-   procedure Record_Time_From_Last_Bind is
-   begin
-      Recording_Time_From_Last_Bind := True;
-   end Record_Time_From_Last_Bind;
-
-   -------------------------
-   -- Time_From_Last_Bind --
-   -------------------------
-
-   function Time_From_Last_Bind return Nat is
-      Old_Y  : Nat;
-      Old_M  : Nat;
-      Old_D  : Nat;
-      Old_H  : Nat;
-      Old_Mi : Nat;
-      Old_S  : Nat;
-      New_Y  : Nat;
-      New_M  : Nat;
-      New_D  : Nat;
-      New_H  : Nat;
-      New_Mi : Nat;
-      New_S  : Nat;
-
-      type Month_Data is array (Int range 1 .. 12) of Int;
-      Cumul : constant Month_Data := (0, 0, 3, 3, 4, 4, 5, 5, 5, 6, 6, 7);
-      --  Represents the difference in days from a period compared to the
-      --  same period if all months had 31 days, i.e:
-      --
-      --    Cumul (m) = 31x(m-1) - (number of days from 01/01 to m/01)
-
-      Res : Int;
-
-   begin
-      if not Recording_Time_From_Last_Bind
-        or else not Binder_Output_Time_Stamps_Set
-        or else Old_Binder_Output_Time_Stamp = Empty_Time_Stamp
-      then
-         return Nat'Last;
-      end if;
-
-      Split_Time_Stamp
-       (Old_Binder_Output_Time_Stamp,
-        Old_Y, Old_M, Old_D, Old_H, Old_Mi, Old_S);
-
-      Split_Time_Stamp
-       (New_Binder_Output_Time_Stamp,
-        New_Y, New_M, New_D, New_H, New_Mi, New_S);
-
-      Res := New_Mi - Old_Mi;
-
-      --  60 minutes in an hour
-
-      Res := Res + 60 * (New_H  - Old_H);
-
-      --  24 hours in a day
-
-      Res := Res + 60 * 24 * (New_D  - Old_D);
-
-      --  Almost 31 days in a month
-
-      Res := Res + 60 * 24 *
-        (31 * (New_M - Old_M) - Cumul (New_M) + Cumul (Old_M));
-
-      --  365 days in a year
-
-      Res := Res + 60 * 24 * 365 * (New_Y - Old_Y);
-
-      return Res;
-   end Time_From_Last_Bind;
 
    -----------------------
    -- Write_Binder_Info --

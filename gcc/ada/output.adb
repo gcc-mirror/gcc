@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,6 +58,15 @@ package body Output is
       Special_Output_Proc := null;
    end Cancel_Special_Output;
 
+   ------------
+   -- Column --
+   ------------
+
+   function Column return Pos is
+   begin
+      return Pos (Next_Col);
+   end Column;
+
    ------------------
    -- Flush_Buffer --
    ------------------
@@ -99,15 +108,6 @@ package body Output is
          Next_Col := 1;
       end if;
    end Flush_Buffer;
-
-   ------------
-   -- Column --
-   ------------
-
-   function Column return Pos is
-   begin
-      return Pos (Next_Col);
-   end Column;
 
    ---------------------------
    -- Restore_Output_Buffer --
@@ -240,8 +240,12 @@ package body Output is
          Write_Eol;
       end if;
 
-      Buffer (Next_Col) := C;
-      Next_Col := Next_Col + 1;
+      if C = ASCII.LF then
+         Write_Eol;
+      else
+         Buffer (Next_Col) := C;
+         Next_Col := Next_Col + 1;
+      end if;
    end Write_Char;
 
    ---------------
@@ -294,6 +298,17 @@ package body Output is
       Write_Str (S);
       Write_Eol;
    end Write_Line;
+
+   ------------------
+   -- Write_Spaces --
+   ------------------
+
+   procedure Write_Spaces (N : Nat) is
+   begin
+      for J in 1 .. N loop
+         Write_Char (' ');
+      end loop;
+   end Write_Spaces;
 
    ---------------
    -- Write_Str --

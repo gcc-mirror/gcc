@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,7 +110,7 @@ package Prj.Attr is
    --  The type to refers to an attribute, self-initialized
 
    Empty_Attribute : constant Attribute_Node_Id;
-   --  Indicates no attribute. Default value of Attribute_Node_Id objects.
+   --  Indicates no attribute. Default value of Attribute_Node_Id objects
 
    Attribute_First : constant Attribute_Node_Id;
    --  First attribute node id of project level attributes
@@ -205,7 +205,7 @@ private
    ----------------
 
    Attributes_Initial   : constant := 50;
-   Attributes_Increment : constant := 50;
+   Attributes_Increment : constant := 100;
 
    Attribute_Node_Low_Bound  : constant := 0;
    Attribute_Node_High_Bound : constant := 099_999_999;
@@ -235,7 +235,7 @@ private
    --------------
 
    Packages_Initial   : constant := 10;
-   Packages_Increment : constant := 50;
+   Packages_Increment : constant := 100;
 
    Package_Node_Low_Bound  : constant := 0;
    Package_Node_High_Bound : constant := 099_999_999;

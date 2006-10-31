@@ -128,7 +128,7 @@ package body Ada.Text_IO.Enumeration_Aux is
       Actual_Width : constant Count := Count'Max (Count (Width), Item'Length);
 
    begin
-      if Set = Lower_Case and then Item (1) /= ''' then
+      if Set = Lower_Case and then Item (Item'First) /= ''' then
          declare
             Iteml : String (Item'First .. Item'Last);
 
@@ -167,7 +167,7 @@ package body Ada.Text_IO.Enumeration_Aux is
       else
          Ptr := To'First;
          for J in Item'Range loop
-            if Set = Lower_Case and then Item (1) /= ''' then
+            if Set = Lower_Case and then Item (Item'First) /= ''' then
                To (Ptr) := To_Lower (Item (J));
             else
                To (Ptr) := Item (J);

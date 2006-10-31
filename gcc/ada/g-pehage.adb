@@ -1970,6 +1970,7 @@ package body GNAT.Perfect_Hash_Generators is
       --  position selection plus Pos. Once this routine is called, reduced
       --  words are sorted by subsets and each item (First, Last) in Sets
       --  defines the range of identical keys.
+      --  Need comment saying exactly what Last is ???
 
       function Count_Different_Keys
         (Table : Vertex_Table_Type;
@@ -1991,9 +1992,9 @@ package body GNAT.Perfect_Hash_Generators is
          Last  : in out Natural;
          Pos   : Natural)
       is
-         S : constant Vertex_Table_Type := Table (1 .. Last);
+         S : constant Vertex_Table_Type := Table (Table'First .. Last);
          C : constant Natural           := Pos;
-         --  Shortcuts
+         --  Shortcuts (why are these not renames ???)
 
          F : Integer;
          L : Integer;

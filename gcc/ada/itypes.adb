@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,14 +93,14 @@ package body Itypes is
       Set_Etype                    (I_Typ, T);
       Init_Size_Align              (I_Typ);
       Set_Depends_On_Private       (I_Typ, Depends_On_Private (T));
-      Set_Is_Public                (I_Typ, Is_Public (T));
-      Set_From_With_Type           (I_Typ, From_With_Type (T));
+      Set_Is_Public                (I_Typ, Is_Public          (T));
+      Set_From_With_Type           (I_Typ, From_With_Type     (T));
       Set_Is_Access_Constant       (I_Typ, Is_Access_Constant (T));
-      Set_Is_Generic_Type          (I_Typ, Is_Generic_Type (T));
-      Set_Is_Volatile              (I_Typ, Is_Volatile (T));
-      Set_Treat_As_Volatile        (I_Typ, Treat_As_Volatile (T));
-      Set_Is_Atomic                (I_Typ, Is_Atomic (T));
-      Set_Is_Ada_2005              (I_Typ, Is_Ada_2005 (T));
+      Set_Is_Generic_Type          (I_Typ, Is_Generic_Type    (T));
+      Set_Is_Volatile              (I_Typ, Is_Volatile        (T));
+      Set_Treat_As_Volatile        (I_Typ, Treat_As_Volatile  (T));
+      Set_Is_Atomic                (I_Typ, Is_Atomic          (T));
+      Set_Is_Ada_2005_Only         (I_Typ, Is_Ada_2005_Only   (T));
       Set_Can_Never_Be_Null        (I_Typ);
 
       return I_Typ;

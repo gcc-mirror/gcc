@@ -218,7 +218,7 @@ void __gnat_unsetenv (char *name) {
 #elif defined (__hpux__) || defined (sun) \
      || (defined (__mips) && defined (__sgi)) \
      || (defined (__vxworks) && ! defined (__RTP__)) \
-     || defined (_AIX)
+     || defined (_AIX) || defined (__Lynx__)
 
   /* On Solaris, HP-UX and IRIX there is no function to clear an environment
      variable. So we look for the variable in the environ table and delete it

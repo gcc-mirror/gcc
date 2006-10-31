@@ -558,6 +558,8 @@ package body Sem_Case is
          Raises_CE      : out Boolean;
          Others_Present : out Boolean)
       is
+         pragma Assert (Choice_Table'First = 1);
+
          E : Entity_Id;
 
          Enode : Node_Id;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,17 +54,17 @@ procedure Core_Dump (Occurrence : Exception_Occurrence) is
 
    procedure Setexv (
      Status : out Cond_Value_Type;
-     Vector : in  Unsigned_Longword := 0;
-     Addres : in  Address           := Address_Zero;
-     Acmode : in  Access_Mode_Type  := Access_Mode_Zero;
-     Prvhnd : in  Unsigned_Longword := 0);
+     Vector : Unsigned_Longword := 0;
+     Addres : Address           := Address_Zero;
+     Acmode : Access_Mode_Type  := Access_Mode_Zero;
+     Prvhnd : Unsigned_Longword := 0);
    pragma Interface (External, Setexv);
    pragma Import_Valued_Procedure (Setexv, "SYS$SETEXV",
      (Cond_Value_Type, Unsigned_Longword, Address, Access_Mode_Type,
       Unsigned_Longword),
      (Value, Value, Value, Value, Value));
 
-   procedure Lib_Signal (I : in Integer);
+   procedure Lib_Signal (I : Integer);
    pragma Interface (C, Lib_Signal);
    pragma Import_Procedure (Lib_Signal, "LIB$SIGNAL", Mechanism => (Value));
 begin

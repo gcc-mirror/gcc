@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                      Copyright (C) 2001-2005, AdaCore                    --
+--                      Copyright (C) 2001-2006, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -188,6 +188,7 @@ package body GNAT.CGI is
          Data : constant String := Metavariable (Query_String);
       begin
          Current_Method := Get;
+
          if Data /= "" then
             Set_Parameter_Table (Data);
          end if;
@@ -335,9 +336,8 @@ package body GNAT.CGI is
       ---------------------
 
       function Get_Environment (Variable_Name : String) return String is
-         Value : OS_Lib.String_Access := OS_Lib.Getenv (Variable_Name);
+         Value  : OS_Lib.String_Access := OS_Lib.Getenv (Variable_Name);
          Result : constant String := Value.all;
-
       begin
          OS_Lib.Free (Value);
          return Result;

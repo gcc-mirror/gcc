@@ -394,6 +394,8 @@ package body MDLL is
             raise;
       end Ada_Build_Non_Reloc_DLL;
 
+   --  Start of processing for Build_Dynamic_Library
+
    begin
       --  On Windows the binder file must not be in the first position in the
       --  list. This is due to the way DLL's are built on Windows. We swap the
@@ -402,13 +404,14 @@ package body MDLL is
       if L_Afiles'Length > 1 then
          declare
             Filename : constant String :=
-                         Directory_Operations.Base_Name (L_Afiles (1).all);
+                         Directory_Operations.Base_Name
+                           (L_Afiles (L_Afiles'First).all);
             First    : constant Positive := Filename'First;
 
          begin
             if Filename (First .. First + 1) = "b~" then
-               L_Afiles (L_Afiles'Last) := Afiles (1);
-               L_Afiles (1) := Afiles (Afiles'Last);
+               L_Afiles (L_Afiles'Last) := Afiles (Afiles'First);
+               L_Afiles (L_Afiles'First) := Afiles (Afiles'Last);
             end if;
          end;
       end if;
@@ -438,7 +441,6 @@ package body MDLL is
      (Lib_Filename : String;
       Def_Filename : String)
    is
-
       procedure Build_Import_Library (Lib_Filename : String);
       --  Build an import library. This is to build only a .a library to link
       --  against a DLL.
@@ -472,8 +474,12 @@ package body MDLL is
       --  convention and we try as much as possible to follow the platform
       --  convention.
 
-      if Lib_Filename'Length > 3 and then Lib_Filename (1 .. 3) = "lib" then
-         Build_Import_Library (Lib_Filename (4 .. Lib_Filename'Last));
+      if Lib_Filename'Length > 3
+        and then
+          Lib_Filename (Lib_Filename'First .. Lib_Filename'First + 2) = "lib"
+      then
+         Build_Import_Library
+           (Lib_Filename (Lib_Filename'First + 3 .. Lib_Filename'Last));
       else
          Build_Import_Library (Lib_Filename);
       end if;
