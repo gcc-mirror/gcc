@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2006 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,6 +104,10 @@ package body System.Stack_Checking.Operations is
    is
 
       --  Task descriptor that is handled internally by the VxWorks kernel
+
+      type Td_Events_Storage is array (1 .. 4) of Interfaces.C.int;
+      pragma Convention (C, Td_Events_Storage);
+
       type Task_Descriptor is record
          T_Id            : Interfaces.C.int; -- task identifier
          Td_Name         : System.Address; -- task name
@@ -121,6 +125,7 @@ package body System.Stack_Checking.Operations is
          Td_StackMargin  : Interfaces.C.int; -- current stack margin in bytes
          Td_ErrorStatus  : Interfaces.C.int; -- most recent task error status
          Td_Delay        : Interfaces.C.int; -- delay/timeout ticks
+         Td_Events       : Td_Events_Storage; -- task events, post t2.0
       end record;
       pragma Convention (C, Task_Descriptor);
 
