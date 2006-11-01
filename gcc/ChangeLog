@@ -1,3 +1,16 @@
+2006-11-01	Douglas Gregor <doug.gregor@gmail.com>
+
+	* c-common.c (flag_cpp0x): New.
+	* c-common.h (flag_cpp0x): New.
+	* c-cppbuiltin.c (c_cpp_builtins): If C++0x extensions are
+	supported, define __GXX_EXPERIMENTAL_CPP0X__.
+	* c-opts.c (set_std_cxx0x): New.
+	(c_common_handle_option): Handle -std=c++0x, -std=gnu++0x.
+	* c.opt (std=c++0x): Document.
+	(std=gnu++0x): Ditto.
+	* doc/cpp.texi: Document __GXX_EXPERIMENTAL_CPP0X__.
+	* doc/invoke.texi: Document -std=c++0x, -std=gnu++0x.
+
 2006-11-01  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386.c (ix86_expand_rint): Fix issues with
