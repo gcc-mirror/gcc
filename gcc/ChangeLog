@@ -1,3 +1,18 @@
+2006-11-01  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* target.h (targetm.cxx.use_atexit_for_cxa_atexit): New target
+	hook.
+	* target-def.h: (TARGET_CXX_USE_ATEXIT_FOR_CXA_ATEXIT): Define
+	default.
+	* config/i386/mingw32.h (TARGET_CXX_USE_ATEXIT_FOR_CXA_ATEXIT):
+	Override default.
+	* doc/tm.texi (TARGET_CXX_USE_ATEXIT_FOR_CXA_ATEXIT): Document.
+	* configure.ac (use_cxa_atexit): As a special case, don't test
+	for libc definition of __cxa_atexit on mingw32
+	* configure: Regenerate.
+	* config.gcc (i[34567]86-pc-mingw32): Default to
+	enable__cxa_atexit=yes.
+
 2006-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (gamma, lgamma): Use ATTR_MATHFN_FPROUNDING_STORE.

@@ -1,3 +1,10 @@
+2006-11-01  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* decl.c (get_atexit_node): Reference atexit, not __cxa_exit.
+	if targetm.cxx.use_atexit_for cxa_atexit.
+	(start_cleanup_fn): Likewise.
+	(register_dtor_fn): Likewise.
+
 2006-09-25  Geoffrey Keating  <geoffk@apple.com>
 
 	* decl2.c (cp_write_global_declarations): Rename from
