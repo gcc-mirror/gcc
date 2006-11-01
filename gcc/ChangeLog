@@ -1,3 +1,9 @@
+2006-11-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/28970
+	* loop.c (loop_giv_reduce_benefit): Take the max of the addition
+	cost on all the increments of the BIV.
+
 2006-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (gamma, lgamma): Use ATTR_MATHFN_FPROUNDING_STORE.

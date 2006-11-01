@@ -5603,13 +5603,19 @@ loop_giv_reduce_benefit (struct loop *loop ATTRIBUTE_UNUSED,
 			 struct iv_class *bl, struct induction *v,
 			 rtx test_reg)
 {
-  int add_cost;
+  struct induction *biv;
+  int add_cost = 0;
   int benefit;
 
   benefit = v->benefit;
   PUT_MODE (test_reg, v->mode);
-  add_cost = iv_add_mult_cost (bl->biv->add_val, v->mult_val,
-			       test_reg, test_reg);
+  for (biv = bl->biv; biv; biv = biv->next_iv)
+    {
+      int cost = iv_add_mult_cost (biv->add_val, v->mult_val,
+				   test_reg, test_reg);
+      if (cost > add_cost)
+	add_cost = cost;
+    }
 
   /* Reduce benefit if not replaceable, since we will insert a
      move-insn to replace the insn that calculates this giv.  Don't do
