@@ -1,3 +1,52 @@
+2006-09-07  Eric Christopher  <echristo@apple.com>
+	    Falk Hueffner  <falk@debian.org>
+
+	* doc/extend.texi (__builtin_bswap32): Document.
+	(__builtin_bswap64): Ditto.
+	* doc/libgcc.texi (bswapsi2): Document.
+	(bswapdi2): Ditto.
+	* doc/rtl.texi (bswap): Document.
+	* optabs.c (expand_unop): Don't widen a bswap.
+	(init_optabs): Init bswap. Set libfuncs explicitly
+	for bswapsi2 and bswapdi2.
+	* optabs.h (OTI_bswap): New.
+	(bswap_optab): Ditto.
+	* genopinit.c (optabs): Handle bswap_optab.
+	* tree.h (tree_index): Add TI_UINT32_TYPE and
+	TI_UINT64_TYPE.
+	(uint32_type_node): New.
+	(uint64_type_node): Ditto.
+	* tree.c (build_common_tree_nodes_2): Initialize
+	uint32_type_node and uint64_type_node.
+	* builtins.c (expand_builtin_bswap): New.
+	(expand_builtin): Call.
+	(fold_builtin_bswap): New.
+	(fold_builtin_1): Call.
+	* fold-const.c (tree_expr_nonnegative_p): Return true
+	for bswap.
+	* builtin-types.def (BT_UINT32): New.
+	(BT_UINT64): Ditto.
+	(BT_FN_UINT32_UINT32): Ditto.
+	(BT_FN_UINT64_UINT64): Ditto.
+	* builtins.def (BUILT_IN_BSWAP32): New.
+	(BUILT_IN_BSWAP64): Ditto.
+	* rtl.def (BSWAP): New.
+	* genattrtab.c (check_attr_value): New.
+	* libgcc2.c (__bswapSI2): New.
+	(__bswapDI2): Ditto.
+	* libgcc2.h (__bswapSI2): Declare.
+	(__bswapDI2): Ditto.
+	* mklibgcc.in (lib2funcs): Add _bswapsi2 and _bswapdi2.
+	* simplify-rtx.c (simplify_const_unary_operation): Return
+	0 for BSWAP.
+	* libgcc-std.ver (__bwapsi2): Add.
+	(__bswapdi2): Ditto.
+	* reload1.c (eliminate_regs_1): Add bswap.
+	(elimination_effects): Ditto.
+	* config/i386/i386.h (x86_bswap): New.
+	(TARGET_BSWAP): Use.
+	* config/i386/i386.c (x86_bswap): Set.
+
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* coverage.c (coverage_checksum_string): Update comment.

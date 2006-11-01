@@ -212,6 +212,11 @@ These functions return the value zero if the number of bits set in
 These functions return the number of bits set in @var{a}.
 @end deftypefn
 
+@deftypefn {Runtime Function} int32_t __bswapsi2 (int32_t @var{a})
+@deftypefnx {Runtime Function} int64_t __bswapdi2 (int64_t @var{a})
+These functions return the @var{a} byteswapped.
+@end deftypefn
+
 @node Soft float library routines
 @section Routines for floating point emulation
 @cindex soft float library
@@ -728,4 +733,3 @@ document me!
 @deftypefn {Runtime Function} void __clear_cache (char *@var{beg}, char *@var{end})
 This function clears the instruction cache between @var{beg} and @var{end}.
 @end deftypefn
-

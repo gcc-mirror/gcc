@@ -959,6 +959,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
     case CTZ:
     case POPCOUNT:
     case PARITY:
+    case BSWAP:
       XEXP (exp, 0) = check_attr_value (XEXP (exp, 0), attr);
       break;
 

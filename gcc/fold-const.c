@@ -12302,6 +12302,8 @@ tree_expr_nonnegative_p (tree t)
 	    CASE_INT_FN (BUILT_IN_FFS):
 	    CASE_INT_FN (BUILT_IN_PARITY):
 	    CASE_INT_FN (BUILT_IN_POPCOUNT):
+	    case BUILT_IN_BSWAP32:
+	    case BUILT_IN_BSWAP64:
 	      /* Always true.  */
 	      return true;
 
@@ -13241,4 +13243,3 @@ fold_strip_sign_ops (tree exp)
     }
   return NULL_TREE;
 }
-
