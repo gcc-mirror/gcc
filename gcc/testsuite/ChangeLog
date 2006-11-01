@@ -1,3 +1,13 @@
+2006-10-31  Eric Christopher  <echristo@apple.com>
+	    Falk Hueffner  <falk@debian.org>
+
+	* gcc.dg/builtin-bswap-1.c: New.
+	* gcc.dg/builtin-bswap-2.c: New.
+	* gcc.dg/builtin-bswap-3.c: New.
+	* gcc.dg/builtin-bswap-4.c: New.
+	* gcc.dg/builtin-bswap-5.c: New.
+	* gcc.dg/i386/builtin-bswap-1.c: New.
+
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/inline-16.c: New.
