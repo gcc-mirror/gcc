@@ -80,18 +80,20 @@ struct lang_flags
 
 static const struct lang_flags lang_defaults[] =
 { /*              c99 c++ xnum xid std  //   digr  */
-  /* GNUC89 */  { 0,  0,  1,   0,  0,   1,   1     },
-  /* GNUC99 */  { 1,  0,  1,   0,  0,   1,   1     },
-  /* STDC89 */  { 0,  0,  0,   0,  1,   0,   0     },
-  /* STDC94 */  { 0,  0,  0,   0,  1,   0,   1     },
-  /* STDC99 */  { 1,  0,  1,   0,  1,   1,   1     },
-  /* GNUCXX */  { 0,  1,  1,   0,  0,   1,   1     },
-  /* CXX98  */  { 0,  1,  1,   0,  1,   1,   1     },
-  /* ASM    */  { 0,  0,  1,   0,  0,   1,   0     }
-  /* xid should be 1 for GNUC99, STDC99, GNUCXX and CXX98 when no
-     longer experimental (when all uses of identifiers in the compiler
-     have been audited for correct handling of extended
-     identifiers).  */
+  /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1     },
+  /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1     },
+  /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0     },
+  /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1     },
+  /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1     },
+  /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1     },
+  /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1     },
+  /* GNUCXX0X */  { 1,  1,  1,   0,  0,   1,   1     },
+  /* CXX0X    */  { 1,  1,  1,   0,  1,   1,   1     },
+  /* ASM      */  { 0,  0,  1,   0,  0,   1,   0     }
+  /* xid should be 1 for GNUC99, STDC99, GNUCXX, CXX98, GNUCXX0X, and
+     CXX0X when no longer experimental (when all uses of identifiers
+     in the compiler have been audited for correct handling of
+     extended identifiers).  */
 };
 
 /* Sets internal flags correctly for a given language.  */
