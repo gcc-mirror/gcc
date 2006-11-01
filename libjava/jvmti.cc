@@ -14,6 +14,7 @@ details.  */
 #include <jvm.h>
 #include <java-threads.h>
 #include <java-gc.h>
+#include <java-interp.h>
 #include <jvmti.h>
 #include "jvmti-int.h"
 
@@ -21,6 +22,9 @@ details.  */
 
 #include <gnu/classpath/SystemProperties.h>
 #include <gnu/gcj/runtime/BootClassLoader.h>
+#include <gnu/gcj/jvmti/Breakpoint.h>
+#include <gnu/gcj/jvmti/BreakpointManager.h>
+
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Object.h>
@@ -276,6 +280,72 @@ _Jv_JVMTI_RawMonitorNotifyAll (MAYBE_UNUSED jvmtiEnv *env,
   if (_Jv_CondNotifyAll (&monitor->condition, &monitor->mutex)
       == _JV_NOT_OWNER)
     return JVMTI_ERROR_NOT_MONITOR_OWNER;
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_SetBreakpoint (jvmtiEnv *env, jmethodID method, jlocation location)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
+
+  using namespace gnu::gcj::jvmti;
+  Breakpoint *bp
+    = BreakpointManager::getBreakpoint (reinterpret_cast<jlong> (method),
+					location);
+  if (bp == NULL)
+    {
+      jclass klass;
+      jvmtiError err = env->GetMethodDeclaringClass (method, &klass);
+      if (err != JVMTI_ERROR_NONE)
+	return err;
+
+      if (!_Jv_IsInterpretedClass (klass))
+	return JVMTI_ERROR_INVALID_CLASS;
+
+      _Jv_MethodBase *base = _Jv_FindInterpreterMethod (klass, method);
+      if (base == NULL)
+	return JVMTI_ERROR_INVALID_METHODID;
+
+      jint flags;
+      err = env->GetMethodModifiers (method, &flags);
+      if (err != JVMTI_ERROR_NONE)
+	return err;
+
+      if (flags & java::lang::reflect::Modifier::NATIVE)
+	return JVMTI_ERROR_NATIVE_METHOD;
+
+      _Jv_InterpMethod *imeth = reinterpret_cast<_Jv_InterpMethod *> (base);
+      if (imeth->get_insn (location) == NULL)
+	return JVMTI_ERROR_INVALID_LOCATION;
+
+      // Now the breakpoint can be safely installed
+      bp = BreakpointManager::newBreakpoint (reinterpret_cast<jlong> (method),
+					     location);
+    }
+  else
+    {
+      // Duplicate breakpoints are not permitted by JVMTI
+      return JVMTI_ERROR_DUPLICATE;
+    }
+
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
+_Jv_JVMTI_ClearBreakpoint (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
+			   jlocation location)
+{
+  REQUIRE_PHASE (env, JVMTI_PHASE_LIVE);
+
+  using namespace gnu::gcj::jvmti;
+
+  Breakpoint *bp
+    = BreakpointManager::getBreakpoint (reinterpret_cast<jlong> (method),
+					location);
+  if (bp == NULL)
+    return JVMTI_ERROR_NOT_FOUND;
+
+  BreakpointManager::deleteBreakpoint (reinterpret_cast<jlong> (method), location);
   return JVMTI_ERROR_NONE;
 }
 
@@ -1278,8 +1348,8 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   _Jv_JVMTI_RawMonitorWait,	// RawMonitorWait
   _Jv_JVMTI_RawMonitorNotify,	// RawMonitorNotify
   _Jv_JVMTI_RawMonitorNotifyAll, // RawMonitorNotifyAll
-  UNIMPLEMENTED,		// SetBreakpoint
-  UNIMPLEMENTED,		// ClearBreakpoint
+  _Jv_JVMTI_SetBreakpoint,	// SetBreakpoint
+  _Jv_JVMTI_ClearBreakpoint,	// ClearBreakpoint
   RESERVED,			// reserved40
   UNIMPLEMENTED,		// SetFieldAccessWatch
   UNIMPLEMENTED,		// ClearFieldAccessWatch
