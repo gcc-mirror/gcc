@@ -120,6 +120,10 @@ static int __attribute__ ((__unused__)) not_target_flags = 0;
 		    : TREE_TYPE (_fields)) == DFmode)			\
    ? MAX (MAX (COMPUTED, SPECIFIED), 64)				\
    : MAX (COMPUTED, SPECIFIED));})
+/* FIXME: The word 'fixme' is insufficient to explain the wrong-ness
+   of this next macro definition.  */
+#define darwin_rs6000_special_round_type_align(S,C,S2) \
+  rs6000_special_round_type_align(S,C,S2)
 
 /*
   return the size of an object specified by type

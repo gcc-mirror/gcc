@@ -1,3 +1,7 @@
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
+
+	* encoding.c (darwin_rs6000_special_round_type_align): New.
+
 2006-10-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in: Use multi_basedir instead of toplevel_srcdir.

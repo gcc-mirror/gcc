@@ -1,6 +1,5 @@
 /* { dg-do compile { target powerpc*-*-darwin* } } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-xfail-if "" { powerpc*-*-darwin* } } */
 /* { dg-options "-Wno-long-long" } */
 
 struct a

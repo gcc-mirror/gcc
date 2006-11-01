@@ -2591,7 +2591,7 @@ invalid_e500_subreg (rtx op, enum machine_mode mode)
   return false;
 }
 
-/* Darwin, AIX increases natural record alignment to doubleword if the first
+/* AIX increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
 
 unsigned int
@@ -2614,6 +2614,37 @@ rs6000_special_round_type_align (tree type, unsigned int computed,
       if (type != error_mark_node && TYPE_MODE (type) == DFmode)
 	align = MAX (align, 64);
     }
+
+  return align;
+}
+
+/* Darwin increases record alignment to the natural alignment of
+   the first field.  */
+
+unsigned int
+darwin_rs6000_special_round_type_align (tree type, unsigned int computed,
+					unsigned int specified)
+{
+  unsigned int align = MAX (computed, specified);
+
+  if (TYPE_PACKED (type))
+    return align;
+
+  /* Find the first field, looking down into aggregates.  */
+  do {
+    tree field = TYPE_FIELDS (type);
+    /* Skip all non field decls */
+    while (field != NULL && TREE_CODE (field) != FIELD_DECL)
+      field = TREE_CHAIN (field);
+    if (! field)
+      break;
+    type = TREE_TYPE (field);
+    while (TREE_CODE (type) == ARRAY_TYPE)
+      type = TREE_TYPE (type);
+  } while (AGGREGATE_TYPE_P (type));
+
+  if (! AGGREGATE_TYPE_P (type) && type != error_mark_node)
+    align = MAX (align, TYPE_ALIGN (type));
 
   return align;
 }

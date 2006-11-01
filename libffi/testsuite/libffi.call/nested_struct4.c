@@ -6,7 +6,7 @@
    PR:		PR 25630.
    Originator:	<andreast@gcc.gnu.org> 20051010	 */
 
-/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* powerpc*-*-darwin* } } */
+/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
 #include "ffitest.h"
 
 typedef struct A {
