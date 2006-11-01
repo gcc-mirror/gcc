@@ -1199,6 +1199,18 @@ The 1998 ISO C++ standard plus amendments.
 @item gnu++98
 The same as @option{-std=c++98} plus GNU extensions.  This is the
 default for C++ code.
+
+@item c++0x
+The working draft of the upcoming ISO C++0x standard. This option
+enables experimental features that are likely to be included in
+C++0x. The working draft is constantly changing, and any feature that is
+enabled by this flag may be removed from future versions of GCC if it is
+not part of the C++0x standard.
+
+@item gnu++0x
+The same as @option{-std=c++0x} plus GNU extensions. As with
+@option{-std=c++0x}, this option enables experimental features that may
+be removed in future versions of GCC.
 @end table
 
 Even when this option is not specified, you can still use some of the

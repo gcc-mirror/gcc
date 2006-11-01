@@ -109,6 +109,7 @@ static size_t include_cursor;
 static void set_Wimplicit (int);
 static void handle_OPT_d (const char *);
 static void set_std_cxx98 (int);
+static void set_std_cxx0x (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void check_deps_environment_vars (void);
@@ -789,7 +790,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_fuse_cxa_atexit:
       flag_use_cxa_atexit = value;
       break;
-      
+
     case OPT_fuse_cxa_get_exception_ptr:
       flag_use_cxa_get_exception_ptr = value;
       break;
@@ -911,6 +912,12 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_std_gnu__98:
       if (!preprocessing_asm_p)
 	set_std_cxx98 (code == OPT_std_c__98 /* ISO */);
+      break;
+
+    case OPT_std_c__0x:
+    case OPT_std_gnu__0x:
+      if (!preprocessing_asm_p)
+	set_std_cxx0x (code == OPT_std_c__0x /* ISO */);
       break;
 
     case OPT_std_c89:
@@ -1507,6 +1514,17 @@ set_std_cxx98 (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+}
+
+/* Set the C++ 0x working draft "standard" (without GNU extensions if ISO).  */
+static void
+set_std_cxx0x (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_CXX0X: CLK_GNUCXX0X);
+  flag_no_gnu_keywords = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  flag_cpp0x = 1;
 }
 
 /* Handle setting implicit to ON.  */
