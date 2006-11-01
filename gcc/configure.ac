@@ -1429,8 +1429,17 @@ use_cxa_atexit=no
 if test x$enable___cxa_atexit = xyes || \
    test x$enable___cxa_atexit = x -a x$default_use_cxa_atexit = xyes; then
   if test x$host = x$target; then
-    AC_CHECK_FUNC(__cxa_atexit,[use_cxa_atexit=yes],
-	[echo "__cxa_atexit can't be enabled on this target"])
+    case $host in
+      # mingw32 doesn't have __cxa_atexit but uses atexit registration
+      # keyed to flag_use_cxa_atexit
+      *-*-mingw32*)
+	use_cxa_atexit=yes
+	;;
+      *)
+	AC_CHECK_FUNC(__cxa_atexit,[use_cxa_atexit=yes],
+	  [echo "__cxa_atexit can't be enabled on this target"])
+	::
+    esac
   else
     # We can't check for __cxa_atexit when building a cross, so assume
     # it is available 

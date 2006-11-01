@@ -112,3 +112,7 @@ do {						         \
 /* mingw32 uses the  -mthreads option to enable thread support.  */
 #undef GOMP_SELF_SPECS
 #define GOMP_SELF_SPECS "%{fopenmp: -mthreads}"
+
+/* mingw32 atexit function is safe to use in shared libraries.  Use it
+   to register C++ static destructors.  */
+#define TARGET_CXX_USE_ATEXIT_FOR_CXA_ATEXIT hook_bool_void_true

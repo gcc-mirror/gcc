@@ -8971,6 +8971,14 @@ should be used to register static destructors when @option{-fuse-cxa-atexit}
 is in effect.  The default is to return false to use @code{__cxa_atexit}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CXX_USE_ATEXIT_FOR_CXA_ATEXIT (void)
+This hook returns true if the target @code{atexit} function can be used
+in the same manner as @code{__cxa_atexit} to register C++ static
+destructors. This requires that @code{atexit}-registered functions in
+shared libraries are run in the correct order when the libraries are
+unloaded. The default is to return false.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_CXX_ADJUST_CLASS_AT_DEFINITION (tree @var{type})
 @var{type} is a C++ class (i.e., RECORD_TYPE or UNION_TYPE) that has just been
 defined.  Use this hook to make adjustments to the class (eg, tweak

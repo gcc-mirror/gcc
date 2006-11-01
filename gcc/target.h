@@ -776,6 +776,9 @@ struct gcc_target
     /* Returns true if __aeabi_atexit should be used to register static
        destructors.  */
     bool (*use_aeabi_atexit) (void);
+    /* Returns true if target may use atexit in the same manner as
+    __cxa_atexit  to register static destructors.  */
+    bool (*use_atexit_for_cxa_atexit) (void);
     /* TYPE is a C++ class (i.e., RECORD_TYPE or UNION_TYPE) that
        has just been defined.  Use this hook to make adjustments to the
        class  (eg, tweak visibility or perform any other required
