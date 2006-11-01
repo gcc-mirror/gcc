@@ -1040,10 +1040,14 @@ compile_file (void)
      what's left of the symbol table output.  */
   timevar_pop (TV_PARSE);
 
-  if (flag_syntax_only || errorcount || sorrycount)
+  if (flag_syntax_only)
     return;
 
   lang_hooks.decls.final_write_globals ();
+
+  if (errorcount || sorrycount)
+    return;
+
   cgraph_varpool_assemble_pending_decls ();
   finish_aliases_2 ();
 

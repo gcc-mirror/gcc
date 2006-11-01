@@ -3027,13 +3027,13 @@ build_java_method_aliases (void)
     }
 }
 
-/* This routine is called from the last rule in yyparse ().
+/* This routine is called at the end of compilation.
    Its job is to create all the code needed to initialize and
    destroy the global aggregates.  We do the destruction
    first, since that way we only need to reverse the decls once.  */
 
 void
-cp_finish_file (void)
+cp_write_global_declarations (void)
 {
   tree vars;
   bool reconsider;

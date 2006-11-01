@@ -3968,7 +3968,7 @@ extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *,
 			  tree);
 extern void cplus_decl_attributes		(tree *, tree, int);
 extern void finish_anon_union			(tree);
-extern void cp_finish_file			(void);
+extern void cp_write_global_declarations	(void);
 extern tree coerce_new_type			(tree);
 extern tree coerce_delete_type			(tree);
 extern void comdat_linkage			(tree);
