@@ -40,6 +40,9 @@ Boston, MA 02110-1301, USA.  */
 
 #define OBJECT_FORMAT_MACHO
 
+/* Don't assume anything about the header files.  */
+#define NO_IMPLICIT_EXTERN_C
+
 /* Suppress g++ attempt to link in the math library automatically. */
 #define MATH_LIBRARY ""
 
