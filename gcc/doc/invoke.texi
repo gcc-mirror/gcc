@@ -4711,7 +4711,7 @@ release to an another.
 In C, emit @code{static} functions that are declared @code{inline}
 into the object file, even if the function has been inlined into all
 of its callers.  This switch does not affect functions using the
-@code{extern inline} extension in GNU C@.  In C++, emit any and all
+@code{extern inline} extension in GNU C89@.  In C++, emit any and all
 inline functions into the object file.
 
 @item -fkeep-static-consts
