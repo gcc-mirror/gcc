@@ -1,5 +1,10 @@
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
+	PR 15834
+	* config/darwin.h (NO_IMPLICIT_EXTERN_C): Define.
+
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
+
 	* c-decl.c (grokdeclarator): Don't set DECL_EXTERNAL on
 	inline static functions in c99 mode.
 
