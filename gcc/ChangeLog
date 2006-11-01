@@ -1,5 +1,14 @@
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/i386/darwin.h (PREFERRED_DEBUGGING_TYPE): Remove.
+	* config/darwin.h (PREFERRED_DEBUGGING_TYPE): Set to DWARF2_DEBUG.
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Don't do weird things with -@.
+	Call dsymutil when compiling and linking one or more source files
+	in one step.
+
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
+
 	PR 15834
 	* config/darwin.h (NO_IMPLICIT_EXTERN_C): Define.
 
