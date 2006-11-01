@@ -1,3 +1,11 @@
+2006-11-01  Richard Guenther  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_expand_rint): Fix issues with
+	signed zeros.
+	(ix86_expand_floorceildf_32): Likewise.
+	(ix86_expand_floorceil): Likewise.
+	(ix86_expand_trunc): Likewise.
+
 2006-10-31  Andrew Pinski  <pinskia@gmail.com>
 
 	* doc/invoke.texi (-fkeep-inline-functions): Change "GNU C"
