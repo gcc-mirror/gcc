@@ -141,7 +141,6 @@ cp_init_ts (void)
 void
 finish_file (void)
 {
-  cp_finish_file ();
 }
 
 #include "gtype-cp.h"

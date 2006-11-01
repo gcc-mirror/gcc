@@ -1,4 +1,9 @@
-2006-09-07  Eric Christopher  <echristo@apple.com>
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
+
+	* toplev.c (compile_file): Call final_write_globals
+	even if there have been errors.
+	
+2006-10-31  Eric Christopher  <echristo@apple.com>
 	    Falk Hueffner  <falk@debian.org>
 
 	* doc/extend.texi (__builtin_bswap32): Document.
