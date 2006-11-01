@@ -1,3 +1,11 @@
+2006-10-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/23470
+	* tree.h (tree_expr_nonnegative_p): Return "bool" instead of "int".
+	* fold-const.c (tree_expr_nonnegative_p): Likewise.  Consider
+	pow(x,y) and powi(x,y) to be nonnegative if either x is nonnegative
+	or y is an even integer.
+
 2006-10-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/24071

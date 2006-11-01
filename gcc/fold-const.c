@@ -12109,14 +12109,14 @@ multiple_of_p (tree type, tree top, tree bottom)
 
 /* Return true if `t' is known to be non-negative.  */
 
-int
+bool
 tree_expr_nonnegative_p (tree t)
 {
   if (t == error_mark_node)
-    return 0;
+    return false;
 
   if (TYPE_UNSIGNED (TREE_TYPE (t)))
-    return 1;
+    return true;
 
   switch (TREE_CODE (t))
     {
@@ -12129,7 +12129,7 @@ tree_expr_nonnegative_p (tree t)
       /* We can't return 1 if flag_wrapv is set because
 	 ABS_EXPR<INT_MIN> = INT_MIN.  */
       if (!(flag_wrapv && INTEGRAL_TYPE_P (TREE_TYPE (t))))
-        return 1;
+        return true;
       break;
 
     case INTEGER_CST:
@@ -12166,7 +12166,7 @@ tree_expr_nonnegative_p (tree t)
 	{
 	  /* x * x for floating point x is always non-negative.  */
 	  if (operand_equal_p (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1), 0))
-	    return 1;
+	    return true;
 	  return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
 		 && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
 	}
@@ -12184,7 +12184,7 @@ tree_expr_nonnegative_p (tree t)
 	    return TYPE_PRECISION (inner1) + TYPE_PRECISION (inner2)
 		   < TYPE_PRECISION (TREE_TYPE (t));
 	}
-      return 0;
+      return false;
 
     case BIT_AND_EXPR:
     case MAX_EXPR:
@@ -12234,7 +12234,7 @@ tree_expr_nonnegative_p (tree t)
 	    if (TREE_CODE (inner_type) == INTEGER_TYPE)
 	      {
 		if (TYPE_UNSIGNED (inner_type))
-		  return 1;
+		  return true;
 		return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
 	      }
 	  }
@@ -12277,7 +12277,7 @@ tree_expr_nonnegative_p (tree t)
 	    && TREE_OPERAND (t, 0) == temp)
 	  return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
 
-	return 0;
+	return false;
       }
 
     case CALL_EXPR:
@@ -12303,12 +12303,12 @@ tree_expr_nonnegative_p (tree t)
 	    CASE_INT_FN (BUILT_IN_PARITY):
 	    CASE_INT_FN (BUILT_IN_POPCOUNT):
 	      /* Always true.  */
-	      return 1;
+	      return true;
 
 	    CASE_FLT_FN (BUILT_IN_SQRT):
 	      /* sqrt(-0.0) is -0.0.  */
 	      if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (t))))
-		return 1;
+		return true;
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
 	    CASE_FLT_FN (BUILT_IN_ASINH):
@@ -12332,7 +12332,6 @@ tree_expr_nonnegative_p (tree t)
 	    CASE_FLT_FN (BUILT_IN_LROUND):
 	    CASE_FLT_FN (BUILT_IN_MODF):
 	    CASE_FLT_FN (BUILT_IN_NEARBYINT):
-	    CASE_FLT_FN (BUILT_IN_POW):
 	    CASE_FLT_FN (BUILT_IN_RINT):
 	    CASE_FLT_FN (BUILT_IN_ROUND):
 	    CASE_FLT_FN (BUILT_IN_SIGNBIT):
@@ -12356,6 +12355,38 @@ tree_expr_nonnegative_p (tree t)
 	      /* True if the 2nd argument is nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
 
+	    CASE_FLT_FN (BUILT_IN_POWI):
+	      /* True if the 1st argument is nonnegative or the second
+		 argument is an even integer.  */
+	      if (TREE_CODE (TREE_VALUE (TREE_CHAIN (arglist))) == INTEGER_CST)
+		{
+		  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+		  if ((TREE_INT_CST_LOW (arg1) & 1) == 0)
+		    return true;
+		}
+	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
+
+	    CASE_FLT_FN (BUILT_IN_POW):
+	      /* True if the 1st argument is nonnegative or the second
+		 argument is an even integer valued real.  */
+	      if (TREE_CODE (TREE_VALUE (TREE_CHAIN (arglist))) == REAL_CST)
+		{
+		  REAL_VALUE_TYPE c;
+		  HOST_WIDE_INT n;
+
+		  c = TREE_REAL_CST (TREE_VALUE (TREE_CHAIN (arglist)));
+		  n = real_to_integer (&c);
+		  if ((n & 1) == 0)
+		    {
+		      REAL_VALUE_TYPE cint;
+		      real_from_integer (&cint, VOIDmode, n,
+					 n < 0 ? -1 : 0, 0);
+		      if (real_identical (&c, &cint))
+			return true;
+		    }
+		}
+	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
+
 	    default:
 	      break;
 	    }
@@ -12366,11 +12397,11 @@ tree_expr_nonnegative_p (tree t)
     default:
       if (truth_value_p (TREE_CODE (t)))
 	/* Truth values evaluate to 0 or 1, which is nonnegative.  */
-	return 1;
+	return true;
     }
 
   /* We don't know sign of `t', so be conservative and return false.  */
-  return 0;
+  return false;
 }
 
 /* Return true when T is an address and is known to be nonzero.

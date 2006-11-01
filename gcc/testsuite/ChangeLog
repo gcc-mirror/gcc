@@ -1,3 +1,8 @@
+2006-10-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/23470
+	* gcc.dg/pr23470-1.c: New test case.
+
 2006-11-01  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/29537
