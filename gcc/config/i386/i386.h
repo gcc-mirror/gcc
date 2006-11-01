@@ -165,6 +165,7 @@ extern const int x86_use_bt;
 extern const int x86_cmpxchg, x86_cmpxchg8b, x86_cmpxchg16b, x86_xadd;
 extern const int x86_use_incdec;
 extern const int x86_pad_returns;
+extern const int x86_bswap;
 extern const int x86_partial_flag_reg_stall;
 extern int x86_prefetch_sse;
 
@@ -238,6 +239,7 @@ extern int x86_prefetch_sse;
 #define TARGET_CMPXCHG8B (x86_cmpxchg8b & (1 << ix86_arch))
 #define TARGET_CMPXCHG16B (x86_cmpxchg16b & (1 << ix86_arch))
 #define TARGET_XADD (x86_xadd & (1 << ix86_arch))
+#define TARGET_BSWAP (x86_bswap & (1 << ix86_arch))
 
 #ifndef TARGET_64BIT_DEFAULT
 #define TARGET_64BIT_DEFAULT 0

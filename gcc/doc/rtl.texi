@@ -2084,6 +2084,11 @@ mode @var{m}.  The mode of @var{x} will usually be an integer mode.
 Represents the number of 1-bits modulo 2 in @var{x}, represented as an
 integer of mode @var{m}.  The mode of @var{x} will usually be an integer
 mode.
+
+@findex bswap
+@item (bswap:@var{m} @var{x})
+Represents the value @var{x} with the order of bytes reversed, carried out
+in mode @var{m}, which must be a fixed-point machine mode.
 @end table
 
 @node Comparisons

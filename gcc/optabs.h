@@ -146,6 +146,8 @@ enum optab_index
   /* Abs value */
   OTI_abs,
   OTI_absv,
+  /* Byteswap */
+  OTI_bswap,
   /* Bitwise not */
   OTI_one_cmpl,
   /* Bit scanning and counting */
@@ -312,6 +314,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define abs_optab (optab_table[OTI_abs])
 #define absv_optab (optab_table[OTI_absv])
 #define one_cmpl_optab (optab_table[OTI_one_cmpl])
+#define bswap_optab (optab_table[OTI_bswap])
 #define ffs_optab (optab_table[OTI_ffs])
 #define clz_optab (optab_table[OTI_clz])
 #define ctz_optab (optab_table[OTI_ctz])

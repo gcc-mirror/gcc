@@ -1042,6 +1042,9 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  val &= 1;
 	  break;
 
+	case BSWAP:
+	  return 0;
+
 	case TRUNCATE:
 	  val = arg0;
 	  break;
@@ -4867,4 +4870,3 @@ simplify_rtx (rtx x)
     }
   return NULL;
 }
-

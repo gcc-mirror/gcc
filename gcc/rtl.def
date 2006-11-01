@@ -567,6 +567,9 @@ DEF_RTL_EXPR(ABS, "abs", "e", RTX_UNARY)
 /* Square root */
 DEF_RTL_EXPR(SQRT, "sqrt", "e", RTX_UNARY)
 
+/* Swap bytes.  */
+DEF_RTL_EXPR(BSWAP, "bswap", "e", RTX_UNARY)
+
 /* Find first bit that is set.
    Value is 1 + number of trailing zeros in the arg.,
    or 0 if arg is 0.  */

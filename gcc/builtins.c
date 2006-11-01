@@ -4625,6 +4625,30 @@ expand_builtin_alloca (tree arglist, rtx target)
   return result;
 }
 
+/* Expand a call to a bswap builtin.  The arguments are in ARGLIST.  MODE
+   is the mode to expand with.  */
+
+static rtx
+expand_builtin_bswap (tree arglist, rtx target, rtx subtarget)
+{
+  enum machine_mode mode;
+  tree arg;
+  rtx op0;
+
+  if (!validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+  mode = TYPE_MODE (TREE_TYPE (arg));
+  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+
+  target = expand_unop (mode, bswap_optab, op0, target, 1);
+
+  gcc_assert (target);
+
+  return convert_to_mode (mode, target, 0);
+}
+
 /* Expand a call to a unary builtin.  The arguments are in ARGLIST.
    Return 0 if a normal call should be emitted rather than expanding the
    function in-line.  If convenient, the result should be placed in TARGET.
@@ -5902,6 +5926,14 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_STACK_RESTORE:
       expand_stack_restore (TREE_VALUE (arglist));
       return const0_rtx;
+
+    case BUILT_IN_BSWAP32:
+    case BUILT_IN_BSWAP64:
+      target = expand_builtin_bswap (arglist, target, subtarget);
+
+      if (target)
+	return target;
+      break;
 
     CASE_INT_FN (BUILT_IN_FFS):
     case BUILT_IN_FFSIMAX:
@@ -7543,6 +7575,67 @@ fold_builtin_bitop (tree fndecl, tree arglist)
   return NULL_TREE;
 }
 
+/* Fold function call to builtin_bswap and the long and long long
+   variants.  Return NULL_TREE if no simplification can be made.  */
+static tree
+fold_builtin_bswap (tree fndecl, tree arglist)
+{
+  tree arg;
+
+  if (! validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+
+  /* Optimize constant value.  */
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (arg) == INTEGER_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      HOST_WIDE_INT hi, width, r_hi = 0;
+      unsigned HOST_WIDE_INT lo, r_lo = 0;
+      tree type;
+
+      type = TREE_TYPE (arg);
+      width = TYPE_PRECISION (type);
+      lo = TREE_INT_CST_LOW (arg);
+      hi = TREE_INT_CST_HIGH (arg);
+
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	  case BUILT_IN_BSWAP32:
+	  case BUILT_IN_BSWAP64:
+	    {
+	      int s;
+
+	      for (s = 0; s < width; s += 8)
+		{
+		  int d = width - s - 8;
+		  unsigned HOST_WIDE_INT byte;
+
+		  if (s < HOST_BITS_PER_WIDE_INT)
+		    byte = (lo >> s) & 0xff;
+		  else
+		    byte = (hi >> (s - HOST_BITS_PER_WIDE_INT)) & 0xff;
+
+		  if (d < HOST_BITS_PER_WIDE_INT)
+		    r_lo |= byte << d;
+		  else
+		    r_hi |= byte << (d - HOST_BITS_PER_WIDE_INT);
+		}
+	    }
+
+	    break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      if (width < HOST_BITS_PER_WIDE_INT)
+	return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), r_lo);
+      else
+	return build_int_cst_wide (TREE_TYPE (TREE_TYPE (fndecl)), r_lo, r_hi);
+    }
+
+  return NULL_TREE;
+}
 /* Return true if EXPR is the real constant contained in VALUE.  */
 
 static bool
@@ -9219,6 +9312,10 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     CASE_FLT_FN (BUILT_IN_LRINT):
     CASE_FLT_FN (BUILT_IN_LLRINT):
       return fold_fixed_mathfn (fndecl, arglist);
+
+    case BUILT_IN_BSWAP32:
+    case BUILT_IN_BSWAP64:
+      return fold_builtin_bswap (fndecl, arglist);
 
     CASE_INT_FN (BUILT_IN_FFS):
     CASE_INT_FN (BUILT_IN_CLZ):

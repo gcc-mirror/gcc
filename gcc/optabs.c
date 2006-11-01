@@ -2590,6 +2590,10 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	goto try_libcall;
     }
 
+  /* We can't widen a bswap.  */
+  if (unoptab == bswap_optab)
+    goto try_libcall;
+
   if (CLASS_HAS_WIDER_MODES_P (class))
     for (wider_mode = GET_MODE_WIDER_MODE (mode);
 	 wider_mode != VOIDmode;
@@ -5292,6 +5296,7 @@ init_optabs (void)
   absv_optab = init_optabv (ABS);
   addcc_optab = init_optab (UNKNOWN);
   one_cmpl_optab = init_optab (NOT);
+  bswap_optab = init_optab (BSWAP);
   ffs_optab = init_optab (FFS);
   clz_optab = init_optab (CLZ);
   ctz_optab = init_optab (CTZ);
@@ -5503,6 +5508,11 @@ init_optabs (void)
   init_intraclass_conv_libfuncs (trunc_optab, "trunc", MODE_DECIMAL_FLOAT, false);
   init_interclass_conv_libfuncs (trunc_optab, "trunc", MODE_FLOAT, MODE_DECIMAL_FLOAT);
   init_interclass_conv_libfuncs (trunc_optab, "trunc", MODE_DECIMAL_FLOAT, MODE_FLOAT);
+
+  /* Explicitly initialize the bswap libfuncs since we need them to be
+     valid for things other than word_mode.  */
+  set_optab_libfunc (bswap_optab, SImode, "__bswapsi2");
+  set_optab_libfunc (bswap_optab, DImode, "__bswapdi2");
 
   /* Use cabs for double complex abs, since systems generally have cabs.
      Don't define any libcall for float complex, so that cabs will be used.  */

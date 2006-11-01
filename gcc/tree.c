@@ -6576,6 +6576,10 @@ build_common_tree_nodes_2 (int short_double)
   long_double_ptr_type_node = build_pointer_type (long_double_type_node);
   integer_ptr_type_node = build_pointer_type (integer_type_node);
 
+  /* Fixed size integer types.  */
+  uint32_type_node = build_nonstandard_integer_type (32, true);
+  uint64_type_node = build_nonstandard_integer_type (64, true);
+
   /* Decimal float types. */
   dfloat32_type_node = make_node (REAL_TYPE);
   TYPE_PRECISION (dfloat32_type_node) = DECIMAL32_TYPE_SIZE; 

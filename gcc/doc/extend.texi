@@ -6116,6 +6116,16 @@ Similar to @code{__builtin_powi}, except the argument and return types
 are @code{long double}.
 @end deftypefn
 
+@deftypefn {Built-in Function} int32_t __builtin_bswap32 (int32_t x)
+Returns @var{x} with the order of the bytes reversed; for example,
+@code{0xaabbccdd} becomes @code{0xddccbbaa}.  Byte here always means
+exactly 8 bits.
+@end deftypefn
+
+@deftypefn {Built-in Function} int64_t __builtin_bswap64 (int64_t x)
+Similar to @code{__builtin_bswap32}, except the argument and return types
+are 64-bit.
+@end deftypefn
 
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
