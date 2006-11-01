@@ -19,5 +19,5 @@ long long j (long long c) {
 }
 /* { dg-final { scan-tree-dump-times "= 0" 2 "gimple" } } */
 /* { dg-final { scan-tree-dump "b >> 31" "gimple" } } */
-/* { dg-final { scan-tree-dump "c & -(34359738368|800000000)" "gimple" } } */
+/* { dg-final { scan-tree-dump "c & -(34359738368|0x800000000)" "gimple" } } */
 /* { dg-final { cleanup-tree-dump "gimple" } } */
