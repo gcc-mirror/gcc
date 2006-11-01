@@ -3,6 +3,10 @@
 	* gcc.dg/torture/builtin-attr-1.c: Don't test gamma/lgamma.
 	* gcc.dg/torture/builtin-convert-1.c: Don't test lgamma.
 
+2006-10-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20061031-1.c: New test.
+
 2006-10-31  Joseph Myers  <joseph@codesourcery.com>
             Richard Sandiford  <richard@codesourcery.com>
 
