@@ -1,4 +1,4 @@
-2006-10-16  Geoffrey Keating  <geoffk@apple.com>
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* src/powerpc/ffi_darwin.c (darwin_adjust_aggregate_sizes): New.
 	(ffi_prep_cif_machdep): Call darwin_adjust_aggregate_sizes for
