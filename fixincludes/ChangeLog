@@ -1,3 +1,7 @@
+2006-11-01  Steve Ellcey  <sje@cup.hp.com>
+
+	* tests/base/sys/socket.h: Update.
+
 2006-10-31  Steve Ellcey  <sje@cup.hp.com>
 
 	* inclhack.def (hpux11_extern_sendfile): New.

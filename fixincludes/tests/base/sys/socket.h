@@ -9,6 +9,24 @@
 
 
 
+#if defined( HPUX11_EXTERN_SENDFILE_CHECK )
+#ifndef _APP32_64BIT_OFF_T
+   extern sbsize_t sendfile __((int, int, off_t, bsize_t,
+                               const struct iovec *, int));
+#endif
+
+#endif  /* HPUX11_EXTERN_SENDFILE_CHECK */
+
+
+#if defined( HPUX11_EXTERN_SENDPATH_CHECK )
+#ifndef _APP32_64BIT_OFF_T
+   extern sbsize_t sendpath __((int, int, off_t, bsize_t,
+                               const struct iovec *, int));
+#endif
+
+#endif  /* HPUX11_EXTERN_SENDPATH_CHECK */
+
+
 #if defined( IRIX_SOCKLEN_T_CHECK )
 #define _SOCKLEN_T
 #if _NO_XOPEN4 && _NO_XOPEN5
