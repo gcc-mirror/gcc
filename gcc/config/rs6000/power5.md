@@ -144,7 +144,8 @@
 
 ; Integer latency is 2 cycles
 (define_insn_reservation "power5-integer" 2
-  (and (eq_attr "type" "integer")
+  (and (eq_attr "type" "integer,insert_dword,shift,trap,\
+                        var_shift_rotate,cntlz,exts")
        (eq_attr "cpu" "power5"))
   "iq_power5")
 
@@ -179,7 +180,7 @@
   "iq_power5")
 
 (define_insn_reservation "power5-compare" 2
-  (and (eq_attr "type" "compare,delayed_compare")
+  (and (eq_attr "type" "compare,delayed_compare,var_delayed_compare")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,iu1_power5,iu2_power5")
 

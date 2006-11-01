@@ -52,7 +52,8 @@
   "iu_rios1+fpu_rios1")
 
 (define_insn_reservation "rios1-integer" 1
-  (and (eq_attr "type" "integer,insert_word")
+  (and (eq_attr "type" "integer,insert_word,insert_dword,shift,\
+                        trap,var_shift_rotate,cntlz,exts")
        (eq_attr "cpu" "rios1,ppc601"))
   "iu_rios1")
 
@@ -104,12 +105,13 @@
   "iu_rios1,nothing*2,bpu_rios1")
 
 (define_insn_reservation "rios1-delayed_compare" 5
-  (and (eq_attr "type" "delayed_compare")
+  (and (eq_attr "type" "delayed_compare,var_delayed_compare")
        (eq_attr "cpu" "rios1"))
   "iu_rios1,nothing*3,bpu_rios1")
 
 (define_insn_reservation "ppc601-compare" 3
-  (and (eq_attr "type" "cmp,compare,delayed_compare")
+  (and (eq_attr "type" "cmp,compare,delayed_compare,\
+                        var_delayed_compare")
        (eq_attr "cpu" "ppc601"))
   "iu_rios1,nothing,bpu_rios1")
 

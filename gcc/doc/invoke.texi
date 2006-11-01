@@ -656,6 +656,7 @@ See RS/6000 and PowerPC Options.
 -mpowerpc-gpopt  -mno-powerpc-gpopt @gol
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
 -mmfcrf  -mno-mfcrf  -mpopcntb  -mno-popcntb  -mfprnd  -mno-fprnd @gol
+-mmfpgpr -mno-mfpgpr @gol
 -mnew-mnemonics  -mold-mnemonics @gol
 -mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
 -m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
@@ -11253,6 +11254,8 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @itemx -mno-popcntb
 @itemx -mfprnd
 @itemx -mno-fprnd
+@itemx -mmfpgpr
+@itemx -mno-mfpgpr
 @opindex mpower
 @opindex mno-power
 @opindex mpower2
@@ -11271,6 +11274,8 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @opindex mno-popcntb
 @opindex mfprnd
 @opindex mno-fprnd
+@opindex mmfpgpr
+@opindex mno-mfpgpr
 GCC supports two related instruction set architectures for the
 RS/6000 and PowerPC@.  The @dfn{POWER} instruction set are those
 instructions supported by the @samp{rios} chip set used in the original
@@ -11315,6 +11320,10 @@ architecture.
 The @option{-mfprnd} option allows GCC to generate the FP round to
 integer instructions implemented on the POWER5+ processor and other
 processors that support the PowerPC V2.03 architecture.
+The @option{-mmfpgpr} option allows GCC to generate the FP move to/from
+general purpose register instructions implemented on the POWER6X
+processor and other processors that support the extended PowerPC V2.05
+architecture.
 
 The @option{-mpowerpc64} option allows GCC to generate the additional
 64-bit instructions that are found in the full PowerPC64 architecture
@@ -11357,7 +11366,7 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{860}, @samp{970}, @samp{8540}, @samp{ec603e}, @samp{G3},
 @samp{G4}, @samp{G5}, @samp{power}, @samp{power2}, @samp{power3},
 @samp{power4}, @samp{power5}, @samp{power5+}, @samp{power6},
-@samp{common}, @samp{powerpc}, @samp{powerpc64},
+@samp{power6x}, @samp{common}, @samp{powerpc}, @samp{powerpc64},
 @samp{rios}, @samp{rios1}, @samp{rios2}, @samp{rsc}, and @samp{rs64}.
 
 @option{-mcpu=common} selects a completely generic processor.  Code
@@ -11381,14 +11390,14 @@ following options: @option{-maltivec}, @option{-mfprnd},
 @option{-mhard-float}, @option{-mmfcrf}, @option{-mmultiple},
 @option{-mnew-mnemonics}, @option{-mpopcntb}, @option{-mpower},
 @option{-mpower2}, @option{-mpowerpc64}, @option{-mpowerpc-gpopt},
-@option{-mpowerpc-gfxopt}, @option{-mstring}, @option{-mmulhw}, @option{-mdlmzb}.
-The particular options
-set for any particular CPU will vary between compiler versions,
-depending on what setting seems to produce optimal code for that CPU;
-it doesn't necessarily reflect the actual hardware's capabilities.  If
-you wish to set an individual option to a particular value, you may
-specify it after the @option{-mcpu} option, like @samp{-mcpu=970
--mno-altivec}.
+@option{-mpowerpc-gfxopt}, @option{-mstring}, @option{-mmulhw},
+@option{-mdlmzb}, @option{-mmfpgpr}.
+The particular options set for any particular CPU will vary between
+compiler versions, depending on what setting seems to produce optimal
+code for that CPU; it doesn't necessarily reflect the actual hardware's
+capabilities.  If you wish to set an individual option to a particular
+value, you may specify it after the @option{-mcpu} option, like
+@samp{-mcpu=970 -mno-altivec}.
 
 On AIX, the @option{-maltivec} and @option{-mpowerpc64} options are
 not enabled or disabled by the @option{-mcpu} option at present because

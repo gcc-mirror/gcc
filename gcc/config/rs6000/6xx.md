@@ -74,7 +74,8 @@
   "lsu_6xx")
   
 (define_insn_reservation "ppc604-integer" 1
-  (and (eq_attr "type" "integer,insert_word")
+  (and (eq_attr "type" "integer,insert_word,insert_dword,shift,trap,\
+                        var_shift_rotate,cntlz,exts")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "iu1_6xx|iu2_6xx")
 
@@ -139,7 +140,8 @@
   "mciu_6xx*36")
 
 (define_insn_reservation "ppc604-compare" 3
-  (and (eq_attr "type" "cmp,fast_compare,compare,delayed_compare")
+  (and (eq_attr "type" "cmp,fast_compare,compare,delayed_compare,\
+                        var_delayed_compare")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "(iu1_6xx|iu2_6xx)")
 

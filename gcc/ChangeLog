@@ -1,3 +1,72 @@
+2006-11-01  Pete Steinmetz  <steinmtz@us.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+
+	* doc/invoke.texi: Add cpu_type power6x
+	(RS/6000 and PowerPC Options): Add -mmfpgpr.
+	* config.gcc: Add cpu_type power6x.
+	* configure.ac: Add test for mf{t,f}gpr instructions.
+	(HAVE_AS_MFPGPR): New.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* config/rs6000/aix52.h (ASM_CPU_SPEC): Add power6x.
+	* config/rs6000/rs6000.md (define_attr "type"): Add insert_dword,
+	shift,trap,var_shift_rotate,cntlz,exts, var_delayed_compare, mffgpr
+	and mftgpr attributes.
+	(define_attr "cpu"): Add power6.
+	Change instruction sequences to use new attributes.
+	(floatsidf2,fix_truncdfsi2): use TARGET_MFPGPR.
+	(fix_truncdfsi2_mfpgpr): New.
+	(floatsidf_ppc64_mfpgpr): New.
+	(floatsidf_ppc64): Added !TARGET_MFPGPR condition.
+	(movdf_hardfloat64_mfpgpr,movdi_mfpgpr): New.
+	(movdf_hardfloat64): Added !TARGET_MFPGPR condition.
+	(movdi_internal64): Added !TARGET_MFPGPR and related conditions.
+	(fix_truncdfsi2): Use gpc_reg_operand constraint.
+	* config/rs6000/{6xx.md,power4.md,8540.md,603.md,mpc.md,
+	7xx.md,rios2.md,7450.md,440.md,rios1.md,rs64.md,power5.md,40x.md}:
+	Add descriptions for insert_dword, shift,trap,var_shift_rotate,
+	cntlz,exts and var_delayed_compare.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	_ARCH_PWR6X, if features enabled.
+	* config/rs6000/rs6000.opt (mmfpgpr): New.
+	* config/rs6000/rs6000.c (rs6000_align_branch_targets): New variable.
+	(cached_can_issue_more): New variable.
+	(processor_costs): Add power6_cost.
+	(rs6000_sched_init): New function.
+	(is_dispatch_slot_restricted): Deleted.
+	(set_to_load_agen): New function.
+	(is_load_insn,is_store_insn): New functions.
+	(adjacent_mem_locations): New function.
+	(insn_must_be_first_in_group): New function.
+	(insn_must_be_last_in_group): New function.
+	(rs6000_sched_reorder): New function.
+	(rs6000_sched_reorder2): New function.
+	(TARGET_SCHED_INIT,TARGET_SCHED_REORDER,
+	TARGET_SCHED_REORDER2): Define.
+	(processor_target_table): Use PROCESSOR_POWER6 for power6.
+	Add power6x. Add MASK_MFPGPR for power6x.
+	(POWERPC_MASKS): Add MASK_MFPGPR.
+	(rs6000_override_options): Set rs6000_always_hint to false
+	for power6.  Set rs6000_align_branch_targets. Replace
+	rs6000_sched_groups check with rs6000_align_branch_targets.
+	Use PROCESSOR_POWER6.
+	(last_scheduled_insn): New variable.
+	(load_store_pendulum): New variable.
+	(rs6000_variable_issue): Set last_scheduled_insn and
+	cached_can_issue_more.
+	(rs6000_adjust_cost): Add power6 cost adjustments.
+	(rs6000_adjust_priority): Replace is_dispatch_slot_restricted
+	with insn_must_be_first_in_group. Add power6 priority adjustments.
+	(rs6000_issue_rate): Add CPU_POWER6.
+	(insn_terminates_group_p): Use insn_must_be_{first,last}_in_group.
+	* config/rs6000/rs6000.h (processor_type): Add PROCESSOR_POWER6.
+	(TARGET_MFPGPR): New.
+	(SECONDARY_MEMORY_NEEDED): Use TARGET_MFPGPR.
+	(ASM_CPU_SPEC): Add power6x.
+	(SECONDARY_MEMORY_NEEDED): Added mode!=DFmode and mode!=DImode
+	conditions.
+	* config/rs6000/power6.md: New file.
+
 2006-11-01  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* tree-pretty-print.c (dump_generic_node) <INTEGER_CST>: Use
