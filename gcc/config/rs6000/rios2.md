@@ -40,7 +40,8 @@
   "iu1_rios2|iu2_rios2")
 
 (define_insn_reservation "rios2-integer" 1
-  (and (eq_attr "type" "integer,insert_word")
+  (and (eq_attr "type" "integer,insert_word,insert_dword,shift,trap,\
+                         var_shift_rotate,cntlz,exts")
        (eq_attr "cpu" "rios2"))
   "iu1_rios2|iu2_rios2")
 
@@ -67,7 +68,8 @@
 ; compare executes on integer unit, but feeds insns which
 ; execute on the branch unit.
 (define_insn_reservation "rios2-compare" 3
-  (and (eq_attr "type" "cmp,fast_compare,compare,delayed_compare")
+  (and (eq_attr "type" "cmp,fast_compare,compare,delayed_compare,\
+                        var_delayed_compare")
        (eq_attr "cpu" "rios2"))
   "(iu1_rios2|iu2_rios2),nothing,bpu_rios2")
 
