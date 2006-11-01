@@ -1,3 +1,7 @@
+2006-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def (gamma, lgamma): Use ATTR_MATHFN_FPROUNDING_STORE.
+
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 23067

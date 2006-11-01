@@ -106,7 +106,6 @@ void test(double d1, float f1, long double ld1)
   OUTER_CAST1 (exp2, /*C99=*/ 1);
   OUTER_CAST1 (expm1, /*C99=*/ 1);
   OUTER_CAST1 (fabs, /*C99=*/ 0);
-  OUTER_CAST1 (lgamma, /*C99=*/ 1);
   OUTER_CAST1 (log, /*C99=*/ 0);
   OUTER_CAST1 (log10, /*C99=*/ 0);
   OUTER_CAST1 (log1p, /*C99=*/ 1);
