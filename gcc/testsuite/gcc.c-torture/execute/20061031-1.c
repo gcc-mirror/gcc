@@ -17,7 +17,7 @@ void f(short delta)
         p0 += delta;
         ff(s);
         if (nunmap[p0] == 17)
-            asm volatile("# nop");
+            asm volatile("");
     }
 }
 
