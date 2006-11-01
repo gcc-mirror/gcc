@@ -1,3 +1,7 @@
+2006-11-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20061101-1.c: New test.
+
 2006-11-01  Richard Guenther  <rguenther@suse.de>
 
 	* testsuite/gcc.target/i386/fpprec-1.c: New testcase.
