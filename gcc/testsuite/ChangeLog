@@ -1,3 +1,7 @@
+2006-11-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20061101-1.c: New test.
+
 2006-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-attr-1.c: Don't test gamma/lgamma.
