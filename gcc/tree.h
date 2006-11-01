@@ -4150,7 +4150,7 @@ extern GTY(()) const char * current_function_func_begin_label;
 /* In tree.c */
 extern unsigned crc32_string (unsigned, const char *);
 extern void clean_symbol_name (char *);
-extern tree get_file_function_name_long (const char *);
+extern tree get_file_function_name (const char *);
 extern tree get_callee_fndecl (tree);
 extern void change_decl_assembler_name (tree, tree);
 extern int type_num_arguments (tree);
@@ -4488,10 +4488,6 @@ extern void gimplify_function_tree (tree);
 extern const char *get_name (tree);
 extern tree unshare_expr (tree);
 extern void sort_case_labels (tree);
-
-/* If KIND=='I', return a suitable global initializer (constructor) name.
-   If KIND=='D', return a suitable global clean-up (destructor) name.  */
-extern tree get_file_function_name (int);
 
 /* Interface of the DWARF2 unwind info support.  */
 

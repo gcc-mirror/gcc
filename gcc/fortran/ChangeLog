@@ -1,3 +1,8 @@
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
+
+	* trans-decl.c (gfc_generate_constructors): Update for removal
+	of get_file_function_name.
+
 2006-11-01  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/29537

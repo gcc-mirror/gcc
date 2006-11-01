@@ -1,3 +1,10 @@
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
+
+	* name-lookup.c (get_anonymous_namespace_name): New.
+	(push_namespace_with_attribs): Use get_anonymous_namespace_name.
+	* decl2.c (start_objects): Update for rename of
+	get_file_function_name_long.
+
 2006-10-30  Dirk Mueller  <dmueller@suse.de>
 
 	PR c++/28704
