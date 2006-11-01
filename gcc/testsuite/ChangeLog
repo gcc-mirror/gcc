@@ -1,3 +1,18 @@
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/inline-16.c: New.
+
+	PR 16622
+	* gcc.dg/inline-10.c (main): Don't declare 'main' inline without
+	defining it.
+	* gcc.dg/inline-13.c: New.
+	* gcc.dg/inline-14.c: New.
+	* gcc.dg/inline-15.c: New.
+
+	PR 11377
+	* gcc.dg/inline6.c: New.
+	* gcc.dg/inline7.c: New.
+
 2006-10-31  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/23470
