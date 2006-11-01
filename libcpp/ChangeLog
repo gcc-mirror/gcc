@@ -1,3 +1,10 @@
+2006-11-01	Douglas Gregor <doug.gregor@gmail.com>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUCXX0X and CLK_CXX0X
+	for experimental C++0x mode.
+	* init.c (lang_defaults): Add defaults for C++0x modes. C++0x has
+	adopted the preprocessor changes introduced in C99.
+
 2006-10-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (need_64bit_hwint): Set for i[34567]86-*-linux*
