@@ -1,5 +1,17 @@
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
+	PR 23067
+	* c-decl.c (start_struct): Don't create self-containing
+	structures.
+	* config/rs6000/rs6000.c (darwin_rs6000_special_round_type_align):
+	New.
+	* config/rs6000/rs6000-protos.h
+	(darwin_rs6000_special_round_type_align): New.
+	* config/rs6000/darwin.h (ADJUST_FIELD_ALIGN): Rewrite.
+	(ROUND_TYPE_ALIGN): Use darwin_rs6000_special_round_type_align.
+
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
+
 	* toplev.c (compile_file): Call final_write_globals
 	even if there have been errors.
 	

@@ -374,26 +374,28 @@ do {									\
 /* Fix for emit_group_load (): force large constants to be pushed via regs.  */
 #define ALWAYS_PUSH_CONSTS_USING_REGS_P		1
 
-/* This now supports a natural alignment mode */
-/* Darwin word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-  (TARGET_ALIGN_NATURAL ? (COMPUTED) : \
-  (TYPE_MODE (TREE_CODE (TREE_TYPE (FIELD)) == ARRAY_TYPE \
-	      ? get_inner_array_type (FIELD) \
-	      : TREE_TYPE (FIELD)) == DFmode \
-   ? MIN ((COMPUTED), 32) : (COMPUTED)))
+/* Compute field alignment.  This is similar to the version of the
+   macro in the Apple version of GCC, except that version supports
+   'mac68k' alignment, and that version uses the computed alignment
+   always for the first field of a structure.  The first-field
+   behaviour is dealt with by
+   darwin_rs6000_special_round_type_align.  */
+#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)	\
+  (TARGET_ALIGN_NATURAL ? (COMPUTED)		\
+   : (COMPUTED) == 128 ? 128			\
+   : MIN ((COMPUTED), 32))
 
 /* Darwin increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
-#define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)			\
-  ((TREE_CODE (STRUCT) == RECORD_TYPE					\
-    || TREE_CODE (STRUCT) == UNION_TYPE					\
-    || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)				\
-   && TARGET_ALIGN_NATURAL == 0                         		\
-   ? rs6000_special_round_type_align (STRUCT, COMPUTED, SPECIFIED)	\
-   : (TREE_CODE (STRUCT) == VECTOR_TYPE					\
-      && ALTIVEC_VECTOR_MODE (TYPE_MODE (STRUCT))) 			\
-   ? MAX (MAX ((COMPUTED), (SPECIFIED)), 128)          			 \
+#define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)			  \
+  ((TREE_CODE (STRUCT) == RECORD_TYPE					  \
+    || TREE_CODE (STRUCT) == UNION_TYPE					  \
+    || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)				  \
+   && TARGET_ALIGN_NATURAL == 0						  \
+   ? darwin_rs6000_special_round_type_align (STRUCT, COMPUTED, SPECIFIED) \
+   : (TREE_CODE (STRUCT) == VECTOR_TYPE					  \
+      && ALTIVEC_VECTOR_MODE (TYPE_MODE (STRUCT)))			  \
+   ? MAX (MAX ((COMPUTED), (SPECIFIED)), 128)				  \
    : MAX ((COMPUTED), (SPECIFIED)))
 
 /* Specify padding for the last element of a block move between

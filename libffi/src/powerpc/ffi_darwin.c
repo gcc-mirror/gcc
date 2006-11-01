@@ -1,11 +1,12 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998 Geoffrey Keating
+   ffi_darwin.c
 
-   PowerPC Foreign Function Interface
+   Copyright (C) 1998 Geoffrey Keating
+   Copyright (C) 2001 John Hornkvist
+   Copyright (C) 2002, 2006 Free Software Foundation, Inc.
 
-   Darwin ABI support (c) 2001 John Hornkvist
-   AIX ABI support (c) 2002 Free Software Foundation, Inc.
-
+   FFI support for Darwin and AIX.
+   
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
    ``Software''), to deal in the Software without restriction, including
@@ -225,6 +226,48 @@ void ffi_prep_args(extended_cif *ecif, unsigned *const stack)
   //FFI_ASSERT(flags & FLAG_4_GPR_ARGUMENTS || intarg_count <= 4);
 }
 
+/* Adjust the size of S to be correct for Darwin.
+   On Darwin, the first field of a structure has natural alignment.  */
+
+static void
+darwin_adjust_aggregate_sizes (ffi_type *s)
+{
+  int i;
+
+  if (s->type != FFI_TYPE_STRUCT)
+    return;
+
+  s->size = 0;
+  for (i = 0; s->elements[i] != NULL; i++)
+    {
+      ffi_type *p;
+      int align;
+      
+      p = s->elements[i];
+      darwin_adjust_aggregate_sizes (p);
+      if (i == 0
+	  && (p->type == FFI_TYPE_UINT64
+	      || p->type == FFI_TYPE_SINT64
+	      || p->type == FFI_TYPE_DOUBLE
+	      || p->alignment == 8))
+	align = 8;
+      else if (p->alignment == 16 || p->alignment < 4)
+	align = p->alignment;
+      else
+	align = 4;
+      s->size = ALIGN(s->size, align) + p->size;
+    }
+  
+  s->size = ALIGN(s->size, s->alignment);
+  
+  if (s->elements[0]->type == FFI_TYPE_UINT64
+      || s->elements[0]->type == FFI_TYPE_SINT64
+      || s->elements[0]->type == FFI_TYPE_DOUBLE
+      || s->elements[0]->alignment == 8)
+    s->alignment = s->alignment > 8 ? s->alignment : 8;
+  /* Do not add additional tail padding.  */
+}
+
 /* Perform machine dependent cif processing.  */
 ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 {
@@ -237,7 +280,15 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   unsigned size_al = 0;
 
   /* All the machine-independent calculation of cif->bytes will be wrong.
+     All the calculation of structure sizes will also be wrong.
      Redo the calculation for DARWIN.  */
+
+  if (cif->abi == FFI_DARWIN)
+    {
+      darwin_adjust_aggregate_sizes (cif->rtype);
+      for (i = 0; i < cif->nargs; i++)
+	darwin_adjust_aggregate_sizes (cif->arg_types[i]);
+    }
 
   /* Space for the frame pointer, callee's LR, CR, etc, and for
      the asm's temp regs.  */

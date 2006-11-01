@@ -1,3 +1,14 @@
+2006-10-31  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 23067
+	* gcc.target/powerpc/darwin-abi-3.c: Remove XFAIL.
+	* gcc.target/powerpc/darwin-abi-6.c: Remove XFAIL.
+	* gcc.target/powerpc/darwin-abi-7.c: Remove XFAIL.
+	* gcc.target/powerpc/darwin-abi-8.c: Remove XFAIL.
+	* gcc.target/powerpc/darwin-abi-9.c: Remove XFAIL.
+	* gcc.target/powerpc/darwin-abi-10.c: Remove XFAIL.
+	* gcc.target/powerpc/darwin-abi-11.c: Remove XFAIL.
+
 2006-10-31  Eric Christopher  <echristo@apple.com>
 	    Falk Hueffner  <falk@debian.org>
 
@@ -6,7 +17,7 @@
 	* gcc.dg/builtin-bswap-3.c: New.
 	* gcc.dg/builtin-bswap-4.c: New.
 	* gcc.dg/builtin-bswap-5.c: New.
-	* gcc.dg/i386/builtin-bswap-1.c: New.
+	* gcc.target/i386/builtin-bswap-1.c: New.
 
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
