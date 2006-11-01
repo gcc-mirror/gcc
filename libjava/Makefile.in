@@ -1216,7 +1216,9 @@ gnu/gcj/io/SimpleSHSStream.java
 
 gnu_gcj_io_header_files = $(patsubst %.java,%.h,$(gnu_gcj_io_source_files))
 gnu_gcj_jvmti_source_files = \
-gnu/gcj/jvmti/Breakpoint.java
+gnu/gcj/jvmti/Breakpoint.java \
+gnu/gcj/jvmti/BreakpointManager.java \
+gnu/gcj/jvmti/Location.java
 
 gnu_gcj_jvmti_header_files = $(patsubst %.java,%.h,$(gnu_gcj_jvmti_source_files))
 gnu_gcj_runtime_source_files = \

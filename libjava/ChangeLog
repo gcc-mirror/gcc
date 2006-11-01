@@ -1,3 +1,13 @@
+2006-11-01  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/gcj/jvmti/Location.java: New file.
+	* gnu/gcj/jvmti/BreakpointManager.java: New file.
+	* jvmti.cc (_Jv_JVMTI_SetBreakpoint): New function.
+	(_Jv_JVMTI_ClearBreakpoint): New function.
+	(_Jv_JVMTI_Interface): Define SetBreakpoint and ClearBreakpoint.
+	* sources.am: Regenerated.
+	* Makefile.in: Regenerated.
+
 2006-10-28  Keith Seitz  <keiths@redhat.com>
 
 	* Makefile.am (nat_source_files): Add natBreakpoint.cc.
