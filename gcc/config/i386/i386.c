@@ -19423,10 +19423,11 @@ void
 ix86_expand_rint (rtx operand0, rtx operand1)
 {
   /* C code for the stuff we're doing below:
-        if (!isless (fabs (operand1), 2**52))
+	xa = fabs (operand1);
+        if (!isless (xa, 2**52))
 	  return operand1;
-        tmp = copysign (2**52, operand1);
-        return operand1 + tmp - tmp;
+        xa = xa + 2**52 - 2**52;
+        return copysign (xa, operand1);
    */
   enum machine_mode mode = GET_MODE (operand0);
   rtx res, xa, label, TWO52, mask;
@@ -19441,10 +19442,10 @@ ix86_expand_rint (rtx operand0, rtx operand1)
   TWO52 = ix86_gen_TWO52 (mode);
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
-  ix86_sse_copysign_to_positive (TWO52, TWO52, res, mask);
+  expand_simple_binop (mode, PLUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
+  expand_simple_binop (mode, MINUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
 
-  expand_simple_binop (mode, PLUS, res, TWO52, res, 0, OPTAB_DIRECT);
-  expand_simple_binop (mode, MINUS, res, TWO52, res, 0, OPTAB_DIRECT);
+  ix86_sse_copysign_to_positive (res, xa, res, mask);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
@@ -19468,7 +19469,7 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
           x2 -= 1;
      Compensate.  Ceil:
         if (x2 < x)
-          x2 += 1;
+          x2 -= -1;
         return x2;
    */
   enum machine_mode mode = GET_MODE (operand0);
@@ -19494,14 +19495,17 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
   /* xa = copysign (xa, operand1) */
   ix86_sse_copysign_to_positive (xa, xa, res, mask);
 
-  /* generate 1.0 */
-  one = force_reg (mode, const_double_from_real_value (dconst1, mode));
+  /* generate 1.0 or -1.0 */
+  one = force_reg (mode,
+	           const_double_from_real_value (do_floor
+						 ? dconst1 : dconstm1, mode));
 
   /* Compensate: xa = xa - (xa > operand1 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGT, xa, res, !do_floor);
   emit_insn (gen_rtx_SET (VOIDmode, tmp,
                           gen_rtx_AND (mode, one, tmp)));
-  expand_simple_binop (mode, do_floor ? MINUS : PLUS,
+  /* We always need to subtract here to preserve signed zero.  */
+  expand_simple_binop (mode, MINUS,
                        xa, tmp, res, 0, OPTAB_DIRECT);
 
   emit_label (label);
@@ -19526,10 +19530,12 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
      Compensate.  Ceil:
 	if (x2 < x)
 	  x2 += 1;
+	if (HONOR_SIGNED_ZEROS (mode))
+	  return copysign (x2, x);
 	return x2;
    */
   enum machine_mode mode = GET_MODE (operand0);
-  rtx xa, xi, TWO52, tmp, label, one, res;
+  rtx xa, xi, TWO52, tmp, label, one, res, mask;
 
   TWO52 = ix86_gen_TWO52 (mode);
 
@@ -19539,7 +19545,7 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
   emit_move_insn (res, operand1);
 
   /* xa = abs (operand1) */
-  xa = ix86_expand_sse_fabs (res, NULL);
+  xa = ix86_expand_sse_fabs (res, &mask);
 
   /* if (!isless (xa, TWO52)) goto label; */
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
@@ -19558,6 +19564,9 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
                           gen_rtx_AND (mode, one, tmp)));
   expand_simple_binop (mode, do_floor ? MINUS : PLUS,
                        xa, tmp, res, 0, OPTAB_DIRECT);
+
+  if (HONOR_SIGNED_ZEROS (mode))
+    ix86_sse_copysign_to_positive (res, res, force_reg (mode, operand1), mask);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
@@ -19650,10 +19659,13 @@ ix86_expand_trunc (rtx operand0, rtx operand1)
         double xa = fabs (x), x2;
         if (!isless (xa, TWO52))
           return x;
-        return (double)(long)x;
+        x2 = (double)(long)x;
+	if (HONOR_SIGNED_ZEROS (mode))
+	  return copysign (x2, x);
+	return x2;
    */
   enum machine_mode mode = GET_MODE (operand0);
-  rtx xa, xi, TWO52, label, res;
+  rtx xa, xi, TWO52, label, res, mask;
 
   TWO52 = ix86_gen_TWO52 (mode);
 
@@ -19663,7 +19675,7 @@ ix86_expand_trunc (rtx operand0, rtx operand1)
   emit_move_insn (res, operand1);
 
   /* xa = abs (operand1) */
-  xa = ix86_expand_sse_fabs (res, NULL);
+  xa = ix86_expand_sse_fabs (res, &mask);
 
   /* if (!isless (xa, TWO52)) goto label; */
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
@@ -19672,6 +19684,9 @@ ix86_expand_trunc (rtx operand0, rtx operand1)
   xi = gen_reg_rtx (mode == DFmode ? DImode : SImode);
   expand_fix (xi, res, 0);
   expand_float (res, xi, 0);
+
+  if (HONOR_SIGNED_ZEROS (mode))
+    ix86_sse_copysign_to_positive (res, res, force_reg (mode, operand1), mask);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
