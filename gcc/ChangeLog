@@ -1,3 +1,8 @@
+2006-10-31  Andrew Pinski  <pinskia@gmail.com>
+
+	* doc/invoke.texi (-fkeep-inline-functions): Change "GNU C"
+	to "GNU C89".
+
 2006-11-01  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* target.h (targetm.cxx.use_atexit_for_cxa_atexit): New target
