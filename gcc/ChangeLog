@@ -1,3 +1,10 @@
+2006-11-01  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* tree-pretty-print.c (dump_generic_node) <INTEGER_CST>: Use
+	HOST_WIDE_INT_PRINT to print high and low parts.  Use
+	HOST_BITS_PER_WIDE_INT for the width of HOST_WIDE_INT.  When
+	printing a hexadecimal number prefix it with 0x.
+
 2006-11-01  Chris Johns <chris@contemporary.net.au>
 
 	PR bootstrap/28400
