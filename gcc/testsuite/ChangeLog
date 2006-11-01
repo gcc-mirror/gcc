@@ -1,3 +1,10 @@
+2006-11-01  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.dg/fold-mod-1.c: Match the leading 0x for the
+	hexadecimal value.
+	* gcc.dg/tree-prof/val-prof-2.c: Likewise.
+	* gcc.dg/pr14796-2.c: Likewise.
+
 2006-11-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20061101-1.c: New test.
