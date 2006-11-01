@@ -3,4 +3,4 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -ffreestanding -pedantic-errors" } */
 
-inline int main (void);
+inline int main (void) { return 1; }

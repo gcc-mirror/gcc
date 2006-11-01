@@ -384,7 +384,6 @@ struct language_function GTY(())
   int returns_null;
   int returns_abnormally;
   int warn_about_return_type;
-  int extern_inline;
 };
 
 /* Save lists of labels used or defined in particular contexts.
