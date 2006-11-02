@@ -1,3 +1,7 @@
+2006-11-02  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc++.dg/tree-ssa/pr27891.c: New test.
+
 2006-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-attr-1.c: Don't test gamma/lgamma.

@@ -1,3 +1,9 @@
+2006-11-02  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/27891
+	* tree-ssa-loop-ivopts.c (rewrite_use_outer): Do not insert code
+	on abnormal edge.
+
 2006-11-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Update GMP/MPFR build
@@ -25,7 +31,7 @@
 2006-10-26  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/29092
-        * c-typeck.c (digest_init): Always allow initializing vectors
+	* c-typeck.c (digest_init): Always allow initializing vectors
 	that have static storage duration with compound literals.
 	* tree.c (build_type_attribute_qual_variant): New, based on
 	build_type_attribute_variant.
