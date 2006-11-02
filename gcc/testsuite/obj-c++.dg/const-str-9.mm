@@ -3,6 +3,7 @@
 
 /* { dg-options "-fnext-runtime" } */
 /* { dg-do compile { target *-*-darwin* } } */
+/* { dg-skip-if "" { *-*-darwin* } { "-m64" } { "" } } */
 
 #include <objc/Object.h>
 
