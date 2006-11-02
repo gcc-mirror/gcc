@@ -507,6 +507,54 @@ _Jv_JVMTI_GetMethodModifiers (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
 }
 
 static jvmtiError JNICALL
+_Jv_JVMTI_GetLineNumberTable (jvmtiEnv *env, jmethodID method,
+			      jint *entry_count_ptr,
+			      jvmtiLineNumberEntry **table_ptr)
+{
+  NULL_CHECK (entry_count_ptr);
+  NULL_CHECK (table_ptr);
+
+  jclass klass;
+  jvmtiError jerr = env->GetMethodDeclaringClass (method, &klass);
+  if (jerr != JVMTI_ERROR_NONE)
+    return jerr;
+
+  _Jv_MethodBase *base = _Jv_FindInterpreterMethod (klass, method);
+  if (base == NULL)
+    return JVMTI_ERROR_INVALID_METHODID;
+
+  if (java::lang::reflect::Modifier::isNative (method->accflags)
+      || !_Jv_IsInterpretedClass (klass))
+    return JVMTI_ERROR_NATIVE_METHOD;
+
+  _Jv_InterpMethod *imeth = reinterpret_cast<_Jv_InterpMethod *> (base);
+  jlong start, end;
+  jintArray lines = NULL;
+  jlongArray indices = NULL;
+  imeth->get_line_table (start, end, lines, indices);
+  if (lines == NULL)
+    return JVMTI_ERROR_ABSENT_INFORMATION;
+
+  jvmtiLineNumberEntry *table;
+  jsize len = lines->length * sizeof (jvmtiLineNumberEntry);
+  table = (jvmtiLineNumberEntry *) _Jv_MallocUnchecked (len);
+  if (table == NULL)
+    return JVMTI_ERROR_OUT_OF_MEMORY;
+  
+  jint *line = elements (lines);
+  jlong *index = elements (indices);
+  for (int i = 0; i < lines->length; ++i)
+    {
+      table[i].start_location = index[i];
+      table[i].line_number = line[i];
+    }
+
+  *table_ptr = table;
+  *entry_count_ptr = lines->length;
+  return JVMTI_ERROR_NONE;
+}
+
+static jvmtiError JNICALL
 _Jv_JVMTI_IsMethodNative (MAYBE_UNUSED jvmtiEnv *env, jmethodID method,
 			  jboolean *result)
 {
@@ -1380,7 +1428,7 @@ struct _Jv_jvmtiEnv _Jv_JVMTI_Interface =
   RESERVED,			// reserved67
   UNIMPLEMENTED,		// GetMaxLocals
   UNIMPLEMENTED,		// GetArgumentsSize
-  UNIMPLEMENTED,		// GetLineNumberTable
+  _Jv_JVMTI_GetLineNumberTable,	// GetLineNumberTable
   UNIMPLEMENTED,		// GetMethodLocation
   UNIMPLEMENTED,		// GetLocalVariableTable
   RESERVED,			// reserved73
