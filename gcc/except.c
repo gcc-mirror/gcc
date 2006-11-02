@@ -3522,8 +3522,14 @@ sjlj_output_call_site_table (void)
 static void
 switch_to_exception_section (const char * ARG_UNUSED (fnname))
 {
-  if (exception_section == 0)
+  section *s;
+
+  if (exception_section)
+    s = exception_section;
+  else
     {
+      /* Compute the section and cache it into exception_section,
+	 unless it depends on the function name.  */
       if (targetm.have_named_sections)
 	{
 	  int flags;
@@ -3539,22 +3545,26 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
 	    }
 	  else
 	    flags = SECTION_WRITE;
+
 #ifdef HAVE_LD_EH_GC_SECTIONS
 	  if (flag_function_sections)
 	    {
 	      char *section_name = xmalloc (strlen (fnname) + 32);
 	      sprintf (section_name, ".gcc_except_table.%s", fnname);
-	      exception_section = get_section (section_name, flags, NULL);
+	      s = get_section (section_name, flags, NULL);
 	      free (section_name);
 	    }
 	  else
 #endif
-	  exception_section = get_section (".gcc_except_table", flags, NULL);
+	    exception_section
+	      = s = get_section (".gcc_except_table", flags, NULL);
 	}
       else
-	exception_section = flag_pic ? data_section : readonly_data_section;
+	exception_section
+	  = s = flag_pic ? data_section : readonly_data_section;
     }
-  switch_to_section (exception_section);
+
+  switch_to_section (s);
 }
 #endif
 

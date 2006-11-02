@@ -1,3 +1,10 @@
+2006-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR other/29639
+	* except.c (switch_to_exception_section): Do not cache the section
+	if named sections are supported and HAVE_LD_EH_GC_SECTIONS is defined
+	and flag_function_sections is set.
+
 2006-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/29335
