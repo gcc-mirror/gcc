@@ -550,10 +550,6 @@ objc_finish_file (void)
 
   if (gen_declaration_file)
     fclose (gen_declaration_file);
-
-#ifdef OBJCPLUS
-  cp_finish_file ();
-#endif
 }
 
 /* Return the first occurrence of a method declaration corresponding

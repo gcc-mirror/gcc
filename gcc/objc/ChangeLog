@@ -1,3 +1,8 @@
+2006-11-02  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* objc-act.c (objc_finish_file): Remove ifdef clause for OBJCPLUS and
+	content where we called cp_finish_file.
+
 2006-10-23 Rafael Avila de Espindola  <rafael.espindola@gmail.com>
 
 	* objc-act.c (synth_module_prologue): Replace calls to
