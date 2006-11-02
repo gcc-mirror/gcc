@@ -1,5 +1,10 @@
 2006-11-01  Roger Sayle  <roger@eyesopen.com>
 
+	* config/darwin.h (CPP_SPEC): Handle -pthread, transforming
+	it into -D_REENTRANT.
+
+2006-11-01  Roger Sayle  <roger@eyesopen.com>
+
 	* configure.ac (HAVE_AS_IX86_DIFF_SECT_DELTA): New test to determine
 	whether the assembler supports taking the difference of symbols in
 	different sections.  On x86/Solaris, GAS does but Solaris as doesn't.
