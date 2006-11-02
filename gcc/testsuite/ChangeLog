@@ -1,5 +1,7 @@
 2006-11-02  Mike Stump  <mrs@apple.com>
 
+	* obj-c++.dg/const-str-9.mm: Don't run on 64-bit.
+
 	* g++.old-deja/g++.abi/align.C: Enable for darwin.
 
 2006-11-02  Eric Botcazou  <ebotcazou@adacore.com>
