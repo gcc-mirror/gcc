@@ -207,6 +207,7 @@ static tree do_mpfr_arg1 (tree, tree, int (*)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
 			  const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, bool);
 static tree do_mpfr_arg2 (tree, tree, tree,
 			  int (*)(mpfr_ptr, mpfr_srcptr, mpfr_srcptr, mp_rnd_t));
+static tree do_mpfr_sincos (tree, tree, tree);
 
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
@@ -9184,6 +9185,12 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     CASE_FLT_FN (BUILT_IN_TAN):
       return fold_builtin_tan (arglist, type);
 
+    CASE_FLT_FN (BUILT_IN_SINCOS):
+      if (validate_arglist (arglist, REAL_TYPE, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
+	return do_mpfr_sincos (TREE_VALUE (arglist), TREE_VALUE (TREE_CHAIN (arglist)),
+			       TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))));
+    break;
+
     CASE_FLT_FN (BUILT_IN_SINH):
       if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
 	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_sinh,
@@ -11592,5 +11599,60 @@ do_mpfr_arg2 (tree arg1, tree arg2, tree type,
 	}
     }
   
+  return result;
+}
+
+/* If argument ARG is a REAL_CST, call mpfr_sin_cos() on it and set
+   the pointers *(ARG_SINP) and *(ARG_COSP) to the resulting values.
+   The type is taken from the type of ARG and is used for setting the
+   precision of the calculation and results.  */
+
+static tree
+do_mpfr_sincos (tree arg, tree arg_sinp, tree arg_cosp)
+{
+  tree result = NULL_TREE;
+  
+  STRIP_NOPS (arg);
+  
+  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg);
+
+      if (!real_isnan (ra) && !real_isinf (ra))
+        {
+	  tree const type = TREE_TYPE (arg);
+	  const int prec = REAL_MODE_FORMAT (TYPE_MODE (type))->p;
+	  tree result_s, result_c;
+	  int inexact;
+	  mpfr_t m, ms, mc;
+
+	  mpfr_inits2 (prec, m, ms, mc, NULL);
+	  mpfr_from_real (m, ra);
+	  mpfr_clear_flags();
+	  inexact = mpfr_sin_cos (ms, mc, m, GMP_RNDN);
+	  result_s = do_mpfr_ckconv (ms, type, inexact);
+	  result_c = do_mpfr_ckconv (mc, type, inexact);
+	  mpfr_clears (m, ms, mc, NULL);
+	  if (result_s && result_c)
+	    {
+	      /* Dereference the sin/cos pointer arguments.  */
+	      arg_sinp = build_fold_indirect_ref (arg_sinp);
+	      arg_cosp = build_fold_indirect_ref (arg_cosp);
+	      /* Proceed if valid pointer type were passed in.  */
+	      if (TYPE_MAIN_VARIANT (TREE_TYPE (arg_sinp)) == TYPE_MAIN_VARIANT (type)
+		  && TYPE_MAIN_VARIANT (TREE_TYPE (arg_cosp)) == TYPE_MAIN_VARIANT (type))
+	        {
+		  /* Set the values. */
+		  result_s = fold_build2 (MODIFY_EXPR, type, arg_sinp, result_s);
+		  TREE_SIDE_EFFECTS (result_s) = 1;
+		  result_c = fold_build2 (MODIFY_EXPR, type, arg_cosp, result_c);
+		  TREE_SIDE_EFFECTS (result_c) = 1;
+		  /* Combine the assignments into a compound expr.  */
+		  result = non_lvalue (fold_build2 (COMPOUND_EXPR, type,
+						    result_s, result_c));
+		}
+	    }
+	}
+    }
   return result;
 }
