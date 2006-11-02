@@ -1,3 +1,11 @@
+2006-11-02  Uros Bizjak <ubizjak@gmail.com>
+
+	PR target/29377
+	* config/h8300/h8300.c (h8300_emit_stack_adjustment): Change "size"
+	argument to HOST_WIDE_INT.  Update function prototype.
+	(round_frame_size): Change return type to HOST_WIDE_INT.  Change
+	"size" argument to HOST_WIDE_INT.  Update function prototype.
+
 2006-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (gamma, lgamma): Use ATTR_MATHFN_FPROUNDING_STORE.
