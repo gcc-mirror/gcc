@@ -2850,6 +2850,18 @@ foo:	nop
       [AC_DEFINE(HAVE_AS_IX86_FFREEP, 1,
         [Define if your assembler supports the ffreep mnemonic.])])
 
+    gcc_GAS_CHECK_FEATURE([different section symbol subtraction],
+      gcc_cv_as_ix86_diff_sect_delta,,,
+      [.section .rodata
+.L1:
+        .long .L2-.L1
+        .long .L3-.L1
+        .text
+.L3:    nop
+.L2:    nop],,
+      [AC_DEFINE(HAVE_AS_IX86_DIFF_SECT_DELTA, 1,
+        [Define if your assembler supports the subtraction of symbols in different sections.])])
+
     # This one is used unconditionally by i386.[ch]; it is to be defined
     # to 1 if the feature is present, 0 otherwise.
     gcc_GAS_CHECK_FEATURE([GOTOFF in data],
