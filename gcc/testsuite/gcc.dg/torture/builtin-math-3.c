@@ -21,7 +21,7 @@ extern void link_error(int);
     link_error(__LINE__); \
   if (__builtin_##FUNC##l(ARG##L) != RES##L) \
     link_error(__LINE__); \
-  } while (0);
+  } while (0)
 
 /* Range test, check that (LOW) < FUNC(ARG) < (HI).  */
 #define TESTIT_R(FUNC,ARG,LOW,HI) do { \
@@ -31,7 +31,7 @@ extern void link_error(int);
     link_error(__LINE__); \
   if (__builtin_##FUNC##l(ARG) <= (LOW) || __builtin_##FUNC##l(ARG) >= (HI)) \
     link_error(__LINE__); \
-  } while (0);
+  } while (0)
 
 /* Test that FUNC(ARG1, ARG2) == (RES).  */
 #define TESTIT2(FUNC,ARG1,ARG2,RES) do { \
@@ -41,7 +41,7 @@ extern void link_error(int);
     link_error(__LINE__); \
   if (__builtin_##FUNC##l(ARG1##L, ARG2##L) != RES##L) \
     link_error(__LINE__); \
-  } while (0);
+  } while (0)
 
 /* Range test, check that (LOW) < FUNC(ARG1,ARG2) < (HI).  */
 #define TESTIT2_R(FUNC,ARG1,ARG2,LOW,HI) do { \
@@ -54,10 +54,47 @@ extern void link_error(int);
   if (__builtin_##FUNC##l(ARG1, ARG2) <= (LOW) \
       || __builtin_##FUNC##l(ARG1, ARG2) >= (HI)) \
     link_error(__LINE__); \
-  } while (0);
+  } while (0)
+
+/* Test that for FUNC(ARG, &ARG_S, &ARG_C);
+   assert (ARG_S == RES_S && ARG_C == RES_C);.  */
+#define TESTIT_2P(FUNC,ARG,ARG_S,ARG_C,RES_S,RES_C) do { \
+  __builtin_##FUNC##f(ARG##F, &ARG_S##f, &ARG_C##f); \
+  if (ARG_S##f != (RES_S##F) || ARG_C##f != (RES_C##F)) \
+    link_error(__LINE__); \
+  __builtin_##FUNC(ARG, &ARG_S, &ARG_C); \
+  if (ARG_S != (RES_S) || ARG_C != (RES_C)) \
+    link_error(__LINE__); \
+  __builtin_##FUNC##l(ARG##L, &ARG_S##l, &ARG_C##l); \
+  if (ARG_S##l != (RES_S##L) || ARG_C##l != (RES_C##L)) \
+    link_error(__LINE__); \
+  } while (0)
+
+/* Test that for FUNC(ARG, &ARG_S, &ARG_C);
+   assert (LOW_S < ARG_S < HI_S && LOW_C < ARG_C < HI_C);.  */
+#define TESTIT_2P_R(FUNC,ARG,ARG_S,ARG_C,LOW_S,HI_S,LOW_C,HI_C) do { \
+  __builtin_##FUNC##f(ARG##F, &ARG_S##f, &ARG_C##f); \
+  if (ARG_S##f <= (LOW_S##F) || ARG_S##f >= (HI_S##F) \
+      || ARG_C##f <= (LOW_C##F) || ARG_C##f >= (HI_C##F)) \
+    link_error(__LINE__); \
+  __builtin_##FUNC(ARG, &ARG_S, &ARG_C); \
+  if (ARG_S <= (LOW_S) || ARG_S >= (HI_S) \
+      || ARG_C <= (LOW_C) || ARG_C >= (HI_C)) \
+    link_error(__LINE__); \
+  __builtin_##FUNC##l(ARG##L, &ARG_S##l, &ARG_C##l); \
+  if (ARG_S##l <= (LOW_S##L) || ARG_S##l >= (HI_S##L) \
+      || ARG_C##l <= (LOW_C##L) || ARG_C##l >= (HI_C##L)) \
+    link_error(__LINE__); \
+  } while (0)
 
 int main (void)
 {
+#ifdef __OPTIMIZE__
+  float sf, cf;
+  double s, c;
+  long double sl, cl;
+#endif
+
   TESTIT_R (asin, -1.0, -3.15/2.0, -3.14/2.0); /* asin(-1) == -pi/2 */
   TESTIT (asin, 0.0, 0.0); /* asin(0) == 0 */
   TESTIT (asin, -0.0, -0.0); /* asin(-0) == -0 */
@@ -101,6 +138,15 @@ int main (void)
   TESTIT (tan, -0.0, -0.0); /* tan(-0) == -0 */
   TESTIT_R (tan, 1.0, 1.55, 1.56); /* tan(1) == 1.557... */
 
+#ifdef __OPTIMIZE__
+  /* These tests rely on propagating the variables s and c, which
+     happens only when optimization is turned on.  */
+  TESTIT_2P_R (sincos, -1.0, s, c, -0.85, -0.84, 0.54, 0.55); /* (s==-0.841..., c==0.5403...) */
+  TESTIT_2P (sincos, 0.0, s, c, 0.0, 1.0); /* (s==0, c==1) */
+  TESTIT_2P (sincos, -0.0, s, c, -0.0, 1.0); /* (s==-0, c==1) */
+  TESTIT_2P_R (sincos, 1.0, s, c, 0.84, 0.85, 0.54, 0.55); /* (s==0.841..., c==0.5403...) */
+#endif
+  
   TESTIT_R (sinh, -1.0, -1.18, -1.17); /* sinh(-1) == -1.175... */
   TESTIT (sinh, 0.0, 0.0); /* sinh(0) == 0 */
   TESTIT (sinh, -0.0, -0.0); /* sinh(-0) == -0 */
@@ -207,16 +253,16 @@ int main (void)
   TESTIT2 (hypot, -3.0, -4.0, 5.0); /* hypot(-3,-4) == 5 */
   TESTIT2_R (hypot, 4.0, 5.0, 6.40, 6.41); /* hypot(4,5) == 6.403... */
 
-  TESTIT2 (atan2, 0.0, 0.0, 0.0) /* atan2(0,0) == 0 */
-  TESTIT2 (atan2, -0.0, 0.0, -0.0) /* atan2(-0,0) == -0 */
-  TESTIT2_R (atan2, 0.0, -0.0, 3.14, 3.15) /* atan2(0,-0) == pi */
-  TESTIT2_R (atan2, -0.0, -0.0, -3.15, -3.14) /* atan2(-0,-0) == -pi */
-  TESTIT2_R (atan2, 0.0, -1.0, 3.14, 3.15) /* atan2(0,-1) == pi */
-  TESTIT2_R (atan2, -0.0, -1.0, -3.15, -3.14) /* atan2(-0,-1) == -pi */
-  TESTIT2 (atan2, 0.0, 1.0, 0.0) /* atan2(0,1) == 0 */
-  TESTIT2 (atan2, -0.0, 1.0, -0.0) /* atan2(-0,1) == -0 */
-  TESTIT2_R (atan2, -1.0, 0.0, -1.58, -1.57) /* atan2(-1,0) == -pi/2 */
-  TESTIT2_R (atan2, 1.0, 0.0, 1.57, 1.58) /* atan2(1,0) == pi/2 */
+  TESTIT2 (atan2, 0.0, 0.0, 0.0); /* atan2(0,0) == 0 */
+  TESTIT2 (atan2, -0.0, 0.0, -0.0); /* atan2(-0,0) == -0 */
+  TESTIT2_R (atan2, 0.0, -0.0, 3.14, 3.15); /* atan2(0,-0) == pi */
+  TESTIT2_R (atan2, -0.0, -0.0, -3.15, -3.14); /* atan2(-0,-0) == -pi */
+  TESTIT2_R (atan2, 0.0, -1.0, 3.14, 3.15); /* atan2(0,-1) == pi */
+  TESTIT2_R (atan2, -0.0, -1.0, -3.15, -3.14); /* atan2(-0,-1) == -pi */
+  TESTIT2 (atan2, 0.0, 1.0, 0.0); /* atan2(0,1) == 0 */
+  TESTIT2 (atan2, -0.0, 1.0, -0.0); /* atan2(-0,1) == -0 */
+  TESTIT2_R (atan2, -1.0, 0.0, -1.58, -1.57); /* atan2(-1,0) == -pi/2 */
+  TESTIT2_R (atan2, 1.0, 0.0, 1.57, 1.58); /* atan2(1,0) == pi/2 */
 
   return 0;
 }

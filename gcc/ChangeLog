@@ -1,3 +1,9 @@
+2006-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/29335
+	* builtins.c (do_mpfr_sincos): New.
+	(fold_builtin_1): Use it to fold builtin sincos.
+
 2006-11-01  Roger Sayle  <roger@eyesopen.com>
 
 	* config/darwin.h (CPP_SPEC): Handle -pthread, transforming
