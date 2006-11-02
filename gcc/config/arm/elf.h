@@ -149,5 +149,3 @@
     }							\
   while (0)
 
-/* The EABI doesn't provide a way of implementing init_priority.  */
-#define SUPPORTS_INIT_PRIORITY (!TARGET_AAPCS_BASED)

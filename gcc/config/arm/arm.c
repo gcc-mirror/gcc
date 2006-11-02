@@ -11349,8 +11349,10 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
 /* Add a function to the list of static constructors.  */
 
 static void
-arm_elf_asm_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
+arm_elf_asm_constructor (rtx symbol, int priority)
 {
+  section *s;
+
   if (!TARGET_AAPCS_BASED)
     {
       default_named_section_asm_out_constructor (symbol, priority);
@@ -11358,7 +11360,16 @@ arm_elf_asm_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
     }
 
   /* Put these in the .init_array section, using a special relocation.  */
-  switch_to_section (ctors_section);
+  if (priority != DEFAULT_INIT_PRIORITY)
+    {
+      char buf[18];
+      sprintf (buf, ".init_array.%.5u", priority);
+      s = get_section (buf, SECTION_WRITE, NULL_TREE);
+    }
+  else
+    s = ctors_section;
+
+  switch_to_section (s);
   assemble_align (POINTER_SIZE);
   fputs ("\t.word\t", asm_out_file);
   output_addr_const (asm_out_file, symbol);

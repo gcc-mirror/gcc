@@ -1,3 +1,11 @@
+2006-11-02  Paul Brook  <paul@codesourcery.com>
+
+	gcc/
+	* config/arm/arm.c (arm_elf_asm_constructor): Remove ATTRIBUTE_UNUSED
+	from priority argument.  Use different section for non-default
+	priority.
+	* config/arm/elf.h: Remove definition of SUPPORTS_INIT_PRIORITY.
+
 2006-11-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR other/29639
