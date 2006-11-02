@@ -1,3 +1,8 @@
+2006-11-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/target-supports.exp, gcc.dg/arm-vfp1.c: Revert previous
+	patch.
+
 2006-11-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20061101-1.c: New test.
