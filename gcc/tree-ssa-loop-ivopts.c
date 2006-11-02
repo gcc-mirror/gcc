@@ -5738,7 +5738,7 @@ rewrite_use_outer (struct ivopts_data *data,
 
   exit = single_dom_exit (data->current_loop);
 
-  if (exit)
+  if (exit && !(exit->flags & EDGE_COMPLEX))
     {
       if (!cand->iv)
 	{

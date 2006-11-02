@@ -1,3 +1,7 @@
+2006-11-02  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc++.dg/tree-ssa/pr27891.c: New test.
+
 2006-11-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* lib/target-supports.exp, gcc.dg/arm-vfp1.c: Revert previous
