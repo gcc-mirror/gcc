@@ -10,8 +10,10 @@ details.  */
 
 #include <config.h>
 #include <gcj/cni.h>
+#include <java-interp.h>
 
 #include <gnu/classpath/jdwp/VMMethod.h>
+#include <gnu/classpath/jdwp/exception/JdwpInternalErrorException.h>
 #include <gnu/classpath/jdwp/util/LineTable.h>
 #include <gnu/classpath/jdwp/util/VariableTable.h>
 
@@ -33,10 +35,44 @@ gnu::classpath::jdwp::VMMethod::getModifiers ()
   return 0;
 }
 
-gnu::classpath::jdwp::util::LineTable*
+gnu::classpath::jdwp::util::LineTable *
 gnu::classpath::jdwp::VMMethod::getLineTable ()
 {
-  return NULL;
+  if (!_Jv_IsInterpretedClass (getDeclaringClass ()))
+    {
+      // this should not happen
+      ::java::lang::String *msg = JvNewStringLatin1 ("native class");
+      throw new exception::JdwpInternalErrorException (msg);
+    }
+
+  jmethodID desired_method = reinterpret_cast<jmethodID> (_methodId);
+
+  _Jv_MethodBase *theMethod
+    = _Jv_FindInterpreterMethod (getDeclaringClass (), desired_method);
+
+  if (theMethod == NULL)
+    {
+      // this should not happen
+      ::java::lang::String *msg
+	= JvNewStringLatin1 ("could not find method in class");
+      throw new exception::JdwpInternalErrorException (msg);
+    }
+
+  if (::java::lang::reflect::Modifier::isNative (desired_method->accflags))
+    {
+      jintArray lines = JvNewIntArray (0);
+      jlongArray indices = JvNewLongArray (0);
+      return new util::LineTable (-1, -1, lines, indices);
+    }
+
+  // get the linetable
+  _Jv_InterpMethod *imeth = reinterpret_cast<_Jv_InterpMethod *> (theMethod);
+  jlong start;
+  jlong end;
+  jintArray lines;
+  jlongArray indices;
+  imeth->get_line_table (start, end, lines, indices);
+  return new util::LineTable (start, end, lines, indices);
 }
 
 

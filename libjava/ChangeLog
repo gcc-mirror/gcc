@@ -1,5 +1,9 @@
 2006-11-02  Keith Seitz  <keiths@redhat.com>
 
+	* gnu/classpath/jdwp/natVMMethod.cc (getLineTable): Implement.
+
+2006-11-02  Keith Seitz  <keiths@redhat.com>
+
 	* jvmti.cc (_Jv_JVMTI_GetLineNumberTable): New function.
 	(_Jv_JVMTI_Interface): Define GetLineNumberTable.
 
