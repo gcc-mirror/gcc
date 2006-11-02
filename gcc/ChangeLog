@@ -1,3 +1,14 @@
+2006-11-01  Roger Sayle  <roger@eyesopen.com>
+
+	* configure.ac (HAVE_AS_IX86_DIFF_SECT_DELTA): New test to determine
+	whether the assembler supports taking the difference of symbols in
+	different sections.  On x86/Solaris, GAS does but Solaris as doesn't.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/sol2-10.h (JUMP_TABLES_IN_TEXT_SECTION): Define if
+	the assembler doesn't support taking the difference of symbols in
+	different sections, i.e. we're using the native solaris assembler.
+
 2006-11-01  Pete Steinmetz  <steinmtz@us.ibm.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 

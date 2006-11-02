@@ -203,6 +203,13 @@
 #endif
 
 
+/* Define if your assembler supports the subtraction of symbols in different
+   sections. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_DIFF_SECT_DELTA
+#endif
+
+
 /* Define if your assembler supports the ffreep mnemonic. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_FFREEP
