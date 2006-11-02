@@ -3850,12 +3850,15 @@ ld: warning: relocation error: R_SPARC_UA32: @dots{}
 To work around this problem, compile with @option{-gstabs+} instead of
 plain @option{-g}.
 
-When configuring the GNU Multiple Precision Library (GMP) version 4.1.x
-on a Solaris 7 or later system, the canonical target triplet must be
-specified as the @command{build} parameter on the configure line:
+When configuring the GNU Multiple Precision Library (GMP) or the MPFR
+library on a Solaris 7 or later system, the canonical target triplet
+must be specified as the @command{build} parameter on the configure
+line.  This triplet can be obtained by invoking ./config.guess in
+the toplevel source directory of GCC (and not that of GMP or MPFR).
+For example on a Solaris 7 system:
 
 @smallexample
-./configure --build=sparc-sun-solaris2.7 --prefix=xxx --enable-mpfr
+   % ./configure --build=sparc-sun-solaris2.7 --prefix=xxx
 @end smallexample
 
 @html
@@ -3935,15 +3938,24 @@ releases mishandled unaligned relocations on @code{sparc-*-*} targets.
 @end html
 @heading @anchor{sparc64-x-solaris2}sparc64-*-solaris2*
 
+When configuring the GNU Multiple Precision Library (GMP) or the
+MPFR library, the canonical target triplet must be specified as
+the @command{build} parameter on the configure line.  For example
+on a Solaris 7 system:
+
+@smallexample
+   % ./configure --build=sparc64-sun-solaris2.7 --prefix=xxx
+@end smallexample
+
 The following compiler flags must be specified in the configure
 step in order to bootstrap this target with the Sun compiler:
 
 @smallexample
-   % CC="cc -xildoff -xarch=v9" @var{srcdir}/configure [@var{options}] [@var{target}]
+   % CC="cc -xarch=v9 -xildoff" @var{srcdir}/configure [@var{options}] [@var{target}]
 @end smallexample
 
-@option{-xildoff} turns off the incremental linker, and @option{-xarch=v9}
-specifies the SPARC-V9 architecture to the Sun linker and assembler.
+@option{-xarch=v9} specifies the SPARC-V9 architecture to the Sun toolchain
+and @option{-xildoff} turns off the incremental linker.
 
 @html
 <hr />
