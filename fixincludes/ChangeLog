@@ -1,3 +1,14 @@
+2006-11-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* inclhack.def (glibc_c99_inline_1): New.
+	* inclhack.def (glibc_c99_inline_2): New.
+	* inclhack.def (glibc_c99_inline_3): New.
+	* inclhack.def (glibc_c99_inline_4): New.
+	* fixincl.x: Regenerate.
+	* tests/base/bits/string2.h: New.
+	* tests/base/sys/sysmacros.h: New.
+	* tests/base/sys/stat.h: Update.
+
 2006-11-01  Steve Ellcey  <sje@cup.hp.com>
 
 	* tests/base/sys/socket.h: Update.

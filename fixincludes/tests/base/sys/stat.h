@@ -14,6 +14,20 @@
 #endif  /* ALPHA___EXTERN_PREFIX_SYS_STAT_CHECK */
 
 
+#if defined( GLIBC_C99_INLINE_2_CHECK )
+#if __STDC_VERSION__ < 199901L
+extern
+#endif
+__inline__ int fstat64 (int __fd, struct stat64 *__buf) __THROW __nonnull ((2));
+#if __STDC_VERSION__ < 199901L
+extern
+#endif
+__inline__ int
+__NTH (fstat64 (int __fd, struct stat64 *__statbuf))
+{}
+#endif  /* GLIBC_C99_INLINE_2_CHECK */
+
+
 #if defined( RS6000_FCHMOD_CHECK )
 extern int fchmod(int, mode_t);
 #endif  /* RS6000_FCHMOD_CHECK */
