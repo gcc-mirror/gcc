@@ -1,3 +1,11 @@
+2006-11-03  Paul Brook  <paul@codesourcery.com>
+
+	gcc/
+	* config/arm/arm.c (arm_file_start): New function.
+	(TARGET_ASM_FILE_START): Define.
+	(arm_default_cpu): New variable.
+	(arm_override_options): Set arm_default_cpu.
+
 2006-11-03  David Ung  <davidu@mips.com>
 	
 	* config/mips/mips.h (processor_type): Removed PROCESSOR_24K, add
