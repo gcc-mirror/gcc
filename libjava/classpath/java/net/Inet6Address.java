@@ -95,7 +95,7 @@ public final class Inet6Address extends InetAddress
   /**
    * The address family of these addresses (used for serialization).
    */
-  private static final int FAMILY = 10; // AF_INET6
+  private static final int AF_INET6 = 10;
 
   /**
    * Create an Inet6Address object
@@ -105,7 +105,7 @@ public final class Inet6Address extends InetAddress
    */
   Inet6Address(byte[] addr, String host)
   {
-    super(addr, host, FAMILY);
+    super(addr, host, AF_INET6);
     // Super constructor clones the addr.  Get a reference to the clone.
     this.ipaddress = this.addr;
     ifname = null;

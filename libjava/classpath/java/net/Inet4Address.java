@@ -59,14 +59,14 @@ public final class Inet4Address extends InetAddress
   /**
    * The address family of these addresses (used for serialization).
    */
-  private static final int FAMILY = 2; // AF_INET
+  private static final int AF_INET = 2;
 
   /**
    * Inet4Address objects are serialized as InetAddress objects.
    */
   private Object writeReplace() throws ObjectStreamException
   {
-    return new InetAddress(addr, hostName, FAMILY);
+    return new InetAddress(addr, hostName, AF_INET);
   }
   
   /**
@@ -79,7 +79,7 @@ public final class Inet4Address extends InetAddress
    */
   Inet4Address(byte[] addr, String host)
   {
-    super(addr, host, FAMILY);
+    super(addr, host, AF_INET);
   }
 
   /**
