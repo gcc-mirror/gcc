@@ -1289,6 +1289,81 @@ fix = {
 };
 
 
+/*
+ *  Some versions of glibc don't expect the C99 inline semantics.
+ */
+fix = {
+    hackname  = glibc_c99_inline_1;
+    files     = features.h;
+    select    = "^ *&& !defined __OPTIMIZE_SIZE__ && !defined __NO_INLINE__$";
+    c_fix     = format;
+    c_fix_arg = "%0 && __STDC_VERSION__ < 199901L";
+    test_text = <<-EOT
+#if __GNUC_PREREQ (2, 7) && defined __OPTIMIZE__ \
+    && !defined __OPTIMIZE_SIZE__ && !defined __NO_INLINE__
+# define __USE_EXTERN_INLINES	1
+#endif
+EOT;
+};
+
+
+/*
+ * The glibc_c99_inline_1 fix should have fixed everything.  Unfortunately
+ * there are many glibc headers which do not respect __USE_EXTERN_INLINES.
+ * The remaining glibc_c99_inline_* fixes deal with some of those headers.
+ */
+fix = {
+    hackname  = glibc_c99_inline_2;
+    files     = sys/stat.h;
+    select    = "extern __inline__ int";
+    sed	      = "s/extern int \\(stat\\|lstat\\|fstat\\|mknod\\)/"
+		"#if __STDC_VERSION__ < 199901L\\\nextern\\\n#endif\\\n"
+    		"__inline__ int \\1/";
+    sed	      = "s/extern int __REDIRECT_NTH (\\(stat\\|lstat\\|fstat\\)/"
+		"#if __STDC_VERSION__ < 199901L\\\nextern\\\n#endif\\\n"
+    		"__inline__ int __REDIRECT_NTH (\\1/";
+    sed	      = "/^extern __inline__ int$/ c\\\n"
+		"#if __STDC_VERSION__ < 199901L\\\nextern\\\n#endif\\\n"
+		"__inline__ int\n";
+    test_text = <<-EOT
+extern int fstat64 (int __fd, struct stat64 *__buf) __THROW __nonnull ((2));
+extern __inline__ int
+__NTH (fstat64 (int __fd, struct stat64 *__statbuf))
+{}
+EOT;
+};
+
+
+fix = {
+    hackname  = glibc_c99_inline_3;
+    files     = bits/string2.h;
+    bypass    = "__STDC_VERSION__";
+    c_fix     = format;
+    c_fix_arg = "# if defined(__cplusplus) || __STDC_VERSION__ >= 19901L";
+    c_fix_arg = "^# ifdef __cplusplus$";
+    test_text = <<-EOT
+# ifdef __cplusplus
+#  define __STRING_INLINE inline
+# else
+#  define __STRING_INLINE extern __inline
+# endif
+EOT;
+};
+
+
+fix = {
+    hackname  = glibc_c99_inline_4;
+    files     = sys/sysmacros.h;
+    bypass    = "__STDC_VERSION__";
+    c_fix     = format;
+    c_fix_arg = "\n#if __STDC_VERSION__ < 19901L\nextern\n#endif\n";
+    c_fix_arg = "extern";
+    test_text = <<-EOT
+__extension__ extern __inline unsigned int
+EOT;
+};
+
+
 /*  glibc-2.3.5 defines pthread mutex initializers incorrectly,
  *  so we replace them with versions that correspond to the
  *  definition.
