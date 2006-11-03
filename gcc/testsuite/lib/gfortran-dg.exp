@@ -26,23 +26,23 @@ proc gfortran-dg-test { prog do_what extra_tool_flags } {
     set output_file [lindex $result 1]
 
     # gfortran error messages look like this:
-    #      In file [name]:[line]
+    #      [name]:[line]
     #
     #        some code
     #              1
-    #     Error: Some error at (1) and (2)
+    #     Error: Some error at (1)
     # or
-    #      In file [name]:[line]
+    #      [name]:[line]
     #
     #       some code
     #              1
-    #      In file [name]:[line2]
+    #      [name]:[line2]
     #
     #       some other code
     #         2
     #     Error: Some error at (1) and (2)
     # or
-    #      In file [name]:[line]
+    #      [name]:[line]
     #
     #       some code and some more code
     #              1       2
@@ -59,7 +59,7 @@ proc gfortran-dg-test { prog do_what extra_tool_flags } {
     # Note that these regexps only make sense in the combinations used below.
     # Note also that is imperative that we first deal with the form with
     # two loci.
-    set locus_regexp " In file (\[^\n\]*)\n\n\[^\n\]*\n\[^\n\]*\n"
+    set locus_regexp " (\[^\n\]*)\n\n\[^\n\]*\n\[^\n\]*\n"
     set diag_regexp "(\[^\n\]*)\n"
 
     set two_loci "$locus_regexp$locus_regexp$diag_regexp"
