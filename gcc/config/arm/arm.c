@@ -3230,7 +3230,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	      /* Play games to avoid marking the function as needing pic
 		 if we are being called as part of the cost-estimation
 		 process.  */
-	      if (!ir_type())
+	      if (current_ir_type () != IR_GIMPLE)
 		current_function_uses_pic_offset_table = 1;
 	    }
 	  else
@@ -3242,7 +3242,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	      /* Play games to avoid marking the function as needing pic
 		 if we are being called as part of the cost-estimation
 		 process.  */
-	      if (!ir_type())
+	      if (current_ir_type () != IR_GIMPLE)
 		{
 		  current_function_uses_pic_offset_table = 1;
 		  start_sequence ();

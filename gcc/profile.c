@@ -1228,7 +1228,7 @@ end_branch_prob (void)
 void
 tree_register_profile_hooks (void)
 {
-  gcc_assert (ir_type ());
+  gcc_assert (current_ir_type () == IR_GIMPLE);
   profile_hooks = &tree_profile_hooks;
 }
 

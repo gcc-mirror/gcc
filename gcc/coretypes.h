@@ -48,6 +48,13 @@ typedef union tree_node *tree;
 union section;
 typedef union section section;
 
+/* The major intermediate representations of GCC.  */
+enum ir_type {
+  IR_GIMPLE,
+  IR_RTL_CFGRTL,
+  IR_RTL_CFGLAYOUT
+};
+
 /* Provide forward struct declaration so that we don't have to include
    all of cpplib.h whenever a random prototype includes a pointer.
    Note that the cpp_reader typedef remains part of cpplib.h.  */

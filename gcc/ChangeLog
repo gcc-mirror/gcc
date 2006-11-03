@@ -1,3 +1,20 @@
+2006-11-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-dump.c (dump_enable_all): Rename local variable
+	ir_type to avoid name conflicts.
+	* cfgloopmanip.c (lv_adjust_loop_entry_edge): Check for IR_GIMPLE
+	instead of using ir_type().
+	* profile.c (tree_register_profile_hooks): Likewise.
+	* value-prof.c (tree_register_value_prof_hooks): Likewise.
+	* basic-block.h (struct edge_def): Likewise.
+	* config/arm/arm.c (legitimize_pic_address): Likewise.
+	* coretypes.h (ir_type): New enum of all intermediate languages
+	used in GCC.
+	* cfghooks.c (ir_type): Rename to...
+	(current_ir_type): ...this.  Distinguish between cfgrtl and
+	cfglayout mode when the current IR is RTL.  Return enum ir_type.
+	* cfghooks.h (ir_type): Replace with current_ir_type prototype.
+
 2006-11-03  Paul Brook  <paul@codesourcery.com>
 
 	gcc/
