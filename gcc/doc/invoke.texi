@@ -8365,7 +8365,7 @@ In addition to the traps enabled by @samp{n}, underflow traps are enabled
 as well.
 
 @item su
-Like @samp{su}, but the instructions are marked to be safe for software
+Like @samp{u}, but the instructions are marked to be safe for software
 completion (see Alpha architecture manual for details).
 
 @item sui
