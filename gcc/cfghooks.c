@@ -55,12 +55,19 @@ tree_register_cfg_hooks (void)
   cfg_hooks = &tree_cfg_hooks;
 }
 
-/* Returns current ir type (rtl = 0, trees = 1).  */
+/* Returns current ir type.  */
 
-int
-ir_type (void)
+enum ir_type
+current_ir_type (void)
 {
-  return cfg_hooks == &tree_cfg_hooks ? 1 : 0;
+  if (cfg_hooks == &tree_cfg_hooks)
+    return IR_GIMPLE;
+  else if (cfg_hooks == &rtl_cfg_hooks)
+    return IR_RTL_CFGRTL;
+  else if (cfg_hooks == &cfg_layout_rtl_cfg_hooks)
+    return IR_RTL_CFGLAYOUT;
+  else
+    gcc_unreachable ();
 }
 
 /* Verify the CFG consistency.

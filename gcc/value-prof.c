@@ -854,8 +854,8 @@ static struct value_prof_hooks tree_value_prof_hooks = {
 void
 tree_register_value_prof_hooks (void)
 {
+  gcc_assert (current_ir_type () == IR_GIMPLE);
   value_prof_hooks = &tree_value_prof_hooks;
-  gcc_assert (ir_type ());
 }
 
 /* IR-independent entry points.  */

@@ -123,9 +123,9 @@ struct edge_def GTY(())
 
   /* Instructions queued on the edge.  */
   union edge_def_insns {
-    rtx GTY ((tag ("0"))) r;
-    tree GTY ((tag ("1"))) t;
-  } GTY ((desc ("ir_type ()"))) insns;
+    tree GTY ((tag ("true"))) t;
+    rtx GTY ((tag ("false"))) r;
+  } GTY ((desc ("current_ir_type () == IR_GIMPLE"))) insns;
 
   /* Auxiliary info specific to a pass.  */
   PTR GTY ((skip (""))) aux;
