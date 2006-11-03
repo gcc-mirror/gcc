@@ -38,11 +38,12 @@ MULTILIB_DIRNAMES=
 # is why sh2a and sh2a-single need their own multilibs.
 MULTILIB_MATCHES = $(shell \
   multilibs="$(MULTILIB_OPTIONS)" ; \
-  for abi in m1,m2,m3,m4-nofpu,m4-400,m4-500,m4al,m4a-nofpu m1,m2,m2a-nofpu \
-             m2e,m3e,m4-single-only,m4-100-single-only,m4-200-single-only,m4a-single-only \
+  for abi in m1,m2,m3,m4-nofpu,m4-100-nofpu,m4-200-nofpu,m4-400,m4-500,m4-340,m4-300-nofpu,m4al,m4a-nofpu \
+             m1,m2,m2a-nofpu \
+             m2e,m3e,m4-single-only,m4-100-single-only,m4-200-single-only,m4-300-single-only,m4a-single-only \
              m2e,m2a-single-only \
-             m4-single,m4-100-single,m4-200-single,m4a-single \
-             m4,m4-100,m4-200,m4a \
+             m4-single,m4-100-single,m4-200-single,m4-300-single,m4a-single \
+             m4,m4-100,m4-200,m4-300,m4a \
              m5-32media,m5-compact,m5-32media \
              m5-32media-nofpu,m5-compact-nofpu,m5-32media-nofpu; do \
     subst= ; \
@@ -76,7 +77,7 @@ gt-sh.h : s-gtype ; @true
 
 IC_EXTRA_PARTS= libic_invalidate_array_4-100.a libic_invalidate_array_4-200.a \
 libic_invalidate_array_4a.a
-OPT_EXTRA_PARTS= libgcc-Os-4-200.a
+OPT_EXTRA_PARTS= libgcc-Os-4-200.a libgcc-4-300.a
 EXTRA_MULTILIB_PARTS= $(IC_EXTRA_PARTS) $(OPT_EXTRA_PARTS)
 
 $(T)ic_invalidate_array_4-100.o: $(srcdir)/config/sh/lib1funcs.asm $(GCC_PASSES)
@@ -103,6 +104,12 @@ $(T)unwind-dw2-Os-4-200.o: $(srcdir)/unwind-dw2.c $(srcdir)/unwind-generic.h unw
 OBJS_Os_4_200=$(T)sdivsi3_i4i-Os-4-200.o $(T)udivsi3_i4i-Os-4-200.o $(T)unwind-dw2-Os-4-200.o
 $(T)libgcc-Os-4-200.a: $(OBJS_Os_4_200) $(GCC_PASSES)
 	$(AR_CREATE_FOR_TARGET) $@ $(OBJS_Os_4_200)
+
+$(T)div_table-4-300.o: $(srcdir)/config/sh/lib1funcs-4-300.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) $(MULTILIB_CFLAGS) -c -o $@ -DL_div_table -x assembler-with-cpp $<
+
+$(T)libgcc-4-300.a: $(T)div_table-4-300.o $(GCC_PASSES)
+	$(AR_CREATE_FOR_TARGET) $@ $(T)div_table-4-300.o
 
 # Local Variables:
 # mode: Makefile

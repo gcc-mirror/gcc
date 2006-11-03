@@ -204,7 +204,9 @@
 ;; load_si	Likewise, SImode variant for general register.
 ;; fload	Likewise, but load to fp register.
 ;; store	to memory
+;; fstore	floating point register to memory
 ;; move		general purpose register to register
+;; movi8	8 bit immediate to general purpose register
 ;; mt_group	other sh4 mt instructions
 ;; fmove	register to register, floating point
 ;; smpy		word precision integer multiply
@@ -221,11 +223,15 @@
 ;; sfunc	special function call with known used registers
 ;; call		function call
 ;; fp		floating point
+;; fpscr_toggle	toggle a bit in the fpscr
 ;; fdiv		floating point divide (or square root)
 ;; gp_fpul	move from general purpose register to fpul
 ;; fpul_gp	move from fpul to general purpose register
 ;; mac_gp	move from mac[lh] to general purpose register
-;; dfp_arith, dfp_cmp,dfp_conv
+;; gp_mac	move from general purpose register to mac[lh]
+;; mac_mem	move from mac[lh] to memory
+;; mem_mac	move from memory to mac[lh]
+;; dfp_arith,dfp_mul, fp_cmp,dfp_cmp,dfp_conv
 ;; ftrc_s	fix_truncsfsi2_i4
 ;; dfdiv	double precision floating point divide (or square root)
 ;; cwb		ic_invalidate_line_i
@@ -263,7 +269,7 @@
 ;; nil		no-op move, will be deleted.
 
 (define_attr "type"
- "mt_group,cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,load,load_si,fload,store,move,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,pcfload,rte,sfunc,call,fp,fdiv,ftrc_s,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,fpul_gp,mac_gp,mem_fpscr,gp_fpscr,cwb,movua,fsrra,fsca,tls_load,arith_media,cbranch_media,cmp_media,dfdiv_media,dfmul_media,dfparith_media,dfpconv_media,dmpy_media,fcmp_media,fdiv_media,fload_media,fmove_media,fparith_media,fpconv_media,fstore_media,gettr_media,invalidate_line_media,jump_media,load_media,pt_media,ptabs_media,store_media,mcmp_media,mac_media,d2mpy_media,atrans_media,ustore_media,nil,other"
+ "mt_group,cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,load,load_si,fload,store,fstore,move,movi8,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,pcfload,rte,sfunc,call,fp,fpscr_toggle,fdiv,ftrc_s,dfp_arith,dfp_mul,fp_cmp,dfp_cmp,dfp_conv,dfdiv,gp_fpul,fpul_gp,mac_gp,gp_mac,mac_mem,mem_mac,mem_fpscr,gp_fpscr,cwb,movua,fsrra,fsca,tls_load,arith_media,cbranch_media,cmp_media,dfdiv_media,dfmul_media,dfparith_media,dfpconv_media,dmpy_media,fcmp_media,fdiv_media,fload_media,fmove_media,fparith_media,fpconv_media,fstore_media,gettr_media,invalidate_line_media,jump_media,load_media,pt_media,ptabs_media,store_media,mcmp_media,mac_media,d2mpy_media,atrans_media,ustore_media,nil,other"
   (const_string "other"))
 
 ;; We define a new attribute namely "insn_class".We use
@@ -279,12 +285,12 @@
 (define_attr "insn_class"
   "mt_group,ex_group,ls_group,br_group,fe_group,co_group,none"
   (cond [(eq_attr "type" "move,mt_group") (const_string "mt_group")
-         (eq_attr "type" "arith,dyn_shift") (const_string "ex_group")
-	 (eq_attr "type" "fmove,load,pcload,load_si,pcload_si,fload,pcfload,store,gp_fpul,fpul_gp") (const_string "ls_group")
+         (eq_attr "type" "movi8,arith,dyn_shift") (const_string "ex_group")
+	 (eq_attr "type" "fmove,load,pcload,load_si,pcload_si,fload,pcfload,store,fstore,gp_fpul,fpul_gp") (const_string "ls_group")
 	 (eq_attr "type" "cbranch,jump") (const_string "br_group")
-	 (eq_attr "type" "fp,fdiv,ftrc_s,dfp_arith,dfp_conv,dfdiv")
+	 (eq_attr "type" "fp,fp_cmp,fdiv,ftrc_s,dfp_arith,dfp_mul,dfp_conv,dfdiv")
 	   (const_string "fe_group")
-	 (eq_attr "type" "jump_ind,smpy,dmpy,mac_gp,return,pload,prset,pstore,prget,rte,sfunc,call,dfp_cmp,mem_fpscr,gp_fpscr,cwb") (const_string "co_group")]
+	 (eq_attr "type" "jump_ind,smpy,dmpy,mac_gp,return,pload,prset,pstore,prget,rte,sfunc,call,dfp_cmp,mem_fpscr,gp_fpscr,cwb,gp_mac,mac_mem,mem_mac") (const_string "co_group")]
 	(const_string "none")))
 ;; nil are zero instructions, and arith3 / arith3b are multiple instructions,
 ;; so these do not belong in an insn group, although they are modeled
@@ -494,14 +500,14 @@
 ;; SH4 Double-precision computation with double-precision result -
 ;; the two halves are ready at different times.
 (define_attr "dfp_comp" "yes,no"
-  (cond [(eq_attr "type" "dfp_arith,dfp_conv,dfdiv") (const_string "yes")]
+  (cond [(eq_attr "type" "dfp_arith,dfp_mul,dfp_conv,dfdiv") (const_string "yes")]
 	(const_string "no")))
 
 ;; Insns for which the latency of a preceding fp insn is decreased by one.
 (define_attr "late_fp_use" "yes,no" (const_string "no"))
 ;; And feeding insns for which this relevant.
 (define_attr "any_fp_comp" "yes,no"
-  (cond [(eq_attr "type" "fp,fdiv,ftrc_s,dfp_arith,dfp_conv,dfdiv")
+  (cond [(eq_attr "type" "fp,fdiv,ftrc_s,dfp_arith,dfp_mul,dfp_conv,dfdiv")
 	 (const_string "yes")]
 	(const_string "no")))
 
@@ -609,15 +615,37 @@
    [(set_attr "type" "mt_group")])
 
 ;; -------------------------------------------------------------------------
+;; SImode compare and branch
+;; -------------------------------------------------------------------------
+
+(define_expand "cbranchsi4"
+  [(set (pc)
+	(if_then_else (match_operator 0 "comparison_operator"
+			[(match_operand:SI 1 "arith_operand" "")
+			 (match_operand:SI 2 "arith_operand" "")])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_CBRANCHDI4"
+  "expand_cbranchsi4 (operands, CODE_FOR_nothing, -1); DONE;")
+
+;; -------------------------------------------------------------------------
 ;; SImode unsigned integer comparisons
 ;; -------------------------------------------------------------------------
 
-(define_insn "cmpgeusi_t"
+(define_insn_and_split "cmpgeusi_t"
   [(set (reg:SI T_REG)
 	(geu:SI (match_operand:SI 0 "arith_reg_operand" "r")
-		(match_operand:SI 1 "arith_reg_operand" "r")))]
+		(match_operand:SI 1 "arith_reg_or_0_operand" "rN")))]
   "TARGET_SH1"
   "cmp/hs	%1,%0"
+  "&& operands[0] == CONST0_RTX (SImode)"
+  [(pc)]
+  "
+{
+  emit_insn (gen_sett ());
+  DONE;
+}"
    [(set_attr "type" "mt_group")])
 
 (define_insn "cmpgtusi_t"
@@ -647,12 +675,64 @@
 }")
 
 ;; -------------------------------------------------------------------------
-;; DImode signed integer comparisons
+;; DImode compare and branch
 ;; -------------------------------------------------------------------------
 
-;; ??? Could get better scheduling by splitting the initial test from the
-;; rest of the insn after reload.  However, the gain would hardly justify
-;; the sh.md size increase necessary to do that.
+
+;; arith3 patterns don't work well with the sh4-300 branch prediction mechanism.
+;; Therefore, we aim to have a set of three branches that go straight to the
+;; destination, i.e. only one of them is taken at any one time.
+;; This mechanism should also be slightly better for the sh4-200.
+
+(define_expand "cbranchdi4"
+  [(set (pc)
+	(if_then_else (match_operator 0 "comparison_operator"
+			[(match_operand:DI 1 "arith_operand" "")
+			 (match_operand:DI 2 "arith_operand" "")])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))
+   (clobber (match_dup 4))
+   (clobber (reg:SI T_REG))]
+  "TARGET_CBRANCHDI4"
+  "
+{
+  enum rtx_code comparison;
+
+  if (TARGET_EXPAND_CBRANCHDI4)
+    {
+      if (expand_cbranchdi4 (operands, CODE_FOR_nothing))
+	DONE;
+    }
+  comparison = prepare_cbranch_operands (operands, DImode, CODE_FOR_nothing);
+  if (comparison != GET_CODE (operands[0]))
+    operands[0]
+      = gen_rtx_fmt_ee (VOIDmode, comparison, operands[1], operands[2]);
+   operands[4] = gen_rtx_SCRATCH (SImode);
+}")
+
+(define_insn_and_split "cbranchdi4_i"
+  [(set (pc)
+	(if_then_else (match_operator 0 "comparison_operator"
+			[(match_operand:DI 1 "arith_operand" "r,r")
+			 (match_operand:DI 2 "arith_operand" "rN,i")])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))
+   (clobber (match_scratch:SI 4 "=X,&r"))
+   (clobber (reg:SI T_REG))]
+  "TARGET_CBRANCHDI4"
+  "#"
+  "&& reload_completed"
+  [(pc)]
+  "
+{
+  if (!expand_cbranchdi4 (operands, GET_CODE (operands[0])))
+    FAIL;
+  DONE;
+}")
+
+;; -------------------------------------------------------------------------
+;; DImode signed integer comparisons
+;; -------------------------------------------------------------------------
 
 (define_insn ""
   [(set (reg:SI T_REG)
@@ -4736,7 +4816,7 @@ label:
   [(set (mem:SF (pre_dec:SI (reg:SI SP_REG))) (reg:SF FPUL_REG))]
   "TARGET_SH2E && ! TARGET_SH5"
   "sts.l	fpul,@-r15"
-  [(set_attr "type" "store")
+  [(set_attr "type" "fstore")
    (set_attr "late_fp_use" "yes")
    (set_attr "hit_stack" "yes")])
 
@@ -4818,9 +4898,9 @@ label:
 ;; (made from (set (subreg:SI (reg:QI ###) 0) ) into T.
 (define_insn "movsi_i"
   [(set (match_operand:SI 0 "general_movdst_operand"
-	    "=r,r,t,r,r,r,r,m,<,<,x,l,x,l,r")
+	    "=r,r,r,t,r,r,r,r,m,<,<,x,l,x,l,r")
 	(match_operand:SI 1 "general_movsrc_operand"
-	 "Q,rI08,r,mr,x,l,t,r,x,l,r,r,>,>,i"))]
+	 "Q,r,I08,r,mr,x,l,t,r,x,l,r,r,>,>,i"))]
   "TARGET_SH1
    && ! TARGET_SH2E
    && ! TARGET_SH2A
@@ -4828,6 +4908,7 @@ label:
        || register_operand (operands[1], SImode))"
   "@
 	mov.l	%1,%0
+	mov	%1,%0
 	mov	%1,%0
 	cmp/pl	%1
 	mov.l	%1,%0
@@ -4842,8 +4923,8 @@ label:
 	lds.l	%1,%0
 	lds.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload_si,move,mt_group,load_si,mac_gp,prget,move,store,store,pstore,move,prset,load,pload,pcload_si")
-   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "pcload_si,move,movi8,mt_group,load_si,mac_gp,prget,arith,mac_mem,store,pstore,gp_mac,prset,mem_mac,pload,pcload_si")
+   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
 ;; (subreg:SI (reg:SF FR14_REG) 0) into T (compiling stdlib/strtod.c -m3e -O2)
@@ -4853,14 +4934,15 @@ label:
 ;; TARGET_FMOVD is in effect, and mode switching is done before reload.
 (define_insn "movsi_ie"
   [(set (match_operand:SI 0 "general_movdst_operand"
-	    "=r,r,r,t,r,r,r,r,m,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
+	    "=r,r,r,r,t,r,r,r,r,m,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
 	(match_operand:SI 1 "general_movsrc_operand"
-	 "Q,rI08,I20,r,mr,x,l,t,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
+	 "Q,r,I08,I20,r,mr,x,l,t,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
   "(TARGET_SH2E || TARGET_SH2A)
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
 	mov.l	%1,%0
+	mov	%1,%0
 	mov	%1,%0
 	movi20	%1,%0
 	cmp/pl	%1
@@ -4884,18 +4966,19 @@ label:
 	flds	%1,fpul
 	fmov	%1,%0
 	! move optimized away"
-  [(set_attr "type" "pcload_si,move,move,*,load_si,mac_gp,prget,move,store,store,pstore,move,prset,load,pload,load,store,pcload_si,gp_fpul,fpul_gp,fmove,fmove,fmove,nil")
-   (set_attr "late_fp_use" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes,*,*,yes,*,*,*,*")
-   (set_attr "length" "*,*,4,*,4,*,*,*,4,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
+  [(set_attr "type" "pcload_si,move,movi8,move,*,load_si,mac_gp,prget,arith,store,mac_mem,pstore,gp_mac,prset,mem_mac,pload,load,fstore,pcload_si,gp_fpul,fpul_gp,fmove,fmove,fmove,nil")
+   (set_attr "late_fp_use" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes,*,*,yes,*,*,*,*")
+   (set_attr "length" "*,*,*,4,*,4,*,*,*,4,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
 
 (define_insn "movsi_i_lowpart"
-  [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "+r,r,r,r,r,r,m,r"))
-	(match_operand:SI 1 "general_movsrc_operand" "Q,rI08,mr,x,l,t,r,i"))]
+  [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "+r,r,r,r,r,r,r,m,r"))
+	(match_operand:SI 1 "general_movsrc_operand" "Q,r,I08,mr,x,l,t,r,i"))]
    "TARGET_SH1
     && (register_operand (operands[0], SImode)
         || register_operand (operands[1], SImode))"
   "@
 	mov.l	%1,%0
+	mov	%1,%0
 	mov	%1,%0
 	mov.l	%1,%0
 	sts	%1,%0
@@ -4903,7 +4986,7 @@ label:
 	movt	%0
 	mov.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload,move,load,move,prget,move,store,pcload")])
+  [(set_attr "type" "pcload,move,arith,load,mac_gp,prget,arith,store,pcload")])
 
 (define_insn_and_split "load_ra"
   [(set (match_operand:SI 0 "general_movdst_operand" "")
@@ -5155,19 +5238,20 @@ label:
    (set_attr "needs_delay_slot" "yes")])
 
 (define_insn "movqi_i"
-  [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,m,r,r,l")
-	(match_operand:QI 1 "general_movsrc_operand"  "ri,m,r,t,l,r"))]
+  [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,r,m,r,r,l")
+	(match_operand:QI 1 "general_movsrc_operand"  "r,i,m,r,t,l,r"))]
   "TARGET_SH1
    && (arith_reg_operand (operands[0], QImode)
        || arith_reg_operand (operands[1], QImode))"
   "@
+	mov	%1,%0
 	mov	%1,%0
 	mov.b	%1,%0
 	mov.b	%1,%0
 	movt	%0
 	sts	%1,%0
 	lds	%1,%0"
- [(set_attr "type" "move,load,store,move,move,move")])
+ [(set_attr "type" "move,movi8,load,store,arith,prget,prset")])
 
 (define_insn "*movqi_media"
   [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,r,m")
@@ -5769,7 +5853,7 @@ label:
       (if_then_else
        (ne (symbol_ref "TARGET_SHCOMPACT") (const_int 0))
        (const_int 10) (const_int 8))])
-   (set_attr "type" "fmove,move,pcfload,fload,store,pcload,load,store,load,fload")
+   (set_attr "type" "fmove,move,pcfload,fload,fstore,pcload,load,store,load,fload")
    (set_attr "late_fp_use" "*,*,*,*,yes,*,*,*,*,*")
    (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
 					   (const_string "double")
@@ -6486,7 +6570,7 @@ label:
 	sts.l	%1,%0
 	lds.l	%1,%0
 	! move optimized away"
-  [(set_attr "type" "fmove,move,fmove,fmove,pcfload,fload,store,pcload,load,store,fmove,fmove,load,*,fpul_gp,gp_fpul,store,load,nil")
+  [(set_attr "type" "fmove,move,fmove,fmove,pcfload,fload,fstore,pcload,load,store,fmove,fmove,load,*,fpul_gp,gp_fpul,fstore,load,nil")
    (set_attr "late_fp_use" "*,*,*,*,*,*,yes,*,*,*,*,*,*,*,yes,*,yes,*,*")
    (set_attr "length" "*,*,*,*,4,4,4,*,*,*,2,2,2,4,2,2,2,2,0")
    (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
@@ -9929,7 +10013,7 @@ mov.l\\t1f,r0\\n\\
 	sts	fpscr,%0
 	sts.l	fpscr,%0"
   [(set_attr "length" "0,2,2,4,2,2,2,2,2")
-   (set_attr "type" "nil,mem_fpscr,load,mem_fpscr,gp_fpscr,move,store,mac_gp,store")])
+   (set_attr "type" "nil,mem_fpscr,load,mem_fpscr,gp_fpscr,move,store,mac_gp,fstore")])
 
 (define_peephole2
   [(set (reg:PSI FPSCR_REG)
@@ -9980,7 +10064,7 @@ mov.l\\t1f,r0\\n\\
 	(xor:PSI (reg:PSI FPSCR_REG) (const_int 1048576)))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fschg"
-  [(set_attr "type" "fp") (set_attr "fp_set" "unknown")])
+  [(set_attr "type" "fpscr_toggle") (set_attr "fp_set" "unknown")])
 
 ;; There's no way we can use it today, since optimize mode switching
 ;; doesn't enable us to know from which mode we're switching to the
@@ -9992,7 +10076,7 @@ mov.l\\t1f,r0\\n\\
 	(xor:PSI (reg:PSI FPSCR_REG) (const_int 524288)))]
   "TARGET_SH4A_FP && ! TARGET_FPU_SINGLE"
   "fpchg"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fpscr_toggle")])
 
 (define_expand "addsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "")
@@ -10124,25 +10208,12 @@ mov.l\\t1f,r0\\n\\
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
-;; Unfortunately, the combiner is unable to cope with the USE of the FPSCR
-;; register in feeding fp instructions.  Thus, we cannot generate fmac for
-;; mixed-precision SH4 targets.  To allow it to be still generated for the
-;; SH3E, we use a separate insn for SH3E mulsf3.
-
 (define_expand "mulsf3"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "")
 	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "")))]
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
-  "
-{
-  if (TARGET_SH4 || TARGET_SH2A_SINGLE)
-    expand_sf_binop (&gen_mulsf3_i4, operands);
-  else if (TARGET_SH2E)
-    emit_insn (gen_mulsf3_ie (operands[0], operands[1], operands[2]));
-  if (! TARGET_SHMEDIA)
-    DONE;
-}")
+  "")
 
 (define_insn "*mulsf3_media"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
@@ -10151,6 +10222,27 @@ mov.l\\t1f,r0\\n\\
   "TARGET_SHMEDIA_FPU"
   "fmul.s	%1, %2, %0"
   [(set_attr "type" "fparith_media")])
+
+;; Unfortunately, the combiner is unable to cope with the USE of the FPSCR
+;; register in feeding fp instructions.  Thus, in order to generate fmac,
+;; we start out with a mulsf pattern that does not depend on fpscr.
+;; This is split after combine to introduce the dependency, in order to
+;; get mode switching and scheduling right.
+(define_insn_and_split "mulsf3_ie"
+  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
+	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
+		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))]
+  "TARGET_SH2E"
+  "fmul	%2,%0"
+  "TARGET_SH4 || TARGET_SH2A_SINGLE"
+  [(const_int 0)]
+  "
+{
+  emit_insn (gen_mulsf3_i4 (operands[0], operands[1], operands[2],
+	     get_fpscr_rtx ()));
+  DONE;
+}"
+  [(set_attr "type" "fp")])
 
 (define_insn "mulsf3_i4"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
@@ -10162,20 +10254,12 @@ mov.l\\t1f,r0\\n\\
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
-(define_insn "mulsf3_ie"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
-		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
-  "fmul	%2,%0"
-  [(set_attr "type" "fp")])
-
 (define_insn "mac_media"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(plus:SF (mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%f")
 			  (match_operand:SF 2 "fp_arith_reg_operand" "f"))
 		 (match_operand:SF 3 "fp_arith_reg_operand" "0")))]
-  "TARGET_SHMEDIA_FPU"
+  "TARGET_SHMEDIA_FPU && TARGET_FMAC"
   "fmac.s %1, %2, %0"
   [(set_attr "type" "fparith_media")])
 
@@ -10185,7 +10269,7 @@ mov.l\\t1f,r0\\n\\
 			  (match_operand:SF 2 "fp_arith_reg_operand" "f"))
 		 (match_operand:SF 3 "arith_reg_operand" "0")))
    (use (match_operand:PSI 4 "fpscr_operand" "c"))]
-  "TARGET_SH2E && ! TARGET_SH4"
+  "TARGET_SH2E && TARGET_FMAC"
   "fmac	fr0,%2,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
@@ -10336,7 +10420,7 @@ mov.l\\t1f,r0\\n\\
 	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
   "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "fcmp/gt	%1,%0"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fp_cmp")
    (set_attr "fp_mode" "single")])
 
 (define_insn "cmpeqsf_t"
@@ -10345,7 +10429,7 @@ mov.l\\t1f,r0\\n\\
 	       (match_operand:SF 1 "fp_arith_reg_operand" "f")))]
   "TARGET_SH2E && ! (TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "fcmp/eq	%1,%0"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fp_cmp")
    (set_attr "fp_mode" "single")])
 
 (define_insn "ieee_ccmpeqsf_t"
@@ -10365,7 +10449,7 @@ mov.l\\t1f,r0\\n\\
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "fcmp/gt	%1,%0"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fp_cmp")
    (set_attr "fp_mode" "single")])
 
 (define_insn "cmpeqsf_t_i4"
@@ -10375,7 +10459,7 @@ mov.l\\t1f,r0\\n\\
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "(TARGET_SH4 || TARGET_SH2A_SINGLE)"
   "fcmp/eq	%1,%0"
-  [(set_attr "type" "fp")
+  [(set_attr "type" "fp_cmp")
    (set_attr "fp_mode" "single")])
 
 (define_insn "*ieee_ccmpeqsf_t_4"
@@ -10724,7 +10808,7 @@ mov.l\\t1f,r0\\n\\
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
   "fmul	%2,%0"
-  [(set_attr "type" "dfp_arith")
+  [(set_attr "type" "dfp_mul")
    (set_attr "fp_mode" "double")])
 
 (define_expand "divdf3"

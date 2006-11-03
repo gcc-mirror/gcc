@@ -79,7 +79,7 @@ main ()
 	  continue;
 	r1 = xx / yy;
 	r2 = xx % yy;
-	if (ABS (r2) >= (unsigned int) ABS (yy) || (signed int) (r1 * yy + r2) != xx)
+	if (ABS (r2) >= (unsigned int) ABS (yy) || (signed int) (r1 * yy + r2) != xx || ((xx < 0) != (r2 < 0) && r2))
 	  abort ();
       }
       { unsigned short xx = x, yy = y, r1, r2;

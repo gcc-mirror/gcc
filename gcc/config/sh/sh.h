@@ -274,6 +274,7 @@ do { \
 #endif
 #if SUPPORT_SH2
 #define SUPPORT_SH3 1
+#define SUPPORT_SH2A_NOFPU 1
 #endif
 #if SUPPORT_SH3
 #define SUPPORT_SH4_NOFPU 1
@@ -281,16 +282,17 @@ do { \
 #if SUPPORT_SH4_NOFPU
 #define SUPPORT_SH4A_NOFPU 1
 #define SUPPORT_SH4AL 1
-#define SUPPORT_SH2A_NOFPU 1
 #endif
 
 #if SUPPORT_SH2E
 #define SUPPORT_SH3E 1
+#define SUPPORT_SH2A_SINGLE_ONLY 1
 #endif
 #if SUPPORT_SH3E
 #define SUPPORT_SH4_SINGLE_ONLY 1
+#endif
+#if SUPPORT_SH4_SINGLE_ONLY
 #define SUPPORT_SH4A_SINGLE_ONLY 1
-#define SUPPORT_SH2A_SINGLE_ONLY 1
 #endif
 
 #if SUPPORT_SH4
@@ -469,6 +471,11 @@ do {									\
       target_flags |= MASK_SMALLCODE;					\
       sh_div_str = SH_DIV_STR_FOR_SIZE ;				\
     }									\
+  else									\
+    {									\
+      TARGET_CBRANCHDI4 = 1;						\
+      TARGET_EXPAND_CBRANCHDI4 = 1;					\
+    }									\
   /* We can't meaningfully test TARGET_SHMEDIA here, because -m options	\
      haven't been parsed yet, hence we'd read only the default.	\
      sh_target_reg_class will return NO_REGS if this is not SHMEDIA, so	\
@@ -608,6 +615,7 @@ do {									\
 	      else							\
 		sh_div_strategy = SH_DIV_INV;				\
 	    }								\
+	  TARGET_CBRANCHDI4 = 0;					\
 	}								\
       /* -fprofile-arcs needs a working libgcov .  In unified tree	\
 	 configurations with newlib, this requires to configure with	\
@@ -668,6 +676,9 @@ do {									\
     sh_divsi3_libfunc = "__sdivsi3_1";					\
   else									\
     sh_divsi3_libfunc = "__sdivsi3";					\
+  if (sh_branch_cost == -1)						\
+    sh_branch_cost							\
+      = TARGET_SH5 ? 1 : ! TARGET_SH2 || TARGET_HARD_SH4 ? 2 : 1;	\
   if (TARGET_FMOVD)							\
     reg_class_from_letter['e' - 'a'] = NO_REGS;				\
 									\
@@ -844,7 +855,7 @@ do {									\
   ((GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_INT \
     || GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_FLOAT) \
    ? (unsigned) MIN (BIGGEST_ALIGNMENT, GET_MODE_BITSIZE (TYPE_MODE (TYPE))) \
-   : (unsigned) ALIGN)
+   : (unsigned) DATA_ALIGNMENT(TYPE, ALIGN))
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
@@ -2288,6 +2299,7 @@ struct sh_args {
 #define CONSTANT_ADDRESS_P(X)	(GET_CODE (X) == LABEL_REF)
 
 /* Nonzero if the constant value X is a legitimate general operand.  */
+/* can_store_by_pieces constructs VOIDmode CONST_DOUBLEs.  */
 
 #define LEGITIMATE_CONSTANT_P(X) \
   (TARGET_SHMEDIA							\
@@ -2298,7 +2310,7 @@ struct sh_args {
       || TARGET_SHMEDIA64)						\
    : (GET_CODE (X) != CONST_DOUBLE					\
       || GET_MODE (X) == DFmode || GET_MODE (X) == SFmode		\
-      || (TARGET_SH2E && (fp_zero_operand (X) || fp_one_operand (X)))))
+      || GET_MODE (X) == DImode || GET_MODE (X) == VOIDmode))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.

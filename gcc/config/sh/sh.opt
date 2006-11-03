@@ -57,11 +57,11 @@ Target RejectNegative Condition(SUPPORT_SH2A_NOFPU)
 Generate SH2a FPU-less code
 
 m2a-single
-Target RejectNegative Condition (SUPPORT_SH2A_SINGLE)
+Target RejectNegative Condition(SUPPORT_SH2A_SINGLE)
 Generate default single-precision SH2a code
 
 m2a-single-only
-Target RejectNegative Condition (SUPPORT_SH2A_SINGLE_ONLY)
+Target RejectNegative Condition(SUPPORT_SH2A_SINGLE_ONLY)
 Generate only single-precision SH2a code
 
 m2e
@@ -88,9 +88,32 @@ m4-200
 Target RejectNegative Condition(SUPPORT_SH4)
 Generate SH4-200 code
 
+;; TARGET_SH4_300 indicates if we have the ST40-300 instruction set and
+;; pipeline - irrespective of ABI.
+m4-300
+Target RejectNegative Condition(SUPPORT_SH4) Var(TARGET_SH4_300)
+Generate SH4-300 code
+
 m4-nofpu
 Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
 Generate SH4 FPU-less code
+
+m4-100-nofpu
+Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
+Generate SH4-100 FPU-less code
+
+m4-200-nofpu
+Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
+Generate SH4-200 FPU-less code
+
+m4-300-nofpu
+Target RejectNegative Condition(SUPPORT_SH4_NOFPU) Var(TARGET_SH4_300) VarExists
+Generate SH4-300 FPU-less code
+
+m4-340
+Target RejectNegative Condition(SUPPORT_SH4_NOFPU) Var(TARGET_SH4_300) VarExists
+Generate code for SH4 340 series (MMU/FPU-less)
+;; passes -isa=sh4-nommu-nofpu to the assembler.
 
 m4-400
 Target RejectNegative Condition(SUPPORT_SH4_NOFPU)
@@ -114,6 +137,10 @@ m4-200-single
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE)
 Generate default single-precision SH4-200 code
 
+m4-300-single
+Target RejectNegative Condition(SUPPORT_SH4_SINGLE) Var(TARGET_SH4_300) VarExists
+Generate default single-precision SH4-300 code
+
 m4-single-only
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY)
 Generate only single-precision SH4 code
@@ -125,6 +152,10 @@ Generate only single-precision SH4-100 code
 m4-200-single-only
 Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY)
 Generate only single-precision SH4-200 code
+
+m4-300-single-only
+Target RejectNegative Condition(SUPPORT_SH4_SINGLE_ONLY) Var(TARGET_SH4_300) VarExists
+Generate only single-precision SH4-300 code
 
 m4a
 Target RejectNegative Mask(SH4A) Condition(SUPPORT_SH4A)
@@ -182,6 +213,22 @@ mbigtable
 Target Report RejectNegative Mask(BIGTABLE)
 Generate 32-bit offsets in switch tables
 
+mbranch-cost=
+Target RejectNegative Joined UInteger Var(sh_branch_cost) Init(-1)
+Cost to assume for a branch insn
+
+mcbranchdi
+Target Var(TARGET_CBRANCHDI4)
+Enable cbranchdi4 pattern
+
+mexpand-cbranchdi
+Target Var(TARGET_EXPAND_CBRANCHDI4)
+Expand cbranchdi4 pattern early into separate comparisons and branches.
+
+mcmpeqdi
+Target Var(TARGET_CMPEQDI_T)
+Emit cmpeqdi_t pattern even when -mcbranchdi and -mexpand-cbranchdi are in effect.
+
 mcut2-workaround
 Target RejectNegative Var(TARGET_SH5_CUT2_WORKAROUND)
 Enable SH5 cut2 workaround
@@ -192,7 +239,7 @@ Align doubles at 64-bit boundaries
 
 mdiv=
 Target RejectNegative Joined Var(sh_div_str) Init("")
-Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp call-div1 call-fp call-table
+Division strategy, one of: call, call2, fp, inv, inv:minlat, inv20u, inv20l, inv:call, inv:call2, inv:fp, call-div1, call-fp, call-table
 
 mdivsi3_libfunc=
 Target RejectNegative Joined Var(sh_divsi3_libfunc) Init("")
@@ -200,6 +247,10 @@ Specify name for 32 bit signed division function
 
 mfmovd
 Target RejectNegative Mask(FMOVD) Undocumented
+
+mfused-madd
+Target Var(TARGET_FMAC)
+Enable the use of the fused floating point multiply-accumulate operation
 
 mgettrcost=
 Target RejectNegative Joined UInteger Var(sh_gettrcost) Init(-1)
