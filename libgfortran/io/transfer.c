@@ -359,52 +359,10 @@ read_block (st_parameter_dt *dtp, int *length)
 static void
 read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 {
-  int *length;
-  void *data;
   size_t nread;
+  int short_record;
 
-  if (!is_stream_io (dtp))
-    {
-      if (dtp->u.p.current_unit->bytes_left < (gfc_offset) *nbytes)
-	{
-	  /* For preconnected units with default record length, set
-	     bytes left to unit record length and proceed, otherwise
-	     error.  */
-	  if (dtp->u.p.current_unit->unit_number == options.stdin_unit
-	      && dtp->u.p.current_unit->recl == DEFAULT_RECL)
-	    dtp->u.p.current_unit->bytes_left = dtp->u.p.current_unit->recl;
-	  else
-	    {
-	      if (dtp->u.p.current_unit->flags.pad == PAD_NO)
-		{
-		  /* Not enough data left.  */
-		  generate_error (&dtp->common, ERROR_EOR, NULL);
-		  return;
-		}
-	    }
-	  
-	  if (dtp->u.p.current_unit->bytes_left == 0)
-	    {
-	      dtp->u.p.current_unit->endfile = AT_ENDFILE;
-	      generate_error (&dtp->common, ERROR_END, NULL);
-	      return;
-	    }
-
-	  *nbytes = (size_t) dtp->u.p.current_unit->bytes_left;
-	}
-
-      if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED &&
-	  dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
-	{
-	  length = (int *) nbytes;
-	  data = read_sf (dtp, length, 0);	/* Special case.  */
-	  memcpy (buf, data, (size_t) *length);
-	  return;
-	}
-
-      dtp->u.p.current_unit->bytes_left -= (gfc_offset) *nbytes;
-    }
-  else
+  if (is_stream_io (dtp))
     {
       if (sseek (dtp->u.p.current_unit->s,
 		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
@@ -412,29 +370,62 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	  generate_error (&dtp->common, ERROR_END, NULL);
 	  return;
 	}
+
+      nread = *nbytes;
+      if (sread (dtp->u.p.current_unit->s, buf, &nread) != 0)
+	{
+	  generate_error (&dtp->common, ERROR_OS, NULL);
+	  return;
+	}
+
+      dtp->u.p.current_unit->strm_pos += (gfc_offset) nread; 
+
+      if (nread != *nbytes)  /* Short read, e.g. if we hit EOF.  */
+	generate_error (&dtp->common, ERROR_END, NULL);	  
+
+      return;
     }
 
-  nread = *nbytes;
+  /* Unformatted file with records */
+  if (dtp->u.p.current_unit->bytes_left < (gfc_offset) *nbytes)
+    {
+      short_record = 1;
+      nread = (size_t) dtp->u.p.current_unit->bytes_left;
+      *nbytes = nread;
+
+      if (dtp->u.p.current_unit->bytes_left == 0)
+	{
+	  dtp->u.p.current_unit->endfile = AT_ENDFILE;
+	  generate_error (&dtp->common, ERROR_END, NULL);
+	  return;
+	}
+    }
+
+  else
+    {
+      short_record = 0;
+      nread = *nbytes;
+    }
+
+  dtp->u.p.current_unit->bytes_left -= nread;
+
   if (sread (dtp->u.p.current_unit->s, buf, &nread) != 0)
     {
       generate_error (&dtp->common, ERROR_OS, NULL);
       return;
     }
 
-  if (!is_stream_io (dtp))
-    {
-      if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-	dtp->u.p.size_used += (gfc_offset) nread;
-    }
-  else
-    dtp->u.p.current_unit->strm_pos += (gfc_offset) nread; 
-
   if (nread != *nbytes)  /* Short read, e.g. if we hit EOF.  */
     {
-      if (!is_stream_io (dtp))
-	generate_error (&dtp->common, ERROR_EOR, NULL);
-      else
-	generate_error (&dtp->common, ERROR_END, NULL);	  
+      *nbytes = nread;
+      generate_error (&dtp->common, ERROR_END, NULL);
+      return;
+    }
+
+  if (short_record)
+    {
+      generate_error (&dtp->common, ERROR_SHORT_RECORD, NULL);
+      return;
     }
 }
 
@@ -595,7 +586,8 @@ unformatted_read (st_parameter_dt *dtp, bt type,
       /* By now, all complex variables have been split into their
 	 constituent reals.  For types with padding, we only need to
 	 read kind bytes.  We don't care about the contents
-	 of the padding.  */
+	 of the padding.  If we hit a short record, then sz is
+	 adjusted accordingly, making later reads no-ops.  */
       
       sz = kind;
       for (i=0; i<nelems; i++)
