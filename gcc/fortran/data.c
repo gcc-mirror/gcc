@@ -155,7 +155,8 @@ create_character_intializer (gfc_expr * init, gfc_typespec * ts,
       init->expr_type = EXPR_CONSTANT;
       init->ts = *ts;
       
-      dest = gfc_getmem (len);
+      dest = gfc_getmem (len + 1);
+      dest[len] = '\0';
       init->value.character.length = len;
       init->value.character.string = dest;
       /* Blank the string if we're only setting a substring.  */

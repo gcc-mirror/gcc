@@ -283,6 +283,7 @@ match_hollerith_constant (gfc_expr ** result)
 		gfc_default_character_kind, &gfc_current_locus);
 	  e->value.character.string = gfc_getmem (num+1);
 	  memcpy (e->value.character.string, buffer, num);
+	  e->value.character.string[num] = '\0';
 	  e->value.character.length = num;
 	  *result = e;
 	  return MATCH_YES;
