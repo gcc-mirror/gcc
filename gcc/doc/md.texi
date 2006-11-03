@@ -1836,12 +1836,24 @@ Constant whose negation is a signed 16-bit constant
 Floating point constant that can be loaded into a register with one
 instruction per word
 
+@item H
+Integer/Floating point constant that can be loaded into a register using
+three instructions
+
 @item Q
 Memory operand that is an offset from a register (@samp{m} is preferable
 for @code{asm} statements)
 
+@item Z
+Memory operand that is an indexed or indirect from a register (@samp{m} is
+preferable for @code{asm} statements)
+
 @item R
 AIX TOC entry
+
+@item a
+Address operand that is an indexed or indirect from a register (@samp{p} is
+preferable for @code{asm} statements)
 
 @item S
 Constant suitable as a 64-bit mask operand
@@ -1851,6 +1863,13 @@ Constant suitable as a 32-bit mask operand
 
 @item U
 System V Release 4 small data area reference
+
+@item t
+AND masks that can be performed by two rldic@{l, r@} instructions
+
+@item W
+Vector constant that does not require memory
+
 @end table
 
 @item MorphoTech family---@file{config/mt/mt.h}
