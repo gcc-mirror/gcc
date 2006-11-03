@@ -1,4 +1,4 @@
-/* Copyright (C) 2003  Free Software Foundation
+/* Copyright (C) 2003, 2006 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -238,7 +238,7 @@ gnu::java::net::PlainDatagramSocketImpl::peekData(::java::net::DatagramPacket *p
   else
     throw new ::java::net::SocketException (JvNewStringUTF ("invalid family"));
 
-  p->setAddress (new ::java::net::InetAddress (raddr, NULL));
+  p->setAddress (::java::net::InetAddress::getByAddress (raddr));
   p->setPort (rport);
   p->length = (jint) retlen;
   return rport;
@@ -360,7 +360,7 @@ gnu::java::net::PlainDatagramSocketImpl::receive (::java::net::DatagramPacket *p
   else
     throw new ::java::net::SocketException (JvNewStringUTF ("invalid family"));
 
-  p->setAddress (new ::java::net::InetAddress (raddr, NULL));
+  p->setAddress (::java::net::InetAddress::getByAddress (raddr));
   p->setPort (rport);
   p->length = (jint) retlen;
   return;
@@ -656,7 +656,7 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
       else
         throw new ::java::net::SocketException (
             JvNewStringUTF ("invalid family"));
-      localAddress = new ::java::net::InetAddress (laddr, NULL);
+      localAddress = ::java::net::InetAddress::getByAddress (laddr);
     }
   return localAddress;
   break;

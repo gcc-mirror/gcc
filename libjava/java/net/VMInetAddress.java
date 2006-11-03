@@ -58,18 +58,12 @@ class VMInetAddress implements Serializable
    *
    * @return The local hostname.
    */
-  public static String getLocalHostname()
-  {
-    return InetAddress.getLocalHostname();
-  }
+  public static native String getLocalHostname();
 
   /**
    * Returns the value of the special address INADDR_ANY
    */
-  public static byte[] lookupInaddrAny() throws UnknownHostException
-  {
-    return new byte[] {0, 0, 0, 0};
-  }
+  public static native byte[] lookupInaddrAny() throws UnknownHostException;
 
   /**
    * This method returns the hostname for a given IP address.  It will
@@ -81,26 +75,15 @@ class VMInetAddress implements Serializable
    *
    * @exception UnknownHostException If the reverse lookup fails
    */
-  public static String getHostByAddr(byte[] ip) throws UnknownHostException
-  {
-    InetAddress addr = InetAddress.getByAddress(ip);
-    InetAddress.lookup(null, addr, false);
-    return addr.getHostName();
-  }
+  public static native String getHostByAddr(byte[] ip)
+    throws UnknownHostException;
 
   /**
    * Returns a list of all IP addresses for a given hostname.  Will throw
    * an UnknownHostException if the hostname cannot be resolved.
    */
-  public static byte[][] getHostByName(String hostname)
-    throws UnknownHostException
-  {
-    InetAddress[] iaddrs = InetAddress.lookup(hostname, null, true);
-    byte[][] addrs = new byte[iaddrs.length][];
-    for (int i = 0; i < iaddrs.length; i++)
-      addrs[i] = iaddrs[i].getAddress();
-    return addrs;
-  }
+  public static native byte[][] getHostByName(String hostname)
+    throws UnknownHostException;
 
   /**
    * Return the IP address represented by a literal address.
@@ -110,8 +93,5 @@ class VMInetAddress implements Serializable
    *
    * @return The IP address as a byte array
    */
-  public static byte[] aton(String address)
-  {
-    return InetAddress.aton(address);
-  }
+  public static native byte[] aton(String address);
 }

@@ -1,3 +1,26 @@
+2006-11-03  Gary Benson  <gbenson@redhat.com>
+
+	* java/net/InetAddress.java: Removed.
+	* java/net/natInetAddressNoNet.cc: Likewise.
+	* java/net/natInetAddressPosix.cc: Likewise.
+	* java/net/natInetAddressWin32.cc: Likewise.
+	* java/net/VMInetAddress.java (getLocalHostname,
+	lookupInaddrAny, getHostByAddr, getHostByName,
+	aton): Replace glue methods with native ones.
+	* java/net/natVMInetAddressNoNet.cc: New file.
+	* java/net/natVMInetAddressPosix.cc: Likewise.
+	* java/net/natVMInetAddressWin32.cc: Likewise.
+	* Makefile.am, configure.ac: Reflect the above.
+	* sources.am, Makefile.in, configure: Rebuilt.
+
+	* java/net/natVMNetworkInterfaceWin32.cc
+	(winsock2GetRealNetworkInterfaces): Create InetAddress
+	objects using InetAddress.getByAddress.
+	* gnu/java/net/natPlainSocketImplWin32.cc
+	(accept, getOption): Likewise.
+	* gnu/java/net/natPlainDatagramSocketImplWin32.cc
+	(peekData, receive, getOption): Likewise.
+
 2006-11-02  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/natVMMethod.cc (getLineTable): Implement.

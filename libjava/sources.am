@@ -5229,7 +5229,7 @@ classpath/java/net/FileNameMap.java \
 classpath/java/net/HttpURLConnection.java \
 classpath/java/net/Inet4Address.java \
 classpath/java/net/Inet6Address.java \
-java/net/InetAddress.java \
+classpath/java/net/InetAddress.java \
 classpath/java/net/InetSocketAddress.java \
 classpath/java/net/JarURLConnection.java \
 classpath/java/net/MalformedURLException.java \
