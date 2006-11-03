@@ -38,9 +38,9 @@ include(iparm.m4)dnl
 
 typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 
-/* The shape parameter is ignored. We can currently deduce the shape from the
-   return array.  */
-dnl Only the kind (ie size) is used to name the function.
+dnl For integer routines, only the kind (ie size) is used to name the
+dnl function.  The same function will be used for integer and logical
+dnl arrays of the same kind.
 
 extern void reshape_`'rtype_ccode (rtype * const restrict, 
 	rtype * const restrict, 
@@ -85,12 +85,13 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
   const rtype_name *src;
   int n;
   int dim;
+  int sempty, pempty;
 
   if (ret->data == NULL)
     {
       rdim = shape->dim[0].ubound - shape->dim[0].lbound + 1;
       rs = 1;
-      for (n=0; n < rdim; n++)
+      for (n = 0; n < rdim; n++)
 	{
 	  ret->dim[n].lbound = 0;
 	  rex = shape->data[n * shape->dim[0].stride];
@@ -132,13 +133,17 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
 
   sdim = GFC_DESCRIPTOR_RANK (source);
   ssize = 1;
+  sempty = 0;
   for (n = 0; n < sdim; n++)
     {
       scount[n] = 0;
       sstride[n] = source->dim[n].stride;
       sextent[n] = source->dim[n].ubound + 1 - source->dim[n].lbound;
       if (sextent[n] <= 0)
-        abort ();
+	{
+	  sempty = 1;
+	  sextent[n] = 0;
+	}
 
       if (ssize == sstride[n])
         ssize *= sextent[n];
@@ -150,13 +155,18 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
     {
       pdim = GFC_DESCRIPTOR_RANK (pad);
       psize = 1;
+      pempty = 0;
       for (n = 0; n < pdim; n++)
         {
           pcount[n] = 0;
           pstride[n] = pad->dim[n].stride;
           pextent[n] = pad->dim[n].ubound + 1 - pad->dim[n].lbound;
           if (pextent[n] <= 0)
-            abort ();
+	    {
+	      pempty = 1;
+	      pextent[n] = 0;
+	    }
+
           if (psize == pstride[n])
             psize *= pextent[n];
           else
@@ -168,6 +178,7 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
     {
       pdim = 0;
       psize = 1;
+      pempty = 1;
       pptr = NULL;
     }
 
@@ -185,6 +196,24 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
   rstride0 = rstride[0];
   sstride0 = sstride[0];
 
+  if (sempty && pempty)
+    abort ();
+
+  if (sempty)
+    {
+      /* Switch immediately to the pad array.  */
+      src = pptr;
+      sptr = NULL;
+      sdim = pdim;
+      for (dim = 0; dim < pdim; dim++)
+	{
+	  scount[dim] = pcount[dim];
+	  sextent[dim] = pextent[dim];
+	  sstride[dim] = pstride[dim];
+	  sstride0 = sstride[0] * sizeof (rtype_name);
+	}
+    }
+
   while (rptr)
     {
       /* Select between the source and pad arrays.  */
@@ -194,6 +223,7 @@ reshape_`'rtype_ccode (rtype * const restrict ret,
       src += sstride0;
       rcount[0]++;
       scount[0]++;
+
       /* Advance to the next destination element.  */
       n = 0;
       while (rcount[n] == rextent[n])
