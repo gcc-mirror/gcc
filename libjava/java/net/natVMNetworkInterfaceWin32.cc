@@ -12,7 +12,7 @@ details.  */
 #undef STRICT
 
 #include <java/net/NetworkInterface.h>
-#include <java/net/Inet4Address.h>
+#include <java/net/InetAddress.h>
 #include <java/net/SocketException.h>
 #include <java/net/VMNetworkInterface.h>
 #include <java/util/Vector.h>
@@ -83,8 +83,8 @@ winsock2GetRealNetworkInterfaces (jstring* pjstrName,
         }
 
       jstring if_name = _Jv_Win32NewString (szName);
-      java::net::Inet4Address* address =
-        new java::net::Inet4Address (baddr, JvNewStringLatin1 (""));
+      java::net::InetAddress* address =
+        java::net::InetAddress::getByAddress (baddr);
       pjstrName[i] = if_name;
       ppAddress[i] = address;
     }

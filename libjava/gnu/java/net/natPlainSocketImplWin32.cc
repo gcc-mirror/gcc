@@ -1,4 +1,4 @@
-/* Copyright (C) 2003, 2004, 2005 Free Software Foundation
+/* Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -328,7 +328,7 @@ gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
 
   s->native_fd = (jint) hSocket;
   s->localport = localport;
-  s->address = new ::java::net::InetAddress (raddr, NULL);
+  s->address = ::java::net::InetAddress::getByAddress (raddr);
   s->port = rport;
   return;
 
@@ -735,7 +735,7 @@ gnu::java::net::PlainSocketImpl::getOption (jint optID)
           else
             throw new ::java::net::SocketException
               (JvNewStringUTF ("invalid family"));
-          localAddress = new ::java::net::InetAddress (laddr, NULL);
+          localAddress = ::java::net::InetAddress::getByAddress (laddr);
         }
 
       return localAddress;

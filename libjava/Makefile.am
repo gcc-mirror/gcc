@@ -858,7 +858,7 @@ java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
 java/net/natVMNetworkInterface.cc \
-java/net/natInetAddress.cc \
+java/net/natVMInetAddress.cc \
 java/net/natURLClassLoader.cc \
 java/nio/channels/natVMChannels.cc \
 java/nio/natDirectByteBufferImpl.cc \

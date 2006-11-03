@@ -7486,9 +7486,9 @@ test -d java/lang || mkdir java/lang
           ac_config_links="$ac_config_links java/lang/natConcreteProcess.cc:java/lang/nat${PLATFORM}Process.cc"
 
 
-# Likewise for natInetAddress.cc and natVMNetworkInterface.cc.
+# Likewise for natVMInetAddress.cc and natVMNetworkInterface.cc.
 test -d java/net || mkdir java/net
-          ac_config_links="$ac_config_links java/net/natInetAddress.cc:java/net/natInetAddress${PLATFORMNET}.cc"
+          ac_config_links="$ac_config_links java/net/natVMInetAddress.cc:java/net/natVMInetAddress${PLATFORMNET}.cc"
 
           ac_config_links="$ac_config_links java/net/natVMNetworkInterface.cc:java/net/natVMNetworkInterface${PLATFORMNET}.cc"
 
@@ -17479,7 +17479,7 @@ do
   "java/io/natFile.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/io/natFile.cc:java/io/natFile${FILE-${PLATFORM}}.cc" ;;
   "java/lang/ConcreteProcess.java" ) CONFIG_LINKS="$CONFIG_LINKS java/lang/ConcreteProcess.java:java/lang/${PLATFORM}Process.java" ;;
   "java/lang/natConcreteProcess.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/lang/natConcreteProcess.cc:java/lang/nat${PLATFORM}Process.cc" ;;
-  "java/net/natInetAddress.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/net/natInetAddress.cc:java/net/natInetAddress${PLATFORMNET}.cc" ;;
+  "java/net/natVMInetAddress.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/net/natVMInetAddress.cc:java/net/natVMInetAddress${PLATFORMNET}.cc" ;;
   "java/net/natVMNetworkInterface.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/net/natVMNetworkInterface.cc:java/net/natVMNetworkInterface${PLATFORMNET}.cc" ;;
   "gnu/java/net/natPlainSocketImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/net/natPlainSocketImpl.cc:gnu/java/net/natPlainSocketImpl${PLATFORMNET}.cc" ;;
   "gnu/java/net/natPlainDatagramSocketImpl.cc" ) CONFIG_LINKS="$CONFIG_LINKS gnu/java/net/natPlainDatagramSocketImpl.cc:gnu/java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc" ;;
