@@ -1,3 +1,7 @@
+2006-11-02  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* doc/invoke.texi: Fix mfp-trap-mode typo.
+
 2006-11-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Update GMP/MPFR build
