@@ -1,3 +1,7 @@
+2006-11-02  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* error.c (show_locus): Remove "In file" from error messages.
+
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* trans-decl.c (gfc_generate_constructors): Update for removal
