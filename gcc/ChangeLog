@@ -1,4 +1,4 @@
-2006-11-03  David Ung  <davidung@mips.com>
+2006-11-03  David Ung  <davidu@mips.com>
 	
 	* config/mips/mips.h (processor_type): Removed PROCESSOR_24K, add
 	PROCESSOR_24KC and PROCESSOR_24KF.
