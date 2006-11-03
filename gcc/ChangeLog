@@ -1,3 +1,7 @@
+2006-11-02  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* doc/invoke.texi: Fix mfp-trap-mode typo.
+
 2006-11-02  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* config/arm/linux-elf.h (NEED_INDICATE_EXEC_STACK): Define as 1.
