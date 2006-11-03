@@ -193,5 +193,5 @@ program test
   call test_unpack
   call test_spread
   call test_pack
-!  call test_reshape
+  call test_reshape
 end
