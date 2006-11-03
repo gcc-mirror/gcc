@@ -14417,6 +14417,10 @@ arm_file_end (void)
 {
   int regno;
 
+  if (NEED_INDICATE_EXEC_STACK)
+    /* Add .note.GNU-stack.  */
+    file_end_indicate_exec_stack ();
+
   if (! thumb_call_reg_needed)
     return;
 

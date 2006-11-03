@@ -1,3 +1,16 @@
+2006-11-02  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* config/arm/linux-elf.h (NEED_INDICATE_EXEC_STACK): Define as 1.
+	* arm.c (arm_file_end): If NEED_INDICATE_EXEC_STACK call 
+	file_end_indicate_exec_stack. 
+	* arm.h [!NEED_INDICATE_EXEC_STACK] (NEED_INIDCATE_EXEC_STACK): 
+	Define as 0.
+	* lib1funcs.asm [__ELF__ && __linux__]: Emit .note.GNU-stack section
+	for a non-executable stack.
+	* crti.asm: Likewise.
+	* crtn.asm: Likewise.
+	* libunwind.S: Likewise. 
+
 2006-11-02  Ben Elliston  <bje@au.ibm.com>
 
 	* tree-ssa.c (warn_uninit): Use expand_location variables for

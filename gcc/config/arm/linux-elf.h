@@ -104,3 +104,7 @@
 
 /* The GNU/Linux profiler needs a frame pointer.  */
 #define SUBTARGET_FRAME_POINTER_REQUIRED current_function_profile
+
+/* Add .note.GNU-stack.  */
+#undef NEED_INDICATE_EXEC_STACK
+#define NEED_INDICATE_EXEC_STACK	1
