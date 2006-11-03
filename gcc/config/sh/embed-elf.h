@@ -32,6 +32,7 @@ Boston, MA 02110-1301, USA.  */
 #define LIBGCC_SPEC "%{!shared: \
   %{m4-100*:-lic_invalidate_array_4-100} \
   %{m4-200*:-lic_invalidate_array_4-200} \
+  %{m4-300*|-m4-340:-lic_invalidate_array_4a %{!Os: -lgcc-4-300}} \
   %{m4a*:-lic_invalidate_array_4a}} \
   %{Os: -lgcc-Os-4-200} \
   -lgcc \

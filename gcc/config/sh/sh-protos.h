@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003,
-   2004, 2005
+   2004, 2005, 2006
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -69,6 +69,10 @@ extern void print_operand (FILE *, rtx, int);
 extern void output_pic_addr_const (FILE *, rtx);
 extern int expand_block_move (rtx *);
 extern int prepare_move_operands (rtx[], enum machine_mode mode);
+extern enum rtx_code prepare_cbranch_operands (rtx *, enum machine_mode mode,
+					       enum rtx_code comparison);
+extern void expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int);
+extern bool expand_cbranchdi4 (rtx *operands, enum rtx_code comparison);
 extern void from_compare (rtx *, int);
 extern int shift_insns_rtx (rtx);
 extern void gen_ashift (int, int, rtx);

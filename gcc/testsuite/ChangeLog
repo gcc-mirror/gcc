@@ -1,3 +1,8 @@
+2006-11-03  J"orn Rennecke  <joern.rennecke@st.com>
+
+	* testsuite/gcc.c-torture/execute/arith-rand-ll.c:
+	Also test for bogus rest sign.
+
 2006-11-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/27895

@@ -75,17 +75,17 @@ Boston, MA 02110-1301, USA.  */
    on newlib and provide the runtime support */
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC \
-"-D__EMBEDDED_CROSS__ %{m4-100*:-D__SH4_100__} %{m4-200*:-D__SH4_200__} %{m4-400:-D__SH4_400__} %{m4-500:-D__SH4_500__} \
+"-D__EMBEDDED_CROSS__ %{m4-100*:-D__SH4_100__} %{m4-200*:-D__SH4_200__} %{m4-300*:-D__SH4_300__} %{m4-340:-D__SH4_340__} %{m4-400:-D__SH4_400__} %{m4-500:-D__SH4_500__} \
 %(cppruntime)"
 
 /* Override the SUBTARGET_ASM_SPEC to add the runtime support */
 #undef SUBTARGET_ASM_SPEC
-#define SUBTARGET_ASM_SPEC "%{m4-100*|m4-200*:-isa=sh4} %{m4-400:-isa=sh4-nommu-nofpu} %{m4-500:-isa=sh4-nofpu} %(asruntime)"
+#define SUBTARGET_ASM_SPEC "%{m4-100*|m4-200*:-isa=sh4} %{m4-400|m4-340:-isa=sh4-nommu-nofpu} %{m4-500:-isa=sh4-nofpu} %(asruntime)"
 
 /* Override the SUBTARGET_ASM_RELAX_SPEC so it doesn't interfere with the
    runtime support by adding -isa=sh4 in the wrong place.  */
 #undef SUBTARGET_ASM_RELAX_SPEC
-#define SUBTARGET_ASM_RELAX_SPEC "%{!m4-100*:%{!m4-200*:%{!m4-400:%{!m4-500:-isa=sh4}}}}"
+#define SUBTARGET_ASM_RELAX_SPEC "%{!m4-100*:%{!m4-200*:%{!m4-300*:%{!m4-340:%{!m4-400:%{!m4-500:-isa=sh4}}}}}}"
 
 /* Create the CC1_SPEC to add the runtime support */
 #undef CC1_SPEC
@@ -102,7 +102,7 @@ Boston, MA 02110-1301, USA.  */
 /* Override STARTFILE_SPEC to add profiling and MMU support.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
-  "%{!shared: %{!m4-400*: %{pg:gcrt1-mmu.o%s}%{!pg:crt1-mmu.o%s}}} \
-   %{!shared: %{m4-400*: %{pg:gcrt1.o%s}%{!pg:crt1.o%s}}} \
+  "%{!shared: %{!m4-400*:%{!m4-340*: %{pg:gcrt1-mmu.o%s}%{!pg:crt1-mmu.o%s}}}} \
+   %{!shared: %{m4-340*|m4-400*: %{pg:gcrt1.o%s}%{!pg:crt1.o%s}}} \
    crti.o%s \
    %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"

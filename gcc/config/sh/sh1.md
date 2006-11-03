@@ -1,5 +1,5 @@
 ;; DFA scheduling description for Renesas / SuperH SH.
-;; Copyright (C) 2004 Free Software Foundation, Inc.
+;; Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -45,7 +45,7 @@
 
 (define_insn_reservation "sh1_load_store" 2
   (and (eq_attr "pipe_model" "sh1")
-       (eq_attr "type" "load,pcload,pload,store,pstore"))
+       (eq_attr "type" "load,pcload,pload,mem_mac,store,fstore,pstore,mac_mem"))
   "sh1memory*2")
 
 (define_insn_reservation "sh1_arith3" 3
@@ -76,7 +76,7 @@
 
 (define_insn_reservation "sh1_fp" 2
   (and (eq_attr "pipe_model" "sh1")
-       (eq_attr "type" "fp,fmove"))
+       (eq_attr "type" "fp,fpscr_toggle,fp_cmp,fmove"))
   "sh1fp")
 
 (define_insn_reservation "sh1_fdiv" 13

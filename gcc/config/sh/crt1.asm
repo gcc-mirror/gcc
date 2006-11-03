@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006
+   Free Software Foundation, Inc.
    This file was pretty much copied from newlib.
 
 This file is part of GCC.
@@ -894,25 +895,12 @@ ___main:
 	nop
 #ifdef VBR_SETUP
 ! Exception handlers	
-	.balign 256
+	.section .text.vbr, "ax"
 vbr_start:
-	mov.l 2f, r0     ! load the old vbr setting (if any)
-	mov.l @r0, r0
-	cmp/eq #0, r0
-	bf 1f
-	! no previous vbr - jump to own generic handler
-	bra handler
-	nop
-1:	! there was a previous handler - chain them
-	jmp @r0
-	nop
-	.balign 4
-2:
-	.long old_vbr
 
-	.balign 256
+	.org 0x100
 vbr_100:
-	#ifdef PROFILE
+#ifdef PROFILE
 	! Note on register usage.
 	! we use r0..r3 as scratch in this code. If we are here due to a trapa for profiling
 	! then this is OK as we are just before executing any function code.
@@ -1017,50 +1005,7 @@ handler_100:
 2:	
 	.long old_vbr
 
-	.balign 256
-vbr_200:
-	mov.l 2f, r0     ! load the old vbr setting (if any)
-	mov.l @r0, r0
-	cmp/eq #0, r0
-	bf 1f
-	! no previous vbr - jump to own generic handler
-	bra handler
-	nop	
-1:	! there was a previous handler - chain them
-	add #0x7f, r0	 ! 0x7f
-	add #0x7f, r0	 ! 0xfe
-	add #0x7f, r0	 ! 0x17d
-	add #0x7f, r0    ! 0x1fc
-	add #0x4, r0     ! add 0x200 without corrupting another register
-	jmp @r0
-	nop
-	.balign 4
-2:
-	.long old_vbr
-
-	.balign 256
-vbr_300:
-	mov.l 2f, r0     ! load the old vbr setting (if any)
-	mov.l @r0, r0
-	cmp/eq #0, r0
-	bf 1f
-	! no previous vbr - jump to own generic handler
-	bra handler
-	nop	
-1:	! there was a previous handler - chain them
-	rotcr r0
-	rotcr r0
-	add #0x7f, r0	 ! 0x1fc
-	add #0x41, r0	 ! 0x300
-	rotcl r0
-	rotcl r0	 ! Add 0x300 without corrupting another register
-	jmp @r0
-	nop
-	.balign 4
-2:
-	.long old_vbr
-
-	.balign 256	
+	.org 0x400
 vbr_400:	! Should be at vbr+0x400
 	mov.l 2f, r0     ! load the old vbr setting (if any)
 	mov.l @r0, r0
@@ -1103,28 +1048,7 @@ handler:
 	jmp @r2
 	nop
 
-	.balign 256
-vbr_500:
-	mov.l 2f, r0     ! load the old vbr setting (if any)
-	mov.l @r0, r0
-	cmp/eq #0, r0
-	! no previous vbr - jump to own generic handler
-	bt handler
-	! there was a previous handler - chain them
-	rotcr r0
-	rotcr r0
-	add #0x7f, r0	 ! 0x1fc
-	add #0x7f, r0	 ! 0x3f8
-	add #0x42, r0	 ! 0x500
-	rotcl r0
-	rotcl r0	 ! Add 0x500 without corrupting another register
-	jmp @r0
-	nop
-	.balign 4
-2:
-	.long old_vbr
-
-	.balign 256
+	.org 0x600
 vbr_600:
 #ifdef PROFILE	
 	! Should be at vbr+0x600
@@ -1140,11 +1064,48 @@ vbr_600:
 	mov.l	r6,@-r15
 	mov.l	r7,@-r15
 	sts.l	pr,@-r15
+	sts.l	mach,@-r15
+	sts.l	macl,@-r15
+#if defined(__SH_FPU_ANY__)
+	! Save fpul and fpscr, save fr0-fr7 in 64 bit mode
+	! and set the pervading precision for the timer_handler
+	mov	#0,r0
+	sts.l	fpul,@-r15
+	sts.l	fpscr,@-r15
+	lds	r0,fpscr	! Clear fpscr
+	fmov	fr0,@-r15
+	fmov	fr1,@-r15
+	fmov	fr2,@-r15
+	fmov	fr3,@-r15
+	mov.l	pervading_precision_k,r0
+	fmov	fr4,@-r15
+	fmov	fr5,@-r15
+	mov.l	@r0,r0
+	fmov	fr6,@-r15
+	fmov	fr7,@-r15
+	lds	r0,fpscr
+#endif /* __SH_FPU_ANY__ */
 	! Pass interrupted pc to timer_handler as first parameter (r4).
 	stc    spc, r4
 	mov.l timer_handler_k, r0
 	jsr @r0
 	nop
+#if defined(__SH_FPU_ANY__)
+	mov	#0,r0
+	lds	r0,fpscr	! Clear the fpscr
+	fmov	@r15+,fr7
+	fmov	@r15+,fr6
+	fmov	@r15+,fr5
+	fmov	@r15+,fr4
+	fmov	@r15+,fr3
+	fmov	@r15+,fr2
+	fmov	@r15+,fr1
+	fmov	@r15+,fr0
+	lds.l	@r15+,fpscr
+	lds.l	@r15+,fpul
+#endif /* __SH_FPU_ANY__ */
+	lds.l @r15+,macl
+	lds.l @r15+,mach
 	lds.l @r15+,pr
 	mov.l @r15+,r7
 	mov.l @r15+,r6
@@ -1157,6 +1118,13 @@ vbr_600:
 	stc sgr, r15    ! Restore r15, destroyed by this sequence. 
 	rte
 	nop
+#if defined(__SH_FPU_ANY__)
+	.balign 4
+pervading_precision_k:
+#define CONCAT1(A,B) A##B
+#define CONCAT(A,B) CONCAT1(A,B)
+	.long CONCAT(__USER_LABEL_PREFIX__,__fpscr_values)+4
+#endif
 #else
 	mov.l 2f, r0     ! Load the old vbr setting (if any).
 	mov.l @r0, r0

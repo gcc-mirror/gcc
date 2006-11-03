@@ -1,3 +1,91 @@
+2006-11-03  J"orn Rennecke  <joern.rennecke@st.com>
+
+	* config/sh/crt1.asm: Fix #ifdef indent.
+
+2006-11-03  J"orn Rennecke  <joern.rennecke@st.com>
+	Merged from STMicroelectronics sources:
+	2006-10-06  Andrew Stubbs  <andrew.stubbs@st.com>
+	  * config/sh/crt1.asm (vbr_600): Add missing #if.
+	2006-08-03  J"orn Rennecke  <joern.rennecke@st.com>
+	  * sh.opt (mfused-madd): New option.
+	  * sh.md (mac_media, macsf3): Make conditional on TARGET_FMAC.
+	2006-07-04  Andrew Stubbs  <andrew.stubbs@st.com>
+	  * config/sh/crt1.asm (vbr_start): Move to new section .test.vbr.
+	  Remove pointless handler at VBR+0.
+	  (vbr_200, vbr_300, vbr_500): Remove pointless handler.
+	  (vbr_600): Save and restore mach and macl, fpul and fpscr and fr0 to
+	  fr7. Make sure the timer handler is called with the correct FPU
+	  precision setting, according to the ABI.
+	2006-06-14  J"orn Rennecke <joern.rennecke@st.com>
+	  * config/sh/sh.opt (m2a-single, m2a-single-only): Fix Condition.
+	  * config/sh/sh.h (SUPPORT_SH2A_NOFPU): Fix condition.
+	  (SUPPORT_SH2A_SINGLE_ONLY, SUPPORT_SH2A_SINGLE_ONLY): Likewise.
+	2006-06-09  J"orn Rennecke <joern.rennecke@st.com>
+	  * sh.md (cmpgeusi_t): Change into define_insn_and_split.  Accept
+	  zero as second operand.
+	2006-04-28  J"orn Rennecke <joern.rennecke@st.com>
+	  * config/sh/divtab-sh4-300.c, config/sh/lib1funcs-4-300.asm:
+	  Fixed some bugs related to negative values, in particular -0
+	  and overflow at -0x80000000.
+	  * config/sh/divcost-analysis: Added sh4-300 figures.
+	2006-04-27  J"orn Rennecke <joern.rennecke@st.com>
+	  * config/sh/t-sh (MULTILIB_MATCHES): Add -m4-300* / -m4-340 options.
+	2006-04-26  J"orn Rennecke <joern.rennecke@st.com>
+	  * config/sh/t-sh (OPT_EXTRA_PARTS): Add libgcc-4-300.a.
+	  ($(T)div_table-4-300.o, $(T)libgcc-4-300.a): New rules.
+	  * config/sh/divtab-sh4-300.c, config/sh/lib1funcs-4-300.asm:
+	New files.
+	  * config/sh/embed-elf.h (LIBGCC_SPEC): Use -lgcc-4-300 for -m4-300* /
+	  -m4-340.
+	2006-04-24  J"orn Rennecke <joern.rennecke@st.com>
+	  SH4-300 scheduling description & fixes to SH4-[12]00 description:
+	  * sh.md: New instruction types: fstore, movi8, fpscr_toggle, gp_mac,
+	  mac_mem, mem_mac, dfp_mul, fp_cmp.
+	  (insn_class, dfp_comp, any_fp_comp): Update.
+	  (push_fpul, movsf_ie, fpu_switch, toggle_sz, toggle_pr): Update type.
+	  (cmpgtsf_t, "cmpeqsf_t, cmpgtsf_t_i4, cmpeqsf_t_i4): Likewise.
+	  (muldf3_i): Likewise.
+	  (movsi_i): Split rI08 alternative into two separate alternatives.
+	  Update type.
+	  (movsi_ie, movsi_i_lowpart): Likewise.
+	  (movqi_i): Split ri alternative into two separate alternatives.
+	  Update type.
+	  * sh1.md (sh1_load_store, sh1_fp): Update.
+	  * sh4.md (sh4_store, sh4_mac_gp, fp_arith, fp_double_arith): Update.
+	  (mac_mem, sh4_fpscr_toggle): New insn_reservations.
+	  * sh4a.md (sh4a_mov, sh4a_load, sh4a_store, sh4a_fp_arith): Update.
+	  (sh4a_fp_double_arith): Likewise.
+	  * sh4-300.md: New file.
+	  * sh.c (sh_handle_option): Handle m4-300* options.
+	  (sh_adjust_cost): Fix latency of auto-increments.
+	  Handle SH4-300 differently than other SH4s.  Check for new insn types.
+	  * sh.h (OVERRIDE_OPTIONS): Initilize sh_branch_cost if it has not
+	  been set by an option.
+	  * sh.opt (m4-300, m4-100-nofpu, m4-200-nofpu): New options.
+	  (m4-300-nofpu, -m4-340, m4-300-single, m4-300-single-only): Likewise.
+	  (mbranch-cost=): Likewise.
+	  * superh.h (STARTFILE_SPEC): Take -m4-340 into account.
+
+	  * sh.md (mulsf3): Remove special expansion code.
+	  (mulsf3_ie): Now a define_insn_and_split.
+	  (macsf3): Allow for TARGET_SH4.
+
+	  * sh.md (cbranchsi4, cbranchdi4, cbranchdi4_i): New patterns.
+	  * sh.c (prepare_cbranch_operands, expand_cbranchsi4): New functions.
+	  (expand_cbranchdi4): Likewise.
+	  (sh_rtx_costs): Give lower cost for certain CONST_INT values and for
+	  CONST_DOUBLE if the outer code is COMPARE.
+	  * sh.h (OPTIMIZATION_OPTIONS): If not optimizing for size, set
+	  TARGET_CBRANCHDI4 and TARGET_EXPAND_CBRANCHDI4.
+	  (OVERRIDE_OPTIONS): For TARGET_SHMEDIA, clear TARGET_CBRANCHDI4.
+	  (LEGITIMATE_CONSTANT_P): Also allow DImode and VOIDmode CONST_DOUBLEs.
+	  Remove redundant fp_{zero,one}_operand checks.
+	  * sh.opt (mcbranchdi, mexpand-cbranchdi, mcmpeqdi): New options.
+	  * sh-protos.h (prepare_cbranch_operands, expand_cbranchsi4): Declare.
+	  (expand_cbranchdi4): Likewise.
+	2006-04-20  J"orn Rennecke <joern.rennecke@st.com>
+	  * sh.h (LOCAL_ALIGNMENT): Use DATA_ALIGNMENT.
+
 2006-11-02  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* doc/md.texi (RS6000 constraints): Document H, Z, a, t, and W
