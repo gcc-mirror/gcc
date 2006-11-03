@@ -749,10 +749,18 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
   /* MIPS32 Release 2 */
   { "m4k", PROCESSOR_M4K, 33 },
-  { "24k", PROCESSOR_24K, 33 },
-  { "24kc", PROCESSOR_24K, 33 },  /* 24K  no FPU */
-  { "24kf", PROCESSOR_24K, 33 },  /* 24K 1:2 FPU */
-  { "24kx", PROCESSOR_24KX, 33 }, /* 24K 1:1 FPU */
+  { "4kec", PROCESSOR_4KC, 33 },
+  { "4kem", PROCESSOR_4KC, 33 },
+  { "4kep", PROCESSOR_4KP, 33 },
+  { "24kc", PROCESSOR_24KC, 33 },  /* 24K  no FPU */
+  { "24kf", PROCESSOR_24KF, 33 },  /* 24K 1:2 FPU */
+  { "24kx", PROCESSOR_24KX, 33 },  /* 24K 1:1 FPU */
+  { "24kec", PROCESSOR_24KC, 33 }, /* 24K with DSP */
+  { "24kef", PROCESSOR_24KF, 33 },
+  { "24kex", PROCESSOR_24KX, 33 },
+  { "34kc", PROCESSOR_24KC, 33 },  /* 34K with MT/DSP */
+  { "34kf", PROCESSOR_24KF, 33 },
+  { "34kx", PROCESSOR_24KX, 33 },
 
   /* MIPS64 */
   { "5kc", PROCESSOR_5KC, 64 },
@@ -847,7 +855,16 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
     { /* 20KC */
       DEFAULT_COSTS
     },
-    { /* 24k */
+    { /* 24KC */
+      SOFT_FP_COSTS,
+      COSTS_N_INSNS (5),            /* int_mult_si */
+      COSTS_N_INSNS (5),            /* int_mult_di */
+      COSTS_N_INSNS (41),           /* int_div_si */
+      COSTS_N_INSNS (41),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
+    },
+    { /* 24KF */
       COSTS_N_INSNS (8),            /* fp_add */
       COSTS_N_INSNS (8),            /* fp_mult_sf */
       COSTS_N_INSNS (10),           /* fp_mult_df */
@@ -860,7 +877,7 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
                        1,           /* branch_cost */
                        4            /* memory_latency */
     },
-    { /* 24kx */
+    { /* 24KX */
       COSTS_N_INSNS (4),            /* fp_add */
       COSTS_N_INSNS (4),            /* fp_mult_sf */
       COSTS_N_INSNS (5),            /* fp_mult_df */
