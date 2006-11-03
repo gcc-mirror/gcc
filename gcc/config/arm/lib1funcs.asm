@@ -27,6 +27,13 @@ You should have received a copy of the GNU General Public License
 along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
+
+/* An executable stack is *not* required for these functions.  */
+#if defined(__ELF__) && defined(__linux__)
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 /* ------------------------------------------------------------------------ */
 
 /* We need to know what prefix to add to function names.  */

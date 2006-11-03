@@ -31,6 +31,12 @@
 #    the executable file might be covered by the GNU General Public License.
 # 
 
+/* An executable stack is *not* required for these functions.  */
+#if defined(__ELF__) && defined(__linux__)
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 # This file just make a stack frame for the contents of the .fini and
 # .init sections.  Users may put any desired instructions in those
 # sections.

@@ -2591,4 +2591,10 @@ enum arm_builtins
 
   ARM_BUILTIN_MAX
 };
+
+/* Do not emit .note.GNU-stack by default.  */
+#ifndef NEED_INDICATE_EXEC_STACK
+#define NEED_INDICATE_EXEC_STACK	0
+#endif
+
 #endif /* ! GCC_ARM_H */
