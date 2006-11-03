@@ -1,3 +1,10 @@
+2006-11-02  Steve Ellcey  <sje@cup.hp.com>
+
+	* inclhack.def (hpux11_extern_sendfile): New.
+	(hpux11_extern_sendpath): New.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/socket.h: Update.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Makefile.in: Added empty "pdf" target.
