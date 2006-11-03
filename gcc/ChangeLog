@@ -1,3 +1,15 @@
+2006-11-03  David Ung  <davidung@mips.com>
+	
+	* config/mips/mips.h (processor_type): Removed PROCESSOR_24K, add
+	PROCESSOR_24KC and PROCESSOR_24KF.
+	* config/mips/mips.c (mips_cpu_info_table): Add processor names
+	and aliases for 4kec/4kem/4kep/24kec/24kef/24kex/34kc/34kf/34kx.
+	(mips_rtx_cost_data): Add costs for the 24kc.
+	* config/mips/mips.md ("cpu"): Remove 24k, add 24kc and 24kf.
+	* config/mips/24k.md: Remove references to 24k and replace with
+	uses of 24kc/24kf in the appropriate reservations.
+	* doc/invoke.texi (MIPS Options): Updated. 
+	
 2006-11-03  J"orn Rennecke  <joern.rennecke@st.com>
 
 	* config/sh/crt1.asm: Fix #ifdef indent.
