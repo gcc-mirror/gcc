@@ -1,3 +1,8 @@
+2006-11-02  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* doc/md.texi (RS6000 constraints): Document H, Z, a, t, and W
+	constraints.
+
 2006-11-02  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* doc/invoke.texi: Fix mfp-trap-mode typo.
