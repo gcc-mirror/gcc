@@ -1,3 +1,8 @@
+2006-11-02  Ben Elliston  <bje@au.ibm.com>
+
+	* tree-ssa.c (warn_uninit): Use expand_location variables for
+	locus and declaration locus.
+
 2006-11-02  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/27405

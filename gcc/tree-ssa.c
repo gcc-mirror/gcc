@@ -1154,7 +1154,8 @@ warn_uninit (tree t, const char *gmsgid, void *data)
   tree var = SSA_NAME_VAR (t);
   tree def = SSA_NAME_DEF_STMT (t);
   tree context = (tree) data;
-  location_t *locus, *fun_locus;
+  location_t *locus;
+  expanded_location xloc, floc;
 
   /* Default uses (indicated by an empty definition statement),
      are uninitialized.  */
@@ -1178,10 +1179,11 @@ warn_uninit (tree t, const char *gmsgid, void *data)
 	   ? EXPR_LOCUS (context)
 	   : &DECL_SOURCE_LOCATION (var));
   warning (0, gmsgid, locus, var);
-  fun_locus = &DECL_SOURCE_LOCATION (cfun->decl);
-  if (locus->file != fun_locus->file
-      || locus->line < fun_locus->line
-      || locus->line > cfun->function_end_locus.line)
+  xloc = expand_location (*locus);
+  floc = expand_location (DECL_SOURCE_LOCATION (cfun->decl));
+  if (xloc.file != floc.file
+      || xloc.line < floc.line
+      || xloc.line > LOCATION_LINE (cfun->function_end_locus))
     inform ("%J%qD was declared here", var, var);
 
   TREE_NO_WARNING (var) = 1;
