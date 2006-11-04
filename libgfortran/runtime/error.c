@@ -435,6 +435,10 @@ translate_error (int code)
       p = "Write exceeds length of DIRECT access record";
       break;
 
+    case ERROR_SHORT_RECORD:
+      p = "Short record on unformatted read";
+      break;
+
     default:
       p = "Unknown error code";
       break;
