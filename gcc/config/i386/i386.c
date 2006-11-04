@@ -4575,6 +4575,8 @@ init_ext_80387_constants (void)
 int
 standard_80387_constant_p (rtx x)
 {
+  REAL_VALUE_TYPE r;
+
   if (GET_CODE (x) != CONST_DOUBLE || !FLOAT_MODE_P (GET_MODE (x)))
     return -1;
 
@@ -4583,22 +4585,29 @@ standard_80387_constant_p (rtx x)
   if (x == CONST1_RTX (GET_MODE (x)))
     return 2;
 
+  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+
   /* For XFmode constants, try to find a special 80387 instruction when
      optimizing for size or on those CPUs that benefit from them.  */
   if (GET_MODE (x) == XFmode
       && (optimize_size || x86_ext_80387_constants & TUNEMASK))
     {
-      REAL_VALUE_TYPE r;
       int i;
 
       if (! ext_80387_constants_init)
 	init_ext_80387_constants ();
 
-      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
       for (i = 0; i < 5; i++)
         if (real_identical (&r, &ext_80387_constants_table[i]))
 	  return i + 3;
     }
+
+  /* Load of the constant -0.0 or -1.0 will be split as
+     fldz;fchs or fld1;fchs sequence.  */
+  if (real_isnegzero (&r))
+    return 8;
+  if (real_identical (&r, &dconstm1))
+    return 9;
 
   return 0;
 }
@@ -4625,6 +4634,9 @@ standard_80387_constant_opcode (rtx x)
       return "fldl2t";
     case 7:
       return "fldpi";
+    case 8:
+    case 9:
+      return "#";
     default:
       gcc_unreachable ();
     }
