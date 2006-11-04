@@ -1,3 +1,8 @@
+2006-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/29713
+	* gfortran.dg/pr29713.f90: New test.
+
 2006-11-03  J"orn Rennecke  <joern.rennecke@st.com>
 
 	* testsuite/gcc.c-torture/execute/arith-rand-ll.c:
@@ -6,8 +11,7 @@
 2006-11-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/27895
-	* gcc/testsuite/gfortran.dg/zero_sized_1.f90: Uncomment checks
-	for RESHAPE.
+	* gfortran.dg/zero_sized_1.f90: Uncomment checks for RESHAPE.
 
 2006-11-02  Brooks Moses  <brooks.moses@codesourcery.com>
 
