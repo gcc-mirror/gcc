@@ -1,5 +1,5 @@
 2006-11-03  Paolo Bonzini  <bonzini@gnu.org>
-            Steven Bosscher  <stevenb.gcc@gmail.com>
+            Steven Bosscher  <steven@gcc.gnu.org>
 
         * fwprop.c: New file.
         * Makefile.in: Add fwprop.o.
@@ -21,7 +21,6 @@
         (equiv_constant): Move here a small part of fold_rtx_subreg,
         do not call fold_rtx.  Call avoid_constant_pool_reference
         to process MEMs.
-        * recog.c (canonicalize_change_group): New.
         * recog.h (canonicalize_change_group): New.
 
         * doc/invoke.texi (Optimization Options): Document fwprop.
