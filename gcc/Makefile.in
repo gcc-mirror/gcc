@@ -997,7 +997,7 @@ OBJS-common = \
  debug.o df-core.o df-problems.o df-scan.o dfp.o diagnostic.o dojump.o     \
  dominance.o loop-doloop.o	   					   \
  dwarf2asm.o dwarf2out.o emit-rtl.o except.o explow.o loop-iv.o		   \
- expmed.o expr.o final.o flow.o fold-const.o function.o gcse.o		   \
+ expmed.o expr.o final.o flow.o fold-const.o function.o fwprop.o gcse.o	   \
  genrtl.o ggc-common.o global.o graph.o gtype-desc.o			   \
  haifa-sched.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o insn-modes.o	   \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
@@ -2336,6 +2336,9 @@ cse.o : cse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h $(FLAGS_H) insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
    output.h $(FUNCTION_H) $(BASIC_BLOCK_H) $(GGC_H) $(TM_P_H) $(TIMEVAR_H) \
    except.h $(TARGET_H) $(PARAMS_H) rtlhooks-def.h tree-pass.h $(REAL_H)
+fwprop.o : fwprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
+   toplev.h insn-config.h $(RECOG_H) $(FLAGS_H) $(OBSTACK_H) $(BASIC_BLOCK_H) \
+   output.h $(DF_H) alloc-pool.h $(TIMEVAR_H) tree-pass.h
 web.o : web.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    hard-reg-set.h $(FLAGS_H) $(BASIC_BLOCK_H) $(FUNCTION_H) output.h toplev.h \
    $(DF_H) $(OBSTACK_H) $(TIMEVAR_H) tree-pass.h

@@ -238,6 +238,28 @@ validate_change (rtx object, rtx *loc, rtx new, int in_group)
     return apply_change_group ();
 }
 
+/* Keep X canonicalized if some changes have made it non-canonical; only
+   modifies the operands of X, not (for example) its code.  Simplifications
+   are not the job of this routine.
+
+   Return true if anything was changed.  */
+bool
+canonicalize_change_group (rtx insn, rtx x)
+{
+  if (COMMUTATIVE_P (x)
+      && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
+    {
+      /* Oops, the caller has made X no longer canonical.
+	 Let's redo the changes in the correct order.  */
+      rtx tem = XEXP (x, 0);
+      validate_change (insn, &XEXP (x, 0), XEXP (x, 1), 1);
+      validate_change (insn, &XEXP (x, 1), tem, 1);
+      return true;
+    }
+  else
+    return false;
+}
+  
 
 /* This subroutine of apply_change_group verifies whether the changes to INSN
    were valid; i.e. whether INSN can still be recognized.  */

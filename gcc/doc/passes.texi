@@ -685,6 +685,15 @@ optimization pass''.  The bulk of the code for this pass is in
 @file{cfgcleanup.c}, and there are support routines in @file{cfgrtl.c}
 and @file{jump.c}.
 
+@item Forward propagation of single-def values
+
+This pass attempts to remove redundant computation by substituting
+variables that come from a single definition, and
+seeing if the result can be simplified.  It performs copy propagation
+and addressing mode selection.  The pass is run twice, with values
+being propagated into loops only on the second run.  It is located in
+@file{fwprop.c}.
+
 @item Common subexpression elimination
 
 This pass removes redundant computation within basic blocks, and
