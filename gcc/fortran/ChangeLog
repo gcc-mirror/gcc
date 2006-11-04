@@ -1,3 +1,8 @@
+2006-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/29713
+	* expr.c (gfc_simplify_expr): Correct memory allocation.
+
 2006-11-02  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* error.c (show_locus): Remove "In file" from error messages.

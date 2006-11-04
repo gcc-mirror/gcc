@@ -1436,7 +1436,7 @@ gfc_simplify_expr (gfc_expr * p, int type)
 	  gfc_extract_int (p->ref->u.ss.start, &start);
 	  start--;  /* Convert from one-based to zero-based.  */
 	  gfc_extract_int (p->ref->u.ss.end, &end);
-	  s = gfc_getmem (end - start + 1);
+	  s = gfc_getmem (end - start + 2);
 	  memcpy (s, p->value.character.string + start, end - start);
 	  s[end-start+1] = '\0';  /* TODO: C-style string for debugging.  */
 	  gfc_free (p->value.character.string);
