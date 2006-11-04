@@ -1732,10 +1732,6 @@ write_builtin_type (tree type)
       break;
 
     case INTEGER_TYPE:
-      /* If this is size_t, get the underlying int type.  */
-      if (TYPE_IS_SIZETYPE (type))
-	type = TYPE_DOMAIN (type);
-
       /* TYPE may still be wchar_t, since that isn't in
 	 integer_type_nodes.  */
       if (type == wchar_type_node)
