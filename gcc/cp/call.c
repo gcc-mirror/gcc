@@ -4077,7 +4077,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	  /* On the second pass, the second argument must be
 	     "size_t".  */
 	  else if (pass == 1
-		   && same_type_p (TREE_VALUE (t), sizetype)
+		   && same_type_p (TREE_VALUE (t), size_type_node)
 		   && TREE_CHAIN (t) == void_list_node)
 	    break;
 	}

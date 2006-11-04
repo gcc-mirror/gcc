@@ -1,3 +1,14 @@
+2006-11-03  Roger Sayle  <roger@eyesopen.com>
+
+	* call.c (build_op_delete_call): Test user-visible type against
+	size_type_node, instead of against the internal type, sizetype.
+	* class.c (type_requires_array_cookie): Likewise.
+	* mangle.c (write_builtin_type) <INTEGER_TYPE>: Remove special
+	handling of TYPE_IS_SIZETYPE.
+	* typeck.c (type_after_usual_arithmetic_conversions): Remove
+	special case handling of TYPE_IS_SIZETYPE.
+	(comptypes): Likewise.
+
 2006-11-01  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* decl.c (get_atexit_node): Reference atexit, not __cxa_exit.

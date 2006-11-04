@@ -324,12 +324,6 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
 
   if (code1 != REAL_TYPE)
     {
-      /* If one is a sizetype, use it so size_binop doesn't blow up.  */
-      if (TYPE_IS_SIZETYPE (t1) > TYPE_IS_SIZETYPE (t2))
-	return build_type_attribute_variant (t1, attributes);
-      if (TYPE_IS_SIZETYPE (t2) > TYPE_IS_SIZETYPE (t1))
-	return build_type_attribute_variant (t2, attributes);
-
       /* If one is unsigned long long, then convert the other to unsigned
 	 long long.  */
       if (same_type_p (TYPE_MAIN_VARIANT (t1), long_long_unsigned_type_node)
@@ -965,16 +959,6 @@ comptypes (tree t1, tree t2, int strict)
       if (resolved != error_mark_node)
 	t2 = resolved;
     }
-
-  /* If either type is the internal version of sizetype, use the
-     language version.  */
-  if (TREE_CODE (t1) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t1)
-      && TYPE_ORIG_SIZE_TYPE (t1))
-    t1 = TYPE_ORIG_SIZE_TYPE (t1);
-
-  if (TREE_CODE (t2) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t2)
-      && TYPE_ORIG_SIZE_TYPE (t2))
-    t2 = TYPE_ORIG_SIZE_TYPE (t2);
 
   if (TYPE_PTRMEMFUNC_P (t1))
     t1 = TYPE_PTRMEMFUNC_FN_TYPE (t1);
