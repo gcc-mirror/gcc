@@ -1,3 +1,32 @@
+2006-11-03  Paolo Bonzini  <bonzini@gnu.org>
+            Steven Bosscher  <stevenb.gcc@gmail.com>
+
+        * fwprop.c: New file.
+        * Makefile.in: Add fwprop.o.
+        * tree-pass.h (pass_rtl_fwprop, pass_rtl_fwprop_with_addr): New.
+        * passes.c (init_optimization_passes): Schedule forward propagation.
+        * rtlanal.c (loc_mentioned_in_p): Support NULL value of the second
+        parameter.
+        * timevar.def (TV_FWPROP): New.
+        * common.opt (-fforward-propagate): New.
+        * opts.c (decode_options): Enable forward propagation at -O2.
+        * gcse.c (one_cprop_pass): Do not run local cprop unless touching jumps.
+        * cse.c (fold_rtx_subreg, fold_rtx_mem, fold_rtx_mem_1, find_best_addr,
+        canon_for_address, table_size): Remove.
+        (new_basic_block, insert, remove_from_table): Remove references to
+        table_size.
+        (fold_rtx): Process SUBREGs and MEMs with equiv_constant, make
+        simplification loop more straightforward by not calling fold_rtx
+        recursively.
+        (equiv_constant): Move here a small part of fold_rtx_subreg,
+        do not call fold_rtx.  Call avoid_constant_pool_reference
+        to process MEMs.
+        * recog.c (canonicalize_change_group): New.
+        * recog.h (canonicalize_change_group): New.
+
+        * doc/invoke.texi (Optimization Options): Document fwprop.
+        * doc/passes.texi (RTL passes): Document fwprop.
+
 2006-11-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-decl.c (WANT_C99_INLINE_SEMANTICS): New, set to 1.
@@ -23,7 +52,6 @@
 
 2006-11-03  Paul Brook  <paul@codesourcery.com>
 
-	gcc/
 	* config/arm/arm.c (arm_file_start): New function.
 	(TARGET_ASM_FILE_START): Define.
 	(arm_default_cpu): New variable.

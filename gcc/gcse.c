@@ -3396,7 +3396,8 @@ one_cprop_pass (int pass, bool cprop_jumps, bool bypass_jumps)
   global_const_prop_count = local_const_prop_count = 0;
   global_copy_prop_count = local_copy_prop_count = 0;
 
-  local_cprop_pass (cprop_jumps);
+  if (cprop_jumps)
+    local_cprop_pass (cprop_jumps);
 
   /* Determine implicit sets.  */
   implicit_sets = XCNEWVEC (rtx, last_basic_block);

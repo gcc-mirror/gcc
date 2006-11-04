@@ -474,6 +474,7 @@ decode_options (unsigned int argc, const char **argv)
       flag_thread_jumps = 1;
       flag_crossjumping = 1;
       flag_optimize_sibling_calls = 1;
+      flag_forward_propagate = 1;
       flag_cse_follow_jumps = 1;
       flag_gcse = 1;
       flag_expensive_optimizations = 1;
