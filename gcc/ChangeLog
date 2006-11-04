@@ -1,30 +1,36 @@
+2006-11-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movxf_nointeger, *movxf_integer): Enable
+	patterns for standard 80387 constants.
+
+
 2006-11-03  Paolo Bonzini  <bonzini@gnu.org>
-            Steven Bosscher  <steven@gcc.gnu.org>
+	    Steven Bosscher  <steven@gcc.gnu.org>
 
-        * fwprop.c: New file.
-        * Makefile.in: Add fwprop.o.
-        * tree-pass.h (pass_rtl_fwprop, pass_rtl_fwprop_with_addr): New.
-        * passes.c (init_optimization_passes): Schedule forward propagation.
-        * rtlanal.c (loc_mentioned_in_p): Support NULL value of the second
-        parameter.
-        * timevar.def (TV_FWPROP): New.
-        * common.opt (-fforward-propagate): New.
-        * opts.c (decode_options): Enable forward propagation at -O2.
-        * gcse.c (one_cprop_pass): Do not run local cprop unless touching jumps.
-        * cse.c (fold_rtx_subreg, fold_rtx_mem, fold_rtx_mem_1, find_best_addr,
-        canon_for_address, table_size): Remove.
-        (new_basic_block, insert, remove_from_table): Remove references to
-        table_size.
-        (fold_rtx): Process SUBREGs and MEMs with equiv_constant, make
-        simplification loop more straightforward by not calling fold_rtx
-        recursively.
-        (equiv_constant): Move here a small part of fold_rtx_subreg,
-        do not call fold_rtx.  Call avoid_constant_pool_reference
-        to process MEMs.
-        * recog.h (canonicalize_change_group): New.
+	* fwprop.c: New file.
+	* Makefile.in: Add fwprop.o.
+	* tree-pass.h (pass_rtl_fwprop, pass_rtl_fwprop_with_addr): New.
+	* passes.c (init_optimization_passes): Schedule forward propagation.
+	* rtlanal.c (loc_mentioned_in_p): Support NULL value of the second
+	parameter.
+	* timevar.def (TV_FWPROP): New.
+	* common.opt (-fforward-propagate): New.
+	* opts.c (decode_options): Enable forward propagation at -O2.
+	* gcse.c (one_cprop_pass): Do not run local cprop unless touching jumps.
+	* cse.c (fold_rtx_subreg, fold_rtx_mem, fold_rtx_mem_1, find_best_addr,
+	canon_for_address, table_size): Remove.
+	(new_basic_block, insert, remove_from_table): Remove references to
+	table_size.
+	(fold_rtx): Process SUBREGs and MEMs with equiv_constant, make
+	simplification loop more straightforward by not calling fold_rtx
+	recursively.
+	(equiv_constant): Move here a small part of fold_rtx_subreg,
+	do not call fold_rtx.  Call avoid_constant_pool_reference
+	to process MEMs.
+	* recog.h (canonicalize_change_group): New.
 
-        * doc/invoke.texi (Optimization Options): Document fwprop.
-        * doc/passes.texi (RTL passes): Document fwprop.
+	* doc/invoke.texi (Optimization Options): Document fwprop.
+	* doc/passes.texi (RTL passes): Document fwprop.
 
 2006-11-03  Geoffrey Keating  <geoffk@apple.com>
 
@@ -452,7 +458,7 @@
 	handling for 'F'.
 	(get_file_function_name): Remove.
 	* tree.h (get_file_function_name): Rename from
-        get_file_function_name_long.
+	get_file_function_name_long.
 	(get_file_function_name): Remove prototype.
 
 2006-10-31  Geoffrey Keating  <geoffk@apple.com>
@@ -534,7 +540,7 @@
 	* c-decl (start_function): Move code for main decl warning ..
 	* c-common.c (check_main_parameter_types): .. here.
 	* c-common.h (check_main_parameter_types): Declare.
- 
+
 2006-10-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR middle-end/29335
@@ -963,7 +969,7 @@
 	* config/darwin.h (CPP_SPEC): ... here.
 
 2006-10-26  Nathan Froyd  <froydnj@codesourcery.com>
-            Nathan Sidwell  <nathan@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
 
 	* ggc-common.c (ggc_min_heapsize_heuristic): Be more conservative
 	when choosing the minimum heapsize.
@@ -1011,10 +1017,10 @@
 
 2006-10-24  Nathan Froyd  <froydnj@codesourcery.com>
 
-        * dwarf2out.c (gen_compile_unit_die): Use IS_ABSOLUTE_PATH.
-        (file_table_relative_p): Likewise.
-        (dwarf2out_finish): Likewise.
-        (file_name_acquire): Use DIR_SEPARATOR and DIR_SEPARATOR_2.
+	* dwarf2out.c (gen_compile_unit_die): Use IS_ABSOLUTE_PATH.
+	(file_table_relative_p): Likewise.
+	(dwarf2out_finish): Likewise.
+	(file_name_acquire): Use DIR_SEPARATOR and DIR_SEPARATOR_2.
 
 2006-10-25  Daniel Berlin  <dberlin@dberlin.org>
 
@@ -1391,9 +1397,9 @@
 
 2006-10-22  Ira Rosen  <irar@il.ibm.com>
 
-        * tree-vect-transform.c (vectorizable_load): Use the type of the
-        return value of the mask_for_load builtin to create realign_load
-        stmt.
+	* tree-vect-transform.c (vectorizable_load): Use the type of the
+	return value of the mask_for_load builtin to create realign_load
+	stmt.
 
 2006-10-22  Richard Sandiford  <richard@codesourcery.com>
 
@@ -1588,28 +1594,28 @@
 
 2006-10-19  Chen Liqin  <liqin@sunnorth.com.cn>
 
-        * config/score/crti.asm: New file.
-        * config/score/crtn.asm: New file.
-        * config/score/elf.h: New file.
-        * config/score/mac.md: New file.
-        * config/score/misc.md: New file.
-        * config/score/mul-div.S: New file.
-        * config/score/predicates.md: New file.
-        * config/score/score7.md: New file.
-        * config/score/score.c: New file.
-        * config/score/score-conv.h: New file.
-        * config/score/score.h: New file.
-        * config/score/score.md: New file.
-        * config/score/score-mdaux.c: New file.
-        * config/score/score-mdaux.h: New file.
-        * config/score/score-modes.def: New file.
-        * config/score/score.opt: New file.
-        * config/score/score-protos.h: New file.
-        * config/score/score-version.h: New file.
-        * config/score/t-score-elf: New file.
-        * config.gcc: Add score*-*-* configurations(Update before).
-        * doc/invoke.texi (Score Options): New section.
-        * doc/md.texi (Score family): New section to document constraints.
+	* config/score/crti.asm: New file.
+	* config/score/crtn.asm: New file.
+	* config/score/elf.h: New file.
+	* config/score/mac.md: New file.
+	* config/score/misc.md: New file.
+	* config/score/mul-div.S: New file.
+	* config/score/predicates.md: New file.
+	* config/score/score7.md: New file.
+	* config/score/score.c: New file.
+	* config/score/score-conv.h: New file.
+	* config/score/score.h: New file.
+	* config/score/score.md: New file.
+	* config/score/score-mdaux.c: New file.
+	* config/score/score-mdaux.h: New file.
+	* config/score/score-modes.def: New file.
+	* config/score/score.opt: New file.
+	* config/score/score-protos.h: New file.
+	* config/score/score-version.h: New file.
+	* config/score/t-score-elf: New file.
+	* config.gcc: Add score*-*-* configurations(Update before).
+	* doc/invoke.texi (Score Options): New section.
+	* doc/md.texi (Score family): New section to document constraints.
 
 2006-10-19  Nick Clifton  <nickc@redhat.com>
 
@@ -1633,13 +1639,13 @@
 2006-10-17  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* config/s390/contraints.md: New file.
-        * config/s390/s390-protos.h (s390_mem_constraint,
+	* config/s390/s390-protos.h (s390_mem_constraint,
 	s390_O_constraint_str, s390_N_constraint_str,
 	s390_float_const_zero_p): Function prototypes added.
 	* config/s390/s390.c (s390_extra_constraint_str,
 	s390_const_double_ok_for_constraint_p,
 	s390_const_ok_for_constraint_p): Functions removed.
-        (s390_mem_constraint, s390_O_constraint_str, s390_N_constraint_str,
+	(s390_mem_constraint, s390_O_constraint_str, s390_N_constraint_str,
 	s390_float_const_zero_p): New functions.
 	* config/s390/s390.h (REG_CLASS_FROM_LETTER, CONST_OK_FOR_CONSTRAINT_P,
 	CONST_DOUBLE_OK_FOR_CONSTRAINT_P, EXTRA_CONSTRAINT_STR,
@@ -1744,14 +1750,14 @@
 	declared always_inline even when not inlining.
 
 2006-10-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
-            Andrew Pinski  <pinskia@gmail.com>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	    Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/29111
 	* builtins.c (get_pointer_alignment): Return 0 if TER is not run.
 
 2006-10-15  Jan Hubicka  <jh@suse.cz>
-            Richard Guenther  <rguenther@suse.de>
+	    Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/29299
 	* cgraphunit.c (cgraph_finalize_compilation_unit): Call
