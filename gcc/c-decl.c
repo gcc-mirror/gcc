@@ -62,6 +62,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "langhooks-def.h"
 #include "pointer-set.h"
 
+/* Set this to 1 if you want the standard ISO C99 semantics of 'inline'
+   when you specify -std=c99 or -std=gnuc99, and to 0 if you want
+   behaviour compatible with the nonstandard semantics implemented by
+   GCC 2.95 through 4.2.  */
+#define WANT_C99_INLINE_SEMANTICS 1
+
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
 { NORMAL,			/* Ordinary declaration */
@@ -1760,6 +1766,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	}
     }
 
+#if WANT_C99_INLINE_SEMANTICS
    /* In c99, 'extern' declaration before (or after) 'inline' means this
       function is not DECL_EXTERNAL.  */
    if (TREE_CODE (newdecl) == FUNCTION_DECL
@@ -1771,6 +1778,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
        && DECL_EXTERNAL (newdecl)
        && flag_isoc99)
      DECL_EXTERNAL (newdecl) = 0;
+#endif /* WANT_C99_INLINE_SEMANTICS */
 
   if (DECL_EXTERNAL (newdecl))
     {
@@ -4772,7 +4780,11 @@ grokdeclarator (const struct c_declarator *declarator,
 	   in this file, C99 6.7.4p6.  In GNU C89, a function declared
 	   'extern inline' is an external reference.  */
 	else if (declspecs->inline_p && storage_class != csc_static)
+#if WANT_C99_INLINE_SEMANTICS
 	  DECL_EXTERNAL (decl) = (storage_class == csc_extern) == !flag_isoc99;
+#else
+	  DECL_EXTERNAL (decl) = (storage_class == csc_extern);
+#endif
 	else
 	  DECL_EXTERNAL (decl) = !initialized;
 

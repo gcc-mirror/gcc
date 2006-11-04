@@ -1,3 +1,9 @@
+2006-11-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-decl.c (WANT_C99_INLINE_SEMANTICS): New, set to 1.
+	(merge_decls): Implement WANT_C99_INLINE_SEMANTICS.
+	(grokdeclarator): Likewise.
+
 2006-11-03  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-dump.c (dump_enable_all): Rename local variable
