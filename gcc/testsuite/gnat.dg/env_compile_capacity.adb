@@ -1,4 +1,4 @@
--- { do-do compile }
+-- { dg-do compile }
 
 with My_Env_Versioned_Value_Set_G;
 package body Env_Compile_Capacity is

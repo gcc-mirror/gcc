@@ -1,5 +1,6 @@
--- { do-do run }
+-- { dg-do run }
 -- { dg-options "-gnatws" }
+
 pragma Locking_Policy (Ceiling_Locking);
 with test_prio_p;use test_prio_p;
 with text_io; use text_io;
