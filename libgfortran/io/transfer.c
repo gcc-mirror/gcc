@@ -2215,7 +2215,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 		    length = (int) dtp->u.p.current_unit->bytes_left;
 		}
 
-	if (sset (dtp->u.p.current_unit->s, ' ', length) == FAILURE)
+	      if (sset (dtp->u.p.current_unit->s, ' ', length) == FAILURE)
 		{
 		  generate_error (&dtp->common, ERROR_END, NULL);
 		  return;
