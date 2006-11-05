@@ -134,7 +134,7 @@ show_locus (int offset, locus * loc)
 
   lb = loc->lb;
   f = lb->file;
-  error_printf ("%s:%d\n", f->filename,
+  error_printf ("%s:%d:\n", f->filename,
 #ifdef USE_MAPPED_LOCATION
 		LOCATION_LINE (lb->location)
 #else
@@ -380,7 +380,8 @@ error_print (const char *type, const char *format0, va_list argp)
   if (have_l1)
     show_loci (l1, l2);
   error_string (type);
-  error_char (' ');
+  if (*type)
+    error_char (' ');
 
   have_l1 = 0;
   format = format0;
