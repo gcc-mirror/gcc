@@ -29,6 +29,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "lib1funcs.h"
 
+#if !__SHMEDIA__
 #ifdef L_div_table
 #if defined (__SH3__) || defined (__SH3E__) || defined (__SH4__) || defined (__SH4_SINGLE__) || defined (__SH4_SINGLE_ONLY__) || defined (__SH4_NOFPU__)
 /* This code used shld, thus is not suitable for SH1 / SH2.  */
@@ -936,3 +937,4 @@ LOCAL(div_table_inv):
 #endif /* SH3 / SH4 */
 
 #endif /* L_div_table */
+#endif /* !__SHMEDIA__ */
