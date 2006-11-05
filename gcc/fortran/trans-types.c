@@ -1485,9 +1485,13 @@ gfc_get_derived_type (gfc_symbol * derived)
 
       /* Derived types in an interface body obtain their parent reference
 	 through the proc_name symbol.  */
-      ns = derived->ns->parent ? derived->ns->parent
-			       : derived->ns->proc_name->ns;
-
+      if (derived->ns->parent)
+	ns = derived->ns->parent;
+      if (derived->ns->proc_name)
+	ns = derived->ns->proc_name->ns;
+      else
+	ns = NULL;
+      
       for (; ns; ns = ns->parent)
 	{
 	  for (dt = ns->derived_types; dt; dt = dt->next)
