@@ -1,3 +1,9 @@
+2006-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/29695
+	* fold-const.c (fold_ternary): Fix A < 0 ? <sign bit of A> : 0
+	simplification.
+
 2006-11-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/26915

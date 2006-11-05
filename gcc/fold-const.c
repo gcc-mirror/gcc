@@ -11380,13 +11380,76 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 
       /* A < 0 ? <sign bit of A> : 0 is simply (A & <sign bit of A>).  */
       if (TREE_CODE (arg0) == LT_EXPR
-          && integer_zerop (TREE_OPERAND (arg0, 1))
-          && integer_zerop (op2)
-          && (tem = sign_bit_p (TREE_OPERAND (arg0, 0), arg1)))
-        return fold_convert (type,
-			     fold_build2 (BIT_AND_EXPR,
-					  TREE_TYPE (tem), tem,
-					  fold_convert (TREE_TYPE (tem), arg1)));
+	  && integer_zerop (TREE_OPERAND (arg0, 1))
+	  && integer_zerop (op2)
+	  && (tem = sign_bit_p (TREE_OPERAND (arg0, 0), arg1)))
+	{
+	  /* sign_bit_p only checks ARG1 bits within A's precision.
+	     If <sign bit of A> has wider type than A, bits outside
+	     of A's precision in <sign bit of A> need to be checked.
+	     If they are all 0, this optimization needs to be done
+	     in unsigned A's type, if they are all 1 in signed A's type,
+	     otherwise this can't be done.  */
+	  if (TYPE_PRECISION (TREE_TYPE (tem))
+	      < TYPE_PRECISION (TREE_TYPE (arg1))
+	      && TYPE_PRECISION (TREE_TYPE (tem))
+		 < TYPE_PRECISION (type))
+	    {
+	      unsigned HOST_WIDE_INT mask_lo;
+	      HOST_WIDE_INT mask_hi;
+	      int inner_width, outer_width;
+	      tree tem_type;
+
+	      inner_width = TYPE_PRECISION (TREE_TYPE (tem));
+	      outer_width = TYPE_PRECISION (TREE_TYPE (arg1));
+	      if (outer_width > TYPE_PRECISION (type))
+		outer_width = TYPE_PRECISION (type);
+
+	      if (outer_width > HOST_BITS_PER_WIDE_INT)
+		{
+		  mask_hi = ((unsigned HOST_WIDE_INT) -1
+			     >> (2 * HOST_BITS_PER_WIDE_INT - outer_width));
+		  mask_lo = -1;
+		}
+	      else
+		{
+		  mask_hi = 0;
+		  mask_lo = ((unsigned HOST_WIDE_INT) -1
+			     >> (HOST_BITS_PER_WIDE_INT - outer_width));
+		}
+	      if (inner_width > HOST_BITS_PER_WIDE_INT)
+		{
+		  mask_hi &= ~((unsigned HOST_WIDE_INT) -1
+			       >> (HOST_BITS_PER_WIDE_INT - inner_width));
+		  mask_lo = 0;
+		}
+	      else
+		mask_lo &= ~((unsigned HOST_WIDE_INT) -1
+			     >> (HOST_BITS_PER_WIDE_INT - inner_width));
+
+	      if ((TREE_INT_CST_HIGH (arg1) & mask_hi) == mask_hi
+		  && (TREE_INT_CST_LOW (arg1) & mask_lo) == mask_lo)
+		{
+		  tem_type = lang_hooks.types.signed_type (TREE_TYPE (tem));
+		  tem = fold_convert (tem_type, tem);
+		}
+	      else if ((TREE_INT_CST_HIGH (arg1) & mask_hi) == 0
+		       && (TREE_INT_CST_LOW (arg1) & mask_lo) == 0)
+		{
+		  tem_type = lang_hooks.types.unsigned_type (TREE_TYPE (tem));
+		  tem = fold_convert (tem_type, tem);
+		}
+	      else
+		tem = NULL;
+	    }
+
+	  if (tem)
+	    return fold_convert (type,
+				 fold_build2 (BIT_AND_EXPR,
+					      TREE_TYPE (tem), tem,
+					      fold_convert (TREE_TYPE (tem),
+							    arg1)));
+	}
 
       /* (A >> N) & 1 ? (1 << N) : 0 is simply A & (1 << N).  A & 1 was
 	 already handled above.  */
