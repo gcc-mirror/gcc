@@ -1,3 +1,8 @@
+2006-11-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/25545
+	* gfortran.dg/dollar_edit_descriptor-2.f: New test.
+
 2006-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29695
