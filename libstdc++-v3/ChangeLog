@@ -1,3 +1,9 @@
+2006-11-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 45.
+	* docs/html/ext/lwg-closed.html: Add.
+	* docs/html/ext/howto.html: Adjust.
+
 2006-10-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/utility (tuple_size<std::pair<> >::value): Provide
