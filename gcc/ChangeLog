@@ -1,3 +1,8 @@
+2006-11-05  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/lib1funcs-4-300.asm: Guard entire file with
+        #if !__SHMEDIA__ .
+
 2006-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29695
