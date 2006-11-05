@@ -1,5 +1,5 @@
--- { do-do compile }
--- { do-options "-gnatN" }
+-- { dg-do compile }
+-- { dg-options "-gnatN" }
 
 with inline_scope_p;
 procedure inline_scope (X : Integer) is

@@ -1,4 +1,4 @@
--- { do-do compile }
+-- { dg-do compile }
 
 with Layered_Abstraction_P;
 with layered_abstraction;

@@ -1,5 +1,5 @@
--- { do-do run }
--- { do-options "-gnatws" }
+-- { dg-do run }
+-- { dg-options "-gnatws" }
 
 with Unchecked_Conversion;
 procedure biased_uc is

@@ -1,4 +1,4 @@
--- { do-do compile }
+-- { dg-do compile }
 
 procedure in_mod_conv is
    package Test is 
