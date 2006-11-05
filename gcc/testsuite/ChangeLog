@@ -1,3 +1,9 @@
+2006-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/29695
+	* gcc.c-torture/execute/pr29695-1.c: New test.
+	* gcc.c-torture/execute/pr29695-2.c: New test.
+
 2006-11-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29565
