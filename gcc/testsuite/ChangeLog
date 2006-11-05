@@ -1,3 +1,8 @@
+2006-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29565
+	* gfortran.dg/gfortran.dg/aliasing_dummy_3.f90: New test.
+
 2006-11-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* lib/gfortran-dg.exp (gfortran-dg-test): Adjust pattern

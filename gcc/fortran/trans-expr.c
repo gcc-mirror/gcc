@@ -1715,9 +1715,14 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
     }
   else
     {
-      /* Make sure that the temporary declaration survives.  */
-      tmp = gfc_finish_block (&body);
-      gfc_add_expr_to_block (&loop.pre, tmp);
+      /* Make sure that the temporary declaration survives by merging
+       all the loop declarations into the current context.  */
+      for (n = 0; n < loop.dimen; n++)
+	{
+	  gfc_merge_block_scope (&body);
+	  body = loop.code[loop.order[n]];
+	}
+      gfc_merge_block_scope (&body);
     }
 
   /* Add the post block after the second loop, so that any

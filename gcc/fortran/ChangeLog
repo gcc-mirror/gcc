@@ -1,3 +1,15 @@
+2006-11-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu,org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24518
+	* trans-intrinsic.c (gfc_conv_intrinsic_mod): Use built_in fmod
+	for both MOD and MODULO, if it is available.
+
+	PR fortran/29565
+	* trans-expr.c (gfc_conv_aliased_arg): For an INTENT(OUT), save
+	the declarations from the unused loops by merging the block
+	scope for each; this ensures that the temporary is declared.
+
 2006-11-04  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* error.c (show_locus): Add trailing colon in error messages.
