@@ -253,6 +253,10 @@ package System.OS_Interface is
    SCHED_FIFO  : constant := 1;
    SCHED_RR    : constant := 2;
 
+   function To_Target_Priority
+     (Prio : System.Any_Priority) return Interfaces.C.int;
+   --  Maps System.Any_Priority to a POSIX priority.
+
    -------------
    -- Process --
    -------------
