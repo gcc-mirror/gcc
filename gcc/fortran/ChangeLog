@@ -1,3 +1,8 @@
+2006-11-04  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* error.c (show_locus): Add trailing colon in error messages.
+	(error_print): Avoid leading space in error lines.
+
 2006-11-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/29713
