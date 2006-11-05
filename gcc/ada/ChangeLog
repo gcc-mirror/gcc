@@ -1,3 +1,9 @@
+2006-11-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-linux-alpha.ads, s-osinte-linux-hppa.ads
+	(To_Target_Priority): New function.
+	Fix PR ada/29707
+
 2006-10-31  Robert Dewar  <dewar@adacore.com>
 
 	* a-taster.adb, s-traent-vms.adb, a-elchha.ads, a-elchha.adb,
