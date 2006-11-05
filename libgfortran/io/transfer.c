@@ -263,7 +263,16 @@ read_block (st_parameter_dt *dtp, int *length)
   char *source;
   int nread;
 
-  if (!is_stream_io (dtp))
+  if (is_stream_io (dtp))
+    {
+      if (sseek (dtp->u.p.current_unit->s,
+		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
+	{
+	  generate_error (&dtp->common, ERROR_END, NULL);
+	  return NULL;
+	}
+    }
+  else
     {
       if (dtp->u.p.current_unit->bytes_left < (gfc_offset) *length)
 	{
@@ -291,65 +300,38 @@ read_block (st_parameter_dt *dtp, int *length)
 
 	  *length = dtp->u.p.current_unit->bytes_left;
 	}
-
-      if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED &&
-	dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL)
-	  return read_sf (dtp, length, 0);	/* Special case.  */
-
-      dtp->u.p.current_unit->bytes_left -= (gfc_offset) *length;
-
-      nread = *length;
-      source = salloc_r (dtp->u.p.current_unit->s, &nread);
-
-      if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-	dtp->u.p.size_used += (gfc_offset) nread;
-
-      if (nread != *length)
-	{				/* Short read, this shouldn't happen.  */
-	  if (dtp->u.p.current_unit->flags.pad == PAD_YES)
-	    *length = nread;
-	  else
-	    {
-	      generate_error (&dtp->common, ERROR_EOR, NULL);
-	      source = NULL;
-	    }
-	}
     }
-  else
+
+  if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED &&
+      (dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL ||
+       dtp->u.p.current_unit->flags.access == ACCESS_STREAM))
     {
-      if (sseek (dtp->u.p.current_unit->s,
-		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
-	{
-	  generate_error (&dtp->common, ERROR_END, NULL);
-	  return NULL;
-	}
-
-      if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED)
-	{
-	  source = read_sf (dtp, length, 0);
-	  dtp->u.p.current_unit->strm_pos +=
-	    (gfc_offset) (*length + dtp->u.p.sf_seen_eor);
-	  return source;
-	}
-      nread = *length;
-      source = salloc_r (dtp->u.p.current_unit->s, &nread);
-
-      if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-	dtp->u.p.size_used += (gfc_offset) nread;
-
-      if (nread != *length)
-	{				/* Short read, this shouldn't happen.  */
-	  if (dtp->u.p.current_unit->flags.pad == PAD_YES)
-	    *length = nread;
-	  else
-	    {
-	      generate_error (&dtp->common, ERROR_END, NULL);
-	      source = NULL;
-	    }
-	}
-
-      dtp->u.p.current_unit->strm_pos += (gfc_offset) nread;
+      source = read_sf (dtp, length, 0);
+      dtp->u.p.current_unit->strm_pos +=
+	(gfc_offset) (*length + dtp->u.p.sf_seen_eor);
+      return source;
     }
+  dtp->u.p.current_unit->bytes_left -= (gfc_offset) *length;
+
+  nread = *length;
+  source = salloc_r (dtp->u.p.current_unit->s, &nread);
+
+  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
+    dtp->u.p.size_used += (gfc_offset) nread;
+
+  if (nread != *length)
+    {				/* Short read, this shouldn't happen.  */
+      if (dtp->u.p.current_unit->flags.pad == PAD_YES)
+	*length = nread;
+      else
+	{
+	  generate_error (&dtp->common, ERROR_EOR, NULL);
+	  source = NULL;
+	}
+    }
+
+  dtp->u.p.current_unit->strm_pos += (gfc_offset) nread;
+
   return source;
 }
 
@@ -440,7 +422,16 @@ write_block (st_parameter_dt *dtp, int length)
 {
   char *dest;
 
-  if (!is_stream_io (dtp))
+  if (is_stream_io (dtp))
+    {
+      if (sseek (dtp->u.p.current_unit->s,
+		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
+	{
+	  generate_error (&dtp->common, ERROR_OS, NULL);
+	  return NULL;
+	}
+    }
+  else
     {
       if (dtp->u.p.current_unit->bytes_left < (gfc_offset) length)
 	{
@@ -458,41 +449,23 @@ write_block (st_parameter_dt *dtp, int length)
 	}
 
       dtp->u.p.current_unit->bytes_left -= (gfc_offset) length;
-
-
-      dest = salloc_w (dtp->u.p.current_unit->s, &length);
-  
-      if (dest == NULL)
-	{
-	  generate_error (&dtp->common, ERROR_END, NULL);
-	  return NULL;
-	}
-
-      if (is_internal_unit (dtp) && dtp->u.p.current_unit->endfile == AT_ENDFILE)
-	generate_error (&dtp->common, ERROR_END, NULL);
-
-      if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
-	dtp->u.p.size_used += (gfc_offset) length;
     }
-  else
+
+  dest = salloc_w (dtp->u.p.current_unit->s, &length);
+
+  if (dest == NULL)
     {
-      if (sseek (dtp->u.p.current_unit->s,
-		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
-	{
-	  generate_error (&dtp->common, ERROR_OS, NULL);
-	  return NULL;
-	}
-
-      dest = salloc_w (dtp->u.p.current_unit->s, &length);
-
-      if (dest == NULL)
-	{
-	  generate_error (&dtp->common, ERROR_END, NULL);
-	  return NULL;
-	}
-
-      dtp->u.p.current_unit->strm_pos += (gfc_offset) length;
+      generate_error (&dtp->common, ERROR_END, NULL);
+      return NULL;
     }
+
+  if (is_internal_unit (dtp) && dtp->u.p.current_unit->endfile == AT_ENDFILE)
+    generate_error (&dtp->common, ERROR_END, NULL);
+
+  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
+    dtp->u.p.size_used += (gfc_offset) length;
+
+  dtp->u.p.current_unit->strm_pos += (gfc_offset) length;
 
   return dest;
 }
@@ -503,7 +476,16 @@ write_block (st_parameter_dt *dtp, int length)
 static try
 write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 {
-  if (!is_stream_io (dtp))
+  if (is_stream_io (dtp))
+    {
+      if (sseek (dtp->u.p.current_unit->s,
+		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
+	{
+	  generate_error (&dtp->common, ERROR_OS, NULL);
+	  return FAILURE;
+	}
+    }
+  else
     {
       if (dtp->u.p.current_unit->bytes_left < (gfc_offset) nbytes)
 	{
@@ -526,15 +508,6 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
 
       dtp->u.p.current_unit->bytes_left -= (gfc_offset) nbytes;
     }
-  else
-    {
-      if (sseek (dtp->u.p.current_unit->s,
-		 dtp->u.p.current_unit->strm_pos - 1) == FAILURE)
-	{
-	  generate_error (&dtp->common, ERROR_OS, NULL);
-	  return FAILURE;
-	}
-    }
 
   if (swrite (dtp->u.p.current_unit->s, buf, &nbytes) != 0)
     {
@@ -542,13 +515,10 @@ write_buf (st_parameter_dt *dtp, void *buf, size_t nbytes)
       return FAILURE;
     }
 
-  if (!is_stream_io (dtp))
-    {
-      if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
+  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
 	dtp->u.p.size_used += (gfc_offset) nbytes;
-    }
-  else
-    dtp->u.p.current_unit->strm_pos += (gfc_offset) nbytes; 
+
+  dtp->u.p.current_unit->strm_pos += (gfc_offset) nbytes; 
 
   return SUCCESS;
 }
@@ -2244,7 +2214,8 @@ next_record_w (st_parameter_dt *dtp, int done)
 		  else
 		    length = (int) dtp->u.p.current_unit->bytes_left;
 		}
-	      if (sset (dtp->u.p.current_unit->s, ' ', length) == FAILURE)
+
+	if (sset (dtp->u.p.current_unit->s, ' ', length) == FAILURE)
 		{
 		  generate_error (&dtp->common, ERROR_END, NULL);
 		  return;
@@ -2371,28 +2342,34 @@ finalize_transfer (st_parameter_dt *dtp)
     }
 
   if ((cf & IOPARM_DT_LIST_FORMAT) != 0 && dtp->u.p.mode == READING)
-    finish_list_read (dtp);
-  else if (!is_stream_io (dtp))
     {
-      dtp->u.p.current_unit->current_record = 0;
-      if (dtp->u.p.advance_status == ADVANCE_NO || dtp->u.p.seen_dollar)
-	{
-	  /* Most systems buffer lines, so force the partial record
-	     to be written out.  */
-	  if (!is_internal_unit (dtp))
-	    flush (dtp->u.p.current_unit->s);
-	  dtp->u.p.seen_dollar = 0;
-	  return;
-	}
-      next_record (dtp, 1);
+      finish_list_read (dtp);
+      sfree (dtp->u.p.current_unit->s);
+      return;
     }
-  else
+
+  if (is_stream_io (dtp))
     {
       if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED)
 	next_record (dtp, 1);
       flush (dtp->u.p.current_unit->s);
+      sfree (dtp->u.p.current_unit->s);
+      return;
     }
 
+  dtp->u.p.current_unit->current_record = 0;
+
+  if (dtp->u.p.advance_status == ADVANCE_NO)
+    return;
+
+  if (!is_internal_unit (dtp) && dtp->u.p.seen_dollar)
+    {
+      dtp->u.p.seen_dollar = 0;
+      sfree (dtp->u.p.current_unit->s);
+      return;
+    }
+
+  next_record (dtp, 1);
   sfree (dtp->u.p.current_unit->s);
 }
 
