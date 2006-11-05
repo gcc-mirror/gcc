@@ -1,3 +1,22 @@
+2006-11-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 45.
+	* docs/html/ext/lwg-closed.html: Add.
+	* docs/html/ext/howto.html: Adjust.
+
+2006-10-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/utility (tuple_size<std::pair<> >::value): Provide
+	definition.
+
+2006-10-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/tuple_iterate.h (tuple_size<tuple<> >::value): Provide
+	definition.
+	* include/tr1/functional (is_bind_expression<>::value,
+	is_placeholder<>::value, + various partial specializations): Likewise.
+	* include/tr1/array (tuple_size<array<> >::value): Likewise.
+
 2006-10-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/tr1/6_containers/array/capacity/max_size.cc: Actually
