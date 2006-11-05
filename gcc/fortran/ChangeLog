@@ -1,3 +1,11 @@
+2006-11-05  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/21061
+	* error.c (gfc_warning): If warnings_are_errors then treat
+	warnings as errors with respect to the exit code.
+	(gfc_notify_std): Ditto.
+	(gfc_warning_now): Ditto.
+
 2006-11-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu,org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
