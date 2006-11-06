@@ -1,3 +1,12 @@
+2006-11-06  Frank Ch. Eigler  <fche@redhat.com>
+
+	* configure.ac (__libc_freeres): Look for it.
+	* mf-impl.h (call_libc_freeres): New configuration flag.
+	* mf-runtime.c (__mf_set_default_options): Set it by default.
+	(__mfu_report): Call it if needed.
+	(__mfu_unregister): Remove "unaccessed registered object" warning.
+	* configure, config.h.in: Regenerated.
+
 2006-09-18  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.

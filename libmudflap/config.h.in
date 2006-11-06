@@ -243,6 +243,9 @@
 /* Define to 1 if you have the `__ctype_toupper_loc' function. */
 #undef HAVE___CTYPE_TOUPPER_LOC
 
+/* Define to 1 if you have the `__libc_freeres' function. */
+#undef HAVE___LIBC_FREERES
+
 /* Name of package */
 #undef PACKAGE
 

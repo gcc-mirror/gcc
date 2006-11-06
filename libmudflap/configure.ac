@@ -75,6 +75,7 @@ AC_CHECK_FUNCS(getservent getservbyname getservbyport getaddrinfo gai_strerror)
 AC_CHECK_FUNCS(getprotoent getprotobyname getprotobynumber)
 AC_CHECK_FUNCS(getmntent setmntent addmntent)
 AC_CHECK_FUNCS(inet_ntoa mmap munmap)
+AC_CHECK_FUNCS(__libc_freeres)
 
 AC_TRY_COMPILE([#include <sys/types.h>
 #include <sys/ipc.h>
