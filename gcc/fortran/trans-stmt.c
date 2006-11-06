@@ -1803,6 +1803,7 @@ generate_loop_for_temp_to_lhs (gfc_expr *expr, tree tmp1, tree count3,
       gfc_conv_expr (&lse, expr);
 
       /* Use the scalar assignment.  */
+      rse.string_length = lse.string_length;
       tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts.type);
 
      /* Form the mask expression according to the mask tree list.  */
@@ -1900,6 +1901,7 @@ generate_loop_for_rhs_to_temp (gfc_expr *expr2, tree tmp1, tree count3,
     }
 
   /* Use the scalar assignment.  */
+  lse.string_length = rse.string_length;
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr2->ts.type);
 
   /* Form the mask expression according to the mask tree list.  */

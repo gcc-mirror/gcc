@@ -3772,7 +3772,7 @@ gfc_use_module (void)
 {
   char *filename;
   gfc_state_data *p;
-  int c, line;
+  int c, line, start;
 
   filename = (char *) alloca(strlen(module_name) + strlen(MODULE_EXTENSION)
 			     + 1);
@@ -3787,15 +3787,23 @@ gfc_use_module (void)
   iomode = IO_INPUT;
   module_line = 1;
   module_column = 1;
+  start = 0;
 
-  /* Skip the first two lines of the module.  */
-  /* FIXME: Could also check for valid two lines here, instead.  */
+  /* Skip the first two lines of the module, after checking that this is
+     a gfortran module file.  */
   line = 0;
   while (line < 2)
     {
       c = module_char ();
       if (c == EOF)
 	bad_module ("Unexpected end of module");
+      if (start++ < 2)
+	parse_name (c);
+      if ((start == 1 && strcmp (atom_name, "GFORTRAN") != 0)
+	    || (start == 2 && strcmp (atom_name, " module") != 0))
+	gfc_fatal_error ("File '%s' opened at %C is not a GFORTRAN module "
+			  "file", filename);
+
       if (c == '\n')
 	line++;
     }

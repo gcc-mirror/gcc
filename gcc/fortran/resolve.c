@@ -583,6 +583,7 @@ resolve_structure_cons (gfc_expr * expr)
   gfc_constructor *cons;
   gfc_component *comp;
   try t;
+  symbol_attribute a;
 
   t = SUCCESS;
   cons = expr->value.constructor;
@@ -597,10 +598,7 @@ resolve_structure_cons (gfc_expr * expr)
   for (; comp; comp = comp->next, cons = cons->next)
     {
       if (! cons->expr)
-	{
-	  t = FAILURE;
-	  continue;
-	}
+	continue;
 
       if (gfc_resolve_expr (cons->expr) == FAILURE)
 	{
@@ -621,6 +619,19 @@ resolve_structure_cons (gfc_expr * expr)
 		       gfc_basic_typename (comp->ts.type));
 	  else
 	    t = gfc_convert_type (cons->expr, &comp->ts, 1);
+	}
+
+      if (!comp->pointer || cons->expr->expr_type == EXPR_NULL)
+      continue;
+
+      a = gfc_expr_attr (cons->expr);
+
+      if (!a.pointer && !a.target)
+	{
+	  t = FAILURE;
+	  gfc_error ("The element in the derived type constructor at %L, "
+		     "for pointer component '%s' should be a POINTER or "
+		     "a TARGET", &cons->expr->where, comp->name);
 	}
     }
 
@@ -1512,12 +1523,12 @@ resolve_function (gfc_expr * expr)
 
       if (esym->attr.entry && esym->ns->entries && proc->ns->entries
           && esym->ns->entries->sym == proc->ns->entries->sym)
-      {
-        gfc_error ("Call to ENTRY '%s' at %L is recursive, but function "
-                   "'%s' is not declared as RECURSIVE",
-                   esym->name, &expr->where, esym->ns->entries->sym->name);
-        t = FAILURE;
-      }
+	{
+	  gfc_error ("Call to ENTRY '%s' at %L is recursive, but function "
+		     "'%s' is not declared as RECURSIVE",
+		     esym->name, &expr->where, esym->ns->entries->sym->name);
+	  t = FAILURE;
+	}
     }
 
   /* Character lengths of use associated functions may contains references to
@@ -5103,6 +5114,24 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       return FAILURE;
     }
 
+  /* Check to see if a derived type is blocked from being host associated
+     by the presence of another class I symbol in the same namespace.
+     14.6.1.3 of the standard and the discussion on comp.lang.fortran.  */
+  if (sym->ts.type == BT_DERIVED && sym->ns != sym->ts.derived->ns)
+    {
+      gfc_symbol *s;
+      gfc_find_symbol (sym->ts.derived->name, sym->ns, 0, &s);
+      if (s && (s->attr.flavor != FL_DERIVED
+		  || !gfc_compare_derived_types (s, sym->ts.derived)))
+	{
+	  gfc_error ("The type %s cannot be host associated at %L because "
+		     "it is blocked by an incompatible object of the same "
+		     "name at %L", sym->ts.derived->name, &sym->declared_at,
+		     &s->declared_at);
+	  return FAILURE;
+	}
+    }
+
   /* 4th constraint in section 11.3:  "If an object of a type for which
      component-initialization is specified (R429) appears in the
      specification-part of a module and does not have the ALLOCATABLE
@@ -5296,6 +5325,15 @@ resolve_fl_derived (gfc_symbol *sym)
 	    }
 	}
 
+      if (c->ts.type == BT_DERIVED && c->pointer
+	    && c->ts.derived->components == NULL)
+	{
+	  gfc_error ("The pointer component '%s' of '%s' at %L is a type "
+		     "that has not been declared", c->name, sym->name,
+		     &c->loc);
+	  return FAILURE;
+	}
+
       if (c->pointer || c->as == NULL)
 	continue;
 
@@ -5375,16 +5413,18 @@ resolve_fl_namelist (gfc_symbol *sym)
      same message has been used.  */
   for (nl = sym->namelist; nl; nl = nl->next)
     {
+      if (nl->sym->ts.kind != 0 && nl->sym->attr.flavor == FL_VARIABLE)
+	continue;
       nlsym = NULL;
-	if (sym->ns->parent && nl->sym && nl->sym->name)
-	  gfc_find_symbol (nl->sym->name, sym->ns->parent, 0, &nlsym);
-	if (nlsym && nlsym->attr.flavor == FL_PROCEDURE)
-	  {
-	    gfc_error ("PROCEDURE attribute conflicts with NAMELIST "
-		       "attribute in '%s' at %L", nlsym->name,
-		       &sym->declared_at);
-	    return FAILURE;
-	  }
+      if (sym->ns->parent && nl->sym && nl->sym->name)
+	gfc_find_symbol (nl->sym->name, sym->ns->parent, 0, &nlsym);
+      if (nlsym && nlsym->attr.flavor == FL_PROCEDURE)
+	{
+	  gfc_error ("PROCEDURE attribute conflicts with NAMELIST "
+		     "attribute in '%s' at %L", nlsym->name,
+		     &sym->declared_at);
+	  return FAILURE;
+	}
     }
 
   return SUCCESS;

@@ -636,7 +636,8 @@ get_proc_name (const char *name, gfc_symbol ** result,
 	 accessible names.  */
       if (sym->attr.flavor != 0
 	    && sym->attr.proc != 0
-	    && sym->formal)
+	    && (sym->attr.subroutine || sym->attr.function)
+	    && sym->attr.if_source != IFSRC_UNKNOWN)
 	gfc_error_now ("Procedure '%s' at %C is already defined at %L",
 		       name, &sym->declared_at);
 
@@ -644,6 +645,7 @@ get_proc_name (const char *name, gfc_symbol ** result,
 	 signature for this is that ts.kind is set.  Legitimate
 	 references only set ts.type.  */
       if (sym->ts.kind != 0
+	    && !sym->attr.implicit_type
 	    && sym->attr.proc == 0
 	    && gfc_current_ns->parent != NULL
 	    && sym->attr.access == 0
@@ -2638,7 +2640,9 @@ gfc_match_function_decl (void)
       || copy_prefix (&sym->attr, &sym->declared_at) == FAILURE)
     goto cleanup;
 
-  if (current_ts.type != BT_UNKNOWN && sym->ts.type != BT_UNKNOWN)
+  if (current_ts.type != BT_UNKNOWN
+	&& sym->ts.type != BT_UNKNOWN
+	&& !sym->attr.implicit_type)
     {
       gfc_error ("Function '%s' at %C already has a type of %s", name,
 		 gfc_basic_typename (sym->ts.type));

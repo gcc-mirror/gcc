@@ -1,3 +1,30 @@
+2006-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29373
+	* gfortran.dg/implicit_9.f90: New test.
+
+	PR fortran/29407
+	* gfortran.dg/namelist_25.f90: New test.
+
+	PR fortran/27701
+	* gfortran.dg/same_name_2.f90: New test.
+
+	PR fortran/29232
+	* gfortran.dg/host_assoc_types_1.f90: New test.
+
+	PR fortran/29364
+	* gfortran.dg/missing_derived_type_1.f90: New test.
+	* gfortran.dg/implicit_actual.f90: Comment out USE GLOBAL.
+
+	PR fortran/29115
+	* gfortran.dg/derived_constructor_comps_2.f90: New test.
+
+	PR fortran/29211
+	* gfortran.dg/forall_char_dependencies_1.f90: New test.
+
+	PR fortran/29098
+	* gfortran.dg/default_initialization_2.f90: New test.
+
 2006-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29695
