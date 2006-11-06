@@ -1438,7 +1438,7 @@ if test x$enable___cxa_atexit = xyes || \
       *)
 	AC_CHECK_FUNC(__cxa_atexit,[use_cxa_atexit=yes],
 	  [echo "__cxa_atexit can't be enabled on this target"])
-	::
+	;;
     esac
   else
     # We can't check for __cxa_atexit when building a cross, so assume
