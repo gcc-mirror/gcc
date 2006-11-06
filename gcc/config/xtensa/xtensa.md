@@ -1,5 +1,6 @@
 ;; GCC machine description for Tensilica's Xtensa architecture.
-;; Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+;; Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+;; Free Software Foundation, Inc.
 ;; Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 ;; This file is part of GCC.
@@ -26,13 +27,23 @@
   (A7_REG		7)
   (A8_REG		8)
 
-  (UNSPEC_NSAU		1)
   (UNSPEC_NOP		2)
   (UNSPEC_PLT		3)
   (UNSPEC_RET_ADDR	4)
   (UNSPECV_SET_FP	1)
   (UNSPECV_ENTRY	2)
 ])
+
+;; This code macro allows signed and unsigned widening multiplications
+;; to use the same template.
+(define_code_macro any_extend [sign_extend zero_extend])
+
+;; <u> expands to an empty string when doing a signed operation and
+;; "u" when doing an unsigned operation.
+(define_code_attr u [(sign_extend "") (zero_extend "u")])
+
+;; <su> is like <u>, but the signed form expands to "s" rather than "".
+(define_code_attr su [(sign_extend "s") (zero_extend "u")])
 
 
 ;; Attributes.
@@ -292,6 +303,32 @@
 
 ;; Multiplication.
 
+(define_expand "<u>mulsidi3"
+  [(set (match_operand:DI 0 "register_operand")
+	(mult:DI (any_extend:DI (match_operand:SI 1 "register_operand"))
+		 (any_extend:DI (match_operand:SI 2 "register_operand"))))]
+  "TARGET_MUL32_HIGH"
+{
+  emit_insn (gen_mulsi3 (gen_lowpart (SImode, operands[0]),
+			 operands[1], operands[2]));
+  emit_insn (gen_<u>mulsi3_highpart (gen_highpart (SImode, operands[0]),
+				     operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "<u>mulsi3_highpart"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(truncate:SI
+	 (lshiftrt:DI
+	  (mult:DI (any_extend:DI (match_operand:SI 1 "register_operand" "%r"))
+		   (any_extend:DI (match_operand:SI 2 "register_operand" "r")))
+	  (const_int 32))))]
+  "TARGET_MUL32_HIGH"
+  "mul<su>h\t%0, %1, %2"
+  [(set_attr "type"	"mul32")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(mult:SI (match_operand:SI 1 "register_operand" "%r")
@@ -541,7 +578,30 @@
    (set_attr "length"	"3")])
 
 
-;; Find first bit.
+;; Count leading/trailing zeros and find first bit.
+
+(define_insn "clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(clz:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_NSA"
+  "nsau\t%0, %1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_expand "ctzsi2"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(ctz:SI (match_operand:SI 1 "register_operand" "")))]
+  "TARGET_NSA"
+{
+  rtx temp = gen_reg_rtx (SImode);
+  emit_insn (gen_negsi2 (temp, operands[1]));
+  emit_insn (gen_andsi3 (temp, temp, operands[1]));
+  emit_insn (gen_clzsi2 (temp, temp));
+  emit_insn (gen_negsi2 (temp, temp));
+  emit_insn (gen_addsi3 (operands[0], temp, GEN_INT (31)));
+  DONE;
+})
 
 (define_expand "ffssi2"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -551,21 +611,11 @@
   rtx temp = gen_reg_rtx (SImode);
   emit_insn (gen_negsi2 (temp, operands[1]));
   emit_insn (gen_andsi3 (temp, temp, operands[1]));
-  emit_insn (gen_nsau (temp, temp));
+  emit_insn (gen_clzsi2 (temp, temp));
   emit_insn (gen_negsi2 (temp, temp));
   emit_insn (gen_addsi3 (operands[0], temp, GEN_INT (32)));
   DONE;
 })
-
-;; There is no RTL operator corresponding to NSAU.
-(define_insn "nsau"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "r")] UNSPEC_NSAU))]
-  "TARGET_NSA"
-  "nsau\t%0, %1"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
 
 
 ;; Negation and one's complement.

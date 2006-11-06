@@ -1,3 +1,29 @@
+2006-11-06  Bob Wilson  <bob.wilson@acm.org>
+
+	* longlong.h (__xtensa__): Add definitions for umul_ppmm, __umulsidi3,
+	count_leading_zeros, and count_trailing_zeros.
+	* config/xtensa/xtensa.c (TARGET_INIT_BUILTINS): Define.
+	(TARGET_FOLD_BUILTIN): Define.
+	(TARGET_EXPAND_BUILTIN): Define.
+	(xtensa_init_builtins): New.
+	(xtensa_fold_builtin): New.
+	(xtensa_expand_builtin): New.
+	(xtensa_rtx_costs): Add CTZ and CLZ.  Adjust costs for MULT.
+	* config/xtensa/xtensa.h (TARGET_MUL32_HIGH): Define.
+	(CLZ_DEFINED_VALUE_AT_ZERO): Define.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Define.
+	* config/xtensa/xtensa.md (UNSPEC_NSAU): Remove.
+	(any_extend): New code macro.
+	(u, su): New code attributes.
+	(<u>mulsidi3, <u>mulsi3_highpart, clzsi2, ctzsi2): New.
+	(nsau): Remove; replaced by clzsi2.
+	(ffssi2): Use clzsi2.
+	* config/xtensa/t-xtensa (LIB1ASMFUNCS): Add _umulsidi3,
+	_clzsi2, _ctzsi2, and _ffssi2.  Rename _nsau to _clz.
+	* config/xtensa/lib1funcs.asm (__mulsi3): Support Mul32 option.
+	(__umulsidi3, __clzsi2, __ctzsi2, __ffssi2): New.
+	(__nsau_data): Guard with ifdef L_clz instead of L_nsau.
+
 2006-11-06  Vladimir Prus  <vladimir@codesourcery.com>
 
 	* config/arm/t-strongarm-pe: (TARGET_LIBGCC2_CFLAGS): Do no

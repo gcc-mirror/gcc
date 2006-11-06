@@ -48,6 +48,7 @@ extern unsigned xtensa_current_frame_size;
 #define TARGET_MAC16		XCHAL_HAVE_MAC16
 #define TARGET_MUL16		XCHAL_HAVE_MUL16
 #define TARGET_MUL32		XCHAL_HAVE_MUL32
+#define TARGET_MUL32_HIGH	XCHAL_HAVE_MUL32_HIGH
 #define TARGET_DIV32		XCHAL_HAVE_DIV32
 #define TARGET_NSA		XCHAL_HAVE_NSA
 #define TARGET_MINMAX		XCHAL_HAVE_MINMAX
@@ -1068,6 +1069,9 @@ typedef struct xtensa_args
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
+
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = -1, 1)
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

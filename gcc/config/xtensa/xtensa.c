@@ -210,6 +210,9 @@ static bool xtensa_rtx_costs (rtx, int, int, int *);
 static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (tree, tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+static void xtensa_init_builtins (void);
+static tree xtensa_fold_builtin (tree, tree, bool);
+static rtx xtensa_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
@@ -264,6 +267,13 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_RETURN_IN_MSB
 #define TARGET_RETURN_IN_MSB xtensa_return_in_msb
+
+#undef  TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS xtensa_init_builtins
+#undef  TARGET_FOLD_BUILTIN
+#define TARGET_FOLD_BUILTIN xtensa_fold_builtin
+#undef  TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN xtensa_expand_builtin
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2322,6 +2332,74 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 }
 
 
+/* Builtins.  */
+
+enum xtensa_builtin
+{
+  XTENSA_BUILTIN_UMULSIDI3,
+  XTENSA_BUILTIN_max
+};
+
+
+static void
+xtensa_init_builtins (void)
+{
+  tree ftype;
+
+  ftype = build_function_type_list (unsigned_intDI_type_node,
+				    unsigned_intSI_type_node,
+				    unsigned_intSI_type_node, NULL_TREE);
+
+  add_builtin_function ("__builtin_umulsidi3", ftype,
+			XTENSA_BUILTIN_UMULSIDI3, BUILT_IN_MD,
+			"__umulsidi3", NULL_TREE);
+}
+
+
+static tree
+xtensa_fold_builtin (tree fndecl, tree arglist, bool ignore ATTRIBUTE_UNUSED)
+{
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  tree arg0, arg1;
+
+  if (fcode == XTENSA_BUILTIN_UMULSIDI3)
+    {
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      if ((TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == INTEGER_CST)
+	  || TARGET_MUL32_HIGH)
+	return fold_build2 (MULT_EXPR, unsigned_intDI_type_node,
+			    fold_convert (unsigned_intDI_type_node, arg0),
+			    fold_convert (unsigned_intDI_type_node, arg1));
+      else
+	return NULL;
+    }
+
+  internal_error ("bad builtin code");
+  return NULL;
+}
+
+
+static rtx
+xtensa_expand_builtin (tree exp, rtx target,
+		       rtx subtarget ATTRIBUTE_UNUSED,
+		       enum machine_mode mode ATTRIBUTE_UNUSED,
+		       int ignore)
+{
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+
+  /* The umulsidi3 builtin is just a mechanism to avoid calling the real
+     __umulsidi3 function when the Xtensa configuration can directly
+     implement it.  If not, just call the function.  */
+  if (fcode == XTENSA_BUILTIN_UMULSIDI3)
+    return expand_call (exp, target, ignore);
+
+  internal_error ("bad builtin code");
+  return NULL_RTX;
+}
+
+
 enum reg_class
 xtensa_preferred_reload_class (rtx x, enum reg_class class, int isoutput)
 {
@@ -2530,7 +2608,12 @@ xtensa_rtx_costs (rtx x, int code, int outer_code, int *total)
       }
 
     case FFS:
+    case CTZ:
       *total = COSTS_N_INSNS (TARGET_NSA ? 5 : 50);
+      return true;
+
+    case CLZ:
+      *total = COSTS_N_INSNS (TARGET_NSA ? 1 : 50);
       return true;
 
     case NOT:
@@ -2589,8 +2672,10 @@ xtensa_rtx_costs (rtx x, int code, int outer_code, int *total)
 	enum machine_mode xmode = GET_MODE (x);
 	if (xmode == SFmode)
 	  *total = COSTS_N_INSNS (TARGET_HARD_FLOAT ? 4 : 50);
-	else if (xmode == DFmode || xmode == DImode)
+	else if (xmode == DFmode)
 	  *total = COSTS_N_INSNS (50);
+	else if (xmode == DImode)
+	  *total = COSTS_N_INSNS (TARGET_MUL32_HIGH ? 10 : 50);
 	else if (TARGET_MUL32)
 	  *total = COSTS_N_INSNS (4);
 	else if (TARGET_MAC16)
