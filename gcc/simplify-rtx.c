@@ -3747,10 +3747,10 @@ simplify_const_relational_operation (enum rtx_code code,
     return simplify_const_relational_operation (signed_condition (code),
 						mode, tem, const0_rtx);
 
-  if (flag_unsafe_math_optimizations && code == ORDERED)
+  if (! HONOR_NANS (mode) && code == ORDERED)
     return const_true_rtx;
 
-  if (flag_unsafe_math_optimizations && code == UNORDERED)
+  if (! HONOR_NANS (mode) && code == UNORDERED)
     return const0_rtx;
 
   /* For modes without NaNs, if the two operands are equal, we know the

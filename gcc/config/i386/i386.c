@@ -1847,7 +1847,7 @@ override_options (void)
 
   /* If we're doing fast math, we don't care about comparison order
      wrt NaNs.  This lets us use a shorter comparison sequence.  */
-  if (flag_unsafe_math_optimizations)
+  if (flag_finite_math_only)
     target_flags &= ~MASK_IEEE_FP;
 
   /* If the architecture always has an FPU, turn off NO_FANCY_MATH_387,

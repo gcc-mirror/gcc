@@ -1,3 +1,21 @@
+2006-11-06  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-10-21  Richard Guenther  <rguenther@suse.de>
+
+	PR target/19116
+	* config/i386/i386.c (override_options): Do not set MASK_IEEE_FP
+	if flag_unsafe_math_optimizations is specified.  We have
+	flag_finite_math_only for that.
+	* config/i386/i386.md (sqrtxf2): Do not require TARGET_IEEE_FP
+	or flag_unsafe_math_optimizations.
+
+	PR middle-end/28796
+	* simplify-rtx.c (simplify_const_relational_operation):
+	Do not constant-fold ORDERED and UNORDERED for
+	flag_unsafe_math_optimizations but only we do not need to
+	honor NaNs for the given mode.
+
 2006-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29695
