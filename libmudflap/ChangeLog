@@ -1,5 +1,11 @@
 2006-11-06  Frank Ch. Eigler  <fche@redhat.com>
 
+	From Herman ten Brugge <hermantenbrugge@home.nl>:
+	* mf-runtime.c (__mf_uncache_object): Optimize the code so that
+	small and large objects are handled a lot faster.
+
+2006-11-06  Frank Ch. Eigler  <fche@redhat.com>
+
 	* configure.ac (__libc_freeres): Look for it.
 	* mf-impl.h (call_libc_freeres): New configuration flag.
 	* mf-runtime.c (__mf_set_default_options): Set it by default.
