@@ -1079,24 +1079,80 @@ __mf_uncache_object (__mf_object_t *old_obj)
   /* Can it possibly exist in the cache?  */
   if (LIKELY (old_obj->read_count + old_obj->write_count))
     {
-      /* As reported by Herman ten Brugge, we need to scan the entire
-         cache for entries that may hit this object. */
       uintptr_t low = old_obj->low;
       uintptr_t high = old_obj->high;
-      struct __mf_cache *entry = & __mf_lookup_cache [0];
+      struct __mf_cache *entry;
       unsigned i;
-      for (i = 0; i <= __mf_lc_mask; i++, entry++)
-        {
-          /* NB: the "||" in the following test permits this code to
-             tolerate the situation introduced by __mf_check over
-             contiguous objects, where a cache entry spans several
-             objects.  */
-          if (entry->low == low || entry->high == high)
+      if ((high - low) >= (__mf_lc_mask << __mf_lc_shift))
+	{
+	  /* For large objects (>= cache size - 1) check the whole cache.  */
+          entry = & __mf_lookup_cache [0];
+          for (i = 0; i <= __mf_lc_mask; i++, entry++)
             {
-              entry->low = MAXPTR;
-              entry->high = MINPTR;
+              /* NB: the "||" in the following test permits this code to
+                 tolerate the situation introduced by __mf_check over
+                 contiguous objects, where a cache entry spans several
+                 objects.  */
+              if (entry->low == low || entry->high == high)
+                {
+                  entry->low = MAXPTR;
+                  entry->high = MINPTR;
+                }
             }
         }
+      else
+	{
+	  /* Object is now smaller then cache size.  */
+          unsigned entry_low_idx = __MF_CACHE_INDEX (low);
+          unsigned entry_high_idx = __MF_CACHE_INDEX (high);
+          if (entry_low_idx <= entry_high_idx)
+	    {
+              entry = & __mf_lookup_cache [entry_low_idx];
+              for (i = entry_low_idx; i <= entry_high_idx; i++, entry++)
+                {
+                  /* NB: the "||" in the following test permits this code to
+                     tolerate the situation introduced by __mf_check over
+                     contiguous objects, where a cache entry spans several
+                     objects.  */
+                  if (entry->low == low || entry->high == high)
+                    {
+                      entry->low = MAXPTR;
+                      entry->high = MINPTR;
+                    }
+                }
+            }
+          else
+	    {
+	      /* Object wrapped around the end of the cache. First search
+		 from low to end of cache and then from 0 to high.  */
+              entry = & __mf_lookup_cache [entry_low_idx];
+              for (i = entry_low_idx; i <= __mf_lc_mask; i++, entry++)
+                {
+                  /* NB: the "||" in the following test permits this code to
+                     tolerate the situation introduced by __mf_check over
+                     contiguous objects, where a cache entry spans several
+                     objects.  */
+                  if (entry->low == low || entry->high == high)
+                    {
+                      entry->low = MAXPTR;
+                      entry->high = MINPTR;
+                    }
+                }
+              entry = & __mf_lookup_cache [0];
+              for (i = 0; i <= entry_high_idx; i++, entry++)
+                {
+                  /* NB: the "||" in the following test permits this code to
+                     tolerate the situation introduced by __mf_check over
+                     contiguous objects, where a cache entry spans several
+                     objects.  */
+                  if (entry->low == low || entry->high == high)
+                    {
+                      entry->low = MAXPTR;
+                      entry->high = MINPTR;
+                    }
+                }
+	    }
+	}
     }
 }
 
