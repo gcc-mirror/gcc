@@ -1177,7 +1177,7 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
       else if (code == MULT_EXPR && !integer_zerop (val1))
 	{
 	  tree tmp = int_const_binop (TRUNC_DIV_EXPR,
-				      TYPE_MAX_VALUE (TREE_TYPE (val1)),
+				      res,
 				      val1, 0);
 	  int check = compare_values (tmp, val2);
 
