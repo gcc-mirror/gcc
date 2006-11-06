@@ -1,3 +1,7 @@
+2006-11-06  Jan van Dijk  <jan@etpmod.phys.tue.nl>
+
+	* configure.ac: Fixed typo in case statement: :: changed to ;;
+
 2006-11-06  Bob Wilson  <bob.wilson@acm.org>
 
 	* longlong.h (__xtensa__): Add definitions for umul_ppmm, __umulsidi3,

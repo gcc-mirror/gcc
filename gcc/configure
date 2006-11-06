@@ -12531,7 +12531,7 @@ else
   echo "__cxa_atexit can't be enabled on this target"
 fi
 
-	::
+	;;
     esac
   else
     # We can't check for __cxa_atexit when building a cross, so assume
