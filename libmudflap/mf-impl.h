@@ -134,6 +134,11 @@ struct __mf_options
   /* Print list of leaked heap objects on shutdown. */
   unsigned print_leaks;
 
+#ifdef HAVE___LIBC_FREERES
+  /* Call __libc_freeres before leak analysis. */
+  unsigned call_libc_freeres;
+#endif
+
   /* Detect reads of uninitialized objects. */
   unsigned check_initialization;
 
