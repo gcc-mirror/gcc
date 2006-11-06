@@ -1,3 +1,16 @@
+2006-11-06  Vladimir Prus  <vladimir@codesourcery.com>
+
+	Backport from mainline:
+	* config/arm/t-strongarm-pe: (TARGET_LIBGCC2_CFLAGS): Do not
+	set inhibit_libc.
+	* config/arm/t-strongarm-elf: Likewise.
+	* config/arm/t-pe: Likewise.
+	* config/arm/t-arm-elf: Likewise.
+	* config/arm/t-xscale-elf: Likewise.
+	* config/arm/t-arm-coff: Likewise.
+	* config/arm/t-xscale-coff: Likewise.
+	* config/arm/t-wince-pe: Likewise.
+
 2006-11-06  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
