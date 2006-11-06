@@ -1,3 +1,9 @@
+2006-11-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/29439
+	* tree-vrp.c (vrp_int_const_binop): Use the correct tree when
+	checking for overflow.
+
 2006-11-06  Jan van Dijk  <jan@etpmod.phys.tue.nl>
 
 	* configure.ac: Fixed typo in case statement: :: changed to ;;
