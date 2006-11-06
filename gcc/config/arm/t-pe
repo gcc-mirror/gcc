@@ -29,4 +29,4 @@ MULTILIB_DIRNAMES = fpu thumb
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-TARGET_LIBGCC2_CFLAGS = -Dinhibit_libc
+TARGET_LIBGCC2_CFLAGS = 

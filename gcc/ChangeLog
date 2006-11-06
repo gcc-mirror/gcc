@@ -1,3 +1,15 @@
+2006-11-06  Vladimir Prus  <vladimir@codesourcery.com>
+
+	* config/arm/t-strongarm-pe: (TARGET_LIBGCC2_CFLAGS): Do no
+	set inhibit_libc.
+	* config/arm/t-strongarm-elf: Likewise.
+	* config/arm/t-pe: Likewise.
+	* config/arm/t-arm-elf: Likewise.
+	* config/arm/t-xscale-elf: Likewise.
+	* config/arm/t-arm-coff: Likewise.
+	* config/arm/t-xscale-coff: Likewise.
+	* config/arm/t-wince-pe: Likewise.
+	
 2006-11-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/lib1funcs-4-300.asm: Guard entire file with
