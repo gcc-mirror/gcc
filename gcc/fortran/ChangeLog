@@ -1,3 +1,10 @@
+2006-11-06  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/29630
+	PR fortran/29679
+	* expr.c (find_array_section): Support vector subscripts.  Don't
+	  add sizes for dimen_type == DIMEN_ELEMENT to the shape array.
+
 2006-11-05  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/21061

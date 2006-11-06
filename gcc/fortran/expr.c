@@ -1013,7 +1013,9 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
   int idx;
   int rank;
   int d;
+  int shape_i;
   long unsigned one = 1;
+  bool incr_ctr;
   mpz_t start[GFC_MAX_DIMENSIONS];
   mpz_t end[GFC_MAX_DIMENSIONS];
   mpz_t stride[GFC_MAX_DIMENSIONS];
@@ -1023,7 +1025,6 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
   mpz_t tmp_mpz;
   mpz_t nelts;
   mpz_t ptr;
-  mpz_t stop;
   mpz_t index;
   gfc_constructor *cons;
   gfc_constructor *base;
@@ -1032,6 +1033,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
   gfc_expr *step;
   gfc_expr *upper;
   gfc_expr *lower;
+  gfc_constructor *vecsub[GFC_MAX_DIMENSIONS], *c;
   try t;
 
   t = SUCCESS;
@@ -1057,9 +1059,11 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
       mpz_init (end[d]);
       mpz_init (ctr[d]);
       mpz_init (stride[d]);
+      vecsub[d] = NULL;
     }
 
   /* Build the counters to clock through the array reference.  */
+  shape_i = 0;
   for (d = 0; d < rank; d++)
     {
       /* Make this stretch of code easier on the eye!  */
@@ -1069,63 +1073,94 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
       lower = ref->u.ar.as->lower[d];
       upper = ref->u.ar.as->upper[d];
 
-      if ((begin && begin->expr_type != EXPR_CONSTANT)
-	    || (finish && finish->expr_type != EXPR_CONSTANT)
-	    || (step && step->expr_type != EXPR_CONSTANT))
-	{
-	  t = FAILURE;
-	  goto cleanup;
+      if (ref->u.ar.dimen_type[d] == DIMEN_VECTOR)  /* Vector subscript.  */
+        {
+          gcc_assert(begin);
+	  gcc_assert(begin->expr_type == EXPR_ARRAY); 
+	  gcc_assert(begin->rank == 1);
+	  gcc_assert(begin->shape);
+
+	  vecsub[d] = begin->value.constructor;
+	  mpz_set (ctr[d], vecsub[d]->expr->value.integer);
+	  mpz_mul (nelts, nelts, begin->shape[0]);
+	  mpz_set (expr->shape[shape_i++], begin->shape[0]);
+
+	  /* Check bounds.  */
+	  for (c = vecsub[d]; c; c = c->next)
+	    {
+	      if (mpz_cmp (c->expr->value.integer, upper->value.integer) > 0
+	          || mpz_cmp (c->expr->value.integer, lower->value.integer) < 0)
+		{
+		  gfc_error ("index in dimension %d is out of bounds "
+			     "at %L", d + 1, &ref->u.ar.c_where[d]);
+		  t = FAILURE;
+		  goto cleanup;
+		}
+	    }
+        }
+      else
+        {
+	  if ((begin && begin->expr_type != EXPR_CONSTANT)
+		|| (finish && finish->expr_type != EXPR_CONSTANT)
+		|| (step && step->expr_type != EXPR_CONSTANT))
+	    {
+	      t = FAILURE;
+	      goto cleanup;
+	    }
+
+	  /* Obtain the stride.  */
+	  if (step)
+	    mpz_set (stride[d], step->value.integer);
+	  else
+	    mpz_set_ui (stride[d], one);
+
+	  if (mpz_cmp_ui (stride[d], 0) == 0)
+	    mpz_set_ui (stride[d], one);
+
+	  /* Obtain the start value for the index.  */
+	  if (begin)
+	    mpz_set (start[d], begin->value.integer);
+	  else
+	    mpz_set (start[d], lower->value.integer);
+
+	  mpz_set (ctr[d], start[d]);
+
+	  /* Obtain the end value for the index.  */
+	  if (finish)
+	    mpz_set (end[d], finish->value.integer);
+	  else
+	    mpz_set (end[d], upper->value.integer);
+
+	  /* Separate 'if' because elements sometimes arrive with
+	     non-null end.  */
+	  if (ref->u.ar.dimen_type[d] == DIMEN_ELEMENT)
+	    mpz_set (end [d], begin->value.integer);
+
+	  /* Check the bounds.  */
+	  if (mpz_cmp (ctr[d], upper->value.integer) > 0
+	      || mpz_cmp (end[d], upper->value.integer) > 0
+	      || mpz_cmp (ctr[d], lower->value.integer) < 0
+	      || mpz_cmp (end[d], lower->value.integer) < 0)
+	    {
+	      gfc_error ("index in dimension %d is out of bounds "
+			 "at %L", d + 1, &ref->u.ar.c_where[d]);
+	      t = FAILURE;
+	      goto cleanup;
+	    }
+
+	  /* Calculate the number of elements and the shape.  */
+	  mpz_abs (tmp_mpz, stride[d]);
+	  mpz_div (tmp_mpz, stride[d], tmp_mpz);
+	  mpz_add (tmp_mpz, end[d], tmp_mpz);
+	  mpz_sub (tmp_mpz, tmp_mpz, ctr[d]);
+	  mpz_div (tmp_mpz, tmp_mpz, stride[d]);
+	  mpz_mul (nelts, nelts, tmp_mpz);
+
+	  /* An element reference reduces the rank of the expression; don't add
+	     anything to the shape array.  */
+	  if (ref->u.ar.dimen_type[d] != DIMEN_ELEMENT) 
+	    mpz_set (expr->shape[shape_i++], tmp_mpz);
 	}
-
-      /* Obtain the stride.  */
-      if (step)
-	mpz_set (stride[d], step->value.integer);
-      else
-	mpz_set_ui (stride[d], one);
-
-      if (mpz_cmp_ui (stride[d], 0) == 0)
-	mpz_set_ui (stride[d], one);
-
-      /* Obtain the start value for the index.  */
-      if (begin)
-	  mpz_set (start[d], begin->value.integer);
-      else
-	mpz_set (start[d], lower->value.integer);
-
-      mpz_set (ctr[d], start[d]);
-
-      /* Obtain the end value for the index.  */
-      if (finish)
-        mpz_set (end[d], finish->value.integer);
-      else
-	mpz_set (end[d], upper->value.integer);
-
-      /* Separate 'if' because elements sometimes arrive with
-	 non-null end.  */
-      if (ref->u.ar.dimen_type[d] == DIMEN_ELEMENT)
-	mpz_set (end [d], begin->value.integer);
-
-      /* Check the bounds.  */
-      if (mpz_cmp (ctr[d], upper->value.integer) > 0
-	    || mpz_cmp (end[d], upper->value.integer) > 0
-	    || mpz_cmp (ctr[d], lower->value.integer) < 0
-	    || mpz_cmp (end[d], lower->value.integer) < 0)
-	{
-	  gfc_error ("index in dimension %d is out of bounds "
-		     "at %L", d + 1, &ref->u.ar.c_where[d]);
-	  t = FAILURE;
-	  goto cleanup;
-	}
-
-      /* Calculate the number of elements and the shape.  */
-      mpz_abs (tmp_mpz, stride[d]);
-      mpz_div (tmp_mpz, stride[d], tmp_mpz);
-      mpz_add (tmp_mpz, end[d], tmp_mpz);
-      mpz_sub (tmp_mpz, tmp_mpz, ctr[d]);
-      mpz_div (tmp_mpz, tmp_mpz, stride[d]);
-      mpz_mul (nelts, nelts, tmp_mpz);
-
-      mpz_set (expr->shape[d], tmp_mpz);
 
       /* Calculate the 'stride' (=delta) for conversion of the
 	 counter values into the index along the constructor.  */
@@ -1137,7 +1172,6 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 
   mpz_init (index);
   mpz_init (ptr);
-  mpz_init (stop);
   cons = base;
 
   /* Now clock through the array reference, calculating the index in
@@ -1150,7 +1184,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
       else
 	mpz_init_set_ui (ptr, 0);
 
-      mpz_set_ui (stop, one);
+      incr_ctr = true;
       for (d = 0; d < rank; d++)
 	{
 	  mpz_set (tmp_mpz, ctr[d]);
@@ -1158,16 +1192,32 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 	  mpz_mul (tmp_mpz, tmp_mpz, delta[d]);
 	  mpz_add (ptr, ptr, tmp_mpz);
 
-	  mpz_mul (tmp_mpz, stride[d], stop);
-	  mpz_add (ctr[d], ctr[d], tmp_mpz); 
+	  if (!incr_ctr) continue;
 
-	  mpz_set (tmp_mpz, end[d]);
-	  if (mpz_cmp_ui (stride[d], 0) > 0 ?
-		mpz_cmp (ctr[d], tmp_mpz) > 0 :
-		mpz_cmp (ctr[d], tmp_mpz) < 0)
-	    mpz_set (ctr[d], start[d]);
+	  if (ref->u.ar.dimen_type[d] == DIMEN_VECTOR)  /* Vector subscript.  */
+	    {
+	      gcc_assert(vecsub[d]);
+
+	      if (!vecsub[d]->next)
+		vecsub[d] = ref->u.ar.start[d]->value.constructor;
+	      else
+		{
+		  vecsub[d] = vecsub[d]->next;
+		  incr_ctr = false;
+		}
+	      mpz_set (ctr[d], vecsub[d]->expr->value.integer);
+	    }
 	  else
-	    mpz_set_ui (stop, 0);
+	    {
+	      mpz_add (ctr[d], ctr[d], stride[d]); 
+
+	      if (mpz_cmp_ui (stride[d], 0) > 0 ?
+		    mpz_cmp (ctr[d], end[d]) > 0 :
+		    mpz_cmp (ctr[d], end[d]) < 0)
+		mpz_set (ctr[d], start[d]);
+	      else
+		incr_ctr = false;
+	    }
 	}
 
       /* There must be a better way of dealing with negative strides
@@ -1189,7 +1239,6 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 
   mpz_clear (ptr);
   mpz_clear (index);
-  mpz_clear (stop);
 
 cleanup:
 
