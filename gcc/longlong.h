@@ -1189,6 +1189,23 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #endif /* __vax__ */
 
+#if defined (__xtensa__) && W_TYPE_SIZE == 32
+/* This code is not Xtensa-configuration-specific, so rely on the compiler
+   to expand builtin functions depending on what configuration features
+   are available.  This avoids library calls when the operation can be
+   performed in-line.  */
+#define umul_ppmm(w1, w0, u, v)						\
+  do {									\
+    DWunion __w;							\
+    __w.ll = __builtin_umulsidi3 (u, v);				\
+    w1 = __w.s.high;							\
+    w0 = __w.s.low;							\
+  } while (0)
+#define __umulsidi3(u, v)		__builtin_umulsidi3 (u, v)
+#define count_leading_zeros(COUNT, X)	((COUNT) = __builtin_clz (X))
+#define count_trailing_zeros(COUNT, X)	((COUNT) = __builtin_ctz (X))
+#endif /* __xtensa__ */
+
 #if defined (__z8000__) && W_TYPE_SIZE == 16
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add	%H1,%H5\n\tadc	%H0,%H3"				\
