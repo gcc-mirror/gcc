@@ -699,6 +699,15 @@ gfc_clear_error (void)
 }
 
 
+/* Tests the state of error_flag.  */
+
+int
+gfc_error_flag_test (void)
+{
+  return error_buffer.flag;
+}
+
+
 /* Check to see if any errors have been saved.
    If so, print the error.  Returns the state of error_flag.  */
 

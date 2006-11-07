@@ -1,3 +1,12 @@
+2006-11-07 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29539
+	* gfortran.dg/gfortran.dg/blockdata_3.f90: New test.
+
+	PR fortran/29634
+	* gfortran.dg/gfortran.dg/derived_function_interface_1.f90: New
+	test.
+
 2006-11-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29601
