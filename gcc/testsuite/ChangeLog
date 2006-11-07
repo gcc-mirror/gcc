@@ -1,3 +1,14 @@
+2006-11-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29601
+	* gfortran.dg/volatile.f90: Add.
+	* gfortran.dg/volatile2.f90: Add.
+	* gfortran.dg/volatile3.f90: Add.
+	* gfortran.dg/volatile4.f90: Add.
+	* gfortran.dg/volatile5.f90: Add.
+	* gfortran.dg/volatile6.f90: Add.
+	* gfortran.dg/volatile7.f90: Add.
+
 2006-11-06  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/io_constraints_2.f90: Adjust pattern

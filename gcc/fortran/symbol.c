@@ -265,14 +265,15 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
 {
   static const char *dummy = "DUMMY", *save = "SAVE", *pointer = "POINTER",
     *target = "TARGET", *external = "EXTERNAL", *intent = "INTENT",
-    *intrinsic = "INTRINSIC", *allocatable = "ALLOCATABLE",
-    *elemental = "ELEMENTAL", *private = "PRIVATE", *recursive = "RECURSIVE",
+    *intent_in = "INTENT(IN)", *intrinsic = "INTRINSIC",
+    *allocatable = "ALLOCATABLE", *elemental = "ELEMENTAL",
+    *private = "PRIVATE", *recursive = "RECURSIVE",
     *in_common = "COMMON", *result = "RESULT", *in_namelist = "NAMELIST",
     *public = "PUBLIC", *optional = "OPTIONAL", *entry = "ENTRY",
     *function = "FUNCTION", *subroutine = "SUBROUTINE",
     *dimension = "DIMENSION", *in_equivalence = "EQUIVALENCE",
     *use_assoc = "USE ASSOCIATED", *cray_pointer = "CRAY POINTER",
-    *cray_pointee = "CRAY POINTEE", *data = "DATA";
+    *cray_pointee = "CRAY POINTEE", *data = "DATA", *volatile_ = "VOLATILE";
   static const char *threadprivate = "THREADPRIVATE";
 
   const char *a1, *a2;
@@ -399,6 +400,16 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (data, allocatable);
   conf (data, use_assoc);
 
+  conf (volatile_, intrinsic)
+  conf (volatile_, external)
+
+  if (attr->volatile_ && attr->intent == INTENT_IN)
+    {
+      a1 = volatile_;
+      a2 = intent_in;
+      goto conflict;
+    }
+
   a1 = gfc_code2string (flavors, attr->flavor);
 
   if (attr->in_namelist
@@ -508,6 +519,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
       conf2 (dummy);
       conf2 (in_common);
       conf2 (save);
+      conf2 (volatile_);
       conf2 (threadprivate);
       break;
 
@@ -809,6 +821,26 @@ gfc_add_save (symbol_attribute * attr, const char *name, locus * where)
     }
 
   attr->save = 1;
+  return check_conflict (attr, name, where);
+}
+
+try
+gfc_add_volatile (symbol_attribute * attr, const char *name, locus * where)
+{
+
+  if (check_used (attr, name, where))
+    return FAILURE;
+
+  if (attr->volatile_)
+    {
+	if (gfc_notify_std (GFC_STD_LEGACY, 
+			    "Duplicate VOLATILE attribute specified at %L",
+			    where) 
+	    == FAILURE)
+	  return FAILURE;
+    }
+
+  attr->volatile_ = 1;
   return check_conflict (attr, name, where);
 }
 
@@ -1248,6 +1280,8 @@ gfc_copy_attr (symbol_attribute * dest, symbol_attribute * src, locus * where)
   if (src->pointer && gfc_add_pointer (dest, where) == FAILURE)
     goto fail;
   if (src->save && gfc_add_save (dest, NULL, where) == FAILURE)
+    goto fail;
+  if (src->volatile_ && gfc_add_volatile (dest, NULL, where) == FAILURE)
     goto fail;
   if (src->threadprivate && gfc_add_threadprivate (dest, NULL, where) == FAILURE)
     goto fail;

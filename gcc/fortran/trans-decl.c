@@ -513,7 +513,15 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   if ((sym->attr.save || sym->attr.data || sym->value)
       && !sym->attr.use_assoc)
     TREE_STATIC (decl) = 1;
-  
+
+  if (sym->attr.volatile_)
+    {
+      tree new;
+      TREE_THIS_VOLATILE (decl) = 1;
+      new = build_qualified_type (TREE_TYPE (decl), TYPE_QUAL_VOLATILE);
+      TREE_TYPE (decl) = new;
+    } 
+
   /* Keep variables larger than max-stack-var-size off stack.  */
   if (!sym->ns->proc_name->attr.recursive
       && INTEGER_CST_P (DECL_SIZE_UNIT (decl))

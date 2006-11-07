@@ -677,7 +677,7 @@ was_declared (gfc_symbol * sym)
     return 1;
 
   if (a.allocatable || a.dimension || a.dummy || a.external || a.intrinsic
-      || a.optional || a.pointer || a.save || a.target
+      || a.optional || a.pointer || a.save || a.target || a.volatile_
       || a.access != ACCESS_UNKNOWN || a.intent != INTENT_UNKNOWN)
     return 1;
 
