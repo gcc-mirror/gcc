@@ -3616,7 +3616,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  switch (c)
 	    {
 	    case 'b':
-	      if (NULL == strchr(argv[i] + 2, '-')) break;
+	      if (NULL == strchr(argv[i] + 2, '-'))
+		goto normal_switch;
+
+	      /* Fall through.  */
 	    case 'V':
 	      fatal ("'-%c' must come at the start of the command line", c);
 	      break;
