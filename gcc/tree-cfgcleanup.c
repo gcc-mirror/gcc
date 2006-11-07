@@ -160,7 +160,7 @@ cleanup_control_flow (void)
 
       /* If the last statement of the block could throw and now cannot,
 	 we need to prune cfg.  */
-      tree_purge_dead_eh_edges (bb);
+      retval |= tree_purge_dead_eh_edges (bb);
 
       if (bsi_end_p (bsi))
 	continue;
