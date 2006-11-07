@@ -796,6 +796,21 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
                       COSTS_N_INSNS (256), /* fp_div_sf */    \
                       COSTS_N_INSNS (256)  /* fp_div_df */
 
+static struct mips_rtx_cost_data const mips_rtx_cost_optimize_size =
+  {
+      COSTS_N_INSNS (1),            /* fp_add */
+      COSTS_N_INSNS (1),            /* fp_mult_sf */
+      COSTS_N_INSNS (1),            /* fp_mult_df */
+      COSTS_N_INSNS (1),            /* fp_div_sf */
+      COSTS_N_INSNS (1),            /* fp_div_df */
+      COSTS_N_INSNS (1),            /* int_mult_si */
+      COSTS_N_INSNS (1),            /* int_mult_di */
+      COSTS_N_INSNS (1),            /* int_div_si */
+      COSTS_N_INSNS (1),            /* int_div_di */
+                       2,           /* branch_cost */
+                       4            /* memory_latency */
+  };
+
 static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
   {
     { /* R3000 */
@@ -4756,7 +4771,10 @@ override_options (void)
     mips_set_tune (mips_arch_info);
 
   /* Set cost structure for the processor.  */
-  mips_cost = &mips_rtx_cost_data[mips_tune];
+  if (optimize_size)
+    mips_cost = &mips_rtx_cost_optimize_size;
+  else
+    mips_cost = &mips_rtx_cost_data[mips_tune];
 
   if ((target_flags_explicit & MASK_64BIT) != 0)
     {
