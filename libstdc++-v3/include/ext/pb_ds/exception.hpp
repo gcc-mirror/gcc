@@ -51,13 +51,11 @@
 
 namespace pb_ds
 {
-#if __EXCEPTIONS
-
   // Base class for exceptions.
   struct container_error : public std::logic_error
   {
     container_error() 
-    : std::logic_error(__N("policy based data structure exception")) { }
+    : std::logic_error(__N("pb_ds::container_error")) { }
   };
 
   // An entry cannot be inserted into a container object for logical
@@ -72,6 +70,7 @@ namespace pb_ds
   // A container cannot be resized.
   struct resize_error : public container_error { };
 
+#if __EXCEPTIONS
   void
   __throw_container_error(void)
   { throw container_error(); }
@@ -87,9 +86,7 @@ namespace pb_ds
   void
   __throw_resize_error(void)
   { throw resize_error(); }
-
 #else
-
   void
   __throw_container_error(void)
   { std::abort(); }
@@ -105,7 +102,6 @@ namespace pb_ds
   void
   __throw_resize_error(void)
   { std::abort(); }
-
 #endif
 } // namespace pb_ds
 

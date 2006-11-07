@@ -1,5 +1,19 @@
 2006-11-07  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/29722
+	* include/ext/concurrence.h (concurrence_lock_error): New.
+	(concurrence_unlock_error): New.
+	(__throw_concurrence_lock_error): New.
+	(__throw_concurrence_unlock_error): New.
+	(__mutex): Use functions.
+	(__recursive_mutex): Same.
+	* testsuite/abi/cxx_runtime_only_linkage.cc: New.
+
+	* include/ext/pb_ds/exception.hpp: Keep exception classes defined
+	even when -fno-exceptions is passed, consistent with other usage.
+	
+2006-11-07  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/ext/pb_ds/exception.hpp (pb_ds): Modify for -fno-exceptions.
 	(__throw_container_error): New. Conditionalize based on __EXCEPTIONS.
 	(__throw_insert_error): New.
