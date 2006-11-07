@@ -1,3 +1,11 @@
+2006-11-07 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29539
+	PR fortran/29634
+	* decl.c (variable_decl): Add test for presence of proc_name.
+	* error.c (gfc_error_flag_test): New function.
+	* gfortran.h : Prototype for gfc_error_flag_test.
+
 2006-11-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29601
