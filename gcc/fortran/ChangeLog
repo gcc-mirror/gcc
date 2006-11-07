@@ -1,4 +1,4 @@
-2006-11-04  Brooks Moses  <brooks.moses@codesourcery.com>
+2006-11-06  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi: Added documentation for FTELL, GETLOG, and
 	HOSTNM intrinsics.
