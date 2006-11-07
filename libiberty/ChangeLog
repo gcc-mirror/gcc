@@ -1,3 +1,10 @@
+2006-11-07  Julian Brown  <julian@codesourcery.com>
+
+	* floatformat.c (get_field): Fix segfault with little-endian word
+	order on 64-bit hosts.
+	(put_field): Likewise.
+	(min): Move definition.
+
 2006-10-26  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	pex-win32.c (argv_to_cmdline): Replace xmalloc with XNEWVEC.
