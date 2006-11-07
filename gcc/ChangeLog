@@ -1,3 +1,9 @@
+2006-11-07  Josh Conner  <jconner@apple.com>
+
+	* doc/invoke.texi (fstrict-aliasing): Move implementation
+	details...
+	* doc/tree-ssa.texi (Alias analysis): ...here.
+
 2006-11-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/29610
