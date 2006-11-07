@@ -67,7 +67,7 @@ public:
     catch(...)
       {
 	s_internal_node_allocator.deallocate(p_nd, 1);
-	throw;
+	__throw_exception_again;
       }
   }
 

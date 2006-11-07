@@ -73,6 +73,6 @@ resize_imp_reassign(entry_pointer p_e, entry_array a_entries_resized,
 	  _GLIBCXX_DEBUG_ASSERT(0);
         };
     }
-  throw insert_error();
+  __throw_insert_error();
 }
 

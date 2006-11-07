@@ -275,7 +275,7 @@ set_loads(std::pair<float, float> load_pair)
       m_next_shrink_size = old_next_shrink_size;
       m_next_grow_size = old_next_grow_size;
       m_resize_needed = old_resize_needed;
-      throw;
+      __throw_exception_again;
     }
 }
 

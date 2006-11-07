@@ -65,14 +65,13 @@ copy_from_range(It first_it, It last_it)
   while (first_it != last_it)
     {
       insert_value(*first_it, s_no_throw_copies_ind);
-
       ++first_it;
     }
 
   std::make_heap(m_a_entries, m_a_entries + m_size, static_cast<entry_cmp& >(*this));
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -82,7 +81,7 @@ binary_heap_() :
   m_a_entries(s_entry_allocator.allocate(m_actual_size))
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -93,7 +92,7 @@ binary_heap_(const Cmp_Fn& r_cmp_fn) :
   m_a_entries(s_entry_allocator.allocate(m_actual_size))
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -105,7 +104,7 @@ binary_heap_(const PB_DS_CLASS_C_DEC& other) :
   m_a_entries(s_entry_allocator.allocate(m_actual_size))
 {
   _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    _GLIBCXX_DEBUG_ASSERT(m_a_entries != other.m_a_entries);
+  _GLIBCXX_DEBUG_ASSERT(m_a_entries != other.m_a_entries);
 
   const_iterator first_it = other.begin();
   const_iterator last_it = other.end();
@@ -115,7 +114,6 @@ binary_heap_(const PB_DS_CLASS_C_DEC& other) :
       while (first_it != last_it)
         {
 	  insert_value(*first_it, s_no_throw_copies_ind);
-
 	  ++first_it;
         }
     }
@@ -125,12 +123,10 @@ binary_heap_(const PB_DS_CLASS_C_DEC& other) :
 	erase_at(m_a_entries, i, s_no_throw_copies_ind);
 
       s_entry_allocator.deallocate(m_a_entries, m_actual_size);
-
-      throw;
+      __throw_exception_again;
     }
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -138,16 +134,14 @@ PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    _GLIBCXX_DEBUG_ASSERT(m_a_entries != other.m_a_entries);
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ASSERT(m_a_entries != other.m_a_entries);
 
   value_swap(other);
-
   std::swap((entry_cmp& )(*this), (entry_cmp& )other);
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -155,12 +149,9 @@ PB_DS_CLASS_C_DEC::
 value_swap(PB_DS_CLASS_C_DEC& other)
 {
   std::swap(m_a_entries, other.m_a_entries);
-
   std::swap(m_size, other.m_size);
-
   std::swap(m_actual_size, other.m_actual_size);
-
-  static_cast<resize_policy* >(this)->swap(other);
+  static_cast<resize_policy*>(this)->swap(other);
 }
 
 PB_DS_CLASS_T_DEC
@@ -169,7 +160,6 @@ PB_DS_CLASS_C_DEC::
 {
   for (size_type i = 0; i < m_size; ++i)
     erase_at(m_a_entries, i, s_no_throw_copies_ind);
-
   s_entry_allocator.deallocate(m_a_entries, m_actual_size);
 }
 
