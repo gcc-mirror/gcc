@@ -1118,7 +1118,11 @@ fi
 CFLAGS="$saved_CFLAGS"
 
 if test x$have_gmp != xyes; then
-  AC_MSG_ERROR([Building GCC requires GMP 4.1+ and MPFR 2.2+.  Try the --with-gmp and/or --with-mpfr options.])
+  AC_MSG_ERROR([Building GCC requires GMP 4.1+ and MPFR 2.2+.
+Try the --with-gmp and/or --with-mpfr options to specify their locations.
+Copies of these libraries' source code can be found at their respective
+hosting sites as well as at ftp://gcc.gnu.org/pub/gcc/infrastructure/.
+See also http://gcc.gnu.org/install/prerequisites.html for additional info.])
 fi
 
 # Flags needed for both GMP and/or MPFR
