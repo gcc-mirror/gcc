@@ -1,3 +1,11 @@
+2006-11-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/29610
+	* tree-cfgcleanup.c (cleanup_control_flow): Honor return value
+	of tree_purge_dead_eh_edges as it may free dominators.
+
+	* g++.dg/other/pr29610.C: New testcase.
+
 2006-11-07  Jie Zhang  <jie.zhang@analog.com>
 
 	* gcc.c (process_command): Treat -b as normal switch if its argument
