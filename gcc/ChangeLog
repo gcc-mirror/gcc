@@ -1,3 +1,11 @@
+2006-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (c_common_attributes): Add gnu_inline attribyte.
+	(handle_gnu_inline_attribute): New function.
+	* c-decl.c (diagnose_mismatched_decls): Handle gnu_inline attribute.
+	(merge_decls, start_decl, start_function): Likewise.
+	* doc/extend.texi: Document gnu_inline attribute.
+
 2006-11-07  Steve Ellcey  <sje@cup.hp.com>
 
 	PR other/25028

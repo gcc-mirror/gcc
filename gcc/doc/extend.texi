@@ -1581,8 +1581,8 @@ attributes are currently defined for functions on all targets:
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
 @code{unused}, @code{deprecated}, @code{weak}, @code{malloc},
-@code{alias}, @code{warn_unused_result}, @code{nonnull}
-and @code{externally_visible}.  Several other
+@code{alias}, @code{warn_unused_result}, @code{nonnull},
+@code{gnu_inline} and @code{externally_visible}.  Several other
 attributes are defined for functions on particular target systems.  Other
 attributes, including @code{section} are supported for variables declarations
 (@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
@@ -1619,6 +1619,11 @@ Not all target machines support this attribute.
 Generally, functions are not inlined unless optimization is specified.
 For functions declared inline, this attribute inlines the function even
 if no optimization level was specified.
+
+@item gnu_inline
+@cindex @code{gnu_inline} function attribute
+This attribute on an inline declaration results in the old GNU C89
+inline behavior even in the ISO C99 mode.
 
 @cindex @code{flatten} function attribute
 @item flatten
@@ -3802,7 +3807,8 @@ also direct GCC to try to integrate all ``simple enough'' functions
 into their callers with the option @option{-finline-functions}.
 
 GCC implements three different semantics of declaring a function
-inline.  One is available with @option{-std=gnu89}, another when
+inline.  One is available with @option{-std=gnu89} or when @code{gnu_inline}
+attribute is present on all inline declarations, another when
 @option{-std=c99} or @option{-std=gnu99}, and the third is used when
 compiling C++.
 
