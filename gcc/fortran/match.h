@@ -146,6 +146,7 @@ match gfc_match_public (gfc_statement *);
 match gfc_match_save (void);
 match gfc_match_modproc (void);
 match gfc_match_target (void);
+match gfc_match_volatile (void);
 
 /* primary.c */
 match gfc_match_structure_constructor (gfc_symbol *, gfc_expr **);

@@ -1,3 +1,17 @@
+2006-11-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29601
+	* symbol.c (check_conflict, gfc_add_volatile): Add volatile support.
+	* decl.c (match_attr_spec, gfc_match_volatile): Add volatile support.
+	* gfortran.h (symbol_attribute): Add volatile_ to struct.
+	* resolve.c (was_declared): Add volatile support.
+	* trans-decl.c (gfc_finish_var_decl): Add volatile support.
+	* match.h: Declare gfc_match_volatile.
+	* parse.c (decode_statement): Recognize volatile.
+	* modules.c (ab_attribute, attr_bits, mio_symbol_attribute):
+	  Add volatile support.
+	* dump-parse-tree.c (gfc_show_attr): Add volatile support.
+
 2006-11-06  Tobias Burnus  <burnus@net-b.de>
 
 	* decl.c (match_attr_spec, gfc_match_enum): Unify gfc_notify_std

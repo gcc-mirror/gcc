@@ -282,6 +282,10 @@ decode_statement (void)
       match ("use% ", gfc_match_use, ST_USE);
       break;
 
+    case 'v':
+      match ("volatile", gfc_match_volatile, ST_ATTR_DECL);
+      break;
+
     case 'w':
       match ("write", gfc_match_write, ST_WRITE);
       break;
