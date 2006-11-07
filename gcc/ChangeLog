@@ -1,3 +1,8 @@
+2006-11-07  Jie Zhang  <jie.zhang@analog.com>
+
+	* gcc.c (process_command): Treat -b as normal switch if its argument
+	has no dash.
+
 2006-11-06  Vladimir Prus  <vladimir@codesourcery.com>
 
 	Backport from mainline:
