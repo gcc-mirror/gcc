@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       if (__gthread_active_p())
 	{
 	  if (__gthread_mutex_lock(&_M_mutex) != 0)
-	    std::__throw_runtime_error("__mutex::lock");
+	    std::__throw_runtime_error(__N("__mutex::lock"));
 	}
 #endif
     }
@@ -104,7 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       if (__gthread_active_p())
 	{
 	  if (__gthread_mutex_unlock(&_M_mutex) != 0)
-	    std::__throw_runtime_error("__mutex::unlock");
+	    std::__throw_runtime_error(__N("__mutex::unlock"));
 	}
 #endif
     }
@@ -140,7 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       if (__gthread_active_p())
 	{
 	  if (__gthread_recursive_mutex_lock(&_M_mutex) != 0)
-	    std::__throw_runtime_error("__recursive_mutex::lock");
+	    std::__throw_runtime_error(__N("__recursive_mutex::lock"));
 	}
 #endif
     }
@@ -151,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       if (__gthread_active_p())
 	{
 	  if (__gthread_recursive_mutex_unlock(&_M_mutex) != 0)
-	    std::__throw_runtime_error("__recursive_mutex::unlock");
+	    std::__throw_runtime_error(__N("__recursive_mutex::unlock"));
 	}
 #endif
     }

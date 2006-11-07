@@ -164,7 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         _M_at(size_type __n)
         {
 	  if (__builtin_expect(__n >= _Mm, false))
-	    std::__throw_out_of_range("array::_M_at");
+	    std::__throw_out_of_range(__N("array::_M_at"));
 	  return _M_instance[__n];
 	}
 
@@ -173,7 +173,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         typename __gnu_cxx::__enable_if<!_Mm, reference>::__type
         _M_at(size_type)
         {
-	  std::__throw_out_of_range("array::_M_at");
+	  std::__throw_out_of_range(__N("array::_M_at"));
 	  return _M_instance[0];
 	}
 
@@ -182,7 +182,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         _M_at(size_type __n) const
         {
 	  if (__builtin_expect(__n >= _Mm, false))
-	    std::__throw_out_of_range("array::_M_at");
+	    std::__throw_out_of_range(__N("array::_M_at"));
 	  return _M_instance[__n];
 	}
 
@@ -190,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         typename __gnu_cxx::__enable_if<!_Mm, const_reference>::__type
         _M_at(size_type) const
         {
-	  std::__throw_out_of_range("array::_M_at");
+	  std::__throw_out_of_range(__N("array::_M_at"));
 	  return _M_instance[0];
 	}     
     };

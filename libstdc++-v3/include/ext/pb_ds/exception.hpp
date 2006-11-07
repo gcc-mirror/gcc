@@ -54,7 +54,8 @@ namespace pb_ds
   // Base class for exceptions.
   struct container_error : public std::logic_error
   {
-    container_error() : std::logic_error("data structure exception") { }
+    container_error() 
+    : std::logic_error(__N("policy based data structure exception")) { }
   };
 
   // An entry cannot be inserted into a container object for logical
