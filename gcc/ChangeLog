@@ -1,3 +1,12 @@
+2006-11-06  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr-protos.h (mask_one_bit_p, const_int_pow2_p): Remove 
+	prototype.
+	* config/avr/avr.c (mask_one_bit_p, const_int_pow2_p): Remove.
+	(output_movhi, ashlhi3_out, ashlsi3_out, ashrhi3_out, ashrsi3_out,
+	lshrhi3_out, lshrsi3_out): Remove unnecessary code for handling value
+	which start in an odd register.
+
 2006-11-07  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.h (ISA_HAS_PREFETCHX): Fix typo.
