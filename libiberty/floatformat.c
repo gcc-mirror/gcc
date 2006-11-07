@@ -249,53 +249,51 @@ const struct floatformat floatformat_ia64_quad_little =
   floatformat_always_valid
 };
 
+
+#ifndef min
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 /* Extract a field which starts at START and is LEN bits long.  DATA and
    TOTAL_LEN are the thing we are extracting it from, in byteorder ORDER.  */
 static unsigned long
 get_field (const unsigned char *data, enum floatformat_byteorders order,
            unsigned int total_len, unsigned int start, unsigned int len)
 {
-  unsigned long result;
+  unsigned long result = 0;
   unsigned int cur_byte;
-  int cur_bitshift;
+  int lo_bit, hi_bit, cur_bitshift = 0;
+  int nextbyte = (order == floatformat_little) ? 1 : -1;
+
+  /* Start is in big-endian bit order!  Fix that first.  */
+  start = total_len - (start + len);
 
   /* Start at the least significant part of the field.  */
-  cur_byte = (start + len) / FLOATFORMAT_CHAR_BIT;
   if (order == floatformat_little)
-    cur_byte = (total_len / FLOATFORMAT_CHAR_BIT) - cur_byte - 1;
-  cur_bitshift =
-    ((start + len) % FLOATFORMAT_CHAR_BIT) - FLOATFORMAT_CHAR_BIT;
-  result = *(data + cur_byte) >> (-cur_bitshift);
-  cur_bitshift += FLOATFORMAT_CHAR_BIT;
-  if (order == floatformat_little)
-    ++cur_byte;
+    cur_byte = start / FLOATFORMAT_CHAR_BIT;
   else
-    --cur_byte;
+    cur_byte = (total_len - start - 1) / FLOATFORMAT_CHAR_BIT;
 
-  /* Move towards the most significant part of the field.  */
-  while ((unsigned int) cur_bitshift < len)
+  lo_bit = start % FLOATFORMAT_CHAR_BIT;
+  hi_bit = min (lo_bit + len, FLOATFORMAT_CHAR_BIT);
+  
+  do
     {
-      if (len - cur_bitshift < FLOATFORMAT_CHAR_BIT)
-	/* This is the last byte; zero out the bits which are not part of
-	   this field.  */
-	result |=
-	  (*(data + cur_byte) & ((1 << (len - cur_bitshift)) - 1))
-	    << cur_bitshift;
-      else
-	result |= *(data + cur_byte) << cur_bitshift;
-      cur_bitshift += FLOATFORMAT_CHAR_BIT;
-      if (order == floatformat_little)
-	++cur_byte;
-      else
-	--cur_byte;
+      unsigned int shifted = *(data + cur_byte) >> lo_bit;
+      unsigned int bits = hi_bit - lo_bit;
+      unsigned int mask = (1 << bits) - 1;
+      result |= (shifted & mask) << cur_bitshift;
+      len -= bits;
+      cur_bitshift += bits;
+      cur_byte += nextbyte;
+      lo_bit = 0;
+      hi_bit = min (len, FLOATFORMAT_CHAR_BIT);
     }
+  while (len != 0);
+
   return result;
 }
   
-#ifndef min
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
 /* Convert from FMT to a double.
    FROM is the address of the extended float.
    Store the double in *TO.  */
@@ -428,43 +426,34 @@ put_field (unsigned char *data, enum floatformat_byteorders order,
            unsigned long stuff_to_put)
 {
   unsigned int cur_byte;
-  int cur_bitshift;
+  int lo_bit, hi_bit;
+  int nextbyte = (order == floatformat_little) ? 1 : -1;
+
+  /* Start is in big-endian bit order!  Fix that first.  */
+  start = total_len - (start + len);
 
   /* Start at the least significant part of the field.  */
-  cur_byte = (start + len) / FLOATFORMAT_CHAR_BIT;
   if (order == floatformat_little)
-    cur_byte = (total_len / FLOATFORMAT_CHAR_BIT) - cur_byte - 1;
-  cur_bitshift =
-    ((start + len) % FLOATFORMAT_CHAR_BIT) - FLOATFORMAT_CHAR_BIT;
-  *(data + cur_byte) &=
-    ~(((1 << ((start + len) % FLOATFORMAT_CHAR_BIT)) - 1) << (-cur_bitshift));
-  *(data + cur_byte) |=
-    (stuff_to_put & ((1 << FLOATFORMAT_CHAR_BIT) - 1)) << (-cur_bitshift);
-  cur_bitshift += FLOATFORMAT_CHAR_BIT;
-  if (order == floatformat_little)
-    ++cur_byte;
+    cur_byte = start / FLOATFORMAT_CHAR_BIT;
   else
-    --cur_byte;
+    cur_byte = (total_len - start - 1) / FLOATFORMAT_CHAR_BIT;
 
-  /* Move towards the most significant part of the field.  */
-  while ((unsigned int) cur_bitshift < len)
+  lo_bit = start % FLOATFORMAT_CHAR_BIT;
+  hi_bit = min (lo_bit + len, FLOATFORMAT_CHAR_BIT);
+  
+  do
     {
-      if (len - cur_bitshift < FLOATFORMAT_CHAR_BIT)
-	{
-	  /* This is the last byte.  */
-	  *(data + cur_byte) &=
-	    ~((1 << (len - cur_bitshift)) - 1);
-	  *(data + cur_byte) |= (stuff_to_put >> cur_bitshift);
-	}
-      else
-	*(data + cur_byte) = ((stuff_to_put >> cur_bitshift)
-			      & ((1 << FLOATFORMAT_CHAR_BIT) - 1));
-      cur_bitshift += FLOATFORMAT_CHAR_BIT;
-      if (order == floatformat_little)
-	++cur_byte;
-      else
-	--cur_byte;
+      unsigned char *byte_ptr = data + cur_byte;
+      unsigned int bits = hi_bit - lo_bit;
+      unsigned int mask = ((1 << bits) - 1) << lo_bit;
+      *byte_ptr = (*byte_ptr & ~mask) | ((stuff_to_put << lo_bit) & mask);
+      stuff_to_put >>= bits;
+      len -= bits;
+      cur_byte += nextbyte;
+      lo_bit = 0;
+      hi_bit = min (len, FLOATFORMAT_CHAR_BIT);
     }
+  while (len != 0);
 }
 
 /* The converse: convert the double *FROM to an extended float
