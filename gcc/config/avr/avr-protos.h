@@ -36,7 +36,6 @@ extern void asm_globalize_label (FILE *file, const char *name);
 extern void order_regs_for_local_alloc (void);
 extern int initial_elimination_offset (int from, int to);
 extern int avr_simple_epilogue (void);
-extern int mask_one_bit_p (HOST_WIDE_INT mask);
 extern void gas_output_limited_string (FILE *file, const char *str);
 extern void gas_output_ascii (FILE *file, const char *str, size_t length);
 
@@ -122,7 +121,6 @@ extern int compare_eq_p (rtx insn);
 extern void out_shift_with_cnt (const char *template, rtx insn,
 				rtx operands[], int *len, int t_len);
 extern int avr_io_address_p (rtx x, int size);
-extern int const_int_pow2_p (rtx x);
 extern int avr_peep2_scratch_safe (rtx reg_rtx);
 #endif /* RTX_CODE */
 
