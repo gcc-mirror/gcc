@@ -874,7 +874,7 @@ gfc_match_array_constructor (gfc_expr ** result)
         return MATCH_NO;
       else
         {
-          if (gfc_notify_std (GFC_STD_F2003, "New in Fortran 2003: [...] "
+          if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: [...] "
                               "style array constructors at %C") == FAILURE)
             return MATCH_ERROR;
           end_delim = " ]";

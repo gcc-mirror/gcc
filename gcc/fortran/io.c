@@ -2599,7 +2599,7 @@ if (condition) \
       if (dt->namelist != NULL)
         {
           if (gfc_notify_std(GFC_STD_F2003,
-                         "Internal file at %L is incompatible with namelist",
+                         "Fortran 2003: Internal file at %L with namelist",
                          &expr->where) == FAILURE)
             m = MATCH_ERROR;
         }

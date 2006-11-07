@@ -2191,8 +2191,8 @@ match_attr_spec (void)
 	  if (d == DECL_ALLOCATABLE)
 	    {
 	      if (gfc_notify_std (GFC_STD_F2003, 
-				   "In the selected standard, the ALLOCATABLE "
-				   "attribute at %C is not allowed in a TYPE "
+				   "Fortran 2003: ALLOCATABLE "
+				   "attribute at %C in a TYPE "
 				   "definition") == FAILURE)         
 		{
 		  m = MATCH_ERROR;
@@ -4143,7 +4143,7 @@ gfc_match_enum (void)
     return m;
 
   if (gfc_notify_std (GFC_STD_F2003, 
-		      "New in Fortran 2003: ENUM AND ENUMERATOR at %C")
+		      "Fortran 2003: ENUM AND ENUMERATOR at %C")
       == FAILURE)
     return MATCH_ERROR;
 
