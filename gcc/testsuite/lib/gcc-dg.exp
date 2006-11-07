@@ -446,6 +446,52 @@ proc cleanup-modules { modlist } {
     }
 }
 
+# Verify that the compiler output file exists, invoked via dg-final.
+proc output-exists { args } {
+    # Process an optional target or xfail list.
+    if { [llength $args] >= 1 } {
+	switch [dg-process-target [lindex $args 0]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # Access variables from gcc-dg-test-1.
+    upvar 2 name testcase
+    upvar 2 output_file output_file
+
+    if [file exists $output_file] {
+	pass "$testcase output-exists $output_file"
+    } else {
+	fail "$testcase output-exists $output_file"
+    }
+}
+
+# Verify that the compiler output file does not exist, invoked via dg-final.
+proc output-exists-not { args } {
+    # Process an optional target or xfail list.
+    if { [llength $args] >= 1 } {
+	switch [dg-process-target [lindex $args 0]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # Access variables from gcc-dg-test-1.
+    upvar 2 name testcase
+    upvar 2 output_file output_file
+
+    if [file exists $output_file] {
+	fail "$testcase output-exists-not $output_file"
+    } else {
+	pass "$testcase output-exists-not $output_file"
+    }
+}
+
 # We need to make sure that additional_* are cleared out after every
 # test.  It is not enough to clear them out *before* the next test run
 # because gcc-target-compile gets run directly from some .exp files
