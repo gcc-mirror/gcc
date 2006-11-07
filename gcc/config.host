@@ -177,7 +177,7 @@ case ${host} in
   i[34567]86-*-interix3*)
     host_xmake_file="${host_xmake_file} x-interix"
     ;;
-  i[34567]86-*-darwin*)
+  i[34567]86-*-darwin* | x86_64-*-darwin*)
     out_host_hook_obj="${out_host_hook_obj} host-i386-darwin.o"
     host_xmake_file="${host_xmake_file} i386/x-darwin"
     ;;

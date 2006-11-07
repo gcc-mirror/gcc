@@ -1,3 +1,10 @@
+2006-11-06  Eric Christopher  <echristo@apple.com>
+
+	* config.gcc: Add x86_64-darwin host support.
+	* config.host: Ditto.
+	* config/i386/darwin64.h: New file.
+	* config/i386/t-darwin64: Ditto.
+
 2006-11-06  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc/doc/sourcebuild.texi (Test Directives): Add output-exists
@@ -50,7 +57,7 @@
 	* config/arm/t-arm-coff: Likewise.
 	* config/arm/t-xscale-coff: Likewise.
 	* config/arm/t-wince-pe: Likewise.
-	
+
 2006-11-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/lib1funcs-4-300.asm: Guard entire file with
@@ -141,7 +148,7 @@
 	(arm_override_options): Set arm_default_cpu.
 
 2006-11-03  David Ung  <davidu@mips.com>
-	
+
 	* config/mips/mips.h (processor_type): Removed PROCESSOR_24K, add
 	PROCESSOR_24KC and PROCESSOR_24KF.
 	* config/mips/mips.c (mips_cpu_info_table): Add processor names
@@ -150,8 +157,8 @@
 	* config/mips/mips.md ("cpu"): Remove 24k, add 24kc and 24kf.
 	* config/mips/24k.md: Remove references to 24k and replace with
 	uses of 24kc/24kf in the appropriate reservations.
-	* doc/invoke.texi (MIPS Options): Updated. 
-	
+	* doc/invoke.texi (MIPS Options): Updated.
+
 2006-11-03  J"orn Rennecke  <joern.rennecke@st.com>
 
 	* config/sh/crt1.asm: Fix #ifdef indent.
@@ -252,15 +259,15 @@
 2006-11-02  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* config/arm/linux-elf.h (NEED_INDICATE_EXEC_STACK): Define as 1.
-	* arm.c (arm_file_end): If NEED_INDICATE_EXEC_STACK call 
-	file_end_indicate_exec_stack. 
-	* arm.h [!NEED_INDICATE_EXEC_STACK] (NEED_INIDCATE_EXEC_STACK): 
+	* arm.c (arm_file_end): If NEED_INDICATE_EXEC_STACK call
+	file_end_indicate_exec_stack.
+	* arm.h [!NEED_INDICATE_EXEC_STACK] (NEED_INIDCATE_EXEC_STACK):
 	Define as 0.
 	* lib1funcs.asm [__ELF__ && __linux__]: Emit .note.GNU-stack section
 	for a non-executable stack.
 	* crti.asm: Likewise.
 	* crtn.asm: Likewise.
-	* libunwind.S: Likewise. 
+	* libunwind.S: Likewise.
 
 2006-11-02  Ben Elliston  <bje@au.ibm.com>
 
@@ -473,7 +480,7 @@
 
 	* toplev.c (compile_file): Call final_write_globals
 	even if there have been errors.
-	
+
 2006-10-31  Eric Christopher  <echristo@apple.com>
 	    Falk Hueffner  <falk@debian.org>
 
@@ -672,7 +679,7 @@
 
 2006-10-29  Daniel Berlin  <dberlin@dberlin.org>
 
-	* tree.h (tree_value_handle): Remove struct value_set declaration.	
+	* tree.h (tree_value_handle): Remove struct value_set declaration.
 	Change value_set to bitmap_set.
 	* tree-pretty-print.c (dump_generic_node): Use has_stmt_ann.
 	* tree-vn.c (get_value_handle): Made inline and moved to
@@ -741,7 +748,7 @@
 	(compute_avail): Handle RETURN_EXPR.
 	(init_pre): Modify for bitmapped sets.
 	* tree-flow.h (has_stmt_ann): New function.
-	
+
 2006-10-29  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_floor): Check for the availability of
@@ -994,7 +1001,7 @@
 
 	* config/i386/i386.c (output_387_ffreep): Create output from a
 	template string for !HAVE_AS_IX86_FFREEP.
-	
+
 2006-10-27  Eric Christopher  <echristo@apple.com>
 
 	* config/darwin.c: Fix formatting and grammar.
