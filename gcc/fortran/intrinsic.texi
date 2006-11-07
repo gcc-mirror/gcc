@@ -3878,20 +3878,45 @@ Subroutine
 @node FTELL
 @section @code{FTELL} --- Current stream position
 @findex @code{FTELL} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Retrieves the current position within an open file.
+
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Subroutine, function
+
 @item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{CALL FTELL(UNIT, OFFSET)}
+@item @code{OFFSET = FTELL(UNIT)}
+@end multitable
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{OFFSET}  @tab Shall of type @code{INTEGER}.
+@item @var{UNIT}    @tab Shall of type @code{INTEGER}.
+@end multitable
+
 @item @emph{Return value}:
+In either syntax, @var{OFFSET} is set to the current offset of unit
+number @var{UNIT}, or to @math{-1} if the unit is not currently open.
+
 @item @emph{Example}:
+@smallexample
+PROGRAM test_ftell
+  INTEGER :: i
+  OPEN(10, FILE="temp.dat")
+  CALL ftell(10,i)
+  WRITE(*,*) i
+END PROGRAM
+@end smallexample
 
 @item @emph{See also}:
 @ref{FSEEK}
@@ -4216,7 +4241,7 @@ kind.
 See @code{GETPID} for an example.
 
 @item @emph{See also}:
-@ref{GETPID}
+@ref{GETPID}, @ref{GETUID}
 @end table
 
 
@@ -4224,12 +4249,11 @@ See @code{GETPID} for an example.
 @node GETLOG
 @section @code{GETLOG} --- Get login name
 @findex @code{GETLOG} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Gets the username under which the program is running.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -4237,13 +4261,30 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@item @emph{Arguments}:
-@item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
-@item @emph{See also}:
-@end table
+@code{CALL GETLOG(LOGIN)}
 
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{LOGIN} @tab Shall be of type @code{CHARACTER(*)}.
+@end multitable
+
+@item @emph{Return value}:
+Stores the current user name in @var{LOGIN}.  (On systems where 
+the @code{getlogin(3)} function is not implemented, this will
+return a blank string.)
+
+@item @emph{Example}:
+@smallexample
+PROGRAM TEST_GETLOG
+  CHARACTER(32) :: login
+  CALL GETLOG(login)
+  WRITE(*,*) login
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{GETUID}
+@end table
 
 
 
@@ -4279,6 +4320,8 @@ program info
 end program info
 @end smallexample
 
+@item @emph{See also}:
+@ref{GETGID}, @ref{GETUID}
 @end table
 
 
@@ -4310,7 +4353,7 @@ kind.
 See @code{GETPID} for an example.
 
 @item @emph{See also}:
-@ref{GETPID}
+@ref{GETPID}, @ref{GETLOG}
 @end table
 
 
@@ -4345,22 +4388,38 @@ Subroutine
 @node HOSTNM
 @section @code{HOSTNM} --- Get system host name
 @findex @code{HOSTNM} intrinsic
-@cindex undocumented intrinsic 
-
-Intrinsic implemented, documentation pending.
 
 @table @asis
 @item @emph{Description}:
+Retrieves the host name of the system on which the program is running.
+
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
+Subroutine, function
+
 @item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{CALL HOSTNM(NAME, STATUS)}
+@item @code{STATUS = HOSTNM(NAME)}
+@end multitable
+
 @item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{NAME}    @tab Shall of type @code{CHARACTER(*)}.
+@item @var{STATUS}  @tab (Optional) status flag of type @code{INTEGER}.
+                         Returns 0 on success, or a system specific error
+                         code otherwise.
+@end multitable
+
 @item @emph{Return value}:
-@item @emph{Example}:
-@item @emph{Specific names}:
-@item @emph{See also}:
+In either syntax, @var{NAME} is set to the current hostname if it can
+be obtained, or to a blank string otherwise.
+
 @end table
 
 
