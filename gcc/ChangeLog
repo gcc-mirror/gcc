@@ -1,8 +1,15 @@
+2006-11-07  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.c (mips_rtx_cost_optimize_size): New table of
+	costs when optimizing for size.
+	(override_options): Use mips_rtx_cost_optimize_size table for cost
+	calculations.
+
 2006-11-07  Jie Zhang  <jie.zhang@analog.com>
 
 	* gcc.c (process_command): Treat -b as normal switch if its argument
 	has no dash.
-
+	
 2006-11-07  David Ung  <davidu@mips.com>
 	
 	* config/mips/mips.h (ISA_HAS_PREFETCHX): Add ISA_MIPS32R2 to the
