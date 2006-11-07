@@ -1,3 +1,9 @@
+2006-11-07  Steve Ellcey  <sje@cup.hp.com>
+
+	PR other/25028
+	* gcc.dg/torture/fp-int-convert-float128-timode.c:  Do not XFAIL
+	on HP-UX.
+
 2006-11-07 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29539
