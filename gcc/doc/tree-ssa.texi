@@ -1591,6 +1591,12 @@ every addressable variable found in the program.  Given a symbol
 memory tag SMT and an addressable variable V@.  If the alias sets
 of SMT and V conflict (as computed by may_alias_p), then V is
 marked as an alias tag and added to the alias set of SMT@.
+
+Every language that wishes to perform language-specific alias analysis
+should define a function that computes, given a @code{tree}
+node, an alias set for the node.  Nodes in different alias sets are not
+allowed to alias.  For an example, see the C front-end function
+@code{c_get_alias_set}.
 @end enumerate
 
 For instance, consider the following function:

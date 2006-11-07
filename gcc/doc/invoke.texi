@@ -5377,12 +5377,6 @@ int f() @{
 @}
 @end smallexample
 
-Every language that wishes to perform language-specific alias analysis
-should define a function that computes, given an @code{tree}
-node, an alias set for the node.  Nodes in different alias sets are not
-allowed to alias.  For an example, see the C front-end function
-@code{c_get_alias_set}.
-
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -falign-functions
