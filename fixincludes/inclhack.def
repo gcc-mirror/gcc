@@ -1319,12 +1319,12 @@ fix = {
     sed	      = "s/extern int \\(stat\\|lstat\\|fstat\\|mknod\\)/"
 		"#if __STDC_VERSION__ < 199901L\\\nextern\\\n#endif\\\n"
     		"__inline__ int \\1/";
-    sed	      = "s/extern int __REDIRECT_NTH (\\(stat\\|lstat\\|fstat\\)/"
+    sed	      = "s/extern int __REDIRECT\\(_NTH\\|\\) (\\(stat\\|lstat\\|fstat\\)/"
 		"#if __STDC_VERSION__ < 199901L\\\nextern\\\n#endif\\\n"
-    		"__inline__ int __REDIRECT_NTH (\\1/";
-    sed	      = "/^extern __inline__ int$/ c\\\n"
+    		"__inline__ int __REDIRECT\\1 (\\2/";
+    sed	      = "s/^extern __inline__ int/"
 		"#if __STDC_VERSION__ < 199901L\\\nextern\\\n#endif\\\n"
-		"__inline__ int\n";
+		"__inline__ int/";
     test_text = <<-EOT
 extern int fstat64 (int __fd, struct stat64 *__buf) __THROW __nonnull ((2));
 extern __inline__ int

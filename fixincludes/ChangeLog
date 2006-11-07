@@ -1,3 +1,9 @@
+2006-11-07  Richard Guenther  <rguenther@suse.de>
+
+	* inclhack.def (glibc_c99_inline_2): Adjust for glibc 2.3
+	systems.
+	* fixincl.x: Regenerate.
+
 2006-11-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* inclhack.def (glibc_c99_inline_1): New.
