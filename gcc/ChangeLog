@@ -1,3 +1,11 @@
+2006-11-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/29610
+	* tree-cfgcleanup.c (cleanup_control_flow): Honor return value
+	of tree_purge_dead_eh_edges as it may free dominators.
+
+	* g++.dg/other/pr29610.C: New testcase.
+
 2006-11-07  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.c (mips_rtx_cost_optimize_size): New table of
