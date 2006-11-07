@@ -1,3 +1,7 @@
+2006-11-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.h (ISA_HAS_PREFETCHX): Fix typo.
+
 2006-11-07  Josh Conner  <jconner@apple.com>
 
 	* doc/invoke.texi (fstrict-aliasing): Move implementation
