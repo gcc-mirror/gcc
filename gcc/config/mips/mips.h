@@ -686,6 +686,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
    (prefx is a cop1x instruction, so can only be used if FP is
    enabled.)  */
 #define ISA_HAS_PREFETCHX	((ISA_MIPS4				\
+				  || ISA_MIPS32R2)			\
 				  || ISA_MIPS64)			\
 				 && !TARGET_MIPS16)
 
