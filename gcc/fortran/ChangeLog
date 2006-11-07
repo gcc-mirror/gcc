@@ -1,3 +1,14 @@
+2006-11-06  Tobias Burnus  <burnus@net-b.de>
+
+	* decl.c (match_attr_spec, gfc_match_enum): Unify gfc_notify_std
+	  message for GFC_STD_F2003.
+	* array.c (gfc_match_array_constructor): Unify gfc_notify_std
+	  message for GFC_STD_F2003.
+	* io.c (check_io_constraints): Unify gfc_notify_std message for
+	  GFC_STD_F2003.
+	* resolve.c (resolve_actual_arglist): Unify gfc_notify_std message
+	  for GFC_STD_F2003.
+
 2006-11-06  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi: Added documentation for FTELL, GETLOG, and

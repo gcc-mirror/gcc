@@ -40,7 +40,7 @@ end module global
 !
 ! Not allowed with internal unit
 !Was correctly picked up before patch.
- write(buffer, NML=NL)                          !  { dg-error "incompatible with namelist" }
+ write(buffer, NML=NL)                          !  { dg-error "Internal file at \\(1\\) with namelist" }
 !Was correctly picked up before patch.
  write(buffer, fmt='(i6)', REC=10) a            !  { dg-error "REC tag" }
  write(buffer, fmt='(i6)', END=10) a            !  { dg-error "END tag" }

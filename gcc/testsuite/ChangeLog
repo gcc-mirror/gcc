@@ -1,3 +1,10 @@
+2006-11-06  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/io_constraints_2.f90: Adjust pattern
+	  for matching error messages.
+	* gfortran.dg/specifics_3.f90: Adjust pattern
+	  for matching error messages.
+
 2006-11-06  Janis Johnson  <janis187@us.ibm.com
 	    Bernhard Fischer  <aldot@gcc.gnu.org>
 
