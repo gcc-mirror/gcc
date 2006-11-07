@@ -59,7 +59,7 @@ left_child_next_sibling_heap_() :
   m_size(0)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
@@ -69,25 +69,19 @@ left_child_next_sibling_heap_(const Cmp_Fn& r_cmp_fn) :
   m_size(0)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
-left_child_next_sibling_heap_(const PB_DS_CLASS_C_DEC& other) :
-  Cmp_Fn(other),
-  m_p_root(NULL),
-  m_size(0)
+left_child_next_sibling_heap_(const PB_DS_CLASS_C_DEC& other) 
+: Cmp_Fn(other), m_p_root(NULL), m_size(0)
 {
   m_size = other.m_size;
-
   _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-
-    m_p_root = recursive_copy_node(other.m_p_root);
-
+  m_p_root = recursive_copy_node(other.m_p_root);
   m_size = other.m_size;
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -95,15 +89,12 @@ PB_DS_CLASS_C_DEC::
 swap(PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-
-    value_swap(other);
-
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  value_swap(other);
   std::swap((Cmp_Fn& )(*this), (Cmp_Fn& )other);
-
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -111,7 +102,6 @@ PB_DS_CLASS_C_DEC::
 value_swap(PB_DS_CLASS_C_DEC& other)
 {
   std::swap(m_p_root, other.m_p_root);
-
   std::swap(m_size, other.m_size);
 }
 
@@ -139,8 +129,7 @@ recursive_copy_node(const_node_pointer p_nd)
   catch(...)
     {
       s_node_allocator.deallocate(p_ret, 1);
-
-      throw;
+      __throw_exception_again;
     }
 
   p_ret->m_p_l_child = p_ret->m_p_next_sibling =
@@ -149,14 +138,12 @@ recursive_copy_node(const_node_pointer p_nd)
   try
     {
       p_ret->m_p_l_child = recursive_copy_node(p_nd->m_p_l_child);
-
       p_ret->m_p_next_sibling = recursive_copy_node(p_nd->m_p_next_sibling);
     }
   catch(...)
     {
       clear_imp(p_ret);
-
-      throw;
+      __throw_exception_again;
     }
 
   if (p_ret->m_p_l_child != NULL)
@@ -164,10 +151,8 @@ recursive_copy_node(const_node_pointer p_nd)
 
   if (p_ret->m_p_next_sibling != NULL)
     p_ret->m_p_next_sibling->m_p_prev_or_parent =
-      p_nd->m_p_next_sibling->m_p_prev_or_parent == p_nd?
-      p_ret :
-      NULL;
+      p_nd->m_p_next_sibling->m_p_prev_or_parent == p_nd ? p_ret : NULL;
 
-  return (p_ret);
+  return p_ret;
 }
 

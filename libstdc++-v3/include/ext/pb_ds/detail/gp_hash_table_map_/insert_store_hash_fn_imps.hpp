@@ -97,7 +97,7 @@ find_ins_pos(const_key_reference r_key, true_type)
     }
   resize_base::notify_insert_search_end();
   if (ins_pos == m_num_e)
-    throw insert_error();
+    __throw_insert_error();
   return std::make_pair(ins_pos, pos_hash_pair.second);
 }
 

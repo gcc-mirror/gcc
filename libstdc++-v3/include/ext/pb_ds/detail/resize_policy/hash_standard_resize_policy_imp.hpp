@@ -200,7 +200,7 @@ resize(size_type new_size)
       const size_type pot = size_policy_base::get_nearest_larger_size(actual_size);
 
       if (pot == actual_size && pot < new_size)
-	throw resize_error();
+	__throw_resize_error();
       actual_size = pot;
     }
 
@@ -215,12 +215,12 @@ resize(size_type new_size)
   catch(insert_error& )
     {
       m_size = old_size;
-      throw resize_error();
+      __throw_resize_error();
     }
   catch(...)
     {
       m_size = old_size;
-      throw;
+      __throw_exception_again;
     }
 }
 

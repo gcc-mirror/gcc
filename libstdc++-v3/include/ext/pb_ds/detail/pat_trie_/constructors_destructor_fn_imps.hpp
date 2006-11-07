@@ -103,7 +103,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
   catch(...)
     {
       s_head_allocator.deallocate(m_p_head, 1);
-      throw;
+      __throw_exception_again;
     }
 
   m_p_head->m_p_min = leftmost_descendant(m_p_head->m_p_parent);
@@ -203,7 +203,7 @@ recursive_copy_node(const_node_pointer p_other_nd)
     {
       while (child_i-- > 0)
 	clear_imp(a_p_children[child_i]);
-      throw;
+      __throw_exception_again;
     }
 
   new (p_ret) internal_node(p_other_internal_nd->get_e_ind(),

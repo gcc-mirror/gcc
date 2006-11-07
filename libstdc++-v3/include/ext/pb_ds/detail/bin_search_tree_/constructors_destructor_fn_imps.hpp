@@ -107,7 +107,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
       {
         _GLIBCXX_DEBUG_ONLY(map_debug_base::clear();)
 	s_node_allocator.deallocate(m_p_head, 1);
-        throw;
+        __throw_exception_again;
       }
   _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
 }
@@ -170,7 +170,7 @@ recursive_copy_node(const node_pointer p_nd)
   catch(...)
     {
       s_node_allocator.deallocate(p_ret, 1);
-      throw;
+      __throw_exception_again;
     }
 
   p_ret->m_p_left = p_ret->m_p_right = NULL;
@@ -183,7 +183,7 @@ recursive_copy_node(const node_pointer p_nd)
   catch(...)
     {
       clear_imp(p_ret);
-      throw;
+      __throw_exception_again;
     }
 
   if (p_ret->m_p_left != NULL)

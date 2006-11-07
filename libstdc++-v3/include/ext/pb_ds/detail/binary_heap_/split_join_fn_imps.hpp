@@ -91,7 +91,7 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
       if (a_other_entries != NULL)
 	s_entry_allocator.deallocate(a_other_entries, other_actual_size);
 
-      throw;
+      __throw_exception_again;
     };
 
   for (size_type i = 0; i < other.m_size; ++i)
@@ -129,9 +129,9 @@ PB_DS_CLASS_C_DEC::
 join(PB_DS_CLASS_C_DEC& other)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
-    const size_type size = m_size + other.m_size;
+  const size_type size = m_size + other.m_size;
   const size_type actual_size = resize_policy::get_new_size_for_arbitrary(size);
 
   entry_pointer a_entries = NULL;
@@ -140,7 +140,6 @@ join(PB_DS_CLASS_C_DEC& other)
   try
     {
       a_entries = s_entry_allocator.allocate(actual_size);
-
       a_other_entries = s_entry_allocator.allocate(resize_policy::min_size);
     }
   catch(...)
@@ -151,7 +150,7 @@ join(PB_DS_CLASS_C_DEC& other)
       if (a_other_entries != NULL)
 	s_entry_allocator.deallocate(a_other_entries, resize_policy::min_size);
 
-      throw;
+      __throw_exception_again;
     }
 
   std::copy(m_a_entries, m_a_entries + m_size, a_entries);
@@ -174,6 +173,6 @@ join(PB_DS_CLASS_C_DEC& other)
   other.notify_arbitrary(resize_policy::min_size);
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
-    }
+  _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
+}
 
