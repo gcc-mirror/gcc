@@ -1,3 +1,14 @@
+2006-11-08  Roger Sayle  <roger@eyesopen.com>
+
+	* tree-ssa-propagate.c (set_rhs): Restructure validity tests as a
+	test for inclusion rather than as a test for exclusion.
+	* tree-ssa-ccp.c (fold_stmt_r) <COND_EXPR>: Use set_rhs to modify
+	the condition after calling fold_binary.
+	* fold-const.c (fold_inf_compare): Remove in_gimple_form check.
+	(fold_binary) <LT_EXPR, GT_EXPR, LE_EXPR, GE_EXPR>: Likewise.
+	* builtins.c (fold_builtin_isascii): Likewise.
+	(fold_builtin_isdigit): Likewise.
+
 2006-11-08  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* configure.ac: Do not set PREFIX_INCLUDE_DIR if $prefix is NONE.

@@ -6059,11 +6059,6 @@ fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 	return fold_build2 (neg ? GE_EXPR : LE_EXPR, type,
 			    arg0, build_real (TREE_TYPE (arg0), max));
 
-      /* The transformation below creates non-gimple code and thus is
-	 not appropriate if we are in gimple form.  */
-      if (in_gimple_form)
-	return NULL_TREE;
-
       temp = fold_build2 (neg ? LT_EXPR : GT_EXPR, type,
 			  arg0, build_real (TREE_TYPE (arg0), max));
       return fold_build1 (TRUTH_NOT_EXPR, type, temp);
@@ -11043,8 +11038,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		  break;
 		}
 
-	    else if (!in_gimple_form
-		     && TREE_INT_CST_HIGH (arg1) == signed_max_hi
+	    else if (TREE_INT_CST_HIGH (arg1) == signed_max_hi
 		     && TREE_INT_CST_LOW (arg1) == signed_max_lo
 		     && TYPE_UNSIGNED (TREE_TYPE (arg1))
 		     /* signed_type does not work on pointer types.  */
