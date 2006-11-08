@@ -1,3 +1,8 @@
+2006-11-08  Andrew Pinski  <Andrew_Pinski@playstation.sony.com>
+
+	* tree-pretty-print.c (dump_generic_node) <INTEGER_CST>: Use 
+	HOST_WIDE_INT_PRINT_DOUBLE_HEX instead of format buffer.
+
 2006-11-08  Roger Sayle  <roger@eyesopen.com>
 
 	* tree-ssa-propagate.c (set_rhs): Restructure validity tests as a
