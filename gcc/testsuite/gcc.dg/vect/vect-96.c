@@ -38,7 +38,7 @@ int main (void)
 }
 
 /* The store is unaligned, the load is aligned. For targets that support unaligned
-   loads, peel to align the store and generated unaligned access for the loads.
+   loads, peel to align the store and generate an unaligned access for the load.
    For targets that don't support unaligned loads, version for the store.  */
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */

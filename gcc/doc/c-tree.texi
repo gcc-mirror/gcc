@@ -1928,6 +1928,14 @@ This macro returns the attributes on the type @var{type}.
 @tindex OMP_CONTINUE
 @tindex OMP_ATOMIC
 @tindex OMP_CLAUSE
+@tindex VEC_LSHIFT_EXPR
+@tindex VEC_RSHIFT_EXPR
+@tindex VEC_WIDEN_MULT_HI_EXPR
+@tindex VEC_WIDEN_MULT_LO_EXPR
+@tindex VEC_UNPACK_HI_EXPR
+@tindex VEC_UNPACK_LO_EXPR
+@tindex VEC_PACK_MOD_EXPR
+@tindex VEC_PACK_SAT_EXPR
 
 The internal representation for expressions is for the most part quite
 straightforward.  However, there are a few facts that one must bear in
@@ -2734,5 +2742,45 @@ of variables are restricted to exactly one, accessed with
 same clause @code{C} need to be represented as multiple @code{C} clauses
 chained together.  This facilitates adding new clauses during
 compilation.
+
+@item VEC_LSHIFT_EXPR
+@item VEC_RSHIFT_EXPR
+These nodes represent whole vector left and right shifts, respectively.  
+The first operand is the vector to shift; it will always be of vector type.  
+The second operand is an expression for the number of bits by which to
+shift.  Note that the result is undefined if the second operand is larger
+than or equal to the first operand's type size.
+
+@item VEC_WIDEN_MULT_HI_EXPR
+@item VEC_WIDEN_MULT_LO_EXPR
+These nodes represent widening vector multiplication of the high and low
+parts of the two input vectors, respectively.  Their operands are vectors 
+that contain the same number of elements (@code{N}) of the same integral type.  
+The result is a vector that contains half as many elements, of an integral type 
+whose size is twice as wide.  In the case of @code{VEC_WIDEN_MULT_HI_EXPR} the
+high @code{N/2} elements of the two vector are multiplied to produce the
+vector of @code{N/2} products. In the case of @code{VEC_WIDEN_MULT_LO_EXPR} the
+low @code{N/2} elements of the two vector are multiplied to produce the
+vector of @code{N/2} products.
+
+@item VEC_UNPACK_HI_EXPR
+@item VEC_UNPACK_LO_EXPR
+These nodes represent unpacking of the high and low parts of the input vector, 
+respectively.  The single operand is a vector that contains @code{N} elements 
+of the same integral type.  The result is a vector that contains half as many 
+elements, of an integral type whose size is twice as wide.  In the case of 
+@code{VEC_UNPACK_HI_EXPR} the high @code{N/2} elements of the vector are 
+extracted and widened (promoted).  In the case of @code{VEC_UNPACK_LO_EXPR} the 
+low @code{N/2} elements of the vector are extracted and widened (promoted).
+
+@item VEC_PACK_MOD_EXPR
+@item VEC_PACK_SAT_EXPR
+These nodes represent packing of elements of the two input vectors into the
+output vector, using modulo or saturating arithmetic, respectively.
+Their operands are vectors that contain the same number of elements 
+of the same integral type.  The result is a vector that contains twice as many 
+elements, of an integral type whose size is half as wide.  In both cases
+the elements of the two vectors are demoted and merged (concatenated) to form
+the output vector.
 
 @end table

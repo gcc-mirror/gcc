@@ -54,8 +54,6 @@ static bool vect_determine_vectorization_factor (loop_vec_info);
 
 /* Utility functions for the analyses.  */
 static bool exist_non_indexing_operands_for_use_p (tree, tree);
-static void vect_mark_relevant (VEC(tree,heap) **, tree, bool, bool);
-static bool vect_stmt_relevant_p (tree, loop_vec_info, bool *, bool *);
 static tree vect_get_loop_niters (struct loop *, tree *);
 static bool vect_analyze_data_ref_dependence
   (struct data_dependence_relation *, loop_vec_info);
@@ -187,22 +185,9 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "nunits = %d", nunits);
 
-          if (vectorization_factor)
-            {
-              /* FORNOW: don't allow mixed units. 
-                 This restriction will be relaxed in the future.  */
-              if (nunits != vectorization_factor) 
-                {
-                  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-                    fprintf (vect_dump, "not vectorized: mixed data-types");
-                  return false;
-                }
-            }
-          else
+	  if (!vectorization_factor
+              || (nunits > vectorization_factor))
             vectorization_factor = nunits;
-
-          gcc_assert (GET_MODE_SIZE (TYPE_MODE (scalar_type))
-                        * vectorization_factor == UNITS_PER_SIMD_WORD);
         }
     }
 
@@ -310,7 +295,9 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
               gcc_assert (!VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (stmt))));
               gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
 
-	      ok = (vectorizable_operation (stmt, NULL, NULL)
+	      ok = (vectorizable_type_promotion (stmt, NULL, NULL)
+		    || vectorizable_type_demotion (stmt, NULL, NULL)
+		    || vectorizable_operation (stmt, NULL, NULL)
 		    || vectorizable_assignment (stmt, NULL, NULL)
 		    || vectorizable_load (stmt, NULL, NULL)
 		    || vectorizable_store (stmt, NULL, NULL)
@@ -588,6 +575,8 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   struct data_reference *drb = DDR_B (ddr);
   stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra)); 
   stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
+  int dra_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dra))));
+  int drb_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (drb))));
   lambda_vector dist_v;
   unsigned int loop_depth;
          
@@ -628,7 +617,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	fprintf (vect_dump, "dependence distance  = %d.", dist);
 
       /* Same loop iteration.  */
-      if (dist % vectorization_factor == 0)
+      if (dist % vectorization_factor == 0 && dra_size == drb_size)
 	{
 	  /* Two references with distance zero have the same alignment.  */
 	  VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a), drb);
@@ -837,12 +826,15 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
                                    struct data_reference *dr_peel, int npeel)
 {
   unsigned int i;
-  int drsize;
   VEC(dr_p,heap) *same_align_drs;
   struct data_reference *current_dr;
+  int dr_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
+  int dr_peel_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr_peel))));
 
   if (known_alignment_for_access_p (dr)
-      && DR_MISALIGNMENT (dr) == DR_MISALIGNMENT (dr_peel))
+      && known_alignment_for_access_p (dr_peel)
+      && (DR_MISALIGNMENT (dr)/dr_size == 
+	  DR_MISALIGNMENT (dr_peel)/dr_peel_size))
     {
       DR_MISALIGNMENT (dr) = 0;
       return;
@@ -856,7 +848,8 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
     {
       if (current_dr != dr)
         continue;
-      gcc_assert (DR_MISALIGNMENT (dr) == DR_MISALIGNMENT (dr_peel));
+      gcc_assert (DR_MISALIGNMENT (dr)/dr_size == 
+		  DR_MISALIGNMENT (dr_peel)/dr_peel_size);
       DR_MISALIGNMENT (dr) = 0;
       return;
     }
@@ -864,12 +857,13 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
   if (known_alignment_for_access_p (dr)
       && known_alignment_for_access_p (dr_peel))
     {  
-      drsize = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
-      DR_MISALIGNMENT (dr) += npeel * drsize;
+      DR_MISALIGNMENT (dr) += npeel * dr_size;
       DR_MISALIGNMENT (dr) %= UNITS_PER_SIMD_WORD;
       return;
     }
 
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "Setting misalignment to -1.");
   DR_MISALIGNMENT (dr) = -1;
 }
 
@@ -1014,6 +1008,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   bool do_versioning = false;
   bool stat;
 
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "=== vect_enhance_data_refs_alignment ===");
+
   /* While cost model enhancements are expected in the future, the high level
      view of the code at this time is as follows:
 
@@ -1080,6 +1077,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           mis = DR_MISALIGNMENT (dr0);
           mis /= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr0))));
           npeel = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - mis;
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "Try peeling by %d",npeel);
         }
 
       /* Ensure that all data refs can be vectorized after the peel.  */
@@ -1423,14 +1422,14 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 
 static void
 vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt,
-		    bool relevant_p, bool live_p)
+		    enum vect_relevant relevant, bool live_p)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  bool save_relevant_p = STMT_VINFO_RELEVANT_P (stmt_info);
+  enum vect_relevant save_relevant = STMT_VINFO_RELEVANT (stmt_info);
   bool save_live_p = STMT_VINFO_LIVE_P (stmt_info);
 
   if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "mark relevant %d, live %d.",relevant_p, live_p);
+    fprintf (vect_dump, "mark relevant %d, live %d.", relevant, live_p);
 
   if (STMT_VINFO_IN_PATTERN_P (stmt_info))
     {
@@ -1445,20 +1444,21 @@ vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt,
       pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
       stmt_info = vinfo_for_stmt (pattern_stmt);
       gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == stmt);
-      save_relevant_p = STMT_VINFO_RELEVANT_P (stmt_info);
+      save_relevant = STMT_VINFO_RELEVANT (stmt_info);
       save_live_p = STMT_VINFO_LIVE_P (stmt_info);
       stmt = pattern_stmt;
     }
 
   STMT_VINFO_LIVE_P (stmt_info) |= live_p;
-  STMT_VINFO_RELEVANT_P (stmt_info) |= relevant_p;
+  if (relevant > STMT_VINFO_RELEVANT (stmt_info))
+    STMT_VINFO_RELEVANT (stmt_info) = relevant;
 
   if (TREE_CODE (stmt) == PHI_NODE)
     /* Don't put phi-nodes in the worklist. Phis that are marked relevant
        or live will fail vectorization later on.  */
     return;
 
-  if (STMT_VINFO_RELEVANT_P (stmt_info) == save_relevant_p
+  if (STMT_VINFO_RELEVANT (stmt_info) == save_relevant
       && STMT_VINFO_LIVE_P (stmt_info) == save_live_p)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1484,7 +1484,7 @@ vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt,
 
 static bool
 vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
-		      bool *relevant_p, bool *live_p)
+		      enum vect_relevant *relevant, bool *live_p)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   ssa_op_iter op_iter;
@@ -1492,12 +1492,12 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
   use_operand_p use_p;
   def_operand_p def_p;
 
-  *relevant_p = false;
+  *relevant = vect_unused_in_loop;
   *live_p = false;
 
   /* cond stmt other than loop exit cond.  */
   if (is_ctrl_stmt (stmt) && (stmt != LOOP_VINFO_EXIT_COND (loop_vinfo)))
-    *relevant_p = true;
+    *relevant = vect_used_in_loop;
 
   /* changing memory.  */
   if (TREE_CODE (stmt) != PHI_NODE)
@@ -1505,7 +1505,7 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
       {
 	if (vect_print_dump_info (REPORT_DETAILS))
 	  fprintf (vect_dump, "vec_stmt_relevant_p: stmt has vdefs.");
-	*relevant_p = true;
+	*relevant = vect_used_in_loop;
       }
 
   /* uses outside the loop.  */
@@ -1529,7 +1529,7 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
 	}
     }
 
-  return (*live_p || *relevant_p);
+  return (*live_p || *relevant);
 }
 
 
@@ -1564,7 +1564,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
   stmt_vec_info stmt_vinfo;
   basic_block bb;
   tree phi;
-  bool relevant_p, live_p;
+  bool live_p;
+  enum vect_relevant relevant;
   tree def, def_stmt;
   enum vect_def_type dt;
 
@@ -1584,8 +1585,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
           print_generic_expr (vect_dump, phi, TDF_SLIM);
         }
 
-      if (vect_stmt_relevant_p (phi, loop_vinfo, &relevant_p, &live_p))
-	vect_mark_relevant (&worklist, phi, relevant_p, live_p);
+      if (vect_stmt_relevant_p (phi, loop_vinfo, &relevant, &live_p))
+	vect_mark_relevant (&worklist, phi, relevant, live_p);
     }
 
   for (i = 0; i < nbbs; i++)
@@ -1601,8 +1602,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	      print_generic_expr (vect_dump, stmt, TDF_SLIM);
 	    } 
 
-	  if (vect_stmt_relevant_p (stmt, loop_vinfo, &relevant_p, &live_p))
-            vect_mark_relevant (&worklist, stmt, relevant_p, live_p);
+	  if (vect_stmt_relevant_p (stmt, loop_vinfo, &relevant, &live_p))
+            vect_mark_relevant (&worklist, stmt, relevant, live_p);
 	}
     }
 
@@ -1619,7 +1620,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
           print_generic_expr (vect_dump, stmt, TDF_SLIM);
 	}
 
-      /* Examine the USEs of STMT. For each ssa-name USE thta is defined
+      /* Examine the USEs of STMT. For each ssa-name USE that is defined
          in the loop, mark the stmt that defines it (DEF_STMT) as
          relevant/irrelevant and live/dead according to the liveness and
          relevance properties of STMT.
@@ -1630,13 +1631,13 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
       ann = stmt_ann (stmt);
       stmt_vinfo = vinfo_for_stmt (stmt);
 
-      relevant_p = STMT_VINFO_RELEVANT_P (stmt_vinfo);
+      relevant = STMT_VINFO_RELEVANT (stmt_vinfo);
       live_p = STMT_VINFO_LIVE_P (stmt_vinfo);
 
       /* Generally, the liveness and relevance properties of STMT are
          propagated to the DEF_STMTs of its USEs:
              STMT_VINFO_LIVE_P (DEF_STMT_info) <-- live_p
-             STMT_VINFO_RELEVANT_P (DEF_STMT_info) <-- relevant_p
+             STMT_VINFO_RELEVANT (DEF_STMT_info) <-- relevant
 
          Exceptions:
 
@@ -1659,18 +1660,22 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
              the def_stmt of these uses we want to set liveness/relevance
              as follows:
                STMT_VINFO_LIVE_P (DEF_STMT_info) <-- false
-               STMT_VINFO_RELEVANT_P (DEF_STMT_info) <-- true
+               STMT_VINFO_RELEVANT (DEF_STMT_info) <-- vect_used_by_reduction
              because even though STMT is classified as live (since it defines a
              value that is used across loop iterations) and irrelevant (since it
              is not used inside the loop), it will be vectorized, and therefore
              the corresponding DEF_STMTs need to marked as relevant.
+	     We distinguish between two kinds of relevant stmts - those that are
+	     used by a reduction conputation, and those that are (also) used by 	     a regular computation. This allows us later on to identify stmts 
+	     that are used solely by a reduction, and therefore the order of 
+	     the results that they produce does not have to be kept.
        */
 
       /* case 2.2:  */
       if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
         {
-          gcc_assert (!relevant_p && live_p);
-          relevant_p = true;
+          gcc_assert (relevant == vect_unused_in_loop && live_p);
+          relevant = vect_used_by_reduction;
           live_p = false;
         }
 
@@ -1710,7 +1715,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	      && TREE_CODE (def_stmt) == PHI_NODE)
 	    continue;
 
-	  vect_mark_relevant (&worklist, def_stmt, relevant_p, live_p);
+	  vect_mark_relevant (&worklist, def_stmt, relevant, live_p);
 	}
     }				/* while worklist */
 
@@ -1738,7 +1743,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
   /* Analyze phi functions of the loop header.  */
 
   if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "=== vect_can_advance_ivs_p ===");
+    fprintf (vect_dump, "vect_can_advance_ivs_p:");
 
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {

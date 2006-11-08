@@ -19,9 +19,6 @@ foo (int n)
   int ia[N];
   int ib[N];
   int ic[N];
-  short sa[N];
-  short sb[N];
-  short sc[N];
   int i,j;
   int diff = 0;
   char cb[N];
@@ -79,16 +76,6 @@ foo (int n)
   ibar (ia);
   fbar (a);
   fbar (d);
-
-
-  /* Not vectorizable yet (two types with different nunits in vector).  */
-  for (i = 0; i < N; i++){
-    ia[i] = ib[i] + ic[i];
-    sa[i] = sb[i] + sc[i];
-  }
-  ibar (ia);
-  sbar (sa);
-
 
   /* Not vetorizable yet (too conservative dependence test).  */
   for (i = 0; i < N; i++){

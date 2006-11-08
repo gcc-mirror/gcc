@@ -411,9 +411,15 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
   gcc_assert (code != CONVERT_EXPR);
   op = optab_for_tree_code (code, type);
 
-  /* For widening vector operations, the relevant type is of the arguments,
-     not the widened result.  */
-  if (code == WIDEN_SUM_EXPR)
+  /* For widening/narrowgin vector operations, the relevant type is of the 
+     arguments, not the widened result.  */
+  if (code == WIDEN_SUM_EXPR
+      || code == VEC_WIDEN_MULT_HI_EXPR
+      || code == VEC_WIDEN_MULT_LO_EXPR
+      || code == VEC_UNPACK_HI_EXPR
+      || code == VEC_UNPACK_LO_EXPR
+      || code == VEC_PACK_MOD_EXPR
+      || code == VEC_PACK_SAT_EXPR)
     type = TREE_TYPE (TREE_OPERAND (rhs, 0));
 
   /* Optabs will try converting a negation into a subtraction, so

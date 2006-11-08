@@ -3495,6 +3495,36 @@ Operand 2 is an integer shift amount in bits.
 Operand 0 is where the resulting shifted vector is stored.
 The output and input vectors should have the same modes.
 
+@cindex @code{vec_pack_mod_@var{m}} instruction pattern
+@cindex @code{vec_pack_ssat_@var{m}} instruction pattern
+@cindex @code{vec_pack_usat_@var{m}} instruction pattern
+@item @samp{vec_pack_mod_@var{m}}, @samp{vec_pack_ssat_@var{m}}, @samp{vec_pack_usat_@var{m}}
+Narrow (demote) and merge the elements of two vectors.
+Operands 1 and 2 are vectors of the same mode.
+Operand 0 is the resulting vector in which the elements of the two input
+vectors are concatenated after narrowing them down using modulo arithmetic or
+signed/unsigned saturating arithmetic.
+
+@cindex @code{vec_unpacks_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpacks_lo_@var{m}} instruction pattern
+@cindex @code{vec_unpacku_hi_@var{m}} instruction pattern
+@cindex @code{vec_unpacku_lo_@var{m}} instruction pattern
+@item @samp{vec_unpacks_hi_@var{m}}, @samp{vec_unpacks_lo_@var{m}}, @samp{vec_unpacku_hi_@var{m}}, @samp{vec_unpacku_lo_@var{m}}
+Extract and widen (promote) the high/low part of a vector of signed/unsigned
+elements. The input vector (operand 1) has N signed/unsigned elements of size S. 
+Using sign/zero extension widen (promote) the high/low elements of the vector,
+and place the resulting N/2 values of size 2*S in the output vector (operand 0).
+
+@cindex @code{vec_widen_umult_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_umult_lo__@var{m}} instruction pattern
+@cindex @code{vec_widen_smult_hi_@var{m}} instruction pattern
+@cindex @code{vec_widen_smult_lo_@var{m}} instruction pattern
+@item @samp{vec_widen_umult_hi_@var{m}}, @samp{vec_widen_umult_lo_@var{m}}, @samp{vec_widen_smult_hi_@var{m}}, @samp{vec_widen_smult_lo_@var{m}}
+Signed/Unsigned widening multiplication. 
+The two inputs (operands 1 and 2) are vectors with N 
+signed/unsigned elements of size S. Multiply the high/low elements of the two 
+vectors, and put the N/2 products of size 2*S in the output vector (opernad 0). 
+
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}
 Multiply operands 1 and 2, which have mode @code{HImode}, and store
