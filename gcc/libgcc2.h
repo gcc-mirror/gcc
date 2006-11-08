@@ -304,13 +304,11 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define __ctzSI2	__NW(ctz,2)
 #define __popcountSI2	__NW(popcount,2)
 #define __paritySI2	__NW(parity,2)
-#define __bswapSI2	__NW(bswap,2)
 #define __ffsDI2	__NDW(ffs,2)
 #define __clzDI2	__NDW(clz,2)
 #define __ctzDI2	__NDW(ctz,2)
 #define __popcountDI2	__NDW(popcount,2)
 #define __parityDI2	__NDW(parity,2)
-#define __bswapDI2	__NDW(bswap,2)
 
 extern DWtype __muldi3 (DWtype, DWtype);
 extern DWtype __divdi3 (DWtype, DWtype);
@@ -347,13 +345,13 @@ extern Wtype __addvSI3 (Wtype, Wtype);
 extern Wtype __subvSI3 (Wtype, Wtype);
 extern Wtype __mulvSI3 (Wtype, Wtype);
 extern Wtype __negvSI2 (Wtype);
-extern UWtype __bswapSI2 (UWtype);
+extern UWtype __bswapsi2 (UWtype);
 extern DWtype __absvDI2 (DWtype);
 extern DWtype __addvDI3 (DWtype, DWtype);
 extern DWtype __subvDI3 (DWtype, DWtype);
 extern DWtype __mulvDI3 (DWtype, DWtype);
 extern DWtype __negvDI2 (DWtype);
-extern UDWtype __bswapDI2 (UDWtype);
+extern UDWtype __bswapdi2 (UDWtype);
 
 #ifdef COMPAT_SIMODE_TRAPPING_ARITHMETIC
 extern SItype __absvsi2 (SItype);

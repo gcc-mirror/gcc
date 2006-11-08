@@ -1,12 +1,16 @@
 /* { dg-do compile } */
-/* { dg-options "-march=i486" } */
-/* { dg-final { scan-assembler "bswap" } } */
+/* { dg-options "-march=nocona" } */
+/* { dg-final { scan-assembler-not "builtin_bswap" } } */
 
-int foo (int a)
+long foo (long a)
 {
-  int b;
+  long b;
 
-  b = __builtin_bswap (a);
+#if __LP64__
+  b = __builtin_bswap64 (a);
+#else
+  b = __builtin_bswap32 (a);
+#endif
 
   return b;
 }

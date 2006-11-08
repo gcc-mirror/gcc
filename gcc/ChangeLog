@@ -1,3 +1,11 @@
+2006-11-07  Eric Christopher  <echristo@apple.com>
+
+	* libgcc2.c (__bswapdi2): Rename from bswapDI2.
+	(__bswapsi2): Ditto.
+	* libgcc2.h: Remove transformation of bswap routines.
+	* config/i386/i386.md (bswapsi2): New.
+	(bswapdi2): Ditto.
+
 2006-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (c_common_attributes): Add gnu_inline attribyte.
@@ -14,7 +22,7 @@
 
 2006-11-06  Anatoly Sokolov <aesok@post.ru>
 
-	* config/avr/avr-protos.h (mask_one_bit_p, const_int_pow2_p): Remove 
+	* config/avr/avr-protos.h (mask_one_bit_p, const_int_pow2_p): Remove
 	prototype.
 	* config/avr/avr.c (mask_one_bit_p, const_int_pow2_p): Remove.
 	(output_movhi, ashlhi3_out, ashlsi3_out, ashrhi3_out, ashrsi3_out,
@@ -50,9 +58,9 @@
 
 	* gcc.c (process_command): Treat -b as normal switch if its argument
 	has no dash.
-	
+
 2006-11-07  David Ung  <davidu@mips.com>
-	
+
 	* config/mips/mips.h (ISA_HAS_PREFETCHX): Add ISA_MIPS32R2 to the
 	list.
 
