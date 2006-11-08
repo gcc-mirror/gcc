@@ -1,3 +1,8 @@
+2006-11-08  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* configure.ac: Do not set PREFIX_INCLUDE_DIR if $prefix is NONE.
+	* configure: Regenerate.
+
 2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-analyze.c (vect_mark_relevant, vect_stmt_relevant_p): Take 
