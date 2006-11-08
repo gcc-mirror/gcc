@@ -1,3 +1,10 @@
+2006-11-08  Vladimir Prus  <vladimir@codesourcery.com>
+
+	* pex-win32.c (no_suffixes): Remove.
+	(std_suffixes): Add "" as first element.
+	(find_executable): Remove detection of already-present
+	extension. Try all suffixes in std_suffixes.
+				
 2006-11-07  Julian Brown  <julian@codesourcery.com>
 
 	* floatformat.c (get_field): Fix segfault with little-endian word

@@ -382,16 +382,18 @@ argv_to_cmdline (char *const *argv)
   return cmdline;
 }
 
+/* We'll try the passed filename with all the known standard
+   extensions, and then without extension.  We try no extension
+   last so that we don't try to run some random extension-less
+   file that might be hanging around.  We try both extension
+   and no extension so that we don't need any fancy logic
+   to determine if a file has extension.  */
 static const char *const
 std_suffixes[] = {
   ".com",
   ".exe",
   ".bat",
   ".cmd",
-  0
-};
-static const char *const
-no_suffixes[] = {
   "",
   0
 };
@@ -409,7 +411,6 @@ find_executable (const char *program, BOOL search)
   const char *const *ext;
   const char *p, *q;
   size_t proglen = strlen (program);
-  int has_extension = !!strchr (program, '.');
   int has_slash = (strchr (program, '/') || strchr (program, '\\'));
   HANDLE h;
 
@@ -432,7 +433,7 @@ find_executable (const char *program, BOOL search)
       if (*q == ';')
 	q++;
     }
-  fe_len = fe_len + 1 + proglen + (has_extension ? 1 : 5);
+  fe_len = fe_len + 1 + proglen + 5 /* space for extension */;
   full_executable = XNEWVEC (char, fe_len);
 
   p = path;
@@ -458,7 +459,7 @@ find_executable (const char *program, BOOL search)
 
       /* At this point, e points to the terminating NUL character for
          full_executable.  */
-      for (ext = has_extension ? no_suffixes : std_suffixes; *ext; ext++)
+      for (ext = std_suffixes; *ext; ext++)
 	{
 	  /* Remove any current extension.  */
 	  *e = '\0';
