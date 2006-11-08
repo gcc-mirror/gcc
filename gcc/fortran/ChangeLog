@@ -1,4 +1,10 @@
-2006-11-07 Paul Thomas <pault@gcc.gnu.org>
+2006-11-08  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi: Add volatile and internal-file
+	  namelist to Fortran 2003 status.
+	* intrinsic.texi: Correct CHMOD entry.
+
+2006-11-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29539
 	PR fortran/29634
