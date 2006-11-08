@@ -16176,7 +16176,8 @@ _ACEOF
 fi
 
 if test x$with_sysroot = x && test x$host = x$target \
-   && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
+   && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" \
+   && test "$prefix" != "NONE"; then
 
 cat >>confdefs.h <<_ACEOF
 #define PREFIX_INCLUDE_DIR "$prefix/include"
