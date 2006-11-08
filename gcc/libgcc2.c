@@ -494,7 +494,7 @@ __ashrdi3 (DWtype u, word_type b)
 
 #ifdef L_bswapsi2
 UWtype
-__bswapSI2 (UWtype u)
+__bswapsi2 (UWtype u)
 {
   return ((((u) & 0xff000000) >> 24)
 	  | (((u) & 0x00ff0000) >>  8)
@@ -504,7 +504,7 @@ __bswapSI2 (UWtype u)
 #endif
 #ifdef L_bswapdi2
 UDWtype
-__bswapDI2 (UDWtype u)
+__bswapdi2 (UDWtype u)
 {
   return ((((u) & 0xff00000000000000ull) >> 56)
 	  | (((u) & 0x00ff000000000000ull) >> 40)
@@ -1886,7 +1886,7 @@ CONCAT3(__div,MODE,3) (MTYPE a, MTYPE b, MTYPE c, MTYPE d)
 {
   MTYPE denom, ratio, x, y;
 
-  /* ??? We can get better behavior from logarithmic scaling instead of 
+  /* ??? We can get better behavior from logarithmic scaling instead of
      the division.  But that would mean starting to link libgcc against
      libm.  We could implement something akin to ldexp/frexp as gcc builtins
      fairly easily...  */

@@ -1,3 +1,8 @@
+2006-11-07  Eric Christopher  <echristo@apple.com>
+
+	* gcc.target/i386/builtin-bswap-1.c: Rewrite for 64-bit.
+	Test using scan-assembler-not.
+
 2006-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/inline-17.c: New test.
@@ -216,7 +221,7 @@
 
 	PR fortran/29641
 	* gfortran.dg/used_types_11.f90: New test.
-	
+
 2006-10-30  Dirk Mueller  <dmueller@suse.de>
 
 	* g++.old-deja/g++.pt/eichin01a.C (main): Fix prototype.
@@ -305,7 +310,7 @@
 2006-10-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR libgfortran/24313
-	* gfortran.dg/csqrt_2.f: Remove xfail *-*-linux-gnu. 
+	* gfortran.dg/csqrt_2.f: Remove xfail *-*-linux-gnu.
 
 2006-10-29  Kazu Hirata  <kazu@codesourcery.com>
 
@@ -332,9 +337,9 @@
 
 2006-10-28  Tobias Burnus  <burnus@net-b.de>
 
-	PR fortran/28224 
+	PR fortran/28224
 	* gfortran.dg/io_constraints_2.f90: Use -std=f95.
-	* gfortran.dg/namelist_internal.f90: New test. 
+	* gfortran.dg/namelist_internal.f90: New test.
 
 2006-10-28  Tobias Burnus  <burnus@net-b.de>
 
@@ -358,7 +363,7 @@
 	* gcc.dg/builtins-44.c: Likewise.
 	* gcc.dg/builtins-45.c: Likewise.
 	* gcc.dg/pr28796-2.c: Likewise.
-	* gcc.dg/unordered-3.c: Likewise.	
+	* gcc.dg/unordered-3.c: Likewise.
 
 2006-10-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -416,7 +421,7 @@
 
 	* gcc.dg/torture/builtin-math-2.c: Add checks for asin, acos,
 	acosh and atanh.
-	
+
 	* gcc.dg/torture/builtin-math-3.c (TESTIT): Append 'F' and 'L'
 	floating point modifiers to arguments passed to float and long
 	double functions respectively.  Update all callers to use floating
@@ -517,11 +522,11 @@
 	* gcc.dg/torture/pr26898-2.c: Likewise.
 
 2006-10-20  Lee Millward  <lee.millward@codesourcery.com>
-        
+
         PR c++/28053
         * g++.dg/parse/bitfield1.C: Adjust error markers.
-        * g++.dg/parse/bitfield2.C: New test. 
-	
+        * g++.dg/parse/bitfield2.C: New test.
+
 2006-10-20  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.dg/tree-ssa/ivopts-2.c: Match final candidates line only.
@@ -563,7 +568,7 @@
 
 	PR c++/27952
 	* g++.dg/inherit/virtual1.C: New test.
-	
+
 2006-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/28261
@@ -573,7 +578,7 @@
 
 	PR c++/29039
 	* g++.dg/init/ctor8.C: New test.
-	
+
 2006-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/27270
