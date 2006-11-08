@@ -122,8 +122,8 @@ join(PB_DS_CLASS_C_DEC& other)
   const bool lesser = Cmp_Fn::operator()(PB_DS_V2F(*(other.end() - 1)),
 					 PB_DS_V2F(*begin()));
 
-  if (!greater&&  !lesser)
-    throw join_error();
+  if (!greater && !lesser)
+    __throw_join_error();
 
   PB_DS_CLASS_C_DEC new_this(*this, *this);
 

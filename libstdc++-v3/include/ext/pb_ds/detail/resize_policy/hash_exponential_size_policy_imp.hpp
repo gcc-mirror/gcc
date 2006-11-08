@@ -70,7 +70,7 @@ get_nearest_larger_size(size_type size) const
     {
       const size_type next_ret = ret*  m_grow_factor;
       if (next_ret < ret)
-	throw insert_error();
+	__throw_insert_error();
       ret = next_ret;
     }
   return ret;
@@ -86,7 +86,7 @@ get_nearest_smaller_size(size_type size) const
     {
       const size_type next_ret = ret*  m_grow_factor;
       if (next_ret < ret)
-	throw resize_error();
+	__throw_resize_error();
       if (next_ret >= size)
 	return (ret);
       ret = next_ret;

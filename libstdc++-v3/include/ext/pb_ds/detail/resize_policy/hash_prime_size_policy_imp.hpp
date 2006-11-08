@@ -145,7 +145,7 @@ get_nearest_larger_size(size_type n) const
 		     detail::g_a_sizes + detail::num_distinct_sizes, n);
 
   if (p_upper == detail::g_a_sizes + detail::num_distinct_sizes)
-    throw resize_error();
+    __throw_resize_error();
   return *p_upper;
 }
 

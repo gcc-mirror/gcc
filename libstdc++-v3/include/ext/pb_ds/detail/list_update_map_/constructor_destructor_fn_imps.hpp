@@ -107,7 +107,7 @@ m_p_l(NULL)
   catch(...)
     {
       deallocate_all();
-      throw;
+      __throw_exception_again;
     }
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 }

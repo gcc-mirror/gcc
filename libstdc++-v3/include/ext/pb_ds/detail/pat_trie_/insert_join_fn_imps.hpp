@@ -95,7 +95,7 @@ join_prep(PB_DS_CLASS_C_DEC& other, split_join_branch_bag& r_bag)
 												other.m_p_head->m_p_max)->value()),PB_DS_V2F(static_cast<const_leaf_pointer>(m_p_head->m_p_min)->value()));
 
   if (!greater && !lesser)
-    throw join_error();
+    __throw_join_error();
 
   rec_join_prep(m_p_head->m_p_parent, other.m_p_head->m_p_parent, r_bag);
   _GLIBCXX_DEBUG_ONLY(map_debug_base::join(other);)
