@@ -2048,12 +2048,15 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
         {
 	  tree op0 = TREE_OPERAND (expr, 0);
           tree tem = fold_binary (TREE_CODE (op0), TREE_TYPE (op0),
-				  TREE_OPERAND (op0, 0), TREE_OPERAND (op0, 1));
-	  if (tem && is_gimple_condexpr (tem))
-	    TREE_OPERAND (expr, 0) = tem;
-	  t = expr;
-          break;
+				  TREE_OPERAND (op0, 0),
+				  TREE_OPERAND (op0, 1));
+	  if (tem && set_rhs (expr_p, tem))
+	    {
+	      t = *expr_p;
+	      break;
+	    }
         }
+      return NULL_TREE;
 
     default:
       return NULL_TREE;
