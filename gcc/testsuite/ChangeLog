@@ -1,3 +1,7 @@
+2006-11-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-3.c: Add more sincos tests.
+
 2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-1.c: Loop with multiple types removed (appears in

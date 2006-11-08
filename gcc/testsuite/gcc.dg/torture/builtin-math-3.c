@@ -90,9 +90,9 @@ extern void link_error(int);
 int main (void)
 {
 #ifdef __OPTIMIZE__
-  float sf, cf;
-  double s, c;
-  long double sl, cl;
+  float sf, cf, oneF = 1.0F;
+  double s, c, one = 1.0;
+  long double sl, cl, oneL = 1.0L;
 #endif
 
   TESTIT_R (asin, -1.0, -3.15/2.0, -3.14/2.0); /* asin(-1) == -pi/2 */
@@ -139,12 +139,14 @@ int main (void)
   TESTIT_R (tan, 1.0, 1.55, 1.56); /* tan(1) == 1.557... */
 
 #ifdef __OPTIMIZE__
-  /* These tests rely on propagating the variables s and c, which
+  /* These tests rely on propagating the variables s, c and one, which
      happens only when optimization is turned on.  */
   TESTIT_2P_R (sincos, -1.0, s, c, -0.85, -0.84, 0.54, 0.55); /* (s==-0.841..., c==0.5403...) */
   TESTIT_2P (sincos, 0.0, s, c, 0.0, 1.0); /* (s==0, c==1) */
   TESTIT_2P (sincos, -0.0, s, c, -0.0, 1.0); /* (s==-0, c==1) */
   TESTIT_2P_R (sincos, 1.0, s, c, 0.84, 0.85, 0.54, 0.55); /* (s==0.841..., c==0.5403...) */
+  TESTIT_2P_R (sincos, one, s, c, 0.84, 0.85, 0.54, 0.55); /* (s==0.841..., c==0.5403...) */
+  TESTIT_2P_R (sincos, -one, s, c, -0.85, -0.84, 0.54, 0.55); /* (s==-0.841..., c==0.5403...) */
 #endif
   
   TESTIT_R (sinh, -1.0, -1.18, -1.17); /* sinh(-1) == -1.175... */
