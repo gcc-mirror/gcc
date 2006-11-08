@@ -1,3 +1,9 @@
+2006-11-08  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/29630
+	PR fortran/29679
+	* gfortran.dg/initialization_2.f90: Test PRs 29630 and 29679 too.
+
 2006-11-08  Janis Johnson  <janis187@us.ibm.com
 	    Bernhard Fischer  <aldot@gcc.gnu.org>
 
