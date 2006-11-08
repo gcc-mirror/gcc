@@ -165,7 +165,16 @@ enum stmt_vec_info_type {
   op_vec_info_type,
   assignment_vec_info_type,
   condition_vec_info_type,
-  reduc_vec_info_type
+  reduc_vec_info_type,
+  type_promotion_vec_info_type,
+  type_demotion_vec_info_type
+};
+
+/* Indicates whether/how a variable is used in the loop.  */
+enum vect_relevant {
+  vect_unused_in_loop = 0,
+  vect_used_by_reduction,
+  vect_used_in_loop  
 };
 
 typedef struct data_reference *dr_p;
@@ -182,10 +191,10 @@ typedef struct _stmt_vec_info {
   /* The loop_vec_info with respect to which STMT is vectorized.  */
   loop_vec_info loop_vinfo;
 
-  /* Not all stmts in the loop need to be vectorized. e.g, the incrementation
+  /* Not all stmts in the loop need to be vectorized. e.g, the increment
      of the loop induction variable and computation of array indexes. relevant
      indicates whether the stmt needs to be vectorized.  */
-  bool relevant;
+  enum vect_relevant relevant;
 
   /* Indicates whether this stmts is part of a computation whose result is
      used outside the loop.  */
@@ -232,7 +241,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_TYPE(S)                (S)->type
 #define STMT_VINFO_STMT(S)                (S)->stmt
 #define STMT_VINFO_LOOP_VINFO(S)          (S)->loop_vinfo
-#define STMT_VINFO_RELEVANT_P(S)          (S)->relevant
+#define STMT_VINFO_RELEVANT(S)            (S)->relevant
 #define STMT_VINFO_LIVE_P(S)              (S)->live
 #define STMT_VINFO_VECTYPE(S)             (S)->vectype
 #define STMT_VINFO_VEC_STMT(S)            (S)->vectorized_stmt
@@ -241,6 +250,8 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_RELATED_STMT(S)        (S)->related_stmt
 #define STMT_VINFO_SAME_ALIGN_REFS(S)     (S)->same_align_refs
 #define STMT_VINFO_DEF_TYPE(S)            (S)->def_type
+
+#define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_loop)
 
 static inline void set_stmt_info (stmt_ann_t ann, stmt_vec_info stmt_info);
 static inline stmt_vec_info vinfo_for_stmt (tree stmt);
@@ -328,6 +339,8 @@ extern bool vect_can_force_dr_alignment_p (tree, unsigned int);
 extern enum dr_alignment_support vect_supportable_dr_alignment
   (struct data_reference *);
 extern bool reduction_code_for_scalar_code (enum tree_code, enum tree_code *);
+extern bool supportable_widening_operation (enum tree_code, tree, tree,
+  tree *, tree *, enum tree_code *, enum tree_code *);
 /* Creation and deletion of loop and stmt info structs.  */
 extern loop_vec_info new_loop_vec_info (struct loop *loop);
 extern void destroy_loop_vec_info (loop_vec_info);
@@ -354,6 +367,8 @@ void vect_pattern_recog (loop_vec_info);
 extern bool vectorizable_load (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_store (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_operation (tree, block_stmt_iterator *, tree *);
+extern bool vectorizable_type_promotion (tree, block_stmt_iterator *, tree *);
+extern bool vectorizable_type_demotion (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_assignment (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_condition (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_live_operation (tree, block_stmt_iterator *, tree *);

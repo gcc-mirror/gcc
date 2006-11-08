@@ -1,3 +1,67 @@
+2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-1.c: Loop with multiple types removed (appears in
+	vect-9.c).
+	* gcc.dg/vect/vect-106.c: Removed (duplicate of vect-9.c).
+	* gcc.dg/vect/vect-9.c: Now vectorizable.
+	* gcc.dg/vect/vect-reduc-dot-s16a.c: Now vectorizable also on targets
+	that support vect_widen_mult. 
+	* gcc.dg/vect/vect-reduc-dot-u16.c: Removed (split into two new tests).
+	* gcc.dg/vect/vect-reduc-dot-u16a.c: New test (split from 
+	vect-reduc-dot-u16.c).
+	* gcc.dg/vect/vect-reduc-dot-u16b.c: New test (split from 
+	vect-reduc-dot-u16.c).
+	* gcc.dg/vect/vect-reduc-dot-s8.c: Removed (split into three new tests).
+	* gcc.dg/vect/vect-reduc-dot-s8a.c: New test (split from
+	vect-reduc-dot-s8.c).
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: New test (split from
+	vect-reduc-dot-s8.c).
+	* gcc.dg/vect/vect-reduc-dot-s8c.c: New test (split from
+	vect-reduc-dot-s8.c).
+	* gcc.dg/vect/vect-reduc-dot-u8.c: Removed (split into two new tests).
+	* gcc.dg/vect/vect-reduc-dot-u8a.c: New test (split from
+	vect-reduc-dot-u8.c).
+	* gcc.dg/vect/vect-reduc-dot-u8b.c: New test (split from
+	vect-reduc-dot-u8.c).
+	* gcc.dg/vect/vect-widen-mult-sum.c: New test.
+	* gcc.dg/vect/vect-multitypes-9.c: New test.
+	* gcc.dg/vect/vect-multitypes-10.c: New test.
+	* gcc.dg/vect/vect-widen-mult-s16.c: New test.
+	* gcc.dg/vect/vect-widen-mult-u16.c: New test.
+	* gcc.dg/vect/vect-widen-mult-u8.c: New test.
+	* gcc.dg/vect/vect-widen-mult-s8.c: New test.
+	* gcc.dg/vect/wrapv-vect-reduc-dot-s8.c: Removed.
+	* gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c: New reduced version of
+	wrapv-vect-reduc-dot-s8.c.
+	* lib/target-support.exp (check_effective_target_vect_unpack): New.
+	(check_effective_target_vect_widen_sum_hi_to_si): Now also includes
+	targets that support vec_unpack. 
+	(check_effective_target_vect_widen_sum_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi): New.
+	(check_effective_target_vect_widen_mult_hi_to_si): New.
+	(check_effective_target_vect_widen_sum): Removed.
+
+	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-multitypes-8.c: New test.
+	* lib/target-supports.exp (check_effective_target_vect_pack_mod): New.
+
+	2006-11-08 Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-multitypes-7.c: New test.
+
+	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-multitypes-4.c: New test.
+	* gcc.dg/vect/vect-multitypes-5.c: New test.
+	* gcc.dg/vect/vect-multitypes-6.c: New test.
+
+	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
+	
+	* gcc.dg/vect/vect-multitypes-1.c: New test.
+	* gcc.dg/vect/vect-multitypes-2.c: New test.
+	* gcc.dg/vect/vect-multitypes-3.c: New test.
+
 2006-11-07  Eric Christopher  <echristo@apple.com>
 
 	* gcc.target/i386/builtin-bswap-1.c: Rewrite for 64-bit.

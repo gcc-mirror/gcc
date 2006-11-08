@@ -334,12 +334,69 @@ vect_recog_dot_prod_pattern (tree last_stmt, tree *type_in, tree *type_out)
 */
 
 static tree
-vect_recog_widen_mult_pattern (tree last_stmt ATTRIBUTE_UNUSED, 
-			       tree *type_in ATTRIBUTE_UNUSED, 
-			       tree *type_out ATTRIBUTE_UNUSED)
+vect_recog_widen_mult_pattern (tree last_stmt, 
+			       tree *type_in, 
+			       tree *type_out)
 {
-  /* Yet to be implemented.   */
-  return NULL;
+  tree expr;
+  tree def_stmt0, def_stmt1;
+  tree oprnd0, oprnd1;
+  tree type, half_type0, half_type1;
+  tree pattern_expr;
+  tree vectype;
+  tree dummy;
+  enum tree_code dummy_code;
+
+  if (TREE_CODE (last_stmt) != MODIFY_EXPR)
+    return NULL;
+
+  expr = TREE_OPERAND (last_stmt, 1);
+  type = TREE_TYPE (expr);
+
+  /* Starting from LAST_STMT, follow the defs of its uses in search
+     of the above pattern.  */
+
+  if (TREE_CODE (expr) != MULT_EXPR)
+    return NULL;
+
+  oprnd0 = TREE_OPERAND (expr, 0);
+  oprnd1 = TREE_OPERAND (expr, 1);
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (oprnd0)) != TYPE_MAIN_VARIANT (type)
+      || TYPE_MAIN_VARIANT (TREE_TYPE (oprnd1)) != TYPE_MAIN_VARIANT (type))
+    return NULL;
+
+  /* Check argument 0 */
+  if (!widened_name_p (oprnd0, last_stmt, &half_type0, &def_stmt0))
+    return NULL;
+  oprnd0 = TREE_OPERAND (TREE_OPERAND (def_stmt0, 1), 0);
+
+  /* Check argument 1 */
+  if (!widened_name_p (oprnd1, last_stmt, &half_type1, &def_stmt1))
+    return NULL;
+  oprnd1 = TREE_OPERAND (TREE_OPERAND (def_stmt1, 1), 0);
+
+  if (TYPE_MAIN_VARIANT (half_type0) != TYPE_MAIN_VARIANT (half_type1))
+    return NULL;
+
+  /* Pattern detected.  */
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "vect_recog_widen_mult_pattern: detected: ");
+
+  /* Check target support  */
+  vectype = get_vectype_for_scalar_type (half_type0);
+  if (!supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt, vectype,
+                                       &dummy, &dummy, &dummy_code,
+                                       &dummy_code))
+    return NULL;
+
+  *type_in = vectype;
+  *type_out = NULL_TREE;
+
+  /* Pattern supported. Create a stmt to be used to replace the pattern: */
+  pattern_expr = build2 (WIDEN_MULT_EXPR, type, oprnd0, oprnd1);
+  if (vect_print_dump_info (REPORT_DETAILS))
+    print_generic_expr (vect_dump, pattern_expr, TDF_SLIM);
+  return pattern_expr;
 }
 
 

@@ -1,3 +1,177 @@
+2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-analyze.c (vect_mark_relevant, vect_stmt_relevant_p): Take 
+	enum argument instead of bool.
+	(vect_analyze_operations): Call vectorizable_type_promotion.
+	* tree-vectorizer.h (type_promotion_vec_info_type): New enum
+	stmt_vec_info_type value.
+	(supportable_widening_operation, vectorizable_type_promotion): New
+	function declarations.
+	* tree-vect-transform.c (vect_gen_widened_results_half): New function.
+	(vectorizable_type_promotion): New function.
+	(vect_transform_stmt): Call vectorizable_type_promotion.
+	* tree-vect-analyze.c (supportable_widening_operation): New function.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): 
+	Add implementation.
+	* tree-vect-generic.c (expand_vector_operations_1): Consider correct
+	mode.
+	
+	* tree.def (VEC_WIDEN_MULT_HI_EXPR, VEC_WIDEN_MULT_LO_EXPR):
+	(VEC_UNPACK_HI_EXPR, VEC_UNPACK_LO_EXPR): New tree-codes.
+	* tree-inline.c (estimate_num_insns_1): Add cases for above new 
+	tree-codes.
+	* tree-pretty-print.c (dump_generic_node, op_prio): Likewise.
+	* expr.c (expand_expr_real_1): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	(init_optabs): Initialize new optabs.
+	* genopinit.c (vec_widen_umult_hi_optab, vec_widen_smult_hi_optab,
+	vec_widen_smult_hi_optab, vec_widen_smult_lo_optab,
+	vec_unpacks_hi_optab, vec_unpacks_lo_optab, vec_unpacku_hi_optab,
+	vec_unpacku_lo_optab): Initialize new optabs.
+	* optabs.h (OTI_vec_widen_umult_hi, OTI_vec_widen_umult_lo):
+	(OTI_vec_widen_smult_h, OTI_vec_widen_smult_lo, OTI_vec_unpacks_hi,
+	OTI_vec_unpacks_lo, OTI_vec_unpacku_hi, OTI_vec_unpacku_lo): New 
+	optab indices.
+	(vec_widen_umult_hi_optab, vec_widen_umult_lo_optab):
+	(vec_widen_smult_hi_optab, vec_widen_smult_lo_optab):
+	(vec_unpacks_hi_optab, vec_unpacku_hi_optab, vec_unpacks_lo_optab):
+	(vec_unpacku_lo_optab): New optabs.
+	* doc/md.texi (vec_unpacks_hi, vec_unpacks_lo, vec_unpacku_hi): 
+	(vec_unpacku_lo, vec_widen_umult_hi, vec_widen_umult_lo): 
+	(vec_widen_smult_hi, vec_widen_smult_lo): New.
+	* doc/c-tree.texi (VEC_LSHIFT_EXPR, VEC_RSHIFT_EXPR):
+	(VEC_WIDEN_MULT_HI_EXPR, VEC_WIDEN_MULT_LO_EXPR, VEC_UNPACK_HI_EXPR):
+	(VEC_UNPACK_LO_EXPR, VEC_PACK_MOD_EXPR, VEC_PACK_SAT_EXPR): New.
+	 
+	* config/rs6000/altivec.md (UNSPEC_VMULWHUB, UNSPEC_VMULWLUB):
+	(UNSPEC_VMULWHSB, UNSPEC_VMULWLSB, UNSPEC_VMULWHUH, UNSPEC_VMULWLUH):
+	(UNSPEC_VMULWHSH, UNSPEC_VMULWLSH): New.
+	(UNSPEC_VPERMSI, UNSPEC_VPERMHI): New.
+	(vec_vperm_v8hiv4si, vec_vperm_v16qiv8hi): New patterns used to
+	implement the unsigned unpacking patterns.
+	(vec_unpacks_hi_v16qi, vec_unpacks_hi_v8hi, vec_unpacks_lo_v16qi):
+	(vec_unpacks_lo_v8hi): New signed unpacking patterns.
+	(vec_unpacku_hi_v16qi, vec_unpacku_hi_v8hi, vec_unpacku_lo_v16qi):
+	(vec_unpacku_lo_v8hi): New unsigned unpacking patterns.
+	(vec_widen_umult_hi_v16qi, vec_widen_umult_lo_v16qi):
+	(vec_widen_smult_hi_v16qi, vec_widen_smult_lo_v16qi): 
+	(vec_widen_umult_hi_v8hi, vec_widen_umult_lo_v8hi):
+	(vec_widen_smult_hi_v8hi, vec_widen_smult_lo_v8hi): New widening
+	multiplication patterns.
+
+	* target.h (builtin_mul_widen_even, builtin_mul_widen_odd): New.
+	* target-def.h (TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN):
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD): New.
+	* config/rs6000/rs6000.c (rs6000_builtin_mul_widen_even): New.
+	(rs6000_builtin_mul_widen_odd): New.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN): Defined.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD): Defined.
+	* tree-vectorizer.h (enum vect_relevant): New enum type.
+	(_stmt_vec_info): Field relevant chaned from bool to enum
+	vect_relevant.
+	(STMT_VINFO_RELEVANT_P): Updated.
+	(STMT_VINFO_RELEVANT): New.
+	* tree-vectorizer.c (new_stmt_vec_info): Use STMT_VINFO_RELEVANT
+	instead of STMT_VINFO_RELEVANT_P.
+	* tree-vect-analyze.c (vect_mark_relevant, vect_stmt_relevant_p):
+	Replace calls to STMT_VINFO_RELEVANT_P with STMT_VINFO_RELEVANT,
+	and boolean variable with enum vect_relevant.
+	(vect_mark_stmts_to_be_vectorized): Likewise + update documentation.
+	* doc/tm.texi (TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN): New.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD): New.
+
+	2006-11-08  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (vec_widen_umult_hi_v8hi,
+	vec_widen_umult_lo_v8hi): New.
+	(vec_widen_smult_hi_v4si, vec_widen_smult_lo_v4si,
+	vec_widen_umult_hi_v4si, vec_widen_umult_lo_v4si): New.
+
+	* config/i386/i386.c (ix86_expand_sse_unpack): New. 
+	* config/i386/i386-protos.h (ix86_expand_sse_unpack): New. 
+	* config/i386/sse.md (vec_unpacku_hi_v16qi, vec_unpacks_hi_v16qi,
+	vec_unpacku_lo_v16qi, vec_unpacks_lo_v16qi, vec_unpacku_hi_v8hi,
+	vec_unpacks_hi_v8hi, vec_unpacku_lo_v8hi, vec_unpacks_lo_v8hi,
+	vec_unpacku_hi_v4si, vec_unpacks_hi_v4si, vec_unpacku_lo_v4si,
+	vec_unpacks_lo_v4si): New.
+
+	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (vectorizable_type_demotion): New function.
+	(vect_transform_stmt): Add case for type_demotion_vec_info_type.
+	(vect_analyze_operations): Call vectorizable_type_demotion.
+	* tree-vectorizer.h (type_demotion_vec_info_type): New enum 
+	stmt_vec_info_type value.
+	(vectorizable_type_demotion): New function declaration.
+	* tree-vect-generic.c (expand_vector_operations_1): Consider correct
+	mode.
+
+	* tree.def (VEC_PACK_MOD_EXPR, VEC_PACK_SAT_EXPR): New tree-codes.
+	* expr.c (expand_expr_real_1): Add case for VEC_PACK_MOD_EXPR and
+	VEC_PACK_SAT_EXPR.
+	* tree-iniline.c (estimate_num_insns_1): Likewise.
+	* tree-pretty-print.c (dump_generic_node, op_prio): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+
+	* optabs.c (expand_binop): In case of vec_pack_*_optabs the mode 
+	compared against the predicate of the result is not 'mode' (the input 
+	to the function) but a mode with half the size of 'mode'.
+	(init_optab): Initialize new optabs.
+	* optabs.h (OTI_vec_pack_mod, OTI_vec_pack_ssat, OTI_vec_pack_usat):
+	New optab indices.
+	(vec_pack_mod_optab, vec_pack_ssat_optab,  vec_pack_usat_optab): New
+	optabs.
+	* genopinit.c (vec_pack_mod_optab, vec_pack_ssat_optab):
+	(vec_pack_usat_optab): Initialize new optabs.
+	* doc/md.texi (vec_pack_mod, vec_pack_ssat, vec_pack_usat): New.
+	* config/rs6000/altivec.md (vec_pack_mod_v8hi, vec_pack_mod_v4si): New.
+
+	2006-11-08  Richard Henderson  <rth@redehat.com>
+
+	* config/i386/sse.md (vec_pack_mod_v8hi, vec_pack_mod_v4si):
+	(vec_pack_mod_v2di, vec_interleave_highv16qi, vec_interleave_lowv16qi):
+	(vec_interleave_highv8hi, vec_interleave_lowv8hi):
+	(vec_interleave_highv4si, vec_interleave_lowv4si):
+	(vec_interleave_highv2di, vec_interleave_lowv2di): New.
+
+	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (vectorizable_reduction): Support multiple 
+	datatypes.
+	(vect_transform_stmt): Removed redundant code.
+
+	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (vectorizable_operation): Support multiple 
+	datatypes.
+
+	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (vect_align_data_ref): Removed.
+	(vect_create_data_ref_ptr): Added additional argument - ptr_incr. 
+	Updated function documentation. Return the increment stmt in ptr_incr.
+	(bump_vector_ptr): New function.
+	(vect_get_vec_def_for_stmt_copy): New function.
+	(vect_finish_stmt_generation): Create a stmt_info to newly created
+	vector stmts.
+	(vect_setup_realignment): Call vect_create_data_ref_ptr with additional
+	argument.
+	(vectorizable_reduction, vectorizable_assignment): Not supported yet if
+	VF is greater than the number of elements that can fit in one vector
+	word.
+	(vectorizable_operation, vectorizable_condition): Likewise.
+	(vectorizable_store, vectorizable_load): Support the case that the VF
+	is greater than the number of elements that can fit in one vector word.
+	(vect_transform_loop): Don't fail in case of multiple data-types.
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Don't fail 
+	in case of multiple data-types; the smallest type determines the VF.
+	(vect_analyze_data_ref_dependence): Don't record datarefs as same_align
+	if they are of different sizes.
+	(vect_update_misalignment_for_peel): Compare misalignments in terms of
+	number of elements rather than number of bytes.
+	(vect_enhance_data_refs_alignment): Fix/Add dump printouts.
+	(vect_can_advance_ivs_p): Fix a dump printout
+
 2006-11-07  Eric Christopher  <echristo@apple.com>
 
 	* libgcc2.c (__bswapdi2): Rename from bswapDI2.
