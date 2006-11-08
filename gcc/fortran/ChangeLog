@@ -1,3 +1,7 @@
+2006-11-08  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.texi: Correct CHMOD entry.
+
 2006-11-06  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* intrinsic.texi: Added documentation for FTELL, GETLOG, and
