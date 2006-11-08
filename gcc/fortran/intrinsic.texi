@@ -1910,16 +1910,21 @@ END PROGRAM
 @item @emph{Description}:
 @code{CHMOD} changes the permissions of a file. This function invokes
 @code{/bin/chmod} and might therefore not work on all platforms.
-@code{CHMOD} as an intrinsic function is not implemented in GNU Fortran.
+
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
 
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, non-elemental function
 
 @item @emph{Syntax}:
-@code{CHMOD(NAME, MODE[, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL CHMOD(NAME, MODE[, STATUS])}
+@item @code{STATUS = CHMOD(NAME, MODE)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -1936,12 +1941,26 @@ used as the file name.
 @code{0} on success and non-zero otherwise.
 @end multitable
 
+@item @emph{Return value}:
+In either syntax, @var{STATUS} is set to @code{0} on success and non-zero
+otherwise.
+
 @item @emph{Example}:
+@code{CHMOD} as subroutine
 @smallexample
 program chmod_test
   implicit none
   integer :: status
   call chmod('test.dat','u+x',status)
+  print *, 'Status: ', status
+end program chmod_test
+@end smallexample
+@code{CHMOD} as non-elemental function:
+@smallexample
+program chmod_test
+  implicit none
+  integer :: status
+  status = chmod('test.dat','u+x')
   print *, 'Status: ', status
 end program chmod_test
 @end smallexample
