@@ -1,3 +1,9 @@
+2006-11-09  Janis Johnson  <janis187@us.ibm.com>
+
+	Backports from mainline.
+	* doc/sourcebuild.texi (Test Directives): Document dg-shouldfail,
+	output-exists and output-exists-not.
+
 2006-11-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/29610

@@ -1006,6 +1006,10 @@ Skip the test if the test target, including current multilib flags,
 is not covered by the effective-target keyword.
 This directive must appear after any @code{dg-do} directive in the test.
 
+@item  @{ dg-shouldfail @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
+Expect the test executable to return a nonzero exit status if the
+conditions (which are the same as for @code{dg-skip-if}) are met.
+
 @item @{ dg-error @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] @}]] @}
 This DejaGnu directive appears on a source line that is expected to get
 an error message, or else specifies the source line associated with the
@@ -1124,6 +1128,12 @@ suffix @var{suffix}.
 @item scan-tree-dump-dem-not @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} does not match demangled text in the dump file with
 suffix @var{suffix}.
+
+@item output-exists [@{ target/xfail @var{selector} @}]
+Passes if compiler output file exists.
+
+@item output-exists-not [@{ target/xfail @var{selector} @}]
+Passes if compiler output file does not exist.
 
 @item run-gcov @var{sourcefile}
 Check line counts in @command{gcov} tests.

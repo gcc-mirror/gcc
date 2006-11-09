@@ -1,3 +1,77 @@
+2006-11-09  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline.
+
+	2006-11-06  Janis Johnson  <janis187@us.ibm.com>
+		    Bernhard Fischer  <aldot@gcc.gnu.org>
+	* lib/gcc-dg.exp (output-exists): New proc.
+	(output-exists-not): New proc.
+	* gcc.test-framework/test-framework.awk: Support new directives.
+	* gcc.test-framework/dg-outexistsnot-exp-F.c: New test.
+	* gcc.test-framework/dg-outexistsnot-exp-P.c: New test.
+	* gcc.test-framework/dg-outexists-exp-F.c: New test.
+	* gcc.test-framework/dg-outexists-exp-XP.c: New test.
+	* gcc.test-framework/dg-outexistsnot-exp-XF.c: New test.
+	* gcc.test-framework/dg-outexists-exp-P.c: New test.
+
+	2006-10-31  Joseph Myers  <joseph@codesourcery.com>
+		    Richard Sandiford  <richard@codesourcery.com>
+	* lib/target-supports.exp (get_compiler_messages): Append options
+	as a single list element.
+
+	2006-10-30  Joseph Myers  <joseph@codesourcery.com>
+	* lib/target-supports.exp (check_function_available): Declare
+	function before calling.
+
+	2006-09-12  Kazu Hirata  <kazu@codesourcery.com>
+	* lib/c-torture.exp (c-torture-compile, c-torture-execute):
+	Treat $srcdir as a literal.
+	* lib/fortran-torture.exp (fortran-torture-compile,
+	fortran-torture-execute): Likewise.
+	* lib/objc-torture.exp (objc-torture-compile,
+	objc-torture-execute): Likewise.
+	* lib/profopt.exp (profopt-execute): Likewise.
+
+	2006-07-13  Janis Johnson  <janis187@us.ibm.com>
+	* lib/gcc-dg.exp (tool_load): Wrapper to support shouldfail tests.
+	(dg-test): Support shouldfail tests.
+	* lib/target-supports-dg.exp (dg-shouldfail): New.
+	* gcc.test-framework/test-framework.awk: Handle shouldfail tests.
+
+	2006-06-12  Matthew Sachs  <msachs@apple.com>
+	* lib/target-supports-dg.exp (check-flags): Include TOOL_OPTIONS in
+	the list of compiler flags; this causes those flags to be checked
+	for things like dg-skip-if.
+
+	2006-06-06  Janis Johnson  <janis187@us.ibm.com>
+	* lib/gcc-dg.exp (gcc-dg-test-1): Detect and report ICE.
+	* lib/gcc-defs.exp (tool_check_compile): Ditto.
+	* lib/fortran-torture.exp (fortran-torture-compile,
+	fortran-torture-execute): Ditto.
+
+	2006-05-11  Jason Merrill  <jason@redhat.com>
+	* lib/scanasm.exp (scan-not-hidden): Fix typo.
+
+	2006-02-08  Paolo Bonzini  <bonzini@gnu.org>
+	* lib/gcc-dg.exp (cleanup-rtl-dump, cleanup-tree-dump,
+	cleanup-ipa-dump): Update dump file glob patterns.
+	* lib/scanipa.exp (scan-ipa-dump, scan-ipa-dump-times,
+	scan-ipa-dump-not, scan-ipa-dump-dem): Likewise.
+	* lib/scanrtl.exp: New.
+	* lib/gcc-dg.exp: Load it.
+
+	2006-01-11  Ben Elliston  <bje@au1.ibm.com>
+	* lib/compat.exp (compat_skip_list): Make global, rename.
+	* lib/c-compat.exp: New file.
+	* gcc.dg/compat/struct-layout-1.exp: Use c-compat.exp.
+	* gcc.dg/compat/compat.exp: (compat-use-alt-compiler,
+	compat-use-tst-compiler): Move to new file.
+	Make some variables global, prepend "compat_" to their names.
+	* gcc.dg/compat/struct-layout-1.exp: Ditto.
+
+	2005-12-12  Alan Modra  <amodra@bigpond.net.au>
+	* gcc.misc-tests/linkage.exp: Set native_cflags for powerpc*-*-linux*.
+
 2006-11-08  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/29630

@@ -65,7 +65,7 @@ proc c-torture-compile { src option } {
 
     set output "$tmpdir/[file tail [file rootname $src]].o"
 
-    regsub "^$srcdir/?" $src "" testcase
+    regsub "(?q)$srcdir/" $src "" testcase
     # If we couldn't rip $srcdir out of `src' then just do the best we can.
     # The point is to reduce the unnecessary noise in the logs.  Don't strip
     # out too much because different testcases with the same name can confuse
@@ -127,7 +127,7 @@ proc c-torture-execute { sources args } {
 
     set executable $tmpdir/[file tail [file rootname $src].x]
 
-    regsub "^$srcdir/?" $src "" testcase
+    regsub "(?q)$srcdir/" $src "" testcase
     # If we couldn't rip $srcdir out of `src' then just do the best we can.
     # The point is to reduce the unnecessary noise in the logs.  Don't strip
     # out too much because different testcases with the same name can confuse

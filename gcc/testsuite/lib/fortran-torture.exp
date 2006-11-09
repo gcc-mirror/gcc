@@ -54,7 +54,7 @@ proc fortran-torture-compile { src option } {
 
     set output "$tmpdir/[file tail [file rootname $src]].o"
 
-    regsub "^$srcdir/?" $src "" testcase
+    regsub "(?q)$srcdir/" $src "" testcase
 
     # If we couldn't rip $srcdir out of `src' then just do the best we can.
     # The point is to reduce the unnecessary noise in the logs.  Don't strip
@@ -83,6 +83,12 @@ proc fortran-torture-compile { src option } {
 
     if [string match "$fatal_signal 11" $comp_output] then {
 	gfortran_fail $testcase "Got Signal 11, $option"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    if [string match "*internal compiler error*" $comp_output] then {
+	gfortran_fail $testcase "$option (internal compiler error)"
 	catch { remote_file build delete $output }
 	return
     }
@@ -152,7 +158,7 @@ proc fortran-torture-execute { src } {
     # Setup the options for the testcase run.
     set option_list $TORTURE_OPTIONS
     set executable $tmpdir/[file tail [file rootname $src].x]
-    regsub "^$srcdir/?" $src "" testcase
+    regsub "(?q)$srcdir/" $src "" testcase
 
     # If we couldn't rip $srcdir out of `src' then just do the best we can.
     # The point is to reduce the unnecessary noise in the logs.  Don't strip
@@ -201,6 +207,12 @@ proc fortran-torture-execute { src } {
 	
 	if [string match "$fatal_signal 11" $comp_output] then {
 	    gfortran_fail $testcase "Got Signal 11, $option"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+
+	if [string match "*internal compiler error*" $comp_output] then {
+	    gfortran_fail $testcase "$option (internal compiler error)"
 	    catch { remote_file build delete $executable }
 	    continue
 	}
