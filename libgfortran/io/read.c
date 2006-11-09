@@ -92,7 +92,9 @@ GFC_UINTEGER_LARGEST
 max_value (int length, int signed_flag)
 {
   GFC_UINTEGER_LARGEST value;
+#if defined HAVE_GFC_REAL_16 || defined HAVE_GFC_REAL_10
   int n;
+#endif
 
   switch (length)
     {
