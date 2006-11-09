@@ -10587,7 +10587,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      unsigned HOST_WIDE_INT log2 = tree_log2 (arg01);
 	      /* If (C2 << C1) doesn't overflow, then ((X >> C1) & C2) != 0
 		 can be rewritten as (X & (C2 << C1)) != 0.  */
-	      if ((log2 + TREE_INT_CST_LOW (arg01)) < prec)
+	      if ((log2 + TREE_INT_CST_LOW (arg001)) < prec)
 		{
 		  tem = fold_build2 (LSHIFT_EXPR, itype, arg01, arg001);
 		  tem = fold_build2 (BIT_AND_EXPR, itype, arg000, tem);
