@@ -1629,6 +1629,7 @@ typedef struct
   int warn_surprising;
   int warn_tabs;
   int warn_underflow;
+  int max_errors;
 
   int flag_all_intrinsics;
   int flag_default_double;
