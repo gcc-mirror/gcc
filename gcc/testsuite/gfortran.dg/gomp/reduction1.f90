@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-fopenmp -fmax-errors=100" }
 ! { dg-require-effective-target tls }
 
 subroutine foo (ia1)
