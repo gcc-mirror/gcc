@@ -1,3 +1,7 @@
+2006-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-20.c: Use fabs, not __builtin_fabs.
+
 2006-11-09  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/io_constraints_3.f90: Fixed by using -fmax-errors.
