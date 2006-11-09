@@ -1,5 +1,13 @@
 2006-11-09 Paul Thomas <pault@gcc.gnu.org>
 
+	PR fortran/29744
+	* trans-types.c (gfc_get_derived_type): Ensure that the
+	proc_name namespace is not the same as the owner namespace and
+	that identical derived types in the same namespace share the
+	same backend_decl.
+
+2006-11-09 Paul Thomas <pault@gcc.gnu.org>
+
 	PR fortran/29699
 	* trans-array.c (structure_alloc_comps): Detect pointers to
 	arrays and use indirect reference to declaration.
