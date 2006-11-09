@@ -1,3 +1,8 @@
+2006-11-09  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	PR middle-end/29726
+	* fold-const.c (fold_binary) <EQ_EXPR>: Fix typo in variable name.
+
 2006-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* simplify-rtx.c (avoid_constant_pool_reference): Avoid calling 

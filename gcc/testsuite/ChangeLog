@@ -1,3 +1,11 @@
+2006-11-09  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	PR middle-end/29726
+	* gcc.dg/fold-eqandshift-1.c (test5): Uncomment function.
+	(test6): Ditto.
+	(dg-final): Add scan-tree-dump-times patterns for test5 and test6.
+	* gcc.dg/fold-eqandshift-3.c: New test case.
+
 2006-11-09 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29699
