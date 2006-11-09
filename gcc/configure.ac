@@ -983,7 +983,7 @@ vax-*-*)
     stage1_cflags="-J"
   fi
   ;;
-powerpc-*-darwin*)
+powerpc*-*-darwin*)
   # The spiffy cpp-precomp chokes on some legitimate constructs in GCC
   # sources; use -no-cpp-precomp to get to GNU cpp.
   # Apple's GCC has bugs in designated initializer handling, so disable
@@ -1366,7 +1366,7 @@ if test "$host_xm_file" != "$build_xm_file"; then
 fi
 
 case ${host} in
-  powerpc-*-darwin*)
+  powerpc*-*-darwin*)
     AC_CACHE_CHECK([whether mcontext_t fields have underscores],
       gcc_cv_mcontext_underscores,
       AC_COMPILE_IFELSE([

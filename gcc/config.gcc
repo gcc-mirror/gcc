@@ -1742,6 +1742,12 @@ powerpc-*-darwin*)
 	esac
 	extra_headers=altivec.h
 	;;
+powerpc64-*-darwin*)
+	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
+	extra_options="${extra_options} ${cpu_type}/darwin.opt"
+	# We're omitting t-darwin8 to avoid building any multilibs
+	extra_headers=altivec.h
+	;;
 powerpc*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
 	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
