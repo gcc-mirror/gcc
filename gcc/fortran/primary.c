@@ -580,16 +580,6 @@ done:
       kind = gfc_default_double_kind;
       break;
 
-    case 'q':
-      if (kind != -2)
-	{
-	  gfc_error
-	    ("Real number at %C has a 'q' exponent and an explicit kind");
-	  goto cleanup;
-	}
-      kind = gfc_option.q_kind;
-      break;
-
     default:
       if (kind == -2)
 	kind = gfc_default_real_kind;

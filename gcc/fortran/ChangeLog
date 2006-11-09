@@ -1,3 +1,11 @@
+2006-11-08  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* lang.opt: Remove non-working -qkind= option.
+	* gfortran.h (gfc_option_t): Remove q_kind member.
+	* options.c (gfc_init_options): Remove q_kind initialization.
+	(gfc_handle_option): Remove -qkind= option handling.
+	* primary.c: (match_real_constant): Remove 'Q' exponent.
+
 2006-11-08  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi: Add volatile and internal-file
