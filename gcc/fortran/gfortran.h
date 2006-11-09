@@ -1656,8 +1656,6 @@ typedef struct
   int flag_d_lines;
   int flag_openmp;
 
-  int q_kind;
-
   int fpe;
 
   int warn_std;
