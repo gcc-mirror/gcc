@@ -5497,8 +5497,11 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     }
 
   /* Assign default initializer.  */
-  if (sym->ts.type == BT_DERIVED && !sym->value && !sym->attr.pointer
-      && !sym->attr.allocatable && (!flag || sym->attr.intent == INTENT_OUT))
+  if (sym->ts.type == BT_DERIVED
+	&& !sym->value
+	&& !sym->attr.pointer
+	&& !sym->attr.allocatable
+	&& (!flag || sym->attr.intent == INTENT_OUT))
     sym->value = gfc_default_initializer (&sym->ts);
 
   return SUCCESS;
@@ -6036,8 +6039,12 @@ resolve_symbol (gfc_symbol * sym)
   /* If we have come this far we can apply default-initializers, as
      described in 14.7.5, to those variables that have not already
      been assigned one.  */
-  if (sym->ts.type == BT_DERIVED && sym->ns == gfc_current_ns && !sym->value
-	&& !sym->attr.allocatable && !sym->attr.alloc_comp)
+  if (sym->ts.type == BT_DERIVED
+	&& sym->attr.referenced
+	&& sym->ns == gfc_current_ns
+	&& !sym->value
+	&& !sym->attr.allocatable
+	&& !sym->attr.alloc_comp)
     {
       symbol_attribute *a = &sym->attr;
 

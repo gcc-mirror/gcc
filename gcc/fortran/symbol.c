@@ -601,28 +601,6 @@ check_used (symbol_attribute * attr, const char * name, locus * where)
 }
 
 
-/* Used to prevent changing the attributes of a symbol after it has been
-   used.  This check is only done for dummy variables as only these can be
-   used in specification expressions.  Applying this to all symbols causes
-   an error when we reach the body of a contained function.  */
-
-static int
-check_done (symbol_attribute * attr, locus * where)
-{
-
-  if (!(attr->dummy && attr->referenced))
-    return 0;
-
-  if (where == NULL)
-    where = &gfc_current_locus;
-
-  gfc_error ("Cannot change attributes of symbol at %L"
-             " after it has been used", where);
-
-  return 1;
-}
-
-
 /* Generate an error because of a duplicate attribute.  */
 
 static void
@@ -638,12 +616,9 @@ duplicate_attr (const char *attr, locus * where)
 /* Called from decl.c (attr_decl1) to check attributes, when declared separately.  */
 
 try
-gfc_add_attribute (symbol_attribute * attr, locus * where,
-		   unsigned int attr_intent)
+gfc_add_attribute (symbol_attribute * attr, locus * where)
 {
-
-  if (check_used (attr, NULL, where)
-	|| (attr_intent == 0 && check_done (attr, where)))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   return check_conflict (attr, NULL, where);
@@ -653,7 +628,7 @@ try
 gfc_add_allocatable (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   if (attr->allocatable)
@@ -671,7 +646,7 @@ try
 gfc_add_dimension (symbol_attribute * attr, const char *name, locus * where)
 {
 
-  if (check_used (attr, name, where) || check_done (attr, where))
+  if (check_used (attr, name, where))
     return FAILURE;
 
   if (attr->dimension)
@@ -689,7 +664,7 @@ try
 gfc_add_external (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   if (attr->external)
@@ -708,7 +683,7 @@ try
 gfc_add_intrinsic (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   if (attr->intrinsic)
@@ -727,7 +702,7 @@ try
 gfc_add_optional (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   if (attr->optional)
@@ -745,7 +720,7 @@ try
 gfc_add_pointer (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   attr->pointer = 1;
@@ -757,7 +732,7 @@ try
 gfc_add_cray_pointer (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   attr->cray_pointer = 1;
@@ -769,7 +744,7 @@ try
 gfc_add_cray_pointee (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   if (attr->cray_pointee)
@@ -788,7 +763,7 @@ try
 gfc_add_result (symbol_attribute * attr, const char *name, locus * where)
 {
 
-  if (check_used (attr, name, where) || check_done (attr, where))
+  if (check_used (attr, name, where))
     return FAILURE;
 
   attr->result = 1;
@@ -866,7 +841,7 @@ try
 gfc_add_target (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   if (attr->target)
@@ -897,7 +872,7 @@ try
 gfc_add_in_common (symbol_attribute * attr, const char *name, locus * where)
 {
 
-  if (check_used (attr, name, where) || check_done (attr, where))
+  if (check_used (attr, name, where))
     return FAILURE;
 
   /* Duplicate attribute already checked for.  */
@@ -965,7 +940,7 @@ try
 gfc_add_elemental (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   attr->elemental = 1;
@@ -977,7 +952,7 @@ try
 gfc_add_pure (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   attr->pure = 1;
@@ -989,7 +964,7 @@ try
 gfc_add_recursive (symbol_attribute * attr, locus * where)
 {
 
-  if (check_used (attr, NULL, where) || check_done (attr, where))
+  if (check_used (attr, NULL, where))
     return FAILURE;
 
   attr->recursive = 1;
@@ -1093,7 +1068,7 @@ gfc_add_procedure (symbol_attribute * attr, procedure_type t,
 		   const char *name, locus * where)
 {
 
-  if (check_used (attr, name, where) || check_done (attr, where))
+  if (check_used (attr, name, where))
     return FAILURE;
 
   if (attr->flavor != FL_PROCEDURE
@@ -1201,10 +1176,6 @@ try
 gfc_add_type (gfc_symbol * sym, gfc_typespec * ts, locus * where)
 {
   sym_flavor flavor;
-
-/* TODO: This is legal if it is reaffirming an implicit type.
-  if (check_done (&sym->attr, where))
-    return FAILURE;*/
 
   if (where == NULL)
     where = &gfc_current_locus;
