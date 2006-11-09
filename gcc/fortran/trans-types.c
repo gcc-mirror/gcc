@@ -1483,11 +1483,12 @@ gfc_get_derived_type (gfc_symbol * derived)
 	 same TREE_TYPE.  If an equal type is found without a backend_decl,
 	 build the parent version and use it in the current namespace.  */
 
-      /* Derived types in an interface body obtain their parent reference
-	 through the proc_name symbol.  */
       if (derived->ns->parent)
 	ns = derived->ns->parent;
-      if (derived->ns->proc_name)
+      /* Derived types in an interface body obtain their parent reference
+	 through the proc_name symbol.  */
+      if (derived->ns->proc_name
+	    && derived->ns->proc_name->ns != derived->ns)
 	ns = derived->ns->proc_name->ns;
       else
 	ns = NULL;
@@ -1591,6 +1592,9 @@ gfc_get_derived_type (gfc_symbol * derived)
 other_equal_dts:
   /* Add this backend_decl to all the other, equal derived types and
      their components in this and sibling namespaces.  */
+
+  for (dt = derived->ns->derived_types; dt; dt = dt->next)
+    copy_dt_decls_ifequal (derived, dt->derived);
 
   for (ns = derived->ns->sibling; ns; ns = ns->sibling)
     for (dt = ns->derived_types; dt; dt = dt->next)
