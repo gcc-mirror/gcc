@@ -1,3 +1,8 @@
+2006-11-09 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29744
+	* gfortran.dg/used_types_12.f90: New test.
+
 2006-11-09  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
 
 	PR middle-end/29726
