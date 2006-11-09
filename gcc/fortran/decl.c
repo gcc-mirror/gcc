@@ -3330,7 +3330,7 @@ attr_decl1 (void)
 	goto cleanup;
     }
 
-  if (gfc_add_attribute (&sym->attr, &var_locus, current_attr.intent) == FAILURE)
+  if (gfc_add_attribute (&sym->attr, &var_locus) == FAILURE)
     {
       m = MATCH_ERROR;
       goto cleanup;
