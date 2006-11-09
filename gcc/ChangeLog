@@ -1,3 +1,15 @@
+2006-11-09  Eric Christopher  <echristo@apple.com>
+
+	PR bootstrap/26892
+	PR bootstrap/27814
+	PR other/28994
+	* configure.ac: Match powerpc*-*-darwin* for powerpc darwin checks.
+	* config.gcc (powerpc64-*-darwin*): New target.
+	* config.host: Ditto.
+	* config/rs6000/darwin64.h: New file.
+	* config/rs6000/x-darwin64: Ditto.
+	* config/rs6000/host-ppc64-darwin.c: Ditto.
+
 2006-11-09  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_hpux_init_libfuncs):  Use HP-UX millicode
@@ -14,7 +26,7 @@
 
 2006-11-09  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* simplify-rtx.c (avoid_constant_pool_reference): Avoid calling 
+	* simplify-rtx.c (avoid_constant_pool_reference): Avoid calling
 	simplify_subreg with BLKmode outer mode.
 
 2006-11-08  Brooks Moses  <brooks.moses@codesourcery.com>
@@ -44,7 +56,7 @@
 
 2006-11-08  Andrew Pinski  <Andrew_Pinski@playstation.sony.com>
 
-	* tree-pretty-print.c (dump_generic_node) <INTEGER_CST>: Use 
+	* tree-pretty-print.c (dump_generic_node) <INTEGER_CST>: Use
 	HOST_WIDE_INT_PRINT_DOUBLE_HEX instead of format buffer.
 
 2006-11-08  Roger Sayle  <roger@eyesopen.com>
@@ -65,7 +77,7 @@
 
 2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
 
-	* tree-vect-analyze.c (vect_mark_relevant, vect_stmt_relevant_p): Take 
+	* tree-vect-analyze.c (vect_mark_relevant, vect_stmt_relevant_p): Take
 	enum argument instead of bool.
 	(vect_analyze_operations): Call vectorizable_type_promotion.
 	* tree-vectorizer.h (type_promotion_vec_info_type): New enum
@@ -76,14 +88,14 @@
 	(vectorizable_type_promotion): New function.
 	(vect_transform_stmt): Call vectorizable_type_promotion.
 	* tree-vect-analyze.c (supportable_widening_operation): New function.
-	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): 
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern):
 	Add implementation.
 	* tree-vect-generic.c (expand_vector_operations_1): Consider correct
 	mode.
-	
+
 	* tree.def (VEC_WIDEN_MULT_HI_EXPR, VEC_WIDEN_MULT_LO_EXPR):
 	(VEC_UNPACK_HI_EXPR, VEC_UNPACK_LO_EXPR): New tree-codes.
-	* tree-inline.c (estimate_num_insns_1): Add cases for above new 
+	* tree-inline.c (estimate_num_insns_1): Add cases for above new
 	tree-codes.
 	* tree-pretty-print.c (dump_generic_node, op_prio): Likewise.
 	* expr.c (expand_expr_real_1): Likewise.
@@ -95,19 +107,19 @@
 	vec_unpacku_lo_optab): Initialize new optabs.
 	* optabs.h (OTI_vec_widen_umult_hi, OTI_vec_widen_umult_lo):
 	(OTI_vec_widen_smult_h, OTI_vec_widen_smult_lo, OTI_vec_unpacks_hi,
-	OTI_vec_unpacks_lo, OTI_vec_unpacku_hi, OTI_vec_unpacku_lo): New 
+	OTI_vec_unpacks_lo, OTI_vec_unpacku_hi, OTI_vec_unpacku_lo): New
 	optab indices.
 	(vec_widen_umult_hi_optab, vec_widen_umult_lo_optab):
 	(vec_widen_smult_hi_optab, vec_widen_smult_lo_optab):
 	(vec_unpacks_hi_optab, vec_unpacku_hi_optab, vec_unpacks_lo_optab):
 	(vec_unpacku_lo_optab): New optabs.
-	* doc/md.texi (vec_unpacks_hi, vec_unpacks_lo, vec_unpacku_hi): 
-	(vec_unpacku_lo, vec_widen_umult_hi, vec_widen_umult_lo): 
+	* doc/md.texi (vec_unpacks_hi, vec_unpacks_lo, vec_unpacku_hi):
+	(vec_unpacku_lo, vec_widen_umult_hi, vec_widen_umult_lo):
 	(vec_widen_smult_hi, vec_widen_smult_lo): New.
 	* doc/c-tree.texi (VEC_LSHIFT_EXPR, VEC_RSHIFT_EXPR):
 	(VEC_WIDEN_MULT_HI_EXPR, VEC_WIDEN_MULT_LO_EXPR, VEC_UNPACK_HI_EXPR):
 	(VEC_UNPACK_LO_EXPR, VEC_PACK_MOD_EXPR, VEC_PACK_SAT_EXPR): New.
-	 
+
 	* config/rs6000/altivec.md (UNSPEC_VMULWHUB, UNSPEC_VMULWLUB):
 	(UNSPEC_VMULWHSB, UNSPEC_VMULWLSB, UNSPEC_VMULWHUH, UNSPEC_VMULWLUH):
 	(UNSPEC_VMULWHSH, UNSPEC_VMULWLSH): New.
@@ -119,7 +131,7 @@
 	(vec_unpacku_hi_v16qi, vec_unpacku_hi_v8hi, vec_unpacku_lo_v16qi):
 	(vec_unpacku_lo_v8hi): New unsigned unpacking patterns.
 	(vec_widen_umult_hi_v16qi, vec_widen_umult_lo_v16qi):
-	(vec_widen_smult_hi_v16qi, vec_widen_smult_lo_v16qi): 
+	(vec_widen_smult_hi_v16qi, vec_widen_smult_lo_v16qi):
 	(vec_widen_umult_hi_v8hi, vec_widen_umult_lo_v8hi):
 	(vec_widen_smult_hi_v8hi, vec_widen_smult_lo_v8hi): New widening
 	multiplication patterns.
@@ -152,8 +164,8 @@
 	(vec_widen_smult_hi_v4si, vec_widen_smult_lo_v4si,
 	vec_widen_umult_hi_v4si, vec_widen_umult_lo_v4si): New.
 
-	* config/i386/i386.c (ix86_expand_sse_unpack): New. 
-	* config/i386/i386-protos.h (ix86_expand_sse_unpack): New. 
+	* config/i386/i386.c (ix86_expand_sse_unpack): New.
+	* config/i386/i386-protos.h (ix86_expand_sse_unpack): New.
 	* config/i386/sse.md (vec_unpacku_hi_v16qi, vec_unpacks_hi_v16qi,
 	vec_unpacku_lo_v16qi, vec_unpacks_lo_v16qi, vec_unpacku_hi_v8hi,
 	vec_unpacks_hi_v8hi, vec_unpacku_lo_v8hi, vec_unpacks_lo_v8hi,
@@ -165,7 +177,7 @@
 	* tree-vect-transform.c (vectorizable_type_demotion): New function.
 	(vect_transform_stmt): Add case for type_demotion_vec_info_type.
 	(vect_analyze_operations): Call vectorizable_type_demotion.
-	* tree-vectorizer.h (type_demotion_vec_info_type): New enum 
+	* tree-vectorizer.h (type_demotion_vec_info_type): New enum
 	stmt_vec_info_type value.
 	(vectorizable_type_demotion): New function declaration.
 	* tree-vect-generic.c (expand_vector_operations_1): Consider correct
@@ -178,8 +190,8 @@
 	* tree-pretty-print.c (dump_generic_node, op_prio): Likewise.
 	* optabs.c (optab_for_tree_code): Likewise.
 
-	* optabs.c (expand_binop): In case of vec_pack_*_optabs the mode 
-	compared against the predicate of the result is not 'mode' (the input 
+	* optabs.c (expand_binop): In case of vec_pack_*_optabs the mode
+	compared against the predicate of the result is not 'mode' (the input
 	to the function) but a mode with half the size of 'mode'.
 	(init_optab): Initialize new optabs.
 	* optabs.h (OTI_vec_pack_mod, OTI_vec_pack_ssat, OTI_vec_pack_usat):
@@ -201,19 +213,19 @@
 
 	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
 
-	* tree-vect-transform.c (vectorizable_reduction): Support multiple 
+	* tree-vect-transform.c (vectorizable_reduction): Support multiple
 	datatypes.
 	(vect_transform_stmt): Removed redundant code.
 
 	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
 
-	* tree-vect-transform.c (vectorizable_operation): Support multiple 
+	* tree-vect-transform.c (vectorizable_operation): Support multiple
 	datatypes.
 
 	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-transform.c (vect_align_data_ref): Removed.
-	(vect_create_data_ref_ptr): Added additional argument - ptr_incr. 
+	(vect_create_data_ref_ptr): Added additional argument - ptr_incr.
 	Updated function documentation. Return the increment stmt in ptr_incr.
 	(bump_vector_ptr): New function.
 	(vect_get_vec_def_for_stmt_copy): New function.
@@ -228,7 +240,7 @@
 	(vectorizable_store, vectorizable_load): Support the case that the VF
 	is greater than the number of elements that can fit in one vector word.
 	(vect_transform_loop): Don't fail in case of multiple data-types.
-	* tree-vect-analyze.c (vect_determine_vectorization_factor): Don't fail 
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Don't fail
 	in case of multiple data-types; the smallest type determines the VF.
 	(vect_analyze_data_ref_dependence): Don't record datarefs as same_align
 	if they are of different sizes.
