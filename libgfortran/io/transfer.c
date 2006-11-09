@@ -2359,13 +2359,16 @@ finalize_transfer (st_parameter_dt *dtp)
 
   dtp->u.p.current_unit->current_record = 0;
 
-  if (dtp->u.p.advance_status == ADVANCE_NO)
-    return;
-
   if (!is_internal_unit (dtp) && dtp->u.p.seen_dollar)
     {
       dtp->u.p.seen_dollar = 0;
       sfree (dtp->u.p.current_unit->s);
+      return;
+    }
+
+  if (dtp->u.p.advance_status == ADVANCE_NO)
+    {
+      flush (dtp->u.p.current_unit->s);
       return;
     }
 
