@@ -95,7 +95,7 @@ one is not the default.
                         without explanations.
 * Fortran Dialect Options::  Controlling the variant of Fortran language
                              compiled.
-* Warning Options::     How picky should the compiler be?
+* Error and Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Directory Options::   Where to find module files
 * Runtime Options::     Influencing runtime behavior
@@ -115,51 +115,48 @@ by type.  Explanations are in the following sections.
 @table @emph
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options Controlling Fortran Dialect}.
-@gccoptlist{
--fall-intrinsics -ffree-form  -fno-fixed-form @gol
+@gccoptlist{-fall-intrinsics  -ffree-form  -fno-fixed-form @gol
 -fdollar-ok  -fimplicit-none  -fmax-identifier-length @gol
--std=@var{std} -fd-lines-as-code -fd-lines-as-comments @gol
+-std=@var{std} -fd-lines-as-code  -fd-lines-as-comments @gol
 -ffixed-line-length-@var{n}  -ffixed-line-length-none @gol
 -ffree-line-length-@var{n}  -ffree-line-length-none @gol
 -fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 @gol
 -fcray-pointer  -fopenmp  -frange-check }
 
-@item Warning Options
-@xref{Warning Options,,Options to Request or Suppress Warnings}.
-@gccoptlist{
+@item Error and Warning Options
+@xref{Error and Warning Options,,Options to Request or Suppress Errors
+and Warnings}.
+@gccoptlist{-fmax-errors=@var{n} @gol
 -fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wall  -Waliasing -Wampersand -Wconversion -Wimplicit-interface @gol
+-w  -Wall  -Waliasing  -Wampersand  -Wconversion  -Wimplicit-interface @gol
 -Wtabs -Wnonstd-intrinsics -Wsurprising -Wunderflow @gol
 -Wline-truncation -W}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
-@gccoptlist{
--fdump-parse-tree -ffpe-trap=@var{list}}
+@gccoptlist{-fdump-parse-tree  -ffpe-trap=@var{list}}
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
-@gccoptlist{
--I@var{dir}  -M@var{dir}}
+@gccoptlist{-I@var{dir}  -M@var{dir}}
 
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
-@gccoptlist{
--fconvert=@var{conversion} -frecord-marker=@var{length}}
+@gccoptlist{-fconvert=@var{conversion} -frecord-marker=@var{length}}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
-@gccoptlist{
--fno-automatic -ff2c -fno-underscoring  -fsecond-underscore @gol
+@gccoptlist{-fno-automatic  -ff2c  -fno-underscoring
+-fsecond-underscore @gol
 -fbounds-check  -fmax-stack-var-size=@var{n} @gol
--fpack-derived  -frepack-arrays  -fshort-enums -fexternal-blas
+-fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n}}
 @end table
 
 @menu
 * Fortran Dialect Options::  Controlling the variant of Fortran language
                              compiled.
-* Warning Options::     How picky should the compiler be?
+* Error and Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Directory Options::   Where to find module files
 * Runtime Options::     Influencing runtime behavior
@@ -336,16 +333,24 @@ standards is specified by @samp{f95} and @samp{f2003}, respectively.
 
 @end table
 
-@node Warning Options
-@section Options to Request or Suppress Warnings
+@node Error and Warning Options
+@section Options to Request or Suppress Errors and Warnings
 @cindex options, warnings
+@cindex options, errors
 @cindex warnings, suppressing
+@cindex messages, error
 @cindex messages, warning
 @cindex suppressing warnings
 
+Errors are diagnostic messages that report that the GNU Fortran compiler
+cannot compile the relevant piece of source code.  The compiler will
+continue to process the program in an attempt to report further errors
+to aid in debugging, but will not produce any compiled output.  
+
 Warnings are diagnostic messages that report constructions which
-are not inherently erroneous but which are risky or suggest there
-might have been an error.
+are not inherently erroneous but which are risky or suggest there is
+likely to be a bug in the program.  Unless @option{-Werrors} is specified,
+they do not prevent compilation of the program.
 
 You can request many specific warnings with options beginning @option{-W},
 for example @option{-Wimplicit} to request warnings on implicit
@@ -354,10 +359,19 @@ negative form beginning @option{-Wno-} to turn off warnings;
 for example, @option{-Wno-implicit}.  This manual lists only one of the
 two forms, whichever is not the default.
 
-These options control the amount and kinds of warnings produced by GNU
-Fortran:
+These options control the amount and kinds of errors and warnings produced
+by GNU Fortran:
 
 @table @gcctabopt
+@cindex errors, limiting
+@cindex -fmax-errors-@var{n} option
+@cindex options, -fmax-errors-@var{n}
+@item -fmax-errors-@var{n}
+Limits the maximum number of error messages to @var{n}, at which point
+GNU Fortran bails out rather than attempting to continue processing the
+source code.  If @var{n} is 0, there is no limit on the number of error
+messages produced.
+
 @cindex syntax checking
 @cindex -fsyntax-only option
 @cindex options, -fsyntax-only
@@ -518,10 +532,10 @@ via @option{-O}, the @option{-Wuninitialized} option.
 (This might change in future versions of GNU Fortran.)
 @end table
 
-@xref{Warning Options,,Options to Request or Suppress Warnings,
-gcc,Using the GNU Compiler Collection (GCC)}, for information on more
-options offered by the GBE shared by @command{gfortran}, @command{gcc} and
-other GNU compilers.
+@xref{Error and Warning Options,,Options to Request or Suppress Errors and
+Warnings, gcc,Using the GNU Compiler Collection (GCC)}, for information on
+more options offered by the GBE shared by @command{gfortran}, @command{gcc}
+and other GNU compilers.
 
 Some of these have no effect when compiling programs written in Fortran.
 
