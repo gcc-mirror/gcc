@@ -49,6 +49,7 @@ static void
 parse_schedule (void)
 {
   char *env, *end;
+  unsigned long value;
 
   env = getenv ("OMP_SCHEDULE");
   if (env == NULL)
@@ -85,11 +86,17 @@ parse_schedule (void)
   if (*env == '\0')
     goto invalid;
 
-  gomp_run_sched_chunk = strtoul (env, &end, 10);
+  errno = 0;
+  value = strtoul (env, &end, 10);
+  if (errno)
+    goto invalid;
+
   while (isspace ((unsigned char) *end))
     ++end;
   if (*end != '\0')
     goto invalid;
+
+  gomp_run_sched_chunk = value;
   return;
 
  unknown:
@@ -99,7 +106,6 @@ parse_schedule (void)
  invalid:
   gomp_error ("Invalid value for chunk size in "
 	      "environment variable OMP_SCHEDULE");
-  gomp_run_sched_chunk = 1;
   return;
 }
 
@@ -121,7 +127,11 @@ parse_unsigned_long (const char *name, unsigned long *pvalue)
   if (*env == '\0')
     goto invalid;
 
+  errno = 0;
   value = strtoul (env, &end, 10);
+  if (errno || (long) value <= 0)
+    goto invalid;
+
   while (isspace ((unsigned char) *end))
     ++end;
   if (*end != '\0')
