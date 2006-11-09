@@ -1,5 +1,9 @@
 2006-11-08  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* invoke.texi: Added documentation for -fmax-errors option.
+
+2006-11-08  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* lang.opt: Add -fmax-errors= option.
 	* gfortran.h (gfc_option_t): Add max_errors element.
 	* options.c (gfc_init_options): Set max_errors default value
