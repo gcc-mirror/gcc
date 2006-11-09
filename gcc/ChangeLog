@@ -1,3 +1,24 @@
+2006-11-08  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/29738
+	* tree-ssa-ccp.c: Remove UNKNOWN_VAL from comments.
+	(ccp_lattice_t): Remove UNKNOWN_VAL.
+	(dump_lattice_value, ccp_lattice_meet, ccp_visit_phi_node):
+	Do not handle UNKNOWN_VAL.
+	(get_default_value): Set initial value of virtual operands to
+	VARYING.
+	(get_value): Always use get_default_value on uninitialized
+	operands.
+	(set_value_varying, surely_varying_stmt_p): New functions.
+	(set_lattice_value): Do not pass argument to get_value.
+	Do not handle UNKNOWN_VAL.
+	(likely_value): Follow the semantics described in the comment.
+	(ccp_initialize): Use surely_varying_stmt_p.  Do not mark
+	phi nodes DONT_SIMULATE_AGAIN.
+	(ccp_fold): Do not pass argument to get_value.
+	(fold_const_aggregate_ref, visit_assignment): Ditto.  Do not
+	handle UNKNOWN_VAL.
+
 2006-11-08  Andrew Pinski  <Andrew_Pinski@playstation.sony.com>
 
 	* tree-pretty-print.c (dump_generic_node) <INTEGER_CST>: Use 
