@@ -158,6 +158,9 @@ avoid_constant_pool_reference (rtx x)
       return x;
     }
 
+  if (GET_MODE (x) == BLKmode)
+    return x;
+
   addr = XEXP (x, 0);
 
   /* Call target hook to avoid the effects of -fpic etc....  */
