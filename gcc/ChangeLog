@@ -1,3 +1,7 @@
+2006-11-08  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* doc/invoke.texi: Minor formatting fixes in option lists.
+
 2006-11-08  Eric Christopher  <echristo@apple.com>
 
 	Backport from mainline:
