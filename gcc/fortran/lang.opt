@@ -201,10 +201,6 @@ fpreprocessed
 Fortran
 Treat the input file as preprocessed
 
-qkind=
-Fortran RejectNegative Joined UInteger
--qkind=<n>	Set the kind for a real with the 'q' exponent to 'n'
-
 ffpe-trap=
 Fortran RejectNegative JoinedOrMissing
 -ffpe-trap=[..]	Stop on following floating point exceptions
