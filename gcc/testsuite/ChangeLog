@@ -1,3 +1,8 @@
+2006-11-08  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/ssa-ccp-14.c: New test.
+	* gcc.dg/tree-ssa/ssa-ccp-15.c: New test.
+
 2006-11-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-3.c: Add more sincos tests.
