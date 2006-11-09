@@ -1,3 +1,7 @@
+2006-11-08  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* doc/invoke.texi: Minor formatting fixes in option lists.
+
 2006-11-08  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/29738
