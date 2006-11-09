@@ -1,5 +1,11 @@
 2006-11-09 Paul Thomas <pault@gcc.gnu.org>
 
+	PR fortran/29431
+	* trans-array.c    (get_array_ctor_strlen): If we fall through to
+	default, use a constant character length if it is available.
+
+2006-11-09 Paul Thomas <pault@gcc.gnu.org>
+
 	PR fortran/29744
 	* trans-types.c (gfc_get_derived_type): Ensure that the
 	proc_name namespace is not the same as the owner namespace and
