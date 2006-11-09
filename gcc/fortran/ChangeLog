@@ -1,5 +1,22 @@
 2006-11-08  Brooks Moses  <brooks.moses@codesourcery.com>
 
+	* lang.opt: Add -fmax-errors= option.
+	* gfortran.h (gfc_option_t): Add max_errors element.
+	* options.c (gfc_init_options): Set max_errors default value
+	to 25.
+	(gfc_handle_options): Assign -fmax_errors value to
+	gfc_option.max_errors.
+	* error.c (gfc_increment_error_count): New function, which
+	also checks whether the error count exceeds max_errors.
+	(gfc_warning): Use it.
+	(gfc_warning_now): Use it.
+	(gfc_notify_std): Use it.
+	(gfc_error): Use it.
+	(gfc_error_now): Use it.
+	(gfc_error_check): Use it.
+
+2006-11-08  Brooks Moses  <brooks.moses@codesourcery.com>
+
 	* lang.opt: Remove non-working -qkind= option.
 	* gfortran.h (gfc_option_t): Remove q_kind member.
 	* options.c (gfc_init_options): Remove q_kind initialization.
