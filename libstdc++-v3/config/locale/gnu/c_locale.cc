@@ -77,7 +77,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       char* __sanity;
       errno = 0;
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+      // Prefer strtold_l, as __strtold_l isn't prototyped in more recent
+      // glibc versions.
+      long double __ld = strtold_l(__s, &__sanity, __cloc);
+#else
       long double __ld = __strtold_l(__s, &__sanity, __cloc);
+#endif
       if (__sanity != __s && errno != ERANGE)
 	__v = __ld;
       else
