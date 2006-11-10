@@ -75,21 +75,24 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 
 #if PIC
+
+enum { BS = 4096, NB=10 };
+static char __mf_0fn_bufs[NB][BS];
+static unsigned __mf_0fn_bufs_used[NB];
+
+
 /* A special bootstrap variant. */
 void *
 __mf_0fn_malloc (size_t c)
 {
-  enum foo { BS = 4096, NB=10 };
-  static char bufs[NB][BS];
-  static unsigned bufs_used[NB];
   unsigned i;
 
   for (i=0; i<NB; i++)
     {
-      if (! bufs_used[i] && c < BS)
+      if (! __mf_0fn_bufs_used[i] && c < BS)
 	{
-	  bufs_used[i] = 1;
-	  return & bufs[i][0];
+	  __mf_0fn_bufs_used[i] = 1;
+	  return & __mf_0fn_bufs[i][0];
 	}
     }
   return NULL;
@@ -245,6 +248,19 @@ WRAPPER(void, free, void *buf)
 
   if (UNLIKELY(buf == NULL))
     return;
+
+#if PIC
+  /* Check whether the given buffer might have come from a
+     __mf_0fn_malloc/calloc call that for whatever reason was not
+     redirected back to __mf_0fn_free.  If so, we just ignore the
+     call. */
+  if (UNLIKELY((uintptr_t) buf >= (uintptr_t) __mf_0fn_bufs &&
+               (uintptr_t) buf < ((uintptr_t) __mf_0fn_bufs + sizeof(__mf_0fn_bufs))))
+  {
+    VERBOSE_TRACE ("skipping free of boot (0fn) alloc buffer %p\n", buf);
+    return;
+  }
+#endif
 
   LOCKTH ();
   if (UNLIKELY(!freeq_initialized))
