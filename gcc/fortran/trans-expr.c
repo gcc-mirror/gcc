@@ -1838,7 +1838,8 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
   return;
 }
 
-/* Is true if the last array reference is followed by a component reference.  */
+/* Is true if an array reference is followed by a component or substring
+   reference.  */
 
 static bool
 is_aliased_array (gfc_expr * e)
@@ -1849,10 +1850,11 @@ is_aliased_array (gfc_expr * e)
   seen_array = false;	
   for (ref = e->ref; ref; ref = ref->next)
     {
-      if (ref->type == REF_ARRAY)
+      if (ref->type == REF_ARRAY
+	    && ref->u.ar.type != AR_ELEMENT)
 	seen_array = true;
 
-      if (ref->next == NULL
+      if (seen_array
 	    && ref->type != REF_ARRAY)
 	return seen_array;
     }
