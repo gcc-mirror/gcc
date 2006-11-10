@@ -1,7 +1,9 @@
-2006-11-10  Tobias Burnus  <burnus@net-b.de>
+2006-11-10 Paul Thomas <pault@gcc.gnu.org>
 
-	PR fortran/29454
-	* resolve.c (gfc_resolve_blocks): Fix error message.
+   PR fortran/29758
+   * check.c (gfc_check_reshape): Check that there are enough
+   elements in the source array as to be able to fill an array
+   defined by shape, when pad is absent.
 
 2006-11-10 Paul Thomas <pault@gcc.gnu.org>
 
