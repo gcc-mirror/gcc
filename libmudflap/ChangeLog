@@ -1,3 +1,12 @@
+2006-11-10  Frank Ch. Eigler  <fche@redhat.com>
+
+	PR libmudflap/28578
+	* mf-hooks1.c (__mf_0fn_malloc): Make the bootstrap buffers
+	static but not function scope static.
+	(free): Skip deallocation attempts for objects placed into
+	bootstrap buffers.
+	* testsuite/libmudflap.cth/pass59-frag.c: New test.
+
 2006-11-06  Frank Ch. Eigler  <fche@redhat.com>
 
 	From Herman ten Brugge <hermantenbrugge@home.nl>:
