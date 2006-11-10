@@ -199,7 +199,7 @@ scalar_check (gfc_expr * e, int n)
 }
 
 
-/* Make sure two expression have the same type.  */
+/* Make sure two expressions have the same type.  */
 
 static try
 same_type_check (gfc_expr * e, int n, gfc_expr * f, int m)
