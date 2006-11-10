@@ -2620,7 +2620,7 @@
   [(set_attr "type" "sseimul")
    (set_attr "mode" "TI")])
 
-(define_insn "smulv8hi3_highpart"
+(define_expand "smulv8hi3_highpart"
   [(set (match_operand:V8HI 0 "register_operand" "")
         (truncate:V8HI
           (lshiftrt:V8SI 
@@ -2648,7 +2648,7 @@
   [(set_attr "type" "sseimul")
    (set_attr "mode" "TI")])
 
-(define_insn "umulv8hi3_highpart"
+(define_expand "umulv8hi3_highpart"
   [(set (match_operand:V8HI 0 "register_operand" "")
         (truncate:V8HI
           (lshiftrt:V8SI
@@ -2815,6 +2815,46 @@
   /* Add the three parts together.  */
   emit_insn (gen_addv2di3 (t6, t1, t4));
   emit_insn (gen_addv2di3 (op0, t6, t5));
+  DONE;
+})
+
+(define_expand "vec_widen_smult_hi_v8hi"
+  [(match_operand:V4SI 0 "register_operand" "")
+   (match_operand:V8HI 1 "register_operand" "")
+   (match_operand:V8HI 2 "register_operand" "")]
+  "TARGET_SSE2"
+{
+  rtx op1, op2, t1, t2, dest;
+
+  op1 = operands[1];
+  op2 = operands[2];
+  t1 = gen_reg_rtx (V8HImode);
+  t2 = gen_reg_rtx (V8HImode);
+  dest = gen_lowpart (V8HImode, operands[0]);
+
+  emit_insn (gen_mulv8hi3 (t1, op1, op2));
+  emit_insn (gen_smulv8hi3_highpart (t2, op1, op2));
+  emit_insn (gen_vec_interleave_highv8hi (dest, t1, t2));
+  DONE;
+})
+
+(define_expand "vec_widen_smult_lo_v8hi"
+  [(match_operand:V4SI 0 "register_operand" "")
+   (match_operand:V8HI 1 "register_operand" "")
+   (match_operand:V8HI 2 "register_operand" "")]
+  "TARGET_SSE2"
+{
+  rtx op1, op2, t1, t2, dest;
+
+  op1 = operands[1];
+  op2 = operands[2];
+  t1 = gen_reg_rtx (V8HImode);
+  t2 = gen_reg_rtx (V8HImode);
+  dest = gen_lowpart (V8HImode, operands[0]);
+
+  emit_insn (gen_mulv8hi3 (t1, op1, op2));
+  emit_insn (gen_smulv8hi3_highpart (t2, op1, op2));
+  emit_insn (gen_vec_interleave_lowv8hi (dest, t1, t2));
   DONE;
 })
 

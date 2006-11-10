@@ -1603,7 +1603,9 @@ proc check_effective_target_vect_widen_mult_hi_to_si { } {
         } else {
           set et_vect_widen_mult_hi_to_si_saved 0
         }
-        if { [istarget powerpc*-*-*] } {
+        if { [istarget powerpc*-*-*]
+	      || [istarget i?86-*-*]
+	      || [istarget x86_64-*-*] } {
             set et_vect_widen_mult_hi_to_si_saved 1
         }
     }

@@ -1,3 +1,9 @@
+2006-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/29777
+        * lib/target-supports.exp (vect_widen_mult_hi_to_si): Add i?86-*-*
+	and x86_64-*-* targets.
+
 2006-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-2.c: Test builtin fma.
