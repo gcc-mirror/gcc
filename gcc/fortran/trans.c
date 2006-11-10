@@ -513,6 +513,10 @@ gfc_trans_code (gfc_code * code)
 	  res = gfc_trans_pointer_assign (code);
 	  break;
 
+	case EXEC_INIT_ASSIGN:
+	  res = gfc_trans_init_assign (code);
+	  break;
+
 	case EXEC_CONTINUE:
 	  res = NULL_TREE;
 	  break;

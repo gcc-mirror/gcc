@@ -870,6 +870,13 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_COPYSIGN, "copysign", true);
   gfc_define_builtin ("__builtin_copysignf", mfunc_float[1], 
 		      BUILT_IN_COPYSIGNF, "copysignf", true);
+ 
+  gfc_define_builtin ("__builtin_fmodl", mfunc_longdouble[1], 
+		      BUILT_IN_FMODL, "fmodl", true);
+  gfc_define_builtin ("__builtin_fmod", mfunc_double[1], 
+		      BUILT_IN_FMOD, "fmod", true);
+  gfc_define_builtin ("__builtin_fmodf", mfunc_float[1], 
+		      BUILT_IN_FMODF, "fmodf", true);
 
   /* These are used to implement the ** operator.  */
   gfc_define_builtin ("__builtin_powl", mfunc_longdouble[1], 
