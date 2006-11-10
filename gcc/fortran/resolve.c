@@ -4749,7 +4749,7 @@ gfc_resolve_blocks (gfc_code * b, gfc_namespace * ns)
 	  if (t == SUCCESS && b->expr != NULL
 	      && (b->expr->ts.type != BT_LOGICAL || b->expr->rank != 0))
 	    gfc_error
-	      ("ELSE IF clause at %L requires a scalar LOGICAL expression",
+	      ("IF clause at %L requires a scalar LOGICAL expression",
 	       &b->expr->where);
 	  break;
 
