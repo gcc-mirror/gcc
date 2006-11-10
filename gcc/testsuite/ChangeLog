@@ -1,3 +1,11 @@
+2006-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-2.c: Test builtin fma.
+	* gcc.dg/torture/builtin-math-3.c (CKSGN_F, CKSGN, CKSGN_L):
+	New macros. Use them in exact tests.
+	(TESTIT3): New macro.
+	Add tests for fmin, fmax and fma.
+
 2006-11-09 Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/29431
