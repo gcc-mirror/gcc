@@ -1200,6 +1200,7 @@ variable_decl (int elem)
      that the interface may specify a procedure that is not pure if the procedure
      is defined to be pure(12.3.2).  */
   if (current_ts.type == BT_DERIVED
+	&& gfc_current_ns->proc_name
 	&& gfc_current_ns->proc_name->attr.if_source == IFSRC_IFBODY
 	&& current_ts.derived->ns != gfc_current_ns)
     {
@@ -2366,7 +2367,8 @@ ok:
 	break;
     }
 
-  gfc_error ("Syntax error in data declaration at %C");
+  if (gfc_error_flag_test () == 0)
+    gfc_error ("Syntax error in data declaration at %C");
   m = MATCH_ERROR;
 
 cleanup:
