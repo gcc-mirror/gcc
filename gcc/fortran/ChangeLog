@@ -1,3 +1,9 @@
+2006-11-10 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29315
+	* trans-expr.c (is_aliased_array): Treat correctly the case where the
+	component is itself and array or array reference.
+
 2006-11-09  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* check.c (same_type_check): Typo fix in comment.
