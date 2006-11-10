@@ -1,9 +1,18 @@
+2006-11-10  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	* lang.opt (-fmodule-private): Remove option.
+	* gfortran.h (gfc_option_t): Remove module_access_private flag.
+	* options.c (gfc_init_options): Remove initialization for it.
+	(gfc_process_option): Remove handling for -fmodule-private.
+	* module.c (gfc_check_access): Add comments, remove check for
+	gfc_option.flag_module_access_private.
+
 2006-11-10 Paul Thomas <pault@gcc.gnu.org>
 
-   PR fortran/29758
-   * check.c (gfc_check_reshape): Check that there are enough
-   elements in the source array as to be able to fill an array
-   defined by shape, when pad is absent.
+	PR fortran/29758
+	* check.c (gfc_check_reshape): Check that there are enough
+	elements in the source array as to be able to fill an array
+	defined by shape, when pad is absent.
 
 2006-11-10 Paul Thomas <pault@gcc.gnu.org>
 
