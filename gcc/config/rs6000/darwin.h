@@ -126,6 +126,8 @@ do {									\
   %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}}"
 
+#define DARWIN_ARCH_SPEC "%{m64:ppc64;:ppc}"
+
 #define DARWIN_SUBARCH_SPEC "			\
  %{m64: ppc64}					\
  %{!m64:					\
@@ -151,7 +153,7 @@ do {									\
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
-  { "darwin_arch", "%{m64:ppc64;:ppc}" },	\
+  { "darwin_arch", DARWIN_ARCH_SPEC },		\
   { "darwin_crt2", DARWIN_CRT2_SPEC },		\
   { "darwin_subarch", DARWIN_SUBARCH_SPEC },
 
