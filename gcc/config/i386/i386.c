@@ -8589,7 +8589,7 @@ emit_i387_cw_initialization (int mode)
   rtx reg = gen_reg_rtx (HImode);
 
   emit_insn (gen_x86_fnstcw_1 (stored_mode));
-  emit_move_insn (reg, stored_mode);
+  emit_move_insn (reg, copy_rtx (stored_mode));
 
   if (TARGET_64BIT || TARGET_PARTIAL_REG_STALL || optimize_size)
     {
@@ -13520,7 +13520,7 @@ assign_386_stack_local (enum machine_mode mode, enum ix86_stack_slot n)
 
   for (s = ix86_stack_locals; s; s = s->next)
     if (s->mode == mode && s->n == n)
-      return s->rtl;
+      return copy_rtx (s->rtl);
 
   s = (struct stack_local_entry *)
     ggc_alloc (sizeof (struct stack_local_entry));

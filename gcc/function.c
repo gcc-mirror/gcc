@@ -1540,7 +1540,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
       /* Propagate operand changes into the duplicates.  */
       for (i = 0; i < recog_data.n_dups; ++i)
 	*recog_data.dup_loc[i]
-	  = recog_data.operand[(unsigned)recog_data.dup_num[i]];
+	  = copy_rtx (recog_data.operand[(unsigned)recog_data.dup_num[i]]);
 
       /* Force re-recognition of the instruction for validation.  */
       INSN_CODE (insn) = -1;

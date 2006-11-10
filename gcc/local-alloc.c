@@ -907,7 +907,7 @@ update_equiv_regs (void)
 	     REG_EQUAL note on the insn.  Since this note would be redundant,
 	     there's no point creating it earlier than here.  */
 	  if (! note && ! rtx_varies_p (src, 0))
-	    note = set_unique_reg_note (insn, REG_EQUAL, src);
+	    note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
 
 	  /* Don't bother considering a REG_EQUAL note containing an EXPR_LIST
 	     since it represents a function call */
@@ -953,7 +953,8 @@ update_equiv_regs (void)
 	  if (note == 0 && REG_BASIC_BLOCK (regno) >= 0
 	      && MEM_P (SET_SRC (set))
 	      && validate_equiv_mem (insn, dest, SET_SRC (set)))
-	    REG_NOTES (insn) = note = gen_rtx_EXPR_LIST (REG_EQUIV, SET_SRC (set),
+	    REG_NOTES (insn) = note = gen_rtx_EXPR_LIST (REG_EQUIV,
+			    				 copy_rtx (SET_SRC (set)),
 							 REG_NOTES (insn));
 
 	  if (note)
@@ -1061,7 +1062,7 @@ update_equiv_regs (void)
 	      && ! memref_used_between_p (dest, init_insn, insn))
 	    {
 	      REG_NOTES (init_insn)
-		= gen_rtx_EXPR_LIST (REG_EQUIV, dest,
+		= gen_rtx_EXPR_LIST (REG_EQUIV, copy_rtx (dest),
 				     REG_NOTES (init_insn));
 	      /* This insn makes the equivalence, not the one initializing
 		 the register.  */

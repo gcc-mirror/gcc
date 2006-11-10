@@ -2647,6 +2647,11 @@ try_replace_reg (rtx from, rtx to, rtx insn)
   int success = 0;
   rtx set = single_set (insn);
 
+  /* Usually we substitute easy stuff, so we won't copy everything.
+     We however need to take care to not duplicate non-trivial CONST
+     expressions.  */
+  to = copy_rtx (to);
+
   validate_replace_src_group (from, to, insn);
   if (num_changes_pending () && apply_change_group ())
     success = 1;

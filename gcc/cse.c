@@ -5817,7 +5817,7 @@ cse_process_notes (rtx x, rtx object)
 	    {
 	      rtx new = gen_lowpart (GET_MODE (x), ent->const_rtx);
 	      if (new)
-		return new;
+		return copy_rtx (new);
 	    }
 	}
 
