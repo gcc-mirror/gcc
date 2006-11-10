@@ -2110,6 +2110,7 @@ gfc_check_reshape (gfc_expr * source, gfc_expr * shape,
 		   gfc_expr * pad, gfc_expr * order)
 {
   mpz_t size;
+  mpz_t nelems;
   int m;
 
   if (array_check (source, 0) == FAILURE)
@@ -2148,6 +2149,38 @@ gfc_check_reshape (gfc_expr * source, gfc_expr * shape,
 
   if (order != NULL && array_check (order, 3) == FAILURE)
     return FAILURE;
+
+  if (pad == NULL
+	&& shape->expr_type == EXPR_ARRAY
+	&& gfc_is_constant_expr (shape)
+	&& !(source->expr_type == EXPR_VARIABLE
+	       && source->symtree->n.sym->as
+	       && source->symtree->n.sym->as->type == AS_ASSUMED_SIZE))
+    {
+      /* Check the match in size between source and destination.  */
+      if (gfc_array_size (source, &nelems) == SUCCESS)
+	{
+	  gfc_constructor *c;
+	  bool test;
+
+	  c = shape->value.constructor;
+	  mpz_init_set_ui (size, 1);
+	  for (; c; c = c->next)
+	    mpz_mul (size, size, c->expr->value.integer);
+
+	  test = mpz_cmp (nelems, size) < 0 && mpz_cmp_ui (size, 0) > 0;
+	  mpz_clear (nelems);
+	  mpz_clear (size);
+
+	  if (test)
+	    {
+	      gfc_error ("Without padding, there are not enough elements in the "
+			 "intrinsic RESHAPE source at %L to match the shape",
+			 &source->where);
+	      return FAILURE;
+	    }
+	}
+    }
 
   return SUCCESS;
 }
