@@ -1,3 +1,8 @@
+2006-11-10  Jan Hubicka  <jh@suse.cz>
+
+	* final.c (final): Walk from first instruction.
+	* cfglayout.c (insn_locators_initialize): Remove line number notes.
+
 2006-11-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/29777

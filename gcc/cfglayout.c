@@ -277,6 +277,7 @@ insn_locators_initialize (void)
 	      NOTE_EXPANDED_LOCATION (xloc, insn);
 	      line_number = xloc.line;
 	      file_name = xloc.file;
+	      delete_insn (insn);
 	    }
 	}
       else
