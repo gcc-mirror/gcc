@@ -1,3 +1,12 @@
+2006-11-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/29777
+	* config/i386/sse.md (smulv8hi3_highpart): Change from define_insn
+	to define_expand.
+	(umulv8hi3_highpart): Ditto.
+	(vec_widen_smult_hi_v8hi): New expander.
+	(vec_widen_smult_lo_v8hi): Ditto.
+
 2006-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (do_mpfr_arg3): New.
