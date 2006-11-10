@@ -133,6 +133,18 @@ void bar()
   foo (__builtin_pow (__DBL_MAX__, -3.5));
   fool (__builtin_powl (__LDBL_MAX__, -3.5L));
   TESTIT2 (pow, 2.0, -0x1p50);
+  
+  foof (__builtin_fmaf (__FLT_MAX__, __FLT_MAX__, 0.0F));
+  foof (__builtin_fmaf (__FLT_MAX__, 1.0F, __FLT_MAX__));
+  foof (__builtin_fmaf (__FLT_MIN__, __FLT_MIN__, 0.0F));
+  
+  foo (__builtin_fma (__DBL_MAX__, __DBL_MAX__, 0.0));
+  foo (__builtin_fma (__DBL_MAX__, 1.0, __DBL_MAX__));
+  foo (__builtin_fma (__DBL_MIN__, __DBL_MIN__, 0.0));
+  
+  fool (__builtin_fmal (__LDBL_MAX__, __LDBL_MAX__, 0.0L));
+  fool (__builtin_fmal (__LDBL_MAX__, 1.0L, __LDBL_MAX__));
+  fool (__builtin_fmal (__LDBL_MIN__, __LDBL_MIN__, 0.0L));
 }
 
 /* { dg-final { scan-tree-dump-times "exp2 " 9 "original" } } */
@@ -168,4 +180,7 @@ void bar()
 /* { dg-final { scan-tree-dump-times "pow " 13 "original" } } */
 /* { dg-final { scan-tree-dump-times "powf" 13 "original" } } */
 /* { dg-final { scan-tree-dump-times "powl" 13 "original" } } */
+/* { dg-final { scan-tree-dump-times "fma " 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "fmaf" 3 "original" } } */
+/* { dg-final { scan-tree-dump-times "fmal" 3 "original" } } */
 /* { dg-final { cleanup-tree-dump "original" } } */

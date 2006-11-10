@@ -207,6 +207,8 @@ static tree do_mpfr_arg1 (tree, tree, int (*)(mpfr_ptr, mpfr_srcptr, mp_rnd_t),
 			  const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, bool);
 static tree do_mpfr_arg2 (tree, tree, tree,
 			  int (*)(mpfr_ptr, mpfr_srcptr, mpfr_srcptr, mp_rnd_t));
+static tree do_mpfr_arg3 (tree, tree, tree, tree,
+			  int (*)(mpfr_ptr, mpfr_srcptr, mpfr_srcptr, mpfr_srcptr, mp_rnd_t));
 static tree do_mpfr_sincos (tree, tree, tree);
 
 /* Return true if NODE should be considered for inline expansion regardless
@@ -9256,6 +9258,28 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 			     type, mpfr_atan2);
     break;
 
+    CASE_FLT_FN (BUILT_IN_FMA):
+      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg3 (TREE_VALUE (arglist),
+			     TREE_VALUE (TREE_CHAIN (arglist)),
+			     TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))),
+			     type, mpfr_fma);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_FMIN):
+      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg2 (TREE_VALUE (arglist),
+			     TREE_VALUE (TREE_CHAIN (arglist)),
+			     type, mpfr_min);
+    break;
+
+    CASE_FLT_FN (BUILT_IN_FMAX):
+      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+	return do_mpfr_arg2 (TREE_VALUE (arglist),
+			     TREE_VALUE (TREE_CHAIN (arglist)),
+			     type, mpfr_max);
+    break;
+
     CASE_FLT_FN (BUILT_IN_HYPOT):
       return fold_builtin_hypot (fndecl, arglist, type);
     
@@ -11587,6 +11611,52 @@ do_mpfr_arg2 (tree arg1, tree arg2, tree type,
 	  inexact = func (m1, m1, m2, GMP_RNDN);
 	  result = do_mpfr_ckconv (m1, type, inexact);
 	  mpfr_clears (m1, m2, NULL);
+	}
+    }
+  
+  return result;
+}
+
+/* If argument ARG is a REAL_CST, call the three-argument mpfr function
+   FUNC on it and return the resulting value as a tree with type TYPE.
+   The mpfr precision is set to the precision of TYPE.  We assume that
+   function FUNC returns zero if the result could be calculated
+   exactly within the requested precision.  */
+
+static tree
+do_mpfr_arg3 (tree arg1, tree arg2, tree arg3, tree type,
+	      int (*func)(mpfr_ptr, mpfr_srcptr, mpfr_srcptr, mpfr_srcptr, mp_rnd_t))
+{
+  tree result = NULL_TREE;
+  
+  STRIP_NOPS (arg1);
+  STRIP_NOPS (arg2);
+  STRIP_NOPS (arg3);
+
+  if (TREE_CODE (arg1) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg1)
+      && TREE_CODE (arg2) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg2)
+      && TREE_CODE (arg3) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg3))
+    {
+      const REAL_VALUE_TYPE *const ra1 = &TREE_REAL_CST (arg1);
+      const REAL_VALUE_TYPE *const ra2 = &TREE_REAL_CST (arg2);
+      const REAL_VALUE_TYPE *const ra3 = &TREE_REAL_CST (arg3);
+
+      if (!real_isnan (ra1) && !real_isinf (ra1)
+	  && !real_isnan (ra2) && !real_isinf (ra2)
+	  && !real_isnan (ra3) && !real_isinf (ra3))
+        {
+	  const int prec = REAL_MODE_FORMAT (TYPE_MODE (type))->p;
+	  int inexact;
+	  mpfr_t m1, m2, m3;
+
+	  mpfr_inits2 (prec, m1, m2, m3, NULL);
+	  mpfr_from_real (m1, ra1);
+	  mpfr_from_real (m2, ra2);
+	  mpfr_from_real (m3, ra3);
+	  mpfr_clear_flags();
+	  inexact = func (m1, m1, m2, m3, GMP_RNDN);
+	  result = do_mpfr_ckconv (m1, type, inexact);
+	  mpfr_clears (m1, m2, m3, NULL);
 	}
     }
   

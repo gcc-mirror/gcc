@@ -13,13 +13,25 @@
 /* All references to link_error should go away at compile-time.  */
 extern void link_error(int);
 
+/* Return TRUE if the sign of X != sign of Y.  This is important when
+   comparing signed zeros.  */
+#define CKSGN_F(X,Y) \
+  (__builtin_copysignf(1.0F,(X)) != __builtin_copysignf(1.0F,(Y)))
+#define CKSGN(X,Y) \
+  (__builtin_copysign(1.0,(X)) != __builtin_copysign(1.0,(Y)))
+#define CKSGN_L(X,Y) \
+  (__builtin_copysignl(1.0L,(X)) != __builtin_copysignl(1.0L,(Y)))
+
 /* Test that FUNC(ARG) == (RES).  */
 #define TESTIT(FUNC,ARG,RES) do { \
-  if (__builtin_##FUNC##f(ARG##F) != RES##F) \
+  if (__builtin_##FUNC##f(ARG##F) != RES##F \
+      || CKSGN_F(__builtin_##FUNC##f(ARG##F),RES##F)) \
     link_error(__LINE__); \
-  if (__builtin_##FUNC(ARG) != RES) \
+  if (__builtin_##FUNC(ARG) != RES \
+      || CKSGN(__builtin_##FUNC(ARG),RES)) \
     link_error(__LINE__); \
-  if (__builtin_##FUNC##l(ARG##L) != RES##L) \
+  if (__builtin_##FUNC##l(ARG##L) != RES##L \
+      || CKSGN_L(__builtin_##FUNC##l(ARG##L),RES##L)) \
     link_error(__LINE__); \
   } while (0)
 
@@ -35,11 +47,14 @@ extern void link_error(int);
 
 /* Test that FUNC(ARG1, ARG2) == (RES).  */
 #define TESTIT2(FUNC,ARG1,ARG2,RES) do { \
-  if (__builtin_##FUNC##f(ARG1##F, ARG2##F) != RES##F) \
+  if (__builtin_##FUNC##f(ARG1##F, ARG2##F) != RES##F \
+      || CKSGN_F(__builtin_##FUNC##f(ARG1##F,ARG2##F),RES##F)) \
     link_error(__LINE__); \
-  if (__builtin_##FUNC(ARG1, ARG2) != RES) \
+  if (__builtin_##FUNC(ARG1, ARG2) != RES \
+      || CKSGN(__builtin_##FUNC(ARG1,ARG2),RES)) \
     link_error(__LINE__); \
-  if (__builtin_##FUNC##l(ARG1##L, ARG2##L) != RES##L) \
+  if (__builtin_##FUNC##l(ARG1##L, ARG2##L) != RES##L \
+      || CKSGN_L(__builtin_##FUNC##l(ARG1##L,ARG2##L),RES##L)) \
     link_error(__LINE__); \
   } while (0)
 
@@ -53,6 +68,19 @@ extern void link_error(int);
     link_error(__LINE__); \
   if (__builtin_##FUNC##l(ARG1, ARG2) <= (LOW) \
       || __builtin_##FUNC##l(ARG1, ARG2) >= (HI)) \
+    link_error(__LINE__); \
+  } while (0)
+
+/* Test that FUNC(ARG1, ARG2, ARG3) == (RES).  */
+#define TESTIT3(FUNC,ARG1,ARG2,ARG3,RES) do { \
+  if (__builtin_##FUNC##f(ARG1##F, ARG2##F, ARG3##F) != RES##F \
+      || CKSGN_F(__builtin_##FUNC##f(ARG1##F,ARG2##F,ARG3##F),RES##F)) \
+    link_error(__LINE__); \
+  if (__builtin_##FUNC(ARG1, ARG2, ARG3) != RES \
+      || CKSGN(__builtin_##FUNC(ARG1,ARG2,ARG3),RES)) \
+    link_error(__LINE__); \
+  if (__builtin_##FUNC##l(ARG1##L, ARG2##L, ARG3##L) != RES##L \
+      || CKSGN_L(__builtin_##FUNC##l(ARG1##L,ARG2##L,ARG3##L),RES##L)) \
     link_error(__LINE__); \
   } while (0)
 
@@ -265,6 +293,65 @@ int main (void)
   TESTIT2 (atan2, -0.0, 1.0, -0.0); /* atan2(-0,1) == -0 */
   TESTIT2_R (atan2, -1.0, 0.0, -1.58, -1.57); /* atan2(-1,0) == -pi/2 */
   TESTIT2_R (atan2, 1.0, 0.0, 1.57, 1.58); /* atan2(1,0) == pi/2 */
+
+  TESTIT2 (fmin, 5.0, 6.0, 5.0); /* fmin(5,6) == 5 */
+  TESTIT2 (fmin, 6.0, 5.0, 5.0); /* fmin(6,5) == 5 */
+  TESTIT2 (fmin, -5.0, -6.0, -6.0); /* fmin(-5,-6) == -6 */
+  TESTIT2 (fmin, -6.0, -5.0, -6.0); /* fmin(-6,-5) == -6 */
+  TESTIT2 (fmin, -0.0, 0.0, -0.0); /* fmin(-0,0) == -0 */
+  TESTIT2 (fmin, 0.0, -0.0, -0.0); /* fmin(-0,0) == -0 */
+
+  TESTIT2 (fmax, 5.0, 6.0, 6.0); /* fmax(5,6) == 6 */
+  TESTIT2 (fmax, 6.0, 5.0, 6.0); /* fmax(6,5) == 6 */
+  TESTIT2 (fmax, -5.0, -6.0, -5.0); /* fmax(-5,-6) == -5 */
+  TESTIT2 (fmax, -6.0, -5.0, -5.0); /* fmax(-6,-5) == -5 */
+  TESTIT2 (fmax, -0.0, 0.0, 0.0); /* fmax(-0,0) == 0 */
+  TESTIT2 (fmax, 0.0, -0.0, 0.0); /* fmax(-0,0) == 0 */
+
+  TESTIT3 (fma, 2.0, 3.0, 4.0, 10.0); /* fma(2,3,4) == 10 */
+  TESTIT3 (fma, 2.0, -3.0, 4.0, -2.0); /* fma(2,-3,4) == -2 */
+  TESTIT3 (fma, 2.0, 3.0, -4.0, 2.0); /* fma(2,3,-4) == 2 */
+  TESTIT3 (fma, 2.0, -3.0, -4.0, -10.0); /* fma(2,-3,-4) == -10 */
+  TESTIT3 (fma, -2.0, -3.0, -4.0, 2.0); /* fma(-2,-3,-4) == 2 */
+  TESTIT3 (fma, 6.0, -0.0, 0.0, 0.0); /* fma(6,-0,0) == 0 */
+  TESTIT3 (fma, -0.0, 6.0, 0.0, 0.0); /* fma(-0,6,0) == 0 */
+  TESTIT3 (fma, 6.0, -0.0, -0.0, -0.0); /* fma(6,-0,-0) == -0 */
+  TESTIT3 (fma, -0.0, 6.0, -0.0, -0.0); /* fma(-0,6,-0) == -0 */
+  TESTIT3 (fma, 0.0, 0.0, 0.0, 0.0); /* fma(0,0,0) == 0 */
+  TESTIT3 (fma, -0.0, 0.0, 0.0, 0.0); /* fma(-0,0,0) == 0 */
+  TESTIT3 (fma, 0.0, -0.0, 0.0, 0.0); /* fma(0,-0,0) == 0 */
+  TESTIT3 (fma, -0.0, -0.0, 0.0, 0.0); /* fma(-0,-0,0) == 0 */
+  TESTIT3 (fma, 0.0, 0.0, -0.0, 0.0); /* fma(0,0,-0) == 0 */
+  TESTIT3 (fma, -0.0, 0.0, -0.0, -0.0); /* fma(-0,0,-0) == -0 */
+  TESTIT3 (fma, 0.0, -0.0, -0.0, -0.0); /* fma(0,-0,-0) == -0 */
+  TESTIT3 (fma, -0.0, -0.0, -0.0, 0.0); /* fma(-0,-0,-0) == 0 */
+
+  if (__builtin_fmaf(__FLT_MAX__, 2.0F, -__FLT_MAX__) != __FLT_MAX__)
+    link_error (__LINE__);
+  if (__builtin_fmaf(2.0F,__FLT_MAX__, -__FLT_MAX__) != __FLT_MAX__)
+    link_error (__LINE__);
+  if (__builtin_fmaf(__FLT_MIN__, 0.5F, __FLT_MIN__) != __FLT_MIN__*1.5F)
+    link_error (__LINE__);
+  if (__builtin_fmaf(0.5F,__FLT_MIN__, __FLT_MIN__) != __FLT_MIN__*1.5F)
+    link_error (__LINE__);
+
+  if (__builtin_fma(__DBL_MAX__, 2.0, -__DBL_MAX__) != __DBL_MAX__)
+    link_error (__LINE__);
+  if (__builtin_fma(2.0,__DBL_MAX__, -__DBL_MAX__) != __DBL_MAX__)
+    link_error (__LINE__);
+  if (__builtin_fma(__DBL_MIN__, 0.5, __DBL_MIN__) != __DBL_MIN__*1.5)
+    link_error (__LINE__);
+  if (__builtin_fma(0.5,__DBL_MIN__, __DBL_MIN__) != __DBL_MIN__*1.5)
+    link_error (__LINE__);
+
+  if (__builtin_fmal(__LDBL_MAX__, 2.0L, -__LDBL_MAX__) != __LDBL_MAX__)
+    link_error (__LINE__);
+  if (__builtin_fmal(2.0L,__LDBL_MAX__, -__LDBL_MAX__) != __LDBL_MAX__)
+    link_error (__LINE__);
+  if (__builtin_fmal(__LDBL_MIN__, 0.5L, __LDBL_MIN__) != __LDBL_MIN__*1.5L)
+    link_error (__LINE__);
+  if (__builtin_fmal(0.5L,__LDBL_MIN__, __LDBL_MIN__) != __LDBL_MIN__*1.5L)
+    link_error (__LINE__);
 
   return 0;
 }
