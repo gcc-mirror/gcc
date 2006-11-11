@@ -1117,7 +1117,7 @@ if test x"$have_gmp" = xyes; then
 fi
 CFLAGS="$saved_CFLAGS"
 
-if test x$have_gmp != xyes; then
+if test -d ${srcdir}/gcc && test x$have_gmp != xyes; then
   AC_MSG_ERROR([Building GCC requires GMP 4.1+ and MPFR 2.2+.
 Try the --with-gmp and/or --with-mpfr options to specify their locations.
 Copies of these libraries' source code can be found at their respective
