@@ -1,3 +1,10 @@
+2006-11-11  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* data.c: Add 2006 to copyright years.
+	* interface.c: Same.
+	* misc.c: Same.
+	* trans-io.c: Same.
+
 2006-11-11  Richard Guenther  <rguenther@suse.de>
 
 	* trans-intrinsic.c (enum rounding_mode): New enum.
