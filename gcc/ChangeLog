@@ -1,3 +1,10 @@
+2006-11-10  Roger Sayle  <roger@eyesopen.com>
+
+	* tree.c (build_int_cst_wide): Add an assertion (gcc_unreachable)
+	when attempting to build INTEGER_CSTs of non-integral types.
+	* expmed.c (make_tree): Use the correct type, i.e. the inner
+	type, when constructing the individual elements of a CONST_VECTOR.
+
 2006-11-10  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (cse_process_notes): Copy the propagated value.
