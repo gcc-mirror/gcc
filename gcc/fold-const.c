@@ -2545,23 +2545,15 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
     switch (TREE_CODE (arg0))
       {
       case INTEGER_CST:
-	return (! TREE_CONSTANT_OVERFLOW (arg0)
-		&& ! TREE_CONSTANT_OVERFLOW (arg1)
-		&& tree_int_cst_equal (arg0, arg1));
+	return tree_int_cst_equal (arg0, arg1);
 
       case REAL_CST:
-	return (! TREE_CONSTANT_OVERFLOW (arg0)
-		&& ! TREE_CONSTANT_OVERFLOW (arg1)
-		&& REAL_VALUES_IDENTICAL (TREE_REAL_CST (arg0),
-					  TREE_REAL_CST (arg1)));
+	return REAL_VALUES_IDENTICAL (TREE_REAL_CST (arg0),
+				      TREE_REAL_CST (arg1));
 
       case VECTOR_CST:
 	{
 	  tree v1, v2;
-
-	  if (TREE_CONSTANT_OVERFLOW (arg0)
-	      || TREE_CONSTANT_OVERFLOW (arg1))
-	    return 0;
 
 	  v1 = TREE_VECTOR_CST_ELTS (arg0);
 	  v2 = TREE_VECTOR_CST_ELTS (arg1);
