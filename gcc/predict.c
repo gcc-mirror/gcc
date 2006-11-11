@@ -631,12 +631,11 @@ combine_predictions_for_bb (basic_block bb)
    When RTLSIMPLELOOPS is set, attempt to count number of iterations by analyzing
    RTL otherwise use tree based approach.  */
 static void
-predict_loops (struct loops *loops_info, bool rtlsimpleloops)
+predict_loops (struct loops *loops_info)
 {
   unsigned i;
 
-  if (!rtlsimpleloops)
-    scev_initialize (loops_info);
+  scev_initialize (loops_info);
 
   /* Try to predict out blocks in a loop that are not part of a
      natural loop.  */
@@ -646,69 +645,38 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
       unsigned j;
       unsigned n_exits;
       struct loop *loop = loops_info->parray[i];
-      struct niter_desc desc;
-      unsigned HOST_WIDE_INT niter;
       edge *exits;
+      struct tree_niter_desc niter_desc;
 
       exits = get_loop_exit_edges (loop, &n_exits);
 
-      if (rtlsimpleloops)
+
+      for (j = 0; j < n_exits; j++)
 	{
-	  iv_analysis_loop_init (loop);
-	  find_simple_exit (loop, &desc);
+	  tree niter = NULL;
 
-	  if (desc.simple_p && desc.const_iter)
+	  if (number_of_iterations_exit (loop, exits[j], &niter_desc, false))
+	    niter = niter_desc.niter;
+	  if (!niter || TREE_CODE (niter_desc.niter) != INTEGER_CST)
+	    niter = loop_niter_by_eval (loop, exits[j]);
+
+	  if (TREE_CODE (niter) == INTEGER_CST)
 	    {
-	      int prob;
-	      niter = desc.niter + 1;
-	      if (niter == 0)        /* We might overflow here.  */
-		niter = desc.niter;
-	      if (niter
-		  > (unsigned int) PARAM_VALUE (PARAM_MAX_PREDICTED_ITERATIONS))
-		niter = PARAM_VALUE (PARAM_MAX_PREDICTED_ITERATIONS);
-
-	      prob = (REG_BR_PROB_BASE
-		      - (REG_BR_PROB_BASE + niter /2) / niter);
-	      /* Branch prediction algorithm gives 0 frequency for everything
-		 after the end of loop for loop having 0 probability to finish.  */
-	      if (prob == REG_BR_PROB_BASE)
-		prob = REG_BR_PROB_BASE - 1;
-	      predict_edge (desc.in_edge, PRED_LOOP_ITERATIONS,
-			    prob);
-	    }
-	}
-      else
-	{
-	  struct tree_niter_desc niter_desc;
-
-	  for (j = 0; j < n_exits; j++)
-	    {
-	      tree niter = NULL;
-
-	      if (number_of_iterations_exit (loop, exits[j], &niter_desc, false))
-		niter = niter_desc.niter;
-	      if (!niter || TREE_CODE (niter_desc.niter) != INTEGER_CST)
-	        niter = loop_niter_by_eval (loop, exits[j]);
-
-	      if (TREE_CODE (niter) == INTEGER_CST)
+	      int probability;
+	      int max = PARAM_VALUE (PARAM_MAX_PREDICTED_ITERATIONS);
+	      if (host_integerp (niter, 1)
+		  && tree_int_cst_lt (niter,
+				      build_int_cstu (NULL_TREE, max - 1)))
 		{
-		  int probability;
-		  int max = PARAM_VALUE (PARAM_MAX_PREDICTED_ITERATIONS);
-		  if (host_integerp (niter, 1)
-		      && tree_int_cst_lt (niter,
-				          build_int_cstu (NULL_TREE, max - 1)))
-		    {
-		      HOST_WIDE_INT nitercst = tree_low_cst (niter, 1) + 1;
-		      probability = ((REG_BR_PROB_BASE + nitercst / 2)
-				     / nitercst);
-		    }
-		  else
-		    probability = ((REG_BR_PROB_BASE + max / 2) / max);
-
-		  predict_edge (exits[j], PRED_LOOP_ITERATIONS, probability);
+		  HOST_WIDE_INT nitercst = tree_low_cst (niter, 1) + 1;
+		  probability = ((REG_BR_PROB_BASE + nitercst / 2)
+				 / nitercst);
 		}
-	    }
+	      else
+		probability = ((REG_BR_PROB_BASE + max / 2) / max);
 
+	      predict_edge (exits[j], PRED_LOOP_ITERATIONS, probability);
+	    }
 	}
       free (exits);
 
@@ -726,8 +694,7 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 	     statements construct loops via "non-loop" constructs
 	     in the source language and are better to be handled
 	     separately.  */
-	  if ((rtlsimpleloops && !can_predict_insn_p (BB_END (bb)))
-	      || predicted_by_p (bb, PRED_CONTINUE))
+	  if (predicted_by_p (bb, PRED_CONTINUE))
 	    continue;
 
 	  /* Loop branch heuristics - predict an edge back to a
@@ -776,11 +743,8 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
       free (bbs);
     }
 
-  if (!rtlsimpleloops)
-    {
-      scev_finalize ();
-      current_loops = NULL;
-    }
+  scev_finalize ();
+  current_loops = NULL;
 }
 
 /* Attempt to predict probabilities of BB outgoing edges using local
@@ -1303,7 +1267,7 @@ tree_estimate_probability (void)
   tree_bb_level_predictions ();
 
   mark_irreducible_loops (&loops_info);
-  predict_loops (&loops_info, false);
+  predict_loops (&loops_info);
 
   FOR_EACH_BB (bb)
     {

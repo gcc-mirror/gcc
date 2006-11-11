@@ -1,5 +1,9 @@
 2006-11-11  Jan Hubicka  <jh@suse.cz>
 
+	* predict.c (predict_loops): Kill RTL variant.
+
+2006-11-11  Jan Hubicka  <jh@suse.cz>
+
 	* tree-pass.h (pass_purge_lineno_notes): Remove declaration.
 	* modulo-sched.c (find_line_note): Remove.
 	(loop_canon_p): Do not worry about line number notes.
@@ -98,7 +102,7 @@
 	* local-alloc.c (update_equiv_regs): Copy the memory RTX to be used
 	in REG_EQUIV notes.
 	* gcse.c (try_replace_reg): Copy the replacement.
-	* i386.c (emit_i387_cw_initialization): Copy stored_mode
+	* i386.c (emit_i387_cw_initialization): Copy stored_mode.
 	(assign_386_stack_local): Always return copied memory expression
 	* function.c (instantiate_virtual_regs_in_insn): Copy the operand
 	duplicates.
