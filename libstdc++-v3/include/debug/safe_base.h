@@ -31,6 +31,8 @@
 #ifndef _GLIBCXX_DEBUG_SAFE_BASE_H
 #define _GLIBCXX_DEBUG_SAFE_BASE_H 1
 
+#include <ext/concurrence.h>
+
 namespace __gnu_debug
 {
   class _Safe_sequence_base;
@@ -103,6 +105,9 @@ namespace __gnu_debug
 
     ~_Safe_iterator_base() { this->_M_detach(); }
 
+    /** For use in _Safe_iterator. */
+    __gnu_cxx::__mutex& _M_get_mutex();
+
   public:
     /** Attaches this iterator to the given sequence, detaching it
      *	from whatever sequence it was attached to originally. If the
@@ -111,10 +116,16 @@ namespace __gnu_debug
      */
     void _M_attach(_Safe_sequence_base* __seq, bool __constant);
 
+    /** Likewise, but not thread-safe. */
+    void _M_attach_single(_Safe_sequence_base* __seq, bool __constant);
+
     /** Detach the iterator for whatever sequence it is attached to,
      *	if any.
     */
     void _M_detach();
+
+    /** Likewise, but not thread-safe. */
+    void _M_detach_single();
 
     /** Determines if we are attached to the given sequence. */
     bool _M_attached_to(const _Safe_sequence_base* __seq) const
@@ -195,6 +206,9 @@ namespace __gnu_debug
      */
     void
     _M_swap(_Safe_sequence_base& __x);
+
+    /** For use in _Safe_sequence. */
+    __gnu_cxx::__mutex& _M_get_mutex();
 
   public:
     /** Invalidates all iterators. */

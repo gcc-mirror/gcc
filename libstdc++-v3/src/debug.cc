@@ -35,13 +35,12 @@
 #include <cassert>
 #include <cstring>
 #include <cctype>
-#include <ext/concurrence.h>
 
 using namespace std;
 
 namespace
 {
-  __gnu_cxx::__mutex iterator_base_mutex;
+  __gnu_cxx::__mutex safe_base_mutex;
 } // anonymous namespace
 
 namespace __gnu_debug
@@ -107,43 +106,45 @@ namespace __gnu_debug
     "attempt to increment an end-of-stream istreambuf_iterator"
   };
 
-  void 
+  void
   _Safe_sequence_base::
   _M_detach_all()
   {
-    for (_Safe_iterator_base* __iter = _M_iterators; __iter; )
+    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
       {
 	_Safe_iterator_base* __old = __iter;
 	__iter = __iter->_M_next;
-	__old->_M_attach(0, false);
+	__old->_M_detach_single();
       }
     
-    for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2; )
+    for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2;)
       {
 	_Safe_iterator_base* __old = __iter2;
 	__iter2 = __iter2->_M_next;
-	__old->_M_attach(0, true);
+	__old->_M_detach_single();
       }
   }
 
-  void 
+  void
   _Safe_sequence_base::
   _M_detach_singular()
   {
-    for (_Safe_iterator_base* __iter = _M_iterators; __iter; )
+    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
       {
 	_Safe_iterator_base* __old = __iter;
 	__iter = __iter->_M_next;
 	if (__old->_M_singular())
-	  __old->_M_attach(0, false);
+	  __old->_M_detach_single();
       }
 
-    for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2; )
+    for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2;)
       {
 	_Safe_iterator_base* __old = __iter2;
 	__iter2 = __iter2->_M_next;
 	if (__old->_M_singular())
-	  __old->_M_attach(0, true);
+	  __old->_M_detach_single();
       }
   }
 
@@ -151,6 +152,7 @@ namespace __gnu_debug
   _Safe_sequence_base::
   _M_revalidate_singular()
   {
+    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
     for (_Safe_iterator_base* __iter = _M_iterators; __iter;
 	 __iter = __iter->_M_next)
       __iter->_M_version = _M_version;
@@ -160,10 +162,11 @@ namespace __gnu_debug
       __iter2->_M_version = _M_version;
   }
 
-  void 
+  void
   _Safe_sequence_base::
   _M_swap(_Safe_sequence_base& __x)
   {
+    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
     swap(_M_iterators, __x._M_iterators);
     swap(_M_const_iterators, __x._M_const_iterators);
     swap(_M_version, __x._M_version);
@@ -177,17 +180,29 @@ namespace __gnu_debug
     for (__iter = __x._M_const_iterators; __iter; __iter = __iter->_M_next)
       __iter->_M_sequence = &__x;
   }
-  
-  void 
+
+  __gnu_cxx::__mutex&
+  _Safe_sequence_base::
+  _M_get_mutex()
+  { return safe_base_mutex; }
+
+  void
   _Safe_iterator_base::
   _M_attach(_Safe_sequence_base* __seq, bool __constant)
   {
-    _M_detach();
+    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    _M_attach_single(__seq, __constant);
+  }
+  
+  void
+  _Safe_iterator_base::
+  _M_attach_single(_Safe_sequence_base* __seq, bool __constant)
+  {
+    _M_detach_single();
     
     // Attach to the new sequence (if there is one)
     if (__seq)
       {
-	__gnu_cxx::__scoped_lock sentry(iterator_base_mutex);
 	_M_sequence = __seq;
 	_M_version = _M_sequence->_M_version;
 	_M_prior = 0;
@@ -208,11 +223,18 @@ namespace __gnu_debug
       }
   }
 
-  void 
+  void
   _Safe_iterator_base::
   _M_detach()
   {
-    __gnu_cxx::__scoped_lock sentry(iterator_base_mutex);
+    __gnu_cxx::__scoped_lock sentry(safe_base_mutex);
+    _M_detach_single();
+  }
+
+  void
+  _Safe_iterator_base::
+  _M_detach_single()
+  {
     if (_M_sequence)
       {
 	// Remove us from this sequence's list
@@ -232,7 +254,7 @@ namespace __gnu_debug
     _M_prior = 0;
     _M_next = 0;
   }
-  
+
   bool
   _Safe_iterator_base::
   _M_singular() const
@@ -245,6 +267,11 @@ namespace __gnu_debug
     return (!_M_singular() 
 	    && !__x._M_singular() && _M_sequence == __x._M_sequence);
   }
+
+  __gnu_cxx::__mutex&
+  _Safe_iterator_base::
+  _M_get_mutex()
+  { return safe_base_mutex; }
 
   void
   _Error_formatter::_Parameter::
