@@ -1596,9 +1596,6 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
   /* Refuse to operate on certain unary expressions for which we
      cannot easily determine a resulting range.  */
   if (code == FIX_TRUNC_EXPR
-      || code == FIX_CEIL_EXPR
-      || code == FIX_FLOOR_EXPR
-      || code == FIX_ROUND_EXPR
       || code == FLOAT_EXPR
       || code == BIT_NOT_EXPR
       || code == NON_LVALUE_EXPR

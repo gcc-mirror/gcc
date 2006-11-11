@@ -160,6 +160,7 @@ typedef struct
 }
 real_compnt_info;
 
+enum rounding_mode { RND_ROUND, RND_TRUNC, RND_CEIL, RND_FLOOR };
 
 /* Evaluate the arguments to an intrinsic function.  */
 
@@ -307,23 +308,24 @@ build_round_expr (stmtblock_t * pblock, tree arg, tree type)
 
 static tree
 build_fix_expr (stmtblock_t * pblock, tree arg, tree type,
-               enum tree_code op)
+               enum rounding_mode op)
 {
   switch (op)
     {
-    case FIX_FLOOR_EXPR:
+    case RND_FLOOR:
       return build_fixbound_expr (pblock, arg, type, 0);
       break;
 
-    case FIX_CEIL_EXPR:
+    case RND_CEIL:
       return build_fixbound_expr (pblock, arg, type, 1);
       break;
 
-    case FIX_ROUND_EXPR:
+    case RND_ROUND:
       return build_round_expr (pblock, arg, type);
 
     default:
-      return build1 (op, type, arg);
+      gcc_assert (op == RND_TRUNC);
+      return build1 (FIX_TRUNC_EXPR, type, arg);
     }
 }
 
@@ -338,7 +340,7 @@ build_fix_expr (stmtblock_t * pblock, tree arg, tree type,
    */
 
 static void
-gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum tree_code op)
+gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
 {
   tree type;
   tree itype;
@@ -355,7 +357,7 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum tree_code op)
   /* We have builtin functions for some cases.  */
   switch (op)
     {
-    case FIX_ROUND_EXPR:
+    case RND_ROUND:
       switch (kind)
 	{
 	case 4:
@@ -373,7 +375,7 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	}
       break;
 
-    case FIX_TRUNC_EXPR:
+    case RND_TRUNC:
       switch (kind)
 	{
 	case 4:
@@ -437,7 +439,7 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum tree_code op)
 /* Convert to an integer using the specified rounding mode.  */
 
 static void
-gfc_conv_intrinsic_int (gfc_se * se, gfc_expr * expr, int op)
+gfc_conv_intrinsic_int (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
 {
   tree type;
   tree arg;
@@ -1076,9 +1078,9 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
 
       itype = gfc_get_int_type (ikind);
       if (modulo)
-       tmp = build_fix_expr (&se->pre, tmp, itype, FIX_FLOOR_EXPR);
+       tmp = build_fix_expr (&se->pre, tmp, itype, RND_FLOOR);
       else
-       tmp = build_fix_expr (&se->pre, tmp, itype, FIX_TRUNC_EXPR);
+       tmp = build_fix_expr (&se->pre, tmp, itype, RND_TRUNC);
       tmp = convert (type, tmp);
       tmp = build3 (COND_EXPR, type, test2, tmp, arg);
       tmp = build2 (MULT_EXPR, type, tmp, arg2);
@@ -3474,7 +3476,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_AINT:
-      gfc_conv_intrinsic_aint (se, expr, FIX_TRUNC_EXPR);
+      gfc_conv_intrinsic_aint (se, expr, RND_TRUNC);
       break;
 
     case GFC_ISYM_ALL:
@@ -3482,7 +3484,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_ANINT:
-      gfc_conv_intrinsic_aint (se, expr, FIX_ROUND_EXPR);
+      gfc_conv_intrinsic_aint (se, expr, RND_ROUND);
       break;
 
     case GFC_ISYM_AND:
@@ -3515,19 +3517,19 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_INT2:
     case GFC_ISYM_INT8:
     case GFC_ISYM_LONG:
-      gfc_conv_intrinsic_int (se, expr, FIX_TRUNC_EXPR);
+      gfc_conv_intrinsic_int (se, expr, RND_TRUNC);
       break;
 
     case GFC_ISYM_NINT:
-      gfc_conv_intrinsic_int (se, expr, FIX_ROUND_EXPR);
+      gfc_conv_intrinsic_int (se, expr, RND_ROUND);
       break;
 
     case GFC_ISYM_CEILING:
-      gfc_conv_intrinsic_int (se, expr, FIX_CEIL_EXPR);
+      gfc_conv_intrinsic_int (se, expr, RND_CEIL);
       break;
 
     case GFC_ISYM_FLOOR:
-      gfc_conv_intrinsic_int (se, expr, FIX_FLOOR_EXPR);
+      gfc_conv_intrinsic_int (se, expr, RND_FLOOR);
       break;
 
     case GFC_ISYM_MOD:

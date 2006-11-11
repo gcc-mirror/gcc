@@ -1,3 +1,8 @@
+2006-11-11  Richard Guenther  <rguenther@suse.de>
+
+	* trans.c (maybe_stabilize_reference): Remove handling of
+	FIX_CEIL_EXPR, FIX_FLOOR_EXPR and FIX_ROUND_EXPR.
+
 2006-11-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-osinte-linux-alpha.ads, s-osinte-linux-hppa.ads

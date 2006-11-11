@@ -1860,18 +1860,6 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, tree arg1)
       real_trunc (&r, VOIDmode, &x);
       break;
 
-    case FIX_CEIL_EXPR:
-      real_ceil (&r, VOIDmode, &x);
-      break;
-
-    case FIX_FLOOR_EXPR:
-      real_floor (&r, VOIDmode, &x);
-      break;
-
-    case FIX_ROUND_EXPR:
-      real_round (&r, VOIDmode, &x);
-      break;
-
     default:
       gcc_unreachable ();
     }
@@ -2610,10 +2598,7 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
         {
         case NOP_EXPR:
         case CONVERT_EXPR:
-        case FIX_CEIL_EXPR:
         case FIX_TRUNC_EXPR:
-        case FIX_FLOOR_EXPR:
-        case FIX_ROUND_EXPR:
 	  if (TYPE_UNSIGNED (TREE_TYPE (arg0))
 	      != TYPE_UNSIGNED (TREE_TYPE (arg1)))
 	    return 0;
@@ -7299,9 +7284,6 @@ fold_unary (enum tree_code code, tree type, tree op0)
     case FLOAT_EXPR:
     case CONVERT_EXPR:
     case FIX_TRUNC_EXPR:
-    case FIX_CEIL_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
       if (TREE_TYPE (op0) == type)
 	return op0;
       

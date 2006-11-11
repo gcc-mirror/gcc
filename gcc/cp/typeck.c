@@ -4146,9 +4146,6 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  case CONVERT_EXPR:
 	  case FLOAT_EXPR:
 	  case FIX_TRUNC_EXPR:
-	  case FIX_FLOOR_EXPR:
-	  case FIX_ROUND_EXPR:
-	  case FIX_CEIL_EXPR:
 	    {
 	      tree incremented, modify, value, compound;
 	      if (! lvalue_p (arg) && pedantic)
@@ -4301,9 +4298,6 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	case CONVERT_EXPR:
 	case FLOAT_EXPR:
 	case FIX_TRUNC_EXPR:
-	case FIX_FLOOR_EXPR:
-	case FIX_ROUND_EXPR:
-	case FIX_CEIL_EXPR:
 	  if (! lvalue_p (arg) && pedantic)
 	    pedwarn ("ISO C++ forbids taking the address of a cast to a non-lvalue expression");
 	  break;

@@ -409,10 +409,7 @@ is_gimple_cast (tree t)
 {
   return (TREE_CODE (t) == NOP_EXPR
 	  || TREE_CODE (t) == CONVERT_EXPR
-          || TREE_CODE (t) == FIX_TRUNC_EXPR
-          || TREE_CODE (t) == FIX_CEIL_EXPR
-          || TREE_CODE (t) == FIX_FLOOR_EXPR
-          || TREE_CODE (t) == FIX_ROUND_EXPR);
+          || TREE_CODE (t) == FIX_TRUNC_EXPR);
 }
 
 /* Return true if T is a valid op0 of a CALL_EXPR.  */

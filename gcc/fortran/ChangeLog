@@ -1,3 +1,10 @@
+2006-11-11  Richard Guenther  <rguenther@suse.de>
+
+	* trans-intrinsic.c (enum rounding_mode): New enum.
+	(build_fix_expr, gfc_conv_intrinsic_aint, gfc_conv_intrinsic_mod,
+	gfc_conv_intrinsic_function): Use it instead of FIX_CEIL_EXPR,
+	FIX_FLOOR_EXPR, FIX_ROUND_EXPR and FIX_TRUNC_EXPR.
+
 2006-11-10  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* lang.opt (-fmodule-private): Remove option.

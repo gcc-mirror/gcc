@@ -1700,9 +1700,6 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case MULT_EXPR:
 
     case FIX_TRUNC_EXPR:
-    case FIX_CEIL_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
 
     case NEGATE_EXPR:
     case FLOAT_EXPR:

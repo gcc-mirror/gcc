@@ -9478,9 +9478,6 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
       break;
 
     case FIX_TRUNC_EXPR:
-    case FIX_CEIL_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
       return 0;
 
     default:

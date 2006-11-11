@@ -634,15 +634,8 @@ DEFTREECODE (RDIV_EXPR, "rdiv_expr", tcc_binary, 2)
    Used for pointer subtraction in C.  */
 DEFTREECODE (EXACT_DIV_EXPR, "exact_div_expr", tcc_binary, 2)
 
-/* Conversion of real to fixed point: four ways to round,
-   like the four ways to divide.
-   CONVERT_EXPR can also be used to convert a real to an integer,
-   and that is what is used in languages that do not have ways of
-   specifying which of these is wanted.  Maybe these are not needed.  */
+/* Conversion of real to fixed point by truncation.  */
 DEFTREECODE (FIX_TRUNC_EXPR, "fix_trunc_expr", tcc_unary, 1)
-DEFTREECODE (FIX_CEIL_EXPR, "fix_ceil_expr", tcc_unary, 1)
-DEFTREECODE (FIX_FLOOR_EXPR, "fix_floor_expr", tcc_unary, 1)
-DEFTREECODE (FIX_ROUND_EXPR, "fix_round_expr", tcc_unary, 1)
 
 /* Conversion of an integer to a real.  */
 DEFTREECODE (FLOAT_EXPR, "float_expr", tcc_unary, 1)

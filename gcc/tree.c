@@ -2599,9 +2599,6 @@ stabilize_reference (tree ref)
     case CONVERT_EXPR:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
-    case FIX_CEIL_EXPR:
       result = build_nt (code, stabilize_reference (TREE_OPERAND (ref, 0)));
       break;
 
