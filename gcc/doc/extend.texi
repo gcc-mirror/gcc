@@ -5874,10 +5874,9 @@ programmers are notoriously bad at predicting how their programs
 actually perform.  However, there are applications in which this
 data is hard to collect.
 
-The return value is the value of @var{exp}, which should be an
-integral expression.  The value of @var{c} must be a compile-time
-constant.  The semantics of the built-in are that it is expected
-that @var{exp} == @var{c}.  For example:
+The return value is the value of @var{exp}, which should be an integral
+expression.  The semantics of the built-in are that it is expected that
+@var{exp} == @var{c}.  For example:
 
 @smallexample
 if (__builtin_expect (x, 0))

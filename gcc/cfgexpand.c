@@ -45,7 +45,7 @@ Boston, MA 02110-1301, USA.  */
    ??? We really ought to pass the probability down to RTL expanders and let it
    re-distribute it when the conditional expands into multiple conditionals.
    This is however difficult to do.  */
-static void
+void
 add_reg_br_prob_note (rtx last, int probability)
 {
   if (profile_status == PROFILE_ABSENT)

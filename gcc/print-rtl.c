@@ -299,14 +299,6 @@ print_rtx (rtx in_rtx)
 		  break;
 	        }
 
-	      case NOTE_INSN_EXPECTED_VALUE:
-		indent += 2;
-		if (!sawclose)
-		  fprintf (outfile, " ");
-		print_rtx (NOTE_EXPECTED_VALUE (in_rtx));
-		indent -= 2;
-		break;
-
 	      case NOTE_INSN_DELETED_LABEL:
 		{
 		  const char *label = NOTE_DELETED_LABEL_NAME (in_rtx);

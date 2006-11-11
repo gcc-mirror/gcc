@@ -551,37 +551,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	}
       break;
 
-      /* Special case:
-          __builtin_expect (<test>, 0)	and
-          __builtin_expect (<test>, 1)
-
-         We need to do this here, so that <test> is not converted to a SCC
-         operation on machines that use condition code registers and COMPARE
-         like the PowerPC, and then the jump is done based on whether the SCC
-         operation produced a 1 or 0.  */
-    case CALL_EXPR:
-      /* Check for a built-in function.  */
-      {
-	tree fndecl = get_callee_fndecl (exp);
-	tree arglist = TREE_OPERAND (exp, 1);
-
-	if (fndecl
-	    && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-	    && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT
-	    && arglist != NULL_TREE
-	    && TREE_CHAIN (arglist) != NULL_TREE)
-	  {
-	    rtx seq = expand_builtin_expect_jump (exp, if_false_label,
-						  if_true_label);
-
-	    if (seq != NULL_RTX)
-	      {
-		emit_insn (seq);
-		return;
-	      }
-	  }
-      }
- 
       /* Fall through and generate the normal code.  */
     default:
     normal:
