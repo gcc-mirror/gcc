@@ -111,23 +111,32 @@ namespace __gnu_debug
     _Safe_iterator<_Iterator, _Sequence>::
     _M_invalidate()
     {
+      __gnu_cxx::__scoped_lock sentry(this->_M_get_mutex());
+      _M_invalidate_single();
+    }
+
+  template<typename _Iterator, typename _Sequence>
+    void
+    _Safe_iterator<_Iterator, _Sequence>::
+    _M_invalidate_single()
+    {
       typedef typename _Sequence::iterator iterator;
       typedef typename _Sequence::const_iterator const_iterator;
 
       if (!this->_M_singular())
 	{
-	  for (_Safe_iterator_base* iter = _M_sequence->_M_iterators; iter;)
+	  for (_Safe_iterator_base* __iter = _M_sequence->_M_iterators;
+	       __iter; __iter = __iter->_M_next)
 	    {
-	      iterator* __victim = static_cast<iterator*>(iter);
-	      iter = iter->_M_next;
+	      iterator* __victim = static_cast<iterator*>(__iter);
 	      if (this->base() == __victim->base())
 		__victim->_M_version = 0;
 	    }
-	  for (_Safe_iterator_base* iter = _M_sequence->_M_const_iterators;
-	       iter;)
+
+	  for (_Safe_iterator_base* __iter2 = _M_sequence->_M_const_iterators;
+	       __iter2; __iter2 = __iter2->_M_next)
 	    {
-	      const_iterator* __victim = static_cast<const_iterator*>(iter);
-	      iter = iter->_M_next;
+	      const_iterator* __victim = static_cast<const_iterator*>(__iter2);
 	      if (__victim->base() == this->base())
 		__victim->_M_version = 0;
 	    }
