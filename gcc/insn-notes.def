@@ -43,10 +43,6 @@ INSN_NOTE (DELETED_LABEL)
 INSN_NOTE (BLOCK_BEG)
 INSN_NOTE (BLOCK_END)
 
-/* These mark the extremes of a loop.  */
-INSN_NOTE (LOOP_BEG)
-INSN_NOTE (LOOP_END)
-
 /* This note indicates the start of the real body of the function,
    i.e. the point just after all of the parms have been moved into
    their homes, etc.  */
@@ -70,18 +66,8 @@ INSN_NOTE (EPILOGUE_BEG)
 INSN_NOTE (EH_REGION_BEG)
 INSN_NOTE (EH_REGION_END)
 
-/* Generated whenever a duplicate line number note is output.
-   For example, one is output after the end of an inline function,
-   in order to prevent the line containing the inline call from
-   being counted twice in gcov.  */
-INSN_NOTE (REPEATED_LINE_NUMBER)
-
 /* The location of a variable.  */
 INSN_NOTE (VAR_LOCATION)
-
-/* Record the expected value of a register at a location.  Uses
-   NOTE_EXPECTED_VALUE; stored as (eq (reg) (const_int)).  */
-INSN_NOTE (EXPECTED_VALUE)
 
 /* Record the struct for the following basic block.  Uses
    NOTE_BASIC_BLOCK.  FIXME: Redundant with the basic block pointer
