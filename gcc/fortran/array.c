@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 3006 Free Software
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006 Free Software
    Foundation, Inc.
    Contributed by Andy Vaught
 
