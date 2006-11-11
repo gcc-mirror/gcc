@@ -519,7 +519,6 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    note_flds = create_field (note_flds, tree_tp, "rt_tree");
 	    break;
 
-	  case NOTE_INSN_EXPECTED_VALUE:
 	  case NOTE_INSN_VAR_LOCATION:
 	    note_flds = create_field (note_flds, rtx_tp, "rt_rtx");
 	    break;

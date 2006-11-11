@@ -2250,6 +2250,8 @@ extern GTY(()) rtx stack_limit_rtx;
 /* In predict.c */
 extern void invert_br_probabilities (rtx);
 extern bool expensive_function_p (int);
+/* In cfgexpand.c */
+extern void add_reg_br_prob_note (rtx last, int probability);
 /* In tracer.c */
 extern void tracer (unsigned int);
 

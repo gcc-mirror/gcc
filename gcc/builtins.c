@@ -4693,9 +4693,9 @@ expand_builtin_fputs (tree arglist, rtx target, bool unlocked)
   return 0;
 }
 
-/* Expand a call to __builtin_expect.  We return our argument and emit a
-   NOTE_INSN_EXPECTED_VALUE note.  This is the expansion of __builtin_expect in
-   a non-jump context.  */
+/* Expand a call to __builtin_expect.  We just return our argument 
+   as the builtin_expect semantic should've been already executed by
+   tree branch prediction pass. */
 
 static rtx
 expand_builtin_expect (tree arglist, rtx target)
@@ -4709,147 +4709,10 @@ expand_builtin_expect (tree arglist, rtx target)
   exp = TREE_VALUE (arglist);
   c = TREE_VALUE (TREE_CHAIN (arglist));
 
-  if (TREE_CODE (c) != INTEGER_CST)
-    {
-      error ("second argument to %<__builtin_expect%> must be a constant");
-      c = integer_zero_node;
-    }
-
   target = expand_expr (exp, target, VOIDmode, EXPAND_NORMAL);
-
-  /* Don't bother with expected value notes for integral constants.  */
-  if (flag_guess_branch_prob && GET_CODE (target) != CONST_INT)
-    {
-      /* We do need to force this into a register so that we can be
-	 moderately sure to be able to correctly interpret the branch
-	 condition later.  */
-      target = force_reg (GET_MODE (target), target);
-
-      rtx_c = expand_expr (c, NULL_RTX, GET_MODE (target), EXPAND_NORMAL);
-
-      note = emit_note (NOTE_INSN_EXPECTED_VALUE);
-      NOTE_EXPECTED_VALUE (note) = gen_rtx_EQ (VOIDmode, target, rtx_c);
-    }
-
+  /* When guessing was done, the hints should be already stripped away.  */
+  gcc_assert (!flag_guess_branch_prob);
   return target;
-}
-
-/* Like expand_builtin_expect, except do this in a jump context.  This is
-   called from do_jump if the conditional is a __builtin_expect.  Return either
-   a list of insns to emit the jump or NULL if we cannot optimize
-   __builtin_expect.  We need to optimize this at jump time so that machines
-   like the PowerPC don't turn the test into a SCC operation, and then jump
-   based on the test being 0/1.  */
-
-rtx
-expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
-{
-  tree arglist = TREE_OPERAND (exp, 1);
-  tree arg0 = TREE_VALUE (arglist);
-  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  rtx ret = NULL_RTX;
-
-  /* Only handle __builtin_expect (test, 0) and
-     __builtin_expect (test, 1).  */
-  if (TREE_CODE (TREE_TYPE (arg1)) == INTEGER_TYPE
-      && (integer_zerop (arg1) || integer_onep (arg1)))
-    {
-      rtx insn, drop_through_label, temp;
-
-      /* Expand the jump insns.  */
-      start_sequence ();
-      do_jump (arg0, if_false_label, if_true_label);
-      ret = get_insns ();
-
-      drop_through_label = get_last_insn ();
-      if (drop_through_label && NOTE_P (drop_through_label))
-	drop_through_label = prev_nonnote_insn (drop_through_label);
-      if (drop_through_label && !LABEL_P (drop_through_label))
-	drop_through_label = NULL_RTX;
-      end_sequence ();
-
-      if (! if_true_label)
-	if_true_label = drop_through_label;
-      if (! if_false_label)
-	if_false_label = drop_through_label;
-
-      /* Go through and add the expect's to each of the conditional jumps.  */
-      insn = ret;
-      while (insn != NULL_RTX)
-	{
-	  rtx next = NEXT_INSN (insn);
-
-	  if (JUMP_P (insn) && any_condjump_p (insn))
-	    {
-	      rtx ifelse = SET_SRC (pc_set (insn));
-	      rtx then_dest = XEXP (ifelse, 1);
-	      rtx else_dest = XEXP (ifelse, 2);
-	      int taken = -1;
-
-	      /* First check if we recognize any of the labels.  */
-	      if (GET_CODE (then_dest) == LABEL_REF
-		  && XEXP (then_dest, 0) == if_true_label)
-		taken = 1;
-	      else if (GET_CODE (then_dest) == LABEL_REF
-		       && XEXP (then_dest, 0) == if_false_label)
-		taken = 0;
-	      else if (GET_CODE (else_dest) == LABEL_REF
-		       && XEXP (else_dest, 0) == if_false_label)
-		taken = 1;
-	      else if (GET_CODE (else_dest) == LABEL_REF
-		       && XEXP (else_dest, 0) == if_true_label)
-		taken = 0;
-	      /* Otherwise check where we drop through.  */
-	      else if (else_dest == pc_rtx)
-		{
-		  if (next && NOTE_P (next))
-		    next = next_nonnote_insn (next);
-
-		  if (next && JUMP_P (next)
-		      && any_uncondjump_p (next))
-		    temp = XEXP (SET_SRC (pc_set (next)), 0);
-		  else
-		    temp = next;
-
-		  /* TEMP is either a CODE_LABEL, NULL_RTX or something
-		     else that can't possibly match either target label.  */
-		  if (temp == if_false_label)
-		    taken = 1;
-		  else if (temp == if_true_label)
-		    taken = 0;
-		}
-	      else if (then_dest == pc_rtx)
-		{
-		  if (next && NOTE_P (next))
-		    next = next_nonnote_insn (next);
-
-		  if (next && JUMP_P (next)
-		      && any_uncondjump_p (next))
-		    temp = XEXP (SET_SRC (pc_set (next)), 0);
-		  else
-		    temp = next;
-
-		  if (temp == if_false_label)
-		    taken = 0;
-		  else if (temp == if_true_label)
-		    taken = 1;
-		}
-
-	      if (taken != -1)
-		{
-		  /* If the test is expected to fail, reverse the
-		     probabilities.  */
-		  if (integer_zerop (arg1))
-		    taken = 1 - taken;
-		  predict_insn_def (insn, PRED_BUILTIN_EXPECT, taken);
-		}
-	    }
-
-	  insn = next;
-	}
-    }
-
-  return ret;
 }
 
 void

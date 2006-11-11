@@ -1875,11 +1875,9 @@ sjlj_emit_function_enter (rtx dispatch_label)
 				 plus_constant (XEXP (fc, 0),
 						sjlj_fc_jbuf_ofs), Pmode);
 
-    note = emit_note (NOTE_INSN_EXPECTED_VALUE);
-    NOTE_EXPECTED_VALUE (note) = gen_rtx_EQ (VOIDmode, x, const0_rtx);
-
     emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
 			     TYPE_MODE (integer_type_node), 0, dispatch_label);
+    add_reg_br_prob_note (get_insns (), REG_BR_PROB_BASE/100);
   }
 #else
   expand_builtin_setjmp_setup (plus_constant (XEXP (fc, 0), sjlj_fc_jbuf_ofs),

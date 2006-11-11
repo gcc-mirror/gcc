@@ -1,3 +1,25 @@
+2006-11-11  Jan Hubicka  <jh@suse.cz>
+
+	* extended.texi (__builtin_expect): We no longer require second argument
+	to be constant.
+	* gengtype.c (adjust_field_rtx_def): Drop NOTE_INSN_EXPECTED_VALUE.
+	* builtins.c (expand_builtin_expect): Simplify.
+	(expand_builtin_expect_jump): Kill.
+	* final.c (final_scan_insn): Do not skip the removed notes.
+	* insn-notes.def (LOOP_BEG, LOOP_END, REPEATED_LINE_NUMBER,
+	EXPECTED_VALUE): Remove.
+	* dojump.c (do_jump): Do not care about __builtin_expect.
+	* predict.c (expected_value_to_br_prob): Kill.
+	* function.c (expand_function_end): Do not expand
+	NOTE_INSN_REPEATED_LINE_NUMBER.
+	* print-rtl.c (print_rtx): Do not pretty print the removed notes.
+	* expect.c (sjlj_emit_function_enter): Emit directly branch probability.
+	* cfgexpand.c (add_reg_br_prob_note): Export.
+	* cfgcleanup.c (rest_of_handle_jump2): Do not call
+	expected_value_to_br_prob.
+	* cfglayout.c (duplicate_insn_chain): Do not deal with removed notes.
+	* rtl.h (add_reg_br_prob_note): Declare.
+
 2006-11-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree-pretty-print.c (dump_generic_node): Print sign of Inf.

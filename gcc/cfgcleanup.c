@@ -2300,11 +2300,6 @@ struct tree_opt_pass pass_jump =
 static unsigned int
 rest_of_handle_jump2 (void)
 {
-  /* Turn NOTE_INSN_EXPECTED_VALUE into REG_BR_PROB.  Do this
-     before jump optimization switches branch directions.  */
-  if (flag_guess_branch_prob)
-    expected_value_to_br_prob ();
-
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
   reg_scan (get_insns (), max_reg_num ());
   if (dump_file)
