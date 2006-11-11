@@ -1,3 +1,9 @@
+2006-11-11  Richard Sandiford  <richard@codesourcery.com>
+
+	PR middle-end/27528
+	* stmt.c (expand_asm_operands): Use EXPAND_INITIALIZER if the
+	constraints accept neither registers or memories.
+
 2006-11-11  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.h (FUNCTION_PROFILER): Don't use LABELNO.
