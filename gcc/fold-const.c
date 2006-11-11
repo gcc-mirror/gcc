@@ -13296,6 +13296,17 @@ fold_strip_sign_ops (tree exp)
 			    arg1 ? arg1 : TREE_OPERAND (exp, 1));
       break;
 
+    case CALL_EXPR:
+      /* Strip sign ops from the argument of "odd" math functions.  */
+      if (negate_mathfn_p (builtin_mathfn_code (exp)))
+        {
+	  arg0 = fold_strip_sign_ops (TREE_VALUE (TREE_OPERAND (exp, 1)));
+	  if (arg0)
+	    return build_function_call_expr (get_callee_fndecl (exp),
+					     build_tree_list (NULL_TREE, arg0));
+	}
+      break;
+
     default:
       break;
     }

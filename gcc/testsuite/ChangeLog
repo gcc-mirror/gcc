@@ -1,5 +1,7 @@
 2006-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.dg/builtins-20.c: Add more cases for stripping sign ops.
+
 	* gcc.dg/torture/builtin-symmetric-1.c: New test.
 
 2006-11-10 Paul Thomas <pault@gcc.gnu.org>

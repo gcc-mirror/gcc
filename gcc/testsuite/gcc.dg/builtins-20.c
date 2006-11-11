@@ -38,6 +38,15 @@ void test1(double x)
   if (cos(x) != cos(-x))
     link_error ();
 
+  if (cos(x) != cos(fabs(x)))
+    link_error ();
+
+  if (cos(x) != cos(-fabs(x)))
+    link_error ();
+
+  if (cos(tan(x)) != cos(tan(-fabs(x))))
+    link_error ();
+
   if (sin(x)/cos(x) != tan(x))
     link_error ();
 
@@ -63,6 +72,21 @@ void test2(double x, double y)
     link_error ();
 
   if (-sin(x-y) != sin(y-x))
+    link_error ();
+
+  if (cos(-x*y) != cos(x*y))
+    link_error ();
+
+  if (cos(x*-y) != cos(x*y))
+    link_error ();
+
+  if (cos(-x/y) != cos(x/y))
+    link_error ();
+
+  if (cos(x/-y) != cos(x/y))
+    link_error ();
+
+  if (cos(-fabs(tan(x/-y))) != cos(tan(x/y)))
     link_error ();
 
   if (hypot (x, 0) != fabs(x))
@@ -103,11 +127,23 @@ void test2(double x, double y)
 
   if (hypot (pure(x), -pure(x)) != fabs(pure(x)) * __builtin_sqrt(2))
     link_error ();
+
+  if (hypot (tan(-x), tan(-fabs(y))) != hypot (tan(x), tan(y)))
+    link_error ();
 }
 
 void test1f(float x)
 {
   if (cosf(x) != cosf(-x))
+    link_error ();
+
+  if (cosf(x) != cosf(fabsf(x)))
+    link_error ();
+
+  if (cosf(x) != cosf(-fabsf(x)))
+    link_error ();
+
+  if (cosf(tanf(x)) != cosf(tanf(-fabsf(x))))
     link_error ();
 
 #ifdef HAVE_C99_RUNTIME
@@ -137,6 +173,21 @@ void test2f(float x, float y)
     link_error ();
 
   if (-sinf(x-y) != sinf(y-x))
+    link_error ();
+
+  if (cosf(-x*y) != cosf(x*y))
+    link_error ();
+
+  if (cosf(x*-y) != cosf(x*y))
+    link_error ();
+
+  if (cosf(-x/y) != cosf(x/y))
+    link_error ();
+
+  if (cosf(x/-y) != cosf(x/y))
+    link_error ();
+
+  if (cosf(-fabsf(tanf(x/-y))) != cosf(tanf(x/y)))
     link_error ();
 
   if (hypotf (x, 0) != fabsf(x))
@@ -177,12 +228,24 @@ void test2f(float x, float y)
 
   if (hypotf (puref(x), -puref(x)) != fabsf(puref(x)) * __builtin_sqrtf(2))
     link_error ();
+
+  if (hypotf (tanf(-x), tanf(-fabsf(y))) != hypotf (tanf(x), tanf(y)))
+    link_error ();
 }
 
 
 void test1l(long double x)
 {
   if (cosl(x) != cosl(-x))
+    link_error ();
+
+  if (cosl(x) != cosl(fabsl(x)))
+    link_error ();
+
+  if (cosl(x) != cosl(-fabsl(x)))
+    link_error ();
+
+  if (cosl(tanl(x)) != cosl(tanl(-fabsl(x))))
     link_error ();
 
 #ifdef HAVE_C99_RUNTIME
@@ -212,6 +275,21 @@ void test2l(long double x, long double y)
     link_error ();
 
   if (-sinl(x-y) != sinl(y-x))
+    link_error ();
+
+  if (cosl(-x*y) != cosl(x*y))
+    link_error ();
+
+  if (cosl(x*-y) != cosl(x*y))
+    link_error ();
+
+  if (cosl(-x/y) != cosl(x/y))
+    link_error ();
+
+  if (cosl(x/-y) != cosl(x/y))
+    link_error ();
+
+  if (cosl(-fabsl(tanl(x/-y))) != cosl(tanl(x/y)))
     link_error ();
 
   if (hypotl (x, 0) != fabsl(x))
@@ -251,6 +329,9 @@ void test2l(long double x, long double y)
     link_error ();
 
   if (hypotl (purel(x), -purel(x)) != fabsl(purel(x)) * __builtin_sqrtl(2))
+    link_error ();
+
+  if (hypotl (tanl(-x), tanl(-fabsl(y))) != hypotl (tanl(x), tanl(y)))
     link_error ();
 }
 
