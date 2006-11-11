@@ -203,7 +203,7 @@ extern tree debug_find_var_in_block_tree (tree, tree);
 static void record_insns (rtx, VEC(int,heap) **) ATTRIBUTE_UNUSED;
 static int contains (rtx, VEC(int,heap) **);
 #ifdef HAVE_return
-static void emit_return_into_block (basic_block, rtx);
+static void emit_return_into_block (basic_block);
 #endif
 #if defined(HAVE_epilogue) && defined(INCOMING_RETURN_ADDR_RTX)
 static rtx keep_stack_depressed (rtx);
@@ -4340,14 +4340,6 @@ expand_function_end (void)
      without returning a value.  */
   emit_note (NOTE_INSN_FUNCTION_END);
 
-  /* Must mark the last line number note in the function, so that the test
-     coverage code can avoid counting the last line twice.  This just tells
-     the code to ignore the immediately following line note, since there
-     already exists a copy of this note somewhere above.  This line number
-     note is still needed for debugging though, so we can't delete it.  */
-  if (flag_test_coverage)
-    emit_note (NOTE_INSN_REPEATED_LINE_NUMBER);
-
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */
   force_next_line_note ();
@@ -4653,11 +4645,9 @@ sibcall_epilogue_contains (rtx insn)
    block_for_insn appropriately.  */
 
 static void
-emit_return_into_block (basic_block bb, rtx line_note)
+emit_return_into_block (basic_block bb)
 {
   emit_jump_insn_after (gen_return (), BB_END (bb));
-  if (line_note)
-    emit_note_copy_after (line_note, PREV_INSN (BB_END (bb)));
 }
 #endif /* HAVE_return */
 
@@ -5123,18 +5113,6 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
       if (BB_HEAD (last) == label && LABEL_P (label))
 	{
 	  edge_iterator ei2;
-	  rtx epilogue_line_note = NULL_RTX;
-
-	  /* Locate the line number associated with the closing brace,
-	     if we can find one.  */
-	  for (seq = get_last_insn ();
-	       seq && ! active_insn_p (seq);
-	       seq = PREV_INSN (seq))
-	    if (NOTE_P (seq) && NOTE_LINE_NUMBER (seq) > 0)
-	      {
-		epilogue_line_note = seq;
-		break;
-	      }
 
 	  for (ei2 = ei_start (last->preds); (e = ei_safe_edge (ei2)); )
 	    {
@@ -5158,7 +5136,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 		 with a simple return instruction.  */
 	      if (simplejump_p (jump))
 		{
-		  emit_return_into_block (bb, epilogue_line_note);
+		  emit_return_into_block (bb);
 		  delete_insn (jump);
 		}
 
@@ -5195,7 +5173,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
 	     this is still reachable will be determined later.  */
 
 	  emit_barrier_after (BB_END (last));
-	  emit_return_into_block (last, epilogue_line_note);
+	  emit_return_into_block (last);
 	  epilogue_end = BB_END (last);
 	  single_succ_edge (last)->flags &= ~EDGE_FALLTHRU;
 	  goto epilogue_done;
@@ -5297,61 +5275,6 @@ epilogue_done:
     }
 #endif
 
-#ifdef HAVE_prologue
-  /* This is probably all useless now that we use locators.  */
-  if (prologue_end)
-    {
-      rtx insn, prev;
-
-      /* GDB handles `break f' by setting a breakpoint on the first
-	 line note after the prologue.  Which means (1) that if
-	 there are line number notes before where we inserted the
-	 prologue we should move them, and (2) we should generate a
-	 note before the end of the first basic block, if there isn't
-	 one already there.
-
-	 ??? This behavior is completely broken when dealing with
-	 multiple entry functions.  We simply place the note always
-	 into first basic block and let alternate entry points
-	 to be missed.
-       */
-
-      for (insn = prologue_end; insn; insn = prev)
-	{
-	  prev = PREV_INSN (insn);
-	  if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
-	    {
-	      /* Note that we cannot reorder the first insn in the
-		 chain, since rest_of_compilation relies on that
-		 remaining constant.  */
-	      if (prev == NULL)
-		break;
-	      reorder_insns (insn, insn, prologue_end);
-	    }
-	}
-
-      /* Find the last line number note in the first block.  */
-      for (insn = BB_END (ENTRY_BLOCK_PTR->next_bb);
-	   insn != prologue_end && insn;
-	   insn = PREV_INSN (insn))
-	if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
-	  break;
-
-      /* If we didn't find one, make a copy of the first line number
-	 we run across.  */
-      if (! insn)
-	{
-	  for (insn = next_active_insn (prologue_end);
-	       insn;
-	       insn = PREV_INSN (insn))
-	    if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
-	      {
-		emit_note_copy_after (insn, prologue_end);
-		break;
-	      }
-	}
-    }
-#endif
 #ifdef HAVE_epilogue
   if (epilogue_end)
     {
@@ -5366,8 +5289,7 @@ epilogue_done:
 	{
 	  next = NEXT_INSN (insn);
 	  if (NOTE_P (insn) 
-	      && (NOTE_LINE_NUMBER (insn) > 0
-		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG
+	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG
 		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_END))
 	    reorder_insns (insn, insn, PREV_INSN (epilogue_end));
 	}

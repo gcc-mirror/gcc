@@ -1,3 +1,38 @@
+2006-11-11  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pass.h (pass_purge_lineno_notes): Remove declaration.
+	* modulo-sched.c (find_line_note): Remove.
+	(loop_canon_p): Do not worry about line number notes.
+	(sms_schedule): Likewise.
+	* cse.c (cse_main): Likewise.
+	* regmove.c (fixup_match_1): Likewise
+	* function.c (emit_return_info_block): Likewise.
+	(expand_function_end): Likewise.
+	(thread_prologue_an_epilogue_insns): Likewise.
+	* cfgrtl.c (try_redirect_by_replacing_jump, rtl_tidy_fallthru_edge):
+	Likewise.
+	* emit-rtl.c (find_line_note, emit_insn_after_with_line_notes,
+	emit_note_copy_after): Kill.
+	(emit_note_copy): Do not worry about line numbers.
+	* jump.c (purge_line_number_notes): Kill.
+	(pass_purge_lineno_notes): Kill.
+	* cfgcleanup.c (rest_of_handle_jump2): Kill purge_line_number_notes
+	call.
+	* rtl.h (emit_note_copy_after, emit_insn_after_with_line_notes): Kill.
+	* passes.c (init_optimization_passes): Don't purge_lineno_notes.
+	* sched-ebb.c (schedule_ebbs): Don't do rm_redundant_line_notes.
+	* tree-pass.h (pass_purge_lineno_notes): Kill.
+	* sched-ebb.c (schedule_ebb): Don't rm_line_notes,
+	rm_redundant_line_notes.
+	* sched-rgb.c (schedule_region): Don't rm_line_notes,
+	rm_redundant_line_notes.
+	* sched-int.h (rm_line_notes, rm_redundant_line_notes): Kill.
+	* haifa-sched.c: Update comment about handling notes.
+ 	(unlink_line_notes): Kill.
+	(rm_line_notes): Kill.
+	(save_line_notes): Simplify.
+	(rm_redundant_line_notes): Kill.
+
 2006-11-11  Richard Guenther  <rguenther@suse.de>
 
 	* tree.def (FIX_CEIL_EXPR, FIX_FLOOR_EXPR, FIX_ROUND_EXPR):

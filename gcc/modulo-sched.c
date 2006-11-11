@@ -761,19 +761,6 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop * loop, rtx count_r
   end_sequence ();
 }
 
-/* Return the line note insn preceding INSN, for debugging.  Taken from
-   emit-rtl.c.  */
-static rtx
-find_line_note (rtx insn)
-{
-  for (; insn; insn = PREV_INSN (insn))
-    if (NOTE_P (insn)
-	&& NOTE_LINE_NUMBER (insn) >= 0)
-      break;
-
-  return insn;
-}
-
 /* Return true if all the BBs of the loop are empty except the
    loop header.  */
 static bool
@@ -831,16 +818,7 @@ loop_canon_p (struct loop *loop)
     {
       if (dump_file)
 	{
-	  rtx line_note = find_line_note (BB_END (loop->header));
-
 	  fprintf (dump_file, "SMS loop many exits ");
-	  if (line_note)
-	    {
-	      expanded_location xloc;
-	      NOTE_EXPANDED_LOCATION (xloc, line_note);
-	      fprintf (dump_file, " %s %d (file, line)\n",
-		       xloc.file, xloc.line);
-	    }
 	}
       return false;
     }
@@ -849,16 +827,7 @@ loop_canon_p (struct loop *loop)
     {
       if (dump_file)
 	{
-	  rtx line_note = find_line_note (BB_END (loop->header));
-
 	  fprintf (dump_file, "SMS loop many BBs. ");
-	  if (line_note)
-	    {
-	      expanded_location xloc;
-  	      NOTE_EXPANDED_LOCATION (xloc, line_note);
-	      fprintf (dump_file, " %s %d (file, line)\n",
-		       xloc.file, xloc.line);
-	    }
 	}
       return false;
     }
@@ -986,15 +955,6 @@ sms_schedule (void)
 	{
 	  if (dump_file)
 	    {
-	      rtx line_note = find_line_note (tail);
-
-	      if (line_note)
-		{
-		  expanded_location xloc;
-		  NOTE_EXPANDED_LOCATION (xloc, line_note);
-		  fprintf (dump_file, "SMS bb %s %d (file, line)\n",
-			   xloc.file, xloc.line);
-		}
 	      fprintf (dump_file, "SMS single-bb-loop\n");
 	      if (profile_info && flag_branch_probabilities)
 	    	{
@@ -1084,15 +1044,6 @@ sms_schedule (void)
 
       if (dump_file)
 	{
-	  rtx line_note = find_line_note (tail);
-
-	  if (line_note)
-	    {
-	      expanded_location xloc;
-	      NOTE_EXPANDED_LOCATION (xloc, line_note);
-	      fprintf (dump_file, "SMS bb %s %d (file, line)\n",
-		       xloc.file, xloc.line);
-	    }
 	  fprintf (dump_file, "SMS single-bb-loop\n");
 	  if (profile_info && flag_branch_probabilities)
 	    {

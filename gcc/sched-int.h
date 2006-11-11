@@ -634,10 +634,8 @@ extern int haifa_classify_insn (rtx);
 extern void get_ebb_head_tail (basic_block, basic_block, rtx *, rtx *);
 extern int no_real_insns_p (rtx, rtx);
 
-extern void rm_line_notes (rtx, rtx);
 extern void save_line_notes (int, rtx, rtx);
 extern void restore_line_notes (rtx, rtx);
-extern void rm_redundant_line_notes (void);
 extern void rm_other_notes (rtx, rtx);
 
 extern int insn_cost (rtx, rtx, rtx);
