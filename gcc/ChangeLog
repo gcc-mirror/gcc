@@ -1,3 +1,7 @@
+2006-11-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* rtl.h (MEM_COPY_ATTRIBUTES): Copy MEM_POINTER.
+
 2006-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_cos): Use fold_strip_sign_ops().
