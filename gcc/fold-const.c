@@ -894,6 +894,7 @@ negate_mathfn_p (enum built_in_function code)
     CASE_FLT_FN (BUILT_IN_SINH):
     CASE_FLT_FN (BUILT_IN_TAN):
     CASE_FLT_FN (BUILT_IN_TANH):
+    CASE_FLT_FN (BUILT_IN_ERF):
       return true;
 
     default:

@@ -1,3 +1,7 @@
+2006-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fold-const.c (negate_mathfn_p): Add BUILT_IN_ERF.
+
 2006-11-10  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.c (build_int_cst_wide): Add an assertion (gcc_unreachable)
