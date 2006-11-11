@@ -683,7 +683,6 @@ init_optimization_passes (void)
   NEXT_PASS (pass_variable_tracking);
   NEXT_PASS (pass_free_cfg);
   NEXT_PASS (pass_machine_reorg);
-  NEXT_PASS (pass_purge_lineno_notes);
   NEXT_PASS (pass_cleanup_barriers);
   NEXT_PASS (pass_delay_slots);
   NEXT_PASS (pass_split_for_shorten_branches);

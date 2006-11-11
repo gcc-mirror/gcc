@@ -140,62 +140,6 @@ struct tree_opt_pass pass_cleanup_barriers =
   0                                     /* letter */
 };
 
-unsigned int
-purge_line_number_notes (void)
-{
-  rtx last_note = 0;
-  rtx insn;
-  /* Delete extraneous line number notes.
-     Note that two consecutive notes for different lines are not really
-     extraneous.  There should be some indication where that line belonged,
-     even if it became empty.  */
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (NOTE_P (insn))
-      {
-	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
-	  /* Any previous line note was for the prologue; gdb wants a new
-	     note after the prologue even if it is for the same line.  */
-	  last_note = NULL_RTX;
-	else if (NOTE_LINE_NUMBER (insn) >= 0)
-	  {
-	    /* Delete this note if it is identical to previous note.  */
-	    if (last_note
-#ifdef USE_MAPPED_LOCATION
-		&& NOTE_SOURCE_LOCATION (insn) == NOTE_SOURCE_LOCATION (last_note)
-#else
-		&& NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last_note)
-		&& NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last_note)
-#endif
-)
-	      {
-		delete_related_insns (insn);
-		continue;
-	      }
-
-	    last_note = insn;
-	  }
-      }
-  return 0;
-}
-
-struct tree_opt_pass pass_purge_lineno_notes =
-{
-  "elnotes",                            /* name */
-  NULL,                                 /* gate */
-  purge_line_number_notes,              /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  0,                                    /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
-  0                                     /* letter */
-};
-
 
 /* Initialize LABEL_NUSES and JUMP_LABEL fields.  Delete any REG_LABEL
    notes whose labels don't occur in the insn any more.  Returns the

@@ -1894,15 +1894,9 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
 	{
 	  rtx notes = REG_NOTES (insn);
 
-	  emit_insn_after_with_line_notes (pat, PREV_INSN (p), insn);
+	  p = emit_insn_after_setloc (pat, PREV_INSN (p), INSN_LOCATOR (insn));
 	  delete_insn (insn);
-	  /* emit_insn_after_with_line_notes has no
-	     return value, so search for the new insn.  */
-	  insn = p;
-	  while (! INSN_P (insn) || PATTERN (insn) != pat)
-	    insn = PREV_INSN (insn);
-
-	  REG_NOTES (insn) = notes;
+	  REG_NOTES (p) = notes;
 	}
     }
   /* Sometimes we'd generate src = const; src += n;

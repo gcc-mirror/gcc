@@ -866,12 +866,6 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   e->probability = REG_BR_PROB_BASE;
   e->count = src->count;
 
-  /* We don't want a block to end on a line-number note since that has
-     the potential of changing the code between -g and not -g.  */
-  while (NOTE_P (BB_END (e->src))
-	 && NOTE_LINE_NUMBER (BB_END (e->src)) >= 0)
-    delete_insn (BB_END (e->src));
-
   if (e->dest != target)
     redirect_edge_succ (e, target);
 
@@ -1233,11 +1227,6 @@ rtl_tidy_fallthru_edge (edge e)
 #endif
 
       q = PREV_INSN (q);
-
-      /* We don't want a block to end on a line-number note since that has
-	 the potential of changing the code between -g and not -g.  */
-      while (NOTE_P (q) && NOTE_LINE_NUMBER (q) >= 0)
-	q = PREV_INSN (q);
     }
 
   /* Selectively unlink the sequence.  */

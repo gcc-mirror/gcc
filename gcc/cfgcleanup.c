@@ -2312,8 +2312,6 @@ rest_of_handle_jump2 (void)
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
 	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
-  purge_line_number_notes ();
-
   if (optimize)
     cleanup_cfg (CLEANUP_EXPENSIVE);
 

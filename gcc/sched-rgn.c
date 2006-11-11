@@ -2787,7 +2787,6 @@ schedule_region (int rgn)
       if (write_symbols != NO_DEBUG)
 	{
 	  save_line_notes (b, head, tail);
-	  rm_line_notes (head, tail);
 	}
 
       /* rm_other_notes only removes notes which are _inside_ the
@@ -3044,10 +3043,6 @@ schedule_insns (void)
      prologue/epilogue insns.  */
   if (reload_completed)
     reposition_prologue_and_epilogue_notes (get_insns ());
-
-  /* Delete redundant line notes.  */
-  if (write_symbols != NO_DEBUG)
-    rm_redundant_line_notes ();
 
   if (sched_verbose)
     {

@@ -6138,19 +6138,10 @@ cse_main (rtx f, int nregs)
 
   /* Compute the mapping from uids to cuids.
      CUIDs are numbers assigned to insns, like uids,
-     except that cuids increase monotonically through the code.
-     Don't assign cuids to line-number NOTEs, so that the distance in cuids
-     between two insns is not affected by -g.  */
+     except that cuids increase monotonically through the code.  */
 
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
-    {
-      if (!NOTE_P (insn)
-	  || NOTE_LINE_NUMBER (insn) < 0)
-	INSN_CUID (insn) = ++i;
-      else
-	/* Give a line number note the same cuid as preceding insn.  */
-	INSN_CUID (insn) = i;
-    }
+    INSN_CUID (insn) = ++i;
 
   /* Loop over basic blocks.
      Compute the maximum number of qty's needed for each basic block

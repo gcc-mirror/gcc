@@ -386,7 +386,6 @@ extern struct tree_opt_pass pass_duplicate_computed_gotos;
 extern struct tree_opt_pass pass_variable_tracking;
 extern struct tree_opt_pass pass_free_cfg;
 extern struct tree_opt_pass pass_machine_reorg;
-extern struct tree_opt_pass pass_purge_lineno_notes;
 extern struct tree_opt_pass pass_cleanup_barriers;
 extern struct tree_opt_pass pass_delay_slots;
 extern struct tree_opt_pass pass_split_for_shorten_branches;
