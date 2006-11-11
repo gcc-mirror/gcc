@@ -1,3 +1,7 @@
+2006-11-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree-pretty-print.c (dump_generic_node): Print sign of Inf.
+
 2006-11-11  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (predict_loops): Kill RTL variant.
