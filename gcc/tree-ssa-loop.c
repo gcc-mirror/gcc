@@ -426,7 +426,7 @@ gate_tree_ssa_loop_prefetch (void)
 
 struct tree_opt_pass pass_loop_prefetch =
 {
-  "prefetch",				/* name */
+  "aprefetch",				/* name */
   gate_tree_ssa_loop_prefetch,		/* gate */
   tree_ssa_loop_prefetch,	       	/* execute */
   NULL,					/* sub */
