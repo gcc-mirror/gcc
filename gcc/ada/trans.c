@@ -6033,9 +6033,6 @@ maybe_stabilize_reference (tree ref, bool force, bool lvalues_only,
     case CONVERT_EXPR:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
-    case FIX_CEIL_EXPR:
     case VIEW_CONVERT_EXPR:
       result
 	= build1 (code, type,

@@ -1956,9 +1956,6 @@ tree_could_trap_p (tree expr)
 
     case CONVERT_EXPR:
     case FIX_TRUNC_EXPR:
-    case FIX_CEIL_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
       /* Conversion of floating point might trap.  */
       return honor_nans;
 

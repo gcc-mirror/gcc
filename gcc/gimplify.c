@@ -5489,9 +5489,6 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  /* FALLTHRU */
 
 	case FIX_TRUNC_EXPR:
-	case FIX_CEIL_EXPR:
-	case FIX_FLOOR_EXPR:
-	case FIX_ROUND_EXPR:
 	  /* unary_expr: ... | '(' cast ')' val | ...  */
 	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 			       is_gimple_val, fb_rvalue);

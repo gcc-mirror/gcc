@@ -1,3 +1,8 @@
+2006-11-11  Richard Guenther  <rguenther@suse.de>
+
+	* typeck.c (build_unary_op): Remove handling of FIX_CEIL_EXPR,
+	FIX_FLOOR_EXPR and FIX_ROUND_EXPR.
+
 2006-11-03  Roger Sayle  <roger@eyesopen.com>
 
 	* call.c (build_op_delete_call): Test user-visible type against

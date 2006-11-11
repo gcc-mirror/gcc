@@ -814,9 +814,6 @@ check_init (tree exp, words before)
     case ADDR_EXPR:
     case NON_LVALUE_EXPR:
     case INSTANCEOF_EXPR:
-    case FIX_CEIL_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
     case ABS_EXPR:
       /* Avoid needless recursion. */
       exp = TREE_OPERAND (exp, 0);

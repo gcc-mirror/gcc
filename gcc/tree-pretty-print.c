@@ -1324,9 +1324,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case FIX_TRUNC_EXPR:
-    case FIX_CEIL_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
     case FLOAT_EXPR:
     case CONVERT_EXPR:
     case NOP_EXPR:
@@ -2236,9 +2233,6 @@ op_prio (tree op)
     case NOP_EXPR:
     case CONVERT_EXPR:
     case FIX_TRUNC_EXPR:
-    case FIX_CEIL_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
     case TARGET_EXPR:
       return 14;
 
