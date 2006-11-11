@@ -1,3 +1,7 @@
+2006-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-symmetric-1.c: New test.
+
 2006-11-10 Paul Thomas <pault@gcc.gnu.org>
 
    PR fortran/29758
