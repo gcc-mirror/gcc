@@ -1,3 +1,9 @@
+2006-11-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (have_gmp): Only error if the gcc directory exists.
+	
+	* configure: Regenerate.
+
 2006-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Robustify error message for missing GMP/MPFR.
