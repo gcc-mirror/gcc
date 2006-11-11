@@ -217,7 +217,7 @@ dump_mem_ref (FILE *file, struct mem_ref *ref)
   fprintf (file, HOST_WIDE_INT_PRINT_DEC, ref->group->step);
   fprintf (file, ")\n");
 
-  fprintf (dump_file, "  delta ");
+  fprintf (file, "  delta ");
   fprintf (file, HOST_WIDE_INT_PRINT_DEC, ref->delta);
   fprintf (file, "\n");
 
@@ -1048,12 +1048,13 @@ tree_ssa_prefetch_arrays (struct loops *loops)
   for (i = loops->num - 1; i > 0; i--)
     {
       loop = loops->parray[i];
+      if (!loop)
+	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Processing loop %d:\n", loop->num);
 
-      if (loop)
-	unrolled |= loop_prefetch_arrays (loops, loop);
+      unrolled |= loop_prefetch_arrays (loops, loop);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "\n\n");
