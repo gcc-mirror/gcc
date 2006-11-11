@@ -1,3 +1,8 @@
+2006-11-10  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (operand_equal_p) <INTEGER_CST, REAL_CST, VECTOR_CST>:
+	Don't check for TREE_CONSTANT_OVERFLOW when comparing constants.
+
 2006-11-10  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* rtl.h (MEM_COPY_ATTRIBUTES): Copy MEM_POINTER.
