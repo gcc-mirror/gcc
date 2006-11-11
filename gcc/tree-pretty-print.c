@@ -752,7 +752,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 #if !defined(REAL_IS_NOT_DOUBLE) || defined(REAL_ARITHMETIC)
 	d = TREE_REAL_CST (node);
 	if (REAL_VALUE_ISINF (d))
-	  pp_string (buffer, " Inf");
+	  pp_string (buffer, REAL_VALUE_NEGATIVE (d) ? " -Inf" : " Inf");
 	else if (REAL_VALUE_ISNAN (d))
 	  pp_string (buffer, " Nan");
 	else
