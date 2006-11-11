@@ -4701,7 +4701,6 @@ static rtx
 expand_builtin_expect (tree arglist, rtx target)
 {
   tree exp, c;
-  rtx note, rtx_c;
 
   if (arglist == NULL_TREE
       || TREE_CHAIN (arglist) == NULL_TREE)
