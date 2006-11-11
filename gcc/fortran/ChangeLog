@@ -1,6 +1,7 @@
 2006-11-11  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
-	* data.c: Add 2006 to copyright years.
+	* array.c: Add 2006 to copyright years.
+	* data.c: Same.
 	* interface.c: Same.
 	* misc.c: Same.
 	* trans-io.c: Same.
