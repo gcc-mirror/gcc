@@ -1,5 +1,9 @@
 2006-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (fold_builtin_cos): Use fold_strip_sign_ops().
+	(fold_builtin_hypot): Likewise.
+	* fold-const.c (fold_strip_sign_ops): Handle "odd" builtins.
+
 	* fold-const.c (negate_mathfn_p): Add BUILT_IN_ERF.
 
 2006-11-10  Roger Sayle  <roger@eyesopen.com>

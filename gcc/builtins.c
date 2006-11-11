@@ -7242,7 +7242,7 @@ static tree
 fold_builtin_cos (tree arglist, tree type, tree fndecl)
 {
   tree arg = TREE_VALUE (arglist);
-  tree res;
+  tree res, narg;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
@@ -7252,12 +7252,9 @@ fold_builtin_cos (tree arglist, tree type, tree fndecl)
     return res;
   
   /* Optimize cos(-x) into cos (x).  */
-  if (TREE_CODE (arg) == NEGATE_EXPR)
-    {
-      tree args = build_tree_list (NULL_TREE,
-				   TREE_OPERAND (arg, 0));
-      return build_function_call_expr (fndecl, args);
-    }
+  if ((narg = fold_strip_sign_ops (arg)))
+    return build_function_call_expr (fndecl, 
+				     build_tree_list (NULL_TREE, narg));
 
   return NULL_TREE;
 }
@@ -7765,7 +7762,7 @@ fold_builtin_hypot (tree fndecl, tree arglist, tree type)
 {
   tree arg0 = TREE_VALUE (arglist);
   tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  tree res;
+  tree res, narg0, narg1;
 
   if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
     return NULL_TREE;
@@ -7776,17 +7773,13 @@ fold_builtin_hypot (tree fndecl, tree arglist, tree type)
   
   /* If either argument to hypot has a negate or abs, strip that off.
      E.g. hypot(-x,fabs(y)) -> hypot(x,y).  */
-  if (TREE_CODE (arg0) == NEGATE_EXPR || TREE_CODE (arg1) == NEGATE_EXPR
-      || TREE_CODE (arg0) == ABS_EXPR || TREE_CODE (arg1) == ABS_EXPR)
+  narg0 = fold_strip_sign_ops (arg0);
+  narg1 = fold_strip_sign_ops (arg1);
+  if (narg0 || narg1)
     {
-      tree narg0 = (TREE_CODE (arg0) == NEGATE_EXPR
-		    || TREE_CODE (arg0) == ABS_EXPR)
-	? TREE_OPERAND (arg0, 0) : arg0;
-      tree narg1 = (TREE_CODE (arg1) == NEGATE_EXPR
-		    || TREE_CODE (arg1) == ABS_EXPR)
-	? TREE_OPERAND (arg1, 0) : arg1;
-      tree narglist = tree_cons (NULL_TREE, narg0,
-				 build_tree_list (NULL_TREE, narg1));
+      tree narglist = tree_cons (NULL_TREE, narg0 ? narg0 : arg0,
+				 build_tree_list (NULL_TREE,
+						  narg1 ? narg1 : arg1));
       return build_function_call_expr (fndecl, narglist);
     }
   
