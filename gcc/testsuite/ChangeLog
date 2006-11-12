@@ -1,3 +1,7 @@
+2006-11-12  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/prefetch-3.c: New test.
+
 2006-11-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/13827

@@ -1036,4 +1036,7 @@ void swap_tree_operands (tree, tree *, tree *);
 
 extern void recalculate_used_alone (void);
 extern bool updating_used_alone;
+
+int least_common_multiple (int, int);
+
 #endif /* _TREE_FLOW_H  */
