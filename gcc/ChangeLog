@@ -1,3 +1,19 @@
+2006-11-11  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (int_binop_types_match_p): New function.
+	(size_binop): Relax constraint that both arguments must both have
+	exactly the same sizetype type.  Instead use int_binop_types_match_p.
+	(size_diffop): Likewise.
+
+	(make_range): Use build_int_cst instead of fold_convert.
+	(fold_cond_expr_with_comparison): Use build_int_cst to construct
+	integer constants of the correct type.
+	(fold_div_compare): Likewise.
+	(fold_single_bit_test): Likewise.
+	(fold_binary): Likewise.
+	* stor-layout.c (layout_type) <VECTOR_TYPE>: Ensure that TYPE_SIZE
+	has type bitsizetype and TYPE_SIZE_UNIT has type sizetype.
+
 2006-11-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR rtl-opt/28812
