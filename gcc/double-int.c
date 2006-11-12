@@ -290,7 +290,8 @@ double_int_umod (double_int a, double_int b, unsigned code)
   return double_int_mod (a, b, true, code);
 }
 
-/* Constructs tree in type TYPE from with value given by CST.  */
+/* Constructs tree in type TYPE from with value given by CST.  Signedness of CST
+   is assumed to be the same as the signedness of TYPE.  */
 
 tree
 double_int_to_tree (tree type, double_int cst)
@@ -298,6 +299,19 @@ double_int_to_tree (tree type, double_int cst)
   cst = double_int_ext (cst, TYPE_PRECISION (type), TYPE_UNSIGNED (type));
 
   return build_int_cst_wide (type, cst.low, cst.high);
+}
+
+/* Returns true if CST fits into range of TYPE.  Signedness of CST is assumed
+   to be the same as the signedness of TYPE.  */
+
+bool
+double_int_fits_to_tree_p (tree type, double_int cst)
+{
+  double_int ext = double_int_ext (cst,
+				   TYPE_PRECISION (type),
+				   TYPE_UNSIGNED (type));
+
+  return double_int_equal_p (cst, ext);
 }
 
 /* Returns true if CST is negative.  Of course, CST is considered to

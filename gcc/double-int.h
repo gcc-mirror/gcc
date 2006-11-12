@@ -58,7 +58,8 @@ union tree_node;
 /* Constructors and conversions.  */
 
 union tree_node *double_int_to_tree (union tree_node *, double_int);
-double_int tree_to_double_int (union tree_node *tree);
+bool double_int_fits_to_tree_p (union tree_node *, double_int);
+double_int tree_to_double_int (union tree_node *);
 
 /* Constructs double_int from integer CST.  The bits over the precision of
    HOST_WIDE_INT are filled with the sign bit.  */

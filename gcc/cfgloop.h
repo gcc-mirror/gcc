@@ -47,12 +47,31 @@ struct lpt_decision
 
 struct nb_iter_bound
 {
-  tree bound;		/* The constant expression whose value is an upper
-			   bound on the number of executions of ...  */
-  tree at_stmt;		/* ... this statement during one execution of
-			   a loop.  */
+  /* The statement STMT is executed at most ...  */
+  tree stmt;
+
+  /* ... BOUND + 1 times (BOUND must be an unsigned constant).
+     The + 1 is added for the following reasons:
+
+     a) 0 would otherwise be unused, while we would need to care more about
+        overflows (as MAX + 1 is sometimes produced as the estimate on number
+	of executions of STMT).
+     b) it is consistent with the result of number_of_iterations_exit.  */
+  double_int bound;
+
+  /* True if the statement will cause the loop to be leaved the (at most) 
+     BOUND + 1-st time it is executed, that is, all the statements after it
+     are executed at most BOUND times.  */
+  bool is_exit;
+
+  /* True if the bound is "realistic" -- i.e., most likely the loop really has
+     number of iterations close to the bound.  Exact bounds (if the number of
+     iterations of a loop is a constant) and bounds derived from the size of
+     data accessed in the loop are considered realistic.  */
+  bool realistic;
+
+  /* The next bound in the list.  */
   struct nb_iter_bound *next;
-			/* The next bound in a list.  */
 };
 
 /* Structure to hold information for each natural loop.  */
@@ -111,9 +130,18 @@ struct loop
      information in this field.  */
   tree nb_iterations;
 
-  /* An INTEGER_CST estimation of the number of iterations.  NULL_TREE
-     if there is no estimation.  */
-  tree estimated_nb_iterations;
+  /* An integer estimation of the number of iterations.  Estimate_state
+     describes what is the state of the estimation.  */
+  enum
+    {
+      /* Estimate was not computed yet.  */
+      EST_NOT_COMPUTED,
+      /* Estimate was computed, but we could derive no useful bound.  */
+      EST_NOT_AVAILABLE,
+      /* Estimate is ready.  */
+      EST_AVAILABLE
+    } estimate_state;
+  double_int estimated_nb_iterations;
 
   /* Upper bound on number of iterations of a loop.  */
   struct nb_iter_bound *bounds;
@@ -398,6 +426,5 @@ enum
 extern void unroll_and_peel_loops (struct loops *, int);
 extern void doloop_optimize_loops (struct loops *);
 extern void move_loop_invariants (struct loops *);
-extern void record_estimate (struct loop *, tree, tree, tree);
 
 #endif /* GCC_CFGLOOP_H */
