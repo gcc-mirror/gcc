@@ -1,3 +1,8 @@
+2006-11-12  David Daney  <ddaney@avtrex.com>
+
+	PR java/29805
+	* typeck.c (build_java_array_type): Increase buffer sizes.
+
 2006-11-11  Richard Guenther  <rguenther@suse.de>
 
 	* check-init.c (check_init): Remove handling of FIX_CEIL_EXPR,
