@@ -1,3 +1,13 @@
+2006-11-12  Jie Zhang  <jie.zhang@analog.com>
+
+	Revert
+	2006-11-11  Jie Zhang  <jie.zhang@analog.com>
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define __bfin__
+	and __BFIN__.
+
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Use builtin_define_std
+	instead of builtin_define for bfin and BFIN.
+
 2006-11-11  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define __bfin__
