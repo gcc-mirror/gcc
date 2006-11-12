@@ -2972,6 +2972,66 @@ insert_range_assertions (void)
 }
 
 
+/* Replaces all uses of NAME by VAL.  */
+
+static void
+replace_uses_by_vrp (tree name, tree val)
+{
+  imm_use_iterator imm_iter;
+  use_operand_p use;
+  tree stmt;
+  edge e;
+  unsigned i;
+  VEC(tree,heap) *stmts = VEC_alloc (tree, heap, 20);
+
+  FOR_EACH_IMM_USE_SAFE (use, imm_iter, name)
+    {
+      stmt = USE_STMT (use);
+      SET_USE (use, val);
+
+      if (TREE_CODE (stmt) == PHI_NODE)
+	{
+	  e = PHI_ARG_EDGE (stmt, PHI_ARG_INDEX_FROM_USE (use));
+	  if (e->flags & EDGE_ABNORMAL)
+	    {
+	      /* This can only occur for virtual operands, since
+		 for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+		 would prevent replacement.  */
+	      gcc_assert (!is_gimple_reg (name));
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
+	    }
+	}
+      else
+	VEC_safe_push (tree, heap, stmts, stmt);
+    }
+ 
+  /* We do not update the statements in the loop above.  Consider
+     x = w * w;
+
+     If we performed the update in the first loop, the statement
+     would be rescanned after first occurrence of w is replaced,
+     the new uses would be placed to the beginning of the list,
+     and we would never process them.  */
+  for (i = 0; VEC_iterate (tree, stmts, i, stmt); i++)
+    update_stmt (stmt);
+
+  VEC_free (tree, heap, stmts);
+
+  /* Also update the trees stored in loop structures.  */
+  if (current_loops)
+    {
+      struct loop *loop;
+
+      for (i = 0; i < current_loops->num; i++)
+	{
+	  loop = current_loops->parray[i];
+	  if (loop)
+	    substitute_in_loop_info (loop, name, val);
+	}
+    }
+}
+
+
 /* Convert range assertion expressions into the implied copies and
    copy propagate away the copies.  Doing the trivial copy propagation
    here avoids the need to run the full copy propagation pass after
@@ -3015,8 +3075,7 @@ remove_range_assertions (void)
 	  {
 	    tree rhs = TREE_OPERAND (stmt, 1);
 	    tree cond = fold (ASSERT_EXPR_COND (rhs));
-	    use_operand_p use_p;
-	    imm_use_iterator iter;
+	    tree lhs = TREE_OPERAND (stmt, 0);
 
 	    gcc_assert (cond != boolean_false_node);
 	    TREE_OPERAND (stmt, 1) = ASSERT_EXPR_VAR (rhs);
@@ -3024,11 +3083,7 @@ remove_range_assertions (void)
 
 	    /* The statement is now a copy.  Propagate the RHS into
 	       every use of the LHS.  */
-	    FOR_EACH_IMM_USE_SAFE (use_p, iter, TREE_OPERAND (stmt, 0))
-	      {
-		SET_USE (use_p, ASSERT_EXPR_VAR (rhs));
-		update_stmt (USE_STMT (use_p));
-	      }
+	    replace_uses_by_vrp (lhs, ASSERT_EXPR_VAR (rhs));
 
 	    /* And finally, remove the copy, it is not needed.  */
 	    bsi_remove (&si);

@@ -1,3 +1,9 @@
+2006-11-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/28545
+	* tree-vrp.c (replace_uses_by_vrp): New function.
+	(remove_range_assertions): Use it.
+
 2006-11-12  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Use builtin_define_std
