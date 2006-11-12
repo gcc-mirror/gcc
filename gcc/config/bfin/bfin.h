@@ -39,8 +39,8 @@ extern int target_flags;
 #define TARGET_CPU_CPP_BUILTINS()               \
   do                                            \
     {                                           \
-      builtin_define ("bfin");                  \
-      builtin_define ("BFIN");                  \
+      builtin_define_std ("bfin");              \
+      builtin_define_std ("BFIN");              \
       if (flag_pic)				\
 	{					\
 	  builtin_define ("__PIC__");		\
