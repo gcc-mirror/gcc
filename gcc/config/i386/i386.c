@@ -50,6 +50,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-gimple.h"
 #include "dwarf2.h"
 #include "tm-constrs.h"
+#include "params.h"
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -536,7 +537,12 @@ struct processor_costs k8_cost = {
 					   in SImode, DImode and TImode */
   5,					/* MMX or SSE register to integer */
   64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
+  /* New AMD processors neer drop prefetches; if they cannot be performed
+     immediately, they are queued.  We set number of simultaneous prefetches
+     to a large constant to reflect this (it probably is not a good idea not
+     to limit number of prefetches at all, as their execution also takes some
+     time).  */
+  100,					/* number of parallel prefetches */
   5,					/* Branch cost */
   COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
@@ -2063,6 +2069,12 @@ override_options (void)
      so it won't slow down the compilation and make x87 code slower.  */
   if (!TARGET_SCHEDULE)
     flag_schedule_insns_after_reload = flag_schedule_insns = 0;
+
+  if (!PARAM_SET_P (PARAM_SIMULTANEOUS_PREFETCHES))
+    set_param_value ("simultaneous-prefetches",
+		     ix86_cost->simultaneous_prefetches);
+  if (!PARAM_SET_P (PARAM_L1_CACHE_LINE_SIZE))
+    set_param_value ("l1-cache-line-size", ix86_cost->prefetch_block);
 }
 
 /* switch to the appropriate section for output of DECL.

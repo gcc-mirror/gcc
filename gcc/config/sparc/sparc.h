@@ -2175,19 +2175,6 @@ do {                                                                    \
 	 : (sparc_cpu == PROCESSOR_NIAGARA \
 	    ? 4 \
 	 : 3)))
-
-#define PREFETCH_BLOCK \
-	((sparc_cpu == PROCESSOR_ULTRASPARC \
-          || sparc_cpu == PROCESSOR_ULTRASPARC3 \
-	  || sparc_cpu == PROCESSOR_NIAGARA) \
-         ? 64 : 32)
-
-#define SIMULTANEOUS_PREFETCHES \
-	((sparc_cpu == PROCESSOR_ULTRASPARC \
-	  || sparc_cpu == PROCESSOR_NIAGARA) \
-         ? 2 \
-         : (sparc_cpu == PROCESSOR_ULTRASPARC3 \
-            ? 8 : 3))
 
 /* Control the assembler format that we output.  */
 

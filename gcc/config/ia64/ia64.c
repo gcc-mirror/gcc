@@ -9798,6 +9798,11 @@ ia64_optimization_options (int level ATTRIBUTE_UNUSED,
 {
   /* Let the scheduler form additional regions.  */
   set_param_value ("max-sched-extend-regions-iters", 2);
+
+  /* Set the default values for cache-related parameters.  */
+  set_param_value ("simultaneous-prefetches", 6);
+  set_param_value ("l1-cache-line-size", 32);
+
 }
 
 #include "gt-ia64.h"

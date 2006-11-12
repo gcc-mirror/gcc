@@ -1,3 +1,37 @@
+2006-11-12  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* params.c (set_param_value): Initialize the "set" field.
+	* params.h (struct param_info): Add "set" field.
+	(PARAM_SET_P): New macro.
+	(PREFETCH_LATENCY, SIMULTANEOUS_PREFETCHES, L1_CACHE_SIZE,
+	L1_CACHE_LINE_SIZE): New macros.
+	* toplev.c (DEFPARAM): Initialize the "set" field.
+	* tree-ssa-loop-prefetch.c (PREFETCH_LATENCY,
+	SIMULTANEOUS_PREFETCHES): Removed.
+	(PREFETCH_BLOCK): Use L1_CACHE_LINE_SIZE.
+	(tree_ssa_prefetch_arrays): Dump the values of the parameters.
+	* config/sparc/sparc.c: Include params.h.
+	(sparc_override_options): Set SIMULTANEOUS_PREFETCHES and
+	L1_CACHE_LINE_SIZE parameters.
+	* config/sparc/sparc.h (PREFETCH_BLOCK, SIMULTANEOUS_PREFETCHES):
+	Removed.
+	* config/i386/i386.h (PREFETCH_BLOCK, SIMULTANEOUS_PREFETCHES):
+	Removed.
+	* config/i386/i386.c: Include params.h.
+	(k8_cost): Change default value for SIMULTANEOUS_PREFETCHES.
+	(override_options): Set SIMULTANEOUS_PREFETCHES and
+	L1_CACHE_LINE_SIZE parameters.
+	* config/sh/sh.h (SIMULTANEOUS_PREFETCHES): Removed.
+	(OPTIMIZATION_OPTIONS): Set SIMULTANEOUS_PREFETCHES and
+	L1_CACHE_LINE_SIZE parameters.
+	* config/ia64/ia64.c (ia64_optimization_options): Set
+	SIMULTANEOUS_PREFETCHES and L1_CACHE_LINE_SIZE parameters.
+	* config/ia64/ia64.h (SIMULTANEOUS_PREFETCHES, PREFETCH_BLOCK):
+	Removed.
+	* params.def (PARAM_PREFETCH_LATENCY, PARAM_SIMULTANEOUS_PREFETCHES,
+	PARAM_L1_CACHE_SIZE, PARAM_L1_CACHE_LINE_SIZE): New params.
+	* doc/invoke.texi: Document new params.
+
 2006-11-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/13827

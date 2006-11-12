@@ -77,7 +77,10 @@ set_param_value (const char *name, int value)
 		 compiler_params[i].option,
 		 compiler_params[i].max_value);
 	else
-	  compiler_params[i].value = value;
+	  {
+	    compiler_params[i].value = value;
+	    compiler_params[i].set = true;
+	  }
 	return;
       }
 

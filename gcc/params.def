@@ -594,6 +594,37 @@ DEFPARAM(PARAM_MAX_SCHED_READY_INSNS,
 	 "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass",
 	 100, 0, 0)
 
+/* Prefetching and cache-optimizations related parameters.  Default values are
+   usually set by machine description.  */
+
+/* The number of insns executed before prefetch is completed.  */
+
+DEFPARAM (PARAM_PREFETCH_LATENCY,
+	 "prefetch-latency",
+	 "The number of insns executed before prefetch is completed",
+	 200, 0, 0)
+
+/* The number of prefetches that can run at the same time.  */
+
+DEFPARAM (PARAM_SIMULTANEOUS_PREFETCHES,
+	  "simultaneous-prefetches",
+	  "The number of prefetches that can run at the same time",
+	  3, 0, 0)
+
+/* The size of L1 cache in number of cache lines.  */
+
+DEFPARAM (PARAM_L1_CACHE_SIZE,
+	  "l1-cache-size",
+	  "The size of L1 cache",
+	  1024, 0, 0)
+
+/* The size of L1 cache line in bytes.  */
+
+DEFPARAM (PARAM_L1_CACHE_LINE_SIZE,
+	  "l1-cache-line-size",
+	  "The size of L1 cache line",
+	  32, 0, 0)
+
 /*
 Local variables:
 mode:c

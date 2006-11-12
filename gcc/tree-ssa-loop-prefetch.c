@@ -115,19 +115,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Magic constants follow.  These should be replaced by machine specific
    numbers.  */
 
-/* A number that should roughly correspond to the number of instructions
-   executed before the prefetch is completed.  */
-
-#ifndef PREFETCH_LATENCY
-#define PREFETCH_LATENCY 200
-#endif
-
-/* Number of prefetches that can run at the same time.  */
-
-#ifndef SIMULTANEOUS_PREFETCHES
-#define SIMULTANEOUS_PREFETCHES 3
-#endif
-
 /* True if write can be prefetched by a read prefetch.  */
 
 #ifndef WRITE_CAN_USE_READ_PREFETCH
@@ -140,10 +127,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define READ_CAN_USE_WRITE_PREFETCH 0
 #endif
 
-/* Cache line size.  Assumed to be a power of two.  */
+/* The size of the block loaded by a single prefetch.  Usually, this is
+   the same as cache line size (at the moment, we only consider one level
+   of cache hierarchy).  */
 
 #ifndef PREFETCH_BLOCK
-#define PREFETCH_BLOCK 32
+#define PREFETCH_BLOCK L1_CACHE_LINE_SIZE
 #endif
 
 /* Do we have a forward hardware sequential prefetching?  */
@@ -1025,6 +1014,19 @@ tree_ssa_prefetch_arrays (struct loops *loops)
 	 -march=pentium4 causes HAVE_prefetch to be true.  Ugh.  */
       || PREFETCH_BLOCK == 0)
     return 0;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Prefetching parameters:\n");
+      fprintf (dump_file, "    simultaneous prefetches: %d\n",
+	       SIMULTANEOUS_PREFETCHES);
+      fprintf (dump_file, "    prefetch latency: %d\n", PREFETCH_LATENCY);
+      fprintf (dump_file, "    L1 cache size: %d (%d bytes)\n",
+	       L1_CACHE_SIZE, L1_CACHE_SIZE * L1_CACHE_LINE_SIZE);
+      fprintf (dump_file, "    L1 cache line size: %d\n", L1_CACHE_LINE_SIZE);
+      fprintf (dump_file, "    prefetch block size: %d\n", PREFETCH_BLOCK);
+      fprintf (dump_file, "\n");
+    }
 
   initialize_original_copy_tables ();
 

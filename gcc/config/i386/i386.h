@@ -1739,12 +1739,6 @@ do {							\
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-/* Number of bytes moved into a data cache for a single prefetch operation.  */
-#define PREFETCH_BLOCK ix86_cost->prefetch_block
-
-/* Number of prefetch operations that can be done in parallel.  */
-#define SIMULTANEOUS_PREFETCHES ix86_cost->simultaneous_prefetches
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 16
