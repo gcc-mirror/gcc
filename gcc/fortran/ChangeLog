@@ -1,3 +1,41 @@
+2006-11-12 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/29699
+	* trans-array.c (structure_alloc_comps): Detect pointers to
+	arrays and use indirect reference to declaration.
+	* resolve.c (resolve_fl_variable): Tidy up condition.
+	(resolve_symbol): The same and only add initialization code if
+	the symbol is referenced.
+	* trans-decl.c (gfc_trans_deferred_vars): Call gfc_trans_
+	deferred_array before gfc_trans_auto_array_allocation.
+
+	PR fortran/21730
+	* symbol.c (check_done): Remove.
+	(gfc_add_attribute): Remove reference to check_done and remove
+	the argument attr_intent.
+	(gfc_add_allocatable, gfc_add_dimension, gfc_add_external,
+	gfc_add_intrinsic, gfc_add_optional, gfc_add_pointer,
+	gfc_add_cray_pointer, gfc_add_cray_pointee, gfc_add_result,
+	gfc_add_target, gfc_add_in_common, gfc_add_elemental,
+	gfc_add_pure, gfc_add_recursive, gfc_add_procedure,
+	gfc_add_type): Remove references to check_done.
+	* decl.c (attr_decl1): Eliminate third argument in call to
+	gfc_add_attribute.
+	* gfortran.h : Change prototype for gfc_add_attribute.
+
+	PR fortran/29431
+	* trans-array.c    (get_array_ctor_strlen): If we fall through to
+	default, use a constant character length if it is available.
+
+	PR fortran/29758
+	* check.c (gfc_check_reshape): Check that there are enough
+	elements in the source array as to be able to fill an array
+	defined by shape, when pad is absent.
+
+	PR fortran/29315
+	* trans-expr.c (is_aliased_array): Treat correctly the case where the
+	component is itself and array or array reference.
+
 2006-11-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29454

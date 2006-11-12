@@ -1416,7 +1416,7 @@ get_array_ctor_strlen (gfc_constructor * c, tree * len)
 
 	case EXPR_ARRAY:
 	  if (!get_array_ctor_strlen (c->expr->value.constructor, len))
-	    is_const = FALSE;
+	    is_const = false;
 	  break;
 
 	case EXPR_VARIABLE:
@@ -1425,7 +1425,15 @@ get_array_ctor_strlen (gfc_constructor * c, tree * len)
 	  break;
 
 	default:
-	  is_const = FALSE;
+	  is_const = false;
+
+	  /* Hope that whatever we have possesses a constant character
+	     length!  */
+	  if (!(*len && INTEGER_CST_P (*len)) && c->expr->ts.cl)
+	    {
+	      gfc_conv_const_charlen (c->expr->ts.cl);
+	      *len = c->expr->ts.cl->backend_decl;
+	    }
 	  /* TODO: For now we just ignore anything we don't know how to
 	     handle, and hope we can figure it out a different way.  */
 	  break;
@@ -4743,6 +4751,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
   tree null_cond = NULL_TREE;
 
   gfc_init_block (&fnblock);
+
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+    decl = build_fold_indirect_ref (decl);
 
   /* If this an array of derived types with allocatable components
      build a loop and recursively call this function.  */

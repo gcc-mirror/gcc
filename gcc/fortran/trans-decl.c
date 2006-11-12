@@ -2534,6 +2534,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
   gfc_symbol *sym;
   gfc_formal_arglist *f;
   stmtblock_t body;
+  bool seen_trans_deferred_array = false;
 
   /* Deal with implicit return variables.  Explicit return variables will
      already have been added.  */
@@ -2590,10 +2591,19 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 		  if (TREE_STATIC (sym->backend_decl))
 		    gfc_trans_static_array_pointer (sym);
 		  else
-		    fnbody = gfc_trans_deferred_array (sym, fnbody);
+		    {
+		      seen_trans_deferred_array = true;
+		      fnbody = gfc_trans_deferred_array (sym, fnbody);
+		    }
 		}
 	      else
 		{
+		  if (sym_has_alloc_comp)
+		    {
+		      seen_trans_deferred_array = true;
+		      fnbody = gfc_trans_deferred_array (sym, fnbody);
+		    }
+
 		  gfc_get_backend_locus (&loc);
 		  gfc_set_backend_locus (&sym->declared_at);
 		  fnbody = gfc_trans_auto_array_allocation (sym->backend_decl,
@@ -2619,14 +2629,14 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	      break;
 
 	    case AS_DEFERRED:
-	      if (!sym_has_alloc_comp)
-		fnbody = gfc_trans_deferred_array (sym, fnbody);
+	      seen_trans_deferred_array = true;
+	      fnbody = gfc_trans_deferred_array (sym, fnbody);
 	      break;
 
 	    default:
 	      gcc_unreachable ();
 	    }
-	  if (sym_has_alloc_comp)
+	  if (sym_has_alloc_comp && !seen_trans_deferred_array)
 	    fnbody = gfc_trans_deferred_array (sym, fnbody);
 	}
       else if (sym_has_alloc_comp)
