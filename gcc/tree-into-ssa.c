@@ -2659,6 +2659,13 @@ need_ssa_update_p (void)
   return syms_to_rename || old_ssa_names || new_ssa_names;
 }
 
+/* Return true if SSA name mappings have been registered for SSA updating.  */
+
+bool
+name_mappings_registered_p (void)
+{
+  return repl_tbl && htab_elements (repl_tbl) > 0;
+}
 
 /* Return true if name N has been registered in the replacement table.  */
 

@@ -1200,11 +1200,13 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
     return false;
 
   /* It must be possible to eliminate all phi nodes in B.  If ssa form
-     is not up-to-date, we cannot eliminate any phis.  */
+     is not up-to-date, we cannot eliminate any phis; however, if only
+     some symbols as whole are marked for renaming, this is not a problem,
+     as phi nodes for those symbols are irrelevant in updating anyway.  */
   phi = phi_nodes (b);
   if (phi)
     {
-      if (need_ssa_update_p ())
+      if (name_mappings_registered_p ())
 	return false;
 
       for (; phi; phi = PHI_CHAIN (phi))
@@ -1241,7 +1243,6 @@ replace_uses_by (tree name, tree val)
   tree stmt;
   edge e;
   unsigned i;
-
 
   FOR_EACH_IMM_USE_STMT (stmt, imm_iter, name)
     {
