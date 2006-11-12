@@ -1857,13 +1857,15 @@ fixed_scalar_and_varying_struct_p (rtx mem1, rtx mem2, rtx mem1_addr,
   if (! flag_strict_aliasing)
     return NULL_RTX;
 
-  if (MEM_SCALAR_P (mem1) && MEM_IN_STRUCT_P (mem2)
+  if (MEM_ALIAS_SET (mem2)
+      && MEM_SCALAR_P (mem1) && MEM_IN_STRUCT_P (mem2)
       && !varies_p (mem1_addr, 1) && varies_p (mem2_addr, 1))
     /* MEM1 is a scalar at a fixed address; MEM2 is a struct at a
        varying address.  */
     return mem1;
 
-  if (MEM_IN_STRUCT_P (mem1) && MEM_SCALAR_P (mem2)
+  if (MEM_ALIAS_SET (mem1)
+      && MEM_IN_STRUCT_P (mem1) && MEM_SCALAR_P (mem2)
       && varies_p (mem1_addr, 1) && !varies_p (mem2_addr, 1))
     /* MEM2 is a scalar at a fixed address; MEM1 is a struct at a
        varying address.  */
