@@ -1,6 +1,6 @@
 /* Implements exception handling.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -1869,7 +1869,7 @@ sjlj_emit_function_enter (rtx dispatch_label)
 
 #ifdef DONT_USE_BUILTIN_SETJMP
   {
-    rtx x, note;
+    rtx x;
     x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_RETURNS_TWICE,
 				 TYPE_MODE (integer_type_node), 1,
 				 plus_constant (XEXP (fc, 0),
