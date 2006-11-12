@@ -716,6 +716,7 @@ void delete_update_ssa (void);
 void register_new_name_mapping (tree, tree);
 tree create_new_def_for (tree, tree, def_operand_p);
 bool need_ssa_update_p (void);
+bool name_mappings_registered_p (void);
 bool name_registered_for_update_p (tree);
 bitmap ssa_names_to_replace (void);
 void release_ssa_name_after_update_ssa (tree name);
