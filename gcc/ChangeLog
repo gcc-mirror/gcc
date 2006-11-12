@@ -1,3 +1,11 @@
+2006-11-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_cosh): New.
+	(fold_builtin_1): Use it.
+	* fold-const.c (negate_mathfn_p): Add llround, lround, round,
+	trunc to the list of "odd" functions.  Also add llrint, lrint,
+	rint and nearbyint when flag_rounding_math is false.
+
 2006-11-12  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-flow.h (name_mappings_registered_p): Declare.

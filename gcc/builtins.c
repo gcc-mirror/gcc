@@ -151,6 +151,7 @@ static tree fold_builtin_cbrt (tree, tree);
 static tree fold_builtin_pow (tree, tree, tree);
 static tree fold_builtin_powi (tree, tree, tree);
 static tree fold_builtin_cos (tree, tree, tree);
+static tree fold_builtin_cosh (tree, tree, tree);
 static tree fold_builtin_tan (tree, tree);
 static tree fold_builtin_trunc (tree, tree);
 static tree fold_builtin_floor (tree, tree);
@@ -7121,6 +7122,29 @@ fold_builtin_cos (tree arglist, tree type, tree fndecl)
   return NULL_TREE;
 }
 
+/* Fold function call to builtin cosh, coshf, or coshl.  Return
+   NULL_TREE if no simplification can be made.  */
+static tree
+fold_builtin_cosh (tree arglist, tree type, tree fndecl)
+{
+  if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    {
+      tree arg = TREE_VALUE (arglist);
+      tree res, narg;
+
+      /* Calculate the result when the argument is a constant.  */
+      if ((res = do_mpfr_arg1 (arg, type, mpfr_cosh, NULL, NULL, 0)))
+	return res;
+  
+      /* Optimize cosh(-x) into cosh (x).  */
+      if ((narg = fold_strip_sign_ops (arg)))
+	return build_function_call_expr (fndecl, 
+					 build_tree_list (NULL_TREE, narg));
+    }
+  
+  return NULL_TREE;
+}
+
 /* Fold function call to builtin tan, tanf, or tanl.  Return
    NULL_TREE if no simplification can be made.  */
 static tree
@@ -9046,10 +9070,7 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     break;
 
     CASE_FLT_FN (BUILT_IN_COSH):
-      if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
-	return do_mpfr_arg1 (TREE_VALUE (arglist), type, mpfr_cosh,
-			     NULL, NULL, 0);
-    break;
+      return fold_builtin_cosh (arglist, type, fndecl);
 
     CASE_FLT_FN (BUILT_IN_TANH):
       if (validate_arglist (arglist, REAL_TYPE, VOID_TYPE))

@@ -890,13 +890,23 @@ negate_mathfn_p (enum built_in_function code)
     CASE_FLT_FN (BUILT_IN_ATAN):
     CASE_FLT_FN (BUILT_IN_ATANH):
     CASE_FLT_FN (BUILT_IN_CBRT):
+    CASE_FLT_FN (BUILT_IN_ERF):
+    CASE_FLT_FN (BUILT_IN_LLROUND):
+    CASE_FLT_FN (BUILT_IN_LROUND):
+    CASE_FLT_FN (BUILT_IN_ROUND):
     CASE_FLT_FN (BUILT_IN_SIN):
     CASE_FLT_FN (BUILT_IN_SINH):
     CASE_FLT_FN (BUILT_IN_TAN):
     CASE_FLT_FN (BUILT_IN_TANH):
-    CASE_FLT_FN (BUILT_IN_ERF):
+    CASE_FLT_FN (BUILT_IN_TRUNC):
       return true;
 
+    CASE_FLT_FN (BUILT_IN_LLRINT):
+    CASE_FLT_FN (BUILT_IN_LRINT):
+    CASE_FLT_FN (BUILT_IN_NEARBYINT):
+    CASE_FLT_FN (BUILT_IN_RINT):
+      return !flag_rounding_math;
+    
     default:
       break;
     }
