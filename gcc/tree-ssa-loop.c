@@ -189,8 +189,7 @@ struct tree_opt_pass pass_tree_unswitch =
 static unsigned int
 tree_vectorize (void)
 {
-  vectorize_loops (current_loops);
-  return 0;
+  return vectorize_loops (current_loops);
 }
 
 static bool

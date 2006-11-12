@@ -345,8 +345,6 @@ extern bool supportable_widening_operation (enum tree_code, tree, tree,
 extern loop_vec_info new_loop_vec_info (struct loop *loop);
 extern void destroy_loop_vec_info (loop_vec_info);
 extern stmt_vec_info new_stmt_vec_info (tree stmt, loop_vec_info);
-/* Main driver.  */
-extern void vectorize_loops (struct loops *);
 
 
 /** In tree-vect-analyze.c  **/
