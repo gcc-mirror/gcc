@@ -442,8 +442,8 @@ lambda_lattice_compute_base (lambda_loopnest nest)
 
 /* Compute the least common multiple of two numbers A and B .  */
 
-static int
-lcm (int a, int b)
+int
+least_common_multiple (int a, int b)
 {
   return (abs (a) * abs (b) / gcd (a, b));
 }
@@ -577,7 +577,7 @@ compute_nest_using_fourier_motzkin (int size,
 		{
 		  if (A[k][i] < 0)
 		    {
-		      multiple = lcm (A[j][i], A[k][i]);
+		      multiple = least_common_multiple (A[j][i], A[k][i]);
 		      f1 = multiple / A[j][i];
 		      f2 = -1 * multiple / A[k][i];
 
