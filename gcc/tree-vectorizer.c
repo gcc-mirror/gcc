@@ -2151,7 +2151,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
    
    Entry Point to loop vectorization phase.  */
 
-void
+unsigned
 vectorize_loops (struct loops *loops)
 {
   unsigned int i;
@@ -2209,4 +2209,6 @@ vectorize_loops (struct loops *loops)
       destroy_loop_vec_info (loop_vinfo);
       loop->aux = NULL;
     }
+
+  return num_vectorized_loops > 0 ? TODO_cleanup_cfg : 0;
 }

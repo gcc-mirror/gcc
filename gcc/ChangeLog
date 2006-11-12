@@ -1,5 +1,14 @@
 2006-11-12  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* tree-ssa-loop.c (tree_vectorize): Return the result of
+	vectorize_loops.
+	* tree-vectorizer.c (vectorize_loops): Return TODO_cleanup_cfg
+	if anything changed.
+	* tree-vectorizer.h (vectorize_loops): Declaration removed.
+	* tree-flow.h (vectorize_loops): Declaration changed.
+
+2006-11-12  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* tree-ssa-loop-prefetch.c (schedule_prefetches): Cleanup and improve
 	comments.
 	(issue_prefetch_ref): Move assignment to write_p out of loop.
