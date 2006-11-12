@@ -1,6 +1,6 @@
 // Bitmap Allocator. Out of line function definitions. -*- C++ -*-
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,10 +31,16 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
-  namespace balloc
+  namespace __balloc
   {
-    template class __mini_vector<std::pair<bitmap_allocator<char>::_Alloc_block*, bitmap_allocator<char>::_Alloc_block*> >;
-    template class __mini_vector<std::pair<bitmap_allocator<wchar_t>::_Alloc_block*, bitmap_allocator<wchar_t>::_Alloc_block*> >;
+    template class __mini_vector<
+      std::pair<bitmap_allocator<char>::_Alloc_block*,
+		bitmap_allocator<char>::_Alloc_block*> >;
+
+    template class __mini_vector<
+      std::pair<bitmap_allocator<wchar_t>::_Alloc_block*,
+		bitmap_allocator<wchar_t>::_Alloc_block*> >;
+
     template class __mini_vector<size_t*>;
 
     template size_t** __lower_bound(size_t**, size_t**, size_t const&, 
@@ -46,10 +52,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   _M_get(size_t __sz) throw(std::bad_alloc)
   {
 #if defined __GTHREADS
-    mutex_type& __bfl_mutex = _M_get_mutex();
+    __mutex_type& __bfl_mutex = _M_get_mutex();
 #endif
     const vector_type& __free_list = _M_get_free_list();
-    using __gnu_cxx::balloc::__lower_bound;
+    using __gnu_cxx::__balloc::__lower_bound;
     iterator __tmp = __lower_bound(__free_list.begin(), __free_list.end(), 
 				   __sz, _LT_pointer_compare());
 
@@ -71,7 +77,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    --__ctr;
 	    try
 	      {
-		__ret = reinterpret_cast<size_t*>(::operator new(__sz + sizeof(size_t)));
+		__ret = reinterpret_cast<size_t*>
+		  (::operator new(__sz + sizeof(size_t)));
 	      }
 	    catch(...)
 	      {
@@ -95,7 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       }
   }
 
-  void 
+  void
   free_list::
   _M_clear()
   {

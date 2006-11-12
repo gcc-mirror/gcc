@@ -67,20 +67,20 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   
   // NB: As this is used in libsupc++, need to only depend on
   // exception. No stdexception classes, no use of std::string.
-  class concurrence_lock_error : public std::exception
+  class __concurrence_lock_error : public std::exception
   {
   public:
     virtual char const*
     what() const throw()
-    { return "__gnu_cxx::concurrence_lock_error"; }
+    { return "__gnu_cxx::__concurrence_lock_error"; }
   };
 
-  class concurrence_unlock_error : public std::exception
+  class __concurrence_unlock_error : public std::exception
   {
   public:
     virtual char const*
     what() const throw()
-    { return "__gnu_cxx::concurrence_unlock_error"; }
+    { return "__gnu_cxx::__concurrence_unlock_error"; }
   };
 
   // Substitute for concurrence_error object in the case of -fno-exceptions.
@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   __throw_concurrence_lock_error()
   {
 #if __EXCEPTIONS
-    throw concurrence_lock_error();
+    throw __concurrence_lock_error();
 #else
     std::abort();
 #endif
@@ -98,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   __throw_concurrence_unlock_error()
   {
 #if __EXCEPTIONS
-    throw concurrence_unlock_error();
+    throw __concurrence_unlock_error();
 #else
     std::abort();
 #endif
@@ -129,7 +129,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     }
 
     void lock()
-    { 
+    {
 #if __GTHREADS
       if (__gthread_active_p())
 	{
@@ -140,7 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     }
     
     void unlock()
-    { 
+    {
 #if __GTHREADS
       if (__gthread_active_p())
 	{
@@ -204,16 +204,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   class __scoped_lock
   {
   public:
-    typedef __mutex mutex_type;
+    typedef __mutex __mutex_type;
 
   private:
-    mutex_type& _M_device;
+    __mutex_type& _M_device;
 
     __scoped_lock(const __scoped_lock&);
     __scoped_lock& operator=(const __scoped_lock&);
 
   public:
-    explicit __scoped_lock(mutex_type& __name) : _M_device(__name)
+    explicit __scoped_lock(__mutex_type& __name) : _M_device(__name)
     { _M_device.lock(); }
 
     ~__scoped_lock() throw()
