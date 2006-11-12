@@ -41,6 +41,8 @@ extern int target_flags;
     {                                           \
       builtin_define ("bfin");                  \
       builtin_define ("BFIN");                  \
+      builtin_define ("__bfin__");              \
+      builtin_define ("__BFIN__");              \
       builtin_define ("__ADSPBLACKFIN__");	\
       if (TARGET_FDPIC)				\
 	builtin_define ("__BFIN_FDPIC__");	\

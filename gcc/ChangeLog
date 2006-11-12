@@ -1,3 +1,8 @@
+2006-11-11  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define __bfin__
+	and __BFIN__.
+
 2006-11-11  Jan Hubicka  <jh@suse.cz>
 
 	* extended.texi (__builtin_expect): We no longer require second argument
