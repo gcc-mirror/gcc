@@ -64,7 +64,7 @@
 	* trans-decl.c (gfc_trans_deferred_vars): Call gfc_trans_
 	deferred_array before gfc_trans_auto_array_allocation.
 
-	PR fortran/21730
+	PR fortran/21370
 	* symbol.c (check_done): Remove.
 	(gfc_add_attribute): Remove reference to check_done and remove
 	the argument attr_intent.
@@ -377,7 +377,7 @@
 
 2006-10-17  Paul Thomas <pault@gcc.gnu.org>
 
-	PR fortran/20541
+	PR fortran/29451
 	* trans-array.c (gfc_trans_array_bounds): Test for and set
 	negative stride of a non-constant bound array to zero.
 
