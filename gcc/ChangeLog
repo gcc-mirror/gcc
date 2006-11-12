@@ -1,3 +1,9 @@
+2006-11-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/13827
+	* fold-const.c (fold_binary) <EQ_EXPR, NE_EXPR>: Fold (X&C) op (Y&C)
+	as ((X^Y)&C) op 0.
+
 2006-11-12  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* cfgloopmanip.c (update_single_exit_for_duplicated_loop,

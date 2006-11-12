@@ -10818,6 +10818,49 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			    TREE_OPERAND (arg0, 0),
 			    TREE_OPERAND (arg1, 0));
 
+      /* Fold (X & C) op (Y & C) as (X ^ Y) & C op 0", and symmetries.  */
+      if (TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (arg1) == BIT_AND_EXPR)
+	{
+	  tree arg00 = TREE_OPERAND (arg0, 0);
+	  tree arg01 = TREE_OPERAND (arg0, 1);
+	  tree arg10 = TREE_OPERAND (arg1, 0);
+	  tree arg11 = TREE_OPERAND (arg1, 1);
+	  tree itype = TREE_TYPE (arg0);
+
+	  if (operand_equal_p (arg01, arg11, 0))
+	    return fold_build2 (code, type,
+				fold_build2 (BIT_AND_EXPR, itype,
+					     fold_build2 (BIT_XOR_EXPR, itype,
+							  arg00, arg10),
+					     arg01),
+				build_int_cst (itype, 0));
+
+	  if (operand_equal_p (arg01, arg10, 0))
+	    return fold_build2 (code, type,
+				fold_build2 (BIT_AND_EXPR, itype,
+					     fold_build2 (BIT_XOR_EXPR, itype,
+							  arg00, arg11),
+					     arg01),
+				build_int_cst (itype, 0));
+
+	  if (operand_equal_p (arg00, arg11, 0))
+	    return fold_build2 (code, type,
+				fold_build2 (BIT_AND_EXPR, itype,
+					     fold_build2 (BIT_XOR_EXPR, itype,
+							  arg01, arg10),
+					     arg00),
+				build_int_cst (itype, 0));
+
+	  if (operand_equal_p (arg00, arg10, 0))
+	    return fold_build2 (code, type,
+				fold_build2 (BIT_AND_EXPR, itype,
+					     fold_build2 (BIT_XOR_EXPR, itype,
+							  arg01, arg11),
+					     arg00),
+				build_int_cst (itype, 0));
+	}
+
       return NULL_TREE;
 
     case LT_EXPR:
