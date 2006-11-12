@@ -1,3 +1,8 @@
+2006-11-11  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define __bfin__
+	and __BFIN__.
+
 2006-11-11  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/27528
