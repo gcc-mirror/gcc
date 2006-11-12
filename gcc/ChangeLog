@@ -1,3 +1,10 @@
+2006-11-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR rtl-opt/28812
+	* alias.c (fixed_scalar_and_varying_struct_p): Don't return a
+	non null value if the struct memory access is in the 0th
+	aliasing set.
+
 2006-11-12  Jie Zhang  <jie.zhang@analog.com>
 
 	Revert
