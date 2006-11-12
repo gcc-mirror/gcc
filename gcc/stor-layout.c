@@ -1617,7 +1617,6 @@ layout_type (tree type)
     case VECTOR_TYPE:
       {
 	int nunits = TYPE_VECTOR_SUBPARTS (type);
-	tree nunits_tree = build_int_cst (NULL_TREE, nunits);
 	tree innertype = TREE_TYPE (type);
 
 	gcc_assert (!(nunits & (nunits - 1)));
@@ -1655,9 +1654,9 @@ layout_type (tree type)
         TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
 	TYPE_SIZE_UNIT (type) = int_const_binop (MULT_EXPR,
 					         TYPE_SIZE_UNIT (innertype),
-					         nunits_tree, 0);
+					         size_int (nunits), 0);
 	TYPE_SIZE (type) = int_const_binop (MULT_EXPR, TYPE_SIZE (innertype),
-					    nunits_tree, 0);
+					    bitsize_int (nunits), 0);
 
 	/* Always naturally align vectors.  This prevents ABI changes
 	   depending on whether or not native vector modes are supported.  */
