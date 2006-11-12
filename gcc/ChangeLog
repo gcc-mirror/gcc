@@ -1,3 +1,12 @@
+2006-11-12  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* cfgloopmanip.c (update_single_exit_for_duplicated_loop,
+	update_single_exit_for_duplicated_loops): New functions.
+	(duplicate_loop_to_header_edge): Use
+	update_single_exit_for_duplicated_loops.
+	* tree-ssa-loop-manip.c (tree_unroll_loop): Call verification
+	functions only with ENABLE_CHECKING.
+
 2006-11-12  Andreas Schwab  <schwab@suse.de>
 
 	* except.c (sjlj_emit_function_enter): Remove unused variable.

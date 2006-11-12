@@ -940,8 +940,10 @@ tree_unroll_loop (struct loops *loops, struct loop *loop, unsigned factor,
 			   tree_block_label (rest));
   bsi_insert_after (&bsi, exit_if, BSI_NEW_STMT);
 
+#ifdef ENABLE_CHECKING
   verify_flow_info ();
   verify_dominators (CDI_DOMINATORS);
   verify_loop_structure (loops);
   verify_loop_closed_ssa ();
+#endif
 }

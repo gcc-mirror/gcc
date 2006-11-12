@@ -770,6 +770,40 @@ update_single_exits_after_duplication (basic_block *bbs, unsigned nbbs,
     bbs[i]->flags &= ~BB_DUPLICATED;
 }
 
+/* Updates single exit information for the copy of LOOP.  */
+
+static void
+update_single_exit_for_duplicated_loop (struct loop *loop)
+{
+  struct loop *copy = loop->copy;
+  basic_block src, dest;
+  edge exit = loop->single_exit;
+
+  if (!exit)
+    return;
+
+  src = get_bb_copy (exit->src);
+  dest = exit->dest;
+  if (dest->flags & BB_DUPLICATED)
+    dest = get_bb_copy (dest);
+
+  exit = find_edge (src, dest);
+  gcc_assert (exit != NULL);
+  copy->single_exit = exit;
+}
+
+/* Updates single exit information for copies of ORIG_LOOPS and their subloops.
+   N is the number of the loops in the ORIG_LOOPS array.  */
+
+static void
+update_single_exit_for_duplicated_loops (struct loop *orig_loops[], unsigned n)
+{
+  unsigned i;
+
+  for (i = 0; i < n; i++)
+    update_single_exit_for_duplicated_loop (orig_loops[i]);
+}
+
 /* Duplicates body of LOOP to given edge E NDUPL times.  Takes care of updating
    LOOPS structure and dominators.  E's destination must be LOOP header for
    this to work, i.e. it must be entry or latch edge of this loop; these are
@@ -949,6 +983,15 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       copy_bbs (bbs, n, new_bbs, spec_edges, 2, new_spec_edges, loop,
 		place_after);
       place_after = new_spec_edges[SE_LATCH]->src;
+
+      if (loops->state & LOOPS_HAVE_MARKED_SINGLE_EXITS)
+	{
+	  for (i = 0; i < n; i++)
+	    bbs[i]->flags |= BB_DUPLICATED;
+	  update_single_exit_for_duplicated_loops (orig_loops, n_orig_loops);
+	  for (i = 0; i < n; i++)
+	    bbs[i]->flags &= ~BB_DUPLICATED;
+	}
 
       if (flags & DLTHE_RECORD_COPY_NUMBER)
 	for (i = 0; i < n; i++)
