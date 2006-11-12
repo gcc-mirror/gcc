@@ -1533,6 +1533,7 @@ derive_constant_upper_bound (tree val, tree additional)
   tree type = TREE_TYPE (val);
   tree op0, op1, subtype, maxt;
   double_int bnd, max, mmax, cst;
+  tree stmt;
 
   if (INTEGRAL_TYPE_P (type))
     maxt = TYPE_MAX_VALUE (type);
@@ -1647,37 +1648,111 @@ derive_constant_upper_bound (tree val, tree additional)
       bnd = derive_constant_upper_bound (op0, additional);
       return double_int_udiv (bnd, tree_to_double_int (op1), FLOOR_DIV_EXPR);
 
+    case BIT_AND_EXPR:
+      op1 = TREE_OPERAND (val, 1);
+      if (TREE_CODE (op1) != INTEGER_CST
+	  || tree_int_cst_sign_bit (op1))
+	return max;
+      return tree_to_double_int (op1);
+
+    case SSA_NAME:
+      stmt = SSA_NAME_DEF_STMT (val);
+      if (TREE_CODE (stmt) != MODIFY_EXPR
+	  || TREE_OPERAND (stmt, 0) != val)
+	return max;
+      return derive_constant_upper_bound (TREE_OPERAND (stmt, 1), additional);
+
     default: 
       return max;
     }
 }
 
-/* Records that AT_STMT is executed at most BOUND times in LOOP.  The
-   additional condition ADDITIONAL is recorded with the bound.  */
+/* Records that AT_STMT is executed at most BOUND + 1 times in LOOP.  The
+   additional condition ADDITIONAL is recorded with the bound.  IS_EXIT
+   is true if the loop is exited immediately after STMT, and this exit
+   is taken at last when the STMT is executed BOUND + 1 times.
+   REALISTIC is true if the estimate comes from a reliable source
+   (number of iterations analysis, or size of data accessed in the loop).  */
 
-void
-record_estimate (struct loop *loop, tree bound, tree additional, tree at_stmt)
+static void
+record_estimate (struct loop *loop, tree bound, tree additional, tree at_stmt,
+		 bool is_exit, bool realistic)
 {
   struct nb_iter_bound *elt = xmalloc (sizeof (struct nb_iter_bound));
   double_int i_bound = derive_constant_upper_bound (bound, additional);
-  tree c_bound = double_int_to_tree (unsigned_type_for (TREE_TYPE (bound)),
-				     i_bound);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Statements after ");
+      fprintf (dump_file, "Statement %s", is_exit ? "(exit)" : "");
       print_generic_expr (dump_file, at_stmt, TDF_SLIM);
-      fprintf (dump_file, " are executed at most ");
+      fprintf (dump_file, " is executed at most ");
       print_generic_expr (dump_file, bound, TDF_SLIM);
       fprintf (dump_file, " (bounded by ");
-      print_generic_expr (dump_file, c_bound, TDF_SLIM);
-      fprintf (dump_file, ") times in loop %d.\n", loop->num);
+      dump_double_int (dump_file, i_bound, true);
+      fprintf (dump_file, ") + 1 times in loop %d.\n", loop->num);
     }
 
-  elt->bound = c_bound;
-  elt->at_stmt = at_stmt;
+  elt->bound = i_bound;
+  elt->stmt = at_stmt;
+  elt->is_exit = is_exit;
+  elt->realistic = realistic && TREE_CODE (bound) == INTEGER_CST;
   elt->next = loop->bounds;
   loop->bounds = elt;
+}
+
+/* Record the estimate on number of iterations of LOOP based on the fact that
+   the induction variable BASE + STEP * i evaluated in STMT does not wrap and
+   its values belong to the range <LOW, HIGH>.  DATA_SIZE_BOUNDS_P is true if
+   LOW and HIGH are derived from the size of data.  */
+
+static void
+record_nonwrapping_iv (struct loop *loop, tree base, tree step, tree stmt,
+		       tree low, tree high, bool data_size_bounds_p)
+{
+  tree niter_bound, extreme, delta;
+  tree type = TREE_TYPE (base), unsigned_type;
+
+  if (TREE_CODE (step) != INTEGER_CST || zero_p (step))
+    return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Induction variable (");
+      print_generic_expr (dump_file, TREE_TYPE (base), TDF_SLIM);
+      fprintf (dump_file, ") ");
+      print_generic_expr (dump_file, base, TDF_SLIM);
+      fprintf (dump_file, " + ");
+      print_generic_expr (dump_file, step, TDF_SLIM);
+      fprintf (dump_file, " * iteration does not wrap in statement ");
+      print_generic_expr (dump_file, stmt, TDF_SLIM);
+      fprintf (dump_file, " in loop %d.\n", loop->num);
+    }
+
+  unsigned_type = unsigned_type_for (type);
+  base = fold_convert (unsigned_type, base);
+  step = fold_convert (unsigned_type, step);
+
+  if (tree_int_cst_sign_bit (step))
+    {
+      extreme = fold_convert (unsigned_type, low);
+      if (TREE_CODE (base) != INTEGER_CST)
+	base = fold_convert (unsigned_type, high);
+      delta = fold_build2 (MINUS_EXPR, unsigned_type, base, extreme);
+      step = fold_build1 (NEGATE_EXPR, unsigned_type, step);
+    }
+  else
+    {
+      extreme = fold_convert (unsigned_type, high);
+      if (TREE_CODE (base) != INTEGER_CST)
+	base = fold_convert (unsigned_type, low);
+      delta = fold_build2 (MINUS_EXPR, unsigned_type, extreme, base);
+    }
+
+  /* STMT is executed at most NITER_BOUND + 1 times, since otherwise the value
+     would get out of the range.  */
+  niter_bound = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step);
+  record_estimate (loop, niter_bound, boolean_true_node, stmt,
+		   false, data_size_bounds_p);
 }
 
 /* Initialize LOOP->ESTIMATED_NB_ITERATIONS with the lowest safe
@@ -1687,18 +1762,182 @@ static void
 compute_estimated_nb_iterations (struct loop *loop)
 {
   struct nb_iter_bound *bound;
-  
+ 
+  gcc_assert (loop->estimate_state == EST_NOT_AVAILABLE);
+
   for (bound = loop->bounds; bound; bound = bound->next)
     {
-      if (TREE_CODE (bound->bound) != INTEGER_CST)
+      if (!bound->realistic)
 	continue;
 
       /* Update only when there is no previous estimation, or when the current
 	 estimation is smaller.  */
-      if (chrec_contains_undetermined (loop->estimated_nb_iterations)
-	  || tree_int_cst_lt (bound->bound, loop->estimated_nb_iterations))
-	loop->estimated_nb_iterations = bound->bound;
+      if (loop->estimate_state == EST_NOT_AVAILABLE
+	  || double_int_ucmp (bound->bound, loop->estimated_nb_iterations) < 0)
+	{
+	  loop->estimate_state = EST_AVAILABLE;
+	  loop->estimated_nb_iterations = bound->bound;
+	}
     }
+}
+
+/* Determine information about number of iterations a LOOP from the index
+   IDX of a data reference accessed in STMT.  Callback for for_each_index.  */
+
+struct ilb_data
+{
+  struct loop *loop;
+  tree stmt;
+};
+
+static bool
+idx_infer_loop_bounds (tree base, tree *idx, void *dta)
+{
+  struct ilb_data *data = dta;
+  tree ev, init, step;
+  tree low, high, type, next;
+  bool sign;
+  struct loop *loop = data->loop;
+
+  if (TREE_CODE (base) != ARRAY_REF)
+    return true;
+
+  ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, *idx));
+  init = initial_condition (ev);
+  step = evolution_part_in_loop_num (ev, loop->num);
+
+  if (!init
+      || !step
+      || TREE_CODE (step) != INTEGER_CST
+      || zero_p (step)
+      || tree_contains_chrecs (init, NULL)
+      || chrec_contains_symbols_defined_in_loop (init, loop->num))
+    return true;
+
+  low = array_ref_low_bound (base);
+  high = array_ref_up_bound (base);
+  
+  /* The case of nonconstant bounds could be handled, but it would be
+     complicated.  */
+  if (TREE_CODE (low) != INTEGER_CST
+      || !high
+      || TREE_CODE (high) != INTEGER_CST)
+    return true;
+  sign = tree_int_cst_sign_bit (step);
+  type = TREE_TYPE (step);
+  
+  /* In case the relevant bound of the array does not fit in type, or
+     it does, but bound + step (in type) still belongs into the range of the
+     array, the index may wrap and still stay within the range of the array
+     (consider e.g. if the array is indexed by the full range of
+     unsigned char).
+
+     To make things simpler, we require both bounds to fit into type, although
+     there are cases where this would not be strightly necessary.  */
+  if (!int_fits_type_p (high, type)
+      || !int_fits_type_p (low, type))
+    return true;
+  low = fold_convert (type, low);
+  high = fold_convert (type, high);
+
+  if (sign)
+    next = fold_binary (PLUS_EXPR, type, low, step);
+  else
+    next = fold_binary (PLUS_EXPR, type, high, step);
+  
+  if (tree_int_cst_compare (low, next) <= 0
+      && tree_int_cst_compare (next, high) <= 0)
+    return true;
+
+  record_nonwrapping_iv (loop, init, step, data->stmt, low, high, true);
+  return true;
+}
+
+/* Determine information about number of iterations a LOOP from the bounds
+   of arrays in the data reference REF accessed in STMT.  */
+
+static void
+infer_loop_bounds_from_ref (struct loop *loop, tree stmt, tree ref)
+{
+  struct ilb_data data;
+
+  data.loop = loop;
+  data.stmt = stmt;
+  for_each_index (&ref, idx_infer_loop_bounds, &data);
+}
+
+/* Determine information about number of iterations of a LOOP from the way
+   arrays are used in STMT.  */
+
+static void
+infer_loop_bounds_from_array (struct loop *loop, tree stmt)
+{
+  tree call;
+
+  if (TREE_CODE (stmt) == MODIFY_EXPR)
+    {
+      tree op0 = TREE_OPERAND (stmt, 0);
+      tree op1 = TREE_OPERAND (stmt, 1);
+
+      /* For each memory access, analyze its access function
+	 and record a bound on the loop iteration domain.  */
+      if (REFERENCE_CLASS_P (op0))
+	infer_loop_bounds_from_ref (loop, stmt, op0);
+
+      if (REFERENCE_CLASS_P (op1))
+	infer_loop_bounds_from_ref (loop, stmt, op1);
+    }
+  
+  
+  call = get_call_expr_in (stmt);
+  if (call)
+    {
+      tree args;
+
+      for (args = TREE_OPERAND (call, 1); args; args = TREE_CHAIN (args))
+	if (REFERENCE_CLASS_P (TREE_VALUE (args)))
+	  infer_loop_bounds_from_ref (loop, stmt, TREE_VALUE (args));
+    }
+}
+
+/* Determine information about number of iterations of a LOOP from the fact
+   that signed arithmetics in STMT does not overflow.  */
+
+static void
+infer_loop_bounds_from_signedness (struct loop *loop, tree stmt)
+{
+  tree def, base, step, scev, type, low, high;
+
+  if (flag_wrapv || TREE_CODE (stmt) != MODIFY_EXPR)
+    return;
+
+  def = TREE_OPERAND (stmt, 0);
+
+  if (TREE_CODE (def) != SSA_NAME)
+    return;
+
+  type = TREE_TYPE (def);
+  if (!INTEGRAL_TYPE_P (type)
+      || TYPE_UNSIGNED (type))
+    return;
+
+  scev = instantiate_parameters (loop, analyze_scalar_evolution (loop, def));
+  if (chrec_contains_undetermined (scev))
+    return;
+
+  base = initial_condition_in_loop_num (scev, loop->num);
+  step = evolution_part_in_loop_num (scev, loop->num);
+
+  if (!base || !step
+      || TREE_CODE (step) != INTEGER_CST
+      || tree_contains_chrecs (base, NULL)
+      || chrec_contains_symbols_defined_in_loop (base, loop->num))
+    return;
+
+  low = lower_bound_in_type (type, type);
+  high = upper_bound_in_type (type, type);
+
+  record_nonwrapping_iv (loop, base, step, stmt, low, high, false);
 }
 
 /* The following analyzers are extracting informations on the bounds
@@ -1714,8 +1953,9 @@ static void
 infer_loop_bounds_from_undefined (struct loop *loop)
 {
   unsigned i;
-  basic_block bb, *bbs;
+  basic_block *bbs;
   block_stmt_iterator bsi;
+  basic_block bb;
   
   bbs = get_loop_body (loop);
 
@@ -1723,95 +1963,21 @@ infer_loop_bounds_from_undefined (struct loop *loop)
     {
       bb = bbs[i];
 
+      /* If BB is not executed in each iteration of the loop, we cannot
+	 use it to infer any information about # of iterations of the loop.  */
+      if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
+	continue;
+
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-        {
+	{
 	  tree stmt = bsi_stmt (bsi);
 
-	  switch (TREE_CODE (stmt))
-	    {
-	    case MODIFY_EXPR:
-	      {
-		tree op0 = TREE_OPERAND (stmt, 0);
-		tree op1 = TREE_OPERAND (stmt, 1);
+	  infer_loop_bounds_from_array (loop, stmt);
+	  infer_loop_bounds_from_signedness (loop, stmt);
+  	}
 
-		/* For each array access, analyze its access function
-		   and record a bound on the loop iteration domain.  */
-		if (TREE_CODE (op1) == ARRAY_REF 
-		    && !array_ref_contains_indirect_ref (op1))
-		  estimate_iters_using_array (stmt, op1);
-
-		if (TREE_CODE (op0) == ARRAY_REF 
-		    && !array_ref_contains_indirect_ref (op0))
-		  estimate_iters_using_array (stmt, op0);
-
-		/* For each signed type variable in LOOP, analyze its
-		   scalar evolution and record a bound of the loop
-		   based on the type's ranges.  */
-		else if (!flag_wrapv && TREE_CODE (op0) == SSA_NAME)
-		  {
-		    tree init, step, diff, estimation;
-		    tree scev = instantiate_parameters 
-		      (loop, analyze_scalar_evolution (loop, op0));
-		    tree type = chrec_type (scev);
-
-		    if (chrec_contains_undetermined (scev)
-			|| TYPE_UNSIGNED (type))
-		      break;
-
-		    init = initial_condition_in_loop_num (scev, loop->num);
-		    step = evolution_part_in_loop_num (scev, loop->num);
-
-		    if (init == NULL_TREE
-			|| step == NULL_TREE
-			|| TREE_CODE (init) != INTEGER_CST
-			|| TREE_CODE (step) != INTEGER_CST
-			|| TYPE_MIN_VALUE (type) == NULL_TREE
-			|| TYPE_MAX_VALUE (type) == NULL_TREE)
-		      break;
-
-		    if (integer_nonzerop (step))
-		      {
-			tree utype;
-
-			if (tree_int_cst_lt (step, integer_zero_node))
-			  diff = fold_build2 (MINUS_EXPR, type, init,
-					      TYPE_MIN_VALUE (type));
-			else
-			  diff = fold_build2 (MINUS_EXPR, type,
-					      TYPE_MAX_VALUE (type), init);
-
-			utype = unsigned_type_for (type);
-			estimation = fold_build2 (CEIL_DIV_EXPR, type, diff,
-						  step);
-			record_estimate (loop,
-					 fold_convert (utype, estimation),
-					 boolean_true_node, stmt);
-		      }
-		  }
-
-		break;
-	      }
-
-	    case CALL_EXPR:
-	      {
-		tree args;
-
-		for (args = TREE_OPERAND (stmt, 1); args;
-		     args = TREE_CHAIN (args))
-		  if (TREE_CODE (TREE_VALUE (args)) == ARRAY_REF
-		      && !array_ref_contains_indirect_ref (TREE_VALUE (args)))
-		    estimate_iters_using_array (stmt, TREE_VALUE (args));
-
-		break;
-	      }
-
-	    default:
-	      break;
-	    }
-	}
     }
 
-  compute_estimated_nb_iterations (loop);
   free (bbs);
 }
 
@@ -1826,13 +1992,9 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   struct tree_niter_desc niter_desc;
 
   /* Give up if we already have tried to compute an estimation.  */
-  if (loop->estimated_nb_iterations == chrec_dont_know
-      /* Or when we already have an estimation.  */
-      || (loop->estimated_nb_iterations != NULL_TREE
-	  && TREE_CODE (loop->estimated_nb_iterations) == INTEGER_CST))
+  if (loop->estimate_state != EST_NOT_COMPUTED)
     return;
-  else
-    loop->estimated_nb_iterations = chrec_dont_know;
+  loop->estimate_state = EST_NOT_AVAILABLE;
 
   exits = get_loop_exit_edges (loop, &n_exits);
   for (i = 0; i < n_exits; i++)
@@ -1842,19 +2004,19 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 
       niter = niter_desc.niter;
       type = TREE_TYPE (niter);
-      if (!zero_p (niter_desc.may_be_zero)
-	  && !nonzero_p (niter_desc.may_be_zero))
+      if (TREE_CODE (niter_desc.may_be_zero) != INTEGER_CST)
 	niter = build3 (COND_EXPR, type, niter_desc.may_be_zero,
 			build_int_cst (type, 0),
 			niter);
       record_estimate (loop, niter,
 		       niter_desc.additional_info,
-		       last_stmt (exits[i]->src));
+		       last_stmt (exits[i]->src),
+		       true, true);
     }
   free (exits);
   
-  if (chrec_contains_undetermined (loop->estimated_nb_iterations))
-    infer_loop_bounds_from_undefined (loop);
+  infer_loop_bounds_from_undefined (loop);
+  compute_estimated_nb_iterations (loop);
 }
 
 /* Records estimates on numbers of iterations of LOOPS.  */
@@ -1899,40 +2061,67 @@ stmt_dominates_stmt_p (tree s1, tree s2)
 }
 
 /* Returns true when we can prove that the number of executions of
-   STMT in the loop is at most NITER, according to the fact
-   that the statement NITER_BOUND->at_stmt is executed at most
-   NITER_BOUND->bound times.  */
+   STMT in the loop is at most NITER, according to the bound on
+   the number of executions of the statement NITER_BOUND->stmt recorded in
+   NITER_BOUND.  If STMT is NULL, we must prove this bound for all
+   statements in the loop.  */
 
 static bool
 n_of_executions_at_most (tree stmt,
 			 struct nb_iter_bound *niter_bound, 
 			 tree niter)
 {
-  tree cond;
-  tree bound = niter_bound->bound;
-  tree bound_type = TREE_TYPE (bound);
+  double_int bound = niter_bound->bound;
   tree nit_type = TREE_TYPE (niter);
   enum tree_code cmp;
 
-  gcc_assert (TYPE_UNSIGNED (bound_type)
-	      && TYPE_UNSIGNED (nit_type)
-	      && is_gimple_min_invariant (bound));
-  if (TYPE_PRECISION (nit_type) > TYPE_PRECISION (bound_type))
-    bound = fold_convert (nit_type, bound);
-  else
-    niter = fold_convert (bound_type, niter);
+  gcc_assert (TYPE_UNSIGNED (nit_type));
 
-  /* After the statement niter_bound->at_stmt we know that anything is
-     executed at most BOUND times.  */
-  if (stmt && stmt_dominates_stmt_p (niter_bound->at_stmt, stmt))
-    cmp = GE_EXPR;
-  /* Before the statement niter_bound->at_stmt we know that anything
-     is executed at most BOUND + 1 times.  */
-  else
-    cmp = GT_EXPR;
+  /* If the bound does not even fit into NIT_TYPE, it cannot tell us that
+     the number of iterations is small.  */
+  if (!double_int_fits_to_tree_p (nit_type, bound))
+    return false;
 
-  cond = fold_binary (cmp, boolean_type_node, niter, bound);
-  return nonzero_p (cond);
+  /* We know that NITER_BOUND->stmt is executed at most NITER_BOUND->bound + 1
+     times.  This means that:
+     
+     -- if NITER_BOUND->is_exit is true, then everything before
+        NITER_BOUND->stmt is executed at most NITER_BOUND->bound + 1
+	times, and everyting after it at most NITER_BOUND->bound times.
+
+     -- If NITER_BOUND->is_exit is false, then if we can prove that when STMT
+	is executed, then NITER_BOUND->stmt is executed as well in the same
+	iteration (we conclude that if both statements belong to the same
+	basic block, or if STMT is after NITER_BOUND->stmt), then STMT
+	is executed at most NITER_BOUND->bound + 1 times.  Otherwise STMT is
+	executed at most NITER_BOUND->bound + 2 times.  */
+
+  if (niter_bound->is_exit)
+    {
+      if (stmt
+	  && stmt != niter_bound->stmt
+	  && stmt_dominates_stmt_p (niter_bound->stmt, stmt))
+	cmp = GE_EXPR;
+      else
+	cmp = GT_EXPR;
+    }
+  else
+    {
+      if (!stmt
+	  || (bb_for_stmt (stmt) != bb_for_stmt (niter_bound->stmt)
+	      && !stmt_dominates_stmt_p (niter_bound->stmt, stmt)))
+	{
+	  bound = double_int_add (bound, double_int_one);
+	  if (double_int_zero_p (bound)
+	      || !double_int_fits_to_tree_p (nit_type, bound))
+	    return false;
+	}
+      cmp = GT_EXPR;
+    }
+
+  return nonzero_p (fold_binary (cmp, boolean_type_node,
+				 niter,
+				 double_int_to_tree (nit_type, bound)));
 }
 
 /* Returns true if the arithmetics in TYPE can be assumed not to wrap.  */
@@ -2042,7 +2231,7 @@ free_numbers_of_iterations_estimates_loop (struct loop *loop)
   struct nb_iter_bound *bound, *next;
 
   loop->nb_iterations = NULL;
-  loop->estimated_nb_iterations = NULL;
+  loop->estimate_state = EST_NOT_COMPUTED;
   for (bound = loop->bounds; bound; bound = next)
     {
       next = bound->next;
@@ -2075,6 +2264,4 @@ void
 substitute_in_loop_info (struct loop *loop, tree name, tree val)
 {
   loop->nb_iterations = simplify_replace_tree (loop->nb_iterations, name, val);
-  loop->estimated_nb_iterations
-	  = simplify_replace_tree (loop->estimated_nb_iterations, name, val);
 }

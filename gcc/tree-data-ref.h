@@ -269,6 +269,21 @@ DEF_VEC_ALLOC_P(ddr_p,heap);
 
 
 
+/* Describes a location of a memory reference.  */
+
+typedef struct data_ref_loc_d
+{
+  /* Position of the memory reference.  */
+  tree *pos;
+
+  /* True if the memory reference is read.  */
+  bool is_read;
+} data_ref_loc;
+
+DEF_VEC_O (data_ref_loc);
+DEF_VEC_ALLOC_O (data_ref_loc, heap);
+
+bool get_references_in_stmt (tree, VEC (data_ref_loc, heap) **);
 extern tree find_data_references_in_loop (struct loop *,
 					  VEC (data_reference_p, heap) **);
 extern void compute_data_dependences_for_loop (struct loop *, bool,
@@ -292,7 +307,6 @@ extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (VEC (ddr_p, heap) *);
 extern void free_data_refs (VEC (data_reference_p, heap) *);
 extern struct data_reference *analyze_array (tree, tree, bool);
-extern void estimate_iters_using_array (tree, tree);
 
 
 /* Return the index of the variable VAR in the LOOP_NEST array.  */

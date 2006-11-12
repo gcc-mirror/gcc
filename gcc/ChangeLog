@@ -1,5 +1,48 @@
 2006-11-12  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* Makefile.in (tree-data-ref.o): Add langhooks.h dependency.
+	* tree-ssa-loop-niter.c (derive_constant_upper_bound):  Follow
+	ud-chains.  Handle AND_EXPR.
+	(record_estimate): Record whether the estimate is realistic
+	and whether it is derived from a loop exit.
+	(record_nonwrapping_iv, idx_infer_loop_bounds, infer_loop_bounds_from_ref,
+	infer_loop_bounds_from_array, infer_loop_bounds_from_signedness): New
+	functions.
+	(compute_estimated_nb_iterations): Take only realistic bounds into
+	account.  Set estimate_state.  Use double_ints.
+	(infer_loop_bounds_from_undefined): Call infer_loop_bounds_from_array
+	and infer_loop_bounds_from_signedness.  Do not consider basic blocks
+	that do not have to be always executed.
+	(estimate_numbers_of_iterations_loop): Set estimate_state, and use it
+	to determine whether to call infer_loop_bounds_from_undefined
+	and compute_estimated_nb_iterations.
+	(n_of_executions_at_most): Use double_ints.
+	(free_numbers_of_iterations_estimates_loop): Set estimate_state.
+	(substitute_in_loop_info): Do not replace in estimated_nb_iterations.
+	* double-int.c (double_int_to_tree): Improve comment.
+	(double_int_fits_to_tree_p): New function.
+	* double-int.h (double_int_fits_to_tree_p): Declare.
+	* tree-data-ref.c: Include langhooks.h.
+	(estimate_niter_from_size_of_data, estimate_iters_using_array): Removed.
+	(analyze_array_indexes): Do not call estimate_niter_from_size_of_data.
+	(analyze_array): Do not pass estimate_only argument to
+	analyze_array_indexes.
+	(get_number_of_iters_for_loop): Build tree from the stored double_int
+	value.
+	(get_references_in_stmt, find_data_references_in_stmt): New functions.
+	(find_data_references_in_loop): Use find_data_references_in_stmt.
+	* tree-data-ref.h (struct data_ref_loc_d): New.
+	(get_references_in_stmt): Declare.
+	(estimate_iters_using_array): Declaration removed.
+	* cfgloop.h (struct nb_iter_bound): Change type of bound to
+	double_int.  Improve comments.  Add is_exit and realistic
+	fields.
+	(struct loop): Changed type of estimated_nb_iterations to double_int.
+	Added estimate_state field.
+	(record_estimate): Declaration removed.
+
+2006-11-12  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* params.c (set_param_value): Initialize the "set" field.
 	* params.h (struct param_info): Add "set" field.
 	(PARAM_SET_P): New macro.
