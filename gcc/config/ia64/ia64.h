@@ -1979,19 +1979,6 @@ do {									\
    #pragma weak.  Note, #pragma weak will only be supported if SUPPORT_WEAK is
    defined.  */
 
-/* If this architecture supports prefetch, define this to be the number of
-   prefetch commands that can be executed in parallel.
-
-   ??? This number is bogus and needs to be replaced before the value is
-   actually used in optimizations.  */
-
-#define SIMULTANEOUS_PREFETCHES 6
-
-/* If this architecture supports prefetch, define this to be the size of
-   the cache line that is prefetched.  */
-
-#define PREFETCH_BLOCK 32
-
 #define HANDLE_SYSV_PRAGMA 1
 
 /* A C expression for the maximum number of instructions to execute via

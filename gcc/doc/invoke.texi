@@ -6329,6 +6329,21 @@ duplicated when threading jumps.
 Maximum number of fields in a structure we will treat in
 a field sensitive manner during pointer analysis.
 
+@item prefetch-latency
+Estimate on average number of instructions that are executed before
+prefetch finishes.  The distance we prefetch ahead is proportional
+to this constant.  Increasing this number may also lead to less
+streams being prefetched (see @option{simultaneous-prefetches}).
+
+@item simultaneous-prefetches
+Maximum number of prefetches that can run at the same time.
+
+@item l1-cache-line-size
+The size of cache line in L1 cache, in bytes.
+
+@item l1-cache-size
+The number of cache lines in L1 cache.
+
 @end table
 @end table
 
