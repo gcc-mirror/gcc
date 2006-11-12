@@ -1,3 +1,8 @@
+2006-11-12  David Daney  <ddaney@avtrex.com>
+
+	PR java/29805
+	* typeck.c (build_java_array_type): Increase buffer sizes.
+
 2006-10-10  Brooks Moses  <bmoses@stanford.edu>
 
 	* Make-lang.in: Added "java.pdf", "gcj.pdf" target support.
