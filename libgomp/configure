@@ -8845,11 +8845,11 @@ else
 
     if test "$cross_compiling" = yes; then
   cat >conftest.$ac_ext <<_ACEOF
-__thread int foo;
+__thread int a; int b; int main() { return a = b; }
 _ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
   ac_status=$?
   grep -v '^ *+' conftest.er1 >conftest.err
   rm -f conftest.er1
@@ -8863,7 +8863,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
+	 { ac_try='test -s conftest$ac_exeext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -8876,7 +8876,8 @@ sed 's/^/| /' conftest.$ac_ext >&5
 
 have_tls=no
 fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
 
 else
   cat >conftest.$ac_ext <<_ACEOF

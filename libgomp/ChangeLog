@@ -1,8 +1,11 @@
+2006-11-13  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* configure: Regenerated.
+
 2006-11-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* env.c (parse_schedule): Reject out of range values.
 	(parse_unsigned_long): Reject out of range, negative or zero values.
-
 
 2006-10-29  Jakub Jelinek  <jakub@redhat.com>
 

@@ -1,3 +1,7 @@
+2006-11-13  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* configure: Regenerated.
+
 2006-11-03  Gary Benson  <gbenson@redhat.com>
 
 	* java/net/InetAddress.java: Removed.
