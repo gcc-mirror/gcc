@@ -1,3 +1,13 @@
+2006-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* libsupc++/typeinfo (__GXX_TYPEINFO_EQUALITY_INLINE): Define.
+	Use instead of __GXX_MERGED_TYPEINFO_NAMES to condition inline
+	definitions.
+	* libsupc++/tinfo.cc (operator==): Condition on
+	__GXX_TYPEINFO_EQUALITY_INLINE; check __GXX_MERGED_TYPEINFO_NAMES
+	to determine algorithm.
+	* libsupc++/tinfo2.cc (type_info::before): Likewise.
+
 2006-11-12  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/bitmap_allocator.h: Uglify some names.

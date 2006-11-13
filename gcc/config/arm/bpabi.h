@@ -102,7 +102,7 @@
 #define TARGET_BPABI_CPP_BUILTINS()			\
   do							\
     {							\
-      builtin_define ("__GXX_MERGED_TYPEINFO_NAMES=0");	\
+      builtin_define ("__GXX_TYPEINFO_EQUALITY_INLINE=0");	\
     }							\
   while (false)
 

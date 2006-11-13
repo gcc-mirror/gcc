@@ -38,12 +38,16 @@ extern "C" void abort ();
 
 using std::type_info;
 
-#if !__GXX_MERGED_TYPEINFO_NAMES
+#if !__GXX_TYPEINFO_EQUALITY_INLINE
 
 bool
 type_info::before (const type_info &arg) const
 {
+#if __GXX_MERGED_TYPEINFO_NAMES
+  return name () < arg.name ();
+#else
   return __builtin_strcmp (name (), arg.name ()) < 0;
+#endif
 }
 
 #endif

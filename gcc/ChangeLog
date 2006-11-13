@@ -1,3 +1,13 @@
+2006-11-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/bpapi.h (TARGET_BPABI_CPP_BUILTINS): Define
+	__GXX_TYPEINFO_EQUALITY_INLINE but not
+	__GXX_MERGED_TYPEINFO_NAMES.
+	* config/arm/symbian.h (TARGET_OS_CPP_BUILTINS): Define
+	__GXX_MERGED_TYPEINFO_NAMES.
+	* config/i386/cygming.h (TARGET_OS_CPP_BUILTINS): Define
+	__GXX_TYPEINFO_EQUALITY_INLINE.
+
 2006-11-13  H.J. Lu  <hongjiu.lu@intel.com>
 	    Zdenek Dvorak <dvorakz@suse.cz>
 
