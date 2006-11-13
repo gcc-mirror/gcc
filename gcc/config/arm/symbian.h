@@ -79,13 +79,16 @@
 
 /* Define the __symbian__ macro.  */
 #undef TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS()		\
-  do						\
-    {						\
-      /* Include the default BPABI stuff.  */	\
-      TARGET_BPABI_CPP_BUILTINS ();		\
-      builtin_define ("__symbian__");		\
-    }						\
+#define TARGET_OS_CPP_BUILTINS()				\
+  do								\
+    {								\
+      /* Include the default BPABI stuff.  */			\
+      TARGET_BPABI_CPP_BUILTINS ();				\
+      /* Symbian OS does not support merging symbols across DLL	\
+	 boundaries.  */					\
+      builtin_define ("__GXX_MERGED_TYPEINFO_NAMES=0");		\
+      builtin_define ("__symbian__");				\
+    }								\
   while (false)
 
 /* On SymbianOS, these sections are not writable, so we use "a",

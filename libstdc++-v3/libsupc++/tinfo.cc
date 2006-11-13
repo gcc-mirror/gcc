@@ -44,13 +44,17 @@ std::type_info::
 std::bad_cast::~bad_cast() throw() { }
 std::bad_typeid::~bad_typeid() throw() { }
 
-#if !__GXX_MERGED_TYPEINFO_NAMES
+#if !__GXX_TYPEINFO_EQUALITY_INLINE
 
 // We can't rely on common symbols being shared between shared objects.
 bool std::type_info::
 operator== (const std::type_info& arg) const
 {
+#if __GXX_MERGED_TYPEINFO_NAMES
+  return name () == arg.name ();
+#else
   return (&arg == this) || (__builtin_strcmp (name (), arg.name ()) == 0);
+#endif
 }
 
 #endif
