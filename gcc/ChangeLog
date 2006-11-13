@@ -1,3 +1,9 @@
+2006-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Add changequote around __LONG_DOUBLE_MATH_OPTIONAL
+	test.
+	* configure: Rebuilt.
+
 2006-11-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/rs6000/cell.md: New file.

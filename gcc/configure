@@ -18255,9 +18255,10 @@ else
       else
 	glibc_header_dir=/usr/include
       fi
-      grep '^ 	*#[ 	]*define[ 	][ 	]*__LONG_DOUBLE_MATH_OPTIONAL' \
+      grep '^[ 	]*#[ 	]*define[ 	][ 	]*__LONG_DOUBLE_MATH_OPTIONAL' \
         $glibc_header_dir/bits/wordsize.h > /dev/null 2>&1 \
       && gcc_cv_target_ldbl128=yes
+
 fi
 
     ;;
