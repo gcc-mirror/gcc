@@ -1,3 +1,7 @@
+2006-11-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c: Fix a typo in comment.
+
 2006-11-13  Michael Matz  <matz@suse.de>
 
 	* genemit.c (gen_expand): Allocate enough memory.
