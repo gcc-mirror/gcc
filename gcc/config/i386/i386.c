@@ -19448,7 +19448,7 @@ ix86_expand_lround (rtx op0, rtx op1)
   ix86_sse_copysign_to_positive (adj, adj, force_reg (mode, op1), NULL_RTX);
 
   /* adj = op1 + adj */
-  expand_simple_binop (mode, PLUS, adj, op1, adj, 0, OPTAB_DIRECT);
+  adj = expand_simple_binop (mode, PLUS, adj, op1, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* op0 = (imode)adj */
   expand_fix (op0, adj, 0);
@@ -19466,7 +19466,7 @@ ix86_expand_lfloorceil (rtx op0, rtx op1, bool do_floor)
    */
   enum machine_mode fmode = GET_MODE (op1);
   enum machine_mode imode = GET_MODE (op0);
-  rtx ireg, freg, label;
+  rtx ireg, freg, label, tmp;
 
   /* reg = (long)op1 */
   ireg = gen_reg_rtx (imode);
@@ -19479,8 +19479,10 @@ ix86_expand_lfloorceil (rtx op0, rtx op1, bool do_floor)
   /* ireg = (freg > op1) ? ireg - 1 : ireg */
   label = ix86_expand_sse_compare_and_jump (UNLE,
 					    freg, op1, !do_floor);
-  expand_simple_binop (imode, do_floor ? MINUS : PLUS,
-                       ireg, const1_rtx, ireg, 0, OPTAB_DIRECT);
+  tmp = expand_simple_binop (imode, do_floor ? MINUS : PLUS,
+			     ireg, const1_rtx, NULL_RTX, 0, OPTAB_DIRECT);
+  emit_move_insn (ireg, tmp);
+
   emit_label (label);
   LABEL_NUSES (label) = 1;
 
@@ -19512,8 +19514,8 @@ ix86_expand_rint (rtx operand0, rtx operand1)
   TWO52 = ix86_gen_TWO52 (mode);
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
-  expand_simple_binop (mode, PLUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
-  expand_simple_binop (mode, MINUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
+  xa = expand_simple_binop (mode, PLUS, xa, TWO52, NULL_RTX, 0, OPTAB_DIRECT);
+  xa = expand_simple_binop (mode, MINUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
 
   ix86_sse_copysign_to_positive (res, xa, res, mask);
 
@@ -19559,8 +19561,8 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
   /* xa = xa + TWO52 - TWO52; */
-  expand_simple_binop (mode, PLUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
-  expand_simple_binop (mode, MINUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
+  xa = expand_simple_binop (mode, PLUS, xa, TWO52, NULL_RTX, 0, OPTAB_DIRECT);
+  xa = expand_simple_binop (mode, MINUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
 
   /* xa = copysign (xa, operand1) */
   ix86_sse_copysign_to_positive (xa, xa, res, mask);
@@ -19575,8 +19577,9 @@ ix86_expand_floorceildf_32 (rtx operand0, rtx operand1, bool do_floor)
   emit_insn (gen_rtx_SET (VOIDmode, tmp,
                           gen_rtx_AND (mode, one, tmp)));
   /* We always need to subtract here to preserve signed zero.  */
-  expand_simple_binop (mode, MINUS,
-                       xa, tmp, res, 0, OPTAB_DIRECT);
+  tmp = expand_simple_binop (mode, MINUS,
+			     xa, tmp, NULL_RTX, 0, OPTAB_DIRECT);
+  emit_move_insn (res, tmp);
 
   emit_label (label);
   LABEL_NUSES (label) = 1;
@@ -19632,8 +19635,9 @@ ix86_expand_floorceil (rtx operand0, rtx operand1, bool do_floor)
   tmp = ix86_expand_sse_compare_mask (UNGT, xa, res, !do_floor);
   emit_insn (gen_rtx_SET (VOIDmode, tmp,
                           gen_rtx_AND (mode, one, tmp)));
-  expand_simple_binop (mode, do_floor ? MINUS : PLUS,
-                       xa, tmp, res, 0, OPTAB_DIRECT);
+  tmp = expand_simple_binop (mode, do_floor ? MINUS : PLUS,
+			     xa, tmp, NULL_RTX, 0, OPTAB_DIRECT);
+  emit_move_insn (res, tmp);
 
   if (HONOR_SIGNED_ZEROS (mode))
     ix86_sse_copysign_to_positive (res, res, force_reg (mode, operand1), mask);
@@ -19683,20 +19687,17 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
   /* xa2 = xa + TWO52 - TWO52; */
-  xa2 = gen_reg_rtx (mode);
-  expand_simple_binop (mode, PLUS, xa, TWO52, xa2, 0, OPTAB_DIRECT);
-  expand_simple_binop (mode, MINUS, xa2, TWO52, xa2, 0, OPTAB_DIRECT);
+  xa2 = expand_simple_binop (mode, PLUS, xa, TWO52, NULL_RTX, 0, OPTAB_DIRECT);
+  xa2 = expand_simple_binop (mode, MINUS, xa2, TWO52, xa2, 0, OPTAB_DIRECT);
 
   /* dxa = xa2 - xa; */
-  dxa = gen_reg_rtx (mode);
-  expand_simple_binop (mode, MINUS, xa2, xa, dxa, 0, OPTAB_DIRECT);
+  dxa = expand_simple_binop (mode, MINUS, xa2, xa, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* generate 0.5, 1.0 and -0.5 */
   half = force_reg (mode, const_double_from_real_value (dconsthalf, mode));
-  one = gen_reg_rtx (mode);
-  expand_simple_binop (mode, PLUS, half, half, one, 0, OPTAB_DIRECT);
-  mhalf = gen_reg_rtx (mode);
-  expand_simple_binop (mode, MINUS, half, one, mhalf, 0, OPTAB_DIRECT);
+  one = expand_simple_binop (mode, PLUS, half, half, NULL_RTX, 0, OPTAB_DIRECT);
+  mhalf = expand_simple_binop (mode, MINUS, half, one, NULL_RTX,
+			       0, OPTAB_DIRECT);
 
   /* Compensate.  */
   tmp = gen_reg_rtx (mode);
@@ -19704,12 +19705,12 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
   tmp = ix86_expand_sse_compare_mask (UNGT, dxa, half, false);
   emit_insn (gen_rtx_SET (VOIDmode, tmp,
                           gen_rtx_AND (mode, one, tmp)));
-  expand_simple_binop (mode, MINUS, xa2, tmp, xa2, 0, OPTAB_DIRECT);
+  xa2 = expand_simple_binop (mode, MINUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
   /* xa2 = xa2 + (dxa <= -0.5 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGE, mhalf, dxa, false);
   emit_insn (gen_rtx_SET (VOIDmode, tmp,
                           gen_rtx_AND (mode, one, tmp)));
-  expand_simple_binop (mode, PLUS, xa2, tmp, xa2, 0, OPTAB_DIRECT);
+  xa2 = expand_simple_binop (mode, PLUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* res = copysign (xa2, operand1) */
   ix86_sse_copysign_to_positive (res, xa2, force_reg (mode, operand1), mask);
@@ -19770,7 +19771,7 @@ void
 ix86_expand_truncdf_32 (rtx operand0, rtx operand1)
 {
   enum machine_mode mode = GET_MODE (operand0);
-  rtx xa, mask, TWO52, label, one, res, smask;
+  rtx xa, mask, TWO52, label, one, res, smask, tmp;
 
   /* C code for SSE variant we expand below.
         double xa = fabs (x), x2;
@@ -19798,8 +19799,9 @@ ix86_expand_truncdf_32 (rtx operand0, rtx operand1)
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
   /* res = xa + TWO52 - TWO52; */
-  expand_simple_binop (mode, PLUS, xa, TWO52, res, 0, OPTAB_DIRECT);
-  expand_simple_binop (mode, MINUS, res, TWO52, res, 0, OPTAB_DIRECT);
+  tmp = expand_simple_binop (mode, PLUS, xa, TWO52, NULL_RTX, 0, OPTAB_DIRECT);
+  tmp = expand_simple_binop (mode, MINUS, tmp, TWO52, tmp, 0, OPTAB_DIRECT);
+  emit_move_insn (res, tmp);
 
   /* generate 1.0 */
   one = force_reg (mode, const_double_from_real_value (dconst1, mode));
@@ -19808,8 +19810,9 @@ ix86_expand_truncdf_32 (rtx operand0, rtx operand1)
   mask = ix86_expand_sse_compare_mask (UNGT, res, xa, false);
   emit_insn (gen_rtx_SET (VOIDmode, mask,
                           gen_rtx_AND (mode, mask, one)));
-  expand_simple_binop (mode, MINUS,
-                       res, mask, res, 0, OPTAB_DIRECT);
+  tmp = expand_simple_binop (mode, MINUS,
+			     res, mask, NULL_RTX, 0, OPTAB_DIRECT);
+  emit_move_insn (res, tmp);
 
   /* res = copysign (res, operand1) */
   ix86_sse_copysign_to_positive (res, res, force_reg (mode, operand1), smask);
@@ -19853,7 +19856,7 @@ ix86_expand_round (rtx operand0, rtx operand1)
 
   /* xa = xa + 0.5 */
   half = force_reg (mode, const_double_from_real_value (pred_half, mode));
-  expand_simple_binop (mode, PLUS, xa, half, xa, 0, OPTAB_DIRECT);
+  xa = expand_simple_binop (mode, PLUS, xa, half, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* xa = (double)(int64_t)xa */
   xi = gen_reg_rtx (mode == DFmode ? DImode : SImode);

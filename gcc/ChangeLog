@@ -1,3 +1,15 @@
+2006-11-13  Richard Guenther  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_expand_lround): Handle expand_simple_binop
+	return value.
+	(ix86_expand_lfloorceil): Likewise.
+	(ix86_expand_rint): Likewise.
+	(ix86_expand_floorceildf_32): Likewise.
+	(ix86_expand_floorceil): Likewise.
+	(ix86_expand_rounddf_32): Likewise.
+	(ix86_expand_truncdf_32): Likewise.
+	(ix86_expand_round): Likewise.
+
 2006-11-13  Carlos O'Donell  <carlos@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
