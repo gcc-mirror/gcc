@@ -1,3 +1,9 @@
+2006-11-13  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* lib/c-torture.exp: Use target-libpath.exp.
+	* lib/target-libpath.exp (set_ld_library_path_env_vars): If present,
+	set GCC_EXEC_PREFIX env var from global variable of same name.
+
 2006-11-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR fortran/26994
