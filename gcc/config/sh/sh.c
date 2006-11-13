@@ -1483,7 +1483,7 @@ bool
 expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 {
   enum rtx_code msw_taken, msw_skip, lsw_taken;
-  rtx skip_label;
+  rtx skip_label = NULL_RTX;
   rtx op1h, op1l, op2h, op2l;
   int num_branches;
   int prob, rev_prob;
@@ -9398,7 +9398,9 @@ static bool
 sh_optimize_target_register_callee_saved (bool after_prologue_epilogue_gen)
 {
   HARD_REG_SET dummy;
+#if 0
   rtx insn;
+#endif
 
   if (! shmedia_space_reserved_for_target_registers)
     return 0;
@@ -9406,6 +9408,7 @@ sh_optimize_target_register_callee_saved (bool after_prologue_epilogue_gen)
     return 0;
   if (calc_live_regs (&dummy) >= 6 * 8)
     return 1;
+#if 0
   /* This is a borderline case.  See if we got a nested loop, or a loop
      with a call, or with more than 4 labels inside.  */
   for (insn = get_insns(); insn; insn = NEXT_INSN (insn))
@@ -9428,6 +9431,7 @@ sh_optimize_target_register_callee_saved (bool after_prologue_epilogue_gen)
 		 || NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END);
 	}
     }
+#endif
   return 0;
 }
 
