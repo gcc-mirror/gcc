@@ -3752,7 +3752,7 @@ label:
   "
 {
   emit_insn (gen_ashlsi_c (operands[0], operands[1]));
-  emit_insn (gen_mov_neg_si_t (operands[0]));
+  emit_insn (gen_mov_neg_si_t (copy_rtx (operands[0])));
   DONE;
 }")
 
@@ -5113,7 +5113,7 @@ label:
 {
   rtx insn = emit_insn (gen_movsi_const (operands[0], operands[1]));
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (operands[1]),
 					REG_NOTES (insn));
 
   DONE;
@@ -5497,7 +5497,7 @@ label:
   else
     insn = emit_insn (gen_movdi_const_32bit (operands[0], operands[1]));
 
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, copy_rtx (operands[1]),
 					REG_NOTES (insn));
 
   DONE;
@@ -7390,7 +7390,7 @@ label:
     emit_insn (gen_sym_label2reg (operands[2], operands[0], lab));
   else
     emit_insn (gen_symPLT_label2reg (operands[2], operands[0], lab));
-  emit_call_insn (gen_calli_pcrel (operands[2], operands[1], lab));
+  emit_call_insn (gen_calli_pcrel (operands[2], operands[1], copy_rtx (lab)));
   DONE;
 }"
   [(set_attr "type" "call")
@@ -7494,7 +7494,7 @@ label:
   else
     emit_insn (gen_symPLT_label2reg (operands[3], operands[1], lab));
   emit_call_insn (gen_call_valuei_pcrel (operands[0], operands[3],
-					 operands[2], lab));
+					 operands[2], copy_rtx (lab)));
   DONE;
 }"
   [(set_attr "type" "call")
@@ -7875,7 +7875,7 @@ label:
 
   emit_insn (gen_sym_label2reg (operands[2], operands[0], lab));
   call_insn = emit_call_insn (gen_sibcalli_pcrel (operands[2], operands[1],
-						  lab));
+						  copy_rtx (lab)));
   SIBLING_CALL_P (call_insn) = 1;
   DONE;
 }"
@@ -8313,12 +8313,12 @@ label:
       if (Pmode == SImode)
 	{
 	  emit_insn (gen_movsi_const (pic, operands[1]));
-	  emit_insn (gen_ptrel_si (tr, pic, lab));
+	  emit_insn (gen_ptrel_si (tr, pic, copy_rtx (lab)));
 	}
       else
 	{
 	  emit_insn (gen_movdi_const (pic, operands[1]));
-	  emit_insn (gen_ptrel_di (tr, pic, lab));
+	  emit_insn (gen_ptrel_di (tr, pic, copy_rtx (lab)));
 	}
 
       insn = emit_move_insn (operands[0], tr);

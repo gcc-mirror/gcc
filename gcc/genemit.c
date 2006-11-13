@@ -428,15 +428,18 @@ gen_insn (rtx insn, int lineno)
     }
   else
     {
+      char *used = XCNEWVEC (char, operands);
+
       printf ("  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (%d",
 	      XVECLEN (insn, 1));
 
       for (i = 0; i < XVECLEN (insn, 1); i++)
 	{
 	  printf (",\n\t\t");
-	  gen_exp (XVECEXP (insn, 1, i), DEFINE_INSN, NULL);
+	  gen_exp (XVECEXP (insn, 1, i), DEFINE_INSN, used);
 	}
       printf ("));\n}\n\n");
+      XDELETEVEC (used);
     }
 }
 
@@ -447,6 +450,7 @@ gen_expand (rtx expand)
 {
   int operands;
   int i;
+  char *used;
 
   if (strlen (XSTR (expand, 0)) == 0)
     fatal ("define_expand lacks a name");
@@ -530,6 +534,8 @@ gen_expand (rtx expand)
      Use emit_insn to add them to the sequence being accumulated.
      But don't do this if the user's code has set `no_more' nonzero.  */
 
+  used = XCNEWVEC (char, operands);
+
   for (i = 0; i < XVECLEN (expand, 1); i++)
     {
       rtx next = XVECEXP (expand, 1, i);
@@ -560,12 +566,14 @@ gen_expand (rtx expand)
 	printf ("  emit (");
       else
 	printf ("  emit_insn (");
-      gen_exp (next, DEFINE_EXPAND, NULL);
+      gen_exp (next, DEFINE_EXPAND, used);
       printf (");\n");
       if (GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC
 	  && GET_CODE (SET_SRC (next)) == LABEL_REF)
 	printf ("  emit_barrier ();");
     }
+
+  XDELETEVEC (used);
 
   /* Call `get_insns' to extract the list of all the
      insns emitted within this gen_... function.  */
