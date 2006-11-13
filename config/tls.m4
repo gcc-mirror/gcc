@@ -13,7 +13,8 @@ AC_DEFUN([GCC_CHECK_TLS], [
 		    [have_tls=yes], [have_tls=no], [])
       LDFLAGS="$save_LDFLAGS"],
       [have_tls=no],
-      [AC_COMPILE_IFELSE([__thread int foo;], [have_tls=yes], [have_tls=no])]
+      [AC_LINK_IFELSE([__thread int a; int b; int main() { return a = b; }],
+	[have_tls=yes], [have_tls=no])]
     )])
   if test "$enable_tls $have_tls" = "yes yes"; then
     AC_DEFINE(HAVE_TLS, 1,

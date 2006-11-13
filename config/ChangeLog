@@ -1,3 +1,7 @@
+2006-11-13  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* tls.m4 (GCC_CHECK_TLS): Fall back to a link test.
+
 2006-10-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* multi.m4: New file, from automake version 2 branch.
