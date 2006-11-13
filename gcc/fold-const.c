@@ -981,7 +981,8 @@ negate_expr_p (tree t)
 	     && negate_expr_p (TREE_IMAGPART (t));
 
     case PLUS_EXPR:
-      if (FLOAT_TYPE_P (type) && !flag_unsafe_math_optimizations)
+      if (HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (type))
+	  || HONOR_SIGNED_ZEROS (TYPE_MODE (type)))
 	return false;
       /* -(A + B) -> (-B) - A.  */
       if (negate_expr_p (TREE_OPERAND (t, 1))
@@ -993,7 +994,8 @@ negate_expr_p (tree t)
 
     case MINUS_EXPR:
       /* We can't turn -(A-B) into B-A when we honor signed zeros.  */
-      return (! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
+      return !HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (type))
+	     && !HONOR_SIGNED_ZEROS (TYPE_MODE (type))
 	     && reorder_operands_p (TREE_OPERAND (t, 0),
 				    TREE_OPERAND (t, 1));
 
@@ -1105,7 +1107,8 @@ fold_negate_expr (tree t)
       return TREE_OPERAND (t, 0);
 
     case PLUS_EXPR:
-      if (! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
+      if (!HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (type))
+	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (type)))
 	{
 	  /* -(A + B) -> (-B) - A.  */
 	  if (negate_expr_p (TREE_OPERAND (t, 1))
@@ -1129,7 +1132,8 @@ fold_negate_expr (tree t)
 
     case MINUS_EXPR:
       /* - (A - B) -> B - A  */
-      if ((! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
+      if (!HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (type))
+	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (type))
 	  && reorder_operands_p (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1)))
 	return fold_build2 (MINUS_EXPR, type,
 			    TREE_OPERAND (t, 1), TREE_OPERAND (t, 0));
