@@ -1,3 +1,9 @@
+2006-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/29759
+	* fortran/scanner.c (skip_free_comments): Clear openmp_flag
+	before returning true.
+
 2006-11-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR fortran/26994
