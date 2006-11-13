@@ -1,5 +1,12 @@
 2006-11-13  Joseph Myers  <joseph@codesourcery.com>
 
+	* libsupc++/eh_globals.cc (__cxxabiv1::__cxa_get_globals):
+	Initialize propagatingExceptions if __ARM_EABI_UNWINDER__.
+	* libsupc++/eh_personality.cc (empty_exception_spec): Define
+	separately in __ARM_EABI_UNWINDER__ case.
+
+2006-11-13  Joseph Myers  <joseph@codesourcery.com>
+
 	* libsupc++/typeinfo (__GXX_TYPEINFO_EQUALITY_INLINE): Define.
 	Use instead of __GXX_MERGED_TYPEINFO_NAMES to condition inline
 	definitions.

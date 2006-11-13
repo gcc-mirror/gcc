@@ -140,6 +140,9 @@ __cxxabiv1::__cxa_get_globals() throw()
 	  g = static_cast<__cxa_eh_globals*>(v);
 	  g->caughtExceptions = 0;
 	  g->uncaughtExceptions = 0;
+#ifdef __ARM_EABI_UNWINDER__
+	  g->propagatingExceptions = 0;
+#endif
 	}
     }
   else
