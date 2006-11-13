@@ -1,3 +1,10 @@
+2006-11-12  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (negate_expr_p) <PLUS_EXPR, MINUS_EXPR>: Correct/refine
+	condition for transformations.  Use !HONOR_SIGN_DEPENDENT_ROUNDING
+	&& !HONOR_SIGNED_ZEROS instead of flag_unsafe_math_optimizations.
+	(fold_negate_expr) <PLUS_EXPR, MINUS_EXPR>: Likewise.
+
 2006-11-12  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/29587
