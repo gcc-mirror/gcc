@@ -1,3 +1,9 @@
+2006-11-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29518
+	* pt.c (coerce_template_parms): Do not skip_evaluation while
+	substituting template arguments.
+
 2006-10-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20647
