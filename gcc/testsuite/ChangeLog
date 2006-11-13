@@ -1,3 +1,8 @@
+2006-11-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/29797
+	* gcc.c-torture/execute/pr29797-1.c: New test case.
+
 2006-11-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-symmetric-1.c: Add more cases.
