@@ -1,3 +1,9 @@
+2006-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (ld_vers): Parse GNU ld version 2.17.50.0.3-6 20060715
+	style versions.
+	* configure: Rebuilt.
+
 2006-11-13  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386.c (ix86_expand_lround): Handle expand_simple_binop
