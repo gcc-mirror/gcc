@@ -2327,8 +2327,11 @@ process_constraint (constraint_t t)
       varinfo_t vi;
       gcc_assert (rhs.offset == 0);
       
-      for (vi = get_varinfo (rhs.var); vi != NULL; vi = vi->next)
-	vi->address_taken = true;
+      /* No need to mark address taken simply because of escaped vars
+	 constraints.  */
+      if (lhs.var != escaped_vars_id)
+	for (vi = get_varinfo (rhs.var); vi != NULL; vi = vi->next)
+	  vi->address_taken = true;
 
       VEC_safe_push (constraint_t, heap, constraints, t);
     }
