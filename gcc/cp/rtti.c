@@ -1037,6 +1037,7 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 	tree binfo = TYPE_BINFO (type);
 	int nbases = BINFO_N_BASE_BINFOS (binfo);
 	VEC(tree,gc) *base_accesses = BINFO_BASE_ACCESSES (binfo);
+	tree offset_type = integer_types[itk_long];
 	tree base_inits = NULL_TREE;
 	int ix;
 
@@ -1059,17 +1060,17 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 		/* We store the vtable offset at which the virtual
 		   base offset can be found.  */
 		offset = BINFO_VPTR_FIELD (base_binfo);
-		offset = convert (sizetype, offset);
 		flags |= 1;
 	      }
 	    else
 	      offset = BINFO_OFFSET (base_binfo);
 
 	    /* Combine offset and flags into one field.  */
-	    offset = cp_build_binary_op (LSHIFT_EXPR, offset,
-					 build_int_cst (NULL_TREE, 8));
-	    offset = cp_build_binary_op (BIT_IOR_EXPR, offset,
-					 build_int_cst (NULL_TREE, flags));
+	    offset = fold_convert (offset_type, offset);
+	    offset = fold_build2 (LSHIFT_EXPR, offset_type, offset,
+				  build_int_cst (offset_type, 8));
+	    offset = fold_build2 (BIT_IOR_EXPR, offset_type, offset,
+				  build_int_cst (offset_type, flags));
 	    base_init = tree_cons (NULL_TREE, offset, base_init);
 	    base_init = tree_cons (NULL_TREE, tinfo, base_init);
 	    base_init = build_constructor_from_list (NULL_TREE, base_init);
