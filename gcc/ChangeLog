@@ -1,3 +1,7 @@
+2006-11-13  Michael Matz  <matz@suse.de>
+
+	* genemit.c (gen_expand): Allocate enough memory.
+
 2006-11-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/bpapi.h (TARGET_BPABI_CPP_BUILTINS): Define
