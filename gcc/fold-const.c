@@ -3441,15 +3441,19 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type,
   if (! const_p)
     /* If not comparing with constant, just rework the comparison
        and return.  */
-    return build2 (code, compare_type,
-		   build2 (BIT_AND_EXPR, unsigned_type,
-			   make_bit_field_ref (linner, unsigned_type,
-					       nbitsize, nbitpos, 1),
-			   mask),
-		   build2 (BIT_AND_EXPR, unsigned_type,
-			   make_bit_field_ref (rinner, unsigned_type,
-					       nbitsize, nbitpos, 1),
-			   mask));
+    return fold_build2 (code, compare_type,
+			fold_build2 (BIT_AND_EXPR, unsigned_type,
+				     make_bit_field_ref (linner,
+							 unsigned_type,
+							 nbitsize, nbitpos,
+							 1),
+				     mask),
+			fold_build2 (BIT_AND_EXPR, unsigned_type,
+				     make_bit_field_ref (rinner,
+							 unsigned_type,
+							 nbitsize, nbitpos,
+							 1),
+				     mask));
 
   /* Otherwise, we are handling the constant case. See if the constant is too
      big for the field.  Warn and return a tree of for 0 (false) if so.  We do

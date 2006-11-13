@@ -1,3 +1,8 @@
+2006-11-13  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (optimize_bit_field_compare): Recursively call
+	fold when simplifying non-constant comparisons between bit-fields.
+
 2006-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Add changequote around __LONG_DOUBLE_MATH_OPTIONAL
