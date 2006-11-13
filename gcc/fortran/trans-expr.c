@@ -3104,6 +3104,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
     {
       var = build_decl (CONST_DECL, NULL, TREE_TYPE (se->expr));
       DECL_INITIAL (var) = se->expr;
+      TREE_STATIC (var) = 1;
       pushdecl (var);
     }
   else
