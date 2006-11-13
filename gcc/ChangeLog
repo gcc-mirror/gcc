@@ -1,3 +1,33 @@
+2006-11-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/rs6000/cell.md: New file.
+	* config/rs6000/rs6000.c (rs6000_cell_dont_microcode): New 
+	variable.
+	(ppccell_cost): New cost matrix.
+	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD): Define.
+	(rs6000_override_options): Set rs6000_always_hint to false
+	for cell. Also align functions/lables/loops to 8byte
+	for the Cell. Use PROCESSOR_CELL.
+	(rs6000_emit_epilogue): Rename using_mfcr_multiple to
+	using_mtcr_multiple.
+	(rs6000_variable_issue): If the insn is a nonpipelined instruction
+	on the Cell, return 0.
+	(rs6000_adjust_cost): Add Cell cost adjustments.
+	(is_microcoded_insn): Return true for Cell microcoded
+	instructions.
+	(is_nonpipeline_insn): New function.
+	(rs6000_issue_rate): Add PROCESSOR_CELL.
+	(rs6000_use_sched_lookahead): If Cell, then we should look ahead 8
+	instructions.
+	(rs6000_use_sched_lookahead_guard): New function.
+	(rs6000_sched_reorder):  Reorder the ready list, if the second
+	to last ready insn is a nonepipeline insn on the Cell.
+	* config/rs6000/rs6000.h (processor_type): Add PROCESSOR_CELL.
+	(ASM_CPU_SPEC): Add Cell.
+	* config/rs6000/rs6000.md (cpu): Add Cell.
+	(cell_micro): New Attr.
+	Include cell.md
+
 2006-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (ld_vers): Parse GNU ld version 2.17.50.0.3-6 20060715

@@ -68,6 +68,7 @@
   %{mno-power: %{!mpowerpc*: -mcom}} \
   %{!mno-power: %{!mpower*: %(asm_default)}}} \
 %{mcpu=common: -mcom} \
+%{mcpu=cell: -mcell} \
 %{mcpu=power: -mpwr} \
 %{mcpu=power2: -mpwrx} \
 %{mcpu=power3: -mppc64} \
@@ -222,7 +223,8 @@ enum processor_type
    PROCESSOR_PPC8540,
    PROCESSOR_POWER4,
    PROCESSOR_POWER5,
-   PROCESSOR_POWER6
+   PROCESSOR_POWER6,
+   PROCESSOR_CELL
 };
 
 extern enum processor_type rs6000_cpu;

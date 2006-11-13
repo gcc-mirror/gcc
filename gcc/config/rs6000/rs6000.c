@@ -139,6 +139,8 @@ struct rs6000_cpu_select rs6000_select[3] =
   { (const char *)0,	"-mtune=",		1,	0 },
 };
 
+static GTY(()) bool rs6000_cell_dont_microcode;
+
 /* Always emit branch hint bits.  */
 static GTY(()) bool rs6000_always_hint;
 
@@ -519,6 +521,22 @@ struct processor_costs ppc630_cost = {
   COSTS_N_INSNS (21),   /* ddiv */
 };
 
+/* Instruction costs on Cell processor.  */
+/* COSTS_N_INSNS (1) ~ one add.  */
+static const
+struct processor_costs ppccell_cost = {
+  COSTS_N_INSNS (9/2)+2,    /* mulsi */
+  COSTS_N_INSNS (6/2),    /* mulsi_const */
+  COSTS_N_INSNS (6/2),    /* mulsi_const9 */
+  COSTS_N_INSNS (15/2)+2,   /* muldi */
+  COSTS_N_INSNS (38/2),   /* divsi */
+  COSTS_N_INSNS (70/2),   /* divdi */
+  COSTS_N_INSNS (10/2),   /* fp */
+  COSTS_N_INSNS (10/2),   /* dmul */
+  COSTS_N_INSNS (74/2),   /* sdiv */
+  COSTS_N_INSNS (74/2),   /* ddiv */
+};
+
 /* Instruction costs on PPC750 and PPC7400 processors.  */
 static const
 struct processor_costs ppc750_cost = {
@@ -671,6 +689,7 @@ static bool rs6000_rtx_costs (rtx, int, int, int *);
 static int rs6000_adjust_cost (rtx, rtx, rtx, int);
 static void rs6000_sched_init (FILE *, int, int);
 static bool is_microcoded_insn (rtx);
+static bool is_nonpipeline_insn (rtx);
 static bool is_cracked_insn (rtx);
 static bool is_branch_slot_insn (rtx);
 static bool is_load_insn (rtx);
@@ -692,6 +711,7 @@ static void rs6000_sched_finish (FILE *, int);
 static int rs6000_sched_reorder (FILE *, int, rtx *, int *, int);
 static int rs6000_sched_reorder2 (FILE *, int, rtx *, int *, int);
 static int rs6000_use_sched_lookahead (void);
+static int rs6000_use_sched_lookahead_guard (rtx);
 static tree rs6000_builtin_mask_for_load (void);
 static tree rs6000_builtin_mul_widen_even (tree);
 static tree rs6000_builtin_mul_widen_odd (tree);
@@ -951,6 +971,9 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD rs6000_use_sched_lookahead
+
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD rs6000_use_sched_lookahead_guard
 
 #undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD rs6000_builtin_mask_for_load
@@ -1217,6 +1240,8 @@ rs6000_override_options (const char *default_cpu)
 	 {"860", PROCESSOR_MPCCORE, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"970", PROCESSOR_POWER4,
 	  POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
+	 {"cell", PROCESSOR_CELL,
+	  POWERPC_7400_MASK  | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
 	 {"common", PROCESSOR_COMMON, MASK_NEW_MNEMONICS},
 	 {"ec603e", PROCESSOR_PPC603, POWERPC_BASE_MASK | MASK_SOFT_FLOAT},
 	 {"G3", PROCESSOR_PPC750, POWERPC_BASE_MASK | MASK_PPC_GFXOPT},
@@ -1445,7 +1470,8 @@ rs6000_override_options (const char *default_cpu)
 
   rs6000_always_hint = (rs6000_cpu != PROCESSOR_POWER4
 			&& rs6000_cpu != PROCESSOR_POWER5
-                        && rs6000_cpu != PROCESSOR_POWER6);
+                        && rs6000_cpu != PROCESSOR_POWER6
+			&& rs6000_cpu != PROCESSOR_CELL);
   rs6000_sched_groups = (rs6000_cpu == PROCESSOR_POWER4
 			 || rs6000_cpu == PROCESSOR_POWER5);
   rs6000_align_branch_targets = (rs6000_cpu == PROCESSOR_POWER4
@@ -1519,6 +1545,16 @@ rs6000_override_options (const char *default_cpu)
   /* Set branch target alignment, if not optimizing for size.  */
   if (!optimize_size)
     {
+      /* Cell wants to be aligned 8byte for dual issue. */
+      if (rs6000_cpu == PROCESSOR_CELL)
+	{
+	  if (align_functions <= 0)
+	    align_functions = 8;
+	  if (align_jumps <= 0)
+	    align_jumps = 8;
+	  if (align_loops <= 0)
+	    align_loops = 8;
+ 	}
       if (rs6000_align_branch_targets)
 	{
 	  if (align_functions <= 0)
@@ -1598,6 +1634,10 @@ rs6000_override_options (const char *default_cpu)
 
       case PROCESSOR_PPC630:
 	rs6000_cost = &ppc630_cost;
+	break;
+
+      case PROCESSOR_CELL: 
+	rs6000_cost = &ppccell_cost;
 	break;
 
       case PROCESSOR_PPC750:
@@ -14940,7 +14980,7 @@ rs6000_emit_epilogue (int sibcall)
   rs6000_stack_t *info;
   int restoring_FPRs_inline;
   int using_load_multiple;
-  int using_mfcr_multiple;
+  int using_mtcr_multiple;
   int use_backchain_to_restore_sp;
   int sp_offset = 0;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, 1);
@@ -14969,7 +15009,7 @@ rs6000_emit_epilogue (int sibcall)
   use_backchain_to_restore_sp = (frame_pointer_needed
 				 || current_function_calls_alloca
 				 || info->total_size > 32767);
-  using_mfcr_multiple = (rs6000_cpu == PROCESSOR_PPC601
+  using_mtcr_multiple = (rs6000_cpu == PROCESSOR_PPC601
 			 || rs6000_cpu == PROCESSOR_PPC603
 			 || rs6000_cpu == PROCESSOR_PPC750
 			 || optimize_size);
@@ -15269,7 +15309,7 @@ rs6000_emit_epilogue (int sibcall)
       rtx r12_rtx = gen_rtx_REG (SImode, 12);
       int count = 0;
 
-      if (using_mfcr_multiple)
+      if (using_mtcr_multiple)
 	{
 	  for (i = 0; i < 8; i++)
 	    if (regs_ever_live[CR0_REGNO+i] && ! call_used_regs[CR0_REGNO+i])
@@ -15277,7 +15317,7 @@ rs6000_emit_epilogue (int sibcall)
 	  gcc_assert (count);
 	}
 
-      if (using_mfcr_multiple && count > 1)
+      if (using_mtcr_multiple && count > 1)
 	{
 	  rtvec p;
 	  int ndx;
@@ -16595,6 +16635,10 @@ rs6000_variable_issue (FILE *stream ATTRIBUTE_UNUSED,
       return cached_can_issue_more;
     }
 
+  /* If no reservation, but reach here */
+  if (recog_memoized (insn) < 0)
+    return more;
+
   if (rs6000_sched_groups)
     {
       if (is_microcoded_insn (insn))
@@ -16606,6 +16650,9 @@ rs6000_variable_issue (FILE *stream ATTRIBUTE_UNUSED,
 
       return cached_can_issue_more;
     }
+
+  if (rs6000_cpu_attr == CPU_CELL && is_nonpipeline_insn (insn))
+    return 0;
 
   cached_can_issue_more = more - 1;
   return cached_can_issue_more;
@@ -16662,7 +16709,8 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                  || rs6000_cpu_attr == CPU_PPC7400
                  || rs6000_cpu_attr == CPU_PPC7450
                  || rs6000_cpu_attr == CPU_POWER4
-                 || rs6000_cpu_attr == CPU_POWER5)
+                 || rs6000_cpu_attr == CPU_POWER5
+                 || rs6000_cpu_attr == CPU_CELL)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
               
@@ -16912,6 +16960,9 @@ is_microcoded_insn (rtx insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return false;
 
+  if (rs6000_cpu_attr == CPU_CELL)
+    return get_attr_cell_micro (insn) == CELL_MICRO_ALWAYS;
+
   if (rs6000_sched_groups)
     {
       enum attr_type type = get_attr_type (insn);
@@ -17115,6 +17166,37 @@ rs6000_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
   return priority;
 }
 
+/* Return true if the instruction is nonpipelined on the Cell. */
+static bool
+is_nonpipeline_insn (rtx insn)
+{
+  enum attr_type type;
+  if (!insn || !INSN_P (insn)
+      || GET_CODE (PATTERN (insn)) == USE
+      || GET_CODE (PATTERN (insn)) == CLOBBER)
+    return false;
+
+  type = get_attr_type (insn);
+  if (type == TYPE_IMUL
+      || type == TYPE_IMUL2
+      || type == TYPE_IMUL3
+      || type == TYPE_LMUL
+      || type == TYPE_IDIV
+      || type == TYPE_LDIV
+      || type == TYPE_SDIV
+      || type == TYPE_DDIV
+      || type == TYPE_SSQRT
+      || type == TYPE_DSQRT
+      || type == TYPE_MFCR
+      || type == TYPE_MFCRF
+      || type == TYPE_MFJMPR)
+    {
+      return true;
+    }
+  return false;
+}
+
+
 /* Return how many instructions the machine can issue per cycle.  */
 
 static int
@@ -17135,6 +17217,7 @@ rs6000_issue_rate (void)
   case CPU_PPC750:
   case CPU_PPC7400:
   case CPU_PPC8540:
+  case CPU_CELL:
     return 2;
   case CPU_RIOS2:
   case CPU_PPC604:
@@ -17159,7 +17242,27 @@ rs6000_use_sched_lookahead (void)
 {
   if (rs6000_cpu_attr == CPU_PPC8540)
     return 4;
+  if (rs6000_cpu_attr == CPU_CELL)
+    return (reload_completed ? 8 : 0);
   return 0;
+}
+
+/* We are choosing insn from the ready queue.  Return nonzero if INSN can be chosen.  */
+static int
+rs6000_use_sched_lookahead_guard (rtx insn)
+{
+  if (rs6000_cpu_attr != CPU_CELL)
+    return 1;
+
+   if (insn == NULL_RTX || !INSN_P (insn))
+     abort ();
+   
+  if (!reload_completed
+      || is_nonpipeline_insn (insn)
+      || is_microcoded_insn (insn))
+    return 0;
+
+  return 1;
 }
 
 /* Determine is PAT refers to memory.  */
@@ -17337,8 +17440,24 @@ rs6000_sched_reorder (FILE *dump ATTRIBUTE_UNUSED, int sched_verbose,
                         int *pn_ready ATTRIBUTE_UNUSED,
 		        int clock_var ATTRIBUTE_UNUSED)
 {
+  int n_ready = *pn_ready;
+
   if (sched_verbose)
     fprintf (dump, "// rs6000_sched_reorder :\n");
+
+  /* Reorder the ready list, if the second to last ready insn
+     is a nonepipeline insn.  */
+  if (rs6000_cpu_attr == CPU_CELL && n_ready > 1)
+  {
+    if (is_nonpipeline_insn (ready[n_ready - 1])
+        && (recog_memoized (ready[n_ready - 2]) > 0))
+      /* Simply swap first two insns.  */
+      {
+	rtx tmp = ready[n_ready - 1];
+	ready[n_ready - 1] = ready[n_ready - 2];
+	ready[n_ready - 2] = tmp;
+      }
+  }
 
   if (rs6000_cpu == PROCESSOR_POWER6)
     load_store_pendulum = 0;
