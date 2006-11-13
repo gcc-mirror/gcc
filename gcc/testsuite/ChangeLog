@@ -21,6 +21,12 @@
 	PR tree-optimization/29680
 	* gcc.dg/alias-11.c: New test.
 
+2006-11-12  Jason Merrill  <jason@redhat.com>
+	    Andrew Pinski <pinskia@physics.uc.edu>
+
+	PR middle-end/28915
+	* gcc.target/i386/vectorize1.c: New.
+
 2006-11-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/29797
