@@ -1,3 +1,9 @@
+2006-11-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR fortran/26994
+	* trans-expr.c (gfc_conv_expr_reference): Set TREE_STATIC on the
+	new CONST_DECL.
+
 2006-11-11  Tobias SchlÅ¸ter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* array.c: Add 2006 to copyright years.
