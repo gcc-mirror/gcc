@@ -1,3 +1,12 @@
+2006-11-13  Janis Johnson  <janis187@us.ibm.com>
+
+	Backport from mainline:
+	2006-08-14  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/28703
+	* gcc.c-torture/execute/pr28651.c: Do not use argc
+	to avoid optimization, instead forbid inlining.
+
 2006-11-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29518
