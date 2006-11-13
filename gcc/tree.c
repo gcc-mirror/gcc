@@ -973,6 +973,10 @@ build_vector (tree type, tree vals)
     {
       tree value = TREE_VALUE (link);
 
+      /* Don't crash if we get an address constant.  */
+      if (!CONSTANT_CLASS_P (value))
+	continue;
+
       over1 |= TREE_OVERFLOW (value);
       over2 |= TREE_CONSTANT_OVERFLOW (value);
     }
