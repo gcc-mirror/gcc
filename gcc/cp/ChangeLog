@@ -1,3 +1,8 @@
+2006-11-13  Roger Sayle  <roger@eyesopen.com>
+
+	* rtti.c (get_pseudo_ti_init): Ensure that the offset field of the
+	base type info initializer has the correct type.
+
 2006-11-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29518
