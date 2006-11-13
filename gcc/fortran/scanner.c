@@ -392,6 +392,7 @@ skip_free_comments (void)
 		    {
 		      gfc_current_locus = old_loc;
 		      next_char ();
+		      openmp_flag = 0;
 		      return true;
 		    }
 		}
