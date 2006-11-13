@@ -513,7 +513,7 @@ emit_delay_sequence (rtx insn, rtx list, int length)
 
   for (li = list; li; li = XEXP (li, 1), i++)
     {
-      rtx tem = XEXP (li, 0);
+      rtx tem = copy_rtx (XEXP (li, 0));
       rtx note, next;
 
       /* Show that this copy of the insn isn't deleted.  */

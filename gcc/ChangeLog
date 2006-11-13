@@ -1,3 +1,14 @@
+2006-11-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* genemit.c (gen_insn): Call gen_exp with a non-null used
+	when handling multiple insns.
+	(gen_expand): Likewise.
+	* reorg.c (emit_delay_sequence): Copy the delay slot insn.
+	* config/sh/sh.md (ashrsi2_31+1): Copy operands[0].
+	(movsi_const_16bit+1): Copy operands[1].
+	(call_pcrel): Copy the call_site pattern.
+	(call_value_pcrel, sibcall_pcrel, GOTaddr2picreg): Likewise.
+
 2006-11-12  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (negate_expr_p) <PLUS_EXPR, MINUS_EXPR>: Correct/refine
