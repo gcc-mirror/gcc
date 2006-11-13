@@ -534,7 +534,8 @@ gen_expand (rtx expand)
      Use emit_insn to add them to the sequence being accumulated.
      But don't do this if the user's code has set `no_more' nonzero.  */
 
-  used = XCNEWVEC (char, operands);
+  used = XCNEWVEC (char,
+		   MAX (operands, MAX (max_scratch_opno, max_dup_opno) + 1));
 
   for (i = 0; i < XVECLEN (expand, 1); i++)
     {
