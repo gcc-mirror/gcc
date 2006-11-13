@@ -17,6 +17,7 @@
 # This file was written by Rob Savoye. (rob@cygnus.com)
 
 load_lib file-format.exp
+load_lib target-libpath.exp
 
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
@@ -40,6 +41,19 @@ if ![info exists TORTURE_OPTIONS] {
 	{ -Os } ]
 }
 
+global GCC_UNDER_TEST
+if ![info exists GCC_UNDER_TEST] {
+    set GCC_UNDER_TEST "[find_gcc]"
+}
+
+global orig_environment_saved
+
+# This file may be sourced, so don't override environment settings
+# that have been previously setup.
+if { $orig_environment_saved == 0 } {
+    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+    set_ld_library_path_env_vars
+}
 
 # Split TORTURE_OPTIONS into two choices: one for testcases with loops and
 # one for testcases without loops.

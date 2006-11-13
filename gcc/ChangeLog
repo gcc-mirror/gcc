@@ -1,3 +1,16 @@
+2006-11-13  Carlos O'Donell  <carlos@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.c: Organize search path variables into $prefix relative,
+	and well-known native. Add comments.
+	(add_sysrooted_prefix): Add comment.
+	(process_command): If !gcc_exec_prefix add $prefix based paths.
+	If *cross_compile == '0', add native well-known paths.
+	Assert tooldir_base_prefix is always relative.
+	(main): If print_search_dirs, and if gcc_exec_prefix is set,
+	use this value for 'install:' path.
+	* Makefile.in: Add GCC_EXEC_PREFIX to generated site.exp.
+
 2006-11-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c: Fix a typo in comment.
