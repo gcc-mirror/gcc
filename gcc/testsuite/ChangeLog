@@ -1,3 +1,9 @@
+2006-11-12  H.J. Lu  <hongjiu.lu@intel.com>
+	    Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/29680
+	* gcc.dg/alias-11.c: New test.
+
 2006-11-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/29797
