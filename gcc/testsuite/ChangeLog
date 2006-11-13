@@ -1,3 +1,8 @@
+2006-11-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29518
+	* g++.dg/template/static28.C: New test.
+
 2006-11-13  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* lib/c-torture.exp: Use target-libpath.exp.

@@ -1,3 +1,9 @@
+2006-11-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29518
+	* pt.c (coerce_template_parms): Do not skip_evaluation while
+	substituting template arguments.
+
 2006-11-11  Richard Guenther  <rguenther@suse.de>
 
 	* typeck.c (build_unary_op): Remove handling of FIX_CEIL_EXPR,
