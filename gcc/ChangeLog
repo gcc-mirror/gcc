@@ -1,3 +1,9 @@
+2006-11-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/29439
+	* tree-vrp.c (vrp_int_const_binop): Use the correct tree when
+	checking for overflow.
+
 2006-11-13  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
