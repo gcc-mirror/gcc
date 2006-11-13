@@ -339,6 +339,7 @@
 
 2006-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	PR middle-end/29335
 	* builtins.c (do_mpfr_arg3): New.
 	(fold_builtin_1): Handle builtins fma, fmin and fmax.
 
