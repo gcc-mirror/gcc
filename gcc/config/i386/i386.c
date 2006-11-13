@@ -537,7 +537,7 @@ struct processor_costs k8_cost = {
 					   in SImode, DImode and TImode */
   5,					/* MMX or SSE register to integer */
   64,					/* size of prefetch block */
-  /* New AMD processors neer drop prefetches; if they cannot be performed
+  /* New AMD processors never drop prefetches; if they cannot be performed
      immediately, they are queued.  We set number of simultaneous prefetches
      to a large constant to reflect this (it probably is not a good idea not
      to limit number of prefetches at all, as their execution also takes some
