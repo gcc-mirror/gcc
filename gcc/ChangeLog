@@ -1,3 +1,9 @@
+2006-11-12  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/29587
+	* tree-ssa-structalias.c (process_constraint): Don't
+	mark address taken due only to escaped vars constraint.
+
 2006-11-12  Michael Matz  <matz@suse.de>
 	    Roger Sayle  <roger@eyesopen.com>
 
