@@ -1,3 +1,14 @@
+2006-11-12  Jason Merrill  <jason@redhat.com>
+	    Andrew Pinski <pinskia@physics.uc.edu>
+
+	PR middle-end/28915
+	* gimplify.c (gimplify_init_constructor): Don't reduce TREE_CONSTANT
+	vector ctors.
+	* tree-cfg.c (verify_expr): Don't look into TREE_CONSTANT
+	vector ctors.
+	* expmed.c (make_tree): Handle CONST, SYMBOL_REF.
+	* tree.c (build_vector): Handle non-_CST elements.
+
 2006-11-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* genemit.c (gen_insn): Call gen_exp with a non-null used

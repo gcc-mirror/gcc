@@ -3420,6 +3420,11 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       CHECK_OP (1, "invalid operand to binary operator");
       break;
 
+    case CONSTRUCTOR:
+      if (TREE_CONSTANT (t) && TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+	*walk_subtrees = 0;
+      break;
+
     default:
       break;
     }
