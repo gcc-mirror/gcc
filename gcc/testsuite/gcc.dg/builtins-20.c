@@ -89,6 +89,22 @@ void test2(double x, double y)
   if (cos(-fabs(tan(x/-y))) != cos(tan(x/y)))
     link_error ();
 
+  if (cos(y<10 ? -x : y) != cos(y<10 ? x : y))
+    link_error ();
+
+  if (cos(y<10 ? x : -y) != cos(y<10 ? x : y))
+    link_error ();
+
+  if (cos(y<10 ? -fabs(x) : tan(x<20 ? -x : -fabs(y)))
+      != cos(y<10 ? x : tan(x<20 ? x : y)))
+    link_error ();
+
+  if (cos((y*=3, -x)) != cos((y*=3,x)))
+    link_error ();
+
+  if (cos((y*=2, -fabs(tan(x/-y)))) != cos((y*=2,tan(x/y))))
+    link_error ();
+
   if (hypot (x, 0) != fabs(x))
     link_error ();
 
@@ -188,6 +204,22 @@ void test2f(float x, float y)
     link_error ();
 
   if (cosf(-fabsf(tanf(x/-y))) != cosf(tanf(x/y)))
+    link_error ();
+
+  if (cosf(y<10 ? -x : y) != cosf(y<10 ? x : y))
+    link_error ();
+
+  if (cosf(y<10 ? x : -y) != cosf(y<10 ? x : y))
+    link_error ();
+
+  if (cosf(y<10 ? -fabsf(x) : tanf(x<20 ? -x : -fabsf(y)))
+      != cosf(y<10 ? x : tanf(x<20 ? x : y)))
+    link_error ();
+
+  if (cosf((y*=3, -x)) != cosf((y*=3,x)))
+    link_error ();
+
+  if (cosf((y*=2, -fabsf(tanf(x/-y)))) != cosf((y*=2,tanf(x/y))))
     link_error ();
 
   if (hypotf (x, 0) != fabsf(x))
@@ -290,6 +322,22 @@ void test2l(long double x, long double y)
     link_error ();
 
   if (cosl(-fabsl(tanl(x/-y))) != cosl(tanl(x/y)))
+    link_error ();
+
+  if (cosl(y<10 ? -x : y) != cosl(y<10 ? x : y))
+    link_error ();
+
+  if (cosl(y<10 ? x : -y) != cosl(y<10 ? x : y))
+    link_error ();
+
+  if (cosl(y<10 ? -fabsl(x) : tanl(x<20 ? -x : -fabsl(y)))
+      != cosl(y<10 ? x : tanl(x<20 ? x : y)))
+    link_error ();
+
+  if (cosl((y*=3, -x)) != cosl((y*=3,x)))
+    link_error ();
+
+  if (cosl((y*=2, -fabsl(tanl(x/-y)))) != cosl((y*=2,tanl(x/y))))
     link_error ();
 
   if (hypotl (x, 0) != fabsl(x))
