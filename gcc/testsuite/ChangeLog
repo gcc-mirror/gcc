@@ -1,3 +1,10 @@
+2006-11-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/29106
+	* g++.dg/init/self1.C: New test.
+	* g++.dg/other/fold1.C: Adjust error markers.
+	* g++.dg/init/member1.C: Likewise.
+
 2006-11-12  Jason Merrill  <jason@redhat.com>
 	    Andrew Pinski <pinskia@physics.uc.edu>
 

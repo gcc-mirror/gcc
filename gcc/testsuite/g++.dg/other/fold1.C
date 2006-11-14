@@ -4,5 +4,5 @@
 struct A
 {
     static const int i = i;  // { dg-error "not declared" }
-    int x[i];                // { dg-error "variable-size array" }
+    int x[i];                // { dg-error "integral constant-expression" }
 };
