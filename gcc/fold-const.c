@@ -13368,6 +13368,22 @@ fold_strip_sign_ops (tree exp)
 			    arg1 ? arg1 : TREE_OPERAND (exp, 1));
       break;
 
+    case COMPOUND_EXPR:
+      arg0 = TREE_OPERAND (exp, 0);
+      arg1 = fold_strip_sign_ops (TREE_OPERAND (exp, 1));
+      if (arg1)
+	return fold_build2 (COMPOUND_EXPR, TREE_TYPE (exp), arg0, arg1);
+      break;
+      
+    case COND_EXPR:
+      arg0 = fold_strip_sign_ops (TREE_OPERAND (exp, 1));
+      arg1 = fold_strip_sign_ops (TREE_OPERAND (exp, 2));
+      if (arg0 || arg1)
+	return fold_build3 (COND_EXPR, TREE_TYPE (exp), TREE_OPERAND (exp, 0),
+			    arg0 ? arg0 : TREE_OPERAND (exp, 1),
+			    arg1 ? arg1 : TREE_OPERAND (exp, 2));
+      break;
+      
     case CALL_EXPR:
       /* Strip sign ops from the argument of "odd" math functions.  */
       if (negate_mathfn_p (builtin_mathfn_code (exp)))
