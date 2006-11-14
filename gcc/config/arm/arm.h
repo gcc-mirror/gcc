@@ -2091,7 +2091,7 @@ do {							\
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */
 #define BRANCH_COST \
-  (TARGET_ARM ? 4 : (optimize > 1 ? 1 : 0))
+  (TARGET_ARM ? 4 : (optimize > 0 ? 2 : 0))
 
 /* Position Independent Code.  */
 /* We decide which register to use based on the compilation options and

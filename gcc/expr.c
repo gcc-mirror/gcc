@@ -9155,6 +9155,17 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
     return 0;
 
   icode = setcc_gen_code[(int) code];
+
+  if (icode == CODE_FOR_nothing)
+    {
+      enum machine_mode wmode;
+      
+      for (wmode = operand_mode;
+	   icode == CODE_FOR_nothing && wmode != VOIDmode;
+	   wmode = GET_MODE_WIDER_MODE (wmode))
+	icode = cstore_optab->handlers[(int) wmode].insn_code;
+    }
+
   if (icode == CODE_FOR_nothing
       || (only_cheap && insn_data[(int) icode].operand[0].mode != mode))
     {
@@ -9200,25 +9211,10 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
     target = gen_reg_rtx (GET_MODE (target));
 
   emit_move_insn (target, invert ? const0_rtx : const1_rtx);
-  result = compare_from_rtx (op0, op1, code, unsignedp,
-			     operand_mode, NULL_RTX);
-  if (GET_CODE (result) == CONST_INT)
-    return (((result == const0_rtx && ! invert)
-	     || (result != const0_rtx && invert))
-	    ? const0_rtx : const1_rtx);
-
-  /* The code of RESULT may not match CODE if compare_from_rtx
-     decided to swap its operands and reverse the original code.
-
-     We know that compare_from_rtx returns either a CONST_INT or
-     a new comparison code, so it is safe to just extract the
-     code from RESULT.  */
-  code = GET_CODE (result);
-
   label = gen_label_rtx ();
-  gcc_assert (bcc_gen_fctn[(int) code]);
-
-  emit_jump_insn ((*bcc_gen_fctn[(int) code]) (label));
+  do_compare_rtx_and_jump (op0, op1, code, unsignedp, operand_mode, NULL_RTX,
+			   NULL_RTX, label);
+  
   emit_move_insn (target, invert ? const1_rtx : const0_rtx);
   emit_label (label);
 

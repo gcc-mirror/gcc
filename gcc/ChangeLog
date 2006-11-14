@@ -1,3 +1,16 @@
+2006-11-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* expmed.c (emit_store_flag_1): New function.
+	(emit_store_flag): Call it.  If we can't find a suitable scc insn,
+	try a cstore insn.
+	* expr.c (do_store_flag): If we can't find a scc insn, try cstore.
+	Use do_compare_rtx_and_jump.
+	* arm.h (BRANCH_COST): Increase to 2 on Thumb.
+	* arm.md (cstoresi4): New define_expand.
+	(cstoresi_eq0_thumb, cstoresi_ne0_thumb): Likewise.
+	(cstoresi_eq0_thumb_insn, cstore_ne0_thumb_insn): New patterns.
+	(cstoresi_nltu_thumb, thumb_addsi3_addgeu): New patterns.
+
 2006-11-14  Caroline Tice  <ctice@apple.com>
 		
 	* dwarf2out.c (debug_pubtypes_section): New static global variable.

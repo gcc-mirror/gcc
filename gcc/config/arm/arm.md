@@ -7460,6 +7460,198 @@
    (set_attr "length" "8")]
 )
 
+(define_expand "cstoresi4"
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(match_operator:SI 1 "arm_comparison_operator"
+	 [(match_operand:SI 2 "s_register_operand" "")
+	  (match_operand:SI 3 "reg_or_int_operand" "")]))]
+  "TARGET_THUMB"
+  "{
+  rtx op3, scratch, scratch2;
+
+  if (operands[3] == const0_rtx)
+    {
+      switch (GET_CODE (operands[1]))
+	{
+	case EQ:
+	  emit_insn (gen_cstoresi_eq0_thumb (operands[0], operands[2]));
+	  break;
+
+	case NE:
+	  emit_insn (gen_cstoresi_ne0_thumb (operands[0], operands[2]));
+	  break;
+
+	case LE:
+          scratch = expand_binop (SImode, add_optab, operands[2], constm1_rtx,
+				  NULL_RTX, 0, OPTAB_WIDEN);
+          scratch = expand_binop (SImode, ior_optab, operands[2], scratch,
+				  NULL_RTX, 0, OPTAB_WIDEN);
+          expand_binop (SImode, lshr_optab, scratch, GEN_INT (31),
+			operands[0], 1, OPTAB_WIDEN);
+	  break;
+
+        case GE:
+          scratch = expand_unop (SImode, one_cmpl_optab, operands[2],
+				 NULL_RTX, 1);
+          expand_binop (SImode, lshr_optab, scratch, GEN_INT (31),
+			NULL_RTX, 1, OPTAB_WIDEN);
+          break;
+
+        case GT:
+          scratch = expand_binop (SImode, ashr_optab, operands[2],
+				  GEN_INT (31), NULL_RTX, 0, OPTAB_WIDEN);
+          scratch = expand_binop (SImode, sub_optab, scratch, operands[2],
+				  NULL_RTX, 0, OPTAB_WIDEN);
+          expand_binop (SImode, lshr_optab, scratch, GEN_INT (31), operands[0],
+			0, OPTAB_WIDEN);
+          break;
+
+	/* LT is handled by generic code.  No need for unsigned with 0.  */
+	default:
+	  FAIL;
+	}
+      DONE;
+    }
+
+  switch (GET_CODE (operands[1]))
+    {
+    case EQ:
+      scratch = expand_binop (SImode, sub_optab, operands[2], operands[3],
+			      NULL_RTX, 0, OPTAB_WIDEN);
+      emit_insn (gen_cstoresi_eq0_thumb (operands[0], scratch));
+      break;
+
+    case NE:
+      scratch = expand_binop (SImode, sub_optab, operands[2], operands[3],
+			      NULL_RTX, 0, OPTAB_WIDEN);
+      emit_insn (gen_cstoresi_ne0_thumb (operands[0], scratch));
+      break;
+
+    case LE:
+      op3 = force_reg (SImode, operands[3]);
+
+      scratch = expand_binop (SImode, lshr_optab, operands[2], GEN_INT (31),
+			      NULL_RTX, 1, OPTAB_WIDEN);
+      scratch2 = expand_binop (SImode, ashr_optab, op3, GEN_INT (31),
+			      NULL_RTX, 0, OPTAB_WIDEN);
+      emit_insn (gen_thumb_addsi3_addgeu (operands[0], scratch, scratch2,
+					  op3, operands[2]));
+      break;
+
+    case GE:
+      op3 = operands[3];
+      if (!thumb_cmp_operand (op3, SImode))
+        op3 = force_reg (SImode, op3);
+      scratch = expand_binop (SImode, ashr_optab, operands[2], GEN_INT (31),
+			      NULL_RTX, 0, OPTAB_WIDEN);
+      scratch2 = expand_binop (SImode, lshr_optab, op3, GEN_INT (31),
+			       NULL_RTX, 1, OPTAB_WIDEN);
+      emit_insn (gen_thumb_addsi3_addgeu (operands[0], scratch, scratch2,
+					  operands[2], op3));
+      break;
+
+    case LEU:
+      op3 = force_reg (SImode, operands[3]);
+      scratch = force_reg (SImode, const0_rtx);
+      emit_insn (gen_thumb_addsi3_addgeu (operands[0], scratch, scratch,
+					  op3, operands[2]));
+      break;
+
+    case GEU:
+      op3 = operands[3];
+      if (!thumb_cmp_operand (op3, SImode))
+        op3 = force_reg (SImode, op3);
+      scratch = force_reg (SImode, const0_rtx);
+      emit_insn (gen_thumb_addsi3_addgeu (operands[0], scratch, scratch,
+					  operands[2], op3));
+      break;
+
+    case LTU:
+      op3 = operands[3];
+      if (!thumb_cmp_operand (op3, SImode))
+        op3 = force_reg (SImode, op3);
+      scratch = gen_reg_rtx (SImode);
+      emit_insn (gen_cstoresi_nltu_thumb (scratch, operands[2], op3));
+      emit_insn (gen_negsi2 (operands[0], scratch));
+      break;
+
+    case GTU:
+      op3 = force_reg (SImode, operands[3]);
+      scratch = gen_reg_rtx (SImode);
+      emit_insn (gen_cstoresi_nltu_thumb (scratch, op3, operands[2]));
+      emit_insn (gen_negsi2 (operands[0], scratch));
+      break;
+
+    /* No good sequences for GT, LT.  */
+    default:
+      FAIL;
+    }
+  DONE;
+}")
+
+(define_expand "cstoresi_eq0_thumb"
+  [(parallel
+    [(set (match_operand:SI 0 "s_register_operand" "")
+	  (eq:SI (match_operand:SI 1 "s_register_operand" "")
+		 (const_int 0)))
+     (clobber (match_dup:SI 2))])]
+  "TARGET_THUMB"
+  "operands[2] = gen_reg_rtx (SImode);"
+)
+
+(define_expand "cstoresi_ne0_thumb"
+  [(parallel
+    [(set (match_operand:SI 0 "s_register_operand" "")
+	  (ne:SI (match_operand:SI 1 "s_register_operand" "")
+		 (const_int 0)))
+     (clobber (match_dup:SI 2))])]
+  "TARGET_THUMB"
+  "operands[2] = gen_reg_rtx (SImode);"
+)
+
+(define_insn "*cstoresi_eq0_thumb_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=&l,l")
+	(eq:SI (match_operand:SI 1 "s_register_operand" "l,0")
+	       (const_int 0)))
+   (clobber (match_operand:SI 2 "s_register_operand" "=X,l"))]
+  "TARGET_THUMB"
+  "@
+   neg\\t%0, %1\;adc\\t%0, %0, %1
+   neg\\t%2, %1\;adc\\t%0, %1, %2"
+  [(set_attr "length" "4")]
+)
+
+(define_insn "*cstoresi_ne0_thumb_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=l")
+	(ne:SI (match_operand:SI 1 "s_register_operand" "0")
+	       (const_int 0)))
+   (clobber (match_operand:SI 2 "s_register_operand" "=l"))]
+  "TARGET_THUMB"
+  "sub\\t%2, %1, #1\;sbc\\t%0, %1, %2"
+  [(set_attr "length" "4")]
+)
+
+(define_insn "cstoresi_nltu_thumb"
+  [(set (match_operand:SI 0 "s_register_operand" "=l,l")
+        (neg:SI (gtu:SI (match_operand:SI 1 "s_register_operand" "l,*h")
+			(match_operand:SI 2 "thumb_cmp_operand" "lI*h,*r"))))]
+  "TARGET_THUMB"
+  "cmp\\t%1, %2\;sbc\\t%0, %0, %0"
+  [(set_attr "length" "4")]
+)
+
+;; Used as part of the expansion of thumb les sequence.
+(define_insn "thumb_addsi3_addgeu"
+  [(set (match_operand:SI 0 "s_register_operand" "=l")
+        (plus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "%0")
+			  (match_operand:SI 2 "s_register_operand" "l"))
+		 (geu:SI (match_operand:SI 3 "s_register_operand" "l")
+			 (match_operand:SI 4 "thumb_cmp_operand" "lI"))))]
+  "TARGET_THUMB"
+  "cmp\\t%3, %4\;adc\\t%0, %1, %2"
+  [(set_attr "length" "4")]
+)
+
 
 ;; Conditional move insns
 
