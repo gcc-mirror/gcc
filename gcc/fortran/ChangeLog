@@ -1,5 +1,10 @@
 2006-11-14  Tobias Burnus  <burnus@net-b.de>
 
+	* match.c (gfc_match_namelist): Add missing space to
+	  error message.
+
+2006-11-14  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/29657
 	* symbol.c (check_conflict): Add further conflicts.
 
