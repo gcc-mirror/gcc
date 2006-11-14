@@ -1,3 +1,8 @@
+2006-11-13  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_prepare_shift): Use a separate
+	temporary for intermediates.
+
 2006-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Add changequote around __LONG_DOUBLE_MATH_OPTIONAL

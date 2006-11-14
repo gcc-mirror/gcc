@@ -3423,7 +3423,7 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
 	 undefined to skip one of the comparisons.  */
 
       rtx count;
-      rtx label, lref, insn;
+      rtx label, lref, insn, tempvar;
 
       emit_move_insn (operands[0], operands[1]);
 
@@ -3432,13 +3432,15 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
       lref = gen_rtx_LABEL_REF (VOIDmode, label);
       LABEL_NUSES (label) ++;
 
+      tempvar = gen_reg_rtx (mode);
+
       if (shift_code == ASHIFT)
 	{
 	  /* This is a left shift.  We only need check positive counts.  */
 	  emit_jump_insn (gen_cbranchqi4 (gen_rtx_LE (VOIDmode, 0, 0),
 					  count, GEN_INT (16), label));
-	  emit_insn (func (operands[0], operands[0], GEN_INT (8)));
-	  emit_insn (func (operands[0], operands[0], GEN_INT (8)));
+	  emit_insn (func (tempvar, operands[0], GEN_INT (8)));
+	  emit_insn (func (operands[0], tempvar, GEN_INT (8)));
 	  insn = emit_insn (gen_addqi3 (count, count, GEN_INT (-16)));
 	  emit_label_after (label, insn);
 	}
@@ -3447,8 +3449,8 @@ m32c_prepare_shift (rtx * operands, int scale, int shift_code)
 	  /* This is a right shift.  We only need check negative counts.  */
 	  emit_jump_insn (gen_cbranchqi4 (gen_rtx_GE (VOIDmode, 0, 0),
 					  count, GEN_INT (-16), label));
-	  emit_insn (func (operands[0], operands[0], GEN_INT (-8)));
-	  emit_insn (func (operands[0], operands[0], GEN_INT (-8)));
+	  emit_insn (func (tempvar, operands[0], GEN_INT (-8)));
+	  emit_insn (func (operands[0], tempvar, GEN_INT (-8)));
 	  insn = emit_insn (gen_addqi3 (count, count, GEN_INT (16)));
 	  emit_label_after (label, insn);
 	}
