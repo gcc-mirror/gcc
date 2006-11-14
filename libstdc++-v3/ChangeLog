@@ -1,3 +1,8 @@
+2006-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/26_numerics/complex/13450.cc: Do not test long double
+	in IBM long double case.
+
 2006-11-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/debug.cc (_Safe_sequence_base::_M_revalidate_singular): Fix
