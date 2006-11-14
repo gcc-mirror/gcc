@@ -61,6 +61,11 @@ void test01()
   d2 = 1.4;
   test01_do(d1, d2);
 
+#if __LDBL_MANT_DIG__ != 106
+  /* For IBM long double, epsilon is too small (since 1.0 plus any
+     double is representable) to be able to expect results within
+     epsilon * 100 (which may be much less than 1ulp for a particular
+     long double value).  */
   long double ld1 = -1.0l;
   long double ld2 = 0.5l;
   test01_do(ld1, ld2);
@@ -68,6 +73,7 @@ void test01()
   ld1 = -3.2l;
   ld2 = 1.4l;
   test01_do(ld1, ld2);
+#endif
 }
 
 int main()

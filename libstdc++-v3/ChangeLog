@@ -1,3 +1,8 @@
+2006-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/26_numerics/complex/13450.cc: Do not test long double
+	in IBM long double case.
+
 2006-11-13  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* configure: Regenerated.
