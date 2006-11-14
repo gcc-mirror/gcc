@@ -1,3 +1,27 @@
+2006-11-14  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/27755
+
+	* tree-ssa-pre.c: Update comments.
+	(bb_bitmap_sets): Add pa_in and  deferred member.
+	(BB_DEFERRED): New macro.
+	(maximal_set): New variable.
+	(pre_stats): Add pa_insert member.
+	(bitmap_set_and): Short circuit orig == dest.
+	(bitmap_set_subtract_values): New function.
+	(bitmap_set_contains_expr): Ditto.
+	(translate_vuses_through_block): Add phiblock argument.
+	(dependent_clean): New function.
+	(compute_antic_aux): Update for maximal_set changes.
+	(compute_partial_antic_aux): New function.
+	(compute_antic): Handle partial anticipation.
+	(do_partial_partial_insertion): New function.
+	(insert_aux): Handle partial anticipation.
+	(add_to_sets): Add to maximal set.
+	(compute_avail): Ditto.
+	(init_pre): Initialize maximal_set.
+	(execute_pre): Do partial anticipation if -O3+.
+
 2006-11-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/29798
