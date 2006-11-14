@@ -2598,7 +2598,7 @@ gfc_match_namelist (void)
 	     these are the only errors for the next two lines.  */
 	  if (sym->as && sym->as->type == AS_ASSUMED_SIZE)
 	    {
-	      gfc_error ("Assumed size array '%s' in namelist '%s'at "
+	      gfc_error ("Assumed size array '%s' in namelist '%s' at "
 		         "%C is not allowed.", sym->name, group_name->name);
 	      gfc_error_check ();
 	    }
