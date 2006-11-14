@@ -318,6 +318,8 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
 	}
     }
 
+  conf (dummy, entry);
+  conf (dummy, intrinsic);
   conf (dummy, save);
   conf (dummy, threadprivate);
   conf (pointer, target);
@@ -427,6 +429,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
     case FL_BLOCK_DATA:
     case FL_MODULE:
     case FL_LABEL:
+      conf2 (dimension);
       conf2 (dummy);
       conf2 (save);
       conf2 (pointer);
@@ -448,15 +451,16 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
 
     case FL_PROCEDURE:
       conf2 (intent);
+      conf2(save);
 
       if (attr->subroutine)
 	{
-	  conf2(save);
 	  conf2(pointer);
 	  conf2(target);
 	  conf2(allocatable);
 	  conf2(result);
 	  conf2(in_namelist);
+	  conf2(dimension);
 	  conf2(function);
 	  conf2(threadprivate);
 	}
