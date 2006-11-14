@@ -1,3 +1,11 @@
+2006-11-14  Caroline Tice  <ctice@apple.com>
+
+	* gcc.dg/pubtypes-1.c: New file/testcase.
+	* gcc.dg/pubtypes-2.c: New file/testcase.
+	* gcc.dg/pubtypes-3.c: New file/testcase.
+	* gcc.dg/pubtypes-4.c: New file/testcase.
+	* g++.dg/pubtypes.C: New file/testcase.
+
 2006-11-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/29106
