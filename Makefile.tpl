@@ -854,9 +854,12 @@ all-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
 maybe-clean-stage[+id+]-[+prefix+][+module+]: clean-stage[+id+]-[+prefix+][+module+]
 clean-stage[+id+]: clean-stage[+id+]-[+prefix+][+module+]
 clean-stage[+id+]-[+prefix+][+module+]:
-	@[ -f [+subdir+]/[+module+]/Makefile ] || [ -f [+subdir+]/stage[+id+]-[+module+]/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage[+id+] ] || $(MAKE) stage[+id+]-start; \
+	@if [ $(current_stage) = stage[+id+] ]; then \
+	  [ -f [+subdir+]/[+module+]/Makefile ] || exit 0; \
+	else \
+	  [ -f [+subdir+]/stage[+id+]-[+module+]/Makefile ] || exit 0; \
+	  $(MAKE) stage[+id+]-start; \
+	fi; \
 	cd [+subdir+]/[+module+] && \
 	$(MAKE) [+args+] [+ IF prev +] \
 		[+poststage1_args+] [+ ENDIF prev +] \
