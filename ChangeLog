@@ -1,3 +1,7 @@
+2006-11-14  Erven Rohou  <erven.rohou@st.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2006-11-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (clean-stage*): Test separately for package/Makefile
