@@ -466,9 +466,21 @@ local_ref_killed_between_p (struct df_ref * ref, rtx from, rtx to)
 static bool
 use_killed_between (struct df_ref *use, rtx def_insn, rtx target_insn)
 {
-  basic_block def_bb, target_bb;
+  basic_block def_bb = BLOCK_FOR_INSN (def_insn);
+  basic_block target_bb = BLOCK_FOR_INSN (target_insn);
   int regno;
   struct df_ref * def;
+
+  /* In some obscure situations we can have a def reaching a use
+     that is _before_ the def.  In other words the def does not
+     dominate the use even though the use and def are in the same
+     basic block.  This can happen when a register may be used
+     uninitialized in a loop.  In such cases, we must assume that
+     DEF is not available.  */
+  if (def_bb == target_bb
+      ? DF_INSN_LUID (df, def_insn) >= DF_INSN_LUID (df, target_insn)
+      : !dominated_by_p (CDI_DOMINATORS, target_bb, def_bb))
+    return true;
 
   /* Check if the reg in USE has only one definition.  We already
      know that this definition reaches use, or we wouldn't be here.  */
@@ -477,22 +489,9 @@ use_killed_between (struct df_ref *use, rtx def_insn, rtx target_insn)
   if (def && (def->next_reg == NULL))
     return false;
 
-  /* Check if we are in the same basic block.  */
-  def_bb = BLOCK_FOR_INSN (def_insn);
-  target_bb = BLOCK_FOR_INSN (target_insn);
+  /* Check locally if we are in the same basic block.  */
   if (def_bb == target_bb)
-    {
-      /* In some obscure situations we can have a def reaching a use
-	 that is _before_ the def.  In other words the def does not
-	 dominate the use even though the use and def are in the same
-	 basic block.  This can happen when a register may be used
-	 uninitialized in a loop.  In such cases, we must assume that
-	 DEF is not available.  */
-      if (DF_INSN_LUID (df, def_insn) >= DF_INSN_LUID (df, target_insn))
-	return true;
-
-      return local_ref_killed_between_p (use, def_insn, target_insn);
-    }
+    return local_ref_killed_between_p (use, def_insn, target_insn);
 
   /* Finally, if DEF_BB is the sole predecessor of TARGET_BB.  */
   if (single_pred_p (target_bb)
@@ -890,16 +889,14 @@ static void
 fwprop_init (void)
 {
   num_changes = 0;
+  calculate_dominance_info (CDI_DOMINATORS);
 
   /* We do not always want to propagate into loops, so we have to find
      loops and be careful about them.  But we have to call flow_loops_find
      before df_analyze, because flow_loops_find may introduce new jump
      insns (sadly) if we are not working in cfglayout mode.  */
   if (flag_rerun_cse_after_loop && (flag_unroll_loops || flag_peel_loops))
-    {
-      calculate_dominance_info (CDI_DOMINATORS);
-      flow_loops_find (&loops);
-    }
+    flow_loops_find (&loops);
 
   /* Now set up the dataflow problem (we only want use-def chains) and
      put the dataflow solver to work.  */
@@ -917,10 +914,10 @@ fwprop_done (void)
   if (flag_rerun_cse_after_loop && (flag_unroll_loops || flag_peel_loops))
     {
       flow_loops_free (&loops);
-      free_dominance_info (CDI_DOMINATORS);
       loops.num = 0;
     }
 
+  free_dominance_info (CDI_DOMINATORS);
   cleanup_cfg (0);
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
 

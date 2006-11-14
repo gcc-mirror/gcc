@@ -1,3 +1,12 @@
+2006-11-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/29798
+
+	* fwprop.c (use_killed_between): Check that DEF_INSN dominates
+	TARGET_INSN before any other check.
+	(fwprop_init): Always calculate dominators.
+	(fwprop_done): Always free them.
+
 2006-11-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fold-const.c (fold_strip_sign_ops): Handle COMPOUND_EXPR and
