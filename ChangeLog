@@ -1,3 +1,9 @@
+2006-11-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (clean-stage*): Test separately for package/Makefile
+	and stageN-package/Makefile.
+	* Makefile.in: Regenerated.
+
 2006-11-14  Jie Zhang  <jie.zhang@analog.com>
 
 	* configure.in: Remove target-libgloss from noconfigdirs for
