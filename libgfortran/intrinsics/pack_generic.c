@@ -1,5 +1,5 @@
 /* Generic implementation of the PACK intrinsic
-   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -195,12 +195,15 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
       ret->dim[0].ubound = total - 1;
       ret->dim[0].stride = 1;
 
-      ret->data = internal_malloc_size (size * total);
       ret->offset = 0;
-
       if (total == 0)
-	/* In this case, nothing remains to be done.  */
-	return;
+	{
+	  /* In this case, nothing remains to be done.  */
+	  ret->data = internal_malloc_size (1);
+	  return;
+	}
+      else
+	ret->data = internal_malloc_size (size * total);
     }
 
   rstride0 = ret->dim[0].stride * size;
@@ -210,7 +213,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
   mstride0 = mstride[0];
   rptr = ret->data;
 
-  while (sptr)
+  while (sptr && mptr)
     {
       /* Test this element.  */
       if (*mptr)
@@ -315,14 +318,17 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type n;
   index_type dim;
+  index_type ssize;
   index_type nelem;
 
   dim = GFC_DESCRIPTOR_RANK (array);
+  ssize = 1;
   for (n = 0; n < dim; n++)
     {
       count[n] = 0;
       extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
       sstride[n] = array->dim[n].stride * size;
+      ssize *= extent[n];
     }
   if (sstride[0] == 0)
     sstride[0] = size;
@@ -352,25 +358,23 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
 		total *= extent[n];
 	    }
 	  else
-	    {
-	      /* The result array will be empty.  */
-	      ret->dim[0].lbound = 0;
-	      ret->dim[0].ubound = -1;
-	      ret->dim[0].stride = 1;
-	      ret->data = internal_malloc_size (0);
-	      ret->offset = 0;
-
-	      return;
-	    }
+	    /* The result array will be empty.  */
+	    total = 0;
 	}
 
       /* Setup the array descriptor.  */
       ret->dim[0].lbound = 0;
       ret->dim[0].ubound = total - 1;
       ret->dim[0].stride = 1;
-
-      ret->data = internal_malloc_size (size * total);
       ret->offset = 0;
+
+      if (total == 0)
+	{
+	  ret->data = internal_malloc_size (1);
+	  return;
+	}
+      else
+	ret->data = internal_malloc_size (size * total);
     }
 
   rstride0 = ret->dim[0].stride * size;
@@ -384,7 +388,7 @@ pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
        If MASK is .FALSE., we have to copy VECTOR into the result
      array. If VECTOR were not present we would have already returned.  */
 
-  if (*mask)
+  if (*mask && ssize != 0)
     {
       while (sptr)
 	{

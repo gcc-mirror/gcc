@@ -101,7 +101,13 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
 	    }
 	}
       ret->offset = 0;
-      ret->data = internal_malloc_size (rs * size);
+      if (rs > 0)
+        ret->data = internal_malloc_size (rs * size);
+      else
+	{
+	  ret->data = internal_malloc_size (1);
+	  return;
+	}
     }
   else
     {
