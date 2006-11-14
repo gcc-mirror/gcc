@@ -1,3 +1,9 @@
+2006-11-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR fortran/26994
+	* trans-expr.c (gfc_conv_expr_reference): Set TREE_STATIC on the
+	new CONST_DECL.
+
 2006-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/29759
