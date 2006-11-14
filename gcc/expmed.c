@@ -5091,6 +5091,77 @@ expand_and (enum machine_mode mode, rtx op0, rtx op1, rtx target)
   return target;
 }
 
+/* Helper function for emit_store_flag.  */
+static rtx
+emit_store_flag_1 (rtx target, rtx subtarget, enum machine_mode mode,
+		   int normalizep)
+{
+  rtx op0;
+  enum machine_mode target_mode = GET_MODE (target);
+  
+  /* If we are converting to a wider mode, first convert to
+     TARGET_MODE, then normalize.  This produces better combining
+     opportunities on machines that have a SIGN_EXTRACT when we are
+     testing a single bit.  This mostly benefits the 68k.
+
+     If STORE_FLAG_VALUE does not have the sign bit set when
+     interpreted in MODE, we can do this conversion as unsigned, which
+     is usually more efficient.  */
+  if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (mode))
+    {
+      convert_move (target, subtarget,
+		    (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+		    && 0 == (STORE_FLAG_VALUE
+			     & ((HOST_WIDE_INT) 1
+				<< (GET_MODE_BITSIZE (mode) -1))));
+      op0 = target;
+      mode = target_mode;
+    }
+  else
+    op0 = subtarget;
+
+  /* If we want to keep subexpressions around, don't reuse our last
+     target.  */
+  if (optimize)
+    subtarget = 0;
+
+  /* Now normalize to the proper value in MODE.  Sometimes we don't
+     have to do anything.  */
+  if (normalizep == 0 || normalizep == STORE_FLAG_VALUE)
+    ;
+  /* STORE_FLAG_VALUE might be the most negative number, so write
+     the comparison this way to avoid a compiler-time warning.  */
+  else if (- normalizep == STORE_FLAG_VALUE)
+    op0 = expand_unop (mode, neg_optab, op0, subtarget, 0);
+
+  /* We don't want to use STORE_FLAG_VALUE < 0 below since this makes
+     it hard to use a value of just the sign bit due to ANSI integer
+     constant typing rules.  */
+  else if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	   && (STORE_FLAG_VALUE
+	       & ((HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1))))
+    op0 = expand_shift (RSHIFT_EXPR, mode, op0,
+			size_int (GET_MODE_BITSIZE (mode) - 1), subtarget,
+			normalizep == 1);
+  else
+    {
+      gcc_assert (STORE_FLAG_VALUE & 1);
+
+      op0 = expand_and (mode, op0, const1_rtx, subtarget);
+      if (normalizep == -1)
+	op0 = expand_unop (mode, neg_optab, op0, op0, 0);
+    }
+
+  /* If we were converting to a smaller mode, do the conversion now.  */
+  if (target_mode != mode)
+    {
+      convert_move (target, op0, 0);
+      return target;
+    }
+  else
+    return op0;
+}
+
 /* Emit a store-flags instruction for comparison CODE on OP0 and OP1
    and storing in TARGET.  Normally return TARGET.
    Return 0 if that cannot be done.
@@ -5180,12 +5251,14 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	{
 	  rtx op00, op01, op0both;
 
-	  /* Do a logical OR or AND of the two words and compare the result.  */
+	  /* Do a logical OR or AND of the two words and compare the
+	     result.  */
 	  op00 = simplify_gen_subreg (word_mode, op0, mode, 0);
 	  op01 = simplify_gen_subreg (word_mode, op0, mode, UNITS_PER_WORD);
 	  op0both = expand_binop (word_mode,
 				  op1 == const0_rtx ? ior_optab : and_optab,
-				  op00, op01, NULL_RTX, unsignedp, OPTAB_DIRECT);
+				  op00, op01, NULL_RTX, unsignedp,
+				  OPTAB_DIRECT);
 
 	  if (op0both != 0)
 	    return emit_store_flag (target, code, op0both, op1, word_mode,
@@ -5197,14 +5270,12 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
 	  /* If testing the sign bit, can just test on high word.  */
 	  op0h = simplify_gen_subreg (word_mode, op0, mode,
-				      subreg_highpart_offset (word_mode, mode));
+				      subreg_highpart_offset (word_mode,
+							      mode));
 	  return emit_store_flag (target, code, op0h, op1, word_mode,
 				  unsignedp, normalizep);
 	}
     }
-
-  /* From now on, we won't change CODE, so set ICODE now.  */
-  icode = setcc_gen_code[(int) code];
 
   /* If this is A < 0 or A >= 0, we can do this by taking the ones
      complement of A (for GE) and shifting the sign bit to the low bit.  */
@@ -5213,7 +5284,8 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       && (normalizep || STORE_FLAG_VALUE == 1
 	  || (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	      && ((STORE_FLAG_VALUE & GET_MODE_MASK (mode))
-		  == (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))))
+		  == ((unsigned HOST_WIDE_INT) 1
+		      << (GET_MODE_BITSIZE (mode) - 1))))))
     {
       subtarget = target;
 
@@ -5247,6 +5319,8 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
       return op0;
     }
+
+  icode = setcc_gen_code[(int) code];
 
   if (icode != CODE_FOR_nothing)
     {
@@ -5305,72 +5379,65 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       if (pattern)
 	{
 	  emit_insn (pattern);
+	  return emit_store_flag_1 (target, subtarget, compare_mode,
+				    normalizep);
+	}
+    }
+  else
+    {
+      /* We don't have an scc insn, so try a cstore insn.  */
 
-	  /* If we are converting to a wider mode, first convert to
-	     TARGET_MODE, then normalize.  This produces better combining
-	     opportunities on machines that have a SIGN_EXTRACT when we are
-	     testing a single bit.  This mostly benefits the 68k.
+      for (compare_mode = mode; compare_mode != VOIDmode;
+	   compare_mode = GET_MODE_WIDER_MODE (compare_mode))
+	{
+	  icode = cstore_optab->handlers[(int) compare_mode].insn_code;
+	  if (icode != CODE_FOR_nothing)
+	    break;
+	}
 
-	     If STORE_FLAG_VALUE does not have the sign bit set when
-	     interpreted in COMPARE_MODE, we can do this conversion as
-	     unsigned, which is usually more efficient.  */
-	  if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (compare_mode))
+      if (icode != CODE_FOR_nothing)
+	{
+	  enum machine_mode result_mode
+	    = insn_data[(int) icode].operand[0].mode;
+	  rtx cstore_op0 = op0;
+	  rtx cstore_op1 = op1;
+
+	  do_pending_stack_adjust ();
+	  last = get_last_insn ();
+
+	  if (compare_mode != mode)
 	    {
-	      convert_move (target, subtarget,
-			    (GET_MODE_BITSIZE (compare_mode)
-			     <= HOST_BITS_PER_WIDE_INT)
-			    && 0 == (STORE_FLAG_VALUE
-				     & ((HOST_WIDE_INT) 1
-					<< (GET_MODE_BITSIZE (compare_mode) -1))));
-	      op0 = target;
-	      compare_mode = target_mode;
+	      cstore_op0 = convert_modes (compare_mode, mode, cstore_op0,
+					  unsignedp);
+	      cstore_op1 = convert_modes (compare_mode, mode, cstore_op1,
+					  unsignedp);
 	    }
-	  else
-	    op0 = subtarget;
+	  
+	  if (!insn_data[(int) icode].operand[2].predicate (cstore_op0,
+							    compare_mode))
+	    cstore_op0 = copy_to_mode_reg (compare_mode, cstore_op0);
 
-	  /* If we want to keep subexpressions around, don't reuse our
-	     last target.  */
+	  if (!insn_data[(int) icode].operand[3].predicate (cstore_op1,
+							    compare_mode))
+	    cstore_op1 = copy_to_mode_reg (compare_mode, cstore_op1);
 
-	  if (optimize)
-	    subtarget = 0;
+	  comparison = gen_rtx_fmt_ee (code, result_mode, cstore_op0,
+				       cstore_op1);
+	  subtarget = target;
 
-	  /* Now normalize to the proper value in COMPARE_MODE.  Sometimes
-	     we don't have to do anything.  */
-	  if (normalizep == 0 || normalizep == STORE_FLAG_VALUE)
-	    ;
-	  /* STORE_FLAG_VALUE might be the most negative number, so write
-	     the comparison this way to avoid a compiler-time warning.  */
-	  else if (- normalizep == STORE_FLAG_VALUE)
-	    op0 = expand_unop (compare_mode, neg_optab, op0, subtarget, 0);
+	  if (optimize || !(insn_data[(int) icode].operand[0].predicate
+			    (subtarget, result_mode)))
+	    subtarget = gen_reg_rtx (result_mode);
 
-	  /* We don't want to use STORE_FLAG_VALUE < 0 below since this
-	     makes it hard to use a value of just the sign bit due to
-	     ANSI integer constant typing rules.  */
-	  else if (GET_MODE_BITSIZE (compare_mode) <= HOST_BITS_PER_WIDE_INT
-		   && (STORE_FLAG_VALUE
-		       & ((HOST_WIDE_INT) 1
-			  << (GET_MODE_BITSIZE (compare_mode) - 1))))
-	    op0 = expand_shift (RSHIFT_EXPR, compare_mode, op0,
-				size_int (GET_MODE_BITSIZE (compare_mode) - 1),
-				subtarget, normalizep == 1);
-	  else
+	  pattern = GEN_FCN (icode) (subtarget, comparison, cstore_op0,
+				     cstore_op1);
+
+	  if (pattern)
 	    {
-	      gcc_assert (STORE_FLAG_VALUE & 1);
-	      
-	      op0 = expand_and (compare_mode, op0, const1_rtx, subtarget);
-	      if (normalizep == -1)
-		op0 = expand_unop (compare_mode, neg_optab, op0, op0, 0);
+	      emit_insn (pattern);
+	      return emit_store_flag_1 (target, subtarget, result_mode,
+					normalizep);
 	    }
-
-	  /* If we were converting to a smaller mode, do the
-	     conversion now.  */
-	  if (target_mode != compare_mode)
-	    {
-	      convert_move (target, op0, 0);
-	      return target;
-	    }
-	  else
-	    return op0;
 	}
     }
 
