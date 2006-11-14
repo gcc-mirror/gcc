@@ -1,3 +1,7 @@
+2006-11-14  Eric Christopher  <echristo@apple.com>
+
+	* configure: Regenerate with autoconf 2.59.
+
 2006-11-14  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/27755
@@ -61,7 +65,7 @@
 2006-11-13  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/rs6000/cell.md: New file.
-	* config/rs6000/rs6000.c (rs6000_cell_dont_microcode): New 
+	* config/rs6000/rs6000.c (rs6000_cell_dont_microcode): New
 	variable.
 	(ppccell_cost): New cost matrix.
 	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD): Define.
