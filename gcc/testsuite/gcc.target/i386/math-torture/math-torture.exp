@@ -1,5 +1,10 @@
 # This harness is for tests that should be run at all optimisation levels.
 
+# Exit immediately if this isn't a x86 target.
+if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
+  return
+}
+
 set TORTURE_OPTIONS [list \
         { -O0 } \
         { -O0 -mfpmath=387 } \

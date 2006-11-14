@@ -1,3 +1,8 @@
+2006-11-14  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.target/i386/math-torture/math-torture.exp: Restrict
+	to i?86 and x86_64 targets.
+
 2006-11-14  Caroline Tice  <ctice@apple.com>
 
 	* gcc.dg/pubtypes-1.c: New file/testcase.
