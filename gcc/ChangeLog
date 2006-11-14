@@ -1,3 +1,7 @@
+2006-11-14  Eric Christopher  <echristo@apple.com>
+
+	* configure: Regenerate with autoconf 2.59.
+
 2006-11-13  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_prepare_shift): Use a separate
