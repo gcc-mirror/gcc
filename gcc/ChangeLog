@@ -1,3 +1,10 @@
+2006-11-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/arm.h (FUNCTION_ARG_ADVANCE): Only adjust
+	iwmmxt_nregs if TARGET_IWMMXT_ABI.
+	* config/arm/iwmmxt.md (movv8qi_internal, movv4hi_internal,
+	movv2si_internal): Support moves between core registers.
+
 2006-11-14  Eric Christopher  <echristo@apple.com>
 
 	* configure: Regenerate with autoconf 2.59.
