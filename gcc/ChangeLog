@@ -1,5 +1,10 @@
 2006-11-15  Steve Ellcey  <sje@cup.hp.com>
 
+	* config/ia64/ia64.c (ia64_hpux_init_libfuncs):  Use HP-UX millicode
+	routines for integer division.
+
+2006-11-15  Steve Ellcey  <sje@cup.hp.com>
+
 	PR other/25028
 	* config/ia64/t-hpux (LIB1ASMFUNCS):  Filter out _fixtfdi,
 	_fixunstfdi, and  _floatditf
