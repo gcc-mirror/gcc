@@ -2757,6 +2757,7 @@ parse_contained (int module)
   gfc_statement st;
   gfc_symbol *sym;
   gfc_entry_list *el;
+  int contains_statements = 0;
 
   push_state (&s1, COMP_CONTAINS, NULL);
   parent_ns = gfc_current_ns;
@@ -2777,6 +2778,7 @@ parse_contained (int module)
 
 	case ST_FUNCTION:
 	case ST_SUBROUTINE:
+  contains_statements = 1;
 	  accept_statement (st);
 
 	  push_state (&s2,
@@ -2860,6 +2862,11 @@ parse_contained (int module)
   gfc_free_namespace (ns);
 
   pop_state ();
+  if (!contains_statements)
+    /* This is valid in Fortran 2008.  */
+    gfc_notify_std (GFC_STD_GNU, "Extension: "
+                    "CONTAINS statement without FUNCTION "
+                    "or SUBROUTINE statement at %C");
 }
 
 
