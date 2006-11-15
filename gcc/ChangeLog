@@ -1,3 +1,9 @@
+2006-11-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/29788
+	* fold-const.c (fold_indirect_ref_1): Fold *&CONST_DECL down
+	to what is the const decl is a place holder for.
+
 2006-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.opt: New target option -mx87regparm.
