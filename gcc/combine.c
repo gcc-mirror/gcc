@@ -1659,7 +1659,7 @@ likely_spilled_retval_1 (rtx x, rtx set, void *data)
     new_mask >>= info->regno - regno;
   else
     new_mask <<= regno - info->regno;
-  info->mask &= new_mask;
+  info->mask &= ~new_mask;
 }
 
 /* Return nonzero iff part of the return value is live during INSN, and
@@ -1695,7 +1695,8 @@ likely_spilled_retval_p (rtx insn)
   info.nregs = nregs;
   info.mask = mask;
   for (p = PREV_INSN (use); info.mask && p != insn; p = PREV_INSN (p))
-    note_stores (PATTERN (insn), likely_spilled_retval_1, &info);
+    if (INSN_P (p))
+      note_stores (PATTERN (p), likely_spilled_retval_1, &info);
   mask = info.mask;
 
   /* Check if any of the (probably) live return value registers is
