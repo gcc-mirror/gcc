@@ -1,14 +1,3 @@
-2006-11-12  Jason Merrill  <jason@redhat.com>
-	    Andrew Pinski <pinskia@physics.uc.edu>
-
-	PR middle-end/28915
-	* gimplify.c (gimplify_init_constructor): Don't reduce TREE_CONSTANT
-	vector ctors.
-	* tree-cfg.c (verify_expr): Don't look into TREE_CONSTANT
-	vector ctors.
-	* expmed.c (make_tree): Handle CONST, SYMBOL_REF.
-	* tree.c (build_vector): Handle non-_CST elements.
-
 2006-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (ld_vers): Parse GNU ld version 2.17.50.0.3-6 20060715

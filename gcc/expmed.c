@@ -5031,15 +5031,6 @@ make_tree (tree type, rtx x)
 					  GET_CODE (x) == ZERO_EXTEND);
       return fold_convert (type, make_tree (t, XEXP (x, 0)));
 
-    case CONST:
-      return make_tree (type, XEXP (x, 0));
-
-    case SYMBOL_REF:
-      t = SYMBOL_REF_DECL (x);
-      if (t)
-	return fold_convert (type, build_fold_addr_expr (t));
-      /* else fall through.  */
-
     default:
       t = build_decl (VAR_DECL, NULL_TREE, type);
 
