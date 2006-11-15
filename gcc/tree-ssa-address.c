@@ -397,8 +397,9 @@ most_expensive_mult_to_index (struct mem_address *parts, tree type,
 
   for (i = 0; i < addr->n; i++)
     {
+      /* FIXME: Should use the correct memory mode rather than Pmode.  */
       if (addr->coefs[i] == 1
-	  || !multiplier_allowed_in_address_p (addr->coefs[i]))
+	  || !multiplier_allowed_in_address_p (addr->coefs[i], Pmode))
 	continue;
       
       acost = multiply_by_cost (addr->coefs[i], Pmode);

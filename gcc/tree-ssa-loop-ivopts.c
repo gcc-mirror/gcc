@@ -3321,32 +3321,32 @@ multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode)
 /* Returns true if multiplying by RATIO is allowed in address.  */
 
 bool
-multiplier_allowed_in_address_p (HOST_WIDE_INT ratio)
+multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode)
 {
 #define MAX_RATIO 128
-  static sbitmap valid_mult;
+  static sbitmap valid_mult[MAX_MACHINE_MODE];
   
-  if (!valid_mult)
+  if (!valid_mult[mode])
     {
       rtx reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
       rtx addr;
       HOST_WIDE_INT i;
 
-      valid_mult = sbitmap_alloc (2 * MAX_RATIO + 1);
-      sbitmap_zero (valid_mult);
+      valid_mult[mode] = sbitmap_alloc (2 * MAX_RATIO + 1);
+      sbitmap_zero (valid_mult[mode]);
       addr = gen_rtx_fmt_ee (MULT, Pmode, reg1, NULL_RTX);
       for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
 	{
 	  XEXP (addr, 1) = gen_int_mode (i, Pmode);
-	  if (memory_address_p (Pmode, addr))
-	    SET_BIT (valid_mult, i + MAX_RATIO);
+	  if (memory_address_p (mode, addr))
+	    SET_BIT (valid_mult[mode], i + MAX_RATIO);
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "  allowed multipliers:");
 	  for (i = -MAX_RATIO; i <= MAX_RATIO; i++)
-	    if (TEST_BIT (valid_mult, i + MAX_RATIO))
+	    if (TEST_BIT (valid_mult[mode], i + MAX_RATIO))
 	      fprintf (dump_file, " %d", (int) i);
 	  fprintf (dump_file, "\n");
 	  fprintf (dump_file, "\n");
@@ -3356,7 +3356,7 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio)
   if (ratio > MAX_RATIO || ratio < -MAX_RATIO)
     return false;
 
-  return TEST_BIT (valid_mult, ratio + MAX_RATIO);
+  return TEST_BIT (valid_mult[mode], ratio + MAX_RATIO);
 }
 
 /* Returns cost of address in shape symbol + var + OFFSET + RATIO * index.
@@ -3367,19 +3367,20 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio)
 
 static unsigned
 get_address_cost (bool symbol_present, bool var_present,
-		  unsigned HOST_WIDE_INT offset, HOST_WIDE_INT ratio)
+		  unsigned HOST_WIDE_INT offset, HOST_WIDE_INT ratio,
+		  enum machine_mode mem_mode)
 {
-  static bool initialized = false;
-  static HOST_WIDE_INT rat, off;
-  static HOST_WIDE_INT min_offset, max_offset;
-  static unsigned costs[2][2][2][2];
+  static bool initialized[MAX_MACHINE_MODE];
+  static HOST_WIDE_INT rat[MAX_MACHINE_MODE], off[MAX_MACHINE_MODE];
+  static HOST_WIDE_INT min_offset[MAX_MACHINE_MODE], max_offset[MAX_MACHINE_MODE];
+  static unsigned costs[MAX_MACHINE_MODE][2][2][2][2];
   unsigned cost, acost;
   bool offset_p, ratio_p;
   HOST_WIDE_INT s_offset;
   unsigned HOST_WIDE_INT mask;
   unsigned bits;
 
-  if (!initialized)
+  if (!initialized[mem_mode])
     {
       HOST_WIDE_INT i;
       int old_cse_not_expected;
@@ -3387,7 +3388,7 @@ get_address_cost (bool symbol_present, bool var_present,
       rtx seq, addr, base;
       rtx reg0, reg1;
 
-      initialized = true;
+      initialized[mem_mode] = true;
 
       reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
 
@@ -3395,32 +3396,36 @@ get_address_cost (bool symbol_present, bool var_present,
       for (i = 1; i <= 1 << 20; i <<= 1)
 	{
 	  XEXP (addr, 1) = gen_int_mode (i, Pmode);
-	  if (!memory_address_p (Pmode, addr))
+	  if (!memory_address_p (mem_mode, addr))
 	    break;
 	}
-      max_offset = i >> 1;
-      off = max_offset;
+      max_offset[mem_mode] = i >> 1;
+      off[mem_mode] = max_offset[mem_mode];
 
       for (i = 1; i <= 1 << 20; i <<= 1)
 	{
 	  XEXP (addr, 1) = gen_int_mode (-i, Pmode);
-	  if (!memory_address_p (Pmode, addr))
+	  if (!memory_address_p (mem_mode, addr))
 	    break;
 	}
-      min_offset = -(i >> 1);
+      min_offset[mem_mode] = -(i >> 1);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "get_address_cost:\n");
-	  fprintf (dump_file, "  min offset %d\n", (int) min_offset);
-	  fprintf (dump_file, "  max offset %d\n", (int) max_offset);
+	  fprintf (dump_file, "  min offset %s %d\n",
+		   GET_MODE_NAME (mem_mode),
+		   (int) min_offset[mem_mode]);
+	  fprintf (dump_file, "  max offset %s %d\n",
+		   GET_MODE_NAME (mem_mode),
+		   (int) max_offset[mem_mode]);
 	}
 
-      rat = 1;
+      rat[mem_mode] = 1;
       for (i = 2; i <= MAX_RATIO; i++)
-	if (multiplier_allowed_in_address_p (i))
+	if (multiplier_allowed_in_address_p (i, mem_mode))
 	  {
-	    rat = i;
+	    rat[mem_mode] = i;
 	    break;
 	  }
 
@@ -3438,7 +3443,8 @@ get_address_cost (bool symbol_present, bool var_present,
 
 	  addr = reg0;
 	  if (rat_p)
-	    addr = gen_rtx_fmt_ee (MULT, Pmode, addr, gen_int_mode (rat, Pmode));
+	    addr = gen_rtx_fmt_ee (MULT, Pmode, addr,
+				   gen_int_mode (rat[mem_mode], Pmode));
 
 	  if (var_p)
 	    addr = gen_rtx_fmt_ee (PLUS, Pmode, addr, reg1);
@@ -3450,10 +3456,11 @@ get_address_cost (bool symbol_present, bool var_present,
 		base = gen_rtx_fmt_e (CONST, Pmode,
 				      gen_rtx_fmt_ee (PLUS, Pmode,
 						      base,
-						      gen_int_mode (off, Pmode)));
+						      gen_int_mode (off[mem_mode],
+								    Pmode)));
 	    }
 	  else if (off_p)
-	    base = gen_int_mode (off, Pmode);
+	    base = gen_int_mode (off[mem_mode], Pmode);
 	  else
 	    base = NULL_RTX;
     
@@ -3465,17 +3472,17 @@ get_address_cost (bool symbol_present, bool var_present,
 	     follow.  */
 	  old_cse_not_expected = cse_not_expected;
 	  cse_not_expected = true;
-	  addr = memory_address (Pmode, addr);
+	  addr = memory_address (mem_mode, addr);
 	  cse_not_expected = old_cse_not_expected;
 	  seq = get_insns ();
 	  end_sequence ();
 
 	  acost = seq_cost (seq);
-	  acost += address_cost (addr, Pmode);
+	  acost += address_cost (addr, mem_mode);
 
 	  if (!acost)
 	    acost = 1;
-	  costs[sym_p][var_p][off_p][rat_p] = acost;
+	  costs[mem_mode][sym_p][var_p][off_p][rat_p] = acost;
 	}
 
       /* On some targets, it is quite expensive to load symbol to a register,
@@ -3497,12 +3504,12 @@ get_address_cost (bool symbol_present, bool var_present,
 	  off_p = (i >> 1) & 1;
 	  rat_p = (i >> 2) & 1;
 
-	  acost = costs[0][1][off_p][rat_p] + 1;
+	  acost = costs[mem_mode][0][1][off_p][rat_p] + 1;
 	  if (var_p)
 	    acost += add_c;
 
-	  if (acost < costs[1][var_p][off_p][rat_p])
-	    costs[1][var_p][off_p][rat_p] = acost;
+	  if (acost < costs[mem_mode][1][var_p][off_p][rat_p])
+	    costs[mem_mode][1][var_p][off_p][rat_p] = acost;
 	}
   
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3526,7 +3533,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	      if (rat_p)
 		fprintf (dump_file, "rat * ");
 
-	      acost = costs[sym_p][var_p][off_p][rat_p];
+	      acost = costs[mem_mode][sym_p][var_p][off_p][rat_p];
 	      fprintf (dump_file, "index costs %d\n", acost);
 	    }
 	  fprintf (dump_file, "\n");
@@ -3542,9 +3549,10 @@ get_address_cost (bool symbol_present, bool var_present,
 
   cost = 0;
   offset_p = (s_offset != 0
-	      && min_offset <= s_offset && s_offset <= max_offset);
+	      && min_offset[mem_mode] <= s_offset
+	      && s_offset <= max_offset[mem_mode]);
   ratio_p = (ratio != 1
-	     && multiplier_allowed_in_address_p (ratio));
+	     && multiplier_allowed_in_address_p (ratio, mem_mode));
 
   if (ratio != 1 && !ratio_p)
     cost += multiply_by_cost (ratio, Pmode);
@@ -3555,7 +3563,7 @@ get_address_cost (bool symbol_present, bool var_present,
       var_present = true;
     }
 
-  acost = costs[symbol_present][var_present][offset_p][ratio_p];
+  acost = costs[mem_mode][symbol_present][var_present][offset_p][ratio_p];
   return cost + acost;
 }
 
@@ -3963,7 +3971,8 @@ get_computation_cost_at (struct ivopts_data *data,
      (symbol/var/const parts may be omitted).  If we are looking for an address,
      find the cost of addressing this.  */
   if (address_p)
-    return cost + get_address_cost (symbol_present, var_present, offset, ratio);
+    return cost + get_address_cost (symbol_present, var_present, offset, ratio,
+				    TYPE_MODE (TREE_TYPE (*use->op_p)));
 
   /* Otherwise estimate the costs for computing the expression.  */
   aratio = ratio > 0 ? ratio : -ratio;

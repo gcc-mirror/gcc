@@ -1,3 +1,11 @@
+2006-11-15  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* tree-flow.h (multiplier_allowed_in_address_p): Adjust prototype.
+	* tree-ssa-loop-ivopts.c (multiplier_allowed_in_address_p): New
+	arg MODE; all callers changed.  Use it to determine validity per
+	machine mode instead of using Pmode for all memory references.
+	(get_address_cost): Likewise add and use new arg MEM_MODE.
+
 2006-11-15  Rask Ingemann Lambertsen <rask@sygehus.dk>
 	    J"orn Rennecke <joern.rennecke@st.com>
 
