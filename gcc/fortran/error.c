@@ -114,33 +114,87 @@ error_string (const char *p)
 }
 
 
-/* Show the file, where it was included and the source line, give a
+/* Print a formatted integer to the error buffer or output.  */
+
+#define IBUF_LEN 30
+
+static void
+error_integer (int i)
+{
+  char *p, int_buf[IBUF_LEN];
+
+  if (i < 0)
+    {
+      i = -i;
+      error_char ('-');
+    }
+
+  p = int_buf + IBUF_LEN - 1;
+  *p-- = '\0';
+
+  if (i == 0)
+    *p-- = '0';
+
+  while (i > 0)
+    {
+      *p-- = i % 10 + '0';
+      i = i / 10;
+    }
+
+  error_string (p + 1);
+}
+
+
+/* Show the file, where it was included, and the source line, give a
    locus.  Calls error_printf() recursively, but the recursion is at
    most one level deep.  */
 
 static void error_printf (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 
 static void
-show_locus (int offset, locus * loc)
+show_locus (locus * loc, int c1, int c2)
 {
   gfc_linebuf *lb;
   gfc_file *f;
   char c, *p;
-  int i, m;
+  int i, m, offset, cmax;
 
   /* TODO: Either limit the total length and number of included files
      displayed or add buffering of arbitrary number of characters in
      error messages.  */
 
+  /* Write out the error header line, giving the source file and error
+     location (in GNU standard "[file]:[line].[column]:" format),
+     followed by an "included by" stack and a blank line.  This header
+     format is matched by a testsuite parser defined in
+     lib/gfortran-dg.exp.  */
+
   lb = loc->lb;
   f = lb->file;
-  error_printf ("%s:%d:\n", f->filename,
+
+  error_string (f->filename);
+  error_char (':');
+    
 #ifdef USE_MAPPED_LOCATION
-		LOCATION_LINE (lb->location)
+  error_integer (LOCATION_LINE (lb->location));
 #else
-		lb->linenum
+  error_integer (lb->linenum);
 #endif
-		);
+
+  if ((c1 > 0) || (c2 > 0))
+    error_char ('.');
+
+  if (c1 > 0)
+    error_integer (c1);
+
+  if ((c1 > 0) && (c2 > 0))
+    error_char ('-');
+
+  if (c2 > 0)
+    error_integer (c2);
+
+  error_char (':');
+  error_char ('\n');
 
   for (;;)
     {
@@ -149,11 +203,51 @@ show_locus (int offset, locus * loc)
       f = f->included_by;
       if (f == NULL) break;
 
-      error_printf ("    Included at %s:%d\n", f->filename, i);
+      error_printf ("    Included at %s:%d:", f->filename, i);
     }
 
+  error_char ('\n');
+
+  /* Calculate an appropriate horizontal offset of the source line in
+     order to get the error locus within the visible portion of the
+     line.  Note that if the margin of 5 here is changed, the
+     corresponding margin of 10 in show_loci should be changed.  */
+
+  offset = 0;
+
+  /* When the loci is not associated with a column, it will have a
+     value of zero.  We adjust this to 1 so that it will appear.  */
+     
+  if (c1 == 0)
+    c1 = 1;
+  if (c2 == 0)
+    c2 = 1;
+
+  /* If the two loci would appear in the same column, we shift
+     '2' one column to the right, so as to print '12' rather than
+     just '1'.  We do this here so it will be accounted for in the
+     margin calculations.  */
+
+  if (c1 == c2)
+    c2 += 1;
+
+  cmax = (c1 < c2) ? c2 : c1;
+  if (cmax > terminal_width - 5)
+    offset = cmax - terminal_width + 5;
+
+  /* TODO: Is there a good reason for the following apparently-redundant
+     check, and the similar ones in the single-locus cases below?  */
+
+  if (offset < 0)
+    offset = 0;
+
   /* Show the line itself, taking care not to print more than what can
-     show up on the terminal.  Tabs are converted to spaces.  */
+     show up on the terminal.  Tabs are converted to spaces, and 
+     nonprintable characters are converted to a "\xNN" sequence.  */
+
+  /* TODO: Although setting i to the terminal width is clever, it fails
+     to work correctly when nonprintable characters exist.  A better 
+     solution should be found.  */
 
   p = lb->line + offset;
   i = strlen (p);
@@ -186,18 +280,37 @@ show_locus (int offset, locus * loc)
     }
 
   error_char ('\n');
+
+  /* Show the '1' and/or '2' corresponding to the column of the error
+     locus.  Note that a value of -1 for c1 or c2 will simply cause 
+     the relevant number not to be printed.  */
+
+  c1 -= offset;
+  c2 -= offset;
+
+  for (i = 1; i <= cmax; i++)
+    {
+      if (i == c1)
+	error_char ('1');
+      else if (i == c2)
+	error_char ('2');
+      else
+	error_char (' ');
+    }
+
+  error_char ('\n');
+
 }
 
 
 /* As part of printing an error, we show the source lines that caused
-   the problem.  We show at least one, possibly two loci.  If we're
-   showing two loci and they both refer to the same file and line, we
-   only print the line once.  */
+   the problem.  We show at least one, and possibly two loci; the two
+   loci may or may not be on the same source line.  */
 
 static void
 show_loci (locus * l1, locus * l2)
 {
-  int offset, flag, i, m, c1, c2, cmax;
+  int m, c1, c2;
 
   if (l1 == NULL || l1->lb == NULL)
     {
@@ -205,10 +318,16 @@ show_loci (locus * l1, locus * l2)
       return;
     }
 
+  /* While calculating parameters for printing the loci, we consider possible
+     reasons for printing one per line.  If appropriate, print the loci
+     individually; otherwise we print them both on the same line.  */
+
   c1 = l1->nextc - l1->lb->line;
-  c2 = 0;
   if (l2 == NULL)
-    goto separate;
+    {
+      show_locus (l1, c1, -1);
+      return;
+    }
 
   c2 = l2->nextc - l2->lb->line;
 
@@ -217,83 +336,20 @@ show_loci (locus * l1, locus * l2)
   else
     m = c1 - c2;
 
+  /* Note that the margin value of 10 here needs to be less than the 
+     margin of 5 used in the calculation of offset in show_locus.  */
 
   if (l1->lb != l2->lb || m > terminal_width - 10)
-    goto separate;
-
-  offset = 0;
-  cmax = (c1 < c2) ? c2 : c1;
-  if (cmax > terminal_width - 5)
-    offset = cmax - terminal_width + 5;
-
-  if (offset < 0)
-    offset = 0;
-
-  c1 -= offset;
-  c2 -= offset;
-
-  show_locus (offset, l1);
-
-  /* Arrange that '1' and '2' will show up even if the two columns are equal.  */
-  for (i = 1; i <= cmax; i++)
     {
-      flag = 0;
-      if (i == c1)
-	{
-	  error_char ('1');
-	  flag = 1;
-	}
-      if (i == c2)
-	{
-	  error_char ('2');
-	  flag = 1;
-	}
-      if (flag == 0)
-	error_char (' ');
+      show_locus (l1, c1, -1);
+      show_locus (l2, -1, c2);
+      return;
     }
 
-  error_char ('\n');
+  show_locus (l1, c1, c2);
 
   return;
 
-separate:
-  offset = 0;
-
-  if (c1 > terminal_width - 5)
-    {
-      offset = c1 - 5;
-      if (offset < 0)
-	offset = 0;
-      c1 = c1 - offset;
-    }
-
-  show_locus (offset, l1);
-  for (i = 1; i < c1; i++)
-    error_char (' ');
-
-  error_char ('1');
-  error_char ('\n');
-
-  if (l2 != NULL)
-    {
-      offset = 0;
-
-      if (c2 > terminal_width - 20)
-	{
-	  offset = c2 - 20;
-	  if (offset < 0)
-	    offset = 0;
-	  c2 = c2 - offset;
-	}
-
-      show_locus (offset, l2);
-
-      for (i = 1; i < c2; i++)
-	error_char (' ');
-
-      error_char ('2');
-      error_char ('\n');
-    }
 }
 
 
@@ -301,24 +357,29 @@ separate:
    inspired by g77's error handling and is similar to printf() with
    the following %-codes:
 
-   %c Character, %d Integer, %s String, %% Percent
+   %c Character, %d or %i Integer, %s String, %% Percent
    %L  Takes locus argument
    %C  Current locus (no argument)
 
    If a locus pointer is given, the actual source line is printed out
    and the column is indicated.  Since we want the error message at
    the bottom of any source file information, we must scan the
-   argument list twice.  A maximum of two locus arguments are
-   permitted.  */
+   argument list twice -- once to determine whether the loci are 
+   present and record this for printing, and once to print the error
+   message after and loci have been printed.  A maximum of two locus
+   arguments are permitted.
+   
+   This function is also called (recursively) by show_locus in the
+   case of included files; however, as show_locus does not resupply
+   any loci, the recursion is at most one level deep.  */
 
-#define IBUF_LEN 30
 #define MAX_ARGS 10
 
 static void ATTRIBUTE_GCC_GFC(2,0)
 error_print (const char *type, const char *format0, va_list argp)
 {
-  char c, *p, int_buf[IBUF_LEN], c_arg[MAX_ARGS], *cp_arg[MAX_ARGS];
-  int i, n, have_l1, i_arg[MAX_ARGS];
+  char c, c_arg[MAX_ARGS], *cp_arg[MAX_ARGS];
+  int n, have_l1, i_arg[MAX_ARGS];
   locus *l1, *l2, *loc;
   const char *format;
 
@@ -372,6 +433,10 @@ error_print (const char *type, const char *format0, va_list argp)
 	    case 's':
 	      cp_arg[n++] = va_arg (argp, char *);
 	      break;
+
+	    case '\0':
+	      format--;
+	      break;
 	    }
 	}
     }
@@ -379,9 +444,12 @@ error_print (const char *type, const char *format0, va_list argp)
   /* Show the current loci if we have to.  */
   if (have_l1)
     show_loci (l1, l2);
-  error_string (type);
+
   if (*type)
-    error_char (' ');
+    {
+      error_string (type);
+      error_char (' ');
+    }
 
   have_l1 = 0;
   format = format0;
@@ -410,35 +478,19 @@ error_print (const char *type, const char *format0, va_list argp)
 	  error_string (cp_arg[n++]);
 	  break;
 
-	case 'i':
 	case 'd':
-	  i = i_arg[n++];
-
-	  if (i < 0)
-	    {
-	      i = -i;
-	      error_char ('-');
-	    }
-
-	  p = int_buf + IBUF_LEN - 1;
-	  *p-- = '\0';
-
-	  if (i == 0)
-	    *p-- = '0';
-
-	  while (i > 0)
-	    {
-	      *p-- = i % 10 + '0';
-	      i = i / 10;
-	    }
-
-	  error_string (p + 1);
+	case 'i':
+	  error_integer (i_arg[n++]);
 	  break;
 
 	case 'C':		/* Current locus */
 	case 'L':		/* Specified locus */
 	  error_string (have_l1 ? "(2)" : "(1)");
 	  have_l1 = 1;
+	  break;
+
+	case '\0':
+	  format--;
 	  break;
 	}
     }
