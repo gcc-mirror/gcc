@@ -379,3 +379,17 @@ _Unwind_GetLanguageSpecificData (_Unwind_Context * context)
   return ptr;
 }
 
+
+/* These two should never be used.  */
+
+_Unwind_Ptr
+_Unwind_GetDataRelBase (_Unwind_Context *context __attribute__ ((unused)))
+{
+  abort ();
+}
+
+_Unwind_Ptr
+_Unwind_GetTextRelBase (_Unwind_Context *context __attribute__ ((unused)))
+{
+  abort ();
+}
