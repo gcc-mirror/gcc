@@ -1,3 +1,9 @@
+2006-11-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/29753
+	* gimplify.c (fold_indirect_ref_rhs): Use
+	STRIP_USELESS_TYPE_CONVERSION rather than STRIP_NOPS.
+
 2006-11-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* expmed.c (emit_store_flag_1): New function.

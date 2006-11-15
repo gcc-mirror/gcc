@@ -3212,7 +3212,7 @@ fold_indirect_ref_rhs (tree t)
   tree sub = t;
   tree subtype;
 
-  STRIP_NOPS (sub);
+  STRIP_USELESS_TYPE_CONVERSION (sub);
   subtype = TREE_TYPE (sub);
   if (!POINTER_TYPE_P (subtype))
     return NULL_TREE;
