@@ -2150,11 +2150,17 @@ perfect_nest_p (struct loop *loop)
   return true;
 }
 
-/* Replace the USES of X in STMT, or uses with the same step as X  with Y.  */
+/* Replace the USES of X in STMT, or uses with the same step as X with Y.
+   YINIT is the initial value of Y, REPLACEMENTS is a hash table to
+   avoid creating duplicate temporaries and FIRSTBSI is statement
+   iterator where new temporaries should be inserted at the beginning
+   of body basic block.  */
 
 static void
 replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x, 
-				int xstep, tree y)
+				int xstep, tree y, tree yinit,
+				htab_t replacements,
+				block_stmt_iterator *firstbsi)
 {
   ssa_op_iter iter;
   use_operand_p use_p;
@@ -2163,17 +2169,83 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
     {
       tree use = USE_FROM_PTR (use_p);
       tree step = NULL_TREE;
-      tree scev = instantiate_parameters (loop,
-					  analyze_scalar_evolution (loop, use));
+      tree scev, init, val, var, setstmt;
+      struct tree_map *h, in;
+      void **loc;
 
-      if (scev != NULL_TREE && scev != chrec_dont_know)
-	step = evolution_part_in_loop_num (scev, loop->num);
+      /* Replace uses of X with Y right away.  */
+      if (use == x)
+	{
+	  SET_USE (use_p, y);
+	  continue;
+	}
 
-      if ((step && step != chrec_dont_know 
-	   && TREE_CODE (step) == INTEGER_CST
-	   && int_cst_value (step) == xstep)
-	  || USE_FROM_PTR (use_p) == x)
-	SET_USE (use_p, y);
+      scev = instantiate_parameters (loop,
+				     analyze_scalar_evolution (loop, use));
+
+      if (scev == NULL || scev == chrec_dont_know)
+	continue;
+
+      step = evolution_part_in_loop_num (scev, loop->num);
+      if (step == NULL
+	  || step == chrec_dont_know
+	  || TREE_CODE (step) != INTEGER_CST
+	  || int_cst_value (step) != xstep)
+	continue;
+
+      /* Use REPLACEMENTS hash table to cache already created
+	 temporaries.  */
+      in.hash = htab_hash_pointer (use);
+      in.from = use;
+      h = htab_find_with_hash (replacements, &in, in.hash);
+      if (h != NULL)
+	{
+	  SET_USE (use_p, h->to);
+	  continue;
+	}
+
+      /* USE which has the same step as X should be replaced
+	 with a temporary set to Y + YINIT - INIT.  */
+      init = initial_condition_in_loop_num (scev, loop->num);
+      gcc_assert (init != NULL && init != chrec_dont_know);
+      if (TREE_TYPE (use) == TREE_TYPE (y))
+	{
+	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (y), init, yinit);
+	  val = fold_build2 (PLUS_EXPR, TREE_TYPE (y), y, val);
+	  if (val == y)
+ 	    {
+	      /* If X has the same type as USE, the same step
+		 and same initial value, it can be replaced by Y.  */
+	      SET_USE (use_p, y);
+	      continue;
+	    }
+	}
+      else
+	{
+	  val = fold_build2 (MINUS_EXPR, TREE_TYPE (y), y, yinit);
+	  val = fold_convert (TREE_TYPE (use), val);
+	  val = fold_build2 (PLUS_EXPR, TREE_TYPE (use), val, init);
+	}
+
+      /* Create a temporary variable and insert it at the beginning
+	 of the loop body basic block, right after the PHI node
+	 which sets Y.  */
+      var = create_tmp_var (TREE_TYPE (use), "perfecttmp");
+      add_referenced_tmp_var (var);
+      val = force_gimple_operand_bsi (firstbsi, val, false, NULL);
+      setstmt = build2 (MODIFY_EXPR, void_type_node, var, val);
+      var = make_ssa_name (var, setstmt);
+      TREE_OPERAND (setstmt, 0) = var;
+      bsi_insert_before (firstbsi, setstmt, BSI_SAME_STMT);
+      update_stmt (setstmt);
+      SET_USE (use_p, var);
+      h = ggc_alloc (sizeof (struct tree_map));
+      h->hash = in.hash;
+      h->from = use;
+      h->to = var;
+      loc = htab_find_slot_with_hash (replacements, h, in.hash, INSERT);
+      gcc_assert ((*(struct tree_map **)loc) == NULL);
+      *(struct tree_map **) loc = h;
     }
 }
 
@@ -2433,7 +2505,7 @@ perfect_nestify (struct loops *loops,
   tree then_label, else_label, cond_stmt;
   basic_block preheaderbb, headerbb, bodybb, latchbb, olddest;
   int i;
-  block_stmt_iterator bsi;
+  block_stmt_iterator bsi, firstbsi;
   bool insert_after;
   edge e;
   struct loop *newloop;
@@ -2442,7 +2514,8 @@ perfect_nestify (struct loops *loops,
   tree stmt;
   tree oldivvar, ivvar, ivvarinced;
   VEC(tree,heap) *phis = NULL;
-  
+  htab_t replacements = NULL;
+
   /* Create the new loop.  */
   olddest = loop->single_exit->dest;
   preheaderbb = loop_split_edge_with (loop->single_exit, NULL);
@@ -2538,10 +2611,13 @@ perfect_nestify (struct loops *loops,
 					   uboundvar,
 					   ivvarinced);
   update_stmt (exit_condition);
+  replacements = htab_create_ggc (20, tree_map_hash,
+				  tree_map_eq, NULL);
   bbs = get_loop_body_in_dom_order (loop); 
   /* Now move the statements, and replace the induction variable in the moved
      statements with the correct loop induction variable.  */
   oldivvar = VEC_index (tree, loopivs, 0);
+  firstbsi = bsi_start (bodybb);
   for (i = loop->num_nodes - 1; i >= 0 ; i--)
     {
       block_stmt_iterator tobsi = bsi_last (bodybb);
@@ -2597,7 +2673,8 @@ perfect_nestify (struct loops *loops,
 		    }
 		  
 		  replace_uses_equiv_to_x_with_y 
-		    (loop, stmt, oldivvar, VEC_index (int, steps, 0), ivvar);
+		    (loop, stmt, oldivvar, VEC_index (int, steps, 0), ivvar,
+		     VEC_index (tree, lbounds, 0), replacements, &firstbsi);
 
 		  bsi_move_before (&bsi, &tobsi);
 		  
@@ -2613,6 +2690,7 @@ perfect_nestify (struct loops *loops,
     }
 
   free (bbs);
+  htab_delete (replacements);
   return perfect_nest_p (loop);
 }
 
