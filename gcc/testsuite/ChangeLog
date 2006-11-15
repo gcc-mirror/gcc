@@ -1,3 +1,10 @@
+2006-11-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/x87regparm-1.c: New test.
+	* gcc.target/i386/x87regparm-2.c: New test.
+	* gcc.target/i386/x87regparm-3.c: New test.
+	* gcc.target/i386/x87regparm-4.c: New test.
+
 2006-11-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/27546

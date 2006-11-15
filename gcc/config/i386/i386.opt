@@ -201,6 +201,10 @@ mssse3
 Target Report Mask(SSSE3)
 Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation
 
+mx87regparm
+Target RejectNegative Mask(X87REGPARM)
+Use x87 register passing conventions to pass floating point arguments
+
 msseregparm
 Target RejectNegative Mask(SSEREGPARM)
 Use SSE register passing conventions for SF and DF mode
