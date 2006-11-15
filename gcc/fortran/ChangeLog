@@ -1,5 +1,10 @@
 2006-11-15  Tobias Burnus  <burnus@net-b.de>
 
+	* parse.c (parse_contained): Fix indention
+	  of one line.
+
+2006-11-15  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/27546
 	* decl.c (gfc_match_import,variable_decl):
 	  Add IMPORT support.
