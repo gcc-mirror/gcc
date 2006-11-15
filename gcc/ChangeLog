@@ -1,3 +1,7 @@
+2006-11-15  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* tree-ssa-loop-ivopts.c (determine_iv_costs): Fix formatting.
+
 2006-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/29581
