@@ -2791,7 +2791,7 @@ parse_contained (int module)
 
 	case ST_FUNCTION:
 	case ST_SUBROUTINE:
-  contains_statements = 1;
+	  contains_statements = 1;
 	  accept_statement (st);
 
 	  push_state (&s2,
