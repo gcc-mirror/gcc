@@ -1,3 +1,9 @@
+2006-11-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/29788
+	* gfortran.fortran-torture/compile/inline_1.f90:
+	New testcase.
+
 2006-11-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/x87regparm-1.c: New test.
