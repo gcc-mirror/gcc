@@ -949,7 +949,7 @@ extern void linear_transform_loops (struct loops *);
 
 /* In tree-ssa-loop-ivopts.c  */
 bool expr_invariant_in_loop_p (struct loop *, tree);
-bool multiplier_allowed_in_address_p (HOST_WIDE_INT);
+bool multiplier_allowed_in_address_p (HOST_WIDE_INT, enum machine_mode);
 unsigned multiply_by_cost (HOST_WIDE_INT, enum machine_mode);
 
 /* In tree-ssa-threadupdate.c.  */
