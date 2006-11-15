@@ -4392,8 +4392,8 @@ determine_iv_costs (struct ivopts_data *data)
 	fprintf (dump_file, "  %d\t%d\n", i, cand->cost);
     }
   
-if (dump_file && (dump_flags & TDF_DETAILS))
-      fprintf (dump_file, "\n");
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\n");
 }
 
 /* Calculates cost for having SIZE induction variables.  */
