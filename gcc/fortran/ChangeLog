@@ -1,3 +1,12 @@
+2006-11-14  Brooks Moses  <brooks.moses@codesourcery.com>
+ 
+ 	* lang.opt: Remove -fno-backend option.
+ 	* gfortran.h (gfc_option_t): Remove flag_no_backend.
+ 	* options.c (gfc_init_options): Remove flag_no_backend.
+ 	(gfc_handle_option): Remove -fno-backend option handler.
+ 	* parse.c (gfc_parse_file): Remove references to
+ 	gfc_option.flag_no_backend.
+
 2006-11-14  Tobias Burnus  <burnus@net-b.de>
 
 	* match.c (gfc_match_namelist): Add missing space to
