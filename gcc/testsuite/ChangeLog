@@ -1,3 +1,9 @@
+2006-11-14  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR fortran/29702
+	* lib/gfortran-dg.exp (gfortran-dg-test): Ignore column
+	numbers in error message headers.
+
 2006-11-14  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.target/i386/math-torture/math-torture.exp: Restrict

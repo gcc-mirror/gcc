@@ -1,4 +1,17 @@
 2006-11-14  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	PR fortran/29702
+	* error.c (show_loci): Move column-offset calculation to
+	show_locus.
+	(show_locus): Remove blank lines before "Included in"
+	lines, clean up code, calculate column-offsets, print
+	column number is error-header lines as appropriate.
+	(error_integer): (new function) Print integer to error
+	buffer.
+	(error_print): Use error_integer, avoid possible buffer
+	overflows from buggy error formats.
+
+2006-11-14  Brooks Moses  <brooks.moses@codesourcery.com>
  
  	* gfortran.h (GFC_MAX_LINE): Remove constant definition.
  	(gfc_option_t): Clarify comments.
