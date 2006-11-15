@@ -24,7 +24,7 @@ program foo
   interface
     import ! { dg-error "only permitted in an INTERFACE body" }
     subroutine bar()
-      import foob ! { dg-error "Can not IMPORT 'foob' from host scoping unit" }
+      import foob ! { dg-error "Cannot IMPORT 'foob' from host scoping unit" }
     end subroutine bar
     subroutine test()
       import :: ! { dg-error "Expecting list of named entities" }
