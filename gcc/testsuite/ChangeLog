@@ -1,3 +1,12 @@
+2006-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/29581
+	* gcc.dg/pr29581-1.c: New test.
+	* gcc.dg/pr29581-2.c: New test.
+	* gcc.dg/pr29581-3.c: New test.
+	* gcc.dg/pr29581-4.c: New test.
+	* gfortran.dg/pr29581.f90: New test.
+
 2006-11-14  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	PR fortran/29702

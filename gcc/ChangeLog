@@ -1,3 +1,12 @@
+2006-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/29581
+	* lambda-code.c (replace_uses_equiv_to_x_with_y): Add YINIT,
+	REPLACEMENTS, FIRSTBSI arguments.  If initial condition or
+	type is different between Y and USE, create a temporary
+	variable, initialize it at the beginning of the body bb
+	and use it as replacement instead of Y.
+
 2006-11-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/29753
