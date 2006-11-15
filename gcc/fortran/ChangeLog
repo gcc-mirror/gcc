@@ -1,4 +1,12 @@
 2006-11-15  Tobias Burnus  <burnus@net-b.de>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/27588
+	* trans-expr.c (gfc_conv_substring): Add bounds checking.
+	  (gfc_conv_variable, gfc_conv_substring_expr): Pass more
+	  arguments to gfc_conv_substring.
+
+2006-11-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/29806
 	* parse.c (parse_contained): Check for empty contains statement.
