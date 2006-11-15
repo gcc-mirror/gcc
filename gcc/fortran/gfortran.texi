@@ -1387,6 +1387,11 @@ Namelist input/output for internal files.
 @cindex @code{VOLATILE}
 The @code{VOLATILE} statement and attribute.
 
+@item
+@cindex @code{IMPORT}
+The @code{IMPORT} statement, allowing to import
+host-associated derived types.
+
 
 @end itemize
 
