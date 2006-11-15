@@ -55,8 +55,7 @@ char *alloca ();
 
 /* Major control parameters.  */
 
-#define GFC_MAX_SYMBOL_LEN 63
-#define GFC_MAX_LINE 132	/* Characters beyond this are not seen.  */
+#define GFC_MAX_SYMBOL_LEN 63   /* Must be at least 63 for F2003.  */
 #define GFC_MAX_DIMENSIONS 7	/* Maximum dimensions in an array.  */
 #define GFC_LETTERS 26		/* Number of letters in the alphabet.  */
 
@@ -1602,20 +1601,16 @@ typedef struct
 {
   char *module_dir;
   gfc_source_form source_form;
-  /* When fixed_line_length or free_line_length are 0, the whole line is used.
-
-     Default is -1, the maximum line length mandated by the respective source
-     form is used:
-     for FORM_FREE GFC_MAX_LINE (132)
-     else 72.
-
-     If fixed_line_length or free_line_length is not 0 nor -1 then the user has
-     requested a specific line-length.
+  /* Maximum line lengths in fixed- and free-form source, respectively.
+     When fixed_line_length or free_line_length are 0, the whole line is used,
+     regardless of length.
 
      If the user requests a fixed_line_length <7 then gfc_init_options()
      emits a fatal error.  */
-  int fixed_line_length; /* maximum line length in fixed-form.  */
-  int free_line_length; /* maximum line length in free-form.  */
+  int fixed_line_length;
+  int free_line_length;
+  /* Maximum number of continuation lines in fixed- and free-form source,
+     respectively.  */
   int max_continue_fixed;
   int max_continue_free;
   int max_identifier_length;
