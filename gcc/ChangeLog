@@ -1,3 +1,10 @@
+2006-11-15  Rask Ingemann Lambertsen <rask@sygehus.dk>
+	    J"orn Rennecke <joern.rennecke@st.com>
+
+	* combine.c (likely_spilled_retval_1): Fix masking operation.
+	(likely_spilled_retval_p): Use proper pattern for call to
+	likely_spilled_retval_1.
+
 2006-11-15  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* tree-ssa-loop-ivopts.c (determine_iv_costs): Fix formatting.
