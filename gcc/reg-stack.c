@@ -2553,11 +2553,28 @@ print_stack (FILE *file, stack s)
 static int
 convert_regs_entry (void)
 {
+  tree params = DECL_ARGUMENTS (current_function_decl);
+  tree p;
+  HARD_REG_SET incoming_regs;
+  rtx inc_rtx;
+
   int inserted = 0;
   edge e;
   edge_iterator ei;
 
-  /* Load something into each stack register live at function entry.
+  /* Find out which registers were used as argument passing registers.  */
+
+  CLEAR_HARD_REG_SET (incoming_regs);
+  for (p = params; p; p = TREE_CHAIN (p))
+    {
+      inc_rtx = DECL_INCOMING_RTL (p);
+
+      if (REG_P (inc_rtx)
+          && IN_RANGE (REGNO (inc_rtx), FIRST_STACK_REG, LAST_STACK_REG))
+	SET_HARD_REG_BIT (incoming_regs, REGNO (inc_rtx));
+    }
+
+  /* Load something into remaining stack register live at function entry.
      Such live registers can be caused by uninitialized variables or
      functions not returning values on all paths.  In order to keep
      the push/pop code happy, and to not scrog the register stack, we
@@ -2578,6 +2595,10 @@ convert_regs_entry (void)
 	    rtx init;
 
 	    bi->stack_in.reg[++top] = reg;
+
+	    /* Skip argument passing registers.  */
+	    if (TEST_HARD_REG_BIT (incoming_regs, reg))
+	      continue;
 
 	    init = gen_rtx_SET (VOIDmode,
 				FP_MODE_REG (FIRST_STACK_REG, SFmode),
