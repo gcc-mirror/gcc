@@ -1942,7 +1942,9 @@ noce_try_bitop (struct noce_if_info *if_info)
 	return FALSE;
       bitnum = INTVAL (XEXP (cond, 2));
       mode = GET_MODE (x);
-      if (bitnum >= HOST_BITS_PER_WIDE_INT)
+      if (BITS_BIG_ENDIAN)
+	bitnum = GET_MODE_BITSIZE (mode) - 1 - bitnum;
+      if (bitnum < 0 || bitnum >= HOST_BITS_PER_WIDE_INT)
 	return FALSE;
     }
   else
