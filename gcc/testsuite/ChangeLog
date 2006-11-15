@@ -1,3 +1,7 @@
+2006-11-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/import3.f90: Fix error message.
+
 2006-11-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/29788
