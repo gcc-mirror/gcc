@@ -1001,16 +1001,3 @@ __aeabi_unwind_cpp_pr2 (_Unwind_State state,
 {
   return __gnu_unwind_pr_common (state, ucbp, context, 2);
 }
-
-/* These two should never be used.  */
-_Unwind_Ptr
-_Unwind_GetDataRelBase (_Unwind_Context *context __attribute__ ((unused)))
-{
-  abort ();
-}
-
-_Unwind_Ptr
-_Unwind_GetTextRelBase (_Unwind_Context *context __attribute__ ((unused)))
-{
-  abort ();
-}

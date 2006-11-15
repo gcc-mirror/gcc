@@ -1,3 +1,10 @@
+2006-11-15  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/unwind-arm.c (_Unwind_GetDataRelBase,
+	_Unwind_GetTextRelBase): Move from here ...
+	* config/arm/pr-support.c (_Unwind_GetDataRelBase,
+	_Unwind_GetTextRelBase): ... To here.
+
 2006-11-15  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* tree-ssa-loop-ivopts.c (get_address_cost): Make sure memory
