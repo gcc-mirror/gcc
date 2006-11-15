@@ -229,6 +229,7 @@ decode_statement (void)
       match ("inquire", gfc_match_inquire, ST_INQUIRE);
       match ("implicit", gfc_match_implicit, ST_IMPLICIT);
       match ("implicit% none", gfc_match_implicit_none, ST_IMPLICIT_NONE);
+      match ("import", gfc_match_import, ST_IMPORT);
       match ("interface", gfc_match_interface, ST_INTERFACE);
       match ("intent", gfc_match_intent, ST_ATTR_DECL);
       match ("intrinsic", gfc_match_intrinsic, ST_ATTR_DECL);
@@ -1038,6 +1039,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_IMPLIED_ENDDO:
       p = _("implied END DO");
       break;
+    case ST_IMPORT:
+      p = "IMPORT";
+      break;
     case ST_INQUIRE:
       p = "INQUIRE";
       break;
@@ -1352,7 +1356,9 @@ unexpected_statement (gfc_statement st)
             | program  subroutine  function  module |
             +---------------------------------------+
             |                 use                   |
-            |---------------------------------------+
+            +---------------------------------------+
+            |                 import                |
+            +---------------------------------------+
             |        |        implicit none         |
             |        +-----------+------------------+
             |        | parameter |  implicit        |
@@ -1376,8 +1382,8 @@ unexpected_statement (gfc_statement st)
 typedef struct
 {
   enum
-  { ORDER_START, ORDER_USE, ORDER_IMPLICIT_NONE, ORDER_IMPLICIT,
-    ORDER_SPEC, ORDER_EXEC
+  { ORDER_START, ORDER_USE, ORDER_IMPORT, ORDER_IMPLICIT_NONE,
+    ORDER_IMPLICIT, ORDER_SPEC, ORDER_EXEC
   }
   state;
   gfc_statement last_statement;
@@ -1399,6 +1405,12 @@ verify_st_order (st_state * p, gfc_statement st)
       if (p->state > ORDER_USE)
 	goto order;
       p->state = ORDER_USE;
+      break;
+
+    case ST_IMPORT:
+      if (p->state > ORDER_IMPORT)
+	goto order;
+      p->state = ORDER_IMPORT;
       break;
 
     case ST_IMPLICIT_NONE:
@@ -1820,6 +1832,7 @@ loop:
       /* Fall through */
 
     case ST_USE:
+    case ST_IMPORT:
     case ST_IMPLICIT_NONE:
     case ST_IMPLICIT:
     case ST_PARAMETER:

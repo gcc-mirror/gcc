@@ -1,4 +1,18 @@
 2006-11-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/27546
+	* decl.c (gfc_match_import,variable_decl):
+	  Add IMPORT support.
+	  (gfc_match_kind_spec): Fix typo in gfc_error.
+	* gfortran.h (gfc_namespace, gfc_statement):
+	  Add IMPORT support.
+	* parse.c (decode_statement,gfc_ascii_statement,
+	  verify_st_order): Add IMPORT support.
+	* match.h: Add gfc_match_import.
+	* gfortran.texi: Add IMPORT to the supported
+	  Fortran 2003 features.
+
+2006-11-15  Tobias Burnus  <burnus@net-b.de>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/27588
