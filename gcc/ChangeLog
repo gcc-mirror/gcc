@@ -2,6 +2,9 @@
 
 	* tree-ssa-loop-ivopts.c (determine_iv_costs): Fix formatting.
 
+	* config/bfin/bfin.c (legitimize_pic_address): Lose dead code
+	that tests for CONSTANT_POOL_ADDRESS_P.
+
 2006-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/29581

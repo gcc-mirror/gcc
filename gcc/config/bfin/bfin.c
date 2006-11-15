@@ -145,36 +145,27 @@ legitimize_pic_address (rtx orig, rtx reg, rtx picreg)
 
   if (GET_CODE (addr) == SYMBOL_REF || GET_CODE (addr) == LABEL_REF)
     {
-      if (GET_CODE (addr) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (addr))
-	reg = new = orig;
+      int unspec;
+      rtx tmp;
+
+      if (TARGET_ID_SHARED_LIBRARY)
+	unspec = UNSPEC_MOVE_PIC;
+      else if (GET_CODE (addr) == SYMBOL_REF
+	       && SYMBOL_REF_FUNCTION_P (addr))
+	unspec = UNSPEC_FUNCDESC_GOT17M4;
       else
+	unspec = UNSPEC_MOVE_FDPIC;
+
+      if (reg == 0)
 	{
-	  int unspec;
-	  rtx tmp;
-
-	  if (TARGET_ID_SHARED_LIBRARY)
-	    unspec = UNSPEC_MOVE_PIC;
-	  else if (GET_CODE (addr) == SYMBOL_REF
-		   && SYMBOL_REF_FUNCTION_P (addr))
-	    {
-	      unspec = UNSPEC_FUNCDESC_GOT17M4;
-	    }
-	  else
-	    {
-	      unspec = UNSPEC_MOVE_FDPIC;
-	    }
-
-	  if (reg == 0)
-	    {
-	      gcc_assert (!no_new_pseudos);
-	      reg = gen_reg_rtx (Pmode);
-	    }
-
-	  tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), unspec);
-	  new = gen_const_mem (Pmode, gen_rtx_PLUS (Pmode, picreg, tmp));
-
-	  emit_move_insn (reg, new);
+	  gcc_assert (!no_new_pseudos);
+	  reg = gen_reg_rtx (Pmode);
 	}
+
+      tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), unspec);
+      new = gen_const_mem (Pmode, gen_rtx_PLUS (Pmode, picreg, tmp));
+
+      emit_move_insn (reg, new);
       if (picreg == pic_offset_table_rtx)
 	current_function_uses_pic_offset_table = 1;
       return reg;
