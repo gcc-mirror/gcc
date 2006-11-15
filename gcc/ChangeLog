@@ -1,3 +1,8 @@
+2006-11-15  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* tree-ssa-loop-ivopts.c (get_address_cost): Make sure memory
+	addresses we generate for testing are aligned.
+
 2006-11-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/29788

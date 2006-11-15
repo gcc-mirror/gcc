@@ -3318,7 +3318,8 @@ multiply_by_cost (HOST_WIDE_INT cst, enum machine_mode mode)
   return cost;
 }
 
-/* Returns true if multiplying by RATIO is allowed in address.  */
+/* Returns true if multiplying by RATIO is allowed in an address.  Test the
+   validity for a memory reference accessing memory of mode MODE.  */
 
 bool
 multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode)
@@ -3361,8 +3362,9 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode)
 
 /* Returns cost of address in shape symbol + var + OFFSET + RATIO * index.
    If SYMBOL_PRESENT is false, symbol is omitted.  If VAR_PRESENT is false,
-   variable is omitted.  The created memory accesses MODE.
-   
+   variable is omitted.  Compute the cost for a memory reference that accesses
+   a memory location of mode MEM_MODE.
+
    TODO -- there must be some better way.  This all is quite crude.  */
 
 static unsigned
@@ -3383,6 +3385,7 @@ get_address_cost (bool symbol_present, bool var_present,
   if (!initialized[mem_mode])
     {
       HOST_WIDE_INT i;
+      HOST_WIDE_INT start = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
       int old_cse_not_expected;
       unsigned sym_p, var_p, off_p, rat_p, add_c;
       rtx seq, addr, base;
@@ -3393,22 +3396,22 @@ get_address_cost (bool symbol_present, bool var_present,
       reg1 = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1);
 
       addr = gen_rtx_fmt_ee (PLUS, Pmode, reg1, NULL_RTX);
-      for (i = 1; i <= 1 << 20; i <<= 1)
+      for (i = start; i <= 1 << 20; i <<= 1)
 	{
 	  XEXP (addr, 1) = gen_int_mode (i, Pmode);
 	  if (!memory_address_p (mem_mode, addr))
 	    break;
 	}
-      max_offset[mem_mode] = i >> 1;
+      max_offset[mem_mode] = i == start ? 0 : i >> 1;
       off[mem_mode] = max_offset[mem_mode];
 
-      for (i = 1; i <= 1 << 20; i <<= 1)
+      for (i = start; i <= 1 << 20; i <<= 1)
 	{
 	  XEXP (addr, 1) = gen_int_mode (-i, Pmode);
 	  if (!memory_address_p (mem_mode, addr))
 	    break;
 	}
-      min_offset[mem_mode] = -(i >> 1);
+      min_offset[mem_mode] = i == start ? 0 : -(i >> 1);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
