@@ -1,3 +1,11 @@
+2006-11-15  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-11-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/29797
+	* gcc.c-torture/execute/pr29797-1.c: New test case.
+
 2006-11-14  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	PR fortran/29702
