@@ -1,3 +1,9 @@
+2006-11-15  Steve Ellcey  <sje@cup.hp.com>
+
+	PR other/25028
+	* config/ia64/t-hpux (LIB1ASMFUNCS):  Filter out _fixtfdi,
+	_fixunstfdi, and  _floatditf
+
 2006-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/29581
