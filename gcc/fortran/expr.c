@@ -39,7 +39,7 @@ gfc_get_expr (void)
   e->shape = NULL;
   e->ref = NULL;
   e->symtree = NULL;
-
+  e->con_by_offset = NULL;
   return e;
 }
 
@@ -226,7 +226,8 @@ gfc_free_expr (gfc_expr * e)
 
   if (e == NULL)
     return;
-
+  if (e->con_by_offset)
+    splay_tree_delete (e->con_by_offset); 
   free_expr0 (e);
   gfc_free (e);
 }

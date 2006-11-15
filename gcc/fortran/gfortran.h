@@ -33,7 +33,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "intl.h"
 #include "coretypes.h"
 #include "input.h"
-
+#include "splay-tree.h"
 /* The following ifdefs are recommended by the autoconf documentation
    for any code using alloca.  */
 
@@ -1245,6 +1245,8 @@ typedef struct gfc_expr
   /* True if the expression is a call to a function that returns an array,
      and if we have decided not to allocate temporary data for that array.  */
   unsigned int inline_noncopying_intrinsic : 1;
+  /* Used to quickly find a given constructor by it's offset.  */
+  splay_tree con_by_offset;
 
   union
   {

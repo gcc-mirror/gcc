@@ -1,3 +1,15 @@
+2006-11-15  Bud Davis <bdavis9659@sbcglobal.net>
+
+	PR fortran/28974
+	* gfortran.h (gfc_expr): Add element which holds a splay-tree
+	for the exclusive purpose of quick access to a constructor by
+	offset.
+	* data.c (find_con_by_offset): Use the splay tree for the search.
+	(gfc_assign_data_value): Use the splay tree.
+	(gfc_assign_data_value_range): ditto.
+	* expr.c (gfc_get_expr): Initialize new element to null.
+	(gfc_free_expr): Delete splay tree when deleting gfc_expr.
+
 2006-11-14  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	PR fortran/29702
