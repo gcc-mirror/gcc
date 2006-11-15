@@ -956,33 +956,25 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
   int seen_printable = 0, seen_ampersand = 0;
   char *buffer;
 
-  /* Determine the maximum allowed line length.
-     The default for free-form is GFC_MAX_LINE, for fixed-form or for
-     unknown form it is 72. Refer to the documentation in gfc_option_t.  */
+  /* Determine the maximum allowed line length.  */
   if (gfc_current_form == FORM_FREE)
-    {
-      if (gfc_option.free_line_length == -1)
-	maxlen = GFC_MAX_LINE;
-      else
-	maxlen = gfc_option.free_line_length;
-    }
+    maxlen = gfc_option.free_line_length;
   else if (gfc_current_form == FORM_FIXED)
-    {
-      if (gfc_option.fixed_line_length == -1)
-	maxlen = 72;
-      else
-	maxlen = gfc_option.fixed_line_length;
-    }
+    maxlen = gfc_option.fixed_line_length;
   else
     maxlen = 72;
 
   if (*pbuf == NULL)
     {
-      /* Allocate the line buffer, storing its length into buflen.  */
+      /* Allocate the line buffer, storing its length into buflen.
+	 Note that if maxlen==0, indicating that arbitrary-length lines
+	 are allowed, the buffer will be reallocated if this length is
+	 insufficient; since 132 characters is the length of a standard
+	 free-form line, we use that as a starting guess.  */
       if (maxlen > 0)
 	buflen = maxlen;
       else
-	buflen = GFC_MAX_LINE;
+	buflen = 132;
 
       *pbuf = gfc_getmem (buflen + 1);
     }

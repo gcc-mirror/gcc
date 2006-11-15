@@ -1,5 +1,14 @@
 2006-11-14  Brooks Moses  <brooks.moses@codesourcery.com>
  
+ 	* gfortran.h (GFC_MAX_LINE): Remove constant definition.
+ 	(gfc_option_t): Clarify comments.
+ 	* options.c: Set default line length limits to actual default
+ 	values, rather than flag values.
+ 	* scanner.c: Eliminate checking and handling of the
+ 	fixed/free_line_length flag values.
+
+2006-11-14  Brooks Moses  <brooks.moses@codesourcery.com>
+ 
  	* lang.opt: Remove -fno-backend option.
  	* gfortran.h (gfc_option_t): Remove flag_no_backend.
  	* options.c (gfc_init_options): Remove flag_no_backend.

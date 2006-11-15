@@ -46,8 +46,8 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_source_file = NULL;
   gfc_option.module_dir = NULL;
   gfc_option.source_form = FORM_UNKNOWN;
-  gfc_option.fixed_line_length = -1;
-  gfc_option.free_line_length = -1;
+  gfc_option.fixed_line_length = 72;
+  gfc_option.free_line_length = 132;
   gfc_option.max_continue_fixed = 19;
   gfc_option.max_continue_free = 39;
   gfc_option.max_identifier_length = GFC_MAX_SYMBOL_LEN;
