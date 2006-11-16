@@ -3066,12 +3066,17 @@
   [(parallel
     [(set (match_operand:SI         0 "s_register_operand" "")
 	  (abs:SI (match_operand:SI 1 "s_register_operand" "")))
-     (clobber (reg:CC CC_REGNUM))])]
-  "TARGET_ARM"
-  "")
+     (clobber (match_dup 2))])]
+  "TARGET_EITHER"
+  "
+  if (TARGET_THUMB)
+    operands[2] = gen_rtx_SCRATCH (SImode);
+  else
+    operands[2] = gen_rtx_REG (CCmode, CC_REGNUM);
+")
 
 (define_insn "*arm_abssi2"
-  [(set (match_operand:SI         0 "s_register_operand" "=r,&r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(abs:SI (match_operand:SI 1 "s_register_operand" "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
@@ -3084,7 +3089,21 @@
    (set_attr "length" "8")]
 )
 
-(define_insn "*neg_abssi2"
+(define_insn_and_split "*thumb_abssi2"
+  [(set (match_operand:SI 0 "s_register_operand" "=l")
+	(abs:SI (match_operand:SI 1 "s_register_operand" "l")))
+   (clobber (match_scratch:SI 2 "=&l"))]
+  "TARGET_THUMB"
+  "#"
+  "TARGET_THUMB && reload_completed"
+  [(set (match_dup 2) (ashiftrt:SI (match_dup 1) (const_int 31)))
+   (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (xor:SI (match_dup 0) (match_dup 2)))]
+  ""
+  [(set_attr "length" "6")]
+)
+
+(define_insn "*arm_neg_abssi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
 	(neg:SI (abs:SI (match_operand:SI 1 "s_register_operand" "0,r"))))
    (clobber (reg:CC CC_REGNUM))]
@@ -3096,6 +3115,20 @@
    (set_attr "shift" "1")
    ;; predicable can't be set based on the variant, so left as no
    (set_attr "length" "8")]
+)
+
+(define_insn_and_split "*thumb_neg_abssi2"
+  [(set (match_operand:SI 0 "s_register_operand" "=l")
+	(neg:SI (abs:SI (match_operand:SI 1 "s_register_operand" "l"))))
+   (clobber (match_scratch:SI 2 "=&l"))]
+  "TARGET_THUMB"
+  "#"
+  "TARGET_THUMB && reload_completed"
+  [(set (match_dup 2) (ashiftrt:SI (match_dup 1) (const_int 31)))
+   (set (match_dup 0) (minus:SI (match_dup 2) (match_dup 1)))
+   (set (match_dup 0) (xor:SI (match_dup 0) (match_dup 2)))]
+  ""
+  [(set_attr "length" "6")]
 )
 
 (define_expand "abssf2"
