@@ -1,3 +1,8 @@
+2006-11-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/29862
+	* real.c (mpfr_from_real): Call mpfr_set_str before gcc_assert.
+
 2006-11-15  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/unwind-arm.c (_Unwind_GetDataRelBase,
