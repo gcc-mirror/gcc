@@ -754,7 +754,7 @@ gfc_add_cray_pointee (symbol_attribute * attr, locus * where)
   if (attr->cray_pointee)
     {
       gfc_error ("Cray Pointee at %L appears in multiple pointer()"
-		 " statements.", where);
+		 " statements", where);
       return FAILURE;
     }
 

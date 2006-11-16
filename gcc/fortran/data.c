@@ -61,7 +61,7 @@ get_array_index (gfc_array_ref * ar, mpz_t * offset)
       if ((gfc_is_constant_expr (ar->as->lower[i]) == 0)
 	  || (gfc_is_constant_expr (ar->as->upper[i]) == 0)
 	  || (gfc_is_constant_expr (e) == 0))
-	gfc_error ("non-constant array in DATA statement %L.", &ar->where);        
+	gfc_error ("non-constant array in DATA statement %L", &ar->where);        
       mpz_set (tmp, e->value.integer);
       mpz_sub (tmp, tmp, ar->as->lower[i]->value.integer);
       mpz_mul (tmp, tmp, delta);

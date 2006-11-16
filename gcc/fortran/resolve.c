@@ -774,7 +774,7 @@ check_assumed_size_reference (gfc_symbol * sym, gfc_expr * e)
     {
       gfc_error ("The upper bound in the last dimension must "
 		 "appear in the reference to the assumed size "
-		 "array '%s' at %L.", sym->name, &e->where);
+		 "array '%s' at %L", sym->name, &e->where);
       return true;
     }
   return false;
@@ -5640,7 +5640,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	     || !gfc_is_constant_expr (c->ts.cl->length))
 	   {
 	     gfc_error ("Character length of component '%s' needs to "
-			"be a constant specification expression at %L.",
+			"be a constant specification expression at %L",
 			c->name,
 			c->ts.cl->length ? &c->ts.cl->length->where : &c->loc);
 	     return FAILURE;
@@ -5693,7 +5693,7 @@ resolve_fl_derived (gfc_symbol *sym)
 		|| !gfc_is_constant_expr (c->as->upper[i]))
 	    {
 	      gfc_error ("Component '%s' of '%s' at %L must have "
-			 "constant array bounds.",
+			 "constant array bounds",
 			 c->name, sym->name, &c->loc);
 	      return FAILURE;
 	    }
@@ -5952,7 +5952,7 @@ resolve_symbol (gfc_symbol * sym)
 	&& sym->ts.derived->components == NULL)
     {
       gfc_error ("The derived type '%s' at %L is of type '%s', "
-		 "which has not been defined.", sym->name,
+		 "which has not been defined", sym->name,
 		  &sym->declared_at, sym->ts.derived->name);
       sym->ts.type = BT_UNKNOWN;
       return;
