@@ -85,13 +85,37 @@ fbackslash
 Fortran
 Specify that backslash in string introduces an escape character
 
-fexternal-blas
-Fortran
-Specify that an external BLAS library should be used for matmul calls on large-size arrays
-
 fblas-matmul-limit=
 Fortran RejectNegative Joined UInteger
 -fblas-matmul-limit=<n>        Size of the smallest matrix for which matmul will use BLAS
+
+fconvert=big-endian
+Fortran RejectNegative
+Use big-endian format for unformatted files
+
+fconvert=little-endian
+Fortran RejectNegative
+Use little-endian format for unformatted files
+
+fconvert=native
+Fortran RejectNegative
+Use native format for unformatted files
+
+fconvert=swap
+Fortran RejectNegative
+Swap endianness for unformatted files
+
+fcray-pointer
+Fortran
+Use the Cray Pointer extension
+
+fd-lines-as-code
+Fortran RejectNegative
+Ignore 'D' in column one in fixed form
+
+fd-lines-as-comments
+Fortran RejectNegative
+Treat lines with 'D' in column one as comments
 
 fdefault-double-8
 Fortran
@@ -105,14 +129,6 @@ fdefault-real-8
 Fortran
 Set the default real kind to an 8 byte wide type
 
-fd-lines-as-code
-Fortran RejectNegative
-Ignore 'D' in column one in fixed form
-
-fd-lines-as-comments
-Fortran RejectNegative
-Treat lines with 'D' in column one as comments
-
 fdollar-ok
 Fortran
 Allow dollar signs in entity names
@@ -120,6 +136,10 @@ Allow dollar signs in entity names
 fdump-parse-tree
 Fortran
 Display the code tree after parsing
+
+fexternal-blas
+Fortran
+Specify that an external BLAS library should be used for matmul calls on large-size arrays
 
 ff2c
 Fortran
@@ -129,30 +149,6 @@ ffixed-form
 Fortran RejectNegative
 Assume that the source file is fixed form
 
-ffree-form
-Fortran RejectNegative
-Assume that the source file is free form
-
-fopenmp
-Fortran
-Enable OpenMP
-
-funderscoring
-Fortran
-Append underscores to externally visible names
-
-fcray-pointer
-Fortran
-Use the Cray Pointer extension
-
-fsecond-underscore
-Fortran
-Append a second underscore if the name already contains an underscore
-
-fimplicit-none
-Fortran
-Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
-
 ffixed-line-length-none
 Fortran RejectNegative
 Allow arbitrary character line width in fixed mode
@@ -161,6 +157,14 @@ ffixed-line-length-
 Fortran RejectNegative Joined UInteger
 -ffixed-line-length-<n>		Use n as character line width in fixed mode
 
+ffpe-trap=
+Fortran RejectNegative JoinedOrMissing
+-ffpe-trap=[..]	Stop on following floating point exceptions
+
+ffree-form
+Fortran RejectNegative
+Assume that the source file is free form
+
 ffree-line-length-none
 Fortran RejectNegative
 Allow arbitrary character line width in free mode
@@ -168,6 +172,10 @@ Allow arbitrary character line width in free mode
 ffree-line-length-
 Fortran RejectNegative Joined UInteger
 -ffree-line-length-<n>		Use n as character line width in free mode
+
+fimplicit-none
+Fortran
+Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
 
 fmax-errors=
 Fortran RejectNegative Joined UInteger
@@ -181,61 +189,21 @@ fmax-stack-var-size=
 Fortran RejectNegative Joined UInteger
 -fmax-stack-var-size=<n>	Size in bytes of the largest array that will be put on the stack
 
-frange-check
+fopenmp
 Fortran
-Enable range checking during compilation
+Enable OpenMP
 
 fpack-derived
 Fortran
 Try to layout derived types as compact as possible
 
-frepack-arrays
-Fortran
-Copy array sections into a contiguous block on procedure entry
-
 fpreprocessed
 Fortran
 Treat the input file as preprocessed
 
-ffpe-trap=
-Fortran RejectNegative JoinedOrMissing
--ffpe-trap=[..]	Stop on following floating point exceptions
-
-std=f95
+frange-check
 Fortran
-Conform to the ISO Fortran 95 standard
-
-std=f2003
-Fortran
-Conform to the ISO Fortran 2003 standard
-
-std=gnu
-Fortran
-Conform nothing in particular
-
-std=legacy
-Fortran
-Accept extensions to support legacy code
-
-fshort-enums
-Fortran
-Use the narrowest integer type possible for enumeration types
-
-fconvert=little-endian
-Fortran RejectNegative
-Use little-endian format for unformatted files
-
-fconvert=big-endian
-Fortran RejectNegative
-Use big-endian format for unformatted files
-
-fconvert=native
-Fortran RejectNegative
-Use native format for unformatted files
-
-fconvert=swap
-Fortran RejectNegative
-Swap endianness for unformatted files
+Enable range checking during compilation
 
 frecord-marker=4
 Fortran RejectNegative
@@ -244,5 +212,37 @@ Use a 4-byte record marker for unformatted files
 frecord-marker=8
 Fortran RejectNegative
 Use an 8-byte record marker for unformatted files
+
+frepack-arrays
+Fortran
+Copy array sections into a contiguous block on procedure entry
+
+fsecond-underscore
+Fortran
+Append a second underscore if the name already contains an underscore
+
+fshort-enums
+Fortran
+Use the narrowest integer type possible for enumeration types
+
+funderscoring
+Fortran
+Append underscores to externally visible names
+
+std=f2003
+Fortran
+Conform to the ISO Fortran 2003 standard
+
+std=f95
+Fortran
+Conform to the ISO Fortran 95 standard
+
+std=gnu
+Fortran
+Conform nothing in particular
+
+std=legacy
+Fortran
+Accept extensions to support legacy code
 
 ; This comment is to ensure we retain the blank line above.
