@@ -1,3 +1,8 @@
+2006-11-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/spe.md (frob_di_df_2): Handle non-offsettable
+	memory operand.
+
 2006-11-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (abssi2): Allow Thumb as well.	 Use an SImode scratch for
