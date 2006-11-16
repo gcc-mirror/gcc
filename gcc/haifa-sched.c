@@ -3544,18 +3544,22 @@ static basic_block
 create_recovery_block (void)
 {
   rtx label;
+  rtx barrier;
   basic_block rec;
   
   added_recovery_block_p = true;
 
   if (!before_recovery)
     init_before_recovery ();
- 
-  label = gen_label_rtx ();
-  gcc_assert (BARRIER_P (NEXT_INSN (BB_END (before_recovery))));
-  label = emit_label_after (label, NEXT_INSN (BB_END (before_recovery)));
 
-  rec = create_basic_block (label, label, before_recovery); 
+  barrier = get_last_bb_insn (before_recovery);
+  gcc_assert (BARRIER_P (barrier));
+
+  label = emit_label_after (gen_label_rtx (), barrier);
+
+  rec = create_basic_block (label, label, before_recovery);
+
+  /* Recovery block always end with an unconditional jump.  */
   emit_barrier_after (BB_END (rec));
 
   if (BB_PARTITION (before_recovery) != BB_UNPARTITIONED)
