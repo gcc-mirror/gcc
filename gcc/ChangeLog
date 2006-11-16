@@ -1,3 +1,10 @@
+2006-11-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (abssi2): Allow Thumb as well.	 Use an SImode scratch for
+	Thumb.
+	(arm_neg_abssi2): Renamed from neg_abssi2.
+	(thumb_abssi2, thumb_neg_abssi2): New patterns with splitters.
+
 2006-11-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_function_sseregparm): Fix comment:
