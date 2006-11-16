@@ -1,3 +1,12 @@
+2006-11-16  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+
+	PR target/29201
+	* cfgrtl.c (rtl_delete_block): Move the code for getting last insn of
+	bb to ...
+	(get_last_bb_insn): ... new global function.
+	(basic_block.h): Declare it.
+	* haifa-sched.c (create_recovery_block): Use it.
+
 2006-11-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/29862
