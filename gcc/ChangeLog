@@ -1,3 +1,11 @@
+2006-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_function_sseregparm): Fix comment:
+	number of arguments passed to local functions in SSE registers is 3.
+
+	* doc/invoke.texi (Function Attributes) [sseregparm]: Correct
+	number of arguments passed in SSE registers to 3.
+
 2006-11-16  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	PR target/29201
@@ -34,8 +42,8 @@
 
 	* config/i386/i386.opt: New target option -mx87regparm.
 
-	* config/i386/i386.h (struct ix86_args): Add x87_nregs, x87_regno,
-	float_in_x87: Add new variables. mmx_words, sse_words: Remove.
+	* config/i386/i386.h (struct ix86_args): Add x87_nregs, x87_regno
+	and float_in_x87 variables. mmx_words, sse_words: Remove.
 	(X87_REGPARM_MAX): Define.
 
 	* config/i386/i386.c (override_options): Error out for

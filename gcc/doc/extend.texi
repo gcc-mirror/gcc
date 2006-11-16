@@ -2232,7 +2232,7 @@ on the stack.
 @item sseregparm
 @cindex @code{sseregparm} attribute
 On the Intel 386 with SSE support, the @code{sseregparm} attribute
-causes the compiler to pass up to 8 floating point arguments in
+causes the compiler to pass up to 3 floating point arguments in
 SSE registers instead of on the stack.  Functions that take a
 variable number of arguments will continue to pass all of their
 floating point arguments on the stack.
