@@ -2265,7 +2265,7 @@ gfc_check_assign (gfc_expr * lvalue, gfc_expr * rvalue, int conform)
        && lvalue->ref->u.ar.as->cp_was_assumed)
      {
        gfc_error ("Vector assignment to assumed-size Cray Pointee at %L"
-		  " is illegal.", &lvalue->where);
+		  " is illegal", &lvalue->where);
        return FAILURE;
      }
 

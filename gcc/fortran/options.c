@@ -236,7 +236,7 @@ gfc_post_options (const char **pfilename)
       if (gfc_current_form == FORM_UNKNOWN)
 	{
 	  gfc_current_form = FORM_FREE;
-	  gfc_warning_now ("Reading file '%s' as free form.", 
+	  gfc_warning_now ("Reading file '%s' as free form", 
 			   (filename[0] == '\0') ? "<stdin>" : filename);
 	}
     }
@@ -247,10 +247,10 @@ gfc_post_options (const char **pfilename)
     {
       if (gfc_option.flag_d_lines == 0)
 	gfc_warning_now ("'-fd-lines-as-comments' has no effect "
-			 "in free form.");
+			 "in free form");
       else if (gfc_option.flag_d_lines == 1)
 	gfc_warning_now ("'-fd-lines-as-code' has no effect "
-			 "in free form.");
+			 "in free form");
     }
 
   flag_inline_trees = 1;

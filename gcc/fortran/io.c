@@ -858,7 +858,7 @@ gfc_match_format (void)
   if (gfc_current_ns->proc_name
 	&& gfc_current_ns->proc_name->attr.flavor == FL_MODULE)
     {
-      gfc_error ("Format statement in module main block at %C.");
+      gfc_error ("Format statement in module main block at %C");
       return MATCH_ERROR;
     }
 

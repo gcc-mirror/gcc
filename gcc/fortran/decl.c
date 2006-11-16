@@ -221,7 +221,7 @@ var_element (gfc_data_variable * new)
   if (!sym->attr.function && gfc_current_ns->parent && gfc_current_ns->parent == sym->ns)
     {
       gfc_error ("Host associated variable '%s' may not be in the DATA "
-		 "statement at %C.", sym->name);
+		 "statement at %C", sym->name);
       return MATCH_ERROR;
     }
 
@@ -1170,7 +1170,7 @@ variable_decl (int elem)
 	    {
 	      if (sym->as != NULL)
 		{
-		  gfc_error ("Duplicate array spec for Cray pointee at %C.");
+		  gfc_error ("Duplicate array spec for Cray pointee at %C");
 		  gfc_free_array_spec (cp_as);
 		  m = MATCH_ERROR;
 		  goto cleanup;
@@ -2460,7 +2460,7 @@ gfc_match_data_decl (void)
       /* Now we have an error, which we signal, and then fix up
 	 because the knock-on is plain and simple confusing.  */
       gfc_error_now ("Derived type at %C has not been previously defined "
-		 "and so cannot appear in a derived type definition.");
+		 "and so cannot appear in a derived type definition");
       current_attr.pointer = 1;
       goto ok;
     }
@@ -3536,12 +3536,12 @@ cray_pointer_decl (void)
 	}
       else if (cptr->ts.type != BT_INTEGER)
 	{
-	  gfc_error ("Cray pointer at %C must be an integer.");
+	  gfc_error ("Cray pointer at %C must be an integer");
 	  return MATCH_ERROR;
 	}
       else if (cptr->ts.kind < gfc_index_integer_kind)
 	gfc_warning ("Cray pointer at %C has %d bytes of precision;"
-		     " memory addresses require %d bytes.",
+		     " memory addresses require %d bytes",
 		     cptr->ts.kind,
 		     gfc_index_integer_kind);
 
@@ -3590,7 +3590,7 @@ cray_pointer_decl (void)
 	}
       else if (as != NULL)
 	{
-	  gfc_error ("Duplicate array spec for Cray pointee at %C.");
+	  gfc_error ("Duplicate array spec for Cray pointee at %C");
 	  gfc_free_array_spec (as);
 	  return MATCH_ERROR;
 	}
@@ -3688,7 +3688,7 @@ gfc_match_pointer (void)
       if (!gfc_option.flag_cray_pointer)
 	{
 	  gfc_error ("Cray pointer declaration at %C requires -fcray-pointer"
-		     " flag.");
+		     " flag");
 	  return MATCH_ERROR;
 	}
       return cray_pointer_decl ();

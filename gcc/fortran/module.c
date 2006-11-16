@@ -2690,7 +2690,7 @@ mio_namelist (gfc_symbol * sym)
 	  check_name = find_use_name (sym->name);
 	  if (check_name && strcmp (check_name, sym->name) != 0)
 	    gfc_error("Namelist %s cannot be renamed by USE"
-		      " association to %s.",
+		      " association to %s",
 		      sym->name, check_name);
 	}
 
