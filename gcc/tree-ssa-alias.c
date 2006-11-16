@@ -2465,8 +2465,7 @@ get_ptr_info (tree t)
   pi = SSA_NAME_PTR_INFO (t);
   if (pi == NULL)
     {
-      pi = GGC_NEW (struct ptr_info_def);
-      memset ((void *)pi, 0, sizeof (*pi));
+      pi = GGC_CNEW (struct ptr_info_def);
       SSA_NAME_PTR_INFO (t) = pi;
     }
 

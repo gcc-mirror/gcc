@@ -1289,11 +1289,11 @@ begin_scope (scope_kind kind, tree entity)
   if (!ENABLE_SCOPE_CHECKING && free_binding_level)
     {
       scope = free_binding_level;
+      memset (scope, 0, sizeof (cxx_scope));
       free_binding_level = scope->level_chain;
     }
   else
-    scope = GGC_NEW (cxx_scope);
-  memset (scope, 0, sizeof (cxx_scope));
+    scope = GGC_CNEW (cxx_scope);
 
   scope->this_entity = entity;
   scope->more_cleanups_ok = true;

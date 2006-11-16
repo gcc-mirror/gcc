@@ -1211,8 +1211,7 @@ tree_bb_level_predictions (void)
   basic_block bb;
   int *heads;
 
-  heads = XNEWVEC (int, last_basic_block);
-  memset (heads, ENTRY_BLOCK, sizeof (int) * last_basic_block);
+  heads = XCNEWVEC (int, last_basic_block);
   heads[ENTRY_BLOCK_PTR->next_bb->index] = last_basic_block;
 
   apply_return_prediction (heads);

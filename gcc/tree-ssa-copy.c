@@ -882,11 +882,9 @@ init_copy_prop (void)
 {
   basic_block bb;
 
-  copy_of = XNEWVEC (prop_value_t, num_ssa_names);
-  memset (copy_of, 0, num_ssa_names * sizeof (*copy_of));
+  copy_of = XCNEWVEC (prop_value_t, num_ssa_names);
 
-  cached_last_copy_of = XNEWVEC (tree, num_ssa_names);
-  memset (cached_last_copy_of, 0, num_ssa_names * sizeof (*cached_last_copy_of));
+  cached_last_copy_of = XCNEWVEC (tree, num_ssa_names);
 
   FOR_EACH_BB (bb)
     {
@@ -954,8 +952,7 @@ fini_copy_prop (void)
   
   /* Set the final copy-of value for each variable by traversing the
      copy-of chains.  */
-  tmp = XNEWVEC (prop_value_t, num_ssa_names);
-  memset (tmp, 0, num_ssa_names * sizeof (*tmp));
+  tmp = XCNEWVEC (prop_value_t, num_ssa_names);
   for (i = 1; i < num_ssa_names; i++)
     {
       tree var = ssa_name (i);

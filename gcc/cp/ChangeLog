@@ -1,3 +1,8 @@
+2006-11-16  Dirk Mueller  <dmueller@suse.de>
+
+	* name-lookup.c (begin_scope): Use GGC_CNEW instead of
+	GGC_NEW and memset.
+
 2006-11-13  Roger Sayle  <roger@eyesopen.com>
 
 	* rtti.c (get_pseudo_ti_init): Ensure that the offset field of the

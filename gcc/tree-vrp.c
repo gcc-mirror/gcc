@@ -265,8 +265,7 @@ get_value_range (tree var)
     return vr;
 
   /* Create a default value range.  */
-  vr_value[ver] = vr = XNEW (value_range_t);
-  memset (vr, 0, sizeof (*vr));
+  vr_value[ver] = vr = XCNEW (value_range_t);
 
   /* Allocate an equivalence set.  */
   vr->equiv = BITMAP_ALLOC (NULL);
@@ -3347,8 +3346,7 @@ insert_range_assertions (void)
   sbitmap_zero (blocks_visited);
 
   need_assert_for = BITMAP_ALLOC (NULL);
-  asserts_for = XNEWVEC (assert_locus_t, num_ssa_names);
-  memset (asserts_for, 0, num_ssa_names * sizeof (assert_locus_t));
+  asserts_for = XCNEWVEC (assert_locus_t, num_ssa_names);
 
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -3486,8 +3484,7 @@ vrp_initialize (void)
 {
   basic_block bb;
 
-  vr_value = XNEWVEC (value_range_t *, num_ssa_names);
-  memset (vr_value, 0, num_ssa_names * sizeof (value_range_t *));
+  vr_value = XCNEWVEC (value_range_t *, num_ssa_names);
 
   FOR_EACH_BB (bb)
     {
@@ -4683,8 +4680,7 @@ vrp_finalize (void)
   /* We may have ended with ranges that have exactly one value.  Those
      values can be substituted as any other copy/const propagated
      value using substitute_and_fold.  */
-  single_val_range = XNEWVEC (prop_value_t, num_ssa_names);
-  memset (single_val_range, 0, num_ssa_names * sizeof (*single_val_range));
+  single_val_range = XCNEWVEC (prop_value_t, num_ssa_names);
 
   do_value_subst_p = false;
   for (i = 0; i < num_ssa_names; i++)
