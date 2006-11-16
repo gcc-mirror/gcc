@@ -2223,6 +2223,11 @@
     case 0:
       return \"evmergehi %0,%1,%1\;mr %L0,%1\";
     case 1:
+      /* If the address is not offsettable we need to load the whole
+	 doubleword into a 64-bit register and then copy the high word
+	 to form the correct output layout.  */
+      if (!offsettable_nonstrict_memref_p (operands[1]))
+	return \"evldd%X1 %L0,%y1\;evmergehi %0,%L0,%L0\";
       /* If the low-address word is used in the address, we must load
 	it last.  Otherwise, load it first.  Note that we cannot have
 	auto-increment in that case since the address register is
