@@ -503,7 +503,42 @@ determined by the ABI@.
 @cite{What constitutes an access to an object that has volatile-qualified
 type (C90 6.5.3, C99 6.7.3).}
 
-@xref{Volatiles, , When is a Volatile Object Accessed?}.
+Such an object is normally accessed by pointers and used for accessing
+hardware.  In most expressions, it is intuitively obvious what is a read
+and what is a write.  For example
+
+@smallexample
+volatile int *dst = @var{somevalue};
+volatile int *src = @var{someothervalue};
+*dst = *src;
+@end smallexample
+
+@noindent
+will cause a read of the volatile object pointed to by @var{src} and store the
+value into the volatile object pointed to by @var{dst}.  There is no
+guarantee that these reads and writes are atomic, especially for objects
+larger than @code{int}.
+
+However, if the volatile storage is not being modified, and the value of
+the volatile storage is not used, then the situation is less obvious.
+For example
+
+@smallexample
+volatile int *src = @var{somevalue};
+*src;
+@end smallexample
+
+According to the C standard, such an expression is an rvalue whose type
+is the unqualified version of its original type, i.e. @code{int}.  Whether
+GCC interprets this as a read of the volatile object being pointed to or
+only as a request to evaluate the expression for its side-effects depends
+on this type.
+
+If it is a scalar type, or on most targets an aggregate type whose only
+member object is of a scalar type, or a union type whose member objects
+are of scalar types, the expression is interpreted by GCC as a read of
+the volatile object; in the other cases, the expression is only evaluated
+for its side-effects.
 
 @end itemize
 

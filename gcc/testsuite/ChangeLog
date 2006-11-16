@@ -1,3 +1,7 @@
+2006-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile_aggregate.adb: New test.
+
 2006-11-16  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/29788
