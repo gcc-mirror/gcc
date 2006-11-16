@@ -1,3 +1,8 @@
+2003-11-16  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* MAINTAINERS: Add myself and Daniel Berlin as loop optimizer
+	maintainers.
+
 2006-11-14  Erven Rohou  <erven.rohou@st.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
