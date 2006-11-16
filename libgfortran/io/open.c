@@ -343,7 +343,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 	break;
 
       opp->file = tmpname;
-      opp->file_len = sprintf(opp->file, "fort.%d", opp->common.unit);
+      opp->file_len = sprintf(opp->file, "fort.%d", (int) opp->common.unit);
       break;
 
     default:

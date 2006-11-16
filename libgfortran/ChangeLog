@@ -1,3 +1,8 @@
+2006-11-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/open.c (new_unit): Format %d expects an int variable.
+	* runtime/error.c (show_locus): Format %d expects an int variable.
+
 2006-11-08  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	* io/read. (max_value): Hide "int n" in an #ifdef.
