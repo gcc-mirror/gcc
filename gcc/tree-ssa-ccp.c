@@ -551,8 +551,7 @@ ccp_initialize (void)
 {
   basic_block bb;
 
-  const_val = XNEWVEC (prop_value_t, num_ssa_names);
-  memset (const_val, 0, num_ssa_names * sizeof (*const_val));
+  const_val = XCNEWVEC (prop_value_t, num_ssa_names);
 
   /* Initialize simulation flags for PHI nodes and statements.  */
   FOR_EACH_BB (bb)

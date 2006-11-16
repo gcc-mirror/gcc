@@ -1,3 +1,19 @@
+2006-11-16  Dirk Mueller  <dmueller@suse.de>
+
+	* tree-vrp.c (get_value_range): Use XCNEW instead
+	of XNEW and memset.
+	(insert_range_assertions): Use XCNEWVEC instead
+	of XNEWVEC and memset.
+	(vrp_initialize): Same.
+	(vrp_finalize): Same.
+	* tree-ssa-ccp.c (ccp_initialize): Same.
+	* predict.c (tree_bb_level_predictions): Same.
+	* calls.c (expand_call): Same.
+	* tree-ssa-copy.c (init_copy_prop): Same.
+	(fini_copy_prop): Same.
+	* tree-ssa-alias.c (get_ptr_info): Use GGC_CNEW instead
+	of GGC_NEW and memset.
+
 2006-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/26306
