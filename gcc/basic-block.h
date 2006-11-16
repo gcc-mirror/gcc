@@ -946,6 +946,7 @@ extern void update_br_prob_note (basic_block);
 extern void fixup_abnormal_edges (void);
 extern bool inside_basic_block_p (rtx);
 extern bool control_flow_insn_p (rtx);
+extern rtx get_last_bb_insn (basic_block);
 
 /* In bb-reorder.c */
 extern void reorder_basic_blocks (unsigned int);
