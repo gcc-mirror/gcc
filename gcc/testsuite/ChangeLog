@@ -1,3 +1,7 @@
+2006-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile_aggregate.adb: New test.
+
 2006-11-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/29391
