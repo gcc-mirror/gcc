@@ -1,3 +1,12 @@
+2006-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/26306
+	* gimplify.c (gimplify_expr): Only force a load for references to
+	non-BLKmode volatile values.
+	* doc/implement-c.texi (Qualifiers implementation): Document the
+	interpretation of what a volatile access is.
+	* doc/extend.texi (C++ Extensions): Rework same documentation.
+
 2006-11-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/spe.md (frob_di_df_2): Handle non-offsettable

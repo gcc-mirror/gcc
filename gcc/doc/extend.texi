@@ -10441,11 +10441,10 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
 
 Both the C and C++ standard have the concept of volatile objects.  These
 are normally accessed by pointers and used for accessing hardware.  The
-standards encourage compilers to refrain from optimizations
-concerning accesses to volatile objects that it might perform on
-non-volatile objects.  The C standard leaves it implementation defined
-as to what constitutes a volatile access.  The C++ standard omits to
-specify this, except to say that C++ should behave in a similar manner
+standards encourage compilers to refrain from optimizations concerning
+accesses to volatile objects.  The C standard leaves it implementation
+defined  as to what constitutes a volatile access.  The C++ standard omits
+to specify this, except to say that C++ should behave in a similar manner
 to C with respect to volatiles, where possible.  The minimum either
 standard specifies is that at a sequence point all previous accesses to
 volatile objects have stabilized and no subsequent accesses have
@@ -10455,55 +10454,28 @@ for accesses across a sequence point.  The use of volatiles does not
 allow you to violate the restriction on updating objects multiple times
 within a sequence point.
 
-In most expressions, it is intuitively obvious what is a read and what is
-a write.  For instance
+@xref{Qualifiers implementation, , Volatile qualifier and the C compiler}.
 
-@smallexample
-volatile int *dst = @var{somevalue};
-volatile int *src = @var{someothervalue};
-*dst = *src;
-@end smallexample
-
-@noindent
-will cause a read of the volatile object pointed to by @var{src} and stores the
-value into the volatile object pointed to by @var{dst}.  There is no
-guarantee that these reads and writes are atomic, especially for objects
-larger than @code{int}.
-
-Less obvious expressions are where something which looks like an access
-is used in a void context.  An example would be,
+The behavior differs slightly between C and C++ in the non-obvious cases:
 
 @smallexample
 volatile int *src = @var{somevalue};
 *src;
 @end smallexample
 
-With C, such expressions are rvalues, and as rvalues cause a read of
-the object, GCC interprets this as a read of the volatile being pointed
-to.  The C++ standard specifies that such expressions do not undergo
-lvalue to rvalue conversion, and that the type of the dereferenced
+With C, such expressions are rvalues, and GCC interprets this either as a
+read of the volatile object being pointed to or only as request to evaluate
+the side-effects.  The C++ standard specifies that such expressions do not
+undergo lvalue to rvalue conversion, and that the type of the dereferenced
 object may be incomplete.  The C++ standard does not specify explicitly
-that it is this lvalue to rvalue conversion which is responsible for
+that it is this lvalue to rvalue conversion which may be responsible for
 causing an access.  However, there is reason to believe that it is,
 because otherwise certain simple expressions become undefined.  However,
 because it would surprise most programmers, G++ treats dereferencing a
-pointer to volatile object of complete type in a void context as a read
-of the object.  When the object has incomplete type, G++ issues a
-warning.
-
-@smallexample
-struct S;
-struct T @{int m;@};
-volatile S *ptr1 = @var{somevalue};
-volatile T *ptr2 = @var{somevalue};
-*ptr1;
-*ptr2;
-@end smallexample
-
-In this example, a warning is issued for @code{*ptr1}, and @code{*ptr2}
-causes a read of the object pointed to.  If you wish to force an error on
-the first case, you must force a conversion to rvalue with, for instance
-a static cast, @code{static_cast<S>(*ptr1)}.
+pointer to volatile object of complete type when the value is unused as
+GCC would do for an equivalent type in C.  When the object has incomplete
+type, G++ issues a warning; if you wish to force an error, you must
+force a conversion to rvalue with, for instance, a static cast.
 
 When using a reference to volatile, G++ does not treat equivalent
 expressions as accesses to volatiles, but instead issues a warning that
