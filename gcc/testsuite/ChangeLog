@@ -1,3 +1,10 @@
+2006-11-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/29391
+	PR fortran/29489
+	* gcc/testsuite/gfortran.dg/bound_2.f90: Add more checks.
+	* gcc/testsuite/gfortran.dg/bound_3.f90: New test.
+
 2006-11-16  Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	PR target/29201
