@@ -712,14 +712,13 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   tree type;
   tree bound;
   tree tmp;
-  tree cond, cond1, cond2, cond3, size;
+  tree cond, cond1, cond2, cond3, cond4, size;
   tree ubound;
   tree lbound;
   gfc_se argse;
   gfc_ss *ss;
   gfc_array_spec * as;
   gfc_ref *ref;
-  int i;
 
   arg = expr->value.function.actual;
   arg2 = arg->next;
@@ -761,9 +760,14 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 
   if (INTEGER_CST_P (bound))
     {
-      gcc_assert (TREE_INT_CST_HIGH (bound) == 0);
-      i = TREE_INT_CST_LOW (bound);
-      gcc_assert (i >= 0 && i < GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc)));
+      int hi, low;
+
+      hi = TREE_INT_CST_HIGH (bound);
+      low = TREE_INT_CST_LOW (bound);
+      if (hi || low < 0 || low >= GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc)))
+	gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
+		   "dimension index", upper ? "UBOUND" : "LBOUND",
+		   &expr->where);
     }
   else
     {
@@ -842,15 +846,21 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   if (as)
     {
       tree stride = gfc_conv_descriptor_stride (desc, bound);
+
       cond1 = fold_build2 (GE_EXPR, boolean_type_node, ubound, lbound);
       cond2 = fold_build2 (LE_EXPR, boolean_type_node, ubound, lbound);
-      cond3 = fold_build2 (GT_EXPR, boolean_type_node, stride,
+
+      cond3 = fold_build2 (GE_EXPR, boolean_type_node, stride,
 			   gfc_index_zero_node);
+      cond3 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, cond3, cond1);
+
+      cond4 = fold_build2 (LT_EXPR, boolean_type_node, stride,
+			   gfc_index_zero_node);
+      cond4 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, cond4, cond2);
 
       if (upper)
 	{
-	  cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, cond3, cond1);
-	  cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, cond, cond2);
+	  cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, cond3, cond4);
 
 	  se->expr = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
 				  ubound, gfc_index_zero_node);
@@ -860,13 +870,11 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 	  if (as->type == AS_ASSUMED_SIZE)
 	    cond = fold_build2 (EQ_EXPR, boolean_type_node, bound,
 				build_int_cst (TREE_TYPE (bound),
-					       arg->expr->rank));
+					       arg->expr->rank - 1));
 	  else
 	    cond = boolean_false_node;
 
-	  cond1 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, cond3, cond1);
-	  cond1 = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, cond1, cond2);
-
+	  cond1 = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, cond3, cond4);
 	  cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, cond, cond1);
 
 	  se->expr = fold_build3 (COND_EXPR, gfc_array_index_type, cond,

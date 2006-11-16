@@ -1913,17 +1913,17 @@ simplify_bound (gfc_expr * array, gfc_expr * dim, int upper)
 {
   gfc_ref *ref;
   gfc_array_spec *as;
-  gfc_expr *e;
+  gfc_expr *l, *u, *result;
   int d;
-
-  if (array->expr_type != EXPR_VARIABLE)
-    return NULL;
 
   if (dim == NULL)
     /* TODO: Simplify constant multi-dimensional bounds.  */
     return NULL;
 
   if (dim->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  if (array->expr_type != EXPR_VARIABLE)
     return NULL;
 
   /* Follow any component references.  */
@@ -1975,12 +1975,43 @@ simplify_bound (gfc_expr * array, gfc_expr * dim, int upper)
       return &gfc_bad_expr;
     }
 
-  e = upper ? as->upper[d-1] : as->lower[d-1];
+  /* The last dimension of an assumed-size array is special.  */
+  if (d == as->rank && as->type == AS_ASSUMED_SIZE && !upper)
+    {
+      if (as->lower[d-1]->expr_type == EXPR_CONSTANT)
+	return gfc_copy_expr (as->lower[d-1]);
+      else
+	return NULL;
+    }
 
-  if (e->expr_type != EXPR_CONSTANT)
+  /* Then, we need to know the extent of the given dimension.  */
+  l = as->lower[d-1];
+  u = as->upper[d-1];
+
+  if (l->expr_type != EXPR_CONSTANT || u->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  return gfc_copy_expr (e);
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
+				&array->where);
+
+  if (mpz_cmp (l->value.integer, u->value.integer) > 0)
+    {
+      /* Zero extent.  */
+      if (upper)
+	mpz_set_si (result->value.integer, 0);
+      else
+	mpz_set_si (result->value.integer, 1);
+    }
+  else
+    {
+      /* Nonzero extent.  */
+      if (upper)
+	mpz_set (result->value.integer, u->value.integer);
+      else
+	mpz_set (result->value.integer, l->value.integer);
+    }
+
+  return range_check (result, upper ? "UBOUND" : "LBOUND");
 }
 
 
