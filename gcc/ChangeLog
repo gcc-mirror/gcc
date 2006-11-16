@@ -1,3 +1,7 @@
+2006-11-16  Mike Stump  <mrs@apple.com>
+
+	* Makefile.in (targhooks.o): Add $(OPTABS_H).
+
 2006-11-16  Dirk Mueller  <dmueller@suse.de>
 
 	* tree-vrp.c (get_value_range): Use XCNEW instead
