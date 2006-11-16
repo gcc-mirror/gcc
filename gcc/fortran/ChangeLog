@@ -1,16 +1,20 @@
+2006-11-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu,org>
+
+	* trans-decl.c (gfc_get_symbol_decl): Fix formatting.
+
 2006-11-15  Brooks Moses  <brooks.moses@codesourcery.com>
- 
- 	* data.c: Remove trailing periods from error messages.
- 	* decl.c: Likewise.
- 	* expr.c: Likewise.
- 	* io.c: Likewise.
- 	* match.c: Likewise.
- 	* module.c: Likewise.
- 	* options.c: Likewise.
- 	* resolve.c: Likewise.
- 	* symbol.c: Likewise.
- 	* trans-io.c: Likewise.
- 
+
+	* data.c: Remove trailing periods from error messages.
+	* decl.c: Likewise.
+	* expr.c: Likewise.
+	* io.c: Likewise.
+	* match.c: Likewise.
+	* module.c: Likewise.
+	* options.c: Likewise.
+	* resolve.c: Likewise.
+	* symbol.c: Likewise.
+	* trans-io.c: Likewise.
+
 2006-11-15  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* lang.opt: Rearrange entries back into ASCII order.

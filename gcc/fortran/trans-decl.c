@@ -1008,9 +1008,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   sym->backend_decl = decl;
 
   if (sym->attr.assign)
-    {
-      gfc_add_assign_aux_vars (sym);
-    }
+    gfc_add_assign_aux_vars (sym);
 
   if (TREE_STATIC (decl) && !sym->attr.use_assoc)
     {
