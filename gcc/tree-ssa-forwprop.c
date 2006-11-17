@@ -934,7 +934,9 @@ simplify_switch_expr (tree stmt)
 
 	      need_precision = TYPE_PRECISION (ti);
 	      fail = false;
-	      if (TYPE_UNSIGNED (to) && !TYPE_UNSIGNED (ti))
+	      if (! INTEGRAL_TYPE_P (ti))
+		fail = true;
+	      else if (TYPE_UNSIGNED (to) && !TYPE_UNSIGNED (ti))
 		fail = true;
 	      else if (!TYPE_UNSIGNED (to) && TYPE_UNSIGNED (ti))
 		need_precision += 1;
