@@ -591,7 +591,7 @@ realclean: maintainer-clean
 # Extra dependency for clean-target, owing to the mixed nature of gcc.
 clean-target: clean-target-libgcc
 clean-target-libgcc:
-	test ! -d gcc || (cd gcc && $(MAKE) $@)
+	if test -f gcc/Makefile; then cd gcc && $(MAKE) $@; else :; fi
 
 # Check target.
 
@@ -854,9 +854,12 @@ all-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
 maybe-clean-stage[+id+]-[+prefix+][+module+]: clean-stage[+id+]-[+prefix+][+module+]
 clean-stage[+id+]: clean-stage[+id+]-[+prefix+][+module+]
 clean-stage[+id+]-[+prefix+][+module+]:
-	@[ -f [+subdir+]/[+module+]/Makefile ] || [ -f [+subdir+]/stage[+id+]-[+module+]/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage[+id+] ] || $(MAKE) stage[+id+]-start; \
+	@if [ $(current_stage) = stage[+id+] ]; then \
+	  [ -f [+subdir+]/[+module+]/Makefile ] || exit 0; \
+	else \
+	  [ -f [+subdir+]/stage[+id+]-[+module+]/Makefile ] || exit 0; \
+	  $(MAKE) stage[+id+]-start; \
+	fi; \
 	cd [+subdir+]/[+module+] && \
 	$(MAKE) [+args+] [+ IF prev +] \
 		[+poststage1_args+] [+ ENDIF prev +] \
@@ -1212,7 +1215,7 @@ stage = :
 current_stage = ""
 
 @if gcc-bootstrap
-unstage = [ -f stage_current ] || $(MAKE) `cat stage_last`-start
+unstage = if [ -f stage_last ]; then [ -f stage_current ] || $(MAKE) `cat stage_last`-start || exit 1; else :; fi
 stage = if [ -f stage_current ]; then $(MAKE) `cat stage_current`-end || exit 1; else :; fi
 current_stage = "`cat stage_current 2> /dev/null`"
 @endif gcc-bootstrap
@@ -1255,7 +1258,7 @@ objext = .o
 # Flags to pass to stage2 and later makes.
 POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-	STAGE_PREFIX=$$r/prev-gcc/ \
+	STAGE_PREFIX="$$r/$(HOST_SUBDIR)/prev-gcc/" \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LIBCFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \

@@ -1,3 +1,15 @@
+2006-11-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (clean-target-libgcc): Test for gcc Makefile presence.
+	(unstage): Test for stage_last presence.
+
+	* Makefile.tpl (clean-stage*): Test separately for package/Makefile
+	and stageN-package/Makefile.
+
+	PR bootstrap/29802
+	* Makefile.tpl (POSTSTAGE1_FLAGS_TO_PASS): Add HOST_SUBDIR in STAGE_PREFIX.
+	* Makefile.in: Regenerate.
+
 2006-11-14  Jie Zhang  <jie.zhang@analog.com>
 
 	* configure.in: Remove target-libgloss from noconfigdirs for

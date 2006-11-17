@@ -20,6 +20,19 @@ AC_PREREQ([2.59])
 
 AC_CONFIG_SRCDIR([Makefile.in])
 
+sinclude(../config/acx.m4)
+
+# Determine the host, build, and target systems
+AC_CANONICAL_BUILD
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
+
+# Determine the noncanonical target name, for directory use.
+ACX_NONCANONICAL_TARGET
+
+# Determine the target- and build-specific subdirectories
+GCC_TOPLEV_SUBDIRS
+
 # Command-line options.
 # Very limited version of AC_MAINTAINER_MODE.
 AC_ARG_ENABLE([maintainer-mode],
@@ -55,12 +68,6 @@ case $enable_shared in
 esac
 ], [enable_shared=yes])
 AC_SUBST([enable_shared])
-
-# Start of actual configure tests
-
-AC_CANONICAL_BUILD
-AC_CANONICAL_HOST
-AC_CANONICAL_TARGET
 
 # Need to pass this down for now :-P
 AC_PROG_LN_S

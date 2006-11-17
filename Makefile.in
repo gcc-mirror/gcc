@@ -2084,7 +2084,7 @@ realclean: maintainer-clean
 # Extra dependency for clean-target, owing to the mixed nature of gcc.
 clean-target: clean-target-libgcc
 clean-target-libgcc:
-	test ! -d gcc || (cd gcc && $(MAKE) $@)
+	if test -f gcc/Makefile; then cd gcc && $(MAKE) $@; else :; fi
 
 # Check target.
 
@@ -4655,9 +4655,12 @@ all-stage1-bfd: configure-stage1-bfd
 maybe-clean-stage1-bfd: clean-stage1-bfd
 clean-stage1: clean-stage1-bfd
 clean-stage1-bfd:
-	@[ -f $(HOST_SUBDIR)/bfd/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-bfd/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/bfd/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-bfd/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -4685,9 +4688,12 @@ all-stage2-bfd: configure-stage2-bfd
 maybe-clean-stage2-bfd: clean-stage2-bfd
 clean-stage2: clean-stage2-bfd
 clean-stage2-bfd:
-	@[ -f $(HOST_SUBDIR)/bfd/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-bfd/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/bfd/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-bfd/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -4716,9 +4722,12 @@ all-stage3-bfd: configure-stage3-bfd
 maybe-clean-stage3-bfd: clean-stage3-bfd
 clean-stage3: clean-stage3-bfd
 clean-stage3-bfd:
-	@[ -f $(HOST_SUBDIR)/bfd/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-bfd/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/bfd/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-bfd/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -4747,9 +4756,12 @@ all-stage4-bfd: configure-stage4-bfd
 maybe-clean-stage4-bfd: clean-stage4-bfd
 clean-stage4: clean-stage4-bfd
 clean-stage4-bfd:
-	@[ -f $(HOST_SUBDIR)/bfd/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-bfd/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/bfd/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-bfd/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -4778,9 +4790,12 @@ all-stageprofile-bfd: configure-stageprofile-bfd
 maybe-clean-stageprofile-bfd: clean-stageprofile-bfd
 clean-stageprofile: clean-stageprofile-bfd
 clean-stageprofile-bfd:
-	@[ -f $(HOST_SUBDIR)/bfd/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-bfd/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/bfd/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-bfd/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -4809,9 +4824,12 @@ all-stagefeedback-bfd: configure-stagefeedback-bfd
 maybe-clean-stagefeedback-bfd: clean-stagefeedback-bfd
 clean-stagefeedback: clean-stagefeedback-bfd
 clean-stagefeedback-bfd:
-	@[ -f $(HOST_SUBDIR)/bfd/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-bfd/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/bfd/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-bfd/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -5392,9 +5410,12 @@ all-stage1-opcodes: configure-stage1-opcodes
 maybe-clean-stage1-opcodes: clean-stage1-opcodes
 clean-stage1: clean-stage1-opcodes
 clean-stage1-opcodes:
-	@[ -f $(HOST_SUBDIR)/opcodes/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-opcodes/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/opcodes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-opcodes/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -5422,9 +5443,12 @@ all-stage2-opcodes: configure-stage2-opcodes
 maybe-clean-stage2-opcodes: clean-stage2-opcodes
 clean-stage2: clean-stage2-opcodes
 clean-stage2-opcodes:
-	@[ -f $(HOST_SUBDIR)/opcodes/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-opcodes/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/opcodes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-opcodes/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -5453,9 +5477,12 @@ all-stage3-opcodes: configure-stage3-opcodes
 maybe-clean-stage3-opcodes: clean-stage3-opcodes
 clean-stage3: clean-stage3-opcodes
 clean-stage3-opcodes:
-	@[ -f $(HOST_SUBDIR)/opcodes/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-opcodes/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/opcodes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-opcodes/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -5484,9 +5511,12 @@ all-stage4-opcodes: configure-stage4-opcodes
 maybe-clean-stage4-opcodes: clean-stage4-opcodes
 clean-stage4: clean-stage4-opcodes
 clean-stage4-opcodes:
-	@[ -f $(HOST_SUBDIR)/opcodes/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-opcodes/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/opcodes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-opcodes/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -5515,9 +5545,12 @@ all-stageprofile-opcodes: configure-stageprofile-opcodes
 maybe-clean-stageprofile-opcodes: clean-stageprofile-opcodes
 clean-stageprofile: clean-stageprofile-opcodes
 clean-stageprofile-opcodes:
-	@[ -f $(HOST_SUBDIR)/opcodes/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-opcodes/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/opcodes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-opcodes/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -5546,9 +5579,12 @@ all-stagefeedback-opcodes: configure-stagefeedback-opcodes
 maybe-clean-stagefeedback-opcodes: clean-stagefeedback-opcodes
 clean-stagefeedback: clean-stagefeedback-opcodes
 clean-stagefeedback-opcodes:
-	@[ -f $(HOST_SUBDIR)/opcodes/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-opcodes/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/opcodes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-opcodes/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -6129,9 +6165,12 @@ all-stage1-binutils: configure-stage1-binutils
 maybe-clean-stage1-binutils: clean-stage1-binutils
 clean-stage1: clean-stage1-binutils
 clean-stage1-binutils:
-	@[ -f $(HOST_SUBDIR)/binutils/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-binutils/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/binutils/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-binutils/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -6159,9 +6198,12 @@ all-stage2-binutils: configure-stage2-binutils
 maybe-clean-stage2-binutils: clean-stage2-binutils
 clean-stage2: clean-stage2-binutils
 clean-stage2-binutils:
-	@[ -f $(HOST_SUBDIR)/binutils/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-binutils/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/binutils/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-binutils/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -6190,9 +6232,12 @@ all-stage3-binutils: configure-stage3-binutils
 maybe-clean-stage3-binutils: clean-stage3-binutils
 clean-stage3: clean-stage3-binutils
 clean-stage3-binutils:
-	@[ -f $(HOST_SUBDIR)/binutils/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-binutils/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/binutils/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-binutils/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -6221,9 +6266,12 @@ all-stage4-binutils: configure-stage4-binutils
 maybe-clean-stage4-binutils: clean-stage4-binutils
 clean-stage4: clean-stage4-binutils
 clean-stage4-binutils:
-	@[ -f $(HOST_SUBDIR)/binutils/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-binutils/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/binutils/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-binutils/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -6252,9 +6300,12 @@ all-stageprofile-binutils: configure-stageprofile-binutils
 maybe-clean-stageprofile-binutils: clean-stageprofile-binutils
 clean-stageprofile: clean-stageprofile-binutils
 clean-stageprofile-binutils:
-	@[ -f $(HOST_SUBDIR)/binutils/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-binutils/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/binutils/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-binutils/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -6283,9 +6334,12 @@ all-stagefeedback-binutils: configure-stagefeedback-binutils
 maybe-clean-stagefeedback-binutils: clean-stagefeedback-binutils
 clean-stagefeedback: clean-stagefeedback-binutils
 clean-stagefeedback-binutils:
-	@[ -f $(HOST_SUBDIR)/binutils/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-binutils/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/binutils/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-binutils/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -11923,9 +11977,12 @@ all-stage1-gas: configure-stage1-gas
 maybe-clean-stage1-gas: clean-stage1-gas
 clean-stage1: clean-stage1-gas
 clean-stage1-gas:
-	@[ -f $(HOST_SUBDIR)/gas/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-gas/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/gas/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-gas/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -11953,9 +12010,12 @@ all-stage2-gas: configure-stage2-gas
 maybe-clean-stage2-gas: clean-stage2-gas
 clean-stage2: clean-stage2-gas
 clean-stage2-gas:
-	@[ -f $(HOST_SUBDIR)/gas/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-gas/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/gas/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-gas/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -11984,9 +12044,12 @@ all-stage3-gas: configure-stage3-gas
 maybe-clean-stage3-gas: clean-stage3-gas
 clean-stage3: clean-stage3-gas
 clean-stage3-gas:
-	@[ -f $(HOST_SUBDIR)/gas/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-gas/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/gas/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-gas/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -12015,9 +12078,12 @@ all-stage4-gas: configure-stage4-gas
 maybe-clean-stage4-gas: clean-stage4-gas
 clean-stage4: clean-stage4-gas
 clean-stage4-gas:
-	@[ -f $(HOST_SUBDIR)/gas/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-gas/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/gas/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-gas/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -12046,9 +12112,12 @@ all-stageprofile-gas: configure-stageprofile-gas
 maybe-clean-stageprofile-gas: clean-stageprofile-gas
 clean-stageprofile: clean-stageprofile-gas
 clean-stageprofile-gas:
-	@[ -f $(HOST_SUBDIR)/gas/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-gas/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/gas/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-gas/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -12077,9 +12146,12 @@ all-stagefeedback-gas: configure-stagefeedback-gas
 maybe-clean-stagefeedback-gas: clean-stagefeedback-gas
 clean-stagefeedback: clean-stagefeedback-gas
 clean-stagefeedback-gas:
-	@[ -f $(HOST_SUBDIR)/gas/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-gas/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/gas/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-gas/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -12660,9 +12732,12 @@ all-stage1-gcc: configure-stage1-gcc
 maybe-clean-stage1-gcc: clean-stage1-gcc
 clean-stage1: clean-stage1-gcc
 clean-stage1-gcc:
-	@[ -f $(HOST_SUBDIR)/gcc/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-gcc/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/gcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-gcc/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)" $(EXTRA_GCC_FLAGS) clean
@@ -12690,9 +12765,12 @@ all-stage2-gcc: configure-stage2-gcc
 maybe-clean-stage2-gcc: clean-stage2-gcc
 clean-stage2: clean-stage2-gcc
 clean-stage2-gcc:
-	@[ -f $(HOST_SUBDIR)/gcc/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-gcc/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/gcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-gcc/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -12721,9 +12799,12 @@ all-stage3-gcc: configure-stage3-gcc
 maybe-clean-stage3-gcc: clean-stage3-gcc
 clean-stage3: clean-stage3-gcc
 clean-stage3-gcc:
-	@[ -f $(HOST_SUBDIR)/gcc/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-gcc/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/gcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-gcc/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -12752,9 +12833,12 @@ all-stage4-gcc: configure-stage4-gcc
 maybe-clean-stage4-gcc: clean-stage4-gcc
 clean-stage4: clean-stage4-gcc
 clean-stage4-gcc:
-	@[ -f $(HOST_SUBDIR)/gcc/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-gcc/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/gcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-gcc/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -12783,9 +12867,12 @@ all-stageprofile-gcc: configure-stageprofile-gcc
 maybe-clean-stageprofile-gcc: clean-stageprofile-gcc
 clean-stageprofile: clean-stageprofile-gcc
 clean-stageprofile-gcc:
-	@[ -f $(HOST_SUBDIR)/gcc/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-gcc/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/gcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-gcc/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -12814,9 +12901,12 @@ all-stagefeedback-gcc: configure-stagefeedback-gcc
 maybe-clean-stagefeedback-gcc: clean-stagefeedback-gcc
 clean-stagefeedback: clean-stagefeedback-gcc
 clean-stagefeedback-gcc:
-	@[ -f $(HOST_SUBDIR)/gcc/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-gcc/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/gcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-gcc/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -16169,9 +16259,12 @@ all-stage1-intl: configure-stage1-intl
 maybe-clean-stage1-intl: clean-stage1-intl
 clean-stage1: clean-stage1-intl
 clean-stage1-intl:
-	@[ -f $(HOST_SUBDIR)/intl/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-intl/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-intl/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -16199,9 +16292,12 @@ all-stage2-intl: configure-stage2-intl
 maybe-clean-stage2-intl: clean-stage2-intl
 clean-stage2: clean-stage2-intl
 clean-stage2-intl:
-	@[ -f $(HOST_SUBDIR)/intl/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-intl/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-intl/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -16230,9 +16326,12 @@ all-stage3-intl: configure-stage3-intl
 maybe-clean-stage3-intl: clean-stage3-intl
 clean-stage3: clean-stage3-intl
 clean-stage3-intl:
-	@[ -f $(HOST_SUBDIR)/intl/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-intl/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-intl/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -16261,9 +16360,12 @@ all-stage4-intl: configure-stage4-intl
 maybe-clean-stage4-intl: clean-stage4-intl
 clean-stage4: clean-stage4-intl
 clean-stage4-intl:
-	@[ -f $(HOST_SUBDIR)/intl/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-intl/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-intl/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -16292,9 +16394,12 @@ all-stageprofile-intl: configure-stageprofile-intl
 maybe-clean-stageprofile-intl: clean-stageprofile-intl
 clean-stageprofile: clean-stageprofile-intl
 clean-stageprofile-intl:
-	@[ -f $(HOST_SUBDIR)/intl/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-intl/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-intl/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -16323,9 +16428,12 @@ all-stagefeedback-intl: configure-stagefeedback-intl
 maybe-clean-stagefeedback-intl: clean-stagefeedback-intl
 clean-stagefeedback: clean-stagefeedback-intl
 clean-stagefeedback-intl:
-	@[ -f $(HOST_SUBDIR)/intl/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-intl/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-intl/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -17683,9 +17791,12 @@ all-stage1-ld: configure-stage1-ld
 maybe-clean-stage1-ld: clean-stage1-ld
 clean-stage1: clean-stage1-ld
 clean-stage1-ld:
-	@[ -f $(HOST_SUBDIR)/ld/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-ld/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/ld/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-ld/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -17713,9 +17824,12 @@ all-stage2-ld: configure-stage2-ld
 maybe-clean-stage2-ld: clean-stage2-ld
 clean-stage2: clean-stage2-ld
 clean-stage2-ld:
-	@[ -f $(HOST_SUBDIR)/ld/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-ld/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/ld/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-ld/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -17744,9 +17858,12 @@ all-stage3-ld: configure-stage3-ld
 maybe-clean-stage3-ld: clean-stage3-ld
 clean-stage3: clean-stage3-ld
 clean-stage3-ld:
-	@[ -f $(HOST_SUBDIR)/ld/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-ld/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/ld/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-ld/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -17775,9 +17892,12 @@ all-stage4-ld: configure-stage4-ld
 maybe-clean-stage4-ld: clean-stage4-ld
 clean-stage4: clean-stage4-ld
 clean-stage4-ld:
-	@[ -f $(HOST_SUBDIR)/ld/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-ld/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/ld/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-ld/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -17806,9 +17926,12 @@ all-stageprofile-ld: configure-stageprofile-ld
 maybe-clean-stageprofile-ld: clean-stageprofile-ld
 clean-stageprofile: clean-stageprofile-ld
 clean-stageprofile-ld:
-	@[ -f $(HOST_SUBDIR)/ld/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-ld/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/ld/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-ld/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -17837,9 +17960,12 @@ all-stagefeedback-ld: configure-stagefeedback-ld
 maybe-clean-stagefeedback-ld: clean-stagefeedback-ld
 clean-stagefeedback: clean-stagefeedback-ld
 clean-stagefeedback-ld:
-	@[ -f $(HOST_SUBDIR)/ld/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-ld/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/ld/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-ld/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -18420,9 +18546,12 @@ all-stage1-libcpp: configure-stage1-libcpp
 maybe-clean-stage1-libcpp: clean-stage1-libcpp
 clean-stage1: clean-stage1-libcpp
 clean-stage1-libcpp:
-	@[ -f $(HOST_SUBDIR)/libcpp/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-libcpp/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/libcpp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-libcpp/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -18450,9 +18579,12 @@ all-stage2-libcpp: configure-stage2-libcpp
 maybe-clean-stage2-libcpp: clean-stage2-libcpp
 clean-stage2: clean-stage2-libcpp
 clean-stage2-libcpp:
-	@[ -f $(HOST_SUBDIR)/libcpp/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-libcpp/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libcpp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-libcpp/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -18481,9 +18613,12 @@ all-stage3-libcpp: configure-stage3-libcpp
 maybe-clean-stage3-libcpp: clean-stage3-libcpp
 clean-stage3: clean-stage3-libcpp
 clean-stage3-libcpp:
-	@[ -f $(HOST_SUBDIR)/libcpp/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-libcpp/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/libcpp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-libcpp/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -18512,9 +18647,12 @@ all-stage4-libcpp: configure-stage4-libcpp
 maybe-clean-stage4-libcpp: clean-stage4-libcpp
 clean-stage4: clean-stage4-libcpp
 clean-stage4-libcpp:
-	@[ -f $(HOST_SUBDIR)/libcpp/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-libcpp/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/libcpp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-libcpp/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -18543,9 +18681,12 @@ all-stageprofile-libcpp: configure-stageprofile-libcpp
 maybe-clean-stageprofile-libcpp: clean-stageprofile-libcpp
 clean-stageprofile: clean-stageprofile-libcpp
 clean-stageprofile-libcpp:
-	@[ -f $(HOST_SUBDIR)/libcpp/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-libcpp/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libcpp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-libcpp/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -18574,9 +18715,12 @@ all-stagefeedback-libcpp: configure-stagefeedback-libcpp
 maybe-clean-stagefeedback-libcpp: clean-stagefeedback-libcpp
 clean-stagefeedback: clean-stagefeedback-libcpp
 clean-stagefeedback-libcpp:
-	@[ -f $(HOST_SUBDIR)/libcpp/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-libcpp/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libcpp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-libcpp/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -19157,9 +19301,12 @@ all-stage1-libdecnumber: configure-stage1-libdecnumber
 maybe-clean-stage1-libdecnumber: clean-stage1-libdecnumber
 clean-stage1: clean-stage1-libdecnumber
 clean-stage1-libdecnumber:
-	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-libdecnumber/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-libdecnumber/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -19187,9 +19334,12 @@ all-stage2-libdecnumber: configure-stage2-libdecnumber
 maybe-clean-stage2-libdecnumber: clean-stage2-libdecnumber
 clean-stage2: clean-stage2-libdecnumber
 clean-stage2-libdecnumber:
-	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-libdecnumber/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-libdecnumber/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -19218,9 +19368,12 @@ all-stage3-libdecnumber: configure-stage3-libdecnumber
 maybe-clean-stage3-libdecnumber: clean-stage3-libdecnumber
 clean-stage3: clean-stage3-libdecnumber
 clean-stage3-libdecnumber:
-	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-libdecnumber/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-libdecnumber/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -19249,9 +19402,12 @@ all-stage4-libdecnumber: configure-stage4-libdecnumber
 maybe-clean-stage4-libdecnumber: clean-stage4-libdecnumber
 clean-stage4: clean-stage4-libdecnumber
 clean-stage4-libdecnumber:
-	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-libdecnumber/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-libdecnumber/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -19280,9 +19436,12 @@ all-stageprofile-libdecnumber: configure-stageprofile-libdecnumber
 maybe-clean-stageprofile-libdecnumber: clean-stageprofile-libdecnumber
 clean-stageprofile: clean-stageprofile-libdecnumber
 clean-stageprofile-libdecnumber:
-	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-libdecnumber/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-libdecnumber/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -19311,9 +19470,12 @@ all-stagefeedback-libdecnumber: configure-stagefeedback-libdecnumber
 maybe-clean-stagefeedback-libdecnumber: clean-stagefeedback-libdecnumber
 clean-stagefeedback: clean-stagefeedback-libdecnumber
 clean-stagefeedback-libdecnumber:
-	@[ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-libdecnumber/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-libdecnumber/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -20290,9 +20452,12 @@ all-stage1-libiberty: configure-stage1-libiberty
 maybe-clean-stage1-libiberty: clean-stage1-libiberty
 clean-stage1: clean-stage1-libiberty
 clean-stage1-libiberty:
-	@[ -f $(HOST_SUBDIR)/libiberty/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-libiberty/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-libiberty/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -20320,9 +20485,12 @@ all-stage2-libiberty: configure-stage2-libiberty
 maybe-clean-stage2-libiberty: clean-stage2-libiberty
 clean-stage2: clean-stage2-libiberty
 clean-stage2-libiberty:
-	@[ -f $(HOST_SUBDIR)/libiberty/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-libiberty/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-libiberty/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -20351,9 +20519,12 @@ all-stage3-libiberty: configure-stage3-libiberty
 maybe-clean-stage3-libiberty: clean-stage3-libiberty
 clean-stage3: clean-stage3-libiberty
 clean-stage3-libiberty:
-	@[ -f $(HOST_SUBDIR)/libiberty/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-libiberty/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-libiberty/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -20382,9 +20553,12 @@ all-stage4-libiberty: configure-stage4-libiberty
 maybe-clean-stage4-libiberty: clean-stage4-libiberty
 clean-stage4: clean-stage4-libiberty
 clean-stage4-libiberty:
-	@[ -f $(HOST_SUBDIR)/libiberty/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-libiberty/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-libiberty/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -20413,9 +20587,12 @@ all-stageprofile-libiberty: configure-stageprofile-libiberty
 maybe-clean-stageprofile-libiberty: clean-stageprofile-libiberty
 clean-stageprofile: clean-stageprofile-libiberty
 clean-stageprofile-libiberty:
-	@[ -f $(HOST_SUBDIR)/libiberty/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-libiberty/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-libiberty/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -20444,9 +20621,12 @@ all-stagefeedback-libiberty: configure-stagefeedback-libiberty
 maybe-clean-stagefeedback-libiberty: clean-stagefeedback-libiberty
 clean-stagefeedback: clean-stagefeedback-libiberty
 clean-stagefeedback-libiberty:
-	@[ -f $(HOST_SUBDIR)/libiberty/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-libiberty/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-libiberty/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -30114,9 +30294,12 @@ all-stage1-zlib: configure-stage1-zlib
 maybe-clean-stage1-zlib: clean-stage1-zlib
 clean-stage1: clean-stage1-zlib
 clean-stage1-zlib:
-	@[ -f $(HOST_SUBDIR)/zlib/Makefile ] || [ -f $(HOST_SUBDIR)/stage1-zlib/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage1 ] || $(MAKE) stage1-start; \
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/zlib/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-zlib/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		CFLAGS="$(STAGE1_CFLAGS)" LIBCFLAGS="$(STAGE1_CFLAGS)"  clean
@@ -30144,9 +30327,12 @@ all-stage2-zlib: configure-stage2-zlib
 maybe-clean-stage2-zlib: clean-stage2-zlib
 clean-stage2: clean-stage2-zlib
 clean-stage2-zlib:
-	@[ -f $(HOST_SUBDIR)/zlib/Makefile ] || [ -f $(HOST_SUBDIR)/stage2-zlib/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage2 ] || $(MAKE) stage2-start; \
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/zlib/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-zlib/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -30175,9 +30361,12 @@ all-stage3-zlib: configure-stage3-zlib
 maybe-clean-stage3-zlib: clean-stage3-zlib
 clean-stage3: clean-stage3-zlib
 clean-stage3-zlib:
-	@[ -f $(HOST_SUBDIR)/zlib/Makefile ] || [ -f $(HOST_SUBDIR)/stage3-zlib/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage3 ] || $(MAKE) stage3-start; \
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/zlib/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-zlib/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -30206,9 +30395,12 @@ all-stage4-zlib: configure-stage4-zlib
 maybe-clean-stage4-zlib: clean-stage4-zlib
 clean-stage4: clean-stage4-zlib
 clean-stage4-zlib:
-	@[ -f $(HOST_SUBDIR)/zlib/Makefile ] || [ -f $(HOST_SUBDIR)/stage4-zlib/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stage4 ] || $(MAKE) stage4-start; \
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/zlib/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-zlib/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -30237,9 +30429,12 @@ all-stageprofile-zlib: configure-stageprofile-zlib
 maybe-clean-stageprofile-zlib: clean-stageprofile-zlib
 clean-stageprofile: clean-stageprofile-zlib
 clean-stageprofile-zlib:
-	@[ -f $(HOST_SUBDIR)/zlib/Makefile ] || [ -f $(HOST_SUBDIR)/stageprofile-zlib/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start; \
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/zlib/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-zlib/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -30268,9 +30463,12 @@ all-stagefeedback-zlib: configure-stagefeedback-zlib
 maybe-clean-stagefeedback-zlib: clean-stagefeedback-zlib
 clean-stagefeedback: clean-stagefeedback-zlib
 clean-stagefeedback-zlib:
-	@[ -f $(HOST_SUBDIR)/zlib/Makefile ] || [ -f $(HOST_SUBDIR)/stagefeedback-zlib/Makefile ] \
-	  || exit 0 ; \
-	[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start; \
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/zlib/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-zlib/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
@@ -41614,7 +41812,7 @@ stage = :
 current_stage = ""
 
 @if gcc-bootstrap
-unstage = [ -f stage_current ] || $(MAKE) `cat stage_last`-start
+unstage = if [ -f stage_last ]; then [ -f stage_current ] || $(MAKE) `cat stage_last`-start || exit 1; else :; fi
 stage = if [ -f stage_current ]; then $(MAKE) `cat stage_current`-end || exit 1; else :; fi
 current_stage = "`cat stage_current 2> /dev/null`"
 @endif gcc-bootstrap
@@ -41657,7 +41855,7 @@ objext = .o
 # Flags to pass to stage2 and later makes.
 POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-	STAGE_PREFIX=$$r/prev-gcc/ \
+	STAGE_PREFIX="$$r/$(HOST_SUBDIR)/prev-gcc/" \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LIBCFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
