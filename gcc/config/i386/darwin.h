@@ -187,6 +187,13 @@ extern void darwin_x86_file_end (void);
     SUBTARGET_C_COMMON_OVERRIDE_OPTIONS;				\
   } while (0)
 
+/* Darwin on x86_64 uses dwarf-2 by default.  Pre-darwin9 32-bit
+   compiles defaut to stabs+.  darwin9+ defaults to dwarf-2.  */
+#ifndef DARWIN_PREFER_DWARF
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE (TARGET_64BIT ? DWARF2_DEBUG : DBX_DEBUG)
+#endif
+
 /* Darwin uses the standard DWARF register numbers but the default
    register numbers for STABS.  Fortunately for 64-bit code the
    default and the standard are the same.  */
