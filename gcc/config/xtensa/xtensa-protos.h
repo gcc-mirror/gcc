@@ -50,6 +50,9 @@ extern int xtensa_emit_move_sequence (rtx *, enum machine_mode);
 extern rtx xtensa_copy_incoming_a7 (rtx);
 extern void xtensa_expand_nonlocal_goto (rtx *);
 extern void xtensa_emit_loop_end (rtx, rtx *);
+extern char *xtensa_emit_branch (bool, bool, rtx *);
+extern char *xtensa_emit_bit_branch (bool, bool, rtx *);
+extern char *xtensa_emit_movcc (bool, bool, bool, rtx *);
 extern char *xtensa_emit_call (int, rtx *);
 
 #ifdef TREE_CODE
@@ -71,6 +74,7 @@ extern enum reg_class xtensa_secondary_reload_class (enum reg_class,
 extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree);
 extern struct rtx_def *function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 				     tree, int);
+extern int function_arg_boundary (enum machine_mode, tree);
 #endif /* TREE_CODE */
 
 extern void xtensa_setup_frame_addresses (void);

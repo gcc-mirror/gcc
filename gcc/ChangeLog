@@ -1,5 +1,31 @@
 2006-11-17  Bob Wilson  <bob.wilson@acm.org>
 
+	* config/xtensa/predicates.md (addsubx_operand): New.
+	* config/xtensa/xtensa.c (xtensa_emit_branch): New.
+	(xtensa_emit_bit_branch): New.
+	(xtensa_emit_movcc): New.
+	* config/xtensa/xtensa.md (any_minmax): New code macro.
+	(minmax): New code attribute.
+	(any_cond, any_scc, any_scc_sf): New code macros.
+	(*addx2, *addx4, *addx8): Delete.
+	(*addx): New.
+	(*subx2, *subx4, *subx8): Delete.
+	(*subx): New.
+	(sminsi3, uminsi3, smaxsi3, umaxsi3): Use any_minmax macro.
+	(beq, bne, bgt, bge, blt, ble, bgtu, bgeu, bltu, bleu): Use any_cond.
+	(*btrue, *bfalse, *ubtrue, *ubfalse): Use xtensa_emit_branch.
+	(*bittrue, *bitfalse): Use xtensa_emit_bit_branch.
+	(seq, sne, sgt, sge, slt, sle): Use any_scc macro.
+	(movsicc_internal0, movsicc_internal1): Use xtensa_emit_movcc.
+	(movsfcc_internal0, movsfcc_internal1): Likewise.
+	(seq_sf, slt_sf, sle_sf): Use any_scc_sf macro.
+	* config/xtensa/xtensa-protos.h: (xtensa_emit_branch): New.
+	(xtensa_emit_bit_branch): New.
+	(xtensa_emit_movcc): New.
+	(function_arg_boundary): Add missing prototype.
+
+2006-11-17  Bob Wilson  <bob.wilson@acm.org>
+
 	* config/xtensa/xtensa.md (tstsi): Delete
 
 2006-11-17  Bob Wilson  <bob.wilson@acm.org>

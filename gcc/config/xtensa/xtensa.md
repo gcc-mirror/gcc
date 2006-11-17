@@ -45,6 +45,24 @@
 ;; <su> is like <u>, but the signed form expands to "s" rather than "".
 (define_code_attr su [(sign_extend "s") (zero_extend "u")])
 
+;; This code macro allows four integer min/max operations to be
+;; generated from one template.
+(define_code_macro any_minmax [smin umin smax umax])
+
+;; <minmax> expands to the opcode name for any_minmax operations.
+(define_code_attr minmax [(smin "min") (umin "minu")
+			  (smax "max") (umax "maxu")])
+
+;; This code macro allows all branch instructions to be generated from
+;; a single define_expand template.
+(define_code_macro any_cond [eq ne gt ge lt le gtu geu ltu leu])
+
+;; This code macro is for setting a register from a comparison.
+(define_code_macro any_scc [eq ne gt ge lt le])
+
+;; This code macro is for floating-point comparisons.
+(define_code_macro any_scc_sf [eq lt le])
+
 
 ;; Attributes.
 
@@ -170,35 +188,13 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"2,2,3,3,3")])
 
-(define_insn "*addx2"
+(define_insn "*addx"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-			  (const_int 2))
+			  (match_operand:SI 3 "addsubx_operand" "i"))
 		 (match_operand:SI 2 "register_operand" "r")))]
   "TARGET_ADDX"
-  "addx2\t%0, %1, %2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
-(define_insn "*addx4"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-			  (const_int 4))
-		 (match_operand:SI 2 "register_operand" "r")))]
-  "TARGET_ADDX"
-  "addx4\t%0, %1, %2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
-(define_insn "*addx8"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-			  (const_int 8))
-		 (match_operand:SI 2 "register_operand" "r")))]
-  "TARGET_ADDX"
-  "addx8\t%0, %1, %2"
+  "addx%3\t%0, %1, %2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
@@ -257,35 +253,13 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn "*subx2"
+(define_insn "*subx"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-			   (const_int 2))
+			   (match_operand:SI 3 "addsubx_operand" "i"))
 		  (match_operand:SI 2 "register_operand" "r")))]
   "TARGET_ADDX"
-  "subx2\t%0, %1, %2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
-(define_insn "*subx4"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-			   (const_int 4))
-		  (match_operand:SI 2 "register_operand" "r")))]
-  "TARGET_ADDX"
-  "subx4\t%0, %1, %2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
-(define_insn "*subx8"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(minus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
-			   (const_int 8))
-		  (match_operand:SI 2 "register_operand" "r")))]
-  "TARGET_ADDX"
-  "subx8\t%0, %1, %2"
+  "subx%3\t%0, %1, %2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
@@ -537,42 +511,12 @@
 
 ;; Min and max.
 
-(define_insn "sminsi3"
+(define_insn "<code>si3"
   [(set (match_operand:SI 0 "register_operand" "=a")
-        (smin:SI (match_operand:SI 1 "register_operand" "%r")
-                 (match_operand:SI 2 "register_operand" "r")))]
+        (any_minmax:SI (match_operand:SI 1 "register_operand" "%r")
+		       (match_operand:SI 2 "register_operand" "r")))]
   "TARGET_MINMAX"
-  "min\t%0, %1, %2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
-(define_insn "uminsi3"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-        (umin:SI (match_operand:SI 1 "register_operand" "%r")
-                 (match_operand:SI 2 "register_operand" "r")))]
-  "TARGET_MINMAX"
-  "minu\t%0, %1, %2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
-(define_insn "smaxsi3"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-        (smax:SI (match_operand:SI 1 "register_operand" "%r")
-                 (match_operand:SI 2 "register_operand" "r")))]
-  "TARGET_MINMAX"
-  "max\t%0, %1, %2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
-(define_insn "umaxsi3"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-        (umax:SI (match_operand:SI 1 "register_operand" "%r")
-                 (match_operand:SI 2 "register_operand" "r")))]
-  "TARGET_MINMAX"
-  "maxu\t%0, %1, %2"
+  "<minmax>\t%0, %1, %2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
@@ -1236,113 +1180,14 @@
 
 ;; Conditional branches.
 
-(define_expand "beq"
+(define_expand "b<code>"
   [(set (pc)
-	(if_then_else (eq (cc0) (const_int 0))
+	(if_then_else (any_cond (cc0) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
 {
-  xtensa_expand_conditional_branch (operands, EQ);
-  DONE;
-})
-
-(define_expand "bne"
-  [(set (pc)
-	(if_then_else (ne (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-{
-  xtensa_expand_conditional_branch (operands, NE);
-  DONE;
-})
-
-(define_expand "bgt"
-  [(set (pc)
-	(if_then_else (gt (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-{
-  xtensa_expand_conditional_branch (operands, GT);
-  DONE;
-})
-
-(define_expand "bge"
-  [(set (pc)
-	(if_then_else (ge (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-{
-  xtensa_expand_conditional_branch (operands, GE);
-  DONE;
-})
-
-(define_expand "blt"
-  [(set (pc)
-	(if_then_else (lt (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-{
-  xtensa_expand_conditional_branch (operands, LT);
-  DONE;
-})
-
-(define_expand "ble"
-  [(set (pc)
-	(if_then_else (le (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-{
-  xtensa_expand_conditional_branch (operands, LE);
-  DONE;
-})
-
-(define_expand "bgtu"
-  [(set (pc)
-	(if_then_else (gtu (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-{
-  xtensa_expand_conditional_branch (operands, GTU);
-  DONE;
-})
-
-(define_expand "bgeu"
-  [(set (pc)
-	(if_then_else (geu (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-{
-  xtensa_expand_conditional_branch (operands, GEU);
-  DONE;
-})
-
-(define_expand "bltu"
-  [(set (pc)
-	(if_then_else (ltu (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-{
-  xtensa_expand_conditional_branch (operands, LTU);
-  DONE;
-})
-
-(define_expand "bleu"
-  [(set (pc)
-	(if_then_else (leu (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-{
-  xtensa_expand_conditional_branch (operands, LEU);
+  xtensa_expand_conditional_branch (operands, <CODE>);
   DONE;
 })
 
@@ -1351,50 +1196,13 @@
 (define_insn "*btrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "branch_operator"
-			 [(match_operand:SI 0 "register_operand" "r,r")
-			  (match_operand:SI 1 "branch_operand" "K,r")])
+		       [(match_operand:SI 0 "register_operand" "r,r")
+			(match_operand:SI 1 "branch_operand" "K,r")])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
 {
-  if (which_alternative == 1)
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return "beq\t%0, %1, %2";
-	case NE:	return "bne\t%0, %1, %2";
-	case LT:	return "blt\t%0, %1, %2";
-	case GE:	return "bge\t%0, %1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  else if (INTVAL (operands[1]) == 0)
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return (TARGET_DENSITY
-				? "beqz.n\t%0, %2"
-				: "beqz\t%0, %2");
-	case NE:	return (TARGET_DENSITY
-				? "bnez.n\t%0, %2"
-				: "bnez\t%0, %2");
-	case LT:	return "bltz\t%0, %2";
-	case GE:	return "bgez\t%0, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  else
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return "beqi\t%0, %d1, %2";
-	case NE:	return "bnei\t%0, %d1, %2";
-	case LT:	return "blti\t%0, %d1, %2";
-	case GE:	return "bgei\t%0, %d1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  gcc_unreachable ();
+  return xtensa_emit_branch (false, which_alternative == 0, operands);
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1403,50 +1211,13 @@
 (define_insn "*bfalse"
   [(set (pc)
 	(if_then_else (match_operator 3 "branch_operator"
-			 [(match_operand:SI 0 "register_operand" "r,r")
-			  (match_operand:SI 1 "branch_operand" "K,r")])
+		       [(match_operand:SI 0 "register_operand" "r,r")
+			(match_operand:SI 1 "branch_operand" "K,r")])
 		      (pc)
 		      (label_ref (match_operand 2 "" ""))))]
   ""
 {
-  if (which_alternative == 1)
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return "bne\t%0, %1, %2";
-	case NE:	return "beq\t%0, %1, %2";
-	case LT:	return "bge\t%0, %1, %2";
-	case GE:	return "blt\t%0, %1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  else if (INTVAL (operands[1]) == 0)
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return (TARGET_DENSITY
-				? "bnez.n\t%0, %2"
-				: "bnez\t%0, %2");
-	case NE:	return (TARGET_DENSITY
-				? "beqz.n\t%0, %2"
-				: "beqz\t%0, %2");
-	case LT:	return "bgez\t%0, %2";
-	case GE:	return "bltz\t%0, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  else
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return "bnei\t%0, %d1, %2";
-	case NE:	return "beqi\t%0, %d1, %2";
-	case LT:	return "bgei\t%0, %d1, %2";
-	case GE:	return "blti\t%0, %d1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  gcc_unreachable ();
+  return xtensa_emit_branch (true, which_alternative == 0, operands);
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1455,31 +1226,13 @@
 (define_insn "*ubtrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "ubranch_operator"
-			 [(match_operand:SI 0 "register_operand" "r,r")
-			  (match_operand:SI 1 "ubranch_operand" "L,r")])
+		       [(match_operand:SI 0 "register_operand" "r,r")
+			(match_operand:SI 1 "ubranch_operand" "L,r")])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
 {
-  if (which_alternative == 1)
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case LTU:	return "bltu\t%0, %1, %2";
-	case GEU:	return "bgeu\t%0, %1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  else
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case LTU:	return "bltui\t%0, %d1, %2";
-	case GEU:	return "bgeui\t%0, %d1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  gcc_unreachable ();
+  return xtensa_emit_branch (false, which_alternative == 0, operands);
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1494,25 +1247,7 @@
 		      (label_ref (match_operand 2 "" ""))))]
   ""
 {
-  if (which_alternative == 1)
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case LTU:	return "bgeu\t%0, %1, %2";
-	case GEU:	return "bltu\t%0, %1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  else
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case LTU:	return "bgeui\t%0, %d1, %2";
-	case GEU:	return "bltui\t%0, %d1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  gcc_unreachable ();
+  return xtensa_emit_branch (true, which_alternative == 0, operands);
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1532,27 +1267,7 @@
 		      (pc)))]
   ""
 {
-  if (which_alternative == 0)
-    {
-      unsigned bitnum = INTVAL(operands[1]) & 0x1f;
-      operands[1] = GEN_INT(bitnum);
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return "bbci\t%0, %d1, %2";
-	case NE:	return "bbsi\t%0, %d1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  else
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return "bbc\t%0, %1, %2";
-	case NE:	return "bbs\t%0, %1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  gcc_unreachable ();
+  return xtensa_emit_bit_branch (false, which_alternative == 0, operands);
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -1570,27 +1285,7 @@
 		      (label_ref (match_operand 2 "" ""))))]
   ""
 {
-  if (which_alternative == 0)
-    {
-      unsigned bitnum = INTVAL (operands[1]) & 0x1f;
-      operands[1] = GEN_INT (bitnum);
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return "bbsi\t%0, %d1, %2";
-	case NE:	return "bbci\t%0, %d1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  else
-    {
-      switch (GET_CODE (operands[3]))
-	{
-	case EQ:	return "bbs\t%0, %1, %2";
-	case NE:	return "bbc\t%0, %1, %2";
-	default:	gcc_unreachable ();
-	}
-    }
-  gcc_unreachable ();
+  return xtensa_emit_bit_branch (true, which_alternative == 0, operands);
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -1677,67 +1372,13 @@
 
 ;; Setting a register from a comparison.
 
-(define_expand "seq"
+(define_expand "s<code>"
   [(set (match_operand:SI 0 "register_operand" "")
-	(match_dup 1))]
+	(any_scc:SI (match_dup 1)
+		    (match_dup 2)))]
   ""
 {
-  operands[1] = gen_rtx_EQ (SImode, branch_cmp[0], branch_cmp[1]);
-  if (!xtensa_expand_scc (operands))
-    FAIL;
-  DONE;
-})
-
-(define_expand "sne"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_dup 1))]
-  ""
-{
-  operands[1] = gen_rtx_NE (SImode, branch_cmp[0], branch_cmp[1]);
-  if (!xtensa_expand_scc (operands))
-    FAIL;
-  DONE;
-})
-
-(define_expand "sgt"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_dup 1))]
-  ""
-{
-  operands[1] = gen_rtx_GT (SImode, branch_cmp[0], branch_cmp[1]);
-  if (!xtensa_expand_scc (operands))
-    FAIL;
-  DONE;
-})
-
-(define_expand "sge"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_dup 1))]
-  ""
-{
-  operands[1] = gen_rtx_GE (SImode, branch_cmp[0], branch_cmp[1]);
-  if (!xtensa_expand_scc (operands))
-    FAIL;
-  DONE;
-})
-
-(define_expand "slt"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_dup 1))]
-  ""
-{
-  operands[1] = gen_rtx_LT (SImode, branch_cmp[0], branch_cmp[1]);
-  if (!xtensa_expand_scc (operands))
-    FAIL;
-  DONE;
-})
-
-(define_expand "sle"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(match_dup 1))]
-  ""
-{
-  operands[1] = gen_rtx_LE (SImode, branch_cmp[0], branch_cmp[1]);
+  operands[1] = gen_rtx_<CODE> (SImode, branch_cmp[0], branch_cmp[1]);
   if (!xtensa_expand_scc (operands))
     FAIL;
   DONE;
@@ -1779,29 +1420,7 @@
 			 (match_operand:SI 3 "register_operand" "0,r")))]
   ""
 {
-  if (which_alternative == 0)
-    {
-      switch (GET_CODE (operands[4]))
-	{
-	case EQ:	return "moveqz\t%0, %2, %1";
-	case NE:	return "movnez\t%0, %2, %1";
-	case LT:	return "movltz\t%0, %2, %1";
-	case GE:	return "movgez\t%0, %2, %1";
-	default:	gcc_unreachable ();
-	}
-    }
-  else
-    {
-      switch (GET_CODE (operands[4]))
-	{
-	case EQ:	return "movnez\t%0, %3, %1";
-	case NE:	return "moveqz\t%0, %3, %1";
-	case LT:	return "movgez\t%0, %3, %1";
-	case GE:	return "movltz\t%0, %3, %1";
-	default:	gcc_unreachable ();
-	}
-    }
-  gcc_unreachable ();
+  return xtensa_emit_movcc (which_alternative == 1, false, false, operands);
 }
   [(set_attr "type"	"move,move")
    (set_attr "mode"	"SI")
@@ -1816,18 +1435,7 @@
 			 (match_operand:SI 3 "register_operand" "0,r")))]
   "TARGET_BOOLEANS"
 {
-  int isEq = (GET_CODE (operands[4]) == EQ);
-  switch (which_alternative)
-    {
-    case 0:
-      if (isEq) return "movf\t%0, %2, %1";
-      return "movt\t%0, %2, %1";
-    case 1:
-      if (isEq) return "movt\t%0, %3, %1";
-      return "movf\t%0, %3, %1";
-    default:
-      gcc_unreachable ();
-    }
+  return xtensa_emit_movcc (which_alternative == 1, false, true, operands);
 }
   [(set_attr "type"	"move,move")
    (set_attr "mode"	"SI")
@@ -1842,52 +1450,8 @@
 			 (match_operand:SF 3 "register_operand" "0,r,0,f")))]
   ""
 {
-  switch (which_alternative)
-    {
-    case 0:
-      switch (GET_CODE (operands[4]))
-	{
-	case EQ:	return "moveqz\t%0, %2, %1";
-	case NE:	return "movnez\t%0, %2, %1";
-	case LT:	return "movltz\t%0, %2, %1";
-	case GE:	return "movgez\t%0, %2, %1";
-	default:	gcc_unreachable ();
-	}
-      break;
-    case 1:
-      switch (GET_CODE (operands[4]))
-	{
-	case EQ:	return "movnez\t%0, %3, %1";
-	case NE:	return "moveqz\t%0, %3, %1";
-	case LT:	return "movgez\t%0, %3, %1";
-	case GE:	return "movltz\t%0, %3, %1";
-	default:	gcc_unreachable ();
-	}
-      break;
-    case 2:
-      switch (GET_CODE (operands[4]))
-	{
-	case EQ:	return "moveqz.s %0, %2, %1";
-	case NE:	return "movnez.s %0, %2, %1";
-	case LT:	return "movltz.s %0, %2, %1";
-	case GE:	return "movgez.s %0, %2, %1";
-	default:	gcc_unreachable ();
-	}
-      break;
-    case 3:
-      switch (GET_CODE (operands[4]))
-	{
-	case EQ:	return "movnez.s %0, %3, %1";
-	case NE:	return "moveqz.s %0, %3, %1";
-	case LT:	return "movgez.s %0, %3, %1";
-	case GE:	return "movltz.s %0, %3, %1";
-	default:	gcc_unreachable ();
-	}
-      break;
-    default:
-      gcc_unreachable ();
-    }
-  gcc_unreachable ();
+  return xtensa_emit_movcc ((which_alternative & 1) == 1,
+			    which_alternative >= 2, false, operands);
 }
   [(set_attr "type"	"move,move,move,move")
    (set_attr "mode"	"SF")
@@ -1902,24 +1466,8 @@
 			 (match_operand:SF 3 "register_operand" "0,r,0,f")))]
   "TARGET_BOOLEANS"
 {
-  int isEq = (GET_CODE (operands[4]) == EQ);
-  switch (which_alternative)
-    {
-    case 0:
-      if (isEq) return "movf\t%0, %2, %1";
-      return "movt\t%0, %2, %1";
-    case 1:
-      if (isEq) return "movt\t%0, %3, %1";
-      return "movf\t%0, %3, %1";
-    case 2:
-      if (isEq) return "movf.s\t%0, %2, %1";
-      return "movt.s\t%0, %2, %1";
-    case 3:
-      if (isEq) return "movt.s\t%0, %3, %1";
-      return "movf.s\t%0, %3, %1";
-    default:
-      gcc_unreachable ();
-    }
+  return xtensa_emit_movcc ((which_alternative & 1) == 1,
+			    which_alternative >= 2, true, operands);
 }
   [(set_attr "type"	"move,move,move,move")
    (set_attr "mode"	"SF")
@@ -1928,32 +1476,12 @@
 
 ;; Floating-point comparisons.
 
-(define_insn "seq_sf"
+(define_insn "s<code>_sf"
   [(set (match_operand:CC 0 "register_operand" "=b")
-	(eq:CC (match_operand:SF 1 "register_operand" "f")
-	       (match_operand:SF 2 "register_operand" "f")))]
+	(any_scc_sf:CC (match_operand:SF 1 "register_operand" "f")
+		       (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
-  "oeq.s\t%0, %1, %2"
-  [(set_attr "type"	"farith")
-   (set_attr "mode"	"BL")
-   (set_attr "length"	"3")])
-
-(define_insn "slt_sf"
-  [(set (match_operand:CC 0 "register_operand" "=b")
-	(lt:CC (match_operand:SF 1 "register_operand" "f")
-	       (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "olt.s\t%0, %1, %2"
-  [(set_attr "type"	"farith")
-   (set_attr "mode"	"BL")
-   (set_attr "length"	"3")])
-
-(define_insn "sle_sf"
-  [(set (match_operand:CC 0 "register_operand" "=b")
-	(le:CC (match_operand:SF 1 "register_operand" "f")
-	       (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "ole.s\t%0, %1, %2"
+  "o<code>.s\t%0, %1, %2"
   [(set_attr "type"	"farith")
    (set_attr "mode"	"BL")
    (set_attr "length"	"3")])
