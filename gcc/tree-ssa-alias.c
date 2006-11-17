@@ -2755,6 +2755,9 @@ new_type_alias (tree ptr, tree var, tree expr)
   tree ali = NULL_TREE;
   HOST_WIDE_INT offset, size, maxsize;
   tree ref;
+  VEC (tree, heap) *overlaps = NULL;
+  subvar_t sv;
+  unsigned int len;
 
   gcc_assert (p_ann->symbol_mem_tag == NULL_TREE);
   gcc_assert (!MTAG_P (var));
@@ -2767,13 +2770,9 @@ new_type_alias (tree ptr, tree var, tree expr)
 
   /* Add VAR to the may-alias set of PTR's new symbol tag.  If VAR has
      subvars, add the subvars to the tag instead of the actual var.  */
-  if (var_can_have_subvars (var)
-      && (svars = get_subvars_for_var (var)))
+  if (var_can_have_subvars (ref)
+      && (svars = get_subvars_for_var (ref)))
     {
-      subvar_t sv;
-      VEC (tree, heap) *overlaps = NULL;
-      unsigned int len;
-
       for (sv = svars; sv; sv = sv->next)
 	{
           bool exact;
@@ -2781,15 +2780,36 @@ new_type_alias (tree ptr, tree var, tree expr)
           if (overlap_subvar (offset, maxsize, sv->var, &exact))
             VEC_safe_push (tree, heap, overlaps, sv->var);
         }
-      len = VEC_length (tree, overlaps);
+      gcc_assert (overlaps != NULL);
+    }
+  else if (var_can_have_subvars (var)
+	   && (svars = get_subvars_for_var (var)))
+    {
+      /* If the REF is not a direct access to VAR (e.g., it is a dereference
+	 of a pointer), we should scan the virtual operands of REF the same
+	 way as tree-ssa-operands do.  At the moment, this is somewhat
+	 difficult, so we just give up and add all the subvars of VAR.
+	 On mem-ssa branch, the scanning for virtual operands have been
+	 split from the rest of tree-ssa-operands, so it should be much
+	 easier to fix this problem correctly once mem-ssa is merged.  */
+      for (sv = svars; sv; sv = sv->next)
+	VEC_safe_push (tree, heap, overlaps, sv->var);
+
+      gcc_assert (overlaps != NULL);
+    }
+  else
+    ali = add_may_alias_for_new_tag (tag, var);
+
+  len = VEC_length (tree, overlaps);
+  if (len > 0)
+    {
       if (dump_file && (dump_flags & TDF_DETAILS))
-        fprintf (dump_file, "\nnumber of overlapping subvars = %u\n", len);
-      gcc_assert (len);
+	fprintf (dump_file, "\nnumber of overlapping subvars = %u\n", len);
 
       if (len == 1)
-        ali = add_may_alias_for_new_tag (tag, VEC_index (tree, overlaps, 0));
+	ali = add_may_alias_for_new_tag (tag, VEC_index (tree, overlaps, 0));
       else if (len > 1)
-        {
+	{
 	  unsigned int k;
 	  tree sv_var;
 
@@ -2807,9 +2827,8 @@ new_type_alias (tree ptr, tree var, tree expr)
 		}
 	    }
 	}
+      VEC_free (tree, heap, overlaps);
     }
-  else
-    ali = add_may_alias_for_new_tag (tag, var);
 
   p_ann->symbol_mem_tag = ali;
   TREE_READONLY (tag) = TREE_READONLY (var);
