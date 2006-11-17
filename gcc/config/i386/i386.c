@@ -2679,10 +2679,10 @@ ix86_function_x87regparm (tree type, tree decl)
   return 0;
 }
 
-/* Return 1 or 2, if we can pass up to 8 SFmode (1) and DFmode (2) arguments
-   in SSE registers for a function with the indicated TYPE and DECL.
-   DECL may be NULL when calling function indirectly
-   or considering a libcall.  Otherwise return 0.  */
+/* Return 1 or 2, if we can pass up to SSE_REGPARM_MAX SFmode (1) and
+   DFmode (2) arguments in SSE registers for a function with the
+   indicated TYPE and DECL.  DECL may be NULL when calling function
+   indirectly or considering a libcall.  Otherwise return 0.  */
 
 static int
 ix86_function_sseregparm (tree type, tree decl)
