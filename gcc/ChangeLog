@@ -1,3 +1,8 @@
+2006-11-17  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-alias.c (new_type_alias): Do not use offset of expr to
+	select subvars of var.
+
 2006-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29584
