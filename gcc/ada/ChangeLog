@@ -1,3 +1,9 @@
+2006-11-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/27936
+	* trans.c (add_decl_expr): Do not dynamically elaborate padded objects
+	if the initializer takes into account the padding.
+
 2006-11-11  Richard Guenther  <rguenther@suse.de>
 
 	* trans.c (maybe_stabilize_reference): Remove handling of
