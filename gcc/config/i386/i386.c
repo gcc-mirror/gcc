@@ -2212,10 +2212,10 @@ ix86_function_regparm (tree type, tree decl)
   return regparm;
 }
 
-/* Return 1 or 2, if we can pass up to 8 SFmode (1) and DFmode (2) arguments
-   in SSE registers for a function with the indicated TYPE and DECL.
-   DECL may be NULL when calling function indirectly
-   or considering a libcall.  Otherwise return 0.  */
+/* Return 1 or 2, if we can pass up to SSE_REGPARM_MAX SFmode (1) and
+   DFmode (2) arguments in SSE registers for a function with the
+   indicated TYPE and DECL.  DECL may be NULL when calling function
+   indirectly or considering a libcall.  Otherwise return 0.  */
 
 static int
 ix86_function_sseregparm (tree type, tree decl)
@@ -2240,9 +2240,9 @@ ix86_function_sseregparm (tree type, tree decl)
       return 2;
     }
 
-  /* For local functions, pass SFmode (and DFmode for SSE2) arguments
-     in SSE registers even for 32-bit mode and not just 3, but up to
-     8 SSE arguments in registers.  */
+  /* For local functions, pass up to SSE_REGPARM_MAX SFmode
+     (and DFmode for SSE2) arguments in SSE registers,
+     even for 32-bit targets.  */
   if (!TARGET_64BIT && decl
       && TARGET_SSE_MATH && flag_unit_at_a_time && !profile_flag)
     {
