@@ -2084,7 +2084,7 @@ realclean: maintainer-clean
 # Extra dependency for clean-target, owing to the mixed nature of gcc.
 clean-target: clean-target-libgcc
 clean-target-libgcc:
-	test ! -d gcc || (cd gcc && $(MAKE) $@)
+	if test -f gcc/Makefile; then cd gcc && $(MAKE) $@; else :; fi
 
 # Check target.
 
@@ -4470,7 +4470,7 @@ configure-stage1-bfd:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif bfd-bootstrap
 
 .PHONY: configure-stage2-bfd maybe-configure-stage2-bfd
@@ -5225,7 +5225,7 @@ configure-stage1-opcodes:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif opcodes-bootstrap
 
 .PHONY: configure-stage2-opcodes maybe-configure-stage2-opcodes
@@ -5980,7 +5980,7 @@ configure-stage1-binutils:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif binutils-bootstrap
 
 .PHONY: configure-stage2-binutils maybe-configure-stage2-binutils
@@ -11792,7 +11792,7 @@ configure-stage1-gas:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif gas-bootstrap
 
 .PHONY: configure-stage2-gas maybe-configure-stage2-gas
@@ -12547,7 +12547,7 @@ configure-stage1-gcc:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif gcc-bootstrap
 
 .PHONY: configure-stage2-gcc maybe-configure-stage2-gcc
@@ -16074,7 +16074,7 @@ configure-stage1-intl:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif intl-bootstrap
 
 .PHONY: configure-stage2-intl maybe-configure-stage2-intl
@@ -17606,7 +17606,7 @@ configure-stage1-ld:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif ld-bootstrap
 
 .PHONY: configure-stage2-ld maybe-configure-stage2-ld
@@ -18361,7 +18361,7 @@ configure-stage1-libcpp:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libcpp-bootstrap
 
 .PHONY: configure-stage2-libcpp maybe-configure-stage2-libcpp
@@ -19116,7 +19116,7 @@ configure-stage1-libdecnumber:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libdecnumber-bootstrap
 
 .PHONY: configure-stage2-libdecnumber maybe-configure-stage2-libdecnumber
@@ -20267,7 +20267,7 @@ configure-stage1-libiberty:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif libiberty-bootstrap
 
 .PHONY: configure-stage2-libiberty maybe-configure-stage2-libiberty
@@ -30109,7 +30109,7 @@ configure-stage1-zlib:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	   \
-	  --disable-intermodule --enable-checking 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
+	  --disable-intermodule 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" 
 @endif zlib-bootstrap
 
 .PHONY: configure-stage2-zlib maybe-configure-stage2-zlib
@@ -41812,7 +41812,7 @@ stage = :
 current_stage = ""
 
 @if gcc-bootstrap
-unstage = [ -f stage_current ] || $(MAKE) `cat stage_last`-start
+unstage = if [ -f stage_last ]; then [ -f stage_current ] || $(MAKE) `cat stage_last`-start || exit 1; else :; fi
 stage = if [ -f stage_current ]; then $(MAKE) `cat stage_current`-end || exit 1; else :; fi
 current_stage = "`cat stage_current 2> /dev/null`"
 @endif gcc-bootstrap
@@ -41855,7 +41855,7 @@ objext = .o
 # Flags to pass to stage2 and later makes.
 POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-	STAGE_PREFIX=$$r/prev-gcc/ \
+	STAGE_PREFIX="$$r/$(HOST_SUBDIR)/prev-gcc/" \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	LIBCFLAGS="$(BOOT_CFLAGS)" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
