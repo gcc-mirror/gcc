@@ -2258,7 +2258,9 @@ simplify_switch_and_lookup_avail_expr (tree stmt, int insert)
 
 	      need_precision = TYPE_PRECISION (ti);
 	      fail = false;
-	      if (TYPE_UNSIGNED (to) && !TYPE_UNSIGNED (ti))
+	      if (! INTEGRAL_TYPE_P (ti))
+		fail = true;
+	      else if (TYPE_UNSIGNED (to) && !TYPE_UNSIGNED (ti))
 		fail = true;
 	      else if (!TYPE_UNSIGNED (to) && TYPE_UNSIGNED (ti))
 		need_precision += 1;

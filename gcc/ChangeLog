@@ -1,3 +1,9 @@
+2006-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/29584
+	* tree-ssa-dom.c (simplify_switch_and_lookup_avail_expr): Don't
+	optimize if DEF doesn't have integral type.
+
 2006-11-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_function_sseregparm): Fix comment:
