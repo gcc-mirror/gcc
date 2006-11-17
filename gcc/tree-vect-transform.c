@@ -1100,13 +1100,15 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
 	      tree bitpos = size_int (bit_offset);
 
 	      epilog_stmt = build2 (MODIFY_EXPR, vectype, vec_dest,
-	      build2 (shift_code, vectype, new_temp, bitpos));
+				    build2 (shift_code, vectype,
+					    new_temp, bitpos));
 	      new_name = make_ssa_name (vec_dest, epilog_stmt);
 	      TREE_OPERAND (epilog_stmt, 0) = new_name;
 	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
 
 	      epilog_stmt = build2 (MODIFY_EXPR, vectype, vec_dest,
-	      build2 (code, vectype, new_name, new_temp));
+				    build2 (code, vectype,
+					    new_name, new_temp));
 	      new_temp = make_ssa_name (vec_dest, epilog_stmt);
 	      TREE_OPERAND (epilog_stmt, 0) = new_temp;
 	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
@@ -3165,29 +3167,33 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
 
   /* Create: ratio = ni >> log2(vf) */
 
-  var = create_tmp_var (TREE_TYPE (ni), "bnd");
-  add_referenced_var (var);
-  ratio_name = make_ssa_name (var, NULL_TREE);
-  stmt = build2 (MODIFY_EXPR, void_type_node, ratio_name,
-	   build2 (RSHIFT_EXPR, TREE_TYPE (ni_name), ni_name, log_vf));
-  SSA_NAME_DEF_STMT (ratio_name) = stmt;
+  ratio_name = fold_build2 (RSHIFT_EXPR, TREE_TYPE (ni_name), ni_name, log_vf);
+  if (!is_gimple_val (ratio_name))
+    {
+      var = create_tmp_var (TREE_TYPE (ni), "bnd");
+      add_referenced_var (var);
 
-  pe = loop_preheader_edge (loop);
-  new_bb = bsi_insert_on_edge_immediate (pe, stmt);
-  gcc_assert (!new_bb);
+      ratio_name = force_gimple_operand (ratio_name, &stmt, true, var);
+      pe = loop_preheader_edge (loop);
+      new_bb = bsi_insert_on_edge_immediate (pe, stmt);
+      gcc_assert (!new_bb);
+    }
        
   /* Create: ratio_mult_vf = ratio << log2 (vf).  */
 
-  var = create_tmp_var (TREE_TYPE (ni), "ratio_mult_vf");
-  add_referenced_var (var);
-  ratio_mult_vf_name = make_ssa_name (var, NULL_TREE);
-  stmt = build2 (MODIFY_EXPR, void_type_node, ratio_mult_vf_name,
-	   build2 (LSHIFT_EXPR, TREE_TYPE (ratio_name), ratio_name, log_vf));
-  SSA_NAME_DEF_STMT (ratio_mult_vf_name) = stmt;
+  ratio_mult_vf_name = fold_build2 (LSHIFT_EXPR, TREE_TYPE (ratio_name),
+				    ratio_name, log_vf);
+  if (!is_gimple_val (ratio_mult_vf_name))
+    {
+      var = create_tmp_var (TREE_TYPE (ni), "ratio_mult_vf");
+      add_referenced_var (var);
 
-  pe = loop_preheader_edge (loop);
-  new_bb = bsi_insert_on_edge_immediate (pe, stmt);
-  gcc_assert (!new_bb);
+      ratio_mult_vf_name = force_gimple_operand (ratio_mult_vf_name, &stmt,
+						 true, var);
+      pe = loop_preheader_edge (loop);
+      new_bb = bsi_insert_on_edge_immediate (pe, stmt);
+      gcc_assert (!new_bb);
+    }
 
   *ni_name_ptr = ni_name;
   *ratio_mult_vf_name_ptr = ratio_mult_vf_name;
@@ -3375,9 +3381,9 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       init_expr = unshare_expr (initial_condition_in_loop_num (access_fn, 
 							       loop->num));
 
-      ni = build2 (PLUS_EXPR, TREE_TYPE (init_expr),
-		  build2 (MULT_EXPR, TREE_TYPE (niters),
-		       niters, step_expr), init_expr);
+      ni = fold_build2 (PLUS_EXPR, TREE_TYPE (init_expr),
+			fold_build2 (MULT_EXPR, TREE_TYPE (niters),
+				     niters, step_expr), init_expr);
 
       var = create_tmp_var (TREE_TYPE (init_expr), "tmp");
       add_referenced_var (var);
@@ -3530,15 +3536,15 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   
       /* Create:  byte_misalign = addr & (vectype_size - 1)  */
       byte_misalign = 
-        build2 (BIT_AND_EXPR, type, start_addr, vectype_size_minus_1);
+        fold_build2 (BIT_AND_EXPR, type, start_addr, vectype_size_minus_1);
   
       /* Create:  elem_misalign = byte_misalign / element_size  */
       elem_misalign =
-        build2 (RSHIFT_EXPR, type, byte_misalign, elem_size_log);
+        fold_build2 (RSHIFT_EXPR, type, byte_misalign, elem_size_log);
 
       /* Create:  (niters_type) (VF - elem_misalign)&(VF - 1)  */
-      iters = build2 (MINUS_EXPR, type, vf_tree, elem_misalign);
-      iters = build2 (BIT_AND_EXPR, type, iters, vf_minus_1);
+      iters = fold_build2 (MINUS_EXPR, type, vf_tree, elem_misalign);
+      iters = fold_build2 (BIT_AND_EXPR, type, iters, vf_minus_1);
       iters = fold_convert (niters_type, iters);
     }
 
@@ -3547,7 +3553,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
      greater than vf; since the misalignment ('iters') is at most vf, there's
      no need to generate the MIN_EXPR in this case.  */
   if (TREE_CODE (loop_niters) != INTEGER_CST)
-    iters = build2 (MIN_EXPR, niters_type, iters, loop_niters);
+    iters = fold_build2 (MIN_EXPR, niters_type, iters, loop_niters);
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
