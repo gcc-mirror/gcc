@@ -1,3 +1,13 @@
+2006-11-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/tree-ssa/stdarg-2.c, gcc.dg/tree-ssa/stdarg-4.c:
+	Condition PowerPC tests for saving FPRs on powerpc_fprs.
+	* gcc.target/powerpc/compress-float-ppc.c,
+	gcc.target/powerpc/compress-float-ppc-pic.c: Only test if
+	powerpc_fprs.
+	* gcc.target/powerpc/rs6000-power2-2.c: Only test if powerpc_fprs;
+	do not pass -mhard-float.
+
 2006-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/volatile_aggregate.adb: New test.
