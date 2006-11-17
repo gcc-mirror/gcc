@@ -2101,13 +2101,7 @@
 			     (match_operand:SI 1 "const_int_operand" "i")]
 			    UNSPECV_ENTRY))]
   ""
-{
-  if (frame_pointer_needed)
-    output_asm_insn (".frame\ta7, %0", operands);
-  else
-    output_asm_insn (".frame\tsp, %0", operands);
-  return "entry\tsp, %1";
-}
+  "entry\tsp, %1"
   [(set_attr "type"	"move")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
