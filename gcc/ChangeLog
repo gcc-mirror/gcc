@@ -1,3 +1,9 @@
+2006-11-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/29788
+	* fold-const.c (fold_indirect_ref_1): Fold *&CONST_DECL down
+	to what is the const decl is a place holder for.
+
 2006-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29584
