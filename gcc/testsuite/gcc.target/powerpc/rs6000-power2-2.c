@@ -1,5 +1,5 @@
-/* { dg-do compile { target { ilp32 } } } */
-/* { dg-options "-O3 -mcpu=power2 -fno-schedule-insns -w -mhard-float" } */
+/* { dg-do compile { target { powerpc_fprs && ilp32 } } } */
+/* { dg-options "-O3 -mcpu=power2 -fno-schedule-insns -w" } */
 /* { dg-final { scan-assembler-not "lfd" } } */
 /* { dg-final { scan-assembler-not "sfd" } } */
 /* { dg-final { scan-assembler "lfq" } } */

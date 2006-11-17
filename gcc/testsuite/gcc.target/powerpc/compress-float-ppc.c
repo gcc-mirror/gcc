@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-do compile { target powerpc_fprs } } */
 /* { dg-options "-O2" } */
 double foo (double x) {
   return x + 1.75;
