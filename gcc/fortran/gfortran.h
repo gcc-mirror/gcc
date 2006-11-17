@@ -1709,9 +1709,11 @@ void gfc_advance_section (mpz_t *, gfc_array_ref *, mpz_t *);
 void gfc_scanner_done_1 (void);
 void gfc_scanner_init_1 (void);
 
-void gfc_add_include_path (const char *);
+void gfc_add_include_path (const char *, bool);
+void gfc_add_intrinsic_modules_path (const char *);
 void gfc_release_include_path (void);
-FILE *gfc_open_included_file (const char *, bool);
+FILE *gfc_open_included_file (const char *, bool, bool);
+FILE *gfc_open_intrinsic_module (const char *);
 
 int gfc_at_end (void);
 int gfc_at_eof (void);

@@ -280,7 +280,7 @@ decode_statement (void)
       break;
 
     case 'u':
-      match ("use% ", gfc_match_use, ST_USE);
+      match ("use", gfc_match_use, ST_USE);
       break;
 
     case 'v':

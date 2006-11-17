@@ -217,10 +217,10 @@ gfc_post_options (const char **pfilename)
       source_path = alloca (i + 1);
       memcpy (source_path, canon_source_file, i);
       source_path[i] = 0;
-      gfc_add_include_path (source_path);
+      gfc_add_include_path (source_path, true);
     }
   else
-    gfc_add_include_path (".");
+    gfc_add_include_path (".", true);
 
   if (canon_source_file != gfc_source_file)
     gfc_free ((void *) canon_source_file);
@@ -511,6 +511,11 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.flag_implicit_none = value;
       break;
 
+    case OPT_fintrinsic_modules_path:
+      gfc_add_include_path (arg, false);
+      gfc_add_intrinsic_modules_path (arg);
+      break;
+
     case OPT_fmax_errors_:
       gfc_option.max_errors = value;
       break;
@@ -555,7 +560,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_I:
-      gfc_add_include_path (arg);
+      gfc_add_include_path (arg, true);
       break;
 
     case OPT_J:
