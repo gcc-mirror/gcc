@@ -479,6 +479,7 @@ extern int arm_cpp_interwork;
 
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
    ((TREE_CODE (EXP) == STRING_CST				\
+     && !optimize_size						\
      && (ALIGN) < BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR)	\
     ? BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR : (ALIGN))
 
