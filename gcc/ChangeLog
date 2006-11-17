@@ -1,3 +1,8 @@
+2006-11-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (CONSTANT_ALIGNMENT): Don't over-align strings when
+	optimizing for size.
+
 2006-11-16  Mike Stump  <mrs@apple.com>
 
 	* Makefile.in (targhooks.o): Add $(OPTABS_H).
