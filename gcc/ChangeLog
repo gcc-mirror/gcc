@@ -1,3 +1,7 @@
+2006-11-17  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib1funcs.asm (__umulsidi3): Restore a0 on exit.
+
 2006-11-17  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* tree-vrp.c (execute_vrp): Do not update current_loops.

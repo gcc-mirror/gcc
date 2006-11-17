@@ -323,6 +323,10 @@ __umulsidi3:
 
 #endif /* !MUL32_HIGH */
 
+#if !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MUL32 && !XCHAL_HAVE_MAC16
+	/* Restore the original return address.  */
+	l32i	a0, sp, 0
+#endif
 	leaf_return
 
 #if !XCHAL_HAVE_MUL16 && !XCHAL_HAVE_MUL32 && !XCHAL_HAVE_MAC16
