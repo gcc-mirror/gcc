@@ -1,3 +1,9 @@
+2006-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/29584
+	* tree-ssa-forwprop.c (simplify_switch_expr): Don't
+	optimize if DEF doesn't have integral type.
+
 2006-11-16  Mike Stump  <mrs@apple.com>
 
 	* config/darwin.h (LINK_COMMAND_SPEC): Don't do dwarf stuff on
