@@ -3854,11 +3854,12 @@ if_convert (int x_life_data_ok)
       && (!flag_reorder_blocks_and_partition || !no_new_pseudos
 	  || !targetm.have_named_sections))
     {
-      struct loops loops;
-
-      flow_loops_find (&loops);
-      mark_loop_exit_edges (&loops);
-      flow_loops_free (&loops);
+      loop_optimizer_init (0);
+      if (current_loops)
+	{
+	  mark_loop_exit_edges (current_loops);
+	  loop_optimizer_finalize ();
+	}
       free_dominance_info (CDI_DOMINATORS);
     }
 

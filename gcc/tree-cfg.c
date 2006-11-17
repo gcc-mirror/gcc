@@ -1998,24 +1998,15 @@ remove_bb (basic_block bb)
 	}
     }
 
-  /* If we remove the header or the latch of a loop, mark the loop for
-     removal by setting its header and latch to NULL.  */
   if (current_loops)
     {
       struct loop *loop = bb->loop_father;
 
+      /* If a loop gets removed, clean up the information associated
+	 with it.  */
       if (loop->latch == bb
 	  || loop->header == bb)
-	{
-	  loop->latch = NULL;
-	  loop->header = NULL;
-
-	  /* Also clean up the information associated with the loop.  Updating
-	     it would waste time. More importantly, it may refer to ssa
-	     names that were defined in other removed basic block -- these
-	     ssa names are now removed and invalid.  */
-	  free_numbers_of_iterations_estimates_loop (loop);
-	}
+	free_numbers_of_iterations_estimates_loop (loop);
     }
 
   /* Remove all the instructions in the block.  */

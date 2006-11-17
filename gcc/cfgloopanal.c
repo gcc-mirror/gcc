@@ -273,8 +273,9 @@ mark_irreducible_loops (struct loops *loops)
   edge_iterator ei;
   int i, src, dest;
   struct graph *g;
-  int *queue1 = XNEWVEC (int, last_basic_block + loops->num);
-  int *queue2 = XNEWVEC (int, last_basic_block + loops->num);
+  int num = loops ? loops->num : 1;
+  int *queue1 = XNEWVEC (int, last_basic_block + num);
+  int *queue2 = XNEWVEC (int, last_basic_block + num);
   int nq, depth;
   struct loop *cloop;
 
@@ -287,7 +288,7 @@ mark_irreducible_loops (struct loops *loops)
     }
 
   /* Create the edge lists.  */
-  g = new_graph (last_basic_block + loops->num);
+  g = new_graph (last_basic_block + num);
 
   FOR_BB_BETWEEN (act, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
     FOR_EACH_EDGE (e, ei, act->succs)
@@ -296,35 +297,38 @@ mark_irreducible_loops (struct loops *loops)
 	if (e->dest == EXIT_BLOCK_PTR)
 	  continue;
 
-	/* And latch edges.  */
-	if (e->dest->loop_father->header == e->dest
-	    && e->dest->loop_father->latch == act)
-	  continue;
-
-	/* Edges inside a single loop should be left where they are.  Edges
-	   to subloop headers should lead to representative of the subloop,
-	   but from the same place.
-
-	   Edges exiting loops should lead from representative
-	   of the son of nearest common ancestor of the loops in that
-	   act lays.  */
-
 	src = BB_REPR (act);
 	dest = BB_REPR (e->dest);
 
-	if (e->dest->loop_father->header == e->dest)
-	  dest = LOOP_REPR (e->dest->loop_father);
-
-	if (!flow_bb_inside_loop_p (act->loop_father, e->dest))
+	if (loops)
 	  {
-	    depth = find_common_loop (act->loop_father,
-				      e->dest->loop_father)->depth + 1;
-	    if (depth == act->loop_father->depth)
-	      cloop = act->loop_father;
-	    else
-	      cloop = act->loop_father->pred[depth];
+	    /* Ignore latch edges.  */
+	    if (e->dest->loop_father->header == e->dest
+		&& e->dest->loop_father->latch == act)
+	      continue;
 
-	    src = LOOP_REPR (cloop);
+	    /* Edges inside a single loop should be left where they are.  Edges
+	       to subloop headers should lead to representative of the subloop,
+	       but from the same place.
+
+	       Edges exiting loops should lead from representative
+	       of the son of nearest common ancestor of the loops in that
+	       act lays.  */
+
+	    if (e->dest->loop_father->header == e->dest)
+	      dest = LOOP_REPR (e->dest->loop_father);
+
+	    if (!flow_bb_inside_loop_p (act->loop_father, e->dest))
+	      {
+		depth = find_common_loop (act->loop_father,
+					  e->dest->loop_father)->depth + 1;
+		if (depth == act->loop_father->depth)
+		  cloop = act->loop_father;
+		else
+		  cloop = act->loop_father->pred[depth];
+
+		src = LOOP_REPR (cloop);
+	      }
 	  }
 
 	add_edge (g, src, dest, e);
@@ -339,7 +343,7 @@ mark_irreducible_loops (struct loops *loops)
     {
       queue1[nq++] = BB_REPR (act);
     }
-  for (i = 1; i < (int) loops->num; i++)
+  for (i = 1; i < num; i++)
     if (loops->parray[i])
       queue1[nq++] = LOOP_REPR (loops->parray[i]);
   dfs (g, queue1, nq, queue2, false);
@@ -354,7 +358,8 @@ mark_irreducible_loops (struct loops *loops)
   free (queue1);
   free (queue2);
 
-  loops->state |= LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS;
+  if (loops)
+    loops->state |= LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS;
 }
 
 /* Counts number of insns inside LOOP.  */

@@ -520,7 +520,6 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
 
   /* Create new bb between loop and new_merge_bb.  */
   *new_exit_bb = split_edge (loop->single_exit);
-  add_bb_to_loop (*new_exit_bb, loop->outer);
 
   new_exit_e = EDGE_SUCC (*new_exit_bb, 0);
 
@@ -646,7 +645,6 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
 
   /* Create new bb between loop and new_merge_bb.  */
   *new_exit_bb = split_edge (loop->single_exit);
-  add_bb_to_loop (*new_exit_bb, loop->outer);
 
   new_exit_e = EDGE_SUCC (*new_exit_bb, 0);
 
@@ -1157,9 +1155,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
    */
 
   bb_before_first_loop = split_edge (loop_preheader_edge (first_loop));
-  add_bb_to_loop (bb_before_first_loop, first_loop->outer);
   bb_before_second_loop = split_edge (first_loop->single_exit);
-  add_bb_to_loop (bb_before_second_loop, first_loop->outer);
 
   pre_condition =
     fold_build2 (LE_EXPR, boolean_type_node, first_niters, 
@@ -1199,7 +1195,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
 
   bb_between_loops = new_exit_bb;
   bb_after_second_loop = split_edge (second_loop->single_exit);
-  add_bb_to_loop (bb_after_second_loop, second_loop->outer);
 
   pre_condition = 
 	fold_build2 (EQ_EXPR, boolean_type_node, first_niters, niters);

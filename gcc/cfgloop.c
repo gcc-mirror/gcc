@@ -52,7 +52,6 @@ static bool glb_enum_p (basic_block, void *);
 static void
 flow_loops_cfg_dump (const struct loops *loops, FILE *file)
 {
-  int i;
   basic_block bb;
 
   if (! loops->num || ! file)
@@ -67,26 +66,6 @@ flow_loops_cfg_dump (const struct loops *loops, FILE *file)
       FOR_EACH_EDGE (succ, ei, bb->succs)
 	fprintf (file, "%d ", succ->dest->index);
       fprintf (file, "}\n");
-    }
-
-  /* Dump the DFS node order.  */
-  if (loops->cfg.dfs_order)
-    {
-      fputs (";; DFS order: ", file);
-      for (i = NUM_FIXED_BLOCKS; i < n_basic_blocks; i++)
-	fprintf (file, "%d ", loops->cfg.dfs_order[i]);
-
-      fputs ("\n", file);
-    }
-
-  /* Dump the reverse completion node order.  */
-  if (loops->cfg.rc_order)
-    {
-      fputs (";; RC order: ", file);
-      for (i = NUM_FIXED_BLOCKS; i < n_basic_blocks; i++)
-	fprintf (file, "%d ", loops->cfg.rc_order[i]);
-
-      fputs ("\n", file);
     }
 }
 
@@ -208,12 +187,6 @@ flow_loops_free (struct loops *loops)
 
       free (loops->parray);
       loops->parray = NULL;
-
-      if (loops->cfg.dfs_order)
-	free (loops->cfg.dfs_order);
-      if (loops->cfg.rc_order)
-	free (loops->cfg.rc_order);
-
     }
 }
 
@@ -697,10 +670,6 @@ flow_loops_find (struct loops *loops)
       rc_order = XNEWVEC (int, n_basic_blocks);
       pre_and_rev_post_order_compute (dfs_order, rc_order, false);
 
-      /* Save CFG derived information to avoid recomputing it.  */
-      loops->cfg.dfs_order = dfs_order;
-      loops->cfg.rc_order = rc_order;
-
       num_loops = 1;
 
       for (b = 0; b < n_basic_blocks - NUM_FIXED_BLOCKS; b++)
@@ -744,16 +713,14 @@ flow_loops_find (struct loops *loops)
 
       loops->num = num_loops;
       initialize_loops_parallel_p (loops);
+
+      free (dfs_order);
+      free (rc_order);
     }
 
   sbitmap_free (headers);
 
   loops->state = 0;
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-  verify_loop_structure (loops);
-#endif
-
   return loops->num;
 }
 
@@ -969,12 +936,13 @@ add_bb_to_loop (basic_block bb, struct loop *loop)
 {
    int i;
 
+   gcc_assert (bb->loop_father == NULL);
    bb->loop_father = loop;
    bb->loop_depth = loop->depth;
    loop->num_nodes++;
    for (i = 0; i < loop->depth; i++)
      loop->pred[i]->num_nodes++;
- }
+}
 
 /* Remove basic block BB from loops.  */
 void
@@ -983,6 +951,7 @@ remove_bb_from_loops (basic_block bb)
    int i;
    struct loop *loop = bb->loop_father;
 
+   gcc_assert (loop != NULL);
    loop->num_nodes--;
    for (i = 0; i < loop->depth; i++)
      loop->pred[i]->num_nodes--;

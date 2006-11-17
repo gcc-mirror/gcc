@@ -257,7 +257,7 @@ add_test (rtx cond, edge *e, basic_block dest)
 
   seq = get_insns ();
   end_sequence ();
-  bb = loop_split_edge_with (*e, seq);
+  bb = split_edge_and_insert (*e, seq);
   *e = single_succ_edge (bb);
 
   if (any_uncondjump_p (jump))
@@ -372,9 +372,9 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
       rtx ass = copy_rtx (desc->noloop_assumptions);
       basic_block preheader = loop_preheader_edge (loop)->src;
       basic_block set_zero
-	      = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
+	      = split_edge (loop_preheader_edge (loop));
       basic_block new_preheader
-	      = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
+	      = split_edge (loop_preheader_edge (loop));
       edge te;
 
       /* Expand the condition testing the assumptions and if it does not pass,
@@ -406,7 +406,6 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	{
 	  /* All the conditions were simplified to false, remove the
 	     unreachable set_zero block.  */
-	  remove_bb_from_loops (set_zero);
 	  delete_basic_block (set_zero);
 	}
       else
