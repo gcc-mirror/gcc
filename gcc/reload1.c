@@ -4794,6 +4794,51 @@ reload_reg_reaches_end_p (unsigned int regno, int opnum, enum reload_type type)
     }
 }
 
+
+/*  Returns whether R1 and R2 are uniquely chained: the value of one
+    is used by the other, and that value is not used by any other
+    reload for this insn.  This is used to partially undo the decision
+    made in find_reloads when in the case of multiple
+    RELOAD_FOR_OPERAND_ADDRESS reloads it converts all
+    RELOAD_FOR_OPADDR_ADDR reloads into RELOAD_FOR_OPERAND_ADDRESS
+    reloads.  This code tries to avoid the conflict created by that
+    change.  It might be cleaner to explicitly keep track of which
+    RELOAD_FOR_OPADDR_ADDR reload is associated with which
+    RELOAD_FOR_OPERAND_ADDRESS reload, rather than to try to detect
+    this after the fact. */
+static bool
+reloads_unique_chain_p (int r1, int r2)
+{
+  int i;
+
+  /* We only check input reloads.  */
+  if (! rld[r1].in || ! rld[r2].in)
+    return false;
+
+  /* Avoid anything with output reloads.  */
+  if (rld[r1].out || rld[r2].out)
+    return false;
+
+  /* "chained" means one reload is a component of the other reload,
+     not the same as the other reload.  */
+  if (rld[r1].opnum != rld[r2].opnum
+      || rtx_equal_p (rld[r1].in, rld[r2].in)
+      || rld[r1].optional || rld[r2].optional
+      || ! (reg_mentioned_p (rld[r1].in, rld[r2].in)
+	    || reg_mentioned_p (rld[r2].in, rld[r1].in)))
+    return false;
+
+  for (i = 0; i < n_reloads; i ++)
+    /* Look for input reloads that aren't our two */
+    if (i != r1 && i != r2 && rld[i].in)
+      {
+	/* If our reload is mentioned at all, it isn't a simple chain.  */
+	if (reg_mentioned_p (rld[r1].in, rld[i].in))
+	  return false;
+      }
+  return true;
+}
+
 /* Return 1 if the reloads denoted by R1 and R2 cannot share a register.
    Return 0 otherwise.
 
@@ -4842,7 +4887,8 @@ reloads_conflict (int r1, int r2)
 
     case RELOAD_FOR_OPERAND_ADDRESS:
       return (r2_type == RELOAD_FOR_INPUT || r2_type == RELOAD_FOR_INSN
-	      || r2_type == RELOAD_FOR_OPERAND_ADDRESS);
+	      || (r2_type == RELOAD_FOR_OPERAND_ADDRESS
+		  && !reloads_unique_chain_p (r1, r2)));
 
     case RELOAD_FOR_OPADDR_ADDR:
       return (r2_type == RELOAD_FOR_INPUT
