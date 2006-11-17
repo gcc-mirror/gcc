@@ -33,23 +33,26 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "flags.h"
 
 
-/* Initialize loop optimizer.  This is used by the tree and RTL loop
+/* Initialize loop structures.  This is used by the tree and RTL loop
    optimizers.  FLAGS specify what properties to compute and/or ensure for
    loops.  */
 
-struct loops *
+void
 loop_optimizer_init (unsigned flags)
 {
-  struct loops *loops = XCNEW (struct loops);
   edge e;
   edge_iterator ei;
   static bool first_time = true;
+  struct loops *loops;
 
   if (first_time)
     {
       first_time = false;
       init_set_costs ();
     }
+
+  gcc_assert (!current_loops);
+  loops = XCNEW (struct loops);
 
   /* Avoid annoying special cases of edges going to exit
      block.  */
@@ -62,63 +65,64 @@ loop_optimizer_init (unsigned flags)
 
   /* Find the loops.  */
 
-  if (flow_loops_find (loops) <= 1)
+  flow_loops_find (loops);
+  current_loops = loops;
+
+  if (current_loops->num <= 1)
     {
       /* No loops.  */
-      flow_loops_free (loops);
-      free (loops);
-
-      return NULL;
+      loop_optimizer_finalize ();
+      return;
     }
-
-  /* Not going to update these.  */
-  free (loops->cfg.rc_order);
-  loops->cfg.rc_order = NULL;
-  free (loops->cfg.dfs_order);
-  loops->cfg.dfs_order = NULL;
 
   /* Create pre-headers.  */
   if (flags & LOOPS_HAVE_PREHEADERS)
-    create_preheaders (loops, CP_SIMPLE_PREHEADERS);
+    create_preheaders (current_loops, CP_SIMPLE_PREHEADERS);
 
   /* Force all latches to have only single successor.  */
   if (flags & LOOPS_HAVE_SIMPLE_LATCHES)
-    force_single_succ_latches (loops);
+    force_single_succ_latches (current_loops);
 
   /* Mark irreducible loops.  */
   if (flags & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
-    mark_irreducible_loops (loops);
+    mark_irreducible_loops (current_loops);
 
   if (flags & LOOPS_HAVE_MARKED_SINGLE_EXITS)
-    mark_single_exit_loops (loops);
+    mark_single_exit_loops (current_loops);
 
   /* Dump loops.  */
-  flow_loops_dump (loops, dump_file, NULL, 1);
+  flow_loops_dump (current_loops, dump_file, NULL, 1);
 
 #ifdef ENABLE_CHECKING
   verify_dominators (CDI_DOMINATORS);
-  verify_loop_structure (loops);
+  verify_loop_structure (current_loops);
 #endif
-
-  return loops;
 }
 
-/* Finalize loop optimizer.  */
+/* Finalize loop structures.  */
+
 void
-loop_optimizer_finalize (struct loops *loops)
+loop_optimizer_finalize (void)
 {
   unsigned i;
+  basic_block bb;
 
-  if (!loops)
+  if (!current_loops)
     return;
 
-  for (i = 1; i < loops->num; i++)
-    if (loops->parray[i])
-      free_simple_loop_desc (loops->parray[i]);
+  for (i = 1; i < current_loops->num; i++)
+    if (current_loops->parray[i])
+      free_simple_loop_desc (current_loops->parray[i]);
 
   /* Clean up.  */
-  flow_loops_free (loops);
-  free (loops);
+  flow_loops_free (current_loops);
+  free (current_loops);
+  current_loops = NULL;
+
+  FOR_ALL_BB (bb)
+    {
+      bb->loop_father = NULL;
+    }
 
   /* Checking.  */
 #ifdef ENABLE_CHECKING
@@ -173,7 +177,7 @@ rtl_loop_init (void)
   /* Initialize structures for layout changes.  */
   cfg_layout_initialize (0);
 
-  current_loops = loop_optimizer_init (LOOPS_NORMAL);
+  loop_optimizer_init (LOOPS_NORMAL);
   return 0;
 }
 
@@ -196,14 +200,13 @@ struct tree_opt_pass pass_rtl_loop_init =
 
 
 /* Finalization of the RTL loop passes.  */
+
 static unsigned int
 rtl_loop_done (void)
 {
   basic_block bb;
 
-  if (current_loops)
-    loop_optimizer_finalize (current_loops);
-
+  loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
 
   /* Finalize layout changes.  */
@@ -218,7 +221,6 @@ rtl_loop_done (void)
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
 
-  current_loops = NULL;
   return 0;
 }
 

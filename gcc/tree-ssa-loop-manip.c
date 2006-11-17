@@ -98,7 +98,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
      loop (i.e. the step should be loop invariant).  */
   step = force_gimple_operand (step, &stmts, true, var);
   if (stmts)
-    bsi_insert_on_edge_immediate_loop (pe, stmts);
+    bsi_insert_on_edge_immediate (pe, stmts);
 
   stmt = build2 (MODIFY_EXPR, void_type_node, va,
 		 build2 (incr_op, TREE_TYPE (base),
@@ -111,7 +111,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 
   initial = force_gimple_operand (base, &stmts, true, var);
   if (stmts)
-    bsi_insert_on_edge_immediate_loop (pe, stmts);
+    bsi_insert_on_edge_immediate (pe, stmts);
 
   stmt = create_phi_node (vb, loop->header);
   SSA_NAME_DEF_STMT (vb) = stmt;
@@ -445,7 +445,7 @@ void
 split_loop_exit_edge (edge exit)
 {
   basic_block dest = exit->dest;
-  basic_block bb = loop_split_edge_with (exit, NULL);
+  basic_block bb = split_edge (exit);
   tree phi, new_phi, new_name, name;
   use_operand_p op_p;
 
@@ -468,32 +468,6 @@ split_loop_exit_edge (edge exit)
       add_phi_arg (new_phi, name, exit);
       SET_USE (op_p, new_name);
     }
-}
-
-/* Insert statement STMT to the edge E and update the loop structures.
-   Returns the newly created block (if any).  */
-
-basic_block
-bsi_insert_on_edge_immediate_loop (edge e, tree stmt)
-{
-  basic_block src, dest, new_bb;
-  struct loop *loop_c;
-
-  src = e->src;
-  dest = e->dest;
-
-  loop_c = find_common_loop (src->loop_father, dest->loop_father);
-
-  new_bb = bsi_insert_on_edge_immediate (e, stmt);
-
-  if (!new_bb)
-    return NULL;
-
-  add_bb_to_loop (new_bb, loop_c);
-  if (dest->loop_father->latch == src)
-    dest->loop_father->latch = new_bb;
-
-  return new_bb;
 }
 
 /* Returns the basic block in that statements should be emitted for induction
@@ -749,7 +723,7 @@ determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
 
   cond = force_gimple_operand (unshare_expr (cond), &stmts, false, NULL_TREE);
   if (stmts)
-    bsi_insert_on_edge_immediate_loop (loop_preheader_edge (loop), stmts);
+    bsi_insert_on_edge_immediate (loop_preheader_edge (loop), stmts);
   /* cond now may be a gimple comparison, which would be OK, but also any
      other gimple rhs (say a && b).  In this case we need to force it to
      operand.  */
@@ -757,16 +731,16 @@ determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
     {
       cond = force_gimple_operand (cond, &stmts, true, NULL_TREE);
       if (stmts)
-	bsi_insert_on_edge_immediate_loop (loop_preheader_edge (loop), stmts);
+	bsi_insert_on_edge_immediate (loop_preheader_edge (loop), stmts);
     }
   *enter_cond = cond;
 
   base = force_gimple_operand (unshare_expr (base), &stmts, true, NULL_TREE);
   if (stmts)
-    bsi_insert_on_edge_immediate_loop (loop_preheader_edge (loop), stmts);
+    bsi_insert_on_edge_immediate (loop_preheader_edge (loop), stmts);
   bound = force_gimple_operand (unshare_expr (bound), &stmts, true, NULL_TREE);
   if (stmts)
-    bsi_insert_on_edge_immediate_loop (loop_preheader_edge (loop), stmts);
+    bsi_insert_on_edge_immediate (loop_preheader_edge (loop), stmts);
 
   *exit_base = base;
   *exit_step = bigstep;
@@ -881,7 +855,7 @@ tree_unroll_loop (struct loops *loops, struct loop *loop, unsigned factor,
   /* Prepare the cfg and update the phi nodes.  */
   rest = loop_preheader_edge (new_loop)->src;
   precond_edge = single_pred_edge (rest);
-  loop_split_edge_with (loop_latch_edge (loop), NULL);
+  split_edge (loop_latch_edge (loop));
   exit_bb = single_pred (loop->latch);
 
   new_exit = make_edge (exit_bb, rest, EDGE_FALSE_VALUE | irr);

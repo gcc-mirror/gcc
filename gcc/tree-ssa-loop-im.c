@@ -690,25 +690,6 @@ determine_invariantness (void)
   fini_walk_dominator_tree (&walk_data);
 }
 
-/* Commits edge insertions and updates loop structures.  */
-
-void
-loop_commit_inserts (void)
-{
-  unsigned old_last_basic_block, i;
-  basic_block bb;
-
-  old_last_basic_block = last_basic_block;
-  bsi_commit_edge_inserts ();
-  for (i = old_last_basic_block; i < (unsigned) last_basic_block; i++)
-    {
-      bb = BASIC_BLOCK (i);
-      add_bb_to_loop (bb,
-		      find_common_loop (single_pred (bb)->loop_father,
-					single_succ (bb)->loop_father));
-    }
-}
-
 /* Hoist the statements in basic block BB out of the loops prescribed by
    data stored in LIM_DATA structures associated with each statement.  Callback
    for walk_dominator_tree.  */
@@ -778,7 +759,7 @@ move_computations (void)
   walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
   fini_walk_dominator_tree (&walk_data);
 
-  loop_commit_inserts ();
+  bsi_commit_edge_inserts ();
   if (need_ssa_update_p ())
     rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
 }
@@ -1419,7 +1400,7 @@ determine_lsm (struct loops *loops)
 	  loop = loop->outer;
 	  if (loop == loops->tree_root)
 	    {
-	      loop_commit_inserts ();
+	      bsi_commit_edge_inserts ();
 	      return;
 	    }
 	}

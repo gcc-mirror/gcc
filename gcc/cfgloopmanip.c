@@ -40,7 +40,6 @@ static void remove_bbs (basic_block *, int);
 static bool rpe_enum_p (basic_block, void *);
 static int find_path (edge, basic_block **);
 static bool alp_enum_p (basic_block, void *);
-static void add_loop (struct loops *, struct loop *);
 static void fix_loop_placements (struct loops *, struct loop *, bool *);
 static bool fix_bb_placement (struct loops *, basic_block);
 static void fix_bb_placements (struct loops *, basic_block, bool *);
@@ -58,18 +57,15 @@ rpe_enum_p (basic_block bb, void *data)
   return dominated_by_p (CDI_DOMINATORS, bb, data);
 }
 
-/* Remove basic blocks BBS from loop structure and dominance info,
-   and delete them afterwards.  */
+/* Remove basic blocks BBS.  NBBS is the number of the basic blocks.  */
+
 static void
 remove_bbs (basic_block *bbs, int nbbs)
 {
   int i;
 
   for (i = 0; i < nbbs; i++)
-    {
-      remove_bb_from_loops (bbs[i]);
-      delete_basic_block (bbs[i]);
-    }
+    delete_basic_block (bbs[i]);
 }
 
 /* Find path -- i.e. the basic blocks dominated by edge E and put them
@@ -247,9 +243,10 @@ remove_path (struct loops *loops, edge e)
 {
   edge ae;
   basic_block *rem_bbs, *bord_bbs, *dom_bbs, from, bb;
-  int i, nrem, n_bord_bbs, n_dom_bbs;
+  int i, nrem, n_bord_bbs, n_dom_bbs, nreml;
   sbitmap seen;
   bool deleted, irred_invalidated = false;
+  struct loop **deleted_loop;
 
   if (!loop_delete_branch_edge (e, 0))
     return false;
@@ -267,7 +264,7 @@ remove_path (struct loops *loops, edge e)
      fix -- when e->dest has exactly one predecessor, this corresponds
      to blocks dominated by e->dest, if not, split the edge.  */
   if (!single_pred_p (e->dest))
-    e = single_pred_edge (loop_split_edge_with (e, NULL_RTX));
+    e = single_pred_edge (split_edge (e));
 
   /* It may happen that by removing path we remove one or more loops
      we belong to.  In this case first unloop the loops, then proceed
@@ -311,12 +308,18 @@ remove_path (struct loops *loops, edge e)
   dom_bbs = XCNEWVEC (basic_block, n_basic_blocks);
 
   /* Cancel loops contained in the path.  */
+  deleted_loop = XNEWVEC (struct loop *, nrem);
+  nreml = 0;
   for (i = 0; i < nrem; i++)
     if (rem_bbs[i]->loop_father->header == rem_bbs[i])
-      cancel_loop_tree (loops, rem_bbs[i]->loop_father);
+      deleted_loop[nreml++] = rem_bbs[i]->loop_father;
 
   remove_bbs (rem_bbs, nrem);
   free (rem_bbs);
+
+  for (i = 0; i < nreml; i++)
+    cancel_loop_tree (loops, deleted_loop[i]);
+  free (deleted_loop);
 
   /* Find blocks whose dominators may be affected.  */
   n_dom_bbs = 0;
@@ -364,15 +367,18 @@ alp_enum_p (basic_block bb, void *alp_header)
 }
 
 /* Given LOOP structure with filled header and latch, find the body of the
-   corresponding loop and add it to LOOPS tree.  */
+   corresponding loop and add it to LOOPS tree.  Insert the LOOP as a son of
+   outer.  */
+
 static void
-add_loop (struct loops *loops, struct loop *loop)
+add_loop (struct loops *loops, struct loop *loop, struct loop *outer)
 {
   basic_block *bbs;
   int i, n;
 
   /* Add it to loop structure.  */
   place_new_loop (loops, loop);
+  flow_loop_tree_node_add (outer, loop);
   loop->level = 1;
 
   /* Find its nodes.  */
@@ -381,7 +387,11 @@ add_loop (struct loops *loops, struct loop *loop)
 			  bbs, n_basic_blocks, loop->header);
 
   for (i = 0; i < n; i++)
-    add_bb_to_loop (bbs[i], loop);
+    {
+      remove_bb_from_loops (bbs[i]);
+      add_bb_to_loop (bbs[i], loop);
+    }
+  remove_bb_from_loops (loop->header);
   add_bb_to_loop (loop->header, loop);
 
   free (bbs);
@@ -453,10 +463,11 @@ loopify (struct loops *loops, edge latch_edge, edge header_edge,
   set_immediate_dominator (CDI_DOMINATORS, succ_bb, switch_bb);
 
   /* Compute new loop.  */
-  add_loop (loops, loop);
-  flow_loop_tree_node_add (outer, loop);
+  add_loop (loops, loop, outer);
 
   /* Add switch_bb to appropriate loop.  */
+  if (switch_bb->loop_father)
+    remove_bb_from_loops (switch_bb);
   add_bb_to_loop (switch_bb, outer);
 
   /* Fix frequencies.  */
@@ -1111,21 +1122,6 @@ mfb_keep_just (edge e)
   return e != mfb_kj_edge;
 }
 
-/* A callback for make_forwarder block, to update data structures for a basic
-   block JUMP created by redirecting an edge (only the latch edge is being
-   redirected).  */
-
-static void
-mfb_update_loops (basic_block jump)
-{
-  struct loop *loop = single_succ (jump)->loop_father;
-
-  if (dom_computed[CDI_DOMINATORS])
-    set_immediate_dominator (CDI_DOMINATORS, jump, single_pred (jump));
-  add_bb_to_loop (jump, loop);
-  loop->latch = jump;
-}
-
 /* Creates a pre-header for a LOOP.  Returns newly created block.  Unless
    CP_SIMPLE_PREHEADERS is set in FLAGS, we only force LOOP to have single
    entry; otherwise we also force preheader block to have only one successor.
@@ -1136,14 +1132,11 @@ create_preheader (struct loop *loop, int flags)
 {
   edge e, fallthru;
   basic_block dummy;
-  struct loop *cloop, *ploop;
   int nentry = 0;
   bool irred = false;
   bool latch_edge_was_fallthru;
   edge one_succ_pred = 0;
   edge_iterator ei;
-
-  cloop = loop->outer;
 
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     {
@@ -1168,16 +1161,9 @@ create_preheader (struct loop *loop, int flags)
 
   mfb_kj_edge = loop_latch_edge (loop);
   latch_edge_was_fallthru = (mfb_kj_edge->flags & EDGE_FALLTHRU) != 0;
-  fallthru = make_forwarder_block (loop->header, mfb_keep_just,
-				   mfb_update_loops);
+  fallthru = make_forwarder_block (loop->header, mfb_keep_just, NULL);
   dummy = fallthru->src;
   loop->header = fallthru->dest;
-
-  /* The header could be a latch of some superloop(s); due to design of
-     split_block, it would now move to fallthru->dest.  */
-  for (ploop = loop; ploop; ploop = ploop->outer)
-    if (ploop->latch == dummy)
-      ploop->latch = fallthru->dest;
 
   /* Try to be clever in placing the newly created preheader.  The idea is to
      avoid breaking any "fallthruness" relationship between blocks.
@@ -1196,9 +1182,6 @@ create_preheader (struct loop *loop, int flags)
 
       move_block_after (dummy, e->src);
     }
-
-  loop->header->loop_father = loop;
-  add_bb_to_loop (dummy, cloop);
 
   if (irred)
     {
@@ -1241,39 +1224,9 @@ force_single_succ_latches (struct loops *loops)
 
       e = find_edge (loop->latch, loop->header);
 
-      loop_split_edge_with (e, NULL_RTX);
+      split_edge (e);
     }
   loops->state |= LOOPS_HAVE_SIMPLE_LATCHES;
-}
-
-/* A quite stupid function to put INSNS on edge E. They are supposed to form
-   just one basic block.  Jumps in INSNS are not handled, so cfg do not have to
-   be ok after this function.  The created block is placed on correct place
-   in LOOPS structure and its dominator is set.  */
-basic_block
-loop_split_edge_with (edge e, rtx insns)
-{
-  basic_block src, dest, new_bb;
-  struct loop *loop_c;
-
-  src = e->src;
-  dest = e->dest;
-
-  loop_c = find_common_loop (src->loop_father, dest->loop_father);
-
-  /* Create basic block for it.  */
-
-  new_bb = split_edge (e);
-  add_bb_to_loop (new_bb, loop_c);
-  new_bb->flags |= (insns ? BB_SUPERBLOCK : 0);
-
-  if (insns)
-    emit_insn_after (insns, BB_END (new_bb));
-
-  if (dest->loop_father->latch == src)
-    dest->loop_father->latch = new_bb;
-
-  return new_bb;
 }
 
 /* This function is called from loop_version.  It splits the entry edge
@@ -1424,8 +1377,8 @@ loop_version (struct loops *loops, struct loop * loop,
   /* At this point condition_bb is loop predheader with two successors,
      first_head and second_head.   Make sure that loop predheader has only
      one successor.  */
-  loop_split_edge_with (loop_preheader_edge (loop), NULL);
-  loop_split_edge_with (loop_preheader_edge (nloop), NULL);
+  split_edge (loop_preheader_edge (loop));
+  split_edge (loop_preheader_edge (nloop));
 
   return nloop;
 }

@@ -486,6 +486,7 @@ extern void update_bb_for_insn (basic_block);
 extern void free_basic_block_vars (void);
 
 extern void insert_insn_on_edge (rtx, edge);
+basic_block split_edge_and_insert (edge, rtx);
 
 extern void commit_edge_insertions (void);
 extern void commit_edge_insertions_watch_calls (void);

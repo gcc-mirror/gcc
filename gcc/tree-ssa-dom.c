@@ -240,7 +240,6 @@ tree_ssa_dominator_optimize (void)
 {
   struct dom_walk_data walk_data;
   unsigned int i;
-  struct loops loops_info;
 
   memset (&opt_stats, 0, sizeof (opt_stats));
 
@@ -276,9 +275,12 @@ tree_ssa_dominator_optimize (void)
   /* We need to know which edges exit loops so that we can
      aggressively thread through loop headers to an exit
      edge.  */
-  flow_loops_find (&loops_info);
-  mark_loop_exit_edges (&loops_info);
-  flow_loops_free (&loops_info);
+  loop_optimizer_init (0);
+  if (current_loops)
+    {
+      mark_loop_exit_edges (current_loops);
+      loop_optimizer_finalize ();
+    }
 
   /* Clean up the CFG so that any forwarder blocks created by loop
      canonicalization are removed.  */

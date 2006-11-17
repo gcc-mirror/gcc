@@ -3845,7 +3845,6 @@ vect_transform_loop (loop_vec_info loop_vinfo,
       merge_bb = loop->single_exit->dest;
       gcc_assert (EDGE_COUNT (merge_bb->preds) == 2);
       new_exit_bb = split_edge (loop->single_exit);
-      add_bb_to_loop (new_exit_bb, loop->outer);
       new_exit_e = loop->single_exit;
       e = EDGE_SUCC (new_exit_bb, 0);
 
@@ -3897,8 +3896,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 
   gcc_assert (EDGE_COUNT (loop->header->preds) == 2);
 
-  loop_split_edge_with (loop_preheader_edge (loop), NULL);
-
+  split_edge (loop_preheader_edge (loop));
 
   /* FORNOW: the vectorizer supports only loops which body consist
      of one basic block (header + empty latch). When the vectorizer will 

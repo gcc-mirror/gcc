@@ -187,24 +187,9 @@ struct loops
   /* Pointer to root of loop hierarchy tree.  */
   struct loop *tree_root;
 
-  /* Information derived from the CFG.  */
-  struct cfg
-  {
-    /* The ordering of the basic blocks in a depth first search.  */
-    int *dfs_order;
-
-    /* The reverse completion ordering of the basic blocks found in a
-       depth first search.  */
-    int *rc_order;
-  } cfg;
-
   /* Headers shared by multiple loops that should be merged.  */
   sbitmap shared_headers;
 };
-
-/* The loop tree currently optimized.  */
-
-extern struct loops *current_loops;
 
 /* Loop recognition.  */
 extern int flow_loops_find (struct loops *);
@@ -248,7 +233,6 @@ extern void remove_bb_from_loops (basic_block);
 
 extern void cancel_loop_tree (struct loops *, struct loop *);
 
-extern basic_block loop_split_edge_with (edge, rtx);
 extern int fix_loop_placement (struct loop *);
 
 enum
@@ -410,8 +394,8 @@ extern unsigned global_cost_for_size (unsigned, unsigned, unsigned);
 extern void init_set_costs (void);
 
 /* Loop optimizer initialization.  */
-extern struct loops *loop_optimizer_init (unsigned);
-extern void loop_optimizer_finalize (struct loops *);
+extern void loop_optimizer_init (unsigned);
+extern void loop_optimizer_finalize (void);
 
 /* Optimization passes.  */
 extern void unswitch_loops (struct loops *);
@@ -419,8 +403,8 @@ extern void unswitch_loops (struct loops *);
 enum
 {
   UAP_PEEL = 1,		/* Enables loop peeling.  */
-  UAP_UNROLL = 2,	/* Enables peeling of loops if it seems profitable.  */
-  UAP_UNROLL_ALL = 4	/* Enables peeling of all loops.  */
+  UAP_UNROLL = 2,	/* Enables unrolling of loops if it seems profitable.  */
+  UAP_UNROLL_ALL = 4	/* Enables unrolling of all loops.  */
 };
 
 extern void unroll_and_peel_loops (struct loops *, int);

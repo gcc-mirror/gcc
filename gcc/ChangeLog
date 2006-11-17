@@ -1,5 +1,88 @@
 2006-11-17  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* tree-vrp.c (execute_vrp): Do not update current_loops.
+	* loop-unswitch.c (unswitch_loop): Do not use loop_split_edge_with.
+	* doc/loop.texi: Remove documentation for cancelled functions.
+	* tree-ssa-loop-im.c (loop_commit_inserts): Removed.
+	(move_computations, determine_lsm): Use bsi_commit_edge_inserts
+	instead.
+	* cfgloopmanip.c (remove_bbs): Do not update loops explicitly.
+	(remove_path): Ensure that in delete_basic_blocks, the loops
+	are still allocated.
+	(add_loop): Work on valid loop structures.
+	(loopify): Modify call of add_loop.
+	(mfb_update_loops): Removed.
+	(create_preheader): Do not update loops explicitly.
+	(force_single_succ_latches, loop_version): Do not use
+	loop_split_edge_with.
+	(loop_split_edge_with): Removed.
+	* tree-ssa-loop-manip.c (create_iv, determine_exit_conditions):
+	Do not use bsi_insert_on_edge_immediate_loop.
+	(split_loop_exit_edge, tree_unroll_loop): Do not use
+	loop_split_edge_with.
+	(bsi_insert_on_edge_immediate_loop): Removed.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Use current_loops.  Do not
+	use loop_split_edge_with.
+	* cfghooks.c: Include cfgloop.h.
+	(verify_flow_info): Verify that loop_father is filled iff current_loops
+	are available.
+	(redirect_edge_and_branch_force, split_block, delete_basic_block,
+	split_edge, merge_blocks, make_forwarder_block, duplicate_block):
+	Update cfg.
+	* cfgloopanal.c (mark_irreducible_loops): Work if the function contains
+	no loops.
+	* modulo-sched.c (generate_prolog_epilog, canon_loop): Do not use
+	loop_split_edge_with.
+	(sms_schedule): Use current_loops.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Use current_loops.
+	* loop-init.c (loop_optimizer_init, loop_optimizer_finalize): Set
+	current_loops.
+	(rtl_loop_init, rtl_loop_done): Do not set current_loops.
+	* tree-ssa-sink.c (execute_sink_code): Use current_loops.
+	* ifcvt.c (if_convert): Ditto.
+	* predict.c (predict_loops): Do not clear current_loops.
+	(tree_estimate_probability): Use current_loops.
+	(propagate_freq): Receive head of the region to propagate instead of
+	loop.
+	(estimate_loops_at_level): Do not use shared to_visit bitmap.
+	(estimate_loops): New function.  Handle case current_loops == NULL.
+	(estimate_bb_frequencies): Do not allocate tovisit.  Use
+	estimate_loops.
+	* tree-ssa-loop.c (current_loops): Removed.
+	(tree_loop_optimizer_init): Do not return loops.
+	(tree_ssa_loop_init, tree_ssa_loop_done): Do not set current_loops.
+	* tree-vectorizer.c (slpeel_update_phi_nodes_for_guard1,
+	slpeel_update_phi_nodes_for_guard2, slpeel_tree_peel_loop_to_edge):
+	Do not update loops explicitly.
+	* function.h (struct function): Add x_current_loops field.
+	(current_loops): New macro.
+	* tree-if-conv.c (combine_blocks): Do not update loops explicitly.
+	* loop-unroll.c (split_edge_and_insert): New function.
+	(unroll_loop_runtime_iterations, analyze_insns_in_loop): Do not
+	use loop_split_edge_with.
+	* loop-doloop.c (add_test, doloop_modify): Ditto.
+	* tree-ssa-pre.c (init_pre, fini_pre): Do not set current_loops.
+	* cfglayout.c (copy_bbs): Do not update loops explicitly.
+	* lambda-code.c (perfect_nestify): Do not use loop_split_edge_with.
+	* tree-vect-transform.c (vect_transform_loop): Do not update loops
+	explicitly.
+	* cfgloop.c (flow_loops_cfg_dump): Do not dump dfs_order and rc_order.
+	(flow_loops_free): Do not free dfs_order and rc_order.
+	(flow_loops_find): Do not set dfs_order and rc_order in loops
+	structure.  Do not call loops and flow info verification.
+	(add_bb_to_loop, remove_bb_from_loops): Check whether the block
+	already belongs to some loop.
+	* cfgloop.h (struct loops): Remove struct cfg.
+	(current_loops, loop_split_edge_with): Declaration removed.
+	(loop_optimizer_init, loop_optimizer_finalize): Declaration changed.
+	* tree-flow.h (loop_commit_inserts, bsi_insert_on_edge_immediate_loop):
+	Declaration removed.
+	* Makefile.in (cfghooks.o): Add CFGLOOP_H dependency.
+	* basic-block.h (split_edge_and_insert): Declare.
+	* tree-cfg.c (remove_bb): Do not update loops explicitly.
+
+2006-11-17  Zdenek Dvorak <dvorakz@suse.cz>
+
 	PR tree-optimization/29801
 	* tree-ssa-ccp.c (get_symbol_constant_value): New function.
 	(get_default_value): Use get_symbol_constant_value.

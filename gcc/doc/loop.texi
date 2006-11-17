@@ -195,19 +195,11 @@ The loops tree can be manipulated using the following functions:
 @item @code{remove_bb_from_loops}: Removes a basic block from loops.
 @end itemize
 
-The specialized versions of several low-level CFG functions that also
-update loop structures are provided:
+Most low-level CFG functions update loops automatically.  The following
+functions handle some more complicated cases of CFG manipulations:
 
 @itemize
-@item @code{loop_split_edge_with}: Splits an edge, and places a
-specified RTL code on it.  On GIMPLE, the function can still be used,
-but the code must be NULL.
-@item @code{bsi_insert_on_edge_immediate_loop}: Inserts code on edge,
-splitting it if necessary.  Only works on GIMPLE.
 @item @code{remove_path}: Removes an edge and all blocks it dominates.
-@item @code{loop_commit_inserts}: Commits insertions scheduled on edges,
-and sets loops for the new blocks.  This function can only be used on
-GIMPLE.
 @item @code{split_loop_exit_edge}: Splits exit edge of the loop,
 ensuring that PHI node arguments remain in the loop (this ensures that
 loop-closed SSA form is preserved).  Only useful on GIMPLE.

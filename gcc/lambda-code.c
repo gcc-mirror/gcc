@@ -2464,7 +2464,7 @@ perfect_nestify (struct loops *loops,
 
   /* Create the new loop.  */
   olddest = loop->single_exit->dest;
-  preheaderbb = loop_split_edge_with (loop->single_exit, NULL);
+  preheaderbb = split_edge (loop->single_exit);
   headerbb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   
   /* Push the exit phi nodes that we are moving.  */

@@ -4065,7 +4065,7 @@ init_pre (bool do_fre)
 
   vn_init ();
   if (!do_fre)
-    current_loops = loop_optimizer_init (LOOPS_NORMAL);
+    loop_optimizer_init (LOOPS_NORMAL);
 
   connect_infinite_loops_to_exit ();
   memset (&pre_stats, 0, sizeof (pre_stats));
@@ -4169,10 +4169,7 @@ fini_pre (bool do_fre)
 	SSA_NAME_VALUE (name) = NULL;
     }
   if (!do_fre && current_loops)
-    {
-      loop_optimizer_finalize (current_loops);
-      current_loops = NULL;
-    }
+    loop_optimizer_finalize ();
 }
 
 /* Main entry point to the SSA-PRE pass.  DO_FRE is true if the caller

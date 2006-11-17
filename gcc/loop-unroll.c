@@ -899,6 +899,18 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
 	     loop->lpt_decision.times);
 }
 
+/* Splits edge E and inserts INSNS on it.  */
+
+basic_block
+split_edge_and_insert (edge e, rtx insns)
+{
+  basic_block bb = split_edge (e); 
+  gcc_assert (insns != NULL_RTX);
+  emit_insn_after (insns, BB_END (bb));
+  bb->flags |= BB_SUPERBLOCK;
+  return bb;
+}
+
 /* Unroll LOOP for that we are able to count number of iterations in runtime
    LOOP->LPT_DECISION.TIMES + 1 times.  The transformation does this (with some
    extra care for case n < 0):
@@ -1009,7 +1021,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   end_sequence ();
 
   /* Precondition the loop.  */
-  loop_split_edge_with (loop_preheader_edge (loop), init_code);
+  split_edge_and_insert (loop_preheader_edge (loop), init_code);
 
   remove_edges = XCNEWVEC (edge, max_unroll + n_peel + 1);
   n_remove_edges = 0;
@@ -1033,8 +1045,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   gcc_assert (ok);
 
   /* Record the place where switch will be built for preconditioning.  */
-  swtch = loop_split_edge_with (loop_preheader_edge (loop),
-				NULL_RTX);
+  swtch = split_edge (loop_preheader_edge (loop));
 
   for (i = 0; i < n_peel; i++)
     {
@@ -1053,12 +1064,12 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       j = n_peel - i - (extra_zero_check ? 0 : 1);
       p = REG_BR_PROB_BASE / (i + 2);
 
-      preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
+      preheader = split_edge (loop_preheader_edge (loop));
       branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
 					  block_label (preheader), p,
 					  NULL_RTX);
 
-      swtch = loop_split_edge_with (single_pred_edge (swtch), branch_code);
+      swtch = split_edge_and_insert (single_pred_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
       single_pred_edge (swtch)->probability = REG_BR_PROB_BASE - p;
       e = make_edge (swtch, preheader,
@@ -1071,12 +1082,12 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       /* Add branch for zero iterations.  */
       p = REG_BR_PROB_BASE / (max_unroll + 1);
       swtch = ezc_swtch;
-      preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
+      preheader = split_edge (loop_preheader_edge (loop));
       branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
 					  block_label (preheader), p,
 					  NULL_RTX);
 
-      swtch = loop_split_edge_with (single_succ_edge (swtch), branch_code);
+      swtch = split_edge_and_insert (single_succ_edge (swtch), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
       single_succ_edge (swtch)->probability = REG_BR_PROB_BASE - p;
       e = make_edge (swtch, preheader,
@@ -1717,18 +1728,12 @@ analyze_insns_in_loop (struct loop *loop)
                                             si_info_hash, si_info_eq, free);
   
   /* Record the loop exit bb and loop preheader before the unrolling.  */
-  if (!loop_preheader_edge (loop)->src)
-    {
-      loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
-      opt_info->loop_preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
-    }
-  else
-    opt_info->loop_preheader = loop_preheader_edge (loop)->src;
+  opt_info->loop_preheader = loop_preheader_edge (loop)->src;
   
   if (num_edges == 1
       && !(edges[0]->flags & EDGE_COMPLEX))
     {
-      opt_info->loop_exit = loop_split_edge_with (edges[0], NULL_RTX);
+      opt_info->loop_exit = split_edge (edges[0]);
       can_apply = true;
     }
   

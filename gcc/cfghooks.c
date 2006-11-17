@@ -29,6 +29,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-flow.h"
 #include "timevar.h"
 #include "toplev.h"
+#include "cfgloop.h"
 
 /* A pointer to one of the hooks containers.  */
 static struct cfg_hooks *cfg_hooks;
@@ -114,6 +115,18 @@ verify_flow_info (void)
       int n_fallthru = 0;
       edge e;
       edge_iterator ei;
+
+      if (bb->loop_father != NULL && current_loops == NULL)
+	{
+	  error ("verify_flow_info: Block %i has loop_father, but there are no loops",
+		 bb->index);
+	  err = 1;
+	}
+      if (bb->loop_father == NULL && current_loops != NULL)
+	{
+	  error ("verify_flow_info: Block %i lacks loop_father", bb->index);
+	  err = 1;
+	}
 
       if (bb->count < 0)
 	{
@@ -308,12 +321,19 @@ basic_block
 redirect_edge_and_branch_force (edge e, basic_block dest)
 {
   basic_block ret;
+  struct loop *loop;
 
   if (!cfg_hooks->redirect_edge_and_branch_force)
     internal_error ("%s does not support redirect_edge_and_branch_force",
 		    cfg_hooks->name);
 
   ret = cfg_hooks->redirect_edge_and_branch_force (e, dest);
+  if (current_loops != NULL && ret != NULL)
+    {
+      loop = find_common_loop (single_pred (ret)->loop_father,
+			       single_succ (ret)->loop_father);
+      add_bb_to_loop (ret, loop);
+    }
 
   return ret;
 }
@@ -343,6 +363,9 @@ split_block (basic_block bb, void *i)
       redirect_immediate_dominators (CDI_DOMINATORS, bb, new_bb);
       set_immediate_dominator (CDI_DOMINATORS, new_bb, bb);
     }
+
+  if (current_loops != NULL)
+    add_bb_to_loop (new_bb, bb->loop_father);
 
   return make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
 }
@@ -381,6 +404,22 @@ delete_basic_block (basic_block bb)
 
   cfg_hooks->delete_basic_block (bb);
 
+  if (current_loops != NULL)
+    {
+      struct loop *loop = bb->loop_father;
+
+      /* If we remove the header or the latch of a loop, mark the loop for
+	 removal by setting its header and latch to NULL.  */
+      if (loop->latch == bb
+	  || loop->header == bb)
+	{
+	  loop->header = NULL;
+	  loop->latch = NULL;
+	}
+
+      remove_bb_from_loops (bb);
+    }
+
   /* Remove the edges into and out of this block.  Note that there may
      indeed be edges in, if we are removing an unreachable loop.  */
   while (EDGE_COUNT (bb->preds) != 0)
@@ -407,6 +446,8 @@ split_edge (edge e)
   int freq = EDGE_FREQUENCY (e);
   edge f;
   bool irr = (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
+  struct loop *loop;
+  basic_block src = e->src, dest = e->dest;
 
   if (!cfg_hooks->split_edge)
     internal_error ("%s does not support split_edge", cfg_hooks->name);
@@ -455,7 +496,16 @@ split_edge (edge e)
 	  if (!f)
 	    set_immediate_dominator (CDI_DOMINATORS, single_succ (ret), ret);
 	}
-    };
+    }
+
+  if (current_loops != NULL)
+    {
+      loop = find_common_loop (src->loop_father, dest->loop_father);
+      add_bb_to_loop (ret, loop);
+
+      if (loop->latch == src)
+	loop->latch = ret;
+    }
 
   return ret;
 }
@@ -534,6 +584,9 @@ merge_blocks (basic_block a, basic_block b)
   if (!cfg_hooks->merge_blocks)
     internal_error ("%s does not support merge_blocks", cfg_hooks->name);
 
+  if (current_loops != NULL)
+    remove_bb_from_loops (b);
+
   cfg_hooks->merge_blocks (a, b);
 
   /* Normally there should only be one successor of A and that is B, but
@@ -575,6 +628,7 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
   edge e, fallthru;
   edge_iterator ei;
   basic_block dummy, jump;
+  struct loop *loop, *ploop, *cloop;
 
   if (!cfg_hooks->make_forwarder_block)
     internal_error ("%s does not support make_forwarder_block",
@@ -615,6 +669,33 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
       doms_to_fix[0] = dummy;
       doms_to_fix[1] = bb;
       iterate_fix_dominators (CDI_DOMINATORS, doms_to_fix, 2);
+    }
+
+  if (current_loops != NULL)
+    {
+      /* If we do not split a loop header, then both blocks belong to the
+	 same loop.  In case we split loop header and do not redirect the
+	 latch edge to DUMMY, then DUMMY belongs to the outer loop, and
+	 BB becomes the new header.  */
+      loop = dummy->loop_father;
+      if (loop->header == dummy
+	  && find_edge (loop->latch, dummy) == NULL)
+	{
+	  remove_bb_from_loops (dummy);
+	  loop->header = bb;
+
+	  cloop = loop;
+	  FOR_EACH_EDGE (e, ei, dummy->preds)
+	    {
+	      cloop = find_common_loop (cloop, e->src->loop_father);
+	    }
+	  add_bb_to_loop (dummy, cloop);
+	}
+
+      /* In case we split loop latch, update it.  */
+      for (ploop = loop; ploop; ploop = ploop->outer)
+	if (ploop->latch == dummy)
+	  ploop->latch = bb;
     }
 
   cfg_hooks->make_forwarder_block (fallthru);
@@ -767,6 +848,10 @@ duplicate_block (basic_block bb, edge e, basic_block after)
 
   set_bb_original (new_bb, bb);
   set_bb_copy (bb, new_bb);
+
+  /* Add the new block to the prescribed loop.  */
+  if (current_loops != NULL)
+    add_bb_to_loop (new_bb, bb->loop_father->copy);
 
   return new_bb;
 }

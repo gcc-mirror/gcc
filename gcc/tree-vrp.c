@@ -4772,7 +4772,7 @@ execute_vrp (void)
 {
   insert_range_assertions ();
 
-  current_loops = loop_optimizer_init (LOOPS_NORMAL);
+  loop_optimizer_init (LOOPS_NORMAL);
   if (current_loops)
     scev_initialize (current_loops);
 
@@ -4783,8 +4783,7 @@ execute_vrp (void)
   if (current_loops)
     {
       scev_finalize ();
-      loop_optimizer_finalize (current_loops);
-      current_loops = NULL;
+      loop_optimizer_finalize ();
     }
 
   /* ASSERT_EXPRs must be removed before finalizing jump threads
