@@ -293,6 +293,24 @@ ccp_decl_initial_min_invariant (tree t)
   return true;
 }
 
+/* If SYM is a constant variable with known value, return the value.
+   NULL_TREE is returned otherwise.  */
+
+static tree
+get_symbol_constant_value (tree sym)
+{
+  if (TREE_STATIC (sym)
+      && TREE_READONLY (sym)
+      && !MTAG_P (sym))
+    {
+      tree val = DECL_INITIAL (sym);
+      if (val
+	  && ccp_decl_initial_min_invariant (val))
+	return val;
+    }
+
+  return NULL_TREE;
+}
 
 /* Compute a default value for variable VAR and store it in the
    CONST_VAL array.  The following rules are used to get default
@@ -320,6 +338,7 @@ get_default_value (tree var)
 {
   tree sym = SSA_NAME_VAR (var);
   prop_value_t val = { UNINITIALIZED, NULL_TREE, NULL_TREE };
+  tree cst_val;
   
   if (!do_store_ccp && !is_gimple_reg (var))
     {
@@ -333,16 +352,12 @@ get_default_value (tree var)
       val.lattice_val = CONSTANT;
       val.value = SSA_NAME_VALUE (var);
     }
-  else if (TREE_STATIC (sym)
-	   && TREE_READONLY (sym)
-	   && !MTAG_P (sym)
-	   && DECL_INITIAL (sym)
-	   && ccp_decl_initial_min_invariant (DECL_INITIAL (sym)))
+  else if ((cst_val = get_symbol_constant_value (sym)) != NULL_TREE)
     {
       /* Globals and static variables declared 'const' take their
 	 initial value.  */
       val.lattice_val = CONSTANT;
-      val.value = DECL_INITIAL (sym);
+      val.value = cst_val;
       val.mem_ref = sym;
     }
   else
@@ -415,9 +430,10 @@ set_lattice_value (tree var, prop_value_t new_val)
      value.  If *OLD_VAL and NEW_VAL are the same, return false to
      inform the caller that this was a non-transition.  */
 
-  gcc_assert (old_val->lattice_val <= new_val.lattice_val
+  gcc_assert (old_val->lattice_val < new_val.lattice_val
               || (old_val->lattice_val == new_val.lattice_val
-		  && old_val->value == new_val.value
+		  && ((!old_val->value && !new_val.value)
+		      || operand_equal_p (old_val->value, new_val.value, 0))
 		  && old_val->mem_ref == new_val.mem_ref));
 
   if (old_val->lattice_val != new_val.lattice_val)
@@ -1222,7 +1238,15 @@ visit_assignment (tree stmt, tree *output_p)
       /* Set the value of every VDEF to VAL.  */
       changed = false;
       FOR_EACH_SSA_TREE_OPERAND (vdef, stmt, i, SSA_OP_VIRTUAL_DEFS)
-	changed |= set_lattice_value (vdef, val);
+	{
+	  /* See PR 29801.  We may have VDEFs for read-only variables
+	     (see the handling of unmodifiable variables in
+	     add_virtual_operand); do not attempt to change their value.  */
+	  if (get_symbol_constant_value (SSA_NAME_VAR (vdef)) != NULL_TREE)
+	    continue;
+
+	  changed |= set_lattice_value (vdef, val);
+	}
       
       /* Note that for propagation purposes, we are only interested in
 	 visiting statements that load the exact same memory reference
