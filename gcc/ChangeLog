@@ -1,3 +1,11 @@
+2006-11-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_function_sseregparm): Fix comment:
+	number of arguments passed to local functions in SSE registers is 3.
+
+	* doc/invoke.texi (Function Attributes) [sseregparm]: Correct
+	number of arguments passed in SSE registers to 3.
+
 2006-11-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/26306
