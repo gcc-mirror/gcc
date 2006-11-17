@@ -1369,6 +1369,101 @@ xtensa_emit_loop_end (rtx insn, rtx *operands)
 
 
 char *
+xtensa_emit_branch (bool inverted, bool immed, rtx *operands)
+{
+  static char result[64];
+  enum rtx_code code;
+  const char *op;
+
+  code = GET_CODE (operands[3]);
+  switch (code)
+    {
+    case EQ:	op = inverted ? "ne" : "eq"; break;
+    case NE:	op = inverted ? "eq" : "ne"; break;
+    case LT:	op = inverted ? "ge" : "lt"; break;
+    case GE:	op = inverted ? "lt" : "ge"; break;
+    case LTU:	op = inverted ? "geu" : "ltu"; break;
+    case GEU:	op = inverted ? "ltu" : "geu"; break;
+    default:	gcc_unreachable ();
+    }
+
+  if (immed)
+    {
+      if (INTVAL (operands[1]) == 0)
+	sprintf (result, "b%sz%s\t%%0, %%2", op,
+		 (TARGET_DENSITY && (code == EQ || code == NE)) ? ".n" : "");
+      else
+	sprintf (result, "b%si\t%%0, %%d1, %%2", op);
+    }
+  else
+    sprintf (result, "b%s\t%%0, %%1, %%2", op);
+
+  return result;
+}
+
+
+char *
+xtensa_emit_bit_branch (bool inverted, bool immed, rtx *operands)
+{
+  static char result[64];
+  const char *op;
+
+  switch (GET_CODE (operands[3]))
+    {
+    case EQ:	op = inverted ? "bs" : "bc"; break;
+    case NE:	op = inverted ? "bc" : "bs"; break;
+    default:	gcc_unreachable ();
+    }
+
+  if (immed)
+    {
+      unsigned bitnum = INTVAL (operands[1]) & 0x1f; 
+      operands[1] = GEN_INT (bitnum); 
+      sprintf (result, "b%si\t%%0, %%d1, %%2", op);
+    }
+  else
+    sprintf (result, "b%s\t%%0, %%1, %%2", op);
+
+  return result;
+}
+
+
+char *
+xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
+{
+  static char result[64];
+  enum rtx_code code;
+  const char *op;
+
+  code = GET_CODE (operands[4]);
+  if (isbool)
+    {
+      switch (code)
+	{
+	case EQ:	op = inverted ? "t" : "f"; break;
+	case NE:	op = inverted ? "f" : "t"; break;
+	default:	gcc_unreachable ();
+	}
+    }
+  else
+    {
+      switch (code)
+	{
+	case EQ:	op = inverted ? "nez" : "eqz"; break;
+	case NE:	op = inverted ? "eqz" : "nez"; break;
+	case LT:	op = inverted ? "gez" : "ltz"; break;
+	case GE:	op = inverted ? "ltz" : "gez"; break;
+	default:	gcc_unreachable ();
+	}
+    }
+
+  sprintf (result, "mov%s%s\t%%0, %%%d, %%1",
+	   op, isfp ? ".s" : "", inverted ? 3 : 2);
+  return result;
+}
+
+
+char *
 xtensa_emit_call (int callop, rtx *operands)
 {
   static char result[64];

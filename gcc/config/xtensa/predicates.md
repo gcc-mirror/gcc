@@ -1,5 +1,5 @@
 ;; Predicate definitions for Xtensa.
-;; Copyright (C) 2005 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -23,6 +23,12 @@
 	    (match_test "xtensa_simm8 (INTVAL (op))
 			 || xtensa_simm8x256 (INTVAL (op))"))
        (match_operand 0 "register_operand")))
+
+(define_predicate "addsubx_operand"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 2
+		    || INTVAL (op) == 4
+		    || INTVAL (op) == 8")))
 
 (define_predicate "arith_operand"
   (ior (and (match_code "const_int")
