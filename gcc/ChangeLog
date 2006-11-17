@@ -1,5 +1,14 @@
 2006-11-17  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR tree-optimization/29801
+	* tree-ssa-ccp.c (get_symbol_constant_value): New function.
+	(get_default_value): Use get_symbol_constant_value.
+	(set_lattice_value): ICE when the value of the constant is
+	changed.
+	(visit_assignment): Ignore VDEFs of read-only variables.
+
+2006-11-17  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* tree-vect-transform.c (vect_create_epilog_for_reduction): Fix
 	formating.
 	(vect_generate_tmps_on_preheader, vect_update_ivs_after_vectorizer,
