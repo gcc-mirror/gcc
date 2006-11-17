@@ -173,6 +173,9 @@ static FILE *module_fp;
 /* The name of the module we're reading (USE'ing) or writing.  */
 static char module_name[GFC_MAX_SYMBOL_LEN + 1];
 
+/* The way the module we're reading was specified.  */
+static bool specified_nonint, specified_int;
+
 static int module_line, module_column, only_flag;
 static enum
 { IO_INPUT, IO_OUTPUT }
@@ -483,11 +486,64 @@ free_rename (void)
 match
 gfc_match_use (void)
 {
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  char name[GFC_MAX_SYMBOL_LEN + 1], module_nature[GFC_MAX_SYMBOL_LEN + 1];
   gfc_use_rename *tail = NULL, *new;
   interface_type type;
   gfc_intrinsic_op operator;
   match m;
+
+  specified_int = false;
+  specified_nonint = false;
+
+  if (gfc_match (" , ") == MATCH_YES)
+    {
+      if ((m = gfc_match (" %n ::", module_nature)) == MATCH_YES)
+       {
+         if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: module "
+                             "nature in USE statement at %C") == FAILURE)
+           return MATCH_ERROR;
+
+         if (strcmp (module_nature, "intrinsic") == 0)
+           specified_int = true;
+         else
+           {
+             if (strcmp (module_nature, "non_intrinsic") == 0)
+               specified_nonint = true;
+             else
+               {
+                 gfc_error ("Module nature in USE statement at %C shall "
+                            "be either INTRINSIC or NON_INTRINSIC");
+                 return MATCH_ERROR;
+               }
+           }
+	}
+      else
+	{
+	  /* Help output a better error message than "Unclassifiable
+	     statement".  */
+	  gfc_match (" %n", module_nature);
+	  if (strcmp (module_nature, "intrinsic") == 0
+	      || strcmp (module_nature, "non_intrinsic") == 0)
+	    gfc_error ("\"::\" was expected after module nature at %C "
+		       "but was not found");
+	  return m;
+	}
+    }
+  else
+    {
+      m = gfc_match (" ::");
+      if (m == MATCH_YES &&
+	  gfc_notify_std (GFC_STD_F2003, "Fortran 2003: "
+			  "\"USE :: module\" at %C") == FAILURE)
+	return MATCH_ERROR;
+
+      if (m != MATCH_YES)
+       {
+         m = gfc_match ("% ");
+         if (m != MATCH_YES)
+           return m;
+       }
+    }
 
   m = gfc_match_name (module_name);
   if (m != MATCH_YES)
@@ -3801,7 +3857,33 @@ gfc_use_module (void)
   strcpy (filename, module_name);
   strcat (filename, MODULE_EXTENSION);
 
-  module_fp = gfc_open_included_file (filename, true);
+  /* First, try to find an non-intrinsic module, unless the USE statement
+     specified that the module is intrinsic.  */
+  module_fp = NULL;
+  if (!specified_int)
+    module_fp = gfc_open_included_file (filename, true, true);
+
+  /* Then, see if it's an intrinsic one, unless the USE statement
+     specified that the module is non-intrinsic.  */
+  if (module_fp == NULL && !specified_nonint)
+    {
+#if 0
+      if (strcmp (module_name, "iso_fortran_env") == 0
+         && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: "
+                            "ISO_FORTRAN_ENV intrinsic module at %C") != FAILURE)
+       {
+         use_iso_fortran_env_module ();
+         return;
+       }
+#endif
+
+      module_fp = gfc_open_intrinsic_module (filename);
+
+      if (module_fp == NULL && specified_int)
+       gfc_fatal_error ("Can't find an intrinsic module named '%s' at %C",
+                        module_name);
+    }
+
   if (module_fp == NULL)
     gfc_fatal_error ("Can't open module file '%s' for reading at %C: %s",
 		     filename, strerror (errno));

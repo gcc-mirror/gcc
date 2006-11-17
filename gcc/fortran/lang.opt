@@ -149,6 +149,10 @@ ffixed-form
 Fortran RejectNegative
 Assume that the source file is fixed form
 
+fintrinsic-modules-path
+Fortran RejectNegative Joined Separate
+Specify where to find the compiled intrinsic modules
+
 ffixed-line-length-none
 Fortran RejectNegative
 Allow arbitrary character line width in fixed mode
