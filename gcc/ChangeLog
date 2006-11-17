@@ -1,5 +1,9 @@
 2006-11-17  Bob Wilson  <bob.wilson@acm.org>
 
+	* config/xtensa/xtensa.md (tstsi): Delete
+
+2006-11-17  Bob Wilson  <bob.wilson@acm.org>
+
 	* config/xtensa/xtensa.md (entry): Do not emit .frame directive.
 
 2006-11-17  Bob Wilson  <bob.wilson@acm.org>
