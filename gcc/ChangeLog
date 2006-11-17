@@ -1,3 +1,8 @@
+2006-11-17  DJ Delorie  <dj@redhat.com>
+
+	* reload1.c (reloads_unique_chain): New.
+	(reloads_conflict): Call it.
+
 2006-11-17  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/predicates.md (addsubx_operand): New.
