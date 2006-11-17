@@ -1,3 +1,13 @@
+2006-11-16  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Don't do dwarf stuff on
+	pre-darwin9 system, unless the user asks for it directly.
+	(PREFERRED_DEBUGGING_TYPE): Likewise.
+	* config/i386/darwin.h (PREFERRED_DEBUGGING_TYPE): Likewise.
+	* config.gcc: Add suppport for darwin9.h.
+	* config/darwin9.h: Add.
+	* doc/install.texi (Specific): Clarify darwin documentation.
+	
 2006-11-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (CONSTANT_ALIGNMENT): Don't over-align strings when

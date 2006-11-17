@@ -3611,11 +3611,10 @@ binaries are available at
 @uref{http://developer.apple.com/darwin/projects/compiler/} (free
 registration required).
 
-This version of GCC requires at least cctools-590.7.
-
-The version of GCC shipped by Apple typically includes a number of
-extensions not available in a standard GCC release.  These extensions
-are generally for backwards compatibility and best avoided.
+This version of GCC requires at least cctools-590.36.  The
+cctools-590.36 package referenced from
+@uref{http://gcc.gnu.org/ml/gcc/2006-03/msg00507.html} will not work
+on systems older than 10.3.9 (aka darwin7.9.0).
 
 @html
 <hr />
