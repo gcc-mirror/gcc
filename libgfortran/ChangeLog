@@ -5,7 +5,7 @@
 
 2006-11-08  Steven G. Kargl <kargl@gcc.gnu.org>
 
-	* io/read. (max_value): Hide "int n" in an #ifdef.
+	* io/read.c (max_value): Hide "int n" in an #ifdef.
 
 2006-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -67,7 +67,7 @@
 	* Makefile.in: Regenerate.
 	* aclocal.m4: Regenerate.
 
-2006-10-28 Tobias Burnus <burnus@net-b.de>
+2006-10-28  Tobias Burnus <burnus@net-b.de>
 
 	PR fortran/29625
 	* io/transfer.c (formatted_transfer_scalar): Allow binary edit
