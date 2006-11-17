@@ -1221,17 +1221,6 @@
   DONE;
 })
 
-(define_expand "tstsi"
-  [(set (cc0)
-	(match_operand:SI 0 "register_operand" ""))]
-  ""
-{
-  branch_cmp[0] = operands[0];
-  branch_cmp[1] = const0_rtx;
-  branch_type = CMP_SI;
-  DONE;
-})
-
 (define_expand "cmpsf"
   [(set (cc0)
 	(compare:CC (match_operand:SF 0 "register_operand" "")
