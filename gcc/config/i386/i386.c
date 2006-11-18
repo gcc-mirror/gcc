@@ -14835,13 +14835,41 @@ enum ix86_builtins
   IX86_BUILTIN_MAX
 };
 
-#define def_builtin(MASK, NAME, TYPE, CODE)				\
-do {									\
-  if ((MASK) & target_flags						\
-      && (!((MASK) & MASK_64BIT) || TARGET_64BIT))			\
-    add_builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,	\
-			 NULL, NULL_TREE);			\
-} while (0)
+/* Table for the ix86 builtin decls.  */
+static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
+
+/* Add a ix86 target builtin function with CODE, NAME and TYPE.  Do so,
+ * if the target_flags include one of MASK.  Stores the function decl
+ * in the ix86_builtins array.
+ * Returns the function decl or NULL_TREE, if the builtin was not added.  */
+
+static inline tree
+def_builtin (int mask, const char *name, tree type, enum ix86_builtins code)
+{
+  tree decl = NULL_TREE;
+
+  if (mask & target_flags
+      && (!(mask & MASK_64BIT) || TARGET_64BIT))
+    {
+      decl = add_builtin_function (name, type, code, BUILT_IN_MD,
+				   NULL, NULL_TREE);
+      ix86_builtins[(int) code] = decl;
+    }
+
+  return decl;
+}
+
+/* Like def_builtin, but also marks the function decl "const".  */
+
+static inline tree
+def_builtin_const (int mask, const char *name, tree type,
+		   enum ix86_builtins code)
+{
+  tree decl = def_builtin (mask, name, type, code);
+  if (decl)
+    TREE_READONLY (decl) = 1;
+  return decl;
+}
 
 /* Bits for builtin_description.flag.  */
 
@@ -15708,15 +15736,15 @@ ix86_init_mmx_sse_builtins (void)
 
   def_builtin (MASK_SSE, "__builtin_ia32_ldmxcsr", void_ftype_unsigned, IX86_BUILTIN_LDMXCSR);
   def_builtin (MASK_SSE, "__builtin_ia32_stmxcsr", unsigned_ftype_void, IX86_BUILTIN_STMXCSR);
-  def_builtin (MASK_SSE, "__builtin_ia32_cvtpi2ps", v4sf_ftype_v4sf_v2si, IX86_BUILTIN_CVTPI2PS);
-  def_builtin (MASK_SSE, "__builtin_ia32_cvtps2pi", v2si_ftype_v4sf, IX86_BUILTIN_CVTPS2PI);
-  def_builtin (MASK_SSE, "__builtin_ia32_cvtsi2ss", v4sf_ftype_v4sf_int, IX86_BUILTIN_CVTSI2SS);
-  def_builtin (MASK_SSE | MASK_64BIT, "__builtin_ia32_cvtsi642ss", v4sf_ftype_v4sf_int64, IX86_BUILTIN_CVTSI642SS);
-  def_builtin (MASK_SSE, "__builtin_ia32_cvtss2si", int_ftype_v4sf, IX86_BUILTIN_CVTSS2SI);
-  def_builtin (MASK_SSE | MASK_64BIT, "__builtin_ia32_cvtss2si64", int64_ftype_v4sf, IX86_BUILTIN_CVTSS2SI64);
-  def_builtin (MASK_SSE, "__builtin_ia32_cvttps2pi", v2si_ftype_v4sf, IX86_BUILTIN_CVTTPS2PI);
-  def_builtin (MASK_SSE, "__builtin_ia32_cvttss2si", int_ftype_v4sf, IX86_BUILTIN_CVTTSS2SI);
-  def_builtin (MASK_SSE | MASK_64BIT, "__builtin_ia32_cvttss2si64", int64_ftype_v4sf, IX86_BUILTIN_CVTTSS2SI64);
+  def_builtin_const (MASK_SSE, "__builtin_ia32_cvtpi2ps", v4sf_ftype_v4sf_v2si, IX86_BUILTIN_CVTPI2PS);
+  def_builtin_const (MASK_SSE, "__builtin_ia32_cvtps2pi", v2si_ftype_v4sf, IX86_BUILTIN_CVTPS2PI);
+  def_builtin_const (MASK_SSE, "__builtin_ia32_cvtsi2ss", v4sf_ftype_v4sf_int, IX86_BUILTIN_CVTSI2SS);
+  def_builtin_const (MASK_SSE | MASK_64BIT, "__builtin_ia32_cvtsi642ss", v4sf_ftype_v4sf_int64, IX86_BUILTIN_CVTSI642SS);
+  def_builtin_const (MASK_SSE, "__builtin_ia32_cvtss2si", int_ftype_v4sf, IX86_BUILTIN_CVTSS2SI);
+  def_builtin_const (MASK_SSE | MASK_64BIT, "__builtin_ia32_cvtss2si64", int64_ftype_v4sf, IX86_BUILTIN_CVTSS2SI64);
+  def_builtin_const (MASK_SSE, "__builtin_ia32_cvttps2pi", v2si_ftype_v4sf, IX86_BUILTIN_CVTTPS2PI);
+  def_builtin_const (MASK_SSE, "__builtin_ia32_cvttss2si", int_ftype_v4sf, IX86_BUILTIN_CVTTSS2SI);
+  def_builtin_const (MASK_SSE | MASK_64BIT, "__builtin_ia32_cvttss2si64", int64_ftype_v4sf, IX86_BUILTIN_CVTTSS2SI64);
 
   def_builtin (MASK_SSE | MASK_3DNOW_A, "__builtin_ia32_maskmovq", void_ftype_v8qi_v8qi_pchar, IX86_BUILTIN_MASKMOVQ);
 
@@ -15741,8 +15769,8 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (MASK_SSE, "__builtin_ia32_rcpss", v4sf_ftype_v4sf, IX86_BUILTIN_RCPSS);
   def_builtin (MASK_SSE, "__builtin_ia32_rsqrtps", v4sf_ftype_v4sf, IX86_BUILTIN_RSQRTPS);
   def_builtin (MASK_SSE, "__builtin_ia32_rsqrtss", v4sf_ftype_v4sf, IX86_BUILTIN_RSQRTSS);
-  def_builtin (MASK_SSE, "__builtin_ia32_sqrtps", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTPS);
-  def_builtin (MASK_SSE, "__builtin_ia32_sqrtss", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTSS);
+  def_builtin_const (MASK_SSE, "__builtin_ia32_sqrtps", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTPS);
+  def_builtin_const (MASK_SSE, "__builtin_ia32_sqrtss", v4sf_ftype_v4sf, IX86_BUILTIN_SQRTSS);
 
   def_builtin (MASK_SSE, "__builtin_ia32_shufps", v4sf_ftype_v4sf_v4sf_int, IX86_BUILTIN_SHUFPS);
 
@@ -15796,35 +15824,35 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (MASK_SSE2, "__builtin_ia32_pshufhw", v8hi_ftype_v8hi_int, IX86_BUILTIN_PSHUFHW);
   def_builtin (MASK_SSE2, "__builtin_ia32_psadbw128", v2di_ftype_v16qi_v16qi, IX86_BUILTIN_PSADBW128);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_sqrtpd", v2df_ftype_v2df, IX86_BUILTIN_SQRTPD);
-  def_builtin (MASK_SSE2, "__builtin_ia32_sqrtsd", v2df_ftype_v2df, IX86_BUILTIN_SQRTSD);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_sqrtpd", v2df_ftype_v2df, IX86_BUILTIN_SQRTPD);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_sqrtsd", v2df_ftype_v2df, IX86_BUILTIN_SQRTSD);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_shufpd", v2df_ftype_v2df_v2df_int, IX86_BUILTIN_SHUFPD);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtdq2pd", v2df_ftype_v4si, IX86_BUILTIN_CVTDQ2PD);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtdq2ps", v4sf_ftype_v4si, IX86_BUILTIN_CVTDQ2PS);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtdq2pd", v2df_ftype_v4si, IX86_BUILTIN_CVTDQ2PD);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtdq2ps", v4sf_ftype_v4si, IX86_BUILTIN_CVTDQ2PS);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtpd2dq", v4si_ftype_v2df, IX86_BUILTIN_CVTPD2DQ);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtpd2pi", v2si_ftype_v2df, IX86_BUILTIN_CVTPD2PI);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtpd2ps", v4sf_ftype_v2df, IX86_BUILTIN_CVTPD2PS);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvttpd2dq", v4si_ftype_v2df, IX86_BUILTIN_CVTTPD2DQ);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvttpd2pi", v2si_ftype_v2df, IX86_BUILTIN_CVTTPD2PI);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtpd2dq", v4si_ftype_v2df, IX86_BUILTIN_CVTPD2DQ);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtpd2pi", v2si_ftype_v2df, IX86_BUILTIN_CVTPD2PI);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtpd2ps", v4sf_ftype_v2df, IX86_BUILTIN_CVTPD2PS);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvttpd2dq", v4si_ftype_v2df, IX86_BUILTIN_CVTTPD2DQ);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvttpd2pi", v2si_ftype_v2df, IX86_BUILTIN_CVTTPD2PI);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtpi2pd", v2df_ftype_v2si, IX86_BUILTIN_CVTPI2PD);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtpi2pd", v2df_ftype_v2si, IX86_BUILTIN_CVTPI2PD);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtsd2si", int_ftype_v2df, IX86_BUILTIN_CVTSD2SI);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvttsd2si", int_ftype_v2df, IX86_BUILTIN_CVTTSD2SI);
-  def_builtin (MASK_SSE2 | MASK_64BIT, "__builtin_ia32_cvtsd2si64", int64_ftype_v2df, IX86_BUILTIN_CVTSD2SI64);
-  def_builtin (MASK_SSE2 | MASK_64BIT, "__builtin_ia32_cvttsd2si64", int64_ftype_v2df, IX86_BUILTIN_CVTTSD2SI64);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtsd2si", int_ftype_v2df, IX86_BUILTIN_CVTSD2SI);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvttsd2si", int_ftype_v2df, IX86_BUILTIN_CVTTSD2SI);
+  def_builtin_const (MASK_SSE2 | MASK_64BIT, "__builtin_ia32_cvtsd2si64", int64_ftype_v2df, IX86_BUILTIN_CVTSD2SI64);
+  def_builtin_const (MASK_SSE2 | MASK_64BIT, "__builtin_ia32_cvttsd2si64", int64_ftype_v2df, IX86_BUILTIN_CVTTSD2SI64);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtps2dq", v4si_ftype_v4sf, IX86_BUILTIN_CVTPS2DQ);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtps2pd", v2df_ftype_v4sf, IX86_BUILTIN_CVTPS2PD);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvttps2dq", v4si_ftype_v4sf, IX86_BUILTIN_CVTTPS2DQ);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtps2dq", v4si_ftype_v4sf, IX86_BUILTIN_CVTPS2DQ);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtps2pd", v2df_ftype_v4sf, IX86_BUILTIN_CVTPS2PD);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvttps2dq", v4si_ftype_v4sf, IX86_BUILTIN_CVTTPS2DQ);
 
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtsi2sd", v2df_ftype_v2df_int, IX86_BUILTIN_CVTSI2SD);
-  def_builtin (MASK_SSE2 | MASK_64BIT, "__builtin_ia32_cvtsi642sd", v2df_ftype_v2df_int64, IX86_BUILTIN_CVTSI642SD);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtsd2ss", v4sf_ftype_v4sf_v2df, IX86_BUILTIN_CVTSD2SS);
-  def_builtin (MASK_SSE2, "__builtin_ia32_cvtss2sd", v2df_ftype_v2df_v4sf, IX86_BUILTIN_CVTSS2SD);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtsi2sd", v2df_ftype_v2df_int, IX86_BUILTIN_CVTSI2SD);
+  def_builtin_const (MASK_SSE2 | MASK_64BIT, "__builtin_ia32_cvtsi642sd", v2df_ftype_v2df_int64, IX86_BUILTIN_CVTSI642SD);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtsd2ss", v4sf_ftype_v4sf_v2df, IX86_BUILTIN_CVTSD2SS);
+  def_builtin_const (MASK_SSE2, "__builtin_ia32_cvtss2sd", v2df_ftype_v2df_v4sf, IX86_BUILTIN_CVTSS2SD);
 
   def_builtin (MASK_SSE2, "__builtin_ia32_clflush", void_ftype_pcvoid, IX86_BUILTIN_CLFLUSH);
   def_builtin (MASK_SSE2, "__builtin_ia32_lfence", void_ftype_void, IX86_BUILTIN_LFENCE);
