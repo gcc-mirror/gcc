@@ -13388,14 +13388,29 @@ fold_strip_sign_ops (tree exp)
       break;
       
     case CALL_EXPR:
-      /* Strip sign ops from the argument of "odd" math functions.  */
-      if (negate_mathfn_p (builtin_mathfn_code (exp)))
-        {
-	  arg0 = fold_strip_sign_ops (TREE_VALUE (TREE_OPERAND (exp, 1)));
-	  if (arg0)
-	    return build_function_call_expr (get_callee_fndecl (exp),
-					     build_tree_list (NULL_TREE, arg0));
+      {
+	const enum built_in_function fcode = builtin_mathfn_code (exp);
+	switch (fcode)
+	{
+	CASE_FLT_FN (BUILT_IN_COPYSIGN):
+	  /* Strip copysign function call, return the 1st argument. */
+	  arg0 = TREE_VALUE (TREE_OPERAND (exp, 1));
+	  arg1 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (exp, 1)));
+	  return omit_one_operand (TREE_TYPE (exp), arg0, arg1);
+
+	default:
+	  /* Strip sign ops from the argument of "odd" math functions.  */
+	  if (negate_mathfn_p (fcode))
+            {
+	      arg0 = fold_strip_sign_ops (TREE_VALUE (TREE_OPERAND (exp, 1)));
+	      if (arg0)
+		return build_function_call_expr (get_callee_fndecl (exp),
+						 build_tree_list (NULL_TREE,
+								  arg0));
+	    }
+	  break;
 	}
+      }
       break;
 
     default:

@@ -1,3 +1,7 @@
+2006-11-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fold-const.c (fold_strip_sign_ops): Handle copysign.
+
 2006-11-18  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386.c (ix86_builtins): New array for ix86
