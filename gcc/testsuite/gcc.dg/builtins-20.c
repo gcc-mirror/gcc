@@ -17,6 +17,8 @@ extern double sin (double);
 extern double tan (double);
 extern double fabs (double);
 extern double copysign (double, double);
+extern double fmin (double, double);
+extern double fmax (double, double);
 extern double hypot (double, double);
 extern double pure (double) __attribute__ ((__pure__));
 extern float cosf (float);
@@ -24,6 +26,8 @@ extern float sinf (float);
 extern float tanf (float);
 extern float fabsf (float);
 extern float copysignf (float, float);
+extern float fminf (float, float);
+extern float fmaxf (float, float);
 extern float hypotf (float, float);
 extern float puref (float) __attribute__ ((__pure__));
 extern long double cosl (long double);
@@ -31,6 +35,8 @@ extern long double sinl (long double);
 extern long double tanl (long double);
 extern long double fabsl (long double);
 extern long double copysignl (long double, long double);
+extern long double fminl (long double, long double);
+extern long double fmaxl (long double, long double);
 extern long double hypotl (long double, long double);
 extern long double purel (long double) __attribute__ ((__pure__));
 
@@ -155,6 +161,30 @@ void test2(double x, double y)
 
   if (hypot (tan(-x), tan(-fabs(y))) != hypot (tan(x), tan(y)))
     link_error ();
+
+  if (fmin (fmax(x,y),y) != y)
+    link_error ();
+
+  if (fmin (fmax(y,x),y) != y)
+    link_error ();
+
+  if (fmin (x,fmax(x,y)) != x)
+    link_error ();
+  
+  if (fmin (x,fmax(y,x)) != x)
+    link_error ();
+  
+  if (fmax (fmin(x,y),y) != y)
+    link_error ();
+
+  if (fmax (fmin(y,x),y) != y)
+    link_error ();
+
+  if (fmax (x,fmin(x,y)) != x)
+    link_error ();
+  
+  if (fmax (x,fmin(y,x)) != x)
+    link_error ();
 }
 
 void test1f(float x)
@@ -277,6 +307,30 @@ void test2f(float x, float y)
     link_error ();
 
   if (hypotf (tanf(-x), tanf(-fabsf(y))) != hypotf (tanf(x), tanf(y)))
+    link_error ();
+
+  if (fminf (fmaxf(x,y),y) != y)
+    link_error ();
+
+  if (fminf (fmaxf(y,x),y) != y)
+    link_error ();
+
+  if (fminf (x,fmaxf(x,y)) != x)
+    link_error ();
+  
+  if (fminf (x,fmaxf(y,x)) != x)
+    link_error ();
+  
+  if (fmaxf (fminf(x,y),y) != y)
+    link_error ();
+
+  if (fmaxf (fminf(y,x),y) != y)
+    link_error ();
+
+  if (fmaxf (x,fminf(x,y)) != x)
+    link_error ();
+  
+  if (fmaxf (x,fminf(y,x)) != x)
     link_error ();
 }
 
@@ -401,6 +455,30 @@ void test2l(long double x, long double y)
     link_error ();
 
   if (hypotl (tanl(-x), tanl(-fabsl(y))) != hypotl (tanl(x), tanl(y)))
+    link_error ();
+
+  if (fminl (fmaxl(x,y),y) != y)
+    link_error ();
+
+  if (fminl (fmaxl(y,x),y) != y)
+    link_error ();
+
+  if (fminl (x,fmaxl(x,y)) != x)
+    link_error ();
+  
+  if (fminl (x,fmaxl(y,x)) != x)
+    link_error ();
+  
+  if (fmaxl (fminl(x,y),y) != y)
+    link_error ();
+
+  if (fmaxl (fminl(y,x),y) != y)
+    link_error ();
+
+  if (fmaxl (x,fminl(x,y)) != x)
+    link_error ();
+  
+  if (fmaxl (x,fminl(y,x)) != x)
     link_error ();
 }
 

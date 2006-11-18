@@ -1,5 +1,9 @@
 2006-11-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (integer_valued_real_p): Handle fmin/fmax.
+	(fold_builtin_fmin_fmax): New.
+	(fold_builtin_1): Use it.
+
 	* fold-const.c (fold_strip_sign_ops): Handle copysign.
 
 2006-11-18  Richard Guenther  <rguenther@suse.de>

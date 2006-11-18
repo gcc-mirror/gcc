@@ -6708,6 +6708,11 @@ integer_valued_real_p (tree t)
 	CASE_FLT_FN (BUILT_IN_TRUNC):
 	  return true;
 
+	CASE_FLT_FN (BUILT_IN_FMIN):
+	CASE_FLT_FN (BUILT_IN_FMAX):
+	  return integer_valued_real_p (TREE_VALUE (TREE_OPERAND (t, 1)))
+	    && integer_valued_real_p (TREE_VALUE (TREE_CHAIN (TREE_OPERAND (t, 1))));
+
 	default:
 	  break;
 	}
@@ -8722,6 +8727,38 @@ fold_builtin_abs (tree arglist, tree type)
   return fold_build1 (ABS_EXPR, type, arg);
 }
 
+/* Fold a call to builtin fmin or fmax.  */
+
+static tree
+fold_builtin_fmin_fmax (tree arglist, tree type, bool max)
+{
+  if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+    {
+      tree arg0 = TREE_VALUE (arglist);
+      tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      /* Calculate the result when the argument is a constant.  */
+      tree res = do_mpfr_arg2 (arg0, arg1, type, (max ? mpfr_max : mpfr_min));
+
+      if (res)
+	return res;
+
+      /* Transform fmin/fmax(x,x) -> x.  */
+      if (operand_equal_p (arg0, arg1, OEP_PURE_SAME))
+	return omit_one_operand (type, arg0, arg1);
+      
+      /* Convert fmin/fmax to MIN_EXPR/MAX_EXPR.  C99 requires these
+	 functions to return the numeric arg if the other one is NaN.
+	 These tree codes don't honor that, so only transform if
+	 -ffinite-math-only is set.  C99 doesn't require -0.0 to be
+	 handled, so we don't have to worry about it either.  */
+      if (flag_finite_math_only)
+	return fold_build2 ((max ? MAX_EXPR : MIN_EXPR), type,
+			    fold_convert (type, arg0),
+			    fold_convert (type, arg1));
+    }
+  return NULL_TREE;
+}
+
 /* Fold a call to __builtin_isnan(), __builtin_isinf, __builtin_finite.
    EXP is the CALL_EXPR for the call.  */
 
@@ -9143,18 +9180,10 @@ fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
     break;
 
     CASE_FLT_FN (BUILT_IN_FMIN):
-      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
-	return do_mpfr_arg2 (TREE_VALUE (arglist),
-			     TREE_VALUE (TREE_CHAIN (arglist)),
-			     type, mpfr_min);
-    break;
+      return fold_builtin_fmin_fmax (arglist, type, /*max=*/false);
 
     CASE_FLT_FN (BUILT_IN_FMAX):
-      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
-	return do_mpfr_arg2 (TREE_VALUE (arglist),
-			     TREE_VALUE (TREE_CHAIN (arglist)),
-			     type, mpfr_max);
-    break;
+      return fold_builtin_fmin_fmax (arglist, type, /*max=*/true);
 
     CASE_FLT_FN (BUILT_IN_HYPOT):
       return fold_builtin_hypot (fndecl, arglist, type);

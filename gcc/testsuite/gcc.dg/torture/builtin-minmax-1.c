@@ -1,0 +1,100 @@
+/* Copyright (C) 2006  Free Software Foundation.
+
+   Verify that built-in math function folding of fmin/fmax is
+   correctly performed by the compiler.
+
+   Origin: Kaveh R. Ghazi,  November 13, 2006.  */
+
+/* { dg-do link } */
+/* { dg-options "-fno-math-errno" } */
+
+/* All references to link_error should go away at compile-time.  */
+extern void link_error(int);
+
+#define DECLARE(FUNC) \
+  extern float FUNC##f (float); \
+  extern double FUNC (double); \
+  extern long double FUNC##l (long double)
+#define DECLARE_L(FUNC) \
+  extern long FUNC##f (float); \
+  extern long FUNC (double); \
+  extern long FUNC##l (long double)
+#define DECLARE2(FUNC) \
+  extern float FUNC##f (float, float); \
+  extern double FUNC (double, double); \
+  extern long double FUNC##l (long double, long double)
+
+DECLARE2(fmin);
+DECLARE2(fmax);
+DECLARE_L(lround);
+DECLARE_L(lrint);
+DECLARE(sqrt);
+DECLARE(fabs);
+extern int pure(int) __attribute__ ((__pure__));
+
+/* Test that FUNC(x,x) == x.  We cast to (long) so "!=" folds.  */
+#define TEST_EQ(FUNC) do { \
+  if ((long)FUNC##f(xf,xf) != (long)xf) \
+    link_error(__LINE__); \
+  if ((long)FUNC(x,x) != (long)x) \
+    link_error(__LINE__); \
+  if ((long)FUNC##l(xl,xl) != (long)xl) \
+    link_error(__LINE__); \
+  } while (0)
+
+/* Test that FUNC(purefn,purefn) == purefn.  We cast to (long) so "!=" folds.  */
+#define TEST_EQ_PURE(FUNC) do { \
+  if ((long)FUNC##f(pure(i),pure(i)) != (long)FUNC##f(pure(i),pure(i))) \
+    link_error(__LINE__); \
+  if ((long)FUNC(pure(i),pure(i)) != (long)FUNC(pure(i),pure(i))) \
+    link_error(__LINE__); \
+  if ((long)FUNC##l(pure(i),pure(i)) != (long)FUNC##l(pure(i),pure(i))) \
+    link_error(__LINE__); \
+  } while (0)
+
+/* Test that lround(FUNC(int,int)) == lrint(FUNC(int,int)), i.e. both
+   lround() and lrint() should be folded away.  */
+#define TEST_NONNEG(FUNC) do { \
+  if (lroundf(FUNC##f(i,j)) != lrintf(FUNC##f(i,j))) \
+    link_error(__LINE__); \
+  if (lround(FUNC(i,j)) != lrint(FUNC(i,j))) \
+    link_error(__LINE__); \
+  if (lroundl(FUNC##l(i,j)) != lrintl(FUNC##l(i,j))) \
+    link_error(__LINE__); \
+  } while (0)
+
+/* Test that (long)fabs(FUNC(fabs(x),fabs(y))) ==
+   (long)FUNC(fabs(x),fabs(y)).  We cast to (long) so "!=" folds.  */
+#define TEST_INT(FUNC) do { \
+  if ((long)fabsf(FUNC##f(fabsf(xf),fabsf(yf))) != (long)FUNC##f(fabsf(xf),fabsf(yf))) \
+    link_error(__LINE__); \
+  if ((long)fabs(FUNC(fabs(x),fabs(y))) != (long)FUNC(fabs(x),fabs(y))) \
+    link_error(__LINE__); \
+  if ((long)fabsl(FUNC##l(fabsl(xl),fabsl(yl))) != (long)FUNC##l(fabsl(xl),fabsl(yl))) \
+    link_error(__LINE__); \
+  } while (0)
+
+void foo (float xf, double x, long double xl,
+	  float yf, double y, long double yl,
+	  int i, int j)
+{
+  TEST_EQ(fmin);
+  TEST_EQ(fmax);
+
+#ifdef __OPTIMIZE__
+  TEST_EQ_PURE(fmin);
+  TEST_EQ_PURE(fmax);
+#endif
+
+  TEST_INT(fmin);
+  TEST_INT(fmax);
+  
+  TEST_NONNEG(fmin);
+  TEST_NONNEG(fmax);
+}
+
+int main()
+{
+  foo (1,1,1,1,1,1,1,1);
+  return 0;
+}
