@@ -1,3 +1,9 @@
+2006-11-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/24285
+	* io.c (check_format): Allow dollars everywhere in format, and
+	issue a warning.
+
 2006-11-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.h (gfc_add_intrinsic_modules_path,

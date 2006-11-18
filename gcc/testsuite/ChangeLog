@@ -1,5 +1,9 @@
-2006-11-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2006-11-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR fortran/24285
+	* gfortran.dg/dollar_edit_descriptor-3.f: New test.
+
+2006-11-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	* gfortran.dg/use_1.f90: New test.
 	* gfortran.dg/use_1.f90: New test.
 	* gfortran.dg/use_1.f90: New test.
