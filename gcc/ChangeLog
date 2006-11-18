@@ -1,3 +1,11 @@
+2006-11-18  Richard Guenther  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_builtins): New array for ix86
+	builtin function decls.
+	(def_builtin): New function.
+	(def_builtin_const): Likewise.
+	(ix86_init_mmx_sse_builtins): Mark sqrt and cvt builtins const.
+
 2006-11-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* doc/invoke.texi (core2): Add item.
