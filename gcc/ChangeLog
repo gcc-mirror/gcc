@@ -1,3 +1,31 @@
+2006-11-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* doc/invoke.texi (core2): Add item.
+
+	* config/i386/i386.h (TARGET_CORE2, TARGET_CPU_DEFAULT_core2): New
+	macros.
+	(TARGET_CPU_CPP_BUILTINS): Add code for core2.
+	(TARGET_CPU_DEFAULT_generic): Change value.
+	(TARGET_CPU_DEFAULT_NAMES): Add core2.
+	(processor_type): Add new constant PROCESSOR_CORE2.
+
+	* config/i386/i386.md (cpu): Add core2.
+
+	* config/i386/i386.c (core2_cost): New initialized variable.
+	(m_CORE2): New macro.
+	(x86_use_leave, x86_push_memory, x86_movx, x86_unroll_strlen,
+	x86_deep_branch, x86_partial_reg_stall, x86_use_simode_fiop,
+	x86_use_cltd, x86_promote_QImode, x86_sub_esp_4, x86_sub_esp_8,
+	x86_add_esp_4, x86_add_esp_8, x86_integer_DFmode_moves,
+	x86_partial_reg_dependency, x86_memory_mismatch_stall,
+	x86_accumulate_outgoing_args, x86_prologue_using_move,
+	x86_epilogue_using_move, x86_arch_always_fancy_math_387,
+	x86_sse_partial_reg_dependency, x86_rep_movl_optimal,
+	x86_use_incdec, x86_four_jump_limit, x86_schedule,
+	x86_pad_returns): Add m_CORE2.
+	(override_options): Add entries for Core2.
+	(ix86_issue_rate): Add case for Core2.
+	
 2006-11-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* doc/invoke.texi: Fix mno-isel typo.
