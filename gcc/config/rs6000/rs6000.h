@@ -342,6 +342,9 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define TARGET_E500_SINGLE 0
 #define TARGET_E500_DOUBLE 0
 
+/* E500 processors only support plain "sync", not lwsync.  */
+#define TARGET_NO_LWSYNC TARGET_E500
+
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
