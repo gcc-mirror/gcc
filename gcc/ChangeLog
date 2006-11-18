@@ -1,5 +1,10 @@
 2006-11-18  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/rs6000/spe.md (movv4hi_internal): Add alternative for
+	easy vector constant loads.
+
+2006-11-18  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/rs6000/rs6000.h (TARGET_NO_LWSYNC): Define.
 	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
 	__NO_LWSYNC__ if TARGET_NO_LWSYNC.

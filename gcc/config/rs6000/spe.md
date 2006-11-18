@@ -2392,15 +2392,16 @@
   "{ rs6000_emit_move (operands[0], operands[1], V4HImode); DONE; }")
 
 (define_insn "*movv4hi_internal"
-  [(set (match_operand:V4HI 0 "nonimmediate_operand" "=m,r,r")
-	(match_operand:V4HI 1 "input_operand" "r,m,r"))]
+  [(set (match_operand:V4HI 0 "nonimmediate_operand" "=m,r,r,r")
+	(match_operand:V4HI 1 "input_operand" "r,m,r,W"))]
   "TARGET_SPE
    && (gpc_reg_operand (operands[0], V4HImode)
        || gpc_reg_operand (operands[1], V4HImode))"
   "@
    evstdd%X0 %1,%y0
    evldd%X1 %0,%y1
-   evor %0,%1,%1"
+   evor %0,%1,%1
+   evxor %0,%0,%0"
   [(set_attr "type" "vecload")])
 
 (define_expand "movv2sf"
