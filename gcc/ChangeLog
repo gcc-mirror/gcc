@@ -1,3 +1,7 @@
+2006-11-18  Aldy Hernandez  <aldyh@redhat.com>
+
+       * doc/invoke.texi: Fix mno-isel typo.
+
 2006-11-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/spe.md (movv4hi_internal): Add alternative for
