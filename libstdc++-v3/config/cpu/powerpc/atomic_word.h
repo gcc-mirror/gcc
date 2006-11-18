@@ -33,6 +33,10 @@
 typedef int _Atomic_word;
 
 #define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("isync":::"memory")
+#ifdef __NO_LWSYNC__
+#define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("sync":::"memory")
+#else
 #define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("lwsync":::"memory")
+#endif
 
 #endif 
