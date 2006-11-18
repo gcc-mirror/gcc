@@ -1941,7 +1941,8 @@ set_sizetype (tree type)
      calculating signed sizes / offsets in bits.  However, when
      cross-compiling from a 32 bit to a 64 bit host, we are limited to 64 bit
      precision.  */
-  int precision = MIN (oprecision + BITS_PER_UNIT_LOG + 1,
+  int precision = MIN (MIN (oprecision + BITS_PER_UNIT_LOG + 1,
+			    MAX_FIXED_MODE_SIZE),
 		       2 * HOST_BITS_PER_WIDE_INT);
   tree t;
 

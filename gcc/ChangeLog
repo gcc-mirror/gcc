@@ -1,3 +1,10 @@
+2006-11-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR fortran/27885
+	PR middle-end/28176
+	* stor-layout.c (set_sizetype): Limit precision of *bitsizetypes types
+	to MAX_FIXED_MODE_SIZE.
+
 2006-11-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (integer_valued_real_p): Handle fmin/fmax.
