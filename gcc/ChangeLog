@@ -1,3 +1,11 @@
+2006-11-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.h (TARGET_NO_LWSYNC): Define.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Define
+	__NO_LWSYNC__ if TARGET_NO_LWSYNC.
+	* config/rs6000/sync.md (lwsync): Emit plain sync if
+	TARGET_NO_LWSYNC.
+
 2006-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/29584

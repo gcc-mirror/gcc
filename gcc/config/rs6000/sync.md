@@ -615,6 +615,11 @@
   [(set (mem:BLK (match_scratch 0 "X"))
 	(unspec_volatile:BLK [(mem:BLK (match_scratch 1 "X"))] UNSPEC_LWSYNC))]
   ""
-  ".long 0x7c2004ac"
+{
+  if (TARGET_NO_LWSYNC)
+    return "sync";
+  else
+    return ".long 0x7c2004ac";
+}
   [(set_attr "type" "sync")])
 
