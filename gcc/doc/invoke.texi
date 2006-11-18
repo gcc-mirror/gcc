@@ -9296,6 +9296,9 @@ set support.
 @item nocona
 Improved version of Intel Pentium4 CPU with 64-bit extensions, MMX, SSE,
 SSE2 and SSE3 instruction set support.
+@item core2
+Intel Core2 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3 and SSSE3
+instruction set support.
 @item k6
 AMD K6 CPU with MMX instruction set support.
 @item k6-2, k6-3

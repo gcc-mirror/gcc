@@ -137,6 +137,7 @@ extern const struct processor_costs *ix86_cost;
 #define TARGET_K8 (ix86_tune == PROCESSOR_K8)
 #define TARGET_ATHLON_K8 (TARGET_K8 || TARGET_ATHLON)
 #define TARGET_NOCONA (ix86_tune == PROCESSOR_NOCONA)
+#define TARGET_CORE2 (ix86_tune == PROCESSOR_CORE2)
 #define TARGET_GENERIC32 (ix86_tune == PROCESSOR_GENERIC32)
 #define TARGET_GENERIC64 (ix86_tune == PROCESSOR_GENERIC64)
 #define TARGET_GENERIC (TARGET_GENERIC32 || TARGET_GENERIC64)
@@ -403,6 +404,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 	builtin_define ("__tune_pentium4__");			\
       else if (TARGET_NOCONA)					\
 	builtin_define ("__tune_nocona__");			\
+      else if (TARGET_CORE2)					\
+	builtin_define ("__tune_core2__");			\
 								\
       if (TARGET_MMX)						\
 	builtin_define ("__MMX__");				\
@@ -483,6 +486,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 	  builtin_define ("__nocona");				\
 	  builtin_define ("__nocona__");			\
 	}							\
+      else if (ix86_arch == PROCESSOR_CORE2)			\
+	{							\
+	  builtin_define ("__core2");				\
+	  builtin_define ("__core2__");				\
+	}							\
     }								\
   while (0)
 
@@ -504,14 +512,15 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_CPU_DEFAULT_pentium_m 15
 #define TARGET_CPU_DEFAULT_prescott 16
 #define TARGET_CPU_DEFAULT_nocona 17
-#define TARGET_CPU_DEFAULT_generic 18
+#define TARGET_CPU_DEFAULT_core2 18
+#define TARGET_CPU_DEFAULT_generic 19
 
 #define TARGET_CPU_DEFAULT_NAMES {"i386", "i486", "pentium", "pentium-mmx",\
 				  "pentiumpro", "pentium2", "pentium3", \
                                   "pentium4", "geode", "k6", "k6-2", "k6-3", \
 				  "athlon", "athlon-4", "k8", \
 				  "pentium-m", "prescott", "nocona", \
-				  "generic"}
+				  "core2", "generic"}
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
@@ -2073,6 +2082,7 @@ enum processor_type
   PROCESSOR_PENTIUM4,
   PROCESSOR_K8,
   PROCESSOR_NOCONA,
+  PROCESSOR_CORE2,
   PROCESSOR_GENERIC32,
   PROCESSOR_GENERIC64,
   PROCESSOR_max
