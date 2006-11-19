@@ -1123,9 +1123,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
   _TR1_hashtable_define_trivial_hash(short);
   _TR1_hashtable_define_trivial_hash(int);
   _TR1_hashtable_define_trivial_hash(long);
+  _TR1_hashtable_define_trivial_hash(long long);
   _TR1_hashtable_define_trivial_hash(unsigned short);
   _TR1_hashtable_define_trivial_hash(unsigned int);
   _TR1_hashtable_define_trivial_hash(unsigned long);
+  _TR1_hashtable_define_trivial_hash(unsigned long long);
 
 #undef _TR1_hashtable_define_trivial_hash
 
