@@ -2797,14 +2797,24 @@ resolve_ref (gfc_expr * expr)
 	  break;
 
 	case REF_COMPONENT:
-	  if ((current_part_dimension || seen_part_dimension)
-	      && ref->u.c.component->pointer)
+	  if (current_part_dimension || seen_part_dimension)
 	    {
-	      gfc_error
-		("Component to the right of a part reference with nonzero "
-		 "rank must not have the POINTER attribute at %L",
-		 &expr->where);
-	      return FAILURE;
+	      if (ref->u.c.component->pointer)
+	        {
+		  gfc_error
+		    ("Component to the right of a part reference with nonzero "
+		     "rank must not have the POINTER attribute at %L",
+		     &expr->where);
+		  return FAILURE;
+		}
+	      else if (ref->u.c.component->allocatable)
+	        {
+		  gfc_error
+		    ("Component to the right of a part reference with nonzero "
+		     "rank must not have the ALLOCATABLE attribute at %L",
+		     &expr->where);
+		  return FAILURE;
+		}
 	    }
 
 	  n_components++;
