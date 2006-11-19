@@ -498,24 +498,24 @@ gfc_match_use (void)
   if (gfc_match (" , ") == MATCH_YES)
     {
       if ((m = gfc_match (" %n ::", module_nature)) == MATCH_YES)
-       {
-         if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: module "
-                             "nature in USE statement at %C") == FAILURE)
-           return MATCH_ERROR;
+	{
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: module "
+			      "nature in USE statement at %C") == FAILURE)
+	    return MATCH_ERROR;
 
-         if (strcmp (module_nature, "intrinsic") == 0)
-           specified_int = true;
-         else
-           {
-             if (strcmp (module_nature, "non_intrinsic") == 0)
-               specified_nonint = true;
-             else
-               {
-                 gfc_error ("Module nature in USE statement at %C shall "
-                            "be either INTRINSIC or NON_INTRINSIC");
-                 return MATCH_ERROR;
-               }
-           }
+	  if (strcmp (module_nature, "intrinsic") == 0)
+	    specified_int = true;
+	  else
+	    {
+	      if (strcmp (module_nature, "non_intrinsic") == 0)
+		specified_nonint = true;
+	      else
+		{
+		  gfc_error ("Module nature in USE statement at %C shall "
+			     "be either INTRINSIC or NON_INTRINSIC");
+		  return MATCH_ERROR;
+		}
+	    }
 	}
       else
 	{
@@ -538,11 +538,11 @@ gfc_match_use (void)
 	return MATCH_ERROR;
 
       if (m != MATCH_YES)
-       {
-         m = gfc_match ("% ");
-         if (m != MATCH_YES)
-           return m;
-       }
+	{
+	  m = gfc_match ("% ");
+	  if (m != MATCH_YES)
+	    return m;
+	}
     }
 
   m = gfc_match_name (module_name);
@@ -3843,6 +3843,138 @@ gfc_dump_module (const char *name, int dump_flag)
 }
 
 
+/* Add an integer named constant from a given module.  */
+static void
+create_int_parameter (const char *name, int value, const char *modname)
+{
+  gfc_symtree * tmp_symtree;
+  gfc_symbol * sym;
+
+  tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, name);
+  if (tmp_symtree != NULL)
+    {
+      if (strcmp (modname, tmp_symtree->n.sym->module) == 0)
+	return;
+      else
+	gfc_error ("Symbol '%s' already declared", name);
+    }
+
+  gfc_get_sym_tree (name, gfc_current_ns, &tmp_symtree);
+  sym = tmp_symtree->n.sym;
+
+  sym->module = gfc_get_string (modname);
+  sym->attr.flavor = FL_PARAMETER;
+  sym->ts.type = BT_INTEGER;
+  sym->ts.kind = gfc_default_integer_kind;
+  sym->value = gfc_int_expr (value);
+  sym->attr.use_assoc = 1;
+}
+
+/* USE the ISO_FORTRAN_ENV intrinsic module.  */
+static void
+use_iso_fortran_env_module (void)
+{
+  static char mod[] = "iso_fortran_env";
+  const char *local_name;
+  gfc_use_rename *u;
+  gfc_symbol *mod_sym;
+  gfc_symtree *mod_symtree;
+  int i;
+
+  mstring symbol[] = {
+#define NAMED_INTCST(a,b,c) minit(b,0),
+#include "iso-fortran-env.def"
+#undef NAMED_INTCST
+    minit (NULL, -1234) };
+
+  i = 0;
+#define NAMED_INTCST(a,b,c) symbol[i++].tag = c;
+#include "iso-fortran-env.def"
+#undef NAMED_INTCST
+
+  /* Generate the symbol for the module itself.  */
+  mod_symtree = gfc_find_symtree (gfc_current_ns->sym_root, mod);
+  if (mod_symtree == NULL)
+    {
+      gfc_get_sym_tree (mod, gfc_current_ns, &mod_symtree);
+      gcc_assert (mod_symtree);
+      mod_sym = mod_symtree->n.sym;
+
+      mod_sym->attr.flavor = FL_MODULE;
+      mod_sym->attr.intrinsic = 1;
+      mod_sym->module = gfc_get_string (mod);
+    }
+  else
+    if (!mod_symtree->n.sym->attr.intrinsic)
+      gfc_error ("Use of intrinsic module '%s' at %C conflicts with "
+		 "non-intrinsic module name used previously", mod);
+
+  /* Generate the symbols for the module integer named constants.  */
+  if (only_flag)
+    for (u = gfc_rename_list; u; u = u->next)
+      {
+	for (i = 0; symbol[i].string; i++)
+	  if (strcmp (symbol[i].string, u->use_name) == 0)
+	    break;
+
+	if (symbol[i].string == NULL)
+	  {
+	    gfc_error ("Symbol '%s' referenced at %L does not exist in "
+		       "intrinsic module ISO_FORTRAN_ENV", u->use_name,
+		       &u->where);
+	    continue;
+	  }
+
+	if ((gfc_option.flag_default_integer || gfc_option.flag_default_real)
+	    && strcmp (symbol[i].string, "numeric_storage_size") == 0)
+	  gfc_warning_now ("Use of the NUMERIC_STORAGE_SIZE named constant "
+			   "from intrinsic module ISO_FORTRAN_ENV at %L is "
+			   "incompatible with option %s", &u->where,
+			   gfc_option.flag_default_integer
+			     ? "-fdefault-integer-8" : "-fdefault-real-8");
+
+	create_int_parameter (u->local_name[0] ? u->local_name
+					       : symbol[i].string,
+			      symbol[i].tag, mod);
+      }
+  else
+    {
+      for (i = 0; symbol[i].string; i++)
+	{
+	  local_name = NULL;
+	  for (u = gfc_rename_list; u; u = u->next)
+	    {
+	      if (strcmp (symbol[i].string, u->use_name) == 0)
+		{
+		  local_name = u->local_name;
+		  u->found = 1;
+		  break;
+		}
+	    }
+
+	  if ((gfc_option.flag_default_integer || gfc_option.flag_default_real)
+	      && strcmp (symbol[i].string, "numeric_storage_size") == 0)
+	    gfc_warning_now ("Use of the NUMERIC_STORAGE_SIZE named constant "
+			     "from intrinsic module ISO_FORTRAN_ENV at %C is "
+			     "incompatible with option %s",
+			     gfc_option.flag_default_integer
+				? "-fdefault-integer-8" : "-fdefault-real-8");
+
+	  create_int_parameter (local_name ? local_name : symbol[i].string,
+				symbol[i].tag, mod);
+	}
+
+      for (u = gfc_rename_list; u; u = u->next)
+	{
+	  if (u->found)
+	    continue;
+
+	  gfc_error ("Symbol '%s' referenced at %L not found in intrinsic "
+		     "module ISO_FORTRAN_ENV", u->use_name, &u->where);
+	}
+    }
+}
+
 /* Process a USE directive.  */
 
 void
@@ -3851,6 +3983,7 @@ gfc_use_module (void)
   char *filename;
   gfc_state_data *p;
   int c, line, start;
+  gfc_symtree *mod_symtree;
 
   filename = (char *) alloca(strlen(module_name) + strlen(MODULE_EXTENSION)
 			     + 1);
@@ -3867,7 +4000,6 @@ gfc_use_module (void)
      specified that the module is non-intrinsic.  */
   if (module_fp == NULL && !specified_nonint)
     {
-#if 0
       if (strcmp (module_name, "iso_fortran_env") == 0
          && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: "
                             "ISO_FORTRAN_ENV intrinsic module at %C") != FAILURE)
@@ -3875,7 +4007,6 @@ gfc_use_module (void)
          use_iso_fortran_env_module ();
          return;
        }
-#endif
 
       module_fp = gfc_open_intrinsic_module (filename);
 
@@ -3887,6 +4018,14 @@ gfc_use_module (void)
   if (module_fp == NULL)
     gfc_fatal_error ("Can't open module file '%s' for reading at %C: %s",
 		     filename, strerror (errno));
+
+  /* Check that we haven't already USEd an intrinsic module with the
+     same name.  */
+
+  mod_symtree = gfc_find_symtree (gfc_current_ns->sym_root, module_name);
+  if (mod_symtree && mod_symtree->n.sym->attr.intrinsic)
+    gfc_error ("Use of non-intrinsic module '%s' at %C conflicts with "
+	       "intrinsic module name used previously", module_name);
 
   iomode = IO_INPUT;
   module_line = 1;

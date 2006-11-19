@@ -1,3 +1,18 @@
+2006-11-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* module.c (gfc_use_module): Uncomment the ISO_FORTRAN_ENV code.
+	Check that intrinsic and non-intrinsic modules don't conflict.
+	(use_iso_fortran_env_module): New function.
+	(create_int_parameter): New function.
+	* trans-types.c (gfc_init_kinds): Choose values for
+	gfc_numeric_storage_size and gfc_character_storage_size.
+	(gfc_numeric_storage_size, gfc_character_storage_size): New variables.
+	* resolve.c (resolve_symbol): Do no check intrinsic modules
+	against the list of intrinsic symbols.
+	* iso-fortran-env.def: New file.
+	* gfortran.h (gfc_numeric_storage_size,
+	gfc_character_storage_size): Add prototypes.
+
 2006-11-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/24285

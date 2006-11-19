@@ -1,0 +1,37 @@
+/* Copyright (C) 2006 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.  */
+
+/* This file contains the definition of the named integer constants provided
+   by the Fortran 2003 ISO_FORTRAN_ENV intrinsic module.  */
+
+/* The arguments to NAMED_INTCST are:
+     -- an internal name
+     -- the symbol name in the module, as seen by Fortran code
+     -- the value it has  */
+
+NAMED_INTCST (ISOFORTRANENV_CHARACTER_STORAGE_SIZE, "character_storage_size", \
+              gfc_character_storage_size)
+NAMED_INTCST (ISOFORTRANENV_ERROR_UNIT, "error_unit", 0)
+NAMED_INTCST (ISOFORTRANENV_FILE_STORAGE_SIZE, "file_storage_size", 8)
+NAMED_INTCST (ISOFORTRANENV_INPUT_UNIT, "input_unit", 5)
+NAMED_INTCST (ISOFORTRANENV_IOSTAT_END, "iostat_end", -1)
+NAMED_INTCST (ISOFORTRANENV_IOSTAT_EOR, "iostat_eor", -2)
+NAMED_INTCST (ISOFORTRANENV_NUMERIC_STORAGE_SIZE, "numeric_storage_size", \
+              gfc_numeric_storage_size)
+NAMED_INTCST (ISOFORTRANENV_OUTPUT_UNIT, "output_unit", 6)

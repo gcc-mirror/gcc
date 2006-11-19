@@ -6007,7 +6007,7 @@ resolve_symbol (gfc_symbol * sym)
     }
 
   /* Make sure that intrinsic exist */
-  if (sym->attr.intrinsic
+  if (sym->attr.flavor != FL_MODULE && sym->attr.intrinsic
       && ! gfc_intrinsic_name(sym->name, 0)
       && ! gfc_intrinsic_name(sym->name, 1))
     gfc_error("Intrinsic at %L does not exist", &sym->declared_at);
