@@ -1,3 +1,9 @@
+2006-11-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/29114
+	* pa.c (emit_move_sequence): Don't split constants with PLUS for modes
+	larger than BITS_PER_WORD.
+
 2006-11-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR fortran/27885
