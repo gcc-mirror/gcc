@@ -38,12 +38,6 @@
   if (any( (/(((y(k)%at(i)%i(j), j = 1,4), i = 1,2), k = 1,2)/) .ne. &
          (/0,0,2,1,11,12,6,5,11,12,3,2,9,8,7,6/))) call abort () 
 
-  where (y((2))%at(:)%i(2) > 8)
-    y(2)%at(:)%i(2) = 77
-  end where
-  if (any ((/(((y(k)%at(i)%i(j), j = 1,4), i = 1,2), k = 1,2)/) .ne. &
-         (/0,0,2,1,11,12,6,5,11,77,3,2,9,8,7,6/))) call abort ()
-
 ! Check that temporaries and full array  alloctable component assignments
 ! are correctly handled in FORALL.
 
