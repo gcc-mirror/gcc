@@ -3691,6 +3691,19 @@ tree_verify_flow_info (void)
 	      }
 	}
 
+      if (TREE_CODE (stmt) != COND_EXPR)
+	{
+	  /* Verify that there are no edges with EDGE_TRUE/FALSE_FLAG set
+	     after anything else but if statement.  */
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE))
+	      {
+		error ("true/false edge after a non-COND_EXPR in bb %d",
+		       bb->index);
+		err = 1;
+	      }
+	}
+
       switch (TREE_CODE (stmt))
 	{
 	case COND_EXPR:

@@ -1,3 +1,11 @@
+2006-11-19  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-09-22  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/28888
+	* gcc.dg/pr28888.c: New test.
+
 2006-11-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/29788
