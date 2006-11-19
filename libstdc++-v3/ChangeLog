@@ -1,3 +1,8 @@
+06-11-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/functional (hash(long long), hash(unsigned long long)):
+	Add specializations.
+
 2006-11-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/cpu/powerpc/atomic_word.h (_GLIBCXX_WRITE_MEM_BARRIER):
