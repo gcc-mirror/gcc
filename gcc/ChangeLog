@@ -1,3 +1,12 @@
+2006-11-19  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	2006-11-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/29753
+	* gimplify.c (fold_indirect_ref_rhs): Use
+	STRIP_USELESS_TYPE_CONVERSION rather than STRIP_NOPS.
+
 2006-11-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR fortran/27885
