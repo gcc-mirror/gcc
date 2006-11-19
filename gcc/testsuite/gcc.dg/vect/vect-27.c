@@ -13,7 +13,7 @@ int main1 ()
   int ia[N];
   int ib[N+1];
 
-  for (i=0; i < N; i++)
+  for (i=0; i <= N; i++)
     {
       ib[i] = i;
     }
