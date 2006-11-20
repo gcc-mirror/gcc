@@ -432,6 +432,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
       conf2 (dimension);
       conf2 (dummy);
       conf2 (save);
+      conf2 (volatile_);
       conf2 (pointer);
       conf2 (target);
       conf2 (external);

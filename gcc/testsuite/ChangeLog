@@ -1,3 +1,7 @@
+2006-11-20  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/volatile3.f90: Add conflict test.
+
 2006-11-20  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/24783
