@@ -1,3 +1,8 @@
+2006-11-20  David Daney  <ddaney@avtrex.com>
+
+	* testsuite/libjava.lang/Throw_3.java: New Test.
+	* testsuite/libjava.lang/Throw_3.out: Its expected output.
+
 2006-11-13  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* configure: Regenerated.
