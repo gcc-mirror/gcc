@@ -40,9 +40,18 @@ mid-shared-library
 Target Report Mask(ID_SHARED_LIBRARY)
 Enabled ID based shared library
 
+mleaf-id-shared-library
+Target Report Mask(LEAF_ID_SHARED_LIBRARY)
+Generate code that won't be linked against any other ID shared libraries,
+but may be used as a shared library.
+
 mshared-library-id=
 Target RejectNegative Joined UInteger Var(bfin_library_id)
 ID of shared library to build
+
+msep-data
+Target Report Mask(SEP_DATA)
+Enable separate data segment
 
 mlong-calls
 Target Report Mask(LONG_CALLS)

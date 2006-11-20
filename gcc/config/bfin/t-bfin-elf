@@ -22,10 +22,12 @@ GCC_CFLAGS += -N
 CRTSTUFF_T_CFLAGS = -fpic
 TARGET_LIBGCC2_CFLAGS = -fpic
 
-MULTILIB_OPTIONS=mid-shared-library mfdpic
+MULTILIB_OPTIONS=mid-shared-library mleaf-id-shared-library
+MULTILIB_OPTIONS+=msep-data mfdpic
 MULTILIB_DEFAULTS=
 MULTILIB_DIRNAMES=
-MULTILIB_EXCEPTIONS=mid-shared-library/mfdpic
+MULTILIB_EXCEPTIONS=mid-shared-library*/mfdpic mleaf-id-shared-library*
+MULTILIB_EXCEPTIONS+=*msep-data*
 
 # Assemble startup files.
 $(T)crti.o: $(srcdir)/config/bfin/crti.s $(GCC_PASSES)

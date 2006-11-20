@@ -12,6 +12,19 @@
 	functions.
 	(TARGET_CANNOT_FORCE_CONST_MEM): New macro.
 
+	* config/bfin/bfin.md (call_symbol, call_value_symbol, sibcall_symbol,
+	sibcall_value_symbol): Allow these patterns if
+	TARGET_LEAF_ID_SHARED_LIBRARY.
+	* config/bfin/bfin.c (bfin_expand_call): Allow them here as well.
+	(override_options): Turn on id shared library flags if -msep-data,
+	but disallow the combination of these options on the command line.
+	* config/bfin/bfin.h (TARGET_LEAF_ID_SHARED_LIBRARY, MASK_SEP_DATA
+	MASK_LEAF_ID_SHARED_LIBRARY, TARGET_SEP_DATA): New macros.
+	(DRIVER_SELF_SPECS): -mleaf-id-shared-library implies
+	-mid-shared-library.
+	(TARGET_SWITCHES): Add -mleaf-id-shared-library and -msep-data.
+	* doc/invoke.texi (Blackfin Options): Document new switches.
+
 2006-11-19  Andrew Pinski  <pinskia@gmail.com>
 
 	PR rtl-opt/29879
