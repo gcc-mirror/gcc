@@ -1351,6 +1351,32 @@ instantiate_missing_elements (struct sra_elt *elt)
     }
 }
 
+/* Return true if there is only one non aggregate field in the record, TYPE.
+   Return false otherwise.  */
+
+static bool
+single_scalar_field_in_record_p (tree type)
+{
+   int num_fields = 0;
+   tree field;
+   if (TREE_CODE (type) != RECORD_TYPE)
+     return false;
+
+   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+     if (TREE_CODE (field) == FIELD_DECL)
+       {
+         num_fields++;
+
+         if (num_fields == 2)
+           return false;
+	 
+         if (AGGREGATE_TYPE_P (TREE_TYPE (field)))
+           return false;
+       }
+
+   return true;
+}
+
 /* Make one pass across an element tree deciding whether to perform block
    or element copies.  If we decide on element copies, instantiate all
    elements.  Return true if there are any instantiated sub-elements.  */
@@ -1429,6 +1455,10 @@ decide_block_copy (struct sra_elt *elt)
 	  full_size = tree_low_cst (size_tree, 1);
 	  full_count = count_type_elements (elt->type, false);
 	  inst_count = sum_instantiated_sizes (elt, &inst_size);
+
+	  /* If there is only one scalar field in the record, don't block copy.  */
+	  if (single_scalar_field_in_record_p (elt->type))
+	    use_block_copy = false;
 
 	  /* ??? What to do here.  If there are two fields, and we've only
 	     instantiated one, then instantiating the other is clearly a win.

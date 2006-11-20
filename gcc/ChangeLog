@@ -1,3 +1,9 @@
+2006-11-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/25500
+	* tree-sra.c (single_scalar_field_in_record_p): New function.
+	(decide_block_copy): Use it.
+
 2006-11-20  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/linux-unwind.h (mips_fallback_frame_state): Adjust
