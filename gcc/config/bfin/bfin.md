@@ -605,7 +605,10 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "")
 	(match_operand:SI 1 "general_operand" ""))]
   ""
-  "expand_move (operands, SImode);")
+{
+  if (expand_move (operands, SImode))
+    DONE;
+})
 
 (define_expand "movv2hi"
   [(set (match_operand:V2HI 0 "nonimmediate_operand" "")

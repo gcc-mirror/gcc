@@ -729,7 +729,7 @@ typedef struct {
    See force_const_mem().
    If -mno-pool, all constants are legitimate.
  */
-#define LEGITIMATE_CONSTANT_P(x) 1
+#define LEGITIMATE_CONSTANT_P(X) bfin_legitimate_constant_p (X)
 
 /*   A number, the maximum number of registers that can appear in a
      valid memory address.  Note that it is up to you to specify a

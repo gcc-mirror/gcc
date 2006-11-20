@@ -36,6 +36,7 @@ extern char *bfin_asm_short (void);
 extern int log2constp (unsigned HOST_WIDE_INT);
 
 extern rtx legitimize_address (rtx, rtx, Mmode);
+extern bool bfin_legitimate_constant_p (rtx);
 extern int hard_regno_mode_ok (int, Mmode);
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);	  
 extern int bfin_frame_pointer_required (void);
@@ -44,7 +45,7 @@ extern HOST_WIDE_INT bfin_initial_elimination_offset (int, int);
 extern int effective_address_32bit_p (rtx, Mmode);
 extern int symbolic_reference_mentioned_p (rtx);
 extern rtx bfin_gen_compare (rtx, Mmode);
-extern void expand_move (rtx *, Mmode);
+extern bool expand_move (rtx *, Mmode);
 extern void bfin_expand_call (rtx, rtx, rtx, rtx, int);
 extern bool bfin_longcall_p (rtx, int);
 extern bool bfin_dsp_memref_p (rtx);
