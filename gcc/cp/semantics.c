@@ -234,7 +234,7 @@ pop_to_parent_deferring_access_checks (void)
 	  /* Check access.  */
 	  for (; checks; checks = TREE_CHAIN (checks))
 	    enforce_access (TREE_PURPOSE (checks),
-			    TREE_VALUE (checks));
+			    TREE_VALUE (checks), TREE_VALUE (checks));
 	}
       else
 	{
@@ -271,7 +271,7 @@ perform_access_checks (tree checks)
   while (checks)
     {
       enforce_access (TREE_PURPOSE (checks),
-		      TREE_VALUE (checks));
+		      TREE_VALUE (checks), TREE_VALUE (checks));
       checks = TREE_CHAIN (checks);
     }
 }
@@ -299,10 +299,10 @@ perform_deferred_access_checks (void)
 }
 
 /* Defer checking the accessibility of DECL, when looked up in
-   BINFO.  */
+   BINFO. DIAG_DECL is the declaration to use to print diagnostics.  */
 
 void
-perform_or_defer_access_check (tree binfo, tree decl)
+perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
 {
   tree check;
   deferred_access *ptr;
@@ -319,7 +319,7 @@ perform_or_defer_access_check (tree binfo, tree decl)
   /* If we are not supposed to defer access checks, just check now.  */
   if (ptr->deferring_access_checks_kind == dk_no_deferred)
     {
-      enforce_access (binfo, decl);
+      enforce_access (binfo, decl, diag_decl);
       return;
     }
 
@@ -1432,7 +1432,8 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 				     DECL_NAME (decl),
 				     /*template_p=*/false);
 
-      perform_or_defer_access_check (TYPE_BINFO (access_type), decl);
+      perform_or_defer_access_check (TYPE_BINFO (access_type), decl,
+				     decl);
 
       /* If the data member was named `C::M', convert `*this' to `C'
 	 first.  */
@@ -1511,7 +1512,8 @@ check_accessibility_of_qualified_id (tree decl,
 	 or similar in a default argument value.  */
       && CLASS_TYPE_P (qualifying_type)
       && !dependent_type_p (qualifying_type))
-    perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl);
+    perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl,
+				   decl);
 }
 
 /* EXPR is the result of a qualified-id.  The QUALIFYING_CLASS was the
@@ -2839,7 +2841,7 @@ finish_id_expression (tree id_expression,
 	      tree path;
 
 	      path = currently_open_derived_class (DECL_CONTEXT (decl));
-	      perform_or_defer_access_check (TYPE_BINFO (path), decl);
+	      perform_or_defer_access_check (TYPE_BINFO (path), decl, decl);
 	    }
 
 	  decl = convert_from_reference (decl);

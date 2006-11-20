@@ -1273,7 +1273,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type)
       && !really_overloaded_fn (rval)
       && !(TREE_CODE (rval) == FUNCTION_DECL
 	   && DECL_NONSTATIC_MEMBER_FUNCTION_P (rval)))
-    perform_or_defer_access_check (basetype_path, rval);
+    perform_or_defer_access_check (basetype_path, rval, rval);
 
   if (errstr && protect)
     {

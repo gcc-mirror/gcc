@@ -4097,7 +4097,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       /* If the FN is a member function, make sure that it is
 	 accessible.  */
       if (DECL_CLASS_SCOPE_P (fn))
-	perform_or_defer_access_check (TYPE_BINFO (type), fn);
+	perform_or_defer_access_check (TYPE_BINFO (type), fn, fn);
 
       if (pass == 0)
 	args = tree_cons (NULL_TREE, addr, args);
@@ -4128,21 +4128,22 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
 /* If the current scope isn't allowed to access DECL along
    BASETYPE_PATH, give an error.  The most derived class in
-   BASETYPE_PATH is the one used to qualify DECL.  */
+   BASETYPE_PATH is the one used to qualify DECL. DIAG_DECL is
+   the declaration to use in the error diagnostic.  */
 
 bool
-enforce_access (tree basetype_path, tree decl)
+enforce_access (tree basetype_path, tree decl, tree diag_decl)
 {
   gcc_assert (TREE_CODE (basetype_path) == TREE_BINFO);
 
   if (!accessible_p (basetype_path, decl, true))
     {
       if (TREE_PRIVATE (decl))
-	error ("%q+#D is private", decl);
+	error ("%q+#D is private", diag_decl);
       else if (TREE_PROTECTED (decl))
-	error ("%q+#D is protected", decl);
+	error ("%q+#D is protected", diag_decl);
       else
-	error ("%q+#D is inaccessible", decl);
+	error ("%q+#D is inaccessible", diag_decl);
       error ("within this context");
       return false;
     }
@@ -4771,9 +4772,9 @@ build_over_call (struct z_candidate *cand, int flags)
       if (DECL_TEMPLATE_INFO (fn)
 	  && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (fn)))
 	perform_or_defer_access_check (cand->access_path,
-				       DECL_TI_TEMPLATE (fn));
+				       DECL_TI_TEMPLATE (fn), fn);
       else
-	perform_or_defer_access_check (cand->access_path, fn);
+	perform_or_defer_access_check (cand->access_path, fn, fn);
     }
 
   if (args && TREE_CODE (args) != TREE_LIST)
