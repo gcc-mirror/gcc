@@ -866,3 +866,7 @@ extern int avr_case_values_threshold;
 #define ZERO_REGNO 1
 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+#define DWARF2_DEBUGGING_INFO 1
+
+#define OBJECT_FORMAT_ELF
