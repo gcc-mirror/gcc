@@ -918,3 +918,7 @@ mmcu=*:-mmcu=%*}"
 #define CR_TAB "\n\t"
 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+#define DWARF2_DEBUGGING_INFO 1
+
+#define OBJECT_FORMAT_ELF
