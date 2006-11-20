@@ -1,3 +1,8 @@
+2006-11-20  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/linux-unwind.h (mips_fallback_frame_state): Adjust
+	PC to point to following instruction.
+
 2006-11-20  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/18553
