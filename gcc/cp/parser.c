@@ -8759,6 +8759,7 @@ cp_parser_template_id (cp_parser *parser,
       /* Perform any access checks that were deferred.  */
       for (check = TREE_PURPOSE (value); check; check = TREE_CHAIN (check))
 	perform_or_defer_access_check (TREE_PURPOSE (check),
+				       TREE_VALUE (check),
 				       TREE_VALUE (check));
       /* Return the stored value.  */
       return TREE_VALUE (value);
@@ -16643,7 +16644,9 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   value = cp_lexer_consume_token (parser->lexer)->value;
   /* Perform any access checks that were deferred.  */
   for (check = TREE_PURPOSE (value); check; check = TREE_CHAIN (check))
-    perform_or_defer_access_check (TREE_PURPOSE (check), TREE_VALUE (check));
+    perform_or_defer_access_check (TREE_PURPOSE (check),
+				   TREE_VALUE (check),
+				   TREE_VALUE (check));
   /* Set the scope from the stored value.  */
   parser->scope = TREE_VALUE (value);
   parser->qualifying_scope = TREE_TYPE (value);

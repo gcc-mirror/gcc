@@ -1,3 +1,28 @@
+2006-11-20  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/29475
+	* cp-tree.h (enforce_access, perform_or_defer_access_check): Added an
+	extra argument that represents the declaration to use to print
+	potential error messages.
+	* init.c (build_offset_ref): Adjusted the call to
+	perform_or_defer_access_check.
+	* class.c (alter_access, resolve_address_of_overloaded_function):
+	Likewise.
+	* decl.c (make_typename_type, make_unbound_class_template): Likewise. 
+	* search.c (lookup_member): Likewise.
+	* friend.c (add_friend): Likewise.
+	* parser.c (cp_parser_template_id,
+	cp_parser_pre_parsed_nested_name_specifier): Likewise.
+	* semantics.c (finish_non_static_data_member,
+	check_accessibility_of_qualified_id, finish_id_expression): Likewise.
+	(pop_to_parent_deferring_access_checks, perform_access_checks,
+	perform_or_defer_access_check): Adjusted the call to enforce_access.
+	* call.c (enforce_access): Use the new extra argument to build the
+	error message.
+	(build_op_delete_call): Adjusted the call to
+	perform_or_defer_access_check.
+	(build_over_call): Likewise.
+	
 2006-11-16  Dirk Mueller  <dmueller@suse.de>
 
 	* name-lookup.c (begin_scope): Use GGC_CNEW instead of

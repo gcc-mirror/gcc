@@ -171,7 +171,7 @@ add_friend (tree type, tree decl, bool complain)
 
   ctx = DECL_CONTEXT (decl);
   if (ctx && CLASS_TYPE_P (ctx) && !uses_template_parms (ctx))
-    perform_or_defer_access_check (TYPE_BINFO (ctx), decl);
+    perform_or_defer_access_check (TYPE_BINFO (ctx), decl, decl);
 
   maybe_add_class_template_decl_list (type, decl, /*friend_p=*/1);
 

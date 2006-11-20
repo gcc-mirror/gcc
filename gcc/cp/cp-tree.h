@@ -3772,7 +3772,7 @@ extern tree build_op_delete_call		(enum tree_code, tree, tree, bool, tree, tree)
 extern bool can_convert				(tree, tree);
 extern bool can_convert_arg			(tree, tree, tree, int);
 extern bool can_convert_arg_bad			(tree, tree, tree);
-extern bool enforce_access			(tree, tree);
+extern bool enforce_access			(tree, tree, tree);
 extern tree convert_default_arg			(tree, tree, tree, int);
 extern tree convert_arg_to_ellipsis		(tree);
 extern tree build_x_va_arg			(tree, tree);
@@ -4209,7 +4209,7 @@ extern tree get_deferred_access_checks		(void);
 extern void pop_to_parent_deferring_access_checks (void);
 extern void perform_access_checks		(tree);
 extern void perform_deferred_access_checks	(void);
-extern void perform_or_defer_access_check	(tree, tree);
+extern void perform_or_defer_access_check	(tree, tree, tree);
 extern int stmts_are_full_exprs_p		(void);
 extern void init_cp_semantics			(void);
 extern tree do_poplevel				(tree);
