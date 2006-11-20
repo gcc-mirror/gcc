@@ -1,3 +1,8 @@
+2006-11-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR c++/8586
+	* c-opts.c (c_common_handle_option): Enable -Wwrite-strings if -Wall.
+
 2006-11-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/29114
