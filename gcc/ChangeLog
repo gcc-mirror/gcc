@@ -1,3 +1,15 @@
+2006-11-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR rtl-opt/29879
+	* fwprop.c (loops): Remove.
+	(forward_propagate_into): Use current_loops instead of
+	loops.
+	(fwprop_init): Call loop_optimizer_init instead of
+	flow_loops_find.
+	(fwprop_done): Call loop_optimizer_finalize instead of
+	flow_loops_free.
+	(fwprop): Use current_loops instead of loops.
+
 2006-11-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/8586

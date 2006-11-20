@@ -104,7 +104,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    where the first two insns are now dead.  */
 
 
-static struct loops loops;
 static struct df *df;
 static int num_changes;
 
@@ -859,7 +858,7 @@ forward_propagate_into (struct df_ref *use)
 
   /* Do not propagate loop invariant definitions inside the loop if
      we are going to unroll.  */
-  if (loops.num > 0
+  if (current_loops
       && DF_REF_BB (def)->loop_father != DF_REF_BB (use)->loop_father)
     return;
 
@@ -896,7 +895,7 @@ fwprop_init (void)
      before df_analyze, because flow_loops_find may introduce new jump
      insns (sadly) if we are not working in cfglayout mode.  */
   if (flag_rerun_cse_after_loop && (flag_unroll_loops || flag_peel_loops))
-    flow_loops_find (&loops);
+    loop_optimizer_init (0);
 
   /* Now set up the dataflow problem (we only want use-def chains) and
      put the dataflow solver to work.  */
@@ -912,10 +911,7 @@ fwprop_done (void)
   df_finish (df);
 
   if (flag_rerun_cse_after_loop && (flag_unroll_loops || flag_peel_loops))
-    {
-      flow_loops_free (&loops);
-      loops.num = 0;
-    }
+    loop_optimizer_finalize ();
 
   free_dominance_info (CDI_DOMINATORS);
   cleanup_cfg (0);
@@ -955,7 +951,7 @@ fwprop (void)
     {
       struct df_ref *use = DF_USES_GET (df, i);
       if (use)
-	if (loops.num == 0
+	if (!current_loops 
 	    || DF_REF_TYPE (use) == DF_REF_REG_USE
 	    || DF_REF_BB (use)->loop_father == NULL)
 	  forward_propagate_into (use);
