@@ -51,6 +51,7 @@ extern int target_flags;
 #endif
 
 #define DRIVER_SELF_SPECS SUBTARGET_DRIVER_SELF_SPECS	"\
+ %{mleaf-id-shared-library:%{!mid-shared-library:-mid-shared-library}} \
  %{mfdpic:%{!fpic:%{!fpie:%{!fPIC:%{!fPIE:\
    	    %{!fno-pic:%{!fno-pie:%{!fno-PIC:%{!fno-PIE:-fpie}}}}}}}}} \
 "

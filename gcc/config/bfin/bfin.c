@@ -948,6 +948,7 @@ bfin_expand_prologue (void)
   do_link (spreg, frame_size, false);
 
   if (TARGET_ID_SHARED_LIBRARY
+      && !TARGET_SEP_DATA
       && (current_function_uses_pic_offset_table
 	  || !current_function_is_leaf))
     bfin_load_pic_reg (pic_offset_table_rtx);
@@ -1780,7 +1781,7 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
   else if ((!register_no_elim_operand (callee, Pmode)
 	    && GET_CODE (callee) != SYMBOL_REF)
 	   || (GET_CODE (callee) == SYMBOL_REF
-	       && (flag_pic
+	       && ((TARGET_ID_SHARED_LIBRARY && !TARGET_LEAF_ID_SHARED_LIBRARY)
 		   || bfin_longcall_p (callee, INTVAL (cookie)))))
     {
       callee = copy_to_mode_reg (Pmode, callee);
@@ -2006,6 +2007,14 @@ override_options (void)
 
   if (TARGET_ID_SHARED_LIBRARY && TARGET_FDPIC)
       error ("ID shared libraries and FD-PIC mode can't be used together.");
+
+  /* Don't allow the user to specify -mid-shared-library and -msep-data
+     together, as it makes little sense from a user's point of view...  */
+  if (TARGET_SEP_DATA && TARGET_ID_SHARED_LIBRARY)
+    error ("cannot specify both -msep-data and -mid-shared-library");
+  /* ... internally, however, it's nearly the same.  */
+  if (TARGET_SEP_DATA)
+    target_flags |= MASK_ID_SHARED_LIBRARY | MASK_LEAF_ID_SHARED_LIBRARY;
 
   /* There is no single unaligned SI op for PIC code.  Sometimes we
      need to use ".4byte" and sometimes we need to use ".picptr".
