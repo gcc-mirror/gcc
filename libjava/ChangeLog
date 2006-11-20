@@ -1,5 +1,14 @@
 2006-11-20  David Daney  <ddaney@avtrex.com>
 
+	* include/mips-signal.h (sys/syscall.h): Do not include.
+	(sig_ucontext_t): Removed.
+	(MAKE_THROW_FRAME): Changed to be a nop.
+	(_INIT_SIG_HANDLER): New macro.
+	(INIT_SEGV): Rewrote to use _INIT_SIG_HANDLER.
+	(INIT_FPE): Same.
+
+2006-11-20  David Daney  <ddaney@avtrex.com>
+
 	* testsuite/libjava.lang/Throw_3.java: New Test.
 	* testsuite/libjava.lang/Throw_3.out: Its expected output.
 
