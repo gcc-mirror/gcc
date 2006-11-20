@@ -28,6 +28,9 @@
 	* config/bfin/bfin.c (bfin_function_ok_for_sibcall): Handle some
 	edge cases with local functions and TARGET_ID_SHARED_LIBRARY.
 
+	* tree-ssa-loop-ivopts.c (get_address_cost): Do not artificially
+	inflate costs for addresses with an out-of-bounds address.
+
 2006-11-19  Andrew Pinski  <pinskia@gmail.com>
 
 	PR rtl-opt/29879

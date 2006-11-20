@@ -3561,10 +3561,7 @@ get_address_cost (bool symbol_present, bool var_present,
     cost += multiply_by_cost (ratio, Pmode);
 
   if (s_offset && !offset_p && !symbol_present)
-    {
-      cost += add_cost (Pmode);
-      var_present = true;
-    }
+    cost += add_cost (Pmode);
 
   acost = costs[mem_mode][symbol_present][var_present][offset_p][ratio_p];
   return cost + acost;
