@@ -1596,7 +1596,28 @@ bfin_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 			      tree exp ATTRIBUTE_UNUSED)
 {
   e_funkind fkind = funkind (TREE_TYPE (current_function_decl));
-  return fkind == SUBROUTINE;
+  if (fkind != SUBROUTINE)
+    return false;
+  if (!TARGET_ID_SHARED_LIBRARY || TARGET_SEP_DATA)
+    return true;
+
+  /* When compiling for ID shared libraries, can't sibcall a local function
+     from a non-local function, because the local function thinks it does
+     not need to reload P5 in the prologue, but the sibcall wil pop P5 in the
+     sibcall epilogue, and we end up with the wrong value in P5.  */
+
+  if (!flag_unit_at_a_time || decl == NULL)
+    /* Not enough information.  */
+    return false;
+
+  {
+    struct cgraph_local_info *this_func, *called_func;
+    rtx addr, insn;
+ 
+    this_func = cgraph_local_info (current_function_decl);
+    called_func = cgraph_local_info (decl);
+    return !called_func->local || this_func->local;
+  }
 }
 
 /* Emit RTL insns to initialize the variable parts of a trampoline at

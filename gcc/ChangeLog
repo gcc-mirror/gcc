@@ -25,6 +25,9 @@
 	(TARGET_SWITCHES): Add -mleaf-id-shared-library and -msep-data.
 	* doc/invoke.texi (Blackfin Options): Document new switches.
 
+	* config/bfin/bfin.c (bfin_function_ok_for_sibcall): Handle some
+	edge cases with local functions and TARGET_ID_SHARED_LIBRARY.
+
 2006-11-19  Andrew Pinski  <pinskia@gmail.com>
 
 	PR rtl-opt/29879
