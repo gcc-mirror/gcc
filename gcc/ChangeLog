@@ -1,3 +1,17 @@
+2006-11-20  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (LEGITIMATE_CONSTANT_P): Call
+	bfin_legitimate_constant_p.
+	* config/bfin/bfin.md (movsi expander): Check return value of
+	expand_mvoe.
+	* config/bfin/bfin-protos.h (bfin_legitimate_constant_p): Declare.
+	(expand_move): Adjust prototype.
+	* config/bfin/bfin.c (expand_move): Now returns bool.  Handle
+	invalid constants specially.
+	(bfin_cannot_force_const_mem, bfin_legitimate_constant_p): New
+	functions.
+	(TARGET_CANNOT_FORCE_CONST_MEM): New macro.
+
 2006-11-19  Andrew Pinski  <pinskia@gmail.com>
 
 	PR rtl-opt/29879

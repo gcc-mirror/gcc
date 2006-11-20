@@ -1648,21 +1648,44 @@ emit_pic_move (rtx *operands, enum machine_mode mode ATTRIBUTE_UNUSED)
 					  : pic_offset_table_rtx);
 }
 
-/* Expand a move operation in mode MODE.  The operands are in OPERANDS.  */
+/* Expand a move operation in mode MODE.  The operands are in OPERANDS.
+   Returns true if no further code must be generated, false if the caller
+   should generate an insn to move OPERANDS[1] to OPERANDS[0].  */
 
-void
+bool
 expand_move (rtx *operands, enum machine_mode mode)
 {
   rtx op = operands[1];
   if ((TARGET_ID_SHARED_LIBRARY || TARGET_FDPIC)
       && SYMBOLIC_CONST (op))
     emit_pic_move (operands, mode);
+  else if (mode == SImode && GET_CODE (op) == CONST
+	   && GET_CODE (XEXP (op, 0)) == PLUS
+	   && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
+	   && !bfin_legitimate_constant_p (op))
+    {
+      rtx dest = operands[0];
+      rtx op0, op1;
+      gcc_assert (!reload_in_progress && !reload_completed);
+      op = XEXP (op, 0);
+      op0 = force_reg (mode, XEXP (op, 0));
+      op1 = XEXP (op, 1);
+      if (!insn_data[CODE_FOR_addsi3].operand[2].predicate (op1, mode))
+	op1 = force_reg (mode, op1);
+      if (GET_CODE (dest) == MEM)
+	dest = gen_reg_rtx (mode);
+      emit_insn (gen_addsi3 (dest, op0, op1));
+      if (dest == operands[0])
+	return true;
+      operands[1] = dest;
+    }
   /* Don't generate memory->memory or constant->memory moves, go through a
      register */
   else if ((reload_in_progress | reload_completed) == 0
 	   && GET_CODE (operands[0]) == MEM
     	   && GET_CODE (operands[1]) != REG)
     operands[1] = force_reg (mode, operands[1]);
+  return false;
 }
 
 /* Split one or more DImode RTL references into pairs of SImode
@@ -2304,6 +2327,53 @@ bfin_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
     break;
   }
   return false;
+}
+
+/* Decide whether we can force certain constants to memory.  If we
+   decide we can't, the caller should be able to cope with it in
+   another way.  */
+
+static bool
+bfin_cannot_force_const_mem (rtx x ATTRIBUTE_UNUSED)
+{
+  /* We have only one class of non-legitimate constants, and our movsi
+     expander knows how to handle them.  Dropping these constants into the
+     data section would only shift the problem - we'd still get relocs
+     outside the object, in the data section rather than the text section.  */
+  return true;
+}
+
+/* Ensure that for any constant of the form symbol + offset, the offset
+   remains within the object.  Any other constants are ok.
+   This ensures that flat binaries never have to deal with relocations
+   crossing section boundaries.  */
+
+bool
+bfin_legitimate_constant_p (rtx x)
+{
+  rtx sym;
+  HOST_WIDE_INT offset;
+
+  if (GET_CODE (x) != CONST)
+    return true;
+
+  x = XEXP (x, 0);
+  gcc_assert (GET_CODE (x) == PLUS);
+
+  sym = XEXP (x, 0);
+  x = XEXP (x, 1);
+  if (GET_CODE (sym) != SYMBOL_REF
+      || GET_CODE (x) != CONST_INT)
+    return true;
+  offset = INTVAL (x);
+
+  if (SYMBOL_REF_DECL (sym) == 0)
+    return true;
+  if (offset < 0
+      || offset >= int_size_in_bytes (TREE_TYPE (SYMBOL_REF_DECL (sym))))
+    return false;
+
+  return true;
 }
 
 static bool
@@ -4431,5 +4501,8 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS bfin_delegitimize_address
+
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM bfin_cannot_force_const_mem
 
 struct gcc_target targetm = TARGET_INITIALIZER;
