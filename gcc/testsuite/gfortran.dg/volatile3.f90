@@ -13,6 +13,7 @@ program volatile_test
   real, volatile,volatile :: r = 3. ! { dg-error "Duplicate VOLATILE attribute" }
   volatile :: l,n ! { dg-error "Duplicate VOLATILE attribute" }
   volatile ! { dg-error "Syntax error in VOLATILE statement" }
+  volatile :: volatile_test ! { dg-error "PROGRAM attribute conflicts with VOLATILE attribute" }
   l = 4.0
   m = 3.0
 contains

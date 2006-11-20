@@ -1,3 +1,8 @@
+2006-11-20  Tobias Burnus  <burnus@net-b.de>
+
+	* symbol.c (check_conflict): Add conflict between VOLATILE
+	  attribute and program name.
+
 2006-11-20  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/24783
