@@ -12,6 +12,12 @@
 
 2006-11-20  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/27546
+	* gfortran.dg/import.f90: Extended test.
+	* gfortran.dg/import2.f90: Extended test.
+
+2006-11-20  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/volatile3.f90: Add conflict test.
 
 2006-11-20  Bernhard Fischer  <aldot@gcc.gnu.org>

@@ -1,5 +1,10 @@
 2006-11-20  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/27546
+	* primary.c (gfc_match_rvalue): Added IMPORT support.
+
+2006-11-20  Tobias Burnus  <burnus@net-b.de>
+
 	* symbol.c (check_conflict): Add conflict between VOLATILE
 	  attribute and program name.
 

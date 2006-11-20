@@ -13,18 +13,36 @@ subroutine test(x)
 end subroutine test
 
 
-subroutine bar(x)
+subroutine bar(x,y)
   type myType
     sequence
     integer :: i
   end type myType
   type(myType) :: x
+  integer(8) :: y
+  if(y /= 8) call abort()
   if(x%i /= 2) call abort()
   x%i = 5
+  y = 42
 end subroutine bar
 
+module testmod
+  implicit none
+  integer, parameter :: kind = 8
+  type modType
+    real :: rv
+  end type modType
+  interface
+    subroutine other(x,y)
+       import
+       real(kind)    :: x
+       type(modType) :: y
+    end subroutine
+  end interface
+end module testmod
 
 program foo
+  integer, parameter :: dp = 8
   type myType
     sequence
     integer :: i
@@ -34,9 +52,10 @@ program foo
     integer :: i
   end type myType3
   interface
-    subroutine bar(x)
+    subroutine bar(x,y)
       import
       type(myType) :: x
+      integer(dp)     :: y
     end subroutine bar
     subroutine test(x)
       import :: myType3
@@ -47,10 +66,13 @@ program foo
 
   type(myType) :: y
   type(myType3) :: z
+  integer(8) :: i8
   y%i = 2
-  call bar(y)
-  if(y%i /= 5) call abort()
+  i8 = 8
+  call bar(y,i8)
+  if(y%i /= 5 .or. i8/= 42) call abort()
   z%i = 7
   call test(z)
   if(z%i /= 1) call abort()
 end program foo
+! { dg-final { cleanup-modules "testmod" } }

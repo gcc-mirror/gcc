@@ -1917,7 +1917,8 @@ gfc_match_rvalue (gfc_expr ** result)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_find_state (COMP_INTERFACE) == SUCCESS)
+  if (gfc_find_state (COMP_INTERFACE) == SUCCESS
+      && !gfc_current_ns->has_import_set)
     i = gfc_get_sym_tree (name, NULL, &symtree);
   else
     i = gfc_get_ha_sym_tree (name, &symtree);
