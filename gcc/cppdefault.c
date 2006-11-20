@@ -96,3 +96,31 @@ const size_t cpp_GCC_INCLUDE_DIR_len = sizeof GCC_INCLUDE_DIR - 8;
 const char cpp_GCC_INCLUDE_DIR[] = "";
 const size_t cpp_GCC_INCLUDE_DIR_len = 0;
 #endif
+
+/* The configured prefix.  */
+const char cpp_PREFIX[] = PREFIX;
+const size_t cpp_PREFIX_len = sizeof PREFIX - 1;
+
+/* This value is set by cpp_relocated at runtime */
+const char *gcc_exec_prefix;
+
+/* Return true if the toolchain is relocated.  */
+bool
+cpp_relocated (void)
+{
+  static int relocated = -1;
+
+  /* A relocated toolchain ignores standard include directories.  */
+  if (relocated == -1)
+    {
+      /* Check if the toolchain was relocated?  */
+      GET_ENVIRONMENT (gcc_exec_prefix, "GCC_EXEC_PREFIX");
+      if (gcc_exec_prefix)
+       relocated = 1;
+      else
+       relocated = 0;
+    }
+
+  return relocated;
+}
+

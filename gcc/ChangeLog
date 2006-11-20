@@ -1,3 +1,15 @@
+2006-11-20  Carlos O'Donell  <carlos@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* cppdefault.c: Define cpp_PREFIX, cpp_PREFIX_len, and 
+	gcc_exec_prefix.
+	(cpp_relocated): New function.
+	* cppdefault.h: Declare cpp_PREFIX, cpp_PREFIX_len, gcc_exec_prefix 
+	and cpp_relocated. 
+	* Makefile.in (PREPROCESSOR_DEFINES): Add -DPREFIX option.
+	* c-incpath.c (add_standard_paths): Call cpp_relocated. If relocated,
+	replace configured prefix with gcc_exec_prefix. 
+
 2006-11-20  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.h (LEGITIMATE_CONSTANT_P): Call

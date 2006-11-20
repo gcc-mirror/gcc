@@ -127,6 +127,7 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 		    const char *imultilib, int cxx_stdinc)
 {
   const struct default_include *p;
+  int relocated = cpp_relocated();
   size_t len;
 
   if (iprefix && (len = cpp_GCC_INCLUDE_DIR_len) != 0)
@@ -163,6 +164,17 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 	  /* Should this directory start with the sysroot?  */
 	  if (sysroot && p->add_sysroot)
 	    str = concat (sysroot, p->fname, NULL);
+	  else if (!p->add_sysroot && relocated)
+	    {
+	      /* If the compiler is relocated, and this is a configured 
+		 prefix relative path, then we use gcc_exec_prefix instead 
+		 of the configured prefix.  */
+	      gcc_assert (strncmp (p->fname, cpp_PREFIX,
+				     cpp_PREFIX_len) == 0);
+	      str = concat (gcc_exec_prefix, p->fname
+			      + cpp_PREFIX_len, NULL);
+	      str = update_path (str, p->component);
+	    }
 	  else
 	    str = update_path (p->fname, p->component);
 

@@ -52,4 +52,11 @@ extern const struct default_include cpp_include_defaults[];
 extern const char cpp_GCC_INCLUDE_DIR[];
 extern const size_t cpp_GCC_INCLUDE_DIR_len;
 
+extern const char cpp_PREFIX[];
+extern const size_t cpp_PREFIX_len;
+extern const char *gcc_exec_prefix;
+
+/* Return true if the toolchain is relocated.  */
+bool cpp_relocated (void);
+
 #endif /* ! GCC_CPPDEFAULT_H */
