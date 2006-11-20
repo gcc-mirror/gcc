@@ -1,3 +1,11 @@
+2006-11-20  Anatoly Sokolov <aesok@post.ru>
+
+	PR target/18553
+	PR target/29449
+	* config/avr/avr.h (OBJECT_FORMAT_ELF): Define.
+
+	* config/avr/avr.h (DWARF2_DEBUGGING_INFO): Define.
+
 2006-11-20  J"orn Rennecke  <joern.rennecke@st.com>
 
 	* config.gcc (sh*-superh-elf): Add t-superh to tmake_file.
