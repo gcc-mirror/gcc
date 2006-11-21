@@ -64,7 +64,7 @@ typedef decNumber* (*dfp_unary_func)
 
 /* A pointer to a binary decNumber operation.  */
 typedef decNumber* (*dfp_binary_func)
-     (decNumber *, decNumber *, decNumber *, decContext *);
+     (decNumber *, const decNumber *, const decNumber *, decContext *);
 
 extern unsigned long __dec_byte_swap (unsigned long);
 
