@@ -869,8 +869,6 @@ note_yacc_type (options_p o, pair_p fields, pair_p typeinfo,
   do_typedef ("YYSTYPE", new_structure ("yy_union", 1, pos, typeinfo, o), pos);
 }
 
-static void process_gc_options (options_p, enum gc_used_enum,
-				int *, int *, int *, type_p *);
 static void set_gc_used_type (type_p, enum gc_used_enum, type_p *);
 static void set_gc_used (pair_p);
 
@@ -878,7 +876,7 @@ static void set_gc_used (pair_p);
 
 static void
 process_gc_options (options_p opt, enum gc_used_enum level, int *maybe_undef,
-		    int *pass_param, int *length, type_p *nested_ptr)
+		    int *pass_param, int *length, int *skip, type_p *nested_ptr)
 {
   options_p o;
   for (o = opt; o; o = o->next)
@@ -890,6 +888,8 @@ process_gc_options (options_p opt, enum gc_used_enum level, int *maybe_undef,
       *pass_param = 1;
     else if (strcmp (o->name, "length") == 0)
       *length = 1;
+    else if (strcmp (o->name, "skip") == 0)
+      *skip = 1;
     else if (strcmp (o->name, "nested_ptr") == 0)
       *nested_ptr = ((const struct nested_ptr_data *) o->info)->type;
 }
@@ -913,7 +913,7 @@ set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
 	int dummy;
 	type_p dummy2;
 
-	process_gc_options (t->u.s.opt, level, &dummy, &dummy, &dummy,
+	process_gc_options (t->u.s.opt, level, &dummy, &dummy, &dummy, &dummy,
 			    &dummy2);
 
 	for (f = t->u.s.fields; f; f = f->next)
@@ -921,9 +921,10 @@ set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
 	    int maybe_undef = 0;
 	    int pass_param = 0;
 	    int length = 0;
+	    int skip = 0;
 	    type_p nested_ptr = NULL;
 	    process_gc_options (f->opt, level, &maybe_undef, &pass_param,
-				&length, &nested_ptr);
+				&length, &skip, &nested_ptr);
 
 	    if (nested_ptr && f->type->kind == TYPE_POINTER)
 	      set_gc_used_type (nested_ptr, GC_POINTED_TO, 
@@ -935,6 +936,8 @@ set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
 	    else if (pass_param && f->type->kind == TYPE_POINTER && param)
 	      set_gc_used_type (find_param_structure (f->type->u.p, param),
 				GC_POINTED_TO, NULL);
+	    else if (skip)
+	      ; /* target type is not used through this field */
 	    else
 	      set_gc_used_type (f->type, GC_USED, pass_param ? param : NULL);
 	  }

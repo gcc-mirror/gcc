@@ -1,3 +1,10 @@
+2006-11-20  Zack Weinberg  <zackw@panix.com>
+
+	* gengtype.c (process_gc_options): Remove unnecessary forward decl.
+	Add another out parameter, "skip".
+	(set_gc_used_type): Adjust calls to process_gc_options.  If a field
+	is tagged "skip", do not mark its type used.
+
 2006-11-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/25500
