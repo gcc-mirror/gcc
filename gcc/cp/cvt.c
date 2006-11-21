@@ -1083,7 +1083,6 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 	  return expr;
 	/* else fall through...  */
 
-      case VECTOR_TYPE:
       case BOOLEAN_TYPE:
 	return (desires & WANT_INT) ? expr : NULL_TREE;
       case ENUMERAL_TYPE:
@@ -1097,6 +1096,23 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       case ARRAY_TYPE:
 	return (desires & WANT_POINTER) ? decay_conversion (expr)
 					: NULL_TREE;
+
+      case VECTOR_TYPE:
+	if ((desires & WANT_VECTOR) == 0)
+	  return NULL_TREE;
+	switch (TREE_CODE (TREE_TYPE (basetype)))
+	  {
+	  case INTEGER_TYPE:
+	  case BOOLEAN_TYPE:
+	    return (desires & WANT_INT) ? expr : NULL_TREE;
+	  case ENUMERAL_TYPE:
+	    return (desires & WANT_ENUM) ? expr : NULL_TREE;
+	  case REAL_TYPE:
+	    return (desires & WANT_FLOAT) ? expr : NULL_TREE;
+	  default:
+	    return NULL_TREE;
+	  }
+
       default:
 	return NULL_TREE;
       }
@@ -1130,6 +1146,23 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 	  win = (desires & WANT_FLOAT); break;
 	case POINTER_TYPE:
 	  win = (desires & WANT_POINTER); break;
+
+	case VECTOR_TYPE:
+	  if ((desires & WANT_VECTOR) == 0)
+	    break;
+	  switch (TREE_CODE (TREE_TYPE (candidate)))
+	    {
+	    case BOOLEAN_TYPE:
+	    case INTEGER_TYPE:
+	      win = (desires & WANT_INT); break;
+	    case ENUMERAL_TYPE:
+	      win = (desires & WANT_ENUM); break;
+	    case REAL_TYPE:
+	      win = (desires & WANT_FLOAT); break;
+	    default:
+	      break;
+	    }
+	  break;
 
 	default:
 	  break;
