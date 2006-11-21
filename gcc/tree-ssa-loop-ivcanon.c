@@ -283,7 +283,7 @@ canonicalize_loop_induction_variables (struct loops *loops, struct loop *loop,
   niter = number_of_iterations_in_loop (loop);
   if (TREE_CODE (niter) == INTEGER_CST)
     {
-      exit = loop->single_exit;
+      exit = single_exit (loop);
       if (!just_once_each_iteration_p (loop, exit->src))
 	return false;
 
@@ -297,7 +297,7 @@ canonicalize_loop_induction_variables (struct loops *loops, struct loop *loop,
     {
       /* If the loop has more than one exit, try checking all of them
 	 for # of iterations determinable through scev.  */
-      if (!loop->single_exit)
+      if (!single_exit (loop))
 	niter = find_loop_niter (loop, &exit);
 
       /* Finally if everything else fails, try brute force evaluation.  */

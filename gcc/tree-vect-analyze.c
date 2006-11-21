@@ -384,7 +384,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
                      "not vectorized: can't create epilog loop 1.");
           return false;
         }
-      if (!slpeel_can_duplicate_loop_p (loop, loop->single_exit))
+      if (!slpeel_can_duplicate_loop_p (loop, single_exit (loop)))
         {
           if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
             fprintf (vect_dump,
@@ -1522,7 +1522,7 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
 	      /* We expect all such uses to be in the loop exit phis
 		 (because of loop closed form)   */
 	      gcc_assert (TREE_CODE (USE_STMT (use_p)) == PHI_NODE);
-	      gcc_assert (bb == loop->single_exit->dest);
+	      gcc_assert (bb == single_exit (loop)->dest);
 
               *live_p = true;
 	    }
@@ -1873,13 +1873,13 @@ vect_analyze_loop_form (struct loop *loop)
       return NULL;
     }
   
-  if (!loop->single_exit 
+  if (!single_exit (loop) 
       || loop->num_nodes != 2
       || EDGE_COUNT (loop->header->preds) != 2)
     {
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
         {
-          if (!loop->single_exit)
+          if (!single_exit (loop))
             fprintf (vect_dump, "not vectorized: multiple exits.");
           else if (loop->num_nodes != 2)
             fprintf (vect_dump, "not vectorized: too many BBs in loop.");
@@ -1903,9 +1903,9 @@ vect_analyze_loop_form (struct loop *loop)
     }
 
   /* Make sure there exists a single-predecessor exit bb:  */
-  if (!single_pred_p (loop->single_exit->dest))
+  if (!single_pred_p (single_exit (loop)->dest))
     {
-      edge e = loop->single_exit;
+      edge e = single_exit (loop);
       if (!(e->flags & EDGE_ABNORMAL))
 	{
 	  split_loop_exit_edge (e);

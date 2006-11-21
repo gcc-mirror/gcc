@@ -1875,7 +1875,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
 					     type,
 					     new_ivs,
 					     invariants, MIN_EXPR, &stmts);
-      exit = temp->single_exit;
+      exit = single_exit (temp);
       exitcond = get_loop_exit_condition (temp);
       bb = bb_for_stmt (exitcond);
       bsi = bsi_start (bb);
@@ -2211,7 +2211,7 @@ exit_phi_for_loop_p (struct loop *loop, tree stmt)
   
   if (TREE_CODE (stmt) != PHI_NODE
       || PHI_NUM_ARGS (stmt) != 1
-      || bb_for_stmt (stmt) != loop->single_exit->dest)
+      || bb_for_stmt (stmt) != single_exit (loop)->dest)
     return false;
   
   return true;
@@ -2387,7 +2387,7 @@ can_convert_to_perfect_nest (struct loop *loop)
   /* We also need to make sure the loop exit only has simple copy phis in it,
      otherwise we don't know how to transform it into a perfect nest right
      now.  */
-  exitdest = loop->single_exit->dest;
+  exitdest = single_exit (loop)->dest;
   
   for (phi = phi_nodes (exitdest); phi; phi = PHI_CHAIN (phi))
     if (PHI_NUM_ARGS (phi) != 1)
@@ -2463,8 +2463,8 @@ perfect_nestify (struct loops *loops,
   htab_t replacements = NULL;
 
   /* Create the new loop.  */
-  olddest = loop->single_exit->dest;
-  preheaderbb = split_edge (loop->single_exit);
+  olddest = single_exit (loop)->dest;
+  preheaderbb = split_edge (single_exit (loop));
   headerbb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
   
   /* Push the exit phi nodes that we are moving.  */
@@ -2517,14 +2517,14 @@ perfect_nestify (struct loops *loops,
   newloop = duplicate_loop (loops, loop, olddest->loop_father);  
   newloop->header = headerbb;
   newloop->latch = latchbb;
-  newloop->single_exit = e;
+  set_single_exit (newloop, e);
   add_bb_to_loop (latchbb, newloop);
   add_bb_to_loop (bodybb, newloop);
   add_bb_to_loop (headerbb, newloop);
   set_immediate_dominator (CDI_DOMINATORS, bodybb, headerbb);
   set_immediate_dominator (CDI_DOMINATORS, headerbb, preheaderbb);
   set_immediate_dominator (CDI_DOMINATORS, preheaderbb, 
-			   loop->single_exit->src);
+			   single_exit (loop)->src);
   set_immediate_dominator (CDI_DOMINATORS, latchbb, bodybb);
   set_immediate_dominator (CDI_DOMINATORS, olddest, bodybb);
   /* Create the new iv.  */

@@ -766,11 +766,11 @@ update_single_exits_after_duplication (basic_block *bbs, unsigned nbbs,
 
   for (; loop->outer; loop = loop->outer)
     {
-      if (!loop->single_exit)
+      if (!single_exit (loop))
 	continue;
 
-      if (loop->single_exit->src->flags & BB_DUPLICATED)
-	loop->single_exit = NULL;
+      if (single_exit (loop)->src->flags & BB_DUPLICATED)
+	set_single_exit (loop, NULL);
     }
 
   for (i = 0; i < nbbs; i++)
@@ -784,7 +784,7 @@ update_single_exit_for_duplicated_loop (struct loop *loop)
 {
   struct loop *copy = loop->copy;
   basic_block src, dest;
-  edge exit = loop->single_exit;
+  edge exit = single_exit (loop);
 
   if (!exit)
     return;
@@ -796,7 +796,7 @@ update_single_exit_for_duplicated_loop (struct loop *loop)
 
   exit = find_edge (src, dest);
   gcc_assert (exit != NULL);
-  copy->single_exit = exit;
+  set_single_exit (copy, exit);
 }
 
 /* Updates single exit information for copies of ORIG_LOOPS and their subloops.
@@ -1336,9 +1336,9 @@ loop_version (struct loops *loops, struct loop * loop,
 		   cond_bb, true_edge, false_edge,
 		   false /* Do not redirect all edges.  */);
 
-  exit = loop->single_exit;
+  exit = single_exit (loop);
   if (exit)
-    nloop->single_exit = find_edge (get_bb_copy (exit->src), exit->dest);
+    set_single_exit (nloop, find_edge (get_bb_copy (exit->src), exit->dest));
 
   /* loopify redirected latch_edge. Update its PENDING_STMTS.  */
   lv_flush_pending_stmts (latch_edge);

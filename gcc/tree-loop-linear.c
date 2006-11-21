@@ -270,7 +270,7 @@ linear_transform_loops (struct loops *loops)
                 ...
                }
            } */
-      if (!loop_nest || !loop_nest->inner || !loop_nest->single_exit)
+      if (!loop_nest || !loop_nest->inner || !single_exit (loop_nest))
 	continue;
       VEC_truncate (tree, oldivs, 0);
       VEC_truncate (tree, invariants, 0);
@@ -278,7 +278,7 @@ linear_transform_loops (struct loops *loops)
       for (temp = loop_nest->inner; temp; temp = temp->inner)
 	{
 	  /* If we have a sibling loop or multiple exit edges, jump ship.  */
-	  if (temp->next || !temp->single_exit)
+	  if (temp->next || !single_exit (temp))
 	    {
 	      problem = true;
 	      break;

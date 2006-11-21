@@ -251,7 +251,7 @@ mark_single_exit_loops (struct loops *loops)
     {
       loop = loops->parray[i];
       if (loop)
-	loop->single_exit = NULL;
+	set_single_exit (loop, NULL);
     }
 
   FOR_EACH_BB (bb)
@@ -273,10 +273,10 @@ mark_single_exit_loops (struct loops *loops)
 	    {
 	      /* If we have already seen an exit, mark this by the edge that
 		 surely does not occur as any exit.  */
-	      if (loop->single_exit)
-		loop->single_exit = single_succ_edge (ENTRY_BLOCK_PTR);
+	      if (single_exit (loop))
+		set_single_exit (loop, single_succ_edge (ENTRY_BLOCK_PTR));
 	      else
-		loop->single_exit = e;
+		set_single_exit (loop, e);
 	    }
 	}
     }
@@ -287,8 +287,8 @@ mark_single_exit_loops (struct loops *loops)
       if (!loop)
 	continue;
 
-      if (loop->single_exit == single_succ_edge (ENTRY_BLOCK_PTR))
-	loop->single_exit = NULL;
+      if (single_exit (loop) == single_succ_edge (ENTRY_BLOCK_PTR))
+	set_single_exit (loop, NULL);
     }
 
   loops->state |= LOOPS_HAVE_MARKED_SINGLE_EXITS;
@@ -1142,12 +1142,12 @@ verify_loop_structure (struct loops *loops)
 		   loop = loop->outer)
 		{
 		  sizes[loop->num]++;
-		  if (loop->single_exit
-		      && loop->single_exit != e)
+		  if (single_exit (loop)
+		      && single_exit (loop) != e)
 		    {
 		      error ("wrong single exit %d->%d recorded for loop %d",
-			     loop->single_exit->src->index,
-			     loop->single_exit->dest->index,
+			     single_exit (loop)->src->index,
+			     single_exit (loop)->dest->index,
 			     loop->num);
 		      error ("right exit is %d->%d",
 			     e->src->index, e->dest->index);
@@ -1164,19 +1164,19 @@ verify_loop_structure (struct loops *loops)
 	    continue;
 
 	  if (sizes[i] == 1
-	      && !loop->single_exit)
+	      && !single_exit (loop))
 	    {
 	      error ("single exit not recorded for loop %d", loop->num);
 	      err = 1;
 	    }
 
 	  if (sizes[i] != 1
-	      && loop->single_exit)
+	      && single_exit (loop))
 	    {
 	      error ("loop %d should not have single exit (%d -> %d)",
 		     loop->num,
-		     loop->single_exit->src->index,
-		     loop->single_exit->dest->index);
+		     single_exit (loop)->src->index,
+		     single_exit (loop)->dest->index);
 	      err = 1;
 	    }
 	}
@@ -1215,4 +1215,21 @@ loop_exit_edge_p (const struct loop *loop, edge e)
 {
   return (flow_bb_inside_loop_p (loop, e->src)
 	  && !flow_bb_inside_loop_p (loop, e->dest));
+}
+
+/* Returns the single exit edge of LOOP, or NULL if LOOP has either no exit
+   or more than one exit.  */
+
+edge
+single_exit (const struct loop *loop)
+{
+  return loop->single_exit_;
+}
+
+/* Records E as a single exit edge of LOOP.  */
+
+void
+set_single_exit (struct loop *loop, edge e)
+{
+  loop->single_exit_ = e;
 }

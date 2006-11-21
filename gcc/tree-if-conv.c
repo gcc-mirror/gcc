@@ -521,7 +521,7 @@ if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
     }
 
   /* More than one loop exit is too much to handle.  */
-  if (!loop->single_exit)
+  if (!single_exit (loop))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "multiple exits\n");

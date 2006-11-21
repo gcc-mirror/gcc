@@ -1006,7 +1006,7 @@ loop_only_exit_p (struct loop *loop, edge exit)
   unsigned i;
   tree call;
 
-  if (exit != loop->single_exit)
+  if (exit != single_exit (loop))
     return false;
 
   body = get_loop_body (loop);

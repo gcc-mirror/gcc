@@ -966,8 +966,7 @@ tree
 get_loop_exit_condition (struct loop *loop)
 {
   tree res = NULL_TREE;
-  edge exit_edge = loop->single_exit;
-
+  edge exit_edge = single_exit (loop);
   
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(get_loop_exit_condition \n  ");
@@ -1003,7 +1002,7 @@ get_exit_conditions_rec (struct loop *loop,
   get_exit_conditions_rec (loop->inner, exit_conditions);
   get_exit_conditions_rec (loop->next, exit_conditions);
   
-  if (loop->single_exit)
+  if (single_exit (loop))
     {
       tree loop_condition = get_loop_exit_condition (loop);
       
@@ -2107,7 +2106,7 @@ loop_closed_phi_def (tree var)
     return NULL_TREE;
 
   loop = loop_containing_stmt (SSA_NAME_DEF_STMT (var));
-  exit = loop->single_exit;
+  exit = single_exit (loop);
   if (!exit)
     return NULL_TREE;
 
@@ -2485,7 +2484,7 @@ number_of_iterations_in_loop (struct loop *loop)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(number_of_iterations_in_loop\n");
   
-  exit = loop->single_exit;
+  exit = single_exit (loop);
   if (!exit)
     goto end;
 
@@ -2961,7 +2960,7 @@ scev_const_prop (void)
 
       /* If we do not know exact number of iterations of the loop, we cannot
 	 replace the final value.  */
-      exit = loop->single_exit;
+      exit = single_exit (loop);
       if (!exit)
 	continue;
 
