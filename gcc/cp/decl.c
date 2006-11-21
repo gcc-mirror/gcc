@@ -4977,7 +4977,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  || !DECL_CLASS_SCOPE_P (decl)
 	  || !DECL_INTEGRAL_CONSTANT_VAR_P (decl)
 	  || type_dependent_p
-	  || value_dependent_expression_p (init))
+	  || value_dependent_expression_p (init)
+	     /* Check also if initializer is a value dependent
+		{ integral_constant_expression }.  */
+	  || (TREE_CODE (init) == CONSTRUCTOR
+	      && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)) == 1
+	      && value_dependent_expression_p
+		   (VEC_index (constructor_elt,
+			       CONSTRUCTOR_ELTS (init), 0)->value)))
 	{
 	  if (init && DECL_INITIAL (decl))
 	    DECL_INITIAL (decl) = init;
