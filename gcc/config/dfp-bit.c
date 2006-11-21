@@ -88,9 +88,6 @@ dfp_unary_op (dfp_unary_func op, DFP_C_TYPE arg)
   /* Perform the operation.  */
   op (&res, &arg1, &context);
 
-  if (CONTEXT_TRAPS && CONTEXT_ERRORS (context))
-    DFP_RAISE (0);
-
   TO_ENCODED (&encoded_result, &res, &context);
   IEEE_TO_HOST (encoded_result, &result);
   return result;
@@ -118,9 +115,6 @@ dfp_binary_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
   /* Perform the operation.  */
   op (&res, &arg1, &arg2, &context);
 
-  if (CONTEXT_TRAPS && CONTEXT_ERRORS (context))
-    DFP_RAISE (0);
-
   TO_ENCODED (&encoded_result, &res, &context);
   IEEE_TO_HOST (encoded_result, &result);
   return result;
@@ -147,9 +141,6 @@ dfp_compare_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 
   /* Perform the comparison.  */
   op (&res, &arg1, &arg2, &context);
-
-  if (CONTEXT_TRAPS && CONTEXT_ERRORS (context))
-    DFP_RAISE (0);
 
   if (decNumberIsNegative (&res))
     result = -1;
@@ -379,8 +370,6 @@ DFP_TO_DFP (DFP_C_TYPE f_from)
   HOST_TO_IEEE (f_from, &s_from);
   TO_INTERNAL (&s_from, &d);
   TO_ENCODED_TO (&s_to, &d, &context);
-  if (CONTEXT_TRAPS && (context.status & DEC_Inexact) != 0)
-    DFP_RAISE (DEC_Inexact);
 
   IEEE_TO_HOST_TO (s_to, &f_to);
   return f_to;
@@ -469,8 +458,6 @@ INT_TO_DFP (INT_TYPE i)
   /* Convert from the floating point string to a decimal* type.  */
   FROM_STRING (&s, buf, &context);
   IEEE_TO_HOST (s, &f);
-  if (CONTEXT_TRAPS && (context.status & DEC_Inexact) != 0)
-    DFP_RAISE (DEC_Inexact);
   return f;
 }
 #endif
@@ -519,8 +506,6 @@ BFP_TO_DFP (BFP_TYPE x)
   /* Convert from the floating point string to a decimal* type.  */
   FROM_STRING (&s, buf, &context);
   IEEE_TO_HOST (s, &f);
-  if (CONTEXT_TRAPS && (context.status & DEC_Inexact) != 0)
-    DFP_RAISE (DEC_Inexact);
   return f;
 }
 #endif

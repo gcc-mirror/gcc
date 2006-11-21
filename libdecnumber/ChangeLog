@@ -1,5 +1,8 @@
 2006-11-21  Janis Johnson  <janis187@us.ibm.com>
 
+	* decLibrary.c (__dec_type_swap): Add prototype.
+	(__dfp_enable_traps, dfp_raise): Delete.
+
 	* Makefile.in: Don't include decRound in library used by compiler.
 
 2006-10-10  Brooks Moses  <bmoses@stanford.edu> 
