@@ -1,7 +1,7 @@
 2006-11-20  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
 
 	* configure.ac (need_64bit_hwint): Need 64bit hwint for SPU.
-	* configure : Rebuilt.
+	* configure: Rebuilt.
 
 2006-11-01	Douglas Gregor <doug.gregor@gmail.com>
 
