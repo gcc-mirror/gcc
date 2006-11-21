@@ -886,6 +886,10 @@ dump_decl (tree t, int flags)
       dump_decl (DECL_NAME (t), flags);
       break;
 
+    case STATIC_ASSERT:
+      pp_cxx_declaration (cxx_pp, t);
+      break;
+
     case BASELINK:
       dump_decl (BASELINK_FUNCTIONS (t), flags);
       break;
