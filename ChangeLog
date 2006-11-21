@@ -1,3 +1,8 @@
+2006-11-22  Ben Elliston  <bje@au.ibm.com>
+
+	* configure.in (skipdirs): Don't build libssp for SPU.
+	* configure: Regenerate.
+
 2006-11-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* MAINTAINERS (spu port): Add myself as maintainer.
