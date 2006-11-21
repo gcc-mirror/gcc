@@ -379,7 +379,6 @@ add_loop (struct loops *loops, struct loop *loop, struct loop *outer)
   /* Add it to loop structure.  */
   place_new_loop (loops, loop);
   flow_loop_tree_node_add (outer, loop);
-  loop->level = 1;
 
   /* Find its nodes.  */
   bbs = XCNEWVEC (basic_block, n_basic_blocks);
@@ -653,10 +652,7 @@ duplicate_loop (struct loops *loops, struct loop *loop, struct loop *target)
   cloop = XCNEW (struct loop);
   place_new_loop (loops, cloop);
 
-  /* Initialize copied loop.  */
-  cloop->level = loop->level;
-
-  /* Set it as copy of loop.  */
+  /* Mark the new loop as copy of LOOP.  */
   loop->copy = cloop;
 
   /* Add it to target.  */

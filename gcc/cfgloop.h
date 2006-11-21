@@ -104,10 +104,6 @@ struct loop
   /* Superloops of the loop.  */
   struct loop **pred;
 
-  /* The height of the loop (enclosed loop levels) within the loop
-     hierarchy tree.  */
-  int level;
-
   /* The outer (parent) loop or NULL if outermost loop.  */
   struct loop *outer;
 
