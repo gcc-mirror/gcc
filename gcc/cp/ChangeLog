@@ -1,3 +1,12 @@
+2006-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/29734
+	* cp-tree.h (WANT_VECTOR): Define.
+	(WANT_ARITH): Add WANT_VECTOR.
+	* cvt.c (build_expr_type_conversion): Handle vector types.
+	* typeck.c (build_unary_op): Add WANT_VECTOR to
+	build_expr_type_conversion flags.
+
 2006-11-20  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/29475
