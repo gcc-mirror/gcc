@@ -321,6 +321,10 @@ sparc64*-*-*)
 sparc*-*-*)
 	cpu_type=sparc
 	;;
+spu*-*-*)
+	cpu_type=spu
+	need_64bit_hwint=yes
+	;;
 s390*-*-*)
 	cpu_type=s390
 	need_64bit_hwint=yes
@@ -2325,6 +2329,14 @@ sparc64-*-netbsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-netbsd64"
+	;;
+spu-*-elf*)
+	tm_file="dbxelf.h elfos.h spu/spu-elf.h spu/spu.h"
+	tmake_file="spu/t-spu-elf"
+	extra_headers="spu_intrinsics.h spu_internals.h vmx2spu.h spu_mfcio.h vec_types.h"
+	extra_modes=spu/spu-modes.def
+	c_target_objs="${c_target_objs} spu-c.o"
+	cxx_target_objs="${cxx_target_objs} spu-c.o"
 	;;
 strongarm-*-elf*)
 	tm_file="arm/strongarm-elf.h dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"

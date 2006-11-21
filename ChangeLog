@@ -1,5 +1,10 @@
 2006-11-20  Trevor Smigiel <trevor_smigiel@playstation.sony.com>
 
+	* configure.in (skipdirs) : Don't build target-libiberty for SPU.
+	* configure : Rebuilt.
+
+2006-11-20  Trevor Smigiel <trevor_smigiel@playstation.sony.com>
+
 	* MAINTAINERS (Write After Approval): Add myself.
 
 2006-11-20  Andrea Ornstein  <andrea.ornstein@st.com>

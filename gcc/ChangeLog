@@ -1,3 +1,42 @@
+2006-11-20  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
+	Russell Olsen <Russell_Olsen@playstation.sony.com>
+	Dmitri Makarov <Dmitri_Makarov@playstation.sony.com>
+	Yukishige Shibata <shibata@rd.scei.sony.co.jp>
+	Nobuhisa Fujinami <fnami@rd.scei.sony.co.jp>
+	Takeaki Fukuoka <fukuoka@rd.scei.sony.co.jp>
+	Andrew Pinski <Andrew_Pinski@playstation.sony.com>
+
+	* config.gcc : Add target for SPU.
+	* config/spu/constraints.md : New file.
+	* config/spu/crt0.c : New file.
+	* config/spu/crtend.c : New file.
+	* config/spu/crti.asm : New file.
+	* config/spu/crtn.asm : New file.
+	* config/spu/float_unsdidf.c : New file.
+	* config/spu/float_unssidf.c : New file.
+	* config/spu/predicates.md : New file.
+	* config/spu/spu-builtins.def : New file.
+	* config/spu/spu-builtins.h : New file.
+	* config/spu/spu-builtins.md : New file.
+	* config/spu/spu-c.c : New file.
+	* config/spu/spu-elf.h : New file.
+	* config/spu/spu-modes.def : New file.
+	* config/spu/spu-protos.h : New file.
+	* config/spu/spu.c : New file.
+	* config/spu/spu.h : New file.
+	* config/spu/spu.md : New file.
+	* config/spu/spu.opt : New file.
+	* config/spu/spu_internals.h : New file.
+	* config/spu/spu_intrinsics.h : New file.
+	* config/spu/spu_mfcio.h : New file.
+	* config/spu/t-spu-elf : New file.
+	* config/spu/vec_types.h : New file.
+	* config/spu/vmx2spu.h : New file.
+	* doc/contrib.texi : Document SPU contributor.
+	* doc/extend.texi : Document SPU extensions.
+	* doc/invoke.texi : Document SPU options.
+	* doc/md.texi : Document SPU constraints.
+
 2006-11-21  Zdenek Dvorak <dvorakz@suse.cz>
 
 	* cfgloopmanip.c (add_loop, duplicate_loop): Do not set level

@@ -1,3 +1,8 @@
+2006-11-20  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
+
+	* configure.ac (need_64bit_hwint): Need 64bit hwint for SPU.
+	* configure : Rebuilt.
+
 2006-11-01	Douglas Gregor <doug.gregor@gmail.com>
 
 	* include/cpplib.h (enum c_lang): Add CLK_GNUCXX0X and CLK_CXX0X

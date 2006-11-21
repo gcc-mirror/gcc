@@ -2630,6 +2630,76 @@ Vector zero
 
 @end table
 
+@item SPU---@file{config/spu/spu.h}
+@table @code
+@item a
+An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 64 bit value.  
+
+@item c
+An immediate for and/xor/or instructions.  const_int is treated as a 64 bit value.  
+
+@item d
+An immediate for the @code{iohl} instruction.  const_int is treated as a 64 bit value.  
+
+@item f
+An immediate which can be loaded with @code{fsmbi}.  
+
+@item A
+An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is treated as a 32 bit value.  
+
+@item B
+An immediate for most arithmetic instructions.  const_int is treated as a 32 bit value.  
+
+@item C
+An immediate for and/xor/or instructions.  const_int is treated as a 32 bit value.  
+
+@item D
+An immediate for the @code{iohl} instruction.  const_int is treated as a 32 bit value.  
+
+@item I
+A constant in the range [-64, 63] for shift/rotate instructions.  
+
+@item J
+An unsigned 7-bit constant for conversion/nop/channel instructions.  
+
+@item K
+A signed 10-bit constant for most arithmetic instructions.  
+
+@item M
+A signed 16 bit immediate for @code{stop}.  
+
+@item N
+An unsigned 16-bit constant for @code{iohl} and @code{fsmbi}.  
+
+@item O
+An unsigned 7-bit constant whose 3 least significant bits are 0.  
+
+@item P
+An unsigned 3-bit constant for 16-byte rotates and shifts 
+
+@item R
+Call operand, reg, for indirect calls 
+
+@item S
+Call operand, symbol, for relative calls.  
+
+@item T
+Call operand, const_int, for absolute calls.  
+
+@item U
+An immediate which can be loaded with the il/ila/ilh/ilhu instructions.  const_int is sign extended to 128 bit.  
+
+@item W
+An immediate for shift and rotate instructions.  const_int is treated as a 32 bit value.  
+
+@item Y
+An immediate for and/xor/or instructions.  const_int is sign extended as a 128 bit.  
+
+@item Z
+An immediate for the @code{iohl} instruction.  const_int is sign extended to 128 bit.  
+
+@end table
+
 @item TMS320C3x/C4x---@file{config/c4x/c4x.h}
 @table @code
 @item a
