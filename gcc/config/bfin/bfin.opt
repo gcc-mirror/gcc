@@ -60,3 +60,7 @@ Avoid generating pc-relative calls; use indirection
 mfdpic
 Target Report Mask(FDPIC)
 Enable Function Descriptor PIC mode
+
+mstack-check-l1
+Target Report Mask(STACK_CHECK_L1)
+Do stack checking using bounds in L1 scratch memory
