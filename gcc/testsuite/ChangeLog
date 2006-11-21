@@ -1,5 +1,8 @@
 2006-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/29570
+	* g++.dg/template/static29.C: New test.
+
 	PR c++/29734
 	* g++.dg/conversion/simd4.C: New test.
 

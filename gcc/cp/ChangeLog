@@ -1,5 +1,9 @@
 2006-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/29570
+	* decl.c (cp_finish_decl): Check for value dependent brace enclosed
+	scalar initializer.
+
 	PR c++/29734
 	* cp-tree.h (WANT_VECTOR): Define.
 	(WANT_ARITH): Add WANT_VECTOR.
