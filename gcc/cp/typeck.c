@@ -3995,7 +3995,8 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  if (!noconvert)
 	    arg = default_conversion (arg);
 	}
-      else if (!(arg = build_expr_type_conversion (WANT_INT | WANT_ENUM,
+      else if (!(arg = build_expr_type_conversion (WANT_INT | WANT_ENUM
+						   | WANT_VECTOR,
 						   arg, true)))
 	errstring = "wrong type argument to bit-complement";
       else if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
