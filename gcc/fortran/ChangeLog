@@ -1,3 +1,10 @@
+2006-11-21 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29820
+	* trans-array.c (gfc_get_derived_type): Once done, spread the
+	backend_decl to all identical derived types in all sibling
+	namespaces.
+
 2006-11-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/27546
