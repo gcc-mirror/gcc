@@ -222,7 +222,7 @@ extern void mark_loop_exit_edges (struct loops *);
 extern basic_block *get_loop_body (const struct loop *);
 extern basic_block *get_loop_body_in_dom_order (const struct loop *);
 extern basic_block *get_loop_body_in_bfs_order (const struct loop *);
-extern edge *get_loop_exit_edges (const struct loop *, unsigned *);
+extern VEC (edge, heap) *get_loop_exit_edges (const struct loop *);
 extern unsigned num_loop_branches (const struct loop *);
 
 extern edge loop_preheader_edge (const struct loop *);

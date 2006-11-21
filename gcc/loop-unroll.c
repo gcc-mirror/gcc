@@ -1709,14 +1709,15 @@ static struct opt_info *
 analyze_insns_in_loop (struct loop *loop)
 {
   basic_block *body, bb;
-  unsigned i, num_edges = 0;
+  unsigned i;
   struct opt_info *opt_info = XCNEW (struct opt_info);
   rtx insn;
   struct iv_to_split *ivts = NULL;
   struct var_to_expand *ves = NULL;
   PTR *slot1;
   PTR *slot2;
-  edge *edges = get_loop_exit_edges (loop, &num_edges);
+  VEC (edge, heap) *edges = get_loop_exit_edges (loop);
+  edge exit;
   bool can_apply = false;
   
   iv_analysis_loop_init (loop);
@@ -1730,11 +1731,14 @@ analyze_insns_in_loop (struct loop *loop)
   /* Record the loop exit bb and loop preheader before the unrolling.  */
   opt_info->loop_preheader = loop_preheader_edge (loop)->src;
   
-  if (num_edges == 1
-      && !(edges[0]->flags & EDGE_COMPLEX))
+  if (VEC_length (edge, edges) == 1)
     {
-      opt_info->loop_exit = split_edge (edges[0]);
-      can_apply = true;
+      exit = VEC_index (edge, edges, 0);
+      if (!(exit->flags & EDGE_COMPLEX))
+	{
+	  opt_info->loop_exit = split_edge (exit);
+	  can_apply = true;
+	}
     }
   
   if (flag_variable_expansion_in_unroller
@@ -1774,7 +1778,7 @@ analyze_insns_in_loop (struct loop *loop)
       }
     }
   
-  free (edges);
+  VEC_free (edge, heap, edges);
   free (body);
   return opt_info;
 }

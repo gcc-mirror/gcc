@@ -1016,13 +1016,12 @@ get_lsm_tmp_name (tree ref)
 /* Records request for store motion of memory reference REF from LOOP.
    MEM_REFS is the list of occurrences of the reference REF inside LOOP;
    these references are rewritten by a new temporary variable.
-   Exits from the LOOP are stored in EXITS, there are N_EXITS of them.
-   The initialization of the temporary variable is put to the preheader
-   of the loop, and assignments to the reference from the temporary variable
-   are emitted to exits.  */
+   Exits from the LOOP are stored in EXITS.  The initialization of the
+   temporary variable is put to the preheader of the loop, and assignments
+   to the reference from the temporary variable are emitted to exits.  */
 
 static void
-schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
+schedule_sm (struct loop *loop, VEC (edge, heap) *exits, tree ref,
 	     struct mem_ref_loc *mem_refs)
 {
   struct mem_ref_loc *aref;
@@ -1030,6 +1029,7 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
   unsigned i;
   tree load, store;
   struct fmt_data fmt_data;
+  edge ex;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1060,11 +1060,11 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
      all dependencies.  */
   bsi_insert_on_edge (loop_latch_edge (loop), load);
 
-  for (i = 0; i < n_exits; i++)
+  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
     {
       store = build2 (MODIFY_EXPR, void_type_node,
 		      unshare_expr (ref), tmp_var);
-      bsi_insert_on_edge (exits[i], store);
+      bsi_insert_on_edge (ex, store);
     }
 }
 
@@ -1072,12 +1072,12 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
    is true, prepare the statements that load the value of the memory reference
    to a temporary variable in the loop preheader, store it back on the loop
    exits, and replace all the references inside LOOP by this temporary variable.
-   LOOP has N_EXITS stored in EXITS.  CLOBBERED_VOPS is the bitmap of virtual
+   EXITS is the list of exits of LOOP.  CLOBBERED_VOPS is the bitmap of virtual
    operands that are clobbered by a call or accessed through multiple references
    in loop.  */
 
 static void
-determine_lsm_ref (struct loop *loop, edge *exits, unsigned n_exits,
+determine_lsm_ref (struct loop *loop, VEC (edge, heap) *exits,
 		   bitmap clobbered_vops, struct mem_ref *ref)
 {
   struct mem_ref_loc *aref;
@@ -1123,35 +1123,36 @@ determine_lsm_ref (struct loop *loop, edge *exits, unsigned n_exits,
 	return;
     }
 
-  schedule_sm (loop, exits, n_exits, ref->mem, ref->locs);
+  schedule_sm (loop, exits, ref->mem, ref->locs);
 }
 
 /* Hoists memory references MEM_REFS out of LOOP.  CLOBBERED_VOPS is the list
    of vops clobbered by call in loop or accessed by multiple memory references.
-   EXITS is the list of N_EXITS exit edges of the LOOP.  */
+   EXITS is the list of exit edges of the LOOP.  */
 
 static void
 hoist_memory_references (struct loop *loop, struct mem_ref *mem_refs,
-			 bitmap clobbered_vops, edge *exits, unsigned n_exits)
+			 bitmap clobbered_vops, VEC (edge, heap) *exits)
 {
   struct mem_ref *ref;
 
   for (ref = mem_refs; ref; ref = ref->next)
-    determine_lsm_ref (loop, exits, n_exits, clobbered_vops, ref);
+    determine_lsm_ref (loop, exits, clobbered_vops, ref);
 }
 
-/* Checks whether LOOP (with N_EXITS exits stored in EXITS array) is suitable
+/* Checks whether LOOP (with exits stored in EXITS array) is suitable
    for a store motion optimization (i.e. whether we can insert statement
    on its exits).  */
 
 static bool
-loop_suitable_for_sm (struct loop *loop ATTRIBUTE_UNUSED, edge *exits,
-		      unsigned n_exits)
+loop_suitable_for_sm (struct loop *loop ATTRIBUTE_UNUSED,
+		      VEC (edge, heap) *exits)
 {
   unsigned i;
+  edge ex;
 
-  for (i = 0; i < n_exits; i++)
-    if (exits[i]->flags & EDGE_ABNORMAL)
+  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+    if (ex->flags & EDGE_ABNORMAL)
       return false;
 
   return true;
@@ -1345,14 +1346,13 @@ free_mem_refs (struct mem_ref *refs)
 static void
 determine_lsm_loop (struct loop *loop)
 {
-  unsigned n_exits;
-  edge *exits = get_loop_exit_edges (loop, &n_exits);
+  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
   bitmap clobbered_vops;
   struct mem_ref *mem_refs;
 
-  if (!loop_suitable_for_sm (loop, exits, n_exits))
+  if (!loop_suitable_for_sm (loop, exits))
     {
-      free (exits);
+      VEC_free (edge, heap, exits);
       return;
     }
 
@@ -1364,10 +1364,10 @@ determine_lsm_loop (struct loop *loop)
   find_more_ref_vops (mem_refs, clobbered_vops);
 
   /* Hoist all suitable memory references.  */
-  hoist_memory_references (loop, mem_refs, clobbered_vops, exits, n_exits);
+  hoist_memory_references (loop, mem_refs, clobbered_vops, exits);
 
   free_mem_refs (mem_refs);
-  free (exits);
+  VEC_free (edge, heap, exits);
   BITMAP_FREE (clobbered_vops);
 }
 

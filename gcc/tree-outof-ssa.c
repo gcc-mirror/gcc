@@ -1976,9 +1976,6 @@ rewrite_trees (var_map map, tree *values)
   delete_elim_graph (g);
 }
 
-
-DEF_VEC_ALLOC_P(edge,heap);
-
 /* These are the local work structures used to determine the best place to 
    insert the copies that were placed on edges by the SSA->normal pass..  */
 static VEC(edge,heap) *edge_leader;

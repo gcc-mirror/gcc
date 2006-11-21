@@ -1,3 +1,19 @@
+2006-11-21  Zdenek Dvorak <dvorakz@suse.cz>
+
+	* tree-ssa-loop-im.c (schedule_sm, determine_lsm_ref,
+	hoist_memory_references, loop_suitable_for_sm, determine_lsm_loop):
+	Use vector of edges instead of array.
+	* tree-ssa-loop-niter.c (find_loop_niter, find_loop_niter_by_eval,
+	estimate_numbers_of_iterations_loop): Ditto.
+	* predict.c (predict_loops): Ditto.
+	* loop-unroll.c (analyze_insns_in_loop): Ditto.
+	* tree-ssa-threadupdate.c: Remove declaration of heap allocation for
+	edge vectors.
+	* basic-block.h: Declare heap allocation for edge vectors.
+	* tree-outof-ssa.c: Ditto.
+	* cfgloop.c (get_loop_exit_edges): Return vector of edges.
+	* cfgloop.h (get_loop_exit_edges): Declaration changed.
+
 2006-11-20  Zack Weinberg  <zackw@panix.com>
 
 	* gengtype.c (process_gc_options): Remove unnecessary forward decl.
