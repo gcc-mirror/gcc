@@ -118,12 +118,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 extern enum rounding	__decGetRound (void);
 #define CONTEXT_ROUND	__decGetRound ()
 
-extern int __dfp_traps;
-#define CONTEXT_TRAPS	__dfp_traps
-#define CONTEXT_ERRORS(context)	context.status & DEC_Errors
-extern void __dfp_raise (int);
-#define DFP_RAISE(A)	__dfp_raise(A)
-
 /* Conversions between different decimal float types use WIDTH_TO to
    determine additional macros to define.  */
 

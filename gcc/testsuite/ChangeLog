@@ -1,4 +1,8 @@
-2006-11-21      Douglas Gregor <doug.gregor@gmail.com>
+2006-11-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/dfp/snan.c: Delete.
+
+2006-11-21  Douglas Gregor  <doug.gregor@gmail.com>
 
         * g++.dg/cpp0x/static_assert1.C: New.
         * g++.dg/cpp0x/static_assert2.C: New.
