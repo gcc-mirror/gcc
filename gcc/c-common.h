@@ -90,6 +90,9 @@ enum rid
   /* casts */
   RID_CONSTCAST, RID_DYNCAST, RID_REINTCAST, RID_STATCAST,
 
+  /* C++0x */
+  RID_STATIC_ASSERT,
+
   /* Objective-C */
   RID_AT_ENCODE,   RID_AT_END,
   RID_AT_CLASS,    RID_AT_ALIAS,     RID_AT_DEFS,
