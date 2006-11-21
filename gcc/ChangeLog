@@ -1,3 +1,10 @@
+2006-11-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vectorizer.h (NUM_PATTERNS): Increase.
+	* tree-vect-patterns.c (vect_vect_recog_func_ptrs): Add
+	vect_recog_pow_pattern.
+	(vect_recog_pow_pattern): New function.
+
 2006-11-21  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.opt (mstack-check-l1): New.

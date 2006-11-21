@@ -50,10 +50,12 @@ static bool widened_name_p (tree, tree, tree *, tree *);
 static tree vect_recog_widen_sum_pattern (tree, tree *, tree *);
 static tree vect_recog_widen_mult_pattern (tree, tree *, tree *);
 static tree vect_recog_dot_prod_pattern (tree, tree *, tree *);
+static tree vect_recog_pow_pattern (tree, tree *, tree *);
 static vect_recog_func_ptr vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
 	vect_recog_widen_mult_pattern,
 	vect_recog_widen_sum_pattern,
-	vect_recog_dot_prod_pattern};
+	vect_recog_dot_prod_pattern,
+	vect_recog_pow_pattern};
 
 
 /* Function widened_name_p
@@ -397,6 +399,93 @@ vect_recog_widen_mult_pattern (tree last_stmt,
   if (vect_print_dump_info (REPORT_DETAILS))
     print_generic_expr (vect_dump, pattern_expr, TDF_SLIM);
   return pattern_expr;
+}
+
+
+/* Function vect_recog_pow_pattern
+
+   Try to find the following pattern:
+
+     x = POW (y, N);
+
+   with POW being one of pow, powf, powi, powif and N being
+   either 2 or 0.5.
+
+   Input:
+
+   * LAST_STMT: A stmt from which the pattern search begins.
+
+   Output:
+
+   * TYPE_IN: The type of the input arguments to the pattern.
+
+   * TYPE_OUT: The type of the output of this pattern.
+
+   * Return value: A new stmt that will be used to replace the sequence of
+   stmts that constitute the pattern. In this case it will be:
+        x * x
+   or
+	sqrt (x)
+*/
+
+static tree
+vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
+{
+  tree expr;
+  tree type;
+  tree fn, arglist, base, exp;
+
+  if (TREE_CODE (last_stmt) != MODIFY_EXPR)
+    return NULL;
+
+  expr = TREE_OPERAND (last_stmt, 1);
+  type = TREE_TYPE (expr);
+
+  if (TREE_CODE (expr) != CALL_EXPR)
+    return NULL_TREE;
+
+  fn = get_callee_fndecl (expr);
+  arglist = TREE_OPERAND (expr, 1);
+  switch (DECL_FUNCTION_CODE (fn))
+    {
+    case BUILT_IN_POWIF:
+    case BUILT_IN_POWI:
+    case BUILT_IN_POWF:
+    case BUILT_IN_POW:
+      base = TREE_VALUE (arglist);
+      exp = TREE_VALUE (TREE_CHAIN (arglist));
+      if (TREE_CODE (exp) != REAL_CST
+	  && TREE_CODE (exp) != INTEGER_CST)
+        return NULL_TREE;
+      break;
+
+    default:;
+      return NULL_TREE;
+    }
+
+  /* We now have a pow or powi builtin function call with a constant
+     exponent.  */
+
+  *type_in = get_vectype_for_scalar_type (TREE_TYPE (base));
+  *type_out = NULL_TREE;
+
+  /* Catch squaring.  */
+  if ((host_integerp (exp, 0)
+       && tree_low_cst (exp, 0) == 2)
+      || (TREE_CODE (exp) == REAL_CST
+          && REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst2)))
+    return build2 (MULT_EXPR, TREE_TYPE (base), base, base);
+
+  /* Catch square root.  */
+  if (TREE_CODE (exp) == REAL_CST
+      && REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconsthalf))
+    {
+      tree newfn = mathfn_built_in (TREE_TYPE (base), BUILT_IN_SQRT);
+      tree newarglist = build_tree_list (NULL_TREE, base);
+      return build_function_call_expr (newfn, newarglist);
+    }
+
+  return NULL_TREE;
 }
 
 
