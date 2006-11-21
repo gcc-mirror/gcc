@@ -404,29 +404,6 @@ DFP_TO_INT (DFP_C_TYPE x)
   decNumberFromString (&qval, (char *) "1.0", &context);
   /* Force the exponent to zero.  */
   decNumberQuantize (&n1, &n2, &qval, &context);
-  /* This is based on text in N1107 section 5.1; it might turn out to be
-     undefined behavior instead.  */
-  if (context.status & DEC_Invalid_operation)
-    {
-#if defined (L_sd_to_si) || defined (L_dd_to_si) || defined (L_td_to_si)
-      if (decNumberIsNegative(&n2))
-        return INT_MIN;
-      else
-        return INT_MAX;
-#elif defined (L_sd_to_di) || defined (L_dd_to_di) || defined (L_td_to_di)
-      if (decNumberIsNegative(&n2))
-        /* Find a defined constant that will work here.  */
-        return (-9223372036854775807LL - 1LL);
-      else
-        /* Find a defined constant that will work here.  */
-        return 9223372036854775807LL;
-#elif defined (L_sd_to_usi) || defined (L_dd_to_usi) || defined (L_td_to_usi)
-      return UINT_MAX;
-#elif defined (L_sd_to_udi) || defined (L_dd_to_udi) || defined (L_td_to_udi)
-        /* Find a defined constant that will work here.  */
-      return 18446744073709551615ULL;
-#endif
-    }
   /* Get a string, which at this point will not include an exponent.  */
   decNumberToString (&n1, buf);
   /* Ignore the fractional part.  */
