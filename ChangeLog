@@ -1,3 +1,8 @@
+2006-11-21  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* MAINTAINERS (spu port): Add myself as maintainer.
+	(libobjc): Update my email address.
+
 2006-11-21  Andrea Bona  <andrea.bona@st.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
