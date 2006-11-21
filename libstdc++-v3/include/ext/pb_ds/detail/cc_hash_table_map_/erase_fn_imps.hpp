@@ -64,7 +64,6 @@ inline typename PB_DS_CLASS_C_DEC::size_type
 PB_DS_CLASS_C_DEC::
 erase_if(Pred pred)
 {
-  typedef typename PB_DS_TYPES_TRAITS_C_DEC::const_reference const_reference;
   size_type num_ersd = 0;
   for (size_type pos = 0; pos < m_num_e; ++pos)
     {

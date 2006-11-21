@@ -713,7 +713,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	       __cur1 = __cur1->_M_next)
 	    {
 	      bool _found__cur1 = false;
-	      for (_Node* __cur2 = __ht2._M_buckets[__n];
+	      for (__cur2 = __ht2._M_buckets[__n];
 		   __cur2; __cur2 = __cur2->_M_next)
 		{
 		  if (__cur1->_M_val == __cur2->_M_val)

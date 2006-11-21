@@ -137,16 +137,16 @@ void
 PB_DS_CLASS_C_DEC::
 copy_from_ordered_range(It first_it, It last_it)
 {
-  const size_type size = std::distance(first_it, last_it);
-  if (size == 0)
+  const size_type len = std::distance(first_it, last_it);
+  if (len == 0)
     return;
 
-  value_vector a_values = s_value_alloc.allocate(size);
+  value_vector a_values = s_value_alloc.allocate(len);
   iterator target_it = a_values;
   It source_it = first_it;
   It source_end_it = last_it;
 
-  cond_dtor<size_type> cd(a_values, target_it, size);
+  cond_dtor<size_type> cd(a_values, target_it, len);
   while (source_it != source_end_it)
     {
       new (const_cast<void* >(static_cast<const void* >(target_it)))
@@ -155,10 +155,10 @@ copy_from_ordered_range(It first_it, It last_it)
       ++target_it;
     }
 
-  reallocate_metadata((node_update* )this, size);
+  reallocate_metadata((node_update* )this, len);
   cd.set_no_action();
   m_a_values = a_values;
-  m_size = size;
+  m_size = len;
   m_end_it = m_a_values + m_size;
   update(PB_DS_node_begin_imp(), (node_update* )this);
 
@@ -181,16 +181,16 @@ copy_from_ordered_range(It first_it, It last_it, It other_first_it,
 			It other_last_it)
 {
   clear();
-  const size_type size = std::distance(first_it, last_it) 
+  const size_type len = std::distance(first_it, last_it) 
     		         + std::distance(other_first_it, other_last_it);
 
-  value_vector a_values = s_value_alloc.allocate(size);
+  value_vector a_values = s_value_alloc.allocate(len);
 
   iterator target_it = a_values;
   It source_it = first_it;
   It source_end_it = last_it;
 
-  cond_dtor<size_type> cd(a_values, target_it, size);
+  cond_dtor<size_type> cd(a_values, target_it, len);
   while (source_it != source_end_it)
     {
       new (const_cast<void* >(static_cast<const void* >(target_it)))
@@ -208,10 +208,10 @@ copy_from_ordered_range(It first_it, It last_it, It other_first_it,
       ++target_it;
     }
 
-  reallocate_metadata((node_update* )this, size);
+  reallocate_metadata((node_update* )this, len);
   cd.set_no_action();
   m_a_values = a_values;
-  m_size = size;
+  m_size = len;
   m_end_it = m_a_values + m_size;
   update(PB_DS_node_begin_imp(), (node_update* )this);
 
