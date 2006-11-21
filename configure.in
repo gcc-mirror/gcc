@@ -1065,7 +1065,13 @@ AC_ARG_WITH(mpfr-dir, [  --with-mpfr-dir=PATH    Specify source directory for MP
 
 if test "x$with_mpfr_dir" != x; then
   gmpinc="-I$with_mpfr_dir"
-  gmplibs="$with_mpfr_dir/libmpfr.a"
+  if test -f "$with_mpfr_dir/.libs/libmpfr.a"; then
+    gmplibs="$with_mpfr_dir/.libs/libmpfr.a"
+  elif test -f "$with_mpfr_dir/_libs/libmpfr.a"; then
+    gmplibs="$with_mpfr_dir/_libs/libmpfr.a"
+  else
+    gmplibs="$with_mpfr_dir/libmpfr.a"
+  fi
 else
   gmplibs="-lmpfr"
 fi
