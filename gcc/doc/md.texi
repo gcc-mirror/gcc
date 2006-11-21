@@ -3006,7 +3006,7 @@ The constant 0.
 
 @end table
 
-@item Xtensa---@file{config/xtensa/xtensa.h}
+@item Xtensa---@file{config/xtensa/constraints.md}
 @table @code
 @item a
 General-purpose 32-bit register

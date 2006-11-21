@@ -1,3 +1,21 @@
+2006-11-21  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_char_to_class): Delete.
+	(xtensa_const_ok_for_letter_p): Delete.
+	(xtensa_extra_constraint): Delete.
+	(override_options): Delete xtensa_char_to_class initialization.
+	* config/xtensa/xtensa.h (REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(EXTRA_CONSTRAINT): Delete.
+	* config/xtensa/xtensa.md: Include constraints.md.
+	(call_internal): Combine alternatives.
+	(call_value_internal): Likewise, and remove invalid constraints.
+	* config/xtensa/constraints.md: New file.
+	* config/xtensa/xtensa-protos.h (xtensa_const_ok_for_letter_p): Delete.
+	(xtensa_extra_constraint): Delete.
+	* doc/md.texi (Machine Constraints): Refer to constraints.md for
+	Xtensa constraints.
+
 2006-11-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/dfp-bits.c (DFP_TO_INT): Remove code to saturate result

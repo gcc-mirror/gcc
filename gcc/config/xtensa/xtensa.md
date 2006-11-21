@@ -117,9 +117,10 @@
 			 (eq_attr "type" "fconv")
 			 "nothing")
 
-;; Include predicate definitions
+;; Include predicates and constraints.
 
 (include "predicates.md")
+(include "constraints.md")
 
 
 ;; Addition.
@@ -1570,8 +1571,8 @@
 })
 
 (define_insn "call_internal"
-  [(call (mem (match_operand:SI 0 "call_insn_operand" "n,i,r"))
-	 (match_operand 1 "" "i,i,i"))]
+  [(call (mem (match_operand:SI 0 "call_insn_operand" "nir"))
+	 (match_operand 1 "" "i"))]
   ""
 {
   return xtensa_emit_call (0, operands);
@@ -1594,16 +1595,10 @@
     XEXP (operands[1], 0) = copy_to_mode_reg (Pmode, addr);
 })
 
-;; Cannot combine constraints for operand 0 into "afvb":
-;; reload.c:find_reloads seems to assume that grouped constraints somehow
-;; specify related register classes, and when they don't the constraints
-;; fail to match.  By not grouping the constraints, we get the correct
-;; behavior.
 (define_insn "call_value_internal"
-   [(set (match_operand 0 "register_operand" "=af,af,af,v,v,v,b,b,b")
-         (call (mem (match_operand:SI 1 "call_insn_operand"
-					"n,i,r,n,i,r,n,i,r"))
-               (match_operand 2 "" "i,i,i,i,i,i,i,i,i")))]
+   [(set (match_operand 0 "register_operand" "=a")
+         (call (mem (match_operand:SI 1 "call_insn_operand" "nir"))
+               (match_operand 2 "" "i")))]
   ""
 {
   return xtensa_emit_call (1, operands);
