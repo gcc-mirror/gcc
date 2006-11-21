@@ -1,4 +1,8 @@
-2006-11-21      Douglas Gregor <doug.gregor@gmail.com>
+2006-11-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/dfp-bit.c (dfp_binary_func): Fix typedef.
+
+2006-11-21  Douglas Gregor <doug.gregor@gmail.com>
 
         * c-common.h (enum rid): Add RID_STATIC_ASSERT.
 
