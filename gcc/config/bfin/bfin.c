@@ -547,12 +547,12 @@ frame_related_constant_load (rtx reg, HOST_WIDE_INT constant, bool related)
     RTX_FRAME_RELATED_P (insn) = 1;
 }
 
-/* Generate efficient code to add a value to the frame pointer.  We
-   can use P1 as a scratch register.  Set RTX_FRAME_RELATED_P on the
-   generated insns if FRAME is nonzero.  */
+/* Generate efficient code to add a value to a P register.  We can use
+   P1 as a scratch register.  Set RTX_FRAME_RELATED_P on the generated
+   insns if FRAME is nonzero.  */
 
 static void
-add_to_sp (rtx spreg, HOST_WIDE_INT value, int frame)
+add_to_reg (rtx reg, HOST_WIDE_INT value, int frame)
 {
   if (value == 0)
     return;
@@ -568,13 +568,9 @@ add_to_sp (rtx spreg, HOST_WIDE_INT value, int frame)
       if (frame)
 	frame_related_constant_load (tmpreg, value, TRUE);
       else
-	{
-	  insn = emit_move_insn (tmpreg, GEN_INT (value));
-	  if (frame)
-	    RTX_FRAME_RELATED_P (insn) = 1;
-	}
+	insn = emit_move_insn (tmpreg, GEN_INT (value));
 
-      insn = emit_insn (gen_addsi3 (spreg, spreg, tmpreg));
+      insn = emit_insn (gen_addsi3 (reg, reg, tmpreg));
       if (frame)
 	RTX_FRAME_RELATED_P (insn) = 1;
     }
@@ -591,7 +587,7 @@ add_to_sp (rtx spreg, HOST_WIDE_INT value, int frame)
 	     it's no good.  */
 	  size = -60;
 
-	insn = emit_insn (gen_addsi3 (spreg, spreg, GEN_INT (size)));
+	insn = emit_insn (gen_addsi3 (reg, reg, GEN_INT (size)));
 	if (frame)
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	value -= size;
@@ -684,7 +680,7 @@ do_link (rtx spreg, HOST_WIDE_INT frame_size, bool all)
 	  rtx insn = emit_insn (pat);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      add_to_sp (spreg, -frame_size, 1);
+      add_to_reg (spreg, -frame_size, 1);
     }
 }
 
@@ -701,7 +697,7 @@ do_unlink (rtx spreg, HOST_WIDE_INT frame_size, bool all)
     {
       rtx postinc = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, spreg));
 
-      add_to_sp (spreg, frame_size, 0);
+      add_to_reg (spreg, frame_size, 0);
       if (must_save_fp_p ())
 	{
 	  rtx fpreg = gen_rtx_REG (Pmode, REG_FP);
@@ -911,16 +907,24 @@ bfin_expand_prologue (void)
       return;
     }
 
-  if (current_function_limit_stack)
+  if (current_function_limit_stack
+      || TARGET_STACK_CHECK_L1)
     {
       HOST_WIDE_INT offset
 	= bfin_initial_elimination_offset (ARG_POINTER_REGNUM,
 					   STACK_POINTER_REGNUM);
-      rtx lim = stack_limit_rtx;
+      rtx lim = current_function_limit_stack ? stack_limit_rtx : NULL_RTX;
+      rtx p2reg = gen_rtx_REG (Pmode, REG_P2);
 
+      if (!lim)
+	{
+	  rtx p1reg = gen_rtx_REG (Pmode, REG_P1);
+	  emit_move_insn (p2reg, gen_int_mode (0xFFB00000, SImode));
+	  emit_move_insn (p2reg, gen_rtx_MEM (Pmode, p2reg));
+	  lim = p2reg;
+	}
       if (GET_CODE (lim) == SYMBOL_REF)
 	{
-	  rtx p2reg = gen_rtx_REG (Pmode, REG_P2);
 	  if (TARGET_ID_SHARED_LIBRARY)
 	    {
 	      rtx p1reg = gen_rtx_REG (Pmode, REG_P1);
@@ -935,10 +939,17 @@ bfin_expand_prologue (void)
 	    }
 	  else
 	    {
-	      rtx limit = plus_constant (stack_limit_rtx, offset);
+	      rtx limit = plus_constant (lim, offset);
 	      emit_move_insn (p2reg, limit);
 	      lim = p2reg;
 	    }
+	}
+      else
+	{
+	  if (lim != p2reg)
+	    emit_move_insn (p2reg, lim);
+	  add_to_reg (p2reg, offset, 0);
+	  lim = p2reg;
 	}
       emit_insn (gen_compare_lt (bfin_cc_rtx, spreg, lim));
       emit_insn (gen_trapifcc ());
@@ -2026,8 +2037,11 @@ override_options (void)
   if (TARGET_ID_SHARED_LIBRARY && flag_pic == 0)
     flag_pic = 1;
 
+  if (stack_limit_rtx && TARGET_STACK_CHECK_L1)
+    error ("Can't use multiple stack checking methods together.");
+
   if (TARGET_ID_SHARED_LIBRARY && TARGET_FDPIC)
-      error ("ID shared libraries and FD-PIC mode can't be used together.");
+    error ("ID shared libraries and FD-PIC mode can't be used together.");
 
   /* Don't allow the user to specify -mid-shared-library and -msep-data
      together, as it makes little sense from a user's point of view...  */

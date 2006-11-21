@@ -1,3 +1,14 @@
+2006-11-21  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.opt (mstack-check-l1): New.
+	* doc/invoke.texi (Blackfin Options): Document it.
+	* config/bfin/bfin.c (bfin_expand_prologue): Generate code to use
+	stack bounds in L1 memory if the new option is enabled.
+	(override_options): Don't allow combinations of -fstack-limit and
+	-mstack-check-l1.
+	(add_to_reg): Renamed from add_to_sp.  All callers changed.  Lose some
+	dead code.
+
 2006-11-21  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu.c (spu_expand_vector_init): Initialise x.

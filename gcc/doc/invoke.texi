@@ -429,9 +429,10 @@ Objective-C and Objective-C++ Dialects}.
 @emph{Blackfin Options}
 @gccoptlist{-momit-leaf-frame-pointer -mno-omit-leaf-frame-pointer @gol
 -mspecld-anomaly -mno-specld-anomaly -mcsync-anomaly -mno-csync-anomaly @gol
--mlow-64k -mno-low64k -mid-shared-library @gol
+-mlow-64k  -mno-low64k  -mstack-check-l1  -mid-shared-library @gol
 -mno-id-shared-library -mshared-library-id=@var{n} @gol
--mlong-calls  -mno-long-calls}
+-mleaf-id-shared-library  -mno-leaf-id-shared-library @gol
+-msep-data  -mno-sep-data  -mlong-calls  -mno-long-calls}
 
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
@@ -7845,6 +7846,11 @@ the entire program fits into the low 64k of memory.
 @opindex mno-low-64k
 Assume that the program is arbitrarily large.  This is the default.
 
+@item -mstack-check-l1
+@opindex mstack-check-l1
+Do stack checking using information placed into L1 scratchpad memory by the
+uClinux kernel.
+
 @item -mid-shared-library
 @opindex mid-shared-library
 Generate code that supports shared libraries via the library ID method.
@@ -7856,12 +7862,36 @@ without virtual memory management.  This option implies @option{-fPIC}.
 Generate code that doesn't assume ID based shared libraries are being used.
 This is the default.
 
+@item -mleaf-id-shared-library
+@opindex mleaf-id-shared-library
+Generate code that supports shared libraries via the library ID method,
+but assumes that this library or executable won't link against any other
+ID shared libraries.  That allows the compiler to use faster code for jumps
+and calls.
+
+@item -mno-leaf-id-shared-library
+@opindex mno-leaf-id-shared-library
+Do not assume that the code being compiled won't link against any ID shared
+libraries.  Slower code will be generated for jump and call insns.
+
 @item -mshared-library-id=n
 @opindex mshared-library-id
 Specified the identification number of the ID based shared library being
 compiled.  Specifying a value of 0 will generate more compact code, specifying
 other values will force the allocation of that number to the current
 library but is no more space or time efficient than omitting this option.
+
+@item -msep-data
+@opindex msep-data
+Generate code that allows the data segment to be located in a different
+area of memory from the text segment.  This allows for execute in place in
+an environment without virtual memory management by eliminating relocations
+against the text section.
+
+@item -mno-sep-data
+@opindex mno-sep-data
+Generate code that assumes that the data segment follows the text segment.
+This is the default.
 
 @item -mlong-calls
 @itemx -mno-long-calls
