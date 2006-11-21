@@ -1589,6 +1589,8 @@ static void cp_parser_asm_definition
   (cp_parser *);
 static void cp_parser_linkage_specification
   (cp_parser *);
+static void cp_parser_static_assert
+  (cp_parser *, bool);
 
 /* Declarators [gram.dcl.decl] */
 
@@ -7211,6 +7213,11 @@ cp_parser_declaration (cp_parser* parser)
      __extension__ block-declaration
      label-declaration
 
+   C++0x Extension:
+
+   block-declaration:
+     static_assert-declaration
+
    If STATEMENT_P is TRUE, then this block-declaration is occurring as
    part of a declaration-statement.  */
 
@@ -7272,6 +7279,9 @@ cp_parser_block_declaration (cp_parser *parser,
 	cp_parser_commit_to_tentative_parse (parser);
       cp_parser_label_declaration (parser);
     }
+  /* If the next token is `static_assert' we have a static assertion.  */
+  else if (token1->keyword == RID_STATIC_ASSERT)
+    cp_parser_static_assert (parser, /*member_p=*/false);
   /* Anything else must be a simple-declaration.  */
   else
     cp_parser_simple_declaration (parser, !statement_p);
@@ -7823,6 +7833,68 @@ cp_parser_linkage_specification (cp_parser* parser)
 
   /* We're done with the linkage-specification.  */
   pop_lang_context ();
+}
+
+/* Parse a static_assert-declaration.
+
+   static_assert-declaration:
+     static_assert ( constant-expression , string-literal ) ; 
+
+   If MEMBER_P, this static_assert is a class member.  */
+
+static void 
+cp_parser_static_assert(cp_parser *parser, bool member_p)
+{
+  tree condition;
+  tree message;
+  cp_token *token;
+  location_t saved_loc;
+
+  /* Peek at the `static_assert' token so we can keep track of exactly
+     where the static assertion started.  */
+  token = cp_lexer_peek_token (parser->lexer);
+  saved_loc = token->location;
+
+  /* Look for the `static_assert' keyword.  */
+  if (!cp_parser_require_keyword (parser, RID_STATIC_ASSERT, 
+                                  "`static_assert'"))
+    return;
+
+  /*  We know we are in a static assertion; commit to any tentative
+      parse.  */
+  if (cp_parser_parsing_tentatively (parser))
+    cp_parser_commit_to_tentative_parse (parser);
+
+  /* Parse the `(' starting the static assertion condition.  */
+  cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
+
+  /* Parse the constant-expression.  */
+  condition = 
+    cp_parser_constant_expression (parser,
+                                   /*allow_non_constant_p=*/false,
+                                   /*non_constant_p=*/NULL);
+
+  /* Parse the separating `,'.  */
+  cp_parser_require (parser, CPP_COMMA, "`,'");
+
+  /* Parse the string-literal message.  */
+  message = cp_parser_string_literal (parser, 
+                                      /*translate=*/false,
+                                      /*wide_ok=*/true);
+
+  /* A `)' completes the static assertion.  */
+  if (!cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'"))
+    cp_parser_skip_to_closing_parenthesis (parser, 
+                                           /*recovering=*/true, 
+                                           /*or_comma=*/false,
+					   /*consume_paren=*/true);
+
+  /* A semicolon terminates the declaration.  */
+  cp_parser_require (parser, CPP_SEMICOLON, "`;'");
+
+  /* Complete the static assertion, which may mean either processing 
+     the static assert now or saving it for template instantiation.  */
+  finish_static_assert (condition, message, saved_loc, member_p);
 }
 
 /* Special member functions [gram.special] */
@@ -13624,7 +13696,12 @@ cp_parser_member_specification_opt (cp_parser* parser)
    member-declarator:
      declarator attributes [opt] pure-specifier [opt]
      declarator attributes [opt] constant-initializer [opt]
-     identifier [opt] attributes [opt] : constant-expression  */
+     identifier [opt] attributes [opt] : constant-expression  
+
+   C++0x Extensions:
+
+   member-declaration:
+     static_assert-declaration  */
 
 static void
 cp_parser_member_declaration (cp_parser* parser)
@@ -13684,6 +13761,13 @@ cp_parser_member_declaration (cp_parser* parser)
 	  TREE_CHAIN (member) = NULL_TREE;
 	  finish_member_declaration (member);
 	}
+      return;
+    }
+
+  /* If the next token is `static_assert' we have a static assertion.  */
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_STATIC_ASSERT))
+    {
+      cp_parser_static_assert (parser, /*member_p=*/true);
       return;
     }
 

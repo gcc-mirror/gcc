@@ -1711,6 +1711,10 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
       pp_newline_and_indent (pp, -2);
       break;
 
+    case STATIC_ASSERT:
+      pp_cxx_declaration (pp, t);
+      break;
+
     default:
       pp_c_statement (pp_c_base (pp), t);
       break;
@@ -1906,11 +1910,21 @@ pp_cxx_explicit_instantiation (cxx_pretty_printer *pp, tree t)
        asm-definition
        namespace-alias-definition
        using-declaration
-       using-directive  */
+       using-directive
+       static_assert-declaration */
 void
 pp_cxx_declaration (cxx_pretty_printer *pp, tree t)
 {
-  if (!DECL_LANG_SPECIFIC (t))
+  if (TREE_CODE (t) == STATIC_ASSERT)
+    {
+      pp_cxx_identifier (pp, "static_assert");
+      pp_cxx_left_paren (pp);
+      pp_cxx_expression (pp, STATIC_ASSERT_CONDITION (t));
+      pp_cxx_separate_with (pp, ',');
+      pp_cxx_expression (pp, STATIC_ASSERT_MESSAGE (t));
+      pp_cxx_right_paren (pp);
+    }
+  else if (!DECL_LANG_SPECIFIC (t))
     pp_cxx_simple_declaration (pp, t);
   else if (DECL_USE_TEMPLATE (t))
     switch (DECL_USE_TEMPLATE (t))

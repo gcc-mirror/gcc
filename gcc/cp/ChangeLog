@@ -1,3 +1,29 @@
+2006-11-21      Douglas Gregor <doug.gregor@gmail.com>
+
+        * cp-tree.def (STATIC_ASSERT): New.  
+	* cp-objcp-common.c (cp_tree_size): Handle STATIC_ASSERT.
+	* error.c (dump_decl): Handle STATIC_ASSERT.
+	* cp-tree.h (STATIC_ASSERT_CONDITION): New.
+        (STATIC_ASSERT_MESSAGE): New.
+	(STATIC_ASSERT_SOURCE_LOCATION): New.
+	(struct tree_static_assert): New.
+	(enum cp_tree_node_structure_enum): Add TS_CP_STATIC_ASSERT.
+	(union lang_tree_node): Add static_assertion.
+        (finish_static_assert): Declare.
+	* cxx-pretty-print.c (pp_cxx_statement): Handle STATIC_ASSERT.
+	(pp_cxx_declaration): Handle STATIC_ASSERT.
+	* pt.c (instantiate_class_template): Handle
+	STATIC_ASSERT members.
+        (tsubst_expr): Handle STATIC_ASSERT statements.  
+	* semantics.c (finish_static_assert): New.
+        * lex.c (D_CPP0X): New.
+        (reswords): Add static_assert keyword.
+        (init_reswords): If not flag_cpp0x, mask out C++0x keywords.
+        * parser.c (cp_parser_block_declaration): Parse static
+	assertions.
+        (cp_parser_static_assert): New.
+        (cp_parser_member_declaration): Parse static assertions.
+
 2006-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/29570

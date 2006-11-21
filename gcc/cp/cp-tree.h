@@ -446,6 +446,29 @@ struct tree_default_arg GTY (())
   VEC(tree,gc) *instantiations;
 };
 
+/* The condition associated with the static assertion.  This must be
+   an integral constant expression.  */
+#define STATIC_ASSERT_CONDITION(NODE) \
+  (((struct tree_static_assert *)STATIC_ASSERT_CHECK (NODE))->condition)
+
+/* The message associated with the static assertion.  This must be a
+   string constant, which will be emitted as an error message when the
+   static assert condition is false.  */
+#define STATIC_ASSERT_MESSAGE(NODE) \
+  (((struct tree_static_assert *)STATIC_ASSERT_CHECK (NODE))->message)
+
+/* Source location information for a static assertion.  */
+#define STATIC_ASSERT_SOURCE_LOCATION(NODE) \
+  (((struct tree_static_assert *)STATIC_ASSERT_CHECK (NODE))->location)
+
+struct tree_static_assert GTY (())
+{
+  struct tree_common common;
+  tree condition;
+  tree message;
+  location_t location;
+};
+
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
   TS_CP_IDENTIFIER,
@@ -457,6 +480,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_BASELINK,
   TS_CP_WRAPPER,
   TS_CP_DEFAULT_ARG,
+  TS_CP_STATIC_ASSERT,
   LAST_TS_CP_ENUM
 };
 
@@ -473,6 +497,8 @@ union lang_tree_node GTY((desc ("cp_tree_node_structure (&%h)"),
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
   struct tree_default_arg GTY ((tag ("TS_CP_DEFAULT_ARG"))) default_arg;
   struct lang_identifier GTY ((tag ("TS_CP_IDENTIFIER"))) identifier;
+  struct tree_static_assert GTY ((tag ("TS_CP_STATIC_ASSERT"))) 
+    static_assertion;
 };
 
 
@@ -4326,6 +4352,8 @@ extern tree cxx_omp_clause_assign_op		(tree, tree, tree);
 extern tree cxx_omp_clause_dtor			(tree, tree);
 extern bool cxx_omp_privatize_by_reference	(tree);
 extern tree baselink_for_fns                    (tree);
+extern void finish_static_assert                (tree, tree, location_t,
+                                                 bool);
 
 /* in tree.c */
 extern void lang_check_failed			(const char *, int,

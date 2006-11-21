@@ -123,6 +123,7 @@ cp_tree_size (enum tree_code code)
     case TEMPLATE_PARM_INDEX:	return sizeof (template_parm_index);
     case DEFAULT_ARG:		return sizeof (struct tree_default_arg);
     case OVERLOAD:		return sizeof (struct tree_overload);
+    case STATIC_ASSERT:         return sizeof (struct tree_static_assert);
     default:
       gcc_unreachable ();
     }
