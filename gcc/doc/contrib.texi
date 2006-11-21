@@ -822,6 +822,9 @@ for GNU/Linux.
 Andrey Slepuhin for assorted AIX hacking.
 
 @item
+Trevor Smigiel for contributing the SPU port.
+
+@item
 Christopher Smith did the port for Convex machines.
 
 @item

@@ -128,6 +128,7 @@ case $target in
 	sparc64*-*-* | ultrasparc-*-freebsd* | \
 	sparcv9-*-solaris2* | \
 	sparc-*-solaris2.[789] | sparc-*-solaris2.1[0-9]* | \
+	spu-*-* | \
 	sh[123456789l]*-*-*)
 		need_64bit_hwint=yes ;;
 	i[34567]86-*-linux*)
