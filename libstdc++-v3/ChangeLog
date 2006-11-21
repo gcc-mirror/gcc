@@ -1,4 +1,9 @@
-06-11-19  Paolo Carlini  <pcarlini@suse.de>
+2006-11-21  Benjamin Kosnik  <bkoz@redhat.com>
+	    Howard Hinnant  <hhinnant@apple.com>
+
+	* src/iostream-inst.cc: Remove iostream include.
+
+2006-11-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/functional (hash(long long), hash(unsigned long long)):
 	Add specializations.
