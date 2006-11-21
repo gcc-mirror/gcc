@@ -131,8 +131,8 @@ join(PB_DS_CLASS_C_DEC& other)
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
 
-  const size_type size = m_size + other.m_size;
-  const size_type actual_size = resize_policy::get_new_size_for_arbitrary(size);
+  const size_type len = m_size + other.m_size;
+  const size_type actual_size = resize_policy::get_new_size_for_arbitrary(len);
 
   entry_pointer a_entries = NULL;
   entry_pointer a_other_entries = NULL;
@@ -158,7 +158,7 @@ join(PB_DS_CLASS_C_DEC& other)
 
   s_entry_allocator.deallocate(m_a_entries, m_actual_size);
   m_a_entries = a_entries;
-  m_size = size;
+  m_size = len;
   m_actual_size = actual_size;
 
   resize_policy::notify_arbitrary(actual_size);

@@ -243,9 +243,9 @@ namespace pb_ds
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    pat_trie_internal_node(size_type e_ind, const const_e_iterator pref_b_it) :
+    pat_trie_internal_node(size_type len, const const_e_iterator it) :
       PB_DS_BASE_C_DEC(pat_trie_internal_node_type),
-      m_e_ind(e_ind), m_pref_b_it(pref_b_it), m_pref_e_it(pref_b_it)
+      m_e_ind(len), m_pref_b_it(it), m_pref_e_it(it)
     {
       std::advance(m_pref_e_it, m_e_ind);
       std::fill(m_a_p_children, m_a_p_children + arr_size,

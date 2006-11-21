@@ -58,8 +58,8 @@ do_resize_if_needed()
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-do_resize(size_type size)
-{ resize_imp(resize_base::get_nearest_larger_size(size)); }
+do_resize(size_type len)
+{ resize_imp(resize_base::get_nearest_larger_size(len)); }
 
 PB_DS_CLASS_T_DEC
 inline void

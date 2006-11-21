@@ -587,7 +587,7 @@ namespace __gnu_debug
   _M_print_string(const char* __string) const
   {
     const char* __start = __string;
-    const char* __end = __start;
+    const char* __finish = __start;
     const int __bufsize = 128;
     char __buf[__bufsize];
 
@@ -595,21 +595,21 @@ namespace __gnu_debug
       {
 	if (*__start != '%')
 	  {
-	    // [__start, __end) denotes the next word
-	    __end = __start;
-	    while (isalnum(*__end))
-	      ++__end;
-	    if (__start == __end)
-	      ++__end;
-	    if (isspace(*__end))
-	      ++__end;
+	    // [__start, __finish) denotes the next word
+	    __finish = __start;
+	    while (isalnum(*__finish))
+	      ++__finish;
+	    if (__start == __finish)
+	      ++__finish;
+	    if (isspace(*__finish))
+	      ++__finish;
 	    
-	    const ptrdiff_t __len = __end - __start;
+	    const ptrdiff_t __len = __finish - __start;
 	    assert(__len < __bufsize);
 	    memcpy(__buf, __start, __len);
 	    __buf[__len] = '\0';
 	    _M_print_word(__buf);
-	    __start = __end;
+	    __start = __finish;
 	    
 	    // Skip extra whitespace
 	    while (*__start == ' ') 
