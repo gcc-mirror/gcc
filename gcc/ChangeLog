@@ -1,5 +1,8 @@
 2006-11-21  Janis Johnson  <janis187@us.ibm.com>
 
+	* config/dfp-bits.c (DFP_TO_INT): Remove code to saturate result
+ 	of conversion that doesn't fit.
+
 	* config/dfp-bit.h (CONTEXT_TRAPS, CONTEXT_ERRORS, DFP_RAISE): Delete.
 	* config/dfp-bit.c (dfp_unary_op, dfp_binary_op, dfp_compare_op,
 	DFP_TO_DFP, INT_TO_DFP, BFP_TO_DFP): Remove calls to DFP_RAISE.
