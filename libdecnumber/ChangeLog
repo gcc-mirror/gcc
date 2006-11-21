@@ -1,5 +1,8 @@
-2006-10-10  Brooks Moses  <bmoses@stanford.edu>
+2006-11-21  Janis Johnson  <janis187@us.ibm.com>
 
+	* Makefile.in: Don't include decRound in library used by compiler.
+
+2006-10-10  Brooks Moses  <bmoses@stanford.edu> 
 	* Makefile.in: Added empty "pdf" target.
 
 2006-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
