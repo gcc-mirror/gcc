@@ -9,6 +9,11 @@
 	(add_to_reg): Renamed from add_to_sp.  All callers changed.  Lose some
 	dead code.
 
+	* config/bfin/bfin.c (hard_regno_mode_ok): Only allow first 31
+	regs for DImode.
+	(bfin_register_move_cost): Bump costs if trying to move plain
+	integer values through accumulators.
+
 2006-11-21  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu.c (spu_expand_vector_init): Initialise x.
