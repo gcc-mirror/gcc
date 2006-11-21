@@ -881,30 +881,24 @@ get_loop_body_in_bfs_order (const struct loop *loop)
   return blocks;
 }
 
-/* Gets exit edges of a LOOP, returning their number in N_EDGES.  */
-edge *
-get_loop_exit_edges (const struct loop *loop, unsigned int *num_edges)
+/* Returns the list of the exit edges of a LOOP.  */
+
+VEC (edge, heap) *
+get_loop_exit_edges (const struct loop *loop)
 {
-  edge *edges, e;
-  unsigned i, n;
-  basic_block * body;
+  VEC (edge, heap) *edges = NULL;
+  edge e;
+  unsigned i;
+  basic_block *body;
   edge_iterator ei;
 
   gcc_assert (loop->latch != EXIT_BLOCK_PTR);
 
   body = get_loop_body (loop);
-  n = 0;
   for (i = 0; i < loop->num_nodes; i++)
     FOR_EACH_EDGE (e, ei, body[i]->succs)
       if (!flow_bb_inside_loop_p (loop, e->dest))
-	n++;
-  edges = XNEWVEC (edge, n);
-  *num_edges = n;
-  n = 0;
-  for (i = 0; i < loop->num_nodes; i++)
-    FOR_EACH_EDGE (e, ei, body[i]->succs)
-      if (!flow_bb_inside_loop_p (loop, e->dest))
-	edges[n++] = e;
+	VEC_safe_push (edge, heap, edges, e);
   free (body);
 
   return edges;

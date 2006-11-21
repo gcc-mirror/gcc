@@ -149,7 +149,6 @@ struct local_info
    opportunities as they are discovered.  We keep the registered
    jump threading opportunities in this vector as edge pairs
    (original_edge, target_edge).  */
-DEF_VEC_ALLOC_P(edge,heap);
 static VEC(edge,heap) *threaded_edges;
 
 

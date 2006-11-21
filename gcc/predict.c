@@ -640,23 +640,23 @@ predict_loops (struct loops *loops_info)
   for (i = 1; i < loops_info->num; i++)
     {
       basic_block bb, *bbs;
-      unsigned j;
-      unsigned n_exits;
+      unsigned j, n_exits;
       struct loop *loop = loops_info->parray[i];
-      edge *exits;
+      VEC (edge, heap) *exits;
       struct tree_niter_desc niter_desc;
+      edge ex;
 
-      exits = get_loop_exit_edges (loop, &n_exits);
+      exits = get_loop_exit_edges (loop);
+      n_exits = VEC_length (edge, exits);
 
-
-      for (j = 0; j < n_exits; j++)
+      for (j = 0; VEC_iterate (edge, exits, j, ex); j++)
 	{
 	  tree niter = NULL;
 
-	  if (number_of_iterations_exit (loop, exits[j], &niter_desc, false))
+	  if (number_of_iterations_exit (loop, ex, &niter_desc, false))
 	    niter = niter_desc.niter;
 	  if (!niter || TREE_CODE (niter_desc.niter) != INTEGER_CST)
-	    niter = loop_niter_by_eval (loop, exits[j]);
+	    niter = loop_niter_by_eval (loop, ex);
 
 	  if (TREE_CODE (niter) == INTEGER_CST)
 	    {
@@ -673,10 +673,10 @@ predict_loops (struct loops *loops_info)
 	      else
 		probability = ((REG_BR_PROB_BASE + max / 2) / max);
 
-	      predict_edge (exits[j], PRED_LOOP_ITERATIONS, probability);
+	      predict_edge (ex, PRED_LOOP_ITERATIONS, probability);
 	    }
 	}
-      free (exits);
+      VEC_free (edge, heap, exits);
 
       bbs = get_loop_body (loop);
 

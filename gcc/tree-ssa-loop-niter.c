@@ -1161,16 +1161,15 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 tree
 find_loop_niter (struct loop *loop, edge *exit)
 {
-  unsigned n_exits, i;
-  edge *exits = get_loop_exit_edges (loop, &n_exits);
+  unsigned i;
+  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
   edge ex;
   tree niter = NULL_TREE, aniter;
   struct tree_niter_desc desc;
 
   *exit = NULL;
-  for (i = 0; i < n_exits; i++)
+  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
     {
-      ex = exits[i];
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
 
@@ -1217,7 +1216,7 @@ find_loop_niter (struct loop *loop, edge *exit)
 	  continue;
 	}
     }
-  free (exits);
+  VEC_free (edge, heap, exits);
 
   return niter ? niter : chrec_dont_know;
 }
@@ -1446,15 +1445,14 @@ loop_niter_by_eval (struct loop *loop, edge exit)
 tree
 find_loop_niter_by_eval (struct loop *loop, edge *exit)
 {
-  unsigned n_exits, i;
-  edge *exits = get_loop_exit_edges (loop, &n_exits);
+  unsigned i;
+  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
   edge ex;
   tree niter = NULL_TREE, aniter;
 
   *exit = NULL;
-  for (i = 0; i < n_exits; i++)
+  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
     {
-      ex = exits[i];
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
 
@@ -1469,7 +1467,7 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
       niter = aniter;
       *exit = ex;
     }
-  free (exits);
+  VEC_free (edge, heap, exits);
 
   return niter ? niter : chrec_dont_know;
 }
@@ -1986,20 +1984,21 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 static void
 estimate_numbers_of_iterations_loop (struct loop *loop)
 {
-  edge *exits;
+  VEC (edge, heap) *exits;
   tree niter, type;
-  unsigned i, n_exits;
+  unsigned i;
   struct tree_niter_desc niter_desc;
+  edge ex;
 
   /* Give up if we already have tried to compute an estimation.  */
   if (loop->estimate_state != EST_NOT_COMPUTED)
     return;
   loop->estimate_state = EST_NOT_AVAILABLE;
 
-  exits = get_loop_exit_edges (loop, &n_exits);
-  for (i = 0; i < n_exits; i++)
+  exits = get_loop_exit_edges (loop);
+  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
     {
-      if (!number_of_iterations_exit (loop, exits[i], &niter_desc, false))
+      if (!number_of_iterations_exit (loop, ex, &niter_desc, false))
 	continue;
 
       niter = niter_desc.niter;
@@ -2010,10 +2009,10 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 			niter);
       record_estimate (loop, niter,
 		       niter_desc.additional_info,
-		       last_stmt (exits[i]->src),
+		       last_stmt (ex->src),
 		       true, true);
     }
-  free (exits);
+  VEC_free (edge, heap, exits);
   
   infer_loop_bounds_from_undefined (loop);
   compute_estimated_nb_iterations (loop);
