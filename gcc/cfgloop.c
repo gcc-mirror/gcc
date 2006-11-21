@@ -41,8 +41,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define LATCH_EDGE(E) (*(int *) (E)->aux)
 
 static void flow_loops_cfg_dump (const struct loops *, FILE *);
-static int flow_loop_level_compute (struct loop *);
-static void flow_loops_level_compute (struct loops *);
 static void establish_preds (struct loop *);
 static void canonicalize_loop_headers (void);
 static bool glb_enum_p (basic_block, void *);
@@ -110,9 +108,8 @@ flow_loop_dump (const struct loop *loop, FILE *file,
 
   fprintf (file, ";;  header %d, latch %d\n",
 	   loop->header->index, loop->latch->index);
-  fprintf (file, ";;  depth %d, level %d, outer %ld\n",
-	   loop->depth, loop->level,
-	   (long) (loop->outer ? loop->outer->num : -1));
+  fprintf (file, ";;  depth %d, outer %ld\n",
+	   loop->depth, (long) (loop->outer ? loop->outer->num : -1));
 
   fprintf (file, ";;  nodes:");
   bbs = get_loop_body (loop);
@@ -353,45 +350,6 @@ flow_loop_tree_node_remove (struct loop *loop)
   loop->depth = -1;
   free (loop->pred);
   loop->pred = NULL;
-}
-
-/* Helper function to compute loop nesting depth and enclosed loop level
-   for the natural loop specified by LOOP.  Returns the loop level.  */
-
-static int
-flow_loop_level_compute (struct loop *loop)
-{
-  struct loop *inner;
-  int level = 1;
-
-  if (! loop)
-    return 0;
-
-  /* Traverse loop tree assigning depth and computing level as the
-     maximum level of all the inner loops of this loop.  The loop
-     level is equivalent to the height of the loop in the loop tree
-     and corresponds to the number of enclosed loop levels (including
-     itself).  */
-  for (inner = loop->inner; inner; inner = inner->next)
-    {
-      int ilevel = flow_loop_level_compute (inner) + 1;
-
-      if (ilevel > level)
-	level = ilevel;
-    }
-
-  loop->level = level;
-  return level;
-}
-
-/* Compute the loop nesting depth and enclosed loop level for the loop
-   hierarchy tree specified by LOOPS.  Return the maximum enclosed loop
-   level.  */
-
-static void
-flow_loops_level_compute (struct loops *loops)
-{
-  flow_loop_level_compute (loops->tree_root);
 }
 
 /* A callback to update latch and header info for basic block JUMP created
@@ -706,10 +664,6 @@ flow_loops_find (struct loops *loops)
 	  flow_loop_tree_node_add (header->loop_father, loop);
 	  loop->num_nodes = flow_loop_nodes_find (loop->header, loop);
 	}
-
-      /* Assign the loop nesting depth and enclosed loop level for each
-	 loop.  */
-      flow_loops_level_compute (loops);
 
       loops->num = num_loops;
       initialize_loops_parallel_p (loops);

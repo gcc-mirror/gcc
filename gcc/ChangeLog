@@ -1,5 +1,15 @@
 2006-11-21  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* cfgloopmanip.c (add_loop, duplicate_loop): Do not set level
+	of the loop.
+	* cfgloop.c (flow_loop_level_compute, flow_loops_level_compute):
+	Removed.
+	(flow_loop_dump): Do not dump loop level.
+	(flow_loops_find): Do not call flow_loops_level_compute.
+	* cfgloop.h (struct loop): Remove level field.
+
+2006-11-21  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* tree-ssa-loop-im.c (schedule_sm, determine_lsm_ref,
 	hoist_memory_references, loop_suitable_for_sm, determine_lsm_loop):
 	Use vector of edges instead of array.
