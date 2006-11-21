@@ -61,7 +61,7 @@ import java.util.Vector;
 
 /**
  * This class centralizes all security properties and common security methods.
- * One of its primary uses is to manage providers.
+ * One of its primary uses is to manage security providers.
  *
  * @author Mark Benvenuto (ivymccough@worldnet.att.net)
  */
@@ -102,7 +102,12 @@ public final class Security
 		      System.err.println
 			  ("         Falling back to standard GNU security provider");
 		  }
+              // Note that this matches our classpath.security file.
 	      providers.addElement (new gnu.java.security.provider.Gnu());
+	      providers.addElement(new gnu.javax.crypto.jce.GnuCrypto());
+              providers.addElement(new gnu.javax.crypto.jce.GnuSasl());
+              providers.addElement(new gnu.javax.net.ssl.provider.Jessie());
+              providers.addElement(new gnu.javax.security.auth.callback.GnuCallbacks());
 	  }
     }
   // This class can't be instantiated.
@@ -111,9 +116,9 @@ public final class Security
   }
 
   /**
-   * Tries to load the vender specific security providers from the given
-   * base URL. Returns true if the resource could be read and completely
-   * parsed successfully, false otherwise.
+   * Tries to load the vender specific security providers from the given base
+   * URL. Returns true if the resource could be read and completely parsed
+   * successfully, false otherwise.
    */
   private static boolean loadProviders(String baseUrl, String vendor)
   {
@@ -134,7 +139,8 @@ public final class Security
 	    Exception exception = null;
 	    try
 	      {
-		providers.addElement(Class.forName(name).newInstance());
+            ClassLoader sys = ClassLoader.getSystemClassLoader();
+		providers.addElement(Class.forName(name, true, sys).newInstance());
 	      }
 	    catch (ClassNotFoundException x)
 	      {
@@ -167,22 +173,18 @@ public final class Security
   }
 
   /**
-   * Gets a specified property for an algorithm. The algorithm name should be a
-   * standard name. See Appendix A in the Java Cryptography Architecture API
-   * Specification &amp; Reference for information about standard algorithm
-   * names. One possible use is by specialized algorithm parsers, which may map
-   * classes to algorithms which they understand (much like {@link Key} parsers
-   * do).
-   *
-   * @param algName the algorithm name.
-   * @param propName the name of the property to get.
-   * @return the value of the specified property.
-   * @deprecated This method used to return the value of a proprietary property
-   * in the master file of the "SUN" Cryptographic Service Provider in order to
-   * determine how to parse algorithm-specific parameters. Use the new
-   * provider-based and algorithm-independent {@link AlgorithmParameters} and
-   * {@link KeyFactory} engine classes (introduced in the Java 2 platform)
-   * instead.
+   * Returns the value associated to a designated property name for a given
+   * algorithm.
+   * 
+   * @param algName
+   *          the algorithm name.
+   * @param propName
+   *          the name of the property to return.
+   * @return the value of the specified property or <code>null</code> if none
+   *         found.
+   * @deprecated Use the provider-based and algorithm-independent
+   *             {@link AlgorithmParameters} and {@link KeyFactory} engine
+   *             classes instead.
    */
   public static String getAlgorithmProperty(String algName, String propName)
   {
@@ -205,37 +207,21 @@ public final class Security
   }
 
   /**
-   * <p>Adds a new provider, at a specified position. The position is the
-   * preference order in which providers are searched for requested algorithms.
-   * Note that it is not guaranteed that this preference will be respected. The
-   * position is 1-based, that is, <code>1</code> is most preferred, followed by
-   * <code>2</code>, and so on.</p>
-   *
-   * <p>If the given provider is installed at the requested position, the
-   * provider that used to be at that position, and all providers with a
-   * position greater than position, are shifted up one position (towards the
-   * end of the list of installed providers).</p>
-   *
-   * <p>A provider cannot be added if it is already installed.</p>
-   *
-   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
-   * </code> method is called with the string <code>"insertProvider."+provider.
-   * getName()</code> to see if it's ok to add a new provider. If the default
-   * implementation of <code>checkSecurityAccess()</code> is used (i.e., that
-   * method is not overriden), then this will result in a call to the security
-   * manager's <code>checkPermission()</code> method with a
-   * <code>SecurityPermission("insertProvider."+provider.getName())</code>
-   * permission.</p>
-   *
-   * @param provider the provider to be added.
-   * @param position the preference position that the caller would like for
-   * this provider.
-   * @return the actual preference position in which the provider was added, or
-   * <code>-1</code> if the provider was not added because it is already
-   * installed.
-   * @throws SecurityException if a security manager exists and its
-   * {@link SecurityManager#checkSecurityAccess(String)} method denies access
-   * to add a new provider.
+   * Inserts a new designated {@link Provider} at a designated (1-based)
+   * position in the current list of installed {@link Provider}s,
+   * 
+   * @param provider
+   *          the new {@link Provider} to add.
+   * @param position
+   *          the position (starting from 1) of where to install
+   *          <code>provider</code>.
+   * @return the actual position, in the list of installed Providers. Returns
+   *         <code>-1</code> if <code>provider</code> was laready in the
+   *         list. The actual position may be different than the desired
+   *         <code>position</code>.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed and it disallows this
+   *           operation.
    * @see #getProvider(String)
    * @see #removeProvider(String)
    * @see SecurityPermission
@@ -265,24 +251,17 @@ public final class Security
   }
 
   /**
-   * <p>Adds a provider to the next position available.</p>
-   *
-   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
-   * </code> method is called with the string <code>"insertProvider."+provider.
-   * getName()</code> to see if it's ok to add a new provider. If the default
-   * implementation of <code>checkSecurityAccess()</code> is used (i.e., that
-   * method is not overriden), then this will result in a call to the security
-   * manager's <code>checkPermission()</code> method with a
-   * <code>SecurityPermission("insertProvider."+provider.getName())</code>
-   * permission.</p>
-   *
-   * @param provider the provider to be added.
-   * @return the preference position in which the provider was added, or
-   * <code>-1</code> if the provider was not added because it is already
-   * installed.
-   * @throws SecurityException if a security manager exists and its
-   * {@link SecurityManager#checkSecurityAccess(String)} method denies access
-   * to add a new provider.
+   * Appends the designated new {@link Provider} to the current list of
+   * installed {@link Provider}s.
+   * 
+   * @param provider
+   *          the new {@link Provider} to append.
+   * @return the position (starting from 1) of <code>provider</code> in the
+   *         current list of {@link Provider}s, or <code>-1</code> if
+   *         <code>provider</code> was already there.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed and it disallows this
+   *           operation.
    * @see #getProvider(String)
    * @see #removeProvider(String)
    * @see SecurityPermission
@@ -293,26 +272,14 @@ public final class Security
   }
 
   /**
-   * <p>Removes the provider with the specified name.</p>
-   *
-   * <p>When the specified provider is removed, all providers located at a
-   * position greater than where the specified provider was are shifted down
-   * one position (towards the head of the list of installed providers).</p>
-   *
-   * <p>This method returns silently if the provider is not installed.</p>
-   *
-   * <p>First, if there is a security manager, its <code>checkSecurityAccess()
-   * </code> method is called with the string <code>"removeProvider."+name</code>
-   * to see if it's ok to remove the provider. If the default implementation of
-   * <code>checkSecurityAccess()</code> is used (i.e., that method is not
-   * overriden), then this will result in a call to the security manager's
-   * <code>checkPermission()</code> method with a <code>SecurityPermission(
-   * "removeProvider."+name)</code> permission.</p>
-   *
-   * @param name the name of the provider to remove.
-   * @throws SecurityException if a security manager exists and its
-   * {@link SecurityManager#checkSecurityAccess(String)} method denies access
-   * to remove the provider.
+   * Removes an already installed {@link Provider}, given its name, from the
+   * current list of installed {@link Provider}s.
+   * 
+   * @param name
+   *          the name of an already installed {@link Provider} to remove.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed and it disallows this
+   *           operation.
    * @see #getProvider(String)
    * @see #addProvider(Provider)
    */
@@ -334,9 +301,9 @@ public final class Security
   }
 
   /**
-   * Returns an array containing all the installed providers. The order of the
-   * providers in the array is their preference order.
-   *
+   * Returns the current list of installed {@link Provider}s as an array
+   * ordered according to their installation preference order.
+   * 
    * @return an array of all the installed providers.
    */
   public static Provider[] getProviders()
@@ -347,11 +314,13 @@ public final class Security
   }
 
   /**
-   * Returns the provider installed with the specified name, if any. Returns
-   * <code>null</code> if no provider with the specified name is installed.
-   *
-   * @param name the name of the provider to get.
-   * @return the provider of the specified name.
+   * Returns an already installed {@link Provider} given its name.
+   * 
+   * @param name
+   *          the name of an already installed {@link Provider}.
+   * @return the {@link Provider} known by <code>name</code>. Returns
+   *         <code>null</code> if the current list of {@link Provider}s does
+   *         not include one named <code>name</code>.
    * @see #removeProvider(String)
    * @see #addProvider(Provider)
    */
@@ -377,18 +346,16 @@ public final class Security
   }
 
   /**
-   * <p>Gets a security property value.</p>
-   *
-   * <p>First, if there is a security manager, its <code>checkPermission()</code>
-   * method is called with a <code>SecurityPermission("getProperty."+key)</code>
-   * permission to see if it's ok to retrieve the specified security property
-   * value.</p>
-   *
-   * @param key the key of the property being retrieved.
-   * @return the value of the security property corresponding to key.
-   * @throws SecurityException if a security manager exists and its
-   * {@link SecurityManager#checkPermission(Permission)} method denies access
-   * to retrieve the specified security property value.
+   * Returns the value associated with a Security propery.
+   * 
+   * @param key
+   *          the key of the property to fetch.
+   * @return the value of the Security property associated with
+   *         <code>key</code>. Returns <code>null</code> if no such property
+   *         was found.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed and it disallows this
+   *           operation.
    * @see #setProperty(String, String)
    * @see SecurityPermission
    */
@@ -407,18 +374,15 @@ public final class Security
   }
 
   /**
-   * <p>Sets a security property value.</p>
-   *
-   * <p>First, if there is a security manager, its <code>checkPermission()</code>
-   * method is called with a <code>SecurityPermission("setProperty."+key)</code>
-   * permission to see if it's ok to set the specified security property value.
-   * </p>
-   *
-   * @param key the name of the property to be set.
-   * @param datum the value of the property to be set.
-   * @throws SecurityException if a security manager exists and its
-   * {@link SecurityManager#checkPermission(Permission)} method denies access
-   * to set the specified security property value.
+   * Sets or changes a designated Security property to a designated value.
+   * 
+   * @param key
+   *          the name of the property to set.
+   * @param datum
+   *          the new value of the property.
+   * @throws SecurityException
+   *           if a {@link SecurityManager} is installed and it disallows this
+   *           operation.
    * @see #getProperty(String)
    * @see SecurityPermission
    */
@@ -435,19 +399,16 @@ public final class Security
   }
 
   /**
-   * Returns a Set of Strings containing the names of all available algorithms
-   * or types for the specified Java cryptographic service (e.g., Signature,
-   * MessageDigest, Cipher, Mac, KeyStore). Returns an empty Set if there is no
-   * provider that supports the specified service. For a complete list of Java
-   * cryptographic services, please see the Java Cryptography Architecture API
-   * Specification &amp; Reference. Note: the returned set is immutable.
-   *
-   * @param serviceName the name of the Java cryptographic service (e.g.,
-   * Signature, MessageDigest, Cipher, Mac, KeyStore). Note: this parameter is
-   * case-insensitive.
-   * @return a Set of Strings containing the names of all available algorithms
-   * or types for the specified Java cryptographic service or an empty set if
-   * no provider supports the specified service.
+   * For a given <i>service</i> (e.g. Signature, MessageDigest, etc...) this
+   * method returns the {@link Set} of all available algorithm names (instances
+   * of {@link String}, from all currently installed {@link Provider}s.
+   * 
+   * @param serviceName
+   *          the case-insensitive name of a service (e.g. Signature,
+   *          MessageDigest, etc).
+   * @return a {@link Set} of {@link String}s containing the names of all
+   *         algorithm names provided by all of the currently installed
+   *         {@link Provider}s.
    * @since 1.4
    */
   public static Set getAlgorithms(String serviceName)
@@ -480,53 +441,48 @@ public final class Security
   }
 
   /**
-   * <p>Returns an array containing all installed providers that satisfy the
-   * specified selection criterion, or <code>null</code> if no such providers
-   * have been installed. The returned providers are ordered according to their
-   * preference order.</p>
-   *
-   * <p>A cryptographic service is always associated with a particular
-   * algorithm or type. For example, a digital signature service is always
-   * associated with a particular algorithm (e.g., <i>DSA</i>), and a
-   * CertificateFactory service is always associated with a particular
-   * certificate type (e.g., <i>X.509</i>).</p>
-   *
-   * <p>The selection criterion must be specified in one of the following two
-   * formats:</p>
-   *
+   * Returns an array of currently installed {@link Provider}s, ordered
+   * according to their installation preference order, which satisfy a given
+   * <i>selection</i> criterion.
+   * 
+   * <p>This implementation recognizes a <i>selection</i> criterion written in
+   * one of two following forms:</p>
+   * 
    * <ul>
-   *    <li><p>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt;</p>
-   *    <p>The cryptographic service name must not contain any dots.</p>
-   *    <p>A provider satisfies the specified selection criterion iff the
-   *    provider implements the specified algorithm or type for the specified
-   *    cryptographic service.</p>
-   *    <p>For example, "CertificateFactory.X.509" would be satisfied by any
-   *    provider that supplied a CertificateFactory implementation for X.509
-   *    certificates.</p></li>
-   *
-   *    <li><p>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt; &lt;attribute_name&gt;:&lt;attribute_value&gt;</p>
-   *    <p>The cryptographic service name must not contain any dots. There must
-   *    be one or more space charaters between the the &lt;algorithm_or_type&gt;
-   *    and the &lt;attribute_name&gt;.</p>
-   *    <p>A provider satisfies this selection criterion iff the provider
-   *    implements the specified algorithm or type for the specified
-   *    cryptographic service and its implementation meets the constraint
-   *    expressed by the specified attribute name/value pair.</p>
-   *    <p>For example, "Signature.SHA1withDSA KeySize:1024" would be satisfied
-   *    by any provider that implemented the SHA1withDSA signature algorithm
-   *    with a keysize of 1024 (or larger).</p></li>
+   *   <li>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt;: Where
+   *   <i>crypto_service</i> is a case-insensitive string, similar to what has
+   *   been described in the {@link #getAlgorithms(String)} method, and
+   *   <i>algorithm_or_type</i> is a known case-insensitive name of an
+   *   Algorithm, or one of its aliases.
+   *   
+   *   <p>For example, "CertificateFactory.X.509" would return all the installed
+   *   {@link Provider}s which provide a <i>CertificateFactory</i>
+   *   implementation of <i>X.509</i>.</p></li>
+   *   
+   *   <li>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt; &lt;attribute_name&gt;:&lt;value&gt;:
+   *   Where <i>crypto_service</i> is a case-insensitive string, similar to what
+   *   has been described in the {@link #getAlgorithms(String)} method,
+   *   <i>algorithm_or_type</i> is a case-insensitive known name of an Algorithm
+   *   or one of its aliases, <i>attribute_name</i> is a case-insensitive
+   *   property name with no whitespace characters, and no dots, in-between, and
+   *   <i>value</i> is a {@link String} with no whitespace characters in-between.
+   *   
+   *   <p>For example, "Signature.Sha1WithDSS KeySize:1024" would return all the
+   *   installed {@link Provider}s which declared their ability to provide
+   *   <i>Signature</i> services, using the <i>Sha1WithDSS</i> algorithm with
+   *   key sizes of <i>1024</i>.</p></li>
    * </ul>
-   *
-   * <p>See Appendix A in the Java Cryptogaphy Architecture API Specification
-   * &amp; Reference for information about standard cryptographic service names,
-   * standard algorithm names and standard attribute names.</p>
-   *
-   * @param filter the criterion for selecting providers. The filter is case-
-   * insensitive.
-   * @return all the installed providers that satisfy the selection criterion,
-   * or null if no such providers have been installed.
-   * @throws InvalidParameterException if the filter is not in the required
-   * format.
+   * 
+   * @param filter
+   *          the <i>selection</i> criterion for selecting among the installed
+   *          {@link Provider}s.
+   * @return all the installed {@link Provider}s which satisfy the <i>selection</i>
+   *         criterion. Returns <code>null</code> if no installed
+   *         {@link Provider}s were found which satisfy the <i>selection</i>
+   *         criterion. Returns ALL installed {@link Provider}s if
+   *         <code>filter</code> is <code>null</code> or is an empty string.
+   * @throws InvalidParameterException
+   *           if an exception occurs while parsing the <code>filter</code>.
    * @see #getProviders(Map)
    */
   public static Provider[] getProviders(String filter)
@@ -547,48 +503,47 @@ public final class Security
     return getProviders(map);
   }
 
- /**
-  * <p>Returns an array containing all installed providers that satisfy the
-  * specified selection criteria, or <code>null</code> if no such providers
-  * have been installed. The returned providers are ordered according to their
-  * preference order.</p>
-  *
-  * <p>The selection criteria are represented by a map. Each map entry
-  * represents a selection criterion. A provider is selected iff it satisfies
-  * all selection criteria. The key for any entry in such a map must be in one
-  * of the following two formats:</p>
-  *
-  * <ul>
-  *    <li><p>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt;</p>
-  *    <p>The cryptographic service name must not contain any dots.</p>
-  *    <p>The value associated with the key must be an empty string.</p>
-  *    <p>A provider satisfies this selection criterion iff the provider
-  *    implements the specified algorithm or type for the specified
-  *    cryptographic service.</p></li>
-  *
-  *    <li><p>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt; &lt;attribute_name&gt;</p>
-  *    <p>The cryptographic service name must not contain any dots. There must
-  *    be one or more space charaters between the &lt;algorithm_or_type&gt; and
-  *    the &lt;attribute_name&gt;.</p>
-  *    <p>The value associated with the key must be a non-empty string. A
-  *    provider satisfies this selection criterion iff the provider implements
-  *    the specified algorithm or type for the specified cryptographic service
-  *    and its implementation meets the constraint expressed by the specified
-  *    attribute name/value pair.</p></li>
-  * </ul>
-  *
-  * <p>See Appendix A in the Java Cryptogaphy Architecture API Specification
-  * &amp; Reference for information about standard cryptographic service names,
-  * standard algorithm names and standard attribute names.</p>
-  *
-  * @param filter the criteria for selecting providers. The filter is case-
-  * insensitive.
-  * @return all the installed providers that satisfy the selection criteria,
-  * or <code>null</code> if no such providers have been installed.
-  * @throws InvalidParameterException if the filter is not in the required
-  * format.
-  * @see #getProviders(String)
-  */
+  /**
+   * Returns an array of currently installed {@link Provider}s which satisfy a
+   * set of <i>selection</i> criteria.
+   * 
+   * <p>The <i>selection</i> criteria are defined in a {@link Map} where each
+   * element specifies a <i>selection</i> querry. The <i>Keys</i> in this
+   * {@link Map} must be in one of the two following forms:</p>
+   * 
+   * <ul>
+   *   <li>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt;: Where
+   *   <i>crypto_service</i> is a case-insensitive string, similar to what has
+   *   been described in the {@link #getAlgorithms(String)} method, and
+   *   <i>algorithm_or_type</i> is a case-insensitive known name of an
+   *   Algorithm, or one of its aliases. The <i>value</i> of the entry in the
+   *   {@link Map} for such a <i>Key</i> MUST be the empty string.
+   *   {@link Provider}s which provide an implementation for the designated
+   *   <i>service algorithm</i> are included in the result.</li>
+   *   
+   *   <li>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt; &lt;attribute_name&gt;:
+   *   Where <i>crypto_service</i> is a case-insensitive string, similar to what
+   *   has been described in the {@link #getAlgorithms(String)} method,
+   *   <i>algorithm_or_type</i> is a case-insensitive known name of an Algorithm
+   *   or one of its aliases, and <i>attribute_name</i> is a case-insensitive
+   *   property name with no whitespace characters, and no dots, in-between. The
+   *   <i>value</i> of the entry in this {@link Map} for such a <i>Key</i> MUST
+   *   NOT be <code>null</code> or an empty string. {@link Provider}s which
+   *   declare the designated <i>attribute_name</i> and <i>value</i> for the
+   *   designated <i>service algorithm</i> are included in the result.</li>
+   * </ul>
+   * 
+   * @param filter
+   *          a {@link Map} of <i>selection querries</i>.
+   * @return all currently installed {@link Provider}s which satisfy ALL the
+   *         <i>selection</i> criteria defined in <code>filter</code>.
+   *         Returns ALL installed {@link Provider}s if <code>filter</code>
+   *         is <code>null</code> or empty.
+   * @throws InvalidParameterException
+   *           if an exception is encountered while parsing the syntax of the
+   *           {@link Map}'s <i>keys</i>.
+   * @see #getProviders(String)
+   */
   public static Provider[] getProviders(Map filter)
   {
     if (providers == null || providers.isEmpty())
