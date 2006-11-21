@@ -4395,7 +4395,7 @@ spu_expand_vector_init (rtx target, rtx vals)
   int n_elts = GET_MODE_NUNITS (mode);
   int n_var = 0;
   bool all_same = true;
-  rtx first, x, first_constant = NULL_RTX;
+  rtx first, x = NULL_RTX, first_constant = NULL_RTX;
   int i;
 
   first = XVECEXP (vals, 0, 0); 
