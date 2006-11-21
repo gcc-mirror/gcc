@@ -1,5 +1,41 @@
 2006-11-22  Zdenek Dvorak <dvorakz@suse.cz>
 
+	* tree-loop-linear.c (linear_transform_loops): Use single_exit accessor
+	functions.
+	* tree-ssa-loop-niter.c (loop_only_exit_p): Ditto.
+	* cfgloopmanip.c (update_single_exits_after_duplication,
+	update_single_exit_for_duplicated_loop, loop_version): Ditto.
+	* tree-scalar-evolution.c (get_loop_exit_condition,
+	get_exit_conditions_rec, loop_closed_phi_def,
+	number_of_iterations_in_loop, scev_const_prop): Ditto.
+	* tree-ssa-loop-ivopts.c (single_dom_exit): Ditto.
+	* modulo-sched.c (generate_prolog_epilog, loop_canon_p, sms_schedule):
+	Ditto.
+	* tree-ssa-loop-ivcanon.c (canonicalize_loop_induction_variables):
+	Ditto.
+	* tree-vectorizer.c (slpeel_update_phis_for_duplicate_loop,
+	slpeel_update_phi_nodes_for_guard1, slpeel_update_phi_nodes_for_guard2,
+	slpeel_make_loop_iterate_ntimes,
+	slpeel_tree_duplicate_loop_to_edge_cfg, slpeel_can_duplicate_loop_p,
+	slpeel_verify_cfg_after_peeling, slpeel_tree_peel_loop_to_edge):
+	Ditto.
+	* tree-if-conv.c (if_convertible_loop_p): Ditto.
+	* tree-vect-analyze.c (vect_analyze_operations, vect_stmt_relevant_p,
+	vect_analyze_loop_form): Ditto.
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest, exit_phi_for_loop_p,
+	can_convert_to_perfect_nest, perfect_nestify): Ditto.
+	* tree-vect-transform.c (vect_create_epilog_for_reduction,
+	vect_update_ivs_after_vectorizer, vect_do_peeling_for_loop_bound,
+	vect_transform_loop): Ditto.
+	* cfgloop.c (mark_single_exit_loops, verify_loop_structure): Ditto.
+	(single_exit, set_single_exit): New functions.
+	* cfgloop.h (struct loop): Rename single_exit field to single_exit_.
+	(single_exit, set_single_exit): Declare.
+	* doc/loop.texi: Undocument single_exit field.  Document single_exit
+	accessor function.
+
+2006-11-22  Zdenek Dvorak <dvorakz@suse.cz>
+
 	PR tree-optimization/29902
 	* tree-ssa-loop-manip.c (can_unroll_loop_p): Return false if
 	any involved ssa name appears in abnormal phi node.

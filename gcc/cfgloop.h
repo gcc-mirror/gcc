@@ -143,8 +143,9 @@ struct loop
   struct nb_iter_bound *bounds;
 
   /* If not NULL, loop has just single exit edge stored here (edges to the
-     EXIT_BLOCK_PTR do not count.  */
-  edge single_exit;
+     EXIT_BLOCK_PTR do not count.  Do not use direcly, this field should
+     only be accessed via single_exit/set_single_exit functions.  */
+  edge single_exit_;
 
   /* True when the loop does not carry data dependences, and
      consequently the iterations can be executed in any order.  False
@@ -219,6 +220,8 @@ extern basic_block *get_loop_body (const struct loop *);
 extern basic_block *get_loop_body_in_dom_order (const struct loop *);
 extern basic_block *get_loop_body_in_bfs_order (const struct loop *);
 extern VEC (edge, heap) *get_loop_exit_edges (const struct loop *);
+edge single_exit (const struct loop *);
+void set_single_exit (struct loop *, edge);
 extern unsigned num_loop_branches (const struct loop *);
 
 extern edge loop_preheader_edge (const struct loop *);

@@ -755,8 +755,8 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop * loop, rtx count_r
     duplicate_insns_of_cycles (ps, i + 1, last_stage, 0);
 
   /* Put the epilogue on the exit edge.  */
-  gcc_assert (loop->single_exit);
-  e = loop->single_exit;
+  gcc_assert (single_exit (loop));
+  e = single_exit (loop);
   split_edge_and_insert (e, get_insns());
   end_sequence ();
 }
@@ -814,7 +814,7 @@ loop_canon_p (struct loop *loop)
   if (loop->inner || ! loop->outer)
     return false;
 
-  if (!loop->single_exit)
+  if (!single_exit (loop))
     {
       if (dump_file)
 	{
@@ -943,14 +943,14 @@ sms_schedule (void)
 
       get_ebb_head_tail (bb, bb, &head, &tail);
       latch_edge = loop_latch_edge (loop);
-      gcc_assert (loop->single_exit);
-      if (loop->single_exit->count)
-	trip_count = latch_edge->count / loop->single_exit->count;
+      gcc_assert (single_exit (loop));
+      if (single_exit (loop)->count)
+	trip_count = latch_edge->count / single_exit (loop)->count;
 
       /* Perfrom SMS only on loops that their average count is above threshold.  */
 
       if ( latch_edge->count
-          && (latch_edge->count < loop->single_exit->count * SMS_LOOP_AVERAGE_COUNT_THRESHOLD))
+          && (latch_edge->count < single_exit (loop)->count * SMS_LOOP_AVERAGE_COUNT_THRESHOLD))
 	{
 	  if (dump_file)
 	    {
@@ -1037,9 +1037,9 @@ sms_schedule (void)
       get_ebb_head_tail (loop->header, loop->header, &head, &tail);
 
       latch_edge = loop_latch_edge (loop);
-      gcc_assert (loop->single_exit);
-      if (loop->single_exit->count)
-	trip_count = latch_edge->count / loop->single_exit->count;
+      gcc_assert (single_exit (loop));
+      if (single_exit (loop)->count)
+	trip_count = latch_edge->count / single_exit (loop)->count;
 
       if (dump_file)
 	{

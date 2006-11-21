@@ -995,9 +995,9 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
   /* 2.1 Create new loop-exit-phi to preserve loop-closed form:
         v_out1 = phi <v_loop>  */
 
-  exit_bb = loop->single_exit->dest;
+  exit_bb = single_exit (loop)->dest;
   new_phi = create_phi_node (SSA_NAME_VAR (vect_def), exit_bb);
-  SET_PHI_ARG_DEF (new_phi, loop->single_exit->dest_idx, vect_def);
+  SET_PHI_ARG_DEF (new_phi, single_exit (loop)->dest_idx, vect_def);
   exit_bsi = bsi_start (exit_bb);
 
   /* 2.2 Get the relevant tree-code to use in the epilog for schemes 2,3 
@@ -3325,7 +3325,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
 				  edge update_e)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  basic_block exit_bb = loop->single_exit->dest;
+  basic_block exit_bb = single_exit (loop)->dest;
   tree phi, phi1;
   basic_block update_bb = update_e->dest;
 
@@ -3436,7 +3436,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 				   &ratio_mult_vf_name, ratio);
 
   loop_num  = loop->num; 
-  new_loop = slpeel_tree_peel_loop_to_edge (loop, loops, loop->single_exit,
+  new_loop = slpeel_tree_peel_loop_to_edge (loop, loops, single_exit (loop),
 					    ratio_mult_vf_name, ni_name, false);
   gcc_assert (new_loop);
   gcc_assert (loop_num == loop->num);
@@ -3451,7 +3451,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
      is on the path where the LOOP IVs are used and need to be updated.  */
 
   preheader = loop_preheader_edge (new_loop)->src;
-  if (EDGE_PRED (preheader, 0)->src == loop->single_exit->dest)
+  if (EDGE_PRED (preheader, 0)->src == single_exit (loop)->dest)
     update_e = EDGE_PRED (preheader, 0);
   else
     update_e = EDGE_PRED (preheader, 1);
@@ -3842,10 +3842,10 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 	 here by adding a new (empty) block on the exit-edge of the loop,
 	 with the proper loop-exit phis to maintain loop-closed-form.  **/
       
-      merge_bb = loop->single_exit->dest;
+      merge_bb = single_exit (loop)->dest;
       gcc_assert (EDGE_COUNT (merge_bb->preds) == 2);
-      new_exit_bb = split_edge (loop->single_exit);
-      new_exit_e = loop->single_exit;
+      new_exit_bb = split_edge (single_exit (loop));
+      new_exit_e = single_exit (loop);
       e = EDGE_SUCC (new_exit_bb, 0);
 
       for (orig_phi = phi_nodes (merge_bb); orig_phi; 
