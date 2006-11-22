@@ -1,3 +1,7 @@
+2006-11-22  Philipp Thomas <pth@suse.de>
+
+	* MAINTAINERS (i18n): Update e-mail address.
+
 2006-11-21  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 
 	* MAINTAINERS (spu port): Add myself as maintainer.
