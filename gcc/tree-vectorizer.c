@@ -1370,6 +1370,12 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   else
     STMT_VINFO_DEF_TYPE (res) = vect_loop_def;
   STMT_VINFO_SAME_ALIGN_REFS (res) = VEC_alloc (dr_p, heap, 5);
+  DR_GROUP_FIRST_DR (res) = NULL_TREE;
+  DR_GROUP_NEXT_DR (res) = NULL_TREE;
+  DR_GROUP_SIZE (res) = 0;
+  DR_GROUP_STORE_COUNT (res) = 0;
+  DR_GROUP_GAP (res) = 0;
+  DR_GROUP_SAME_DR_STMT (res) = NULL_TREE;
 
   return res;
 }

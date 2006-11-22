@@ -1,3 +1,63 @@
+2006-11-22  Ira Rosen  <irar@il.ibm.com>
+
+	* doc/c-tree.texi: Document new tree codes.
+	* doc/md.texi: Document new optabs.
+	* tree-pretty-print.c (dump_generic_node): Handle print of new tree
+	codes.
+	* optabs.c (optab_for_tree_code, init_optabs): Handle new optabs.
+	* optabs.h (optab_index): Add new.
+	(vec_extract_even_optab, vec_extract_odd_optab,
+	vec_interleave_high_optab, vec_interleave_low_optab): New optabs.
+	* genopinit.c (vec_extract_even_optab, vec_extract_odd_optab,
+	vec_interleave_high_optab, vec_interleave_low_optab): Initialize
+	new optabs.
+	* expr.c (expand_expr_real_1): Add implementation for new tree codes.
+	* tree-vectorizer.c (new_stmt_vec_info): Initialize new fields.
+	* tree-vectorizer.h (stmt_vec_info): Add new fields for interleaving
+	along with macros for their access.
+	* tree-data-ref.h (first_location_in_loop, data_reference): Update
+	comment.
+	* tree-vect-analyze.c (toplev.h): Include.
+	(vect_determine_vectorization_factor): Fix indentation.
+	(vect_insert_into_interleaving_chain,
+	vect_update_interleaving_chain, vect_equal_offsets): New functions.
+	(vect_analyze_data_ref_dependence): Add argument for interleaving
+	check. Check for interleaving if it's true.
+	(vect_check_dependences): New function.
+	(vect_analyze_data_ref_dependences): Call vect_check_dependences for
+	every ddr. Call vect_analyze_data_ref_dependence with new argument.
+	(vect_update_misalignment_for_peel): Update for interleaving.
+	(vect_verify_datarefs_alignment): Check only first data-ref for
+	interleaving.
+	(vect_enhance_data_refs_alignment): Update for interleaving. Check
+	only first data-ref for interleaving.
+	(vect_analyze_data_ref_access): Check interleaving, update
+	interleaving data.
+	(vect_analyze_data_refs): Call compute_data_dependences_for_loop
+	with different parameters.
+	* tree.def (VEC_EXTRACT_EVEN_EXPR, VEC_EXTRACT_ODD_EXPR,
+	VEC_INTERLEAVE_HIGH_EXPR, VEC_INTERLEAVE_LOW_EXPR): New tree codes.
+	* tree-inline.c (estimate_num_insns_1): Add cases for new codes.
+	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref):
+	Update step in case of interleaving.
+	(vect_strided_store_supported, vect_permute_store_chain): New
+	functions.
+	(vectorizable_store): Handle strided stores.
+	(vect_strided_load_supported, vect_permute_load_chain,
+	vect_transform_strided_load): New functions.
+	(vectorizable_load): Handle strided loads.
+	(vect_transform_stmt): Add argument. Handle strided stores. Check
+	that vectorized stmt exists for patterns.
+	(vect_gen_niters_for_prolog_loop): Update calculation for
+	interleaving.
+	(vect_transform_loop): Remove stmt_vec_info for strided stores after
+	whole chain vectorization.
+	* config/rs6000/altivec.md (UNSPEC_EXTEVEN, UNSPEC_EXTODD,
+	UNSPEC_INTERHI, UNSPEC_INTERLO): New constants.
+	(vpkuhum_nomode, vpkuwum_nomode, vec_extract_even<mode>,
+	vec_extract_odd<mode>, altivec_vmrghsf, altivec_vmrglsf,
+	vec_interleave_high<mode>, vec_interleave_low<mode>): Implement.
+
 2006-11-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cse.c (enum taken): Remove PATH_AROUND.

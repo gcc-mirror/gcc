@@ -24,25 +24,27 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "lambda.h"
 
-/** {base_address + offset + init} is the first location accessed by data-ref 
-      in the loop, and step is the stride of data-ref in the loop in bytes;
-      e.g.:
-    
+/*
+  The first location accessed by data-ref in the loop is the address of data-ref's 
+  base (BASE_ADDRESS) plus the initial offset from the base. We divide the initial offset 
+  into two parts: loop invariant offset (OFFSET) and constant offset (INIT). 
+  STEP is the stride of data-ref in the loop in bytes.
+
                        Example 1                      Example 2
       data-ref         a[j].b[i][j]                   a + x + 16B (a is int*)
       
-First location info:
+  First location info:
       base_address     &a                             a
-      offset           j_0*D_j + i_0*D_i + C_a        x
-      init             C_b                            16
+      offset           j_0*D_j + i_0*D_i              x
+      init             C_b + C_a                      16
       step             D_j                            4
       access_fn        NULL                           {16, +, 1}
 
-Base object info:
+  Base object info:
       base_object      a                              NULL
       access_fn        <access_fns of indexes of b>   NULL
 
-  **/
+  */
 struct first_location_in_loop
 {
   tree base_address;
@@ -51,7 +53,6 @@ struct first_location_in_loop
   tree step;
   /* Access function related to first location in the loop.  */
   VEC(tree,heap) *access_fns;
-
 };
 
 struct base_object_info
@@ -97,10 +98,39 @@ struct data_reference
   struct ptr_info_def *ptr_info;
   subvar_t subvars;
 
-  /* Alignment information.  */ 
-  /* The offset of the data-reference from its base in bytes.  */
+  /* Alignment information.  
+     MISALIGNMENT is the offset of the data-reference from its base in bytes.
+     ALIGNED_TO is the maximum data-ref's alignment.  
+
+     Example 1, 
+       for i
+          for (j = 3; j < N; j++)
+            a[j].b[i][j] = 0;
+	 
+     For a[j].b[i][j], the offset from base (calculated in get_inner_reference() 
+     will be 'i * C_i + j * C_j + C'. 
+     We try to substitute the variables of the offset expression
+     with initial_condition of the corresponding access_fn in the loop.
+     'i' cannot be substituted, since its access_fn in the inner loop is i. 'j' 
+     will be substituted with 3. 
+
+     Example 2
+        for (j = 3; j < N; j++)
+          a[j].b[5][j] = 0; 
+
+     Here the offset expression (j * C_j + C) will not contain variables after
+     subsitution of j=3 (3*C_j + C).
+
+     Misalignment can be calculated only if all the variables can be 
+     substituted with constants, otherwise, we record maximum possible alignment
+     in ALIGNED_TO. In Example 1, since 'i' cannot be substituted, 
+     MISALIGNMENT will be NULL_TREE, and the biggest divider of C_i (a power of 
+     2) will be recorded in ALIGNED_TO.
+
+     In Example 2, MISALIGNMENT will be the value of 3*C_j + C in bytes, and 
+     ALIGNED_TO will be NULL_TREE.
+  */
   tree misalignment;
-  /* The maximum data-ref's alignment.  */
   tree aligned_to;
 
   /* The type of the data-ref.  */
