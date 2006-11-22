@@ -1,3 +1,7 @@
+2006-11-23  Ben Elliston  <bje@au.ibm.com>
+
+	* config/spu/spu-elf.h (LIB_SPEC): Do not link with -lc_p.
+
 2006-11-23  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/29921
