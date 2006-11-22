@@ -719,6 +719,12 @@
       && easy_vector_constant (op, mode))
     return 1;
 
+  /* Do not allow invalid E500 subregs.  */
+  if ((TARGET_E500_DOUBLE || TARGET_SPE)
+      && GET_CODE (op) == SUBREG
+      && invalid_e500_subreg (op, mode))
+    return 0;
+
   /* For floating-point or multi-word mode, the only remaining valid type
      is a register.  */
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
@@ -753,7 +759,7 @@
 (define_predicate "rs6000_nonimmediate_operand"
   (match_code "reg,subreg,mem")
 {
-  if (TARGET_E500_DOUBLE
+  if ((TARGET_E500_DOUBLE || TARGET_SPE)
       && GET_CODE (op) == SUBREG
       && invalid_e500_subreg (op, mode))
     return 0;
