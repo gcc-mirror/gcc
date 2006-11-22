@@ -2574,18 +2574,29 @@ build_mask64_2_operands (rtx in, rtx *out)
 bool
 invalid_e500_subreg (rtx op, enum machine_mode mode)
 {
-  /* Reject (subreg:SI (reg:DF)).  */
-  if (GET_CODE (op) == SUBREG
+  if (TARGET_E500_DOUBLE)
+    {
+      /* Reject (subreg:SI (reg:DF)).  */
+      if (GET_CODE (op) == SUBREG
+	  && mode == SImode
+	  && REG_P (SUBREG_REG (op))
+	  && GET_MODE (SUBREG_REG (op)) == DFmode)
+	return true;
+
+      /* Reject (subreg:DF (reg:DI)).  */
+      if (GET_CODE (op) == SUBREG
+	  && mode == DFmode
+	  && REG_P (SUBREG_REG (op))
+	  && GET_MODE (SUBREG_REG (op)) == DImode)
+	return true;
+    }
+
+  if (TARGET_SPE
+      && GET_CODE (op) == SUBREG
       && mode == SImode
       && REG_P (SUBREG_REG (op))
-      && GET_MODE (SUBREG_REG (op)) == DFmode)
-    return true;
-
-  /* Reject (subreg:DF (reg:DI)).  */
-  if (GET_CODE (op) == SUBREG
-      && mode == DFmode
-      && REG_P (SUBREG_REG (op))
-      && GET_MODE (SUBREG_REG (op)) == DImode)
+      && SPE_VECTOR_MODE (GET_MODE (SUBREG_REG (op)))
+      && SUBREG_BYTE (op) != 4)
     return true;
 
   return false;

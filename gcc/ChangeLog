@@ -1,3 +1,20 @@
+2006-11-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/spe.md (SPE64): New mode macro.
+	(mov_sidf_e500_subreg0): Change to mov_si<mode>_e500_subreg0.  Add
+	memory load.
+	(mov_si<mode>_e500_subreg0_2): New.
+	(mov_sidf_e500_subreg4): Change to mov_si<mode>_e500_subreg4.  Add
+	memory load.
+	(mov_si<mode>_e500_subreg4_2): New.
+	* config/rs6000/predicates.md (input_operand): Do not allow
+	invalid E500 subregs.
+	(rs6000_nonimmediate_operand): Check for invalid E500 subregs also
+	if TARGET_SPE.
+	* config/rs6000/rs6000.c (invalid_e500_subreg): Check for subregs
+	involving DFmode if TARGET_E500_DOUBLE.  Check for subregs
+	involving vector modes if TARGET_SPE.
+
 2006-11-20  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/18553

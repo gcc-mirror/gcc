@@ -32,6 +32,9 @@
    (E500_CR_IOR_COMPARE 1012)
    ])
 
+;; Modes using a 64-bit register.
+(define_mode_macro SPE64 [DF V4HI V2SF V1DI V2SI])
+
 (define_insn "*negsf2_gpr"
   [(set (match_operand:SF 0 "gpc_reg_operand" "=r")
         (neg:SF (match_operand:SF 1 "gpc_reg_operand" "r")))]
@@ -2241,17 +2244,39 @@
 }"
   [(set_attr "length" "8,8")])
 
-(define_insn "*mov_sidf_e500_subreg0"
-  [(set (subreg:SI (match_operand:DF 0 "register_operand" "+r") 0)
-	(match_operand:SI 1 "register_operand" "r"))]
-  "TARGET_E500_DOUBLE"
-  "evmergelo %0,%1,%0")
+(define_insn "*mov_si<mode>_e500_subreg0"
+  [(set (subreg:SI (match_operand:SPE64 0 "register_operand" "+r,&r") 0)
+	(match_operand:SI 1 "input_operand" "r,m"))]
+  "(TARGET_E500_DOUBLE && <MODE>mode == DFmode) || (TARGET_SPE && <MODE>mode != DFmode)"
+  "@
+   evmergelo %0,%1,%0
+   evmergelohi %0,%0,%0\;{l%U1%X1|lwz%U1%X1} %0,%1\;evmergelohi %0,%0,%0")
 
-(define_insn "*mov_sidf_e500_subreg4"
-  [(set (subreg:SI (match_operand:DF 0 "register_operand" "+r") 4)
-	(match_operand:SI 1 "register_operand" "r"))]
-  "TARGET_E500_DOUBLE"
-  "mr %0,%1")
+;; ??? Could use evstwwe for memory stores in some cases, depending on
+;; the offset.
+(define_insn "*mov_si<mode>_e500_subreg0_2"
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+	(subreg:SI (match_operand:SPE64 1 "register_operand" "+r,&r") 0))]
+  "(TARGET_E500_DOUBLE && <MODE>mode == DFmode) || (TARGET_SPE && <MODE>mode != DFmode)"
+  "@
+   evmergehi %0,%0,%1
+   evmergelohi %1,%1,%1\;{st%U0%X0|stw%U0%X0} %1,%0")
+
+(define_insn "*mov_si<mode>_e500_subreg4"
+  [(set (subreg:SI (match_operand:SPE64 0 "register_operand" "+r,r") 4)
+	(match_operand:SI 1 "input_operand" "r,m"))]
+  "(TARGET_E500_DOUBLE && <MODE>mode == DFmode) || (TARGET_SPE && <MODE>mode != DFmode)"
+  "@
+   mr %0,%1
+   {l%U1%X1|lwz%U1%X1} %0,%1")
+
+(define_insn "*mov_si<mode>_e500_subreg4_2"
+  [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
+	(subreg:SI (match_operand:SPE64 1 "register_operand" "r,r") 4))]
+  "(TARGET_E500_DOUBLE && <MODE>mode == DFmode) || (TARGET_SPE && <MODE>mode != DFmode)"
+  "@
+   mr %0,%1
+   {st%U0%X0|stw%U0%X0} %1,%0")
 
 ;; FIXME: Allow r=CONST0.
 (define_insn "*movdf_e500_double"
