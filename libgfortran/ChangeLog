@@ -1,3 +1,10 @@
+2006-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/io.h (unit_flags): Add new flag has_recl.
+	* io.open.c (new_unit): Set flag if RECL= was specified.
+	* io/transfer.c (us_write): If flag set, leave recl as initialized by
+	new_unit.
+
 2006-11-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* io/open.c (new_unit): Format %d expects an int variable.
