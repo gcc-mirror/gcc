@@ -1,3 +1,9 @@
+2006-11-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (get_store_dest): New.
+	(adjacent_mem_locations): Use get_store_dest() to get
+	the rtl of the store destination.
+
 2006-11-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/spe.md (SPE64): New mode macro.
