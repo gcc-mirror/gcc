@@ -406,9 +406,13 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   /* Unspecified recl ends up with a processor dependent value.  */
 
   if ((opp->common.flags & IOPARM_OPEN_HAS_RECL_IN))
-    u->recl = opp->recl_in;
+    {
+      u->flags.has_recl = 1;
+      u->recl = opp->recl_in;
+    }
   else
     {
+      u->flags.has_recl = 0;
       switch (compile_options.record_marker)
 	{
 	case 0:
