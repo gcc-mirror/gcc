@@ -1,3 +1,9 @@
+2006-11-23  Zdenek Dvorak <dvorakz@suse.cz>
+
+	PR tree-optimization/29921
+	* fold-const.c (operand_equal_p): Without HONOR_SIGNED_ZEROS, consider
+	signed and unsigned zero equal.
+
 2006-11-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (get_store_dest): New.

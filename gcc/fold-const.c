@@ -2584,8 +2584,19 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 	return tree_int_cst_equal (arg0, arg1);
 
       case REAL_CST:
-	return REAL_VALUES_IDENTICAL (TREE_REAL_CST (arg0),
-				      TREE_REAL_CST (arg1));
+	if (REAL_VALUES_IDENTICAL (TREE_REAL_CST (arg0),
+				   TREE_REAL_CST (arg1)))
+	  return 1;
+
+	
+	if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0))))
+	  {
+	    /* If we do not distinguish between signed and unsigned zero,
+	       consider them equal.  */
+	    if (real_zerop (arg0) && real_zerop (arg1))
+	      return 1;
+	  }
+	return 0;
 
       case VECTOR_CST:
 	{
