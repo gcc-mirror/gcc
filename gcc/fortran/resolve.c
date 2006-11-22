@@ -89,8 +89,6 @@ resolve_formal_arglist (gfc_symbol * proc)
   gfc_symbol *sym;
   int i;
 
-  /* TODO: Procedures whose return character length parameter is not constant
-     or assumed must also have explicit interfaces.  */
   if (proc->result != NULL)
     sym = proc->result;
   else
@@ -5529,15 +5527,23 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	&& resolve_fl_var_and_proc (sym, mp_flag) == FAILURE)
     return FAILURE;
 
-  if (sym->attr.proc == PROC_ST_FUNCTION)
+  if (sym->ts.type == BT_CHARACTER)
     {
-      if (sym->ts.type == BT_CHARACTER)
-        {
-          gfc_charlen *cl = sym->ts.cl;
-          if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT)
-            {
+      gfc_charlen *cl = sym->ts.cl;
+      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT)
+	{
+	  if (sym->attr.proc == PROC_ST_FUNCTION)
+	    {
               gfc_error ("Character-valued statement function '%s' at %L must "
                          "have constant length", sym->name, &sym->declared_at);
+              return FAILURE;
+            }
+
+	  if (sym->attr.external && sym->formal == NULL
+		&& cl && cl->length && cl->length->expr_type != EXPR_CONSTANT)
+            {
+              gfc_error ("Automatic character length function '%s' at %L must "
+                         "have an explicit interface", sym->name, &sym->declared_at);
               return FAILURE;
             }
         }
