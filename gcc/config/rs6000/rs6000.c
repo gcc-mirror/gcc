@@ -693,6 +693,7 @@ static bool is_nonpipeline_insn (rtx);
 static bool is_cracked_insn (rtx);
 static bool is_branch_slot_insn (rtx);
 static bool is_load_insn (rtx);
+static rtx get_store_dest (rtx pat);
 static bool is_store_insn (rtx);
 static bool set_to_load_agen (rtx,rtx);
 static bool adjacent_mem_locations (rtx,rtx); 
@@ -17066,9 +17067,9 @@ static bool
 adjacent_mem_locations (rtx insn1, rtx insn2)
 {
 
-  rtx a = SET_DEST (PATTERN (insn1));
-  rtx b = SET_DEST (PATTERN (insn2));
- 
+  rtx a = get_store_dest (PATTERN (insn1));
+  rtx b = get_store_dest (PATTERN (insn2));
+
   if ((GET_CODE (XEXP (a, 0)) == REG
        || (GET_CODE (XEXP (a, 0)) == PLUS
 	   && GET_CODE (XEXP (XEXP (a, 0), 1)) == CONST_INT))
@@ -17372,6 +17373,32 @@ is_store_insn (rtx insn)
     return false;
 
   return is_store_insn1 (PATTERN (insn));
+}
+
+/* Return the dest of a store insn.  */
+
+static rtx
+get_store_dest (rtx pat)
+{
+  gcc_assert (is_store_insn1 (pat));
+
+  if (GET_CODE (pat) == SET)
+    return SET_DEST (pat);
+  else if (GET_CODE (pat) == PARALLEL)
+    {
+      int i;
+
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx inner_pat = XVECEXP (pat, 0, i);
+	  if (GET_CODE (inner_pat) == SET
+	      && is_mem_ref (SET_DEST (inner_pat)))
+	    return inner_pat;
+	}
+    }
+  /* We shouldn't get here, because we should have either a simple
+     store insn or a store with update which are covered above.  */
+  gcc_unreachable();
 }
 
 /* Returns whether the dependence between INSN and NEXT is considered
