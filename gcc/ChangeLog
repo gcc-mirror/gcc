@@ -1,3 +1,9 @@
+2006-11-22  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Revert
+	2006-11-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+	* reorg.c (emit_delay_sequence): Copy the delay slot insn.
+
 2006-11-22  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/predicates.md (d_register_operand, mem_p_address_operand,
