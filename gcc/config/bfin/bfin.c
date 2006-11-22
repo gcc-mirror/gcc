@@ -2816,8 +2816,15 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
     }
   return false;
 }
-
 
+/* Implement TARGET_SCHED_ISSUE_RATE.  */
+
+static int
+bfin_issue_rate (void)
+{
+  return 3;
+}
+
 static int
 bfin_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 {
@@ -4526,6 +4533,9 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST bfin_adjust_cost
+
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE bfin_issue_rate
 
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true

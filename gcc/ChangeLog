@@ -1,3 +1,19 @@
+2006-11-22  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/predicates.md (d_register_operand, mem_p_address_operand,
+	mem_i_address_operand): New predicates.
+	* config/bfin/bfin.c (bfin_issue_rate): New function.
+	(TARGET_SCHED_ISSUE_RATE): New macro.
+	* config/bfin/bfin.md (addrtype): New attribute.
+	(slot0, slot1, slot2, store, pregs): New cpu_units.
+	(core): Now a define_reservation.
+	(alu): Remove some insn types from this reservation.
+	(dsp32, load32, loadp, loadi, store32, storep, storei, multi): New
+	insn reservations.
+	(dummy reservation): Don't trigger for mcld insns.
+	(absence_sets): Two new absence sets to enforce slot ordering.
+	(popsi_insn): Set addrtype.
+
 2006-11-22  Ira Rosen  <irar@il.ibm.com>
 
 	* doc/c-tree.texi: Document new tree codes.
