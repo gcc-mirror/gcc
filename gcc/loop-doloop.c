@@ -248,7 +248,7 @@ add_test (rtx cond, edge *e, basic_block dest)
   do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL_RTX, label);
 
   jump = get_last_insn ();
-  if (!JUMP_P (jump))
+  if (!jump || !JUMP_P (jump))
     {
       /* The condition is always false and the jump was optimized out.  */
       end_sequence ();
@@ -257,6 +257,10 @@ add_test (rtx cond, edge *e, basic_block dest)
 
   seq = get_insns ();
   end_sequence ();
+
+  /* There always is at least the jump insn in the sequence.  */
+  gcc_assert (seq != NULL_RTX);
+
   bb = split_edge_and_insert (*e, seq);
   *e = single_succ_edge (bb);
 
