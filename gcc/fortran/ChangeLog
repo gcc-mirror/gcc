@@ -1,17 +1,23 @@
-2006-11-22 Paul Thomas  <pault@gcc.gnu.org>
+2006-11-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/29441
+	* intrinsic.c (gfc_intrinsic_func_interface): Always check if
+	intrinsic is allowed in initialization expression.
+
+2006-11-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25087
 	* resolve.c (resolve_fl_procedure): Add an error if an external
 	automatic character length function does not have an explicit
 	interface.
 
-2006-11-22 Paul Thomas  <pault@gcc.gnu.org>
+2006-11-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29652
 	* interface.c (check_interface1): Use a local value, instead of
 	the dummy, as the inner iterator over interface symbols.
 
-2006-11-21 Paul Thomas  <pault@gcc.gnu.org>
+2006-11-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29820
 	* trans-array.c (gfc_get_derived_type): Once done, spread the
