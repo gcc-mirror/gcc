@@ -1,3 +1,14 @@
+2006-11-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cse.c (enum taken): Remove PATH_AROUND.
+	(addr_affects_sp_p, invalidate_skipped_set,
+	invalidate_skipped_block): Remove.
+	(cse_end_of_basic_block): Remove skip_blocks and related code.
+	(cse_main): Don't test for flag_cse_skip_blocks.
+	Update cse_end_of_basic_block call.
+	(cse_basic_block): Likewise.  Remove PATH_AROUND case.  Remove
+	code to lengthen the path if a jump was simplified.
+
 2006-11-22  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR rtl-optimization/29924
