@@ -1,5 +1,13 @@
 2006-11-22  Zdenek Dvorak <dvorakz@suse.cz>
 
+	PR rtl-optimization/29924
+	* loop-unroll.c (split_edge_and_insert): Handle the case insns is NULL.
+	(unroll_loop_runtime_iterations): Assert that the argument passed to
+	split_edge_and_insert is not NULL.
+	* loop-doloop.c (add_test): Ditto.
+
+2006-11-22  Zdenek Dvorak <dvorakz@suse.cz>
+
 	* tree-loop-linear.c (linear_transform_loops): Use single_exit accessor
 	functions.
 	* tree-ssa-loop-niter.c (loop_only_exit_p): Ditto.
