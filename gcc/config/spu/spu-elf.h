@@ -46,7 +46,7 @@
 #define LINK_SPEC "%{mlarge-mem: --defsym __stack=0xfffffff0 }"
 
 #define LIB_SPEC \
-	"-( %{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} -lgloss -)"
+	"-( %{!shared:%{g*:-lg}} -lc -lgloss -)"
 
 /* Turn off warnings in the assembler too. */
 #undef ASM_SPEC
