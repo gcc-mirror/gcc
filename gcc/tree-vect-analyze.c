@@ -38,6 +38,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
+#include "toplev.h"
 
 /* Main analysis functions.  */
 static loop_vec_info vect_analyze_loop_form (struct loop *);
@@ -56,13 +57,12 @@ static bool vect_determine_vectorization_factor (loop_vec_info);
 static bool exist_non_indexing_operands_for_use_p (tree, tree);
 static tree vect_get_loop_niters (struct loop *, tree *);
 static bool vect_analyze_data_ref_dependence
-  (struct data_dependence_relation *, loop_vec_info);
+  (struct data_dependence_relation *, loop_vec_info, bool);
 static bool vect_compute_data_ref_alignment (struct data_reference *); 
 static bool vect_analyze_data_ref_access (struct data_reference *);
 static bool vect_can_advance_ivs_p (loop_vec_info);
 static void vect_update_misalignment_for_peel
   (struct data_reference *, struct data_reference *, int npeel);
- 
 
 /* Function vect_determine_vectorization_factor
 
@@ -185,9 +185,10 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "nunits = %d", nunits);
 
-	  if (!vectorization_factor
-              || (nunits > vectorization_factor))
-            vectorization_factor = nunits;
+          if (!vectorization_factor
+	      || (nunits > vectorization_factor))
+	    vectorization_factor = nunits;
+
         }
     }
 
@@ -559,6 +560,295 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
 }
 
 
+/* Function vect_insert_into_interleaving_chain.
+
+   Insert DRA into the interleaving chain of DRB according to DRA's INIT.  */
+
+static void
+vect_insert_into_interleaving_chain (struct data_reference *dra,
+				     struct data_reference *drb)
+{
+  tree prev, next, next_init;
+  stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra)); 
+  stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
+
+  prev = DR_GROUP_FIRST_DR (stmtinfo_b);
+  next = DR_GROUP_NEXT_DR (vinfo_for_stmt (prev));		  
+  while (next)
+    {
+      next_init = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (next)));
+      if (tree_int_cst_compare (next_init, DR_INIT (dra)) > 0)
+	{
+	  /* Insert here.  */
+	  DR_GROUP_NEXT_DR (vinfo_for_stmt (prev)) = DR_STMT (dra);
+	  DR_GROUP_NEXT_DR (stmtinfo_a) = next;
+	  return;
+	}
+      prev = next;
+      next = DR_GROUP_NEXT_DR (vinfo_for_stmt (prev));
+    }
+
+  /* We got to the end of the list. Insert here.  */
+  DR_GROUP_NEXT_DR (vinfo_for_stmt (prev)) = DR_STMT (dra);
+  DR_GROUP_NEXT_DR (stmtinfo_a) = NULL_TREE;
+}
+
+
+/* Function vect_update_interleaving_chain.
+   
+   For two data-refs DRA and DRB that are a part of a chain interleaved data 
+   accesses, update the interleaving chain. DRB's INIT is smaller than DRA's.
+
+   There are four possible cases:
+   1. New stmts - both DRA and DRB are not a part of any chain:
+      FIRST_DR = DRB
+      NEXT_DR (DRB) = DRA
+   2. DRB is a part of a chain and DRA is not:
+      no need to update FIRST_DR
+      no need to insert DRB
+      insert DRA according to init
+   3. DRA is a part of a chain and DRB is not:
+      if (init of FIRST_DR > init of DRB)
+          FIRST_DR = DRB
+	  NEXT(FIRST_DR) = previous FIRST_DR
+      else
+          insert DRB according to its init
+   4. both DRA and DRB are in some interleaving chains:
+      choose the chain with the smallest init of FIRST_DR
+      insert the nodes of the second chain into the first one.  */
+
+static void
+vect_update_interleaving_chain (struct data_reference *drb,
+				struct data_reference *dra)
+{
+  stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra)); 
+  stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
+  tree next_init, init_dra_chain, init_drb_chain, first_a, first_b;
+  tree node, prev, next, node_init, first_stmt;
+
+  /* 1. New stmts - both DRA and DRB are not a part of any chain.   */
+  if (!DR_GROUP_FIRST_DR (stmtinfo_a) && !DR_GROUP_FIRST_DR (stmtinfo_b))
+    {
+      DR_GROUP_FIRST_DR (stmtinfo_a) = DR_STMT (drb);
+      DR_GROUP_FIRST_DR (stmtinfo_b) = DR_STMT (drb);
+      DR_GROUP_NEXT_DR (stmtinfo_b) = DR_STMT (dra);
+      return;
+    }
+
+  /* 2. DRB is a part of a chain and DRA is not.  */
+  if (!DR_GROUP_FIRST_DR (stmtinfo_a) && DR_GROUP_FIRST_DR (stmtinfo_b))
+    {
+      DR_GROUP_FIRST_DR (stmtinfo_a) = DR_GROUP_FIRST_DR (stmtinfo_b);
+      /* Insert DRA into the chain of DRB.  */
+      vect_insert_into_interleaving_chain (dra, drb);
+      return;
+    }
+
+  /* 3. DRA is a part of a chain and DRB is not.  */  
+  if (DR_GROUP_FIRST_DR (stmtinfo_a) && !DR_GROUP_FIRST_DR (stmtinfo_b))
+    {
+      tree old_first_stmt = DR_GROUP_FIRST_DR (stmtinfo_a);
+      tree init_old = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (
+							      old_first_stmt)));
+      tree tmp;
+
+      if (tree_int_cst_compare (init_old, DR_INIT (drb)) > 0)
+	{
+	  /* DRB's init is smaller than the init of the stmt previously marked 
+	     as the first stmt of the interleaving chain of DRA. Therefore, we 
+	     update FIRST_STMT and put DRB in the head of the list.  */
+	  DR_GROUP_FIRST_DR (stmtinfo_b) = DR_STMT (drb);
+	  DR_GROUP_NEXT_DR (stmtinfo_b) = old_first_stmt;
+		
+	  /* Update all the stmts in the list to point to the new FIRST_STMT.  */
+	  tmp = old_first_stmt;
+	  while (tmp)
+	    {
+	      DR_GROUP_FIRST_DR (vinfo_for_stmt (tmp)) = DR_STMT (drb);
+	      tmp = DR_GROUP_NEXT_DR (vinfo_for_stmt (tmp));
+	    }
+	}
+      else
+	{
+	  /* Insert DRB in the list of DRA.  */
+	  vect_insert_into_interleaving_chain (drb, dra);
+	  DR_GROUP_FIRST_DR (stmtinfo_b) = DR_GROUP_FIRST_DR (stmtinfo_a);	      
+	}
+      return;
+    }
+  
+  /* 4. both DRA and DRB are in some interleaving chains.  */
+  first_a = DR_GROUP_FIRST_DR (stmtinfo_a);
+  first_b = DR_GROUP_FIRST_DR (stmtinfo_b);
+  if (first_a == first_b)
+    return;
+  init_dra_chain = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (first_a)));
+  init_drb_chain = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (first_b)));
+
+  if (tree_int_cst_compare (init_dra_chain, init_drb_chain) > 0)
+    {
+      /* Insert the nodes of DRA chain into the DRB chain.  
+	 After inserting a node, continue from this node of the DRB chain (don't
+         start from the beginning.  */
+      node = DR_GROUP_FIRST_DR (stmtinfo_a);
+      prev = DR_GROUP_FIRST_DR (stmtinfo_b);      
+      first_stmt = first_b;
+    }
+  else
+    {
+      /* Insert the nodes of DRB chain into the DRA chain.  
+	 After inserting a node, continue from this node of the DRA chain (don't
+         start from the beginning.  */
+      node = DR_GROUP_FIRST_DR (stmtinfo_b);
+      prev = DR_GROUP_FIRST_DR (stmtinfo_a);      
+      first_stmt = first_a;
+    }
+  
+  while (node)
+    {
+      node_init = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (node)));
+      next = DR_GROUP_NEXT_DR (vinfo_for_stmt (prev));		  
+      while (next)
+	{	  
+	  next_init = DR_INIT (STMT_VINFO_DATA_REF (vinfo_for_stmt (next)));
+	  if (tree_int_cst_compare (next_init, node_init) > 0)
+	    {
+	      /* Insert here.  */
+	      DR_GROUP_NEXT_DR (vinfo_for_stmt (prev)) = node;
+	      DR_GROUP_NEXT_DR (vinfo_for_stmt (node)) = next;
+	      prev = node;
+	      break;
+	    }
+	  prev = next;
+	  next = DR_GROUP_NEXT_DR (vinfo_for_stmt (prev));
+	}
+      if (!next)
+	{
+	  /* We got to the end of the list. Insert here.  */
+	  DR_GROUP_NEXT_DR (vinfo_for_stmt (prev)) = node;
+	  DR_GROUP_NEXT_DR (vinfo_for_stmt (node)) = NULL_TREE;
+	  prev = node;
+	}			
+      DR_GROUP_FIRST_DR (vinfo_for_stmt (node)) = first_stmt;
+      node = DR_GROUP_NEXT_DR (vinfo_for_stmt (node));	       
+    }
+}
+
+
+/* Function vect_equal_offsets.
+
+   Check if OFFSET1 and OFFSET2 are identical expressions.  */
+
+static bool
+vect_equal_offsets (tree offset1, tree offset2)
+{
+  bool res0, res1;
+
+  STRIP_NOPS (offset1);
+  STRIP_NOPS (offset2);
+
+  if (offset1 == offset2)
+    return true;
+
+  if (TREE_CODE (offset1) != TREE_CODE (offset2)
+      || !BINARY_CLASS_P (offset1)
+      || !BINARY_CLASS_P (offset2))    
+    return false;
+  
+  res0 = vect_equal_offsets (TREE_OPERAND (offset1, 0), 
+			     TREE_OPERAND (offset2, 0));
+  res1 = vect_equal_offsets (TREE_OPERAND (offset1, 1), 
+			     TREE_OPERAND (offset2, 1));
+
+  return (res0 && res1);
+}
+
+
+/* Function vect_check_interleaving.
+
+   Check if DRA and DRB are a part of interleaving. In case they are, insert
+   DRA and DRB in an interleaving chain.  */
+
+static void
+vect_check_interleaving (struct data_reference *dra,
+			 struct data_reference *drb)
+{
+  HOST_WIDE_INT type_size_a, type_size_b, diff_mod_size, step, init_a, init_b;
+
+  /* Check that the data-refs have same first location (except init) and they
+     are both either store or load (not load and store).  */
+  if ((DR_BASE_ADDRESS (dra) != DR_BASE_ADDRESS (drb)
+       && (TREE_CODE (DR_BASE_ADDRESS (dra)) != ADDR_EXPR 
+	   || TREE_CODE (DR_BASE_ADDRESS (drb)) != ADDR_EXPR
+	   || TREE_OPERAND (DR_BASE_ADDRESS (dra), 0) 
+	   != TREE_OPERAND (DR_BASE_ADDRESS (drb),0)))
+      || !vect_equal_offsets (DR_OFFSET (dra), DR_OFFSET (drb))
+      || !tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb)) 
+      || DR_IS_READ (dra) != DR_IS_READ (drb))
+    return;
+
+  /* Check:
+     1. data-refs are of the same type
+     2. their steps are equal
+     3. the step is greater than the difference between data-refs' inits  */
+  type_size_a = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))));
+  type_size_b = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
+
+  if (type_size_a != type_size_b
+      || tree_int_cst_compare (DR_STEP (dra), DR_STEP (drb)))
+    return;
+
+  init_a = TREE_INT_CST_LOW (DR_INIT (dra));
+  init_b = TREE_INT_CST_LOW (DR_INIT (drb));
+  step = TREE_INT_CST_LOW (DR_STEP (dra));
+
+  if (init_a > init_b)
+    {
+      /* If init_a == init_b + the size of the type * k, we have an interleaving, 
+	 and DRB is accessed before DRA.  */
+      diff_mod_size = (init_a - init_b) % type_size_a;
+
+      if ((init_a - init_b) > step)
+         return; 
+
+      if (diff_mod_size == 0)
+	{
+	  vect_update_interleaving_chain (drb, dra);	  
+	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	    {
+	      fprintf (vect_dump, "Detected interleaving ");
+	      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
+	      fprintf (vect_dump, " and ");
+	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	    }
+	  return;
+	} 
+    }
+  else 
+    {
+      /* If init_b == init_a + the size of the type * k, we have an 
+	 interleaving, and DRA is accessed before DRB.  */
+      diff_mod_size = (init_b - init_a) % type_size_a;
+
+      if ((init_b - init_a) > step)
+         return;
+
+      if (diff_mod_size == 0)
+	{
+	  vect_update_interleaving_chain (dra, drb);	  
+	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	    {
+	      fprintf (vect_dump, "Detected interleaving ");
+	      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
+	      fprintf (vect_dump, " and ");
+	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	    }
+	  return;
+	} 
+    }
+}
+
+
 /* Function vect_analyze_data_ref_dependence.
 
    Return TRUE if there (might) exist a dependence between a memory-reference
@@ -566,7 +856,8 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
       
 static bool
 vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
-                                  loop_vec_info loop_vinfo)
+                                  loop_vec_info loop_vinfo,
+				  bool check_interleaving)
 {
   unsigned int i;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -581,6 +872,14 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   unsigned int loop_depth;
          
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
+    {
+      /* Independent data accesses.  */
+      if (check_interleaving)
+	vect_check_interleaving (dra, drb);
+      return false;
+    }
+
+  if ((DR_IS_READ (dra) && DR_IS_READ (drb)) || dra == drb)
     return false;
   
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
@@ -659,6 +958,36 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 }
 
 
+/* Function vect_check_dependences.
+
+    Return TRUE if there is a store-store or load-store dependence between
+    data-refs in DDR, otherwise return FALSE.  */
+
+static bool
+vect_check_dependences (struct data_dependence_relation *ddr)
+{
+  struct data_reference *dra = DDR_A (ddr);
+  struct data_reference *drb = DDR_B (ddr);
+
+  if (DDR_ARE_DEPENDENT (ddr) == chrec_known || dra == drb)
+    /* Independent or same data accesses.  */
+    return false;
+
+  if (DR_IS_READ (dra) == DR_IS_READ (drb) && DR_IS_READ (dra))
+    /* Two loads.  */
+    return false;
+
+  if (vect_print_dump_info (REPORT_DR_DETAILS))
+    {
+      fprintf (vect_dump, "possible store or store/load dependence between ");
+      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
+      fprintf (vect_dump, " and ");
+      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+    }
+  return true;
+}
+
+
 /* Function vect_analyze_data_ref_dependences.
           
    Examine all the data references in the loop, and make sure there do not
@@ -670,12 +999,24 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo)
   unsigned int i;
   VEC (ddr_p, heap) *ddrs = LOOP_VINFO_DDRS (loop_vinfo);
   struct data_dependence_relation *ddr;
+  bool check_interleaving = true;
 
   if (vect_print_dump_info (REPORT_DETAILS)) 
     fprintf (vect_dump, "=== vect_analyze_dependences ===");
      
+  /* We allow interleaving only if there are no store-store and load-store
+      dependencies in the loop.  */
   for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
-    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo))
+    {
+      if (vect_check_dependences (ddr))
+	{
+	  check_interleaving = false;
+	  break;
+	}
+    }
+
+  for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
+    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, check_interleaving))
       return false;
 
   return true;
@@ -830,11 +1171,20 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
   struct data_reference *current_dr;
   int dr_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
   int dr_peel_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr_peel))));
+  stmt_vec_info stmt_info = vinfo_for_stmt (DR_STMT (dr));
+  stmt_vec_info peel_stmt_info = vinfo_for_stmt (DR_STMT (dr_peel));
+
+ /* For interleaved data accesses the step in the loop must be multiplied by
+     the size of the interleaving group.  */
+  if (DR_GROUP_FIRST_DR (stmt_info))
+    dr_size *= DR_GROUP_SIZE (vinfo_for_stmt (DR_GROUP_FIRST_DR (stmt_info)));
+  if (DR_GROUP_FIRST_DR (peel_stmt_info))
+    dr_peel_size *= DR_GROUP_SIZE (peel_stmt_info);
 
   if (known_alignment_for_access_p (dr)
       && known_alignment_for_access_p (dr_peel)
-      && (DR_MISALIGNMENT (dr)/dr_size == 
-	  DR_MISALIGNMENT (dr_peel)/dr_peel_size))
+      && (DR_MISALIGNMENT (dr) / dr_size ==
+          DR_MISALIGNMENT (dr_peel) / dr_peel_size))
     {
       DR_MISALIGNMENT (dr) = 0;
       return;
@@ -848,15 +1198,15 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
     {
       if (current_dr != dr)
         continue;
-      gcc_assert (DR_MISALIGNMENT (dr)/dr_size == 
-		  DR_MISALIGNMENT (dr_peel)/dr_peel_size);
+      gcc_assert (DR_MISALIGNMENT (dr) / dr_size ==
+                  DR_MISALIGNMENT (dr_peel) / dr_peel_size);
       DR_MISALIGNMENT (dr) = 0;
       return;
     }
 
   if (known_alignment_for_access_p (dr)
       && known_alignment_for_access_p (dr_peel))
-    {  
+    {
       DR_MISALIGNMENT (dr) += npeel * dr_size;
       DR_MISALIGNMENT (dr) %= UNITS_PER_SIMD_WORD;
       return;
@@ -883,6 +1233,14 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo)
 
   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
     {
+      tree stmt = DR_STMT (dr);
+      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+      /* For interleaving, only the alignment of the first access matters.  */
+      if (DR_GROUP_FIRST_DR (stmt_info)
+          && DR_GROUP_FIRST_DR (stmt_info) != stmt)
+        continue;
+
       supportable_dr_alignment = vect_supportable_dr_alignment (dr);
       if (!supportable_dr_alignment)
         {
@@ -1007,6 +1365,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   bool do_peeling = false;
   bool do_versioning = false;
   bool stat;
+  tree stmt;
+  stmt_vec_info stmt_info;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_enhance_data_refs_alignment ===");
@@ -1051,12 +1411,47 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
      TODO: Use a cost model.  */
 
   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
-    if (!DR_IS_READ (dr) && !aligned_access_p (dr))
-      {
-	dr0 = dr;
-	do_peeling = true;
-	break;
-      }
+    {
+      stmt = DR_STMT (dr);
+      stmt_info = vinfo_for_stmt (stmt);
+
+      /* For interleaving, only the alignment of the first access
+         matters.  */
+      if (DR_GROUP_FIRST_DR (stmt_info)
+          && DR_GROUP_FIRST_DR (stmt_info) != stmt)
+        continue;
+
+      if (!DR_IS_READ (dr) && !aligned_access_p (dr))
+        {
+	  if (DR_GROUP_FIRST_DR (stmt_info))
+	    {
+	      /* For interleaved access we peel only if number of iterations in
+		 the prolog loop ({VF - misalignment}), is a multiple of the
+		 number of the interelaved accesses.  */
+	      int elem_size, mis_in_elements;
+	      int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+
+	      /* FORNOW: handle only known alignment.  */
+	      if (!known_alignment_for_access_p (dr))
+		{
+		  do_peeling = false;
+		  break;
+		}
+
+	      elem_size = UNITS_PER_SIMD_WORD / vf;
+	      mis_in_elements = DR_MISALIGNMENT (dr) / elem_size;
+
+	      if ((vf - mis_in_elements) % DR_GROUP_SIZE (stmt_info))
+		{
+		  do_peeling = false;
+		  break;
+		}
+	    }
+	  dr0 = dr;
+	  do_peeling = true;
+	  break;
+	}
+    }
 
   /* Often peeling for alignment will require peeling for loop-bound, which in 
      turn requires that we know how to adjust the loop ivs after the loop.  */
@@ -1077,8 +1472,16 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           mis = DR_MISALIGNMENT (dr0);
           mis /= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr0))));
           npeel = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - mis;
+
+	  /* For interleaved data access every iteration accesses all the 
+	     members of the group, therefore we divide the number of iterations
+	     by the group size.  */
+	  stmt_info = vinfo_for_stmt (DR_STMT (dr0));	  
+	  if (DR_GROUP_FIRST_DR (stmt_info))
+	    npeel /= DR_GROUP_SIZE (stmt_info);
+
           if (vect_print_dump_info (REPORT_DETAILS))
-            fprintf (vect_dump, "Try peeling by %d",npeel);
+            fprintf (vect_dump, "Try peeling by %d", npeel);
         }
 
       /* Ensure that all data refs can be vectorized after the peel.  */
@@ -1087,6 +1490,14 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           int save_misalignment;
 
 	  if (dr == dr0)
+	    continue;
+
+	  stmt = DR_STMT (dr);
+	  stmt_info = vinfo_for_stmt (stmt);
+	  /* For interleaving, only the alignment of the first access
+            matters.  */
+	  if (DR_GROUP_FIRST_DR (stmt_info)
+	      && DR_GROUP_FIRST_DR (stmt_info) != stmt)
 	    continue;
 
 	  save_misalignment = DR_MISALIGNMENT (dr);
@@ -1146,10 +1557,17 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
     {
       for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
         {
-          if (aligned_access_p (dr))
-            continue;
+	  stmt = DR_STMT (dr);
+	  stmt_info = vinfo_for_stmt (stmt);
 
-          supportable_dr_alignment = vect_supportable_dr_alignment (dr);
+	  /* For interleaving, only the alignment of the first access
+	     matters.  */
+	  if (aligned_access_p (dr)
+	      || (DR_GROUP_FIRST_DR (stmt_info)
+		  && DR_GROUP_FIRST_DR (stmt_info) != stmt))
+	    continue;
+
+	  supportable_dr_alignment = vect_supportable_dr_alignment (dr);
 
           if (!supportable_dr_alignment)
             {
@@ -1266,13 +1684,156 @@ static bool
 vect_analyze_data_ref_access (struct data_reference *dr)
 {
   tree step = DR_STEP (dr);
+  HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
   tree scalar_type = TREE_TYPE (DR_REF (dr));
+  HOST_WIDE_INT type_size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (scalar_type));
+  tree stmt = DR_STMT (dr);
+  /* For interleaving, STRIDE is STEP counted in elements, i.e., the size of the 
+     interleaving group (including gaps).  */
+  HOST_WIDE_INT stride = dr_step / type_size;
 
-  if (!step || tree_int_cst_compare (step, TYPE_SIZE_UNIT (scalar_type)))
+  if (!step)
     {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "bad data-ref access");
+      return false;
+    }
+
+  /* Consecutive?  */
+  if (!tree_int_cst_compare (step, TYPE_SIZE_UNIT (scalar_type)))
+    {
+      /* Mark that it is not interleaving.  */
+      DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) = NULL_TREE;
+      return true;
+    }
+
+  /* Not consecutive access is possible only if it is a part of interleaving.  */
+  if (!DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)))
+    {
+      /* Check if it this DR is a part of interleaving, and is a single
+	 element of the group that is accessed in the loop.  */
+      
+      /* Gaps are supported only for loads. STEP must be a multiple of the type
+	 size.  The size of the group must be a power of 2.  */
+      if (DR_IS_READ (dr)
+	  && (dr_step % type_size) == 0
+	  && stride > 0
+	  && exact_log2 (stride) != -1)
+	{
+	  DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) = stmt;
+	  DR_GROUP_SIZE (vinfo_for_stmt (stmt)) = stride;
+	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	    {
+	      fprintf (vect_dump, "Detected single element interleaving %d ",
+		       DR_GROUP_SIZE (vinfo_for_stmt (stmt)));
+	      print_generic_expr (vect_dump, DR_REF (dr), TDF_SLIM);
+	      fprintf (vect_dump, " step ");
+	      print_generic_expr (vect_dump, step, TDF_SLIM);
+	    }
+	  return true;
+	}
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "not consecutive access");
       return false;
+    }
+
+  if (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) == stmt)
+    {
+      /* First stmt in the interleaving chain. Check the chain.  */
+      tree next = DR_GROUP_NEXT_DR (vinfo_for_stmt (stmt));
+      struct data_reference *data_ref = dr;
+      unsigned int count = 1;
+      tree next_step;
+      tree prev_init = DR_INIT (data_ref);
+      tree prev = stmt;
+      HOST_WIDE_INT diff, count_in_bytes;
+
+      while (next)
+	{
+	  /* Skip same data-refs. In case that two or more stmts share data-ref
+	     (supported only for loads), we vectorize only the first stmt, and
+	     the rest get their vectorized loads from the the first one.  */
+	  if (!tree_int_cst_compare (DR_INIT (data_ref),
+				     DR_INIT (STMT_VINFO_DATA_REF (
+						      vinfo_for_stmt (next)))))
+	    {
+	      /* For load use the same data-ref load. (We check in
+		 vect_check_dependences() that there are no two stores to the
+		 same location).  */
+	      DR_GROUP_SAME_DR_STMT (vinfo_for_stmt (next)) = prev;
+
+	      prev = next;
+	      next = DR_GROUP_NEXT_DR (vinfo_for_stmt (next));
+	      continue;
+	    }
+	  prev = next;
+
+	  /* Check that all the accesses have the same STEP.  */
+	  next_step = DR_STEP (STMT_VINFO_DATA_REF (vinfo_for_stmt (next)));
+	  if (tree_int_cst_compare (step, next_step))
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (vect_dump, "not consecutive access in interleaving");
+	      return false;
+	    }
+
+	  data_ref = STMT_VINFO_DATA_REF (vinfo_for_stmt (next));
+	  /* Check that the distance between two accesses is equal to the type
+	     size. Otherwise, we have gaps.  */
+	  diff = (TREE_INT_CST_LOW (DR_INIT (data_ref)) 
+		  - TREE_INT_CST_LOW (prev_init)) / type_size;
+	  if (!DR_IS_READ (data_ref) && diff != 1)
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (vect_dump, "interleaved store with gaps");
+	      return false;
+	    }
+	  /* Store the gap from the previous member of the group. If there is no
+             gap in the access, DR_GROUP_GAP is always 1.  */
+	  DR_GROUP_GAP (vinfo_for_stmt (next)) = diff;
+
+	  prev_init = DR_INIT (data_ref);
+	  next = DR_GROUP_NEXT_DR (vinfo_for_stmt (next));
+	  /* Count the number of data-refs in the chain.  */
+	  count++;
+	}
+
+      /* COUNT is the number of accesses found, we multiply it by the size of 
+	 the type to get COUNT_IN_BYTES.  */
+      count_in_bytes = type_size * count;
+      /* Check the size of the interleaving is not greater than STEP.  */
+      if (dr_step < count_in_bytes) 
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (vect_dump, "interleaving size is greater than step for ");
+	      print_generic_expr (vect_dump, DR_REF (dr), TDF_SLIM); 
+	    }
+	  return false;
+	}
+
+      /* Check that STEP is a multiple of type size.  */
+      if ((dr_step % type_size) != 0)
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS)) 
+            {
+              fprintf (vect_dump, "step is not a multiple of type size: step ");
+              print_generic_expr (vect_dump, step, TDF_SLIM);
+              fprintf (vect_dump, " size ");
+              print_generic_expr (vect_dump, TYPE_SIZE_UNIT (scalar_type),
+                                  TDF_SLIM);
+            }
+	  return false;
+	}
+
+      /* FORNOW: we handle only interleaving that is a power of 2.  */
+      if (exact_log2 (stride) == -1)
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "interleaving is not a power of 2");
+	  return false;
+	}
+      DR_GROUP_SIZE (vinfo_for_stmt (stmt)) = stride;
     }
   return true;
 }
@@ -1335,7 +1896,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_data_refs ===");
 
-  compute_data_dependences_for_loop (loop, false,
+  compute_data_dependences_for_loop (loop, true,
                                      &LOOP_VINFO_DATAREFS (loop_vinfo),
                                      &LOOP_VINFO_DDRS (loop_vinfo));
 

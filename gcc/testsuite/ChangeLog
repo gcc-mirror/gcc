@@ -1,3 +1,29 @@
+2006-11-22  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect-1.c: Additional loop is now vectorizable on 
+	platforms that have interleaving support.
+	* gcc.dg/vect/vect-107.c, gcc.dg/vect/vect-98.c: Likewise.
+	* gcc.dg/vect/vect-strided-a-u16-i2.c,
+	gcc.dg/vect/vect-strided-a-u16-i4.c, gcc.dg/vect/vect-strided-u16-i2.c,
+	gcc.dg/vect/vect-strided-u16-i4.c, gcc.dg/vect/vect-strided-u32-i4.c,
+	gcc.dg/vect/vect-strided-u32-i8.c, gcc.dg/vect/vect-strided-u8-i2.c,
+	gcc.dg/vect/vect-strided-u8-i2-gap.c,
+	gcc.dg/vect/vect-strided-u8-i8.c,
+	gcc.dg/vect/vect-strided-u8-i8-gap2.c,
+	gcc.dg/vect/vect-strided-u8-i8-gap4.c,
+	gcc.dg/vect/vect-strided-u8-i8-gap7.c,
+	gcc.dg/vect/vect-strided-float.c,
+	gcc.dg/vect/vect-strided-a-mult.c,
+	gcc.dg/vect/vect-strided-mult-char-ls.c,
+	gcc.dg/vect/vect-strided-a-u16-mult.c,
+	gcc.dg/vect/vect-strided-a-u32-mult.c,
+	gcc.dg/vect/vect-strided-a-u8-i2-gap.c,
+	gcc.dg/vect/vect-strided-a-u8-i8-gap2.c,
+	gcc.dg/vect/vect-strided-a-u8-i8-gap7.c,
+	gcc.dg/vect/vect-strided-mult.c,
+	gcc.dg/vect/vect-strided-u32-mult.c: New testcases.
+	* lib/target-supports.exp (vect_extract_even_odd, vect_interleave): New.
+
 2006-11-22 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/25087

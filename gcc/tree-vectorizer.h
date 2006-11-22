@@ -235,21 +235,50 @@ typedef struct _stmt_vec_info {
   /* Classify the def of this stmt.  */
   enum vect_def_type def_type;
 
+  /* Interleaving info.  */
+  /* First data-ref in the interleaving group.  */
+  tree first_dr;
+  /* Pointer to the next data-ref in the group.  */
+  tree next_dr;
+  /* The size of the interleaving group.  */
+  unsigned int size;
+  /* For stores, number of stores from this group seen. We vectorize the last
+     one.  */
+  unsigned int store_count;
+  /* For loads only, the gap from the previous load. For consecutive loads, GAP
+     is 1.  */
+  unsigned int gap;
+  /* In case that two or more stmts share data-ref, this is the pointer to the
+     previously detected stmt with the same dr.  */
+  tree same_dr_stmt;
 } *stmt_vec_info;
 
 /* Access Functions.  */
-#define STMT_VINFO_TYPE(S)                (S)->type
-#define STMT_VINFO_STMT(S)                (S)->stmt
-#define STMT_VINFO_LOOP_VINFO(S)          (S)->loop_vinfo
-#define STMT_VINFO_RELEVANT(S)            (S)->relevant
-#define STMT_VINFO_LIVE_P(S)              (S)->live
-#define STMT_VINFO_VECTYPE(S)             (S)->vectype
-#define STMT_VINFO_VEC_STMT(S)            (S)->vectorized_stmt
-#define STMT_VINFO_DATA_REF(S)            (S)->data_ref_info
-#define STMT_VINFO_IN_PATTERN_P(S)        (S)->in_pattern_p
-#define STMT_VINFO_RELATED_STMT(S)        (S)->related_stmt
-#define STMT_VINFO_SAME_ALIGN_REFS(S)     (S)->same_align_refs
-#define STMT_VINFO_DEF_TYPE(S)            (S)->def_type
+#define STMT_VINFO_TYPE(S)                 (S)->type
+#define STMT_VINFO_STMT(S)                 (S)->stmt
+#define STMT_VINFO_LOOP_VINFO(S)           (S)->loop_vinfo
+#define STMT_VINFO_RELEVANT(S)             (S)->relevant
+#define STMT_VINFO_LIVE_P(S)               (S)->live
+#define STMT_VINFO_VECTYPE(S)              (S)->vectype
+#define STMT_VINFO_VEC_STMT(S)             (S)->vectorized_stmt
+#define STMT_VINFO_DATA_REF(S)             (S)->data_ref_info
+#define STMT_VINFO_IN_PATTERN_P(S)         (S)->in_pattern_p
+#define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
+#define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs
+#define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
+#define STMT_VINFO_DR_GROUP_FIRST_DR(S)    (S)->first_dr
+#define STMT_VINFO_DR_GROUP_NEXT_DR(S)     (S)->next_dr
+#define STMT_VINFO_DR_GROUP_SIZE(S)        (S)->size
+#define STMT_VINFO_DR_GROUP_STORE_COUNT(S) (S)->store_count
+#define STMT_VINFO_DR_GROUP_GAP(S)         (S)->gap
+#define STMT_VINFO_DR_GROUP_SAME_DR_STMT(S)(S)->same_dr_stmt
+
+#define DR_GROUP_FIRST_DR(S)               (S)->first_dr
+#define DR_GROUP_NEXT_DR(S)                (S)->next_dr
+#define DR_GROUP_SIZE(S)                   (S)->size
+#define DR_GROUP_STORE_COUNT(S)            (S)->store_count
+#define DR_GROUP_GAP(S)                    (S)->gap
+#define DR_GROUP_SAME_DR_STMT(S)           (S)->same_dr_stmt
 
 #define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_loop)
 

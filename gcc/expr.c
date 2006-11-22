@@ -8745,6 +8745,30 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
         return temp;
       }
 
+    case VEC_EXTRACT_EVEN_EXPR:
+    case VEC_EXTRACT_ODD_EXPR:
+      {
+        expand_operands (TREE_OPERAND (exp, 0),  TREE_OPERAND (exp, 1),
+                         NULL_RTX, &op0, &op1, 0);
+        this_optab = optab_for_tree_code (code, type);
+        temp = expand_binop (mode, this_optab, op0, op1, target, unsignedp,
+                             OPTAB_WIDEN);
+        gcc_assert (temp);
+        return temp;
+      }
+
+    case VEC_INTERLEAVE_HIGH_EXPR:
+    case VEC_INTERLEAVE_LOW_EXPR:
+      {
+        expand_operands (TREE_OPERAND (exp, 0),  TREE_OPERAND (exp, 1),
+                         NULL_RTX, &op0, &op1, 0);
+        this_optab = optab_for_tree_code (code, type);
+        temp = expand_binop (mode, this_optab, op0, op1, target, unsignedp,
+                             OPTAB_WIDEN);
+        gcc_assert (temp);
+        return temp;
+      }
+
     case VEC_LSHIFT_EXPR:
     case VEC_RSHIFT_EXPR:
       {

@@ -27,6 +27,7 @@ Boston, MA 02110-1301, USA.  */
 /* Optabs are tables saying how to generate insn bodies
    for various machine modes and numbers of operands.
    Each optab applies to one operation.
+
    For example, add_optab applies to addition.
 
    The insn_code slot is the enum insn_code that says how to
@@ -253,6 +254,12 @@ enum optab_index
   OTI_vec_set,
   /* Extract specified field of vector operand.  */
   OTI_vec_extract,
+  /* Extract even/odd fields of vector operands.  */
+  OTI_vec_extract_even,
+  OTI_vec_extract_odd,
+  /* Interleave fields of vector operands.  */
+  OTI_vec_interleave_high,
+  OTI_vec_interleave_low,
   /* Initialize vector operand.  */
   OTI_vec_init,
   /* Whole vector shift. The shift amount is in bits.  */
@@ -397,6 +404,10 @@ extern GTY(()) optab optab_table[OTI_MAX];
 
 #define vec_set_optab (optab_table[OTI_vec_set])
 #define vec_extract_optab (optab_table[OTI_vec_extract])
+#define vec_extract_even_optab (optab_table[OTI_vec_extract_even])
+#define vec_extract_odd_optab (optab_table[OTI_vec_extract_odd])
+#define vec_interleave_high_optab (optab_table[OTI_vec_interleave_high])
+#define vec_interleave_low_optab (optab_table[OTI_vec_interleave_low])
 #define vec_init_optab (optab_table[OTI_vec_init])
 #define vec_shl_optab (optab_table[OTI_vec_shl])
 #define vec_shr_optab (optab_table[OTI_vec_shr])

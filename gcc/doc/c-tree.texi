@@ -1936,6 +1936,10 @@ This macro returns the attributes on the type @var{type}.
 @tindex VEC_UNPACK_LO_EXPR
 @tindex VEC_PACK_MOD_EXPR
 @tindex VEC_PACK_SAT_EXPR
+@tindex VEC_EXTRACT_EVEN_EXPR 
+@tindex VEC_EXTRACT_ODD_EXPR
+@tindex VEC_INTERLEAVE_HIGH_EXPR
+@tindex VEC_INTERLEAVE_LOW_EXPR
 
 The internal representation for expressions is for the most part quite
 straightforward.  However, there are a few facts that one must bear in
@@ -2782,5 +2786,22 @@ of the same integral type.  The result is a vector that contains twice as many
 elements, of an integral type whose size is half as wide.  In both cases
 the elements of the two vectors are demoted and merged (concatenated) to form
 the output vector.
+
+@item VEC_EXTRACT_EVEN_EXPR
+@item VEC_EXTRACT_ODD_EXPR
+These nodes represent extracting of the even/odd elements of the two input 
+vectors, respectively. Their operands and result are vectors that contain the 
+same number of elements of the same type.
+
+@item VEC_INTERLEAVE_HIGH_EXPR
+@item VEC_INTERLEAVE_LOW_EXPR
+These nodes represent merging and interleaving of the high/low elements of the
+two input vectors, respectively. The operands and the result are vectors that 
+contain the same number of elements (@code{N}) of the same type.
+In the case of @code{VEC_INTERLEAVE_HIGH_EXPR}, the high @code{N/2} elements of 
+the first input vector are interleaved with the high @code{N/2} elements of the
+second input vector. In the case of @code{VEC_INTERLEAVE_LOW_EXPR}, the low
+@code{N/2} elements of the first input vector are interleaved with the low 
+@code{N/2} elements of the second input vector.
 
 @end table

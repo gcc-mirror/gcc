@@ -1771,6 +1771,11 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
 
     case WIDEN_MULT_EXPR:
 
+    case VEC_EXTRACT_EVEN_EXPR:
+    case VEC_EXTRACT_ODD_EXPR:
+    case VEC_INTERLEAVE_HIGH_EXPR:
+    case VEC_INTERLEAVE_LOW_EXPR:
+
     case RESX_EXPR:
       *count += 1;
       break;
