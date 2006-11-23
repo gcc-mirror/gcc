@@ -37,8 +37,8 @@ __extension__
 #endif
 typedef struct mfc_list_element {
   uint64_t notify       :  1;   /** Stall-and-notify bit  */
-  uint64_t reserved     : 15;
-  uint64_t size         : 16;   /** Transfer size */
+  uint64_t reserved     : 16;
+  uint64_t size         : 15;   /** Transfer size */
   uint64_t eal          : 32;   /** Lower word of effective address */
 } mfc_list_element_t;
  

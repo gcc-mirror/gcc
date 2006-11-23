@@ -1,5 +1,8 @@
 2006-11-23  Ben Elliston  <bje@au.ibm.com>
 
+	* config/spu/spu_mfcio.h (struct mfc_list_element): Change width
+	of size bitfield.
+
 	* config/spu/spu-elf.h (LIB_SPEC): Do not link with -lc_p.
 
 2006-11-23  Zdenek Dvorak <dvorakz@suse.cz>
