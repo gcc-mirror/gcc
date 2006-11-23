@@ -1,3 +1,8 @@
+2006-11-23  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* var-tracking.c (emit_note_insn_var_location): Take care not to
+	cause verify_flow_info failures.
+
 2006-11-22  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c: Remove edge weights in favor of just
