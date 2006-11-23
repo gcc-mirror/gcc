@@ -4968,3 +4968,14 @@ real_from_mpfr (REAL_VALUE_TYPE *r, mpfr_srcptr m)
   
   real_from_string (r, buf);
 }
+
+/* Check whether the real constant value given is an integer.  */
+
+bool
+real_isinteger (const REAL_VALUE_TYPE *c, enum machine_mode mode)
+{
+  REAL_VALUE_TYPE cint;
+
+  real_trunc (&cint, mode, c);
+  return real_identical (c, &cint);
+}
