@@ -1251,7 +1251,7 @@ tree_estimate_probability (void)
   basic_block bb;
 
   loop_optimizer_init (0);
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (current_loops && dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (current_loops, dump_file, NULL, 0);
 
   add_noreturn_fake_exit_edges ();

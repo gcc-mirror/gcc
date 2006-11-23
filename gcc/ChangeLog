@@ -1,3 +1,8 @@
+2006-11-23  Andrew Pinski  <pinskia@gmail.com>
+
+	* predict.c (tree_estimate_probability): Check to make
+	sure current_loops is non null before calling flow_loops_dump.
+
 2006-11-23  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* var-tracking.c (emit_note_insn_var_location): Revert previous patch.
