@@ -1,6 +1,7 @@
 2006-11-22  Antony King <anthony.king@st.com>
             J"orn Rennecke <joern.rennecke@st.com>
 
+	PR libstdc++/29920
 	* include/Makefile.am (stamp-host): Remove CCODECVT_H line.
 	* include/Makefile.in: Regenerate.
 
