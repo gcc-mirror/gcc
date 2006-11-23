@@ -1,3 +1,10 @@
+2006-11-23  David Ung <davidu@mips.com>
+	
+	* gcc.target/mips/mips.exp (dg-mips-options): Handle parsing of
+	-mfp64, allowable when ISA >= 33 and float is enabled.
+	* gcc.target/mips/mips32r2-mxhc1.c: New test for checking the use
+	of mthc1 and mfhc1 patterns.
+	
 2006-11-23  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/29921

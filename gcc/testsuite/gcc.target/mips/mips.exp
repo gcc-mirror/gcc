@@ -158,6 +158,10 @@ proc dg-mips-options {args} {
 	    if {$mips_mips16} {
 		set matches 0
 	    }
+	} elseif {$flag == "-mfp64"} {
+	    if {$mips_isa < 33 || $mips_float != "hard"} {
+		set matches 0
+	    }
 	} elseif {[regexp -- {^-march=(.*)} $flag dummy arch]} {
 	    if {$mips_mips16 || ($arch != $mips_arch && $mips_forced_isa)} {
 		set matches 0

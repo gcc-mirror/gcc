@@ -607,6 +607,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
    FP madd and msub instructions, and the FP recip and recip sqrt
    instructions.  */
 #define ISA_HAS_FP4		((ISA_MIPS4				\
+				  || (ISA_MIPS32R2 && TARGET_FLOAT64)   \
 				  || ISA_MIPS64)			\
 				 && !TARGET_MIPS16)
 
@@ -702,6 +703,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
 /* ISA includes the MIPS32/64 rev 2 ext and ins instructions.  */
 #define ISA_HAS_EXT_INS		(ISA_MIPS32R2				\
 				 && !TARGET_MIPS16)
+
+/* ISA has instructions for accessing top part of 64 bit fp regs */
+#define ISA_HAS_MXHC1		(TARGET_FLOAT64 && ISA_MIPS32R2)
 
 /* True if the result of a load is not available to the next instruction.
    A nop will then be needed between instructions like "lw $4,..."
@@ -821,6 +825,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
 %(subtarget_asm_debugging_spec) \
 %{mabi=*} %{!mabi*: %(asm_abi_default_spec)} \
 %{mgp32} %{mgp64} %{march=*} %{mxgot:-xgot} \
+%{mfp32} %{mfp64} \
 %{mshared} %{mno-shared} \
 %{msym32} %{mno-sym32} \
 %{mtune=*} %{v} \
