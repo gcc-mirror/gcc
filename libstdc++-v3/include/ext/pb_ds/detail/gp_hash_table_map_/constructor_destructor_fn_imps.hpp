@@ -110,10 +110,10 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn,
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, 
-		 const Comb_Probe_Fn& comb_hash_fn, const Probe_Fn& probe_fn) 
+		 const Comb_Probe_Fn& comb_hash_fn, const Probe_Fn& prober) 
 : hash_eq_fn_base(r_eq_fn),
   ranged_probe_fn_base(resize_base::get_nearest_larger_size(1),
-		       r_hash_fn, comb_hash_fn, probe_fn),
+		       r_hash_fn, comb_hash_fn, prober),
   m_num_e(resize_base::get_nearest_larger_size(1)), m_num_used_e(0),
   m_entries(s_entry_allocator.allocate(m_num_e))
 {
@@ -124,11 +124,11 @@ PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn,
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const Hash_Fn& r_hash_fn, const Eq_Fn& r_eq_fn, 
-		 const Comb_Probe_Fn& comb_hash_fn, const Probe_Fn& probe_fn, 
+		 const Comb_Probe_Fn& comb_hash_fn, const Probe_Fn& prober, 
 		 const Resize_Policy& r_resize_policy) 
 : hash_eq_fn_base(r_eq_fn), resize_base(r_resize_policy),
   ranged_probe_fn_base(resize_base::get_nearest_larger_size(1),
-		       r_hash_fn, comb_hash_fn, probe_fn),
+		       r_hash_fn, comb_hash_fn, prober),
   m_num_e(resize_base::get_nearest_larger_size(1)), m_num_used_e(0),
   m_entries(s_entry_allocator.allocate(m_num_e))
 {
@@ -205,9 +205,9 @@ deallocate_all()
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-erase_all_valid_entries(entry_array a_entries_resized, size_type size)
+erase_all_valid_entries(entry_array a_entries_resized, size_type len)
 {
-  for (size_type pos = 0; pos < size; ++pos)
+  for (size_type pos = 0; pos < len; ++pos)
     {
       entry_pointer p_e = &a_entries_resized[pos];
       if (p_e->m_stat == valid_entry_status)
