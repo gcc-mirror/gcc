@@ -2443,7 +2443,9 @@ emit_note_insn_var_location (void **varp, void *data)
     complete = false;
 
   if (where == EMIT_NOTE_AFTER_INSN)
-    note = emit_note_after (NOTE_INSN_VAR_LOCATION, insn);
+    /* emit_note_after can insert a note after a flow-control insn in a basic
+       block.  That causes verify_flow_info failures.  */
+    note = emit_note_before (NOTE_INSN_VAR_LOCATION, NEXT_INSN (insn));
   else
     note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);
 
