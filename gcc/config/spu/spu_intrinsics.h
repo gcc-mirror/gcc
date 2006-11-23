@@ -45,7 +45,7 @@
 #define SPU_RdSigNotify2	 4
 #define SPU_WrDec		 7
 #define SPU_RdDec		 8
-#define SPU_RdEventStatMask	11
+#define SPU_RdEventMask		11
 #define SPU_RdMachStat		13
 #define SPU_WrSRR0		14
 #define SPU_RdSRR0		15
