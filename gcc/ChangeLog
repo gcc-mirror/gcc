@@ -1,3 +1,30 @@
+2006-11-23  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.h (ISA_HAS_FP4): Add MIPS32R2 + 64bit fpu
+	combination.
+	(ISA_HAS_MXHC1): True if ISA supports mfhc1 and mthc1 opcodes.
+	(ASM_SPEC): Pass along -mfp32 and -mfp64.
+	* config/mips/mips.c (mips_split_64bit_move): Use gen_mthc1 to set
+	high part of FP register when in 64-bit FP register mode.  Similarly
+	use gen_mfhc1 to load high part of FP register.
+	(override_options): Allow -mgp32 and -mfp64 combination if
+	ISA_HAS_MXHC1 (currently for O32 only).
+	(mips_cannot_change_mode_class): If floating-point registers are
+	bigger than word size. disallow conversion of float register from a
+	large integer mode to a float mode smaller than the float register
+	size.
+	(mips_class_max_nregs): Handle float registers case seperately.
+	* config/mips/mips.md (define_constants): Add UNSPEC_MFHC1,
+	UNSPEC_MTHC1.
+	(movdi_32bit): Use !TARGET_FLOAT64 in condition pattern.
+	(movdf_hardfloat_32bit): Similarly.
+	(movdi_gp32_fp64): New DImode pattern for MIPS32R2 which optionally
+	support a full 64-bit fpu.
+	(mthc1): New pattern to generate MTHC1 instruction.
+	(mfhc1): New pattern to generate MFHC1 instruction.
+	* doc/invoke.texi (MIPS Options): Document the -mgp32 -mfp64
+	option for the MIPS32R2 and mention its use under O32 ABI.
+
 2006-11-23  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* var-tracking.c (emit_note_insn_var_location): Take care not to

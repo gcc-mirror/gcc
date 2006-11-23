@@ -47,6 +47,8 @@
    (UNSPEC_MFHILO		26)
    (UNSPEC_TLS_LDM		27)
    (UNSPEC_TLS_GET_TP		28)
+   (UNSPEC_MFHC1		31)
+   (UNSPEC_MTHC1		32)
 
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -3255,13 +3257,24 @@
 (define_insn "*movdi_32bit"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,m,*a,*d,*B*C*D,*B*C*D,*d,*m")
 	(match_operand:DI 1 "move_operand" "d,i,m,d,*J*d,*a,*d,*m,*B*C*D,*B*C*D"))]
-  "!TARGET_64BIT && !TARGET_MIPS16
+  "!TARGET_64BIT && !TARGET_FLOAT64 && !TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"arith,arith,load,store,mthilo,mfhilo,xfer,load,xfer,store")
    (set_attr "mode"	"DI")
    (set_attr "length"   "8,16,*,*,8,8,8,*,8,*")])
+
+(define_insn "*movdi_gp32_fp64"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,m,*a,*d,*f,*f,*f,*d,*m")
+	(match_operand:DI 1 "move_operand" "d,i,m,d,*J*d,*a,*f,*J*d,*m,*f,*f"))]
+  "!TARGET_64BIT && TARGET_FLOAT64 && !TARGET_MIPS16
+   && (register_operand (operands[0], DImode)
+       || reg_or_0_operand (operands[1], DImode))"
+  { return mips_output_move (operands[0], operands[1]); }
+  [(set_attr "type"	"arith,arith,load,store,mthilo,mfhilo,fmove,xfer,fpload,xfer,fpstore")
+   (set_attr "mode"	"DI")
+   (set_attr "length"   "8,16,*,*,8,8,4,8,*,8,*")])
 
 (define_insn "*movdi_32bit_mips16"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,m,*d")
@@ -3804,6 +3817,7 @@
    (set_attr "mode"	"DF")
    (set_attr "length"	"4,4,*,*,*,4,4,4,*,*")])
 
+;; This pattern applies to both !TARGET_FLOAT64 and TARGET_FLOAT64.
 (define_insn "*movdf_hardfloat_32bit"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,m,m,*f,*d,*d,*d,*m")
 	(match_operand:DF 1 "move_operand" "f,G,m,f,G,*d,*f,*d*G,*m,*d"))]
@@ -3983,6 +3997,29 @@
   return mips_output_move (operands[0], operands[1]);
 }
   [(set_attr "type"	"xfer,fpstore")
+   (set_attr "mode"	"SF")])
+
+;; Move operand 1 to the high word of operand 0 using mthc1, preserving the
+;; value in the low word.
+(define_insn "mthc1"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(unspec:DF [(match_operand:SI 1 "general_operand" "dJ")
+		    (match_operand:DF 2 "register_operand" "0")]
+		    UNSPEC_MTHC1))]
+  "TARGET_HARD_FLOAT && !TARGET_64BIT && ISA_HAS_MXHC1"
+  "mthc1\t%z1,%0"
+  [(set_attr "type"	"xfer")
+   (set_attr "mode"	"SF")])
+
+;; Move high word of operand 1 to operand 0 using mfhc1.  The corresponding
+;; low-word move is done in the normal way.
+(define_insn "mfhc1"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:DF 1 "register_operand" "f")]
+		    UNSPEC_MFHC1))]
+  "TARGET_HARD_FLOAT && !TARGET_64BIT && ISA_HAS_MXHC1"
+  "mfhc1\t%0,%1"
+  [(set_attr "type"	"xfer")
    (set_attr "mode"	"SF")])
 
 ;; Insn to initialize $gp for n32/n64 abicalls.  Operand 0 is the offset

@@ -2846,15 +2846,35 @@ mips_split_64bit_move (rtx dest, rtx src)
   if (FP_REG_RTX_P (dest))
     {
       /* Loading an FPR from memory or from GPRs.  */
-      emit_insn (gen_load_df_low (copy_rtx (dest), mips_subword (src, 0)));
-      emit_insn (gen_load_df_high (dest, mips_subword (src, 1),
-				   copy_rtx (dest)));
+      if (ISA_HAS_MXHC1)
+	{
+	  dest = gen_lowpart (DFmode, dest);
+	  emit_insn (gen_load_df_low (dest, mips_subword (src, 0)));
+	  emit_insn (gen_mthc1 (dest, mips_subword (src, 1),
+				copy_rtx (dest)));
+	}
+      else
+	{
+	  emit_insn (gen_load_df_low (copy_rtx (dest),
+				      mips_subword (src, 0)));
+	  emit_insn (gen_load_df_high (dest, mips_subword (src, 1),
+				       copy_rtx (dest)));
+	}
     }
   else if (FP_REG_RTX_P (src))
     {
       /* Storing an FPR into memory or GPRs.  */
-      emit_move_insn (mips_subword (dest, 0), mips_subword (src, 0));
-      emit_insn (gen_store_df_high (mips_subword (dest, 1), src));
+      if (ISA_HAS_MXHC1)
+	{
+	  src = gen_lowpart (DFmode, src);
+	  emit_move_insn (mips_subword (dest, 0), mips_subword (src, 0));
+	  emit_insn (gen_mfhc1 (mips_subword (dest, 1), src));
+	}
+      else
+	{
+	  emit_move_insn (mips_subword (dest, 0), mips_subword (src, 0));
+	  emit_insn (gen_store_df_high (mips_subword (dest, 1), src));
+	}
     }
   else
     {
@@ -4804,8 +4824,10 @@ override_options (void)
 	 only one right answer here.  */
       if (TARGET_64BIT && TARGET_DOUBLE_FLOAT && !TARGET_FLOAT64)
 	error ("unsupported combination: %s", "-mgp64 -mfp32 -mdouble-float");
-      else if (!TARGET_64BIT && TARGET_FLOAT64)
-	error ("unsupported combination: %s", "-mgp32 -mfp64");
+      else if (!TARGET_64BIT && TARGET_FLOAT64 
+	       && !(ISA_HAS_MXHC1 && mips_abi == ABI_32))
+	error ("-mgp32 and -mfp64 can only be combined if the target"
+	       " supports the mfhc1 and mthc1 instructions");
       else if (TARGET_SINGLE_FLOAT && TARGET_FLOAT64)
 	error ("unsupported combination: %s", "-mfp64 -msingle-float");
     }
@@ -7660,15 +7682,27 @@ mips_cannot_change_mode_class (enum machine_mode from,
 	    return true;
 	}
     }
+
+  /* gcc assumes that each word of a multiword register can be accessed
+     individually using SUBREGs.  This is not true for floating-point
+     registers if they are bigger than a word.  */  
+  if (UNITS_PER_FPREG > UNITS_PER_WORD
+      && GET_MODE_SIZE (from) > UNITS_PER_WORD
+      && GET_MODE_SIZE (to) < UNITS_PER_FPREG
+      && reg_classes_intersect_p (FP_REGS, class))
+    return true;
+
   /* Loading a 32-bit value into a 64-bit floating-point register
      will not sign-extend the value, despite what LOAD_EXTEND_OP says.
      We can't allow 64-bit float registers to change from SImode to
      to a wider mode.  */
-  if (TARGET_FLOAT64
+  if (TARGET_64BIT
+      && TARGET_FLOAT64
       && from == SImode
       && GET_MODE_SIZE (to) >= UNITS_PER_WORD
       && reg_classes_intersect_p (FP_REGS, class))
     return true;
+
   return false;
 }
 
@@ -7830,14 +7864,17 @@ mips_secondary_reload_class (enum reg_class class,
 
 /* Implement CLASS_MAX_NREGS.
 
-   Usually all registers are word-sized.  The only supported exception
-   is -mgp64 -msingle-float, which has 64-bit words but 32-bit float
-   registers.  A word-based calculation is correct even in that case,
-   since -msingle-float disallows multi-FPR values.
+   - UNITS_PER_FPREG controls the number of registers needed by FP_REGS.
 
-   The FP status registers are an exception to this rule.  They are always
-   4 bytes wide as they only hold condition code modes, and CCmode is always
-   considered to be 4 bytes wide.  */
+   - ST_REGS are always hold CCmode values, and CCmode values are
+     considered to be 4 bytes wide.
+
+   All other register classes are covered by UNITS_PER_WORD.  Note that
+   this is true even for unions of integer and float registers when the
+   latter are smaller than the former.  The only supported combination
+   in which case this occurs is -mgp64 -msingle-float, which has 64-bit
+   words but 32-bit float registers.  A word-based calculation is correct
+   in that case since -msingle-float disallows multi-FPR values.  */
 
 int
 mips_class_max_nregs (enum reg_class class ATTRIBUTE_UNUSED,
@@ -7845,6 +7882,8 @@ mips_class_max_nregs (enum reg_class class ATTRIBUTE_UNUSED,
 {
   if (class == ST_REGS)
     return (GET_MODE_SIZE (mode) + 3) / 4;
+  else if (class == FP_REGS)
+    return (GET_MODE_SIZE (mode) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG;
   else
     return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
