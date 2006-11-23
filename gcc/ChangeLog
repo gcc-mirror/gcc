@@ -1,3 +1,38 @@
+2006-11-22  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c: Remove edge weights in favor of just
+	processing them as complex constraints.
+	(struct constraint_graph): Remove weighted succs and preds. Rename
+	nonweighted succs and preds.
+	(constraint_edge): Removed.
+	(constraint_edge_t): Ditto.
+	(constraint_edge_pool): Ditto.
+	(new_constraint_edge): Ditto.
+	(constraint_edge_equal): Ditto.
+	(constraint_edge_less): Ditto.
+	(constraint_edge_vec_find): Ditto.
+	(erase_self_graph_edge): Ditto.
+	(add_graph_edge): Removed.
+	(get_graph_weights): Ditto.
+	(allocate_graph_weights): Ditto.	(
+	(valid_weighted_graph_edge): Ditto
+	(bitmap_other_than_zero_bit_set): Ditto.
+	(int_add_graph_edge): Renamed to add_graph_edge.
+	(clear_edges_for_node): Remove support for weighted edges.
+	(merge_graph_nodes): Ditto.
+	(valid_graph_edge): Ditto.
+	(build_constraint_graph): Ditto.
+	(scc_visit): Ditto.
+	(collapse_nodes): Ditto.
+	(process_unification_queue): Ditto.
+	(topo_visit): Ditto.
+	(do_ds_constraint): Ditto.
+	(perform_var_subsitution): Ditto.
+	(solve_graph): Ditto.
+	(init_alias_vars): Ditto.
+	(delete_points_to_sets): Ditto.
+	(do_complex_constraint): Support offsetted copies here.
+
 2006-11-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/spu/spu_intrinsics.h (SPU_RdEventStatMask): Rename to
