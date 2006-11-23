@@ -1,3 +1,7 @@
+2006-11-23  Andrew Pinski  <pinskia@gmail.com>
+
+	* gcc.dg/tree-ssa/dump-1.c: New test.
+
 2006-11-23  David Ung <davidu@mips.com>
 	
 	* gcc.target/mips/mips.exp (dg-mips-options): Handle parsing of
