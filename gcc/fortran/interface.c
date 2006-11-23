@@ -963,12 +963,12 @@ check_interface0 (gfc_interface * p, const char *interface_name)
    here.  */
 
 static int
-check_interface1 (gfc_interface * p, gfc_interface * q,
+check_interface1 (gfc_interface * p, gfc_interface * q0,
 		  int generic_flag, const char *interface_name)
 {
-
+  gfc_interface * q;
   for (; p; p = p->next)
-    for (; q; q = q->next)
+    for (q = q0; q; q = q->next)
       {
 	if (p->sym == q->sym)
 	  continue;		/* Duplicates OK here */

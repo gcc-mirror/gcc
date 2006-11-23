@@ -11,7 +11,7 @@ module mymod
      module procedure foo_1 ! { dg-error "must be INTENT" }
      module procedure foo_2 ! { dg-error "cannot be optional" }
      module procedure foo_3 ! { dg-error "must have, at most, two arguments" }
-     module procedure foo_1_OK
+     module procedure foo_1_OK  ! { dg-error "Ambiguous interfaces" }
      module procedure foo_2_OK
      function foo_chr (chr) ! { dg-error "cannot be assumed character length" }
        character(*) :: foo_chr
