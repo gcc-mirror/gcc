@@ -1,8 +1,8 @@
-/* Test messages for -Wconversion, including that they are not
+/* Test messages for -Wtraditional-conversion, including that they are not
    pedwarns.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -pedantic-errors -Wconversion" } */
+/* { dg-options "-std=c99 -pedantic-errors -Wtraditional-conversion" } */
 
 void fsc(signed char);
 void fsi(signed int);

@@ -255,7 +255,7 @@ Objective-C and Objective-C++ Dialects}.
 @item C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
 -Wmissing-prototypes  -Wnested-externs  -Wold-style-definition @gol
--Wstrict-prototypes  -Wtraditional @gol
+-Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion @gol
 -Wdeclaration-after-statement -Wpointer-sign}
 
 @item Debugging Options
@@ -3058,7 +3058,7 @@ traditional C case.
 Conversions by prototypes between fixed/floating point values and vice
 versa.  The absence of these prototypes when compiling with traditional
 C would cause serious problems.  This is a subset of the possible
-conversion warnings, for the full set use @option{-Wconversion}.
+conversion warnings, for the full set use @option{-Wtraditional-conversion}.
 
 @item
 Use of ISO C style function definitions.  This warning intentionally is
@@ -3069,6 +3069,14 @@ libiberty's traditional C compatibility macros, @code{PARAMS} and
 because that feature is already a GCC extension and thus not relevant to
 traditional C compatibility.
 @end itemize
+
+@item -Wtraditional-conversion @r{(C only)}
+@opindex Wtraditional-conversion
+Warn if a prototype causes a type conversion that is different from what
+would happen to the same argument in the absence of a prototype.  This
+includes conversions of fixed point to floating and vice versa, and
+conversions changing the width or signedness of a fixed point argument
+except when the same as the default promotion.
 
 @item -Wdeclaration-after-statement @r{(C only)}
 @opindex Wdeclaration-after-statement
@@ -3148,16 +3156,10 @@ this is why we did not make @option{-Wall} request these warnings.
 
 @item -Wconversion
 @opindex Wconversion
-Warn if a prototype causes a type conversion that is different from what
-would happen to the same argument in the absence of a prototype.  This
-includes conversions of fixed point to floating and vice versa, and
-conversions changing the width or signedness of a fixed point argument
-except when the same as the default promotion.
-
-Also, warn if a negative integer constant expression is implicitly
-converted to an unsigned type.  For example, warn about the assignment
-@code{x = -1} if @code{x} is unsigned.  But do not warn about explicit
-casts like @code{(unsigned) -1}.
+Warn if a negative integer constant expression is implicitly converted
+to an unsigned type.  For example, warn about the assignment
+@code{unsigned x = -1} if @code{x} is unsigned. But do not warn about
+explicit casts like @code{(unsigned) -1}.
 
 @item -Wsign-compare
 @opindex Wsign-compare

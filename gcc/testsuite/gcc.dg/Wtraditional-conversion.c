@@ -5,7 +5,7 @@
    not used in the appropriate place in the warning code.  */
 
 /* { dg-do compile } */
-/* { dg-options -Wconversion } */
+/* { dg-options -Wtraditional-conversion } */
 
 typedef enum { a } __attribute__((packed)) t;
 void f(t x) {}

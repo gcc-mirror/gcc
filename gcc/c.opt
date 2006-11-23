@@ -151,7 +151,7 @@ Synonym for -Wcomment
 
 Wconversion
 C ObjC C++ ObjC++ Var(warn_conversion)
-Warn about possibly confusing type conversions
+Warn for implicit type conversions that may change a value
 
 Wctor-dtor-privacy
 C++ ObjC++ Var(warn_ctor_dtor_privacy)
@@ -398,6 +398,10 @@ Do not suppress warnings from system headers
 Wtraditional
 C ObjC Var(warn_traditional)
 Warn about features not present in traditional C
+
+Wtraditional-conversion
+C ObjC Var(warn_traditional_conversion)
+Warn of prototypes causing type conversions different from what would happen in the absence of prototype
 
 Wtrigraphs
 C ObjC C++ ObjC++

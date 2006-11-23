@@ -2427,7 +2427,7 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 	    {
 	      /* Optionally warn about conversions that
 		 differ from the default conversions.  */
-	      if (warn_conversion || warn_traditional)
+	      if (warn_traditional_conversion || warn_traditional)
 		{
 		  unsigned int formal_prec = TYPE_PRECISION (type);
 
@@ -2503,8 +2503,8 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 		    }
 		  /* Detect integer changing in width or signedness.
 		     These warnings are only activated with
-		     -Wconversion, not with -Wtraditional.  */
-		  else if (warn_conversion && INTEGRAL_TYPE_P (type)
+		     -Wtraditional-conversion, not with -Wtraditional.  */
+		  else if (warn_traditional_conversion && INTEGRAL_TYPE_P (type)
 			   && INTEGRAL_TYPE_P (TREE_TYPE (val)))
 		    {
 		      tree would_have_been = default_conversion (val);
@@ -2517,7 +2517,7 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 			   and the actual arg is that enum type.  */
 			;
 		      else if (formal_prec != TYPE_PRECISION (type1))
-			warning (OPT_Wconversion, "passing argument %d of %qE "
+			warning (OPT_Wtraditional_conversion, "passing argument %d of %qE "
 				 "with different width due to prototype",
 				 argnum, rname);
 		      else if (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (type1))
@@ -2540,11 +2540,11 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 			       && TYPE_UNSIGNED (TREE_TYPE (val)))
 			;
 		      else if (TYPE_UNSIGNED (type))
-			warning (OPT_Wconversion, "passing argument %d of %qE "
+			warning (OPT_Wtraditional_conversion, "passing argument %d of %qE "
 				 "as unsigned due to prototype",
 				 argnum, rname);
 		      else
-			warning (OPT_Wconversion, "passing argument %d of %qE "
+			warning (OPT_Wtraditional_conversion, "passing argument %d of %qE "
 				 "as signed due to prototype", argnum, rname);
 		    }
 		}
