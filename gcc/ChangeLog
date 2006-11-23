@@ -1,3 +1,7 @@
+2006-11-23  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* var-tracking.c (emit_note_insn_var_location): Revert previous patch.
+
 2006-11-23  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.h (ISA_HAS_FP4): Add MIPS32R2 + 64bit fpu
