@@ -1,7 +1,13 @@
-2006-11-23  Ben Elliston  <bje@au.ibm.com>
+2006-11-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/spu/spu_intrinsics.h (SPU_RdEventStatMask): Rename to
+	SPU_RdEventMask.
+	* config/spu/spu_mfcio.h (spu_read_event_mask): Update.
 
 	* config/spu/spu_mfcio.h (struct mfc_list_element): Change width
 	of size bitfield.
+
+2006-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu-elf.h (LIB_SPEC): Do not link with -lc_p.
 
