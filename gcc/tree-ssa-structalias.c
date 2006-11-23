@@ -434,14 +434,53 @@ struct constraint
 static VEC(constraint_t,heap) *constraints;
 static alloc_pool constraint_pool;
 
+/* An edge in the weighted constraint graph.   The edges are weighted,
+   with a bit set in weights meaning their is an edge with that
+   weight. 
+   We don't keep the src in the edge, because we always know what it
+   is. */
 
-/* The constraint graph is represented as an array of bitmaps
-   containing successor nodes.  */
+struct constraint_edge
+{
+  unsigned int dest;
+  bitmap weights;
+};
+
+typedef struct constraint_edge *constraint_edge_t;
+static alloc_pool constraint_edge_pool;
+
+/* Return a new constraint edge from SRC to DEST.  */
+
+static constraint_edge_t
+new_constraint_edge (unsigned int dest)
+{
+  constraint_edge_t ret = pool_alloc (constraint_edge_pool);
+  ret->dest = dest;
+  ret->weights = NULL;
+  return ret;
+}
+
+DEF_VEC_P(constraint_edge_t);
+DEF_VEC_ALLOC_P(constraint_edge_t,heap);
+
+
+/* The constraint graph is represented internally in two different
+   ways.  The overwhelming majority of edges in the constraint graph
+   are zero weigh edges, and thus, using a vector of contrainst_edge_t
+   is a waste of time and memory, since they have no weights.  We
+   simply use a bitmap to store the preds and succs for each node.
+   The weighted edges are stored as a set of adjacency vectors, one
+   per variable. succs[x] is the vector of successors for variable x,
+   and preds[x] is the vector of predecessors for variable x.  IOW,
+   all edges are "forward" edges, which is not like our CFG.  So
+   remember that preds[x]->src == x, and succs[x]->src == x.  */
 
 struct constraint_graph
 {
-  bitmap *succs;
-  bitmap *preds;
+  bitmap *zero_weight_succs;
+  bitmap *zero_weight_preds;
+  VEC(constraint_edge_t,heap) **succs;
+  VEC(constraint_edge_t,heap) **preds;
 };
 
 typedef struct constraint_graph *constraint_graph_t;
@@ -700,6 +739,44 @@ insert_into_complex (unsigned int var, constraint_t c)
 }
 
 
+/* Compare two constraint edges A and B, return true if they are equal.  */
+
+static bool
+constraint_edge_equal (struct constraint_edge a, struct constraint_edge b)
+{
+  return a.dest == b.dest;
+}
+
+/* Compare two constraint edges, return true if A is less than B */
+
+static bool
+constraint_edge_less (const constraint_edge_t a, const constraint_edge_t b)
+{
+  if (a->dest < b->dest)
+    return true;
+  return false;
+}
+
+/* Find the constraint edge that matches LOOKFOR, in VEC.
+   Return the edge, if found, NULL otherwise.  */
+
+static constraint_edge_t 
+constraint_edge_vec_find (VEC(constraint_edge_t,heap) *vec, 
+			  struct constraint_edge lookfor)
+{
+  unsigned int place;  
+  constraint_edge_t edge = NULL;
+
+  place = VEC_lower_bound (constraint_edge_t, vec, &lookfor, 
+			   constraint_edge_less);
+  if (place >= VEC_length (constraint_edge_t, vec))
+    return NULL;
+  edge = VEC_index (constraint_edge_t, vec, place);
+  if (!constraint_edge_equal (*edge, lookfor))
+    return NULL;
+  return edge;
+}
+
 /* Condense two variable nodes into a single variable node, by moving
    all associated info from SRC to TO.  */
 
@@ -738,43 +815,206 @@ condense_varmap_nodes (unsigned int to, unsigned int src)
   srcvi->complex = NULL;
 }
 
+/* Erase an edge from SRC to SRC from GRAPH.  This routine only
+   handles self-edges (e.g. an edge from a to a).  */
+
+static void
+erase_graph_self_edge (constraint_graph_t graph, unsigned int src)
+{
+  VEC(constraint_edge_t,heap) *predvec = graph->preds[src];
+  VEC(constraint_edge_t,heap) *succvec = graph->succs[src];
+  struct constraint_edge edge;
+  unsigned int place;
+
+  edge.dest = src;
+
+  /* Remove from the successors.  */
+  place = VEC_lower_bound (constraint_edge_t, succvec, &edge, 
+			   constraint_edge_less);
+  
+  /* Make sure we found the edge.  */
+#ifdef ENABLE_CHECKING
+  {
+    constraint_edge_t tmp = VEC_index (constraint_edge_t, succvec, place);
+    gcc_assert (constraint_edge_equal (*tmp, edge));
+  }
+#endif
+  VEC_ordered_remove (constraint_edge_t, succvec, place);
+
+  /* Remove from the predecessors.  */
+  place = VEC_lower_bound (constraint_edge_t, predvec, &edge,
+			   constraint_edge_less);
+
+  /* Make sure we found the edge.  */
+#ifdef ENABLE_CHECKING
+  {
+    constraint_edge_t tmp = VEC_index (constraint_edge_t, predvec, place);
+    gcc_assert (constraint_edge_equal (*tmp, edge));
+  }
+#endif
+  VEC_ordered_remove (constraint_edge_t, predvec, place);
+}
 
 /* Remove edges involving NODE from GRAPH.  */
 
 static void
 clear_edges_for_node (constraint_graph_t graph, unsigned int node)
 {
+  VEC(constraint_edge_t,heap) *succvec = graph->succs[node];
+  VEC(constraint_edge_t,heap) *predvec = graph->preds[node];
   bitmap_iterator bi;
   unsigned int j;
+  constraint_edge_t c = NULL;
+  int i;
 
   /* Walk the successors, erase the associated preds.  */
   
-  EXECUTE_IF_IN_NONNULL_BITMAP (graph->succs[node], 0, j, bi)
+  EXECUTE_IF_IN_NONNULL_BITMAP (graph->zero_weight_succs[node], 0, j, bi)
     if (j != node)
-      bitmap_clear_bit (graph->preds[j], node);
+      bitmap_clear_bit (graph->zero_weight_preds[j], node);
   
+  for (i = 0; VEC_iterate (constraint_edge_t, succvec, i, c); i++)
+    if (c->dest != node)
+      {
+	unsigned int place;
+	struct constraint_edge lookfor;
+	constraint_edge_t result;
+
+	lookfor.dest = node;
+	place = VEC_lower_bound (constraint_edge_t, graph->preds[c->dest], 
+				 &lookfor, constraint_edge_less);
+	result = VEC_ordered_remove (constraint_edge_t, 
+				     graph->preds[c->dest], place);
+	pool_free (constraint_edge_pool, result);
+      }
 
   /* Walk the preds, erase the associated succs.  */
 
-  EXECUTE_IF_IN_NONNULL_BITMAP (graph->preds[node], 0, j, bi)
+  EXECUTE_IF_IN_NONNULL_BITMAP (graph->zero_weight_preds[node], 0, j, bi)
     if (j != node)
-      bitmap_clear_bit (graph->succs[j], node);
+      bitmap_clear_bit (graph->zero_weight_succs[j], node);
   
+  for (i =0; VEC_iterate (constraint_edge_t, predvec, i, c); i++)
+    if (c->dest != node)
+      {
+	unsigned int place;
+	struct constraint_edge lookfor;
+	constraint_edge_t result;
 
-  if (graph->preds[node])
+	lookfor.dest = node;
+	place = VEC_lower_bound (constraint_edge_t, graph->succs[c->dest],
+				 &lookfor, constraint_edge_less);
+	result = VEC_ordered_remove (constraint_edge_t, 
+				     graph->succs[c->dest], place);
+	pool_free (constraint_edge_pool, result);
+
+      }    
+
+  if (graph->zero_weight_preds[node])
     {
-      BITMAP_FREE (graph->preds[node]);
-      graph->preds[node] = NULL;
+      BITMAP_FREE (graph->zero_weight_preds[node]);
+      graph->zero_weight_preds[node] = NULL;
     } 
 
-  if (graph->succs[node])
+  if (graph->zero_weight_succs[node])
     {
-      BITMAP_FREE (graph->succs[node]);
-      graph->succs[node] = NULL;
-    }
+      BITMAP_FREE (graph->zero_weight_succs[node]);
+      graph->zero_weight_succs[node] = NULL;
+    } 
+
+  VEC_free (constraint_edge_t, heap, graph->preds[node]);
+  VEC_free (constraint_edge_t, heap, graph->succs[node]);
+  graph->preds[node] = NULL;
+  graph->succs[node] = NULL;
 }
 
 static bool edge_added = false;
+  
+/* Add edge (src, dest) to the graph.  */
+
+static bool
+add_graph_edge (constraint_graph_t graph, unsigned int src, unsigned int dest)
+{
+  unsigned int place;
+  VEC(constraint_edge_t,heap) *vec;
+  struct constraint_edge newe;
+  newe.dest = dest;
+
+  vec = graph->preds[src];
+  place = VEC_lower_bound (constraint_edge_t, vec, &newe, 
+			   constraint_edge_less);
+  if (place == VEC_length (constraint_edge_t, vec)
+      || VEC_index (constraint_edge_t, vec, place)->dest != dest)
+    {
+      constraint_edge_t edge = new_constraint_edge (dest);
+
+      VEC_safe_insert (constraint_edge_t, heap, graph->preds[src], 
+		       place, edge);
+      edge = new_constraint_edge (src);
+
+      place = VEC_lower_bound (constraint_edge_t, graph->succs[dest],
+			       edge, constraint_edge_less);
+      VEC_safe_insert (constraint_edge_t, heap, graph->succs[dest], 
+		       place, edge);
+      edge_added = true;
+      stats.num_edges++;
+      return true;
+    }
+  else
+    return false;
+}
+
+
+/* Return the bitmap representing the weights of edge (SRC, DEST).  */
+
+static bitmap *
+get_graph_weights (constraint_graph_t graph, unsigned int src,
+		   unsigned int dest)
+{
+  constraint_edge_t edge;
+  VEC(constraint_edge_t,heap) *vec;
+  struct constraint_edge lookfor;
+
+  lookfor.dest = dest;
+
+  vec = graph->preds[src];
+  edge = constraint_edge_vec_find (vec, lookfor);
+  gcc_assert (edge != NULL);
+  return &edge->weights;
+}
+
+/* Allocate graph weight bitmap for the edges associated with SRC and
+   DEST in GRAPH.  Both the pred and the succ edges share a single
+   bitmap, so we need to set both edges to that bitmap.  */
+
+static bitmap
+allocate_graph_weights (constraint_graph_t graph, unsigned int src, 
+			unsigned int dest)
+{
+  bitmap result;
+  constraint_edge_t edge;
+  VEC(constraint_edge_t,heap) *vec;
+  struct constraint_edge lookfor;
+  
+  result = BITMAP_ALLOC (&ptabitmap_obstack);
+
+  /* Set the pred weight.  */
+  lookfor.dest = dest;
+  vec = graph->preds[src];
+  edge = constraint_edge_vec_find (vec, lookfor);
+  gcc_assert (edge != NULL);
+  edge->weights = result;
+
+  /* Set the succ weight.  */  
+  lookfor.dest = src;
+  vec = graph->succs[dest];
+  edge = constraint_edge_vec_find (vec, lookfor);
+  gcc_assert (edge != NULL);
+  edge->weights = result;
+  
+  return result;  
+}
+
 
 /* Merge GRAPH nodes FROM and TO into node TO.  */
 
@@ -782,72 +1022,144 @@ static void
 merge_graph_nodes (constraint_graph_t graph, unsigned int to, 
 		   unsigned int from)
 {
+  VEC(constraint_edge_t,heap) *succvec = graph->succs[from];
+  VEC(constraint_edge_t,heap) *predvec = graph->preds[from];
+  int i;
+  constraint_edge_t c;
   unsigned int j;
   bitmap_iterator bi;
 
-  /* Merge all the predecessor edges.  */
-  if (graph->preds[from])
+  /* Merge all the zero weighted predecessor edges.  */
+  if (graph->zero_weight_preds[from])
     {
-      if (!graph->preds[to])
-	graph->preds[to] = BITMAP_ALLOC (&predbitmap_obstack);
+      if (!graph->zero_weight_preds[to])
+	graph->zero_weight_preds[to] = BITMAP_ALLOC (&predbitmap_obstack);
       
-      EXECUTE_IF_SET_IN_BITMAP (graph->preds[from], 0, j, bi)
+      EXECUTE_IF_SET_IN_BITMAP (graph->zero_weight_preds[from], 0, j, bi)
 	{
 	  if (j != to)
 	    {
-	      bitmap_clear_bit (graph->succs[j], from);
-	      bitmap_set_bit (graph->succs[j], to);
+	      bitmap_clear_bit (graph->zero_weight_succs[j], from);
+	      bitmap_set_bit (graph->zero_weight_succs[j], to);
 	    }
 	}
-      bitmap_ior_into (graph->preds[to], 
-		       graph->preds[from]);
+      bitmap_ior_into (graph->zero_weight_preds[to], 
+		       graph->zero_weight_preds[from]);
     }
 
-  /* Merge all the successor edges.  */
-  if (graph->succs[from])
+  /* Merge all the zero weighted successor edges.  */
+  if (graph->zero_weight_succs[from])
     {
-      if (!graph->succs[to])
-	graph->succs[to] = BITMAP_ALLOC (&ptabitmap_obstack);
-      EXECUTE_IF_SET_IN_BITMAP (graph->succs[from], 0, j, bi)
+      if (!graph->zero_weight_succs[to])
+	graph->zero_weight_succs[to] = BITMAP_ALLOC (&ptabitmap_obstack);
+      EXECUTE_IF_SET_IN_BITMAP (graph->zero_weight_succs[from], 0, j, bi)
 	{
-	  bitmap_clear_bit (graph->preds[j], from);
-	  bitmap_set_bit (graph->preds[j], to);
+	  bitmap_clear_bit (graph->zero_weight_preds[j], from);
+	  bitmap_set_bit (graph->zero_weight_preds[j], to);
 	}
-      bitmap_ior_into (graph->succs[to], 
-		       graph->succs[from]);
+      bitmap_ior_into (graph->zero_weight_succs[to], 
+		       graph->zero_weight_succs[from]);
     }
 
+  /* Merge all the nonzero weighted predecessor edges.  */
+  for (i = 0; VEC_iterate (constraint_edge_t, predvec, i, c); i++)
+    {
+      unsigned int d = c->dest;
+      bitmap temp;
+      bitmap *weights;
+
+      if (c->dest == from)
+	d = to;
+
+      add_graph_edge (graph, to, d);
+
+      temp = *(get_graph_weights (graph, from, c->dest));      
+      if (temp)
+	{
+	  weights = get_graph_weights (graph, to, d);
+	  if (!*weights)
+	    *weights = allocate_graph_weights (graph, to, d);
+	  
+	  bitmap_ior_into (*weights, temp);
+	}
+      
+    }
+  
+  /* Merge all the nonzero weighted successor edges.  */
+  for (i = 0; VEC_iterate (constraint_edge_t, succvec, i, c); i++)
+    {
+      unsigned int d = c->dest;
+      bitmap temp;
+      bitmap *weights;
+
+      if (c->dest == from)
+	d = to;
+
+      add_graph_edge (graph, d, to);
+
+      temp = *(get_graph_weights (graph, c->dest, from));
+      if (temp)
+	{
+	  weights = get_graph_weights (graph, d, to);
+	  if (!*weights)
+	    *weights = allocate_graph_weights (graph, d, to);
+	  bitmap_ior_into (*weights, temp);
+	}
+    }
   clear_edges_for_node (graph, from);
 }
 
-/* Add a graph edge to GRAPH, going from TO to FROM if
+/* Add a graph edge to GRAPH, going from TO to FROM, with WEIGHT, if
    it doesn't exist in the graph already.
    Return false if the edge already existed, true otherwise.  */
 
 static bool
-add_graph_edge (constraint_graph_t graph, unsigned int to,
-		unsigned int from)
+int_add_graph_edge (constraint_graph_t graph, unsigned int to, 
+		    unsigned int from, unsigned HOST_WIDE_INT weight)
 {
-  if (to == from)
+  if (to == from && weight == 0)
     {
       return false;
     }
   else
     {
       bool r = false;
-      
-      if (!graph->preds[to])
-	graph->preds[to] = BITMAP_ALLOC (&predbitmap_obstack);
-      if (!graph->succs[from])
-	graph->succs[from] = BITMAP_ALLOC (&ptabitmap_obstack);
-      if (!bitmap_bit_p (graph->succs[from], to))
+
+      if (weight == 0)
 	{
-	  edge_added = true;
-	  r = true;
-	  stats.num_edges++;
-	  bitmap_set_bit (graph->preds[to], from);
-	  bitmap_set_bit (graph->succs[from], to);
+          if (!graph->zero_weight_preds[to])
+	    graph->zero_weight_preds[to] = BITMAP_ALLOC (&predbitmap_obstack);
+          if (!graph->zero_weight_succs[from])
+	    graph->zero_weight_succs[from] = BITMAP_ALLOC (&ptabitmap_obstack);
+	  if (!bitmap_bit_p (graph->zero_weight_succs[from], to))
+	    {
+	      edge_added = true;
+	      r = true;
+	      stats.num_edges++;
+	      bitmap_set_bit (graph->zero_weight_preds[to], from);
+	      bitmap_set_bit (graph->zero_weight_succs[from], to);
+	    }
 	}
+      else
+	{
+	  bitmap *weights;
+
+	  r = add_graph_edge (graph, to, from);
+	  weights = get_graph_weights (graph, to, from);
+
+	  if (!*weights)
+	    {
+	      r = true;
+	      *weights = allocate_graph_weights (graph, to, from);
+	      bitmap_set_bit (*weights, weight);
+	    }
+	  else
+	    {
+	      r |= !bitmap_bit_p (*weights, weight);
+	      bitmap_set_bit (*weights, weight);
+	    }
+	}
+      
       return r;
     }
 }
@@ -859,9 +1171,27 @@ static bool
 valid_graph_edge (constraint_graph_t graph, unsigned int src, 
 		  unsigned int dest)
 {
-  return (graph->succs[dest] 
-	  && bitmap_bit_p (graph->succs[dest], src));
+  struct constraint_edge lookfor;
+  lookfor.dest = src;
+  
+  return (graph->zero_weight_succs[dest] 
+      && bitmap_bit_p (graph->zero_weight_succs[dest], src)) 
+    || constraint_edge_vec_find (graph->succs[dest], lookfor) != NULL;
 }
+
+/* Return true if {DEST, SRC} is an existing weighted graph edge (IE has
+   a weight other than 0) in GRAPH.  */
+static bool
+valid_weighted_graph_edge (constraint_graph_t graph, unsigned int src, 
+			   unsigned int dest)
+{
+  struct constraint_edge lookfor;
+  lookfor.dest = src;
+  
+  return graph->preds[src] 
+    && constraint_edge_vec_find (graph->succs[dest], lookfor) != NULL;
+}
+
 
 /* Build the constraint graph.  */
 
@@ -873,8 +1203,10 @@ build_constraint_graph (void)
 
   graph = XNEW (struct constraint_graph);
   graph_size = VEC_length (varinfo_t, varmap) + 1;
-  graph->succs = XCNEWVEC (bitmap, graph_size);
-  graph->preds = XCNEWVEC (bitmap, graph_size);
+  graph->succs = XCNEWVEC (VEC(constraint_edge_t,heap) *, graph_size);
+  graph->preds = XCNEWVEC (VEC(constraint_edge_t,heap) *, graph_size);
+  graph->zero_weight_succs = XCNEWVEC (bitmap, graph_size);
+  graph->zero_weight_preds = XCNEWVEC (bitmap, graph_size);
 
   for (i = 0; VEC_iterate (constraint_t, constraints, i, c); i++)
     {
@@ -902,14 +1234,12 @@ build_constraint_graph (void)
 	}
       else if (lhsvar > anything_id)
 	{
-	  /* Ignore self edges, as they can't possibly contribute
+	  /* Ignore 0 weighted self edges, as they can't possibly contribute
 	     anything */
 	  if (lhsvar != rhsvar || rhs.offset != 0 || lhs.offset != 0)
 	    {
-	      if (rhs.offset != 0 || lhs.offset != 0)
-		insert_into_complex (lhsvar, c);
-	      else
-		add_graph_edge (graph, lhs.var, rhs.var);
+	      /* x = y (simple) */
+	      int_add_graph_edge (graph, lhs.var, rhs.var, rhs.offset);
 	    }
 	  
 	}
@@ -961,7 +1291,7 @@ scc_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
   si->visited_index[n] = si->current_index ++;
   
   /* Visit all the successors.  */
-  EXECUTE_IF_IN_NONNULL_BITMAP (graph->succs[n], 0, i, bi)
+  EXECUTE_IF_IN_NONNULL_BITMAP (graph->zero_weight_succs[n], 0, i, bi)
     {
       unsigned int w = i;
       if (!TEST_BIT (si->visited, w))
@@ -1010,10 +1340,16 @@ collapse_nodes (constraint_graph_t graph, unsigned int to, unsigned int from)
 
   if (valid_graph_edge (graph, to, to))
     {
-      if (graph->preds[to])
+      if (graph->zero_weight_preds[to])
 	{
-	  bitmap_clear_bit (graph->preds[to], to);
-	  bitmap_clear_bit (graph->succs[to], to);
+	  bitmap_clear_bit (graph->zero_weight_preds[to], to);
+	  bitmap_clear_bit (graph->zero_weight_succs[to], to);
+	}
+      if (valid_weighted_graph_edge (graph, to, to))
+	{
+	  bitmap weights = *(get_graph_weights (graph, to, to));
+	  if (!weights || bitmap_empty_p (weights))
+	    erase_graph_self_edge (graph, to);
 	}
     }
   BITMAP_FREE (fromsol);
@@ -1058,7 +1394,7 @@ process_unification_queue (constraint_graph_t graph, struct scc_info *si,
 	Merge tmp into solution for rep, marking rep changed if this
 	changed rep's solution.
 	
-	Delete any self-edges we now have for rep.  */
+	Delete any 0 weighted self-edges we now have for rep.  */
   while (i != VEC_length (unsigned, si->unification_queue))
     {
       unsigned int tounify = VEC_index (unsigned, si->unification_queue, i);
@@ -1111,11 +1447,17 @@ process_unification_queue (constraint_graph_t graph, struct scc_info *si,
 
 	  if (valid_graph_edge (graph, n, n))
 	    {
-	      if (graph->succs[n])
+	      if (graph->zero_weight_succs[n])
 		{
-		  if (graph->preds[n])
-		    bitmap_clear_bit (graph->preds[n], n);
-		  bitmap_clear_bit (graph->succs[n], n);
+		  if (graph->zero_weight_preds[n])
+		    bitmap_clear_bit (graph->zero_weight_preds[n], n);
+		  bitmap_clear_bit (graph->zero_weight_succs[n], n);
+		}
+	      if (valid_weighted_graph_edge (graph, n, n))
+		{
+		  bitmap weights = *(get_graph_weights (graph, n, n));
+		  if (!weights || bitmap_empty_p (weights))
+		    erase_graph_self_edge (graph, n);
 		}
 	    }
 	}
@@ -1167,12 +1509,24 @@ static void
 topo_visit (constraint_graph_t graph, struct topo_info *ti,
 	    unsigned int n)
 {
+  VEC(constraint_edge_t,heap) *succs = graph->succs[n];
   bitmap temp;
   bitmap_iterator bi;
+  constraint_edge_t c;
+  int i;
   unsigned int j;
 
   SET_BIT (ti->visited, n);
-  temp = graph->succs[n];
+  if (VEC_length (constraint_edge_t, succs) != 0)
+    {
+      temp = BITMAP_ALLOC (&iteration_obstack);
+      if (graph->zero_weight_succs[n])
+	bitmap_ior_into (temp, graph->zero_weight_succs[n]);
+      for (i = 0; VEC_iterate (constraint_edge_t, succs, i, c); i++)
+	bitmap_set_bit (temp, c->dest);
+    }
+  else 
+    temp = graph->zero_weight_succs[n];
 
   if (temp) 
     EXECUTE_IF_SET_IN_BITMAP (temp, 0, j, bi)
@@ -1286,7 +1640,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	     They don't have sets that can change.  */
 	  if (get_varinfo (t) ->is_special_var)
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
-	  else if (add_graph_edge (graph, lhs, t))
+	  else if (int_add_graph_edge (graph, lhs, t, 0))
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 	}
       else if (0 && dump_file && !(get_varinfo (j)->is_special_var))
@@ -1310,7 +1664,7 @@ done:
 /* Process a constraint C that represents *x = y.  */
 
 static void
-do_ds_constraint (constraint_t c, bitmap delta)
+do_ds_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
 {
   unsigned int rhs = get_varinfo (c->rhs.var)->node;
   unsigned HOST_WIDE_INT roff = c->rhs.offset;
@@ -1356,26 +1710,27 @@ do_ds_constraint (constraint_t c, bitmap delta)
 	  varinfo_t v;
 	  unsigned int t;
 	  unsigned HOST_WIDE_INT fieldoffset = get_varinfo (j)->offset + loff;
-	  bitmap tmp;
-	  
+
 	  v = first_vi_for_offset (get_varinfo (j), fieldoffset);
 	  if (!v)
 	    continue;
 	  t = v->node;
-	  tmp = get_varinfo (t)->solution;
-
-	  if (set_union_with_increment (tmp, sol, roff))
+	  if (int_add_graph_edge (graph, t, rhs, roff))
 	    {
-	      get_varinfo (t)->solution = tmp;
-	      if (t == rhs)
-		sol = get_varinfo (rhs)->solution;
-	      if (!TEST_BIT (changed, t))
+	      bitmap tmp = get_varinfo (t)->solution;
+	      if (set_union_with_increment (tmp, sol, roff))
 		{
-		  SET_BIT (changed, t);
-		  changed_count++;
+		  get_varinfo (t)->solution = tmp;
+		  if (t == rhs)
+		    sol = get_varinfo (rhs)->solution;
+		  if (!TEST_BIT (changed, t))
+		    {
+		      SET_BIT (changed, t);
+		      changed_count++;
+		    }
 		}
 	    }
-	}
+	}    
       else if (0 && dump_file && !(get_varinfo (j)->is_special_var))
 	fprintf (dump_file, "Untypesafe usage in do_ds_constraint\n");
     }
@@ -1397,39 +1752,14 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
       else
 	{
 	  /* *x = y */
-	  do_ds_constraint (c, delta);
+	  do_ds_constraint (graph, c, delta);
 	}
     }
-  else if (c->rhs.type == DEREF)
+  else
     {
       /* x = *y */
       if (!(get_varinfo (c->lhs.var)->is_special_var))
 	do_sd_constraint (graph, c, delta);
-    }
-  else 
-    {
-      bitmap tmp; 
-      bitmap solution;
-      bool flag = false;
-      unsigned int t;
-
-      gcc_assert(c->rhs.type == SCALAR && c->lhs.type == SCALAR);
-      t = get_varinfo (c->rhs.var)->node;
-      solution = get_varinfo (t)->solution;
-      t = get_varinfo (c->lhs.var)->node;
-      tmp = get_varinfo (t)->solution;
-
-      flag = set_union_with_increment (tmp, solution, c->rhs.offset);
-      
-      if (flag)
-	{
-	  get_varinfo (t)->solution = tmp;
-	  if (!TEST_BIT (changed, c->lhs.var))
-	    {
-	      SET_BIT (changed, c->lhs.var);
-	      changed_count++;
-	    }
-	}
     }
 }
 
@@ -1501,6 +1831,21 @@ compute_topo_order (constraint_graph_t graph,
       topo_visit (graph, ti, i);
 }
 
+/* Return true if bitmap B is empty, or a bitmap other than bit 0 is set. */
+
+static bool
+bitmap_other_than_zero_bit_set (bitmap b)
+{
+  unsigned int i;
+  bitmap_iterator bi;
+
+  if (bitmap_empty_p (b))
+    return false;
+  EXECUTE_IF_SET_IN_BITMAP (b, 1, i, bi)
+    return true;
+  return false;
+}
+
 /* Perform offline variable substitution.
    
    This is a linear time way of identifying variables that must have
@@ -1524,9 +1869,12 @@ perform_var_substitution (constraint_graph_t graph)
   while (VEC_length (unsigned, ti->topo_order) != 0)
     {
       unsigned int i = VEC_pop (unsigned, ti->topo_order);
+      unsigned int pred;
       varinfo_t vi = get_varinfo (i);
       bool okay_to_elim = false;
       unsigned int root = VEC_length (varinfo_t, varmap);
+      VEC(constraint_edge_t,heap) *predvec = graph->preds[i];
+      constraint_edge_t ce = NULL;
       bitmap tmp;
       unsigned int k;
       bitmap_iterator bi;
@@ -1537,10 +1885,59 @@ perform_var_substitution (constraint_graph_t graph)
 	continue;
 
       /* See if all predecessors of I are ripe for elimination */
-      EXECUTE_IF_IN_NONNULL_BITMAP (graph->preds[i], 0, k, bi)
+      EXECUTE_IF_IN_NONNULL_BITMAP (graph->zero_weight_preds[i], 0, k, bi)
 	  {
 	    unsigned int w;
 	    w = get_varinfo (k)->node;
+
+	    /* We can't eliminate the node if one of the predecessors is
+	       part of a different strongly connected component.  */
+	    if (!okay_to_elim)
+	      {
+		root = w;
+		okay_to_elim = true;
+	      }
+	    else if (w != root)
+	      {
+		okay_to_elim = false;
+		break;
+	      }
+
+	    /* Theorem 4 in Rountev and Chandra: If i is a direct node,
+	       then Solution(i) is a subset of Solution (w), where w is a
+	       predecessor in the graph.  
+	       Corollary: If all predecessors of i have the same
+	       points-to set, then i has that same points-to set as
+	       those predecessors.  */
+	    tmp = BITMAP_ALLOC (NULL);
+	    bitmap_and_compl (tmp, get_varinfo (i)->solution,
+			      get_varinfo (w)->solution);
+	    if (!bitmap_empty_p (tmp))
+	      {
+		okay_to_elim = false;
+		BITMAP_FREE (tmp);
+		break;
+	      }
+	    BITMAP_FREE (tmp);
+	  }
+
+      if (okay_to_elim)
+	for (pred = 0; 
+	     VEC_iterate (constraint_edge_t, predvec, pred, ce); 
+	     pred++)
+	  {
+	    bitmap weight;
+	    unsigned int w;
+	    weight = *(get_graph_weights (graph, i, ce->dest));
+
+	    /* We can't eliminate variables that have nonzero weighted
+	       edges between them.  */
+	    if (weight && bitmap_other_than_zero_bit_set (weight))
+	      {
+		okay_to_elim = false;
+		break;
+	      }
+	    w = get_varinfo (ce->dest)->node;
 
 	    /* We can't eliminate the node if one of the predecessors is
 	       part of a different strongly connected component.  */
@@ -1647,9 +2044,11 @@ solve_graph (constraint_graph_t graph)
 	    {
 	      unsigned int j;
 	      constraint_t c;
+	      constraint_edge_t e = NULL;
 	      bitmap solution;
 	      bitmap_iterator bi;
 	      VEC(constraint_t,heap) *complex = get_varinfo (i)->complex;
+	      VEC(constraint_edge_t,heap) *succs;
 	      bool solution_empty;
 
 	      RESET_BIT (changed, i);
@@ -1674,14 +2073,14 @@ solve_graph (constraint_graph_t graph)
 	      if (!solution_empty)
 		{
 		  /* Propagate solution to all successors.  */
-		  EXECUTE_IF_IN_NONNULL_BITMAP (graph->succs[i], 
+		  succs = graph->succs[i];
+		  
+		  EXECUTE_IF_IN_NONNULL_BITMAP (graph->zero_weight_succs[i], 
 						0, j, bi)
 		    {
 		      bitmap tmp = get_varinfo (j)->solution;
 		      bool flag = false;
 		  
-		      gcc_assert (get_varinfo (j)->node == j);
-		      
 		      flag = set_union_with_increment (tmp, solution, 0);
 		  
 		      if (flag)
@@ -1694,13 +2093,35 @@ solve_graph (constraint_graph_t graph)
 			    }
 			}
 		    }
+		  for (j = 0; VEC_iterate (constraint_edge_t, succs, j, e); j++)
+		    {
+		      bitmap tmp = get_varinfo (e->dest)->solution;
+		      bool flag = false;
+		      unsigned int k;
+		      bitmap weights = e->weights;
+		      bitmap_iterator bi;
+
+		      gcc_assert (weights && !bitmap_empty_p (weights));
+		      EXECUTE_IF_SET_IN_BITMAP (weights, 0, k, bi)
+			flag |= set_union_with_increment (tmp, solution, k);
+
+		      if (flag)
+			{
+			  get_varinfo (e->dest)->solution = tmp;
+			  if (!TEST_BIT (changed, e->dest))
+			    {
+			      SET_BIT (changed, e->dest);
+			      changed_count++;
+			    }
+			}
+		    }
 		}
 	    }
 	}
       free_topo_info (ti);
       bitmap_obstack_release (&iteration_obstack);
     }
-  
+
   sbitmap_free (changed);
 }
 
@@ -4246,6 +4667,9 @@ init_alias_vars (void)
 				       sizeof (struct constraint), 30);
   variable_info_pool = create_alloc_pool ("Variable info pool",
 					  sizeof (struct variable_info), 30);
+  constraint_edge_pool = create_alloc_pool ("Constraint edges",
+					    sizeof (struct constraint_edge), 30);
+  
   constraints = VEC_alloc (constraint_t, heap, 8);
   varmap = VEC_alloc (varinfo_t, heap, 8);
   id_for_tree = htab_create (10, tree_id_hash, tree_id_eq, free);
@@ -4449,15 +4873,21 @@ delete_points_to_sets (void)
       if (i >= graph_size)
 	break;
 
+      VEC_free (constraint_edge_t, heap, graph->succs[i]);
+      VEC_free (constraint_edge_t, heap, graph->preds[i]);
       VEC_free (constraint_t, heap, v->complex);
     }
-  free (graph->preds);
+  free (graph->zero_weight_preds);
+  free (graph->zero_weight_succs);
   free (graph->succs);
+  free (graph->preds);
   free (graph);
 
   VEC_free (varinfo_t, heap, varmap);
   free_alloc_pool (variable_info_pool);
   free_alloc_pool (constraint_pool); 
+  free_alloc_pool (constraint_edge_pool);
+
   have_alias_info = false;
 }
 
