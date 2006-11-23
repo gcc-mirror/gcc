@@ -6677,15 +6677,7 @@ integer_valued_real_p (tree t)
 	     && integer_valued_real_p (TREE_OPERAND (t, 2));
 
     case REAL_CST:
-      if (! TREE_CONSTANT_OVERFLOW (t))
-      {
-	REAL_VALUE_TYPE c, cint;
-
-	c = TREE_REAL_CST (t);
-	real_trunc (&cint, TYPE_MODE (TREE_TYPE (t)), &c);
-	return real_identical (&c, &cint);
-      }
-      break;
+      return real_isinteger (TREE_REAL_CST_PTR (t), TYPE_MODE (TREE_TYPE (t)));
 
     case NOP_EXPR:
       {

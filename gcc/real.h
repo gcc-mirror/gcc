@@ -433,4 +433,7 @@ extern void real_copysign (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 extern void real_from_mpfr (REAL_VALUE_TYPE *, mpfr_srcptr);
 extern void mpfr_from_real (mpfr_ptr, const REAL_VALUE_TYPE *);
 
+/* Check whether the real constant value given is an integer.  */
+extern bool real_isinteger (const REAL_VALUE_TYPE *c, enum machine_mode mode);
+
 #endif /* ! GCC_REAL_H */

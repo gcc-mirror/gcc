@@ -1,5 +1,11 @@
 2006-11-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
+	* real.h (real_isinteger): Declare.
+	* real.c (real_isinteger): Define.
+	* builtins.c (integer_valued_real_p): Use it.
+
+2006-11-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
 	PR c/9072 
 	* c.opt (Wtraditional-conversion): New.
 	(Wconversion): Update description.
