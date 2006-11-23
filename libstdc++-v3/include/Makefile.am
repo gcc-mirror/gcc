@@ -962,8 +962,7 @@ stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
 	  $(LN_S) ${glibcxx_srcdir}/$(CLOCALE_INTERNAL_H) . || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(COMPATIBILITY_H) . || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_H) messages_members.h || true ;\
-	  $(LN_S) ${glibcxx_srcdir}/$(CTIME_H) time_members.h || true ;\
-	  $(LN_S) ${glibcxx_srcdir}/$(CCODECVT_H) codecvt_specializations.h || true);\
+	  $(LN_S) ${glibcxx_srcdir}/$(CTIME_H) time_members.h || true);\
 	fi ;\
 	$(STAMP) stamp-host
 
