@@ -985,10 +985,10 @@ you are removing prototypes that were made with @command{protoize}; if
 the program worked before without any prototypes, it will work again
 without them.
 
-@opindex Wconversion
+@opindex Wtraditional-conversion
 You can find all the places where this problem might occur by compiling
-the program with the @option{-Wconversion} option.  It prints a warning
-whenever an argument is converted.
+the program with the @option{-Wtraditional-conversion} option.  It
+prints a warning whenever an argument is converted.
 
 @item
 Both conversion programs can be confused if there are macro calls in and

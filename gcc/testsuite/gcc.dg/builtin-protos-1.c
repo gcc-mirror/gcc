@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options -Wconversion } */
+/* { dg-options -Wtraditional-conversion } */
 
 int
 test_s (signed int x)

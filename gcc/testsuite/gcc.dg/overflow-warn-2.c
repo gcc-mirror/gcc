@@ -1,7 +1,7 @@
-/* Test for diagnostics for constant overflow.  Test with -Wconversion.  */
+/* Test for diagnostics for constant overflow.  Test with -Wtraditional-conversion.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -Wconversion" } */
+/* { dg-options "-std=c99 -Wtraditional-conversion" } */
 
 #include <limits.h>
 
@@ -82,23 +82,23 @@ void
 h2 (void)
 {
   fsc (SCHAR_MAX + 1);
-  /* { dg-warning "warning: passing argument 1 of 'fsc' with different width due to prototype" "-Wconversion" { target *-*-* } 84 } */
+  /* { dg-warning "warning: passing argument 1 of 'fsc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } 84 } */
   fsc (SCHAR_MIN - 1); /* { dg-warning "warning: overflow in implicit constant conversion" } */
-  /* { dg-warning "warning: passing argument 1 of 'fsc' with different width due to prototype" "-Wconversion" { target *-*-* } 86 } */
+  /* { dg-warning "warning: passing argument 1 of 'fsc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } 86 } */
   fsc (UCHAR_MAX);
-  /* { dg-warning "warning: passing argument 1 of 'fsc' with different width due to prototype" "-Wconversion" { target *-*-* } 88 } */
+  /* { dg-warning "warning: passing argument 1 of 'fsc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } 88 } */
   fsc (UCHAR_MAX + 1); /* { dg-warning "warning: overflow in implicit constant conversion" } */
-  /* { dg-warning "warning: passing argument 1 of 'fsc' with different width due to prototype" "-Wconversion" { target *-*-* } 90 } */
-  fuc (-1); /* { dg-warning "warning: negative integer implicitly converted to unsigned type" } */
-  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wconversion" { target *-*-* } 92 } */
+  /* { dg-warning "warning: passing argument 1 of 'fsc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } 90 } */
+  fuc (-1);
+  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } 92 } */
   fuc (UCHAR_MAX + 1); /* { dg-warning "warning: large integer implicitly truncated to unsigned type" } */
-  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wconversion" { target *-*-* } 94 } */
-  fuc (SCHAR_MIN); /* { dg-warning "warning: negative integer implicitly converted to unsigned type" } */
-  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wconversion" { target *-*-* } 96 } */
+  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } 94 } */
+  fuc (SCHAR_MIN);
+  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } 96 } */
   fuc (SCHAR_MIN - 1); /* { dg-warning "warning: large integer implicitly truncated to unsigned type" } */
-  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wconversion" { target *-*-* } 98 } */
+  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } 98 } */
   fuc (-UCHAR_MAX); /* { dg-warning "warning: large integer implicitly truncated to unsigned type" } */
-  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wconversion" { target *-*-* } 100 } */
+  /* { dg-warning "warning: passing argument 1 of 'fuc' with different width due to prototype" "-Wtraditional-conversion" { target *-*-* } 100 } */
 }
 
 void fui (unsigned int);
@@ -111,7 +111,7 @@ void
 h2i (int x)
 {
   /* For some reason, we only give certain warnings for implicit
-     conversions among values of the same precision with -Wconversion,
+     conversions among values of the same precision with -Wtraditional-conversion,
      while we don't give others at all.  */
   fsi ((unsigned)INT_MAX + 1); /* { dg-warning "warning: passing argument 1 of 'fsi' as signed due to prototype" } */
   si = (unsigned)INT_MAX + 1;
@@ -121,12 +121,12 @@ h2i (int x)
   si = x ? (unsigned)INT_MAX + 2 : 1;
   fsi (UINT_MAX); /* { dg-warning "warning: passing argument 1 of 'fsi' as signed due to prototype" } */
   si = UINT_MAX;
-  fui (-1); /* { dg-warning "warning: negative integer implicitly converted to unsigned type" } */
-  /* { dg-warning "warning: passing argument 1 of 'fui' as unsigned due to prototype" "-Wconversion" { target *-*-* } 124 } */
-  ui = -1; /* { dg-warning "warning: negative integer implicitly converted to unsigned type" } */
-  ui = x ? -1 : 1U; /* { dg-warning "warning: negative integer implicitly converted to unsigned type" } */
-  fui (INT_MIN); /* { dg-warning "warning: negative integer implicitly converted to unsigned type" } */
-  /* { dg-warning "warning: passing argument 1 of 'fui' as unsigned due to prototype" "-Wconversion" { target *-*-* } 128 } */
-  ui = INT_MIN; /* { dg-warning "warning: negative integer implicitly converted to unsigned type" } */
-  ui = x ? INT_MIN : 1U; /* { dg-warning "warning: negative integer implicitly converted to unsigned type" } */
+  fui (-1);
+  /* { dg-warning "warning: passing argument 1 of 'fui' as unsigned due to prototype" "-Wtraditional-conversion" { target *-*-* } 124 } */
+  ui = -1;
+  ui = x ? -1 : 1U;
+  fui (INT_MIN);
+  /* { dg-warning "warning: passing argument 1 of 'fui' as unsigned due to prototype" "-Wtraditional-conversion" { target *-*-* } 128 } */
+  ui = INT_MIN;
+  ui = x ? INT_MIN : 1U;
 }

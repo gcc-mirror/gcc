@@ -1,3 +1,17 @@
+2006-11-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/9072 
+	* gcc.dg/builtin-protos-1.c: Replace Wconversion by
+	Wtraditional-conversion.
+	* gcc.dg/overflow-warn-2.c: Likewise.
+	* gcc.dg/Wconversion.c: Likewise. Renamed as
+	Wtraditional-conversion.c .
+	* gcc.dg/Wconversion-2.c: Likewise. Renamed as
+	Wtraditional-conversion-2.c .
+	* gcc.dg/dfp/Wconversion-2.c: Likewise. Renamed as
+	Wtraditional-conversion-2.c 
+	* gcc.dg/Wconversion-negative-constants.c: New.
+
 2006-11-23  Andrew Pinski  <pinskia@gmail.com>
 
 	* gcc.dg/tree-ssa/dump-1.c: New test.

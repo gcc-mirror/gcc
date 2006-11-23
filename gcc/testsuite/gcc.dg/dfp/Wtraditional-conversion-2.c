@@ -1,6 +1,8 @@
-/* Test messages for -Wconversion (based on gcc.dg/Wconversion-2.c).  */
+/* Test messages for -Wtraditional-conversion 
+   (based on gcc.dg/Wtraditional-conversion-2.c).  */
+
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -Wconversion" } */
+/* { dg-options "-std=gnu99 -Wtraditional-conversion" } */
 
 void fsi(signed int);
 void fd32(_Decimal32);

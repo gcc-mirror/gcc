@@ -1,3 +1,16 @@
+2006-11-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c/9072 
+	* c.opt (Wtraditional-conversion): New.
+	(Wconversion): Update description.
+	* c-typeck.c (convert_arguments): Warnings for prototypes causing
+	type conversions different from what would happen in the absence
+	of prototype are now handled by Wtraditional-conversion.
+	* doc/invoke.texi (Wtraditional-conversion): New.
+	(Wconversion): Update description.
+	* doc/trouble.texi (Wconversion): Replace Wconversion by
+	Wtraditional-conversion.
+
 2006-11-23  Andrew Pinski  <pinskia@gmail.com>
 
 	* predict.c (tree_estimate_probability): Check to make
