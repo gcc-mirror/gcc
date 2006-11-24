@@ -1,3 +1,7 @@
+2006-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (return_addr_rtx): Change 0xe0400002 to -532676606.
+
 2006-11-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/spe.md (SPE64): New mode macro.
