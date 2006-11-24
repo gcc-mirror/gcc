@@ -1,3 +1,7 @@
+2006-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (return_addr_rtx): Change 0xe0400002 to -532676606.
+
 2006-11-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/29114
