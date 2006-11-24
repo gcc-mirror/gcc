@@ -7755,6 +7755,12 @@ c_parser_omp_construct (c_parser *parser)
   p_kind = c_parser_peek_token (parser)->pragma_kind;
   c_parser_consume_pragma (parser);
 
+  /* For all constructs below except #pragma omp atomic
+     MUST_NOT_THROW catch handlers are needed when exceptions
+     are enabled.  */
+  if (p_kind != PRAGMA_OMP_ATOMIC)
+    c_maybe_initialize_eh ();
+
   switch (p_kind)
     {
     case PRAGMA_OMP_ATOMIC:
