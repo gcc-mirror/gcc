@@ -1,5 +1,12 @@
 2006-11-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/29955
+	* c-tree.h (c_maybe_initialize_eh): New prototype.
+	* c-decl.c (finish_decl): Move EH initialization...
+	(c_maybe_initialize_eh): ... here.  New function.
+	* c-parser.c (c_parser_omp_construct): Call c_maybe_initialize_eh
+	if not #pragma omp atomic.
+
 	PR c/29736
 	* c-common.c (handle_vector_size_attribute): Disallow VECTOR_TYPE
 	or UNION_TYPE inner types.

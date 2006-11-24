@@ -3385,6 +3385,23 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   return tem;
 }
 
+/* Initialize EH if not initialized yet and exceptions are enabled.  */
+
+void
+c_maybe_initialize_eh (void)
+{
+  if (!flag_exceptions || c_eh_initialized_p)
+    return;
+
+  c_eh_initialized_p = true;
+  eh_personality_libfunc
+    = init_one_libfunc (USING_SJLJ_EXCEPTIONS
+			? "__gcc_personality_sj0"
+			: "__gcc_personality_v0");
+  default_init_unwind_resume_libfunc ();
+  using_eh_for_cleanups ();
+}
+
 /* Finish processing of a declaration;
    install its initial value.
    If the length of an array type is not known before,
@@ -3676,16 +3693,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  TREE_USED (cleanup_decl) = 1;
 
 	  /* Initialize EH, if we've been told to do so.  */
-	  if (flag_exceptions && !c_eh_initialized_p)
-	    {
-	      c_eh_initialized_p = true;
-	      eh_personality_libfunc
-		= init_one_libfunc (USING_SJLJ_EXCEPTIONS
-				    ? "__gcc_personality_sj0"
-				    : "__gcc_personality_v0");
-	      default_init_unwind_resume_libfunc ();
-	      using_eh_for_cleanups ();
-	    }
+	  c_maybe_initialize_eh ();
 
 	  push_cleanup (decl, cleanup, false);
 	}

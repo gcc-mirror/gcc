@@ -456,6 +456,7 @@ extern void declare_parm_level (void);
 extern void undeclared_variable (tree, location_t);
 extern tree declare_label (tree);
 extern tree define_label (location_t, tree);
+extern void c_maybe_initialize_eh (void);
 extern void finish_decl (tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
 extern void finish_function (void);

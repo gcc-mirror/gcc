@@ -1,5 +1,8 @@
 2006-11-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/29955
+	* gcc.dg/gomp/pr29955.c: New test.
+
 	PR c/29736
 	* gcc.dg/pr29736.c: New test.
 
