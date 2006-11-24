@@ -3156,10 +3156,13 @@ this is why we did not make @option{-Wall} request these warnings.
 
 @item -Wconversion
 @opindex Wconversion
-Warn if a negative integer constant expression is implicitly converted
-to an unsigned type.  For example, warn about the assignment
-@code{unsigned x = -1} if @code{x} is unsigned. But do not warn about
-explicit casts like @code{(unsigned) -1}.
+Warn for implicit conversions that may alter a value. This includes
+conversions between real and integer, like @code{abs (x)} when
+@code{x} is @code{double}; conversions between signed and unsigned,
+like @code{unsigned ui = -1}; and conversions to smaller types, like
+@code{sqrtf (M_PI)}. Do not warn for explicit casts like @code{abs
+((int) x)} and @code{ui = (unsigned) -1}, or if the value is not
+changed by the conversion like in @code{abs (2.0)}.
 
 @item -Wsign-compare
 @opindex Wsign-compare
