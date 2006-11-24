@@ -1,3 +1,9 @@
+2006-11-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390.c (s390_emit_compare_and_swap): New function.
+	(s390_expand_cs_hqi, s390_expand_atomic): Call 
+	s390_emit_compare_and_swap.
+
 2006-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (return_addr_rtx): Change 0xe0400002 to -532676606.

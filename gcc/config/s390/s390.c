@@ -780,6 +780,24 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
   return ret;
 }
 
+/* Emit a SImode compare and swap instruction setting MEM to NEW if OLD
+   matches CMP.
+   Return the correct condition RTL to be placed in the IF_THEN_ELSE of the
+   conditional branch testing the result.  */
+
+static rtx
+s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem, rtx cmp, rtx new)
+{
+  rtx ret;
+
+  emit_insn (gen_sync_compare_and_swap_ccsi (old, mem, cmp, new));
+  ret = gen_rtx_fmt_ee (code, VOIDmode, s390_compare_emitted, const0_rtx);
+
+  s390_compare_emitted = NULL_RTX;
+
+  return ret;
+}
+
 /* Emit a jump instruction to TARGET.  If COND is NULL_RTX, emit an
    unconditional jump, else a conditional jump under condition COND.  */
 
@@ -4187,11 +4205,9 @@ s390_expand_cs_hqi (enum machine_mode mode, rtx target, rtx mem, rtx cmp, rtx ne
     newv = force_reg (SImode, expand_simple_binop (SImode, IOR, new, val,
 						   NULL_RTX, 1, OPTAB_DIRECT));
 
-  /* Emit compare_and_swap pattern.  */
-  emit_insn (gen_sync_compare_and_swap_ccsi (res, ac.memsi, cmpv, newv));
-      
   /* Jump to end if we're done (likely?).  */
-  s390_emit_jump (csend, s390_emit_compare (EQ, cmpv, ac.memsi));
+  s390_emit_jump (csend, s390_emit_compare_and_swap (EQ, res, ac.memsi,
+						     cmpv, newv));
 
   /* Check for changes outside mode.  */
   resv = expand_simple_binop (SImode, AND, res, ac.modemaski, 
@@ -4284,13 +4300,9 @@ s390_expand_atomic (enum machine_mode mode, enum rtx_code code,
     default:
       gcc_unreachable ();
     }
-  /* Emit compare_and_swap pattern.  */
-  emit_insn (gen_sync_compare_and_swap_ccsi (cmp, ac.memsi, cmp, new));
 
-  /* Loop until swapped (unlikely?).  */
-  s390_emit_jump (csloop, gen_rtx_fmt_ee (NE, CCZ1mode,
-					  gen_rtx_REG (CCZ1mode, CC_REGNUM),
-					  const0_rtx));
+  s390_emit_jump (csloop, s390_emit_compare_and_swap (NE, cmp,
+						      ac.memsi, cmp, new));
 
   /* Return the correct part of the bitfield.  */
   if (target)
