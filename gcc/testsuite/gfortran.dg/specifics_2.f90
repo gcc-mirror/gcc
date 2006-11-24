@@ -1,7 +1,7 @@
 ! { dg-do compile }
 ! This is the list of intrinsics allowed as actual arguments
  intrinsic abs,acos,acosh,aimag,aint,alog,alog10,amod,anint,asin,asinh,atan,&
- atan2,atanh,cabs,ccos,cexp,char,clog,conjg,cos,cosh,csin,csqrt,dabs,dacos,&
+ atan2,atanh,cabs,ccos,cexp,clog,conjg,cos,cosh,csin,csqrt,dabs,dacos,&
  dacosh,dasin,dasinh,datan,datan2,datanh,dconjg,dcos,dcosh,ddim,dexp,dim,&
  dimag,dint,dlog,dlog10,dmod,dnint,dprod,dsign,dsin,dsinh,dsqrt,dtan,dtanh,&
  exp,iabs,idim,idnint,index,isign,len,mod,nint,sign,sin,sinh,sqrt,tan,&
@@ -24,7 +24,6 @@
   call foo(cabs)
   call foo(ccos)
   call foo(cexp)
-  call foo(char)
   call foo(clog)
   call foo(conjg)
   call foo(cos)

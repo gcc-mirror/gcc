@@ -145,12 +145,6 @@ subroutine test_len(fn,val,res)
   if (res .ne. fn(val)) call abort
 end subroutine
 
-subroutine test_char(fn,val,res)
-  integer val
-  character(len=1) fn, res
-  if (res .ne. fn(val)) call abort
-end subroutine
-
 subroutine test_index(fn,val1,val2,res)
   integer fn, res
   character(len=*) val1, val2
@@ -235,7 +229,6 @@ program specifics
   intrinsic mod
   intrinsic len
   intrinsic index
-  intrinsic char
 
   intrinsic aimag
   intrinsic dimag
@@ -319,7 +312,6 @@ program specifics
   call test_iabs (iabs, -7, iabs(-7))
   call test_idim (mod, 5, 2, mod(5,2))
   call test_len (len, "foobar", len("foobar"))
-  call test_char (char, 47, char(47))
   call test_index (index, "foobarfoobar", "bar", index("foobarfoobar","bar"))
 
 end program

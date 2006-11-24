@@ -1,3 +1,9 @@
+2006-11-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* resolve.c (resolve_actual_arglist): Remove the special case for
+	CHAR.
+	* intrinsic.c (add_functions): Remove the special case for CHAR.
+
 2006-11-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/29441
