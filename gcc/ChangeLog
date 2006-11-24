@@ -1,3 +1,12 @@
+2006-11-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/eabispe.h (TARGET_DEFAULT): Include
+	MASK_STRICT_ALIGN.
+	* config/rs6000/linuxspe.h (TARGET_DEFAULT): Likewise.
+	* config/rs6000/rs6000.c (rs6000_override_options): Use
+	MASK_STRICT_ALIGN for 8540 and 8548.  Add MASK_STRICT_ALIGN to
+	POWERPC_MASKS.
+
 2006-11-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390.c (s390_emit_compare_and_swap): New function.
