@@ -1,21 +1,25 @@
+2006-11-23  Eric Christopher  <echristo@apple.com>
+
+	* gcc.dg/inline-16.c: Use __SIZE_TYPE__.
+
 2006-11-24  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
 	PR c/2707
 	PR c++/26167
-	* gcc.dg/Wconversion-integer.c: New. Supersedes	
-	Wconversion-negative-constants.c 
+	* gcc.dg/Wconversion-integer.c: New. Supersedes
+	Wconversion-negative-constants.c
 	* gcc.dg/Wconversion-real.c: New.
 	* gcc.dg/Wconversion-real-integer.c: New.
 	* gcc.dg/Wconversion-negative-constants.c: Deleted.
 	* g++.dg/warn/Wconversion1.C: Modified.
-	
+
 2006-11-23  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/overload_1.f90: New test.
 
 2006-11-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
-	PR c/9072 
+	PR c/9072
 	* gcc.dg/builtin-protos-1.c: Replace Wconversion by
 	Wtraditional-conversion.
 	* gcc.dg/overflow-warn-2.c: Likewise.
@@ -24,7 +28,7 @@
 	* gcc.dg/Wconversion-2.c: Likewise. Renamed as
 	Wtraditional-conversion-2.c .
 	* gcc.dg/dfp/Wconversion-2.c: Likewise. Renamed as
-	Wtraditional-conversion-2.c 
+	Wtraditional-conversion-2.c
 	* gcc.dg/Wconversion-negative-constants.c: New.
 
 2006-11-23  Andrew Pinski  <pinskia@gmail.com>
@@ -32,12 +36,12 @@
 	* gcc.dg/tree-ssa/dump-1.c: New test.
 
 2006-11-23  David Ung <davidu@mips.com>
-	
+
 	* gcc.target/mips/mips.exp (dg-mips-options): Handle parsing of
 	-mfp64, allowable when ISA >= 33 and float is enabled.
 	* gcc.target/mips/mips32r2-mxhc1.c: New test for checking the use
 	of mthc1 and mfhc1 patterns.
-	
+
 2006-11-23  Zdenek Dvorak <dvorakz@suse.cz>
 
 	PR tree-optimization/29921
@@ -50,7 +54,7 @@
 
 2006-11-22  Ira Rosen  <irar@il.ibm.com>
 
-	* gcc.dg/vect/vect-1.c: Additional loop is now vectorizable on 
+	* gcc.dg/vect/vect-1.c: Additional loop is now vectorizable on
 	platforms that have interleaving support.
 	* gcc.dg/vect/vect-107.c, gcc.dg/vect/vect-98.c: Likewise.
 	* gcc.dg/vect/vect-strided-a-u16-i2.c,
@@ -124,7 +128,7 @@
 	* g++.dg/template/access19.C: New test.
 	* g++.old-deja/g++.other/access11.C: Adjusted the line where the
 	error is reported.
-	
+
 2006-11-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/25500
@@ -451,11 +455,11 @@
 	* gcc.dg/vect/vect-106.c: Removed (duplicate of vect-9.c).
 	* gcc.dg/vect/vect-9.c: Now vectorizable.
 	* gcc.dg/vect/vect-reduc-dot-s16a.c: Now vectorizable also on targets
-	that support vect_widen_mult. 
+	that support vect_widen_mult.
 	* gcc.dg/vect/vect-reduc-dot-u16.c: Removed (split into two new tests).
-	* gcc.dg/vect/vect-reduc-dot-u16a.c: New test (split from 
+	* gcc.dg/vect/vect-reduc-dot-u16a.c: New test (split from
 	vect-reduc-dot-u16.c).
-	* gcc.dg/vect/vect-reduc-dot-u16b.c: New test (split from 
+	* gcc.dg/vect/vect-reduc-dot-u16b.c: New test (split from
 	vect-reduc-dot-u16.c).
 	* gcc.dg/vect/vect-reduc-dot-s8.c: Removed (split into three new tests).
 	* gcc.dg/vect/vect-reduc-dot-s8a.c: New test (split from
@@ -481,7 +485,7 @@
 	wrapv-vect-reduc-dot-s8.c.
 	* lib/target-support.exp (check_effective_target_vect_unpack): New.
 	(check_effective_target_vect_widen_sum_hi_to_si): Now also includes
-	targets that support vec_unpack. 
+	targets that support vec_unpack.
 	(check_effective_target_vect_widen_sum_qi_to_hi): Likewise.
 	(check_effective_target_vect_widen_mult_qi_to_hi): New.
 	(check_effective_target_vect_widen_mult_hi_to_si): New.
@@ -503,7 +507,7 @@
 	* gcc.dg/vect/vect-multitypes-6.c: New test.
 
 	2006-11-08  Dorit Nuzman  <dorit@il.ibm.com>
-	
+
 	* gcc.dg/vect/vect-multitypes-1.c: New test.
 	* gcc.dg/vect/vect-multitypes-2.c: New test.
 	* gcc.dg/vect/vect-multitypes-3.c: New test.

@@ -1,21 +1,22 @@
 /* { dg-do link } */
 /* { dg-options "-std=c99" } */
 
-static inline int
-func1(const volatile void * base, int byteOffset)
+static inline __SIZE_TYPE__
+func1(const volatile void * base, __SIZE_TYPE__ byteOffset)
 {
-  volatile int *addr = (volatile int *)((int)base + byteOffset);
+  volatile __SIZE_TYPE__ *addr
+    = (volatile __SIZE_TYPE__ *)((__SIZE_TYPE__)base + byteOffset);
   return *addr;
 }
 
-static inline int
-func2(int data)
+static inline __SIZE_TYPE__
+func2(__SIZE_TYPE__ data)
 {
     return func1(&data, 0);
 }
 
 int main(int argc, char *argv[]) {
-  int b = func2(argc);
+  __SIZE_TYPE__ b = func2(argc);
 
   return 0;
 }
