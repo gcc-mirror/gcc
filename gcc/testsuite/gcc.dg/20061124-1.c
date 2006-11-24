@@ -16,4 +16,5 @@ main ()
 
   if (!flag)
     abort ();
+  exit (0);
 }
