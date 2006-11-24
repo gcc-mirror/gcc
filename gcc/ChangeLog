@@ -1,3 +1,12 @@
+2006-11-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/29964
+	* ipa-pure-const.c (check_tree): If the original tree
+	is volatile return early and say the function is not pure
+	nor const.  Remove the volatile check for writes.  
+	(analyze_function): Print out the result of the local
+	analysis pass.
+
 2006-11-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/eabispe.h (TARGET_DEFAULT): Include
