@@ -1,3 +1,9 @@
+2006-11-23  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (tree_pointer_compare): New function.
+	(compact_name_tags): New function.
+	(group_aliases): Call compact_name_tags.
+
 2006-11-23  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* real.h (real_isinteger): Declare.

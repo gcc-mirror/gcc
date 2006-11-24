@@ -121,7 +121,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
   Direct constraints are ADDRESSOF constraints that require no extra
   processing, such as P = &Q
   Copy constraints are those of the form P = Q.
-  Complex constraints are all the constraints involving dereferences.
+  Complex constraints are all the constraints involving dereferences
+  and offsets (including offsetted copies).
   
   3. All direct constraints of the form P = &Q are processed, such
   that Q is added to Sol(P) 

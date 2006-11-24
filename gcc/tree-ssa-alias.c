@@ -1436,6 +1436,73 @@ group_aliases_into (tree tag, bitmap tag_aliases, struct alias_info *ai)
   tag_ann->may_aliases = NULL;
 }
 
+/* Simple comparison function for qsort that sorts based on pointer
+   address.  */
+
+static int
+tree_pointer_compare (const void *pa, const void *pb)
+{
+  const tree a = *((const tree *)pa);
+  const tree b = *((const tree *)pb);
+  
+  return b - a;
+}
+
+
+/* Replacing may aliases in name tags during grouping can up with the
+   same SMT multiple times in the may_alias list.  It's quicker to
+   just remove them post-hoc than it is to avoid them during
+   replacement.  Thus, this routine sorts the may-alias list and
+   removes duplicates.  */
+
+static void
+compact_name_tags (void)
+{
+  referenced_var_iterator rvi;
+  tree var;
+
+  FOR_EACH_REFERENCED_VAR (var, rvi)
+    {
+      if (TREE_CODE (var) == NAME_MEMORY_TAG)
+	{
+	  VEC(tree, gc) *aliases, *new_aliases;
+	  tree alias, last_alias;
+	  int i;
+	  
+	  last_alias = NULL;
+	  aliases = var_ann (var)->may_aliases;
+	  new_aliases = NULL;
+	  
+	  if (VEC_length (tree, aliases) > 1)
+	    {
+	      bool changed = false;
+	      qsort (VEC_address (tree, aliases), VEC_length (tree, aliases),
+		     sizeof (tree), tree_pointer_compare);
+	      
+	      for (i = 0; VEC_iterate (tree, aliases, i, alias); i++)
+		{
+		  if (alias == last_alias)
+		    {
+		      changed = true;
+		      continue;
+		    }
+		  
+		  VEC_safe_push (tree, gc, new_aliases, alias);
+		  last_alias = alias;
+		}
+
+	      /* Only replace the array if something has changed.  */
+	      if (changed)
+		{
+		  VEC_free (tree, gc, aliases);
+		  var_ann (var)->may_aliases = new_aliases;
+		}
+	      else
+		VEC_free (tree, gc, new_aliases);
+	    }
+	}
+    }
+}
 
 /* Group may-aliases sets to reduce the number of virtual operands due
    to aliasing.
@@ -1596,6 +1663,8 @@ group_aliases (struct alias_info *ai)
 	    }
 	}
     }
+
+  compact_name_tags ();
 
   if (dump_file)
     fprintf (dump_file,
