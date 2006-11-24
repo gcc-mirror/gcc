@@ -1,3 +1,9 @@
+2006-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/29736
+	* c-common.c (handle_vector_size_attribute): Disallow VECTOR_TYPE
+	or UNION_TYPE inner types.
+
 2006-11-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/29964
