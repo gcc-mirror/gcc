@@ -9,4 +9,4 @@ unsigned char uc1 = -129; // { dg-warning "unsigned" }
 
 bool b1 = -3;
 
-int i1 = 0x80000000;
+int i1 = 0x80000000; // { dg-warning "conversion" }

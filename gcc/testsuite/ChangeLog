@@ -1,3 +1,14 @@
+2006-11-24  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+
+	PR c/2707
+	PR c++/26167
+	* gcc.dg/Wconversion-integer.c: New. Supersedes	
+	Wconversion-negative-constants.c 
+	* gcc.dg/Wconversion-real.c: New.
+	* gcc.dg/Wconversion-real-integer.c: New.
+	* gcc.dg/Wconversion-negative-constants.c: Deleted.
+	* g++.dg/warn/Wconversion1.C: Modified.
+	
 2006-11-23  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/overload_1.f90: New test.
