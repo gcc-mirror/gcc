@@ -1,3 +1,8 @@
+2006-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/29736
+	* gcc.dg/pr29736.c: New test.
+
 2006-11-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++.dg/eh/simd-2.C: Use -O -w in general for PowerPC.
