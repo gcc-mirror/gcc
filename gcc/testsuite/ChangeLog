@@ -1,3 +1,7 @@
+2006-11-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/20061124-1.c: New testcase.
+
 2006-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/29570
