@@ -1,3 +1,9 @@
+2006-11-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/specifics_1.f90: Remove check for CHAR.
+	* gfortran.dg/specifics_2.f90: Remove check for CHAR.
+	* gfortran.dg/specifics_3.f90: Remove.
+
 2006-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/29955
