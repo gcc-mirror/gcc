@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-do compile { target powerpc_altivec_ok } } */
 /* { dg-options "-O -gdwarf-2 -dA -maltivec" } */
 /* { dg-final { scan-assembler "DW_AT_const_value" } } */
 

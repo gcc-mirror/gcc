@@ -1,3 +1,8 @@
+2006-11-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/eh/simd-2.C: Use -O -w in general for PowerPC.
+	* gcc.dg/debug/dwarf2/const-2.c: Use powerpc_altivec_ok.
+
 2006-11-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20061124-1.c: New testcase.
