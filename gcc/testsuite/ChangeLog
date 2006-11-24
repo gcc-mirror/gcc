@@ -1,3 +1,15 @@
+2006-11-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/29391
+	PR fortran/29489
+	* gfortran.dg/bound_2.f90: New test.
+	* gfortran.dg/bound_3.f90: New test.
+
+2006-11-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/24285
+	* gfortran.dg/dollar_edit_descriptor-3.f: New test.
+
 2006-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/29955

@@ -510,8 +510,8 @@ format_item_1:
         return FAILURE;
       if (t != FMT_RPAREN || level > 0)
 	{
-	  error = _("$ must be the last specifier");
-	  goto syntax;
+	  gfc_warning ("$ should be the last specifier in format at %C");
+	  goto optional_comma_1;
 	}
 
       goto finished;
@@ -755,8 +755,9 @@ between_desc:
 
 optional_comma:
   /* Optional comma is a weird between state where we've just finished
-     reading a colon, slash or P descriptor.  */
+     reading a colon, slash, dollar or P descriptor.  */
   t = format_lex ();
+optional_comma_1:
   switch (t)
     {
     case FMT_COMMA:
