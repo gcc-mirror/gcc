@@ -1,3 +1,17 @@
+2006-11-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cse.c (cse_altered): Remove.
+	(record_jump_equiv): Make true/false argument a bool instead
+	of an int.
+	(cse_insn): Don't set cse_altered.  Use delete_insn_and_edges
+	where appropriate.  Emit a new jump before the existing one
+	instead of after so that delete_insn_and_edges removes the
+	dead edges properly.  Check any_condjump_p before calling
+	record_jump_equiv.
+	(cse_basic_block): Check any_condjump_p before calling
+	record_jump_equiv.
+	(cse_main): Don't set/check cse_altered.  Remove USE_C_ALLOCA.
+
 2006-11-25  Brooks Moses  <brooks.moses@codesourcery.com>
 
 	* c.opt: Remove -ffixed-form, -ffixed-line-length-none, and
