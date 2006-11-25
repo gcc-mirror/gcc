@@ -329,7 +329,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
        */
       iterator
       insert(iterator __position, const value_type& __x)
-      { return _M_t._M_insert_unique(__position, __x); }
+      { return _M_t._M_insert_unique_(__position, __x); }
 
       /**
        *  @brief A template function that attemps to insert a range of elements.
